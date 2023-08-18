@@ -42,7 +42,7 @@ namespace
         { 10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<glm::vec3, c_LightPositions.size()> c_LightColors = osc::to_array<glm::vec3>(
+    constexpr std::array<glm::vec3, c_LightPositions.size()> c_LightRadiances = osc::to_array<glm::vec3>(
     {
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
@@ -152,11 +152,13 @@ namespace
                 osc::App::slurp("shaders/ExperimentPBRLightingTextured.frag"),
             },
         };
-        rv.setTexture("albedoMap", albedo);
-        rv.setTexture("normalMap", normal);
-        rv.setTexture("metallicMap", metallic);
-        rv.setTexture("roughnessMap", roughness);
-        rv.setTexture("aoMap", ao);
+        rv.setTexture("uAlbedoMap", albedo);
+        rv.setTexture("uNormalMap", normal);
+        rv.setTexture("uMetallicMap", metallic);
+        rv.setTexture("uRoughnessMap", roughness);
+        rv.setTexture("uAOMap", ao);
+        rv.setVec3Array("uLightWorldPositions", c_LightPositions);
+        rv.setVec3Array("uLightRadiances", c_LightRadiances);
         return rv;
     }
 }
@@ -231,9 +233,7 @@ private:
     {
         m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
 
-        m_PBRMaterial.setVec3("camPos", m_Camera.getPosition());
-        m_PBRMaterial.setVec3Array("lightPositions", c_LightPositions);
-        m_PBRMaterial.setVec3Array("lightColors", c_LightColors);
+        m_PBRMaterial.setVec3("uCameraWorldPosition", m_Camera.getPosition());
 
         drawSpheres();
         drawLights();

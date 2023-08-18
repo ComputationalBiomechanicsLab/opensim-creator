@@ -1,13 +1,13 @@
 #version 330 core
 
-uniform sampler2D albedoMap;
-uniform sampler2D normalMap;
-uniform sampler2D metallicMap;
-uniform sampler2D roughnessMap;
-uniform sampler2D aoMap;
-uniform vec3 lightPositions[4];
-uniform vec3 lightColors[4];
-uniform vec3 camPos;
+uniform sampler2D uAlbedoMap;
+uniform sampler2D uNormalMap;
+uniform sampler2D uMetallicMap;
+uniform sampler2D uRoughnessMap;
+uniform sampler2D uAOMap;
+uniform vec3 uLightWorldPositions[4];
+uniform vec3 uLightRadiances[4];
+uniform vec3 uCameraWorldPosition;
 
 in vec2 TexCoord;
 in vec3 WorldPos;
@@ -17,6 +17,11 @@ out vec4 FragColor;
 
 const float PI = 3.14159265359;
 
+// see: https://www.jordanstevenstechart.com/physically-based-rendering
+//
+// it's a very good resource that explains each part of the rendering equation
+// for simple PBR shaders
+
 // ----------------------------------------------------------------------------
 // Easy trick to get tangent-normals to world-space to keep PBR code simplified.
 // Don't worry if you don't get what's going on; you generally want to do normal
@@ -24,23 +29,28 @@ const float PI = 3.14159265359;
 // technique somewhere later in the normal mapping tutorial.
 vec3 getNormalFromMap()
 {
-    vec3 tangentNormal = texture(normalMap, TexCoord).xyz * 2.0 - 1.0;
+    vec3 tangentNormal = texture(uNormalMap, TexCoord).xyz * 2.0 - 1.0;
 
     vec3 Q1  = dFdx(WorldPos);
     vec3 Q2  = dFdy(WorldPos);
     vec2 st1 = dFdx(TexCoord);
     vec2 st2 = dFdy(TexCoord);
 
-    vec3 N   = normalize(Normal);
-    vec3 T  = normalize(Q1*st2.t - Q2*st1.t);
-    vec3 B  = -normalize(cross(N, T));
+    vec3 N   =  normalize(Normal);
+    vec3 T   =  normalize(Q1*st2.t - Q2*st1.t);
+    vec3 B   = -normalize(cross(N, T));
     mat3 TBN = mat3(T, B, N);
 
     return normalize(TBN * tangentNormal);
 }
-// ----------------------------------------------------------------------------
-float DistributionGGX(vec3 N, vec3 H, float roughness)
+
+float TrowbridgeReitzGGXNDF(vec3 N, vec3 H, float roughness)
 {
+    // normal distribution function (NDF): "Trowbridge-Reitz GGX"
+    //
+    // this calculates the relative surface area of microfacets on a surface
+    // with normal N that are exactly along the halfway reflection vector H.
+
     float a = roughness*roughness;
     float a2 = a*a;
     float NdotH = max(dot(N, H), 0.0);
@@ -52,9 +62,11 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
 
     return nom / denom;
 }
-// ----------------------------------------------------------------------------
-float GeometrySchlickGGX(float NdotV, float roughness)
+
+float SchlickGGXGSF(float NdotV, float roughness)
 {
+    // geometric shadowing function (GSF): "Schlick-GGX"
+
     float r = (roughness + 1.0);
     float k = (r*r) / 8.0;
 
@@ -63,31 +75,46 @@ float GeometrySchlickGGX(float NdotV, float roughness)
 
     return nom / denom;
 }
-// ----------------------------------------------------------------------------
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+
+float SmithWalterEtAlGSF(vec3 N, vec3 V, vec3 L, float roughness)
 {
+    // geometric shadowing function (GSF): Smith-based
+    //
+    // combines a shadowing component from the light ray (L) being occluded by
+    // the surface roughness and a obstruction component from the view vector
+    // being occluded by the surface roughness
+    //
+    // see: https://www.jordanstevenstechart.com/physically-based-rendering
+    //
+    // LearnOpenGL uses the "common form" of Smith-based GGX GSF, created by Walter
+    // et. al. ("Microfacet Models for Refraction through Rough Surfaces", 2007)
+
     float NdotV = max(dot(N, V), 0.0);
     float NdotL = max(dot(N, L), 0.0);
-    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
-    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
 
-    return ggx1 * ggx2;
+    float geomObstruction = SchlickGGXGSF(NdotV, roughness);
+    float geomShadowing = SchlickGGXGSF(NdotL, roughness);
+
+    return geomObstruction * geomShadowing;
 }
-// ----------------------------------------------------------------------------
-vec3 fresnelSchlick(float cosTheta, vec3 F0)
+
+vec3 SchlickFresnelFunction(float cosTheta, vec3 F0)
 {
+    // fresnel function: Schlick Fresnel
+
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
-// ----------------------------------------------------------------------------
+
 void main()
 {
-    vec3 albedo     = texture(albedoMap, TexCoord).rgb;
-    float metallic  = texture(metallicMap, TexCoord).r;
-    float roughness = texture(roughnessMap, TexCoord).r;
-    float ao        = texture(aoMap, TexCoord).r;
+    // read material properties from material map textures
+    vec3 albedo = texture(uAlbedoMap, TexCoord).rgb;
+    float metallic = texture(uMetallicMap, TexCoord).r;
+    float roughness = texture(uRoughnessMap, TexCoord).r;
+    float ao = texture(uAOMap, TexCoord).r;
 
     vec3 N = getNormalFromMap();
-    vec3 V = normalize(camPos - WorldPos);
+    vec3 V = normalize(uCameraWorldPosition - WorldPos);
 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0
     // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)
@@ -96,19 +123,19 @@ void main()
 
     // reflectance equation
     vec3 Lo = vec3(0.0);
-    for(int i = 0; i < 4; ++i)
+    for (int lightIdx = 0; lightIdx < 4; ++lightIdx)
     {
         // calculate per-light radiance
-        vec3 L = normalize(lightPositions[i] - WorldPos);
+        vec3 L = normalize(uLightWorldPositions[lightIdx] - WorldPos);
         vec3 H = normalize(V + L);
-        float distance = length(lightPositions[i] - WorldPos);
+        float distance = length(uLightWorldPositions[lightIdx] - WorldPos);
         float attenuation = 1.0 / (distance * distance);
-        vec3 radiance = lightColors[i] * attenuation;
+        vec3 radiance = uLightRadiances[lightIdx] * attenuation;
 
         // Cook-Torrance BRDF
-        float NDF = DistributionGGX(N, H, roughness);
-        float G   = GeometrySmith(N, V, L, roughness);
-        vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);
+        float NDF = TrowbridgeReitzGGXNDF(N, H, roughness);
+        float G   = SmithWalterEtAlGSF(N, V, L, roughness);
+        vec3 F    = SchlickFresnelFunction(max(dot(H, V), 0.0), F0);
 
         vec3 numerator    = NDF * G * F;
         float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero
@@ -116,10 +143,12 @@ void main()
 
         // kS is equal to Fresnel
         vec3 kS = F;
+
         // for energy conservation, the diffuse and specular light can't
         // be above 1.0 (unless the surface emits light); to preserve this
         // relationship the diffuse component (kD) should equal 1.0 - kS.
         vec3 kD = vec3(1.0) - kS;
+
         // multiply kD by the inverse metalness such that only non-metals
         // have diffuse lighting, or a linear blend if partly metal (pure metals
         // have no diffuse light).
@@ -128,18 +157,17 @@ void main()
         // scale light by NdotL
         float NdotL = max(dot(N, L), 0.0);
 
+        vec3 fr = (kD * albedo / PI) + specular;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+
         // add to outgoing radiance Lo
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+        Lo += fr * radiance * NdotL;
     }
 
-    // ambient lighting (note that the next IBL tutorial will replace
-    // this ambient lighting with environment lighting).
+    // add ambient component
     vec3 ambient = vec3(0.03) * albedo * ao;
 
     vec3 color = ambient + Lo;
-
-    // HDR tonemapping
-    color = color / (color + vec3(1.0));
+    color = color / (color + vec3(1.0));  // HDR tonemap
 
     FragColor = vec4(color, 1.0);
 }

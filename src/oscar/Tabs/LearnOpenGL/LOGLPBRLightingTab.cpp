@@ -35,7 +35,7 @@ namespace
         { 10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<glm::vec3, c_LightPositions.size()> c_LightColors = osc::to_array<glm::vec3>(
+    constexpr std::array<glm::vec3, c_LightPositions.size()> c_LightRadiances = osc::to_array<glm::vec3>(
     {
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
@@ -146,7 +146,7 @@ private:
 
         m_PBRMaterial.setVec3("uCameraWorldPos", m_Camera.getPosition());
         m_PBRMaterial.setVec3Array("uLightPositions", c_LightPositions);
-        m_PBRMaterial.setVec3Array("uLightColors", c_LightColors);
+        m_PBRMaterial.setVec3Array("uLightColors", c_LightRadiances);
 
         drawSpheres();
         drawLights();

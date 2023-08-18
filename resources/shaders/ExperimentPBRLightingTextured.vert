@@ -19,5 +19,5 @@ void main()
     TexCoord = aTexCoord;
     WorldPos = vec3(affinePos);
     Normal = uNormalMat * aNormal;
-    gl_Position = uViewProjMat * vec4(WorldPos, 1.0);
+    gl_Position = uViewProjMat * affinePos;
 }
