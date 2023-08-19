@@ -1,5 +1,7 @@
 #pragma once
 
+#include "oscar/Graphics/TextureChannelFormat.hpp"
+
 #include <cstddef>
 #include <cstdint>
 #include <optional>
@@ -15,10 +17,7 @@ namespace osc
     };
 
     size_t NumChannels(TextureFormat) noexcept;
-    size_t NumBytesPerChannel(TextureFormat) noexcept;
+    TextureChannelFormat ChannelFormat(TextureFormat) noexcept;
     size_t NumBytesPerPixel(TextureFormat) noexcept;
-
-    template<typename T> std::optional<TextureFormat> ToTextureFormat(size_t numChannels) noexcept;
-    template<> std::optional<TextureFormat> ToTextureFormat<uint8_t>(size_t numChannels) noexcept;
-    template<> std::optional<TextureFormat> ToTextureFormat<float>(size_t numChannels) noexcept;
+    std::optional<TextureFormat> ToTextureFormat(size_t numChannels, TextureChannelFormat) noexcept;
 }

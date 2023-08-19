@@ -50,11 +50,11 @@ osc::Texture2D osc::ReadSVGIntoTexture(
     {
         {bitmap.width(), bitmap.height()},
         TextureFormat::RGBA32,
-        {bitmap.data(), bitmap.width()*bitmap.height()*4},
         ColorSpace::sRGB,
+        TextureWrapMode::Clamp,
+        TextureFilterMode::Nearest,
     };
-    rv.setWrapMode(TextureWrapMode::Clamp);
-    rv.setFilterMode(TextureFilterMode::Nearest);
+    rv.setPixelData({bitmap.data(), bitmap.width()*bitmap.height()*4});
     return rv;
 }
 

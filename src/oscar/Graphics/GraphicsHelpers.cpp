@@ -463,7 +463,7 @@ osc::Material osc::CreateWireframeOverlayMaterial(Config const& config, ShaderCa
 
 osc::Texture2D osc::ToTexture2D(Image const& image)
 {
-    std::optional<TextureFormat> const format = ToTextureFormat<uint8_t>(image.getNumChannels());
+    std::optional<TextureFormat> const format = ToTextureFormat(image.getNumChannels(), TextureChannelFormat::Uint8);
     if (!format)
     {
         std::stringstream ss;
@@ -471,13 +471,14 @@ osc::Texture2D osc::ToTexture2D(Image const& image)
         throw std::runtime_error{std::move(ss).str()};
     }
 
-    return Texture2D
+    Texture2D rv
     {
         image.getDimensions(),
         *format,
-        image.getPixelData(),
         image.getColorSpace(),
     };
+    rv.setPixelData(image.getPixelData());
+    return rv;
 }
 
 osc::Texture2D osc::LoadTexture2DFromImage(

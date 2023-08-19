@@ -1330,38 +1330,246 @@ namespace
             return GL_REPEAT;
         }
     }
+
+    std::vector<osc::Color> ReadPixelDataAsColor(
+        nonstd::span<uint8_t const> pixelData,
+        osc::TextureFormat pixelDataFormat)
+    {
+        osc::TextureChannelFormat const channelFormat = osc::ChannelFormat(pixelDataFormat);
+
+        size_t const numChannels = osc::NumChannels(pixelDataFormat);
+        size_t const bytesPerChannel = osc::NumBytesPerChannel(channelFormat);
+        size_t const bytesPerPixel = bytesPerChannel * numChannels;
+        size_t const numPixels = pixelData.size() / bytesPerPixel;
+
+        OSC_ASSERT(pixelData.size() % bytesPerPixel == 0);
+
+        std::vector<osc::Color> rv;
+        rv.reserve(numPixels);
+
+        static_assert(osc::NumOptions<osc::TextureChannelFormat>() == 2);
+        if (channelFormat == osc::TextureChannelFormat::Uint8)
+        {
+            // unpack 8-bit channel bytes into floating-point osc::Color channels
+            for (size_t pixel = 0; pixel < numPixels; ++pixel)
+            {
+                size_t const pixelStart = bytesPerPixel * pixel;
+
+                osc::Color color = osc::Color::black();
+                for (size_t channel = 0; channel < numChannels; ++channel)
+                {
+                    size_t const channelStart = pixelStart + channel;
+                    color[channel] = static_cast<float>(pixelData[channelStart]) / 255.0f;
+                }
+                rv.push_back(color);
+            }
+        }
+        else
+        {
+            static_assert(std::is_same_v<osc::Color::value_type, float>);
+            OSC_ASSERT(bytesPerChannel == sizeof(float));
+
+            // read 32-bit channel floats into osc::Color channels
+            for (size_t pixel = 0; pixel < numPixels; ++pixel)
+            {
+                size_t const pixelStart = bytesPerPixel * pixel;
+
+                osc::Color color = osc::Color::black();
+                for (size_t channel = 0; channel < numChannels; ++channel)
+                {
+                    size_t const channelStart = pixelStart + channel*sizeof(float);
+                    std::copy(
+                        pixelData.begin() + channelStart,
+                        pixelData.begin() + channelStart + sizeof(float),
+                        reinterpret_cast<uint8_t*>(&color[channel])
+                    );
+                }
+                rv.push_back(color);
+            }
+        }
+
+        return rv;
+    }
+
+    std::vector<osc::Rgba32> ReadPixelDataAsColor32(
+        nonstd::span<uint8_t const> pixelData,
+        osc::TextureFormat pixelDataFormat)
+    {
+        osc::TextureChannelFormat const channelFormat = osc::ChannelFormat(pixelDataFormat);
+
+        size_t const numChannels = osc::NumChannels(pixelDataFormat);
+        size_t const bytesPerChannel = osc::NumBytesPerChannel(channelFormat);
+        size_t const bytesPerPixel = bytesPerChannel * numChannels;
+        size_t const numPixels = pixelData.size() / bytesPerPixel;
+
+        std::vector<osc::Rgba32> rv;
+        rv.reserve(numPixels);
+
+        static_assert(osc::NumOptions<osc::TextureChannelFormat>() == 2);
+        if (channelFormat == osc::TextureChannelFormat::Uint8)
+        {
+            // read 8-bit channel bytes into 8-bit osc::Rgba32 color channels
+            for (size_t pixel = 0; pixel < numPixels; ++pixel)
+            {
+                size_t const pixelStart = bytesPerPixel * pixel;
+
+                osc::Rgba32 color = {0x00, 0x00, 0x00, 0xff};
+                for (size_t channel = 0; channel < numChannels; ++channel)
+                {
+                    size_t const channelStart = pixelStart + channel;
+                    color[channel] = pixelData[channelStart];
+                }
+                rv.push_back(color);
+            }
+        }
+        else
+        {
+            static_assert(std::is_same_v<osc::Color::value_type, float>);
+            OSC_ASSERT(bytesPerChannel == sizeof(float));
+
+            // pack 32-bit channel floats into 8-bit osc::Rgba32 color channels
+            for (size_t pixel = 0; pixel < numPixels; ++pixel)
+            {
+                size_t const pixelStart = bytesPerPixel * pixel;
+
+                osc::Rgba32 color = {0x00, 0x00, 0x00, 0xff};
+                for (size_t channel = 0; channel < numChannels; ++channel)
+                {
+                    size_t const channelStart = pixelStart + channel*sizeof(float);
+
+                    float channelFloat = 0.0f;
+                    std::copy(
+                        pixelData.begin() + channelStart,
+                        pixelData.begin() + channelStart + sizeof(float),
+                        reinterpret_cast<uint8_t*>(&channelFloat)
+                    );
+
+                    // clamp HDR values: cannot be represented in 8-bit and tonemapping is
+                    // a bad idea here
+                    channelFloat = glm::clamp(channelFloat, 0.0f, 1.0f);
+
+                    color[channel] = static_cast<uint8_t>(255.0f * channelFloat);
+                }
+                rv.push_back(color);
+            }
+        }
+
+        return rv;
+    }
+
+    void EncodePixelsInDesiredFormat(
+        nonstd::span<osc::Color const> pixels,
+        osc::TextureFormat pixelDataFormat,
+        std::vector<uint8_t>& pixelData)
+    {
+        osc::TextureChannelFormat const channelFormat = osc::ChannelFormat(pixelDataFormat);
+
+        size_t const numChannels = osc::NumChannels(pixelDataFormat);
+        size_t const bytesPerChannel = osc::NumBytesPerChannel(channelFormat);
+        size_t const bytesPerPixel = bytesPerChannel * numChannels;
+        size_t const numPixels = pixels.size();
+        size_t const numOutputBytes = bytesPerPixel * numPixels;
+
+        pixelData.clear();
+        pixelData.reserve(numOutputBytes);
+
+        OSC_ASSERT(numChannels <= osc::Color::length());
+        static_assert(osc::NumOptions<osc::TextureChannelFormat>() == 2);
+        if (channelFormat == osc::TextureChannelFormat::Uint8)
+        {
+            // clamp pixels, convert them to bytes, add them to pixel data buffer
+            for (osc::Color const& pixel : pixels)
+            {
+                for (size_t channel = 0; channel < numChannels; ++channel)
+                {
+                    uint8_t const v = static_cast<uint8_t>(255.0f * glm::clamp(pixel[channel], 0.0f, 1.0f));
+                    pixelData.push_back(v);
+                }
+            }
+        }
+        else
+        {
+            // write pixels to pixel data buffer as-is (they're floats already)
+            for (osc::Color const& pixel : pixels)
+            {
+                for (size_t channel = 0; channel < numChannels; ++channel)
+                {
+                    pixelData.insert(
+                        pixelData.end(),
+                        reinterpret_cast<uint8_t const*>(&pixel[channel]),
+                        reinterpret_cast<uint8_t const*>(&pixel[channel] + 1)
+                    );
+                }
+            }
+        }
+    }
+
+    void EncodePixels32InDesiredFormat(
+        nonstd::span<osc::Rgba32 const> pixels,
+        osc::TextureFormat pixelDataFormat,
+        std::vector<uint8_t>& pixelData)
+    {
+        osc::TextureChannelFormat const channelFormat = osc::ChannelFormat(pixelDataFormat);
+
+        size_t const numChannels = osc::NumChannels(pixelDataFormat);
+        size_t const bytesPerChannel = osc::NumBytesPerChannel(channelFormat);
+        size_t const bytesPerPixel = bytesPerChannel * numChannels;
+        size_t const numPixels = pixels.size();
+        size_t const numOutputBytes = bytesPerPixel * numPixels;
+
+        pixelData.clear();
+        pixelData.reserve(numOutputBytes);
+
+        OSC_ASSERT(numChannels <= osc::Rgba32::length());
+        static_assert(osc::NumOptions<osc::TextureChannelFormat>() == 2);
+        if (channelFormat == osc::TextureChannelFormat::Uint8)
+        {
+            // write pixels to pixel data buffer as-is (they're bytes already)
+            for (osc::Rgba32 const& pixel : pixels)
+            {
+                for (size_t channel = 0; channel < numChannels; ++channel)
+                {
+                    pixelData.push_back(pixel[channel]);
+                }
+            }
+        }
+        else
+        {
+            // upscale pixels to float32s and write the floats to the pixel buffer
+            for (osc::Rgba32 const& pixel : pixels)
+            {
+                for (size_t channel = 0; channel < numChannels; ++channel)
+                {
+                    float const pixelFloatVal = static_cast<float>(pixel[channel]) / 255.0f;
+                    pixelData.insert(
+                        pixelData.end(),
+                        reinterpret_cast<uint8_t const*>(&pixelFloatVal),
+                        reinterpret_cast<uint8_t const*>(&pixelFloatVal + 1)
+                    );
+                }
+            }
+        }
+    }
 }
 
 class osc::Texture2D::Impl final {
 public:
     Impl(
         glm::ivec2 dimensions,
-        nonstd::span<Rgba32 const> pixelsRowByRow,
-        ColorSpace colorSpace) :
-
-        Impl
-        {
-            dimensions,
-            TextureFormat::RGBA32,
-            nonstd::span<uint8_t const>{&pixelsRowByRow[0].r, 4 * pixelsRowByRow.size()},
-            colorSpace,
-        }
-    {
-    }
-
-    Impl(
-        glm::ivec2 dimensions,
         TextureFormat format,
-        nonstd::span<uint8_t const> channelsRowByRow,
-        ColorSpace colorSpace) :
+        ColorSpace colorSpace,
+        TextureWrapMode wrapMode,
+        TextureFilterMode filterMode) :
 
         m_Dimensions{dimensions},
         m_Format{format},
         m_ColorSpace{colorSpace},
-        m_PixelData(channelsRowByRow.data(), channelsRowByRow.data() + channelsRowByRow.size())
+        m_WrapModeU{wrapMode},
+        m_WrapModeV{wrapMode},
+        m_WrapModeW{wrapMode},
+        m_FilterMode{filterMode}
     {
-        OSC_THROWING_ASSERT(m_Dimensions.x >= 0 && m_Dimensions.y >= 0);
-        OSC_THROWING_ASSERT(static_cast<ptrdiff_t>(m_Dimensions.x * m_Dimensions.y) == static_cast<ptrdiff_t>(m_PixelData.size()/NumBytesPerPixel(m_Format)));
+        OSC_THROWING_ASSERT(m_Dimensions.x > 0 && m_Dimensions.y > 0);
     }
 
     glm::ivec2 getDimensions() const
@@ -1369,19 +1577,14 @@ public:
         return m_Dimensions;
     }
 
-    float getAspectRatio() const
+    TextureFormat getTextureFormat() const
     {
-        return AspectRatio(m_Dimensions);
+        return m_Format;
     }
 
     ColorSpace getColorSpace() const
     {
         return m_ColorSpace;
-    }
-
-    TextureFormat getTextureFormat() const
-    {
-        return m_Format;
     }
 
     TextureWrapMode getWrapMode() const
@@ -1439,6 +1642,41 @@ public:
     {
         m_FilterMode = tfm;
         m_TextureParamsVersion.reset();
+    }
+
+    std::vector<Color> getPixels() const
+    {
+        return ReadPixelDataAsColor(m_PixelData, m_Format);
+    }
+
+    void setPixels(nonstd::span<Color const> pixels)
+    {
+        OSC_THROWING_ASSERT(pixels.size() == m_Dimensions.x*m_Dimensions.y);
+        EncodePixelsInDesiredFormat(pixels, m_Format, m_PixelData);
+    }
+
+    std::vector<Rgba32> getPixels32() const
+    {
+        return ReadPixelDataAsColor32(m_PixelData, m_Format);
+    }
+
+    void setPixels32(nonstd::span<Rgba32 const> pixels)
+    {
+        OSC_THROWING_ASSERT(pixels.size() == m_Dimensions.x*m_Dimensions.y);
+        EncodePixels32InDesiredFormat(pixels, m_Format, m_PixelData);
+    }
+
+    nonstd::span<uint8_t const> getPixelData() const
+    {
+        return m_PixelData;
+    }
+
+    void setPixelData(nonstd::span<uint8_t const> pixelData)
+    {
+        OSC_THROWING_ASSERT(pixelData.size() == NumBytesPerPixel(m_Format)*m_Dimensions.x*m_Dimensions.y && "incorrect number of bytes passed to Texture2D::setPixelData");
+        OSC_THROWING_ASSERT(pixelData.size() == m_PixelData.size());
+
+        std::copy(pixelData.cbegin(), pixelData.cend(), m_PixelData.begin());
     }
 
     void* getTextureHandleHACK() const
@@ -1518,13 +1756,12 @@ private:
     glm::ivec2 m_Dimensions;
     TextureFormat m_Format;
     ColorSpace m_ColorSpace;
-    std::vector<uint8_t> m_PixelData;
     TextureWrapMode m_WrapModeU = TextureWrapMode::Repeat;
     TextureWrapMode m_WrapModeV = TextureWrapMode::Repeat;
     TextureWrapMode m_WrapModeW = TextureWrapMode::Repeat;
     TextureFilterMode m_FilterMode = TextureFilterMode::Nearest;
+    std::vector<uint8_t> m_PixelData = std::vector<uint8_t>(NumBytesPerPixel(m_Format) * m_Dimensions.x * m_Dimensions.y, 0xff);
     UID m_TextureParamsVersion;
-
     DefaultConstructOnCopy<std::optional<Texture2DOpenGLData>> m_MaybeGPUTexture;
 };
 
@@ -1552,63 +1789,65 @@ size_t osc::NumChannels(TextureFormat format) noexcept
     }
 }
 
-size_t osc::NumBytesPerChannel(TextureFormat format) noexcept
+osc::TextureChannelFormat osc::ChannelFormat(TextureFormat f) noexcept
 {
     static_assert(NumOptions<TextureFormat>() == 4);
 
-    switch (format)
+    switch (f)
     {
-    case TextureFormat::R8: return 1;
-    case TextureFormat::RGBA32: return 1;
-    case TextureFormat::RGB24: return 1;
-    case TextureFormat::RGBAFloat: return 4;
-    default: return 1;  // static_assert ensure this shouldn't be hit
+    case TextureFormat::R8: return TextureChannelFormat::Uint8;
+    case TextureFormat::RGBA32: return TextureChannelFormat::Uint8;
+    case TextureFormat::RGB24: return TextureChannelFormat::Uint8;
+    case TextureFormat::RGBAFloat: return TextureChannelFormat::Float32;
+    default: return TextureChannelFormat::Uint8;
     }
 }
 
 size_t osc::NumBytesPerPixel(TextureFormat format) noexcept
 {
-    return NumChannels(format) * NumBytesPerChannel(format);
+    return NumChannels(format) * NumBytesPerChannel(ChannelFormat(format));
 }
 
-template<> std::optional<osc::TextureFormat> osc::ToTextureFormat<uint8_t>(size_t numChannels) noexcept
+std::optional<osc::TextureFormat> osc::ToTextureFormat(size_t numChannels, TextureChannelFormat channelFormat) noexcept
 {
-    static_assert(NumOptions<TextureFormat>() == 4);
+    static_assert(NumOptions<TextureChannelFormat>() == 2);
+    bool const isByteOriented = channelFormat == TextureChannelFormat::Uint8;
 
+    static_assert(NumOptions<TextureFormat>() == 4);
     switch (numChannels)
     {
-    case 1: return TextureFormat::R8;
-    case 3: return TextureFormat::RGB24;
-    case 4: return TextureFormat::RGBA32;
-    default: return std::nullopt;
+    case 1:
+        return isByteOriented ? TextureFormat::R8 : std::optional<TextureFormat>{};
+    case 3:
+        return isByteOriented ? TextureFormat::RGB24 : std::optional<TextureFormat>{};
+    case 4:
+        return isByteOriented ? TextureFormat::RGBA32 : TextureFormat::RGBAFloat;
+    default:
+        return std::nullopt;
     }
 }
 
-template<> std::optional<osc::TextureFormat> osc::ToTextureFormat<float>(size_t numChannels) noexcept
+size_t osc::NumBytesPerChannel(TextureChannelFormat f)
 {
-    static_assert(NumOptions<TextureFormat>() == 4);
-    return numChannels == 4 ? osc::TextureFormat::RGBAFloat : std::optional<osc::TextureFormat>{};
-}
-
-osc::Texture2D::Texture2D(
-    glm::ivec2 dimensions,
-    nonstd::span<Rgba32 const> pixels,
-    ColorSpace colorSpace) :
-
-    m_Impl{make_cow<Impl>(dimensions, pixels, colorSpace)}
-{
+    static_assert(NumOptions<TextureChannelFormat>() == 2);
+    switch (f)
+    {
+    case TextureChannelFormat::Uint8: return 1;
+    case TextureChannelFormat::Float32: return 4;
+    default: return 1;
+    }
 }
 
 osc::Texture2D::Texture2D(
     glm::ivec2 dimensions,
     TextureFormat format,
-    nonstd::span<uint8_t const> channelsRowByRow,
-    ColorSpace colorSpace) :
+    ColorSpace colorSpace,
+    TextureWrapMode wrapMode,
+    TextureFilterMode filterMode) :
 
-    m_Impl{make_cow<Impl>(dimensions, format, channelsRowByRow, colorSpace)}
+    m_Impl{make_cow<Impl>(dimensions, format, colorSpace, wrapMode, filterMode)}
 {
 }
-
 osc::Texture2D::Texture2D(Texture2D const&) = default;
 osc::Texture2D::Texture2D(Texture2D&&) noexcept = default;
 osc::Texture2D& osc::Texture2D::operator=(Texture2D const&) = default;
@@ -1620,19 +1859,14 @@ glm::ivec2 osc::Texture2D::getDimensions() const
     return m_Impl->getDimensions();
 }
 
-float osc::Texture2D::getAspectRatio() const
+osc::TextureFormat osc::Texture2D::getTextureFormat() const
 {
-    return m_Impl->getAspectRatio();
+    return m_Impl->getTextureFormat();
 }
 
 osc::ColorSpace osc::Texture2D::getColorSpace() const
 {
     return m_Impl->getColorSpace();
-}
-
-osc::TextureFormat osc::Texture2D::getTextureFormat() const
-{
-    return m_Impl->getTextureFormat();
 }
 
 osc::TextureWrapMode osc::Texture2D::getWrapMode() const
@@ -1688,6 +1922,36 @@ void osc::Texture2D::setFilterMode(TextureFilterMode twm)
 void* osc::Texture2D::getTextureHandleHACK() const
 {
     return m_Impl->getTextureHandleHACK();
+}
+
+std::vector<osc::Color> osc::Texture2D::getPixels() const
+{
+    return m_Impl->getPixels();
+}
+
+void osc::Texture2D::setPixels(nonstd::span<Color const> pixels)
+{
+    m_Impl.upd()->setPixels(pixels);
+}
+
+std::vector<osc::Rgba32> osc::Texture2D::getPixels32() const
+{
+    return m_Impl->getPixels32();
+}
+
+void osc::Texture2D::setPixels32(nonstd::span<Rgba32 const> pixels)
+{
+    m_Impl.upd()->setPixels32(pixels);
+}
+
+nonstd::span<uint8_t const> osc::Texture2D::getPixelData() const
+{
+    return m_Impl->getPixelData();
+}
+
+void osc::Texture2D::setPixelData(nonstd::span<uint8_t const> pixelData)
+{
+    m_Impl.upd()->setPixelData(pixelData);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, Texture2D const&)
@@ -6672,7 +6936,7 @@ void osc::GraphicsBackend::CopyTexture(
         GL_LINEAR  // the two texture may have different dimensions (avoid GL_NEAREST)
     );
 
-    // TODO: download the blitted data into the texture's CPU buffer
+    // TODO: download the blitted data into the texture's CPU buffer, make sure it's aligned etc.
 }
 
 void osc::GraphicsBackend::ReadPixels(Texture2D const& source, Image& dest)
@@ -6721,8 +6985,12 @@ void osc::GraphicsBackend::ReadPixels(
     // TODO: what format should be output have (HDR, RGB, RGBA, etc.)?
 
     glm::ivec2 const dims = renderTexture.getDimensions();
-    std::vector<uint8_t> dummy(dims.x*dims.y*4);
-    Texture2D t{dims, TextureFormat::RGBA32, dummy, ColorSpace::sRGB};
+    Texture2D t
+    {
+        dims,
+        TextureFormat::RGBA32,
+        ColorSpace::sRGB,
+    };
     CopyTexture(renderTexture, t);
     ReadPixels(t, dest);
 }

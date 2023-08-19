@@ -93,7 +93,6 @@ add_library(oscar STATIC
     Graphics/RenderTextureDescriptor.hpp
     Graphics/RenderTextureFormat.hpp
     Graphics/RenderTextureReadWrite.hpp
-    Graphics/Rgb24.hpp
     Graphics/Rgba32.hpp
     Graphics/SceneCollision.hpp
     Graphics/SceneDecoration.cpp
@@ -110,6 +109,7 @@ add_library(oscar STATIC
     Graphics/ShaderType.hpp
     Graphics/SimpleSceneDecoration.hpp
     Graphics/Texture2D.hpp
+    Graphics/TextureChannelFormat.hpp
     Graphics/TextureDimension.hpp
     Graphics/TextureFilterMode.hpp
     Graphics/TextureFormat.hpp

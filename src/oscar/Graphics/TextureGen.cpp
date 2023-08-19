@@ -37,10 +37,10 @@ osc::Texture2D osc::GenChequeredFloorTexture()
     {
         glm::vec2{textureWidth, textureHeight},
         TextureFormat::RGBA32,
-        nonstd::span<uint8_t const>{&pixels.front().r, sizeof(pixels)},
         ColorSpace::sRGB,
+        TextureWrapMode::Repeat,
+        TextureFilterMode::Mipmap,
     };
-    rv.setFilterMode(TextureFilterMode::Mipmap);
-    rv.setWrapMode(TextureWrapMode::Repeat);
+    rv.setPixelData(nonstd::span<uint8_t const>{&pixels.front().r, sizeof(pixels)});
     return rv;
 }

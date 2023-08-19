@@ -1,5 +1,6 @@
 #include "oscar/Graphics/TextureFormat.hpp"
 
+#include "oscar/Graphics/TextureChannelFormat.hpp"
 #include "oscar/Utils/EnumHelpers.hpp"
 
 #include <gtest/gtest.h>
@@ -20,14 +21,14 @@ TEST(TextureFormat, NumChannelsReturnsExpectedValues)
     ASSERT_EQ(osc::NumChannels(osc::TextureFormat::RGBAFloat), 4);
 }
 
-TEST(TextureFormat, NumBytesPerChannelReturnsExpectedValues)
+TEST(TextureFormat, ChannelFormatReturnsExpectedValues)
 {
     static_assert(osc::NumOptions<osc::TextureFormat>() == 4);
 
-    ASSERT_EQ(osc::NumBytesPerChannel(osc::TextureFormat::R8), 1);
-    ASSERT_EQ(osc::NumBytesPerChannel(osc::TextureFormat::RGB24), 1);
-    ASSERT_EQ(osc::NumBytesPerChannel(osc::TextureFormat::RGBA32), 1);
-    ASSERT_EQ(osc::NumBytesPerChannel(osc::TextureFormat::RGBAFloat), 4);
+    ASSERT_EQ(osc::ChannelFormat(osc::TextureFormat::R8), osc::TextureChannelFormat::Uint8);
+    ASSERT_EQ(osc::ChannelFormat(osc::TextureFormat::RGB24), osc::TextureChannelFormat::Uint8);
+    ASSERT_EQ(osc::ChannelFormat(osc::TextureFormat::RGBA32), osc::TextureChannelFormat::Uint8);
+    ASSERT_EQ(osc::ChannelFormat(osc::TextureFormat::RGBAFloat), osc::TextureChannelFormat::Float32);
 }
 
 TEST(TextureFormat, NumBytesPerPixelReturnsExpectedValues)
@@ -44,15 +45,15 @@ TEST(TextureFormat, ToTextureFormatReturnsExpectedValues)
 {
     static_assert(osc::NumOptions<osc::TextureFormat>() == 4);
 
-    ASSERT_EQ(osc::ToTextureFormat<uint8_t>(1), osc::TextureFormat::R8);
-    ASSERT_EQ(osc::ToTextureFormat<uint8_t>(2), std::nullopt);
-    ASSERT_EQ(osc::ToTextureFormat<uint8_t>(3), osc::TextureFormat::RGB24);
-    ASSERT_EQ(osc::ToTextureFormat<uint8_t>(4), osc::TextureFormat::RGBA32);
-    ASSERT_EQ(osc::ToTextureFormat<uint8_t>(5), std::nullopt);
+    ASSERT_EQ(osc::ToTextureFormat(1, osc::TextureChannelFormat::Uint8), osc::TextureFormat::R8);
+    ASSERT_EQ(osc::ToTextureFormat(2, osc::TextureChannelFormat::Uint8), std::nullopt);
+    ASSERT_EQ(osc::ToTextureFormat(3, osc::TextureChannelFormat::Uint8), osc::TextureFormat::RGB24);
+    ASSERT_EQ(osc::ToTextureFormat(4, osc::TextureChannelFormat::Uint8), osc::TextureFormat::RGBA32);
+    ASSERT_EQ(osc::ToTextureFormat(5, osc::TextureChannelFormat::Uint8), std::nullopt);
 
-    ASSERT_EQ(osc::ToTextureFormat<float>(1), std::nullopt);
-    ASSERT_EQ(osc::ToTextureFormat<float>(2), std::nullopt);
-    ASSERT_EQ(osc::ToTextureFormat<float>(3), std::nullopt);
-    ASSERT_EQ(osc::ToTextureFormat<float>(4), osc::TextureFormat::RGBAFloat);
-    ASSERT_EQ(osc::ToTextureFormat<float>(5), std::nullopt);
+    ASSERT_EQ(osc::ToTextureFormat(1, osc::TextureChannelFormat::Float32), std::nullopt);
+    ASSERT_EQ(osc::ToTextureFormat(2, osc::TextureChannelFormat::Float32), std::nullopt);
+    ASSERT_EQ(osc::ToTextureFormat(3, osc::TextureChannelFormat::Float32), std::nullopt);
+    ASSERT_EQ(osc::ToTextureFormat(4, osc::TextureChannelFormat::Float32), osc::TextureFormat::RGBAFloat);
+    ASSERT_EQ(osc::ToTextureFormat(5, osc::TextureChannelFormat::Float32), std::nullopt);
 }

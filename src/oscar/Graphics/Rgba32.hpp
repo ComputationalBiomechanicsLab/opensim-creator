@@ -6,11 +6,41 @@
 namespace osc
 {
     struct alignas(alignof(uint32_t)) Rgba32 final {
+
+        static constexpr size_t length() noexcept
+        {
+            return 4;
+        }
+
+        uint8_t& operator[](ptrdiff_t i)
+        {
+            return (&r)[i];
+        }
+
+        uint8_t const& operator[](ptrdiff_t i) const
+        {
+            return (&r)[i];
+        }
+
         uint8_t r;
         uint8_t g;
         uint8_t b;
         uint8_t a;
     };
+
+    constexpr bool operator==(Rgba32 const& a, Rgba32 const& b) noexcept
+    {
+        return
+            a.r == b.r &&
+            a.g == b.g &&
+            a.b == b.b &&
+            a.a == b.a;
+    }
+
+    constexpr bool operator!=(Rgba32 const& a, Rgba32 const& b) noexcept
+    {
+        return !(a == b);
+    }
 
     inline uint32_t ToUint32(Rgba32 const& rgba32)
     {

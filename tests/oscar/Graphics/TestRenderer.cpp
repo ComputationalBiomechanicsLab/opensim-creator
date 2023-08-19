@@ -421,9 +421,9 @@ namespace
 
     osc::Texture2D GenerateTexture()
     {
-        std::vector<osc::Rgba32> pixels(4);
-
-        return osc::Texture2D{{2, 2}, pixels, osc::ColorSpace::sRGB};
+        osc::Texture2D rv{glm::ivec2{2, 2}};
+        rv.setPixels(std::vector<osc::Color>(4, osc::Color::red()));
+        return rv;
     }
 
     osc::Material GenerateMaterial()
@@ -446,6 +446,22 @@ namespace
     {
         osc::RenderTextureDescriptor d{{2, 2}};
         return osc::RenderTexture{d};
+    }
+
+    template<typename T>
+    nonstd::span<uint8_t const> ToByteSpan(nonstd::span<T const> vs)
+    {
+        return
+        {
+            reinterpret_cast<uint8_t const*>(vs.data()),
+            reinterpret_cast<uint8_t const*>(vs.data() + vs.size())
+        };
+    }
+
+    template<typename T>
+    nonstd::span<uint8_t const> ToByteSpan(std::vector<T> const& vs)
+    {
+        return ToByteSpan(nonstd::span<T const>(vs));
     }
 
     template<typename T>
@@ -1522,75 +1538,184 @@ TEST_F(Renderer, MaterialPropertyBlockPrintingToOutputStreamMentionsMaterialProp
     ASSERT_TRUE(osc::ContainsSubstring(ss.str(), "MaterialPropertyBlock"));
 }
 
-TEST_F(Renderer, TextureCanConstructFromRGBAPixels)
+TEST_F(Renderer, TextureConstructorThrowsIfGivenZeroOrNegativeSizedDimensions)
 {
-    std::vector<osc::Rgba32> pixels(4);
-    osc::Texture2D t{{2, 2}, pixels, osc::ColorSpace::sRGB};
+    ASSERT_ANY_THROW({ osc::Texture2D(glm::ivec2(0, 0)); });   // x and y are zero
+    ASSERT_ANY_THROW({ osc::Texture2D(glm::ivec2(0, 1)); });   // x is zero
+    ASSERT_ANY_THROW({ osc::Texture2D(glm::ivec2(1, 0)); });   // y is zero
+
+    ASSERT_ANY_THROW({ osc::Texture2D(glm::ivec2(-1, -1)); }); // x any y are negative
+    ASSERT_ANY_THROW({ osc::Texture2D(glm::ivec2(-1, 1)); });  // x is negative
+    ASSERT_ANY_THROW({ osc::Texture2D(glm::ivec2(1, -1)); });  // y is negative
 }
 
-TEST_F(Renderer, TextureRGBAThrowsIfDimensionsDontMatchNumberOfPixels)
+TEST_F(Renderer, TextureDefaultConstructorCreatesRGBATextureWithExpectedColorSpaceEtc)
 {
-    std::vector<osc::Rgba32> pixels(4);
-    ASSERT_ANY_THROW({ osc::Texture2D t({1, 2}, pixels, osc::ColorSpace::sRGB); });
-}
+    osc::Texture2D t{glm::ivec2(1, 1)};
 
-TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForSingleChannelData)
-{
-    std::vector<std::uint8_t> singleChannelPixels(16);
-    osc::Texture2D t{{4, 4}, osc::TextureFormat::R8, singleChannelPixels, osc::ColorSpace::sRGB};
-
-    ASSERT_EQ(t.getDimensions(), glm::ivec2(4,4));
-    ASSERT_EQ(t.getAspectRatio(), 1.0f);
-}
-
-TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForRGBData)
-{
-    std::vector<std::uint8_t> rgbPixels(12);
-    osc::Texture2D t{{2, 2}, osc::TextureFormat::RGB24, rgbPixels, osc::ColorSpace::sRGB};
-
-    ASSERT_EQ(t.getDimensions(), glm::ivec2(2,2));
-    ASSERT_EQ(t.getAspectRatio(), 1.0f);
-}
-
-TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForRGBAData)
-{
-    std::vector<std::uint8_t> rgbaPixels(16);
-    osc::Texture2D t{{2, 2}, osc::TextureFormat::RGBA32, rgbaPixels, osc::ColorSpace::sRGB};
-
-    ASSERT_EQ(t.getDimensions(), glm::ivec2(2,2));
-    ASSERT_EQ(t.getAspectRatio(), 1.0f);
-}
-
-TEST_F(Renderer, TextureGetTextureFormatReturnsExpectedFormatForSingleChannelArg)
-{
-    std::vector<std::uint8_t> singleChannelPixels(16);
-    osc::Texture2D t{{4, 4}, osc::TextureFormat::R8, singleChannelPixels, osc::ColorSpace::sRGB};
-
-    ASSERT_EQ(t.getTextureFormat(), osc::TextureFormat::R8);
-}
-
-TEST_F(Renderer, TextureGetTextureFormatReturnsExpectedFormatForRGBChannelArg)
-{
-    std::vector<std::uint8_t> rgbPixels(12);
-    osc::Texture2D t{{2, 2}, osc::TextureFormat::RGB24, rgbPixels, osc::ColorSpace::sRGB};
-
-    ASSERT_EQ(t.getTextureFormat(), osc::TextureFormat::RGB24);
-}
-
-TEST_F(Renderer, TextureGetTextureFormatReturnsExpectedFormatForRGBAChannelArg)
-{
-    std::vector<std::uint8_t> rgbaPixels(16);
-    osc::Texture2D t{{2, 2}, osc::TextureFormat::RGBA32, rgbaPixels, osc::ColorSpace::sRGB};
-
+    ASSERT_EQ(t.getDimensions(), glm::ivec2(1, 1));
     ASSERT_EQ(t.getTextureFormat(), osc::TextureFormat::RGBA32);
+    ASSERT_EQ(t.getColorSpace(), osc::ColorSpace::sRGB);
+    ASSERT_EQ(t.getWrapMode(), osc::TextureWrapMode::Repeat);
+    ASSERT_EQ(t.getFilterMode(), osc::TextureFilterMode::Linear);
 }
 
-TEST_F(Renderer, TextureGetTextureFormatReturnsExpectedFormatForFloatChannelArg)
+TEST_F(Renderer, TextureCanSetPixels32OnDefaultConstructedTexture)
 {
-    std::vector<std::uint8_t> rgbafPixels(2*2*4*4);
-    osc::Texture2D t{{2, 2}, osc::TextureFormat::RGBAFloat, rgbafPixels, osc::ColorSpace::sRGB};
+    glm::ivec2 const dimensions = {1, 1};
+    std::vector<osc::Rgba32> const pixels(dimensions.x * dimensions.y);
 
-    ASSERT_EQ(t.getTextureFormat(), osc::TextureFormat::RGBAFloat);
+    osc::Texture2D t{dimensions};
+    t.setPixels32(pixels);
+
+    ASSERT_EQ(t.getDimensions(), dimensions);
+    ASSERT_EQ(t.getPixels32(), pixels);
+}
+
+TEST_F(Renderer, TextureSetPixelsThrowsIfNumberOfPixelsDoesNotMatchDimensions)
+{
+    glm::ivec2 const dimensions = {1, 1};
+    std::vector<osc::Color> const incorrectPixels(dimensions.x * dimensions.y + 1);
+
+    osc::Texture2D t{dimensions};
+
+    ASSERT_ANY_THROW({ t.setPixels(incorrectPixels); });
+}
+
+TEST_F(Renderer, TextureSetPixels32ThrowsIfNumberOfPixelsDoesNotMatchDimensions)
+{
+    glm::ivec2 const dimensions = {1, 1};
+    std::vector<osc::Rgba32> const incorrectPixels(dimensions.x * dimensions.y + 1);
+
+    osc::Texture2D t{dimensions};
+    ASSERT_ANY_THROW({ t.setPixels32(incorrectPixels); });
+}
+
+TEST_F(Renderer, TextureSetPixelDataThrowsIfNumberOfPixelBytesDoesNotMatchDimensions)
+{
+    glm::ivec2 const dimensions = {1, 1};
+    std::vector<osc::Rgba32> const incorrectPixels(dimensions.x * dimensions.y + 1);
+
+    osc::Texture2D t{dimensions};
+
+    ASSERT_EQ(t.getTextureFormat(), osc::TextureFormat::RGBA32);  // sanity check
+    ASSERT_ANY_THROW({ t.setPixelData(ToByteSpan(incorrectPixels)); });
+}
+
+TEST_F(Renderer, TextureSetPixelDataDoesNotThrowWhenGivenValidNumberOfPixelBytes)
+{
+    glm::ivec2 const dimensions = {1, 1};
+    std::vector<osc::Rgba32> const pixels(dimensions.x * dimensions.y);
+
+    osc::Texture2D t{dimensions};
+
+    ASSERT_EQ(t.getTextureFormat(), osc::TextureFormat::RGBA32);  // sanity check
+
+    t.setPixelData(ToByteSpan(pixels));
+}
+
+TEST_F(Renderer, TextureSetPixelDataWorksFineFor8BitSingleChannelData)
+{
+    glm::ivec2 const dimensions = {1, 1};
+    std::vector<uint8_t> const singleChannelPixels(dimensions.x * dimensions.y);
+
+    osc::Texture2D t{dimensions, osc::TextureFormat::R8};
+   t.setPixelData(singleChannelPixels);  // shouldn't throw
+}
+
+TEST_F(Renderer, TextureSetPixelDataWith8BitSingleChannelDataFollowedByGetPixelsBlanksOutGreenAndRed)
+{
+    uint8_t const color{0x88};
+    float const colorFloat = static_cast<float>(color) / 255.0f;
+    glm::ivec2 const dimensions = {1, 1};
+    std::vector<uint8_t> const singleChannelPixels(dimensions.x * dimensions.y, color);
+
+    osc::Texture2D t{dimensions, osc::TextureFormat::R8};
+    t.setPixelData(singleChannelPixels);
+
+    for (osc::Color const& c : t.getPixels())
+    {
+        ASSERT_EQ(c, osc::Color(colorFloat, 0.0f, 0.0f, 1.0f));
+    }
+}
+
+TEST_F(Renderer, TextureSetPixelDataWith8BitSingleChannelDataFollowedByGetPixels32BlanksOutGreenAndRed)
+{
+    uint8_t const color{0x88};
+    glm::ivec2 const dimensions = {1, 1};
+    std::vector<uint8_t> const singleChannelPixels(dimensions.x * dimensions.y, color);
+
+    osc::Texture2D t{dimensions, osc::TextureFormat::R8};
+    t.setPixelData(singleChannelPixels);
+
+    for (osc::Rgba32 const& c : t.getPixels32())
+    {
+        osc::Rgba32 expected{color, 0x00, 0x00, 0xff};
+        ASSERT_EQ(c, expected);
+    }
+}
+
+TEST_F(Renderer, TextureSetPixelDataWith32BitFloatingPointValuesFollowedByGetPixelDataReturnsSameSpan)
+{
+    glm::vec4 const color = GenerateVec4();
+    glm::ivec2 const dimensions = {1, 1};
+    std::vector<glm::vec4> const rgbaFloatPixels(dimensions.x * dimensions.y, color);
+
+    osc::Texture2D t(dimensions, osc::TextureFormat::RGBAFloat);
+    t.setPixelData(ToByteSpan(rgbaFloatPixels));
+
+    ASSERT_TRUE(SpansEqual(t.getPixelData(), ToByteSpan(rgbaFloatPixels)));
+}
+
+TEST_F(Renderer, TextureSetPixelDataWith32BitFloatingPointValuesFollowedByGetPixelsReturnsSameValues)
+{
+    osc::Color const hdrColor = {1.2f, 1.4f, 1.3f, 1.0f};
+    glm::ivec2 const dimensions = {1, 1};
+    std::vector<osc::Color> const rgbaFloatPixels(dimensions.x * dimensions.y, hdrColor);
+
+    osc::Texture2D t(dimensions, osc::TextureFormat::RGBAFloat);
+    t.setPixelData(ToByteSpan(rgbaFloatPixels));
+
+    ASSERT_EQ(t.getPixels(), rgbaFloatPixels);  // because the texture holds 32-bit floats
+}
+
+TEST_F(Renderer, TextureSetPixelsOnAn8BitTextureLDRClampsTheColorValues)
+{
+    osc::Color const hdrColor = {1.2f, 1.4f, 1.3f, 1.0f};
+    glm::ivec2 const dimensions = {1, 1};
+    std::vector<osc::Color> const hdrPixels(dimensions.x * dimensions.y, hdrColor);
+
+    osc::Texture2D t(dimensions, osc::TextureFormat::RGBA32);  // note: not HDR
+
+    t.setPixels(hdrPixels);
+
+    ASSERT_NE(t.getPixels(), hdrPixels);  // because the impl had to convert them
+}
+
+TEST_F(Renderer, TextureSetPixels32OnAn8BitTextureDoesntConvert)
+{
+    osc::Rgba32 const color32 = {0x77, 0x63, 0x24, 0x76};
+    glm::ivec2 const dimensions = {1, 1};
+    std::vector<osc::Rgba32> const pixels32(dimensions.x * dimensions.y, color32);
+
+    osc::Texture2D t(dimensions, osc::TextureFormat::RGBA32);  // note: matches pixel format
+
+    t.setPixels32(pixels32);
+
+    ASSERT_EQ(t.getPixels32(), pixels32);  // because no conversion was required
+}
+
+TEST_F(Renderer, TextureSetPixels32OnA32BitTextureDoesntDetectablyChangeValues)
+{
+    osc::Rgba32 const color32 = {0x77, 0x63, 0x24, 0x76};
+    glm::ivec2 const dimensions = {1, 1};
+    std::vector<osc::Rgba32> const pixels32(dimensions.x * dimensions.y, color32);
+
+    osc::Texture2D t(dimensions, osc::TextureFormat::RGBAFloat);  // note: higher precision than input
+
+    t.setPixels32(pixels32);
+
+    ASSERT_EQ(t.getPixels32(), pixels32);  // because, although conversion happened, it was _from_ a higher precision
 }
 
 TEST_F(Renderer, TextureCanCopyConstruct)
@@ -1625,9 +1750,8 @@ TEST_F(Renderer, TextureGetWidthReturnsSuppliedWidth)
 {
     int width = 2;
     int height = 6;
-    std::vector<osc::Rgba32> pixels(width*height);
 
-    osc::Texture2D t{{width, height}, pixels, osc::ColorSpace::sRGB};
+    osc::Texture2D t{{width, height}};
 
     ASSERT_EQ(t.getDimensions().x, width);
 }
@@ -1636,38 +1760,22 @@ TEST_F(Renderer, TextureGetHeightReturnsSuppliedHeight)
 {
     int width = 2;
     int height = 6;
-    std::vector<osc::Rgba32> pixels(width*height);
 
-    osc::Texture2D t{{width, height}, pixels, osc::ColorSpace::sRGB};
+    osc::Texture2D t{{width, height}};
 
     ASSERT_EQ(t.getDimensions().y, height);
 }
 
-TEST_F(Renderer, TextureGetAspectRatioReturnsExpectedRatio)
-{
-    int width = 16;
-    int height = 37;
-    std::vector<osc::Rgba32> pixels(width*height);
-
-    osc::Texture2D t{{width, height}, pixels, osc::ColorSpace::sRGB};
-
-    float expected = static_cast<float>(width) / static_cast<float>(height);
-
-    ASSERT_FLOAT_EQ(t.getAspectRatio(), expected);
-}
-
 TEST_F(Renderer, TextureGetColorSpaceReturnsProvidedColorSpaceIfSRGB)
 {
-    std::array<osc::Rgba32, 1> const pixels{};
-    osc::Texture2D t{{1, 1}, pixels, osc::ColorSpace::sRGB};
+    osc::Texture2D t{{1, 1}, osc::TextureFormat::RGBA32, osc::ColorSpace::sRGB};
 
     ASSERT_EQ(t.getColorSpace(), osc::ColorSpace::sRGB);
 }
 
 TEST_F(Renderer, TextureGetColorSpaceReturnsProvidedColorSpaceIfLinear)
 {
-    std::array<osc::Rgba32, 1> const pixels{};
-    osc::Texture2D t{{1, 1}, pixels, osc::ColorSpace::Linear};
+    osc::Texture2D t{{1, 1}, osc::TextureFormat::RGBA32, osc::ColorSpace::Linear};
 
     ASSERT_EQ(t.getColorSpace(), osc::ColorSpace::Linear);
 }
@@ -1749,7 +1857,7 @@ TEST_F(Renderer, TextureSetFilterModeCausesGetFilterModeToReturnValue)
 {
     osc::Texture2D t = GenerateTexture();
 
-    osc::TextureFilterMode tfm = osc::TextureFilterMode::Linear;
+    osc::TextureFilterMode tfm = osc::TextureFilterMode::Nearest;
 
     ASSERT_NE(t.getFilterMode(), tfm);
 
@@ -1865,7 +1973,7 @@ TEST_F(Renderer, TextureChangingFilterModeMakesCopyUnequal)
 {
     osc::Texture2D t1 = GenerateTexture();
     osc::Texture2D t2{t1};
-    osc::TextureFilterMode fm = osc::TextureFilterMode::Linear;
+    osc::TextureFilterMode fm = osc::TextureFilterMode::Nearest;
 
     ASSERT_EQ(t1, t2);
     ASSERT_NE(t2.getFilterMode(), fm);

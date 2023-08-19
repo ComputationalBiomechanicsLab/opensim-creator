@@ -120,13 +120,11 @@ namespace
         {
             dimensions,
             osc::TextureFormat::RGBAFloat,
-            ToByteSpan<glm::vec4>(pixels),
             osc::ColorSpace::Linear,
+            osc::TextureWrapMode::Repeat,
+            osc::TextureFilterMode::Linear,
         };
-
-        rv.setFilterMode(osc::TextureFilterMode::Linear);
-        rv.setWrapMode(osc::TextureWrapMode::Repeat);
-
+        rv.setPixelData(ToByteSpan<glm::vec4>(pixels));
         return rv;
     }
 

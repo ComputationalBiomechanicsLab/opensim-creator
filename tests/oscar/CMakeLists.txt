@@ -16,6 +16,7 @@ add_executable(testoscar EXCLUDE_FROM_ALL
     Graphics/TestRenderTargetColorAttachment.cpp
     Graphics/TestRenderTargetDepthAttachment.cpp
     Graphics/TestRenderTextureFormat.cpp
+    Graphics/TestTextureChannelFormat.cpp
     Graphics/TestTextureFormat.cpp
 
     Maths/TestBVH.cpp

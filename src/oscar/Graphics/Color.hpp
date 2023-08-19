@@ -13,6 +13,13 @@ namespace osc
     // representation of RGBA, usually in sRGB color space, with a range of 0 to 1
     struct Color final {
 
+        using value_type = float;
+
+        static constexpr size_t length() noexcept
+        {
+            return 4;
+        }
+
         static constexpr Color halfGrey()
         {
             return {0.5f, 0.5f, 0.5f};
