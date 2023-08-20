@@ -948,16 +948,6 @@ namespace osc
             Texture2D&,
             CubemapFace
         );
-
-        static void ReadPixels(
-            Texture2D const&,
-            Image&
-        );
-
-        static void ReadPixels(
-            RenderTexture const&,
-            Image&
-        );
     };
 }
 
@@ -5671,18 +5661,6 @@ void osc::Graphics::CopyTexture(
     GraphicsBackend::CopyTexture(src, dest, face);
 }
 
-void osc::Graphics::ReadPixels(
-    RenderTexture const& renderTexture,
-    Image& image)
-{
-    GraphicsBackend::ReadPixels(renderTexture, image);
-}
-
-void osc::Graphics::ReadPixels(Texture2D const& texture, Image& image)
-{
-    GraphicsBackend::ReadPixels(texture, image);
-}
-
 /////////////////////////
 //
 // backend implementation
@@ -6936,61 +6914,27 @@ void osc::GraphicsBackend::CopyTexture(
         GL_LINEAR  // the two texture may have different dimensions (avoid GL_NEAREST)
     );
 
-    // TODO: download the blitted data into the texture's CPU buffer, make sure it's aligned etc.
-}
-
-void osc::GraphicsBackend::ReadPixels(Texture2D const& source, Image& dest)
-{
-    // TODO: what format should be output have (HDR, RGB, RGBA, etc.)?
-
-    TextureFormat const textureFormat = source.getTextureFormat();
-    glm::ivec2 const textureDims = source.getDimensions();
-    int32_t const numChannels = static_cast<int32_t>(NumChannels(source.getTextureFormat()));
-
-    std::vector<uint8_t> pixels(static_cast<size_t>(textureDims.x*textureDims.y*numChannels));
-
-    gl::Viewport(0, 0, textureDims.x, textureDims.y);
-
-    gl::FrameBuffer fbo;
-    gl::BindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
-    gl::FramebufferTexture2D(
-        GL_READ_FRAMEBUFFER,
-        GL_COLOR_ATTACHMENT0,
-        const_cast<Texture2D::Impl&>(*source.m_Impl).updTexture(),
-        0
-    );
-    glReadBuffer(GL_COLOR_ATTACHMENT0);
-    GLint const packFormat = ToImagePixelPackAlignment(textureFormat);
-    OSC_ASSERT(reinterpret_cast<uintptr_t>(pixels.data()) % packFormat == 0 && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-    gl::PixelStorei(GL_PACK_ALIGNMENT, packFormat);
-    glReadPixels(
-        0,
-        0,
-        textureDims.x,
-        textureDims.y,
-        ToImageColorFormat(textureFormat),
-        ToImageDataType(textureFormat),
-        pixels.data()
-    );
-
-    gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-
-    dest = Image{textureDims, pixels, numChannels, ColorSpace::sRGB};
-}
-
-void osc::GraphicsBackend::ReadPixels(
-    RenderTexture const& renderTexture,
-    Image& dest)
-{
-    // TODO: what format should be output have (HDR, RGB, RGBA, etc.)?
-
-    glm::ivec2 const dims = renderTexture.getDimensions();
-    Texture2D t
+    // then download the blitted data into the texture's CPU buffer
     {
-        dims,
-        TextureFormat::RGBA32,
-        ColorSpace::sRGB,
-    };
-    CopyTexture(renderTexture, t);
-    ReadPixels(t, dest);
+        std::vector<uint8_t>& cpuBuffer = dest.m_Impl.upd()->m_PixelData;
+        GLint const packFormat = ToImagePixelPackAlignment(dest.getTextureFormat());
+
+        OSC_ASSERT(reinterpret_cast<uintptr_t>(cpuBuffer.data()) % packFormat == 0 && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+        OSC_ASSERT(cpuBuffer.size() == dest.getDimensions().x*dest.getDimensions().y*NumBytesPerPixel(dest.getTextureFormat()));
+
+        gl::Viewport(0, 0, dest.getDimensions().x, dest.getDimensions().y);
+        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, drawFBO);
+        glReadBuffer(GL_COLOR_ATTACHMENT0);
+        gl::PixelStorei(GL_PACK_ALIGNMENT, packFormat);
+        glReadPixels(
+            0,
+            0,
+            dest.getDimensions().x,
+            dest.getDimensions().y,
+            ToImageColorFormat(dest.getTextureFormat()),
+            ToImageDataType(dest.getTextureFormat()),
+            cpuBuffer.data()
+        );
+    }
+    gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
 }

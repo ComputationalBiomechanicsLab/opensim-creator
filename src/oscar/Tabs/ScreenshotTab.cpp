@@ -4,6 +4,7 @@
 #include "oscar/Graphics/AnnotatedImage.hpp"
 #include "oscar/Graphics/Camera.hpp"
 #include "oscar/Graphics/Color.hpp"
+#include "oscar/Graphics/ColorSpace.hpp"
 #include "oscar/Graphics/Graphics.hpp"
 #include "oscar/Graphics/GraphicsHelpers.hpp"
 #include "oscar/Graphics/Material.hpp"
@@ -12,6 +13,7 @@
 #include "oscar/Graphics/ShaderCache.hpp"
 #include "oscar/Graphics/Mesh.hpp"
 #include "oscar/Graphics/Texture2D.hpp"
+#include "oscar/Graphics/TextureFormat.hpp"
 #include "oscar/Maths/CollisionTests.hpp"
 #include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Platform/App.hpp"
@@ -291,9 +293,15 @@ private:
             c.renderTo(*rt);
         }
 
-        Image rv;
-        Graphics::ReadPixels(*rt, rv);
-        return rv;
+        Texture2D t
+        {
+            rt->getDimensions(),
+            TextureFormat::RGB24,
+            ColorSpace::sRGB,
+        };
+        Graphics::CopyTexture(*rt, t);
+
+        return Image{t.getDimensions(), t.getPixelData(), 3, ColorSpace::sRGB};
     }
 
     AnnotatedImage m_AnnotatedImage;
