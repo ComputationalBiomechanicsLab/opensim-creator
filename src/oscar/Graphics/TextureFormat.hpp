@@ -12,6 +12,7 @@ namespace osc
         RGBA32 = 0,
         RGB24,
         R8,
+        RGBFloat,
         RGBAFloat,
         NUM_OPTIONS,
     };

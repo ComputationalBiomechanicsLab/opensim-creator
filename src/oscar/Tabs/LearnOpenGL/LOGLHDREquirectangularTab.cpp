@@ -7,6 +7,7 @@
 #include "oscar/Maths/Rect.hpp"
 #include "oscar/Platform/App.hpp"
 #include "oscar/Tabs/StandardTabBase.hpp"
+#include "oscar/Utils/Assertions.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <IconsFontAwesome5.h>
@@ -24,6 +25,7 @@ class osc::LOGLHDREquirectangularTab::Impl final : public osc::StandardTabBase {
 public:
     Impl() : StandardTabBase{c_TabStringID}
     {
+        OSC_ASSERT_ALWAYS(m_Texture.getTextureFormat() == osc::TextureFormat::RGBFloat);
     }
 
 private:

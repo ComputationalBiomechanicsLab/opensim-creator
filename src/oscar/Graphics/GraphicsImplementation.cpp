@@ -956,7 +956,7 @@ namespace
     // CPU (packed) to the GPU (unpacked)
     constexpr GLint ToOpenGLUnpackAlignment(osc::TextureFormat format) noexcept
     {
-        static_assert(osc::NumOptions<osc::TextureFormat>() == 4);
+        static_assert(osc::NumOptions<osc::TextureFormat>() == 5);
 
         switch (format)
         {
@@ -965,6 +965,8 @@ namespace
         case osc::TextureFormat::RGB24:
             return 1;
         case osc::TextureFormat::RGBA32:
+            return 4;
+        case osc::TextureFormat::RGBFloat:
             return 4;
         case osc::TextureFormat::RGBAFloat:
             return 4;
@@ -979,7 +981,7 @@ namespace
         osc::TextureFormat format,
         osc::ColorSpace colorSpace) noexcept
     {
-        static_assert(osc::NumOptions<osc::TextureFormat>() == 4);
+        static_assert(osc::NumOptions<osc::TextureFormat>() == 5);
         static_assert(osc::NumOptions<osc::ColorSpace>() == 2);
 
         switch (format)
@@ -990,6 +992,8 @@ namespace
             return colorSpace == osc::ColorSpace::sRGB ? GL_SRGB8 : GL_RGB8;
         case osc::TextureFormat::RGBA32:
             return colorSpace == osc::ColorSpace::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+        case osc::TextureFormat::RGBFloat:
+            return GL_RGB32F;
         case osc::TextureFormat::RGBAFloat:
             return GL_RGBA32F;
         default:
@@ -1028,7 +1032,7 @@ namespace
 
     constexpr CPUDataType ToEquivalentCPUDataType(osc::TextureFormat format) noexcept
     {
-        static_assert(osc::NumOptions<osc::TextureFormat>() == 4);
+        static_assert(osc::NumOptions<osc::TextureFormat>() == 5);
         static_assert(osc::NumOptions<CPUDataType>() == 4);
 
         switch (format)
@@ -1037,6 +1041,7 @@ namespace
         case osc::TextureFormat::RGB24:
         case osc::TextureFormat::RGBA32:
             return CPUDataType::UnsignedByte;
+        case osc::TextureFormat::RGBFloat:
         case osc::TextureFormat::RGBAFloat:
             return CPUDataType::Float;
         default:
@@ -1056,7 +1061,7 @@ namespace
 
     constexpr CPUImageFormat ToEquivalentCPUImageFormat(osc::TextureFormat format) noexcept
     {
-        static_assert(osc::NumOptions<osc::TextureFormat>() == 4);
+        static_assert(osc::NumOptions<osc::TextureFormat>() == 5);
         static_assert(osc::NumOptions<CPUImageFormat>() == 4);
 
         switch (format)
@@ -1067,6 +1072,8 @@ namespace
             return CPUImageFormat::RGB;
         case osc::TextureFormat::RGBA32:
             return CPUImageFormat::RGBA;
+        case osc::TextureFormat::RGBFloat:
+            return CPUImageFormat::RGB;
         case osc::TextureFormat::RGBAFloat:
             return CPUImageFormat::RGBA;
         default:
@@ -1188,7 +1195,7 @@ private:
         OSC_ASSERT(numBytesPerRow % unpackAlignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
         OSC_ASSERT(reinterpret_cast<intptr_t>(m_Data.data()) % unpackAlignment == 0 && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
         OSC_ASSERT(numBytesInCubemap <= m_Data.size() && "the number of bytes in the cubemap (CPU-side) is less than expected: this is a developer bug");
-        static_assert(osc::NumOptions<osc::TextureFormat>() == 4, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
+        static_assert(osc::NumOptions<osc::TextureFormat>() == 5, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
 
         // upload cubemap to GPU
         gl::BindTexture((*m_MaybeGPUTexture)->texture);
@@ -1706,7 +1713,7 @@ private:
         CPUDataType const cpuDataType = ToEquivalentCPUDataType(m_Format);  // TextureFormat's datatype == CPU format's datatype for cubemaps
         CPUImageFormat const cpuChannelLayout = ToEquivalentCPUImageFormat(m_Format);  // TextureFormat's layout == CPU formats's layout for cubemaps
 
-        static_assert(osc::NumOptions<osc::TextureFormat>() == 4, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
+        static_assert(osc::NumOptions<osc::TextureFormat>() == 5, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
         OSC_ASSERT(numBytesPerRow % unpackAlignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
         OSC_ASSERT(reinterpret_cast<intptr_t>(m_PixelData.data()) % unpackAlignment == 0 && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
 
@@ -1766,13 +1773,14 @@ std::ostream& osc::operator<<(std::ostream& o, TextureFilterMode twm)
 
 size_t osc::NumChannels(TextureFormat format) noexcept
 {
-    static_assert(NumOptions<TextureFormat>() == 4);
+    static_assert(NumOptions<TextureFormat>() == 5);
 
     switch (format)
     {
     case TextureFormat::R8: return 1;
     case TextureFormat::RGBA32: return 4;
     case TextureFormat::RGB24: return 3;
+    case TextureFormat::RGBFloat: return 3;
     case TextureFormat::RGBAFloat: return 4;
     default: return 4;  // static_assert ensure this shouldn't be hit
     }
@@ -1780,13 +1788,14 @@ size_t osc::NumChannels(TextureFormat format) noexcept
 
 osc::TextureChannelFormat osc::ChannelFormat(TextureFormat f) noexcept
 {
-    static_assert(NumOptions<TextureFormat>() == 4);
+    static_assert(NumOptions<TextureFormat>() == 5);
 
     switch (f)
     {
     case TextureFormat::R8: return TextureChannelFormat::Uint8;
     case TextureFormat::RGBA32: return TextureChannelFormat::Uint8;
     case TextureFormat::RGB24: return TextureChannelFormat::Uint8;
+    case TextureFormat::RGBFloat: return TextureChannelFormat::Float32;
     case TextureFormat::RGBAFloat: return TextureChannelFormat::Float32;
     default: return TextureChannelFormat::Uint8;
     }
@@ -1802,13 +1811,13 @@ std::optional<osc::TextureFormat> osc::ToTextureFormat(size_t numChannels, Textu
     static_assert(NumOptions<TextureChannelFormat>() == 2);
     bool const isByteOriented = channelFormat == TextureChannelFormat::Uint8;
 
-    static_assert(NumOptions<TextureFormat>() == 4);
+    static_assert(NumOptions<TextureFormat>() == 5);
     switch (numChannels)
     {
     case 1:
         return isByteOriented ? TextureFormat::R8 : std::optional<TextureFormat>{};
     case 3:
-        return isByteOriented ? TextureFormat::RGB24 : std::optional<TextureFormat>{};
+        return isByteOriented ? TextureFormat::RGB24 : TextureFormat::RGBFloat;
     case 4:
         return isByteOriented ? TextureFormat::RGBA32 : TextureFormat::RGBAFloat;
     default:
@@ -2063,7 +2072,7 @@ namespace
 
     constexpr GLenum ToImageColorFormat(osc::TextureFormat f)
     {
-        static_assert(osc::NumOptions<osc::TextureFormat>() == 4);
+        static_assert(osc::NumOptions<osc::TextureFormat>() == 5);
 
         switch (f)
         {
@@ -2073,6 +2082,8 @@ namespace
             return GL_RGB;
         case osc::TextureFormat::R8:
             return GL_RED;
+        case osc::TextureFormat::RGBFloat:
+            return GL_RGB;
         case osc::TextureFormat::RGBAFloat:
             return GL_RGBA;
         default:
@@ -2082,7 +2093,7 @@ namespace
 
     constexpr GLint ToImagePixelPackAlignment(osc::TextureFormat f)
     {
-        static_assert(osc::NumOptions<osc::TextureFormat>() == 4);
+        static_assert(osc::NumOptions<osc::TextureFormat>() == 5);
 
         switch (f)
         {
@@ -2092,6 +2103,8 @@ namespace
             return 1;
         case osc::TextureFormat::R8:
             return 1;
+        case osc::TextureFormat::RGBFloat:
+            return 4;
         case osc::TextureFormat::RGBAFloat:
             return 4;
         default:
@@ -2101,7 +2114,7 @@ namespace
 
     constexpr GLenum ToImageDataType(osc::TextureFormat)
     {
-        static_assert(osc::NumOptions<osc::TextureFormat>() == 4);
+        static_assert(osc::NumOptions<osc::TextureFormat>() == 5);
         return GL_UNSIGNED_BYTE;
     }
 }
