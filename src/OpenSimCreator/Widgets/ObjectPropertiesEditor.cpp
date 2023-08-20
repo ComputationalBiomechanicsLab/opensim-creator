@@ -58,8 +58,8 @@ namespace
         };
     }
 
-    // extract linear RGBA values from an OpenSim::Appearance
-    osc::Color ExtractRgba(OpenSim::Appearance const& appearance)
+    // returns an `osc::Color` extracted from the given `OpenSim::Appearance`
+    osc::Color ToColor(OpenSim::Appearance const& appearance)
     {
         SimTK::Vec3 const& rgb = appearance.get_color();
         double const a = appearance.get_opacity();
@@ -1071,7 +1071,7 @@ namespace
 
             bool shouldSave = false;
 
-            osc::Color color = ExtractRgba(m_EditedProperty.getValue());
+            osc::Color color = ToColor(m_EditedProperty.getValue());
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
             if (ImGui::ColorEdit4("##coloreditor", osc::ValuePtr(color)))

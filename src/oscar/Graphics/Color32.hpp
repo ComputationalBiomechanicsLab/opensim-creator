@@ -42,11 +42,11 @@ namespace osc
         return !(a == b);
     }
 
-    inline uint32_t ToUint32(Color32 const& rgba32)
+    inline uint32_t ToUint32(Color32 const& color32)
     {
         static_assert(alignof(Color32) == alignof(uint32_t));
         static_assert(sizeof(Color32) == sizeof(uint32_t));
-        return reinterpret_cast<uint32_t const&>(rgba32);
+        return reinterpret_cast<uint32_t const&>(color32);
     }
 }
 
@@ -54,9 +54,9 @@ namespace std
 {
     template<>
     struct hash<osc::Color32> final {
-        size_t operator()(osc::Color32 const& rgba32) const noexcept
+        size_t operator()(osc::Color32 const& color32) const noexcept
         {
-            return std::hash<uint32_t>{}(ToUint32(rgba32));
+            return std::hash<uint32_t>{}(ToUint32(color32));
         }
     };
 }

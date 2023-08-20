@@ -82,12 +82,12 @@ namespace
         return rv;
     }
 
-    std::vector<glm::vec4> GenerateNoiseTexturePixels(size_t numPixels)
+    std::vector<osc::Color> GenerateNoiseTexturePixels(size_t numPixels)
     {
         std::default_random_engine rng{std::random_device{}()};
         std::uniform_real_distribution<float> minusOneToOne{-1.0f, 1.0f};
 
-        std::vector<glm::vec4> rv;
+        std::vector<osc::Color> rv;
         rv.reserve(numPixels);
         for (size_t i = 0; i < numPixels; ++i)
         {
@@ -113,7 +113,7 @@ namespace
 
     osc::Texture2D GenerateNoiseTexture(glm::ivec2 dimensions)
     {
-        std::vector<glm::vec4> const pixels =
+        std::vector<osc::Color> const pixels =
             GenerateNoiseTexturePixels(static_cast<size_t>(dimensions.x) * static_cast<size_t>(dimensions.y));
 
         osc::Texture2D rv
@@ -124,7 +124,7 @@ namespace
             osc::TextureWrapMode::Repeat,
             osc::TextureFilterMode::Linear,
         };
-        rv.setPixelData(ToByteSpan<glm::vec4>(pixels));
+        rv.setPixelData(ToByteSpan<osc::Color>(pixels));
         return rv;
     }
 
