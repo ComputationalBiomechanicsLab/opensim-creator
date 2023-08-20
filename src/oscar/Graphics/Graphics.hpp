@@ -9,7 +9,6 @@
 #include <optional>
 
 namespace osc { class Camera; }
-namespace osc { class Image; }
 namespace osc { class Mesh; }
 namespace osc { class Material; }
 namespace osc { struct Rect; }

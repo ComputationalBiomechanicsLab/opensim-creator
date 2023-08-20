@@ -34,7 +34,6 @@
 #include "oscar/Bindings/GlGlm.hpp"
 #include "oscar/Bindings/GlmHelpers.hpp"
 #include "oscar/Bindings/SDL2Helpers.hpp"
-#include "oscar/Graphics/Image.hpp"
 #include "oscar/Graphics/MeshGen.hpp"
 #include "oscar/Graphics/Rgba32.hpp"
 #include "oscar/Graphics/ShaderLocations.hpp"
@@ -5367,7 +5366,7 @@ public:
         return m_GLContext.get();
     }
 
-    std::future<Image> requestScreenshot()
+    std::future<Texture2D> requestScreenshot()
     {
         return m_ActiveScreenshotRequests.emplace_back().get_future();
     }
@@ -5396,7 +5395,13 @@ public:
                 pixels.data()
             );
 
-            Image screenshot{dims, pixels, 4, ColorSpace::sRGB};
+            Texture2D screenshot
+            {
+                dims,
+                TextureFormat::RGBA32,
+                ColorSpace::sRGB
+            };
+            screenshot.setPixelData(pixels);
 
             // copy image to requests [0..n-2]
             for (ptrdiff_t i = 0, len = osc::ssize(m_ActiveScreenshotRequests)-1; i < len; ++i)
@@ -5473,7 +5478,7 @@ private:
     bool m_DebugModeEnabled = false;
 
     // a "queue" of active screenshot requests
-    std::vector<std::promise<Image>> m_ActiveScreenshotRequests;
+    std::vector<std::promise<Texture2D>> m_ActiveScreenshotRequests;
 
     // a generic quad rendering material: used for some blitting operations
     Material m_QuadMaterial
@@ -5565,7 +5570,7 @@ void osc::GraphicsContext::doSwapBuffers(SDL_Window& window)
     g_GraphicsContextImpl->doSwapBuffers(window);
 }
 
-std::future<osc::Image> osc::GraphicsContext::requestScreenshot()
+std::future<osc::Texture2D> osc::GraphicsContext::requestScreenshot()
 {
     return g_GraphicsContextImpl->requestScreenshot();
 }

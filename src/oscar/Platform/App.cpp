@@ -2,7 +2,9 @@
 
 #include "oscar/Bindings/SDL2Helpers.hpp"
 #include "oscar/Bindings/ImGuiHelpers.hpp"
+#include "oscar/Graphics/AnnotatedImage.hpp"
 #include "oscar/Graphics/GraphicsContext.hpp"
+#include "oscar/Graphics/Texture2D.hpp"
 #include "oscar/Platform/AppClock.hpp"
 #include "oscar/Platform/Config.hpp"
 #include "oscar/Platform/Log.hpp"
@@ -179,7 +181,7 @@ namespace
 
         AnnotatedScreenshotRequest(
             uint64_t frameRequested_,
-            std::future<osc::Image> underlyingFuture_) :
+            std::future<osc::Texture2D> underlyingFuture_) :
 
             frameRequested{frameRequested_},
             underlyingScreenshotFuture{std::move(underlyingFuture_)}
@@ -190,7 +192,7 @@ namespace
         uint64_t frameRequested;
 
         // underlying (to-be-waited-on) future for the screenshot
-        std::future<osc::Image> underlyingScreenshotFuture;
+        std::future<osc::Texture2D> underlyingScreenshotFuture;
 
         // our promise to the caller, who is waiting for an annotated image
         std::promise<osc::AnnotatedImage> resultPromise;
@@ -395,7 +397,7 @@ public:
         m_FrameAnnotations.push_back(ImageAnnotation{std::string{label}, screenRect});
     }
 
-    std::future<Image> requestScreenshot()
+    std::future<Texture2D> requestScreenshot()
     {
         return m_GraphicsContext.requestScreenshot();
     }
@@ -1066,7 +1068,7 @@ void osc::App::addFrameAnnotation(std::string_view label, Rect screenRect)
     m_Impl->addFrameAnnotation(label, screenRect);
 }
 
-std::future<osc::Image> osc::App::requestScreenshot()
+std::future<osc::Texture2D> osc::App::requestScreenshot()
 {
     return m_Impl->requestScreenshot();
 }

@@ -11,8 +11,8 @@
 #include "OpenSimCreator/Utils/ParamBlock.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Graphics/AnnotatedImage.hpp>
 #include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/Image.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Config.hpp>
 #include <oscar/Platform/Log.hpp>

@@ -2,13 +2,14 @@
 
 #include "oscar/Graphics/Color.hpp"
 #include "oscar/Graphics/ColorSpace.hpp"
-#include "oscar/Graphics/Image.hpp"
+#include "oscar/Graphics/ImageLoadingFlags.hpp"
 #include "oscar/Graphics/Mesh.hpp"
 #include "oscar/Graphics/MeshCache.hpp"
 #include "oscar/Graphics/MeshIndicesView.hpp"
 #include "oscar/Graphics/MeshTopology.hpp"
 #include "oscar/Graphics/ShaderCache.hpp"
 #include "oscar/Graphics/SceneDecoration.hpp"
+#include "oscar/Graphics/TextureChannelFormat.hpp"
 #include "oscar/Graphics/TextureFormat.hpp"
 #include "oscar/Maths/AABB.hpp"
 #include "oscar/Maths/BVH.hpp"
@@ -25,13 +26,28 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/gtx/transform.hpp>
+#include <nonstd/span.hpp>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
 
+#include <cstddef>
+#include <cstdint>
+#include <memory>
 #include <optional>
 #include <sstream>
 #include <stdexcept>
 
 namespace
 {
+    // this mutex is required because stbi has global mutable state (e.g. stbi_set_flip_vertically_on_load)
+    auto LockStbiAPI()
+    {
+        static std::mutex s_StbiMutex;
+        return std::lock_guard{s_StbiMutex};
+    }
+
     void DrawGrid(
         osc::MeshCache& cache,
         glm::quat const& rotation,
@@ -46,6 +62,118 @@ namespace
         osc::Color const color = {0.7f, 0.7f, 0.7f, 0.15f};
 
         out(osc::SceneDecoration{grid, t, color});
+    }
+
+    osc::Texture2D Load32BitTexture(
+        std::filesystem::path const& p,
+        osc::ColorSpace colorSpace,
+        osc::ImageLoadingFlags flags)
+    {
+        auto const guard = LockStbiAPI();
+
+        if (flags & osc::ImageLoadingFlags::FlipVertically)
+        {
+            stbi_set_flip_vertically_on_load(true);
+        }
+
+        glm::ivec2 dims{};
+        int numChannels = 0;
+        std::unique_ptr<float, decltype(&stbi_image_free)> const pixels =
+        {
+            stbi_loadf(p.string().c_str(), &dims.x, &dims.y, &numChannels, 0),
+            stbi_image_free,
+        };
+
+        if (flags & osc::ImageLoadingFlags::FlipVertically)
+        {
+            stbi_set_flip_vertically_on_load(true);
+        }
+
+        if (!pixels)
+        {
+            std::stringstream ss;
+            ss << p << ": error loading image path: " << stbi_failure_reason();
+            throw std::runtime_error{std::move(ss).str()};
+        }
+
+        std::optional<osc::TextureFormat> const format = osc::ToTextureFormat(
+            static_cast<size_t>(numChannels),
+            osc::TextureChannelFormat::Float32
+        );
+
+        if (!format)
+        {
+            std::stringstream ss;
+            ss << p << ": error loading image: no osc::TextureFormat exists for " << numChannels << " floating-point channel images";
+            throw std::runtime_error{std::move(ss).str()};
+        }
+
+        osc::Texture2D rv
+        {
+            dims,
+            *format,
+            colorSpace,
+        };
+        rv.setPixelData(
+        {
+            reinterpret_cast<uint8_t const*>(pixels.get()),
+            static_cast<size_t>(4*dims.x*dims.y*numChannels)
+        });
+        return rv;
+    }
+
+    osc::Texture2D Load8BitTexture(
+        std::filesystem::path const& p,
+        osc::ColorSpace colorSpace,
+        osc::ImageLoadingFlags flags)
+    {
+        auto const guard = LockStbiAPI();
+
+        if (flags & osc::ImageLoadingFlags::FlipVertically)
+        {
+            stbi_set_flip_vertically_on_load(true);
+        }
+
+        glm::ivec2 dims{};
+        int numChannels = 0;
+        std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> const pixels =
+        {
+            stbi_load(p.string().c_str(), &dims.x, &dims.y, &numChannels, 0),
+            stbi_image_free,
+        };
+
+        if (flags & osc::ImageLoadingFlags::FlipVertically)
+        {
+            stbi_set_flip_vertically_on_load(true);
+        }
+
+        if (!pixels)
+        {
+            std::stringstream ss;
+            ss << p << ": error loading image path: " << stbi_failure_reason();
+            throw std::runtime_error{std::move(ss).str()};
+        }
+
+        std::optional<osc::TextureFormat> const format = osc::ToTextureFormat(
+            static_cast<size_t>(numChannels),
+            osc::TextureChannelFormat::Uint8
+        );
+
+        if (!format)
+        {
+            std::stringstream ss;
+            ss << p << ": error loading image: no osc::TextureFormat exists for " << numChannels << " 8-bit channel images";
+            throw std::runtime_error{std::move(ss).str()};
+        }
+
+        osc::Texture2D rv
+        {
+            dims,
+            *format,
+            colorSpace,
+        };
+        rv.setPixelData({pixels.get(), static_cast<size_t>(dims.x*dims.y*numChannels)});
+        return rv;
     }
 }
 
@@ -461,42 +589,37 @@ osc::Material osc::CreateWireframeOverlayMaterial(Config const& config, ShaderCa
     return material;
 }
 
-osc::Texture2D osc::ToTexture2D(Image const& image)
-{
-    std::optional<TextureFormat> const format = ToTextureFormat(image.getNumChannels(), TextureChannelFormat::Uint8);
-    if (!format)
-    {
-        std::stringstream ss;
-        ss << "number of color channels in this image (" << image.getNumChannels() << ") cannot be represented by a GPU texture";
-        throw std::runtime_error{std::move(ss).str()};
-    }
-
-    Texture2D rv
-    {
-        image.getDimensions(),
-        *format,
-        image.getColorSpace(),
-    };
-    rv.setPixelData(image.getPixelData());
-    return rv;
-}
-
 osc::Texture2D osc::LoadTexture2DFromImage(
     std::filesystem::path const& path,
     ColorSpace colorSpace,
     ImageLoadingFlags flags)
 {
-    Image const img = LoadImageFromFile(path, colorSpace, flags);
-    try
-    {
-        return ToTexture2D(img);
-    }
-    catch (std::exception const& ex)
-    {
-        std::stringstream ss;
-        ss << path << ": " << ex.what();
-        throw std::runtime_error{std::move(ss).str()};
-    }
+    return stbi_is_hdr(path.string().c_str()) ?
+        Load32BitTexture(path, colorSpace, flags) :
+        Load8BitTexture(path, colorSpace, flags);
+}
+
+void osc::WriteToPNG(
+    Texture2D const& tex,
+    std::filesystem::path const& outpath)
+{
+    glm::ivec2 const dims = tex.getDimensions();
+    int const stride = 4 * dims.x;
+    std::vector<Rgba32> const pixels = tex.getPixels32();
+
+    auto const guard = LockStbiAPI();
+    stbi_flip_vertically_on_write(true);
+    int const rv = stbi_write_png(
+        outpath.string().c_str(),
+        dims.x,
+        dims.y,
+        4,
+        pixels.data(),
+        stride
+    );
+    stbi_flip_vertically_on_write(false);
+
+    OSC_ASSERT(rv != 0);
 }
 
 osc::AABB osc::GetWorldspaceAABB(SceneDecoration const& cd)

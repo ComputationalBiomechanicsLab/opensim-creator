@@ -187,13 +187,13 @@ private:
         std::optional<std::filesystem::path> const maybeImagePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("png");
         if (maybeImagePath)
         {
-            Image outputImage = renderOutputImage();
-            osc::WriteImageToPNGFile(outputImage, *maybeImagePath);
+            Texture2D outputImage = renderOutputImage();
+            osc::WriteToPNG(outputImage, *maybeImagePath);
             osc::OpenPathInOSDefaultApplication(*maybeImagePath);
         }
     }
 
-    Image renderOutputImage()
+    Texture2D renderOutputImage()
     {
         std::optional<RenderTexture> rt;
         rt.emplace(RenderTextureDescriptor{m_ImageTexture.getDimensions()});
@@ -300,12 +300,11 @@ private:
             ColorSpace::sRGB,
         };
         Graphics::CopyTexture(*rt, t);
-
-        return Image{t.getDimensions(), t.getPixelData(), 3, ColorSpace::sRGB};
+        return t;
     }
 
     AnnotatedImage m_AnnotatedImage;
-    Texture2D m_ImageTexture = ToTexture2D(m_AnnotatedImage.image);
+    Texture2D m_ImageTexture = m_AnnotatedImage.image;
     std::unordered_set<std::string> m_SelectedAnnotations;
 };
 

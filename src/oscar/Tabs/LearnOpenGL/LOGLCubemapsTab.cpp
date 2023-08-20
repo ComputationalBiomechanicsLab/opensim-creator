@@ -6,11 +6,11 @@
 #include "oscar/Graphics/Cubemap.hpp"
 #include "oscar/Graphics/Graphics.hpp"
 #include "oscar/Graphics/GraphicsHelpers.hpp"
-#include "oscar/Graphics/Image.hpp"
 #include "oscar/Graphics/Material.hpp"
 #include "oscar/Graphics/Mesh.hpp"
 #include "oscar/Graphics/MeshGen.hpp"
 #include "oscar/Graphics/Shader.hpp"
+#include "oscar/Graphics/Texture2D.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
 #include "oscar/Platform/Config.hpp"
@@ -49,28 +49,30 @@ namespace
     osc::Cubemap LoadCubemap(std::filesystem::path const& resourcesDir)
     {
         // load the first face, so we know the width
-        osc::Image image = osc::LoadImageFromFile(
+        osc::Texture2D t = osc::LoadTexture2DFromImage(
             resourcesDir / "textures" / std::string_view{c_SkyboxTextureFilenames.front()},
             osc::ColorSpace::sRGB
         );
-        OSC_THROWING_ASSERT(image.getDimensions().x == image.getDimensions().y);
-        OSC_THROWING_ASSERT(image.getNumChannels() == 3);
-        int32_t const width = image.getDimensions().x;
+
+        glm::ivec2 const dims = t.getDimensions();
+        OSC_THROWING_ASSERT(dims.x == dims.y);
 
         // load all face data into the cubemap
         static_assert(static_cast<int32_t>(osc::CubemapFace::PositiveX) == 0);
         static_assert(osc::NumOptions<osc::CubemapFace>() == c_SkyboxTextureFilenames.size());
-        osc::Cubemap cubemap{width, osc::TextureFormat::RGB24};
-        cubemap.setPixelData(osc::CubemapFace::PositiveX, image.getPixelData());
+
+        osc::Cubemap cubemap{dims.x, t.getTextureFormat()};
+        cubemap.setPixelData(osc::CubemapFace::PositiveX, t.getPixelData());
         for (int32_t i = 1; i < osc::NumOptions<osc::CubemapFace>(); ++i)
         {
-            image = osc::LoadImageFromFile(
+            t = osc::LoadTexture2DFromImage(
                 resourcesDir / "textures" / std::string_view{c_SkyboxTextureFilenames[i]},
                 osc::ColorSpace::sRGB
             );
-            OSC_THROWING_ASSERT(image.getDimensions().x == width);
-            OSC_THROWING_ASSERT(image.getDimensions().y == width);
-            cubemap.setPixelData(static_cast<osc::CubemapFace>(i), image.getPixelData());
+            OSC_THROWING_ASSERT(t.getDimensions().x == dims.x);
+            OSC_THROWING_ASSERT(t.getDimensions().y == dims.x);
+            OSC_THROWING_ASSERT(t.getTextureFormat() == cubemap.getTextureFormat());
+            cubemap.setPixelData(static_cast<osc::CubemapFace>(i), t.getPixelData());
         }
 
         return cubemap;

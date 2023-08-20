@@ -10,7 +10,6 @@ add_executable(testoscar EXCLUDE_FROM_ALL
     Graphics/TestCubemap.cpp
     Graphics/TestCubemapFace.cpp
     Graphics/TestGraphicsHelpers.cpp
-    Graphics/TestImage.cpp
     Graphics/TestRenderer.cpp
     Graphics/TestRenderTarget.cpp
     Graphics/TestRenderTargetColorAttachment.cpp

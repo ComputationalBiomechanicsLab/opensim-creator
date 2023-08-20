@@ -1,6 +1,6 @@
 #pragma once
 
-#include "oscar/Graphics/Image.hpp"
+#include "oscar/Graphics/Texture2D.hpp"
 
 #include <cstdint>
 #include <future>
@@ -41,7 +41,7 @@ namespace osc
         void* updRawGLContextHandle();
 
         // returns a future that asynchronously yields a complete screenshot of the next frame
-        std::future<Image> requestScreenshot();
+        std::future<Texture2D> requestScreenshot();
 
         // execure the "swap chain" operation, which makes the current backbuffer the frontbuffer,
         void doSwapBuffers(SDL_Window&);

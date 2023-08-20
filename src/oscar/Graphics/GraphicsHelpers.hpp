@@ -27,7 +27,6 @@ namespace osc { struct Rect; }
 namespace osc { struct Segment; }
 namespace osc { struct Transform; }
 namespace osc { class Config; }
-namespace osc { class Image; }
 namespace osc { class Mesh; }
 namespace osc { class MeshCache; }
 namespace osc { class MeshIndicesView; }
@@ -166,11 +165,6 @@ namespace osc
         ShaderCache&
     );
 
-    // returns a texture loaded from the provided image data
-    //
-    // throws if the image isn't representable as a GPU texture
-    Texture2D ToTexture2D(Image const&);
-
     // returns a texture loaded from disk via Image
     //
     // throws if the image data isn't representable as a GPU texture (e.g. because it has
@@ -179,6 +173,11 @@ namespace osc
         std::filesystem::path const&,
         ColorSpace,
         ImageLoadingFlags = ImageLoadingFlags::None
+    );
+
+    void WriteToPNG(
+        Texture2D const&,
+        std::filesystem::path const&
     );
 
     AABB GetWorldspaceAABB(SceneDecoration const&);

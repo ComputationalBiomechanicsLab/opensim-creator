@@ -64,8 +64,6 @@ add_library(oscar STATIC
     Graphics/Icon.hpp
     Graphics/IconCache.cpp
     Graphics/IconCache.hpp
-    Graphics/Image.cpp
-    Graphics/Image.hpp
     Graphics/ImageAnnotation.hpp
     Graphics/ImageLoadingFlags.hpp
     Graphics/Material.hpp

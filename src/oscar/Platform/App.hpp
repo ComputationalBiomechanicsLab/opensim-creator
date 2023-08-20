@@ -1,7 +1,6 @@
 #pragma once
 
 #include "oscar/Graphics/AnnotatedImage.hpp"
-#include "oscar/Graphics/Image.hpp"
 #include "oscar/Platform/AppClock.hpp"
 #include "oscar/Platform/Log.hpp"
 #include "oscar/Platform/MouseState.hpp"
@@ -187,7 +186,7 @@ namespace osc
         void addFrameAnnotation(std::string_view label, Rect screenRect);
 
         // returns a future that asynchronously yields a complete screenshot of the next frame
-        std::future<Image> requestScreenshot();
+        std::future<Texture2D> requestScreenshot();
 
         // returns a future that asynchronously yields a complete annotated screenshot of the next frame
         //
