@@ -171,8 +171,8 @@ private:
                 Transform t;
                 t.position =
                 {
-                    (col - (c_NumCols / 2)) * c_CellSpacing,
-                    (row - (c_NumRows / 2)) * c_CellSpacing,
+                    static_cast<float>(col - (c_NumCols / 2)) * c_CellSpacing,
+                    static_cast<float>(row - (c_NumRows / 2)) * c_CellSpacing,
                     0.0f
                 };
 

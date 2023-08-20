@@ -111,7 +111,7 @@ private:
     {
         float const rotationSpeed = glm::radians(50.0f);
         double const dt = App::get().getFrameDeltaSinceAppStartup().count();
-        float const angle = static_cast<float>(rotationSpeed * dt);
+        auto const angle = static_cast<float>(rotationSpeed * dt);
         glm::vec3 const axis = glm::normalize(glm::vec3{0.5f, 1.0f, 0.0f});
 
         m_Step1.rotation = glm::angleAxis(angle, axis);

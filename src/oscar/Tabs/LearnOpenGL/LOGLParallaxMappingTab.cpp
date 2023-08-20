@@ -173,7 +173,7 @@ private:
         return false;
     }
 
-    void implOnDraw()
+    void implOnDraw() final
     {
         // handle mouse capturing and update camera
         if (m_IsMouseCaptured)
@@ -213,7 +213,6 @@ private:
         ImGui::End();
     }
 
-private:
     // rendering state
     Material m_ParallaxMappingMaterial = CreateParallaxMappingMaterial();
     Material m_LightCubeMaterial = CreateLightCubeMaterial();

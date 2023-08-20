@@ -1478,7 +1478,7 @@ namespace
             {
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
-                    uint8_t const v = static_cast<uint8_t>(255.0f * glm::clamp(pixel[channel], 0.0f, 1.0f));
+                    auto const v = static_cast<uint8_t>(255.0f * glm::clamp(pixel[channel], 0.0f, 1.0f));
                     pixelData.push_back(v);
                 }
             }
@@ -2367,18 +2367,18 @@ public:
         {
             if (m_Descriptor.getAntialiasingLevel() <= 1)
             {
-                SingleSampledTexture& t = std::get<SingleSampledTexture>((*m_MaybeOpenGLData).emplace(SingleSampledTexture{}));
+                auto& t = std::get<SingleSampledTexture>((*m_MaybeOpenGLData).emplace(SingleSampledTexture{}));
                 configureData(t);
             }
             else
             {
-                MultisampledRBOAndResolvedTexture& t = std::get<MultisampledRBOAndResolvedTexture>((*m_MaybeOpenGLData).emplace(MultisampledRBOAndResolvedTexture{}));
+                auto& t = std::get<MultisampledRBOAndResolvedTexture>((*m_MaybeOpenGLData).emplace(MultisampledRBOAndResolvedTexture{}));
                 configureData(t);
             }
         }
         else
         {
-            SingleSampledCubemap& t = std::get<SingleSampledCubemap>((*m_MaybeOpenGLData).emplace(SingleSampledCubemap{}));
+            auto& t = std::get<SingleSampledCubemap>((*m_MaybeOpenGLData).emplace(SingleSampledCubemap{}));
             configureData(t);
         }
     }
