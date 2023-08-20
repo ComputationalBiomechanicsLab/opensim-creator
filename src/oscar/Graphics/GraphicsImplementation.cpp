@@ -34,6 +34,7 @@
 #include "oscar/Bindings/GlGlm.hpp"
 #include "oscar/Bindings/GlmHelpers.hpp"
 #include "oscar/Bindings/SDL2Helpers.hpp"
+#include "oscar/Graphics/AntiAliasingLevel.hpp"
 #include "oscar/Graphics/Color32.hpp"
 #include "oscar/Graphics/MeshGen.hpp"
 #include "oscar/Graphics/ShaderLocations.hpp"
@@ -2160,14 +2161,13 @@ void osc::RenderTextureDescriptor::setDimension(TextureDimension newDimension)
     m_Dimension = newDimension;
 }
 
-int32_t osc::RenderTextureDescriptor::getAntialiasingLevel() const
+osc::AntiAliasingLevel osc::RenderTextureDescriptor::getAntialiasingLevel() const
 {
     return m_AnialiasingLevel;
 }
 
-void osc::RenderTextureDescriptor::setAntialiasingLevel(int32_t level)
+void osc::RenderTextureDescriptor::setAntialiasingLevel(AntiAliasingLevel level)
 {
-    OSC_THROWING_ASSERT(level <= 64 && osc::popcount(static_cast<uint32_t>(level)) == 1);
     m_AnialiasingLevel = level;
 }
 
@@ -2238,13 +2238,13 @@ public:
         m_BufferType{type_}
     {
         OSC_THROWING_ASSERT((getDimension() != TextureDimension::Cube || getDimensions().x == getDimensions().y) && "cannot construct a Cube renderbuffer with non-square dimensions");
-        OSC_THROWING_ASSERT((getDimension() != TextureDimension::Cube || getAntialiasingLevel() == 1) && "cannot construct a Cube renderbuffer that is anti-aliased (not supported by backends like OpenGL)");
+        OSC_THROWING_ASSERT((getDimension() != TextureDimension::Cube || getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot construct a Cube renderbuffer that is anti-aliased (not supported by backends like OpenGL)");
     }
 
     void reformat(RenderTextureDescriptor const& newDescriptor)
     {
         OSC_THROWING_ASSERT((newDescriptor.getDimension() != TextureDimension::Cube || newDescriptor.getDimensions().x == newDescriptor.getDimensions().y) && "cannot reformat a render buffer to a Cube dimensionality with non-square dimensions");
-        OSC_THROWING_ASSERT((newDescriptor.getDimension() != TextureDimension::Cube || newDescriptor.getAntialiasingLevel() == 1) && "cannot reformat a renderbuffer to a Cube dimensionality with is anti-aliased (not supported by backends like OpenGL)");
+        OSC_THROWING_ASSERT((newDescriptor.getDimension() != TextureDimension::Cube || newDescriptor.getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot reformat a renderbuffer to a Cube dimensionality with is anti-aliased (not supported by backends like OpenGL)");
 
         if (m_Descriptor != newDescriptor)
         {
@@ -2282,7 +2282,7 @@ public:
     void setDimension(TextureDimension newDimension)
     {
         OSC_THROWING_ASSERT((newDimension != osc::TextureDimension::Cube || getDimensions().x == getDimensions().y) && "cannot set dimensionality to Cube for non-square render buffer");
-        OSC_THROWING_ASSERT((newDimension != TextureDimension::Cube || getAntialiasingLevel() == 1) && "cannot set dimensionality to Cube for an anti-aliased render buffer (not supported by backends like OpenGL)");
+        OSC_THROWING_ASSERT((newDimension != TextureDimension::Cube || getAntialiasingLevel() == osc::AntiAliasingLevel{1}) && "cannot set dimensionality to Cube for an anti-aliased render buffer (not supported by backends like OpenGL)");
 
         if (newDimension != getDimension())
         {
@@ -2305,14 +2305,14 @@ public:
         }
     }
 
-    int32_t getAntialiasingLevel() const
+    AntiAliasingLevel getAntialiasingLevel() const
     {
         return m_Descriptor.getAntialiasingLevel();
     }
 
-    void setAntialiasingLevel(int32_t newLevel)
+    void setAntialiasingLevel(AntiAliasingLevel newLevel)
     {
-        OSC_THROWING_ASSERT((getDimension() != TextureDimension::Cube || newLevel == 1) && "cannot set anti-aliasing level >1 on a cube render buffer (it is not supported by backends like OpenGL)");
+        OSC_THROWING_ASSERT((getDimension() != TextureDimension::Cube || newLevel == osc::AntiAliasingLevel{1}) && "cannot set anti-aliasing level >1 on a cube render buffer (it is not supported by backends like OpenGL)");
 
         if (newLevel != getAntialiasingLevel())
         {
@@ -2365,7 +2365,7 @@ public:
         static_assert(osc::NumOptions<osc::TextureDimension>() == 2);
         if (getDimension() == osc::TextureDimension::Tex2D)
         {
-            if (m_Descriptor.getAntialiasingLevel() <= 1)
+            if (m_Descriptor.getAntialiasingLevel() <= AntiAliasingLevel{1})
             {
                 auto& t = std::get<SingleSampledTexture>((*m_MaybeOpenGLData).emplace(SingleSampledTexture{}));
                 configureData(t);
@@ -2438,7 +2438,7 @@ public:
         gl::BindRenderBuffer(data.multisampledRBO);
         glRenderbufferStorageMultisample(
             GL_RENDERBUFFER,
-            m_Descriptor.getAntialiasingLevel(),
+            m_Descriptor.getAntialiasingLevel().getU32(),
             ToInternalOpenGLColorFormat(m_BufferType, m_Descriptor),
             dimensions.x,
             dimensions.y
@@ -2620,12 +2620,12 @@ public:
         }
     }
 
-    int32_t getAntialiasingLevel() const
+    AntiAliasingLevel getAntialiasingLevel() const
     {
         return m_ColorBuffer->m_Impl->getAntialiasingLevel();
     }
 
-    void setAntialiasingLevel(int32_t newLevel)
+    void setAntialiasingLevel(AntiAliasingLevel newLevel)
     {
         if (newLevel != getAntialiasingLevel())
         {
@@ -2768,12 +2768,12 @@ void osc::RenderTexture::setColorFormat(RenderTextureFormat format)
     m_Impl.upd()->setColorFormat(format);
 }
 
-int32_t osc::RenderTexture::getAntialiasingLevel() const
+osc::AntiAliasingLevel osc::RenderTexture::getAntialiasingLevel() const
 {
     return m_Impl->getAntialiasingLevel();
 }
 
-void osc::RenderTexture::setAntialiasingLevel(int32_t level)
+void osc::RenderTexture::setAntialiasingLevel(AntiAliasingLevel level)
 {
     m_Impl.upd()->setAntialiasingLevel(level);
 }
@@ -5078,24 +5078,14 @@ namespace
     }
 
     // returns the maximum numbers of MSXAA samples the active OpenGL context supports
-    int32_t GetOpenGLMaxMSXAASamples(sdl::GLContext const&)
+    osc::AntiAliasingLevel GetOpenGLMaxMSXAASamples(sdl::GLContext const&)
     {
         GLint v = 1;
         glGetIntegerv(GL_MAX_SAMPLES, &v);
 
-        // OpenGL spec: "the value must be at least 4"
-        // see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glGet.xhtml
-        if (v < 4)
-        {
-            [[maybe_unused]] static bool const s_ShowWarningOnce = [&]()
-            {
-                osc::log::warn("the current OpenGl backend only supports %i samples. Technically, this is invalid (4 *should* be the minimum)", v);
-                return true;
-            }();
-        }
-        OSC_ASSERT_ALWAYS(v < 1<<16 && "number of samples is greater than the maximum supported by the application");
+        OSC_ASSERT_ALWAYS(v < osc::AntiAliasingLevel::max().getI32() && "number of samples is greater than the maximum supported by the application");
 
-        return static_cast<int32_t>(v);
+        return osc::AntiAliasingLevel{v};
     }
 
     // maps an OpenGL debug message severity level to a log level
@@ -5299,7 +5289,7 @@ public:
         m_QuadMaterial.setDepthTested(false);  // it's for fullscreen rendering
     }
 
-    int32_t getMaxMSXAASamples() const
+    AntiAliasingLevel getMaxMSXAASamples() const
     {
         return m_MaxMSXAASamples;
     }
@@ -5483,7 +5473,7 @@ private:
     sdl::GLContext m_GLContext;
 
     // maximum number of samples supported by this hardware's OpenGL MSXAA API
-    int32_t m_MaxMSXAASamples = GetOpenGLMaxMSXAASamples(m_GLContext);
+    AntiAliasingLevel m_MaxMSXAASamples = GetOpenGLMaxMSXAASamples(m_GLContext);
 
     bool m_VSyncEnabled = SDL_GL_GetSwapInterval() != 0;
 
@@ -5528,7 +5518,7 @@ osc::GraphicsContext::~GraphicsContext() noexcept
     g_GraphicsContextImpl.reset();
 }
 
-int32_t osc::GraphicsContext::getMaxMSXAASamples() const
+osc::AntiAliasingLevel osc::GraphicsContext::getMaxMSXAASamples() const
 {
     return g_GraphicsContextImpl->getMaxMSXAASamples();
 }
@@ -6377,7 +6367,7 @@ void osc::GraphicsBackend::ValidateRenderTarget(RenderTarget& renderTarget)
 
     OSC_THROWING_ASSERT(renderTarget.colors.front().buffer != nullptr && "a color attachment must have a non-null render buffer");
     glm::ivec2 const firstColorBufferDimensions = renderTarget.colors.front().buffer->m_Impl->getDimensions();
-    int32_t const firstColorBufferSamples = renderTarget.colors.front().buffer->m_Impl->getAntialiasingLevel();
+    AntiAliasingLevel const firstColorBufferSamples = renderTarget.colors.front().buffer->m_Impl->getAntialiasingLevel();
 
     // validate other buffers against the first
     for (auto it = renderTarget.colors.begin()+1; it != renderTarget.colors.end(); ++it)

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "oscar/Graphics/AntiAliasingLevel.hpp"
 #include "oscar/Graphics/Color.hpp"
 
 #include <glm/vec2.hpp>
@@ -28,7 +29,7 @@ namespace osc
         SceneRendererParams();
 
         glm::ivec2 dimensions;
-        int32_t samples;
+        AntiAliasingLevel samples;
         bool drawMeshNormals;
         bool drawRims;
         bool drawShadows;

@@ -64,7 +64,7 @@ namespace
         static_assert(sizeof(float) == 4);
         static_assert(sizeof(uint8_t) == 1);
 
-        auto const* const ptr = reinterpret_cast<uint8_t const*>(&v);  // typecasting to a byte is always safe
+        auto const* const ptr = reinterpret_cast<uint8_t const*>(&v);
         o << ptr[0];
         o << ptr[1];
         o << ptr[2];

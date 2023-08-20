@@ -320,32 +320,17 @@ public:
         SDL_SetWindowFullscreen(m_MainWindow.get(), 0);
     }
 
-    int32_t getMSXAASamplesRecommended() const
+    AntiAliasingLevel getMSXAASamplesRecommended() const
     {
         return m_CurrentMSXAASamples;
     }
 
-    void setMSXAASamplesRecommended(int32_t s)
+    void setMSXAASamplesRecommended(AntiAliasingLevel s)
     {
-        if (s <= 0)
-        {
-            throw std::runtime_error{"tried to set number of samples to <= 0"};
-        }
-
-        if (s > getMSXAASamplesMax())
-        {
-            throw std::runtime_error{"tried to set number of multisamples higher than supported by hardware"};
-        }
-
-        if (popcount(static_cast<uint32_t>(s)) != 1)
-        {
-            throw std::runtime_error{"tried to set number of multisamples to an invalid value. Must be 1, or a multiple of 2 (1x, 2x, 4x, 8x...)"};
-        }
-
-        m_CurrentMSXAASamples = s;
+        m_CurrentMSXAASamples = std::clamp(s, AntiAliasingLevel{1}, getMSXAASamplesMax());
     }
 
-    int32_t getMSXAASamplesMax() const
+    AntiAliasingLevel getMSXAASamplesMax() const
     {
         return m_GraphicsContext.getMaxMSXAASamples();
     }
@@ -894,7 +879,7 @@ private:
     SynchronizedValue<std::unordered_map<TypeInfoReference, std::shared_ptr<void>>> m_Singletons;
 
     // how many samples the implementation should actually use
-    int32_t m_CurrentMSXAASamples = std::min(m_GraphicsContext.getMaxMSXAASamples(), m_ApplicationConfig->getNumMSXAASamples());
+    AntiAliasingLevel m_CurrentMSXAASamples = std::min(m_GraphicsContext.getMaxMSXAASamples(), m_ApplicationConfig->getNumMSXAASamples());
 
     // set to true if the application should quit
     bool m_QuitRequested = false;
@@ -1013,17 +998,17 @@ void osc::App::makeWindowed()
     m_Impl->makeWindowed();
 }
 
-int32_t osc::App::getMSXAASamplesRecommended() const
+osc::AntiAliasingLevel osc::App::getMSXAASamplesRecommended() const
 {
     return m_Impl->getMSXAASamplesRecommended();
 }
 
-void osc::App::setMSXAASamplesRecommended(int32_t s)
+void osc::App::setMSXAASamplesRecommended(osc::AntiAliasingLevel s)
 {
     m_Impl->setMSXAASamplesRecommended(s);
 }
 
-int32_t osc::App::getMSXAASamplesMax() const
+osc::AntiAliasingLevel osc::App::getMSXAASamplesMax() const
 {
     return m_Impl->getMSXAASamplesMax();
 }

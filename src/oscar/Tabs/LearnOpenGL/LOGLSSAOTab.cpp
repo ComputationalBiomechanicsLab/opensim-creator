@@ -1,6 +1,7 @@
 #include "LOGLSSAOTab.hpp"
 
 #include "oscar/Bindings/ImGuiHelpers.hpp"
+#include "oscar/Graphics/AntiAliasingLevel.hpp"
 #include "oscar/Graphics/Camera.hpp"
 #include "oscar/Graphics/Color.hpp"
 #include "oscar/Graphics/ColorSpace.hpp"
@@ -250,7 +251,7 @@ private:
     {
         Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
         glm::vec2 const viewportDims = Dimensions(viewportRect);
-        int32_t const samples = 1;
+        AntiAliasingLevel const samples = AntiAliasingLevel::none();
 
         // ensure textures/buffers have correct dimensions
         {
@@ -428,7 +429,7 @@ private:
             },
         };
 
-        void reformat(glm::vec2 dims, int32_t samples)
+        void reformat(glm::vec2 dims, AntiAliasingLevel samples)
         {
             RenderTextureDescriptor desc{dims};
             desc.setAntialiasingLevel(samples);
@@ -445,7 +446,7 @@ private:
         Material material = LoadSSAOMaterial();
         RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::Red8);
 
-        void reformat(glm::vec2 dims, int32_t samples)
+        void reformat(glm::vec2 dims, AntiAliasingLevel samples)
         {
             outputTexture.setDimensions(dims);
             outputTexture.setAntialiasingLevel(samples);
@@ -456,7 +457,7 @@ private:
         Material material = LoadBlurMaterial();
         RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::Red8);
 
-        void reformat(glm::vec2 dims, int32_t samples)
+        void reformat(glm::vec2 dims, AntiAliasingLevel samples)
         {
             outputTexture.setDimensions(dims);
             outputTexture.setAntialiasingLevel(samples);
@@ -467,7 +468,7 @@ private:
         Material material = LoadLightingMaterial();
         RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::ARGB32);
 
-        void reformat(glm::vec2 dims, int32_t samples)
+        void reformat(glm::vec2 dims, AntiAliasingLevel samples)
         {
             outputTexture.setDimensions(dims);
             outputTexture.setAntialiasingLevel(samples);

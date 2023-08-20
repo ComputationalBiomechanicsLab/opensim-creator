@@ -45,6 +45,8 @@ add_library(oscar STATIC
     Formats/SVG.cpp
 
     Graphics/AnnotatedImage.hpp
+    Graphics/AntiAliasingLevel.cpp
+    Graphics/AntiAliasingLevel.hpp
     Graphics/CachedSceneRenderer.cpp
     Graphics/CachedSceneRenderer.hpp
     Graphics/BlitFlags.hpp
@@ -294,7 +296,7 @@ add_library(oscar STATIC
     Widgets/UndoButton.hpp
     Widgets/WindowMenu.cpp
     Widgets/WindowMenu.hpp
-)
+ "Graphics/AntiAliasingLevel.cpp")
 
 target_compile_options(oscar PRIVATE
 

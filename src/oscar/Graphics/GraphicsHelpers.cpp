@@ -1,5 +1,6 @@
 #include "GraphicsHelpers.hpp"
 
+#include "oscar/Graphics/AntiAliasingLevel.hpp"
 #include "oscar/Graphics/Color.hpp"
 #include "oscar/Graphics/Color32.hpp"
 #include "oscar/Graphics/ColorSpace.hpp"
@@ -631,7 +632,7 @@ osc::AABB osc::GetWorldspaceAABB(SceneDecoration const& cd)
 
 osc::SceneRendererParams osc::CalcStandardDarkSceneRenderParams(
     PolarPerspectiveCamera const& camera,
-    int32_t samples,
+    AntiAliasingLevel samples,
     glm::vec2 renderDims)
 {
     osc::SceneRendererParams rv;

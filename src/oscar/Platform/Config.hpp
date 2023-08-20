@@ -1,5 +1,7 @@
 #pragma once
 
+#include "oscar/Graphics/AntiAliasingLevel.hpp"
+
 #include <filesystem>
 #include <memory>
 #include <optional>
@@ -31,7 +33,7 @@ namespace osc
         bool isMultiViewportEnabled() const;
 
         // get number of MSXAA samples 3D viewports should use
-        int32_t getNumMSXAASamples() const;
+        AntiAliasingLevel getNumMSXAASamples() const;
 
         // get if a given UI panel is enabled or not
         bool getIsPanelEnabled(std::string const& panelName) const;

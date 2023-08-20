@@ -41,14 +41,6 @@
 #include <typeinfo>
 #include <utility>
 
-namespace
-{
-    constexpr auto c_AntialiasingLevels = osc::to_array<osc::CStringView const>(
-    {
-        "x1", "x2", "x4", "x8", "x16", "x32", "x64", "x128"
-    });
-}
-
 // public API
 
 osc::MainMenuFileTab::MainMenuFileTab() :
@@ -268,15 +260,20 @@ void osc::MainMenuAboutTab::onDraw()
         DrawHelpMarker("the level of MultiSample Anti-Aliasing to use. This only affects 3D renders *within* the UI, not the whole UI (panels etc. will not be affected)");
         ImGui::NextColumn();
         {
-            size_t samplesIdx = countr_zero(static_cast<size_t>(App::get().getMSXAASamplesRecommended()));
-            size_t maxSamplesIdx = countr_zero(static_cast<size_t>(App::get().getMSXAASamplesMax()));
-            OSC_ASSERT(maxSamplesIdx < c_AntialiasingLevels.size());
+            AntiAliasingLevel const current = App::get().getMSXAASamplesRecommended();
+            AntiAliasingLevel const max = App::get().getMSXAASamplesMax();
 
-            nonstd::span<osc::CStringView const> items{c_AntialiasingLevels.begin(), c_AntialiasingLevels.begin() + (maxSamplesIdx + 1)};
-
-            if (osc::Combo("##msxaa", &samplesIdx, items))
+            if (ImGui::BeginCombo("##msxaa", to_string(current).c_str()))
             {
-                App::upd().setMSXAASamplesRecommended(1 << samplesIdx);
+                for (AntiAliasingLevel l = AntiAliasingLevel::min(); l <= max; ++l)
+                {
+                    bool selected = l == current;
+                    if (ImGui::Selectable(to_string(l).c_str(), &selected))
+                    {
+                        App::upd().setMSXAASamplesRecommended(l);
+                    }
+                }
+                ImGui::EndCombo();
             }
         }
         ImGui::NextColumn();

@@ -1,5 +1,6 @@
 #include "Config.hpp"
 
+#include "oscar/Graphics/AntiAliasingLevel.hpp"
 #include "oscar/Platform/Log.hpp"
 #include "oscar/Platform/os.hpp"
 #include "OscarConfiguration.hpp"
@@ -20,7 +21,7 @@
 
 namespace
 {
-    constexpr int32_t c_NumMSXAASamples = 4;
+    constexpr osc::AntiAliasingLevel c_NumMSXAASamples{4};
 
     std::optional<std::filesystem::path> TryGetConfigLocation()
     {
@@ -194,7 +195,7 @@ bool osc::Config::isMultiViewportEnabled() const
     return m_Impl->useMultiViewport;
 }
 
-int32_t osc::Config::getNumMSXAASamples() const
+osc::AntiAliasingLevel osc::Config::getNumMSXAASamples() const
 {
     return c_NumMSXAASamples;
 }

@@ -6,6 +6,7 @@
 #include "OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp"
 #include "OpenSimCreator/Model/VirtualConstModelStatePair.hpp"
 
+#include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/SceneDecoration.hpp>
 #include <oscar/Maths/Line.hpp>
@@ -21,7 +22,7 @@
 osc::SceneRendererParams osc::CalcSceneRendererParams(
     ModelRendererParams const& renderParams,
     glm::vec2 viewportDims,
-    int32_t samples,
+    AntiAliasingLevel samples,
     float fixupScaleFactor)
 {
     SceneRendererParams params;

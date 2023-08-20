@@ -2108,6 +2108,10 @@ namespace
 
         void drawLegendContextMenuContent()
         {
+            static_assert(sizeof(decltype(m_PlotFlags)) == sizeof(unsigned int));
+            static_assert(alignof(decltype(m_PlotFlags)) == alignof(unsigned int));
+            static_assert(sizeof(decltype(m_LegendFlags)) == sizeof(unsigned int));
+            static_assert(alignof(decltype(m_LegendFlags)) == alignof(unsigned int));
             ImGui::CheckboxFlags("Hide", reinterpret_cast<unsigned int*>(&m_PlotFlags), ImPlotFlags_NoLegend);
             ImGui::CheckboxFlags("Outside", reinterpret_cast<unsigned int*>(&m_LegendFlags), ImPlotLegendFlags_Outside);
 

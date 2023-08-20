@@ -185,7 +185,7 @@ private:
     void reformatAllTextures(Rect const& viewportRect)
     {
         glm::vec2 const viewportDims = Dimensions(viewportRect);
-        int32_t const msxaaSamples = App::get().getMSXAASamplesRecommended();
+        AntiAliasingLevel const msxaaSamples = App::get().getMSXAASamplesRecommended();
 
         RenderTextureDescriptor textureDescription{viewportDims};
         textureDescription.setAntialiasingLevel(msxaaSamples);
@@ -196,7 +196,7 @@ private:
         m_SceneHDRThresholdedOutput.reformat(textureDescription);
 
         // intermediate buffers are single-sampled HDR textures
-        textureDescription.setAntialiasingLevel(1);
+        textureDescription.setAntialiasingLevel(AntiAliasingLevel::none());
         for (RenderTexture& pingPongBuffer : m_PingPongBlurOutputBuffers)
         {
             pingPongBuffer.reformat(textureDescription);

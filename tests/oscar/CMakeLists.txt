@@ -6,6 +6,7 @@ add_executable(testoscar EXCLUDE_FROM_ALL
     Formats/TestCSV.cpp
     Formats/TestDAE.cpp
 
+    Graphics/TestAntiAliasingLevel.cpp
     Graphics/TestColor.cpp
     Graphics/TestCubemap.cpp
     Graphics/TestCubemapFace.cpp
@@ -20,6 +21,7 @@ add_executable(testoscar EXCLUDE_FROM_ALL
 
     Maths/TestBVH.cpp
 
+    Utils/TestCpp20Shims.cpp
     Utils/TestFileChangePoller.cpp
     Utils/TestStringHelpers.cpp
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "oscar/Graphics/AntiAliasingLevel.hpp"
 #include "oscar/Graphics/Color.hpp"
 #include "oscar/Graphics/ImageLoadingFlags.hpp"
 #include "oscar/Graphics/Material.hpp"
@@ -14,7 +15,6 @@
 #include <glm/vec4.hpp>
 #include <nonstd/span.hpp>
 
-#include <cstdint>
 #include <filesystem>
 #include <functional>
 #include <optional>
@@ -185,7 +185,7 @@ namespace osc
     // returns scene rendering parameters for an generic panel
     SceneRendererParams CalcStandardDarkSceneRenderParams(
         PolarPerspectiveCamera const&,
-        int32_t samples,
+        AntiAliasingLevel,
         glm::vec2 renderDims
     );
 }

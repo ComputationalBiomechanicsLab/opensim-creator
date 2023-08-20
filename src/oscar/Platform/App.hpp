@@ -1,6 +1,7 @@
 #pragma once
 
 #include "oscar/Graphics/AnnotatedImage.hpp"
+#include "oscar/Graphics/AntiAliasingLevel.hpp"
 #include "oscar/Platform/AppClock.hpp"
 #include "oscar/Platform/Log.hpp"
 #include "oscar/Platform/MouseState.hpp"
@@ -156,15 +157,15 @@ namespace osc
         void makeWindowed();
 
         // returns the recommended number of MSXAA samples that rendererers should use (based on config etc.)
-        int32_t getMSXAASamplesRecommended() const;
+        AntiAliasingLevel getMSXAASamplesRecommended() const;
 
         // sets the number of MSXAA samples multisampled renderered should use
         //
         // throws if arg > max_samples()
-        void setMSXAASamplesRecommended(int32_t);
+        void setMSXAASamplesRecommended(AntiAliasingLevel);
 
         // returns the maximum number of MSXAA samples the backend supports
-        int32_t getMSXAASamplesMax() const;
+        AntiAliasingLevel getMSXAASamplesMax() const;
 
         // returns true if the application is rendering in debug mode
         //

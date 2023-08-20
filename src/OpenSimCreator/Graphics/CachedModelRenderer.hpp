@@ -1,12 +1,12 @@
 #pragma once
 
 #include <oscar/Maths/AABB.hpp>
+#include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/SceneCollision.hpp>
 
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
 
-#include <cstdint>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -47,7 +47,7 @@ namespace osc
             VirtualConstModelStatePair const&,
             ModelRendererParams const&,
             glm::vec2 dims,
-            int32_t samples
+            AntiAliasingLevel samples
         );
         RenderTexture& updRenderTexture();
 

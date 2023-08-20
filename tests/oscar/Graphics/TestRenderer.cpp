@@ -1,3 +1,4 @@
+#include "oscar/Graphics/AntiAliasingLevel.hpp"
 #include "oscar/Graphics/Camera.hpp"
 #include "oscar/Graphics/CameraClearFlags.hpp"
 #include "oscar/Graphics/CameraProjection.hpp"
@@ -2550,34 +2551,16 @@ TEST_F(Renderer, RenderTextureDescriptorSetHeightFollowedByGetHeightReturnsSetHe
 TEST_F(Renderer, RenderTextureDescriptorGetAntialiasingLevelInitiallyReturns1)
 {
     osc::RenderTextureDescriptor d1{{1, 1}};
-    ASSERT_EQ(d1.getAntialiasingLevel(), 1);
+    ASSERT_EQ(d1.getAntialiasingLevel(), osc::AntiAliasingLevel{1});
 }
 
 TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingLevelMakesGetAntialiasingLevelReturnValue)
 {
-    int32_t newAntialiasingLevel = 4;
+    osc::AntiAliasingLevel newAntialiasingLevel{4};
 
     osc::RenderTextureDescriptor d1{{1, 1}};
     d1.setAntialiasingLevel(newAntialiasingLevel);
     ASSERT_EQ(d1.getAntialiasingLevel(), newAntialiasingLevel);
-}
-
-TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingLevelToZeroThrows)
-{
-    osc::RenderTextureDescriptor d1{{1, 1}};
-    ASSERT_ANY_THROW({ d1.setAntialiasingLevel(0); });
-}
-
-TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingNegativeThrows)
-{
-    osc::RenderTextureDescriptor d1{{1, 1}};
-    ASSERT_ANY_THROW({ d1.setAntialiasingLevel(-1); });
-}
-
-TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingLevelToInvalidValueThrows)
-{
-    osc::RenderTextureDescriptor d1{{1, 1}};
-    ASSERT_ANY_THROW({ d1.setAntialiasingLevel(3); });
 }
 
 TEST_F(Renderer, RenderTextureDescriptorGetColorFormatReturnsARGB32ByDefault)
@@ -2719,7 +2702,7 @@ TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingLevelMakesItCompareNotEqu
     osc::RenderTextureDescriptor d1{{1, 1}};
     osc::RenderTextureDescriptor d2{{1, 1}};
 
-    d2.setAntialiasingLevel(2);
+    d2.setAntialiasingLevel(osc::AntiAliasingLevel{2});
 
     ASSERT_NE(d1, d2);
 }
@@ -2750,7 +2733,7 @@ TEST_F(Renderer, RenderTextureDefaultConstructorCreates1x1RgbaRenderTexture)
     ASSERT_EQ(tex.getDimensions(), glm::ivec2(1, 1));
     ASSERT_EQ(tex.getDepthStencilFormat(), osc::DepthStencilFormat::D24_UNorm_S8_UInt);
     ASSERT_EQ(tex.getColorFormat(), osc::RenderTextureFormat::ARGB32);
-    ASSERT_EQ(tex.getAntialiasingLevel(), 1);
+    ASSERT_EQ(tex.getAntialiasingLevel(), osc::AntiAliasingLevel{1});
 }
 
 TEST_F(Renderer, RenderTextureDefaultConstructorHasTex2DDimension)
@@ -2772,7 +2755,7 @@ TEST_F(Renderer, RenderTextureSetDimensionToCubeThrowsIfRenderTextureIsMultisamp
     // so loudly throw an error if the caller is trying to render a multisampled
     // cubemap
     osc::RenderTexture tex;
-    tex.setAntialiasingLevel(2);
+    tex.setAntialiasingLevel(osc::AntiAliasingLevel{2});
     ASSERT_ANY_THROW(tex.setDimension(osc::TextureDimension::Cube));
 }
 
@@ -2783,7 +2766,7 @@ TEST_F(Renderer, RenderTextureSetAntialiasingToNonOneOnCubeDimensionalityRenderT
     // cubemap
     osc::RenderTexture tex;
     tex.setDimension(osc::TextureDimension::Cube);
-    ASSERT_ANY_THROW(tex.setAntialiasingLevel(2));
+    ASSERT_ANY_THROW(tex.setAntialiasingLevel(osc::AntiAliasingLevel{2}));
 }
 
 TEST_F(Renderer, RenderTextureCtorThrowsIfGivenCubeDimensionalityAndAntialiasedDescriptor)
@@ -2794,7 +2777,7 @@ TEST_F(Renderer, RenderTextureCtorThrowsIfGivenCubeDimensionalityAndAntialiasedD
     osc::RenderTextureDescriptor desc{{1, 1}};
 
     // allowed: RenderTextureDescriptor is non-throwing until the texture is actually constructed
-    desc.setAntialiasingLevel(2);
+    desc.setAntialiasingLevel(osc::AntiAliasingLevel{2});
     desc.setDimension(osc::TextureDimension::Cube);
 
     // throws because the descriptor is bad
@@ -2805,7 +2788,7 @@ TEST_F(Renderer, RenderTextureReformatThrowsIfGivenCubeDimensionalityAndAntialia
 {
     // allowed: RenderTextureDescriptor is non-throwing until the texture is actually constructed
     osc::RenderTextureDescriptor desc{{1, 1}};
-    desc.setAntialiasingLevel(2);
+    desc.setAntialiasingLevel(osc::AntiAliasingLevel{2});
     desc.setDimension(osc::TextureDimension::Cube);
 
     // throws because the descriptor is bad
@@ -2882,7 +2865,7 @@ TEST_F(Renderer, RenderTextureFromDescriptorHasExpectedValues)
 {
     int width = 8;
     int height = 8;
-    int32_t aaLevel = 1;
+    osc::AntiAliasingLevel aaLevel{1};
     osc::RenderTextureFormat format = osc::RenderTextureFormat::Red8;
     osc::RenderTextureReadWrite rw = osc::RenderTextureReadWrite::Linear;
     osc::TextureDimension dimension = osc::TextureDimension::Cube;

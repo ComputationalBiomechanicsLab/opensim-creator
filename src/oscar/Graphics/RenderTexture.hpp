@@ -1,5 +1,6 @@
 #pragma once
 
+#include "oscar/Graphics/AntiAliasingLevel.hpp"
 #include "oscar/Graphics/RenderTextureDescriptor.hpp"
 #include "oscar/Graphics/RenderTextureFormat.hpp"
 #include "oscar/Graphics/RenderTextureReadWrite.hpp"
@@ -40,8 +41,8 @@ namespace osc
         RenderTextureFormat getColorFormat() const;
         void setColorFormat(RenderTextureFormat);
 
-        int32_t getAntialiasingLevel() const;
-        void setAntialiasingLevel(int32_t);
+        AntiAliasingLevel getAntialiasingLevel() const;
+        void setAntialiasingLevel(AntiAliasingLevel);
 
         DepthStencilFormat getDepthStencilFormat() const;
         void setDepthStencilFormat(DepthStencilFormat);

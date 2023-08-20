@@ -1,5 +1,7 @@
 #pragma once
 
+#include "oscar/Graphics/AntiAliasingLevel.hpp"
+
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
 
@@ -24,7 +26,7 @@ namespace osc
         ~SceneRenderer() noexcept;
 
         glm::ivec2 getDimensions() const;
-        int32_t getSamples() const;
+        AntiAliasingLevel getSamples() const;
         void render(nonstd::span<SceneDecoration const>, SceneRendererParams const&);
         RenderTexture& updRenderTexture();
 

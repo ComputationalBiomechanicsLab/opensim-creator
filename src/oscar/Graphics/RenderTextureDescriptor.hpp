@@ -1,5 +1,6 @@
 #pragma once
 
+#include "oscar/Graphics/AntiAliasingLevel.hpp"
 #include "oscar/Graphics/DepthStencilFormat.hpp"
 #include "oscar/Graphics/RenderTextureFormat.hpp"
 #include "oscar/Graphics/RenderTextureReadWrite.hpp"
@@ -26,8 +27,8 @@ namespace osc
         TextureDimension getDimension() const;
         void setDimension(TextureDimension);
 
-        int32_t getAntialiasingLevel() const;
-        void setAntialiasingLevel(int32_t);
+        AntiAliasingLevel getAntialiasingLevel() const;
+        void setAntialiasingLevel(AntiAliasingLevel);
 
         RenderTextureFormat getColorFormat() const;
         void setColorFormat(RenderTextureFormat);
@@ -46,7 +47,7 @@ namespace osc
 
         glm::ivec2 m_Dimensions;
         TextureDimension m_Dimension;
-        int32_t m_AnialiasingLevel;
+        AntiAliasingLevel m_AnialiasingLevel;
         RenderTextureFormat m_ColorFormat;
         DepthStencilFormat m_DepthStencilFormat;
         RenderTextureReadWrite m_ReadWrite;

@@ -5,6 +5,7 @@
 #include <atomic>
 #include <cstddef>
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <thread>
 #include <type_traits>
@@ -233,15 +234,35 @@ namespace osc {
     //
     // see: https://en.cppreference.com/w/cpp/numeric/countr_zero
     template<typename T>
-    constexpr int countr_zero(T x)
+    constexpr int countr_zero(T x) noexcept
     {
         static_assert(std::is_unsigned_v<T> && sizeof(T) <= sizeof(unsigned long long));
+
+        if (x == 0)
+        {
+            return std::numeric_limits<T>::digits;
+        }
 
         unsigned long long uv = x;
         int rv = 0;
         while (!(uv & 0x1))
         {
             uv >>= 1;
+            ++rv;
+        }
+        return rv;
+    }
+
+    template<typename T>
+    constexpr int bit_width(T x) noexcept
+    {
+        static_assert(std::is_unsigned_v<T>);
+        static_assert(!std::is_same_v<T, bool>);
+
+        int rv = 0;
+        while (x)
+        {
+            x >>= 1;
             ++rv;
         }
         return rv;

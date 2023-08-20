@@ -1,6 +1,7 @@
 #include "SceneRenderer.hpp"
 
 #include "oscar/Bindings/GlmHelpers.hpp"
+#include "oscar/Graphics/AntiAliasingLevel.hpp"
 #include "oscar/Graphics/Camera.hpp"
 #include "oscar/Graphics/Color.hpp"
 #include "oscar/Graphics/Graphics.hpp"
@@ -163,7 +164,7 @@ public:
         return m_OutputTexture.getDimensions();
     }
 
-    int32_t getSamples() const
+    osc::AntiAliasingLevel getSamples() const
     {
         return m_OutputTexture.getAntialiasingLevel();
     }
@@ -499,7 +500,7 @@ glm::ivec2 osc::SceneRenderer::getDimensions() const
     return m_Impl->getDimensions();
 }
 
-int32_t osc::SceneRenderer::getSamples() const
+osc::AntiAliasingLevel osc::SceneRenderer::getSamples() const
 {
     return m_Impl->getSamples();
 }

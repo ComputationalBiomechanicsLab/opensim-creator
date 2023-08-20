@@ -1,8 +1,8 @@
 #pragma once
 
+#include "oscar/Graphics/AntiAliasingLevel.hpp"
 #include "oscar/Graphics/Texture2D.hpp"
 
-#include <cstdint>
 #include <future>
 #include <string>
 
@@ -24,7 +24,7 @@ namespace osc
         GraphicsContext& operator=(GraphicsContext&&) noexcept = delete;
         ~GraphicsContext() noexcept;
 
-        int32_t getMaxMSXAASamples() const;
+        AntiAliasingLevel getMaxMSXAASamples() const;
 
         bool isVsyncEnabled() const;
         void enableVsync();

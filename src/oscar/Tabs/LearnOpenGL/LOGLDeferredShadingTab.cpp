@@ -1,6 +1,7 @@
 #include "LOGLDeferredShadingTab.hpp"
 
 #include "oscar/Bindings/ImGuiHelpers.hpp"
+#include "oscar/Graphics/AntiAliasingLevel.hpp"
 #include "oscar/Graphics/Camera.hpp"
 #include "oscar/Graphics/Color.hpp"
 #include "oscar/Graphics/ColorSpace.hpp"
@@ -167,7 +168,7 @@ namespace
             },
         };
 
-        void reformat(glm::vec2 dims, int32_t samples)
+        void reformat(glm::vec2 dims, osc::AntiAliasingLevel samples)
         {
             osc::RenderTextureDescriptor desc{dims};
             desc.setAntialiasingLevel(samples);
@@ -252,7 +253,7 @@ private:
     {
         Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
         glm::vec2 const viewportDims = Dimensions(viewportRect);
-        int32_t const samples = App::get().getMSXAASamplesRecommended();
+        AntiAliasingLevel const samples = App::get().getMSXAASamplesRecommended();
 
         // ensure textures/buffers have correct dimensions
         {

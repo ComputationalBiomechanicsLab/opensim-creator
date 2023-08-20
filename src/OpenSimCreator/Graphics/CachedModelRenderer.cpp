@@ -6,14 +6,15 @@
 #include "OpenSimCreator/Model/ModelStatePairInfo.hpp"
 #include "OpenSimCreator/Model/VirtualConstModelStatePair.hpp"
 
-#include <oscar/Maths/AABB.hpp>
-#include <oscar/Maths/BVH.hpp>
-#include <oscar/Maths/PolarPerspectiveCamera.hpp>
+#include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/SceneCollision.hpp>
 #include <oscar/Graphics/SceneDecoration.hpp>
 #include <oscar/Graphics/SceneRenderer.hpp>
 #include <oscar/Graphics/SceneRendererParams.hpp>
+#include <oscar/Maths/AABB.hpp>
+#include <oscar/Maths/BVH.hpp>
+#include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Utils/Perf.hpp>
 
 #include <glm/vec2.hpp>
@@ -127,7 +128,7 @@ public:
         VirtualConstModelStatePair const& modelState,
         ModelRendererParams const& renderParams,
         glm::vec2 dims,
-        int32_t samples)
+        AntiAliasingLevel samples)
     {
         OSC_PERF("CachedModelRenderer/onDraw");
 
@@ -205,7 +206,7 @@ osc::RenderTexture& osc::CachedModelRenderer::onDraw(
     VirtualConstModelStatePair const& modelState,
     ModelRendererParams const& renderParams,
     glm::vec2 dims,
-    int32_t samples)
+    AntiAliasingLevel samples)
 {
     return m_Impl->onDraw(
         modelState,
