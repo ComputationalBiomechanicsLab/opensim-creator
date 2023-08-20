@@ -53,6 +53,7 @@ add_library(oscar STATIC
     Graphics/CameraProjection.hpp
     Graphics/Color.cpp
     Graphics/Color.hpp
+    Graphics/Color32.hpp
     Graphics/Cubemap.hpp
     Graphics/CubemapFace.hpp
     Graphics/DepthStencilFormat.hpp
@@ -91,7 +92,6 @@ add_library(oscar STATIC
     Graphics/RenderTextureDescriptor.hpp
     Graphics/RenderTextureFormat.hpp
     Graphics/RenderTextureReadWrite.hpp
-    Graphics/Rgba32.hpp
     Graphics/SceneCollision.hpp
     Graphics/SceneDecoration.cpp
     Graphics/SceneDecoration.hpp

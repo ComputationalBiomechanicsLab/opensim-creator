@@ -203,7 +203,7 @@ TEST(Color, ToLinearFollowedByToSRGBEffectivelyReuturnsOriginalColor)
 TEST(Color, ToRgba32ReturnsRgba32VersionOfTheColor)
 {
     osc::Color const color = {0.85f, 0.62f, 0.3f, 0.5f};
-    osc::Rgba32 const expected
+    osc::Color32 const expected
     {
         static_cast<uint8_t>(color.r * static_cast<float>(0xff)),
         static_cast<uint8_t>(color.g * static_cast<float>(0xff)),
@@ -211,7 +211,7 @@ TEST(Color, ToRgba32ReturnsRgba32VersionOfTheColor)
         static_cast<uint8_t>(color.a * static_cast<float>(0xff)),
     };
 
-    osc::Rgba32 const got = osc::ToRgba32(color);
+    osc::Color32 const got = osc::ToColor32(color);
 
     ASSERT_EQ(expected.r, got.r);
     ASSERT_EQ(expected.g, got.g);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "oscar/Graphics/Rgba32.hpp"
+#include "oscar/Graphics/Color32.hpp"
 
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -202,9 +202,9 @@ namespace osc
     Color Lerp(Color const& a, Color const& b, float t) noexcept;
 
     // float-/double-based inputs assume normalized color range (i.e. 0 to 1)
-    Rgba32 ToRgba32(glm::vec4 const&) noexcept;
-    Rgba32 ToRgba32(float, float, float, float) noexcept;
-    Rgba32 ToRgba32(uint32_t) noexcept;  // R at MSB
+    Color32 ToColor32(glm::vec4 const&) noexcept;
+    Color32 ToColor32(float, float, float, float) noexcept;
+    Color32 ToColor32(uint32_t) noexcept;  // R at MSB
 }
 
 // define hashing function for colors

@@ -1,6 +1,7 @@
 #include "GraphicsHelpers.hpp"
 
 #include "oscar/Graphics/Color.hpp"
+#include "oscar/Graphics/Color32.hpp"
 #include "oscar/Graphics/ColorSpace.hpp"
 #include "oscar/Graphics/ImageLoadingFlags.hpp"
 #include "oscar/Graphics/Mesh.hpp"
@@ -606,7 +607,7 @@ void osc::WriteToPNG(
 {
     glm::ivec2 const dims = tex.getDimensions();
     int const stride = 4 * dims.x;
-    std::vector<Rgba32> const pixels = tex.getPixels32();
+    std::vector<Color32> const pixels = tex.getPixels32();
 
     auto const guard = LockStbiAPI();
     stbi_flip_vertically_on_write(true);

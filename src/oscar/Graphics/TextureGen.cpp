@@ -1,8 +1,8 @@
 #include "TextureGen.hpp"
 
+#include "oscar/Graphics/Color32.hpp"
 #include "oscar/Graphics/ColorSpace.hpp"
 #include "oscar/Graphics/GraphicsHelpers.hpp"
-#include "oscar/Graphics/Rgba32.hpp"
 #include "oscar/Graphics/TextureFormat.hpp"
 
 #include <glm/vec2.hpp>
@@ -18,10 +18,10 @@ osc::Texture2D osc::GenChequeredFloorTexture()
     constexpr size_t chequerHeight = 32;
     constexpr size_t textureWidth = 2 * chequerWidth;
     constexpr size_t textureHeight = 2 * chequerHeight;
-    constexpr Rgba32 onColor = {0xff, 0xff, 0xff, 0xff};
-    constexpr Rgba32 offColor = {0xf3, 0xf3, 0xf3, 0xff};
+    constexpr Color32 onColor = {0xff, 0xff, 0xff, 0xff};
+    constexpr Color32 offColor = {0xf3, 0xf3, 0xf3, 0xff};
 
-    std::array<Rgba32, textureWidth * textureHeight> pixels{};
+    std::array<Color32, textureWidth * textureHeight> pixels{};
     for (size_t row = 0; row < textureHeight; ++row)
     {
         size_t const rowStart = row * textureWidth;

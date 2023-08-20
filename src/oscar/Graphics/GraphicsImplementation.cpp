@@ -34,8 +34,8 @@
 #include "oscar/Bindings/GlGlm.hpp"
 #include "oscar/Bindings/GlmHelpers.hpp"
 #include "oscar/Bindings/SDL2Helpers.hpp"
+#include "oscar/Graphics/Color32.hpp"
 #include "oscar/Graphics/MeshGen.hpp"
-#include "oscar/Graphics/Rgba32.hpp"
 #include "oscar/Graphics/ShaderLocations.hpp"
 #include "oscar/Maths/AABB.hpp"
 #include "oscar/Maths/BVH.hpp"
@@ -1387,7 +1387,7 @@ namespace
         return rv;
     }
 
-    std::vector<osc::Rgba32> ReadPixelDataAsColor32(
+    std::vector<osc::Color32> ReadPixelDataAsColor32(
         nonstd::span<uint8_t const> pixelData,
         osc::TextureFormat pixelDataFormat)
     {
@@ -1398,18 +1398,18 @@ namespace
         size_t const bytesPerPixel = bytesPerChannel * numChannels;
         size_t const numPixels = pixelData.size() / bytesPerPixel;
 
-        std::vector<osc::Rgba32> rv;
+        std::vector<osc::Color32> rv;
         rv.reserve(numPixels);
 
         static_assert(osc::NumOptions<osc::TextureChannelFormat>() == 2);
         if (channelFormat == osc::TextureChannelFormat::Uint8)
         {
-            // read 8-bit channel bytes into 8-bit osc::Rgba32 color channels
+            // read 8-bit channel bytes into 8-bit osc::Color32 color channels
             for (size_t pixel = 0; pixel < numPixels; ++pixel)
             {
                 size_t const pixelStart = bytesPerPixel * pixel;
 
-                osc::Rgba32 color = {0x00, 0x00, 0x00, 0xff};
+                osc::Color32 color = {0x00, 0x00, 0x00, 0xff};
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
                     size_t const channelStart = pixelStart + channel;
@@ -1423,12 +1423,12 @@ namespace
             static_assert(std::is_same_v<osc::Color::value_type, float>);
             OSC_ASSERT(bytesPerChannel == sizeof(float));
 
-            // pack 32-bit channel floats into 8-bit osc::Rgba32 color channels
+            // pack 32-bit channel floats into 8-bit osc::Color32 color channels
             for (size_t pixel = 0; pixel < numPixels; ++pixel)
             {
                 size_t const pixelStart = bytesPerPixel * pixel;
 
-                osc::Rgba32 color = {0x00, 0x00, 0x00, 0xff};
+                osc::Color32 color = {0x00, 0x00, 0x00, 0xff};
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
                     size_t const channelStart = pixelStart + channel*sizeof(float);
@@ -1501,7 +1501,7 @@ namespace
     }
 
     void EncodePixels32InDesiredFormat(
-        nonstd::span<osc::Rgba32 const> pixels,
+        nonstd::span<osc::Color32 const> pixels,
         osc::TextureFormat pixelDataFormat,
         std::vector<uint8_t>& pixelData)
     {
@@ -1516,12 +1516,12 @@ namespace
         pixelData.clear();
         pixelData.reserve(numOutputBytes);
 
-        OSC_ASSERT(numChannels <= osc::Rgba32::length());
+        OSC_ASSERT(numChannels <= osc::Color32::length());
         static_assert(osc::NumOptions<osc::TextureChannelFormat>() == 2);
         if (channelFormat == osc::TextureChannelFormat::Uint8)
         {
             // write pixels to pixel data buffer as-is (they're bytes already)
-            for (osc::Rgba32 const& pixel : pixels)
+            for (osc::Color32 const& pixel : pixels)
             {
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
@@ -1532,7 +1532,7 @@ namespace
         else
         {
             // upscale pixels to float32s and write the floats to the pixel buffer
-            for (osc::Rgba32 const& pixel : pixels)
+            for (osc::Color32 const& pixel : pixels)
             {
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
@@ -1651,12 +1651,12 @@ public:
         EncodePixelsInDesiredFormat(pixels, m_Format, m_PixelData);
     }
 
-    std::vector<Rgba32> getPixels32() const
+    std::vector<Color32> getPixels32() const
     {
         return ReadPixelDataAsColor32(m_PixelData, m_Format);
     }
 
-    void setPixels32(nonstd::span<Rgba32 const> pixels)
+    void setPixels32(nonstd::span<Color32 const> pixels)
     {
         OSC_THROWING_ASSERT(pixels.size() == m_Dimensions.x*m_Dimensions.y);
         EncodePixels32InDesiredFormat(pixels, m_Format, m_PixelData);
@@ -1932,12 +1932,12 @@ void osc::Texture2D::setPixels(nonstd::span<Color const> pixels)
     m_Impl.upd()->setPixels(pixels);
 }
 
-std::vector<osc::Rgba32> osc::Texture2D::getPixels32() const
+std::vector<osc::Color32> osc::Texture2D::getPixels32() const
 {
     return m_Impl->getPixels32();
 }
 
-void osc::Texture2D::setPixels32(nonstd::span<Rgba32 const> pixels)
+void osc::Texture2D::setPixels32(nonstd::span<Color32 const> pixels)
 {
     m_Impl.upd()->setPixels32(pixels);
 }

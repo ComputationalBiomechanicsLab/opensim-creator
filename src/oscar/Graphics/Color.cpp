@@ -79,9 +79,9 @@ size_t std::hash<osc::Color>::operator()(osc::Color const& color) const
     return osc::HashOf(color.r, color.g, color.b, color.a);
 }
 
-osc::Rgba32 osc::ToRgba32(glm::vec4 const& v) noexcept
+osc::Color32 osc::ToColor32(glm::vec4 const& v) noexcept
 {
-    return Rgba32
+    return Color32
     {
         static_cast<uint8_t>(255.0f * v.r),
         static_cast<uint8_t>(255.0f * v.g),
@@ -90,9 +90,9 @@ osc::Rgba32 osc::ToRgba32(glm::vec4 const& v) noexcept
     };
 }
 
-osc::Rgba32 osc::ToRgba32(float r, float g, float b, float a) noexcept
+osc::Color32 osc::ToColor32(float r, float g, float b, float a) noexcept
 {
-    return Rgba32
+    return Color32
     {
         static_cast<uint8_t>(255.0f * r),
         static_cast<uint8_t>(255.0f * g),
@@ -101,9 +101,9 @@ osc::Rgba32 osc::ToRgba32(float r, float g, float b, float a) noexcept
     };
 }
 
-osc::Rgba32 osc::ToRgba32(std::uint32_t v) noexcept
+osc::Color32 osc::ToColor32(std::uint32_t v) noexcept
 {
-    return Rgba32
+    return Color32
     {
         static_cast<uint8_t>((v >> 24) & 0xff),
         static_cast<uint8_t>((v >> 16) & 0xff),

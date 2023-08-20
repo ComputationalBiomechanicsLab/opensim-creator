@@ -1,8 +1,8 @@
 #pragma once
 
 #include "oscar/Graphics/Color.hpp"
+#include "oscar/Graphics/Color32.hpp"
 #include "oscar/Graphics/ColorSpace.hpp"
-#include "oscar/Graphics/Rgba32.hpp"
 #include "oscar/Graphics/TextureFilterMode.hpp"
 #include "oscar/Graphics/TextureFormat.hpp"
 #include "oscar/Graphics/TextureWrapMode.hpp"
@@ -70,8 +70,8 @@ namespace osc
         // - may internally convert the provided `Color` structs into the format
         //   of the texture, so don't expect `getPixels` to necessarily return
         //   exactly the same values as provided
-        std::vector<Rgba32> getPixels32() const;
-        void setPixels32(nonstd::span<Rgba32 const>);
+        std::vector<Color32> getPixels32() const;
+        void setPixels32(nonstd::span<Color32 const>);
 
         // - must contain pixel _data_ row-by-row
         // - the size of the data span must be equal to:
