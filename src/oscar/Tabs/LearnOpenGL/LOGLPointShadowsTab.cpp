@@ -85,41 +85,6 @@ namespace
         });
     }
 
-    // describes the direction of each cube face and which direction is "up"
-    // from the perspective of looking at that face from the center of the cube
-    struct CubemapFaceDetails final {
-        glm::vec3 direction;
-        glm::vec3 up;
-    };
-    constexpr auto c_CubemapFacesDetails = osc::to_array<CubemapFaceDetails>(
-    {
-        {{ 1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},
-        {{-1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},
-        {{ 0.0f,  1.0f,  0.0f}, {0.0f,  0.0f,  1.0f}},
-        {{ 0.0f, -1.0f,  0.0f}, {0.0f,  0.0f, -1.0f}},
-        {{ 0.0f,  0.0f,  1.0f}, {0.0f, -1.0f,  0.0f}},
-        {{ 0.0f,  0.0f, -1.0f}, {0.0f, -1.0f,  0.0f}},
-    });
-
-    glm::mat4 CalcCubemapViewMatrix(CubemapFaceDetails const& faceDetails, glm::vec3 const& cubeCenter)
-    {
-        return glm::lookAt(cubeCenter, cubeCenter + faceDetails.direction, faceDetails.up);
-    }
-
-    std::array<glm::mat4, 6> CalcAllCubemapViewProjMatrices(
-        glm::mat4 const& projectionMatrix,
-        glm::vec3 cubeCenter)
-    {
-        static_assert(std::size(c_CubemapFacesDetails) == 6);
-
-        std::array<glm::mat4, 6> rv{};
-        for (size_t i = 0; i < 6; ++i)
-        {
-            rv[i] = projectionMatrix * CalcCubemapViewMatrix(c_CubemapFacesDetails[i], cubeCenter);
-        }
-        return rv;
-    }
-
     osc::RenderTexture CreateDepthTexture()
     {
         osc::RenderTextureDescriptor desc{c_ShadowmapDims};
@@ -226,8 +191,8 @@ private:
         );
 
         // have the cone point toward all 6 faces of the cube
-        std::array<glm::mat4, 6> const shadowMatrices =
-            CalcAllCubemapViewProjMatrices(projectionMatrix, m_LightPos);
+        auto const shadowMatrices =
+            osc::CalcCubemapViewProjMatrices(projectionMatrix, m_LightPos);
 
         // pass data to material
         m_ShadowMappingMaterial.setMat4Array("uShadowMatrices", shadowMatrices);

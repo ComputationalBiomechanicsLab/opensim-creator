@@ -10,11 +10,13 @@
 #include "oscar/Graphics/Texture2D.hpp"
 #include "oscar/Maths/RayCollision.hpp"
 
+#include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <nonstd/span.hpp>
 
+#include <array>
 #include <filesystem>
 #include <functional>
 #include <optional>
@@ -187,5 +189,13 @@ namespace osc
         PolarPerspectiveCamera const&,
         AntiAliasingLevel,
         glm::vec2 renderDims
+    );
+
+    // returns arrays that transforms cube faces from worldspace to projection
+    // space such that the observer is looking at each face of the cube from
+    // the center of the cube
+    std::array<glm::mat4, 6> CalcCubemapViewProjMatrices(
+        glm::mat4 const& projectionMatrix,
+        glm::vec3 cubeCenter
     );
 }
