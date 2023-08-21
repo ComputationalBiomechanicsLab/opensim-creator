@@ -166,6 +166,24 @@ namespace osc
         };
     }
 
+    // returns the normalized (0.0 - 1.0) floating-point equivalent of the
+    // given 8-bit (0 - 255) color channel value
+    constexpr float ToFloatingPointColorChannel(uint8_t channelValue) noexcept
+    {
+        return (1.0f/255.0f) * static_cast<float>(channelValue);
+    }
+
+    // returns the 8-bit (0 - 255) equivalent of the given normalized (0.0 - 1.0)
+    // floating-point color channel value
+    //
+    // input values that fall outside of the 0.0 - 1.0 range are clamped to that range
+    constexpr uint8_t ToClamped8BitColorChannel(float channelValue) noexcept
+    {
+        channelValue = channelValue >= 0.0f ? channelValue : 0.0f;
+        channelValue = channelValue <= 1.0f ? channelValue : 1.0f;
+        return static_cast<uint8_t>(255.0f * channelValue);
+    }
+
     // returns the linear version of one (presumed to be) sRGB color channel value
     float ToLinear(float colorChannelValue) noexcept;
 

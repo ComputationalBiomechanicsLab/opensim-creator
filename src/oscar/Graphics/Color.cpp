@@ -83,10 +83,10 @@ osc::Color32 osc::ToColor32(glm::vec4 const& v) noexcept
 {
     return Color32
     {
-        static_cast<uint8_t>(255.0f * v.r),
-        static_cast<uint8_t>(255.0f * v.g),
-        static_cast<uint8_t>(255.0f * v.b),
-        static_cast<uint8_t>(255.0f * v.a),
+        ToClamped8BitColorChannel(v.r),
+        ToClamped8BitColorChannel(v.g),
+        ToClamped8BitColorChannel(v.b),
+        ToClamped8BitColorChannel(v.a),
     };
 }
 
@@ -94,14 +94,14 @@ osc::Color32 osc::ToColor32(float r, float g, float b, float a) noexcept
 {
     return Color32
     {
-        static_cast<uint8_t>(255.0f * r),
-        static_cast<uint8_t>(255.0f * g),
-        static_cast<uint8_t>(255.0f * b),
-        static_cast<uint8_t>(255.0f * a),
+        ToClamped8BitColorChannel(r),
+        ToClamped8BitColorChannel(g),
+        ToClamped8BitColorChannel(b),
+        ToClamped8BitColorChannel(a),
     };
 }
 
-osc::Color32 osc::ToColor32(std::uint32_t v) noexcept
+osc::Color32 osc::ToColor32(uint32_t v) noexcept
 {
     return Color32
     {

@@ -1356,7 +1356,7 @@ namespace
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
                     size_t const channelStart = pixelStart + channel;
-                    color[channel] = static_cast<float>(pixelData[channelStart]) / 255.0f;
+                    color[channel] = osc::ToFloatingPointColorChannel(pixelData[channelStart]);
                 }
                 rv.push_back(color);
             }
@@ -1440,12 +1440,7 @@ namespace
                         pixelData.begin() + channelStart + sizeof(float),
                         reinterpret_cast<uint8_t*>(&channelFloat)
                     );
-
-                    // clamp HDR values: cannot be represented in 8-bit and tonemapping is
-                    // a bad idea here
-                    channelFloat = glm::clamp(channelFloat, 0.0f, 1.0f);
-
-                    color[channel] = static_cast<uint8_t>(255.0f * channelFloat);
+                    color[channel] = osc::ToClamped8BitColorChannel(channelFloat);
                 }
                 rv.push_back(color);
             }
@@ -1479,8 +1474,7 @@ namespace
             {
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
-                    auto const v = static_cast<uint8_t>(255.0f * glm::clamp(pixel[channel], 0.0f, 1.0f));
-                    pixelData.push_back(v);
+                    pixelData.push_back(osc::ToClamped8BitColorChannel(pixel[channel]));
                 }
             }
         }
@@ -1537,7 +1531,7 @@ namespace
             {
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
-                    float const pixelFloatVal = static_cast<float>(pixel[channel]) / 255.0f;
+                    float const pixelFloatVal = osc::ToFloatingPointColorChannel(pixel[channel]);
                     pixelData.insert(
                         pixelData.end(),
                         reinterpret_cast<uint8_t const*>(&pixelFloatVal),

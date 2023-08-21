@@ -908,7 +908,11 @@ namespace
         std::array<uint8_t, 256> rv{};
         for (size_t i = 0; i < 256; ++i)
         {
-            rv[i] = static_cast<uint8_t>(255.0f*osc::ToLinear(static_cast<float>(i)/255.0f));
+            uint8_t const ldrColor = static_cast<uint8_t>(i);
+            float const hdrColor = osc::ToFloatingPointColorChannel(ldrColor);
+            float const linearHdrColor = osc::ToLinear(hdrColor);
+            uint8_t const linearLdrColor = osc::ToClamped8BitColorChannel(linearHdrColor);
+            rv[i] = linearLdrColor;
         }
         return rv;
     }
