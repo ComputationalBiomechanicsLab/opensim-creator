@@ -2905,7 +2905,7 @@ public:
 private:
     void parseUniformsAndAttributesFromProgram()
     {
-        constexpr GLsizei maxNameLen = 128;
+        constexpr GLsizei c_ShaderMaxNameLength = 128;
 
         GLint numAttrs = 0;
         glGetProgramiv(m_Program.get(), GL_ACTIVE_ATTRIBUTES, &numAttrs);
@@ -2918,12 +2918,12 @@ private:
         {
             GLint size = 0; // size of the variable
             GLenum type = 0; // type of the variable (float, vec3 or mat4, etc)
-            std::array<GLchar, maxNameLen> name{}; // variable name in GLSL
+            std::array<GLchar, c_ShaderMaxNameLength> name{}; // variable name in GLSL
             GLsizei length = 0; // name length
             glGetActiveAttrib(
                 m_Program.get() ,
                 static_cast<GLuint>(i),
-                maxNameLen,
+                static_cast<GLsizei>(name.size()),
                 &length,
                 &size,
                 &type,
@@ -2945,12 +2945,12 @@ private:
         {
             GLint size = 0; // size of the variable
             GLenum type = 0; // type of the variable (float, vec3 or mat4, etc)
-            std::array<GLchar, maxNameLen> name{}; // variable name in GLSL
+            std::array<GLchar, c_ShaderMaxNameLength> name{}; // variable name in GLSL
             GLsizei length = 0; // name length
             glGetActiveUniform(
                 m_Program.get(),
                 static_cast<GLuint>(i),
-                maxNameLen,
+                static_cast<GLsizei>(name.size()),
                 &length,
                 &size,
                 &type,
