@@ -2931,9 +2931,8 @@ private:
             );
 
             static_assert(sizeof(GLint) <= sizeof(int32_t));
-            std::string const elName = NormalizeShaderElementName(name.data());
-            m_Attributes.try_emplace(
-                elName,
+            m_Attributes.try_emplace<std::string>(
+                NormalizeShaderElementName(name.data()),
                 static_cast<int32_t>(glGetAttribLocation(m_Program.get(), name.data())),
                 GLShaderTypeToShaderTypeInternal(type),
                 static_cast<int32_t>(size)
@@ -2958,9 +2957,8 @@ private:
             );
 
             static_assert(sizeof(GLint) <= sizeof(int32_t));
-            std::string const elName = NormalizeShaderElementName(name.data());
-            m_Uniforms.try_emplace(
-                elName,
+            m_Uniforms.try_emplace<std::string>(
+                NormalizeShaderElementName(name.data()),
                 static_cast<int32_t>(glGetUniformLocation(m_Program.get(), name.data())),
                 GLShaderTypeToShaderTypeInternal(type),
                 static_cast<int32_t>(size)
