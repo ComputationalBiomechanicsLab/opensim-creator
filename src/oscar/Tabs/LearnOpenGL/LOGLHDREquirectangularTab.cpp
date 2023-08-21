@@ -147,6 +147,7 @@ namespace
         osc::Graphics::DrawMesh(osc::GenCube(), osc::Transform{}, material, camera);
         camera.renderTo(irradianceCubemap);
 
+        // TODO: some way of copying it into an `osc::Cubemap` would make sense
         return irradianceCubemap;
     }
 
