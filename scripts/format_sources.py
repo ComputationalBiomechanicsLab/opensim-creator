@@ -82,11 +82,17 @@ def ensure_all_files_have_trailing_newline(dirpath):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("dirpath")
+    p.add_argument(
+        "dirpaths",
+        help="directories containing files to recursively reformat",
+        nargs="+"
+    )
     parsed = p.parse_args()
-    ensure_all_files_have_trailing_newline(parsed.dirpath)
-    strip_whitespace_for_all_files_in(parsed.dirpath)
-    replace_leading_tabs_with_spaces_in(parsed.dirpath)
+
+    for p in parsed.dirpaths:
+        ensure_all_files_have_trailing_newline(p)
+        strip_whitespace_for_all_files_in(p)
+        replace_leading_tabs_with_spaces_in(p)
 
 if __name__ == '__main__':
     main()
