@@ -88,11 +88,6 @@ TEST(AntiAliasingLevel, MinReturns1X)
     static_assert(osc::AntiAliasingLevel::min() == osc::AntiAliasingLevel{1});
 }
 
-TEST(AntiAliasingLevel, MaxReturnsGreaterThan32X)
-{
-    static_assert(osc::AntiAliasingLevel::max() > osc::AntiAliasingLevel{32});
-}
-
 TEST(AntiAliasingLevel, NoneReturns1X)
 {
     static_assert(osc::AntiAliasingLevel::none() == osc::AntiAliasingLevel{1});

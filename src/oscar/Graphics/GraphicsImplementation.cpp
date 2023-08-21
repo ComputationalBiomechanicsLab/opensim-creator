@@ -5082,9 +5082,6 @@ namespace
     {
         GLint v = 1;
         glGetIntegerv(GL_MAX_SAMPLES, &v);
-
-        OSC_ASSERT_ALWAYS(v < osc::AntiAliasingLevel::max().getI32() && "number of samples is greater than the maximum supported by the application");
-
         return osc::AntiAliasingLevel{v};
     }
 

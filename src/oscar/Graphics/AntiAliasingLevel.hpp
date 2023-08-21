@@ -15,11 +15,6 @@ namespace osc
             return AntiAliasingLevel{1};
         }
 
-        static constexpr AntiAliasingLevel max() noexcept
-        {
-            return AntiAliasingLevel{128};
-        }
-
         static constexpr AntiAliasingLevel none() noexcept
         {
             return AntiAliasingLevel{1};
