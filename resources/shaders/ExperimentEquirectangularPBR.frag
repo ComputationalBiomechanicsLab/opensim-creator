@@ -7,6 +7,7 @@ uniform float uAO;
 uniform vec3 uLightPositions[4];
 uniform vec3 uLightColors[4];
 uniform vec3 uCameraWorldPos;
+uniform samplerCube uIrradianceMap;
 
 in vec2 TexCoord;
 in vec3 WorldPos;
@@ -104,9 +105,12 @@ void main()
         Lo += (kD * uAlbedoColor / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
     }
 
-    // ambient lighting (note that the next IBL tutorial will replace
-    // this ambient lighting with environment lighting).
-    vec3 ambient = vec3(0.03) * uAlbedoColor * uAO;
+    vec3 kS = fresnelSchlick(max(dot(N, V), 0.0), F0);
+    vec3 kD = 1.0 - kS;
+    kD *= 1.0 - uMetallicity;
+    vec3 irradiance = texture(uIrradianceMap, N).rgb;
+    vec3 diffuse    = irradiance * uAlbedoColor;
+    vec3 ambient = (kD *  diffuse) * uAO;
 
     vec3 color = ambient + Lo;
 

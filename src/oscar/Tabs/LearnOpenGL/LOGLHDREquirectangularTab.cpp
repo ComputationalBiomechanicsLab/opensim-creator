@@ -105,12 +105,49 @@ namespace
         );
 
         osc::Camera camera;
-        camera.setBackgroundColor(osc::Color::red());
         osc::Graphics::DrawMesh(osc::GenCube(), osc::Transform{}, material, camera);
         camera.renderTo(cubemapRenderTarget);
 
         // TODO: some way of copying it into an `osc::Cubemap` would make sense
         return cubemapRenderTarget;
+    }
+
+    osc::RenderTexture CreateIrradianceCubemap(osc::RenderTexture const& skybox)
+    {
+        osc::RenderTexture irradianceCubemap{{32, 32}};
+        irradianceCubemap.setDimensionality(osc::TextureDimensionality::Cube);
+        irradianceCubemap.setColorFormat(osc::RenderTextureFormat::ARGBFloat16);
+
+        glm::mat4 const captureProjection = glm::perspective(
+            glm::radians(90.0f),
+            1.0f,
+            0.1f,
+            10.0f
+        );
+
+        osc::Material material
+        {
+            osc::Shader
+            {
+                osc::App::slurp("shaders/ExperimentEquirectangularConvolution.vert"),
+                osc::App::slurp("shaders/ExperimentEquirectangularConvolution.geom"),
+                osc::App::slurp("shaders/ExperimentEquirectangularConvolution.frag"),
+            }
+        };
+        material.setRenderTexture(
+            "uEnvironmentMap",
+            skybox
+        );
+        material.setMat4Array(
+            "uShadowMatrices",
+            osc::CalcCubemapViewProjMatrices(captureProjection, glm::vec3{})
+        );
+
+        osc::Camera camera;
+        osc::Graphics::DrawMesh(osc::GenCube(), osc::Transform{}, material, camera);
+        camera.renderTo(irradianceCubemap);
+
+        return irradianceCubemap;
     }
 
     osc::Material CreateMaterial()
@@ -202,6 +239,7 @@ private:
         m_PBRMaterial.setVec3("uCameraWorldPos", m_Camera.getPosition());
         m_PBRMaterial.setVec3Array("uLightPositions", c_LightPositions);
         m_PBRMaterial.setVec3Array("uLightColors", c_LightRadiances);
+        m_PBRMaterial.setRenderTexture("uIrradianceMap", m_IrradianceMap);
 
         drawSpheres();
         drawLights();
@@ -267,6 +305,7 @@ private:
     );
 
     RenderTexture m_ProjectedMap = LoadEquirectangularHDRTextureIntoCubemap();
+    RenderTexture m_IrradianceMap = CreateIrradianceCubemap(m_ProjectedMap);
 
     Material m_BackgroundMaterial
     {
