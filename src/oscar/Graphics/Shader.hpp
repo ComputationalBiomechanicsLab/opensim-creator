@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <iosfwd>
 #include <optional>
-#include <string>
+#include <string_view>
 
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
@@ -34,8 +34,8 @@ namespace osc
         ~Shader() noexcept;
 
         size_t getPropertyCount() const;
-        std::optional<ptrdiff_t> findPropertyIndex(std::string const& propertyName) const;
-        std::string const& getPropertyName(ptrdiff_t) const;
+        std::optional<ptrdiff_t> findPropertyIndex(std::string_view propertyName) const;
+        std::string_view getPropertyName(ptrdiff_t) const;
         ShaderType getPropertyType(ptrdiff_t) const;
 
         friend void swap(Shader& a, Shader& b) noexcept

@@ -491,8 +491,20 @@ namespace
         o << "ShadeElement(name = " << name << ", location = " << se.location << ", shaderType = " << se.shaderType << ", size = " << se.size << ')';
     }
 
-    template<typename Key>
-    ShaderElement const* TryGetValue(ankerl::unordered_dense::map<std::string, ShaderElement> const& m, Key const& k)
+    // see: ankerl/unordered_dense documentation for heterogeneous lookups
+    struct transparent_string_hash final {
+        using is_transparent = void;
+        using is_avalanching = void;
+
+        [[nodiscard]] auto operator()(std::string_view str) const noexcept -> uint64_t {
+            return ankerl::unordered_dense::hash<std::string_view>{}(str);
+        }
+    };
+
+    template<typename Value>
+    using FastStringHashtable = ankerl::unordered_dense::map<std::string, Value, transparent_string_hash, std::equal_to<>>;
+
+    ShaderElement const* TryGetValue(FastStringHashtable<ShaderElement> const& m, std::string_view k)
     {
         auto const it = m.find(k);
         return it != m.end() ? &it->second : nullptr;
@@ -2845,7 +2857,7 @@ public:
         return m_Uniforms.size();
     }
 
-    std::optional<ptrdiff_t> findPropertyIndex(std::string const& propertyName) const
+    std::optional<ptrdiff_t> findPropertyIndex(std::string_view propertyName) const
     {
         auto const it = m_Uniforms.find(propertyName);
 
@@ -2859,7 +2871,7 @@ public:
         }
     }
 
-    std::string const& getPropertyName(ptrdiff_t i) const
+    std::string_view getPropertyName(ptrdiff_t i) const
     {
         auto it = m_Uniforms.begin();
         std::advance(it, i);
@@ -2880,12 +2892,12 @@ public:
         return m_Program;
     }
 
-    ankerl::unordered_dense::map<std::string, ShaderElement> const& getUniforms() const
+    FastStringHashtable<ShaderElement> const& getUniforms() const
     {
         return m_Uniforms;
     }
 
-    ankerl::unordered_dense::map<std::string, ShaderElement> const& getAttributes() const
+    FastStringHashtable<ShaderElement> const& getAttributes() const
     {
         return m_Attributes;
     }
@@ -2990,8 +3002,8 @@ private:
 
     UID m_UID;
     gl::Program m_Program;
-    ankerl::unordered_dense::map<std::string, ShaderElement> m_Uniforms;
-    ankerl::unordered_dense::map<std::string, ShaderElement> m_Attributes;
+    FastStringHashtable<ShaderElement> m_Uniforms;
+    FastStringHashtable<ShaderElement> m_Attributes;
     std::optional<ShaderElement> m_MaybeModelMatUniform;
     std::optional<ShaderElement> m_MaybeNormalMatUniform;
     std::optional<ShaderElement> m_MaybeViewMatUniform;
@@ -3028,12 +3040,12 @@ size_t osc::Shader::getPropertyCount() const
     return m_Impl->getPropertyCount();
 }
 
-std::optional<ptrdiff_t> osc::Shader::findPropertyIndex(std::string const& propertyName) const
+std::optional<ptrdiff_t> osc::Shader::findPropertyIndex(std::string_view propertyName) const
 {
     return m_Impl->findPropertyIndex(propertyName);
 }
 
-std::string const& osc::Shader::getPropertyName(ptrdiff_t propertyIndex) const
+std::string_view osc::Shader::getPropertyName(ptrdiff_t propertyIndex) const
 {
     return m_Impl->getPropertyName(propertyIndex);
 }
@@ -3254,7 +3266,7 @@ public:
 
     void clearTexture(std::string_view propertyName)
     {
-        m_Values.erase(std::string{propertyName});
+        m_Values.erase(propertyName);
     }
 
     std::optional<RenderTexture> getRenderTexture(std::string_view propertyName) const
@@ -3269,7 +3281,7 @@ public:
 
     void clearRenderTexture(std::string_view propertyName)
     {
-        m_Values.erase(std::string{propertyName});
+        m_Values.erase(propertyName);
     }
 
     std::optional<Cubemap> getCubemap(std::string_view propertyName) const
@@ -3284,7 +3296,7 @@ public:
 
     void clearCubemap(std::string_view propertyName)
     {
-        m_Values.erase(std::string{propertyName});
+        m_Values.erase(propertyName);
     }
 
     bool getTransparent() const
@@ -3331,7 +3343,7 @@ private:
     template<typename T, typename TConverted = T>
     std::optional<TConverted> getValue(std::string_view propertyName) const
     {
-        auto const it = m_Values.find(std::string{propertyName});
+        auto const it = m_Values.find(propertyName);
 
         if (it == m_Values.end())
         {
@@ -3349,13 +3361,13 @@ private:
     template<typename T>
     void setValue(std::string_view propertyName, T&& v)
     {
-        m_Values.insert_or_assign(std::string{propertyName}, std::forward<T>(v));
+        m_Values.insert_or_assign(propertyName, std::forward<T>(v));
     }
 
     friend class GraphicsBackend;
 
     Shader m_Shader;
-    ankerl::unordered_dense::map<std::string, MaterialValue> m_Values;
+    FastStringHashtable<MaterialValue> m_Values;
     bool m_IsTransparent = false;
     bool m_IsDepthTested = true;
     bool m_IsWireframeMode = false;
@@ -3716,7 +3728,7 @@ private:
     template<typename T>
     std::optional<T> getValue(std::string_view propertyName) const
     {
-        auto const it = m_Values.find(std::string{propertyName});
+        auto const it = m_Values.find(propertyName);
 
         if (it == m_Values.end())
         {
@@ -3734,12 +3746,12 @@ private:
     template<typename T>
     void setValue(std::string_view propertyName, T&& v)
     {
-        m_Values.insert_or_assign(std::string{propertyName}, std::forward<T>(v));
+        m_Values.insert_or_assign(propertyName, std::forward<T>(v));
     }
 
     friend class GraphicsBackend;
 
-    ankerl::unordered_dense::map<std::string, MaterialValue> m_Values;
+    FastStringHashtable<MaterialValue> m_Values;
 };
 
 osc::MaterialPropertyBlock::MaterialPropertyBlock()
@@ -5889,7 +5901,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
 
     Material::Impl const& matImpl = *els.front().material.m_Impl;
     Shader::Impl const& shaderImpl = *matImpl.m_Shader.m_Impl;
-    ankerl::unordered_dense::map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
+    FastStringHashtable<ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
     // bind property block variables (if applicable)
     if (els.front().maybePropBlock)
@@ -6156,7 +6168,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
 
     auto& matImpl = const_cast<Material::Impl&>(*els.front().material.m_Impl);
     auto& shaderImpl = const_cast<Shader::Impl&>(*matImpl.m_Shader.m_Impl);
-    ankerl::unordered_dense::map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
+    FastStringHashtable<ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
     // preemptively upload instance data
     std::optional<InstancingState> maybeInstances = UploadInstanceData(els, shaderImpl);

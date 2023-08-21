@@ -11,7 +11,7 @@ TEST(popcount, ReturnsExpectedResults)
     static_assert(osc::popcount(0b00011101u) == 4);
 }
 
-TEST(countr_zero, ReturnsExpectedResults)
+TEST(countrzero, ReturnsExpectedResults)
 {
     static_assert(osc::countr_zero(static_cast<uint8_t>(0b00000000u)) == 8);
     static_assert(osc::countr_zero(0b11111111u) == 0);
@@ -19,7 +19,7 @@ TEST(countr_zero, ReturnsExpectedResults)
     static_assert(osc::countr_zero(0b00011101u) == 0);
 }
 
-TEST(bit_width, ReturnsExpectedResults)
+TEST(bitwidth, ReturnsExpectedResults)
 {
     static_assert(osc::bit_width(0b0000u) == 0);
     static_assert(osc::bit_width(0b0001u) == 1);

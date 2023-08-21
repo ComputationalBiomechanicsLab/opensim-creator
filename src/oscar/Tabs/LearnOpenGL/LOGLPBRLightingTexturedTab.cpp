@@ -196,8 +196,8 @@ private:
                 Transform t;
                 t.position =
                 {
-                    static_cast<float>(col - (c_NumCols / 2)) * c_CellSpacing,
-                    static_cast<float>(row - (c_NumRows / 2)) * c_CellSpacing,
+                    (static_cast<float>(col) - static_cast<float>(c_NumCols)/2.0f) * c_CellSpacing,
+                    (static_cast<float>(row) - static_cast<float>(c_NumRows)/2.0f) * c_CellSpacing,
                     0.0f,
                 };
 

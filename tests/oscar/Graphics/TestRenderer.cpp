@@ -616,7 +616,7 @@ TEST_F(Renderer, ShaderIteratingOverPropertyIndicesForNameReturnsValidPropertyNa
 
     for (size_t i = 0, len = s.getPropertyCount(); i < len; ++i)
     {
-        returnedPropNames.insert(s.getPropertyName(i));
+        returnedPropNames.insert(std::string{s.getPropertyName(i)});
     }
 
     ASSERT_EQ(allPropNames, returnedPropNames);
@@ -628,7 +628,7 @@ TEST_F(Renderer, ShaderGetPropertyNameReturnsGivenPropertyName)
 
     for (auto const& propName : c_ExpectedPropertyNames)
     {
-        std::optional<size_t> idx = s.findPropertyIndex(std::string{propName});
+        std::optional<size_t> idx = s.findPropertyIndex(propName);
         ASSERT_TRUE(idx);
         ASSERT_EQ(s.getPropertyName(*idx), propName);
     }
