@@ -374,7 +374,7 @@ private:
                 *m_Parameters.getModelSharedPtr(),
                 m_Parameters.getRenderParams(),
                 Dimensions(m_State.viewportRect),
-                App::get().getMSXAASamplesRecommended()
+                App::get().getCurrentAntiAliasingLevel()
             );
             DrawTextureAsImGuiImage(
                 sceneTexture,

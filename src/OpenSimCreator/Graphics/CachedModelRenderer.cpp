@@ -128,7 +128,7 @@ public:
         VirtualConstModelStatePair const& modelState,
         ModelRendererParams const& renderParams,
         glm::vec2 dims,
-        AntiAliasingLevel samples)
+        AntiAliasingLevel antiAliasingLevel)
     {
         OSC_PERF("CachedModelRenderer/onDraw");
 
@@ -136,7 +136,7 @@ public:
         SceneRendererParams const rendererParameters = CalcSceneRendererParams(
             renderParams,
             dims,
-            samples,
+            antiAliasingLevel,
             modelState.getFixupScaleFactor()
         );
 
@@ -206,13 +206,13 @@ osc::RenderTexture& osc::CachedModelRenderer::onDraw(
     VirtualConstModelStatePair const& modelState,
     ModelRendererParams const& renderParams,
     glm::vec2 dims,
-    AntiAliasingLevel samples)
+    AntiAliasingLevel antiAliasingLevel)
 {
     return m_Impl->onDraw(
         modelState,
         renderParams,
         dims,
-        samples
+        antiAliasingLevel
     );
 }
 

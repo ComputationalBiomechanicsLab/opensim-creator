@@ -21,7 +21,7 @@ namespace osc
 
         void registerTab(TabRegistryEntry const&);
         size_t size() const;
-        TabRegistryEntry operator[](size_t i) const;
+        TabRegistryEntry operator[](size_t) const;
         std::optional<TabRegistryEntry> getByName(std::string_view) const;
 
     private:

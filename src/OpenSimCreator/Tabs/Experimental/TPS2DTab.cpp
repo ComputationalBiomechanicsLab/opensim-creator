@@ -423,7 +423,7 @@ private:
     void renderMesh(Mesh const& mesh, glm::ivec2 dims, std::optional<RenderTexture>& out)
     {
         RenderTextureDescriptor desc{dims};
-        desc.setAntialiasingLevel(App::get().getMSXAASamplesRecommended());
+        desc.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
         out.emplace(desc);
         osc::Graphics::DrawMesh(mesh, osc::Transform{}, m_Material, m_Camera);
         osc::Graphics::DrawMesh(mesh, osc::Transform{}, m_WireframeMaterial, m_Camera);

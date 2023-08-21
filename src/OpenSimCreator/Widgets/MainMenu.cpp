@@ -260,8 +260,8 @@ void osc::MainMenuAboutTab::onDraw()
         DrawHelpMarker("the level of MultiSample Anti-Aliasing to use. This only affects 3D renders *within* the UI, not the whole UI (panels etc. will not be affected)");
         ImGui::NextColumn();
         {
-            AntiAliasingLevel const current = App::get().getMSXAASamplesRecommended();
-            AntiAliasingLevel const max = App::get().getMSXAASamplesMax();
+            AntiAliasingLevel const current = App::get().getCurrentAntiAliasingLevel();
+            AntiAliasingLevel const max = App::get().getMaxAntiAliasingLevel();
 
             if (ImGui::BeginCombo("##msxaa", to_string(current).c_str()))
             {
@@ -270,7 +270,7 @@ void osc::MainMenuAboutTab::onDraw()
                     bool selected = l == current;
                     if (ImGui::Selectable(to_string(l).c_str(), &selected))
                     {
-                        App::upd().setMSXAASamplesRecommended(l);
+                        App::upd().setCurrentAntiAliasingLevel(l);
                     }
                 }
                 ImGui::EndCombo();

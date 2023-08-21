@@ -67,7 +67,7 @@ namespace
         rv.reserve(numSamples);
         for (size_t i = 0; i < numSamples; ++i)
         {
-            // scale samples such that they are more aligned to
+            // scale antiAliasingLevel such that they are more aligned to
             // the center of the kernel
             float scale = static_cast<float>(i)/numSamples;
             scale = glm::mix(0.1f, 1.0f, scale*scale);
@@ -251,14 +251,14 @@ private:
     {
         Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
         glm::vec2 const viewportDims = Dimensions(viewportRect);
-        AntiAliasingLevel const samples = AntiAliasingLevel::none();
+        AntiAliasingLevel const antiAliasingLevel = AntiAliasingLevel::none();
 
         // ensure textures/buffers have correct dimensions
         {
-            m_GBuffer.reformat(viewportDims, samples);
-            m_SSAO.reformat(viewportDims, samples);
-            m_Blur.reformat(viewportDims, samples);
-            m_Lighting.reformat(viewportDims, samples);
+            m_GBuffer.reformat(viewportDims, antiAliasingLevel);
+            m_SSAO.reformat(viewportDims, antiAliasingLevel);
+            m_Blur.reformat(viewportDims, antiAliasingLevel);
+            m_Lighting.reformat(viewportDims, antiAliasingLevel);
         }
 
         renderGeometryPassToGBuffers();
@@ -429,10 +429,10 @@ private:
             },
         };
 
-        void reformat(glm::vec2 dims, AntiAliasingLevel samples)
+        void reformat(glm::vec2 dims, AntiAliasingLevel antiAliasingLevel)
         {
             RenderTextureDescriptor desc{dims};
-            desc.setAntialiasingLevel(samples);
+            desc.setAntialiasingLevel(antiAliasingLevel);
 
             for (RenderTexture* tex : {&albedo, &normal, &position})
             {
@@ -446,10 +446,10 @@ private:
         Material material = LoadSSAOMaterial();
         RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::Red8);
 
-        void reformat(glm::vec2 dims, AntiAliasingLevel samples)
+        void reformat(glm::vec2 dims, AntiAliasingLevel antiAliasingLevel)
         {
             outputTexture.setDimensions(dims);
-            outputTexture.setAntialiasingLevel(samples);
+            outputTexture.setAntialiasingLevel(antiAliasingLevel);
         }
     } m_SSAO;
 
@@ -457,10 +457,10 @@ private:
         Material material = LoadBlurMaterial();
         RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::Red8);
 
-        void reformat(glm::vec2 dims, AntiAliasingLevel samples)
+        void reformat(glm::vec2 dims, AntiAliasingLevel antiAliasingLevel)
         {
             outputTexture.setDimensions(dims);
-            outputTexture.setAntialiasingLevel(samples);
+            outputTexture.setAntialiasingLevel(antiAliasingLevel);
         }
     } m_Blur;
 
@@ -468,10 +468,10 @@ private:
         Material material = LoadLightingMaterial();
         RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::ARGB32);
 
-        void reformat(glm::vec2 dims, AntiAliasingLevel samples)
+        void reformat(glm::vec2 dims, AntiAliasingLevel antiAliasingLevel)
         {
             outputTexture.setDimensions(dims);
-            outputTexture.setAntialiasingLevel(samples);
+            outputTexture.setAntialiasingLevel(antiAliasingLevel);
         }
     } m_Lighting;
 

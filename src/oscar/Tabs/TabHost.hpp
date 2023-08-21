@@ -25,7 +25,7 @@ namespace osc
             return addTab(std::make_unique<T>(std::forward<Args>(args)...));
         }
 
-        UID addTab(std::unique_ptr<Tab> tab);
+        UID addTab(std::unique_ptr<Tab>);
         void selectTab(UID);
         void closeTab(UID);
         void resetImgui();

@@ -47,7 +47,7 @@ namespace osc
             VirtualConstModelStatePair const&,
             ModelRendererParams const&,
             glm::vec2 dims,
-            AntiAliasingLevel samples
+            AntiAliasingLevel antiAliasingLevel
         );
         RenderTexture& updRenderTexture();
 

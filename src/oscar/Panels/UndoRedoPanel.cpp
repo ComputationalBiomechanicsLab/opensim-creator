@@ -13,10 +13,10 @@
 class osc::UndoRedoPanel::Impl final : public osc::StandardPanel {
 public:
     Impl(
-        std::string_view panelName_,
+        std::string_view panelName,
         std::shared_ptr<UndoRedo> storage_) :
 
-        StandardPanel{panelName_},
+        StandardPanel{panelName},
         m_Storage{std::move(storage_)}
     {
     }

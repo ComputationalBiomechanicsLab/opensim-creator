@@ -32,7 +32,7 @@ namespace osc
         // returns true if the implementation should allow multiple viewports
         bool isMultiViewportEnabled() const;
 
-        // get number of MSXAA samples 3D viewports should use
+        // get number of MSXAA antiAliasingLevel 3D viewports should use
         AntiAliasingLevel getNumMSXAASamples() const;
 
         // get if a given UI panel is enabled or not

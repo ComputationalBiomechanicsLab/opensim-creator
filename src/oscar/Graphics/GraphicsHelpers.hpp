@@ -55,9 +55,9 @@ namespace osc
         std::function<void(SceneDecoration&&)> const&
     );
 
-    void DrawAABBs(
+    void DrawBVHLeafNodes(
         MeshCache&,
-        BVH const& drawLeafNodesOfThis,
+        BVH const&,
         std::function<void(SceneDecoration&&)> const&
     );
 
@@ -101,7 +101,7 @@ namespace osc
     void DrawLineSegment(
         MeshCache&,
         Segment const&,
-        Color const& color,
+        Color const&,
         float radius,
         std::function<void(SceneDecoration&&)> const&
     );
@@ -115,7 +115,7 @@ namespace osc
     // returns all collisions along a ray
     std::vector<SceneCollision> GetAllSceneCollisions(
         BVH const& sceneBVH,
-        nonstd::span<SceneDecoration const> sceneDecorations,
+        nonstd::span<SceneDecoration const>,
         Line const& worldspaceRay
     );
 

@@ -26,7 +26,7 @@ namespace osc
         ~SceneRenderer() noexcept;
 
         glm::ivec2 getDimensions() const;
-        AntiAliasingLevel getSamples() const;
+        AntiAliasingLevel getAntiAliasingLevel() const;
         void render(nonstd::span<SceneDecoration const>, SceneRendererParams const&);
         RenderTexture& updRenderTexture();
 

@@ -185,7 +185,7 @@ private:
     void reformatAllTextures(Rect const& viewportRect)
     {
         glm::vec2 const viewportDims = Dimensions(viewportRect);
-        AntiAliasingLevel const msxaaSamples = App::get().getMSXAASamplesRecommended();
+        AntiAliasingLevel const msxaaSamples = App::get().getCurrentAntiAliasingLevel();
 
         RenderTextureDescriptor textureDescription{viewportDims};
         textureDescription.setAntialiasingLevel(msxaaSamples);

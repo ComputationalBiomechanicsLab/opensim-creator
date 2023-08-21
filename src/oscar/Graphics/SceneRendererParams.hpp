@@ -29,7 +29,7 @@ namespace osc
         SceneRendererParams();
 
         glm::ivec2 dimensions;
-        AntiAliasingLevel samples;
+        AntiAliasingLevel antiAliasingLevel;
         bool drawMeshNormals;
         bool drawRims;
         bool drawShadows;

@@ -65,7 +65,7 @@ public:
             rs,
             m_Params,
             ImGui::GetContentRegionAvail(),
-            App::get().getMSXAASamplesRecommended()
+            App::get().getCurrentAntiAliasingLevel()
         );
 
         // blit texture as an ImGui::Image

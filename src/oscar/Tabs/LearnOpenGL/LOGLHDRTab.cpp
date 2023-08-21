@@ -172,7 +172,7 @@ private:
         {
             Rect const viewportRect = osc::GetMainViewportWorkspaceScreenRect();
             RenderTextureDescriptor descriptor{Dimensions(viewportRect)};
-            descriptor.setAntialiasingLevel(App::get().getMSXAASamplesRecommended());
+            descriptor.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
             if (m_Use16BitFormat)
             {
                 descriptor.setColorFormat(RenderTextureFormat::ARGBFloat16);

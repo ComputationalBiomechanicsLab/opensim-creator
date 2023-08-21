@@ -8,13 +8,16 @@
 #include <string_view>
 #include <utility>
 
-osc::StandardPanel::StandardPanel(std::string_view name) :
-    StandardPanel{name, ImGuiWindowFlags_None}
+osc::StandardPanel::StandardPanel(std::string_view panelName) :
+    StandardPanel{panelName, ImGuiWindowFlags_None}
 {
 }
 
-osc::StandardPanel::StandardPanel(std::string_view name, ImGuiWindowFlags imGuiWindowFlags) :
-    m_PanelName{name},
+osc::StandardPanel::StandardPanel(
+    std::string_view panelName,
+    ImGuiWindowFlags imGuiWindowFlags) :
+
+    m_PanelName{panelName},
     m_PanelFlags{imGuiWindowFlags}
 {
 }

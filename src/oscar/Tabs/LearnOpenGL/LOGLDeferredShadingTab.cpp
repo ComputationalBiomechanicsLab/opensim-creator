@@ -168,10 +168,10 @@ namespace
             },
         };
 
-        void reformat(glm::vec2 dims, osc::AntiAliasingLevel samples)
+        void reformat(glm::vec2 dims, osc::AntiAliasingLevel antiAliasingLevel)
         {
             osc::RenderTextureDescriptor desc{dims};
-            desc.setAntialiasingLevel(samples);
+            desc.setAntialiasingLevel(antiAliasingLevel);
 
             for (osc::RenderTexture* tex : {&albedo, &normal, &position})
             {
@@ -253,13 +253,13 @@ private:
     {
         Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
         glm::vec2 const viewportDims = Dimensions(viewportRect);
-        AntiAliasingLevel const samples = App::get().getMSXAASamplesRecommended();
+        AntiAliasingLevel const antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
 
         // ensure textures/buffers have correct dimensions
         {
-            m_GBuffer.reformat(viewportDims, samples);
+            m_GBuffer.reformat(viewportDims, antiAliasingLevel);
             m_OutputTexture.setDimensions(viewportDims);
-            m_OutputTexture.setAntialiasingLevel(samples);
+            m_OutputTexture.setAntialiasingLevel(antiAliasingLevel);
         }
 
         renderSceneToGBuffers();

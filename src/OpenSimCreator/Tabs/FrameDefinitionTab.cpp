@@ -1403,7 +1403,7 @@ namespace
             osc::SceneRendererParams const rendererParameters = osc::CalcSceneRendererParams(
                 m_State.renderParams,
                 osc::Dimensions(panelState.viewportRect),
-                osc::App::get().getMSXAASamplesRecommended(),
+                osc::App::get().getCurrentAntiAliasingLevel(),
                 m_State.model->getFixupScaleFactor()
             );
 

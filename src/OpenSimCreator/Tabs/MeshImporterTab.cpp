@@ -4443,7 +4443,7 @@ namespace
             // setup rendering params
             osc::SceneRendererParams p;
             p.dimensions = osc::Dimensions(Get3DSceneRect());
-            p.samples = osc::App::get().getMSXAASamplesRecommended();
+            p.antiAliasingLevel = osc::App::get().getCurrentAntiAliasingLevel();
             p.drawRims = true;
             p.drawFloor = false;
             p.nearClippingPlane = m_3DSceneCamera.znear;

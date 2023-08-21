@@ -53,10 +53,13 @@ namespace osc::Graphics
         BlitFlags = BlitFlags::None
     );
 
+    // assigns the source RenderTexture to the texture uniform "uTexture"
+    //
+    // (can be sampler2D or samplerCube, depending on the source RenderTexture)
     void BlitToScreen(
         RenderTexture const&,
         Rect const&,
-        Material const&,  // assigns the source RenderTexture to uniform "uTexture" (can be sampler2D or samplerCube depending on source)
+        Material const&,
         BlitFlags = BlitFlags::None
     );
 

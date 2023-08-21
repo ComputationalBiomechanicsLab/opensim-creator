@@ -22,7 +22,7 @@
 osc::SceneRendererParams osc::CalcSceneRendererParams(
     ModelRendererParams const& renderParams,
     glm::vec2 viewportDims,
-    AntiAliasingLevel samples,
+    AntiAliasingLevel antiAliasingLevel,
     float fixupScaleFactor)
 {
     SceneRendererParams params;
@@ -30,7 +30,7 @@ osc::SceneRendererParams osc::CalcSceneRendererParams(
     {
         params.dimensions = viewportDims;
     }
-    params.samples = samples;
+    params.antiAliasingLevel = antiAliasingLevel;
     params.lightDirection = RecommendedLightDirection(renderParams.camera);
     params.drawFloor = renderParams.renderingOptions.getDrawFloor();
     params.viewMatrix = renderParams.camera.getViewMtx();

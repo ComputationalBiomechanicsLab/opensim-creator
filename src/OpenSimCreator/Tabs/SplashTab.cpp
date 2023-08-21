@@ -177,7 +177,7 @@ private:
 
         SceneRendererParams params{m_LastSceneRendererParams};
         params.dimensions = Dimensions(screenRect);
-        params.samples = App::get().getMSXAASamplesRecommended();
+        params.antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
         params.projectionMatrix = m_Camera.getProjMtx(AspectRatio(screenRect));
 
         if (params != m_LastSceneRendererParams)

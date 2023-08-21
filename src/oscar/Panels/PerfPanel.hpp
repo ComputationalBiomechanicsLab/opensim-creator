@@ -10,7 +10,7 @@ namespace osc
 {
     class PerfPanel final : public Panel {
     public:
-        PerfPanel(std::string_view panelName);
+        explicit PerfPanel(std::string_view panelName);
         PerfPanel(PerfPanel const&) = delete;
         PerfPanel(PerfPanel&&) noexcept;
         PerfPanel& operator=(PerfPanel const&) = delete;

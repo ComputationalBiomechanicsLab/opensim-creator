@@ -2,7 +2,7 @@
 
 osc::SceneRendererParams::SceneRendererParams() :
     dimensions{1, 1},
-    samples{1},
+    antiAliasingLevel{AntiAliasingLevel::none()},
     drawMeshNormals{false},
     drawRims{true},
     drawShadows{true},
@@ -30,7 +30,7 @@ bool osc::operator==(SceneRendererParams const& a, SceneRendererParams const& b)
 {
     return
         a.dimensions == b.dimensions &&
-        a.samples == b.samples &&
+        a.antiAliasingLevel == b.antiAliasingLevel &&
         a.drawMeshNormals == b.drawMeshNormals &&
         a.drawRims == b.drawRims &&
         a.drawShadows == b.drawShadows &&

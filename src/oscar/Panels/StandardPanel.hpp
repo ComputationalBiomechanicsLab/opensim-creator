@@ -13,8 +13,8 @@ namespace osc
     // a "standard" implementation for a Panel
     class StandardPanel : public Panel {
     protected:
-        explicit StandardPanel(std::string_view name);
-        StandardPanel(std::string_view name, ImGuiWindowFlags);
+        explicit StandardPanel(std::string_view panelName);
+        StandardPanel(std::string_view panelName, ImGuiWindowFlags);
         StandardPanel(StandardPanel const&) = default;
         StandardPanel(StandardPanel&&) noexcept = default;
         StandardPanel& operator=(StandardPanel const&) = default;

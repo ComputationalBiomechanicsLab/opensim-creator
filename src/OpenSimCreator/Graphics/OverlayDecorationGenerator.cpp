@@ -14,7 +14,7 @@ void osc::GenerateOverlayDecorations(
 {
     if (params.getDrawAABBs())
     {
-        DrawAABBs(meshCache, sceneBVH, out);
+        DrawBVHLeafNodes(meshCache, sceneBVH, out);
     }
 
     if (params.getDrawBVH())

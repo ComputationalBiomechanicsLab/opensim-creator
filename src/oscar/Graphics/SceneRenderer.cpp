@@ -164,7 +164,7 @@ public:
         return m_OutputTexture.getDimensions();
     }
 
-    osc::AntiAliasingLevel getSamples() const
+    osc::AntiAliasingLevel getAntiAliasingLevel() const
     {
         return m_OutputTexture.getAntialiasingLevel();
     }
@@ -281,7 +281,7 @@ public:
         }
 
         m_OutputTexture.setDimensions(params.dimensions);
-        m_OutputTexture.setAntialiasingLevel(params.samples);
+        m_OutputTexture.setAntialiasingLevel(params.antiAliasingLevel);
         m_Camera.renderTo(m_OutputTexture);
 
         // prevents copies on next frame
@@ -390,7 +390,7 @@ private:
 
         // configure the off-screen solid-colored texture
         RenderTextureDescriptor desc{params.dimensions};
-        desc.setAntialiasingLevel(params.samples);
+        desc.setAntialiasingLevel(params.antiAliasingLevel);
         desc.setColorFormat(RenderTextureFormat::ARGB32);  // care: don't use RED: causes an explosion on some Intel machines (#418)
         m_RimsTexture.reformat(desc);
 
@@ -500,9 +500,9 @@ glm::ivec2 osc::SceneRenderer::getDimensions() const
     return m_Impl->getDimensions();
 }
 
-osc::AntiAliasingLevel osc::SceneRenderer::getSamples() const
+osc::AntiAliasingLevel osc::SceneRenderer::getAntiAliasingLevel() const
 {
-    return m_Impl->getSamples();
+    return m_Impl->getAntiAliasingLevel();
 }
 
 void osc::SceneRenderer::render(

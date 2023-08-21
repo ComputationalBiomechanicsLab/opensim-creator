@@ -1610,7 +1610,7 @@ namespace
         {
             osc::SceneRendererParams const params = CalcStandardDarkSceneRenderParams(
                 m_Camera,
-                osc::App::get().getMSXAASamplesRecommended(),
+                osc::App::get().getCurrentAntiAliasingLevel(),
                 dims
             );
             std::vector<osc::SceneDecoration> const decorations = generateDecorations(maybeMeshCollision, maybeLandmarkCollision);
@@ -1944,7 +1944,7 @@ namespace
             std::vector<osc::SceneDecoration> const decorations = generateDecorations();
             osc::SceneRendererParams const params = CalcStandardDarkSceneRenderParams(
                 m_Camera,
-                osc::App::get().getMSXAASamplesRecommended(),
+                osc::App::get().getCurrentAntiAliasingLevel(),
                 dims
             );
             return m_CachedRenderer.render(decorations, params);

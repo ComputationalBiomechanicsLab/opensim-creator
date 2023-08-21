@@ -320,19 +320,19 @@ public:
         SDL_SetWindowFullscreen(m_MainWindow.get(), 0);
     }
 
-    AntiAliasingLevel getMSXAASamplesRecommended() const
+    AntiAliasingLevel getCurrentAntiAliasingLevel() const
     {
         return m_CurrentMSXAASamples;
     }
 
-    void setMSXAASamplesRecommended(AntiAliasingLevel s)
+    void setCurrentAntiAliasingLevel(AntiAliasingLevel s)
     {
-        m_CurrentMSXAASamples = std::clamp(s, AntiAliasingLevel{1}, getMSXAASamplesMax());
+        m_CurrentMSXAASamples = std::clamp(s, AntiAliasingLevel{1}, getMaxAntiAliasingLevel());
     }
 
-    AntiAliasingLevel getMSXAASamplesMax() const
+    AntiAliasingLevel getMaxAntiAliasingLevel() const
     {
-        return m_GraphicsContext.getMaxMSXAASamples();
+        return m_GraphicsContext.getMaxAntialiasingLevel();
     }
 
     bool isInDebugMode() const
@@ -878,8 +878,8 @@ private:
     // global cache of application-wide singletons (usually, for caching)
     SynchronizedValue<std::unordered_map<TypeInfoReference, std::shared_ptr<void>>> m_Singletons;
 
-    // how many samples the implementation should actually use
-    AntiAliasingLevel m_CurrentMSXAASamples = std::min(m_GraphicsContext.getMaxMSXAASamples(), m_ApplicationConfig->getNumMSXAASamples());
+    // how many antiAliasingLevel the implementation should actually use
+    AntiAliasingLevel m_CurrentMSXAASamples = std::min(m_GraphicsContext.getMaxAntialiasingLevel(), m_ApplicationConfig->getNumMSXAASamples());
 
     // set to true if the application should quit
     bool m_QuitRequested = false;
@@ -998,19 +998,19 @@ void osc::App::makeWindowed()
     m_Impl->makeWindowed();
 }
 
-osc::AntiAliasingLevel osc::App::getMSXAASamplesRecommended() const
+osc::AntiAliasingLevel osc::App::getCurrentAntiAliasingLevel() const
 {
-    return m_Impl->getMSXAASamplesRecommended();
+    return m_Impl->getCurrentAntiAliasingLevel();
 }
 
-void osc::App::setMSXAASamplesRecommended(osc::AntiAliasingLevel s)
+void osc::App::setCurrentAntiAliasingLevel(osc::AntiAliasingLevel s)
 {
-    m_Impl->setMSXAASamplesRecommended(s);
+    m_Impl->setCurrentAntiAliasingLevel(s);
 }
 
-osc::AntiAliasingLevel osc::App::getMSXAASamplesMax() const
+osc::AntiAliasingLevel osc::App::getMaxAntiAliasingLevel() const
 {
-    return m_Impl->getMSXAASamplesMax();
+    return m_Impl->getMaxAntiAliasingLevel();
 }
 
 bool osc::App::isInDebugMode() const

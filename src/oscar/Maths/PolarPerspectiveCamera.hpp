@@ -41,7 +41,7 @@ namespace osc
         void rescaleZNearAndZFarBasedOnRadius() noexcept;
 
         glm::mat4 getViewMtx() const noexcept;
-        glm::mat4 getProjMtx(float aspect_ratio) const noexcept;
+        glm::mat4 getProjMtx(float aspectRatio) const noexcept;
 
         // project's a worldspace coordinate onto a screen-space rectangle
         glm::vec2 projectOntoScreenRect(glm::vec3 const& worldspaceLoc, Rect const& screenRect) const noexcept;

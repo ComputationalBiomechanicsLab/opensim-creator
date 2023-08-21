@@ -10,7 +10,7 @@ namespace osc
 {
     class LogViewerPanel final : public Panel {
     public:
-        LogViewerPanel(std::string_view panelName);
+        explicit LogViewerPanel(std::string_view panelName);
         LogViewerPanel(LogViewerPanel const&) = delete;
         LogViewerPanel(LogViewerPanel&&) noexcept;
         LogViewerPanel& operator=(LogViewerPanel const&) = delete;

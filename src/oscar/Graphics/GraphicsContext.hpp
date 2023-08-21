@@ -24,7 +24,7 @@ namespace osc
         GraphicsContext& operator=(GraphicsContext&&) noexcept = delete;
         ~GraphicsContext() noexcept;
 
-        AntiAliasingLevel getMaxMSXAASamples() const;
+        AntiAliasingLevel getMaxAntialiasingLevel() const;
 
         bool isVsyncEnabled() const;
         void enableVsync();

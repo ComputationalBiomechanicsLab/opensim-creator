@@ -156,16 +156,16 @@ namespace osc
         // makes the main window windowed (as opposed to fullscreen)
         void makeWindowed();
 
-        // returns the recommended number of MSXAA samples that rendererers should use (based on config etc.)
-        AntiAliasingLevel getMSXAASamplesRecommended() const;
+        // returns the recommended number of MSXAA antiAliasingLevel that rendererers should use (based on config etc.)
+        AntiAliasingLevel getCurrentAntiAliasingLevel() const;
 
-        // sets the number of MSXAA samples multisampled renderered should use
+        // sets the number of MSXAA antiAliasingLevel multisampled renderered should use
         //
         // throws if arg > max_samples()
-        void setMSXAASamplesRecommended(AntiAliasingLevel);
+        void setCurrentAntiAliasingLevel(AntiAliasingLevel);
 
-        // returns the maximum number of MSXAA samples the backend supports
-        AntiAliasingLevel getMSXAASamplesMax() const;
+        // returns the maximum number of MSXAA antiAliasingLevel the backend supports
+        AntiAliasingLevel getMaxAntiAliasingLevel() const;
 
         // returns true if the application is rendering in debug mode
         //

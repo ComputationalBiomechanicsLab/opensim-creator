@@ -225,7 +225,7 @@ void osc::DrawAABBs(
     }
 }
 
-void osc::DrawAABBs(
+void osc::DrawBVHLeafNodes(
     MeshCache& cache,
     BVH const& bvh,
     std::function<void(SceneDecoration&&)> const& out)
@@ -632,12 +632,12 @@ osc::AABB osc::GetWorldspaceAABB(SceneDecoration const& cd)
 
 osc::SceneRendererParams osc::CalcStandardDarkSceneRenderParams(
     PolarPerspectiveCamera const& camera,
-    AntiAliasingLevel samples,
+    AntiAliasingLevel antiAliasingLevel,
     glm::vec2 renderDims)
 {
     osc::SceneRendererParams rv;
     rv.dimensions = renderDims;
-    rv.samples = samples;
+    rv.antiAliasingLevel = antiAliasingLevel;
     rv.drawMeshNormals = false;
     rv.drawFloor = false;
     rv.viewMatrix = camera.getViewMtx();

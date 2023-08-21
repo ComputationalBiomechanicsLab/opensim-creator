@@ -79,7 +79,7 @@ private:
 
             glm::vec2 contentRegion = ImGui::GetContentRegionAvail();
             m_RenderParams.dimensions = osc::Max(contentRegion, {0.0f, 0.0f});
-            m_RenderParams.samples = App::get().getMSXAASamplesRecommended();
+            m_RenderParams.antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
 
             {
                 m_RenderParams.lightDirection = osc::RecommendedLightDirection(m_Camera);

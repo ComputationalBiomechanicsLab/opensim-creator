@@ -5071,7 +5071,7 @@ namespace
         return ctx;
     }
 
-    // returns the maximum numbers of MSXAA samples the active OpenGL context supports
+    // returns the maximum numbers of MSXAA antiAliasingLevel the active OpenGL context supports
     osc::AntiAliasingLevel GetOpenGLMaxMSXAASamples(sdl::GLContext const&)
     {
         GLint v = 1;
@@ -5280,7 +5280,7 @@ public:
         m_QuadMaterial.setDepthTested(false);  // it's for fullscreen rendering
     }
 
-    AntiAliasingLevel getMaxMSXAASamples() const
+    AntiAliasingLevel getMaxAntialiasingLevel() const
     {
         return m_MaxMSXAASamples;
     }
@@ -5463,7 +5463,7 @@ private:
     // active OpenGL context for the application
     sdl::GLContext m_GLContext;
 
-    // maximum number of samples supported by this hardware's OpenGL MSXAA API
+    // maximum number of antiAliasingLevel supported by this hardware's OpenGL MSXAA API
     AntiAliasingLevel m_MaxMSXAASamples = GetOpenGLMaxMSXAASamples(m_GLContext);
 
     bool m_VSyncEnabled = SDL_GL_GetSwapInterval() != 0;
@@ -5509,9 +5509,9 @@ osc::GraphicsContext::~GraphicsContext() noexcept
     g_GraphicsContextImpl.reset();
 }
 
-osc::AntiAliasingLevel osc::GraphicsContext::getMaxMSXAASamples() const
+osc::AntiAliasingLevel osc::GraphicsContext::getMaxAntialiasingLevel() const
 {
-    return g_GraphicsContextImpl->getMaxMSXAASamples();
+    return g_GraphicsContextImpl->getMaxAntialiasingLevel();
 }
 
 bool osc::GraphicsContext::isVsyncEnabled() const

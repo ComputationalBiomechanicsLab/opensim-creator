@@ -138,7 +138,7 @@ private:
         osc::Rect viewportRect = osc::GetMainViewportWorkspaceScreenRect();
         glm::vec2 viewportRectDims = osc::Dimensions(viewportRect);
         m_RenderTexture.setDimensions(viewportRectDims);
-        m_RenderTexture.setAntialiasingLevel(osc::App::get().getMSXAASamplesRecommended());
+        m_RenderTexture.setAntialiasingLevel(osc::App::get().getCurrentAntiAliasingLevel());
 
         // render scene
         {
