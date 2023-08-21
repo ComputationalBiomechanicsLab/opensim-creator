@@ -4,7 +4,7 @@
 #include "oscar/Utils/Assertions.hpp"
 
 #include <glm/vec2.hpp>
-#include <lunasvg/lunasvg.h>
+#include <lunasvg.h>
 #include <nonstd/span.hpp>
 
 #include <algorithm>
