@@ -3,12 +3,13 @@
 #include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "oscar/Graphics/MeshCache.hpp"
+#include "oscar/Graphics/SceneDecoration.hpp"
 #include "oscar/Platform/Config.hpp"
 
 #include <benchmark/benchmark.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
-#include <simbody.h>
+#include <Simbody.h>
 
 #include <filesystem>
 #include <memory>
