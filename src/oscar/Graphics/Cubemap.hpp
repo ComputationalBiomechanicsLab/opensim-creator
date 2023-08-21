@@ -22,7 +22,7 @@ namespace osc
 
         // `data` must match the channel layout, bytes per channel, and
         // width*height of the cubemap, or an exception will be thrown
-        void setPixelData(CubemapFace, nonstd::span<uint8_t const> data);
+        void setPixelData(CubemapFace, nonstd::span<uint8_t const>);
 
     private:
         friend class GraphicsBackend;

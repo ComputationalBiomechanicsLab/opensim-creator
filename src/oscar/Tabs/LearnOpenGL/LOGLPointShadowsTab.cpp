@@ -13,7 +13,7 @@
 #include "oscar/Graphics/RenderTextureReadWrite.hpp"
 #include "oscar/Graphics/Shader.hpp"
 #include "oscar/Graphics/Texture2D.hpp"
-#include "oscar/Graphics/TextureDimension.hpp"
+#include "oscar/Graphics/TextureDimensionality.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Panels/PerfPanel.hpp"
@@ -123,7 +123,7 @@ namespace
     osc::RenderTexture CreateDepthTexture()
     {
         osc::RenderTextureDescriptor desc{c_ShadowmapDims};
-        desc.setDimension(osc::TextureDimension::Cube);
+        desc.setDimensionality(osc::TextureDimensionality::Cube);
         desc.setReadWrite(osc::RenderTextureReadWrite::Linear);
         desc.setColorFormat(osc::RenderTextureFormat::Depth);
         return osc::RenderTexture{desc};

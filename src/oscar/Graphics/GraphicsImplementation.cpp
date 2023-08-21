@@ -371,8 +371,8 @@ namespace
             return osc::ShaderType::Sampler2D;
         case VariantIndex<MaterialValue, osc::RenderTexture>():
         {
-            static_assert(osc::NumOptions<osc::TextureDimension>() == 2);
-            return std::get<osc::RenderTexture>(v).getDimension() == osc::TextureDimension::Tex2D ?
+            static_assert(osc::NumOptions<osc::TextureDimensionality>() == 2);
+            return std::get<osc::RenderTexture>(v).getDimensionality() == osc::TextureDimensionality::Tex2D ?
                 osc::ShaderType::Sampler2D :
                 osc::ShaderType::SamplerCube;
         }
@@ -2132,7 +2132,7 @@ std::ostream& osc::operator<<(std::ostream& o, DepthStencilFormat f)
 
 osc::RenderTextureDescriptor::RenderTextureDescriptor(glm::ivec2 dimensions) :
     m_Dimensions{Max(dimensions, glm::ivec2{0, 0})},
-    m_Dimension{TextureDimension::Tex2D},
+    m_Dimension{TextureDimensionality::Tex2D},
     m_AnialiasingLevel{1},
     m_ColorFormat{RenderTextureFormat::ARGB32},
     m_DepthStencilFormat{DepthStencilFormat::D24_UNorm_S8_UInt},
@@ -2151,12 +2151,12 @@ void osc::RenderTextureDescriptor::setDimensions(glm::ivec2 d)
     m_Dimensions = d;
 }
 
-osc::TextureDimension osc::RenderTextureDescriptor::getDimension() const
+osc::TextureDimensionality osc::RenderTextureDescriptor::getDimensionality() const
 {
     return m_Dimension;
 }
 
-void osc::RenderTextureDescriptor::setDimension(TextureDimension newDimension)
+void osc::RenderTextureDescriptor::setDimensionality(TextureDimensionality newDimension)
 {
     m_Dimension = newDimension;
 }
@@ -2237,14 +2237,14 @@ public:
         m_Descriptor{descriptor_},
         m_BufferType{type_}
     {
-        OSC_THROWING_ASSERT((getDimension() != TextureDimension::Cube || getDimensions().x == getDimensions().y) && "cannot construct a Cube renderbuffer with non-square dimensions");
-        OSC_THROWING_ASSERT((getDimension() != TextureDimension::Cube || getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot construct a Cube renderbuffer that is anti-aliased (not supported by backends like OpenGL)");
+        OSC_THROWING_ASSERT((getDimensionality() != TextureDimensionality::Cube || getDimensions().x == getDimensions().y) && "cannot construct a Cube renderbuffer with non-square dimensions");
+        OSC_THROWING_ASSERT((getDimensionality() != TextureDimensionality::Cube || getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot construct a Cube renderbuffer that is anti-aliased (not supported by backends like OpenGL)");
     }
 
     void reformat(RenderTextureDescriptor const& newDescriptor)
     {
-        OSC_THROWING_ASSERT((newDescriptor.getDimension() != TextureDimension::Cube || newDescriptor.getDimensions().x == newDescriptor.getDimensions().y) && "cannot reformat a render buffer to a Cube dimensionality with non-square dimensions");
-        OSC_THROWING_ASSERT((newDescriptor.getDimension() != TextureDimension::Cube || newDescriptor.getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot reformat a renderbuffer to a Cube dimensionality with is anti-aliased (not supported by backends like OpenGL)");
+        OSC_THROWING_ASSERT((newDescriptor.getDimensionality() != TextureDimensionality::Cube || newDescriptor.getDimensions().x == newDescriptor.getDimensions().y) && "cannot reformat a render buffer to a Cube dimensionality with non-square dimensions");
+        OSC_THROWING_ASSERT((newDescriptor.getDimensionality() != TextureDimensionality::Cube || newDescriptor.getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot reformat a renderbuffer to a Cube dimensionality with is anti-aliased (not supported by backends like OpenGL)");
 
         if (m_Descriptor != newDescriptor)
         {
@@ -2265,7 +2265,7 @@ public:
 
     void setDimensions(glm::ivec2 newDims)
     {
-        OSC_THROWING_ASSERT((getDimension() != TextureDimension::Cube || newDims.x == newDims.y) && "cannot set a cubemap to have non-square dimensions");
+        OSC_THROWING_ASSERT((getDimensionality() != TextureDimensionality::Cube || newDims.x == newDims.y) && "cannot set a cubemap to have non-square dimensions");
 
         if (newDims != getDimensions())
         {
@@ -2274,19 +2274,19 @@ public:
         }
     }
 
-    TextureDimension getDimension() const
+    TextureDimensionality getDimensionality() const
     {
-        return m_Descriptor.getDimension();
+        return m_Descriptor.getDimensionality();
     }
 
-    void setDimension(TextureDimension newDimension)
+    void setDimensionality(TextureDimensionality newDimension)
     {
-        OSC_THROWING_ASSERT((newDimension != osc::TextureDimension::Cube || getDimensions().x == getDimensions().y) && "cannot set dimensionality to Cube for non-square render buffer");
-        OSC_THROWING_ASSERT((newDimension != TextureDimension::Cube || getAntialiasingLevel() == osc::AntiAliasingLevel{1}) && "cannot set dimensionality to Cube for an anti-aliased render buffer (not supported by backends like OpenGL)");
+        OSC_THROWING_ASSERT((newDimension != osc::TextureDimensionality::Cube || getDimensions().x == getDimensions().y) && "cannot set dimensionality to Cube for non-square render buffer");
+        OSC_THROWING_ASSERT((newDimension != TextureDimensionality::Cube || getAntialiasingLevel() == osc::AntiAliasingLevel{1}) && "cannot set dimensionality to Cube for an anti-aliased render buffer (not supported by backends like OpenGL)");
 
-        if (newDimension != getDimension())
+        if (newDimension != getDimensionality())
         {
-            m_Descriptor.setDimension(newDimension);
+            m_Descriptor.setDimensionality(newDimension);
             m_MaybeOpenGLData->reset();
         }
     }
@@ -2312,7 +2312,7 @@ public:
 
     void setAntialiasingLevel(AntiAliasingLevel newLevel)
     {
-        OSC_THROWING_ASSERT((getDimension() != TextureDimension::Cube || newLevel == osc::AntiAliasingLevel{1}) && "cannot set anti-aliasing level >1 on a cube render buffer (it is not supported by backends like OpenGL)");
+        OSC_THROWING_ASSERT((getDimensionality() != TextureDimensionality::Cube || newLevel == osc::AntiAliasingLevel{1}) && "cannot set anti-aliasing level >1 on a cube render buffer (it is not supported by backends like OpenGL)");
 
         if (newLevel != getAntialiasingLevel())
         {
@@ -2362,8 +2362,8 @@ public:
     {
         // dispatch _which_ texture handles are created based on render buffer params
 
-        static_assert(osc::NumOptions<osc::TextureDimension>() == 2);
-        if (getDimension() == osc::TextureDimension::Tex2D)
+        static_assert(osc::NumOptions<osc::TextureDimensionality>() == 2);
+        if (getDimensionality() == osc::TextureDimensionality::Tex2D)
         {
             if (m_Descriptor.getAntialiasingLevel() <= AntiAliasingLevel{1})
             {
@@ -2592,17 +2592,17 @@ public:
         }
     }
 
-    TextureDimension getDimension() const
+    TextureDimensionality getDimensionality() const
     {
-        return m_ColorBuffer->m_Impl->getDimension();
+        return m_ColorBuffer->m_Impl->getDimensionality();
     }
 
-    void setDimension(TextureDimension newDimension)
+    void setDimensionality(TextureDimensionality newDimension)
     {
-        if (newDimension != getDimension())
+        if (newDimension != getDimensionality())
         {
-            m_ColorBuffer->m_Impl->setDimension(newDimension);
-            m_DepthBuffer->m_Impl->setDimension(newDimension);
+            m_ColorBuffer->m_Impl->setDimensionality(newDimension);
+            m_DepthBuffer->m_Impl->setDimensionality(newDimension);
         }
     }
 
@@ -2748,14 +2748,14 @@ void osc::RenderTexture::setDimensions(glm::ivec2 d)
     m_Impl.upd()->setDimensions(d);
 }
 
-osc::TextureDimension osc::RenderTexture::getDimension() const
+osc::TextureDimensionality osc::RenderTexture::getDimensionality() const
 {
-    return m_Impl->getDimension();
+    return m_Impl->getDimensionality();
 }
 
-void osc::RenderTexture::setDimension(TextureDimension newDimension)
+void osc::RenderTexture::setDimensionality(TextureDimensionality newDimension)
 {
-    m_Impl.upd()->setDimension(newDimension);
+    m_Impl.upd()->setDimensionality(newDimension);
 }
 
 osc::RenderTextureFormat osc::RenderTexture::getColorFormat() const
@@ -6102,7 +6102,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     }
     case VariantIndex<MaterialValue, RenderTexture>():
     {
-        static_assert(osc::NumOptions<TextureDimension>() == 2);
+        static_assert(osc::NumOptions<TextureDimensionality>() == 2);
         std::visit(Overload
         {
             [&textureSlot, &se](SingleSampledTexture& sst)

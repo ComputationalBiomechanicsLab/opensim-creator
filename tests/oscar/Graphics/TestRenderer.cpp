@@ -2606,15 +2606,15 @@ TEST_F(Renderer, RenderTextureDescriptorGetDimensionReturns2DOnConstruction)
 {
     osc::RenderTextureDescriptor d1{{1, 1}};
 
-    ASSERT_EQ(d1.getDimension(), osc::TextureDimension::Tex2D);
+    ASSERT_EQ(d1.getDimensionality(), osc::TextureDimensionality::Tex2D);
 }
 
 TEST_F(Renderer, RenderTextureDescriptorSetDimensionCausesGetDimensionToReturnTheSetDimension)
 {
     osc::RenderTextureDescriptor d1{{1, 1}};
-    d1.setDimension(osc::TextureDimension::Cube);
+    d1.setDimensionality(osc::TextureDimensionality::Cube);
 
-    ASSERT_EQ(d1.getDimension(), osc::TextureDimension::Cube);
+    ASSERT_EQ(d1.getDimensionality(), osc::TextureDimensionality::Cube);
 }
 
 TEST_F(Renderer, RenderTextureDescriptorSetDimensionChangesDescriptorEquality)
@@ -2624,7 +2624,7 @@ TEST_F(Renderer, RenderTextureDescriptorSetDimensionChangesDescriptorEquality)
 
     ASSERT_EQ(d1, d2);
 
-    d1.setDimension(osc::TextureDimension::Cube);
+    d1.setDimensionality(osc::TextureDimensionality::Cube);
 
     ASSERT_NE(d1, d2);
 }
@@ -2635,18 +2635,18 @@ TEST_F(Renderer, RenderTextureDescriptorSetDimensionToCubeOnRectangularDimension
     // allows changing the dimension independently from changing the dimensions without
     // throwing an error, so that code like:
     //
-    // desc.setDimension(TextureDimension::Cube);
+    // desc.setDimensionality(TextureDimensionality::Cube);
     // desc.setDimensions({2,2});
     //
     // is permitted, even though the first line might create an "invalid" descriptor
 
     osc::RenderTextureDescriptor rect{{1, 2}};
-    rect.setDimension(osc::TextureDimension::Cube);
+    rect.setDimensionality(osc::TextureDimensionality::Cube);
 
     // also permitted
     osc::RenderTextureDescriptor initiallySquare{{1, 1}};
     initiallySquare.setDimensions({1, 2});
-    initiallySquare.setDimension(osc::TextureDimension::Cube);
+    initiallySquare.setDimensionality(osc::TextureDimensionality::Cube);
 }
 
 TEST_F(Renderer, RenderTextureSetReadWriteChangesEquality)
@@ -2739,14 +2739,14 @@ TEST_F(Renderer, RenderTextureDefaultConstructorCreates1x1RgbaRenderTexture)
 TEST_F(Renderer, RenderTextureDefaultConstructorHasTex2DDimension)
 {
     osc::RenderTexture const tex;
-    ASSERT_EQ(tex.getDimension(), osc::TextureDimension::Tex2D);
+    ASSERT_EQ(tex.getDimensionality(), osc::TextureDimensionality::Tex2D);
 }
 
 TEST_F(Renderer, RenderTextureSetDimensionSetsTheDimension)
 {
     osc::RenderTexture tex;
-    tex.setDimension(osc::TextureDimension::Cube);
-    ASSERT_EQ(tex.getDimension(), osc::TextureDimension::Cube);
+    tex.setDimensionality(osc::TextureDimensionality::Cube);
+    ASSERT_EQ(tex.getDimensionality(), osc::TextureDimensionality::Cube);
 }
 
 TEST_F(Renderer, RenderTextureSetDimensionToCubeThrowsIfRenderTextureIsMultisampled)
@@ -2756,7 +2756,7 @@ TEST_F(Renderer, RenderTextureSetDimensionToCubeThrowsIfRenderTextureIsMultisamp
     // cubemap
     osc::RenderTexture tex;
     tex.setAntialiasingLevel(osc::AntiAliasingLevel{2});
-    ASSERT_ANY_THROW(tex.setDimension(osc::TextureDimension::Cube));
+    ASSERT_ANY_THROW(tex.setDimensionality(osc::TextureDimensionality::Cube));
 }
 
 TEST_F(Renderer, RenderTextureSetAntialiasingToNonOneOnCubeDimensionalityRenderTextureThrows)
@@ -2765,7 +2765,7 @@ TEST_F(Renderer, RenderTextureSetAntialiasingToNonOneOnCubeDimensionalityRenderT
     // so loudly throw an error if the caller is trying to render a multisampled
     // cubemap
     osc::RenderTexture tex;
-    tex.setDimension(osc::TextureDimension::Cube);
+    tex.setDimensionality(osc::TextureDimensionality::Cube);
     ASSERT_ANY_THROW(tex.setAntialiasingLevel(osc::AntiAliasingLevel{2}));
 }
 
@@ -2778,7 +2778,7 @@ TEST_F(Renderer, RenderTextureCtorThrowsIfGivenCubeDimensionalityAndAntialiasedD
 
     // allowed: RenderTextureDescriptor is non-throwing until the texture is actually constructed
     desc.setAntialiasingLevel(osc::AntiAliasingLevel{2});
-    desc.setDimension(osc::TextureDimension::Cube);
+    desc.setDimensionality(osc::TextureDimensionality::Cube);
 
     // throws because the descriptor is bad
     ASSERT_ANY_THROW(osc::RenderTexture rt(desc));
@@ -2789,7 +2789,7 @@ TEST_F(Renderer, RenderTextureReformatThrowsIfGivenCubeDimensionalityAndAntialia
     // allowed: RenderTextureDescriptor is non-throwing until the texture is actually constructed
     osc::RenderTextureDescriptor desc{{1, 1}};
     desc.setAntialiasingLevel(osc::AntiAliasingLevel{2});
-    desc.setDimension(osc::TextureDimension::Cube);
+    desc.setDimensionality(osc::TextureDimensionality::Cube);
 
     // throws because the descriptor is bad
     ASSERT_ANY_THROW(osc::RenderTexture().reformat(desc));
@@ -2798,7 +2798,7 @@ TEST_F(Renderer, RenderTextureReformatThrowsIfGivenCubeDimensionalityAndAntialia
 TEST_F(Renderer, RenderTextureThrowsIfGivenNonSquareButCubeDimensionalityDescriptor)
 {
     osc::RenderTextureDescriptor desc{{1, 2}};  // not square
-    desc.setDimension(osc::TextureDimension::Cube);  // permitted, at least for now
+    desc.setDimensionality(osc::TextureDimensionality::Cube);  // permitted, at least for now
 
     ASSERT_ANY_THROW(osc::RenderTexture rt(desc));
 }
@@ -2807,7 +2807,7 @@ TEST_F(Renderer, RenderTextureReformatThrowsIfGivenNonSquareButCubeDimensionalit
 {
     // allowed: RenderTextureDescriptor is non-throwing until the texture is actually constructed
     osc::RenderTextureDescriptor desc{{1, 2}};
-    desc.setDimension(osc::TextureDimension::Cube);
+    desc.setDimensionality(osc::TextureDimensionality::Cube);
 
     // throws because the descriptor is bad
     ASSERT_ANY_THROW(osc::RenderTexture().reformat(desc));
@@ -2818,13 +2818,13 @@ TEST_F(Renderer, RenderTextureSetDimensionThrowsIfSetToCubeOnNonSquareRenderText
     osc::RenderTexture t;
     t.setDimensions({1, 2});  // not square
 
-    ASSERT_ANY_THROW(t.setDimension(osc::TextureDimension::Cube));
+    ASSERT_ANY_THROW(t.setDimensionality(osc::TextureDimensionality::Cube));
 }
 
 TEST_F(Renderer, RenderTextureSetDimensionsThrowsIfSettingNonSquareOnCubeDimensionTexture)
 {
     osc::RenderTexture t;
-    t.setDimension(osc::TextureDimension::Cube);
+    t.setDimensionality(osc::TextureDimensionality::Cube);
 
     ASSERT_ANY_THROW(t.setDimensions({1, 2}));
 }
@@ -2836,7 +2836,7 @@ TEST_F(Renderer, RenderTextureSetDimensionChangesEquality)
 
     ASSERT_EQ(t1, t2);
 
-    t2.setDimension(osc::TextureDimension::Cube);
+    t2.setDimensionality(osc::TextureDimensionality::Cube);
 
     ASSERT_NE(t1, t2);
 }
@@ -2868,10 +2868,10 @@ TEST_F(Renderer, RenderTextureFromDescriptorHasExpectedValues)
     osc::AntiAliasingLevel aaLevel{1};
     osc::RenderTextureFormat format = osc::RenderTextureFormat::Red8;
     osc::RenderTextureReadWrite rw = osc::RenderTextureReadWrite::Linear;
-    osc::TextureDimension dimension = osc::TextureDimension::Cube;
+    osc::TextureDimensionality dimension = osc::TextureDimensionality::Cube;
 
     osc::RenderTextureDescriptor desc{{width, height}};
-    desc.setDimension(dimension);
+    desc.setDimensionality(dimension);
     desc.setAntialiasingLevel(aaLevel);
     desc.setColorFormat(format);
     desc.setReadWrite(rw);
@@ -2879,7 +2879,7 @@ TEST_F(Renderer, RenderTextureFromDescriptorHasExpectedValues)
     osc::RenderTexture tex{desc};
 
     ASSERT_EQ(tex.getDimensions(), glm::ivec2(width, height));
-    ASSERT_EQ(tex.getDimension(), osc::TextureDimension::Cube);
+    ASSERT_EQ(tex.getDimensionality(), osc::TextureDimensionality::Cube);
     ASSERT_EQ(tex.getAntialiasingLevel(), aaLevel);
     ASSERT_EQ(tex.getColorFormat(), format);
     ASSERT_EQ(tex.getReadWrite(), rw);

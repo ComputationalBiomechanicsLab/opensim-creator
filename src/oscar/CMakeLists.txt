@@ -110,7 +110,7 @@ add_library(oscar STATIC
     Graphics/SimpleSceneDecoration.hpp
     Graphics/Texture2D.hpp
     Graphics/TextureChannelFormat.hpp
-    Graphics/TextureDimension.hpp
+    Graphics/TextureDimensionality.hpp
     Graphics/TextureFilterMode.hpp
     Graphics/TextureFormat.hpp
     Graphics/TextureGen.cpp

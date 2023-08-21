@@ -4,7 +4,7 @@
 #include "oscar/Graphics/DepthStencilFormat.hpp"
 #include "oscar/Graphics/RenderTextureFormat.hpp"
 #include "oscar/Graphics/RenderTextureReadWrite.hpp"
-#include "oscar/Graphics/TextureDimension.hpp"
+#include "oscar/Graphics/TextureDimensionality.hpp"
 
 #include <glm/vec2.hpp>
 
@@ -24,8 +24,8 @@ namespace osc
         glm::ivec2 getDimensions() const;
         void setDimensions(glm::ivec2);
 
-        TextureDimension getDimension() const;
-        void setDimension(TextureDimension);
+        TextureDimensionality getDimensionality() const;
+        void setDimensionality(TextureDimensionality);
 
         AntiAliasingLevel getAntialiasingLevel() const;
         void setAntialiasingLevel(AntiAliasingLevel);
@@ -46,7 +46,7 @@ namespace osc
         friend std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
 
         glm::ivec2 m_Dimensions;
-        TextureDimension m_Dimension;
+        TextureDimensionality m_Dimension;
         AntiAliasingLevel m_AnialiasingLevel;
         RenderTextureFormat m_ColorFormat;
         DepthStencilFormat m_DepthStencilFormat;
