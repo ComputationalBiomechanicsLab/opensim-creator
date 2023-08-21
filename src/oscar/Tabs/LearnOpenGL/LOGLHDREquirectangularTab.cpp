@@ -32,6 +32,17 @@ namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/PBR/HDREquirectangular";
 
+    osc::Camera CreateCamera()
+    {
+        osc::Camera rv;
+        rv.setPosition({0.0f, 0.0f, 3.0f});
+        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setNearClippingPlane(0.1f);
+        rv.setFarClippingPlane(100.0f);
+        rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
+        return rv;
+    }
+
     osc::RenderTexture LoadEquirectangularHDRTextureIntoCubemap()
     {
         osc::Texture2D hdrTexture = osc::LoadTexture2DFromImage(
@@ -67,7 +78,7 @@ namespace
         material.setTexture("uEquirectangularMap", hdrTexture);
         material.setMat4Array(
             "uShadowMatrices",
-            osc::CalcCubemapViewProjMatrices(projectionMatrix, {0.0f, 0.0f, 0.0f})
+            osc::CalcCubemapViewProjMatrices(projectionMatrix, glm::vec3{})
         );
 
         osc::Camera camera;
@@ -83,7 +94,6 @@ class osc::LOGLHDREquirectangularTab::Impl final : public osc::StandardTabBase {
 public:
     Impl() : StandardTabBase{c_TabStringID}
     {
-        OSC_ASSERT_ALWAYS(m_Texture.getTextureFormat() == TextureFormat::RGBFloat);
     }
 
 private:
@@ -95,8 +105,19 @@ private:
     {
     }
 
-    bool implOnEvent(SDL_Event const&) final
+    bool implOnEvent(SDL_Event const& e) final
     {
+        // handle mouse input
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+        {
+            m_IsMouseCaptured = false;
+            return true;
+        }
+        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect())
+        {
+            m_IsMouseCaptured = true;
+            return true;
+        }
         return false;
     }
 
@@ -110,9 +131,33 @@ private:
 
     void implOnDraw() final
     {
-        LoadEquirectangularHDRTextureIntoCubemap();
-        Rect const r = GetMainViewportWorkspaceScreenRect();
-        Graphics::BlitToScreen(m_Texture, r);
+        updateCameraFromInputs();
+        drawBackground();
+    }
+
+    void updateCameraFromInputs()
+    {
+        // handle mouse capturing
+        if (m_IsMouseCaptured)
+        {
+            UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
+            ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+            App::upd().setShowCursor(false);
+        }
+        else
+        {
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
+            App::upd().setShowCursor(true);
+        }
+    }
+
+    void drawBackground()
+    {
+        m_BackgroundMaterial.setRenderTexture("uEnvironmentMap", m_ProjectedMap);
+        m_BackgroundMaterial.setDepthFunction(DepthFunction::LessOrEqual);  // for skybox depth trick
+        Graphics::DrawMesh(m_CubeMesh, Transform{}, m_BackgroundMaterial, m_Camera);
+        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
+        m_Camera.renderToScreen();
     }
 
     Texture2D m_Texture = osc::LoadTexture2DFromImage(
@@ -120,6 +165,23 @@ private:
         ColorSpace::Linear,
         ImageLoadingFlags::FlipVertically
     );
+
+    RenderTexture m_ProjectedMap = LoadEquirectangularHDRTextureIntoCubemap();
+
+    Material m_BackgroundMaterial
+    {
+        Shader
+        {
+            App::slurp("shaders/ExperimentEquirectangularBackground.vert"),
+            App::slurp("shaders/ExperimentEquirectangularBackground.frag"),
+        }
+    };
+
+    Mesh m_CubeMesh = osc::GenCube();
+
+    Camera m_Camera = CreateCamera();
+    glm::vec3 m_CameraEulers = {};
+    bool m_IsMouseCaptured = true;
 };
 
 
