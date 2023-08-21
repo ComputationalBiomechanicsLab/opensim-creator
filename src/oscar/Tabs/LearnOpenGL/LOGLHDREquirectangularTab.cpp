@@ -19,18 +19,41 @@
 #include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/Assertions.hpp"
 #include "oscar/Utils/CStringView.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 
 #include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <IconsFontAwesome5.h>
 #include <SDL_events.h>
 
+#include <array>
 #include <string>
 #include <utility>
 
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/PBR/HDREquirectangular";
+
+    constexpr auto c_LightPositions = osc::to_array<glm::vec3>(
+    {
+        {-10.0f,  10.0f, 10.0f},
+        { 10.0f,  10.0f, 10.0f},
+        {-10.0f, -10.0f, 10.0f},
+        { 10.0f, -10.0f, 10.0f},
+    });
+
+    constexpr std::array<glm::vec3, c_LightPositions.size()> c_LightRadiances = osc::to_array<glm::vec3>(
+    {
+        {300.0f, 300.0f, 300.0f},
+        {300.0f, 300.0f, 300.0f},
+        {300.0f, 300.0f, 300.0f},
+        {300.0f, 300.0f, 300.0f},
+    });
+
+    constexpr int c_NumRows = 7;
+    constexpr int c_NumCols = 7;
+    constexpr float c_CellSpacing = 2.5f;
 
     osc::Camera CreateCamera()
     {
@@ -86,7 +109,22 @@ namespace
         osc::Graphics::DrawMesh(osc::GenCube(), osc::Transform{}, material, camera);
         camera.renderTo(cubemapRenderTarget);
 
+        // TODO: some way of copying it into an `osc::Cubemap` would make sense
         return cubemapRenderTarget;
+    }
+
+    osc::Material CreateMaterial()
+    {
+        osc::Material rv
+        {
+            osc::Shader
+            {
+                osc::App::slurp("shaders/ExperimentEquirectangularPBR.vert"),
+                osc::App::slurp("shaders/ExperimentEquirectangularPBR.frag"),
+            },
+        };
+        rv.setFloat("uAO", 1.0f);
+        return rv;
     }
 }
 
@@ -99,10 +137,15 @@ public:
 private:
     void implOnMount() final
     {
+        App::upd().makeMainEventLoopPolling();
+        m_IsMouseCaptured = true;
     }
 
     void implOnUnmount() final
     {
+        App::upd().setShowCursor(true);
+        App::upd().makeMainEventLoopWaiting();
+        m_IsMouseCaptured = false;
     }
 
     bool implOnEvent(SDL_Event const& e) final
@@ -132,6 +175,7 @@ private:
     void implOnDraw() final
     {
         updateCameraFromInputs();
+        draw3DRender();
         drawBackground();
     }
 
@@ -151,13 +195,69 @@ private:
         }
     }
 
+    void draw3DRender()
+    {
+        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
+
+        m_PBRMaterial.setVec3("uCameraWorldPos", m_Camera.getPosition());
+        m_PBRMaterial.setVec3Array("uLightPositions", c_LightPositions);
+        m_PBRMaterial.setVec3Array("uLightColors", c_LightRadiances);
+
+        drawSpheres();
+        drawLights();
+
+        m_Camera.renderToScreen();
+    }
+
+    void drawSpheres()
+    {
+        m_PBRMaterial.setVec3("uAlbedoColor", {0.5f, 0.0f, 0.0f});
+
+        for (int row = 0; row < c_NumRows; ++row)
+        {
+            m_PBRMaterial.setFloat("uMetallicity", static_cast<float>(row) / static_cast<float>(c_NumRows));
+
+            for (int col = 0; col < c_NumCols; ++col)
+            {
+                float const normalizedCol = static_cast<float>(col) / static_cast<float>(c_NumCols);
+                m_PBRMaterial.setFloat("uRoughness", glm::clamp(normalizedCol, 0.005f, 1.0f));
+
+                Transform t;
+                t.position =
+                {
+                    (static_cast<float>(col) - static_cast<float>(c_NumCols)/2.0f) * c_CellSpacing,
+                    (static_cast<float>(row) - static_cast<float>(c_NumRows)/2.0f) * c_CellSpacing,
+                    0.0f
+                };
+
+                Graphics::DrawMesh(m_SphereMesh, t, m_PBRMaterial, m_Camera);
+            }
+        }
+    }
+
+    void drawLights()
+    {
+        m_PBRMaterial.setVec3("uAlbedoColor", {1.0f, 1.0f, 1.0f});
+
+        for (glm::vec3 const& pos : c_LightPositions)
+        {
+            Transform t;
+            t.position = pos;
+            t.scale = glm::vec3{0.5f};
+
+            Graphics::DrawMesh(m_SphereMesh, t, m_PBRMaterial, m_Camera);
+        }
+    }
+
     void drawBackground()
     {
         m_BackgroundMaterial.setRenderTexture("uEnvironmentMap", m_ProjectedMap);
         m_BackgroundMaterial.setDepthFunction(DepthFunction::LessOrEqual);  // for skybox depth trick
         Graphics::DrawMesh(m_CubeMesh, Transform{}, m_BackgroundMaterial, m_Camera);
         m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
+        m_Camera.setClearFlags(osc::CameraClearFlags::Nothing);
         m_Camera.renderToScreen();
+        m_Camera.setClearFlags(osc::CameraClearFlags::Default);
     }
 
     Texture2D m_Texture = osc::LoadTexture2DFromImage(
@@ -177,7 +277,9 @@ private:
         }
     };
 
-    Mesh m_CubeMesh = osc::GenCube();
+    Mesh m_CubeMesh = GenCube();
+    Material m_PBRMaterial = CreateMaterial();
+    Mesh m_SphereMesh = GenSphere(64, 64);
 
     Camera m_Camera = CreateCamera();
     glm::vec3 m_CameraEulers = {};
