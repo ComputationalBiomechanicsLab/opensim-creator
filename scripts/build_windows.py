@@ -84,6 +84,9 @@ def build_osc(conf: BuildConfiguration):
         _run(f'cmake --build {conf.osc_build_dir} --target testopensimcreator --config {conf.osc_build_type} -j{conf.concurrency}')
         _run(f'{test_osc_path} --gtest_filter="-Renderer*"')
 
+        # build final output target (usually, the installer)
+        _run(f'cmake --build {conf.osc_build_dir} --target {conf.build_target} --config {conf.osc_build_type} -j{conf.concurrency}')
+
 def main():
     conf = BuildConfiguration()
 
