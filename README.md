@@ -103,7 +103,7 @@ requires being logged into GitHub; otherwise, you won't see download links).
     3. Verify it's installed by opening a terminal (`Shift+Right-Click` -> `Open Powershell window here`) and run `cmake`
 4. Get `NSIS`:
     1. Download+install it from https://nsis.sourceforge.io/Download
-5. Get `python` and `pip` (*optional*: you only need this if you want to build documentation):
+5. Get `python` and `pip`:
     1. Download from https://www.python.org/downloads/
     2. Make sure `python` and `pip` are added to the `PATH` (the installer usually prompts this)
     3. Verify they are installed by opening a terminal (`Shift+Right-Click` -> `Open Powershell window here`) and run `python --help` and `pip --help`
@@ -111,7 +111,7 @@ requires being logged into GitHub; otherwise, you won't see download links).
     1. Open a PowerShell terminal (`Shift+Right-Click` -> `Open Powershell window here`)
     2. Clone `opensim-creator`: `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator`
     3. `cd` into the source dir: `cd opensim-creator`
-    4. Run the build script: `scripts\build_windows.bat` (**warning**: can take a long time)
+    4. Run the build script: `python .\scripts\build_windows.py` (**warning**: can take a long time)
 7. Done:
     1. The `osc-build` directory should contain the built installer
 
@@ -157,7 +157,7 @@ These are some generic tips that might be handy when setting up your own develop
 
 ### Visual Studio 2022
 
-- Run the `bat` [builscript](scripts/build_windows.bat) (described above) to get a complete build.
+- Run [build_windows.py](scripts/build_windows.py) (described above) to get a complete build.
 - In Visual Studio 2020, open `opensim-creator` as a folder project
 - Later versions of Visual Studio (i.e. 2017+) should have in-built CMake support that automatically detects that the folder is a CMake project
 - Right-click the `CMakeLists.txt` file to edit settings or build the project

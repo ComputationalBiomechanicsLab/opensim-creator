@@ -14,11 +14,10 @@ jobs:
         path: osc
         submodules: 'recursive'
 
-    - name: run build_windows.bat
+    - name: run build_windows.py
       run: |
         cd $env:GITHUB_WORKSPACE\osc
-        set OSC_BUILD_CONCURRENCY=%NUMBER_OF_PROCESSORS%
-        scripts\\build_windows.bat || exit /b
+        python scripts\\build_windows.py || exit /b
 
     - uses: actions/upload-artifact@v2
       with:
