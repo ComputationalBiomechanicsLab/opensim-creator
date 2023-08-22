@@ -152,7 +152,7 @@ namespace
     }
 
     osc::Cubemap CreatePreFilteredEnvironmentMap(
-        osc::RenderTexture const& environmentMap)
+        osc::RenderTexture const&)
     {
         osc::Cubemap rv
         {
