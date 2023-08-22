@@ -176,6 +176,8 @@ namespace
         // TODO: wrap-s/t/r == GL_CLAMP_TO_EDGE
         // TODO: ensure GL_TEXTURE_MIN_FILTER is GL_LINEAR_MIPMAP_LINEAR
         // TODO: ensure GL_TEXTURE_MAG_FILTER is GL_LINEAR
+        // TODO: GL_TEXTURE_CUBE_MAP_SEAMLESS
+        // TODO: fix upside-down R = reflect(-V,N) (mentioned in LearnOpenGL comments)
 
         return rv;
     }
