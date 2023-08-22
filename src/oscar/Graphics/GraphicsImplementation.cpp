@@ -599,7 +599,7 @@ namespace
         glm::vec3 worldMidpoint;
     };
 
-    bool operator==(RenderObject const& a, RenderObject const& b) noexcept
+    bool operator==(RenderObject const& a, RenderObject const& b)
     {
         return
             a.material == b.material &&
@@ -4764,7 +4764,7 @@ public:
         GraphicsBackend::RenderScene(*this, &renderTarget);
     }
 
-    bool operator==(Impl const& other) const noexcept
+    bool operator==(Impl const& other) const
     {
         return
             m_BackgroundColor == other.m_BackgroundColor &&
@@ -5011,12 +5011,12 @@ std::ostream& osc::operator<<(std::ostream& o, Camera const& camera)
     return o << "Camera(position = " << camera.getPosition() << ", direction = " << camera.getDirection() << ", projection = " << camera.getCameraProjection() << ')';
 }
 
-bool osc::operator==(Camera const& a, Camera const& b) noexcept
+bool osc::operator==(Camera const& a, Camera const& b)
 {
     return a.m_Impl == b.m_Impl || *a.m_Impl == *b.m_Impl;
 }
 
-bool osc::operator!=(Camera const& a, Camera const& b) noexcept
+bool osc::operator!=(Camera const& a, Camera const& b)
 {
     return !(a == b);
 }
