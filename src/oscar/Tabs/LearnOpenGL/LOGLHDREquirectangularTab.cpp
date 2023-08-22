@@ -215,6 +215,7 @@ private:
         updateCameraFromInputs();
         draw3DRender();
         drawBackground();
+        draw2DUI();
     }
 
     void updateCameraFromInputs()
@@ -297,6 +298,19 @@ private:
         m_Camera.setClearFlags(osc::CameraClearFlags::Nothing);
         m_Camera.renderToScreen();
         m_Camera.setClearFlags(osc::CameraClearFlags::Default);
+    }
+
+    void draw2DUI()
+    {
+        if (ImGui::Begin("Controls"))
+        {
+            float ao = m_PBRMaterial.getFloat("uAO").value_or(1.0f);
+            if (ImGui::SliderFloat("ao", &ao, 0.0f, 1.0f))
+            {
+                m_PBRMaterial.setFloat("uAO", ao);
+            }
+        }
+        ImGui::End();
     }
 
     Texture2D m_Texture = osc::LoadTexture2DFromImage(
