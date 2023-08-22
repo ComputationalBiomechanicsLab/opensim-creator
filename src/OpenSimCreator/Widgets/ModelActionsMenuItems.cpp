@@ -96,7 +96,7 @@ private:
 
                 if (ImGui::IsItemHovered())
                 {
-                    DrawTooltip(names[i].c_str(), osc::ComponentRegistry<T>::descriptionStrings()[i].c_str());
+                    DrawTooltip(names[i], osc::ComponentRegistry<T>::descriptionStrings()[i]);
                 }
             }
 
