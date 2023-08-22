@@ -111,21 +111,21 @@ TEST(OpenSimModel, EditingACoordinateLockMutatesModel)
 // effectively, it is possible to segfault OpenSim by giving it incorrect socket
 // assignments: even if the incorrect socket assignmments are provided via an
 // `osim` file (i.e. it's not a code bug in OpenSim Creator)
-TEST(OpenSimModel, DISABLED_CreatingCircularJointConnectionToGroundDoesNotSegfault)
+TEST(OpenSimModel, CreatingCircularJointConnectionToGroundDoesNotSegfault)
 {
     std::filesystem::path const path =
         std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_382_repro.osim";
 
     OpenSim::Model model{path.string()};
     model.finalizeFromProperties();
-    model.finalizeConnections();  // segfault
+    ASSERT_ANY_THROW({ model.finalizeConnections(); });  // throwing is permissable, segfaulting is not
 }
 
 // repro for an OpenSim bug found in #515
 //
 // code inside OpenSim::CoordinateCouplerConstraint assumes that a function property
 // is always set - even though it is listed as OPTIONAL
-TEST(OpenSimModel, DISABLED_CoordinateCouplerConstraintsWithNoCoupledCoordinatesFunctionDoesNotSegfault)
+TEST(OpenSimModel, CoordinateCouplerConstraintsWithNoCoupledCoordinatesFunctionDoesNotSegfault)
 {
     std::filesystem::path const path =
         std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_515_repro.osim";
@@ -133,48 +133,48 @@ TEST(OpenSimModel, DISABLED_CoordinateCouplerConstraintsWithNoCoupledCoordinates
     OpenSim::Model model{path.string()};
     model.finalizeFromProperties();
     model.finalizeConnections();
-    model.buildSystem();  // segfault
+    ASSERT_ANY_THROW({ model.buildSystem(); });  // throwing is permissable, segfaulting is not
 }
 
 // repro for an OpenSim bug found in #517
 //
 // code inside OpenSim::ActivationCoordinateActuator assumes that a coordinate name
 // property is always set - even though it is listed as OPTIONAL
-TEST(OpenSimModel, DISABLED_ActivationCoordinateActuatorWithNoCoordinateNameDoesNotSegfault)
+TEST(OpenSimModel, ActivationCoordinateActuatorWithNoCoordinateNameDoesNotSegfault)
 {
     std::filesystem::path const path =
         std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_517_repro.osim";
 
     OpenSim::Model model{path.string()};
     model.finalizeFromProperties();
-    model.finalizeConnections();  // segfault (exception after applying #621 patch)
+    ASSERT_ANY_THROW({ model.finalizeConnections(); });  // throwing is permissable, segfaulting is not
 }
 
 // repro for an Opensim bug found in #523
 //
 // code inside OpenSim::PointToPointActuator segfaults if either `bodyA` or `bodyB` is unspecified
-TEST(OpenSimModel, DISABLED_PointToPointActuatorWithNoBodyAOrBodyBDoesNotSegfault)
+TEST(OpenSimModel, PointToPointActuatorWithNoBodyAOrBodyBDoesNotSegfault)
 {
     std::filesystem::path const path =
         std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_523_repro.osim";
 
     OpenSim::Model model{path.string()};
     model.finalizeFromProperties();
-    model.finalizeConnections();  // segfault (exception after applying #621 patch)
+    ASSERT_ANY_THROW({ model.finalizeConnections(); });  // throwing is permissable, segfaulting is not
 }
 
 // repro for an OpenSim bug found in #524
 //
 // code inside OpenSim::SpringGeneralizeForce assumes that the `coordinate` property
 // is always set - even though it is listed as OPTIONAL
-TEST(OpenSimModel, DISABLED_SpringGeneralizedForceWithNoCoordinateDoesNotSegfault)
+TEST(OpenSimModel, SpringGeneralizedForceWithNoCoordinateDoesNotSegfault)
 {
     std::filesystem::path const path =
         std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_524_repro.osim";
 
     OpenSim::Model model{path.string()};
     model.finalizeFromProperties();
-    model.finalizeConnections();  // segfault (exception after applying #621 patch)
+    ASSERT_ANY_THROW({ model.finalizeConnections(); });  // throwing is permissable, segfaulting is not
 }
 
 // repro for an OpenSim bug found in #621
@@ -204,7 +204,7 @@ TEST(OpenSimModel, LoadingAnOsimWithEmptyFieldsDoesNotSegfault)
 
     OpenSim::Model m1{brokenFilePath.string()};
     OpenSim::Model m2{m1};
-    m2.buildSystem();  // segfaults, due to #621 (opensim-core/#3409)
+    m2.buildSystem();  // shouldn't segfault or throw
 }
 
 // repro for #597
