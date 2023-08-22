@@ -1005,13 +1005,10 @@ bool osc::ActionAssignContactGeometryToHCF(
             return false;
         }
 
-        // HACK: if it has no parameters, give it some. The HuntCrossleyForce implementation effectively
-        // does this internally anyway to satisfy its own API (e.g. `getStaticFriction` requires that
-        // the HuntCrossleyForce has a parameter)
-        if (mutHCF->get_contact_parameters().getSize() == 0)
-        {
-            mutHCF->updContactParametersSet().cloneAndAppend(OpenSim::HuntCrossleyForce::ContactParameters{});
-        }
+        // calling this ensures at least one `OpenSim::HuntCrossleyForce::ContactParameters`
+        // is present in the HCF
+        mutHCF->getStaticFriction();
+        OSC_ASSERT(mutHCF->updContactParametersSet().getSize() > 0);
 
         mutHCF->updContactParametersSet()[0].updGeometry().appendValue(geom->getName());
         mutModel.finalizeConnections();

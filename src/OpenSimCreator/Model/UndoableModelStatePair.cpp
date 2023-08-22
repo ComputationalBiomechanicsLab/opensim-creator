@@ -604,7 +604,7 @@ private:
             return;
         }
 
-        // perform hacky fixups to ensure the user experience is best:
+        // perform fixups to ensure the user experience is best:
         //
         // - user's selection state should be "sticky" between undo/redo
         // - user's scene scale factor should be "sticky" between undo/redo
@@ -633,7 +633,7 @@ private:
             return;
         }
 
-        // perform hacky fixups to ensure the user experience is best:
+        // perform fixups to ensure the user experience is best:
         //
         // - user's selection state should be "sticky" between undo/redo
         // - user's scene scale factor should be "sticky" between undo/redo

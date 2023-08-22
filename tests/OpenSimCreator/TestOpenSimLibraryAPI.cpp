@@ -8,6 +8,7 @@
 
 #include <gtest/gtest.h>
 #include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
@@ -234,4 +235,24 @@ TEST(OpenSimModel, UpdatesInertiaCorrectly)
     b.finalizeFromProperties();
 
     ASSERT_EQ(b.getInertia(), toInertia(updatedValue));  // broke in OpenSim <= 4.4 (see #597)
+}
+
+// tests for a behavior that is relied upon in osc::ActionAssignContactGeometryToHCF
+//
+// a newly-constructed HCF may have no contact parameters, but OSC editors usually need
+// one. However, explicitly adding it with `cloneAndAppend` triggers memory leak warnings
+// in clang-tidy, because OpenSim::ArrayPtrs<T> sucks, so downstream code "hides" the parameter
+// creation step by relying on the fact that `getStaticFriction` does it for us
+//
+// if this test breaks then look for HuntCrossleyForce, ContactParameterSet, getStaticFriction,
+// and ActionAssignContactGeometryToHCF and go fix things
+TEST(HuntCrossleyForce, GetStaticFrictionCreatesOneContactparameterSet)
+{
+    OpenSim::HuntCrossleyForce hcf;
+
+    ASSERT_EQ(hcf.get_contact_parameters().getSize(), 0);
+
+    hcf.getStaticFriction();
+
+    ASSERT_EQ(hcf.get_contact_parameters().getSize(), 1);
 }
