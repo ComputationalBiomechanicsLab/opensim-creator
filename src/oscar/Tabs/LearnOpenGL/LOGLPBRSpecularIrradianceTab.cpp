@@ -14,7 +14,9 @@
 #include "oscar/Graphics/Texture2D.hpp"
 #include "oscar/Graphics/TextureWrapMode.hpp"
 #include "oscar/Graphics/TextureFilterMode.hpp"
+#include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Maths/Rect.hpp"
+#include "oscar/Panels/PerfPanel.hpp"
 #include "oscar/Platform/App.hpp"
 #include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/Assertions.hpp"
@@ -151,14 +153,38 @@ namespace
         return irradianceCubemap;
     }
 
-    osc::Cubemap CreatePreFilteredEnvironmentMap(
-        osc::RenderTexture const&)
+    constexpr float c_HackedRoughness = 0.05f;  // hard-coded until LOD is implemented
+
+    osc::RenderTexture CreatePreFilteredEnvironmentMap(
+        osc::RenderTexture const& environmentMap)
     {
-        osc::Cubemap rv
+        osc::RenderTexture rv{{128, 128}};
+        rv.setDimensionality(osc::TextureDimensionality::Cube);
+        rv.setColorFormat(osc::RenderTextureFormat::ARGBFloat16);
+
+        glm::mat4 const captureProjection = glm::perspective(
+            glm::radians(90.0f),
+            1.0f,
+            0.1f,
+            10.0f
+        );
+
+        osc::Material material
         {
-            128,
-            osc::TextureFormat::RGBFloat,  // TODO: GL_RGB16F support
+            osc::Shader
+            {
+                osc::App::slurp("shaders/PBR/ibl_specular/Prefilter.vert"),
+                osc::App::slurp("shaders/PBR/ibl_specular/Prefilter.geom"),
+                osc::App::slurp("shaders/PBR/ibl_specular/Prefilter.frag"),
+            },
         };
+        material.setRenderTexture("uEnvironmentMap", environmentMap);
+        material.setMat4Array("uShadowMatrices", osc::CalcCubemapViewProjMatrices(captureProjection, glm::vec3{}));
+        material.setFloat("uRoughness", c_HackedRoughness);  // TODO: hacked in for non-LOD visualization
+
+        osc::Camera camera;
+        osc::Graphics::DrawMesh(osc::GenCube(), osc::Transform{}, material, camera);
+        camera.renderTo(rv);
 
         // TODO: create an output cubemap (the return value)
         //
@@ -282,10 +308,16 @@ private:
 
     void implOnDraw() final
     {
+        Rect const outputRect = GetMainViewportWorkspaceScreenRect();
+        m_OutputRender.setDimensions(Dimensions(outputRect));
+        m_OutputRender.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
+
         updateCameraFromInputs();
         draw3DRender();
         drawBackground();
+        Graphics::BlitToScreen(m_OutputRender, outputRect);
         draw2DUI();
+        m_PerfPanel.onDraw();
     }
 
     void updateCameraFromInputs()
@@ -306,19 +338,17 @@ private:
 
     void draw3DRender()
     {
-        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
-
         m_PBRMaterial.setVec3("uCameraWorldPos", m_Camera.getPosition());
         m_PBRMaterial.setVec3Array("uLightPositions", c_LightPositions);
         m_PBRMaterial.setVec3Array("uLightColors", c_LightRadiances);
         m_PBRMaterial.setRenderTexture("uIrradianceMap", m_IrradianceMap);
-        m_PBRMaterial.setCubemap("uPrefilterMap", m_PrefilterMap);
+        m_PBRMaterial.setRenderTexture("uPrefilterMap", m_PrefilterMap);
         m_PBRMaterial.setTexture("uBRDFLut", m_BRDFLookup);
 
         drawSpheres();
         drawLights();
 
-        m_Camera.renderToScreen();
+        m_Camera.renderTo(m_OutputRender);
     }
 
     void drawSpheres()
@@ -331,8 +361,8 @@ private:
 
             for (int col = 0; col < c_NumCols; ++col)
             {
-                float const normalizedCol = static_cast<float>(col) / static_cast<float>(c_NumCols);
-                m_PBRMaterial.setFloat("uRoughness", glm::clamp(normalizedCol, 0.005f, 1.0f));
+                // TODO: after mipmaps are implemented float const normalizedCol = static_cast<float>(col) / static_cast<float>(c_NumCols);
+                m_PBRMaterial.setFloat("uRoughness", c_HackedRoughness); // TODO: vary roughness and use mipmaps glm::clamp(normalizedCol, 0.005f, 1.0f));
 
                 Transform t;
                 t.position =
@@ -366,9 +396,8 @@ private:
         m_BackgroundMaterial.setRenderTexture("uEnvironmentMap", m_ProjectedMap);
         m_BackgroundMaterial.setDepthFunction(DepthFunction::LessOrEqual);  // for skybox depth trick
         Graphics::DrawMesh(m_CubeMesh, Transform{}, m_BackgroundMaterial, m_Camera);
-        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
         m_Camera.setClearFlags(osc::CameraClearFlags::Nothing);
-        m_Camera.renderToScreen();
+        m_Camera.renderTo(m_OutputRender);
         m_Camera.setClearFlags(osc::CameraClearFlags::Default);
     }
 
@@ -393,8 +422,9 @@ private:
 
     RenderTexture m_ProjectedMap = LoadEquirectangularHDRTextureIntoCubemap();
     RenderTexture m_IrradianceMap = CreateIrradianceCubemap(m_ProjectedMap);
-    Cubemap m_PrefilterMap = CreatePreFilteredEnvironmentMap(m_ProjectedMap);
+    RenderTexture m_PrefilterMap = CreatePreFilteredEnvironmentMap(m_ProjectedMap);
     Texture2D m_BRDFLookup = Create2DBRDFLookup();
+    RenderTexture m_OutputRender{{1, 1}};
 
     Material m_BackgroundMaterial
     {
@@ -412,6 +442,8 @@ private:
     Camera m_Camera = CreateCamera();
     glm::vec3 m_CameraEulers = {};
     bool m_IsMouseCaptured = true;
+
+    PerfPanel m_PerfPanel{"Perf"};
 };
 
 
