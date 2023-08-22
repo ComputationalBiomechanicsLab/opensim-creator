@@ -12,9 +12,11 @@
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
+#include <Simbody.h>
 
 #include <array>
 #include <filesystem>
+#include <memory>
 
 
 // this is a repro for
@@ -203,4 +205,33 @@ TEST(OpenSimModel, LoadingAnOsimWithEmptyFieldsDoesNotSegfault)
     OpenSim::Model m1{brokenFilePath.string()};
     OpenSim::Model m2{m1};
     m2.buildSystem();  // segfaults, due to #621 (opensim-core/#3409)
+}
+
+// repro for #597
+//
+// OpenSim <= 4.4 had unusual code for storing/updating the inertia of a body and
+// that code causes property updates to not update the underlying body when the
+// component is re-finalized
+TEST(OpenSimModel, UpdatesInertiaCorrectly)
+{
+    // this converter matches how OpenSim::Body does it
+    auto const toInertia = [](SimTK::Vec6 const& v)
+    {
+        return SimTK::Inertia{v.getSubVec<3>(0), v.getSubVec<3>(0)};
+    };
+
+    SimTK::Vec6 initialValue{1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+    SimTK::Vec6 updatedValue{2.0, 2.0, 2.0, 2.0, 2.0, 2.0};
+
+    OpenSim::Body b{};
+    b.set_mass(1.0);  // just something nonzero
+    b.set_inertia(initialValue);  // note: updating the property
+    b.finalizeFromProperties();
+
+    ASSERT_EQ(b.getInertia(), toInertia(initialValue));
+
+    b.set_inertia(updatedValue);
+    b.finalizeFromProperties();
+
+    ASSERT_EQ(b.getInertia(), toInertia(updatedValue));  // broke in OpenSim <= 4.4 (see #597)
 }
