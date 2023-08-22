@@ -179,6 +179,45 @@ namespace
         return rv;
     }
 
+    osc::Texture2D Create2DBRDFLookup()
+    {
+        osc::RenderTexture renderTex
+        {
+            {512, 512}
+        };
+        renderTex.setColorFormat(osc::RenderTextureFormat::ARGBFloat16);  // TODO RG16F in LearnOpenGL
+
+        osc::Material material
+        {
+            osc::Shader
+            {
+                osc::App::slurp("shaders/PBR/ibl_specular/BRDF.vert"),
+                osc::App::slurp("shaders/PBR/ibl_specular/BRDF.frag"),
+            },
+        };
+
+        osc::Mesh quad = osc::GenTexturedQuad();
+
+        // TODO: Graphics::Blit with material
+        osc::Camera camera;
+        camera.setProjectionMatrixOverride(glm::mat4{1.0f});
+        camera.setViewMatrixOverride(glm::mat4{1.0f});
+
+        osc::Graphics::DrawMesh(quad, osc::Transform{}, material, camera);
+        camera.renderTo(renderTex);
+
+        osc::Texture2D rv
+        {
+            {512, 512},
+            osc::TextureFormat::RGBFloat,  // TODO: RG16F in LearnOpenGL
+            osc::ColorSpace::Linear,
+            osc::TextureWrapMode::Clamp,
+            osc::TextureFilterMode::Linear,
+        };
+        osc::Graphics::CopyTexture(renderTex, rv);
+        return rv;
+    }
+
     osc::Material CreateMaterial()
     {
         osc::Material rv
@@ -350,6 +389,7 @@ private:
     RenderTexture m_ProjectedMap = LoadEquirectangularHDRTextureIntoCubemap();
     RenderTexture m_IrradianceMap = CreateIrradianceCubemap(m_ProjectedMap);
     Cubemap m_PrefilterMap = CreatePreFilteredEnvironmentMap(m_ProjectedMap);
+    Texture2D m_BRDFLookup = Create2DBRDFLookup();
 
     Material m_BackgroundMaterial
     {
