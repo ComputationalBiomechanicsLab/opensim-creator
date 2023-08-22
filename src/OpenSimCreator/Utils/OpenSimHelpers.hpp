@@ -269,12 +269,6 @@ namespace osc
         OpenSim::Component const&
     );
 
-    // returns `true` if the socket was successfully connected to the component
-    bool TryConnectTo(
-        OpenSim::AbstractSocket&,
-        OpenSim::Component const&
-    );
-
     // recursively traverses all components within `root` and reassigns any sockets
     // pointing to `from` to instead point to `to`
     //

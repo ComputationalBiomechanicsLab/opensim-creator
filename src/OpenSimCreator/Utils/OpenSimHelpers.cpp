@@ -261,6 +261,26 @@ namespace
             osc::PointDirection{insertionPos, insertionDir},
         };
     }
+
+    bool TryConnectTo(
+        OpenSim::AbstractSocket& socket,
+        OpenSim::Component const& c)
+    {
+        if (!socket.canConnectTo(c))
+        {
+            return false;
+        }
+
+        try
+        {
+            socket.connect(c);
+            return true;
+        }
+        catch (OpenSim::Exception const&)
+        {
+            return false;
+        }
+    }
 }
 
 
@@ -591,33 +611,7 @@ bool osc::IsAbleToConnectTo(
     OpenSim::AbstractSocket const& s,
     OpenSim::Component const& c)
 {
-    // yes, this is very very bad
-
-    std::unique_ptr<OpenSim::AbstractSocket> copy{s.clone()};
-    try
-    {
-        copy->connect(c);
-        return true;
-    }
-    catch (OpenSim::Exception const&)
-    {
-        return false;
-    }
-}
-
-bool osc::TryConnectTo(
-    OpenSim::AbstractSocket& socket,
-    OpenSim::Component const& c)
-{
-    try
-    {
-        socket.connect(c);
-        return true;
-    }
-    catch (OpenSim::Exception const&)
-    {
-        return false;
-    }
+    return s.canConnectTo(c);
 }
 
 void osc::RecursivelyReassignAllSockets(
@@ -629,9 +623,9 @@ void osc::RecursivelyReassignAllSockets(
     {
         for (OpenSim::AbstractSocket* socket : osc::UpdAllSockets(c))
         {
-            if (osc::IsConnectedTo(*socket, from))
+            if (IsConnectedTo(*socket, from))
             {
-                osc::TryConnectTo(*socket, to);
+                TryConnectTo(*socket, to);
             }
         }
     }
