@@ -3201,7 +3201,7 @@ namespace
         addedBody->setName(std::string{bodyEl.GetLabel()});
         addedBody->setMass(bodyEl.getMass());
 
-        // HACK: set the inertia of the emitted body to be nonzero
+        // set the inertia of the emitted body to be nonzero
         //
         // the reason we do this is because having a zero inertia on a body can cause
         // the simulator to freak out in some scenarios.

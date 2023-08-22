@@ -100,9 +100,8 @@ namespace
         return false;
     }
 
-    bool IsConnectedViaSocketTo(OpenSim::Component& c, OpenSim::Component const& other)
+    bool IsConnectedViaSocketTo(OpenSim::Component const& c, OpenSim::Component const& other)
     {
-        // TODO: .getSocketNames() should be `const` in OpenSim >4.4
         for (std::string const& socketName : c.getSocketNames())
         {
             OpenSim::AbstractSocket const& sock = c.getSocket(socketName);
@@ -114,18 +113,18 @@ namespace
         return false;
     }
 
-    std::vector<OpenSim::Component*> GetAnyComponentsConnectedViaSocketTo(
-        OpenSim::Component& root,
+    std::vector<OpenSim::Component const*> GetAnyComponentsConnectedViaSocketTo(
+        OpenSim::Component const& root,
         OpenSim::Component const& component)
     {
-        std::vector<OpenSim::Component*> rv;
+        std::vector<OpenSim::Component const*> rv;
 
         if (IsConnectedViaSocketTo(root, component))
         {
             rv.push_back(&root);
         }
 
-        for (OpenSim::Component& modelComponent : root.updComponentList())
+        for (OpenSim::Component const& modelComponent : root.getComponentList())
         {
             if (IsConnectedViaSocketTo(modelComponent, component))
             {
@@ -136,12 +135,12 @@ namespace
         return rv;
     }
 
-    std::vector<OpenSim::Component*> GetAnyNonChildrenComponentsConnectedViaSocketTo(
-        OpenSim::Component& root,
+    std::vector<OpenSim::Component const*> GetAnyNonChildrenComponentsConnectedViaSocketTo(
+        OpenSim::Component const& root,
         OpenSim::Component const& component)
     {
-        std::vector<OpenSim::Component*> allConnectees = GetAnyComponentsConnectedViaSocketTo(root, component);
-        osc::erase_if(allConnectees, [&root, &component](OpenSim::Component* connectee)
+        std::vector<OpenSim::Component const*> allConnectees = GetAnyComponentsConnectedViaSocketTo(root, component);
+        osc::erase_if(allConnectees, [&root, &component](OpenSim::Component const* connectee)
         {
             return
                 osc::IsInclusiveChildOf(&component, connectee) &&
@@ -485,8 +484,7 @@ osc::CStringView osc::GetCoordDisplayValueUnitsString(OpenSim::Coordinate const&
 
 std::vector<std::string> osc::GetSocketNames(OpenSim::Component const& c)
 {
-    // const_cast is necessary because `getSocketNames` is somehow not-`const`
-    return const_cast<OpenSim::Component&>(c).getSocketNames();
+    return c.getSocketNames();
 }
 
 std::vector<OpenSim::AbstractSocket const*> osc::GetAllSockets(OpenSim::Component const& c)
@@ -537,7 +535,7 @@ OpenSim::Component const* osc::FindComponent(
     OpenSim::Model const& model,
     std::string const& absPath)
 {
-    return osc::FindComponent(model, OpenSim::ComponentPath{absPath});
+    return FindComponent(model, OpenSim::ComponentPath{absPath});
 }
 
 OpenSim::Component* osc::FindComponentMut(
