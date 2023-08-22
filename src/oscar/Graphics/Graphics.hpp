@@ -44,7 +44,7 @@ namespace osc::Graphics
 
     void Blit(
         Texture2D const&,
-        RenderTexture& dest
+        RenderTexture&
     );
 
     void BlitToScreen(
@@ -68,7 +68,7 @@ namespace osc::Graphics
         Rect const&
     );
 
-    // copy: copy one GPU texture to another GPU texture
+    // copy: copy a GPU texture to a (potentially, CPU-accessible) texture
 
     void CopyTexture(
         RenderTexture const&,
@@ -80,4 +80,6 @@ namespace osc::Graphics
         Texture2D&,
         CubemapFace
     );
+
+    // TODO: (PBR): CopyTexture(RenderTexture const&, Cubemap&, size_t mip)
 }

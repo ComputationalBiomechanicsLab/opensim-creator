@@ -1299,6 +1299,8 @@ namespace
 
     GLint ToGLTextureMinFilterParam(osc::TextureFilterMode m)
     {
+        static_assert(osc::NumOptions<osc::TextureFilterMode>() == 3);
+
         switch (m)
         {
         case osc::TextureFilterMode::Nearest:
@@ -1314,6 +1316,8 @@ namespace
 
     GLint ToGLTextureMagFilterParam(osc::TextureFilterMode m)
     {
+        static_assert(osc::NumOptions<osc::TextureFilterMode>() == 3);
+
         switch (m)
         {
         case osc::TextureFilterMode::Nearest:
@@ -1327,6 +1331,8 @@ namespace
 
     GLint ToGLTextureTextureWrapParam(osc::TextureWrapMode m)
     {
+        static_assert(osc::NumOptions<osc::TextureWrapMode>() == 3);
+
         switch (m)
         {
         case osc::TextureWrapMode::Repeat:
@@ -3908,6 +3914,7 @@ namespace
     GLenum ToOpenGLTopology(osc::MeshTopology t)
     {
         static_assert(osc::NumOptions<osc::MeshTopology>() == 2);
+
         switch (t)
         {
         case osc::MeshTopology::Triangles:
