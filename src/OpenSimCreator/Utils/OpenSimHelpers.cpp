@@ -762,7 +762,7 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
         return false;
     }
 
-    // BUG/HACK: check if any path wraps connect to the component
+    // HACK: check if any path wraps connect to the component
     //
     // this is because the wrapping code isn't using sockets :< - this should be
     // fixed in OpenSim itself
@@ -985,26 +985,6 @@ void osc::InitializeModel(OpenSim::Model& model)
 {
     OSC_PERF("osc::InitializeModel");
     model.finalizeFromProperties();  // clears potentially-stale member components (required for `clearConnections`)
-
-    // HACK: reset body inertias to NaN to force OpenSim (at least <= 4.4) to recompute
-    //       inertia correctly (#597)
-    //
-    // this is necessary, because OpenSim contains a bug where body inertias aren't updated
-    // by property changes (see #597 for a better explanation)
-    for (OpenSim::Body& body : model.updComponentList<OpenSim::Body>())
-    {
-        // maintain copy of user-enacted/osim inertia value
-        SimTK::Vec6 const userInertia = body.get_inertia();
-
-        // NaN both the property and the internal `_inertia` member
-        body.setInertia(SimTK::Inertia{});
-
-        // but then reset the property to the user-enacted value
-        body.set_inertia(userInertia);
-
-        // (which should cause OpenSim to behave as-if finalized properly)
-    }
-
     model.clearConnections();        // clears any potentially stale pointers that can be retained by OpenSim::Socket<T> (see #263)
     model.buildSystem();             // creates a new underlying physics system
 }
@@ -1452,15 +1432,14 @@ std::optional<osc::PointInfo> osc::TryExtractPointInfo(
 {
     if (dynamic_cast<OpenSim::PathWrapPoint const*>(&c))
     {
-        // BODGE/HACK: path wrap points don't update the cache correctly?
+        // HACK: path wrap points don't update the cache correctly?
         return std::nullopt;
     }
     else if (auto const* station = dynamic_cast<OpenSim::Station const*>(&c))
     {
-        // BODGE/HACK: OpenSim redundantly stores path point information
-        // in a child called 'station'. These must be filtered because, otherwise,
-        // the user will just see a bunch of 'station' entries below each path
-        // point
+        // HACK: OpenSim redundantly stores path point information in a child called 'station'.
+        // These must be filtered because, otherwise, the user will just see a bunch of
+        // 'station' entries below each path point
         {
             OpenSim::Component const* owner = osc::GetOwner(*station);
             if (station->getName() == "station" && dynamic_cast<OpenSim::PathPoint const*>(owner))

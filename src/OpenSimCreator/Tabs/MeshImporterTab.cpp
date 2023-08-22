@@ -502,7 +502,7 @@ namespace
             }
         }
 
-        // HACK: ensure the UI thread redraws after the mesh is loaded
+        // ensure the UI thread redraws after the mesh is loaded
         osc::App::upd().requestRedraw();
 
         return MeshLoadOKResponse{msg.preferredAttachmentPoint, std::move(loadedMeshes)};

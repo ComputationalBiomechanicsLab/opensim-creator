@@ -74,8 +74,8 @@ private:
 
             if (ImGuiTableSortSpecs* specs = ImGui::TableGetSortSpecs(); specs && specs->SpecsDirty)
             {
-                // HACK: we know the user can only sort one column (name) so we don't need to permute
-                //       through the entire specs structure
+                // we know the user can only sort one column (name) so we don't need to permute
+                // through the entire specs structure
                 if (specs->SpecsCount == 1 && specs->Specs[0].ColumnIndex == 0 && specs->Specs[0].SortOrder == 0)
                 {
                     ImGuiTableColumnSortSpecs const& spec = specs->Specs[0];

@@ -388,7 +388,7 @@ private:
         m_Toolbar.onDraw();
 
         // only draw content if a simulation report is available
-        std::optional<osc::SimulationReport> maybeReport = TrySelectReportBasedOnScrubbing(*m_Simulation);
+        std::optional<osc::SimulationReport> maybeReport = trySelectReportBasedOnScrubbing();
         if (maybeReport)
         {
             m_ShownModelState->setSimulation(m_Simulation);
@@ -410,25 +410,6 @@ private:
             LogViewerPanel p{"Log"};
             p.onDraw();
         }
-    }
-
-    std::optional<osc::SimulationReport> TrySelectReportBasedOnScrubbing(osc::VirtualSimulation& sim)
-    {
-        std::optional<osc::SimulationReport> maybeReport = trySelectReportBasedOnScrubbing();
-
-        if (!maybeReport)
-        {
-            return maybeReport;
-        }
-
-        osc::SimulationReport& report = *maybeReport;
-
-        // HACK: re-realize state, because of the OpenSim pathwrap bug: https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/123
-        SimTK::State& st = report.updStateHACK();
-        st.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
-        sim.getModel()->realizeReport(st);
-
-        return maybeReport;
     }
 
     // tab data

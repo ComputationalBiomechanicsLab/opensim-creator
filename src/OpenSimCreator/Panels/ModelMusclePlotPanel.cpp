@@ -674,7 +674,7 @@ namespace
                 lock->push_back(p);
             }
 
-            // HACK: something happened on a background thread, the UI thread should probably redraw
+            // something happened on a background thread, the UI thread should probably redraw
             osc::App::upd().requestRedraw();
         }
 

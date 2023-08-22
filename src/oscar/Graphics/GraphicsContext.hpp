@@ -38,7 +38,7 @@ namespace osc
         void clearScreen(Color const&);
 
         // HACK: this is needed by ImGui, because it uses OpenGL "in the raw"
-        void* updRawGLContextHandle();
+        void* updRawGLContextHandleHACK();
 
         // returns a future that asynchronously yields a complete screenshot of the next frame
         std::future<Texture2D> requestScreenshot();

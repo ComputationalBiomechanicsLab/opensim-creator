@@ -647,9 +647,9 @@ public:
         return m_GraphicsContext;
     }
 
-    void* updRawGLContextHandle()
+    void* updRawGLContextHandleHACK()
     {
-        return m_GraphicsContext.updRawGLContextHandle();
+        return m_GraphicsContext.updRawGLContextHandleHACK();
     }
 
 private:
@@ -1272,7 +1272,7 @@ void osc::ImGuiInit()
 
     // init ImGui for SDL2 /w OpenGL
     App::Impl& impl = *App::upd().m_Impl;
-    ImGui_ImplSDL2_InitForOpenGL(impl.updWindow().get(), impl.updRawGLContextHandle());
+    ImGui_ImplSDL2_InitForOpenGL(impl.updWindow().get(), impl.updRawGLContextHandleHACK());
 
     // init ImGui for OpenGL
     ImGui_ImplOpenGL3_Init("#version 330 core");

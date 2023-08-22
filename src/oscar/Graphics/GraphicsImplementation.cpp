@@ -5374,7 +5374,7 @@ public:
         gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
-    void* updRawGLContextHandle()
+    void* updRawGLContextHandleHACK()
     {
         return m_GLContext.get();
     }
@@ -5573,9 +5573,9 @@ void osc::GraphicsContext::clearScreen(Color const& color)
     g_GraphicsContextImpl->clearScreen(color);
 }
 
-void* osc::GraphicsContext::updRawGLContextHandle()
+void* osc::GraphicsContext::updRawGLContextHandleHACK()
 {
-    return g_GraphicsContextImpl->updRawGLContextHandle();
+    return g_GraphicsContextImpl->updRawGLContextHandleHACK();
 }
 
 void osc::GraphicsContext::doSwapBuffers(SDL_Window& window)

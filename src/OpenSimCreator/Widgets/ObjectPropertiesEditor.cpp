@@ -1061,7 +1061,7 @@ namespace
 
             if (m_EditedProperty.isListProperty())
             {
-                return rv;  // // HACK: ignore list props for now
+                return rv;  // HACK: ignore list props for now
             }
 
             if (m_EditedProperty.empty())

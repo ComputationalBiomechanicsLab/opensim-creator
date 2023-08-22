@@ -976,7 +976,10 @@ bool osc::ActionAttachGeometryToPhysicalFrame(UndoableModelStatePair& uim, OpenS
     }
 }
 
-bool osc::ActionAssignContactGeometryToHCF(UndoableModelStatePair& uim, OpenSim::ComponentPath const& hcfPath, OpenSim::ComponentPath const& contactGeomPath)
+bool osc::ActionAssignContactGeometryToHCF(
+    UndoableModelStatePair& uim,
+    OpenSim::ComponentPath const& hcfPath,
+    OpenSim::ComponentPath const& contactGeomPath)
 {
     auto const* const target = osc::FindComponent<OpenSim::HuntCrossleyForce>(uim.getModel(), hcfPath);
     if (!target)
@@ -1297,8 +1300,8 @@ bool osc::ActionSetCoordinateSpeed(UndoableModelStatePair& model, OpenSim::Coord
             return false;
         }
 
-        // PERF HACK: don't do a full model+state re-realization here: only do it
-        //            when the caller wants to save the coordinate change
+        // HACK: don't do a full model+state re-realization here: only do it
+        //       when the caller wants to save the coordinate change
         mutCoord->setDefaultSpeedValue(v);
         mutCoord->setSpeedValue(mutModel.updWorkingState(), v);
         mutModel.equilibrateMuscles(mutModel.updWorkingState());
@@ -1396,8 +1399,8 @@ bool osc::ActionSetCoordinateValue(UndoableModelStatePair& model, OpenSim::Coord
             return false;
         }
 
-        // PERF HACK: don't do a full model+state re-realization here: only do it
-        //            when the caller wants to save the coordinate change
+        // HACK: don't do a full model+state re-realization here: only do it
+        //       when the caller wants to save the coordinate change
         mutCoord->setDefaultValue(v);
         mutCoord->setValue(mutModel.updWorkingState(), v);
         mutModel.equilibrateMuscles(mutModel.updWorkingState());
@@ -1618,10 +1621,10 @@ bool osc::ActionTranslateStation(
         // perform mutation
         mutStation->set_location(newPos);
 
-        // HACK: don't perform a full reinitialization because that would be very expensive
-        // and likely isn't necessary for a station
+        // HACK: don't perform a full model reinitialization because that would be very expensive
+        // and it is very likely that it isn't necessary when dragging a station
         //
-        // osc::InitializeModel(mutModel);
+        // osc::InitializeModel(mutModel);  // don't do this
         osc::InitializeState(mutModel);
 
         return true;
