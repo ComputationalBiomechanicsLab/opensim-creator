@@ -253,14 +253,8 @@ namespace
 }
 
 // custom OpenSim components for this screen
-namespace OpenSim
+namespace
 {
-    // HACK: OpenSim namespace is REQUIRED
-    //
-    // because OpenSim's property macros etc. assume so much, see:
-    //
-    //  - https://github.com/opensim-org/opensim-core/pull/3469
-
     // returns `true` if the given component is a point in the frame definition scene
     bool IsPoint(OpenSim::Component const& component)
     {
@@ -284,18 +278,18 @@ namespace OpenSim
         OpenSim_DECLARE_CONCRETE_OBJECT(SphereLandmark, OpenSim::Station)
     public:
         OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the sphere (decorative)");
-        OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance, "The appearance of the sphere (decorative)");
+        OpenSim_DECLARE_PROPERTY(Appearance, OpenSim::Appearance, "The appearance of the sphere (decorative)");
 
         SphereLandmark()
         {
             constructProperty_radius(c_SphereDefaultRadius);
-            constructProperty_Appearance(Appearance{});
+            constructProperty_Appearance(OpenSim::Appearance{});
             SetColorAndOpacity(upd_Appearance(), c_SphereDefaultColor);
         }
 
         void generateDecorations(
             bool,
-            const ModelDisplayHints&,
+            const OpenSim::ModelDisplayHints&,
             const SimTK::State& state,
             SimTK::Array_<SimTK::DecorativeGeometry>& appendOut) const final
         {
@@ -312,20 +306,20 @@ namespace OpenSim
         OpenSim_DECLARE_CONCRETE_OBJECT(MidpointLandmark, OpenSim::Point)
     public:
         OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the midpoint (decorative)");
-        OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance, "The appearance of the midpoint (decorative)");
+        OpenSim_DECLARE_PROPERTY(Appearance, OpenSim::Appearance, "The appearance of the midpoint (decorative)");
         OpenSim_DECLARE_SOCKET(pointA, OpenSim::Point, "The first point that the midpoint is between");
         OpenSim_DECLARE_SOCKET(pointB, OpenSim::Point, "The second point that the midpoint is between");
 
         MidpointLandmark()
         {
             constructProperty_radius(c_SphereDefaultRadius);
-            constructProperty_Appearance(Appearance{});
+            constructProperty_Appearance(OpenSim::Appearance{});
             SetColorAndOpacity(upd_Appearance(), c_MidpointDefaultColor);
         }
 
         void generateDecorations(
             bool,
-            const ModelDisplayHints&,
+            const OpenSim::ModelDisplayHints&,
             const SimTK::State& state,
             SimTK::Array_<SimTK::DecorativeGeometry>& appendOut) const final
         {
@@ -390,7 +384,7 @@ namespace OpenSim
 
     // virtual base class for an edge that starts at one location in ground and ends at
     // some other location in ground
-    class FDVirtualEdge : public ModelComponent {
+    class FDVirtualEdge : public OpenSim::ModelComponent {
         OpenSim_DECLARE_ABSTRACT_OBJECT(FDVirtualEdge, ModelComponent)
     public:
         EdgePoints getEdgePointsInGround(SimTK::State const& state) const
@@ -403,26 +397,26 @@ namespace OpenSim
 
     bool IsEdge(OpenSim::Component const& component)
     {
-        return dynamic_cast<OpenSim::FDVirtualEdge const*>(&component);
+        return dynamic_cast<FDVirtualEdge const*>(&component);
     }
 
     // an edge that starts at virtual `pointA` and ends at virtual `pointB`
     class FDPointToPointEdge final : public FDVirtualEdge {
         OpenSim_DECLARE_CONCRETE_OBJECT(FDPointToPointEdge, FDVirtualEdge)
     public:
-        OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance, "The appearance of the edge (decorative)");
-        OpenSim_DECLARE_SOCKET(pointA, Point, "The first point that the edge is connected to");
-        OpenSim_DECLARE_SOCKET(pointB, Point, "The second point that the edge is connected to");
+        OpenSim_DECLARE_PROPERTY(Appearance, OpenSim::Appearance, "The appearance of the edge (decorative)");
+        OpenSim_DECLARE_SOCKET(pointA, OpenSim::Point, "The first point that the edge is connected to");
+        OpenSim_DECLARE_SOCKET(pointB, OpenSim::Point, "The second point that the edge is connected to");
 
         FDPointToPointEdge()
         {
-            constructProperty_Appearance(Appearance{});
+            constructProperty_Appearance(OpenSim::Appearance{});
             SetColorAndOpacity(upd_Appearance(), c_PointToPointEdgeDefaultColor);
         }
 
         void generateDecorations(
             bool,
-            const ModelDisplayHints&,
+            const OpenSim::ModelDisplayHints&,
             const SimTK::State& state,
             SimTK::Array_<SimTK::DecorativeGeometry>& appendOut) const final
         {
@@ -457,20 +451,20 @@ namespace OpenSim
         OpenSim_DECLARE_CONCRETE_OBJECT(FDCrossProductEdge, FDVirtualEdge)
     public:
         OpenSim_DECLARE_PROPERTY(showPlane, bool, "Whether to show the plane of the two edges the cross product was created from (decorative)");
-        OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance, "The appearance of the edge (decorative)");
+        OpenSim_DECLARE_PROPERTY(Appearance, OpenSim::Appearance, "The appearance of the edge (decorative)");
         OpenSim_DECLARE_SOCKET(edgeA, FDVirtualEdge, "The first edge parameter to the cross product calculation");
         OpenSim_DECLARE_SOCKET(edgeB, FDVirtualEdge, "The second edge parameter to the cross product calculation");
 
         FDCrossProductEdge()
         {
             constructProperty_showPlane(false);
-            constructProperty_Appearance(Appearance{});
+            constructProperty_Appearance(OpenSim::Appearance{});
             SetColorAndOpacity(upd_Appearance(), c_CrossProductEdgeDefaultColor);
         }
 
         void generateDecorations(
             bool,
-            const ModelDisplayHints&,
+            const OpenSim::ModelDisplayHints&,
             const SimTK::State& state,
             SimTK::Array_<SimTK::DecorativeGeometry>& appendOut) const final
         {
@@ -666,7 +660,7 @@ namespace OpenSim
     private:
         void generateDecorations(
             bool,
-            const ModelDisplayHints&,
+            const OpenSim::ModelDisplayHints&,
             const SimTK::State& state,
             SimTK::Array_<SimTK::DecorativeGeometry>& appendOut) const final
         {
@@ -871,9 +865,9 @@ namespace
         std::string const commitMessage = GenerateAddedSomethingCommitMessage(sphereName);
 
         // create sphere component
-        std::unique_ptr<OpenSim::SphereLandmark> sphere = [&mesh, &locationInMeshFrame, &sphereName]()
+        std::unique_ptr<SphereLandmark> sphere = [&mesh, &locationInMeshFrame, &sphereName]()
         {
-            auto rv = std::make_unique<OpenSim::SphereLandmark>();
+            auto rv = std::make_unique<SphereLandmark>();
             rv->setName(sphereName);
             rv->set_location(locationInMeshFrame);
             rv->connectSocket_parent_frame(mesh.getFrame());
@@ -883,7 +877,7 @@ namespace
         // perform the model mutation
         {
             OpenSim::Model& mutableModel = model.updModel();
-            OpenSim::SphereLandmark const* const spherePtr = sphere.get();
+            SphereLandmark const* const spherePtr = sphere.get();
 
             mutableModel.addModelComponent(sphere.release());
             mutableModel.finalizeConnections();
@@ -940,14 +934,14 @@ namespace
         std::string const commitMessage = GenerateAddedSomethingCommitMessage(edgeName);
 
         // create edge
-        auto edge = std::make_unique<OpenSim::FDPointToPointEdge>();
+        auto edge = std::make_unique<FDPointToPointEdge>();
         edge->connectSocket_pointA(pointA);
         edge->connectSocket_pointB(pointB);
 
         // perform model mutation
         {
             OpenSim::Model& mutableModel = model.updModel();
-            OpenSim::FDPointToPointEdge const* edgePtr = edge.get();
+            FDPointToPointEdge const* edgePtr = edge.get();
 
             mutableModel.addModelComponent(edge.release());
             mutableModel.finalizeConnections();
@@ -967,14 +961,14 @@ namespace
         std::string const commitMessage = GenerateAddedSomethingCommitMessage(midpointName);
 
         // create midpoint component
-        auto midpoint = std::make_unique<OpenSim::MidpointLandmark>();
+        auto midpoint = std::make_unique<MidpointLandmark>();
         midpoint->connectSocket_pointA(pointA);
         midpoint->connectSocket_pointB(pointB);
 
         // perform model mutation
         {
             OpenSim::Model& mutableModel = model.updModel();
-            OpenSim::MidpointLandmark const* midpointPtr = midpoint.get();
+            MidpointLandmark const* midpointPtr = midpoint.get();
 
             mutableModel.addModelComponent(midpoint.release());
             mutableModel.finalizeConnections();
@@ -987,21 +981,21 @@ namespace
 
     void ActionAddCrossProductEdge(
         osc::UndoableModelStatePair& model,
-        OpenSim::FDVirtualEdge const& edgeA,
-        OpenSim::FDVirtualEdge const& edgeB)
+        FDVirtualEdge const& edgeA,
+        FDVirtualEdge const& edgeB)
     {
         std::string const edgeName = GenerateSceneElementName("crossproduct_");
         std::string const commitMessage = GenerateAddedSomethingCommitMessage(edgeName);
 
         // create cross product edge component
-        auto edge = std::make_unique<OpenSim::FDCrossProductEdge>();
+        auto edge = std::make_unique<FDCrossProductEdge>();
         edge->connectSocket_edgeA(edgeA);
         edge->connectSocket_edgeB(edgeB);
 
         // perform model mutation
         {
             OpenSim::Model& mutableModel = model.updModel();
-            OpenSim::FDCrossProductEdge const* edgePtr = edge.get();
+            FDCrossProductEdge const* edgePtr = edge.get();
 
             mutableModel.addModelComponent(edge.release());
             mutableModel.finalizeConnections();
@@ -1062,31 +1056,31 @@ namespace
 
     void ActionSwapPointToPointEdgeEnds(
         osc::UndoableModelStatePair& model,
-        OpenSim::FDPointToPointEdge const& edge)
+        FDPointToPointEdge const& edge)
     {
         ActionSwapSocketAssignments(model, edge.getAbsolutePath(), "pointA", "pointB");
     }
 
     void ActionSwapCrossProductEdgeOperands(
         osc::UndoableModelStatePair& model,
-        OpenSim::FDCrossProductEdge const& edge)
+        FDCrossProductEdge const& edge)
     {
         ActionSwapSocketAssignments(model, edge.getAbsolutePath(), "edgeA", "edgeB");
     }
 
     void ActionAddFrame(
         std::shared_ptr<osc::UndoableModelStatePair> model,
-        OpenSim::FDVirtualEdge const& firstEdge,
-        OpenSim::MaybeNegatedAxis firstEdgeAxis,
-        OpenSim::FDVirtualEdge const& otherEdge,
+        FDVirtualEdge const& firstEdge,
+        MaybeNegatedAxis firstEdgeAxis,
+        FDVirtualEdge const& otherEdge,
         OpenSim::Point const& origin)
     {
         std::string const frameName = GenerateSceneElementName("frame_");
         std::string const commitMessage = GenerateAddedSomethingCommitMessage(frameName);
 
         // create the frame
-        auto frame = std::make_unique<OpenSim::LandmarkDefinedFrame>();
-        frame->set_axisEdgeDimension(OpenSim::ToString(firstEdgeAxis));
+        auto frame = std::make_unique<LandmarkDefinedFrame>();
+        frame->set_axisEdgeDimension(ToString(firstEdgeAxis));
         frame->set_secondAxisDimension(ToString(Next(firstEdgeAxis)));
         frame->connectSocket_axisEdge(firstEdge);
         frame->connectSocket_otherEdge(otherEdge);
@@ -1095,7 +1089,7 @@ namespace
         // perform model mutation
         {
             OpenSim::Model& mutModel = model->updModel();
-            OpenSim::LandmarkDefinedFrame const* const framePtr = frame.get();
+            LandmarkDefinedFrame const* const framePtr = frame.get();
 
             mutModel.addModelComponent(frame.release());
             mutModel.finalizeConnections();
@@ -1538,7 +1532,7 @@ namespace
 
         ChooseComponentsEditorLayerParameters options;
         options.popupHeaderText = "choose other point";
-        options.canChooseItem = OpenSim::IsPoint;
+        options.canChooseItem = IsPoint;
         options.componentsBeingAssignedTo = {point.getAbsolutePathString()};
         options.numComponentsUserMustChoose = 1;
         options.onUserFinishedChoosing = [model, pointAPath = point.getAbsolutePathString()](std::unordered_set<std::string> const& choices) -> bool
@@ -1589,7 +1583,7 @@ namespace
 
         ChooseComponentsEditorLayerParameters options;
         options.popupHeaderText = "choose other point";
-        options.canChooseItem = OpenSim::IsPoint;
+        options.canChooseItem = IsPoint;
         options.componentsBeingAssignedTo = {point.getAbsolutePathString()};
         options.numComponentsUserMustChoose = 1;
         options.onUserFinishedChoosing = [model, pointAPath = point.getAbsolutePathString()](std::unordered_set<std::string> const& choices) -> bool
@@ -1629,7 +1623,7 @@ namespace
     void PushCreateCrossProductEdgeLayer(
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
-        OpenSim::FDVirtualEdge const& firstEdge,
+        FDVirtualEdge const& firstEdge,
         osc::ModelEditorViewerPanelRightClickEvent const& sourceEvent)
     {
         auto* const visualizer = editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
@@ -1640,7 +1634,7 @@ namespace
 
         ChooseComponentsEditorLayerParameters options;
         options.popupHeaderText = "choose other edge";
-        options.canChooseItem = OpenSim::IsEdge;
+        options.canChooseItem = IsEdge;
         options.componentsBeingAssignedTo = {firstEdge.getAbsolutePathString()};
         options.numComponentsUserMustChoose = 1;
         options.onUserFinishedChoosing = [model, edgeAPath = firstEdge.getAbsolutePathString()](std::unordered_set<std::string> const& choices) -> bool
@@ -1656,14 +1650,14 @@ namespace
             }
             std::string const& edgeBPath = *choices.begin();
 
-            auto const* edgeA = osc::FindComponent<OpenSim::FDVirtualEdge>(model->getModel(), edgeAPath);
+            auto const* edgeA = osc::FindComponent<FDVirtualEdge>(model->getModel(), edgeAPath);
             if (!edgeA)
             {
                 osc::log::error("edge A's component path (%s) does not exist in the model", edgeAPath.c_str());
                 return false;
             }
 
-            auto const* edgeB = osc::FindComponent<OpenSim::FDVirtualEdge>(model->getModel(), edgeBPath);
+            auto const* edgeB = osc::FindComponent<FDVirtualEdge>(model->getModel(), edgeBPath);
             if (!edgeB)
             {
                 osc::log::error("point B's component path (%s) does not exist in the model", edgeBPath.c_str());
@@ -1681,12 +1675,12 @@ namespace
         osc::ModelEditorViewerPanel& visualizer,
         std::shared_ptr<osc::UndoableModelStatePair> model,
         std::string const& firstEdgeAbsPath,
-        OpenSim::MaybeNegatedAxis firstEdgeAxis,
+        MaybeNegatedAxis firstEdgeAxis,
         std::string const& secondEdgeAbsPath)
     {
         ChooseComponentsEditorLayerParameters options;
         options.popupHeaderText = "choose frame origin";
-        options.canChooseItem = OpenSim::IsPoint;
+        options.canChooseItem = IsPoint;
         options.numComponentsUserMustChoose = 1;
         options.onUserFinishedChoosing = [
             model,
@@ -1706,14 +1700,14 @@ namespace
             }
             std::string const& originPath = *choices.begin();
 
-            auto const* firstEdge = osc::FindComponent<OpenSim::FDVirtualEdge>(model->getModel(), firstEdgeAbsPath);
+            auto const* firstEdge = osc::FindComponent<FDVirtualEdge>(model->getModel(), firstEdgeAbsPath);
             if (!firstEdge)
             {
                 osc::log::error("the first edge's component path (%s) does not exist in the model", firstEdgeAbsPath.c_str());
                 return false;
             }
 
-            auto const* otherEdge = osc::FindComponent<OpenSim::FDVirtualEdge>(model->getModel(), secondEdgeAbsPath);
+            auto const* otherEdge = osc::FindComponent<FDVirtualEdge>(model->getModel(), secondEdgeAbsPath);
             if (!otherEdge)
             {
                 osc::log::error("the second edge's component path (%s) does not exist in the model", secondEdgeAbsPath.c_str());
@@ -1743,12 +1737,12 @@ namespace
     void PushPickOtherEdgeStateForFrameDefinitionLayer(
         osc::ModelEditorViewerPanel& visualizer,
         std::shared_ptr<osc::UndoableModelStatePair> model,
-        OpenSim::FDVirtualEdge const& firstEdge,
-        OpenSim::MaybeNegatedAxis firstEdgeAxis)
+        FDVirtualEdge const& firstEdge,
+        MaybeNegatedAxis firstEdgeAxis)
     {
         ChooseComponentsEditorLayerParameters options;
         options.popupHeaderText = "choose other edge";
-        options.canChooseItem = OpenSim::IsEdge;
+        options.canChooseItem = IsEdge;
         options.componentsBeingAssignedTo = {firstEdge.getAbsolutePathString()};
         options.numComponentsUserMustChoose = 1;
         options.onUserFinishedChoosing = [
@@ -1786,8 +1780,8 @@ namespace
     void ActionPushCreateFrameLayer(
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
-        OpenSim::FDVirtualEdge const& firstEdge,
-        OpenSim::MaybeNegatedAxis firstEdgeAxis,
+        FDVirtualEdge const& firstEdge,
+        MaybeNegatedAxis firstEdgeAxis,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent)
     {
         if (!maybeSourceEvent)
@@ -1977,7 +1971,7 @@ namespace
         options.canChooseItem = [bodyFrame = osc::FindComponent(model->getModel(), frameAbsPath)](OpenSim::Component const& c)
         {
             return
-                OpenSim::IsPhysicalFrame(c) &&
+                IsPhysicalFrame(c) &&
                 &c != bodyFrame &&
                 !osc::IsChildOfA<OpenSim::ComponentSet>(c) &&
                 (osc::DerivesFrom<OpenSim::Ground>(c) || osc::IsChildOfA<OpenSim::BodySet>(c));
@@ -2025,7 +2019,7 @@ namespace
     {
         ChooseComponentsEditorLayerParameters options;
         options.popupHeaderText = "choose joint center frame";
-        options.canChooseItem = OpenSim::IsPhysicalFrame;
+        options.canChooseItem = IsPhysicalFrame;
         options.numComponentsUserMustChoose = 1;
         options.onUserFinishedChoosing = [
             visualizerPtr = &visualizer,  // TODO: implement weak_ptr for panel lookup
@@ -2068,7 +2062,7 @@ namespace
     {
         ChooseComponentsEditorLayerParameters options;
         options.popupHeaderText = "choose mesh to attach the body to";
-        options.canChooseItem = [](OpenSim::Component const& c) { return OpenSim::IsMesh(c) && !osc::IsChildOfA<OpenSim::Body>(c); };
+        options.canChooseItem = [](OpenSim::Component const& c) { return IsMesh(c) && !osc::IsChildOfA<OpenSim::Body>(c); };
         options.numComponentsUserMustChoose = 1;
         options.onUserFinishedChoosing = [
             visualizerPtr = &visualizer,  // TODO: implement weak_ptr for panel lookup
@@ -2133,7 +2127,7 @@ namespace
     void DrawCalculateMenu(
         OpenSim::Component const& root,
         SimTK::State const& state,
-        OpenSim::FDVirtualEdge const& edge)
+        FDVirtualEdge const& edge)
     {
         if (ImGui::BeginMenu(ICON_FA_CALCULATOR " Calculate"))
         {
@@ -2173,7 +2167,7 @@ namespace
                     osc::DrawDirectionInformationWithRepsectTo(
                         frame,
                         state,
-                        osc::ToVec3(OpenSim::CalcDirection(edge.getEdgePointsInGround(state)))
+                        osc::ToVec3(CalcDirection(edge.getEdgePointsInGround(state)))
                     );
                 };
 
@@ -2224,7 +2218,7 @@ namespace
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::FDVirtualEdge const& edge)
+        FDVirtualEdge const& edge)
     {
         if (maybeSourceEvent && ImGui::MenuItem(ICON_FA_TIMES " Cross Product Edge"))
         {
@@ -2240,7 +2234,7 @@ namespace
                     editor,
                     model,
                     edge,
-                    OpenSim::MaybeNegatedAxis{OpenSim::AxisIndex::X, false},
+                    MaybeNegatedAxis{AxisIndex::X, false},
                     maybeSourceEvent
                 );
             }
@@ -2253,7 +2247,7 @@ namespace
                     editor,
                     model,
                     edge,
-                    OpenSim::MaybeNegatedAxis{OpenSim::AxisIndex::Y, false},
+                    MaybeNegatedAxis{AxisIndex::Y, false},
                     maybeSourceEvent
                 );
             }
@@ -2266,7 +2260,7 @@ namespace
                     editor,
                     model,
                     edge,
-                    OpenSim::MaybeNegatedAxis{OpenSim::AxisIndex::Z, false},
+                    MaybeNegatedAxis{AxisIndex::Z, false},
                     maybeSourceEvent
                 );
             }
@@ -2281,7 +2275,7 @@ namespace
                     editor,
                     model,
                     edge,
-                    OpenSim::MaybeNegatedAxis{OpenSim::AxisIndex::X, true},
+                    MaybeNegatedAxis{AxisIndex::X, true},
                     maybeSourceEvent
                 );
             }
@@ -2294,7 +2288,7 @@ namespace
                     editor,
                     model,
                     edge,
-                    OpenSim::MaybeNegatedAxis{OpenSim::AxisIndex::Y, true},
+                    MaybeNegatedAxis{AxisIndex::Y, true},
                     maybeSourceEvent
                 );
             }
@@ -2307,7 +2301,7 @@ namespace
                     editor,
                     model,
                     edge,
-                    OpenSim::MaybeNegatedAxis{OpenSim::AxisIndex::Z, true},
+                    MaybeNegatedAxis{AxisIndex::Z, true},
                     maybeSourceEvent
                 );
             }
@@ -2476,7 +2470,7 @@ namespace
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::FDPointToPointEdge const& edge)
+        FDPointToPointEdge const& edge)
     {
         osc::DrawRightClickedComponentContextMenuHeader(edge);
         osc::DrawContextMenuSeparator();
@@ -2498,7 +2492,7 @@ namespace
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::FDCrossProductEdge const& edge)
+        FDCrossProductEdge const& edge)
     {
         osc::DrawRightClickedComponentContextMenuHeader(edge);
         osc::DrawContextMenuSeparator();
@@ -2588,11 +2582,11 @@ namespace
             {
                 DrawRightClickedFrameContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeFrame);
             }
-            else if (auto const* maybeP2PEdge = dynamic_cast<OpenSim::FDPointToPointEdge const*>(maybeComponent))
+            else if (auto const* maybeP2PEdge = dynamic_cast<FDPointToPointEdge const*>(maybeComponent))
             {
                 DrawRightClickedPointToPointEdgeContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeP2PEdge);
             }
-            else if (auto const* maybeCPEdge = dynamic_cast<OpenSim::FDCrossProductEdge const*>(maybeComponent))
+            else if (auto const* maybeCPEdge = dynamic_cast<FDCrossProductEdge const*>(maybeComponent))
             {
                 DrawRightClickedCrossProductEdgeContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeCPEdge);
             }
