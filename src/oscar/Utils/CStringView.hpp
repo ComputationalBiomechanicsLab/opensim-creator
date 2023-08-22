@@ -14,7 +14,7 @@ namespace osc
     public:
         constexpr CStringView() noexcept : m_Data{nullptr}, m_Size{0} {}
         constexpr CStringView(CStringView const&) noexcept = default;
-        constexpr CStringView(char const* s) noexcept : m_Data{s}, m_Size{std::string_view{s}.size()} {}
+        constexpr CStringView(char const* s) noexcept : m_Data{s}, m_Size{s ? std::string_view{s}.size() : 0} {}
         constexpr CStringView(std::nullptr_t) noexcept : CStringView{} {}
         CStringView(std::string const& s) noexcept : m_Data{s.c_str()}, m_Size{s.size()} {}
         constexpr CStringView& operator=(CStringView const&) noexcept = default;

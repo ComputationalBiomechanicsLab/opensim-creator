@@ -21,6 +21,7 @@ add_executable(testoscar EXCLUDE_FROM_ALL
 
     Maths/TestBVH.cpp
 
+    Utils/TestCStringView.cpp
     Utils/TestCpp20Shims.cpp
     Utils/TestFileChangePoller.cpp
     Utils/TestStringHelpers.cpp
