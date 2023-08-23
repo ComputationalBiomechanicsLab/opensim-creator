@@ -1,73 +1,73 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="40000">
-	<Model name="model">
-		<!--The model's ground reference frame.-->
-		<Ground name="ground">
-			<!--The geometry used to display the axes of this Frame.-->
-			<FrameGeometry name="frame_geometry">
-				<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-				<socket_frame>..</socket_frame>
-				<!--Scale factors in X, Y, Z directions respectively.-->
-				<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
-			</FrameGeometry>
-		</Ground>
-		<!--List of bodies that make up this model.-->
-		<BodySet name="bodyset">
-			<objects>
-				<Body name="some">
-					<!--The geometry used to display the axes of this Frame.-->
-					<FrameGeometry name="frame_geometry">
-						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-						<socket_frame>..</socket_frame>
-						<!--Scale factors in X, Y, Z directions respectively.-->
-						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
-					</FrameGeometry>
-					<!--The mass of the body (kg)-->
-					<mass>1</mass>
-					<!--The location (Vec3) of the mass center in the body frame.-->
-					<mass_center>0 0 0</mass_center>
-					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
-					<inertia>1 1 1 0 0 0</inertia>
-				</Body>
-			</objects>
-			<groups />
-		</BodySet>
-		<!--List of joints that connect the bodies.-->
-		<JointSet name="jointset">
-			<objects>
-				<PinJoint name="pinjoint">
-					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
-					<socket_parent_frame>/ground</socket_parent_frame>
-					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame>/bodyset/some</socket_child_frame>
-					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
-					<coordinates>
-						<Coordinate name="rz">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value></default_value>
-						</Coordinate>
-					</coordinates>
-				</PinJoint>
-			</objects>
-			<groups />
-		</JointSet>
-		<!--Controllers that provide the control inputs for Actuators.-->
-		<ControllerSet name="controllerset">
-			<objects />
-			<groups />
-		</ControllerSet>
-		<!--Forces in the model (includes Actuators).-->
-		<ForceSet name="forceset">
-			<objects />
-			<groups />
-		</ForceSet>
-		<!--Visual preferences for this model.-->
-		<ModelVisualPreferences name="modelvisualpreferences">
-			<!--Model display preferences-->
-			<ModelDisplayHints>
-				<!--Flag to indicate whether or not to show frames, default to false.-->
-				<show_frames>true</show_frames>
-			</ModelDisplayHints>
-		</ModelVisualPreferences>
-	</Model>
+    <Model name="model">
+        <!--The model's ground reference frame.-->
+        <Ground name="ground">
+            <!--The geometry used to display the axes of this Frame.-->
+            <FrameGeometry name="frame_geometry">
+                <!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+                <socket_frame>..</socket_frame>
+                <!--Scale factors in X, Y, Z directions respectively.-->
+                <scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+            </FrameGeometry>
+        </Ground>
+        <!--List of bodies that make up this model.-->
+        <BodySet name="bodyset">
+            <objects>
+                <Body name="some">
+                    <!--The geometry used to display the axes of this Frame.-->
+                    <FrameGeometry name="frame_geometry">
+                        <!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+                        <socket_frame>..</socket_frame>
+                        <!--Scale factors in X, Y, Z directions respectively.-->
+                        <scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+                    </FrameGeometry>
+                    <!--The mass of the body (kg)-->
+                    <mass>1</mass>
+                    <!--The location (Vec3) of the mass center in the body frame.-->
+                    <mass_center>0 0 0</mass_center>
+                    <!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+                    <inertia>1 1 1 0 0 0</inertia>
+                </Body>
+            </objects>
+            <groups />
+        </BodySet>
+        <!--List of joints that connect the bodies.-->
+        <JointSet name="jointset">
+            <objects>
+                <PinJoint name="pinjoint">
+                    <!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+                    <socket_parent_frame>/ground</socket_parent_frame>
+                    <!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+                    <socket_child_frame>/bodyset/some</socket_child_frame>
+                    <!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+                    <coordinates>
+                        <Coordinate name="rz">
+                            <!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+                            <default_value></default_value>
+                        </Coordinate>
+                    </coordinates>
+                </PinJoint>
+            </objects>
+            <groups />
+        </JointSet>
+        <!--Controllers that provide the control inputs for Actuators.-->
+        <ControllerSet name="controllerset">
+            <objects />
+            <groups />
+        </ControllerSet>
+        <!--Forces in the model (includes Actuators).-->
+        <ForceSet name="forceset">
+            <objects />
+            <groups />
+        </ForceSet>
+        <!--Visual preferences for this model.-->
+        <ModelVisualPreferences name="modelvisualpreferences">
+            <!--Model display preferences-->
+            <ModelDisplayHints>
+                <!--Flag to indicate whether or not to show frames, default to false.-->
+                <show_frames>true</show_frames>
+            </ModelDisplayHints>
+        </ModelVisualPreferences>
+    </Model>
 </OpenSimDocument>

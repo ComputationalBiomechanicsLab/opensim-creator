@@ -1,0 +1,28 @@
+<OpenSimDocument Version="40000">
+    <Model name="Segfaulty">
+        <Ground name="ground"></Ground>
+
+        <BodySet name="bodyset">
+            <objects>
+                <Body name="pelvis">
+                    <mass>1</mass>
+                    <mass_center>0 0 0</mass_center>
+                    <inertia>1 1 1 1 1 1</inertia>
+                </Body>
+            </objects>
+        </BodySet>
+
+        <JointSet name="jointset">
+            <objects>
+                <PinJoint name="ground_pelvis">
+                    <socket_parent_frame>/ground</socket_parent_frame>
+                    <socket_child_frame>/bodyset/pelvis</socket_child_frame>
+                </PinJoint>
+                <PinJoint name="pelvis_ground">
+                    <socket_parent_frame>/bodyset/pelvis</socket_parent_frame>
+                    <socket_child_frame>/ground</socket_child_frame>
+                </PinJoint>
+            </objects>
+        </JointSet>
+    </Model>
+</OpenSimDocument>
