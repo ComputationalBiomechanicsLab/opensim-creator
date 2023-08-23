@@ -246,7 +246,7 @@ TEST(OpenSimModel, UpdatesInertiaCorrectly)
 //
 // if this test breaks then look for HuntCrossleyForce, ContactParameterSet, getStaticFriction,
 // and ActionAssignContactGeometryToHCF and go fix things
-TEST(HuntCrossleyForce, GetStaticFrictionCreatesOneContactparameterSet)
+TEST(OpenSimModel, HuntCrossleyForceGetStaticFrictionCreatesOneContactparameterSet)
 {
     OpenSim::HuntCrossleyForce hcf;
 
@@ -255,4 +255,20 @@ TEST(HuntCrossleyForce, GetStaticFrictionCreatesOneContactparameterSet)
     hcf.getStaticFriction();
 
     ASSERT_EQ(hcf.get_contact_parameters().getSize(), 1);
+}
+
+// repro for #515
+//
+// github/@modenaxe (Luca Modenese) reported (paraphrasing):
+//
+// > I encountered an OpenSim bug/crash when using a CoordinateCouplerConstraint that has a MultiVariatePolynomial function
+//
+// this test just ensures that a minimal model containing those seems to work
+TEST(OpenSimModel, CoordinateCouplerConstraintWorksWithMultiVariatePolynomial)
+{
+    std::filesystem::path const brokenFilePath =
+        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_515-2_repro.osim";
+
+    OpenSim::Model model{brokenFilePath.string()};
+    model.buildSystem();  // shouldn't have any problems
 }
