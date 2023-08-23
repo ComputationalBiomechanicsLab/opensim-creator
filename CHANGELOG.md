@@ -5,6 +5,7 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- The 3D camera will no longer move when dragging a visualizer panel around (#739)
 - OpenSim was upgraded from version v4.4 to v4.4.1 (#721)
 - All other libraries were updated to their latest version (#721)
 - Internal: LearnOpenGL's physically based rendering (PBR) examples tabs added

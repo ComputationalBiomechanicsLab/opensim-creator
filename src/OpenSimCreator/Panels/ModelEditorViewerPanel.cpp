@@ -338,8 +338,6 @@ private:
         // because GCing destroyed them before they were rendered
         layersGarbageCollect();
 
-        bool const isHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
-
         m_State.viewportRect = ContentRegionAvailScreenRect();
         m_State.isLeftClickReleasedWithoutDragging = IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
         m_State.isRightClickReleasedWithoutDragging = IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
@@ -358,7 +356,7 @@ private:
         layersOnNewFrame();
 
         // if the viewer is hovered, handle inputs
-        if (isHovered)
+        if (m_RenderIsHovered)
         {
             layersHandleMouseInputs();
 
@@ -380,13 +378,34 @@ private:
                 sceneTexture,
                 Dimensions(m_State.viewportRect)
             );
+
+            // care: hittesting is done here, rather than using ImGui::IsWindowHovered, because
+            // we care about whether the _render_ is hovered, not any part of the window (which
+            // may include things like the title bar, etc.
+            //
+            // screwing this up can result in unusual camera behavior, e.g. the camera may move when
+            // dragging a visualizer panel around (#739 #93)
+
+            // check if the window is conditionally hovered: this returns true if no other window is
+            // overlapping the editor panel, _but_ it also returns true if the user is only hovering
+            // the title bar of the window, rather than specifically the render
+            bool const windowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows);
+
+            // check if the 3D render is hovered - ignore blocking and overlapping because the layer
+            // stack might be screwing with this
+            bool const renderHoveredIgnoringOverlap = ImGui::IsItemHovered(
+                ImGuiHoveredFlags_AllowWhenBlockedByActiveItem |
+                ImGuiHoveredFlags_AllowWhenOverlapped
+            );
+
+            m_RenderIsHovered = windowHovered && renderHoveredIgnoringOverlap;
         }
 
         // update state scene AABB
         m_State.maybeSceneAABB = m_State.getRenderer().getRootAABB();
 
         // if hovering in 2D, 3D-hittest the scene
-        if (isHovered)
+        if (m_RenderIsHovered)
         {
             m_State.maybeBaseLayerHittest = m_State.getRenderer().getClosestCollision(
                 m_Parameters.getRenderParams(),
@@ -492,6 +511,7 @@ private:
     ModelEditorViewerPanelState m_State{getName()};
     std::vector<std::unique_ptr<ModelEditorViewerPanelLayer>> m_Layers;
     bool m_IsFirstFrame = true;
+    bool m_RenderIsHovered = false;
 };
 
 
