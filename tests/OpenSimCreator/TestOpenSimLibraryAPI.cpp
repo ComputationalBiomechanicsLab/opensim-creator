@@ -307,3 +307,117 @@ TEST(OpenSimModel, DeletingElementFromCoordinateRangeShouldThrowEarly)
 
     ASSERT_ANY_THROW({ coord.getRangeMin(); });  // throws (shouldn't: should throw in finalizeFromProperties/finalizeConnections)
 }
+
+// repro for #472
+//
+// OpenSim <= 4.4 contains a bug where circular, or bizzarre, joint topologies segfault
+// because the model topology graph solver isn't resillient to incorrect inputs
+//
+// it should be fixed in OpenSim >= 4.4.1, but this test is here to double-check that
+TEST(OpenSimModel, ReassigningAJointsChildToGroundDoesNotSegfault)
+{
+    OpenSim::Model model;
+
+    // define model with a body connected to ground via a simple joint
+    auto body = std::make_unique<OpenSim::Body>("body", 1.0, SimTK::Vec3{}, SimTK::Inertia{});
+    auto joint = std::make_unique<OpenSim::PinJoint>();
+    joint->setName("joint");
+    joint->updCoordinate().setName("rotation");
+    joint->connectSocket_parent_frame(model.getGround());
+    joint->connectSocket_child_frame(*body);
+    OpenSim::Joint* jointPtr = joint.get();
+    model.addJoint(joint.release());
+    model.addBody(body.release());
+    model.finalizeConnections();
+
+    // building that system should have no issues
+    model.buildSystem();
+
+    // but, uh oh, we've now set the joint's child to be the same as it's parent,
+    // which makes no logical sense
+    jointPtr->connectSocket_child_frame(model.getGround());
+
+    try
+    {
+        // doing that shouldn't segfault
+        model.buildSystem();
+    } catch (std::exception const&)
+    {
+        // but OpenSim is pemitted to throw an exception whining about it
+    }
+}
+
+// repro for #472
+//
+// similar to above, OpenSim <= 4.4 can segfault if a user does something bizzare, but indirect,
+// like reassigining a child offset frame of a joint to be the same as the parent of the joint
+// (even indirectly, e.g. joint --> parent offset --> parent)
+//
+// this little bit of code is just here to make sure that it's fixed in OpenSim >= 4.4.1, so that
+// I know that various downstream hacks in OSC (e.g. OSC runtime-checking the user's UI
+// selection and preemptively erroring on these edge-cases) are now unnecessary
+TEST(OpenSimModel, ReassigningAnOffsetFrameForJointChildToParentDoesNotSegfault)
+{
+    OpenSim::Model model;
+
+    // define model with a body connected to ground via a simple joint
+    auto body = std::make_unique<OpenSim::Body>("body", 1.0, SimTK::Vec3{}, SimTK::Inertia{});
+    auto joint = std::make_unique<OpenSim::PinJoint>();
+    joint->setName("joint");
+
+    // add first offset frame as joint's parent
+    OpenSim::PhysicalOffsetFrame* parentToGroundOffset = [&model, &joint]()
+    {
+        auto pof1 = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+        pof1->setParentFrame(model.getGround());
+        pof1->setName("ground_offset");
+
+        OpenSim::PhysicalOffsetFrame* ptr = pof1.get();
+        joint->addFrame(pof1.release());
+        joint->connectSocket_parent_frame(*ptr);
+        return ptr;
+    }();
+
+    // add second offset frame as joint's child
+    OpenSim::PhysicalOffsetFrame* childToBodyOffset = [&body, &joint]()
+    {
+        auto pof2 = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+        pof2->setParentFrame(*body);
+        pof2->setName("body_offset");
+
+        OpenSim::PhysicalOffsetFrame* ptr = pof2.get();
+        joint->addFrame(pof2.release());
+        joint->connectSocket_child_frame(*ptr);
+        return ptr;
+    }();
+
+    model.addJoint(joint.release());
+    model.addBody(body.release());
+    model.finalizeConnections();
+
+    // building that system should have no issues
+    model.buildSystem();
+
+    // but, uh oh, we've now set the joint's child to be the same as it's parent,
+    // which makes no logical sense
+    //childToBodyOffset->connectSocket_parent(*parentToGroundOffset);
+
+    try
+    {
+        // doing that shouldn't segfault
+        //model.buildSystem();
+    } catch (std::exception const&)
+    {
+        // but OpenSim is pemitted to throw an exception whining about it
+    }
+}
+
+// exact repro for #472 that matches upstreamed opensim-core/#3299
+TEST(OpenSimModel, OriginalReproFrom3299ThrowsInsteadOfSegfaulting)
+{
+    std::filesystem::path const brokenFilePath =
+        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_472_repro.osim";
+
+    OpenSim::Model model{brokenFilePath.string()};
+    ASSERT_ANY_THROW({ model.buildSystem(); });
+}
