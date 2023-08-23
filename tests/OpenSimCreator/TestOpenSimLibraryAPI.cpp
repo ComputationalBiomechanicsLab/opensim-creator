@@ -400,12 +400,12 @@ TEST(OpenSimModel, ReassigningAnOffsetFrameForJointChildToParentDoesNotSegfault)
 
     // but, uh oh, we've now set the joint's child to be the same as it's parent,
     // which makes no logical sense
-    //childToBodyOffset->connectSocket_parent(*parentToGroundOffset);
+    childToBodyOffset->connectSocket_parent(*parentToGroundOffset);
 
     try
     {
         // doing that shouldn't segfault
-        //model.buildSystem();
+        model.buildSystem();
     } catch (std::exception const&)
     {
         // but OpenSim is pemitted to throw an exception whining about it
