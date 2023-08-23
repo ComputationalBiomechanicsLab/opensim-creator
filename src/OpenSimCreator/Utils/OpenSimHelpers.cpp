@@ -987,6 +987,17 @@ void osc::InitializeModel(OpenSim::Model& model)
     model.finalizeFromProperties();  // clears potentially-stale member components (required for `clearConnections`)
     model.clearConnections();        // clears any potentially stale pointers that can be retained by OpenSim::Socket<T> (see #263)
     model.buildSystem();             // creates a new underlying physics system
+
+    // HACK: ensure OpenSim::Coordinate::getMinRange()/getMaxRange() are callable without
+    //       throwing exceptions (i.e. catch it here, rather than at some undetermined
+    //       later time)
+    //
+    // see #654
+    for (OpenSim::Coordinate const& c : model.getComponentList<OpenSim::Coordinate>())
+    {
+        c.getRangeMin();
+        c.getRangeMax();
+    }
 }
 
 SimTK::State& osc::InitializeState(OpenSim::Model& model)

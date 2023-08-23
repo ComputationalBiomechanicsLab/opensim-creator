@@ -2,6 +2,7 @@
 
 #include "OpenSimCreator/Model/ObjectPropertyEdit.hpp"
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "testopensimcreator_config.hpp"
 
 #include <gtest/gtest.h>
@@ -53,7 +54,7 @@ TEST(OpenSimActions, ActionUpdateModelFromBackingFileReturnsFalseIfFileDoesNotEx
 //
 // the bug is in OpenSim, but the action needs to hack around that bug until it is fixed
 // upstream
-TEST(OpenSimActions, ActionApplyRangeDeletionPropertyEditShouldThrow)
+TEST(OpenSimActions, ActionApplyRangeDeletionPropertyEditReturnsFalseToIndicateFailure)
 {
     // create undoable model with one body + joint
     auto undoableModel = []()
@@ -74,12 +75,15 @@ TEST(OpenSimActions, ActionApplyRangeDeletionPropertyEditShouldThrow)
     osc::ObjectPropertyEdit edit
     {
         undoableModel.updModel().updComponent<OpenSim::Coordinate>("/jointset/joint/rotation").updProperty_range(),
-        [](OpenSim::AbstractProperty& p)
+        [&](OpenSim::AbstractProperty& p)
         {
             p.clear();
         },
     };
 
-    // should throw on application of the faulty edit, not at some later time
-    ASSERT_ANY_THROW({ osc::ActionApplyPropertyEdit(undoableModel, edit); });
+    ASSERT_EQ(osc::ActionApplyPropertyEdit(undoableModel, edit), false);
+
+    // hacky extra test: you can remove this, it's just reminder code
+    undoableModel.updModel().updComponent<OpenSim::Coordinate>("/jointset/joint/rotation").updProperty_range().clear();
+    ASSERT_ANY_THROW({ osc::InitializeModel(undoableModel.updModel()); });
 }
