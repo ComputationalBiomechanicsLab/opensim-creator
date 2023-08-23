@@ -235,33 +235,73 @@ public:
         }
         catch (std::exception const& ex)
         {
-            log::error("an std::exception was thrown while drawing the editor");
-            log::error("    message = %s", ex.what());
-            log::error("exceptions typically happen when the model is damaged or made invalid by an edit (e.g. setting a property to an invalid value)");
+            tryRecoveringFromException(ex);
+        }
+    }
 
-            if (m_ExceptionThrownLastFrame)
+    void tryRecoveringFromException(std::exception const& ex)
+    {
+        log::error("an std::exception was thrown while drawing the model editor editor");
+        log::error("    message = %s", ex.what());
+        log::error("exceptions typically happen when the model is damaged or made invalid by an edit (e.g. setting a property to an invalid value)");
+
+        if (m_ExceptionThrownLastFrame)
+        {
+            if (m_Model->canUndo())
             {
-                m_Parent->addAndSelectTab<ErrorTab>(m_Parent, ex);
-                m_Parent->closeTab(m_TabID);
-            }
-            else
-            {
+                // exception was thrown last frame, indicating the model in the undo/redo buffer is also
+                // damaged, so try undoing
+
+                log::error("an exception was also thrown last frame, indicating model damage: attempting to undo to an earlier version of the model to try and fix the model");
+
                 try
                 {
-                    m_Model->rollback();
-                    log::error("model rollback succeeded");
-                    m_ExceptionThrownLastFrame = true;
+                    m_Model->doUndo();  // TODO: add `doUndoWithNoRedoStorage` so that the user's redo buffer isn't tainted
                 }
                 catch (std::exception const& ex2)
                 {
-                    log::error("model rollback also thrown an exception: %s", ex2.what());
-                    m_Parent->addAndSelectTab<ErrorTab>(m_Parent, ex2);
-                    m_Parent->closeTab(m_TabID);
+                    log::error("undoing the model also failed with error: %s", ex2.what());
+                    log::error("because the model isn't recoverable, closing the editor tab");
+                    m_Parent->addAndSelectTab<ErrorTab>(m_Parent, ex);
+                    m_Parent->closeTab(m_TabID);  // TODO: should be forcibly closed with no "save" prompt
                 }
-            }
 
-            m_Parent->resetImgui();
+                log::error("sucessfully undone model");
+                m_ExceptionThrownLastFrame = false;  // reset flag
+            }
+            else
+            {
+                // exception thrown last frame, indicating the model in the undo/redo buffer is also damaged,
+                // but cannot undo, so quit
+
+                log::error("because the model isn't recoverable, closing the editor tab");
+                m_Parent->addAndSelectTab<ErrorTab>(m_Parent, ex);
+                m_Parent->closeTab(m_TabID);  // TODO: should be forcibly closed
+            }
         }
+        else
+        {
+            // no exception last frame, indicating the _scratch space_ may be damaged, so try to rollback
+            // to a version in the undo/redo buffer
+
+            try
+            {
+                log::error("attempting to rollback the model edit to a clean state");
+                m_Model->rollback();
+                log::error("model rollback succeeded");
+                m_ExceptionThrownLastFrame = true;
+            }
+            catch (std::exception const& ex2)
+            {
+                log::error("model rollback thrown an exception: %s", ex2.what());
+                log::error("because the model cannot be rolled back, closing the editor tab");
+                m_Parent->addAndSelectTab<ErrorTab>(m_Parent, ex2);
+                m_Parent->closeTab(m_TabID);
+            }
+        }
+
+        // reset ImGui, because the exception unroll may have damaged ImGui state
+        m_Parent->resetImgui();
     }
 
 private:
