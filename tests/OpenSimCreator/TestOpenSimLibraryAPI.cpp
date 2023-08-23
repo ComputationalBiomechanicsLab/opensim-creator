@@ -272,3 +272,38 @@ TEST(OpenSimModel, CoordinateCouplerConstraintWorksWithMultiVariatePolynomial)
     OpenSim::Model model{brokenFilePath.string()};
     model.buildSystem();  // shouldn't have any problems
 }
+
+// repro for bug found in #654
+//
+// `OpenSim::Coordinate` exposes its `range` as a list property but OpenSim's API doesn't
+// prevent a user from deleting an element from that property
+//
+// the "bug" is that, on deleting an element from the range (already an issue: should be a Vec2)
+// the resulting model will still finalize+build fine, _but_ subsequently requesting the minimum
+// or maximum of the range will _then_ throw
+//
+// this crashes OSC because it effectively installs a bug in an OpenSim model that is then kicked
+// out by the coordinate editor panel (which, naturally, asks the coordinate for its range for
+// rendering)
+TEST(OpenSimModel, DeletingElementFromCoordinateRangeShouldThrowEarly)
+{
+    OpenSim::Model model;
+
+    auto body = std::make_unique<OpenSim::Body>("body", 1.0, SimTK::Vec3{}, SimTK::Inertia{});
+    auto joint = std::make_unique<OpenSim::PinJoint>();
+    joint->setName("joint");
+    joint->updCoordinate().setName("rotation");
+    joint->connectSocket_parent_frame(model.getGround());
+    joint->connectSocket_child_frame(*body);
+    model.addJoint(joint.release());
+    model.addBody(body.release());
+
+    model.finalizeConnections();  // should be fine: the model is correct
+
+    OpenSim::Coordinate& coord = model.updComponent<OpenSim::Coordinate>("/jointset/joint/rotation");
+    coord.updProperty_range().clear();  // uh oh: a coordinate with no range (also applies when deleting only one element)
+
+    model.finalizeConnections();  // should throw (but this bug indicates it does not)
+
+    ASSERT_ANY_THROW({ coord.getRangeMin(); });  // throws (shouldn't: should throw in finalizeFromProperties/finalizeConnections)
+}
