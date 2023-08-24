@@ -5,6 +5,7 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- The scene scale factor should now ignore any explicitly added `OpenSim::Geometry` in the scene (#461)
 - Deleting a `range` element of an `OpenSim::Coordinate` no longer causes the editor to crash (#654)
 - The 3D camera will no longer move when dragging a visualizer panel around (#739)
 - OpenSim was upgraded from version v4.4 to v4.4.1 (#721)
