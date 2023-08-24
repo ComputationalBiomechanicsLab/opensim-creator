@@ -61,7 +61,9 @@ TEST(Algorithms, TrimLeadingAndTrailingWhitespaceWorksAsExpected)
     }
 }
 
-namespace std
+// setup standard test cases so that googletest can automatically generate
+// one test per test case
+namespace
 {
     std::ostream& operator<<(std::ostream& o, std::optional<float> const& v)
     {
@@ -76,19 +78,6 @@ namespace std
         return o;
     }
 
-    void PrintTo(std::optional<float> const& of, std::ostream* o)
-    {
-        // this teaches googletest to pretty-print a std::optional<float>
-        //
-        // see: googletest/include/gtest/gtest-printers.h `PrintTo`
-        *o << of;
-    }
-}
-
-// setup standard test cases so that googletest can automatically generate
-// one test per test case
-namespace
-{
     struct TestCase final {
         std::string_view input;
         std::optional<float> expectedOutput;

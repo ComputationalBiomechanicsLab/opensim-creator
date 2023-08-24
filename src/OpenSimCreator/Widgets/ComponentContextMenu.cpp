@@ -62,7 +62,7 @@ namespace
             return;
         }
 
-        int selectedIdx = -1;
+        ptrdiff_t selectedIdx = -1;
         if (ImGui::BeginMenu("Change Joint Type"))
         {
             // look the Joint up in the type registry so we know where it should be in the ImGui::Combo
@@ -70,7 +70,7 @@ namespace
             int typeIndex = maybeTypeIndex ? static_cast<int>(*maybeTypeIndex) : -1;
             nonstd::span<osc::CStringView const> const jointNames = osc::JointRegistry::nameStrings();
 
-            for (int i = 0; i < static_cast<int>(jointNames.size()); ++i)
+            for (ptrdiff_t i = 0; i < ssize(jointNames); ++i)
             {
                 bool selected = i == typeIndex;
                 bool wasSelected = selected;
@@ -85,7 +85,7 @@ namespace
             ImGui::EndMenu();
         }
 
-        if (0 <= selectedIdx && selectedIdx < osc::JointRegistry::prototypes().size())
+        if (0 <= selectedIdx && selectedIdx < ssize(osc::JointRegistry::prototypes()))
         {
             // copy + fixup  a prototype of the user's selection
             std::unique_ptr<OpenSim::Joint> newJoint{osc::JointRegistry::prototypes()[static_cast<size_t>(selectedIdx)]->clone()};

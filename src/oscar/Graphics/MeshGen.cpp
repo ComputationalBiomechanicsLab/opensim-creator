@@ -5,6 +5,7 @@
 #include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Maths/Triangle.hpp"
 #include "oscar/Utils/Assertions.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -910,7 +911,7 @@ osc::Mesh osc::GenNxMTriangleQuad2DGrid(glm::ivec2 steps)
     }
 
     OSC_ASSERT(verts.size() == coords.size());
-    OSC_ASSERT(indices.size() == (steps.x-1)*(steps.y-1)*6);
+    OSC_ASSERT(ssize(indices) == (steps.x-1)*(steps.y-1)*6);
 
     osc::Mesh rv;
     rv.setTopology(osc::MeshTopology::Triangles);

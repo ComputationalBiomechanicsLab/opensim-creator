@@ -1667,7 +1667,7 @@ public:
 
     void setPixels(nonstd::span<Color const> pixels)
     {
-        OSC_THROWING_ASSERT(pixels.size() == m_Dimensions.x*m_Dimensions.y);
+        OSC_THROWING_ASSERT(ssize(pixels) == m_Dimensions.x*m_Dimensions.y);
         EncodePixelsInDesiredFormat(pixels, m_Format, m_PixelData);
     }
 
@@ -1678,7 +1678,7 @@ public:
 
     void setPixels32(nonstd::span<Color32 const> pixels)
     {
-        OSC_THROWING_ASSERT(pixels.size() == m_Dimensions.x*m_Dimensions.y);
+        OSC_THROWING_ASSERT(ssize(pixels) == m_Dimensions.x*m_Dimensions.y);
         EncodePixels32InDesiredFormat(pixels, m_Format, m_PixelData);
     }
 

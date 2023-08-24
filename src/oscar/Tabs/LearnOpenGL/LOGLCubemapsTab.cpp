@@ -63,7 +63,7 @@ namespace
 
         osc::Cubemap cubemap{dims.x, t.getTextureFormat()};
         cubemap.setPixelData(osc::CubemapFace::PositiveX, t.getPixelData());
-        for (int32_t i = 1; i < osc::NumOptions<osc::CubemapFace>(); ++i)
+        for (size_t i = 1; i < osc::NumOptions<osc::CubemapFace>(); ++i)
         {
             t = osc::LoadTexture2DFromImage(
                 resourcesDir / "textures" / std::string_view{c_SkyboxTextureFilenames[i]},

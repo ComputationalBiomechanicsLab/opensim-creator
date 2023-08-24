@@ -123,9 +123,6 @@ target_compile_options(oscar_configuration INTERFACE
         # warn if a suspicous use of a logical operator is detected (e.g. i < 0 && i < 0)
         # -Wlogical-op
 
-        # disable: broken in OSC (int == size_t etc.)
-        -Wno-sign-compare
-
         # disabled: doesn't work in some contexts where forward declarations are necessary
         # -Wredundant-decls
 

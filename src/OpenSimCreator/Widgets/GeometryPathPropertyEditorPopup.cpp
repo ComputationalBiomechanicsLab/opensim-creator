@@ -298,7 +298,7 @@ private:
             SimTK::Vec3& location = pp->upd_location();
 
             static_assert(c_LocationInputIDs.size() == 3);
-            for (int dim = 0; dim < c_LocationInputIDs.size(); ++dim)
+            for (size_t dim = 0; dim < c_LocationInputIDs.size(); ++dim)
             {
                 auto v = static_cast<float>(location[dim]);
 

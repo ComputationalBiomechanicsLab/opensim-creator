@@ -1063,7 +1063,7 @@ namespace
 
         void tagOtherPlotForDeletion(size_t i)
         {
-            m_PlotTaggedForDeletion = static_cast<int>(i);
+            m_PlotTaggedForDeletion = static_cast<ptrdiff_t>(i);
         }
 
         void setOtherPlotLocked(size_t i, bool v)
@@ -1176,7 +1176,7 @@ namespace
             // deletions
             //
             // handle any user-requested deletions by removing the curve from the collection
-            if (0 <= m_PlotTaggedForDeletion && m_PlotTaggedForDeletion < m_PreviousPlots.size())
+            if (0 <= m_PlotTaggedForDeletion && m_PlotTaggedForDeletion < osc::ssize(m_PreviousPlots))
             {
                 m_PreviousPlots.erase(m_PreviousPlots.begin() + m_PlotTaggedForDeletion);
                 m_PlotTaggedForDeletion = -1;
@@ -1208,9 +1208,9 @@ namespace
 
             auto const backwardIt = std::find_if(m_PreviousPlots.rbegin(), m_PreviousPlots.rend(), isFirstDeleteablePlot);
             auto const forwardIt = backwardIt.base();
-            size_t const idxOfDeleteableEnd = std::distance(m_PreviousPlots.begin(), forwardIt);
+            ptrdiff_t const idxOfDeleteableEnd = std::distance(m_PreviousPlots.begin(), forwardIt);
 
-            auto shouldDelete = [i = 0, idxOfDeleteableEnd](std::shared_ptr<Plot> const& p) mutable
+            auto shouldDelete = [i = static_cast<ptrdiff_t>(0), idxOfDeleteableEnd](std::shared_ptr<Plot> const& p) mutable
             {
                 return i++ < idxOfDeleteableEnd && !p->getIsLocked();
             };
@@ -1221,7 +1221,7 @@ namespace
         std::shared_ptr<Plot> m_ActivePlot;
         PlottingTask m_PlottingTask;
         std::vector<std::shared_ptr<Plot>> m_PreviousPlots;
-        int m_PlotTaggedForDeletion = -1;
+        ptrdiff_t m_PlotTaggedForDeletion = -1;
         int m_MaxHistoryEntries = 6;
     };
 
@@ -2049,7 +2049,7 @@ namespace
                 {
                     int id = 0;
 
-                    for (int i = 0; i < m_Lines.getNumOtherPlots(); ++i)
+                    for (size_t i = 0; i < m_Lines.getNumOtherPlots(); ++i)
                     {
                         ImGui::PushID(id++);
                         if (ImGui::MenuItem(m_Lines.getOtherPlot(i).getName().c_str()))

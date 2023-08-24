@@ -228,7 +228,7 @@ public:
     {
         // tick all the tabs, because they may internally be polling something (e.g.
         // updating something as a simulation runs)
-        for (int i = 0; i < m_Tabs.size(); ++i)
+        for (size_t i = 0; i < m_Tabs.size(); ++i)
         {
             try
             {
@@ -414,7 +414,7 @@ private:
             {
                 if (ImGui::BeginTabBar("##TabBar"))
                 {
-                    for (int i = 0; i < m_Tabs.size(); ++i)
+                    for (size_t i = 0; i < m_Tabs.size(); ++i)
                     {
                         ImGuiTabItemFlags flags = ImGuiTabItemFlags_NoReorder;
 

@@ -37,7 +37,7 @@ static NestedComponentChain GenerateNestedComponentChain()
 static void BM_OpenSimGetAbsolutePathString(benchmark::State& state)
 {
     NestedComponentChain c = GenerateNestedComponentChain();
-    for (auto _ : state)
+    for ([[maybe_unused]] auto _ : state)
     {
         benchmark::DoNotOptimize(c.deepestChild->getAbsolutePathString());
     }
@@ -47,7 +47,7 @@ BENCHMARK(BM_OpenSimGetAbsolutePathString);
 static void BM_OscGetAbsolutePathString(benchmark::State& state)
 {
     NestedComponentChain c = GenerateNestedComponentChain();
-    for (auto _ : state)
+    for ([[maybe_unused]] auto _ : state)
     {
         benchmark::DoNotOptimize(osc::GetAbsolutePathString(*c.deepestChild));
     }
@@ -58,7 +58,7 @@ static void BM_OscGetAbsolutePathStringAssigning(benchmark::State& state)
 {
     NestedComponentChain c = GenerateNestedComponentChain();
     std::string out;
-    for (auto _ : state)
+    for ([[maybe_unused]] auto _ : state)
     {
         osc::GetAbsolutePathString(*c.deepestChild, out);
     }
@@ -68,7 +68,7 @@ BENCHMARK(BM_OscGetAbsolutePathStringAssigning);
 static void BM_OpenSimGetAbsolutePath(benchmark::State& state)
 {
     NestedComponentChain c = GenerateNestedComponentChain();
-    for (auto _ : state)
+    for ([[maybe_unused]] auto _ : state)
     {
         benchmark::DoNotOptimize(c.deepestChild->getAbsolutePath());
     }
@@ -78,7 +78,7 @@ BENCHMARK(BM_OpenSimGetAbsolutePath);
 static void BM_OscGetAbsolutePath(benchmark::State& state)
 {
     NestedComponentChain c = GenerateNestedComponentChain();
-    for (auto _ : state)
+    for ([[maybe_unused]] auto _ : state)
     {
         benchmark::DoNotOptimize(osc::GetAbsolutePath(*c.deepestChild));
     }

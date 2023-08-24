@@ -48,7 +48,7 @@ TEST(RenderTargetColorAttachment, EqualityReturnsTrueForCopies)
         osc::RenderBufferStoreAction::Resolve,
         osc::Color::red(),
     };
-    osc::RenderTargetColorAttachment copy = attachment;
+    osc::RenderTargetColorAttachment copy = attachment;  // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(copy, attachment);
 }
