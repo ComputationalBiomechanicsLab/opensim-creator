@@ -18,11 +18,11 @@ namespace
     struct ShaderInputs final {
 
         ShaderInputs(
-            std::filesystem::path const& vertexShaderPath_,
-            std::filesystem::path const& fragmentShaderPath_) :
+            std::filesystem::path vertexShaderPath_,
+            std::filesystem::path fragmentShaderPath_) :
 
-            vertexShaderPath{vertexShaderPath_},
-            fragmentShaderPath{fragmentShaderPath_}
+            vertexShaderPath{std::move(vertexShaderPath_)},
+            fragmentShaderPath{std::move(fragmentShaderPath_)}
         {
         }
 

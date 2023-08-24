@@ -561,28 +561,28 @@ namespace
     struct RenderObject final {
 
         RenderObject(
-            osc::Mesh const& mesh_,
+            osc::Mesh mesh_,
             osc::Transform const& transform_,
-            osc::Material const& material_,
-            std::optional<osc::MaterialPropertyBlock> const& maybePropBlock_) :
+            osc::Material material_,
+            std::optional<osc::MaterialPropertyBlock> maybePropBlock_) :
 
-            material{material_},
-            mesh{mesh_},
-            maybePropBlock{maybePropBlock_},
+            material{std::move(material_)},
+            mesh{std::move(mesh_)},
+            maybePropBlock{std::move(maybePropBlock_)},
             transform{transform_},
             worldMidpoint{material.getTransparent() ? osc::TransformPoint(transform_, osc::Midpoint(mesh.getBounds())) : glm::vec3{}}
         {
         }
 
         RenderObject(
-            osc::Mesh const& mesh_,
+            osc::Mesh mesh_,
             glm::mat4 const& transform_,
-            osc::Material const& material_,
-            std::optional<osc::MaterialPropertyBlock> const& maybePropBlock_) :
+            osc::Material material_,
+            std::optional<osc::MaterialPropertyBlock> maybePropBlock_) :
 
-            material{material_},
-            mesh{mesh_},
-            maybePropBlock{maybePropBlock_},
+            material{std::move(material_)},
+            mesh{std::move(mesh_)},
+            maybePropBlock{std::move(maybePropBlock_)},
             transform{transform_},
             worldMidpoint{material.getTransparent() ? transform_ * glm::vec4{osc::Midpoint(mesh.getBounds()), 1.0f} : glm::vec3{}}
         {
@@ -1667,7 +1667,7 @@ public:
 
     void setPixels(nonstd::span<Color const> pixels)
     {
-        OSC_THROWING_ASSERT(ssize(pixels) == m_Dimensions.x*m_Dimensions.y);
+        OSC_THROWING_ASSERT(ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
         EncodePixelsInDesiredFormat(pixels, m_Format, m_PixelData);
     }
 
@@ -1678,7 +1678,7 @@ public:
 
     void setPixels32(nonstd::span<Color32 const> pixels)
     {
-        OSC_THROWING_ASSERT(ssize(pixels) == m_Dimensions.x*m_Dimensions.y);
+        OSC_THROWING_ASSERT(ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
         EncodePixels32InDesiredFormat(pixels, m_Format, m_PixelData);
     }
 
@@ -4215,7 +4215,7 @@ private:
         static_assert(sizeof(decltype(m_Tangents)::value_type) == 4*sizeof(float));
 
         // calculate the number of bytes between each entry in the packed VBO
-        GLsizei byteStride = sizeof(decltype(m_Vertices)::value_type);
+        size_t byteStride = sizeof(decltype(m_Vertices)::value_type);
         if (hasNormals)
         {
             byteStride += sizeof(decltype(m_Normals)::value_type);
@@ -4311,31 +4311,66 @@ private:
 
 
         {  // mesh always has vertices
-            glVertexAttribPointer(shader_locations::aPos, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
+            glVertexAttribPointer(
+                shader_locations::aPos,
+                3,
+                GL_FLOAT,
+                GL_FALSE,
+                static_cast<GLsizei>(byteStride),
+                reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset))
+            );
             glEnableVertexAttribArray(shader_locations::aPos);
             byteOffset += sizeof(decltype(m_Vertices)::value_type);
         }
         if (hasNormals)
         {
-            glVertexAttribPointer(shader_locations::aNormal, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
+            glVertexAttribPointer(
+                shader_locations::aNormal,
+                3,
+                GL_FLOAT,
+                GL_FALSE,
+                static_cast<GLsizei>(byteStride),
+                reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset))
+            );
             glEnableVertexAttribArray(shader_locations::aNormal);
             byteOffset += sizeof(decltype(m_Normals)::value_type);
         }
         if (hasTexCoords)
         {
-            glVertexAttribPointer(shader_locations::aTexCoord, 2, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
+            glVertexAttribPointer(
+                shader_locations::aTexCoord,
+                2,
+                GL_FLOAT,
+                GL_FALSE,
+                static_cast<GLsizei>(byteStride),
+                reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset))
+            );
             glEnableVertexAttribArray(shader_locations::aTexCoord);
             byteOffset += sizeof(decltype(m_TexCoords)::value_type);
         }
         if (hasColors)
         {
-            glVertexAttribPointer(shader_locations::aColor, 4, GL_FLOAT, GL_TRUE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
+            glVertexAttribPointer(
+                shader_locations::aColor,
+                4,
+                GL_FLOAT,
+                GL_TRUE,
+                static_cast<GLsizei>(byteStride),
+                reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset))
+            );
             glEnableVertexAttribArray(shader_locations::aColor);
             byteOffset += sizeof(decltype(m_Colors)::value_type);
         }
         if (hasTangents)
         {
-            glVertexAttribPointer(shader_locations::aTangent, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
+            glVertexAttribPointer(
+                shader_locations::aTangent,
+                3,
+                GL_FLOAT,
+                GL_FALSE,
+                static_cast<GLsizei>(byteStride),
+                reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset))
+            );
             glEnableVertexAttribArray(shader_locations::aTangent);
             // unused: byteOffset += sizeof(decltype(m_Tangents)::value_type);
         }
@@ -6949,7 +6984,7 @@ void osc::GraphicsBackend::CopyTexture(
         GLint const packFormat = ToImagePixelPackAlignment(dest.getTextureFormat());
 
         OSC_ASSERT(reinterpret_cast<uintptr_t>(cpuBuffer.data()) % packFormat == 0 && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-        OSC_ASSERT(cpuBuffer.size() == dest.getDimensions().x*dest.getDimensions().y*NumBytesPerPixel(dest.getTextureFormat()));
+        OSC_ASSERT(cpuBuffer.size() == static_cast<ptrdiff_t>(dest.getDimensions().x*dest.getDimensions().y)*NumBytesPerPixel(dest.getTextureFormat()));
 
         gl::Viewport(0, 0, dest.getDimensions().x, dest.getDimensions().y);
         gl::BindFramebuffer(GL_READ_FRAMEBUFFER, drawFBO);

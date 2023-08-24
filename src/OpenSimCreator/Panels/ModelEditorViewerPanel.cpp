@@ -299,10 +299,10 @@ public:
 
     Impl(
         std::string_view panelName_,
-        ModelEditorViewerPanelParameters const& parameters_) :
+        ModelEditorViewerPanelParameters parameters_) :
 
         StandardPanel{panelName_},
-        m_Parameters{parameters_}
+        m_Parameters{std::move(parameters_)}
     {
         pushLayer(std::make_unique<BaseInteractionLayer>());
         pushLayer(std::make_unique<ButtonAndGizmoControlsLayer>(m_Parameters.getModelSharedPtr()));

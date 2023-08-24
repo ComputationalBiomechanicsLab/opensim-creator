@@ -1564,7 +1564,7 @@ TEST_F(Renderer, TextureDefaultConstructorCreatesRGBATextureWithExpectedColorSpa
 TEST_F(Renderer, TextureCanSetPixels32OnDefaultConstructedTexture)
 {
     glm::ivec2 const dimensions = {1, 1};
-    std::vector<osc::Color32> const pixels(dimensions.x * dimensions.y);
+    std::vector<osc::Color32> const pixels(static_cast<size_t>(dimensions.x * dimensions.y));
 
     osc::Texture2D t{dimensions};
     t.setPixels32(pixels);
@@ -1606,7 +1606,7 @@ TEST_F(Renderer, TextureSetPixelDataThrowsIfNumberOfPixelBytesDoesNotMatchDimens
 TEST_F(Renderer, TextureSetPixelDataDoesNotThrowWhenGivenValidNumberOfPixelBytes)
 {
     glm::ivec2 const dimensions = {1, 1};
-    std::vector<osc::Color32> const pixels(dimensions.x * dimensions.y);
+    std::vector<osc::Color32> const pixels(static_cast<size_t>(dimensions.x * dimensions.y));
 
     osc::Texture2D t{dimensions};
 
@@ -1618,10 +1618,10 @@ TEST_F(Renderer, TextureSetPixelDataDoesNotThrowWhenGivenValidNumberOfPixelBytes
 TEST_F(Renderer, TextureSetPixelDataWorksFineFor8BitSingleChannelData)
 {
     glm::ivec2 const dimensions = {1, 1};
-    std::vector<uint8_t> const singleChannelPixels(dimensions.x * dimensions.y);
+    std::vector<uint8_t> const singleChannelPixels(static_cast<size_t>(dimensions.x * dimensions.y));
 
     osc::Texture2D t{dimensions, osc::TextureFormat::R8};
-   t.setPixelData(singleChannelPixels);  // shouldn't throw
+    t.setPixelData(singleChannelPixels);  // shouldn't throw
 }
 
 TEST_F(Renderer, TextureSetPixelDataWith8BitSingleChannelDataFollowedByGetPixelsBlanksOutGreenAndRed)
@@ -1629,7 +1629,7 @@ TEST_F(Renderer, TextureSetPixelDataWith8BitSingleChannelDataFollowedByGetPixels
     uint8_t const color{0x88};
     float const colorFloat = static_cast<float>(color) / 255.0f;
     glm::ivec2 const dimensions = {1, 1};
-    std::vector<uint8_t> const singleChannelPixels(dimensions.x * dimensions.y, color);
+    std::vector<uint8_t> const singleChannelPixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
 
     osc::Texture2D t{dimensions, osc::TextureFormat::R8};
     t.setPixelData(singleChannelPixels);
@@ -1644,7 +1644,7 @@ TEST_F(Renderer, TextureSetPixelDataWith8BitSingleChannelDataFollowedByGetPixels
 {
     uint8_t const color{0x88};
     glm::ivec2 const dimensions = {1, 1};
-    std::vector<uint8_t> const singleChannelPixels(dimensions.x * dimensions.y, color);
+    std::vector<uint8_t> const singleChannelPixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
 
     osc::Texture2D t{dimensions, osc::TextureFormat::R8};
     t.setPixelData(singleChannelPixels);
@@ -1660,7 +1660,7 @@ TEST_F(Renderer, TextureSetPixelDataWith32BitFloatingPointValuesFollowedByGetPix
 {
     glm::vec4 const color = GenerateVec4();
     glm::ivec2 const dimensions = {1, 1};
-    std::vector<glm::vec4> const rgbaFloatPixels(dimensions.x * dimensions.y, color);
+    std::vector<glm::vec4> const rgbaFloatPixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
 
     osc::Texture2D t(dimensions, osc::TextureFormat::RGBAFloat);
     t.setPixelData(ToByteSpan(rgbaFloatPixels));
@@ -1672,7 +1672,7 @@ TEST_F(Renderer, TextureSetPixelDataWith32BitFloatingPointValuesFollowedByGetPix
 {
     osc::Color const hdrColor = {1.2f, 1.4f, 1.3f, 1.0f};
     glm::ivec2 const dimensions = {1, 1};
-    std::vector<osc::Color> const rgbaFloatPixels(dimensions.x * dimensions.y, hdrColor);
+    std::vector<osc::Color> const rgbaFloatPixels(static_cast<size_t>(dimensions.x * dimensions.y), hdrColor);
 
     osc::Texture2D t(dimensions, osc::TextureFormat::RGBAFloat);
     t.setPixelData(ToByteSpan(rgbaFloatPixels));
@@ -1684,7 +1684,7 @@ TEST_F(Renderer, TextureSetPixelsOnAn8BitTextureLDRClampsTheColorValues)
 {
     osc::Color const hdrColor = {1.2f, 1.4f, 1.3f, 1.0f};
     glm::ivec2 const dimensions = {1, 1};
-    std::vector<osc::Color> const hdrPixels(dimensions.x * dimensions.y, hdrColor);
+    std::vector<osc::Color> const hdrPixels(static_cast<size_t>(dimensions.x * dimensions.y), hdrColor);
 
     osc::Texture2D t(dimensions, osc::TextureFormat::RGBA32);  // note: not HDR
 
@@ -1697,7 +1697,7 @@ TEST_F(Renderer, TextureSetPixels32OnAn8BitTextureDoesntConvert)
 {
     osc::Color32 const color32 = {0x77, 0x63, 0x24, 0x76};
     glm::ivec2 const dimensions = {1, 1};
-    std::vector<osc::Color32> const pixels32(dimensions.x * dimensions.y, color32);
+    std::vector<osc::Color32> const pixels32(static_cast<size_t>(dimensions.x * dimensions.y), color32);
 
     osc::Texture2D t(dimensions, osc::TextureFormat::RGBA32);  // note: matches pixel format
 
@@ -1710,7 +1710,7 @@ TEST_F(Renderer, TextureSetPixels32OnA32BitTextureDoesntDetectablyChangeValues)
 {
     osc::Color32 const color32 = {0x77, 0x63, 0x24, 0x76};
     glm::ivec2 const dimensions = {1, 1};
-    std::vector<osc::Color32> const pixels32(dimensions.x * dimensions.y, color32);
+    std::vector<osc::Color32> const pixels32(static_cast<size_t>(dimensions.x * dimensions.y), color32);
 
     osc::Texture2D t(dimensions, osc::TextureFormat::RGBAFloat);  // note: higher precision than input
 

@@ -24,9 +24,9 @@ namespace
 {
     struct DAEGeometry final {
 
-        DAEGeometry(std::string geometryID_, osc::Mesh const& mesh_) :
+        DAEGeometry(std::string geometryID_, osc::Mesh mesh_) :
             geometryID{std::move(geometryID_)},
-            mesh{mesh_}
+            mesh{std::move(mesh_)}
         {
         }
 

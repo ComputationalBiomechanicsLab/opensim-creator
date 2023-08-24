@@ -1106,13 +1106,13 @@ namespace
         MeshEl(
             UIDT<MeshEl> id,
             UID attachment,  // can be c_GroundID
-            Mesh const& meshData,
-            std::filesystem::path const& path) :
+            Mesh meshData,
+            std::filesystem::path path) :
 
             m_ID{id},
             m_Attachment{attachment},
-            m_MeshData{meshData},
-            m_Path{path}
+            m_MeshData{std::move(meshData)},
+            m_Path{std::move(path)}
         {
         }
 

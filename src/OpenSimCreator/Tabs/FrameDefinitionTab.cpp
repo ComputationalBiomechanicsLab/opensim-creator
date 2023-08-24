@@ -2554,7 +2554,7 @@ namespace
             m_EditorAPI{editorAPI_},
             m_Model{std::move(model_)},
             m_ComponentPath{std::move(componentPath_)},
-            m_MaybeSourceVisualizerEvent{maybeSourceVisualizerEvent_}
+            m_MaybeSourceVisualizerEvent{std::move(maybeSourceVisualizerEvent_)}
         {
             OSC_ASSERT(m_EditorAPI != nullptr);
             OSC_ASSERT(m_Model != nullptr);
@@ -2609,11 +2609,11 @@ namespace
     class FrameDefinitionTabMainMenu final {
     public:
         explicit FrameDefinitionTabMainMenu(
-            osc::ParentPtr<osc::TabHost> const& tabHost_,
+            osc::ParentPtr<osc::TabHost> tabHost_,
             std::shared_ptr<osc::UndoableModelStatePair> model_,
             std::shared_ptr<osc::PanelManager> panelManager_) :
 
-            m_TabHost{tabHost_},
+            m_TabHost{std::move(tabHost_)},
             m_Model{std::move(model_)},
             m_WindowMenu{std::move(panelManager_)}
         {
@@ -2654,11 +2654,11 @@ namespace
     public:
         FrameDefinitionTabToolbar(
             std::string_view label_,
-            osc::ParentPtr<osc::TabHost> const& tabHost_,
+            osc::ParentPtr<osc::TabHost> tabHost_,
             std::shared_ptr<osc::UndoableModelStatePair> model_) :
 
             m_Label{label_},
-            m_TabHost{tabHost_},
+            m_TabHost{std::move(tabHost_)},
             m_Model{std::move(model_)}
         {
         }

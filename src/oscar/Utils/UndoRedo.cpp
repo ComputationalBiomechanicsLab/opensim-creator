@@ -21,7 +21,7 @@ osc::UndoRedoEntryMetadata& osc::UndoRedoEntryMetadata::operator=(UndoRedoEntryM
 osc::UndoRedoEntryMetadata& osc::UndoRedoEntryMetadata::operator=(UndoRedoEntryMetadata&&) noexcept = default;
 osc::UndoRedoEntryMetadata::~UndoRedoEntryMetadata() noexcept = default;
 
-osc::UndoRedo::UndoRedo(UndoRedoEntry const& initialCommit_) : m_Head{initialCommit_}
+osc::UndoRedo::UndoRedo(UndoRedoEntry initialCommit_) : m_Head{std::move(initialCommit_)}
 {
 }
 osc::UndoRedo::UndoRedo(UndoRedo const&) = default;

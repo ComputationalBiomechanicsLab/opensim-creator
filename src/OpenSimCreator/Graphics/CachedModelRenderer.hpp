@@ -28,7 +28,7 @@ namespace osc
     public:
         CachedModelRenderer(
             Config const&,
-            std::shared_ptr<MeshCache>,
+            std::shared_ptr<MeshCache> const&,
             ShaderCache&
         );
         CachedModelRenderer(CachedModelRenderer const&) = delete;

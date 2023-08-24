@@ -439,12 +439,12 @@ namespace
 
         PlottingTaskInputs(
             std::shared_ptr<PlottingTaskThreadsafeSharedData> shared_,
-            PlotParameters const& plotParameters_,
+            PlotParameters plotParameters_,
             std::shared_ptr<PlotDataPointConsumer> dataPointConsumer_) :
 
-            shared{ std::move(shared_) },
-            plotParameters{ plotParameters_ },
-            dataPointConsumer{ std::move(dataPointConsumer_) }
+            shared{std::move(shared_)},
+            plotParameters{std::move(plotParameters_)},
+            dataPointConsumer{std::move(dataPointConsumer_)}
         {
         }
 

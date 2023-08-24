@@ -104,7 +104,7 @@ class osc::CachedModelRenderer::Impl final {
 public:
     Impl(
         Config const& config,
-        std::shared_ptr<MeshCache> meshCache,
+        std::shared_ptr<MeshCache> const& meshCache,
         ShaderCache& shaderCache) :
 
         m_DecorationCache{meshCache},
@@ -192,10 +192,10 @@ private:
 
 osc::CachedModelRenderer::CachedModelRenderer(
     Config const& config,
-    std::shared_ptr<MeshCache> meshCache,
+    std::shared_ptr<MeshCache> const& meshCache,
     ShaderCache& shaderCache) :
 
-    m_Impl{std::make_unique<Impl>(config, std::move(meshCache), shaderCache)}
+    m_Impl{std::make_unique<Impl>(config, meshCache, shaderCache)}
 {
 }
 osc::CachedModelRenderer::CachedModelRenderer(CachedModelRenderer&&) noexcept = default;

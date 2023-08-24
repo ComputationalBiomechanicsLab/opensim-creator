@@ -221,13 +221,13 @@ public:
         ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
         EditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> model_,
-        OpenSim::ComponentPath const& path_) :
+        OpenSim::ComponentPath path_) :
 
         StandardPopup{popupName_, {10.0f, 10.0f}, ImGuiWindowFlags_NoMove},
         m_MainUIStateAPI{mainUIStateAPI_},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)},
-        m_Path{path_}
+        m_Path{std::move(path_)}
     {
         setModal(false);
         OSC_ASSERT(m_Model != nullptr);

@@ -803,7 +803,7 @@ namespace
             osc::ParentPtr<osc::TabHost> parent_) :
 
             tabID{tabID_},
-            tabHost{parent_}
+            tabHost{std::move(parent_)}
         {
         }
 

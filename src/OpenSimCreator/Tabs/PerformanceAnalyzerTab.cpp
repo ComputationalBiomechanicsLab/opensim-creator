@@ -50,10 +50,10 @@ public:
 
     Impl(
         BasicModelStatePair baseModel,
-        osc::ParamBlock const& params) :
+        osc::ParamBlock params) :
 
         m_BaseModel{std::move(baseModel)},
-        m_BaseParams{params}
+        m_BaseParams{std::move(params)}
     {
     }
 

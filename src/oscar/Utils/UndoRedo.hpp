@@ -111,7 +111,7 @@ namespace osc
     // actually being stored
     class UndoRedo {
     protected:
-        UndoRedo(UndoRedoEntry const& initialCommit_);
+        UndoRedo(UndoRedoEntry initialCommit_);
         UndoRedo(UndoRedo const&);
         UndoRedo(UndoRedo&&) noexcept;
         UndoRedo& operator=(UndoRedo const&);

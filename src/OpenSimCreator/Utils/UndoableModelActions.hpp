@@ -90,7 +90,7 @@ namespace osc
     bool ActionLoadSTOFileAgainstModel(
         ParentPtr<MainUIStateAPI> const&,
         UndoableModelStatePair const&,
-        std::filesystem::path stoPath
+        std::filesystem::path const& stoPath
     );
 
     // start simulating the given model in a forward-dynamic simulator tab

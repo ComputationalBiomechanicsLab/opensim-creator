@@ -130,14 +130,12 @@ TEST(Cubemap, SetDataWorksForAnyFaceIfGivenCorrectNumberOfBytes)
 {
     osc::TextureFormat const format = osc::TextureFormat::RGBA32;
     constexpr size_t bytesPerPixelForFormat = 4;
-    constexpr int32_t width = 5;
-    constexpr int32_t nPixels = width*width*bytesPerPixelForFormat;
+    constexpr size_t width = 5;
+    constexpr size_t nPixels = width*width*bytesPerPixelForFormat;
     std::array<uint8_t, nPixels> const data = {};
 
     osc::Cubemap cubemap{width, format};
-
-    static_assert(std::is_same_v<std::underlying_type_t<osc::CubemapFace>, int32_t>);
-    for (int32_t i = 0; i < static_cast<int32_t>(osc::NumOptions<osc::CubemapFace>()); ++i)
+    for (size_t i = 0; i < osc::NumOptions<osc::CubemapFace>(); ++i)
     {
         auto const face = static_cast<osc::CubemapFace>(i);
         cubemap.setPixelData(face, data);
@@ -148,14 +146,12 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGBA32)
 {
     osc::TextureFormat const format = osc::TextureFormat::RGBA32;
     constexpr size_t incorrectBytesPerPixelForFormat = 3;
-    constexpr int32_t width = 5;
-    constexpr int32_t nPixels = width*width*incorrectBytesPerPixelForFormat;
+    constexpr size_t width = 5;
+    constexpr size_t nPixels = width*width*incorrectBytesPerPixelForFormat;
     std::array<uint8_t, nPixels> const data = {};
 
     osc::Cubemap cubemap{width, format};
-
-    static_assert(std::is_same_v<std::underlying_type_t<osc::CubemapFace>, int32_t>);
-    for (int32_t i = 0; i < static_cast<int32_t>(osc::NumOptions<osc::CubemapFace>()); ++i)
+    for (size_t i = 0; i < osc::NumOptions<osc::CubemapFace>(); ++i)
     {
         auto const face = static_cast<osc::CubemapFace>(i);
         ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
@@ -166,14 +162,12 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGB24)
 {
     osc::TextureFormat const format = osc::TextureFormat::RGB24;
     constexpr size_t incorrectBytesPerPixelForFormat = 4;
-    constexpr int32_t width = 5;
-    constexpr int32_t nPixels = width*width*incorrectBytesPerPixelForFormat;
+    constexpr size_t width = 5;
+    constexpr size_t nPixels = width*width*incorrectBytesPerPixelForFormat;
     std::array<uint8_t, nPixels> const data = {};
 
     osc::Cubemap cubemap{width, format};
-
-    static_assert(std::is_same_v<std::underlying_type_t<osc::CubemapFace>, int32_t>);
-    for (int32_t i = 0; i < static_cast<int32_t>(osc::NumOptions<osc::CubemapFace>()); ++i)
+    for (size_t i = 0; i < osc::NumOptions<osc::CubemapFace>(); ++i)
     {
         auto const face = static_cast<osc::CubemapFace>(i);
         ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
@@ -184,15 +178,13 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForWidth)
 {
     osc::TextureFormat const format = osc::TextureFormat::RGBA32;
     constexpr size_t bytesPerPixelForFormat = 4;
-    constexpr int32_t width = 5;
-    constexpr int32_t nPixels = width*width*bytesPerPixelForFormat;
-    constexpr int32_t incorrectNPixels = nPixels+3;
+    constexpr size_t width = 5;
+    constexpr size_t nPixels = width*width*bytesPerPixelForFormat;
+    constexpr size_t incorrectNPixels = nPixels+3;
     std::array<uint8_t, incorrectNPixels> const data = {};
 
     osc::Cubemap cubemap{width, format};
-
-    static_assert(std::is_same_v<std::underlying_type_t<osc::CubemapFace>, int32_t>);
-    for (int32_t i = 0; i < static_cast<int32_t>(osc::NumOptions<osc::CubemapFace>()); ++i)
+    for (size_t i = 0; i < osc::NumOptions<osc::CubemapFace>(); ++i)
     {
         auto const face = static_cast<osc::CubemapFace>(i);
         ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });

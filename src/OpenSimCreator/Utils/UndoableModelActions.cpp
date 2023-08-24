@@ -342,7 +342,7 @@ void osc::ActionClearSelectionFromEditedModel(UndoableModelStatePair& model)
 bool osc::ActionLoadSTOFileAgainstModel(
     ParentPtr<MainUIStateAPI> const& parent,
     UndoableModelStatePair const& uim,
-    std::filesystem::path stoPath)
+    std::filesystem::path const& stoPath)
 {
     try
     {

@@ -54,7 +54,7 @@ osc::Texture2D osc::ReadSVGIntoTexture(
         TextureWrapMode::Clamp,
         TextureFilterMode::Nearest,
     };
-    rv.setPixelData({bitmap.data(), bitmap.width()*bitmap.height()*4});
+    rv.setPixelData({bitmap.data(), static_cast<size_t>(bitmap.width()*bitmap.height()*4)});
     return rv;
 }
 

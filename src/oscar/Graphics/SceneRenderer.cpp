@@ -54,13 +54,13 @@ namespace
 
     struct RimHighlights final {
         RimHighlights(
-            osc::Mesh const& mesh_,
+            osc::Mesh mesh_,
             glm::mat4 const& transform_,
-            osc::Material const& material_) :
+            osc::Material material_) :
 
-            mesh{mesh_},
+            mesh{std::move(mesh_)},
             transform{transform_},
-            material{material_}
+            material{std::move(material_)}
         {
         }
 
