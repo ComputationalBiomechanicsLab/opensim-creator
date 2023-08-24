@@ -2111,7 +2111,7 @@ namespace
             {
                 static_assert(std::is_same_v<decltype(m_PlotFlags), int>);
 
-                unsigned int f = static_cast<unsigned int>(m_PlotFlags);
+                auto f = static_cast<unsigned int>(m_PlotFlags);
                 if (ImGui::CheckboxFlags("Hide", &f, ImPlotFlags_NoLegend))
                 {
                     m_PlotFlags = static_cast<int>(f);
@@ -2120,7 +2120,7 @@ namespace
             {
                 static_assert(std::is_same_v<decltype(m_LegendFlags), int>);
 
-                unsigned int f = static_cast<unsigned int>(m_LegendFlags);
+                auto f = static_cast<unsigned int>(m_LegendFlags);
                 if (ImGui::CheckboxFlags("Outside", &f, ImPlotLegendFlags_Outside))
                 {
                     m_LegendFlags = static_cast<int>(f);
