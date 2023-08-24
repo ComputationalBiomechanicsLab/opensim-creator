@@ -68,6 +68,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <functional>
 #include <iostream>
 #include <iterator>
@@ -308,9 +309,15 @@ namespace
     {
         out.insert(
             out.end(),
-            reinterpret_cast<std::byte const*>(&v),  // it is always safe to cast to std::byte/char
+            reinterpret_cast<std::byte const*>(&v),
             reinterpret_cast<std::byte const*>(&v) + sizeof(T)
         );
+    }
+
+    template<typename GlmType>
+    nonstd::span<typename GlmType::value_type const> ToFloatSpan(GlmType const& v)
+    {
+        return {glm::value_ptr(v), sizeof(GlmType)/sizeof(typename GlmType::value_type)};
     }
 }
 
@@ -5720,7 +5727,8 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
 
         OSC_PERF("GraphicsBackend::UploadInstanceData");
         std::vector<float>& buf = g_GraphicsContextImpl->updInstanceCPUBuffer();
-        buf.resize(els.size() * (byteStride/sizeof(float)));
+        buf.clear();
+        buf.reserve(els.size() * (byteStride/sizeof(float)));
 
         size_t floatOffset = 0;
         for (RenderObject const& el : els)
@@ -5729,24 +5737,27 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
             {
                 if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == osc::ShaderType::Mat4)
                 {
-                    static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
-                    reinterpret_cast<glm::mat4&>(buf[floatOffset]) = ModelMatrix(el);
-                    floatOffset += 16;
+                    glm::mat4 const m = ModelMatrix(el);
+                    nonstd::span<float const> const els = ToFloatSpan(m);
+                    buf.insert(buf.end(), els.begin(), els.end());
+                    floatOffset += els.size();
                 }
             }
             if (shaderImpl.m_MaybeInstancedNormalMatAttr)
             {
                 if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderType::Mat4)
                 {
-                    static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
-                    reinterpret_cast<glm::mat4&>(buf[floatOffset]) = NormalMatrix4(el);
-                    floatOffset += 16;
+                    glm::mat4 const m = NormalMatrix4(el);
+                    nonstd::span<float const> const els = ToFloatSpan(m);
+                    buf.insert(buf.end(), els.begin(), els.end());
+                    floatOffset += els.size();
                 }
                 else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderType::Mat3)
                 {
-                    static_assert(alignof(glm::mat3) == alignof(float) && sizeof(glm::mat3) == 9 * sizeof(float));
-                    reinterpret_cast<glm::mat3&>(buf[floatOffset]) = NormalMatrix(el);
-                    floatOffset += 9;
+                    glm::mat3 const m = NormalMatrix(el);
+                    nonstd::span<float const> const els = ToFloatSpan(m);
+                    buf.insert(buf.end(), els.begin(), els.end());
+                    floatOffset += els.size();
                 }
             }
         }

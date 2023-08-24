@@ -4520,15 +4520,21 @@ namespace
 
         nonstd::span<osc::Color const> GetColors() const
         {
-            static_assert(alignof(decltype(m_Colors)) == alignof(osc::Color));
-            static_assert(sizeof(m_Colors) % sizeof(osc::Color) == 0);
-            auto const* start = reinterpret_cast<osc::Color const*>(&m_Colors);
-            return {start, start + sizeof(m_Colors)/sizeof(osc::Color)};
+            static_assert(offsetof(Colors, ground) == 0);
+            static_assert(sizeof(Colors) % sizeof(osc::Color) == 0);
+            return {&m_Colors.ground, sizeof(m_Colors)/sizeof(osc::Color)};
+        }
+
+        nonstd::span<osc::Color> UpdColors()
+        {
+            static_assert(offsetof(Colors, ground) == 0);
+            static_assert(sizeof(Colors) % sizeof(osc::Color) == 0);
+            return {&m_Colors.ground, sizeof(m_Colors)/sizeof(osc::Color)};
         }
 
         void SetColor(size_t i, osc::Color const& newColorValue)
         {
-            reinterpret_cast<osc::Color*>(&m_Colors)[i] = newColorValue;
+            UpdColors()[i] = newColorValue;
         }
 
         nonstd::span<char const* const> GetColorLabels() const
@@ -4573,15 +4579,21 @@ namespace
 
         nonstd::span<bool const> GetVisibilityFlags() const
         {
-            static_assert(alignof(decltype(m_VisibilityFlags)) == alignof(bool));
-            static_assert(sizeof(m_VisibilityFlags) % sizeof(bool) == 0);
-            bool const* start = reinterpret_cast<bool const*>(&m_VisibilityFlags);
-            return {start, start + sizeof(m_VisibilityFlags)/sizeof(bool)};
+            static_assert(offsetof(VisibilityFlags, ground) == 0);
+            static_assert(sizeof(VisibilityFlags) % sizeof(bool) == 0);
+            return {&m_VisibilityFlags.ground, sizeof(m_VisibilityFlags)/sizeof(bool)};
+        }
+
+        nonstd::span<bool> UpdVisibilityFlags()
+        {
+            static_assert(offsetof(VisibilityFlags, ground) == 0);
+            static_assert(sizeof(VisibilityFlags) % sizeof(bool) == 0);
+            return {&m_VisibilityFlags.ground, sizeof(m_VisibilityFlags)/sizeof(bool)};
         }
 
         void SetVisibilityFlag(size_t i, bool newVisibilityValue)
         {
-            reinterpret_cast<bool*>(&m_VisibilityFlags)[i] = newVisibilityValue;
+            UpdVisibilityFlags()[i] = newVisibilityValue;
         }
 
         nonstd::span<char const* const> GetVisibilityFlagLabels() const
@@ -4852,15 +4864,21 @@ namespace
 
         nonstd::span<bool const> GetIneractivityFlags() const
         {
-            static_assert(alignof(decltype(m_InteractivityFlags)) == alignof(bool));
-            static_assert(sizeof(m_InteractivityFlags) % sizeof(bool) == 0);
-            bool const* start = reinterpret_cast<bool const*>(&m_InteractivityFlags);
-            return {start, start + sizeof(m_InteractivityFlags)/sizeof(bool)};
+            static_assert(offsetof(InteractivityFlags, ground) == 0);
+            static_assert(sizeof(InteractivityFlags) % sizeof(bool) == 0);
+            return {&m_InteractivityFlags.ground, sizeof(m_InteractivityFlags)/sizeof(bool)};
+        }
+
+        nonstd::span<bool> UpdInteractivityFlags()
+        {
+            static_assert(offsetof(InteractivityFlags, ground) == 0);
+            static_assert(sizeof(InteractivityFlags) % sizeof(bool) == 0);
+            return {&m_InteractivityFlags.ground, sizeof(m_InteractivityFlags)/sizeof(bool)};
         }
 
         void SetInteractivityFlag(size_t i, bool newInteractivityValue)
         {
-            reinterpret_cast<bool*>(&m_InteractivityFlags)[i] = newInteractivityValue;
+            UpdInteractivityFlags()[i] = newInteractivityValue;
         }
 
         nonstd::span<char const* const> GetInteractivityFlagLabels() const
@@ -5212,7 +5230,7 @@ namespace
         // COLORS
         //
         // these are runtime-editable color values for things in the scene
-        struct {
+        struct Colors {
             osc::Color ground{196.0f/255.0f, 196.0f/255.0f, 196.0f/255.0f, 1.0f};
             osc::Color meshes{1.0f, 1.0f, 1.0f, 1.0f};
             osc::Color stations{196.0f/255.0f, 0.0f, 0.0f, 1.0f};
@@ -5234,7 +5252,7 @@ namespace
         // VISIBILITY
         //
         // these are runtime-editable visibility flags for things in the scene
-        struct {
+        struct VisibilityFlags {
             bool ground = true;
             bool meshes = true;
             bool bodies = true;
@@ -5264,7 +5282,7 @@ namespace
         // LOCKING
         //
         // these are runtime-editable flags that dictate what gets hit-tested
-        struct {
+        struct InteractivityFlags {
             bool ground = true;
             bool meshes = true;
             bool bodies = true;

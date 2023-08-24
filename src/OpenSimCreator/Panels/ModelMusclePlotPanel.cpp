@@ -2108,12 +2108,24 @@ namespace
 
         void drawLegendContextMenuContent()
         {
-            static_assert(sizeof(decltype(m_PlotFlags)) == sizeof(unsigned int));
-            static_assert(alignof(decltype(m_PlotFlags)) == alignof(unsigned int));
-            static_assert(sizeof(decltype(m_LegendFlags)) == sizeof(unsigned int));
-            static_assert(alignof(decltype(m_LegendFlags)) == alignof(unsigned int));
-            ImGui::CheckboxFlags("Hide", reinterpret_cast<unsigned int*>(&m_PlotFlags), ImPlotFlags_NoLegend);
-            ImGui::CheckboxFlags("Outside", reinterpret_cast<unsigned int*>(&m_LegendFlags), ImPlotLegendFlags_Outside);
+            {
+                static_assert(std::is_same_v<decltype(m_PlotFlags), int>);
+
+                unsigned int f = static_cast<unsigned int>(m_PlotFlags);
+                if (ImGui::CheckboxFlags("Hide", &f, ImPlotFlags_NoLegend))
+                {
+                    m_PlotFlags = static_cast<int>(f);
+                }
+            }
+            {
+                static_assert(std::is_same_v<decltype(m_LegendFlags), int>);
+
+                unsigned int f = static_cast<unsigned int>(m_LegendFlags);
+                if (ImGui::CheckboxFlags("Outside", &f, ImPlotLegendFlags_Outside))
+                {
+                    m_LegendFlags = static_cast<int>(f);
+                }
+            }
 
             const float s = ImGui::GetFrameHeight();
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2, 2));

@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <functional>
 
 namespace osc
@@ -45,9 +46,14 @@ namespace osc
 
     inline uint32_t ToUint32(Color32 const& color32)
     {
-        static_assert(alignof(Color32) == alignof(uint32_t));
         static_assert(sizeof(Color32) == sizeof(uint32_t));
-        return reinterpret_cast<uint32_t const&>(color32);
+        uint32_t rv = 0;
+        std::memcpy(
+            reinterpret_cast<uint8_t*>(&rv),
+            reinterpret_cast<uint8_t const*>(&color32),
+            sizeof(Color32)
+        );
+        return rv;
     }
 }
 
