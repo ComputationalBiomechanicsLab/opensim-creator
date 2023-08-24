@@ -91,6 +91,8 @@ def build_osc(conf: BuildConfiguration):
         _run(f'cmake --build {conf.osc_build_dir} --target {conf.build_target} {other_build_args}')
 
 def main():
+    logging.basicConfig(level=logging.DEBUG)
+
     conf = BuildConfiguration()
 
     log_build_params(conf)
