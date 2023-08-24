@@ -40,8 +40,8 @@ namespace osc
         // - this behavior makes the implementation simpler, because
         //   you don't have to handle _begin == _end edge cases and
         //   one-past-the end out-of-bounds checks
-        using storage_bytes = std::aligned_storage_t<sizeof(T), alignof(T)>;
-        std::array<storage_bytes, N> raw_storage;
+        class alignas(T) object_bytes { std::byte data[sizeof(T)]; };
+        std::array<object_bytes, N> raw_storage;
 
         // index (T-based, not raw byte based) of the first element
         ptrdiff_t _begin = 0;
@@ -397,7 +397,7 @@ namespace osc
             }
 
             // construct T in the old "dead" element location
-            storage_bytes* ptr = raw_storage.data() + _end;
+            object_bytes* ptr = raw_storage.data() + _end;
             T* constructed_el = new (ptr) T{std::forward<Args>(args)...};
 
             _end = new_end;
