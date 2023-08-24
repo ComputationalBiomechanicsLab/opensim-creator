@@ -5694,7 +5694,7 @@ void osc::Graphics::CopyTexture(
 
 // helper: upload instancing data for a batch
 std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
-    nonstd::span<RenderObject const> els,
+    nonstd::span<RenderObject const> renderObjects,
     osc::Shader::Impl const& shaderImpl)
 {
     // preemptively upload instancing data
@@ -5728,10 +5728,10 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
         OSC_PERF("GraphicsBackend::UploadInstanceData");
         std::vector<float>& buf = g_GraphicsContextImpl->updInstanceCPUBuffer();
         buf.clear();
-        buf.reserve(els.size() * (byteStride/sizeof(float)));
+        buf.reserve(renderObjects.size() * (byteStride/sizeof(float)));
 
         size_t floatOffset = 0;
-        for (RenderObject const& el : els)
+        for (RenderObject const& el : renderObjects)
         {
             if (shaderImpl.m_MaybeInstancedModelMatAttr)
             {
@@ -5761,7 +5761,7 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
                 }
             }
         }
-        OSC_ASSERT_ALWAYS(sizeof(float)*floatOffset == els.size() * byteStride);
+        OSC_ASSERT_ALWAYS(sizeof(float)*floatOffset == renderObjects.size() * byteStride);
 
         auto& vbo = maybeInstancingState.emplace(g_GraphicsContextImpl->updInstanceGPUBuffer(), byteStride).buf;
         vbo.assign(nonstd::span<float const>{buf.data(), floatOffset});
