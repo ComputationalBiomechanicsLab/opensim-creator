@@ -240,7 +240,8 @@ namespace
         // use OpenSim to emit generic decorations exactly as OpenSim would emit them
         void emitGenericDecorations(
             OpenSim::Component const& componentToRender,
-            OpenSim::Component const& componentToLinkTo)
+            OpenSim::Component const& componentToLinkTo,
+            float fixupScaleFactor)
         {
             std::function<void(osc::SimpleSceneDecoration&&)> const callback = [this, &componentToLinkTo](osc::SimpleSceneDecoration&& dec)
             {
@@ -261,7 +262,7 @@ namespace
                     getMatterSubsystem(),
                     getState(),
                     geom,
-                    getFixupScaleFactor(),
+                    fixupScaleFactor,
                     callback
                 );
             }
@@ -280,10 +281,18 @@ namespace
                     getMatterSubsystem(),
                     getState(),
                     geom,
-                    getFixupScaleFactor(),
+                    fixupScaleFactor,
                     callback
                 );
             }
+        }
+
+        // use OpenSim to emit generic decorations exactly as OpenSim would emit them
+        void emitGenericDecorations(
+            OpenSim::Component const& componentToRender,
+            OpenSim::Component const& componentToLinkTo)
+        {
+            emitGenericDecorations(componentToRender, componentToLinkTo, getFixupScaleFactor());
         }
 
     private:
@@ -962,6 +971,14 @@ void osc::GenerateModelDecorations(
         else if (auto const* const hcf = dynamic_cast<OpenSim::HuntCrossleyForce const*>(&c))
         {
             HandleHuntCrossleyForce(rendererState, *hcf);
+        }
+        else if (auto const* const geom = dynamic_cast<OpenSim::Geometry const*>(&c))
+        {
+            // EDGE-CASE:
+            //
+            // if the component being rendered is geometry that was explicitly added into the model then
+            // the scene scale factor should not apply to that geometry
+            rendererState.emitGenericDecorations(c, c, 1.0f);  // note: override scale factor
         }
         else
         {

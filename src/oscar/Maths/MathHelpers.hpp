@@ -28,12 +28,16 @@ namespace osc { struct Segment; }
 //               osc struct
 namespace osc
 {
-    // returns `true` if the values of `a` and `b` are effectively equal
+    // returns `true` if the two arguments are effectively equal (i.e. within machine precision)
     //
     // this algorithm is designed to be correct, rather than fast
     bool IsEffectivelyEqual(double, double) noexcept;
 
     bool IsLessThanOrEffectivelyEqual(double, double) noexcept;
+
+    // returns `true` if the first two arguments are within `relativeError` of eachover
+    bool IsEqualWithinRelativeError(float, float, float relativeError) noexcept;
+    bool IsEqualWithinRelativeError(glm::vec3 const&, glm::vec3 const&, float relativeError) noexcept;
 
     // ----- glm::vecX/glm::matX helpers -----
 

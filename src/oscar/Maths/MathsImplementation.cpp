@@ -1074,6 +1074,33 @@ bool osc::IsLessThanOrEffectivelyEqual(double a, double b) noexcept
     }
 }
 
+bool osc::IsEqualWithinRelativeError(float a, float b, float relativeError) noexcept
+{
+    // inspired from:
+    //
+    // - https://stackoverflow.com/questions/17333/what-is-the-most-effective-way-for-float-and-double-comparison
+    //
+    // but, specifically, you should read the section `Epsilon comparisons` here:
+    //
+    // - https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+
+    auto const difference = std::abs(a - b);
+    auto const permittedAbsoluteError = relativeError * std::max(std::abs(a), std::abs(b));
+    return difference <= permittedAbsoluteError;
+}
+
+bool osc::IsEqualWithinRelativeError(glm::vec3 const& a, glm::vec3 const& b, float relativeError) noexcept
+{
+    for (glm::vec3::length_type i = 0; i < glm::vec3::length(); ++i)
+    {
+        if (!IsEqualWithinRelativeError(a[i], b[i], relativeError))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool osc::AreAtSameLocation(glm::vec3 const& a, glm::vec3 const& b) noexcept
 {
     constexpr float eps2 = std::numeric_limits<float>::epsilon() * std::numeric_limits<float>::epsilon();

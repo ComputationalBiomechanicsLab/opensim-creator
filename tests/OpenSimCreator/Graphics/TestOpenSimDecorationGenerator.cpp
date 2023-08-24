@@ -5,17 +5,25 @@
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "testopensimcreator_config.hpp"
 
+#include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/SceneDecoration.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Platform/Log.hpp>
 
 #include <gtest/gtest.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Geometry.h>
 
 #include <filesystem>
 #include <utility>
 #include <vector>
+
+namespace glm
+{
+    using osc::operator<<;  // so that glm types can be printed
+}
 
 // test that telling OSC to generate OpenSim-colored muscles
 // results in red muscle lines (as opposed to muscle lines that
@@ -53,4 +61,125 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithOpenSimMuscleColoringGen
         }
     );
     ASSERT_TRUE(passedTest);
+}
+
+
+// repro for #461
+//
+// the bug is that the scene scale factor is blindly applied to all scene geometry
+//
+// this is a basic test that ensures that the scale factor argument is applied to
+// non-sized scene elements (specifically, here, the ground frame geometry), rather
+// than exercising the bug (seperate test)
+TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorScalesFrames)
+{
+    OpenSim::Model model;
+    model.updDisplayHints().set_show_frames(true);  // it should scale frame geometry
+    model.buildSystem();
+    SimTK::State const& state = model.initializeState();
+
+    auto const generateDecorationsWithScaleFactor = [&model, &state](float scaleFactor)
+    {
+        osc::MeshCache meshCache;
+
+        std::vector<osc::SceneDecoration> rv;
+        osc::GenerateModelDecorations(
+            meshCache,
+            model,
+            state,
+            osc::OpenSimDecorationOptions{},
+            scaleFactor,
+            [&rv](OpenSim::Component const& c, osc::SceneDecoration&& dec)
+            {
+                // only suck up the frame decorations associated with ground
+                if (dynamic_cast<OpenSim::Ground const*>(&c))
+                {
+                    rv.push_back(std::move(dec));
+                }
+            }
+        );
+        return rv;
+    };
+
+    float const scale = 0.25f;
+    std::vector<osc::SceneDecoration> const unscaledDecs = generateDecorationsWithScaleFactor(1.0f);
+    std::vector<osc::SceneDecoration> const scaledDecs = generateDecorationsWithScaleFactor(scale);
+
+    ASSERT_FALSE(unscaledDecs.empty());
+    ASSERT_FALSE(scaledDecs.empty());
+    ASSERT_EQ(unscaledDecs.size(), scaledDecs.size());
+
+    for (size_t i = 0; i < unscaledDecs.size(); ++i)
+    {
+        osc::SceneDecoration const& unscaledDec = unscaledDecs[i];
+        osc::SceneDecoration const& scaledDec = scaledDecs[i];
+
+        ASSERT_TRUE(osc::IsEqualWithinRelativeError(scale*unscaledDec.transform.scale, scaledDec.transform.scale, 0.0001f));
+    }
+}
+
+// repro for #461
+//
+// the bug is that the scene scale factor is blindly applied to all scene geometry
+//
+// this repro adds a sphere into the scene and checks that the decoration genenerator ignores
+// the geometry in this particular case
+TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorDoesNotScaleExplicitlyAddedSphereGeometry)
+{
+    // create appropriate model
+    std::pair<OpenSim::Model, OpenSim::ComponentPath> p = []()
+    {
+        OpenSim::Model m;
+        auto body = std::make_unique<OpenSim::Body>("body", 1.0, SimTK::Vec3{}, SimTK::Inertia{1.0});
+        auto geom = std::make_unique<OpenSim::Sphere>(1.0);
+        OpenSim::Geometry const* geomPtr = geom.get();
+
+        body->attachGeometry(geom.release());
+        m.addBody(body.release());
+        m.buildSystem();
+
+        return std::pair{std::move(m), geomPtr->getAbsolutePath()};
+    }();
+    p.first.buildSystem();
+    SimTK::State const& state = p.first.initializeState();
+
+    // helper
+    auto const generateDecorationsWithScaleFactor = [&p, &state](float scaleFactor)
+    {
+        osc::MeshCache meshCache;
+
+        std::vector<osc::SceneDecoration> rv;
+        osc::GenerateModelDecorations(
+            meshCache,
+            p.first,
+            state,
+            osc::OpenSimDecorationOptions{},
+            scaleFactor,
+            [&p, &rv](OpenSim::Component const& c, osc::SceneDecoration&& dec)
+            {
+                if (c.getAbsolutePath() == p.second)
+                {
+                    rv.push_back(std::move(dec));
+                }
+            }
+        );
+        return rv;
+    };
+
+    float const scale = 0.25f;
+    std::vector<osc::SceneDecoration> const unscaledDecs = generateDecorationsWithScaleFactor(1.0f);
+    std::vector<osc::SceneDecoration> const scaledDecs = generateDecorationsWithScaleFactor(scale);
+
+    ASSERT_FALSE(unscaledDecs.empty());
+    ASSERT_FALSE(scaledDecs.empty());
+    ASSERT_EQ(unscaledDecs.size(), scaledDecs.size());
+
+    for (size_t i = 0; i < unscaledDecs.size(); ++i)
+    {
+        osc::SceneDecoration const& unscaledDec = unscaledDecs[i];
+        osc::SceneDecoration const& scaledDec = scaledDecs[i];
+
+        // note: not scaled
+        ASSERT_TRUE(osc::IsEqualWithinRelativeError(unscaledDec.transform.scale, scaledDec.transform.scale, 0.0001f));
+    }
 }
