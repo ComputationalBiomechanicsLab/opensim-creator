@@ -115,9 +115,13 @@ target_compile_options(oscar_configuration INTERFACE
         # warn if a pointer is cast in a C-style cast in such a way that it removes qualifiers (e.g. char const* -> char*)
         -Wcast-qual
 
-        # disabled: broken in osc
-        # warn if an implicit conversion may alter a value
-        # -Wconversion
+        # warn if implicit conversion may alter a value
+        -Wconversion
+
+        # disabled: very very hard to avoid all warnings from this :(
+        #
+        # warn if an implicit conversion involving signed-to-unsigned etc. may alter a value
+        -Wno-sign-conversion
 
         # disabled: requires newer gcc
         # warn if a suspicous use of a logical operator is detected (e.g. i < 0 && i < 0)

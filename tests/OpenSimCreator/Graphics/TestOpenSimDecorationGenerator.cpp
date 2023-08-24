@@ -20,11 +20,6 @@
 #include <utility>
 #include <vector>
 
-namespace glm
-{
-    using osc::operator<<;  // so that glm types can be printed
-}
-
 // test that telling OSC to generate OpenSim-colored muscles
 // results in red muscle lines (as opposed to muscle lines that
 // are based on something like excitation - #663)

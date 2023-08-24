@@ -142,7 +142,7 @@ private:
     {
         Rect tabRect = osc::GetMainViewportWorkspaceScreenRect();
         // pretend the attributation bar isn't there (avoid it)
-        tabRect.p2.y -= std::max(m_TudLogo.getDimensions().y, m_CziLogo.getDimensions().y) - 2.0f*ImGui::GetStyle().WindowPadding.y;
+        tabRect.p2.y -= static_cast<float>(std::max(m_TudLogo.getDimensions().y, m_CziLogo.getDimensions().y)) - 2.0f*ImGui::GetStyle().WindowPadding.y;
 
         glm::vec2 const menuAndTopLogoDims = osc::Min(osc::Dimensions(tabRect), glm::vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
         glm::vec2 const menuAndTopLogoTopLeft = tabRect.p1 + 0.5f*(Dimensions(tabRect) - menuAndTopLogoDims);
@@ -339,15 +339,15 @@ private:
     {
         Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
         glm::vec2 loc = viewportRect.p2;
-        loc.x = loc.x - 2.0f*ImGui::GetStyle().WindowPadding.x - m_CziLogo.getDimensions().x - 2.0f*ImGui::GetStyle().ItemSpacing.x - m_TudLogo.getDimensions().x;
-        loc.y = loc.y - 2.0f*ImGui::GetStyle().WindowPadding.y - std::max(m_CziLogo.getDimensions().y, m_TudLogo.getDimensions().y);
+        loc.x = loc.x - 2.0f*ImGui::GetStyle().WindowPadding.x - static_cast<float>(m_CziLogo.getDimensions().x) - 2.0f*ImGui::GetStyle().ItemSpacing.x - static_cast<float>(m_TudLogo.getDimensions().x);
+        loc.y = loc.y - 2.0f*ImGui::GetStyle().WindowPadding.y - static_cast<float>(std::max(m_CziLogo.getDimensions().y, m_TudLogo.getDimensions().y));
 
         ImGui::SetNextWindowPos(loc);
         ImGui::Begin("##czlogo", nullptr, GetMinimalWindowFlags());
         DrawTextureAsImGuiImage(m_CziLogo);
         ImGui::End();
 
-        loc.x += m_CziLogo.getDimensions().x + 2.0f*ImGui::GetStyle().ItemSpacing.x;
+        loc.x += static_cast<float>(m_CziLogo.getDimensions().x) + 2.0f*ImGui::GetStyle().ItemSpacing.x;
         ImGui::SetNextWindowPos(loc);
         ImGui::Begin("##tudlogo", nullptr, GetMinimalWindowFlags());
         DrawTextureAsImGuiImage(m_TudLogo);

@@ -300,13 +300,13 @@ private:
             static_assert(c_LocationInputIDs.size() == 3);
             for (size_t dim = 0; dim < c_LocationInputIDs.size(); ++dim)
             {
-                auto v = static_cast<float>(location[dim]);
+                auto v = static_cast<float>(location[static_cast<int>(dim)]);
 
                 ImGui::TableSetColumnIndex(column++);
                 ImGui::SetNextItemWidth(inputWidth);
                 if (ImGui::InputFloat(c_LocationInputIDs[dim].c_str(), &v))
                 {
-                    location[dim] = static_cast<double>(v);
+                    location[static_cast<int>(dim)] = static_cast<double>(v);
                 }
             }
         }

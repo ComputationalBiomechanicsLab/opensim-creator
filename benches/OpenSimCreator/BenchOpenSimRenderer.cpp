@@ -31,7 +31,7 @@ static void BM_OpenSimRenderRajagopalDecorations(benchmark::State& state)
     // warmup
     osc::GenerateModelDecorations(meshCache, model, modelState, decorationOptions, 1.0, outputFunc);
 
-    for (auto _ : state)
+    for ([[maybe_unused]] auto _ : state)
     {
         osc::GenerateModelDecorations(meshCache, model, modelState, decorationOptions, 1.0, outputFunc);
     }

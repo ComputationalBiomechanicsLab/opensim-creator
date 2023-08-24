@@ -146,7 +146,7 @@ private:
             glm::vec3 const axis = glm::normalize(glm::vec3{1.0f, 0.3f, 0.5f});
             for (glm::vec3 const& pos : c_CubePositions)
             {
-                float const angle = glm::radians(i++ * 20.0f);
+                float const angle = glm::radians(static_cast<float>(i++) * 20.0f);
 
                 Transform t;
                 t.rotation = glm::angleAxis(angle, axis);

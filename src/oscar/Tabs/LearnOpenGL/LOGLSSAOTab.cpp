@@ -69,7 +69,7 @@ namespace
         {
             // scale antiAliasingLevel such that they are more aligned to
             // the center of the kernel
-            float scale = static_cast<float>(i)/numSamples;
+            float scale = static_cast<float>(i)/static_cast<float>(numSamples);
             scale = glm::mix(0.1f, 1.0f, scale*scale);
 
             glm::vec3 sample = {minusOneToOne(rng), minusOneToOne(rng), minusOneToOne(rng)};

@@ -78,7 +78,12 @@ namespace
             {
                 for (int32_t z = min; z <= max; z += step)
                 {
-                    rv.emplace_back(glm::vec3{x, 50.0f + 2.0f*y, z});
+                    rv.emplace_back(glm::vec3
+                    {
+                        static_cast<float>(x),
+                        50.0f + 2.0f*static_cast<float>(y),
+                        static_cast<float>(z),
+                    });
                 }
             }
         }

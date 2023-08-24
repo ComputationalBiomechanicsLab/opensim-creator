@@ -813,7 +813,7 @@ osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max
         // emit rest of the row (has vertical and horizontal links)
         for (int32_t x = 1; x < steps.x; ++x)
         {
-            glm::vec3 const pos = {min.x + static_cast<float>(x)*stepSize.x, min.y + y*stepSize.y, zValue};
+            glm::vec3 const pos = {min.x + static_cast<float>(x)*stepSize.x, min.y + static_cast<float>(y)*stepSize.y, zValue};
             verts.push_back(pos);
             uint32_t const index = static_cast<int32_t>(verts.size() - 1);
             indices.push_back(index - 1);        // link the previous point
