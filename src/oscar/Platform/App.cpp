@@ -924,7 +924,7 @@ std::vector<uint8_t> osc::App::slurpBinary(std::string_view s)
     return get().slurpBinaryResource(s);
 }
 
-osc::App::App() : m_Impl{new Impl{}}
+osc::App::App() : m_Impl{std::make_unique<Impl>()}
 {
     g_Current = this;
 }

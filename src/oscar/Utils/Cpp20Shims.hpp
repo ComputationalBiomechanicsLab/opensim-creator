@@ -41,7 +41,7 @@ namespace osc {
     // C++20: std::stop_source
     class stop_source final {
     public:
-        stop_source() : m_SharedState{new std::atomic<bool>{false}}
+        stop_source() : m_SharedState{std::make_shared<std::atomic<bool>>(false)}
         {
         }
         stop_source(stop_source const&) = delete;

@@ -29,40 +29,40 @@ namespace
 {
     using Geom_ctor_fn = std::unique_ptr<OpenSim::Geometry>();
     constexpr auto c_GeomCtors = osc::MakeArray<Geom_ctor_fn*>(
-        []()
+        []() -> std::unique_ptr<OpenSim::Geometry>
         {
             auto ptr = std::make_unique<OpenSim::Brick>();
             ptr->set_half_lengths(SimTK::Vec3{0.1, 0.1, 0.1});
-            return std::unique_ptr<OpenSim::Geometry>(std::move(ptr));
+            return ptr;
         },
-        []()
+        []() -> std::unique_ptr<OpenSim::Geometry>
         {
             auto ptr = std::make_unique<OpenSim::Sphere>();
             ptr->set_radius(0.1);
-            return std::unique_ptr<OpenSim::Geometry>{std::move(ptr)};
+            return ptr;
         },
-        []()
+        []() -> std::unique_ptr<OpenSim::Geometry>
         {
             auto ptr = std::make_unique<OpenSim::Cylinder>();
             ptr->set_radius(0.1);
             ptr->set_half_height(0.1);
-            return std::unique_ptr<OpenSim::Geometry>{std::move(ptr)};
+            return ptr;
         },
-        []()
+        []() -> std::unique_ptr<OpenSim::Geometry>
         {
-            return std::unique_ptr<OpenSim::Geometry>{new OpenSim::LineGeometry{}};
+            return std::make_unique<OpenSim::LineGeometry>();
         },
-        []()
+        []() -> std::unique_ptr<OpenSim::Geometry>
         {
-            return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Ellipsoid{}};
+            return std::make_unique<OpenSim::Ellipsoid>();
         },
-        []()
+        []() -> std::unique_ptr<OpenSim::Geometry>
         {
-            return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Arrow{}};
+            return std::make_unique<OpenSim::Arrow>();
         },
-        []()
+        []() -> std::unique_ptr<OpenSim::Geometry>
         {
-            return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Cone{}};
+            return std::make_unique<OpenSim::Cone>();
         }
     );
 

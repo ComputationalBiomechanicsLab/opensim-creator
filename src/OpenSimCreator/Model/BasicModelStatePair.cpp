@@ -85,16 +85,16 @@ private:
 // public API
 
 osc::BasicModelStatePair::BasicModelStatePair() :
-    m_Impl{new Impl{}}
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
 osc::BasicModelStatePair::BasicModelStatePair(VirtualModelStatePair const& p) :
-    m_Impl{new Impl{p}}
+    m_Impl{std::make_unique<Impl>(p)}
 {
 }
 osc::BasicModelStatePair::BasicModelStatePair(OpenSim::Model const& model, SimTK::State const& state) :
-    m_Impl{new Impl{model, state}}
+    m_Impl{std::make_unique<Impl>(model, state)}
 {
 }
 osc::BasicModelStatePair::BasicModelStatePair(BasicModelStatePair const&) = default;

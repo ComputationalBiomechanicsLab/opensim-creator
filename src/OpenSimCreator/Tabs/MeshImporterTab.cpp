@@ -996,7 +996,7 @@ namespace
                 c_GroundLabelOptionallyPluralized,
                 ICON_FA_DOT_CIRCLE,
                 c_GroundDescription,
-                std::unique_ptr<SceneEl>{new GroundEl{}}
+                std::make_unique<GroundEl>(),
             };
 
             return s_Class;
@@ -1090,7 +1090,7 @@ namespace
                 c_MeshLabelOptionallyPluralized,
                 ICON_FA_CUBE,
                 c_MeshDescription,
-                std::unique_ptr<SceneEl>{new MeshEl{}}
+                std::make_unique<MeshEl>(),
             };
 
             return s_Class;
@@ -1278,7 +1278,7 @@ namespace
                 c_BodyLabelOptionallyPluralized,
                 ICON_FA_CIRCLE,
                 c_BodyDescription,
-                std::unique_ptr<SceneEl>{new BodyEl{}}
+                std::make_unique<BodyEl>(),
             };
 
             return s_Class;
@@ -1420,7 +1420,7 @@ namespace
                 c_JointLabelOptionallyPluralized,
                 ICON_FA_LINK,
                 c_JointDescription,
-                std::unique_ptr<SceneEl>{new JointEl{}}
+                std::make_unique<JointEl>(),
             };
 
             return s_Class;
@@ -1656,7 +1656,7 @@ namespace
                 c_StationLabelOptionallyPluralized,
                 ICON_FA_MAP_PIN,
                 c_StationDescription,
-                std::unique_ptr<SceneEl>{new StationEl{}}
+                std::make_unique<StationEl>(),
             };
 
             return s_Class;

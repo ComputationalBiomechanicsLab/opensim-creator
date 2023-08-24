@@ -41,12 +41,11 @@ namespace osc
         template<typename T, typename...Args>
         static std::shared_ptr<T> singleton(Args&&... args)
         {
-            auto const ctor = [argTuple = std::make_tuple(std::forward<Args>(args)...)]() mutable
+            auto const ctor = [argTuple = std::make_tuple(std::forward<Args>(args)...)]() mutable -> std::shared_ptr<void>
             {
                 return std::apply([](auto&&... innerArgs) -> std::shared_ptr<void>
                 {
-                     auto const customDeleter = [](T* t) { delete t; };
-                     return std::shared_ptr<void>{new T{std::forward<Args>(innerArgs)...}, customDeleter};
+                     return std::make_shared<T>(std::forward<Args>(innerArgs)...);
                 }, std::move(argTuple));
             };
 

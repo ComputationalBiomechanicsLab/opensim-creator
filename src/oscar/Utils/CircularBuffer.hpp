@@ -392,7 +392,7 @@ namespace osc
                 // but before the first (head). The head is about to become the
                 // new "dead" element and should be destructed
 
-                front().~T();
+                std::destroy_at(&front());
                 _begin = (_begin + 1) % N;
             }
 

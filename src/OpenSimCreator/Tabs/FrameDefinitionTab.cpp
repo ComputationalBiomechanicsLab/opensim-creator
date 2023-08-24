@@ -1914,7 +1914,7 @@ namespace
             //
             // (must be done after adding body etc. to model and finalizing - #325)
             mutModel.finalizeConnections();
-            meshPofPtr->attachGeometry(new OpenSim::Mesh{*mesh});
+            meshPofPtr->attachGeometry(std::make_unique<OpenSim::Mesh>(*mesh).release());
 
             // ensure model is in a valid, initialized, state before moving
             // and reassigning things around

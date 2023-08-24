@@ -60,7 +60,7 @@ private:
 // public API (PIMPL)
 
 osc::SceneViewer::SceneViewer() :
-    m_Impl{new Impl{}}
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
