@@ -1,3 +1,4 @@
+import logging
 import os
 import pprint
 import subprocess
@@ -7,12 +8,13 @@ def _is_truthy_envvar(s : str):
     return sl in {"on", "true", "yes", "1"}
 
 def _run(s: str):
-    print(s)
+    logging.info(f"running: {s}")
     subprocess.run(s, check=True)
 
-def _print_dir(path: str):
+def _log_dir_contents(path: str):
+    logging.info(f"listing {path}")
     for el in os.listdir(path):
-        print(el)
+        logging.info(f"{path}/{el}")
 
 class BuildConfiguration:
 
@@ -40,13 +42,13 @@ class Section:
     def __init__(self, name):
         self.name = name
     def __enter__(self):
-        print(f"----- start: {self.name}")
+        logging.info(f"----- start: {self.name}")
     def __exit__(self, type, value, traceback):
-        print(f"----- end: {self.name}")
+        logging.info(f"----- end: {self.name}")
 
-def print_build_params(conf: BuildConfiguration):
-    with Section("print build params"):
-        print(conf)
+def log_build_params(conf: BuildConfiguration):
+    with Section("logging build params"):
+        logging.info(conf)
 
 def ensure_submodules_are_up_to_date(conf: BuildConfiguration):
     with Section("update git submodules"):
@@ -57,16 +59,16 @@ def install_system_dependencies(conf: BuildConfiguration):
         if conf.build_docs:
             _run("pip install -r docs/requirements.txt")
         else:
-            print("skipping pip install: this build isn't building docs")
+            logging.info("skipping pip install: this build isn't building docs")
 
 def build_osc_dependencies(conf: BuildConfiguration):
     with Section("build osc dependencies"):
         _run(f'cmake -S third_party/ -B "{conf.dependencies_build_dir}" {conf.generator_flags} -DCMAKE_INSTALL_PREFIX="{conf.dependencies_install_dir}"')
         _run(f'cmake --build {conf.dependencies_build_dir} --config {conf.osc_deps_build_type} -j{conf.concurrency}')
 
-    with Section("print osc dependencies build/install dirs"):
-        _print_dir(conf.dependencies_build_dir)
-        _print_dir(conf.dependencies_install_dir)
+    with Section("log osc dependencies build/install dirs"):
+        _log_dir_contents(conf.dependencies_build_dir)
+        _log_dir_contents(conf.dependencies_install_dir)
 
 def build_osc(conf: BuildConfiguration):
     with Section("build osc"):
@@ -91,7 +93,7 @@ def build_osc(conf: BuildConfiguration):
 def main():
     conf = BuildConfiguration()
 
-    print_build_params(conf)
+    log_build_params(conf)
     ensure_submodules_are_up_to_date(conf)
     install_system_dependencies(conf)
     build_osc_dependencies(conf)
