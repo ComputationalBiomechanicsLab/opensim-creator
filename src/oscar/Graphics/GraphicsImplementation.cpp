@@ -588,7 +588,7 @@ namespace
         {
         }
 
-        friend void swap(RenderObject& a, RenderObject& b)
+        friend void swap(RenderObject& a, RenderObject& b) noexcept
         {
             using std::swap;
 
@@ -3767,10 +3767,13 @@ private:
     FastStringHashtable<MaterialValue> m_Values;
 };
 
-osc::MaterialPropertyBlock::MaterialPropertyBlock()
+osc::MaterialPropertyBlock::MaterialPropertyBlock() :
+    m_Impl{[]()
+    {
+        static CopyOnUpdPtr<Impl> const s_EmptyPropertyBlockImpl = make_cow<Impl>();
+        return s_EmptyPropertyBlockImpl;
+    }()}
 {
-    static CopyOnUpdPtr<Impl> const s_EmptyPropertyBlockImpl = make_cow<Impl>();
-    m_Impl = s_EmptyPropertyBlockImpl;
 }
 
 osc::MaterialPropertyBlock::MaterialPropertyBlock(MaterialPropertyBlock const&) = default;

@@ -100,7 +100,7 @@ namespace osc
         bool getWireframeMode() const;
         void setWireframeMode(bool);
 
-        friend void swap(Material& a, Material& b)
+        friend void swap(Material& a, Material& b) noexcept
         {
             swap(a.m_Impl, b.m_Impl);
         }

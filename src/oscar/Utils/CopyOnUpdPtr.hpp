@@ -16,12 +16,6 @@ namespace osc
         {
         }
     public:
-        CopyOnUpdPtr() = default;
-
-        explicit CopyOnUpdPtr(std::unique_ptr<T> p) :
-            m_Ptr{std::move(p)}
-        {
-        }
 
         T const* get() const noexcept
         {
@@ -45,11 +39,6 @@ namespace osc
         T const* operator->() const noexcept
         {
             return get();
-        }
-
-        explicit operator bool() const noexcept
-        {
-            return true;
         }
 
         friend void swap(CopyOnUpdPtr& a, CopyOnUpdPtr& b) noexcept
