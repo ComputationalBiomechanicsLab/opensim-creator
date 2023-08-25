@@ -5400,11 +5400,6 @@ public:
         m_DebugModeEnabled = IsOpenGLInDebugMode();
     }
 
-    void clearProgram()
-    {
-        gl::UseProgram();
-    }
-
     void clearScreen(Color const& color)
     {
         // clear color is in sRGB, but the framebuffer is sRGB-corrected (GL_FRAMEBUFFER_SRGB)
@@ -5603,11 +5598,6 @@ void osc::GraphicsContext::enableDebugMode()
 void osc::GraphicsContext::disableDebugMode()
 {
     g_GraphicsContextImpl->disableDebugMode();
-}
-
-void osc::GraphicsContext::clearProgram()
-{
-    g_GraphicsContextImpl->clearProgram();
 }
 
 void osc::GraphicsContext::clearScreen(Color const& color)

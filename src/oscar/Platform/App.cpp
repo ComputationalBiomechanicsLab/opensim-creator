@@ -1317,9 +1317,6 @@ void osc::ImGuiNewFrame()
 
 void osc::ImGuiRender()
 {
-    // bound program can sometimes cause issues
-    App::upd().m_Impl->updGraphicsContext().clearProgram();
-
     {
         OSC_PERF("ImGuiRender/Render");
         ImGui::Render();

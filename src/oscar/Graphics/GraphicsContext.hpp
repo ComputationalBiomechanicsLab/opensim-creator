@@ -34,7 +34,6 @@ namespace osc
         void enableDebugMode();
         void disableDebugMode();
 
-        void clearProgram();
         void clearScreen(Color const&);
 
         // HACK: this is needed by ImGui, because it uses OpenGL "in the raw"
