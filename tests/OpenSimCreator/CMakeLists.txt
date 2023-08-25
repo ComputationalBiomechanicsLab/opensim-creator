@@ -1,5 +1,5 @@
+include(GoogleTest)
 enable_testing()
-
 find_package(GTest REQUIRED CONFIG)
 
 # testopensimcreator_config.hpp
@@ -41,7 +41,6 @@ target_include_directories(testopensimcreator PUBLIC
 )
 
 # tell CMake (+IDEs) how to find all tests
-include(GoogleTest)
 gtest_add_tests(TARGET testopensimcreator)
 
 # for development on Windows, copy all runtime dlls to the exe directory

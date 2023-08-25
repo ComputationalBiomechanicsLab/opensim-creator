@@ -46,6 +46,7 @@
 #include <OpenSim/Simulation/Model/Marker.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include <OpenSim/Simulation/Model/PathPointSet.h>
@@ -1000,6 +1001,12 @@ void osc::InitializeModel(OpenSim::Model& model)
     }
 }
 
+void osc::FinalizeConnections(OpenSim::Model& model)
+{
+    OSC_PERF("osc::FinalizeConnections");
+    model.finalizeConnections();
+}
+
 SimTK::State& osc::InitializeState(OpenSim::Model& model)
 {
     OSC_PERF("osc::InitializeState");
@@ -1493,4 +1500,18 @@ std::optional<osc::PointInfo> osc::TryExtractPointInfo(
     {
         return std::nullopt;
     }
+}
+
+OpenSim::ModelComponent& osc::AddModelComponent(OpenSim::Model& model, std::unique_ptr<OpenSim::ModelComponent> p)
+{
+    OpenSim::ModelComponent& rv = *p;
+    model.addModelComponent(p.release());
+    return rv;
+}
+
+OpenSim::Geometry& osc::AttachGeometry(OpenSim::Frame& frame, std::unique_ptr<OpenSim::Geometry> p)
+{
+    OpenSim::Geometry& rv = *p;
+    frame.attachGeometry(p.release());
+    return rv;
 }

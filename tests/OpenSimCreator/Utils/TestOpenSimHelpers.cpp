@@ -10,8 +10,10 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+#include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 
 #include <filesystem>
 #include <memory>
@@ -177,4 +179,29 @@ TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFault
             }
         }
     }
+}
+
+TEST(OpenSimHelpers, AddModelComponentReturnsProvidedPointer)
+{
+    OpenSim::Model m;
+
+    auto p = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+    p->setParentFrame(m.getGround());
+
+    OpenSim::PhysicalOffsetFrame* expected = p.get();
+    ASSERT_EQ(&osc::AddModelComponent(m, std::move(p)), expected);
+}
+
+TEST(OpenSimHelpers, AddModelComponentAddsComponentToModelComponentSet)
+{
+    OpenSim::Model m;
+
+    auto p = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+    p->setParentFrame(m.getGround());
+
+    OpenSim::PhysicalOffsetFrame& s = osc::AddModelComponent(m, std::move(p));
+    osc::FinalizeConnections(m);
+
+    ASSERT_EQ(m.get_ComponentSet().getSize(), 1);
+    ASSERT_EQ(dynamic_cast<OpenSim::Component const*>(&m.get_ComponentSet()[0]), dynamic_cast<OpenSim::Component const*>(&s));
 }

@@ -421,3 +421,49 @@ TEST(OpenSimModel, OriginalReproFrom3299ThrowsInsteadOfSegfaulting)
     OpenSim::Model model{brokenFilePath.string()};
     ASSERT_ANY_THROW({ model.buildSystem(); });
 }
+
+// repro for #752
+//
+// in #752, a segfault was introduced into the frame definition UI by upgrading
+// OpenSim. After some digging around in the debugger, I managed to figure out
+// that OpenSim behaves unusually when deleting components from the model. From
+// what I could figure out:
+//
+// - if you delete something from (e.g.) a component set then it doesn't necessarily
+//   immediately dissapear from internal datastructures in OpenSim::Component etc.
+//
+// - so you _must_ re-initialize the whole model whenever an object is being deleted
+//   from the model
+//
+// - if you don't, then `finalizeConnections` will segfault because there's a dangling
+//   socket hanging around in a now-dead object
+TEST(OpenSimModel, DISABLED_DeleteComponentFromModelFollowedByFinalizeConnectionsShouldNotSegfault)
+{
+    OpenSim::Model model;
+    auto& sphere = osc::AttachGeometry<OpenSim::Sphere>(model.updGround());
+
+    osc::InitializeModel(model);
+    osc::InitializeState(model);
+    osc::TryDeleteComponentFromModel(model, sphere);
+    osc::FinalizeConnections(model);
+}
+
+// repro for (#752)
+//
+// this version shouldn't crash, because the model is reinitialized etc. after the deletion
+TEST(OpenSimModel, DeleteComponentFromModelFollowedByReinitializingAndThenFinalizingDefinitelyShouldntSegfault)
+{
+    OpenSim::Model model;
+    auto& sphere = osc::AttachGeometry<OpenSim::Sphere>(model.updGround());
+
+    osc::InitializeModel(model);
+    osc::InitializeState(model);
+    osc::TryDeleteComponentFromModel(model, sphere);
+
+    // these put the model back into a safe state
+    osc::InitializeModel(model);
+    osc::InitializeState(model);
+
+    // and then finalizing the connections should be fine (#752)
+    osc::FinalizeConnections(model);
+}

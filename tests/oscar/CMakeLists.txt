@@ -1,5 +1,5 @@
+include(GoogleTest)
 enable_testing()
-
 find_package(GTest REQUIRED CONFIG)
 
 add_executable(testoscar EXCLUDE_FROM_ALL
@@ -43,7 +43,6 @@ target_link_libraries(testoscar PUBLIC
 )
 
 # tell CMake (+IDEs) how to find all tests
-include(GoogleTest)
 gtest_add_tests(TARGET testoscar)
 
 # for development on Windows, copy all runtime dlls to the exe directory

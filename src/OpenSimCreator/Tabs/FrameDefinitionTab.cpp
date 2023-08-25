@@ -1930,11 +1930,15 @@ namespace
                 osc::log::debug("reassign sockets");
                 osc::RecursivelyReassignAllSockets(mutModel, *pof, *meshPofPtr);
                 mutModel.finalizeConnections();
+
                 if (auto* mutPof = osc::FindComponentMut<OpenSim::PhysicalOffsetFrame>(mutModel, osc::GetAbsolutePathOrEmpty(pof)))
                 {
                     osc::log::debug("delete old pof");
                     osc::TryDeleteComponentFromModel(mutModel, *mutPof);
-                    mutModel.finalizeConnections();
+                    osc::InitializeModel(mutModel);
+                    osc::InitializeState(mutModel);
+
+                    // care: `pof` is now dead
                 }
             }
 
@@ -1943,10 +1947,10 @@ namespace
             {
                 osc::log::debug("delete old mesh");
                 osc::TryDeleteComponentFromModel(mutModel, *mutMesh);
-                mutModel.finalizeConnections();
+                osc::InitializeModel(mutModel);
+                osc::InitializeState(mutModel);
             }
 
-            mutModel.finalizeConnections();
             osc::InitializeModel(mutModel);
             osc::InitializeState(mutModel);
             model->setSelected(bodyPtr);

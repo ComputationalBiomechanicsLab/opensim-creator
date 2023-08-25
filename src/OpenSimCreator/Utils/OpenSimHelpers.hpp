@@ -23,12 +23,14 @@ namespace OpenSim { class AbstractSocket; }
 namespace OpenSim { class Component; }
 namespace OpenSim { class ComponentPath; }
 namespace OpenSim { class Coordinate; }
+namespace OpenSim { class Frame; }
 namespace OpenSim { class Geometry; }
 namespace OpenSim { class GeometryPath; }
 namespace OpenSim { class HuntCrossleyForce; }
 namespace OpenSim { class Joint; }
 namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
+namespace OpenSim { class ModelComponent; }
 namespace OpenSim { class Muscle; }
 namespace osc { class UndoableModelStatePair; }
 namespace SimTK { class State; }
@@ -350,6 +352,16 @@ namespace osc
     // fully initalize an OpenSim model's working state
     SimTK::State& InitializeState(OpenSim::Model&);
 
+    // finalize any socket connections in the model
+    //
+    // care:
+    //
+    // - it will _first_ finalize any properties in the model
+    // - then it will finalize each socket recursively
+    // - finalizing a socket causes the socket's pointer to write an updated
+    //   component path to the socket's path property (for later serialization)
+    void FinalizeConnections(OpenSim::Model&);
+
     // returns optional{index} if joint is found in parent jointset (otherwise: std::nullopt)
     std::optional<int> FindJointInParentJointSet(OpenSim::Joint const&);
 
@@ -478,4 +490,27 @@ namespace osc
     };
     bool CanExtractPointInfoFrom(OpenSim::Component const&, SimTK::State const&);
     std::optional<PointInfo> TryExtractPointInfo(OpenSim::Component const&, SimTK::State const&);
+
+    OpenSim::ModelComponent& AddModelComponent(OpenSim::Model&, std::unique_ptr<OpenSim::ModelComponent>);
+
+    template<typename T>
+    T& AddModelComponent(OpenSim::Model& model, std::unique_ptr<T> p)
+    {
+        return static_cast<T&>(AddModelComponent(model, static_cast<std::unique_ptr<OpenSim::ModelComponent>&&>(std::move(p))));
+    }
+
+    template<typename T, typename... Args>
+    T& AddModelComponent(OpenSim::Model& model, Args&&... args)
+    {
+        auto p = std::make_unique<T>(std::forward<Args>(args)...);
+        return static_cast<T&>(AddModelComponent(model, std::move(p)));
+    }
+
+    OpenSim::Geometry& AttachGeometry(OpenSim::Frame&, std::unique_ptr<OpenSim::Geometry>);
+    template<typename T, typename... Args>
+    T& AttachGeometry(OpenSim::Frame& frame, Args&&... args)
+    {
+        auto p = std::make_unique<T>(std::forward<Args>(args)...);
+        return static_cast<T&>(AttachGeometry(frame, std::move(p)));
+    }
 }
