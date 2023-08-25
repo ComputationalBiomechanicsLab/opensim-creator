@@ -17,7 +17,7 @@ namespace
 {
     bool LexographicallyHighestLabel(osc::PerfMeasurement const& a, osc::PerfMeasurement const& b)
     {
-        return a.getLabel() > b.getLabel();
+        return std::string_view{a.getLabel()} > std::string_view{b.getLabel()};
     }
 }
 
@@ -59,11 +59,11 @@ private:
         }
         ImGui::Checkbox("pause", &m_IsPaused);
 
+        std::vector<PerfMeasurement> measurements;
         if (!m_IsPaused)
         {
-            m_MeasurementBuffer.clear();
-            GetAllMeasurements(m_MeasurementBuffer);
-            std::sort(m_MeasurementBuffer.begin(), m_MeasurementBuffer.end(), LexographicallyHighestLabel);
+            measurements = GetAllMeasurements();
+            std::sort(measurements.begin(), measurements.end(), LexographicallyHighestLabel);
         }
 
         ImGuiTableFlags flags =
@@ -80,7 +80,7 @@ private:
             ImGui::TableSetupColumn("Total Duration");
             ImGui::TableHeadersRow();
 
-            for (osc::PerfMeasurement const& pm : m_MeasurementBuffer)
+            for (PerfMeasurement const& pm : measurements)
             {
                 if (pm.getCallCount() <= 0)
                 {
@@ -108,7 +108,6 @@ private:
     }
 
     bool m_IsPaused = false;
-    std::vector<osc::PerfMeasurement> m_MeasurementBuffer;
 };
 
 

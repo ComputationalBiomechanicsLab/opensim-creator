@@ -35,9 +35,10 @@ namespace
 int64_t osc::AllocateMeasurementID(std::string_view label, std::string_view filename, unsigned int line)
 {
     int64_t id = GenerateID(label, filename, line);
+    auto metadata = std::make_shared<PerfMeasurementMetadata>(id, label, filename, line);
 
     auto guard = GetMeasurementStorage().lock();
-    guard->emplace(std::piecewise_construct, std::tie(id), std::tie(id, label, filename, line));
+    guard->emplace(std::piecewise_construct, std::tie(id), std::tie(metadata));
     return id;
 }
 
@@ -62,16 +63,17 @@ void osc::ClearPerfMeasurements()
     }
 }
 
-size_t osc::GetAllMeasurements(std::vector<PerfMeasurement>& appendOut)
+std::vector<osc::PerfMeasurement> osc::GetAllMeasurements()
 {
     auto guard = GetMeasurementStorage().lock();
-    size_t i = 0;
+
+    std::vector<PerfMeasurement> rv;
+    rv.reserve(guard->size());
     for (auto const& [id, measurement] : *guard)
     {
-        appendOut.push_back(measurement);
-        ++i;
+        rv.push_back(measurement);
     }
-    return i;
+    return rv;
 }
 
 

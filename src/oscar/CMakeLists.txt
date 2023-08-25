@@ -261,6 +261,9 @@ add_library(oscar STATIC
     Utils/ParentPtr.hpp
     Utils/Perf.cpp
     Utils/Perf.hpp
+    Utils/PerfClock.hpp
+    Utils/PerfMeasurement.hpp
+    Utils/PerfMeasurementMetadata.hpp
     Utils/ScopeGuard.hpp
     Utils/SetHelpers.hpp
     Utils/Spsc.hpp
