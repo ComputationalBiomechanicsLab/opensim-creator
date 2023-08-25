@@ -30,7 +30,7 @@ class BuildConfiguration:
         self.concurrency = int(os.getenv("OSC_BUILD_CONCURRENCY", _default_build_concurrency))
         self.build_target = os.getenv("OSC_BUILD_TARGET", _default_build_target)
         self.build_docs = _is_truthy_envvar(os.getenv("OSC_BUILD_DOCS", _default_build_docs))
-        self.generator_flags = f'-G"Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE={self.osc_build_type}'
+        self.generator_flags = f'-G"Visual Studio 17 2022" -A x64'
         self.dependencies_build_dir = "osc-dependencies-build"
         self.dependencies_install_dir = "osc-dependencies-install"
         self.osc_build_dir = "osc-build"
