@@ -301,7 +301,7 @@ add_library(oscar STATIC
     Widgets/UndoButton.hpp
     Widgets/WindowMenu.cpp
     Widgets/WindowMenu.hpp
- "Graphics/AntiAliasingLevel.cpp")
+)
 
 target_compile_options(oscar PRIVATE
 
