@@ -268,6 +268,36 @@ namespace
         rv.setFloat("uAO", 1.0f);
         return rv;
     }
+
+    struct IBLSpecularObjectTextures final {
+        explicit IBLSpecularObjectTextures(std::filesystem::path const& dir_) :
+            dir{dir_}
+        {
+        }
+
+        std::filesystem::path dir;
+
+        osc::Texture2D albedoMap = osc::LoadTexture2DFromImage(
+            dir / "albedo.png",
+            osc::ColorSpace::sRGB
+        );
+        osc::Texture2D normalMap = osc::LoadTexture2DFromImage(
+            dir / "normal.png",
+            osc::ColorSpace::Linear
+        );
+        osc::Texture2D metallicMap = osc::LoadTexture2DFromImage(
+            dir / "metallic.png",
+            osc::ColorSpace::Linear
+        );
+        osc::Texture2D roughnessMap = osc::LoadTexture2DFromImage(
+            dir / "roughness.png",
+            osc::ColorSpace::Linear
+        );
+        osc::Texture2D aoMap = osc::LoadTexture2DFromImage(
+            dir / "ao.png",
+            osc::ColorSpace::Linear
+        );
+    };
 }
 
 class osc::LOGLPBRSpecularIrradianceTexturedTab::Impl final : public osc::StandardTabBase {
@@ -345,11 +375,11 @@ private:
 
     void draw3DRender()
     {
-        m_PBRMaterial.setTexture("uAlbedoMap", m_AlbedoMap);
-        m_PBRMaterial.setTexture("uNormalMap", m_NormalMap);
-        m_PBRMaterial.setTexture("uMetallicMap", m_MetallicMap);
-        m_PBRMaterial.setTexture("uRoughnessMap", m_RoughnessMap);
-        m_PBRMaterial.setTexture("uAOMap", m_AOMap);
+        m_PBRMaterial.setTexture("uAlbedoMap", m_RustedIron.albedoMap);
+        m_PBRMaterial.setTexture("uNormalMap", m_RustedIron.normalMap);
+        m_PBRMaterial.setTexture("uMetallicMap", m_RustedIron.metallicMap);
+        m_PBRMaterial.setTexture("uRoughnessMap", m_RustedIron.roughnessMap);
+        m_PBRMaterial.setTexture("uAOMap", m_RustedIron.aoMap);
         m_PBRMaterial.setVec3("uCameraWorldPos", m_Camera.getPosition());
         m_PBRMaterial.setVec3Array("uLightPositions", c_LightPositions);
         m_PBRMaterial.setVec3Array("uLightColors", c_LightRadiances);
@@ -410,27 +440,7 @@ private:
         ColorSpace::Linear,
         ImageLoadingFlags::FlipVertically
     );
-    Texture2D m_AlbedoMap = osc::LoadTexture2DFromImage(
-        App::resource("textures/pbr/rusted_iron/albedo.png"),
-        ColorSpace::sRGB
-    );
-    Texture2D m_NormalMap = osc::LoadTexture2DFromImage(
-        App::resource("textures/pbr/rusted_iron/normal.png"),
-        ColorSpace::Linear
-    );
-    Texture2D m_MetallicMap = osc::LoadTexture2DFromImage(
-        App::resource("textures/pbr/rusted_iron/metallic.png"),
-        ColorSpace::Linear
-    );
-    Texture2D m_RoughnessMap = osc::LoadTexture2DFromImage(
-        App::resource("textures/pbr/rusted_iron/roughness.png"),
-        ColorSpace::Linear
-    );
-    Texture2D m_AOMap = osc::LoadTexture2DFromImage(
-        App::resource("textures/pbr/rusted_iron/ao.png"),
-        ColorSpace::Linear
-    );
-
+    IBLSpecularObjectTextures m_RustedIron{App::resource("textures/pbr/rusted_iron")};
     RenderTexture m_ProjectedMap = LoadEquirectangularHDRTextureIntoCubemap();
     RenderTexture m_IrradianceMap = CreateIrradianceCubemap(m_ProjectedMap);
     Cubemap m_PrefilterMap = CreatePreFilteredEnvironmentMap(m_ProjectedMap);
