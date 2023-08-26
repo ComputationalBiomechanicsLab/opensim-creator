@@ -217,6 +217,8 @@ add_library(oscar STATIC
     Tabs/LearnOpenGL/LOGLPBRLightingTexturedTab.hpp
     Tabs/LearnOpenGL/LOGLPBRSpecularIrradianceTab.cpp
     Tabs/LearnOpenGL/LOGLPBRSpecularIrradianceTab.hpp
+    Tabs/LearnOpenGL/LOGLPBRSpecularIrradianceTexturedTab.cpp
+    Tabs/LearnOpenGL/LOGLPBRSpecularIrradianceTexturedTab.hpp
     Tabs/LearnOpenGL/LOGLPointShadowsTab.cpp
     Tabs/LearnOpenGL/LOGLPointShadowsTab.hpp
     Tabs/LearnOpenGL/LOGLShadowMappingTab.cpp
