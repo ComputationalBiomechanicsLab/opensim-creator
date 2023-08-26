@@ -967,6 +967,12 @@ namespace osc
             Texture2D&,
             CubemapFace
         );
+
+        static void CopyTexture(
+            RenderTexture const&,
+            Cubemap&,
+            size_t
+        );
     };
 }
 
@@ -1153,9 +1159,8 @@ public:
     {
         OSC_THROWING_ASSERT(m_Width > 0 && "the width of a cubemap must be a positive number");
 
-        auto const numFaces = osc::NumOptions<osc::CubemapFace>();
         size_t const numPixelsPerFace = static_cast<size_t>(m_Width*m_Width)*NumBytesPerPixel(m_Format);
-        m_Data.resize(numFaces * numPixelsPerFace);
+        m_Data.resize(osc::NumOptions<osc::CubemapFace>() * numPixelsPerFace);
     }
 
     int32_t getWidth() const
@@ -1236,9 +1241,12 @@ private:
             );
         }
 
+        // generate mips (care: they can be uploaded to with osc::Graphics::CopyTexture)
+        glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
         // set texture parameters
         gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);  // TODO: cubemap should have user-customizable filtering opts
         gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
@@ -5122,6 +5130,10 @@ namespace
         // should respect whether the framebuffer is using an sRGB internal format
         glEnable(GL_FRAMEBUFFER_SRGB);
 
+        // enable seamless cubemap sampling when sampling lower mip levels in (e.g.)
+        // PBR prefilter maps
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
         // print OpenGL information to console (handy for debugging user's rendering
         // issues)
         osc::log::info(
@@ -5712,6 +5724,14 @@ void osc::Graphics::CopyTexture(
     CubemapFace face)
 {
     GraphicsBackend::CopyTexture(src, dest, face);
+}
+
+void osc::Graphics::CopyTexture(
+    RenderTexture const& sourceRenderTexture,
+    Cubemap& destinationCubemap,
+    size_t mip)
+{
+    GraphicsBackend::CopyTexture(sourceRenderTexture, destinationCubemap, mip);
 }
 
 /////////////////////////
@@ -6936,11 +6956,12 @@ void osc::GraphicsBackend::CopyTexture(
         },
         [face](SingleSampledCubemap& t)
         {
-            glFramebufferTexture(
+            glFramebufferTexture2D(
                 GL_READ_FRAMEBUFFER,
                 GL_COLOR_ATTACHMENT0,
                 ToOpenGLTextureEnum(face),
-                t.textureCubemap.get()
+                t.textureCubemap.get(),
+                0
             );
         }
     }, const_cast<RenderTexture::Impl&>(*src.m_Impl).getColorRenderBufferData());
@@ -6994,4 +7015,84 @@ void osc::GraphicsBackend::CopyTexture(
         );
     }
     gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+}
+
+void osc::GraphicsBackend::CopyTexture(
+    RenderTexture const& sourceRenderTexture,
+    Cubemap& destinationCubemap,
+    size_t mip)
+{
+    // from: https://registry.khronos.org/OpenGL-Refpages/es2.0/xhtml/glTexParameter.xml
+    //
+    // > To define the mipmap levels, call glTexImage2D, glCompressedTexImage2D, or glCopyTexImage2D
+    // > with the level argument indicating the order of the mipmaps. Level 0 is the original texture;
+    // > level floor(log2(max(w, h))) is the final 1 x 1 mipmap.
+    //
+    // related:
+    //
+    // - https://registry.khronos.org/OpenGL-Refpages/es2.0/xhtml/glTexImage2D.xml
+    size_t const maxMipmapLevel = static_cast<size_t>(std::max(
+        0,
+        bit_width(static_cast<size_t>(destinationCubemap.getWidth())) - 1
+    ));
+
+    OSC_ASSERT(sourceRenderTexture.getDimensionality() == osc::TextureDimensionality::Cube && "provided render texture must be a cubemap to call this method");
+    OSC_ASSERT(mip <= maxMipmapLevel);
+
+    // blit each face of the source cubemap into the output cubemap
+    for (size_t face = 0; face < 6; ++face)
+    {
+        gl::FrameBuffer readFBO;
+        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, readFBO);
+        std::visit(Overload  // attach source texture depending on rendertexture's type
+        {
+            [](SingleSampledTexture&)
+            {
+                OSC_ASSERT(false && "cannot call CopyTexture (Cubemap --> Cubemap) with a 2D render");
+            },
+            [](MultisampledRBOAndResolvedTexture&)
+            {
+                OSC_ASSERT(false && "cannot call CopyTexture (Cubemap --> Cubemap) with a 2D render");
+            },
+            [face](SingleSampledCubemap& t)
+            {
+                glFramebufferTexture2D(
+                    GL_READ_FRAMEBUFFER,
+                    GL_COLOR_ATTACHMENT0,
+                    GL_TEXTURE_CUBE_MAP_POSITIVE_X + static_cast<GLenum>(face),
+                    t.textureCubemap.get(),
+                    0
+                );
+            }
+        }, const_cast<RenderTexture::Impl&>(*sourceRenderTexture.m_Impl).getColorRenderBufferData());
+        glReadBuffer(GL_COLOR_ATTACHMENT0);
+
+        gl::FrameBuffer drawFBO;
+        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFBO);
+        glFramebufferTexture2D(
+            GL_DRAW_FRAMEBUFFER,
+            GL_COLOR_ATTACHMENT0,
+            GL_TEXTURE_CUBE_MAP_POSITIVE_X + static_cast<GLenum>(face),
+            destinationCubemap.m_Impl.upd()->updCubemap().get(),
+            static_cast<GLint>(mip)
+        );
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+        // blit the read framebuffer to the draw framebuffer
+        gl::BlitFramebuffer(
+            0,
+            0,
+            sourceRenderTexture.getDimensions().x,
+            sourceRenderTexture.getDimensions().y,
+            0,
+            0,
+            destinationCubemap.getWidth() / (1<<mip),
+            destinationCubemap.getWidth() / (1<<mip),
+            GL_COLOR_BUFFER_BIT,
+            GL_LINEAR  // the two texture may have different dimensions (avoid GL_NEAREST)
+        );
+    }
+
+    // TODO: should be copied into CPU memory if mip==0? (won't store mipmaps in the CPU but
+    // maybe it makes sense to store the mip==0 in CPU?)
 }

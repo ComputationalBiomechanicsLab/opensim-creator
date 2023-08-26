@@ -9,6 +9,7 @@
 #include <optional>
 
 namespace osc { class Camera; }
+namespace osc { class Cubemap; }
 namespace osc { class Mesh; }
 namespace osc { class Material; }
 namespace osc { struct Rect; }
@@ -81,5 +82,9 @@ namespace osc::Graphics
         CubemapFace
     );
 
-    // TODO: (PBR): CopyTexture(RenderTexture const&, Cubemap&, size_t mip)
+    void CopyTexture(
+        RenderTexture const&,
+        Cubemap&,
+        size_t mip
+    );
 }
