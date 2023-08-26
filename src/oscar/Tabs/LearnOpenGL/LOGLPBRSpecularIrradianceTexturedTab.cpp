@@ -32,7 +32,6 @@
 #include <array>
 #include <string>
 #include <utility>
-#include <vector>
 
 namespace
 {
@@ -48,15 +47,11 @@ namespace
 
     constexpr std::array<glm::vec3, c_LightPositions.size()> c_LightRadiances = osc::to_array<glm::vec3>(
     {
-        {300.0f, 300.0f, 300.0f},
-        {300.0f, 300.0f, 300.0f},
-        {300.0f, 300.0f, 300.0f},
-        {300.0f, 300.0f, 300.0f},
+        {150.0f, 150.0f, 150.0f},
+        {150.0f, 150.0f, 150.0f},
+        {150.0f, 150.0f, 150.0f},
+        {150.0f, 150.0f, 150.0f},
     });
-
-    constexpr int c_NumRows = 7;
-    constexpr int c_NumCols = 7;
-    constexpr float c_CellSpacing = 2.5f;
 
     osc::Camera CreateCamera()
     {
@@ -443,14 +438,14 @@ private:
         ColorSpace::Linear,
         ImageLoadingFlags::FlipVertically
     );
-    std::vector<IBLSpecularObjectTextures> m_ObjectTextures =
-    {
+    std::array<IBLSpecularObjectTextures, 5> m_ObjectTextures = osc::to_array<IBLSpecularObjectTextures>
+    ({
         IBLSpecularObjectTextures{App::resource("textures/pbr/rusted_iron")},
         IBLSpecularObjectTextures{App::resource("textures/pbr/gold")},
         IBLSpecularObjectTextures{App::resource("textures/pbr/grass")},
         IBLSpecularObjectTextures{App::resource("textures/pbr/plastic")},
         IBLSpecularObjectTextures{App::resource("textures/pbr/wall")},
-    };
+    });
     RenderTexture m_ProjectedMap = LoadEquirectangularHDRTextureIntoCubemap();
     RenderTexture m_IrradianceMap = CreateIrradianceCubemap(m_ProjectedMap);
     Cubemap m_PrefilterMap = CreatePreFilteredEnvironmentMap(m_ProjectedMap);
