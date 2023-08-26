@@ -32,6 +32,7 @@
 #include <array>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace
 {
@@ -375,11 +376,15 @@ private:
 
     void draw3DRender()
     {
-        m_PBRMaterial.setTexture("uAlbedoMap", m_RustedIron.albedoMap);
-        m_PBRMaterial.setTexture("uNormalMap", m_RustedIron.normalMap);
-        m_PBRMaterial.setTexture("uMetallicMap", m_RustedIron.metallicMap);
-        m_PBRMaterial.setTexture("uRoughnessMap", m_RustedIron.roughnessMap);
-        m_PBRMaterial.setTexture("uAOMap", m_RustedIron.aoMap);
+        setCommonMaterialProps();
+        drawSpheres();
+        drawLights();
+
+        m_Camera.renderTo(m_OutputRender);
+    }
+
+    void setCommonMaterialProps()
+    {
         m_PBRMaterial.setVec3("uCameraWorldPos", m_Camera.getPosition());
         m_PBRMaterial.setVec3Array("uLightPositions", c_LightPositions);
         m_PBRMaterial.setVec3Array("uLightColors", c_LightRadiances);
@@ -387,29 +392,27 @@ private:
         m_PBRMaterial.setCubemap("uPrefilterMap", m_PrefilterMap);
         m_PBRMaterial.setFloat("uMaxReflectionLOD", static_cast<float>(osc::bit_width(static_cast<uint32_t>(m_PrefilterMap.getWidth()) - 1)));
         m_PBRMaterial.setTexture("uBRDFLut", m_BRDFLookup);
+    }
 
-        drawSpheres();
-        drawLights();
-
-        m_Camera.renderTo(m_OutputRender);
+    void setMaterialMaps(Material& mat, IBLSpecularObjectTextures const& ts)
+    {
+        mat.setTexture("uAlbedoMap", ts.albedoMap);
+        mat.setTexture("uNormalMap", ts.normalMap);
+        mat.setTexture("uMetallicMap", ts.metallicMap);
+        mat.setTexture("uRoughnessMap", ts.roughnessMap);
+        mat.setTexture("uAOMap", ts.aoMap);
     }
 
     void drawSpheres()
     {
-        for (int row = 0; row < c_NumRows; ++row)
+        glm::vec3 pos = {-5.0f, 0.0f, 2.0f};
+        for (IBLSpecularObjectTextures const& t : m_ObjectTextures)
         {
-            for (int col = 0; col < c_NumCols; ++col)
-            {
-                Transform t;
-                t.position =
-                {
-                    (static_cast<float>(col) - static_cast<float>(c_NumCols)/2.0f) * c_CellSpacing,
-                    (static_cast<float>(row) - static_cast<float>(c_NumRows)/2.0f) * c_CellSpacing,
-                    0.0f
-                };
-
-                Graphics::DrawMesh(m_SphereMesh, t, m_PBRMaterial, m_Camera);
-            }
+            setMaterialMaps(m_PBRMaterial, t);
+            Transform xform;
+            xform.position = pos;
+            Graphics::DrawMesh(m_SphereMesh, xform, m_PBRMaterial, m_Camera);
+            pos.x += 2.0f;
         }
     }
 
@@ -440,7 +443,14 @@ private:
         ColorSpace::Linear,
         ImageLoadingFlags::FlipVertically
     );
-    IBLSpecularObjectTextures m_RustedIron{App::resource("textures/pbr/rusted_iron")};
+    std::vector<IBLSpecularObjectTextures> m_ObjectTextures =
+    {
+        IBLSpecularObjectTextures{App::resource("textures/pbr/rusted_iron")},
+        IBLSpecularObjectTextures{App::resource("textures/pbr/gold")},
+        IBLSpecularObjectTextures{App::resource("textures/pbr/grass")},
+        IBLSpecularObjectTextures{App::resource("textures/pbr/plastic")},
+        IBLSpecularObjectTextures{App::resource("textures/pbr/wall")},
+    };
     RenderTexture m_ProjectedMap = LoadEquirectangularHDRTextureIntoCubemap();
     RenderTexture m_IrradianceMap = CreateIrradianceCubemap(m_ProjectedMap);
     Cubemap m_PrefilterMap = CreatePreFilteredEnvironmentMap(m_ProjectedMap);
