@@ -13,16 +13,16 @@ namespace osc { class TabHost; }
 
 namespace osc
 {
-    class LOGLHDREquirectangularTab final : public Tab {
+    class LOGLPBRDiffuseIrradianceTab final : public Tab {
     public:
         static CStringView id() noexcept;
 
-        explicit LOGLHDREquirectangularTab(ParentPtr<TabHost> const&);
-        LOGLHDREquirectangularTab(LOGLHDREquirectangularTab const&) = delete;
-        LOGLHDREquirectangularTab(LOGLHDREquirectangularTab&&) noexcept;
-        LOGLHDREquirectangularTab& operator=(LOGLHDREquirectangularTab const&) = delete;
-        LOGLHDREquirectangularTab& operator=(LOGLHDREquirectangularTab&&) noexcept;
-        ~LOGLHDREquirectangularTab() noexcept override;
+        explicit LOGLPBRDiffuseIrradianceTab(ParentPtr<TabHost> const&);
+        LOGLPBRDiffuseIrradianceTab(LOGLPBRDiffuseIrradianceTab const&) = delete;
+        LOGLPBRDiffuseIrradianceTab(LOGLPBRDiffuseIrradianceTab&&) noexcept;
+        LOGLPBRDiffuseIrradianceTab& operator=(LOGLPBRDiffuseIrradianceTab const&) = delete;
+        LOGLPBRDiffuseIrradianceTab& operator=(LOGLPBRDiffuseIrradianceTab&&) noexcept;
+        ~LOGLPBRDiffuseIrradianceTab() noexcept override;
 
     private:
         UID implGetID() const final;

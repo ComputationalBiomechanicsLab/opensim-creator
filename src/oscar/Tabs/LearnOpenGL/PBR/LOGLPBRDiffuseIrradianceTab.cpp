@@ -1,4 +1,4 @@
-#include "LOGLHDREquirectangularTab.hpp"
+#include "LOGLPBRDiffuseIrradianceTab.hpp"
 
 #include "oscar/Bindings/ImGuiHelpers.hpp"
 #include "oscar/Graphics/ColorSpace.hpp"
@@ -33,7 +33,7 @@
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/PBR/HDREquirectangular";
+    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/PBR/DiffuseIrradiance";
 
     constexpr auto c_LightPositions = osc::to_array<glm::vec3>(
     {
@@ -93,9 +93,9 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentEquirectangular.vert"),
-                osc::App::slurp("shaders/ExperimentEquirectangular.geom"),
-                osc::App::slurp("shaders/ExperimentEquirectangular.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/EquirectangularToCubemap.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/EquirectangularToCubemap.geom"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/EquirectangularToCubemap.frag"),
             }
         };
         material.setTexture("uEquirectangularMap", hdrTexture);
@@ -129,9 +129,9 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentEquirectangularConvolution.vert"),
-                osc::App::slurp("shaders/ExperimentEquirectangularConvolution.geom"),
-                osc::App::slurp("shaders/ExperimentEquirectangularConvolution.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/Convolution.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/Convolution.geom"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/Convolution.frag"),
             }
         };
         material.setRenderTexture(
@@ -157,8 +157,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentEquirectangularPBR.vert"),
-                osc::App::slurp("shaders/ExperimentEquirectangularPBR.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/PBR.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/PBR.frag"),
             },
         };
         rv.setFloat("uAO", 1.0f);
@@ -166,7 +166,7 @@ namespace
     }
 }
 
-class osc::LOGLHDREquirectangularTab::Impl final : public osc::StandardTabBase {
+class osc::LOGLPBRDiffuseIrradianceTab::Impl final : public osc::StandardTabBase {
 public:
     Impl() : StandardTabBase{c_TabStringID}
     {
@@ -326,8 +326,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/ExperimentEquirectangularBackground.vert"),
-            App::slurp("shaders/ExperimentEquirectangularBackground.frag"),
+            App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/Background.vert"),
+            App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/Background.frag"),
         }
     };
 
@@ -343,56 +343,56 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLHDREquirectangularTab::id() noexcept
+osc::CStringView osc::LOGLPBRDiffuseIrradianceTab::id() noexcept
 {
     return c_TabStringID;
 }
 
-osc::LOGLHDREquirectangularTab::LOGLHDREquirectangularTab(ParentPtr<TabHost> const&) :
+osc::LOGLPBRDiffuseIrradianceTab::LOGLPBRDiffuseIrradianceTab(ParentPtr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }
 
-osc::LOGLHDREquirectangularTab::LOGLHDREquirectangularTab(LOGLHDREquirectangularTab&&) noexcept = default;
-osc::LOGLHDREquirectangularTab& osc::LOGLHDREquirectangularTab::operator=(LOGLHDREquirectangularTab&&) noexcept = default;
-osc::LOGLHDREquirectangularTab::~LOGLHDREquirectangularTab() noexcept = default;
+osc::LOGLPBRDiffuseIrradianceTab::LOGLPBRDiffuseIrradianceTab(LOGLPBRDiffuseIrradianceTab&&) noexcept = default;
+osc::LOGLPBRDiffuseIrradianceTab& osc::LOGLPBRDiffuseIrradianceTab::operator=(LOGLPBRDiffuseIrradianceTab&&) noexcept = default;
+osc::LOGLPBRDiffuseIrradianceTab::~LOGLPBRDiffuseIrradianceTab() noexcept = default;
 
-osc::UID osc::LOGLHDREquirectangularTab::implGetID() const
+osc::UID osc::LOGLPBRDiffuseIrradianceTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLHDREquirectangularTab::implGetName() const
+osc::CStringView osc::LOGLPBRDiffuseIrradianceTab::implGetName() const
 {
     return m_Impl->getName();
 }
 
-void osc::LOGLHDREquirectangularTab::implOnMount()
+void osc::LOGLPBRDiffuseIrradianceTab::implOnMount()
 {
     m_Impl->onMount();
 }
 
-void osc::LOGLHDREquirectangularTab::implOnUnmount()
+void osc::LOGLPBRDiffuseIrradianceTab::implOnUnmount()
 {
     m_Impl->onUnmount();
 }
 
-bool osc::LOGLHDREquirectangularTab::implOnEvent(SDL_Event const& e)
+bool osc::LOGLPBRDiffuseIrradianceTab::implOnEvent(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
 }
 
-void osc::LOGLHDREquirectangularTab::implOnTick()
+void osc::LOGLPBRDiffuseIrradianceTab::implOnTick()
 {
     m_Impl->onTick();
 }
 
-void osc::LOGLHDREquirectangularTab::implOnDrawMainMenu()
+void osc::LOGLPBRDiffuseIrradianceTab::implOnDrawMainMenu()
 {
     m_Impl->onDrawMainMenu();
 }
 
-void osc::LOGLHDREquirectangularTab::implOnDraw()
+void osc::LOGLPBRDiffuseIrradianceTab::implOnDraw()
 {
     m_Impl->onDraw();
 }

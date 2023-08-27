@@ -1,12 +1,15 @@
-#include "LOGLPBRLightingTab.hpp"
+#include "LOGLPBRLightingTexturedTab.hpp"
 
 #include "oscar/Bindings/ImGuiHelpers.hpp"
 #include "oscar/Graphics/Camera.hpp"
 #include "oscar/Graphics/Graphics.hpp"
+#include "oscar/Graphics/GraphicsHelpers.hpp"
 #include "oscar/Graphics/Material.hpp"
 #include "oscar/Graphics/Mesh.hpp"
 #include "oscar/Graphics/MeshGen.hpp"
 #include "oscar/Graphics/Shader.hpp"
+#include "oscar/Graphics/Texture2D.hpp"
+#include "oscar/Maths/Constants.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Panels/PerfPanel.hpp"
 #include "oscar/Platform/App.hpp"
@@ -14,19 +17,23 @@
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <SDL_events.h>
 
 #include <array>
+#include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/PBR/Lighting";
+    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/PBR/LightingTextured";
 
     constexpr auto c_LightPositions = osc::to_array<glm::vec3>(
     {
@@ -61,20 +68,47 @@ namespace
 
     osc::Material CreateMaterial()
     {
+        osc::Texture2D albedo = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/pbr/rusted_iron/albedo.png"),
+            osc::ColorSpace::sRGB
+        );
+        osc::Texture2D normal = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/pbr/rusted_iron/normal.png"),
+            osc::ColorSpace::Linear
+        );
+        osc::Texture2D metallic = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/pbr/rusted_iron/metallic.png"),
+            osc::ColorSpace::Linear
+        );
+        osc::Texture2D roughness = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/pbr/rusted_iron/roughness.png"),
+            osc::ColorSpace::Linear
+        );
+        osc::Texture2D ao = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/pbr/rusted_iron/ao.png"),
+            osc::ColorSpace::Linear
+        );
+
         osc::Material rv
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentPBRLighting.vert"),
-                osc::App::slurp("shaders/ExperimentPBRLighting.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/lighting_textured/PBR.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/lighting_textured/PBR.frag"),
             },
         };
-        rv.setFloat("uAO", 1.0f);
+        rv.setTexture("uAlbedoMap", albedo);
+        rv.setTexture("uNormalMap", normal);
+        rv.setTexture("uMetallicMap", metallic);
+        rv.setTexture("uRoughnessMap", roughness);
+        rv.setTexture("uAOMap", ao);
+        rv.setVec3Array("uLightWorldPositions", c_LightPositions);
+        rv.setVec3Array("uLightRadiances", c_LightRadiances);
         return rv;
     }
 }
 
-class osc::LOGLPBRLightingTab::Impl final : public osc::StandardTabBase {
+class osc::LOGLPBRLightingTexturedTab::Impl final : public osc::StandardTabBase {
 public:
     Impl() : StandardTabBase{c_TabStringID}
     {
@@ -122,7 +156,7 @@ private:
     {
         updateCameraFromInputs();
         draw3DRender();
-        draw2DUI();
+        m_PerfPanel.onDraw();
     }
 
     void updateCameraFromInputs()
@@ -145,9 +179,7 @@ private:
     {
         m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
 
-        m_PBRMaterial.setVec3("uCameraWorldPos", m_Camera.getPosition());
-        m_PBRMaterial.setVec3Array("uLightPositions", c_LightPositions);
-        m_PBRMaterial.setVec3Array("uLightColors", c_LightRadiances);
+        m_PBRMaterial.setVec3("uCameraWorldPosition", m_Camera.getPosition());
 
         drawSpheres();
         drawLights();
@@ -157,23 +189,16 @@ private:
 
     void drawSpheres()
     {
-        m_PBRMaterial.setVec3("uAlbedoColor", {0.5f, 0.0f, 0.0f});
-
         for (int row = 0; row < c_NumRows; ++row)
         {
-            m_PBRMaterial.setFloat("uMetallicity", static_cast<float>(row) / static_cast<float>(c_NumRows));
-
             for (int col = 0; col < c_NumCols; ++col)
             {
-                float const normalizedCol = static_cast<float>(col) / static_cast<float>(c_NumCols);
-                m_PBRMaterial.setFloat("uRoughness", glm::clamp(normalizedCol, 0.005f, 1.0f));
-
                 Transform t;
                 t.position =
                 {
                     (static_cast<float>(col) - static_cast<float>(c_NumCols)/2.0f) * c_CellSpacing,
                     (static_cast<float>(row) - static_cast<float>(c_NumRows)/2.0f) * c_CellSpacing,
-                    0.0f
+                    0.0f,
                 };
 
                 Graphics::DrawMesh(m_SphereMesh, t, m_PBRMaterial, m_Camera);
@@ -183,8 +208,6 @@ private:
 
     void drawLights()
     {
-        m_PBRMaterial.setVec3("uAlbedoColor", {1.0f, 1.0f, 1.0f});
-
         for (glm::vec3 const& pos : c_LightPositions)
         {
             Transform t;
@@ -193,11 +216,6 @@ private:
 
             Graphics::DrawMesh(m_SphereMesh, t, m_PBRMaterial, m_Camera);
         }
-    }
-
-    void draw2DUI()
-    {
-        m_PerfPanel.onDraw();
     }
 
     Camera m_Camera = CreateCamera();
@@ -212,56 +230,56 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLPBRLightingTab::id() noexcept
+osc::CStringView osc::LOGLPBRLightingTexturedTab::id() noexcept
 {
     return c_TabStringID;
 }
 
-osc::LOGLPBRLightingTab::LOGLPBRLightingTab(ParentPtr<TabHost> const&) :
+osc::LOGLPBRLightingTexturedTab::LOGLPBRLightingTexturedTab(ParentPtr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }
 
-osc::LOGLPBRLightingTab::LOGLPBRLightingTab(LOGLPBRLightingTab&&) noexcept = default;
-osc::LOGLPBRLightingTab& osc::LOGLPBRLightingTab::operator=(LOGLPBRLightingTab&&) noexcept = default;
-osc::LOGLPBRLightingTab::~LOGLPBRLightingTab() noexcept = default;
+osc::LOGLPBRLightingTexturedTab::LOGLPBRLightingTexturedTab(LOGLPBRLightingTexturedTab&&) noexcept = default;
+osc::LOGLPBRLightingTexturedTab& osc::LOGLPBRLightingTexturedTab::operator=(LOGLPBRLightingTexturedTab&&) noexcept = default;
+osc::LOGLPBRLightingTexturedTab::~LOGLPBRLightingTexturedTab() noexcept = default;
 
-osc::UID osc::LOGLPBRLightingTab::implGetID() const
+osc::UID osc::LOGLPBRLightingTexturedTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLPBRLightingTab::implGetName() const
+osc::CStringView osc::LOGLPBRLightingTexturedTab::implGetName() const
 {
     return m_Impl->getName();
 }
 
-void osc::LOGLPBRLightingTab::implOnMount()
+void osc::LOGLPBRLightingTexturedTab::implOnMount()
 {
     m_Impl->onMount();
 }
 
-void osc::LOGLPBRLightingTab::implOnUnmount()
+void osc::LOGLPBRLightingTexturedTab::implOnUnmount()
 {
     m_Impl->onUnmount();
 }
 
-bool osc::LOGLPBRLightingTab::implOnEvent(SDL_Event const& e)
+bool osc::LOGLPBRLightingTexturedTab::implOnEvent(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
 }
 
-void osc::LOGLPBRLightingTab::implOnTick()
+void osc::LOGLPBRLightingTexturedTab::implOnTick()
 {
     m_Impl->onTick();
 }
 
-void osc::LOGLPBRLightingTab::implOnDrawMainMenu()
+void osc::LOGLPBRLightingTexturedTab::implOnDrawMainMenu()
 {
     m_Impl->onDrawMainMenu();
 }
 
-void osc::LOGLPBRLightingTab::implOnDraw()
+void osc::LOGLPBRLightingTexturedTab::implOnDraw()
 {
     m_Impl->onDraw();
 }

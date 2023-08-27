@@ -1,4 +1,4 @@
-#include "LOGLPBRSpecularIrradianceTab.hpp"
+#include "LOGLPBRSpecularIrradianceTexturedTab.hpp"
 
 #include "oscar/Bindings/ImGuiHelpers.hpp"
 #include "oscar/Graphics/ColorSpace.hpp"
@@ -35,7 +35,7 @@
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/PBR/SpecularIrradiance";
+    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/PBR/SpecularIrradianceTextured";
 
     constexpr auto c_LightPositions = osc::to_array<glm::vec3>(
     {
@@ -47,15 +47,11 @@ namespace
 
     constexpr std::array<glm::vec3, c_LightPositions.size()> c_LightRadiances = osc::to_array<glm::vec3>(
     {
-        {300.0f, 300.0f, 300.0f},
-        {300.0f, 300.0f, 300.0f},
-        {300.0f, 300.0f, 300.0f},
-        {300.0f, 300.0f, 300.0f},
+        {150.0f, 150.0f, 150.0f},
+        {150.0f, 150.0f, 150.0f},
+        {150.0f, 150.0f, 150.0f},
+        {150.0f, 150.0f, 150.0f},
     });
-
-    constexpr int c_NumRows = 7;
-    constexpr int c_NumCols = 7;
-    constexpr float c_CellSpacing = 2.5f;
 
     osc::Camera CreateCamera()
     {
@@ -97,9 +93,9 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/PBR/ibl_specular/EquirectangularToCubemap.vert"),
-                osc::App::slurp("shaders/PBR/ibl_specular/EquirectangularToCubemap.geom"),
-                osc::App::slurp("shaders/PBR/ibl_specular/EquirectangularToCubemap.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular_textured/EquirectangularToCubemap.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular_textured/EquirectangularToCubemap.geom"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular_textured/EquirectangularToCubemap.frag"),
             }
         };
         material.setTexture("uEquirectangularMap", hdrTexture);
@@ -133,9 +129,9 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/PBR/ibl_specular/IrradianceConvolution.vert"),
-                osc::App::slurp("shaders/PBR/ibl_specular/IrradianceConvolution.geom"),
-                osc::App::slurp("shaders/PBR/ibl_specular/IrradianceConvolution.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular_textured/IrradianceConvolution.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular_textured/IrradianceConvolution.geom"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular_textured/IrradianceConvolution.frag"),
             },
         };
         material.setRenderTexture(
@@ -176,9 +172,9 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/PBR/ibl_specular/Prefilter.vert"),
-                osc::App::slurp("shaders/PBR/ibl_specular/Prefilter.geom"),
-                osc::App::slurp("shaders/PBR/ibl_specular/Prefilter.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular_textured/Prefilter.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular_textured/Prefilter.geom"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular_textured/Prefilter.frag"),
             },
         };
         material.setRenderTexture("uEnvironmentMap", environmentMap);
@@ -228,8 +224,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/PBR/ibl_specular/BRDF.vert"),
-                osc::App::slurp("shaders/PBR/ibl_specular/BRDF.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular_textured/BRDF.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular_textured/BRDF.frag"),
             },
         };
 
@@ -261,16 +257,46 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/PBR/ibl_specular/PBR.vert"),
-                osc::App::slurp("shaders/PBR/ibl_specular/PBR.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular_textured/PBR.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular_textured/PBR.frag"),
             },
         };
         rv.setFloat("uAO", 1.0f);
         return rv;
     }
+
+    struct IBLSpecularObjectTextures final {
+        explicit IBLSpecularObjectTextures(std::filesystem::path const& dir_) :
+            dir{dir_}
+        {
+        }
+
+        std::filesystem::path dir;
+
+        osc::Texture2D albedoMap = osc::LoadTexture2DFromImage(
+            dir / "albedo.png",
+            osc::ColorSpace::sRGB
+        );
+        osc::Texture2D normalMap = osc::LoadTexture2DFromImage(
+            dir / "normal.png",
+            osc::ColorSpace::Linear
+        );
+        osc::Texture2D metallicMap = osc::LoadTexture2DFromImage(
+            dir / "metallic.png",
+            osc::ColorSpace::Linear
+        );
+        osc::Texture2D roughnessMap = osc::LoadTexture2DFromImage(
+            dir / "roughness.png",
+            osc::ColorSpace::Linear
+        );
+        osc::Texture2D aoMap = osc::LoadTexture2DFromImage(
+            dir / "ao.png",
+            osc::ColorSpace::Linear
+        );
+    };
 }
 
-class osc::LOGLPBRSpecularIrradianceTab::Impl final : public osc::StandardTabBase {
+class osc::LOGLPBRSpecularIrradianceTexturedTab::Impl final : public osc::StandardTabBase {
 public:
     Impl() : StandardTabBase{c_TabStringID}
     {
@@ -324,7 +350,6 @@ private:
         draw3DRender();
         drawBackground();
         Graphics::BlitToScreen(m_OutputRender, outputRect);
-        draw2DUI();
         m_PerfPanel.onDraw();
     }
 
@@ -346,6 +371,15 @@ private:
 
     void draw3DRender()
     {
+        setCommonMaterialProps();
+        drawSpheres();
+        drawLights();
+
+        m_Camera.renderTo(m_OutputRender);
+    }
+
+    void setCommonMaterialProps()
+    {
         m_PBRMaterial.setVec3("uCameraWorldPos", m_Camera.getPosition());
         m_PBRMaterial.setVec3Array("uLightPositions", c_LightPositions);
         m_PBRMaterial.setVec3Array("uLightColors", c_LightRadiances);
@@ -353,43 +387,32 @@ private:
         m_PBRMaterial.setCubemap("uPrefilterMap", m_PrefilterMap);
         m_PBRMaterial.setFloat("uMaxReflectionLOD", static_cast<float>(osc::bit_width(static_cast<uint32_t>(m_PrefilterMap.getWidth()) - 1)));
         m_PBRMaterial.setTexture("uBRDFLut", m_BRDFLookup);
+    }
 
-        drawSpheres();
-        drawLights();
-
-        m_Camera.renderTo(m_OutputRender);
+    void setMaterialMaps(Material& mat, IBLSpecularObjectTextures const& ts)
+    {
+        mat.setTexture("uAlbedoMap", ts.albedoMap);
+        mat.setTexture("uNormalMap", ts.normalMap);
+        mat.setTexture("uMetallicMap", ts.metallicMap);
+        mat.setTexture("uRoughnessMap", ts.roughnessMap);
+        mat.setTexture("uAOMap", ts.aoMap);
     }
 
     void drawSpheres()
     {
-        m_PBRMaterial.setVec3("uAlbedoColor", {0.5f, 0.0f, 0.0f});
-
-        for (int row = 0; row < c_NumRows; ++row)
+        glm::vec3 pos = {-5.0f, 0.0f, 2.0f};
+        for (IBLSpecularObjectTextures const& t : m_ObjectTextures)
         {
-            m_PBRMaterial.setFloat("uMetallicity", static_cast<float>(row) / static_cast<float>(c_NumRows));
-
-            for (int col = 0; col < c_NumCols; ++col)
-            {
-                float const normalizedCol = static_cast<float>(col) / static_cast<float>(c_NumCols);
-                m_PBRMaterial.setFloat("uRoughness", glm::clamp(normalizedCol, 0.005f, 1.0f));
-
-                Transform t;
-                t.position =
-                {
-                    (static_cast<float>(col) - static_cast<float>(c_NumCols)/2.0f) * c_CellSpacing,
-                    (static_cast<float>(row) - static_cast<float>(c_NumRows)/2.0f) * c_CellSpacing,
-                    0.0f
-                };
-
-                Graphics::DrawMesh(m_SphereMesh, t, m_PBRMaterial, m_Camera);
-            }
+            setMaterialMaps(m_PBRMaterial, t);
+            Transform xform;
+            xform.position = pos;
+            Graphics::DrawMesh(m_SphereMesh, xform, m_PBRMaterial, m_Camera);
+            pos.x += 2.0f;
         }
     }
 
     void drawLights()
     {
-        m_PBRMaterial.setVec3("uAlbedoColor", {1.0f, 1.0f, 1.0f});
-
         for (glm::vec3 const& pos : c_LightPositions)
         {
             Transform t;
@@ -410,25 +433,19 @@ private:
         m_Camera.setClearFlags(osc::CameraClearFlags::Default);
     }
 
-    void draw2DUI()
-    {
-        if (ImGui::Begin("Controls"))
-        {
-            float ao = m_PBRMaterial.getFloat("uAO").value_or(1.0f);
-            if (ImGui::SliderFloat("ao", &ao, 0.0f, 1.0f))
-            {
-                m_PBRMaterial.setFloat("uAO", ao);
-            }
-        }
-        ImGui::End();
-    }
-
     Texture2D m_Texture = osc::LoadTexture2DFromImage(
         App::resource("textures/hdr/newport_loft.hdr"),
         ColorSpace::Linear,
         ImageLoadingFlags::FlipVertically
     );
-
+    std::array<IBLSpecularObjectTextures, 5> m_ObjectTextures = osc::to_array<IBLSpecularObjectTextures>
+    ({
+        IBLSpecularObjectTextures{App::resource("textures/pbr/rusted_iron")},
+        IBLSpecularObjectTextures{App::resource("textures/pbr/gold")},
+        IBLSpecularObjectTextures{App::resource("textures/pbr/grass")},
+        IBLSpecularObjectTextures{App::resource("textures/pbr/plastic")},
+        IBLSpecularObjectTextures{App::resource("textures/pbr/wall")},
+    });
     RenderTexture m_ProjectedMap = LoadEquirectangularHDRTextureIntoCubemap();
     RenderTexture m_IrradianceMap = CreateIrradianceCubemap(m_ProjectedMap);
     Cubemap m_PrefilterMap = CreatePreFilteredEnvironmentMap(m_ProjectedMap);
@@ -439,8 +456,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/PBR/ibl_specular/Skybox.vert"),
-            App::slurp("shaders/PBR/ibl_specular/Skybox.frag"),
+            App::slurp("shaders/LearnOpenGL/PBR/ibl_specular_textured/Skybox.vert"),
+            App::slurp("shaders/LearnOpenGL/PBR/ibl_specular_textured/Skybox.frag"),
         },
     };
 
@@ -458,56 +475,56 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLPBRSpecularIrradianceTab::id() noexcept
+osc::CStringView osc::LOGLPBRSpecularIrradianceTexturedTab::id() noexcept
 {
     return c_TabStringID;
 }
 
-osc::LOGLPBRSpecularIrradianceTab::LOGLPBRSpecularIrradianceTab(ParentPtr<TabHost> const&) :
+osc::LOGLPBRSpecularIrradianceTexturedTab::LOGLPBRSpecularIrradianceTexturedTab(ParentPtr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }
 
-osc::LOGLPBRSpecularIrradianceTab::LOGLPBRSpecularIrradianceTab(LOGLPBRSpecularIrradianceTab&&) noexcept = default;
-osc::LOGLPBRSpecularIrradianceTab& osc::LOGLPBRSpecularIrradianceTab::operator=(LOGLPBRSpecularIrradianceTab&&) noexcept = default;
-osc::LOGLPBRSpecularIrradianceTab::~LOGLPBRSpecularIrradianceTab() noexcept = default;
+osc::LOGLPBRSpecularIrradianceTexturedTab::LOGLPBRSpecularIrradianceTexturedTab(LOGLPBRSpecularIrradianceTexturedTab&&) noexcept = default;
+osc::LOGLPBRSpecularIrradianceTexturedTab& osc::LOGLPBRSpecularIrradianceTexturedTab::operator=(LOGLPBRSpecularIrradianceTexturedTab&&) noexcept = default;
+osc::LOGLPBRSpecularIrradianceTexturedTab::~LOGLPBRSpecularIrradianceTexturedTab() noexcept = default;
 
-osc::UID osc::LOGLPBRSpecularIrradianceTab::implGetID() const
+osc::UID osc::LOGLPBRSpecularIrradianceTexturedTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLPBRSpecularIrradianceTab::implGetName() const
+osc::CStringView osc::LOGLPBRSpecularIrradianceTexturedTab::implGetName() const
 {
     return m_Impl->getName();
 }
 
-void osc::LOGLPBRSpecularIrradianceTab::implOnMount()
+void osc::LOGLPBRSpecularIrradianceTexturedTab::implOnMount()
 {
     m_Impl->onMount();
 }
 
-void osc::LOGLPBRSpecularIrradianceTab::implOnUnmount()
+void osc::LOGLPBRSpecularIrradianceTexturedTab::implOnUnmount()
 {
     m_Impl->onUnmount();
 }
 
-bool osc::LOGLPBRSpecularIrradianceTab::implOnEvent(SDL_Event const& e)
+bool osc::LOGLPBRSpecularIrradianceTexturedTab::implOnEvent(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
 }
 
-void osc::LOGLPBRSpecularIrradianceTab::implOnTick()
+void osc::LOGLPBRSpecularIrradianceTexturedTab::implOnTick()
 {
     m_Impl->onTick();
 }
 
-void osc::LOGLPBRSpecularIrradianceTab::implOnDrawMainMenu()
+void osc::LOGLPBRSpecularIrradianceTexturedTab::implOnDrawMainMenu()
 {
     m_Impl->onDrawMainMenu();
 }
 
-void osc::LOGLPBRSpecularIrradianceTab::implOnDraw()
+void osc::LOGLPBRSpecularIrradianceTexturedTab::implOnDraw()
 {
     m_Impl->onDraw();
 }
