@@ -83,8 +83,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentHDRScene.vert"),
-                osc::App::slurp("shaders/ExperimentHDRScene.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/HDR/Scene.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/HDR/Scene.frag"),
             },
         };
         rv.setVec3Array("uSceneLightPositions", c_LightPositions);
@@ -100,8 +100,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentHDRTonemap.vert"),
-                osc::App::slurp("shaders/ExperimentHDRTonemap.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/HDR/Tonemap.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/HDR/Tonemap.frag"),
             },
         };
     }

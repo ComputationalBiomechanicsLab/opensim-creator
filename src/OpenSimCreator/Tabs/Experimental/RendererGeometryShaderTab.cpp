@@ -97,8 +97,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/ExperimentGeometryShaderScene.vert"),
-            App::slurp("shaders/ExperimentGeometryShaderScene.frag"),
+            App::slurp("shaders/OpenSimCreator/GeometryShaderTab/Scene.vert"),
+            App::slurp("shaders/OpenSimCreator/GeometryShaderTab/Scene.frag"),
         },
     };
 
@@ -106,9 +106,9 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/ExperimentGeometryShaderNormals.vert"),
-            App::slurp("shaders/ExperimentGeometryShaderNormals.geom"),
-            App::slurp("shaders/ExperimentGeometryShaderNormals.frag"),
+            App::slurp("shaders/OpenSimCreator/GeometryShaderTab/DrawNormals.vert"),
+            App::slurp("shaders/OpenSimCreator/GeometryShaderTab/DrawNormals.geom"),
+            App::slurp("shaders/OpenSimCreator/GeometryShaderTab/DrawNormals.frag"),
         },
     };
 

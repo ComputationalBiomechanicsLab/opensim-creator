@@ -16,6 +16,7 @@ All notable changes to this project will be documented here. The format is based
 - Internal: Added `osc::StandardTabBase`, to reduce code duplication in tab implementations
 - Internal: Added `osc::ParentPtr<T>`, for parent pointer lifetime management
 - Internal: The rendering API now supports rendering into cubemap render textures (#671)
+- Internal: Shaders in the `resources/` dir were reorganized according to purpose
 
 
 ## [0.5.1] - 2023/07/27

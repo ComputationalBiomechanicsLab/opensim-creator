@@ -4714,7 +4714,7 @@ namespace
             Transform t = GetFloorTransform();
             t.scale *= 0.5f;
 
-            osc::Material material{osc::App::singleton<osc::ShaderCache>()->load(osc::App::resource("shaders/SolidColor.vert"), osc::App::resource("shaders/SolidColor.frag"))};
+            osc::Material material{osc::App::singleton<osc::ShaderCache>()->load(osc::App::resource("shaders/OpenSimCreator/SolidColor.vert"), osc::App::resource("shaders/OpenSimCreator/SolidColor.frag"))};
             material.setColor("uColor", m_Colors.gridLines);
             material.setTransparent(true);
 

@@ -105,8 +105,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentDeferredShadingGBuffer.vert"),
-                osc::App::slurp("shaders/ExperimentDeferredShadingGBuffer.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/deferred_shading/GBuffer.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/deferred_shading/GBuffer.frag"),
             },
         };
     }
@@ -186,8 +186,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentDeferredShadingLightingPass.vert"),
-                osc::App::slurp("shaders/ExperimentDeferredShadingLightingPass.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/deferred_shading/LightingPass.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/deferred_shading/LightingPass.frag"),
             },
         };
     };
@@ -392,8 +392,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/ExperimentDeferredShadingLightBox.vert"),
-            App::slurp("shaders/ExperimentDeferredShadingLightBox.frag"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/deferred_shading/LightBox.vert"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/deferred_shading/LightBox.frag"),
         },
     };
 

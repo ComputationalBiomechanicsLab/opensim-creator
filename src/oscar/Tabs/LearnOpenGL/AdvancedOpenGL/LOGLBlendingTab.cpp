@@ -208,8 +208,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/ExperimentBlending.vert"),
-            App::slurp("shaders/ExperimentBlending.frag"),
+            App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Blending.vert"),
+            App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Blending.frag"),
         },
     };
     Material m_BlendingMaterial = m_OpaqueMaterial;

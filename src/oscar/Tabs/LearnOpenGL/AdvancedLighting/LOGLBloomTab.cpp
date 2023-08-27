@@ -361,8 +361,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/ExperimentBloom.vert"),
-            App::slurp("shaders/ExperimentBloom.frag"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/bloom/Bloom.vert"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/bloom/Bloom.frag"),
         },
     };
 
@@ -370,8 +370,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/ExperimentBloomLightBox.vert"),
-            App::slurp("shaders/ExperimentBloomLightBox.frag"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/bloom/LightBox.vert"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/bloom/LightBox.frag"),
         },
     };
 
@@ -379,8 +379,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/ExperimentBloomBlur.vert"),
-            App::slurp("shaders/ExperimentBloomBlur.frag"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/bloom/Blur.vert"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/bloom/Blur.frag"),
         },
     };
 
@@ -388,8 +388,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/ExperimentBloomFinal.vert"),
-            App::slurp("shaders/ExperimentBloomFinal.frag"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/bloom/Final.vert"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/bloom/Final.frag"),
         },
     };
 

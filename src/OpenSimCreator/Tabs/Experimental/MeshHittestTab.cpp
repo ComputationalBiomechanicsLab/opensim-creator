@@ -192,8 +192,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/SolidColor.vert"),
-            App::slurp("shaders/SolidColor.frag"),
+            App::slurp("shaders/OpenSimCreator/SolidColor.vert"),
+            App::slurp("shaders/OpenSimCreator/SolidColor.frag"),
         },
     };
     Mesh m_Mesh = LoadMeshViaSimTK(App::resource("geometry/hat_ribs.vtp"));

@@ -232,16 +232,16 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/ExperimentShadowMapping.vert"),
-            App::slurp("shaders/ExperimentShadowMapping.frag"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/shadow_mapping/Scene.vert"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/shadow_mapping/Scene.frag"),
         },
     };
     Material m_DepthMaterial
     {
         Shader
         {
-            App::slurp("shaders/ExperimentShadowMappingDepth.vert"),
-            App::slurp("shaders/ExperimentShadowMappingDepth.frag"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/shadow_mapping/MakeShadowMap.vert"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/shadow_mapping/MakeShadowMap.frag"),
         },
     };
     RenderTexture m_DepthTexture = CreateDepthTexture();

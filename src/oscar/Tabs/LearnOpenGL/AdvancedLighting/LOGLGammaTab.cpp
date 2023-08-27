@@ -106,8 +106,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentGamma.vert"),
-                osc::App::slurp("shaders/ExperimentGamma.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/Gamma.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/Gamma.frag"),
             },
         };
         rv.setTexture("uFloorTexture", woodTexture);

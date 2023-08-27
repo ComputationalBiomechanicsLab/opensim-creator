@@ -113,8 +113,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentParallaxMapping.vert"),
-                osc::App::slurp("shaders/ExperimentParallaxMapping.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ParallaxMapping.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ParallaxMapping.frag"),
             },
         };
         rv.setTexture("uDiffuseMap", diffuseMap);
@@ -130,8 +130,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentLightCube.vert"),
-                osc::App::slurp("shaders/ExperimentLightCube.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/LightCube.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/LightCube.frag"),
             },
         };
     }

@@ -59,8 +59,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentTexturing.vert"),
-                osc::App::slurp("shaders/ExperimentTexturing.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/GettingStarted/Texturing.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/GettingStarted/Texturing.frag"),
             },
         };
 

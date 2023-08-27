@@ -105,8 +105,8 @@ namespace
                 {
                     osc::Shader
                     {
-                        osc::App::slurp("shaders/ExperimentCubemap.vert"),
-                        osc::App::slurp("shaders/ExperimentCubemap.frag"),
+                        osc::App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Cubemaps/Basic.vert"),
+                        osc::App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Cubemaps/Basic.frag"),
                     },
                 },
             },
@@ -117,8 +117,8 @@ namespace
                 {
                     osc::Shader
                     {
-                        osc::App::slurp("shaders/ExperimentCubemapReflection.vert"),
-                        osc::App::slurp("shaders/ExperimentCubemapReflection.frag"),
+                        osc::App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Cubemaps/Reflection.vert"),
+                        osc::App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Cubemaps/Reflection.frag"),
                     },
                 },
             },
@@ -129,8 +129,8 @@ namespace
                 {
                     osc::Shader
                     {
-                        osc::App::slurp("shaders/ExperimentCubemapRefraction.vert"),
-                        osc::App::slurp("shaders/ExperimentCubemapRefraction.frag"),
+                        osc::App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Cubemaps/Refraction.vert"),
+                        osc::App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Cubemaps/Refraction.frag"),
                     },
                 },
             },
@@ -272,8 +272,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/ExperimentCubemapSkybox.vert"),
-            App::slurp("shaders/ExperimentCubemapSkybox.frag"),
+            App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Cubemaps/Skybox.vert"),
+            App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Cubemaps/Skybox.frag"),
         },
     };
     Mesh m_Skybox = GenCube();

@@ -89,8 +89,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentMultipleLights.vert"),
-                osc::App::slurp("shaders/ExperimentMultipleLights.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/Lighting/MultipleLights.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/Lighting/MultipleLights.frag"),
             },
         };
 
@@ -128,8 +128,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentLightCube.vert"),
-                osc::App::slurp("shaders/ExperimentLightCube.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/LightCube.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/LightCube.frag"),
             },
         };
         rv.setColor("uLightColor", osc::Color::white());

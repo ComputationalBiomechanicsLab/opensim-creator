@@ -111,8 +111,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentNormalMapping.vert"),
-                osc::App::slurp("shaders/ExperimentNormalMapping.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/NormalMapping.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/NormalMapping.frag"),
             },
         };
         rv.setTexture("uDiffuseMap", diffuseMap);
@@ -127,8 +127,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentLightCube.vert"),
-                osc::App::slurp("shaders/ExperimentLightCube.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/LightCube.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/LightCube.frag"),
             },
         };
     }

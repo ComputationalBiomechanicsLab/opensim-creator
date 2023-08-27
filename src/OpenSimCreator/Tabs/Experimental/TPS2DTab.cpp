@@ -524,11 +524,11 @@ private:
     Mesh m_OutputGrid = m_InputGrid;
     Material m_Material = Material
     {
-        App::singleton<ShaderCache>()->load(App::resource("shaders/Textured.vert"), App::resource("shaders/Textured.frag"))
+        App::singleton<ShaderCache>()->load(App::resource("shaders/OpenSimCreator/TPS2D/Textured.vert"), App::resource("shaders/OpenSimCreator/TPS2D/Textured.frag"))
     };
     Material m_WireframeMaterial = Material
     {
-        App::singleton<ShaderCache>()->load(App::resource("shaders/SolidColor.vert"), App::resource("shaders/SolidColor.frag"))
+        App::singleton<ShaderCache>()->load(App::resource("shaders/OpenSimCreator/SolidColor.vert"), App::resource("shaders/OpenSimCreator/SolidColor.frag"))
     };
     Camera m_Camera;
     std::optional<RenderTexture> m_InputRender;

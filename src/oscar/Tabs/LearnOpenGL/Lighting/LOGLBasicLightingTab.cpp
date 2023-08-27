@@ -123,16 +123,16 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/ExperimentBasicLighting.vert"),
-            App::slurp("shaders/ExperimentBasicLighting.frag"),
+            App::slurp("shaders/LearnOpenGL/Lighting/BasicLighting.vert"),
+            App::slurp("shaders/LearnOpenGL/Lighting/BasicLighting.frag"),
         },
     };
     Material m_LightCubeMaterial
     {
         Shader
         {
-            App::slurp("shaders/ExperimentLightCube.vert"),
-            App::slurp("shaders/ExperimentLightCube.frag"),
+            App::slurp("shaders/LearnOpenGL/LightCube.vert"),
+            App::slurp("shaders/LearnOpenGL/LightCube.frag"),
         },
     };
 

@@ -168,8 +168,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/ExperimentFrameBuffers.vert"),
-            App::slurp("shaders/ExperimentFrameBuffers.frag"),
+            App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Framebuffers/Blitter.vert"),
+            App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Framebuffers/Blitter.frag"),
         }
     };
 
@@ -196,8 +196,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/ExperimentFrameBuffersScreen.vert"),
-            App::slurp("shaders/ExperimentFrameBuffersScreen.frag"),
+            App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Framebuffers/Filter.vert"),
+            App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Framebuffers/Filter.frag"),
         }
     };
 

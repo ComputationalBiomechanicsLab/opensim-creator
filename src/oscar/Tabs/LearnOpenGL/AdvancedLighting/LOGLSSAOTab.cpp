@@ -135,8 +135,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentSSAOGeometry.vert"),
-                osc::App::slurp("shaders/ExperimentSSAOGeometry.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ssao/Geometry.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ssao/Geometry.frag"),
             },
         };
     }
@@ -154,8 +154,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentSSAOSSAO.vert"),
-                osc::App::slurp("shaders/ExperimentSSAOSSAO.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ssao/SSAO.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ssao/SSAO.frag"),
             },
         };
     }
@@ -166,8 +166,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentSSAOBlur.vert"),
-                osc::App::slurp("shaders/ExperimentSSAOBlur.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ssao/Blur.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ssao/Blur.frag"),
             },
         };
     }
@@ -178,8 +178,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentSSAOLighting.vert"),
-                osc::App::slurp("shaders/ExperimentSSAOLighting.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ssao/Lighting.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ssao/Lighting.frag"),
             },
         };
     }

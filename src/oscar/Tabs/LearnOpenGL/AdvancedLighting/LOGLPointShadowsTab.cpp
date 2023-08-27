@@ -256,17 +256,17 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/ExperimentPointShadows.vert"),
-            App::slurp("shaders/ExperimentPointShadows.geom"),
-            App::slurp("shaders/ExperimentPointShadows.frag"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/point_shadows/MakeShadowMap.vert"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/point_shadows/MakeShadowMap.geom"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/point_shadows/MakeShadowMap.frag"),
         },
     };
     Material m_SceneMaterial
     {
         Shader
         {
-            App::slurp("shaders/ExperimentPointShadowsScene.vert"),
-            App::slurp("shaders/ExperimentPointShadowsScene.frag"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/point_shadows/Scene.vert"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/point_shadows/Scene.frag"),
         },
     };
 
@@ -274,8 +274,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/ExperimentPointShadowsScene.vert"),
-            App::slurp("shaders/ExperimentPointShadowsSoftScene.frag"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/point_shadows/Scene.vert"),
+            App::slurp("shaders/LearnOpenGL/AdvancedLighting/point_shadows/SoftScene.frag"),
         }
     };
 

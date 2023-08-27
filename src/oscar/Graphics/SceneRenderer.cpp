@@ -140,12 +140,12 @@ public:
         MeshCache& meshCache,
         ShaderCache& shaderCache) :
 
-        m_SceneColoredElementsMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneShader.vert", config.getResourceDir() / "shaders/SceneShader.frag")},
-        m_SceneTexturedElementsMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneTexturedShader.vert", config.getResourceDir() / "shaders/SceneTexturedShader.frag")},
-        m_SolidColorMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneSolidColor.vert", config.getResourceDir() / "shaders/SceneSolidColor.frag")},
-        m_EdgeDetectorMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneEdgeDetector.vert", config.getResourceDir() / "shaders/SceneEdgeDetector.frag")},
-        m_NormalsMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneNormalsShader.vert", config.getResourceDir() / "shaders/SceneNormalsShader.geom", config.getResourceDir() / "shaders/SceneNormalsShader.frag")},
-        m_DepthWritingMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneDepthMap.vert", config.getResourceDir() / "shaders/SceneDepthMap.frag")},
+        m_SceneColoredElementsMaterial{shaderCache.load(config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/DrawColoredObjects.vert", config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/DrawColoredObjects.frag")},
+        m_SceneTexturedElementsMaterial{shaderCache.load(config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/DrawTexturedObjects.vert", config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/DrawTexturedObjects.frag")},
+        m_SolidColorMaterial{shaderCache.load(config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/SolidColor.vert", config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/SolidColor.frag")},
+        m_EdgeDetectorMaterial{shaderCache.load(config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/EdgeDetector.vert", config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/EdgeDetector.frag")},
+        m_NormalsMaterial{shaderCache.load(config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/NormalsVisualizer.vert", config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/NormalsVisualizer.geom", config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/NormalsVisualizer.frag")},
+        m_DepthWritingMaterial{shaderCache.load(config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/DepthMap.vert", config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/DepthMap.frag")},
         m_QuadMesh{meshCache.getTexturedQuadMesh()}
     {
         m_SceneTexturedElementsMaterial.setTexture("uDiffuseTexture", m_ChequerTexture);

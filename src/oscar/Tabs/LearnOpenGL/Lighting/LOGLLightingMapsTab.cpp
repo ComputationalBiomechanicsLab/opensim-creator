@@ -51,8 +51,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/ExperimentLightingMaps.vert"),
-                osc::App::slurp("shaders/ExperimentLightingMaps.frag"),
+                osc::App::slurp("shaders/LearnOpenGL/Lighting/LightingMaps.vert"),
+                osc::App::slurp("shaders/LearnOpenGL/Lighting/LightingMaps.frag"),
             },
         };
         rv.setTexture("uMaterialDiffuse", diffuseMap);
@@ -148,8 +148,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/ExperimentLightCube.vert"),
-            App::slurp("shaders/ExperimentLightCube.frag"),
+            App::slurp("shaders/LearnOpenGL/LightCube.vert"),
+            App::slurp("shaders/LearnOpenGL/LightCube.frag"),
         },
     };
     Mesh m_Mesh = GenLearnOpenGLCube();

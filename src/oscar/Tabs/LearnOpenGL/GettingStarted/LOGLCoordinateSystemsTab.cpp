@@ -181,8 +181,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/ExperimentCoordinateSystems.vert"),
-            App::slurp("shaders/ExperimentCoordinateSystems.frag"),
+            App::slurp("shaders/LearnOpenGL/GettingStarted/CoordinateSystems.vert"),
+            App::slurp("shaders/LearnOpenGL/GettingStarted/CoordinateSystems.frag"),
         },
     };
     Mesh m_Mesh = GenLearnOpenGLCube();
