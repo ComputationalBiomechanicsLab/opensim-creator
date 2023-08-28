@@ -753,8 +753,8 @@ namespace
             bool shouldSave = false;
             for (glm::vec3::length_type i = 0; i < 3; ++i)
             {
-                ComponentEditorReturn const rv = drawVec3ComponentEditor(idx, i, editedValue, valueConverter);
-                shouldSave = shouldSave || rv == ComponentEditorReturn::ShouldSave;
+                ComponentEditorReturn const componentEditorRv = drawVec3ComponentEditor(idx, i, editedValue, valueConverter);
+                shouldSave = shouldSave || componentEditorRv == ComponentEditorReturn::ShouldSave;
             }
 
             // if any component editor indicated that it should be saved then propagate that upwards
