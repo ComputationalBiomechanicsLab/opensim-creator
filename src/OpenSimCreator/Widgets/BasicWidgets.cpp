@@ -469,9 +469,14 @@ void osc::DrawFrameInformationExpressedIn(
 void osc::DrawCalculateMenu(
     OpenSim::Component const& root,
     SimTK::State const& state,
-    OpenSim::Point const& point)
+    OpenSim::Point const& point,
+    CalculateMenuFlags flags)
 {
-    if (ImGui::BeginMenu(ICON_FA_CALCULATOR " Calculate"))
+    osc::CStringView const label = flags & CalculateMenuFlags::NoCalculatorIcon ?
+        "Calculate" :
+        ICON_FA_CALCULATOR " Calculate";
+
+    if (ImGui::BeginMenu(label.c_str()))
     {
         if (ImGui::BeginMenu("Position"))
         {
@@ -494,9 +499,14 @@ void osc::DrawCalculateMenu(
 void osc::DrawCalculateMenu(
     OpenSim::Component const& root,
     SimTK::State const& state,
-    OpenSim::Frame const& frame)
+    OpenSim::Frame const& frame,
+    CalculateMenuFlags flags)
 {
-    if (ImGui::BeginMenu(ICON_FA_CALCULATOR " Calculate"))
+    osc::CStringView const label = flags & CalculateMenuFlags::NoCalculatorIcon ?
+        "Calculate" :
+        ICON_FA_CALCULATOR " Calculate";
+
+    if (ImGui::BeginMenu(label.c_str()))
     {
         if (ImGui::BeginMenu("Transform"))
         {

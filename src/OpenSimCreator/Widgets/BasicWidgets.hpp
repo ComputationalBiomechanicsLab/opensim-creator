@@ -11,6 +11,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <type_traits>
 
 namespace osc { class OpenSimDecorationOptions; }
 namespace osc { class OverlayDecorationOptions; }
@@ -83,15 +84,30 @@ namespace osc
         SimTK::State const&,
         OpenSim::Frame const&
     );
+
+    enum class CalculateMenuFlags {
+        None,
+        NoCalculatorIcon,
+    };
+
+    constexpr bool operator&(CalculateMenuFlags a, CalculateMenuFlags b) noexcept
+    {
+        auto const aV = static_cast<std::underlying_type_t<CalculateMenuFlags>>(a);
+        auto const bV = static_cast<std::underlying_type_t<CalculateMenuFlags>>(b);
+        return (aV & bV) != 0;
+    }
+
     void DrawCalculateMenu(
         OpenSim::Component const& root,
         SimTK::State const&,
-        OpenSim::Point const&
+        OpenSim::Point const&,
+        CalculateMenuFlags = CalculateMenuFlags::None
     );
     void DrawCalculateMenu(
         OpenSim::Component const& root,
         SimTK::State const&,
-        OpenSim::Frame const&
+        OpenSim::Frame const&,
+        CalculateMenuFlags = CalculateMenuFlags::None
     );
 
     // basic wigetized parts of the 3D viewer

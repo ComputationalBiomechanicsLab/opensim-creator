@@ -99,6 +99,16 @@ namespace
         std::shared_ptr<osc::UndoableModelStatePair> const& uim,
         OpenSim::ComponentPath const& pfPath)
     {
+        if (auto const* pf = osc::FindComponent<OpenSim::PhysicalFrame>(uim->getModel(), pfPath))
+        {
+            osc::DrawCalculateMenu(
+                uim->getModel(),
+                uim->getState(),
+                *pf,
+                osc::CalculateMenuFlags::NoCalculatorIcon
+            );
+        }
+
         if (ImGui::MenuItem("Add Geometry"))
         {
             std::function<void(std::unique_ptr<OpenSim::Geometry>)> const callback = [uim, pfPath](auto geom)
@@ -211,6 +221,13 @@ namespace
         {
             osc::ActionToggleFrames(uim);
         }
+    }
+
+    void DrawPointContextualActions(
+        osc::UndoableModelStatePair& uim,
+        OpenSim::Point const& point)
+    {
+        osc::DrawCalculateMenu(uim.getModel(), uim.getState(), point, osc::CalculateMenuFlags::NoCalculatorIcon);
     }
 }
 
@@ -371,6 +388,10 @@ private:
         else if (dynamic_cast<OpenSim::PathActuator const*>(c))
         {
             DrawPathActuatorContextualParams(m_EditorAPI, m_Model, m_Path);
+        }
+        else if (OpenSim::Point const* p = dynamic_cast<OpenSim::Point const*>(c))
+        {
+            DrawPointContextualActions(*m_Model, *p);
         }
     }
 
