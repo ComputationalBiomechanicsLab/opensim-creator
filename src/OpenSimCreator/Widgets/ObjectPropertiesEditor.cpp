@@ -9,6 +9,8 @@
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/Constants.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Transform.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/Assertions.hpp>
@@ -27,8 +29,10 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Simulation/Model/Appearance.h>
+#include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <SimTKcommon/Constants.h>
 #include <SimTKcommon/SmallMatrix.h>
 
@@ -192,7 +196,8 @@ namespace
         StringPropertyEditor(
             osc::EditorAPI*,
             std::shared_ptr<osc::UndoableModelStatePair const>,
-            std::function<property_type const* ()> accessor_) :
+            std::function<OpenSim::Object const*()>,
+            std::function<property_type const*()> accessor_) :
 
             m_Accessor{std::move(accessor_)}
         {
@@ -294,6 +299,7 @@ namespace
         DoublePropertyEditor(
             osc::EditorAPI*,
             std::shared_ptr<osc::UndoableModelStatePair const>,
+            std::function<OpenSim::Object const*()>,
             std::function<property_type const*()> accessor_) :
 
             m_Accessor{std::move(accessor_)}
@@ -395,6 +401,7 @@ namespace
         BoolPropertyEditor(
             osc::EditorAPI*,
             std::shared_ptr<osc::UndoableModelStatePair const>,
+            std::function<OpenSim::Object const*()>,
             std::function<property_type const*()> accessor_) :
 
             m_Accessor{std::move(accessor_)}
@@ -497,13 +504,121 @@ namespace
 
         Vec3PropertyEditor(
             osc::EditorAPI*,
-            std::shared_ptr<osc::UndoableModelStatePair const>,
+            std::shared_ptr<osc::UndoableModelStatePair const> model_,
+            std::function<OpenSim::Object const*()> objectAccessor_,
             std::function<property_type const*()> accessor_) :
 
+            m_Model{std::move(model_)},
+            m_ObjectAccessor{std::move(objectAccessor_)},
             m_Accessor{std::move(accessor_)}
         {
         }
     private:
+
+        // converter class that changes based on whether the user wants the value in
+        // different units, different frame, etc.
+        class ValueConverter final {
+        public:
+            ValueConverter(
+                float modelToEditedValueScaler_,
+                SimTK::Transform const& modelToEditedTransform_) :
+
+                m_ModelToEditedValueScaler{modelToEditedValueScaler_},
+                m_ModelToEditedTransform{modelToEditedTransform_}
+            {
+            }
+
+            glm::vec3 modelValueToEditedValue(glm::vec3 const& modelValue) const
+            {
+                return osc::ToVec3(static_cast<double>(m_ModelToEditedValueScaler) * (m_ModelToEditedTransform * osc::ToSimTKVec3(modelValue)));
+            }
+
+            glm::vec3 editedValueToModelValue(glm::vec3 const& editedValue) const
+            {
+                return osc::ToVec3(m_ModelToEditedTransform.invert() * osc::ToSimTKVec3(editedValue/m_ModelToEditedValueScaler));
+            }
+        private:
+            float m_ModelToEditedValueScaler;
+            SimTK::Transform m_ModelToEditedTransform;
+        };
+
+        // returns `true` if the Vec3 property is expressed w.r.t. a frame
+        bool isPropertyExpressedWithinAParentFrame() const
+        {
+            return getParentToGroundTransform() != std::nullopt;
+        }
+
+        // returns `true` if the Vec3 property is edited in radians
+        bool isPropertyEditedInRadians() const
+        {
+            return osc::IsEqualCaseInsensitive(m_EditedProperty.getName(), "orientation");
+        }
+
+        // if the Vec3 property has a parent frame, returns a transform that maps the Vec3
+        // property's value to ground
+        std::optional<SimTK::Transform> getParentToGroundTransform() const
+        {
+            OpenSim::Object const* obj = m_ObjectAccessor();
+            OpenSim::Property<SimTK::Vec3> const* prop = m_Accessor();
+
+            if (!obj)
+            {
+                return std::nullopt;
+            }
+            else if (!prop)
+            {
+                return std::nullopt;
+            }
+            else if (auto const* station = dynamic_cast<OpenSim::Station const*>(obj); station && prop->getName() == "location")
+            {
+                return station->getParentFrame().getTransformInGround(m_Model->getState());
+            }
+            else if (auto const* pp = dynamic_cast<OpenSim::PathPoint const*>(obj); pp && prop->getName() == "location")
+            {
+                return pp->getParentFrame().getTransformInGround(m_Model->getState());
+            }
+            else if (auto const* pof = dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(obj); pof && prop->getName() == "translation")
+            {
+                return pof->getParentFrame().getTransformInGround(m_Model->getState());
+            }
+            else
+            {
+                return std::nullopt;
+            }
+        }
+
+        // if the user has selected a different frame in which to edit 3D quantities, then
+        // returns a transform that maps Vec3 properties expressed in ground to the other
+        // frame
+        std::optional<SimTK::Transform> getGroundToUserSelectedFrameTransform() const
+        {
+            if (!m_MaybeUserSelectedFrameAbsPath)
+            {
+                return std::nullopt;
+            }
+
+            OpenSim::Model const& model = m_Model->getModel();
+            OpenSim::Frame const* frame = osc::FindComponent<OpenSim::Frame>(model, *m_MaybeUserSelectedFrameAbsPath);
+            return frame->getTransformInGround(m_Model->getState()).invert();
+        }
+
+        ValueConverter getValueConverter() const
+        {
+            float conversionCoefficient = 1.0f;
+            if (isPropertyEditedInRadians() && !m_OrientationValsAreInRadians)
+            {
+                conversionCoefficient = static_cast<float>(SimTK_RADIAN_TO_DEGREE);
+            }
+
+            std::optional<SimTK::Transform> const parent2ground = getParentToGroundTransform();
+            std::optional<SimTK::Transform> const ground2frame = getGroundToUserSelectedFrameTransform();
+            SimTK::Transform const transform = parent2ground && ground2frame ?
+                (*ground2frame) * (*parent2ground) :
+                SimTK::Transform{};
+
+            return ValueConverter{conversionCoefficient, transform};
+        }
+
         std::type_info const& implGetTypeInfo() const final
         {
             return typeid(property_type);
@@ -525,18 +640,31 @@ namespace
                 m_EditedProperty = prop;
             }
 
+            // compute value converter (applies to all values)
+            ValueConverter const valueConverter = getValueConverter();
+
+
+            // draw UI
+
+
             ImGui::Separator();
 
             // draw name of the property in left-hand column
             DrawPropertyName(m_EditedProperty);
             ImGui::NextColumn();
 
-            // draw `n` editors in right-hand column
+            // top line of right column shows "reexpress in" editor (if applicable)
+            drawReexpressionEditorIfApplicable();
+
+            // draw radians/degrees conversion toggle button (if applicable)
+            drawDegreesToRadiansConversionToggle();
+
+            // draw `[0, 1]` editors in right-hand column
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
             for (int idx = 0; idx < std::max(m_EditedProperty.size(), 1); ++idx)
             {
                 ImGui::PushID(idx);
-                std::optional<std::function<void(OpenSim::AbstractProperty&)>> editorRv = drawIthEditor(idx);
+                std::optional<std::function<void(OpenSim::AbstractProperty&)>> editorRv = drawIthEditor(valueConverter, idx);
                 ImGui::PopID();
 
                 if (!rv)
@@ -549,7 +677,59 @@ namespace
             return rv;
         }
 
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> drawIthEditor(int idx)
+        void drawReexpressionEditorIfApplicable()
+        {
+            if (!isPropertyExpressedWithinAParentFrame())
+            {
+                return;
+            }
+
+            osc::DrawHelpMarker("The frame that this quantity should be _edited_ in.\n\nnote: does not change the frame in which it is _saved_: use the 'Reassign Socket' action if you want to change the frame that this component is attached to");
+            ImGui::SameLine();
+
+            std::string const preview = m_MaybeUserSelectedFrameAbsPath ?
+                m_MaybeUserSelectedFrameAbsPath->getComponentName() :
+                "default (parent frame)";
+
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            if (ImGui::BeginCombo("##reexpressioneditor", preview.c_str()))
+            {
+                int imguiID = 0;
+
+                // draw "default" (reset) option
+                {
+                    ImGui::PushID(imguiID++);
+                    bool selected = !m_MaybeUserSelectedFrameAbsPath.has_value();
+                    if (ImGui::Selectable("default (parent frame)", &selected))
+                    {
+                        m_MaybeUserSelectedFrameAbsPath.reset();
+                    }
+                    ImGui::PopID();
+                    ImGui::Separator();
+                }
+
+                // draw selectable for each frame in the model
+                for (OpenSim::Frame const& frame : m_Model->getModel().getComponentList<OpenSim::Frame>())
+                {
+                    OpenSim::ComponentPath const frameAbsPath = osc::GetAbsolutePath(frame);
+
+                    ImGui::PushID(imguiID++);
+                    bool selected = frameAbsPath == m_MaybeUserSelectedFrameAbsPath;
+                    if (ImGui::Selectable(frame.getName().c_str(), &selected))
+                    {
+                        m_MaybeUserSelectedFrameAbsPath = frameAbsPath;
+                    }
+                    ImGui::PopID();
+                }
+
+                ImGui::EndCombo();
+            }
+        }
+
+        // draws an editor for the `ith` Vec3 element of the given (potentially, list) property
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> drawIthEditor(
+            ValueConverter const& valueConverter,
+            int idx)
         {
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
 
@@ -566,60 +746,18 @@ namespace
             // read stored value from edited property
             //
             // care: optional properties have size==0, so perform a range check
-            glm::vec3 rawValue = osc::ToVec3(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : SimTK::Vec3{});
+            glm::vec3 const rawValue = osc::ToVec3(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : SimTK::Vec3{});
+            glm::vec3 const editedValue = valueConverter.modelValueToEditedValue(rawValue);
 
-            // draw button that converts the displayed value for editing (e.g. between radians and degrees)
-            float const conversionCoefficient = drawValueConversionToggle();
-            rawValue *= conversionCoefficient;
-
-            // draw an editor for each component of the vec3
+            // draw an editor for each component of the Vec3
             bool shouldSave = false;
             for (glm::vec3::length_type i = 0; i < 3; ++i)
             {
-                ImGui::PushID(i);
-                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-
-                // draw dimension hint (color bar next to the input)
-                {
-                    osc::Color color = {0.0f, 0.0f, 0.0f, 0.6f};
-                    color[i] = 1.0f;
-
-                    ImDrawList* const l = ImGui::GetWindowDrawList();
-                    glm::vec2 const p = ImGui::GetCursorScreenPos();
-                    float const h = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y + 2.0f*ImGui::GetStyle().FrameBorderSize;
-                    glm::vec2 const dims = glm::vec2{4.0f, h};
-                    l->AddRectFilled(p, p + dims, ImGui::ColorConvertFloat4ToU32(glm::vec4{color}));
-                    ImGui::SetCursorScreenPos({p.x + 4.0f, p.y});
-                }
-
-                // draw the input editor
-                ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, {1.0f, 0.0f});
-                if (ImGui::InputScalar("##valueinput", ImGuiDataType_Float, &rawValue[i], &m_StepSize, nullptr, "%.6f"))
-                {
-                    // un-convert the value on save
-                    glm::vec3 const savedValue = (1.0f/conversionCoefficient) * rawValue;
-                    m_EditedProperty.setValue(idx, osc::ToSimTKVec3(savedValue));
-                }
-                ImGui::PopStyleVar();
-                shouldSave = shouldSave || osc::ItemValueShouldBeSaved();
-
-                // globally annotate the editor rect, for downstream screenshot automation
-                {
-                    std::stringstream annotation;
-                    annotation << "ObjectPropertiesEditor::Vec3/";
-                    annotation << i;
-                    annotation << '/';
-                    annotation << m_EditedProperty.getName();
-                    osc::App::upd().addFrameAnnotation(std::move(annotation).str(), osc::GetItemRect());
-                }
-                osc::DrawTooltipIfItemHovered("Step Size", "You can right-click to adjust the step size of the buttons");
-
-                // draw a context menu that lets the user "step" the value with a button
-                drawStepSizeContextMenu();
-
-                ImGui::PopID();
+                ComponentEditorReturn const rv = drawVec3ComponentEditor(idx, i, editedValue, valueConverter);
+                shouldSave = shouldSave || rv == ComponentEditorReturn::ShouldSave;
             }
 
+            // if any component editor indicated that it should be saved then propagate that upwards
             if (shouldSave)
             {
                 rv = MakePropValueSetter<SimTK::Vec3>(idx, m_EditedProperty.getValue(idx));
@@ -628,41 +766,88 @@ namespace
             return rv;
         }
 
-        // draws a unit converter toggle button and returns the effective conversion ratio that is
-        // initated by the button
-        float drawValueConversionToggle()
-        {
-            if (osc::IsEqualCaseInsensitive(m_EditedProperty.getName(), "orientation"))
-            {
-                if (m_OrientationValsAreInRadians)
-                {
-                    if (ImGui::Button("radians"))
-                    {
-                        m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
-                    }
-                    osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), osc::GetItemRect());
-                    osc::DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in radians (click to switch to degrees)");
-                }
-                else
-                {
-                    if (ImGui::Button("degrees"))
-                    {
-                        m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
-                    }
-                    osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), osc::GetItemRect());
-                    osc::DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in degrees (click to switch to radians)");
-                }
+        enum ComponentEditorReturn { None, ShouldSave };
 
-                return m_OrientationValsAreInRadians ? 1.0f : static_cast<float>(SimTK_RADIAN_TO_DEGREE);
+        // draws float input for a single component of the Vec3 (e.g. vec.x)
+        ComponentEditorReturn drawVec3ComponentEditor(
+            int idx,
+            glm::vec3::length_type i,
+            glm::vec3 editedValue,
+            ValueConverter const& valueConverter)
+        {
+            ImGui::PushID(i);
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+
+            // draw dimension hint (color bar next to the input)
+            drawColoredDimensionHintVerticalLine(i);
+
+            // draw the input editor
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, {1.0f, 0.0f});
+            if (ImGui::InputScalar("##valueinput", ImGuiDataType_Float, &editedValue[i], &m_StepSize, nullptr, "%.6f"))
+            {
+                // un-convert the value on save
+                glm::vec3 const savedValue = valueConverter.editedValueToModelValue(editedValue);
+                m_EditedProperty.setValue(idx, osc::ToSimTKVec3(savedValue));
+            }
+            ImGui::PopStyleVar();
+            bool const rv = osc::ItemValueShouldBeSaved();
+            globallyAddFrameAnnotationForIthVecInputForDocumentation(i);
+            osc::DrawTooltipIfItemHovered("Step Size", "You can right-click to adjust the step size of the buttons");
+
+            // draw a context menu that lets the user "step" the value with a button
+            drawStepSizeEditor();
+
+            ImGui::PopID();
+
+            return rv ? ComponentEditorReturn::ShouldSave : ComponentEditorReturn::None;
+        }
+
+        // draws a little vertical line that is red/green/blue depending on the given dimension index
+        //
+        // (used to visually indicate x/y/z to the user)
+        void drawColoredDimensionHintVerticalLine(glm::vec3::length_type i)
+        {
+            osc::Color color = {0.0f, 0.0f, 0.0f, 0.6f};
+            color[i] = 1.0f;
+
+            ImDrawList* const l = ImGui::GetWindowDrawList();
+            glm::vec2 const p = ImGui::GetCursorScreenPos();
+            float const h = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y + 2.0f*ImGui::GetStyle().FrameBorderSize;
+            glm::vec2 const dims = glm::vec2{4.0f, h};
+            l->AddRectFilled(p, p + dims, ImGui::ColorConvertFloat4ToU32(glm::vec4{color}));
+            ImGui::SetCursorScreenPos({p.x + 4.0f, p.y});
+        }
+
+        // draws button that lets the user toggle between inputting radians vs. degrees
+        void drawDegreesToRadiansConversionToggle()
+        {
+            if (!isPropertyEditedInRadians())
+            {
+                return;
+            }
+
+            if (m_OrientationValsAreInRadians)
+            {
+                if (ImGui::Button("radians"))
+                {
+                    m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
+                }
+                osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), osc::GetItemRect());
+                osc::DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in radians (click to switch to degrees)");
             }
             else
             {
-                return 1.0f;
+                if (ImGui::Button("degrees"))
+                {
+                    m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
+                }
+                osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), osc::GetItemRect());
+                osc::DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in degrees (click to switch to radians)");
             }
         }
 
         // draws a context menu that the user can use to change the step size of the +/- buttons
-        void drawStepSizeContextMenu()
+        void drawStepSizeEditor()
         {
             if (ImGui::BeginPopupContextItem("##valuecontextmenu"))
             {
@@ -773,9 +958,24 @@ namespace
             }
         }
 
+        // globally adds a frame annotation to the app's current frame that can later be used to
+        // highlight a specific Vec3 input
+        void globallyAddFrameAnnotationForIthVecInputForDocumentation(glm::vec3::length_type i)
+        {
+            std::stringstream annotation;
+            annotation << "ObjectPropertiesEditor::Vec3/";
+            annotation << i;
+            annotation << '/';
+            annotation << m_EditedProperty.getName();
+            osc::App::upd().addFrameAnnotation(std::move(annotation).str(), osc::GetItemRect());
+        }
+
+        std::shared_ptr<osc::UndoableModelStatePair const> m_Model;
+        std::function<OpenSim::Object const*()> m_ObjectAccessor;
         std::function<property_type const*()> m_Accessor;
         property_type m_OriginalProperty{"blank", true};
         property_type m_EditedProperty{"blank", true};
+        std::optional<OpenSim::ComponentPath> m_MaybeUserSelectedFrameAbsPath;
         float m_StepSize = 0.001f;
         bool m_OrientationValsAreInRadians = false;
     };
@@ -788,6 +988,7 @@ namespace
         Vec6PropertyEditor(
             osc::EditorAPI*,
             std::shared_ptr<osc::UndoableModelStatePair const>,
+            std::function<OpenSim::Object const*()>,
             std::function<property_type const*()> accessor_) :
 
             m_Accessor{std::move(accessor_)}
@@ -897,6 +1098,7 @@ namespace
         IntPropertyEditor(
             osc::EditorAPI*,
             std::shared_ptr<osc::UndoableModelStatePair const>,
+            std::function<OpenSim::Object const*()>,
             std::function<property_type const*()> accessor_) :
 
             m_Accessor{std::move(accessor_)}
@@ -1005,6 +1207,7 @@ namespace
         AppearancePropertyEditor(
             osc::EditorAPI*,
             std::shared_ptr<osc::UndoableModelStatePair const>,
+            std::function<OpenSim::Object const*()>,
             std::function<property_type const*()> accessor_) :
 
             m_Accessor{std::move(accessor_)}
@@ -1115,6 +1318,7 @@ namespace
         ContactParameterSetEditor(
             osc::EditorAPI* api,
             std::shared_ptr<osc::UndoableModelStatePair const> targetModel_,
+            std::function<OpenSim::Object const*()>,
             std::function<property_type const*()> accessor_) :
 
             m_API{api},
@@ -1195,6 +1399,7 @@ namespace
         GeometryPathPropertyEditor(
             osc::EditorAPI* api_,
             std::shared_ptr<osc::UndoableModelStatePair const> targetModel_,
+            std::function<OpenSim::Object const*()>,
             std::function<property_type const*()> accessor_) :
 
             m_API{api_},
@@ -1280,9 +1485,10 @@ namespace
         std::unique_ptr<VirtualPropertyEditor> tryCreateEditor(
             osc::EditorAPI* editorAPI,
             std::shared_ptr<osc::UndoableModelStatePair const> targetModel,
-            std::function<OpenSim::AbstractProperty const*()> genericAccessor) const
+            std::function<OpenSim::Object const*()> objectAccessor,
+            std::function<OpenSim::AbstractProperty const*()> propertyAccessor) const
         {
-            OpenSim::AbstractProperty const* maybeProp = genericAccessor();
+            OpenSim::AbstractProperty const* maybeProp = propertyAccessor();
             if (!maybeProp)
             {
                 return nullptr;  // cannot access the property
@@ -1296,7 +1502,7 @@ namespace
             }
 
             // else: instantiate new property editor
-            return it->second(editorAPI, targetModel, genericAccessor);
+            return it->second(editorAPI, targetModel, objectAccessor, propertyAccessor);
         }
 
     private:
@@ -1316,7 +1522,7 @@ namespace
             }
         };
 
-        using PropertyEditorCtor = std::function<std::unique_ptr<VirtualPropertyEditor>(osc::EditorAPI*, std::shared_ptr<osc::UndoableModelStatePair const>, std::function<OpenSim::AbstractProperty const*()>)>;
+        using PropertyEditorCtor = std::function<std::unique_ptr<VirtualPropertyEditor>(osc::EditorAPI*, std::shared_ptr<osc::UndoableModelStatePair const>, std::function<OpenSim::Object const*()>, std::function<OpenSim::AbstractProperty const*()>)>;
         using PropertyEditorLUT = std::unordered_map<TypeInfoRef, PropertyEditorCtor, TypeInfoHasher, TypeInfoEqualTo>;
 
         template<typename TConcretePropertyEditor>
@@ -1329,11 +1535,15 @@ namespace
         static PropertyEditorLUT::value_type MakeRegistryEntry()
         {
             TypeInfoRef typeInfo = typeid(typename TConcretePropertyEditor::property_type);
-            auto ctor = [](osc::EditorAPI* api, std::shared_ptr<osc::UndoableModelStatePair const> targetModel, std::function<OpenSim::AbstractProperty const*()> genericAccessor)
+            auto ctor = [](
+                osc::EditorAPI* api,
+                std::shared_ptr<osc::UndoableModelStatePair const> targetModel,
+                std::function<OpenSim::Object const*()> objectAccessor,
+                std::function<OpenSim::AbstractProperty const*()> propetyAccessor)
             {
-                auto downcastedAccessor = [genericAccessor]() -> typename TConcretePropertyEditor::property_type const*
+                auto downcastedAccessor = [propetyAccessor]() -> typename TConcretePropertyEditor::property_type const*
                 {
-                    OpenSim::AbstractProperty const* genericProp = genericAccessor();
+                    OpenSim::AbstractProperty const* genericProp = propetyAccessor();
                     if (genericProp)
                     {
                         return dynamic_cast<typename TConcretePropertyEditor::property_type const*>(genericProp);
@@ -1343,7 +1553,7 @@ namespace
                         return nullptr;
                     }
                 };
-                return std::make_unique<TConcretePropertyEditor>(api, targetModel, downcastedAccessor);
+                return std::make_unique<TConcretePropertyEditor>(api, targetModel, objectAccessor, downcastedAccessor);
             };
             return typename PropertyEditorLUT::value_type(typeInfo, ctor);
         }
@@ -1478,14 +1688,15 @@ private:
     VirtualPropertyEditor* tryGetPropertyEditor(OpenSim::AbstractProperty const& prop)
     {
         auto const [it, inserted] = m_PropertyEditorsByName.try_emplace(prop.getName(), nullptr);
+
         if (inserted || (it->second && !it->second->isCompatibleWith(prop)))
         {
             // need to create a new editor because either it hasn't been made yet or the existing
             // editor is for a different type
 
             // wrap property accesses via the object accessor so that they can be runtime-checked
-            std::function<OpenSim::AbstractProperty const*()> accessor = MakePropertyAccessor(m_ObjectGetter, prop.getName());
-            it->second = GetGlobalPropertyEditorRegistry().tryCreateEditor(m_API, m_TargetModel, accessor);
+            std::function<OpenSim::AbstractProperty const*()> propertyAccessor = MakePropertyAccessor(m_ObjectGetter, prop.getName());
+            it->second = GetGlobalPropertyEditorRegistry().tryCreateEditor(m_API, m_TargetModel, m_ObjectGetter, propertyAccessor);
         }
 
         return it->second.get();

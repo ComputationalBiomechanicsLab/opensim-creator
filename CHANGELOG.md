@@ -5,6 +5,9 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Property editors for `Station`s, `PathPoint`s, and `PhysicalOffsetFrame`s now also display a user-editable
+  "expressed in frame" dropdown, which lets users select which frame the `location`/`translation` properties
+  of those components are edited in (#723)
 - The scene scale factor should now ignore any explicitly added `OpenSim::Geometry` in the scene (#461)
 - Deleting a `range` element of an `OpenSim::Coordinate` no longer causes the editor to crash (#654)
 - The 3D camera will no longer move when dragging a visualizer panel around (#739)
