@@ -2241,7 +2241,7 @@ TEST_F(Renderer, MeshTransformVertsWithMat4AppliesTransformToVerts)
     expectedVerts.reserve(originalVerts.size());
     for (glm::vec3& v : originalVerts)
     {
-        expectedVerts.push_back(glm::vec3{mat * glm::vec4{v, 1.0f}});
+        expectedVerts.emplace_back(glm::vec3{mat * glm::vec4{v, 1.0f}});
     }
 
     // create mesh with "original" verts
