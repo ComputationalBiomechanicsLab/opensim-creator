@@ -78,6 +78,7 @@
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Ground.h>
+#include <OpenSim/Simulation/Model/Marker.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/Model/OffsetFrame.h>
@@ -3158,6 +3159,33 @@ namespace
 // into a standard OpenSim model. This code does that.
 namespace
 {
+    // user-editable flags that affect how the model is created from the model graph
+    enum class ModelCreationFlags {
+        None,
+        ExportStationsAsMarkers,
+    };
+
+    constexpr bool operator&(ModelCreationFlags const& a, ModelCreationFlags const& b) noexcept
+    {
+        auto const aV = static_cast<std::underlying_type_t<ModelCreationFlags>>(a);
+        auto const bV = static_cast<std::underlying_type_t<ModelCreationFlags>>(b);
+        return (aV & bV) != 0;
+    }
+
+    constexpr ModelCreationFlags operator+(ModelCreationFlags const& a, ModelCreationFlags const& b) noexcept
+    {
+        auto aV = static_cast<std::underlying_type_t<ModelCreationFlags>>(a);
+        auto bV = static_cast<std::underlying_type_t<ModelCreationFlags>>(a);
+        return static_cast<ModelCreationFlags>(aV | bV);
+    }
+
+    constexpr ModelCreationFlags operator-(ModelCreationFlags const& a, ModelCreationFlags const& b) noexcept
+    {
+        auto aV = static_cast<std::underlying_type_t<ModelCreationFlags>>(a);
+        auto bV = static_cast<std::underlying_type_t<ModelCreationFlags>>(a);
+        return static_cast<ModelCreationFlags>(aV & ~bV);
+    }
+
     // stand-in method that should be replaced by actual support for scale-less transforms
     // (dare i call them.... frames ;))
     Transform IgnoreScale(Transform const& t)
@@ -3500,7 +3528,9 @@ namespace
         model.addJoint(weldJoint.release());
     }
 
-    void AddStationToModel(ModelGraph const& mg,
+    void AddStationToModel(
+        ModelGraph const& mg,
+        ModelCreationFlags flags,
         OpenSim::Model& model,
         StationEl const& stationEl,
         std::unordered_map<UID, OpenSim::Body*>& visitedBodies)
@@ -3513,15 +3543,27 @@ namespace
         SimTK::Transform stationXform = ToSimTKTransform(stationEl.GetXform());
         SimTK::Vec3 locationInParent = (parentXform.invert() * stationXform).p();
 
-        auto station = std::make_unique<OpenSim::Station>(*res.physicalFrame, locationInParent);
-        station->setName(to_string(stationEl.GetLabel()));
-        res.physicalFrame->addComponent(station.release());
+        if (flags & ModelCreationFlags::ExportStationsAsMarkers)
+        {
+            // export as markers in the model's markerset (overridden behavior)
+            auto marker = std::make_unique<OpenSim::Marker>(std::string{stationEl.GetLabel()}, *res.physicalFrame, locationInParent);
+            model.addMarker(marker.release());
+        }
+        else
+        {
+            // export as stations in the given frame (default behavior)
+            auto station = std::make_unique<OpenSim::Station>(*res.physicalFrame, locationInParent);
+            station->setName(to_string(stationEl.GetLabel()));
+            res.physicalFrame->addComponent(station.release());
+        }
     }
 
     // if there are no issues, returns a new OpenSim::Model created from the Modelgraph
     //
     // otherwise, returns nullptr and issuesOut will be populated with issue messages
-    std::unique_ptr<OpenSim::Model> CreateOpenSimModelFromModelGraph(ModelGraph const& mg,
+    std::unique_ptr<OpenSim::Model> CreateOpenSimModelFromModelGraph(
+        ModelGraph const& mg,
+        ModelCreationFlags flags,
         std::vector<std::string>& issuesOut)
     {
         if (GetModelGraphIssues(mg, issuesOut))
@@ -3574,7 +3616,7 @@ namespace
         // add stations into the model
         for (StationEl const& el : mg.iter<StationEl>())
         {
-            AddStationToModel(mg, *model, el, visitedBodies);
+            AddStationToModel(mg, flags, *model, el, visitedBodies);
         }
 
         // invalidate all properties, so that model.finalizeFromProperties() *must*
@@ -3923,7 +3965,7 @@ namespace
         {
             try
             {
-                m_MaybeOutputModel = CreateOpenSimModelFromModelGraph(GetModelGraph(), m_IssuesBuffer);
+                m_MaybeOutputModel = CreateOpenSimModelFromModelGraph(GetModelGraph(), m_ModelCreationFlags, m_IssuesBuffer);
             }
             catch (std::exception const& ex)
             {
@@ -3960,7 +4002,7 @@ namespace
 
             try
             {
-                m = CreateOpenSimModelFromModelGraph(GetModelGraph(), issues);
+                m = CreateOpenSimModelFromModelGraph(GetModelGraph(), m_ModelCreationFlags, issues);
             }
             catch (std::exception const& ex)
             {
@@ -5022,6 +5064,20 @@ namespace
         }
 
         //
+        // MODEL CREATION FLAGS
+        //
+
+        ModelCreationFlags GetModelCreationFlags() const
+        {
+            return m_ModelCreationFlags;
+        }
+
+        void SetModelCreationFlags(ModelCreationFlags newFlags)
+        {
+            m_ModelCreationFlags = newFlags;
+        }
+
+        //
         // SCENE ELEMENT STUFF (specific methods for specific scene element types)
         //
 
@@ -5353,6 +5409,9 @@ namespace
 
         // true if the implementation wants the host to open a new mesh importer
         bool m_NewTabRequested = false;
+
+        // changes how a model is created
+        ModelCreationFlags m_ModelCreationFlags = ModelCreationFlags::None;
     };
 }
 
@@ -7886,21 +7945,53 @@ private:
     void Draw3DViewerOverlayConvertToOpenSimModelButton()
     {
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
-        osc::PushStyleColor(ImGuiCol_Button, Color::darkGreen());
 
-        constexpr osc::CStringView text = "Convert to OpenSim Model " ICON_FA_ARROW_RIGHT;
+        constexpr osc::CStringView mainButtonText = "Convert to OpenSim Model " ICON_FA_ARROW_RIGHT;
+        constexpr osc::CStringView settingButtonText = ICON_FA_COG;
+        constexpr glm::vec2 spacingBetweenMainAndSettingsButtons = {1.0f, 0.0f};
         constexpr glm::vec2 margin = {25.0f, 35.0f};
-        glm::vec2 const buttonTopLeft = m_Shared->Get3DSceneRect().p2 - (osc::CalcButtonSize(text) + margin);
+
+        glm::vec2 const mainButtonDims = osc::CalcButtonSize(mainButtonText);
+        glm::vec2 const settingButtonDims = osc::CalcButtonSize(settingButtonText);
+        glm::vec2 const viewportBottomRight = m_Shared->Get3DSceneRect().p2;
+
+        glm::vec2 const buttonTopLeft =
+        {
+            viewportBottomRight.x - (margin.x + spacingBetweenMainAndSettingsButtons.x + settingButtonDims.x + mainButtonDims.x),
+            viewportBottomRight.y - (margin.y + mainButtonDims.y),
+        };
 
         ImGui::SetCursorScreenPos(buttonTopLeft);
-        if (ImGui::Button(text.c_str()))
+        osc::PushStyleColor(ImGuiCol_Button, Color::darkGreen());
+        if (ImGui::Button(mainButtonText.c_str()))
         {
             m_Shared->TryCreateOutputModel();
         }
-
         osc::PopStyleColor();
+
         ImGui::PopStyleVar();
         osc::DrawTooltipIfItemHovered("Convert current scene to an OpenSim Model", "This will attempt to convert the current scene into an OpenSim model, followed by showing the model in OpenSim Creator's OpenSim model editor screen.\n\nYour progress in this tab will remain untouched.");
+
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
+        ImGui::SameLine(0.0f, spacingBetweenMainAndSettingsButtons.x);
+        ImGui::Button(settingButtonText.c_str());
+        ImGui::PopStyleVar();
+
+        if (ImGui::BeginPopupContextItem("##settingspopup", ImGuiPopupFlags_MouseButtonLeft))
+        {
+            ModelCreationFlags const flags = m_Shared->GetModelCreationFlags();
+
+            {
+                bool v = flags & ModelCreationFlags::ExportStationsAsMarkers;
+                if (ImGui::Checkbox("Export Stations as Markers", &v))
+                {
+                    ModelCreationFlags const newFlags = v ?
+                        newFlags + ModelCreationFlags::ExportStationsAsMarkers :
+                        newFlags - ModelCreationFlags::ExportStationsAsMarkers;
+                    m_Shared->SetModelCreationFlags(newFlags);
+                }
+            }
+        }
     }
 
     void Draw3DViewerOverlay()

@@ -5,6 +5,8 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Added a settings editor next to the `Convert to OpenSim Model` that contains an `Export Stations as Markers`
+  option, which lets a user export any stations in the mesh importer scene as markers instead (#172)
 - Added an `Export` submenu when right-clicking a mesh in the mesh importer, which lets users re-export meshes
   w.r.t. another element in the mesh importer scene (#169)
 - Property editors for `Station`s, `PathPoint`s, and `PhysicalOffsetFrame`s now also display a user-editable
