@@ -20,6 +20,7 @@ All notable changes to this project will be documented here. The format is based
 - Internal: Added `osc::ParentPtr<T>`, for parent pointer lifetime management
 - Internal: The rendering API now supports rendering into cubemap render textures (#671)
 - Internal: Shaders in the `resources/` dir were reorganized according to purpose
+- Internal: `osc::WarpingTab` was renamed to `osc::MeshWarpingTab` (#725)
 
 
 ## [0.5.1] - 2023/07/27

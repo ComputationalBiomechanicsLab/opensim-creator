@@ -4,7 +4,7 @@
 #include "OpenSimCreator/Tabs/FrameDefinitionTab.hpp"
 #include "OpenSimCreator/Tabs/LoadingTab.hpp"
 #include "OpenSimCreator/Tabs/MeshImporterTab.hpp"
-#include "OpenSimCreator/Tabs/WarpingTab.hpp"
+#include "OpenSimCreator/Tabs/MeshWarpingTab.hpp"
 #include "OpenSimCreator/Utils/UndoableModelActions.hpp"
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
 
@@ -263,7 +263,7 @@ private:
         }
         if (ImGui::MenuItem(ICON_FA_CUBE " Mesh Warping"))
         {
-            m_Parent->addAndSelectTab<WarpingTab>(m_Parent);
+            m_Parent->addAndSelectTab<MeshWarpingTab>(m_Parent);
         }
     }
 

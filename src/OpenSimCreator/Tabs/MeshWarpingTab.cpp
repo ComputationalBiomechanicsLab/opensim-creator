@@ -1,4 +1,4 @@
-#include "WarpingTab.hpp"
+#include "MeshWarpingTab.hpp"
 
 #include "OpenSimCreator/Utils/TPS3D.hpp"
 #include "OpenSimCreator/Bindings/SimTKMeshLoader.hpp"
@@ -1304,7 +1304,7 @@ namespace
 namespace
 {
     // generic base class for the panels shown in the TPS3D tab
-    class WarpingTabPanel : public osc::StandardPanel {
+    class MeshWarpingTabPanel : public osc::StandardPanel {
     public:
         using osc::StandardPanel::StandardPanel;
 
@@ -1320,14 +1320,14 @@ namespace
     };
 
     // an "input" panel (i.e. source or destination mesh, before warping)
-    class TPS3DInputPanel final : public WarpingTabPanel {
+    class TPS3DInputPanel final : public MeshWarpingTabPanel {
     public:
         TPS3DInputPanel(
             std::string_view panelName_,
             std::shared_ptr<TPSUISharedState> state_,
             TPSDocumentInputIdentifier documentIdentifier_) :
 
-            WarpingTabPanel{panelName_, ImGuiDockNodeFlags_PassthruCentralNode},
+            MeshWarpingTabPanel{panelName_, ImGuiDockNodeFlags_PassthruCentralNode},
             m_State{std::move(state_)},
             m_DocumentIdentifier{documentIdentifier_}
         {
@@ -1721,14 +1721,14 @@ namespace
     };
 
     // a "result" panel (i.e. after applying a warp to the source)
-    class TPS3DResultPanel final : public WarpingTabPanel {
+    class TPS3DResultPanel final : public MeshWarpingTabPanel {
     public:
 
         TPS3DResultPanel(
             std::string_view panelName_,
             std::shared_ptr<TPSUISharedState> state_) :
 
-            WarpingTabPanel{panelName_},
+            MeshWarpingTabPanel{panelName_},
             m_State{std::move(state_)}
         {
             OSC_ASSERT(m_State != nullptr && "the input panel requires a valid sharedState state");
@@ -2005,7 +2005,7 @@ namespace
 }
 
 // top-level tab implementation
-class osc::WarpingTab::Impl final {
+class osc::MeshWarpingTab::Impl final {
 public:
 
     explicit Impl(ParentPtr<TabHost> const& parent_) : m_Parent{parent_}
@@ -2114,56 +2114,56 @@ private:
 
 // public API (PIMPL)
 
-osc::CStringView osc::WarpingTab::id() noexcept
+osc::CStringView osc::MeshWarpingTab::id() noexcept
 {
     return "OpenSim/Warping";
 }
 
-osc::WarpingTab::WarpingTab(ParentPtr<TabHost> const& parent_) :
+osc::MeshWarpingTab::MeshWarpingTab(ParentPtr<TabHost> const& parent_) :
     m_Impl{std::make_unique<Impl>(parent_)}
 {
 }
 
-osc::WarpingTab::WarpingTab(WarpingTab&&) noexcept = default;
-osc::WarpingTab& osc::WarpingTab::operator=(WarpingTab&&) noexcept = default;
-osc::WarpingTab::~WarpingTab() noexcept = default;
+osc::MeshWarpingTab::MeshWarpingTab(MeshWarpingTab&&) noexcept = default;
+osc::MeshWarpingTab& osc::MeshWarpingTab::operator=(MeshWarpingTab&&) noexcept = default;
+osc::MeshWarpingTab::~MeshWarpingTab() noexcept = default;
 
-osc::UID osc::WarpingTab::implGetID() const
+osc::UID osc::MeshWarpingTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::WarpingTab::implGetName() const
+osc::CStringView osc::MeshWarpingTab::implGetName() const
 {
     return m_Impl->getName();
 }
 
-void osc::WarpingTab::implOnMount()
+void osc::MeshWarpingTab::implOnMount()
 {
     m_Impl->onMount();
 }
 
-void osc::WarpingTab::implOnUnmount()
+void osc::MeshWarpingTab::implOnUnmount()
 {
     m_Impl->onUnmount();
 }
 
-bool osc::WarpingTab::implOnEvent(SDL_Event const& e)
+bool osc::MeshWarpingTab::implOnEvent(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
 }
 
-void osc::WarpingTab::implOnTick()
+void osc::MeshWarpingTab::implOnTick()
 {
     m_Impl->onTick();
 }
 
-void osc::WarpingTab::implOnDrawMainMenu()
+void osc::MeshWarpingTab::implOnDrawMainMenu()
 {
     m_Impl->onDrawMainMenu();
 }
 
-void osc::WarpingTab::implOnDraw()
+void osc::MeshWarpingTab::implOnDraw()
 {
     m_Impl->onDraw();
 }

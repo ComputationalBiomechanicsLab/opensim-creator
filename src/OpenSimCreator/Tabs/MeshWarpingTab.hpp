@@ -13,16 +13,16 @@ namespace osc { class TabHost; }
 
 namespace osc
 {
-    class WarpingTab final : public Tab {
+    class MeshWarpingTab final : public Tab {
     public:
         static CStringView id() noexcept;
 
-        explicit WarpingTab(ParentPtr<TabHost> const&);
-        WarpingTab(WarpingTab const&) = delete;
-        WarpingTab(WarpingTab&&) noexcept;
-        WarpingTab& operator=(WarpingTab const&) = delete;
-        WarpingTab& operator=(WarpingTab&&) noexcept;
-        ~WarpingTab() noexcept override;
+        explicit MeshWarpingTab(ParentPtr<TabHost> const&);
+        MeshWarpingTab(MeshWarpingTab const&) = delete;
+        MeshWarpingTab(MeshWarpingTab&&) noexcept;
+        MeshWarpingTab& operator=(MeshWarpingTab const&) = delete;
+        MeshWarpingTab& operator=(MeshWarpingTab&&) noexcept;
+        ~MeshWarpingTab() noexcept override;
 
     private:
         UID implGetID() const final;

@@ -127,6 +127,8 @@ add_library(OpenSimCreator STATIC
     Tabs/LoadingTab.hpp
     Tabs/MeshImporterTab.cpp
     Tabs/MeshImporterTab.hpp
+    Tabs/MeshWarpingTab.cpp
+    Tabs/MeshWarpingTab.hpp
     Tabs/ModelEditorTab.cpp
     Tabs/ModelEditorTab.hpp
     Tabs/PerformanceAnalyzerTab.cpp
@@ -135,8 +137,6 @@ add_library(OpenSimCreator STATIC
     Tabs/SimulatorTab.hpp
     Tabs/SplashTab.cpp
     Tabs/SplashTab.hpp
-    Tabs/WarpingTab.cpp
-    Tabs/WarpingTab.hpp
 
     Utils/OpenSimHelpers.cpp
     Utils/OpenSimHelpers.hpp
