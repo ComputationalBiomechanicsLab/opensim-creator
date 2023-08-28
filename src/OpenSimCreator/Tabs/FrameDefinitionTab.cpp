@@ -39,6 +39,7 @@
 #include <oscar/Panels/LogViewerPanel.hpp>
 #include <oscar/Panels/Panel.hpp>
 #include <oscar/Panels/PanelManager.hpp>
+#include <oscar/Panels/PerfPanel.hpp>
 #include <oscar/Panels/StandardPanel.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
@@ -2766,6 +2767,13 @@ public:
             [](std::string_view panelName)
             {
                 return std::make_shared<LogViewerPanel>(panelName);
+            }
+        );
+        m_PanelManager->registerToggleablePanel(
+            "Performance",
+            [](std::string_view panelName)
+            {
+                return std::make_shared<PerfPanel>(panelName);
             }
         );
         m_PanelManager->registerSpawnablePanel(
