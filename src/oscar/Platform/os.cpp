@@ -106,7 +106,7 @@ std::optional<std::filesystem::path> osc::PromptUserForFile(
     auto [path, result] = [&]()
     {
         nfdchar_t* ptr = nullptr;
-        nfdresult_t const result = NFD_OpenDialog(
+        nfdresult_t const res = NFD_OpenDialog(
             maybeCommaDelimitedExtensions ? maybeCommaDelimitedExtensions->c_str() : nullptr,
             maybeInitialDirectoryToOpen ? maybeInitialDirectoryToOpen->c_str() : nullptr,
             &ptr
@@ -114,7 +114,7 @@ std::optional<std::filesystem::path> osc::PromptUserForFile(
         return std::pair<std::unique_ptr<nfdchar_t, decltype(::free)*>, nfdresult_t>
         {
             std::unique_ptr<nfdchar_t, decltype(::free)*>{ptr, ::free},
-            result,
+            res,
         };
     }();
 
@@ -176,7 +176,7 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
     auto [path, result] = [&]()
     {
         nfdchar_t* ptr = nullptr;
-        nfdresult_t const result = NFD_SaveDialog(
+        nfdresult_t const res = NFD_SaveDialog(
             maybeExtension ? maybeExtension->c_str() : nullptr,
             maybeInitialDirectoryToOpen ? maybeInitialDirectoryToOpen->c_str() : nullptr,
             &ptr
@@ -184,7 +184,7 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
         return std::pair<std::unique_ptr<nfdchar_t, decltype(::free)*>, nfdresult_t>
         {
             std::unique_ptr<nfdchar_t, decltype(::free)*>{ptr, ::free},
-            result
+            res,
         };
     }();
 
@@ -274,7 +274,7 @@ void osc::WriteTracebackToLog(log::Level lvl)
 
     for (int i = 0; i < size; ++i)
     {
-        osc::log::log(lvl, "%s", messages[i]);
+        osc::log::log(lvl, "%s", messages.get()[i]);
     }
 }
 
@@ -330,7 +330,7 @@ static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
     /* skip first stack frame (points here) */
     for (int i = 1; i < size; ++i)
     {
-        std::cerr << "    #" << std::setw(2) << i << ' ' << messages[i] << '\n';
+        std::cerr << "    #" << std::setw(2) << i << ' ' << messages.get()[i] << '\n';
     }
 }
 
@@ -448,7 +448,7 @@ void osc::WriteTracebackToLog(log::Level lvl)
 
     for (int i = 0; i < size; ++i)
     {
-        osc::log::log(lvl, "%s", messages[i]);
+        osc::log::log(lvl, "%s", messages.get()[i]);
     }
 }
 
