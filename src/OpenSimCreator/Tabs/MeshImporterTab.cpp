@@ -3174,15 +3174,15 @@ namespace
 
     constexpr ModelCreationFlags operator+(ModelCreationFlags const& a, ModelCreationFlags const& b) noexcept
     {
-        auto aV = static_cast<std::underlying_type_t<ModelCreationFlags>>(a);
-        auto bV = static_cast<std::underlying_type_t<ModelCreationFlags>>(a);
+        auto const aV = static_cast<std::underlying_type_t<ModelCreationFlags>>(a);
+        auto const bV = static_cast<std::underlying_type_t<ModelCreationFlags>>(b);
         return static_cast<ModelCreationFlags>(aV | bV);
     }
 
     constexpr ModelCreationFlags operator-(ModelCreationFlags const& a, ModelCreationFlags const& b) noexcept
     {
-        auto aV = static_cast<std::underlying_type_t<ModelCreationFlags>>(a);
-        auto bV = static_cast<std::underlying_type_t<ModelCreationFlags>>(a);
+        auto const aV = static_cast<std::underlying_type_t<ModelCreationFlags>>(a);
+        auto const bV = static_cast<std::underlying_type_t<ModelCreationFlags>>(b);
         return static_cast<ModelCreationFlags>(aV & ~bV);
     }
 
@@ -7986,8 +7986,8 @@ private:
                 if (ImGui::Checkbox("Export Stations as Markers", &v))
                 {
                     ModelCreationFlags const newFlags = v ?
-                        newFlags + ModelCreationFlags::ExportStationsAsMarkers :
-                        newFlags - ModelCreationFlags::ExportStationsAsMarkers;
+                        flags + ModelCreationFlags::ExportStationsAsMarkers :
+                        flags - ModelCreationFlags::ExportStationsAsMarkers;
                     m_Shared->SetModelCreationFlags(newFlags);
                 }
             }

@@ -389,7 +389,7 @@ private:
         {
             DrawPathActuatorContextualParams(m_EditorAPI, m_Model, m_Path);
         }
-        else if (OpenSim::Point const* p = dynamic_cast<OpenSim::Point const*>(c))
+        else if (auto const* p = dynamic_cast<OpenSim::Point const*>(c))
         {
             DrawPointContextualActions(*m_Model, *p);
         }

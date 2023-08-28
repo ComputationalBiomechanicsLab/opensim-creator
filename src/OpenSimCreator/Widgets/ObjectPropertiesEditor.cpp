@@ -521,10 +521,10 @@ namespace
         public:
             ValueConverter(
                 float modelToEditedValueScaler_,
-                SimTK::Transform const& modelToEditedTransform_) :
+                SimTK::Transform  modelToEditedTransform_) :
 
                 m_ModelToEditedValueScaler{modelToEditedValueScaler_},
-                m_ModelToEditedTransform{modelToEditedTransform_}
+                m_ModelToEditedTransform{std::move(modelToEditedTransform_)}
             {
             }
 
@@ -598,7 +598,7 @@ namespace
             }
 
             OpenSim::Model const& model = m_Model->getModel();
-            OpenSim::Frame const* frame = osc::FindComponent<OpenSim::Frame>(model, *m_MaybeUserSelectedFrameAbsPath);
+            auto const* frame = osc::FindComponent<OpenSim::Frame>(model, *m_MaybeUserSelectedFrameAbsPath);
             return frame->getTransformInGround(m_Model->getState()).invert();
         }
 

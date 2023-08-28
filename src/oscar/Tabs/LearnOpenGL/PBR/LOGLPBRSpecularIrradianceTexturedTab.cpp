@@ -266,8 +266,8 @@ namespace
     }
 
     struct IBLSpecularObjectTextures final {
-        explicit IBLSpecularObjectTextures(std::filesystem::path const& dir_) :
-            dir{dir_}
+        explicit IBLSpecularObjectTextures(std::filesystem::path dir_) :
+            dir{std::move(dir_)}
         {
         }
 
