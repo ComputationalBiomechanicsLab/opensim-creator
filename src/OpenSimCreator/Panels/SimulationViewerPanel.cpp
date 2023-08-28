@@ -87,6 +87,8 @@ private:
                 ImGui::Separator();
                 ImGui::Dummy({0.0f, 3.0f});
 
+                // TODO: should match functionality of the editor (#722)
+
                 DrawSelectOwnerMenu(*m_Model, *selected);
                 DrawWatchOutputMenu(*m_API, *selected);
                 ImGui::EndPopup();
