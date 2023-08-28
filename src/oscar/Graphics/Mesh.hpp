@@ -5,6 +5,7 @@
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Utils/CopyOnUpdPtr.hpp"
 
+#include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -43,6 +44,7 @@ namespace osc
         void setVerts(nonstd::span<glm::vec3 const>);
         void transformVerts(std::function<void(nonstd::span<glm::vec3>)> const&);
         void transformVerts(Transform const&);
+        void transformVerts(glm::mat4 const&);
 
         nonstd::span<glm::vec3 const> getNormals() const;
         void setNormals(nonstd::span<glm::vec3 const>);

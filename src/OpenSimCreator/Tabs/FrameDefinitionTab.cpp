@@ -2366,6 +2366,9 @@ namespace
         std::shared_ptr<osc::UndoableModelStatePair> model,
         OpenSim::Mesh const& mesh)
     {
+        ImGui::TextDisabled("Format:");
+        ImGui::Separator();
+
         if (ImGui::BeginMenu(".obj"))
         {
             auto const onFrameMenuItemClicked = [model, &mesh](OpenSim::Frame const& frame)

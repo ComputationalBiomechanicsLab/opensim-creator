@@ -12,6 +12,8 @@
 #include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Bindings/ImGuizmoHelpers.hpp>
+#include <oscar/Formats/OBJ.hpp>
+#include <oscar/Formats/STL.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
@@ -7229,6 +7231,108 @@ private:
         }
     }
 
+    void ActionPromptUserToSaveMeshAsOBJ(
+        Mesh const& mesh)
+    {
+        // prompt user for a save location
+        std::optional<std::filesystem::path> const maybeUserSaveLocation =
+            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
+        if (!maybeUserSaveLocation)
+        {
+            return;  // user didn't select a save location
+        }
+        std::filesystem::path const& userSaveLocation = *maybeUserSaveLocation;
+
+        // write transformed mesh to output
+        std::ofstream outputFileStream
+        {
+            userSaveLocation,
+            std::ios_base::out | std::ios_base::trunc | std::ios_base::binary,
+        };
+        if (!outputFileStream)
+        {
+            std::string const error = osc::CurrentErrnoAsString();
+            osc::log::error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
+            return;
+        }
+
+        osc::WriteMeshAsObj(
+            outputFileStream,
+            mesh,
+            osc::ObjWriterFlags::NoWriteNormals
+        );
+    }
+
+    void ActionPromptUserToSaveMeshAsSTL(
+        Mesh const& mesh)
+    {
+        // prompt user for a save location
+        std::optional<std::filesystem::path> const maybeUserSaveLocation =
+            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
+        if (!maybeUserSaveLocation)
+        {
+            return;  // user didn't select a save location
+        }
+        std::filesystem::path const& userSaveLocation = *maybeUserSaveLocation;
+
+        // write transformed mesh to output
+        std::ofstream outputFileStream
+        {
+            userSaveLocation,
+            std::ios_base::out | std::ios_base::trunc | std::ios_base::binary,
+        };
+        if (!outputFileStream)
+        {
+            std::string const error = osc::CurrentErrnoAsString();
+            osc::log::error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
+            return;
+        }
+
+        osc::WriteMeshAsStl(outputFileStream, mesh);
+    }
+
+    void DrawSaveMeshMenu(MeshEl const& el)
+    {
+        if (ImGui::BeginMenu(ICON_FA_FILE_EXPORT " Export"))
+        {
+            ImGui::TextDisabled("With Respect to:");
+            ImGui::Separator();
+            for (SceneEl const& sceneEl : m_Shared->GetModelGraph().iter())
+            {
+                if (ImGui::BeginMenu(sceneEl.GetLabel().c_str()))
+                {
+                    ImGui::TextDisabled("Format:");
+                    ImGui::Separator();
+
+                    if (ImGui::MenuItem(".obj"))
+                    {
+                        osc::Transform const sceneElToGround = sceneEl.GetXform();
+                        osc::Transform const meshVertToGround = el.GetXform();
+                        glm::mat4 const meshVertToSceneElVert = osc::ToInverseMat4(sceneElToGround) * osc::ToMat4(meshVertToGround);
+
+                        Mesh mesh = el.getMeshData();
+                        mesh.transformVerts(meshVertToSceneElVert);
+                        ActionPromptUserToSaveMeshAsOBJ(mesh);
+                    }
+
+                    if (ImGui::MenuItem(".stl"))
+                    {
+                        osc::Transform const sceneElToGround = sceneEl.GetXform();
+                        osc::Transform const meshVertToGround = el.GetXform();
+                        glm::mat4 const meshVertToSceneElVert = osc::ToInverseMat4(sceneElToGround) * osc::ToMat4(meshVertToGround);
+
+                        Mesh mesh = el.getMeshData();
+                        mesh.transformVerts(meshVertToSceneElVert);
+                        ActionPromptUserToSaveMeshAsSTL(mesh);
+                    }
+
+                    ImGui::EndMenu();
+                }
+            }
+            ImGui::EndMenu();
+        }
+    }
+
     // draw context menu content for when user right-clicks nothing
     void DrawNothingContextMenuContent()
     {
@@ -7280,6 +7384,7 @@ private:
 
         DrawTranslateMenu(el);
         DrawReorientMenu(el);
+        DrawSaveMeshMenu(el);
         DrawReassignCrossrefMenu(el);
         DrawSceneElActions(el, clickPos);
     }
@@ -7409,9 +7514,9 @@ private:
 
         std::vector<ModelGraphCommit const*> commits;
         storage.ForEachCommitUnordered([&commits](ModelGraphCommit const& c)
-            {
-                commits.push_back(&c);
-            });
+        {
+            commits.push_back(&c);
+        });
 
         auto orderedByTime = [](ModelGraphCommit const* a, ModelGraphCommit const* b)
         {

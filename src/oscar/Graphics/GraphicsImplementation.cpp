@@ -3988,6 +3988,14 @@ public:
         }
     }
 
+    void transformVerts(glm::mat4 const& m)
+    {
+        for (glm::vec3& v : m_Vertices)
+        {
+            v = glm::vec3{m * glm::vec4{v, 1.0f}};
+        }
+    }
+
     nonstd::span<glm::vec3 const> getNormals() const
     {
         return m_Normals;
@@ -4453,6 +4461,11 @@ void osc::Mesh::transformVerts(std::function<void(nonstd::span<glm::vec3>)> cons
 void osc::Mesh::transformVerts(Transform const& t)
 {
     m_Impl.upd()->transformVerts(t);
+}
+
+void osc::Mesh::transformVerts(glm::mat4 const& m)
+{
+    m_Impl.upd()->transformVerts(m);
 }
 
 nonstd::span<glm::vec3 const> osc::Mesh::getNormals() const

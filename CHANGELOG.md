@@ -5,6 +5,8 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Added an `Export` submenu when right-clicking a mesh in the mesh importer, which lets users re-export meshes
+  w.r.t. another element in the mesh importer scene (#169)
 - Property editors for `Station`s, `PathPoint`s, and `PhysicalOffsetFrame`s now also display a user-editable
   "expressed in frame" dropdown, which lets users select which frame the `location`/`translation` properties
   of those components are edited in (#723)

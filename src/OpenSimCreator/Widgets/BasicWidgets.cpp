@@ -379,20 +379,19 @@ void osc::DrawWithRespectToMenuContainingMenuPerFrame(
     OpenSim::Component const& root,
     std::function<void(OpenSim::Frame const&)> const& onFrameMenuOpened)
 {
-    if (ImGui::BeginMenu("With Respect to"))
+    ImGui::TextDisabled("With Respect to:");
+    ImGui::Separator();
+
+    int imguiID = 0;
+    for (OpenSim::Frame const& frame : root.getComponentList<OpenSim::Frame>())
     {
-        int imguiID = 0;
-        for (OpenSim::Frame const& frame : root.getComponentList<OpenSim::Frame>())
+        ImGui::PushID(imguiID++);
+        if (ImGui::BeginMenu(frame.getName().c_str()))
         {
-            ImGui::PushID(imguiID++);
-            if (ImGui::BeginMenu(frame.getName().c_str()))
-            {
-                onFrameMenuOpened(frame);
-                ImGui::EndMenu();
-            }
-            ImGui::PopID();
+            onFrameMenuOpened(frame);
+            ImGui::EndMenu();
         }
-        ImGui::EndMenu();
+        ImGui::PopID();
     }
 }
 
@@ -400,19 +399,18 @@ void osc::DrawWithRespectToMenuContainingMenuItemPerFrame(
     OpenSim::Component const& root,
     std::function<void(OpenSim::Frame const&)> const& onFrameMenuItemClicked)
 {
-    if (ImGui::BeginMenu("With Respect to"))
+    ImGui::TextDisabled("With Respect to:");
+    ImGui::Separator();
+
+    int imguiID = 0;
+    for (OpenSim::Frame const& frame : root.getComponentList<OpenSim::Frame>())
     {
-        int imguiID = 0;
-        for (OpenSim::Frame const& frame : root.getComponentList<OpenSim::Frame>())
+        ImGui::PushID(imguiID++);
+        if (ImGui::MenuItem(frame.getName().c_str()))
         {
-            ImGui::PushID(imguiID++);
-            if (ImGui::MenuItem(frame.getName().c_str()))
-            {
-                onFrameMenuItemClicked(frame);
-            }
-            ImGui::PopID();
+            onFrameMenuItemClicked(frame);
         }
-        ImGui::EndMenu();
+        ImGui::PopID();
     }
 }
 
