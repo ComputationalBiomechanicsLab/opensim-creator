@@ -2,7 +2,6 @@
 
 #include "oscar/Platform/Log.hpp"
 #include "oscar/Utils/Assertions.hpp"
-#include "oscar/Utils/ScopeGuard.hpp"
 #include "oscar/Utils/StringHelpers.hpp"
 
 #include <nfd.h>
@@ -104,17 +103,25 @@ std::optional<std::filesystem::path> osc::PromptUserForFile(
     std::optional<CStringView> maybeCommaDelimitedExtensions,
     std::optional<CStringView> maybeInitialDirectoryToOpen)
 {
-    nfdchar_t* path = nullptr;
-    nfdresult_t const result = NFD_OpenDialog(
-        maybeCommaDelimitedExtensions ? maybeCommaDelimitedExtensions->c_str() : nullptr,
-        maybeInitialDirectoryToOpen ? maybeInitialDirectoryToOpen->c_str() : nullptr,
-        &path
-    );
-    ScopeGuard const g{[&path]() { if (path) { free(path); } }};
+    auto [path, result] = [&]()
+    {
+        nfdchar_t* ptr = nullptr;
+        nfdresult_t const result = NFD_OpenDialog(
+            maybeCommaDelimitedExtensions ? maybeCommaDelimitedExtensions->c_str() : nullptr,
+            maybeInitialDirectoryToOpen ? maybeInitialDirectoryToOpen->c_str() : nullptr,
+            &ptr
+        );
+        return std::pair<std::unique_ptr<nfdchar_t, decltype(::free)*>, nfdresult_t>
+        {
+            std::unique_ptr<nfdchar_t, decltype(::free)*>{ptr, ::free},
+            result,
+        };
+    }();
 
     if (path && result == NFD_OKAY)
     {
-        return std::filesystem::path{path};
+        static_assert(std::is_same_v<nfdchar_t, char>);
+        return std::filesystem::path{path.get()};
     }
     else
     {
@@ -166,22 +173,30 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
         OSC_ASSERT(!Contains(*maybeExtension, ',') && "can only provide one extension to this implementation!");
     }
 
-    nfdchar_t* path = nullptr;
-    nfdresult_t const result = NFD_SaveDialog(
-        maybeExtension ? maybeExtension->c_str() : nullptr,
-        maybeInitialDirectoryToOpen ? maybeInitialDirectoryToOpen->c_str() : nullptr,
-        &path
-    );
-    ScopeGuard const g{[&path]() { if (path) { free(path); }}};
+    auto [path, result] = [&]()
+    {
+        nfdchar_t* ptr = nullptr;
+        nfdresult_t const result = NFD_SaveDialog(
+            maybeExtension ? maybeExtension->c_str() : nullptr,
+            maybeInitialDirectoryToOpen ? maybeInitialDirectoryToOpen->c_str() : nullptr,
+            &ptr
+        );
+        return std::pair<std::unique_ptr<nfdchar_t, decltype(::free)*>, nfdresult_t>
+        {
+            std::unique_ptr<nfdchar_t, decltype(::free)*>{ptr, ::free},
+            result
+        };
+    }();
 
     if (result != NFD_OKAY)
     {
         return std::nullopt;
     }
 
-    std::filesystem::path p{path};
+    static_assert(std::is_same_v<nfdchar_t, char>);
+    std::filesystem::path p{path.get()};
 
-    if (maybeExtension && !CStrEndsWith(path, *maybeExtension))
+    if (maybeExtension && !CStrEndsWith(path.get(), *maybeExtension))
     {
         p += '.';
         p += std::string_view{*maybeExtension};
@@ -250,13 +265,12 @@ void osc::WriteTracebackToLog(log::Level lvl)
 {
     std::array<void*, 50> ary{};
     int const size = backtrace(ary.data(), ary.size());
-    char** const messages = backtrace_symbols(ary.data(), size);
+    std::unique_ptr<char*, decltype(::free)*> messages{backtrace_symbols(ary.data(), size), ::free};
 
-    if (messages == nullptr)
+    if (!messages)
     {
         return;
     }
-    osc::ScopeGuard g{[&messages]() { free(messages); }};
 
     for (int i = 0; i < size; ++i)
     {
@@ -307,13 +321,11 @@ static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
     int const size = backtrace(ary.data(), ary.size());
     ary[1] = callerAddress;  // overwrite sigaction with caller's address
 
-    char** const messages = backtrace_symbols(ary.data(), size);
-
-    if (messages == nullptr)
+    std::unique_ptr<char*, decltype(::free)*> const messages{backtrace_symbols(ary.data(), size), ::free};
+    if (!messages)
     {
         return;
     }
-    osc::ScopeGuard g{[&messages]() { free(messages); }};
 
     /* skip first stack frame (points here) */
     for (int i = 1; i < size; ++i)
@@ -427,13 +439,12 @@ void osc::WriteTracebackToLog(log::Level lvl)
 {
     void* array[50];
     int size = backtrace(array, 50);
-    char** messages = backtrace_symbols(array, size);
+    std::unique_ptr<char*, decltype(::free)*> messages{backtrace_symbols(array, size), ::free};
 
-    if (messages == nullptr)
+    if (!messages)
     {
         return;
     }
-    osc::ScopeGuard g{[&messages]() { free(messages); }};
 
     for (int i = 0; i < size; ++i)
     {
