@@ -15,7 +15,6 @@ Checks: >
   -modernize-use-trailing-return-type,
   -modernize-use-nodiscard,
   cppcoreguidelines-*,
-  -cppcoreguidelines-non-private-member-variables-in-classes,
   -cppcoreguidelines-pro-type-const-cast,
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-avoid-magic-numbers,

@@ -53,7 +53,6 @@
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <oscar/Widgets/LogViewer.hpp>
-#include <oscar/Widgets/SaveChangesPopup.hpp>
 #include <OscarConfiguration.hpp>
 
 #include <glm/mat3x3.hpp>
@@ -5220,6 +5219,56 @@ namespace
             e.Accept(visitor);
         }
 
+        //
+        // WINDOWS
+        //
+        enum PanelIndex_ {
+            PanelIndex_History = 0,
+            PanelIndex_Navigator,
+            PanelIndex_Log,
+            PanelIndex_Performance,
+            PanelIndex_COUNT,
+        };
+        size_t getNumToggleablePanels() const
+        {
+            return static_cast<size_t>(PanelIndex_COUNT);
+        }
+
+        osc::CStringView getNthPanelName(size_t n) const
+        {
+            return c_OpenedPanelNames[n];
+        }
+
+        bool isNthPanelEnabled(size_t n) const
+        {
+            return m_PanelStates[n];
+        }
+
+        void setNthPanelEnabled(size_t n, bool v)
+        {
+            m_PanelStates[n] = v;
+        }
+
+        bool isPanelEnabled(PanelIndex_ idx) const
+        {
+            return m_PanelStates[idx];
+        }
+
+        void setPanelEnabled(PanelIndex_ idx, bool v)
+        {
+            m_PanelStates[idx] = v;
+        }
+
+        osc::LogViewer& updLogViewer()
+        {
+            return m_Logviewer;
+        }
+
+        osc::PerfPanel& updPerfPanel()
+        {
+            return m_PerfPanel;
+        }
+
 
         //
         // TOP-LEVEL STUFF
@@ -5357,7 +5406,6 @@ namespace
         });
         static_assert(c_InteractivityFlagNames.size() == sizeof(decltype(m_InteractivityFlags))/sizeof(bool));
 
-    public:
         // WINDOWS
         //
         // these are runtime-editable flags that dictate which panels are open
@@ -5371,18 +5419,9 @@ namespace
             "Performance",
         });
         static_assert(c_OpenedPanelNames.size() == c_NumPanelStates);
-        enum PanelIndex_ {
-            PanelIndex_History = 0,
-            PanelIndex_Navigator,
-            PanelIndex_Log,
-            PanelIndex_Performance,
-            PanelIndex_COUNT,
-        };
+        static_assert(PanelIndex_COUNT == c_NumPanelStates);
         osc::LogViewer m_Logviewer;
         osc::PerfPanel m_PerfPanel{"Performance"};
-
-        std::optional<osc::SaveChangesPopup> m_MaybeSaveChangesPopup;
-    private:
 
         // scale factor for all non-mesh, non-overlay scene elements (e.g.
         // the floor, bodies)
@@ -6193,54 +6232,59 @@ public:
         }
 
         // draw history panel (if enabled)
-        if (m_Shared->m_PanelStates[SharedData::PanelIndex_History])
+        if (m_Shared->isPanelEnabled(SharedData::PanelIndex_History))
         {
-            if (ImGui::Begin("history", &m_Shared->m_PanelStates[SharedData::PanelIndex_History]))
+            bool v = true;
+            if (ImGui::Begin("history", &v))
             {
                 DrawHistoryPanelContent();
             }
             ImGui::End();
+
+            m_Shared->setPanelEnabled(SharedData::PanelIndex_History, v);
         }
 
         // draw navigator panel (if enabled)
-        if (m_Shared->m_PanelStates[SharedData::PanelIndex_Navigator])
+        if (m_Shared->isPanelEnabled(SharedData::PanelIndex_Navigator))
         {
-            if (ImGui::Begin("navigator", &m_Shared->m_PanelStates[SharedData::PanelIndex_Navigator]))
+            bool v = true;
+            if (ImGui::Begin("navigator", &v))
             {
                 DrawNavigatorPanelContent();
             }
             ImGui::End();
+
+            m_Shared->setPanelEnabled(SharedData::PanelIndex_Navigator, v);
         }
 
         // draw log panel (if enabled)
-        if (m_Shared->m_PanelStates[SharedData::PanelIndex_Log])
+        if (m_Shared->isPanelEnabled(SharedData::PanelIndex_Log))
         {
-            if (ImGui::Begin("Log", &m_Shared->m_PanelStates[SharedData::PanelIndex_Log], ImGuiWindowFlags_MenuBar))
+            bool v = true;
+            if (ImGui::Begin("Log", &v, ImGuiWindowFlags_MenuBar))
             {
-                m_Shared->m_Logviewer.onDraw();
+                m_Shared->updLogViewer().onDraw();
             }
             ImGui::End();
+
+            m_Shared->setPanelEnabled(SharedData::PanelIndex_Log, v);
         }
 
         // draw performance panel (if enabled)
-        if (m_Shared->m_PanelStates[SharedData::PanelIndex_Performance])
+        if (m_Shared->isPanelEnabled(SharedData::PanelIndex_Performance))
         {
-            m_Shared->m_PerfPanel.open();
-            m_Shared->m_PerfPanel.onDraw();
-            if (!m_Shared->m_PerfPanel.isOpen())
+            osc::PerfPanel& pp = m_Shared->updPerfPanel();
+
+            pp.open();
+            pp.onDraw();
+            if (!pp.isOpen())
             {
-                m_Shared->m_PanelStates[SharedData::PanelIndex_Performance] = false;
+                m_Shared->setPanelEnabled(SharedData::PanelIndex_Performance, false);
             }
         }
 
         // draw contextual 3D modal (if there is one), else: draw standard 3D viewer
         DrawMainViewerPanelOrModal();
-
-        // (maybe) draw popup modal
-        if (m_Shared->m_MaybeSaveChangesPopup)
-        {
-            m_Shared->m_MaybeSaveChangesPopup->onDraw();
-        }
     }
 
 private:
@@ -8322,11 +8366,12 @@ private:
 
         if (ImGui::BeginMenu("Window"))
         {
-            for (int i = 0; i < SharedData::PanelIndex_COUNT; ++i)
+            for (size_t i = 0; i < m_Shared->getNumToggleablePanels(); ++i)
             {
-                if (ImGui::MenuItem(SharedData::c_OpenedPanelNames[i], nullptr, m_Shared->m_PanelStates[i]))
+                bool isEnabled = m_Shared->isNthPanelEnabled(i);
+                if (ImGui::MenuItem(m_Shared->getNthPanelName(i).c_str(), nullptr, isEnabled))
                 {
-                    m_Shared->m_PanelStates[i] = !m_Shared->m_PanelStates[i];
+                    m_Shared->setNthPanelEnabled(i, !isEnabled);
                 }
             }
             ImGui::EndMenu();
