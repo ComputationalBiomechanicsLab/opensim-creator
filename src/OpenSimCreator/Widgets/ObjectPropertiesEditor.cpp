@@ -587,7 +587,7 @@ namespace
                 return std::nullopt;  // the property this editor is editing isn't a logically positional one
             }
 
-            std::optional<SimTK::Transform> const transform = osc::TryGetParentToGroundTransform(*component, m_Model->getState());
+            std::optional<SimTK::Transform> transform = osc::TryGetParentToGroundTransform(*component, m_Model->getState());
             if (!transform)
             {
                 return std::nullopt;  // the component doesn't have a logical position-to-ground transform
