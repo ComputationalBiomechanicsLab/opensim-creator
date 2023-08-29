@@ -5,7 +5,12 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
-- Added a clarifying `note` in Tutorial 1's documentation that asks users to try and use the `Brick` analytic geometry, rather than a mesh file like `brick.vtp` (#175)
+- The `Reassign Socket` popup now has a `Re-express $COMPONENT in chosen frame` checkbox, which users can
+  tick to prompt OSC to automatically recalculate what the location/position/orientation properties of the
+  component should be in the new frame, in the current scene state, such that it does not move or rotate. This
+  is handy for (e.g.) re-socketing muscle path points onto different bodies, changing joint topologies, etc. (#326)
+- Added a clarifying `note` in Tutorial 1's documentation that asks users to try and use the `Brick` analytic
+  geometry, rather than a mesh file like `brick.vtp` (#175)
 - Added the `Calculate` menu from the frame definition workflow to the OpenSim model editor and simulator
   workflows workflow, which means that users can calculate the position/orientation of a frame/point in an
   OpenSim model w.r.t. some other frame by right-clicking the element in the scene (#722)
