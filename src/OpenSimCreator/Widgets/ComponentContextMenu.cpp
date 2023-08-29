@@ -18,7 +18,6 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
-#include <oscar/Utils/ScopeGuard.hpp>
 #include <oscar/Widgets/StandardPopup.hpp>
 
 #include <IconsFontAwesome5.h>

@@ -44,7 +44,6 @@
 #include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/Perf.hpp>
-#include <oscar/Utils/ScopeGuard.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <oscar/Utils/UndoRedo.hpp>
 #include <oscar/Widgets/Popup.hpp>
