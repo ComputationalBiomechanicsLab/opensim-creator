@@ -26,7 +26,7 @@ namespace osc
         //       to handle it (e.g. mutexes) appropriately
         ForwardDynamicSimulator(
             BasicModelStatePair,
-            ForwardDynamicSimulatorParams const& params,
+            ForwardDynamicSimulatorParams const&,
             std::function<void(SimulationReport)> onReportFromBgThread
         );
         ForwardDynamicSimulator(ForwardDynamicSimulator const&) = delete;

@@ -537,9 +537,9 @@ glm::mat4 osc::EulerPerspectiveCamera::getViewMtx() const noexcept
     return glm::lookAt(pos, pos + getFront(), getUp());
 }
 
-glm::mat4 osc::EulerPerspectiveCamera::getProjMtx(float aspect_ratio) const noexcept
+glm::mat4 osc::EulerPerspectiveCamera::getProjMtx(float aspectRatio) const noexcept
 {
-    return glm::perspective(fov, aspect_ratio, znear, zfar);
+    return glm::perspective(fov, aspectRatio, znear, zfar);
 }
 
 
@@ -1346,11 +1346,11 @@ glm::mat4 osc::ToNormalMatrix4(glm::mat4 const& m) noexcept
     return ToNormalMatrix(m);
 }
 
-glm::mat4 osc::Dir1ToDir2Xform(glm::vec3 const& a, glm::vec3 const& b) noexcept
+glm::mat4 osc::Dir1ToDir2Xform(glm::vec3 const& dir1, glm::vec3 const& dir2) noexcept
 {
     // this is effectively a rewrite of glm::rotation(vec3 const&, vec3 const& dest);
 
-    float const cosTheta = glm::dot(a, b);
+    float const cosTheta = glm::dot(dir1, dir2);
 
     if(cosTheta >= static_cast<float>(1.0f) - std::numeric_limits<float>::epsilon())
     {
@@ -1367,11 +1367,11 @@ glm::mat4 osc::Dir1ToDir2Xform(glm::vec3 const& a, glm::vec3 const& b) noexcept
         // - there is no "ideal" rotation axis
         // - so we try "guessing" one and hope it's good (then try another if it isn't)
 
-        rotationAxis = glm::cross(glm::vec3{0.0f, 0.0f, 1.0f}, a);
+        rotationAxis = glm::cross(glm::vec3{0.0f, 0.0f, 1.0f}, dir1);
         if (glm::length2(rotationAxis) < std::numeric_limits<float>::epsilon())
         {
             // bad luck: they were parallel - use a different axis
-            rotationAxis = glm::cross(glm::vec3{1.0f, 0.0f, 0.0f}, a);
+            rotationAxis = glm::cross(glm::vec3{1.0f, 0.0f, 0.0f}, dir1);
         }
 
         theta = osc::fpi;
@@ -1380,7 +1380,7 @@ glm::mat4 osc::Dir1ToDir2Xform(glm::vec3 const& a, glm::vec3 const& b) noexcept
     else
     {
         theta = glm::acos(cosTheta);
-        rotationAxis = glm::normalize(glm::cross(a, b));
+        rotationAxis = glm::normalize(glm::cross(dir1, dir2));
     }
 
     return glm::rotate(glm::mat4{1.0f}, theta, rotationAxis);
@@ -1400,17 +1400,17 @@ glm::vec3 osc::ExtractEulerAngleXYZ(glm::mat4 const& m) noexcept
     return v;
 }
 
-glm::vec2 osc::TopleftRelPosToNDCPoint(glm::vec2 p)
+glm::vec2 osc::TopleftRelPosToNDCPoint(glm::vec2 relpos)
 {
-    p.y = 1.0f - p.y;
-    return 2.0f*p - 1.0f;
+    relpos.y = 1.0f - relpos.y;
+    return 2.0f*relpos - 1.0f;
 }
 
-glm::vec2 osc::NDCPointToTopLeftRelPos(glm::vec2 p)
+glm::vec2 osc::NDCPointToTopLeftRelPos(glm::vec2 ndcPos)
 {
-    p = (p + 1.0f) * 0.5f;
-    p.y = 1.0f - p.y;
-    return p;
+    ndcPos = (ndcPos + 1.0f) * 0.5f;
+    ndcPos.y = 1.0f - ndcPos.y;
+    return ndcPos;
 }
 
 glm::vec4 osc::TopleftRelPosToNDCCube(glm::vec2 relpos)
@@ -1420,7 +1420,7 @@ glm::vec4 osc::TopleftRelPosToNDCCube(glm::vec2 relpos)
 
 osc::Line osc::PerspectiveUnprojectTopLeftScreenPosToWorldRay(
     glm::vec2 relpos,
-    glm::vec3 cameraWorldspaceLocation,
+    glm::vec3 cameraWorldspaceOrigin,
     glm::mat4 const& viewMatrix,
     glm::mat4 const& projMatrix)
 {
@@ -1434,7 +1434,7 @@ osc::Line osc::PerspectiveUnprojectTopLeftScreenPosToWorldRay(
     glm::vec3 lineOriginWorld = glm::vec3{glm::inverse(viewMatrix) * lineOriginView};
 
     // direction vector from camera to mouse location (i.e. the projection)
-    glm::vec3 lineDirWorld = glm::normalize(lineOriginWorld - cameraWorldspaceLocation);
+    glm::vec3 lineDirWorld = glm::normalize(lineOriginWorld - cameraWorldspaceOrigin);
 
     Line rv{};
     rv.dir = lineDirWorld;

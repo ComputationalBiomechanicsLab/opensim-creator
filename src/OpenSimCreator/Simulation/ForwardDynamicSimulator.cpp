@@ -59,10 +59,10 @@ namespace
     public:
         SimulatorThreadInput(osc::BasicModelStatePair modelState,
                              osc::ForwardDynamicSimulatorParams const& params,
-                             std::function<void(osc::SimulationReport)> reportCallback) :
+                             std::function<void(osc::SimulationReport)> onReportFromBgThread) :
             m_ModelState{std::move(modelState)},
             m_Params{params},
-            m_ReportCallback{std::move(reportCallback)}
+            m_ReportCallback{std::move(onReportFromBgThread)}
         {
         }
 
@@ -400,7 +400,7 @@ class osc::ForwardDynamicSimulator::Impl final {
 public:
     Impl(BasicModelStatePair modelState,
         ForwardDynamicSimulatorParams const& params,
-        std::function<void(SimulationReport)> reportCallback) :
+        std::function<void(SimulationReport)> onReportFromBgThread) :
 
         m_SimulationParams{params},
         m_Shared{std::make_shared<SharedState>()},
@@ -409,7 +409,7 @@ public:
             FdSimulationMain,
             std::make_unique<SimulatorThreadInput>(std::move(modelState),
                                                    params,
-                                                   std::move(reportCallback)),
+                                                   std::move(onReportFromBgThread)),
             m_Shared
         }
     {
@@ -455,10 +455,12 @@ osc::OutputExtractor osc::GetFdSimulatorOutputExtractor(int idx)
     return GetSimulatorOutputExtractors().at(static_cast<size_t>(idx));
 }
 
-osc::ForwardDynamicSimulator::ForwardDynamicSimulator(BasicModelStatePair msp,
-                                ForwardDynamicSimulatorParams const& params,
-                                std::function<void(SimulationReport)> reportCallback) :
-    m_Impl{std::make_unique<Impl>(std::move(msp), params, std::move(reportCallback))}
+osc::ForwardDynamicSimulator::ForwardDynamicSimulator(
+    BasicModelStatePair msp,
+    ForwardDynamicSimulatorParams const& params,
+    std::function<void(SimulationReport)> onReportFromBgThread) :
+
+    m_Impl{std::make_unique<Impl>(std::move(msp), params, std::move(onReportFromBgThread))}
 {
 }
 

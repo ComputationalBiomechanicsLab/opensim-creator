@@ -33,7 +33,7 @@ namespace osc
     bool CStrEndsWith(CStringView, std::string_view suffix);
 
     // returns true if `str` contains `c`
-    bool Contains(CStringView, char e);
+    bool Contains(CStringView, char c);
 
     template<typename T>
     inline std::string StreamToString(T const& v)

@@ -534,7 +534,7 @@ std::vector<OpenSim::AbstractSocket*> osc::UpdAllSockets(OpenSim::Component& c)
 }
 
 OpenSim::Component const* osc::FindComponent(
-    OpenSim::Component const& c,
+    OpenSim::Component const& root,
     OpenSim::ComponentPath const& cp)
 {
     if (IsEmpty(cp))
@@ -544,7 +544,7 @@ OpenSim::Component const* osc::FindComponent(
 
     try
     {
-        return &c.getComponent(cp);
+        return &root.getComponent(cp);
     }
     catch (OpenSim::Exception const&)
     {
@@ -560,10 +560,10 @@ OpenSim::Component const* osc::FindComponent(
 }
 
 OpenSim::Component* osc::FindComponentMut(
-    OpenSim::Component& c,
+    OpenSim::Component& root,
     OpenSim::ComponentPath const& cp)
 {
-    return const_cast<OpenSim::Component*>(FindComponent(c, cp));
+    return const_cast<OpenSim::Component*>(FindComponent(root, cp));
 }
 
 bool osc::ContainsComponent(

@@ -720,9 +720,9 @@ void osc::DrawHelpMarker(CStringView desc)
     DrawTooltipIfItemHovered(desc);
 }
 
-bool osc::InputString(CStringView label, std::string& s, ImGuiInputTextFlags flags)
+bool osc::InputString(CStringView label, std::string& editedString, ImGuiInputTextFlags flags)
 {
-    return ImGui::InputText(label.c_str(), &s, flags);  // uses `imgui_stdlib`
+    return ImGui::InputText(label.c_str(), &editedString, flags);  // uses `imgui_stdlib`
 }
 
 bool osc::InputMetersFloat(CStringView label, float& v, float step, float step_fast, ImGuiInputTextFlags flags)

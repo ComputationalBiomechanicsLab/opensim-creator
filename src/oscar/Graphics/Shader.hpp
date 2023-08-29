@@ -25,7 +25,7 @@ namespace osc
         Shader(
             CStringView vertexShader,
             CStringView geometryShader,
-            CStringView fragmmentShader
+            CStringView fragmentShader
         );
         Shader(Shader const&);
         Shader(Shader&&) noexcept;

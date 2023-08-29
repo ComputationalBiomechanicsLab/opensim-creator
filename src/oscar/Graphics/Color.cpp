@@ -23,27 +23,27 @@
 //
 // (because I am a lazy bastard)
 
-float osc::ToLinear(float srgb) noexcept
+float osc::ToLinear(float colorChannelValue) noexcept
 {
-    if (srgb <= 0.04045f)
+    if (colorChannelValue <= 0.04045f)
     {
-        return srgb / 12.92f;
+        return colorChannelValue / 12.92f;
     }
     else
     {
-        return std::pow((srgb + 0.055f) / 1.055f, 2.4f);
+        return std::pow((colorChannelValue + 0.055f) / 1.055f, 2.4f);
     }
 }
 
-float osc::ToSRGB(float linear) noexcept
+float osc::ToSRGB(float colorChannelValue) noexcept
 {
-    if (linear <= 0.0031308f)
+    if (colorChannelValue <= 0.0031308f)
     {
-        return linear * 12.92f;
+        return colorChannelValue * 12.92f;
     }
     else
     {
-        return std::pow(linear, 1.0f/2.4f)*1.055f - 0.055f;
+        return std::pow(colorChannelValue, 1.0f/2.4f)*1.055f - 0.055f;
     }
 }
 

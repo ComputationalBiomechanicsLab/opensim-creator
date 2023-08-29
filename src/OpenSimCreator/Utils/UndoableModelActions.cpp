@@ -1344,7 +1344,10 @@ bool osc::ActionAddComponentToModel(UndoableModelStatePair& model, std::unique_p
     }
 }
 
-bool osc::ActionSetCoordinateSpeed(UndoableModelStatePair& model, OpenSim::Coordinate const& coord, double v)
+bool osc::ActionSetCoordinateSpeed(
+    UndoableModelStatePair& model,
+    OpenSim::Coordinate const& coord,
+    double newSpeed)
 {
     OpenSim::ComponentPath const coordPath = osc::GetAbsolutePath(coord);
 
@@ -1362,8 +1365,8 @@ bool osc::ActionSetCoordinateSpeed(UndoableModelStatePair& model, OpenSim::Coord
 
         // HACK: don't do a full model+state re-realization here: only do it
         //       when the caller wants to save the coordinate change
-        mutCoord->setDefaultSpeedValue(v);
-        mutCoord->setSpeedValue(mutModel.updWorkingState(), v);
+        mutCoord->setDefaultSpeedValue(newSpeed);
+        mutCoord->setSpeedValue(mutModel.updWorkingState(), newSpeed);
         mutModel.equilibrateMuscles(mutModel.updWorkingState());
         mutModel.realizeDynamics(mutModel.updWorkingState());
 
@@ -1377,9 +1380,12 @@ bool osc::ActionSetCoordinateSpeed(UndoableModelStatePair& model, OpenSim::Coord
     }
 }
 
-bool osc::ActionSetCoordinateSpeedAndSave(UndoableModelStatePair& model, OpenSim::Coordinate const& coord, double v)
+bool osc::ActionSetCoordinateSpeedAndSave(
+    UndoableModelStatePair& model,
+    OpenSim::Coordinate const& coord,
+    double newSpeed)
 {
-    if (ActionSetCoordinateSpeed(model, coord, v))
+    if (ActionSetCoordinateSpeed(model, coord, newSpeed))
     {
         OpenSim::Model& mutModel = model.updModel();
         osc::InitializeModel(mutModel);
@@ -1434,7 +1440,10 @@ bool osc::ActionSetCoordinateLockedAndSave(UndoableModelStatePair& model, OpenSi
 }
 
 // set the value of a coordinate, but don't save it to the model (yet)
-bool osc::ActionSetCoordinateValue(UndoableModelStatePair& model, OpenSim::Coordinate const& coord, double v)
+bool osc::ActionSetCoordinateValue(
+    UndoableModelStatePair& model,
+    OpenSim::Coordinate const& coord,
+    double newValue)
 {
     OpenSim::ComponentPath const coordPath = osc::GetAbsolutePath(coord);
 
@@ -1453,7 +1462,7 @@ bool osc::ActionSetCoordinateValue(UndoableModelStatePair& model, OpenSim::Coord
         double const rangeMin = std::min(mutCoord->getRangeMin(), mutCoord->getRangeMax());
         double const rangeMax = std::max(mutCoord->getRangeMin(), mutCoord->getRangeMax());
 
-        if (!(rangeMin <= v && v <= rangeMax))
+        if (!(rangeMin <= newValue && newValue <= rangeMax))
         {
             model.setModelVersion(oldVersion);  // the requested edit is outside the coordinate's allowed range
             return false;
@@ -1461,8 +1470,8 @@ bool osc::ActionSetCoordinateValue(UndoableModelStatePair& model, OpenSim::Coord
 
         // HACK: don't do a full model+state re-realization here: only do it
         //       when the caller wants to save the coordinate change
-        mutCoord->setDefaultValue(v);
-        mutCoord->setValue(mutModel.updWorkingState(), v);
+        mutCoord->setDefaultValue(newValue);
+        mutCoord->setValue(mutModel.updWorkingState(), newValue);
         mutModel.equilibrateMuscles(mutModel.updWorkingState());
         mutModel.realizeDynamics(mutModel.updWorkingState());
 
@@ -1477,9 +1486,12 @@ bool osc::ActionSetCoordinateValue(UndoableModelStatePair& model, OpenSim::Coord
 }
 
 // set the value of a coordinate and ensure it is saved into the model
-bool osc::ActionSetCoordinateValueAndSave(UndoableModelStatePair& model, OpenSim::Coordinate const& coord, double v)
+bool osc::ActionSetCoordinateValueAndSave(
+    UndoableModelStatePair& model,
+    OpenSim::Coordinate const& coord,
+    double newValue)
 {
-    if (ActionSetCoordinateValue(model, coord, v))
+    if (ActionSetCoordinateValue(model, coord, newValue))
     {
         OpenSim::Model& mutModel = model.updModel();
 
@@ -1500,7 +1512,7 @@ bool osc::ActionSetCoordinateValueAndSave(UndoableModelStatePair& model, OpenSim
         osc::InitializeState(mutModel);
 
         std::stringstream ss;
-        ss << "set " << coord.getName() << " to " << osc::ConvertCoordValueToDisplayValue(coord, v);
+        ss << "set " << coord.getName() << " to " << osc::ConvertCoordValueToDisplayValue(coord, newValue);
         model.commit(std::move(ss).str());
 
         return true;
@@ -1511,7 +1523,10 @@ bool osc::ActionSetCoordinateValueAndSave(UndoableModelStatePair& model, OpenSim
     }
 }
 
-bool osc::ActionSetComponentAndAllChildrensIsVisibleTo(UndoableModelStatePair& model, OpenSim::ComponentPath const& path, bool visible)
+bool osc::ActionSetComponentAndAllChildrensIsVisibleTo(
+    UndoableModelStatePair& model,
+    OpenSim::ComponentPath const& path,
+    bool newVisibility)
 {
     UID const oldVersion = model.getModelVersion();
     try
@@ -1525,18 +1540,18 @@ bool osc::ActionSetComponentAndAllChildrensIsVisibleTo(UndoableModelStatePair& m
             return false;
         }
 
-        TrySetAppearancePropertyIsVisibleTo(*mutComponent, visible);
+        TrySetAppearancePropertyIsVisibleTo(*mutComponent, newVisibility);
 
         for (OpenSim::Component& c : mutComponent->updComponentList())
         {
-            TrySetAppearancePropertyIsVisibleTo(c, visible);
+            TrySetAppearancePropertyIsVisibleTo(c, newVisibility);
         }
 
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
 
         std::stringstream ss;
-        ss << "set " << path.getComponentName() << " visibility to " << visible;
+        ss << "set " << path.getComponentName() << " visibility to " << newVisibility;
         model.commit(std::move(ss).str());
 
         return true;
