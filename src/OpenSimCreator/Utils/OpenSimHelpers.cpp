@@ -1538,11 +1538,7 @@ std::optional<SimTK::Transform> osc::TryGetParentToGroundTransform(
     }
 }
 
-// tries to get the name of the "positional" property of the given component
-//
-// e.g. the positional property of an `OpenSim::Station` is "location", whereas the
-//      positional property of an `OpenSim::PhysicalOffsetFrame` is "translation"
-std::optional<std::string_view> osc::TryGetPositionalPropertyName(
+std::optional<std::string> osc::TryGetPositionalPropertyName(
     OpenSim::Component const& component)
 {
     if (auto const* station = dynamic_cast<OpenSim::Station const*>(&component))
@@ -1561,4 +1557,36 @@ std::optional<std::string_view> osc::TryGetPositionalPropertyName(
     {
         return std::nullopt;
     }
+}
+
+std::optional<std::string> osc::TryGetOrientationalPropertyName(
+    OpenSim::Component const& component)
+{
+    if (auto const* pof = dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&component))
+    {
+        return pof->getProperty_orientation().getName();
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+
+std::optional<osc::ComponentSpatialRepresentation> osc::TryGetSpatialRepresentation(
+    OpenSim::Component const& component,
+    SimTK::State const& state)
+{
+    if (auto xform = TryGetParentToGroundTransform(component, state))
+    {
+        if (auto posProp = TryGetPositionalPropertyName(component))
+        {
+            return ComponentSpatialRepresentation
+            {
+                *xform,
+                std::move(posProp).value(),
+                TryGetOrientationalPropertyName(component)
+            };
+        }
+    }
+    return std::nullopt;
 }

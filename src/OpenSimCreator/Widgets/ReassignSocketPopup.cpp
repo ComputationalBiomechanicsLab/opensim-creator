@@ -12,12 +12,14 @@
 #include <glm/vec2.hpp>
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
-#include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Common/ComponentList.h>
+#include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Common/ComponentSocket.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <memory>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -33,13 +35,13 @@ namespace
             std::string socketName_) :
 
             modelVersion{modelVersion_},
-            path{std::move(path_)},
+            componentPath{std::move(path_)},
             socketName{std::move(socketName_)}
         {
         }
 
         osc::UID modelVersion;
-        OpenSim::ComponentPath path;
+        OpenSim::ComponentPath componentPath;
         std::string socketName;
         std::string search;
     };
@@ -48,7 +50,7 @@ namespace
     {
         return
             a.modelVersion == b.modelVersion &&
-            a.path == b.path &&
+            a.componentPath == b.componentPath &&
             a.socketName == b.socketName &&
             a.search == b.search;
     }
@@ -76,7 +78,7 @@ namespace
     {
         std::vector<ConnecteeOption> rv;
 
-        OpenSim::Component const* component = osc::FindComponent(model, params.path);
+        OpenSim::Component const* component = osc::FindComponent(model, params.componentPath);
         if (!component)
         {
             return rv;   // component isn't in model?
@@ -140,7 +142,7 @@ private:
         }
 
         // check: ensure the "from" side of the socket still exists
-        OpenSim::Component const* component = osc::FindComponent(m_Model->getModel(), m_Params.path);
+        OpenSim::Component const* component = osc::FindComponent(m_Model->getModel(), m_Params.componentPath);
         if (!component)
         {
             requestClose();
@@ -185,6 +187,9 @@ private:
             ImGui::TextWrapped("%s", m_Error.c_str());
         }
 
+        // add ability to re-express a component in a new frame (#326)
+        tryDrawReexpressPropertyInFrameCheckbox(*component, *socket);
+
         if (ImGui::Button("Cancel"))
         {
             requestClose();
@@ -194,8 +199,13 @@ private:
         // if the user selected something, try to form the connection in the active model
         if (userSelection)
         {
+            SocketReassignmentFlags const flags = m_TryReexpressInDifferentFrame ?
+                SocketReassignmentFlags::TryReexpressComponentInNewConnectee :
+                SocketReassignmentFlags::None;
+
             OpenSim::Component const* selected = osc::FindComponent(m_Model->getModel(), *userSelection);
-            if (selected && osc::ActionReassignComponentSocket(*m_Model, m_Params.path, m_Params.socketName, *selected, m_Error))
+
+            if (selected && osc::ActionReassignComponentSocket(*m_Model, m_Params.componentPath, m_Params.socketName, *selected, flags, m_Error))
             {
                 requestClose();
                 return;
@@ -209,11 +219,46 @@ private:
         m_Error.clear();
     }
 
+    void tryDrawReexpressPropertyInFrameCheckbox(
+        OpenSim::Component const& component,
+        OpenSim::AbstractSocket const& abstractSocket)
+    {
+        std::string const label = [&component]()
+        {
+            std::stringstream ss;
+            ss << "Re-express " << component.getName() << " in chosen frame";
+            return std::move(ss).str();
+        }();
+
+        auto const* const physFrameSocket =
+            dynamic_cast<OpenSim::Socket<OpenSim::PhysicalFrame> const*>(&abstractSocket);
+        if (!physFrameSocket)
+        {
+            bool v = false;
+            ImGui::Checkbox(label.c_str(), &v);
+            DrawTooltipBodyOnlyIfItemHovered("Disabled: the socket doesn't connect to a physical frame");
+            return;
+        }
+
+        auto const componentSpatialRepresentation =
+            osc::TryGetSpatialRepresentation(component, m_Model->getState());
+        if (!componentSpatialRepresentation)
+        {
+            bool v = false;
+            ImGui::Checkbox(label.c_str(), &v);
+            DrawTooltipBodyOnlyIfItemHovered("Disabled: the component doesn't have a spatial representation that OSC knows how to re-express");
+            return;
+        }
+
+        ImGui::Checkbox(label.c_str(), &m_TryReexpressInDifferentFrame);
+    }
+
     std::shared_ptr<UndoableModelStatePair> m_Model;
     PopupParams m_Params;
     PopupParams m_EditedParams = m_Params;
     std::vector<ConnecteeOption> m_Options = GenerateSelectionOptions(m_Model->getModel(), m_EditedParams);
     std::string m_Error;
+    bool m_TryReexpressInDifferentFrame = false;
 };
 
 

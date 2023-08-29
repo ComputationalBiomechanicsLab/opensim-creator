@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <type_traits>
 
 namespace OpenSim { class Component; }
 namespace OpenSim { class ComponentPath; }
@@ -227,12 +228,24 @@ namespace osc
         OpenSim::ComponentPath const& pointPhysFrame
     );
 
+    // flags for reassignment
+    enum class SocketReassignmentFlags {
+        None,
+        TryReexpressComponentInNewConnectee,
+    };
+    constexpr bool operator&(SocketReassignmentFlags a, SocketReassignmentFlags b) noexcept
+    {
+        using Underlying = std::underlying_type_t<SocketReassignmentFlags>;
+        return static_cast<Underlying>(a) & static_cast<Underlying>(b);
+    }
+
     // attempts to reassign a component's socket connection (returns false and writes to `error` on failure)
     bool ActionReassignComponentSocket(
         UndoableModelStatePair&,
         OpenSim::ComponentPath const& componentAbsPath,
         std::string const& socketName,
         OpenSim::Object const& connectee,
+        SocketReassignmentFlags flags,
         std::string& error
     );
 

@@ -174,6 +174,46 @@ namespace
 
         return copy;
     }
+
+    bool TryReexpressComponentSpatialPropertiesInNewConnectee(
+        OpenSim::Component& component,
+        OpenSim::Object const& newConnectee,
+        SimTK::State const& state)
+    {
+        auto const* const newFrame = dynamic_cast<OpenSim::Frame const*>(&newConnectee);
+        if (!newFrame)
+        {
+            return false;  // new connectee isn't a frame
+        }
+
+        auto const spatialRep = osc::TryGetSpatialRepresentation(component, state);
+        if (!spatialRep)
+        {
+            return false;  // cannot represent the component spatially
+        }
+
+        SimTK::Transform const currentParentToGround = spatialRep->parentToGround;
+        SimTK::Transform const groundToNewConnectee = newFrame->getTransformInGround(state).invert();
+        SimTK::Transform const currentParentToNewConnectee = groundToNewConnectee * currentParentToGround;
+
+        if (auto* positionalProp = osc::FindSimplePropertyMut<SimTK::Vec3>(component, spatialRep->locationVec3PropertyName))
+        {
+            SimTK::Vec3 const oldPosition = positionalProp->getValue();
+            SimTK::Vec3 const newPosition = currentParentToNewConnectee * oldPosition;
+
+            positionalProp->setValue(newPosition);  // update property with new position
+        }
+
+        if (spatialRep->maybeOrientationVec3EulersPropertyName)
+        {
+            if (auto const* orientationalProp = osc::FindSimplePropertyMut<SimTK::Vec3>(component, *spatialRep->maybeOrientationVec3EulersPropertyName))
+            {
+                // TODO: update it
+            }
+        }
+
+        return true;
+    }
 }
 
 void osc::ActionSaveCurrentModelAs(UndoableModelStatePair& uim)
@@ -1129,14 +1169,9 @@ bool osc::ActionReassignComponentSocket(
     OpenSim::ComponentPath const& componentAbsPath,
     std::string const& socketName,
     OpenSim::Object const& connectee,
+    SocketReassignmentFlags flags,
     std::string& error)
 {
-    OpenSim::Component const* const target = osc::FindComponent(uim.getModel(), componentAbsPath);
-    if (!target)
-    {
-        return false;
-    }
-
     // HOTFIX for #382
     //
     // OpenSim can segfault if certain types of circular joint connections to `/ground` are made.
@@ -1146,6 +1181,12 @@ bool osc::ActionReassignComponentSocket(
     if (socketName == "child_frame" && &connectee == &uim.getModel().getGround())
     {
         error = "Error: you cannot assign a joint's child frame to ground: this is a known bug in OpenSim (see issue #382 in ComputationalBiomechanicsLab/opensim-creator and issue #3299 in opensim-org/opensim-core)";
+        return false;
+    }
+
+    OpenSim::Component const* const target = osc::FindComponent(uim.getModel(), componentAbsPath);
+    if (!target)
+    {
         return false;
     }
 
@@ -1169,6 +1210,14 @@ bool osc::ActionReassignComponentSocket(
 
     try
     {
+        bool const componentPropertiesReexpressed = flags & SocketReassignmentFlags::TryReexpressComponentInNewConnectee ?
+            TryReexpressComponentSpatialPropertiesInNewConnectee(*mutComponent, connectee, uim.getState()) :
+            false;
+
+        if (componentPropertiesReexpressed)
+        {
+            mutModel.finalizeFromProperties();
+        }
         mutSocket->connect(connectee);
         mutModel.finalizeConnections();
         osc::InitializeModel(mutModel);

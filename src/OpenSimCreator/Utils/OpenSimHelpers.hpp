@@ -14,7 +14,6 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -34,6 +33,7 @@ namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
 namespace OpenSim { class ModelComponent; }
 namespace OpenSim { class Muscle; }
+namespace OpenSim { template<typename T> class SimpleProperty; }
 namespace osc { class UndoableModelStatePair; }
 namespace SimTK { class State; }
 
@@ -289,6 +289,15 @@ namespace osc
         std::string const&
     );
 
+    // returns a pointer to the property if the component has a simple property with the given name and type
+    template<typename T>
+    OpenSim::SimpleProperty<T>* FindSimplePropertyMut(
+        OpenSim::Component& c,
+        std::string const& name)
+    {
+        return dynamic_cast<OpenSim::SimpleProperty<T>*>(FindPropertyMut(c, name));
+    }
+
     // returns non-nullptr if an `AbstractOutput` with the given name is attached to the given component
     OpenSim::AbstractOutput const* FindOutput(
         OpenSim::Component const&,
@@ -526,5 +535,30 @@ namespace osc
     //
     // e.g. the positional property of an `OpenSim::Station` is "location", whereas the
     //      positional property of an `OpenSim::PhysicalOffsetFrame` is "translation"
-    std::optional<std::string_view> TryGetPositionalPropertyName(OpenSim::Component const&);
+    std::optional<std::string> TryGetPositionalPropertyName(OpenSim::Component const&);
+
+    // tries to get the name of the "orientational" property of the given component
+    //
+    // e.g. the orientational property of an `OpenSim::PhysicalOffsetFrame` is "orientation",
+    //      whereas `OpenSim::Station` has no orientation, so this returns `std::nullopt`
+    std::optional<std::string> TryGetOrientationalPropertyName(OpenSim::Component const&);
+
+    // packages up the various useful parts that describe how a component is spatially represented
+    //
+    // see also (component functions):
+    //
+    // - TryGetParentToGroundTransform
+    // - TryGetPositionalPropertyName
+    // - TryGetOrientationalPropertyName
+    struct ComponentSpatialRepresentation final {
+        SimTK::Transform parentToGround;
+        std::string locationVec3PropertyName;
+        std::optional<std::string> maybeOrientationVec3EulersPropertyName;
+    };
+
+    // tries to get the "spatial" representation of a component
+    std::optional<ComponentSpatialRepresentation> TryGetSpatialRepresentation(
+        OpenSim::Component const&,
+        SimTK::State const&
+    );
 }
