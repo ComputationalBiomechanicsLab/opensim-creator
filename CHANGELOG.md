@@ -5,6 +5,7 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Added a clarifying `note` in Tutorial 1's documentation that asks users to try and use the `Brick` analytic geometry, rather than a mesh file like `brick.vtp` (#175)
 - Added the `Calculate` menu from the frame definition workflow to the OpenSim model editor workflow, which
   means that users can calculate the position/orientation of a frame/point in an OpenSim model w.r.t. some
   other frame by right-clicking the element in the scene (#722)

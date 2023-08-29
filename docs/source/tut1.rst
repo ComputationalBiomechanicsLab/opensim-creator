@@ -54,6 +54,10 @@ In the UI, open the ``Add`` menu at the top, or right-click an empty part of the
 
 A dialog should pop up that prompts you to fill in the body's details. Create a body with the following details:
 
+.. note::
+    To use the ``Brick`` analytic geometry, use the ``Generated Geometry`` dropdown when selecting the geometry. This is better than
+    using a mesh file (e.g. ``brick.vtp``) because the resulting model will not be dependent on the existence of the mesh file.
+
 .. figure:: _static/tut1_addbodymodal.png
 
     Body properties for ``pendulum_base``. **Note**: Make sure to use the same parameters, and to also attach a ``Brick`` generated geometry (highlighted).
