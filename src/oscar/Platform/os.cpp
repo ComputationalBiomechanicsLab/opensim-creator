@@ -242,7 +242,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
 {
     std::array<char, 1024> buf{};
 
-    auto maybeErr = strerror_r(errnum, buf.data(), buf.size());
+    auto* maybeErr = strerror_r(errnum, buf.data(), buf.size());
     if (std::is_same_v<int, decltype(maybeErr)> && !maybeErr)
     {
         osc::log::warn("a call to strerror_r failed with error code %i", maybeErr);

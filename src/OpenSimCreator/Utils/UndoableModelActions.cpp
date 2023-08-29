@@ -1615,7 +1615,7 @@ bool osc::ActionShowOnlyComponentAndAllChildren(UndoableModelStatePair& model, O
 bool osc::ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
     UndoableModelStatePair& model,
     OpenSim::ComponentPath const& root,
-    std::string concreteClassName,
+    std::string_view concreteClassName,
     bool newVisibility)
 {
     UID const oldVersion = model.getModelVersion();

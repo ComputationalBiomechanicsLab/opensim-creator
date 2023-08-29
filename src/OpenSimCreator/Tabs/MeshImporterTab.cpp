@@ -480,7 +480,7 @@ namespace
     using MeshLoadResponse = std::variant<MeshLoadOKResponse, MeshLoadErrorResponse>;
 
     // returns an OK or ERROR response to a mesh load request
-    MeshLoadResponse respondToMeshloadRequest(MeshLoadRequest msg)
+    MeshLoadResponse respondToMeshloadRequest(MeshLoadRequest msg)  // NOLINT(performance-unnecessary-value-param)
     {
         std::vector<LoadedMesh> loadedMeshes;
         loadedMeshes.reserve(msg.paths.size());

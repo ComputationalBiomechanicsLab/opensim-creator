@@ -589,7 +589,7 @@ namespace
         osc::Rect const& viewportRect,
         ImGuizmo::OPERATION operation,
         ImGuizmo::MODE mode,
-        std::shared_ptr<osc::UndoableModelStatePair> model,
+        std::shared_ptr<osc::UndoableModelStatePair> const& model,
         OpenSim::Component const& selected,
         bool& wasUsingLastFrameStorage)
     {

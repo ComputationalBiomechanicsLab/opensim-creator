@@ -216,7 +216,7 @@ public:
         std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_,
         size_t numInitiallyOpenedPanels)
     {
-        m_SpawnablePanels.emplace_back(baseName, constructorFunc_, numInitiallyOpenedPanels);
+        m_SpawnablePanels.emplace_back(baseName, std::move(constructorFunc_), numInitiallyOpenedPanels);
     }
 
     Panel* tryUpdPanelByName(std::string_view name)

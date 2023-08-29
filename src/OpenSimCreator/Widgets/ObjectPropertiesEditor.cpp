@@ -135,7 +135,7 @@ namespace
     // property accesssor with the same lifetime semantics as the object can exist
     std::function<OpenSim::AbstractProperty const*()> MakePropertyAccessor(
         std::function<OpenSim::Object const*()> const& objAccessor,
-        std::string propertyName)
+        std::string const& propertyName)
     {
         return [objAccessor, propertyName]() -> OpenSim::AbstractProperty const*
         {
@@ -195,11 +195,11 @@ namespace
 
         StringPropertyEditor(
             osc::EditorAPI*,
-            std::shared_ptr<osc::UndoableModelStatePair const>,
-            std::function<OpenSim::Object const*()>,
-            std::function<property_type const*()> accessor_) :
+            std::shared_ptr<osc::UndoableModelStatePair const> const&,
+            std::function<OpenSim::Object const*()> const&,
+            std::function<property_type const*()> const& accessor_) :
 
-            m_Accessor{std::move(accessor_)}
+            m_Accessor{accessor_}
         {
         }
     private:
@@ -298,11 +298,11 @@ namespace
 
         DoublePropertyEditor(
             osc::EditorAPI*,
-            std::shared_ptr<osc::UndoableModelStatePair const>,
-            std::function<OpenSim::Object const*()>,
-            std::function<property_type const*()> accessor_) :
+            std::shared_ptr<osc::UndoableModelStatePair const> const&,
+            std::function<OpenSim::Object const*()> const&,
+            std::function<property_type const*()> const& accessor_) :
 
-            m_Accessor{std::move(accessor_)}
+            m_Accessor{accessor_}
         {
         }
     private:
@@ -400,11 +400,11 @@ namespace
 
         BoolPropertyEditor(
             osc::EditorAPI*,
-            std::shared_ptr<osc::UndoableModelStatePair const>,
-            std::function<OpenSim::Object const*()>,
-            std::function<property_type const*()> accessor_) :
+            std::shared_ptr<osc::UndoableModelStatePair const> const&,
+            std::function<OpenSim::Object const*()> const&,
+            std::function<property_type const*()> const& accessor_) :
 
-            m_Accessor{std::move(accessor_)}
+            m_Accessor{accessor_}
         {
         }
     private:
@@ -504,13 +504,13 @@ namespace
 
         Vec3PropertyEditor(
             osc::EditorAPI*,
-            std::shared_ptr<osc::UndoableModelStatePair const> model_,
-            std::function<OpenSim::Object const*()> objectAccessor_,
-            std::function<property_type const*()> accessor_) :
+            std::shared_ptr<osc::UndoableModelStatePair const> const& model_,
+            std::function<OpenSim::Object const*()> const& objectAccessor_,
+            std::function<property_type const*()> const& accessor_) :
 
-            m_Model{std::move(model_)},
-            m_ObjectAccessor{std::move(objectAccessor_)},
-            m_Accessor{std::move(accessor_)}
+            m_Model{model_},
+            m_ObjectAccessor{objectAccessor_},
+            m_Accessor{accessor_}
         {
         }
     private:
@@ -996,11 +996,11 @@ namespace
 
         Vec6PropertyEditor(
             osc::EditorAPI*,
-            std::shared_ptr<osc::UndoableModelStatePair const>,
-            std::function<OpenSim::Object const*()>,
-            std::function<property_type const*()> accessor_) :
+            std::shared_ptr<osc::UndoableModelStatePair const> const&,
+            std::function<OpenSim::Object const*()> const&,
+            std::function<property_type const*()> const& accessor_) :
 
-            m_Accessor{std::move(accessor_)}
+            m_Accessor{accessor_}
         {
         }
     private:
@@ -1106,11 +1106,11 @@ namespace
 
         IntPropertyEditor(
             osc::EditorAPI*,
-            std::shared_ptr<osc::UndoableModelStatePair const>,
-            std::function<OpenSim::Object const*()>,
-            std::function<property_type const*()> accessor_) :
+            std::shared_ptr<osc::UndoableModelStatePair const> const&,
+            std::function<OpenSim::Object const*()> const&,
+            std::function<property_type const*()> const& accessor_) :
 
-            m_Accessor{std::move(accessor_)}
+            m_Accessor{accessor_}
         {
         }
 
@@ -1215,11 +1215,11 @@ namespace
 
         AppearancePropertyEditor(
             osc::EditorAPI*,
-            std::shared_ptr<osc::UndoableModelStatePair const>,
-            std::function<OpenSim::Object const*()>,
-            std::function<property_type const*()> accessor_) :
+            std::shared_ptr<osc::UndoableModelStatePair const> const&,
+            std::function<OpenSim::Object const*()> const&,
+            std::function<property_type const*()> const& accessor_) :
 
-            m_Accessor{std::move(accessor_)}
+            m_Accessor{accessor_}
         {
         }
     private:
@@ -1326,13 +1326,13 @@ namespace
 
         ContactParameterSetEditor(
             osc::EditorAPI* api,
-            std::shared_ptr<osc::UndoableModelStatePair const> targetModel_,
-            std::function<OpenSim::Object const*()>,
-            std::function<property_type const*()> accessor_) :
+            std::shared_ptr<osc::UndoableModelStatePair const> const& targetModel_,
+            std::function<OpenSim::Object const*()> const&,
+            std::function<property_type const*()> const& accessor_) :
 
             m_API{api},
-            m_TargetModel{std::move(targetModel_)},
-            m_Accessor{std::move(accessor_)}
+            m_TargetModel{targetModel_},
+            m_Accessor{accessor_}
         {
         }
     private:
@@ -1407,13 +1407,13 @@ namespace
 
         GeometryPathPropertyEditor(
             osc::EditorAPI* api_,
-            std::shared_ptr<osc::UndoableModelStatePair const> targetModel_,
-            std::function<OpenSim::Object const*()>,
-            std::function<property_type const*()> accessor_) :
+            std::shared_ptr<osc::UndoableModelStatePair const> const& targetModel_,
+            std::function<OpenSim::Object const*()> const&,
+            std::function<property_type const*()> const& accessor_) :
 
             m_API{api_},
-            m_TargetModel{std::move(targetModel_)},
-            m_Accessor{std::move(accessor_)}
+            m_TargetModel{targetModel_},
+            m_Accessor{accessor_}
         {
         }
     private:
@@ -1531,7 +1531,12 @@ namespace
             }
         };
 
-        using PropertyEditorCtor = std::function<std::unique_ptr<VirtualPropertyEditor>(osc::EditorAPI*, std::shared_ptr<osc::UndoableModelStatePair const>, std::function<OpenSim::Object const*()>, std::function<OpenSim::AbstractProperty const*()>)>;
+        using PropertyEditorCtor = std::function<std::unique_ptr<VirtualPropertyEditor>(
+            osc::EditorAPI*,
+            std::shared_ptr<osc::UndoableModelStatePair const> const&,
+            std::function<OpenSim::Object const*()> const&,
+            std::function<OpenSim::AbstractProperty const*()> const&
+        )>;
         using PropertyEditorLUT = std::unordered_map<TypeInfoRef, PropertyEditorCtor, TypeInfoHasher, TypeInfoEqualTo>;
 
         template<typename TConcretePropertyEditor>
@@ -1546,9 +1551,9 @@ namespace
             TypeInfoRef typeInfo = typeid(typename TConcretePropertyEditor::property_type);
             auto ctor = [](
                 osc::EditorAPI* api,
-                std::shared_ptr<osc::UndoableModelStatePair const> targetModel,
-                std::function<OpenSim::Object const*()> objectAccessor,
-                std::function<OpenSim::AbstractProperty const*()> propetyAccessor)
+                std::shared_ptr<osc::UndoableModelStatePair const> const& targetModel,
+                std::function<OpenSim::Object const*()> const& objectAccessor,
+                std::function<OpenSim::AbstractProperty const*()> const& propetyAccessor)
             {
                 auto downcastedAccessor = [propetyAccessor]() -> typename TConcretePropertyEditor::property_type const*
                 {

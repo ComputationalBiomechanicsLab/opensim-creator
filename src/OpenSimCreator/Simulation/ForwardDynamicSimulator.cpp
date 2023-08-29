@@ -369,7 +369,7 @@ namespace
     int FdSimulationMain(
         osc::stop_token stopToken,
         std::unique_ptr<SimulatorThreadInput> input,
-        std::shared_ptr<SharedState> shared)
+        std::shared_ptr<SharedState> shared)  // NOLINT(performance-unnecessary-value-param)
     {
         osc::SimulationStatus status = osc::SimulationStatus::Error;
 

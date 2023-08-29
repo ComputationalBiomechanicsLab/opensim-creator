@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <type_traits>
 
 namespace OpenSim { class Component; }
@@ -338,7 +339,7 @@ namespace osc
     bool ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
         UndoableModelStatePair&,
         OpenSim::ComponentPath const&,
-        std::string concreteClassName,
+        std::string_view concreteClassName,
         bool newVisibility
     );
 
