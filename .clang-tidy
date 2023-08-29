@@ -15,18 +15,17 @@ Checks: >
   -modernize-use-trailing-return-type,
   -modernize-use-nodiscard,
   cppcoreguidelines-*,
-  -cppcoreguidelines-pro-type-const-cast,
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-avoid-magic-numbers,
-  -cppcoreguidelines-pro-type-union-access,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
-  -cppcoreguidelines-pro-type-reinterpret-cast,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
-  -cppcoreguidelines-narrowing-conversions,
   -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-narrowing-conversions,
+  -cppcoreguidelines-pro-type-const-cast,
+  -cppcoreguidelines-pro-type-union-access,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
   -cppcoreguidelines-pro-type-vararg,
   performance-*,
-  -performance-unnecessary-value-param,
   -performance-no-int-to-ptr,
   portability-*,
   google-*,
@@ -51,6 +50,3 @@ Checks: >
   -readability-simplify-boolean-expr,
   -readability-static-accessed-through-instance,
   cert-*
-
-# disabled: OpenSim contains memory-leaking code that I cannot disable :<
-# WarningsAsErrors: "*"
