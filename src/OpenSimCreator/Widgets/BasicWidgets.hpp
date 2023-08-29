@@ -109,6 +109,12 @@ namespace osc
         OpenSim::Frame const&,
         CalculateMenuFlags = CalculateMenuFlags::None
     );
+    void TryDrawCalculateMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Component const& selected,
+        CalculateMenuFlags = CalculateMenuFlags::None
+    );
 
     // basic wigetized parts of the 3D viewer
     void DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions&);

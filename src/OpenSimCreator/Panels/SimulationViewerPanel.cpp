@@ -9,6 +9,7 @@
 #include <oscar/Utils/ParentPtr.hpp>
 
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 #include <memory>
 #include <string>
@@ -87,10 +88,9 @@ private:
                 ImGui::Separator();
                 ImGui::Dummy({0.0f, 3.0f});
 
-                // TODO: should match functionality of the editor (#722)
-
                 DrawSelectOwnerMenu(*m_Model, *selected);
                 DrawWatchOutputMenu(*m_API, *selected);
+                TryDrawCalculateMenu(m_Model->getModel(), m_Model->getState(), *selected, CalculateMenuFlags::NoCalculatorIcon);
                 ImGui::EndPopup();
             }
         }

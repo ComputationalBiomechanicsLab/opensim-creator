@@ -521,6 +521,22 @@ void osc::DrawCalculateMenu(
     }
 }
 
+void osc::TryDrawCalculateMenu(
+    OpenSim::Component const& root,
+    SimTK::State const& state,
+    OpenSim::Component const& selected,
+    CalculateMenuFlags flags)
+{
+    if (auto const* const frame = dynamic_cast<OpenSim::Frame const*>(&selected))
+    {
+        DrawCalculateMenu(root, state, *frame, flags);
+    }
+    else if (auto const* const point = dynamic_cast<OpenSim::Point const*>(&selected))
+    {
+        DrawCalculateMenu(root, state, *point, flags);
+    }
+}
+
 void osc::DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions& opts)
 {
     osc::MuscleDecorationStyle const currentStyle = opts.getMuscleDecorationStyle();
