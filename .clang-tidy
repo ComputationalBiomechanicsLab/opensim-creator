@@ -44,7 +44,6 @@ Checks: >
   -readability-else-after-return,
   -readability-implicit-bool-conversion,
   -readability-function-cognitive-complexity,
-  -readability-suspicious-call-argument,
   -readability-named-parameter,
   -readability-convert-member-functions-to-static,
   -readability-qualified-auto,
