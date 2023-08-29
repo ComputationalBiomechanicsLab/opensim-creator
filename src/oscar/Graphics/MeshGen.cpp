@@ -333,11 +333,11 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
     };
 
     // helper: push primitive *indices* (into data) to the output
-    auto const pushTriangle = [&data](uint32_t p0Index, uint32_t p1Index, uint32_t p2Index)
+    auto const pushTriangle = [&data](uint32_t p0idx, uint32_t p1idx, uint32_t p2idx)
     {
-        data.indices.push_back(p0Index);
-        data.indices.push_back(p1Index);
-        data.indices.push_back(p2Index);
+        data.indices.push_back(p0idx);
+        data.indices.push_back(p1idx);
+        data.indices.push_back(p2idx);
     };
 
     // top: a triangle fan

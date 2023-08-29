@@ -447,9 +447,9 @@ void osc::DrawDirectionInformationWithRepsectTo(
 void osc::DrawFrameInformationExpressedIn(
     OpenSim::Frame const& parent,
     SimTK::State const& state,
-    OpenSim::Frame const& xFrame)
+    OpenSim::Frame const& otherFrame)
 {
-    SimTK::Transform const xform = parent.findTransformBetween(state, xFrame);
+    SimTK::Transform const xform = parent.findTransformBetween(state, otherFrame);
     glm::vec3 position = osc::ToVec3(xform.p());
     glm::vec3 rotationEulers = osc::ToVec3(xform.R().convertRotationToBodyFixedXYZ());
 
