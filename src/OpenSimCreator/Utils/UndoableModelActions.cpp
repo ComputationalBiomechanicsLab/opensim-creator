@@ -206,9 +206,23 @@ namespace
 
         if (spatialRep->maybeOrientationVec3EulersPropertyName)
         {
-            if (auto const* orientationalProp = osc::FindSimplePropertyMut<SimTK::Vec3>(component, *spatialRep->maybeOrientationVec3EulersPropertyName))
+            if (auto* orientationalProp = osc::FindSimplePropertyMut<SimTK::Vec3>(component, *spatialRep->maybeOrientationVec3EulersPropertyName))
             {
-                // TODO: update it
+                SimTK::Rotation const currentRotationInGround = spatialRep->parentToGround.R();
+                SimTK::Rotation const groundToNewConnecteeRotation = newFrame->getRotationInGround(state).invert();
+                SimTK::Rotation const currentParentRotationToNewConnecteeRotation = groundToNewConnecteeRotation * currentRotationInGround;
+
+                SimTK::Vec3 const oldEulers = orientationalProp->getValue();
+                SimTK::Rotation const oldRotation = [oldEulers]()
+                {
+                    SimTK::Rotation rv;
+                    rv.setRotationToBodyFixedXYZ(oldEulers);
+                    return rv;
+                }();
+                SimTK::Rotation const newRotation = currentParentRotationToNewConnecteeRotation * oldRotation;
+                SimTK::Vec3 const newEulers = newRotation.convertRotationToBodyFixedXYZ();
+
+                orientationalProp->setValue(newEulers);
             }
         }
 
