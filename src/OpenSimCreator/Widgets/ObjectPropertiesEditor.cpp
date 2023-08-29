@@ -558,33 +558,42 @@ namespace
         // property's value to ground
         std::optional<SimTK::Transform> getParentToGroundTransform() const
         {
-            OpenSim::Object const* obj = m_ObjectAccessor();
-            OpenSim::Property<SimTK::Vec3> const* prop = m_Accessor();
-
+            OpenSim::Object const* const obj = m_ObjectAccessor();
             if (!obj)
             {
-                return std::nullopt;
+                return std::nullopt;  // cannot find the property's parent object?
             }
-            else if (!prop)
+
+            auto const* const component = dynamic_cast<OpenSim::Component const*>(obj);
+            if (!component)
             {
-                return std::nullopt;
+                return std::nullopt;  // the object isn't an OpenSim component
             }
-            else if (auto const* station = dynamic_cast<OpenSim::Station const*>(obj); station && prop->getName() == "location")
+
+            std::optional<std::string_view> const positionPropName = osc::TryGetPositionalPropertyName(*component);
+            if (!positionPropName)
             {
-                return station->getParentFrame().getTransformInGround(m_Model->getState());
+                return std::nullopt;  // the component doesn't have a logical positional property that can be edited with the transform
             }
-            else if (auto const* pp = dynamic_cast<OpenSim::PathPoint const*>(obj); pp && prop->getName() == "location")
+
+            OpenSim::Property<SimTK::Vec3> const* const prop = m_Accessor();
+            if (!prop)
             {
-                return pp->getParentFrame().getTransformInGround(m_Model->getState());
+                return std::nullopt;  // can't access the property this editor is ultimately editing
             }
-            else if (auto const* pof = dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(obj); pof && prop->getName() == "translation")
+
+            if (prop->getName() != *positionPropName)
             {
-                return pof->getParentFrame().getTransformInGround(m_Model->getState());
+                return std::nullopt;  // the property this editor is editing isn't a logically positional one
             }
-            else
+
+            std::optional<SimTK::Transform> const transform = osc::TryGetParentToGroundTransform(*component, m_Model->getState());
+            if (!transform)
             {
-                return std::nullopt;
+                return std::nullopt;  // the component doesn't have a logical position-to-ground transform
             }
+
+            return transform;
         }
 
         // if the user has selected a different frame in which to edit 3D quantities, then

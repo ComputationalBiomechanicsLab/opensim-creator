@@ -1515,3 +1515,50 @@ OpenSim::Geometry& osc::AttachGeometry(OpenSim::Frame& frame, std::unique_ptr<Op
     frame.attachGeometry(p.release());
     return rv;
 }
+
+std::optional<SimTK::Transform> osc::TryGetParentToGroundTransform(
+    OpenSim::Component const& component,
+    SimTK::State const& state)
+{
+    if (auto const* station = dynamic_cast<OpenSim::Station const*>(&component))
+    {
+        return station->getParentFrame().getTransformInGround(state);
+    }
+    else if (auto const* pp = dynamic_cast<OpenSim::PathPoint const*>(&component))
+    {
+        return pp->getParentFrame().getTransformInGround(state);
+    }
+    else if (auto const* pof = dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&component))
+    {
+        return pof->getParentFrame().getTransformInGround(state);
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+
+// tries to get the name of the "positional" property of the given component
+//
+// e.g. the positional property of an `OpenSim::Station` is "location", whereas the
+//      positional property of an `OpenSim::PhysicalOffsetFrame` is "translation"
+std::optional<std::string_view> osc::TryGetPositionalPropertyName(
+    OpenSim::Component const& component)
+{
+    if (auto const* station = dynamic_cast<OpenSim::Station const*>(&component))
+    {
+        return station->getProperty_location().getName();
+    }
+    else if (auto const* pp = dynamic_cast<OpenSim::PathPoint const*>(&component))
+    {
+        return pp->getProperty_location().getName();
+    }
+    else if (auto const* pof = dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&component))
+    {
+        return pof->getProperty_translation().getName();
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}

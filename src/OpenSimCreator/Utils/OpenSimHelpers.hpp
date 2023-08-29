@@ -8,11 +8,13 @@
 #include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/ComponentPath.h>
+#include <SimTKcommon/internal/Transform.h>
 
 #include <filesystem>
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -241,7 +243,7 @@ namespace osc
         return dynamic_cast<T*>(FindComponentMut(root, cp));
     }
 
-    // returns true if the path resolves to a component within root
+    // returns true if the path resolves to a component within `root`
     bool ContainsComponent(
         OpenSim::Component const& root,
         OpenSim::ComponentPath const&
@@ -366,7 +368,7 @@ namespace osc
     std::optional<int> FindJointInParentJointSet(OpenSim::Joint const&);
 
     // returns a string representation of the recommended document's name
-    std::string GetRecommendedDocumentName(osc::UndoableModelStatePair const&);
+    std::string GetRecommendedDocumentName(UndoableModelStatePair const&);
 
     // returns user-visible (basic) name of geometry, or underlying file name
     std::string GetDisplayName(OpenSim::Geometry const&);
@@ -513,4 +515,16 @@ namespace osc
         auto p = std::make_unique<T>(std::forward<Args>(args)...);
         return static_cast<T&>(AttachGeometry(frame, std::move(p)));
     }
+
+    // tries to get the "parent" transform of the given component (if available)
+    //
+    // e.g. in OpenSim, this is usually acquired with `getParentFrame().getTransformInGround(State const&)`
+    //      but that API isn't exposed generically via virtual methods
+    std::optional<SimTK::Transform> TryGetParentToGroundTransform(OpenSim::Component const&, SimTK::State const&);
+
+    // tries to get the name of the "positional" property of the given component
+    //
+    // e.g. the positional property of an `OpenSim::Station` is "location", whereas the
+    //      positional property of an `OpenSim::PhysicalOffsetFrame` is "translation"
+    std::optional<std::string_view> TryGetPositionalPropertyName(OpenSim::Component const&);
 }
