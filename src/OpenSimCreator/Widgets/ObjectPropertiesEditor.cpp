@@ -693,23 +693,27 @@ namespace
                 return;
             }
 
-            osc::DrawHelpMarker("The frame that this quantity should be _edited_ in.\n\nnote: does not change the frame in which it is _saved_: use the 'Reassign Socket' action if you want to change the frame that this component is attached to");
-            ImGui::SameLine();
-
+            osc::CStringView const defaultedLabel = "(parent frame)";
             std::string const preview = m_MaybeUserSelectedFrameAbsPath ?
                 m_MaybeUserSelectedFrameAbsPath->getComponentName() :
-                "default (parent frame)";
+                std::string{defaultedLabel};
 
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             if (ImGui::BeginCombo("##reexpressioneditor", preview.c_str()))
             {
+                ImGui::TextDisabled("Frame (editing)");
+                ImGui::SameLine();
+                osc::DrawHelpMarker("Note: this only affects the values that the quantities are edited in. It does not change the frame that the component is attached to. You can change the frame attachment by using the component's context menu: Socket > $FRAME > (edit button) > (select new frame)");
+                ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+
                 int imguiID = 0;
 
                 // draw "default" (reset) option
                 {
+                    ImGui::Separator();
                     ImGui::PushID(imguiID++);
                     bool selected = !m_MaybeUserSelectedFrameAbsPath.has_value();
-                    if (ImGui::Selectable("default (parent frame)", &selected))
+                    if (ImGui::Selectable(defaultedLabel.c_str(), &selected))
                     {
                         m_MaybeUserSelectedFrameAbsPath.reset();
                     }
