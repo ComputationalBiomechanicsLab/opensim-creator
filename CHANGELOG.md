@@ -5,6 +5,7 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- The "Socket" menu in the component context menu now explains each column in the displayed sockets table
 - Sliders in the coordinate editor now look much more like "typical" sliders, and are now entirely
   disabled when locked (#36)
 - The `Reassign Socket` popup now has a `Re-express $COMPONENT in chosen frame` checkbox, which users can

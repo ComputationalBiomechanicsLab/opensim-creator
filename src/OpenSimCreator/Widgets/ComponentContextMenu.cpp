@@ -402,11 +402,14 @@ private:
 
             if (!socketNames.empty())
             {
-                if (ImGui::BeginTable("sockets table", 3, ImGuiTableFlags_SizingStretchProp))
+                ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, {0.5f*ImGui::GetTextLineHeight(), 0.5f*ImGui::GetTextLineHeight()});
+                if (ImGui::BeginTable("sockets table", 3, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInner | ImGuiTableFlags_PadOuterX))
                 {
                     ImGui::TableSetupColumn("Socket Name");
-                    ImGui::TableSetupColumn("Connectee Name");
+                    ImGui::TableSetupColumn("Connectee");
                     ImGui::TableSetupColumn("Actions");
+
+                    ImGui::TableHeadersRow();
 
                     int id = 0;
                     for (std::string const& socketName : socketNames)
@@ -426,14 +429,9 @@ private:
                             m_Model->setSelected(dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject()));
                             requestClose();
                         }
-                        if (ImGui::IsItemHovered())
-                        {
-                            m_Model->setHovered(dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject()));
-                            osc::DrawTooltipBodyOnly("Click to select");
-                        }
 
                         ImGui::TableSetColumnIndex(column++);
-                        if (ImGui::SmallButton(ICON_FA_EDIT))
+                        if (ImGui::SmallButton("change"))
                         {
                             auto popup = std::make_unique<ReassignSocketPopup>(
                                 "Reassign " + socket.getName(),
@@ -444,16 +442,13 @@ private:
                             popup->open();
                             m_EditorAPI->pushPopup(std::move(popup));
                         }
-                        if (ImGui::IsItemHovered())
-                        {
-                            osc::DrawTooltipBodyOnly("Click to edit");
-                        }
 
                         ImGui::PopID();
                     }
 
                     ImGui::EndTable();
                 }
+                ImGui::PopStyleVar();
             }
             else
             {
