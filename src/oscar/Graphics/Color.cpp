@@ -111,3 +111,8 @@ osc::Color32 osc::ToColor32(uint32_t v) noexcept
         static_cast<uint8_t>((v >> 0) & 0xff),
     };
 }
+
+osc::Color osc::ClampToLDR(Color const& c) noexcept
+{
+    return Color{glm::clamp(glm::vec4{c}, 0.0f, 1.0f)};
+}

@@ -166,6 +166,17 @@ namespace osc
         };
     }
 
+    constexpr Color operator*(float s, Color const& a) noexcept
+    {
+        return Color
+        {
+            s * a.r,
+            s * a.g,
+            s * a.b,
+            s * a.a,
+        };
+    }
+
     // returns the normalized (0.0 - 1.0) floating-point equivalent of the
     // given 8-bit (0 - 255) color channel value
     constexpr float ToFloatingPointColorChannel(uint8_t channelValue) noexcept
@@ -195,6 +206,9 @@ namespace osc
 
     // returns a color that is the (presumed to be) linear color with the sRGB gamma curve applied
     Color ToSRGB(Color const&) noexcept;
+
+    // returns a color that is clamped to the low-dynamic range (LDR, i.e. [0, 1])
+    Color ClampToLDR(Color const&) noexcept;
 
     // returns a Vec4 version of a Color
     inline glm::vec4 ToVec4(Color const& c) noexcept
