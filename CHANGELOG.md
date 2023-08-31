@@ -28,6 +28,8 @@ All notable changes to this project will be documented here. The format is based
 - The 3D camera will no longer move when dragging a visualizer panel around (#739)
 - OpenSim was upgraded from version v4.4 to v4.4.1 (#721)
 - All other libraries were updated to their latest version (#721)
+- The border between windows/panels/bars in the UI were made brighter so that it's easier to see when one
+  panel ends and another begins
 - Internal: LearnOpenGL's physically based rendering (PBR) examples tabs added
 - Internal: `osc::MeshTopology` now supports `TriangleStrip`
 - Internal: `osc::Mesh::set/getColors` now takes a sequence of `osc::Color`, rather than `osc::Rgba32`
