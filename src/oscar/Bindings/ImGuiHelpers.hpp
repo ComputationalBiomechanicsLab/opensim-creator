@@ -272,4 +272,13 @@ namespace osc
 
     void VerticalSeperator();
     void SameLineWithVerticalSeperator();
+
+    bool CircularSliderFloat(
+        char const* label,
+        float* v,
+        float min,
+        float max,
+        char const* format = "%.3f",
+        ImGuiSliderFlags flags = 0
+    );
 }

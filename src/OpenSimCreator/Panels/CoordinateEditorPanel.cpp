@@ -62,7 +62,7 @@ private:
             ImGuiTableFlags_Resizable |
             ImGuiTableFlags_Sortable |
             ImGuiTableFlags_SortTristate |
-            ImGuiTableFlags_BordersInner |
+            ImGuiTableFlags_BordersInnerV |
             ImGuiTableFlags_SizingStretchSame;
         if (ImGui::BeginTable("##coordinatestable", 3, flags))
         {
@@ -169,14 +169,16 @@ private:
 
     void drawDataCell(OpenSim::Coordinate const& c)
     {
-        int stylesPushed = 0;
+        drawDataCellLockButton(c);
+        ImGui::SameLine(0.0f, 0.0f);
+        drawDataCellCoordinateSlider(c);
+    }
 
-        if (c.getLocked(m_Model->getState()))
-        {
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, {0.6f, 0.0f, 0.0f, 1.0f});
-            ++stylesPushed;
-        }
-
+    void drawDataCellLockButton(OpenSim::Coordinate const& c)
+    {
+        ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.0f, 0.0f, 0.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, {0.0f, 0.0f, 0.0f, 0.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {0.0f, 0.0f, 0.0f, 0.0f});
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.0f, ImGui::GetStyle().FramePadding.y});
         if (ImGui::Button(c.getLocked(m_Model->getState()) ? ICON_FA_LOCK : ICON_FA_UNLOCK))
         {
@@ -184,19 +186,36 @@ private:
             ActionSetCoordinateLockedAndSave(*m_Model, c, newValue);
         }
         ImGui::PopStyleVar();
+        ImGui::PopStyleColor();
+        ImGui::PopStyleColor();
+        ImGui::PopStyleColor();
         osc::DrawTooltipIfItemHovered("Toggle Coordinate Lock", "Lock/unlock the coordinate's value.\n\nLocking a coordinate indicates whether the coordinate's value should be constrained to this value during the simulation.");
+    }
 
-        ImGui::SameLine(0.0f, 1.0f);
+    void drawDataCellCoordinateSlider(OpenSim::Coordinate const& c)
+    {
+        bool const coordinateLocked = c.getLocked(m_Model->getState());
 
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
         float minValue = ConvertCoordValueToDisplayValue(c, c.getRangeMin());
         float maxValue = ConvertCoordValueToDisplayValue(c, c.getRangeMax());
         float displayedValue = ConvertCoordValueToDisplayValue(c, c.getValue(m_Model->getState()));
-        if (ImGui::SliderFloat("##coordinatevalueeditor", &displayedValue, minValue, maxValue))
+
+        if (coordinateLocked)
+        {
+            ImGui::PushStyleVar(ImGuiStyleVar_DisabledAlpha, 0.2f);
+            ImGui::BeginDisabled();
+        }
+        if (CircularSliderFloat("##coordinatevalueeditor", &displayedValue, minValue, maxValue))
         {
             double storedValue = ConvertCoordDisplayValueToStorageValue(c, displayedValue);
             ActionSetCoordinateValue(*m_Model, c, storedValue);
+        }
+        if (coordinateLocked)
+        {
+            ImGui::EndDisabled();
+            ImGui::PopStyleVar();
         }
         if (ImGui::IsItemDeactivatedAfterEdit())
         {
@@ -204,8 +223,6 @@ private:
             ActionSetCoordinateValueAndSave(*m_Model, c, storedValue);
         }
         osc::DrawTooltipBodyOnlyIfItemHovered("Ctrl-click the slider to edit");
-
-        ImGui::PopStyleColor(stylesPushed);
     }
 
     void drawSpeedCell(OpenSim::Coordinate const& c)

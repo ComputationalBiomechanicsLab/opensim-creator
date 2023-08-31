@@ -5,6 +5,8 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Sliders in the coordinate editor now look much more like "typical" sliders, and are now entirely
+  disabled when locked(#753)
 - The `Reassign Socket` popup now has a `Re-express $COMPONENT in chosen frame` checkbox, which users can
   tick to prompt OSC to automatically recalculate what the location/position/orientation properties of the
   component should be in the new frame, in the current scene state, such that it does not move or rotate. This
