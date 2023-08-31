@@ -48,5 +48,4 @@ Checks: >
   -readability-qualified-auto,
   -readability-container-data-pointer,
   -readability-simplify-boolean-expr,
-  -readability-static-accessed-through-instance,
   cert-*
