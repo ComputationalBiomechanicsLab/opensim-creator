@@ -46,6 +46,4 @@ Checks: >
   -readability-named-parameter,
   -readability-convert-member-functions-to-static,
   -readability-qualified-auto,
-  -readability-container-data-pointer,
-  -readability-simplify-boolean-expr,
   cert-*
