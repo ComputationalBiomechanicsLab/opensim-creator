@@ -150,7 +150,14 @@ namespace
             auto maybeUseMultipleViewports = config["experimental_feature_flags"]["multiple_viewports"];
             if (maybeUseMultipleViewports)
             {
-                cfg.useMultiViewport = maybeUseMultipleViewports.as_boolean();
+                if (auto const* downcasted = maybeUseMultipleViewports.as_boolean())
+                {
+                    cfg.useMultiViewport = downcasted->get();
+                }
+                else
+                {
+                    cfg.useMultiViewport = false;
+                }
             }
         }
     }

@@ -5269,7 +5269,7 @@ namespace
         }
 
         {
-            GLboolean b = false;
+            GLboolean b = GL_FALSE;
             glGetBooleanv(GL_DEBUG_OUTPUT, &b);
             if (!b)
             {
@@ -5278,7 +5278,7 @@ namespace
         }
 
         {
-            GLboolean b = false;
+            GLboolean b = GL_FALSE;
             glGetBooleanv(GL_DEBUG_OUTPUT_SYNCHRONOUS, &b);
             if (!b)
             {
@@ -6156,7 +6156,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
 
             static_assert(sizeof(glm::mat4) == 16*sizeof(float));
             static_assert(alignof(glm::mat4) <= alignof(float));
-            glUniformMatrix4fv(se.location, numToAssign, false, glm::value_ptr(vals.front()));
+            glUniformMatrix4fv(se.location, numToAssign, GL_FALSE, glm::value_ptr(vals.front()));
         }
         break;
     }

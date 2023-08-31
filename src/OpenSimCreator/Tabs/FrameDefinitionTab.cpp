@@ -259,19 +259,19 @@ namespace
     // returns `true` if the given component is a point in the frame definition scene
     bool IsPoint(OpenSim::Component const& component)
     {
-        return dynamic_cast<OpenSim::Point const*>(&component);
+        return dynamic_cast<OpenSim::Point const*>(&component) != nullptr;
     }
 
     // returns `true` if the given component is a mesh in the frame definition scene
     bool IsMesh(OpenSim::Component const& component)
     {
-        return dynamic_cast<OpenSim::Mesh const*>(&component);
+        return dynamic_cast<OpenSim::Mesh const*>(&component) != nullptr;
     }
 
     // returns `true` if the given component is a frame in the frame definition scene
     bool IsPhysicalFrame(OpenSim::Component const& component)
     {
-        return dynamic_cast<OpenSim::PhysicalFrame const*>(&component);
+        return dynamic_cast<OpenSim::PhysicalFrame const*>(&component) != nullptr;
     }
 
     // a sphere landmark, where the center of the sphere is the point of interest
@@ -2328,7 +2328,7 @@ namespace
             groundOrExistingBody = osc::FindFirstDescendentOfType<OpenSim::Body>(frame);
         }
 
-        if (ImGui::MenuItem(ICON_FA_WEIGHT " Body From This", nullptr, false, !groundOrExistingBody))
+        if (ImGui::MenuItem(ICON_FA_WEIGHT " Body From This", nullptr, false, groundOrExistingBody == nullptr))
         {
             ActionCreateBodyFromFrame(editor, model, maybeSourceEvent, frame);
         }

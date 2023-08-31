@@ -182,7 +182,7 @@ void osc::MainMenuFileTab::onDraw(
     ImGui::Separator();
 
     {
-        bool const modelHasBackingFile = maybeModel && osc::HasInputFileName(maybeModel->getModel());
+        bool const modelHasBackingFile = maybeModel != nullptr && osc::HasInputFileName(maybeModel->getModel());
 
         if (ImGui::MenuItem(ICON_FA_RECYCLE " Reload", "F5", false, modelHasBackingFile) && maybeModel)
         {

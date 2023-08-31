@@ -706,7 +706,7 @@ namespace
 
     bool IsExternallyProvided(Plot const& plot)
     {
-        return !plot.tryGetParameters();
+        return plot.tryGetParameters() == nullptr;
     }
 
     bool IsLocked(Plot const& plot)
@@ -1149,7 +1149,7 @@ namespace
                 // (edge-case): if the user selection fundamentally changes what's being plotted
                 // then previous plots should be cleared
                 bool const clearPrevious =
-                    maybeParams &&
+                    maybeParams != nullptr &&
                     (maybeParams->getMuscleOutput() != desiredParams.getMuscleOutput() ||
                      maybeParams->getCoordinatePath() != desiredParams.getCoordinatePath() ||
                      maybeParams->getMusclePath() != desiredParams.getMusclePath());

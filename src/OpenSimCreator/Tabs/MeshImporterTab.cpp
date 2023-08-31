@@ -304,7 +304,7 @@ namespace
     bool IsValidOpenSimComponentNameCharacter(char c)
     {
         return
-            std::isalpha(static_cast<uint8_t>(c)) ||
+            std::isalpha(static_cast<uint8_t>(c)) != 0 ||
             ('0' <= c && c <= '9') ||
             (c == '-' || c == '_');
     }
@@ -935,44 +935,44 @@ namespace
 
     bool CanChangeLabel(SceneEl const& el)
     {
-        return el.GetFlags() & SceneElFlags_CanChangeLabel;
+        return (el.GetFlags() & SceneElFlags_CanChangeLabel) != 0;
     }
 
     bool CanChangePosition(SceneEl const& el)
     {
-        return el.GetFlags() & SceneElFlags_CanChangePosition;
+        return (el.GetFlags() & SceneElFlags_CanChangePosition) != 0;
     }
 
     bool CanChangeRotation(SceneEl const& el)
     {
-        return el.GetFlags() & SceneElFlags_CanChangeRotation;
+        return (el.GetFlags() & SceneElFlags_CanChangeRotation) != 0;
     }
 
     bool CanChangeScale(SceneEl const& el)
     {
-        return el.GetFlags() & SceneElFlags_CanChangeScale;
+        return (el.GetFlags() & SceneElFlags_CanChangeScale) != 0;
     }
 
     bool CanDelete(SceneEl const& el)
     {
-        return el.GetFlags() & SceneElFlags_CanDelete;
+        return (el.GetFlags() & SceneElFlags_CanDelete) != 0;
     }
 
     bool CanSelect(SceneEl const& el)
     {
-        return el.GetFlags() & SceneElFlags_CanSelect;
+        return (el.GetFlags() & SceneElFlags_CanSelect) != 0;
     }
 
     bool HasPhysicalSize(SceneEl const& el)
     {
-        return el.GetFlags() & SceneElFlags_HasPhysicalSize;
+        return (el.GetFlags() & SceneElFlags_HasPhysicalSize) != 0;
     }
 
     bool IsCrossReferencing(SceneEl const& el, UID id, CrossrefDirection direction = CrossrefDirection_Both)
     {
         for (int i = 0, len = el.GetNumCrossReferences(); i < len; ++i)
         {
-            if (el.GetCrossReferenceConnecteeID(i) == id && el.GetCrossReferenceDirection(i) & direction)
+            if (el.GetCrossReferenceConnecteeID(i) == id && (el.GetCrossReferenceDirection(i) & direction) != 0)
             {
                 return true;
             }
@@ -2685,7 +2685,7 @@ namespace
 
         bool HasCommit(UID id) const
         {
-            return TryGetCommitByID(id);
+            return TryGetCommitByID(id) != nullptr;
         }
 
         template<typename Consumer>
@@ -2752,7 +2752,7 @@ namespace
             }
 
             ModelGraphCommit const* c = TryGetCommitByID(m_BranchHead);
-            while (c && c->GetParentID() != m_Current)
+            while (c != nullptr && c->GetParentID() != m_Current)
             {
                 c = TryGetCommitByID(c->GetParentID());
             }

@@ -51,7 +51,7 @@ namespace
     constexpr bool operator&(SupportedManipulationOpFlags a, SupportedManipulationOpFlags b) noexcept
     {
         using T = std::underlying_type_t<SupportedManipulationOpFlags>;
-        return static_cast<T>(a) & static_cast<T>(b);
+        return (static_cast<T>(a) & static_cast<T>(b)) != 0u;
     }
 
     // type-erased virtual base class that each concrete manipulator inherits from

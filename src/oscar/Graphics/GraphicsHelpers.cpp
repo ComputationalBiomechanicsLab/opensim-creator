@@ -44,6 +44,9 @@
 
 namespace
 {
+    inline constexpr int c_StbTrue = 1;
+    inline constexpr int c_StbFalse = 0;
+
     // this mutex is required because stbi has global mutable state (e.g. stbi_set_flip_vertically_on_load)
     auto LockStbiAPI()
     {
@@ -76,7 +79,7 @@ namespace
 
         if (flags & osc::ImageLoadingFlags::FlipVertically)
         {
-            stbi_set_flip_vertically_on_load(true);
+            stbi_set_flip_vertically_on_load(c_StbTrue);
         }
 
         glm::ivec2 dims{};
@@ -89,7 +92,7 @@ namespace
 
         if (flags & osc::ImageLoadingFlags::FlipVertically)
         {
-            stbi_set_flip_vertically_on_load(false);
+            stbi_set_flip_vertically_on_load(c_StbFalse);
         }
 
         if (!pixels)
@@ -134,7 +137,7 @@ namespace
 
         if (flags & osc::ImageLoadingFlags::FlipVertically)
         {
-            stbi_set_flip_vertically_on_load(true);
+            stbi_set_flip_vertically_on_load(c_StbTrue);
         }
 
         glm::ivec2 dims{};
@@ -147,7 +150,7 @@ namespace
 
         if (flags & osc::ImageLoadingFlags::FlipVertically)
         {
-            stbi_set_flip_vertically_on_load(false);
+            stbi_set_flip_vertically_on_load(c_StbFalse);
         }
 
         if (!pixels)
@@ -632,7 +635,7 @@ void osc::WriteToPNG(
     std::vector<Color32> const pixels = tex.getPixels32();
 
     auto const guard = LockStbiAPI();
-    stbi_flip_vertically_on_write(true);
+    stbi_flip_vertically_on_write(c_StbTrue);
     int const rv = stbi_write_png(
         outpath.string().c_str(),
         dims.x,
@@ -641,7 +644,7 @@ void osc::WriteToPNG(
         pixels.data(),
         stride
     );
-    stbi_flip_vertically_on_write(false);
+    stbi_flip_vertically_on_write(c_StbFalse);
 
     OSC_ASSERT(rv != 0);
 }

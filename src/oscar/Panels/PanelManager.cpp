@@ -223,7 +223,7 @@ public:
     {
         for (ToggleablePanel& panel : m_ToggleablePanels)
         {
-            if (Panel* p = panel.updPtrOrNull(); p && p->getName() == name)
+            if (Panel* p = panel.updPtrOrNull(); (p != nullptr) && p->getName() == name)
             {
                 return p;
             }
@@ -231,7 +231,7 @@ public:
 
         for (DynamicPanel& panel : m_DynamicPanels)
         {
-            if (Panel* p = panel.updPtrOrNull(); p && p->getName() == name)
+            if (Panel* p = panel.updPtrOrNull(); (p != nullptr) && p->getName() == name)
             {
                 return p;
             }

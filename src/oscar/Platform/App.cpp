@@ -302,7 +302,7 @@ public:
 
     bool isWindowFocused() const
     {
-        return SDL_GetWindowFlags(m_MainWindow.get()) & SDL_WINDOW_INPUT_FOCUS;
+        return (SDL_GetWindowFlags(m_MainWindow.get()) & SDL_WINDOW_INPUT_FOCUS) != 0u;
     }
 
     void makeFullscreen()
@@ -478,11 +478,11 @@ public:
         Uint32 ms = SDL_GetMouseState(&mouseLocal.x, &mouseLocal.y);
 
         MouseState rv{};
-        rv.LeftDown = ms & SDL_BUTTON(SDL_BUTTON_LEFT);
-        rv.RightDown = ms & SDL_BUTTON(SDL_BUTTON_RIGHT);
-        rv.MiddleDown = ms & SDL_BUTTON(SDL_BUTTON_MIDDLE);
-        rv.X1Down = ms & SDL_BUTTON(SDL_BUTTON_X1);
-        rv.X2Down = ms & SDL_BUTTON(SDL_BUTTON_X2);
+        rv.LeftDown = (ms & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0u;
+        rv.RightDown = (ms & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0u;
+        rv.MiddleDown = (ms & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0u;
+        rv.X1Down = (ms & SDL_BUTTON(SDL_BUTTON_X1)) != 0u;
+        rv.X2Down = (ms & SDL_BUTTON(SDL_BUTTON_X2)) != 0u;
 
         if (isWindowFocused())
         {
@@ -513,17 +513,17 @@ public:
 
     bool isShiftPressed() const
     {
-        return SDL_GetModState() & KMOD_SHIFT;
+        return (SDL_GetModState() & KMOD_SHIFT) != 0;
     }
 
     bool isCtrlPressed() const
     {
-        return SDL_GetModState() & KMOD_CTRL;
+        return (SDL_GetModState() & KMOD_CTRL) != 0;
     }
 
     bool isAltPressed() const
     {
-        return SDL_GetModState() & KMOD_ALT;
+        return (SDL_GetModState() & KMOD_ALT) != 0;
     }
 
     void setMainWindowSubTitle(std::string_view sv)

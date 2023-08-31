@@ -1181,7 +1181,7 @@ namespace
             // read stored value from edited property
             //
             // care: optional properties have size==0, so perform a range check
-            int value = idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : false;
+            int value = idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : 0;
             bool edited = false;
 
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);

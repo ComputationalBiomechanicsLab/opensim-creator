@@ -570,7 +570,7 @@ bool osc::ContainsComponent(
     OpenSim::Component const& root,
     OpenSim::ComponentPath const& cp)
 {
-    return FindComponent(root, cp);
+    return FindComponent(root, cp) != nullptr;
 }
 
 OpenSim::AbstractSocket const* osc::FindSocket(

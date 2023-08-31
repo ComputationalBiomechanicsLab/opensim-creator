@@ -66,7 +66,7 @@ namespace
     {
         static_assert(std::is_same_v<std::underlying_type_t<CustomRenderingOptionFlags>, uint32_t>);
 
-        return flags & static_cast<uint32_t>(flag);
+        return (flags & static_cast<uint32_t>(flag)) != 0u;
     }
 }
 
@@ -88,7 +88,7 @@ size_t osc::CustomRenderingOptions::getNumOptions() const
 
 bool osc::CustomRenderingOptions::getOptionValue(ptrdiff_t i) const
 {
-    return m_Flags & (1<<i);
+    return (m_Flags & (1<<i)) != 0u;
 }
 
 void osc::CustomRenderingOptions::setOptionValue(ptrdiff_t i, bool v)

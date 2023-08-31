@@ -63,7 +63,7 @@ private:
 
             ImGui::Separator();
 
-            if (ImGui::MenuItem("         Deselect", nullptr, false, m_Model->getSelected()))
+            if (ImGui::MenuItem("         Deselect", nullptr, false, m_Model->getSelected() != nullptr))
             {
                 m_Model->setSelected(nullptr);
             }

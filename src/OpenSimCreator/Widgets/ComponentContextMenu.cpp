@@ -189,7 +189,7 @@ namespace
             };
             auto filter = [](OpenSim::Component const& c) -> bool
             {
-                return dynamic_cast<OpenSim::ContactGeometry const*>(&c);
+                return dynamic_cast<OpenSim::ContactGeometry const*>(&c) != nullptr;
             };
             auto popup = std::make_unique<osc::SelectComponentPopup>("Select Contact Geometry", uim, onSelection, filter);
             popup->open();

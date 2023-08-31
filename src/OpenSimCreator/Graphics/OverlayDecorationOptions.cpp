@@ -91,7 +91,7 @@ size_t osc::OverlayDecorationOptions::getNumOptions() const
 
 bool osc::OverlayDecorationOptions::getOptionValue(ptrdiff_t i) const
 {
-    return m_Flags & (1<<i);
+    return (m_Flags & (1<<i)) != 0u;
 }
 
 void osc::OverlayDecorationOptions::setOptionValue(ptrdiff_t i, bool v)
@@ -111,7 +111,7 @@ ptrdiff_t osc::OverlayDecorationOptions::getOptionGroupIndex(ptrdiff_t i) const
 
 bool osc::OverlayDecorationOptions::getDrawXZGrid() const
 {
-    return m_Flags & CustomRenderingOptionFlags_DrawXZGrid;
+    return (m_Flags & CustomRenderingOptionFlags_DrawXZGrid) != 0u;
 }
 
 void osc::OverlayDecorationOptions::setDrawXZGrid(bool v)
@@ -121,7 +121,7 @@ void osc::OverlayDecorationOptions::setDrawXZGrid(bool v)
 
 bool osc::OverlayDecorationOptions::getDrawXYGrid() const
 {
-    return m_Flags & CustomRenderingOptionFlags_DrawXYGrid;
+    return (m_Flags & CustomRenderingOptionFlags_DrawXYGrid) != 0u;
 }
 
 void osc::OverlayDecorationOptions::setDrawXYGrid(bool v)
@@ -131,7 +131,7 @@ void osc::OverlayDecorationOptions::setDrawXYGrid(bool v)
 
 bool osc::OverlayDecorationOptions::getDrawYZGrid() const
 {
-    return m_Flags & CustomRenderingOptionFlags_DrawYZGrid;
+    return (m_Flags & CustomRenderingOptionFlags_DrawYZGrid) != 0u;
 }
 
 void osc::OverlayDecorationOptions::setDrawYZGrid(bool v)
@@ -141,7 +141,7 @@ void osc::OverlayDecorationOptions::setDrawYZGrid(bool v)
 
 bool osc::OverlayDecorationOptions::getDrawAxisLines() const
 {
-    return m_Flags & CustomRenderingOptionFlags_DrawAxisLines;
+    return (m_Flags & CustomRenderingOptionFlags_DrawAxisLines) != 0u;
 }
 
 void osc::OverlayDecorationOptions::setDrawAxisLines(bool v)
@@ -151,7 +151,7 @@ void osc::OverlayDecorationOptions::setDrawAxisLines(bool v)
 
 bool osc::OverlayDecorationOptions::getDrawAABBs() const
 {
-    return m_Flags & CustomRenderingOptionFlags_DrawAABBs;
+    return (m_Flags & CustomRenderingOptionFlags_DrawAABBs) != 0u;
 }
 
 void osc::OverlayDecorationOptions::setDrawAABBs(bool v)
@@ -161,7 +161,7 @@ void osc::OverlayDecorationOptions::setDrawAABBs(bool v)
 
 bool osc::OverlayDecorationOptions::getDrawBVH() const
 {
-    return m_Flags & CustomRenderingOptionFlags_DrawBVH;
+    return (m_Flags & CustomRenderingOptionFlags_DrawBVH) != 0u;
 }
 
 void osc::OverlayDecorationOptions::setDrawBVH(bool v)

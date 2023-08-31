@@ -52,7 +52,7 @@ namespace
 
     bool GetFlag(uint32_t flags, CustomDecorationOptionFlags flag)
     {
-        return flags & static_cast<std::underlying_type_t<CustomDecorationOptionFlags>>(flag);
+        return (flags & static_cast<std::underlying_type_t<CustomDecorationOptionFlags>>(flag)) != 0u;
     }
 
     void SetFlag(uint32_t& flags, CustomDecorationOptionFlags flag, bool v)
@@ -114,7 +114,7 @@ size_t osc::OpenSimDecorationOptions::getNumOptions() const
 
 bool osc::OpenSimDecorationOptions::getOptionValue(ptrdiff_t i) const
 {
-    return m_Flags & (1<<i);
+    return (m_Flags & (1<<i)) != 0u;
 }
 
 void osc::OpenSimDecorationOptions::setOptionValue(ptrdiff_t i, bool v)

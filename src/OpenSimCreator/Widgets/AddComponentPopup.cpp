@@ -165,7 +165,7 @@ private:
             }
         );
         bool hasEnoughPathPoints =
-            !dynamic_cast<OpenSim::PathActuator const*>(m_Proto.get()) ||
+            dynamic_cast<OpenSim::PathActuator const*>(m_Proto.get()) == nullptr ||
             m_PathPoints.size() >= 2;
 
         return hasName && allSocketsAssigned && hasEnoughPathPoints;

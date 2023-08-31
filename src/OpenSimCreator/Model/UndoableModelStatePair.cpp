@@ -419,7 +419,7 @@ private:
     // returns `true` if a commit with the given ID has been stored
     bool hasCommit(UID id) const
     {
-        return tryGetCommitByID(id);
+        return tryGetCommitByID(id) != nullptr;
     }
 
     // returns the number of hops between commit `a` and commit `b`
@@ -487,12 +487,12 @@ private:
     {
         ModelStateCommit const* c = tryGetCommitByID(id);
 
-        while (c && c->getID() != maybeAncestor)
+        while (c != nullptr && c->getID() != maybeAncestor)
         {
             c = tryGetCommitByID(c->getParentID());
         }
 
-        return c;
+        return c != nullptr;
     }
 
     // remove a range of commits from `start` (inclusive) to `end` (exclusive)
