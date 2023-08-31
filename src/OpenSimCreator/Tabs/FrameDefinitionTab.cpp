@@ -1340,7 +1340,7 @@ namespace
             ChooseComponentsEditorLayerParameters parameters_) :
 
             m_State{std::move(model_), std::move(parameters_)},
-            m_Renderer{osc::App::get().config(), *osc::App::singleton<osc::MeshCache>(), *osc::App::singleton<osc::ShaderCache>()}
+            m_Renderer{osc::App::config(), *osc::App::singleton<osc::MeshCache>(), *osc::App::singleton<osc::ShaderCache>()}
         {
         }
 

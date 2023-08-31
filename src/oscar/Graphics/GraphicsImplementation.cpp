@@ -1759,7 +1759,7 @@ private:
             ToOpenGLDataType(cpuDataType),
             m_PixelData.data()
         );
-        glGenerateMipmap((*m_MaybeGPUTexture)->texture.type);
+        glGenerateMipmap(GL_TEXTURE_2D);
         gl::BindTexture();
     }
 

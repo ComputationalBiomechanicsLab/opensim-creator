@@ -1090,7 +1090,7 @@ void osc::DrawReloadModelButton(UndoableModelStatePair& model)
 
     if (ImGui::Button(ICON_FA_RECYCLE))
     {
-        ActionReloadOsimFromDisk(model, *App::upd().singleton<MeshCache>());
+        ActionReloadOsimFromDisk(model, *App::singleton<MeshCache>());
     }
 
     if (!HasInputFileName(model.getModel()))

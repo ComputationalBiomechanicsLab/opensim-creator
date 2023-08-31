@@ -81,7 +81,7 @@ void osc::MainMenuFileTab::onDraw(
         }
         else if (maybeModel && ImGui::IsKeyPressed(ImGuiKey_F5))
         {
-            ActionReloadOsimFromDisk(*maybeModel, *App::upd().singleton<MeshCache>());
+            ActionReloadOsimFromDisk(*maybeModel, *App::singleton<MeshCache>());
         }
     }
 
@@ -186,7 +186,7 @@ void osc::MainMenuFileTab::onDraw(
 
         if (ImGui::MenuItem(ICON_FA_RECYCLE " Reload", "F5", false, modelHasBackingFile) && maybeModel)
         {
-            osc::ActionReloadOsimFromDisk(*maybeModel, *App::upd().singleton<MeshCache>());
+            osc::ActionReloadOsimFromDisk(*maybeModel, *App::singleton<MeshCache>());
         }
         osc::DrawTooltipIfItemHovered("Reload", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
 
