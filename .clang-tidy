@@ -41,9 +41,12 @@ Checks: >
   -readability-identifier-length,
   -readability-uppercase-literal-suffix,
   -readability-else-after-return,
-  -readability-implicit-bool-conversion,
   -readability-function-cognitive-complexity,
   -readability-named-parameter,
   -readability-convert-member-functions-to-static,
   -readability-qualified-auto,
   cert-*
+
+Options:
+  AllowIntegerConditions: true
+  AllowPointerConditions: true
