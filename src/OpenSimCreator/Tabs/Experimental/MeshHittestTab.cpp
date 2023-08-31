@@ -161,7 +161,6 @@ public:
 
         // auxiliary 2D UI
         // printout stats
-        if (true)
         {
             ImGui::Begin("controls");
             ImGui::Checkbox("BVH", &m_UseBVH);

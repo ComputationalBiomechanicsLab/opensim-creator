@@ -30,14 +30,9 @@ bool osc::IsStringCaseInsensitiveGreaterThan(std::string const& a, std::string c
         return true;  // b is greater than a (common prefix, but has more letters)
     }
 
-    if (tolower(*itA) < tolower(*itB))
-    {
-        return true;  // b is greater than a (first mismatching character is greater)
-    }
-    else
-    {
-        return false;  // a is greater than b (first mismatching character is less)
-    }
+    // true if b is greater than a (first mismatching character is greater)
+    // else, a is greater than b (first mismatching character is less)
+    return tolower(*itA) < tolower(*itB);
 }
 
 bool osc::ContainsSubstring(std::string const& str, std::string_view substr)

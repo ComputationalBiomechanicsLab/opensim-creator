@@ -902,7 +902,7 @@ bool osc::DeactivateAllWrapObjectsIn(OpenSim::Model& m)
             OpenSim::WrapObject& wo = wos[i];
             wo.set_active(false);
             wo.upd_Appearance().set_visible(false);
-            rv = rv || true;
+            rv = true;
         }
     }
     return rv;
@@ -918,7 +918,7 @@ bool osc::ActivateAllWrapObjectsIn(OpenSim::Model& m)
             OpenSim::WrapObject& wo = wos[i];
             wo.set_active(true);
             wo.upd_Appearance().set_visible(true);
-            rv = rv || true;
+            rv = true;
         }
     }
     return rv;

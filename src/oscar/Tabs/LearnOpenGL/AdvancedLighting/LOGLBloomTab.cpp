@@ -340,8 +340,8 @@ private:
         {
             &m_SceneHDRColorOutput,
             &m_SceneHDRThresholdedOutput,
-            &m_PingPongBlurOutputBuffers[0],
-            &m_PingPongBlurOutputBuffers[1],
+            m_PingPongBlurOutputBuffers.data(),
+            m_PingPongBlurOutputBuffers.data() + 1,
         });
 
         for (size_t i = 0; i < textures.size(); ++i)

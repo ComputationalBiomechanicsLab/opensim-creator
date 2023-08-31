@@ -106,15 +106,9 @@ namespace
             osc::ModelEditorViewerPanelParameters&,
             osc::ModelEditorViewerPanelState&) final
         {
-            if (m_Gizmo.isUsing())
-            {
-                return true;
-            }
-
             // care: ImGuizmo::isOver can return `true` even if it
             // isn't being drawn this frame
-
-            return false;
+            return m_Gizmo.isUsing();
         }
 
         bool implHandleKeyboardInputs(
