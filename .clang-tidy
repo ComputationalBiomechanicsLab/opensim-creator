@@ -47,6 +47,8 @@ Checks: >
   -readability-qualified-auto,
   cert-*
 
-Options:
-  AllowIntegerConditions: true
-  AllowPointerConditions: true
+CheckOptions:
+  - key: readability-implicit-bool-conversion.AllowPointerConditions
+    value: true
+  - key: readability-implicit-bool-conversion.AllowIntegerConditions
+    value: true
