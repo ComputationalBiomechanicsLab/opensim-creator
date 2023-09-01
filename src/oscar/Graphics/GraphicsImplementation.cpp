@@ -1480,7 +1480,7 @@ namespace
                     nonstd::span<uint8_t const> src{pixelData.begin() + channelStart, sizeof(float)};
                     std::array<uint8_t, sizeof(float)> dest{};
                     std::copy(src.begin(), src.end(), dest.begin());
-                    float const channelFloat = osc::bit_cast<float>(dest);
+                    auto const channelFloat = osc::bit_cast<float>(dest);
 
                     color[channel] = osc::ToClamped8BitColorChannel(channelFloat);
                 }
