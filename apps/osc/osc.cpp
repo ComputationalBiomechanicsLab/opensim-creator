@@ -38,7 +38,6 @@ int main(int argc, char* argv[])
         else if (arg.front() != '-')
         {
             unnamedArgs.push_back(arg);
-            break;
         }
         else if (arg == "--help")
         {
