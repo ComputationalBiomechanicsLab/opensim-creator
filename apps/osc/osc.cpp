@@ -10,86 +10,53 @@
 
 #include <cstdlib>
 #include <iostream>
-
-static osc::CStringView constexpr c_Usage = R"(usage: osc [--help] [fd] MODEL.osim
-)";
-
-static osc::CStringView constexpr c_Help = R"(OPTIONS
-    --help
-        Show this help
-)";
+#include <memory>
+#include <string_view>
+#include <vector>
 
 namespace
 {
-    bool SkipPrefix(char const* prefix, char const* s, char const** out)
-    {
-        do
-        {
-            if (*prefix == '\0' && (*s == '\0' || *s == '='))
-            {
-                *out = s;
-                return true;
-            }
-        }
-        while (*prefix++ == *s++);
+    constexpr osc::CStringView c_Usage = "usage: osc [--help] [fd] MODEL.osim\n";
 
-        return false;
-    }
+    constexpr osc::CStringView c_Help = R"(OPTIONS
+    --help
+        Show this help
+)";
 }
 
-int main(int argc, char** argv)
+int main(int argc, char* argv[])
 {
-    // skip application name
-    --argc;
-    ++argv;
-
-    // handle named flag args (e.g. --help)
-    while (argc)
+    std::vector<std::string_view> unnamedArgs;
+    for (int i = 1; i < argc; ++i)
     {
-        char const* arg = *argv;
+        std::string_view const arg{argv[i]};
 
-        if (*arg != '-')
+        if (arg.empty())
         {
+            // do nothing (this shouldn't happen)
+        }
+        else if (arg.front() != '-')
+        {
+            unnamedArgs.push_back(arg);
             break;
         }
-
-        if (SkipPrefix("--help", arg, &arg))
+        else if (arg == "--help")
         {
             std::cout << c_Usage << '\n' << c_Help << '\n';
             return EXIT_SUCCESS;
         }
-
-        ++argv;
-        --argc;
     }
 
     // init top-level application state
     osc::OpenSimCreatorApp app;
 
     // init top-level screen (tab host)
-    auto screen = std::make_unique<osc::MainUIScreen>(std::vector<std::filesystem::path>(argv, argv + argc));
+    auto screen = std::make_unique<osc::MainUIScreen>();
 
-    // if the config requested that an initial tab should be opened, try looking it up
-    // and loading it
-    if (std::optional<std::string> maybeRequestedTab = app.getConfig().getInitialTabOverride())
+    // load each unnamed arg as a file in the UI
+    for (auto const& unnamedArg : unnamedArgs)
     {
-        std::shared_ptr<osc::TabRegistry> tabs = osc::App::singleton<osc::TabRegistry>();
-
-        if (std::optional<osc::TabRegistryEntry> maybeEntry = tabs->getByName(*maybeRequestedTab))
-        {
-            osc::ParentPtr<osc::TabHost> api = screen->getTabHostAPI();
-            std::unique_ptr<osc::Tab> initialTab = maybeEntry->createTab(api);
-            api->selectTab(api->addTab(std::move(initialTab)));
-        }
-        else
-        {
-            osc::log::warn("%s: cannot find a tab with this name in the tab registry: ignoring", maybeRequestedTab->c_str());
-            osc::log::warn("available tabs are:");
-            for (size_t i = 0; i < tabs->size(); ++i)
-            {
-                osc::log::warn("    %s", (*tabs)[i].getName().c_str());
-            }
-        }
+        screen->open(unnamedArg);
     }
 
     // enter main application loop

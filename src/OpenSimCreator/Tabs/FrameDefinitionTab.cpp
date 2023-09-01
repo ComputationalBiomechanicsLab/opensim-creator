@@ -398,7 +398,7 @@ namespace
 
     bool IsEdge(OpenSim::Component const& component)
     {
-        return dynamic_cast<FDVirtualEdge const*>(&component);
+        return dynamic_cast<FDVirtualEdge const*>(&component) != nullptr;
     }
 
     // an edge that starts at virtual `pointA` and ends at virtual `pointB`

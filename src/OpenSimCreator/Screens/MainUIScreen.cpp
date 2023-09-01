@@ -47,55 +47,66 @@
 #include <utility>
 #include <vector>
 
+namespace
+{
+    std::unique_ptr<osc::Tab> LoadConfigurationDefinedTabIfNecessary(
+        osc::Config const& config,
+        osc::TabRegistry const& tabRegistry,
+        osc::ParentPtr<osc::TabHost> api)
+    {
+        if (std::optional<std::string> maybeRequestedTab = config.getInitialTabOverride())
+        {
+            if (std::optional<osc::TabRegistryEntry> maybeEntry = tabRegistry.getByName(*maybeRequestedTab))
+            {
+                return maybeEntry->createTab(api);
+            }
+
+            osc::log::warn("%s: cannot find a tab with this name in the tab registry: ignoring", maybeRequestedTab->c_str());
+            osc::log::warn("available tabs are:");
+            for (size_t i = 0; i < tabRegistry.size(); ++i)
+            {
+                osc::log::warn("    %s", tabRegistry[i].getName().c_str());
+            }
+        }
+
+        return nullptr;
+    }
+}
+
 class osc::MainUIScreen::Impl final :
     public osc::MainUIStateAPI,
     public std::enable_shared_from_this<Impl> {
 public:
 
-    Impl()
+    UID addTab(std::unique_ptr<Tab> tab)
     {
-        // CARE: the reason we delay construction is because std::enable_shared_from_this
-        // does not work until after the inheriting class's constructor completes
-        m_InitialTabsCtors.emplace_back([](ParentPtr<MainUIStateAPI> const& api)
-        {
-            return std::make_unique<SplashTab>(api);
-        });
+        return implAddTab(std::move(tab));
     }
 
-    explicit Impl(std::vector<std::filesystem::path> const& paths)
+    void open(std::filesystem::path const& p)
     {
-        // CARE: the reason we delay construction is because std::enable_shared_from_this
-        // does not work until after the inheriting class's constructor completes
-
-        // always ensure the splash tab is available
-        m_InitialTabsCtors.emplace_back([](ParentPtr<MainUIStateAPI> const& api)
-        {
-            return std::make_unique<SplashTab>(api);
-        });
-
-        // queue a tab for each supplied path (i.e. load the path)
-        for (std::filesystem::path const& path : paths)
-        {
-            m_InitialTabsCtors.emplace_back([path](ParentPtr<MainUIStateAPI> const& api)
-            {
-                return std::make_unique<LoadingTab>(api, path);
-            });
-        }
+        addTab(std::make_unique<LoadingTab>(getTabHostAPI(), p));
     }
 
     void onMount()
     {
-        if (!m_InitialTabsCtors.empty())
+        if (!std::exchange(m_HasBeenMountedBefore, true))
         {
-            // edge-case: the caller used the API to add tabs, which are already in there
-            // and should behave "as if" added after the ctor-defined tabs (#624)
-            size_t const nManuallyAddedTabs = m_Tabs.size();
-            for (auto& initialTab : m_InitialTabsCtors)
+            // on first mount, place the splash tab at the front of the tabs collection
+            m_Tabs.insert(m_Tabs.begin(), std::make_unique<SplashTab>(getTabHostAPI()));
+
+            // if the application configuration has requested that a specific tab should be opened,
+            // then try looking it up and open it
+            if (auto tab = LoadConfigurationDefinedTabIfNecessary(App::get().getConfig(), *App::singleton<osc::TabRegistry>(), getTabHostAPI()))
             {
-                m_Tabs.insert(m_Tabs.end() - nManuallyAddedTabs, initialTab(updThisAsParent()));
+                addTab(std::move(tab));
             }
-            m_RequestedTab = m_Tabs.back()->getID();
-            m_InitialTabsCtors.clear();
+
+            // focus on the rightmost tab
+            if (!m_Tabs.empty())
+            {
+                m_RequestedTab = m_Tabs.back()->getID();
+            }
         }
 
         osc::ImGuiInit();
@@ -351,17 +362,12 @@ public:
         }
     }
 
-    UID addTab(std::unique_ptr<Tab> tab)
-    {
-        return implAddTab(std::move(tab));
-    }
+private:
 
     osc::ParentPtr<MainUIStateAPI> getTabHostAPI()
     {
         return osc::ParentPtr<MainUIStateAPI>{shared_from_this()};
     }
-
-private:
     void drawTabSpecificMenu()
     {
         OSC_PERF("MainUIScreen/drawTabSpecificMenu");
@@ -783,8 +789,8 @@ private:
         return ParentPtr<MainUIStateAPI>{shared_from_this()};
     }
 
-    // queued tabs, constructed on the first time this is mounted
-    std::vector<std::function<std::unique_ptr<Tab>(ParentPtr<MainUIStateAPI> const&)>> m_InitialTabsCtors;
+    // set the first time `onMount` is called
+    bool m_HasBeenMountedBefore = false;
 
     // global simulation params: dictates how the next simulation shall be ran
     ParamBlock m_SimulationParams = ToParamBlock(ForwardDynamicSimulatorParams{});
@@ -828,18 +834,12 @@ private:
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::MainUIScreen::MainUIScreen() :
     m_Impl{std::make_shared<Impl>()}
 {
 }
-
-osc::MainUIScreen::MainUIScreen(std::vector<std::filesystem::path> const& paths) :
-    m_Impl{std::make_shared<Impl>(paths)}
-{
-}
-
 osc::MainUIScreen::MainUIScreen(MainUIScreen&&) noexcept = default;
 osc::MainUIScreen& osc::MainUIScreen::operator=(MainUIScreen&&) noexcept = default;
 osc::MainUIScreen::~MainUIScreen() noexcept = default;
@@ -849,9 +849,9 @@ osc::UID osc::MainUIScreen::addTab(std::unique_ptr<Tab> tab)
     return m_Impl->addTab(std::move(tab));
 }
 
-osc::ParentPtr<osc::TabHost> osc::MainUIScreen::getTabHostAPI()
+void osc::MainUIScreen::open(std::filesystem::path const& path)
 {
-    return m_Impl->getTabHostAPI();
+    m_Impl->open(path);
 }
 
 void osc::MainUIScreen::implOnMount()

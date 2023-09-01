@@ -51,10 +51,9 @@ namespace
 
     // export a timeseries to a CSV file and return the filepath
     std::string ExportTimeseriesToCSV(
-        float const* ts,    // times
-        float const* vs,    // values @ each time in times
-        size_t n,           // number of datapoints
-        std::string_view header)  // name of values (header)
+        nonstd::span<float const> times,
+        nonstd::span<float const> values,
+        std::string_view header)
     {
         // try prompt user for save location
         std::optional<std::filesystem::path> const maybeCSVPath =
@@ -76,9 +75,9 @@ namespace
         }
 
         fout << "time," << header << '\n';
-        for (size_t i = 0; i < n; ++i)
+        for (size_t i = 0, len = std::min(times.size(), values.size()); i < len; ++i)
         {
-            fout << ts[i] << ',' << vs[i] << '\n';
+            fout << times[i] << ',' << values[i] << '\n';
         }
 
         if (!fout)
@@ -124,11 +123,7 @@ namespace
         std::vector<float> values = PopulateFirstNNumericOutputValues(*sim.getModel(), reports, output);
         std::vector<float> times = PopulateFirstNTimeValues(reports);
 
-        return ExportTimeseriesToCSV(times.data(),
-            values.data(),
-            times.size(),
-            output.getName()
-        );
+        return ExportTimeseriesToCSV(times, values, output.getName());
     }
 
     void DrawToggleWatchOutputMenuItem(

@@ -8,7 +8,6 @@
 
 #include <filesystem>
 #include <memory>
-#include <vector>
 
 namespace osc { class Tab; }
 namespace osc { class TabHost; }
@@ -18,7 +17,6 @@ namespace osc
     class MainUIScreen final : public Screen {
     public:
         MainUIScreen();
-        MainUIScreen(std::vector<std::filesystem::path> const&);
         MainUIScreen(MainUIScreen const&) = delete;
         MainUIScreen(MainUIScreen&&) noexcept;
         MainUIScreen& operator=(MainUIScreen const&) = delete;
@@ -26,7 +24,7 @@ namespace osc
         ~MainUIScreen() noexcept override;
 
         UID addTab(std::unique_ptr<Tab>);
-        ParentPtr<TabHost> getTabHostAPI();
+        void open(std::filesystem::path const&);
 
     private:
         void implOnMount() final;

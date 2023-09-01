@@ -120,7 +120,7 @@ namespace
             // allocate an appropriate internal node
 
             // compute bounding box of remaining (children) prims
-            osc::AABB const aabb = Union({prims.data() + begin, static_cast<size_t>(n)});
+            osc::AABB const aabb = Union({prims.begin() + begin, static_cast<size_t>(n)});
 
             // compute slicing position along the longest dimension
             auto const longestDimIdx = LongestDimIndex(aabb);
