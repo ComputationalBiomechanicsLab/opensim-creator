@@ -106,7 +106,7 @@ public:
 
     bool onEvent(SDL_Event const& e)
     {
-        if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".osim"))
+        if (e.type == SDL_DROPFILE && e.drop.file != nullptr && EndsWith(e.drop.file, ".osim"))
         {
             // if the user drops an osim file on this tab then it should be loaded
             m_Parent->addAndSelectTab<LoadingTab>(m_Parent, e.drop.file);

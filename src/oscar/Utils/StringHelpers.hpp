@@ -30,7 +30,7 @@ namespace osc
     bool ContainsSubstringCaseInsensitive(std::string const& str, std::string const& substr);
 
     // returns true if `s` ends with `suffix`
-    bool CStrEndsWith(CStringView, std::string_view suffix);
+    bool EndsWith(std::string_view s, std::string_view suffix);
 
     // returns true if `str` contains `c`
     bool Contains(CStringView, char c);

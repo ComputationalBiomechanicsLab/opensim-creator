@@ -196,7 +196,7 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
     static_assert(std::is_same_v<nfdchar_t, char>);
     std::filesystem::path p{path.get()};
 
-    if (maybeExtension && !CStrEndsWith(path.get(), *maybeExtension))
+    if (maybeExtension && !EndsWith(path.get(), *maybeExtension))
     {
         p += '.';
         p += std::string_view{*maybeExtension};

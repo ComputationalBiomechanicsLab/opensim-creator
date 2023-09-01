@@ -316,11 +316,11 @@ private:
 
     bool onDropEvent(SDL_DropEvent const& e)
     {
-        if (e.file != nullptr && CStrEndsWith(e.file, ".sto"))
+        if (e.file != nullptr && EndsWith(e.file, ".sto"))
         {
             return osc::ActionLoadSTOFileAgainstModel(m_Parent, *m_Model, e.file);
         }
-        else if (e.type == SDL_DROPFILE && e.file != nullptr && CStrEndsWith(e.file, ".osim"))
+        else if (e.type == SDL_DROPFILE && e.file != nullptr && EndsWith(e.file, ".osim"))
         {
             // if the user drops an osim file on this tab then it should be loaded
             m_Parent->addAndSelectTab<LoadingTab>(m_Parent, e.file);

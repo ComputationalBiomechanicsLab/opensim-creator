@@ -52,7 +52,7 @@ namespace
     std::unique_ptr<osc::Tab> LoadConfigurationDefinedTabIfNecessary(
         osc::Config const& config,
         osc::TabRegistry const& tabRegistry,
-        osc::ParentPtr<osc::TabHost> api)
+        osc::ParentPtr<osc::TabHost> const& api)
     {
         if (std::optional<std::string> maybeRequestedTab = config.getInitialTabOverride())
         {

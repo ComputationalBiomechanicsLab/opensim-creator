@@ -89,14 +89,13 @@ bool osc::ContainsSubstringCaseInsensitive(std::string const& str, std::string c
     return ContainsSubstring(s, ss);
 }
 
-bool osc::CStrEndsWith(CStringView s, std::string_view suffix)
+bool osc::EndsWith(std::string_view s, std::string_view suffix)
 {
-    if (s.size() < suffix.length())
+    if (s.size() < suffix.size())
     {
         return false;
     }
-
-    return std::equal(s.end() - suffix.length(), s.end(), suffix.begin(), suffix.end());
+    return s.substr(s.size() - suffix.size()) == suffix;
 }
 
 bool osc::Contains(CStringView s, char c)
