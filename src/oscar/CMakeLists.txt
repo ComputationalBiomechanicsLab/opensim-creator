@@ -273,6 +273,7 @@ add_library(oscar STATIC
     Utils/PerfMeasurementMetadata.hpp
     Utils/ScopeGuard.hpp
     Utils/SetHelpers.hpp
+    Utils/SpanHelpers.hpp
     Utils/Spsc.hpp
     Utils/StringHelpers.cpp
     Utils/StringHelpers.hpp

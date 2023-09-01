@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
     std::vector<std::string_view> unnamedArgs;
     for (int i = 1; i < argc; ++i)
     {
-        std::string_view const arg{argv[i]};
+        std::string_view const arg{argv[i]};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
         if (arg.empty())
         {

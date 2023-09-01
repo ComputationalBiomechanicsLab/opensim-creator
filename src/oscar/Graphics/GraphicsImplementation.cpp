@@ -51,6 +51,7 @@
 #include "oscar/Utils/DefaultConstructOnCopy.hpp"
 #include "oscar/Utils/EnumHelpers.hpp"
 #include "oscar/Utils/Perf.hpp"
+#include "oscar/Utils/SpanHelpers.hpp"
 #include "oscar/Utils/UID.hpp"
 #include "oscar/Utils/VariantHelpers.hpp"
 
@@ -305,13 +306,10 @@ namespace
 namespace
 {
     template<typename T>
-    void PushAsBytes(T const& v, std::vector<std::byte>& out)
+    void PushAsBytes(T const& v, std::vector<uint8_t>& out)
     {
-        out.insert(
-            out.end(),
-            reinterpret_cast<std::byte const*>(&v),
-            reinterpret_cast<std::byte const*>(&v) + sizeof(T)
-        );
+        auto const bytes = osc::ViewAsUint8Span(v);
+        out.insert(out.end(), bytes.begin(), bytes.end());
     }
 
     template<typename GlmType>
@@ -1518,11 +1516,7 @@ namespace
             {
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
-                    pixelData.insert(
-                        pixelData.end(),
-                        reinterpret_cast<uint8_t const*>(&pixel[channel]),
-                        reinterpret_cast<uint8_t const*>(&pixel[channel] + 1)
-                    );
+                    PushAsBytes(pixel[channel], pixelData);
                 }
             }
         }
@@ -1565,11 +1559,7 @@ namespace
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
                     float const pixelFloatVal = osc::ToFloatingPointColorChannel(pixel[channel]);
-                    pixelData.insert(
-                        pixelData.end(),
-                        reinterpret_cast<uint8_t const*>(&pixelFloatVal),
-                        reinterpret_cast<uint8_t const*>(&pixelFloatVal + 1)
-                    );
+                    PushAsBytes(pixelFloatVal, pixelData);
                 }
             }
         }
@@ -4259,7 +4249,7 @@ private:
         OSC_ASSERT_ALWAYS((!hasTangents || m_Tangents.size() == m_Vertices.size()) && "number of tangents != number of verts");
 
         // allocate+pack mesh data into CPU-side vector
-        std::vector<std::byte> data;
+        std::vector<uint8_t> data;
         data.reserve(byteStride * m_Vertices.size());
         for (size_t i = 0; i < m_Vertices.size(); ++i)
         {

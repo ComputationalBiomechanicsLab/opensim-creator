@@ -4,6 +4,7 @@
 #include <array>
 #include <atomic>
 #include <cstddef>
+#include <cstring>
 #include <iterator>
 #include <limits>
 #include <memory>
@@ -283,5 +284,20 @@ namespace osc {
     constexpr std::array<std::remove_cv_t<T>, N> to_array(T (&&a)[N])
     {
         return detail::to_array_impl(std::move(a), std::make_index_sequence<N>{});
+    }
+
+    template<class To, class From>
+    To bit_cast(From const& src) noexcept
+    {
+        static_assert(
+            sizeof(To) == sizeof(From) &&
+            std::is_trivially_copyable_v<From> &&
+            std::is_trivially_copyable_v<To> &&
+            std::is_trivially_constructible_v<To>
+        );
+
+        To dst;
+        std::memcpy(&dst, &src, sizeof(To));
+        return dst;
     }
 }

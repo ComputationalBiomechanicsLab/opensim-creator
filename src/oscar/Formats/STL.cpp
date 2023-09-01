@@ -10,6 +10,7 @@
 #include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
@@ -61,14 +62,11 @@ namespace
 
     void WriteFloatIEEE(std::ostream& o, float v)
     {
-        static_assert(sizeof(float) == 4);
-        static_assert(sizeof(uint8_t) == 1);
-
-        auto const* const ptr = reinterpret_cast<uint8_t const*>(&v);
-        o << ptr[0];
-        o << ptr[1];
-        o << ptr[2];
-        o << ptr[3];
+        static_assert(std::numeric_limits<float>::is_iec559);
+        for (uint8_t byte : osc::bit_cast<std::array<uint8_t, sizeof(decltype(v))>>(v))
+        {
+            o << byte;
+        }
     }
 
     void WriteVec3IEEE(std::ostream& o, glm::vec3 const& v)
