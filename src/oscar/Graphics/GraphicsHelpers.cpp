@@ -23,6 +23,7 @@
 #include "oscar/Maths/Tetrahedron.hpp"
 #include "oscar/Platform/Config.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
+#include "oscar/Utils/SpanHelpers.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
@@ -114,17 +115,20 @@ namespace
             throw std::runtime_error{std::move(ss).str()};
         }
 
+        nonstd::span<float const> const pixelSpan
+        {
+            pixels.get(),
+            static_cast<size_t>(dims.x*dims.y*numChannels)
+        };
+
         osc::Texture2D rv
         {
             dims,
             *format,
             colorSpace,
         };
-        rv.setPixelData(
-        {
-            reinterpret_cast<uint8_t const*>(pixels.get()),
-            static_cast<size_t>(4*dims.x*dims.y*numChannels)
-        });
+        rv.setPixelData(osc::ViewSpanAsUint8Span(pixelSpan));
+
         return rv;
     }
 

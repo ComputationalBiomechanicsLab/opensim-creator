@@ -23,4 +23,12 @@ namespace osc
         static_assert(std::is_trivially_destructible_v<T>);
         return {reinterpret_cast<uint8_t const*>(&v), sizeof(T)};
     }
+
+    template<typename T>
+    nonstd::span<uint8_t const> ViewSpanAsUint8Span(nonstd::span<T const> const& vs)
+    {
+        static_assert(std::is_trivially_copyable_v<T>);
+        static_assert(std::is_trivially_destructible_v<T>);
+        return {reinterpret_cast<uint8_t const*>(vs.data()), sizeof(T) * vs.size()};
+    }
 }

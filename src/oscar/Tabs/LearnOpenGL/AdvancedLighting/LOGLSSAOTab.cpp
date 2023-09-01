@@ -28,6 +28,7 @@
 #include "oscar/Platform/App.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
+#include "oscar/Utils/SpanHelpers.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -102,16 +103,6 @@ namespace
         return rv;
     }
 
-    template<typename T>
-    nonstd::span<uint8_t const> ToByteSpan(nonstd::span<T const> vs)
-    {
-        return
-        {
-            reinterpret_cast<uint8_t const*>(vs.data()),
-            reinterpret_cast<uint8_t const*>(vs.data() + vs.size())
-        };
-    }
-
     osc::Texture2D GenerateNoiseTexture(glm::ivec2 dimensions)
     {
         std::vector<osc::Color> const pixels =
@@ -125,7 +116,7 @@ namespace
             osc::TextureWrapMode::Repeat,
             osc::TextureFilterMode::Linear,
         };
-        rv.setPixelData(ToByteSpan<osc::Color>(pixels));
+        rv.setPixelData(osc::ViewSpanAsUint8Span<osc::Color>(pixels));
         return rv;
     }
 

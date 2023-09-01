@@ -479,28 +479,26 @@ namespace gl
 
         if constexpr (TGlsl::size <= 4)
         {
-            void const* const offsetgl = reinterpret_cast<void*>(offset);
             glVertexAttribPointer(
                 attr.get(),
                 TGlsl::size,
                 SourceType,
                 normgl,
                 stridegl,
-                offsetgl
+                reinterpret_cast<void*>(offset)
             );
         }
         else if constexpr (SourceType == GL_FLOAT)
         {
             for (size_t i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i)
             {
-                void* offsetgl = reinterpret_cast<void*>(offset + (i * TGlsl::elementsPerLocation * sizeof(float)));
                 glVertexAttribPointer(
                     attr.get() + static_cast<GLuint>(i),
                     TGlsl::elementsPerLocation,
                     SourceType,
                     normgl,
                     stridegl,
-                    offsetgl
+                    reinterpret_cast<void*>(offset + (i * TGlsl::elementsPerLocation * sizeof(float)))
                 );
             }
         }
@@ -927,11 +925,6 @@ namespace gl
         constexpr TextureHandle& handle() noexcept
         {
             return m_TextureHandle;
-        }
-
-        void* getVoidHandle() const noexcept
-        {
-            return reinterpret_cast<void*>(static_cast<uintptr_t>(m_TextureHandle.get()));
         }
 
     private:

@@ -1226,6 +1226,7 @@ private:
         for (GLint faceIdx = 0; faceIdx < static_cast<GLint>(osc::NumOptions<osc::CubemapFace>()); ++faceIdx)
         {
             size_t const faceBytesBegin = faceIdx * numBytesPerFace;
+
             gl::TexImage2D(
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIdx,
                 0,
@@ -4319,7 +4320,8 @@ private:
         int64_t byteOffset = 0;
 
 
-        {  // mesh always has vertices
+        {
+            // mesh always has vertices
             glVertexAttribPointer(
                 shader_locations::aPos,
                 3,

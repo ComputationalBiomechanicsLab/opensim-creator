@@ -1,5 +1,7 @@
 #pragma once
 
+#include "oscar/Utils/Cpp20Shims.hpp"
+
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -46,14 +48,7 @@ namespace osc
 
     inline uint32_t ToUint32(Color32 const& color32)
     {
-        static_assert(sizeof(Color32) == sizeof(uint32_t));
-        uint32_t rv = 0;
-        std::memcpy(
-            reinterpret_cast<uint8_t*>(&rv),
-            reinterpret_cast<uint8_t const*>(&color32),
-            sizeof(Color32)
-        );
-        return rv;
+        return bit_cast<uint32_t>(color32);
     }
 }
 
