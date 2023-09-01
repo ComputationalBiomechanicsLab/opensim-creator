@@ -125,6 +125,18 @@ namespace
         }
     )";
 
+    std::string GLToString(GLubyte const* ptr)
+    {
+        static_assert(sizeof(GLubyte) == sizeof(char));
+        static_assert(alignof(GLubyte) == alignof(char));
+        return ptr ? std::string{reinterpret_cast<char const*>(ptr)} : std::string{};
+    }
+
+    bool IsAlignedAtLeast(void const* ptr, GLint requiredAlignment)
+    {
+        return reinterpret_cast<intptr_t>(ptr) % requiredAlignment == 0;
+    }
+
     // returns the `Name String`s of all extensions that OSC's OpenGL backend might
     // use
     std::set<std::string> GetAllOpenGLExtensionsUsedByOSC()
@@ -250,11 +262,8 @@ namespace
         std::set<std::string> extensionsSupportedByBackend;
         for (GLint i = 0; i < numExtensionsSupportedByBackend; ++i)
         {
-            static_assert(sizeof(GLubyte) == sizeof(char));
-            static_assert(alignof(GLubyte) == alignof(char));
-
-            GLubyte const* s = glGetStringi(GL_EXTENSIONS, i);
-            extensionsSupportedByBackend.emplace(reinterpret_cast<char const*>(s));
+            std::string str = GLToString(glGetStringi(GL_EXTENSIONS, i));
+            extensionsSupportedByBackend.emplace(std::move(str));
         }
 
         return extensionsSupportedByBackend;
@@ -1216,7 +1225,7 @@ private:
 
         // sanity-check before doing anything with OpenGL
         OSC_ASSERT(numBytesPerRow % unpackAlignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-        OSC_ASSERT(reinterpret_cast<intptr_t>(m_Data.data()) % unpackAlignment == 0 && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+        OSC_ASSERT(IsAlignedAtLeast(m_Data.data(), unpackAlignment) && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
         OSC_ASSERT(numBytesInCubemap <= m_Data.size() && "the number of bytes in the cubemap (CPU-side) is less than expected: this is a developer bug");
         static_assert(osc::NumOptions<osc::TextureFormat>() == 5, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
 
@@ -1393,11 +1402,8 @@ namespace
                 rv.push_back(color);
             }
         }
-        else
+        else if (channelFormat == osc::TextureChannelFormat::Float32 && bytesPerChannel == sizeof(float))
         {
-            static_assert(std::is_same_v<osc::Color::value_type, float>);
-            OSC_ASSERT(bytesPerChannel == sizeof(float));
-
             // read 32-bit channel floats into osc::Color channels
             for (size_t pixel = 0; pixel < numPixels; ++pixel)
             {
@@ -1406,15 +1412,20 @@ namespace
                 osc::Color color = osc::Color::black();
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
-                    size_t const channelStart = pixelStart + channel*sizeof(float);
-                    std::copy(
-                        pixelData.begin() + channelStart,
-                        pixelData.begin() + channelStart + sizeof(float),
-                        reinterpret_cast<uint8_t*>(&color[channel])
-                    );
+                    size_t const channelStart = pixelStart + channel*bytesPerChannel;
+
+                    nonstd::span<uint8_t const> src{pixelData.begin() + channelStart, sizeof(float)};
+                    std::array<uint8_t, sizeof(float)> dest{};
+                    std::copy(src.begin(), src.end(), dest.begin());
+
+                    color[channel] = osc::bit_cast<float>(dest);
                 }
                 rv.push_back(color);
             }
+        }
+        else
+        {
+            OSC_ASSERT(false && "unsupported texture channel format or bytes per channel detected");
         }
 
         return rv;
@@ -1466,12 +1477,11 @@ namespace
                 {
                     size_t const channelStart = pixelStart + channel*sizeof(float);
 
-                    float channelFloat = 0.0f;
-                    std::copy(
-                        pixelData.begin() + channelStart,
-                        pixelData.begin() + channelStart + sizeof(float),
-                        reinterpret_cast<uint8_t*>(&channelFloat)
-                    );
+                    nonstd::span<uint8_t const> src{pixelData.begin() + channelStart, sizeof(float)};
+                    std::array<uint8_t, sizeof(float)> dest{};
+                    std::copy(src.begin(), src.end(), dest.begin());
+                    float const channelFloat = osc::bit_cast<float>(dest);
+
                     color[channel] = osc::ToClamped8BitColorChannel(channelFloat);
                 }
                 rv.push_back(color);
@@ -1734,7 +1744,7 @@ private:
 
         static_assert(osc::NumOptions<osc::TextureFormat>() == 5, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
         OSC_ASSERT(numBytesPerRow % unpackAlignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-        OSC_ASSERT(reinterpret_cast<intptr_t>(m_PixelData.data()) % unpackAlignment == 0 && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+        OSC_ASSERT(IsAlignedAtLeast(m_PixelData.data(), unpackAlignment) && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
 
         // one-time upload, because pixels cannot be altered
         gl::BindTexture((*m_MaybeGPUTexture)->texture);
@@ -5453,7 +5463,7 @@ public:
             glm::ivec2 const dims = osc::App::get().idims();
 
             std::vector<uint8_t> pixels(static_cast<size_t>(4*dims.x*dims.y));
-            OSC_ASSERT(reinterpret_cast<uintptr_t>(pixels.data()) % 4 == 0 && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+            OSC_ASSERT(IsAlignedAtLeast(pixels.data(), 4) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
             gl::PixelStorei(GL_PACK_ALIGNMENT, 4);
             glReadPixels(
                 0,
@@ -5488,30 +5498,22 @@ public:
 
     std::string getBackendVendorString() const
     {
-        GLubyte const* const s = glGetString(GL_VENDOR);
-        static_assert(sizeof(GLubyte) == sizeof(char));
-        return reinterpret_cast<char const*>(s);
+        return GLToString(glGetString(GL_VENDOR));
     }
 
     std::string getBackendRendererString() const
     {
-        GLubyte const* const s = glGetString(GL_RENDERER);
-        static_assert(sizeof(GLubyte) == sizeof(char));
-        return reinterpret_cast<char const*>(s);
+        return GLToString(glGetString(GL_RENDERER));
     }
 
     std::string getBackendVersionString() const
     {
-        GLubyte const* const s = glGetString(GL_VERSION);
-        static_assert(sizeof(GLubyte) == sizeof(char));
-        return reinterpret_cast<char const*>(s);
+        return GLToString(glGetString(GL_VERSION));
     }
 
     std::string getBackendShadingLanguageVersionString() const
     {
-        GLubyte const* const s = glGetString(GL_SHADING_LANGUAGE_VERSION);
-        static_assert(sizeof(GLubyte) == sizeof(char));
-        return reinterpret_cast<char const*>(s);
+        return GLToString(glGetString(GL_SHADING_LANGUAGE_VERSION));
     }
 
     Material const& getQuadMaterial() const
@@ -7002,7 +7004,7 @@ void osc::GraphicsBackend::CopyTexture(
         std::vector<uint8_t>& cpuBuffer = dest.m_Impl.upd()->m_PixelData;
         GLint const packFormat = ToImagePixelPackAlignment(dest.getTextureFormat());
 
-        OSC_ASSERT(reinterpret_cast<uintptr_t>(cpuBuffer.data()) % packFormat == 0 && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+        OSC_ASSERT(IsAlignedAtLeast(cpuBuffer.data(), packFormat) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
         OSC_ASSERT(cpuBuffer.size() == static_cast<ptrdiff_t>(dest.getDimensions().x*dest.getDimensions().y)*NumBytesPerPixel(dest.getTextureFormat()));
 
         gl::Viewport(0, 0, dest.getDimensions().x, dest.getDimensions().y);
