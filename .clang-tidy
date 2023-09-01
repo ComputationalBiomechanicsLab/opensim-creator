@@ -17,7 +17,6 @@ Checks: >
   cppcoreguidelines-*,
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-avoid-magic-numbers,
-  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-pro-bounds-constant-array-index,
   -cppcoreguidelines-narrowing-conversions,
