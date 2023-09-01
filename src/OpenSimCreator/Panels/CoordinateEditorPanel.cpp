@@ -72,14 +72,15 @@ private:
             ImGui::TableSetupScrollFreeze(0, 1);
             ImGui::TableHeadersRow();
 
-            if (ImGuiTableSortSpecs* specs = ImGui::TableGetSortSpecs(); specs && specs->SpecsDirty)
+            if (ImGuiTableSortSpecs* p = ImGui::TableGetSortSpecs(); p && p->SpecsDirty)
             {
+                nonstd::span<ImGuiTableColumnSortSpecs const> specs(p->Specs, p->SpecsCount);
+
                 // we know the user can only sort one column (name) so we don't need to permute
                 // through the entire specs structure
-                if (specs->SpecsCount == 1 && specs->Specs[0].ColumnIndex == 0 && specs->Specs[0].SortOrder == 0)
+                if (specs.size() == 1 && specs.front().ColumnIndex == 0 && specs.front().SortOrder == 0)
                 {
-                    ImGuiTableColumnSortSpecs const& spec = specs->Specs[0];
-                    switch (spec.SortDirection)
+                    switch (specs.front().SortDirection)
                     {
                     case ImGuiSortDirection_Ascending:
                         std::sort(
