@@ -232,7 +232,7 @@ private:
 
     void drawActionsMenuSectionContent()
     {
-        if (ImGui::MenuItem(ICON_FA_FILE_ALT " New Model"))
+        if (ImGui::MenuItem(ICON_FA_FILE " New Model"))
         {
             ActionNewModel(m_Parent);
         }

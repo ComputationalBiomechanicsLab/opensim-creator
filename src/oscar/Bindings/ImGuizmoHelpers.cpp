@@ -73,7 +73,7 @@ bool osc::DrawGizmoOpSelector(
             osc::PushStyleColor(ImGuiCol_Button, Color::mutedBlue());
             ++colorsPushed;
         }
-        if (ImGui::Button(ICON_FA_REDO_ALT))
+        if (ImGui::Button(ICON_FA_REDO))
         {
             if (op != ImGuizmo::ROTATE)
             {
