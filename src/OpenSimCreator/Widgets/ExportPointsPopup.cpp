@@ -75,8 +75,9 @@ namespace
     {
         ImGui::Text("Description");
         ImGui::Separator();
-        ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
+        osc::BeginDisabled();
         ImGui::TextWrapped("%s", c_ExplanationText.c_str());
+        osc::EndDisabled();
         ImGui::PopStyleColor();
     }
 
@@ -195,21 +196,23 @@ namespace
         {
             if (ImGui::MenuItem(f.getName().c_str()))
             {
+                auto const isAttachedToFrame = [path = osc::GetAbsolutePath(f), &state](OpenSim::Component const& c)
+                {
+                    if (auto const pointInfo = osc::TryExtractPointInfo(c, state))
+                    {
+                        return pointInfo->frameAbsPath == path;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                };
+
                 ActionChangeSelectionStateIf(
                     uiState,
                     model,
                     state,
-                    [path = osc::GetAbsolutePath(f), &state](OpenSim::Component const& c)
-                    {
-                        if (auto const pointInfo = osc::TryExtractPointInfo(c, state))
-                        {
-                            return pointInfo->frameAbsPath == path;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    },
+                    isAttachedToFrame,
                     newStateOnUserClick
                 );
             }

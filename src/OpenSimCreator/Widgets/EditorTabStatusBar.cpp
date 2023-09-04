@@ -44,9 +44,9 @@ private:
         if (c)
         {
             std::vector<OpenSim::Component const*> const els = osc::GetPathElements(*c);
-            for (int i = 0; i < static_cast<int>(els.size())-1; ++i)
+            for (ptrdiff_t i = 0; i < osc::ssize(els)-1; ++i)
             {
-                ImGui::PushID(i);
+                osc::PushID(i);
                 std::string const label = osc::Ellipsis(els[i]->getName(), 15);
                 if (ImGui::SmallButton(label.c_str()))
                 {
@@ -56,7 +56,7 @@ private:
                 ImGui::SameLine();
                 ImGui::TextDisabled("/");
                 ImGui::SameLine();
-                ImGui::PopID();
+                osc::PopID();
             }
             if (!els.empty())
             {
@@ -83,7 +83,13 @@ private:
         }
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {
-            auto menu = std::make_unique<ComponentContextMenu>("##hovermenu", m_MainUIStateAPI, m_EditorAPI, m_Model, osc::GetAbsolutePath(c));
+            auto menu = std::make_unique<ComponentContextMenu>(
+                "##hovermenu",
+                m_MainUIStateAPI,
+                m_EditorAPI,
+                m_Model,
+                osc::GetAbsolutePath(c)
+            );
             menu->open();
             m_EditorAPI->pushPopup(std::move(menu));
         }

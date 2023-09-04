@@ -87,7 +87,7 @@ namespace
         if (0 <= selectedIdx && selectedIdx < ssize(osc::JointRegistry::prototypes()))
         {
             // copy + fixup  a prototype of the user's selection
-            std::unique_ptr<OpenSim::Joint> newJoint{osc::JointRegistry::prototypes()[static_cast<size_t>(selectedIdx)]->clone()};
+            std::unique_ptr<OpenSim::Joint> newJoint{osc::JointRegistry::prototypes()[selectedIdx]->clone()};
             osc::ActionChangeJointTypeTo(uim, jointPath, std::move(newJoint));
         }
     }
@@ -114,7 +114,7 @@ namespace
             {
                 osc::ActionAttachGeometryToPhysicalFrame(*uim, pfPath, std::move(geom));
             };
-            std::unique_ptr<osc::Popup> p = std::make_unique<osc::SelectGeometryPopup>(
+            auto p = std::make_unique<osc::SelectGeometryPopup>(
                 "select geometry to attach",
                 osc::App::resource("geometry"),
                 callback

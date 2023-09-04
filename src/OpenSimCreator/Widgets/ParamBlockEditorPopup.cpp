@@ -76,7 +76,8 @@ namespace
     {
         osc::ParamValue v = b.getValue(idx);
         bool rv = false;
-        auto handler = Overloaded{
+        auto handler = Overloaded
+        {
             [&b, &rv, idx](double dv) { rv = DrawEditor(b, idx, dv); },
             [&b, &rv, idx](int iv) { rv = DrawEditor(b, idx, iv); },
             [&b, &rv, idx](osc::IntegratorMethod imv) { rv = DrawEditor(b, idx, imv); },

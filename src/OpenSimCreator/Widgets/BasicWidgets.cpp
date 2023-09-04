@@ -215,8 +215,9 @@ void osc::DrawSelectOwnerMenu(osc::VirtualModelStatePair& model, OpenSim::Compon
 {
     if (ImGui::BeginMenu("Select Owner"))
     {
-        OpenSim::Component const* c = &selected;
         model.setHovered(nullptr);
+
+        OpenSim::Component const* c = &selected;
         while (c->hasOwner())
         {
             c = &c->getOwner();

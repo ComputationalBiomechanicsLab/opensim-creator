@@ -769,9 +769,19 @@ bool osc::InputKilogramFloat(CStringView label, float& v, float step, float step
     return InputMetersFloat(label, v, step, step_fast, flags);
 }
 
-void osc::PushID(UID const& id)
+void osc::PushID(UID id)
 {
     ImGui::PushID(static_cast<int>(id.get()));
+}
+
+void osc::PushID(ptrdiff_t p)
+{
+    ImGui::PushID(static_cast<int>(p));
+}
+
+void osc::PopID()
+{
+    ImGui::PopID();
 }
 
 void osc::PushStyleColor(ImGuiCol index, Color const& c)
@@ -1203,4 +1213,14 @@ bool osc::CircularSliderFloat(
     IMGUI_TEST_ENGINE_ITEM_INFO(id, label, g.LastItemData.StatusFlags | (temp_input_allowed ? ImGuiItemStatusFlags_Inputable : 0));
 
     return valueChanged;
+}
+
+void osc::BeginDisabled()
+{
+    ImGui::BeginDisabled();
+}
+
+void osc::EndDisabled()
+{
+    ImGui::EndDisabled();
 }
