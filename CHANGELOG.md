@@ -5,6 +5,7 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Fixed the muscle plot panel crashing when importing a CSV overlay (#755)
 - The "Socket" menu in the component context menu now explains each column in the displayed sockets table
 - Sliders in the coordinate editor now look much more like "typical" sliders, and are now entirely
   disabled when locked (#36)

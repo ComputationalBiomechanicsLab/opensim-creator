@@ -891,78 +891,79 @@ namespace
 
     std::vector<Plot> TryLoadSVCFileAsPlots(std::filesystem::path const& inputPath)
     {
-        std::vector<Plot> rv;
-
         // create input reader
         std::ifstream inputFileStream{inputPath};
         inputFileStream.exceptions(std::ios_base::badbit);
         if (!inputFileStream)
         {
-            return rv;  // error opening path
+            return {};  // error opening path
         }
 
-        std::vector<std::string> maybeHeaders;
-        if (!osc::ReadCSVRowIntoVector(inputFileStream, maybeHeaders))
+        // try to read header row
+        std::vector<std::string> headers;
+        if (!osc::ReadCSVRowIntoVector(inputFileStream, headers))
         {
-            return rv;  // no CSV data (headers) in top row
+            return {};  // no CSV data (headers) in top row
         }
 
-        std::vector<std::string> row;
-        std::vector<std::vector<PlotDataPoint>> datapointsPerPlot;
-        while (osc::ReadCSVRowIntoVector(inputFileStream, row))
+        // map each CSV row from [$independent, ...$dependent] -> [($independent, $dependent[i])]
+        std::vector<std::vector<PlotDataPoint>> columnsAsPlots;
+        for (std::vector<std::string> row; osc::ReadCSVRowIntoVector(inputFileStream, row);)
         {
             if (row.size() < 2)
             {
-                // ignore rows that do not contain enough columns
-                continue;
+                continue;  // skip: row does not contain enough columns
             }
 
-            // parse first column as a number (independent variable)
-            std::optional<float> independentVar = osc::FromCharsStripWhitespace(row[0]);
+            std::optional<float> const independentVar = osc::FromCharsStripWhitespace(row.front());
             if (!independentVar)
             {
-                continue;  // cannot parse independent variable: skip entire row
+                continue;  // skip: row does not contain a valid independent variable
             }
 
-            // parse remaining columns as datapoints for each plot
-            for (size_t i = 1; i < row.size(); ++i)
+            // parse remaining columns as dependent variables
+            for (size_t dependentCol = 1; dependentCol < row.size(); ++dependentCol)
             {
-                // parse column as a number (dependent variable)
-                std::optional<float> dependentVar = osc::FromCharsStripWhitespace(row[i]);
+                std::string const& dependentVarStr = row[dependentCol];
+                std::optional<float> const dependentVar = osc::FromCharsStripWhitespace(dependentVarStr);
                 if (!dependentVar)
                 {
-                    continue;  // parsing error: skip this column
+                    continue;  // skip: column cannot be parsed as a number
                 }
-                // else: append to the appropriate vector
-                datapointsPerPlot.resize(std::max(datapointsPerPlot.size(), i+1));
-                datapointsPerPlot[i].push_back({*independentVar, *dependentVar});
+
+                // else: append column as ($independent, $dependent[col]) to the plots vector
+                columnsAsPlots.resize(std::max(columnsAsPlots.size(), dependentCol));
+                columnsAsPlots[dependentCol-1].push_back({*independentVar, *dependentVar});
             }
         }
 
-        if (datapointsPerPlot.empty())
+        if (columnsAsPlots.empty())
         {
-            // no data: no plots
-            return rv;
+            // 0 series: return no plots
+            return {};
         }
-        else if (datapointsPerPlot.size() == 1)
+        else if (columnsAsPlots.size() == 1)
         {
-            // one series: name the series `$filename`
-            rv.emplace_back(inputPath.filename().string(), std::move(datapointsPerPlot.front()));
-            return rv;
+            // 1 series: return one plot with one series named `$filename`
+            return
+            {
+                Plot{inputPath.filename().string(), std::move(columnsAsPlots.front())}
+            };
         }
         else
         {
-            // >1 series: name each series `$filename ($header)` (or a number)
+            // >1 series: return each plot named `$filename ($header)` (or a number)
 
-            rv.reserve(datapointsPerPlot.size());
-            for (size_t i = 0; i < datapointsPerPlot.size(); ++i)
+            std::vector<Plot> rv;
+            rv.reserve(columnsAsPlots.size());
+            for (size_t i = 0; i < columnsAsPlots.size(); ++i)
             {
                 std::stringstream ss;
                 ss << inputPath.filename();
                 ss << " (";
-                if (maybeHeaders.size() > i)
+                if (i < headers.size())
                 {
-                    ss << row[i];
+                    ss << headers[i];
                 }
                 else
                 {
@@ -970,7 +971,7 @@ namespace
                 }
                 ss << ')';
 
-                rv.emplace_back(std::move(ss).str(), std::move(datapointsPerPlot[i]));
+                rv.emplace_back(std::move(ss).str(), std::move(columnsAsPlots[i]));
             }
 
             return rv;
