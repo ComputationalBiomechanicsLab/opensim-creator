@@ -813,7 +813,7 @@ osc::Rect osc::GetMainViewportWorkspaceScreenRect()
 
 bool osc::IsMouseInMainViewportWorkspaceScreenRect()
 {
-    glm::vec2 const mousepos = ImGui::GetIO().MousePos;
+    glm::vec2 const mousepos = ImGui::GetMousePos();
     osc::Rect const hitRect = osc::GetMainViewportWorkspaceScreenRect();
 
     return osc::IsPointInRect(hitRect, mousepos);

@@ -62,7 +62,7 @@ public:
         {
             Rect r = osc::GetMainViewportWorkspaceScreenRect();
             glm::vec2 d = osc::Dimensions(r);
-            m_Ray = m_PolarCamera.unprojectTopLeftPosToWorldRay(glm::vec2{ ImGui::GetIO().MousePos } - r.p1, d);
+            m_Ray = m_PolarCamera.unprojectTopLeftPosToWorldRay(glm::vec2{ImGui::GetMousePos()} - r.p1, d);
 
             m_IsMousedOver = false;
             if (m_UseBVH)
