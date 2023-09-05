@@ -43,6 +43,7 @@ All notable changes to this project will be documented here. The format is based
 - Internal: The frame definition tab now supports the `Performance` panel (#733)
 - Internal: Refactored many OpenSim methods to use RAII-/type-safe equivalents (#756, #758)
 - Internal: Refactored OpenSim-style `int T::getSize` with stdlib-style `size_t size(T const&);` (#757)
+- Internal: Refactored `osc::OutputSubfield` to be more type-safe (#759)
 
 
 ## [0.5.1] - 2023/07/27

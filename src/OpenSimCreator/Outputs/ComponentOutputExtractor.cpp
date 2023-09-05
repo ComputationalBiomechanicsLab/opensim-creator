@@ -101,9 +101,9 @@ namespace
     {
         std::stringstream ss;
         ss << cp.toString() << '[' << outputName;
-        if (subfield != osc::OutputSubfield::None)
+        if (auto label = osc::GetOutputSubfieldLabel(subfield))
         {
-            ss << '.' << osc::GetOutputSubfieldLabel(subfield);
+            ss << '.' << *label;
         }
         ss << ']';
         return std::move(ss).str();
@@ -285,7 +285,7 @@ private:
 
 // public API
 
-osc::CStringView osc::GetOutputSubfieldLabel(OutputSubfield subfield)
+std::optional<osc::CStringView> osc::GetOutputSubfieldLabel(OutputSubfield subfield)
 {
     switch (subfield) {
     case osc::OutputSubfield::X:
@@ -298,7 +298,7 @@ osc::CStringView osc::GetOutputSubfieldLabel(OutputSubfield subfield)
     case osc::OutputSubfield::Default:
         return "Magnitude";
     default:
-        return "Unknown";
+        return std::nullopt;
     }
 }
 
@@ -308,19 +308,19 @@ nonstd::span<osc::OutputSubfield const> osc::GetAllSupportedOutputSubfields()
     return s_AllSubfields;
 }
 
-int osc::GetSupportedSubfields(OpenSim::AbstractOutput const& ao)
+osc::OutputSubfield osc::GetSupportedSubfields(OpenSim::AbstractOutput const& ao)
 {
     if (typeid(ao) == typeid(OpenSim::Output<SimTK::Vec3>))
     {
-        int rv = static_cast<int>(osc::OutputSubfield::X);
-        rv |= static_cast<int>(osc::OutputSubfield::Y);
-        rv |= static_cast<int>(osc::OutputSubfield::Z);
-        rv |= static_cast<int>(osc::OutputSubfield::Magnitude);
-        return rv;
+        return
+            OutputSubfield::X |
+            OutputSubfield::Y |
+            OutputSubfield::Z |
+            OutputSubfield::Magnitude;
     }
     else
     {
-        return static_cast<int>(osc::OutputSubfield::None);
+        return OutputSubfield::None;
     }
 }
 

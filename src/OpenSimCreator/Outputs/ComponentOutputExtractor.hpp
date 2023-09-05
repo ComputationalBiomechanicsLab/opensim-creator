@@ -8,7 +8,10 @@
 #include <nonstd/span.hpp>
 
 #include <cstddef>
+#include <cstdint>
+#include <optional>
 #include <string>
+#include <type_traits>
 
 namespace OpenSim { class AbstractOutput; }
 namespace OpenSim { class Component; }
@@ -18,7 +21,7 @@ namespace osc { class SimulationReport; }
 namespace osc
 {
     // flag type that can be used to say what subfields an OpenSim output has
-    enum class OutputSubfield {
+    enum class OutputSubfield : uint32_t {
         None      = 0,
         X         = 1<<0,
         Y         = 1<<1,
@@ -28,11 +31,23 @@ namespace osc
         Default = None,
     };
 
-    CStringView GetOutputSubfieldLabel(OutputSubfield);
+    constexpr OutputSubfield operator|(OutputSubfield a, OutputSubfield b) noexcept
+    {
+        using Ut = std::underlying_type_t<OutputSubfield>;
+        return static_cast<OutputSubfield>(static_cast<Ut>(a) | static_cast<Ut>(b));
+    }
+
+    constexpr bool operator&(OutputSubfield a, OutputSubfield b) noexcept
+    {
+        using Ut = std::underlying_type_t<OutputSubfield>;
+        return (static_cast<Ut>(a) & static_cast<Ut>(b)) != 0;
+    }
+
+    std::optional<CStringView> GetOutputSubfieldLabel(OutputSubfield);
     nonstd::span<OutputSubfield const> GetAllSupportedOutputSubfields();
 
     // returns applicable OutputSubfield ORed together
-    int GetSupportedSubfields(OpenSim::AbstractOutput const&);
+    OutputSubfield GetSupportedSubfields(OpenSim::AbstractOutput const&);
 
     // an output extractor that uses the `OpenSim::AbstractOutput` API to extract a value
     // from a component

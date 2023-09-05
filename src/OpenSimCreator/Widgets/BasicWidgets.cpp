@@ -99,16 +99,16 @@ namespace
     bool DrawOutputWithSubfieldsMenu(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
     {
         bool outputAdded = false;
-        int supportedSubfields = osc::GetSupportedSubfields(o);
+        osc::OutputSubfield supportedSubfields = osc::GetSupportedSubfields(o);
 
         // can plot suboutputs
         if (ImGui::BeginMenu(("  " + o.getName()).c_str()))
         {
             for (osc::OutputSubfield f : osc::GetAllSupportedOutputSubfields())
             {
-                if (static_cast<int>(f) & supportedSubfields)
+                if (f & supportedSubfields)
                 {
-                    if (ImGui::MenuItem(GetOutputSubfieldLabel(f).c_str()))
+                    if (auto label = GetOutputSubfieldLabel(f); label && ImGui::MenuItem(label->c_str()))
                     {
                         api.addUserOutputExtractor(osc::OutputExtractor{osc::ComponentOutputExtractor{o, f}});
                         outputAdded = true;
@@ -148,7 +148,7 @@ namespace
 
     bool DrawRequestOutputMenuOrMenuItem(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
     {
-        if (osc::GetSupportedSubfields(o) == static_cast<int>(osc::OutputSubfield::None))
+        if (osc::GetSupportedSubfields(o) == osc::OutputSubfield::None)
         {
             return DrawOutputWithNoSubfieldsMenuItem(api, o);
         }
