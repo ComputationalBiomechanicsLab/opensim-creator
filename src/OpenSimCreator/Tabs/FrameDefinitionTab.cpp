@@ -51,7 +51,6 @@
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/SetHelpers.hpp>
-#include <oscar/Utils/TypeHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <oscar/Widgets/Popup.hpp>
 #include <oscar/Widgets/PopupManager.hpp>
@@ -837,14 +836,13 @@ namespace
             {
                 auto mesh = std::make_unique<OpenSim::Mesh>(meshPath.string());
                 mesh->setName(meshName);
-                meshPhysicalOffsetFrame->attachGeometry(mesh.release());
+                osc::AttachGeometry(*meshPhysicalOffsetFrame, std::move(mesh));
             }
 
             // add it to the model and select it (i.e. always select the last mesh)
-            OpenSim::PhysicalOffsetFrame const* const pofPtr = meshPhysicalOffsetFrame.get();
-            mutableModel.addModelComponent(meshPhysicalOffsetFrame.release());
-            mutableModel.finalizeConnections();
-            model.setSelected(pofPtr);
+            OpenSim::PhysicalOffsetFrame const& pofRef = osc::AddModelComponent(mutableModel, std::move(meshPhysicalOffsetFrame));
+            osc::FinalizeConnections(mutableModel);
+            model.setSelected(&pofRef);
         }
 
         model.commit(commitMessage);
@@ -878,13 +876,12 @@ namespace
         // perform the model mutation
         {
             OpenSim::Model& mutableModel = model.updModel();
-            SphereLandmark const* const spherePtr = sphere.get();
 
-            mutableModel.addModelComponent(sphere.release());
-            mutableModel.finalizeConnections();
+            SphereLandmark const& sphereRef = osc::AddModelComponent(mutableModel, std::move(sphere));
+            osc::FinalizeConnections(mutableModel);
             osc::InitializeModel(mutableModel);
             osc::InitializeState(mutableModel);
-            model.setSelected(spherePtr);
+            model.setSelected(&sphereRef);
             model.commit(commitMessage);
         }
     }
@@ -915,13 +912,12 @@ namespace
         // perform model mutation
         {
             OpenSim::Model& mutableModel = model.updModel();
-            OpenSim::PhysicalOffsetFrame const* const pofPtr = pof.get();
 
-            mutableModel.addModelComponent(pof.release());
-            mutableModel.finalizeConnections();
+            OpenSim::PhysicalOffsetFrame const& pofRef = osc::AddModelComponent(mutableModel, std::move(pof));
+            osc::FinalizeConnections(mutableModel);
             osc::InitializeModel(mutableModel);
             osc::InitializeState(mutableModel);
-            model.setSelected(pofPtr);
+            model.setSelected(&pofRef);
             model.commit(commitMessage);
         }
     }
@@ -942,13 +938,12 @@ namespace
         // perform model mutation
         {
             OpenSim::Model& mutableModel = model.updModel();
-            FDPointToPointEdge const* edgePtr = edge.get();
 
-            mutableModel.addModelComponent(edge.release());
-            mutableModel.finalizeConnections();
+            FDPointToPointEdge const& edgeRef = osc::AddModelComponent(mutableModel, std::move(edge));
+            osc::FinalizeConnections(mutableModel);
             osc::InitializeModel(mutableModel);
             osc::InitializeState(mutableModel);
-            model.setSelected(edgePtr);
+            model.setSelected(&edgeRef);
             model.commit(commitMessage);
         }
     }
@@ -969,13 +964,12 @@ namespace
         // perform model mutation
         {
             OpenSim::Model& mutableModel = model.updModel();
-            MidpointLandmark const* midpointPtr = midpoint.get();
 
-            mutableModel.addModelComponent(midpoint.release());
-            mutableModel.finalizeConnections();
+            MidpointLandmark const& midpointRef = osc::AddModelComponent(mutableModel, std::move(midpoint));
+            osc::FinalizeConnections(mutableModel);
             osc::InitializeModel(mutableModel);
             osc::InitializeState(mutableModel);
-            model.setSelected(midpointPtr);
+            model.setSelected(&midpointRef);
             model.commit(commitMessage);
         }
     }
@@ -996,13 +990,12 @@ namespace
         // perform model mutation
         {
             OpenSim::Model& mutableModel = model.updModel();
-            FDCrossProductEdge const* edgePtr = edge.get();
 
-            mutableModel.addModelComponent(edge.release());
-            mutableModel.finalizeConnections();
+            FDCrossProductEdge const& edgeRef = osc::AddModelComponent(mutableModel, std::move(edge));
+            osc::FinalizeConnections(mutableModel);
             osc::InitializeModel(mutableModel);
             osc::InitializeState(mutableModel);
-            model.setSelected(edgePtr);
+            model.setSelected(&edgeRef);
             model.commit(commitMessage);
         }
     }
@@ -1090,13 +1083,12 @@ namespace
         // perform model mutation
         {
             OpenSim::Model& mutModel = model->updModel();
-            LandmarkDefinedFrame const* const framePtr = frame.get();
 
-            mutModel.addModelComponent(frame.release());
-            mutModel.finalizeConnections();
+            LandmarkDefinedFrame const& frameRef = osc::AddModelComponent(mutModel, std::move(frame));
+            osc::FinalizeConnections(mutModel);
             osc::InitializeModel(mutModel);
             osc::InitializeState(mutModel);
-            model->setSelected(framePtr);
+            model->setSelected(&frameRef);
             model->commit(commitMessage);
         }
     }
@@ -1865,9 +1857,9 @@ namespace
             jointParentPof->setName(meshFrame->getName() + "_parent_offset");
             jointParentPof->setOffsetTransform(jointFrame->findTransformBetween(model->getState(), *parentFrame));
 
-            OpenSim::PhysicalOffsetFrame* ptr = jointParentPof.get();
-            joint->addFrame(jointParentPof.release());  // care: ownership change happens here (#642)
-            joint->connectSocket_parent_frame(*ptr);
+            // care: ownership change happens here (#642)
+            OpenSim::PhysicalOffsetFrame& pof = osc::AddFrame(*joint, std::move(jointParentPof));
+            joint->connectSocket_parent_frame(pof);
         }
         {
             auto jointChildPof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
@@ -1875,9 +1867,9 @@ namespace
             jointChildPof->setName(meshFrame->getName() + "_child_offset");
             jointChildPof->setOffsetTransform(jointFrame->findTransformBetween(model->getState(), *meshFrame));
 
-            OpenSim::PhysicalOffsetFrame* ptr = jointChildPof.get();
-            joint->addFrame(jointChildPof.release());
-            joint->connectSocket_child_frame(*ptr);
+            // care: ownership change happens here (#642)
+            OpenSim::PhysicalOffsetFrame& pof = osc::AddFrame(*joint, std::move(jointChildPof));
+            joint->connectSocket_child_frame(pof);
         }
 
         // create PoF for the mesh
@@ -1904,22 +1896,20 @@ namespace
             OpenSim::ComponentPath const meshPath = osc::GetAbsolutePath(*mesh);
 
             OpenSim::Model& mutModel = model->updModel();
-            OpenSim::Body const* const bodyPtr = body.get();
-            OpenSim::PhysicalOffsetFrame* meshPofPtr = meshPof.get();
 
-            body->addComponent(meshPof.release());
-            mutModel.addJoint(joint.release());
-            mutModel.addBody(body.release());
+            OpenSim::PhysicalOffsetFrame& meshPofRef = osc::AddComponent(*body, std::move(meshPof));
+            osc::AddJoint(mutModel, std::move(joint));
+            OpenSim::Body& bodyRef = osc::AddBody(mutModel, std::move(body));
 
             // attach copy of source mesh to mesh PoF
             //
             // (must be done after adding body etc. to model and finalizing - #325)
-            mutModel.finalizeConnections();
-            meshPofPtr->attachGeometry(std::make_unique<OpenSim::Mesh>(*mesh).release());
+            osc::FinalizeConnections(mutModel);
+            osc::AttachGeometry<OpenSim::Mesh>(meshPofRef, *mesh);
 
             // ensure model is in a valid, initialized, state before moving
             // and reassigning things around
-            mutModel.finalizeConnections();
+            osc::FinalizeConnections(mutModel);
             osc::InitializeModel(mutModel);
             osc::InitializeState(mutModel);
 
@@ -1929,8 +1919,8 @@ namespace
                 pof && osc::GetNumChildren(*pof) == 3)  // mesh+frame geom+wrap object set
             {
                 osc::log::debug("reassign sockets");
-                osc::RecursivelyReassignAllSockets(mutModel, *pof, *meshPofPtr);
-                mutModel.finalizeConnections();
+                osc::RecursivelyReassignAllSockets(mutModel, *pof, meshPofRef);
+                osc::FinalizeConnections(mutModel);
 
                 if (auto* mutPof = osc::FindComponentMut<OpenSim::PhysicalOffsetFrame>(mutModel, osc::GetAbsolutePathOrEmpty(pof)))
                 {
@@ -1954,7 +1944,7 @@ namespace
 
             osc::InitializeModel(mutModel);
             osc::InitializeState(mutModel);
-            model->setSelected(bodyPtr);
+            model->setSelected(&bodyRef);
             model->commit(commitMessage);
         }
         catch (std::exception const& ex)
@@ -1979,7 +1969,7 @@ namespace
                 IsPhysicalFrame(c) &&
                 &c != bodyFrame &&
                 !osc::IsChildOfA<OpenSim::ComponentSet>(c) &&
-                (osc::DerivesFrom<OpenSim::Ground>(c) || osc::IsChildOfA<OpenSim::BodySet>(c));
+                (dynamic_cast<OpenSim::Ground const*>(&c) || osc::IsChildOfA<OpenSim::BodySet>(c));
         };
         options.numComponentsUserMustChoose = 1;
         options.onUserFinishedChoosing = [

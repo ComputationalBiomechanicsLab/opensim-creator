@@ -810,7 +810,7 @@ namespace
         }
 
         // the `GeometryPath` has a owner, which might be a muscle or path actuator
-        if (auto const* musc = dynamic_cast<OpenSim::Muscle const*>(&gp.getOwner()); musc)
+        if (auto const* const musc = osc::GetOwner<OpenSim::Muscle>(gp))
         {
             // owner is a muscle, coerce selection "hit" to the muscle
 
@@ -829,13 +829,13 @@ namespace
                 return;
             }
         }
-        else if (auto const* pa = dynamic_cast<OpenSim::PathActuator const*>(&gp.getOwner()); pa)
+        else if (auto const* const pa = osc::GetOwner<OpenSim::PathActuator>(gp))
         {
             // owner is a path actuator, coerce selection "hit" to the path actuator (#519)
             HandleGenericGeometryPath(rs, gp, *pa);
             return;
         }
-        else if (auto const* pathSpring = dynamic_cast<OpenSim::PathSpring const*>(&gp.getOwner()); pathSpring)
+        else if (auto const* const pathSpring = osc::GetOwner<OpenSim::PathSpring>(gp))
         {
             // owner is a path spring, coerce selection "hit" to the path spring (#650)
             HandleGenericGeometryPath(rs, gp, *pathSpring);
@@ -856,9 +856,8 @@ namespace
         // promote current component to the parent of the frame geometry, because
         // a user is probably more interested in the thing the frame geometry
         // represents (e.g. an offset frame) than the geometry itself (#506)
-        OpenSim::Component const& componentToLinkTo = frameGeometry.hasOwner() ?
-            frameGeometry.getOwner() :
-            frameGeometry;
+        OpenSim::Component const& componentToLinkTo =
+            osc::GetOwnerOr(frameGeometry, frameGeometry);
 
         rs.emitGenericDecorations(frameGeometry, componentToLinkTo);
     }

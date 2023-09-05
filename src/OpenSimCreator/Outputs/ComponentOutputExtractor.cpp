@@ -6,7 +6,6 @@
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
-#include <oscar/Utils/TypeHelpers.hpp>
 
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
@@ -114,11 +113,11 @@ namespace
         OpenSim::AbstractOutput const& ao,
         osc::OutputSubfield subfield)
     {
-        if (osc::TypeIDEquals<OpenSim::Output<double>>(ao))
+        if (typeid(ao) == typeid(OpenSim::Output<double>))
         {
             return output_magic::extractTypeErased<OpenSim::Output<double>>;
         }
-        else if (osc::TypeIDEquals<OpenSim::Output<SimTK::Vec3>>(ao))
+        else if (typeid(ao) == typeid(OpenSim::Output<SimTK::Vec3>))
         {
             switch (subfield) {
             case osc::OutputSubfield::X:
@@ -156,7 +155,7 @@ public:
     Impl(OpenSim::AbstractOutput const& ao,
          OutputSubfield subfield) :
 
-        m_ComponentAbsPath{osc::GetAbsolutePath(ao.getOwner())},
+        m_ComponentAbsPath{GetAbsolutePath(GetOwnerOrThrow(ao))},
         m_OutputName{ao.getName()},
         m_Label{GenerateLabel(m_ComponentAbsPath, m_OutputName, subfield)},
         m_OutputType{&typeid(ao)},
@@ -311,7 +310,7 @@ nonstd::span<osc::OutputSubfield const> osc::GetAllSupportedOutputSubfields()
 
 int osc::GetSupportedSubfields(OpenSim::AbstractOutput const& ao)
 {
-    if (TypeIDEquals<OpenSim::Output<SimTK::Vec3>>(ao))
+    if (typeid(ao) == typeid(OpenSim::Output<SimTK::Vec3>))
     {
         int rv = static_cast<int>(osc::OutputSubfield::X);
         rv |= static_cast<int>(osc::OutputSubfield::Y);

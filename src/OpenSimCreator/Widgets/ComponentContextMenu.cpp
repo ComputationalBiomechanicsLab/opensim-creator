@@ -87,7 +87,7 @@ namespace
         if (0 <= selectedIdx && selectedIdx < ssize(osc::JointRegistry::prototypes()))
         {
             // copy + fixup  a prototype of the user's selection
-            std::unique_ptr<OpenSim::Joint> newJoint{osc::JointRegistry::prototypes()[selectedIdx]->clone()};
+            std::unique_ptr<OpenSim::Joint> newJoint = osc::Clone(*osc::JointRegistry::prototypes()[selectedIdx]);
             osc::ActionChangeJointTypeTo(uim, jointPath, std::move(newJoint));
         }
     }

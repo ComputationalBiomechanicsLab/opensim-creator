@@ -3,6 +3,7 @@
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
 #include "OpenSimCreator/Widgets/AddBodyPopup.hpp"
 #include "OpenSimCreator/Widgets/AddComponentPopup.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/ComponentRegistry.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
@@ -88,7 +89,7 @@ private:
             {
                 if (ImGui::MenuItem(names[i].c_str()))
                 {
-                    std::unique_ptr<T> copy{osc::ComponentRegistry<T>::prototypes()[i]->clone()};
+                    std::unique_ptr<T> copy = osc::Clone(*osc::ComponentRegistry<T>::prototypes()[i]);
                     auto popup = std::make_unique<AddComponentPopup>(m_EditorAPI, m_Uum, std::move(copy), "Add " + osc::ComponentRegistry<T>::name());
                     popup->open();
                     m_EditorAPI->pushPopup(std::move(popup));

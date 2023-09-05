@@ -575,13 +575,13 @@ namespace
                 }
                 else
                 {
-                    rv.emplace_back(v.clone());
+                    rv.emplace_back(osc::Clone(v));
                 }
             }
             else
             {
                 // not in the manual prototype LUT - just take whatever OpenSim has
-                rv.emplace_back(v.clone());
+                rv.emplace_back(osc::Clone(v));
             }
         }
 
@@ -668,7 +668,7 @@ namespace
                 continue;
             }
 
-            rv.emplace_back(c.clone());
+            rv.emplace_back(osc::Clone(c));
         }
 
         std::sort(

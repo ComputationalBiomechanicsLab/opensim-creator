@@ -414,11 +414,11 @@ namespace
         }
         else
         {
-            auto const isEndOfPathLexographicallyLess = [](std::string const& a, std::string const& b)
+            auto const isComponentNameLexographicallyLess = [](std::string const& a, std::string const& b)
             {
                 return osc::SubstringAfterLast(a, '/') < osc::SubstringAfterLast(b, '/');
             };
-            std::sort(rv.begin(), rv.end(), isEndOfPathLexographicallyLess);
+            std::sort(rv.begin(), rv.end(), isComponentNameLexographicallyLess);
         }
         return rv;
     }

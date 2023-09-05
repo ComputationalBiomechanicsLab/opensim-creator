@@ -41,6 +41,7 @@ All notable changes to this project will be documented here. The format is based
 - Internal: Shaders in the `resources/` dir were reorganized according to purpose
 - Internal: `osc::WarpingTab` was renamed to `osc::MeshWarpingTab` (#725)
 - Internal: The frame definition tab now supports the `Performance` panel (#733)
+- Internal: Many OpenSim methods were replaced with RAII-/type-safe equivalents (#756, #758)
 
 
 ## [0.5.1] - 2023/07/27

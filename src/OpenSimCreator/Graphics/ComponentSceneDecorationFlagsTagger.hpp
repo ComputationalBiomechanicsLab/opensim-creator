@@ -44,18 +44,16 @@ namespace osc
                 rv |= SceneDecorationFlags::IsHovered;
             }
 
-            OpenSim::Component const* ptr = GetOwner(component);
-            while (ptr)
+            for (OpenSim::Component const* p = GetOwner(component); p; p = GetOwner(*p))
             {
-                if (ptr == m_Selected)
+                if (p == m_Selected)
                 {
                     rv |= SceneDecorationFlags::IsChildOfSelected;
                 }
-                if (ptr == m_Hovered)
+                if (p == m_Hovered)
                 {
                     rv |= SceneDecorationFlags::IsChildOfHovered;
                 }
-                ptr = GetOwner(*ptr);
             }
 
             return rv;

@@ -151,7 +151,7 @@ private:
 
             std::stringstream ss;
             ss << "    motion type = " << osc::GetMotionTypeDisplayName(c) << '\n';
-            ss << "    owner = " << (c.hasOwner() ? c.getOwner().getName().c_str() : "(no owner)");
+            ss << "    owner = " << osc::TryGetOwnerName(c).value_or("(no owner)");
 
             osc::DrawTooltip(c.getName(), ss.str());
         }

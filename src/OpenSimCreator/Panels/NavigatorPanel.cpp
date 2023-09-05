@@ -105,18 +105,14 @@ namespace
         out.clear();
 
         // populate child --> parent
-        while (child) {
+        for (; child != nullptr; child = osc::GetOwner(*child))
+        {
             out.push_back(child);
 
-            if (!child->hasOwner()) {
+            if (!child->hasOwner() || child == ancestor)
+            {
                 break;
             }
-
-            if (child == ancestor) {
-                break;
-            }
-
-            child = &child->getOwner();
         }
 
         // reverse to yield parent --> child

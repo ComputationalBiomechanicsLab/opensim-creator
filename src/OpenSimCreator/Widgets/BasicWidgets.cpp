@@ -217,27 +217,28 @@ void osc::DrawSelectOwnerMenu(osc::VirtualModelStatePair& model, OpenSim::Compon
     {
         model.setHovered(nullptr);
 
-        OpenSim::Component const* c = &selected;
-        while (c->hasOwner())
+        for (
+            OpenSim::Component const* owner = osc::GetOwner(selected);
+            owner != nullptr;
+            owner = osc::GetOwner(*owner))
         {
-            c = &c->getOwner();
-
-            std::string const menuLabel = [&c]()
+            std::string const menuLabel = [&owner]()
             {
                 std::stringstream ss;
-                ss << c->getName() << '(' << c->getConcreteClassName() << ')';
+                ss << owner->getName() << '(' << owner->getConcreteClassName() << ')';
                 return std::move(ss).str();
             }();
 
             if (ImGui::MenuItem(menuLabel.c_str()))
             {
-                model.setSelected(c);
+                model.setSelected(owner);
             }
             if (ImGui::IsItemHovered())
             {
-                model.setHovered(c);
+                model.setHovered(owner);
             }
         }
+
         ImGui::EndMenu();
     }
 }
@@ -252,8 +253,7 @@ bool osc::DrawWatchOutputMenu(MainUIStateAPI& api, OpenSim::Component const& c)
 
         // iterate from the selected component upwards to the root
         int imguiId = 0;
-        OpenSim::Component const* p = &c;
-        while (p)
+        for (OpenSim::Component const* p = &c; p; p = osc::GetOwner(*p))
         {
             ImGui::PushID(imguiId++);
 
@@ -277,8 +277,6 @@ bool osc::DrawWatchOutputMenu(MainUIStateAPI& api, OpenSim::Component const& c)
             }
 
             ImGui::PopID();
-
-            p = p->hasOwner() ? &p->getOwner() : nullptr;
         }
 
         ImGui::EndMenu();

@@ -1,6 +1,7 @@
 #include "GeometryPathPropertyEditorPopup.hpp"
 
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/Log.hpp>
@@ -74,9 +75,9 @@ namespace
     {
         if (0 < i && i < pps.getSize())
         {
-            std::unique_ptr<OpenSim::AbstractPathPoint> tmp{pps.get(i).clone()};
-            pps.set(i, pps.get(i-1));
-            pps.set(i-1, tmp.release());
+            auto tmp = osc::Clone(pps.get(i));
+            osc::Assign(pps, i, pps.get(i-1));
+            osc::Assign(pps, i-1, std::move(tmp));
         }
     }
 
@@ -84,9 +85,9 @@ namespace
     {
         if (0 <= i && i+1 < pps.getSize())
         {
-            std::unique_ptr<OpenSim::AbstractPathPoint> tmp{pps.get(i).clone()};
-            pps.set(i, pps.get(i+1));
-            pps.set(i+1, tmp.release());
+            auto tmp = osc::Clone(pps.get(i));
+            osc::Assign(pps, i, pps.get(i+1));
+            osc::Assign(pps, i+1, std::move(tmp));
         }
     }
 
@@ -111,7 +112,8 @@ namespace
 
         auto pp = std::make_unique<OpenSim::PathPoint>();
         pp->updSocket("parent_frame").setConnecteePath(frame);
-        pps.adoptAndAppend(pp.release());
+
+        osc::Append(pps, std::move(pp));
     }
 
     std::function<void(OpenSim::AbstractProperty&)> MakeGeometryPathPropertyOverwriter(

@@ -97,7 +97,7 @@ private:
         }
 
         // clone prototype
-        std::unique_ptr<OpenSim::Component> rv{m_Proto->clone()};
+        std::unique_ptr<OpenSim::Component> rv = osc::Clone(*m_Proto);
 
         // set name
         rv->setName(m_Name);

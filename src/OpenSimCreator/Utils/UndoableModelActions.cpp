@@ -24,7 +24,6 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
-#include <oscar/Utils/TypeHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <OpenSim/Common/Component.h>
@@ -139,7 +138,7 @@ namespace
         OpenSim::Joint const& jointPrototype,
         OpenSim::PhysicalFrame const& selectedPf)
     {
-        std::unique_ptr<OpenSim::Joint> copy{jointPrototype.clone()};
+        std::unique_ptr<OpenSim::Joint> copy = osc::Clone(jointPrototype);
         copy->setName(details.jointName);
 
         if (!details.addOffsetFrames)
@@ -155,9 +154,9 @@ namespace
                 pof1->setParentFrame(selectedPf);
                 pof1->setName(selectedPf.getName() + "_offset");
 
-                OpenSim::PhysicalOffsetFrame* ptr = pof1.get();
-                copy->addFrame(pof1.release());  // care: ownership change happens here (#642)
-                copy->connectSocket_parent_frame(*ptr);
+                // care: ownership change happens here (#642)
+                OpenSim::PhysicalOffsetFrame& ref = osc::AddFrame(*copy, std::move(pof1));
+                copy->connectSocket_parent_frame(ref);
             }
 
             // add second offset frame as joint's child
@@ -166,9 +165,9 @@ namespace
                 pof2->setParentFrame(b);
                 pof2->setName(b.getName() + "_offset");
 
-                OpenSim::PhysicalOffsetFrame* ptr = pof2.get();
-                copy->addFrame(pof2.release());  // care: ownership change happens here (#642)
-                copy->connectSocket_child_frame(*ptr);
+                // care: ownership change happens here (#642)
+                OpenSim::PhysicalOffsetFrame& ref = osc::AddFrame(*copy, std::move(pof2));
+                copy->connectSocket_child_frame(ref);
             }
         }
 
@@ -671,8 +670,6 @@ bool osc::ActionAddOffsetFrameToPhysicalFrame(UndoableModelStatePair& uim, OpenS
     pof->setName(newPofName);
     pof->setParentFrame(*target);
 
-    OpenSim::PhysicalOffsetFrame const* const pofptr = pof.get();
-
     UID const oldVersion = uim.getModelVersion();  // for rollbacks
     try
     {
@@ -685,11 +682,11 @@ bool osc::ActionAddOffsetFrameToPhysicalFrame(UndoableModelStatePair& uim, OpenS
             return false;
         }
 
-        mutTarget->addComponent(pof.release());
-        mutModel.finalizeConnections();
+        OpenSim::PhysicalOffsetFrame& pofRef = osc::AddComponent(*mutTarget, std::move(pof));
+        osc::FinalizeConnections(mutModel);
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
-        uim.setSelected(pofptr);
+        uim.setSelected(&pofRef);
         uim.commit("added " + newPofName);
 
         return true;
@@ -715,7 +712,7 @@ bool osc::CanRezeroJoint(UndoableModelStatePair& uim, OpenSim::ComponentPath con
     // point is whatever the current arrangement is (effectively, by pre-transforming
     // the parent into the child and assuming a "zeroed" joint is an identity op)
 
-    return osc::DerivesFrom<OpenSim::PhysicalOffsetFrame>(joint->getParentFrame());
+    return dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&joint->getParentFrame());
 }
 
 bool osc::ActionRezeroJoint(UndoableModelStatePair& uim, OpenSim::ComponentPath const& jointPath)
@@ -814,8 +811,8 @@ bool osc::ActionAddParentOffsetFrameToJoint(UndoableModelStatePair& uim, OpenSim
 
         std::string const jointName = mutJoint->getName();
 
-        mutJoint->addFrame(pf.release());
-        mutModel.finalizeConnections();
+        osc::AddFrame(*mutJoint, std::move(pf));
+        osc::FinalizeConnections(mutModel);
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
         uim.commit("added " + jointName);
@@ -855,8 +852,8 @@ bool osc::ActionAddChildOffsetFrameToJoint(UndoableModelStatePair& uim, OpenSim:
 
         std::string const jointName = mutJoint->getName();
 
-        mutJoint->addFrame(pf.release());
-        mutModel.finalizeConnections();
+        osc::AddFrame(*mutJoint, std::move(pf));
+        osc::FinalizeConnections(mutModel);
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
         uim.commit("added " + jointName);
@@ -969,11 +966,10 @@ bool osc::ActionChangeJointTypeTo(UndoableModelStatePair& uim, OpenSim::Componen
             return false;
         }
 
-        OpenSim::Joint* const ptr = newType.get();
-        mutParent->set(idx, newType.release());
+        OpenSim::Joint const& jointRef = osc::Assign(*mutParent, idx, std::move(newType));
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
-        uim.setSelected(ptr);
+        uim.setSelected(&jointRef);
 
         std::stringstream ss;
         ss << "changed " << oldTypeName << " to " << newTypeName;
@@ -1011,8 +1007,8 @@ bool osc::ActionAttachGeometryToPhysicalFrame(UndoableModelStatePair& uim, OpenS
 
         std::string const pofName = mutPof->getName();
 
-        mutPof->attachGeometry(geom.release());
-        mutModel.finalizeConnections();
+        osc::AttachGeometry(*mutPof, std::move(geom));
+        osc::FinalizeConnections(mutModel);
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
 
@@ -1230,10 +1226,10 @@ bool osc::ActionReassignComponentSocket(
 
         if (componentPropertiesReexpressed)
         {
-            mutModel.finalizeFromProperties();
+            osc::FinalizeFromProperties(mutModel);
         }
         mutSocket->connect(connectee);
-        mutModel.finalizeConnections();
+        osc::FinalizeConnections(mutModel);
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
         uim.commit("reassigned socket");
@@ -1288,24 +1284,23 @@ bool osc::ActionAddBodyToModel(UndoableModelStatePair& uim, BodyDetails const& d
     // attach decorative geom
     if (details.maybeGeometry)
     {
-        body->attachGeometry(details.maybeGeometry->clone());
+        osc::AttachGeometry(*body, osc::Clone(*details.maybeGeometry));
     }
 
     // mutate the model and perform the edit
     try
     {
         OpenSim::Model& mutModel = uim.updModel();
-        OpenSim::Body const* const bodyPtr = body.get();
 
-        mutModel.addJoint(joint.release());
-        mutModel.addBody(body.release());
-        mutModel.finalizeConnections();
+        osc::AddJoint(mutModel, std::move(joint));
+        OpenSim::Body& bodyRef = osc::AddBody(mutModel, std::move(body));
+        osc::FinalizeConnections(mutModel);
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
-        uim.setSelected(bodyPtr);
+        uim.setSelected(&bodyRef);
 
         std::stringstream ss;
-        ss << "added " << bodyPtr->getName();
+        ss << "added " << bodyRef.getName();
         uim.commit(std::move(ss).str());
 
         return true;
@@ -1320,17 +1315,23 @@ bool osc::ActionAddBodyToModel(UndoableModelStatePair& uim, BodyDetails const& d
 
 bool osc::ActionAddComponentToModel(UndoableModelStatePair& model, std::unique_ptr<OpenSim::Component> c, std::string& errorOut)
 {
+    if (c == nullptr)
+    {
+        return false;  // paranoia
+    }
+
     try
     {
         OpenSim::Model& mutModel = model.updModel();
-        OpenSim::Component const* const ptr = c.get();
-        AddComponentToModel(mutModel, std::move(c));
+
+        OpenSim::Component const& ref = AddComponentToAppropriateSet(mutModel, std::move(c));
+        osc::FinalizeConnections(mutModel);
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
-        model.setSelected(ptr);
+        model.setSelected(&ref);
 
         std::stringstream ss;
-        ss << "added " << ptr->getName();
+        ss << "added " << ref.getName();
         model.commit(std::move(ss).str());
 
         return true;

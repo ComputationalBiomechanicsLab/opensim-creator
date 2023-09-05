@@ -11,7 +11,6 @@
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/Perf.hpp>
-#include <oscar/Utils/TypeHelpers.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/vec3.hpp>
@@ -297,9 +296,31 @@ bool osc::IsNameLexographicallyLowerThan(OpenSim::Component const& a, OpenSim::C
     return a.getName() < b.getName();
 }
 
-OpenSim::Component* osc::UpdOwner(OpenSim::Component& c)
+OpenSim::Component* osc::UpdOwner(OpenSim::Component& root, OpenSim::Component const& c)
 {
-    return c.hasOwner() ? const_cast<OpenSim::Component*>(&c.getOwner()) : nullptr;
+    if (auto const* constOwner = GetOwner(c))
+    {
+        return FindComponentMut(root, osc::GetAbsolutePath(*constOwner));
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
+OpenSim::Component const& osc::GetOwnerOrThrow(OpenSim::AbstractOutput const& ao)
+{
+    return ao.getOwner();
+}
+
+OpenSim::Component const& osc::GetOwnerOrThrow(OpenSim::Component const& c)
+{
+    return c.getOwner();
+}
+
+OpenSim::Component const& osc::GetOwnerOr(OpenSim::Component const& c, OpenSim::Component const& fallback)
+{
+    return c.hasOwner() ? c.getOwner() : fallback;
 }
 
 OpenSim::Component const* osc::GetOwner(OpenSim::Component const& c)
@@ -307,17 +328,19 @@ OpenSim::Component const* osc::GetOwner(OpenSim::Component const& c)
     return c.hasOwner() ? &c.getOwner() : nullptr;
 }
 
+std::optional<std::string> osc::TryGetOwnerName(OpenSim::Component const& c)
+{
+    OpenSim::Component const* owner = GetOwner(c);
+    return owner ? owner->getName() : std::optional<std::string>{};
+}
+
 int osc::DistanceFromRoot(OpenSim::Component const& c)
 {
-    OpenSim::Component const* p = &c;
     int dist = 0;
-
-    while (p->hasOwner())
+    for (OpenSim::Component const* p = &c; p; p = GetOwner(*p))
     {
         ++dist;
-        p = &p->getOwner();
     }
-
     return dist;
 }
 
@@ -348,12 +371,8 @@ std::vector<OpenSim::Component const*> osc::GetPathElements(OpenSim::Component c
     std::vector<OpenSim::Component const*> rv;
     rv.reserve(DistanceFromRoot(c));
 
-    OpenSim::Component const* p = &c;
-    rv.push_back(p);
-
-    while (p->hasOwner())
+    for (OpenSim::Component const* p = &c; p; p = GetOwner(*p))
     {
-        p = &p->getOwner();
         rv.push_back(p);
     }
 
@@ -377,57 +396,43 @@ size_t osc::GetNumChildren(OpenSim::Component const& c)
 
 bool osc::IsInclusiveChildOf(OpenSim::Component const* parent, OpenSim::Component const* c)
 {
-    if (!c)
+    if (parent == nullptr)
     {
         return false;
     }
 
-    if (!parent)
-    {
-        return false;
-    }
-
-    for (;;)
+    for (; c != nullptr; c = GetOwner(*c))
     {
         if (c == parent)
         {
             return true;
         }
-
-        if (!c->hasOwner())
-        {
-            return false;
-        }
-
-        c = &c->getOwner();
     }
+
+    return false;
 }
 
 OpenSim::Component const* osc::IsInclusiveChildOf(nonstd::span<OpenSim::Component const*> parents, OpenSim::Component const* c)
 {
-    while (c)
+    // TODO: this method signature makes no sense and should be refactored
+    for (; c; c = GetOwner(*c))
     {
-        for (OpenSim::Component const* parent : parents)
+        if (auto it = std::find(parents.begin(), parents.end(), c); it != parents.end())
         {
-            if (c == parent)
-            {
-                return parent;
-            }
+            return *it;
         }
-        c = c->hasOwner() ? &c->getOwner() : nullptr;
     }
     return nullptr;
 }
 
 OpenSim::Component const* osc::FindFirstAncestorInclusive(OpenSim::Component const* c, bool(*pred)(OpenSim::Component const*))
 {
-    while (c)
+    for (; c; c = GetOwner(*c))
     {
         if (pred(c))
         {
             return c;
         }
-        c = c->hasOwner() ? &c->getOwner() : nullptr;
     }
     return nullptr;
 }
@@ -715,14 +720,11 @@ std::optional<std::filesystem::path> osc::FindGeometryFileAbsPath(
 
 bool osc::ShouldShowInUI(OpenSim::Component const& c)
 {
-    if (TypeIDEquals<OpenSim::PathWrapPoint>(c))
+    if (typeid(c) == typeid(OpenSim::PathWrapPoint))
     {
         return false;
     }
-    else if (
-        TypeIDEquals<OpenSim::Station>(c) &&
-        c.hasOwner() &&
-        DerivesFrom<OpenSim::PathPoint>(c.getOwner()))
+    else if (typeid(c) == typeid(OpenSim::Station) && OwnerIs<OpenSim::PathPoint>(c))
     {
         return false;
     }
@@ -734,7 +736,7 @@ bool osc::ShouldShowInUI(OpenSim::Component const& c)
 
 bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
 {
-    OpenSim::Component* const owner = osc::UpdOwner(c);
+    OpenSim::Component* const owner = osc::UpdOwner(m, c);
 
     if (!owner)
     {
@@ -851,16 +853,14 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
             // assignment
 
             auto& prop = dynamic_cast<OpenSim::ObjectProperty<OpenSim::Geometry>&>(frame->updProperty_attached_geometry());
-
-            std::unique_ptr<OpenSim::ObjectProperty<OpenSim::Geometry>> copy{prop.clone()};
+            auto copy = osc::Clone(prop);
             copy->clear();
 
             for (int i = 0; i < prop.size(); ++i)
             {
-                OpenSim::Geometry& g = prop[i];
-                if (&g != geom)
+                if (OpenSim::Geometry& g = prop[i]; &g != geom)
                 {
-                    copy->adoptAndAppendValue(g.clone());
+                    Append(*copy, g);
                 }
             }
 
@@ -924,59 +924,6 @@ bool osc::ActivateAllWrapObjectsIn(OpenSim::Model& m)
     return rv;
 }
 
-void osc::AddComponentToModel(OpenSim::Model& m, std::unique_ptr<OpenSim::Component> c)
-{
-    if (!c)
-    {
-        return;  // paranoia
-    }
-    else if (dynamic_cast<OpenSim::Body*>(c.get()))
-    {
-        m.addBody(dynamic_cast<OpenSim::Body*>(c.release()));
-    }
-    else if (auto* j = dynamic_cast<OpenSim::Joint*>(c.get()))
-    {
-        // HOTFIX: `OpenSim::Ground` should never be listed as a joint's parent, because it
-        //         causes a segfault in OpenSim 4.4 (#543)
-        if (dynamic_cast<OpenSim::Ground const*>(&j->getChildFrame()))
-        {
-            throw std::runtime_error{"cannot create a new joint with 'ground' as the child: did you mix up parent/child?"};
-        }
-
-        m.addJoint(dynamic_cast<OpenSim::Joint*>(c.release()));
-    }
-    else if (dynamic_cast<OpenSim::Constraint*>(c.get()))
-    {
-        m.addConstraint(dynamic_cast<OpenSim::Constraint*>(c.release()));
-    }
-    else if (dynamic_cast<OpenSim::Force*>(c.get()))
-    {
-        m.addForce(dynamic_cast<OpenSim::Force*>(c.release()));
-    }
-    else if (dynamic_cast<OpenSim::Probe*>(c.get()))
-    {
-        m.addProbe(dynamic_cast<OpenSim::Probe*>(c.release()));
-    }
-    else if (dynamic_cast<OpenSim::ContactGeometry*>(c.get()))
-    {
-        m.addContactGeometry(dynamic_cast<OpenSim::ContactGeometry*>(c.release()));
-    }
-    else if (dynamic_cast<OpenSim::Marker*>(c.get()))
-    {
-        m.addMarker(dynamic_cast<OpenSim::Marker*>(c.release()));
-    }
-    else if (dynamic_cast<OpenSim::Controller*>(c.get()))
-    {
-        m.addController(dynamic_cast<OpenSim::Controller*>(c.release()));
-    }
-    else
-    {
-        m.addComponent(c.release());
-    }
-
-    m.finalizeConnections();  // necessary, because adding it may have created a new (not finalized) connection
-}
-
 std::unique_ptr<osc::UndoableModelStatePair> osc::LoadOsimIntoUndoableModel(std::filesystem::path const& p)
 {
     return std::make_unique<osc::UndoableModelStatePair>(p);
@@ -1016,11 +963,15 @@ SimTK::State& osc::InitializeState(OpenSim::Model& model)
     return state;
 }
 
+void osc::FinalizeFromProperties(OpenSim::Model& model)
+{
+    OSC_PERF("osc::FinalizeFromProperties");
+    model.finalizeFromProperties();
+}
+
 std::optional<int> osc::FindJointInParentJointSet(OpenSim::Joint const& joint)
 {
-    auto const* parentJointset =
-        joint.hasOwner() ? dynamic_cast<OpenSim::JointSet const*>(&joint.getOwner()) : nullptr;
-
+    auto const* parentJointset = osc::GetOwner<OpenSim::JointSet>(joint);
     if (!parentJointset)
     {
         // it's a joint, but it's not owned by a JointSet, so the implementation cannot switch
@@ -1458,12 +1409,9 @@ std::optional<osc::PointInfo> osc::TryExtractPointInfo(
         // HACK: OpenSim redundantly stores path point information in a child called 'station'.
         // These must be filtered because, otherwise, the user will just see a bunch of
         // 'station' entries below each path point
+        if (station->getName() == "station" && osc::OwnerIs<OpenSim::PathPoint>(*station))
         {
-            OpenSim::Component const* owner = osc::GetOwner(*station);
-            if (station->getName() == "station" && dynamic_cast<OpenSim::PathPoint const*>(owner))
-            {
-                return std::nullopt;
-            }
+            return std::nullopt;
         }
 
         return PointInfo
@@ -1502,10 +1450,89 @@ std::optional<osc::PointInfo> osc::TryExtractPointInfo(
     }
 }
 
+OpenSim::Component& osc::AddComponentToAppropriateSet(OpenSim::Model& m, std::unique_ptr<OpenSim::Component> c)
+{
+    OpenSim::Component& rv = *c.get();
+
+    if (dynamic_cast<OpenSim::Body*>(c.get()))
+    {
+        m.addBody(dynamic_cast<OpenSim::Body*>(c.release()));
+    }
+    else if (auto* j = dynamic_cast<OpenSim::Joint*>(c.get()))
+    {
+        m.addJoint(dynamic_cast<OpenSim::Joint*>(c.release()));
+    }
+    else if (dynamic_cast<OpenSim::Constraint*>(c.get()))
+    {
+        m.addConstraint(dynamic_cast<OpenSim::Constraint*>(c.release()));
+    }
+    else if (dynamic_cast<OpenSim::Force*>(c.get()))
+    {
+        m.addForce(dynamic_cast<OpenSim::Force*>(c.release()));
+    }
+    else if (dynamic_cast<OpenSim::Probe*>(c.get()))
+    {
+        m.addProbe(dynamic_cast<OpenSim::Probe*>(c.release()));
+    }
+    else if (dynamic_cast<OpenSim::ContactGeometry*>(c.get()))
+    {
+        m.addContactGeometry(dynamic_cast<OpenSim::ContactGeometry*>(c.release()));
+    }
+    else if (dynamic_cast<OpenSim::Marker*>(c.get()))
+    {
+        m.addMarker(dynamic_cast<OpenSim::Marker*>(c.release()));
+    }
+    else if (dynamic_cast<OpenSim::Controller*>(c.get()))
+    {
+        m.addController(dynamic_cast<OpenSim::Controller*>(c.release()));
+    }
+    else
+    {
+        m.addComponent(c.release());
+    }
+
+    return rv;
+}
+
 OpenSim::ModelComponent& osc::AddModelComponent(OpenSim::Model& model, std::unique_ptr<OpenSim::ModelComponent> p)
 {
     OpenSim::ModelComponent& rv = *p;
     model.addModelComponent(p.release());
+    return rv;
+}
+
+OpenSim::Component& osc::AddComponent(OpenSim::Component& c, std::unique_ptr<OpenSim::Component> p)
+{
+    OpenSim::Component& rv = *p;
+    c.addComponent(p.release());
+    return rv;
+}
+
+OpenSim::Body& osc::AddBody(OpenSim::Model& model, std::unique_ptr<OpenSim::Body> p)
+{
+    OpenSim::Body& rv = *p;
+    model.addBody(p.release());
+    return rv;
+}
+
+OpenSim::Joint& osc::AddJoint(OpenSim::Model& model, std::unique_ptr<OpenSim::Joint> j)
+{
+    OpenSim::Joint& rv = *j;
+    model.addJoint(j.release());
+    return rv;
+}
+
+OpenSim::Marker& osc::AddMarker(OpenSim::Model& model, std::unique_ptr<OpenSim::Marker> marker)
+{
+    OpenSim::Marker& rv = *marker;
+    model.addMarker(marker.release());
+    return rv;
+}
+
+OpenSim::PhysicalOffsetFrame& osc::AddFrame(OpenSim::Joint& joint, std::unique_ptr<OpenSim::PhysicalOffsetFrame> frame)
+{
+    OpenSim::PhysicalOffsetFrame& rv = *frame;
+    joint.addFrame(frame.release());
     return rv;
 }
 

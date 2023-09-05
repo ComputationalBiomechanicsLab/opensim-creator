@@ -285,4 +285,7 @@ namespace osc
         char const* format = "%.3f",
         ImGuiSliderFlags flags = 0
     );
+
+    void BeginDisabled();
+    void EndDisabled();
 }

@@ -45,7 +45,7 @@ osc::ComponentDetails::Response osc::ComponentDetails::onDraw(SimTK::State const
 
         ImGui::Text("getOwner().getName()");
         ImGui::NextColumn();
-        ImGui::Text("%s", c.hasOwner() ? c.getOwner().getName().c_str() : "N/A (no owner)");
+        ImGui::Text("%s", osc::TryGetOwnerName(c).value_or("N/A (no owner)").c_str());
         ImGui::NextColumn();
 
         ImGui::Text("getAbsolutePath()");

@@ -3208,10 +3208,10 @@ namespace
         auto mesh = std::make_unique<OpenSim::Mesh>(meshEl.getPath().string());
         mesh->setName(std::string{meshEl.GetLabel()});
         mesh->set_scale_factors(osc::ToSimTKVec3(meshEl.GetXform().scale));
-        meshPhysOffsetFrame->attachGeometry(mesh.release());
+        osc::AttachGeometry(*meshPhysOffsetFrame, std::move(mesh));
 
         // make it a child of the parent's physical frame
-        parentPhysFrame.addComponent(meshPhysOffsetFrame.release());
+        osc::AddComponent(parentPhysFrame, std::move(meshPhysOffsetFrame));
     }
 
     // create a body for the `model`, but don't add it to the model yet
@@ -3437,7 +3437,7 @@ namespace
         childPOF->set_orientation(osc::ToSimTKVec3(osc::ExtractEulerAngleXYZ(toChildPofInChild)));
 
         // create a relevant OpenSim::Joint (based on the type index, e.g. could be a FreeJoint)
-        auto jointUniqPtr = std::unique_ptr<OpenSim::Joint>(osc::JointRegistry::prototypes()[joint.getJointTypeIndex()]->clone());
+        auto jointUniqPtr = osc::Clone(*osc::JointRegistry::prototypes()[joint.getJointTypeIndex()]);
 
         // set its name
         std::string jointName = CalcJointName(joint, *parent.physicalFrame, *child.physicalFrame);
@@ -3447,30 +3447,30 @@ namespace
         SetJointCoordinateNames(*jointUniqPtr, jointName);
 
         // add + connect the joint to the POFs
-        OpenSim::PhysicalOffsetFrame* parentPtr = parentPOF.get();
-        OpenSim::PhysicalOffsetFrame* childPtr = childPOF.get();
-        jointUniqPtr->addFrame(parentPOF.release());  // care: ownership change happens here (#642)
-        jointUniqPtr->addFrame(childPOF.release());  // care: ownership change happens here (#642)
-        jointUniqPtr->connectSocket_parent_frame(*parentPtr);
-        jointUniqPtr->connectSocket_child_frame(*childPtr);
+        //
+        // care: ownership change happens here (#642)
+        OpenSim::PhysicalOffsetFrame& parentRef = osc::AddFrame(*jointUniqPtr, std::move(parentPOF));
+        OpenSim::PhysicalOffsetFrame& childRef = osc::AddFrame(*jointUniqPtr, std::move(childPOF));
+        jointUniqPtr->connectSocket_parent_frame(parentRef);
+        jointUniqPtr->connectSocket_child_frame(childRef);
 
         // if a child body was created during this step (e.g. because it's not a cyclic connection)
         // then add it to the model
         OSC_ASSERT_ALWAYS(parent.createdBody == nullptr && "at this point in the algorithm, all parents should have already been created");
         if (child.createdBody)
         {
-            model.addBody(child.createdBody.release());  // add created body to model
+            osc::AddBody(model, std::move(child.createdBody));  // add created body to model
         }
 
         // add the joint to the model
-        model.addJoint(jointUniqPtr.release());
+        osc::AddJoint(model, std::move(jointUniqPtr));
 
         // if there are any meshes attached to the joint, attach them to the parent
         for (MeshEl const& mesh : mg.iter<MeshEl>())
         {
             if (mesh.getParentID() == joint.GetID())
             {
-                AttachMeshElToFrame(mesh, joint.GetXform(), *parentPtr);
+                AttachMeshElToFrame(mesh, joint.GetXform(), parentRef);
             }
         }
 
@@ -3515,10 +3515,10 @@ namespace
         visitedBodies[bodyEl.GetID()] = addedBody.get();
 
         // add the components into the OpenSim::Model
-        weldJoint->addFrame(parentFrame.release());
-        weldJoint->addFrame(childFrame.release());
-        model.addBody(addedBody.release());
-        model.addJoint(weldJoint.release());
+        osc::AddFrame(*weldJoint, std::move(parentFrame));
+        osc::AddFrame(*weldJoint, std::move(childFrame));
+        osc::AddBody(model, std::move(addedBody));
+        osc::AddJoint(model, std::move(weldJoint));
     }
 
     void AddStationToModel(
@@ -3532,22 +3532,22 @@ namespace
         JointAttachmentCachedLookupResult res = LookupPhysFrame(mg, model, visitedBodies, stationEl.getParentID());
         OSC_ASSERT_ALWAYS(res.physicalFrame != nullptr && "all physical frames should have been added by this point in the model-building process");
 
-        SimTK::Transform parentXform = ToSimTKTransform(mg.GetElByID(stationEl.getParentID()).GetXform());
-        SimTK::Transform stationXform = ToSimTKTransform(stationEl.GetXform());
-        SimTK::Vec3 locationInParent = (parentXform.invert() * stationXform).p();
+        SimTK::Transform const parentXform = ToSimTKTransform(mg.GetElByID(stationEl.getParentID()).GetXform());
+        SimTK::Transform const stationXform = ToSimTKTransform(stationEl.GetXform());
+        SimTK::Vec3 const locationInParent = (parentXform.invert() * stationXform).p();
 
         if (flags & ModelCreationFlags::ExportStationsAsMarkers)
         {
             // export as markers in the model's markerset (overridden behavior)
-            auto marker = std::make_unique<OpenSim::Marker>(std::string{stationEl.GetLabel()}, *res.physicalFrame, locationInParent);
-            model.addMarker(marker.release());
+            osc::AddMarker(model, to_string(stationEl.GetLabel()), *res.physicalFrame, locationInParent);
         }
         else
         {
             // export as stations in the given frame (default behavior)
             auto station = std::make_unique<OpenSim::Station>(*res.physicalFrame, locationInParent);
             station->setName(to_string(stationEl.GetLabel()));
-            res.physicalFrame->addComponent(station.release());
+
+            osc::AddComponent(*res.physicalFrame, std::move(station));
         }
     }
 
@@ -3852,7 +3852,7 @@ namespace
                 continue;
             }
 
-            if (dynamic_cast<OpenSim::AbstractPathPoint const*>(&station.getOwner()))
+            if (osc::OwnerIs<OpenSim::AbstractPathPoint>(station))
             {
                 continue;
             }

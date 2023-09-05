@@ -278,7 +278,6 @@ add_library(oscar STATIC
     Utils/StringHelpers.cpp
     Utils/StringHelpers.hpp
     Utils/SynchronizedValue.hpp
-    Utils/TypeHelpers.hpp
     Utils/UID.cpp
     Utils/UID.hpp
     Utils/UndoRedo.cpp

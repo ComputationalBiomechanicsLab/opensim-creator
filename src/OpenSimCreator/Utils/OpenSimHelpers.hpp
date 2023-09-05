@@ -14,6 +14,8 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <stdexcept>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -21,6 +23,7 @@ namespace OpenSim { class AbstractOutput; }
 namespace OpenSim { class AbstractPathPoint; }
 namespace OpenSim { class AbstractProperty; }
 namespace OpenSim { class AbstractSocket; }
+namespace OpenSim { class Body; }
 namespace OpenSim { class Component; }
 namespace OpenSim { class ComponentPath; }
 namespace OpenSim { class Coordinate; }
@@ -29,11 +32,16 @@ namespace OpenSim { class Geometry; }
 namespace OpenSim { class GeometryPath; }
 namespace OpenSim { class HuntCrossleyForce; }
 namespace OpenSim { class Joint; }
+namespace OpenSim { class Marker; }
 namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
 namespace OpenSim { class ModelComponent; }
 namespace OpenSim { class Muscle; }
-namespace OpenSim { template<typename T> class SimpleProperty; }
+namespace OpenSim { class Object; }
+namespace OpenSim { template<typename> class ObjectProperty; }
+namespace OpenSim { class PhysicalOffsetFrame; }
+namespace OpenSim { template<class, class> class Set; }
+namespace OpenSim { template<typename> class SimpleProperty; }
 namespace osc { class UndoableModelStatePair; }
 namespace SimTK { class State; }
 
@@ -80,20 +88,42 @@ namespace osc
     }
 
     // returns a mutable pointer to the owner (if it exists)
-    OpenSim::Component* UpdOwner(OpenSim::Component&);
-    template<typename T>
-    T* UpdOwner(OpenSim::Component& c)
+    OpenSim::Component* UpdOwner(OpenSim::Component& root, OpenSim::Component const&);
+
+    template<
+        typename T,
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true
+    >
+    T* UpdOwner(OpenSim::Component& root, OpenSim::Component const& c)
     {
-        return dynamic_cast<T*>(UpdOwner(c));
+        return dynamic_cast<T*>(UpdOwner(root, c));
     }
 
     // returns a pointer to the owner (if it exists)
+    OpenSim::Component const& GetOwnerOrThrow(OpenSim::AbstractOutput const&);
+    OpenSim::Component const& GetOwnerOrThrow(OpenSim::Component const&);
+    OpenSim::Component const& GetOwnerOr(OpenSim::Component const&, OpenSim::Component const& fallback);
     OpenSim::Component const* GetOwner(OpenSim::Component const&);
-    template<typename T>
+
+    template<
+        typename T,
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true
+    >
     T const* GetOwner(OpenSim::Component const& c)
     {
         return dynamic_cast<T const*>(GetOwner(c));
     }
+
+    template<
+        typename T,
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true
+    >
+    bool OwnerIs(OpenSim::Component const& c)
+    {
+        return GetOwner<T>(c) != nullptr;
+    }
+
+    std::optional<std::string> TryGetOwnerName(OpenSim::Component const&);
 
     // returns the distance between the given `Component` and the component that is at the root of the component tree
     int DistanceFromRoot(OpenSim::Component const&);
@@ -137,7 +167,10 @@ namespace osc
     );
 
     // returns the first ancestor of `c` that has type `T`
-    template<typename T>
+    template<
+        typename T,
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true
+    >
     T const* FindAncestorWithType(OpenSim::Component const* c)
     {
         OpenSim::Component const* rv = FindFirstAncestorInclusive(c, [](OpenSim::Component const* el)
@@ -148,14 +181,20 @@ namespace osc
         return dynamic_cast<T const*>(rv);
     }
 
-    template<typename T>
+    template<
+        typename T,
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true
+    >
     T* FindAncestorWithTypeMut(OpenSim::Component* c)
     {
         return const_cast<T*>(FindAncestorWithType<T>(c));
     }
 
     // returns `true` if `c` is a child of a component that derives from `T`
-    template<typename T>
+    template<
+        typename T,
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true
+    >
     bool IsChildOfA(OpenSim::Component const& c)
     {
         return FindAncestorWithType<T>(&c) != nullptr;
@@ -168,7 +207,10 @@ namespace osc
 
     // returns the first direct descendent of `component` that has type `T`, or
     // `nullptr` if no such descendent exists
-    template<typename T>
+    template<
+        typename T,
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true
+    >
     T const* FindFirstDescendentOfType(OpenSim::Component const& c)
     {
         OpenSim::Component const* rv = FindFirstDescendent(c, [](OpenSim::Component const& el)
@@ -216,13 +258,19 @@ namespace osc
     );
 
     // return non-nullptr if the given path resolves a component of type T relative to root
-    template<typename T>
+    template<
+        typename T,
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true
+    >
     T const* FindComponent(OpenSim::Component const& root, OpenSim::ComponentPath const& cp)
     {
         return dynamic_cast<T const*>(FindComponent(root, cp));
     }
 
-    template<typename T>
+    template<
+        typename T,
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true
+    >
     T const* FindComponent(OpenSim::Component const& root, std::string const& cp)
     {
         return dynamic_cast<T const*>(FindComponent(root, cp));
@@ -235,7 +283,10 @@ namespace osc
     );
 
     // returns non-nullptr if the given path resolves a component of type T relative to root
-    template<typename T>
+    template<
+        typename T,
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true
+    >
     T* FindComponentMut(
         OpenSim::Component& root,
         OpenSim::ComponentPath const& cp)
@@ -351,9 +402,6 @@ namespace osc
     // returns `true` if any modification was made to the model
     bool ActivateAllWrapObjectsIn(OpenSim::Model&);
 
-    // adds a component to an appropriate (if possible - e.g. jointset) location in the model
-    void AddComponentToModel(OpenSim::Model&, std::unique_ptr<OpenSim::Component>);
-
     // load an .osim file into an OpenSim model
     std::unique_ptr<UndoableModelStatePair> LoadOsimIntoUndoableModel(std::filesystem::path const&);
 
@@ -362,6 +410,11 @@ namespace osc
 
     // fully initalize an OpenSim model's working state
     SimTK::State& InitializeState(OpenSim::Model&);
+
+    // calls `model.finalizeFromProperties()`
+    //
+    // (mostly here to match the style of osc's initialization methods)
+    void FinalizeFromProperties(OpenSim::Model&);
 
     // finalize any socket connections in the model
     //
@@ -502,27 +555,136 @@ namespace osc
     bool CanExtractPointInfoFrom(OpenSim::Component const&, SimTK::State const&);
     std::optional<PointInfo> TryExtractPointInfo(OpenSim::Component const&, SimTK::State const&);
 
+    // adds a component to an appropriate location in the model (e.g. jointset for a joint) and
+    // returns a reference to the placed component
+    OpenSim::Component& AddComponentToAppropriateSet(OpenSim::Model&, std::unique_ptr<OpenSim::Component>);
+
+    // adds a model component to the componentset of a model and returns a reference to the component
     OpenSim::ModelComponent& AddModelComponent(OpenSim::Model&, std::unique_ptr<OpenSim::ModelComponent>);
 
-    template<typename T>
+    // adds a specific (T) model component to the componentset of the model and returns a reference to the component
+    template<
+        typename T,
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true
+    >
     T& AddModelComponent(OpenSim::Model& model, std::unique_ptr<T> p)
     {
         return static_cast<T&>(AddModelComponent(model, static_cast<std::unique_ptr<OpenSim::ModelComponent>&&>(std::move(p))));
     }
 
-    template<typename T, typename... Args>
+    // constructs a specific (T) model component in the componentset of the model and returns a reference to the component
+    template<
+        typename T,
+        typename... Args,
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true
+    >
     T& AddModelComponent(OpenSim::Model& model, Args&&... args)
     {
         auto p = std::make_unique<T>(std::forward<Args>(args)...);
         return static_cast<T&>(AddModelComponent(model, std::move(p)));
     }
 
+    // adds a new component to the componentset of the component and returns a reference to the new component
+    OpenSim::Component& AddComponent(OpenSim::Component&, std::unique_ptr<OpenSim::Component>);
+
+    template<
+        typename T,
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true
+    >
+    T& AddComponent(OpenSim::Component& c, std::unique_ptr<T> p)
+    {
+        return static_cast<T&>(AddComponent(c, static_cast<std::unique_ptr<OpenSim::Component>&&>(std::move(p))));
+    }
+
+    OpenSim::Body& AddBody(OpenSim::Model&, std::unique_ptr<OpenSim::Body>);
+    OpenSim::Joint& AddJoint(OpenSim::Model&, std::unique_ptr<OpenSim::Joint>);
+    OpenSim::Marker& AddMarker(OpenSim::Model&, std::unique_ptr<OpenSim::Marker>);
+
+    template<
+        typename... Args,
+        typename std::enable_if_t<std::is_constructible_v<OpenSim::Marker, Args&&...>, bool> = true
+    >
+    OpenSim::Marker& AddMarker(OpenSim::Model& model, Args&&... args)
+    {
+        auto p = std::make_unique<OpenSim::Marker>(std::forward<Args>(args)...);
+        return AddMarker(model, std::move(p));
+    }
+
     OpenSim::Geometry& AttachGeometry(OpenSim::Frame&, std::unique_ptr<OpenSim::Geometry>);
-    template<typename T, typename... Args>
+
+    template<
+        typename T,
+        typename... Args,
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true,
+        typename std::enable_if_t<std::is_constructible_v<T, Args&&...>, bool> = true
+    >
     T& AttachGeometry(OpenSim::Frame& frame, Args&&... args)
     {
         auto p = std::make_unique<T>(std::forward<Args>(args)...);
         return static_cast<T&>(AttachGeometry(frame, std::move(p)));
+    }
+
+    OpenSim::PhysicalOffsetFrame& AddFrame(OpenSim::Joint&, std::unique_ptr<OpenSim::PhysicalOffsetFrame>);
+
+    template<
+        typename T,
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T> || std::is_base_of_v<OpenSim::AbstractProperty, T>, bool> = true
+    >
+    std::unique_ptr<T> Clone(T const& component)
+    {
+        return std::unique_ptr<T>(component.clone());
+    }
+
+    template<
+        typename T,
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true
+    >
+    void Append(OpenSim::ObjectProperty<T>& prop, T const& c)
+    {
+        prop.adoptAndAppendValue(Clone(c).release());
+    }
+
+    template<
+        class T,
+        class U,
+        class C = OpenSim::Object,
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true,
+        typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = true
+    >
+    void Append(OpenSim::Set<T, C>& set, std::unique_ptr<U> el)
+    {
+        set.adoptAndAppend(el.release());
+    }
+
+    template<
+        class T,
+        class U,
+        class C = OpenSim::Object,
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true,
+        typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = true
+    >
+    U& Assign(OpenSim::Set<T, C>& set, int index, std::unique_ptr<U> el)
+    {
+        if (!(0 <= index && index < set.getSize()))
+        {
+            throw std::out_of_range{"called osc::Assign(OpenSim::Set&...) with an out-of-bounds index"};
+        }
+
+        U& rv = *el;
+        set.set(index, el.release());
+        return rv;
+    }
+
+    template<
+        class T,
+        class U,
+        class C = OpenSim::Object,
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true,
+        typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = true
+    >
+    U& Assign(OpenSim::Set<T, C>& set, int index, U const& el)
+    {
+        return Assign(set, index, Clone(el));
     }
 
     // tries to get the "parent" transform of the given component (if available)
