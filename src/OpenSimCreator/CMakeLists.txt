@@ -13,7 +13,9 @@ add_library(OpenSimCreator STATIC
 
     Graphics/CachedModelRenderer.cpp
     Graphics/CachedModelRenderer.hpp
+    Graphics/ComponentAbsPathDeocrationTagger.cpp
     Graphics/ComponentAbsPathDecorationTagger.hpp
+    Graphics/ComponentSceneDecorationFlagsTagger.cpp
     Graphics/ComponentSceneDecorationFlagsTagger.hpp
     Graphics/CustomRenderingOptions.cpp
     Graphics/CustomRenderingOptions.hpp
@@ -199,7 +201,7 @@ add_library(OpenSimCreator STATIC
     ComponentRegistry.hpp
     OpenSimCreatorApp.cpp
     OpenSimCreatorApp.hpp
-)
+ "Graphics/ComponentAbsPathDeocrationTagger.cpp")
 
 # OpenSimCreator: compile-time includes
 target_include_directories(OpenSimCreator PUBLIC

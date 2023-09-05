@@ -1,11 +1,9 @@
 #pragma once
 
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-
-#include <oscar/Graphics/SceneDecoration.hpp>
 #include <oscar/Graphics/SceneDecorationFlags.hpp>
 
 namespace OpenSim { class Component; }
+namespace osc { struct SceneDecoration; }
 
 namespace osc
 {
@@ -13,51 +11,12 @@ namespace osc
     public:
         ComponentSceneDecorationFlagsTagger(
             OpenSim::Component const* selected_,
-            OpenSim::Component const* hovered_) :
-            m_Selected{selected_},
-            m_Hovered{hovered_}
-        {
-        }
+            OpenSim::Component const* hovered_
+        );
 
-        void operator()(OpenSim::Component const& component, SceneDecoration& decoration)
-        {
-            if (&component != m_LastComponent)
-            {
-                m_Flags = ComputeFlags(component);
-                m_LastComponent = &component;
-            }
-
-            decoration.flags = m_Flags;
-        }
+        void operator()(OpenSim::Component const&, SceneDecoration&);
     private:
-        SceneDecorationFlags ComputeFlags(OpenSim::Component const& component) const
-        {
-            SceneDecorationFlags rv = SceneDecorationFlags::CastsShadows;
-
-            if (&component == m_Selected)
-            {
-                rv |= SceneDecorationFlags::IsSelected;
-            }
-
-            if (&component == m_Hovered)
-            {
-                rv |= SceneDecorationFlags::IsHovered;
-            }
-
-            for (OpenSim::Component const* p = GetOwner(component); p; p = GetOwner(*p))
-            {
-                if (p == m_Selected)
-                {
-                    rv |= SceneDecorationFlags::IsChildOfSelected;
-                }
-                if (p == m_Hovered)
-                {
-                    rv |= SceneDecorationFlags::IsChildOfHovered;
-                }
-            }
-
-            return rv;
-        }
+        SceneDecorationFlags ComputeFlags(OpenSim::Component const&) const;
 
         OpenSim::Component const* m_Selected;
         OpenSim::Component const* m_Hovered;

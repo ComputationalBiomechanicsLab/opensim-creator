@@ -686,7 +686,7 @@ namespace osc
     // adds a specific (T) model component to the componentset of the model and returns a reference to the component
     template<
         typename T,
-        typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true
+        typename std::enable_if_t<std::is_base_of_v<OpenSim::ModelComponent, T>, bool> = true
     >
     T& AddModelComponent(OpenSim::Model& model, std::unique_ptr<T> p)
     {
