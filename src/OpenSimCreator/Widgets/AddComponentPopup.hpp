@@ -14,10 +14,10 @@ namespace osc
     class AddComponentPopup final : public Popup {
     public:
         AddComponentPopup(
+            std::string_view popupName,
             EditorAPI*,
             std::shared_ptr<UndoableModelStatePair>,
-            std::unique_ptr<OpenSim::Component> prototype,
-            std::string_view popupName
+            std::unique_ptr<OpenSim::Component> prototype
         );
         AddComponentPopup(AddComponentPopup const&) = delete;
         AddComponentPopup(AddComponentPopup&&) noexcept;

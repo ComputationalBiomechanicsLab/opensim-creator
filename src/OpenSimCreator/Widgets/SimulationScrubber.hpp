@@ -17,9 +17,9 @@ namespace osc
     class SimulationScrubber final {
     public:
         SimulationScrubber(
-            std::string_view,
+            std::string_view label,
             SimulatorUIAPI*,
-            std::shared_ptr<Simulation>
+            std::shared_ptr<Simulation const>
         );
         SimulationScrubber(SimulationScrubber const&) = delete;
         SimulationScrubber(SimulationScrubber&&) noexcept;

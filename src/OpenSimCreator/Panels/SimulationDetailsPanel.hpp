@@ -16,7 +16,7 @@ namespace osc
         SimulationDetailsPanel(
             std::string_view panelName,
             SimulatorUIAPI*,
-            std::shared_ptr<Simulation>
+            std::shared_ptr<Simulation const>
         );
         SimulationDetailsPanel(SimulationDetailsPanel const&) = delete;
         SimulationDetailsPanel(SimulationDetailsPanel&&) noexcept;

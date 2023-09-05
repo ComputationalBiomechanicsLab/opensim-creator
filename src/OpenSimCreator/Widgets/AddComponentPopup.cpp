@@ -68,10 +68,11 @@ namespace
 
 class osc::AddComponentPopup::Impl final : public osc::StandardPopup {
 public:
-    Impl(EditorAPI* api,
-         std::shared_ptr<UndoableModelStatePair> uum,
-         std::unique_ptr<OpenSim::Component> prototype,
-         std::string_view popupName) :
+    Impl(
+        std::string_view popupName,
+        EditorAPI* api,
+        std::shared_ptr<UndoableModelStatePair> uum,
+        std::unique_ptr<OpenSim::Component> prototype) :
 
         StandardPopup{popupName},
         m_Uum{std::move(uum)},
@@ -512,12 +513,12 @@ private:
 // public API
 
 osc::AddComponentPopup::AddComponentPopup(
+    std::string_view popupName,
     EditorAPI* api,
     std::shared_ptr<UndoableModelStatePair> uum,
-    std::unique_ptr<OpenSim::Component> prototype,
-    std::string_view popupName) :
+    std::unique_ptr<OpenSim::Component> prototype) :
 
-    m_Impl{std::make_unique<Impl>(api, std::move(uum), std::move(prototype), popupName)}
+    m_Impl{std::make_unique<Impl>(popupName, api, std::move(uum), std::move(prototype))}
 {
 }
 

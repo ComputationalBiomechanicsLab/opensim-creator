@@ -32,9 +32,9 @@
 
 class osc::AddBodyPopup::Impl final : public osc::StandardPopup {
 public:
-    Impl(EditorAPI* api,
-         std::shared_ptr<UndoableModelStatePair> uum,
-         std::string_view popupName) :
+    Impl(std::string_view popupName,
+         EditorAPI* api,
+         std::shared_ptr<UndoableModelStatePair> uum) :
 
         StandardPopup{popupName},
         m_EditorAPI{api},
@@ -241,11 +241,11 @@ private:
 // public API
 
 osc::AddBodyPopup::AddBodyPopup(
+    std::string_view popupName,
     EditorAPI* api,
-    std::shared_ptr<UndoableModelStatePair> uum,
-    std::string_view popupName) :
+    std::shared_ptr<UndoableModelStatePair> uum) :
 
-    m_Impl{std::make_unique<Impl>(api, std::move(uum), popupName)}
+    m_Impl{std::make_unique<Impl>(popupName, api, std::move(uum))}
 {
 }
 osc::AddBodyPopup::AddBodyPopup(AddBodyPopup&&) noexcept = default;

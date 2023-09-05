@@ -17,7 +17,7 @@
 class osc::SelectComponentPopup::Impl final : public StandardPopup {
 public:
     Impl(std::string_view popupName,
-         std::shared_ptr<UndoableModelStatePair> model,
+         std::shared_ptr<UndoableModelStatePair const> model,
          std::function<void(OpenSim::ComponentPath const&)> onSelection,
          std::function<bool(OpenSim::Component const&)> filter) :
 
@@ -57,14 +57,14 @@ private:
         }
     }
 
-    std::shared_ptr<UndoableModelStatePair> m_Model;
+    std::shared_ptr<UndoableModelStatePair const> m_Model;
     std::function<void(OpenSim::ComponentPath const&)> m_OnSelection;
     std::function<bool(OpenSim::Component const&)> m_Filter;
 };
 
 osc::SelectComponentPopup::SelectComponentPopup(
     std::string_view popupName,
-    std::shared_ptr<UndoableModelStatePair> model,
+    std::shared_ptr<UndoableModelStatePair const> model,
     std::function<void(OpenSim::ComponentPath const&)> onSelection,
     std::function<bool(OpenSim::Component const&)> filter) :
 

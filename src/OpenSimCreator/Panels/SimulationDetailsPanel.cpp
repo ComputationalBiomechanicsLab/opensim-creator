@@ -22,7 +22,7 @@ public:
     Impl(
         std::string_view panelName,
         SimulatorUIAPI* simulatorUIAPI,
-        std::shared_ptr<Simulation> simulation) :
+        std::shared_ptr<Simulation const> simulation) :
 
         StandardPanel{panelName},
         m_SimulatorUIAPI{simulatorUIAPI},
@@ -62,7 +62,7 @@ private:
         }
     }
 
-    void drawSimulationStatPlots(osc::Simulation& sim)
+    void drawSimulationStatPlots(osc::Simulation const& sim)
     {
         auto outputs = sim.getOutputs();
 
@@ -122,7 +122,7 @@ private:
     }
 
     SimulatorUIAPI* m_SimulatorUIAPI;
-    std::shared_ptr<Simulation> m_Simulation;
+    std::shared_ptr<Simulation const> m_Simulation;
 };
 
 
@@ -131,7 +131,7 @@ private:
 osc::SimulationDetailsPanel::SimulationDetailsPanel(
     std::string_view panelName,
     SimulatorUIAPI* simulatorUIAPI,
-    std::shared_ptr<Simulation> simulation) :
+    std::shared_ptr<Simulation const> simulation) :
 
     m_Impl{std::make_unique<Impl>(panelName, simulatorUIAPI, std::move(simulation))}
 {

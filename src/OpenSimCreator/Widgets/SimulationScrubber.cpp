@@ -20,7 +20,7 @@ public:
     Impl(
         std::string_view label,
         SimulatorUIAPI* simulatorAPI,
-        std::shared_ptr<Simulation> simulation) :
+        std::shared_ptr<Simulation const> simulation) :
 
         m_Label{label},
         m_SimulatorAPI{simulatorAPI},
@@ -182,7 +182,7 @@ private:
 
     std::string m_Label;
     SimulatorUIAPI* m_SimulatorAPI;
-    std::shared_ptr<Simulation> m_Simulation;
+    std::shared_ptr<Simulation const> m_Simulation;
 };
 
 
@@ -191,7 +191,7 @@ private:
 osc::SimulationScrubber::SimulationScrubber(
     std::string_view label,
     SimulatorUIAPI* simulatorAPI,
-    std::shared_ptr<Simulation> simulation) :
+    std::shared_ptr<Simulation const> simulation) :
 
     m_Impl{std::make_unique<Impl>(label, simulatorAPI, std::move(simulation))}
 {

@@ -13,7 +13,11 @@ namespace osc
 {
     class SimulationOutputPlot final {
     public:
-        SimulationOutputPlot(SimulatorUIAPI*, OutputExtractor, float height);
+        SimulationOutputPlot(
+            SimulatorUIAPI*,
+            OutputExtractor,
+            float height
+        );
         SimulationOutputPlot(SimulationOutputPlot const&) = delete;
         SimulationOutputPlot(SimulationOutputPlot&&) noexcept;
         SimulationOutputPlot& operator=(SimulationOutputPlot const&) = delete;

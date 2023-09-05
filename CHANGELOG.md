@@ -45,6 +45,7 @@ All notable changes to this project will be documented here. The format is based
 - Internal: Refactored OpenSim-style `int T::getSize` with stdlib-style `size_t size(T const&);` (#757)
 - Internal: Refactored `osc::OutputSubfield` to be more type-safe (#759)
 - Internal: Refactored `osc::ComponentRegistry` into a cleaner set of components (#760)
+- Internal: Refactored various widget constructors to have similar signatures (#761)
 
 
 ## [0.5.1] - 2023/07/27

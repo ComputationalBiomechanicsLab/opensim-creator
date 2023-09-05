@@ -50,7 +50,7 @@ class osc::OutputWatchesPanel::Impl final : public osc::StandardPanel {
 public:
 
     Impl(std::string_view panelName_,
-        std::shared_ptr<UndoableModelStatePair> model_,
+        std::shared_ptr<UndoableModelStatePair const> model_,
         ParentPtr<MainUIStateAPI> const& api_) :
 
         StandardPanel{panelName_},
@@ -102,7 +102,7 @@ private:
     }
 
     ParentPtr<MainUIStateAPI> m_API;
-    std::shared_ptr<UndoableModelStatePair> m_Model;
+    std::shared_ptr<UndoableModelStatePair const> m_Model;
     CachedSimulationReport m_CachedReport;
 };
 
@@ -111,7 +111,7 @@ private:
 
 osc::OutputWatchesPanel::OutputWatchesPanel(
     std::string_view panelName_,
-    std::shared_ptr<UndoableModelStatePair> model_,
+    std::shared_ptr<UndoableModelStatePair const> model_,
     ParentPtr<MainUIStateAPI> const& api_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), api_)}

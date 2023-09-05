@@ -162,7 +162,13 @@ private:
         }
         else if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {
-            auto popup = std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_MainUIStateAPI, m_EditorAPI, m_Model, osc::GetAbsolutePath(c));
+            auto popup = std::make_unique<ComponentContextMenu>(
+                "##componentcontextmenu",
+                m_MainUIStateAPI,
+                m_EditorAPI,
+                m_Model,
+                osc::GetAbsolutePath(c)
+            );
             popup->open();
             m_EditorAPI->pushPopup(std::move(popup));
         }

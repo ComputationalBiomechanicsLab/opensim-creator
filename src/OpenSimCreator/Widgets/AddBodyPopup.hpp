@@ -13,9 +13,9 @@ namespace osc
     class AddBodyPopup final : public Popup {
     public:
         AddBodyPopup(
+            std::string_view popupName,
             EditorAPI*,
-            std::shared_ptr<UndoableModelStatePair>,
-            std::string_view popupName
+            std::shared_ptr<UndoableModelStatePair>
         );
         AddBodyPopup(AddBodyPopup const&) = delete;
         AddBodyPopup(AddBodyPopup&&) noexcept;

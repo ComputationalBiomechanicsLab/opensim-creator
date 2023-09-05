@@ -17,7 +17,7 @@ namespace osc
     public:
         SelectComponentPopup(
             std::string_view popupName,
-            std::shared_ptr<UndoableModelStatePair>,
+            std::shared_ptr<UndoableModelStatePair const>,
             std::function<void(OpenSim::ComponentPath const&)> onSelection,
             std::function<bool(OpenSim::Component const&)> filter
         );

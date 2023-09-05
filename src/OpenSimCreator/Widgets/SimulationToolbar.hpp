@@ -11,7 +11,7 @@ namespace osc
     class SimulationToolbar final {
     public:
         SimulationToolbar(
-            std::string_view,
+            std::string_view label,
             SimulatorUIAPI*,
             std::shared_ptr<Simulation>
         );

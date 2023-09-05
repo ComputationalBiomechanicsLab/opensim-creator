@@ -15,8 +15,8 @@ namespace osc
     public:
         Select1PFPopup(
             std::string_view popupName,
-            std::shared_ptr<UndoableModelStatePair>,
-            std::function<void(OpenSim::ComponentPath const&)>
+            std::shared_ptr<UndoableModelStatePair const>,
+            std::function<void(OpenSim::ComponentPath const&)> onSelection
         );
         Select1PFPopup(Select1PFPopup const&) = delete;
         Select1PFPopup(Select1PFPopup&&) noexcept;

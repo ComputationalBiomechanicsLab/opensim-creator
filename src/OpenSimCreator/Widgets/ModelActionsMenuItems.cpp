@@ -35,7 +35,7 @@ public:
         std::shared_ptr<UndoableModelStatePair> uum_) :
 
         m_EditorAPI{api},
-        m_Uum{std::move(uum_)}
+        m_Model{std::move(uum_)}
     {
     }
 
@@ -48,7 +48,7 @@ public:
             // draw button
             if (ImGui::MenuItem("Body"))
             {
-                auto popup = std::make_unique<AddBodyPopup>(m_EditorAPI, m_Uum, "add body");
+                auto popup = std::make_unique<AddBodyPopup>("add body", m_EditorAPI, m_Model);
                 popup->open();
                 m_EditorAPI->pushPopup(std::move(popup));
             }
@@ -87,10 +87,10 @@ private:
                 if (ImGui::MenuItem(entry.name().c_str()))
                 {
                     auto popup = std::make_unique<AddComponentPopup>(
+                        "Add " + registry.name(),
                         m_EditorAPI,
-                        m_Uum,
-                        entry.instantiate(),
-                        "Add " + registry.name()
+                        m_Model,
+                        entry.instantiate()
                     );
                     popup->open();
                     m_EditorAPI->pushPopup(std::move(popup));
@@ -115,7 +115,7 @@ private:
     }
 
     EditorAPI* m_EditorAPI;
-    std::shared_ptr<UndoableModelStatePair> m_Uum;
+    std::shared_ptr<UndoableModelStatePair> m_Model;
 };
 
 

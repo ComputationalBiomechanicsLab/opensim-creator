@@ -19,7 +19,7 @@ class osc::Select1PFPopup::Impl final : public StandardPopup {
 public:
 
     Impl(std::string_view popupName,
-         std::shared_ptr<UndoableModelStatePair> model,
+         std::shared_ptr<UndoableModelStatePair const> model,
          std::function<void(OpenSim::ComponentPath const&)> onSelection) :
 
         StandardPopup{popupName},
@@ -50,7 +50,7 @@ private:
         }
     }
 
-    std::shared_ptr<UndoableModelStatePair> m_Model;
+    std::shared_ptr<UndoableModelStatePair const> m_Model;
     std::function<void(OpenSim::ComponentPath const&)> m_OnSelection;
 };
 
@@ -59,7 +59,7 @@ private:
 
 osc::Select1PFPopup::Select1PFPopup(
     std::string_view popupName,
-    std::shared_ptr<UndoableModelStatePair> model,
+    std::shared_ptr<UndoableModelStatePair const> model,
     std::function<void(OpenSim::ComponentPath const&)> onSelection) :
 
     m_Impl{std::make_unique<Impl>(popupName, std::move(model), std::move(onSelection))}

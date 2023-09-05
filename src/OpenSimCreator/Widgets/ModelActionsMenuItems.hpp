@@ -9,7 +9,10 @@ namespace osc
 {
     class ModelActionsMenuItems final {
     public:
-        ModelActionsMenuItems(EditorAPI*, std::shared_ptr<UndoableModelStatePair>);
+        ModelActionsMenuItems(
+            EditorAPI*,
+            std::shared_ptr<UndoableModelStatePair>
+        );
         ModelActionsMenuItems(ModelActionsMenuItems const&) = delete;
         ModelActionsMenuItems(ModelActionsMenuItems&&) noexcept;
         ModelActionsMenuItems& operator=(ModelActionsMenuItems const&) = delete;
