@@ -2027,75 +2027,73 @@ namespace
             return std::make_unique<ModelGraph>(*this);
         }
 
-
-        SceneEl* TryUpdElByID(UID id)
-        {
-            auto it = m_Els.find(id);
-
-            if (it == m_Els.end())
-            {
-                return nullptr;  // ID does not exist in the element collection
-            }
-
-            return it->second.get();
-        }
-
-        template<typename T = SceneEl>
+        template<
+            typename T = SceneEl,
+            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
+        >
         T* TryUpdElByID(UID id)
         {
-            static_assert(std::is_base_of_v<SceneEl, T>);
-
-            SceneEl* p = TryUpdElByID(id);
-
-            return p ? dynamic_cast<T*>(p) : nullptr;
+            return FindElByID<T>(m_Els, id);
         }
 
-        template<typename T = SceneEl>
+        template<
+            typename T = SceneEl,
+            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
+        >
         T const* TryGetElByID(UID id) const
         {
-            return const_cast<ModelGraph&>(*this).TryUpdElByID<T>(id);
+            return FindElByID<T>(m_Els, id);
         }
 
-        template<typename T = SceneEl>
+        template<
+            typename T = SceneEl,
+            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
+        >
         T& UpdElByID(UID id)
         {
-            T* ptr = TryUpdElByID<T>(id);
-
-            if (!ptr)
-            {
-                std::stringstream msg;
-                msg << "could not find a scene element of type " << typeid(T).name() << " with ID = " << id;
-                throw std::runtime_error{std::move(msg).str()};
-            }
-
-            return *ptr;
+            return FindElByIDOrThrow<T>(m_Els, id);
         }
 
-        template<typename T = SceneEl>
+        template<
+            typename T = SceneEl,
+            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
+        >
         T const& GetElByID(UID id) const
         {
-            return const_cast<ModelGraph&>(*this).UpdElByID<T>(id);
+            return FindElByIDOrThrow<T>(m_Els, id);
         }
 
-        template<typename T = SceneEl>
+        template<
+            typename T = SceneEl,
+            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
+        >
         bool ContainsEl(UID id) const
         {
             return TryGetElByID<T>(id);
         }
 
-        template<typename T = SceneEl>
+        template<
+            typename T = SceneEl,
+            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
+        >
         bool ContainsEl(SceneEl const& e) const
         {
             return ContainsEl<T>(e.GetID());
         }
 
-        template<typename T = SceneEl>
+        template<
+            typename T = SceneEl,
+            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
+        >
         Iterable<false, T> iter()
         {
             return Iterable<false, T>{m_Els};
         }
 
-        template<typename T = SceneEl>
+        template<
+            typename T = SceneEl,
+            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
+        >
         Iterable<true, T> iter() const
         {
             return Iterable<true, T>{const_cast<ModelGraph&>(*this).m_Els};
@@ -2119,7 +2117,12 @@ namespace
             return *m_Els.emplace(el->GetID(), std::move(el)).first->second;
         }
 
-        template<typename T, typename... Args>
+        template<
+            typename T,
+            typename... Args,
+            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true,
+            typename std::enable_if_t<std::is_constructible_v<T, Args&&...>, bool> = true
+        >
         T& AddEl(Args&&... args)
         {
             return static_cast<T&>(AddEl(std::unique_ptr<SceneEl>{std::make_unique<T>(std::forward<Args>(args)...)}));
@@ -2228,6 +2231,47 @@ namespace
         }
 
     private:
+        template<
+            typename T = SceneEl,
+            typename Container,
+            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
+        >
+        static T* FindElByID(Container& container, UID id)
+        {
+            auto it = container.find(id);
+
+            if (it == container.end())
+            {
+                return nullptr;
+            }
+
+            if constexpr (std::is_same_v<T, SceneEl>)
+            {
+                return it->second.get();
+            }
+            else
+            {
+                return dynamic_cast<T*>(it->second.get());
+            }
+        }
+
+        template<
+            typename T = SceneEl,
+            typename Container,
+            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
+        >
+        static T& FindElByIDOrThrow(Container& container, UID id)
+        {
+            auto ptr = FindElByID<T>(container, id);
+            if (!ptr)
+            {
+                std::stringstream msg;
+                msg << "could not find a scene element of type " << typeid(T).name() << " with ID = " << id;
+                throw std::runtime_error{std::move(msg).str()};
+            }
+
+            return *ptr;
+        }
 
         void PopulateDeletionSet(SceneEl const& deletionTarget, std::unordered_set<UID>& out)
         {

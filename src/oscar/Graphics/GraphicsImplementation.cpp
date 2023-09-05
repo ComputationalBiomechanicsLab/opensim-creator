@@ -2909,7 +2909,7 @@ public:
 
     // non-PIMPL APIs
 
-    gl::Program& updProgram()
+    gl::Program const& getProgram() const
     {
         return m_Program;
     }
@@ -6239,8 +6239,8 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
 {
     OSC_PERF("GraphicsBackend::HandleBatchWithSameMaterial");
 
-    auto& matImpl = const_cast<Material::Impl&>(*els.front().material.m_Impl);
-    auto& shaderImpl = const_cast<Shader::Impl&>(*matImpl.m_Shader.m_Impl);
+    auto const& matImpl = *els.front().material.m_Impl;
+    auto const& shaderImpl = *matImpl.m_Shader.m_Impl;
     FastStringHashtable<ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
     // preemptively upload instance data
@@ -6249,7 +6249,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
     // updated by various batches (which may bind to textures etc.)
     int32_t textureSlot = 0;
 
-    gl::UseProgram(shaderImpl.updProgram());
+    gl::UseProgram(shaderImpl.getProgram());
 
     if (matImpl.getWireframeMode())
     {

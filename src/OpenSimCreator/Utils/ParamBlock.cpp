@@ -108,19 +108,30 @@ private:
         return m_Params.at(static_cast<size_t>(idx));
     }
 
+
+    // helper, to prevent writing a const-/non-const-version of a member method
+    template<
+        typename T,
+        typename Container,
+        typename std::enable_if_t<std::is_same_v<Param, std::decay_t<T>>, bool> = true
+    >
+    static T* find(Container& c, std::string const& name)
+    {
+        auto it = std::find_if(c.begin(), c.end(), [&name](Param const& el)
+        {
+            return el.name == name;
+        });
+        return it != c.end() ? &(*it) : nullptr;
+    }
+
     Param* find(std::string const& name)
     {
-        return const_cast<Param*>(static_cast<Impl const>(*this).find(name));
+        return Impl::find<Param>(m_Params, name);
     }
 
     Param const* find(std::string const& name) const
     {
-        auto it = std::find_if(m_Params.begin(), m_Params.end(), [&name](Param const& param)
-        {
-            return param.name == name;
-        });
-
-        return it != m_Params.end() ? &(*it) : nullptr;
+        return Impl::find<Param const>(m_Params, name);
     }
 
     std::vector<Param> m_Params;
