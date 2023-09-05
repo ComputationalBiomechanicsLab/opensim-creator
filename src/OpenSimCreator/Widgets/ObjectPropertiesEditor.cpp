@@ -1356,7 +1356,7 @@ namespace
             }
             property_type const& prop = *maybeProp;
 
-            if (prop.getValue().getSize() <= 0)
+            if (osc::empty(prop.getValue()))
             {
                 return std::nullopt;  // no editable contact set on the property
             }
@@ -1383,9 +1383,9 @@ namespace
                 rv = [=](OpenSim::AbstractProperty& p) mutable
                 {
                     auto* downcasted = dynamic_cast<OpenSim::Property<OpenSim::HuntCrossleyForce::ContactParametersSet>*>(&p);
-                    if (downcasted && downcasted->getValue().getSize() > 0)
+                    if (downcasted && !osc::empty(downcasted->getValue()))
                     {
-                        OpenSim::HuntCrossleyForce::ContactParameters& contactParams = downcasted->getValue()[0];
+                        OpenSim::HuntCrossleyForce::ContactParameters& contactParams = osc::At(downcasted->updValue(), 0);
                         if (params.hasProperty(resp->getPropertyName()))
                         {
                             OpenSim::AbstractProperty& childP = contactParams.updPropertyByName(resp->getPropertyName());

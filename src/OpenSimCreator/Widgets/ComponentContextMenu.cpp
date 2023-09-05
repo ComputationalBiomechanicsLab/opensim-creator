@@ -55,12 +55,6 @@ namespace
             return;
         }
 
-        std::optional<int> maybeIdx = osc::FindJointInParentJointSet(*joint);
-        if (!maybeIdx)
-        {
-            return;
-        }
-
         ptrdiff_t selectedIdx = -1;
         if (ImGui::BeginMenu("Change Joint Type"))
         {
@@ -176,7 +170,7 @@ namespace
             return;
         }
 
-        if (hcf->get_contact_parameters().getSize() > 1)
+        if (osc::size(hcf->get_contact_parameters()) > 1)
         {
             return;  // cannot edit: has more than one HuntCrossleyForce::Parameter
         }

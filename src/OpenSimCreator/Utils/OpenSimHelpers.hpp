@@ -10,6 +10,7 @@
 #include <OpenSim/Common/ComponentPath.h>
 #include <SimTKcommon/internal/Transform.h>
 
+#include <cstddef>
 #include <filesystem>
 #include <memory>
 #include <optional>
@@ -23,6 +24,8 @@ namespace OpenSim { class AbstractOutput; }
 namespace OpenSim { class AbstractPathPoint; }
 namespace OpenSim { class AbstractProperty; }
 namespace OpenSim { class AbstractSocket; }
+namespace OpenSim { template<typename> class Array; }
+namespace OpenSim { template<typename> class ArrayPtrs; }
 namespace OpenSim { class Body; }
 namespace OpenSim { class Component; }
 namespace OpenSim { class ComponentPath; }
@@ -38,6 +41,7 @@ namespace OpenSim { class Model; }
 namespace OpenSim { class ModelComponent; }
 namespace OpenSim { class Muscle; }
 namespace OpenSim { class Object; }
+namespace OpenSim { template<typename> class Property; }
 namespace OpenSim { template<typename> class ObjectProperty; }
 namespace OpenSim { class PhysicalOffsetFrame; }
 namespace OpenSim { template<class, class> class Set; }
@@ -48,6 +52,123 @@ namespace SimTK { class State; }
 // OpenSimHelpers: a collection of various helper functions that are used by `osc`
 namespace osc
 {
+    // iteration/indexing helpers
+
+    template<
+        typename C,
+        typename O = OpenSim::Object
+    >
+    size_t size(OpenSim::Set<C, O> const& s)
+    {
+        return static_cast<size_t>(s.getSize());
+    }
+
+    template<
+        class T,
+        class C = OpenSim::Object
+    >
+    ptrdiff_t ssize(OpenSim::Set<T, C> const& s)
+    {
+        return static_cast<ptrdiff_t>(s.getSize());
+    }
+
+    template<typename T>
+    size_t size(OpenSim::ArrayPtrs<T> const& ary)
+    {
+        return static_cast<size_t>(ary.getSize());
+    }
+
+    template<typename T>
+    size_t size(OpenSim::Array<T> const& ary)
+    {
+        return static_cast<size_t>(ary.getSize());
+    }
+
+    template<typename T>
+    size_t size(OpenSim::Property<T> const& p)
+    {
+        return static_cast<size_t>(p.size());
+    }
+
+    template<
+        class T,
+        class C = OpenSim::Object
+    >
+    bool empty(OpenSim::Set<T, C> const& s)
+    {
+        return size(s) > 0;
+    }
+
+    template<typename T>
+    T& At(OpenSim::ArrayPtrs<T>& ary, size_t i)
+    {
+        if (i >= size(ary))
+        {
+            throw std::out_of_range{"out of bounds access to an OpenSim::ArrayPtrs detected"};
+        }
+
+        if (T* el = ary.get(static_cast<int>(i)))
+        {
+            return *el;
+        }
+        else
+        {
+            throw std::runtime_error{"attempted to access null element of ArrayPtrs"};
+        }
+    }
+
+    template<typename T>
+    T const& At(OpenSim::Array<T> const& ary, size_t i)
+    {
+        if (i >= size(ary))
+        {
+            throw std::out_of_range{"out of bounds access to an OpenSim::ArrayPtrs detected"};
+        }
+        return ary.get(static_cast<int>(i));
+    }
+
+    template<
+        class T,
+        class C = OpenSim::Object
+    >
+    T const& At(OpenSim::Set<T, C> const& s, size_t i)
+    {
+        if (i >= size(s))
+        {
+            throw std::out_of_range{"out of bounds access to an OpenSim::Set detected"};
+        }
+        return s.get(static_cast<int>(i));
+    }
+
+    template<
+        class T,
+        class C = OpenSim::Object
+    >
+    T& At(OpenSim::Set<T, C>& s, size_t i)
+    {
+        if (i >= size(s))
+        {
+            throw std::out_of_range{"out of bounds access to an OpenSim::Set detected"};
+        }
+        s.get(static_cast<int>(i));  // force an OpenSim-based null check
+        return s[static_cast<int>(i)];
+    }
+
+    template<class T>
+    T const& At(OpenSim::Property<T> const& p, size_t i)
+    {
+        return p[static_cast<int>(i)];
+    }
+
+    template<
+        class T,
+        class C = OpenSim::Object
+    >
+    bool EraseAt(OpenSim::Set<T, C>& s, size_t i)
+    {
+        return s.remove(static_cast<int>(i));
+    }
+
     // returns true if the first argument has a lexographically lower class name
     bool IsConcreteClassNameLexographicallyLowerThan(
         OpenSim::Component const&,
@@ -126,7 +247,7 @@ namespace osc
     std::optional<std::string> TryGetOwnerName(OpenSim::Component const&);
 
     // returns the distance between the given `Component` and the component that is at the root of the component tree
-    int DistanceFromRoot(OpenSim::Component const&);
+    size_t DistanceFromRoot(OpenSim::Component const&);
 
     // returns a reference to a global instance of an empty component path (i.e. "")
     OpenSim::ComponentPath const& GetEmptyComponentPath();
@@ -427,7 +548,7 @@ namespace osc
     void FinalizeConnections(OpenSim::Model&);
 
     // returns optional{index} if joint is found in parent jointset (otherwise: std::nullopt)
-    std::optional<int> FindJointInParentJointSet(OpenSim::Joint const&);
+    std::optional<size_t> FindJointInParentJointSet(OpenSim::Joint const&);
 
     // returns a string representation of the recommended document's name
     std::string GetRecommendedDocumentName(UndoableModelStatePair const&);
@@ -663,15 +784,15 @@ namespace osc
         typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true,
         typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = true
     >
-    U& Assign(OpenSim::Set<T, C>& set, int index, std::unique_ptr<U> el)
+    U& Assign(OpenSim::Set<T, C>& set, size_t index, std::unique_ptr<U> el)
     {
-        if (!(0 <= index && index < set.getSize()))
+        if (index >= size(set))
         {
-            throw std::out_of_range{"called osc::Assign(OpenSim::Set&...) with an out-of-bounds index"};
+            throw std::out_of_range{"out of bounds access to an OpenSim::Set detected"};
         }
 
         U& rv = *el;
-        set.set(index, el.release());
+        set.set(static_cast<int>(index), el.release());
         return rv;
     }
 
@@ -682,7 +803,7 @@ namespace osc
         typename std::enable_if_t<std::is_base_of_v<OpenSim::Component, T>, bool> = true,
         typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = true
     >
-    U& Assign(OpenSim::Set<T, C>& set, int index, U const& el)
+    U& Assign(OpenSim::Set<T, C>& set, size_t index, U const& el)
     {
         return Assign(set, index, Clone(el));
     }

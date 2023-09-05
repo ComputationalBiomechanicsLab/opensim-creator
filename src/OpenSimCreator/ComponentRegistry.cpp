@@ -339,9 +339,9 @@ namespace
         OpenSim::ArrayPtrs<T> ptrs;
         OpenSim::Object::getRegisteredObjectsOfGivenType<T>(ptrs);
 
-        for (int i = 0; i < ptrs.getSize(); ++i)
+        for (size_t i = 0; i < osc::size(ptrs); ++i)
         {
-            out.insert(ptrs[i]->getConcreteClassName());
+            out.insert(osc::At(ptrs, i).getConcreteClassName());
         }
     }
 

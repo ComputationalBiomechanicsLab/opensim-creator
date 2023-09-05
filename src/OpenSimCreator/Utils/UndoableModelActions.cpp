@@ -936,13 +936,13 @@ bool osc::ActionChangeJointTypeTo(UndoableModelStatePair& uim, OpenSim::Componen
 
     OpenSim::ComponentPath const ownerPath = osc::GetAbsolutePath(*owner);
 
-    std::optional<int> const maybeIdx = FindJointInParentJointSet(*target);
+    std::optional<size_t> const maybeIdx = FindJointInParentJointSet(*target);
     if (!maybeIdx)
     {
         return false;
     }
 
-    int const idx = *maybeIdx;
+    size_t const idx = *maybeIdx;
 
     std::string const oldTypeName = target->getConcreteClassName();
     std::string const newTypeName = newType->getConcreteClassName();
@@ -1058,7 +1058,7 @@ bool osc::ActionAssignContactGeometryToHCF(
         // calling this ensures at least one `OpenSim::HuntCrossleyForce::ContactParameters`
         // is present in the HCF
         mutHCF->getStaticFriction();
-        OSC_ASSERT(mutHCF->updContactParametersSet().getSize() > 0);
+        OSC_ASSERT(!osc::empty(mutHCF->updContactParametersSet()));
 
         mutHCF->updContactParametersSet()[0].updGeometry().appendValue(geom->getName());
         mutModel.finalizeConnections();
@@ -1137,7 +1137,7 @@ bool osc::ActionAddPathPointToPathActuator(
         return false;
     }
 
-    int const n = pa->getGeometryPath().getPathPointSet().getSize();
+    size_t const n = osc::size(pa->getGeometryPath().getPathPointSet());
     std::string const name = pa->getName() + "-P" + std::to_string(n + 1);
     SimTK::Vec3 const pos = {0.0f, 0.0f, 0.0f};
 

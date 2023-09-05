@@ -282,7 +282,7 @@ private:
                 }
                 else if (auto const* wos = dynamic_cast<OpenSim::WrapObjectSet const*>(&c))
                 {
-                    shouldRender = wos->getSize() > 0;
+                    shouldRender = !osc::empty(*wos);
                 }
                 else if (!ShouldShowInUI(c))
                 {

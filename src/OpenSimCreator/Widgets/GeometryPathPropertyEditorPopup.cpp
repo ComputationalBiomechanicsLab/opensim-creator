@@ -55,7 +55,7 @@ namespace
 
         RequestedAction(
             Type type_,
-            int pathPointIndex_) :
+            ptrdiff_t pathPointIndex_) :
 
             type{type_},
             pathPointIndex{pathPointIndex_}
@@ -68,47 +68,50 @@ namespace
         }
 
         Type type = Type::None;
-        int pathPointIndex = -1;
+        ptrdiff_t pathPointIndex = -1;
     };
 
-    void ActionMovePathPointUp(OpenSim::PathPointSet& pps, int i)
+    void ActionMovePathPointUp(OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
-        if (0 < i && i < pps.getSize())
+        if (1 <= i && i < osc::ssize(pps))
         {
-            auto tmp = osc::Clone(pps.get(i));
-            osc::Assign(pps, i, pps.get(i-1));
+            auto tmp = osc::Clone(osc::At(pps, i));
+            osc::Assign(pps, i, osc::At(pps, i-1));
             osc::Assign(pps, i-1, std::move(tmp));
         }
     }
 
-    void ActionMovePathPointDown(OpenSim::PathPointSet& pps, int i)
+    void ActionMovePathPointDown(OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
-        if (0 <= i && i+1 < pps.getSize())
+        if (0 <= i && i < osc::ssize(pps)-1)
         {
-            auto tmp = osc::Clone(pps.get(i));
-            osc::Assign(pps, i, pps.get(i+1));
+            auto tmp = osc::Clone(osc::At(pps, i));
+            osc::Assign(pps, i, osc::At(pps, i+1));
             osc::Assign(pps, i+1, std::move(tmp));
         }
     }
 
-    void ActionDeletePathPoint(OpenSim::PathPointSet& pps, int i)
+    void ActionDeletePathPoint(OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
-        if (0 <= i && i < pps.getSize())
+        if (0 <= i && i < osc::ssize(pps))
         {
-            pps.remove(i);
+            osc::EraseAt(pps, i);
         }
     }
 
-    void ActionSetPathPointFramePath(OpenSim::PathPointSet& pps, int i, std::string const& frameAbsPath)
+    void ActionSetPathPointFramePath(
+        OpenSim::PathPointSet& pps,
+        ptrdiff_t i,
+        std::string const& frameAbsPath)
     {
-        pps.get(i).updSocket("parent_frame").setConnecteePath(frameAbsPath);
+        osc::At(pps, i).updSocket("parent_frame").setConnecteePath(frameAbsPath);
     }
 
     void ActionAddNewPathPoint(OpenSim::PathPointSet& pps)
     {
-        std::string const frame = pps.getSize() == 0 ?
+        std::string const frame = osc::empty(pps) ?
             "/ground" :
-            pps.get(pps.getSize() - 1).getSocket("parent_frame").getConnecteePath();
+            osc::At(pps, osc::size(pps)-1).getSocket("parent_frame").getConnecteePath();
 
         auto pp = std::make_unique<OpenSim::PathPoint>();
         pp->updSocket("parent_frame").setConnecteePath(frame);
@@ -194,12 +197,11 @@ private:
             ImGui::TableSetupScrollFreeze(0, 1);
             ImGui::TableHeadersRow();
 
-            int imguiID = 0;
-            for (int i = 0; i < pps.getSize(); ++i)
+            for (ptrdiff_t i = 0; i < osc::ssize(pps); ++i)
             {
-                ImGui::PushID(imguiID++);
+                osc::PushID(i);
                 drawIthPathPointTableRow(pps, i);
-                ImGui::PopID();
+                osc::PopID();
             }
 
             ImGui::EndTable();
@@ -219,7 +221,7 @@ private:
         }
     }
 
-    void drawIthPathPointTableRow(OpenSim::PathPointSet& pps, int i)
+    void drawIthPathPointTableRow(OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
         int column = 0;
 
@@ -237,7 +239,7 @@ private:
         drawIthPathPointFrameCell(pps, i);
     }
 
-    void drawIthPathPointActionsCell(OpenSim::PathPointSet& pps, int i)
+    void drawIthPathPointActionsCell(OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
 
@@ -256,7 +258,7 @@ private:
 
         ImGui::SameLine();
 
-        if (i+1 >= pps.getSize())
+        if (i+1 >= osc::ssize(pps))
         {
             ImGui::BeginDisabled();
         }
@@ -264,7 +266,7 @@ private:
         {
             m_RequestedAction = RequestedAction{RequestedAction::Type::MoveDown, i};
         }
-        if (i+1 >= pps.getSize())
+        if (i+1 >= osc::ssize(pps))
         {
             ImGui::EndDisabled();
         }
@@ -281,17 +283,17 @@ private:
         ImGui::PopStyleVar();
     }
 
-    void drawIthPathPointTypeCell(OpenSim::PathPointSet const& pps, int i)
+    void drawIthPathPointTypeCell(OpenSim::PathPointSet const& pps, ptrdiff_t i)
     {
-        ImGui::TextDisabled("%s", pps.get(i).getConcreteClassName().c_str());
+        ImGui::TextDisabled("%s", At(pps, i).getConcreteClassName().c_str());
     }
 
     // try, because the path point type might not actually have a set location
     //
     // (e.g. `MovingPathPoint`s)
-    void tryDrawIthPathPointLocationEditorCells(OpenSim::PathPointSet& pps, int i, int& column)
+    void tryDrawIthPathPointLocationEditorCells(OpenSim::PathPointSet& pps, ptrdiff_t i, int& column)
     {
-        OpenSim::AbstractPathPoint& app = pps.get(i);
+        OpenSim::AbstractPathPoint& app = At(pps, i);
 
         if (auto* const pp = dynamic_cast<OpenSim::PathPoint*>(&app))
         {
@@ -321,11 +323,11 @@ private:
         }
     }
 
-    void drawIthPathPointFrameCell(OpenSim::PathPointSet& pps, int i)
+    void drawIthPathPointFrameCell(OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
         float const width = ImGui::CalcTextSize("/bodyset/a_typical_body_name").x;
 
-        std::string const& label = pps.get(i).getSocket("parent_frame").getConnecteePath();
+        std::string const& label = At(pps, i).getSocket("parent_frame").getConnecteePath();
 
         ImGui::SetNextItemWidth(width);
         if (ImGui::BeginCombo("##framesel", label.c_str()))
@@ -368,7 +370,7 @@ private:
 
     void tryExecuteRequestedAction(OpenSim::PathPointSet& pps)
     {
-        if (!(0 <= m_RequestedAction.pathPointIndex && m_RequestedAction.pathPointIndex < pps.getSize()))
+        if (!(0 <= m_RequestedAction.pathPointIndex && m_RequestedAction.pathPointIndex < osc::ssize(pps)))
         {
             // edge-case: if the index is out of range, ignore the action
             m_RequestedAction.reset();

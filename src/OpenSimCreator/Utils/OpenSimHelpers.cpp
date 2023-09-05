@@ -2,6 +2,7 @@
 
 #include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Plane.hpp>
@@ -89,12 +90,11 @@ namespace
     template<typename T, typename TSetBase = OpenSim::Object>
     bool TryDeleteItemFromSet(OpenSim::Set<T, TSetBase>& set, T const* item)
     {
-        for (int i = 0; i < set.getSize(); ++i)
+        for (size_t i = 0; i < osc::size(set); ++i)
         {
-            if (&set.get(i) == item)
+            if (&osc::At(set, i) == item)
             {
-                set.remove(i);
-                return true;
+                return osc::EraseAt(set, i);
             }
         }
         return false;
@@ -158,10 +158,10 @@ namespace
         path.getPointForceDirections(st, &pfds);
 
         std::vector<std::unique_ptr<OpenSim::PointForceDirection>> rv;
-        rv.reserve(pfds.getSize());
-        for (int i = 0; i < pfds.getSize(); ++i)
+        rv.reserve(osc::size(pfds));
+        for (size_t i = 0; i < osc::size(pfds); ++i)
         {
-            rv.emplace_back(pfds[i]);
+            rv.emplace_back(osc::At(pfds, i));
         }
         return rv;
     }
@@ -334,9 +334,9 @@ std::optional<std::string> osc::TryGetOwnerName(OpenSim::Component const& c)
     return owner ? owner->getName() : std::optional<std::string>{};
 }
 
-int osc::DistanceFromRoot(OpenSim::Component const& c)
+size_t osc::DistanceFromRoot(OpenSim::Component const& c)
 {
-    int dist = 0;
+    size_t dist = 0;
     for (OpenSim::Component const* p = &c; p; p = GetOwner(*p))
     {
         ++dist;
@@ -463,12 +463,11 @@ void osc::GetCoordinatesInModel(
     std::vector<OpenSim::Coordinate const*>& out)
 {
     OpenSim::CoordinateSet const& s = m.getCoordinateSet();
-    int len = s.getSize();
-    out.reserve(out.size() + static_cast<size_t>(len));
+    out.reserve(out.size() + size(s));
 
-    for (int i = 0; i < len; ++i)
+    for (size_t i = 0; i < size(s); ++i)
     {
-        out.push_back(&s[i]);
+        out.push_back(&At(s, i));
     }
 }
 
@@ -897,9 +896,9 @@ bool osc::DeactivateAllWrapObjectsIn(OpenSim::Model& m)
     bool rv = false;
     for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>())
     {
-        for (int i = 0; i < wos.getSize(); ++i)
+        for (size_t i = 0; i < size(wos); ++i)
         {
-            OpenSim::WrapObject& wo = wos[i];
+            OpenSim::WrapObject& wo = At(wos, i);
             wo.set_active(false);
             wo.upd_Appearance().set_visible(false);
             rv = true;
@@ -913,9 +912,9 @@ bool osc::ActivateAllWrapObjectsIn(OpenSim::Model& m)
     bool rv = false;
     for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>())
     {
-        for (int i = 0; i < wos.getSize(); ++i)
+        for (size_t i = 0; i < size(wos); ++i)
         {
-            OpenSim::WrapObject& wo = wos[i];
+            OpenSim::WrapObject& wo = At(wos, i);
             wo.set_active(true);
             wo.upd_Appearance().set_visible(true);
             rv = true;
@@ -969,7 +968,7 @@ void osc::FinalizeFromProperties(OpenSim::Model& model)
     model.finalizeFromProperties();
 }
 
-std::optional<int> osc::FindJointInParentJointSet(OpenSim::Joint const& joint)
+std::optional<size_t> osc::FindJointInParentJointSet(OpenSim::Joint const& joint)
 {
     auto const* parentJointset = osc::GetOwner<OpenSim::JointSet>(joint);
     if (!parentJointset)
@@ -980,11 +979,9 @@ std::optional<int> osc::FindJointInParentJointSet(OpenSim::Joint const& joint)
     }
 
     OpenSim::JointSet const& js = *parentJointset;
-
-    for (int i = 0; i < js.getSize(); ++i)
+    for (size_t i = 0; i < size(js); ++i)
     {
-        OpenSim::Joint const* j = &js[i];
-        if (j == &joint)
+        if (&At(js, i) == &joint)
         {
             return i;
         }
@@ -1201,13 +1198,13 @@ std::vector<osc::GeometryPathPoint> osc::GetAllPathPoints(OpenSim::GeometryPath 
     OpenSim::Array<OpenSim::AbstractPathPoint*> const& pps = gp.getCurrentPath(st);
 
     std::vector<GeometryPathPoint> rv;
-    rv.reserve(pps.getSize());  // best guess: but path wrapping might add more
+    rv.reserve(size(pps));  // best guess: but path wrapping might add more
 
-    for (int i = 0; i < pps.getSize(); ++i)
+    for (size_t i = 0; i < size(pps); ++i)
     {
-        OpenSim::AbstractPathPoint const* const ap = pps[i];
+        OpenSim::AbstractPathPoint const* const ap = At(pps, i);
 
-        if (!ap)
+        if (ap == nullptr)
         {
             continue;
         }
@@ -1217,10 +1214,10 @@ std::vector<osc::GeometryPathPoint> osc::GetAllPathPoints(OpenSim::GeometryPath 
             Transform const body2ground = ToTransform(pwp->getParentFrame().getTransformInGround(st));
             OpenSim::Array<SimTK::Vec3> const& wrapPath = pwp->getWrapPath(st);
 
-            rv.reserve(rv.size() + wrapPath.getSize());
-            for (int j = 0; j < wrapPath.getSize(); ++j)
+            rv.reserve(rv.size() + size(wrapPath));
+            for (size_t j = 0; j < size(wrapPath); ++j)
             {
-                rv.emplace_back(body2ground * ToVec3(wrapPath[j]));
+                rv.emplace_back(body2ground * ToVec3(At(wrapPath, j)));
             }
         }
         else
@@ -1242,19 +1239,20 @@ namespace
     {
         // get contact parameters (i.e. where the contact geometry is stored)
         OpenSim::HuntCrossleyForce::ContactParametersSet const& paramSet = hcf.get_contact_parameters();
-        if (paramSet.getSize() <= 0)
+        if (osc::empty(paramSet))
         {
             return nullptr;  // edge-case: the force has no parameters
         }
 
         // linearly search for a ContactHalfSpace
-        for (int i = 0; i < paramSet.getSize(); ++i)
+        for (size_t i = 0; i < osc::size(paramSet); ++i)
         {
-            OpenSim::HuntCrossleyForce::ContactParameters const& param = paramSet[i];
+            OpenSim::HuntCrossleyForce::ContactParameters const& param = osc::At(paramSet, i);
             OpenSim::Property<std::string> const& geomProperty = param.getProperty_geometry();
-            for (int j = 0; j < geomProperty.size(); ++j)
+
+            for (size_t j = 0; osc::size(geomProperty); ++j)
             {
-                std::string const& geomNameOrPath = geomProperty[j];
+                std::string const& geomNameOrPath = osc::At(geomProperty, j);
                 if (auto const* foundViaAbsPath = osc::FindComponent<OpenSim::ContactHalfSpace>(model, geomNameOrPath))
                 {
                     // found it as an abspath within the model
