@@ -1,10 +1,11 @@
 #include "ModelActionsMenuItems.hpp"
 
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
+#include "OpenSimCreator/Registry/ComponentRegistry.hpp"
+#include "OpenSimCreator/Registry/StaticComponentRegistries.hpp"
 #include "OpenSimCreator/Widgets/AddBodyPopup.hpp"
 #include "OpenSimCreator/Widgets/AddComponentPopup.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/ComponentRegistry.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
@@ -77,39 +78,39 @@ private:
     template<typename T>
     void renderButton()
     {
-        std::stringstream label;
-        label << osc::ComponentRegistry<T>::name();
+        ComponentRegistry<T> const& registry = osc::GetComponentRegistry<T>();
 
-        // action: add joint
-        if (ImGui::BeginMenu(label.str().c_str()))
+        if (ImGui::BeginMenu(registry.name().c_str()))
         {
-            nonstd::span<CStringView const> const names = osc::ComponentRegistry<T>::nameStrings();
-
-            for (size_t i = 0; i < names.size(); ++i)
+            for (ComponentRegistryEntry<T> const& entry : registry)
             {
-                if (ImGui::MenuItem(names[i].c_str()))
+                if (ImGui::MenuItem(entry.name().c_str()))
                 {
-                    std::unique_ptr<T> copy = osc::Clone(*osc::ComponentRegistry<T>::prototypes()[i]);
-                    auto popup = std::make_unique<AddComponentPopup>(m_EditorAPI, m_Uum, std::move(copy), "Add " + osc::ComponentRegistry<T>::name());
+                    auto popup = std::make_unique<AddComponentPopup>(
+                        m_EditorAPI,
+                        m_Uum,
+                        entry.instantiate(),
+                        "Add " + registry.name()
+                    );
                     popup->open();
                     m_EditorAPI->pushPopup(std::move(popup));
                 }
 
                 if (ImGui::IsItemHovered())
                 {
-                    DrawTooltip(names[i], osc::ComponentRegistry<T>::descriptionStrings()[i]);
+                    DrawTooltip(entry.name(), entry.description());
                 }
             }
 
             ImGui::EndMenu();
         }
+
         if (ImGui::IsItemHovered())
         {
             std::stringstream ttTitle;
-            ttTitle << "Add a " << osc::ComponentRegistry<T>::name() << " into the model";
-            DrawTooltip(
-                ttTitle.str().c_str(),
-                osc::ComponentRegistry<T>::description().c_str());
+            ttTitle << "Add a " << registry.name() << " into the model";
+
+            DrawTooltip(ttTitle.str(), registry.description());
         }
     }
 

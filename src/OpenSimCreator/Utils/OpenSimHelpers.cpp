@@ -1461,7 +1461,7 @@ OpenSim::Component& osc::AddComponentToAppropriateSet(OpenSim::Model& m, std::un
     {
         m.addBody(dynamic_cast<OpenSim::Body*>(c.release()));
     }
-    else if (auto* j = dynamic_cast<OpenSim::Joint*>(c.get()))
+    else if (dynamic_cast<OpenSim::Joint*>(c.get()))
     {
         m.addJoint(dynamic_cast<OpenSim::Joint*>(c.release()));
     }

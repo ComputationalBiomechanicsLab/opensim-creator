@@ -9,7 +9,6 @@
 #include "OpenSimCreator/Widgets/ReassignSocketPopup.hpp"
 #include "OpenSimCreator/Widgets/SelectComponentPopup.hpp"
 #include "OpenSimCreator/Widgets/SelectGeometryPopup.hpp"
-#include "OpenSimCreator/ComponentRegistry.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>

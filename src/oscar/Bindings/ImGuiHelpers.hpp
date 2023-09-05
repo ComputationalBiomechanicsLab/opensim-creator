@@ -11,6 +11,7 @@
 #include <nonstd/span.hpp>
 
 #include <cstddef>
+#include <functional>
 #include <initializer_list>
 #include <optional>
 #include <string>
@@ -263,6 +264,13 @@ namespace osc
     bool ItemValueShouldBeSaved();
 
     void PopItemFlags(int n = 1);
+
+    bool Combo(
+        CStringView label,
+        size_t* current,
+        size_t size,
+        std::function<CStringView(size_t)> const& accessor
+    );
 
     bool Combo(
         CStringView label,

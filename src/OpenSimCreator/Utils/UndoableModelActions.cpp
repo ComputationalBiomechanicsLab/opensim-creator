@@ -6,6 +6,8 @@
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "OpenSimCreator/Model/BasicModelStatePair.hpp"
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
+#include "OpenSimCreator/Registry/ComponentRegistry.hpp"
+#include "OpenSimCreator/Registry/StaticComponentRegistries.hpp"
 #include "OpenSimCreator/Simulation/ForwardDynamicSimulation.hpp"
 #include "OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp"
 #include "OpenSimCreator/Simulation/Simulation.hpp"
@@ -16,7 +18,6 @@
 #include "OpenSimCreator/Tabs/PerformanceAnalyzerTab.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/Widgets/ObjectPropertiesEditor.hpp"
-#include "OpenSimCreator/ComponentRegistry.hpp"
 
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Platform/App.hpp>
@@ -1256,7 +1257,7 @@ osc::BodyDetails::BodyDetails() :
     inertia{1.0f, 1.0f, 1.0f},
     mass{1.0f},
     bodyName{"new_body"},
-    jointTypeIndex{osc::JointRegistry::indexOf<OpenSim::WeldJoint>().value_or(0)},
+    jointTypeIndex{osc::IndexOf<OpenSim::WeldJoint>(osc::GetComponentRegistry<OpenSim::Joint>()).value_or(0)},
     maybeGeometry{nullptr},
     addOffsetFrames{true}
 {
@@ -1278,7 +1279,7 @@ bool osc::ActionAddBodyToModel(UndoableModelStatePair& uim, BodyDetails const& d
     auto body = std::make_unique<OpenSim::Body>(details.bodyName, mass, com, inertia);
 
     // create joint between body and whatever the frame is
-    OpenSim::Joint const& jointProto = *osc::JointRegistry::prototypes()[details.jointTypeIndex];
+    OpenSim::Joint const& jointProto = osc::At(osc::GetComponentRegistry<OpenSim::Joint>(), details.jointTypeIndex).prototype();
     std::unique_ptr<OpenSim::Joint> joint = MakeJoint(details, *body, jointProto, *parent);
 
     // attach decorative geom

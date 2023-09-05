@@ -1,4 +1,6 @@
-#include "OpenSimCreator/ComponentRegistry.hpp"
+#include "OpenSimCreator/Registry/StaticComponentRegistries.hpp"
+
+#include "OpenSimCreator/Registry/ComponentRegistry.hpp"
 
 #include <oscar/Utils/CStringView.hpp>
 
@@ -37,11 +39,12 @@ namespace
         template<typename T, typename... Names>
         static TestCase create(Names... names)
         {
+
             return TestCase
             {
                 typeid(T).name(),
-                osc::ComponentRegistry<OpenSim::Joint>::indexOf<T>(),
-                {std::forward<Names>(names)...}
+                osc::IndexOf<T>(osc::GetComponentRegistry<OpenSim::Joint>()),
+                {std::forward<Names>(names)...},
             };
         }
     };
@@ -75,8 +78,8 @@ TEST(ComponentRegistry, CoordsHaveExpectedNames)
     {
         ASSERT_TRUE(tc.maybeIndex) << tc.name << " does not exist in the registry(it should)";
 
-        auto proto = osc::ComponentRegistry<OpenSim::Joint>::prototypes()[*tc.maybeIndex];
-        auto const& coordProp = proto->getProperty_coordinates();
+        auto const& proto = osc::GetComponentRegistry<OpenSim::Joint>()[*tc.maybeIndex].prototype();
+        auto const& coordProp = proto.getProperty_coordinates();
 
         ASSERT_EQ(coordProp.size(), tc.expectedNames.size()) << tc.name <<  " has different number of coords from expected";
 
@@ -91,10 +94,8 @@ TEST(ComponentRegistry, CoordsHaveExpectedNames)
 //       that all joint types can be added without an exception/segfault
 TEST(JointRegistry, CanAddAnyJointWithoutAnExceptionOrSegfault)
 {
-    for (std::shared_ptr<OpenSim::Joint const> const& prototype : osc::JointRegistry::prototypes())
+    for (auto const& entry : osc::GetComponentRegistry<OpenSim::Joint>())
     {
-        ASSERT_TRUE(prototype != nullptr);
-
         // create a blank model
         OpenSim::Model model;
 
@@ -104,7 +105,7 @@ TEST(JointRegistry, CanAddAnyJointWithoutAnExceptionOrSegfault)
         body->setMass(1.0);  // required
 
         // create joint between the model's ground and the body
-        std::unique_ptr<OpenSim::Joint> joint{prototype->clone()};
+        auto joint = entry.instantiate();
         joint->connectSocket_parent_frame(model.getGround());
         joint->connectSocket_child_frame(*body);
 
@@ -124,15 +125,13 @@ TEST(JointRegistry, CanAddAnyJointWithoutAnExceptionOrSegfault)
 //       to ensure that all contact geometries can be added without an exception/segfault
 TEST(ContactGeometryRegistry, CanAddAnyContactGeometryWithoutAnExceptionOrSegfault)
 {
-    for (std::shared_ptr<OpenSim::ContactGeometry const> const& prototype : osc::ContactGeometryRegistry::prototypes())
+    for (auto const& entry : osc::GetComponentRegistry<OpenSim::ContactGeometry>())
     {
-        ASSERT_TRUE(prototype != nullptr);
-
         // create a blank model
         OpenSim::Model model;
 
         // create contact geometry attached to model's ground frame
-        std::unique_ptr<OpenSim::ContactGeometry> geom{prototype->clone()};
+        auto geom = entry.instantiate();
         geom->connectSocket_frame(model.getGround());
 
         // add it to the model
@@ -153,15 +152,13 @@ TEST(ContactGeometryRegistry, CanAddAnyContactGeometryWithoutAnExceptionOrSegfau
 //  other stuff, e.g. coordinates, existing in the model)
 TEST(ConstraintRegistry, CanAddAnyConstraintWithoutASegfault)
 {
-    for (std::shared_ptr<OpenSim::Constraint const> const& prototype : osc::ConstraintRegistry::prototypes())
+    for (auto const& entry : osc::GetComponentRegistry<OpenSim::Constraint>())
     {
-        ASSERT_TRUE(prototype != nullptr);
-
         // create a blank model
         OpenSim::Model model;
 
         // default-construct the constraint
-        std::unique_ptr<OpenSim::Constraint> constraint{prototype->clone()};
+        auto constraint = entry.instantiate();
 
         // add it to the model
         model.addConstraint(constraint.release());
@@ -188,15 +185,13 @@ TEST(ConstraintRegistry, CanAddAnyConstraintWithoutASegfault)
 //  other stuff, e.g. coordinates, existing in the model)
 TEST(ForceRegistry, CanAddAnyForceWithoutASegfault)
 {
-    for (std::shared_ptr<OpenSim::Force const> const& prototype : osc::ForceRegistry::prototypes())
+    for (auto const& entry : osc::GetComponentRegistry<OpenSim::Force>())
     {
-        ASSERT_TRUE(prototype != nullptr);
-
         // create a blank model
         OpenSim::Model model;
 
         // default-construct the force
-        std::unique_ptr<OpenSim::Force> force{prototype->clone()};
+        auto force = entry.instantiate();
 
         // initialize the model+system+state
         try
@@ -218,15 +213,13 @@ TEST(ForceRegistry, CanAddAnyForceWithoutASegfault)
 //       to ensure that all of them can be added without a segfault
 TEST(ControllerRegistry, CanAddAnyControllerWithoutASegfault)
 {
-    for (std::shared_ptr<OpenSim::Controller const> const& prototype : osc::ControllerRegistry::prototypes())
+    for (auto const& entry : osc::GetComponentRegistry<OpenSim::Controller>())
     {
-        ASSERT_TRUE(prototype != nullptr);
-
         // create a blank model
         OpenSim::Model model;
 
         // default-construct the controller
-        std::unique_ptr<OpenSim::Controller> controller{prototype->clone()};
+        auto controller = entry.instantiate();
 
         // add it to the model
         model.addController(controller.release());
@@ -250,15 +243,13 @@ TEST(ControllerRegistry, CanAddAnyControllerWithoutASegfault)
 //       to ensure that all of them can be added without a segfault
 TEST(ProbeRegistry, CanAddAnyProbeWithoutASegfault)
 {
-    for (std::shared_ptr<OpenSim::Probe const> const& prototype : osc::ProbeRegistry::prototypes())
+    for (auto const& entry : osc::GetComponentRegistry<OpenSim::Probe>())
     {
-        ASSERT_TRUE(prototype != nullptr);
-
         // create a blank model
         OpenSim::Model model;
 
         // default-construct the probe
-        std::unique_ptr<OpenSim::Probe> probe{prototype->clone()};
+        auto probe = entry.instantiate();
 
         // add it to the model
         model.addProbe(probe.release());
@@ -277,15 +268,13 @@ TEST(ProbeRegistry, CanAddAnyProbeWithoutASegfault)
 //       segfault
 TEST(UngroupedRegistry, CanAddAnyUngroupedComponentWithoutASegfault)
 {
-    for (std::shared_ptr<OpenSim::Component const> const& prototype : osc::UngroupedRegistry::prototypes())
+    for (auto const& entry : osc::GetComponentRegistry<OpenSim::Component>())
     {
-        ASSERT_TRUE(prototype != nullptr);
-
         // create a blank model
         OpenSim::Model model;
 
         // default-construct the component
-        std::unique_ptr<OpenSim::Component> component{prototype->clone()};
+        auto component = entry.instantiate();
 
         try
         {

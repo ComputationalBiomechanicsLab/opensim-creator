@@ -2,6 +2,8 @@
 
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
+#include "OpenSimCreator/Registry/ComponentRegistry.hpp"
+#include "OpenSimCreator/Registry/StaticComponentRegistries.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/Utils/UndoableModelActions.hpp"
 #include "OpenSimCreator/Widgets/BasicWidgets.hpp"
@@ -10,7 +12,6 @@
 #include "OpenSimCreator/Widgets/SelectComponentPopup.hpp"
 #include "OpenSimCreator/Widgets/Select1PFPopup.hpp"
 #include "OpenSimCreator/Widgets/SelectGeometryPopup.hpp"
-#include "OpenSimCreator/ComponentRegistry.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Panels/PanelManager.hpp>
@@ -55,19 +56,20 @@ namespace
             return;
         }
 
-        ptrdiff_t selectedIdx = -1;
+        auto const& registry = osc::GetComponentRegistry<OpenSim::Joint>();
+
+        std::optional<ptrdiff_t> selectedIdx;
         if (ImGui::BeginMenu("Change Joint Type"))
         {
             // look the Joint up in the type registry so we know where it should be in the ImGui::Combo
-            std::optional<size_t> maybeTypeIndex = osc::JointRegistry::indexOf(*joint);
-            int typeIndex = maybeTypeIndex ? static_cast<int>(*maybeTypeIndex) : -1;
-            nonstd::span<osc::CStringView const> const jointNames = osc::JointRegistry::nameStrings();
+            std::optional<size_t> maybeTypeIndex = osc::IndexOf(registry, *joint);
 
-            for (ptrdiff_t i = 0; i < ssize(jointNames); ++i)
+            for (ptrdiff_t i = 0; i < ssize(registry); ++i)
             {
-                bool selected = i == typeIndex;
+                bool selected = i == maybeTypeIndex;
                 bool wasSelected = selected;
-                if (ImGui::MenuItem(jointNames[i].c_str(), nullptr, &selected))
+
+                if (ImGui::MenuItem(registry[i].name().c_str(), nullptr, &selected))
                 {
                     if (!wasSelected)
                     {
@@ -78,11 +80,14 @@ namespace
             ImGui::EndMenu();
         }
 
-        if (0 <= selectedIdx && selectedIdx < ssize(osc::JointRegistry::prototypes()))
+        if (selectedIdx && *selectedIdx < ssize(registry))
         {
             // copy + fixup  a prototype of the user's selection
-            std::unique_ptr<OpenSim::Joint> newJoint = osc::Clone(*osc::JointRegistry::prototypes()[selectedIdx]);
-            osc::ActionChangeJointTypeTo(uim, jointPath, std::move(newJoint));
+            osc::ActionChangeJointTypeTo(
+                uim,
+                jointPath,
+                registry[*selectedIdx].instantiate()
+            );
         }
     }
 

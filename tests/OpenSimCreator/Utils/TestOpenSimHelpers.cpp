@@ -1,6 +1,8 @@
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/ComponentRegistry.hpp"
+
+#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
+#include "OpenSimCreator/Registry/ComponentRegistry.hpp"
+#include "OpenSimCreator/Registry/StaticComponentRegistries.hpp"
 #include "OpenSimCreator/OpenSimCreatorApp.hpp"
 
 #include <oscar/Platform/Config.hpp>
@@ -39,7 +41,8 @@ TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
     model.updModel();  // should be fine, before any edits
     model.getState();  // also should be fine
 
-    auto maybeIdx = osc::JointRegistry::indexOf<OpenSim::FreeJoint>();
+    auto const& registry = osc::GetComponentRegistry<OpenSim::Joint>();
+    auto maybeIdx = osc::IndexOf<OpenSim::FreeJoint>(registry);
     ASSERT_TRUE(maybeIdx) << "can't find FreeJoint in type registry?";
     auto idx = *maybeIdx;
 
@@ -77,7 +80,7 @@ TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
 
         ASSERT_NE(jointIdx, -1) << "the joint should exist within its parent set";
 
-        auto replacement = std::unique_ptr<OpenSim::Joint>{osc::JointRegistry::prototypes()[jointIdx]->clone()};
+        auto replacement = registry[jointIdx].instantiate();
 
         osc::CopyCommonJointProperties(joint, *replacement);
 

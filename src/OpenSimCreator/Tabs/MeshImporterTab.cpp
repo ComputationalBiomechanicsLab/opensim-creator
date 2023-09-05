@@ -4,10 +4,11 @@
 #include "OpenSimCreator/Bindings/SimTKMeshLoader.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
+#include "OpenSimCreator/Registry/ComponentRegistry.hpp"
+#include "OpenSimCreator/Registry/StaticComponentRegistries.hpp"
 #include "OpenSimCreator/Tabs/ModelEditorTab.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
-#include "OpenSimCreator/ComponentRegistry.hpp"
 
 #include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
@@ -1472,7 +1473,7 @@ namespace
 
         osc::CStringView GetSpecificTypeName() const
         {
-            return osc::JointRegistry::nameStrings()[m_JointTypeIndex];
+            return osc::At(osc::GetComponentRegistry<OpenSim::Joint>(), m_JointTypeIndex).name();
         }
 
         UID getParentID() const
@@ -2832,7 +2833,7 @@ namespace
     {
         ModelGraph& mg = cmg.UpdScratch();
 
-        size_t jointTypeIdx = *osc::JointRegistry::indexOf<OpenSim::WeldJoint>();
+        size_t jointTypeIdx = *osc::IndexOf<OpenSim::WeldJoint>(osc::GetComponentRegistry<OpenSim::Joint>());
         glm::vec3 parentPos = GetPosition(mg, parentID);
         glm::vec3 childPos = GetPosition(mg, childID);
         glm::vec3 midPoint = osc::Midpoint(parentPos, childPos);
@@ -3334,16 +3335,13 @@ namespace
     };
 
     // returns the indices of each degree of freedom that the joint supports
-    JointDegreesOfFreedom GetDegreesOfFreedom(size_t jointTypeIdx)
+    JointDegreesOfFreedom GetDegreesOfFreedom(OpenSim::Joint const& joint)
     {
-        OpenSim::Joint const* proto = osc::JointRegistry::prototypes()[jointTypeIdx].get();
-        size_t typeHash = typeid(*proto).hash_code();
-
-        if (typeHash == typeid(OpenSim::FreeJoint).hash_code())
+        if (typeid(joint) == typeid(OpenSim::FreeJoint))
         {
             return JointDegreesOfFreedom{{0, 1, 2}, {3, 4, 5}};
         }
-        else if (typeHash == typeid(OpenSim::PinJoint).hash_code())
+        else if (typeid(joint) == typeid(OpenSim::PinJoint))
         {
             return JointDegreesOfFreedom{{-1, -1, 0}, {-1, -1, -1}};
         }
@@ -3355,9 +3353,12 @@ namespace
 
     glm::vec3 GetJointAxisLengths(JointEl const& joint)
     {
-        JointDegreesOfFreedom dofs = GetDegreesOfFreedom(joint.getJointTypeIndex());
+        auto const& registry = osc::GetComponentRegistry<OpenSim::Joint>();
+        JointDegreesOfFreedom dofs = joint.getJointTypeIndex() < registry.size() ?
+            GetDegreesOfFreedom(registry[joint.getJointTypeIndex()].prototype()) :
+            JointDegreesOfFreedom{};
 
-        glm::vec3 rv;
+        glm::vec3 rv{};
         for (int i = 0; i < 3; ++i)
         {
             rv[i] = dofs.orientation[static_cast<size_t>(i)] == -1 ? 0.6f : 1.0f;
@@ -3373,7 +3374,8 @@ namespace
         constexpr auto c_TranslationNames = osc::to_array({"_tx", "_ty", "_tz"});
         constexpr auto c_RotationNames = osc::to_array({"_rx", "_ry", "_rz"});
 
-        JointDegreesOfFreedom dofs = GetDegreesOfFreedom(*osc::JointRegistry::indexOf(joint));
+        auto const& registry = osc::GetComponentRegistry<OpenSim::Joint>();
+        JointDegreesOfFreedom dofs = GetDegreesOfFreedom(osc::Get(registry, joint).prototype());
 
         // translations
         for (int i = 0; i < 3; ++i)
@@ -3437,7 +3439,7 @@ namespace
         childPOF->set_orientation(osc::ToSimTKVec3(osc::ExtractEulerAngleXYZ(toChildPofInChild)));
 
         // create a relevant OpenSim::Joint (based on the type index, e.g. could be a FreeJoint)
-        auto jointUniqPtr = osc::Clone(*osc::JointRegistry::prototypes()[joint.getJointTypeIndex()]);
+        auto jointUniqPtr = osc::At(osc::GetComponentRegistry<OpenSim::Joint>(), joint.getJointTypeIndex()).instantiate();
 
         // set its name
         std::string jointName = CalcJointName(joint, *parent.physicalFrame, *child.physicalFrame);
@@ -3714,8 +3716,7 @@ namespace
                 continue;
             }
 
-            auto maybeType = osc::JointRegistry::indexOf(j);
-
+            auto maybeType = osc::IndexOf(osc::GetComponentRegistry<OpenSim::Joint>(), j);
             if (!maybeType)
             {
                 // joint has a type the mesh importer doesn't support
@@ -7290,8 +7291,10 @@ private:
     void DrawJointTypeEditor(JointEl const& jointEl)
     {
         size_t currentIdx = jointEl.getJointTypeIndex();
-        nonstd::span<CStringView const> const labels = osc::JointRegistry::nameStrings();
-        if (osc::Combo("Joint Type", &currentIdx, labels))
+        auto const& registry = osc::GetComponentRegistry<OpenSim::Joint>();
+        auto const nameAccessor = [&registry](size_t i) { return registry[i].name(); };
+
+        if (osc::Combo("Joint Type", &currentIdx, registry.size(), nameAccessor))
         {
             m_Shared->UpdModelGraph().UpdElByID<JointEl>(jointEl.GetID()).setJointTypeIndex(currentIdx);
             m_Shared->CommitCurrentModelGraph("changed joint type");

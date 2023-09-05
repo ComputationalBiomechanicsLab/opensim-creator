@@ -92,6 +92,15 @@ add_library(OpenSimCreator STATIC
     Panels/SimulationViewerPanel.cpp
     Panels/SimulationViewerPanel.hpp
 
+    Registry/ComponentRegistry.hpp
+    Registry/ComponentRegistryBase.cpp
+    Registry/ComponentRegistryBase.hpp
+    Registry/ComponentRegistryEntry.hpp
+    Registry/ComponentRegistryEntryBase.cpp
+    Registry/ComponentRegistryEntryBase.hpp
+    Registry/StaticComponentRegistries.cpp
+    Registry/StaticComponentRegistries.hpp
+
     Screens/MainUIScreen.cpp
     Screens/MainUIScreen.hpp
 
@@ -197,11 +206,9 @@ add_library(OpenSimCreator STATIC
     Widgets/UiModelViewer.cpp
     Widgets/UiModelViewer.hpp
 
-    ComponentRegistry.cpp
-    ComponentRegistry.hpp
     OpenSimCreatorApp.cpp
     OpenSimCreatorApp.hpp
- "Graphics/ComponentAbsPathDeocrationTagger.cpp")
+)
 
 # OpenSimCreator: compile-time includes
 target_include_directories(OpenSimCreator PUBLIC

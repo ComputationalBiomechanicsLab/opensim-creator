@@ -896,26 +896,30 @@ void osc::PopItemFlags(int n)
 bool osc::Combo(
     CStringView label,
     size_t* current,
-    nonstd::span<CStringView const> items)
+    size_t size,
+    std::function<CStringView(size_t)> const& accessor)
 {
-    char const* preview = *current < items.size() ?
-        items[*current].c_str() :
-        nullptr;
+    CStringView const preview = current != nullptr ?
+        accessor(*current) :
+        CStringView{};
 
-    if (!ImGui::BeginCombo(label.c_str(), preview, ImGuiComboFlags_None))
+    if (!ImGui::BeginCombo(label.c_str(), preview.c_str(), ImGuiComboFlags_None))
     {
         return false;
     }
 
     bool changed = false;
-    for (size_t i = 0; i < items.size(); ++i)
+    for (size_t i = 0; i < size; ++i)
     {
         ImGui::PushID(static_cast<int>(i));
-        bool const isSelected = i == *current;
-        if (ImGui::Selectable(items[i].c_str(), isSelected))
+        bool const isSelected = current != nullptr || i == *current;
+        if (ImGui::Selectable(accessor(i).c_str(), isSelected))
         {
             changed = true;
-            *current = i;
+            if (current != nullptr)
+            {
+                *current = i;
+            }
         }
         if (isSelected)
         {
@@ -932,6 +936,19 @@ bool osc::Combo(
     }
 
     return changed;
+}
+
+bool osc::Combo(
+    CStringView label,
+    size_t* current,
+    nonstd::span<CStringView const> items)
+{
+    return Combo(
+        label,
+        current,
+        items.size(),
+        [items](size_t i) { return items[i]; }
+    );
 }
 
 namespace

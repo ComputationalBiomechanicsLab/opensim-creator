@@ -2,10 +2,11 @@
 
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
+#include "OpenSimCreator/Registry/ComponentRegistry.hpp"
+#include "OpenSimCreator/Registry/StaticComponentRegistries.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/Utils/UndoableModelActions.hpp"
 #include "OpenSimCreator/Widgets/SelectGeometryPopup.hpp"
-#include "OpenSimCreator/ComponentRegistry.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/App.hpp>
@@ -137,8 +138,13 @@ private:
             DrawHelpMarker("The type of OpenSim::Joint that will connect the new OpenSim::Body to the selection above");
             ImGui::NextColumn();
             {
-                nonstd::span<CStringView const> const names = osc::JointRegistry::nameStrings();
-                osc::Combo("##jointtype", &m_BodyDetails.jointTypeIndex, names);
+                auto const& registry = osc::GetComponentRegistry<OpenSim::Joint>();
+                osc::Combo(
+                    "##jointtype",
+                    &m_BodyDetails.jointTypeIndex,
+                    registry.size(),
+                    [&registry](size_t i) { return registry[i].name(); }
+                );
                 App::upd().addFrameAnnotation("AddBodyPopup::JointTypeInput", osc::GetItemRect());
             }
             ImGui::NextColumn();

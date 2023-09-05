@@ -1,5 +1,6 @@
-#include "ComponentRegistry.hpp"
+#include "StaticComponentRegistries.hpp"
 
+#include "OpenSimCreator/Registry/ComponentRegistry.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
 #include <oscar/Utils/CStringView.hpp>
@@ -48,7 +49,24 @@
 #include <utility>
 #include <vector>
 
-// helper methods
+// generic helpers
+namespace
+{
+    // helper: construct a prototype joint and assign its coordinate names
+    template<typename TJoint>
+    std::shared_ptr<TJoint> JointWithCoords(std::initializer_list<osc::CStringView> names)
+    {
+        std::shared_ptr<TJoint> j = std::make_shared<TJoint>();
+        int i = 0;
+        for (osc::CStringView const& name : names)
+        {
+            j->upd_coordinates(i++).setName(std::string{name});
+        }
+        return j;
+    }
+}
+
+// lookup initialization
 namespace
 {
     // create a lookup for user-facing description strings
@@ -69,7 +87,7 @@ namespace
             },
             {
                 "EllipsoidJoint",
-                "An Ellipsoid joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Ellipsoid. An Ellipsoid joint provides three mobilities â€“ coordinated rotation and translation along the surface of an ellipsoid fixed to the parent body. The ellipsoid surface is determined by an input Vec3 which describes the ellipsoid radius.",
+                "An Ellipsoid joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Ellipsoid. An Ellipsoid joint provides three mobilities – coordinated rotation and translation along the surface of an ellipsoid fixed to the parent body. The ellipsoid surface is determined by an input Vec3 which describes the ellipsoid radius.",
             },
             {
                 "FreeJoint",
@@ -366,19 +384,6 @@ namespace
         return s_GroupedEls;
     }
 
-    // helper: construct a prototype joint and assign its coordinate names
-    template<typename TJoint>
-    std::shared_ptr<TJoint> JointWithCoords(std::initializer_list<osc::CStringView> names)
-    {
-        std::shared_ptr<TJoint> j = std::make_shared<TJoint>();
-        int i = 0;
-        for (osc::CStringView const& name : names)
-        {
-            j->upd_coordinates(i++).setName(std::string{name});
-        }
-        return j;
-    }
-
     // create a lookup of pre-initialized prototype components
     std::unordered_map<osc::CStringView, std::shared_ptr<OpenSim::Component const>> CreatePrototypeLut()
     {
@@ -395,7 +400,7 @@ namespace
                     auto joint = JointWithCoords<OpenSim::EllipsoidJoint>({"rx", "ry", "rz"});
                     joint->updProperty_radii_x_y_z() = {1.0, 1.0, 1.0};
                     return joint;
-                }()
+                }(),
             },
             {
                 "FreeJoint",
@@ -420,7 +425,7 @@ namespace
                     auto joint = JointWithCoords<OpenSim::ScapulothoracicJoint>({"rx_abduction", "ry_elevation", "rz_upwardrotation", "ryp_winging"});
                     joint->updProperty_thoracic_ellipsoid_radii_x_y_z() = {1.0, 1.0, 1.0};
                     return joint;
-                }()
+                }(),
             },
             {
                 "SliderJoint",
@@ -465,7 +470,7 @@ namespace
                     auto cs = std::make_shared<OpenSim::ContactSphere>();
                     cs->setRadius(1.0);
                     return cs;
-                }()
+                }(),
             },
             {
                 "ConstantDistanceConstraint",
@@ -474,7 +479,7 @@ namespace
                     auto cdc = std::make_shared<OpenSim::ConstantDistanceConstraint>();
                     cdc->setConstantDistance(1.0);
                     return cdc;
-                }()
+                }(),
             },
 
             // HOTFIX: set SpringGeneralizedForce's `coordinate` property to prevent an OpenSim 4.4 segfault (#524)
@@ -485,7 +490,7 @@ namespace
                     auto c = std::make_shared<OpenSim::SpringGeneralizedForce>();
                     c->set_coordinate(std::string{});
                     return c;
-                }()
+                }(),
             },
 
             // HOTFIX: set `CoordinateCouplerConstraint`s `coupled_coordinates_function` property to prevent an OpenSim 4.4 segfault (#515)
@@ -496,7 +501,7 @@ namespace
                     auto c = std::make_shared<OpenSim::CoordinateCouplerConstraint>();
                     c->setFunction(OpenSim::LinearFunction{1.0, 0.0});  // identity function
                     return c;
-                }()
+                }(),
             },
 
             // HOTFIX: set `ActivationCoordinateActuator`s `coordinate` property to prevent an OpenSim 4.4 segfault (#517)
@@ -507,7 +512,7 @@ namespace
                     auto c = std::make_shared<OpenSim::ActivationCoordinateActuator>();
                     c->set_coordinate(std::string{});
                     return c;
-                }()
+                }(),
             },
 
             // HOTFIX: set `ExpressionBasedPointToPointForce` body properties to prevent an OpenSim 4.4 segfault (#520)
@@ -519,7 +524,7 @@ namespace
                     c->set_body1(std::string{});
                     c->set_body2(std::string{});
                     return c;
-                }()
+                }(),
             },
 
             // HOTFIX: set `PointToPointActuator`s body properties to prevent an OpenSim 4.4 segfault (#523)
@@ -531,7 +536,7 @@ namespace
                     c->set_bodyA(std::string{});
                     c->set_bodyB(std::string{});
                     return c;
-                }()
+                }(),
             },
         };
     }
@@ -594,53 +599,6 @@ namespace
         return rv;
     }
 
-    template<typename T>
-    std::vector<osc::CStringView> CreateNameViews(nonstd::span<std::shared_ptr<T const> const> protos)
-    {
-        std::vector<osc::CStringView> rv;
-        rv.reserve(protos.size());
-        for (auto const& proto : protos)
-        {
-            rv.push_back(proto->getConcreteClassName());
-        }
-        return rv;
-    }
-
-    template<typename T>
-    std::vector<osc::CStringView> CreateDescriptionViews(nonstd::span<std::shared_ptr<T const> const> protos)
-    {
-        auto const& lut = GetDescriptionLut();
-
-        std::vector<osc::CStringView> rv;
-        rv.reserve(protos.size());
-        for (auto const& proto : protos)
-        {
-            auto it = lut.find(proto->getConcreteClassName());
-            if (it != lut.end())
-            {
-                rv.push_back(it->second);
-            }
-            else
-            {
-                rv.emplace_back();
-            }
-        }
-        return rv;
-    }
-
-    template<typename T>
-    std::optional<size_t> IndexOf(
-        nonstd::span<std::shared_ptr<T const> const> container,
-        std::type_info const& ti)
-    {
-        auto hasTypeID = [&ti](std::shared_ptr<T const> const& p)
-        {
-            return typeid(*p) == ti;
-        };
-        auto it = std::find_if(container.begin(), container.end(), hasTypeID);
-        return it == container.end() ? std::nullopt : std::optional<size_t>{std::distance(container.begin(), it)};
-    }
-
     std::vector<std::shared_ptr<OpenSim::Component const>> CreateOtherComponentLut()
     {
         std::unordered_set<std::string> const& grouped = GetSetOfAllGroupedElements();
@@ -679,298 +637,114 @@ namespace
 
         return rv;
     }
-}
 
+    template<typename T>
+    osc::ComponentRegistry<T> CreateRegistryFromLUT(
+        std::string_view name,
+        std::string_view description,
+        std::vector<std::shared_ptr<T const>> const& protoLut)
+    {
+        osc::ComponentRegistry<T> rv{name, description};
 
-// ComponentRegistry<OpenSim::Joint>
+        // populate entries
+        auto const& lut = GetDescriptionLut();
+        for (std::shared_ptr<T const> const& el : protoLut)
+        {
+            std::string name = el->getConcreteClassName();
+            std::string desc;
+            if (auto it = lut.find(name); it != lut.end())
+            {
+                desc = it->second;
+            }
 
-template<>
-osc::CStringView osc::ComponentRegistry<OpenSim::Joint>::name() noexcept
-{
-    return "Joint";
-}
+            rv.emplace_back(name, desc, el);
+        }
 
-template<>
-osc::CStringView osc::ComponentRegistry<OpenSim::Joint>::description() noexcept
-{
-    return "An OpenSim::Joint is a OpenSim::ModelComponent which connects two PhysicalFrames together and specifies their relative permissible motion as described in internal coordinates.";
-}
+        return rv;
+    }
 
-template<>
-nonstd::span<std::shared_ptr<OpenSim::Joint const> const> osc::ComponentRegistry<OpenSim::Joint>::prototypes() noexcept
-{
-    static std::vector<std::shared_ptr<OpenSim::Joint const>> const s_Protos = CreatePrototypeLutT<OpenSim::Joint>();
-    return s_Protos;
-}
+    template<typename T>
+    osc::ComponentRegistry<T> CreateRegistry(
+        std::string_view name,
+        std::string_view description)
+    {
+        return CreateRegistryFromLUT<T>(name, description, CreatePrototypeLutT<T>());
+    }
 
-template<>
-nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Joint>::nameStrings() noexcept
-{
-    static std::vector<osc::CStringView> const s_Names = CreateNameViews(prototypes());
-    return s_Names;
-}
-
-template<>
-nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Joint>::descriptionStrings() noexcept
-{
-    static std::vector<osc::CStringView> const s_Descriptions = CreateDescriptionViews(prototypes());
-    return s_Descriptions;
-}
-
-template<>
-std::optional<size_t> osc::ComponentRegistry<OpenSim::Joint>::indexOf(OpenSim::Joint const& joint) noexcept
-{
-    return ::IndexOf(prototypes(), typeid(joint));
-}
-
-
-// ComponentRegistry<OpenSim::ContactGeometry>
-
-template<>
-osc::CStringView osc::ComponentRegistry<OpenSim::ContactGeometry>::name() noexcept
-{
-    return "Contact Geometry";
+    osc::ComponentRegistry<OpenSim::Component> CreateOtherComponentRegistry(
+        std::string_view name,
+        std::string_view description)
+    {
+        return CreateRegistryFromLUT<OpenSim::Component>(name, description, CreateOtherComponentLut());
+    }
 }
 
 template<>
-osc::CStringView osc::ComponentRegistry<OpenSim::ContactGeometry>::description() noexcept
+osc::ComponentRegistry<OpenSim::Joint> const& osc::GetComponentRegistry()
 {
-    return "Add a geometry with a physical shape that participates in contact modeling. The geometry is attached to an OpenSim::PhysicalFrame in the model (e.g. a body) and and moves with that frame.";
+    static auto const s_StaticReg = CreateRegistry<OpenSim::Joint>(
+        "Joint",
+        "An OpenSim::Joint is a OpenSim::ModelComponent which connects two PhysicalFrames together and specifies their relative permissible motion as described in internal coordinates."
+    );
+    return s_StaticReg;
 }
 
 template<>
-nonstd::span<std::shared_ptr<OpenSim::ContactGeometry const> const> osc::ComponentRegistry<OpenSim::ContactGeometry>::prototypes() noexcept
+osc::ComponentRegistry<OpenSim::ContactGeometry> const& osc::GetComponentRegistry()
 {
-    static std::vector<std::shared_ptr<OpenSim::ContactGeometry const>> const s_Protos = CreatePrototypeLutT<OpenSim::ContactGeometry>();
-    return s_Protos;
+    static auto const s_StaticReg = CreateRegistry<OpenSim::ContactGeometry>(
+        "Contact Geometry",
+        "Add a geometry with a physical shape that participates in contact modeling. The geometry is attached to an OpenSim::PhysicalFrame in the model (e.g. a body) and and moves with that frame."
+    );
+    return s_StaticReg;
 }
 
 template<>
-nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::ContactGeometry>::nameStrings() noexcept
+osc::ComponentRegistry<OpenSim::Constraint> const& osc::GetComponentRegistry()
 {
-    static std::vector<osc::CStringView> const s_Names = CreateNameViews(prototypes());
-    return s_Names;
+    static auto const s_StaticReg = CreateRegistry<OpenSim::Constraint>(
+        "Constraint",
+        "A constraint typically constrains the motion of physical frame(s) in the model some way. For example, an OpenSim::ConstantDistanceConstraint constrains the system to *have* to keep two frames at some constant distance from eachover."
+    );
+    return s_StaticReg;
 }
 
 template<>
-nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::ContactGeometry>::descriptionStrings() noexcept
+osc::ComponentRegistry<OpenSim::Force> const& osc::GetComponentRegistry()
 {
-    static std::vector<osc::CStringView> const s_Descriptions = CreateDescriptionViews(prototypes());
-    return s_Descriptions;
+    static auto const s_StaticReg = CreateRegistry<OpenSim::Force>(
+        "Force",
+        "During a simulation, the force is applied to bodies or generalized coordinates in the model. Muscles are specialized `OpenSim::Force`s with biomech-focused features."
+    );
+    return s_StaticReg;
 }
 
 template<>
-std::optional<size_t> osc::ComponentRegistry<OpenSim::ContactGeometry>::indexOf(OpenSim::ContactGeometry const& cg) noexcept
+osc::ComponentRegistry<OpenSim::Controller> const& osc::GetComponentRegistry()
 {
-    return ::IndexOf(prototypes(), typeid(cg));
-}
-
-
-// ComponentRegistry<OpenSim::Constraint>
-
-template<>
-osc::CStringView osc::ComponentRegistry<OpenSim::Constraint>::name() noexcept
-{
-    return "Constraint";
+    static auto const s_StaticReg = CreateRegistry<OpenSim::Controller>(
+        "Controller",
+        "A controller computes and sets the values of the controls for the actuators under its control."
+    );
+    return s_StaticReg;
 }
 
 template<>
-osc::CStringView osc::ComponentRegistry<OpenSim::Constraint>::description() noexcept
+osc::ComponentRegistry<OpenSim::Probe> const& osc::GetComponentRegistry()
 {
-    return "A constraint typically constrains the motion of physical frame(s) in the model some way. For example, an OpenSim::ConstantDistanceConstraint constrains the system to *have* to keep two frames at some constant distance from eachover.";
+    static auto const s_StaticReg = CreateRegistry<OpenSim::Probe>(
+        "Probe",
+        "This class represents a Probe which is designed to query a Vector of model values given system state. This model quantity is specified as a SimTK::Vector by the pure virtual method computeProbeInputs(), which must be specified for each child Probe.  In addition, the Probe model component interface allows <I> operations </I> to be performed on this value (specified by the property: probe_operation), and then have this result scaled (by the scalar property: 'scale_factor'). A controller computes and sets the values of the controls for the actuators under its control."
+    );
+    return s_StaticReg;
 }
 
 template<>
-nonstd::span<std::shared_ptr<OpenSim::Constraint const> const> osc::ComponentRegistry<OpenSim::Constraint>::prototypes() noexcept
+osc::ComponentRegistry<OpenSim::Component> const& osc::GetComponentRegistry()
 {
-    static std::vector<std::shared_ptr<OpenSim::Constraint const>> const s_Protos = CreatePrototypeLutT<OpenSim::Constraint>();
-    return s_Protos;
-}
-
-template<>
-nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Constraint>::nameStrings() noexcept
-{
-    static std::vector<osc::CStringView> const s_Names = CreateNameViews(prototypes());
-    return s_Names;
-}
-
-template<>
-nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Constraint>::descriptionStrings() noexcept
-{
-    static std::vector<osc::CStringView> const s_Descriptions = CreateDescriptionViews(prototypes());
-    return s_Descriptions;
-}
-
-template<>
-std::optional<size_t> osc::ComponentRegistry<OpenSim::Constraint>::indexOf(OpenSim::Constraint const& cg) noexcept
-{
-    return ::IndexOf(prototypes(), typeid(cg));
-}
-
-
-// ComponentRegistry<OpenSim::Force>
-
-template<>
-osc::CStringView osc::ComponentRegistry<OpenSim::Force>::name() noexcept
-{
-    return "Force";
-}
-
-template<>
-osc::CStringView osc::ComponentRegistry<OpenSim::Force>::description() noexcept
-{
-    return "During a simulation, the force is applied to bodies or generalized coordinates in the model. Muscles are specialized `OpenSim::Force`s with biomech-focused features.";
-}
-
-template<>
-nonstd::span<std::shared_ptr<OpenSim::Force const> const> osc::ComponentRegistry<OpenSim::Force>::prototypes() noexcept
-{
-    static std::vector<std::shared_ptr<OpenSim::Force const>> const s_Protos = CreatePrototypeLutT<OpenSim::Force>();
-    return s_Protos;
-}
-
-template<>
-nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Force>::nameStrings() noexcept
-{
-    static std::vector<osc::CStringView> const s_Names = CreateNameViews(prototypes());
-    return s_Names;
-}
-
-template<>
-nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Force>::descriptionStrings() noexcept
-{
-    static std::vector<osc::CStringView> const s_Descriptions = CreateDescriptionViews(prototypes());
-    return s_Descriptions;
-}
-
-template<>
-std::optional<size_t> osc::ComponentRegistry<OpenSim::Force>::indexOf(OpenSim::Force const& cg) noexcept
-{
-    return ::IndexOf(prototypes(), typeid(cg));
-}
-
-
-// ComponentRegistry<OpenSim::Controller>
-
-template<>
-osc::CStringView osc::ComponentRegistry<OpenSim::Controller>::name() noexcept
-{
-    return "Controller";
-}
-
-template<>
-osc::CStringView osc::ComponentRegistry<OpenSim::Controller>::description() noexcept
-{
-    return "A controller computes and sets the values of the controls for the actuators under its control.";
-}
-
-template<>
-nonstd::span<std::shared_ptr<OpenSim::Controller const> const> osc::ComponentRegistry<OpenSim::Controller>::prototypes() noexcept
-{
-    static std::vector<std::shared_ptr<OpenSim::Controller const>> const s_Protos = CreatePrototypeLutT<OpenSim::Controller>();
-    return s_Protos;
-}
-
-template<>
-nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Controller>::nameStrings() noexcept
-{
-    static std::vector<osc::CStringView> const s_Names = CreateNameViews(prototypes());
-    return s_Names;
-}
-
-template<>
-nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Controller>::descriptionStrings() noexcept
-{
-    static std::vector<osc::CStringView> const s_Descriptions = CreateDescriptionViews(prototypes());
-    return s_Descriptions;
-}
-
-template<>
-std::optional<size_t> osc::ComponentRegistry<OpenSim::Controller>::indexOf(OpenSim::Controller const& cg) noexcept
-{
-    return ::IndexOf(prototypes(), typeid(cg));
-}
-
-
-// ComponentRegistry<OpenSim::Probe>
-
-template<>
-osc::CStringView osc::ComponentRegistry<OpenSim::Probe>::name() noexcept
-{
-    return "Probe";
-}
-
-template<>
-osc::CStringView osc::ComponentRegistry<OpenSim::Probe>::description() noexcept
-{
-    return "This class represents a Probe which is designed to query a Vector of model values given system state. This model quantity is specified as a SimTK::Vector by the pure virtual method computeProbeInputs(), which must be specified for each child Probe.  In addition, the Probe model component interface allows <I> operations </I> to be performed on this value (specified by the property: probe_operation), and then have this result scaled (by the scalar property: 'scale_factor'). A controller computes and sets the values of the controls for the actuators under its control.";
-}
-
-template<>
-nonstd::span<std::shared_ptr<OpenSim::Probe const> const> osc::ComponentRegistry<OpenSim::Probe>::prototypes() noexcept
-{
-    static std::vector<std::shared_ptr<OpenSim::Probe const>> const s_Protos = CreatePrototypeLutT<OpenSim::Probe>();
-    return s_Protos;
-}
-
-template<>
-nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Probe>::nameStrings() noexcept
-{
-    static std::vector<osc::CStringView> const s_Names = CreateNameViews(prototypes());
-    return s_Names;
-}
-
-template<>
-nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Probe>::descriptionStrings() noexcept
-{
-    static std::vector<osc::CStringView> const s_Descriptions = CreateDescriptionViews(prototypes());
-    return s_Descriptions;
-}
-
-template<>
-std::optional<size_t> osc::ComponentRegistry<OpenSim::Probe>::indexOf(OpenSim::Probe const& cg) noexcept
-{
-    return ::IndexOf(prototypes(), typeid(cg));
-}
-
-
-// ComponentRegistry<OpenSim::Component>
-
-template<>
-osc::CStringView osc::ComponentRegistry<OpenSim::Component>::name() noexcept
-{
-    return "Component";
-}
-
-template<>
-osc::CStringView osc::ComponentRegistry<OpenSim::Component>::description() noexcept
-{
-    return "These are all the components that OpenSim Creator knows about, but can't put into an existing category (e.g. Force)";
-}
-
-template<>
-nonstd::span<std::shared_ptr<OpenSim::Component const> const> osc::ComponentRegistry<OpenSim::Component>::prototypes() noexcept
-{
-    static std::vector<std::shared_ptr<OpenSim::Component const>> const s_Protos = CreateOtherComponentLut();
-    return s_Protos;
-}
-
-template<>
-nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Component>::nameStrings() noexcept
-{
-    static std::vector<osc::CStringView> const s_Names = CreateNameViews(prototypes());
-    return s_Names;
-}
-
-template<>
-nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Component>::descriptionStrings() noexcept
-{
-    static std::vector<osc::CStringView> const s_Descriptions = CreateDescriptionViews(prototypes());
-    return s_Descriptions;
-}
-
-template<>
-std::optional<size_t> osc::ComponentRegistry<OpenSim::Component>::indexOf(OpenSim::Component const& cg) noexcept
-{
-    return ::IndexOf(prototypes(), typeid(cg));
+    static auto const s_StaticReg = CreateOtherComponentRegistry(
+        "Component",
+        "These are all the components that OpenSim Creator knows about, but can't put into an existing category (e.g. Force)"
+    );
+    return s_StaticReg;
 }

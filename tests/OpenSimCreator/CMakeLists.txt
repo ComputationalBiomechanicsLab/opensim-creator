@@ -14,12 +14,12 @@ add_executable(testopensimcreator EXCLUDE_FROM_ALL
 
     Graphics/TestOpenSimDecorationGenerator.cpp
     Model/TestUndoableModelStatePair.cpp
+    Registry/TestStaticComponentRegistries.cpp
     Simulation/TestForwardDynamicSimulation.cpp
     Utils/TestOpenSimHelpers.cpp
     Utils/TestUndoableModelActions.cpp
-    TestComponentRegistry.cpp
-    TestOpenSimLibraryAPI.cpp
 
+    TestOpenSimLibraryAPI.cpp
     testopensimcreator.cpp  # entrypoint (main)
 )
 
