@@ -2,11 +2,11 @@
 
 #include <oscar/Utils/CStringView.hpp>
 
+#include <OpenSim/Common/Component.h>
+
 #include <memory>
 #include <string>
 #include <string_view>
-
-namespace OpenSim { class Component; }
 
 namespace osc
 {
@@ -15,7 +15,7 @@ namespace osc
         ComponentRegistryEntryBase(
             std::string_view name_,
             std::string_view description_,
-            std::shared_ptr<OpenSim::Component const> const&
+            std::shared_ptr<OpenSim::Component const>
         );
 
         CStringView name() const noexcept

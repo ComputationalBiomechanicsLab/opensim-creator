@@ -5,6 +5,8 @@
 
 #include <oscar/Utils/CStringView.hpp>
 
+#include <OpenSim/Common/Component.h>
+
 #include <cstddef>
 #include <memory>
 #include <optional>
@@ -78,7 +80,8 @@ namespace osc
     {
         for (size_t i = 0; i < registry.size(); ++i)
         {
-            if (typeid(registry[i].prototype()) == typeid(T))
+            OpenSim::Component const& prototype = registry[i].prototype();
+            if (typeid(prototype) == typeid(T))
             {
                 return i;
             }

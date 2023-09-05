@@ -46,13 +46,13 @@ namespace osc
         ComponentRegistryEntry<T>& emplace_back(
             std::string_view name,
             std::string_view description,
-            std::shared_ptr<T const> const& prototype)
+            std::shared_ptr<T const> prototype)
         {
             auto& erased = push_back_erased(ComponentRegistryEntry<T>
             {
                 name,
                 description,
-                prototype,
+                std::move(prototype),
             });
             return static_cast<ComponentRegistryEntry<T>&>(erased);
         }

@@ -7,15 +7,16 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <utility>
 
 osc::ComponentRegistryEntryBase::ComponentRegistryEntryBase(
     std::string_view name_,
     std::string_view description_,
-    std::shared_ptr<OpenSim::Component const> const& prototype_) :
+    std::shared_ptr<OpenSim::Component const> prototype_) :
 
     m_Name{name_},
     m_Description{description_},
-    m_Prototype{prototype_}
+    m_Prototype{std::move(prototype_)}
 {
 }
 

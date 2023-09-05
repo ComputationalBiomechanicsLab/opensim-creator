@@ -4,6 +4,7 @@
 
 #include <string_view>
 #include <memory>
+#include <utility>
 
 namespace osc
 {
@@ -13,9 +14,9 @@ namespace osc
         ComponentRegistryEntry(
             std::string_view name_,
             std::string_view description_,
-            std::shared_ptr<T const> const& prototype_) :
+            std::shared_ptr<T const> prototype_) :
 
-            ComponentRegistryEntryBase{name_, description_, prototype_}
+            ComponentRegistryEntryBase{name_, description_, std::move(prototype_)}
         {
         }
 

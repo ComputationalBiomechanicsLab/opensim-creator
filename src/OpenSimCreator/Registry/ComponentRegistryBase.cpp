@@ -12,7 +12,8 @@ std::optional<size_t> osc::IndexOf(
 {
     for (size_t i = 0; i < registry.size(); ++i)
     {
-        if (typeid(registry[i].prototype()) == typeid(component))
+        OpenSim::Component const& prototype = registry[i].prototype();
+        if (typeid(prototype) == typeid(component))
         {
             return i;
         }

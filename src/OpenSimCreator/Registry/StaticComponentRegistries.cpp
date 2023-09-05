@@ -650,14 +650,14 @@ namespace
         auto const& lut = GetDescriptionLut();
         for (std::shared_ptr<T const> const& el : protoLut)
         {
-            std::string name = el->getConcreteClassName();
-            std::string desc;
-            if (auto it = lut.find(name); it != lut.end())
+            std::string elName = el->getConcreteClassName();
+            std::string elDescription;
+            if (auto it = lut.find(elName); it != lut.end())
             {
-                desc = it->second;
+                elDescription = it->second;
             }
 
-            rv.emplace_back(name, desc, el);
+            rv.emplace_back(elName, elDescription, el);
         }
 
         return rv;
