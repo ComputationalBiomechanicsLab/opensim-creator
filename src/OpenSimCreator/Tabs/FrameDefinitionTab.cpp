@@ -1969,7 +1969,10 @@ namespace
                 IsPhysicalFrame(c) &&
                 &c != bodyFrame &&
                 !osc::IsChildOfA<OpenSim::ComponentSet>(c) &&
-                (dynamic_cast<OpenSim::Ground const*>(&c) || osc::IsChildOfA<OpenSim::BodySet>(c));
+                (
+                    dynamic_cast<OpenSim::Ground const*>(&c) != nullptr ||
+                    osc::IsChildOfA<OpenSim::BodySet>(c)
+                );
         };
         options.numComponentsUserMustChoose = 1;
         options.onUserFinishedChoosing = [

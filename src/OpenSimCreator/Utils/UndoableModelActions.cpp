@@ -712,7 +712,7 @@ bool osc::CanRezeroJoint(UndoableModelStatePair& uim, OpenSim::ComponentPath con
     // point is whatever the current arrangement is (effectively, by pre-transforming
     // the parent into the child and assuming a "zeroed" joint is an identity op)
 
-    return dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&joint->getParentFrame());
+    return dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&joint->getParentFrame()) != nullptr;
 }
 
 bool osc::ActionRezeroJoint(UndoableModelStatePair& uim, OpenSim::ComponentPath const& jointPath)

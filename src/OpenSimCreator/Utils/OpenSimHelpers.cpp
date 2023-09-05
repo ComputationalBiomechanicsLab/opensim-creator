@@ -1450,6 +1450,11 @@ std::optional<osc::PointInfo> osc::TryExtractPointInfo(
 
 OpenSim::Component& osc::AddComponentToAppropriateSet(OpenSim::Model& m, std::unique_ptr<OpenSim::Component> c)
 {
+    if (c == nullptr)
+    {
+        throw std::runtime_error{"nullptr passed to AddComponentToAppropriateSet"};
+    }
+
     OpenSim::Component& rv = *c.get();
 
     if (dynamic_cast<OpenSim::Body*>(c.get()))
