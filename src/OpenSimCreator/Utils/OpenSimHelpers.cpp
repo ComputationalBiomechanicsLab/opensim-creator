@@ -1455,7 +1455,7 @@ OpenSim::Component& osc::AddComponentToAppropriateSet(OpenSim::Model& m, std::un
         throw std::runtime_error{"nullptr passed to AddComponentToAppropriateSet"};
     }
 
-    OpenSim::Component& rv = *c.get();
+    OpenSim::Component& rv = *c;
 
     if (dynamic_cast<OpenSim::Body*>(c.get()))
     {
