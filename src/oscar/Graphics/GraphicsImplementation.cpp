@@ -300,12 +300,13 @@ namespace
 
         if (!missingExtensions.empty())
         {
-            osc::log::info("OpenGL: the following OpenGL extensions were detected as missing: ");
+            osc::log::info("OpenGL: the following OpenGL extensions may be missing from the graphics backend: ");
             for (auto const& missingExtension : missingExtensions)
             {
                 osc::log::warn("OpenGL:  - %s", missingExtension.c_str());
             }
-            osc::log::warn("OpenGL: because extensions are missing, rendering may behave abnormally");
+            osc::log::warn("OpenGL: because extensions may be missing, rendering may behave abnormally");
+            osc::log::warn("OpenGL: note: some graphics engines can mis-report an extension as missing");
         }
     }
 }
@@ -5137,17 +5138,33 @@ namespace
 
         // depth testing used to ensure geometry overlaps correctly
         glEnable(GL_DEPTH_TEST);
+        if (!glIsEnabled(GL_DEPTH_TEST))
+        {
+            osc::log::warn("failed to enable GL_DEPTH_TEST: this may cause rendering issues");
+        }
 
         // MSXAA is used to smooth out the model
         glEnable(GL_MULTISAMPLE);
+        if (!glIsEnabled(GL_MULTISAMPLE))
+        {
+            osc::log::warn("failed to enable GL_MULTISAMPLE: this may cause rendering issues");
+        }
 
         // shader calculations are done in linear space, but writes to framebuffers
         // should respect whether the framebuffer is using an sRGB internal format
         glEnable(GL_FRAMEBUFFER_SRGB);
+        if (!glIsEnabled(GL_FRAMEBUFFER_SRGB))
+        {
+            osc::log::warn("failed to enable GL_FRAMEBUFFER_SRGB: this may cause rendering issues");
+        }
 
         // enable seamless cubemap sampling when sampling lower mip levels in (e.g.)
         // PBR prefilter maps
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+        if (!glIsEnabled(GL_TEXTURE_CUBE_MAP_SEAMLESS))
+        {
+            osc::log::warn("failed to enable GL_TEXTURE_CUBE_MAP_SEAMLESS: this may cause rendering issues");
+        }
 
         // print OpenGL information to console (handy for debugging user's rendering
         // issues)
