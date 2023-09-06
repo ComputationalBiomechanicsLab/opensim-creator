@@ -1014,11 +1014,11 @@ void osc::SameLineWithVerticalSeperator()
 }
 
 bool osc::CircularSliderFloat(
-    char const* label,
+    CStringView label,
     float* v,
     float min,
     float max,
-    char const* format,
+    CStringView format,
     ImGuiSliderFlags flags)
 {
     // this implementation was initially copied from `ImGui::SliderFloat` and written in a
@@ -1038,10 +1038,10 @@ bool osc::CircularSliderFloat(
     }
     ImGuiContext& g = *ImGui::GetCurrentContext();
     const ImGuiStyle& style = g.Style;
-    const ImGuiID id = window->GetID(label);
+    const ImGuiID id = window->GetID(label.c_str());
 
     // calculate top-level item info for early-cull checks etc.
-    const glm::vec2 labelSize = ImGui::CalcTextSize(label, nullptr, true);
+    const glm::vec2 labelSize = ImGui::CalcTextSize(label.c_str(), nullptr, true);
     const glm::vec2 frameDims = {ImGui::CalcItemWidth(), labelSize.y + 2.0f*style.FramePadding.y};
     const glm::vec2 cursorScreenPos = ImGui::GetCursorScreenPos();
     const ImRect frameBB = {cursorScreenPos, cursorScreenPos + frameDims};
@@ -1097,10 +1097,10 @@ bool osc::CircularSliderFloat(
         return ImGui::TempInputScalar(
             frameBB,
             id,
-            label,
+            label.c_str(),
             ImGuiDataType_Float,
             static_cast<void*>(v),
-            format,
+            format.c_str(),
             shouldClampTextualInput ? static_cast<void const*>(&min) : nullptr,
             shouldClampTextualInput ? static_cast<void const*>(&max) : nullptr
         );
@@ -1120,7 +1120,7 @@ bool osc::CircularSliderFloat(
         v,
         min,
         max,
-        format,
+        format.c_str(),
         flags,
         &grabBoundingBox
     );
@@ -1180,7 +1180,7 @@ bool osc::CircularSliderFloat(
         // render current slider value using user-provided display format
         {
             std::array<char, 64> buf{};
-            const char* bufEnd = buf.data() + ImGui::DataTypeFormatString(buf.data(), static_cast<int>(buf.size()), ImGuiDataType_Float, v, format);
+            const char* const bufEnd = buf.data() + ImGui::DataTypeFormatString(buf.data(), static_cast<int>(buf.size()), ImGuiDataType_Float, v, format.c_str());
             if (g.LogEnabled)
             {
                 ImGui::LogSetNextTextDecoration("{", "}");
@@ -1191,7 +1191,7 @@ bool osc::CircularSliderFloat(
         // render input label in remaining space
         if (labelSize.x > 0.0f)
         {
-            ImGui::RenderText(ImVec2(frameBB.Max.x + style.ItemInnerSpacing.x, frameBB.Min.y + style.FramePadding.y), label);
+            ImGui::RenderText(ImVec2(frameBB.Max.x + style.ItemInnerSpacing.x, frameBB.Min.y + style.FramePadding.y), label.c_str());
         }
     }
     else
@@ -1212,7 +1212,7 @@ bool osc::CircularSliderFloat(
         // render current slider value using user-provided display format
         {
             std::array<char, 64> buf{};
-            const char* bufEnd = buf.data() + ImGui::DataTypeFormatString(buf.data(), static_cast<int>(buf.size()), ImGuiDataType_Float, v, format);
+            const char* const bufEnd = buf.data() + ImGui::DataTypeFormatString(buf.data(), static_cast<int>(buf.size()), ImGuiDataType_Float, v, format.c_str());
             if (g.LogEnabled)
             {
                 ImGui::LogSetNextTextDecoration("{", "}");
@@ -1223,7 +1223,7 @@ bool osc::CircularSliderFloat(
         // render input label in remaining space
         if (labelSize.x > 0.0f)
         {
-            ImGui::RenderText(ImVec2(frameBB.Max.x + style.ItemInnerSpacing.x, frameBB.Min.y + style.FramePadding.y), label);
+            ImGui::RenderText(ImVec2(frameBB.Max.x + style.ItemInnerSpacing.x, frameBB.Min.y + style.FramePadding.y), label.c_str());
         }
     }
 

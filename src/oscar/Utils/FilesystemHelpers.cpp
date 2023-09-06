@@ -126,8 +126,8 @@ std::vector<uint8_t> osc::SlurpFileIntoVector(std::filesystem::path const& p)
 
     rv.insert(
         rv.begin(),
-        std::istreambuf_iterator<char>{f},
-        std::istreambuf_iterator<char>{}
+        std::istreambuf_iterator{f},
+        std::istreambuf_iterator<std::ifstream::char_type>{}
     );
 
     return rv;

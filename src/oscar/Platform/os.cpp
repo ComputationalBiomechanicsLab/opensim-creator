@@ -24,7 +24,7 @@
 
 namespace
 {
-    std::filesystem::path convertSDLPathToStdpath(char const* methodname, char* p)
+    std::filesystem::path convertSDLPathToStdpath(osc::CStringView methodname, char* p)
     {
         // nullptr disallowed
         if (p == nullptr)
@@ -426,12 +426,12 @@ std::tm osc::GMTimeThreadsafe(std::time_t t)
 
 std::string osc::StrerrorThreadsafe(int errnum)
 {
-    char buf[512];
-    if (strerror_r(errnum, buf, sizeof(buf)) == ERANGE)
+    std::array<char, 512> buf{};
+    if (strerror_r(errnum, buf.data(), buf.size()) == ERANGE)
     {
         osc::log::warn("a call to strerror_r returned ERANGE: an OS error message may have been truncated!");
     }
-    return std::string{buf};
+    return std::string{buf.data()};
 }
 
 
@@ -509,12 +509,12 @@ std::tm osc::GMTimeThreadsafe(std::time_t t)
 
 std::string osc::StrerrorThreadsafe(int errnum)
 {
-    char buf[512];
-    if (errno_t rv = strerror_s(buf, sizeof(buf), errnum); rv != 0 )
+    std::array<char, 512> buf{};
+    if (errno_t rv = strerror_s(buf.data(), buf.size(), errnum); rv != 0)
     {
         osc::log::warn("a call to strerror_s returned an error (%i): an OS error message may be missing!", rv);
     }
-    return std::string{buf};
+    return std::string{buf.data()};
 }
 
 void osc::WriteTracebackToLog(log::Level lvl)

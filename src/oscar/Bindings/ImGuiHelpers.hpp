@@ -286,11 +286,11 @@ namespace osc
     void SameLineWithVerticalSeperator();
 
     bool CircularSliderFloat(
-        char const* label,
+        CStringView label,
         float* v,
         float min,
         float max,
-        char const* format = "%.3f",
+        CStringView format = "%.3f",
         ImGuiSliderFlags flags = 0
     );
 

@@ -59,12 +59,6 @@ public:
         return findValue(std::string{name});
     }
 
-    std::optional<ParamValue> findValue(std::string const& name) const
-    {
-        Param const* p = find(name);
-        return p ? std::optional<ParamValue>{p->value} : std::nullopt;
-    }
-
     void pushParam(std::string_view name, std::string_view description, ParamValue v)
     {
         Param* p = find(std::string{name});
@@ -98,6 +92,12 @@ public:
     }
 
 private:
+    std::optional<ParamValue> findValue(std::string const& name) const
+    {
+        Param const* p = find(name);
+        return p ? std::optional<ParamValue>{p->value} : std::nullopt;
+    }
+
     Param& get(int idx)
     {
         return m_Params.at(static_cast<size_t>(idx));
@@ -168,11 +168,6 @@ osc::ParamValue const& osc::ParamBlock::getValue(int idx) const
 }
 
 std::optional<osc::ParamValue> osc::ParamBlock::findValue(std::string_view name) const
-{
-    return m_Impl->findValue(name);
-}
-
-std::optional<osc::ParamValue> osc::ParamBlock::findValue(std::string const& name) const
 {
     return m_Impl->findValue(name);
 }

@@ -1901,25 +1901,34 @@ namespace
     class ModelGraph final {
 
         // helper class for iterating over model graph elements
-        template<bool IsConst, typename T = SceneEl>
+        template<
+            typename T,
+            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
+        >
         class Iterator final {
         public:
             using difference_type = void;
             using value_type = T;
-            using pointer = typename std::conditional<IsConst, T const*, T*>::type;
-            using reference = typename std::conditional<IsConst, T const&, T&>::type;
+            using pointer = T*;
+            using const_pointer = T const*;
+            using reference = T const&;
             using iterator_category = std::input_iterator_tag;
 
-            Iterator(
-                std::map<UID, ClonePtr<SceneEl>>::iterator pos,
-                std::map<UID, ClonePtr<SceneEl>>::iterator end) :
-                m_Pos{pos},
-                m_End{end}
+            // caller-provided iterator
+            using InternalIterator = std::conditional_t<
+                std::is_const_v<T>,
+                std::map<UID, ClonePtr<SceneEl>>::const_iterator,
+                std::map<UID, ClonePtr<SceneEl>>::iterator
+            >;
+
+            Iterator(InternalIterator pos_, InternalIterator end_) :
+                m_Pos{pos_},
+                m_End{end_}
             {
                 // ensure iterator initially points at an element with the correct type
                 while (m_Pos != m_End)
                 {
-                    if (dynamic_cast<T const*>(m_Pos->second.get()))
+                    if (dynamic_cast<const_pointer>(m_Pos->second.get()))
                     {
                         break;
                     }
@@ -1927,12 +1936,10 @@ namespace
                 }
             }
 
-            // implict conversion from non-const- to const-iterator
-
-            template<bool IsConst_ = IsConst>
-            explicit operator typename std::enable_if_t<!IsConst_, Iterator<true, T>>() const noexcept
+            // implict conversion to a const version of the iterator
+            explicit operator Iterator<value_type const>() const noexcept
             {
-                return Iterator<true, T>{m_Pos, m_End};
+                return Iterator<value_type const>{m_Pos, m_End};
             }
 
             // LegacyIterator
@@ -1941,7 +1948,7 @@ namespace
             {
                 while (++m_Pos != m_End)
                 {
-                    if (dynamic_cast<T const*>(m_Pos->second.get()))
+                    if (dynamic_cast<const_pointer>(m_Pos->second.get()))
                     {
                         break;
                     }
@@ -1949,68 +1956,58 @@ namespace
                 return *this;
             }
 
-            template<bool IsConst_ = IsConst>
-            typename std::enable_if_t<IsConst_, T const&> operator*() const noexcept
+            reference operator*() const noexcept
             {
-                return dynamic_cast<T const&>(*m_Pos->second);
-            }
-
-            template<bool IsConst_ = IsConst>
-            typename std::enable_if_t<!IsConst_, T&> operator*() const noexcept
-            {
-                return dynamic_cast<T&>(*m_Pos->second);
+                return dynamic_cast<reference>(*m_Pos->second);
             }
 
             // EqualityComparable
 
-            template<bool OtherConst>
-            bool operator!=(Iterator<OtherConst, T> const& other) const noexcept
+            bool operator!=(Iterator<T> const& other) const noexcept
             {
                 return m_Pos != other.m_Pos;
             }
 
-            template<bool OtherConst>
-            bool operator==(Iterator<OtherConst, T> const& other) const noexcept
+            bool operator==(Iterator<T> const& other) const noexcept
             {
                 return !(*this != other);
             }
 
             // LegacyInputIterator
 
-            template<bool IsConst_ = IsConst>
-            typename std::enable_if_t<IsConst_, T const*> operator->() const noexcept
+            pointer operator->() const noexcept
             {
 
-                return &dynamic_cast<T const&>(*m_Pos->second);
-            }
-
-            template<bool IsConst_ = IsConst>
-            typename std::enable_if_t<!IsConst_, T*> operator->() const noexcept
-            {
-                return &dynamic_cast<T&>(*m_Pos->second);
+                return &dynamic_cast<reference>(*m_Pos->second);
             }
 
         private:
-            std::map<UID, ClonePtr<SceneEl>>::iterator m_Pos;
-            std::map<UID, ClonePtr<SceneEl>>::iterator m_End;  // needed because of multi-step advances
+            InternalIterator m_Pos;
+            InternalIterator m_End;
         };
 
         // helper class for an iterable object with a beginning + end
-        template<bool IsConst, typename T = SceneEl>
+        template<
+            typename T = SceneEl,
+            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
+        >
         class Iterable final {
         public:
-            explicit Iterable(std::map<UID, ClonePtr<SceneEl>>& els) :
+            using Map = std::map<UID, ClonePtr<SceneEl>>;
+            using MapRef = std::conditional_t<std::is_const_v<T>, Map const&, Map&>;
+
+            explicit Iterable(MapRef els) :
                 m_Begin{els.begin(), els.end()},
                 m_End{els.end(), els.end()}
             {
             }
 
-            Iterator<IsConst, T> begin() { return m_Begin; }
-            Iterator<IsConst, T> end() { return m_End; }
+            Iterator<T> begin() { return m_Begin; }
+            Iterator<T> end() { return m_End; }
 
         private:
-            Iterator<IsConst, T> m_Begin;
-            Iterator<IsConst, T> m_End;
+            Iterator<T> m_Begin;
+            Iterator<T> m_End;
         };
 
     public:
@@ -2085,18 +2082,18 @@ namespace
             typename T = SceneEl,
             typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
         >
-        Iterable<false, T> iter()
+        Iterable<T> iter()
         {
-            return Iterable<false, T>{m_Els};
+            return Iterable<T>{m_Els};
         }
 
         template<
             typename T = SceneEl,
             typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
         >
-        Iterable<true, T> iter() const
+        Iterable<T const> iter() const
         {
-            return Iterable<true, T>{const_cast<ModelGraph&>(*this).m_Els};
+            return Iterable<T const>{m_Els};
         }
 
         SceneEl& AddEl(std::unique_ptr<SceneEl> el)
@@ -7901,8 +7898,8 @@ private:
 
         // scale factor
         {
-            char const* const tooltipTitle = "Change scene scale factor";
-            char const* const tooltipDesc = "This rescales *some* elements in the scene. Specifically, the ones that have no 'size', such as body frames, joint frames, and the chequered floor texture.\n\nChanging this is handy if you are working on smaller or larger models, where the size of the (decorative) frames and floor are too large/small compared to the model you are working on.\n\nThis is purely decorative and does not affect the exported OpenSim model in any way.";
+            osc::CStringView const tooltipTitle = "Change scene scale factor";
+            osc::CStringView const tooltipDesc = "This rescales *some* elements in the scene. Specifically, the ones that have no 'size', such as body frames, joint frames, and the chequered floor texture.\n\nChanging this is handy if you are working on smaller or larger models, where the size of the (decorative) frames and floor are too large/small compared to the model you are working on.\n\nThis is purely decorative and does not affect the exported OpenSim model in any way.";
 
             float sf = m_Shared->GetSceneScaleFactor();
             ImGui::SetNextItemWidth(ImGui::CalcTextSize("1000.00").x);

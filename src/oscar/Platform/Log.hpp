@@ -141,7 +141,7 @@ namespace osc::log
             }
 
             // create the log message
-            thread_local std::vector<char> buf(2048);
+            std::vector<char> buf(2048);
             size_t n = 0;
             {
                 va_list args;
