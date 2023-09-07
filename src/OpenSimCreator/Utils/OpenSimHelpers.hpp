@@ -96,7 +96,7 @@ namespace osc
     >
     bool empty(OpenSim::Set<T, C> const& s)
     {
-        return size(s) > 0;
+        return size(s) <= 0;
     }
 
     template<typename T>
