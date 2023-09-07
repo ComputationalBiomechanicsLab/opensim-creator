@@ -53,7 +53,6 @@ TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
     auto const& musc = model.getComponent<OpenSim::Muscle>(musclePath);
 
     // this is what makes the test pass
-    if (true)
     {
         musc.getGeometryPath().computeMomentArm(st, coord);
     }
