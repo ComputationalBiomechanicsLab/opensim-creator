@@ -180,6 +180,7 @@ namespace
             //
             // core in OpenGL 3.0
             "GL_EXT_framebuffer_sRGB",
+
             "GL_EXT_texture_sRGB",
 
             // shaders
@@ -307,6 +308,12 @@ namespace
             }
             osc::log::warn("OpenGL: because extensions may be missing, rendering may behave abnormally");
             osc::log::warn("OpenGL: note: some graphics engines can mis-report an extension as missing");
+
+            osc::log::info("OpenGL: here is a list of all of the extensions supported by the graphics backend:");
+            for (auto const& ext : extensionSupportedByBackend)
+            {
+                osc::log::warn("OpenGL:  - %s", ext.c_str());
+            }
         }
     }
 }
