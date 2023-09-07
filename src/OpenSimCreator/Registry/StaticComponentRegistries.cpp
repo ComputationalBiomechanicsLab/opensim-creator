@@ -499,7 +499,12 @@ namespace
                 []()
                 {
                     auto c = std::make_shared<OpenSim::CoordinateCouplerConstraint>();
-                    c->setFunction(OpenSim::LinearFunction{1.0, 0.0});  // identity function
+
+                    // HACK: do not call the reference version of `OpenSim::CoordinateCouplerConstraint::setFunction`
+                    //
+                    // it leaks memory, this has been reported upstream as opensim-core/#3541
+                    OpenSim::LinearFunction f{1.0, 0.0};
+                    c->setFunction(&f);
                     return c;
                 }(),
             },
