@@ -243,18 +243,24 @@ private:
             ImGui::BeginChild("##pfselector", {ImGui::GetContentRegionAvail().x, 128.0f});
 
             // iterate through PFs in model and print them out
+            int innerID = 0;
             for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>())
             {
-                bool selected = osc::GetAbsolutePath(pf) == connectee;
+                OpenSim::ComponentPath const pfPath = osc::GetAbsolutePath(pf);
+                bool selected = pfPath == connectee;
 
+                ImGui::PushID(innerID++);
                 if (ImGui::Selectable(pf.getName().c_str(), selected))
                 {
-                    connectee = osc::GetAbsolutePath(pf);
+                    connectee = pfPath;
                 }
+                Rect const selectableRect = osc::GetItemRect();
+                osc::DrawTooltipIfItemHovered(pfPath.toString());
+                ImGui::PopID();
 
                 if (selected)
                 {
-                    App::upd().addFrameAnnotation(pf.getName(), osc::GetItemRect());
+                    App::upd().addFrameAnnotation(pfPath.toString(), selectableRect);
                 }
             }
 

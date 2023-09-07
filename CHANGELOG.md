@@ -5,6 +5,11 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Fixed a bug where, when selecting sockets when adding a new component, if two components in the model
+  have identical names (e.g. `torso_offset`) but different locations (e.g. `/jointset/back/torso_offset`
+  vs. `/jointset/acromial_r/torso_offset`) then only one option would be shown and it would be non-selctable.
+  It will now show both options as `torso_offset` but, on mousing over, show the user the full absolute
+  path to the component (#767)
 - Fixed the muscle plot panel crashing when importing a CSV overlay (#755)
 - The "Socket" menu in the component context menu now explains each column in the displayed sockets table
 - Sliders in the coordinate editor now look much more like "typical" sliders, and are now entirely
