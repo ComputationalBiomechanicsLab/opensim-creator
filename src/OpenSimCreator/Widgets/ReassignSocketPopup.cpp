@@ -17,11 +17,13 @@
 #include <OpenSim/Common/ComponentSocket.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
+#include <algorithm>
 #include <memory>
 #include <optional>
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 
 namespace
@@ -73,8 +75,15 @@ namespace
         std::string name;
     };
 
+    bool operator<(ConnecteeOption const& a, ConnecteeOption const& b)
+    {
+        return std::tie(a.name, a.absPath.toString()) < std::tie(b.name, b.absPath.toString());
+    }
+
     // generate a list of possible connectee options, given a set of popup parameters
-    std::vector<ConnecteeOption> GenerateSelectionOptions(OpenSim::Model const& model, PopupParams const& params)
+    std::vector<ConnecteeOption> GenerateSelectionOptions(
+        OpenSim::Model const& model,
+        PopupParams const& params)
     {
         std::vector<ConnecteeOption> rv;
 
@@ -109,6 +118,8 @@ namespace
 
             rv.emplace_back(other);
         }
+
+        std::sort(rv.begin(), rv.end());
 
         return rv;
     }
@@ -168,8 +179,9 @@ private:
         osc::DrawSearchBar(m_EditedParams.search);
 
         std::optional<OpenSim::ComponentPath> userSelection;
-        int id = 0;  // care: necessary because multiple connectees may have the same name
         ImGui::BeginChild("##componentlist", ImVec2(512, 256), true, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar);
+
+        int id = 0;  // care: necessary because multiple connectees may have the same name
         for (ConnecteeOption const& option : m_Options)
         {
             ImGui::PushID(id++);
@@ -177,6 +189,7 @@ private:
             {
                 userSelection = option.absPath;
             }
+            osc::DrawTooltipIfItemHovered(option.absPath.toString());
             ImGui::PopID();
         }
         ImGui::EndChild();

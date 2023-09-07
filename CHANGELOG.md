@@ -5,6 +5,9 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- The reassign socket popup is now sorted alphabetically and shows the absolute path to the component when
+  moused over, to make it easier to use when resocketing in large models containing duplicate component
+  names (#769)
 - Fixed a bug where, when selecting sockets when adding a new component, if two components in the model
   have identical names (e.g. `torso_offset`) but different locations (e.g. `/jointset/back/torso_offset`
   vs. `/jointset/acromial_r/torso_offset`) then only one option would be shown and it would be non-selctable.
