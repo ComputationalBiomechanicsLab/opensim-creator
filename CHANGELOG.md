@@ -5,6 +5,8 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Saving a file that is suffixed with the file extension without the dot (e.g. `somecsv`) now adds
+  the extension onto the end of the path (e.g. `somecsv.csv`, previously: would save it as `somecsv`, #771)
 - The reassign socket popup is now sorted alphabetically and shows the absolute path to the component when
   moused over, to make it easier to use when resocketing in large models containing duplicate component
   names (#769)

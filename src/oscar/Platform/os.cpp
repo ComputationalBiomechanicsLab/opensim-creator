@@ -196,10 +196,19 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
     static_assert(std::is_same_v<nfdchar_t, char>);
     std::filesystem::path p{path.get()};
 
-    if (maybeExtension && !EndsWith(path.get(), *maybeExtension))
+    if (maybeExtension)
     {
-        p += '.';
-        p += std::string_view{*maybeExtension};
+        // ensure that the user-selected path is tested against '.$EXTENSION' (#771)
+        //
+        // the caller only provides the extension without the dot (this is what
+        // NFD requires) but the user may have manually wrote a string that is
+        // suffixed with the dot-less version of the extension (e.g. "somecsv")
+
+        std::string const fullExtension = std::string{"."} + *maybeExtension;
+        if (!EndsWith(path.get(), fullExtension))
+        {
+            p += fullExtension;
+        }
     }
 
     return p;
