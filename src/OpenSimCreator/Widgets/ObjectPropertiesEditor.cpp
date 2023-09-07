@@ -570,7 +570,7 @@ namespace
                 return std::nullopt;  // the object isn't an OpenSim component
             }
 
-            std::optional<std::string_view> const positionPropName = osc::TryGetPositionalPropertyName(*component);
+            auto const positionPropName = osc::TryGetPositionalPropertyName(*component);
             if (!positionPropName)
             {
                 return std::nullopt;  // the component doesn't have a logical positional property that can be edited with the transform

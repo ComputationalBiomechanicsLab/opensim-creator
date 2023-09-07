@@ -8073,6 +8073,8 @@ private:
                     m_Shared->SetModelCreationFlags(newFlags);
                 }
             }
+
+            ImGui::EndPopup();
         }
     }
 
