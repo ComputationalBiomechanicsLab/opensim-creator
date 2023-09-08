@@ -271,7 +271,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
     return rv;
 }
 
-void osc::WriteTracebackToLog(log::Level lvl)
+void osc::WriteTracebackToLog(LogLevel lvl)
 {
     std::array<void*, 50> ary{};
     int const size = backtrace(ary.data(), ary.size());
@@ -445,7 +445,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
 }
 
 
-void osc::WriteTracebackToLog(log::Level lvl)
+void osc::WriteTracebackToLog(LogLevel lvl)
 {
     void* array[50];
     int size = backtrace(array, 50);
@@ -468,7 +468,7 @@ namespace
     {
         osc::log::error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
         osc::log::error("backtrace:");
-        osc::WriteTracebackToLog(osc::log::Level::err);
+        osc::WriteTracebackToLog(osc::LogLevel::err);
         exit(EXIT_FAILURE);
     }
 }
