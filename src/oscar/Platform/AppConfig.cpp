@@ -3,6 +3,7 @@
 #include "oscar/Graphics/AntiAliasingLevel.hpp"
 #include "oscar/Platform/Log.hpp"
 #include "oscar/Platform/os.hpp"
+#include "oscar/Utils/StringHelpers.hpp"
 #include "OscarConfiguration.hpp"
 
 #include <toml++/toml.h>
@@ -87,6 +88,7 @@ public:
     bool useMultiViewport = false;
     std::unordered_map<std::string, bool> m_PanelsEnabledState = MakeDefaultPanelStates();
     std::optional<std::string> m_MaybeInitialTab;
+    LogLevel m_LogLevel = osc::LogLevel::DEFAULT;
 };
 
 namespace
@@ -123,11 +125,21 @@ namespace
             auto maybeResourcePath = config["resources"];
             if (maybeResourcePath)
             {
-                std::string rp = (*maybeResourcePath.as_string()).get();
+                std::string rp = maybeResourcePath.as_string()->value_or(cfg.resourceDir.string());
 
                 // configuration resource_dir is relative *to the configuration file*
                 std::filesystem::path configFileDir = maybeConfigPath->parent_path();
                 cfg.resourceDir = configFileDir / rp;
+            }
+        }
+
+        // log level
+        if (auto maybeLogLevelString = config["log_level"])
+        {
+            std::string const lvlStr = maybeLogLevelString.as_string()->value_or(std::string{osc::ToCStringView(osc::LogLevel::DEFAULT)});
+            if (auto maybeLevel = osc::TryParseAsLogLevel(lvlStr))
+            {
+                cfg.m_LogLevel = *maybeLevel;
             }
         }
 
@@ -220,4 +232,9 @@ void osc::AppConfig::setIsPanelEnabled(std::string const& panelName, bool v)
 std::optional<std::string> osc::AppConfig::getInitialTabOverride() const
 {
     return m_Impl->m_MaybeInitialTab;
+}
+
+osc::LogLevel osc::AppConfig::getRequestedLogLevel() const
+{
+    return m_Impl->m_LogLevel;
 }

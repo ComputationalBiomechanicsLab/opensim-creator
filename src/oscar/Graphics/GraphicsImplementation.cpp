@@ -301,19 +301,19 @@ namespace
 
         if (!missingExtensions.empty())
         {
-            osc::log::info("OpenGL: the following OpenGL extensions may be missing from the graphics backend: ");
+            osc::log::debug("OpenGL: the following OpenGL extensions may be missing from the graphics backend: ");
             for (auto const& missingExtension : missingExtensions)
             {
-                osc::log::warn("OpenGL:  - %s", missingExtension.c_str());
+                osc::log::debug("OpenGL:  - %s", missingExtension.c_str());
             }
-            osc::log::warn("OpenGL: because extensions may be missing, rendering may behave abnormally");
-            osc::log::warn("OpenGL: note: some graphics engines can mis-report an extension as missing");
+            osc::log::debug("OpenGL: because extensions may be missing, rendering may behave abnormally");
+            osc::log::debug("OpenGL: note: some graphics engines can mis-report an extension as missing");
+        }
 
-            osc::log::info("OpenGL: here is a list of all of the extensions supported by the graphics backend:");
-            for (auto const& ext : extensionSupportedByBackend)
-            {
-                osc::log::warn("OpenGL:  - %s", ext.c_str());
-            }
+        osc::log::debug("OpenGL: here is a list of all of the extensions supported by the graphics backend:");
+        for (auto const& ext : extensionSupportedByBackend)
+        {
+            osc::log::debug("OpenGL:  - %s", ext.c_str());
         }
     }
 }

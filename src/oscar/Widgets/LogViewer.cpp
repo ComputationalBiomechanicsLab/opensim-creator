@@ -60,12 +60,18 @@ class osc::LogViewer::Impl final {
 public:
     void onDraw()
     {
+        auto logger = log::defaultLogger();
+        if (!logger)
+        {
+            return;
+        }
+
         // draw top menu bar
         if (ImGui::BeginMenuBar())
         {
             // draw level selector
             {
-                LogLevel currentLevel = log::getTracebackLevel();
+                LogLevel currentLevel = logger->get_level();
                 ImGui::SetNextItemWidth(200.0f);
                 if (ImGui::BeginCombo("level", ToCStringView(currentLevel).c_str()))
                 {
@@ -74,7 +80,7 @@ public:
                         bool active = l == currentLevel;
                         if (ImGui::Selectable(ToCStringView(l).c_str(), &active))
                         {
-                            log::setTracebackLevel(l);
+                            logger->set_level(l);
                         }
                     }
                     ImGui::EndCombo();
@@ -94,7 +100,7 @@ public:
             ImGui::SameLine();
             if (ImGui::Button("turn off"))
             {
-                log::setTracebackLevel(LogLevel::off);
+                logger->set_level(LogLevel::off);
             }
 
             ImGui::SameLine();

@@ -39,6 +39,6 @@ namespace osc
     private:
         virtual void implLog(LogMessageView const&) = 0;
 
-        LogLevel m_SinkLevel = LogLevel::info;
+        LogLevel m_SinkLevel = LogLevel::trace;
     };
 }

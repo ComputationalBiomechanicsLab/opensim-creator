@@ -1,6 +1,7 @@
 #pragma once
 
 #include "oscar/Graphics/AntiAliasingLevel.hpp"
+#include "oscar/Platform/LogLevel.hpp"
 
 #include <filesystem>
 #include <memory>
@@ -42,6 +43,8 @@ namespace osc
         // get the name of a tab that should be opened upon booting (overriding default behavior)
         std::optional<std::string> getInitialTabOverride() const;
 
+        // get the user-requested log level that the application should be initialized with
+        LogLevel getRequestedLogLevel() const;
 
     private:
         std::unique_ptr<Impl> m_Impl;

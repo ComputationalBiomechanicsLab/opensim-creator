@@ -79,6 +79,15 @@ namespace
         return s_BacktraceEnabled;
     }
 
+    bool ConfigureApplicationLog(osc::AppConfig const& config)
+    {
+        if (auto logger = osc::log::defaultLogger())
+        {
+            logger->set_level(config.getRequestedLogLevel());
+        }
+        return true;
+    }
+
     // returns a resource from the config-provided `resources/` dir
     std::filesystem::path GetResource(osc::AppConfig const& c, std::string_view p)
     {
@@ -845,6 +854,9 @@ private:
 
     // init/load the application config first
     std::unique_ptr<AppConfig> m_ApplicationConfig = AppConfig::load();
+
+    // ensure the application log is configured according to the given configuration file
+    bool m_ApplicationLogIsConfigured = ConfigureApplicationLog(*m_ApplicationConfig);
 
     // install the backtrace handler (if necessary - once per process)
     bool m_IsBacktraceHandlerInstalled = EnsureBacktraceHandlerEnabled();

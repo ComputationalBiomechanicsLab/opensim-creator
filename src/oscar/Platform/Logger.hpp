@@ -113,9 +113,19 @@ namespace osc
             return m_Sinks;
         }
 
+        [[nodiscard]] LogLevel get_level() const noexcept
+        {
+            return level;
+        }
+
+        void set_level(LogLevel level_)
+        {
+            level = level_;
+        }
+
     private:
         std::string m_Name;
         std::vector<std::shared_ptr<LogSink>> m_Sinks;
-        LogLevel level = LogLevel::trace;
+        LogLevel level = LogLevel::DEFAULT;
     };
 }

@@ -61,14 +61,19 @@ std::string osc::ToLower(std::string_view s)
     return cpy;
 }
 
-bool osc::IsEqualCaseInsensitive(std::string const& s1, std::string const& s2)
+bool osc::IsEqualCaseInsensitive(std::string_view s1, std::string_view s2)
 {
-    auto const compareChars = [](std::string::value_type c1, std::string::value_type c2)
+    auto const compareChars = [](std::string_view::value_type c1, std::string_view::value_type c2)
     {
         return std::tolower(c1) == std::tolower(c2);
     };
 
     return std::equal(s1.begin(), s1.end(), s2.begin(), s2.end(), compareChars);
+}
+
+bool osc::IsEqualCaseInsensitive(std::string const& s1, std::string const& s2)
+{
+    return IsEqualCaseInsensitive(std::string_view{s1}, std::string_view{s2});
 }
 
 bool osc::ContainsSubstringCaseInsensitive(std::string const& str, std::string const& substr)
