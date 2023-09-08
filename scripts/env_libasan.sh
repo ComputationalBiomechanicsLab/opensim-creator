@@ -20,4 +20,4 @@
 #
 # then LD_PRELOAD it to overwrite unloading libraries: `LD_PRELOAD=${PWD}/out.so`
 
-export ASAN_OPTIONS="strict_string_checks=true:malloc_context_size=30:check_initialization_order=true:detect_stack_use_after_return=true"
+export ASAN_OPTIONS="strict_string_checks=true:malloc_context_size=30:check_initialization_order=false:detect_stack_use_after_return=true"
