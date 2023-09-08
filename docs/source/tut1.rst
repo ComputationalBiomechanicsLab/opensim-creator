@@ -71,10 +71,10 @@ After adding ``pendulum_base``, you should now see a cube in the 3D viewer. The 
 
 When we made ``pendulum_base``, we ticked the ``add offset frames`` checkbox. Adding a body like this added **four** components into the model:
 
-- The body (``pendulum_base``)
-- A ``WeldJoint`` (``pendulum_base_to_ground``)
-- An offset frame between the joint and the body (``pendulum_base_offset``)
-- An offset frame between the joint and ground (``ground_offset``)
+- The body (``/bodyset/pendulum_base``)
+- A ``WeldJoint`` (``/jointset/pendulum_base_to_ground``)
+- An offset frame between the joint and the body (``/jointset/pendulum_base_to_ground/pendulum_base_offset``)
+- An offset frame between the joint and ground (``/jointset/pendulum_base_to_ground/ground_offset``)
 
 The body was added because we asked for it. The offset frames were added because they enable (effectively) moving the joint center later (by changing the offsets). However, why do we need a joint in the first place?
 
