@@ -1,6 +1,9 @@
 resources = "resources"
 docs = "share/doc/html"
 
+# change this if you need OSC to print more information to the log
+# log_level = "trace"  # trace < debug < info < warn < err < critical
+
 # handy for auto-opening an in-development tab
 # initial_tab = "LearnOpenGL/Blending"
 
