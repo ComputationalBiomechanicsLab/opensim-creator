@@ -5,7 +5,7 @@
 #include "OpenSimCreator/Registry/StaticComponentRegistries.hpp"
 #include "OpenSimCreator/OpenSimCreatorApp.hpp"
 
-#include <oscar/Platform/Config.hpp>
+#include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/Log.hpp>
 
 #include <gtest/gtest.h>
@@ -31,7 +31,7 @@ TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
 {
     return;  // disable
 
-    auto config = osc::Config::load();
+    auto config = osc::AppConfig::load();
     osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
 
     std::filesystem::path modelPath = config->getResourceDir() / "models" / "Leg39" / "leg39.osim";
@@ -110,7 +110,7 @@ TEST(OpenSimHelpers, GetAbsolutePathStringWithOutparamWorksForModel)
 
 TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    auto config = osc::Config::load();
+    auto config = osc::AppConfig::load();
     std::filesystem::path modelPath = config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
@@ -126,7 +126,7 @@ TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForCo
 
 TEST(OpenSimHelpers, GetAbsolutePathReturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    auto config = osc::Config::load();
+    auto config = osc::AppConfig::load();
     std::filesystem::path modelPath = config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
@@ -143,7 +143,7 @@ TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsEmptyIfPassedANullptr)
 
 TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    auto config = osc::Config::load();
+    auto config = osc::AppConfig::load();
     std::filesystem::path modelPath = config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
@@ -157,7 +157,7 @@ TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionFor
 // model without anything exploding (deletion failure is ok, though)
 TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFaultsOrExceptions)
 {
-    auto config = osc::Config::load();
+    auto config = osc::AppConfig::load();
     std::filesystem::path modelPath = config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";\
 
     OpenSim::Model const originalModel{modelPath.string()};

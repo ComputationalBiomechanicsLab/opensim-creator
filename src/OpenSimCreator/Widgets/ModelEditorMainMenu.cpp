@@ -12,7 +12,7 @@
 #include "OpenSimCreator/Widgets/ParamBlockEditorPopup.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Platform/Config.hpp>
+#include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Widgets/WindowMenu.hpp>
 

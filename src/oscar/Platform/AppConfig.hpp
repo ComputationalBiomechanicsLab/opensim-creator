@@ -9,19 +9,19 @@
 
 namespace osc
 {
-    class Config final {
+    class AppConfig final {
     public:
         // try to load the config from disk (default location)
-        static std::unique_ptr<Config> load();
+        static std::unique_ptr<AppConfig> load();
 
         class Impl;
     public:
-        explicit Config(std::unique_ptr<Impl>);  // you should use Config::load
-        Config(Config const&) = delete;
-        Config(Config&&) noexcept;
-        Config& operator=(Config const&) = delete;
-        Config& operator=(Config&&) noexcept;
-        ~Config() noexcept;
+        explicit AppConfig(std::unique_ptr<Impl>);  // you should use AppConfig::load
+        AppConfig(AppConfig const&) = delete;
+        AppConfig(AppConfig&&) noexcept;
+        AppConfig& operator=(AppConfig const&) = delete;
+        AppConfig& operator=(AppConfig&&) noexcept;
+        ~AppConfig() noexcept;
 
         // get the full path to the runtime `resources/` dir
         std::filesystem::path const& getResourceDir() const;

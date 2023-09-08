@@ -4,7 +4,7 @@
 #include "OpenSimCreator/OpenSimCreatorApp.hpp"
 #include "testopensimcreator_config.hpp"
 
-#include <oscar/Platform/Config.hpp>
+#include <oscar/Platform/AppConfig.hpp>
 
 #include <gtest/gtest.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -25,7 +25,7 @@
 // https://github.com/opensim-org/opensim-core/issues/3211
 TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 {
-    auto config = osc::Config::load();
+    auto config = osc::AppConfig::load();
     //osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
 
     // data sources
@@ -82,7 +82,7 @@ TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 // breaks this test, and prompts removing fixups from OSC
 TEST(OpenSimModel, EditingACoordinateLockMutatesModel)
 {
-    auto config = osc::Config::load();
+    auto config = osc::AppConfig::load();
     //osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
 
     std::filesystem::path modelPath{config->getResourceDir() / "models" / "Arm26" / "arm26.osim"};

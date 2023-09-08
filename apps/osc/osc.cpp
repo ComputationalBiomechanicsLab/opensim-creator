@@ -1,13 +1,6 @@
 #include "OpenSimCreator/Screens/MainUIScreen.hpp"
 #include "OpenSimCreator/OpenSimCreatorApp.hpp"
 
-#include "oscar/Platform/Config.hpp"
-#include "oscar/Platform/Log.hpp"
-#include "oscar/Tabs/Tab.hpp"
-#include "oscar/Tabs/TabHost.hpp"
-#include "oscar/Tabs/TabRegistry.hpp"
-#include "oscar/Utils/CStringView.hpp"
-
 #include <cstdlib>
 #include <iostream>
 #include <memory>
@@ -16,9 +9,9 @@
 
 namespace
 {
-    constexpr osc::CStringView c_Usage = "usage: osc [--help] [fd] MODEL.osim\n";
+    constexpr std::string_view c_Usage = "usage: osc [--help] [fd] MODEL.osim\n";
 
-    constexpr osc::CStringView c_Help = R"(OPTIONS
+    constexpr std::string_view c_Help = R"(OPTIONS
     --help
         Show this help
 )";

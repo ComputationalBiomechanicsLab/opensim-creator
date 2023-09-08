@@ -28,7 +28,7 @@
 #include <oscar/Panels/Panel.hpp>
 #include <oscar/Panels/PanelManager.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/Platform/Config.hpp>
+#include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Tabs/ErrorTab.hpp>
 #include <oscar/Tabs/TabHost.hpp>

@@ -6,7 +6,7 @@
 #include "oscar/Graphics/GraphicsContext.hpp"
 #include "oscar/Graphics/Texture2D.hpp"
 #include "oscar/Platform/AppClock.hpp"
-#include "oscar/Platform/Config.hpp"
+#include "oscar/Platform/AppConfig.hpp"
 #include "oscar/Platform/Log.hpp"
 #include "oscar/Platform/os.hpp"
 #include "oscar/Platform/RecentFile.hpp"
@@ -80,7 +80,7 @@ namespace
     }
 
     // returns a resource from the config-provided `resources/` dir
-    std::filesystem::path GetResource(osc::Config const& c, std::string_view p)
+    std::filesystem::path GetResource(osc::AppConfig const& c, std::string_view p)
     {
         return c.getResourceDir() / p;
     }
@@ -553,12 +553,12 @@ public:
         setMainWindowSubTitle({});
     }
 
-    osc::Config const& getConfig() const
+    osc::AppConfig const& getConfig() const
     {
         return *m_ApplicationConfig;
     }
 
-    Config& updConfig()
+    AppConfig& updConfig()
     {
         return *m_ApplicationConfig;
     }
@@ -844,7 +844,7 @@ private:
     }
 
     // init/load the application config first
-    std::unique_ptr<Config> m_ApplicationConfig = Config::load();
+    std::unique_ptr<AppConfig> m_ApplicationConfig = AppConfig::load();
 
     // install the backtrace handler (if necessary - once per process)
     bool m_IsBacktraceHandlerInstalled = EnsureBacktraceHandlerEnabled();
@@ -1174,12 +1174,12 @@ void osc::App::unsetMainWindowSubTitle()
     m_Impl->unsetMainWindowSubTitle();
 }
 
-osc::Config const& osc::App::getConfig() const
+osc::AppConfig const& osc::App::getConfig() const
 {
     return m_Impl->getConfig();
 }
 
-osc::Config& osc::App::updConfig()
+osc::AppConfig& osc::App::updConfig()
 {
     return m_Impl->updConfig();
 }

@@ -28,7 +28,7 @@ namespace osc { struct Line; }
 namespace osc { struct Rect; }
 namespace osc { struct Segment; }
 namespace osc { struct Transform; }
-namespace osc { class Config; }
+namespace osc { class AppConfig; }
 namespace osc { class Mesh; }
 namespace osc { class MeshCache; }
 namespace osc { class MeshIndicesView; }
@@ -163,7 +163,7 @@ namespace osc
 
     // returns a material that can draw a mesh's triangles in wireframe-style
     Material CreateWireframeOverlayMaterial(
-        Config const&,
+        AppConfig const&,
         ShaderCache&
     );
 

@@ -6,7 +6,7 @@
 #include "OpenSimCreator/Tabs/FrameDefinitionTab.hpp"
 #include "OpenSimCreator/Tabs/MeshWarpingTab.hpp"
 
-#include <oscar/Platform/Config.hpp>
+#include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Tabs/Demos/ImGuiDemoTab.hpp>
@@ -85,7 +85,7 @@ namespace
         }
     };
 
-    bool InitializeOpenSim(osc::Config const& config)
+    bool InitializeOpenSim(osc::AppConfig const& config)
     {
         std::filesystem::path geometryDir = config.getResourceDir() / "geometry";
 
@@ -241,7 +241,7 @@ namespace
 
 // public API
 
-bool osc::GlobalInitOpenSim(Config const& config)
+bool osc::GlobalInitOpenSim(AppConfig const& config)
 {
     static bool const s_OpenSimInitialized = InitializeOpenSim(config);
     return s_OpenSimInitialized;

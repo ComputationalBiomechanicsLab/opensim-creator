@@ -1,7 +1,7 @@
 #include "StandardPanel.hpp"
 
 #include "oscar/Platform/App.hpp"
-#include "oscar/Platform/Config.hpp"
+#include "oscar/Platform/AppConfig.hpp"
 
 #include <imgui.h>
 

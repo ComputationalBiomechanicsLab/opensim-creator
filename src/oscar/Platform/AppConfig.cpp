@@ -1,4 +1,4 @@
-#include "Config.hpp"
+#include "AppConfig.hpp"
 
 #include "oscar/Graphics/AntiAliasingLevel.hpp"
 #include "oscar/Platform/Log.hpp"
@@ -80,7 +80,7 @@ namespace
     }
 }
 
-class osc::Config::Impl final {
+class osc::AppConfig::Impl final {
 public:
     std::filesystem::path resourceDir;
     std::filesystem::path htmlDocsDir;
@@ -91,7 +91,7 @@ public:
 
 namespace
 {
-    void TryUpdateConfigFromConfigFile(osc::Config::Impl& cfg)
+    void TryUpdateConfigFromConfigFile(osc::AppConfig::Impl& cfg)
     {
         std::optional<std::filesystem::path> maybeConfigPath = TryGetConfigLocation();
 
@@ -166,58 +166,58 @@ namespace
 // public API
 
 // try to load the config from disk (default location)
-std::unique_ptr<osc::Config> osc::Config::load()
+std::unique_ptr<osc::AppConfig> osc::AppConfig::load()
 {
-    auto rv = std::make_unique<Config::Impl>();
+    auto rv = std::make_unique<AppConfig::Impl>();
 
     // set defaults (in case underlying file can't be found)
     rv->resourceDir = OSC_DEFAULT_RESOURCE_DIR;
 
     TryUpdateConfigFromConfigFile(*rv);
 
-    return std::make_unique<Config>(std::move(rv));
+    return std::make_unique<AppConfig>(std::move(rv));
 }
 
-osc::Config::Config(std::unique_ptr<Impl> impl) :
+osc::AppConfig::AppConfig(std::unique_ptr<Impl> impl) :
     m_Impl{std::move(impl)}
 {
 }
 
-osc::Config::Config(Config&&) noexcept = default;
-osc::Config& osc::Config::operator=(Config&&) noexcept = default;
-osc::Config::~Config() noexcept = default;
+osc::AppConfig::AppConfig(AppConfig&&) noexcept = default;
+osc::AppConfig& osc::AppConfig::operator=(AppConfig&&) noexcept = default;
+osc::AppConfig::~AppConfig() noexcept = default;
 
-std::filesystem::path const& osc::Config::getResourceDir() const
+std::filesystem::path const& osc::AppConfig::getResourceDir() const
 {
     return m_Impl->resourceDir;
 }
 
-std::filesystem::path const& osc::Config::getHTMLDocsDir() const
+std::filesystem::path const& osc::AppConfig::getHTMLDocsDir() const
 {
     return m_Impl->htmlDocsDir;
 }
 
-bool osc::Config::isMultiViewportEnabled() const
+bool osc::AppConfig::isMultiViewportEnabled() const
 {
     return m_Impl->useMultiViewport;
 }
 
-osc::AntiAliasingLevel osc::Config::getNumMSXAASamples() const
+osc::AntiAliasingLevel osc::AppConfig::getNumMSXAASamples() const
 {
     return c_NumMSXAASamples;
 }
 
-bool osc::Config::getIsPanelEnabled(std::string const& panelName) const
+bool osc::AppConfig::getIsPanelEnabled(std::string const& panelName) const
 {
     return m_Impl->m_PanelsEnabledState.try_emplace(panelName, true).first->second;
 }
 
-void osc::Config::setIsPanelEnabled(std::string const& panelName, bool v)
+void osc::AppConfig::setIsPanelEnabled(std::string const& panelName, bool v)
 {
     m_Impl->m_PanelsEnabledState[panelName] = v;
 }
 
-std::optional<std::string> osc::Config::getInitialTabOverride() const
+std::optional<std::string> osc::AppConfig::getInitialTabOverride() const
 {
     return m_Impl->m_MaybeInitialTab;
 }

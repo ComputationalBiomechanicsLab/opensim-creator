@@ -20,7 +20,7 @@
 #include "oscar/Maths/PolarPerspectiveCamera.hpp"
 #include "oscar/Maths/Rect.hpp"
 #include "oscar/Maths/Transform.hpp"
-#include "oscar/Platform/Config.hpp"
+#include "oscar/Platform/AppConfig.hpp"
 #include "oscar/Utils/Assertions.hpp"
 #include "oscar/Utils/Perf.hpp"
 
@@ -136,7 +136,7 @@ namespace
 class osc::SceneRenderer::Impl final {
 public:
     Impl(
-        Config const& config,
+        AppConfig const& config,
         MeshCache& meshCache,
         ShaderCache& shaderCache) :
 
@@ -481,7 +481,7 @@ private:
 
 // public API (PIMPL)
 
-osc::SceneRenderer::SceneRenderer(Config const& config, MeshCache& meshCache, ShaderCache& shaderCache) :
+osc::SceneRenderer::SceneRenderer(AppConfig const& config, MeshCache& meshCache, ShaderCache& shaderCache) :
     m_Impl{std::make_unique<Impl>(config, meshCache, shaderCache)}
 {
 }

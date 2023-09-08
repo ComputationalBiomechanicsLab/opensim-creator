@@ -23,7 +23,7 @@
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/Platform/Config.hpp>
+#include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/RecentFile.hpp>
 #include <oscar/Tabs/TabHost.hpp>

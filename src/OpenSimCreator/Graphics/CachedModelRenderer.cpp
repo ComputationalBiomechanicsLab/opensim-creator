@@ -103,7 +103,7 @@ namespace
 class osc::CachedModelRenderer::Impl final {
 public:
     Impl(
-        Config const& config,
+        AppConfig const& config,
         std::shared_ptr<MeshCache> const& meshCache,
         ShaderCache& shaderCache) :
 
@@ -191,7 +191,7 @@ private:
 // public API (PIMPL)
 
 osc::CachedModelRenderer::CachedModelRenderer(
-    Config const& config,
+    AppConfig const& config,
     std::shared_ptr<MeshCache> const& meshCache,
     ShaderCache& shaderCache) :
 

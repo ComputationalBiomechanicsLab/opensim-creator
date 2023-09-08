@@ -27,7 +27,7 @@
 #include <oscar/Panels/PanelManager.hpp>
 #include <oscar/Panels/PerfPanel.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/Platform/Config.hpp>
+#include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Tabs/TabHost.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>

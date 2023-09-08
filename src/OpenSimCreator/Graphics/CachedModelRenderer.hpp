@@ -12,7 +12,7 @@
 #include <optional>
 #include <vector>
 
-namespace osc { class Config; }
+namespace osc { class AppConfig; }
 namespace osc { struct Line; }
 namespace osc { class MeshCache; }
 namespace osc { struct ModelRendererParams; }
@@ -27,7 +27,7 @@ namespace osc
     class CachedModelRenderer final {
     public:
         CachedModelRenderer(
-            Config const&,
+            AppConfig const&,
             std::shared_ptr<MeshCache> const&,
             ShaderCache&
         );

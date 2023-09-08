@@ -153,8 +153,8 @@ add_library(oscar STATIC
     Platform/App.cpp
     Platform/App.hpp
     Platform/AppClock.hpp
-    Platform/Config.cpp
-    Platform/Config.hpp
+    Platform/AppConfig.cpp
+    Platform/AppConfig.hpp
     Platform/IoPoller.cpp
     Platform/IoPoller.hpp
     Platform/Log.cpp

@@ -27,7 +27,7 @@
 #include <vector>
 
 namespace osc { struct Color; }
-namespace osc { class Config; }
+namespace osc { class AppConfig; }
 namespace osc { class Screen; }
 
 namespace osc
@@ -65,7 +65,7 @@ namespace osc
             return *g_Current;
         }
 
-        static Config const& config()
+        static AppConfig const& config()
         {
             return get().getConfig();
         }
@@ -268,8 +268,8 @@ namespace osc
         void unsetMainWindowSubTitle();
 
         // returns the current application configuration
-        Config const& getConfig() const;
-        Config& updConfig();
+        AppConfig const& getConfig() const;
+        AppConfig& updConfig();
 
         // returns a full filesystem path to runtime resource in `resources/` dir
         std::filesystem::path getResource(std::string_view) const;

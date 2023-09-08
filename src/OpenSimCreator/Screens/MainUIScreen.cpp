@@ -14,7 +14,7 @@
 #include <oscar/Graphics/AnnotatedImage.hpp>
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/Platform/Config.hpp>
+#include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Tabs/ErrorTab.hpp>
@@ -50,7 +50,7 @@
 namespace
 {
     std::unique_ptr<osc::Tab> LoadConfigurationDefinedTabIfNecessary(
-        osc::Config const& config,
+        osc::AppConfig const& config,
         osc::TabRegistry const& tabRegistry,
         osc::ParentPtr<osc::TabHost> const& api)
     {

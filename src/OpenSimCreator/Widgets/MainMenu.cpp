@@ -12,7 +12,7 @@
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/Platform/Config.hpp>
+#include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/ArrayHelpers.hpp>

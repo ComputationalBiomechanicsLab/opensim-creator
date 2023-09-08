@@ -3,7 +3,7 @@
 #include "oscar/Graphics/SceneDecoration.hpp"
 #include "oscar/Graphics/SceneRenderer.hpp"
 #include "oscar/Graphics/SceneRendererParams.hpp"
-#include "oscar/Platform/Config.hpp"
+#include "oscar/Platform/AppConfig.hpp"
 
 #include <utility>
 #include <vector>
@@ -11,7 +11,7 @@
 class osc::CachedSceneRenderer::Impl final {
 public:
     Impl(
-        Config const& config,
+        AppConfig const& config,
         MeshCache& meshCache,
         ShaderCache& shaderCache) :
 
@@ -44,7 +44,7 @@ private:
 
 // public API (PIMPL)
 
-osc::CachedSceneRenderer::CachedSceneRenderer(Config const& config, MeshCache& meshCache, ShaderCache& shaderCache) :
+osc::CachedSceneRenderer::CachedSceneRenderer(AppConfig const& config, MeshCache& meshCache, ShaderCache& shaderCache) :
     m_Impl{std::make_unique<Impl>(config, meshCache, shaderCache)}
 {
 }

@@ -9,7 +9,7 @@
 #include <oscar/Formats/DAE.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/SceneDecoration.hpp>
-#include <oscar/Platform/Config.hpp>
+#include <oscar/Platform/AppConfig.hpp>
 
 #include <gtest/gtest.h>
 #include <OpenSim/Common/Component.h>
@@ -20,7 +20,7 @@
 
 TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
 {
-    osc::GlobalInitOpenSim(*osc::Config::load());
+    osc::GlobalInitOpenSim(*osc::AppConfig::load());
 
     osc::MeshCache meshCache;
 

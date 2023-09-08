@@ -21,7 +21,7 @@
 #include "oscar/Maths/Rect.hpp"
 #include "oscar/Maths/Segment.hpp"
 #include "oscar/Maths/Tetrahedron.hpp"
-#include "oscar/Platform/Config.hpp"
+#include "oscar/Platform/AppConfig.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/SpanHelpers.hpp"
 
@@ -609,7 +609,7 @@ std::vector<glm::vec4> osc::CalcTangentVectors(
     return rv;
 }
 
-osc::Material osc::CreateWireframeOverlayMaterial(Config const& config, ShaderCache& cache)
+osc::Material osc::CreateWireframeOverlayMaterial(AppConfig const& config, ShaderCache& cache)
 {
     std::filesystem::path const vertShader = config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/SolidColor.vert";
     std::filesystem::path const fragShader = config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/SolidColor.frag";

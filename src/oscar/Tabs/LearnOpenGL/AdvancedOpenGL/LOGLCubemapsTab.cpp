@@ -13,7 +13,7 @@
 #include "oscar/Graphics/Texture2D.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
-#include "oscar/Platform/Config.hpp"
+#include "oscar/Platform/AppConfig.hpp"
 #include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/ArrayHelpers.hpp"
 #include "oscar/Utils/Assertions.hpp"
