@@ -2251,7 +2251,7 @@ namespace
             }
             osc::PopStyleColor();
 
-            osc::PushStyleColor(ImGuiCol_Text, osc::Color::mutedGreen());
+            osc::PushStyleColor(ImGuiCol_Text, osc::Color::mutedBlue());
             if (ImGui::MenuItem("+z"))
             {
                 ActionPushCreateFrameLayer(
