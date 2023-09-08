@@ -7,6 +7,8 @@ All notable changes to this project will be documented here. The format is based
 
 - Fixed the UI appearing very dark on earlier Intel GPUs that require explicit initialization of an
   sRGB screen framebuffer (specifically, Intel HD 530s, #764)
+- The `osc.toml` configuration file now supports setting `log_level`, which lets users change the log
+  level before the application has booted (handy for debugging OpenGL, etc., #764)
 - Saving a file that is suffixed with the file extension without the dot (e.g. `somecsv`) now adds
   the extension onto the end of the path (e.g. `somecsv.csv`, previously: would save it as `somecsv`, #771)
 - The reassign socket popup is now sorted alphabetically and shows the absolute path to the component when
