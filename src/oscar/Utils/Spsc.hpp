@@ -4,7 +4,7 @@
 
 #include <atomic>
 #include <condition_variable>
-#include <cstdint>
+#include <cstddef>
 #include <list>
 #include <memory>
 #include <mutex>
@@ -34,10 +34,10 @@ namespace osc::spsc
         std::list<T> m_MessageQueue;
 
         // how many `Sender` classes use this Impl (should be 1/0)
-        std::atomic<int32_t> m_NumSenders = 0;
+        std::atomic<ptrdiff_t> m_NumSenders = 0;
 
         // how many `Receiver` classes use this impl (should be 1/0)
-        std::atomic<int32_t> m_NumReceivers = 0;
+        std::atomic<ptrdiff_t> m_NumReceivers = 0;
 
         template<typename U>
         friend std::pair<Sender<U>, Receiver<U>> channel();

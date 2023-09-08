@@ -1190,7 +1190,7 @@ public:
 
     void setPixelData(CubemapFace face, nonstd::span<uint8_t const> data)
     {
-        auto const faceIndex = static_cast<size_t>(face);
+        size_t const faceIndex = osc::ToIndex(face);
         auto const numPixels = static_cast<size_t>(m_Width) * static_cast<size_t>(m_Width);
         size_t const numBytesPerCubeFace = numPixels * NumBytesPerPixel(m_Format);
         size_t const destinationDataStart = faceIndex * numBytesPerCubeFace;
@@ -1225,7 +1225,7 @@ private:
         size_t const numBytesPerPixel = NumBytesPerPixel(m_Format);
         size_t const numBytesPerRow = m_Width * numBytesPerPixel;
         size_t const numBytesPerFace = m_Width * numBytesPerRow;
-        auto const numFaces = osc::NumOptions<osc::CubemapFace>();
+        size_t const numFaces = osc::NumOptions<osc::CubemapFace>();
         size_t const numBytesInCubemap = numFaces * numBytesPerFace;
         CPUDataType const cpuDataType = ToEquivalentCPUDataType(m_Format);  // TextureFormat's datatype == CPU format's datatype for cubemaps
         CPUImageFormat const cpuChannelLayout = ToEquivalentCPUImageFormat(m_Format);  // TextureFormat's layout == CPU formats's layout for cubemaps
@@ -1238,6 +1238,7 @@ private:
         static_assert(osc::NumOptions<osc::TextureFormat>() == 5, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
 
         // upload cubemap to GPU
+        static_assert(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z - GL_TEXTURE_CUBE_MAP_POSITIVE_X == 5);
         gl::BindTexture((*m_MaybeGPUTexture)->texture);
         gl::PixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment);
         for (GLint faceIdx = 0; faceIdx < static_cast<GLint>(osc::NumOptions<osc::CubemapFace>()); ++faceIdx)
@@ -5195,20 +5196,20 @@ namespace
     }
 
     // maps an OpenGL debug message severity level to a log level
-    constexpr osc::log::Level OpenGLDebugSevToLogLvl(GLenum sev) noexcept
+    constexpr osc::LogLevel OpenGLDebugSevToLogLvl(GLenum sev) noexcept
     {
         switch (sev)
         {
         case GL_DEBUG_SEVERITY_HIGH:
-            return osc::log::Level::err;
+            return osc::LogLevel::err;
         case GL_DEBUG_SEVERITY_MEDIUM:
-            return osc::log::Level::warn;
+            return osc::LogLevel::warn;
         case GL_DEBUG_SEVERITY_LOW:
-            return osc::log::Level::debug;
+            return osc::LogLevel::debug;
         case GL_DEBUG_SEVERITY_NOTIFICATION:
-            return osc::log::Level::trace;
+            return osc::LogLevel::trace;
         default:
-            return osc::log::Level::info;
+            return osc::LogLevel::info;
         }
     }
 
@@ -5325,7 +5326,7 @@ namespace
         const GLchar* message,
         void const*)
     {
-        osc::log::Level const lvl = OpenGLDebugSevToLogLvl(severity);
+        osc::LogLevel const lvl = OpenGLDebugSevToLogLvl(severity);
         osc::CStringView const sourceCStr = OpenGLDebugSrcToStrView(source);
         osc::CStringView const typeCStr = OpenGLDebugTypeToStrView(type);
         osc::CStringView const severityCStr = OpenGLDebugSevToStrView(severity);

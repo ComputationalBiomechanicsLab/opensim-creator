@@ -159,6 +159,12 @@ add_library(oscar STATIC
     Platform/IoPoller.hpp
     Platform/Log.cpp
     Platform/Log.hpp
+    Platform/Logger.hpp
+    Platform/LogLevel.cpp
+    Platform/LogLevel.hpp
+    Platform/LogMessage.hpp
+    Platform/LogMessageView.hpp
+    Platform/LogSink.hpp
     Platform/MouseState.hpp
     Platform/os.cpp
     Platform/os.hpp

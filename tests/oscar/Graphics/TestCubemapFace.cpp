@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <type_traits>
 
-static_assert(std::is_same_v<std::underlying_type_t<osc::CubemapFace>, int32_t>);
 static_assert(osc::NumOptions<osc::CubemapFace>() == 6);
 
 // the sequence of faces is important, because OpenGL defines a texture target

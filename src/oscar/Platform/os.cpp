@@ -1,6 +1,7 @@
 #include "os.hpp"
 
 #include "oscar/Platform/Log.hpp"
+#include "oscar/Platform/LogLevel.hpp"
 #include "oscar/Utils/Assertions.hpp"
 #include "oscar/Utils/StringHelpers.hpp"
 
@@ -526,7 +527,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
     return std::string{buf.data()};
 }
 
-void osc::WriteTracebackToLog(log::Level lvl)
+void osc::WriteTracebackToLog(LogLevel lvl)
 {
     constexpr size_t skipped_frames = 0;
     constexpr size_t num_frames = 16;
@@ -576,18 +577,18 @@ void osc::WriteTracebackToLog(log::Level lvl)
 namespace
 {
     // temporarily attach a crash logger to the log
-    class CrashFileSink final : public osc::log::Sink {
+    class CrashFileSink final : public osc::LogSink {
     public:
         explicit CrashFileSink(std::ostream& out_) : m_Out{out_}
         {
         }
 
     private:
-        void implLog(osc::log::LogMessage const& msg) final
+        void implLog(osc::LogMessageView const& msg) final
         {
             if (m_Out)
             {
-                m_Out << '[' << msg.loggerName << "] [" << osc::log::toCStringView(msg.level) << "] " << msg.payload << std::endl;
+                m_Out << '[' << msg.loggerName << "] [" << osc::ToCStringView(msg.level) << "] " << msg.payload << std::endl;
             }
         }
 
@@ -620,9 +621,9 @@ namespace
         {
             crashReportFile << "----- log -----\n";
             auto guard = osc::log::getTracebackLog().lock();
-            for (osc::log::OwnedLogMessage const& msg : *guard)
+            for (osc::LogMessage const& msg : *guard)
             {
-                crashReportFile << '[' << msg.loggerName << "] [" << osc::log::toCStringView(msg.level) << "] " << msg.payload << '\n';
+                crashReportFile << '[' << msg.loggerName << "] [" << osc::ToCStringView(msg.level) << "] " << msg.payload << '\n';
             }
             crashReportFile << "----- /log -----\n";
         }
@@ -633,10 +634,10 @@ namespace
         {
             crashReportFile << "----- traceback -----\n";
 
-            std::shared_ptr<osc::log::Sink> sink = std::make_shared<CrashFileSink>(crashReportFile);
+            std::shared_ptr<osc::LogSink> sink = std::make_shared<CrashFileSink>(crashReportFile);
 
             osc::log::defaultLogger()->sinks().push_back(sink);
-            osc::WriteTracebackToLog(osc::log::Level::err);
+            osc::WriteTracebackToLog(osc::LogLevel::err);
             osc::log::defaultLogger()->sinks().erase(osc::log::defaultLogger()->sinks().end() - 1);
 
             crashReportFile << "----- /traceback -----\n";
@@ -648,7 +649,7 @@ namespace
     void signal_handler(int)
     {
         osc::log::error("signal caught by OSC: printing backtrace");
-        osc::WriteTracebackToLog(osc::log::Level::err);
+        osc::WriteTracebackToLog(osc::LogLevel::err);
     }
 }
 

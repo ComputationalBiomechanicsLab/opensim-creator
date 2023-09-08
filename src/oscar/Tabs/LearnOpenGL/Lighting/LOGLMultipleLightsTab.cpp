@@ -198,10 +198,10 @@ private:
         m_MultipleLightsMaterial.setVec3("uSpotLightDirection", m_Camera.getDirection());
 
         // render containers
-        int32_t i = 0;
         glm::vec3 const axis = glm::normalize(glm::vec3{1.0f, 0.3f, 0.5f});
-        for (glm::vec3 const& pos : c_CubePositions)
+        for (size_t i = 0; i < c_CubePositions.size(); ++i)
         {
+            glm::vec3 const& pos = c_CubePositions[i];
             float const angle = glm::radians(static_cast<float>(i++) * 20.0f);
 
             Transform t;

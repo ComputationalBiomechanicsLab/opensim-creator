@@ -58,21 +58,20 @@ namespace
         OSC_THROWING_ASSERT(dims.x == dims.y);
 
         // load all face data into the cubemap
-        static_assert(static_cast<int32_t>(osc::CubemapFace::PositiveX) == 0);
         static_assert(osc::NumOptions<osc::CubemapFace>() == c_SkyboxTextureFilenames.size());
 
         osc::Cubemap cubemap{dims.x, t.getTextureFormat()};
-        cubemap.setPixelData(osc::CubemapFace::PositiveX, t.getPixelData());
-        for (size_t i = 1; i < osc::NumOptions<osc::CubemapFace>(); ++i)
+        cubemap.setPixelData(osc::FirstCubemapFace(), t.getPixelData());
+        for (osc::CubemapFace f = osc::Next(osc::FirstCubemapFace()); f <= osc::LastCubemapFace(); f = osc::Next(f))
         {
             t = osc::LoadTexture2DFromImage(
-                resourcesDir / "textures" / std::string_view{c_SkyboxTextureFilenames[i]},
+                resourcesDir / "textures" / std::string_view{c_SkyboxTextureFilenames[osc::ToIndex(f)]},
                 osc::ColorSpace::sRGB
             );
             OSC_THROWING_ASSERT(t.getDimensions().x == dims.x);
             OSC_THROWING_ASSERT(t.getDimensions().y == dims.x);
             OSC_THROWING_ASSERT(t.getTextureFormat() == cubemap.getTextureFormat());
-            cubemap.setPixelData(static_cast<osc::CubemapFace>(i), t.getPixelData());
+            cubemap.setPixelData(f, t.getPixelData());
         }
 
         return cubemap;

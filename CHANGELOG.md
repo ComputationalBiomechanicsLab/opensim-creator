@@ -56,6 +56,7 @@ All notable changes to this project will be documented here. The format is based
 - Internal: Refactored `osc::OutputSubfield` to be more type-safe (#759)
 - Internal: Refactored `osc::ComponentRegistry` into a cleaner set of components (#760)
 - Internal: Refactored various widget constructors to have similar signatures (#761)
+- Internal: Refactored logging API into seperate files
 
 
 ## [0.5.1] - 2023/07/27

@@ -135,9 +135,8 @@ TEST(Cubemap, SetDataWorksForAnyFaceIfGivenCorrectNumberOfBytes)
     std::array<uint8_t, nPixels> const data = {};
 
     osc::Cubemap cubemap{width, format};
-    for (size_t i = 0; i < osc::NumOptions<osc::CubemapFace>(); ++i)
+    for (osc::CubemapFace face = osc::FirstCubemapFace(); face <= osc::LastCubemapFace(); face = osc::Next(face))
     {
-        auto const face = static_cast<osc::CubemapFace>(i);
         cubemap.setPixelData(face, data);
     }
 }
@@ -151,9 +150,8 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGBA32)
     std::array<uint8_t, nPixels> const data = {};
 
     osc::Cubemap cubemap{width, format};
-    for (size_t i = 0; i < osc::NumOptions<osc::CubemapFace>(); ++i)
+    for (osc::CubemapFace face = osc::FirstCubemapFace(); face <= osc::LastCubemapFace(); face = osc::Next(face))
     {
-        auto const face = static_cast<osc::CubemapFace>(i);
         ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
     }
 }
@@ -167,9 +165,8 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGB24)
     std::array<uint8_t, nPixels> const data = {};
 
     osc::Cubemap cubemap{width, format};
-    for (size_t i = 0; i < osc::NumOptions<osc::CubemapFace>(); ++i)
+    for (osc::CubemapFace face = osc::FirstCubemapFace(); face <= osc::LastCubemapFace(); face = osc::Next(face))
     {
-        auto const face = static_cast<osc::CubemapFace>(i);
         ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
     }
 }
@@ -184,9 +181,8 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForWidth)
     std::array<uint8_t, incorrectNPixels> const data = {};
 
     osc::Cubemap cubemap{width, format};
-    for (size_t i = 0; i < osc::NumOptions<osc::CubemapFace>(); ++i)
+    for (osc::CubemapFace face = osc::FirstCubemapFace(); face <= osc::LastCubemapFace(); face = osc::Next(face))
     {
-        auto const face = static_cast<osc::CubemapFace>(i);
         ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
     }
 }

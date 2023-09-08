@@ -37,9 +37,11 @@ namespace osc
 
         // get if a given UI panel is enabled or not
         bool getIsPanelEnabled(std::string const& panelName) const;
-        void setIsPanelEnabled(std::string const& panelName, bool v);
+        void setIsPanelEnabled(std::string const& panelName, bool);
 
+        // get the name of a tab that should be opened upon booting (overriding default behavior)
         std::optional<std::string> getInitialTabOverride() const;
+
 
     private:
         std::unique_ptr<Impl> m_Impl;
