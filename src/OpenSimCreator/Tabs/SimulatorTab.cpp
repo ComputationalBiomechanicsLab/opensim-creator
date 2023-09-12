@@ -98,7 +98,18 @@ public:
             {
                 return std::make_shared<NavigatorPanel>(
                     panelName,
-                    m_ShownModelState
+                    m_ShownModelState,
+                    [this](OpenSim::ComponentPath const& p)
+                    {
+                        auto popup = std::make_shared<VirtualModelStatePairContextMenu>(
+                            "##componentcontextmenu",
+                            m_ShownModelState,
+                            m_Parent,
+                            p.toString()
+                        );
+                        popup->open();
+                        m_PopupManager.push_back(std::move(popup));
+                    }
                 );
             }
         );
@@ -158,7 +169,7 @@ public:
                         );
                         popup->open();
                         m_PopupManager.push_back(std::move(popup));
-                    }
+                    },
                 };
 
                 return std::make_shared<SimulationViewerPanel>(panelName, params);

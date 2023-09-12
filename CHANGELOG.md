@@ -5,6 +5,7 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Added right-click context menu support to the Navigator when running a simulation (#776)
 - Fixed the up, down, and trash buttons sometimes not working when selecting path points for a
   new muscle, and relevant up/down buttons are now disabled (e.g. you can't move 'up' from the
   top row of the point list, #778)
