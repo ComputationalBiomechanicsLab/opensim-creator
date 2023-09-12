@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(osc VERSION 0.5.1 LANGUAGES C CXX)
+project(osc VERSION 0.5.2 LANGUAGES C CXX)
 
 
 # -------------- gather user-facing build cache vars ---------------- #
