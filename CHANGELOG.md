@@ -5,55 +5,71 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
-- Fixed a crash that can occur when showing component tooltips in the `Add` menu (#773)
-- Added right-click context menu support to the Navigator when running a simulation (#776)
-- Fixed the up, down, and trash buttons sometimes not working when selecting path points for a
-  new muscle, and relevant up/down buttons are now disabled (e.g. you can't move 'up' from the
-  top row of the point list, #778)
-- Adding a new path point to a muscle using the `Add Path Point` menu option now selects the newly
-  added path point (#779)
-- Fixed the UI appearing very dark on earlier Intel GPUs that require explicit initialization of an
-  sRGB screen framebuffer (specifically, Intel HD 530s; thanks @AdrianHendrik, #764)
-- The `osc.toml` configuration file now supports setting `log_level`, which lets users change the log
-  level before the application has booted (handy for debugging OpenGL, etc.; thanks @AdrianHendrik, #764)
-- Saving a file that is suffixed with the file extension without the dot (e.g. `somecsv`) now adds
-  the extension onto the end of the path (e.g. `somecsv.csv`, previously: would save it as `somecsv`, #771)
-- The reassign socket popup is now sorted alphabetically and shows the absolute path to the component when
-  moused over, to make it easier to use when resocketing in large models containing duplicate component
-  names (#769)
-- Fixed a bug where, when selecting sockets when adding a new component, if two components in the model
-  have identical names (e.g. `torso_offset`) but different locations (e.g. `/jointset/back/torso_offset`
-  vs. `/jointset/acromial_r/torso_offset`) then only one option would be shown and it would be non-selctable.
-  It will now show both options as `torso_offset` but, on mousing over, show the user the full absolute
-  path to the component (#767)
-- Fixed the muscle plot panel crashing when importing a CSV overlay (#755)
-- The "Socket" menu in the component context menu now explains each column in the displayed sockets table
-- Sliders in the coordinate editor now look much more like "typical" sliders, and are now entirely
-  disabled when locked (#36)
+
+## [0.5.2] - 2023/09/12
+
+0.5.2 adds a few nice-to-haves when editing components' positions w.r.t. other frames, or resocketing them. It
+also addresses a few crashing bugs that were introduced during `0.5.1`'s quite aggressive refactor (sorry about
+those).
+
+### Features
+
 - The `Reassign Socket` popup now has a `Re-express $COMPONENT in chosen frame` checkbox, which users can
   tick to prompt OSC to automatically recalculate what the location/position/orientation properties of the
   component should be in the new frame, in the current scene state, such that it does not move or rotate. This
   is handy for (e.g.) re-socketing muscle path points onto different bodies, changing joint topologies, etc. (#326)
-- Added a clarifying `note` in Tutorial 1's documentation that asks users to try and use the `Brick` analytic
-  geometry, rather than a mesh file like `brick.vtp` (#175)
+- Property editors for `Station`s, `PathPoint`s, and `PhysicalOffsetFrame`s now also display a user-editable
+  `(parent frame)` dropdown, which lets users select which frame the `location`/`translation` properties
+  of those components are edited in (#723)
+- Sliders in the coordinate editor now look much more like "typical" sliders, and are now entirely
+  disabled when locked (#36)
 - Added the `Calculate` menu from the frame definition workflow to the OpenSim model editor and simulator
   workflows workflow, which means that users can calculate the position/orientation of a frame/point in an
   OpenSim model w.r.t. some other frame by right-clicking the element in the scene (#722)
-- Added a settings editor next to the `Convert to OpenSim Model` that contains an `Export Stations as Markers`
-  option, which lets a user export any stations in the mesh importer scene as markers instead (#172)
+- Added a settings editor next to the `Convert to OpenSim Model` button in the mesh importer that contains
+  an `Export Stations as Markers` option. This lets a user export any stations in the mesh importer scene
+  as markers instead, so that they can see their muscle points in the official OpenSim GUI (#172)
 - Added an `Export` submenu when right-clicking a mesh in the mesh importer, which lets users re-export meshes
   w.r.t. another element in the mesh importer scene (#169)
-- Property editors for `Station`s, `PathPoint`s, and `PhysicalOffsetFrame`s now also display a user-editable
-  "expressed in frame" dropdown, which lets users select which frame the `location`/`translation` properties
-  of those components are edited in (#723)
-- The scene scale factor should now ignore any explicitly added `OpenSim::Geometry` in the scene (#461)
-- Deleting a `range` element of an `OpenSim::Coordinate` no longer causes the editor to crash (#654)
-- The 3D camera will no longer move when dragging a visualizer panel around (#739)
-- OpenSim was upgraded from version v4.4 to v4.4.1 (#721)
-- All other libraries were updated to their latest version (#721)
+- Added right-click context menu support to the Navigator when running a simulation (#776)
+- Adding a new path point to a muscle using the `Add Path Point` menu option now selects the newly
+  added path point (#779)
+- The `osc.toml` configuration file now supports setting `log_level`, which lets users change the log
+  level before the application has booted (handy for debugging OpenGL, etc.; thanks @AdrianHendrik, #764)
+- The reassign socket popup is now sorted alphabetically and shows the absolute path to the component when
+  moused over, to make it easier to use when resocketing in large models containing duplicate component
+  names (#769)
+- The "Socket" menu in the component context menu now explains each column in the displayed sockets table
 - The border between windows/panels/bars in the UI were made brighter so that it's easier to see when one
   panel ends and another begins
-- Internal: LearnOpenGL's physically based rendering (PBR) examples tabs added
+- Added a clarifying `note` in Tutorial 1's documentation that asks users to try and use the `Brick` analytic
+  geometry, rather than a mesh file like `brick.vtp` (#175)
+- OpenSim was upgraded from version v4.4 to v4.4.1 (#721)
+- All other libraries were updated to their latest version (#721)
+
+### Bugfixes
+
+- Fixed a crash that can occur when showing component tooltips in the `Add` menu (#773)
+- Fixed the muscle plot panel crashing when importing a CSV overlay (#755)
+- Fixed deleting a `range` element of an `OpenSim::Coordinate` no longer causes the editor tab to crash (#654)
+- Fixed the UI appearing very dark on earlier Intel GPUs that require explicit initialization of an
+  sRGB screen framebuffer (specifically, Intel HD 530s; thanks @AdrianHendrik, #764)
+- Fixed the up, down, and trash buttons sometimes not working when selecting path points for a
+  new muscle, and relevant up/down buttons are now disabled (e.g. you can't move 'up' from the
+  top row of the point list, #778)
+- Fixed saving a file that is suffixed with the file extension without the dot (e.g. `somecsv`) now adds
+  the extension onto the end of the path (e.g. `somecsv.csv`, previously: would save it as `somecsv`, #771)
+- Fixed a bug where, when selecting sockets when adding a new component, if two components in the model
+  have identical names (e.g. `torso_offset`) but different locations (e.g. `/jointset/back/torso_offset`
+  vs. `/jointset/acromial_r/torso_offset`) then only one option would be shown and it would be non-selectable.
+  It will now show both options as `torso_offset` but, on mousing over, show the user the full absolute
+  path to the component (#767)
+- Fixed the scene scale factor applying to explicitly added `OpenSim::Geometry` in the scene (#461)
+- Fixed The 3D camera will no longer move when dragging a visualizer panel around (#739)
+
+### Internal Changes
+
+- Internal: LearnOpenGL's physically based rendering (PBR) examples were implemented using OSC's rendering API
 - Internal: `osc::MeshTopology` now supports `TriangleStrip`
 - Internal: `osc::Mesh::set/getColors` now takes a sequence of `osc::Color`, rather than `osc::Rgba32`
 - Internal: Added `osc::StandardTabBase`, to reduce code duplication in tab implementations
@@ -67,7 +83,7 @@ All notable changes to this project will be documented here. The format is based
 - Internal: Refactored `osc::OutputSubfield` to be more type-safe (#759)
 - Internal: Refactored `osc::ComponentRegistry` into a cleaner set of components (#760)
 - Internal: Refactored various widget constructors to have similar signatures (#761)
-- Internal: Refactored logging API into seperate files
+- Internal: Refactored logging API into separate files
 - Internal: The simulator tab 3D viewer was refactored to use the generic `osc::Popup` API (#776)
 
 
