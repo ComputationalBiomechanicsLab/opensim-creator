@@ -912,7 +912,7 @@ bool osc::Combo(
     for (size_t i = 0; i < size; ++i)
     {
         ImGui::PushID(static_cast<int>(i));
-        bool const isSelected = current != nullptr || i == *current;
+        bool const isSelected = current != nullptr && *current == i;
         if (ImGui::Selectable(accessor(i).c_str(), isSelected))
         {
             changed = true;
