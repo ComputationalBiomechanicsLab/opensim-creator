@@ -1161,6 +1161,17 @@ bool osc::ActionAddPathPointToPathActuator(
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
 
+        // try to select the new path point, if possible, so that the user
+        // can immediately see the grab handles etc. (#779)
+        if (auto const* paAfterFinalization = FindComponent<OpenSim::PathActuator>(mutModel, pathActuatorPath))
+        {
+            auto const& pps = paAfterFinalization->getGeometryPath().getPathPointSet();
+            if (!empty(pps))
+            {
+                uim.setSelected(&At(pps, ssize(pps) -1));
+            }
+        }
+
         std::stringstream ss;
         ss << "added path point to " << paName;
         uim.commit(std::move(ss).str());

@@ -5,6 +5,8 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Adding a new path point to a muscle using the `Add Path Point` menu option now selects the newly
+  added path point (#779)
 - Fixed the UI appearing very dark on earlier Intel GPUs that require explicit initialization of an
   sRGB screen framebuffer (specifically, Intel HD 530s; thanks @AdrianHendrik, #764)
 - The `osc.toml` configuration file now supports setting `log_level`, which lets users change the log
