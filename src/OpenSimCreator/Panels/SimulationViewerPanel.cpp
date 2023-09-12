@@ -1,6 +1,8 @@
 #include "SimulationViewerPanel.hpp"
 
 #include "OpenSimCreator/Model/VirtualModelStatePair.hpp"
+#include "OpenSimCreator/Panels/SimulationViewerPanelParameters.hpp"
+#include "OpenSimCreator/Panels/SimulationViewerRightClickEvent.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 #include "OpenSimCreator/Widgets/UiModelViewer.hpp"
@@ -16,16 +18,27 @@
 #include <string_view>
 #include <utility>
 
+namespace
+{
+    osc::SimulationViewerRightClickEvent MakeRightClickEvent(
+        OpenSim::Component const* maybeHover)
+    {
+        std::optional<std::string> maybeAbsPath = maybeHover ?
+            std::optional<std::string>{osc::GetAbsolutePathString(*maybeHover)} :
+            std::optional<std::string>{};
+
+        return osc::SimulationViewerRightClickEvent{std::move(maybeAbsPath)};
+    }
+}
+
 class osc::SimulationViewerPanel::Impl final : public StandardPanel {
 public:
     Impl(
         std::string_view panelName_,
-        std::shared_ptr<VirtualModelStatePair> modelState_,
-        ParentPtr<MainUIStateAPI> const& mainUIStateAPI_) :
+        SimulationViewerPanelParameters const& params_) :
 
         StandardPanel{panelName_},
-        m_Model{std::move(modelState_)},
-        m_API{mainUIStateAPI_}
+        m_Params{params_}
     {
     }
 
@@ -42,23 +55,25 @@ private:
 
     void implDrawContent() final
     {
-        std::optional<SceneCollision> const maybeCollision = m_Viewer.onDraw(*m_Model);
+        VirtualModelStatePair& msp = m_Params.updModelState();
+
+        std::optional<SceneCollision> const maybeCollision = m_Viewer.onDraw(msp);
 
         OpenSim::Component const* maybeHover = maybeCollision ?
-            osc::FindComponent(m_Model->getModel(), maybeCollision->decorationID) :
+            osc::FindComponent(msp.getModel(), maybeCollision->decorationID) :
             nullptr;
 
         // care: this code must check whether the hover != current hover (even if
         // null), because there might be multiple viewports open (#582)
-        if (m_Viewer.isMousedOver() && maybeHover != m_Model->getHovered())
+        if (m_Viewer.isMousedOver() && maybeHover != msp.getHovered())
         {
             // hovering: update hover and show tooltip
-            m_Model->setHovered(maybeHover);
+            msp.setHovered(maybeHover);
         }
 
         if (m_Viewer.isMousedOver() && m_Viewer.isLeftClicked())
         {
-            m_Model->setSelected(maybeHover);
+            msp.setSelected(maybeHover);
         }
 
         if (maybeHover)
@@ -66,50 +81,24 @@ private:
             DrawComponentHoverTooltip(*maybeHover);
         }
 
+        if (m_Viewer.isMousedOver() && m_Viewer.isRightClicked())
         {
-            // right-click: draw context menu
-
-            std::string menuName = std::string{getName()} + "_contextmenu";
-
-            if (m_Viewer.isRightClicked() && m_Viewer.isMousedOver())
-            {
-                m_Model->setSelected(maybeHover);  // can be empty
-                ImGui::OpenPopup(menuName.c_str());
-            }
-
-            OpenSim::Component const* selected = m_Model->getSelected();
-
-            if (selected && ImGui::BeginPopup(menuName.c_str()))
-            {
-                // draw context menu for whatever's selected
-                ImGui::TextUnformatted(selected->getName().c_str());
-                ImGui::SameLine();
-                ImGui::TextDisabled("%s", selected->getConcreteClassName().c_str());
-                ImGui::Separator();
-                ImGui::Dummy({0.0f, 3.0f});
-
-                DrawSelectOwnerMenu(*m_Model, *selected);
-                DrawWatchOutputMenu(*m_API, *selected);
-                TryDrawCalculateMenu(m_Model->getModel(), m_Model->getState(), *selected, CalculateMenuFlags::NoCalculatorIcon);
-                ImGui::EndPopup();
-            }
+            m_Params.callOnRightClickHandler(MakeRightClickEvent(maybeHover));
         }
     }
 
-    std::shared_ptr<VirtualModelStatePair> m_Model;
-    ParentPtr<MainUIStateAPI> m_API;
+    SimulationViewerPanelParameters m_Params;
     UiModelViewer m_Viewer;
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::SimulationViewerPanel::SimulationViewerPanel(
-    std::string_view panelName,
-    std::shared_ptr<VirtualModelStatePair> modelState,
-    ParentPtr<MainUIStateAPI> const& mainUIStateAPI) :
+    std::string_view panelName_,
+    SimulationViewerPanelParameters const& params_) :
 
-    m_Impl{std::make_unique<Impl>(panelName, std::move(modelState), mainUIStateAPI)}
+    m_Impl{std::make_unique<Impl>(panelName_, params_)}
 {
 }
 osc::SimulationViewerPanel::SimulationViewerPanel(SimulationViewerPanel&&) noexcept = default;

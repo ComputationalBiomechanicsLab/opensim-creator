@@ -66,6 +66,7 @@ All notable changes to this project will be documented here. The format is based
 - Internal: Refactored `osc::ComponentRegistry` into a cleaner set of components (#760)
 - Internal: Refactored various widget constructors to have similar signatures (#761)
 - Internal: Refactored logging API into seperate files
+- Internal: The simulator tab 3D viewer was refactored to use the generic `osc::Popup` API (#776)
 
 
 ## [0.5.1] - 2023/07/27

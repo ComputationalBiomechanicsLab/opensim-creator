@@ -175,7 +175,7 @@ public:
     {
         App::upd().makeMainEventLoopWaiting();
         m_TabName = computeTabName();
-        m_PopupManager.openAll();
+        m_PopupManager.onMount();
         m_PanelManager->onMount();
     }
 

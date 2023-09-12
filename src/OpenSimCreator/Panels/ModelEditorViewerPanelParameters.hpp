@@ -4,6 +4,7 @@
 
 #include <functional>
 #include <memory>
+#include <utility>
 
 namespace osc { struct ModelEditorViewerPanelRightClickEvent; }
 namespace osc { struct ModelRendererParams; }

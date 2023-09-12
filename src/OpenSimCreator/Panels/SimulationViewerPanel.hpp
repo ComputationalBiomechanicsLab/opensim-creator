@@ -6,9 +6,7 @@
 #include <memory>
 #include <string_view>
 
-namespace osc { class MainUIStateAPI; }
-namespace osc { template<typename T> class ParentPtr; }
-namespace osc { class VirtualModelStatePair; }
+namespace osc { class SimulationViewerPanelParameters; }
 
 namespace osc
 {
@@ -16,8 +14,7 @@ namespace osc
     public:
         SimulationViewerPanel(
             std::string_view panelName,
-            std::shared_ptr<VirtualModelStatePair>,
-            ParentPtr<MainUIStateAPI> const&
+            SimulationViewerPanelParameters const&
         );
         SimulationViewerPanel(SimulationViewerPanel const&) = delete;
         SimulationViewerPanel(SimulationViewerPanel&&) noexcept;

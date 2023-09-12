@@ -91,6 +91,8 @@ add_library(OpenSimCreator STATIC
     Panels/SimulationDetailsPanel.hpp
     Panels/SimulationViewerPanel.cpp
     Panels/SimulationViewerPanel.hpp
+    Panels/SimulationViewerPanelParameters.hpp
+    Panels/SimulationViewerRightClickEvent.hpp
 
     Registry/ComponentRegistry.hpp
     Registry/ComponentRegistryBase.cpp
@@ -205,10 +207,12 @@ add_library(OpenSimCreator STATIC
     Widgets/SimulationToolbar.hpp
     Widgets/UiModelViewer.cpp
     Widgets/UiModelViewer.hpp
+    Widgets/VirtualModelStatePairContextMenu.cpp
+    Widgets/VirtualModelStatePairContextMenu.hpp
 
     OpenSimCreatorApp.cpp
     OpenSimCreatorApp.hpp
-)
+ )
 
 # OpenSimCreator: compile-time includes
 target_include_directories(OpenSimCreator PUBLIC

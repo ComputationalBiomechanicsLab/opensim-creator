@@ -10,6 +10,8 @@
 #include "OpenSimCreator/Panels/SelectionDetailsPanel.hpp"
 #include "OpenSimCreator/Panels/SimulationDetailsPanel.hpp"
 #include "OpenSimCreator/Panels/SimulationViewerPanel.hpp"
+#include "OpenSimCreator/Panels/SimulationViewerPanelParameters.hpp"
+#include "OpenSimCreator/Panels/SimulationViewerRightClickEvent.hpp"
 #include "OpenSimCreator/Simulation/Simulation.hpp"
 #include "OpenSimCreator/Simulation/SimulationClock.hpp"
 #include "OpenSimCreator/Simulation/SimulationModelStatePair.hpp"
@@ -20,6 +22,7 @@
 #include "OpenSimCreator/Widgets/SimulationOutputPlot.hpp"
 #include "OpenSimCreator/Widgets/SimulationScrubber.hpp"
 #include "OpenSimCreator/Widgets/SimulationToolbar.hpp"
+#include "OpenSimCreator/Widgets/VirtualModelStatePairContextMenu.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
@@ -33,6 +36,7 @@
 #include <oscar/Utils/SynchronizedValue.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/Perf.hpp>
+#include <oscar/Widgets/PopupManager.hpp>
 #include <oscar/Widgets/WindowMenu.hpp>
 
 #include <glm/vec2.hpp>
@@ -141,11 +145,23 @@ public:
             "viewer",
             [this](std::string_view panelName)
             {
-                return std::make_shared<SimulationViewerPanel>(
-                    panelName,
+                SimulationViewerPanelParameters params
+                {
                     m_ShownModelState,
-                    m_Parent
-                );
+                    [this, menuName = std::string{panelName} + "_contextmenu"](SimulationViewerRightClickEvent const& e)
+                    {
+                        auto popup = std::make_shared<VirtualModelStatePairContextMenu>(
+                            menuName,
+                            m_ShownModelState,
+                            m_Parent,
+                            e.maybeComponentAbsPath
+                        );
+                        popup->open();
+                        m_PopupManager.push_back(std::move(popup));
+                    }
+                };
+
+                return std::make_shared<SimulationViewerPanel>(panelName, params);
             },
             1  // by default, open one viewer
         );
@@ -164,6 +180,7 @@ public:
     void onMount()
     {
         App::upd().makeMainEventLoopWaiting();
+        m_PopupManager.onMount();
         m_PanelManager->onMount();
     }
 
@@ -396,6 +413,7 @@ private:
 
             OSC_PERF("draw simulation screen");
             m_PanelManager->onDraw();
+            m_PopupManager.onDraw();
         }
         else
         {
@@ -439,6 +457,9 @@ private:
     MainMenuAboutTab m_MainMenuAboutTab;
     WindowMenu m_MainMenuWindowTab{m_PanelManager};
     SimulationToolbar m_Toolbar{"##SimulationToolbar", this, m_Simulation};
+
+    // manager for popups that are open in this tab
+    PopupManager m_PopupManager;
 };
 
 
