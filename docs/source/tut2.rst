@@ -46,6 +46,7 @@ The first thing we need to add to our model is the ``foot`` body. As explained i
 
 Using similar steps to what was taught in :ref:`tut1`:
 
+* Create a new model.
 * Add a body called ``foot`` into the model. It should have a mass of ``1 kg`` (the default) and be joined to ``ground`` with a ``FreeJoint`` called ``ground_to_foot``. Attach a ``Sphere`` geometry to it.
 * Click the sphere in the 3D viewport and use the properties panel to change its ``Appearance`` property to a red color.
 

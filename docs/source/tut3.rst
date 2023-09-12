@@ -101,7 +101,7 @@ The above steps set up all the bodies + joints in the model. You should have som
 Convert the scene to an osim (for testing)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Next, you will temporarily convert the mesh importer scene into an OpenSim model (``osim``) so that you can test whether your model is correct. Conversion is a one-way process, but your progress in the mesh importer will be **not** be lost.
+Next, you will **temporarily** convert the mesh importer scene into an OpenSim model (``osim``) so that you can test whether your model is correct. Conversion is a one-way process, but your progress in the mesh importer will be **not** be lost.
 
 To convert the mesh importer scene into an ``osim`` (for testing), you will need to:
 
@@ -137,7 +137,7 @@ Attach a cube mesh to ground (the ceiling)
 * In the popup, browse to OpenSim Creator's install directory, which contains a ``resources/geometry`` subdirectory
 * Select ``block.vtp`` from that directory. This is a pre-made block mesh file.
 * Rename  the block mesh to ``ceiling_decoration``
-* Move the mesh to the location of the highest pin joint (``pendulum_head_to_ground``)
+* Move the mesh to the location of the highest pin joint (``pendulum_head_to_ground``). The easiest way to do this is to right-click the mesh and use ``Translate > To (select something)``.
 * Rescale the mesh so that it's displayed as a thin "ceiling" cuboid the pendulum hangs from, rather than a cube. To do this, use scale property in the mesh's context menu (right-click it) **or** the scaling gizmo (press ``S`` or change the manipulation dropdown at the top of the screen from ``translate`` to ``scale``). Recommended scale factors: ``(5.0, 0.1, 5.0)``.
 
 .. figure:: _static/tut3_after-adding-ceiling-mesh.png
