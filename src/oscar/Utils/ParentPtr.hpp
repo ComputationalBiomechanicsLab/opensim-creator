@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <optional>
+#include <type_traits>
 #include <utility>
 
 namespace osc
@@ -17,24 +18,68 @@ namespace osc
     public:
 
         // construct from a non-null shared ptr
-        template<typename U>
+        template<
+            typename U,
+            typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = true
+        >
         explicit ParentPtr(std::shared_ptr<U> const& parent_) :
             m_Parent{parent_}
         {
             OSC_ASSERT(!m_Parent.expired() && "null or expired parent pointer given to a child");
         }
 
-        // coercing constructor that applies when `T` can be implicitly converted to `U`
-        template<typename U>
+        // normal copy construction
+        ParentPtr(ParentPtr const&) noexcept = default;
+
+        // coercing copy construction: only applies when `T` can be implicitly converted to `U`
+        template<
+            typename U,
+            typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = true
+        >
         ParentPtr(ParentPtr<U> const& other) noexcept :
             m_Parent{other.m_Parent}
         {
         }
 
+        // normal move construction
         ParentPtr(ParentPtr&&) noexcept = default;
-        ParentPtr(ParentPtr const&) noexcept = default;
-        ParentPtr& operator=(ParentPtr&&) noexcept = default;
+
+        // coercing move construction: only applies when `T` can be implicitly converted to `U`
+        template<
+            typename U,
+            typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = true
+        >
+        ParentPtr(ParentPtr<U>&& tmp) noexcept :
+            m_Parent{std::move(tmp.m_Parent)}
+        {
+        }
+
+        // normal copy assignment
         ParentPtr& operator=(ParentPtr const&) noexcept = default;
+
+        // coercing copy assignment: only applies when `T` can be implicitly converted to `U`
+        template<
+            typename U,
+            typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = false
+        >
+        ParentPtr& operator=(ParentPtr<U> const& other) noexcept
+        {
+            m_Parent = other.m_Parent;
+        }
+
+        // normal move assignment
+        ParentPtr& operator=(ParentPtr&&) noexcept = default;
+
+        // coercing move assignment: only applies when `T` can be implicitly converted to `U`
+        template<
+            typename U,
+            typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = true
+        >
+        ParentPtr& operator=(ParentPtr<U> && tmp) noexcept
+        {
+            m_Parent = std::move(tmp.m_Parent);
+        }
+
         ~ParentPtr() noexcept = default;
 
         T* operator->() const
@@ -64,7 +109,10 @@ namespace osc
         std::weak_ptr<T> m_Parent;
     };
 
-    template<typename TDerived, typename TBase>
+    template<
+        typename TDerived,
+        typename TBase
+    >
     std::optional<ParentPtr<TDerived>> DynamicParentCast(ParentPtr<TBase> const& p)
     {
         std::shared_ptr<TBase> const parentSharedPtr = p.m_Parent.lock();
