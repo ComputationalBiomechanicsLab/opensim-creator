@@ -35,10 +35,10 @@ class osc::SimulationViewerPanel::Impl final : public StandardPanel {
 public:
     Impl(
         std::string_view panelName_,
-        SimulationViewerPanelParameters const& params_) :
+        SimulationViewerPanelParameters params_) :
 
         StandardPanel{panelName_},
-        m_Params{params_}
+        m_Params{std::move(params_)}
     {
     }
 
@@ -96,9 +96,9 @@ private:
 
 osc::SimulationViewerPanel::SimulationViewerPanel(
     std::string_view panelName_,
-    SimulationViewerPanelParameters const& params_) :
+    SimulationViewerPanelParameters params_) :
 
-    m_Impl{std::make_unique<Impl>(panelName_, params_)}
+    m_Impl{std::make_unique<Impl>(panelName_, std::move(params_))}
 {
 }
 osc::SimulationViewerPanel::SimulationViewerPanel(SimulationViewerPanel&&) noexcept = default;

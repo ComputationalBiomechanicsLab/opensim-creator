@@ -172,7 +172,7 @@ public:
                     },
                 };
 
-                return std::make_shared<SimulationViewerPanel>(panelName, params);
+                return std::make_shared<SimulationViewerPanel>(panelName, std::move(params));
             },
             1  // by default, open one viewer
         );
