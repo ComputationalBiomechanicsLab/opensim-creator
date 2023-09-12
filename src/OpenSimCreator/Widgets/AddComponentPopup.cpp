@@ -358,38 +358,66 @@ private:
 
         ImGui::BeginChild("##pf_pathpoints", {ImGui::GetContentRegionAvail().x, 128.0f});
 
-        // selections
+        std::optional<ptrdiff_t> maybeIndexToErase;
         for (ptrdiff_t i = 0; i < ssize(m_PathPoints); ++i)
         {
+            PushID(i);
+
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
+
             if (ImGui::Button(ICON_FA_TRASH))
             {
-                m_PathPoints.erase(m_PathPoints.begin() + i);
-                ImGui::PopStyleVar();
-                break;
+                maybeIndexToErase = i;
             }
+
             ImGui::SameLine();
+
+            if (i <= 0)
+            {
+                ImGui::BeginDisabled();
+            }
             if (ImGui::Button(ICON_FA_ARROW_UP) && i > 0)
             {
                 std::swap(m_PathPoints[i], m_PathPoints[i-1]);
-                ImGui::PopStyleVar();
-                break;
             }
+            if (i <= 0)
+            {
+                ImGui::EndDisabled();
+            }
+
             ImGui::SameLine();
-            ImGui::PopStyleVar();
-            if (ImGui::Button(ICON_FA_ARROW_DOWN) && i+1 < ssize(m_PathPoints))
+
+            if (i >= ssize(m_PathPoints) - 1)
+            {
+                ImGui::BeginDisabled();
+            }
+            if (ImGui::Button(ICON_FA_ARROW_DOWN) && i < ssize(m_PathPoints) - 1)
             {
                 std::swap(m_PathPoints[i], m_PathPoints[i+1]);
-                break;
             }
-            ImGui::SameLine();
-            ImGui::Text("%s", m_PathPoints[i].userChoice.getComponentName().c_str());
+            if (i >= ssize(m_PathPoints) - 1)
+            {
+                ImGui::EndDisabled();
+            }
 
+            ImGui::PopStyleVar();
+            ImGui::SameLine();
+
+            ImGui::Text("%s", m_PathPoints[i].userChoice.getComponentName().c_str());
             if (ImGui::IsItemHovered())
             {
-                OpenSim::Component const* c = FindComponent(model, m_PathPoints[i].userChoice);
-                DrawTooltip(c->getName(), osc::GetAbsolutePathString(*c));
+                if (OpenSim::Component const* c = FindComponent(model, m_PathPoints[i].userChoice))
+                {
+                    DrawTooltip(c->getName(), osc::GetAbsolutePathString(*c));
+                }
             }
+
+            PopID();
+        }
+
+        if (maybeIndexToErase)
+        {
+            m_PathPoints.erase(m_PathPoints.begin() + *maybeIndexToErase);
         }
 
         ImGui::EndChild();

@@ -5,6 +5,9 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Fixed the up, down, and trash buttons sometimes not working when selecting path points for a
+  new muscle, and relevant up/down buttons are now disabled (e.g. you can't move 'up' from the
+  top row of the point list, #778)
 - Adding a new path point to a muscle using the `Add Path Point` menu option now selects the newly
   added path point (#779)
 - Fixed the UI appearing very dark on earlier Intel GPUs that require explicit initialization of an
