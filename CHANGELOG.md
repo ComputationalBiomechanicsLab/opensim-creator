@@ -5,6 +5,9 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Added `Import Stations from CSV` to the mesh importer's file menu, which provides a way of importing stations
+  into the mesh importer scene from a CSV file (#149)
+
 
 ## [0.5.2] - 2023/09/12
 
