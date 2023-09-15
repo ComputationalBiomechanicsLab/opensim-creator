@@ -6188,7 +6188,7 @@ namespace
                 return RowParseError{lineNum, "too few columns in this row (expecting at least 4)"};
             }
 
-            std::string const stationName = columnsText[0];
+            std::string const& stationName = columnsText[0];
 
             std::optional<float> const maybeX = osc::FromCharsStripWhitespace(columnsText[1]);
             if (!maybeX)
