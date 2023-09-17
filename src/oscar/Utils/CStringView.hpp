@@ -12,11 +12,27 @@ namespace osc
     // represents a view into a NUL-terminated C string
     class CStringView final {
     public:
-        constexpr CStringView() noexcept : m_Data{nullptr}, m_Size{0} {}
+        constexpr CStringView() noexcept :
+            m_Data{""},
+            m_Size{0}
+        {
+        }
+        constexpr CStringView(char const* s) noexcept :
+            m_Data{s ? s : ""},
+            m_Size{std::string_view{m_Data}.size()}
+        {
+        }
+        constexpr CStringView(std::nullptr_t) noexcept :
+            CStringView{}
+        {
+        }
+        CStringView(std::string const& s) noexcept :
+            m_Data{s.c_str()},
+            m_Size{s.size()}
+        {
+        }
+
         constexpr CStringView(CStringView const&) noexcept = default;
-        constexpr CStringView(char const* s) noexcept : m_Data{s}, m_Size{s ? std::string_view{s}.size() : 0} {}
-        constexpr CStringView(std::nullptr_t) noexcept : CStringView{} {}
-        CStringView(std::string const& s) noexcept : m_Data{s.c_str()}, m_Size{s.size()} {}
         constexpr CStringView& operator=(CStringView const&) noexcept = default;
 
         // explicitly necessary because arrays might otherwise decay into pointers
