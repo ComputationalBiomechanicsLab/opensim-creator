@@ -103,7 +103,7 @@ bool osc::EndsWith(std::string_view s, std::string_view suffix)
     return s.substr(s.size() - suffix.size()) == suffix;
 }
 
-bool osc::Contains(CStringView s, char c)
+bool osc::Contains(CStringView s, CStringView::value_type c)
 {
     return std::find(s.begin(), s.end(), c) != s.end();
 }
@@ -167,7 +167,7 @@ std::string osc::Ellipsis(std::string_view v, size_t maxLen)
     return rv;
 }
 
-std::string_view osc::SubstringAfterLast(std::string_view sv, char delimiter)
+std::string_view osc::SubstringAfterLast(std::string_view sv, std::string_view::value_type delimiter)
 {
     size_t const pos = sv.rfind(delimiter);
 

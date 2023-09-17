@@ -9,7 +9,7 @@
 // helpers
 namespace
 {
-    bool IsSpecialCSVCharacter(char c)
+    bool IsSpecialCSVCharacter(std::string_view::value_type c)
     {
         return c == ',' || c == '\r' || c == '\n' || c == '"';
     }
@@ -103,7 +103,7 @@ bool osc::ReadCSVRowIntoVector(
         else
         {
             // normal text
-            s += static_cast<char>(c);
+            s += static_cast<std::string::value_type>(c);
             continue;
         }
     }
@@ -134,7 +134,7 @@ void osc::WriteCSVRow(
             out << '"';
         }
 
-        for (char c : column)
+        for (std::string::value_type c : column)
         {
             if (c != '"')
             {

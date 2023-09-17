@@ -2,6 +2,7 @@
 
 #include "oscar/Platform/LogSink.hpp"
 #include "oscar/Platform/LogMessageView.hpp"
+#include "oscar/Utils/CStringView.hpp"
 
 #include <algorithm>
 #include <cstdarg>
@@ -31,7 +32,7 @@ namespace osc
         }
 
         template<typename... Args>
-        void log(LogLevel msgLvl, char const* fmt, ...)
+        void log(LogLevel msgLvl, CStringView fmt, ...)
         {
             if (msgLvl < level)
             {
@@ -45,7 +46,7 @@ namespace osc
             {
                 va_list args;
                 va_start(args, fmt);
-                int rv = std::vsnprintf(buf.data(), buf.size(), fmt, args);
+                int rv = std::vsnprintf(buf.data(), buf.size(), fmt.c_str(), args);
                 va_end(args);
 
                 if (rv <= 0)
@@ -68,37 +69,37 @@ namespace osc
         }
 
         template<typename... Args>
-        void trace(char const* fmt, Args const&... args)
+        void trace(CStringView fmt, Args const&... args)
         {
             log(LogLevel::trace, fmt, args...);
         }
 
         template<typename... Args>
-        void debug(char const* fmt, Args const&... args)
+        void debug(CStringView fmt, Args const&... args)
         {
             log(LogLevel::debug, fmt, args...);
         }
 
         template<typename... Args>
-        void info(char const* fmt, Args const&... args)
+        void info(CStringView fmt, Args const&... args)
         {
             log(LogLevel::info, fmt, args...);
         }
 
         template<typename... Args>
-        void warn(char const* fmt, Args const&... args)
+        void warn(CStringView fmt, Args const&... args)
         {
             log(LogLevel::warn, fmt, args...);
         }
 
         template<typename... Args>
-        void error(char const* fmt, Args const&... args)
+        void error(CStringView fmt, Args const&... args)
         {
             log(LogLevel::err, fmt, args...);
         }
 
         template<typename... Args>
-        void critical(char const* fmt, Args const&... args)
+        void critical(CStringView fmt, Args const&... args)
         {
             log(LogLevel::critical, fmt, args...);
         }

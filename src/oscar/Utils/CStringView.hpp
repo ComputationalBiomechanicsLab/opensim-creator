@@ -12,6 +12,8 @@ namespace osc
     // represents a view into a NUL-terminated C string
     class CStringView final {
     public:
+        using value_type = std::string_view::value_type;
+
         // factory function for constructing a CStringView from an array of known
         // compile-time size
         template<size_t N>

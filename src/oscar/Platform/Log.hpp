@@ -33,43 +33,43 @@ namespace osc::log
     Logger* defaultLoggerRaw() noexcept;
 
     template<typename... Args>
-    inline void log(LogLevel level, char const* fmt, Args const&... args)
+    inline void log(LogLevel level, CStringView fmt, Args const&... args)
     {
         defaultLoggerRaw()->log(level, fmt, args...);
     }
 
     template<typename... Args>
-    inline void trace(char const* fmt, Args const&... args)
+    inline void trace(CStringView fmt, Args const&... args)
     {
         defaultLoggerRaw()->trace(fmt, args...);
     }
 
     template<typename... Args>
-    inline void debug(char const* fmt, Args const&... args)
+    inline void debug(CStringView fmt, Args const&... args)
     {
         defaultLoggerRaw()->debug(fmt, args...);
     }
 
     template<typename... Args>
-    void info(char const* fmt, Args const&... args)
+    void info(CStringView fmt, Args const&... args)
     {
         defaultLoggerRaw()->info(fmt, args...);
     }
 
     template<typename... Args>
-    void warn(char const* fmt, Args const&... args)
+    void warn(CStringView fmt, Args const&... args)
     {
         defaultLoggerRaw()->warn(fmt, args...);
     }
 
     template<typename... Args>
-    void error(char const* fmt, Args const&... args)
+    void error(CStringView fmt, Args const&... args)
     {
         defaultLoggerRaw()->error(fmt, args...);
     }
 
     template<typename... Args>
-    void critical(char const* fmt, Args const&... args)
+    void critical(CStringView fmt, Args const&... args)
     {
         defaultLoggerRaw()->critical(fmt, args...);
     }

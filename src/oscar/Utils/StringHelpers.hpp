@@ -34,7 +34,7 @@ namespace osc
     bool EndsWith(std::string_view s, std::string_view suffix);
 
     // returns true if `str` contains `c`
-    bool Contains(CStringView, char c);
+    bool Contains(CStringView, CStringView::value_type c);
 
     template<typename T>
     inline std::string StreamToString(T const& v)
@@ -50,7 +50,7 @@ namespace osc
     // returns a string view without its leading/trailing whitespace
     std::string_view TrimLeadingAndTrailingWhitespace(std::string_view);
 
-    // (tries to) convert a char sequence into a floating point number
+    // (tries to) convert a character sequence into a floating point number
     //
     // - strips leading and trailing whitespace
     //
@@ -74,5 +74,5 @@ namespace osc
     // returns the end of the string between the last occurance of the delimiter and
     // the end of the string, or the input string if the delimiter does not occur within
     // the string.
-    std::string_view SubstringAfterLast(std::string_view, char delimiter);
+    std::string_view SubstringAfterLast(std::string_view, std::string_view::value_type delimiter);
 }
