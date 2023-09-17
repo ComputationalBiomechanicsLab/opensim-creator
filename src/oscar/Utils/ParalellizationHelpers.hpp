@@ -15,7 +15,10 @@ namespace osc
     // this is a poor-man's `std::execution::par_unseq`, because C++17's <execution>
     // isn't fully integrated into MacOS/Linux
     template<typename T, typename UnaryFunction>
-    void ForEachParUnseq(size_t minChunkSize, nonstd::span<T> vals, UnaryFunction f)
+    void ForEachParUnseq(
+        size_t minChunkSize,
+        nonstd::span<T> vals,
+        UnaryFunction f)
     {
         size_t const chunkSize = std::max(minChunkSize, vals.size()/std::thread::hardware_concurrency());
         size_t const nTasks = vals.size()/chunkSize;

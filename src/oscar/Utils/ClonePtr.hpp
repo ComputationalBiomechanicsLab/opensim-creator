@@ -25,7 +25,7 @@ namespace osc
         {
             // takes ownership
         }
-        ClonePtr(std::unique_ptr<T, Deleter> ptr) noexcept : m_Value{std::move(ptr)}
+        explicit ClonePtr(std::unique_ptr<T, Deleter> ptr) noexcept : m_Value{std::move(ptr)}
         {
             // takes ownership
         }

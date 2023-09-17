@@ -8,7 +8,7 @@ namespace osc
 {
     class RedoButton final {
     public:
-        RedoButton(std::shared_ptr<UndoRedo>);
+        explicit RedoButton(std::shared_ptr<UndoRedo>);
         RedoButton(RedoButton const&) = delete;
         RedoButton(RedoButton&&) noexcept = default;
         RedoButton& operator=(RedoButton const&) = delete;

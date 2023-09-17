@@ -140,7 +140,7 @@ namespace
     {
         return std::any_of(cp.begin(), cp.end(), [&searchStr](OpenSim::Component const* c)
         {
-            return osc::ContainsSubstringCaseInsensitive(c->getName(), searchStr);
+            return osc::ContainsCaseInsensitive(c->getName(), searchStr);
         });
     }
 }

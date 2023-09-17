@@ -9,7 +9,54 @@
 #include <string>
 #include <string_view>
 
-bool osc::IsStringCaseInsensitiveGreaterThan(std::string const& a, std::string const& b)
+namespace
+{
+    std::string ToLower(std::string_view sv)
+    {
+        std::string cpy{sv};
+        std::transform(cpy.begin(), cpy.end(), cpy.begin(), [](std::string::value_type c)
+        {
+            return static_cast<std::string::value_type>(std::tolower(c));
+        });
+        return cpy;
+    }
+}
+
+bool osc::Contains(std::string_view sv, std::string_view substr)
+{
+    auto const it = std::search(
+        sv.begin(),
+        sv.end(),
+        substr.begin(),
+        substr.end()
+    );
+    return it != sv.end();
+}
+
+bool osc::Contains(std::string_view sv, std::string_view::value_type c)
+{
+    return std::find(sv.begin(), sv.end(), c) != sv.end();
+}
+
+bool osc::ContainsCaseInsensitive(std::string_view sv, std::string_view substr)
+{
+    if (substr.empty())
+    {
+        return true;
+    }
+
+    if (substr.size() > sv.size())
+    {
+        return false;
+    }
+
+    std::string const s = ToLower(sv);
+    std::string const ss = ToLower(substr);
+
+    return Contains(s, ss);
+}
+
+bool osc::IsStringCaseInsensitiveGreaterThan(std::string_view a, std::string_view b)
 {
     // this is a more verbose implementation of:
     //
@@ -32,66 +79,22 @@ bool osc::IsStringCaseInsensitiveGreaterThan(std::string const& a, std::string c
 
     // true if b is greater than a (first mismatching character is greater)
     // else, a is greater than b (first mismatching character is less)
-    return tolower(*itA) < tolower(*itB);
+    return std::tolower(*itA) < std::tolower(*itB);
 }
 
-bool osc::ContainsSubstring(std::string const& str, std::string_view substr)
-{
-    return str.find(substr) != std::string::npos;
-}
-
-bool osc::ContainsSubstring(std::string_view str, std::string_view substr)
-{
-    auto const it = std::search(
-        str.begin(),
-        str.end(),
-        substr.begin(),
-        substr.end()
-    );
-    return it != str.end();
-}
-
-std::string osc::ToLower(std::string_view s)
-{
-    std::string cpy{s};
-    std::transform(cpy.begin(), cpy.end(), cpy.begin(), [](std::string::value_type c)
-    {
-        return static_cast<std::string::value_type>(std::tolower(c));
-    });
-    return cpy;
-}
-
-bool osc::IsEqualCaseInsensitive(std::string_view s1, std::string_view s2)
+bool osc::IsEqualCaseInsensitive(std::string_view a, std::string_view b)
 {
     auto const compareChars = [](std::string_view::value_type c1, std::string_view::value_type c2)
     {
         return std::tolower(c1) == std::tolower(c2);
     };
 
-    return std::equal(s1.begin(), s1.end(), s2.begin(), s2.end(), compareChars);
+    return std::equal(a.begin(), a.end(), b.begin(), b.end(), compareChars);
 }
 
-bool osc::IsEqualCaseInsensitive(std::string const& s1, std::string const& s2)
+bool osc::StartsWith(std::string_view s, std::string_view prefix)
 {
-    return IsEqualCaseInsensitive(std::string_view{s1}, std::string_view{s2});
-}
-
-bool osc::ContainsSubstringCaseInsensitive(std::string const& str, std::string const& substr)
-{
-    if (substr.empty())
-    {
-        return true;
-    }
-
-    if (substr.size() > str.size())
-    {
-        return false;
-    }
-
-    std::string const s = ToLower(str);
-    std::string const ss = ToLower(substr);
-
-    return ContainsSubstring(s, ss);
+    return prefix.size() <= s.size() && std::equal(prefix.begin(), prefix.end(), s.begin());
 }
 
 bool osc::EndsWith(std::string_view s, std::string_view suffix)
@@ -103,28 +106,18 @@ bool osc::EndsWith(std::string_view s, std::string_view suffix)
     return s.substr(s.size() - suffix.size()) == suffix;
 }
 
-bool osc::Contains(CStringView s, CStringView::value_type c)
+std::string_view osc::TrimLeadingAndTrailingWhitespace(std::string_view sv)
 {
-    return std::find(s.begin(), s.end(), c) != s.end();
+    std::string_view::const_iterator const front = std::find_if_not(sv.begin(), sv.end(), ::isspace);
+    std::string_view::const_iterator const back = std::find_if_not(sv.rbegin(), std::string_view::const_reverse_iterator{front}, ::isspace).base();
+    return {sv.data() + std::distance(sv.begin(), front), static_cast<size_t>(std::distance(front, back))};
 }
 
-bool osc::StartsWith(std::string_view s, std::string_view prefix)
+std::optional<float> osc::FromCharsStripWhitespace(std::string_view sv)
 {
-    return prefix.size() <= s.size() && std::equal(prefix.begin(), prefix.end(), s.begin());
-}
+    sv = TrimLeadingAndTrailingWhitespace(sv);
 
-std::string_view osc::TrimLeadingAndTrailingWhitespace(std::string_view v)
-{
-    std::string_view::const_iterator const front = std::find_if_not(v.begin(), v.end(), ::isspace);
-    std::string_view::const_iterator const back = std::find_if_not(v.rbegin(), std::string_view::const_reverse_iterator{front}, ::isspace).base();
-    return {v.data() + std::distance(v.begin(), front), static_cast<size_t>(std::distance(front, back))};
-}
-
-std::optional<float> osc::FromCharsStripWhitespace(std::string_view v)
-{
-    v = TrimLeadingAndTrailingWhitespace(v);
-
-    if (v.empty())
+    if (sv.empty())
     {
         return std::nullopt;
     }
@@ -134,7 +127,7 @@ std::optional<float> osc::FromCharsStripWhitespace(std::string_view v)
 
     try
     {
-        fpv = std::stof(std::string{v}, &i);
+        fpv = std::stof(std::string{sv}, &i);
     }
     catch (std::invalid_argument const&)
     {
@@ -149,7 +142,7 @@ std::optional<float> osc::FromCharsStripWhitespace(std::string_view v)
 
     // else: it m
 
-    return i == v.size() ? std::optional<float>{fpv} : std::optional<float>{};
+    return i == sv.size() ? std::optional<float>{fpv} : std::optional<float>{};
 }
 
 std::string osc::Ellipsis(std::string_view v, size_t maxLen)

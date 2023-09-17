@@ -10,7 +10,7 @@ namespace osc
 {
     class SaveChangesPopup final : public Popup {
     public:
-        SaveChangesPopup(SaveChangesPopupConfig const&);
+        explicit SaveChangesPopup(SaveChangesPopupConfig const&);
         SaveChangesPopup(SaveChangesPopup const&) = delete;
         SaveChangesPopup(SaveChangesPopup&&) noexcept;
         SaveChangesPopup& operator=(SaveChangesPopup const&) = delete;

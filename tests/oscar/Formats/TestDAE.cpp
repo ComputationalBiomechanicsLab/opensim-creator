@@ -34,7 +34,7 @@ TEST(DAE, SetAuthorWritesAuthorToOutput)
     std::stringstream ss;
     osc::WriteDecorationsAsDAE(ss, {}, metadata);
 
-    ASSERT_TRUE(osc::ContainsSubstring(ss.str(), metadata.author));
+    ASSERT_TRUE(osc::Contains(ss.str(), metadata.author));
 }
 
 TEST(DAE, SetAuthoringToolsWritesAuthoringToolToOutput)
@@ -45,5 +45,5 @@ TEST(DAE, SetAuthoringToolsWritesAuthoringToolToOutput)
     std::stringstream ss;
     osc::WriteDecorationsAsDAE(ss, {}, metadata);
 
-    ASSERT_TRUE(osc::ContainsSubstring(ss.str(), metadata.authoringTool));
+    ASSERT_TRUE(osc::Contains(ss.str(), metadata.authoringTool));
 }

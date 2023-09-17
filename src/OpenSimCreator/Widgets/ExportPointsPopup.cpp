@@ -68,7 +68,7 @@ namespace
     {
         return
             osc::CanExtractPointInfoFrom(component, state) &&
-            osc::ContainsSubstringCaseInsensitive(component.getName(), uiState.searchString);
+            osc::ContainsCaseInsensitive(component.getName(), uiState.searchString);
     }
 
     void DrawExportPointsPopupDescriptionSection()

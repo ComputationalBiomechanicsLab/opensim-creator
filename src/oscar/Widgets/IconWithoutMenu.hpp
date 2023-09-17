@@ -15,12 +15,12 @@ namespace osc
             CStringView description
         );
 
-        std::string const& getIconID() const
+        CStringView getIconID() const
         {
             return m_ButtonID;
         }
 
-        std::string const& getTitle() const
+        CStringView getTitle() const
         {
             return m_Title;
         }

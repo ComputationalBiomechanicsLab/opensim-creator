@@ -9,11 +9,14 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include <iosfwd>
+#include <string>
 
 namespace osc
 {
     // glm printing utilities - handy for debugging
     std::ostream& operator<<(std::ostream&, glm::vec2 const&);
+    std::string to_string(glm::vec2 const&);
+
     std::ostream& operator<<(std::ostream&, glm::vec3 const&);
     std::ostream& operator<<(std::ostream&, glm::vec4 const&);
     std::ostream& operator<<(std::ostream&, glm::mat3 const&);

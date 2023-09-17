@@ -106,7 +106,7 @@ namespace
                 continue;  // hide redundant reconnnections
             }
 
-            if (!osc::ContainsSubstring(other.getName(), params.search))
+            if (!osc::Contains(other.getName(), params.search))
             {
                 continue;  // filtered out by search string
             }

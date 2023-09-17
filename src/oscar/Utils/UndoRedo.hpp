@@ -20,7 +20,7 @@ namespace osc
     // an abstract base class for storing undo/redo metadata
     class UndoRedoEntryMetadata {
     protected:
-        UndoRedoEntryMetadata(std::string_view message_);
+        explicit UndoRedoEntryMetadata(std::string_view message_);
         UndoRedoEntryMetadata(UndoRedoEntryMetadata const&);
         UndoRedoEntryMetadata(UndoRedoEntryMetadata&&) noexcept;
         UndoRedoEntryMetadata& operator=(UndoRedoEntryMetadata const&);
@@ -68,7 +68,7 @@ namespace osc
     // implementation code
     class UndoRedoEntry {
     protected:
-        UndoRedoEntry(std::shared_ptr<UndoRedoEntryMetadata const> data_) :
+        explicit UndoRedoEntry(std::shared_ptr<UndoRedoEntryMetadata const> data_) :
             m_Data{std::move(data_)}
         {
         }
@@ -111,7 +111,7 @@ namespace osc
     // actually being stored
     class UndoRedo {
     protected:
-        UndoRedo(UndoRedoEntry initialCommit_);
+        explicit UndoRedo(UndoRedoEntry initialCommit_);
         UndoRedo(UndoRedo const&);
         UndoRedo(UndoRedo&&) noexcept;
         UndoRedo& operator=(UndoRedo const&);

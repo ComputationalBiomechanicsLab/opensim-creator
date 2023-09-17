@@ -9,11 +9,20 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <string_view>
 
 std::ostream& osc::operator<<(std::ostream& o, glm::vec2 const& v)
 {
     return o << "vec2(" << v.x << ", " << v.y << ')';
+}
+
+std::string osc::to_string(glm::vec2 const& v)
+{
+    std::stringstream ss;
+    ss << v;
+    return std::move(ss).str();
 }
 
 std::ostream& osc::operator<<(std::ostream& o, glm::vec3 const& v)

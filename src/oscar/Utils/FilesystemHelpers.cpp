@@ -104,35 +104,6 @@ std::string osc::SlurpFileIntoString(std::filesystem::path const& p)
     return std::move(ss).str();
 }
 
-std::vector<uint8_t> osc::SlurpFileIntoVector(std::filesystem::path const& p)
-{
-    std::ifstream f{p, std::ios::binary | std::ios::in};
-
-    if (!f)
-    {
-        std::stringstream msg;
-        msg << p << ": error opening file: " << osc::CurrentErrnoAsString();
-        throw std::runtime_error{std::move(msg).str()};
-    }
-    f.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
-    std::streampos const start = f.tellg();
-    f.seekg(0, std::ios::end);
-    std::streampos const end = f.tellg();
-    f.seekg(0, std::ios::beg);
-
-    std::vector<uint8_t> rv;
-    rv.reserve(static_cast<size_t>(end - start));
-
-    rv.insert(
-        rv.begin(),
-        std::istreambuf_iterator{f},
-        std::istreambuf_iterator<std::ifstream::char_type>{}
-    );
-
-    return rv;
-}
-
 std::string osc::FileNameWithoutExtension(std::filesystem::path const& p)
 {
     return p.filename().replace_extension({}).string();

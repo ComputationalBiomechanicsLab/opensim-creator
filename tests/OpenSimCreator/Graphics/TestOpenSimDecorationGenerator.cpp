@@ -45,7 +45,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithOpenSimMuscleColoringGen
         1.0f,
         [&passedTest](OpenSim::Component const& c, osc::SceneDecoration&& dec)
         {
-            if (osc::ContainsSubstringCaseInsensitive(c.getName(), "muscle1"))
+            if (osc::ContainsCaseInsensitive(c.getName(), "muscle1"))
             {
                 // check that it's red
                 ASSERT_GT(dec.color.r, 0.5f);

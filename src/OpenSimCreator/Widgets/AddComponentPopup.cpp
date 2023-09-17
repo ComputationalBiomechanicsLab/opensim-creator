@@ -333,7 +333,7 @@ private:
                 continue;  // can't attach a point to it
             }
 
-            if (!ContainsSubstringCaseInsensitive(c.getName(), m_PathSearchString))
+            if (!ContainsCaseInsensitive(c.getName(), m_PathSearchString))
             {
                 continue;  // search failed
             }

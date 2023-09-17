@@ -583,12 +583,6 @@ public:
         return SlurpFileIntoString(path);
     }
 
-    std::vector<uint8_t> slurpBinaryResource(std::string_view p) const
-    {
-        std::filesystem::path path = getResource(p);
-        return SlurpFileIntoVector(path);
-    }
-
     std::vector<osc::RecentFile> getRecentFiles() const
     {
         std::filesystem::path p = GetRecentFilesFilePath();
@@ -932,11 +926,6 @@ std::string osc::App::slurp(std::string_view s)
     return get().slurpResource(s);
 }
 
-std::vector<uint8_t> osc::App::slurpBinary(std::string_view s)
-{
-    return get().slurpBinaryResource(s);
-}
-
 osc::App::App() : m_Impl{std::make_unique<Impl>()}
 {
     g_Current = this;
@@ -1204,11 +1193,6 @@ std::filesystem::path osc::App::getResource(std::string_view p) const
 std::string osc::App::slurpResource(std::string_view p) const
 {
     return m_Impl->slurpResource(p);
-}
-
-std::vector<uint8_t> osc::App::slurpBinaryResource(std::string_view p) const
-{
-    return m_Impl->slurpBinaryResource(p);
 }
 
 std::vector<osc::RecentFile> osc::App::getRecentFiles() const

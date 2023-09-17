@@ -582,7 +582,7 @@ TEST_F(Renderer, ShaderOutputStreamContainsExpectedInfo)
 
     for (auto const& propName : c_ExpectedPropertyNames)
     {
-        ASSERT_TRUE(osc::ContainsSubstring(str, std::string{propName}));
+        ASSERT_TRUE(osc::Contains(str, std::string{propName}));
     }
 }
 
@@ -1242,7 +1242,7 @@ TEST_F(Renderer, MaterialOutputStringContainsUsefulInformation)
 
     std::string str{ss.str()};
 
-    ASSERT_TRUE(osc::ContainsSubstringCaseInsensitive(str, "Material"));
+    ASSERT_TRUE(osc::ContainsCaseInsensitive(str, "Material"));
 
     // TODO: should print more useful info, such as number of props etc.
 }
@@ -1536,7 +1536,7 @@ TEST_F(Renderer, MaterialPropertyBlockPrintingToOutputStreamMentionsMaterialProp
 
     ss << m1;
 
-    ASSERT_TRUE(osc::ContainsSubstring(ss.str(), "MaterialPropertyBlock"));
+    ASSERT_TRUE(osc::Contains(ss.str(), "MaterialPropertyBlock"));
 }
 
 TEST_F(Renderer, TextureConstructorThrowsIfGivenZeroOrNegativeSizedDimensions)
@@ -2772,7 +2772,7 @@ TEST_F(Renderer, RenderTextureDescriptorCanBeStreamedToAString)
     ss << d1;
 
     std::string str{ss.str()};
-    ASSERT_TRUE(osc::ContainsSubstringCaseInsensitive(str, "RenderTextureDescriptor"));
+    ASSERT_TRUE(osc::ContainsCaseInsensitive(str, "RenderTextureDescriptor"));
 }
 
 TEST_F(Renderer, RenderTextureDefaultConstructorCreates1x1RgbaRenderTexture)
