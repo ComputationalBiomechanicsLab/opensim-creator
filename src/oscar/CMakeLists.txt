@@ -254,7 +254,6 @@ add_library(oscar STATIC
     Tabs/TabRegistryEntry.cpp
     Tabs/TabRegistryEntry.hpp
 
-    Utils/ArrayHelpers.hpp
     Utils/Assertions.cpp
     Utils/Assertions.hpp
     Utils/CircularBuffer.hpp

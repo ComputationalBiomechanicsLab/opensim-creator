@@ -29,7 +29,6 @@
 #include "oscar/Maths/BVH.hpp"
 #include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Platform/App.hpp"
-#include "oscar/Utils/ArrayHelpers.hpp"
 #include "oscar/Utils/CStringView.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/EnumHelpers.hpp"
@@ -974,12 +973,13 @@ TEST_F(Renderer, MaterialGetMat4ArrayInitiallyReturnsNothing)
 
 TEST_F(Renderer, MaterialSetMat4ArrayCausesGetMat4ArrayToReturnSameSequenceOfValues)
 {
-    auto const mat4Array = osc::MakeArray<glm::mat4>(
+    auto const mat4Array = osc::to_array<glm::mat4>(
+    {
         GenerateMat4x4(),
         GenerateMat4x4(),
         GenerateMat4x4(),
         GenerateMat4x4()
-    );
+    });
 
     osc::Material mat = GenerateMaterial();
     mat.setMat4Array("someKey", mat4Array);

@@ -15,7 +15,6 @@
 #include "oscar/Platform/App.hpp"
 #include "oscar/Platform/AppConfig.hpp"
 #include "oscar/Tabs/StandardTabBase.hpp"
-#include "oscar/Utils/ArrayHelpers.hpp"
 #include "oscar/Utils/Assertions.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
