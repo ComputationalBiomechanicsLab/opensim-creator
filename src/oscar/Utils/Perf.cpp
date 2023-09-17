@@ -53,7 +53,7 @@ void osc::SubmitMeasurement(int64_t id, PerfClock::time_point start, PerfClock::
     }
 }
 
-void osc::ClearPerfMeasurements()
+void osc::ClearAllPerfMeasurements()
 {
     auto guard = GetMeasurementStorage().lock();
 
@@ -63,7 +63,7 @@ void osc::ClearPerfMeasurements()
     }
 }
 
-std::vector<osc::PerfMeasurement> osc::GetAllMeasurements()
+std::vector<osc::PerfMeasurement> osc::GetAllPerfMeasurements()
 {
     auto guard = GetMeasurementStorage().lock();
 

@@ -55,14 +55,14 @@ private:
         }
         if (ImGui::Button("clear measurements"))
         {
-            osc::ClearPerfMeasurements();
+            osc::ClearAllPerfMeasurements();
         }
         ImGui::Checkbox("pause", &m_IsPaused);
 
         std::vector<PerfMeasurement> measurements;
         if (!m_IsPaused)
         {
-            measurements = GetAllMeasurements();
+            measurements = GetAllPerfMeasurements();
             std::sort(measurements.begin(), measurements.end(), LexographicallyHighestLabel);
         }
 

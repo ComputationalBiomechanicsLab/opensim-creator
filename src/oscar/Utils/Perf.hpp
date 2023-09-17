@@ -12,10 +12,20 @@
 
 namespace osc
 {
-    int64_t AllocateMeasurementID(std::string_view label, std::string_view filename, unsigned int line);
-    void SubmitMeasurement(int64_t id, PerfClock::time_point start, PerfClock::time_point end) noexcept;
-    void ClearPerfMeasurements();
-    std::vector<PerfMeasurement> GetAllMeasurements();
+    int64_t AllocateMeasurementID(
+        std::string_view label,
+        std::string_view filename,
+        unsigned int line
+    );
+
+    void SubmitMeasurement(
+        int64_t id,
+        PerfClock::time_point start,
+        PerfClock::time_point end
+    ) noexcept;
+
+    void ClearAllPerfMeasurements();
+    std::vector<PerfMeasurement> GetAllPerfMeasurements();
 
     class PerfTimer final {
     public:
@@ -35,8 +45,8 @@ namespace osc
         int64_t m_ID;
         PerfClock::time_point m_Start = PerfClock::now();
     };
+}
 
 #define OSC_PERF(label) \
     static int64_t const OSC_TOKENPASTE2(s_TimerID, __LINE__) = osc::AllocateMeasurementID(label, OSC_FILENAME, __LINE__); \
     osc::PerfTimer const OSC_TOKENPASTE2(timer, __LINE__) (OSC_TOKENPASTE2(s_TimerID, __LINE__));
-}
