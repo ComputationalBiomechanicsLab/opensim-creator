@@ -466,3 +466,21 @@ TEST(OpenSimModel, DeleteComponentFromModelFollowedByReinitializingAndThenFinali
     // and then finalizing the connections should be fine (#752)
     osc::FinalizeConnections(model);
 }
+
+// repro for (#773)
+//
+// - user reported that OSC will crash after they rename something in the model
+// - after some manual investigations, it turned out that the problem is
+//   unrelated to renaming and that the segfault will also happen if the
+//   model's connections are re-finalized
+TEST(OpenSimModel, DISABLED_ReFinalizingAModelWithUnusualJointTopologyDoesNotSegfault)
+{
+    std::filesystem::path const brokenFilePath =
+        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_773_repro.osim";
+    OpenSim::Model model{brokenFilePath.string()};
+
+    for (size_t i = 0; i < 10; ++i)
+    {
+        model.finalizeConnections();  // this can segfault (never should)
+    }
+}
