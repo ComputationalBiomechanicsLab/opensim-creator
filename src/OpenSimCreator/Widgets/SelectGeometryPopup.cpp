@@ -4,7 +4,6 @@
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Utils/ArrayHelpers.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Widgets/StandardPopup.hpp>
@@ -28,43 +27,45 @@
 namespace
 {
     using Geom_ctor_fn = std::unique_ptr<OpenSim::Geometry>();
-    constexpr auto c_GeomCtors = osc::MakeArray<Geom_ctor_fn*>(
-        []() -> std::unique_ptr<OpenSim::Geometry>
+
+    constexpr auto c_GeomCtors = osc::to_array<Geom_ctor_fn*>(
+    {
+        std::decay_t<Geom_ctor_fn>{[]() -> std::unique_ptr<OpenSim::Geometry>
         {
             auto ptr = std::make_unique<OpenSim::Brick>();
             ptr->set_half_lengths(SimTK::Vec3{0.1, 0.1, 0.1});
             return ptr;
-        },
-        []() -> std::unique_ptr<OpenSim::Geometry>
+        }},
+        std::decay_t<Geom_ctor_fn>{[]() -> std::unique_ptr<OpenSim::Geometry>
         {
             auto ptr = std::make_unique<OpenSim::Sphere>();
             ptr->set_radius(0.1);
             return ptr;
-        },
-        []() -> std::unique_ptr<OpenSim::Geometry>
+        }},
+        std::decay_t<Geom_ctor_fn>{[]() -> std::unique_ptr<OpenSim::Geometry>
         {
             auto ptr = std::make_unique<OpenSim::Cylinder>();
             ptr->set_radius(0.1);
             ptr->set_half_height(0.1);
             return ptr;
-        },
-        []() -> std::unique_ptr<OpenSim::Geometry>
+        }},
+        std::decay_t<Geom_ctor_fn>{[]() -> std::unique_ptr<OpenSim::Geometry>
         {
             return std::make_unique<OpenSim::LineGeometry>();
-        },
-        []() -> std::unique_ptr<OpenSim::Geometry>
+        }},
+        std::decay_t<Geom_ctor_fn>{[]() -> std::unique_ptr<OpenSim::Geometry>
         {
             return std::make_unique<OpenSim::Ellipsoid>();
-        },
-        []() -> std::unique_ptr<OpenSim::Geometry>
+        }},
+        std::decay_t<Geom_ctor_fn>{[]() -> std::unique_ptr<OpenSim::Geometry>
         {
             return std::make_unique<OpenSim::Arrow>();
-        },
-        []() -> std::unique_ptr<OpenSim::Geometry>
+        }},
+        std::decay_t<Geom_ctor_fn>{[]() -> std::unique_ptr<OpenSim::Geometry>
         {
             return std::make_unique<OpenSim::Cone>();
-        }
-    );
+        }},
+    });
 
     constexpr auto c_GeomNames = osc::to_array(
     {
