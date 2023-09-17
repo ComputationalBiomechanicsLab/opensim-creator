@@ -12,6 +12,14 @@ namespace osc
     // represents a view into a NUL-terminated C string
     class CStringView final {
     public:
+        // factory function for constructing a CStringView from an array of known
+        // compile-time size
+        template<size_t N>
+        static constexpr CStringView FromArray(char const (&s)[N]) noexcept
+        {
+            return {&s[0], N};
+        }
+
         constexpr CStringView() noexcept :
             m_Data{""},
             m_Size{0}
@@ -31,16 +39,8 @@ namespace osc
             m_Size{s.size()}
         {
         }
-
         constexpr CStringView(CStringView const&) noexcept = default;
         constexpr CStringView& operator=(CStringView const&) noexcept = default;
-
-        // explicitly necessary because arrays might otherwise decay into pointers
-        template<size_t N>
-        static constexpr CStringView FromArray(char const (&s)[N]) noexcept
-        {
-            return {&s[0], N};
-        }
 
         constexpr size_t size() const noexcept { return m_Size; }
         constexpr size_t length() const noexcept { return m_Size; }
