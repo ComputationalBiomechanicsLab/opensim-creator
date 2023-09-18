@@ -27,6 +27,7 @@
 #include <oscar/Tabs/LearnOpenGL/AdvancedLighting/LOGLSSAOTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/AdvancedOpenGL/LOGLBlendingTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/AdvancedOpenGL/LOGLCubemapsTab.hpp>
+#include <oscar/Tabs/LearnOpenGL/AdvancedOpenGL/LOGLFaceCullingTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/AdvancedOpenGL/LOGLFramebuffersTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/GettingStarted/LOGLCoordinateSystemsTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/GettingStarted/LOGLHelloTriangleTab.hpp>
@@ -207,6 +208,7 @@ namespace
 
             RegisterTab<osc::LOGLBlendingTab>(registry);
             RegisterTab<osc::LOGLCubemapsTab>(registry);
+            RegisterTab<osc::LOGLFaceCullingTab>(registry);
             RegisterTab<osc::LOGLFramebuffersTab>(registry);
 
             RegisterTab<osc::LOGLCoordinateSystemsTab>(registry);

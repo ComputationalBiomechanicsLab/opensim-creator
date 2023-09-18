@@ -211,6 +211,8 @@ add_library(oscar STATIC
     Tabs/LearnOpenGL/AdvancedOpenGL/LOGLBlendingTab.hpp
     Tabs/LearnOpenGL/AdvancedOpenGL/LOGLCubemapsTab.cpp
     Tabs/LearnOpenGL/AdvancedOpenGL/LOGLCubemapsTab.hpp
+    Tabs/LearnOpenGL/AdvancedOpenGL/LOGLFaceCullingTab.cpp
+    Tabs/LearnOpenGL/AdvancedOpenGL/LOGLFaceCullingTab.hpp
     Tabs/LearnOpenGL/AdvancedOpenGL/LOGLFramebuffersTab.cpp
     Tabs/LearnOpenGL/AdvancedOpenGL/LOGLFramebuffersTab.hpp
 
