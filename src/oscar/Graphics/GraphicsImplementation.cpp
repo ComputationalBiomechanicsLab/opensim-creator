@@ -3142,6 +3142,20 @@ namespace
             return GL_LESS;
         }
     }
+
+    GLenum ToGLCullFaceEnum(osc::CullMode cullMode)
+    {
+        static_assert(osc::NumOptions<osc::CullMode>() == 3);
+
+        switch (cullMode)
+        {
+        case osc::CullMode::Front:
+            return GL_FRONT;
+        case osc::CullMode::Back:
+        default:
+            return GL_BACK;
+        }
+    }
 }
 
 class osc::Material::Impl final {
@@ -3370,6 +3384,16 @@ public:
         m_IsWireframeMode = v;
     }
 
+    CullMode getCullMode() const
+    {
+        return m_CullMode;
+    }
+
+    void setCullMode(CullMode newCullMode)
+    {
+        m_CullMode = newCullMode;
+    }
+
 private:
     template<typename T, typename TConverted = T>
     std::optional<TConverted> getValue(std::string_view propertyName) const
@@ -3403,6 +3427,7 @@ private:
     bool m_IsDepthTested = true;
     bool m_IsWireframeMode = false;
     DepthFunction m_DepthFunction = osc::DepthFunction::Default;
+    CullMode m_CullMode = osc::CullMode::Default;
 };
 
 osc::Material::Material(Shader shader) :
@@ -3634,6 +3659,16 @@ bool osc::Material::getWireframeMode() const
 void osc::Material::setWireframeMode(bool v)
 {
     m_Impl.upd()->setWireframeMode(v);
+}
+
+osc::CullMode osc::Material::getCullMode() const
+{
+    return m_Impl->getCullMode();
+}
+
+void osc::Material::setCullMode(CullMode newMode)
+{
+    m_Impl.upd()->setCullMode(newMode);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, Material const&)
@@ -6286,6 +6321,17 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
         glDepthFunc(ToGLDepthFunc(matImpl.getDepthFunction()));
     }
 
+    if (matImpl.getCullMode() != CullMode::Off)
+    {
+        glEnable(GL_CULL_FACE);
+        glCullFace(ToGLCullFaceEnum(matImpl.getCullMode()));
+
+        // winding order is assumed to be counter-clockwise
+        //
+        // (it's the initial value as defined by Khronos: https://registry.khronos.org/OpenGL-Refpages/gl4/html/glFrontFace.xhtml)
+        // glFrontFace(GL_CCW);
+    }
+
     // bind material variables
     {
         // try binding to uView (standard)
@@ -6336,14 +6382,20 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
         batchIt = batchEnd;
     }
 
-    if (matImpl.getWireframeMode())
+    if (matImpl.getCullMode() != CullMode::Off)
     {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glCullFace(GL_BACK);  // default from Khronos docs
+        glDisable(GL_CULL_FACE);
     }
 
     if (matImpl.getDepthFunction() != DepthFunction::Default)
     {
         glDepthFunc(ToGLDepthFunc(DepthFunction::Default));
+    }
+
+    if (matImpl.getWireframeMode())
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 }
 

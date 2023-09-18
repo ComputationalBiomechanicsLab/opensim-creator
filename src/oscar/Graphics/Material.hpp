@@ -2,6 +2,7 @@
 
 #include "oscar/Graphics/Color.hpp"
 #include "oscar/Graphics/Cubemap.hpp"
+#include "oscar/Graphics/CullMode.hpp"
 #include "oscar/Graphics/DepthFunction.hpp"
 #include "oscar/Graphics/RenderTexture.hpp"
 #include "oscar/Graphics/Shader.hpp"
@@ -99,6 +100,9 @@ namespace osc
 
         bool getWireframeMode() const;
         void setWireframeMode(bool);
+
+        CullMode getCullMode() const;
+        void setCullMode(CullMode);
 
         friend void swap(Material& a, Material& b) noexcept
         {

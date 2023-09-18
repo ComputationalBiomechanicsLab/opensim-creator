@@ -100,7 +100,13 @@ private:
 
     void implOnDraw() final
     {
-        // handle mouse capturing
+        handleMouseInputs();
+        drawScene();
+        draw2DUI();
+    }
+
+    void handleMouseInputs()
+    {
         if (m_IsMouseCaptured)
         {
             UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
@@ -112,10 +118,31 @@ private:
             ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
-        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
+    }
 
+    void drawScene()
+    {
+        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
         Graphics::DrawMesh(m_Cube, Transform{}, m_Material, m_Camera);
         m_Camera.renderToScreen();
+    }
+
+    void draw2DUI()
+    {
+        ImGui::Begin("controls");
+        if (ImGui::Button("off"))
+        {
+            m_Material.setCullMode(CullMode::Off);
+        }
+        if (ImGui::Button("back"))
+        {
+            m_Material.setCullMode(CullMode::Back);
+        }
+        if (ImGui::Button("front"))
+        {
+            m_Material.setCullMode(CullMode::Front);
+        }
+        ImGui::End();
     }
 
     Material m_Material = GenerateUVTestingTextureMappedMaterial();

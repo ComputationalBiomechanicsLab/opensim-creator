@@ -5,6 +5,7 @@
 #include "oscar/Graphics/Color.hpp"
 #include "oscar/Graphics/ColorSpace.hpp"
 #include "oscar/Graphics/Cubemap.hpp"
+#include "oscar/Graphics/CullMode.hpp"
 #include "oscar/Graphics/DepthStencilFormat.hpp"
 #include "oscar/Graphics/Graphics.hpp"
 #include "oscar/Graphics/GraphicsContext.hpp"
@@ -1206,6 +1207,36 @@ TEST_F(Renderer, MaterialSetWireframeModeCausesMaterialCopiesToReturnNonEqual)
     osc::Material copy{mat};
     ASSERT_EQ(mat, copy);
     copy.setWireframeMode(true);
+    ASSERT_NE(mat, copy);
+}
+
+TEST_F(Renderer, MaterialGetCullModeIsInitiallyDefault)
+{
+    osc::Material mat = GenerateMaterial();
+    ASSERT_EQ(mat.getCullMode(), osc::CullMode::Default);
+}
+
+TEST_F(Renderer, MaterialSetCullModeBehavesAsExpected)
+{
+    osc::Material mat = GenerateMaterial();
+
+    constexpr osc::CullMode newCullMode = osc::CullMode::Front;
+
+    ASSERT_NE(mat.getCullMode(), newCullMode);
+    mat.setCullMode(newCullMode);
+    ASSERT_EQ(mat.getCullMode(), newCullMode);
+}
+
+TEST_F(Renderer, MaterialSetCullModeCausesMaterialCopiesToBeNonEqual)
+{
+    constexpr osc::CullMode newCullMode = osc::CullMode::Front;
+
+    osc::Material mat = GenerateMaterial();
+    osc::Material copy{mat};
+
+    ASSERT_EQ(mat, copy);
+    ASSERT_NE(mat.getCullMode(), newCullMode);
+    mat.setCullMode(newCullMode);
     ASSERT_NE(mat, copy);
 }
 
