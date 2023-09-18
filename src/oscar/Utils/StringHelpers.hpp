@@ -23,10 +23,10 @@ namespace osc
     bool IsEqualCaseInsensitive(std::string_view a, std::string_view b);
 
     // returns true if `s` begins with `prefix`
-    bool StartsWith(std::string_view s, std::string_view prefix);
+    bool StartsWith(std::string_view sv, std::string_view prefix);
 
     // returns true if `s` ends with `suffix`
-    bool EndsWith(std::string_view s, std::string_view suffix);
+    bool EndsWith(std::string_view sv, std::string_view suffix);
 
     // returns a substring of `sv` without leading/trailing whitespace
     std::string_view TrimLeadingAndTrailingWhitespace(std::string_view sv);

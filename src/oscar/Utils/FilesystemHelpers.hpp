@@ -2,28 +2,39 @@
 
 #include <nonstd/span.hpp>
 
-#include <cstdint>
 #include <filesystem>
+#include <functional>
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace osc
 {
-    // recursively find all files in `root` with any of the given extensions and
-    // return those files in a vector
-    std::vector<std::filesystem::path> FindAllFilesWithExtensionsRecursively(
+    // calls `consumer` with each file recursively found in `root` that ends with
+    // any of the provied `extensions`
+    void ForEachFileWithExtensionsRecursive(
         std::filesystem::path const& root,
-        nonstd::span<std::string_view> extensions
-    );
-    std::vector<std::filesystem::path> FindAllFilesWithExtensionsRecursively(
-        std::filesystem::path const& root,
-        std::string_view extension
+        std::function<void(std::filesystem::path)> const& consumer,
+        nonstd::span<std::string_view const> extensions
     );
 
-    // recursively find all files in the supplied (root) directory and return
-    // them in a vector
-    std::vector<std::filesystem::path> GetAllFilesInDirRecursively(std::filesystem::path const&);
+    // returns all files found recursively in `root` that end with any of the provided
+    // `extensions`
+    std::vector<std::filesystem::path> FindFilesWithExtensionsRecursive(
+        std::filesystem::path const& root,
+        nonstd::span<std::string_view const> extensions
+    );
+
+    // calls `consumer` with each file recursively found in `root`
+    void ForEachFileRecursive(
+        std::filesystem::path const& root,
+        std::function<void(std::filesystem::path)> const& consumer
+    );
+
+    // returns all files found recursively in `root`
+    std::vector<std::filesystem::path> FindFilesRecursive(
+        std::filesystem::path const& root
+    );
 
     // slurp a file's contents into a string
     std::string SlurpFileIntoString(std::filesystem::path const&);

@@ -92,18 +92,18 @@ bool osc::IsEqualCaseInsensitive(std::string_view a, std::string_view b)
     return std::equal(a.begin(), a.end(), b.begin(), b.end(), compareChars);
 }
 
-bool osc::StartsWith(std::string_view s, std::string_view prefix)
+bool osc::StartsWith(std::string_view sv, std::string_view prefix)
 {
-    return prefix.size() <= s.size() && std::equal(prefix.begin(), prefix.end(), s.begin());
+    return prefix.size() <= sv.size() && std::equal(prefix.begin(), prefix.end(), sv.begin());
 }
 
-bool osc::EndsWith(std::string_view s, std::string_view suffix)
+bool osc::EndsWith(std::string_view sv, std::string_view suffix)
 {
-    if (s.size() < suffix.size())
+    if (sv.size() < suffix.size())
     {
         return false;
     }
-    return s.substr(s.size() - suffix.size()) == suffix;
+    return sv.substr(sv.size() - suffix.size()) == suffix;
 }
 
 std::string_view osc::TrimLeadingAndTrailingWhitespace(std::string_view sv)

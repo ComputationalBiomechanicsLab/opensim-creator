@@ -900,10 +900,10 @@ private:
     int32_t m_NumFramesToPoll = 0;
 
     // current screen being shown (if any)
-    std::unique_ptr<Screen> m_CurrentScreen = nullptr;
+    std::unique_ptr<Screen> m_CurrentScreen;
 
     // the *next* screen the application should show
-    std::unique_ptr<Screen> m_NextScreen = nullptr;
+    std::unique_ptr<Screen> m_NextScreen;
 
     // frame annotations made during this frame
     std::vector<ImageAnnotation> m_FrameAnnotations;

@@ -63,8 +63,6 @@ namespace osc
             using iterator_category = std::random_access_iterator_tag;
             friend class Iterator<!IsConst>;
 
-            constexpr Iterator() = default;
-
             constexpr Iterator(T* _data, ptrdiff_t _pos) noexcept :
                 data{_data},
                 pos{_pos}

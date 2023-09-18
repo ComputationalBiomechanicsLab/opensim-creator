@@ -98,7 +98,7 @@ public:
 
         StandardPopup{popupName},
         m_OnSelection{std::move(onSelection)},
-        m_GeometryFiles{GetAllFilesInDirRecursively(geometryDir)}
+        m_GeometryFiles{FindFilesRecursive(geometryDir)}
     {
     }
 

@@ -39,7 +39,7 @@ namespace osc
         void requestClose();
         bool isModal() const;
         void setModal(bool);
-        void setRect(osc::Rect const&);
+        void setRect(Rect const&);
         void setDimensions(glm::vec2);
         void setPosition(std::optional<glm::vec2>);
 

@@ -12,67 +12,77 @@
 #include <sstream>
 #include <utility>
 
-std::vector<std::filesystem::path> osc::FindAllFilesWithExtensionsRecursively(
+void osc::ForEachFileWithExtensionsRecursive(
     std::filesystem::path const& root,
-    nonstd::span<std::string_view> extensions)
+    std::function<void(std::filesystem::path)> const& consumer,
+    nonstd::span<std::string_view const> extensions)
 {
-    std::vector<std::filesystem::path> rv;
-
     if (!std::filesystem::exists(root))
     {
-        return rv;
+        return;
     }
 
     if (!std::filesystem::is_directory(root))
     {
-        return rv;
+        return;
     }
 
     for (std::filesystem::directory_entry const& e : std::filesystem::recursive_directory_iterator{root})
     {
-        for (std::string_view const& extension : extensions)
+        if (e.is_regular_file() || e.is_block_file())
         {
-            if (e.path().extension() == extension)
+            for (std::string_view const& extension : extensions)
             {
-                rv.push_back(e.path());
+                if (e.path().extension() == extension)
+                {
+                    consumer(e.path());
+                }
             }
         }
     }
+}
 
+std::vector<std::filesystem::path> osc::FindFilesWithExtensionsRecursive(
+    std::filesystem::path const& root,
+    nonstd::span<std::string_view const> extensions)
+{
+    std::vector<std::filesystem::path> rv;
+    ForEachFileWithExtensionsRecursive(
+        root,
+        [&rv](auto p) { rv.push_back(std::move(p)); },
+        extensions
+    );
     return rv;
 }
 
-std::vector<std::filesystem::path> osc::FindAllFilesWithExtensionsRecursively(
+void osc::ForEachFileRecursive(
     std::filesystem::path const& root,
-    std::string_view extension)
+    std::function<void(std::filesystem::path)> const& consumer)
 {
-    return FindAllFilesWithExtensionsRecursively(root, {&extension, 1});
-}
-
-std::vector<std::filesystem::path> osc::GetAllFilesInDirRecursively(std::filesystem::path const& root)
-{
-    std::vector<std::filesystem::path> rv;
-
     if (!std::filesystem::exists(root))
     {
-        return rv;
+        return;
     }
 
     if (!std::filesystem::is_directory(root))
     {
-        return rv;
+        return;
     }
 
     for (std::filesystem::directory_entry const& e : std::filesystem::recursive_directory_iterator{root})
     {
-        if (e.is_directory() || e.is_other() || e.is_socket())
+        if (e.is_regular_file() || e.is_block_file())
         {
-            continue;
+            consumer(e.path());
         }
-
-        rv.push_back(e.path());
     }
+}
 
+std::vector<std::filesystem::path> osc::FindFilesRecursive(
+    std::filesystem::path const& root)
+{
+    std::vector<std::filesystem::path> rv;
+    ForEachFileRecursive(root, [&rv](auto p) { rv.push_back(std::move(p)); });
     return rv;
 }
 

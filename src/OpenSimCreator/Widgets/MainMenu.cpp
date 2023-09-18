@@ -40,10 +40,17 @@
 #include <typeinfo>
 #include <utility>
 
+
 // public API
 
 osc::MainMenuFileTab::MainMenuFileTab() :
-    exampleOsimFiles{FindAllFilesWithExtensionsRecursively(App::resource("models"), ".osim")},
+    exampleOsimFiles
+    {
+        FindFilesWithExtensionsRecursive(
+            App::resource("models"),
+            to_array({std::string_view{".osim"}})
+        )
+    },
     recentlyOpenedFiles{App::get().getRecentFiles()}
 {
     std::sort(exampleOsimFiles.begin(), exampleOsimFiles.end(), IsFilenameLexographicallyGreaterThan);

@@ -185,7 +185,7 @@ void osc::StandardPopup::setModal(bool v)
     m_IsModal = v;
 }
 
-void osc::StandardPopup::setRect(osc::Rect const& rect)
+void osc::StandardPopup::setRect(Rect const& rect)
 {
     m_MaybePosition = rect.p1;
     m_Dimensions = osc::Dimensions(rect);
