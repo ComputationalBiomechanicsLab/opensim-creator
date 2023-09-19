@@ -223,6 +223,7 @@ target_include_directories(OpenSimCreator PUBLIC
 target_link_libraries(OpenSimCreator PUBLIC
     oscar_configuration
     oscar
+    oscar_demos
     oscar_learnopengl
 
     osimCommon
@@ -242,8 +243,13 @@ target_compile_options(OpenSimCreator PUBLIC
         # disable warning 4996: Simbody uses a deprecated iterator class
         /wd4996
 
-        # turn warning level to "production grade" (note: /W4 explodes because of Simbody)
-        /W3
+        # disable "assignment within conditional expression" warning
+        #
+        # it's detected in `OpenSim/Common/Component.h:2521
+        /wd4706
+
+        # disable warning about signed/unsigned comparison mismatch
+        /wd4389
     >
 
     # gcc/clang

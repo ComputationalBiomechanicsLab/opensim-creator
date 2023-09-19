@@ -9,6 +9,9 @@ All notable changes to this project will be documented here. The format is based
   into the mesh importer scene from a CSV file (#149)
 - Internal: `osc::Material` now supports `osc::CullFace` (related: #487)
 - Internal: The LearnOpenGL part of `oscar` is now compiled as a separate project that uses `oscar` as a library
+- Internal: The demo/experimental tabs in `oscar` are now in a separate project (`oscar_demos`)
+- Internal: Both `oscar` and `OpenSimCreator` are now compiled with `/W4` warnings enabled in MSVC, some
+  warnings are manually disabled in `OpenSimCreator` until upstream patches are applied
 
 
 ## [0.5.2] - 2023/09/12

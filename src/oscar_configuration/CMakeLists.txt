@@ -21,6 +21,9 @@ target_compile_options(oscar_configuration INTERFACE
     # msvc (Windows) flags
     $<$<CXX_COMPILER_ID:MSVC>:
 
+        # set the warning level very high
+        /W4
+
         # treat all warnings as errors
         /WX
 

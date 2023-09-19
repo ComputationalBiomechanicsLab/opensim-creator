@@ -9,19 +9,11 @@
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Tabs/Demos/ImGuiDemoTab.hpp>
-#include <oscar/Tabs/Demos/ImGuizmoDemoTab.hpp>
-#include <oscar/Tabs/Demos/ImPlotDemoTab.hpp>
-#include <oscar/Tabs/Experiments/CustomWidgetsTab.hpp>
-#include <oscar/Tabs/Experiments/HittestTab.hpp>
-#include <oscar/Tabs/Experiments/MeshGenTestTab.hpp>
-
-#include <oscar_learnopengl/LearnOpenGLTabRegistry.hpp>
-
 #include <oscar/Tabs/TabRegistry.hpp>
 #include <oscar/Tabs/TabRegistryEntry.hpp>
 #include <oscar/Utils/CStringView.hpp>
-
+#include <oscar_demos/OscarDemosTabRegistry.hpp>
+#include <oscar_learnopengl/LearnOpenGLTabRegistry.hpp>
 #include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/LogSink.h>
 #include <OpenSim/Common/RegisterTypes_osimCommon.h>
@@ -172,13 +164,8 @@ namespace
     void InitializeTabRegistry(osc::TabRegistry& registry)
     {
         osc::RegisterLearnOpenGLTabs(registry);
+        osc::RegisterDemoTabs(registry);
 
-        RegisterTab<osc::CustomWidgetsTab>(registry);
-        RegisterTab<osc::HittestTab>(registry);
-        RegisterTab<osc::ImGuiDemoTab>(registry);
-        RegisterTab<osc::ImPlotDemoTab>(registry);
-        RegisterTab<osc::ImGuizmoDemoTab>(registry);
-        RegisterTab<osc::MeshGenTestTab>(registry);
         RegisterTab<osc::MeshHittestTab>(registry);
         RegisterTab<osc::RendererGeometryShaderTab>(registry);
         RegisterTab<osc::TPS2DTab>(registry);

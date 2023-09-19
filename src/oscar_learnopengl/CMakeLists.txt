@@ -54,12 +54,9 @@ add_library(oscar_learnopengl STATIC
     Tabs/PBR/LOGLPBRSpecularIrradianceTexturedTab.hpp
 
     LearnOpenGLTabRegistry.cpp
- "LearnOpenGLHelpers.cpp")
-
-target_compile_options(oscar_learnopengl PRIVATE
-
-    # msvc (Windows) flags
-    $<$<CXX_COMPILER_ID:MSVC>: /W4>
+    LearnOpenGLTabRegistry.hpp
+    LearnOpenGLHelpers.cpp
+    LearnOpenGLHelpers.hpp
 )
 
 target_include_directories(oscar_learnopengl PUBLIC
@@ -69,6 +66,5 @@ target_include_directories(oscar_learnopengl PUBLIC
 )
 
 target_link_libraries(oscar_learnopengl PUBLIC
-
     oscar
 )

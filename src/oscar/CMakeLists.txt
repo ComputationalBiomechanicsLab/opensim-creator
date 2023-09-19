@@ -174,20 +174,6 @@ add_library(oscar STATIC
     Screens/CookiecutterScreen.hpp
     Screens/Screen.hpp
 
-    Tabs/Demos/ImGuiDemoTab.cpp
-    Tabs/Demos/ImGuiDemoTab.hpp
-    Tabs/Demos/ImGuizmoDemoTab.cpp
-    Tabs/Demos/ImGuizmoDemoTab.hpp
-    Tabs/Demos/ImPlotDemoTab.cpp
-    Tabs/Demos/ImPlotDemoTab.hpp
-
-    Tabs/Experiments/CustomWidgetsTab.cpp
-    Tabs/Experiments/CustomWidgetsTab.hpp
-    Tabs/Experiments/HittestTab.cpp
-    Tabs/Experiments/HittestTab.hpp
-    Tabs/Experiments/MeshGenTestTab.cpp
-    Tabs/Experiments/MeshGenTestTab.hpp
-
     Tabs/CookiecutterTab.cpp
     Tabs/CookiecutterTab.hpp
     Tabs/ErrorTab.cpp
@@ -262,12 +248,6 @@ add_library(oscar STATIC
     Widgets/UndoButton.hpp
     Widgets/WindowMenu.cpp
     Widgets/WindowMenu.hpp
-)
-
-target_compile_options(oscar PRIVATE
-
-    # msvc (Windows) flags
-    $<$<CXX_COMPILER_ID:MSVC>: /W4>
 )
 
 target_include_directories(oscar PUBLIC
