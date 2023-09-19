@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/Tabs/Tab.hpp>
+#include <oscar/UI/Tabs/Tab.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 

@@ -5,7 +5,7 @@
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Outputs/OutputExtractor.hpp"
 
-#include <oscar/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/StandardPanel.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/UID.hpp>
 

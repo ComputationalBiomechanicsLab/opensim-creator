@@ -7,7 +7,7 @@
 #include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 #include "OpenSimCreator/Widgets/UiModelViewer.hpp"
 
-#include <oscar/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/StandardPanel.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 
 #include <OpenSim/Common/Component.h>

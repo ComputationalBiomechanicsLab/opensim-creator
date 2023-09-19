@@ -10,7 +10,7 @@
 #include "oscar/Platform/Log.hpp"
 #include "oscar/Platform/os.hpp"
 #include "oscar/Platform/RecentFile.hpp"
-#include "oscar/Screens/Screen.hpp"
+#include "oscar/UI/Screens/Screen.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/FilesystemHelpers.hpp"
 #include "oscar/Utils/Perf.hpp"

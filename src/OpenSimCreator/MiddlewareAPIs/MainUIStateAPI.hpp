@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/Tabs/TabHost.hpp>
+#include <oscar/UI/Tabs/TabHost.hpp>
 
 namespace osc { class ParamBlock; }
 namespace osc { class OutputExtractor; }

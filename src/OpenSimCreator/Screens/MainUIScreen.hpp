@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/Screens/Screen.hpp>
+#include <oscar/UI/Screens/Screen.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/UID.hpp>
 

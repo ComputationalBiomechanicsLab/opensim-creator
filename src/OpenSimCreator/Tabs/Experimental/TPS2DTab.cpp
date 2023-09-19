@@ -11,7 +11,7 @@
 #include <oscar/Graphics/MeshGen.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Panels/LogViewerPanel.hpp>
+#include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/Assertions.hpp>

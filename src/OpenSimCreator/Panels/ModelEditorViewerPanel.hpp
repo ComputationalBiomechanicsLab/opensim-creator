@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/Panels/Panel.hpp>
+#include <oscar/UI/Panels/Panel.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <glm/vec3.hpp>

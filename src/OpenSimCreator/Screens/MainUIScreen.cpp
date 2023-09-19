@@ -17,17 +17,17 @@
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Tabs/ErrorTab.hpp>
-#include <oscar/Tabs/ScreenshotTab.hpp>
-#include <oscar/Tabs/Tab.hpp>
-#include <oscar/Tabs/TabRegistry.hpp>
+#include <oscar/UI/Tabs/ErrorTab.hpp>
+#include <oscar/UI/Tabs/ScreenshotTab.hpp>
+#include <oscar/UI/Tabs/Tab.hpp>
+#include <oscar/UI/Tabs/TabRegistry.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <oscar/Widgets/SaveChangesPopup.hpp>
-#include <oscar/Widgets/SaveChangesPopupConfig.hpp>
+#include <oscar/UI/Widgets/SaveChangesPopup.hpp>
+#include <oscar/UI/Widgets/SaveChangesPopupConfig.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>

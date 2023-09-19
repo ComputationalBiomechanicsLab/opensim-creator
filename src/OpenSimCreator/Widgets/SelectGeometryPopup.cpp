@@ -6,7 +6,7 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
-#include <oscar/Widgets/StandardPopup.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
 
 #include <imgui.h>
 #include <OpenSim/Simulation/Model/Geometry.h>

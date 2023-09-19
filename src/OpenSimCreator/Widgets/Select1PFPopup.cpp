@@ -3,7 +3,7 @@
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
-#include <oscar/Widgets/StandardPopup.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
 
 #include <imgui.h>
 #include <nonstd/span.hpp>

@@ -1,14 +1,14 @@
 #include "OscarDemosTabRegistry.hpp"
 
-#include "oscar_demos/Tabs/CustomWidgetsTab.hpp"
-#include "oscar_demos/Tabs/HittestTab.hpp"
-#include "oscar_demos/Tabs/ImGuiDemoTab.hpp"
-#include "oscar_demos/Tabs/ImGuizmoDemoTab.hpp"
-#include "oscar_demos/Tabs/ImPlotDemoTab.hpp"
-#include "oscar_demos/Tabs/MeshGenTestTab.hpp"
+#include <oscar_demos/CustomWidgetsTab.hpp>
+#include <oscar_demos/HittestTab.hpp>
+#include <oscar_demos/ImGuiDemoTab.hpp>
+#include <oscar_demos/ImGuizmoDemoTab.hpp>
+#include <oscar_demos/ImPlotDemoTab.hpp>
+#include <oscar_demos/MeshGenTestTab.hpp>
 
-#include <oscar/Tabs/TabRegistry.hpp>
-#include <oscar/Tabs/TabRegistryEntry.hpp>
+#include <oscar/UI/Tabs/TabRegistry.hpp>
+#include <oscar/UI/Tabs/TabRegistryEntry.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 
 #include <memory>

@@ -23,15 +23,15 @@
 #include "OpenSimCreator/Widgets/UiModelViewer.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Panels/LogViewerPanel.hpp>
-#include <oscar/Panels/PerfPanel.hpp>
-#include <oscar/Panels/Panel.hpp>
-#include <oscar/Panels/PanelManager.hpp>
+#include <oscar/UI/Panels/LogViewerPanel.hpp>
+#include <oscar/UI/Panels/PerfPanel.hpp>
+#include <oscar/UI/Panels/Panel.hpp>
+#include <oscar/UI/Panels/PanelManager.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/Log.hpp>
-#include <oscar/Tabs/ErrorTab.hpp>
-#include <oscar/Tabs/TabHost.hpp>
+#include <oscar/UI/Tabs/ErrorTab.hpp>
+#include <oscar/UI/Tabs/TabHost.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/FileChangePoller.hpp>
@@ -39,8 +39,8 @@
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <oscar/Widgets/Popup.hpp>
-#include <oscar/Widgets/PopupManager.hpp>
+#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/UI/Widgets/PopupManager.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>

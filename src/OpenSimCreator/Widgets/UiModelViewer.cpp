@@ -12,8 +12,8 @@
 #include <oscar/Graphics/SceneCollision.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/Widgets/GuiRuler.hpp>
-#include <oscar/Widgets/IconWithoutMenu.hpp>
+#include <oscar/UI/Widgets/GuiRuler.hpp>
+#include <oscar/UI/Widgets/IconWithoutMenu.hpp>
 
 #include <imgui.h>
 

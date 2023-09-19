@@ -137,19 +137,6 @@ add_library(oscar STATIC
     Maths/Transform.hpp
     Maths/Triangle.hpp
 
-    Panels/LogViewerPanel.cpp
-    Panels/LogViewerPanel.hpp
-    Panels/Panel.hpp
-    Panels/PanelManager.cpp
-    Panels/PanelManager.hpp
-    Panels/PerfPanel.cpp
-    Panels/PerfPanel.hpp
-    Panels/StandardPanel.cpp
-    Panels/StandardPanel.hpp
-    Panels/ToggleablePanelFlags.hpp
-    Panels/UndoRedoPanel.cpp
-    Panels/UndoRedoPanel.hpp
-
     Platform/App.cpp
     Platform/App.hpp
     Platform/AppClock.hpp
@@ -170,24 +157,59 @@ add_library(oscar STATIC
     Platform/os.hpp
     Platform/RecentFile.hpp
 
-    Screens/CookiecutterScreen.cpp
-    Screens/CookiecutterScreen.hpp
-    Screens/Screen.hpp
-
-    Tabs/CookiecutterTab.cpp
-    Tabs/CookiecutterTab.hpp
-    Tabs/ErrorTab.cpp
-    Tabs/ErrorTab.hpp
-    Tabs/ScreenshotTab.cpp
-    Tabs/ScreenshotTab.hpp
-    Tabs/StandardTabBase.hpp
-    Tabs/Tab.hpp
-    Tabs/TabHost.cpp
-    Tabs/TabHost.hpp
-    Tabs/TabRegistry.cpp
-    Tabs/TabRegistry.hpp
-    Tabs/TabRegistryEntry.cpp
-    Tabs/TabRegistryEntry.hpp
+    UI/Panels/LogViewerPanel.cpp
+    UI/Panels/LogViewerPanel.hpp
+    UI/Panels/Panel.hpp
+    UI/Panels/PanelManager.cpp
+    UI/Panels/PanelManager.hpp
+    UI/Panels/PerfPanel.cpp
+    UI/Panels/PerfPanel.hpp
+    UI/Panels/StandardPanel.cpp
+    UI/Panels/StandardPanel.hpp
+    UI/Panels/ToggleablePanelFlags.hpp
+    UI/Panels/UndoRedoPanel.cpp
+    UI/Panels/UndoRedoPanel.hpp
+    UI/Screens/CookiecutterScreen.cpp
+    UI/Screens/CookiecutterScreen.hpp
+    UI/Screens/Screen.hpp
+    UI/Tabs/CookiecutterTab.cpp
+    UI/Tabs/CookiecutterTab.hpp
+    UI/Tabs/ErrorTab.cpp
+    UI/Tabs/ErrorTab.hpp
+    UI/Tabs/ScreenshotTab.cpp
+    UI/Tabs/ScreenshotTab.hpp
+    UI/Tabs/StandardTabBase.hpp
+    UI/Tabs/Tab.hpp
+    UI/Tabs/TabHost.cpp
+    UI/Tabs/TabHost.hpp
+    UI/Tabs/TabRegistry.cpp
+    UI/Tabs/TabRegistry.hpp
+    UI/Tabs/TabRegistryEntry.cpp
+    UI/Tabs/TabRegistryEntry.hpp
+    UI/Widgets/GuiRuler.cpp
+    UI/Widgets/GuiRuler.hpp
+    UI/Widgets/IconWithMenu.cpp
+    UI/Widgets/IconWithMenu.hpp
+    UI/Widgets/IconWithoutMenu.cpp
+    UI/Widgets/IconWithoutMenu.hpp
+    UI/Widgets/LogViewer.cpp
+    UI/Widgets/LogViewer.hpp
+    UI/Widgets/Popup.hpp
+    UI/Widgets/PopupManager.cpp
+    UI/Widgets/PopupManager.hpp
+    UI/Widgets/RedoButton.cpp
+    UI/Widgets/RedoButton.hpp
+    UI/Widgets/SaveChangesPopupConfig.hpp
+    UI/Widgets/SaveChangesPopup.cpp
+    UI/Widgets/SaveChangesPopup.hpp
+    UI/Widgets/SceneViewer.cpp
+    UI/Widgets/SceneViewer.hpp
+    UI/Widgets/StandardPopup.cpp
+    UI/Widgets/StandardPopup.hpp
+    UI/Widgets/UndoButton.cpp
+    UI/Widgets/UndoButton.hpp
+    UI/Widgets/WindowMenu.cpp
+    UI/Widgets/WindowMenu.hpp
 
     Utils/Assertions.cpp
     Utils/Assertions.hpp
@@ -223,31 +245,6 @@ add_library(oscar STATIC
     Utils/UndoRedo.cpp
     Utils/UndoRedo.hpp
     Utils/VariantHelpers.hpp
-
-    Widgets/GuiRuler.cpp
-    Widgets/GuiRuler.hpp
-    Widgets/IconWithMenu.cpp
-    Widgets/IconWithMenu.hpp
-    Widgets/IconWithoutMenu.cpp
-    Widgets/IconWithoutMenu.hpp
-    Widgets/LogViewer.cpp
-    Widgets/LogViewer.hpp
-    Widgets/Popup.hpp
-    Widgets/PopupManager.cpp
-    Widgets/PopupManager.hpp
-    Widgets/RedoButton.cpp
-    Widgets/RedoButton.hpp
-    Widgets/SaveChangesPopupConfig.hpp
-    Widgets/SaveChangesPopup.cpp
-    Widgets/SaveChangesPopup.hpp
-    Widgets/SceneViewer.cpp
-    Widgets/SceneViewer.hpp
-    Widgets/StandardPopup.cpp
-    Widgets/StandardPopup.hpp
-    Widgets/UndoButton.cpp
-    Widgets/UndoButton.hpp
-    Widgets/WindowMenu.cpp
-    Widgets/WindowMenu.hpp
 )
 
 target_include_directories(oscar PUBLIC

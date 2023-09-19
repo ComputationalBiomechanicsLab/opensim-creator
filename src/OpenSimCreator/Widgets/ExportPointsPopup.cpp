@@ -13,7 +13,7 @@
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/SetHelpers.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
-#include <oscar/Widgets/StandardPopup.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>

@@ -26,18 +26,18 @@
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Panels/LogViewerPanel.hpp>
-#include <oscar/Panels/PanelManager.hpp>
-#include <oscar/Panels/PerfPanel.hpp>
+#include <oscar/UI/Panels/LogViewerPanel.hpp>
+#include <oscar/UI/Panels/PanelManager.hpp>
+#include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Tabs/TabHost.hpp>
+#include <oscar/UI/Tabs/TabHost.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/Perf.hpp>
-#include <oscar/Widgets/PopupManager.hpp>
-#include <oscar/Widgets/WindowMenu.hpp>
+#include <oscar/UI/Widgets/PopupManager.hpp>
+#include <oscar/UI/Widgets/WindowMenu.hpp>
 
 #include <glm/vec2.hpp>
 #include <imgui.h>

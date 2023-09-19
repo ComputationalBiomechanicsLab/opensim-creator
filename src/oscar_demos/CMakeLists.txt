@@ -1,18 +1,17 @@
 add_library(oscar_demos STATIC
 
-    Tabs/CustomWidgetsTab.cpp
-    Tabs/CustomWidgetsTab.hpp
-    Tabs/HittestTab.cpp
-    Tabs/HittestTab.hpp
-    Tabs/ImGuiDemoTab.cpp
-    Tabs/ImGuiDemoTab.hpp
-    Tabs/ImGuizmoDemoTab.cpp
-    Tabs/ImGuizmoDemoTab.hpp
-    Tabs/ImPlotDemoTab.cpp
-    Tabs/ImPlotDemoTab.hpp
-    Tabs/MeshGenTestTab.cpp
-    Tabs/MeshGenTestTab.hpp
-
+    CustomWidgetsTab.cpp
+    CustomWidgetsTab.hpp
+    HittestTab.cpp
+    HittestTab.hpp
+    ImGuiDemoTab.cpp
+    ImGuiDemoTab.hpp
+    ImGuizmoDemoTab.cpp
+    ImGuizmoDemoTab.hpp
+    ImPlotDemoTab.cpp
+    ImPlotDemoTab.hpp
+    MeshGenTestTab.cpp
+    MeshGenTestTab.hpp
     OscarDemosTabRegistry.cpp
     OscarDemosTabRegistry.hpp
 )

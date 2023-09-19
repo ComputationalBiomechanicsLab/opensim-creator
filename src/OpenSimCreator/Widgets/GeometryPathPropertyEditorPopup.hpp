@@ -2,7 +2,7 @@
 
 #include "OpenSimCreator/Model/ObjectPropertyEdit.hpp"
 
-#include <oscar/Widgets/Popup.hpp>
+#include <oscar/UI/Widgets/Popup.hpp>
 
 #include <functional>
 #include <memory>

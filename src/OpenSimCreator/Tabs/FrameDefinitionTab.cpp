@@ -36,11 +36,11 @@
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
-#include <oscar/Panels/LogViewerPanel.hpp>
-#include <oscar/Panels/Panel.hpp>
-#include <oscar/Panels/PanelManager.hpp>
-#include <oscar/Panels/PerfPanel.hpp>
-#include <oscar/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/LogViewerPanel.hpp>
+#include <oscar/UI/Panels/Panel.hpp>
+#include <oscar/UI/Panels/PanelManager.hpp>
+#include <oscar/UI/Panels/PerfPanel.hpp>
+#include <oscar/UI/Panels/StandardPanel.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
@@ -52,10 +52,10 @@
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/SetHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <oscar/Widgets/Popup.hpp>
-#include <oscar/Widgets/PopupManager.hpp>
-#include <oscar/Widgets/StandardPopup.hpp>
-#include <oscar/Widgets/WindowMenu.hpp>
+#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/UI/Widgets/PopupManager.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <oscar/UI/Widgets/WindowMenu.hpp>
 #include <OscarConfiguration.hpp>
 
 #include <glm/vec2.hpp>

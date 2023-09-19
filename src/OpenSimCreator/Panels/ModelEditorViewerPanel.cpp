@@ -17,11 +17,11 @@
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
-#include <oscar/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/StandardPanel.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
-#include <oscar/Widgets/GuiRuler.hpp>
-#include <oscar/Widgets/IconWithoutMenu.hpp>
+#include <oscar/UI/Widgets/GuiRuler.hpp>
+#include <oscar/UI/Widgets/IconWithoutMenu.hpp>
 
 #include <glm/vec3.hpp>
 #include <imgui.h>

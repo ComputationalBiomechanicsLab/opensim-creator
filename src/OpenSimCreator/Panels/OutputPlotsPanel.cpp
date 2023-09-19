@@ -6,7 +6,7 @@
 #include "OpenSimCreator/Widgets/SimulationOutputPlot.hpp"
 #include "OpenSimCreator/Outputs/OutputExtractor.hpp"
 
-#include <oscar/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/StandardPanel.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 

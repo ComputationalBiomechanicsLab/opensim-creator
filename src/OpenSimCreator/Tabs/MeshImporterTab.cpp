@@ -36,11 +36,11 @@
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
-#include <oscar/Panels/PerfPanel.hpp>
+#include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Tabs/TabHost.hpp>
+#include <oscar/UI/Tabs/TabHost.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/ClonePtr.hpp>
@@ -54,10 +54,10 @@
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <oscar/Utils/VariantHelpers.hpp>
-#include <oscar/Widgets/LogViewer.hpp>
-#include <oscar/Widgets/Popup.hpp>
-#include <oscar/Widgets/PopupManager.hpp>
-#include <oscar/Widgets/StandardPopup.hpp>
+#include <oscar/UI/Widgets/LogViewer.hpp>
+#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/UI/Widgets/PopupManager.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <OscarConfiguration.hpp>
 
 #include <glm/mat3x3.hpp>

@@ -10,7 +10,7 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
-#include <oscar/Widgets/StandardPopup.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
 
 #include <imgui.h>
 #include <IconsFontAwesome5.h>

@@ -7,7 +7,7 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/Widgets/StandardPopup.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <OpenSim/Simulation/Model/AbstractPathPoint.h>

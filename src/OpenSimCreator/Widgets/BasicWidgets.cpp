@@ -34,8 +34,8 @@
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
-#include <oscar/Widgets/GuiRuler.hpp>
-#include <oscar/Widgets/IconWithMenu.hpp>
+#include <oscar/UI/Widgets/GuiRuler.hpp>
+#include <oscar/UI/Widgets/IconWithMenu.hpp>
 #include <OscarConfiguration.hpp>
 
 #include <glm/vec2.hpp>

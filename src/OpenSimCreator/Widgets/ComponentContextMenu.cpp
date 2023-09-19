@@ -14,12 +14,12 @@
 #include "OpenSimCreator/Widgets/SelectGeometryPopup.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Panels/PanelManager.hpp>
+#include <oscar/UI/Panels/PanelManager.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
-#include <oscar/Widgets/StandardPopup.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>

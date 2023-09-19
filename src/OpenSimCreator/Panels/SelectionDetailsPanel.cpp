@@ -6,7 +6,7 @@
 #include "OpenSimCreator/Widgets/SimulationOutputPlot.hpp"
 #include "OpenSimCreator/Simulation/SimulationModelStatePair.hpp"
 
-#include <oscar/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/StandardPanel.hpp>
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>

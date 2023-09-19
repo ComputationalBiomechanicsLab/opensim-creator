@@ -1,7 +1,7 @@
 #pragma once
 
 #include <oscar/Platform/RecentFile.hpp>
-#include <oscar/Widgets/SaveChangesPopup.hpp>
+#include <oscar/UI/Widgets/SaveChangesPopup.hpp>
 
 #include <filesystem>
 #include <memory>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/Widgets/Popup.hpp>
+#include <oscar/UI/Widgets/Popup.hpp>
 
 #include <filesystem>
 #include <functional>

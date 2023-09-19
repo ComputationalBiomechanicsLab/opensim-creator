@@ -26,11 +26,11 @@
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/RecentFile.hpp>
-#include <oscar/Tabs/TabHost.hpp>
+#include <oscar/UI/Tabs/TabHost.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
-#include <oscar/Widgets/LogViewer.hpp>
+#include <oscar/UI/Widgets/LogViewer.hpp>
 #include <OscarConfiguration.hpp>
 
 #include <glm/vec2.hpp>
