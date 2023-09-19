@@ -14,6 +14,7 @@ All notable changes to this project will be documented here. The format is based
   warnings are manually disabled in `OpenSimCreator` until upstream patches are applied
 - Internal: Refactored `OpenSimCreator` to use `oscar` as-if it were any other 3rd-party API (previously: it was
   included in its own block of includes as-if it were special)
+- Internal: All of OpenSimCreator's UI-related code (e.g. tabs, widgets, panels) was refactored into `OpenSimCreator/UI`
 
 
 ## [0.5.2] - 2023/09/12

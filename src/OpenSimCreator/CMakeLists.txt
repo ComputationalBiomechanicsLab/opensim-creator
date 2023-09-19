@@ -4,6 +4,7 @@ find_package(OpenSim REQUIRED CONFIG)
 #
 #     library code behind the OpenSim Creator application
 add_library(OpenSimCreator STATIC
+
     Bindings/SimTKDecorationGenerator.cpp
     Bindings/SimTKDecorationGenerator.hpp
     Bindings/SimTKMeshLoader.cpp
@@ -38,10 +39,6 @@ add_library(OpenSimCreator STATIC
     Graphics/OverlayDecorationOptions.cpp
     Graphics/OverlayDecorationOptions.hpp
 
-    MiddlewareAPIs/EditorAPI.hpp
-    MiddlewareAPIs/MainUIStateAPI.hpp
-    MiddlewareAPIs/SimulatorUIAPI.hpp
-
     Model/BasicModelStatePair.cpp
     Model/BasicModelStatePair.hpp
     Model/ModelStateCommit.cpp
@@ -65,35 +62,6 @@ add_library(OpenSimCreator STATIC
     Outputs/OutputExtractor.hpp
     Outputs/VirtualOutputExtractor.hpp
 
-    Panels/CoordinateEditorPanel.cpp
-    Panels/CoordinateEditorPanel.hpp
-    Panels/ModelEditorViewerPanel.cpp
-    Panels/ModelEditorViewerPanel.hpp
-    Panels/ModelEditorViewerPanelLayer.hpp
-    Panels/ModelEditorViewerPanelLayerFlags.hpp
-    Panels/ModelEditorViewerPanelParameters.hpp
-    Panels/ModelEditorViewerPanelRightClickEvent.hpp
-    Panels/ModelEditorViewerPanelState.cpp
-    Panels/ModelEditorViewerPanelState.hpp
-    Panels/ModelMusclePlotPanel.cpp
-    Panels/ModelMusclePlotPanel.hpp
-    Panels/NavigatorPanel.cpp
-    Panels/NavigatorPanel.hpp
-    Panels/OutputPlotsPanel.cpp
-    Panels/OutputPlotsPanel.hpp
-    Panels/OutputWatchesPanel.cpp
-    Panels/OutputWatchesPanel.hpp
-    Panels/PropertiesPanel.cpp
-    Panels/PropertiesPanel.hpp
-    Panels/SelectionDetailsPanel.cpp
-    Panels/SelectionDetailsPanel.hpp
-    Panels/SimulationDetailsPanel.cpp
-    Panels/SimulationDetailsPanel.hpp
-    Panels/SimulationViewerPanel.cpp
-    Panels/SimulationViewerPanel.hpp
-    Panels/SimulationViewerPanelParameters.hpp
-    Panels/SimulationViewerRightClickEvent.hpp
-
     Registry/ComponentRegistry.hpp
     Registry/ComponentRegistryBase.cpp
     Registry/ComponentRegistryBase.hpp
@@ -102,9 +70,6 @@ add_library(OpenSimCreator STATIC
     Registry/ComponentRegistryEntryBase.hpp
     Registry/StaticComponentRegistries.cpp
     Registry/StaticComponentRegistries.hpp
-
-    Screens/MainUIScreen.cpp
-    Screens/MainUIScreen.hpp
 
     Simulation/ForwardDynamicSimulation.cpp
     Simulation/ForwardDynamicSimulation.hpp
@@ -128,28 +93,113 @@ add_library(OpenSimCreator STATIC
     Simulation/StoFileSimulation.cpp
     Simulation/VirtualSimulation.hpp
 
-    Tabs/Experimental/MeshHittestTab.cpp
-    Tabs/Experimental/MeshHittestTab.hpp
-    Tabs/Experimental/RendererGeometryShaderTab.cpp
-    Tabs/Experimental/RendererGeometryShaderTab.hpp
-    Tabs/Experimental/TPS2DTab.cpp
-    Tabs/Experimental/TPS2DTab.hpp
-    Tabs/FrameDefinitionTab.cpp
-    Tabs/FrameDefinitionTab.hpp
-    Tabs/LoadingTab.cpp
-    Tabs/LoadingTab.hpp
-    Tabs/MeshImporterTab.cpp
-    Tabs/MeshImporterTab.hpp
-    Tabs/MeshWarpingTab.cpp
-    Tabs/MeshWarpingTab.hpp
-    Tabs/ModelEditorTab.cpp
-    Tabs/ModelEditorTab.hpp
-    Tabs/PerformanceAnalyzerTab.cpp
-    Tabs/PerformanceAnalyzerTab.hpp
-    Tabs/SimulatorTab.cpp
-    Tabs/SimulatorTab.hpp
-    Tabs/SplashTab.cpp
-    Tabs/SplashTab.hpp
+    UI/Middleware/EditorAPI.hpp
+    UI/Middleware/MainUIStateAPI.hpp
+    UI/Middleware/SimulatorUIAPI.hpp
+
+    UI/Panels/CoordinateEditorPanel.cpp
+    UI/Panels/CoordinateEditorPanel.hpp
+    UI/Panels/ModelEditorViewerPanel.cpp
+    UI/Panels/ModelEditorViewerPanel.hpp
+    UI/Panels/ModelEditorViewerPanelLayer.hpp
+    UI/Panels/ModelEditorViewerPanelLayerFlags.hpp
+    UI/Panels/ModelEditorViewerPanelParameters.hpp
+    UI/Panels/ModelEditorViewerPanelRightClickEvent.hpp
+    UI/Panels/ModelEditorViewerPanelState.cpp
+    UI/Panels/ModelEditorViewerPanelState.hpp
+    UI/Panels/ModelMusclePlotPanel.cpp
+    UI/Panels/ModelMusclePlotPanel.hpp
+    UI/Panels/NavigatorPanel.cpp
+    UI/Panels/NavigatorPanel.hpp
+    UI/Panels/OutputPlotsPanel.cpp
+    UI/Panels/OutputPlotsPanel.hpp
+    UI/Panels/OutputWatchesPanel.cpp
+    UI/Panels/OutputWatchesPanel.hpp
+    UI/Panels/PropertiesPanel.cpp
+    UI/Panels/PropertiesPanel.hpp
+    UI/Panels/SelectionDetailsPanel.cpp
+    UI/Panels/SelectionDetailsPanel.hpp
+    UI/Panels/SimulationDetailsPanel.cpp
+    UI/Panels/SimulationDetailsPanel.hpp
+    UI/Panels/SimulationViewerPanel.cpp
+    UI/Panels/SimulationViewerPanel.hpp
+    UI/Panels/SimulationViewerPanelParameters.hpp
+    UI/Panels/SimulationViewerRightClickEvent.hpp
+
+    UI/Screens/MainUIScreen.cpp
+    UI/Screens/MainUIScreen.hpp
+
+    UI/Tabs/Experimental/MeshHittestTab.cpp
+    UI/Tabs/Experimental/MeshHittestTab.hpp
+    UI/Tabs/Experimental/RendererGeometryShaderTab.cpp
+    UI/Tabs/Experimental/RendererGeometryShaderTab.hpp
+    UI/Tabs/Experimental/TPS2DTab.cpp
+    UI/Tabs/Experimental/TPS2DTab.hpp
+    UI/Tabs/FrameDefinitionTab.cpp
+    UI/Tabs/FrameDefinitionTab.hpp
+    UI/Tabs/LoadingTab.cpp
+    UI/Tabs/LoadingTab.hpp
+    UI/Tabs/MeshImporterTab.cpp
+    UI/Tabs/MeshImporterTab.hpp
+    UI/Tabs/MeshWarpingTab.cpp
+    UI/Tabs/MeshWarpingTab.hpp
+    UI/Tabs/ModelEditorTab.cpp
+    UI/Tabs/ModelEditorTab.hpp
+    UI/Tabs/PerformanceAnalyzerTab.cpp
+    UI/Tabs/PerformanceAnalyzerTab.hpp
+    UI/Tabs/SimulatorTab.cpp
+    UI/Tabs/SimulatorTab.hpp
+    UI/Tabs/SplashTab.cpp
+    UI/Tabs/SplashTab.hpp
+
+    UI/Widgets/AddBodyPopup.cpp
+    UI/Widgets/AddBodyPopup.hpp
+    UI/Widgets/AddComponentPopup.cpp
+    UI/Widgets/AddComponentPopup.hpp
+    UI/Widgets/BasicWidgets.cpp
+    UI/Widgets/BasicWidgets.hpp
+    UI/Widgets/ComponentContextMenu.cpp
+    UI/Widgets/ComponentContextMenu.hpp
+    UI/Widgets/ComponentDetails.cpp
+    UI/Widgets/ComponentDetails.hpp
+    UI/Widgets/EditorTabStatusBar.cpp
+    UI/Widgets/EditorTabStatusBar.hpp
+    UI/Widgets/ExportPointsPopup.cpp
+    UI/Widgets/ExportPointsPopup.hpp
+    UI/Widgets/GeometryPathPropertyEditorPopup.cpp
+    UI/Widgets/GeometryPathPropertyEditorPopup.hpp
+    UI/Widgets/MainMenu.cpp
+    UI/Widgets/MainMenu.hpp
+    UI/Widgets/ModelActionsMenuItems.cpp
+    UI/Widgets/ModelActionsMenuItems.hpp
+    UI/Widgets/ModelEditorMainMenu.cpp
+    UI/Widgets/ModelEditorMainMenu.hpp
+    UI/Widgets/ModelEditorToolbar.cpp
+    UI/Widgets/ModelEditorToolbar.hpp
+    UI/Widgets/ModelSelectionGizmo.cpp
+    UI/Widgets/ModelSelectionGizmo.hpp
+    UI/Widgets/ObjectPropertiesEditor.cpp
+    UI/Widgets/ObjectPropertiesEditor.hpp
+    UI/Widgets/ParamBlockEditorPopup.cpp
+    UI/Widgets/ParamBlockEditorPopup.hpp
+    UI/Widgets/ReassignSocketPopup.cpp
+    UI/Widgets/ReassignSocketPopup.hpp
+    UI/Widgets/Select1PFPopup.cpp
+    UI/Widgets/Select1PFPopup.hpp
+    UI/Widgets/SelectComponentPopup.cpp
+    UI/Widgets/SelectComponentPopup.hpp
+    UI/Widgets/SelectGeometryPopup.cpp
+    UI/Widgets/SelectGeometryPopup.hpp
+    UI/Widgets/SimulationOutputPlot.cpp
+    UI/Widgets/SimulationOutputPlot.hpp
+    UI/Widgets/SimulationScrubber.cpp
+    UI/Widgets/SimulationScrubber.hpp
+    UI/Widgets/SimulationToolbar.cpp
+    UI/Widgets/SimulationToolbar.hpp
+    UI/Widgets/UiModelViewer.cpp
+    UI/Widgets/UiModelViewer.hpp
+    UI/Widgets/VirtualModelStatePairContextMenu.cpp
+    UI/Widgets/VirtualModelStatePairContextMenu.hpp
 
     Utils/OpenSimHelpers.cpp
     Utils/OpenSimHelpers.hpp
@@ -160,55 +210,6 @@ add_library(OpenSimCreator STATIC
     Utils/TPS3D.hpp
     Utils/UndoableModelActions.cpp
     Utils/UndoableModelActions.hpp
-
-    Widgets/AddBodyPopup.cpp
-    Widgets/AddBodyPopup.hpp
-    Widgets/AddComponentPopup.cpp
-    Widgets/AddComponentPopup.hpp
-    Widgets/BasicWidgets.cpp
-    Widgets/BasicWidgets.hpp
-    Widgets/ComponentContextMenu.cpp
-    Widgets/ComponentContextMenu.hpp
-    Widgets/ComponentDetails.cpp
-    Widgets/ComponentDetails.hpp
-    Widgets/EditorTabStatusBar.cpp
-    Widgets/EditorTabStatusBar.hpp
-    Widgets/ExportPointsPopup.cpp
-    Widgets/ExportPointsPopup.hpp
-    Widgets/GeometryPathPropertyEditorPopup.cpp
-    Widgets/GeometryPathPropertyEditorPopup.hpp
-    Widgets/MainMenu.cpp
-    Widgets/MainMenu.hpp
-    Widgets/ModelActionsMenuItems.cpp
-    Widgets/ModelActionsMenuItems.hpp
-    Widgets/ModelEditorMainMenu.cpp
-    Widgets/ModelEditorMainMenu.hpp
-    Widgets/ModelEditorToolbar.cpp
-    Widgets/ModelEditorToolbar.hpp
-    Widgets/ModelSelectionGizmo.cpp
-    Widgets/ModelSelectionGizmo.hpp
-    Widgets/ObjectPropertiesEditor.cpp
-    Widgets/ObjectPropertiesEditor.hpp
-    Widgets/ParamBlockEditorPopup.cpp
-    Widgets/ParamBlockEditorPopup.hpp
-    Widgets/ReassignSocketPopup.cpp
-    Widgets/ReassignSocketPopup.hpp
-    Widgets/Select1PFPopup.cpp
-    Widgets/Select1PFPopup.hpp
-    Widgets/SelectComponentPopup.cpp
-    Widgets/SelectComponentPopup.hpp
-    Widgets/SelectGeometryPopup.cpp
-    Widgets/SelectGeometryPopup.hpp
-    Widgets/SimulationOutputPlot.cpp
-    Widgets/SimulationOutputPlot.hpp
-    Widgets/SimulationScrubber.cpp
-    Widgets/SimulationScrubber.hpp
-    Widgets/SimulationToolbar.cpp
-    Widgets/SimulationToolbar.hpp
-    Widgets/UiModelViewer.cpp
-    Widgets/UiModelViewer.hpp
-    Widgets/VirtualModelStatePairContextMenu.cpp
-    Widgets/VirtualModelStatePairContextMenu.hpp
 
     OpenSimCreatorApp.cpp
     OpenSimCreatorApp.hpp

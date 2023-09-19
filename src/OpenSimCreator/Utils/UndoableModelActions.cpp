@@ -3,7 +3,6 @@
 #include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
 #include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp>
-#include <OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp>
 #include <OpenSimCreator/Model/BasicModelStatePair.hpp>
 #include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Registry/ComponentRegistry.hpp>
@@ -12,12 +11,13 @@
 #include <OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp>
 #include <OpenSimCreator/Simulation/Simulation.hpp>
 #include <OpenSimCreator/Simulation/StoFileSimulation.hpp>
-#include <OpenSimCreator/Tabs/ModelEditorTab.hpp>
-#include <OpenSimCreator/Tabs/LoadingTab.hpp>
-#include <OpenSimCreator/Tabs/SimulatorTab.hpp>
-#include <OpenSimCreator/Tabs/PerformanceAnalyzerTab.hpp>
+#include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
+#include <OpenSimCreator/UI/Tabs/ModelEditorTab.hpp>
+#include <OpenSimCreator/UI/Tabs/LoadingTab.hpp>
+#include <OpenSimCreator/UI/Tabs/SimulatorTab.hpp>
+#include <OpenSimCreator/UI/Tabs/PerformanceAnalyzerTab.hpp>
+#include <OpenSimCreator/UI/Widgets/ObjectPropertiesEditor.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
-#include <OpenSimCreator/Widgets/ObjectPropertiesEditor.hpp>
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
