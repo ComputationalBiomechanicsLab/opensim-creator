@@ -16,30 +16,7 @@
 #include <oscar/Tabs/Experiments/HittestTab.hpp>
 #include <oscar/Tabs/Experiments/MeshGenTestTab.hpp>
 
-#include <oscar/Tabs/LearnOpenGL/AdvancedLighting/LOGLBloomTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/AdvancedLighting/LOGLDeferredShadingTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/AdvancedLighting/LOGLGammaTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/AdvancedLighting/LOGLHDRTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/AdvancedLighting/LOGLNormalMappingTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/AdvancedLighting/LOGLParallaxMappingTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/AdvancedLighting/LOGLPointShadowsTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/AdvancedLighting/LOGLShadowMappingTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/AdvancedLighting/LOGLSSAOTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/AdvancedOpenGL/LOGLBlendingTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/AdvancedOpenGL/LOGLCubemapsTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/AdvancedOpenGL/LOGLFaceCullingTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/AdvancedOpenGL/LOGLFramebuffersTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/GettingStarted/LOGLCoordinateSystemsTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/GettingStarted/LOGLHelloTriangleTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/GettingStarted/LOGLTexturingTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/Lighting/LOGLBasicLightingTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/Lighting/LOGLLightingMapsTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/Lighting/LOGLMultipleLightsTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/PBR/LOGLPBRDiffuseIrradianceTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/PBR/LOGLPBRLightingTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/PBR/LOGLPBRLightingTexturedTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/PBR/LOGLPBRSpecularIrradianceTab.hpp>
-#include <oscar/Tabs/LearnOpenGL/PBR/LOGLPBRSpecularIrradianceTexturedTab.hpp>
+#include <oscar_learnopengl/LearnOpenGLTabRegistry.hpp>
 
 #include <oscar/Tabs/TabRegistry.hpp>
 #include <oscar/Tabs/TabRegistryEntry.hpp>
@@ -194,37 +171,7 @@ namespace
     // registers user-accessible tabs
     void InitializeTabRegistry(osc::TabRegistry& registry)
     {
-        // LearnOpenGL tabs
-        {
-            RegisterTab<osc::LOGLBloomTab>(registry);
-            RegisterTab<osc::LOGLDeferredShadingTab>(registry);
-            RegisterTab<osc::LOGLGammaTab>(registry);
-            RegisterTab<osc::LOGLHDRTab>(registry);
-            RegisterTab<osc::LOGLNormalMappingTab>(registry);
-            RegisterTab<osc::LOGLParallaxMappingTab>(registry);
-            RegisterTab<osc::LOGLPointShadowsTab>(registry);
-            RegisterTab<osc::LOGLShadowMappingTab>(registry);
-            RegisterTab<osc::LOGLSSAOTab>(registry);
-
-            RegisterTab<osc::LOGLBlendingTab>(registry);
-            RegisterTab<osc::LOGLCubemapsTab>(registry);
-            RegisterTab<osc::LOGLFaceCullingTab>(registry);
-            RegisterTab<osc::LOGLFramebuffersTab>(registry);
-
-            RegisterTab<osc::LOGLCoordinateSystemsTab>(registry);
-            RegisterTab<osc::LOGLHelloTriangleTab>(registry);
-            RegisterTab<osc::LOGLTexturingTab>(registry);
-
-            RegisterTab<osc::LOGLBasicLightingTab>(registry);
-            RegisterTab<osc::LOGLLightingMapsTab>(registry);
-            RegisterTab<osc::LOGLMultipleLightsTab>(registry);
-
-            RegisterTab<osc::LOGLPBRDiffuseIrradianceTab>(registry);
-            RegisterTab<osc::LOGLPBRLightingTab>(registry);
-            RegisterTab<osc::LOGLPBRLightingTexturedTab>(registry);
-            RegisterTab<osc::LOGLPBRSpecularIrradianceTab>(registry);
-            RegisterTab<osc::LOGLPBRSpecularIrradianceTexturedTab>(registry);
-        }
+        osc::RegisterLearnOpenGLTabs(registry);
 
         RegisterTab<osc::CustomWidgetsTab>(registry);
         RegisterTab<osc::HittestTab>(registry);

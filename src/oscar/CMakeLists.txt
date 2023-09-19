@@ -188,59 +188,6 @@ add_library(oscar STATIC
     Tabs/Experiments/MeshGenTestTab.cpp
     Tabs/Experiments/MeshGenTestTab.hpp
 
-    Tabs/LearnOpenGL/AdvancedLighting/LOGLBloomTab.cpp
-    Tabs/LearnOpenGL/AdvancedLighting/LOGLBloomTab.hpp
-    Tabs/LearnOpenGL/AdvancedLighting/LOGLDeferredShadingTab.cpp
-    Tabs/LearnOpenGL/AdvancedLighting/LOGLDeferredShadingTab.hpp
-    Tabs/LearnOpenGL/AdvancedLighting/LOGLGammaTab.cpp
-    Tabs/LearnOpenGL/AdvancedLighting/LOGLGammaTab.hpp
-    Tabs/LearnOpenGL/AdvancedLighting/LOGLHDRTab.cpp
-    Tabs/LearnOpenGL/AdvancedLighting/LOGLHDRTab.hpp
-    Tabs/LearnOpenGL/AdvancedLighting/LOGLNormalMappingTab.cpp
-    Tabs/LearnOpenGL/AdvancedLighting/LOGLNormalMappingTab.hpp
-    Tabs/LearnOpenGL/AdvancedLighting/LOGLParallaxMappingTab.cpp
-    Tabs/LearnOpenGL/AdvancedLighting/LOGLParallaxMappingTab.hpp
-    Tabs/LearnOpenGL/AdvancedLighting/LOGLPointShadowsTab.cpp
-    Tabs/LearnOpenGL/AdvancedLighting/LOGLPointShadowsTab.hpp
-    Tabs/LearnOpenGL/AdvancedLighting/LOGLShadowMappingTab.cpp
-    Tabs/LearnOpenGL/AdvancedLighting/LOGLShadowMappingTab.hpp
-    Tabs/LearnOpenGL/AdvancedLighting/LOGLSSAOTab.cpp
-    Tabs/LearnOpenGL/AdvancedLighting/LOGLSSAOTab.hpp
-
-    Tabs/LearnOpenGL/AdvancedOpenGL/LOGLBlendingTab.cpp
-    Tabs/LearnOpenGL/AdvancedOpenGL/LOGLBlendingTab.hpp
-    Tabs/LearnOpenGL/AdvancedOpenGL/LOGLCubemapsTab.cpp
-    Tabs/LearnOpenGL/AdvancedOpenGL/LOGLCubemapsTab.hpp
-    Tabs/LearnOpenGL/AdvancedOpenGL/LOGLFaceCullingTab.cpp
-    Tabs/LearnOpenGL/AdvancedOpenGL/LOGLFaceCullingTab.hpp
-    Tabs/LearnOpenGL/AdvancedOpenGL/LOGLFramebuffersTab.cpp
-    Tabs/LearnOpenGL/AdvancedOpenGL/LOGLFramebuffersTab.hpp
-
-    Tabs/LearnOpenGL/GettingStarted/LOGLCoordinateSystemsTab.cpp
-    Tabs/LearnOpenGL/GettingStarted/LOGLCoordinateSystemsTab.hpp
-    Tabs/LearnOpenGL/GettingStarted/LOGLHelloTriangleTab.cpp
-    Tabs/LearnOpenGL/GettingStarted/LOGLHelloTriangleTab.hpp
-    Tabs/LearnOpenGL/GettingStarted/LOGLTexturingTab.cpp
-    Tabs/LearnOpenGL/GettingStarted/LOGLTexturingTab.hpp
-
-    Tabs/LearnOpenGL/Lighting/LOGLBasicLightingTab.cpp
-    Tabs/LearnOpenGL/Lighting/LOGLBasicLightingTab.hpp
-    Tabs/LearnOpenGL/Lighting/LOGLLightingMapsTab.cpp
-    Tabs/LearnOpenGL/Lighting/LOGLLightingMapsTab.hpp
-    Tabs/LearnOpenGL/Lighting/LOGLMultipleLightsTab.cpp
-    Tabs/LearnOpenGL/Lighting/LOGLMultipleLightsTab.hpp
-
-    Tabs/LearnOpenGL/PBR/LOGLPBRDiffuseIrradianceTab.cpp
-    Tabs/LearnOpenGL/PBR/LOGLPBRDiffuseIrradianceTab.hpp
-    Tabs/LearnOpenGL/PBR/LOGLPBRLightingTab.cpp
-    Tabs/LearnOpenGL/PBR/LOGLPBRLightingTab.hpp
-    Tabs/LearnOpenGL/PBR/LOGLPBRLightingTexturedTab.cpp
-    Tabs/LearnOpenGL/PBR/LOGLPBRLightingTexturedTab.hpp
-    Tabs/LearnOpenGL/PBR/LOGLPBRSpecularIrradianceTab.cpp
-    Tabs/LearnOpenGL/PBR/LOGLPBRSpecularIrradianceTab.hpp
-    Tabs/LearnOpenGL/PBR/LOGLPBRSpecularIrradianceTexturedTab.cpp
-    Tabs/LearnOpenGL/PBR/LOGLPBRSpecularIrradianceTexturedTab.hpp
-
     Tabs/CookiecutterTab.cpp
     Tabs/CookiecutterTab.hpp
     Tabs/ErrorTab.cpp

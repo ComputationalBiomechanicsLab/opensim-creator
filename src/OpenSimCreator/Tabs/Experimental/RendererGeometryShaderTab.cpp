@@ -37,7 +37,7 @@ public:
 
     CStringView getName() const
     {
-        return "GeometryShader (LearnOpenGL)";
+        return "GeometryShader";
     }
 
     void onMount()

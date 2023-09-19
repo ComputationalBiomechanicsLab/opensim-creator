@@ -38,9 +38,6 @@ namespace osc
     // generates a circle at Z == 0, X/Y == [-1, +1] (r = 1)
     Mesh GenCircle(size_t nsides);
 
-    // generates a cube that matches some of the LearnOpenGL's cube
-    Mesh GenLearnOpenGLCube();
-
     // generates a torus with the given number of slices/stacks of triangulated quads
     //
     // x size: [-(torusCenterToTubeCenterRadius + tubeRadius), +(torusCenterToTubeCenterRadius + tubeRadius)]

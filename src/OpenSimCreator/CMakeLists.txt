@@ -223,6 +223,8 @@ target_include_directories(OpenSimCreator PUBLIC
 target_link_libraries(OpenSimCreator PUBLIC
     oscar_configuration
     oscar
+    oscar_learnopengl
+
     osimCommon
     osimSimulation
     osimActuators

@@ -632,21 +632,6 @@ osc::Mesh osc::GenCircle(size_t nsides)
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenLearnOpenGLCube()
-{
-    osc::Mesh cube = osc::GenCube();
-
-    cube.transformVerts([](nonstd::span<glm::vec3> vs)
-    {
-        for (glm::vec3& v : vs)
-        {
-            v *= 0.5f;
-        }
-    });
-
-    return cube;
-}
-
 osc::Mesh osc::GenTorus(size_t slices, size_t stacks, float torusCenterToTubeCenterRadius, float tubeRadius)
 {
     // adapted from GitHub:prideout/par (used by raylib internally)
