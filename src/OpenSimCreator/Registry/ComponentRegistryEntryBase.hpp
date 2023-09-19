@@ -1,8 +1,7 @@
 #pragma once
 
-#include <oscar/Utils/CStringView.hpp>
-
 #include <OpenSim/Common/Component.h>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <memory>
 #include <string>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "oscar/Platform/LogLevel.hpp"
-#include "oscar/Platform/LogMessageView.hpp"
+#include <oscar/Platform/LogLevel.hpp>
+#include <oscar/Platform/LogMessageView.hpp>
 
 #include <chrono>
 #include <string>

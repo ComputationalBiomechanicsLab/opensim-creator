@@ -1,8 +1,8 @@
 #include "PerfPanel.hpp"
 
-#include "oscar/UI/Panels/StandardPanel.hpp"
-#include "oscar/Platform/App.hpp"
-#include "oscar/Utils/Perf.hpp"
+#include <oscar/Platform/App.hpp>
+#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/Utils/Perf.hpp>
 
 #include <imgui.h>
 

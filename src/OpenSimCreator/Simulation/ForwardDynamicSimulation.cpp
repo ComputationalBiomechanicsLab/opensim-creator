@@ -1,18 +1,17 @@
 #include "ForwardDynamicSimulation.hpp"
 
-#include "OpenSimCreator/Model/BasicModelStatePair.hpp"
-#include "OpenSimCreator/Outputs/OutputExtractor.hpp"
-#include "OpenSimCreator/Simulation/ForwardDynamicSimulator.hpp"
-#include "OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp"
-#include "OpenSimCreator/Simulation/SimulationClock.hpp"
-#include "OpenSimCreator/Simulation/SimulationReport.hpp"
-#include "OpenSimCreator/Simulation/SimulationStatus.hpp"
-#include "OpenSimCreator/Utils/ParamBlock.hpp"
-
-#include <oscar/Utils/SynchronizedValue.hpp>
+#include <OpenSimCreator/Model/BasicModelStatePair.hpp>
+#include <OpenSimCreator/Outputs/OutputExtractor.hpp>
+#include <OpenSimCreator/Simulation/ForwardDynamicSimulator.hpp>
+#include <OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp>
+#include <OpenSimCreator/Simulation/SimulationClock.hpp>
+#include <OpenSimCreator/Simulation/SimulationReport.hpp>
+#include <OpenSimCreator/Simulation/SimulationStatus.hpp>
+#include <OpenSimCreator/Utils/ParamBlock.hpp>
 
 #include <nonstd/span.hpp>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <oscar/Utils/SynchronizedValue.hpp>
 #include <SimTKcommon.h>
 
 #include <algorithm>

@@ -1,6 +1,6 @@
 #include "RenderTargetAttachment.hpp"
 
-#include "oscar/Utils/Assertions.hpp"
+#include <oscar/Utils/Assertions.hpp>
 
 #include <utility>
 

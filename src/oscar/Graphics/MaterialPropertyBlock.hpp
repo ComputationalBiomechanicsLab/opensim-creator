@@ -1,8 +1,8 @@
 #pragma once
 
-#include "oscar/Graphics/Color.hpp"
-#include "oscar/Graphics/Texture2D.hpp"
-#include "oscar/Utils/CopyOnUpdPtr.hpp"
+#include <oscar/Graphics/Color.hpp>
+#include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Utils/CopyOnUpdPtr.hpp>
 
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x4.hpp>

@@ -1,15 +1,20 @@
 #include "MainUIScreen.hpp"
 
-#include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Outputs/OutputExtractor.hpp"
-#include "OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp"
-#include "OpenSimCreator/Tabs/LoadingTab.hpp"
-#include "OpenSimCreator/Tabs/MeshImporterTab.hpp"
-#include "OpenSimCreator/Tabs/ModelEditorTab.hpp"
-#include "OpenSimCreator/Tabs/SplashTab.hpp"
-#include "OpenSimCreator/Utils/ParamBlock.hpp"
+#include <OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Outputs/OutputExtractor.hpp>
+#include <OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp>
+#include <OpenSimCreator/Tabs/LoadingTab.hpp>
+#include <OpenSimCreator/Tabs/MeshImporterTab.hpp>
+#include <OpenSimCreator/Tabs/ModelEditorTab.hpp>
+#include <OpenSimCreator/Tabs/SplashTab.hpp>
+#include <OpenSimCreator/Utils/ParamBlock.hpp>
 
+#include <IconsFontAwesome5.h>
+#include <imgui.h>
+#include <imgui_internal.h>
+#include <ImGuizmo.h>
+#include <implot.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/AnnotatedImage.hpp>
 #include <oscar/Graphics/Graphics.hpp>
@@ -21,19 +26,13 @@
 #include <oscar/UI/Tabs/ScreenshotTab.hpp>
 #include <oscar/UI/Tabs/Tab.hpp>
 #include <oscar/UI/Tabs/TabRegistry.hpp>
+#include <oscar/UI/Widgets/SaveChangesPopup.hpp>
+#include <oscar/UI/Widgets/SaveChangesPopupConfig.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <oscar/UI/Widgets/SaveChangesPopup.hpp>
-#include <oscar/UI/Widgets/SaveChangesPopupConfig.hpp>
-
-#include <IconsFontAwesome5.h>
-#include <imgui.h>
-#include <imgui_internal.h>
-#include <ImGuizmo.h>
-#include <implot.h>
 
 #include <algorithm>
 #include <functional>

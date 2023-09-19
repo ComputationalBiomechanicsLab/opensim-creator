@@ -1,13 +1,17 @@
 #include "SplashTab.hpp"
 
-#include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
-#include "OpenSimCreator/Tabs/FrameDefinitionTab.hpp"
-#include "OpenSimCreator/Tabs/LoadingTab.hpp"
-#include "OpenSimCreator/Tabs/MeshImporterTab.hpp"
-#include "OpenSimCreator/Tabs/MeshWarpingTab.hpp"
-#include "OpenSimCreator/Utils/UndoableModelActions.hpp"
-#include "OpenSimCreator/Widgets/MainMenu.hpp"
+#include <OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp>
+#include <OpenSimCreator/Tabs/FrameDefinitionTab.hpp>
+#include <OpenSimCreator/Tabs/LoadingTab.hpp>
+#include <OpenSimCreator/Tabs/MeshImporterTab.hpp>
+#include <OpenSimCreator/Tabs/MeshWarpingTab.hpp>
+#include <OpenSimCreator/Utils/UndoableModelActions.hpp>
+#include <OpenSimCreator/Widgets/MainMenu.hpp>
 
+#include <glm/vec2.hpp>
+#include <IconsFontAwesome5.h>
+#include <imgui.h>
+#include <nonstd/span.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Formats/SVG.hpp>
 #include <oscar/Graphics/Color.hpp>
@@ -27,16 +31,11 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/RecentFile.hpp>
 #include <oscar/UI/Tabs/TabHost.hpp>
+#include <oscar/UI/Widgets/LogViewer.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
-#include <oscar/UI/Widgets/LogViewer.hpp>
 #include <OscarConfiguration.hpp>
-
-#include <glm/vec2.hpp>
-#include <IconsFontAwesome5.h>
-#include <imgui.h>
-#include <nonstd/span.hpp>
 
 #include <filesystem>
 #include <string>

@@ -1,7 +1,7 @@
 #include "LogViewerPanel.hpp"
 
-#include "oscar/UI/Panels/StandardPanel.hpp"
-#include "oscar/UI/Widgets/LogViewer.hpp"
+#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/UI/Widgets/LogViewer.hpp>
 
 #include <imgui.h>
 

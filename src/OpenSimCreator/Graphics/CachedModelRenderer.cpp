@@ -1,11 +1,13 @@
 #include "CachedModelRenderer.hpp"
 
-#include "OpenSimCreator/Graphics/ModelRendererParams.hpp"
-#include "OpenSimCreator/Graphics/OpenSimGraphicsHelpers.hpp"
-#include "OpenSimCreator/Graphics/OverlayDecorationGenerator.hpp"
-#include "OpenSimCreator/Model/ModelStatePairInfo.hpp"
-#include "OpenSimCreator/Model/VirtualConstModelStatePair.hpp"
+#include <OpenSimCreator/Graphics/ModelRendererParams.hpp>
+#include <OpenSimCreator/Graphics/OpenSimGraphicsHelpers.hpp>
+#include <OpenSimCreator/Graphics/OverlayDecorationGenerator.hpp>
+#include <OpenSimCreator/Model/ModelStatePairInfo.hpp>
+#include <OpenSimCreator/Model/VirtualConstModelStatePair.hpp>
 
+#include <glm/vec2.hpp>
+#include <nonstd/span.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/SceneCollision.hpp>
@@ -16,9 +18,6 @@
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Utils/Perf.hpp>
-
-#include <glm/vec2.hpp>
-#include <nonstd/span.hpp>
 
 #include <cstdint>
 #include <functional>

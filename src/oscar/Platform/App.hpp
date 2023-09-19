@@ -1,12 +1,12 @@
 #pragma once
 
-#include "oscar/Graphics/AnnotatedImage.hpp"
-#include "oscar/Graphics/AntiAliasingLevel.hpp"
-#include "oscar/Platform/AppClock.hpp"
-#include "oscar/Platform/Log.hpp"
-#include "oscar/Platform/MouseState.hpp"
-#include "oscar/Platform/RecentFile.hpp"
-#include "oscar/Utils/Assertions.hpp"
+#include <oscar/Graphics/AnnotatedImage.hpp>
+#include <oscar/Graphics/AntiAliasingLevel.hpp>
+#include <oscar/Platform/AppClock.hpp>
+#include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/MouseState.hpp>
+#include <oscar/Platform/RecentFile.hpp>
+#include <oscar/Utils/Assertions.hpp>
 
 #include <SDL_events.h>
 #include <glm/vec2.hpp>

@@ -1,6 +1,6 @@
 #include "LOGLBlendingTab.hpp"
 
-#include "oscar_learnopengl/LearnOpenGLHelpers.hpp"
+#include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
@@ -13,9 +13,9 @@
 #include <oscar/Graphics/MeshGen.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>

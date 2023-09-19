@@ -1,14 +1,14 @@
 #include "VirtualModelStatePairContextMenu.hpp"
 
-#include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
-#include "OpenSimCreator/Model/VirtualModelStatePair.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/Widgets/BasicWidgets.hpp"
+#include <OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp>
+#include <OpenSimCreator/Model/VirtualModelStatePair.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Widgets/BasicWidgets.hpp>
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 
 #include <memory>
 #include <string_view>

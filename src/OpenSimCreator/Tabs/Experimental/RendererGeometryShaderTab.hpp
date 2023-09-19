@@ -3,7 +3,6 @@
 #include <oscar/UI/Tabs/Tab.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
-
 #include <SDL_events.h>
 
 #include <memory>

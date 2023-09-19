@@ -1,9 +1,9 @@
 #include "TextureGen.hpp"
 
-#include "oscar/Graphics/Color32.hpp"
-#include "oscar/Graphics/ColorSpace.hpp"
-#include "oscar/Graphics/GraphicsHelpers.hpp"
-#include "oscar/Graphics/TextureFormat.hpp"
+#include <oscar/Graphics/Color32.hpp>
+#include <oscar/Graphics/ColorSpace.hpp>
+#include <oscar/Graphics/GraphicsHelpers.hpp>
+#include <oscar/Graphics/TextureFormat.hpp>
 
 #include <glm/vec2.hpp>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OpenSimCreator/Model/VirtualModelStatePair.hpp"
+#include <OpenSimCreator/Model/VirtualModelStatePair.hpp>
 
 #include <oscar/Utils/UID.hpp>
 

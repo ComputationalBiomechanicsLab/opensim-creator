@@ -1,7 +1,7 @@
 #pragma once
 
-#include "oscar/Maths/AABB.hpp"
-#include "oscar/Maths/RayCollision.hpp"
+#include <oscar/Maths/AABB.hpp>
+#include <oscar/Maths/RayCollision.hpp>
 
 #include <glm/vec3.hpp>
 #include <nonstd/span.hpp>

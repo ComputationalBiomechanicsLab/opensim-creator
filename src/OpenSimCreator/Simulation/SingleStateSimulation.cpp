@@ -1,8 +1,8 @@
 #include "SingleStateSimulation.hpp"
 
-#include "OpenSimCreator/Model/BasicModelStatePair.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/Utils/ParamBlock.hpp"
+#include <OpenSimCreator/Model/BasicModelStatePair.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/ParamBlock.hpp>
 
 #include <Simbody.h>
 

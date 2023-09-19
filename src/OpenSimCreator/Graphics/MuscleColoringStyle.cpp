@@ -1,10 +1,9 @@
 #include "MuscleColoringStyle.hpp"
 
+#include <nonstd/span.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
-
-#include <nonstd/span.hpp>
 
 #include <array>
 #include <cstddef>

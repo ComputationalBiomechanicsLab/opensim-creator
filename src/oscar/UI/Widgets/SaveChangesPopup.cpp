@@ -1,7 +1,7 @@
 #include "SaveChangesPopup.hpp"
 
-#include "oscar/UI/Widgets/SaveChangesPopupConfig.hpp"
-#include "oscar/UI/Widgets/StandardPopup.hpp"
+#include <oscar/UI/Widgets/SaveChangesPopupConfig.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
 
 #include <imgui.h>
 

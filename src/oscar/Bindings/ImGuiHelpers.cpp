@@ -1,19 +1,19 @@
 #include "ImGuiHelpers.hpp"
 
-#include "oscar/Bindings/ImGuiHelpers.hpp"
-#include "oscar/Graphics/Camera.hpp"
-#include "oscar/Graphics/Color.hpp"
-#include "oscar/Graphics/RenderTexture.hpp"
-#include "oscar/Graphics/Texture2D.hpp"
-#include "oscar/Maths/CollisionTests.hpp"
-#include "oscar/Maths/Constants.hpp"
-#include "oscar/Maths/MathHelpers.hpp"
-#include "oscar/Maths/Rect.hpp"
-#include "oscar/Maths/PolarPerspectiveCamera.hpp"
-#include "oscar/Utils/Cpp20Shims.hpp"
-#include "oscar/Utils/SynchronizedValue.hpp"
-#include "oscar/Utils/UID.hpp"
-#include "OscarConfiguration.hpp"
+#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Graphics/Camera.hpp>
+#include <oscar/Graphics/Color.hpp>
+#include <oscar/Graphics/RenderTexture.hpp>
+#include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/CollisionTests.hpp>
+#include <oscar/Maths/Constants.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/PolarPerspectiveCamera.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/SynchronizedValue.hpp>
+#include <oscar/Utils/UID.hpp>
+#include <OscarConfiguration.hpp>
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/vec2.hpp>

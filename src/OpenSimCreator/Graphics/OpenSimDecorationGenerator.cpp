@@ -1,24 +1,10 @@
 #include "OpenSimDecorationGenerator.hpp"
 
-#include "OpenSimCreator/Bindings/SimTKDecorationGenerator.hpp"
-#include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
-#include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
-#include "OpenSimCreator/Model/VirtualConstModelStatePair.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
-#include <oscar/Graphics/SceneDecoration.hpp>
-#include <oscar/Maths/AABB.hpp>
-#include <oscar/Maths/Constants.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Segment.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
-#include <oscar/Utils/Perf.hpp>
+#include <OpenSimCreator/Bindings/SimTKDecorationGenerator.hpp>
+#include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
+#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
+#include <OpenSimCreator/Model/VirtualConstModelStatePair.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <glm/vec3.hpp>
 #include <OpenSim/Common/Component.h>
@@ -34,6 +20,19 @@
 #include <OpenSim/Simulation/Model/Station.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
+#include <oscar/Graphics/Color.hpp>
+#include <oscar/Graphics/GraphicsHelpers.hpp>
+#include <oscar/Graphics/Mesh.hpp>
+#include <oscar/Graphics/MeshCache.hpp>
+#include <oscar/Graphics/SceneDecoration.hpp>
+#include <oscar/Maths/AABB.hpp>
+#include <oscar/Maths/Constants.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Segment.hpp>
+#include <oscar/Maths/Transform.hpp>
+#include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/Perf.hpp>
 #include <SimTKcommon.h>
 
 #include <algorithm>

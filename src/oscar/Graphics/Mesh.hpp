@@ -1,9 +1,9 @@
 #pragma once
 
-#include "oscar/Graphics/MeshIndicesView.hpp"
-#include "oscar/Graphics/MeshTopology.hpp"
-#include "oscar/Maths/Transform.hpp"
-#include "oscar/Utils/CopyOnUpdPtr.hpp"
+#include <oscar/Graphics/MeshIndicesView.hpp>
+#include <oscar/Graphics/MeshTopology.hpp>
+#include <oscar/Maths/Transform.hpp>
+#include <oscar/Utils/CopyOnUpdPtr.hpp>
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>

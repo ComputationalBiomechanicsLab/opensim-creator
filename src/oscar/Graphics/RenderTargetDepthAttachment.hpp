@@ -1,6 +1,6 @@
 #pragma once
 
-#include "oscar/Graphics/RenderTargetAttachment.hpp"
+#include <oscar/Graphics/RenderTargetAttachment.hpp>
 
 namespace osc
 {

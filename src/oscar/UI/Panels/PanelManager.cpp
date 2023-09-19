@@ -1,9 +1,9 @@
 #include "PanelManager.hpp"
 
-#include "oscar/UI/Panels/Panel.hpp"
-#include "oscar/UI/Panels/ToggleablePanelFlags.hpp"
-#include "oscar/Utils/CStringView.hpp"
-#include "oscar/Utils/UID.hpp"
+#include <oscar/UI/Panels/Panel.hpp>
+#include <oscar/UI/Panels/ToggleablePanelFlags.hpp>
+#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/UID.hpp>
 
 #include <nonstd/span.hpp>
 

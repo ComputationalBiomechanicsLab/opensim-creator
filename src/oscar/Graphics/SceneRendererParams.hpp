@@ -1,7 +1,7 @@
 #pragma once
 
-#include "oscar/Graphics/AntiAliasingLevel.hpp"
-#include "oscar/Graphics/Color.hpp"
+#include <oscar/Graphics/AntiAliasingLevel.hpp>
+#include <oscar/Graphics/Color.hpp>
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>

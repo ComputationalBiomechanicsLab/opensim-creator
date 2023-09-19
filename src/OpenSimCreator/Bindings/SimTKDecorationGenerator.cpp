@@ -1,8 +1,9 @@
 #include "SimTKDecorationGenerator.hpp"
 
-#include "OpenSimCreator/Bindings/SimTKMeshLoader.hpp"
-#include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
+#include <OpenSimCreator/Bindings/SimTKMeshLoader.hpp>
+#include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
 
+#include <glm/glm.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
@@ -12,8 +13,6 @@
 #include <oscar/Maths/Triangle.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
-
-#include <glm/glm.hpp>
 #include <simbody/internal/common.h>
 #include <simbody/internal/MobilizedBody.h>
 #include <simbody/internal/SimbodyMatterSubsystem.h>

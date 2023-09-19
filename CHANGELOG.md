@@ -12,6 +12,8 @@ All notable changes to this project will be documented here. The format is based
 - Internal: The demo/experimental tabs in `oscar` are now in a separate project (`oscar_demos`)
 - Internal: Both `oscar` and `OpenSimCreator` are now compiled with `/W4` warnings enabled in MSVC, some
   warnings are manually disabled in `OpenSimCreator` until upstream patches are applied
+- Internal: Refactored `OpenSimCreator` to use `oscar` as-if it were any other 3rd-party API (previously: it was
+  included in its own block of includes as-if it were special)
 
 
 ## [0.5.2] - 2023/09/12

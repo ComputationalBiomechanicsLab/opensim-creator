@@ -1,14 +1,13 @@
 #include "CustomWidgetsTab.hpp"
 
-#include "oscar/Bindings/ImGuiHelpers.hpp"
-#include "oscar/UI/Tabs/StandardTabBase.hpp"
-#include "oscar/Utils/CStringView.hpp"
-#include "oscar/Graphics/Color.hpp"
-
 #include <glm/glm.hpp>
 #include <glm/vec2.hpp>
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Graphics/Color.hpp>
+#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
 #include <array>

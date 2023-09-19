@@ -1,7 +1,10 @@
 #include "MeshHittestTab.hpp"
 
-#include "OpenSimCreator/Bindings/SimTKMeshLoader.hpp"
+#include <OpenSimCreator/Bindings/SimTKMeshLoader.hpp>
 
+#include <glm/vec3.hpp>
+#include <IconsFontAwesome5.h>
+#include <imgui.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
@@ -20,14 +23,10 @@
 #include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Triangle.hpp>
-#include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/UID.hpp>
-
-#include <glm/vec3.hpp>
-#include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <SDL_events.h>
 
 #include <array>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "oscar/Graphics/AntiAliasingLevel.hpp"
+#include <oscar/Graphics/AntiAliasingLevel.hpp>
 
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>

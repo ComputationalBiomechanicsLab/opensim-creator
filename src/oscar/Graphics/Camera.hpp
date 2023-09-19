@@ -1,10 +1,10 @@
 #pragma once
 
-#include "oscar/Graphics/CameraClearFlags.hpp"
-#include "oscar/Graphics/CameraProjection.hpp"
-#include "oscar/Graphics/Color.hpp"
-#include "oscar/Maths/Rect.hpp"
-#include "oscar/Utils/CopyOnUpdPtr.hpp"
+#include <oscar/Graphics/CameraClearFlags.hpp>
+#include <oscar/Graphics/CameraProjection.hpp>
+#include <oscar/Graphics/Color.hpp>
+#include <oscar/Maths/Rect.hpp>
+#include <oscar/Utils/CopyOnUpdPtr.hpp>
 
 #include <glm/gtx/quaternion.hpp>
 #include <glm/mat4x4.hpp>

@@ -1,17 +1,12 @@
 #include "AddBodyPopup.hpp"
 
-#include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Registry/ComponentRegistry.hpp"
-#include "OpenSimCreator/Registry/StaticComponentRegistries.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/Utils/UndoableModelActions.hpp"
-#include "OpenSimCreator/Widgets/SelectGeometryPopup.hpp"
-
-#include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Registry/ComponentRegistry.hpp>
+#include <OpenSimCreator/Registry/StaticComponentRegistries.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/UndoableModelActions.hpp>
+#include <OpenSimCreator/Widgets/SelectGeometryPopup.hpp>
 
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
@@ -24,6 +19,10 @@
 #include <OpenSim/Simulation/Model/Ground.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Platform/App.hpp>
+#include <oscar/Platform/Log.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
 
 #include <memory>
 #include <string>

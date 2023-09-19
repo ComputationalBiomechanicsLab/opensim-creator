@@ -1,6 +1,6 @@
 #pragma once
 
-#include "oscar/Maths/Line.hpp"
+#include <oscar/Maths/Line.hpp>
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>

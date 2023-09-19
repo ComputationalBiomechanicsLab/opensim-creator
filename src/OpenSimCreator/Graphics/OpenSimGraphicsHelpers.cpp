@@ -1,11 +1,12 @@
 #include "OpenSimGraphicsHelpers.hpp"
 
-#include "OpenSimCreator/Graphics/ModelRendererParams.hpp"
-#include "OpenSimCreator/Graphics/ComponentAbsPathDecorationTagger.hpp"
-#include "OpenSimCreator/Graphics/ComponentSceneDecorationFlagsTagger.hpp"
-#include "OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp"
-#include "OpenSimCreator/Model/VirtualConstModelStatePair.hpp"
+#include <OpenSimCreator/Graphics/ModelRendererParams.hpp>
+#include <OpenSimCreator/Graphics/ComponentAbsPathDecorationTagger.hpp>
+#include <OpenSimCreator/Graphics/ComponentSceneDecorationFlagsTagger.hpp>
+#include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp>
+#include <OpenSimCreator/Model/VirtualConstModelStatePair.hpp>
 
+#include <glm/vec2.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/SceneDecoration.hpp>
@@ -13,8 +14,6 @@
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
-
-#include <glm/vec2.hpp>
 
 #include <optional>
 #include <vector>

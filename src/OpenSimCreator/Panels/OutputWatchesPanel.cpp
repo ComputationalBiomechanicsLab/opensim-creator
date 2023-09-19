@@ -1,17 +1,16 @@
 #include "OutputWatchesPanel.hpp"
 
-#include "OpenSimCreator/Simulation/SimulationReport.hpp"
-#include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Outputs/OutputExtractor.hpp"
-
-#include <oscar/UI/Panels/StandardPanel.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <OpenSimCreator/Simulation/SimulationReport.hpp>
+#include <OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Outputs/OutputExtractor.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
+#include <oscar/Utils/UID.hpp>
 #include <Simbody.h>
 
 #include <memory>

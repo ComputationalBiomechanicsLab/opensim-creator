@@ -1,7 +1,7 @@
 #include "TabHost.hpp"
 
-#include "oscar/UI/Tabs/Tab.hpp"
-#include "oscar/Utils/UID.hpp"
+#include <oscar/UI/Tabs/Tab.hpp>
+#include <oscar/Utils/UID.hpp>
 
 #include <memory>
 

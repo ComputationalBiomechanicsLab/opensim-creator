@@ -1,10 +1,12 @@
 #include "LoadingTab.hpp"
 
-#include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Tabs/ModelEditorTab.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
+#include <OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Tabs/ModelEditorTab.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
+#include <glm/vec2.hpp>
+#include <imgui.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
@@ -12,9 +14,6 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/UI/Tabs/TabHost.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
-
-#include <glm/vec2.hpp>
-#include <imgui.h>
 #include <SDL_events.h>
 
 #include <chrono>

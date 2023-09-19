@@ -1,8 +1,8 @@
 #pragma once
 
-#include "oscar/Graphics/Icon.hpp"
-#include "oscar/Utils/CStringView.hpp"
-#include "oscar/UI/Widgets/IconWithoutMenu.hpp"
+#include <oscar/Graphics/Icon.hpp>
+#include <oscar/UI/Widgets/IconWithoutMenu.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <functional>
 #include <string>

@@ -1,8 +1,7 @@
 #pragma once
 
-#include <oscar/Utils/UID.hpp>
-
 #include <OpenSim/Common/ComponentPath.h>
+#include <oscar/Utils/UID.hpp>
 
 namespace osc { class VirtualConstModelStatePair; }
 

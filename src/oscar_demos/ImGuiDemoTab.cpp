@@ -1,9 +1,8 @@
 #include "ImGuiDemoTab.hpp"
 
-#include "oscar/UI/Tabs/StandardTabBase.hpp"
-#include "oscar/Utils/CStringView.hpp"
-
 #include <imgui.h>
+#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <utility>
 

@@ -1,10 +1,10 @@
 #include "OpenSimCreatorApp.hpp"
 
-#include "OpenSimCreator/Tabs/Experimental/MeshHittestTab.hpp"
-#include "OpenSimCreator/Tabs/Experimental/RendererGeometryShaderTab.hpp"
-#include "OpenSimCreator/Tabs/Experimental/TPS2DTab.hpp"
-#include "OpenSimCreator/Tabs/FrameDefinitionTab.hpp"
-#include "OpenSimCreator/Tabs/MeshWarpingTab.hpp"
+#include <OpenSimCreator/Tabs/Experimental/MeshHittestTab.hpp>
+#include <OpenSimCreator/Tabs/Experimental/RendererGeometryShaderTab.hpp>
+#include <OpenSimCreator/Tabs/Experimental/TPS2DTab.hpp>
+#include <OpenSimCreator/Tabs/FrameDefinitionTab.hpp>
+#include <OpenSimCreator/Tabs/MeshWarpingTab.hpp>
 
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/Log.hpp>

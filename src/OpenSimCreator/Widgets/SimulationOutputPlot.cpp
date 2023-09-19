@@ -1,18 +1,11 @@
 #include "SimulationOutputPlot.hpp"
 
-#include "OpenSimCreator/Simulation/SimulationClock.hpp"
-#include "OpenSimCreator/Simulation/SimulationReport.hpp"
-#include "OpenSimCreator/Simulation/VirtualSimulation.hpp"
-#include "OpenSimCreator/MiddlewareAPIs/SimulatorUIAPI.hpp"
-#include "OpenSimCreator/Outputs/OutputExtractor.hpp"
-#include "OpenSimCreator/Outputs/VirtualOutputExtractor.hpp"
-
-#include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Platform/os.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Perf.hpp>
-#include <oscar/Utils/SynchronizedValue.hpp>
+#include <OpenSimCreator/Simulation/SimulationClock.hpp>
+#include <OpenSimCreator/Simulation/SimulationReport.hpp>
+#include <OpenSimCreator/Simulation/VirtualSimulation.hpp>
+#include <OpenSimCreator/MiddlewareAPIs/SimulatorUIAPI.hpp>
+#include <OpenSimCreator/Outputs/OutputExtractor.hpp>
+#include <OpenSimCreator/Outputs/VirtualOutputExtractor.hpp>
 
 #include <glm/vec2.hpp>
 #include <imgui.h>
@@ -20,6 +13,12 @@
 #include <IconsFontAwesome5.h>
 #include <nonstd/span.hpp>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/os.hpp>
+#include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/Perf.hpp>
+#include <oscar/Utils/SynchronizedValue.hpp>
 #include <SimTKcommon.h>
 
 #include <algorithm>

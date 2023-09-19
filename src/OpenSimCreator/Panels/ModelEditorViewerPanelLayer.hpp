@@ -1,9 +1,8 @@
 #pragma once
 
-#include "OpenSimCreator/Panels/ModelEditorViewerPanelLayerFlags.hpp"
+#include <OpenSimCreator/Panels/ModelEditorViewerPanelLayerFlags.hpp>
 
 #include <oscar/Graphics/Color.hpp>
-
 #include <SDL_events.h>
 
 namespace osc { class ModelEditorViewerPanelParameters; }

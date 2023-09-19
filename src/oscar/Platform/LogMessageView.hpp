@@ -1,6 +1,6 @@
 #pragma once
 
-#include "oscar/Platform/LogLevel.hpp"
+#include <oscar/Platform/LogLevel.hpp>
 
 #include <chrono>
 #include <string_view>

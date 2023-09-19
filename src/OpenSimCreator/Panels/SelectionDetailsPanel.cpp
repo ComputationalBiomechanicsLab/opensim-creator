@@ -1,15 +1,14 @@
 #include "SelectionDetailsPanel.hpp"
 
-#include "OpenSimCreator/MiddlewareAPIs/SimulatorUIAPI.hpp"
-#include "OpenSimCreator/Outputs/ComponentOutputExtractor.hpp"
-#include "OpenSimCreator/Widgets/ComponentDetails.hpp"
-#include "OpenSimCreator/Widgets/SimulationOutputPlot.hpp"
-#include "OpenSimCreator/Simulation/SimulationModelStatePair.hpp"
-
-#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <OpenSimCreator/MiddlewareAPIs/SimulatorUIAPI.hpp>
+#include <OpenSimCreator/Outputs/ComponentOutputExtractor.hpp>
+#include <OpenSimCreator/Simulation/SimulationModelStatePair.hpp>
+#include <OpenSimCreator/Widgets/ComponentDetails.hpp>
+#include <OpenSimCreator/Widgets/SimulationOutputPlot.hpp>
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
+#include <oscar/UI/Panels/StandardPanel.hpp>
 
 #include <memory>
 #include <string_view>

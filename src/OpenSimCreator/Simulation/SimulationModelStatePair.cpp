@@ -1,16 +1,15 @@
 #include "SimulationModelStatePair.hpp"
 
-#include "OpenSimCreator/Simulation/Simulation.hpp"
-#include "OpenSimCreator/Simulation/SimulationReport.hpp"
-#include "OpenSimCreator/Simulation/SingleStateSimulation.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-
-#include <oscar/Utils/SynchronizedValue.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <OpenSimCreator/Simulation/Simulation.hpp>
+#include <OpenSimCreator/Simulation/SimulationReport.hpp>
+#include <OpenSimCreator/Simulation/SingleStateSimulation.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <oscar/Utils/SynchronizedValue.hpp>
+#include <oscar/Utils/UID.hpp>
 
 #include <memory>
 #include <utility>

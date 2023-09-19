@@ -1,9 +1,9 @@
 #pragma once
 
-#include "oscar/Graphics/Color.hpp"
-#include "oscar/Graphics/RenderBufferLoadAction.hpp"
-#include "oscar/Graphics/RenderBufferStoreAction.hpp"
-#include "oscar/Graphics/RenderTargetAttachment.hpp"
+#include <oscar/Graphics/Color.hpp>
+#include <oscar/Graphics/RenderBufferLoadAction.hpp>
+#include <oscar/Graphics/RenderBufferStoreAction.hpp>
+#include <oscar/Graphics/RenderTargetAttachment.hpp>
 
 #include <memory>
 

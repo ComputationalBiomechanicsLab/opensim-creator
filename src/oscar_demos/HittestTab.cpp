@@ -1,26 +1,25 @@
 #include "HittestTab.hpp"
 
-#include "oscar/Bindings/ImGuiHelpers.hpp"
-#include "oscar/Graphics/Camera.hpp"
-#include "oscar/Graphics/Color.hpp"
-#include "oscar/Graphics/Graphics.hpp"
-#include "oscar/Graphics/Material.hpp"
-#include "oscar/Graphics/MaterialPropertyBlock.hpp"
-#include "oscar/Graphics/MeshGen.hpp"
-#include "oscar/Maths/CollisionTests.hpp"
-#include "oscar/Maths/Disc.hpp"
-#include "oscar/Maths/Line.hpp"
-#include "oscar/Maths/MathHelpers.hpp"
-#include "oscar/Maths/Sphere.hpp"
-#include "oscar/Maths/Triangle.hpp"
-#include "oscar/Platform/App.hpp"
-#include "oscar/UI/Tabs/StandardTabBase.hpp"
-#include "oscar/Utils/Cpp20Shims.hpp"
-#include "oscar/Utils/CStringView.hpp"
-
 #include <glm/vec3.hpp>
-#include <SDL_events.h>
 #include <IconsFontAwesome5.h>
+#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Graphics/Camera.hpp>
+#include <oscar/Graphics/Color.hpp>
+#include <oscar/Graphics/Graphics.hpp>
+#include <oscar/Graphics/Material.hpp>
+#include <oscar/Graphics/MaterialPropertyBlock.hpp>
+#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Maths/CollisionTests.hpp>
+#include <oscar/Maths/Disc.hpp>
+#include <oscar/Maths/Line.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Sphere.hpp>
+#include <oscar/Maths/Triangle.hpp>
+#include <oscar/Platform/App.hpp>
+#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/CStringView.hpp>
+#include <SDL_events.h>
 
 #include <cstdint>
 #include <limits>

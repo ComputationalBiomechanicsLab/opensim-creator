@@ -1,9 +1,8 @@
 #include "ImPlotDemoTab.hpp"
 
-#include "oscar/UI/Tabs/StandardTabBase.hpp"
-#include "oscar/Utils/CStringView.hpp"
-
 #include <implot.h>
+#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <memory>
 

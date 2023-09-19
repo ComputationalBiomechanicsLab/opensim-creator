@@ -1,13 +1,13 @@
 #pragma once
 
-#include "oscar/Graphics/Color.hpp"
-#include "oscar/Graphics/Color32.hpp"
-#include "oscar/Graphics/ColorSpace.hpp"
-#include "oscar/Graphics/TextureFilterMode.hpp"
-#include "oscar/Graphics/TextureFormat.hpp"
-#include "oscar/Graphics/TextureWrapMode.hpp"
-#include "oscar/Utils/CopyOnUpdPtr.hpp"
-#include "oscar/Utils/CStringView.hpp"
+#include <oscar/Graphics/Color.hpp>
+#include <oscar/Graphics/Color32.hpp>
+#include <oscar/Graphics/ColorSpace.hpp>
+#include <oscar/Graphics/TextureFilterMode.hpp>
+#include <oscar/Graphics/TextureFormat.hpp>
+#include <oscar/Graphics/TextureWrapMode.hpp>
+#include <oscar/Utils/CopyOnUpdPtr.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>

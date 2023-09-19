@@ -1,8 +1,8 @@
 #include "ComponentSceneDecorationFlagsTagger.hpp"
 
-#include <oscar/Graphics/SceneDecoration.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
+#include <oscar/Graphics/SceneDecoration.hpp>
 
 osc::ComponentSceneDecorationFlagsTagger::ComponentSceneDecorationFlagsTagger(
     OpenSim::Component const* selected_,

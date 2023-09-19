@@ -1,21 +1,10 @@
 #include "ObjectPropertiesEditor.hpp"
 
-#include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
-#include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/Widgets/GeometryPathPropertyEditorPopup.hpp"
-
-#include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/Constants.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
-#include <OscarConfiguration.hpp>
+#include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
+#include <OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Widgets/GeometryPathPropertyEditorPopup.hpp>
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -33,6 +22,16 @@
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Graphics/Color.hpp>
+#include <oscar/Maths/Constants.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Transform.hpp>
+#include <oscar/Platform/App.hpp>
+#include <oscar/Platform/Log.hpp>
+#include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
+#include <OscarConfiguration.hpp>
 #include <SimTKcommon/Constants.h>
 #include <SimTKcommon/SmallMatrix.h>
 

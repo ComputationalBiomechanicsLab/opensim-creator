@@ -3,7 +3,6 @@
 #include <oscar/UI/Screens/Screen.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/UID.hpp>
-
 #include <SDL_events.h>
 
 #include <filesystem>

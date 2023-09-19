@@ -1,6 +1,6 @@
 #include "Color.hpp"
 
-#include "oscar/Utils/HashHelpers.hpp"
+#include <oscar/Utils/HashHelpers.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/vec4.hpp>

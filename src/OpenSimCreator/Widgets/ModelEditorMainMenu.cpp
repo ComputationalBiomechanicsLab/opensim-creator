@@ -1,23 +1,22 @@
 #include "ModelEditorMainMenu.hpp"
 
-#include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
-#include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Panels/ModelMusclePlotPanel.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/Utils/UndoableModelActions.hpp"
-#include "OpenSimCreator/Widgets/ExportPointsPopup.hpp"
-#include "OpenSimCreator/Widgets/MainMenu.hpp"
-#include "OpenSimCreator/Widgets/ModelActionsMenuItems.hpp"
-#include "OpenSimCreator/Widgets/ParamBlockEditorPopup.hpp"
-
-#include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Platform/AppConfig.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
-#include <oscar/UI/Widgets/WindowMenu.hpp>
+#include <OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp>
+#include <OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Panels/ModelMusclePlotPanel.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/UndoableModelActions.hpp>
+#include <OpenSimCreator/Widgets/ExportPointsPopup.hpp>
+#include <OpenSimCreator/Widgets/MainMenu.hpp>
+#include <OpenSimCreator/Widgets/ModelActionsMenuItems.hpp>
+#include <OpenSimCreator/Widgets/ParamBlockEditorPopup.hpp>
 
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
+#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Platform/AppConfig.hpp>
+#include <oscar/UI/Widgets/WindowMenu.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 
 #include <memory>
 #include <utility>

@@ -1,19 +1,18 @@
 #include "GeometryPathPropertyEditorPopup.hpp"
 
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-
-#include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <OpenSim/Simulation/Model/AbstractPathPoint.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
+#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Platform/Log.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <array>
 #include <functional>

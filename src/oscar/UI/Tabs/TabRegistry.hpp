@@ -1,6 +1,6 @@
 #pragma once
 
-#include "oscar/UI/Tabs/TabRegistryEntry.hpp"
+#include <oscar/UI/Tabs/TabRegistryEntry.hpp>
 
 #include <cstddef>
 #include <memory>

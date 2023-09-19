@@ -1,6 +1,6 @@
 #include "LOGLBasicLightingTab.hpp"
 
-#include "oscar_learnopengl/LearnOpenGLHelpers.hpp"
+#include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
 
 #include <glm/vec3.hpp>
 #include <glm/gtc/type_ptr.hpp>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "oscar/Graphics/Texture2D.hpp"
-#include "oscar/Maths/Rect.hpp"
+#include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Rect.hpp>
 
 #include <utility>
 

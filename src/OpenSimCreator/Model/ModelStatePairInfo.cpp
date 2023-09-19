@@ -1,7 +1,7 @@
 #include "ModelStatePairInfo.hpp"
 
-#include "OpenSimCreator/Model/VirtualConstModelStatePair.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
+#include <OpenSimCreator/Model/VirtualConstModelStatePair.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 osc::ModelStatePairInfo::ModelStatePairInfo() = default;
 osc::ModelStatePairInfo::ModelStatePairInfo(VirtualConstModelStatePair const& msp) :

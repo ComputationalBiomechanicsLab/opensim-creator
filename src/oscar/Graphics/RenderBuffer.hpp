@@ -1,7 +1,7 @@
 #pragma once
 
-#include "oscar/Graphics/RenderBufferType.hpp"
-#include "oscar/Graphics/RenderTextureDescriptor.hpp"
+#include <oscar/Graphics/RenderBufferType.hpp>
+#include <oscar/Graphics/RenderTextureDescriptor.hpp>
 
 #include <memory>
 

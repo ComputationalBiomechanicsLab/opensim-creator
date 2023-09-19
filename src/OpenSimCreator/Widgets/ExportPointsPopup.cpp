@@ -1,19 +1,8 @@
 #include "ExportPointsPopup.hpp"
 
-#include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
-#include "OpenSimCreator/Model/VirtualConstModelStatePair.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-
-#include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Formats/CSV.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Platform/os.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/EnumHelpers.hpp>
-#include <oscar/Utils/SetHelpers.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
+#include <OpenSimCreator/Model/VirtualConstModelStatePair.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -25,6 +14,16 @@
 #include <OpenSim/Simulation/Model/Point.h>
 #include <OpenSim/Simulation/Model/Station.h>
 #include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
+#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Formats/CSV.hpp>
+#include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/os.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/SetHelpers.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 #include <Simbody.h>
 
 #include <algorithm>

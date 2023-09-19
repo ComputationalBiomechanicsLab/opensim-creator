@@ -1,8 +1,8 @@
 #pragma once
 
-#include "oscar/Graphics/BlitFlags.hpp"
-#include "oscar/Graphics/CubemapFace.hpp"
-#include "oscar/Graphics/MaterialPropertyBlock.hpp"
+#include <oscar/Graphics/BlitFlags.hpp>
+#include <oscar/Graphics/CubemapFace.hpp>
+#include <oscar/Graphics/MaterialPropertyBlock.hpp>
 
 #include <glm/mat4x4.hpp>
 

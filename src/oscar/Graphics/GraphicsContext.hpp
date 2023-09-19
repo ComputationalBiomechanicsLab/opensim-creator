@@ -1,7 +1,7 @@
 #pragma once
 
-#include "oscar/Graphics/AntiAliasingLevel.hpp"
-#include "oscar/Graphics/Texture2D.hpp"
+#include <oscar/Graphics/AntiAliasingLevel.hpp>
+#include <oscar/Graphics/Texture2D.hpp>
 
 #include <future>
 #include <string>

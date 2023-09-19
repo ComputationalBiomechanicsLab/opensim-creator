@@ -1,6 +1,6 @@
 #pragma once
 
-#include "oscar/Maths/Rect.hpp"
+#include <oscar/Maths/Rect.hpp>
 
 #include <string>
 

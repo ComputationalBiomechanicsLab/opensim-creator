@@ -1,17 +1,16 @@
 #include "OutputPlotsPanel.hpp"
 
-#include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
-#include "OpenSimCreator/MiddlewareAPIs/SimulatorUIAPI.hpp"
-#include "OpenSimCreator/Widgets/BasicWidgets.hpp"
-#include "OpenSimCreator/Widgets/SimulationOutputPlot.hpp"
-#include "OpenSimCreator/Outputs/OutputExtractor.hpp"
-
-#include <oscar/UI/Panels/StandardPanel.hpp>
-#include <oscar/Platform/os.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
+#include <OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp>
+#include <OpenSimCreator/MiddlewareAPIs/SimulatorUIAPI.hpp>
+#include <OpenSimCreator/Outputs/OutputExtractor.hpp>
+#include <OpenSimCreator/Widgets/BasicWidgets.hpp>
+#include <OpenSimCreator/Widgets/SimulationOutputPlot.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
+#include <oscar/Platform/os.hpp>
+#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 
 #include <string_view>
 #include <memory>

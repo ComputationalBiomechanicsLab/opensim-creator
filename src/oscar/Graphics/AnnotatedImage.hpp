@@ -1,7 +1,7 @@
 #pragma once
 
-#include "oscar/Graphics/ImageAnnotation.hpp"
-#include "oscar/Graphics/Texture2D.hpp"
+#include <oscar/Graphics/ImageAnnotation.hpp>
+#include <oscar/Graphics/Texture2D.hpp>
 
 #include <vector>
 

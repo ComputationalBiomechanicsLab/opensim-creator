@@ -1,6 +1,6 @@
 #pragma once
 
-#include "oscar/Utils/Assertions.hpp"
+#include <oscar/Utils/Assertions.hpp>
 
 #include <array>
 #include <cstddef>

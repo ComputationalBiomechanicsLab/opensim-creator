@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OpenSimCreator/Model/BasicModelStatePair.hpp"
+#include <OpenSimCreator/Model/BasicModelStatePair.hpp>
 
 #include <oscar/UI/Tabs/Tab.hpp>
 #include <oscar/Utils/CStringView.hpp>

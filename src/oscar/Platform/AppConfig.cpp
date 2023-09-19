@@ -1,10 +1,10 @@
 #include "AppConfig.hpp"
 
-#include "oscar/Graphics/AntiAliasingLevel.hpp"
-#include "oscar/Platform/Log.hpp"
-#include "oscar/Platform/os.hpp"
-#include "oscar/Utils/StringHelpers.hpp"
-#include "OscarConfiguration.hpp"
+#include <oscar/Graphics/AntiAliasingLevel.hpp>
+#include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/os.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
+#include <OscarConfiguration.hpp>
 
 #include <toml++/toml.h>
 

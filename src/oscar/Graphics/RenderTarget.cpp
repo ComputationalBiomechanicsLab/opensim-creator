@@ -1,7 +1,7 @@
 #include "RenderTarget.hpp"
 
-#include "oscar/Graphics/RenderTargetColorAttachment.hpp"
-#include "oscar/Graphics/RenderTargetDepthAttachment.hpp"
+#include <oscar/Graphics/RenderTargetColorAttachment.hpp>
+#include <oscar/Graphics/RenderTargetDepthAttachment.hpp>
 
 #include <utility>
 #include <vector>

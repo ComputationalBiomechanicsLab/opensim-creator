@@ -1,7 +1,7 @@
 #include "SVG.hpp"
 
-#include "oscar/Graphics/ColorSpace.hpp"
-#include "oscar/Utils/Assertions.hpp"
+#include <oscar/Graphics/ColorSpace.hpp>
+#include <oscar/Utils/Assertions.hpp>
 
 #include <glm/vec2.hpp>
 #include <lunasvg.h>

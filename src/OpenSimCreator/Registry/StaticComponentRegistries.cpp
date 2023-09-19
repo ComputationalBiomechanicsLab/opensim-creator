@@ -1,11 +1,7 @@
 #include "StaticComponentRegistries.hpp"
 
-#include "OpenSimCreator/Registry/ComponentRegistry.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/Macros.hpp>
-#include <oscar/Utils/SetHelpers.hpp>
+#include <OpenSimCreator/Registry/ComponentRegistry.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/ArrayPtrs.h>
@@ -38,6 +34,9 @@
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
+#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/Macros.hpp>
+#include <oscar/Utils/SetHelpers.hpp>
 
 #include <algorithm>
 #include <initializer_list>

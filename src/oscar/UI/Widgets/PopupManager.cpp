@@ -1,7 +1,7 @@
 #include "PopupManager.hpp"
 
-#include "oscar/Utils/Cpp20Shims.hpp"
-#include "oscar/UI/Widgets/Popup.hpp"
+#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <cstddef>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "oscar/Graphics/Mesh.hpp"
+#include <oscar/Graphics/Mesh.hpp>
 
 #include <functional>
 #include <memory>

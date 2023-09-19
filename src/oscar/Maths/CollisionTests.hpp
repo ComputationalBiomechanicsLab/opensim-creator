@@ -1,6 +1,6 @@
 #pragma once
 
-#include "oscar/Maths/RayCollision.hpp"
+#include <oscar/Maths/RayCollision.hpp>
 
 #include <glm/vec2.hpp>
 

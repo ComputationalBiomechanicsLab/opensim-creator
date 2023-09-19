@@ -1,7 +1,7 @@
 #pragma once
 
-#include "oscar/Platform/LogLevel.hpp"
-#include "oscar/Utils/CStringView.hpp"
+#include <oscar/Platform/LogLevel.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <ctime>
 #include <filesystem>

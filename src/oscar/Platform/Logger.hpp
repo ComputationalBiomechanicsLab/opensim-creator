@@ -1,8 +1,8 @@
 #pragma once
 
-#include "oscar/Platform/LogSink.hpp"
-#include "oscar/Platform/LogMessageView.hpp"
-#include "oscar/Utils/CStringView.hpp"
+#include <oscar/Platform/LogSink.hpp>
+#include <oscar/Platform/LogMessageView.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <algorithm>
 #include <cstdarg>

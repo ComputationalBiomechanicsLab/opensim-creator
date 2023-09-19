@@ -1,8 +1,8 @@
 #include "IconWithoutMenu.hpp"
 
-#include "oscar/Bindings/ImGuiHelpers.hpp"
-#include "oscar/Graphics/Icon.hpp"
-#include "oscar/Utils/CStringView.hpp"
+#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Graphics/Icon.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <string>
 #include <utility>

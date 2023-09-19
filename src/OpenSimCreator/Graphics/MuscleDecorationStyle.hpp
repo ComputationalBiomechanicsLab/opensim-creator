@@ -1,8 +1,7 @@
 #pragma once
 
-#include <oscar/Utils/CStringView.hpp>
-
 #include <nonstd/span.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>
 

@@ -1,31 +1,23 @@
 #include "UndoableModelActions.hpp"
 
-#include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
-#include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
-#include "OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp"
-#include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
-#include "OpenSimCreator/Model/BasicModelStatePair.hpp"
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Registry/ComponentRegistry.hpp"
-#include "OpenSimCreator/Registry/StaticComponentRegistries.hpp"
-#include "OpenSimCreator/Simulation/ForwardDynamicSimulation.hpp"
-#include "OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp"
-#include "OpenSimCreator/Simulation/Simulation.hpp"
-#include "OpenSimCreator/Simulation/StoFileSimulation.hpp"
-#include "OpenSimCreator/Tabs/ModelEditorTab.hpp"
-#include "OpenSimCreator/Tabs/LoadingTab.hpp"
-#include "OpenSimCreator/Tabs/SimulatorTab.hpp"
-#include "OpenSimCreator/Tabs/PerformanceAnalyzerTab.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/Widgets/ObjectPropertiesEditor.hpp"
-
-#include <oscar/Graphics/MeshCache.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Platform/os.hpp>
-#include <oscar/Utils/FilesystemHelpers.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
+#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
+#include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp>
+#include <OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp>
+#include <OpenSimCreator/Model/BasicModelStatePair.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Registry/ComponentRegistry.hpp>
+#include <OpenSimCreator/Registry/StaticComponentRegistries.hpp>
+#include <OpenSimCreator/Simulation/ForwardDynamicSimulation.hpp>
+#include <OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp>
+#include <OpenSimCreator/Simulation/Simulation.hpp>
+#include <OpenSimCreator/Simulation/StoFileSimulation.hpp>
+#include <OpenSimCreator/Tabs/ModelEditorTab.hpp>
+#include <OpenSimCreator/Tabs/LoadingTab.hpp>
+#include <OpenSimCreator/Tabs/SimulatorTab.hpp>
+#include <OpenSimCreator/Tabs/PerformanceAnalyzerTab.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Widgets/ObjectPropertiesEditor.hpp>
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -51,6 +43,13 @@
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
+#include <oscar/Graphics/MeshCache.hpp>
+#include <oscar/Platform/App.hpp>
+#include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/os.hpp>
+#include <oscar/Utils/FilesystemHelpers.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
+#include <oscar/Utils/UID.hpp>
 
 #include <algorithm>
 #include <chrono>

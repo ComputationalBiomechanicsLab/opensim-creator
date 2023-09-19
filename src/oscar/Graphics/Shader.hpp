@@ -1,8 +1,8 @@
 #pragma once
 
-#include "oscar/Graphics/ShaderType.hpp"
-#include "oscar/Utils/CopyOnUpdPtr.hpp"
-#include "oscar/Utils/CStringView.hpp"
+#include <oscar/Graphics/ShaderType.hpp>
+#include <oscar/Utils/CopyOnUpdPtr.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>
 #include <iosfwd>

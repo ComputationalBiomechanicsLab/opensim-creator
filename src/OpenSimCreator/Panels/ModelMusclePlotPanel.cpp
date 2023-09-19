@@ -1,23 +1,10 @@
 #include "ModelMusclePlotPanel.hpp"
 
-#include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
-#include "OpenSimCreator/Model/ModelStateCommit.hpp"
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/Utils/UndoableModelActions.hpp"
-
-#include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Formats/CSV.hpp>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Platform/os.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
-#include <oscar/Utils/SynchronizedValue.hpp>
+#include <OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp>
+#include <OpenSimCreator/Model/ModelStateCommit.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/UndoableModelActions.hpp>
 
 #include <glm/glm.hpp>
 #include <IconsFontAwesome5.h>
@@ -33,6 +20,18 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Formats/CSV.hpp>
+#include <oscar/Graphics/Color.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Platform/App.hpp>
+#include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/os.hpp>
+#include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
+#include <oscar/Utils/SynchronizedValue.hpp>
 
 #include <algorithm>
 #include <atomic>

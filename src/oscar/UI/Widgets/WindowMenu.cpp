@@ -1,7 +1,7 @@
 #include "WindowMenu.hpp"
 
-#include "oscar/UI/Panels/PanelManager.hpp"
-#include "oscar/Utils/CStringView.hpp"
+#include <oscar/UI/Panels/PanelManager.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <imgui.h>
 

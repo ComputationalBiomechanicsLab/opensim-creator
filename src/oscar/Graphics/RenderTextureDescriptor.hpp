@@ -1,10 +1,10 @@
 #pragma once
 
-#include "oscar/Graphics/AntiAliasingLevel.hpp"
-#include "oscar/Graphics/DepthStencilFormat.hpp"
-#include "oscar/Graphics/RenderTextureFormat.hpp"
-#include "oscar/Graphics/RenderTextureReadWrite.hpp"
-#include "oscar/Graphics/TextureDimensionality.hpp"
+#include <oscar/Graphics/AntiAliasingLevel.hpp>
+#include <oscar/Graphics/DepthStencilFormat.hpp>
+#include <oscar/Graphics/RenderTextureFormat.hpp>
+#include <oscar/Graphics/RenderTextureReadWrite.hpp>
+#include <oscar/Graphics/TextureDimensionality.hpp>
 
 #include <glm/vec2.hpp>
 

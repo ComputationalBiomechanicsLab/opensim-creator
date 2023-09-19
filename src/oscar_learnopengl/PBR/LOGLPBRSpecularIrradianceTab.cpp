@@ -20,8 +20,8 @@
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
-#include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>

@@ -1,24 +1,23 @@
 #include "ForwardDynamicSimulator.hpp"
 
-#include "OpenSimCreator/Model/BasicModelStatePair.hpp"
-#include "OpenSimCreator/Outputs/IntegratorOutputExtractor.hpp"
-#include "OpenSimCreator/Outputs/MultiBodySystemOutputExtractor.hpp"
-#include "OpenSimCreator/Outputs/VirtualOutputExtractor.hpp"
-#include "OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp"
-#include "OpenSimCreator/Simulation/IntegratorMethod.hpp"
-#include "OpenSimCreator/Simulation/SimulationClock.hpp"
-#include "OpenSimCreator/Simulation/SimulationReport.hpp"
-#include "OpenSimCreator/Simulation/SimulationStatus.hpp"
-
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
-#include <oscar/Utils/HashHelpers.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <OpenSimCreator/Model/BasicModelStatePair.hpp>
+#include <OpenSimCreator/Outputs/IntegratorOutputExtractor.hpp>
+#include <OpenSimCreator/Outputs/MultiBodySystemOutputExtractor.hpp>
+#include <OpenSimCreator/Outputs/VirtualOutputExtractor.hpp>
+#include <OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp>
+#include <OpenSimCreator/Simulation/IntegratorMethod.hpp>
+#include <OpenSimCreator/Simulation/SimulationClock.hpp>
+#include <OpenSimCreator/Simulation/SimulationReport.hpp>
+#include <OpenSimCreator/Simulation/SimulationStatus.hpp>
 
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <oscar/Platform/Log.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/HashHelpers.hpp>
+#include <oscar/Utils/UID.hpp>
 #include <SimTKsimbody.h>
 #include <simmath/Integrator.h>
 #include <simmath/TimeStepper.h>

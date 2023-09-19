@@ -1,7 +1,7 @@
 #include "CookiecutterTab.hpp"
 
-#include "oscar/UI/Tabs/StandardTabBase.hpp"
-#include "oscar/Utils/CStringView.hpp"
+#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <SDL_events.h>

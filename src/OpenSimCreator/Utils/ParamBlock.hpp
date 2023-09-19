@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OpenSimCreator/Utils/ParamValue.hpp"
+#include <OpenSimCreator/Utils/ParamValue.hpp>
 
 #include <oscar/Utils/ClonePtr.hpp>
 

@@ -1,9 +1,7 @@
 #include "Select1PFPopup.hpp"
 
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-
-#include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <imgui.h>
 #include <nonstd/span.hpp>
@@ -11,6 +9,7 @@
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
 
 #include <algorithm>
 #include <string>

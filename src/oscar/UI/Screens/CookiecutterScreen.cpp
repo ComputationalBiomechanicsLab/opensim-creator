@@ -1,7 +1,7 @@
 #include "CookiecutterScreen.hpp"
 
-#include "oscar/Graphics/Color.hpp"
-#include "oscar/Platform/App.hpp"
+#include <oscar/Graphics/Color.hpp>
+#include <oscar/Platform/App.hpp>
 
 #include <imgui.h>
 

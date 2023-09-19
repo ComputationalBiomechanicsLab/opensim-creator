@@ -1,9 +1,9 @@
 #include "UiModelViewer.hpp"
 
-#include "OpenSimCreator/Graphics/CachedModelRenderer.hpp"
-#include "OpenSimCreator/Graphics/ModelRendererParams.hpp"
-#include "OpenSimCreator/Model/VirtualConstModelStatePair.hpp"
-#include "OpenSimCreator/Widgets/BasicWidgets.hpp"
+#include <OpenSimCreator/Graphics/CachedModelRenderer.hpp>
+#include <OpenSimCreator/Graphics/ModelRendererParams.hpp>
+#include <OpenSimCreator/Model/VirtualConstModelStatePair.hpp>
+#include <OpenSimCreator/Widgets/BasicWidgets.hpp>
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/IconCache.hpp>

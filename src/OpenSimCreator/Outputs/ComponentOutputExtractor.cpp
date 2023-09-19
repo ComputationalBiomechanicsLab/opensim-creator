@@ -1,16 +1,15 @@
 #include "ComponentOutputExtractor.hpp"
 
-#include "OpenSimCreator/Simulation/SimulationReport.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/HashHelpers.hpp>
-#include <oscar/Utils/Perf.hpp>
+#include <OpenSimCreator/Simulation/SimulationReport.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Common/ComponentPath.h>
+#include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/HashHelpers.hpp>
+#include <oscar/Utils/Perf.hpp>
 #include <SimTKcommon/SmallMatrix.h>
 
 #include <algorithm>

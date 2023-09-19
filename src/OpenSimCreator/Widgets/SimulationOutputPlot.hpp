@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OpenSimCreator/Outputs/OutputExtractor.hpp"
+#include <OpenSimCreator/Outputs/OutputExtractor.hpp>
 
 #include <nonstd/span.hpp>
 

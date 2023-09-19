@@ -1,14 +1,8 @@
 #include "NavigatorPanel.hpp"
 
-#include "OpenSimCreator/Model/VirtualModelStatePair.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/Widgets/BasicWidgets.hpp"
-
-#include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/UI/Panels/StandardPanel.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
+#include <OpenSimCreator/Model/VirtualModelStatePair.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Widgets/BasicWidgets.hpp>
 
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
@@ -17,6 +11,11 @@
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Graphics/Color.hpp>
+#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 
 #include <algorithm>
 #include <array>

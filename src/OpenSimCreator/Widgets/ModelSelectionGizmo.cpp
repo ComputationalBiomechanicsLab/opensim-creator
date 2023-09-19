@@ -1,16 +1,9 @@
 #include "ModelSelectionGizmo.hpp"
 
-#include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/Utils/UndoableModelActions.hpp"
-
-#include <oscar/Bindings/ImGuizmoHelpers.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/PolarPerspectiveCamera.hpp>
-#include <oscar/Maths/Rect.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/ScopeGuard.hpp>
+#include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/UndoableModelActions.hpp>
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>
@@ -24,6 +17,12 @@
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
+#include <oscar/Bindings/ImGuizmoHelpers.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/PolarPerspectiveCamera.hpp>
+#include <oscar/Maths/Rect.hpp>
+#include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/ScopeGuard.hpp>
 #include <Simbody.h>
 
 #include <cstddef>

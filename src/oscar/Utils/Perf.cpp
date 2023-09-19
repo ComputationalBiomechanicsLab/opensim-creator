@@ -1,7 +1,7 @@
 #include "Perf.hpp"
 
-#include "oscar/Utils/HashHelpers.hpp"
-#include "oscar/Utils/SynchronizedValue.hpp"
+#include <oscar/Utils/HashHelpers.hpp>
+#include <oscar/Utils/SynchronizedValue.hpp>
 
 #include <algorithm>
 #include <cstddef>

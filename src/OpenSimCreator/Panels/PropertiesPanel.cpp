@@ -1,20 +1,14 @@
 #include "PropertiesPanel.hpp"
 
-#include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/Utils/UndoableModelActions.hpp"
-#include "OpenSimCreator/Widgets/ComponentContextMenu.hpp"
-#include "OpenSimCreator/Widgets/ObjectPropertiesEditor.hpp"
-#include "OpenSimCreator/Widgets/ReassignSocketPopup.hpp"
-#include "OpenSimCreator/Widgets/SelectComponentPopup.hpp"
-#include "OpenSimCreator/Widgets/SelectGeometryPopup.hpp"
-
-#include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/UI/Panels/StandardPanel.hpp>
-#include <oscar/Platform/os.hpp>
-#include <oscar/Utils/ScopeGuard.hpp>
+#include <OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/UndoableModelActions.hpp>
+#include <OpenSimCreator/Widgets/ComponentContextMenu.hpp>
+#include <OpenSimCreator/Widgets/ObjectPropertiesEditor.hpp>
+#include <OpenSimCreator/Widgets/ReassignSocketPopup.hpp>
+#include <OpenSimCreator/Widgets/SelectComponentPopup.hpp>
+#include <OpenSimCreator/Widgets/SelectGeometryPopup.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -32,6 +26,11 @@
 #include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
+#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Graphics/Color.hpp>
+#include <oscar/Platform/os.hpp>
+#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/Utils/ScopeGuard.hpp>
 
 #include <array>
 #include <cstddef>

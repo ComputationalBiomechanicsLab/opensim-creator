@@ -1,11 +1,11 @@
 #include "STL.hpp"
 
-#include "oscar/Graphics/Mesh.hpp"
-#include "oscar/Maths/MathHelpers.hpp"
-#include "oscar/Maths/Triangle.hpp"
-#include "oscar/Utils/Assertions.hpp"
-#include "oscar/Utils/Cpp20Shims.hpp"
-#include "OscarConfiguration.hpp"
+#include <oscar/Graphics/Mesh.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Triangle.hpp>
+#include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
+#include <OscarConfiguration.hpp>
 
 #include <glm/vec3.hpp>
 #include <nonstd/span.hpp>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "oscar/Utils/CStringView.hpp"
-#include "oscar/Utils/UID.hpp"
+#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/UID.hpp>
 
 #include <SDL_events.h>
 

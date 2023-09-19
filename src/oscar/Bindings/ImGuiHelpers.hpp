@@ -1,8 +1,8 @@
 #pragma once
 
-#include "oscar/Maths/AABB.hpp"
-#include "oscar/Maths/Rect.hpp"
-#include "oscar/Utils/CStringView.hpp"
+#include <oscar/Maths/AABB.hpp>
+#include <oscar/Maths/Rect.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>

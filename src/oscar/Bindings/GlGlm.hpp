@@ -1,7 +1,7 @@
 #pragma once
 
-#include "oscar/Bindings/Gl.hpp"
-#include "oscar/Utils/Assertions.hpp"
+#include <oscar/Bindings/Gl.hpp>
+#include <oscar/Utils/Assertions.hpp>
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat3x3.hpp>

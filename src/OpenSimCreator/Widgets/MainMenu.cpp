@@ -1,14 +1,19 @@
 #include "MainMenu.hpp"
 
-#include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Simulation/Simulation.hpp"
-#include "OpenSimCreator/Simulation/StoFileSimulation.hpp"
-#include "OpenSimCreator/Tabs/MeshImporterTab.hpp"
-#include "OpenSimCreator/Tabs/SimulatorTab.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/Utils/UndoableModelActions.hpp"
+#include <OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Simulation/Simulation.hpp>
+#include <OpenSimCreator/Simulation/StoFileSimulation.hpp>
+#include <OpenSimCreator/Tabs/MeshImporterTab.hpp>
+#include <OpenSimCreator/Tabs/SimulatorTab.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/UndoableModelActions.hpp>
 
+#include <imgui.h>
+#include <IconsFontAwesome5.h>
+#include <OpenSim/Common/PropertyObjArray.h>
+#include <OpenSim/Common/Set.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Platform/App.hpp>
@@ -22,12 +27,6 @@
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <OscarConfiguration.hpp>
-
-#include <imgui.h>
-#include <IconsFontAwesome5.h>
-#include <OpenSim/Common/PropertyObjArray.h>
-#include <OpenSim/Common/Set.h>
-#include <OpenSim/Simulation/Model/Model.h>
 
 #include <algorithm>
 #include <array>

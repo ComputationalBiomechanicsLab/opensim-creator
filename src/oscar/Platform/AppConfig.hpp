@@ -1,7 +1,7 @@
 #pragma once
 
-#include "oscar/Graphics/AntiAliasingLevel.hpp"
-#include "oscar/Platform/LogLevel.hpp"
+#include <oscar/Graphics/AntiAliasingLevel.hpp>
+#include <oscar/Platform/LogLevel.hpp>
 
 #include <filesystem>
 #include <memory>

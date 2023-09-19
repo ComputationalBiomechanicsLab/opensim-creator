@@ -1,6 +1,6 @@
 #pragma once
 
-#include "oscar/UI/Screens/Screen.hpp"
+#include <oscar/UI/Screens/Screen.hpp>
 
 #include <SDL_events.h>
 

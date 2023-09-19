@@ -1,13 +1,9 @@
 #include "ReassignSocketPopup.hpp"
 
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/Utils/UndoableModelActions.hpp"
-#include "OpenSimCreator/Widgets/BasicWidgets.hpp"
-
-#include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/UndoableModelActions.hpp>
+#include <OpenSimCreator/Widgets/BasicWidgets.hpp>
 
 #include <glm/vec2.hpp>
 #include <imgui.h>
@@ -16,6 +12,9 @@
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Common/ComponentSocket.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 
 #include <algorithm>
 #include <memory>

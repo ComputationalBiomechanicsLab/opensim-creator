@@ -28,8 +28,8 @@
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Transform.hpp>
-#include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/SpanHelpers.hpp>

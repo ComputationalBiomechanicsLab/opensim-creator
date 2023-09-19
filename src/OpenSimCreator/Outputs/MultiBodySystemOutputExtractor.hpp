@@ -1,12 +1,11 @@
 #pragma once
 
-#include "OpenSimCreator/Outputs/OutputExtractor.hpp"
-#include "OpenSimCreator/Outputs/VirtualOutputExtractor.hpp"
-
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <OpenSimCreator/Outputs/OutputExtractor.hpp>
+#include <OpenSimCreator/Outputs/VirtualOutputExtractor.hpp>
 
 #include <nonstd/span.hpp>
+#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/UID.hpp>
 
 #include <cstddef>
 #include <string>

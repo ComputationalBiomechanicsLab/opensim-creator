@@ -1,7 +1,6 @@
 #pragma once
 
 #include <oscar/Utils/CStringView.hpp>
-
 #include <nonstd/span.hpp>
 
 namespace osc

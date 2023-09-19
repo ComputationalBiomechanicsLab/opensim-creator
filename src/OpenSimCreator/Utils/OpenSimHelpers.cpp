@@ -1,17 +1,8 @@
 #include "OpenSimHelpers.hpp"
 
-#include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Plane.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/Perf.hpp>
+#include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/vec3.hpp>
@@ -62,6 +53,14 @@
 #include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Plane.hpp>
+#include <oscar/Maths/Transform.hpp>
+#include <oscar/Platform/Log.hpp>
+#include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/Perf.hpp>
 #include <SimTKcommon.h>
 #include <SimTKcommon/SmallMatrix.h>
 

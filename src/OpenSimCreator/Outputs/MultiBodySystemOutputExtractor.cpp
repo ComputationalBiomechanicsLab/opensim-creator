@@ -1,11 +1,10 @@
 #include "MultiBodySystemOutputExtractor.hpp"
 
-#include "OpenSimCreator/Simulation/SimulationReport.hpp"
-
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/HashHelpers.hpp>
+#include <OpenSimCreator/Simulation/SimulationReport.hpp>
 
 #include <nonstd/span.hpp>
+#include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/HashHelpers.hpp>
 #include <simbody/internal/MultibodySystem.h>
 
 #include <algorithm>

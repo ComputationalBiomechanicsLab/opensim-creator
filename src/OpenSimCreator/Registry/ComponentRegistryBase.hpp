@@ -1,11 +1,10 @@
 #pragma once
 
-#include "OpenSimCreator/Registry/ComponentRegistryEntryBase.hpp"
-#include "OpenSimCreator/Registry/ComponentRegistryEntry.hpp"
-
-#include <oscar/Utils/CStringView.hpp>
+#include <OpenSimCreator/Registry/ComponentRegistryEntryBase.hpp>
+#include <OpenSimCreator/Registry/ComponentRegistryEntry.hpp>
 
 #include <OpenSim/Common/Component.h>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>
 #include <memory>

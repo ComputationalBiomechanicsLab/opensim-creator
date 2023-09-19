@@ -1,15 +1,19 @@
 #include "ModelEditorViewerPanel.hpp"
 
-#include "OpenSimCreator/Graphics/CachedModelRenderer.hpp"
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Panels/ModelEditorViewerPanelLayer.hpp"
-#include "OpenSimCreator/Panels/ModelEditorViewerPanelParameters.hpp"
-#include "OpenSimCreator/Panels/ModelEditorViewerPanelRightClickEvent.hpp"
-#include "OpenSimCreator/Panels/ModelEditorViewerPanelState.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/Widgets/BasicWidgets.hpp"
-#include "OpenSimCreator/Widgets/ModelSelectionGizmo.hpp"
+#include <OpenSimCreator/Graphics/CachedModelRenderer.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Panels/ModelEditorViewerPanelLayer.hpp>
+#include <OpenSimCreator/Panels/ModelEditorViewerPanelParameters.hpp>
+#include <OpenSimCreator/Panels/ModelEditorViewerPanelRightClickEvent.hpp>
+#include <OpenSimCreator/Panels/ModelEditorViewerPanelState.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Widgets/BasicWidgets.hpp>
+#include <OpenSimCreator/Widgets/ModelSelectionGizmo.hpp>
 
+#include <glm/vec3.hpp>
+#include <imgui.h>
+#include <ImGuizmo.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Bindings/ImGuizmoHelpers.hpp>
 #include <oscar/Graphics/IconCache.hpp>
@@ -17,16 +21,11 @@
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
-#include <oscar/UI/Panels/StandardPanel.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/UI/Panels/StandardPanel.hpp>
 #include <oscar/UI/Widgets/GuiRuler.hpp>
 #include <oscar/UI/Widgets/IconWithoutMenu.hpp>
-
-#include <glm/vec3.hpp>
-#include <imgui.h>
-#include <ImGuizmo.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <cstdint>
 #include <memory>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "oscar/UI/Panels/Panel.hpp"
-#include "oscar/Utils/CStringView.hpp"
+#include <oscar/UI/Panels/Panel.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <memory>
 #include <string_view>

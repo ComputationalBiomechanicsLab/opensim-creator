@@ -1,13 +1,12 @@
 #pragma once
 
-#include "OpenSimCreator/Simulation/SimulationClock.hpp"
-#include "OpenSimCreator/Simulation/SimulationReport.hpp"
-#include "OpenSimCreator/Simulation/SimulationStatus.hpp"
-#include "OpenSimCreator/Simulation/VirtualSimulation.hpp"
-
-#include <oscar/Utils/SynchronizedValue.hpp>
+#include <OpenSimCreator/Simulation/SimulationClock.hpp>
+#include <OpenSimCreator/Simulation/SimulationReport.hpp>
+#include <OpenSimCreator/Simulation/SimulationStatus.hpp>
+#include <OpenSimCreator/Simulation/VirtualSimulation.hpp>
 
 #include <nonstd/span.hpp>
+#include <oscar/Utils/SynchronizedValue.hpp>
 
 #include <cstddef>
 #include <filesystem>

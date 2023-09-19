@@ -1,6 +1,6 @@
 #pragma once
 
-#include "oscar/Graphics/TextureChannelFormat.hpp"
+#include <oscar/Graphics/TextureChannelFormat.hpp>
 
 #include <cstddef>
 #include <cstdint>

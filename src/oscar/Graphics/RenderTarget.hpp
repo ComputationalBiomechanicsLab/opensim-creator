@@ -1,7 +1,7 @@
 #pragma once
 
-#include "oscar/Graphics/RenderTargetColorAttachment.hpp"
-#include "oscar/Graphics/RenderTargetDepthAttachment.hpp"
+#include <oscar/Graphics/RenderTargetColorAttachment.hpp>
+#include <oscar/Graphics/RenderTargetDepthAttachment.hpp>
 
 #include <vector>
 

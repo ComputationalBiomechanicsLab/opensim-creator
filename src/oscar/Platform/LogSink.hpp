@@ -1,6 +1,6 @@
 #pragma once
 
-#include "oscar/Platform/LogLevel.hpp"
+#include <oscar/Platform/LogLevel.hpp>
 
 namespace osc { struct LogMessageView; }
 

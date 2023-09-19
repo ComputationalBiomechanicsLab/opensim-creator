@@ -1,10 +1,17 @@
 #include "MeshWarpingTab.hpp"
 
-#include "OpenSimCreator/Utils/TPS3D.hpp"
-#include "OpenSimCreator/Bindings/SimTKMeshLoader.hpp"
-#include "OpenSimCreator/Widgets/BasicWidgets.hpp"
-#include "OpenSimCreator/Widgets/MainMenu.hpp"
+#include <OpenSimCreator/Bindings/SimTKMeshLoader.hpp>
+#include <OpenSimCreator/Utils/TPS3D.hpp>
+#include <OpenSimCreator/Widgets/BasicWidgets.hpp>
+#include <OpenSimCreator/Widgets/MainMenu.hpp>
 
+#include <glm/mat3x4.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <IconsFontAwesome5.h>
+#include <imgui.h>
+#include <imgui_internal.h>
+#include <nonstd/span.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Formats/CSV.hpp>
@@ -27,6 +34,9 @@
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
+#include <oscar/Platform/App.hpp>
+#include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/os.hpp>
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/UI/Panels/Panel.hpp>
 #include <oscar/UI/Panels/PanelManager.hpp>
@@ -34,10 +44,13 @@
 #include <oscar/UI/Panels/StandardPanel.hpp>
 #include <oscar/UI/Panels/ToggleablePanelFlags.hpp>
 #include <oscar/UI/Panels/UndoRedoPanel.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Platform/os.hpp>
 #include <oscar/UI/Tabs/TabHost.hpp>
+#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/UI/Widgets/PopupManager.hpp>
+#include <oscar/UI/Widgets/RedoButton.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <oscar/UI/Widgets/UndoButton.hpp>
+#include <oscar/UI/Widgets/WindowMenu.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
@@ -46,20 +59,6 @@
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <oscar/Utils/UndoRedo.hpp>
-#include <oscar/UI/Widgets/Popup.hpp>
-#include <oscar/UI/Widgets/PopupManager.hpp>
-#include <oscar/UI/Widgets/RedoButton.hpp>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
-#include <oscar/UI/Widgets/UndoButton.hpp>
-#include <oscar/UI/Widgets/WindowMenu.hpp>
-
-#include <glm/mat3x4.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <IconsFontAwesome5.h>
-#include <imgui.h>
-#include <imgui_internal.h>
-#include <nonstd/span.hpp>
 #include <SDL_events.h>
 #include <Simbody.h>
 

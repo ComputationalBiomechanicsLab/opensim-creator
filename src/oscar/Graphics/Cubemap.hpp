@@ -1,8 +1,8 @@
 #pragma once
 
-#include "oscar/Graphics/CubemapFace.hpp"
-#include "oscar/Graphics/TextureFormat.hpp"
-#include "oscar/Utils/CopyOnUpdPtr.hpp"
+#include <oscar/Graphics/CubemapFace.hpp>
+#include <oscar/Graphics/TextureFormat.hpp>
+#include <oscar/Utils/CopyOnUpdPtr.hpp>
 
 #include <nonstd/span.hpp>
 

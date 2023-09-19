@@ -1,6 +1,6 @@
 #include "ComponentDetails.hpp"
 
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <imgui.h>
 #include <OpenSim/Common/AbstractProperty.h>

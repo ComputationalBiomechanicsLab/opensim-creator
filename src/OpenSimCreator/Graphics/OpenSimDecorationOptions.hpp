@@ -1,8 +1,8 @@
 #pragma once
 
-#include "OpenSimCreator/Graphics/MuscleColoringStyle.hpp"
-#include "OpenSimCreator/Graphics/MuscleDecorationStyle.hpp"
-#include "OpenSimCreator/Graphics/MuscleSizingStyle.hpp"
+#include <OpenSimCreator/Graphics/MuscleColoringStyle.hpp>
+#include <OpenSimCreator/Graphics/MuscleDecorationStyle.hpp>
+#include <OpenSimCreator/Graphics/MuscleSizingStyle.hpp>
 
 #include <oscar/Utils/CStringView.hpp>
 

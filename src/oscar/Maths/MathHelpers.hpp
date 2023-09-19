@@ -1,10 +1,10 @@
 #pragma once
 
-#include "oscar/Maths/AABB.hpp"
-#include "oscar/Maths/Line.hpp"
-#include "oscar/Maths/Sphere.hpp"
-#include "oscar/Maths/Transform.hpp"
-#include "oscar/Maths/Triangle.hpp"
+#include <oscar/Maths/AABB.hpp>
+#include <oscar/Maths/Line.hpp>
+#include <oscar/Maths/Sphere.hpp>
+#include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Triangle.hpp>
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>

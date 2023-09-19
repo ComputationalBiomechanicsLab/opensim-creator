@@ -1,25 +1,24 @@
 #include "MeshGenTestTab.hpp"
 
-#include "oscar/Bindings/ImGuiHelpers.hpp"
-#include "oscar/Graphics/MeshCache.hpp"
-#include "oscar/Graphics/SceneDecoration.hpp"
-#include "oscar/Graphics/SceneDecorationFlags.hpp"
-#include "oscar/Graphics/SceneRenderer.hpp"
-#include "oscar/Graphics/SceneRendererParams.hpp"
-#include "oscar/Maths/Constants.hpp"
-#include "oscar/Maths/MathHelpers.hpp"
-#include "oscar/Maths/Transform.hpp"
-#include "oscar/Maths/PolarPerspectiveCamera.hpp"
-#include "oscar/Platform/App.hpp"
-#include "oscar/UI/Tabs/StandardTabBase.hpp"
-#include "oscar/Utils/CStringView.hpp"
-#include "oscar/UI/Widgets/SceneViewer.hpp"
-
 #include <glm/gtx/transform.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <imgui.h>
+#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Graphics/MeshCache.hpp>
+#include <oscar/Graphics/SceneDecoration.hpp>
+#include <oscar/Graphics/SceneDecorationFlags.hpp>
+#include <oscar/Graphics/SceneRenderer.hpp>
+#include <oscar/Graphics/SceneRendererParams.hpp>
+#include <oscar/Maths/Constants.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/PolarPerspectiveCamera.hpp>
+#include <oscar/Platform/App.hpp>
+#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Widgets/SceneViewer.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <map>
 #include <memory>

@@ -1,13 +1,12 @@
 #pragma once
 
+#include <glm/vec3.hpp>
+#include <nonstd/span.hpp>
+#include <OpenSim/Common/ComponentPath.h>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/Plane.hpp>
 #include <oscar/Maths/PointDirection.hpp>
 #include <oscar/Utils/CStringView.hpp>
-
-#include <glm/vec3.hpp>
-#include <nonstd/span.hpp>
-#include <OpenSim/Common/ComponentPath.h>
 #include <SimTKcommon/internal/Transform.h>
 
 #include <cstddef>

@@ -1,16 +1,15 @@
 #include "EditorTabStatusBar.hpp"
 
-#include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Widgets/ComponentContextMenu.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-
-#include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
+#include <OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Widgets/ComponentContextMenu.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
+#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 
 #include <memory>
 #include <utility>

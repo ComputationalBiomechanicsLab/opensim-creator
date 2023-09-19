@@ -1,6 +1,6 @@
 #include "LOGLCubemapsTab.hpp"
 
-#include "oscar_learnopengl/LearnOpenGLHelpers.hpp"
+#include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
 
 #include <glm/vec3.hpp>
 #include <imgui.h>

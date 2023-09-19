@@ -1,8 +1,8 @@
 #include "OBJ.hpp"
 
-#include "oscar/Graphics/Mesh.hpp"
-#include "oscar/Utils/Cpp20Shims.hpp"
-#include "OscarConfiguration.hpp"
+#include <oscar/Graphics/Mesh.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
+#include <OscarConfiguration.hpp>
 
 #include <cstddef>
 #include <iostream>

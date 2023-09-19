@@ -1,6 +1,6 @@
 #pragma once
 
-#include "oscar/Graphics/Color32.hpp"
+#include <oscar/Graphics/Color32.hpp>
 
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>

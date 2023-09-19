@@ -1,6 +1,6 @@
 #include "BasicModelStatePair.hpp"
 
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>

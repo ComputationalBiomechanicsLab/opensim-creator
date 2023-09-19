@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OpenSimCreator/Model/VirtualConstModelStatePair.hpp"
+#include <OpenSimCreator/Model/VirtualConstModelStatePair.hpp>
 
 namespace OpenSim { class Component; }
 

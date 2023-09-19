@@ -1,7 +1,7 @@
 #pragma once
 
-#include "OpenSimCreator/Model/VirtualModelStatePair.hpp"
-#include "OpenSimCreator/Simulation/SimulationReport.hpp"
+#include <OpenSimCreator/Model/VirtualModelStatePair.hpp>
+#include <OpenSimCreator/Simulation/SimulationReport.hpp>
 
 #include <oscar/Utils/UID.hpp>
 

@@ -1,16 +1,15 @@
 #pragma once
 
-#include "OpenSimCreator/Graphics/CachedModelRenderer.hpp"
-#include "OpenSimCreator/Panels/ModelEditorViewerPanelLayer.hpp"
+#include <OpenSimCreator/Graphics/CachedModelRenderer.hpp>
+#include <OpenSimCreator/Panels/ModelEditorViewerPanelLayer.hpp>
 
+#include <nonstd/span.hpp>
+#include <OpenSim/Common/ComponentPath.h>
 #include <oscar/Graphics/SceneCollision.hpp>
 #include <oscar/Graphics/SceneDecoration.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Utils/CStringView.hpp>
-
-#include <nonstd/span.hpp>
-#include <OpenSim/Common/ComponentPath.h>
 
 #include <optional>
 #include <string>

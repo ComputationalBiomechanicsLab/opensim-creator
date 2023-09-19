@@ -1,15 +1,10 @@
 #include "StoFileSimulation.hpp"
 
-#include "OpenSimCreator/Simulation/SimulationClock.hpp"
-#include "OpenSimCreator/Simulation/SimulationReport.hpp"
-#include "OpenSimCreator/Simulation/SimulationStatus.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/Utils/ParamBlock.hpp"
-
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/ScopeGuard.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
+#include <OpenSimCreator/Simulation/SimulationClock.hpp>
+#include <OpenSimCreator/Simulation/SimulationReport.hpp>
+#include <OpenSimCreator/Simulation/SimulationStatus.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/ParamBlock.hpp>
 
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/Array.h>
@@ -21,6 +16,10 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+#include <oscar/Platform/Log.hpp>
+#include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/ScopeGuard.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 #include <SimTKcommon.h>
 #include <SimTKcommon/Orientation.h>
 #include <SimTKcommon/Scalar.h>

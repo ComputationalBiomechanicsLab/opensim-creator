@@ -1,5 +1,11 @@
 #include "TPS2DTab.hpp"
 
+#include <glm/mat3x4.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <IconsFontAwesome5.h>
+#include <imgui.h>
+#include <nonstd/span.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
@@ -11,19 +17,12 @@
 #include <oscar/Graphics/MeshGen.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
+#include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/VariantHelpers.hpp>
-
-#include <glm/mat3x4.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <IconsFontAwesome5.h>
-#include <imgui.h>
-#include <nonstd/span.hpp>
 #include <SDL_events.h>
 #include <Simbody.h>
 

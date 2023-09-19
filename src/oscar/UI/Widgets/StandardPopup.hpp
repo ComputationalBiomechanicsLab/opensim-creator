@@ -1,6 +1,6 @@
 #pragma once
 
-#include "oscar/UI/Widgets/Popup.hpp"
+#include <oscar/UI/Widgets/Popup.hpp>
 
 #include <glm/vec2.hpp>
 #include <imgui.h>

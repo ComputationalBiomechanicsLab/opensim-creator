@@ -1,16 +1,9 @@
 #include "AddComponentPopup.hpp"
 
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/Utils/UndoableModelActions.hpp"
-#include "OpenSimCreator/Widgets/ObjectPropertiesEditor.hpp"
-
-#include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/UndoableModelActions.hpp>
+#include <OpenSimCreator/Widgets/ObjectPropertiesEditor.hpp>
 
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
@@ -24,6 +17,12 @@
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/Station.h>
+#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Graphics/Color.hpp>
+#include <oscar/Platform/App.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 #include <SimTKcommon/SmallMatrix.h>
 
 #include <algorithm>

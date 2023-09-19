@@ -1,24 +1,23 @@
 #include "PerformanceAnalyzerTab.hpp"
 
-#include "OpenSimCreator/Model/BasicModelStatePair.hpp"
-#include "OpenSimCreator/Outputs/OutputExtractor.hpp"
-#include "OpenSimCreator/Simulation/ForwardDynamicSimulation.hpp"
-#include "OpenSimCreator/Simulation/ForwardDynamicSimulator.hpp"
-#include "OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp"
-#include "OpenSimCreator/Simulation/IntegratorMethod.hpp"
-#include "OpenSimCreator/Simulation/SimulationStatus.hpp"
-#include "OpenSimCreator/Utils/ParamBlock.hpp"
-#include "OpenSimCreator/Utils/ParamValue.hpp"
-#include "OpenSimCreator/Widgets/ParamBlockEditorPopup.hpp"
+#include <OpenSimCreator/Model/BasicModelStatePair.hpp>
+#include <OpenSimCreator/Outputs/OutputExtractor.hpp>
+#include <OpenSimCreator/Simulation/ForwardDynamicSimulation.hpp>
+#include <OpenSimCreator/Simulation/ForwardDynamicSimulator.hpp>
+#include <OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp>
+#include <OpenSimCreator/Simulation/IntegratorMethod.hpp>
+#include <OpenSimCreator/Simulation/SimulationStatus.hpp>
+#include <OpenSimCreator/Utils/ParamBlock.hpp>
+#include <OpenSimCreator/Utils/ParamValue.hpp>
+#include <OpenSimCreator/Widgets/ParamBlockEditorPopup.hpp>
 
-#include <oscar/Platform/os.hpp>
-#include <oscar/Utils/SynchronizedValue.hpp>
-
-#include <SDL_events.h>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <nonstd/span.hpp>
+#include <oscar/Platform/os.hpp>
+#include <oscar/Utils/SynchronizedValue.hpp>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <SDL_events.h>
 
 #include <algorithm>
 #include <filesystem>

@@ -1,9 +1,8 @@
 #pragma once
 
-#include <oscar/Graphics/Mesh.hpp>
-
 #include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
+#include <oscar/Graphics/Mesh.hpp>
 
 #include <filesystem>
 #include <iosfwd>

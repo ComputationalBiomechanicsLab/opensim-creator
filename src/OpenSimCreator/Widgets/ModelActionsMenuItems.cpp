@@ -1,14 +1,11 @@
 #include "ModelActionsMenuItems.hpp"
 
-#include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
-#include "OpenSimCreator/Registry/ComponentRegistry.hpp"
-#include "OpenSimCreator/Registry/StaticComponentRegistries.hpp"
-#include "OpenSimCreator/Widgets/AddBodyPopup.hpp"
-#include "OpenSimCreator/Widgets/AddComponentPopup.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-
-#include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Utils/CStringView.hpp>
+#include <OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp>
+#include <OpenSimCreator/Registry/ComponentRegistry.hpp>
+#include <OpenSimCreator/Registry/StaticComponentRegistries.hpp>
+#include <OpenSimCreator/Widgets/AddBodyPopup.hpp>
+#include <OpenSimCreator/Widgets/AddComponentPopup.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
@@ -19,6 +16,8 @@
 #include <OpenSim/Simulation/Model/Probe.h>
 #include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
+#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>
 #include <optional>

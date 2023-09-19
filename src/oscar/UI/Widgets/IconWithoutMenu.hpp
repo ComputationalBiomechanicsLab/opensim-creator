@@ -1,7 +1,7 @@
 #pragma once
 
-#include "oscar/Graphics/Icon.hpp"
-#include "oscar/Utils/CStringView.hpp"
+#include <oscar/Graphics/Icon.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <string>
 

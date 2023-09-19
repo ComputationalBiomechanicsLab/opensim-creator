@@ -1,6 +1,6 @@
 #include "LOGLParallaxMappingTab.hpp"
 
-#include "oscar_learnopengl/LearnOpenGLHelpers.hpp"
+#include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>

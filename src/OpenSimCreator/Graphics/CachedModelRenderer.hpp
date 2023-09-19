@@ -1,11 +1,10 @@
 #pragma once
 
+#include <glm/vec2.hpp>
+#include <nonstd/span.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/SceneCollision.hpp>
-
-#include <glm/vec2.hpp>
-#include <nonstd/span.hpp>
 
 #include <functional>
 #include <memory>
