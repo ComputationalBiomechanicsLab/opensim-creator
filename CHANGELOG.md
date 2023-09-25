@@ -7,6 +7,8 @@ All notable changes to this project will be documented here. The format is based
 
 - Added `Import Stations from CSV` to the mesh importer's file menu, which provides a way of importing stations
   into the mesh importer scene from a CSV file (#149)
+- Hovering over a recent or example osim file in the home screen now displays the full name of the file in a
+  tooltop (thanks @AdrianHendrik, #784)
 - Internal: `osc::Material` now supports `osc::CullFace` (related: #487)
 - Internal: The LearnOpenGL part of `oscar` is now compiled as a separate project that uses `oscar` as a library
 - Internal: The demo/experimental tabs in `oscar` are now in a separate project (`oscar_demos`)

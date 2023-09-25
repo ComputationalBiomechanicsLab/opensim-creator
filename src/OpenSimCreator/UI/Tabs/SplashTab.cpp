@@ -65,6 +65,30 @@ namespace
         rv.backgroundColor = {0.89f, 0.89f, 0.89f, 1.0f};
         return rv;
     }
+
+    // helper: draws an ImGui::MenuItem for a given recent- or example-file-path
+    void DrawRecentOrExampleFileMenuItem(
+        std::filesystem::path const& path,
+        osc::ParentPtr<osc::MainUIStateAPI>& parent_,
+        int& imguiID)
+    {
+        std::string const label = std::string{ICON_FA_FILE} + " " + path.filename().string();
+
+        ImGui::PushID(++imguiID);
+        if (ImGui::MenuItem(label.c_str()))
+        {
+            parent_->addAndSelectTab<osc::LoadingTab>(parent_, path);
+        }
+        // show the full path as a tooltip when the item is hovered (some people have
+        // long file names (#784)
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::BeginTooltip();
+            ImGui::TextUnformatted(path.filename().string().c_str());
+            ImGui::EndTooltip();
+        }
+        ImGui::PopID();
+    }
 }
 
 class osc::SplashTab::Impl final {
@@ -272,14 +296,11 @@ private:
         {
             for (RecentFile const& rf : m_MainMenuFileTab.recentlyOpenedFiles)
             {
-                std::string const label = std::string{ICON_FA_FILE} + " " + rf.path.filename().string();
-
-                ImGui::PushID(++imguiID);
-                if (ImGui::MenuItem(label.c_str()))
-                {
-                    m_Parent->addAndSelectTab<LoadingTab>(m_Parent, rf.path);
-                }
-                ImGui::PopID();
+                DrawRecentOrExampleFileMenuItem(
+                    rf.path,
+                    m_Parent,
+                    imguiID
+                );
             }
         }
         else
@@ -320,16 +341,13 @@ private:
             ImGui::TextDisabled("Example Models");
             ImGui::Dummy({0.0f, 2.0f});
 
-            for (std::filesystem::path const& ex : m_MainMenuFileTab.exampleOsimFiles)
+            for (std::filesystem::path const& examplePath : m_MainMenuFileTab.exampleOsimFiles)
             {
-                std::string const label = std::string{ICON_FA_FILE} + " " + ex.filename().string();
-
-                ImGui::PushID(++imguiID);
-                if (ImGui::MenuItem(label.c_str()))
-                {
-                    m_Parent->addAndSelectTab<LoadingTab>(m_Parent, ex);
-                }
-                ImGui::PopID();
+                DrawRecentOrExampleFileMenuItem(
+                    examplePath,
+                    m_Parent,
+                    imguiID
+                );
             }
         }
     }
