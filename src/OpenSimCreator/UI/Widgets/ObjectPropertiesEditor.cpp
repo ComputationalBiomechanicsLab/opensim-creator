@@ -45,6 +45,12 @@
 #include <unordered_map>
 #include <utility>
 
+// constants
+namespace
+{
+    inline constexpr float c_InitialStepSize = 0.001f;  // effectively, 1 mm or 0.001 rad
+}
+
 // helper functions
 namespace
 {
@@ -151,6 +157,177 @@ namespace
             }
             return &obj.getPropertyByName(propertyName);
         };
+    }
+
+    // returns a suitable color for the given dimension index (e.g. x == 0)
+    osc::Color IthDimensionColor(glm::vec3::length_type i)
+    {
+        osc::Color color = {0.0f, 0.0f, 0.0f, 0.6f};
+        color[i] = 1.0f;
+        return color;
+    }
+
+    // draws a little vertical line, which is usually used to visually indicate
+    // x/y/z to the user
+    void DrawColoredDimensionHintVerticalLine(osc::Color const& color)
+    {
+        ImDrawList* const l = ImGui::GetWindowDrawList();
+        glm::vec2 const p = ImGui::GetCursorScreenPos();
+        float const h = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y + 2.0f*ImGui::GetStyle().FrameBorderSize;
+        glm::vec2 const dims = glm::vec2{4.0f, h};
+        l->AddRectFilled(p, p + dims, ImGui::ColorConvertFloat4ToU32(glm::vec4{color}));
+        ImGui::SetCursorScreenPos({p.x + 4.0f, p.y});
+    }
+
+    // draws a context menu that the user can use to change the step interval of the +/- buttons
+    void DrawStepSizeEditor(float& stepSize)
+    {
+        if (ImGui::BeginPopupContextItem("##valuecontextmenu"))
+        {
+            ImGui::Text("Set Step Size");
+            ImGui::SameLine();
+            osc::DrawHelpMarker("Sets the decrement/increment of the + and - buttons. Can be handy for tweaking property values");
+            ImGui::Dummy({0.0f, 0.1f*ImGui::GetTextLineHeight()});
+            ImGui::Separator();
+            ImGui::Dummy({0.0f, 0.2f*ImGui::GetTextLineHeight()});
+
+            if (ImGui::BeginTable("CommonChoicesTable", 2, ImGuiTableFlags_SizingStretchProp))
+            {
+                ImGui::TableSetupColumn("Type");
+                ImGui::TableSetupColumn("Options");
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Custom");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::InputFloat("##stepsizeinput", &stepSize, 0.0f, 0.0f, "%.6f");
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Lengths");
+                ImGui::TableSetColumnIndex(1);
+                if (ImGui::Button("10 cm"))
+                {
+                    stepSize = 0.1f;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("1 cm"))
+                {
+                    stepSize = 0.01f;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("1 mm"))
+                {
+                    stepSize = 0.001f;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("0.1 mm"))
+                {
+                    stepSize = 0.0001f;
+                }
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Angles (Degrees)");
+                ImGui::TableSetColumnIndex(1);
+                if (ImGui::Button("180"))
+                {
+                    stepSize = 180.0f;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("90"))
+                {
+                    stepSize = 90.0f;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("45"))
+                {
+                    stepSize = 45.0f;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("10"))
+                {
+                    stepSize = 10.0f;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("1"))
+                {
+                    stepSize = 1.0f;
+                }
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Angles (Radians)");
+                ImGui::TableSetColumnIndex(1);
+                if (ImGui::Button("1 pi"))
+                {
+                    stepSize = osc::fpi;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("1/2 pi"))
+                {
+                    stepSize = osc::fpi2;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("1/4 pi"))
+                {
+                    stepSize = osc::fpi4;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("10/180 pi"))
+                {
+                    stepSize = (10.0f/180.0f) * osc::fpi;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("1/180 pi"))
+                {
+                    stepSize = (1.0f/180.0f) * osc::fpi;
+                }
+
+                ImGui::EndTable();
+            }
+
+            ImGui::EndPopup();
+        }
+    }
+
+    struct ScalarInputRv final {
+        bool wasEdited = false;
+        bool shouldSave = false;
+    };
+
+    ScalarInputRv DrawCustomScalarInput(
+        osc::CStringView label,
+        float& value,
+        float& stepSize,
+        std::string_view frameAnnotationLabel)
+    {
+        ScalarInputRv rv;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, {1.0f, 0.0f});
+        if (ImGui::InputScalar(label.c_str(), ImGuiDataType_Float, &value, &stepSize, nullptr, "%.6f"))
+        {
+            rv.wasEdited = true;
+        }
+        ImGui::PopStyleVar();
+        rv.shouldSave = osc::ItemValueShouldBeSaved();
+        osc::App::upd().addFrameAnnotation(frameAnnotationLabel, osc::GetItemRect());
+        osc::DrawTooltipIfItemHovered("Step Size", "You can right-click to adjust the step size of the buttons");
+        DrawStepSizeEditor(stepSize);
+
+        return rv;
+    }
+
+    std::string GenerateVecFrameAnnotationLabel(
+        OpenSim::AbstractProperty const& backingProperty,
+        glm::vec3::length_type ithDimension)
+    {
+        std::stringstream ss;
+        ss << "ObjectPropertiesEditor::Vec3/";
+        ss << ithDimension;
+        ss << '/';
+        ss << backingProperty.getName();
+        return std::move(ss).str();
     }
 }
 
@@ -364,22 +541,26 @@ namespace
                 ImGui::SameLine();
             }
 
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+
+            // draw an invisible vertical line, so that `double` properties are properly
+            // aligned with `Vec3` properties (that have a non-invisible R/G/B line)
+            DrawColoredDimensionHintVerticalLine(osc::Color::clear());
+
             // read stored value from edited property
             //
             // care: optional properties have size==0, so perform a range check
             auto value = static_cast<float>(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : 0.0);
+            auto frameAnnotationLabel = "ObjectPropertiesEditor::DoubleEditor/" + m_EditedProperty.getName();
 
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            if (ImGui::InputFloat("##doubleeditor", &value, 0.0f, 0.0f, "%.6f"))
+            auto drawRV = DrawCustomScalarInput("##doubleeditor", value, m_StepSize, frameAnnotationLabel);
+
+            if (drawRV.wasEdited)
             {
                 // update the edited property - don't rely on ImGui to remember edits
                 m_EditedProperty.setValue(idx, static_cast<double>(value));
             }
-
-            // globally annotate the editor rect, for downstream screenshot automation
-            osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::DoubleEditor/" + m_EditedProperty.getName(), osc::GetItemRect());
-
-            if (osc::ItemValueShouldBeSaved())
+            if (drawRV.shouldSave)
             {
                 rv = MakePropValueSetter<double>(idx, m_EditedProperty.getValue(idx));
             }
@@ -390,6 +571,7 @@ namespace
         std::function<property_type const*()> m_Accessor;
         property_type m_OriginalProperty{"blank", true};
         property_type m_EditedProperty{"blank", true};
+        float m_StepSize = c_InitialStepSize;
     };
 
     // concrete property editor for a simple `bool` value
@@ -791,43 +973,22 @@ namespace
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
             // draw dimension hint (color bar next to the input)
-            drawColoredDimensionHintVerticalLine(i);
+            DrawColoredDimensionHintVerticalLine(IthDimensionColor(i));
 
             // draw the input editor
-            ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, {1.0f, 0.0f});
-            if (ImGui::InputScalar("##valueinput", ImGuiDataType_Float, &editedValue[i], &m_StepSize, nullptr, "%.6f"))
+            auto frameAnnotation = GenerateVecFrameAnnotationLabel(m_EditedProperty, i);
+            auto drawRV = DrawCustomScalarInput("##valueinput", editedValue[i], m_StepSize, frameAnnotation);
+
+            if (drawRV.wasEdited)
             {
                 // un-convert the value on save
                 glm::vec3 const savedValue = valueConverter.editedValueToModelValue(editedValue);
                 m_EditedProperty.setValue(idx, osc::ToSimTKVec3(savedValue));
             }
-            ImGui::PopStyleVar();
-            bool const rv = osc::ItemValueShouldBeSaved();
-            globallyAddFrameAnnotationForIthVecInputForDocumentation(i);
-            osc::DrawTooltipIfItemHovered("Step Size", "You can right-click to adjust the step size of the buttons");
-
-            // draw a context menu that lets the user "step" the value with a button
-            drawStepSizeEditor();
 
             ImGui::PopID();
 
-            return rv ? ComponentEditorReturn::ShouldSave : ComponentEditorReturn::None;
-        }
-
-        // draws a little vertical line that is red/green/blue depending on the given dimension index
-        //
-        // (used to visually indicate x/y/z to the user)
-        void drawColoredDimensionHintVerticalLine(glm::vec3::length_type i)
-        {
-            osc::Color color = {0.0f, 0.0f, 0.0f, 0.6f};
-            color[i] = 1.0f;
-
-            ImDrawList* const l = ImGui::GetWindowDrawList();
-            glm::vec2 const p = ImGui::GetCursorScreenPos();
-            float const h = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y + 2.0f*ImGui::GetStyle().FrameBorderSize;
-            glm::vec2 const dims = glm::vec2{4.0f, h};
-            l->AddRectFilled(p, p + dims, ImGui::ColorConvertFloat4ToU32(glm::vec4{color}));
-            ImGui::SetCursorScreenPos({p.x + 4.0f, p.y});
+            return drawRV.shouldSave ? ComponentEditorReturn::ShouldSave : ComponentEditorReturn::None;
         }
 
         // draws button that lets the user toggle between inputting radians vs. degrees
@@ -858,137 +1019,13 @@ namespace
             }
         }
 
-        // draws a context menu that the user can use to change the step size of the +/- buttons
-        void drawStepSizeEditor()
-        {
-            if (ImGui::BeginPopupContextItem("##valuecontextmenu"))
-            {
-                ImGui::Text("Set Step Size");
-                ImGui::SameLine();
-                osc::DrawHelpMarker("Sets the decrement/increment of the + and - buttons. Can be handy for tweaking property values");
-                ImGui::Dummy({0.0f, 0.1f*ImGui::GetTextLineHeight()});
-                ImGui::Separator();
-                ImGui::Dummy({0.0f, 0.2f*ImGui::GetTextLineHeight()});
-
-                if (ImGui::BeginTable("CommonChoicesTable", 2, ImGuiTableFlags_SizingStretchProp))
-                {
-                    ImGui::TableSetupColumn("Type");
-                    ImGui::TableSetupColumn("Options");
-
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Custom");
-                    ImGui::TableSetColumnIndex(1);
-                    ImGui::InputFloat("##stepsizeinput", &m_StepSize, 0.0f, 0.0f, "%.6f");
-
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Lengths");
-                    ImGui::TableSetColumnIndex(1);
-                    if (ImGui::Button("10 cm"))
-                    {
-                        m_StepSize = 0.1f;
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("1 cm"))
-                    {
-                        m_StepSize = 0.01f;
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("1 mm"))
-                    {
-                        m_StepSize = 0.001f;
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("0.1 mm"))
-                    {
-                        m_StepSize = 0.0001f;
-                    }
-
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Angles (Degrees)");
-                    ImGui::TableSetColumnIndex(1);
-                    if (ImGui::Button("180"))
-                    {
-                        m_StepSize = 180.0f;
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("90"))
-                    {
-                        m_StepSize = 90.0f;
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("45"))
-                    {
-                        m_StepSize = 45.0f;
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("10"))
-                    {
-                        m_StepSize = 10.0f;
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("1"))
-                    {
-                        m_StepSize = 1.0f;
-                    }
-
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("Angles (Radians)");
-                    ImGui::TableSetColumnIndex(1);
-                    if (ImGui::Button("1 pi"))
-                    {
-                        m_StepSize = osc::fpi;
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("1/2 pi"))
-                    {
-                        m_StepSize = osc::fpi2;
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("1/4 pi"))
-                    {
-                        m_StepSize = osc::fpi4;
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("10/180 pi"))
-                    {
-                        m_StepSize = (10.0f/180.0f) * osc::fpi;
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("1/180 pi"))
-                    {
-                        m_StepSize = (1.0f/180.0f) * osc::fpi;
-                    }
-
-                    ImGui::EndTable();
-                }
-
-                ImGui::EndPopup();
-            }
-        }
-
-        // globally adds a frame annotation to the app's current frame that can later be used to
-        // highlight a specific Vec3 input
-        void globallyAddFrameAnnotationForIthVecInputForDocumentation(glm::vec3::length_type i)
-        {
-            std::stringstream annotation;
-            annotation << "ObjectPropertiesEditor::Vec3/";
-            annotation << i;
-            annotation << '/';
-            annotation << m_EditedProperty.getName();
-            osc::App::upd().addFrameAnnotation(std::move(annotation).str(), osc::GetItemRect());
-        }
-
         std::shared_ptr<osc::UndoableModelStatePair const> m_Model;
         std::function<OpenSim::Object const*()> m_ObjectAccessor;
         std::function<property_type const*()> m_Accessor;
         property_type m_OriginalProperty{"blank", true};
         property_type m_EditedProperty{"blank", true};
         std::optional<OpenSim::ComponentPath> m_MaybeUserSelectedFrameAbsPath;
-        float m_StepSize = 0.001f;
+        float m_StepSize = c_InitialStepSize;
         bool m_OrientationValsAreInRadians = false;
     };
 

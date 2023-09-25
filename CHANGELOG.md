@@ -9,6 +9,8 @@ All notable changes to this project will be documented here. The format is based
   into the mesh importer scene from a CSV file (#149)
 - Hovering over a recent or example osim file in the home screen now displays the full name of the file in a
   tooltop (thanks @AdrianHendrik, #784)
+- Editors for component `double` properties (almost all scalar properties) now have `-` and `+` stepping
+  buttons (previously: the steppers were only available for `Vec3` properties; thanks @tgeijten, #781)
 - Internal: `osc::Material` now supports `osc::CullFace` (related: #487)
 - Internal: The LearnOpenGL part of `oscar` is now compiled as a separate project that uses `oscar` as a library
 - Internal: The demo/experimental tabs in `oscar` are now in a separate project (`oscar_demos`)
