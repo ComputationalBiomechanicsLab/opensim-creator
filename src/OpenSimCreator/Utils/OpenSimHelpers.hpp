@@ -23,6 +23,7 @@ namespace OpenSim { class AbstractOutput; }
 namespace OpenSim { class AbstractPathPoint; }
 namespace OpenSim { class AbstractProperty; }
 namespace OpenSim { class AbstractSocket; }
+namespace OpenSim { class Appearance; }
 namespace OpenSim { template<typename> class Array; }
 namespace OpenSim { template<typename> class ArrayPtrs; }
 namespace OpenSim { class Body; }
@@ -320,9 +321,16 @@ namespace osc
         return FindAncestorWithType<T>(&c) != nullptr;
     }
 
+    // returns the first descendent (including `component`) that satisfies `predicate(descendent);`
+    OpenSim::Component const* FindFirstDescendentInclusive(
+        OpenSim::Component const& component,
+        bool(*predicate)(OpenSim::Component const&)
+    );
+
+    // returns the first descendent of `component` that satisfies `predicate(descendent)`
     OpenSim::Component const* FindFirstDescendent(
-        OpenSim::Component const&,
-        bool(*pred)(OpenSim::Component const&)
+        OpenSim::Component const& component,
+        bool(*predicate)(OpenSim::Component const&)
     );
 
     // returns the first direct descendent of `component` that has type `T`, or
@@ -557,6 +565,10 @@ namespace osc
 
     // returns a user-visible string for a coordinate's motion type
     CStringView GetMotionTypeDisplayName(OpenSim::Coordinate const&);
+
+    // returns a pointer to the component's appearance property, or `nullptr` if it doesn't have one
+    OpenSim::Appearance const* TryGetAppearance(OpenSim::Component const&);
+    OpenSim::Appearance* TryUpdAppearance(OpenSim::Component&);
 
     // tries to set the given component's appearance property's visibility field to the given bool
     //

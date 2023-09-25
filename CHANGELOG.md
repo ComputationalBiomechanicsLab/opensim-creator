@@ -11,6 +11,8 @@ All notable changes to this project will be documented here. The format is based
   tooltop (thanks @AdrianHendrik, #784)
 - Editors for component `double` properties (almost all scalar properties) now have `-` and `+` stepping
   buttons (previously: the steppers were only available for `Vec3` properties; thanks @tgeijten, #781)
+- The `Show`, `Show Only This`, and `Hide` buttons in the component context menu are now disabled if the
+  clicked component, and all its children, have no `Appearance` property (#738)
 - Internal: `osc::Material` now supports `osc::CullFace` (related: #487)
 - Internal: The LearnOpenGL part of `oscar` is now compiled as a separate project that uses `oscar` as a library
 - Internal: The demo/experimental tabs in `oscar` are now in a separate project (`oscar_demos`)

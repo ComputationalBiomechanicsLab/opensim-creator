@@ -226,6 +226,15 @@ namespace
     {
         osc::DrawCalculateMenu(uim.getModel(), uim.getState(), point, osc::CalculateMenuFlags::NoCalculatorIcon);
     }
+
+    bool AnyDescendentInclusiveHasAppearanceProperty(OpenSim::Component const& component)
+    {
+        OpenSim::Component const* const c = osc::FindFirstDescendentInclusive(
+            component,
+            [](OpenSim::Component const& desc) -> bool { return osc::TryGetAppearance(desc); }
+        );
+        return c != nullptr;
+    }
 }
 
 class osc::ComponentContextMenu::Impl final : public osc::StandardPopup {
@@ -293,19 +302,51 @@ private:
 
         if (ImGui::BeginMenu("Display"))
         {
-            if (ImGui::MenuItem("Show"))
+            bool const shouldDisable = !AnyDescendentInclusiveHasAppearanceProperty(*c);
+
             {
-                osc::ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, osc::GetAbsolutePath(*c), true);
+                if (shouldDisable)
+                {
+                    ImGui::BeginDisabled();
+                }
+                if (ImGui::MenuItem("Show"))
+                {
+                    osc::ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, osc::GetAbsolutePath(*c), true);
+                }
+                if (shouldDisable)
+                {
+                    ImGui::EndDisabled();
+                }
             }
 
-            if (ImGui::MenuItem("Show Only This"))
             {
-                osc::ActionShowOnlyComponentAndAllChildren(*m_Model, osc::GetAbsolutePath(*c));
+                if (shouldDisable)
+                {
+                    ImGui::BeginDisabled();
+                }
+                if (ImGui::MenuItem("Show Only This"))
+                {
+                    osc::ActionShowOnlyComponentAndAllChildren(*m_Model, osc::GetAbsolutePath(*c));
+                }
+                if (shouldDisable)
+                {
+                    ImGui::EndDisabled();
+                }
             }
 
-            if (ImGui::MenuItem("Hide"))
             {
-                osc::ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, osc::GetAbsolutePath(*c), false);
+                if (shouldDisable)
+                {
+                    ImGui::BeginDisabled();
+                }
+                if (ImGui::MenuItem("Hide"))
+                {
+                    osc::ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, osc::GetAbsolutePath(*c), false);
+                }
+                if (shouldDisable)
+                {
+                    ImGui::EndDisabled();
+                }
             }
 
             // add a seperator between probably commonly-used, simple, diplay toggles and the more

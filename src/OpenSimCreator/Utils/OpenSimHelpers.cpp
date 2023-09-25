@@ -436,13 +436,27 @@ OpenSim::Component const* osc::FindFirstAncestorInclusive(OpenSim::Component con
     return nullptr;
 }
 
-OpenSim::Component const* osc::FindFirstDescendent(
-    OpenSim::Component const& c,
-    bool(*pred)(OpenSim::Component const&))
+OpenSim::Component const* osc::FindFirstDescendentInclusive(
+    OpenSim::Component const& component,
+    bool(*predicate)(OpenSim::Component const&))
 {
-    for (OpenSim::Component const& descendent : c.getComponentList())
+    if (predicate(component))
     {
-        if (pred(c))
+        return &component;
+    }
+    else
+    {
+        return FindFirstDescendent(component, predicate);
+    }
+}
+
+OpenSim::Component const* osc::FindFirstDescendent(
+    OpenSim::Component const& component,
+    bool(*predicate)(OpenSim::Component const&))
+{
+    for (OpenSim::Component const& descendent : component.getComponentList())
+    {
+        if (predicate(descendent))
         {
             return &descendent;
         }
@@ -1026,20 +1040,43 @@ osc::CStringView osc::GetMotionTypeDisplayName(OpenSim::Coordinate const& c)
     }
 }
 
+OpenSim::Appearance const* osc::TryGetAppearance(OpenSim::Component const& component)
+{
+    if (!component.hasProperty("Appearance"))
+    {
+        return nullptr;
+    }
+
+    OpenSim::AbstractProperty const& abstractProperty = component.getPropertyByName("Appearance");
+    auto const* maybeAppearanceProperty = dynamic_cast<OpenSim::Property<OpenSim::Appearance> const*>(&abstractProperty);
+
+    return maybeAppearanceProperty ? &maybeAppearanceProperty->getValue() : nullptr;
+}
+
+OpenSim::Appearance* osc::TryUpdAppearance(OpenSim::Component& component)
+{
+    if (!component.hasProperty("Appearance"))
+    {
+        return nullptr;
+    }
+
+    OpenSim::AbstractProperty& abstractProperty = component.updPropertyByName("Appearance");
+    auto* maybeAppearanceProperty = dynamic_cast<OpenSim::Property<OpenSim::Appearance>*>(&abstractProperty);
+
+    return maybeAppearanceProperty ? &maybeAppearanceProperty->updValue() : nullptr;
+}
+
 bool osc::TrySetAppearancePropertyIsVisibleTo(OpenSim::Component& c, bool v)
 {
-    if (!c.hasProperty("Appearance"))
+    if (OpenSim::Appearance* appearance = TryUpdAppearance(c))
+    {
+        appearance->set_visible(v);
+        return true;
+    }
+    else
     {
         return false;
     }
-    OpenSim::AbstractProperty& p = c.updPropertyByName("Appearance");
-    auto* maybeAppearance = dynamic_cast<OpenSim::Property<OpenSim::Appearance>*>(&p);
-    if (!maybeAppearance)
-    {
-        return false;
-    }
-    maybeAppearance->updValue().set_visible(v);
-    return true;
 }
 
 osc::Color osc::GetSuggestedBoneColor() noexcept
