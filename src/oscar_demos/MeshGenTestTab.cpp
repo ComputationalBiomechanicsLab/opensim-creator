@@ -26,7 +26,7 @@
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "Experiments/MeshGen";
+    constexpr osc::CStringView c_TabStringID = "Demos/MeshGen";
 
     std::map<std::string, osc::Mesh> GenerateMeshLookup()
     {

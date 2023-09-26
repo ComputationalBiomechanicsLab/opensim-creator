@@ -29,7 +29,7 @@
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "Experiments/Hittest";
+    constexpr osc::CStringView c_TabStringID = "Demos/Hittest";
 
     constexpr auto c_CrosshairVerts = osc::to_array<glm::vec3>(
     {

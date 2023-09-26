@@ -17,7 +17,7 @@
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "Experiments/CustomWidgets";
+    constexpr osc::CStringView c_TabStringID = "Demos/CustomWidgets";
 
     void WidgetTitle(osc::CStringView title, glm::vec2 pos)
     {
