@@ -960,7 +960,7 @@ namespace
             return rv;
         }
 
-        enum ComponentEditorReturn { None, ShouldSave };
+        enum class ComponentEditorReturn { None, ShouldSave };
 
         // draws float input for a single component of the Vec3 (e.g. vec.x)
         ComponentEditorReturn drawVec3ComponentEditor(
