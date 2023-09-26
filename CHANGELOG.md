@@ -21,6 +21,7 @@ All notable changes to this project will be documented here. The format is based
 - Internal: Refactored `OpenSimCreator` to use `oscar` as-if it were any other 3rd-party API (previously: it was
   included in its own block of includes as-if it were special)
 - Internal: All of OpenSimCreator's UI-related code (e.g. tabs, widgets, panels) was refactored into `OpenSimCreator/UI`
+- Internal: Added `osc::MandelbrotTab` to `oscar_demos`
 
 
 ## [0.5.2] - 2023/09/12

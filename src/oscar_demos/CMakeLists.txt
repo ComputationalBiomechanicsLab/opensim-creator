@@ -10,6 +10,8 @@ add_library(oscar_demos STATIC
     ImGuizmoDemoTab.hpp
     ImPlotDemoTab.cpp
     ImPlotDemoTab.hpp
+    MandelbrotTab.cpp
+    MandelbrotTab.hpp
     MeshGenTestTab.cpp
     MeshGenTestTab.hpp
     OscarDemosTabRegistry.cpp
