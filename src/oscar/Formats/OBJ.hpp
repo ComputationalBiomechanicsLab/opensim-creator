@@ -1,7 +1,10 @@
 #pragma once
 
 #include <cstdint>
+#include <ctime>
 #include <iosfwd>
+#include <string>
+#include <string_view>
 #include <type_traits>
 
 namespace osc { class Mesh; }
@@ -21,9 +24,19 @@ namespace osc
         return static_cast<T>(a) & static_cast<T>(b);
     }
 
+    struct ObjMetadata final {
+        explicit ObjMetadata(
+            std::string_view authoringTool_
+        );
+
+        std::string authoringTool;
+        std::tm creationTime;
+    };
+
     void WriteMeshAsObj(
         std::ostream&,
         Mesh const&,
+        ObjMetadata const&,
         ObjWriterFlags = ObjWriterFlags::Default
     );
 }

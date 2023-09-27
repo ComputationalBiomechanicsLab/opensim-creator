@@ -6,7 +6,9 @@
 #include <OpenSimCreator/UI/Tabs/FrameDefinitionTab.hpp>
 #include <OpenSimCreator/UI/Tabs/MeshWarpingTab.hpp>
 
+#include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
+#include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/UI/Tabs/TabRegistry.hpp>
@@ -14,6 +16,7 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar_demos/OscarDemosTabRegistry.hpp>
 #include <oscar_learnopengl/LearnOpenGLTabRegistry.hpp>
+#include <OscarConfiguration.hpp>
 #include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/LogSink.h>
 #include <OpenSim/Common/RegisterTypes_osimCommon.h>
@@ -183,7 +186,15 @@ bool osc::GlobalInitOpenSim(AppConfig const& config)
     return s_OpenSimInitialized;
 }
 
-osc::OpenSimCreatorApp::OpenSimCreatorApp()
+osc::OpenSimCreatorApp::OpenSimCreatorApp() :
+    App{AppMetadata
+    {
+        "cbl",
+        OSC_APPNAME_STRING,
+        OSC_VERSION_STRING,
+        OSC_BUILD_ID,
+        OSC_REPO_URL,
+    }}
 {
     GlobalInitOpenSim(getConfig());
     InitializeTabRegistry(*singleton<osc::TabRegistry>());

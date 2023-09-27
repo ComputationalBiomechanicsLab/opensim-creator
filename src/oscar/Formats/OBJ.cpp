@@ -1,18 +1,22 @@
 #include "OBJ.hpp"
 
 #include <oscar/Graphics/Mesh.hpp>
+#include <oscar/Platform/os.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
-#include <OscarConfiguration.hpp>
 
 #include <cstddef>
+#include <ctime>
+#include <iomanip>
 #include <iostream>
+#include <string>
+#include <string_view>
 
 namespace
 {
-    void WriteHeader(std::ostream& o)
+    void WriteHeader(std::ostream& o, osc::ObjMetadata const& metadata)
     {
-        o << "# " OSC_APPNAME_STRING "\n";
-        o << "# " OSC_REPO_URL "\n";
+        o << "# " << metadata.authoringTool << '\n';
+        o << "# created: " << std::put_time(&metadata.creationTime, "%Y-%m-%d %H:%M:%S") << '\n';
     }
 
     std::ostream& WriteVec3(std::ostream& o, glm::vec3 const& v)
@@ -68,12 +72,22 @@ namespace
     }
 }
 
+// public API
+
+osc::ObjMetadata::ObjMetadata(std::string_view authoringTool_) :
+    authoringTool{authoringTool_},
+    creationTime{GetSystemCalendarTime()}
+{
+}
+
+
 void osc::WriteMeshAsObj(
     std::ostream& out,
     Mesh const& mesh,
+    ObjMetadata const& metadata,
     ObjWriterFlags flags)
 {
-    WriteHeader(out);
+    WriteHeader(out, metadata);
     WriteVertices(out, mesh);
     if (!(flags & ObjWriterFlags::NoWriteNormals))
     {

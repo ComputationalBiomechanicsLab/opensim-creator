@@ -31,7 +31,6 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
-#include <OscarConfiguration.hpp>
 #include <SimTKcommon/Constants.h>
 #include <SimTKcommon/SmallMatrix.h>
 

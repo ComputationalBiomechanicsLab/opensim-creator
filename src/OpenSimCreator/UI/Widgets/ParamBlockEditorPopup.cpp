@@ -8,7 +8,6 @@
 #include <nonstd/span.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/UI/Widgets/StandardPopup.hpp>
-#include <OscarConfiguration.hpp>
 
 #include <string>
 #include <utility>

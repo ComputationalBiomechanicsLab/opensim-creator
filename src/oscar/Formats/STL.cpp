@@ -5,23 +5,24 @@
 #include <oscar/Maths/Triangle.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
-#include <OscarConfiguration.hpp>
 
 #include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
+#include <iomanip>
 #include <limits>
+#include <sstream>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 
 namespace
 {
-    constexpr std::string_view c_Header = "Exported from " OSC_APPNAME_STRING;
-
     template<typename T>
     T const& ElementAt(nonstd::span<T const> vs, ptrdiff_t i)
     {
@@ -35,12 +36,26 @@ namespace
         }
     }
 
-    void WriteHeader(std::ostream& o)
+    std::string CreateHeaderText(osc::StlMetadata const& metadata)
     {
-        static_assert(c_Header.size() < 80);
+        std::stringstream ss;
+        ss << "created " << std::put_time(&metadata.creationTime, "%Y-%m-%d %H:%M:%S") << " by " << metadata.authoringTool;
+        return std::move(ss).str();
+    }
 
-        o << c_Header;
-        for (ptrdiff_t i = 0; i < 80-osc::ssize(c_Header); ++i)
+    void WriteHeader(std::ostream& o, osc::StlMetadata const& metadata)
+    {
+        constexpr size_t c_NumBytesInSTLHeader = 80;
+        constexpr size_t c_MaxCharsInSTLHeader = c_NumBytesInSTLHeader - 1;  // nul-terminator
+
+        std::string const content = CreateHeaderText(metadata);
+        size_t const len = std::min(content.size(), c_MaxCharsInSTLHeader);
+
+        for (size_t i = 0; i < len; ++i)
+        {
+            o << static_cast<uint8_t>(content[i]);
+        }
+        for (size_t i = 0; i < c_NumBytesInSTLHeader-len; ++i)
         {
             o << static_cast<uint8_t>(0x00);
         }
@@ -109,14 +124,26 @@ namespace
     }
 }
 
-void osc::WriteMeshAsStl(std::ostream& output, Mesh const& mesh)
+// public API
+
+osc::StlMetadata::StlMetadata(
+    std::string_view authoringTool_) :
+
+    authoringTool{authoringTool_}
+{
+}
+
+void osc::WriteMeshAsStl(
+    std::ostream& output,
+    Mesh const& mesh,
+    StlMetadata const& metadata)
 {
     if (mesh.getTopology() != MeshTopology::Triangles)
     {
         return;
     }
 
-    WriteHeader(output);
+    WriteHeader(output, metadata);
     WriteNumTriangles(output, mesh);
     WriteTriangles(output, mesh);
 }

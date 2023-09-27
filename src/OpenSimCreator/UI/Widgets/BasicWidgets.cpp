@@ -41,13 +41,13 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/RecentFile.hpp>
 #include <oscar/UI/Widgets/GuiRuler.hpp>
 #include <oscar/UI/Widgets/IconWithMenu.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
-#include <OscarConfiguration.hpp>
 #include <SimTKcommon/basics.h>
 
 #include <array>
@@ -86,7 +86,14 @@ namespace
             return;
         }
 
-        osc::WriteDecorationsAsDAE(outfile, scene);
+        osc::AppMetadata const& appMetadata = osc::App::get().getMetadata();
+        osc::DAEMetadata daeMetadata
+        {
+            appMetadata.getApplicationName(),
+            osc::CalcFullApplicationNameWithVersionAndBuild(appMetadata),
+        };
+
+        osc::WriteDecorationsAsDAE(outfile, scene, daeMetadata);
         osc::log::info("wrote scene as a DAE file to %s", daePath.string().c_str());
     }
 

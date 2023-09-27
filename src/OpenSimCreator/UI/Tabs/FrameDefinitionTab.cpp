@@ -50,6 +50,7 @@
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
@@ -69,7 +70,6 @@
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/SetHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <OscarConfiguration.hpp>
 #include <SDL_events.h>
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 
@@ -1136,9 +1136,16 @@ namespace
             return;
         }
 
+        osc::AppMetadata const& appMetadata = osc::App::get().getMetadata();
+        osc::ObjMetadata const objMetadata
+        {
+            osc::CalcFullApplicationNameWithVersionAndBuild(appMetadata),
+        };
+
         osc::WriteMeshAsObj(
             outputFileStream,
             oscMesh,
+            objMetadata,
             osc::ObjWriterFlags::NoWriteNormals
         );
     }
@@ -1177,7 +1184,13 @@ namespace
             return;
         }
 
-        osc::WriteMeshAsStl(outputFileStream, oscMesh);
+        osc::AppMetadata const& appMetadata = osc::App::get().getMetadata();
+        osc::StlMetadata const stlMetadata
+        {
+            osc::CalcFullApplicationNameWithVersionAndBuild(appMetadata),
+        };
+
+        osc::WriteMeshAsStl(outputFileStream, oscMesh, stlMetadata);
     }
 
     std::unique_ptr<osc::UndoableModelStatePair> MakeUndoableModelFromSceneModel(

@@ -35,6 +35,7 @@
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
@@ -568,9 +569,16 @@ namespace
             return;  // couldn't open for writing
         }
 
+        osc::AppMetadata const& appMetadata = osc::App::get().getMetadata();
+        osc::ObjMetadata const objMetadata
+        {
+            osc::CalcFullApplicationNameWithVersionAndBuild(appMetadata),
+        };
+
         osc::WriteMeshAsObj(
             outputFileStream,
             mesh,
+            objMetadata,
             osc::ObjWriterFlags::NoWriteNormals  // warping might have screwed them
         );
     }
@@ -595,7 +603,13 @@ namespace
             return;  // couldn't open for writing
         }
 
-        osc::WriteMeshAsStl(outputFileStream, mesh);
+        osc::AppMetadata const& appMetadata = osc::App::get().getMetadata();
+        osc::StlMetadata const stlMetadata
+        {
+            osc::CalcFullApplicationNameWithVersionAndBuild(appMetadata),
+        };
+
+        osc::WriteMeshAsStl(outputFileStream, mesh, stlMetadata);
     }
 
     void ActionTrySaveWarpedNonParticipatingLandmarksToCSV(

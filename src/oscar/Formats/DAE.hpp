@@ -5,13 +5,17 @@
 #include <ctime>
 #include <iosfwd>
 #include <string>
+#include <string_view>
 
 namespace osc { struct SceneDecoration; }
 
 namespace osc
 {
     struct DAEMetadata final {
-        DAEMetadata();
+        DAEMetadata(
+            std::string_view author_,
+            std::string_view authoringTool_
+        );
 
         std::string author;
         std::string authoringTool;
@@ -22,6 +26,6 @@ namespace osc
     void WriteDecorationsAsDAE(
         std::ostream&,
         nonstd::span<SceneDecoration const>,
-        DAEMetadata const& = {}
+        DAEMetadata const&
     );
 }

@@ -13,7 +13,6 @@
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <OscarConfiguration.hpp>
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/vec2.hpp>

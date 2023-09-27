@@ -18,6 +18,7 @@
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
+#include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/Assertions.hpp>
@@ -26,7 +27,6 @@
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <OscarConfiguration.hpp>
 
 #include <algorithm>
 #include <array>
@@ -325,34 +325,36 @@ void osc::MainMenuAboutTab::onDraw()
     ImGui::Separator();
     ImGui::Dummy({0.0f, 0.5f});
     {
+        AppMetadata const& metadata = App::get().getMetadata();
+
         ImGui::Columns(2);
 
-        ImGui::TextUnformatted("OSC_VERSION");
+        ImGui::TextUnformatted("VERSION");
         ImGui::NextColumn();
-        ImGui::TextUnformatted(OSC_VERSION_STRING);
-        ImGui::NextColumn();
-
-        ImGui::TextUnformatted("OSC_BUILD_ID");
-        ImGui::NextColumn();
-        ImGui::TextUnformatted(OSC_BUILD_ID);
+        ImGui::TextUnformatted(metadata.tryGetVersionString().value_or("(not known)").c_str());
         ImGui::NextColumn();
 
-        ImGui::TextUnformatted("Graphics vendor");
+        ImGui::TextUnformatted("BUILD_ID");
+        ImGui::NextColumn();
+        ImGui::TextUnformatted(metadata.tryGetBuildID().value_or("(not known)").c_str());
+        ImGui::NextColumn();
+
+        ImGui::TextUnformatted("GRAPHICS_VENDOR");
         ImGui::NextColumn();
         ImGui::Text("%s", App::get().getGraphicsBackendVendorString().c_str());
         ImGui::NextColumn();
 
-        ImGui::TextUnformatted("Graphics renderer");
+        ImGui::TextUnformatted("GRAPHICS_RENDERER");
         ImGui::NextColumn();
         ImGui::Text("%s", App::get().getGraphicsBackendRendererString().c_str());
         ImGui::NextColumn();
 
-        ImGui::TextUnformatted("Graphics renderer version");
+        ImGui::TextUnformatted("GRAPHICS_RENDERER_VERSION");
         ImGui::NextColumn();
         ImGui::Text("%s", App::get().getGraphicsBackendVersionString().c_str());
         ImGui::NextColumn();
 
-        ImGui::TextUnformatted("Graphics shader version");
+        ImGui::TextUnformatted("GRAPHICS_SHADER_VERSION");
         ImGui::NextColumn();
         ImGui::Text("%s", App::get().getGraphicsBackendShadingLanguageVersionString().c_str());
         ImGui::NextColumn();
@@ -435,16 +437,19 @@ void osc::MainMenuAboutTab::onDraw()
         ImGui::PopID();
         ImGui::NextColumn();
 
-        ImGui::TextUnformatted("OpenSim Creator GitHub");
-        ImGui::NextColumn();
-        ImGui::PushID(id++);
-        if (ImGui::Button(ICON_FA_LINK " open"))
+        if (auto repoURL = App::get().getMetadata().tryGetRepositoryURL())
         {
-            OpenPathInOSDefaultApplication(OSC_REPO_URL);
+            ImGui::TextUnformatted("OpenSim Creator Repository");
+            ImGui::NextColumn();
+            ImGui::PushID(id++);
+            if (ImGui::Button(ICON_FA_LINK " open"))
+            {
+                OpenPathInOSDefaultApplication(std::filesystem::path{std::string_view{*repoURL}});
+            }
+            osc::DrawTooltipBodyOnlyIfItemHovered("this will open the repository homepage in a separate browser window");
+            ImGui::PopID();
+            ImGui::NextColumn();
         }
-        osc::DrawTooltipBodyOnlyIfItemHovered("this will open the GitHub homepage in a separate browser window");
-        ImGui::PopID();
-        ImGui::NextColumn();
 
         ImGui::TextUnformatted("OpenSim Documentation");
         ImGui::NextColumn();

@@ -7,6 +7,7 @@
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Platform/AppClock.hpp>
 #include <oscar/Platform/AppConfig.hpp>
+#include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/RecentFile.hpp>
@@ -17,7 +18,6 @@
 #include <oscar/Utils/ScopeGuard.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>
-#include <OscarConfiguration.hpp>
 
 #include <glm/vec2.hpp>
 #include <IconsFontAwesome5.h>
@@ -95,7 +95,7 @@ namespace
     }
 
     // initialize the main application window
-    sdl::Window CreateMainAppWindow()
+    sdl::Window CreateMainAppWindow(osc::CStringView applicationName)
     {
         osc::log::info("initializing main application window");
 
@@ -115,7 +115,7 @@ namespace
         constexpr Uint32 flags =
             SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
 
-        return sdl::CreateWindoww(OSC_APPNAME_STRING, x, y, width, height, flags);
+        return sdl::CreateWindoww(applicationName.c_str(), x, y, width, height, flags);
     }
 
     // load the "recent files" file that osc persists to disk
@@ -249,6 +249,16 @@ namespace std
 // this is what "booting the application" actually initializes
 class osc::App::Impl final {
 public:
+    Impl(AppMetadata const& metadata_) :
+        m_Metadata{metadata_}
+    {
+    }
+
+    AppMetadata const& getMetadata() const
+    {
+        return m_Metadata;
+    }
+
     void show(std::unique_ptr<Screen> s)
     {
         log::info("showing screen %s", s->getName().c_str());
@@ -551,8 +561,8 @@ public:
         *lock = sv;
 
         std::string const newTitle = sv.empty() ?
-            OSC_APPNAME_STRING :
-            (std::string{sv} + " - " + OSC_APPNAME_STRING);
+            std::string{m_Metadata.getApplicationName()} :
+            (std::string{sv} + " - " + m_Metadata.getApplicationName());
 
         SDL_SetWindowTitle(m_MainWindow.get(), newTitle.c_str());
     }
@@ -846,6 +856,9 @@ private:
         }
     }
 
+    // provided via the constructor
+    AppMetadata m_Metadata;
+
     // init/load the application config first
     std::unique_ptr<AppConfig> m_ApplicationConfig = AppConfig::load();
 
@@ -859,7 +872,7 @@ private:
     sdl::Context m_SDLContext{SDL_INIT_VIDEO};
 
     // init main application window
-    sdl::Window m_MainWindow = CreateMainAppWindow();
+    sdl::Window m_MainWindow = CreateMainAppWindow(m_Metadata.getApplicationName());
 
     // init graphics context
     GraphicsContext m_GraphicsContext{*m_MainWindow};
@@ -926,7 +939,8 @@ std::string osc::App::slurp(std::string_view s)
     return get().slurpResource(s);
 }
 
-osc::App::App() : m_Impl{std::make_unique<Impl>()}
+osc::App::App(AppMetadata const& metadata) :
+    m_Impl{std::make_unique<Impl>(metadata)}
 {
     g_Current = this;
 }
@@ -938,6 +952,11 @@ osc::App& osc::App::operator=(App&&) noexcept = default;
 osc::App::~App() noexcept
 {
     g_Current = nullptr;
+}
+
+osc::AppMetadata const& osc::App::getMetadata() const
+{
+    return m_Impl->getMetadata();
 }
 
 void osc::App::show(std::unique_ptr<Screen> s)

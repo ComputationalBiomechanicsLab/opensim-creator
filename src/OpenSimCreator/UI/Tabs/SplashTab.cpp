@@ -28,6 +28,7 @@
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
+#include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/RecentFile.hpp>
 #include <oscar/UI/Tabs/TabHost.hpp>
@@ -35,7 +36,6 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
-#include <OscarConfiguration.hpp>
 
 #include <filesystem>
 #include <string>
@@ -385,8 +385,8 @@ private:
 
         ImDrawList* const dl = ImGui::GetForegroundDrawList();
         ImU32 const color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
-        CStringView const content = "OpenSim Creator v" OSC_VERSION_STRING " (build " OSC_BUILD_ID ")";
-        dl->AddText(pos, color, content.c_str());
+        std::string const text = CalcFullApplicationNameWithVersionAndBuild(App::get().getMetadata());
+        dl->AddText(pos, color, text.c_str());
     }
 
     // tab data

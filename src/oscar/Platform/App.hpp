@@ -28,6 +28,7 @@
 
 namespace osc { struct Color; }
 namespace osc { class AppConfig; }
+namespace osc { class AppMetadata; }
 namespace osc { class Screen; }
 
 namespace osc
@@ -82,12 +83,14 @@ namespace osc
         // constructs an app by initializing it from a config at the default app config location
         //
         // this also sets the `cur` application global
-        App();
+        explicit App(AppMetadata const&);
         App(App const&) = delete;
         App(App&&) noexcept;
         App& operator=(App const&) = delete;
         App& operator=(App&&) noexcept;
         ~App() noexcept;
+
+        AppMetadata const& getMetadata() const;
 
         // start showing the supplied screen, only returns once a screen requests to quit or an exception is thrown
         void show(std::unique_ptr<Screen>);

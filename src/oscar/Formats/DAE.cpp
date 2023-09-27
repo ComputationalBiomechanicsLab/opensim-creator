@@ -5,7 +5,6 @@
 #include <oscar/Graphics/SceneDecoration.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Platform/os.hpp>
-#include <OscarConfiguration.hpp>
 
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -423,9 +422,11 @@ namespace
 
 // public API
 
-osc::DAEMetadata::DAEMetadata() :
-    author{OSC_APPNAME_STRING},
-    authoringTool{OSC_APPNAME_STRING " v" OSC_VERSION_STRING " (build " OSC_BUILD_ID ")"},
+osc::DAEMetadata::DAEMetadata(
+    std::string_view author_,
+    std::string_view authoringTool_) :
+    author{author_},
+    authoringTool{authoringTool_},
     creationTime{GetSystemCalendarTime()},
     modificationTime{creationTime}
 {

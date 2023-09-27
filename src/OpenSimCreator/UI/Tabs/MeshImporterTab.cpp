@@ -72,6 +72,7 @@
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
@@ -93,7 +94,6 @@
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <oscar/Utils/VariantHelpers.hpp>
-#include <OscarConfiguration.hpp>
 #include <SDL_events.h>
 #include <SimTKcommon.h>
 #include <SimTKcommon/Mechanics.h>
@@ -7737,9 +7737,16 @@ private:
             return;
         }
 
+        osc::AppMetadata const& appMetadata = osc::App::get().getMetadata();
+        osc::ObjMetadata const objMetadata
+        {
+            osc::CalcFullApplicationNameWithVersionAndBuild(appMetadata),
+        };
+
         osc::WriteMeshAsObj(
             outputFileStream,
             mesh,
+            objMetadata,
             osc::ObjWriterFlags::NoWriteNormals
         );
     }
@@ -7769,7 +7776,13 @@ private:
             return;
         }
 
-        osc::WriteMeshAsStl(outputFileStream, mesh);
+        osc::AppMetadata const& appMetadata = osc::App::get().getMetadata();
+        osc::StlMetadata const stlMetadata
+        {
+            osc::CalcFullApplicationNameWithVersionAndBuild(appMetadata),
+        };
+
+        osc::WriteMeshAsStl(outputFileStream, mesh, stlMetadata);
     }
 
     void DrawSaveMeshMenu(MeshEl const& el)
