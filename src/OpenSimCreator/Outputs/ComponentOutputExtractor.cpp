@@ -8,6 +8,7 @@
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <SimTKcommon/SmallMatrix.h>
@@ -19,7 +20,18 @@
 #include <typeinfo>
 #include <sstream>
 #include <utility>
-#include <vector>
+
+// constants
+namespace
+{
+    constexpr auto c_OutputSubfieldsLut = osc::to_array(
+    {
+        osc::OutputSubfield::X,
+        osc::OutputSubfield::Y,
+        osc::OutputSubfield::Z,
+        osc::OutputSubfield::Magnitude,
+    });
+}
 
 // named namespace is due to an MSVC internal linkage compiler bug
 namespace output_magic
@@ -87,12 +99,6 @@ namespace
 {
     using ExtractorFunc = double(*)(OpenSim::AbstractOutput const&, SimTK::State const&);
 
-    std::string const& GetNoDescriptionString()
-    {
-        static std::string const s_NoDescriptionStr;
-        return s_NoDescriptionStr;
-    }
-
     std::string GenerateLabel(
         OpenSim::ComponentPath const& cp,
         std::string const& outputName,
@@ -136,17 +142,6 @@ namespace
             return nullptr;
         }
     }
-
-    std::vector<osc::OutputSubfield> CreateOutputSubfieldsLut()
-    {
-        return std::vector<osc::OutputSubfield>
-        {
-            osc::OutputSubfield::X,
-            osc::OutputSubfield::Y,
-            osc::OutputSubfield::Z,
-            osc::OutputSubfield::Magnitude,
-        };
-    }
 }
 
 class osc::ComponentOutputExtractor::Impl final {
@@ -179,7 +174,7 @@ public:
 
     osc::CStringView getDescription() const
     {
-        return GetNoDescriptionString();
+        return osc::CStringView{};
     }
 
     bool producesNumericValues() const
@@ -303,8 +298,7 @@ std::optional<osc::CStringView> osc::GetOutputSubfieldLabel(OutputSubfield subfi
 
 nonstd::span<osc::OutputSubfield const> osc::GetAllSupportedOutputSubfields()
 {
-    static auto const s_AllSubfields = CreateOutputSubfieldsLut();
-    return s_AllSubfields;
+    return c_OutputSubfieldsLut;
 }
 
 osc::OutputSubfield osc::GetSupportedSubfields(OpenSim::AbstractOutput const& ao)

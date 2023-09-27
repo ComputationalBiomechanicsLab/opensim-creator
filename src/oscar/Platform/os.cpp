@@ -298,49 +298,49 @@ namespace
         sigcontext uc_mcontext;
         sigset_t uc_sigmask;
     };
-}
 
-static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
-{
-    // reset abort signal handler
-    if (signal(SIGABRT, SIG_DFL) == SIG_ERR)
+    void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
     {
-        osc::log::error("failed to reset SIGABRT handler - the program may not be able to crash correctly");
-    }
+        // reset abort signal handler
+        if (signal(SIGABRT, SIG_DFL) == SIG_ERR)
+        {
+            osc::log::error("failed to reset SIGABRT handler - the program may not be able to crash correctly");
+        }
 
-    // reset segfault signal handler
-    if (signal(SIGSEGV, SIG_DFL) == SIG_ERR)
-    {
-        osc::log::error("failed to reset SIGSEGV handler - the program may not be able to crash correctly");
-    }
+        // reset segfault signal handler
+        if (signal(SIGSEGV, SIG_DFL) == SIG_ERR)
+        {
+            osc::log::error("failed to reset SIGSEGV handler - the program may not be able to crash correctly");
+        }
 
-    auto* uc = static_cast<osc_sig_ucontext*>(ucontext);
+        auto* uc = static_cast<osc_sig_ucontext*>(ucontext);
 
-    /* Get the address at the time the signal was raised */
+        /* Get the address at the time the signal was raised */
 #if defined(__i386__)  // gcc specific
-    void* caller_address = reinterpret_cast<void*>(uc->uc_mcontext.eip);  // EIP: x86 specific
+        void* caller_address = reinterpret_cast<void*>(uc->uc_mcontext.eip);  // EIP: x86 specific
 #elif defined(__x86_64__)  // gcc specific
-    void* callerAddress = reinterpret_cast<void*>(uc->uc_mcontext.rip);  // RIP: x86_64 specific
+        void* callerAddress = reinterpret_cast<void*>(uc->uc_mcontext.rip);  // RIP: x86_64 specific
 #else
 #error Unsupported architecture.
 #endif
 
-    std::cerr << "osc: critical error: signal " << sig_num << '(' << strsignal(sig_num) << ") received from OS: address is " <<  info->si_addr << " from " << callerAddress;  // NOLINT(concurrency-mt-unsafe)
+        std::cerr << "osc: critical error: signal " << sig_num << '(' << strsignal(sig_num) << ") received from OS: address is " <<  info->si_addr << " from " << callerAddress;  // NOLINT(concurrency-mt-unsafe)
 
-    std::array<void*, 50> ary{};
-    int const size = backtrace(ary.data(), ary.size());
-    ary[1] = callerAddress;  // overwrite sigaction with caller's address
+        std::array<void*, 50> ary{};
+        int const size = backtrace(ary.data(), ary.size());
+        ary[1] = callerAddress;  // overwrite sigaction with caller's address
 
-    std::unique_ptr<char*, decltype(::free)*> const messages{backtrace_symbols(ary.data(), size), ::free};
-    if (!messages)
-    {
-        return;
-    }
+        std::unique_ptr<char*, decltype(::free)*> const messages{backtrace_symbols(ary.data(), size), ::free};
+        if (!messages)
+        {
+            return;
+        }
 
-    /* skip first stack frame (points here) */
-    for (int i = 1; i < size; ++i)
-    {
-        std::cerr << "    #" << std::setw(2) << i << ' ' << messages.get()[i] << '\n';
+        /* skip first stack frame (points here) */
+        for (int i = 1; i < size; ++i)
+        {
+            std::cerr << "    #" << std::setw(2) << i << ' ' << messages.get()[i] << '\n';
+        }
     }
 }
 
