@@ -73,10 +73,10 @@
 #include <functional>
 #include <iostream>
 #include <iterator>
-#include <set>
 #include <stdexcept>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <tuple>
 #include <utility>
@@ -125,11 +125,21 @@ namespace
         }
     )";
 
-    std::string GLToString(GLubyte const* ptr)
+    osc::CStringView GLStringToCStringView(GLubyte const* stringPtr)
     {
-        static_assert(sizeof(GLubyte) == sizeof(char));
-        static_assert(alignof(GLubyte) == alignof(char));
-        return ptr ? std::string{reinterpret_cast<char const*>(ptr)} : std::string{};
+        static_assert(sizeof(GLubyte) == sizeof(osc::CStringView::value_type));
+        static_assert(alignof(GLubyte) == alignof(osc::CStringView::value_type));
+        return stringPtr ? osc::CStringView{reinterpret_cast<char const*>(stringPtr)} : osc::CStringView{};
+    }
+
+    osc::CStringView GLGetCStringView(GLenum name)
+    {
+        return GLStringToCStringView(glGetString(name));
+    }
+
+    osc::CStringView GLGetCStringViewi(GLenum name, GLuint index)
+    {
+        return GLStringToCStringView(glGetStringi(name, index));
     }
 
     bool IsAlignedAtLeast(void const* ptr, GLint requiredAlignment)
@@ -137,9 +147,8 @@ namespace
         return reinterpret_cast<intptr_t>(ptr) % requiredAlignment == 0;
     }
 
-    // returns the `Name String`s of all extensions that OSC's OpenGL backend might
-    // use
-    std::set<std::string> GetAllOpenGLExtensionsUsedByOSC()
+    // returns the `Name String`s of all extensions that OSC's OpenGL backend might use
+    std::vector<osc::CStringView> GetAllOpenGLExtensionsUsedByOSC()
     {
         // most entries in this list were initially from a mixture of:
         //
@@ -255,22 +264,27 @@ namespace
         };
     }
 
-    std::set<std::string> GetAllExtensionsSupportedByCurrentOpenGLBackend()
+    size_t GetNumExtensionsSupportedByBackend()
     {
         GLint numExtensionsSupportedByBackend = 0;
         glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensionsSupportedByBackend);
-
-        std::set<std::string> extensionsSupportedByBackend;
-        for (GLint i = 0; i < numExtensionsSupportedByBackend; ++i)
-        {
-            std::string str = GLToString(glGetStringi(GL_EXTENSIONS, i));
-            extensionsSupportedByBackend.emplace(std::move(str));
-        }
-
-        return extensionsSupportedByBackend;
+        return numExtensionsSupportedByBackend >= 0 ? static_cast<size_t>(numExtensionsSupportedByBackend) : 0;
     }
 
-    void ValidateOpenGLBackendExtensionSupport()
+    std::vector<osc::CStringView> GetAllExtensionsSupportedByCurrentOpenGLBackend()
+    {
+        size_t const numExtensions = GetNumExtensionsSupportedByBackend();
+
+        std::vector<osc::CStringView> rv;
+        rv.reserve(numExtensions);
+        for (size_t i = 0; i < numExtensions; ++i)
+        {
+            rv.emplace_back(GLGetCStringViewi(GL_EXTENSIONS, static_cast<GLuint>(i)));
+        }
+        return rv;
+    }
+
+    void ValidateOpenGLBackendExtensionSupport(osc::LogLevel logLevel)
     {
         // note: the OpenGL specification _requires_ that a backend supports
         // (effectively) RGBA, RG, and RED textures with the following data
@@ -284,36 +298,42 @@ namespace
         //
         // see "Required Formats" in: https://www.khronos.org/opengl/wiki/Image_Format
 
-        // this is a non-comprehensive list of extensions that OSC may use in parts of
-        // its implementation
-        std::set<std::string> const extensionsRequiredByOSC = GetAllOpenGLExtensionsUsedByOSC();
-        std::set<std::string> const extensionSupportedByBackend = GetAllExtensionsSupportedByCurrentOpenGLBackend();
-
-        std::vector<std::string> missingExtensions;
-        for (auto const& extensionRequiredByOSC : extensionsRequiredByOSC)
+        if (logLevel < osc::log::level())
         {
-            auto const it = extensionSupportedByBackend.find(extensionRequiredByOSC);
-            if (it == extensionSupportedByBackend.end())
-            {
-                missingExtensions.push_back(extensionRequiredByOSC);
-            }
+            return;
         }
+
+        std::vector<osc::CStringView> extensionsRequiredByOSC = GetAllOpenGLExtensionsUsedByOSC();
+        std::sort(extensionsRequiredByOSC.begin(), extensionsRequiredByOSC.end());
+
+        std::vector<osc::CStringView> extensionSupportedByBackend = GetAllExtensionsSupportedByCurrentOpenGLBackend();
+        std::sort(extensionSupportedByBackend.begin(), extensionSupportedByBackend.end());
+
+        std::vector<osc::CStringView> missingExtensions;
+        missingExtensions.reserve(extensionsRequiredByOSC.size());  // pessimistic guess
+        std::set_difference(
+            extensionsRequiredByOSC.begin(),
+            extensionsRequiredByOSC.end(),
+            extensionSupportedByBackend.begin(),
+            extensionSupportedByBackend.end(),
+            std::back_inserter(missingExtensions)
+        );
 
         if (!missingExtensions.empty())
         {
-            osc::log::debug("OpenGL: the following OpenGL extensions may be missing from the graphics backend: ");
+            osc::log::log(logLevel, "OpenGL: the following OpenGL extensions may be missing from the graphics backend: ");
             for (auto const& missingExtension : missingExtensions)
             {
-                osc::log::debug("OpenGL:  - %s", missingExtension.c_str());
+                osc::log::log(logLevel, "OpenGL:  - %s", missingExtension.c_str());
             }
-            osc::log::debug("OpenGL: because extensions may be missing, rendering may behave abnormally");
-            osc::log::debug("OpenGL: note: some graphics engines can mis-report an extension as missing");
+            osc::log::log(logLevel, "OpenGL: because extensions may be missing, rendering may behave abnormally");
+            osc::log::log(logLevel, "OpenGL: note: some graphics engines can mis-report an extension as missing");
         }
 
-        osc::log::debug("OpenGL: here is a list of all of the extensions supported by the graphics backend:");
+        osc::log::log(logLevel, "OpenGL: here is a list of all of the extensions supported by the graphics backend:");
         for (auto const& ext : extensionSupportedByBackend)
         {
-            osc::log::debug("OpenGL:  - %s", ext.c_str());
+            osc::log::log(logLevel, "OpenGL:  - %s", ext.c_str());
         }
     }
 }
@@ -5142,14 +5162,40 @@ bool osc::operator!=(Camera const& a, Camera const& b)
 
 namespace
 {
+    struct RequiredOpenGLCapability final {
+        GLenum id;
+        char const* label;
+    };
+    constexpr auto c_RequiredOpenGLCapabilities = osc::to_array<RequiredOpenGLCapability>(
+    {
+        // ensures geometry is occlusion-culled correctly
+        {GL_DEPTH_TEST, "GL_DEPTH_TEST"},
+
+        // used to reduce pixel aliasing (jaggies)
+        {GL_MULTISAMPLE, "GL_MULTISAMPLE"},
+
+        // enables linear color rendering workflow
+        //
+        // in oscar, shader calculations are done in linear space, but reads/writes
+        // from framebuffers respect whether they are internally using an sRGB format
+        {GL_FRAMEBUFFER_SRGB, "GL_FRAMEBUFFER_SRGB"},
+
+        // enable seamless cubemap sampling when sampling
+        //
+        // handy in Physically Based Rendering (PBR) workflows, which do advanced rendering
+        // tricks, like writing to specific mip levels in cubemaps for irradiance sampling etc.
+        {GL_TEXTURE_CUBE_MAP_SEAMLESS, "GL_TEXTURE_CUBE_MAP_SEAMLESS"},
+    });
+
     // create an OpenGL context for an application window
     sdl::GLContext CreateOpenGLContext(SDL_Window& window)
     {
-        osc::log::info("initializing OpenGL context");
+        osc::log::debug("initializing OpenGL context");
 
+        // create an OpenGL context for the application
         sdl::GLContext ctx = sdl::GL_CreateContext(&window);
 
-        // enable the context
+        // enable the OpenGL context
         if (SDL_GL_MakeCurrent(&window, ctx.get()) != 0)
         {
             throw std::runtime_error{std::string{"SDL_GL_MakeCurrent failed: "} + SDL_GetError()};
@@ -5175,38 +5221,19 @@ namespace
             throw std::runtime_error{ss.str()};
         }
 
-        // check that the runtime OpenGL backend supports the extensions that OSC
-        // relies on and report anything missing as a warning to the user
-        ValidateOpenGLBackendExtensionSupport();
+        // validate that the runtime OpenGL backend supports the extensions that OSC
+        // relies on
+        //
+        // reports anything missing to the log at the provided log level
+        ValidateOpenGLBackendExtensionSupport(osc::LogLevel::debug);
 
-        // depth testing used to ensure geometry overlaps correctly
-        glEnable(GL_DEPTH_TEST);
-        if (!glIsEnabled(GL_DEPTH_TEST))
+        for (auto const& capability : c_RequiredOpenGLCapabilities)
         {
-            osc::log::warn("failed to enable GL_DEPTH_TEST: this may cause rendering issues");
-        }
-
-        // MSXAA is used to smooth out the model
-        glEnable(GL_MULTISAMPLE);
-        if (!glIsEnabled(GL_MULTISAMPLE))
-        {
-            osc::log::warn("failed to enable GL_MULTISAMPLE: this may cause rendering issues");
-        }
-
-        // shader calculations are done in linear space, but writes to framebuffers
-        // should respect whether the framebuffer is using an sRGB internal format
-        glEnable(GL_FRAMEBUFFER_SRGB);
-        if (!glIsEnabled(GL_FRAMEBUFFER_SRGB))
-        {
-            osc::log::warn("failed to enable GL_FRAMEBUFFER_SRGB: this may cause rendering issues");
-        }
-
-        // enable seamless cubemap sampling when sampling lower mip levels in (e.g.)
-        // PBR prefilter maps
-        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-        if (!glIsEnabled(GL_TEXTURE_CUBE_MAP_SEAMLESS))
-        {
-            osc::log::warn("failed to enable GL_TEXTURE_CUBE_MAP_SEAMLESS: this may cause rendering issues");
+            glEnable(capability.id);
+            if (!glIsEnabled(capability.id))
+            {
+                osc::log::warn("failed to enable %s: this may cause rendering issues", capability.label);
+            }
         }
 
         // print OpenGL information to console (handy for debugging user's rendering
@@ -5558,22 +5585,22 @@ public:
 
     std::string getBackendVendorString() const
     {
-        return GLToString(glGetString(GL_VENDOR));
+        return std::string{GLGetCStringView(GL_VENDOR)};
     }
 
     std::string getBackendRendererString() const
     {
-        return GLToString(glGetString(GL_RENDERER));
+        return std::string{GLGetCStringView(GL_RENDERER)};
     }
 
     std::string getBackendVersionString() const
     {
-        return GLToString(glGetString(GL_VERSION));
+        return std::string{GLGetCStringView(GL_VERSION)};
     }
 
     std::string getBackendShadingLanguageVersionString() const
     {
-        return GLToString(glGetString(GL_SHADING_LANGUAGE_VERSION));
+        return std::string{GLGetCStringView(GL_SHADING_LANGUAGE_VERSION)};
     }
 
     Material const& getQuadMaterial() const
