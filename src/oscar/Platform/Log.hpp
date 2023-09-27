@@ -32,6 +32,11 @@ namespace osc::log
     std::shared_ptr<Logger> defaultLogger() noexcept;
     Logger* defaultLoggerRaw() noexcept;
 
+    inline LogLevel level()
+    {
+        return defaultLoggerRaw()->get_level();
+    }
+
     template<typename... Args>
     inline void log(LogLevel level, CStringView fmt, Args const&... args)
     {
