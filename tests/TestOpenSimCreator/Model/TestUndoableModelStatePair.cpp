@@ -1,10 +1,11 @@
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 
+#include "TestOpenSimCreator/TestOpenSimCreatorConfig.hpp"
+
 #include "OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp"
 #include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/OpenSimCreatorApp.hpp"
-#include "testopensimcreator_config.hpp"
 
 #include <oscar/Formats/DAE.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
@@ -66,7 +67,8 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
 
             // and all decorations can be exported to a DAE format
             std::stringstream daeData;
-            osc::WriteDecorationsAsDAE(daeData, decorations);
+            osc::DAEMetadata const metadata{TESTOPENSIMCREATOR_APPNAME_STRING, TESTOPENSIMCREATOR_APPNAME_STRING};
+            osc::WriteDecorationsAsDAE(daeData, decorations, metadata);
 
             // and content is actually written to the DAE stream
             ASSERT_FALSE(daeData.str().empty());

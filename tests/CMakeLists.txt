@@ -1,2 +1,2 @@
-add_subdirectory(OpenSimCreator)
-add_subdirectory(oscar)
+add_subdirectory(TestOpenSimCreator)
+add_subdirectory(testoscar)

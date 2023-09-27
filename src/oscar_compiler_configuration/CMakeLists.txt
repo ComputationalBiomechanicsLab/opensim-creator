@@ -1,22 +1,13 @@
-# define MSVC warning flags (e.g. /W3 /W4) ourselves
+# tell cmake that we will define MSVC warning flags (e.g. /W3 /W4) ourselves
 cmake_policy(SET CMP0092 NEW)
 
-# OscarConfiguration.hpp
-#
-# a configured header file that contains values that are accessible in the source
-# code at compile-time
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/OscarConfiguration.hpp.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/OscarConfiguration.hpp"
-)
-
-# oscar_configuration:
+# oscar_compiler_configuration:
 #
 # a cmake target that downstream projects can link to in order to inherit the
 # configured compiler parameters (e.g. warning flags, language level, etc.) for
 # oscar
-add_library(oscar_configuration INTERFACE)
-target_compile_options(oscar_configuration INTERFACE
+add_library(oscar_compiler_configuration INTERFACE)
+target_compile_options(oscar_compiler_configuration INTERFACE
 
     # msvc (Windows) flags
     $<$<CXX_COMPILER_ID:MSVC>:
@@ -160,7 +151,7 @@ target_compile_options(oscar_configuration INTERFACE
     $<$<CXX_COMPILER_ID:GNU>:
     >
 )
-target_link_options(oscar_configuration INTERFACE
+target_link_options(oscar_compiler_configuration INTERFACE
 
     # Linux /w GCC or Clang
     $<$<AND:$<BOOL:LINUX>,$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>>:
@@ -179,13 +170,9 @@ target_link_options(oscar_configuration INTERFACE
         $<$<BOOL:${OSC_USE_ASAN}>:-fsanitize=address>
     >
 )
-target_include_directories(oscar_configuration INTERFACE
-    # so that source code can `#include <OscarConfiguration.hpp>`
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/"
-)
-target_compile_features(oscar_configuration INTERFACE cxx_std_17)
+target_compile_features(oscar_compiler_configuration INTERFACE cxx_std_17)
 
-target_link_libraries(oscar_configuration INTERFACE
+target_link_libraries(oscar_compiler_configuration INTERFACE
 
     # in earlier gcc/clang the <filesystem> implementation must be explicitly linked
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:stdc++fs>
@@ -193,5 +180,5 @@ target_link_libraries(oscar_configuration INTERFACE
 
 # handle OSC_FORCE_ASSERTS_ENABLED
 if(OSC_FORCE_ASSERTS_ENABLED)
-    target_compile_definitions(oscar_configuration INTERFACE -DOSC_FORCE_ASSERTS_ENABLED=1)
+    target_compile_definitions(oscar_compiler_configuration INTERFACE -DOSC_FORCE_ASSERTS_ENABLED=1)
 endif()

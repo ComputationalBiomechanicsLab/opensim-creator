@@ -4,7 +4,7 @@
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "oscar/Graphics/MeshCache.hpp"
 #include "oscar/Graphics/SceneDecoration.hpp"
-#include "oscar/Platform/Config.hpp"
+#include "oscar/Platform/AppConfig.hpp"
 
 #include <benchmark/benchmark.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -17,7 +17,7 @@
 static void BM_OpenSimRenderRajagopalDecorations(benchmark::State& state)
 {
     RegisterTypes_osimActuators();
-    auto config = osc::Config::load();
+    auto config = osc::AppConfig::load();
     std::filesystem::path modelPath = config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
     OpenSim::Model model{modelPath.string()};
     osc::InitializeModel(model);

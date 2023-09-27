@@ -1,3 +1,5 @@
+#include "testoscar/testoscarconfig.hpp"
+
 #include "oscar/Graphics/AntiAliasingLevel.hpp"
 #include "oscar/Graphics/Camera.hpp"
 #include "oscar/Graphics/CameraClearFlags.hpp"
@@ -30,6 +32,7 @@
 #include "oscar/Maths/BVH.hpp"
 #include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Platform/AppMetadata.hpp"
 #include "oscar/Utils/CStringView.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/EnumHelpers.hpp"
@@ -52,7 +55,8 @@ namespace
     protected:
         static void SetUpTestSuite()
         {
-            g_App = std::make_unique<osc::App>();
+            osc::AppMetadata metadata{TESTOSCAR_ORGNAME_STRING, TESTOSCAR_APPNAME_STRING};
+            g_App = std::make_unique<osc::App>(metadata);
         }
 
         static void TearDownTestSuite()

@@ -1,9 +1,10 @@
 #include "OpenSimCreator/Utils/UndoableModelActions.hpp"
 
+#include "TestOpenSimCreator/TestOpenSimCreatorConfig.hpp"
+
 #include "OpenSimCreator/Model/ObjectPropertyEdit.hpp"
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "testopensimcreator_config.hpp"
 
 #include <gtest/gtest.h>
 #include <OpenSim/Common/AbstractProperty.h>

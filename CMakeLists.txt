@@ -51,6 +51,11 @@ set(
     "whether to build the documentation or not (requires sphinx-build is available on the PATH)"
 )
 set(
+    OSC_ORGNAME "cbl"
+    CACHE STRING
+    "the organization that created the application (affects configuration location)"
+)
+set(
     OSC_APPNAME "OpenSim Creator"
     CACHE STRING
     "user-facing name of the application"

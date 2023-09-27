@@ -30,10 +30,22 @@ add_executable(testoscar EXCLUDE_FROM_ALL
     testoscar.cpp  # entry point
 )
 
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/testoscarconfig.hpp.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/testoscar/testoscarconfig.hpp"
+)
+
+target_include_directories(testoscar PUBLIC
+
+    # so that source code can `#include <tesetoscar/testoscarconfig.hpp>`
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/"
+)
+
 target_link_libraries(testoscar PUBLIC
 
     # set compile options
-    oscar_configuration
+    oscar_compiler_configuration
 
     # link to the to-be-tested library
     oscar

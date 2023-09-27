@@ -1,0 +1,11 @@
+#pragma once
+
+// char[]
+//
+// name of the organization (affects things like configuration location)
+#define TESTOSCAR_ORGNAME_STRING "@OSC_ORGNAME@"
+
+// char[]
+//
+// full application name string
+#define TESTOSCAR_APPNAME_STRING "TestOscar"

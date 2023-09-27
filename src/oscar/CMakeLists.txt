@@ -257,7 +257,7 @@ target_include_directories(oscar PUBLIC
 
 target_link_libraries(oscar PUBLIC
 
-    oscar_configuration
+    oscar_compiler_configuration
 
     OpenGL::GL
     GLEW::glew_s

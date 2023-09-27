@@ -141,9 +141,9 @@ cmake \
 # build tests and the final package
 cmake \
     --build "osc-build" \
-    --target testopensimcreator testoscar ${OSC_BUILD_TARGET} \
+    --target TestOpenSimCreator testoscar ${OSC_BUILD_TARGET} \
     -j${OSC_BUILD_CONCURRENCY}
 
 # ensure tests pass
-osc-build/tests/OpenSimCreator/testopensimcreator
-osc-build/tests/oscar/testoscar
+osc-build/tests/TestOpenSimCreator/TestOpenSimCreator
+osc-build/tests/testoscar/testoscar

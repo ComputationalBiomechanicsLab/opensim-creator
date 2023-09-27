@@ -2,15 +2,7 @@ include(GoogleTest)
 enable_testing()
 find_package(GTest REQUIRED CONFIG)
 
-# testopensimcreator_config.hpp
-#
-#     configuration file that contains configuration-time vals (e.g. fixture locations)
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/testopensimcreator_config.hpp.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/testopensimcreator_config.hpp"
-)
-
-add_executable(testopensimcreator EXCLUDE_FROM_ALL
+add_executable(TestOpenSimCreator EXCLUDE_FROM_ALL
 
     Graphics/TestOpenSimDecorationGenerator.cpp
     Model/TestUndoableModelStatePair.cpp
@@ -18,15 +10,23 @@ add_executable(testopensimcreator EXCLUDE_FROM_ALL
     Simulation/TestForwardDynamicSimulation.cpp
     Utils/TestOpenSimHelpers.cpp
     Utils/TestUndoableModelActions.cpp
-
     TestOpenSimLibraryAPI.cpp
-    testopensimcreator.cpp  # entrypoint (main)
+    TestOpenSimCreator.cpp  # entrypoint (main)
 )
 
-target_link_libraries(testopensimcreator PUBLIC
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/TestOpenSimCreatorConfig.hpp.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/TestOpenSimCreator/TestOpenSimCreatorConfig.hpp"
+)
+target_include_directories(TestOpenSimCreator PUBLIC
+    # so that source code can `#include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>`
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/"
+)
+
+target_link_libraries(TestOpenSimCreator PUBLIC
 
     # set compile options
-    oscar_configuration
+    oscar_compiler_configuration
 
     # link to the to-be-tested library
     OpenSimCreator
@@ -36,12 +36,12 @@ target_link_libraries(testopensimcreator PUBLIC
     GTest::gtest_main
 )
 
-target_include_directories(testopensimcreator PUBLIC
+target_include_directories(TestOpenSimCreator PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}/generated  # for testopensimcreator_config.hpp
 )
 
 # tell CMake (+IDEs) how to find all tests
-gtest_add_tests(TARGET testopensimcreator)
+gtest_add_tests(TARGET TestOpenSimCreator)
 
 # for development on Windows, copy all runtime dlls to the exe directory
 # (because Windows doesn't have an RPATH)
@@ -51,9 +51,9 @@ if (WIN32)
     # HACK: we can't use TARGET_RUNTIME_DLLS because simbody doesn't package libgfortran etc. correctly
     file(GLOB_RECURSE dlls "${CMAKE_PREFIX_PATH}/*.dll")
     add_custom_command(
-        TARGET testopensimcreator
+        TARGET TestOpenSimCreator
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${dlls} $<TARGET_FILE_DIR:testopensimcreator>
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${dlls} $<TARGET_FILE_DIR:TestOpenSimCreator>
         COMMAND_EXPAND_LISTS
     )
 endif()

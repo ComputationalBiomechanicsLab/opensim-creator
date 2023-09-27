@@ -5,6 +5,7 @@
 #include <OpenSimCreator/UI/Tabs/Experimental/TPS2DTab.hpp>
 #include <OpenSimCreator/UI/Tabs/FrameDefinitionTab.hpp>
 #include <OpenSimCreator/UI/Tabs/MeshWarpingTab.hpp>
+#include <OpenSimCreator/OpenSimCreatorConfig.hpp>
 
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
@@ -16,7 +17,6 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar_demos/OscarDemosTabRegistry.hpp>
 #include <oscar_learnopengl/LearnOpenGLTabRegistry.hpp>
-#include <OscarConfiguration.hpp>
 #include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/LogSink.h>
 #include <OpenSim/Common/RegisterTypes_osimCommon.h>
@@ -189,7 +189,7 @@ bool osc::GlobalInitOpenSim(AppConfig const& config)
 osc::OpenSimCreatorApp::OpenSimCreatorApp() :
     App{AppMetadata
     {
-        "cbl",
+        OSC_ORGNAME_STRING,
         OSC_APPNAME_STRING,
         OSC_VERSION_STRING,
         OSC_BUILD_ID,

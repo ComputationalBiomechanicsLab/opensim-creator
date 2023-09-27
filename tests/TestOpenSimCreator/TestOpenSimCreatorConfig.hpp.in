@@ -1,3 +1,10 @@
+#pragma once
+
+// char[]
+//
+// full application name string
+#define TESTOPENSIMCREATOR_APPNAME_STRING "TestOpenSimCreator"
+
 // char[]
 //
 // absolute path to the source directory - necessary for loading test

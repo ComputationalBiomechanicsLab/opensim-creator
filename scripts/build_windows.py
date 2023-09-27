@@ -72,7 +72,7 @@ def build_osc_dependencies(conf: BuildConfiguration):
 
 def build_osc(conf: BuildConfiguration):
     with Section("build osc"):
-        test_osc_path = os.path.join(conf.osc_build_dir, 'tests', 'OpenSimCreator', conf.osc_build_type, 'testopensimcreator')
+        test_osc_path = os.path.join(conf.osc_build_dir, 'tests', 'TestOpenSimCreator', conf.osc_build_type, 'TestOpenSimCreator')
         test_oscar_path = os.path.join(conf.osc_build_dir, 'tests', 'oscar', conf.osc_build_type, 'testoscar')
         other_build_args = f'--config {conf.osc_build_type} -j{conf.concurrency}'
 
@@ -84,7 +84,7 @@ def build_osc(conf: BuildConfiguration):
         _run(f'{test_oscar_path} --gtest_filter="-Renderer*')
 
         # build+run OpenSimCreator test suite
-        _run(f'cmake --build {conf.osc_build_dir} --target testopensimcreator {other_build_args}')
+        _run(f'cmake --build {conf.osc_build_dir} --target TestOpenSimCreator {other_build_args}')
         _run(f'{test_osc_path} --gtest_filter="-Renderer*"')
 
         # build final output target (usually, the installer)

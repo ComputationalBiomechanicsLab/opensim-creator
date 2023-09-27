@@ -1,17 +1,9 @@
-// int
-//
-// major (breaking) version number of OSC
-#define OSC_VERSION_MAJOR @osc_VERSION_MAJOR@
+#pragma once
 
-// int
+// char[]
 //
-// minor (slightly breaking) version number of OSC
-#define OSC_VERSION_MINOR @osc_VERSION_MINOR@
-
-// int
-//
-// patch version number of OSC
-#define OSC_VERSION_PATCH @osc_VERSION_PATCH@
+// name of the organization (affects things like configuration location)
+#define OSC_ORGNAME_STRING "@OSC_ORGNAME@"
 
 // char[]
 //
@@ -28,15 +20,6 @@
 // unique build ID for this build of OSC. Bakes the build ID into
 // the binary, which is handy for user bug reports, etc.
 #define OSC_BUILD_ID "@OSC_BUILD_ID@"
-
-// char[]
-//
-// default location of OSC's runtime resources dir when it is not externally
-// specified by the user (commandline args, environment var) or config file
-//
-// this is an "oh shit, we can't even find the config file" fallback to try
-// and get the application booting anyway
-#define OSC_DEFAULT_RESOURCE_DIR "@OSC_DEFAULT_RESOURCE_DIR@"
 
 // char[]
 //

@@ -215,14 +215,28 @@ add_library(OpenSimCreator STATIC
     OpenSimCreatorApp.hpp
  )
 
+# OpenSimCreator: OpenSimCreatorConfig.hpp
+#
+# a configured header file that contains values that are accessible in the source
+# code at compile-time
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/OpenSimCreatorConfig.hpp.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/OpenSimCreator/OpenSimCreatorConfig.hpp"
+)
+
 # OpenSimCreator: compile-time includes
 target_include_directories(OpenSimCreator PUBLIC
+
+    # so that the source code can `#include <OpenSimCreator/SomeModule.hpp>`
     ${CMAKE_CURRENT_SOURCE_DIR}/..
+
+    # so that source code can `#include <OpenSimCreator/OpenSimCreatorConfig.hpp>`
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/"
 )
 
 # OpenSimCreator: libraries
 target_link_libraries(OpenSimCreator PUBLIC
-    oscar_configuration
+    oscar_compiler_configuration
     oscar
     oscar_demos
     oscar_learnopengl
@@ -236,6 +250,7 @@ target_link_libraries(OpenSimCreator PUBLIC
     osimExampleComponents
 )
 
+# OpenSimCreator: additional compile options (on top of `oscar_compiler_configuration`)
 target_compile_options(OpenSimCreator PUBLIC
 
     # msvc (Windows) flags

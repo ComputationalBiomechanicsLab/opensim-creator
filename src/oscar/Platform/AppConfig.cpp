@@ -4,7 +4,6 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
-#include <OscarConfiguration.hpp>
 
 #include <toml++/toml.h>
 
@@ -183,7 +182,7 @@ std::unique_ptr<osc::AppConfig> osc::AppConfig::load()
     auto rv = std::make_unique<AppConfig::Impl>();
 
     // set defaults (in case underlying file can't be found)
-    rv->resourceDir = OSC_DEFAULT_RESOURCE_DIR;
+    rv->resourceDir = "../resources";
 
     TryUpdateConfigFromConfigFile(*rv);
 
