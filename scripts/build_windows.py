@@ -73,7 +73,7 @@ def build_osc_dependencies(conf: BuildConfiguration):
 def build_osc(conf: BuildConfiguration):
     with Section("build osc"):
         test_osc_path = os.path.join(conf.osc_build_dir, 'tests', 'TestOpenSimCreator', conf.osc_build_type, 'TestOpenSimCreator')
-        test_oscar_path = os.path.join(conf.osc_build_dir, 'tests', 'oscar', conf.osc_build_type, 'testoscar')
+        test_oscar_path = os.path.join(conf.osc_build_dir, 'tests', 'testoscar', conf.osc_build_type, 'testoscar')
         other_build_args = f'--config {conf.osc_build_type} -j{conf.concurrency}'
 
         # configure

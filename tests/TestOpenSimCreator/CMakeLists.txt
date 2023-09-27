@@ -36,10 +36,6 @@ target_link_libraries(TestOpenSimCreator PUBLIC
     GTest::gtest_main
 )
 
-target_include_directories(TestOpenSimCreator PUBLIC
-    ${CMAKE_CURRENT_BINARY_DIR}/generated  # for testopensimcreator_config.hpp
-)
-
 # tell CMake (+IDEs) how to find all tests
 gtest_add_tests(TARGET TestOpenSimCreator)
 

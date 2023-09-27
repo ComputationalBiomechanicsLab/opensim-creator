@@ -1,9 +1,10 @@
 #include "OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp"
 
+#include "TestOpenSimCreator/TestOpenSimCreatorConfig.hpp"
+
 #include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
 #include "OpenSimCreator/Graphics/MuscleColoringStyle.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "testopensimcreator_config.hpp"
 
 #include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
