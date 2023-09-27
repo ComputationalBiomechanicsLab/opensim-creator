@@ -298,8 +298,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/OpenSimCreator/SolidColor.vert"),
-            App::slurp("shaders/OpenSimCreator/SolidColor.frag"),
+            App::slurp("shaders/oscar_demos/SolidColor.vert"),
+            App::slurp("shaders/oscar_demos/SolidColor.frag"),
         },
     };
     Mesh m_SphereMesh = GenSphere(12, 12);

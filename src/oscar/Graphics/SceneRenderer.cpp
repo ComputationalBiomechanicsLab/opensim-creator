@@ -140,12 +140,12 @@ public:
         MeshCache& meshCache,
         ShaderCache& shaderCache) :
 
-        m_SceneColoredElementsMaterial{shaderCache.load(config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/DrawColoredObjects.vert", config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/DrawColoredObjects.frag")},
-        m_SceneTexturedElementsMaterial{shaderCache.load(config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/DrawTexturedObjects.vert", config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/DrawTexturedObjects.frag")},
-        m_SolidColorMaterial{shaderCache.load(config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/SolidColor.vert", config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/SolidColor.frag")},
-        m_EdgeDetectorMaterial{shaderCache.load(config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/EdgeDetector.vert", config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/EdgeDetector.frag")},
-        m_NormalsMaterial{shaderCache.load(config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/NormalsVisualizer.vert", config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/NormalsVisualizer.geom", config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/NormalsVisualizer.frag")},
-        m_DepthWritingMaterial{shaderCache.load(config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/DepthMap.vert", config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/DepthMap.frag")},
+        m_SceneColoredElementsMaterial{shaderCache.load(config.getResourceDir() / "shaders/oscar/SceneRenderer/DrawColoredObjects.vert", config.getResourceDir() / "shaders/oscar/SceneRenderer/DrawColoredObjects.frag")},
+        m_SceneTexturedElementsMaterial{shaderCache.load(config.getResourceDir() / "shaders/oscar/SceneRenderer/DrawTexturedObjects.vert", config.getResourceDir() / "shaders/oscar/SceneRenderer/DrawTexturedObjects.frag")},
+        m_SolidColorMaterial{shaderCache.load(config.getResourceDir() / "shaders/oscar/SceneRenderer/SolidColor.vert", config.getResourceDir() / "shaders/oscar/SceneRenderer/SolidColor.frag")},
+        m_EdgeDetectorMaterial{shaderCache.load(config.getResourceDir() / "shaders/oscar/SceneRenderer/EdgeDetector.vert", config.getResourceDir() / "shaders/oscar/SceneRenderer/EdgeDetector.frag")},
+        m_NormalsMaterial{shaderCache.load(config.getResourceDir() / "shaders/oscar/SceneRenderer/NormalsVisualizer.vert", config.getResourceDir() / "shaders/oscar/SceneRenderer/NormalsVisualizer.geom", config.getResourceDir() / "shaders/oscar/SceneRenderer/NormalsVisualizer.frag")},
+        m_DepthWritingMaterial{shaderCache.load(config.getResourceDir() / "shaders/oscar/SceneRenderer/DepthMap.vert", config.getResourceDir() / "shaders/oscar/SceneRenderer/DepthMap.frag")},
         m_QuadMesh{meshCache.getTexturedQuadMesh()}
     {
         m_SceneTexturedElementsMaterial.setTexture("uDiffuseTexture", m_ChequerTexture);

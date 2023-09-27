@@ -611,8 +611,8 @@ std::vector<glm::vec4> osc::CalcTangentVectors(
 
 osc::Material osc::CreateWireframeOverlayMaterial(AppConfig const& config, ShaderCache& cache)
 {
-    std::filesystem::path const vertShader = config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/SolidColor.vert";
-    std::filesystem::path const fragShader = config.getResourceDir() / "shaders/OpenSimCreator/SceneRenderer/SolidColor.frag";
+    std::filesystem::path const vertShader = config.getResourceDir() / "shaders/oscar/SceneRenderer/SolidColor.vert";
+    std::filesystem::path const fragShader = config.getResourceDir() / "shaders/oscar/SceneRenderer/SolidColor.frag";
     osc::Material material{cache.load(vertShader, fragShader)};
     material.setColor("uDiffuseColor", {0.0f, 0.0f, 0.0f, 0.6f});
     material.setWireframeMode(true);

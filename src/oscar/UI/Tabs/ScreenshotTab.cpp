@@ -248,8 +248,8 @@ private:
             {
                 Shader
                 {
-                    App::slurp("shaders/OpenSimCreator/PerVertexColor.vert"),
-                    App::slurp("shaders/OpenSimCreator/PerVertexColor.frag"),
+                    App::slurp("shaders/oscar/PerVertexColor.vert"),
+                    App::slurp("shaders/oscar/PerVertexColor.frag"),
                 }
             };
 
