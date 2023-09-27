@@ -5,6 +5,8 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- The right-click step size menu for scalar property editors now includes suggestions for masses (it assumes
+  the property is expressed in kilograms)
 - Added `Import Stations from CSV` to the mesh importer's file menu, which provides a way of importing stations
   into the mesh importer scene from a CSV file (#149)
 - Hovering over a recent or example osim file in the home screen now displays the full name of the file in a

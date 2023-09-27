@@ -284,6 +284,35 @@ namespace
                     stepSize = (1.0f/180.0f) * osc::fpi;
                 }
 
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Masses");
+                ImGui::TableSetColumnIndex(1);
+                if (ImGui::Button("1 kg"))
+                {
+                    stepSize = 1.0f;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("100 g"))
+                {
+                    stepSize = 0.1f;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("10 g"))
+                {
+                    stepSize = 0.01f;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("1 g"))
+                {
+                    stepSize = 0.001f;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("100 mg"))
+                {
+                    stepSize = 0.0001f;
+                }
+
                 ImGui::EndTable();
             }
 
