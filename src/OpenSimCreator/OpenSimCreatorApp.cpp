@@ -191,6 +191,7 @@ osc::OpenSimCreatorApp::OpenSimCreatorApp() :
     {
         OSC_ORGNAME_STRING,
         OSC_APPNAME_STRING,
+        OSC_LONG_APPNAME_STRING,
         OSC_VERSION_STRING,
         OSC_BUILD_ID,
         OSC_REPO_URL,

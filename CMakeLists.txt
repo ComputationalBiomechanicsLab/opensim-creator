@@ -56,9 +56,14 @@ set(
     "the organization that created the application (affects configuration location)"
 )
 set(
-    OSC_APPNAME "OpenSim Creator"
+    OSC_APPNAME "osc"
     CACHE STRING
-    "user-facing name of the application"
+    "short name for the application (affects configuration location)"
+)
+set(
+    OSC_LONG_APPNAME "OpenSim Creator"
+    CACHE STRING
+    "longer, user-friendly name of the application"
 )
 set(
     OSC_PACKAGE_NAME "OpenSimCreator"

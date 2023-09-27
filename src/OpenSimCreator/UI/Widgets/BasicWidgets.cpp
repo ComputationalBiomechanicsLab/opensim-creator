@@ -89,7 +89,7 @@ namespace
         osc::AppMetadata const& appMetadata = osc::App::get().getMetadata();
         osc::DAEMetadata daeMetadata
         {
-            appMetadata.getApplicationName(),
+            osc::GetBestHumanReadableApplicationName(appMetadata),
             osc::CalcFullApplicationNameWithVersionAndBuild(appMetadata),
         };
 

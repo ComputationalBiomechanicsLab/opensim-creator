@@ -21,12 +21,14 @@ namespace osc
         AppMetadata(
             CStringView organizationName_,
             CStringView applicationName_,
+            CStringView longApplicationName_,
             CStringView versionString_,
             CStringView buildID_,
             CStringView repositoryURL_) :
 
             m_OrganizationName{organizationName_},
             m_ApplicationName{applicationName_},
+            m_LongApplicationName{longApplicationName_},
             m_VersionString{versionString_},
             m_BuildID{buildID_},
             m_RepositoryURL{repositoryURL_}
@@ -41,6 +43,11 @@ namespace osc
         CStringView getApplicationName() const
         {
             return m_ApplicationName;
+        }
+
+        std::optional<CStringView> tryGetLongApplicationName() const
+        {
+            return m_LongApplicationName;
         }
 
         std::optional<CStringView> tryGetVersionString() const
@@ -61,10 +68,12 @@ namespace osc
     private:
         std::string m_OrganizationName;
         std::string m_ApplicationName;
+        std::optional<std::string> m_LongApplicationName;
         std::optional<std::string> m_VersionString;
         std::optional<std::string> m_BuildID;
         std::optional<std::string> m_RepositoryURL;
     };
 
     std::string CalcFullApplicationNameWithVersionAndBuild(AppMetadata const&);
+    CStringView GetBestHumanReadableApplicationName(AppMetadata const&);
 }

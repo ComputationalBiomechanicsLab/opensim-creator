@@ -53,20 +53,6 @@ namespace
 
         return std::filesystem::path{sv};
     }
-
-    std::filesystem::path getCurrentExeDir()
-    {
-        std::unique_ptr<char, decltype(&SDL_free)> p{SDL_GetBasePath(), SDL_free};
-
-        return convertSDLPathToStdpath("SDL_GetBasePath", p.get());
-    }
-
-    std::filesystem::path getUserDataDir()
-    {
-        std::unique_ptr<char, decltype(&SDL_free)> p{SDL_GetPrefPath("cbl", "osc"), SDL_free};
-
-        return convertSDLPathToStdpath("SDL_GetPrefPath", p.get());
-    }
 }
 
 std::tm osc::GetSystemCalendarTime()
@@ -76,18 +62,26 @@ std::tm osc::GetSystemCalendarTime()
     return osc::GMTimeThreadsafe(t);
 }
 
-std::filesystem::path const& osc::CurrentExeDir()
+std::filesystem::path osc::CurrentExeDir()
 {
-    // can be expensive to compute: cache after first retrieval
-    static std::filesystem::path const s_CurrentExeDir = getCurrentExeDir();
-    return s_CurrentExeDir;
+    std::unique_ptr<char, decltype(&SDL_free)> p
+    {
+        SDL_GetBasePath(),
+        SDL_free
+    };
+    return convertSDLPathToStdpath("SDL_GetBasePath", p.get());
 }
 
-std::filesystem::path const& osc::GetUserDataDir()
+std::filesystem::path osc::GetUserDataDir(
+    CStringView organizationName,
+    CStringView applicationName)
 {
-    // can be expensive to compute: cache after first retrieval
-    static std::filesystem::path const s_UserDataDir = getUserDataDir();
-    return s_UserDataDir;
+    std::unique_ptr<char, decltype(&SDL_free)> p
+    {
+        SDL_GetPrefPath(organizationName.c_str(), applicationName.c_str()),
+        SDL_free,
+    };
+    return convertSDLPathToStdpath("SDL_GetPrefPath", p.get());
 }
 
 bool osc::SetClipboardText(CStringView sv)
@@ -344,7 +338,7 @@ namespace
     }
 }
 
-void osc::InstallBacktraceHandler()
+void osc::InstallBacktraceHandler(std::filesystem::path const&)
 {
     struct sigaction sigact{};
 
@@ -473,7 +467,7 @@ namespace
     }
 }
 
-void osc::InstallBacktraceHandler()
+void osc::InstallBacktraceHandler(std::filesystem::path const&)
 {
     struct sigaction sigact;
     sigact.sa_sigaction = OSC_critical_error_handler;
@@ -601,46 +595,71 @@ namespace
         return std::chrono::seconds(std::time(nullptr));
     }
 
-    std::filesystem::path GetCrashReportPath()
+    // care: this is necessary because segfault crash handlers don't appear to
+    // be able to have data passed to them
+    std::optional<std::filesystem::path> UpdCrashDumpDirGlobal()
     {
+        static std::optional<std::filesystem::path> s_CrashDumpDir;
+        return s_CrashDumpDir;
+    }
+
+    std::optional<std::filesystem::path> GetCrashReportPath()
+    {
+        if (!UpdCrashDumpDirGlobal())
+        {
+            return std::nullopt;  // global wasn't set: programmer error
+        }
+
         std::stringstream filename;
         filename << GetCurrentTimeAsUnixTimestamp().count();
         filename << "_CrashReport.txt";
-        return osc::GetUserDataDir() / std::move(filename).str();
+        return *UpdCrashDumpDirGlobal() / std::move(filename).str();
     }
 
     LONG crash_handler(EXCEPTION_POINTERS*)
     {
         osc::log::error("exception propagated to root of OSC: might be a segfault?");
 
-        std::filesystem::path const crashReportPath = GetCrashReportPath();
-        std::ofstream crashReportFile{crashReportPath};
+        std::optional<std::filesystem::path> const maybeCrashReportPath =
+            GetCrashReportPath();
+
+        std::optional<std::ofstream> maybeCrashReportFile = maybeCrashReportPath ?
+            std::ofstream{*maybeCrashReportPath} :
+            std::optional<std::ofstream>{};
 
         // dump out the log history (it's handy for context)
-        if (crashReportFile)
+        if (maybeCrashReportFile && *maybeCrashReportFile)
         {
-            crashReportFile << "----- log -----\n";
+            *maybeCrashReportFile << "----- log -----\n";
             auto guard = osc::log::getTracebackLog().lock();
             for (osc::LogMessage const& msg : *guard)
             {
-                crashReportFile << '[' << msg.loggerName << "] [" << osc::ToCStringView(msg.level) << "] " << msg.payload << '\n';
+                *maybeCrashReportFile << '[' << msg.loggerName << "] [" << osc::ToCStringView(msg.level) << "] " << msg.payload << '\n';
             }
-            crashReportFile << "----- /log -----\n";
+            *maybeCrashReportFile << "----- /log -----\n";
         }
 
         // then write a traceback to both the log (in case the user is running from a console)
         // *and* the crash dump (in case the user is running from a GUI and wants to report it)
-        if (crashReportFile)
+        if (maybeCrashReportFile && *maybeCrashReportFile)
         {
-            crashReportFile << "----- traceback -----\n";
+            *maybeCrashReportFile << "----- traceback -----\n";
 
-            std::shared_ptr<osc::LogSink> sink = std::make_shared<CrashFileSink>(crashReportFile);
+            std::shared_ptr<osc::LogSink> sink = std::make_shared<CrashFileSink>(*maybeCrashReportFile);
 
             osc::log::defaultLogger()->sinks().push_back(sink);
             osc::WriteTracebackToLog(osc::LogLevel::err);
             osc::log::defaultLogger()->sinks().erase(osc::log::defaultLogger()->sinks().end() - 1);
 
-            crashReportFile << "----- /traceback -----\n";
+            *maybeCrashReportFile << "----- /traceback -----\n";
+        }
+        else
+        {
+            // (no crash dump file, but still write it to stdout etc.)
+
+            *maybeCrashReportFile << "----- traceback -----\n";
+            osc::WriteTracebackToLog(osc::LogLevel::err);
+            *maybeCrashReportFile << "----- /traceback -----\n";
         }
 
         return EXCEPTION_CONTINUE_SEARCH;
@@ -653,9 +672,12 @@ namespace
     }
 }
 
-void osc::InstallBacktraceHandler()
+void osc::InstallBacktraceHandler(std::filesystem::path const& crashDumpDir)
 {
     // https://stackoverflow.com/questions/13591334/what-actions-do-i-need-to-take-to-get-a-crash-dump-in-all-error-scenarios
+
+    // set crash dump directory globally so that the crash handler can see it
+    UpdCrashDumpDirGlobal() = crashDumpDir;
 
     // system default: display all errors
     SetErrorMode(0);
@@ -668,7 +690,7 @@ void osc::InstallBacktraceHandler()
 
 void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& p)
 {
-    ShellExecute(0, 0, p.string().c_str(), 0, 0 , SW_SHOW );
+    ShellExecute(0, 0, p.string().c_str(), 0, 0 , SW_SHOW);
 }
 
 void osc::OpenURLInDefaultBrowser(std::string_view)

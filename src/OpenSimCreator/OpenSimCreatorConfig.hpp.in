@@ -2,13 +2,18 @@
 
 // char[]
 //
-// name of the organization (affects things like configuration location)
+// name of the organization (affects configuration location)
 #define OSC_ORGNAME_STRING "@OSC_ORGNAME@"
 
 // char[]
 //
-// full application name string
+// short-form name of the application (affects configuration location)
 #define OSC_APPNAME_STRING "@OSC_APPNAME@"
+
+// char[]
+//
+// user-friendly full application name string
+#define OSC_LONG_APPNAME_STRING "@OSC_LONG_APPNAME@"
 
 // char[]
 //

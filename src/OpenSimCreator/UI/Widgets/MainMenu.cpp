@@ -379,7 +379,7 @@ void osc::MainMenuAboutTab::onDraw()
         ImGui::PushID(id++);
         if (ImGui::Button(ICON_FA_FOLDER " open"))
         {
-            OpenPathInOSDefaultApplication(CurrentExeDir());
+            OpenPathInOSDefaultApplication(App::get().getExecutableDirPath());
         }
         ImGui::PopID();
         ImGui::NextColumn();
@@ -390,7 +390,7 @@ void osc::MainMenuAboutTab::onDraw()
         ImGui::NextColumn();
         ImGui::PushID(id++);
         if (ImGui::Button(ICON_FA_FOLDER " open")) {
-            OpenPathInOSDefaultApplication(GetUserDataDir());
+            OpenPathInOSDefaultApplication(App::get().getUserDataDirPath());
         }
         ImGui::PopID();
         ImGui::NextColumn();

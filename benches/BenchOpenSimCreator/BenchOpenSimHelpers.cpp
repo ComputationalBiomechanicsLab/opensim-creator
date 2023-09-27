@@ -24,7 +24,7 @@ static NestedComponentChain GenerateNestedComponentChain()
 
     auto lastChild = std::make_unique<OpenSim::PhysicalOffsetFrame>();
     lastChild->setName("lastChild");
-    
+
     OpenSim::Component* lastChildPtr = lastChild.get();
 
     secondChild->addComponent(lastChild.release());

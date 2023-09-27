@@ -90,7 +90,15 @@ namespace osc
         App& operator=(App&&) noexcept;
         ~App() noexcept;
 
+        // returns the application's metdata (name, organization, repo URL, version, etc.)
         AppMetadata const& getMetadata() const;
+
+        // returns the filesystem path to the current application executable
+        std::filesystem::path const& getExecutableDirPath() const;
+
+        // returns the filesystem path to a (usually, writable) user-specific directory for the
+        // application
+        std::filesystem::path const& getUserDataDirPath() const;
 
         // start showing the supplied screen, only returns once a screen requests to quit or an exception is thrown
         void show(std::unique_ptr<Screen>);

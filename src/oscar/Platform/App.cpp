@@ -67,16 +67,11 @@ namespace
     // useful if the application fails in prod: can provide some basic backtrace
     // info that users can paste into an issue or something, which is *a lot* more
     // information than "yeah, it's broke"
-    bool EnsureBacktraceHandlerEnabled()
+    bool EnsureBacktraceHandlerEnabled(std::filesystem::path const& crashDumpDir)
     {
-        [[maybe_unused]] static bool const s_BacktraceEnabled = []()
-        {
-            osc::log::info("enabling backtrace handler");
-            osc::InstallBacktraceHandler();
-            return true;
-        }();
-
-        return s_BacktraceEnabled;
+        osc::log::info("enabling backtrace handler");
+        osc::InstallBacktraceHandler(crashDumpDir);
+        return true;
     }
 
     bool ConfigureApplicationLog(osc::AppConfig const& config)
@@ -155,9 +150,9 @@ namespace
     }
 
     // returns the filesystem path to the "recent files" file
-    std::filesystem::path GetRecentFilesFilePath()
+    std::filesystem::path GetRecentFilesFilePath(std::filesystem::path const& userDataDirPath)
     {
-        return osc::GetUserDataDir() / "recent_files.txt";
+        return userDataDirPath / "recent_files.txt";
     }
 
     // returns a unix timestamp in seconds since the epoch
@@ -257,6 +252,16 @@ public:
     AppMetadata const& getMetadata() const
     {
         return m_Metadata;
+    }
+
+    std::filesystem::path const& getExecutableDirPath() const
+    {
+        return m_ExecutableDirPath;
+    }
+
+    std::filesystem::path const& getUserDataDirPath() const
+    {
+        return m_UserDataDirPath;
     }
 
     void show(std::unique_ptr<Screen> s)
@@ -561,8 +566,8 @@ public:
         *lock = sv;
 
         std::string const newTitle = sv.empty() ?
-            std::string{m_Metadata.getApplicationName()} :
-            (std::string{sv} + " - " + m_Metadata.getApplicationName());
+            std::string{osc::GetBestHumanReadableApplicationName(m_Metadata)} :
+            (std::string{sv} + " - " + osc::GetBestHumanReadableApplicationName(m_Metadata));
 
         SDL_SetWindowTitle(m_MainWindow.get(), newTitle.c_str());
     }
@@ -595,7 +600,7 @@ public:
 
     std::vector<osc::RecentFile> getRecentFiles() const
     {
-        std::filesystem::path p = GetRecentFilesFilePath();
+        std::filesystem::path p = GetRecentFilesFilePath(m_UserDataDirPath);
 
         if (!std::filesystem::exists(p))
         {
@@ -607,7 +612,7 @@ public:
 
     void addRecentFile(std::filesystem::path const& p)
     {
-        std::filesystem::path recentFilesPath = GetRecentFilesFilePath();
+        std::filesystem::path recentFilesPath = GetRecentFilesFilePath(m_UserDataDirPath);
 
         // load existing list
         std::vector<RecentFile> rfs;
@@ -859,6 +864,15 @@ private:
     // provided via the constructor
     AppMetadata m_Metadata;
 
+    // path to the directory that the executable is contained within
+    std::filesystem::path m_ExecutableDirPath = osc::CurrentExeDir();
+
+    // compute where a write-able user data dir is
+    std::filesystem::path m_UserDataDirPath = osc::GetUserDataDir(
+        m_Metadata.getOrganizationName(),
+        m_Metadata.getApplicationName()
+    );
+
     // init/load the application config first
     std::unique_ptr<AppConfig> m_ApplicationConfig = AppConfig::load();
 
@@ -866,13 +880,13 @@ private:
     bool m_ApplicationLogIsConfigured = ConfigureApplicationLog(*m_ApplicationConfig);
 
     // install the backtrace handler (if necessary - once per process)
-    bool m_IsBacktraceHandlerInstalled = EnsureBacktraceHandlerEnabled();
+    bool m_IsBacktraceHandlerInstalled = EnsureBacktraceHandlerEnabled(m_UserDataDirPath);
 
     // init SDL context (windowing, etc.)
     sdl::Context m_SDLContext{SDL_INIT_VIDEO};
 
     // init main application window
-    sdl::Window m_MainWindow = CreateMainAppWindow(m_Metadata.getApplicationName());
+    sdl::Window m_MainWindow = CreateMainAppWindow(GetBestHumanReadableApplicationName(m_Metadata));
 
     // init graphics context
     GraphicsContext m_GraphicsContext{*m_MainWindow};
@@ -957,6 +971,16 @@ osc::App::~App() noexcept
 osc::AppMetadata const& osc::App::getMetadata() const
 {
     return m_Impl->getMetadata();
+}
+
+std::filesystem::path const& osc::App::getExecutableDirPath() const
+{
+    return m_Impl->getExecutableDirPath();
+}
+
+std::filesystem::path const& osc::App::getUserDataDirPath() const
+{
+    return m_Impl->getUserDataDirPath();
 }
 
 void osc::App::show(std::unique_ptr<Screen> s)
@@ -1256,7 +1280,7 @@ void osc::ImGuiInit()
 
         // CARE: the reason this filepath is `static` is because ImGui requires that
         // the string outlives the ImGui context
-        static std::string const s_UserImguiIniFilePath = (osc::GetUserDataDir() / "imgui.ini").string();
+        static std::string const s_UserImguiIniFilePath = (App::get().getUserDataDirPath() / "imgui.ini").string();
 
         ImGui::LoadIniSettingsFromDisk(s_UserImguiIniFilePath.c_str());
         io.IniFilename = s_UserImguiIniFilePath.c_str();

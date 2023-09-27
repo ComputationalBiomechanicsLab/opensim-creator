@@ -31,18 +31,24 @@ namespace osc
     std::string StrerrorThreadsafe(int errnum);
 
     // returns the full path to the currently-executing application
-    std::filesystem::path const& CurrentExeDir();
+    //
+    // care: can be slow: downstream callers should cache it
+    std::filesystem::path CurrentExeDir();
 
     // returns the full path to the user's data directory
-    std::filesystem::path const& GetUserDataDir();
+    std::filesystem::path GetUserDataDir(
+        CStringView organizationName,
+        CStringView applicationName
+    );
 
     // writes a backtrace for the calling thread's stack to the log at the specified level
     void WriteTracebackToLog(LogLevel);
 
-    // installs a signal handler that prints a backtrace
+    // installs a signal handler that prints a backtrace and tries to write a
+    // crash report as `CrashReport_DATE.txt` to `crashDumpDir`
     //
     // note: this is a noop on some OSes
-    void InstallBacktraceHandler();
+    void InstallBacktraceHandler(std::filesystem::path const& crashDumpDir);
 
     // tries to open the specified filepath in the OSes default application for that
     // path. This function returns immediately: the application is opened in a separate

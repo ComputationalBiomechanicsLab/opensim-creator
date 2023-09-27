@@ -10,7 +10,7 @@
 std::string osc::CalcFullApplicationNameWithVersionAndBuild(AppMetadata const& metadata)
 {
     std::stringstream ss;
-    ss << metadata.getApplicationName();
+    ss << GetBestHumanReadableApplicationName(metadata);
     if (auto version = metadata.tryGetVersionString())
     {
         ss << " v" << *version;
@@ -20,4 +20,9 @@ std::string osc::CalcFullApplicationNameWithVersionAndBuild(AppMetadata const& m
         ss << " (build " << *buildID << ')';
     }
     return std::move(ss).str();
+}
+
+osc::CStringView osc::GetBestHumanReadableApplicationName(AppMetadata const& metadata)
+{
+    return metadata.tryGetLongApplicationName().value_or(metadata.getApplicationName());
 }
