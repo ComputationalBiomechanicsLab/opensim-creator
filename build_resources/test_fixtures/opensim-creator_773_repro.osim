@@ -4,11 +4,6 @@
 
 		<BodySet name="bodyset">
 			<objects>
-				<Body name="pectoral_girdle_b_slave_0">
-					<mass>1</mass>
-					<inertia>0.01 0.01 0.01 0 0 0</inertia>
-				</Body>
-
 				<Body name="radius_b">
 					<mass>1</mass>
 					<inertia>0.01 0.01 0.01 0 0 0</inertia>
@@ -38,21 +33,6 @@
 
 		<JointSet name="jointset">
 			<objects>
-
-				<WeldJoint name="pectoral_girdle_b_slave_0_to_ground">
-					<socket_parent_frame>ground_offset</socket_parent_frame>
-					<socket_child_frame>pectoral_girdle_b_slave_0_offset</socket_child_frame>
-
-					<frames>
-						<PhysicalOffsetFrame name="ground_offset">
-							<socket_parent>/ground</socket_parent>
-						</PhysicalOffsetFrame>
-
-						<PhysicalOffsetFrame name="pectoral_girdle_b_slave_0_offset">
-							<socket_parent>/bodyset/pectoral_girdle_b_slave_0</socket_parent>
-						</PhysicalOffsetFrame>
-					</frames>
-				</WeldJoint>
 
 				<WeldJoint name="radius_b_to_ground">
 					<socket_parent_frame>ground_offset</socket_parent_frame>

@@ -485,3 +485,38 @@ TEST(OpenSimModel, DISABLED_ReFinalizingAModelWithUnusualJointTopologyDoesNotSeg
         model.finalizeConnections();  // this can segfault (never should)
     }
 }
+
+// simplified repro for (#773)
+//
+// this is a simplified version of #773 that only contains two bodies and three joints,
+// but still observes the same bug
+TEST(OpenSimModel, DISABLED_ReFinalizingASimplerModelWithUnusualJointTopologyDoesNotSegfault)
+{
+    std::filesystem::path const brokenFilePath =
+        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_773-2_repro.osim";
+    OpenSim::Model model{brokenFilePath.string()};
+
+    for (size_t i = 0; i < 10; ++i)
+    {
+        model.finalizeConnections();  // this can segfault (never should)
+    }
+}
+
+// simplified repro for (#773)
+//
+// this is an even more simplified repro for #773 that only contains one body and two joints
+//
+// interestingly, this version of the model doesn't segfault because a (previously segfaulting)
+// failure occurs in the graph maker itself, which was patched in opensim-core/3299. It's only
+// in this test suite to spot regressions
+TEST(OpenSimModel, ReFinalizingAnEvenSimplerModelWithUnusualJointTopologyDoesNotSegfault)
+{
+    std::filesystem::path const brokenFilePath =
+        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_773-3_repro.osim";
+    OpenSim::Model model{brokenFilePath.string()};
+
+    for (size_t i = 0; i < 10; ++i)
+    {
+        model.finalizeConnections();  // this can segfault (never should)
+    }
+}
