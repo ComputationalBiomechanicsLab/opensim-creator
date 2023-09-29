@@ -205,7 +205,6 @@ namespace
             std::string const keyPrefix = [&stack]()
             {
                 std::string rv;
-                std::string_view delim = "";
                 for (auto it = stack.begin() + 1; it != stack.end(); ++it)
                 {
                     rv += it->tableName;
