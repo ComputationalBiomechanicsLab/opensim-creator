@@ -56,7 +56,7 @@ target_link_libraries(testoscar PUBLIC
 )
 
 # tell CMake (+IDEs) how to find all tests
-gtest_add_tests(TARGET testoscar)
+gtest_discover_tests(testoscar)
 
 # for development on Windows, copy all runtime dlls to the exe directory
 # (because Windows doesn't have an RPATH)
