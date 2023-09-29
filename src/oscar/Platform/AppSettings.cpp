@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <exception>
 #include <filesystem>
+#include <fstream>
 #include <memory>
 #include <optional>
 #include <string>
@@ -139,7 +140,26 @@ namespace
         std::string_view organizationName_,
         std::string_view applicationName_)
     {
-        return osc::GetUserDataDir(std::string{organizationName_}, std::string{applicationName_}) / "osc.toml";
+        auto userDir = osc::GetUserDataDir(std::string{organizationName_}, std::string{applicationName_});
+        auto fullPath = userDir / "osc.toml";
+
+        if (std::filesystem::exists(fullPath))
+        {
+            return fullPath;
+        }
+        else if (auto userFileStream = std::ofstream{fullPath})  // create blank user file
+        {
+            userFileStream << "# this is currently blank because OSC hasn't detected any user-enacted configuration changes\n";
+            userFileStream << "#\n";
+            userFileStream << "# you can manually add config options here, if you want: they will override the system configuration file, e.g.\n";
+            userFileStream << "#\n";
+            userFileStream << "# initial_tab = \"LearnOpenGL/Blending\"\n";
+            return fullPath;
+        }
+        else
+        {
+            return std::nullopt;
+        }
     }
 
     void LoadAppSettings(
@@ -154,8 +174,8 @@ namespace
         }
         catch (std::exception const& ex)
         {
-            osc::log::error("error parsing config toml: %s", ex.what());
-            osc::log::error("OSC will continue to boot, but you might need to fix your config file (e.g. by deleting it)");
+            osc::log::warn("error parsing %s: %s", configPath.string().c_str(), ex.what());
+            osc::log::warn("OSC will skip loading this configuration file, but you might want to fix it");
         }
 
         // crawl the table
