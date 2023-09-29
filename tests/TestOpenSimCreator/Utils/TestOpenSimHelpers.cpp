@@ -1,5 +1,7 @@
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
+#include "TestOpenSimCreator/TestOpenSimCreatorConfig.hpp"
+
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Registry/ComponentRegistry.hpp"
 #include "OpenSimCreator/Registry/StaticComponentRegistries.hpp"
@@ -207,4 +209,23 @@ TEST(OpenSimHelpers, AddModelComponentAddsComponentToModelComponentSet)
 
     ASSERT_EQ(m.get_ComponentSet().getSize(), 1);
     ASSERT_EQ(dynamic_cast<OpenSim::Component const*>(&m.get_ComponentSet()[0]), dynamic_cast<OpenSim::Component const*>(&s));
+}
+
+// mid-level repro for (#773)
+//
+// the bug is fundamentally because `Component::finalizeConnections` messes
+// around with stale pointers to deleted slave components. This mid-level
+// test is here in case OSC is doing some kind of magic in `osc::FinalizeConnections`
+// that `OpenSim` doesn't do
+TEST(OpenSimHelpers, DISABLED_FinalizeConnectionsWithUnusualJointTopologyDoesNotSegfault)
+{
+    std::filesystem::path const brokenFilePath =
+        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_773-2_repro.osim";
+    OpenSim::Model model{brokenFilePath.string()};
+    model.finalizeFromProperties();
+
+    for (size_t i = 0; i < 10; ++i)
+    {
+        osc::FinalizeConnections(model);  // the HACK should make this work fine
+    }
 }
