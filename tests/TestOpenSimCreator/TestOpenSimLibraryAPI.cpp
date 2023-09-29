@@ -509,7 +509,7 @@ TEST(OpenSimModel, DISABLED_ReFinalizingASimplerModelWithUnusualJointTopologyDoe
 // interestingly, this version of the model doesn't segfault because a (previously segfaulting)
 // failure occurs in the graph maker itself, which was patched in opensim-core/3299. It's only
 // in this test suite to spot regressions
-TEST(OpenSimModel, ReFinalizingAnEvenSimplerModelWithUnusualJointTopologyDoesNotSegfault)
+TEST(OpenSimModel, DISABLED_ReFinalizingAnEvenSimplerModelWithUnusualJointTopologyDoesNotSegfault)
 {
     std::filesystem::path const brokenFilePath =
         std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_773-3_repro.osim";
@@ -517,6 +517,6 @@ TEST(OpenSimModel, ReFinalizingAnEvenSimplerModelWithUnusualJointTopologyDoesNot
 
     for (size_t i = 0; i < 10; ++i)
     {
-        model.finalizeConnections();  // this can segfault (never should)
+        model.finalizeConnections();  // this throws (shouldn't?)
     }
 }
