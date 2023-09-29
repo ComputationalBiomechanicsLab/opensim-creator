@@ -771,7 +771,7 @@ bool osc::ActionRezeroJoint(UndoableModelStatePair& uim, OpenSim::ComponentPath 
         mutParent->setOffsetTransform(newXform);
 
         // and then put the model back into a valid state, ready for committing etc.
-        mutModel.finalizeConnections();
+        osc::FinalizeConnections(mutModel);
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
         uim.commit("rezeroed " + jointName);
@@ -895,7 +895,7 @@ bool osc::ActionSetComponentName(UndoableModelStatePair& uim, OpenSim::Component
 
         std::string const oldName = mutComponent->getName();
         mutComponent->setName(newName);
-        mutModel.finalizeConnections();  // because pointers need to know the new name
+        osc::FinalizeConnections(mutModel);  // because pointers need to know the new name
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
         uim.setSelected(mutComponent);  // because the name changed
@@ -1061,7 +1061,7 @@ bool osc::ActionAssignContactGeometryToHCF(
         OSC_ASSERT(!osc::empty(mutHCF->updContactParametersSet()));
 
         mutHCF->updContactParametersSet()[0].updGeometry().appendValue(geom->getName());
-        mutModel.finalizeConnections();
+        osc::FinalizeConnections(mutModel);
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
         uim.commit("added contact geometry");
@@ -1156,7 +1156,7 @@ bool osc::ActionAddPathPointToPathActuator(
         std::string const paName = mutPA->getName();
 
         mutPA->addNewPathPoint(name, *pf, pos);
-        mutModel.finalizeConnections();
+        osc::FinalizeConnections(mutModel);
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
 
