@@ -1,18 +1,18 @@
 #pragma once
 
-#include <oscar/Platform/AppSettingsStatus.hpp>
 #include <oscar/Platform/AppSettingValue.hpp>
 
+#include <memory>
 #include <optional>
 #include <string_view>
 
 namespace osc
 {
-    // persistent, platform-independent, application settings
+    // persistent, platform-independent, singleton-ed application settings
     class AppSettings final {
     public:
         AppSettings(
-            std::string_view organization_,
+            std::string_view organizationName_,
             std::string_view applicationName_
         );
         AppSettings(AppSettings const&);
@@ -30,8 +30,19 @@ namespace osc
             AppSettingValue
         );
 
-        void sync();
+        // TODO: `void sync()`
+        //
+        // - extract all user-defined app settings
+        // - sort alphabetically
+        // - for each entry:
+        //   - A if entry key contains `/`
+        //     - for each entry with same prefix up to `/`
+        //         if entry key contains `/` ... (recursive)
+        //   - else (recursion bottom-out)
+        //     - emit value
 
-        AppSettingsStatus status() const;
+        class Impl;
+    private:
+        std::shared_ptr<Impl> m_Impl;
     };
 }
