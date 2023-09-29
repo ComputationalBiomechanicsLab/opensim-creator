@@ -151,6 +151,18 @@ if(OSC_FORCE_UNDEFINE_NDEBUG)
 endif()
 
 
+# -------------- setup top-level project state ---------------- #
+
+# enable testing in this top-level project, so that `ctest` works when
+# (e.g.) IDEs get a list of tests when they use `ctest --show-only`
+# to list all tests project-wide
+#
+# see:
+#
+# - https://developercommunity.visualstudio.com/t/test-explorer-doesnt-detect-tests/482451
+# - https://stackoverflow.com/a/67984312
+enable_testing()
+
 # -------------- add/include subdirectories for each part of the project ---------------- #
 
 add_subdirectory(src)

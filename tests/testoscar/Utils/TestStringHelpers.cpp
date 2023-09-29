@@ -4,6 +4,8 @@
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
+#include <cctype>
 #include <iostream>
 #include <optional>
 #include <string_view>
@@ -83,9 +85,33 @@ namespace
         std::optional<float> expectedOutput;
     };
 
+    std::string WithoutControlCharacters(std::string_view v)
+    {
+        std::string rv;
+        rv.reserve(v.size());
+        for (auto c : v)
+        {
+            switch (c) {
+            case '\n':
+                rv += "\\n";
+                break;
+            case '\r':
+                rv += "\\r";
+                break;
+            default:
+                rv += c;
+            }
+        }
+        return rv;
+    }
+
     std::ostream& operator<<(std::ostream& o, TestCase const& tc)
     {
-        return o << "TestCase(input = " << tc.input << ", expectedOutput = " << tc.expectedOutput << ')';
+        // care: test UIs (e.g. Visual Studio test explorer) don't like it
+        //       when they have to print test names containing control
+        //       characters
+        std::string const sanitizedInput = WithoutControlCharacters(tc.input);
+        return o << "TestCase(input = " << sanitizedInput << ", expectedOutput = " << tc.expectedOutput << ')';
     }
 
     void PrintTo(TestCase const& tc, std::ostream* o)
