@@ -88,3 +88,29 @@ TEST(OpenSimActions, ActionApplyRangeDeletionPropertyEditReturnsFalseToIndicateF
     undoableModel.updModel().updComponent<OpenSim::Coordinate>("/jointset/joint/rotation").updProperty_range().clear();
     ASSERT_ANY_THROW({ osc::InitializeModel(undoableModel.updModel()); });
 }
+
+// high-level repro for (#773)
+//
+// the underlying bug appears to be related to finalizing connections in
+// the model graph (grep for 773 to see other tests), but the user-reported
+// bug is specifically related to renaming a component
+TEST(OpenSimActions, DISABLED_ActionSetComponentNameOnModelWithUnusualJointTopologyDoesNotSegfault)
+{
+    std::filesystem::path const brokenFilePath =
+        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_773-2_repro.osim";
+
+    osc::UndoableModelStatePair const loadedModel{brokenFilePath};
+
+    // loop `n` times because the segfault is stochastic
+    //
+    // ... which is a cute way of saying "really fucking random" :(
+    for (size_t i = 0; i < 25; ++i)
+    {
+        osc::UndoableModelStatePair model = loadedModel;
+        osc::ActionSetComponentName(
+            model,
+            std::string{"/bodyset/humerus_b"},
+            "newName"
+        );
+    }
+}
