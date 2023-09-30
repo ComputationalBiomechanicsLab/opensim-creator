@@ -17,9 +17,6 @@ find_package(span-lite REQUIRED CONFIG)
 find_package(tomlplusplus REQUIRED CONFIG)
 find_package(unordered_dense REQUIRED CONFIG)
 
-# [lib]oscar:
-#
-#     core platform library for window creation, rendering, maths, etc.
 add_library(oscar STATIC
 
     Bindings/GlmHelpers.cpp

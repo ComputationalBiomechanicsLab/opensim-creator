@@ -1,19 +1,17 @@
-# osc:
-#
-#     executable frontend to the `osccore` library
 add_executable(osc
 
-    "osc.cpp"  # entrypoint (main)
+    osc.cpp  # entrypoint (main)
 
     # Windows: also link a resources file (rc)
     #
     # the resources file tells MSVC compiler how to compile non-source resources
     # into the output exe. Specifically, it's used to embed the application icon
     # into the `osc` exe
-    $<$<CXX_COMPILER_ID:MSVC>:${CMAKE_CURRENT_SOURCE_DIR}/../../build_resources/resources.rc>
+    $<$<CXX_COMPILER_ID:MSVC>:
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../build_resources/resources.rc
+    >
 )
 
-# osc: link to necessary libraries
 target_link_libraries(osc PUBLIC
 
     # so that it uses standard compiler flags etc.
@@ -25,12 +23,12 @@ target_link_libraries(osc PUBLIC
 
 target_include_directories(osc PUBLIC
 
-    # necessary, because Windows' `resources.rc` uses the include path
-    # to find resources
-    ${CMAKE_CURRENT_SOURCE_DIR}/../..
+    # Windows: `resources.rc` uses the include path to find resources
+    $<$<CXX_COMPILER_ID:MSVC>:
+        ${CMAKE_CURRENT_SOURCE_DIR}/../..
+    >
 )
 
-# osc: link options
 target_link_options(osc PUBLIC
 
     # MSVC (Windows)
@@ -62,12 +60,10 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/../../build_resources/DEV_osc.toml.i
 #
 # see: https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html?highlight=runtime#genex:TARGET_RUNTIME_DLLS
 if (WIN32)
-    # HACK: we can't use TARGET_RUNTIME_DLLS because simbody doesn't package libgfortran etc. correctly
-    file(GLOB_RECURSE dlls "${CMAKE_PREFIX_PATH}/*.dll")
     add_custom_command(
         TARGET osc
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${dlls} $<TARGET_FILE_DIR:osc>
+        PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:osc> $<TARGET_FILE_DIR:osc>
         COMMAND_EXPAND_LISTS
     )
 endif()

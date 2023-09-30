@@ -1,5 +1,4 @@
 include(GoogleTest)
-enable_testing()
 find_package(GTest REQUIRED CONFIG)
 
 add_executable(TestOpenSimCreator EXCLUDE_FROM_ALL
@@ -37,24 +36,17 @@ target_link_libraries(TestOpenSimCreator PUBLIC
 )
 
 # tell CMake (+IDEs) how to find all tests
-gtest_discover_tests(
-    TestOpenSimCreator
-
-    # note: this is necessary because of the POST_BUILD dll-copying step below
-    DISCOVERY_MODE PRE_TEST
-)
+gtest_discover_tests(TestOpenSimCreator)
 
 # for development on Windows, copy all runtime dlls to the exe directory
 # (because Windows doesn't have an RPATH)
 #
 # see: https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html?highlight=runtime#genex:TARGET_RUNTIME_DLLS
 if (WIN32)
-    # HACK: we can't use TARGET_RUNTIME_DLLS because simbody doesn't package libgfortran etc. correctly
-    file(GLOB_RECURSE dlls "${CMAKE_PREFIX_PATH}/*.dll")
     add_custom_command(
         TARGET TestOpenSimCreator
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${dlls} $<TARGET_FILE_DIR:TestOpenSimCreator>
+        PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:TestOpenSimCreator> $<TARGET_FILE_DIR:TestOpenSimCreator>
         COMMAND_EXPAND_LISTS
     )
 endif()

@@ -1,8 +1,5 @@
 find_package(OpenSim REQUIRED CONFIG)
 
-# [lib]OpenSimCreator:
-#
-#     library code behind the OpenSim Creator application
 add_library(OpenSimCreator STATIC
 
     Bindings/SimTKDecorationGenerator.cpp
@@ -215,7 +212,7 @@ add_library(OpenSimCreator STATIC
     OpenSimCreatorApp.hpp
  )
 
-# OpenSimCreator: OpenSimCreatorConfig.hpp
+# OpenSimCreatorConfig.hpp
 #
 # a configured header file that contains values that are accessible in the source
 # code at compile-time
@@ -224,7 +221,6 @@ configure_file(
     "${CMAKE_CURRENT_BINARY_DIR}/generated/OpenSimCreator/OpenSimCreatorConfig.hpp"
 )
 
-# OpenSimCreator: compile-time includes
 target_include_directories(OpenSimCreator PUBLIC
 
     # so that the source code can `#include <OpenSimCreator/SomeModule.hpp>`
@@ -234,7 +230,6 @@ target_include_directories(OpenSimCreator PUBLIC
     "${CMAKE_CURRENT_BINARY_DIR}/generated/"
 )
 
-# OpenSimCreator: libraries
 target_link_libraries(OpenSimCreator PUBLIC
     oscar_compiler_configuration
     oscar
@@ -250,7 +245,36 @@ target_link_libraries(OpenSimCreator PUBLIC
     osimExampleComponents
 )
 
-# OpenSimCreator: additional compile options (on top of `oscar_compiler_configuration`)
+# HACK: fix simbody not linking all necessary libraries
+if(WIN32)
+    # https://stackoverflow.com/questions/71250816/cmake-how-to-handle-dependencies-of-imported-library-targets-with-target-runti
+
+    add_library(hack_libgcc_s_sjlj-1 SHARED IMPORTED)
+    set_target_properties(hack_libgcc_s_sjlj-1 PROPERTIES
+        IMPORTED_IMPLIB "${Simbody_LIB_DIR}/libblas.lib"
+        IMPORTED_LOCATION "${Simbody_BIN_DIR}/libgcc_s_sjlj-1.dll"
+    )
+
+    add_library(hack_libgfortran-3 SHARED IMPORTED)
+    set_target_properties(hack_libgfortran-3 PROPERTIES
+        IMPORTED_IMPLIB "${Simbody_LIB_DIR}/libblas.lib"
+        IMPORTED_LOCATION "${Simbody_BIN_DIR}/libgfortran-3.dll"
+    )
+
+    add_library(hack_libquadmath-0 SHARED IMPORTED)
+    set_target_properties(hack_libquadmath-0 PROPERTIES
+        IMPORTED_IMPLIB "${Simbody_LIB_DIR}/libblas.lib"
+        IMPORTED_LOCATION "${Simbody_BIN_DIR}/libquadmath-0.dll"
+    )
+
+    target_link_libraries(OpenSimCreator PUBLIC
+        hack_libgcc_s_sjlj-1
+        hack_libgfortran-3
+        hack_libquadmath-0
+    )
+endif()
+
+# additional compile options (on top of `oscar_compiler_configuration`)
 target_compile_options(OpenSimCreator PUBLIC
 
     # msvc (Windows) flags
@@ -272,26 +296,5 @@ target_compile_options(OpenSimCreator PUBLIC
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
         # disable extra-semicolon detection: broken by OpenSim_DECLARE_ macros (see: opensim-core/3496)
         -Wno-extra-semi
-    >
-)
-
-# OpenSimCreator: link options
-target_link_options(OpenSimCreator PUBLIC
-
-    # Linux /w GCC or Clang
-    $<$<AND:$<BOOL:LINUX>,$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>>:
-
-        # make `ld` emit symbols for all functions - even if they aren't
-        # externally used (with an exe, only `main` is used, really)
-        #
-        # this makes the binary a little bigger (~400 KB) but means
-        # that the application can emit its own stack trace /w function
-        # names - even in Release mode.
-        -rdynamic
-    >
-
-    # GCC or Clang: handle OSC_USE_ASAN
-    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
-        $<$<BOOL:${OSC_USE_ASAN}>:-fsanitize=address>
     >
 )

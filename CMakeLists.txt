@@ -159,6 +159,7 @@ endif()
 #
 # see:
 #
+# - https://cmake.org/cmake/help/latest/command/enable_testing.html
 # - https://developercommunity.visualstudio.com/t/test-explorer-doesnt-detect-tests/482451
 # - https://stackoverflow.com/a/67984312
 enable_testing()

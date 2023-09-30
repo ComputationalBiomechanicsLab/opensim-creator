@@ -1,5 +1,4 @@
 include(GoogleTest)
-enable_testing()
 find_package(GTest REQUIRED CONFIG)
 
 add_executable(testoscar EXCLUDE_FROM_ALL
@@ -44,7 +43,7 @@ target_include_directories(testoscar PUBLIC
 
 target_link_libraries(testoscar PUBLIC
 
-    # set compile options
+    # set compiler options
     oscar_compiler_configuration
 
     # link to the to-be-tested library
@@ -63,11 +62,10 @@ gtest_discover_tests(testoscar)
 #
 # see: https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html?highlight=runtime#genex:TARGET_RUNTIME_DLLS
 if (WIN32)
-    file(GLOB_RECURSE dlls "${CMAKE_PREFIX_PATH}/*.dll")
     add_custom_command(
         TARGET testoscar
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${dlls} $<TARGET_FILE_DIR:testoscar>
+        PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:testoscar> $<TARGET_FILE_DIR:testoscar>
         COMMAND_EXPAND_LISTS
     )
 endif()
