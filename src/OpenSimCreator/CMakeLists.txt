@@ -123,9 +123,6 @@ add_library(OpenSimCreator STATIC
     UI/Panels/SimulationViewerPanelParameters.hpp
     UI/Panels/SimulationViewerRightClickEvent.hpp
 
-    UI/Screens/MainUIScreen.cpp
-    UI/Screens/MainUIScreen.hpp
-
     UI/Tabs/Experimental/MeshHittestTab.cpp
     UI/Tabs/Experimental/MeshHittestTab.hpp
     UI/Tabs/Experimental/RendererGeometryShaderTab.cpp
@@ -208,6 +205,8 @@ add_library(OpenSimCreator STATIC
     Utils/UndoableModelActions.cpp
     Utils/UndoableModelActions.hpp
 
+    MainUIScreen.cpp
+    MainUIScreen.hpp
     OpenSimCreatorApp.cpp
     OpenSimCreatorApp.hpp
  )

@@ -1,4 +1,4 @@
-#include <OpenSimCreator/UI/Screens/MainUIScreen.hpp>
+#include <OpenSimCreator/MainUIScreen.hpp>
 #include <OpenSimCreator/OpenSimCreatorApp.hpp>
 
 #include <cstdlib>
