@@ -29,6 +29,17 @@
 
 namespace
 {
+    constexpr osc::CStringView c_ConfigFileHeader =
+R"(# configuration options
+#
+# you can manually add config options here: they will override the system configuration file, e.g.:
+#
+#     initial_tab = "LearnOpenGL/Blending"
+#
+# beware: this file is overwritten by the application when it detects that you have made changes
+
+)";
+
     // the "scope" of an application setting value
     enum class AppSettingScope {
 
@@ -106,6 +117,15 @@ namespace
             }
         }
 
+        auto begin() const
+        {
+            return m_Data.begin();
+        }
+
+        auto end() const
+        {
+            return m_Data.end();
+        }
     private:
         AppSettingsLookupValue const* lookup(std::string_view key) const
         {
@@ -173,16 +193,26 @@ namespace
         }
         else if (auto userFileStream = std::ofstream{fullPath})  // create blank user file
         {
-            userFileStream << "# this is currently blank because the application hasn't detected any user-enacted configuration changes\n";
-            userFileStream << "#\n";
-            userFileStream << "# you can manually add config options here, if you want: they will override the system configuration file, e.g.\n";
-            userFileStream << "#\n";
-            userFileStream << "# initial_tab = \"LearnOpenGL/Blending\"\n";
+            userFileStream << c_ConfigFileHeader;
             return fullPath;
         }
         else
         {
             return std::nullopt;
+        }
+    }
+
+    toml::table ParseTomlFileOrWarn(std::filesystem::path const& p)
+    {
+        try
+        {
+            return toml::parse_file(p.string());
+        }
+        catch (std::exception const& ex)
+        {
+            osc::log::warn("error parsing %s: %s", p.string().c_str(), ex.what());
+            osc::log::warn("the application will skip loading this configuration file, but you might want to fix it");
+            return toml::table{};
         }
     }
 
@@ -193,16 +223,7 @@ namespace
         AppSettingScope scope,
         AppSettingsLookup& out)
     {
-        toml::table config;
-        try
-        {
-            config = toml::parse_file(configPath.string());
-        }
-        catch (std::exception const& ex)
-        {
-            osc::log::warn("error parsing %s: %s", configPath.string().c_str(), ex.what());
-            osc::log::warn("the application will skip loading this configuration file, but you might want to fix it");
-        }
+        toml::table const config = ParseTomlFileOrWarn(configPath);
 
         // crawl the table
         //
@@ -224,8 +245,7 @@ namespace
 
         std::vector<StackElement> stack;
         stack.reserve(16);  // guess
-        stack.emplace_back("", config);
-
+        stack.emplace_back("", config);  // required for .begin()+1
         while (!stack.empty())
         {
             std::string const keyPrefix = [&stack]()
@@ -248,15 +268,16 @@ namespace
                 {
                     stack.emplace_back(k, *ptr);
                     recursing = true;
-                    continue;
+                    ++cur.iterator;
+                    break;
                 }
-                else if (auto const* str = node.as_string())
+                else if (auto const* stringValue = node.as_string())
                 {
-                    out.setValue(keyPrefix + std::string{k.str()}, scope, osc::AppSettingValue{**str});
+                    out.setValue(keyPrefix + std::string{k.str()}, scope, osc::AppSettingValue{**stringValue});
                 }
-                else if (auto const* b = node.as_boolean())
+                else if (auto const* boolValue = node.as_boolean())
                 {
-                    out.setValue(keyPrefix + std::string{k.str()}, scope, osc::AppSettingValue{**b});
+                    out.setValue(keyPrefix + std::string{k.str()}, scope, osc::AppSettingValue{**boolValue});
                 }
             }
 
@@ -281,6 +302,117 @@ namespace
         {
             LoadAppSettingsFromDiskIntoLookup(*maybeUserConfigPath, AppSettingScope::User, rv);
         }
+        return rv;
+    }
+
+    // returns (tableName, valueName) parts of the given settings key
+    std::pair<std::string_view, std::string_view> SplitAtLastElement(std::string_view k)
+    {
+        if (auto const pos = k.rfind('/'); pos != std::string_view::npos)
+        {
+            return std::pair{k.substr(0, pos), k.substr(pos+1)};
+        }
+        else
+        {
+            return std::pair{std::string_view{}, k};
+        }
+    }
+
+    // if found, returns the offset of the leftmost `delimiter` in `v`
+    std::optional<std::string_view::size_type> FindNextDelimiterOffset(std::string_view v, std::string_view::value_type delimeter)
+    {
+        if (auto const pos = v.find(delimeter); pos != std::string_view::npos)
+        {
+            return pos;
+        }
+        else
+        {
+            return std::nullopt;
+        }
+    }
+
+    toml::table& GetDeepestTable(
+        toml::table& root,
+        std::unordered_map<std::string, toml::table*>& lut,
+        std::string_view tablePath)
+    {
+        // edge-case
+        if (tablePath.empty())
+        {
+            return root;
+        }
+
+        // iterate through each part of the given path (e.g. a/b/c)
+        size_t const depth = std::count(tablePath.begin(), tablePath.end(), '/') + 1;
+        toml::table* currentTable = &root;
+        std::string_view currentPath = tablePath.substr(0, tablePath.find('/'));
+
+        for (size_t i = 0; i < depth; ++i)
+        {
+            std::string_view const name = SplitAtLastElement(currentPath).second;
+
+            // insert into LUT that's used by this code
+            auto [it, inserted] = lut.try_emplace(std::string{currentPath}, nullptr);
+
+            // if necessary, insert into TOML document (or re-use existing node)
+            toml::node* n = &currentTable->insert(name, toml::table{}).first->second;
+
+            if (toml::table* t = dynamic_cast<toml::table*>(n))
+            {
+                it->second = t;
+                currentTable = it->second;
+            }
+            else
+            {
+                // edge-case: it already exists in the TOML document as a non-table node,
+                //            which can happen if (e.g.) a user defines setting values with
+                //            both 'a/b' and 'a/b/c'
+                //
+                //            in this case, overwrite the value with a LUT (it's a user/app error)
+                it->second = dynamic_cast<toml::table*>(&currentTable->insert_or_assign(name, toml::table{}).first->second);
+                currentTable =  it->second;
+            }
+
+            currentPath = tablePath.substr(0, tablePath.find('/', currentPath.size()+1));
+        }
+        return *currentTable;
+    }
+
+    void InsertIntoTomlTable(
+        toml::table& table,
+        std::string_view key,
+        osc::AppSettingValue const& value)
+    {
+        static_assert(osc::NumOptions<osc::AppSettingValueType>() == 2);
+
+        switch (value.type())
+        {
+        case osc::AppSettingValueType::Bool:
+            table.insert(key, value.toBool());
+            break;
+        case osc::AppSettingValueType::String:
+        default:
+            table.insert(key, value.toString());
+            break;
+        }
+    }
+
+    toml::table ToTomlTable(AppSettingsLookup const& vs)
+    {
+        toml::table rv;
+        std::unordered_map<std::string, toml::table*> nodeLUT;
+        for (auto const& [k, v] : vs)
+        {
+            if (v.getScope() != AppSettingScope::User)
+            {
+                continue;  // skip non-user setting values
+            }
+
+            auto [tableName, valueName] = SplitAtLastElement(k);
+            toml::table& t = GetDeepestTable(rv, nodeLUT, tableName);
+            InsertIntoTomlTable(t, valueName, v.getValue());
+        }
+
         return rv;
     }
 
@@ -310,6 +442,7 @@ namespace
         void setValue(std::string_view key, osc::AppSettingValue value)
         {
             m_AppSettings.setValue(key, AppSettingScope::User, std::move(value));
+            m_IsDirty = true;
         }
 
         std::optional<std::filesystem::path> getValueFilesystemSource(
@@ -331,10 +464,49 @@ namespace
                 return m_UserConfigPath;
             }
         }
+
+        void sync()
+        {
+            if (!m_IsDirty)
+            {
+                // no changes need to be synchronized
+                return;
+            }
+
+            if (!m_UserConfigPath)
+            {
+                if (!std::exchange(m_WarningAboutMissingUserConfigIssued, true))
+                {
+                    osc::log::warn("application settings could not be synchronized: could not find a user configuration file path");
+                    osc::log::warn("this can happen if (e.g.) your user data directory has incorrect permissions");
+                }
+                return;
+            }
+
+            std::ofstream outFile{*m_UserConfigPath};
+            if (!outFile)
+            {
+                if (!std::exchange(m_WarningAboutCannotOpenUserConfigFileIssued, true))
+                {
+                    osc::log::warn("%s: could not open for writing: user settings will not be saved", m_UserConfigPath->string().c_str());
+                }
+                return;
+            }
+
+            toml::table const settingsAsToml = ToTomlTable(m_AppSettings);
+            outFile << c_ConfigFileHeader;
+            outFile << settingsAsToml;
+            outFile << '\n';  // trailing newline (not added by tomlplusplus?)
+
+            m_IsDirty = false;
+        }
     private:
         std::optional<std::filesystem::path> m_SystemConfigPath;
         std::optional<std::filesystem::path> m_UserConfigPath;
         AppSettingsLookup m_AppSettings = LoadAppSettingsLookupFromDisk(m_SystemConfigPath, m_UserConfigPath);
+        bool m_IsDirty = false;
+        bool m_WarningAboutMissingUserConfigIssued = false;
+        bool m_WarningAboutCannotOpenUserConfigFileIssued = false;
     };
 }
 
@@ -367,6 +539,11 @@ public:
         std::string_view key) const
     {
         return m_GuardedData.lock()->getValueFilesystemSource(key);
+    }
+
+    void sync()
+    {
+        m_GuardedData.lock()->sync();
     }
 
 private:
@@ -430,7 +607,10 @@ osc::AppSettings::AppSettings(AppSettings const&) = default;
 osc::AppSettings::AppSettings(AppSettings&&) noexcept = default;
 osc::AppSettings& osc::AppSettings::operator=(AppSettings const&) = default;
 osc::AppSettings& osc::AppSettings::operator=(AppSettings&&) noexcept = default;
-osc::AppSettings::~AppSettings() noexcept = default;
+osc::AppSettings::~AppSettings() noexcept
+{
+    m_Impl->sync();
+}
 
 std::optional<std::filesystem::path> osc::AppSettings::getSystemConfigurationFileLocation() const
 {
@@ -454,4 +634,9 @@ std::optional<std::filesystem::path> osc::AppSettings::getValueFilesystemSource(
     std::string_view key) const
 {
     return m_Impl->getValueFilesystemSource(key);
+}
+
+void osc::AppSettings::sync()
+{
+    m_Impl->sync();
 }

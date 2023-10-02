@@ -15,6 +15,11 @@ namespace osc
         {
         }
 
+        explicit AppSettingValue(char const* value_) :
+            m_Value{std::string{value_}}
+        {
+        }
+
         explicit AppSettingValue(bool value_) :
             m_Value{value_}
         {

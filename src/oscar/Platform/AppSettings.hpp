@@ -20,7 +20,7 @@ namespace osc
         AppSettings(AppSettings&&) noexcept;
         AppSettings& operator=(AppSettings const&);
         AppSettings& operator=(AppSettings&&) noexcept;
-        ~AppSettings() noexcept;  // try to sync on destruction
+        ~AppSettings() noexcept;
 
         // if available, returns the filesystem path of the system configuration file
         //
@@ -52,16 +52,13 @@ namespace osc
             std::string_view key
         ) const;
 
-        // TODO: `void sync()`
+        // synchronize the current in-memory state of this settings object to disk
         //
-        // - extract all user-defined app settings
-        // - sort alphabetically
-        // - for each entry:
-        //   - A if entry key contains `/`
-        //     - for each entry with same prefix up to `/`
-        //         if entry key contains `/` ... (recursive)
-        //   - else (recursion bottom-out)
-        //     - emit value
+        // note #1: this is automatically called by the destructor
+        //
+        // note #2: only user-level and values that were set with `setValue` will
+        //          be synchronized to disk - system values are not synchronized.
+        void sync();
 
         class Impl;
     private:
