@@ -21,7 +21,7 @@
 
 TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
 {
-    osc::GlobalInitOpenSim(*osc::AppConfig::load());
+    osc::GlobalInitOpenSim();
 
     osc::MeshCache meshCache;
 

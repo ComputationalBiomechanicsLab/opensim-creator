@@ -41,7 +41,7 @@ namespace
         }
         else
         {
-            osc::log::warn("resources path fallback: using %s as a filler entry, but it doesn't actaully exist: OSC's configuration file has an incorrect/missing 'resources' key", resourcesRelToExe.string().c_str());
+            osc::log::warn("resources path fallback: using %s as a filler entry, but it doesn't actaully exist: the application's configuration file has an incorrect/missing 'resources' key", resourcesRelToExe.string().c_str());
         }
 
         return resourcesRelToExe;
@@ -84,7 +84,7 @@ namespace
 
         if (!std::filesystem::exists(resourceDir))
         {
-            osc::log::error("'resources', in the application configuration, points to a location that does not exist (%s), so osc may fail to load resources (which is usually a fatal error). Note: the 'resources' path is relative to the configuration file in which you define it (or can be absolute). Attemtping to fallback to a default resources location (which may or may not work).", resourceDir.string().c_str());
+            osc::log::error("'resources', in the application configuration, points to a location that does not exist (%s), so the application may fail to load resources (which is usually a fatal error). Note: the 'resources' path is relative to the configuration file in which you define it (or can be absolute). Attemtping to fallback to a default resources location (which may or may not work).", resourceDir.string().c_str());
             return GetResourcesDirFallbackPath(settings);
         }
 
@@ -169,7 +169,13 @@ namespace
 
 class osc::AppConfig::Impl final {
 public:
-    AppSettings m_Settings{"cbl", "osc"};
+    Impl(std::string_view organizationName_,
+        std::string_view applicationName_) :
+        m_Settings{organizationName_, applicationName_}
+    {
+    }
+
+    AppSettings m_Settings;
     std::filesystem::path resourceDir = GetResourcesDir(m_Settings);
     std::filesystem::path htmlDocsDir = GetHTMLDocsDir(m_Settings);
     bool useMultiViewport = GetMultiViewport(m_Settings);
@@ -180,14 +186,10 @@ public:
 
 // public API
 
-// try to load the config from disk (default location)
-std::unique_ptr<osc::AppConfig> osc::AppConfig::load()
-{
-    return std::make_unique<osc::AppConfig>(std::make_unique<AppConfig::Impl>());
-}
-
-osc::AppConfig::AppConfig(std::unique_ptr<Impl> impl) :
-    m_Impl{std::move(impl)}
+osc::AppConfig::AppConfig(
+    std::string_view organizationName_,
+    std::string_view applicationName_) :
+    m_Impl{std::make_unique<Impl>(organizationName_, applicationName_)}
 {
 }
 

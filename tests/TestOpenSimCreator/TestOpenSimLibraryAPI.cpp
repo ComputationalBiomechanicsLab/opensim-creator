@@ -26,11 +26,12 @@
 // https://github.com/opensim-org/opensim-core/issues/3211
 TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 {
-    auto config = osc::AppConfig::load();
+    auto const config = osc::LoadOpenSimCreatorConfig();
+
     //osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
 
     // data sources
-    std::filesystem::path modelPath{config->getResourceDir() / "models" / "Arm26" / "arm26.osim"};
+    std::filesystem::path modelPath{config.getResourceDir() / "models" / "Arm26" / "arm26.osim"};
     OpenSim::ComponentPath coordinatePath{"/jointset/r_shoulder/r_shoulder_elev"};
     OpenSim::ComponentPath musclePath{"/forceset/BIClong"};
 
@@ -83,10 +84,11 @@ TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 // breaks this test, and prompts removing fixups from OSC
 TEST(OpenSimModel, EditingACoordinateLockMutatesModel)
 {
-    auto config = osc::AppConfig::load();
+    auto const config = osc::LoadOpenSimCreatorConfig();
+
     //osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
 
-    std::filesystem::path modelPath{config->getResourceDir() / "models" / "Arm26" / "arm26.osim"};
+    std::filesystem::path modelPath{config.getResourceDir() / "models" / "Arm26" / "arm26.osim"};
     OpenSim::ComponentPath coordinatePath{"/jointset/r_shoulder/r_shoulder_elev"};
 
     OpenSim::Model model{modelPath.string()};

@@ -180,14 +180,9 @@ namespace
 
 // public API
 
-bool osc::GlobalInitOpenSim(AppConfig const& config)
+osc::AppMetadata osc::GetOpenSimCreatorAppMetadata()
 {
-    static bool const s_OpenSimInitialized = InitializeOpenSim(config);
-    return s_OpenSimInitialized;
-}
-
-osc::OpenSimCreatorApp::OpenSimCreatorApp() :
-    App{AppMetadata
+    return AppMetadata
     {
         OSC_ORGNAME_STRING,
         OSC_APPNAME_STRING,
@@ -195,7 +190,28 @@ osc::OpenSimCreatorApp::OpenSimCreatorApp() :
         OSC_VERSION_STRING,
         OSC_BUILD_ID,
         OSC_REPO_URL,
-    }}
+    };
+}
+
+osc::AppConfig osc::LoadOpenSimCreatorConfig()
+{
+    auto metadata = GetOpenSimCreatorAppMetadata();
+    return osc::AppConfig{metadata.getOrganizationName(), metadata.getApplicationName()};
+}
+
+bool osc::GlobalInitOpenSim()
+{
+    return GlobalInitOpenSim(LoadOpenSimCreatorConfig());
+}
+
+bool osc::GlobalInitOpenSim(AppConfig const& config)
+{
+    static bool const s_OpenSimInitialized = InitializeOpenSim(config);
+    return s_OpenSimInitialized;
+}
+
+osc::OpenSimCreatorApp::OpenSimCreatorApp() :
+    App{GetOpenSimCreatorAppMetadata()}
 {
     GlobalInitOpenSim(getConfig());
     InitializeTabRegistry(*singleton<osc::TabRegistry>());

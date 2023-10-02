@@ -8,10 +8,18 @@
 
 #include <array>
 
+namespace
+{
+    osc::AppConfig LoadConfig()
+    {
+        return osc::AppConfig{"oscar", "tests"};
+    }
+}
+
 TEST(GraphicsHelpers, LoadTexture2DFromImageRespectsSRGBColorSpace)
 {
-    auto config = osc::AppConfig::load();
-    auto path = config->getResourceDir() / "textures" / "awesomeface.png";
+    auto config = LoadConfig();
+    auto path = config.getResourceDir() / "textures" / "awesomeface.png";
 
     osc::Texture2D const rv = osc::LoadTexture2DFromImage(path, osc::ColorSpace::sRGB);
 
@@ -20,8 +28,8 @@ TEST(GraphicsHelpers, LoadTexture2DFromImageRespectsSRGBColorSpace)
 
 TEST(GraphicsHelpers, LoadTexture2DFromImageRespectsLinearColorSpace)
 {
-    auto config = osc::AppConfig::load();
-    auto path = config->getResourceDir() / "textures" / "awesomeface.png";
+    auto config = LoadConfig();
+    auto path = config.getResourceDir() / "textures" / "awesomeface.png";
 
     osc::Texture2D const rv = osc::LoadTexture2DFromImage(path, osc::ColorSpace::Linear);
 

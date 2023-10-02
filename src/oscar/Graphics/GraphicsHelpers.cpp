@@ -111,7 +111,7 @@ namespace
         if (!format)
         {
             std::stringstream ss;
-            ss << p << ": error loading image: no osc::TextureFormat exists for " << numChannels << " floating-point channel images";
+            ss << p << ": error loading image: no TextureFormat exists for " << numChannels << " floating-point channel images";
             throw std::runtime_error{std::move(ss).str()};
         }
 
@@ -172,7 +172,7 @@ namespace
         if (!format)
         {
             std::stringstream ss;
-            ss << p << ": error loading image: no osc::TextureFormat exists for " << numChannels << " 8-bit channel images";
+            ss << p << ": error loading image: no TextureFormat exists for " << numChannels << " 8-bit channel images";
             throw std::runtime_error{std::move(ss).str()};
         }
 

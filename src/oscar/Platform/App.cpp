@@ -113,7 +113,7 @@ namespace
         return sdl::CreateWindoww(applicationName.c_str(), x, y, width, height, flags);
     }
 
-    // load the "recent files" file that osc persists to disk
+    // load the "recent files" file that the application persists to disk
     std::vector<osc::RecentFile> LoadRecentFilesFile(std::filesystem::path const& p)
     {
         std::ifstream fd{p, std::ios::in};
@@ -579,17 +579,17 @@ public:
 
     osc::AppConfig const& getConfig() const
     {
-        return *m_ApplicationConfig;
+        return m_ApplicationConfig;
     }
 
     AppConfig& updConfig()
     {
-        return *m_ApplicationConfig;
+        return m_ApplicationConfig;
     }
 
     std::filesystem::path getResource(std::string_view p) const
     {
-        return ::GetResource(*m_ApplicationConfig, p);
+        return ::GetResource(m_ApplicationConfig, p);
     }
 
     std::string slurpResource(std::string_view p) const
@@ -874,10 +874,14 @@ private:
     );
 
     // init/load the application config first
-    std::unique_ptr<AppConfig> m_ApplicationConfig = AppConfig::load();
+    AppConfig m_ApplicationConfig
+    {
+        m_Metadata.getOrganizationName(),
+        m_Metadata.getApplicationName(),
+    };
 
     // ensure the application log is configured according to the given configuration file
-    bool m_ApplicationLogIsConfigured = ConfigureApplicationLog(*m_ApplicationConfig);
+    bool m_ApplicationLogIsConfigured = ConfigureApplicationLog(m_ApplicationConfig);
 
     // install the backtrace handler (if necessary - once per process)
     bool m_IsBacktraceHandlerInstalled = EnsureBacktraceHandlerEnabled(m_UserDataDirPath);
@@ -913,7 +917,7 @@ private:
     SynchronizedValue<std::unordered_map<TypeInfoReference, std::shared_ptr<void>>> m_Singletons;
 
     // how many antiAliasingLevel the implementation should actually use
-    AntiAliasingLevel m_CurrentMSXAASamples = std::min(m_GraphicsContext.getMaxAntialiasingLevel(), m_ApplicationConfig->getNumMSXAASamples());
+    AntiAliasingLevel m_CurrentMSXAASamples = std::min(m_GraphicsContext.getMaxAntialiasingLevel(), m_ApplicationConfig.getNumMSXAASamples());
 
     // set to true if the application should quit
     bool m_QuitRequested = false;

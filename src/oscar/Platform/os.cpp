@@ -318,7 +318,7 @@ namespace
 #error Unsupported architecture.
 #endif
 
-        std::cerr << "osc: critical error: signal " << sig_num << '(' << strsignal(sig_num) << ") received from OS: address is " <<  info->si_addr << " from " << callerAddress;  // NOLINT(concurrency-mt-unsafe)
+        std::cerr << "critical error: signal " << sig_num << '(' << strsignal(sig_num) << ") received from OS: address is " <<  info->si_addr << " from " << callerAddress;  // NOLINT(concurrency-mt-unsafe)
 
         std::array<void*, 50> ary{};
         int const size = backtrace(ary.data(), ary.size());
@@ -348,13 +348,13 @@ void osc::InstallBacktraceHandler(std::filesystem::path const&)
     // install segfault handler
     if (sigaction(SIGSEGV, &sigact, nullptr) != 0)
     {
-        osc::log::error("osc: warning: could not set signal handler for SIGSEGV: error reporting may not work as intended");
+        osc::log::error("could not set signal handler for SIGSEGV: error reporting may not work as intended");
     }
 
     // install abort handler: this triggers whenever a non-throwing `assert` causes a termination
     if (sigaction(SIGABRT, &sigact, nullptr) != 0)
     {
-        osc::log::error("osc: warning: could not set signal handler for SIGABRT: error reporting may not work as intended");
+        osc::log::error("could not set signal handler for SIGABRT: error reporting may not work as intended");
     }
 }
 
@@ -562,7 +562,7 @@ void osc::WriteTracebackToLog(LogLevel lvl)
         log::log(lvl, "    #%zu %s+0x%" PRIXPTR " [0x%" PRIXPTR "]", i, filename_start, (uintptr_t)relative_addr, (uintptr_t)return_addrs[i]);
     }
     log::log(lvl, "note: backtrace addresses are return addresses, not call addresses (see: https://devblogs.microsoft.com/oldnewthing/20170505-00/?p=96116)");
-    log::log(lvl, "to analyze the backtrace in WinDbg: `ln osc.exe+ADDR`");
+    log::log(lvl, "to analyze the backtrace in WinDbg: `ln application.exe+ADDR`");
 
     // in windbg: ln osc.exe+ADDR
     // viewing it: https://stackoverflow.com/questions/54022914/c-is-there-any-command-likes-addr2line-on-windows
@@ -618,7 +618,7 @@ namespace
 
     LONG crash_handler(EXCEPTION_POINTERS*)
     {
-        osc::log::error("exception propagated to root of OSC: might be a segfault?");
+        osc::log::error("exception propagated to root of the application: might be a segfault?");
 
         std::optional<std::filesystem::path> const maybeCrashReportPath =
             GetCrashReportPath();
@@ -667,7 +667,7 @@ namespace
 
     void signal_handler(int)
     {
-        osc::log::error("signal caught by OSC: printing backtrace");
+        osc::log::error("signal caught by application: printing backtrace");
         osc::WriteTracebackToLog(osc::LogLevel::err);
     }
 }

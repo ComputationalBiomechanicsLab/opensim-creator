@@ -14,12 +14,12 @@ namespace osc
 {
     class AppConfig final {
     public:
-        // try to load the config from disk (default location)
-        static std::unique_ptr<AppConfig> load();
-
         class Impl;
     public:
-        explicit AppConfig(std::unique_ptr<Impl>);  // you should use AppConfig::load
+        AppConfig(
+            std::string_view organizationName_,
+            std::string_view applicationName_
+        );
         AppConfig(AppConfig const&) = delete;
         AppConfig(AppConfig&&) noexcept;
         AppConfig& operator=(AppConfig const&) = delete;

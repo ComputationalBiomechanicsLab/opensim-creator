@@ -29,14 +29,12 @@
 // Effectively, this is what the joint switcher in the UI is doing. It is permitted for the
 // code to throw an exception (e.g. because other parts of the model depend on something in
 // the joint) but it shouldn't hard crash (it is)
-TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
+TEST(OpenSimHelpers, DISABLED_CanSwapACustomJointForAFreeJoint)
 {
-    return;  // disable
+    auto const config = osc::LoadOpenSimCreatorConfig();
+    osc::GlobalInitOpenSim(config);  // ensure muscles are available etc.
 
-    auto config = osc::AppConfig::load();
-    osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
-
-    std::filesystem::path modelPath = config->getResourceDir() / "models" / "Leg39" / "leg39.osim";
+    std::filesystem::path modelPath = config.getResourceDir() / "models" / "Leg39" / "leg39.osim";
 
     osc::UndoableModelStatePair model{std::make_unique<OpenSim::Model>(modelPath.string())};
 
@@ -112,8 +110,8 @@ TEST(OpenSimHelpers, GetAbsolutePathStringWithOutparamWorksForModel)
 
 TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    auto config = osc::AppConfig::load();
-    std::filesystem::path modelPath = config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    auto const config = osc::LoadOpenSimCreatorConfig();
+    std::filesystem::path modelPath = config.getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
     std::string outparam;
@@ -128,8 +126,8 @@ TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForCo
 
 TEST(OpenSimHelpers, GetAbsolutePathReturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    auto config = osc::AppConfig::load();
-    std::filesystem::path modelPath = config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    auto const config = osc::LoadOpenSimCreatorConfig();
+    std::filesystem::path modelPath = config.getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
     for (OpenSim::Component const& c : m.getComponentList())
@@ -145,8 +143,8 @@ TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsEmptyIfPassedANullptr)
 
 TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    auto config = osc::AppConfig::load();
-    std::filesystem::path modelPath = config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    auto const config = osc::LoadOpenSimCreatorConfig();
+    std::filesystem::path modelPath = config.getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
     for (OpenSim::Component const& c : m.getComponentList())
@@ -159,8 +157,8 @@ TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionFor
 // model without anything exploding (deletion failure is ok, though)
 TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFaultsOrExceptions)
 {
-    auto config = osc::AppConfig::load();
-    std::filesystem::path modelPath = config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";\
+    auto const config = osc::LoadOpenSimCreatorConfig();
+    std::filesystem::path modelPath = config.getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";\
 
     OpenSim::Model const originalModel{modelPath.string()};
     OpenSim::Model modifiedModel{originalModel};

@@ -253,7 +253,7 @@ add_library(oscar STATIC
 
 target_include_directories(oscar PUBLIC
 
-    # so that `#include "oscar/HEADER.hpp"` works
+    # so that `#include <oscar/HEADER.hpp>` works
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
