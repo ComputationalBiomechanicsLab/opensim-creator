@@ -29,67 +29,53 @@
 
 namespace
 {
+    // the "scope" of an application setting value
     enum class AppSettingScope {
+
+        // set by a user-level configuration file, or by runtime code
+        // (e.g. the user clicked a checkbox or similar)
+        //
+        // user settings override system-wide settings
         User = 0,
+
+        // set by a readonly system-level configuration file
         System,
+
         NUM_OPTIONS,
     };
-    constexpr size_t ToIndex(AppSettingScope s) noexcept
-    {
-        return static_cast<size_t>(s);
-    }
 
-    template<typename T>
-    bool HasValue(std::optional<T> const& o)
-    {
-        return o.has_value();
-    };
-
+    // a value stored in the AppSettings lookup table
     class AppSettingsLookupValue final {
     public:
-        AppSettingsLookupValue(
-            AppSettingScope scope,
-            osc::AppSettingValue value)
+        AppSettingsLookupValue(AppSettingScope scope, osc::AppSettingValue value) :
+            m_Scope{scope},
+            m_Value{std::move(value)}
         {
-            m_Data[ToIndex(scope)] = std::move(value);
         }
 
-        osc::AppSettingValue const& get() const
+        osc::AppSettingValue const& getValue() const
         {
-            static_assert(AppSettingScope::User < AppSettingScope::System);
-            return **getIteratorToFirstActiveValue();
+            return m_Value;
         }
 
         AppSettingScope getScope() const
         {
-            static_assert(ToIndex(AppSettingScope::User) == 0);
-            static_assert(ToIndex(AppSettingScope::System) == 1);
-            static_assert(osc::NumOptions<AppSettingScope>() == 2);
-
-            size_t const dist = std::distance(m_Data.begin(), getIteratorToFirstActiveValue());
-            return static_cast<AppSettingScope>(dist);
+            return m_Scope;
         }
+
     private:
-        using value_type = std::optional<osc::AppSettingValue>;
-        using Storage = std::array<value_type, osc::NumOptions<AppSettingScope>()>;
-
-        Storage::const_iterator getIteratorToFirstActiveValue() const
-        {
-            auto const it = std::find_if(m_Data.begin(), m_Data.end(), HasValue<osc::AppSettingValue>);
-            OSC_ASSERT(it != m_Data.end() && it->has_value());
-            return it;
-        }
-
-        Storage m_Data{};
+        AppSettingScope m_Scope;
+        osc::AppSettingValue m_Value;
     };
 
+    // a lookup containing all app setting values
     class AppSettingsLookup final {
     public:
         std::optional<osc::AppSettingValue> getValue(std::string_view key) const
         {
-            if (auto const it = m_Data.find(std::string{key}); it != m_Data.end())
+            if (auto const v = lookup(key))
             {
-                return it->second.get();
+                return v->getValue();
             }
             else
             {
@@ -110,9 +96,9 @@ namespace
 
         std::optional<AppSettingScope> getScope(std::string_view key) const
         {
-            if (auto const it = m_Data.find(std::string{key}); it != m_Data.end())
+            if (auto const v = lookup(key))
             {
-                return it->second.getScope();
+                return v->getScope();
             }
             else
             {
@@ -121,9 +107,22 @@ namespace
         }
 
     private:
+        AppSettingsLookupValue const* lookup(std::string_view key) const
+        {
+            if (auto const it = m_Data.find(std::string{key}); it != m_Data.cend())
+            {
+                return &it->second;
+            }
+            else
+            {
+                return nullptr;
+            }
+        }
+
         std::unordered_map<std::string, AppSettingsLookupValue> m_Data;
     };
 
+    // if available, returns the path to the system-wide configuration file
     std::optional<std::filesystem::path>  TryGetSystemConfigPath()
     {
         // copied from the legacy `osc::AppConfig` implementation for backwards
@@ -158,6 +157,9 @@ namespace
         return exists ? p : std::optional<std::filesystem::path>{};
     }
 
+    // it available, returns the path to the user-level configuration file
+    //
+    // creates a "blank" user-level configuration file if one doesn't already exist
     std::optional<std::filesystem::path> TryGetUserConfigPath(
         std::string_view organizationName_,
         std::string_view applicationName_)
@@ -184,7 +186,9 @@ namespace
         }
     }
 
-    void LoadAppSettings(
+    // loads application settings, located at `configPath` into the given lookup (`out`)
+    // at the given `scope` level
+    void LoadAppSettingsFromDiskIntoLookup(
         std::filesystem::path const& configPath,
         AppSettingScope scope,
         AppSettingsLookup& out)
@@ -263,22 +267,26 @@ namespace
         }
     }
 
-    AppSettingsLookup LoadAppSettingsFromDisk(
+    // loads an app settings lookup from the given paths
+    AppSettingsLookup LoadAppSettingsLookupFromDisk(
         std::optional<std::filesystem::path> const& maybeSystemConfigPath,
         std::optional<std::filesystem::path> const& maybeUserConfigPath)
     {
         AppSettingsLookup rv;
         if (maybeSystemConfigPath)
         {
-            LoadAppSettings(*maybeSystemConfigPath, AppSettingScope::System, rv);
+            LoadAppSettingsFromDiskIntoLookup(*maybeSystemConfigPath, AppSettingScope::System, rv);
         }
         if (maybeUserConfigPath)
         {
-            LoadAppSettings(*maybeUserConfigPath, AppSettingScope::User, rv);
+            LoadAppSettingsFromDiskIntoLookup(*maybeUserConfigPath, AppSettingScope::User, rv);
         }
         return rv;
     }
 
+    // thread-unsafe data storage for application settings
+    //
+    // a higher level of the system must make sure this is mutex-guarded
     class ThreadUnsafeAppSettings final {
     public:
         ThreadUnsafeAppSettings(
@@ -307,14 +315,13 @@ namespace
         std::optional<std::filesystem::path> getValueFilesystemSource(
             std::string_view key) const
         {
-            static_assert(osc::NumOptions<AppSettingScope>() == 2);
-
             std::optional<AppSettingScope> const scope = m_AppSettings.getScope(key);
             if (!scope)
             {
                 return std::nullopt;
             }
 
+            static_assert(osc::NumOptions<AppSettingScope>() == 2);
             switch (*scope)
             {
             case AppSettingScope::System:
@@ -327,7 +334,7 @@ namespace
     private:
         std::optional<std::filesystem::path> m_SystemConfigPath;
         std::optional<std::filesystem::path> m_UserConfigPath;
-        AppSettingsLookup m_AppSettings = LoadAppSettingsFromDisk(m_SystemConfigPath, m_UserConfigPath);
+        AppSettingsLookup m_AppSettings = LoadAppSettingsLookupFromDisk(m_SystemConfigPath, m_UserConfigPath);
     };
 }
 
@@ -372,6 +379,9 @@ private:
 // of the application create a new `AppSettings` object, they all have a
 // consistent view of the latest keys/values without having to poll the
 // disk
+//
+// the idea of sharing `AppSettings` instances process-wide is inspired
+// by Qt's `QSettings` design
 namespace
 {
     class GlobalAppSettingsLookup final {
