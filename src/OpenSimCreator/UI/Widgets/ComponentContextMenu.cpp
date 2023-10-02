@@ -231,7 +231,7 @@ namespace
     {
         OpenSim::Component const* const c = osc::FindFirstDescendentInclusive(
             component,
-            [](OpenSim::Component const& desc) -> bool { return osc::TryGetAppearance(desc); }
+            [](OpenSim::Component const& desc) -> bool { return osc::TryGetAppearance(desc) != nullptr; }
         );
         return c != nullptr;
     }

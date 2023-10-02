@@ -244,7 +244,7 @@ namespace std
 // this is what "booting the application" actually initializes
 class osc::App::Impl final {
 public:
-    explicit Impl(AppMetadata const& metadata_) :
+    explicit Impl(AppMetadata const& metadata_) :  // NOLINT(modernize-pass-by-value)
         m_Metadata{metadata_}
     {
     }
