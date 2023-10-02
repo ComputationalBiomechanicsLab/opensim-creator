@@ -1,67 +1,130 @@
 #include "AppConfig.hpp"
 
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
+#include <oscar/Platform/AppSettings.hpp>
+#include <oscar/Platform/AppSettingValueType.hpp>
 #include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/LogLevel.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
-#include <toml++/toml.h>
-
-#include <algorithm>
-#include <chrono>
-#include <cstdint>
-#include <exception>
 #include <filesystem>
-#include <fstream>
-#include <string>
+#include <memory>
 #include <optional>
+#include <string>
 #include <unordered_map>
 #include <utility>
-#include <vector>
 
 namespace
 {
     constexpr osc::AntiAliasingLevel c_NumMSXAASamples{4};
 
-    std::optional<std::filesystem::path> TryGetConfigLocation()
+    std::filesystem::path GetResourcesDirFallbackPath(osc::AppSettings const& settings)
     {
-        std::filesystem::path p = osc::CurrentExeDir();
-        bool exists = false;
-
-        while (p.has_filename())
+        if (auto const systemConfig = settings.getSystemConfigurationFileLocation())
         {
-            std::filesystem::path maybeConfig = p / "osc.toml";
-            if (std::filesystem::exists(maybeConfig))
+            auto const maybeResourcesPath = systemConfig->parent_path() / "resources";
+            if (std::filesystem::exists(maybeResourcesPath))
             {
-                p = maybeConfig;
-                exists = true;
-                break;
+                return maybeResourcesPath;
             }
-
-            // HACK: there is a file at "MacOS/osc.toml", which is where the config
-            // is relative to SDL_GetBasePath. current_exe_dir should be fixed
-            // accordingly.
-            std::filesystem::path maybeMacOSConfig = p / "MacOS" / "osc.toml";
-            if (std::filesystem::exists(maybeMacOSConfig))
+            else
             {
-                p = maybeMacOSConfig;
-                exists = true;
-                break;
+                osc::log::warn("resources path fallback: tried %s, but it doesn't exist", maybeResourcesPath.string().c_str());
             }
-            p = p.parent_path();
         }
 
-        if (exists)
+        auto const resourcesRelToExe = osc::CurrentExeDir().parent_path() / "resources";
+        if (std::filesystem::exists(resourcesRelToExe))
         {
-            return p;
+            return resourcesRelToExe;
         }
         else
         {
-            return std::nullopt;
+            osc::log::warn("resources path fallback: using %s as a filler entry, but it doesn't actaully exist: OSC's configuration file has an incorrect/missing 'resources' key", resourcesRelToExe.string().c_str());
         }
+
+        return resourcesRelToExe;
     }
 
-    std::unordered_map<std::string, bool> MakeDefaultPanelStates()
+    std::filesystem::path GetResourcesDir(osc::AppSettings const& settings)
+    {
+        // care: the resources directory is _very_, __very__ imporant
+        //
+        // if the application can't find resources, then it'll _probably_ fail to
+        // boot correctly, which will result in great dissapointment, so this code
+        // has to try its best
+
+        constexpr osc::CStringView resourcesKey = "resources";
+
+        auto const resourceDirSettingValue = settings.getValue(resourcesKey);
+        if (!resourceDirSettingValue)
+        {
+            return GetResourcesDirFallbackPath(settings);
+        }
+
+        if (resourceDirSettingValue->type() != osc::AppSettingValueType::String)
+        {
+            osc::log::error("application setting for '%s' is not a string: falling back", resourcesKey.c_str());
+            return GetResourcesDirFallbackPath(settings);
+        }
+
+        // resolve `resources` dir relative to the configuration file in which it was defined
+        std::filesystem::path configFileDir;
+        if (auto p = settings.getValueFilesystemSource(resourcesKey))
+        {
+            configFileDir = p->parent_path();
+        }
+        else
+        {
+            configFileDir = osc::CurrentExeDir().parent_path();  // assume the `bin/` dir is one-up from the config
+        }
+        std::filesystem::path const configuredResourceDir{resourceDirSettingValue->toString()};
+        std::filesystem::path const resourceDir = configFileDir / configuredResourceDir;
+
+        if (!std::filesystem::exists(resourceDir))
+        {
+            osc::log::error("'resources', in the application configuration, points to a location that does not exist (%s), so osc may fail to load resources (which is usually a fatal error). Note: the 'resources' path is relative to the configuration file in which you define it (or can be absolute). Attemtping to fallback to a default resources location (which may or may not work).", resourceDir.string().c_str());
+            return GetResourcesDirFallbackPath(settings);
+        }
+
+        return resourceDir;
+    }
+
+    std::filesystem::path GetHTMLDocsDir(osc::AppSettings const& settings)
+    {
+        constexpr osc::CStringView docsKey = "docs";
+
+        auto const docsSettingValue = settings.getValue(docsKey);
+        if (!docsSettingValue)
+        {
+            // fallback: not set in configuration file
+            return std::filesystem::path{};
+        }
+
+        if (auto const configLocation = settings.getValueFilesystemSource(docsKey))
+        {
+            std::filesystem::path const configDir = configLocation->parent_path();
+            std::filesystem::path const docsLocation = configDir / docsSettingValue->toString();
+            if (std::filesystem::exists(docsLocation))
+            {
+                return docsLocation;
+            }
+        }
+
+        // fallback: not set, or is set but cannot find it on the filesystem
+        return std::filesystem::path{};
+    }
+
+    bool GetMultiViewport(osc::AppSettings const& settings)
+    {
+        return settings
+            .getValue("experimental_feature_flags/multiple_viewports")
+            .value_or(osc::AppSettingValue{false})
+            .toBool();
+    }
+
+    std::unordered_map<std::string, bool> GetPanelsEnabledState(osc::AppSettings const&)
     {
         return
         {
@@ -78,115 +141,49 @@ namespace
             {"Output Plots", true},
         };
     }
+
+    std::optional<std::string> GetInitialTab(osc::AppSettings const& settings)
+    {
+        if (auto v = settings.getValue("initial_tab"))
+        {
+            return v->toString();
+        }
+        else
+        {
+            return std::nullopt;
+        }
+    }
+
+    osc::LogLevel GetLogLevel(osc::AppSettings const& settings)
+    {
+        if (auto const v = settings.getValue("log_level"))
+        {
+            return osc::TryParseAsLogLevel(v->toString()).value_or(osc::LogLevel::DEFAULT);
+        }
+        else
+        {
+            return osc::LogLevel::DEFAULT;
+        }
+    }
 }
 
 class osc::AppConfig::Impl final {
 public:
-    std::filesystem::path resourceDir;
-    std::filesystem::path htmlDocsDir;
-    bool useMultiViewport = false;
-    std::unordered_map<std::string, bool> m_PanelsEnabledState = MakeDefaultPanelStates();
-    std::optional<std::string> m_MaybeInitialTab;
-    LogLevel m_LogLevel = osc::LogLevel::DEFAULT;
+    AppSettings m_Settings{"cbl", "osc"};
+    std::filesystem::path resourceDir = GetResourcesDir(m_Settings);
+    std::filesystem::path htmlDocsDir = GetHTMLDocsDir(m_Settings);
+    bool useMultiViewport = GetMultiViewport(m_Settings);
+    std::unordered_map<std::string, bool> m_PanelsEnabledState = GetPanelsEnabledState(m_Settings);
+    std::optional<std::string> m_MaybeInitialTab = GetInitialTab(m_Settings);
+    LogLevel m_LogLevel = GetLogLevel(m_Settings);
 };
-
-namespace
-{
-    void TryUpdateConfigFromConfigFile(osc::AppConfig::Impl& cfg)
-    {
-        std::optional<std::filesystem::path> maybeConfigPath = TryGetConfigLocation();
-
-        // can't find underlying config file: warn about it but escape early
-        if (!maybeConfigPath)
-        {
-            osc::log::info("could not find a system configuration file: OSC will still work, but might be missing some configured behavior");
-            return;
-        }
-
-        // else: can find the config file: try to parse it
-
-        toml::table config;
-        try
-        {
-            config = toml::parse_file(maybeConfigPath->c_str());
-        }
-        catch (std::exception const& ex)
-        {
-            osc::log::error("error parsing config toml: %s", ex.what());
-            osc::log::error("OSC will continue to boot, but you might need to fix your config file (e.g. by deleting it)");
-            return;
-        }
-
-        // config file parsed as TOML just fine
-
-        // resources
-        {
-            auto maybeResourcePath = config["resources"];
-            if (maybeResourcePath)
-            {
-                std::string rp = maybeResourcePath.as_string()->value_or(cfg.resourceDir.string());
-
-                // configuration resource_dir is relative *to the configuration file*
-                std::filesystem::path configFileDir = maybeConfigPath->parent_path();
-                cfg.resourceDir = configFileDir / rp;
-            }
-        }
-
-        // log level
-        if (auto maybeLogLevelString = config["log_level"])
-        {
-            std::string const lvlStr = maybeLogLevelString.as_string()->value_or(std::string{osc::ToCStringView(osc::LogLevel::DEFAULT)});
-            if (auto maybeLevel = osc::TryParseAsLogLevel(lvlStr))
-            {
-                cfg.m_LogLevel = *maybeLevel;
-            }
-        }
-
-        // docs dir
-        if (auto docs = config["docs"]; docs)
-        {
-            std::string pth = (*docs.as_string()).get();
-            std::filesystem::path configFileDir = maybeConfigPath->parent_path();
-            cfg.htmlDocsDir = configFileDir / pth;
-        }
-
-        // init `initial_tab`
-        if (auto initialTabName = config["initial_tab"]; initialTabName)
-        {
-            cfg.m_MaybeInitialTab = initialTabName.as_string()->get();
-        }
-
-        // init `use_multi_viewport`
-        {
-            auto maybeUseMultipleViewports = config["experimental_feature_flags"]["multiple_viewports"];
-            if (maybeUseMultipleViewports)
-            {
-                if (auto const* downcasted = maybeUseMultipleViewports.as_boolean())
-                {
-                    cfg.useMultiViewport = downcasted->get();
-                }
-                else
-                {
-                    cfg.useMultiViewport = false;
-                }
-            }
-        }
-    }
-}
 
 // public API
 
 // try to load the config from disk (default location)
 std::unique_ptr<osc::AppConfig> osc::AppConfig::load()
 {
-    auto rv = std::make_unique<AppConfig::Impl>();
-
-    // set defaults (in case underlying file can't be found)
-    rv->resourceDir = "../resources";
-
-    TryUpdateConfigFromConfigFile(*rv);
-
-    return std::make_unique<AppConfig>(std::move(rv));
+    return std::make_unique<osc::AppConfig>(std::make_unique<AppConfig::Impl>());
 }
 
 osc::AppConfig::AppConfig(std::unique_ptr<Impl> impl) :

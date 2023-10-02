@@ -16,8 +16,11 @@
 #include <exception>
 #include <filesystem>
 #include <fstream>
+#include <iterator>
 #include <memory>
 #include <optional>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -36,6 +39,12 @@ namespace
         return static_cast<size_t>(s);
     }
 
+    template<typename T>
+    bool HasValue(std::optional<T> const& o)
+    {
+        return o.has_value();
+    };
+
     class AppSettingsLookupValue final {
     public:
         AppSettingsLookupValue(
@@ -48,20 +57,30 @@ namespace
         osc::AppSettingValue const& get() const
         {
             static_assert(AppSettingScope::User < AppSettingScope::System);
+            return **getIteratorToFirstActiveValue();
+        }
 
-            auto const hasValue = [](std::optional<osc::AppSettingValue> const& o)
-            {
-                return o.has_value();
-            };
-            auto const it = std::find_if(m_Data.begin(), m_Data.end(), hasValue);
-            OSC_ASSERT(it != m_Data.end() && it->has_value());
-            return **it;
+        AppSettingScope getScope() const
+        {
+            static_assert(ToIndex(AppSettingScope::User) == 0);
+            static_assert(ToIndex(AppSettingScope::System) == 1);
+            static_assert(osc::NumOptions<AppSettingScope>() == 2);
+
+            size_t const dist = std::distance(m_Data.begin(), getIteratorToFirstActiveValue());
+            return static_cast<AppSettingScope>(dist);
         }
     private:
-        std::array<
-            std::optional<osc::AppSettingValue>,
-            osc::NumOptions<AppSettingScope>()
-        > m_Data{};
+        using value_type = std::optional<osc::AppSettingValue>;
+        using Storage = std::array<value_type, osc::NumOptions<AppSettingScope>()>;
+
+        Storage::const_iterator getIteratorToFirstActiveValue() const
+        {
+            auto const it = std::find_if(m_Data.begin(), m_Data.end(), HasValue<osc::AppSettingValue>);
+            OSC_ASSERT(it != m_Data.end() && it->has_value());
+            return it;
+        }
+
+        Storage m_Data{};
     };
 
     class AppSettingsLookup final {
@@ -89,15 +108,18 @@ namespace
             );
         }
 
-        auto begin() const
+        std::optional<AppSettingScope> getScope(std::string_view key) const
         {
-            return m_Data.begin();
+            if (auto const it = m_Data.find(std::string{key}); it != m_Data.end())
+            {
+                return it->second.getScope();
+            }
+            else
+            {
+                return std::nullopt;
+            }
         }
 
-        auto end() const
-        {
-            return m_Data.end();
-        }
     private:
         std::unordered_map<std::string, AppSettingsLookupValue> m_Data;
     };
@@ -149,7 +171,7 @@ namespace
         }
         else if (auto userFileStream = std::ofstream{fullPath})  // create blank user file
         {
-            userFileStream << "# this is currently blank because OSC hasn't detected any user-enacted configuration changes\n";
+            userFileStream << "# this is currently blank because the application hasn't detected any user-enacted configuration changes\n";
             userFileStream << "#\n";
             userFileStream << "# you can manually add config options here, if you want: they will override the system configuration file, e.g.\n";
             userFileStream << "#\n";
@@ -175,7 +197,7 @@ namespace
         catch (std::exception const& ex)
         {
             osc::log::warn("error parsing %s: %s", configPath.string().c_str(), ex.what());
-            osc::log::warn("OSC will skip loading this configuration file, but you might want to fix it");
+            osc::log::warn("the application will skip loading this configuration file, but you might want to fix it");
         }
 
         // crawl the table
@@ -265,10 +287,11 @@ namespace
             m_SystemConfigPath{TryGetSystemConfigPath()},
             m_UserConfigPath{TryGetUserConfigPath(organizationName_, applicationName_)}
         {
-            for (auto const& [k, v] : m_AppSettings)
-            {
-                osc::log::error("%s --> %s", k.c_str(), v.get().toString().c_str());
-            }
+        }
+
+        std::optional<std::filesystem::path> getSystemConfigurationFileLocation() const
+        {
+            return m_SystemConfigPath;
         }
 
         std::optional<osc::AppSettingValue> getValue(std::string_view key) const
@@ -279,6 +302,27 @@ namespace
         void setValue(std::string_view key, osc::AppSettingValue value)
         {
             m_AppSettings.setValue(key, AppSettingScope::User, std::move(value));
+        }
+
+        std::optional<std::filesystem::path> getValueFilesystemSource(
+            std::string_view key) const
+        {
+            static_assert(osc::NumOptions<AppSettingScope>() == 2);
+
+            std::optional<AppSettingScope> const scope = m_AppSettings.getScope(key);
+            if (!scope)
+            {
+                return std::nullopt;
+            }
+
+            switch (*scope)
+            {
+            case AppSettingScope::System:
+                return m_SystemConfigPath;
+            case AppSettingScope::User:
+            default:
+                return m_UserConfigPath;
+            }
         }
     private:
         std::optional<std::filesystem::path> m_SystemConfigPath;
@@ -297,6 +341,11 @@ public:
     {
     }
 
+    std::optional<std::filesystem::path> getSystemConfigurationFileLocation() const
+    {
+        return m_GuardedData.lock()->getSystemConfigurationFileLocation();
+    }
+
     std::optional<AppSettingValue> getValue(std::string_view key) const
     {
         return m_GuardedData.lock()->getValue(key);
@@ -305,6 +354,12 @@ public:
     void setValue(std::string_view key, AppSettingValue value)
     {
         m_GuardedData.lock()->setValue(key, std::move(value));
+    }
+
+    std::optional<std::filesystem::path> getValueFilesystemSource(
+        std::string_view key) const
+    {
+        return m_GuardedData.lock()->getValueFilesystemSource(key);
     }
 
 private:
@@ -367,6 +422,11 @@ osc::AppSettings& osc::AppSettings::operator=(AppSettings const&) = default;
 osc::AppSettings& osc::AppSettings::operator=(AppSettings&&) noexcept = default;
 osc::AppSettings::~AppSettings() noexcept = default;
 
+std::optional<std::filesystem::path> osc::AppSettings::getSystemConfigurationFileLocation() const
+{
+    return m_Impl->getSystemConfigurationFileLocation();
+}
+
 std::optional<osc::AppSettingValue> osc::AppSettings::getValue(
     std::string_view key) const
 {
@@ -378,4 +438,10 @@ void osc::AppSettings::setValue(
     AppSettingValue value)
 {
     m_Impl->setValue(key, std::move(value));
+}
+
+std::optional<std::filesystem::path> osc::AppSettings::getValueFilesystemSource(
+    std::string_view key) const
+{
+    return m_Impl->getValueFilesystemSource(key);
 }
