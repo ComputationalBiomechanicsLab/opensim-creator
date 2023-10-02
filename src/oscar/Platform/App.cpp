@@ -244,7 +244,7 @@ namespace std
 // this is what "booting the application" actually initializes
 class osc::App::Impl final {
 public:
-    Impl(AppMetadata const& metadata_) :
+    explicit Impl(AppMetadata const& metadata_) :
         m_Metadata{metadata_}
     {
     }

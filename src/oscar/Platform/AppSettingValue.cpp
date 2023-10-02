@@ -22,7 +22,7 @@ bool osc::AppSettingValue::toBool() const
     bool rv = false;
     std::visit(Overload
     {
-        [&rv](std::string const&) {},
+        [](std::string const&) {},
         [&rv](bool v) { rv = v; },
     }, m_Value);
     return rv;

@@ -3,6 +3,7 @@
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Triangle.hpp>
+#include <oscar/Platform/os.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 
@@ -129,7 +130,8 @@ namespace
 osc::StlMetadata::StlMetadata(
     std::string_view authoringTool_) :
 
-    authoringTool{authoringTool_}
+    authoringTool{authoringTool_},
+    creationTime{GetSystemCalendarTime()}
 {
 }
 

@@ -23,7 +23,7 @@ namespace
     {
         if (auto const systemConfig = settings.getSystemConfigurationFileLocation())
         {
-            auto const maybeResourcesPath = systemConfig->parent_path() / "resources";
+            auto maybeResourcesPath = systemConfig->parent_path() / "resources";
             if (std::filesystem::exists(maybeResourcesPath))
             {
                 return maybeResourcesPath;
@@ -34,7 +34,7 @@ namespace
             }
         }
 
-        auto const resourcesRelToExe = osc::CurrentExeDir().parent_path() / "resources";
+        auto resourcesRelToExe = osc::CurrentExeDir().parent_path() / "resources";
         if (std::filesystem::exists(resourcesRelToExe))
         {
             return resourcesRelToExe;
@@ -80,7 +80,7 @@ namespace
             configFileDir = osc::CurrentExeDir().parent_path();  // assume the `bin/` dir is one-up from the config
         }
         std::filesystem::path const configuredResourceDir{resourceDirSettingValue->toString()};
-        std::filesystem::path const resourceDir = configFileDir / configuredResourceDir;
+        std::filesystem::path resourceDir = configFileDir / configuredResourceDir;
 
         if (!std::filesystem::exists(resourceDir))
         {
@@ -105,7 +105,7 @@ namespace
         if (auto const configLocation = settings.getValueFilesystemSource(docsKey))
         {
             std::filesystem::path const configDir = configLocation->parent_path();
-            std::filesystem::path const docsLocation = configDir / docsSettingValue->toString();
+            std::filesystem::path docsLocation = configDir / docsSettingValue->toString();
             if (std::filesystem::exists(docsLocation))
             {
                 return docsLocation;

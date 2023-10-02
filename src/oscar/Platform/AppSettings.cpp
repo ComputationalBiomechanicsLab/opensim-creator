@@ -335,19 +335,6 @@ R"(# configuration options
         }
     }
 
-    // if found, returns the offset of the leftmost `delimiter` in `v`
-    std::optional<std::string_view::size_type> FindNextDelimiterOffset(std::string_view v, std::string_view::value_type delimeter)
-    {
-        if (auto const pos = v.find(delimeter); pos != std::string_view::npos)
-        {
-            return pos;
-        }
-        else
-        {
-            return std::nullopt;
-        }
-    }
-
     toml::table& GetDeepestTable(
         toml::table& root,
         std::unordered_map<std::string, toml::table*>& lut,
@@ -374,7 +361,7 @@ R"(# configuration options
             // if necessary, insert into TOML document (or re-use existing node)
             toml::node* n = &currentTable->insert(name, toml::table{}).first->second;
 
-            if (toml::table* t = dynamic_cast<toml::table*>(n))
+            if (auto* t = dynamic_cast<toml::table*>(n))
             {
                 it->second = t;
                 currentTable = it->second;
