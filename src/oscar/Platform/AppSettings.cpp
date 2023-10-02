@@ -9,6 +9,7 @@
 #include <oscar/Utils/SynchronizedValue.hpp>
 
 #include <toml++/toml.h>
+#include <ankerl/unordered_dense.h>
 
 #include <algorithm>
 #include <array>
@@ -139,7 +140,23 @@ R"(# configuration options
             }
         }
 
-        std::unordered_map<std::string, AppSettingsLookupValue> m_Data;
+        // see: ankerl/unordered_dense documentation for heterogeneous lookups
+        struct transparent_string_hash final {
+            using is_transparent = void;
+            using is_avalanching = void;
+
+            [[nodiscard]] auto operator()(std::string_view str) const noexcept -> uint64_t {
+                return ankerl::unordered_dense::hash<std::string_view>{}(str);
+            }
+        };
+
+        using Storage = ankerl::unordered_dense::map<
+            std::string,
+            AppSettingsLookupValue,
+            transparent_string_hash,
+            std::equal_to<>
+        >;
+        Storage m_Data;
     };
 
     // if available, returns the path to the system-wide configuration file
