@@ -57,9 +57,6 @@
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshGen.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
-#include <oscar/Graphics/SceneDecoration.hpp>
-#include <oscar/Graphics/SceneRenderer.hpp>
-#include <oscar/Graphics/SceneRendererParams.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Constants.hpp>
@@ -75,6 +72,9 @@
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Scene/SceneDecoration.hpp>
+#include <oscar/Scene/SceneRenderer.hpp>
+#include <oscar/Scene/SceneRendererParams.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/TabHost.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>

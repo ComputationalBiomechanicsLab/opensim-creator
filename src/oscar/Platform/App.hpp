@@ -1,11 +1,11 @@
 #pragma once
 
-#include <oscar/Graphics/AnnotatedImage.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Platform/AppClock.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/MouseState.hpp>
 #include <oscar/Platform/RecentFile.hpp>
+#include <oscar/Platform/Screenshot.hpp>
 #include <oscar/Utils/Assertions.hpp>
 
 #include <SDL_events.h>
@@ -202,7 +202,7 @@ namespace osc
         // returns a future that asynchronously yields a complete annotated screenshot of the next frame
         //
         // client code can submit annotations with `App::addFrameAnnotation`
-        std::future<AnnotatedImage> requestAnnotatedScreenshot();
+        std::future<Screenshot> requestAnnotatedScreenshot();
 
         // returns human-readable strings representing (parts of) the graphics backend (e.g. OpenGL)
         std::string getGraphicsBackendVendorString() const;

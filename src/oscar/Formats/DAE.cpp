@@ -2,9 +2,9 @@
 
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/SceneDecoration.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Scene/SceneDecoration.hpp>
 
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>

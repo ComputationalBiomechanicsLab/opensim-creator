@@ -684,7 +684,7 @@ namespace
 
     // function object that returns true if the first argument is farther from the second
     //
-    // (handy for scene sorting)
+    // (handy for depth sorting)
     class RenderObjectIsFartherFrom final {
     public:
         explicit RenderObjectIsFartherFrom(glm::vec3 const& pos) : m_Pos{pos} {}
@@ -791,10 +791,10 @@ namespace
         return opaqueEnd;
     }
 
-    // top-level state for a "scene" (i.e. a render)
-    struct SceneState final {
+    // top-level state for a single call to `render`
+    struct RenderPassState final {
 
-        SceneState(
+        RenderPassState(
             glm::vec3 const& cameraPos_,
             glm::mat4 const& viewMatrix_,
             glm::mat4 const& projectionMatrix_) :
@@ -905,17 +905,17 @@ namespace osc
         );
 
         static void HandleBatchWithSameMaterial(
-            SceneState const&,
+            RenderPassState const&,
             nonstd::span<RenderObject const>
         );
 
         static void DrawBatchedByMaterial(
-            SceneState const&,
+            RenderPassState const&,
             nonstd::span<RenderObject const>
         );
 
         static void DrawBatchedByOpaqueness(
-            SceneState const&,
+            RenderPassState const&,
             nonstd::span<RenderObject const>
         );
 
@@ -945,7 +945,7 @@ namespace osc
             Camera::Impl&,
             RenderTarget* maybeCustomRenderTarget
         );
-        static void RenderScene(
+        static void RenderCameraQueue(
             Camera::Impl& camera,
             RenderTarget* maybeCustomRenderTarget = nullptr
         );
@@ -4845,7 +4845,7 @@ public:
 
     void renderToScreen()
     {
-        GraphicsBackend::RenderScene(*this);
+        GraphicsBackend::RenderCameraQueue(*this);
     }
 
     void renderTo(RenderTexture& renderTexture)
@@ -4893,7 +4893,7 @@ public:
 
     void renderTo(RenderTarget& renderTarget)
     {
-        GraphicsBackend::RenderScene(*this, &renderTarget);
+        GraphicsBackend::RenderCameraQueue(*this, &renderTarget);
     }
 
     bool operator==(Impl const& other) const
@@ -6321,7 +6321,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
 
 // helper: draw a batch of render objects that have the same material
 void osc::GraphicsBackend::HandleBatchWithSameMaterial(
-    SceneState const& scene,
+    RenderPassState const& renderPassState,
     nonstd::span<RenderObject const> els)
 {
     OSC_PERF("GraphicsBackend::HandleBatchWithSameMaterial");
@@ -6367,7 +6367,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
             if (shaderImpl.m_MaybeViewMatUniform->shaderType == ShaderType::Mat4)
             {
                 gl::UniformMat4 u{shaderImpl.m_MaybeViewMatUniform->location};
-                gl::Uniform(u, scene.viewMatrix);
+                gl::Uniform(u, renderPassState.viewMatrix);
             }
         }
 
@@ -6377,7 +6377,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
             if (shaderImpl.m_MaybeProjMatUniform->shaderType == ShaderType::Mat4)
             {
                 gl::UniformMat4 u{shaderImpl.m_MaybeProjMatUniform->location};
-                gl::Uniform(u, scene.projectionMatrix);
+                gl::Uniform(u, renderPassState.projectionMatrix);
             }
         }
 
@@ -6386,7 +6386,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
             if (shaderImpl.m_MaybeViewProjMatUniform->shaderType == ShaderType::Mat4)
             {
                 gl::UniformMat4 u{shaderImpl.m_MaybeViewProjMatUniform->location};
-                gl::Uniform(u, scene.viewProjectionMatrix);
+                gl::Uniform(u, renderPassState.viewProjectionMatrix);
             }
         }
 
@@ -6428,7 +6428,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
 
 // helper: draw a sequence of render objects (no presumptions)
 void osc::GraphicsBackend::DrawBatchedByMaterial(
-    SceneState const& scene,
+    RenderPassState const& renderPassState,
     nonstd::span<RenderObject const> els)
 {
     OSC_PERF("GraphicsBackend::DrawBatchedByMaterial");
@@ -6438,13 +6438,13 @@ void osc::GraphicsBackend::DrawBatchedByMaterial(
     while (batchIt != els.end())
     {
         auto const batchEnd = std::find_if_not(batchIt, els.end(), RenderObjectHasMaterial{&batchIt->material});
-        HandleBatchWithSameMaterial(scene, {batchIt, batchEnd});
+        HandleBatchWithSameMaterial(renderPassState, {batchIt, batchEnd});
         batchIt = batchEnd;
     }
 }
 
 void osc::GraphicsBackend::DrawBatchedByOpaqueness(
-    SceneState const& scene,
+    RenderPassState const& renderPassState,
     nonstd::span<RenderObject const> els)
 {
     OSC_PERF("GraphicsBackend::DrawBatchedByOpaqueness");
@@ -6458,7 +6458,7 @@ void osc::GraphicsBackend::DrawBatchedByOpaqueness(
         {
             // [batchIt..opaqueEnd] contains opaque elements
             gl::Disable(GL_BLEND);
-            DrawBatchedByMaterial(scene, {batchIt, opaqueEnd});
+            DrawBatchedByMaterial(renderPassState, {batchIt, opaqueEnd});
 
             batchIt = opaqueEnd;
         }
@@ -6468,7 +6468,7 @@ void osc::GraphicsBackend::DrawBatchedByOpaqueness(
             // [opaqueEnd..els.end()] contains transparent elements
             auto const transparentEnd = std::find_if(opaqueEnd, els.end(), IsOpaque);
             gl::Enable(GL_BLEND);
-            DrawBatchedByMaterial(scene, {opaqueEnd, transparentEnd});
+            DrawBatchedByMaterial(renderPassState, {opaqueEnd, transparentEnd});
 
             batchIt = transparentEnd;
         }
@@ -6495,8 +6495,8 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera, float aspectRa
         return;
     }
 
-    // precompute any scene state used by the rendering algs
-    SceneState const scene
+    // precompute any render pass state used by the rendering algs
+    RenderPassState const renderPassState
     {
         camera.getPosition(),
         camera.getViewMatrix(),
@@ -6515,8 +6515,8 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera, float aspectRa
         {
             // there are >0 depth-tested elements that are elegible for reordering
 
-            SortRenderQueue(batchIt, depthTestedEnd, scene.cameraPos);
-            DrawBatchedByOpaqueness(scene, {batchIt, depthTestedEnd});
+            SortRenderQueue(batchIt, depthTestedEnd, renderPassState.cameraPos);
+            DrawBatchedByOpaqueness(renderPassState, {batchIt, depthTestedEnd});
 
             batchIt = depthTestedEnd;
         }
@@ -6529,7 +6529,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera, float aspectRa
 
             // these elements aren't depth-tested and should just be drawn as-is
             gl::Disable(GL_DEPTH_TEST);
-            DrawBatchedByOpaqueness(scene, {depthTestedEnd, ignoreDepthTestEnd});
+            DrawBatchedByOpaqueness(renderPassState, {depthTestedEnd, ignoreDepthTestEnd});
             gl::Enable(GL_DEPTH_TEST);
 
             batchIt = ignoreDepthTestEnd;
@@ -6907,11 +6907,11 @@ void osc::GraphicsBackend::ResolveRenderBuffers(RenderTarget& renderTarget)
     }
 }
 
-void osc::GraphicsBackend::RenderScene(
+void osc::GraphicsBackend::RenderCameraQueue(
     Camera::Impl& camera,
     RenderTarget* maybeCustomRenderTarget)
 {
-    OSC_PERF("GraphicsBackend::RenderScene");
+    OSC_PERF("GraphicsBackend::RenderCameraQueue");
 
     if (maybeCustomRenderTarget)
     {

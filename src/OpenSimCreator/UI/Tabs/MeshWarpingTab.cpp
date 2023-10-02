@@ -17,7 +17,6 @@
 #include <oscar/Formats/CSV.hpp>
 #include <oscar/Formats/OBJ.hpp>
 #include <oscar/Formats/STL.hpp>
-#include <oscar/Graphics/CachedSceneRenderer.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Graphics.hpp>
@@ -26,8 +25,6 @@
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/MeshGen.hpp>
-#include <oscar/Graphics/SceneDecoration.hpp>
-#include <oscar/Graphics/SceneRendererParams.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Constants.hpp>
@@ -38,6 +35,9 @@
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Scene/CachedSceneRenderer.hpp>
+#include <oscar/Scene/SceneDecoration.hpp>
+#include <oscar/Scene/SceneRendererParams.hpp>
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/UI/Panels/Panel.hpp>
 #include <oscar/UI/Panels/PanelManager.hpp>

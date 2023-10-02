@@ -3,7 +3,7 @@
 #include "testoscar/testoscarconfig.hpp"
 
 #include "oscar/Graphics/MeshGen.hpp"
-#include "oscar/Graphics/SceneDecoration.hpp"
+#include "oscar/Scene/SceneDecoration.hpp"
 #include "oscar/Utils/StringHelpers.hpp"
 
 #include <gtest/gtest.h>

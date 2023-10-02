@@ -3,9 +3,9 @@
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
-#include <oscar/Graphics/SceneCollision.hpp>
-#include <oscar/Graphics/SceneRendererParams.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Scene/SceneCollision.hpp>
+#include <oscar/Scene/SceneRendererParams.hpp>
 
 #include <functional>
 #include <optional>

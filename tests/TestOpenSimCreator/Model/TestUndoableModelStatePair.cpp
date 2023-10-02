@@ -9,8 +9,8 @@
 
 #include <oscar/Formats/DAE.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
-#include <oscar/Graphics/SceneDecoration.hpp>
 #include <oscar/Platform/AppConfig.hpp>
+#include <oscar/Scene/SceneDecoration.hpp>
 
 #include <gtest/gtest.h>
 #include <OpenSim/Common/Component.h>

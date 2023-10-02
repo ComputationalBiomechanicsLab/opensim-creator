@@ -6,7 +6,7 @@
 
 namespace osc
 {
-    struct ImageAnnotation final {
+    struct ScreenshotAnnotation final {
         std::string label;
         Rect rect;
     };

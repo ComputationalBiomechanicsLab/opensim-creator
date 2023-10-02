@@ -1,7 +1,7 @@
 #include "IconCache.hpp"
 
-#include <oscar/Graphics/Icon.hpp>
 #include <oscar/Formats/SVG.hpp>
+#include <oscar/UI/Icon.hpp>
 
 #include <filesystem>
 #include <memory>

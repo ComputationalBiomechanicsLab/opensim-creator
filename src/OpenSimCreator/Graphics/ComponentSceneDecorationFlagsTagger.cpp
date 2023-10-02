@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include <oscar/Graphics/SceneDecoration.hpp>
+#include <oscar/Scene/SceneDecoration.hpp>
 
 osc::ComponentSceneDecorationFlagsTagger::ComponentSceneDecorationFlagsTagger(
     OpenSim::Component const* selected_,

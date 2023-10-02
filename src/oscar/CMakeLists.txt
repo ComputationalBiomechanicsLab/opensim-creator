@@ -41,11 +41,8 @@ add_library(oscar STATIC
     Formats/SVG.hpp
     Formats/SVG.cpp
 
-    Graphics/AnnotatedImage.hpp
     Graphics/AntiAliasingLevel.cpp
     Graphics/AntiAliasingLevel.hpp
-    Graphics/CachedSceneRenderer.cpp
-    Graphics/CachedSceneRenderer.hpp
     Graphics/BlitFlags.hpp
     Graphics/Camera.hpp
     Graphics/CameraClearFlags.hpp
@@ -61,10 +58,6 @@ add_library(oscar STATIC
     Graphics/GraphicsHelpers.cpp
     Graphics/GraphicsHelpers.hpp
     Graphics/GraphicsImplementation.cpp
-    Graphics/Icon.hpp
-    Graphics/IconCache.cpp
-    Graphics/IconCache.hpp
-    Graphics/ImageAnnotation.hpp
     Graphics/ImageLoadingFlags.hpp
     Graphics/Material.hpp
     Graphics/MaterialPropertyBlock.hpp
@@ -91,20 +84,11 @@ add_library(oscar STATIC
     Graphics/RenderTextureDescriptor.hpp
     Graphics/RenderTextureFormat.hpp
     Graphics/RenderTextureReadWrite.hpp
-    Graphics/SceneCollision.hpp
-    Graphics/SceneDecoration.cpp
-    Graphics/SceneDecoration.hpp
-    Graphics/SceneDecorationFlags.hpp
-    Graphics/SceneRenderer.cpp
-    Graphics/SceneRenderer.hpp
-    Graphics/SceneRendererParams.cpp
-    Graphics/SceneRendererParams.hpp
     Graphics/Shader.hpp
     Graphics/ShaderCache.cpp
     Graphics/ShaderCache.hpp
     Graphics/ShaderLocations.hpp
     Graphics/ShaderType.hpp
-    Graphics/SimpleSceneDecoration.hpp
     Graphics/Texture2D.hpp
     Graphics/TextureChannelFormat.hpp
     Graphics/TextureDimensionality.hpp
@@ -146,8 +130,6 @@ add_library(oscar STATIC
     Platform/AppSettingValue.cpp
     Platform/AppSettingValue.hpp
     Platform/AppSettingValueType.hpp
-    Platform/IoPoller.cpp
-    Platform/IoPoller.hpp
     Platform/Log.cpp
     Platform/Log.hpp
     Platform/Logger.hpp
@@ -160,6 +142,20 @@ add_library(oscar STATIC
     Platform/os.cpp
     Platform/os.hpp
     Platform/RecentFile.hpp
+    Platform/Screen.hpp
+    Platform/Screenshot.hpp
+    Platform/ScreenshotAnnotation.hpp
+
+    Scene/CachedSceneRenderer.cpp
+    Scene/CachedSceneRenderer.hpp
+    Scene/SceneCollision.hpp
+    Scene/SceneDecoration.cpp
+    Scene/SceneDecoration.hpp
+    Scene/SceneDecorationFlags.hpp
+    Scene/SceneRenderer.cpp
+    Scene/SceneRenderer.hpp
+    Scene/SceneRendererParams.cpp
+    Scene/SceneRendererParams.hpp
 
     UI/Panels/LogViewerPanel.cpp
     UI/Panels/LogViewerPanel.hpp
@@ -173,9 +169,6 @@ add_library(oscar STATIC
     UI/Panels/ToggleablePanelFlags.hpp
     UI/Panels/UndoRedoPanel.cpp
     UI/Panels/UndoRedoPanel.hpp
-    UI/Screens/CookiecutterScreen.cpp
-    UI/Screens/CookiecutterScreen.hpp
-    UI/Screens/Screen.hpp
     UI/Tabs/CookiecutterTab.cpp
     UI/Tabs/CookiecutterTab.hpp
     UI/Tabs/ErrorTab.cpp
@@ -214,6 +207,9 @@ add_library(oscar STATIC
     UI/Widgets/UndoButton.hpp
     UI/Widgets/WindowMenu.cpp
     UI/Widgets/WindowMenu.hpp
+    UI/Icon.hpp
+    UI/IconCache.cpp
+    UI/IconCache.hpp
 
     Utils/Assertions.cpp
     Utils/Assertions.hpp

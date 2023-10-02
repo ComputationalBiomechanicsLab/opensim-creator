@@ -2,7 +2,6 @@
 
 #include <oscar/Bindings/SDL2Helpers.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Graphics/AnnotatedImage.hpp>
 #include <oscar/Graphics/GraphicsContext.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Platform/AppClock.hpp>
@@ -11,7 +10,8 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/RecentFile.hpp>
-#include <oscar/UI/Screens/Screen.hpp>
+#include <oscar/Platform/Screen.hpp>
+#include <oscar/Platform/Screenshot.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
@@ -200,10 +200,10 @@ namespace
         std::future<osc::Texture2D> underlyingScreenshotFuture;
 
         // our promise to the caller, who is waiting for an annotated image
-        std::promise<osc::AnnotatedImage> resultPromise;
+        std::promise<osc::Screenshot> resultPromise;
 
         // annotations made during the requested frame (if any)
-        std::vector<osc::ImageAnnotation> annotations;
+        std::vector<osc::ScreenshotAnnotation> annotations;
     };
 
     // wrapper class for storing std::type_info as a hashable type
@@ -404,7 +404,7 @@ public:
 
     void addFrameAnnotation(std::string_view label, Rect screenRect)
     {
-        m_FrameAnnotations.push_back(ImageAnnotation{std::string{label}, screenRect});
+        m_FrameAnnotations.push_back(ScreenshotAnnotation{std::string{label}, screenRect});
     }
 
     std::future<Texture2D> requestScreenshot()
@@ -412,7 +412,7 @@ public:
         return m_GraphicsContext.requestScreenshot();
     }
 
-    std::future<AnnotatedImage> requestAnnotatedScreenshot()
+    std::future<Screenshot> requestAnnotatedScreenshot()
     {
         AnnotatedScreenshotRequest& req = m_ActiveAnnotatedScreenshotRequests.emplace_back(m_FrameCounter, requestScreenshot());
         return req.resultPromise.get_future();
@@ -827,7 +827,7 @@ private:
                     {
                         // screenshot is ready: create an annotated screenshot and send it to
                         // the caller
-                        req.resultPromise.set_value(AnnotatedImage{req.underlyingScreenshotFuture.get(), std::move(req.annotations)});
+                        req.resultPromise.set_value(Screenshot{req.underlyingScreenshotFuture.get(), std::move(req.annotations)});
                     }
                 }
 
@@ -937,7 +937,7 @@ private:
     std::unique_ptr<Screen> m_NextScreen;
 
     // frame annotations made during this frame
-    std::vector<ImageAnnotation> m_FrameAnnotations;
+    std::vector<ScreenshotAnnotation> m_FrameAnnotations;
 
     // any active promises for an annotated frame
     std::vector<AnnotatedScreenshotRequest> m_ActiveAnnotatedScreenshotRequests;
@@ -1107,7 +1107,7 @@ std::future<osc::Texture2D> osc::App::requestScreenshot()
     return m_Impl->requestScreenshot();
 }
 
-std::future<osc::AnnotatedImage> osc::App::requestAnnotatedScreenshot()
+std::future<osc::Screenshot> osc::App::requestAnnotatedScreenshot()
 {
     return m_Impl->requestAnnotatedScreenshot();
 }

@@ -19,8 +19,6 @@
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
-#include <oscar/Graphics/SceneRenderer.hpp>
-#include <oscar/Graphics/SceneRendererParams.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
@@ -31,6 +29,8 @@
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/RecentFile.hpp>
+#include <oscar/Scene/SceneRenderer.hpp>
+#include <oscar/Scene/SceneRendererParams.hpp>
 #include <oscar/UI/Tabs/TabHost.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>
 #include <oscar/Utils/CStringView.hpp>

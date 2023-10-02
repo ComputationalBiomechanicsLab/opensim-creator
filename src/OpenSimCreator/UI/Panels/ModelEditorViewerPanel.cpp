@@ -16,7 +16,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Bindings/ImGuizmoHelpers.hpp>
-#include <oscar/Graphics/IconCache.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
@@ -25,6 +24,7 @@
 #include <oscar/UI/Panels/StandardPanel.hpp>
 #include <oscar/UI/Widgets/GuiRuler.hpp>
 #include <oscar/UI/Widgets/IconWithoutMenu.hpp>
+#include <oscar/UI/IconCache.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <cstdint>

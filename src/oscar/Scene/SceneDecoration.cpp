@@ -2,10 +2,10 @@
 
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/SceneDecoration.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Scene/SceneDecoration.hpp>
 
 bool osc::operator==(SceneDecoration const& a, SceneDecoration const& b) noexcept
 {

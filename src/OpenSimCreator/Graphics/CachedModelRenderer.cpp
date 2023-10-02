@@ -10,13 +10,13 @@
 #include <nonstd/span.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/SceneCollision.hpp>
-#include <oscar/Graphics/SceneDecoration.hpp>
-#include <oscar/Graphics/SceneRenderer.hpp>
-#include <oscar/Graphics/SceneRendererParams.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
+#include <oscar/Scene/SceneCollision.hpp>
+#include <oscar/Scene/SceneDecoration.hpp>
+#include <oscar/Scene/SceneRenderer.hpp>
+#include <oscar/Scene/SceneRendererParams.hpp>
 #include <oscar/Utils/Perf.hpp>
 
 #include <cstdint>

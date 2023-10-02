@@ -5,10 +5,10 @@
 #include <oscar/Graphics/ImageLoadingFlags.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/RenderTexture.hpp>
-#include <oscar/Graphics/SceneCollision.hpp>
-#include <oscar/Graphics/SceneRendererParams.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/RayCollision.hpp>
+#include <oscar/Scene/SceneCollision.hpp>
+#include <oscar/Scene/SceneRendererParams.hpp>
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>

@@ -4,7 +4,7 @@
 #include <nonstd/span.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
-#include <oscar/Graphics/SceneCollision.hpp>
+#include <oscar/Scene/SceneCollision.hpp>
 
 #include <functional>
 #include <memory>

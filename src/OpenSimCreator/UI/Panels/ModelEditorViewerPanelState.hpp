@@ -5,10 +5,10 @@
 
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/ComponentPath.h>
-#include <oscar/Graphics/SceneCollision.hpp>
-#include <oscar/Graphics/SceneDecoration.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Scene/SceneCollision.hpp>
+#include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <optional>

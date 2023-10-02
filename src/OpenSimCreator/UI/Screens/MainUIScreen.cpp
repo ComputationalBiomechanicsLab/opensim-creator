@@ -16,12 +16,12 @@
 #include <ImGuizmo.h>
 #include <implot.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Graphics/AnnotatedImage.hpp>
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Platform/Screenshot.hpp>
 #include <oscar/UI/Tabs/ErrorTab.hpp>
 #include <oscar/UI/Tabs/ScreenshotTab.hpp>
 #include <oscar/UI/Tabs/Tab.hpp>
@@ -829,7 +829,7 @@ private:
     bool m_ImguiWasAggressivelyReset = false;
 
     // `valid` if the user has requested a screenshot (that hasn't yet been handled)
-    std::future<AnnotatedImage> m_MaybeScreenshotRequest;
+    std::future<Screenshot> m_MaybeScreenshotRequest;
 };
 
 

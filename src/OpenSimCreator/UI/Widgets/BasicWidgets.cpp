@@ -32,9 +32,7 @@
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Formats/DAE.hpp>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/IconCache.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
-#include <oscar/Graphics/SceneDecoration.hpp>
 #include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
@@ -43,8 +41,10 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/RecentFile.hpp>
+#include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/UI/Widgets/GuiRuler.hpp>
 #include <oscar/UI/Widgets/IconWithMenu.hpp>
+#include <oscar/UI/IconCache.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/StringHelpers.hpp>

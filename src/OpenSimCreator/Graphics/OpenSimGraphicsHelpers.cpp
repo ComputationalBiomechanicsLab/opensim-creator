@@ -9,10 +9,10 @@
 #include <glm/vec2.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/SceneDecoration.hpp>
 #include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Utils/Perf.hpp>
 
 #include <optional>

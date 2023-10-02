@@ -1,6 +1,6 @@
 #include "IconWithMenu.hpp"
 
-#include <oscar/Graphics/Icon.hpp>
+#include <oscar/UI/Icon.hpp>
 #include <oscar/UI/Widgets/IconWithoutMenu.hpp>
 #include <oscar/Utils/CStringView.hpp>
 

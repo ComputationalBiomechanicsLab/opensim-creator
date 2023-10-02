@@ -1,5 +1,7 @@
 add_library(oscar_demos STATIC
 
+    CookiecutterScreen.cpp
+    CookiecutterScreen.hpp
     CustomWidgetsTab.cpp
     CustomWidgetsTab.hpp
     HittestTab.cpp

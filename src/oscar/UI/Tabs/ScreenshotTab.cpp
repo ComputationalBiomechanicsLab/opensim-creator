@@ -1,7 +1,6 @@
 #include "ScreenshotTab.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Graphics/AnnotatedImage.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
@@ -18,6 +17,7 @@
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Platform/Screenshot.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/SetHelpers.hpp>
@@ -76,9 +76,9 @@ namespace
 
 class osc::ScreenshotTab::Impl final : public osc::StandardTabBase {
 public:
-    explicit Impl(AnnotatedImage&& annotatedImage) :
+    explicit Impl(Screenshot&& screenshot) :
         StandardTabBase{ICON_FA_COOKIE " ScreenshotTab"},
-        m_AnnotatedImage{std::move(annotatedImage)}
+        m_Screenshot{std::move(screenshot)}
     {
         m_ImageTexture.setFilterMode(TextureFilterMode::Mipmap);
     }
@@ -116,7 +116,7 @@ private:
         {
             int id = 0;
             ImGui::Begin("Controls");
-            for (ImageAnnotation const& annotation : m_AnnotatedImage.annotations)
+            for (ScreenshotAnnotation const& annotation : m_Screenshot.annotations)
             {
                 ImGui::PushID(id++);
                 ImGui::TextUnformatted(annotation.label.c_str());
@@ -131,7 +131,7 @@ private:
     {
         glm::vec2 const screenTopLeft = ImGui::GetCursorScreenPos();
         Rect const windowRect = {screenTopLeft, screenTopLeft + glm::vec2{ImGui::GetContentRegionAvail()}};
-        Rect const imageRect = ShrinkToFit(windowRect, osc::AspectRatio(m_AnnotatedImage.image.getDimensions()));
+        Rect const imageRect = ShrinkToFit(windowRect, osc::AspectRatio(m_Screenshot.image.getDimensions()));
         ImGui::SetCursorScreenPos(imageRect.p1);
         DrawTextureAsImGuiImage(m_ImageTexture, osc::Dimensions(imageRect));
         return imageRect;
@@ -145,9 +145,9 @@ private:
     {
         glm::vec2 const mousePos = ImGui::GetMousePos();
         bool const leftClickReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
-        Rect const imageSourceRect = {{0.0f, 0.0f}, m_AnnotatedImage.image.getDimensions()};
+        Rect const imageSourceRect = {{0.0f, 0.0f}, m_Screenshot.image.getDimensions()};
 
-        for (ImageAnnotation const& annotation : m_AnnotatedImage.annotations)
+        for (ScreenshotAnnotation const& annotation : m_Screenshot.annotations)
         {
             Rect const annotationRectScreenSpace = MapRect(imageSourceRect, imageRect, annotation.rect);
             bool const selected =  Contains(m_SelectedAnnotations, annotation.label);
@@ -303,16 +303,16 @@ private:
         return t;
     }
 
-    AnnotatedImage m_AnnotatedImage;
-    Texture2D m_ImageTexture = m_AnnotatedImage.image;
+    Screenshot m_Screenshot;
+    Texture2D m_ImageTexture = m_Screenshot.image;
     std::unordered_set<std::string> m_SelectedAnnotations;
 };
 
 
 // public API
 
-osc::ScreenshotTab::ScreenshotTab(ParentPtr<TabHost> const&, AnnotatedImage&& image) :
-    m_Impl{std::make_unique<Impl>(std::move(image))}
+osc::ScreenshotTab::ScreenshotTab(ParentPtr<TabHost> const&, Screenshot&& screenshot) :
+    m_Impl{std::make_unique<Impl>(std::move(screenshot))}
 {
 }
 

@@ -2,11 +2,11 @@
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
-#include <oscar/Graphics/SceneDecoration.hpp>
-#include <oscar/Graphics/SceneRenderer.hpp>
-#include <oscar/Graphics/SceneRendererParams.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/Scene/SceneDecoration.hpp>
+#include <oscar/Scene/SceneRenderer.hpp>
+#include <oscar/Scene/SceneRendererParams.hpp>
 
 #include <glm/vec2.hpp>
 #include <imgui.h>

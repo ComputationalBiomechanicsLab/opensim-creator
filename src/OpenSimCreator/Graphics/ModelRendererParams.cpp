@@ -7,8 +7,8 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/SceneRendererParams.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
+#include <oscar/Scene/SceneRendererParams.hpp>
 
 osc::ModelRendererParams::ModelRendererParams() :
     lightColor{SceneRendererParams::DefaultLightColor()},

@@ -12,8 +12,8 @@
 #include <IconsFontAwesome5.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/IconCache.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/UI/IconCache.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 
 #include <algorithm>

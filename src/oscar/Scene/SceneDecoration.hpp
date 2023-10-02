@@ -4,9 +4,9 @@
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MaterialPropertyBlock.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/SceneDecorationFlags.hpp>
-#include <oscar/Graphics/SimpleSceneDecoration.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Scene/SceneDecorationFlags.hpp>
+#include <oscar/Scene/SimpleSceneDecoration.hpp>
 
 #include <optional>
 #include <string>

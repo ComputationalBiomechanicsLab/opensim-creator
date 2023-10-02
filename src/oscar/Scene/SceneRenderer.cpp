@@ -10,9 +10,6 @@
 #include <oscar/Graphics/MaterialPropertyBlock.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/RenderTexture.hpp>
-#include <oscar/Graphics/SceneDecoration.hpp>
-#include <oscar/Graphics/SceneDecorationFlags.hpp>
-#include <oscar/Graphics/SceneRendererParams.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Graphics/TextureGen.hpp>
 #include <oscar/Maths/Constants.hpp>
@@ -21,6 +18,9 @@
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Platform/AppConfig.hpp>
+#include <oscar/Scene/SceneDecoration.hpp>
+#include <oscar/Scene/SceneDecorationFlags.hpp>
+#include <oscar/Scene/SceneRendererParams.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Perf.hpp>
 

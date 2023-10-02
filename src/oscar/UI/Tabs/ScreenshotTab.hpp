@@ -6,15 +6,15 @@
 
 #include <memory>
 
-namespace osc { struct AnnotatedImage; }
 namespace osc { template<typename T> class ParentPtr; }
+namespace osc { struct Screenshot; }
 namespace osc { class TabHost; }
 
 namespace osc
 {
     class ScreenshotTab final : public Tab {
     public:
-        ScreenshotTab(ParentPtr<TabHost> const&, AnnotatedImage&&);
+        ScreenshotTab(ParentPtr<TabHost> const&, Screenshot&&);
         ScreenshotTab(ScreenshotTab const&) = delete;
         ScreenshotTab(ScreenshotTab&&) noexcept;
         ScreenshotTab& operator=(ScreenshotTab const&) = delete;

@@ -8,10 +8,10 @@
 
 #include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
-#include <oscar/Graphics/SceneDecoration.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Platform/Log.hpp>
+#include <oscar/Scene/SceneDecoration.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 
 #include <gtest/gtest.h>
 #include <OpenSim/Simulation/Model/Model.h>

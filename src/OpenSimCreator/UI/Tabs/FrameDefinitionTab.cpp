@@ -42,9 +42,6 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
-#include <oscar/Graphics/SceneDecoration.hpp>
-#include <oscar/Graphics/SceneRenderer.hpp>
-#include <oscar/Graphics/SceneRendererParams.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
@@ -53,6 +50,9 @@
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Scene/SceneDecoration.hpp>
+#include <oscar/Scene/SceneRenderer.hpp>
+#include <oscar/Scene/SceneRendererParams.hpp>
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/UI/Panels/Panel.hpp>
 #include <oscar/UI/Panels/PanelManager.hpp>

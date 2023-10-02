@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/Graphics/SceneCollision.hpp>
+#include <oscar/Scene/SceneCollision.hpp>
 
 #include <glm/vec3.hpp>
 

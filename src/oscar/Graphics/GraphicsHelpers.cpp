@@ -10,7 +10,6 @@
 #include <oscar/Graphics/MeshIndicesView.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
-#include <oscar/Graphics/SceneDecoration.hpp>
 #include <oscar/Graphics/TextureChannelFormat.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
 #include <oscar/Maths/AABB.hpp>
@@ -22,6 +21,7 @@
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/Tetrahedron.hpp>
 #include <oscar/Platform/AppConfig.hpp>
+#include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/SpanHelpers.hpp>
 

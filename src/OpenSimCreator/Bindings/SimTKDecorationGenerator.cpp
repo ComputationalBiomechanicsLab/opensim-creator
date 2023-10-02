@@ -7,11 +7,11 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
-#include <oscar/Graphics/SimpleSceneDecoration.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/Triangle.hpp>
 #include <oscar/Platform/Log.hpp>
+#include <oscar/Scene/SimpleSceneDecoration.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <simbody/internal/common.h>
 #include <simbody/internal/MobilizedBody.h>

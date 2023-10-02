@@ -1,7 +1,7 @@
 #pragma once
 
-#include <oscar/Graphics/SceneCollision.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Scene/SceneCollision.hpp>
 
 #include <memory>
 #include <optional>
