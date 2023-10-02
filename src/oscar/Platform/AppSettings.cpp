@@ -101,7 +101,7 @@ R"(# configuration options
             osc::AppSettingValue value)
         {
             m_Data.insert_or_assign(
-                std::string{key},
+                key,
                 AppSettingsLookupValue{scope, std::move(value)}
             );
         }
@@ -130,7 +130,7 @@ R"(# configuration options
     private:
         AppSettingsLookupValue const* lookup(std::string_view key) const
         {
-            if (auto const it = m_Data.find(std::string{key}); it != m_Data.cend())
+            if (auto const it = m_Data.find(key); it != m_Data.cend())
             {
                 return &it->second;
             }
