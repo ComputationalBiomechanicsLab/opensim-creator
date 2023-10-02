@@ -14,7 +14,8 @@ namespace osc
     public:
         AppSettings(
             std::string_view organizationName_,
-            std::string_view applicationName_
+            std::string_view applicationName_,
+            std::string_view applicationConfigFileName_ = "osc.toml"
         );
         AppSettings(AppSettings const&);
         AppSettings(AppSettings&&) noexcept;

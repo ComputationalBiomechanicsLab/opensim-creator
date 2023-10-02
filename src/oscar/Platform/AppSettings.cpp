@@ -160,7 +160,8 @@ R"(# configuration options
     };
 
     // if available, returns the path to the system-wide configuration file
-    std::optional<std::filesystem::path>  TryGetSystemConfigPath()
+    std::optional<std::filesystem::path>  TryGetSystemConfigPath(
+        std::string_view applicationConfigFileName_)
     {
         // copied from the legacy `osc::AppConfig` implementation for backwards
         // compatability with existing config files
@@ -170,7 +171,7 @@ R"(# configuration options
 
         while (p.has_filename())
         {
-            std::filesystem::path maybeConfig = p / "osc.toml";
+            std::filesystem::path maybeConfig = p / applicationConfigFileName_;
             if (std::filesystem::exists(maybeConfig))
             {
                 p = maybeConfig;
@@ -178,10 +179,10 @@ R"(# configuration options
                 break;
             }
 
-            // HACK: there is a file at "MacOS/osc.toml", which is where the config
+            // HACK: there is a file at "MacOS/$configName", which is where the config
             // is relative to SDL_GetBasePath. current_exe_dir should be fixed
             // accordingly.
-            std::filesystem::path maybeMacOSConfig = p / "MacOS" / "osc.toml";
+            std::filesystem::path maybeMacOSConfig = p / "MacOS" / applicationConfigFileName_;
             if (std::filesystem::exists(maybeMacOSConfig))
             {
                 p = maybeMacOSConfig;
@@ -199,10 +200,11 @@ R"(# configuration options
     // creates a "blank" user-level configuration file if one doesn't already exist
     std::optional<std::filesystem::path> TryGetUserConfigPath(
         std::string_view organizationName_,
-        std::string_view applicationName_)
+        std::string_view applicationName_,
+        std::string_view applicationConfigFileName_)
     {
         auto userDir = osc::GetUserDataDir(std::string{organizationName_}, std::string{applicationName_});
-        auto fullPath = userDir / "osc.toml";
+        auto fullPath = userDir / applicationConfigFileName_;
 
         if (std::filesystem::exists(fullPath))
         {
@@ -427,9 +429,11 @@ R"(# configuration options
     public:
         ThreadUnsafeAppSettings(
             std::string_view organizationName_,
-            std::string_view applicationName_) :
-            m_SystemConfigPath{TryGetSystemConfigPath()},
-            m_UserConfigPath{TryGetUserConfigPath(organizationName_, applicationName_)}
+            std::string_view applicationName_,
+            std::string_view applicationConfigFileName_) :
+
+            m_SystemConfigPath{TryGetSystemConfigPath(applicationConfigFileName_)},
+            m_UserConfigPath{TryGetUserConfigPath(organizationName_, applicationName_, applicationConfigFileName_)}
         {
         }
 
@@ -518,9 +522,10 @@ class osc::AppSettings::Impl final {
 public:
     Impl(
         std::string_view organizationName_,
-        std::string_view applicationName_) :
+        std::string_view applicationName_,
+        std::string_view applicationConfigFileName_) :
 
-        m_GuardedData{organizationName_, applicationName_}
+        m_GuardedData{organizationName_, applicationName_, applicationConfigFileName_}
     {
     }
 
@@ -569,22 +574,23 @@ namespace
     public:
         std::shared_ptr<osc::AppSettings::Impl> get(
             std::string_view organizationName_,
-            std::string_view applicationName_)
+            std::string_view applicationName_,
+            std::string_view applicationConfigFileName_)
         {
-            auto [it, inserted] = m_Data.try_emplace(Key{organizationName_, applicationName_});
+            auto [it, inserted] = m_Data.try_emplace(Key{organizationName_, applicationName_, applicationConfigFileName_});
             if (inserted)
             {
-                it->second = std::make_shared<osc::AppSettings::Impl>(organizationName_, applicationName_);
+                it->second = std::make_shared<osc::AppSettings::Impl>(organizationName_, applicationName_, applicationConfigFileName_);
             }
             return it->second;
         }
     private:
-        using Key = std::pair<std::string, std::string>;
+        using Key = std::tuple<std::string, std::string, std::string>;
 
         struct KeyHasher final {
             size_t operator()(Key const& k) const
             {
-                return osc::HashOf(k.first, k.second);
+                return osc::HashOf(std::get<0>(k), std::get<1>(k), std::get<2>(k));
             }
         };
 
@@ -593,18 +599,20 @@ namespace
 
     std::shared_ptr<osc::AppSettings::Impl> GetGloballySharedImplSettings(
         std::string_view organizationName_,
-        std::string_view applicationName_)
+        std::string_view applicationName_,
+        std::string_view applicationConfigFileName_)
     {
         static osc::SynchronizedValue<GlobalAppSettingsLookup> s_SettingsLookup;
-        return s_SettingsLookup.lock()->get(organizationName_, applicationName_);
+        return s_SettingsLookup.lock()->get(organizationName_, applicationName_, applicationConfigFileName_);
     }
 }
 
 osc::AppSettings::AppSettings(
     std::string_view organizationName_,
-    std::string_view applicationName_) :
+    std::string_view applicationName_,
+    std::string_view applicationConfigFileName_) :
 
-    m_Impl{GetGloballySharedImplSettings(organizationName_, applicationName_)}
+    m_Impl{GetGloballySharedImplSettings(organizationName_, applicationName_, applicationConfigFileName_)}
 {
 }
 osc::AppSettings::AppSettings(AppSettings const&) = default;
