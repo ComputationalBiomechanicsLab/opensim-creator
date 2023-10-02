@@ -247,5 +247,5 @@ void osc::AppConfig::setValue(
     std::string_view key,
     AppSettingValue value)
 {
-    m_Impl->m_Settings.setValue(key, value);
+    m_Impl->m_Settings.setValue(key, std::move(value));
 }
