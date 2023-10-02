@@ -234,3 +234,16 @@ osc::LogLevel osc::AppConfig::getRequestedLogLevel() const
 {
     return m_Impl->m_LogLevel;
 }
+
+std::optional<osc::AppSettingValue> osc::AppConfig::getValue(
+    std::string_view key) const
+{
+    return m_Impl->m_Settings.getValue(key);
+}
+
+void osc::AppConfig::setValue(
+    std::string_view key,
+    AppSettingValue value)
+{
+    m_Impl->m_Settings.setValue(key, value);
+}

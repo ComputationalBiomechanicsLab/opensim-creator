@@ -2,11 +2,13 @@
 
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Platform/LogLevel.hpp>
+#include <oscar/Platform/AppSettingValue.hpp>
 
 #include <filesystem>
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace osc
 {
@@ -45,6 +47,16 @@ namespace osc
 
         // get the user-requested log level that the application should be initialized with
         LogLevel getRequestedLogLevel() const;
+
+        // get/set arbitrary runtime configuration values that should be persisted between
+        // application sessions
+        std::optional<AppSettingValue> getValue(
+            std::string_view key
+        ) const;
+        void setValue(
+            std::string_view key,
+            AppSettingValue value
+        );
 
     private:
         std::unique_ptr<Impl> m_Impl;
