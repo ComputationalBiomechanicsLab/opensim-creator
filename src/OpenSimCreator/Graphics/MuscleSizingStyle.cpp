@@ -9,29 +9,32 @@
 
 namespace
 {
-    constexpr auto c_Styles = osc::to_array<osc::MuscleSizingStyle>(
+    constexpr auto c_Metadata = osc::to_array<osc::MuscleSizingStyleMetadata>(
     {
-        osc::MuscleSizingStyle::OpenSim,
-        osc::MuscleSizingStyle::PcsaDerived,
+        osc::MuscleSizingStyleMetadata
+        {
+            "opensim",
+            "OpenSim",
+            osc::MuscleSizingStyle::OpenSim,
+        },
+        osc::MuscleSizingStyleMetadata
+        {
+            "pcsa_derived",
+            "PCSA-derived",
+            osc::MuscleSizingStyle::PcsaDerived,
+        },
     });
-    static_assert(c_Styles.size() == osc::NumOptions<osc::MuscleSizingStyle>());
-
-    constexpr auto c_StyleStrings = osc::to_array<osc::CStringView>(
-    {
-        "OpenSim",
-        "PCSA-derived",
-    });
-    static_assert(c_StyleStrings.size() == osc::NumOptions<osc::MuscleSizingStyle>());
+    static_assert(c_Metadata.size() == osc::NumOptions<osc::MuscleSizingStyle>());
 }
 
-nonstd::span<osc::MuscleSizingStyle const> osc::GetAllMuscleSizingStyles()
+nonstd::span<osc::MuscleSizingStyleMetadata const> osc::GetAllMuscleSizingStyleMetadata()
 {
-    return c_Styles;
+    return c_Metadata;
 }
 
-nonstd::span<osc::CStringView const> osc::GetAllMuscleSizingStyleStrings()
+osc::MuscleSizingStyleMetadata const& osc::GetMuscleSizingStyleMetadata(MuscleSizingStyle s)
 {
-    return c_StyleStrings;
+    return GetAllMuscleSizingStyleMetadata()[GetIndexOf(s)];
 }
 
 ptrdiff_t osc::GetIndexOf(MuscleSizingStyle s)

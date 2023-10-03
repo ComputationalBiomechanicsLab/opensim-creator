@@ -545,17 +545,13 @@ void osc::TryDrawCalculateMenu(
 
 bool osc::DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions& opts)
 {
-    osc::MuscleDecorationStyle const currentStyle = opts.getMuscleDecorationStyle();
-    nonstd::span<osc::MuscleDecorationStyle const> const allStyles = osc::GetAllMuscleDecorationStyles();
-    nonstd::span<osc::CStringView const>  const allStylesStrings = osc::GetAllMuscleDecorationStyleStrings();
-    ptrdiff_t const currentStyleIndex = osc::GetIndexOf(currentStyle);
-
+    MuscleDecorationStyle const currentStyle = opts.getMuscleDecorationStyle();
     bool edited = false;
-    for (ptrdiff_t i = 0; i < osc::ssize(allStyles); ++i)
+    for (auto const& metadata : GetAllMuscleDecorationStyleMetadata())
     {
-        if (ImGui::RadioButton(allStylesStrings[i].c_str(), i == currentStyleIndex))
+        if (ImGui::RadioButton(metadata.label.c_str(), metadata.value == currentStyle))
         {
-            opts.setMuscleDecorationStyle(allStyles[i]);
+            opts.setMuscleDecorationStyle(metadata.value);
             edited = true;
         }
     }
@@ -564,17 +560,13 @@ bool osc::DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions& opts
 
 bool osc::DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions& opts)
 {
-    osc::MuscleSizingStyle const currentStyle = opts.getMuscleSizingStyle();
-    nonstd::span<osc::MuscleSizingStyle const> const allStyles = osc::GetAllMuscleSizingStyles();
-    nonstd::span<CStringView const>  const allStylesStrings = osc::GetAllMuscleSizingStyleStrings();
-    ptrdiff_t const currentStyleIndex = osc::GetIndexOf(currentStyle);
-
+    MuscleSizingStyle const currentStyle = opts.getMuscleSizingStyle();
     bool edited = false;
-    for (ptrdiff_t i = 0; i < osc::ssize(allStyles); ++i)
+    for (auto const& metadata : GetAllMuscleSizingStyleMetadata())
     {
-        if (ImGui::RadioButton(allStylesStrings[i].c_str(), i == currentStyleIndex))
+        if (ImGui::RadioButton(metadata.label.c_str(), metadata.value == currentStyle))
         {
-            opts.setMuscleSizingStyle(allStyles[i]);
+            opts.setMuscleSizingStyle(metadata.value);
             edited = true;
         }
     }
@@ -583,17 +575,13 @@ bool osc::DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions& opts)
 
 bool osc::DrawMuscleColoringOptionsRadioButtons(OpenSimDecorationOptions& opts)
 {
-    osc::MuscleColoringStyle const currentStyle = opts.getMuscleColoringStyle();
-    nonstd::span<osc::MuscleColoringStyle const> const allStyles = osc::GetAllMuscleColoringStyles();
-    nonstd::span<CStringView const>  const allStylesStrings = osc::GetAllMuscleColoringStyleStrings();
-    ptrdiff_t const currentStyleIndex = osc::GetIndexOf(currentStyle);
-
+    MuscleColoringStyle const currentStyle = opts.getMuscleColoringStyle();
     bool edited = false;
-    for (ptrdiff_t i = 0; i < osc::ssize(allStyles); ++i)
+    for (auto const& metadata : GetAllMuscleColoringStyleMetadata())
     {
-        if (ImGui::RadioButton(allStylesStrings[i].c_str(), i == currentStyleIndex))
+        if (ImGui::RadioButton(metadata.label.c_str(), metadata.value == currentStyle))
         {
-            opts.setMuscleColoringStyle(allStyles[i]);
+            opts.setMuscleColoringStyle(metadata.value);
             edited = true;
         }
     }

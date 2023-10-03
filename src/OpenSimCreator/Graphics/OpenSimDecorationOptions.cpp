@@ -1,5 +1,6 @@
 #include "OpenSimDecorationOptions.hpp"
 
+#include <oscar/Platform/AppSettingValue.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 
@@ -141,6 +142,19 @@ void osc::OpenSimDecorationOptions::setShouldShowPointToPointSprings(bool v)
 bool osc::OpenSimDecorationOptions::getShouldShowContactForces() const
 {
     return m_Flags & OpenSimDecorationOptionFlags::ShouldShowContactForces;
+}
+
+void osc::OpenSimDecorationOptions::forEachOptionAsAppSettingValue(std::function<void(std::string_view, AppSettingValue const&)> const& callback) const
+{
+    callback("muscle_decoration_style", AppSettingValue{GetMuscleDecorationStyleMetadata(m_MuscleDecorationStyle).id});
+    callback("muscle_coloring_style", AppSettingValue{GetMuscleColoringStyleMetadata(m_MuscleColoringStyle).id});
+    callback("muscle_sizing_style", AppSettingValue{GetMuscleSizingStyleMetadata(m_MuscleSizingStyle).id});
+    for (size_t i = 0; i < NumOptions<OpenSimDecorationOptionFlags>(); ++i)
+    {
+        auto const& meta = GetIthOptionMetadata(i);
+        bool const v = m_Flags & GetIthOption(i);
+        callback(meta.id, AppSettingValue{v});
+    }
 }
 
 bool osc::operator==(OpenSimDecorationOptions const& a, OpenSimDecorationOptions const& b) noexcept

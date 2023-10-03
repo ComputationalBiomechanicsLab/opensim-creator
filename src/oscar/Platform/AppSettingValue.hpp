@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Platform/AppSettingValueType.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
 #include <string>
 #include <utility>
@@ -16,6 +17,11 @@ namespace osc
         }
 
         explicit AppSettingValue(char const* value_) :
+            m_Value{std::string{value_}}
+        {
+        }
+
+        explicit AppSettingValue(CStringView value_) :
             m_Value{std::string{value_}}
         {
         }

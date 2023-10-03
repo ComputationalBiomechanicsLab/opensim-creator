@@ -10,37 +10,56 @@
 
 namespace
 {
-    constexpr auto c_ColorStyles = osc::to_array<osc::MuscleColoringStyle>(
+    constexpr auto c_Metadata = osc::to_array<osc::MuscleColoringStyleMetadata>(
     {
-        osc::MuscleColoringStyle::OpenSimAppearanceProperty,
-        osc::MuscleColoringStyle::OpenSim,
-        osc::MuscleColoringStyle::Activation,
-        osc::MuscleColoringStyle::Excitation,
-        osc::MuscleColoringStyle::Force,
-        osc::MuscleColoringStyle::FiberLength,
+        osc::MuscleColoringStyleMetadata
+        {
+            "opensim_appearance",
+            "OpenSim (Appearance Property)",
+            osc::MuscleColoringStyle::OpenSimAppearanceProperty,
+        },
+        osc::MuscleColoringStyleMetadata
+        {
+            "opensim",
+            "OpenSim",
+            osc::MuscleColoringStyle::OpenSim,
+        },
+        osc::MuscleColoringStyleMetadata
+        {
+            "activation",
+            "Activation",
+            osc::MuscleColoringStyle::Activation,
+        },
+        osc::MuscleColoringStyleMetadata
+        {
+            "excitation",
+            "Excitation",
+            osc::MuscleColoringStyle::Excitation,
+        },
+        osc::MuscleColoringStyleMetadata
+        {
+            "force",
+            "Force",
+            osc::MuscleColoringStyle::Force,
+        },
+        osc::MuscleColoringStyleMetadata
+        {
+            "fiber_length",
+            "Fiber Length",
+            osc::MuscleColoringStyle::FiberLength,
+        },
     });
-    static_assert(c_ColorStyles.size() == osc::NumOptions<osc::MuscleColoringStyle>());
-
-    constexpr auto c_ColorStyleStrings = osc::to_array<osc::CStringView>(
-    {
-        "OpenSim (Appearance Property)",
-        "OpenSim",
-        "Activation",
-        "Excitation",
-        "Force",
-        "Fiber Length",
-    });
-    static_assert(c_ColorStyleStrings.size() == osc::NumOptions<osc::MuscleColoringStyle>());
+    static_assert(c_Metadata.size() == osc::NumOptions<osc::MuscleColoringStyle>());
 }
 
-nonstd::span<osc::MuscleColoringStyle const> osc::GetAllMuscleColoringStyles()
+nonstd::span<osc::MuscleColoringStyleMetadata const> osc::GetAllMuscleColoringStyleMetadata()
 {
-    return c_ColorStyles;
+    return c_Metadata;
 }
 
-nonstd::span<osc::CStringView const> osc::GetAllMuscleColoringStyleStrings()
+osc::MuscleColoringStyleMetadata const& osc::GetMuscleColoringStyleMetadata(MuscleColoringStyle s)
 {
-    return c_ColorStyleStrings;
+    return GetAllMuscleColoringStyleMetadata()[GetIndexOf(s)];
 }
 
 ptrdiff_t osc::GetIndexOf(osc::MuscleColoringStyle s)

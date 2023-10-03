@@ -16,7 +16,12 @@ namespace osc
         Default = OpenSim,
     };
 
-    nonstd::span<MuscleDecorationStyle const> GetAllMuscleDecorationStyles();
-    nonstd::span<CStringView const> GetAllMuscleDecorationStyleStrings();
+    struct MuscleDecorationStyleMetadata final {
+        CStringView id;
+        CStringView label;
+        MuscleDecorationStyle value;
+    };
+    nonstd::span<MuscleDecorationStyleMetadata const> GetAllMuscleDecorationStyleMetadata();
     ptrdiff_t GetIndexOf(MuscleDecorationStyle);
+    MuscleDecorationStyleMetadata const& GetMuscleDecorationStyleMetadata(MuscleDecorationStyle);
 }

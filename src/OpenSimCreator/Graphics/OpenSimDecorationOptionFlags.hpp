@@ -32,6 +32,7 @@ namespace osc
     }
 
     struct OpenSimDecorationOptionMetadata final {
+        CStringView id;
         CStringView label;
         std::optional<CStringView> maybeDescription;
     };

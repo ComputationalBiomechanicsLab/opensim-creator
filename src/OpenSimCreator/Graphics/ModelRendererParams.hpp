@@ -29,7 +29,7 @@ namespace osc
     void UpdModelRendererParamsFrom(
         AppConfig const&,
         std::string_view keyPrefix,
-        ModelRendererParams& out
+        ModelRendererParams& params
     );
 
     void SaveModelRendererParamsDifference(

@@ -9,9 +9,53 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Platform/AppConfig.hpp>
+#include <oscar/Platform/AppSettingValue.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 
+#include <sstream>
 #include <string_view>
+#include <unordered_map>
+
+namespace
+{
+    std::unordered_map<std::string, osc::AppSettingValue> ToValues(
+        std::string_view prefix,
+        osc::ModelRendererParams const& params)
+    {
+        std::unordered_map<std::string, osc::AppSettingValue> rv;
+        auto const callback = [&prefix, &rv](std::string_view subkey, osc::AppSettingValue value)
+        {
+            std::string k{prefix};
+            k += subkey;
+            rv.insert_or_assign(k, std::move(value));
+        };
+
+        params.decorationOptions.forEachOptionAsAppSettingValue(callback);
+        // TODO: overlayOptions
+        // TODO: renderingOptions
+        // TODO: lightColor
+        // TODO: backgroundColor
+        // TODO: floorLocation
+
+        return rv;
+    }
+
+    void UpdFromValues(
+        std::string_view,
+        std::unordered_map<std::string, osc::AppSettingValue> const&,
+        osc::ModelRendererParams&)
+    {
+        // TODO:
+        //
+        // - update `decorationOptions` (OpenSimDecorationOptions)
+        // - update `overlayOptions` (OverlayDecorationOptions)
+        // - update `renderingOptions` (CustomRenderingOptions)
+        // - update `lightColor` (Color)
+        // - update `backgroundColor` (Color)
+        // - update `floorLocation` (glm::vec3)
+        // - skip `camera`
+    }
+}
 
 osc::ModelRendererParams::ModelRendererParams() :
     lightColor{SceneRendererParams::DefaultLightColor()},
@@ -22,52 +66,38 @@ osc::ModelRendererParams::ModelRendererParams() :
 }
 
 void osc::UpdModelRendererParamsFrom(
-    AppConfig const&,
-    std::string_view,
-    ModelRendererParams&)
+    AppConfig const& config,
+    std::string_view keyPrefix,
+    ModelRendererParams& params)
 {
-    // out.backgroundColor = Color::red();  // HACK: see if the viewer's params are actually being loaded via this function
+    auto values = ToValues(keyPrefix, params);
+    for (auto& [k, v] : values)
+    {
+        if (auto configV = config.getValue(k))
+        {
+            v = *configV;
+        }
+    }
+    UpdFromValues(keyPrefix, values, params);
 }
 
 void osc::SaveModelRendererParamsDifference(
-    ModelRendererParams const&,
-    ModelRendererParams const&,
-    std::string_view,
-    AppConfig&)
+    ModelRendererParams const& a,
+    ModelRendererParams const& b,
+    std::string_view keyPrefix,
+    AppConfig& config)
 {
-    // TODO:
-    //
-    // - perform a tree crawl on the first params vs the second
-    // - if there is a difference, write it to `config` as an entry
+    auto const aVals = ToValues(keyPrefix, a);
+    auto const bVals = ToValues(keyPrefix, b);
 
-    // keys:
-    //
-    // - panels/viewer0/decorations/muscle_decoration_style
-    // - panels/viewer0/decorations/muscle_coloring_style
-    // - panels/viewer0/decorations/muscle_sizing_style
-    // - panels/viewer0/decorations/show_scapulothoracic_joints
-    // - panels/viewer0/decorations/show_muscle_origin_effective_line_of_action
-    // - panels/viewer0/decorations/show_muscle_insertion_effective_line_of_action
-    // - panels/viewer0/decorations/show_muscle_origin_anatomical_line_of_action
-    // - panels/viewer0/decorations/show_muscle_insertion_anatomical_line_of_action
-    // - panels/viewer0/decorations/show_centers_of_mass
-    // - panels/viewer0/decorations/show_point_to_point_springs
-    // - panels/viewer0/decorations/show_contact_forces
-
-    // - panels/viewer0/overlays/draw_xz_grid
-    // - panels/viewer0/overlays/draw_xy_grid
-    // - panels/viewer0/overlays/draw_axis_lines
-    // - panels/viewer0/overlays/draw_aabbs
-    // - panels/viewer0/overlays/draw_bvh
-
-    // - panels/viewer0/graphics/draw_floor
-    // - panels/viewer0/graphics/draw_mesh_normals
-    // - panels/viewer0/graphics/draw_shadows
-    // - panels/viewer0/graphics/draw_selection_rims
-
-    // - panels/viewer0/light_color
-    // - panels/viewer0/background_color
-    // - panels/viewer0/floor_location
-    //
-    // (ignore camera params)
+    for (auto const& [aK, aV] : aVals)
+    {
+        if (auto const it = bVals.find(aK); it != bVals.end())
+        {
+            if (it->second != aV)
+            {
+                config.setValue(it->first, it->second);
+            }
+        }
+    }
 }

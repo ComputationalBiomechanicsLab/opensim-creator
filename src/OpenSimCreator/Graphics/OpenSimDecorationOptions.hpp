@@ -7,7 +7,12 @@
 
 #include <oscar/Utils/CStringView.hpp>
 
+#include <cstddef>
+#include <functional>
 #include <optional>
+#include <string_view>
+
+namespace osc { class AppSettingValue; }
 
 namespace osc
 {
@@ -53,6 +58,8 @@ namespace osc
         void setShouldShowPointToPointSprings(bool);
 
         bool getShouldShowContactForces() const;
+
+        void forEachOptionAsAppSettingValue(std::function<void(std::string_view, AppSettingValue const&)> const&) const;
 
     private:
         friend bool operator==(OpenSimDecorationOptions const&, OpenSimDecorationOptions const&) noexcept;

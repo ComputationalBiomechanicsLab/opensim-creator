@@ -10,34 +10,41 @@
 
 namespace
 {
-    constexpr auto c_Styles = osc::to_array<osc::MuscleDecorationStyle>(
+    constexpr auto c_Metadata = osc::to_array<osc::MuscleDecorationStyleMetadata>(
     {
-        osc::MuscleDecorationStyle::OpenSim,
-        osc::MuscleDecorationStyle::FibersAndTendons,
-        osc::MuscleDecorationStyle::Hidden,
+        osc::MuscleDecorationStyleMetadata
+        {
+            "opensim",
+            "OpenSim",
+            osc::MuscleDecorationStyle::OpenSim,
+        },
+        osc::MuscleDecorationStyleMetadata
+        {
+            "fibers_and_tendons",
+            "Fibers & Tendons",
+            osc::MuscleDecorationStyle::FibersAndTendons,
+        },
+        osc::MuscleDecorationStyleMetadata
+        {
+            "hidden",
+            "Hidden",
+            osc::MuscleDecorationStyle::Hidden,
+        },
     });
-    static_assert(c_Styles.size() == osc::NumOptions<osc::MuscleDecorationStyle>());
-
-    constexpr auto c_StyleStrings = osc::to_array<osc::CStringView>(
-    {
-        "OpenSim",
-        "Fibers & Tendons",
-        "Hidden",
-    });
-    static_assert(c_StyleStrings.size() == osc::NumOptions<osc::MuscleDecorationStyle>());
+    static_assert(c_Metadata.size() == osc::NumOptions<osc::MuscleDecorationStyle>());
 }
 
-nonstd::span<osc::MuscleDecorationStyle const> osc::GetAllMuscleDecorationStyles()
+nonstd::span<osc::MuscleDecorationStyleMetadata const> osc::GetAllMuscleDecorationStyleMetadata()
 {
-    return c_Styles;
-}
-
-nonstd::span<osc::CStringView const> osc::GetAllMuscleDecorationStyleStrings()
-{
-    return c_StyleStrings;
+    return c_Metadata;
 }
 
 ptrdiff_t osc::GetIndexOf(MuscleDecorationStyle s)
 {
     return static_cast<ptrdiff_t>(s);
+}
+
+osc::MuscleDecorationStyleMetadata const& osc::GetMuscleDecorationStyleMetadata(MuscleDecorationStyle s)
+{
+    return GetAllMuscleDecorationStyleMetadata()[GetIndexOf(s)];
 }
