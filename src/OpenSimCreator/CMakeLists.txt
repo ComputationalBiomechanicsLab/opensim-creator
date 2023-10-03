@@ -59,6 +59,14 @@ add_library(OpenSimCreator STATIC
     Outputs/OutputExtractor.hpp
     Outputs/VirtualOutputExtractor.hpp
 
+    Platform/MainUIScreen.cpp
+    Platform/MainUIScreen.hpp
+    Platform/OpenSimCreatorApp.cpp
+    Platform/OpenSimCreatorApp.hpp
+    Platform/RecentFile.hpp
+    Platform/RecentFiles.cpp
+    Platform/RecentFiles.hpp
+
     Registry/ComponentRegistry.hpp
     Registry/ComponentRegistryBase.cpp
     Registry/ComponentRegistryBase.hpp
@@ -204,12 +212,7 @@ add_library(OpenSimCreator STATIC
     Utils/TPS3D.hpp
     Utils/UndoableModelActions.cpp
     Utils/UndoableModelActions.hpp
-
-    MainUIScreen.cpp
-    MainUIScreen.hpp
-    OpenSimCreatorApp.cpp
-    OpenSimCreatorApp.hpp
- )
+)
 
 # OpenSimCreatorConfig.hpp
 #

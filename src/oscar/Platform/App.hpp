@@ -2,23 +2,17 @@
 
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Platform/AppClock.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Platform/MouseState.hpp>
-#include <oscar/Platform/RecentFile.hpp>
 #include <oscar/Platform/Screenshot.hpp>
 #include <oscar/Utils/Assertions.hpp>
 
 #include <SDL_events.h>
 #include <glm/vec2.hpp>
 
-#include <chrono>
 #include <cstdint>
 #include <filesystem>
 #include <future>
 #include <functional>
 #include <memory>
-#include <mutex>
-#include <ratio>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -39,7 +33,7 @@ namespace osc
     // systems (windowing, event pumping, timers, graphics, logging, etc.)
     class App {
     public:
-        template<typename T, typename...Args>
+        template<typename T, typename... Args>
         static std::shared_ptr<T> singleton(Args&&... args)
         {
             auto const ctor = [argTuple = std::make_tuple(std::forward<Args>(args)...)]() mutable -> std::shared_ptr<void>
@@ -54,22 +48,10 @@ namespace osc
         }
 
         // returns the currently-active application global
-        static App& upd()
-        {
-            OSC_ASSERT(g_Current && "App is not initialized: have you constructed a (singleton) instance of App?");
-            return *g_Current;
-        }
+        static App& upd();
+        static App const& get();
 
-        static App const& get()
-        {
-            OSC_ASSERT(g_Current && "App is not initialized: have you constructed a (singleton) instance of App?");
-            return *g_Current;
-        }
-
-        static AppConfig const& config()
-        {
-            return get().getConfig();
-        }
+        static AppConfig const& config();
 
         // returns a full filesystem path to a (runtime- and configuration-dependent) application resource
         static std::filesystem::path resource(std::string_view);
@@ -132,30 +114,17 @@ namespace osc
             requestTransition(std::make_unique<TScreen>(std::forward<Args>(args)...));
         }
 
-        // returns `true` if a screen transition is pending and will probably happen at
-        // the next point in the application loop (e.g. after event polling, drawing)
-        bool isTransitionRequested() const;
-
         // request that the app quits
         //
         // this is merely a *request* tha the `App` will fulfill at a later time (usually,
         // after it's done handling some part of the top-level application loop)
         void requestQuit();
 
-        // returns main window's dimensions (integer)
-        glm::ivec2 idims() const;
-
         // returns main window's dimensions (float)
         glm::vec2 dims() const;
 
-        // returns main window's aspect ratio
-        float aspectRatio() const;
-
         // sets whether the user's mouse cursor should be shown/hidden
         void setShowCursor(bool);
-
-        // returns true if the main window is focused
-        bool isWindowFocused() const;
 
         // makes the main window fullscreen
         void makeFullscreen();
@@ -193,16 +162,13 @@ namespace osc
 
         // add an annotation to the current frame
         //
-        // the annotation is added to the data returned by `App::requestAnnotatedScreenshot`
+        // the annotation is added to the data returned by `App::requestScreenshot`
         void addFrameAnnotation(std::string_view label, Rect screenRect);
-
-        // returns a future that asynchronously yields a complete screenshot of the next frame
-        std::future<Texture2D> requestScreenshot();
 
         // returns a future that asynchronously yields a complete annotated screenshot of the next frame
         //
         // client code can submit annotations with `App::addFrameAnnotation`
-        std::future<Screenshot> requestAnnotatedScreenshot();
+        std::future<Screenshot> requestScreenshot();
 
         // returns human-readable strings representing (parts of) the graphics backend (e.g. OpenGL)
         std::string getGraphicsBackendVendorString() const;
@@ -244,34 +210,6 @@ namespace osc
         // fill all pixels in the screen with the given color
         void clearScreen(Color const&);
 
-        // get the user's current mouse state
-        //
-        // note: this method tries to be as precise as possible by fetching from the
-        //       OS, so it can be expensive. Use something like an IoPoller or ImGui
-        //       to record this information once-per-frame, if possible.
-        MouseState getMouseState() const;
-
-        // move the mouse to a location within the window
-        void warpMouseInWindow(glm::vec2) const;
-
-        // returns true if the user is pressing the SHIFT key
-        //
-        // note: this might fetch the information from the OS, so it's better to store
-        //       it once-per-frame in something like an IoPoller
-        bool isShiftPressed() const;
-
-        // returns true if the user is pressing the CTRL key
-        //
-        // note: this might fetch the information from the OS, so it's better to store
-        //       it once-per-frame in something like an IoPoller
-        bool isCtrlPressed() const;
-
-        // returns true if the user is pressing the ALT key
-        //
-        // note: this might fetch the information from the OS, so it's better to store
-        //       it once-per-frame in something like an IoPoller
-        bool isAltPressed() const;
-
         // sets the main window's subtitle (e.g. document name)
         void setMainWindowSubTitle(std::string_view);
 
@@ -288,16 +226,6 @@ namespace osc
         // returns the contents of a runtime resource in the `resources/` dir as a string
         std::string slurpResource(std::string_view) const;
 
-        // returns all files that were recently opened by the user in the app
-        //
-        // the list is persisted between app boots
-        std::vector<RecentFile> getRecentFiles() const;
-
-        // add a file to the recently opened files list
-        //
-        // this addition is persisted between app boots
-        void addRecentFile(std::filesystem::path const&);
-
     private:
         // try and retrieve a virtual singleton that has the same lifetime as the app
         std::shared_ptr<void> updSingleton(std::type_info const&, std::function<std::shared_ptr<void>()> const&);
@@ -306,8 +234,6 @@ namespace osc
         friend void ImGuiNewFrame();
         friend void ImGuiRender();
 
-        // set when App is constructed for the first time
-        static App* g_Current;
         class Impl;
         std::unique_ptr<Impl> m_Impl;
     };

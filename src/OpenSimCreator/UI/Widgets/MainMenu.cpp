@@ -1,6 +1,7 @@
 #include "MainMenu.hpp"
 
 #include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Platform/RecentFiles.hpp>
 #include <OpenSimCreator/Simulation/Simulation.hpp>
 #include <OpenSimCreator/Simulation/StoFileSimulation.hpp>
 #include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
@@ -49,13 +50,9 @@ osc::MainMenuFileTab::MainMenuFileTab() :
             App::resource("models"),
             to_array({std::string_view{".osim"}})
         )
-    },
-    recentlyOpenedFiles{App::get().getRecentFiles()}
+    }
 {
     std::sort(exampleOsimFiles.begin(), exampleOsimFiles.end(), IsFilenameLexographicallyGreaterThan);
-
-    // they're stored oldest -> newest but should be presented newest -> oldest
-    std::reverse(recentlyOpenedFiles.begin(), recentlyOpenedFiles.end());
 }
 
 void osc::MainMenuFileTab::onDraw(
@@ -113,10 +110,11 @@ void osc::MainMenuFileTab::onDraw(
 
     int imgui_id = 0;
 
-    if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN " Open Recent", !recentlyOpenedFiles.empty()))
+    auto recentFiles = App::singleton<RecentFiles>();
+    if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN " Open Recent", !recentFiles->empty()))
     {
         // iterate in reverse: recent files are stored oldest --> newest
-        for (RecentFile const& rf : recentlyOpenedFiles)
+        for (RecentFile const& rf : *recentFiles)
         {
             ImGui::PushID(++imgui_id);
             if (ImGui::MenuItem(rf.path.filename().string().c_str()))

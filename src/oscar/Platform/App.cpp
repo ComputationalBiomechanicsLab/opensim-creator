@@ -9,7 +9,6 @@
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Platform/RecentFile.hpp>
 #include <oscar/Platform/Screen.hpp>
 #include <oscar/Platform/Screenshot.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
@@ -46,6 +45,8 @@
 
 namespace
 {
+    osc::App* g_ApplicationGlobal = nullptr;
+
     constexpr auto c_IconRanges = osc::to_array<ImWchar>({ ICON_MIN_FA, ICON_MAX_FA, 0 });
 
     void Sdl_GL_SetAttributeOrThrow(
@@ -111,54 +112,6 @@ namespace
             SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
 
         return sdl::CreateWindoww(applicationName.c_str(), x, y, width, height, flags);
-    }
-
-    // load the "recent files" file that the application persists to disk
-    std::vector<osc::RecentFile> LoadRecentFilesFile(std::filesystem::path const& p)
-    {
-        std::ifstream fd{p, std::ios::in};
-
-        if (!fd)
-        {
-            // do not throw, because it probably shouldn't crash the application if this
-            // is an issue
-            osc::log::error("%s: could not be opened for reading: cannot load recent files list", p.string().c_str());
-            return {};
-        }
-
-        std::vector<osc::RecentFile> rv;
-        std::string line;
-
-        while (std::getline(fd, line))
-        {
-            std::istringstream ss{line};
-
-            // read line content
-            uint64_t timestamp = 0;
-            std::filesystem::path path;
-            ss >> timestamp;
-            ss >> path;
-
-            // calc tertiary data
-            bool exists = std::filesystem::exists(path);
-            std::chrono::seconds timestampSecs{timestamp};
-
-            rv.push_back(osc::RecentFile{exists, timestampSecs, std::move(path)});
-        }
-
-        return rv;
-    }
-
-    // returns the filesystem path to the "recent files" file
-    std::filesystem::path GetRecentFilesFilePath(std::filesystem::path const& userDataDirPath)
-    {
-        return userDataDirPath / "recent_files.txt";
-    }
-
-    // returns a unix timestamp in seconds since the epoch
-    std::chrono::seconds GetCurrentTimeAsUnixTimestamp()
-    {
-        return std::chrono::seconds(std::time(nullptr));
     }
 
     osc::AppClock::duration ConvertPerfTicksToFClockDuration(Uint64 ticks, Uint64 frequency)
@@ -293,19 +246,9 @@ public:
         m_NextScreen = std::move(s);
     }
 
-    bool isTransitionRequested() const
-    {
-        return m_NextScreen != nullptr;
-    }
-
     void requestQuit()
     {
         m_QuitRequested = true;
-    }
-
-    glm::ivec2 idims() const
-    {
-        return sdl::GetWindowSize(m_MainWindow.get());
     }
 
     glm::vec2 dims() const
@@ -313,21 +256,10 @@ public:
         return glm::vec2{sdl::GetWindowSize(m_MainWindow.get())};
     }
 
-    float aspectRatio() const
-    {
-        glm::vec2 v = dims();
-        return v.x / v.y;
-    }
-
     void setShowCursor(bool v)
     {
         SDL_ShowCursor(v ? SDL_ENABLE : SDL_DISABLE);
         SDL_SetWindowGrab(m_MainWindow.get(), v ? SDL_FALSE : SDL_TRUE);
-    }
-
-    bool isWindowFocused() const
-    {
-        return (SDL_GetWindowFlags(m_MainWindow.get()) & SDL_WINDOW_INPUT_FOCUS) != 0u;
     }
 
     void makeFullscreen()
@@ -407,14 +339,9 @@ public:
         m_FrameAnnotations.push_back(ScreenshotAnnotation{std::string{label}, screenRect});
     }
 
-    std::future<Texture2D> requestScreenshot()
+    std::future<Screenshot> requestScreenshot()
     {
-        return m_GraphicsContext.requestScreenshot();
-    }
-
-    std::future<Screenshot> requestAnnotatedScreenshot()
-    {
-        AnnotatedScreenshotRequest& req = m_ActiveAnnotatedScreenshotRequests.emplace_back(m_FrameCounter, requestScreenshot());
+        AnnotatedScreenshotRequest& req = m_ActiveAnnotatedScreenshotRequests.emplace_back(m_FrameCounter, requestScreenshotTexture());
         return req.resultPromise.get_future();
     }
 
@@ -497,60 +424,6 @@ public:
         m_GraphicsContext.clearScreen(color);
     }
 
-    osc::MouseState getMouseState() const
-    {
-        glm::ivec2 mouseLocal{};
-        Uint32 ms = SDL_GetMouseState(&mouseLocal.x, &mouseLocal.y);
-
-        MouseState rv{};
-        rv.LeftDown = (ms & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0u;
-        rv.RightDown = (ms & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0u;
-        rv.MiddleDown = (ms & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0u;
-        rv.X1Down = (ms & SDL_BUTTON(SDL_BUTTON_X1)) != 0u;
-        rv.X2Down = (ms & SDL_BUTTON(SDL_BUTTON_X2)) != 0u;
-
-        if (isWindowFocused())
-        {
-            static bool const s_CanUseGlobalMouseState = !StartsWith(SDL_GetCurrentVideoDriver(), "wayland");
-
-            if (s_CanUseGlobalMouseState)
-            {
-                glm::ivec2 mouseGlobal;
-                SDL_GetGlobalMouseState(&mouseGlobal.x, &mouseGlobal.y);
-                glm::ivec2 mouseWindow;
-                SDL_GetWindowPosition(m_MainWindow.get(), &mouseWindow.x, &mouseWindow.y);
-
-                rv.pos = mouseGlobal - mouseWindow;
-            }
-            else
-            {
-                rv.pos = mouseLocal;
-            }
-        }
-
-        return rv;
-    }
-
-    void warpMouseInWindow(glm::vec2 v) const
-    {
-        SDL_WarpMouseInWindow(m_MainWindow.get(), static_cast<int>(v.x), static_cast<int>(v.y));
-    }
-
-    bool isShiftPressed() const
-    {
-        return (SDL_GetModState() & KMOD_SHIFT) != 0;
-    }
-
-    bool isCtrlPressed() const
-    {
-        return (SDL_GetModState() & KMOD_CTRL) != 0;
-    }
-
-    bool isAltPressed() const
-    {
-        return (SDL_GetModState() & KMOD_ALT) != 0;
-    }
-
     void setMainWindowSubTitle(std::string_view sv)
     {
         // use global + mutex to prevent hopping into the OS too much
@@ -598,51 +471,6 @@ public:
         return SlurpFileIntoString(path);
     }
 
-    std::vector<osc::RecentFile> getRecentFiles() const
-    {
-        std::filesystem::path p = GetRecentFilesFilePath(m_UserDataDirPath);
-
-        if (!std::filesystem::exists(p))
-        {
-            return {};
-        }
-
-        return LoadRecentFilesFile(p);
-    }
-
-    void addRecentFile(std::filesystem::path const& p)
-    {
-        std::filesystem::path recentFilesPath = GetRecentFilesFilePath(m_UserDataDirPath);
-
-        // load existing list
-        std::vector<RecentFile> rfs;
-        if (std::filesystem::exists(recentFilesPath))
-        {
-            rfs = LoadRecentFilesFile(recentFilesPath);
-        }
-
-        // clear potentially duplicate entries from existing list
-        osc::erase_if(rfs, [&p](RecentFile const& rf) { return rf.path == p; });
-
-        // write by truncating existing list file
-        std::ofstream fd{recentFilesPath, std::ios::trunc};
-
-        if (!fd)
-        {
-            osc::log::error("%s: could not be opened for writing: cannot update recent files list", recentFilesPath.string().c_str());
-        }
-
-        // re-serialize the n newest entries (the loaded list is sorted oldest -> newest)
-        auto begin = rfs.end() - (rfs.size() < 10 ? static_cast<int>(rfs.size()) : 10);
-        for (auto it = begin; it != rfs.end(); ++it)
-        {
-            fd << it->lastOpenedUnixTimestamp.count() << ' ' << it->path << std::endl;
-        }
-
-        // append the new entry
-        fd << GetCurrentTimeAsUnixTimestamp().count() << ' ' << std::filesystem::absolute(p) << std::endl;
-    }
-
     std::shared_ptr<void> updSingleton(std::type_info const& typeinfo, std::function<std::shared_ptr<void>()> const& ctor)
     {
         auto lock = m_Singletons.lock();
@@ -672,6 +500,16 @@ public:
     }
 
 private:
+    bool isWindowFocused() const
+    {
+        return (SDL_GetWindowFlags(m_MainWindow.get()) & SDL_WINDOW_INPUT_FOCUS) != 0u;
+    }
+
+    std::future<Texture2D> requestScreenshotTexture()
+    {
+        return m_GraphicsContext.requestScreenshot();
+    }
+
     // perform a screen transntion between two top-level `osc::Screen`s
     void transitionToNextScreen()
     {
@@ -945,7 +783,22 @@ private:
 
 // public API
 
-osc::App* osc::App::g_Current = nullptr;
+osc::App& osc::App::upd()
+{
+    OSC_ASSERT(g_ApplicationGlobal && "App is not initialized: have you constructed a (singleton) instance of App?");
+    return *g_ApplicationGlobal;
+}
+
+osc::App const& osc::App::get()
+{
+    OSC_ASSERT(g_ApplicationGlobal && "App is not initialized: have you constructed a (singleton) instance of App?");
+    return *g_ApplicationGlobal;
+}
+
+osc::AppConfig const& osc::App::config()
+{
+    return get().getConfig();
+}
 
 std::filesystem::path osc::App::resource(std::string_view s)
 {
@@ -957,10 +810,12 @@ std::string osc::App::slurp(std::string_view s)
     return get().slurpResource(s);
 }
 
-osc::App::App(AppMetadata const& metadata) :
-    m_Impl{std::make_unique<Impl>(metadata)}
+osc::App::App(AppMetadata const& metadata)
 {
-    g_Current = this;
+    OSC_ASSERT(!g_ApplicationGlobal && "cannot instantiate multiple osc::App instances at the same time");
+
+    m_Impl = std::make_unique<Impl>(metadata);
+    g_ApplicationGlobal = this;
 }
 
 osc::App::App(App&&) noexcept = default;
@@ -969,7 +824,7 @@ osc::App& osc::App::operator=(App&&) noexcept = default;
 
 osc::App::~App() noexcept
 {
-    g_Current = nullptr;
+    g_ApplicationGlobal = nullptr;
 }
 
 osc::AppMetadata const& osc::App::getMetadata() const
@@ -997,19 +852,9 @@ void osc::App::requestTransition(std::unique_ptr<Screen> s)
     m_Impl->requestTransition(std::move(s));
 }
 
-bool osc::App::isTransitionRequested() const
-{
-    return m_Impl->isTransitionRequested();
-}
-
 void osc::App::requestQuit()
 {
     m_Impl->requestQuit();
-}
-
-glm::ivec2 osc::App::idims() const
-{
-    return m_Impl->idims();
 }
 
 glm::vec2 osc::App::dims() const
@@ -1017,19 +862,9 @@ glm::vec2 osc::App::dims() const
     return m_Impl->dims();
 }
 
-float osc::App::aspectRatio() const
-{
-    return m_Impl->aspectRatio();
-}
-
 void osc::App::setShowCursor(bool v)
 {
     m_Impl->setShowCursor(v);
-}
-
-bool osc::App::isWindowFocused() const
-{
-    return m_Impl->isWindowFocused();
 }
 
 void osc::App::makeFullscreen()
@@ -1102,14 +937,9 @@ void osc::App::addFrameAnnotation(std::string_view label, Rect screenRect)
     m_Impl->addFrameAnnotation(label, screenRect);
 }
 
-std::future<osc::Texture2D> osc::App::requestScreenshot()
+std::future<osc::Screenshot> osc::App::requestScreenshot()
 {
     return m_Impl->requestScreenshot();
-}
-
-std::future<osc::Screenshot> osc::App::requestAnnotatedScreenshot()
-{
-    return m_Impl->requestAnnotatedScreenshot();
 }
 
 std::string osc::App::getGraphicsBackendVendorString() const
@@ -1187,31 +1017,6 @@ void osc::App::clearScreen(Color const& color)
     m_Impl->clearScreen(color);
 }
 
-osc::MouseState osc::App::getMouseState() const
-{
-    return m_Impl->getMouseState();
-}
-
-void osc::App::warpMouseInWindow(glm::vec2 v) const
-{
-    m_Impl->warpMouseInWindow(v);
-}
-
-bool osc::App::isShiftPressed() const
-{
-    return m_Impl->isShiftPressed();
-}
-
-bool osc::App::isCtrlPressed() const
-{
-    return m_Impl->isCtrlPressed();
-}
-
-bool osc::App::isAltPressed() const
-{
-    return m_Impl->isAltPressed();
-}
-
 void osc::App::setMainWindowSubTitle(std::string_view sv)
 {
     m_Impl->setMainWindowSubTitle(sv);
@@ -1240,16 +1045,6 @@ std::filesystem::path osc::App::getResource(std::string_view p) const
 std::string osc::App::slurpResource(std::string_view p) const
 {
     return m_Impl->slurpResource(p);
-}
-
-std::vector<osc::RecentFile> osc::App::getRecentFiles() const
-{
-    return m_Impl->getRecentFiles();
-}
-
-void osc::App::addRecentFile(std::filesystem::path const& p)
-{
-    m_Impl->addRecentFile(p);
 }
 
 std::shared_ptr<void> osc::App::updSingleton(std::type_info const& typeInfo, std::function<std::shared_ptr<void>()> const& ctor)

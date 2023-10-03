@@ -279,17 +279,19 @@ private:
             );
         }
 
+        Rect const viewport = osc::GetMainViewportWorkspaceScreenRect();
+
         // draw crosshair overlay
         Graphics::DrawMesh(
             m_CrosshairMesh,
-            m_Camera.getInverseViewProjectionMatrix(App::get().aspectRatio()),
+            m_Camera.getInverseViewProjectionMatrix(AspectRatio(viewport)),
             m_Material,
             m_Camera,
             m_BlackColorMaterialProps
         );
 
         // draw scene to screen
-        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
+        m_Camera.setPixelRect(viewport);
         m_Camera.renderToScreen();
     }
 

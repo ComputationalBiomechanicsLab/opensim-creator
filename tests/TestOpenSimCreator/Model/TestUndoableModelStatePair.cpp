@@ -4,8 +4,8 @@
 
 #include "OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp"
 #include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
+#include "OpenSimCreator/Platform/OpenSimCreatorApp.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/OpenSimCreatorApp.hpp"
 
 #include <oscar/Formats/DAE.hpp>
 #include <oscar/Graphics/MeshCache.hpp>

@@ -5,6 +5,7 @@
 #include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp>
 #include <OpenSimCreator/Model/BasicModelStatePair.hpp>
 #include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Platform/RecentFiles.hpp>
 #include <OpenSimCreator/Registry/ComponentRegistry.hpp>
 #include <OpenSimCreator/Registry/StaticComponentRegistries.hpp>
 #include <OpenSimCreator/Simulation/ForwardDynamicSimulation.hpp>
@@ -246,7 +247,7 @@ void osc::ActionSaveCurrentModelAs(UndoableModelStatePair& uim)
         }
         uim.setUpToDateWithFilesystem(std::filesystem::last_write_time(*maybePath));
 
-        App::upd().addRecentFile(*maybePath);
+        App::singleton<RecentFiles>()->push_back(*maybePath);
     }
 }
 
@@ -282,7 +283,7 @@ bool osc::ActionSaveModel(MainUIStateAPI&, UndoableModelStatePair& model)
         }
         model.setUpToDateWithFilesystem(std::filesystem::last_write_time(*maybeUserSaveLoc));
 
-        App::upd().addRecentFile(*maybeUserSaveLoc);
+        App::singleton<RecentFiles>()->push_back(*maybeUserSaveLoc);
         return true;
     }
     else

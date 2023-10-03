@@ -1,5 +1,7 @@
 #include "SplashTab.hpp"
 
+#include <OpenSimCreator/Platform/RecentFile.hpp>
+#include <OpenSimCreator/Platform/RecentFiles.hpp>
 #include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/Tabs/FrameDefinitionTab.hpp>
 #include <OpenSimCreator/UI/Tabs/LoadingTab.hpp>
@@ -28,7 +30,6 @@
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Platform/RecentFile.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 #include <oscar/UI/Tabs/TabHost.hpp>
@@ -292,9 +293,10 @@ private:
 
     void drawRecentlyOpenedFilesMenuSectionContent(int& imguiID)
     {
-        if (!m_MainMenuFileTab.recentlyOpenedFiles.empty())
+        auto const recentFiles = App::singleton<RecentFiles>();
+        if (!recentFiles->empty())
         {
-            for (RecentFile const& rf : m_MainMenuFileTab.recentlyOpenedFiles)
+            for (RecentFile const& rf : *recentFiles)
             {
                 DrawRecentOrExampleFileMenuItem(
                     rf.path,

@@ -1,6 +1,7 @@
 #include "LoadingTab.hpp"
 
 #include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Platform/RecentFiles.hpp>
 #include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/Tabs/ModelEditorTab.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
@@ -83,7 +84,7 @@ public:
         if (result)
         {
             // add newly-loaded model to the "Recent Files" list
-            App::upd().addRecentFile(m_OsimPath);
+            App::singleton<RecentFiles>()->push_back(m_OsimPath);
 
             // there is an existing editor state
             //

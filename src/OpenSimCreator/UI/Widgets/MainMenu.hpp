@@ -1,6 +1,5 @@
 #pragma once
 
-#include <oscar/Platform/RecentFile.hpp>
 #include <oscar/UI/Widgets/SaveChangesPopup.hpp>
 
 #include <filesystem>
@@ -21,7 +20,6 @@ namespace osc
         void onDraw(ParentPtr<MainUIStateAPI> const&, UndoableModelStatePair* = nullptr);
 
         std::vector<std::filesystem::path> exampleOsimFiles;
-        std::vector<RecentFile> recentlyOpenedFiles;
         std::optional<SaveChangesPopup> maybeSaveChangesPopup;
     };
 

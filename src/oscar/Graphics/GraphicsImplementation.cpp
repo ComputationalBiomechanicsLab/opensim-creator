@@ -5547,7 +5547,7 @@ public:
         if (!m_ActiveScreenshotRequests.empty())
         {
             // copy GPU-side window framebuffer into CPU-side `osc::Image` object
-            glm::ivec2 const dims = osc::App::get().idims();
+            glm::ivec2 const dims = osc::App::get().dims();
 
             std::vector<uint8_t> pixels(static_cast<size_t>(4*dims.x*dims.y));
             OSC_ASSERT(IsAlignedAtLeast(pixels.data(), 4) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
@@ -6567,8 +6567,8 @@ osc::Rect osc::GraphicsBackend::CalcViewportRect(
     RenderTarget* maybeCustomRenderTarget)
 {
     glm::vec2 const targetDims = maybeCustomRenderTarget ?
-        maybeCustomRenderTarget->colors.front().buffer->m_Impl->getDimensions() :
-        App::get().idims();
+        glm::vec2{maybeCustomRenderTarget->colors.front().buffer->m_Impl->getDimensions()} :
+        App::get().dims();
 
     Rect const cameraRect = camera.getPixelRect() ?
         *camera.getPixelRect() :

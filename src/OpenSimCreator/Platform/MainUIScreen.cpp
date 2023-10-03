@@ -144,7 +144,7 @@ public:
             e.key.keysym.scancode == SDL_SCANCODE_P)
         {
             // Ctrl+/Super+P operates as a "take a screenshot" request
-            m_MaybeScreenshotRequest = osc::App::upd().requestAnnotatedScreenshot();
+            m_MaybeScreenshotRequest = osc::App::upd().requestScreenshot();
         }
         else if (osc::ImGuiOnEvent(e))
         {

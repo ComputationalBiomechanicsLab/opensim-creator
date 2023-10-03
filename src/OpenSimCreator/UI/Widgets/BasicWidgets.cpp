@@ -10,6 +10,8 @@
 #include <OpenSimCreator/Model/VirtualModelStatePair.hpp>
 #include <OpenSimCreator/Outputs/ComponentOutputExtractor.hpp>
 #include <OpenSimCreator/Outputs/OutputExtractor.hpp>
+#include <OpenSimCreator/Platform/RecentFile.hpp>
+#include <OpenSimCreator/Platform/RecentFiles.hpp>
 #include <OpenSimCreator/Simulation/IntegratorMethod.hpp>
 #include <OpenSimCreator/Simulation/SimulationModelStatePair.hpp>
 #include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
@@ -40,7 +42,6 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
-#include <oscar/Platform/RecentFile.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/UI/Widgets/GuiRuler.hpp>
 #include <oscar/UI/Widgets/IconWithMenu.hpp>
@@ -1056,11 +1057,10 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(ParentPtr<MainUIStateAPI> c
 
     if (ImGui::BeginPopupContextItem("##RecentFilesMenu", ImGuiPopupFlags_MouseButtonLeft))
     {
-        std::vector<RecentFile> recentFiles = App::get().getRecentFiles();
-        std::reverse(recentFiles.begin(), recentFiles.end());  // sort newest -> oldest
+        auto const recentFiles = App::singleton<RecentFiles>();
         int imguiID = 0;
 
-        for (RecentFile const& rf : recentFiles)
+        for (RecentFile const& rf : *recentFiles)
         {
             ImGui::PushID(imguiID++);
             if (ImGui::Selectable(rf.path.filename().string().c_str()))
