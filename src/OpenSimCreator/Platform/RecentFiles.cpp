@@ -5,6 +5,7 @@
 #include <nonstd/span.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <algorithm>
 #include <chrono>
@@ -28,16 +29,14 @@ namespace
         return std::chrono::seconds(std::time(nullptr));
     }
 
+    bool LastOpenedGreaterThanOrEqualTo(osc::RecentFile const& a, osc::RecentFile const& b)
+    {
+        return a.lastOpenedUnixTimestamp >= b.lastOpenedUnixTimestamp;
+    }
+
     void SortNewestToOldest(nonstd::span<osc::RecentFile> files)
     {
-        std::sort(
-            files.begin(),
-            files.end(),
-            [](osc::RecentFile const& a, osc::RecentFile const& b)
-            {
-                return a.lastOpenedUnixTimestamp >= b.lastOpenedUnixTimestamp;
-            }
-        );
+        std::sort(files.begin(), files.end(), LastOpenedGreaterThanOrEqualTo);
     }
 
     // load the "recent files" file that the application persists to disk
@@ -94,17 +93,11 @@ osc::RecentFiles::RecentFiles() :
 void osc::RecentFiles::push_back(std::filesystem::path const& path)
 {
     // remove duplicates
+    auto const hasPath = [&path](RecentFile const& f)
     {
-        auto const it = std::remove_if(
-            m_Files.begin(),
-            m_Files.end(),
-            [&path](RecentFile const& f)
-            {
-                return f.path == path;
-            }
-        );
-        m_Files.erase(it, m_Files.end());
-    }
+        return f.path == path;
+    };
+    erase_if(m_Files, hasPath);
 
     m_Files.push_back(RecentFile
     {
@@ -113,7 +106,7 @@ void osc::RecentFiles::push_back(std::filesystem::path const& path)
         path,
     });
 
-    SortNewestToOldest(m_Files);
+    ::SortNewestToOldest(m_Files);
 }
 
 void osc::RecentFiles::sync()
