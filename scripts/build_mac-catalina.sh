@@ -131,6 +131,8 @@ cmake \
     -j${OSC_BUILD_CONCURRENCY}
 
 echo "----- building OSC -----"
+
+# configure
 cmake \
     -S . \
     -B "osc-build" \
@@ -138,12 +140,16 @@ cmake \
     -DCMAKE_PREFIX_PATH="${PWD}/osc-deps-install" \
     ${OSC_BUILD_DOCS:+-DOSC_BUILD_DOCS=ON}
 
-# build tests and the final package
+# build all
 cmake \
     --build "osc-build" \
-    --target TestOpenSimCreator testoscar ${OSC_BUILD_TARGET} \
     -j${OSC_BUILD_CONCURRENCY}
 
 # ensure tests pass
-osc-build/tests/TestOpenSimCreator/TestOpenSimCreator
-osc-build/tests/testoscar/testoscar
+ctest --test-dir osc-build --output-on-failure
+
+# build final package
+cmake \
+    --build "osc-build" \
+    --target ${OSC_BUILD_TARGET} \
+    -j${OSC_BUILD_CONCURRENCY}
