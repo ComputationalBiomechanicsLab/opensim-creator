@@ -39,6 +39,13 @@
 
 namespace
 {
+    std::string GetSettingsKeyPrefixForPanel(std::string_view panelName)
+    {
+        std::stringstream ss;
+        ss << "panels/" << panelName << '/';
+        return std::move(ss).str();
+    }
+
     class RulerLayer final : public osc::ModelEditorViewerPanelLayer {
     public:
         RulerLayer()
@@ -127,6 +134,8 @@ namespace
             osc::ModelEditorViewerPanelState& state) final
         {
             // draw generic overlays (i.e. the buttons for toggling things)
+            auto renderParamsBefore = params.getRenderParams();
+
             bool const edited = DrawViewerImGuiOverlays(
                 params.updRenderParams(),
                 state.getDrawlist(),
@@ -139,6 +148,15 @@ namespace
             if (edited)
             {
                 osc::log::debug("%s edited", m_PanelName.c_str());
+
+                auto const& renderParamsAfter = params.getRenderParams();
+
+                osc::SaveModelRendererParamsDifference(
+                    renderParamsBefore,
+                    renderParamsAfter,
+                    GetSettingsKeyPrefixForPanel(m_PanelName),
+                    osc::App::upd().updConfig()
+                );
             }
 
             // draw gizmo manipulators over the top
@@ -314,6 +332,15 @@ public:
         StandardPanel{panelName_},
         m_Parameters{std::move(parameters_)}
     {
+        // update this panel's rendering/state parameters from the runtime
+        // configuration (e.g. user edits)
+        //
+        // each panel has its own configuration set (`panels/viewer0,1,2, etc.`)
+        UpdModelRendererParamsFrom(
+            App::config(),
+            GetSettingsKeyPrefixForPanel(panelName_),
+            m_Parameters.updRenderParams()
+        );
         pushLayer(std::make_unique<BaseInteractionLayer>());
         pushLayer(std::make_unique<ButtonAndGizmoControlsLayer>(panelName_, m_Parameters.getModelSharedPtr()));
     }

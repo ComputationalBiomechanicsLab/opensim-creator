@@ -8,6 +8,10 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 
+#include <string_view>
+
+namespace osc { class AppConfig; }
+
 namespace osc
 {
     struct ModelRendererParams final {
@@ -21,4 +25,17 @@ namespace osc
         glm::vec3 floorLocation;
         PolarPerspectiveCamera camera;
     };
+
+    void UpdModelRendererParamsFrom(
+        AppConfig const&,
+        std::string_view keyPrefix,
+        ModelRendererParams& out
+    );
+
+    void SaveModelRendererParamsDifference(
+        ModelRendererParams const&,
+        ModelRendererParams const&,
+        std::string_view keyPrefix,
+        AppConfig& out
+    );
 }
