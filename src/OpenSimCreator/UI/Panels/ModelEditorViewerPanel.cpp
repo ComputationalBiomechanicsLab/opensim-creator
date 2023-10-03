@@ -21,6 +21,7 @@
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/Platform/Log.hpp>
 #include <oscar/UI/Panels/StandardPanel.hpp>
 #include <oscar/UI/Widgets/GuiRuler.hpp>
 #include <oscar/UI/Widgets/IconWithoutMenu.hpp>
@@ -81,7 +82,11 @@ namespace
     // options and 3D manipulator gizmos
     class ButtonAndGizmoControlsLayer final : public osc::ModelEditorViewerPanelLayer {
     public:
-        explicit ButtonAndGizmoControlsLayer(std::shared_ptr<osc::UndoableModelStatePair> model_) :
+        ButtonAndGizmoControlsLayer(
+            std::string_view panelName_,
+            std::shared_ptr<osc::UndoableModelStatePair> model_) :
+
+            m_PanelName{panelName_},
             m_Gizmo{std::move(model_)}
         {
         }
@@ -122,14 +127,19 @@ namespace
             osc::ModelEditorViewerPanelState& state) final
         {
             // draw generic overlays (i.e. the buttons for toggling things)
-            DrawViewerImGuiOverlays(
+            bool const edited = DrawViewerImGuiOverlays(
                 params.updRenderParams(),
                 state.getDrawlist(),
                 state.maybeSceneAABB,
                 state.viewportRect,
                 *m_IconCache,
-                [this, &state]() { drawExtraTopButtons(state); }
+                [this, &state]() { return drawExtraTopButtons(state); }
             );
+
+            if (edited)
+            {
+                osc::log::debug("%s edited", m_PanelName.c_str());
+            }
 
             // draw gizmo manipulators over the top
             m_Gizmo.onDraw(state.viewportRect, params.getRenderParams().camera);
@@ -141,9 +151,11 @@ namespace
         }
 
         // draws extra top overlay buttons
-        void drawExtraTopButtons(
+        bool drawExtraTopButtons(
             osc::ModelEditorViewerPanelState& state)
         {
+            bool edited = false;
+
             osc::IconWithoutMenu rulerButton
             {
                 m_IconCache->getIcon("ruler"),
@@ -153,6 +165,7 @@ namespace
             if (rulerButton.onDraw())
             {
                 state.pushLayer(std::make_unique<RulerLayer>());
+                edited = true;
             }
             ImGui::SameLine();
 
@@ -162,6 +175,7 @@ namespace
                 if (osc::DrawGizmoOpSelector(op, true, true, false))
                 {
                     m_Gizmo.setOperation(op);
+                    edited = true;
                 }
             }
 
@@ -175,15 +189,18 @@ namespace
                 if (osc::DrawGizmoModeSelector(mode))
                 {
                     m_Gizmo.setMode(mode);
+                    edited = true;
                 }
             }
+
+            return edited;
         }
 
-        // buttons + gizmo layer state
         std::shared_ptr<osc::IconCache> m_IconCache = osc::App::singleton<osc::IconCache>(
             osc::App::resource("icons/"),
             ImGui::GetTextLineHeight()/128.0f
         );
+        std::string m_PanelName;
         osc::ModelSelectionGizmo m_Gizmo;
     };
 
@@ -298,7 +315,7 @@ public:
         m_Parameters{std::move(parameters_)}
     {
         pushLayer(std::make_unique<BaseInteractionLayer>());
-        pushLayer(std::make_unique<ButtonAndGizmoControlsLayer>(m_Parameters.getModelSharedPtr()));
+        pushLayer(std::make_unique<ButtonAndGizmoControlsLayer>(panelName_, m_Parameters.getModelSharedPtr()));
     }
 
     ModelEditorViewerPanelLayer& pushLayer(std::unique_ptr<ModelEditorViewerPanelLayer> layer)

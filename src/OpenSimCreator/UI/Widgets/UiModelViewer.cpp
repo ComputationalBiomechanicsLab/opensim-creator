@@ -95,7 +95,7 @@ public:
             m_CachedModelRenderer.getRootAABB(),
             hittest.rect,
             *m_IconCache,
-            [this]() { drawRulerButton(); }
+            [this]() { return drawRulerButton(); }
         );
 
         // handle ruler and return value
@@ -118,7 +118,7 @@ public:
     }
 
 private:
-    void drawRulerButton()
+    bool drawRulerButton()
     {
         IconWithoutMenu rulerButton
         {
@@ -126,10 +126,14 @@ private:
             "Ruler",
             "Roughly measure something in the scene",
         };
+
+        bool rv = false;
         if (rulerButton.onDraw())
         {
             m_Ruler.toggleMeasuring();
+            rv = true;
         }
+        return rv;
     }
 
     // rendering-related data

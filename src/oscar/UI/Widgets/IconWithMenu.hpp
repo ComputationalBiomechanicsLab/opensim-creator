@@ -15,13 +15,13 @@ namespace osc
             Icon icon,
             CStringView title,
             CStringView description,
-            std::function<void()> contentRenderer
+            std::function<bool()> contentRenderer
         );
 
-        void onDraw();
+        bool onDraw();
     private:
         IconWithoutMenu m_IconWithoutMenu;
         std::string m_ContextMenuID;
-        std::function<void()> m_ContentRenderer;
+        std::function<bool()> m_ContentRenderer;
     };
 }

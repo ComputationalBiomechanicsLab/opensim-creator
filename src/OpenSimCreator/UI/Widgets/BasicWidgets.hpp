@@ -116,34 +116,34 @@ namespace osc
     );
 
     // basic wigetized parts of the 3D viewer
-    void DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions&);
-    void DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions&);
-    void DrawMuscleColoringOptionsRadioButtons(OpenSimDecorationOptions&);
-    void DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions&);
-    void DrawRenderingOptionsEditor(CustomRenderingOptions&);
-    void DrawOverlayOptionsEditor(OverlayDecorationOptions&);
-    void DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions&);
-    void DrawAdvancedParamsEditor(ModelRendererParams&, nonstd::span<SceneDecoration const>);
-    void DrawVisualAidsContextMenuContent(ModelRendererParams&);
-    void DrawViewerTopButtonRow(
+    bool DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions&);
+    bool DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions&);
+    bool DrawMuscleColoringOptionsRadioButtons(OpenSimDecorationOptions&);
+    bool DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions&);
+    bool DrawRenderingOptionsEditor(CustomRenderingOptions&);
+    bool DrawOverlayOptionsEditor(OverlayDecorationOptions&);
+    bool DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions&);
+    bool DrawAdvancedParamsEditor(ModelRendererParams&, nonstd::span<SceneDecoration const>);
+    bool DrawVisualAidsContextMenuContent(ModelRendererParams&);
+    bool DrawViewerTopButtonRow(
         ModelRendererParams&,
         nonstd::span<SceneDecoration const>,
         IconCache&,
-        std::function<void()> const& drawExtraElements = []() {}
+        std::function<bool()> const& drawExtraElements = []() { return false; }
     );
-    void DrawCameraControlButtons(
+    bool DrawCameraControlButtons(
         PolarPerspectiveCamera&,
         Rect const&,
         std::optional<AABB> const& maybeSceneAABB,
         IconCache&
     );
-    void DrawViewerImGuiOverlays(
+    bool DrawViewerImGuiOverlays(
         ModelRendererParams&,
         nonstd::span<SceneDecoration const>,
         std::optional<AABB>,
         Rect const&,
         IconCache&,
-        std::function<void()> const& drawExtraElementsInTop = []() {}
+        std::function<bool()> const& drawExtraElementsInTop = []() { return false; }
     );
 
     // toolbar stuff

@@ -543,79 +543,92 @@ void osc::TryDrawCalculateMenu(
     }
 }
 
-void osc::DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions& opts)
+bool osc::DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions& opts)
 {
     osc::MuscleDecorationStyle const currentStyle = opts.getMuscleDecorationStyle();
     nonstd::span<osc::MuscleDecorationStyle const> const allStyles = osc::GetAllMuscleDecorationStyles();
     nonstd::span<osc::CStringView const>  const allStylesStrings = osc::GetAllMuscleDecorationStyleStrings();
     ptrdiff_t const currentStyleIndex = osc::GetIndexOf(currentStyle);
 
+    bool edited = false;
     for (ptrdiff_t i = 0; i < osc::ssize(allStyles); ++i)
     {
         if (ImGui::RadioButton(allStylesStrings[i].c_str(), i == currentStyleIndex))
         {
             opts.setMuscleDecorationStyle(allStyles[i]);
+            edited = true;
         }
     }
+    return edited;
 }
 
-void osc::DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions& opts)
+bool osc::DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions& opts)
 {
     osc::MuscleSizingStyle const currentStyle = opts.getMuscleSizingStyle();
     nonstd::span<osc::MuscleSizingStyle const> const allStyles = osc::GetAllMuscleSizingStyles();
     nonstd::span<CStringView const>  const allStylesStrings = osc::GetAllMuscleSizingStyleStrings();
     ptrdiff_t const currentStyleIndex = osc::GetIndexOf(currentStyle);
 
+    bool edited = false;
     for (ptrdiff_t i = 0; i < osc::ssize(allStyles); ++i)
     {
         if (ImGui::RadioButton(allStylesStrings[i].c_str(), i == currentStyleIndex))
         {
             opts.setMuscleSizingStyle(allStyles[i]);
+            edited = true;
         }
     }
+    return edited;
 }
 
-void osc::DrawMuscleColoringOptionsRadioButtons(OpenSimDecorationOptions& opts)
+bool osc::DrawMuscleColoringOptionsRadioButtons(OpenSimDecorationOptions& opts)
 {
     osc::MuscleColoringStyle const currentStyle = opts.getMuscleColoringStyle();
     nonstd::span<osc::MuscleColoringStyle const> const allStyles = osc::GetAllMuscleColoringStyles();
     nonstd::span<CStringView const>  const allStylesStrings = osc::GetAllMuscleColoringStyleStrings();
     ptrdiff_t const currentStyleIndex = osc::GetIndexOf(currentStyle);
 
+    bool edited = false;
     for (ptrdiff_t i = 0; i < osc::ssize(allStyles); ++i)
     {
         if (ImGui::RadioButton(allStylesStrings[i].c_str(), i == currentStyleIndex))
         {
             opts.setMuscleColoringStyle(allStyles[i]);
+            edited = true;
         }
     }
+    return edited;
 }
 
-void osc::DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions& opts)
+bool osc::DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions& opts)
 {
     int id = 0;
+    bool edited = false;
 
     ImGui::PushID(id++);
     ImGui::TextDisabled("Rendering");
-    DrawMuscleRenderingOptionsRadioButtions(opts);
+    edited = DrawMuscleRenderingOptionsRadioButtions(opts) || edited;
     ImGui::PopID();
 
     ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
     ImGui::PushID(id++);
     ImGui::TextDisabled("Sizing");
-    DrawMuscleSizingOptionsRadioButtons(opts);
+    edited = DrawMuscleSizingOptionsRadioButtons(opts) || edited;
     ImGui::PopID();
 
     ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
     ImGui::PushID(id++);
     ImGui::TextDisabled("Coloring");
-    DrawMuscleColoringOptionsRadioButtons(opts);
+    edited = DrawMuscleColoringOptionsRadioButtons(opts) || edited;
     ImGui::PopID();
+
+    return edited;
 }
 
-void osc::DrawRenderingOptionsEditor(CustomRenderingOptions& opts)
+bool osc::DrawRenderingOptionsEditor(CustomRenderingOptions& opts)
 {
     std::optional<ptrdiff_t> lastGroup;
+    bool edited = false;
     for (size_t i = 0; i < opts.getNumOptions(); ++i)
     {
         // print header, if necessary
@@ -634,13 +647,16 @@ void osc::DrawRenderingOptionsEditor(CustomRenderingOptions& opts)
         if (ImGui::Checkbox(opts.getOptionLabel(i).c_str(), &value))
         {
             opts.setOptionValue(i, value);
+            edited = true;
         }
     }
+    return edited;
 }
 
-void osc::DrawOverlayOptionsEditor(OverlayDecorationOptions& opts)
+bool osc::DrawOverlayOptionsEditor(OverlayDecorationOptions& opts)
 {
     std::optional<ptrdiff_t> lastGroup;
+    bool edited = false;
     for (size_t i = 0; i < opts.getNumOptions(); ++i)
     {
         // print header, if necessary
@@ -659,13 +675,16 @@ void osc::DrawOverlayOptionsEditor(OverlayDecorationOptions& opts)
         if (ImGui::Checkbox(opts.getOptionLabel(i).c_str(), &value))
         {
             opts.setOptionValue(i, value);
+            edited = true;
         }
     }
+    return edited;
 }
 
-void osc::DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions& opts)
+bool osc::DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions& opts)
 {
     int imguiID = 0;
+    bool edited = false;
     for (size_t i = 0; i < opts.getNumOptions(); ++i)
     {
         ImGui::PushID(imguiID++);
@@ -674,6 +693,7 @@ void osc::DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions& opts)
         if (ImGui::Checkbox(opts.getOptionLabel(i).c_str(), &v))
         {
             opts.setOptionValue(i, v);
+            edited = true;
         }
         if (std::optional<CStringView> description = opts.getOptionDescription(i))
         {
@@ -683,24 +703,29 @@ void osc::DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions& opts)
 
         ImGui::PopID();
     }
+    return edited;
 }
 
-void osc::DrawAdvancedParamsEditor(
+bool osc::DrawAdvancedParamsEditor(
     ModelRendererParams& params,
     nonstd::span<SceneDecoration const> drawlist)
 {
+    bool edited = false;
+
     ImGui::Text("reposition camera:");
     ImGui::Separator();
 
     if (ImGui::Button("+X"))
     {
         osc::FocusAlongX(params.camera);
+        edited = true;
     }
     osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along +X, pointing towards the center (Hotkey: X).");
     ImGui::SameLine();
     if (ImGui::Button("-X"))
     {
         osc::FocusAlongMinusX(params.camera);
+        edited = true;
     }
     osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along -X, pointing towards the center (Hotkey: Ctrl+X).");
 
@@ -708,12 +733,14 @@ void osc::DrawAdvancedParamsEditor(
     if (ImGui::Button("+Y"))
     {
         osc::FocusAlongY(params.camera);
+        edited = true;
     }
     osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along +Y, pointing towards the center (Hotkey: Y).");
     ImGui::SameLine();
     if (ImGui::Button("-Y"))
     {
         osc::FocusAlongMinusY(params.camera);
+        edited = true;
     }
     osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along -Y, pointing towards the center.");
 
@@ -721,29 +748,34 @@ void osc::DrawAdvancedParamsEditor(
     if (ImGui::Button("+Z"))
     {
         osc::FocusAlongZ(params.camera);
+        edited = true;
     }
     osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along +Z, pointing towards the center.");
     ImGui::SameLine();
     if (ImGui::Button("-Z"))
     {
         osc::FocusAlongMinusZ(params.camera);
+        edited = true;
     }
     osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along -Z, pointing towards the center.");
 
     if (ImGui::Button("Zoom In (Hotkey: =)"))
     {
         osc::ZoomIn(params.camera);
+        edited = true;
     }
 
     ImGui::SameLine();
     if (ImGui::Button("Zoom Out (Hotkey: -)"))
     {
         osc::ZoomOut(params.camera);
+        edited = true;
     }
 
     if (ImGui::Button("Reset Camera"))
     {
         osc::Reset(params.camera);
+        edited = true;
     }
     osc::DrawTooltipBodyOnlyIfItemHovered("Reset the camera to its initial (default) location. Hotkey: F");
 
@@ -756,54 +788,62 @@ void osc::DrawAdvancedParamsEditor(
     ImGui::Dummy({0.0f, 10.0f});
     ImGui::Text("advanced camera properties:");
     ImGui::Separator();
-    osc::SliderMetersFloat("radius", params.camera.radius, 0.0f, 10.0f);
-    ImGui::SliderFloat("theta", &params.camera.theta, 0.0f, 2.0f * osc::fpi);
-    ImGui::SliderFloat("phi", &params.camera.phi, 0.0f, 2.0f * osc::fpi);
-    ImGui::InputFloat("fov", &params.camera.fov);
-    osc::InputMetersFloat("znear", params.camera.znear);
-    osc::InputMetersFloat("zfar", params.camera.zfar);
+    edited = osc::SliderMetersFloat("radius", params.camera.radius, 0.0f, 10.0f) || edited;
+    edited = ImGui::SliderFloat("theta", &params.camera.theta, 0.0f, 2.0f * osc::fpi) || edited;
+    edited = ImGui::SliderFloat("phi", &params.camera.phi, 0.0f, 2.0f * osc::fpi) || edited;
+    edited = ImGui::InputFloat("fov", &params.camera.fov) || edited;
+    edited = osc::InputMetersFloat("znear", params.camera.znear) || edited;
+    edited = osc::InputMetersFloat("zfar", params.camera.zfar) || edited;
     ImGui::NewLine();
-    osc::SliderMetersFloat("pan_x", params.camera.focusPoint.x, -100.0f, 100.0f);
-    osc::SliderMetersFloat("pan_y", params.camera.focusPoint.y, -100.0f, 100.0f);
-    osc::SliderMetersFloat("pan_z", params.camera.focusPoint.z, -100.0f, 100.0f);
+    edited = osc::SliderMetersFloat("pan_x", params.camera.focusPoint.x, -100.0f, 100.0f) || edited;
+    edited = osc::SliderMetersFloat("pan_y", params.camera.focusPoint.y, -100.0f, 100.0f) || edited;
+    edited = osc::SliderMetersFloat("pan_z", params.camera.focusPoint.z, -100.0f, 100.0f) || edited;
 
     ImGui::Dummy({0.0f, 10.0f});
     ImGui::Text("advanced scene properties:");
     ImGui::Separator();
-    ImGui::ColorEdit3("light_color", ValuePtr(params.lightColor));
-    ImGui::ColorEdit3("background color", ValuePtr(params.backgroundColor));
-    osc::InputMetersFloat3("floor location", params.floorLocation);
+    edited = ImGui::ColorEdit3("light_color", ValuePtr(params.lightColor)) || edited;
+    edited = ImGui::ColorEdit3("background color", ValuePtr(params.backgroundColor)) || edited;
+    edited = osc::InputMetersFloat3("floor location", params.floorLocation) || edited;
     osc::DrawTooltipBodyOnlyIfItemHovered("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
+
+    return edited;
 }
 
-void osc::DrawVisualAidsContextMenuContent(ModelRendererParams& params)
+bool osc::DrawVisualAidsContextMenuContent(ModelRendererParams& params)
 {
+    bool edited = false;
+
     // generic rendering options
-    DrawRenderingOptionsEditor(params.renderingOptions);
+    edited = DrawRenderingOptionsEditor(params.renderingOptions) || edited;
 
     // overlay options
-    DrawOverlayOptionsEditor(params.overlayOptions);
+    edited = DrawOverlayOptionsEditor(params.overlayOptions) || edited;
 
     // OpenSim-specific extra rendering options
     ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
     ImGui::TextDisabled("OpenSim");
-    DrawCustomDecorationOptionCheckboxes(params.decorationOptions);
+    edited = DrawCustomDecorationOptionCheckboxes(params.decorationOptions) || edited;
+
+    return edited;
 }
 
-void osc::DrawViewerTopButtonRow(
+bool osc::DrawViewerTopButtonRow(
     ModelRendererParams& params,
     nonstd::span<osc::SceneDecoration const> drawlist,
     IconCache& iconCache,
-    std::function<void()> const& drawExtraElements)
+    std::function<bool()> const& drawExtraElements)
 {
+    bool edited = false;
+
     IconWithMenu muscleStylingButton
     {
         iconCache.getIcon("muscle_coloring"),
         "Muscle Styling",
         "Affects how muscles appear in this visualizer panel",
-        [&params]() { DrawMuscleDecorationOptionsEditor(params.decorationOptions); },
+        [&params]() { return DrawMuscleDecorationOptionsEditor(params.decorationOptions); },
     };
-    muscleStylingButton.onDraw();
+    edited = muscleStylingButton.onDraw() || edited;
     ImGui::SameLine();
 
     IconWithMenu vizAidsButton
@@ -811,9 +851,9 @@ void osc::DrawViewerTopButtonRow(
         iconCache.getIcon("viz_aids"),
         "Visual Aids",
         "Affects what's shown in the 3D scene",
-        [&params]() { DrawVisualAidsContextMenuContent(params); },
+        [&params]() { return DrawVisualAidsContextMenuContent(params); },
     };
-    vizAidsButton.onDraw();
+    edited = vizAidsButton.onDraw() || edited;
     ImGui::SameLine();
 
     IconWithMenu settingsButton
@@ -821,18 +861,18 @@ void osc::DrawViewerTopButtonRow(
         iconCache.getIcon("gear"),
         "Scene Settings",
         "Change advanced scene settings",
-        [&params, drawlist]() { DrawAdvancedParamsEditor(params, drawlist); },
+        [&params, drawlist]() { return DrawAdvancedParamsEditor(params, drawlist); },
     };
-    settingsButton.onDraw();
+    edited = settingsButton.onDraw() || edited;
     ImGui::SameLine();
 
     // caller-provided extra buttons (usually, context-dependent)
-    {
-        drawExtraElements();
-    }
+    edited = drawExtraElements() || edited;
+
+    return edited;
 }
 
-void osc::DrawCameraControlButtons(
+bool osc::DrawCameraControlButtons(
     PolarPerspectiveCamera& camera,
     Rect const& viewerScreenRect,
     std::optional<AABB> const& maybeSceneAABB,
@@ -848,6 +888,8 @@ void osc::DrawCameraControlButtons(
     glm::vec2 const firstRowTopLeft = {xFirstRow, yFirstRow};
     float const midRowY = yFirstRow + 0.5f*(buttonHeight + rowSpacing);
 
+    bool edited = false;
+
     // draw top row
     {
         ImGui::SetCursorScreenPos(firstRowTopLeft);
@@ -861,6 +903,7 @@ void osc::DrawCameraControlButtons(
         if (plusXbutton.onDraw())
         {
             FocusAlongX(camera);
+            edited = true;
         }
 
         ImGui::SameLine();
@@ -874,6 +917,7 @@ void osc::DrawCameraControlButtons(
         if (plusYbutton.onDraw())
         {
             FocusAlongY(camera);
+            edited = true;
         }
 
         ImGui::SameLine();
@@ -887,6 +931,7 @@ void osc::DrawCameraControlButtons(
         if (plusZbutton.onDraw())
         {
             FocusAlongZ(camera);
+            edited = true;
         }
 
         ImGui::SameLine();
@@ -901,6 +946,7 @@ void osc::DrawCameraControlButtons(
         if (zoomInButton.onDraw())
         {
             ZoomIn(camera);
+            edited = true;
         }
     }
 
@@ -917,6 +963,7 @@ void osc::DrawCameraControlButtons(
         if (minusXbutton.onDraw())
         {
             FocusAlongMinusX(camera);
+            edited = true;
         }
 
         ImGui::SameLine();
@@ -930,6 +977,7 @@ void osc::DrawCameraControlButtons(
         if (minusYbutton.onDraw())
         {
             FocusAlongMinusY(camera);
+            edited = true;
         }
 
         ImGui::SameLine();
@@ -943,6 +991,7 @@ void osc::DrawCameraControlButtons(
         if (minusZbutton.onDraw())
         {
             FocusAlongMinusZ(camera);
+            edited = true;
         }
 
         ImGui::SameLine();
@@ -957,6 +1006,7 @@ void osc::DrawCameraControlButtons(
         if (zoomOutButton.onDraw())
         {
             ZoomOut(camera);
+            edited = true;
         }
 
         ImGui::SameLine();
@@ -976,21 +1026,26 @@ void osc::DrawCameraControlButtons(
         if (autoFocusButton.onDraw() && maybeSceneAABB)
         {
             osc::AutoFocus(camera, *maybeSceneAABB, osc::AspectRatio(viewerScreenRect));
+            edited = true;
         }
     }
+
+    return edited;
 }
 
-void osc::DrawViewerImGuiOverlays(
+bool osc::DrawViewerImGuiOverlays(
     ModelRendererParams& params,
     nonstd::span<SceneDecoration const> drawlist,
     std::optional<AABB> maybeSceneAABB,
     Rect const& renderRect,
     IconCache& iconCache,
-    std::function<void()> const& drawExtraElementsInTop)
+    std::function<bool()> const& drawExtraElementsInTop)
 {
+    bool edited = false;
+
     // draw the top overlays
     ImGui::SetCursorScreenPos(renderRect.p1 + glm::vec2{ImGui::GetStyle().WindowPadding});
-    DrawViewerTopButtonRow(params, drawlist, iconCache, drawExtraElementsInTop);
+    edited = DrawViewerTopButtonRow(params, drawlist, iconCache, drawExtraElementsInTop) || edited;
 
     // compute bottom overlay positions
     ImGuiStyle const& style = ImGui::GetStyle();
@@ -1006,12 +1061,14 @@ void osc::DrawViewerImGuiOverlays(
     DrawAlignmentAxes(
         params.camera.getViewMtx()
     );
-    DrawCameraControlButtons(
+    edited = DrawCameraControlButtons(
         params.camera,
         renderRect,
         maybeSceneAABB,
         iconCache
-    );
+    ) || edited;
+
+    return edited;
 }
 
 bool osc::BeginToolbar(CStringView label, std::optional<glm::vec2> padding)
@@ -1023,12 +1080,12 @@ bool osc::BeginToolbar(CStringView label, std::optional<glm::vec2> padding)
 
     float const height = ImGui::GetFrameHeight() + 2.0f*ImGui::GetStyle().WindowPadding.y;
     ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
-    bool rv = osc::BeginMainViewportTopBar(label, height, flags);
+    bool open = osc::BeginMainViewportTopBar(label, height, flags);
     if (padding)
     {
         ImGui::PopStyleVar();
     }
-    return rv;
+    return open;
 }
 
 void osc::DrawNewModelButton(ParentPtr<MainUIStateAPI> const& api)
