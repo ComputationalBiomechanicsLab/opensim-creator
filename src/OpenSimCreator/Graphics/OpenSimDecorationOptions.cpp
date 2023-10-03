@@ -1,6 +1,7 @@
 #include "OpenSimDecorationOptions.hpp"
 
 #include <oscar/Platform/AppSettingValue.hpp>
+#include <oscar/Platform/AppSettingValueType.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 
@@ -154,6 +155,72 @@ void osc::OpenSimDecorationOptions::forEachOptionAsAppSettingValue(std::function
         auto const& meta = GetIthOptionMetadata(i);
         bool const v = m_Flags & GetIthOption(i);
         callback(meta.id, AppSettingValue{v});
+    }
+}
+
+void osc::OpenSimDecorationOptions::tryUpdFromValues(
+    std::string_view prefix,
+    std::unordered_map<std::string, osc::AppSettingValue> const& lut)
+{
+    // looks up a single element in the lut
+    auto lookup = [
+        &lut,
+        buf = std::string{prefix},
+        prefixLen = prefix.size()](std::string_view v) mutable
+    {
+        buf.resize(prefixLen);
+        buf.insert(prefixLen, v);
+        auto const it = lut.find(buf);
+        return it != lut.end() ? &it->second : nullptr;
+    };
+
+    if (auto* appVal = lookup("muscle_decoration_style"); appVal->type() == AppSettingValueType::String)
+    {
+        auto const metadata = GetAllMuscleDecorationStyleMetadata();
+        auto const it = std::find_if(metadata.begin(), metadata.end(), [appVal](auto const& m)
+        {
+            return appVal->toString() == m.id;
+        });
+        if (it != metadata.end())
+        {
+            m_MuscleDecorationStyle = it->value;
+        }
+    }
+
+    if (auto* appVal = lookup("muscle_coloring_style"); appVal->type() == AppSettingValueType::String)
+    {
+        auto const metadata = GetAllMuscleColoringStyleMetadata();
+        auto const it = std::find_if(metadata.begin(), metadata.end(), [appVal](auto const& m)
+        {
+            return appVal->toString() == m.id;
+        });
+        if (it != metadata.end())
+        {
+            m_MuscleColoringStyle = it->value;
+        }
+    }
+
+    if (auto* appVal = lookup("muscle_sizing_style"); appVal->type() == AppSettingValueType::String)
+    {
+        auto const metadata = GetAllMuscleSizingStyleMetadata();
+        auto const it = std::find_if(metadata.begin(), metadata.end(), [appVal](auto const& m)
+        {
+            return appVal->toString() == m.id;
+        });
+        if (it != metadata.end())
+        {
+            m_MuscleSizingStyle = it->value;
+        }
+    }
+
+    for (size_t i = 0; i < NumOptions<OpenSimDecorationOptionFlags>(); ++i)
+    {
+        auto const& metadata = GetIthOptionMetadata(i);
+        if (auto* appVal = lookup(metadata.id); appVal->type() == AppSettingValueType::Bool)
+        {
+            bool const v = appVal->toBool();
+            SetOption(m_Flags, GetIthOption(i), v);
+        }
     }
 }
 

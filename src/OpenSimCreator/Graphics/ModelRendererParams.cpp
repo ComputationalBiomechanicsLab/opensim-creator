@@ -26,6 +26,7 @@ namespace
         auto const callback = [&prefix, &rv](std::string_view subkey, osc::AppSettingValue value)
         {
             std::string k{prefix};
+            k += "decorations/";
             k += subkey;
             rv.insert_or_assign(k, std::move(value));
         };
@@ -41,10 +42,12 @@ namespace
     }
 
     void UpdFromValues(
-        std::string_view,
-        std::unordered_map<std::string, osc::AppSettingValue> const&,
-        osc::ModelRendererParams&)
+        std::string_view prefix,
+        std::unordered_map<std::string, osc::AppSettingValue> const& values,
+        osc::ModelRendererParams& params)
     {
+        std::string decorationsPrefix = std::string{prefix} + "decorations/";
+        params.decorationOptions.tryUpdFromValues(decorationsPrefix, values);
         // TODO:
         //
         // - update `decorationOptions` (OpenSimDecorationOptions)
