@@ -2,7 +2,6 @@
 
 #include <OpenSimCreator/Platform/RecentFile.hpp>
 
-#include <nonstd/span.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
@@ -34,7 +33,7 @@ namespace
         return a.lastOpenedUnixTimestamp >= b.lastOpenedUnixTimestamp;
     }
 
-    void SortNewestToOldest(nonstd::span<osc::RecentFile> files)
+    void SortNewestToOldest(std::vector<osc::RecentFile>& files)
     {
         std::sort(files.begin(), files.end(), LastOpenedGreaterThanOrEqualTo);
     }
@@ -120,9 +119,10 @@ void osc::RecentFiles::sync()
     }
 
     // write up-to the first 10 entries
-    auto const end = std::distance(m_Files.begin(), m_Files.end()) > c_MaxRecentFileEntries ? m_Files.begin() + 10 : m_Files.end();
-    for (auto it = m_Files.begin(); it != end; ++it)
+    size_t const numFilesToWrite = std::min(m_Files.size(), c_MaxRecentFileEntries);
+    for (size_t i = 0; i < numFilesToWrite; ++i)
     {
-        fd << it->lastOpenedUnixTimestamp.count() << ' ' << it->path << '\n';
+        RecentFile const& rf = m_Files[i];
+        fd << rf.lastOpenedUnixTimestamp.count() << ' ' << rf.path << '\n';
     }
 }
