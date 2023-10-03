@@ -8,7 +8,7 @@ TEST(CStringView, WhenPassedNullCstringYieldsEmptyCStringView)
     ASSERT_TRUE(osc::CStringView{p}.empty());
 }
 
-TEST(CStringView, WhenPassedNullCStringYieldsNonNull_c_str)
+TEST(CStringView, WhenPassedNullCStringYieldsNonNullCStr)
 {
     char const* p = nullptr;
     ASSERT_NE(osc::CStringView{p}.c_str(), nullptr);
@@ -19,7 +19,7 @@ TEST(CStringView, WhenDefaultConstructedYieldsEmptyCStringView)
     ASSERT_TRUE(osc::CStringView{}.empty());
 }
 
-TEST(CStringView, WhenDefaultConstructedYieldsNonNull_c_str)
+TEST(CStringView, WhenDefaultConstructedYieldsNonNullCStr)
 {
     ASSERT_NE(osc::CStringView{}.c_str(), nullptr);
 }
@@ -29,7 +29,7 @@ TEST(CStringView, WhenConstructedFromNullptrYieldsEmptyCStringView)
     ASSERT_TRUE(osc::CStringView{nullptr}.empty());
 }
 
-TEST(CStringView, WhenConstructedFromNullptrYieldsNonNull_c_str)
+TEST(CStringView, WhenConstructedFromNullptrYieldsNonNullCStr)
 {
     ASSERT_NE(osc::CStringView{nullptr}.c_str(), nullptr);
 }
