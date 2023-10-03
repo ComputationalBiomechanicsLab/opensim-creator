@@ -1,7 +1,7 @@
 include(GoogleTest)
 find_package(GTest REQUIRED CONFIG)
 
-add_executable(testoscar EXCLUDE_FROM_ALL
+add_executable(testoscar
     Formats/TestCSV.cpp
     Formats/TestDAE.cpp
 

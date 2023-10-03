@@ -1,7 +1,7 @@
 include(GoogleTest)
 find_package(GTest REQUIRED CONFIG)
 
-add_executable(TestOpenSimCreator EXCLUDE_FROM_ALL
+add_executable(TestOpenSimCreator
 
     Graphics/TestOpenSimDecorationGenerator.cpp
     Model/TestUndoableModelStatePair.cpp
