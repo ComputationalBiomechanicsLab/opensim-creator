@@ -3,10 +3,10 @@
 #include <OpenSimCreator/Graphics/MuscleColoringStyle.hpp>
 #include <OpenSimCreator/Graphics/MuscleDecorationStyle.hpp>
 #include <OpenSimCreator/Graphics/MuscleSizingStyle.hpp>
+#include <OpenSimCreator/Graphics/OpenSimDecorationOptionFlags.hpp>
 
 #include <oscar/Utils/CStringView.hpp>
 
-#include <cstdint>
 #include <optional>
 
 namespace osc
@@ -60,7 +60,7 @@ namespace osc
         MuscleDecorationStyle m_MuscleDecorationStyle;
         MuscleColoringStyle m_MuscleColoringStyle;
         MuscleSizingStyle m_MuscleSizingStyle;
-        uint32_t m_Flags;
+        OpenSimDecorationOptionFlags m_Flags;
     };
 
     bool operator==(OpenSimDecorationOptions const&, OpenSimDecorationOptions const&) noexcept;

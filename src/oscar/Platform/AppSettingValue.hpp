@@ -29,6 +29,18 @@ namespace osc
         bool toBool() const;  // returns `false` if type is non-boolean
         std::string toString() const;
     private:
+        friend bool operator==(AppSettingValue const&, AppSettingValue const&) noexcept;
+        friend bool operator!=(AppSettingValue const&, AppSettingValue const&) noexcept;
         std::variant<std::string, bool> m_Value;
     };
+
+    inline bool operator==(AppSettingValue const& a, AppSettingValue const& b) noexcept
+    {
+        return a.m_Value == b.m_Value;
+    }
+
+    inline bool operator!=(AppSettingValue const& a, AppSettingValue const& b) noexcept
+    {
+        return a.m_Value != b.m_Value;
+    }
 }

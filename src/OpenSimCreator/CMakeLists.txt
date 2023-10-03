@@ -29,6 +29,8 @@ add_library(OpenSimCreator STATIC
     Graphics/MuscleSizingStyle.hpp
     Graphics/OpenSimDecorationGenerator.cpp
     Graphics/OpenSimDecorationGenerator.hpp
+    Graphics/OpenSimDecorationOptionFlags.cpp
+    Graphics/OpenSimDecorationOptionFlags.hpp
     Graphics/OpenSimGraphicsHelpers.cpp
     Graphics/OpenSimGraphicsHelpers.hpp
     Graphics/OverlayDecorationGenerator.cpp
