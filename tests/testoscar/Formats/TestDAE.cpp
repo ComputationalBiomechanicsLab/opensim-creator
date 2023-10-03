@@ -1,12 +1,11 @@
-#include "oscar/Formats/DAE.hpp"
+#include <oscar/Formats/DAE.hpp>
 
-#include "testoscar/testoscarconfig.hpp"
-
-#include "oscar/Graphics/MeshGen.hpp"
-#include "oscar/Scene/SceneDecoration.hpp"
-#include "oscar/Utils/StringHelpers.hpp"
+#include <testoscar/testoscarconfig.hpp>
 
 #include <gtest/gtest.h>
+#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Scene/SceneDecoration.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 
 #include <sstream>
 

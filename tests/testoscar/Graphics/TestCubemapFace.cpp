@@ -1,6 +1,6 @@
-#include "oscar/Graphics/CubemapFace.hpp"
+#include <oscar/Graphics/CubemapFace.hpp>
 
-#include "oscar/Utils/EnumHelpers.hpp"
+#include <oscar/Utils/EnumHelpers.hpp>
 
 #include <cstdint>
 #include <type_traits>

@@ -1,21 +1,19 @@
-#include "OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp"
+#include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp>
 
-#include "TestOpenSimCreator/TestOpenSimCreatorConfig.hpp"
+#include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
 
-#include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
-#include "OpenSimCreator/Graphics/MuscleColoringStyle.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-
+#include <gtest/gtest.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Geometry.h>
+#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
+#include <OpenSimCreator/Graphics/MuscleColoringStyle.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
-
-#include <gtest/gtest.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/Geometry.h>
 
 #include <filesystem>
 #include <utility>

@@ -1,4 +1,4 @@
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <benchmark/benchmark.h>
 #include <OpenSim/Common/Component.h>

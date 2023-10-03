@@ -1,4 +1,4 @@
-#include "oscar/Utils/Cpp20Shims.hpp"
+#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <gtest/gtest.h>
 

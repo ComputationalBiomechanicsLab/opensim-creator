@@ -1,9 +1,8 @@
-#include "oscar/Graphics/TextureFormat.hpp"
-
-#include "oscar/Graphics/TextureChannelFormat.hpp"
-#include "oscar/Utils/EnumHelpers.hpp"
+#include <oscar/Graphics/TextureFormat.hpp>
 
 #include <gtest/gtest.h>
+#include <oscar/Graphics/TextureChannelFormat.hpp>
+#include <oscar/Utils/EnumHelpers.hpp>
 
 #include <cstdint>
 #include <optional>

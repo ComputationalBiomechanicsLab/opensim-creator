@@ -1,4 +1,4 @@
-#include "oscar/Maths/BVH.hpp"
+#include <oscar/Maths/BVH.hpp>
 
 #include <gtest/gtest.h>
 

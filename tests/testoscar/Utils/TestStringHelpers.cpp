@@ -1,8 +1,7 @@
-#include "oscar/Utils/StringHelpers.hpp"
-
-#include "oscar/Utils/Cpp20Shims.hpp"
+#include <oscar/Utils/StringHelpers.hpp>
 
 #include <gtest/gtest.h>
+#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <algorithm>
 #include <cctype>

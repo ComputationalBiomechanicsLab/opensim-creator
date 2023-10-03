@@ -1,4 +1,4 @@
-#include "oscar/Graphics/Color.hpp"
+#include <oscar/Graphics/Color.hpp>
 
 #include <gtest/gtest.h>
 

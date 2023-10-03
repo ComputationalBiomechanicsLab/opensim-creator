@@ -1,8 +1,7 @@
-#include "oscar/Graphics/TextureChannelFormat.hpp"
-
-#include "oscar/Utils/EnumHelpers.hpp"
+#include <oscar/Graphics/TextureChannelFormat.hpp>
 
 #include <gtest/gtest.h>
+#include <oscar/Utils/EnumHelpers.hpp>
 
 TEST(TextureChannelFormat, NumBytesPerChannelReturnsExpectedValues)
 {

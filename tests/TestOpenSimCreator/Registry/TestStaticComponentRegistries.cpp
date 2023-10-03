@@ -1,10 +1,8 @@
 #include "OpenSimCreator/Registry/StaticComponentRegistries.hpp"
 
-#include "OpenSimCreator/Registry/ComponentRegistry.hpp"
-
-#include <oscar/Utils/CStringView.hpp>
-
 #include <gtest/gtest.h>
+#include <OpenSimCreator/Registry/ComponentRegistry.hpp>
+#include <oscar/Utils/CStringView.hpp>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>

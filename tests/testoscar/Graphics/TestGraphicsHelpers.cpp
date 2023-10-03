@@ -1,10 +1,9 @@
-#include "oscar/Graphics/GraphicsHelpers.hpp"
-
-#include "oscar/Graphics/ColorSpace.hpp"
-#include "oscar/Graphics/Texture2D.hpp"
-#include "oscar/Platform/AppConfig.hpp"
+#include <oscar/Graphics/GraphicsHelpers.hpp>
 
 #include <gtest/gtest.h>
+#include <oscar/Graphics/ColorSpace.hpp>
+#include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Platform/AppConfig.hpp>
 
 #include <array>
 

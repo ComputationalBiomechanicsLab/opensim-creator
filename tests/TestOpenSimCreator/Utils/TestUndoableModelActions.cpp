@@ -1,10 +1,6 @@
-#include "OpenSimCreator/Utils/UndoableModelActions.hpp"
+#include <OpenSimCreator/Utils/UndoableModelActions.hpp>
 
-#include "TestOpenSimCreator/TestOpenSimCreatorConfig.hpp"
-
-#include "OpenSimCreator/Model/ObjectPropertyEdit.hpp"
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
+#include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
 
 #include <gtest/gtest.h>
 #include <OpenSim/Common/AbstractProperty.h>
@@ -12,6 +8,9 @@
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSimCreator/Model/ObjectPropertyEdit.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <functional>
 #include <memory>

@@ -1,8 +1,7 @@
-#include "oscar/Graphics/RenderTextureFormat.hpp"
-
-#include "oscar/Utils/EnumHelpers.hpp"
+#include <oscar/Graphics/RenderTextureFormat.hpp>
 
 #include <gtest/gtest.h>
+#include <oscar/Utils/EnumHelpers.hpp>
 
 #include <sstream>
 #include <string>

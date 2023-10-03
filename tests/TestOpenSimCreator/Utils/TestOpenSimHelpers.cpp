@@ -1,14 +1,6 @@
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include "TestOpenSimCreator/TestOpenSimCreatorConfig.hpp"
-
-#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Platform/OpenSimCreatorApp.hpp"
-#include "OpenSimCreator/Registry/ComponentRegistry.hpp"
-#include "OpenSimCreator/Registry/StaticComponentRegistries.hpp"
-
-#include <oscar/Platform/AppConfig.hpp>
-#include <oscar/Platform/Log.hpp>
+#include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
 
 #include <gtest/gtest.h>
 #include <OpenSim/Common/Component.h>
@@ -18,6 +10,12 @@
 #include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <oscar/Platform/AppConfig.hpp>
+#include <oscar/Platform/Log.hpp>
+#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.hpp>
+#include <OpenSimCreator/Registry/ComponentRegistry.hpp>
+#include <OpenSimCreator/Registry/StaticComponentRegistries.hpp>
 
 #include <filesystem>
 #include <memory>
