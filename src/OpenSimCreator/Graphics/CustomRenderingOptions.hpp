@@ -1,5 +1,7 @@
 #pragma once
 
+#include <OpenSimCreator/Graphics/CustomRenderingOptionFlags.hpp>
+
 #include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>
@@ -9,15 +11,10 @@ namespace osc
 {
     class CustomRenderingOptions final {
     public:
-        CustomRenderingOptions();
-
-        CStringView getGroupLabel(ptrdiff_t) const;
-
         size_t getNumOptions() const;
         bool getOptionValue(ptrdiff_t) const;
         void setOptionValue(ptrdiff_t, bool);
         CStringView getOptionLabel(ptrdiff_t) const;
-        ptrdiff_t getOptionGroupIndex(ptrdiff_t) const;
 
         bool getDrawFloor() const;
         void setDrawFloor(bool);
@@ -35,7 +32,7 @@ namespace osc
         friend bool operator==(CustomRenderingOptions const&, CustomRenderingOptions const&) noexcept;
         friend bool operator!=(CustomRenderingOptions const&, CustomRenderingOptions const&) noexcept;
 
-        uint32_t m_Flags;
+        CustomRenderingOptionFlags m_Flags = CustomRenderingOptionFlags::Default;
     };
 
     inline bool operator==(CustomRenderingOptions const& a, CustomRenderingOptions const& b) noexcept

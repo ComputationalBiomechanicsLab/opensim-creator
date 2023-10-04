@@ -615,22 +615,10 @@ bool osc::DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions& opts)
 
 bool osc::DrawRenderingOptionsEditor(CustomRenderingOptions& opts)
 {
-    std::optional<ptrdiff_t> lastGroup;
     bool edited = false;
+    ImGui::TextDisabled("Rendering");
     for (size_t i = 0; i < opts.getNumOptions(); ++i)
     {
-        // print header, if necessary
-        ptrdiff_t const group = opts.getOptionGroupIndex(i);
-        if (group != lastGroup)
-        {
-            if (lastGroup)
-            {
-                ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
-            }
-            ImGui::TextDisabled("%s", opts.getGroupLabel(group).c_str());
-            lastGroup = group;
-        }
-
         bool value = opts.getOptionValue(i);
         if (ImGui::Checkbox(opts.getOptionLabel(i).c_str(), &value))
         {
@@ -643,20 +631,20 @@ bool osc::DrawRenderingOptionsEditor(CustomRenderingOptions& opts)
 
 bool osc::DrawOverlayOptionsEditor(OverlayDecorationOptions& opts)
 {
-    std::optional<ptrdiff_t> lastGroup;
+    std::optional<CStringView> lastGroupLabel;
     bool edited = false;
     for (size_t i = 0; i < opts.getNumOptions(); ++i)
     {
         // print header, if necessary
-        ptrdiff_t const group = opts.getOptionGroupIndex(i);
-        if (group != lastGroup)
+        CStringView const groupLabel = opts.getOptionGroupLabel(i);
+        if (groupLabel != lastGroupLabel)
         {
-            if (lastGroup)
+            if (lastGroupLabel)
             {
                 ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
             }
-            ImGui::TextDisabled("%s", opts.getGroupLabel(group).c_str());
-            lastGroup = group;
+            ImGui::TextDisabled("%s", groupLabel.c_str());
+            lastGroupLabel = groupLabel;
         }
 
         bool value = opts.getOptionValue(i);

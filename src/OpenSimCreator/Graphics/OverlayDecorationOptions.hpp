@@ -1,5 +1,7 @@
 #pragma once
 
+#include <OpenSimCreator/Graphics/OverlayDecorationOptionFlags.hpp>
+
 #include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>
@@ -9,15 +11,11 @@ namespace osc
 {
     class OverlayDecorationOptions final {
     public:
-        OverlayDecorationOptions();
-
-        CStringView getGroupLabel(ptrdiff_t) const;
-
         size_t getNumOptions() const;
         bool getOptionValue(ptrdiff_t) const;
         void setOptionValue(ptrdiff_t, bool);
         CStringView getOptionLabel(ptrdiff_t) const;
-        ptrdiff_t getOptionGroupIndex(ptrdiff_t) const;
+        CStringView getOptionGroupLabel(ptrdiff_t) const;
 
         bool getDrawXZGrid() const;
         void setDrawXZGrid(bool);
@@ -41,7 +39,7 @@ namespace osc
         friend bool operator==(OverlayDecorationOptions const&, OverlayDecorationOptions const&) noexcept;
         friend bool operator!=(OverlayDecorationOptions const&, OverlayDecorationOptions const&) noexcept;
 
-        uint32_t m_Flags;
+        OverlayDecorationOptionFlags m_Flags = OverlayDecorationOptionFlags::Default;
     };
 
     inline bool operator==(OverlayDecorationOptions const& a, OverlayDecorationOptions const& b) noexcept

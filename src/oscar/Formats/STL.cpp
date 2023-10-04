@@ -6,6 +6,7 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/SpanHelpers.hpp>
 
 #include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
@@ -24,19 +25,6 @@
 
 namespace
 {
-    template<typename T>
-    T const& ElementAt(nonstd::span<T const> vs, ptrdiff_t i)
-    {
-        if (i <= ssize(vs))
-        {
-            return vs[i];
-        }
-        else
-        {
-            throw std::out_of_range{"invalid span subscript"};
-        }
-    }
-
     std::string CreateHeaderText(osc::StlMetadata const& metadata)
     {
         std::stringstream ss;
@@ -116,9 +104,9 @@ namespace
         {
             osc::Triangle const t
             {
-                ElementAt(verts, indices[i]),
-                ElementAt(verts, indices[i+1]),
-                ElementAt(verts, indices[i+2]),
+                osc::At(verts, indices[i]),
+                osc::At(verts, indices[i+1]),
+                osc::At(verts, indices[i+2]),
             };
             WriteTriangle(o, t);
         }

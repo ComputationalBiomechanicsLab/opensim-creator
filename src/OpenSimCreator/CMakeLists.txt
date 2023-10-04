@@ -15,6 +15,8 @@ add_library(OpenSimCreator STATIC
     Graphics/ComponentAbsPathDecorationTagger.hpp
     Graphics/ComponentSceneDecorationFlagsTagger.cpp
     Graphics/ComponentSceneDecorationFlagsTagger.hpp
+    Graphics/CustomRenderingOptionFlags.cpp
+    Graphics/CustomRenderingOptionFlags.hpp
     Graphics/CustomRenderingOptions.cpp
     Graphics/CustomRenderingOptions.hpp
     Graphics/OpenSimDecorationOptions.cpp
@@ -35,6 +37,8 @@ add_library(OpenSimCreator STATIC
     Graphics/OpenSimGraphicsHelpers.hpp
     Graphics/OverlayDecorationGenerator.cpp
     Graphics/OverlayDecorationGenerator.hpp
+    Graphics/OverlayDecorationOptionFlags.cpp
+    Graphics/OverlayDecorationOptionFlags.hpp
     Graphics/OverlayDecorationOptions.cpp
     Graphics/OverlayDecorationOptions.hpp
 

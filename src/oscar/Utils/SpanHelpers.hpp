@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <stdexcept>
 #include <type_traits>
 
 namespace osc
@@ -30,5 +31,18 @@ namespace osc
         static_assert(std::is_trivially_copyable_v<T>);
         static_assert(std::is_trivially_destructible_v<T>);
         return {reinterpret_cast<uint8_t const*>(vs.data()), sizeof(T) * vs.size()};
+    }
+
+    template<typename T>
+    T& At(nonstd::span<T> vs, size_t i)
+    {
+        if (i <= vs.size())
+        {
+            return vs[i];
+        }
+        else
+        {
+            throw std::out_of_range{"invalid span subscript"};
+        }
     }
 }

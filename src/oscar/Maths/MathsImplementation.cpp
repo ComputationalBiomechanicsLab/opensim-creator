@@ -18,6 +18,7 @@
 #include <oscar/Maths/Triangle.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/SpanHelpers.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/mat4x4.hpp>
@@ -75,19 +76,6 @@ namespace
             rv = Union(rv, it->getBounds());
         }
         return rv;
-    }
-
-    template<typename T>
-    T const& at(nonstd::span<T const> vs, size_t i)
-    {
-        if (i <= vs.size())
-        {
-            return vs[i];
-        }
-        else
-        {
-            throw std::out_of_range{"invalid span subscript"};
-        }
     }
 
     bool HasAVolume(osc::Triangle const& t)
@@ -235,9 +223,9 @@ namespace
 
             osc::Triangle const triangle =
             {
-                at(verts, at(indices, p.getID())),
-                at(verts, at(indices, p.getID()+1)),
-                at(verts, at(indices, p.getID()+2)),
+                osc::At(verts, osc::At(indices, p.getID())),
+                osc::At(verts, osc::At(indices, p.getID()+1)),
+                osc::At(verts, osc::At(indices, p.getID()+2)),
             };
 
             std::optional<osc::RayCollision> const rayTriangleColl = osc::GetRayCollisionTriangle(ray, triangle);
@@ -292,9 +280,9 @@ namespace
         {
             osc::Triangle const t
             {
-                at(verts, indices[i]),
-                at(verts, indices[i+1]),
-                at(verts, indices[i+2]),
+                osc::At(verts, indices[i]),
+                osc::At(verts, indices[i+1]),
+                osc::At(verts, indices[i+2]),
             };
 
             if (HasAVolume(t))
