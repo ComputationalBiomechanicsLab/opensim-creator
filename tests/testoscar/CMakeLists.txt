@@ -21,6 +21,8 @@ add_executable(testoscar
 
     Maths/TestBVH.cpp
 
+    Platform/TestAppSettingValueType.cpp
+
     Utils/TestCStringView.cpp
     Utils/TestCpp20Shims.cpp
     Utils/TestFileChangePoller.cpp
