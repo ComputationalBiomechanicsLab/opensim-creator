@@ -2785,7 +2785,7 @@ public:
             }
         );
         m_PanelManager->registerSpawnablePanel(
-            "viewer",
+            "framedef_viewer",
             [this](std::string_view panelName)
             {
                 ModelEditorViewerPanelParameters panelParams
