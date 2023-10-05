@@ -35,8 +35,8 @@ namespace
         params.overlayOptions.forEachOptionAsAppSettingValue(callback);
         subPrefix = std::string{prefix} + std::string{"graphics/"};
         params.renderingOptions.forEachOptionAsAppSettingValue(callback);
-        // TODO: lightColor
-        // TODO: backgroundColor
+        rv.insert_or_assign(std::string{prefix} + "light_color", osc::AppSettingValue{params.lightColor});
+        rv.insert_or_assign(std::string{prefix} + "background_color", osc::AppSettingValue{params.backgroundColor});
         // TODO: floorLocation
 
         return rv;
@@ -50,8 +50,14 @@ namespace
         params.decorationOptions.tryUpdFromValues(std::string{prefix} + "decorations/", values);
         params.overlayOptions.tryUpdFromValues(std::string{prefix} + "overlays/", values);
         params.renderingOptions.tryUpdFromValues(std::string{prefix} + "graphics/", values);
-        // TODO: lightColor
-        // TODO: backgroundColor
+        if (auto const it = values.find(std::string{prefix} + "light_color"); it != values.end())
+        {
+            params.lightColor = it->second.toColor();
+        }
+        if (auto const it = values.find(std::string{prefix} + "background_color"); it != values.end())
+        {
+            params.backgroundColor = it->second.toColor();
+        }
         // TODO: floorLocation
     }
 }

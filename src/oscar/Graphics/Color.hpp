@@ -7,6 +7,8 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <optional>
+#include <string>
 
 namespace osc
 {
@@ -78,6 +80,16 @@ namespace osc
         static constexpr Color yellow()
         {
             return {1.0f, 1.0f, 0.0f};
+        }
+
+        static constexpr Color cyan()
+        {
+            return {0.0f, 1.0f, 1.0f};
+        }
+
+        static constexpr Color magenta()
+        {
+            return {1.0f, 0.0f, 1.0f};
         }
 
         static constexpr Color purple()
@@ -234,9 +246,24 @@ namespace osc
     Color Lerp(Color const& a, Color const& b, float t) noexcept;
 
     // float-/double-based inputs assume normalized color range (i.e. 0 to 1)
+    Color32 ToColor32(Color const&) noexcept;
     Color32 ToColor32(glm::vec4 const&) noexcept;
     Color32 ToColor32(float, float, float, float) noexcept;
     Color32 ToColor32(uint32_t) noexcept;  // R at MSB
+
+    // returns the color as a hexadecimal string in the format "#rrggbbaa", as
+    // commonly-used in web applications, configuration files, etc.
+    //
+    // - HDR values are clamped to LDR (they can't fit in this format)
+    // - examples:
+    //   - red --> "#ff0000ff"
+    //   - green --> "#00ff00ff"
+    //   - blue --> "#0000ffff"
+    //   - black --> "#000000ff"
+    //   - clear --> "#00000000"
+    //   - etc.
+    std::string ToHtmlStringRGBA(Color const&);
+    std::optional<Color> TryParseHtmlString(std::string_view);
 }
 
 // define hashing function for colors

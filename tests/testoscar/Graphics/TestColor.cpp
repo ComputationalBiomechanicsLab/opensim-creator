@@ -1,6 +1,7 @@
 #include <oscar/Graphics/Color.hpp>
 
 #include <gtest/gtest.h>
+#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <type_traits>
 #include <utility>
@@ -219,6 +220,20 @@ TEST(Color, ToRgba32ReturnsRgba32VersionOfTheColor)
     ASSERT_EQ(expected.a, got.a);
 }
 
+TEST(Color, ToColor32ClampsHDRValues)
+{
+    osc::Color const color = {1.5f, 0.0f, 2.0f, 1.0f};
+    osc::Color32 const expected = {0xff, 0x00, 0xff, 0xff};
+    ASSERT_EQ(osc::ToColor32(color), expected);
+}
+
+TEST(Color, ToColor32ClampsNegativeValues)
+{
+    osc::Color const color = {-1.0f, 0.0f, 1.0f, 1.0f};
+    osc::Color32 const expected = {0x00, 0x00, 0xff, 0xff};
+    ASSERT_EQ(osc::ToColor32(color), expected);
+}
+
 TEST(Color, CanGetBlackColor)
 {
     ASSERT_EQ(osc::Color::black(), osc::Color(0.0f, 0.0f, 0.0f, 1.0f));
@@ -323,4 +338,47 @@ TEST(Color, CanBeHashed)
     osc::Color const b = osc::Color::blue();
 
     ASSERT_NE(std::hash<osc::Color>{}(a), std::hash<osc::Color>{}(b));
+}
+
+TEST(Color, ToHtmlStringRGBAReturnsExpectedValues)
+{
+    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color::red()), "#ff0000ff");
+    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color::green()), "#00ff00ff");
+    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color::blue()), "#0000ffff");
+    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color::black()), "#000000ff");
+    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color::clear()), "#00000000");
+    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color::white()), "#ffffffff");
+    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color::yellow()), "#ffff00ff");
+    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color::cyan()), "#00ffffff");
+    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color::magenta()), "#ff00ffff");
+
+    // ... and HDR values are LDR clamped
+    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color(1.5f, 1.5f, 0.0f, 1.0f)), "#ffff00ff");
+
+    // ... and negative values are clamped
+    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color(-1.0f, 0.0f, 0.0f, 1.0f)), "#000000ff");
+}
+
+TEST(Color, TryParseHtmlStringReturnsExpectedValues)
+{
+    // when caller specifies all channels
+    ASSERT_EQ(osc::TryParseHtmlString("#ff0000ff"), osc::Color::red());
+    ASSERT_EQ(osc::TryParseHtmlString("#00ff00ff"), osc::Color::green());
+    ASSERT_EQ(osc::TryParseHtmlString("#0000ffff"), osc::Color::blue());
+    ASSERT_EQ(osc::TryParseHtmlString("#000000ff"), osc::Color::black());
+    ASSERT_EQ(osc::TryParseHtmlString("#ffff00ff"), osc::Color::yellow());
+    ASSERT_EQ(osc::TryParseHtmlString("#00000000"), osc::Color::clear());
+
+    // no colorspace conversion occurs on intermediate values (e.g. no sRGB-to-linear)
+    ASSERT_EQ(osc::TryParseHtmlString("#110000ff"), osc::Color((1.0f*16.0f + 1.0f)/255.0f, 0.0f, 0.0f, 1.0f));
+
+    // when caller specifies 3 channels, assume alpha == 1.0
+    ASSERT_EQ(osc::TryParseHtmlString("#ff0000"), osc::Color::red());
+    ASSERT_EQ(osc::TryParseHtmlString("#000000"), osc::Color::black());
+
+    // unparseable input
+    ASSERT_EQ(osc::TryParseHtmlString("not a color"), std::nullopt);
+    ASSERT_EQ(osc::TryParseHtmlString(" #ff0000ff"), std::nullopt);  // caller handles whitespace
+    ASSERT_EQ(osc::TryParseHtmlString("ff0000ff"), std::nullopt);  // caller must put the # prefix before the string
+    ASSERT_EQ(osc::TryParseHtmlString("red"), std::nullopt);  // literal color strings (e.g. as in Unity) aren't supported (yet)
 }

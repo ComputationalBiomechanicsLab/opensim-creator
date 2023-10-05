@@ -1,12 +1,17 @@
 #include "Color.hpp"
 
 #include <oscar/Utils/HashHelpers.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/vec4.hpp>
 
 #include <cmath>
 #include <cstdint>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <utility>
 
 // the sRGB <--> linear relationship is commonly simplified to:
 //
@@ -79,6 +84,11 @@ size_t std::hash<osc::Color>::operator()(osc::Color const& color) const
     return osc::HashOf(color.r, color.g, color.b, color.a);
 }
 
+osc::Color32 osc::ToColor32(Color const& color) noexcept
+{
+    return ToColor32(static_cast<glm::vec4>(color));
+}
+
 osc::Color32 osc::ToColor32(glm::vec4 const& v) noexcept
 {
     return Color32
@@ -115,4 +125,71 @@ osc::Color32 osc::ToColor32(uint32_t v) noexcept
 osc::Color osc::ClampToLDR(Color const& c) noexcept
 {
     return Color{glm::clamp(glm::vec4{c}, 0.0f, 1.0f)};
+}
+
+std::string osc::ToHtmlStringRGBA(Color const& c)
+{
+    std::string rv;
+    rv.reserve(9);
+    rv.push_back('#');
+    for (uint8_t v : ToColor32(c))
+    {
+        auto [nib1, nib2] = ToHexChars(v);
+        rv.push_back(nib1);
+        rv.push_back(nib2);
+    }
+    return rv;
+}
+
+std::optional<osc::Color> osc::TryParseHtmlString(std::string_view v)
+{
+    if (v.empty())
+    {
+        return std::nullopt;  // it's empty
+    }
+    if (v.front() != '#')
+    {
+        return std::nullopt;  // incorrect first character (e.g. should be "#ff0000ff")
+    }
+
+    std::string_view const content = v.substr(1);
+    if (content.size() == 6)
+    {
+        // RGB hex string
+        Color rv = Color::black();
+        for (size_t i = 0; i < 3; ++i)
+        {
+            if (auto b = TryParseHexCharsAsByte(content[2*i], content[2*i + 1]))
+            {
+                rv[i] = ToFloatingPointColorChannel(*b);
+            }
+            else
+            {
+                return std::nullopt;
+            }
+        }
+        return rv;
+    }
+    else if (content.size() == 8)
+    {
+        // RGBA hex string
+        Color rv = Color::black();
+        for (size_t i = 0; i < 4; ++i)
+        {
+            if (auto b = TryParseHexCharsAsByte(content[2*i], content[2*i + 1]))
+            {
+                rv[i] = ToFloatingPointColorChannel(*b);
+            }
+            else
+            {
+                return std::nullopt;
+            }
+        }
+        return rv;
+    }
+    else
+    {
+        // invalid hex string
+        return std::nullopt;
+    }
 }

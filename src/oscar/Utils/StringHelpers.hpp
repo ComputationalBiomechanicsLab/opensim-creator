@@ -1,9 +1,11 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace osc
 {
@@ -56,4 +58,12 @@ namespace osc
     // the end of the string, or the input string if the delimiter does not occur within
     // the string.
     std::string_view SubstringAfterLast(std::string_view, std::string_view::value_type delimiter);
+
+    // converts the given byte into a 2-length hex character representation
+    //
+    // e.g. 0x00 --> ('0', '0')
+    //      0xf0 --> ('f', '0')
+    //      0x02 --> ('0', '2')
+    std::pair<char, char> ToHexChars(uint8_t) noexcept;
+    std::optional<uint8_t> TryParseHexCharsAsByte(char, char) noexcept;
 }

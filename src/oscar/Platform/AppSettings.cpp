@@ -389,7 +389,7 @@ R"(# configuration options
         std::string_view key,
         osc::AppSettingValue const& value)
     {
-        static_assert(osc::NumOptions<osc::AppSettingValueType>() == 2);
+        static_assert(osc::NumOptions<osc::AppSettingValueType>() == 3);
 
         switch (value.type())
         {
@@ -397,6 +397,7 @@ R"(# configuration options
             table.insert(key, value.toBool());
             break;
         case osc::AppSettingValueType::String:
+        case osc::AppSettingValueType::Color:
         default:
             table.insert(key, value.toString());
             break;

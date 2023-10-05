@@ -1,9 +1,11 @@
 #include "StringHelpers.hpp"
 
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <algorithm>
 #include <cstddef>
+#include <limits>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -11,6 +13,11 @@
 
 namespace
 {
+    auto constexpr c_NibbleToCharacterLUT = osc::to_array(
+    {
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+    });
+
     std::string ToLower(std::string_view sv)
     {
         std::string cpy{sv};
@@ -175,5 +182,73 @@ std::string_view osc::SubstringAfterLast(std::string_view sv, std::string_view::
     else
     {
         return sv.substr(pos+1);
+    }
+}
+
+std::pair<char, char> osc::ToHexChars(uint8_t b) noexcept
+{
+    static_assert((std::numeric_limits<decltype(b)>::max() & 0xf) < c_NibbleToCharacterLUT.size());
+    static_assert(((std::numeric_limits<decltype(b)>::max()>>1) & 0xf) < c_NibbleToCharacterLUT.size());
+
+    char const msn = c_NibbleToCharacterLUT[(b>>4) & 0xf];
+    char const lsn = c_NibbleToCharacterLUT[b & 0xf];
+    return {msn, lsn};
+}
+
+std::optional<uint8_t> osc::TryParseHexCharsAsByte(char a, char b) noexcept
+{
+    // you might be wondering why we aren't using a library function, it's
+    // because:
+    //
+    // - std::stringstream is a sledge-hammer that will try its best to parse
+    //   alsorts of `n`-lengthed strings as hex strings, so users of this
+    //   function would need to know the edge-cases
+    //
+    // - std::strtol is closer, in that it supports parsing base16 strings etc.
+    //   but it _also_ handles things such as plus/minus signs, the `0x`, octal,
+    //   etc.
+    //
+    // - std::from_chars, is the savior from std::strtol, but _also_ has special
+    //   parsing behavior (e.g. the test suite for this function found that it
+    //   is effectively a wrapper around std::strol in terms of behavior
+    //
+    // and all this particular function needs to do is map strings like '00' to
+    // 0x0, 'ff' to 255, etc.
+    //
+    // feel free to change this and re-run the test suite if you can dream up a
+    // better approach though (I know this is ass)
+
+
+    auto const tryConvertToNibbleBinary = [](char c) -> std::optional<uint8_t>
+    {
+        if ('0' <= c && c <= '9')
+        {
+            return static_cast<uint8_t>(c - '0');
+        }
+        else if ('a' <= c && c <= 'f')
+        {
+            return static_cast<uint8_t>(10 + (c - 'a'));
+        }
+        else if ('A' <= c && c <= 'F')
+        {
+            return static_cast<uint8_t>(10 + (c - 'A'));
+        }
+        else
+        {
+            return std::nullopt;
+        }
+    };
+
+    auto const msn = tryConvertToNibbleBinary(a);
+    auto const lsn = tryConvertToNibbleBinary(b);
+
+    if (msn && lsn)
+    {
+        uint8_t const v = (*msn << 4) | *lsn;
+        return v;
+    }
+    else
+    {
+        return std::nullopt;
     }
 }

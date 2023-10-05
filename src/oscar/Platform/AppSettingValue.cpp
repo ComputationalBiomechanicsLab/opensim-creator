@@ -17,6 +17,7 @@ osc::AppSettingValueType osc::AppSettingValue::type() const
     {
         [&rv](std::string const&) { rv = AppSettingValueType::String; },
         [&rv](bool) { rv = AppSettingValueType::Bool; },
+        [&rv](Color const&) { rv = AppSettingValueType::Color; },
     }, m_Value);
     return rv;
 }
@@ -46,6 +47,7 @@ bool osc::AppSettingValue::toBool() const
             }
         },
         [&rv](bool v) { rv = v; },
+        [](Color const&) {},
     }, m_Value);
     return rv;
 }
@@ -57,6 +59,25 @@ std::string osc::AppSettingValue::toString() const
     {
         [&rv](std::string const& v) { rv = v; },
         [&rv](bool v) { rv = v ? "true" : "false"; },
+        [&rv](Color const& c) { rv = ToHtmlStringRGBA(c); },
+    }, m_Value);
+    return rv;
+}
+
+osc::Color osc::AppSettingValue::toColor() const
+{
+    Color rv = Color::white();
+    std::visit(Overload
+    {
+        [&rv](std::string const& v)
+        {
+            if (auto c = TryParseHtmlString(v))
+            {
+                rv = *c;
+            }
+        },
+        [](bool) {},
+        [&rv](Color const& c) { rv = c; },
     }, m_Value);
     return rv;
 }

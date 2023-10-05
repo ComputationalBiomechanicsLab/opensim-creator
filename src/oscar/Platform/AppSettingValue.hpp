@@ -1,5 +1,6 @@
 #pragma once
 
+#include <oscar/Graphics/Color.hpp>
 #include <oscar/Platform/AppSettingValueType.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
@@ -31,13 +32,19 @@ namespace osc
         {
         }
 
+        explicit AppSettingValue(Color const& value_) :
+            m_Value{value_}
+        {
+        }
+
         AppSettingValueType type() const;
-        bool toBool() const;  // returns `false` if type is non-boolean
+        bool toBool() const;
         std::string toString() const;
+        Color toColor() const;
     private:
         friend bool operator==(AppSettingValue const&, AppSettingValue const&) noexcept;
         friend bool operator!=(AppSettingValue const&, AppSettingValue const&) noexcept;
-        std::variant<std::string, bool> m_Value;
+        std::variant<std::string, bool, Color> m_Value;
     };
 
     inline bool operator==(AppSettingValue const& a, AppSettingValue const& b) noexcept

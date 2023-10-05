@@ -26,6 +26,16 @@ namespace osc
             return (&r)[i];
         }
 
+        uint8_t const* begin() const
+        {
+            return &r;
+        }
+
+        uint8_t const* end() const
+        {
+            return &a + 1;
+        }
+
         uint8_t r;
         uint8_t g;
         uint8_t b;
