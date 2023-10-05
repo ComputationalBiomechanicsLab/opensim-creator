@@ -205,12 +205,12 @@ TEST(ToHexChars, ReturnsExpectedResultsWhenComparedToAlternateImplementation)
     // test by comparing with
     for (size_t i = 0; i <= static_cast<size_t>(std::numeric_limits<uint8_t>::max()); ++i)
     {
-        uint8_t v = static_cast<uint8_t>(i);
+        auto const v = static_cast<uint8_t>(i);
 
         uint8_t const msn = (v>>4) & 0xf;
         uint8_t const lsn = v & 0xf;
-        char msc = msn <= 9 ? '0' + msn : 'a' + (msn-10);
-        char lsc = lsn <= 9 ? '0' + lsn : 'a' + (lsn-10);
+        char const msc = msn <= 9 ? '0' + msn : 'a' + (msn-10);
+        char const lsc = lsn <= 9 ? '0' + lsn : 'a' + (lsn-10);
 
         auto [a, b] = osc::ToHexChars(v);
 
