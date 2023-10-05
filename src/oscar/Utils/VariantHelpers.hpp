@@ -6,21 +6,24 @@
 
 namespace osc
 {
-    // returns the index of the given variant type (impl)
-    template<typename Variant, typename T, size_t I = 0>
-    [[nodiscard]] constexpr size_t VariantIndexImpl() noexcept
+    namespace detail
     {
-        if constexpr (I >= std::variant_size_v<Variant>)
+        // returns the index of the given variant type (impl)
+        template<typename Variant, typename T, size_t I = 0>
+        [[nodiscard]] constexpr size_t VariantIndexImpl() noexcept
         {
-            return std::variant_size_v<Variant>;
-        }
-        else if constexpr (std::is_same_v<std::variant_alternative_t<I, Variant>, T>)
-        {
-            return I;
-        }
-        else
-        {
-            return VariantIndexImpl<Variant, T, I + 1>();
+            if constexpr (I >= std::variant_size_v<Variant>)
+            {
+                return std::variant_size_v<Variant>;
+            }
+            else if constexpr (std::is_same_v<std::variant_alternative_t<I, Variant>, T>)
+            {
+                return I;
+            }
+            else
+            {
+                return VariantIndexImpl<Variant, T, I + 1>();
+            }
         }
     }
 
@@ -28,7 +31,7 @@ namespace osc
     template<typename Variant, typename T>
     [[nodiscard]] constexpr size_t VariantIndex() noexcept
     {
-        return VariantIndexImpl<Variant, T>();
+        return detail::VariantIndexImpl<Variant, T>();
     }
 
     template<typename... Ts>
