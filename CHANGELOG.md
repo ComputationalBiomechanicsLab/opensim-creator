@@ -5,6 +5,8 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- 3D viewport settings (e.g. muscle styling, show/hide the floor, background color) are now persisted between
+  boots of OSC via a per-user configuration file (thanks @tgeijten, #782)
 - The right-click step size menu for scalar property editors now includes suggestions for masses (it assumes
   the property is expressed in kilograms)
 - Added `Import Stations from CSV` to the mesh importer's file menu, which provides a way of importing stations
