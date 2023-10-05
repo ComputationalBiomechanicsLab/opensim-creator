@@ -37,7 +37,8 @@ public:
         SimulationViewerPanelParameters params_) :
 
         StandardPanel{panelName_},
-        m_Params{std::move(params_)}
+        m_Params{std::move(params_)},
+        m_Viewer{panelName_}
     {
     }
 

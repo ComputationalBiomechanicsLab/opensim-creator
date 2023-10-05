@@ -11,6 +11,7 @@
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/Platform/Log.hpp>
 #include <oscar/Scene/SceneCollision.hpp>
 #include <oscar/UI/Widgets/GuiRuler.hpp>
 #include <oscar/UI/Widgets/IconWithoutMenu.hpp>
@@ -18,9 +19,32 @@
 
 #include <memory>
 #include <optional>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <utility>
+
+namespace
+{
+    std::string GetSettingsKeyPrefixForPanel(std::string_view panelName)
+    {
+        std::stringstream ss;
+        ss << "panels/" << panelName << '/';
+        return std::move(ss).str();
+    }
+}
 
 class osc::UiModelViewer::Impl final {
 public:
+    Impl(std::string_view parentPanelName_) :
+        m_ParentPanelName{parentPanelName_}
+    {
+        UpdModelRendererParamsFrom(
+            App::config(),
+            GetSettingsKeyPrefixForPanel(parentPanelName_),
+            m_Params
+        );
+    }
 
     bool isLeftClicked() const
     {
@@ -89,7 +113,8 @@ public:
         }
 
         // draw 2D ImGui overlays
-        DrawViewerImGuiOverlays(
+        auto renderParamsBefore = m_Params;
+        bool const edited = DrawViewerImGuiOverlays(
             m_Params,
             m_CachedModelRenderer.getDrawlist(),
             m_CachedModelRenderer.getRootAABB(),
@@ -97,6 +122,16 @@ public:
             *m_IconCache,
             [this]() { return drawRulerButton(); }
         );
+        if (edited)
+        {
+            auto const& renderParamsAfter = m_Params;
+            osc::SaveModelRendererParamsDifference(
+                renderParamsBefore,
+                renderParamsAfter,
+                GetSettingsKeyPrefixForPanel(m_ParentPanelName),
+                App::upd().updConfig()
+            );
+        }
 
         // handle ruler and return value
         if (m_Ruler.isMeasuring())
@@ -136,6 +171,9 @@ private:
         return rv;
     }
 
+    // used for saving per-panel data to the application config
+    std::string m_ParentPanelName;
+
     // rendering-related data
     ModelRendererParams m_Params;
     CachedModelRenderer m_CachedModelRenderer
@@ -159,8 +197,8 @@ private:
 
 // public API (PIMPL)
 
-osc::UiModelViewer::UiModelViewer() :
-    m_Impl{std::make_unique<Impl>()}
+osc::UiModelViewer::UiModelViewer(std::string_view parentPanelName_) :
+    m_Impl{std::make_unique<Impl>(parentPanelName_)}
 {
 }
 osc::UiModelViewer::UiModelViewer(UiModelViewer&&) noexcept = default;

@@ -18,7 +18,6 @@
 #include <OpenSimCreator/UI/Widgets/ModelEditorMainMenu.hpp>
 #include <OpenSimCreator/UI/Widgets/ModelEditorToolbar.hpp>
 #include <OpenSimCreator/UI/Widgets/ParamBlockEditorPopup.hpp>
-#include <OpenSimCreator/UI/Widgets/UiModelViewer.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/UndoableModelActions.hpp>
 
