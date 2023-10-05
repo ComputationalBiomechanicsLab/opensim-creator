@@ -2,10 +2,14 @@
 
 #include <OpenSimCreator/Graphics/CustomRenderingOptionFlags.hpp>
 
+#include <oscar/Platform/AppSettingValue.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>
 #include <cstdint>
+#include <functional>
+#include <string_view>
+#include <unordered_map>
 
 namespace osc
 {
@@ -27,6 +31,9 @@ namespace osc
 
         bool getDrawSelectionRims() const;
         void setDrawSelectionRims(bool);
+
+        void forEachOptionAsAppSettingValue(std::function<void(std::string_view, AppSettingValue const&)> const&) const;
+        void tryUpdFromValues(std::string_view keyPrefix, std::unordered_map<std::string, AppSettingValue> const&);
 
     private:
         friend bool operator==(CustomRenderingOptions const&, CustomRenderingOptions const&) noexcept;

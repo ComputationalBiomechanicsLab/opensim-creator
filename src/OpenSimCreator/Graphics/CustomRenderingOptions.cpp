@@ -70,3 +70,22 @@ void osc::CustomRenderingOptions::setDrawSelectionRims(bool v)
 {
     SetOption(m_Flags, CustomRenderingOptionFlags::DrawSelectionRims, v);
 }
+
+void osc::CustomRenderingOptions::forEachOptionAsAppSettingValue(std::function<void(std::string_view, AppSettingValue const&)> const& callback) const
+{
+    for (auto const& metadata : GetAllCustomRenderingOptionFlagsMetadata())
+    {
+        callback(metadata.id, AppSettingValue{m_Flags & metadata.value});
+    }
+}
+
+void osc::CustomRenderingOptions::tryUpdFromValues(std::string_view keyPrefix, std::unordered_map<std::string, AppSettingValue> const& lut)
+{
+    for (auto const& metadata : GetAllCustomRenderingOptionFlagsMetadata())
+    {
+        if (auto const it = lut.find(std::string{keyPrefix} + metadata.id); it != lut.end() && it->second.type() == AppSettingValueType::Bool)
+        {
+            SetOption(m_Flags, metadata.value, it->second.toBool());
+        }
+    }
+}

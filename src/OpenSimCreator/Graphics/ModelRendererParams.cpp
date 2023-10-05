@@ -23,17 +23,18 @@ namespace
         osc::ModelRendererParams const& params)
     {
         std::unordered_map<std::string, osc::AppSettingValue> rv;
-        auto const callback = [&prefix, &rv](std::string_view subkey, osc::AppSettingValue value)
+        std::string subPrefix;
+        auto const callback = [&subPrefix, &rv](std::string_view subkey, osc::AppSettingValue value)
         {
-            std::string k{prefix};
-            k += "decorations/";
-            k += subkey;
-            rv.insert_or_assign(k, std::move(value));
+            rv.insert_or_assign(subPrefix + std::string{subkey}, std::move(value));
         };
 
+        subPrefix = std::string{prefix} + std::string{"decorations/"};
         params.decorationOptions.forEachOptionAsAppSettingValue(callback);
-        // TODO: overlayOptions
-        // TODO: renderingOptions
+        subPrefix = std::string{prefix} + std::string{"overlays/"};
+        params.overlayOptions.forEachOptionAsAppSettingValue(callback);
+        subPrefix = std::string{prefix} + std::string{"graphics/"};
+        params.renderingOptions.forEachOptionAsAppSettingValue(callback);
         // TODO: lightColor
         // TODO: backgroundColor
         // TODO: floorLocation
@@ -46,17 +47,12 @@ namespace
         std::unordered_map<std::string, osc::AppSettingValue> const& values,
         osc::ModelRendererParams& params)
     {
-        std::string decorationsPrefix = std::string{prefix} + "decorations/";
-        params.decorationOptions.tryUpdFromValues(decorationsPrefix, values);
-        // TODO:
-        //
-        // - update `decorationOptions` (OpenSimDecorationOptions)
-        // - update `overlayOptions` (OverlayDecorationOptions)
-        // - update `renderingOptions` (CustomRenderingOptions)
-        // - update `lightColor` (Color)
-        // - update `backgroundColor` (Color)
-        // - update `floorLocation` (glm::vec3)
-        // - skip `camera`
+        params.decorationOptions.tryUpdFromValues(std::string{prefix} + "decorations/", values);
+        params.overlayOptions.tryUpdFromValues(std::string{prefix} + "overlays/", values);
+        params.renderingOptions.tryUpdFromValues(std::string{prefix} + "graphics/", values);
+        // TODO: lightColor
+        // TODO: backgroundColor
+        // TODO: floorLocation
     }
 }
 

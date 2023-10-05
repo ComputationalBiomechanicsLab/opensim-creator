@@ -1,5 +1,7 @@
 #include "OverlayDecorationOptions.hpp"
 
+#include <oscar/Platform/AppSettingValue.hpp>
+#include <oscar/Platform/AppSettingValueType.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/SpanHelpers.hpp>
@@ -89,4 +91,24 @@ bool osc::OverlayDecorationOptions::getDrawBVH() const
 void osc::OverlayDecorationOptions::setDrawBVH(bool v)
 {
     SetOption(m_Flags, OverlayDecorationOptionFlags::DrawBVH, v);
+}
+
+void osc::OverlayDecorationOptions::forEachOptionAsAppSettingValue(std::function<void(std::string_view, AppSettingValue const&)> const& callback) const
+{
+    for (auto const& metadata : GetAllOverlayDecorationOptionFlagsMetadata())
+    {
+        callback(metadata.id, AppSettingValue{m_Flags & metadata.value});
+    }
+}
+
+void osc::OverlayDecorationOptions::tryUpdFromValues(std::string_view keyPrefix, std::unordered_map<std::string, AppSettingValue> const& lut)
+{
+    for (size_t i = 0; i < NumOptions<OverlayDecorationOptionFlags>(); ++i)
+    {
+        auto const& metadata = At(GetAllOverlayDecorationOptionFlagsMetadata(), i);
+        if (auto const it = lut.find(std::string{keyPrefix}+metadata.id); it != lut.end() && it->second.type() == osc::AppSettingValueType::Bool)
+        {
+            SetOption(m_Flags, metadata.value, it->second.toBool());
+        }
+    }
 }
