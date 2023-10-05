@@ -244,7 +244,7 @@ std::optional<uint8_t> osc::TryParseHexCharsAsByte(char a, char b) noexcept
 
     if (msn && lsn)
     {
-        uint8_t const v = (*msn << 4) | *lsn;
+        uint8_t const v = static_cast<uint8_t>((*msn << 4) | *lsn);
         return v;
     }
     else
