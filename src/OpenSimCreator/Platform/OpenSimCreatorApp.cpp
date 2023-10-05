@@ -215,5 +215,4 @@ osc::OpenSimCreatorApp::OpenSimCreatorApp() :
 {
     GlobalInitOpenSim(getConfig());
     InitializeTabRegistry(*singleton<osc::TabRegistry>());
-    updConfig().setValue("panels/viewer0/is_enabled", AppSettingValue{true});
 }
