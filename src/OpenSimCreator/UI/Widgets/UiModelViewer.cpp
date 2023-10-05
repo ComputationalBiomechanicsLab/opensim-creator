@@ -36,7 +36,7 @@ namespace
 
 class osc::UiModelViewer::Impl final {
 public:
-    Impl(std::string_view parentPanelName_) :
+    explicit Impl(std::string_view parentPanelName_) :
         m_ParentPanelName{parentPanelName_}
     {
         UpdModelRendererParamsFrom(

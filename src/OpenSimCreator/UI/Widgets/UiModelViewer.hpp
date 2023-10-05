@@ -18,7 +18,7 @@ namespace osc
     // callers only have to handle `OpenSim::Model`s, `OpenSim::Component`s, etc.
     class UiModelViewer final {
     public:
-        UiModelViewer(std::string_view parentPanelName_);
+        explicit UiModelViewer(std::string_view parentPanelName_);
         UiModelViewer(UiModelViewer const&) = delete;
         UiModelViewer(UiModelViewer&&) noexcept;
         UiModelViewer& operator=(UiModelViewer const&) = delete;

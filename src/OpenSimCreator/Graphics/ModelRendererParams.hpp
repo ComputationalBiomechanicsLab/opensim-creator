@@ -36,6 +36,6 @@ namespace osc
         ModelRendererParams const&,
         ModelRendererParams const&,
         std::string_view keyPrefix,
-        AppConfig& out
+        AppConfig& config
     );
 }
