@@ -209,8 +209,8 @@ TEST(ToHexChars, ReturnsExpectedResultsWhenComparedToAlternateImplementation)
 
         uint8_t const msn = (v>>4) & 0xf;
         uint8_t const lsn = v & 0xf;
-        char const msc = msn <= 9 ? '0' + msn : 'a' + (msn-10);
-        char const lsc = lsn <= 9 ? '0' + lsn : 'a' + (lsn-10);
+        char const msc = static_cast<char>(msn <= 9 ? '0' + msn : 'a' + (msn-10));
+        char const lsc = static_cast<char>(lsn <= 9 ? '0' + lsn : 'a' + (lsn-10));
 
         auto [a, b] = osc::ToHexChars(v);
 
