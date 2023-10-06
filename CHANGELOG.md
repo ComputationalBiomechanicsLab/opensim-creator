@@ -2,8 +2,10 @@
 
 All notable changes to this project will be documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-
 ## [Unreleased]
+
+
+## [0.5.3] - 2023/10/06
 
 - 3D viewport settings (e.g. muscle styling, show/hide the floor, background color) are now persisted between
   boots of OSC via a per-user configuration file (thanks @tgeijten, #782)
