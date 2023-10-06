@@ -6395,8 +6395,10 @@ namespace
 
         void drawLoadedFileStateData(ImportedCSVData const& result, StationsDefinedInGround const& data)
         {
-            ImGui::Text("%s (%zu data rows)", result.sourceDataPath.string().c_str(), data.rows.size());
+            osc::TextCentered(result.sourceDataPath.string());
+            osc::TextCentered(std::string{"("} + std::to_string(data.rows.size()) + " data rows)");
 
+            ImGui::Dummy({0.0f, 0.2f*ImGui::GetTextLineHeight()});
             if (ImGui::BeginTable("##importtable", 4, ImGuiTableFlags_ScrollY, {0.0f, 10.0f*ImGui::GetTextLineHeight()}))
             {
                 ImGui::TableSetupColumn("Name");
@@ -6424,8 +6426,9 @@ namespace
 
                 ImGui::EndTable();
             }
+            ImGui::Dummy({0.0f, 0.2f*ImGui::GetTextLineHeight()});
 
-            if (ImGui::Button("Select Different File"))
+            if (osc::ButtonCentered(ICON_FA_FILE " Select Different File"))
             {
                 actionTryPromptingUserForCSVFile();
             }
