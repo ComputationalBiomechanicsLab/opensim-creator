@@ -41,6 +41,13 @@ namespace
     // load the "recent files" file that the application persists to disk
     std::vector<osc::RecentFile> LoadRecentFilesFile(std::filesystem::path const& p)
     {
+        if (!std::filesystem::exists(p))
+        {
+            // the recent files txt does not exist (e.g. because it's the first time
+            // that the user booted OSC - #786)
+            return;
+        }
+
         std::ifstream fd{p, std::ios::in};
 
         if (!fd)
