@@ -6323,7 +6323,7 @@ namespace
             }
             osc::DrawTooltipBodyOnlyIfItemHovered("Copy example input to clipboard");
             ImGui::Indent();
-            ImGui::TextWrapped(c_ExampleInputText.c_str());
+            ImGui::TextWrapped("%s", c_ExampleInputText.c_str());
             ImGui::Unindent();
         }
 
