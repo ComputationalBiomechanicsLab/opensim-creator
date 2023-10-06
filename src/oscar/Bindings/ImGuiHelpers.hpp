@@ -247,6 +247,9 @@ namespace osc
     // begin a menu that's attached to the bottom of a viewport, end it with ImGui::End();
     bool BeginMainViewportBottomBar(CStringView);
 
+    //  draw ImGui::Button, but centered on the current line
+    bool ButtonCentered(CStringView);
+
     // draw text, but centered on the current window/line
     void TextCentered(CStringView);
 

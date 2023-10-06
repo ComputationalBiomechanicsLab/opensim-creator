@@ -846,6 +846,17 @@ bool osc::BeginMainViewportBottomBar(CStringView label)
     return ImGui::BeginViewportSideBar(label.c_str(), viewport, ImGuiDir_Down, height, flags);
 }
 
+bool osc::ButtonCentered(CStringView s)
+{
+    float const buttonWidth = ImGui::CalcTextSize(s.c_str()).x + 2.0f*ImGui::GetStyle().FramePadding.x;
+    float const midpoint = ImGui::GetCursorScreenPos().x + 0.5f*ImGui::GetContentRegionAvail().x;
+    float const buttonStartX = midpoint - 0.5f*buttonWidth;
+
+    ImGui::SetCursorScreenPos({buttonStartX, ImGui::GetCursorScreenPos().y});
+
+    return ImGui::Button(s.c_str());
+}
+
 void osc::TextCentered(CStringView s)
 {
     float const windowWidth = ImGui::GetWindowSize().x;

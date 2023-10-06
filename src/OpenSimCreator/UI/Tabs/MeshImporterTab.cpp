@@ -6289,11 +6289,10 @@ namespace
             drawHelpText();
 
             ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
-            ImGui::Separator();
-            ImGui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
-
             if (m_MaybeImportResult.has_value())
             {
+                ImGui::Separator();
+
                 std::visit(osc::Overload
                 {
                     [this](ImportedCSVData const& data) { drawLoadedFileState(data); },
@@ -6304,6 +6303,7 @@ namespace
             {
                 drawSelectInitialFileState();
             }
+            ImGui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
         }
 
         void drawHelpText()
@@ -6321,14 +6321,12 @@ namespace
 
         void drawSelectInitialFileState()
         {
-            if (ImGui::Button("Select File"))
+            if (osc::ButtonCentered(ICON_FA_FILE " Select File"))
             {
                 actionTryPromptingUserForCSVFile();
             }
 
-            ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
-            ImGui::Separator();
-            ImGui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
+            ImGui::Dummy({0.0f, 0.75f*ImGui::GetTextLineHeight()});
 
             drawDisabledOkCancelButtons("Cannot continue: nothing has been imported (select a file first)");
         }
