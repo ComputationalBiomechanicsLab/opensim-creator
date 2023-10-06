@@ -6313,9 +6313,17 @@ namespace
             ImGui::TextWrapped("A header row of four columns, ideally labelled 'name', 'x', 'y', and 'z'");
             ImGui::Bullet();
             ImGui::TextWrapped("Data rows containing four columns: name (string), x (number), y (number), and z (number)");
-            ImGui::TextWrapped("Example Input:");
+
+            constexpr osc::CStringView c_ExampleInputText = "name,x,y,z\nstationatground,0,0,0\nstation2,1.53,0.2,1.7\nstation3,3.0,2.0,0.0\n";
+            ImGui::TextWrapped("Example Input: ");
+            ImGui::SameLine();
+            if (ImGui::Button(ICON_FA_COPY))
+            {
+                osc::SetClipboardText(c_ExampleInputText);
+            }
+            osc::DrawTooltipBodyOnlyIfItemHovered("Copy example input to clipboard");
             ImGui::Indent();
-            ImGui::TextWrapped("name,x,y,z\nstationatground,0,0,0\nstation2,1.53,0.2,1.7\nstation3,3.0,2.0,0.0\netc.");
+            ImGui::TextWrapped(c_ExampleInputText.c_str());
             ImGui::Unindent();
         }
 
