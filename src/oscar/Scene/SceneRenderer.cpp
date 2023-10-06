@@ -237,7 +237,10 @@ public:
                 }
 
                 // if normals are requested, render the scene element via a normals geometry shader
-                if (params.drawMeshNormals)
+                //
+                // care: this only works for triangles, because normals-drawing material uses a geometry
+                //       shader that assumes triangular input (#792)
+                if (params.drawMeshNormals && dec.mesh.getTopology() == MeshTopology::Triangles)
                 {
                     Graphics::DrawMesh(dec.mesh, dec.transform, m_NormalsMaterial, m_Camera);
                 }
