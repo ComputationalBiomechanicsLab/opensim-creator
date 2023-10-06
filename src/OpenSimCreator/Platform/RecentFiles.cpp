@@ -45,7 +45,7 @@ namespace
         {
             // the recent files txt does not exist (e.g. because it's the first time
             // that the user booted OSC - #786)
-            return;
+            return {};
         }
 
         std::ifstream fd{p, std::ios::in};
