@@ -5,6 +5,7 @@
 #include <OpenSimCreator/UI/Tabs/Experimental/TPS2DTab.hpp>
 #include <OpenSimCreator/UI/Tabs/FrameDefinitionTab.hpp>
 #include <OpenSimCreator/UI/Tabs/MeshWarpingTab.hpp>
+#include <OpenSimCreator/UI/Tabs/ShapeFittingTab.hpp>
 
 #include <oscar/UI/Tabs/TabRegistry.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
@@ -32,4 +33,5 @@ void osc::RegisterOpenSimCreatorTabs(TabRegistry& registry)
     RegisterTab<TPS2DTab>(registry);
     RegisterTab<MeshWarpingTab>(registry);
     RegisterTab<FrameDefinitionTab>(registry);
+    RegisterTab<ShapeFittingTab>(registry);
 }

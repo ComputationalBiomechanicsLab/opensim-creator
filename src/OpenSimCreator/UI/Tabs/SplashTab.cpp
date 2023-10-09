@@ -7,6 +7,7 @@
 #include <OpenSimCreator/UI/Tabs/LoadingTab.hpp>
 #include <OpenSimCreator/UI/Tabs/MeshImporterTab.hpp>
 #include <OpenSimCreator/UI/Tabs/MeshWarpingTab.hpp>
+#include <OpenSimCreator/UI/Tabs/ShapeFittingTab.hpp>
 #include <OpenSimCreator/UI/Widgets/MainMenu.hpp>
 #include <OpenSimCreator/Utils/UndoableModelActions.hpp>
 
@@ -288,6 +289,10 @@ private:
         if (ImGui::MenuItem(ICON_FA_CUBE " Mesh Warping"))
         {
             m_Parent->addAndSelectTab<MeshWarpingTab>(m_Parent);
+        }
+        if (ImGui::MenuItem(ICON_FA_CIRCLE " Shape Fitting"))
+        {
+            m_Parent->addAndSelectTab<ShapeFittingTab>(m_Parent);
         }
     }
 
