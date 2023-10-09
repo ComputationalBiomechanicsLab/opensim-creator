@@ -6855,6 +6855,7 @@ private:
         opts.canChooseGround = true;
         opts.canChooseJoints = true;
         opts.canChooseMeshes = false;
+        opts.canChooseStations = true;
         opts.maybeElsAttachingTo = {el.GetID()};
         opts.header = "choose what to point towards (ESC to cancel)";
         opts.onUserChoice = [shared = m_Shared, id = el.GetID(), axis](nonstd::span<UID> choices)
@@ -6876,6 +6877,7 @@ private:
         opts.canChooseGround = true;
         opts.canChooseJoints = true;
         opts.canChooseMeshes = false;
+        opts.canChooseStations = true;
         opts.maybeElsAttachingTo = {el.GetID()};
         opts.header = "choose what to translate to (ESC to cancel)";
         opts.onUserChoice = [shared = m_Shared, id = el.GetID()](nonstd::span<UID> choices)
@@ -6897,6 +6899,7 @@ private:
         opts.canChooseGround = true;
         opts.canChooseJoints = true;
         opts.canChooseMeshes = false;
+        opts.canChooseStations = true;
         opts.maybeElsAttachingTo = {el.GetID()};
         opts.header = "choose two elements to translate between (ESC to cancel)";
         opts.numElementsUserMustChoose = 2;
