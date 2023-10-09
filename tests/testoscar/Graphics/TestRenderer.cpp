@@ -30,7 +30,7 @@
 #include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/ShaderType.hpp>
+#include <oscar/Graphics/ShaderPropertyType.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
@@ -230,22 +230,22 @@ namespace
         "uFar",
     });
 
-    constexpr std::array<osc::ShaderType, 14> c_ExpectedPropertyTypes = osc::to_array(
+    constexpr std::array<osc::ShaderPropertyType, 14> c_ExpectedPropertyTypes = osc::to_array(
     {
-        osc::ShaderType::Mat4,
-        osc::ShaderType::Mat4,
-        osc::ShaderType::Vec3,
-        osc::ShaderType::Vec3,
-        osc::ShaderType::Float,
-        osc::ShaderType::Float,
-        osc::ShaderType::Float,
-        osc::ShaderType::Bool,
-        osc::ShaderType::Sampler2D,
-        osc::ShaderType::Float,
-        osc::ShaderType::Vec3,
-        osc::ShaderType::Vec4,
-        osc::ShaderType::Float,
-        osc::ShaderType::Float,
+        osc::ShaderPropertyType::Mat4,
+        osc::ShaderPropertyType::Mat4,
+        osc::ShaderPropertyType::Vec3,
+        osc::ShaderPropertyType::Vec3,
+        osc::ShaderPropertyType::Float,
+        osc::ShaderPropertyType::Float,
+        osc::ShaderPropertyType::Float,
+        osc::ShaderPropertyType::Bool,
+        osc::ShaderPropertyType::Sampler2D,
+        osc::ShaderPropertyType::Float,
+        osc::ShaderPropertyType::Vec3,
+        osc::ShaderPropertyType::Vec4,
+        osc::ShaderPropertyType::Float,
+        osc::ShaderPropertyType::Float,
     });
     static_assert(c_ExpectedPropertyNames.size() == c_ExpectedPropertyTypes.size());
 
@@ -496,18 +496,18 @@ namespace
 TEST_F(Renderer, ShaderTypeCanStreamToString)
 {
     std::stringstream ss;
-    ss << osc::ShaderType::Bool;
+    ss << osc::ShaderPropertyType::Bool;
 
     ASSERT_EQ(ss.str(), "Bool");
 }
 
 TEST_F(Renderer, ShaderTypeCanBeIteratedOverAndAllCanBeStreamed)
 {
-    for (size_t i = 0; i < osc::NumOptions<osc::ShaderType>(); ++i)
+    for (size_t i = 0; i < osc::NumOptions<osc::ShaderPropertyType>(); ++i)
     {
         // shouldn't crash - if it does then we've missed a case somewhere
         std::stringstream ss;
-        ss << static_cast<osc::ShaderType>(i);
+        ss << static_cast<osc::ShaderPropertyType>(i);
     }
 }
 
@@ -654,7 +654,7 @@ TEST_F(Renderer, ShaderGetPropertyTypeReturnsExpectedType)
     {
         static_assert(c_ExpectedPropertyNames.size() == c_ExpectedPropertyTypes.size());
         auto const& propName = c_ExpectedPropertyNames[i];
-        osc::ShaderType expectedType = c_ExpectedPropertyTypes[i];
+        osc::ShaderPropertyType expectedType = c_ExpectedPropertyTypes[i];
 
         std::optional<size_t> idx = s.findPropertyIndex(std::string{propName});
         ASSERT_TRUE(idx);
@@ -668,7 +668,7 @@ TEST_F(Renderer, ShaderGetPropertyForCubemapReturnsExpectedType)
     std::optional<size_t> index = shader.findPropertyIndex("skybox");
 
     ASSERT_TRUE(index.has_value());
-    ASSERT_EQ(shader.getPropertyType(*index), osc::ShaderType::SamplerCube);
+    ASSERT_EQ(shader.getPropertyType(*index), osc::ShaderPropertyType::SamplerCube);
 }
 
 TEST_F(Renderer, MaterialCanBeConstructed)

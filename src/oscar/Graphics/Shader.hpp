@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/Graphics/ShaderType.hpp>
+#include <oscar/Graphics/ShaderPropertyType.hpp>
 #include <oscar/Utils/CopyOnUpdPtr.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
@@ -36,7 +36,7 @@ namespace osc
         size_t getPropertyCount() const;
         std::optional<ptrdiff_t> findPropertyIndex(std::string_view propertyName) const;
         std::string_view getPropertyName(ptrdiff_t) const;
-        ShaderType getPropertyType(ptrdiff_t) const;
+        ShaderPropertyType getPropertyType(ptrdiff_t) const;
 
         friend void swap(Shader& a, Shader& b) noexcept
         {

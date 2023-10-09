@@ -88,7 +88,7 @@ add_library(oscar STATIC
     Graphics/ShaderCache.cpp
     Graphics/ShaderCache.hpp
     Graphics/ShaderLocations.hpp
-    Graphics/ShaderType.hpp
+    Graphics/ShaderPropertyType.hpp
     Graphics/Texture2D.hpp
     Graphics/TextureChannelFormat.hpp
     Graphics/TextureDimensionality.hpp
