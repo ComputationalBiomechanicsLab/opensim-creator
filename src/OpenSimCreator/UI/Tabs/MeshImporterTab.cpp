@@ -2909,6 +2909,22 @@ namespace
         return true;
     }
 
+    bool TryOrientElementAxisAlongTwoElements(
+        CommittableModelGraph& cmg,
+        UID id,
+        int axis,
+        UID el1,
+        UID el2)
+    {
+        return TryOrientElementAxisAlongTwoPoints(
+            cmg,
+            id,
+            axis,
+            GetPosition(cmg.GetScratch(), el1),
+            GetPosition(cmg.GetScratch(), el2)
+        );
+    }
+
     bool TryTranslateElementBetweenTwoPoints(CommittableModelGraph& cmg, UID id, glm::vec3 const& a, glm::vec3 const& b)
     {
         ModelGraph& mg = cmg.UpdScratch();
@@ -6870,6 +6886,38 @@ private:
         m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
     }
 
+    // transition the shown UI layer to one where the user is choosing two elements that the given axis
+    // should be aligned along (i.e. the direction vector from the first element to the second element
+    // becomes the direction vector of the given axis)
+    void TransitionToChoosingTwoElementsToAlignAxisAlong(SceneEl& el, int axis)
+    {
+        ChooseElLayerOptions opts;
+        opts.canChooseBodies = true;
+        opts.canChooseGround = true;
+        opts.canChooseJoints = true;
+        opts.canChooseMeshes = false;
+        opts.canChooseStations = true;
+        opts.maybeElsAttachingTo = {el.GetID()};
+        opts.header = "choose two elements to align the axis along (ESC to cancel)";
+        opts.numElementsUserMustChoose = 2;
+        opts.onUserChoice = [shared = m_Shared, id = el.GetID(), axis](nonstd::span<UID> choices)
+        {
+            if (choices.size() < 2)
+            {
+                return false;
+            }
+
+            return TryOrientElementAxisAlongTwoElements(
+                shared->UpdCommittableModelGraph(),
+                id,
+                axis,
+                choices[0],
+                choices[1]
+            );
+        };
+        m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
+    }
+
     void TransitionToChoosingWhichElementToTranslateTo(SceneEl& el)
     {
         ChooseElLayerOptions opts;
@@ -7612,6 +7660,11 @@ private:
                 if (ImGui::MenuItem("Towards (select something)"))
                 {
                     TransitionToChoosingWhichElementToPointAxisTowards(el, axis);
+                }
+
+                if (ImGui::MenuItem("Along line between (select two elements)"))
+                {
+                    TransitionToChoosingTwoElementsToAlignAxisAlong(el, axis);
                 }
 
                 if (ImGui::MenuItem("90 degress"))
