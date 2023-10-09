@@ -41,6 +41,6 @@ osc::Texture2D osc::GenChequeredFloorTexture()
         TextureWrapMode::Repeat,
         TextureFilterMode::Mipmap,
     };
-    rv.setPixelData(nonstd::span<uint8_t const>{&pixels.front().r, sizeof(pixels)});
+    rv.setPixelData(nonstd::span<uint8_t const>{&pixels.front().r, sizeof(decltype(pixels)::value_type)*pixels.size()});
     return rv;
 }
