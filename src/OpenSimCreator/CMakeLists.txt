@@ -153,6 +153,8 @@ add_library(OpenSimCreator STATIC
     UI/Tabs/MeshWarpingTab.hpp
     UI/Tabs/ModelEditorTab.cpp
     UI/Tabs/ModelEditorTab.hpp
+    UI/Tabs/OpenSimCreatorTabRegistry.cpp
+    UI/Tabs/OpenSimCreatorTabRegistry.hpp
     UI/Tabs/PerformanceAnalyzerTab.cpp
     UI/Tabs/PerformanceAnalyzerTab.hpp
     UI/Tabs/SimulatorTab.cpp
