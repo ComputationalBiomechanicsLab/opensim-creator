@@ -4,6 +4,8 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Upcoming changes will appear here (currently, there are none)
+
 
 ## [0.5.3] - 2023/10/06
 
