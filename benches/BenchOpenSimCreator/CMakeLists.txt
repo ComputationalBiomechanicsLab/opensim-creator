@@ -23,12 +23,10 @@ target_link_libraries(BenchOpenSimCreator PUBLIC
 #
 # see: https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html?highlight=runtime#genex:TARGET_RUNTIME_DLLS
 if (WIN32)
-    # HACK: we can't use TARGET_RUNTIME_DLLS because simbody doesn't package libgfortran etc. correctly
-    file(GLOB_RECURSE dlls "${CMAKE_PREFIX_PATH}/*.dll")
     add_custom_command(
         TARGET BenchOpenSimCreator
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${dlls} $<TARGET_FILE_DIR:BenchOpenSimCreator>
+        PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:BenchOpenSimCreator> $<TARGET_FILE_DIR:BenchOpenSimCreator>
         COMMAND_EXPAND_LISTS
     )
 endif()
