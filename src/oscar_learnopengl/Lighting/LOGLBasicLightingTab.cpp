@@ -9,7 +9,7 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Platform/App.hpp>

@@ -11,7 +11,7 @@
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Platform/App.hpp>

@@ -10,7 +10,7 @@
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/RenderTexture.hpp>
 #include <oscar/Graphics/RenderTextureDescriptor.hpp>
 #include <oscar/Graphics/RenderTextureReadWrite.hpp>

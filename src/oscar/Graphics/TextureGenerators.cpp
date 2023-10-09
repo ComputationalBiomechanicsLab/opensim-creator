@@ -1,4 +1,4 @@
-#include "TextureGen.hpp"
+#include "TextureGenerators.hpp"
 
 #include <oscar/Graphics/Color32.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
@@ -7,9 +7,9 @@
 
 #include <glm/vec2.hpp>
 
-#include <array>
 #include <cstddef>
 #include <optional>
+#include <vector>
 
 
 osc::Texture2D osc::GenChequeredFloorTexture()
@@ -21,7 +21,7 @@ osc::Texture2D osc::GenChequeredFloorTexture()
     constexpr Color32 onColor = {0xff, 0xff, 0xff, 0xff};
     constexpr Color32 offColor = {0xf3, 0xf3, 0xf3, 0xff};
 
-    std::array<Color32, textureWidth * textureHeight> pixels{};
+    std::vector<Color32> pixels(textureWidth * textureHeight);
     for (size_t row = 0; row < textureHeight; ++row)
     {
         size_t const rowStart = row * textureWidth;

@@ -8,7 +8,7 @@
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MaterialPropertyBlock.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Disc.hpp>
 #include <oscar/Maths/Line.hpp>

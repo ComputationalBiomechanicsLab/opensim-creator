@@ -9,12 +9,12 @@
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Scene/SceneCollision.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
+#include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 #include <oscar/Utils/Perf.hpp>

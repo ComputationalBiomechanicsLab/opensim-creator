@@ -12,7 +12,7 @@
 #include <oscar/Graphics/ImageLoadingFlags.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/RenderBufferLoadAction.hpp>
 #include <oscar/Graphics/RenderBufferStoreAction.hpp>
 #include <oscar/Graphics/RenderTarget.hpp>

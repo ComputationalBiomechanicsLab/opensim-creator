@@ -1,14 +1,9 @@
 #pragma once
 
-#include <oscar/Graphics/AntiAliasingLevel.hpp>
-#include <oscar/Graphics/Color.hpp>
+#include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/ImageLoadingFlags.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/RenderTexture.hpp>
+#include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Maths/RayCollision.hpp>
-#include <oscar/Scene/SceneCollision.hpp>
-#include <oscar/Scene/SceneRendererParams.hpp>
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
@@ -18,125 +13,13 @@
 
 #include <array>
 #include <filesystem>
-#include <functional>
-#include <optional>
 #include <vector>
 
-namespace osc { struct AABB; }
-namespace osc { class BVH; }
-namespace osc { struct Line; }
-namespace osc { struct Rect; }
-namespace osc { struct Segment; }
-namespace osc { struct Transform; }
-namespace osc { class AppConfig; }
 namespace osc { class Mesh; }
-namespace osc { class MeshCache; }
 namespace osc { class MeshIndicesView; }
-namespace osc { enum class MeshTopology; }
-namespace osc { struct PolarPerspectiveCamera; }
-namespace osc { struct SceneDecoration; }
-namespace osc { class ShaderCache; }
 
 namespace osc
 {
-    void DrawBVH(
-        MeshCache&,
-        BVH const&,
-        std::function<void(SceneDecoration&&)> const&
-    );
-
-    void DrawAABB(
-        MeshCache&,
-        AABB const&,
-        std::function<void(SceneDecoration&&)> const&
-    );
-
-    void DrawAABBs(
-        MeshCache&,
-        nonstd::span<AABB const>,
-        std::function<void(SceneDecoration&&)> const&
-    );
-
-    void DrawBVHLeafNodes(
-        MeshCache&,
-        BVH const&,
-        std::function<void(SceneDecoration&&)> const&
-    );
-
-    void DrawXZFloorLines(
-        MeshCache&,
-        std::function<void(SceneDecoration&&)> const&,
-        float scale = 1.0f
-    );
-
-    void DrawXZGrid(
-        MeshCache&,
-        std::function<void(SceneDecoration&&)> const&
-    );
-
-    void DrawXYGrid(
-        MeshCache&,
-        std::function<void(SceneDecoration&&)> const&
-    );
-
-    void DrawYZGrid(
-        MeshCache&,
-        std::function<void(SceneDecoration&&)> const&
-    );
-
-    struct ArrowProperties final {
-        ArrowProperties();
-
-        glm::vec3 worldspaceStart;
-        glm::vec3 worldspaceEnd;
-        float tipLength;
-        float neckThickness;
-        float headThickness;
-        Color color;
-    };
-    void DrawArrow(
-        MeshCache&,
-        ArrowProperties const&,
-        std::function<void(SceneDecoration&&)> const&
-    );
-
-    void DrawLineSegment(
-        MeshCache&,
-        Segment const&,
-        Color const&,
-        float radius,
-        std::function<void(SceneDecoration&&)> const&
-    );
-
-    // updates the given BVH with the given component decorations
-    void UpdateSceneBVH(
-        nonstd::span<SceneDecoration const>,
-        BVH&
-    );
-
-    // returns all collisions along a ray
-    std::vector<SceneCollision> GetAllSceneCollisions(
-        BVH const& sceneBVH,
-        nonstd::span<SceneDecoration const>,
-        Line const& worldspaceRay
-    );
-
-    // returns closest ray-triangle collision in worldspace
-    std::optional<RayCollision> GetClosestWorldspaceRayCollision(
-        Mesh const&,
-        Transform const&,
-        Line const& worldspaceRay
-    );
-
-    // returns closest ray-triangle collision in worldspace for a given mouse position
-    // within the given render rectangle
-    std::optional<RayCollision> GetClosestWorldspaceRayCollision(
-        PolarPerspectiveCamera const&,
-        Mesh const&,
-        Rect const& renderScreenRect,
-        glm::vec2 mouseScreenPos
-    );
-
     // returns the "mass center" of a mesh
     //
     // assumes:
@@ -161,12 +44,6 @@ namespace osc
         MeshIndicesView const&
     );
 
-    // returns a material that can draw a mesh's triangles in wireframe-style
-    Material CreateWireframeOverlayMaterial(
-        AppConfig const&,
-        ShaderCache&
-    );
-
     // returns a texture loaded from disk via Image
     //
     // throws if the image data isn't representable as a GPU texture (e.g. because it has
@@ -180,15 +57,6 @@ namespace osc
     void WriteToPNG(
         Texture2D const&,
         std::filesystem::path const&
-    );
-
-    AABB GetWorldspaceAABB(SceneDecoration const&);
-
-    // returns scene rendering parameters for an generic panel
-    SceneRendererParams CalcStandardDarkSceneRenderParams(
-        PolarPerspectiveCamera const&,
-        AntiAliasingLevel,
-        glm::vec2 renderDims
     );
 
     // returns arrays that transforms cube faces from worldspace to projection

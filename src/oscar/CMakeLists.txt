@@ -63,8 +63,8 @@ add_library(oscar STATIC
     Graphics/MaterialPropertyBlock.hpp
     Graphics/MeshCache.cpp
     Graphics/MeshCache.hpp
-    Graphics/MeshGen.cpp
-    Graphics/MeshGen.hpp
+    Graphics/MeshGenerators.cpp
+    Graphics/MeshGenerators.hpp
     Graphics/MeshIndicesView.hpp
     Graphics/Mesh.hpp
     Graphics/MeshTopology.hpp
@@ -94,8 +94,8 @@ add_library(oscar STATIC
     Graphics/TextureDimensionality.hpp
     Graphics/TextureFilterMode.hpp
     Graphics/TextureFormat.hpp
-    Graphics/TextureGen.cpp
-    Graphics/TextureGen.hpp
+    Graphics/TextureGenerators.cpp
+    Graphics/TextureGenerators.hpp
     Graphics/TextureWrapMode.hpp
 
     Maths/AABB.hpp
@@ -150,6 +150,8 @@ add_library(oscar STATIC
     Scene/SceneDecoration.cpp
     Scene/SceneDecoration.hpp
     Scene/SceneDecorationFlags.hpp
+    Scene/SceneHelpers.cpp
+    Scene/SceneHelpers.hpp
     Scene/SceneRenderer.cpp
     Scene/SceneRenderer.hpp
     Scene/SceneRendererParams.cpp

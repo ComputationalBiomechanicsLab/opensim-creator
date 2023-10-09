@@ -1,7 +1,7 @@
 #include "MeshCache.hpp"
 
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>

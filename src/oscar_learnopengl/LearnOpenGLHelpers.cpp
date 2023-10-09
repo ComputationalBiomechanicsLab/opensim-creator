@@ -2,7 +2,7 @@
 
 #include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 
 osc::Mesh osc::GenLearnOpenGLCube()
 {
