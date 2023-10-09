@@ -1,5 +1,5 @@
 ![workflow](https://github.com/ComputationalBiomechanicsLab/opensim-creator/actions/workflows/continuous-integration-workflow.yml/badge.svg)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7825543.svg)](https://doi.org/10.5281/zenodo.7825543)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7703588.svg)](https://doi.org/10.5281/zenodo.7703588)
 
 # OpenSim Creator <img src="resources/textures/logo.svg" align="right" alt="OpenSim Creator Logo" width="128" height="128" />
 
@@ -178,7 +178,7 @@ These are some generic tips that might be handy when setting up your own develop
 
 OpenSim Creator doesn't have a central _written_ software publication that you can cite (yet 😉). However, if you _need_ to directly cite OpenSim Creator (e.g. because you think it's relevant that you built a model with it), the closest thing you can use is our DOI-ed Zenodo releases (metadata available in this repo: `CITATION.cff`/`codemeta.json`):
 
-> Kewley, Adam, Beesel, Julia, & Seth, Ajay. (2023). OpenSim Creator (0.5.2). Zenodo. https://doi.org/10.5281/zenodo.8338537
+> Kewley, Adam, Beesel, Julia, & Seth, Ajay. (2023). OpenSim Creator (0.5.3). Zenodo. https://doi.org/10.5281/zenodo.8420315
 
 If you need a general citation for the simulation/modelling technique, you can directly cite OpenSim via this paper:
 
