@@ -36,8 +36,15 @@ namespace osc
     bool IsLessThanOrEffectivelyEqual(double, double) noexcept;
 
     // returns `true` if the first two arguments are within `relativeError` of eachover
+    //
+    // careful: this won't work if either argument is equal to, or very near, zero (relative
+    //          requires scaling)
     bool IsEqualWithinRelativeError(float, float, float relativeError) noexcept;
     bool IsEqualWithinRelativeError(glm::vec3 const&, glm::vec3 const&, float relativeError) noexcept;
+
+    // returns `true` if the first two arguments are within `absoluteError` of eachover
+    bool IsEqualWithinAbsoluteError(float, float, float absError) noexcept;
+    bool IsEqualWithinAbsoluteError(glm::vec3 const&, glm::vec3 const&, float absError) noexcept;
 
     // ----- glm::vecX/glm::matX helpers -----
 

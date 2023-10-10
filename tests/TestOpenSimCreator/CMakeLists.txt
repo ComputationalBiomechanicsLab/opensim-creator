@@ -8,7 +8,9 @@ add_executable(TestOpenSimCreator
     Registry/TestStaticComponentRegistries.cpp
     Simulation/TestForwardDynamicSimulation.cpp
     Utils/TestOpenSimHelpers.cpp
+    Utils/TestShapeFitters.cpp
     Utils/TestUndoableModelActions.cpp
+
     TestOpenSimLibraryAPI.cpp
     TestOpenSimCreator.cpp  # entrypoint (main)
 )

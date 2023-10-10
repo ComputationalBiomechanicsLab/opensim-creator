@@ -1089,6 +1089,24 @@ bool osc::IsEqualWithinRelativeError(glm::vec3 const& a, glm::vec3 const& b, flo
     return true;
 }
 
+bool osc::IsEqualWithinAbsoluteError(float a, float b, float absError) noexcept
+{
+    auto const difference = std::abs(a - b);
+    return difference <= absError;
+}
+
+bool osc::IsEqualWithinAbsoluteError(glm::vec3 const& a, glm::vec3 const& b, float absError) noexcept
+{
+    for (glm::vec3::length_type i = 0; i < glm::vec3::length(); ++i)
+    {
+        if (!IsEqualWithinAbsoluteError(a[i], b[i], absError))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool osc::AreAtSameLocation(glm::vec3 const& a, glm::vec3 const& b) noexcept
 {
     constexpr float eps2 = std::numeric_limits<float>::epsilon() * std::numeric_limits<float>::epsilon();

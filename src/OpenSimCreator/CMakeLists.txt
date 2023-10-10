@@ -218,6 +218,8 @@ add_library(OpenSimCreator STATIC
     Utils/ParamBlock.hpp
     Utils/ParamBlock.cpp
     Utils/ParamValue.hpp
+    Utils/ShapeFitters.cpp
+    Utils/ShapeFitters.hpp
     Utils/TPS3D.cpp
     Utils/TPS3D.hpp
     Utils/UndoableModelActions.cpp
