@@ -8,7 +8,7 @@
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Platform/App.hpp>
@@ -64,8 +64,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/PBR/lighting/PBR.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/PBR/lighting/PBR.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.frag"),
             },
         };
         rv.setFloat("uAO", 1.0f);

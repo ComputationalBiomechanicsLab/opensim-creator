@@ -10,7 +10,7 @@
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Constants.hpp>
@@ -68,23 +68,23 @@ namespace
     osc::Material CreateMaterial()
     {
         osc::Texture2D albedo = osc::LoadTexture2DFromImage(
-            osc::App::resource("textures/pbr/rusted_iron/albedo.png"),
+            osc::App::resource("oscar_learnopengl/textures/pbr/rusted_iron/albedo.png"),
             osc::ColorSpace::sRGB
         );
         osc::Texture2D normal = osc::LoadTexture2DFromImage(
-            osc::App::resource("textures/pbr/rusted_iron/normal.png"),
+            osc::App::resource("oscar_learnopengl/textures/pbr/rusted_iron/normal.png"),
             osc::ColorSpace::Linear
         );
         osc::Texture2D metallic = osc::LoadTexture2DFromImage(
-            osc::App::resource("textures/pbr/rusted_iron/metallic.png"),
+            osc::App::resource("oscar_learnopengl/textures/pbr/rusted_iron/metallic.png"),
             osc::ColorSpace::Linear
         );
         osc::Texture2D roughness = osc::LoadTexture2DFromImage(
-            osc::App::resource("textures/pbr/rusted_iron/roughness.png"),
+            osc::App::resource("oscar_learnopengl/textures/pbr/rusted_iron/roughness.png"),
             osc::ColorSpace::Linear
         );
         osc::Texture2D ao = osc::LoadTexture2DFromImage(
-            osc::App::resource("textures/pbr/rusted_iron/ao.png"),
+            osc::App::resource("oscar_learnopengl/textures/pbr/rusted_iron/ao.png"),
             osc::ColorSpace::Linear
         );
 
@@ -92,8 +92,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/PBR/lighting_textured/PBR.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/PBR/lighting_textured/PBR.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.frag"),
             },
         };
         rv.setTexture("uAlbedoMap", albedo);

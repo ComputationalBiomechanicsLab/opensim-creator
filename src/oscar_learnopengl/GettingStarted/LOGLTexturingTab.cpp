@@ -9,7 +9,7 @@
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Transform.hpp>
@@ -58,15 +58,15 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/GettingStarted/Texturing.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/GettingStarted/Texturing.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.frag"),
             },
         };
 
         // set uTexture1
         {
             osc::Texture2D container = osc::LoadTexture2DFromImage(
-                osc::App::resource("textures/container.jpg"),
+                osc::App::resource("oscar_learnopengl/textures/container.jpg"),
                 osc::ColorSpace::sRGB,
                 osc::ImageLoadingFlags::FlipVertically
             );
@@ -78,7 +78,7 @@ namespace
         // set uTexture2
         {
             osc::Texture2D face = osc::LoadTexture2DFromImage(
-                osc::App::resource("textures/awesomeface.png"),
+                osc::App::resource("oscar_learnopengl/textures/awesomeface.png"),
                 osc::ColorSpace::sRGB,
                 osc::ImageLoadingFlags::FlipVertically
             );

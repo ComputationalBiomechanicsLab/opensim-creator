@@ -26,7 +26,7 @@
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
 #include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/ShaderType.hpp>
+#include <oscar/Graphics/ShaderPropertyType.hpp>
 
 // other includes...
 
@@ -36,7 +36,7 @@
 #include <oscar/Bindings/SDL2Helpers.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/Color32.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/ShaderLocations.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>
@@ -381,7 +381,7 @@ namespace
         osc::Cubemap
     >;
 
-    osc::ShaderType GetShaderType(MaterialValue const& v)
+    osc::ShaderPropertyType GetShaderType(MaterialValue const& v)
     {
         using osc::VariantIndex;
 
@@ -389,39 +389,39 @@ namespace
         {
         case VariantIndex<MaterialValue, osc::Color>():
         case VariantIndex<MaterialValue, std::vector<osc::Color>>():
-            return osc::ShaderType::Vec4;
+            return osc::ShaderPropertyType::Vec4;
         case VariantIndex<MaterialValue, glm::vec2>():
-            return osc::ShaderType::Vec2;
+            return osc::ShaderPropertyType::Vec2;
         case VariantIndex<MaterialValue, float>():
         case VariantIndex<MaterialValue, std::vector<float>>():
-            return osc::ShaderType::Float;
+            return osc::ShaderPropertyType::Float;
         case VariantIndex<MaterialValue, glm::vec3>():
         case VariantIndex<MaterialValue, std::vector<glm::vec3>>():
-            return osc::ShaderType::Vec3;
+            return osc::ShaderPropertyType::Vec3;
         case VariantIndex<MaterialValue, glm::vec4>():
-            return osc::ShaderType::Vec4;
+            return osc::ShaderPropertyType::Vec4;
         case VariantIndex<MaterialValue, glm::mat3>():
-            return osc::ShaderType::Mat3;
+            return osc::ShaderPropertyType::Mat3;
         case VariantIndex<MaterialValue, glm::mat4>():
         case VariantIndex<MaterialValue, std::vector<glm::mat4>>():
-            return osc::ShaderType::Mat4;
+            return osc::ShaderPropertyType::Mat4;
         case VariantIndex<MaterialValue, int32_t>():
-            return osc::ShaderType::Int;
+            return osc::ShaderPropertyType::Int;
         case VariantIndex<MaterialValue, bool>():
-            return osc::ShaderType::Bool;
+            return osc::ShaderPropertyType::Bool;
         case VariantIndex<MaterialValue, osc::Texture2D>():
-            return osc::ShaderType::Sampler2D;
+            return osc::ShaderPropertyType::Sampler2D;
         case VariantIndex<MaterialValue, osc::RenderTexture>():
         {
             static_assert(osc::NumOptions<osc::TextureDimensionality>() == 2);
             return std::get<osc::RenderTexture>(v).getDimensionality() == osc::TextureDimensionality::Tex2D ?
-                osc::ShaderType::Sampler2D :
-                osc::ShaderType::SamplerCube;
+                osc::ShaderPropertyType::Sampler2D :
+                osc::ShaderPropertyType::SamplerCube;
         }
         case VariantIndex<MaterialValue, osc::Cubemap>():
-            return osc::ShaderType::SamplerCube;
+            return osc::ShaderPropertyType::SamplerCube;
         default:
-            return osc::ShaderType::Unknown;
+            return osc::ShaderPropertyType::Unknown;
         }
     }
 }
@@ -444,33 +444,33 @@ namespace
         "SamplerCube",
         "Unknown",
     });
-    static_assert(c_ShaderTypeInternalStrings.size() == osc::NumOptions<osc::ShaderType>());
+    static_assert(c_ShaderTypeInternalStrings.size() == osc::NumOptions<osc::ShaderPropertyType>());
 
     // convert a GL shader type to an internal shader type
-    osc::ShaderType GLShaderTypeToShaderTypeInternal(GLenum e)
+    osc::ShaderPropertyType GLShaderTypeToShaderTypeInternal(GLenum e)
     {
         switch (e)
         {
         case GL_FLOAT:
-            return osc::ShaderType::Float;
+            return osc::ShaderPropertyType::Float;
         case GL_FLOAT_VEC2:
-            return osc::ShaderType::Vec2;
+            return osc::ShaderPropertyType::Vec2;
         case GL_FLOAT_VEC3:
-            return osc::ShaderType::Vec3;
+            return osc::ShaderPropertyType::Vec3;
         case GL_FLOAT_VEC4:
-            return osc::ShaderType::Vec4;
+            return osc::ShaderPropertyType::Vec4;
         case GL_FLOAT_MAT3:
-            return osc::ShaderType::Mat3;
+            return osc::ShaderPropertyType::Mat3;
         case GL_FLOAT_MAT4:
-            return osc::ShaderType::Mat4;
+            return osc::ShaderPropertyType::Mat4;
         case GL_INT:
-            return osc::ShaderType::Int;
+            return osc::ShaderPropertyType::Int;
         case GL_BOOL:
-            return osc::ShaderType::Bool;
+            return osc::ShaderPropertyType::Bool;
         case GL_SAMPLER_2D:
-            return osc::ShaderType::Sampler2D;
+            return osc::ShaderPropertyType::Sampler2D;
         case GL_SAMPLER_CUBE:
-            return osc::ShaderType::SamplerCube;
+            return osc::ShaderPropertyType::SamplerCube;
         case GL_INT_VEC2:
         case GL_INT_VEC3:
         case GL_INT_VEC4:
@@ -495,7 +495,7 @@ namespace
         case GL_FLOAT_MAT4x3:
         case GL_FLOAT_MAT2:
         default:
-            return osc::ShaderType::Unknown;
+            return osc::ShaderPropertyType::Unknown;
         }
     }
 
@@ -514,7 +514,7 @@ namespace
     struct ShaderElement final {
         ShaderElement(
             int32_t location_,
-            osc::ShaderType shaderType_,
+            osc::ShaderPropertyType shaderType_,
             int32_t size_) :
 
             location{location_},
@@ -524,7 +524,7 @@ namespace
         }
 
         int32_t location;
-        osc::ShaderType shaderType;
+        osc::ShaderPropertyType shaderType;
         int32_t size;
     };
 
@@ -2929,7 +2929,7 @@ public:
         return it->first;
     }
 
-    ShaderType getPropertyType(ptrdiff_t i) const
+    ShaderPropertyType getPropertyType(ptrdiff_t i) const
     {
         auto it = m_Uniforms.begin();
         std::advance(it, i);
@@ -3065,7 +3065,7 @@ private:
 };
 
 
-std::ostream& osc::operator<<(std::ostream& o, ShaderType shaderType)
+std::ostream& osc::operator<<(std::ostream& o, ShaderPropertyType shaderType)
 {
     return o << c_ShaderTypeInternalStrings.at(static_cast<size_t>(shaderType));
 }
@@ -3101,7 +3101,7 @@ std::string_view osc::Shader::getPropertyName(ptrdiff_t propertyIndex) const
     return m_Impl->getPropertyName(propertyIndex);
 }
 
-osc::ShaderType osc::Shader::getPropertyType(ptrdiff_t propertyIndex) const
+osc::ShaderPropertyType osc::Shader::getPropertyType(ptrdiff_t propertyIndex) const
 {
     return m_Impl->getPropertyType(propertyIndex);
 }
@@ -5848,18 +5848,18 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
         size_t byteStride = 0;
         if (shaderImpl.m_MaybeInstancedModelMatAttr)
         {
-            if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == osc::ShaderType::Mat4)
+            if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == osc::ShaderPropertyType::Mat4)
             {
                 byteStride += sizeof(float) * 16;
             }
         }
         if (shaderImpl.m_MaybeInstancedNormalMatAttr)
         {
-            if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderType::Mat4)
+            if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderPropertyType::Mat4)
             {
                 byteStride += sizeof(float) * 16;
             }
-            else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderType::Mat3)
+            else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderPropertyType::Mat3)
             {
                 byteStride += sizeof(float) * 9;
             }
@@ -5877,7 +5877,7 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
         {
             if (shaderImpl.m_MaybeInstancedModelMatAttr)
             {
-                if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == osc::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == osc::ShaderPropertyType::Mat4)
                 {
                     glm::mat4 const m = ModelMatrix(el);
                     nonstd::span<float const> const els = ToFloatSpan(m);
@@ -5887,14 +5887,14 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
             }
             if (shaderImpl.m_MaybeInstancedNormalMatAttr)
             {
-                if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderPropertyType::Mat4)
                 {
                     glm::mat4 const m = NormalMatrix4(el);
                     nonstd::span<float const> const els = ToFloatSpan(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     floatOffset += els.size();
                 }
-                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderType::Mat3)
+                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderPropertyType::Mat3)
                 {
                     glm::mat3 const m = NormalMatrix(el);
                     nonstd::span<float const> const els = ToFloatSpan(m);
@@ -5921,7 +5921,7 @@ void osc::GraphicsBackend::BindToInstancedAttributes(
     size_t byteOffset = 0;
     if (shaderImpl.m_MaybeInstancedModelMatAttr)
     {
-        if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderType::Mat4)
+        if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4)
         {
             gl::AttributeMat4 const mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->location};
             gl::VertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
@@ -5932,7 +5932,7 @@ void osc::GraphicsBackend::BindToInstancedAttributes(
     }
     if (shaderImpl.m_MaybeInstancedNormalMatAttr)
     {
-        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderType::Mat4)
+        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4)
         {
             gl::AttributeMat4 const mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
             gl::VertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
@@ -5940,7 +5940,7 @@ void osc::GraphicsBackend::BindToInstancedAttributes(
             gl::EnableVertexAttribArray(mmtxAttr);
             // unused: byteOffset += sizeof(float) * 16;
         }
-        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderType::Mat3)
+        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3)
         {
             gl::AttributeMat3 const mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
             gl::VertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
@@ -5958,7 +5958,7 @@ void osc::GraphicsBackend::UnbindFromInstancedAttributes(
 {
     if (shaderImpl.m_MaybeInstancedModelMatAttr)
     {
-        if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderType::Mat4)
+        if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4)
         {
             gl::AttributeMat4 const mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->location};
             gl::DisableVertexAttribArray(mmtxAttr);
@@ -5966,12 +5966,12 @@ void osc::GraphicsBackend::UnbindFromInstancedAttributes(
     }
     if (shaderImpl.m_MaybeInstancedNormalMatAttr)
     {
-        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderType::Mat4)
+        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4)
         {
             gl::AttributeMat4 const mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
             gl::DisableVertexAttribArray(mmtxAttr);
         }
-        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderType::Mat3)
+        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3)
         {
             gl::AttributeMat3 const mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
             gl::DisableVertexAttribArray(mmtxAttr);
@@ -6000,7 +6000,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
             // try binding to uModel (standard)
             if (shaderImpl.m_MaybeModelMatUniform)
             {
-                if (shaderImpl.m_MaybeModelMatUniform->shaderType == ShaderType::Mat4)
+                if (shaderImpl.m_MaybeModelMatUniform->shaderType == ShaderPropertyType::Mat4)
                 {
                     gl::UniformMat4 u{shaderImpl.m_MaybeModelMatUniform->location};
                     gl::Uniform(u, ModelMatrix(el));
@@ -6010,12 +6010,12 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
             // try binding to uNormalMat (standard)
             if (shaderImpl.m_MaybeNormalMatUniform)
             {
-                if (shaderImpl.m_MaybeNormalMatUniform->shaderType == osc::ShaderType::Mat3)
+                if (shaderImpl.m_MaybeNormalMatUniform->shaderType == osc::ShaderPropertyType::Mat3)
                 {
                     gl::UniformMat3 u{shaderImpl.m_MaybeNormalMatUniform->location};
                     gl::Uniform(u, NormalMatrix(el));
                 }
-                else if (shaderImpl.m_MaybeNormalMatUniform->shaderType == osc::ShaderType::Mat4)
+                else if (shaderImpl.m_MaybeNormalMatUniform->shaderType == osc::ShaderPropertyType::Mat4)
                 {
                     gl::UniformMat4 u{shaderImpl.m_MaybeNormalMatUniform->location};
                     gl::Uniform(u, NormalMatrix4(el));
@@ -6364,7 +6364,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
         // try binding to uView (standard)
         if (shaderImpl.m_MaybeViewMatUniform)
         {
-            if (shaderImpl.m_MaybeViewMatUniform->shaderType == ShaderType::Mat4)
+            if (shaderImpl.m_MaybeViewMatUniform->shaderType == ShaderPropertyType::Mat4)
             {
                 gl::UniformMat4 u{shaderImpl.m_MaybeViewMatUniform->location};
                 gl::Uniform(u, renderPassState.viewMatrix);
@@ -6374,7 +6374,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
         // try binding to uProjection (standard)
         if (shaderImpl.m_MaybeProjMatUniform)
         {
-            if (shaderImpl.m_MaybeProjMatUniform->shaderType == ShaderType::Mat4)
+            if (shaderImpl.m_MaybeProjMatUniform->shaderType == ShaderPropertyType::Mat4)
             {
                 gl::UniformMat4 u{shaderImpl.m_MaybeProjMatUniform->location};
                 gl::Uniform(u, renderPassState.projectionMatrix);
@@ -6383,7 +6383,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
 
         if (shaderImpl.m_MaybeViewProjMatUniform)
         {
-            if (shaderImpl.m_MaybeViewProjMatUniform->shaderType == ShaderType::Mat4)
+            if (shaderImpl.m_MaybeViewProjMatUniform->shaderType == ShaderPropertyType::Mat4)
             {
                 gl::UniformMat4 u{shaderImpl.m_MaybeViewProjMatUniform->location};
                 gl::Uniform(u, renderPassState.viewProjectionMatrix);

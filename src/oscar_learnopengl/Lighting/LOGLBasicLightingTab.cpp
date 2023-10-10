@@ -9,7 +9,7 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Platform/App.hpp>
@@ -124,16 +124,16 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/LearnOpenGL/Lighting/BasicLighting.vert"),
-            App::slurp("shaders/LearnOpenGL/Lighting/BasicLighting.frag"),
+            App::slurp("oscar_learnopengl/shaders/Lighting/BasicLighting.vert"),
+            App::slurp("oscar_learnopengl/shaders/Lighting/BasicLighting.frag"),
         },
     };
     Material m_LightCubeMaterial
     {
         Shader
         {
-            App::slurp("shaders/LearnOpenGL/LightCube.vert"),
-            App::slurp("shaders/LearnOpenGL/LightCube.frag"),
+            App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
+            App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
         },
     };
 

@@ -10,7 +10,7 @@
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/RenderTexture.hpp>
 #include <oscar/Graphics/RenderTextureDescriptor.hpp>
 #include <oscar/Graphics/Shader.hpp>
@@ -74,7 +74,7 @@ namespace
     osc::Material CreateSceneMaterial()
     {
         osc::Texture2D woodTexture = osc::LoadTexture2DFromImage(
-            osc::App::resource("textures/wood.png"),
+            osc::App::resource("oscar_learnopengl/textures/wood.png"),
             osc::ColorSpace::sRGB
         );
 
@@ -82,8 +82,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/HDR/Scene.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/HDR/Scene.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.frag"),
             },
         };
         rv.setVec3Array("uSceneLightPositions", c_LightPositions);
@@ -99,8 +99,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/HDR/Tonemap.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/HDR/Tonemap.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Tonemap.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Tonemap.frag"),
             },
         };
     }

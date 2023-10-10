@@ -1,4 +1,4 @@
-#include "OpenSimCreator/Registry/StaticComponentRegistries.hpp"
+#include <OpenSimCreator/Registry/StaticComponentRegistries.hpp>
 
 #include <gtest/gtest.h>
 #include <OpenSimCreator/Registry/ComponentRegistry.hpp>

@@ -12,7 +12,7 @@
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/ImageLoadingFlags.hpp>
 #include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/RenderTextureFormat.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
@@ -72,7 +72,7 @@ namespace
         int constexpr renderWidth = 512;
 
         osc::Texture2D hdrTexture = osc::LoadTexture2DFromImage(
-            osc::App::resource("textures/hdr/newport_loft.hdr"),
+            osc::App::resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
             osc::ColorSpace::Linear,
             osc::ImageLoadingFlags::FlipVertically
         );
@@ -96,9 +96,9 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular/EquirectangularToCubemap.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular/EquirectangularToCubemap.geom"),
-                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular/EquirectangularToCubemap.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.geom"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.frag"),
             }
         };
         material.setTexture("uEquirectangularMap", hdrTexture);
@@ -132,9 +132,9 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular/IrradianceConvolution.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular/IrradianceConvolution.geom"),
-                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular/IrradianceConvolution.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.geom"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.frag"),
             },
         };
         material.setRenderTexture(
@@ -175,9 +175,9 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular/Prefilter.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular/Prefilter.geom"),
-                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular/Prefilter.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.geom"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.frag"),
             },
         };
         material.setRenderTexture("uEnvironmentMap", environmentMap);
@@ -227,8 +227,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular/BRDF.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular/BRDF.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/BRDF.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/BRDF.frag"),
             },
         };
 
@@ -260,8 +260,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular/PBR.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/PBR/ibl_specular/PBR.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/PBR.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/PBR.frag"),
             },
         };
         rv.setFloat("uAO", 1.0f);
@@ -423,7 +423,7 @@ private:
     }
 
     Texture2D m_Texture = osc::LoadTexture2DFromImage(
-        App::resource("textures/hdr/newport_loft.hdr"),
+        App::resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
         ColorSpace::Linear,
         ImageLoadingFlags::FlipVertically
     );
@@ -438,8 +438,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/LearnOpenGL/PBR/ibl_specular/Skybox.vert"),
-            App::slurp("shaders/LearnOpenGL/PBR/ibl_specular/Skybox.frag"),
+            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Skybox.vert"),
+            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Skybox.frag"),
         },
     };
 

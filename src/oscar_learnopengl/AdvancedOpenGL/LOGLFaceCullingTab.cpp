@@ -9,7 +9,7 @@
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Platform/App.hpp>
@@ -37,13 +37,13 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/FaceCulling.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/FaceCulling.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
             },
         };
 
         rv.setTexture("uTexture", osc::LoadTexture2DFromImage(
-            osc::App::resource("textures/uv_checker.jpg"),
+            osc::App::resource("oscar_learnopengl/textures/uv_checker.jpg"),
             osc::ColorSpace::sRGB
         ));
 

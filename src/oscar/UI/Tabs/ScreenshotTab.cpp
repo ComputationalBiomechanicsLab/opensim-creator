@@ -248,8 +248,8 @@ private:
             {
                 Shader
                 {
-                    App::slurp("shaders/oscar/PerVertexColor.vert"),
-                    App::slurp("shaders/oscar/PerVertexColor.frag"),
+                    App::slurp("oscar/shaders/PerVertexColor.vert"),
+                    App::slurp("oscar/shaders/PerVertexColor.frag"),
                 }
             };
 

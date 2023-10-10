@@ -8,7 +8,7 @@
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MaterialPropertyBlock.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Disc.hpp>
 #include <oscar/Maths/Line.hpp>
@@ -300,8 +300,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/oscar_demos/SolidColor.vert"),
-            App::slurp("shaders/oscar_demos/SolidColor.frag"),
+            App::slurp("oscar_demos/shaders/SolidColor.vert"),
+            App::slurp("oscar_demos/shaders/SolidColor.frag"),
         },
     };
     Mesh m_SphereMesh = GenSphere(12, 12);

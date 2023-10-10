@@ -12,7 +12,7 @@
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/RenderBufferLoadAction.hpp>
 #include <oscar/Graphics/RenderBufferStoreAction.hpp>
 #include <oscar/Graphics/RenderTarget.hpp>
@@ -125,8 +125,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ssao/Geometry.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ssao/Geometry.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.frag"),
             },
         };
     }
@@ -144,8 +144,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ssao/SSAO.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ssao/SSAO.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.frag"),
             },
         };
     }
@@ -156,8 +156,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ssao/Blur.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ssao/Blur.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.frag"),
             },
         };
     }
@@ -168,8 +168,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ssao/Lighting.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ssao/Lighting.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.frag"),
             },
         };
     }

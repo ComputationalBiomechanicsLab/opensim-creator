@@ -55,7 +55,7 @@
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
@@ -73,6 +73,7 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
+#include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
@@ -4812,7 +4813,7 @@ namespace
             Transform t = GetFloorTransform();
             t.scale *= 0.5f;
 
-            osc::Material material{osc::App::singleton<osc::ShaderCache>()->load(osc::App::resource("shaders/OpenSimCreator/SolidColor.vert"), osc::App::resource("shaders/OpenSimCreator/SolidColor.frag"))};
+            osc::Material material{osc::App::singleton<osc::ShaderCache>()->load(osc::App::resource("shaders/SolidColor.vert"), osc::App::resource("shaders/SolidColor.frag"))};
             material.setColor("uColor", m_Colors.gridLines);
             material.setTransparent(true);
 

@@ -63,8 +63,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/GettingStarted/HelloTriangle.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/GettingStarted/HelloTriangle.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/GettingStarted/HelloTriangle.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/GettingStarted/HelloTriangle.frag"),
             },
         };
     }

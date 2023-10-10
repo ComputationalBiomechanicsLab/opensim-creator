@@ -11,7 +11,7 @@
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/RenderTexture.hpp>
 #include <oscar/Graphics/RenderTextureDescriptor.hpp>
 #include <oscar/Graphics/Shader.hpp>
@@ -222,7 +222,7 @@ private:
     Camera m_Camera = CreateCamera();
     glm::vec3 m_CameraEulers = {};
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
-        App::resource("textures/wood.png"),
+        App::resource("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
     Mesh m_CubeMesh = GenCube();
@@ -231,16 +231,16 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/shadow_mapping/Scene.vert"),
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/shadow_mapping/Scene.frag"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.frag"),
         },
     };
     Material m_DepthMaterial
     {
         Shader
         {
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/shadow_mapping/MakeShadowMap.vert"),
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/shadow_mapping/MakeShadowMap.frag"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.frag"),
         },
     };
     RenderTexture m_DepthTexture = CreateDepthTexture();

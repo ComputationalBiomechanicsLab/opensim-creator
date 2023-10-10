@@ -12,7 +12,7 @@
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Transform.hpp>
@@ -50,7 +50,7 @@ namespace
     {
         // load the first face, so we know the width
         osc::Texture2D t = osc::LoadTexture2DFromImage(
-            resourcesDir / "textures" / std::string_view{c_SkyboxTextureFilenames.front()},
+            resourcesDir / "oscar_learnopengl" / "textures" / std::string_view{c_SkyboxTextureFilenames.front()},
             osc::ColorSpace::sRGB
         );
 
@@ -65,7 +65,7 @@ namespace
         for (osc::CubemapFace f = osc::Next(osc::FirstCubemapFace()); f <= osc::LastCubemapFace(); f = osc::Next(f))
         {
             t = osc::LoadTexture2DFromImage(
-                resourcesDir / "textures" / std::string_view{c_SkyboxTextureFilenames[osc::ToIndex(f)]},
+                resourcesDir / "oscar_learnopengl" / "textures" / std::string_view{c_SkyboxTextureFilenames[osc::ToIndex(f)]},
                 osc::ColorSpace::sRGB
             );
             OSC_THROWING_ASSERT(t.getDimensions().x == dims.x);
@@ -104,8 +104,8 @@ namespace
                 {
                     osc::Shader
                     {
-                        osc::App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Cubemaps/Basic.vert"),
-                        osc::App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Cubemaps/Basic.frag"),
+                        osc::App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Basic.vert"),
+                        osc::App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Basic.frag"),
                     },
                 },
             },
@@ -116,8 +116,8 @@ namespace
                 {
                     osc::Shader
                     {
-                        osc::App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Cubemaps/Reflection.vert"),
-                        osc::App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Cubemaps/Reflection.frag"),
+                        osc::App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Reflection.vert"),
+                        osc::App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Reflection.frag"),
                     },
                 },
             },
@@ -128,8 +128,8 @@ namespace
                 {
                     osc::Shader
                     {
-                        osc::App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Cubemaps/Refraction.vert"),
-                        osc::App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Cubemaps/Refraction.frag"),
+                        osc::App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Refraction.vert"),
+                        osc::App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Refraction.frag"),
                     },
                 },
             },
@@ -262,7 +262,7 @@ private:
     MaterialPropertyBlock m_CubeProperties;
     Mesh m_Cube = GenLearnOpenGLCube();
     Texture2D m_ContainerTexture = LoadTexture2DFromImage(
-        App::resource("textures/container.jpg"),
+        App::resource("oscar_learnopengl/textures/container.jpg"),
         ColorSpace::sRGB
     );
     float m_IOR = 1.52f;
@@ -271,8 +271,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Cubemaps/Skybox.vert"),
-            App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Cubemaps/Skybox.frag"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Skybox.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Skybox.frag"),
         },
     };
     Mesh m_Skybox = GenCube();

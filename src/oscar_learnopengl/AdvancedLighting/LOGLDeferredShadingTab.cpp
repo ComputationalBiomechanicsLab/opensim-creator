@@ -12,7 +12,7 @@
 #include <oscar/Graphics/ImageLoadingFlags.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/RenderBufferLoadAction.hpp>
 #include <oscar/Graphics/RenderBufferStoreAction.hpp>
 #include <oscar/Graphics/RenderTarget.hpp>
@@ -104,8 +104,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/deferred_shading/GBuffer.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/deferred_shading/GBuffer.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.frag"),
             },
         };
     }
@@ -185,8 +185,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/deferred_shading/LightingPass.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/deferred_shading/LightingPass.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.frag"),
             },
         };
     };
@@ -373,12 +373,12 @@ private:
     Mesh m_CubeMesh = GenCube();
     Mesh m_QuadMesh = GenTexturedQuad();
     Texture2D m_DiffuseMap = LoadTexture2DFromImage(
-        App::resource("textures/container2.png"),
+        App::resource("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB,
         ImageLoadingFlags::FlipVertically
     );
     Texture2D m_SpecularMap = LoadTexture2DFromImage(
-        App::resource("textures/container2_specular.png"),
+        App::resource("oscar_learnopengl/textures/container2_specular.png"),
         ColorSpace::sRGB,
         ImageLoadingFlags::FlipVertically
     );
@@ -391,8 +391,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/deferred_shading/LightBox.vert"),
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/deferred_shading/LightBox.frag"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightBox.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightBox.frag"),
         },
     };
 

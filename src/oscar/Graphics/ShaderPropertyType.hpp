@@ -6,7 +6,7 @@
 namespace osc
 {
     // data type of a material-assignable property parsed from the shader code
-    enum class ShaderType {
+    enum class ShaderPropertyType {
         Float = 0,
         Vec2,
         Vec3,
@@ -21,5 +21,5 @@ namespace osc
         NUM_OPTIONS,
     };
 
-    std::ostream& operator<<(std::ostream&, ShaderType);
+    std::ostream& operator<<(std::ostream&, ShaderPropertyType);
 }

@@ -1,4 +1,4 @@
-#include "MeshGen.hpp"
+#include "MeshGenerators.hpp"
 
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/Constants.hpp>

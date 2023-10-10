@@ -13,7 +13,7 @@
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGen.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
@@ -100,11 +100,11 @@ namespace
     osc::Material CreateNormalMappingMaterial()
     {
         osc::Texture2D diffuseMap = osc::LoadTexture2DFromImage(
-            osc::App::resource("textures/brickwall.jpg"),
+            osc::App::resource("oscar_learnopengl/textures/brickwall.jpg"),
             osc::ColorSpace::sRGB
         );
         osc::Texture2D normalMap = osc::LoadTexture2DFromImage(
-            osc::App::resource("textures/brickwall_normal.jpg"),
+            osc::App::resource("oscar_learnopengl/textures/brickwall_normal.jpg"),
             osc::ColorSpace::Linear
         );
 
@@ -112,8 +112,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/NormalMapping.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/NormalMapping.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.frag"),
             },
         };
         rv.setTexture("uDiffuseMap", diffuseMap);
@@ -128,8 +128,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/LightCube.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/LightCube.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
             },
         };
     }
