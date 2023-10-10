@@ -37,13 +37,13 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/FaceCulling.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/FaceCulling.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
             },
         };
 
         rv.setTexture("uTexture", osc::LoadTexture2DFromImage(
-            osc::App::resource("textures/uv_checker.jpg"),
+            osc::App::resource("oscar_learnopengl/textures/uv_checker.jpg"),
             osc::ColorSpace::sRGB
         ));
 

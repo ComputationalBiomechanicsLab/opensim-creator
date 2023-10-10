@@ -68,7 +68,7 @@ namespace
     osc::RenderTexture LoadEquirectangularHDRTextureIntoCubemap()
     {
         osc::Texture2D hdrTexture = osc::LoadTexture2DFromImage(
-            osc::App::resource("textures/hdr/newport_loft.hdr"),
+            osc::App::resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
             osc::ColorSpace::Linear,
             osc::ImageLoadingFlags::FlipVertically
         );
@@ -92,9 +92,9 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/EquirectangularToCubemap.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/EquirectangularToCubemap.geom"),
-                osc::App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/EquirectangularToCubemap.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/EquirectangularToCubemap.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/EquirectangularToCubemap.geom"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/EquirectangularToCubemap.frag"),
             }
         };
         material.setTexture("uEquirectangularMap", hdrTexture);
@@ -128,9 +128,9 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/Convolution.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/Convolution.geom"),
-                osc::App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/Convolution.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Convolution.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Convolution.geom"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Convolution.frag"),
             }
         };
         material.setRenderTexture(
@@ -156,8 +156,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/PBR.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/PBR.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/PBR.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/PBR.frag"),
             },
         };
         rv.setFloat("uAO", 1.0f);
@@ -313,7 +313,7 @@ private:
     }
 
     Texture2D m_Texture = osc::LoadTexture2DFromImage(
-        App::resource("textures/hdr/newport_loft.hdr"),
+        App::resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
         ColorSpace::Linear,
         ImageLoadingFlags::FlipVertically
     );
@@ -325,8 +325,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/Background.vert"),
-            App::slurp("shaders/LearnOpenGL/PBR/diffuse_irradiance/Background.frag"),
+            App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Background.vert"),
+            App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Background.frag"),
         }
     };
 

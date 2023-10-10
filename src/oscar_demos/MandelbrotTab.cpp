@@ -110,8 +110,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/oscar_demos/Mandelbrot.vert"),
-            App::slurp("shaders/oscar_demos/Mandelbrot.frag"),
+            App::slurp("oscar_demos/shaders/Mandelbrot.vert"),
+            App::slurp("oscar_demos/shaders/Mandelbrot.frag"),
         },
     };
     Camera m_Camera = CreateIdentityCamera();

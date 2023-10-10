@@ -169,8 +169,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Framebuffers/Blitter.vert"),
-            App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Framebuffers/Blitter.frag"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.frag"),
         }
     };
 
@@ -179,11 +179,11 @@ private:
     glm::vec3 m_CameraEulers = {};
 
     Texture2D m_ContainerTexture = LoadTexture2DFromImage(
-        App::resource("textures/container.jpg"),
+        App::resource("oscar_learnopengl/textures/container.jpg"),
         ColorSpace::sRGB
     );
     Texture2D m_MetalTexture = LoadTexture2DFromImage(
-        App::resource("textures/metal.png"),
+        App::resource("oscar_learnopengl/textures/metal.png"),
         ColorSpace::sRGB
     );
 
@@ -197,8 +197,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Framebuffers/Filter.vert"),
-            App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Framebuffers/Filter.frag"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.frag"),
         }
     };
 

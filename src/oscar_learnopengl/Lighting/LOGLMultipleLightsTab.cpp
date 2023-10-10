@@ -75,13 +75,13 @@ namespace
     osc::Material CreateMultipleLightsMaterial()
     {
         osc::Texture2D diffuseMap = osc::LoadTexture2DFromImage(
-            osc::App::resource("textures/container2.png"),
+            osc::App::resource("oscar_learnopengl/textures/container2.png"),
             osc::ColorSpace::sRGB,
             osc::ImageLoadingFlags::FlipVertically
         );
 
         osc::Texture2D specularMap = osc::LoadTexture2DFromImage(
-            osc::App::resource("textures/container2_specular.png"),
+            osc::App::resource("oscar_learnopengl/textures/container2_specular.png"),
             osc::ColorSpace::sRGB,
             osc::ImageLoadingFlags::FlipVertically
         );
@@ -90,8 +90,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/Lighting/MultipleLights.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/Lighting/MultipleLights.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.frag"),
             },
         };
 
@@ -129,8 +129,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/LightCube.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/LightCube.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
             },
         };
         rv.setColor("uLightColor", osc::Color::white());

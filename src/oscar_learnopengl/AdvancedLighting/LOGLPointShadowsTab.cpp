@@ -255,17 +255,17 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/point_shadows/MakeShadowMap.vert"),
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/point_shadows/MakeShadowMap.geom"),
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/point_shadows/MakeShadowMap.frag"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.geom"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.frag"),
         },
     };
     Material m_SceneMaterial
     {
         Shader
         {
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/point_shadows/Scene.vert"),
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/point_shadows/Scene.frag"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.frag"),
         },
     };
 
@@ -273,15 +273,15 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/point_shadows/Scene.vert"),
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/point_shadows/SoftScene.frag"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/SoftScene.frag"),
         }
     };
 
     Camera m_SceneCamera = CreateCamera();
     glm::vec3 m_CameraEulers = {};
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
-        App::resource("textures/wood.png"),
+        App::resource("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
     Mesh m_CubeMesh = GenCube();

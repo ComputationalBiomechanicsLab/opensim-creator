@@ -97,7 +97,7 @@ namespace
     osc::Material CreateFloorMaterial()
     {
         osc::Texture2D woodTexture = osc::LoadTexture2DFromImage(
-            osc::App::resource("textures/wood.png"),
+            osc::App::resource("oscar_learnopengl/textures/wood.png"),
             osc::ColorSpace::sRGB
         );
 
@@ -105,8 +105,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/Gamma.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/Gamma.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.frag"),
             },
         };
         rv.setTexture("uFloorTexture", woodTexture);

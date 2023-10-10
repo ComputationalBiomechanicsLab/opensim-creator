@@ -1090,7 +1090,7 @@ void osc::ImGuiInit()
     baseConfig.PixelSnapH = true;
     baseConfig.OversampleH = 2;
     baseConfig.OversampleV = 2;
-    std::string baseFontFile = App::resource("fonts/Ruda-Bold.ttf").string();
+    std::string baseFontFile = App::resource("oscar/fonts/Ruda-Bold.ttf").string();
     io.Fonts->AddFontFromFileTTF(baseFontFile.c_str(), baseConfig.SizePixels, &baseConfig);
 
     // add FontAwesome icon support
@@ -1100,7 +1100,7 @@ void osc::ImGuiInit()
         config.GlyphMinAdvanceX = std::floor(1.5f * config.SizePixels);
         config.GlyphMaxAdvanceX = std::floor(1.5f * config.SizePixels);
 
-        std::string const fontFile = App::resource("fonts/fa-solid-900.ttf").string();
+        std::string const fontFile = App::resource("oscar/fonts/fa-solid-900.ttf").string();
         io.Fonts->AddFontFromFileTTF(
             fontFile.c_str(),
             config.SizePixels,

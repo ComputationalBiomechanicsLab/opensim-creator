@@ -64,7 +64,7 @@ public:
         m_Material.setTexture(
             "uTexture1",
             LoadTexture2DFromImage(
-                App::resource("textures/container.jpg"),
+                App::resource("oscar_learnopengl/textures/container.jpg"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
             )
@@ -72,7 +72,7 @@ public:
         m_Material.setTexture(
             "uTexture2",
             LoadTexture2DFromImage(
-                App::resource("textures/awesomeface.png"),
+                App::resource("oscar_learnopengl/textures/awesomeface.png"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
             )
@@ -182,8 +182,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/LearnOpenGL/GettingStarted/CoordinateSystems.vert"),
-            App::slurp("shaders/LearnOpenGL/GettingStarted/CoordinateSystems.frag"),
+            App::slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.vert"),
+            App::slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.frag"),
         },
     };
     Mesh m_Mesh = GenLearnOpenGLCube();

@@ -98,15 +98,15 @@ namespace
     osc::Material CreateParallaxMappingMaterial()
     {
         osc::Texture2D diffuseMap = osc::LoadTexture2DFromImage(
-            osc::App::resource("textures/bricks2.jpg"),
+            osc::App::resource("oscar_learnopengl/textures/bricks2.jpg"),
             osc::ColorSpace::sRGB
         );
         osc::Texture2D normalMap = osc::LoadTexture2DFromImage(
-            osc::App::resource("textures/bricks2_normal.jpg"),
+            osc::App::resource("oscar_learnopengl/textures/bricks2_normal.jpg"),
             osc::ColorSpace::Linear
         );
         osc::Texture2D displacementMap = osc::LoadTexture2DFromImage(
-            osc::App::resource("textures/bricks2_disp.jpg"),
+            osc::App::resource("oscar_learnopengl/textures/bricks2_disp.jpg"),
             osc::ColorSpace::Linear
         );
 
@@ -114,8 +114,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ParallaxMapping.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/AdvancedLighting/ParallaxMapping.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.frag"),
             },
         };
         rv.setTexture("uDiffuseMap", diffuseMap);
@@ -131,8 +131,8 @@ namespace
         {
             osc::Shader
             {
-                osc::App::slurp("shaders/LearnOpenGL/LightCube.vert"),
-                osc::App::slurp("shaders/LearnOpenGL/LightCube.frag"),
+                osc::App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
+                osc::App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
             },
         };
     }

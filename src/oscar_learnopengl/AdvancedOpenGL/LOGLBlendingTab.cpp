@@ -209,8 +209,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Blending.vert"),
-            App::slurp("shaders/LearnOpenGL/AdvancedOpenGL/Blending.frag"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.frag"),
         },
     };
     Material m_BlendingMaterial = m_OpaqueMaterial;
@@ -219,15 +219,15 @@ private:
     Mesh m_TransparentMesh = GenerateTransparent();
     Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     Texture2D m_MarbleTexture = LoadTexture2DFromImage(
-        App::resource("textures/marble.jpg"),
+        App::resource("oscar_learnopengl/textures/marble.jpg"),
         ColorSpace::sRGB
     );
     Texture2D m_MetalTexture = LoadTexture2DFromImage(
-        App::resource("textures/metal.png"),
+        App::resource("oscar_learnopengl/textures/metal.png"),
         ColorSpace::sRGB
     );
     Texture2D m_WindowTexture = LoadTexture2DFromImage(
-        App::resource("textures/window.png"),
+        App::resource("oscar_learnopengl/textures/window.png"),
         ColorSpace::sRGB
     );
     bool m_IsMouseCaptured = false;

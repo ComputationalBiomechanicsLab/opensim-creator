@@ -360,8 +360,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/bloom/Bloom.vert"),
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/bloom/Bloom.frag"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Bloom.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Bloom.frag"),
         },
     };
 
@@ -369,8 +369,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/bloom/LightBox.vert"),
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/bloom/LightBox.frag"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/LightBox.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/LightBox.frag"),
         },
     };
 
@@ -378,8 +378,8 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/bloom/Blur.vert"),
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/bloom/Blur.frag"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Blur.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Blur.frag"),
         },
     };
 
@@ -387,17 +387,17 @@ private:
     {
         Shader
         {
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/bloom/Final.vert"),
-            App::slurp("shaders/LearnOpenGL/AdvancedLighting/bloom/Final.frag"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Final.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Final.frag"),
         },
     };
 
     Texture2D m_WoodTexture = osc::LoadTexture2DFromImage(
-        App::resource("textures/wood.png"),
+        App::resource("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
     Texture2D m_ContainerTexture = osc::LoadTexture2DFromImage(
-        App::resource("textures/container2.png"),
+        App::resource("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB
     );
     Mesh m_CubeMesh = GenCube();
