@@ -9,3 +9,8 @@
 //
 // full application name string
 #define TESTOSCAR_APPNAME_STRING "TestOscar"
+
+// char[]
+//
+// absolute path to the build_resources/ dir (for access to test fixture data)
+#define OSC_BUILD_RESOURCES_DIR "@CMAKE_CURRENT_SOURCE_DIR@/../../build_resources"

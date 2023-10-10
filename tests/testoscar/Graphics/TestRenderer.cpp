@@ -2047,7 +2047,7 @@ TEST_F(Renderer, MeshTopologyAllCanBeWrittenToStream)
 TEST_F(Renderer, LoadTexture2DFromImageResourceCanLoadImageFile)
 {
     osc::Texture2D const t = osc::LoadTexture2DFromImage(
-        osc::App::resource("textures/awesomeface.png"),
+        osc::App::resource((std::filesystem::path{OSC_BUILD_RESOURCES_DIR} / "testoscar/awesomeface.png").string()),
         osc::ColorSpace::sRGB
     );
     ASSERT_EQ(t.getDimensions(), glm::ivec2(512, 512));
