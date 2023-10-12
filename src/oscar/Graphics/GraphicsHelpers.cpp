@@ -402,3 +402,33 @@ std::array<glm::mat4, 6> osc::CalcCubemapViewProjMatrices(
     }
     return rv;
 }
+
+void osc::ForEachIndexedVert(Mesh const& mesh, std::function<void(glm::vec3)> const& callback)
+{
+    auto const verts = mesh.getVerts();
+    auto const indices = mesh.getIndices();
+    for (size_t i = 0; i < indices.size(); ++i)
+    {
+        if (auto index = indices[i]; 0 <= index && index < verts.size())
+        {
+            callback(verts[index]);
+        }
+    }
+}
+
+std::vector<glm::vec3> osc::GetAllIndexedVerts(Mesh const& mesh)
+{
+    auto const verts = mesh.getVerts();
+    auto const indices = mesh.getIndices();
+
+    std::vector<glm::vec3> rv;
+    rv.reserve(indices.size());  // guess: it's likely that all indices are fine
+    for (size_t i = 0; i < indices.size(); ++i)
+    {
+        if (auto index = indices[i]; 0 <= index && index < verts.size())
+        {
+            rv.push_back(verts[index]);
+        }
+    }
+    return rv;
+}

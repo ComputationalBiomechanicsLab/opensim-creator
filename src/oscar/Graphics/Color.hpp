@@ -228,13 +228,13 @@ namespace osc
         return glm::vec4{c};
     }
 
-    // returns a pointer to the first float element in the color (used by ImGui etc.)
+    // returns a pointer to the first float element in the color
     constexpr float const* ValuePtr(Color const& color)
     {
         return &color.r;
     }
 
-    // returns a pointer to the first float element in the color (used by ImGui etc.)
+    // returns a pointer to the first float element in the color
     constexpr float* ValuePtr(Color& color)
     {
         return &color.r;

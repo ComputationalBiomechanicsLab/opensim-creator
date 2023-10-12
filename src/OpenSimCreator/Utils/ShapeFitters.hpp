@@ -8,4 +8,5 @@ namespace osc { class Mesh; }
 namespace osc
 {
     Sphere FitSphere(Mesh const&);
+    Plane FitPlane(Mesh const&);
 }

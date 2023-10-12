@@ -13,6 +13,7 @@
 
 #include <array>
 #include <filesystem>
+#include <functional>
 #include <vector>
 
 namespace osc { class Mesh; }
@@ -66,4 +67,19 @@ namespace osc
         glm::mat4 const& projectionMatrix,
         glm::vec3 cubeCenter
     );
+
+    // calls the provided callback with each indexed vertex as-if by calling
+    //
+    //   - callback(mesh.getVertices()[mesh.getIndices()[i]]);
+    //
+    // with range-checking on the indices (invalid indices are ignored)
+    void ForEachIndexedVert(Mesh const&, std::function<void(glm::vec3)> const&);
+
+    // returns a list of vertices in mesh where each vertex was extracted as-if
+    // by calling:
+    //
+    //   - mesh.getVertices()[mesh.getIndices()[i]];
+    //
+    // with range-checking on the indices (invalid indices are ignored)
+    std::vector<glm::vec3> GetAllIndexedVerts(Mesh const&);
 }
