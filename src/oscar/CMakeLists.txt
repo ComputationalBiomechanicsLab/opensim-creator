@@ -103,6 +103,7 @@ add_library(oscar STATIC
     Maths/CollisionTests.hpp
     Maths/Constants.hpp
     Maths/Disc.hpp
+    Maths/Ellipsoid.hpp
     Maths/EulerPerspectiveCamera.hpp
     Maths/Line.hpp
     Maths/MathHelpers.hpp
