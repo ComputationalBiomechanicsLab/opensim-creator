@@ -409,7 +409,8 @@ void osc::ForEachIndexedVert(Mesh const& mesh, std::function<void(glm::vec3)> co
     auto const indices = mesh.getIndices();
     for (size_t i = 0; i < indices.size(); ++i)
     {
-        if (auto index = indices[i]; 0 <= index && index < verts.size())
+        static_assert(std::is_unsigned_v<decltype(indices[i])>);
+        if (auto index = indices[i]; index < verts.size())
         {
             callback(verts[index]);
         }
