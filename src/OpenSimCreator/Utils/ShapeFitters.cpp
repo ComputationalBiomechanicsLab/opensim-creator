@@ -120,7 +120,7 @@ namespace
         return {1.0/v[0], 1.0/v[1], 1.0/v[2]};
     }
 
-    std::vector<std::vector<double>> DebuggableMatrix(SimTK::Matrix const& src)
+    [[maybe_unused]] std::vector<std::vector<double>> DebuggableMatrix(SimTK::Matrix const& src)
     {
         std::vector<std::vector<double>> rv;
         rv.reserve(src.nrow());
@@ -137,7 +137,7 @@ namespace
     }
 
     template<int M, int N>
-    std::array<std::array<double, M>, N> DebuggableMatrix(SimTK::Mat<M, N> const& src)
+    [[maybe_unused]] std::array<std::array<double, M>, N> DebuggableMatrix(SimTK::Mat<M, N> const& src)
     {
         std::array<std::array<double, M>, N> rv;
         for (int row = 0; row < src.nrow(); ++row)
