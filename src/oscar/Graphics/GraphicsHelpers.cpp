@@ -426,7 +426,8 @@ std::vector<glm::vec3> osc::GetAllIndexedVerts(Mesh const& mesh)
     rv.reserve(indices.size());  // guess: it's likely that all indices are fine
     for (size_t i = 0; i < indices.size(); ++i)
     {
-        if (auto index = indices[i]; 0 <= index && index < verts.size())
+        static_assert(std::is_unsigned_v<decltype(indices[i])>);
+        if (auto index = indices[i]; index < verts.size())
         {
             rv.push_back(verts[index]);
         }
