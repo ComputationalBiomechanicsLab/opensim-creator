@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
 
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
@@ -12,15 +13,19 @@
 #include <oscar/Utils/Assertions.hpp>
 #include <Simbody.h>
 
+#include <algorithm>
 #include <array>
 #include <complex>
 #include <numeric>
 #include <vector>
 
+// generic helpers
 namespace
 {
     // returns the contents of `vs` with `subtrahend` subtracted from each element
-    std::vector<glm::vec3> Subtract(nonstd::span<glm::vec3 const> vs, glm::vec3 const& subtrahend)
+    std::vector<glm::vec3> Subtract(
+        nonstd::span<glm::vec3 const> vs,
+        glm::vec3 const& subtrahend)
     {
         std::vector<glm::vec3> rv;
         rv.reserve(vs.size());
@@ -41,270 +46,15 @@ namespace
         }
         return glm::vec3{accumulator / static_cast<double>(vs.size())};
     }
+}
 
-    // returns a covariance matrix by multiplying:
-    //
-    // - lhs: 3xN matrix (rows are x y z, columns are each point)
-    // - rhs: Nx3 matrix (rows are each point, columns are x, y, z)
-    SimTK::Mat33 CalcCovarianceMatrix(nonstd::span<glm::vec3 const> vs)
-    {
-        // pack the vertices into a covariance matrix, ready for principal component analysis (PCA)
-        SimTK::Mat33 covarianceMatrix;
-        for (int row = 0; row < 3; ++row)
-        {
-            for (int col = 0; col < 3; ++col)
-            {
-                double acc = 0.0;
-                for (size_t i = 0; i < vs.size(); ++i)
-                {
-                    float lhs = vs[i][row];
-                    float rhs = vs[i][col];
-                    acc += lhs * rhs;
-                }
-                covarianceMatrix(row, col) = acc;
-            }
-        }
-        return covarianceMatrix;
-    }
-
-    // function that behaves "as if" the caller called MATLAB's `eig` function like
-    // so:
-    //
-    //     [eigenVectors, eigenValuesInDiagonalMatrix] = eig(matrix);
-    //
-    // note: as in MATLAB, the returned vectors/values are not guaranteed to be in
-    //       any particular order.
-    template<int N>
-    std::pair<SimTK::Mat<N, N>, SimTK::Mat<N, N>> Eig(SimTK::Mat<N, N> const& m)
-    {
-        // the provided matrix must be re-packed as complex numbers (with no
-        // complex part) because SimTK's `eigen.cpp` implementation only provides
-        // implementations for complex numbers
-        SimTK::ComplexMatrix packed(N, N);
-        for (int row = 0; row < N; ++row)
-        {
-            for (int col = 0; col < N; ++col)
-            {
-                packed(row, col) = SimTK::Complex{m(row, col), 0.0};
-            }
-        }
-        SimTK::ComplexVector eigenValues(N);
-        SimTK::ComplexMatrix eigenVectors(N, N);
-        SimTK::Eigen(packed).getAllEigenValuesAndVectors(eigenValues, eigenVectors);
-
-        // repack SimTK answer into MATLAB-like form
-        SimTK::Mat<N, N> repackedEigenVectors(0.0);
-        SimTK::Mat<N, N> repackedEigenValues(0.0);
-        for (int row = 0; row < N; ++row)
-        {
-            for (int col = 0; col < N; ++col)
-            {
-                repackedEigenVectors(row, col) = eigenVectors(row, col).real();
-            }
-            repackedEigenValues(row, row) = eigenValues(row).real();
-        }
-        return {repackedEigenVectors, repackedEigenValues};
-    }
-
-    // returns the value returned by `Eig`, but re-sorted from smallest to largest
-    // eigenvalue
-    template<int N>
-    std::pair<SimTK::Mat<N, N>, SimTK::Mat<N, N>> SortedEig(SimTK::Mat<N, N> const& m)
-    {
-        auto const p = Eig(m);
-
-        // create a sort index lookup by comparing the diagonal
-        // entries (eigenvalues) of the second part of the pair
-        std::array<int, N> indices{};
-        std::iota(indices.begin(), indices.end(), 0);
-        std::sort(indices.begin(), indices.end(), [&p](int a, int b)
-        {
-            return p.second(a, a) < p.second(b, b);
-        });
-
-        auto copy = p;
-        for (int dest = 0; dest < N; ++dest)
-        {
-            int const src = indices[dest];
-
-            copy.first.col(dest) = p.first.col(src);
-            copy.second(dest, dest) = p.second(src, src);
-        }
-
-        return copy;
-    }
-
-    // returns `vs` projected onto a plane's 2D surface, where the
-    // plane's surface is described by two orthogonal basis vectors
-    std::vector<glm::vec2> Project3DPointsOnto2DSurface(
-        nonstd::span<glm::vec3 const> vs,
-        glm::vec3 const& basis1,
-        glm::vec3 const& basis2)
-    {
-        std::vector<glm::vec2> rv;
-        rv.reserve(vs.size());
-        for (glm::vec3 const& v : vs)
-        {
-            rv.emplace_back(glm::dot(v, basis1), glm::dot(v, basis2));
-        }
-        return rv;
-    }
-
-    // returns `surfacePoint` un-projected from the 2D surface of a plane
-    // described by two orthogonal basis vectors into 3D
-    glm::vec3 Unproject2DSurfacePointInto3D(
-        glm::vec2 surfacePoint,
-        glm::vec3 const& basis1,
-        glm::vec3 const& basis2)
-    {
-        return surfacePoint.x*basis1 + surfacePoint.y*basis2;
-    }
-
-    // returns the smallest rectangle that bounds `vs`
-    osc::Rect CalcBounds(nonstd::span<glm::vec2 const> vs)
-    {
-        if (vs.empty())
-        {
-            return osc::Rect{};  // edge-case
-        }
-
-        osc::Rect rv{vs.front(), vs.front()};
-        for (auto it = vs.begin()+1; it != vs.end(); ++it)
-        {
-            rv.p1 = osc::Min(rv.p1, *it);
-            rv.p2 = osc::Max(rv.p2, *it);
-        }
-        return rv;
-    }
-
-    // part of solving this algeberic form for an ellipsoid:
-    //
-    //     - Ax^2 + By^2 + Cz^2 + 2Dxy + 2Exz + 2Fyz + 2Gx + 2Hy + 2Iz + J = 0
-    //
-    // see: https://nl.mathworks.com/matlabcentral/fileexchange/24693-ellipsoid-fit
-    std::array<double, 9> SolveU(nonstd::span<glm::vec3 const> vs)
-    {
-        // this code is translated like-for-like with the MATLAB version
-        // and was checked by comparing debugger output in MATLAB from
-        // `ellipsoid_fit.m` to this version
-
-        // the "How to Build a Dinosaur" version only ever calls `ellipsoid_fit`
-        // with `equals` set to `''`, which means "unique fit" (no constraints)
-
-        int const nRows = static_cast<int>(vs.size());
-        int const nCols = 9;
-
-        SimTK::Matrix D(nRows, nCols);
-        SimTK::Vector d2(nRows);
-        for (int row = 0; row < nRows; ++row)
-        {
-            double const x = vs[row].x;
-            double const y = vs[row].y;
-            double const z = vs[row].z;
-
-            D(row, 0) = x*x + y*y - 2.0*z*z;
-            D(row, 1) = x*x + z*z - 2.0*y*y;
-            D(row, 2) = 2.0*x*y;
-            D(row, 3) = 2.0*x*z;
-            D(row, 4) = 2.0*y*z;
-            D(row, 5) = 2.0*x;
-            D(row, 6) = 2.0*y;
-            D(row, 7) = 2.0*z;
-            D(row, 8) = 1.0 + 0.0*x;
-
-            d2(row) = x*x + y*y + z*z;
-        }
-
-        // note: SimTK and MATLAB behave slightly different when given inputs
-        //       that are signular or badly scaled.
-        //
-        //       I'm using a hard-coded rcond here to match MATLAB's error message,
-        //       so that I can verify that SimTK's behavior can be modified to yield
-        //       identical results to MATLAB
-        constexpr double c_RCondReportedByMatlab = 1.202234e-16;
-
-        // solve the normal system of equations
-        SimTK::Vector u(9, 0.0);   // solution to the normal equations
-        auto factor = SimTK::FactorQTZ{D.transpose() * D, c_RCondReportedByMatlab};
-        factor.solve(D.transpose() * d2, u);
-
-        // repack vector into compile-time-known array
-        std::array<double, 9> rv{};
-        std::copy(u.begin(), u.end(), rv.begin());
-        return rv;
-    }
-
-    std::array<double, 10> SolveV(std::array<double, 9> const& u)
-    {
-        return
-        {
-            u[0] + u[1] - 1.0f,
-            u[0] - 2.0f*u[1] - 1.0f,
-            u[1] - 2.0f*u[0] - 1.0f,
-            u[2],
-            u[3],
-            u[4],
-            u[5],
-            u[6],
-            u[7],
-            u[8],
-        };
-    }
-
-    // forms the algebraic form of the ellipsoid
-    SimTK::Mat44 CalcA(std::array<double, 10> const& v)
-    {
-        SimTK::Mat44 A;
-
-        A(0, 0) = v[0];
-        A(0, 1) = v[3];
-        A(0, 2) = v[4];
-        A(0, 3) = v[6];
-
-        A(1, 0) = v[3];
-        A(1, 1) = v[1];
-        A(1, 2) = v[5];
-        A(1, 3) = v[7];
-
-        A(2, 0) = v[4];
-        A(2, 1) = v[5];
-        A(2, 2) = v[2];
-        A(2, 3) = v[8];
-
-        A(3, 0) = v[6];
-        A(3, 1) = v[7];
-        A(3, 2) = v[8];
-        A(3, 3) = v[9];
-
-        return A;
-    }
-
-    // finds the center of the ellipsoid
-    SimTK::Vec3 CalcCenter(SimTK::Mat44 const& A, std::array<double, 10> const& v)
-    {
-        SimTK::Matrix topLeft(3, 3);
-        topLeft(0, 0) = A(0, 0);
-        topLeft(0, 1) = A(0, 1);
-        topLeft(0, 2) = A(0, 2);
-        topLeft(1, 0) = A(1, 0);
-        topLeft(1, 1) = A(1, 1);
-        topLeft(1, 2) = A(1, 2);
-        topLeft(2, 0) = A(2, 0);
-        topLeft(2, 1) = A(2, 1);
-        topLeft(2, 2) = A(2, 2);
-
-        SimTK::Vector rhs(3);
-        rhs(0) = v[6];
-        rhs(1) = v[7];
-        rhs(2) = v[8];
-        SimTK::Vector center(3);
-        SimTK::FactorQTZ{-topLeft}.solve(rhs, center);
-
-        // pack return value
-        return SimTK::Vec3{center(0), center(1), center(2)};
-    }
-
-    SimTK::Matrix MakeIdentityMatrix(int size)
+// `m4s`: "MATLAB for SimTK" helpers
+//
+// helpers that provide a few MATLAB-like utility methods for SimTK, to
+// make it easier to translate the code
+namespace
+{
+    SimTK::Matrix Eye(int size)
     {
         SimTK::Matrix rv(size, size, 0.0);
         for (int i = 0; i < size; ++i)
@@ -401,16 +151,324 @@ namespace
         return rv;
     }
 
+    // function that behaves "as if" the caller called MATLAB's `eig` function like
+    // so:
+    //
+    //     [eigenVectors, eigenValuesInDiagonalMatrix] = eig(matrix);
+    //
+    // note: the returned vectors/values are not guaranteed to be in any particular
+    //       order (same behavior as MATLAB).
+    template<int N>
+    std::pair<SimTK::Mat<N, N>, SimTK::Mat<N, N>> Eig(SimTK::Mat<N, N> const& m)
+    {
+        // the provided matrix must be re-packed as complex numbers (with no
+        // complex part)
+        //
+        // this is entirely because SimTK's `eigen.cpp` implementation only provides
+        // an Eigenanalysis implementation for complex numbers
+        SimTK::ComplexMatrix packed(N, N);
+        for (int row = 0; row < N; ++row)
+        {
+            for (int col = 0; col < N; ++col)
+            {
+                packed(row, col) = SimTK::Complex{m(row, col), 0.0};
+            }
+        }
+
+        // perform Eigenanalysis
+        SimTK::ComplexVector eigenValues(N);
+        SimTK::ComplexMatrix eigenVectors(N, N);
+        SimTK::Eigen(packed).getAllEigenValuesAndVectors(eigenValues, eigenVectors);
+
+        // re-pack answer from SimTK's Eigenanalysis into a MATLAB-like form
+        SimTK::Mat<N, N> repackedEigenVectors(0.0);
+        SimTK::Mat<N, N> repackedEigenValues(0.0);
+        for (int row = 0; row < N; ++row)
+        {
+            for (int col = 0; col < N; ++col)
+            {
+                repackedEigenVectors(row, col) = eigenVectors(row, col).real();
+            }
+            repackedEigenValues(row, row) = eigenValues(row).real();
+        }
+
+        return {repackedEigenVectors, repackedEigenValues};
+    }
+
+    // returns the value returned by `Eig`, but re-sorted from smallest to largest
+    // eigenvalue
+    //
+    // (similar idea to "sorted eigenvalues and eigenvectors" section in MATLAB
+    //  documentation for `eig`)
+    template<int N>
+    std::pair<SimTK::Mat<N, N>, SimTK::Mat<N, N>> EigSorted(SimTK::Mat<N, N> const& m)
+    {
+        // perform unordered Eigenanalysis
+        auto const unsorted = Eig(m);
+
+        // create indices into the unordered result that are sorted by increasing Eigenvalue
+        auto const sortedIndices = [&unsorted]()
+        {
+            std::array<int, N> indices{};
+            std::iota(indices.begin(), indices.end(), 0);
+            std::sort(indices.begin(), indices.end(), [&unsorted](int a, int b)
+            {
+                auto const& lhsEigenValue = unsorted.second(a, a);
+                auto const& rhsEigenValue = unsorted.second(b, b);
+                return lhsEigenValue < rhsEigenValue;
+            });
+            return indices;
+        }();
+
+        // use the indices to create a sorted version of the result
+        auto const sorted = [&unsorted, &sortedIndices]()
+        {
+            auto copy = unsorted;
+            for (int dest = 0; dest < N; ++dest)
+            {
+                int const src = sortedIndices[dest];
+                copy.first.col(dest) = unsorted.first.col(src);
+                copy.second(dest, dest) = unsorted.second(src, src);
+            }
+            return copy;
+        }();
+
+        return sorted;
+    }
+
+    // solve systems of linear equations `Ax = B` for `x`
+    SimTK::Vector SolveLinearLeastSquares(
+        SimTK::Matrix const& A,
+        SimTK::Vector B,
+        std::optional<double> rcond = std::nullopt)
+    {
+        OSC_ASSERT(A.nrow() == B.nrow());
+        SimTK::Vector result(A.ncol(), 0.0);
+        if (rcond)
+        {
+            SimTK::FactorQTZ{A, *rcond}.solve(B, result);
+        }
+        else
+        {
+            SimTK::FactorQTZ{A}.solve(B, result);
+        }
+
+        return result;
+    }
+}
+
+// shape-fitting specific helper functions
+namespace
+{
+    // returns a covariance matrix by multiplying:
+    //
+    // - lhs: 3xN matrix (rows are x y z, and columns are each point in `vs`)
+    // - rhs: Nx3 matrix (rows are each point in `vs`, columns are x, y, z)
+    SimTK::Mat33 CalcCovarianceMatrix(nonstd::span<glm::vec3 const> vs)
+    {
+        SimTK::Mat33 rv;
+        for (int row = 0; row < 3; ++row)
+        {
+            for (int col = 0; col < 3; ++col)
+            {
+                double accumulator = 0.0;
+                for (size_t i = 0; i < vs.size(); ++i)
+                {
+                    float const lhs = vs[i][row];
+                    float const rhs = vs[i][col];
+                    accumulator += lhs * rhs;
+                }
+                rv(row, col) = accumulator;
+            }
+        }
+        return rv;
+    }
+
+    // returns `v` projected onto a plane's 2D surface, where the
+    // plane's surface has basis vectors `basis1` and `basis2`
+    glm::vec2 Project3DPointOntoPlane(
+        glm::vec3 const& v,
+        glm::vec3 const& basis1,
+        glm::vec3 const& basis2)
+    {
+        return {glm::dot(v, basis1), glm::dot(v, basis2)};
+    }
+
+    // returns `surfacePoint` un-projected from the 2D surface of a plane, where
+    // the plane's surface has basis vectors `basis1` and `basis2`
+    glm::vec3 Unproject2DPlanePointInto3D(
+        glm::vec2 planeSurfacePoint,
+        glm::vec3 const& basis1,
+        glm::vec3 const& basis2)
+    {
+        return planeSurfacePoint.x*basis1 + planeSurfacePoint.y*basis2;
+    }
+
+    // returns `vs` projected onto a plane's 2D surface, where the
+    // plane's surface has basis vectors `basis1` and `basis2`
+    std::vector<glm::vec2> Project3DPointsOnto2DSurface(
+        nonstd::span<glm::vec3 const> vs,
+        glm::vec3 const& basis1,
+        glm::vec3 const& basis2)
+    {
+        std::vector<glm::vec2> rv;
+        rv.reserve(vs.size());
+        for (glm::vec3 const& v : vs)
+        {
+            rv.push_back(Project3DPointOntoPlane(v, basis1, basis2));
+        }
+        return rv;
+    }
+
+    // part of solving this algeberic form for an ellipsoid:
+    //
+    //     - Ax^2 + By^2 + Cz^2 + 2Dxy + 2Exz + 2Fyz + 2Gx + 2Hy + 2Iz + J = 0
+    //
+    // see: https://nl.mathworks.com/matlabcentral/fileexchange/24693-ellipsoid-fit
+    std::array<double, 9> SolveEllipsoidAlgebraicForm(nonstd::span<glm::vec3 const> vs)
+    {
+        // this code is translated like-for-like with the MATLAB version
+        // and was checked by comparing debugger output in MATLAB from
+        // `ellipsoid_fit.m` to this version
+        //
+        // which is to say, you should read the "How to Build a Dinosaur"
+        // version if something doesn't make sense here
+
+        // the "How to Build a Dinosaur" version only ever calls `ellipsoid_fit`
+        // with `equals` set to `''`, which means "unique fit" (no constraints)
+
+        int const nRows = static_cast<int>(vs.size());
+        int const nCols = 9;
+
+        SimTK::Matrix D(nRows, nCols);
+        SimTK::Vector d2(nRows);
+        for (int row = 0; row < nRows; ++row)
+        {
+            double const x = vs[row].x;
+            double const y = vs[row].y;
+            double const z = vs[row].z;
+
+            D(row, 0) = x*x + y*y - 2.0*z*z;
+            D(row, 1) = x*x + z*z - 2.0*y*y;
+            D(row, 2) = 2.0*x*y;
+            D(row, 3) = 2.0*x*z;
+            D(row, 4) = 2.0*y*z;
+            D(row, 5) = 2.0*x;
+            D(row, 6) = 2.0*y;
+            D(row, 7) = 2.0*z;
+            D(row, 8) = 1.0 + 0.0*x;
+
+            d2(row) = x*x + y*y + z*z;
+        }
+
+        // note: SimTK and MATLAB behave slightly different when given inputs
+        //       that are signular or badly scaled.
+        //
+        //       I'm using a hard-coded rcond here to match MATLAB's error message,
+        //       so that I can verify that SimTK's behavior can be modified to yield
+        //       identical results to MATLAB
+        constexpr double c_RCondReportedByMatlab = 1.202234e-16;
+
+        // solve the normal system of equations
+        SimTK::Vector u = SolveLinearLeastSquares(
+            D.transpose() * D,  // lhs * u = ...
+            D.transpose() * d2, // ... rhs
+            c_RCondReportedByMatlab
+        );
+
+        // repack vector into compile-time-known array
+        OSC_ASSERT(u.size() == 9);
+        std::array<double, 9> rv{};
+        std::copy(u.begin(), u.end(), rv.begin());
+        return rv;
+    }
+
+    // like-for-like translation from original MATLAB version of the code
+    //
+    // (I didn't have time to figure out what V is in this context)
+    std::array<double, 10> SolveV(std::array<double, 9> const& u)
+    {
+        return
+        {
+            u[0] + u[1] - 1.0f,
+            u[0] - 2.0f*u[1] - 1.0f,
+            u[1] - 2.0f*u[0] - 1.0f,
+            u[2],
+            u[3],
+            u[4],
+            u[5],
+            u[6],
+            u[7],
+            u[8],
+        };
+    }
+
+    // forms the algebraic form of the ellipsoid
+    SimTK::Mat44 CalcA(std::array<double, 10> const& v)
+    {
+        SimTK::Mat44 A;
+
+        A(0, 0) = v[0];
+        A(0, 1) = v[3];
+        A(0, 2) = v[4];
+        A(0, 3) = v[6];
+
+        A(1, 0) = v[3];
+        A(1, 1) = v[1];
+        A(1, 2) = v[5];
+        A(1, 3) = v[7];
+
+        A(2, 0) = v[4];
+        A(2, 1) = v[5];
+        A(2, 2) = v[2];
+        A(2, 3) = v[8];
+
+        A(3, 0) = v[6];
+        A(3, 1) = v[7];
+        A(3, 2) = v[8];
+        A(3, 3) = v[9];
+
+        return A;
+    }
+
+    // calculates the center of the ellipsoid (see original MATLAB code)
+    SimTK::Vec3 CalcEllipsoidCenter(
+        SimTK::Mat44 const& A,
+        std::array<double, 10> const& v)
+    {
+        SimTK::Matrix topLeft(3, 3);
+        topLeft(0, 0) = A(0, 0);
+        topLeft(0, 1) = A(0, 1);
+        topLeft(0, 2) = A(0, 2);
+        topLeft(1, 0) = A(1, 0);
+        topLeft(1, 1) = A(1, 1);
+        topLeft(1, 2) = A(1, 2);
+        topLeft(2, 0) = A(2, 0);
+        topLeft(2, 1) = A(2, 1);
+        topLeft(2, 2) = A(2, 2);
+
+        SimTK::Vector rhs(3);
+        rhs(0) = v[6];
+        rhs(1) = v[7];
+        rhs(2) = v[8];
+        SimTK::Vector const center = SolveLinearLeastSquares(-topLeft, rhs);
+
+        // pack return value
+        OSC_ASSERT(center.size() == 3);
+        return SimTK::Vec3{center(0), center(1), center(2)};
+    }
+
     std::pair<SimTK::Mat33, SimTK::Mat33> SolveEigenProblem(
         SimTK::Mat44 const& A,
         SimTK::Vec3 const& center)
     {
-        SimTK::Matrix T = MakeIdentityMatrix(4);
+        SimTK::Matrix T = Eye(4);
         T(3, 0) = center[0];
         T(3, 1) = center[1];
         T(3, 2) = center[2];
+
         SimTK::Matrix const R = T * SimTK::Matrix{A} * T.transpose();
-        return SortedEig(TopLeft<3, 3>(R) / -R(3, 3));
+        return EigSorted(TopLeft<3, 3>(R) / -R(3, 3));
     }
 }
 
@@ -495,9 +553,8 @@ osc::Sphere osc::FitSphere(Mesh const& mesh)
     }
 
     // solve `f = Ac` for `c`
-    SimTK::Vector c(4, 0.0);
-    SimTK::FactorQTZ const factor{A};
-    factor.solve(f, c);
+    SimTK::Vector const c = SolveLinearLeastSquares(A, f);
+    OSC_ASSERT(c.size() == 4);
 
     // unpack `c` into sphere parameters (explained above)
     double const x0 = c[0];
@@ -587,7 +644,7 @@ osc::Plane osc::FitPlane(Mesh const& mesh)
     SimTK::Mat33 const covarianceMatrix = CalcCovarianceMatrix(verticesReduced);
 
     // eigen analysis to yield [N, B1, B2]
-    SimTK::Mat33 const eigenVectors = SortedEig(covarianceMatrix).first;
+    SimTK::Mat33 const eigenVectors = EigSorted(covarianceMatrix).first;
     SimTK::Vec3 const normal = eigenVectors.col(0);
     SimTK::Vec3 const basis1 = eigenVectors.col(1);
     SimTK::Vec3 const basis2 = eigenVectors.col(2);
@@ -600,13 +657,13 @@ osc::Plane osc::FitPlane(Mesh const& mesh)
     );
 
     // calculate the 2D bounding box in plane-space of all projected vertices
-    Rect const bounds = CalcBounds(projectedPoints);
+    Rect const bounds = BoundingRectOf(projectedPoints);
 
     // calculate the midpoint of those bounds in plane-space
     glm::vec2 const boundsMidpointInPlaneSpace = Midpoint(bounds);
 
     // un-project the plane-space midpoint back into mesh-space
-    glm::vec3 const boundsMidPointInReducedSpace = Unproject2DSurfacePointInto3D(
+    glm::vec3 const boundsMidPointInReducedSpace = Unproject2DPlanePointInto3D(
         boundsMidpointInPlaneSpace,
         ToVec3(basis1),
         ToVec3(basis2)
@@ -645,10 +702,10 @@ osc::Ellipsoid osc::FitEllipsoid(Mesh const& mesh)
 
     std::vector<glm::vec3> const vertices = GetAllIndexedVerts(mesh);
 
-    auto const u = SolveU(vertices);
+    auto const u = SolveEllipsoidAlgebraicForm(vertices);
     auto const v = SolveV(u);
     auto const A = CalcA(v);  // form the algebraic form of the ellipsoid
-    auto const center = CalcCenter(A, v);
+    auto const center = CalcEllipsoidCenter(A, v);
     auto const [evecs, evals] = SolveEigenProblem(A, center);
     SimTK::Vec3 const sgns = Sign(Diag(evals));
     SimTK::Vec3 radii = SimTK::sqrt(Reciporical(Diag(SimTK::abs(evals))));

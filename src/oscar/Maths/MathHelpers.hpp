@@ -195,6 +195,11 @@ namespace osc
     // returns the middle point of the rectangle
     glm::vec2 Midpoint(Rect const&) noexcept;
 
+    // returns the smallest rectangle that bounds the provided points
+    //
+    // note: no points --> zero-sized rectangle at the origin
+    Rect BoundingRectOf(nonstd::span<glm::vec2 const>);
+
     // returns a rectangle that has been expanded along each edge by the given amount
     //
     // (e.g. expand 1.0f adds 1.0f to both the left edge and the right edge)

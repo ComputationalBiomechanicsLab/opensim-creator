@@ -1480,6 +1480,22 @@ glm::vec2 osc::Midpoint(Rect const& r) noexcept
     return 0.5f * (r.p1 + r.p2);
 }
 
+osc::Rect osc::BoundingRectOf(nonstd::span<glm::vec2 const> vs)
+{
+    if (vs.empty())
+    {
+        return osc::Rect{};  // edge-case
+    }
+
+    osc::Rect rv{vs.front(), vs.front()};
+    for (auto it = vs.begin()+1; it != vs.end(); ++it)
+    {
+        rv.p1 = osc::Min(rv.p1, *it);
+        rv.p2 = osc::Max(rv.p2, *it);
+    }
+    return rv;
+}
+
 osc::Rect osc::Expand(Rect const& rect, float amt) noexcept
 {
     Rect rv
