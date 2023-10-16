@@ -319,7 +319,7 @@ namespace shapefit
         size_t erase(DocumentObjectLookupKey const&);
 
     private:
-        std::unordered_map<osc::UID, Mesh> m_Content;
+        std::map<osc::UID, Mesh> m_Content;
     };
 
     IDocumentObject const* Get(Document const&, DocumentObjectLookupKey const&)
