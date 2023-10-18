@@ -2,6 +2,7 @@
 
 #include <oscar/Bindings/SDL2Helpers.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Bindings/imgui_impl_oscargfx.hpp>
 #include <oscar/Graphics/GraphicsContext.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Platform/AppClock.hpp>
@@ -21,7 +22,6 @@
 #include <glm/vec2.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <imgui/backends/imgui_impl_opengl3.h>
 #include <imgui/backends/imgui_impl_sdl2.h>
 #include <SDL.h>
 #include <SDL_error.h>
@@ -1058,15 +1058,7 @@ void osc::ImGuiInit()
     ImGui::CreateContext();
 
     ImGuiIO& io = ImGui::GetIO();
-
-    // configure ImGui from OSC's (toml) configuration
-    {
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-        if (App::get().getConfig().isMultiViewportEnabled())
-        {
-            io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-        }
-    }
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     // make it so that windows can only ever be moved from the title bar
     ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
@@ -1114,14 +1106,14 @@ void osc::ImGuiInit()
     ImGui_ImplSDL2_InitForOpenGL(impl.updWindow().get(), impl.updRawGLContextHandleHACK());
 
     // init ImGui for OpenGL
-    ImGui_ImplOpenGL3_Init("#version 330 core");
+    ImGui_ImplOscarGfx_Init();
 
     ImGuiApplyDarkTheme();
 }
 
 void osc::ImGuiShutdown()
 {
-    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplOscarGfx_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 }
@@ -1149,7 +1141,7 @@ bool osc::ImGuiOnEvent(SDL_Event const& e)
 
 void osc::ImGuiNewFrame()
 {
-    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplOscarGfx_NewFrame();
     ImGui_ImplSDL2_NewFrame(App::upd().m_Impl->updWindow().get());
     ImGui::NewFrame();
 }
@@ -1162,36 +1154,7 @@ void osc::ImGuiRender()
     }
 
     {
-        OSC_PERF("ImGuiRender/ImGui_ImplOpenGL3_RenderDrawData");
-
-        // HACK: convert all ImGui-provided colors from sRGB to linear
-        //
-        // this is necessary because the ImGui OpenGL backend's shaders
-        // assume all color vertices and colors from textures are in
-        // sRGB, but OSC can provide ImGui with linear OR sRGB textures
-        // because OSC assumes the OpenGL backend is using automatic
-        // color conversion support (in ImGui, it isn't)
-        //
-        // so what we do here is linearize all colors from ImGui and
-        // always provide textures in the OSC style. The shaders in ImGui
-        // then write linear color values to the screen, but because we
-        // are *also* enabling GL_FRAMEBUFFER_SRGB, the OpenGL backend
-        // will correctly convert those linear colors to sRGB if necessary
-        // automatically
-        //
-        // (this shitshow is because ImGui's OpenGL backend behaves differently
-        //  from OSCs - ultimately, we need an ImGui_ImplOSC backend)
-        ConvertDrawDataFromSRGBToLinear(*ImGui::GetDrawData());
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    }
-
-    // ImGui: handle multi-viewports if the user has requested them
-    if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-    {
-        SDL_Window* backupCurrentWindow = SDL_GL_GetCurrentWindow();
-        SDL_GLContext backupCurrentContext = SDL_GL_GetCurrentContext();
-        ImGui::UpdatePlatformWindows();
-        ImGui::RenderPlatformWindowsDefault();
-        SDL_GL_MakeCurrent(backupCurrentWindow, backupCurrentContext);
+        OSC_PERF("ImGuiRender/ImGui_ImplOscarGfx_RenderDrawData");
+        ImGui_ImplOscarGfx_RenderDrawData(ImGui::GetDrawData());
     }
 }
