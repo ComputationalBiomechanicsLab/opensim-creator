@@ -221,7 +221,7 @@ namespace
         }();
 
         // use the indices to create a sorted version of the result
-        auto const sorted = [&unsorted, &sortedIndices]()
+        auto sorted = [&unsorted, &sortedIndices]()
         {
             auto copy = unsorted;
             for (int dest = 0; dest < N; ++dest)
@@ -239,7 +239,7 @@ namespace
     // solve systems of linear equations `Ax = B` for `x`
     SimTK::Vector SolveLinearLeastSquares(
         SimTK::Matrix const& A,
-        SimTK::Vector B,
+        SimTK::Vector const& B,
         std::optional<double> rcond = std::nullopt)
     {
         OSC_ASSERT(A.nrow() == B.nrow());
@@ -563,7 +563,7 @@ osc::Sphere osc::FitSphere(Mesh const& mesh)
     double const r2 = c[3] + x0*x0 + y0*y0 + z0*z0;
 
     glm::vec3 const origin{glm::dvec3{x0, y0, z0}};
-    float const radius = static_cast<float>(glm::sqrt(r2));
+    auto const radius = static_cast<float>(glm::sqrt(r2));
 
     return Sphere{origin, radius};
 }
@@ -645,9 +645,9 @@ osc::Plane osc::FitPlane(Mesh const& mesh)
 
     // eigen analysis to yield [N, B1, B2]
     SimTK::Mat33 const eigenVectors = EigSorted(covarianceMatrix).first;
-    SimTK::Vec3 const normal = eigenVectors.col(0);
-    SimTK::Vec3 const basis1 = eigenVectors.col(1);
-    SimTK::Vec3 const basis2 = eigenVectors.col(2);
+    SimTK::Vec3 const& normal = eigenVectors.col(0);
+    SimTK::Vec3 const& basis1 = eigenVectors.col(1);
+    SimTK::Vec3 const& basis2 = eigenVectors.col(2);
 
     // project points onto B1 and B2 (plane-space)
     std::vector<glm::vec2> const projectedPoints = ::Project3DPointsOnto2DSurface(

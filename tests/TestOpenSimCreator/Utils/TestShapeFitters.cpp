@@ -14,8 +14,6 @@
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 
-#include <glm/vec3.hpp>
-
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
