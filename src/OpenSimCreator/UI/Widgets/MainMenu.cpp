@@ -399,7 +399,7 @@ void osc::MainMenuAboutTab::onDraw()
         ImGui::NextColumn();
         {
             bool appIsInDebugMode = App::get().isInDebugMode();
-            if (ImGui::Checkbox("##opengldebugmodecheckbox", &appIsInDebugMode))
+            if (ImGui::Checkbox("##debugmodecheckbox", &appIsInDebugMode))
             {
                 if (appIsInDebugMode)
                 {

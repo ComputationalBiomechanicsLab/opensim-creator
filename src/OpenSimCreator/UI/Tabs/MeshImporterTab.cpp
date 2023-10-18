@@ -543,7 +543,7 @@ namespace
 // - visitor patterns (custom UI elements tailored to each known type)
 // - value semantics (undo/redo, rollbacks, etc.)
 // - groundspace manipulation (3D gizmos, drag and drop)
-// - easy UI integration (GLM datatypes, designed to be easy to dump into OpenGL, etc.)
+// - easy UI integration (GLM datatypes, designed to be easy to dump into the renderer, etc.)
 namespace
 {
     // a "class" for a scene element
