@@ -267,13 +267,7 @@ namespace osc
 }
 
 // define hashing function for colors
-namespace std
-{
-    // declare a hash function for glm::vec4, so it can be used as a key in
-    // unordered maps
-
-    template<>
-    struct hash<osc::Color> final {
-        size_t operator()(osc::Color const&) const;
-    };
-}
+template<>
+struct std::hash<osc::Color> final {
+    size_t operator()(osc::Color const&) const;
+};

@@ -33,6 +33,7 @@
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/UID.hpp>
+#include <SDL_events.h>
 
 #include <algorithm>
 #include <functional>

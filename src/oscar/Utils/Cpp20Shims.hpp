@@ -13,9 +13,9 @@
 #include <unordered_set>
 #include <vector>
 
-// shims: *roughly* compatible shims to features available in newer C++es
-namespace osc {
-
+// Cpp20Shims: *rough* shims to C++20 stdlib features
+namespace osc
+{
     // C++20: std::stop_token
     class stop_token final {
     public:

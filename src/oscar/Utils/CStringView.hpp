@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstddef>
-#include <functional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -99,13 +98,10 @@ namespace osc
     }
 }
 
-namespace std
-{
-    template<>
-    struct hash<osc::CStringView> {
-        size_t operator()(osc::CStringView const& sv) const
-        {
-            return std::hash<std::string_view>{}(sv);
-        }
-    };
-}
+template<>
+struct std::hash<osc::CStringView> {
+    size_t operator()(osc::CStringView const& sv) const
+    {
+        return std::hash<std::string_view>{}(sv);
+    }
+};

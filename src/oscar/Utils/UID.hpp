@@ -2,9 +2,9 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <functional>
 #include <iosfwd>
 #include <type_traits>
+#include <typeindex>  // for std::hash
 #include <utility>
 
 namespace osc
@@ -132,21 +132,18 @@ namespace osc
 // hashing support for LogicalIDs
 //
 // lets them be used as associative lookup keys, etc.
-namespace std
-{
-    template<>
-    struct hash<osc::UID> final {
-        size_t operator()(osc::UID const& id) const
-        {
-            return static_cast<size_t>(id.get());
-        }
-    };
+template<>
+struct std::hash<osc::UID> final {
+    size_t operator()(osc::UID const& id) const
+    {
+        return static_cast<size_t>(id.get());
+    }
+};
 
-    template<typename T>
-    struct hash<osc::UIDT<T>> final {
-        size_t operator()(osc::UID const& id) const
-        {
-            return static_cast<size_t>(id.get());
-        }
-    };
-}
+template<typename T>
+struct std::hash<osc::UIDT<T>> final {
+    size_t operator()(osc::UID const& id) const
+    {
+        return static_cast<size_t>(id.get());
+    }
+};

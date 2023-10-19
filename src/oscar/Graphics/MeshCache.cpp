@@ -36,16 +36,13 @@ namespace
     }
 }
 
-namespace std
-{
-    template<>
-    struct hash<TorusParameters> final {
-        size_t operator()(TorusParameters const& p) const noexcept
-        {
-            return osc::HashOf(p.torusCenterToTubeCenterRadius, p.tubeRadius);
-        }
-    };
-}
+template<>
+struct std::hash<TorusParameters> final {
+    size_t operator()(TorusParameters const& p) const noexcept
+    {
+        return osc::HashOf(p.torusCenterToTubeCenterRadius, p.tubeRadius);
+    }
+};
 
 class osc::MeshCache::Impl final {
 public:

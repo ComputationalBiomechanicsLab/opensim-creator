@@ -20,7 +20,6 @@
 #include <oscar/Utils/Perf.hpp>
 
 #include <cstdint>
-#include <functional>
 #include <memory>
 #include <optional>
 #include <utility>

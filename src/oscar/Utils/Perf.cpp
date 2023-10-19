@@ -32,7 +32,7 @@ namespace
 
 // public API
 
-int64_t osc::AllocateMeasurementID(std::string_view label, std::string_view filename, unsigned int line)
+int64_t osc::detail::AllocateMeasurementID(std::string_view label, std::string_view filename, unsigned int line)
 {
     int64_t id = GenerateID(label, filename, line);
     auto metadata = std::make_shared<PerfMeasurementMetadata>(id, label, filename, line);
@@ -42,7 +42,7 @@ int64_t osc::AllocateMeasurementID(std::string_view label, std::string_view file
     return id;
 }
 
-void osc::SubmitMeasurement(int64_t id, PerfClock::time_point start, PerfClock::time_point end) noexcept
+void osc::detail::SubmitMeasurement(int64_t id, PerfClock::time_point start, PerfClock::time_point end) noexcept
 {
     auto guard = GetMeasurementStorage().lock();
     auto it = guard->find(id);
@@ -75,7 +75,3 @@ std::vector<osc::PerfMeasurement> osc::GetAllPerfMeasurements()
     }
     return rv;
 }
-
-
-
-

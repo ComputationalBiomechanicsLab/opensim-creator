@@ -181,16 +181,13 @@ namespace
     }
 }
 
-namespace std
-{
-    template<>
-    struct hash<TypeInfoReference> final {
-        size_t operator()(TypeInfoReference const& ref) const noexcept
-        {
-            return ref.get().hash_code();
-        }
-    };
-}
+template<>
+struct std::hash<TypeInfoReference> final {
+    size_t operator()(TypeInfoReference const& ref) const noexcept
+    {
+        return ref.get().hash_code();
+    }
+};
 
 // main application state
 //

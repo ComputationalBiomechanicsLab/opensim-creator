@@ -53,11 +53,6 @@ public:
         // a multiline UI
     }
 
-    bool onEvent(SDL_Event const&)
-    {
-        return false;
-    }
-
 private:
     void drawBackwardsButtons()
     {

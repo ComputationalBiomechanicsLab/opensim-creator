@@ -3,7 +3,6 @@
 #include <OpenSimCreator/UI/Panels/ModelEditorViewerPanelLayerFlags.hpp>
 
 #include <oscar/Graphics/Color.hpp>
-#include <SDL_events.h>
 
 namespace osc { class ModelEditorViewerPanelParameters; }
 namespace osc { class ModelEditorViewerPanelState; }

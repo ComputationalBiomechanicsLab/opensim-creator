@@ -9,18 +9,8 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>
 
-#include <nonstd/span.hpp>
-
-#include <algorithm>
-#include <chrono>
-#include <cstdarg>
-#include <cstdint>
-#include <cstdio>
+#include <cstddef>
 #include <memory>
-#include <string>
-#include <string_view>
-#include <utility>
-#include <vector>
 
 // log: logging implementation
 //

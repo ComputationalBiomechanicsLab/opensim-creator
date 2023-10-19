@@ -8,7 +8,6 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <imgui.h>
-#include <SDL_events.h>
 
 #include <iomanip>
 #include <optional>

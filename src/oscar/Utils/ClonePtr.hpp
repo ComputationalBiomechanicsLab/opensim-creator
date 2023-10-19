@@ -1,9 +1,9 @@
 #pragma once
 
-#include <type_traits>
-#include <memory>
-#include <utility>
 #include <iosfwd>
+#include <memory>
+#include <type_traits>
+#include <utility>
 
 namespace osc
 {
@@ -125,6 +125,11 @@ namespace osc
             return m_Value.get();
         }
 
+        friend void swap(ClonePtr& lhs, ClonePtr& rhs)
+        {
+            lhs.swap(rhs);
+        }
+
     private:
         std::unique_ptr<T, Deleter> m_Value;
     };
@@ -142,18 +147,10 @@ namespace osc
     }
 }
 
-namespace std {
-    template<typename T, typename D>
-    void swap(osc::ClonePtr<T, D>& lhs, osc::ClonePtr<T, D>& rhs)
+template<typename T, typename D>
+struct std::hash<osc::ClonePtr<T, D>> {
+    size_t operator()(osc::ClonePtr<T, D> const& p)
     {
-        lhs.swap(rhs);
+        return std::hash(p.get());
     }
-
-    template<typename T, typename D>
-    struct hash<osc::ClonePtr<T, D>> {
-        size_t operator()(osc::ClonePtr<T, D> const& p)
-        {
-            return std::hash(p.get());
-        }
-    };
-}
+};

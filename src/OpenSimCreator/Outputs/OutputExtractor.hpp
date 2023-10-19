@@ -6,7 +6,6 @@
 #include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>
-#include <functional>
 #include <iosfwd>
 #include <memory>
 #include <string>
@@ -102,13 +101,10 @@ namespace osc
     std::string to_string(OutputExtractor const&);
 }
 
-namespace std
-{
-    template<>
-    struct hash<osc::OutputExtractor> {
-        std::size_t operator()(osc::OutputExtractor const& o) const
-        {
-            return o.m_Output->getHash();
-        }
-    };
-}
+template<>
+struct std::hash<osc::OutputExtractor> {
+    std::size_t operator()(osc::OutputExtractor const& o) const
+    {
+        return o.m_Output->getHash();
+    }
+};

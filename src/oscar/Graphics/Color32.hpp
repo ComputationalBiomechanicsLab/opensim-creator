@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <functional>
+#include <typeindex>  // for std::hash
 
 namespace osc
 {
@@ -62,13 +62,10 @@ namespace osc
     }
 }
 
-namespace std
-{
-    template<>
-    struct hash<osc::Color32> final {
-        size_t operator()(osc::Color32 const& color32) const noexcept
-        {
-            return std::hash<uint32_t>{}(ToUint32(color32));
-        }
-    };
-}
+template<>
+struct std::hash<osc::Color32> final {
+    size_t operator()(osc::Color32 const& color32) const noexcept
+    {
+        return std::hash<uint32_t>{}(ToUint32(color32));
+    }
+};

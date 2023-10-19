@@ -113,14 +113,11 @@ namespace osc
     }
 }
 
-namespace std
+template<typename T>
+struct std::hash<osc::CopyOnUpdPtr<T>> final
 {
-    template<typename T>
-    struct hash<osc::CopyOnUpdPtr<T>> final
+    size_t operator()(osc::CopyOnUpdPtr<T> const& cow) const
     {
-        size_t operator()(osc::CopyOnUpdPtr<T> const& cow) const
-        {
-            return std::hash<std::shared_ptr<T>>{}(cow.m_Ptr);
-        }
-    };
-}
+        return std::hash<std::shared_ptr<T>>{}(cow.m_Ptr);
+    }
+};

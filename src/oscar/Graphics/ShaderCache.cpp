@@ -56,17 +56,14 @@ namespace
     }
 }
 
-namespace std
-{
-    template<>
-    struct hash<ShaderInputs> final {
+template<>
+struct std::hash<ShaderInputs> final {
 
-        size_t operator()(ShaderInputs const& inputs) const
-        {
-            return inputs.hash;
-        }
-    };
-}
+    size_t operator()(ShaderInputs const& inputs) const
+    {
+        return inputs.hash;
+    }
+};
 
 class osc::ShaderCache::Impl final {
 public:

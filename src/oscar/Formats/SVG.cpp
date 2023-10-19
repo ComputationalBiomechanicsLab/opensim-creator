@@ -29,7 +29,7 @@ osc::Texture2D osc::ReadSVGIntoTexture(
 
     // parse data into SVG document
     std::unique_ptr<lunasvg::Document> doc = lunasvg::Document::loadFromData(data);
-    OSC_THROWING_ASSERT(doc != nullptr && "error loading SVG document");
+    OSC_ASSERT(doc != nullptr && "error loading SVG document");
 
     // when rendering the document's contents, flip Y so that it's compatible with the
     // renderer's coordinate system

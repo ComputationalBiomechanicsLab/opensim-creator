@@ -165,16 +165,13 @@ namespace
     }
 }
 
-namespace std
-{
-    template<>
-    struct hash<TPSDocumentElementID> {
-        size_t operator()(TPSDocumentElementID const& el) const noexcept
-        {
-            return osc::HashOf(el.whichInput, el.elementType, el.elementID);
-        }
-    };
-}
+template<>
+struct std::hash<TPSDocumentElementID> {
+    size_t operator()(TPSDocumentElementID const& el) const noexcept
+    {
+        return osc::HashOf(el.whichInput, el.elementType, el.elementID);
+    }
+};
 
 // TPS document helper functions
 namespace

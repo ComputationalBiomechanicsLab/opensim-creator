@@ -3,8 +3,6 @@
 #include <OpenSimCreator/Simulation/SimulationClock.hpp>
 #include <OpenSimCreator/Simulation/SimulationReport.hpp>
 
-#include <SDL_events.h>
-
 #include <memory>
 #include <optional>
 #include <string_view>

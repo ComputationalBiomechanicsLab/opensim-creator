@@ -14,40 +14,9 @@
 
 namespace osc
 {
-
     template<typename T, size_t N>
     class CircularBuffer final {
         static_assert(N > 1, "the internal representation of a circular buffer (it has one 'dead' entry) requires this");
-
-        // raw (byte) storage for elements
-        //
-        // - it's raw bytes so that the implementation doesn't
-        //   require a sequence of default-constructed Ts to
-        //   populate the storage
-        //
-        // - the circular/modulo range [_begin.._end) contains
-        //   fully-constructed Ts
-        //
-        // - _end always points to a "dead", but valid, location
-        //   in storage
-        //
-        // - the above constraints imply that the number of "live"
-        //   elements in storage is N-1, because _end will modulo
-        //   spin into position 0 once it is equal to N (this is
-        //   in constrast to non-circular storage, where _end
-        //   typically points one past the end of the storage range)
-        //
-        // - this behavior makes the implementation simpler, because
-        //   you don't have to handle _begin == _end edge cases and
-        //   one-past-the end out-of-bounds checks
-        class alignas(T) object_bytes { std::byte data[sizeof(T)]; };
-        std::array<object_bytes, N> raw_storage;
-
-        // index (T-based, not raw byte based) of the first element
-        ptrdiff_t _begin = 0;
-
-        // first index (T-based, not raw byte based) *after* the last element
-        ptrdiff_t _end = 0;
 
         // iterator implementation
         template<bool IsConst>
@@ -268,21 +237,21 @@ namespace osc
         }
 
         [[nodiscard]] constexpr reference operator[](size_type pos) noexcept {
-            size_type idx = (static_cast<size_type>(_begin) + pos) % N;
-            return *std::launder(reinterpret_cast<T*>(raw_storage.data() + idx));
+            size_type idx = (static_cast<size_type>(m_Begin) + pos) % N;
+            return *std::launder(reinterpret_cast<T*>(m_RawStorage.data() + idx));
         }
 
         [[nodiscard]] constexpr const_reference operator[](size_type pos) const noexcept {
-            size_type idx = (static_cast<size_type>(_begin) + pos) % N;
-            return *std::launder(reinterpret_cast<T const*>(raw_storage.data() + idx));
+            size_type idx = (static_cast<size_type>(m_Begin) + pos) % N;
+            return *std::launder(reinterpret_cast<T const*>(m_RawStorage.data() + idx));
         }
 
         [[nodiscard]] constexpr reference front() noexcept {
-            return *std::launder(reinterpret_cast<T*>(raw_storage.data() + static_cast<size_type>(_begin)));
+            return *std::launder(reinterpret_cast<T*>(m_RawStorage.data() + static_cast<size_type>(m_Begin)));
         }
 
         [[nodiscard]] constexpr const_reference front() const noexcept {
-            *std::launder(reinterpret_cast<T*>(raw_storage.data() + static_cast<size_type>(_begin)));
+            *std::launder(reinterpret_cast<T*>(m_RawStorage.data() + static_cast<size_type>(m_Begin)));
         }
 
         [[nodiscard]] constexpr reference back() noexcept {
@@ -297,13 +266,13 @@ namespace osc
 
         [[nodiscard]] constexpr const_iterator begin() const noexcept {
             // the iterator is designed to handle const-ness
-            T const* const_ptr = std::launder(reinterpret_cast<T const*>(raw_storage.data()));
-            return const_iterator{const_cast<T*>(const_ptr), _begin};
+            T const* const_ptr = std::launder(reinterpret_cast<T const*>(m_RawStorage.data()));
+            return const_iterator{const_cast<T*>(const_ptr), m_Begin};
         }
 
         [[nodiscard]] constexpr iterator begin() noexcept {
-            T* ptr = std::launder(reinterpret_cast<T*>(raw_storage.data()));
-            return iterator{ptr, _begin};
+            T* ptr = std::launder(reinterpret_cast<T*>(m_RawStorage.data()));
+            return iterator{ptr, m_Begin};
         }
 
         [[nodiscard]] constexpr const_iterator cbegin() const noexcept {
@@ -312,13 +281,13 @@ namespace osc
 
         [[nodiscard]] constexpr const_iterator end() const noexcept {
             // the iterator is designed to handle const-ness
-            T const* const_ptr = std::launder(reinterpret_cast<T const*>(raw_storage.data()));
-            return const_iterator{const_cast<T*>(const_ptr), _end};
+            T const* const_ptr = std::launder(reinterpret_cast<T const*>(m_RawStorage.data()));
+            return const_iterator{const_cast<T*>(const_ptr), m_End};
         }
 
         [[nodiscard]] constexpr iterator end() noexcept {
-            T* ptr = std::launder(reinterpret_cast<T*>(raw_storage.data()));
-            return iterator{ptr, _end};
+            T* ptr = std::launder(reinterpret_cast<T*>(m_RawStorage.data()));
+            return iterator{ptr, m_End};
         }
 
         [[nodiscard]] constexpr const_iterator cend() const noexcept {
@@ -352,11 +321,11 @@ namespace osc
         // capacity
 
         [[nodiscard]] constexpr bool empty() const noexcept {
-            return _begin == _end;
+            return m_Begin == m_End;
         }
 
         [[nodiscard]] constexpr size_type size() const noexcept {
-            return _end >= _begin ? _end - _begin : (N - _begin) + _end;
+            return m_End >= m_Begin ? m_End - m_Begin : (N - m_Begin) + m_End;
         }
 
         [[nodiscard]] constexpr size_type max_size() const noexcept {
@@ -372,16 +341,16 @@ namespace osc
         constexpr void clear() noexcept
         {
             std::destroy(this->begin(), this->end());
-            _begin = 0;
-            _end = 0;
+            m_Begin = 0;
+            m_End = 0;
         }
 
         template<typename... Args>
         constexpr T& emplace_back(Args&&... args)
         {
-            ptrdiff_t new_end = (_end + 1) % N;
+            ptrdiff_t new_end = (m_End + 1) % N;
 
-            if (new_end == _begin)
+            if (new_end == m_Begin)
             {
                 // wraparound case: this is a fixed-size non-blocking circular
                 // buffer
@@ -391,14 +360,14 @@ namespace osc
                 // new "dead" element and should be destructed
 
                 std::destroy_at(&front());
-                _begin = (_begin + 1) % N;
+                m_Begin = (m_Begin + 1) % N;
             }
 
             // construct T in the old "dead" element location
-            object_bytes* ptr = raw_storage.data() + _end;
+            object_bytes* ptr = m_RawStorage.data() + m_End;
             T* constructed_el = new (ptr) T{std::forward<Args>(args)...};
 
-            _end = new_end;
+            m_End = new_end;
 
             return *constructed_el;
         }
@@ -418,7 +387,7 @@ namespace osc
             OSC_ASSERT(last == end() && "can currently only erase elements from end of circular buffer");
 
             std::destroy(first, last);
-            _end -= std::distance(first, last);
+            m_End -= std::distance(first, last);
 
             return end();
         }
@@ -433,7 +402,7 @@ namespace osc
             }
 
             rv.emplace(std::move(back()));
-            _end = _end == 0 ? static_cast<ptrdiff_t>(N) - 1 : _end - 1;
+            m_End = m_End == 0 ? static_cast<ptrdiff_t>(N) - 1 : m_End - 1;
 
             return rv;
         }
@@ -446,8 +415,38 @@ namespace osc
             }
 
             T rv{std::move(back())};
-            _end = _end == 0 ? static_cast<ptrdiff_t>(N) - 1 : _end - 1;
+            m_End = m_End == 0 ? static_cast<ptrdiff_t>(N) - 1 : m_End - 1;
             return rv;
         }
+
+        // raw (byte) storage for elements
+        //
+        // - it's raw bytes so that the implementation doesn't
+        //   require a sequence of default-constructed Ts to
+        //   populate the storage
+        //
+        // - the circular/modulo range [m_Begin..m_End) contains
+        //   fully-constructed Ts
+        //
+        // - m_End always points to a "dead", but valid, location
+        //   in storage
+        //
+        // - the above constraints imply that the number of "live"
+        //   elements in storage is N-1, because m_End will modulo
+        //   spin into position 0 once it is equal to N (this is
+        //   in constrast to non-circular storage, where m_End
+        //   typically points one past the end of the storage range)
+        //
+        // - this behavior makes the implementation simpler, because
+        //   you don't have to handle m_Begin == m_End edge cases and
+        //   one-past-the end out-of-bounds checks
+        class alignas(T) object_bytes { std::byte data[sizeof(T)]; };
+        std::array<object_bytes, N> m_RawStorage;
+
+        // index (T-based, not raw byte based) of the first element
+        ptrdiff_t m_Begin = 0;
+
+        // first index (T-based, not raw byte based) *after* the last element
+        ptrdiff_t m_End = 0;
     };
 }

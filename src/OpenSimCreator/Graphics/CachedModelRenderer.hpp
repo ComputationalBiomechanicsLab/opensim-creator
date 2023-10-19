@@ -6,7 +6,6 @@
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Scene/SceneCollision.hpp>
 
-#include <functional>
 #include <memory>
 #include <optional>
 #include <vector>

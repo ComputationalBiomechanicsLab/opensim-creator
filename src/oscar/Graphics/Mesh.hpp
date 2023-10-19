@@ -99,14 +99,11 @@ namespace osc
     std::ostream& operator<<(std::ostream&, Mesh const&);
 }
 
-namespace std
-{
-    template<>
-    struct hash<osc::Mesh> final {
-        size_t operator()(osc::Mesh const& mesh) const
-        {
-            using std::hash;
-            return hash<osc::CopyOnUpdPtr<osc::Mesh::Impl>>{}(mesh.m_Impl);
-        }
-    };
-}
+template<>
+struct std::hash<osc::Mesh> final {
+    size_t operator()(osc::Mesh const& mesh) const
+    {
+        using std::hash;
+        return hash<osc::CopyOnUpdPtr<osc::Mesh::Impl>>{}(mesh.m_Impl);
+    }
+};

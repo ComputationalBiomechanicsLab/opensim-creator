@@ -23,7 +23,6 @@
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/VariantHelpers.hpp>
-#include <SDL_events.h>
 #include <Simbody.h>
 
 #include <cmath>

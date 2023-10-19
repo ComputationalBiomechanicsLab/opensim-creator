@@ -37,6 +37,7 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
+#include <SDL_events.h>
 
 #include <filesystem>
 #include <string>

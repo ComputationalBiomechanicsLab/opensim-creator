@@ -55,7 +55,7 @@ namespace
         );
 
         glm::ivec2 const dims = t.getDimensions();
-        OSC_THROWING_ASSERT(dims.x == dims.y);
+        OSC_ASSERT(dims.x == dims.y);
 
         // load all face data into the cubemap
         static_assert(osc::NumOptions<osc::CubemapFace>() == c_SkyboxTextureFilenames.size());
@@ -68,9 +68,9 @@ namespace
                 resourcesDir / "oscar_learnopengl" / "textures" / std::string_view{c_SkyboxTextureFilenames[osc::ToIndex(f)]},
                 osc::ColorSpace::sRGB
             );
-            OSC_THROWING_ASSERT(t.getDimensions().x == dims.x);
-            OSC_THROWING_ASSERT(t.getDimensions().y == dims.x);
-            OSC_THROWING_ASSERT(t.getTextureFormat() == cubemap.getTextureFormat());
+            OSC_ASSERT(t.getDimensions().x == dims.x);
+            OSC_ASSERT(t.getDimensions().y == dims.x);
+            OSC_ASSERT(t.getTextureFormat() == cubemap.getTextureFormat());
             cubemap.setPixelData(f, t.getPixelData());
         }
 

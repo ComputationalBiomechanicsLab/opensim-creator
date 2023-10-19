@@ -27,7 +27,6 @@
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <SDL_events.h>
 
 #include <array>
 #include <chrono>

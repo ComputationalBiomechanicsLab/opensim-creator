@@ -45,7 +45,6 @@
 #include <oscar/Utils/SynchronizedValue.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/Perf.hpp>
-#include <SDL_events.h>
 #include <SimTKcommon/basics.h>
 
 #include <algorithm>
@@ -198,11 +197,6 @@ public:
     {
         m_PanelManager->onUnmount();
         App::upd().makeMainEventLoopPolling();
-    }
-
-    bool onEvent(SDL_Event const&)
-    {
-        return false;
     }
 
     void onTick()
@@ -505,11 +499,6 @@ void osc::SimulatorTab::implOnMount()
 void osc::SimulatorTab::implOnUnmount()
 {
     m_Impl->onUnmount();
-}
-
-bool osc::SimulatorTab::implOnEvent(SDL_Event const& e)
-{
-    return m_Impl->onEvent(e);
 }
 
 void osc::SimulatorTab::implOnTick()

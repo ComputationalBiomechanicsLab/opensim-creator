@@ -34,7 +34,7 @@ namespace
 }
 
 // named namespace is due to an MSVC internal linkage compiler bug
-namespace output_magic
+namespace detail
 {
     // top-level output extractor declaration
     template<typename ConcreteOutput>
@@ -120,19 +120,19 @@ namespace
     {
         if (typeid(ao) == typeid(OpenSim::Output<double>))
         {
-            return output_magic::extractTypeErased<OpenSim::Output<double>>;
+            return detail::extractTypeErased<OpenSim::Output<double>>;
         }
         else if (typeid(ao) == typeid(OpenSim::Output<SimTK::Vec3>))
         {
             switch (subfield) {
             case osc::OutputSubfield::X:
-                return output_magic::extractTypeErased<osc::OutputSubfield::X, OpenSim::Output<SimTK::Vec3>>;
+                return detail::extractTypeErased<osc::OutputSubfield::X, OpenSim::Output<SimTK::Vec3>>;
             case osc::OutputSubfield::Y:
-                return output_magic::extractTypeErased<osc::OutputSubfield::Y, OpenSim::Output<SimTK::Vec3>>;
+                return detail::extractTypeErased<osc::OutputSubfield::Y, OpenSim::Output<SimTK::Vec3>>;
             case osc::OutputSubfield::Z:
-                return output_magic::extractTypeErased<osc::OutputSubfield::Z, OpenSim::Output<SimTK::Vec3>>;
+                return detail::extractTypeErased<osc::OutputSubfield::Z, OpenSim::Output<SimTK::Vec3>>;
             case osc::OutputSubfield::Magnitude:
-                return output_magic::extractTypeErased<osc::OutputSubfield::Magnitude, OpenSim::Output<SimTK::Vec3>>;
+                return detail::extractTypeErased<osc::OutputSubfield::Magnitude, OpenSim::Output<SimTK::Vec3>>;
             default:
                 return nullptr;
             }

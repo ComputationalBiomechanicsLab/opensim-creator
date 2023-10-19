@@ -71,7 +71,7 @@ namespace osc
     };
 
     // pretty-prints a `Transform` for readability
-    std::ostream& operator<<(std::ostream& o, Transform const&);
+    std::ostream& operator<<(std::ostream&, Transform const&);
 
     // returns true if the Transforms compare value-equal
     bool operator==(Transform const&, Transform const&) noexcept;
