@@ -1,6 +1,8 @@
 #include "NodePath.hpp"
 
+#include <algorithm>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 
 namespace
