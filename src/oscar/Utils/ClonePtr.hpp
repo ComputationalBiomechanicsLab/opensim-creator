@@ -96,7 +96,7 @@ namespace osc
         {
             m_Value.reset(ptr);
         }
-        void swap(ClonePtr& other)
+        void swap(ClonePtr& other) noexcept
         {
             m_Value.swap(other.m_Value);
         }
@@ -125,7 +125,7 @@ namespace osc
             return m_Value.get();
         }
 
-        friend void swap(ClonePtr& lhs, ClonePtr& rhs)
+        friend void swap(ClonePtr& lhs, ClonePtr& rhs) noexcept
         {
             lhs.swap(rhs);
         }
