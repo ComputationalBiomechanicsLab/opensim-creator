@@ -4,6 +4,9 @@ add_library(oscar_document STATIC
     PropertyDescription.hpp
     PropertyDescriptions.cpp
     PropertyDescriptions.hpp
+    Variant.cpp
+    Variant.hpp
+    VariantType.cpp
     VariantType.hpp
 )
 

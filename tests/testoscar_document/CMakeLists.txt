@@ -6,6 +6,8 @@ add_executable(testoscar_document
     testoscar_document.cpp
     TestPropertyDescription.cpp
     TestPropertyDescriptions.cpp
+    TestVariant.cpp
+    TestVariantType.cpp
 )
 
 target_link_libraries(testoscar_document PUBLIC
