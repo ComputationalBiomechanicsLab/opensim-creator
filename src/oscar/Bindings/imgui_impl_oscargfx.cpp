@@ -86,8 +86,6 @@ namespace
 
         OscarImguiBackendData()
         {
-            // translated from ImGui_ImplOpenGL3_SetupRenderState
-
             material.setTransparent(true);
             material.setCullMode(osc::CullMode::Off);
             material.setDepthTested(false);
@@ -157,7 +155,7 @@ namespace
         // setup clipping rectangle
         // update camera with the clipping rectangle
         // flush the draw command
-        // set texture ID
+        // set texture ID  --> drawCommand.GetTexID();
     }
 
     void RenderDrawList(
