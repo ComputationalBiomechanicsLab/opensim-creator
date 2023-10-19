@@ -1,6 +1,10 @@
 add_library(oscar_document STATIC
     NodePath.cpp
     NodePath.hpp
+    PropertyDescription.hpp
+    PropertyDescriptions.cpp
+    PropertyDescriptions.hpp
+    VariantType.hpp
 )
 
 target_include_directories(oscar_document PUBLIC

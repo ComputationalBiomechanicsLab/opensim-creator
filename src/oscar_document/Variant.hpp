@@ -3,5 +3,6 @@
 namespace osc::doc
 {
     class Variant final {
+
     };
 }
