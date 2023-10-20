@@ -29,7 +29,7 @@ namespace sdl
     //     https://wiki.libsdl.org/SDL_Quit
     class Context final {
     public:
-        Context(Uint32 flags)
+        explicit Context(Uint32 flags)
         {
             if (SDL_Init(flags) != 0)
             {

@@ -7,14 +7,14 @@
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 
-bool osc::operator==(SceneDecoration const& a, SceneDecoration const& b) noexcept
+bool osc::operator==(SceneDecoration const& lhs, SceneDecoration const& rhs) noexcept
 {
     return
-        a.mesh == b.mesh &&
-        a.transform == b.transform &&
-        a.color == b.color &&
-        a.id == b.id &&
-        a.flags == b.flags &&
-        a.maybeMaterial == b.maybeMaterial &&
-        a.maybeMaterialProps == b.maybeMaterialProps;
+        lhs.mesh == rhs.mesh &&
+        lhs.transform == rhs.transform &&
+        lhs.color == rhs.color &&
+        lhs.id == rhs.id &&
+        lhs.flags == rhs.flags &&
+        lhs.maybeMaterial == rhs.maybeMaterial &&
+        lhs.maybeMaterialProps == rhs.maybeMaterialProps;
 }

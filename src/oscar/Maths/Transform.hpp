@@ -65,23 +65,23 @@ namespace osc
             return Transform{position, rotation, {scale_, scale_, scale_}};
         }
 
+        // pretty-prints a `Transform` for readability
+        friend std::ostream& operator<<(std::ostream&, Transform const&);
+
+        // returns true if the Transforms compare value-equal
+        friend bool operator==(Transform const&, Transform const&) noexcept;
+
+        // applies the transform to a point vector (equivalent to `TransformPoint`)
+        friend glm::vec3 operator*(Transform const&, glm::vec3 const&) noexcept;
+
+        // performs component-wise addition of two transforms
+        friend Transform& operator+=(Transform&, Transform const&) noexcept;
+
+        // performs component-wise scalar division
+        friend Transform& operator/=(Transform&, float) noexcept;
+
         glm::vec3 scale = {1.0f, 1.0f, 1.0f};
         glm::quat rotation = {1.0f, 0.0f, 0.0f, 0.0f};
         glm::vec3 position = {0.0f, 0.0f, 0.0f};
     };
-
-    // pretty-prints a `Transform` for readability
-    std::ostream& operator<<(std::ostream&, Transform const&);
-
-    // returns true if the Transforms compare value-equal
-    bool operator==(Transform const&, Transform const&) noexcept;
-
-    // applies the transform to a point vector (equivalent to `TransformPoint`)
-    glm::vec3 operator*(Transform const&, glm::vec3 const&) noexcept;
-
-    // performs component-wise addition of two transforms
-    Transform& operator+=(Transform&, Transform const&) noexcept;
-
-    // performs component-wise scalar division
-    Transform& operator/=(Transform&, float) noexcept;
 }

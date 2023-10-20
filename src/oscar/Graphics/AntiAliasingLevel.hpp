@@ -43,34 +43,33 @@ namespace osc
             return *this;
         }
 
+        constexpr friend bool operator==(AntiAliasingLevel const& lhs, AntiAliasingLevel const& rhs) noexcept
+        {
+            return lhs.m_Value == rhs.m_Value;
+        }
+
+        constexpr friend bool operator!=(AntiAliasingLevel const& lhs, AntiAliasingLevel const& rhs) noexcept
+        {
+            return lhs.m_Value != rhs.m_Value;
+        }
+
+        constexpr friend bool operator<(AntiAliasingLevel const& lhs, AntiAliasingLevel const& rhs) noexcept
+        {
+            return lhs.m_Value < rhs.m_Value;
+        }
+
+        constexpr friend bool operator<=(AntiAliasingLevel const& lhs, AntiAliasingLevel const& rhs) noexcept
+        {
+            return lhs.m_Value <= rhs.m_Value;
+        }
+
+        constexpr friend bool operator>(AntiAliasingLevel const& lhs, AntiAliasingLevel const& rhs) noexcept
+        {
+            return lhs.m_Value > rhs.m_Value;
+        }
     private:
         uint32_t m_Value = 1;
     };
-
-    constexpr bool operator==(AntiAliasingLevel const& a, AntiAliasingLevel const& b) noexcept
-    {
-        return a.getU32() == b.getU32();
-    }
-
-    constexpr bool operator!=(AntiAliasingLevel const& a, AntiAliasingLevel const& b) noexcept
-    {
-        return a.getU32() != b.getU32();
-    }
-
-    constexpr bool operator<(AntiAliasingLevel const& a, AntiAliasingLevel const& b) noexcept
-    {
-        return a.getU32() < b.getU32();
-    }
-
-    constexpr bool operator<=(AntiAliasingLevel const& a, AntiAliasingLevel const& b) noexcept
-    {
-        return a.getU32() <= b.getU32();
-    }
-
-    constexpr bool operator>(AntiAliasingLevel const& a, AntiAliasingLevel const& b) noexcept
-    {
-        return a.getU32() > b.getU32();
-    }
 
     std::ostream& operator<<(std::ostream&, AntiAliasingLevel);
     std::string to_string(AntiAliasingLevel);

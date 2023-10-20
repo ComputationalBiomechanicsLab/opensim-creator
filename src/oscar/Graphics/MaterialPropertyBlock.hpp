@@ -68,17 +68,13 @@ namespace osc
             swap(a.m_Impl, b.m_Impl);
         }
 
-    private:
-        friend class GraphicsBackend;
         friend bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
         friend bool operator!=(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
         friend std::ostream& operator<<(std::ostream&, MaterialPropertyBlock const&);
+    private:
+        friend class GraphicsBackend;
 
         class Impl;
         CopyOnUpdPtr<Impl> m_Impl;
     };
-
-    bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
-    bool operator!=(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
-    std::ostream& operator<<(std::ostream&, MaterialPropertyBlock const&);
 }

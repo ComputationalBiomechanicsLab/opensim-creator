@@ -19,16 +19,16 @@ osc::RenderTargetColorAttachment::RenderTargetColorAttachment(
 {
 }
 
-bool osc::operator==(RenderTargetColorAttachment const& a, RenderTargetColorAttachment const& b) noexcept
+bool osc::operator==(RenderTargetColorAttachment const& lhs, RenderTargetColorAttachment const& rhs) noexcept
 {
     return
-        a.buffer == b.buffer &&
-        a.loadAction == b.loadAction &&
-        a.storeAction == b.storeAction &&
-        a.clearColor == b.clearColor;
+        lhs.buffer == rhs.buffer &&
+        lhs.loadAction == rhs.loadAction &&
+        lhs.storeAction == rhs.storeAction &&
+        lhs.clearColor == rhs.clearColor;
 }
 
-bool osc::operator!=(RenderTargetColorAttachment const& a, RenderTargetColorAttachment const& b) noexcept
+bool osc::operator!=(RenderTargetColorAttachment const& lhs, RenderTargetColorAttachment const& rhs) noexcept
 {
-    return !(a == b);
+    return !(lhs == rhs);
 }

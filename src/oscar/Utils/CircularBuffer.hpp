@@ -69,15 +69,15 @@ namespace osc
             // EqualityComparable
 
             template<bool OtherConst>
-            [[nodiscard]] constexpr bool operator!=(Iterator<OtherConst> const& other) const noexcept
+            [[nodiscard]] constexpr friend bool operator!=(Iterator const& lhs, Iterator<OtherConst> const& rhs) noexcept
             {
-                return pos != other.pos;
+                return lhs.pos != rhs.pos;
             }
 
             template<bool OtherConst>
-            [[nodiscard]] constexpr bool operator==(Iterator<OtherConst> const& other) const noexcept
+            [[nodiscard]] constexpr friend bool operator==(Iterator const& lhs, Iterator<OtherConst> const& rhs) noexcept
             {
-                return !(*this != other);
+                return !(lhs != rhs);
             }
 
             // LegacyInputIterator

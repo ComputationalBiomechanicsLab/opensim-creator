@@ -26,34 +26,34 @@ osc::SceneRendererParams::SceneRendererParams() :
 {
 }
 
-bool osc::operator==(SceneRendererParams const& a, SceneRendererParams const& b)
+bool osc::operator==(SceneRendererParams const& lhs, SceneRendererParams const& rhs)
 {
     return
-        a.dimensions == b.dimensions &&
-        a.antiAliasingLevel == b.antiAliasingLevel &&
-        a.drawMeshNormals == b.drawMeshNormals &&
-        a.drawRims == b.drawRims &&
-        a.drawShadows == b.drawShadows &&
-        a.drawFloor == b.drawFloor &&
-        a.nearClippingPlane == b.nearClippingPlane &&
-        a.farClippingPlane == b.farClippingPlane &&
-        a.viewMatrix == b.viewMatrix &&
-        a.projectionMatrix == b.projectionMatrix &&
-        a.viewPos == b.viewPos &&
-        a.lightDirection == b.lightDirection &&
-        a.lightColor == b.lightColor &&
-        a.ambientStrength == b.ambientStrength &&
-        a.diffuseStrength == b.diffuseStrength &&
-        a.specularStrength == b.specularStrength &&
-        a.specularShininess == b.specularShininess &&
-        a.backgroundColor == b.backgroundColor &&
-        a.rimColor == b.rimColor &&
-        a.rimThicknessInPixels == b.rimThicknessInPixels &&
-        a.floorLocation == b.floorLocation &&
-        a.fixupScaleFactor == b.fixupScaleFactor;
+        lhs.dimensions == rhs.dimensions &&
+        lhs.antiAliasingLevel == rhs.antiAliasingLevel &&
+        lhs.drawMeshNormals == rhs.drawMeshNormals &&
+        lhs.drawRims == rhs.drawRims &&
+        lhs.drawShadows == rhs.drawShadows &&
+        lhs.drawFloor == rhs.drawFloor &&
+        lhs.nearClippingPlane == rhs.nearClippingPlane &&
+        lhs.farClippingPlane == rhs.farClippingPlane &&
+        lhs.viewMatrix == rhs.viewMatrix &&
+        lhs.projectionMatrix == rhs.projectionMatrix &&
+        lhs.viewPos == rhs.viewPos &&
+        lhs.lightDirection == rhs.lightDirection &&
+        lhs.lightColor == rhs.lightColor &&
+        lhs.ambientStrength == rhs.ambientStrength &&
+        lhs.diffuseStrength == rhs.diffuseStrength &&
+        lhs.specularStrength == rhs.specularStrength &&
+        lhs.specularShininess == rhs.specularShininess &&
+        lhs.backgroundColor == rhs.backgroundColor &&
+        lhs.rimColor == rhs.rimColor &&
+        lhs.rimThicknessInPixels == rhs.rimThicknessInPixels &&
+        lhs.floorLocation == rhs.floorLocation &&
+        lhs.fixupScaleFactor == rhs.fixupScaleFactor;
 }
 
-bool osc::operator!=(SceneRendererParams const& a, SceneRendererParams const& b)
+bool osc::operator!=(SceneRendererParams const& lhs, SceneRendererParams const& rhs)
 {
-    return !(a == b);
+    return !(lhs == rhs);
 }

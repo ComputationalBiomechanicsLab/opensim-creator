@@ -45,14 +45,17 @@ namespace osc
             {
                 return m_IsU32 ? *m_Ptr.u32 : static_cast<uint32_t>(*m_Ptr.u16);
             }
-            bool operator!=(Iterator const& other) const noexcept
+
+            friend bool operator==(Iterator const& lhs, Iterator const& rhs) noexcept
             {
-                return m_Ptr.u16 != other.m_Ptr.u16 || m_IsU32 != other.m_IsU32;
+                return lhs.m_Ptr.u16 == rhs.m_Ptr.u16 && lhs.m_IsU32 == rhs.m_IsU32;
             }
-            bool operator==(Iterator const& other) const noexcept
+
+            friend bool operator!=(Iterator const& lhs, Iterator const& rhs) noexcept
             {
-                return !(*this != other);
+                return !(lhs == rhs);
             }
+
             Iterator& operator++() noexcept
             {
                 if (m_IsU32) { ++m_Ptr.u32; } else { ++m_Ptr.u16; }

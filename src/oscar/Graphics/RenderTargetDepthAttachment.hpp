@@ -6,8 +6,8 @@ namespace osc
 {
     struct RenderTargetDepthAttachment final : public RenderTargetAttachment {
         using RenderTargetAttachment::RenderTargetAttachment;
-    };
 
-    bool operator==(RenderTargetDepthAttachment const&, RenderTargetDepthAttachment const&) noexcept;
-    bool operator!=(RenderTargetDepthAttachment const&, RenderTargetDepthAttachment const&) noexcept;
+        friend bool operator==(RenderTargetDepthAttachment const&, RenderTargetDepthAttachment const&) noexcept;
+        friend bool operator!=(RenderTargetDepthAttachment const&, RenderTargetDepthAttachment const&) noexcept;
+    };
 }

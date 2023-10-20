@@ -634,22 +634,22 @@ namespace
             swap(a.worldMidpoint, b.worldMidpoint);
         }
 
+        friend bool operator==(RenderObject const& lhs, RenderObject const& rhs)
+        {
+            return
+                lhs.material == rhs.material &&
+                lhs.mesh == rhs.mesh &&
+                lhs.maybePropBlock == rhs.maybePropBlock &&
+                lhs.transform == rhs.transform &&
+                lhs.worldMidpoint == rhs.worldMidpoint;
+        }
+
         osc::Material material;
         osc::Mesh mesh;
         std::optional<osc::MaterialPropertyBlock> maybePropBlock;
         Mat4OrTransform transform;
         glm::vec3 worldMidpoint;
     };
-
-    bool operator==(RenderObject const& a, RenderObject const& b)
-    {
-        return
-            a.material == b.material &&
-            a.mesh == b.mesh &&
-            a.maybePropBlock == b.maybePropBlock &&
-            a.transform == b.transform &&
-            a.worldMidpoint == b.worldMidpoint;
-    }
 
     // returns true if the render object is opaque
     bool IsOpaque(RenderObject const& ro)
@@ -2258,20 +2258,20 @@ void osc::RenderTextureDescriptor::setReadWrite(RenderTextureReadWrite rw)
     m_ReadWrite = rw;
 }
 
-bool osc::operator==(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
+bool osc::operator==(RenderTextureDescriptor const& lhs, RenderTextureDescriptor const& rhs)
 {
     return
-        a.m_Dimensions == b.m_Dimensions &&
-        a.m_Dimension == b.m_Dimension &&
-        a.m_AnialiasingLevel == b.m_AnialiasingLevel &&
-        a.m_ColorFormat == b.m_ColorFormat &&
-        a.m_DepthStencilFormat == b.m_DepthStencilFormat &&
-        a.m_ReadWrite == b.m_ReadWrite;
+        lhs.m_Dimensions == rhs.m_Dimensions &&
+        lhs.m_Dimension == rhs.m_Dimension &&
+        lhs.m_AnialiasingLevel == rhs.m_AnialiasingLevel &&
+        lhs.m_ColorFormat == rhs.m_ColorFormat &&
+        lhs.m_DepthStencilFormat == rhs.m_DepthStencilFormat &&
+        lhs.m_ReadWrite == rhs.m_ReadWrite;
 }
 
-bool osc::operator!=(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
+bool osc::operator!=(RenderTextureDescriptor const& lhs, RenderTextureDescriptor const& rhs)
 {
-    return !(a == b);
+    return !(lhs == rhs);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, RenderTextureDescriptor const& rtd)
@@ -3805,9 +3805,9 @@ public:
         setValue(propertyName, std::move(t));
     }
 
-    bool operator==(Impl const& other) const
+    friend bool operator==(Impl const& lhs, Impl const& rhs)
     {
-        return m_Values == other.m_Values;
+        return lhs.m_Values == rhs.m_Values;
     }
 
 private:
@@ -3955,14 +3955,14 @@ void osc::MaterialPropertyBlock::setTexture(std::string_view propertyName, Textu
     m_Impl.upd()->setTexture(propertyName, std::move(t));
 }
 
-bool osc::operator==(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b) noexcept
+bool osc::operator==(MaterialPropertyBlock const& lhs, MaterialPropertyBlock const& rhs) noexcept
 {
-    return a.m_Impl == b.m_Impl || *a.m_Impl == *b.m_Impl;
+    return lhs.m_Impl == rhs.m_Impl || *lhs.m_Impl == *rhs.m_Impl;
 }
 
-bool osc::operator!=(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b) noexcept
+bool osc::operator!=(MaterialPropertyBlock const& lhs, MaterialPropertyBlock const& rhs) noexcept
 {
-    return a.m_Impl != b.m_Impl;
+    return !(lhs == rhs);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, MaterialPropertyBlock const&)
@@ -4896,27 +4896,26 @@ public:
         GraphicsBackend::RenderCameraQueue(*this, &renderTarget);
     }
 
-    bool operator==(Impl const& other) const
+    friend bool operator==(Impl const& lhs, Impl const& rhs)
     {
         return
-            m_BackgroundColor == other.m_BackgroundColor &&
-            m_CameraProjection == other.m_CameraProjection &&
-            m_OrthographicSize == other.m_OrthographicSize &&
-            m_PerspectiveFov == other.m_PerspectiveFov &&
-            m_NearClippingPlane == other.m_NearClippingPlane &&
-            m_FarClippingPlane == other.m_FarClippingPlane &&
-            m_ClearFlags == other.m_ClearFlags &&
-            m_MaybeScreenPixelRect == other.m_MaybeScreenPixelRect &&
-            m_MaybeScissorRect == other.m_MaybeScissorRect &&
-            m_Position == other.m_Position &&
-            m_Rotation == other.m_Rotation &&
-            m_MaybeViewMatrixOverride == other.m_MaybeViewMatrixOverride &&
-            m_MaybeProjectionMatrixOverride == other.m_MaybeProjectionMatrixOverride &&
-            m_RenderQueue == other.m_RenderQueue;
+            lhs.m_BackgroundColor == rhs.m_BackgroundColor &&
+            lhs.m_CameraProjection == rhs.m_CameraProjection &&
+            lhs.m_OrthographicSize == rhs.m_OrthographicSize &&
+            lhs.m_PerspectiveFov == rhs.m_PerspectiveFov &&
+            lhs.m_NearClippingPlane == rhs.m_NearClippingPlane &&
+            lhs.m_FarClippingPlane == rhs.m_FarClippingPlane &&
+            lhs.m_ClearFlags == rhs.m_ClearFlags &&
+            lhs.m_MaybeScreenPixelRect == rhs.m_MaybeScreenPixelRect &&
+            lhs.m_MaybeScissorRect == rhs.m_MaybeScissorRect &&
+            lhs.m_Position == rhs.m_Position &&
+            lhs.m_Rotation == rhs.m_Rotation &&
+            lhs.m_MaybeViewMatrixOverride == rhs.m_MaybeViewMatrixOverride &&
+            lhs.m_MaybeProjectionMatrixOverride == rhs.m_MaybeProjectionMatrixOverride &&
+            lhs.m_RenderQueue == rhs.m_RenderQueue;
     }
 
 private:
-
     friend class GraphicsBackend;
 
     Color m_BackgroundColor = Color::clear();
@@ -5143,14 +5142,14 @@ std::ostream& osc::operator<<(std::ostream& o, Camera const& camera)
     return o << "Camera(position = " << camera.getPosition() << ", direction = " << camera.getDirection() << ", projection = " << camera.getCameraProjection() << ')';
 }
 
-bool osc::operator==(Camera const& a, Camera const& b)
+bool osc::operator==(Camera const& lhs, Camera const& rhs)
 {
-    return a.m_Impl == b.m_Impl || *a.m_Impl == *b.m_Impl;
+    return lhs.m_Impl == rhs.m_Impl || *lhs.m_Impl == *rhs.m_Impl;
 }
 
-bool osc::operator!=(Camera const& a, Camera const& b)
+bool osc::operator!=(Camera const& lhs, Camera const& rhs)
 {
-    return !(a == b);
+    return !(lhs == rhs);
 }
 
 

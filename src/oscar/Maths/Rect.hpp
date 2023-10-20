@@ -9,11 +9,9 @@ namespace osc
     struct Rect final {
         glm::vec2 p1;
         glm::vec2 p2;
+
+        friend bool operator==(Rect const&, Rect const&) noexcept;
+        friend bool operator!=(Rect const&, Rect const&) noexcept;
+        friend std::ostream& operator<<(std::ostream&, Rect const&);
     };
-
-    // prints a human-readable representation of the Rect to the stream
-    std::ostream& operator<<(std::ostream&, Rect const&);
-
-    bool operator==(Rect const&, Rect const&) noexcept;
-    bool operator!=(Rect const&, Rect const&) noexcept;
 }

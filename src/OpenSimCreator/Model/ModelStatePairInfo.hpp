@@ -16,16 +16,14 @@ namespace osc
         explicit ModelStatePairInfo(VirtualConstModelStatePair const&);
 
         float getFixupScaleFactor() const { return m_FixupScaleFactor; }
-    private:
-        friend bool operator==(ModelStatePairInfo const&, ModelStatePairInfo const&) noexcept;
 
+        friend bool operator==(ModelStatePairInfo const&, ModelStatePairInfo const&) noexcept;
+        friend bool operator!=(ModelStatePairInfo const&, ModelStatePairInfo const&) noexcept;
+    private:
         UID m_ModelVersion;
         UID m_StateVersion;
         OpenSim::ComponentPath m_Selection;
         OpenSim::ComponentPath m_Hover;
         float m_FixupScaleFactor = 1.0f;
     };
-
-    bool operator==(ModelStatePairInfo const&, ModelStatePairInfo const&) noexcept;
-    bool operator!=(ModelStatePairInfo const&, ModelStatePairInfo const&) noexcept;
 }

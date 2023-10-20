@@ -151,22 +151,22 @@ namespace
         {
         }
 
+        friend bool operator==(TPSDocumentElementID const& lhs, TPSDocumentElementID const& rhs)
+        {
+            return
+                lhs.whichInput == rhs.whichInput &&
+                lhs.elementType == rhs.elementType &&
+                lhs.elementID == rhs.elementID;
+        }
+
         TPSDocumentInputIdentifier whichInput;
         TPSDocumentInputElementType elementType;
         std::string elementID;
     };
-
-    bool operator==(TPSDocumentElementID const& a, TPSDocumentElementID const& b) noexcept
-    {
-        return
-            a.whichInput == b.whichInput &&
-            a.elementType == b.elementType &&
-            a.elementID == b.elementID;
-    }
 }
 
 template<>
-struct std::hash<TPSDocumentElementID> {
+struct std::hash<TPSDocumentElementID> final {
     size_t operator()(TPSDocumentElementID const& el) const noexcept
     {
         return osc::HashOf(el.whichInput, el.elementType, el.elementID);

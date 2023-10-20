@@ -46,26 +46,44 @@ namespace osc
             swap(a.m_Ptr, b.m_Ptr);
         }
 
+        template<typename U>
+        friend bool operator==(CopyOnUpdPtr const& lhs, CopyOnUpdPtr<U> const& rhs) noexcept
+        {
+            return lhs.m_Ptr == rhs.m_Ptr;
+        }
+
+        template<typename U>
+        friend bool operator!=(CopyOnUpdPtr const& lhs, CopyOnUpdPtr<U> const& rhs) noexcept
+        {
+            return lhs.m_Ptr != rhs.m_Ptr;
+        }
+
+        template<typename U>
+        friend bool operator<(CopyOnUpdPtr const& lhs, CopyOnUpdPtr<U> const& rhs) noexcept
+        {
+            return lhs.m_Ptr < rhs.m_Ptr;
+        }
+
+        template<typename U>
+        friend bool operator>(CopyOnUpdPtr const& lhs, CopyOnUpdPtr<U> const& rhs) noexcept
+        {
+            return lhs.m_Ptr > rhs.m_Ptr;
+        }
+
+        template<typename U>
+        friend bool operator<=(CopyOnUpdPtr const& lhs, CopyOnUpdPtr<U> const& rhs) noexcept
+        {
+            return lhs.m_Ptr <= rhs.m_Ptr;
+        }
+
+        template<typename U>
+        friend bool operator>=(CopyOnUpdPtr const& lhs, CopyOnUpdPtr<U> const& rhs) noexcept
+        {
+            return lhs.m_Ptr >= rhs.m_Ptr;
+        }
+
     private:
-        template<typename U, typename V>
-        friend bool operator==(CopyOnUpdPtr<U> const&, CopyOnUpdPtr<V> const&) noexcept;
-
-        template<typename U, typename V>
-        friend bool operator!=(CopyOnUpdPtr<U> const&, CopyOnUpdPtr<V> const&) noexcept;
-
-        template<typename U, typename V>
-        friend bool operator<(CopyOnUpdPtr<U> const&, CopyOnUpdPtr<V> const&) noexcept;
-
-        template<typename U, typename V>
-        friend bool operator>(CopyOnUpdPtr<U> const&, CopyOnUpdPtr<V> const&) noexcept;
-
-        template<typename U, typename V>
-        friend bool operator<=(CopyOnUpdPtr<U> const&, CopyOnUpdPtr<V> const&) noexcept;
-
-        template<typename U, typename V>
-        friend bool operator>=(CopyOnUpdPtr<U> const&, CopyOnUpdPtr<V> const&) noexcept;
-
-        friend struct std::hash<CopyOnUpdPtr<T>>;
+        friend struct std::hash<CopyOnUpdPtr>;
 
         std::shared_ptr<T> m_Ptr;
     };
@@ -75,47 +93,10 @@ namespace osc
     {
         return CopyOnUpdPtr<T>(std::make_shared<T>(std::forward<Args>(args)...));
     }
-
-    template<typename U, typename V>
-    inline bool operator==(CopyOnUpdPtr<U> const& a, CopyOnUpdPtr<V> const& b) noexcept
-    {
-        return a.m_Ptr == b.m_Ptr;
-    }
-
-    template<typename U, typename V>
-    inline bool operator!=(CopyOnUpdPtr<U> const& a, CopyOnUpdPtr<V> const& b) noexcept
-    {
-        return a.m_Ptr != b.m_Ptr;
-    }
-
-    template<typename U, typename V>
-    inline bool operator<(CopyOnUpdPtr<U> const& a, CopyOnUpdPtr<V> const& b) noexcept
-    {
-        return a.m_Ptr < b.m_Ptr;
-    }
-
-    template<typename U, typename V>
-    inline bool operator>(CopyOnUpdPtr<U> const& a, CopyOnUpdPtr<V> const& b) noexcept
-    {
-        return a.m_Ptr > b.m_Ptr;
-    }
-
-    template<typename U, typename V>
-    inline bool operator<=(CopyOnUpdPtr<U> const& a, CopyOnUpdPtr<V> const& b) noexcept
-    {
-        return a.m_Ptr <= b.m_Ptr;
-    }
-
-    template<typename U, typename V>
-    inline bool operator>=(CopyOnUpdPtr<U> const& a, CopyOnUpdPtr<V> const& b) noexcept
-    {
-        return a.m_Ptr >= b.m_Ptr;
-    }
 }
 
 template<typename T>
-struct std::hash<osc::CopyOnUpdPtr<T>> final
-{
+struct std::hash<osc::CopyOnUpdPtr<T>> final {
     size_t operator()(osc::CopyOnUpdPtr<T> const& cow) const
     {
         return std::hash<std::shared_ptr<T>>{}(cow.m_Ptr);
