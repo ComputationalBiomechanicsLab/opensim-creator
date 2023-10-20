@@ -27,13 +27,13 @@ namespace osc::doc
             return m_Type;
         }
 
-        friend bool operator==(PropertyDescription const& a, PropertyDescription const& b)
+        friend bool operator==(PropertyDescription const& lhs, PropertyDescription const& rhs)
         {
-            return a.m_Name == b.m_Name && a.m_Type == b.m_Type;
+            return lhs.m_Name == rhs.m_Name && lhs.m_Type == rhs.m_Type;
         }
-        friend bool operator!=(PropertyDescription const& a, PropertyDescription const& b)
+        friend bool operator!=(PropertyDescription const& lhs, PropertyDescription const& rhs)
         {
-            return !(a == b);
+            return !(lhs == rhs);
         }
     private:
         std::string m_Name;

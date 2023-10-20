@@ -49,14 +49,14 @@ namespace osc::doc
                 return copy;
             }
 
-            friend bool operator==(Iterator const& a, Iterator const& b)
+            friend bool operator==(Iterator const& lhs, Iterator const& rhs)
             {
-                return a.m_Current == b.m_Current && a.m_Remaining == b.m_Remaining;
+                return lhs.m_Current == rhs.m_Current && lhs.m_Remaining == rhs.m_Remaining;
             }
 
-            friend bool operator!=(Iterator const& a, Iterator const& b)
+            friend bool operator!=(Iterator const& lhs, Iterator const& rhs)
             {
-                return !(a == b);
+                return !(lhs == rhs);
             }
 
         private:
@@ -74,6 +74,7 @@ namespace osc::doc
             std::string_view m_Remaining;
         };
 
+        using value_type = std::string_view;
         using iterator = Iterator;
         using const_iterator = Iterator;
 
@@ -105,14 +106,14 @@ namespace osc::doc
             return Iterator{};
         }
 
-        friend bool operator==(NodePath const& a, NodePath const& b)
+        friend bool operator==(NodePath const& lhs, NodePath const& rhs)
         {
-            return a.m_ParsedPath == b.m_ParsedPath;
+            return lhs.m_ParsedPath == rhs.m_ParsedPath;
         }
 
-        friend bool operator!=(NodePath const& a, NodePath const& b)
+        friend bool operator!=(NodePath const& lhs, NodePath const& rhs)
         {
-            return a.m_ParsedPath != b.m_ParsedPath;
+            return lhs.m_ParsedPath != rhs.m_ParsedPath;
         }
     private:
         std::string m_ParsedPath;

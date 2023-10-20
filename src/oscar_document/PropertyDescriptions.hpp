@@ -33,13 +33,13 @@ namespace osc::doc
 
         void append(PropertyDescription const&);
 
-        friend bool operator==(PropertyDescriptions const& a, PropertyDescriptions const& b)
+        friend bool operator==(PropertyDescriptions const& lhs, PropertyDescriptions const& rhs)
         {
-            return a.m_Descriptions == b.m_Descriptions;
+            return lhs.m_Descriptions == rhs.m_Descriptions;
         }
-        friend bool operator!=(PropertyDescriptions const& a, PropertyDescriptions const& b)
+        friend bool operator!=(PropertyDescriptions const& lhs, PropertyDescriptions const& rhs)
         {
-            return !(a == b);
+            return !(lhs == rhs);
         }
     private:
         std::vector<PropertyDescription> m_Descriptions;
