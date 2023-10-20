@@ -26,4 +26,7 @@ namespace osc
         OpenSim::ComponentPath m_Hover;
         float m_FixupScaleFactor = 1.0f;
     };
+
+    bool operator==(ModelStatePairInfo const&, ModelStatePairInfo const&) noexcept;
+    bool operator!=(ModelStatePairInfo const&, ModelStatePairInfo const&) noexcept;
 }

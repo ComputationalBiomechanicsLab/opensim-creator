@@ -81,8 +81,6 @@ namespace osc
         {
         }
 
-        friend bool operator==(SceneDecoration const&, SceneDecoration const&) noexcept;
-
         Mesh mesh;
         Transform transform{};
         Color color = Color::white();
@@ -91,4 +89,6 @@ namespace osc
         std::optional<Material> maybeMaterial = std::nullopt;
         std::optional<MaterialPropertyBlock> maybeMaterialProps = std::nullopt;
     };
+
+    bool operator==(SceneDecoration const&, SceneDecoration const&) noexcept;
 }

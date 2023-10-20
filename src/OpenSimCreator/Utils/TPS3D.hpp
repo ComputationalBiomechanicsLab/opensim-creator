@@ -67,13 +67,12 @@ namespace osc
         {
         }
 
-        friend bool operator==(TPSCoefficientSolverInputs3D const&, TPSCoefficientSolverInputs3D const&) noexcept;
-        friend bool operator!=(TPSCoefficientSolverInputs3D const&, TPSCoefficientSolverInputs3D const&) noexcept;
-
         std::vector<LandmarkPair3D> landmarks;
         float blendingFactor = 1.0f;
     };
 
+    bool operator==(TPSCoefficientSolverInputs3D const&, TPSCoefficientSolverInputs3D const&) noexcept;
+    bool operator!=(TPSCoefficientSolverInputs3D const&, TPSCoefficientSolverInputs3D const&) noexcept;
     std::ostream& operator<<(std::ostream&, TPSCoefficientSolverInputs3D const&);
 
     // a single non-affine term of the 3D TPS equation
@@ -111,10 +110,6 @@ namespace osc
     //
     // i.e. these are the a1, a2, a3, a4, and w's (+ control points) terms of the equation
     struct TPSCoefficients3D final {
-
-        friend bool operator==(TPSCoefficients3D const&, TPSCoefficients3D const&) noexcept;
-        friend bool operator!=(TPSCoefficients3D const&, TPSCoefficients3D const&) noexcept;
-
         // default the coefficients to an "identity" warp
         glm::vec3 a1 = {0.0f, 0.0f, 0.0f};
         glm::vec3 a2 = {1.0f, 0.0f, 0.0f};
@@ -123,6 +118,8 @@ namespace osc
         std::vector<TPSNonAffineTerm3D> nonAffineTerms;
     };
 
+    bool operator==(TPSCoefficients3D const&, TPSCoefficients3D const&) noexcept;
+    bool operator!=(TPSCoefficients3D const&, TPSCoefficients3D const&) noexcept;
     std::ostream& operator<<(std::ostream&, TPSCoefficients3D const&);
 
     // computes all coefficients of the 3D TPS equation (a1, a2, a3, a4, and all the w's)

@@ -76,4 +76,6 @@ namespace osc
         MuscleSizingStyle m_MuscleSizingStyle;
         OpenSimDecorationOptionFlags m_Flags;
     };
+
+    bool operator==(OpenSimDecorationOptions const&, OpenSimDecorationOptions const&) noexcept;
 }

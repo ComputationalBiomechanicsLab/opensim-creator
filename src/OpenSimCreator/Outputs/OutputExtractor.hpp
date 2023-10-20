@@ -88,7 +88,6 @@ namespace osc
             return *lhs.m_Output != *rhs.m_Output;
         }
     private:
-        friend bool operator!=(OutputExtractor const&, OutputExtractor const&);
         friend std::string to_string(OutputExtractor const&);
         friend struct std::hash<OutputExtractor>;
 
