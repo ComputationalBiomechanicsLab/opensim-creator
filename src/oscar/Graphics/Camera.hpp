@@ -128,13 +128,17 @@ namespace osc
             swap(a.m_Impl, b.m_Impl);
         }
 
+    private:
         friend bool operator==(Camera const&, Camera const&);
         friend bool operator!=(Camera const&, Camera const&);
         friend std::ostream& operator<<(std::ostream&, Camera const&);
-    private:
         friend class GraphicsBackend;
 
         class Impl;
         CopyOnUpdPtr<Impl> m_Impl;
     };
+
+    bool operator==(Camera const&, Camera const&);
+    bool operator!=(Camera const&, Camera const&);
+    std::ostream& operator<<(std::ostream&, Camera const&);
 }

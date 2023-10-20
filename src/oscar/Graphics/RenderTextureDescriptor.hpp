@@ -39,10 +39,10 @@ namespace osc
         RenderTextureReadWrite getReadWrite() const;
         void setReadWrite(RenderTextureReadWrite);
 
+    private:
         friend bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
         friend bool operator!=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
         friend std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
-    private:
         friend class GraphicsBackend;
 
         glm::ivec2 m_Dimensions;
@@ -52,4 +52,8 @@ namespace osc
         DepthStencilFormat m_DepthStencilFormat;
         RenderTextureReadWrite m_ReadWrite;
     };
+
+    bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
+    bool operator!=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
+    std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
 }

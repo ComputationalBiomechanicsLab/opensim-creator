@@ -95,9 +95,8 @@ namespace osc
             return lhs.m_Impl != rhs.m_Impl;
         }
 
-        friend std::ostream& operator<<(std::ostream&, Texture2D const&);
-
     private:
+        friend std::ostream& operator<<(std::ostream&, Texture2D const&);
         friend void DrawTextureAsImGuiImage(Texture2D const&, glm::vec2, glm::vec2, glm::vec2);
         friend bool ImageButton(CStringView label, Texture2D const& t, glm::vec2, Rect const&);
         void* getTextureHandleHACK() const;  // used by ImGui... for now

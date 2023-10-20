@@ -49,6 +49,8 @@ namespace osc
         friend bool operator==(ForwardDynamicSimulatorParams const&, ForwardDynamicSimulatorParams const&);
     };
 
+    bool operator==(ForwardDynamicSimulatorParams const&, ForwardDynamicSimulatorParams const&);
+
     // convert to a generic parameter block (for UI binding)
     ParamBlock ToParamBlock(ForwardDynamicSimulatorParams const&);
     ForwardDynamicSimulatorParams FromParamBlock(ParamBlock const&);

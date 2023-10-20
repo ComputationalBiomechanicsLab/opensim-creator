@@ -53,8 +53,8 @@ namespace osc
             return lhs.m_Impl != rhs.m_Impl;
         }
 
-        friend std::ostream& operator<<(std::ostream&, Shader const&);
     private:
+        friend std::ostream& operator<<(std::ostream&, Shader const&);
         friend class GraphicsBackend;
 
         class Impl;
