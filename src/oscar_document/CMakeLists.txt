@@ -1,4 +1,6 @@
 add_library(oscar_document STATIC
+    Node.cpp
+    Node.hpp
     NodePath.cpp
     NodePath.hpp
     PropertyDescription.hpp

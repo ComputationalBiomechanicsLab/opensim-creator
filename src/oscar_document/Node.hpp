@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar_document/NodePath.hpp>
+#include <oscar_document/PropertyDescriptions.hpp>
 
 #include <oscar/Utils/CStringView.hpp>
 
@@ -12,7 +13,6 @@
 #include <type_traits>
 #include <utility>
 
-namespace osc::doc { class PropertyDescriptions; }
 namespace osc::doc { class Variant; }
 
 namespace osc::doc
@@ -64,7 +64,7 @@ namespace osc::doc
         >
         TDerived const* getChild(size_t i) const
         {
-            return dynamic_cast<TDerived const*>(getChild<Node>());
+            return dynamic_cast<TDerived const*>(getChild<Node>(i));
         }
         template<>
         Node const* getChild<Node>(size_t) const;
@@ -102,7 +102,10 @@ namespace osc::doc
         template<>
         Node* updChild<Node>(std::string_view childName);
 
-        template<typename TDerived>
+        template<
+            typename TDerived,
+            typename std::enable_if_t<std::is_base_of_v<Node, TDerived>, bool> = true
+        >
         TDerived& addChild(std::unique_ptr<TDerived> p)
         {
             TDerived& rv = *p;
@@ -112,10 +115,19 @@ namespace osc::doc
         template<>
         Node& addChild<Node>(std::unique_ptr<Node>);
 
+        template<
+            typename TDerived,
+            typename... Args,
+            typename std::enable_if_t<std::is_base_of_v<Node, TDerived>, bool> = true
+        >
+        TDerived& emplaceChild(Args&&... args)
+        {
+            return addChild(std::make_unique<TDerived>(std::forward<Args>(args)...));
+        }
+
         bool removeChild(size_t);
         bool removeChild(Node&);
         bool removeChild(std::string_view childName);
-
 
         NodePath getAbsolutePath() const;
 
@@ -143,15 +155,15 @@ namespace osc::doc
 
         size_t getNumProperties() const;
         bool hasProperty(std::string_view propName) const;
-        CStringView getPropertyName(size_t) const;
-        Variant const& getPropertyValue(size_t) const;
+        CStringView const* getPropertyName(size_t) const;
+        Variant const* getPropertyValue(size_t) const;
         Variant const* getPropertyValue(std::string_view propName) const;
         bool setPropertyValue(size_t, Variant const&);
         bool setPropertyValue(std::string_view propName, Variant const&);
 
     private:
         virtual std::unique_ptr<Node> implClone() const = 0;
-        virtual PropertyDescriptions const& implGetPropertyList() const {}
+        virtual PropertyDescriptions  implGetPropertyList() const { return PropertyDescriptions{}; }
 
         class Impl;
         std::shared_ptr<Impl> m_Impl;

@@ -2,13 +2,15 @@ include(GoogleTest)
 find_package(GTest REQUIRED CONFIG)
 
 add_executable(testoscar_document
+    TestNode.cpp
     TestNodePath.cpp
-    testoscar_document.cpp
     TestPropertyDescription.cpp
     TestPropertyDescriptions.cpp
     TestVariant.cpp
     TestVariantType.cpp
-)
+
+    testoscar_document.cpp  # entrypoint
+ )
 
 target_link_libraries(testoscar_document PUBLIC
     # set compiler options
