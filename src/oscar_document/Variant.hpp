@@ -48,6 +48,9 @@ namespace osc::doc
             glm::vec3
         > m_Data;
     };
+
+    bool operator==(Variant const&, Variant const&);
+    bool operator!=(Variant const&, Variant const&);
 }
 
 template<>
