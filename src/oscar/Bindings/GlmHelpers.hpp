@@ -8,6 +8,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+#include <cstddef>
 #include <iosfwd>
 #include <string>
 
@@ -26,3 +27,8 @@ namespace osc
     std::ostream& operator<<(std::ostream&, glm::mat4 const&);
     std::ostream& operator<<(std::ostream&, glm::quat const&);
 }
+
+template<>
+struct std::hash<glm::vec3> final {
+    size_t operator()(glm::vec3 const&);
+};

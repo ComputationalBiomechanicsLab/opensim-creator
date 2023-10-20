@@ -37,6 +37,8 @@ namespace osc::doc
         friend bool operator==(Variant const&, Variant const&);
         friend bool operator!=(Variant const&, Variant const&);
     private:
+        friend struct std::hash<osc::doc::Variant>;
+
         std::variant<
             bool,
             Color,

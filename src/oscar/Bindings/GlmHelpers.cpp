@@ -1,5 +1,7 @@
 #include "GlmHelpers.hpp"
 
+#include <oscar/Utils/HashHelpers.hpp>
+
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -35,6 +37,11 @@ std::string osc::to_string(glm::vec3 const& v)
     std::stringstream ss;
     ss << v;
     return std::move(ss).str();
+}
+
+size_t std::hash<glm::vec3>::operator()(glm::vec3 const& v)
+{
+    return osc::HashOf(v.x, v.y, v.z);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, glm::vec4 const& v)
