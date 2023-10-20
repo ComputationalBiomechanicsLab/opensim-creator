@@ -37,6 +37,14 @@ namespace
         {
         }
 
+        friend bool operator==(ShaderInputs const& lhs, ShaderInputs const& rhs)
+        {
+            return
+                lhs.vertexShaderPath == rhs.vertexShaderPath &&
+                lhs.geometryShaderPath == rhs.geometryShaderPath &&
+                lhs.fragmentShaderPath == rhs.fragmentShaderPath;
+        }
+
         std::filesystem::path vertexShaderPath;
         std::filesystem::path geometryShaderPath;
         std::filesystem::path fragmentShaderPath;
@@ -46,14 +54,6 @@ namespace
             std::filesystem::hash_value(fragmentShaderPath)
         );
     };
-
-    bool operator==(ShaderInputs const& a, ShaderInputs const& b)
-    {
-        return
-            a.vertexShaderPath == b.vertexShaderPath &&
-            a.geometryShaderPath == b.geometryShaderPath &&
-            a.fragmentShaderPath == b.fragmentShaderPath;
-    }
 }
 
 template<>

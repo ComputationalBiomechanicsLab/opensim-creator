@@ -96,7 +96,7 @@ namespace osc
         {
             m_Value.reset(ptr);
         }
-        void swap(ClonePtr& other)
+        void swap(ClonePtr& other) noexcept
         {
             m_Value.swap(other.m_Value);
         }
@@ -125,30 +125,29 @@ namespace osc
             return m_Value.get();
         }
 
-        friend void swap(ClonePtr& lhs, ClonePtr& rhs)
+        friend void swap(ClonePtr& lhs, ClonePtr& rhs) noexcept
         {
             lhs.swap(rhs);
+        }
+
+        template<typename T2, typename D2>
+        friend bool operator==(ClonePtr const& x, ClonePtr<T2, D2> const& y)
+        {
+            return x.get() == y.get();
+        }
+
+        friend std::ostream& operator<<(std::ostream& o, ClonePtr const& p)
+        {
+            return o << p.get();
         }
 
     private:
         std::unique_ptr<T, Deleter> m_Value;
     };
-
-    template<typename T1, typename D1, typename T2, typename D2>
-    bool operator==(ClonePtr<T1, D1> const& x, ClonePtr<T2, D2> const& y)
-    {
-        return x.get() == y.get();
-    }
-
-    template<typename T, typename D>
-    std::ostream& operator<<(std::ostream& o, ClonePtr<T, D> const& p)
-    {
-        return o << p.get();
-    }
 }
 
 template<typename T, typename D>
-struct std::hash<osc::ClonePtr<T, D>> {
+struct std::hash<osc::ClonePtr<T, D>> final {
     size_t operator()(osc::ClonePtr<T, D> const& p)
     {
         return std::hash(p.get());

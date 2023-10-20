@@ -45,10 +45,40 @@ namespace osc
             return m_Value > 0;
         }
 
+        constexpr friend bool operator==(UID const& lhs, UID const& rhs) noexcept
+        {
+            return lhs.get() == rhs.get();
+        }
+
+        constexpr friend bool operator!=(UID const& lhs, UID const& rhs) noexcept
+        {
+            return lhs.get() != rhs.get();
+        }
+
+        constexpr friend bool operator<(UID const& lhs, UID const& rhs) noexcept
+        {
+            return lhs.get() < rhs.get();
+        }
+
+        constexpr friend bool operator<=(UID const& lhs, UID const& rhs) noexcept
+        {
+            return lhs.get() <= rhs.get();
+        }
+
+        constexpr friend bool operator>(UID const& lhs, UID const& rhs) noexcept
+        {
+            return lhs.get() > rhs.get();
+        }
+
+        constexpr friend bool operator>=(UID const& lhs, UID const& rhs) noexcept
+        {
+            return lhs.get() >= rhs.get();
+        }
+
     private:
         static int64_t GetNextID() noexcept;
 
-        constexpr UID(int64_t value) noexcept : m_Value{std::move(value)}
+        constexpr UID(int64_t value) noexcept : m_Value{value}
         {
         }
 
@@ -96,37 +126,7 @@ namespace osc
         return UIDT<V>{id};
     }
 
-    std::ostream& operator<<(std::ostream& o, UID const& id);
-
-    constexpr bool operator==(UID const& lhs, UID const& rhs) noexcept
-    {
-        return lhs.get() == rhs.get();
-    }
-
-    constexpr bool operator!=(UID const& lhs, UID const& rhs) noexcept
-    {
-        return lhs.get() != rhs.get();
-    }
-
-    constexpr bool operator<(UID const& lhs, UID const& rhs) noexcept
-    {
-        return lhs.get() < rhs.get();
-    }
-
-    constexpr bool operator<=(UID const& lhs, UID const& rhs) noexcept
-    {
-        return lhs.get() <= rhs.get();
-    }
-
-    constexpr bool operator>(UID const& lhs, UID const& rhs) noexcept
-    {
-        return lhs.get() > rhs.get();
-    }
-
-    constexpr bool operator>=(UID const& lhs, UID const& rhs) noexcept
-    {
-        return lhs.get() >= rhs.get();
-    }
+    std::ostream& operator<<(std::ostream&, UID const&);
 }
 
 // hashing support for LogicalIDs

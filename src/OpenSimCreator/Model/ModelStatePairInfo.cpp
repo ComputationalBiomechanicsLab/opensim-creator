@@ -13,17 +13,17 @@ osc::ModelStatePairInfo::ModelStatePairInfo(VirtualConstModelStatePair const& ms
 {
 }
 
-bool osc::operator==(ModelStatePairInfo const& a, ModelStatePairInfo const& b) noexcept
+bool osc::operator==(ModelStatePairInfo const& lhs, ModelStatePairInfo const& rhs) noexcept
 {
     return
-        a.m_ModelVersion == b.m_ModelVersion &&
-        a.m_StateVersion == b.m_StateVersion &&
-        a.m_Selection == b.m_Selection &&
-        a.m_Hover == b.m_Hover &&
-        a.m_FixupScaleFactor == b.m_FixupScaleFactor;
+        lhs.m_ModelVersion == rhs.m_ModelVersion &&
+        lhs.m_StateVersion == rhs.m_StateVersion &&
+        lhs.m_Selection == rhs.m_Selection &&
+        lhs.m_Hover == rhs.m_Hover &&
+        lhs.m_FixupScaleFactor == rhs.m_FixupScaleFactor;
 }
 
-bool osc::operator!=(ModelStatePairInfo const& a, ModelStatePairInfo const& b) noexcept
+bool osc::operator!=(ModelStatePairInfo const& lhs, ModelStatePairInfo const& rhs) noexcept
 {
-    return !(a == b);
+    return !(lhs == rhs);
 }

@@ -55,16 +55,15 @@ namespace osc
 
         virtual size_t getHash() const = 0;
         virtual bool equals(VirtualOutputExtractor const&) const = 0;
+
+        friend bool operator==(VirtualOutputExtractor const& lhs, VirtualOutputExtractor const& rhs)
+        {
+            return lhs.equals(rhs);
+        }
+
+        friend bool operator!=(VirtualOutputExtractor const& lhs, VirtualOutputExtractor const& rhs)
+        {
+            return !lhs.equals(rhs);
+        }
     };
-
-
-    inline bool operator==(VirtualOutputExtractor const& a, VirtualOutputExtractor const& b)
-    {
-        return a.equals(b);
-    }
-
-    inline bool operator!=(VirtualOutputExtractor const& a, VirtualOutputExtractor const& b)
-    {
-        return !a.equals(b);
-    }
 }

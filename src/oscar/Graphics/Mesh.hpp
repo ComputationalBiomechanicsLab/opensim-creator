@@ -75,26 +75,24 @@ namespace osc
             swap(a.m_Impl, b.m_Impl);
         }
 
+        friend bool operator==(Mesh const& lhs, Mesh const& rhs) noexcept
+        {
+            return lhs.m_Impl == rhs.m_Impl;
+        }
+
+        friend bool operator!=(Mesh const& lhs, Mesh const& rhs) noexcept
+        {
+            return lhs.m_Impl != rhs.m_Impl;
+        }
+
+        friend std::ostream& operator<<(std::ostream&, Mesh const&);
     private:
         friend class GraphicsBackend;
         friend struct std::hash<Mesh>;
-        friend bool operator==(Mesh const&, Mesh const&) noexcept;
-        friend bool operator!=(Mesh const&, Mesh const&) noexcept;
-        friend std::ostream& operator<<(std::ostream&, Mesh const&);
 
         class Impl;
         CopyOnUpdPtr<Impl> m_Impl;
     };
-
-    inline bool operator==(Mesh const& a, Mesh const& b) noexcept
-    {
-        return a.m_Impl == b.m_Impl;
-    }
-
-    inline bool operator!=(Mesh const& a, Mesh const& b) noexcept
-    {
-        return a.m_Impl != b.m_Impl;
-    }
 
     std::ostream& operator<<(std::ostream&, Mesh const&);
 }
@@ -103,7 +101,6 @@ template<>
 struct std::hash<osc::Mesh> final {
     size_t operator()(osc::Mesh const& mesh) const
     {
-        using std::hash;
-        return hash<osc::CopyOnUpdPtr<osc::Mesh::Impl>>{}(mesh.m_Impl);
+        return std::hash<osc::CopyOnUpdPtr<osc::Mesh::Impl>>{}(mesh.m_Impl);
     }
 };

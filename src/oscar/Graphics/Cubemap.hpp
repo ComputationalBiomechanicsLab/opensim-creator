@@ -24,22 +24,19 @@ namespace osc
         // width*height of the cubemap, or an exception will be thrown
         void setPixelData(CubemapFace, nonstd::span<uint8_t const>);
 
+        friend bool operator==(Cubemap const& lhs, Cubemap const& rhs) noexcept
+        {
+            return lhs.m_Impl == rhs.m_Impl;
+        }
+
+        friend bool operator!=(Cubemap const& lhs, Cubemap const& rhs) noexcept
+        {
+            return lhs.m_Impl != rhs.m_Impl;
+        }
     private:
         friend class GraphicsBackend;
-        friend bool operator==(Cubemap const&, Cubemap const&) noexcept;
-        friend bool operator!=(Cubemap const&, Cubemap const&) noexcept;
 
         class Impl;
         CopyOnUpdPtr<Impl> m_Impl;
     };
-
-    inline bool operator==(Cubemap const& a, Cubemap const& b) noexcept
-    {
-        return a.m_Impl == b.m_Impl;
-    }
-
-    inline bool operator!=(Cubemap const& a, Cubemap const& b) noexcept
-    {
-        return a.m_Impl != b.m_Impl;
-    }
 }

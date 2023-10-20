@@ -26,14 +26,14 @@ namespace
         {
         }
 
+        friend bool operator==(TorusParameters const& lhs, TorusParameters const& rhs) noexcept
+        {
+            return lhs.torusCenterToTubeCenterRadius == rhs.torusCenterToTubeCenterRadius && lhs.tubeRadius == rhs.tubeRadius;
+        }
+
         float torusCenterToTubeCenterRadius;
         float tubeRadius;
     };
-
-    bool operator==(TorusParameters const& a, TorusParameters const& b) noexcept
-    {
-        return a.torusCenterToTubeCenterRadius == b.torusCenterToTubeCenterRadius && a.tubeRadius == b.tubeRadius;
-    }
 }
 
 template<>

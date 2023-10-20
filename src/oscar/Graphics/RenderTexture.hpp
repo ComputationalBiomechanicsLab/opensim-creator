@@ -60,28 +60,26 @@ namespace osc
             swap(a.m_Impl, b.m_Impl);
         }
 
+        friend bool operator==(RenderTexture const& lhs, RenderTexture const& rhs) noexcept
+        {
+            return lhs.m_Impl == rhs.m_Impl;
+        }
+
+        friend bool operator!=(RenderTexture const& lhs, RenderTexture const& rhs) noexcept
+        {
+            return lhs.m_Impl != rhs.m_Impl;
+        }
+
+        friend std::ostream& operator<<(std::ostream&, RenderTexture const&);
     private:
         friend void DrawTextureAsImGuiImage(RenderTexture const&, glm::vec2);
         void* getTextureHandleHACK() const;  // used by ImGui... for now
 
         friend class GraphicsBackend;
-        friend bool operator==(RenderTexture const&, RenderTexture const&) noexcept;
-        friend bool operator!=(RenderTexture const&, RenderTexture const&) noexcept;
-        friend std::ostream& operator<<(std::ostream&, RenderTexture const&);
 
         class Impl;
         CopyOnUpdPtr<Impl> m_Impl;
     };
-
-    inline bool operator==(RenderTexture const& a, RenderTexture const& b) noexcept
-    {
-        return a.m_Impl == b.m_Impl;
-    }
-
-    inline bool operator!=(RenderTexture const& a, RenderTexture const& b) noexcept
-    {
-        return a.m_Impl != b.m_Impl;
-    }
 
     std::ostream& operator<<(std::ostream&, RenderTexture const&);
 }

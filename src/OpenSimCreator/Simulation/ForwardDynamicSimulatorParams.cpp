@@ -41,16 +41,16 @@ osc::ForwardDynamicSimulatorParams::ForwardDynamicSimulatorParams() :
 {
 }
 
-bool osc::operator==(ForwardDynamicSimulatorParams const& a, ForwardDynamicSimulatorParams const& b)
+bool osc::operator==(ForwardDynamicSimulatorParams const& lhs, ForwardDynamicSimulatorParams const& rhs)
 {
     return
-        a.finalTime == b.finalTime &&
-        a.integratorMethodUsed == b.integratorMethodUsed &&
-        a.reportingInterval == b.reportingInterval &&
-        a.integratorStepLimit == b.integratorStepLimit &&
-        a.integratorMinimumStepSize == b.integratorMinimumStepSize &&
-        a.integratorMaximumStepSize == b.integratorMaximumStepSize &&
-        a.integratorAccuracy == b.integratorAccuracy;
+        lhs.finalTime == rhs.finalTime &&
+        lhs.integratorMethodUsed == rhs.integratorMethodUsed &&
+        lhs.reportingInterval == rhs.reportingInterval &&
+        lhs.integratorStepLimit == rhs.integratorStepLimit &&
+        lhs.integratorMinimumStepSize == rhs.integratorMinimumStepSize &&
+        lhs.integratorMaximumStepSize == rhs.integratorMaximumStepSize &&
+        lhs.integratorAccuracy == rhs.integratorAccuracy;
 }
 
 osc::ParamBlock osc::ToParamBlock(ForwardDynamicSimulatorParams const& p)

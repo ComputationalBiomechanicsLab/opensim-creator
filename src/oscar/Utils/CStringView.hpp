@@ -51,31 +51,26 @@ namespace osc
         constexpr char const* begin() const noexcept { return m_Data; }
         constexpr char const* end() const noexcept { return m_Data + m_Size; }
 
+        friend bool operator<(CStringView const& lhs, CStringView const& rhs)
+        {
+            return static_cast<std::string_view>(lhs) < static_cast<std::string_view>(rhs);
+        }
+
+        friend bool operator==(CStringView const& lhs, CStringView const& rhs)
+        {
+            return static_cast<std::string_view>(lhs) == static_cast<std::string_view>(rhs);
+        }
+
+        friend bool operator!=(CStringView const& lhs, CStringView const& rhs)
+        {
+            return static_cast<std::string_view>(lhs) != static_cast<std::string_view>(rhs);
+        }
     private:
         constexpr CStringView(char const* data_, size_t size_) noexcept : m_Data{data_}, m_Size{size_} {}
-
-        friend bool operator<(CStringView const&, CStringView const&);
-        friend bool operator==(CStringView const&, CStringView const&);
-        friend bool operator!=(CStringView const&, CStringView const&);
 
         char const* m_Data;
         size_t m_Size;
     };
-
-    inline bool operator<(CStringView const& a, CStringView const& b)
-    {
-        return static_cast<std::string_view>(a) < static_cast<std::string_view>(b);
-    }
-
-    inline bool operator==(CStringView const& a, CStringView const& b)
-    {
-        return static_cast<std::string_view>(a) == static_cast<std::string_view>(b);
-    }
-
-    inline bool operator!=(CStringView const& a, CStringView const& b)
-    {
-        return static_cast<std::string_view>(a) != static_cast<std::string_view>(b);
-    }
 
     inline std::string to_string(CStringView const& sv)
     {
@@ -99,7 +94,7 @@ namespace osc
 }
 
 template<>
-struct std::hash<osc::CStringView> {
+struct std::hash<osc::CStringView> final {
     size_t operator()(osc::CStringView const& sv) const
     {
         return std::hash<std::string_view>{}(sv);
