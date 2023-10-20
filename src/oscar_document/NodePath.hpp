@@ -121,7 +121,7 @@ namespace osc::doc
 
     namespace literals
     {
-        NodePath operator""_np(char const* s, size_t len)
+        inline NodePath operator""_np(char const* s, size_t len)
         {
             return NodePath{std::string_view(s, len)};
         }

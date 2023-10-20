@@ -3,6 +3,7 @@
 #include <oscar_document/NodePath.hpp>
 #include <oscar_document/PropertyDescriptions.hpp>
 
+#include <oscar/Utils/ClonePtr.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>
@@ -27,9 +28,12 @@ namespace osc::doc
     public:
         virtual ~Node() noexcept;
 
-        std::unique_ptr<Node> clone() const;
+        std::unique_ptr<Node> clone() const
+        {
+            return implClone();
+        }
 
-        CStringView getName() const;  // cannot contain special chars or be called "children"
+        CStringView getName() const;
         void setName(std::string_view);
 
 
@@ -89,7 +93,7 @@ namespace osc::doc
             return dynamic_cast<TDerived*>(updChild<Node>(i));
         }
         template<>
-        Node* updChild(size_t);
+        Node* updChild<Node>(size_t);
 
         template<
             typename TDerived = Node,
@@ -146,12 +150,12 @@ namespace osc::doc
             typename TDerived = Node,
             typename std::enable_if_t<std::is_base_of_v<Node, TDerived>, bool> = true
         >
-        TDerived* find(NodePath const& p)
+        TDerived* findMut(NodePath const& p)
         {
-            return dynamic_cast<TDerived*>(find<Node>(p));
+            return dynamic_cast<TDerived*>(findMut<Node>(p));
         }
         template<>
-        Node* find<Node>(NodePath const&);
+        Node* findMut<Node>(NodePath const&);
 
         size_t getNumProperties() const;
         bool hasProperty(std::string_view propName) const;
@@ -166,6 +170,6 @@ namespace osc::doc
         virtual PropertyDescriptions  implGetPropertyList() const { return PropertyDescriptions{}; }
 
         class Impl;
-        std::shared_ptr<Impl> m_Impl;
+        ClonePtr<Impl> m_Impl;
     };
 }
