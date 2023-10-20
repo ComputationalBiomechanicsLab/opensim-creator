@@ -30,6 +30,13 @@ std::ostream& osc::operator<<(std::ostream& o, glm::vec3 const& v)
     return o << "vec3(" << v.x << ", " << v.y << ", " << v.z << ')';
 }
 
+std::string osc::to_string(glm::vec3 const& v)
+{
+    std::stringstream ss;
+    ss << v;
+    return std::move(ss).str();
+}
+
 std::ostream& osc::operator<<(std::ostream& o, glm::vec4 const& v)
 {
     return o << "vec4(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ')';

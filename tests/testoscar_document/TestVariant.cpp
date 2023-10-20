@@ -2,12 +2,34 @@
 
 #include <glm/vec3.hpp>
 #include <gtest/gtest.h>
+#include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <charconv>
+#include <stdexcept>
+#include <sstream>
 #include <string>
+#include <string_view>
+#include <utility>
+
+namespace
+{
+    float ToFloatOrZero(std::string_view v)
+    {
+        float result{};
+        auto [ptr, ec] = std::from_chars(v.data(), v.data() + v.size(), result);
+        return ec != std::errc() ? result : 0.0f;
+    }
+
+    float ToIntOrZero(std::string_view v)
+    {
+        int result{};
+        auto [ptr, ec] = std::from_chars(v.data(), v.data() + v.size(), result);
+        return ec != std::errc() ? result : 0.0f;
+    }
+}
 
 TEST(Variant, CanExplicitlyContructFromBool)
 {
@@ -297,17 +319,359 @@ TEST(Variant, StringValueColorReturnsWhiteIfStringIsInvalidHTMLColorString)
     ASSERT_EQ(osc::doc::Variant{"not a color"}.toColor(), osc::Color::white());
 }
 
-// TODO: string --> float
-// TODO: string --> int
-// TODO: string --> string
-// TODO: string --> vec3
+TEST(Variant, StringValueToFloatTriesToParseStringAsFloatAndReturnsZeroOnFailure)
+{
+    auto const inputs = osc::to_array<std::string_view>(
+    {
+        "-1.0",
+        "20e-10",
+        "",
+        "1",
+        "1.0",
+        "2.0",
+        "not a number",
+        "  ",
+    });
 
-// TODO: vec3 --> bool
-// TODO: vec3 --> color
-// TODO: vec3 --> float
-// TODO: vec3 --> int
-// TODO: vec3 --> string
-// TODO: vec3 --> vec3
+    for (auto const& input : inputs)
+    {
+        float const expectedOutput = ToFloatOrZero(input);
+        ASSERT_EQ(osc::doc::Variant{input}.toFloat(), expectedOutput);
+    }
+}
 
-// TODO: comparison operations
-// TODO: hashing
+TEST(Variant, StringValueToIntTriesToParseStringAsBase10Int)
+{
+    auto const inputs = osc::to_array<std::string_view>(
+    {
+        "-1.0",
+        "20e-10",
+        "",
+        "1",
+        "1.0",
+        "2.0",
+        "not a number",
+        "  ",
+    });
+
+    for (auto const& input : inputs)
+    {
+        float const expectedOutput = ToIntOrZero(input);
+        ASSERT_EQ(osc::doc::Variant{input}.toInt(), expectedOutput);
+    }
+}
+
+TEST(Variant, StringValueToStringReturnsSuppliedString)
+{
+    auto const inputs = osc::to_array<std::string_view>(
+    {
+        "some\tstring",
+        "-1.0",
+        "20e-10",
+        "",
+        "1",
+        "1.0",
+        "2.0",
+        "not a number",
+        "  ",
+        "a slightly longer string in case sso is in some way important"
+    });
+
+    for (auto const& input : inputs)
+    {
+        ASSERT_EQ(osc::doc::Variant{input}.toString(), input);
+    }
+}
+
+TEST(Variant, StringValueToVec3AlwaysReturnsZeroedVec)
+{
+    auto const inputs = osc::to_array<std::string_view>(
+    {
+        "some\tstring",
+        "-1.0",
+        "20e-10",
+        "",
+        "not a number",
+        "  ",
+        "1, 2, 3",
+        "(1, 2, 3)",
+        "[1, 2, 3]",
+        "Vec3(1, 2, 3)",
+    });
+
+    for (auto const& input : inputs)
+    {
+        ASSERT_EQ(osc::doc::Variant{input}.toVec3(), glm::vec3{});
+    }
+}
+
+TEST(Variant, Vec3ValueToBoolReturnsFalseForZeroVec)
+{
+    ASSERT_EQ(osc::doc::Variant{glm::vec3{}}.toBool(), false);
+}
+
+TEST(Variant, Vec3ValueToBoolReturnsFalseIfXIsZeroRegardlessOfOtherComponents)
+{
+    // why: because it's consistent with the `toInt()` and `toFloat()` behavior, and
+    // one would logically expect `if (v.toInt())` to behave the same as `if (v.toBool())`
+    ASSERT_EQ(osc::doc::Variant{glm::vec3{0.0f}}.toBool(), false);
+    ASSERT_EQ(osc::doc::Variant{glm::vec3(0.0f, 0.0f, 1000.0f)}.toBool(), false);
+    ASSERT_EQ(osc::doc::Variant{glm::vec3(0.0f, 7.0f, -30.0f)}.toBool(), false);
+    ASSERT_EQ(osc::doc::Variant{glm::vec3(0.0f, 2.0f, 1.0f)}.toBool(), false);
+    ASSERT_EQ(osc::doc::Variant{glm::vec3(0.0f, 1.0f, 1.0f)}.toBool(), false);
+    ASSERT_EQ(osc::doc::Variant{glm::vec3(0.0f, -1.0f, 0.0f)}.toBool(), false);
+}
+
+TEST(Variant, Vec3ValueToBoolReturnsTrueIfXIsNonZeroRegardlessOfOtherComponents)
+{
+    ASSERT_EQ(osc::doc::Variant{glm::vec3{1.0f}}.toBool(), false);
+    ASSERT_EQ(osc::doc::Variant{glm::vec3(2.0f, 7.0f, -30.0f)}.toBool(), false);
+    ASSERT_EQ(osc::doc::Variant{glm::vec3(30.0f, 2.0f, 1.0f)}.toBool(), false);
+    ASSERT_EQ(osc::doc::Variant{glm::vec3(-40.0f, 1.0f, 1.0f)}.toBool(), false);
+    ASSERT_EQ(osc::doc::Variant{glm::vec3(-0.0f, 0.0f, 1000.0f)}.toBool(), false);  // ;)
+    ASSERT_EQ(osc::doc::Variant{glm::vec3(std::numeric_limits<float>::quiet_NaN(), -1.0f, 0.0f)}.toBool(), false);  // ;)
+}
+
+TEST(Variant, Vec3ValueToBoolReturnsTrueForNonZeroVec)
+{
+    ASSERT_EQ(osc::doc::Variant{glm::vec3{1.0f}}.toBool(), true);
+    ASSERT_EQ(osc::doc::Variant{glm::vec3(1.0f, 0.0f, 0.0f)}.toBool(), true);
+    ASSERT_EQ(osc::doc::Variant{glm::vec3(0.0f, 1.0f, 0.0f)}.toBool(), true);
+    ASSERT_EQ(osc::doc::Variant{glm::vec3(0.0f, 0.0f, 1.0f)}.toBool(), true);
+    ASSERT_EQ(osc::doc::Variant{glm::vec3(1.0f, 1.0f, 1.0f)}.toBool(), true);
+    ASSERT_EQ(osc::doc::Variant{glm::vec3(-1.0f, 0.0f, 0.0f)}.toBool(), true);
+}
+
+TEST(Variant, Vec3ValueToColorExtractsTheElementsIntoRGB)
+{
+    auto const testCases = osc::to_array<glm::vec3>(
+    {
+        {0.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 1.0f},
+        {-1.0f, 0.0f, 1.0f},
+        {10.0f, 0.0f, 7.5f},
+        {0.0f, -20.0f, 0.5f},
+    });
+
+    for (auto const& testCase : testCases)
+    {
+        ASSERT_EQ(osc::doc::Variant{testCase}.toColor(), osc::Color{testCase});
+    }
+}
+
+TEST(Variant, Vec3ValueToFloatExtractsXToTheFloat)
+{
+    auto const testCases = osc::to_array<glm::vec3>(
+    {
+        {0.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 1.0f},
+        {-1.0f, 0.0f, 1.0f},
+        {10.0f, 0.0f, 7.5f},
+        {0.0f, -20.0f, 0.5f},
+    });
+
+    for (auto const& testCase : testCases)
+    {
+        ASSERT_EQ(osc::doc::Variant{testCase}.toFloat(), testCase.x);
+    }
+}
+
+TEST(Variant, Vec3ValueToIntExtractsXToTheInt)
+{
+    auto const testCases = osc::to_array<glm::vec3>(
+    {
+        {0.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 1.0f},
+        {-1.0f, 0.0f, 1.0f},
+        {10.0f, 0.0f, 7.5f},
+        {0.0f, -20.0f, 0.5f},
+    });
+
+    for (auto const& testCase : testCases)
+    {
+        ASSERT_EQ(osc::doc::Variant{testCase}.toInt(), static_cast<int>(testCase.x));
+    }
+}
+
+TEST(Variant, Vec3ValueToStringReturnsSameAsDirectlyConvertingVectorToString)
+{
+    auto const testCases = osc::to_array<glm::vec3>(
+    {
+        {0.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 1.0f},
+        {-1.0f, 0.0f, 1.0f},
+        {10.0f, 0.0f, 7.5f},
+        {0.0f, -20.0f, 0.5f},
+    });
+
+    for (auto const& testCase : testCases)
+    {
+        ASSERT_EQ(osc::doc::Variant{testCase}.toString(), osc::to_string(testCase));
+    }
+}
+
+TEST(Variant, Vec3ValueToVec3ReturnsOriginalValue)
+{
+    auto const testCases = osc::to_array<glm::vec3>(
+    {
+        {0.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 1.0f},
+        {-1.0f, 0.0f, 1.0f},
+        {10.0f, 0.0f, 7.5f},
+        {0.0f, -20.0f, 0.5f},
+    });
+
+    for (auto const& testCase : testCases)
+    {
+        ASSERT_EQ(osc::doc::Variant{testCase}.toVec3(), testCase);
+    }
+}
+
+TEST(Variant, IsAlwaysEqualToACopyOfItself)
+{
+    auto const testCases = osc::to_array<osc::doc::Variant>(
+    {
+        osc::doc::Variant{false},
+        osc::doc::Variant{true},
+        osc::doc::Variant{osc::Color::white()},
+        osc::doc::Variant{osc::Color::black()},
+        osc::doc::Variant{osc::Color::clear()},
+        osc::doc::Variant{osc::Color::magenta()},
+        osc::doc::Variant{-1.0f},
+        osc::doc::Variant{0.0f},
+        osc::doc::Variant{-30.0f},
+        osc::doc::Variant{std::numeric_limits<float>::quiet_NaN()},
+        osc::doc::Variant{std::numeric_limits<float>::signaling_NaN()},
+        osc::doc::Variant{std::numeric_limits<float>::infinity()},
+        osc::doc::Variant{-std::numeric_limits<float>::infinity()},
+        osc::doc::Variant{std::numeric_limits<int>::min()},
+        osc::doc::Variant{std::numeric_limits<int>::max()},
+        osc::doc::Variant{-1},
+        osc::doc::Variant{0},
+        osc::doc::Variant{1},
+        osc::doc::Variant{""},
+        osc::doc::Variant{"false"},
+        osc::doc::Variant{"true"},
+        osc::doc::Variant{"0"},
+        osc::doc::Variant{"1"},
+        osc::doc::Variant{"a string"},
+        osc::doc::Variant{glm::vec3{}},
+        osc::doc::Variant{glm::vec3{1.0f}},
+        osc::doc::Variant{glm::vec3{-1.0f}},
+        osc::doc::Variant{glm::vec3{0.5f}},
+        osc::doc::Variant{glm::vec3{-0.5f}},
+    });
+
+    for (auto const& tc : testCases)
+    {
+        ASSERT_EQ(tc, tc);
+    }
+}
+
+TEST(Variant, IsNotEqualToOtherValuesEvenIfConversionIsPossible)
+{
+    auto const testCases = osc::to_array<osc::doc::Variant>(
+    {
+        osc::doc::Variant{false},
+        osc::doc::Variant{true},
+        osc::doc::Variant{osc::Color::white()},
+        osc::doc::Variant{osc::Color::black()},
+        osc::doc::Variant{osc::Color::clear()},
+        osc::doc::Variant{osc::Color::magenta()},
+        osc::doc::Variant{-1.0f},
+        osc::doc::Variant{0.0f},
+        osc::doc::Variant{-30.0f},
+        osc::doc::Variant{std::numeric_limits<float>::quiet_NaN()},
+        osc::doc::Variant{std::numeric_limits<float>::signaling_NaN()},
+        osc::doc::Variant{std::numeric_limits<float>::infinity()},
+        osc::doc::Variant{-std::numeric_limits<float>::infinity()},
+        osc::doc::Variant{std::numeric_limits<int>::min()},
+        osc::doc::Variant{std::numeric_limits<int>::max()},
+        osc::doc::Variant{-1},
+        osc::doc::Variant{0},
+        osc::doc::Variant{1},
+        osc::doc::Variant{""},
+        osc::doc::Variant{"false"},
+        osc::doc::Variant{"true"},
+        osc::doc::Variant{"0"},
+        osc::doc::Variant{"1"},
+        osc::doc::Variant{"a string"},
+        osc::doc::Variant{glm::vec3{}},
+        osc::doc::Variant{glm::vec3{1.0f}},
+        osc::doc::Variant{glm::vec3{-1.0f}},
+        osc::doc::Variant{glm::vec3{0.5f}},
+        osc::doc::Variant{glm::vec3{-0.5f}},
+    });
+
+    for (size_t i = 0; i < testCases.size(); ++i)
+    {
+        for (size_t j = 0; j != i; ++j)
+        {
+            ASSERT_NE(testCases[i], testCases[j]);
+        }
+        for (size_t j = i+1; j < testCases.size(); ++j)
+        {
+            ASSERT_NE(testCases[i], testCases[j]);
+        }
+    }
+}
+
+TEST(Variant, CanHashAVarietyOfTypes)
+{
+    auto const testCases = osc::to_array<osc::doc::Variant>(
+    {
+        osc::doc::Variant{false},
+        osc::doc::Variant{true},
+        osc::doc::Variant{osc::Color::white()},
+        osc::doc::Variant{osc::Color::black()},
+        osc::doc::Variant{osc::Color::clear()},
+        osc::doc::Variant{osc::Color::magenta()},
+        osc::doc::Variant{-1.0f},
+        osc::doc::Variant{0.0f},
+        osc::doc::Variant{-30.0f},
+        osc::doc::Variant{std::numeric_limits<float>::quiet_NaN()},
+        osc::doc::Variant{std::numeric_limits<float>::signaling_NaN()},
+        osc::doc::Variant{std::numeric_limits<float>::infinity()},
+        osc::doc::Variant{-std::numeric_limits<float>::infinity()},
+        osc::doc::Variant{std::numeric_limits<int>::min()},
+        osc::doc::Variant{std::numeric_limits<int>::max()},
+        osc::doc::Variant{-1},
+        osc::doc::Variant{0},
+        osc::doc::Variant{1},
+        osc::doc::Variant{""},
+        osc::doc::Variant{"false"},
+        osc::doc::Variant{"true"},
+        osc::doc::Variant{"0"},
+        osc::doc::Variant{"1"},
+        osc::doc::Variant{"a string"},
+        osc::doc::Variant{glm::vec3{}},
+        osc::doc::Variant{glm::vec3{1.0f}},
+        osc::doc::Variant{glm::vec3{-1.0f}},
+        osc::doc::Variant{glm::vec3{0.5f}},
+        osc::doc::Variant{glm::vec3{-0.5f}},
+    });
+
+    for (auto const& testCase : testCases)
+    {
+        ASSERT_NO_THROW({ std::hash<osc::doc::Variant>{}(testCase); });
+    }
+}
+
+TEST(Variant, HashesForStringValuesMatchStdStringEtc)
+{
+    auto const testCases = osc::to_array<osc::doc::Variant>(
+    {
+        osc::doc::Variant{"false"},
+        osc::doc::Variant{"true"},
+        osc::doc::Variant{"0"},
+        osc::doc::Variant{"1"},
+        osc::doc::Variant{"a string"},
+    });
+    for (auto const& testCase : testCases)
+    {
+        auto const h = std::hash<osc::doc::Variant>{}(testCase);
+        ASSERT_EQ(h, std::hash<osc::CStringView>{}(testCase.toString()));
+        ASSERT_EQ(h, std::hash<std::string>{}(testCase.toString()));
+        ASSERT_EQ(h, std::hash<std::string_view>{}(testCase.toString()));
+    }
+}

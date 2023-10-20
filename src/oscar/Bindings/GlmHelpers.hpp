@@ -18,6 +18,8 @@ namespace osc
     std::string to_string(glm::vec2 const&);
 
     std::ostream& operator<<(std::ostream&, glm::vec3 const&);
+    std::string to_string(glm::vec3 const&);
+
     std::ostream& operator<<(std::ostream&, glm::vec4 const&);
     std::ostream& operator<<(std::ostream&, glm::mat3 const&);
     std::ostream& operator<<(std::ostream&, glm::mat4x3 const&);
