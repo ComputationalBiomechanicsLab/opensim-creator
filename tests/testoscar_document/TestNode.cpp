@@ -675,7 +675,77 @@ TEST(Node, FindReturnsExpectedPathsForSingleChild)
 
 TEST(Node, FindReturnsExpectedPathsForGrandchild)
 {
-    // TODO: scenarios
+    NodeWithName a{"a"};
+    auto& b = a.emplaceChild<NodeWithName>("b");
+    auto& c = b.emplaceChild<NodeWithName>("c");
+
+    struct TestCase final {
+        TestCase(
+            std::string_view inputPath_,
+            NodeWithName* resultFromA_,
+            NodeWithName* resultFromB_,
+            NodeWithName* resultFromC_) :
+
+            inputPath{inputPath_},
+            resultFromA{resultFromA_},
+            resultFromB{resultFromB_},
+            resultFromC{resultFromC_}
+        {
+        }
+
+        std::string_view inputPath;
+        NodeWithName* resultFromA;
+        NodeWithName* resultFromB;
+        NodeWithName* resultFromC;
+    };
+
+    auto const testCases = osc::to_array<TestCase>(
+    {
+        //                      | from a  | from b  | from c  |
+        {""                     , nullptr , nullptr , nullptr },
+        {"/"                    ,   &a    ,   &a    ,   &a    },
+        {"/////"                ,   &a    ,   &a    ,   &a    },  // see: NodePath tests: should collapse multiple slashes
+        {"."                    ,   &a    ,   &b    ,   &c    },
+        {"./."                  ,   &a    ,   &a    ,   &a    },
+        {".."                   ,   &a    ,   &a    ,   &b    },
+        {"../."                 ,   &a    ,   &a    ,   &b    },
+        {"../.."                ,   &a    ,   &a    ,   &a    },
+        {"../../b"              ,   &b    ,   &b    ,   &b    },
+        {"../../b/"             ,   &b    ,   &b    ,   &b    },  // see: NodePath tests: should ignore trailing slashes
+        {"../../c"              , nullptr , nullptr , nullptr },
+        {"../../c/"             , nullptr , nullptr , nullptr },
+        {".././b/.."            ,   &a    ,   &a    , nullptr },
+        {"/.././././../"        ,   &a    ,   &a    ,   &a    },
+        {"/.././././.."         ,   &a    ,   &a    ,   &a    },
+        {"/./b/../b/./c"        ,   &c    ,   &c    ,   &c    },
+        {"/./b/../b/bullshit/c" , nullptr , nullptr , nullptr },
+        {"../bullshit/.."       , nullptr , nullptr , nullptr },
+        {"bullshit/../../"      , nullptr , nullptr , nullptr },
+        {"a"                    , nullptr , nullptr , nullptr },
+        {"/a"                   , nullptr , nullptr , nullptr },
+        {"/b/a"                 , nullptr , nullptr , nullptr },
+        {"/b/../a"              , nullptr , nullptr , nullptr },
+        {"b"                    ,   &b    , nullptr , nullptr },
+        {"/b"                   ,   &b    ,   &b    ,   &b    },
+        {"b/a"                  , nullptr , nullptr , nullptr },
+        {"/b/a"                 , nullptr , nullptr , nullptr },
+        {"b/.."                 ,   &a    , nullptr , nullptr },
+        {"/b/../"               ,   &a    ,   &a    ,   &a    },
+        {"b/c/.."               ,   &b    , nullptr , nullptr },
+        {"/b/c/../."            ,   &b    ,   &b    ,   &b    },
+        {"c"                    , nullptr ,   &c    , nullptr },
+        {"/c"                   , nullptr , nullptr , nullptr },
+        {"c/."                  , nullptr ,   &c    , nullptr },
+        {"c/.."                 , nullptr ,   &b    , nullptr },
+    });
+
+    for (TestCase const& tc : testCases)
+    {
+        osc::doc::NodePath const p{tc.inputPath};
+        ASSERT_EQ(a.find(p), tc.resultFromA);
+        ASSERT_EQ(b.find(p), tc.resultFromB);
+        ASSERT_EQ(c.find(p), tc.resultFromC);
+    }
 }
 
 TEST(Node, GetNumPropertiesReturnsZeroForMinimalExample)
