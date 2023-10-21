@@ -119,11 +119,13 @@ namespace osc
             return lhs.m_Impl != rhs.m_Impl;
         }
 
-        friend std::ostream& operator<<(std::ostream&, Material const&);
     private:
+        friend std::ostream& operator<<(std::ostream&, Material const&);
         friend class GraphicsBackend;
 
         class Impl;
         CopyOnUpdPtr<Impl> m_Impl;
     };
+
+    std::ostream& operator<<(std::ostream&, Material const&);
 }
