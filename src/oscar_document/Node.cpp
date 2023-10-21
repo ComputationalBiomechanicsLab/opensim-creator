@@ -267,3 +267,9 @@ bool osc::doc::Node::setPropertyValue(std::string_view propName, Variant const& 
 {
     return m_Impl->setPropertyValue(propName, v);
 }
+
+osc::doc::PropertyDescriptions const&  osc::doc::Node::implGetPropertyList() const
+{
+    static const PropertyDescriptions s_BlankPropertyDescriptions;
+    return s_BlankPropertyDescriptions;
+}

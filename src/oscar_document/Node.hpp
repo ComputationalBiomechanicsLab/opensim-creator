@@ -167,7 +167,7 @@ namespace osc::doc
 
     private:
         virtual std::unique_ptr<Node> implClone() const = 0;
-        virtual PropertyDescriptions  implGetPropertyList() const { return PropertyDescriptions{}; }
+        virtual PropertyDescriptions const&  implGetPropertyList() const;
 
         class Impl;
         ClonePtr<Impl> m_Impl;
