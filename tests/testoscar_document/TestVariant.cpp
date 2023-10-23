@@ -6,6 +6,7 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar_document/StringName.hpp>
 
 #include <charconv>
 #include <stdexcept>
@@ -547,6 +548,7 @@ TEST(Variant, IsAlwaysEqualToACopyOfItself)
         osc::doc::Variant{"0"},
         osc::doc::Variant{"1"},
         osc::doc::Variant{"a string"},
+        osc::doc::Variant{osc::StringName{"a string name"}},
         osc::doc::Variant{glm::vec3{}},
         osc::doc::Variant{glm::vec3{1.0f}},
         osc::doc::Variant{glm::vec3{-1.0f}},
@@ -598,6 +600,7 @@ TEST(Variant, IsNotEqualToOtherValuesEvenIfConversionIsPossible)
         osc::doc::Variant{"0"},
         osc::doc::Variant{"1"},
         osc::doc::Variant{"a string"},
+        osc::doc::Variant{osc::StringName{"a stringname can be compared to a string, though"}},
         osc::doc::Variant{glm::vec3{}},
         osc::doc::Variant{glm::vec3{1.0f}},
         osc::doc::Variant{glm::vec3{-1.0f}},
@@ -646,6 +649,7 @@ TEST(Variant, CanHashAVarietyOfTypes)
         osc::doc::Variant{"0"},
         osc::doc::Variant{"1"},
         osc::doc::Variant{"a string"},
+        osc::doc::Variant{osc::StringName{"a string name"}},
         osc::doc::Variant{glm::vec3{}},
         osc::doc::Variant{glm::vec3{1.0f}},
         osc::doc::Variant{glm::vec3{-1.0f}},
@@ -678,5 +682,162 @@ TEST(Variant, HashesForStringValuesMatchStdStringEtc)
         ASSERT_EQ(hash, std::hash<std::string>{}(std::string{s}));
         ASSERT_EQ(hash, std::hash<std::string_view>{}(s));
         ASSERT_EQ(hash, std::hash<osc::CStringView>{}(std::string{s}));
+    }
+}
+
+TEST(Variant, ConstructingFromstringNameMakesGetTypeReturnStringNameType)
+{
+    ASSERT_EQ(osc::doc::Variant(osc::StringName{"s"}).getType(), osc::doc::VariantType::StringName);
+}
+
+TEST(Variant, ConstructedFromSameStringNameComparesEquivalent)
+{
+    ASSERT_EQ(osc::doc::Variant{osc::StringName{"string"}}, osc::doc::Variant{osc::StringName{"string"}});
+}
+
+TEST(Variant, ConstructedFromStringNameComparesInequivalentToVariantConstructedFromDifferentString)
+{
+    ASSERT_NE(osc::doc::Variant{osc::StringName{"a"}}, osc::doc::Variant{std::string{"b"}});
+}
+
+TEST(Variant, StringNameToBoolReturnsExpectedBoolValues)
+{
+    ASSERT_EQ(osc::doc::Variant(osc::StringName{"false"}).toBool(), false);
+    ASSERT_EQ(osc::doc::Variant(osc::StringName{"FALSE"}).toBool(), false);
+    ASSERT_EQ(osc::doc::Variant(osc::StringName{"False"}).toBool(), false);
+    ASSERT_EQ(osc::doc::Variant(osc::StringName{"FaLsE"}).toBool(), false);
+    ASSERT_EQ(osc::doc::Variant(osc::StringName{"0"}).toBool(), false);
+    ASSERT_EQ(osc::doc::Variant(osc::StringName{""}).toBool(), false);
+
+    // all other strings are effectively `true`
+    ASSERT_EQ(osc::doc::Variant(osc::StringName{"true"}).toBool(), true);
+    ASSERT_EQ(osc::doc::Variant(osc::StringName{"non-empty string"}).toBool(), true);
+    ASSERT_EQ(osc::doc::Variant(osc::StringName{" "}).toBool(), true);
+}
+
+TEST(Variant, StringNameToColorWorksIfStringIsAValidHTMLColorString)
+{
+    ASSERT_EQ(osc::doc::Variant{osc::StringName{"#ff0000ff"}}.toColor(), osc::Color::red());
+    ASSERT_EQ(osc::doc::Variant{osc::StringName{"#00ff00ff"}}.toColor(), osc::Color::green());
+    ASSERT_EQ(osc::doc::Variant{osc::StringName{"#ffffffff"}}.toColor(), osc::Color::white());
+    ASSERT_EQ(osc::doc::Variant{osc::StringName{"#00000000"}}.toColor(), osc::Color::clear());
+    ASSERT_EQ(osc::doc::Variant{osc::StringName{"#000000ff"}}.toColor(), osc::Color::black());
+    ASSERT_EQ(osc::doc::Variant{osc::StringName{"#000000FF"}}.toColor(), osc::Color::black());
+    ASSERT_EQ(osc::doc::Variant{osc::StringName{"#123456ae"}}.toColor(), *osc::TryParseHtmlString("#123456ae"));
+}
+
+TEST(Variant, StringNameToColorReturnsBlackIfStringIsInvalidHTMLColorString)
+{
+    ASSERT_EQ(osc::doc::Variant{osc::StringName{"not a color"}}.toColor(), osc::Color::black());
+}
+
+TEST(Variant, StringNameToFloatTriesToParseStringAsFloatAndReturnsZeroOnFailure)
+{
+    auto const inputs = osc::to_array<std::string_view>(
+    {
+        "-1.0",
+        "20e-10",
+        "",
+        "1",
+        "1.0",
+        "2.0",
+        "not a number",
+        "  ",
+    });
+
+    for (auto const& input : inputs)
+    {
+        float const expectedOutput = ToFloatOrZero(input);
+        ASSERT_EQ(osc::doc::Variant{osc::StringName{input}}.toFloat(), expectedOutput);
+    }
+}
+
+TEST(Variant, StringNameToIntTriesToParseStringAsBase10Int)
+{
+    auto const inputs = osc::to_array<std::string_view>(
+    {
+        "-1.0",
+        "20e-10",
+        "",
+        "1",
+        "1.0",
+        "2.0",
+        "not a number",
+        "  ",
+    });
+
+    for (auto const& input : inputs)
+    {
+        float const expectedOutput = ToIntOrZero(input);
+        ASSERT_EQ(osc::doc::Variant{osc::StringName{input}}.toInt(), expectedOutput);
+    }
+}
+
+TEST(Variant, StringNameToStringReturnsSuppliedString)
+{
+    auto const inputs = osc::to_array<std::string_view>(
+    {
+        "some\tstring",
+        "-1.0",
+        "20e-10",
+        "",
+        "1",
+        "1.0",
+        "2.0",
+        "not a number",
+        "  ",
+        "a slightly longer string in case sso is in some way important"
+    });
+
+    for (auto const& input : inputs)
+    {
+        ASSERT_EQ(osc::doc::Variant{osc::StringName{input}}.toString(), input);
+    }
+}
+
+TEST(Variant, StringNameToVec3AlwaysReturnsZeroedVec)
+{
+    auto const inputs = osc::to_array<std::string_view>(
+    {
+        "some\tstring",
+        "-1.0",
+        "20e-10",
+        "",
+        "not a number",
+        "  ",
+        "1, 2, 3",
+        "(1, 2, 3)",
+        "[1, 2, 3]",
+        "Vec3(1, 2, 3)",
+    });
+
+    for (auto const& input : inputs)
+    {
+        ASSERT_EQ(osc::doc::Variant{osc::StringName{input}}.toVec3(), glm::vec3{});
+    }
+}
+
+TEST(Variant, HashOfStringNameVariantIsSameAsHashOfStringVariant)
+{
+    auto const inputs = osc::to_array<std::string_view>(
+    {
+        "some\tstring",
+        "-1.0",
+        "20e-10",
+        "",
+        "not a number",
+        "  ",
+        "1, 2, 3",
+        "(1, 2, 3)",
+        "[1, 2, 3]",
+        "Vec3(1, 2, 3)",
+    });
+
+    for (auto const& input : inputs)
+    {
+        auto snv = osc::doc::Variant{osc::StringName{input}};
+        auto sv = osc::doc::Variant{std::string{input}};
+
+        ASSERT_EQ(std::hash<osc::doc::Variant>{}(snv), std::hash<osc::doc::Variant>{}(sv));
     }
 }

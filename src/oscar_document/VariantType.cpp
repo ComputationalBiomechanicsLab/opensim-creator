@@ -1,11 +1,13 @@
 #include "VariantType.hpp"
 
 #include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/EnumHelpers.hpp>
 
 #include <array>
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <tuple>
 
 std::string osc::doc::to_string(VariantType v)
 {
@@ -16,8 +18,10 @@ std::string osc::doc::to_string(VariantType v)
         "Float",
         "Int",
         "String",
+        "StringName",
         "Vec3",
     });
+    static_assert(std::tuple_size_v<decltype(s_Lut)> == osc::NumOptions<VariantType>());
 
     auto const idx = std::underlying_type_t<VariantType>(v);
     if (0 <= idx && idx < s_Lut.size())

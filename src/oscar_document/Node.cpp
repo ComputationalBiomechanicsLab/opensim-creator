@@ -1,6 +1,7 @@
 #include "Node.hpp"
 
 #include <oscar_document/NodePath.hpp>
+#include <oscar_document/PropertyDescriptions.hpp>
 #include <oscar_document/Variant.hpp>
 
 #include <oscar/Utils/CStringView.hpp>

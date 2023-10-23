@@ -10,7 +10,9 @@ namespace osc::doc
         Float,
         Int,
         String,
+        StringName,
         Vec3,
+
         NUM_OPTIONS
     };
 

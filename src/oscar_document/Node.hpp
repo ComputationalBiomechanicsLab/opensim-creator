@@ -1,7 +1,7 @@
 #pragma once
 
 #include <oscar_document/NodePath.hpp>
-#include <oscar_document/PropertyDescriptions.hpp>
+#include <oscar_document/Object.hpp>
 
 #include <oscar/Utils/ClonePtr.hpp>
 #include <oscar/Utils/CStringView.hpp>
@@ -15,27 +15,26 @@
 #include <utility>
 
 namespace osc::doc { class Variant; }
+namespace osc::doc { class PropertyDescriptions; }
 
 namespace osc::doc
 {
-    class Node {
+    class Node : public Object {
     protected:
         Node();
         Node(Node const&);
         Node(Node&&) noexcept;
         Node& operator=(Node const&);
         Node& operator=(Node&&) noexcept;
-    public:
-        virtual ~Node() noexcept;
 
+    public:
         std::unique_ptr<Node> clone() const
         {
-            return implClone();
+            return std::unique_ptr<Node>{static_cast<Node*>(static_cast<Object const&>(*this).clone().release())};
         }
 
         CStringView getName() const;
         void setName(std::string_view);
-
 
         template<
             typename TDerived = Node,
@@ -157,19 +156,9 @@ namespace osc::doc
         template<>
         Node* findMut<Node>(NodePath const&);
 
-        size_t getNumProperties() const;
-        bool hasProperty(std::string_view propName) const;
-        CStringView const* getPropertyName(size_t) const;
-        Variant const* getPropertyValue(size_t) const;
-        Variant const* getPropertyValue(std::string_view propName) const;
-        bool setPropertyValue(size_t, Variant const&);
-        bool setPropertyValue(std::string_view propName, Variant const&);
-
     private:
-        virtual std::unique_ptr<Node> implClone() const = 0;
-        virtual PropertyDescriptions const&  implGetPropertyList() const;
-
-        class Impl;
-        ClonePtr<Impl> m_Impl;
+        // lifetime
+        // lifetimed ptr to parent
+        // children
     };
 }

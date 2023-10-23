@@ -22,6 +22,7 @@ TEST(VariantType, ToStringReturnsExpectedResults)
         {VariantType::Float, "Float"},
         {VariantType::Int, "Int"},
         {VariantType::String, "String"},
+        {VariantType::StringName, "StringName"},
         {VariantType::Vec3, "Vec3"},
     });
     static_assert(osc::NumOptions<osc::doc::VariantType>() == std::tuple_size<decltype(testCases)>());

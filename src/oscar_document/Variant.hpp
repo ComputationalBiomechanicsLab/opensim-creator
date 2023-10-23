@@ -2,6 +2,7 @@
 
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar_document/StringName.hpp>
 #include <oscar_document/VariantType.hpp>
 
 #include <glm/vec3.hpp>
@@ -23,6 +24,7 @@ namespace osc::doc
         explicit Variant(std::string_view);
         explicit Variant(char const*);
         explicit Variant(CStringView);
+        explicit Variant(StringName const&);
         explicit Variant(glm::vec3);
 
         VariantType getType() const;
@@ -45,6 +47,7 @@ namespace osc::doc
             float,
             int,
             std::string,
+            StringName,
             glm::vec3
         > m_Data;
     };
