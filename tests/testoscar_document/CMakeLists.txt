@@ -4,6 +4,7 @@ find_package(GTest REQUIRED CONFIG)
 add_executable(testoscar_document
     TestNodePath.cpp
     TestPropertyDescription.cpp
+    TestPropertyTableEntry.cpp
     TestStringName.cpp
     TestVariant.cpp
     TestVariantType.cpp

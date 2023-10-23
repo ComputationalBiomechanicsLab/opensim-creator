@@ -1,25 +1,20 @@
 #pragma once
 
+#include <oscar_document/PropertyDescription.hpp>
 #include <oscar_document/StringName.hpp>
 #include <oscar_document/Variant.hpp>
-
-#include <string>
-#include <string_view>
-
-namespace osc::doc { class PropertyDescription; }
 
 namespace osc::doc
 {
     class PropertyTableEntry final {
     public:
-        explicit PropertyTableEntry(PropertyDescription const&);
-
-        StringName const& name() const
+        explicit PropertyTableEntry(PropertyDescription const& desc) :
+            m_Name{desc.getName()},
+            m_DefaultValue{desc.getDefaultValue()}
         {
-            return m_Name;
         }
 
-        Variant const& value() const
+        StringName const& name() const
         {
             return m_Name;
         }
@@ -29,13 +24,21 @@ namespace osc::doc
             return m_DefaultValue;
         }
 
-        bool setValue(Variant const& newValue)
+        Variant const& value() const
         {
-            // do nothing if type mismatched
+            return m_Value;
+        }
+
+        void setValue(Variant const& newValue)
+        {
+            if (newValue.getType() == m_Value.getType())
+            {
+                m_Value = newValue;
+            }
         }
     private:
         StringName m_Name;
-        Variant m_Value;
         Variant m_DefaultValue;
+        Variant m_Value = m_DefaultValue;
     };
 }
