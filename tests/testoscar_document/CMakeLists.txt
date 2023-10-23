@@ -10,7 +10,7 @@ add_executable(testoscar_document
     TestVariantType.cpp
 
     testoscar_document.cpp  # entrypoint
-)
+ "TestPropertyTable.cpp")
 
 target_link_libraries(testoscar_document PUBLIC
     # set compiler options

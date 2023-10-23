@@ -18,7 +18,7 @@ namespace osc::doc
         {
         }
 
-        std::string_view getName() const
+        StringName const& getName() const
         {
             return m_Name;
         }

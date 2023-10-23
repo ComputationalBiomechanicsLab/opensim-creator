@@ -3,13 +3,15 @@ add_library(oscar_document STATIC
     PropertyTableEntry.hpp
     NodePath.cpp
     NodePath.hpp
+    PropertyTable.cpp
+    PropertyTable.hpp
     StringName.cpp
     StringName.hpp
     Variant.cpp
     Variant.hpp
     VariantType.cpp
     VariantType.hpp
-)
+ )
 
 target_include_directories(oscar_document PUBLIC
 
