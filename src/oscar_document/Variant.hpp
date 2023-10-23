@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <variant>
 
 namespace osc::doc
@@ -38,6 +39,10 @@ namespace osc::doc
 
         friend bool operator==(Variant const&, Variant const&);
         friend bool operator!=(Variant const&, Variant const&);
+        friend void swap(Variant& a, Variant& b)
+        {
+            std::swap(a, b);
+        }
     private:
         friend struct std::hash<osc::doc::Variant>;
 

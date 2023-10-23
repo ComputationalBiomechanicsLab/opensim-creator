@@ -14,17 +14,17 @@ namespace osc::doc
         {
         }
 
-        StringName const& name() const
+        StringName const& getName() const
         {
             return m_Name;
         }
 
-        Variant const& defaultValue() const
+        Variant const& getDefaultValue() const
         {
             return m_DefaultValue;
         }
 
-        Variant const& value() const
+        Variant const& getValue() const
         {
             return m_Value;
         }

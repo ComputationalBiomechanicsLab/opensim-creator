@@ -1,9 +1,11 @@
 #pragma once
 
+#include <oscar_document/PropertyDescription.hpp>
 #include <oscar_document/PropertyTable.hpp>
+#include <oscar_document/StringName.hpp>
 #include <oscar_document/VariantType.hpp>
 
-#include <oscar/Utils/CStringView.hpp>
+#include <nonstd/span.hpp>
 
 #include <cstddef>
 #include <memory>
@@ -12,7 +14,6 @@
 #include <string_view>
 #include <utility>
 
-namespace osc::doc { class PropertyDescriptions; }
 namespace osc::doc { class Variant; }
 
 namespace osc::doc
@@ -20,13 +21,11 @@ namespace osc::doc
     class Object {
     protected:
         Object() = default;
-        explicit Object(PropertyDescriptions const&);
+        explicit Object(nonstd::span<PropertyDescription const>);
         Object(Object const&) = default;
         Object(Object&&) noexcept = default;
         Object& operator=(Object const&) = default;
         Object& operator=(Object&&) noexcept = default;
-
-        void setPropertyDescriptions(PropertyDescriptions const&);
     public:
         virtual ~Object() noexcept = default;
 
@@ -34,19 +33,17 @@ namespace osc::doc
         std::unique_ptr<Object> clone() const { return implClone(); }
 
         size_t getNumProperties() const;
-        CStringView getPropertyName(size_t propertyIndex) const;
+        StringName const& getPropertyName(size_t propertyIndex) const;
         VariantType getPropertyType(size_t propertyIndex) const;
         Variant const& getPropertyValue(size_t propertyIndex) const;
-        void setPropertyValue(size_t propertyIndex, Variant const&);
-        bool isPropertyValueDefaulted(size_t propertyIndex) const;
+        void setPropertyValue(size_t propertyIndex, Variant const& newPropertyValue);
         Variant const& getPropertyDefaultValue(size_t propertyIndex) const;
 
-        bool hasProperty(std::string_view propertyName) const;
-        std::optional<size_t> getPropertyIndex(std::string_view propertyName) const;
-        Variant const* tryGetPropertyValue(std::string_view propertyName) const;
-        bool trySetPropertyValue(std::string_view propertyName, Variant const& newValue);
-        Variant const& getPropertyValue(std::string_view propertyName);
-        void setPropertyValue(std::string_view propertyName, Variant const& newValue);
+        std::optional<size_t> getPropertyIndex(StringName const& propertyName) const;
+        Variant const* tryGetPropertyValue(StringName const& propertyName) const;
+        bool trySetPropertyValue(StringName const& propertyName, Variant const& newPropertyValue);
+        Variant const& getPropertyValue(StringName const& propertyName);
+        void setPropertyValue(StringName const& propertyName, Variant const& newPropertyValue);
 
     private:
         virtual std::string implToString() const;

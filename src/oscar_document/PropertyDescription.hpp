@@ -4,8 +4,6 @@
 #include <oscar_document/Variant.hpp>
 #include <oscar_document/VariantType.hpp>
 
-#include <string_view>
-
 namespace osc::doc
 {
     class PropertyDescription final {

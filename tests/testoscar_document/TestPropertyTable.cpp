@@ -75,9 +75,9 @@ TEST(PropertyTable, EachElementIsInTheSameOrderAsTheProvidedDescriptions)
     ASSERT_EQ(table.size(), descriptions.size());
     for (size_t i = 0; i < descriptions.size(); ++i)
     {
-        ASSERT_EQ(table[i].name(), descriptions[i].getName());
-        ASSERT_EQ(table[i].value(), descriptions[i].getDefaultValue());
-        ASSERT_EQ(table[i].defaultValue(), descriptions[i].getDefaultValue());
+        ASSERT_EQ(table[i].getName(), descriptions[i].getName());
+        ASSERT_EQ(table[i].getValue(), descriptions[i].getDefaultValue());
+        ASSERT_EQ(table[i].getDefaultValue(), descriptions[i].getDefaultValue());
     }
 }
 
@@ -91,7 +91,7 @@ TEST(PropertyTable, IndexOfReturnsCorrectIndexForGivenName)
         auto const rv = table.indexOf(descriptions[i].getName());
         ASSERT_TRUE(rv);
         ASSERT_EQ(*rv, i);
-        ASSERT_EQ(table[*rv].name(), descriptions[i].getName());
+        ASSERT_EQ(table[*rv].getName(), descriptions[i].getName());
     }
 }
 
@@ -120,11 +120,11 @@ TEST(PropertyTable, SetValueSetsPropertyValueIfTypesMatch)
     ASSERT_EQ(newValues.size(), descriptions.size());
     for (size_t i = 0; i < newValues.size(); ++i)
     {
-        ASSERT_EQ(table[i].value(), descriptions[i].getDefaultValue());
-        ASSERT_EQ(table[i].value().getType(), newValues[i].getType());
-        ASSERT_NE(table[i].value(), newValues[i]);
+        ASSERT_EQ(table[i].getValue(), descriptions[i].getDefaultValue());
+        ASSERT_EQ(table[i].getValue().getType(), newValues[i].getType());
+        ASSERT_NE(table[i].getValue(), newValues[i]);
         table.setValue(i, newValues[i]);
-        ASSERT_EQ(table[i].value(), newValues[i]);
+        ASSERT_EQ(table[i].getValue(), newValues[i]);
     }
 }
 
@@ -145,12 +145,12 @@ TEST(PropertyTable, SetValueDoesNothingIfTypesMismatch)
     ASSERT_EQ(newValues.size(), descriptions.size());
     for (size_t i = 0; i < newValues.size(); ++i)
     {
-        ASSERT_EQ(table[i].value(), descriptions[i].getDefaultValue());
-        ASSERT_NE(table[i].value().getType(), newValues[i].getType());
-        ASSERT_NE(table[i].value(), newValues[i]);
+        ASSERT_EQ(table[i].getValue(), descriptions[i].getDefaultValue());
+        ASSERT_NE(table[i].getValue().getType(), newValues[i].getType());
+        ASSERT_NE(table[i].getValue(), newValues[i]);
         table.setValue(i, newValues[i]);
-        ASSERT_NE(table[i].value(), newValues[i]);
-        ASSERT_EQ(table[i].value(), descriptions[i].getDefaultValue());  // i.e. nothing changed
+        ASSERT_NE(table[i].getValue(), newValues[i]);
+        ASSERT_EQ(table[i].getValue(), descriptions[i].getDefaultValue());  // i.e. nothing changed
     }
 }
 
@@ -183,7 +183,7 @@ TEST(PropertyTable, IfGivenPropertiesWithDuplicateNamesTakesTheLatestDuplicateIn
             // i.e. it's one of the non-unique entries in the input descriptions
             auto idx = table.indexOf(itFromEnd->getName());
             ASSERT_TRUE(idx);
-            ASSERT_EQ(table[*idx].defaultValue(), itFromEnd->getDefaultValue());
+            ASSERT_EQ(table[*idx].getDefaultValue(), itFromEnd->getDefaultValue());
         }
     }
 }

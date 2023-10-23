@@ -16,19 +16,19 @@ TEST(PropertyTableEntry, CanBeConstructedFromAPropertyDescription)
 TEST(PropertyTableEntry, NameReturnsTheNameProvidedViaThePropertyDescription)
 {
     PropertyDescription const desc{"name", Variant{"value"}};
-    ASSERT_EQ(PropertyTableEntry{desc}.name(), "name");
+    ASSERT_EQ(PropertyTableEntry{desc}.getName(), "name");
 }
 
 TEST(PropertyTableEntry, DefaultValueReturnsTheDefaultValueProvidedInTheDescription)
 {
     PropertyDescription const desc{"name", Variant{1337}};
-    ASSERT_EQ(PropertyTableEntry{desc}.defaultValue(), Variant{1337});
+    ASSERT_EQ(PropertyTableEntry{desc}.getDefaultValue(), Variant{1337});
 }
 
 TEST(PropertyTableEntry, ValueInitiallyComparesEquivalentToTheProvidedDefaultValue)
 {
     PropertyDescription const desc{"name", Variant{1337.0f}};
-    ASSERT_EQ(PropertyTableEntry{desc}.value(), Variant{1337.0f});
+    ASSERT_EQ(PropertyTableEntry{desc}.getValue(), Variant{1337.0f});
 }
 
 TEST(PropertyTableEntry, SetValueWithCorrectTypeOfValueCausesGetValueToReturnNewValue)
@@ -37,9 +37,9 @@ TEST(PropertyTableEntry, SetValueWithCorrectTypeOfValueCausesGetValueToReturnNew
     PropertyTableEntry entry{desc};
     Variant const newValue{2.0f};
 
-    ASSERT_EQ(entry.value(), desc.getDefaultValue());
+    ASSERT_EQ(entry.getValue(), desc.getDefaultValue());
     entry.setValue(newValue);
-    ASSERT_EQ(entry.value(), newValue);
+    ASSERT_EQ(entry.getValue(), newValue);
 }
 
 TEST(PropertyTableEntry, SetValueWithMismatchedTypeDoesNothing)
@@ -48,8 +48,8 @@ TEST(PropertyTableEntry, SetValueWithMismatchedTypeDoesNothing)
     PropertyTableEntry entry{desc};
     Variant const invalidValue{"not a float"};
 
-    ASSERT_EQ(entry.value(), desc.getDefaultValue());
+    ASSERT_EQ(entry.getValue(), desc.getDefaultValue());
     entry.setValue(invalidValue);
-    ASSERT_NE(entry.value(), invalidValue);
-    ASSERT_EQ(entry.value(), desc.getDefaultValue());
+    ASSERT_NE(entry.getValue(), invalidValue);
+    ASSERT_EQ(entry.getValue(), desc.getDefaultValue());
 }
