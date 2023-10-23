@@ -52,5 +52,5 @@ std::optional<size_t> osc::doc::PropertyTable::indexOf(StringName const& propert
 
 void osc::doc::PropertyTable::setValue(size_t propertyIndex, Variant const& newPropertyValue)
 {
-    m_Entries.at(propertyIndex).setValue(newPropertyValue);
+    m_Entries[propertyIndex].setValue(newPropertyValue);
 }

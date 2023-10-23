@@ -3,6 +3,7 @@
 #include <oscar_document/PropertyDescription.hpp>
 #include <oscar_document/PropertyTable.hpp>
 #include <oscar_document/StringName.hpp>
+#include <oscar_document/Variant.hpp>
 #include <oscar_document/VariantType.hpp>
 
 #include <nonstd/span.hpp>
@@ -13,8 +14,6 @@
 #include <string>
 #include <string_view>
 #include <utility>
-
-namespace osc::doc { class Variant; }
 
 namespace osc::doc
 {

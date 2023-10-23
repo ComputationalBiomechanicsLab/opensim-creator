@@ -3,14 +3,16 @@ find_package(GTest REQUIRED CONFIG)
 
 add_executable(testoscar_document
     TestNodePath.cpp
+    TestObject.cpp
     TestPropertyDescription.cpp
+    TestPropertyTable.cpp
     TestPropertyTableEntry.cpp
     TestStringName.cpp
     TestVariant.cpp
     TestVariantType.cpp
 
     testoscar_document.cpp  # entrypoint
- "TestPropertyTable.cpp")
+)
 
 target_link_libraries(testoscar_document PUBLIC
     # set compiler options
