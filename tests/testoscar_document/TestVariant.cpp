@@ -39,7 +39,7 @@ namespace
     {
         int result{};
         auto [ptr, ec] = std::from_chars(v.data(), v.data() + v.size(), result);
-        return ec == std::errc() ? result : 0.0f;
+        return ec == std::errc() ? result : 0;
     }
 }
 
