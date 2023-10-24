@@ -39,6 +39,7 @@ namespace osc
     //
     // careful: this won't work if either argument is equal to, or very near, zero (relative
     //          requires scaling)
+    bool IsEqualWithinRelativeError(double, double, double relativeError) noexcept;
     bool IsEqualWithinRelativeError(float, float, float relativeError) noexcept;
     bool IsEqualWithinRelativeError(glm::vec3 const&, glm::vec3 const&, float relativeError) noexcept;
 

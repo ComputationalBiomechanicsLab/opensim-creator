@@ -50,6 +50,7 @@
 #include <oscar/Maths/Ellipsoid.hpp>
 #include <oscar/Maths/Plane.hpp>
 #include <oscar/Maths/Sphere.hpp>
+#include <oscar/Maths/Transform.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
@@ -1938,6 +1939,9 @@ bool osc::ActionFitSphereToMesh(
     try
     {
         mesh = ToOscMesh(model.getModel(), model.getState(), openSimMesh);
+        Transform t;
+        t.scale = ToVec3(openSimMesh.get_scale_factors());  // ensure fit is scaled the same as the mesh
+        mesh.transformVerts(t);
         sphere = FitSphere(mesh);
     }
     catch (std::exception const& ex)
