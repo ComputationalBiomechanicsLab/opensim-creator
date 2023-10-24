@@ -1954,10 +1954,12 @@ bool osc::ActionFitSphereToMesh(
     // mesh with an OpenSim::OffsetFrame (because shape fitting also figures out
     // the sphere's origin)
     auto offsetFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+    offsetFrame->setName("sphere_fit");
     offsetFrame->connectSocket_parent(dynamic_cast<OpenSim::PhysicalFrame const&>(openSimMesh.getFrame()));
     offsetFrame->setOffsetTransform(SimTK::Transform{ToSimTKVec3(sphere.origin)});
 
     auto openSimSphere = std::make_unique<OpenSim::Sphere>(sphere.radius);
+    openSimSphere->setName("sphere");
     openSimSphere->connectSocket_frame(*offsetFrame);
     openSimSphere->upd_Appearance().set_color({0.0, 1.0, 0.0});
     openSimSphere->upd_Appearance().set_opacity(0.3);
@@ -1976,7 +1978,7 @@ bool osc::ActionFitSphereToMesh(
         }
 
         std::string const sphereName = openSimSphere->getName();
-        auto& pofRef = AddComponent(*mutOpenSimMesh, std::move(offsetFrame));
+        auto& pofRef = AddModelComponent(mutModel, std::move(offsetFrame));
         auto& sphereRef = AttachGeometry(pofRef, std::move(openSimSphere));
 
         osc::FinalizeConnections(mutModel);
