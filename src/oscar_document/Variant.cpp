@@ -38,11 +38,15 @@ namespace
         }
     }
 
-    float ToFloatOrZero(std::string_view v)
+    float ToFloatOrZero(osc::CStringView v)
     {
-        float rv{};
-        auto [ptr, err] = std::from_chars(v.data(), v.data() + v.size(), rv);
-        return err == std::errc{} ? rv : 0.0f;
+        // TODO: temporarily using `std::sscanf` here, rather than `std::from_chars` (C++17),
+        // because MacOS (Catalina) and Ubuntu 20 don't support the latter (as of Oct 2023)
+        // for floating-point values
+
+        float rv = 0.0f;
+        std::sscanf(v.c_str(), "%f", &rv);
+        return rv;
     }
 
     int ToIntOrZero(std::string_view v)
