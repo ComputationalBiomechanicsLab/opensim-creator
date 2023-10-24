@@ -17,6 +17,7 @@ TEST(VariantType, ToStringReturnsExpectedResults)
     };
     auto const testCases = osc::to_array<TestCase>(
     {
+        {VariantType::Nil, "Nil"},
         {VariantType::Bool, "Bool"},
         {VariantType::Color, "Color"},
         {VariantType::Float, "Float"},

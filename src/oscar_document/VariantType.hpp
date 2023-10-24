@@ -5,7 +5,8 @@
 namespace osc::doc
 {
     enum class VariantType {
-        Bool = 0,
+        Nil = 0,
+        Bool,
         Color,
         Float,
         Int,

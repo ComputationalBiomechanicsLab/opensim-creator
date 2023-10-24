@@ -65,6 +65,7 @@ namespace
     }
 }
 
+osc::doc::Variant::Variant() : m_Data{std::monostate{}} {}
 osc::doc::Variant::Variant(bool v) : m_Data{v} {}
 osc::doc::Variant::Variant(Color v) : m_Data{v} {}
 osc::doc::Variant::Variant(float v) : m_Data{v} {}
@@ -81,6 +82,7 @@ osc::doc::VariantType osc::doc::Variant::getType() const
     osc::doc::VariantType rv = osc::doc::VariantType::Bool;
     std::visit(osc::Overload
     {
+        [&rv](std::monostate const&) { rv = osc::doc::VariantType::Nil; },
         [&rv](bool const&) { rv = osc::doc::VariantType::Bool; },
         [&rv](Color const&) { rv = osc::doc::VariantType::Color; },
         [&rv](float const&) { rv = osc::doc::VariantType::Float; },
@@ -97,6 +99,7 @@ bool osc::doc::Variant::toBool() const
     bool rv = false;
     std::visit(osc::Overload
     {
+        [&rv](std::monostate const&) { rv = false; },
         [&rv](bool const& v) { rv = v; },
         [&rv](Color const& v) { rv = v.r != 0.0f; },
         [&rv](float const& v) { rv = v != 0.0f; },
@@ -109,13 +112,14 @@ bool osc::doc::Variant::toBool() const
 
 osc::Color osc::doc::Variant::toColor() const
 {
-    osc::Color rv = osc::Color::black();
+    Color rv = Color::black();
     std::visit(osc::Overload
     {
-        [&rv](bool const& v) { rv = v ? osc::Color::white() : osc::Color::black(); },
+        [&rv](std::monostate const&) { rv = Color::black(); },
+        [&rv](bool const& v) { rv = v ? Color::white() : Color::black(); },
         [&rv](Color const& v) { rv = v; },
-        [&rv](float const& v) { rv = osc::Color{v, v, v}; },
-        [&rv](int const& v) { rv = v ? osc::Color::white() : osc::Color::black(); },
+        [&rv](float const& v) { rv = Color{v, v, v}; },
+        [&rv](int const& v) { rv = v ? Color::white() : Color::black(); },
         [&rv](std::string_view s)
         {
             if (auto c = TryParseHtmlString(s))
@@ -133,6 +137,7 @@ float osc::doc::Variant::toFloat() const
     float rv = 0.0f;
     std::visit(osc::Overload
     {
+        [&rv](std::monostate const&) { rv = 0.0f; },
         [&rv](bool const& v) { rv = v ? 1.0f : 0.0f; },
         [&rv](Color const& v) { rv = v.r; },
         [&rv](float const& v) { rv = v; },
@@ -148,6 +153,7 @@ int osc::doc::Variant::toInt() const
     int rv = 0;
     std::visit(osc::Overload
     {
+        [&rv](std::monostate const&) { rv = 0; },
         [&rv](bool const& v) { rv = v ? 1 : 0; },
         [&rv](Color const& v) { rv = static_cast<int>(v.r); },
         [&rv](float const& v) { rv = static_cast<int>(v); },
@@ -163,6 +169,7 @@ std::string osc::doc::Variant::toString() const
     std::string rv;
     std::visit(osc::Overload
     {
+        [&rv](std::monostate const&) { rv = "<null>"; },
         [&rv](bool const& v) { rv = v ? "true" : "false"; },
         [&rv](Color const& v) { rv = ToHtmlStringRGBA(v); },
         [&rv](float const& v) { rv = std::to_string(v); },
@@ -173,11 +180,24 @@ std::string osc::doc::Variant::toString() const
     return rv;
 }
 
+osc::StringName osc::doc::Variant::toStringName() const
+{
+    StringName rv;
+    std::visit(osc::Overload
+    {
+        [&rv](std::string const& s) { rv = StringName{s}; },
+        [&rv](StringName const& sn) { rv = sn; },
+        [](auto const&) {},
+    }, m_Data);
+    return rv;
+}
+
 glm::vec3 osc::doc::Variant::toVec3() const
 {
     glm::vec3 rv{};
     std::visit(osc::Overload
     {
+        [&rv](std::monostate const&) { rv = glm::vec3{}; },
         [&rv](bool const& v) { rv = v ? glm::vec3{1.0f, 1.0f, 1.0f} : glm::vec3{}; },
         [&rv](Color const& v) { rv = {v.r, v.g, v.b}; },
         [&rv](float const& v) { rv = {v, v, v}; },
@@ -190,12 +210,26 @@ glm::vec3 osc::doc::Variant::toVec3() const
 
 bool osc::doc::operator==(Variant const& lhs, Variant const& rhs)
 {
-    return lhs.m_Data == rhs.m_Data;
+    // StringName vs. string is transparent w.r.t. comparison - even though they are
+    // different entries in the std::variant
+
+    if (std::holds_alternative<StringName>(lhs.m_Data) && std::holds_alternative<std::string>(rhs.m_Data))
+    {
+        return std::get<StringName>(lhs.m_Data) == std::get<std::string>(rhs.m_Data);
+    }
+    else if (std::holds_alternative<std::string>(lhs.m_Data) && std::holds_alternative<StringName>(rhs.m_Data))
+    {
+        return std::get<std::string>(lhs.m_Data) == std::get<StringName>(rhs.m_Data);
+    }
+    else
+    {
+        return lhs.m_Data == rhs.m_Data;
+    }
 }
 
 bool osc::doc::operator!=(Variant const& lhs, Variant const& rhs)
 {
-    return lhs.m_Data != rhs.m_Data;
+    return !(lhs == rhs);
 }
 
 size_t std::hash<osc::doc::Variant>::operator()(osc::doc::Variant const& v) const

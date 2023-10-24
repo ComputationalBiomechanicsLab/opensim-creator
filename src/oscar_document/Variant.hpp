@@ -17,17 +17,18 @@ namespace osc::doc
 {
     class Variant final {
     public:
-        explicit Variant(bool);
-        explicit Variant(Color);
-        explicit Variant(float);
-        explicit Variant(int);
-        explicit Variant(std::string);
-        explicit Variant(std::string_view);
-        explicit Variant(char const*);
-        explicit Variant(std::nullopt_t) = delete;
-        explicit Variant(CStringView);
-        explicit Variant(StringName const&);
-        explicit Variant(glm::vec3);
+        Variant();
+        Variant(bool);
+        Variant(Color);
+        Variant(float);
+        Variant(int);
+        Variant(std::string);
+        Variant(std::string_view);
+        Variant(char const*);
+        Variant(std::nullopt_t) = delete;
+        Variant(CStringView);
+        Variant(StringName const&);
+        Variant(glm::vec3);
 
         VariantType getType() const;
 
@@ -36,6 +37,7 @@ namespace osc::doc
         float toFloat() const;
         int toInt() const;
         std::string toString() const;
+        StringName toStringName() const;
         glm::vec3 toVec3() const;
 
         friend bool operator==(Variant const&, Variant const&);
@@ -48,6 +50,7 @@ namespace osc::doc
         friend struct std::hash<osc::doc::Variant>;
 
         std::variant<
+            std::monostate,
             bool,
             Color,
             float,

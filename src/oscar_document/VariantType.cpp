@@ -13,6 +13,7 @@ std::string osc::doc::to_string(VariantType v)
 {
     static auto const s_Lut = osc::to_array<std::string_view>(
     {
+        "Nil",
         "Bool",
         "Color",
         "Float",
