@@ -371,7 +371,7 @@ TEST(Variant, StringValueToIntTriesToParseStringAsBase10Int)
 
     for (auto const& input : inputs)
     {
-        float const expectedOutput = ToIntOrZero(input);
+        int const expectedOutput = ToIntOrZero(input);
         ASSERT_EQ(osc::doc::Variant{input}.toInt(), expectedOutput);
     }
 }
@@ -779,7 +779,7 @@ TEST(Variant, StringNameToIntTriesToParseStringAsBase10Int)
 
     for (auto const& input : inputs)
     {
-        float const expectedOutput = ToIntOrZero(input);
+        int const expectedOutput = ToIntOrZero(input);
         ASSERT_EQ(osc::doc::Variant{osc::StringName{input}}.toInt(), expectedOutput);
     }
 }
