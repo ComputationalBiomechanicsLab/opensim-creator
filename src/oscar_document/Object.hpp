@@ -1,9 +1,7 @@
 #pragma once
 
-#include <oscar_document/PropertyDescription.hpp>
 #include <oscar_document/PropertyTable.hpp>
 #include <oscar_document/StringName.hpp>
-#include <oscar_document/Variant.hpp>
 #include <oscar_document/VariantType.hpp>
 
 #include <nonstd/span.hpp>
@@ -12,8 +10,10 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <string_view>
 #include <utility>
+
+namespace osc::doc { class PropertyDescription; }
+namespace osc::doc { class Variant; }
 
 namespace osc::doc
 {
@@ -34,15 +34,15 @@ namespace osc::doc
         size_t getNumProperties() const;
         StringName const& getPropertyName(size_t propertyIndex) const;
         VariantType getPropertyType(size_t propertyIndex) const;
+        Variant const& getPropertyDefaultValue(size_t propertyIndex) const;
         Variant const& getPropertyValue(size_t propertyIndex) const;
         void setPropertyValue(size_t propertyIndex, Variant const& newPropertyValue);
-        Variant const& getPropertyDefaultValue(size_t propertyIndex) const;
 
-        std::optional<size_t> getPropertyIndex(StringName const& propertyName) const;
-        Variant const* tryGetPropertyValue(StringName const& propertyName) const;
-        bool trySetPropertyValue(StringName const& propertyName, Variant const& newPropertyValue);
-        Variant const& getPropertyValue(StringName const& propertyName);
-        void setPropertyValue(StringName const& propertyName, Variant const& newPropertyValue);
+        std::optional<size_t> getPropertyIndexByName(StringName const& propertyName) const;
+        Variant const* tryGetPropertyValueByName(StringName const& propertyName) const;
+        bool trySetPropertyValueByName(StringName const& propertyName, Variant const& newPropertyValue);
+        Variant const& getPropertyValueByName(StringName const& propertyName);
+        void setPropertyValueByName(StringName const& propertyName, Variant const& newPropertyValue);
 
     private:
         virtual std::string implToString() const;

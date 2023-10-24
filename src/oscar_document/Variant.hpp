@@ -24,6 +24,7 @@ namespace osc::doc
         explicit Variant(std::string);
         explicit Variant(std::string_view);
         explicit Variant(char const*);
+        explicit Variant(std::nullopt_t) = delete;
         explicit Variant(CStringView);
         explicit Variant(StringName const&);
         explicit Variant(glm::vec3);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Utils/CStringView.hpp>
+
 #include <atomic>
 #include <cstddef>
 #include <iostream>
@@ -63,8 +65,9 @@ namespace osc
         using const_reverse_iterator = std::string::const_reverse_iterator;
 
         StringName();
-        StringName(char const*);
         StringName(std::string_view);
+        StringName(char const*);
+        StringName(std::nullptr_t) = delete;
 
         StringName(StringName const& other) noexcept :
             m_Data{other.m_Data}
@@ -121,6 +124,11 @@ namespace osc
         }
 
         operator std::string_view() const noexcept
+        {
+            return m_Data->value();
+        }
+
+        explicit operator CStringView() const noexcept
         {
             return m_Data->value();
         }

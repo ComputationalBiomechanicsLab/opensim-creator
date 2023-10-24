@@ -11,6 +11,7 @@
 #include <string_view>
 #include <utility>
 
+using osc::CStringView;
 using osc::StringName;
 
 constexpr char const c_LongStringToAvoidSSO[] = "somequitelongstringthatprobablyneedstobeheapallocatedsothatmemoryanalyzershaveabetterchance";
@@ -68,6 +69,11 @@ TEST(StringName, DefaultConstructedImplicitlyConvertsIntoBlankStringView)
     ASSERT_EQ(static_cast<std::string_view>(StringName{}), std::string_view{});
 }
 
+TEST(StringName, DefaultConstructedImplicitlyConvertsIntoBlankCStringView)
+{
+    ASSERT_EQ(static_cast<CStringView>(StringName{}), CStringView{});
+}
+
 TEST(StringName, DefaultConstructedBeginEqualsEnd)
 {
     StringName sn;
@@ -104,6 +110,11 @@ TEST(StringName, DefaultConstructedEqualsAnotherDefaultConstructed)
 TEST(StringName, DefaultConstructedCanBeImplicitlyConvertedIntoBlankStringView)
 {
     ASSERT_EQ(StringName{}, std::string_view{});
+}
+
+TEST(StringName, DefaultConstructedCanBeImplicitlyConvertedIntoBlankCStringView)
+{
+    ASSERT_EQ(StringName{}, CStringView{});
 }
 
 TEST(StringName, DefaultConstructedIsEqualToBlankString)
@@ -233,6 +244,11 @@ TEST(StringName, CanImplicitlyConstructFromStringView)
     f(std::string_view{"cstring"});  // should compile
 }
 
+TEST(StringName, CanImplicitlyConstructFromCStringView)
+{
+    auto const f = [](CStringView const&) {};
+    f(CStringView{"cstring"});  // should compile
+}
 
 TEST(StringName, CopyAssigningOneNonDefaultConstructedStringNameOverAnotherMakesLhsCompareEqual)
 {
@@ -310,8 +326,14 @@ TEST(StringName, CStringReturnsNulTerminatedPointerToFirstElement)
 
 TEST(StringName, ImplicitlyConvertingToStringViewWorksAsExpected)
 {
-    StringName s{c_LongStringToAvoidSSO};
+    StringName const s{c_LongStringToAvoidSSO};
     ASSERT_EQ(static_cast<std::string_view>(s), std::string_view{c_LongStringToAvoidSSO});
+}
+
+TEST(StringName, ImplicitlyConvertingToCStringViewWorksAsExpected)
+{
+    StringName const s{c_LongStringToAvoidSSO};
+    ASSERT_EQ(static_cast<CStringView>(s), CStringView{c_LongStringToAvoidSSO});
 }
 
 TEST(StringName, BeginNotEqualToEndForNonEmptyString)
@@ -386,12 +408,12 @@ TEST(StringName, NonEmptyStringNameComparesEquivalentToCStringReversedOp)
 
 TEST(StringName, NonEmptyStringNameComaparesEquivalentToCStringView)
 {
-    ASSERT_EQ(StringName{c_LongStringToAvoidSSO}, osc::CStringView{c_LongStringToAvoidSSO});
+    ASSERT_EQ(StringName{c_LongStringToAvoidSSO}, CStringView{c_LongStringToAvoidSSO});
 }
 
 TEST(StringName, NonEmptyStringNameComaparesEquivalentToCStringViewReversedOp)
 {
-    ASSERT_EQ(osc::CStringView{c_LongStringToAvoidSSO}, StringName{c_LongStringToAvoidSSO});
+    ASSERT_EQ(CStringView{c_LongStringToAvoidSSO}, StringName{c_LongStringToAvoidSSO});
 }
 
 TEST(StringName, ComparesNotEqualToInequivalentString)

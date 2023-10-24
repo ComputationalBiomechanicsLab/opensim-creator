@@ -11,6 +11,7 @@
 
 #include <charconv>
 #include <cstddef>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -38,15 +39,22 @@ namespace
         }
     }
 
-    float ToFloatOrZero(osc::CStringView v)
+    float ToFloatOrZero(std::string_view v)
     {
-        // TODO: temporarily using `std::sscanf` here, rather than `std::from_chars` (C++17),
+        // TODO: temporarily using `std::strof` here, rather than `std::from_chars` (C++17),
         // because MacOS (Catalina) and Ubuntu 20 don't support the latter (as of Oct 2023)
         // for floating-point values
 
-        float rv = 0.0f;
-        std::sscanf(v.c_str(), "%f", &rv);
-        return rv;
+        std::string s{v};
+        size_t pos = 0;
+        try
+        {
+            return std::stof(s, &pos);
+        }
+        catch (std::exception const&)
+        {
+            return 0.0f;
+        }
     }
 
     int ToIntOrZero(std::string_view v)
