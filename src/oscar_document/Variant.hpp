@@ -40,7 +40,7 @@ namespace osc::doc
 
         friend bool operator==(Variant const&, Variant const&);
         friend bool operator!=(Variant const&, Variant const&);
-        friend void swap(Variant& a, Variant& b)
+        friend void swap(Variant& a, Variant& b) noexcept
         {
             std::swap(a, b);
         }
