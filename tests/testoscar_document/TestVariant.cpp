@@ -35,7 +35,7 @@ namespace
         }
     }
 
-    float ToIntOrZero(std::string_view v)
+    int ToIntOrZero(std::string_view v)
     {
         int result{};
         auto [ptr, ec] = std::from_chars(v.data(), v.data() + v.size(), result);
