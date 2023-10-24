@@ -19,6 +19,7 @@
 #include <OpenSimCreator/UI/Tabs/PerformanceAnalyzerTab.hpp>
 #include <OpenSimCreator/UI/Widgets/ObjectPropertiesEditor.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/ShapeFitters.hpp>
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -30,6 +31,7 @@
 #include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
+#include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 #include <OpenSim/Simulation/Model/OffsetFrame.h>
@@ -45,6 +47,9 @@
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <oscar/Graphics/MeshCache.hpp>
+#include <oscar/Maths/Ellipsoid.hpp>
+#include <oscar/Maths/Plane.hpp>
+#include <oscar/Maths/Sphere.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
@@ -1921,4 +1926,83 @@ bool osc::ActionTransformContactGeometry(
         return false;
     }
     return false;
+}
+
+bool osc::ActionFitSphereToMesh(
+    UndoableModelStatePair& model,
+    OpenSim::Mesh const& openSimMesh)
+{
+    // do the shape fitting
+    Mesh mesh;
+    Sphere sphere;
+    try
+    {
+        mesh = ToOscMesh(model.getModel(), model.getState(), openSimMesh);
+        sphere = FitSphere(mesh);
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("error detected while trying to fit a sphere to a mesh: %s", ex.what());
+        return false;
+    }
+
+    // create an equivalent OpenSim::Sphere for the shapefit and attach it to the
+    // mesh with an OpenSim::OffsetFrame (because shape fitting also figures out
+    // the sphere's origin)
+    auto offsetFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+    offsetFrame->connectSocket_parent(dynamic_cast<OpenSim::PhysicalFrame const&>(openSimMesh.getFrame()));
+    offsetFrame->setOffsetTransform(SimTK::Transform{ToSimTKVec3(sphere.origin)});
+
+    auto openSimSphere = std::make_unique<OpenSim::Sphere>(sphere.radius);
+    openSimSphere->connectSocket_frame(*offsetFrame);
+    openSimSphere->upd_Appearance().set_color({0.0, 1.0, 0.0});
+    openSimSphere->upd_Appearance().set_opacity(0.3);
+
+    // mutate the model and add the relevant components
+    OpenSim::ComponentPath const openSimMeshPath = osc::GetAbsolutePath(openSimMesh);
+    UID const oldVersion = model.getModelVersion();
+    try
+    {
+        OpenSim::Model& mutModel = model.updModel();
+        auto* const mutOpenSimMesh = FindComponentMut<OpenSim::Mesh>(mutModel, openSimMeshPath);
+        if (!mutOpenSimMesh)
+        {
+            model.setModelVersion(oldVersion);  // the provided path doesn't exist in the model
+            return false;
+        }
+
+        std::string const sphereName = openSimSphere->getName();
+        auto& pofRef = AddComponent(*mutOpenSimMesh, std::move(offsetFrame));
+        auto& sphereRef = AddComponent(pofRef, std::move(openSimSphere));
+
+        osc::FinalizeConnections(mutModel);
+        osc::InitializeModel(mutModel);
+        osc::InitializeState(mutModel);
+        model.setSelected(&sphereRef);
+
+        std::stringstream ss;
+        ss << "fitted sphere " << sphereName;
+        model.commit(std::move(ss).str());
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("error detected while trying to add a sphere fit to the OpenSim model: %s", ex.what());
+        return false;
+    }
+
+    return true;
+}
+
+bool osc::ActionFitEllipsoidToMesh(
+    UndoableModelStatePair&,
+    OpenSim::Mesh const&)
+{
+    return false;  // TODO
+}
+
+bool osc::ActionFitPlaneToMesh(
+    UndoableModelStatePair&,
+    OpenSim::Mesh const&)
+{
+    return false;  // TODO
 }

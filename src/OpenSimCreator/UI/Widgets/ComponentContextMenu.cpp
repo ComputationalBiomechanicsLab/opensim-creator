@@ -227,6 +227,33 @@ namespace
         osc::DrawCalculateMenu(uim.getModel(), uim.getState(), point, osc::CalculateMenuFlags::NoCalculatorIcon);
     }
 
+    void DrawMeshContextualActions(
+        osc::UndoableModelStatePair& uim,
+        OpenSim::Mesh const& mesh)
+    {
+        if (ImGui::BeginMenu("Fit Analytic Geometry to This"))
+        {
+            osc::DrawHelpMarker("Uses shape-fitting algorithms to fit analytic geometry to the points in the given mesh.\n\nThe 'htbad'-suffixed algorithms were adapted (potentially, with bugs - report them) from the MATLAB code in:\n\n        Bishop P., How to build a dinosaur..., doi:10.1017/pab.2020.46");
+
+            if (ImGui::MenuItem("Sphere (htbad)"))
+            {
+                osc::ActionFitSphereToMesh(uim, mesh);
+            }
+
+            if (ImGui::MenuItem("Ellipsoid (htbad)"))
+            {
+                osc::ActionFitEllipsoidToMesh(uim, mesh);
+            }
+
+            if (ImGui::MenuItem("Plane (htbad)"))
+            {
+                osc::ActionFitPlaneToMesh(uim, mesh);
+            }
+
+            ImGui::EndMenu();
+        }
+    }
+
     bool AnyDescendentInclusiveHasAppearanceProperty(OpenSim::Component const& component)
     {
         OpenSim::Component const* const c = osc::FindFirstDescendentInclusive(
@@ -418,18 +445,22 @@ private:
         {
             DrawHCFContextualActions(m_EditorAPI, m_Model, m_Path);
         }
-        else if (auto const* m = dynamic_cast<OpenSim::Muscle const*>(c))
+        else if (auto const* musclePtr = dynamic_cast<OpenSim::Muscle const*>(c))
         {
-            drawAddMusclePlotMenu(*m);
+            drawAddMusclePlotMenu(*musclePtr);
             DrawPathActuatorContextualParams(m_EditorAPI, m_Model, m_Path);  // a muscle is a path actuator
         }
         else if (dynamic_cast<OpenSim::PathActuator const*>(c))
         {
             DrawPathActuatorContextualParams(m_EditorAPI, m_Model, m_Path);
         }
-        else if (auto const* p = dynamic_cast<OpenSim::Point const*>(c))
+        else if (auto const* pointPtr = dynamic_cast<OpenSim::Point const*>(c))
         {
-            DrawPointContextualActions(*m_Model, *p);
+            DrawPointContextualActions(*m_Model, *pointPtr);
+        }
+        else if (auto const* meshPtr = dynamic_cast<OpenSim::Mesh const*>(c))
+        {
+            DrawMeshContextualActions(*m_Model, *meshPtr);
         }
     }
 
