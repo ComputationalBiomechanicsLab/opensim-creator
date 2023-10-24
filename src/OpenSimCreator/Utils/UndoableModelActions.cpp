@@ -1977,7 +1977,7 @@ bool osc::ActionFitSphereToMesh(
 
         std::string const sphereName = openSimSphere->getName();
         auto& pofRef = AddComponent(*mutOpenSimMesh, std::move(offsetFrame));
-        auto& sphereRef = AddComponent(pofRef, std::move(openSimSphere));
+        auto& sphereRef = AttachGeometry(pofRef, std::move(openSimSphere));
 
         osc::FinalizeConnections(mutModel);
         osc::InitializeModel(mutModel);

@@ -851,7 +851,7 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
             rv = TryDeleteItemFromSet(gp->updWrapSet(), pw);
         }
     }
-    else if (auto* geom = FindAncestorWithTypeMut<OpenSim::Geometry>(&c))
+    else if (auto* geom = dynamic_cast<OpenSim::Geometry*>(&c))
     {
         // delete an OpenSim::Geometry from its owning OpenSim::Frame
 
