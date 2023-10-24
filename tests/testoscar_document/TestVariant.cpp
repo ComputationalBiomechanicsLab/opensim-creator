@@ -19,9 +19,20 @@ namespace
 {
     float ToFloatOrZero(std::string_view v)
     {
-        float result{};
-        auto [ptr, ec] = std::from_chars(v.data(), v.data() + v.size(), result);
-        return ec == std::errc() ? result : 0.0f;
+        // TODO: temporarily using `std::strof` here, rather than `std::from_chars` (C++17),
+        // because MacOS (Catalina) and Ubuntu 20 don't support the latter (as of Oct 2023)
+        // for floating-point values
+
+        std::string s{v};
+        size_t pos = 0;
+        try
+        {
+            return std::stof(s, &pos);
+        }
+        catch (std::exception const&)
+        {
+            return 0.0f;
+        }
     }
 
     float ToIntOrZero(std::string_view v)
