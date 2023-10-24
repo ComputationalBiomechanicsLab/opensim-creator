@@ -126,3 +126,6 @@ opensim-dependencies-build/
 opensim-dependencies-install/
 opensim-install/
 osc-build/
+osc-dependencies-build/
+osc-dependencies-install/
+
