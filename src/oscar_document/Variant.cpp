@@ -6,6 +6,7 @@
 #include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/VariantHelpers.hpp>
 
@@ -65,7 +66,10 @@ namespace
     }
 }
 
-osc::doc::Variant::Variant() : m_Data{std::monostate{}} {}
+osc::doc::Variant::Variant() : m_Data{std::monostate{}}
+{
+    static_assert(std::variant_size_v<decltype(m_Data)> == NumOptions<VariantType>());
+}
 osc::doc::Variant::Variant(bool v) : m_Data{v} {}
 osc::doc::Variant::Variant(Color v) : m_Data{v} {}
 osc::doc::Variant::Variant(float v) : m_Data{v} {}
@@ -230,6 +234,16 @@ bool osc::doc::operator==(Variant const& lhs, Variant const& rhs)
 bool osc::doc::operator!=(Variant const& lhs, Variant const& rhs)
 {
     return !(lhs == rhs);
+}
+
+std::string osc::doc::to_string(Variant const& v)
+{
+    return v.to<std::string>();
+}
+
+std::ostream& osc::doc::operator<<(std::ostream& o, Variant const& v)
+{
+    return o << to_string(v);
 }
 
 size_t std::hash<osc::doc::Variant>::operator()(osc::doc::Variant const& v) const

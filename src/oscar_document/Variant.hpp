@@ -8,6 +8,7 @@
 #include <glm/vec3.hpp>
 
 #include <cstddef>
+#include <iosfwd>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -55,6 +56,7 @@ namespace osc::doc
         {
             std::swap(a, b);
         }
+
     private:
         friend struct std::hash<osc::doc::Variant>;
 
@@ -72,6 +74,8 @@ namespace osc::doc
 
     bool operator==(Variant const&, Variant const&);
     bool operator!=(Variant const&, Variant const&);
+    std::string to_string(Variant const&);
+    std::ostream& operator<<(std::ostream&, Variant const&);
 }
 
 template<>

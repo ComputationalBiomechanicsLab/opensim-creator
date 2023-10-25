@@ -812,6 +812,92 @@ TEST(Variant, CanHashAVarietyOfTypes)
     }
 }
 
+TEST(Variant, FreeFunctionToStringOnVarietyOfTypesReturnsSameAsCallingToStringMemberFunction)
+{
+    auto const testCases = osc::to_array<Variant>(
+    {
+        Variant{false},
+        Variant{true},
+        Variant{Color::white()},
+        Variant{Color::black()},
+        Variant{Color::clear()},
+        Variant{Color::magenta()},
+        Variant{-1.0f},
+        Variant{0.0f},
+        Variant{-30.0f},
+        Variant{std::numeric_limits<float>::quiet_NaN()},
+        Variant{std::numeric_limits<float>::signaling_NaN()},
+        Variant{std::numeric_limits<float>::infinity()},
+        Variant{-std::numeric_limits<float>::infinity()},
+        Variant{std::numeric_limits<int>::min()},
+        Variant{std::numeric_limits<int>::max()},
+        Variant{-1},
+        Variant{0},
+        Variant{1},
+        Variant{""},
+        Variant{"false"},
+        Variant{"true"},
+        Variant{"0"},
+        Variant{"1"},
+        Variant{"a string"},
+        Variant{osc::StringName{"a string name"}},
+        Variant{glm::vec3{}},
+        Variant{glm::vec3{1.0f}},
+        Variant{glm::vec3{-1.0f}},
+        Variant{glm::vec3{0.5f}},
+        Variant{glm::vec3{-0.5f}},
+    });
+
+    for (auto const& testCase : testCases)
+    {
+        ASSERT_EQ(to_string(testCase), testCase.to<std::string>());
+    }
+}
+
+TEST(Variant, StreamingToOutputStreamProducesSameOutputAsToString)
+{
+    auto const testCases = osc::to_array<Variant>(
+    {
+        Variant{false},
+        Variant{true},
+        Variant{Color::white()},
+        Variant{Color::black()},
+        Variant{Color::clear()},
+        Variant{Color::magenta()},
+        Variant{-1.0f},
+        Variant{0.0f},
+        Variant{-30.0f},
+        Variant{std::numeric_limits<float>::quiet_NaN()},
+        Variant{std::numeric_limits<float>::signaling_NaN()},
+        Variant{std::numeric_limits<float>::infinity()},
+        Variant{-std::numeric_limits<float>::infinity()},
+        Variant{std::numeric_limits<int>::min()},
+        Variant{std::numeric_limits<int>::max()},
+        Variant{-1},
+        Variant{0},
+        Variant{1},
+        Variant{""},
+        Variant{"false"},
+        Variant{"true"},
+        Variant{"0"},
+        Variant{"1"},
+        Variant{"a string"},
+        Variant{osc::StringName{"a string name"}},
+        Variant{glm::vec3{}},
+        Variant{glm::vec3{1.0f}},
+        Variant{glm::vec3{-1.0f}},
+        Variant{glm::vec3{0.5f}},
+        Variant{glm::vec3{-0.5f}},
+    });
+
+    for (auto const& testCase : testCases)
+    {
+        std::stringstream ss;
+        ss << testCase;
+        ASSERT_EQ(ss.str(), testCase.to<std::string>());
+    }
+}
+
 TEST(Variant, HashesForStringValuesMatchStdStringEtc)
 {
     auto const strings = osc::to_array<std::string_view>(
