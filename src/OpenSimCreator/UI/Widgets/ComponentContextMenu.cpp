@@ -254,6 +254,18 @@ namespace
         }
     }
 
+    void DrawGeometryContextualActions(
+        osc::UndoableModelStatePair& uim,
+        OpenSim::Geometry const& geometry)
+    {
+        osc::DrawCalculateMenu(
+            uim.getModel(),
+            uim.getState(),
+            geometry,
+            osc::CalculateMenuFlags::NoCalculatorIcon
+        );
+    }
+
     bool AnyDescendentInclusiveHasAppearanceProperty(OpenSim::Component const& component)
     {
         OpenSim::Component const* const c = osc::FindFirstDescendentInclusive(
@@ -461,6 +473,10 @@ private:
         else if (auto const* meshPtr = dynamic_cast<OpenSim::Mesh const*>(c))
         {
             DrawMeshContextualActions(*m_Model, *meshPtr);
+        }
+        else if (auto const* geomPtr = dynamic_cast<OpenSim::Geometry const*>(c))
+        {
+            DrawGeometryContextualActions(*m_Model, *geomPtr);
         }
     }
 

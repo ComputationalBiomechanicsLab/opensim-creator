@@ -472,32 +472,65 @@ void osc::DrawFrameInformationExpressedIn(
     ImGui::InputFloat3("##orientation", glm::value_ptr(rotationEulers), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
+bool osc::BeginCalculateMenu(CalculateMenuFlags flags)
+{
+    osc::CStringView const label = flags & CalculateMenuFlags::NoCalculatorIcon ?
+        "Calculate" :
+        ICON_FA_CALCULATOR " Calculate";
+    return ImGui::BeginMenu(label.c_str());
+}
+
+void osc::EndCalculateMenu()
+{
+    ImGui::EndMenu();
+}
+
+void osc::DrawCalculatePositionMenu(
+    OpenSim::Component const& root,
+    SimTK::State const& state,
+    OpenSim::Point const& point)
+{
+    if (ImGui::BeginMenu("Position"))
+    {
+        auto const onFrameMenuOpened = [&state, &point](OpenSim::Frame const& frame)
+        {
+            osc::DrawPointTranslationInformationWithRespectTo(
+                frame,
+                state,
+                osc::ToVec3(point.getLocationInGround(state))
+            );
+        };
+
+        osc::DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+        ImGui::EndMenu();
+    }
+}
+
 void osc::DrawCalculateMenu(
     OpenSim::Component const& root,
     SimTK::State const& state,
     OpenSim::Point const& point,
     CalculateMenuFlags flags)
 {
-    osc::CStringView const label = flags & CalculateMenuFlags::NoCalculatorIcon ?
-        "Calculate" :
-        ICON_FA_CALCULATOR " Calculate";
-
-    if (ImGui::BeginMenu(label.c_str()))
+    if (BeginCalculateMenu(flags))
     {
-        if (ImGui::BeginMenu("Position"))
-        {
-            auto const onFrameMenuOpened = [&state, &point](OpenSim::Frame const& frame)
-            {
-                osc::DrawPointTranslationInformationWithRespectTo(
-                    frame,
-                    state,
-                    osc::ToVec3(point.getLocationInGround(state))
-                );
-            };
+        DrawCalculatePositionMenu(root, state, point);
+        EndCalculateMenu();
+    }
+}
 
-            osc::DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
-            ImGui::EndMenu();
-        }
+void osc::DrawCalculateTransformMenu(
+    OpenSim::Component const& root,
+    SimTK::State const& state,
+    OpenSim::Frame const& frame)
+{
+    if (ImGui::BeginMenu("Transform"))
+    {
+        auto const onFrameMenuOpened = [&state, &frame](OpenSim::Frame const& otherFrame)
+        {
+            osc::DrawFrameInformationExpressedIn(frame, state, otherFrame);
+        };
+        osc::DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
         ImGui::EndMenu();
     }
 }
@@ -508,22 +541,77 @@ void osc::DrawCalculateMenu(
     OpenSim::Frame const& frame,
     CalculateMenuFlags flags)
 {
-    osc::CStringView const label = flags & CalculateMenuFlags::NoCalculatorIcon ?
-        "Calculate" :
-        ICON_FA_CALCULATOR " Calculate";
-
-    if (ImGui::BeginMenu(label.c_str()))
+    if (BeginCalculateMenu(flags))
     {
-        if (ImGui::BeginMenu("Transform"))
+        DrawCalculateTransformMenu(root, state, frame);
+        EndCalculateMenu();
+    }
+}
+
+void osc::DrawCalculateOriginMenu(
+    OpenSim::Component const& root,
+    SimTK::State const& state,
+    OpenSim::Sphere const& sphere)
+{
+    if (ImGui::BeginMenu("origin"))
+    {
+        glm::vec3 const posInGround = ToVec3(sphere.getFrame().getPositionInGround(state));
+        auto const onFrameMenuOpened = [&state, posInGround](OpenSim::Frame const& otherFrame)
         {
-            auto const onFrameMenuOpened = [&state, &frame](OpenSim::Frame const& otherFrame)
-            {
-                osc::DrawFrameInformationExpressedIn(frame, state, otherFrame);
-            };
-            osc::DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
-            ImGui::EndMenu();
-        }
+            DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
+        };
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+
         ImGui::EndMenu();
+    }
+}
+
+void osc::DrawCalculateRadiusMenu(
+    OpenSim::Component const&,
+    SimTK::State const&,
+    OpenSim::Sphere const& sphere)
+{
+    if (ImGui::BeginMenu("radius"))
+    {
+        double d = sphere.get_radius();
+        ImGui::InputDouble("radius", &d);
+        ImGui::EndMenu();
+    }
+}
+
+void osc::DrawCalculateVolumeMenu(
+    OpenSim::Component const&,
+    SimTK::State const&,
+    OpenSim::Sphere const& sphere)
+{
+    if (ImGui::BeginMenu("volume"))
+    {
+        double const r = sphere.get_radius();
+        double v = 4.0/3.0 * SimTK::Pi * r*r*r;
+        ImGui::InputDouble("volume", &v);
+        ImGui::EndMenu();
+    }
+}
+
+void osc::DrawCalculateMenu(
+    OpenSim::Component const& root,
+    SimTK::State const& state,
+    OpenSim::Geometry const& geom,
+    CalculateMenuFlags flags)
+{
+    if (BeginCalculateMenu(flags))
+    {
+        if (auto const* spherePtr = dynamic_cast<OpenSim::Sphere const*>(&geom))
+        {
+            DrawCalculateOriginMenu(root, state, *spherePtr);
+            DrawCalculateRadiusMenu(root, state, *spherePtr);
+            DrawCalculateVolumeMenu(root, state, *spherePtr);
+        }
+        else
+        {
+            DrawCalculateTransformMenu(root, state, geom.getFrame());
+        }
+        EndCalculateMenu();
     }
 }
 

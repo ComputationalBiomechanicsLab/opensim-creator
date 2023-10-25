@@ -28,8 +28,10 @@ namespace osc { class VirtualModelStatePair; }
 namespace osc { class VirtualOutputExtractor; }
 namespace osc { class SimulationModelStatePair; }
 namespace OpenSim { class Component; }
-namespace OpenSim { class Point; }
 namespace OpenSim { class Frame; }
+namespace OpenSim { class Geometry; }
+namespace OpenSim { class Point; }
+namespace OpenSim { class Sphere; }
 namespace SimTK { class State; }
 
 namespace osc
@@ -96,16 +98,52 @@ namespace osc
         return (aV & bV) != 0;
     }
 
+    bool BeginCalculateMenu(
+        CalculateMenuFlags = CalculateMenuFlags::None
+    );
+    void EndCalculateMenu(
+    );
+    void DrawCalculatePositionMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Point const&
+    );
     void DrawCalculateMenu(
         OpenSim::Component const& root,
         SimTK::State const&,
         OpenSim::Point const&,
         CalculateMenuFlags = CalculateMenuFlags::None
     );
+    void DrawCalculateTransformMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Frame const&
+    );
+    void DrawCalculateOriginMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Sphere const&
+    );
+    void DrawCalculateRadiusMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Sphere const&
+    );
+    void DrawCalculateVolumeMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Sphere const&
+    );
     void DrawCalculateMenu(
         OpenSim::Component const& root,
         SimTK::State const&,
         OpenSim::Frame const&,
+        CalculateMenuFlags = CalculateMenuFlags::None
+    );
+    void DrawCalculateMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Geometry const&,
         CalculateMenuFlags = CalculateMenuFlags::None
     );
     void TryDrawCalculateMenu(
