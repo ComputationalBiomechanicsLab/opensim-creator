@@ -32,16 +32,25 @@ namespace osc::doc
 
         VariantType getType() const;
 
-        bool toBool() const;
-        Color toColor() const;
-        float toFloat() const;
-        int toInt() const;
-        std::string toString() const;
-        StringName toStringName() const;
-        glm::vec3 toVec3() const;
+        // implicit conversions
+        operator bool() const;
+        operator Color() const;
+        operator float() const;
+        operator int() const;
+        operator std::string() const;
+        operator StringName() const;
+        operator glm::vec3() const;
+
+        // explicit conversion
+        template<typename T>
+        T to() const
+        {
+            return operator T();
+        }
 
         friend bool operator==(Variant const&, Variant const&);
         friend bool operator!=(Variant const&, Variant const&);
+
         friend void swap(Variant& a, Variant& b) noexcept
         {
             std::swap(a, b);

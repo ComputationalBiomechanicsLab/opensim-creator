@@ -94,7 +94,7 @@ osc::doc::VariantType osc::doc::Variant::getType() const
     return rv;
 }
 
-bool osc::doc::Variant::toBool() const
+osc::doc::Variant::operator bool() const
 {
     bool rv = false;
     std::visit(osc::Overload
@@ -110,7 +110,7 @@ bool osc::doc::Variant::toBool() const
     return rv;
 }
 
-osc::Color osc::doc::Variant::toColor() const
+osc::doc::Variant::operator osc::Color() const
 {
     Color rv = Color::black();
     std::visit(osc::Overload
@@ -132,7 +132,7 @@ osc::Color osc::doc::Variant::toColor() const
     return rv;
 }
 
-float osc::doc::Variant::toFloat() const
+osc::doc::Variant::operator float() const
 {
     float rv = 0.0f;
     std::visit(osc::Overload
@@ -148,7 +148,7 @@ float osc::doc::Variant::toFloat() const
     return rv;
 }
 
-int osc::doc::Variant::toInt() const
+osc::doc::Variant::operator int() const
 {
     int rv = 0;
     std::visit(osc::Overload
@@ -164,7 +164,7 @@ int osc::doc::Variant::toInt() const
     return rv;
 }
 
-std::string osc::doc::Variant::toString() const
+osc::doc::Variant::operator std::string() const
 {
     std::string rv;
     std::visit(osc::Overload
@@ -180,7 +180,7 @@ std::string osc::doc::Variant::toString() const
     return rv;
 }
 
-osc::StringName osc::doc::Variant::toStringName() const
+osc::doc::Variant::operator osc::StringName() const
 {
     StringName rv;
     std::visit(osc::Overload
@@ -192,7 +192,7 @@ osc::StringName osc::doc::Variant::toStringName() const
     return rv;
 }
 
-glm::vec3 osc::doc::Variant::toVec3() const
+osc::doc::Variant::operator glm::vec3() const
 {
     glm::vec3 rv{};
     std::visit(osc::Overload
