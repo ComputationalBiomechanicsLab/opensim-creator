@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdint>
 #include <iostream>
 #include <optional>
 #include <string_view>
@@ -271,4 +272,90 @@ TEST(TryParseHexCharsAsByte, ReturnsExpectedResults)
     ASSERT_EQ(osc::TryParseHexCharsAsByte('x', 'a'), std::nullopt);
     ASSERT_EQ(osc::TryParseHexCharsAsByte('a', '?'), std::nullopt);
     ASSERT_EQ(osc::TryParseHexCharsAsByte('\\', '5'), std::nullopt);
+}
+
+TEST(StringHelpers, IsValidIdentifierReturnsTrueForTypicalIdentifiers)
+{
+    auto const testCases = osc::to_array(
+    {
+        "f",
+        "g",
+        "a_snake_case_string",
+        "aCamelCaseString",
+        "AnotherCamelCaseString",
+        "trailing_numbers_007",
+        "TrailingNumbers007",
+        "Inner56Numbers",
+        "_typically_private",
+        "__very_private",
+        "__orIfYouLikeCPPThenItsMaybeReserved",
+    });
+
+    for (auto const& testCase : testCases)
+    {
+        ASSERT_TRUE(osc::IsValidIdentifier(testCase)) << testCase;
+    }
+}
+
+TEST(StringHelpers, IsValidIdentifierReturnsFalseWhenGivenAnIdentifierWithLeadingNumbers)
+{
+    auto const testCases = osc::to_array(
+    {
+        "1f",
+        "2g",
+        "3a_snake_case_string",
+        "4aCamelCaseString",
+        "5AnotherCamelCaseString",
+        "6trailing_numbers_007",
+        "7TrailingNumbers007",
+        "8Inner56Numbers",
+    });
+
+    for (auto const& testCase : testCases)
+    {
+        ASSERT_FALSE(osc::IsValidIdentifier(testCase)) << testCase;
+    }
+}
+
+TEST(StringHelpers, IsValidIdentifierReturnsFalseIfGivenAnEmptyString)
+{
+    ASSERT_FALSE(osc::IsValidIdentifier(std::string_view{}));
+}
+
+TEST(StringHelpers, IsValidIdentifierReturnsFalseWhenGivenIdentifiersWithInvalidASCIICharacters)
+{
+    auto const assertCharCannotBeUsedInIdentifier = [](char c)
+    {
+        {
+            std::string const leading = c + std::string{"leading"};
+            ASSERT_FALSE(osc::IsValidIdentifier(leading)) << leading;
+        }
+        {
+            std::string const trailing = std::string{"trailing"} + c;
+            ASSERT_FALSE(osc::IsValidIdentifier(trailing)) << trailing;
+        }
+        {
+            std::string const inner = std::string{"inner"} + c + std::string{"usage"};
+            ASSERT_FALSE(osc::IsValidIdentifier(inner)) << inner;
+        }
+    };
+
+    auto const invalidRanges = osc::to_array<std::pair<uint8_t, uint8_t>>(
+    {
+        {0, 0x1F},    // control chars
+        {0x20, 0x2F}, // SPC ! " # $ % & ' ( ) * +  ' - /
+        {0x3A, 0x40}, // : ; < = > ? @
+        {0x5B, 0x5E}, // [ \ ] ^
+        // skip 0x5F (_)
+        {0x60, 0x60}, // `
+        {0x7B, 0x7F}, // { | } ~ DEL
+    });
+
+    for (auto [min, max] : invalidRanges)
+    {
+        for (auto c = min; c <= max; ++c)
+        {
+            assertCharCannotBeUsedInIdentifier(static_cast<char>(c));
+        }
+    }
 }

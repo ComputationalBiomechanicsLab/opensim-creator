@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <utility>
 
 using osc::detail::StringNameData;
 using osc::StringName;
@@ -77,9 +78,10 @@ namespace
         return s_Lut;
     }
 
-    osc::detail::StringNameData& PossiblyConstructThenGetData(std::string_view input)
+    template<typename StringLike>
+    osc::detail::StringNameData& PossiblyConstructThenGetData(StringLike&& input)
     {
-        auto [it, inserted] = GetGlobalStringNameLUT().lock()->emplace(input);
+        auto [it, inserted] = GetGlobalStringNameLUT().lock()->emplace(std::forward<StringLike>(input));
         if (!inserted)
         {
             (*it)->incrementOwnerCount();
@@ -104,6 +106,7 @@ namespace
 }
 
 osc::StringName::StringName() : StringName{GetCachedBlankStringData()} {}
+osc::StringName::StringName(std::string&& tmp) : m_Data{&PossiblyConstructThenGetData(std::move(tmp))} {}
 osc::StringName::StringName(char const* c) : StringName{std::string_view{c}} {}
 osc::StringName::StringName(std::string_view sv) : m_Data{&PossiblyConstructThenGetData(sv)} {}
 osc::StringName::~StringName() noexcept { DecrementThenPossiblyDestroyData(*m_Data); }

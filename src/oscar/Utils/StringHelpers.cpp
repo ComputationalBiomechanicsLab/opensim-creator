@@ -113,6 +113,39 @@ bool osc::EndsWith(std::string_view sv, std::string_view suffix)
     return sv.substr(sv.size() - suffix.size()) == suffix;
 }
 
+bool osc::IsValidIdentifier(std::string_view sv)
+{
+    // helpers
+    auto const isValidFirstCharacterOfIdentifier = [](std::string_view::value_type c)
+    {
+        return
+            ('A' <= c && c <= 'Z') ||
+            (     '_' == c       ) ||
+            ('a' <= c && c <= 'z');
+    };
+    auto const isValidTrailingCharacterOfIdentifier = [](std::string_view::value_type c)
+    {
+        return
+            ('0' <= c && c <= '9') ||
+            ('A' <= c && c <= 'Z') ||
+            (     '_' == c       ) ||
+            ('a' <= c && c <= 'z');
+    };
+
+    if (sv.empty())
+    {
+        return false;
+    }
+    else if (!isValidFirstCharacterOfIdentifier(sv.front()))
+    {
+        return false;
+    }
+    else
+    {
+        return std::all_of(sv.begin() + 1, sv.end(), isValidTrailingCharacterOfIdentifier);
+    }
+}
+
 std::string_view osc::TrimLeadingAndTrailingWhitespace(std::string_view sv)
 {
     std::string_view::const_iterator const front = std::find_if_not(sv.begin(), sv.end(), ::isspace);

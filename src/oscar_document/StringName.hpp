@@ -65,6 +65,7 @@ namespace osc
         using const_reverse_iterator = std::string::const_reverse_iterator;
 
         StringName();
+        StringName(std::string&&);
         StringName(std::string_view);
         StringName(char const*);
         StringName(std::nullptr_t) = delete;

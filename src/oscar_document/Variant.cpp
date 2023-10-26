@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 #include <variant>
 
@@ -248,5 +249,23 @@ std::ostream& osc::doc::operator<<(std::ostream& o, Variant const& v)
 
 size_t std::hash<osc::doc::Variant>::operator()(osc::doc::Variant const& v) const
 {
-    return std::hash<decltype(osc::doc::Variant::m_Data)>{}(v.m_Data);
+    // note: you might be wondering why this isn't `std::hash<std::variant>{}(v.m_Data)`
+    //
+    // > cppreference.com
+    // >
+    // > Unlike std::hash<std::optional>, hash of a variant does not typically equal the
+    // > hash of the contained value; this makes it possible to distinguish std::variant<int, int>
+    // > holding the same value as different alternatives.
+    //
+    // but osc's Variant doesn't need to support this edge-case, and transparent hashing of
+    // the contents can be handy when you want behavior like:
+    //
+    //     HashOf(Variant) == HashOf(std::string) == HashOf(std::string_view) == HashOf(StringName)...
+
+    size_t rv = 0;
+    std::visit(osc::Overload
+    {
+        [&rv](auto const& inner) { rv = std::hash<std::remove_cv_t<std::remove_reference_t<decltype(inner)>>>{}(inner); },
+    }, v.m_Data);
+    return rv;
 }

@@ -10,11 +10,8 @@ namespace osc::doc
     public:
         PropertyDescription(
             StringName const& name_,
-            Variant const& defaultValue_) :
-            m_Name{name_},
-            m_DefaultValue{defaultValue_}
-        {
-        }
+            Variant const& defaultValue_
+        );
 
         StringName const& getName() const
         {

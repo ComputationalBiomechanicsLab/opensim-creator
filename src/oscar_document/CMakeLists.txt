@@ -5,6 +5,8 @@ add_library(oscar_document STATIC
     NodePath.hpp
     Object.cpp
     Object.hpp
+    PropertyDescription.cpp
+    PropertyDescription.hpp
     PropertyTable.cpp
     PropertyTable.hpp
     StringName.cpp
