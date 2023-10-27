@@ -340,7 +340,7 @@ TEST(StringHelpers, IsValidIdentifierReturnsFalseWhenGivenIdentifiersWithInvalid
         }
     };
 
-    auto const invalidRanges = osc::to_array<std::pair<uint8_t, uint8_t>>(
+    auto const invalidRanges = osc::to_array<std::pair<int, int>>(
     {
         {0, 0x1F},    // control chars
         {0x20, 0x2F}, // SPC ! " # $ % & ' ( ) * +  ' - /
