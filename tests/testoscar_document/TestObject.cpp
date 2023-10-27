@@ -10,12 +10,11 @@
 #include <string>
 #include <string_view>
 
-/*
-
 using osc::doc::Object;
 using osc::doc::PropertyDescription;
 using osc::doc::Variant;
 
+/*
 namespace
 {
     int RandomInt()
@@ -73,7 +72,7 @@ namespace
     };
 }
 
-TEST(Object, MinimalObjectImplCanConstruct)
+TEST(Object, MinimalObjectImplCanDefaultConstruct)
 {
     ASSERT_NO_THROW({ MinimalObjectImpl{}; });
 }
@@ -106,52 +105,43 @@ TEST(Object, MinimalObjectImplGetNumPropertiesReturnsZero)
 
 TEST(Object, MinimalObjectImplGetPropertyNameIsBoundsChecked)
 {
-    ASSERT_ANY_THROW({ MinimalObjectImpl{}.getPropertyName(0); });
+    constexpr int c_OutOfBoundsIndex = 0;
+    ASSERT_ANY_THROW({ MinimalObjectImpl{}.getPropertyName(c_OutOfBoundsIndex); });
 }
 
-TEST(Object, MinimalObjectImplGetPropertyTypeIsBoundsChecked)
+TEST(Object, MinimalObjectImplGetPropertyIndexReturnsFalsey)
 {
-    ASSERT_ANY_THROW({ MinimalObjectImpl{}.getPropertyType(0); });
+    ASSERT_FALSE(MinimalObjectImpl().getPropertyIndex("non-existent"));
 }
 
-TEST(Object, MinimalObjectImplGetPropertyDefaultValueIsBoundsChecked)
+TEST(Object, MinimalObjectImplTryGetPropertyDefaultValueReturnsFalsey)
 {
-    ASSERT_ANY_THROW({ MinimalObjectImpl{}.getPropertyDefaultValue(0); });
+    ASSERT_FALSE(MinimalObjectImpl{}.tryGetPropertyDefaultValue("non-existent"));
 }
 
-TEST(Object, MinimalObjectImplGetPropertyValueIsBoundsChecked)
+TEST(Object, MinimalObjectImplGetPropertyDefaultValueThrowsWithNonExistentName)
 {
-    ASSERT_ANY_THROW({ MinimalObjectImpl{}.getPropertyValue(0); });
+    ASSERT_ANY_THROW({ MinimalObjectImpl{}.getPropertyDefaultValue("non-existent"); });
 }
 
-TEST(Object, MinimalObjectImplSetPropertyValueIsBoundsChecked)
+TEST(Object, MinimalObjectImplTryGetPropertyValueReturnsFalsey)
 {
-    ASSERT_ANY_THROW({ MinimalObjectImpl{}.setPropertyValue(0, Variant{false}); });
+    ASSERT_FALSE(MinimalObjectImpl().tryGetPropertyValue("non-existent"));
 }
 
-TEST(Object, MinimalObjectImplGetPropertyIndexByNameReturnsFalsey)
+TEST(Object, MinimalObjectImplGetPropertyValueThrowsForNonExistentPropertyName)
 {
-    ASSERT_FALSE(MinimalObjectImpl().getPropertyIndexByName("non-existent"));
+    ASSERT_ANY_THROW({ MinimalObjectImpl{}.getPropertyValue("non-existent"); });
 }
 
-TEST(Object, MinimalObjectImplTryGetPropertyValueByNameReturnsFalsey)
+TEST(Object, MinimalObjectImplTrySetPropertyValueReturnsFalseyForNonExistentPropertyName)
 {
-    ASSERT_FALSE(MinimalObjectImpl().tryGetPropertyValueByName("non-existent"));
+    ASSERT_FALSE(MinimalObjectImpl().trySetPropertyValue("non-existent", Variant{true}));
 }
 
-TEST(Object, MinimalObjectImplTrySetPropertyValueByNameReturnsFalsey)
+TEST(Object, MinimalObjectImplSetPropertyValueThrowsForNonExistentPropertyName)
 {
-    ASSERT_FALSE(MinimalObjectImpl().trySetPropertyValueByName("non-existent", Variant{true}));
-}
-
-TEST(Object, MinimalObjectImplGetPropertyByNameThrows)
-{
-    ASSERT_ANY_THROW({ MinimalObjectImpl{}.getPropertyValueByName("non-existent"); });
-}
-
-TEST(Object, MinimalObjectImplSetPropertyValueByNameThrows)
-{
-    ASSERT_ANY_THROW({ MinimalObjectImpl{}.setPropertyValueByName("non-existent", Variant{false}); });
+    ASSERT_ANY_THROW({ MinimalObjectImpl{}.setPropertyValue("non-existent", Variant{false}); });
 }
 
 TEST(Object, MinimalObjectToStringFreeFunctionReturnsSameAsToStringMemberFunction)

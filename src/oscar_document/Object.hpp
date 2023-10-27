@@ -33,20 +33,20 @@ namespace osc::doc
 
         size_t getNumProperties() const;
         StringName const& getPropertyName(size_t propertyIndex) const;
-        VariantType getPropertyType(size_t propertyIndex) const;
-        Variant const& getPropertyDefaultValue(size_t propertyIndex) const;
-        Variant const& getPropertyValue(size_t propertyIndex) const;
-        void setPropertyValue(size_t propertyIndex, Variant const& newPropertyValue);
 
-        std::optional<size_t> getPropertyIndexByName(StringName const& propertyName) const;
-        Variant const* tryGetPropertyValueByName(StringName const& propertyName) const;
-        bool trySetPropertyValueByName(StringName const& propertyName, Variant const& newPropertyValue);
-        Variant const& getPropertyValueByName(StringName const& propertyName);
-        void setPropertyValueByName(StringName const& propertyName, Variant const& newPropertyValue);
+        std::optional<size_t> getPropertyIndex(StringName const& propertyName) const;
+        Variant const* tryGetPropertyDefaultValue(StringName const& propertyName) const;
+        Variant const& getPropertyDefaultValue(StringName const&) const;
+        Variant const* tryGetPropertyValue(StringName const& propertyName) const;
+        Variant const& getPropertyValue(StringName const& propertyName) const;
+        bool trySetPropertyValue(StringName const& propertyName, Variant const& newPropertyValue);
+        void setPropertyValue(StringName const& propertyName, Variant const& newPropertyValue);
 
     private:
         virtual std::string implToString() const;
         virtual std::unique_ptr<Object> implClone() const = 0;
+        virtual Variant const* implCustomPropertyGetter(StringName const& propertyName) const;
+        virtual bool implCustomPropertySetter(StringName const& propertyName, Variant const& newPropertyValue);
 
         PropertyTable m_PropertyTable;
     };
