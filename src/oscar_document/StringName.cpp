@@ -28,11 +28,6 @@ namespace
         {
         }
 
-        friend bool operator==(StringNameDataPtr const& lhs, std::string_view rhs)
-        {
-            return lhs.m_Ptr->value() == rhs;
-        }
-
         friend bool operator==(std::string_view lhs, StringNameDataPtr const& rhs)
         {
             return lhs == rhs.m_Ptr->value();
