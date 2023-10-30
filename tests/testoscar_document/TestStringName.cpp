@@ -28,14 +28,14 @@ TEST(StringName, CanBeDefaultConstructed)
 TEST(StringName, CopyConstructingFromDefaultConstructedComparesEqualToDefaultConstructed)
 {
     StringName a;
-    StringName b{a};
+    StringName b{a};  // NOLINT(performance-unnecessary-copy-initialization)
     ASSERT_EQ(a, b);
 }
 
 TEST(StringName, MoveConstructedWorksAsExpected)
 {
     StringName a;
-    StringName b{std::move(a)};
+    StringName b{std::move(a)};  // NOLINT(hicpp-move-const-arg,performance-move-const-arg)
 
     ASSERT_TRUE(b.empty());
     ASSERT_EQ(b.size(), 0);
@@ -53,7 +53,7 @@ TEST(StringName, MoveAssigningDefaultOverNonDefaultMakesLhsDefault)
 {
     StringName a;
     StringName b{c_LongStringToAvoidSSO};
-    b = std::move(a);
+    b = std::move(a);  // NOLINT(hicpp-move-const-arg,performance-move-const-arg)
     ASSERT_EQ(b, StringName{});
 }
 
@@ -266,7 +266,7 @@ TEST(StringName, MoveAssingingOneDefaultConstructedStringNameOverAnotherMakesLhs
     StringName a{c_LongStringToAvoidSSO};
     StringName b{c_AnotherStringToAvoidSSO};
     StringName bTmp{b};
-    a = std::move(bTmp);
+    a = std::move(bTmp);  // NOLINT(hicpp-move-const-arg,performance-move-const-arg)
     ASSERT_EQ(a, b);
 }
 
@@ -307,22 +307,22 @@ TEST(StringName, BackReturnsLastCharacter)
 
 TEST(StringName, DataReturnsNulTerminatedPointerToFirstElement)
 {
-    char const input[] = "string";
-    StringName s{input};
+    constexpr auto c_Input = osc::to_array("string");
+    StringName s{c_Input.data()};
 
-    nonstd::span<char const> inputSpan(input);
-    nonstd::span<StringName::value_type const> outputSpan{s.data(), std::size(input)};  // plus nul terminator
+    nonstd::span<char const> inputSpan(c_Input);
+    nonstd::span<StringName::value_type const> outputSpan{s.data(), std::size(c_Input)};  // plus nul terminator
 
     ASSERT_TRUE(std::equal(outputSpan.begin(), outputSpan.end(), inputSpan.begin(), inputSpan.end()));
 }
 
 TEST(StringName, CStringReturnsNulTerminatedPointerToFirstElement)
 {
-    char const input[] = "string";
-    StringName s{input};
+    constexpr auto c_Input = osc::to_array("string");
+    StringName s{c_Input.data()};
 
-    nonstd::span<char const> inputSpan(input);
-    nonstd::span<StringName::value_type const> outputSpan{s.c_str(), std::size(input)};  // plus nul terminator
+    nonstd::span<char const> inputSpan(c_Input);
+    nonstd::span<StringName::value_type const> outputSpan{s.c_str(), std::size(c_Input)};  // plus nul terminator
 
     ASSERT_TRUE(std::equal(outputSpan.begin(), outputSpan.end(), inputSpan.begin(), inputSpan.end()));
 }
