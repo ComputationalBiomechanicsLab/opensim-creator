@@ -46,7 +46,7 @@ namespace osc::doc
         template<typename T>
         T to() const
         {
-            return operator T();
+            return this->operator T();
         }
 
         friend bool operator==(Variant const&, Variant const&);
