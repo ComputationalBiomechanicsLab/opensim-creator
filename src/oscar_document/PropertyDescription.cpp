@@ -11,9 +11,9 @@
 
 osc::doc::PropertyDescription::PropertyDescription(
     StringName const& name_,
-    Variant const& defaultValue_) :
+    Variant defaultValue_) :
     m_Name{name_},
-    m_DefaultValue{defaultValue_}
+    m_DefaultValue{std::move(defaultValue_)}
 {
     if (!IsValidIdentifier(m_Name))
     {

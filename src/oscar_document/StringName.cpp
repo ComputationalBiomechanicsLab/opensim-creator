@@ -23,7 +23,7 @@ namespace
     // pointers
     struct StringNameDataPtr final {
     public:
-        StringNameDataPtr(std::string_view value_) :
+        explicit StringNameDataPtr(std::string_view value_) :
             m_Ptr{std::make_unique<StringNameData>(value_)}
         {
         }
@@ -42,11 +42,6 @@ namespace
         {
             return *m_Ptr;
         }
-
-        operator std::string_view() const
-        {
-            return m_Ptr->value();
-        }
     private:
         std::unique_ptr<StringNameData> m_Ptr;
     };
@@ -58,6 +53,11 @@ namespace
         [[nodiscard]] auto operator()(std::string_view str) const noexcept -> uint64_t
         {
             return ankerl::unordered_dense::hash<std::string_view>{}(str);
+        }
+
+        [[nodiscard]] auto operator()(StringNameDataPtr const& ptr) const noexcept -> uint64_t
+        {
+            return ankerl::unordered_dense::hash<std::string_view>{}(ptr->value());
         }
     };
 
@@ -93,9 +93,9 @@ namespace
     }
 
     // edge-case for blank string (common)
-    osc::StringName const& GetCachedBlankStringData()
+    StringName const& GetCachedBlankStringData()
     {
-        static osc::StringName const s_BlankString{std::string_view{}};
+        static StringName const s_BlankString{std::string_view{}};
         return s_BlankString;
     }
 }

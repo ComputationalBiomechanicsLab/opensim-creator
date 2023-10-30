@@ -374,7 +374,7 @@ TEST(Variant, IntValueToFloatReturnsIntCastedToFloat)
 {
     for (int v : osc::to_array<int>({-10000, -1000, -1, 0, 1, 17, 23000}))
     {
-        float const expected = static_cast<float>(v);
+        auto const expected = static_cast<float>(v);
         ASSERT_EQ(Variant(v).to<float>(), expected);
     }
 }
@@ -407,7 +407,7 @@ TEST(Variant, IntValueToVec3CastsValueToFloatThenPlacesInAllSlots)
 {
     for (int v : osc::to_array<int>({ -12193, -1212, -738, -12, -1, 0, 1, 18, 1294, 1209849}))
     {
-        float const vf = static_cast<float>(v);
+        auto const vf = static_cast<float>(v);
         glm::vec3 const expected = {vf, vf, vf};
         ASSERT_EQ(Variant(v).to<glm::vec3>(), expected);
     }

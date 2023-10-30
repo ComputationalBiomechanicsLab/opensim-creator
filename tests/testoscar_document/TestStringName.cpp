@@ -1,5 +1,6 @@
 #include <oscar_document/StringName.hpp>
 
+#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <gtest/gtest.h>
@@ -14,8 +15,10 @@
 using osc::CStringView;
 using osc::StringName;
 
-constexpr char const c_LongStringToAvoidSSO[] = "somequitelongstringthatprobablyneedstobeheapallocatedsothatmemoryanalyzershaveabetterchance";
-constexpr char const c_AnotherStringToAvoidSSO[] = "somedifferencequitelongstringthatprobablyneedstobeheapallocatedbutwhoknows";
+constexpr auto c_LongStringToAvoidSSOData = osc::to_array("somequitelongstringthatprobablyneedstobeheapallocatedsothatmemoryanalyzershaveabetterchance");
+constexpr char const* const c_LongStringToAvoidSSO = c_LongStringToAvoidSSOData.data();
+constexpr auto c_AnotherStringToAvoidSSOData = osc::to_array("somedifferencequitelongstringthatprobablyneedstobeheapallocatedbutwhoknows");
+constexpr char const* const c_AnotherStringToAvoidSSO = c_AnotherStringToAvoidSSOData.data();
 
 TEST(StringName, CanBeDefaultConstructed)
 {
@@ -369,7 +372,7 @@ TEST(StringName, EmptyReturnsFalseForNonEmptyString)
 TEST(StringName, SizeReturnsExpectedValue)
 {
     StringName s{c_LongStringToAvoidSSO};
-    ASSERT_EQ(s.size(), std::size(c_LongStringToAvoidSSO)-1);  // minus nul
+    ASSERT_EQ(s.size(), c_LongStringToAvoidSSOData.size()-1);  // minus nul
 }
 
 TEST(StringName, SwapSwapsTheStringNamesContents)

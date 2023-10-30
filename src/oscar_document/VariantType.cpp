@@ -24,7 +24,7 @@ std::string osc::doc::to_string(VariantType v)
     });
     static_assert(std::tuple_size_v<decltype(s_Lut)> == osc::NumOptions<VariantType>());
 
-    auto const idx = std::underlying_type_t<VariantType>(v);
+    auto const idx = static_cast<std::underlying_type_t<VariantType>>(v);
     if (0 <= idx && idx < ssize(s_Lut))
     {
         return std::string{s_Lut[idx]};

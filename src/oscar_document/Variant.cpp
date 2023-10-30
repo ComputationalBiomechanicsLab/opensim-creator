@@ -206,7 +206,11 @@ osc::doc::Variant::operator glm::vec3() const
         [&rv](bool const& v) { rv = v ? glm::vec3{1.0f, 1.0f, 1.0f} : glm::vec3{}; },
         [&rv](Color const& v) { rv = {v.r, v.g, v.b}; },
         [&rv](float const& v) { rv = {v, v, v}; },
-        [&rv](int const& v) { float fv = static_cast<float>(v); rv = {fv, fv, fv}; },
+        [&rv](int const& v)
+        {
+            auto const fv = static_cast<float>(v);
+            rv = {fv, fv, fv};
+        },
         [&rv](std::string_view) { rv = glm::vec3{}; },
         [&rv](glm::vec3 const& v) { rv = v; },
     }, m_Data);

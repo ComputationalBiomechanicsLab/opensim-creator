@@ -54,8 +54,8 @@ namespace
         }
 
         // pathEnd is guaranteed to be a NUL terminator since C++11
-        char* pathBegin = &path[0];
-        char* pathEnd = &path[path.size()];
+        char* pathBegin = path.data();
+        char* pathEnd = path.data() + path.size();
 
         // helper: shift n chars starting at newStart+n such that, after,
         // newStart..end is equal to what newStart+n..end was before.
@@ -72,7 +72,7 @@ namespace
         //   code below needs to be able to detect the upcoming input
         //   pattern "..[/\0]"
         struct Lookahead { char a, b, c; };
-        auto getLookahead = [](char* start, char* end)
+        auto getLookahead = [](char const* start, char const* end)
         {
             return Lookahead
             {

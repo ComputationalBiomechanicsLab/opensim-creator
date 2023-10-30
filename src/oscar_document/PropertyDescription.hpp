@@ -10,7 +10,7 @@ namespace osc::doc
     public:
         PropertyDescription(
             StringName const& name_,
-            Variant const& defaultValue_
+            Variant defaultValue_
         );
 
         StringName const& getName() const

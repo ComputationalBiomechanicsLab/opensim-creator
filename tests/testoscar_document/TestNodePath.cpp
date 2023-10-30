@@ -15,7 +15,7 @@ namespace
 {
     std::vector<std::string> Slurp(osc::doc::NodePath const& np)
     {
-        return std::vector<std::string>(np.begin(), np.end());
+        return {np.begin(), np.end()};
     }
 }
 
