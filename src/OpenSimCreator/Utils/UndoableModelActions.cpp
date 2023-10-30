@@ -2000,10 +2000,87 @@ bool osc::ActionFitSphereToMesh(
 }
 
 bool osc::ActionFitEllipsoidToMesh(
-    UndoableModelStatePair&,
-    OpenSim::Mesh const&)
+    UndoableModelStatePair& model,
+    OpenSim::Mesh const& openSimMesh)
 {
-    return false;  // TODO
+    // do the shape fitting
+    Mesh mesh;
+    Ellipsoid ellipsoid;
+    try
+    {
+        mesh = ToOscMesh(model.getModel(), model.getState(), openSimMesh);
+        Transform t;
+        t.scale = ToVec3(openSimMesh.get_scale_factors());  // ensure fit is scaled the same as the mesh
+        mesh.transformVerts(t);
+        ellipsoid = FitEllipsoid(mesh);
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("error detected while trying to fit an ellipsoid to a mesh: %s", ex.what());
+        return false;
+    }
+
+    // create an equivalent OpenSim::Sphere for the shapefit and attach it to the
+    // mesh with an OpenSim::OffsetFrame (because shape fitting also figures out
+    // the ellipsoid's origin and orientation)
+    auto offsetFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+    offsetFrame->setName("ellipsoid_fit");
+    offsetFrame->connectSocket_parent(dynamic_cast<OpenSim::PhysicalFrame const&>(openSimMesh.getFrame()));
+
+    // compute transform for ellipsoid
+    {
+        // TODO:
+        SimTK::Mat33 m;
+        for (int column = 0; column < 3; ++column)
+        {
+            for (int row = 0; row < 3; ++row)
+            {
+                m[column][row] = static_cast<double>(ellipsoid.radiiDirections[column][row]);
+            }
+        }
+        SimTK::Transform const t{SimTK::Rotation{m}, ToSimTKVec3(ellipsoid.origin)};
+        offsetFrame->setOffsetTransform(t);
+    }
+
+    auto openSimEllipsoid = std::make_unique<OpenSim::Ellipsoid>(ellipsoid.radii[0], ellipsoid.radii[2], ellipsoid.radii[2]);
+    openSimEllipsoid->setName("ellipsoid");
+    openSimEllipsoid->connectSocket_frame(*offsetFrame);
+    openSimEllipsoid->upd_Appearance().set_color({0.0, 1.0, 0.0});
+    openSimEllipsoid->upd_Appearance().set_opacity(0.3);
+
+    // mutate the model and add the relevant components
+    OpenSim::ComponentPath const openSimMeshPath = osc::GetAbsolutePath(openSimMesh);
+    UID const oldVersion = model.getModelVersion();
+    try
+    {
+        OpenSim::Model& mutModel = model.updModel();
+        auto* const mutOpenSimMesh = FindComponentMut<OpenSim::Mesh>(mutModel, openSimMeshPath);
+        if (!mutOpenSimMesh)
+        {
+            model.setModelVersion(oldVersion);  // the provided path doesn't exist in the model
+            return false;
+        }
+
+        std::string const ellipsoidName = openSimEllipsoid->getName();
+        auto& pofRef = AddModelComponent(mutModel, std::move(offsetFrame));
+        auto& sphereRef = AttachGeometry(pofRef, std::move(openSimEllipsoid));
+
+        osc::FinalizeConnections(mutModel);
+        osc::InitializeModel(mutModel);
+        osc::InitializeState(mutModel);
+        model.setSelected(&sphereRef);
+
+        std::stringstream ss;
+        ss << "fitted ellipsoid" << ellipsoidName;
+        model.commit(std::move(ss).str());
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("error detected while trying to add a sphere fit to the OpenSim model: %s", ex.what());
+        return false;
+    }
+
+    return true;
 }
 
 bool osc::ActionFitPlaneToMesh(
