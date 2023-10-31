@@ -187,8 +187,10 @@ namespace
         {
             for (int col = 0; col < N; ++col)
             {
+                OSC_ASSERT(eigenVectors(row, col).imag() == 0.0);
                 repackedEigenVectors(row, col) = eigenVectors(row, col).real();
             }
+            OSC_ASSERT(eigenValues(row).imag() == 0.0);
             repackedEigenValues(row, row) = eigenValues(row).real();
         }
 
@@ -234,6 +236,17 @@ namespace
         }();
 
         return sorted;
+    }
+
+    // assuming `m` is an orthonormal matrix, ensures that the columns form
+    // the vectors of a right-handed system
+    void RightHandify(SimTK::Mat33& m)
+    {
+        SimTK::Vec3 const cp = SimTK::cross(m.col(0), m.col(1));
+        if (SimTK::dot(cp, m.col(2)) < 0.0)
+        {
+            m.col(2) = -m.col(2);
+        }
     }
 
     // solve systems of linear equations `Ax = B` for `x`
@@ -721,9 +734,13 @@ osc::Ellipsoid osc::FitEllipsoid(Mesh const& mesh)
         for (int i = 0; i < 3; ++i)
         {
             evecs.col(i) *= signs[i];
-            evals[i] *= signs[i];
+            evals.col(i) *= signs[i];
         }
     }
+
+    // OpenSimCreator modification: also ensure that the Eigen vectors form a _right handed_ coordinate
+    // system, because that's what SimTK etc. use
+    RightHandify(evecs);
 
     return Ellipsoid
     {
