@@ -59,6 +59,14 @@ namespace osc
         OpenSim::Mesh const&
     );
 
+    // as above, but also bakes the `OpenSim::Mesh`'s `scale_factors` into the mesh's
+    // vertex data
+    Mesh ToOscMeshBakeScaleFactors(
+        OpenSim::Model const&,
+        SimTK::State const&,
+        OpenSim::Mesh const&
+    );
+
     // returns the recommended scale factor for the given {model, state} pair
     float GetRecommendedScaleFactor(
         MeshCache&,

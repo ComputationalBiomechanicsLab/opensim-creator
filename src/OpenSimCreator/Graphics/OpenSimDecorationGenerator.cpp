@@ -1066,6 +1066,20 @@ osc::Mesh osc::ToOscMesh(
     return ToOscMesh(cache, model, state, mesh, opts, 1.0f);
 }
 
+osc::Mesh osc::ToOscMeshBakeScaleFactors(
+    OpenSim::Model const& model,
+    SimTK::State const& state,
+    OpenSim::Mesh const& mesh)
+{
+    Mesh rv = ToOscMesh(model, state, mesh);
+
+    Transform t;
+    t.scale = ToVec3(mesh.get_scale_factors());
+    rv.transformVerts(t);
+
+    return rv;
+}
+
 float osc::GetRecommendedScaleFactor(
     MeshCache& meshCache,
     OpenSim::Model const& model,
