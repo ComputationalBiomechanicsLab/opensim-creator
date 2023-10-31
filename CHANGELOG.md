@@ -8,6 +8,8 @@ All notable changes to this project will be documented here. The format is based
   actions in the mesh importer (thanks @emmccain-uva, #796)
 - The mesh importer now has an option to `Reorient > $axis > Along line between (select two elements)`, which is sometimes
   useful (esp. in conjunction with importing stations, #149) for defining joint/body frames (thanks @emmccain-uva, #797)
+- Right-clicking a mesh in the model editor now shows an `Export` menu, enabling re-exporting of the mesh w.r.t. a different
+  coordinate system (#799)
 - Internal: the codebase now contains shape-fitting algorithms for fitting a sphere, plane, or ellipsoid analytic geometry
   to mesh data. The algorithms were written to closely match the shape-fitting codebase that came with "P.Bishop et. al,
   How to Build a Dinosaur, doi:10.1017/pab.2020.46" (#798)

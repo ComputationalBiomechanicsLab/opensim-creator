@@ -1,8 +1,10 @@
 #include "BasicWidgets.hpp"
 
 #include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
+#include <OpenSimCreator/Bindings/SimTKMeshLoader.hpp>
 #include <OpenSimCreator/Graphics/CustomRenderingOptions.hpp>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
+#include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp>
 #include <OpenSimCreator/Graphics/ModelRendererParams.hpp>
 #include <OpenSimCreator/Graphics/MuscleDecorationStyle.hpp>
 #include <OpenSimCreator/Graphics/MuscleSizingStyle.hpp>
@@ -29,10 +31,13 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Point.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Formats/DAE.hpp>
+#include <oscar/Formats/OBJ.hpp>
+#include <oscar/Formats/STL.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Maths/Constants.hpp>
@@ -56,6 +61,7 @@
 #include <cstdio>
 #include <cstddef>
 #include <filesystem>
+#include <fstream>
 #include <map>
 #include <optional>
 #include <sstream>
@@ -183,6 +189,107 @@ namespace
         {
             ImGui::Text("(unknown value type)");
         }
+    }
+
+    osc::Transform CalcTransformWithRespectTo(
+        OpenSim::Mesh const& mesh,
+        OpenSim::Frame const& frame,
+        SimTK::State const& state)
+    {
+        osc::Transform rv = osc::ToTransform(mesh.getFrame().findTransformBetween(state, frame));
+        rv.scale = osc::ToVec3(mesh.get_scale_factors());
+        return rv;
+    }
+
+    void ActionReexportMeshOBJWithRespectTo(
+        OpenSim::Model const& model,
+        SimTK::State const& state,
+        OpenSim::Mesh const& openSimMesh,
+        OpenSim::Frame const& frame)
+    {
+        // prompt user for a save location
+        std::optional<std::filesystem::path> const maybeUserSaveLocation =
+            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
+        if (!maybeUserSaveLocation)
+        {
+            return;  // user didn't select a save location
+        }
+        std::filesystem::path const& userSaveLocation = *maybeUserSaveLocation;
+
+        // load raw mesh data into an osc mesh for processing
+        osc::Mesh oscMesh = osc::ToOscMesh(model, state, openSimMesh);
+
+        // bake transform into mesh data
+        oscMesh.transformVerts(CalcTransformWithRespectTo(openSimMesh, frame, state));
+
+        // write transformed mesh to output
+        std::ofstream outputFileStream
+        {
+            userSaveLocation,
+            std::ios_base::out | std::ios_base::trunc | std::ios_base::binary,
+        };
+        if (!outputFileStream)
+        {
+            std::string const error = osc::CurrentErrnoAsString();
+            osc::log::error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
+            return;
+        }
+
+        osc::AppMetadata const& appMetadata = osc::App::get().getMetadata();
+        osc::ObjMetadata const objMetadata
+        {
+            osc::CalcFullApplicationNameWithVersionAndBuild(appMetadata),
+        };
+
+        osc::WriteMeshAsObj(
+            outputFileStream,
+            oscMesh,
+            objMetadata,
+            osc::ObjWriterFlags::NoWriteNormals
+        );
+    }
+
+    void ActionReexportMeshSTLWithRespectTo(
+        OpenSim::Model const& model,
+        SimTK::State const& state,
+        OpenSim::Mesh const& openSimMesh,
+        OpenSim::Frame const& frame)
+    {
+        // prompt user for a save location
+        std::optional<std::filesystem::path> const maybeUserSaveLocation =
+            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
+        if (!maybeUserSaveLocation)
+        {
+            return;  // user didn't select a save location
+        }
+        std::filesystem::path const& userSaveLocation = *maybeUserSaveLocation;
+
+        // load raw mesh data into an osc mesh for processing
+        osc::Mesh oscMesh = osc::ToOscMesh(model, state, openSimMesh);
+
+        // bake transform into mesh data
+        oscMesh.transformVerts(CalcTransformWithRespectTo(openSimMesh, frame, state));
+
+        // write transformed mesh to output
+        std::ofstream outputFileStream
+        {
+            userSaveLocation,
+            std::ios_base::out | std::ios_base::trunc | std::ios_base::binary,
+        };
+        if (!outputFileStream)
+        {
+            std::string const error = osc::CurrentErrnoAsString();
+            osc::log::error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
+            return;
+        }
+
+        osc::AppMetadata const& appMetadata = osc::App::get().getMetadata();
+        osc::StlMetadata const stlMetadata
+        {
+            osc::CalcFullApplicationNameWithVersionAndBuild(appMetadata),
+        };
+
+        osc::WriteMeshAsStl(outputFileStream, oscMesh, stlMetadata);
     }
 }
 
@@ -1357,4 +1464,44 @@ void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
     }
     ImGui::PopStyleVar();
     osc::DrawTooltipIfItemHovered("Autoscale Scale Factor", "Try to autoscale the model's scale factor based on the current dimensions of the model");
+}
+
+void osc::DrawMeshExportContextMenuContent(
+    UndoableModelStatePair const& model,
+    OpenSim::Mesh const& mesh)
+{
+    ImGui::TextDisabled("Format:");
+    ImGui::Separator();
+
+    if (ImGui::BeginMenu(".obj"))
+    {
+        auto const onFrameMenuItemClicked = [&model, &mesh](OpenSim::Frame const& frame)
+        {
+            ActionReexportMeshOBJWithRespectTo(
+                model.getModel(),
+                model.getState(),
+                mesh,
+                frame
+            );
+        };
+
+        osc::DrawWithRespectToMenuContainingMenuItemPerFrame(model.getModel(), onFrameMenuItemClicked);
+        ImGui::EndMenu();
+    }
+
+    if (ImGui::BeginMenu(".stl"))
+    {
+        auto const onFrameMenuItemClicked = [model, &mesh](OpenSim::Frame const& frame)
+        {
+            ActionReexportMeshSTLWithRespectTo(
+                model.getModel(),
+                model.getState(),
+                mesh,
+                frame
+            );
+        };
+
+        osc::DrawWithRespectToMenuContainingMenuItemPerFrame(model.getModel(), onFrameMenuItemClicked);
+        ImGui::EndMenu();
+    }
 }

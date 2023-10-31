@@ -252,6 +252,12 @@ namespace
 
             ImGui::EndMenu();
         }
+
+        if (ImGui::BeginMenu("Export"))
+        {
+            osc::DrawMeshExportContextMenuContent(uim, mesh);
+            ImGui::EndMenu();
+        }
     }
 
     void DrawGeometryContextualActions(

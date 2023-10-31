@@ -30,6 +30,7 @@ namespace osc { class SimulationModelStatePair; }
 namespace OpenSim { class Component; }
 namespace OpenSim { class Frame; }
 namespace OpenSim { class Geometry; }
+namespace OpenSim { class Mesh; }
 namespace OpenSim { class Point; }
 namespace OpenSim { class Sphere; }
 namespace SimTK { class State; }
@@ -86,18 +87,17 @@ namespace osc
         OpenSim::Frame const&
     );
 
+    // calculate menus
     enum class CalculateMenuFlags {
         None,
         NoCalculatorIcon,
     };
-
     constexpr bool operator&(CalculateMenuFlags a, CalculateMenuFlags b) noexcept
     {
         auto const aV = static_cast<std::underlying_type_t<CalculateMenuFlags>>(a);
         auto const bV = static_cast<std::underlying_type_t<CalculateMenuFlags>>(b);
         return (aV & bV) != 0;
     }
-
     bool BeginCalculateMenu(
         CalculateMenuFlags = CalculateMenuFlags::None
     );
@@ -199,4 +199,10 @@ namespace osc
     void DrawToggleContactGeometryButton(UndoableModelStatePair&, IconCache&);
     void DrawAllDecorationToggleButtons(UndoableModelStatePair&, IconCache&);
     void DrawSceneScaleFactorEditorControls(UndoableModelStatePair&);
+
+    // mesh stuff
+    void DrawMeshExportContextMenuContent(
+        UndoableModelStatePair const&,
+        OpenSim::Mesh const&
+    );
 }
