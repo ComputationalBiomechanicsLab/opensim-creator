@@ -2038,7 +2038,7 @@ bool osc::ActionFitEllipsoidToMesh(
         offsetFrame->setOffsetTransform(t);
     }
 
-    auto openSimEllipsoid = std::make_unique<OpenSim::Ellipsoid>(std::abs(ellipsoid.radii[0]), std::abs(ellipsoid.radii[1]), std::abs(ellipsoid.radii[2]));
+    auto openSimEllipsoid = std::make_unique<OpenSim::Ellipsoid>(ellipsoid.radii[0], ellipsoid.radii[1], ellipsoid.radii[2]);
     openSimEllipsoid->setName("ellipsoid");
     openSimEllipsoid->connectSocket_frame(*offsetFrame);
     openSimEllipsoid->upd_Appearance().set_color({0.0, 1.0, 0.0});

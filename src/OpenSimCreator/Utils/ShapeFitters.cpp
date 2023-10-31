@@ -432,7 +432,7 @@ namespace
     }
 
     // calculates the center of the ellipsoid (see original MATLAB code)
-    SimTK::Vec3 CalcEllipsoidCenter(
+    SimTK::Vec3 CalcEllipsoidOrigin(
         SimTK::Mat44 const& A,
         std::array<double, 10> const& v)
     {
@@ -453,7 +453,7 @@ namespace
         rhs(2) = v[8];
         SimTK::Vector const center = SolveLinearLeastSquares(-topLeft, rhs);
 
-        // pack return value
+        // pack return value into a Vec3
         OSC_ASSERT(center.size() == 3);
         return SimTK::Vec3{center(0), center(1), center(2)};
     }
@@ -700,21 +700,35 @@ osc::Ellipsoid osc::FitEllipsoid(Mesh const& mesh)
     // but that doesn't mention using eigen analysis, which I imagine Yury is using
     // as a form of PCA?
 
-    std::vector<glm::vec3> const vertices = GetAllIndexedVerts(mesh);
-
-    auto const u = SolveEllipsoidAlgebraicForm(vertices);
+    std::vector<glm::vec3> const meshVertices = GetAllIndexedVerts(mesh);
+    auto const u = SolveEllipsoidAlgebraicForm(meshVertices);
     auto const v = SolveV(u);
     auto const A = CalcA(v);  // form the algebraic form of the ellipsoid
-    auto const center = CalcEllipsoidCenter(A, v);
-    auto const [evecs, evals] = SolveEigenProblem(A, center);
-    SimTK::Vec3 const sgns = Sign(Diag(evals));
-    SimTK::Vec3 radii = SimTK::sqrt(Reciporical(Diag(SimTK::abs(evals))));
-    radii = Multiply(radii, sgns);
+
+    // solve for ellipsoid origin
+    auto const ellipsoidOrigin = CalcEllipsoidOrigin(A, v);
+
+    // use Eigenanalysis to solve for the ellipsoid's radii and and frame
+    auto [evecs, evals] = SolveEigenProblem(A, ellipsoidOrigin);
+
+    // OpenSimCreator modification (this is slightly different behavior from "How to Build a Dinosaur"'s MATLAB code)
+    //
+    // the original code allows negative radii to come out of the algorithm, but
+    // OSC's implementation ensures radii are always positive by negating the
+    // corresponding Eigenvector
+    {
+        SimTK::Vec3 const signs = Sign(Diag(evals));
+        for (int i = 0; i < 3; ++i)
+        {
+            evecs.col(i) *= signs[i];
+            evals[i] *= signs[i];
+        }
+    }
 
     return Ellipsoid
     {
-        ToVec3(center),
-        ToVec3(radii),
-        {-ToVec3(evecs.col(0)), -ToVec3(evecs.col(1)), -ToVec3(evecs.col(2))},
+        ToVec3(ellipsoidOrigin),
+        ToVec3(SimTK::sqrt(Reciporical(Diag(evals)))),
+        {ToVec3(evecs.col(0)), ToVec3(evecs.col(1)), ToVec3(evecs.col(2))},
     };
 }
