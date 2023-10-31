@@ -66,6 +66,10 @@ namespace osc
 
     private:
         friend bool operator==(OpenSimDecorationOptions const&, OpenSimDecorationOptions const&) noexcept;
+        friend bool operator!=(OpenSimDecorationOptions const& lhs, OpenSimDecorationOptions const& rhs) noexcept
+        {
+            return !(lhs == rhs);
+        }
 
         MuscleDecorationStyle m_MuscleDecorationStyle;
         MuscleColoringStyle m_MuscleColoringStyle;
@@ -74,9 +78,4 @@ namespace osc
     };
 
     bool operator==(OpenSimDecorationOptions const&, OpenSimDecorationOptions const&) noexcept;
-
-    inline bool operator!=(OpenSimDecorationOptions const& a, OpenSimDecorationOptions const& b)
-    {
-        return !(a == b);
-    }
 }

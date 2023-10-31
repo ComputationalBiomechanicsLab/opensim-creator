@@ -28,8 +28,11 @@ namespace osc { class VirtualModelStatePair; }
 namespace osc { class VirtualOutputExtractor; }
 namespace osc { class SimulationModelStatePair; }
 namespace OpenSim { class Component; }
-namespace OpenSim { class Point; }
 namespace OpenSim { class Frame; }
+namespace OpenSim { class Geometry; }
+namespace OpenSim { class Mesh; }
+namespace OpenSim { class Point; }
+namespace OpenSim { class Sphere; }
 namespace SimTK { class State; }
 
 namespace osc
@@ -84,28 +87,63 @@ namespace osc
         OpenSim::Frame const&
     );
 
+    // calculate menus
     enum class CalculateMenuFlags {
         None,
         NoCalculatorIcon,
     };
-
     constexpr bool operator&(CalculateMenuFlags a, CalculateMenuFlags b) noexcept
     {
         auto const aV = static_cast<std::underlying_type_t<CalculateMenuFlags>>(a);
         auto const bV = static_cast<std::underlying_type_t<CalculateMenuFlags>>(b);
         return (aV & bV) != 0;
     }
-
+    bool BeginCalculateMenu(
+        CalculateMenuFlags = CalculateMenuFlags::None
+    );
+    void EndCalculateMenu(
+    );
+    void DrawCalculatePositionMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Point const&
+    );
     void DrawCalculateMenu(
         OpenSim::Component const& root,
         SimTK::State const&,
         OpenSim::Point const&,
         CalculateMenuFlags = CalculateMenuFlags::None
     );
+    void DrawCalculateTransformMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Frame const&
+    );
+    void DrawCalculateOriginMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Sphere const&
+    );
+    void DrawCalculateRadiusMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Sphere const&
+    );
+    void DrawCalculateVolumeMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Sphere const&
+    );
     void DrawCalculateMenu(
         OpenSim::Component const& root,
         SimTK::State const&,
         OpenSim::Frame const&,
+        CalculateMenuFlags = CalculateMenuFlags::None
+    );
+    void DrawCalculateMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Geometry const&,
         CalculateMenuFlags = CalculateMenuFlags::None
     );
     void TryDrawCalculateMenu(
@@ -161,4 +199,10 @@ namespace osc
     void DrawToggleContactGeometryButton(UndoableModelStatePair&, IconCache&);
     void DrawAllDecorationToggleButtons(UndoableModelStatePair&, IconCache&);
     void DrawSceneScaleFactorEditorControls(UndoableModelStatePair&);
+
+    // mesh stuff
+    void DrawMeshExportContextMenuContent(
+        UndoableModelStatePair const&,
+        OpenSim::Mesh const&
+    );
 }

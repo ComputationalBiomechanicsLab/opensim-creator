@@ -41,25 +41,25 @@ namespace
         {
         }
 
+        friend bool operator==(PopupParams const& lhs, PopupParams const& rhs)
+        {
+            return
+                lhs.modelVersion == rhs.modelVersion &&
+                lhs.componentPath == rhs.componentPath &&
+                lhs.socketName == rhs.socketName &&
+                lhs.search == rhs.search;
+        }
+
+        friend bool operator!=(PopupParams const& lhs, PopupParams const& rhs)
+        {
+            return !(lhs == rhs);
+        }
+
         osc::UID modelVersion;
         OpenSim::ComponentPath componentPath;
         std::string socketName;
         std::string search;
     };
-
-    bool operator==(PopupParams const& a, PopupParams const& b)
-    {
-        return
-            a.modelVersion == b.modelVersion &&
-            a.componentPath == b.componentPath &&
-            a.socketName == b.socketName &&
-            a.search == b.search;
-    }
-
-    bool operator!=(PopupParams const& a, PopupParams const& b)
-    {
-        return !(a == b);
-    }
 
     // a single user-selectable connectee option
     struct ConnecteeOption final {

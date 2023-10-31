@@ -11,7 +11,7 @@ namespace osc
         glm::vec3 max;
     };
 
-    std::ostream& operator<<(std::ostream&, AABB const&);
     bool operator==(AABB const&, AABB const&) noexcept;
     bool operator!=(AABB const&, AABB const&) noexcept;
+    std::ostream& operator<<(std::ostream&, AABB const&);
 }

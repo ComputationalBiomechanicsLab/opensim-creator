@@ -30,16 +30,6 @@ namespace
     }
 }
 
-bool osc::operator==(LandmarkPair3D const& a, LandmarkPair3D const& b) noexcept
-{
-    return a.source == b.source && a.destination == b.destination;
-}
-
-bool osc::operator!=(LandmarkPair3D const& a, LandmarkPair3D const& b) noexcept
-{
-    return !(a == b);
-}
-
 std::ostream& osc::operator<<(std::ostream& o, LandmarkPair3D const& p)
 {
     using osc::operator<<;
@@ -47,14 +37,14 @@ std::ostream& osc::operator<<(std::ostream& o, LandmarkPair3D const& p)
     return o;
 }
 
-bool osc::operator==(TPSCoefficientSolverInputs3D const& a, TPSCoefficientSolverInputs3D const& b) noexcept
+bool osc::operator==(TPSCoefficientSolverInputs3D const& lhs, TPSCoefficientSolverInputs3D const& rhs) noexcept
 {
-    return a.landmarks == b.landmarks && a.blendingFactor == b.blendingFactor;
+    return lhs.landmarks == rhs.landmarks && lhs.blendingFactor == rhs.blendingFactor;
 }
 
-bool osc::operator!=(TPSCoefficientSolverInputs3D const& a, TPSCoefficientSolverInputs3D const& b) noexcept
+bool osc::operator!=(TPSCoefficientSolverInputs3D const& lhs, TPSCoefficientSolverInputs3D const& rhs) noexcept
 {
-    return !(a == b);
+    return !(lhs == rhs);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, TPSCoefficientSolverInputs3D const& inputs)
@@ -70,35 +60,25 @@ std::ostream& osc::operator<<(std::ostream& o, TPSCoefficientSolverInputs3D cons
     return o;
 }
 
-bool osc::operator==(TPSNonAffineTerm3D const& a, TPSNonAffineTerm3D const& b) noexcept
-{
-    return a.weight == b.weight && a.controlPoint == b.controlPoint;
-}
-
-bool osc::operator!=(TPSNonAffineTerm3D const& a, TPSNonAffineTerm3D const& b) noexcept
-{
-    return !(a == b);
-}
-
 std::ostream& osc::operator<<(std::ostream& o, TPSNonAffineTerm3D const& wt)
 {
     using osc::operator<<;
     return o << "TPSNonAffineTerm3D{Weight = " << wt.weight << ", ControlPoint = " << wt.controlPoint << '}';
 }
 
-bool osc::operator==(TPSCoefficients3D const& a, TPSCoefficients3D const& b) noexcept
+bool osc::operator==(TPSCoefficients3D const& lhs, TPSCoefficients3D const& rhs) noexcept
 {
     return
-        a.a1 == b.a1 &&
-        a.a2 == b.a2 &&
-        a.a3 == b.a3 &&
-        a.a4 == b.a4 &&
-        a.nonAffineTerms == b.nonAffineTerms;
+        lhs.a1 == rhs.a1 &&
+        lhs.a2 == rhs.a2 &&
+        lhs.a3 == rhs.a3 &&
+        lhs.a4 == rhs.a4 &&
+        lhs.nonAffineTerms == rhs.nonAffineTerms;
 }
 
-bool osc::operator!=(TPSCoefficients3D const& a, TPSCoefficients3D const& b) noexcept
+bool osc::operator!=(TPSCoefficients3D const& lhs, TPSCoefficients3D const& rhs) noexcept
 {
-    return !(a == b);
+    return !(lhs == rhs);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, TPSCoefficients3D const& coefs)

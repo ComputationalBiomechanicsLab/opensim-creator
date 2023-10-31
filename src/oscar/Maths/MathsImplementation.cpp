@@ -52,14 +52,14 @@ std::ostream& osc::operator<<(std::ostream& o, AABB const& aabb)
     return o << "AABB(min = " << aabb.min << ", max = " << aabb.max << ')';
 }
 
-bool osc::operator==(AABB const& a, AABB const& b) noexcept
+bool osc::operator==(AABB const& lhs, AABB const& rhs) noexcept
 {
-    return a.min == b.min && a.max == b.max;
+    return lhs.min == rhs.min && lhs.max == rhs.max;
 }
 
-bool osc::operator!=(AABB const& a, AABB const& b) noexcept
+bool osc::operator!=(AABB const& lhs, AABB const& rhs) noexcept
 {
-    return !(a == b);
+    return !(lhs == rhs);
 }
 
 
@@ -675,21 +675,21 @@ osc::Line osc::PolarPerspectiveCamera::unprojectTopLeftPosToWorldRay(glm::vec2 p
     );
 }
 
-bool osc::operator==(PolarPerspectiveCamera const& a, PolarPerspectiveCamera const& b) noexcept
+bool osc::operator==(PolarPerspectiveCamera const& lhs, PolarPerspectiveCamera const& rhs) noexcept
 {
     return
-        a.radius == b.radius &&
-        a.theta == b.theta &&
-        a.phi == b.phi &&
-        a.focusPoint == b.focusPoint &&
-        a.fov == b.fov &&
-        a.znear == b.znear &&
-        a.zfar == b.zfar;
+        lhs.radius == rhs.radius &&
+        lhs.theta == rhs.theta &&
+        lhs.phi == rhs.phi &&
+        lhs.focusPoint == rhs.focusPoint &&
+        lhs.fov == rhs.fov &&
+        lhs.znear == rhs.znear &&
+        lhs.zfar == rhs.zfar;
 }
 
-bool osc::operator!=(PolarPerspectiveCamera const& a, PolarPerspectiveCamera const& b) noexcept
+bool osc::operator!=(PolarPerspectiveCamera const& lhs, PolarPerspectiveCamera const& rhs) noexcept
 {
-    return !(a == b);
+    return !(lhs == rhs);
 }
 
 osc::PolarPerspectiveCamera osc::CreateCameraWithRadius(float r)
@@ -804,14 +804,14 @@ std::ostream& osc::operator<<(std::ostream& o, Rect const& r)
     return o << "Rect(p1 = " << r.p1 << ", p2 = " << r.p2 << ")";
 }
 
-bool osc::operator==(Rect const& a, Rect const& b) noexcept
+bool osc::operator==(Rect const& lhs, Rect const& rhs) noexcept
 {
-    return a.p1 == b.p1 && a.p2 == b.p2;
+    return lhs.p1 == rhs.p1 && lhs.p2 == rhs.p2;
 }
 
-bool osc::operator!=(Rect const& a, Rect const& b) noexcept
+bool osc::operator!=(Rect const& lhs, Rect const& rhs) noexcept
 {
-    return !(a == b);
+    return !(lhs == rhs);
 }
 
 
@@ -867,12 +867,12 @@ std::ostream& osc::operator<<(std::ostream& o, Transform const& t)
     return o << "Transform(position = " << t.position << ", rotation = " << t.rotation << ", scale = " << t.scale << ')';
 }
 
-bool osc::operator==(osc::Transform const& a, osc::Transform const& b) noexcept
+bool osc::operator==(osc::Transform const& lhs, osc::Transform const& rhs) noexcept
 {
     return
-        a.scale == b.scale &&
-        a.rotation == b.rotation &&
-        a.position == b.position;
+        lhs.scale == rhs.scale &&
+        lhs.rotation == rhs.rotation &&
+        lhs.position == rhs.position;
 }
 
 glm::vec3 osc::operator*(Transform const& t, glm::vec3 const& p) noexcept
@@ -1027,6 +1027,22 @@ namespace
 
         return osc::RayCollision{t0, l.origin + t0*l.dir};
     }
+
+    template<typename TReal>
+    bool IsEqualWithinRelativeError(TReal a , TReal b, TReal relativeError) noexcept
+    {
+        // inspired from:
+        //
+        // - https://stackoverflow.com/questions/17333/what-is-the-most-effective-way-for-float-and-double-comparison
+        //
+        // but, specifically, you should read the section `Epsilon comparisons` here:
+        //
+        // - https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+
+        auto const difference = std::abs(a - b);
+        auto const permittedAbsoluteError = relativeError * std::max(std::abs(a), std::abs(b));
+        return difference <= permittedAbsoluteError;
+    }
 }
 
 
@@ -1062,19 +1078,14 @@ bool osc::IsLessThanOrEffectivelyEqual(double a, double b) noexcept
     }
 }
 
+bool osc::IsEqualWithinRelativeError(double a , double b, double relativeError) noexcept
+{
+    return ::IsEqualWithinRelativeError<double>(a, b, relativeError);
+}
+
 bool osc::IsEqualWithinRelativeError(float a, float b, float relativeError) noexcept
 {
-    // inspired from:
-    //
-    // - https://stackoverflow.com/questions/17333/what-is-the-most-effective-way-for-float-and-double-comparison
-    //
-    // but, specifically, you should read the section `Epsilon comparisons` here:
-    //
-    // - https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
-
-    auto const difference = std::abs(a - b);
-    auto const permittedAbsoluteError = relativeError * std::max(std::abs(a), std::abs(b));
-    return difference <= permittedAbsoluteError;
+    return ::IsEqualWithinRelativeError<float>(a, b, relativeError);
 }
 
 bool osc::IsEqualWithinRelativeError(glm::vec3 const& a, glm::vec3 const& b, float relativeError) noexcept

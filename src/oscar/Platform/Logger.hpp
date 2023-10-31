@@ -61,7 +61,7 @@ namespace osc
             // sink it
             for (auto& sink : m_Sinks)
             {
-                if (sink->should_log(view.level))
+                if (sink->shouldLog(view.level))
                 {
                     sink->log(view);
                 }

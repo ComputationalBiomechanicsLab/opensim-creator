@@ -332,7 +332,7 @@ private:
 
     void renderLightCubes()
     {
-        OSC_THROWING_ASSERT(m_LightPositions.size() == m_LightColors.size());
+        OSC_ASSERT(m_LightPositions.size() == m_LightColors.size());
 
         Transform transform;
         transform.scale = glm::vec3{0.125f};

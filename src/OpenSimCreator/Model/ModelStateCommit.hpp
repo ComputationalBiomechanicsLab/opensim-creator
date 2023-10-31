@@ -35,15 +35,12 @@ namespace osc
         UID getModelVersion() const;
         float getFixupScaleFactor() const;
 
+        friend bool operator==(ModelStateCommit const& lhs, ModelStateCommit const& rhs)
+        {
+            return lhs.m_Impl == rhs.m_Impl;
+        }
     private:
-        friend bool operator==(ModelStateCommit const& a, ModelStateCommit const& b);
-
         class Impl;
         std::shared_ptr<Impl const> m_Impl;
     };
-
-    inline bool operator==(ModelStateCommit const& a, ModelStateCommit const& b)
-    {
-        return a.m_Impl == b.m_Impl;
-    }
 }

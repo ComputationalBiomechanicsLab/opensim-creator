@@ -2,9 +2,7 @@
 
 #include <oscar/Utils/CStringView.hpp>
 
-#include <algorithm>
 #include <cstddef>
-#include <cstdint>
 #include <optional>
 #include <string_view>
 #include <type_traits>

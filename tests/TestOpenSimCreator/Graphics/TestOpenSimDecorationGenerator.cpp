@@ -177,3 +177,43 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorDoesNotScaleE
         ASSERT_TRUE(osc::IsEqualWithinRelativeError(unscaledDec.transform.scale, scaledDec.transform.scale, 0.0001f));
     }
 }
+
+TEST(OpenSimDecorationGenerator, ToOscMeshWorksAsIntended)
+{
+    std::filesystem::path const arrowPath = std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "TestOpenSimCreator" / "arrow.vtp";
+
+    OpenSim::Model model;
+    auto& mesh = osc::AddComponent(model, std::make_unique<OpenSim::Mesh>(arrowPath.string()));
+    mesh.setFrame(model.getGround());
+    osc::InitializeModel(model);
+    osc::InitializeState(model);
+    ASSERT_NO_THROW({ osc::ToOscMesh(model, model.getWorkingState(), mesh); });
+}
+
+// generate decorations should only generate decorations for the provided model's
+// _subcomponents_, because the model itself will effectively double-generate
+// everything and label it with 'model
+TEST(OpenSimDecorationGenerator, DoesntIncludeTheModelsDirectDecorations)
+{
+    std::filesystem::path const tugOfWarPath = std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "resources" / "models" / "Tug_of_War" / "Tug_of_War.osim";
+    OpenSim::Model model{tugOfWarPath.string()};
+    osc::InitializeModel(model);
+    osc::InitializeState(model);
+    osc::MeshCache meshCache;
+    osc::OpenSimDecorationOptions opts;
+
+    bool empty = true;
+    osc::GenerateModelDecorations(
+        meshCache,
+        model,
+        model.getWorkingState(),
+        opts,
+        1.0f,
+        [&model, &empty](OpenSim::Component const& c, osc::SceneDecoration&&)
+        {
+            ASSERT_NE(&c, &model);
+            empty = false;
+        }
+    );
+    ASSERT_FALSE(empty);
+}

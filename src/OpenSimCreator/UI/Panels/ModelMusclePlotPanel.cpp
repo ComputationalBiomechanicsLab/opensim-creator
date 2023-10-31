@@ -82,30 +82,25 @@ namespace
             return m_Getter(st, muscle, c);
         }
 
-    private:
-        friend bool operator<(MuscleOutput const&, MuscleOutput const&);
-        friend bool operator==(MuscleOutput const&, MuscleOutput const&);
-        friend bool operator!=(MuscleOutput const&, MuscleOutput const&);
+        friend bool operator<(MuscleOutput const& lhs, MuscleOutput const& rhs)
+        {
+            return lhs.m_Name < rhs.m_Name;
+        }
 
+        friend bool operator==(MuscleOutput const& lhs, MuscleOutput const& rhs)
+        {
+            return lhs.m_Name == rhs.m_Name && lhs.m_Units == rhs.m_Units && lhs.m_Getter == rhs.m_Getter;
+        }
+
+        friend bool operator!=(MuscleOutput const& lhs, MuscleOutput const& rhs)
+        {
+            return !(lhs == rhs);
+        }
+    private:
         osc::CStringView m_Name;
         osc::CStringView m_Units;
         double(*m_Getter)(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const& c);
     };
-
-    bool operator<(MuscleOutput const& a, MuscleOutput const& b)
-    {
-        return a.m_Name < b.m_Name;
-    }
-
-    bool operator==(MuscleOutput const& a, MuscleOutput const& b)
-    {
-        return a.m_Name == b.m_Name && a.m_Units == b.m_Units && a.m_Getter == b.m_Getter;
-    }
-
-    bool operator!=(MuscleOutput const& a, MuscleOutput const& b)
-    {
-        return !(a == b);
-    }
 
     double GetMomentArm(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const& c)
     {
@@ -325,31 +320,27 @@ namespace
             m_RequestedNumDataPoints = v;
         }
 
-    private:
-        friend bool operator==(PlotParameters const&, PlotParameters const&);
-        friend bool operator!=(PlotParameters const&, PlotParameters const&);
+        friend bool operator==(PlotParameters const& lhs, PlotParameters const& rhs)
+        {
+            return
+                lhs.m_Commit == rhs.m_Commit &&
+                lhs.m_CoordinatePath == rhs.m_CoordinatePath &&
+                lhs.m_MusclePath == rhs.m_MusclePath &&
+                lhs.m_Output == rhs.m_Output &&
+                lhs.m_RequestedNumDataPoints == rhs.m_RequestedNumDataPoints;
+        }
 
+        friend bool operator!=(PlotParameters const& lhs, PlotParameters const& rhs)
+        {
+            return !(lhs == rhs);
+        }
+    private:
         osc::ModelStateCommit m_Commit;
         OpenSim::ComponentPath m_CoordinatePath;
         OpenSim::ComponentPath m_MusclePath;
         MuscleOutput m_Output;
         int m_RequestedNumDataPoints;
     };
-
-    bool operator==(PlotParameters const& a, PlotParameters const& b)
-    {
-        return
-            a.m_Commit == b.m_Commit &&
-            a.m_CoordinatePath == b.m_CoordinatePath &&
-            a.m_MusclePath == b.m_MusclePath &&
-            a.m_Output == b.m_Output &&
-            a.m_RequestedNumDataPoints == b.m_RequestedNumDataPoints;
-    }
-
-    bool operator!=(PlotParameters const& a, PlotParameters const& b)
-    {
-        return !(a == b);
-    }
 
     double GetFirstXValue(PlotParameters const&, OpenSim::Coordinate const& c)
     {

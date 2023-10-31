@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
@@ -522,4 +523,24 @@ TEST(OpenSimModel, DISABLED_ReFinalizingAnEvenSimplerModelWithUnusualJointTopolo
     {
         model.finalizeConnections();  // this throws (shouldn't?)
     }
+}
+
+// random check: it screwed me over that `getComponentList` does not include the
+// component being called
+TEST(OpenSimModel, MeshGetComponentListDoesNotIterate)
+{
+    OpenSim::Model model;
+    auto& mesh = osc::AddComponent(model, std::make_unique<OpenSim::Mesh>());
+    mesh.setFrame(model.getGround());
+    osc::InitializeModel(model);
+    osc::InitializeState(model);
+
+    ASSERT_EQ(mesh.countNumComponents(), 0);
+
+    int n = 0;
+    for ([[maybe_unused]] auto const& component : mesh.getComponentList())
+    {
+        ++n;
+    }
+    ASSERT_EQ(n, 0);
 }

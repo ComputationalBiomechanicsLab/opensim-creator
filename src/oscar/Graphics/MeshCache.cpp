@@ -26,26 +26,23 @@ namespace
         {
         }
 
+        friend bool operator==(TorusParameters const& lhs, TorusParameters const& rhs) noexcept
+        {
+            return lhs.torusCenterToTubeCenterRadius == rhs.torusCenterToTubeCenterRadius && lhs.tubeRadius == rhs.tubeRadius;
+        }
+
         float torusCenterToTubeCenterRadius;
         float tubeRadius;
     };
+}
 
-    bool operator==(TorusParameters const& a, TorusParameters const& b) noexcept
+template<>
+struct std::hash<TorusParameters> final {
+    size_t operator()(TorusParameters const& p) const noexcept
     {
-        return a.torusCenterToTubeCenterRadius == b.torusCenterToTubeCenterRadius && a.tubeRadius == b.tubeRadius;
+        return osc::HashOf(p.torusCenterToTubeCenterRadius, p.tubeRadius);
     }
-}
-
-namespace std
-{
-    template<>
-    struct hash<TorusParameters> final {
-        size_t operator()(TorusParameters const& p) const noexcept
-        {
-            return osc::HashOf(p.torusCenterToTubeCenterRadius, p.tubeRadius);
-        }
-    };
-}
+};
 
 class osc::MeshCache::Impl final {
 public:

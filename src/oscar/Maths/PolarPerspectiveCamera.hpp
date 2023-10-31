@@ -59,7 +59,6 @@ namespace osc
         float znear;
         float zfar;
     };
-
     bool operator==(PolarPerspectiveCamera const&, PolarPerspectiveCamera const&) noexcept;
     bool operator!=(PolarPerspectiveCamera const&, PolarPerspectiveCamera const&) noexcept;
 

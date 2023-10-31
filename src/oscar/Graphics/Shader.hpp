@@ -43,25 +43,23 @@ namespace osc
             swap(a.m_Impl, b.m_Impl);
         }
 
+        friend bool operator==(Shader const& lhs, Shader const& rhs) noexcept
+        {
+            return lhs.m_Impl == rhs.m_Impl;
+        }
+
+        friend bool operator!=(Shader const& lhs, Shader const& rhs) noexcept
+        {
+            return lhs.m_Impl != rhs.m_Impl;
+        }
+
     private:
-        friend class GraphicsBackend;
-        friend bool operator==(Shader const&, Shader const&) noexcept;
-        friend bool operator!=(Shader const&, Shader const&) noexcept;
         friend std::ostream& operator<<(std::ostream&, Shader const&);
+        friend class GraphicsBackend;
 
         class Impl;
         CopyOnUpdPtr<Impl> m_Impl;
     };
-
-    inline bool operator==(Shader const& a, Shader const& b) noexcept
-    {
-        return a.m_Impl == b.m_Impl;
-    }
-
-    inline bool operator!=(Shader const& a, Shader const& b) noexcept
-    {
-        return a.m_Impl != b.m_Impl;
-    }
 
     std::ostream& operator<<(std::ostream&, Shader const&);
 }

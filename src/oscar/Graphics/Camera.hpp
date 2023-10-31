@@ -129,10 +129,10 @@ namespace osc
         }
 
     private:
-        friend class GraphicsBackend;
         friend bool operator==(Camera const&, Camera const&);
         friend bool operator!=(Camera const&, Camera const&);
         friend std::ostream& operator<<(std::ostream&, Camera const&);
+        friend class GraphicsBackend;
 
         class Impl;
         CopyOnUpdPtr<Impl> m_Impl;

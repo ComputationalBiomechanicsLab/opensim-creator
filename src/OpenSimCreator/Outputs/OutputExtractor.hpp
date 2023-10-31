@@ -6,7 +6,6 @@
 #include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>
-#include <functional>
 #include <iosfwd>
 #include <memory>
 #include <string>
@@ -79,36 +78,30 @@ namespace osc
             return *m_Output;
         }
 
+        friend bool operator==(OutputExtractor const& lhs, OutputExtractor const& rhs)
+        {
+            return *lhs.m_Output == *rhs.m_Output;
+        }
+
+        friend bool operator!=(OutputExtractor const& lhs, OutputExtractor const& rhs)
+        {
+            return *lhs.m_Output != *rhs.m_Output;
+        }
     private:
-        friend bool operator==(OutputExtractor const&, OutputExtractor const&);
-        friend bool operator!=(OutputExtractor const&, OutputExtractor const&);
         friend std::string to_string(OutputExtractor const&);
         friend struct std::hash<OutputExtractor>;
 
         std::shared_ptr<VirtualOutputExtractor> m_Output;
     };
 
-    inline bool operator==(OutputExtractor const& a, OutputExtractor const& b)
-    {
-        return *a.m_Output == *b.m_Output;
-    }
-
-    inline bool operator!=(OutputExtractor const& a, OutputExtractor const& b)
-    {
-        return *a.m_Output != *b.m_Output;
-    }
-
     std::ostream& operator<<(std::ostream&, OutputExtractor const&);
     std::string to_string(OutputExtractor const&);
 }
 
-namespace std
-{
-    template<>
-    struct hash<osc::OutputExtractor> {
-        std::size_t operator()(osc::OutputExtractor const& o) const
-        {
-            return o.m_Output->getHash();
-        }
-    };
-}
+template<>
+struct std::hash<osc::OutputExtractor> final {
+    size_t operator()(osc::OutputExtractor const& o) const
+    {
+        return o.m_Output->getHash();
+    }
+};

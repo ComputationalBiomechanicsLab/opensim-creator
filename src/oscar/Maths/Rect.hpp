@@ -10,10 +10,7 @@ namespace osc
         glm::vec2 p1;
         glm::vec2 p2;
     };
-
-    // prints a human-readable representation of the Rect to the stream
-    std::ostream& operator<<(std::ostream&, Rect const&);
-
     bool operator==(Rect const&, Rect const&) noexcept;
     bool operator!=(Rect const&, Rect const&) noexcept;
+    std::ostream& operator<<(std::ostream&, Rect const&);
 }

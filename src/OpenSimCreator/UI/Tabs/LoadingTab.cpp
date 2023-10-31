@@ -15,7 +15,6 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/UI/Tabs/TabHost.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
-#include <SDL_events.h>
 
 #include <chrono>
 #include <exception>

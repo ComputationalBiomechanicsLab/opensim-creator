@@ -85,29 +85,27 @@ namespace osc
             swap(a.m_Impl, b.m_Impl);
         }
 
+        friend bool operator==(Texture2D const& lhs, Texture2D const& rhs) noexcept
+        {
+            return lhs.m_Impl == rhs.m_Impl;
+        }
+
+        friend bool operator!=(Texture2D const& lhs, Texture2D const& rhs) noexcept
+        {
+            return lhs.m_Impl != rhs.m_Impl;
+        }
+
     private:
+        friend std::ostream& operator<<(std::ostream&, Texture2D const&);
         friend void DrawTextureAsImGuiImage(Texture2D const&, glm::vec2, glm::vec2, glm::vec2);
         friend bool ImageButton(CStringView label, Texture2D const& t, glm::vec2, Rect const&);
         void* getTextureHandleHACK() const;  // used by ImGui... for now
 
         friend class GraphicsBackend;
-        friend bool operator==(Texture2D const&, Texture2D const&) noexcept;
-        friend bool operator!=(Texture2D const&, Texture2D const&) noexcept;
-        friend std::ostream& operator<<(std::ostream&, Texture2D const&);
 
         class Impl;
         CopyOnUpdPtr<Impl> m_Impl;
     };
-
-    inline bool operator==(Texture2D const& a, Texture2D const& b) noexcept
-    {
-        return a.m_Impl == b.m_Impl;
-    }
-
-    inline bool operator!=(Texture2D const& a, Texture2D const& b) noexcept
-    {
-        return a.m_Impl != b.m_Impl;
-    }
 
     std::ostream& operator<<(std::ostream&, Texture2D const&);
 }

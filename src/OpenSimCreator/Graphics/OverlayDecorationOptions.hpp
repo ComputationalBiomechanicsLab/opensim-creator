@@ -42,20 +42,18 @@ namespace osc
         void forEachOptionAsAppSettingValue(std::function<void(std::string_view, AppSettingValue const&)> const&) const;
         void tryUpdFromValues(std::string_view keyPrefix, std::unordered_map<std::string, AppSettingValue> const&);
 
-    private:
-        friend bool operator==(OverlayDecorationOptions const&, OverlayDecorationOptions const&) noexcept;
-        friend bool operator!=(OverlayDecorationOptions const&, OverlayDecorationOptions const&) noexcept;
+        friend bool operator==(OverlayDecorationOptions const& lhs, OverlayDecorationOptions const& rhs) noexcept
+        {
+            return lhs.m_Flags == rhs.m_Flags;
+        }
 
+        friend bool operator!=(OverlayDecorationOptions const& lhs, OverlayDecorationOptions const& rhs) noexcept
+        {
+            return !(lhs == rhs);
+        }
+    private:
         OverlayDecorationOptionFlags m_Flags = OverlayDecorationOptionFlags::Default;
     };
 
-    inline bool operator==(OverlayDecorationOptions const& a, OverlayDecorationOptions const& b) noexcept
-    {
-        return a.m_Flags == b.m_Flags;
-    }
 
-    inline bool operator!=(OverlayDecorationOptions const& a, OverlayDecorationOptions const& b) noexcept
-    {
-        return !(a == b);
-    }
 }

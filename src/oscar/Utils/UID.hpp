@@ -2,9 +2,9 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <functional>
 #include <iosfwd>
 #include <type_traits>
+#include <typeindex>  // for std::hash
 #include <utility>
 
 namespace osc
@@ -45,10 +45,40 @@ namespace osc
             return m_Value > 0;
         }
 
+        constexpr friend bool operator==(UID const& lhs, UID const& rhs) noexcept
+        {
+            return lhs.get() == rhs.get();
+        }
+
+        constexpr friend bool operator!=(UID const& lhs, UID const& rhs) noexcept
+        {
+            return lhs.get() != rhs.get();
+        }
+
+        constexpr friend bool operator<(UID const& lhs, UID const& rhs) noexcept
+        {
+            return lhs.get() < rhs.get();
+        }
+
+        constexpr friend bool operator<=(UID const& lhs, UID const& rhs) noexcept
+        {
+            return lhs.get() <= rhs.get();
+        }
+
+        constexpr friend bool operator>(UID const& lhs, UID const& rhs) noexcept
+        {
+            return lhs.get() > rhs.get();
+        }
+
+        constexpr friend bool operator>=(UID const& lhs, UID const& rhs) noexcept
+        {
+            return lhs.get() >= rhs.get();
+        }
+
     private:
         static int64_t GetNextID() noexcept;
 
-        constexpr UID(int64_t value) noexcept : m_Value{std::move(value)}
+        constexpr UID(int64_t value) noexcept : m_Value{value}
         {
         }
 
@@ -96,57 +126,24 @@ namespace osc
         return UIDT<V>{id};
     }
 
-    std::ostream& operator<<(std::ostream& o, UID const& id);
-
-    constexpr bool operator==(UID const& lhs, UID const& rhs) noexcept
-    {
-        return lhs.get() == rhs.get();
-    }
-
-    constexpr bool operator!=(UID const& lhs, UID const& rhs) noexcept
-    {
-        return lhs.get() != rhs.get();
-    }
-
-    constexpr bool operator<(UID const& lhs, UID const& rhs) noexcept
-    {
-        return lhs.get() < rhs.get();
-    }
-
-    constexpr bool operator<=(UID const& lhs, UID const& rhs) noexcept
-    {
-        return lhs.get() <= rhs.get();
-    }
-
-    constexpr bool operator>(UID const& lhs, UID const& rhs) noexcept
-    {
-        return lhs.get() > rhs.get();
-    }
-
-    constexpr bool operator>=(UID const& lhs, UID const& rhs) noexcept
-    {
-        return lhs.get() >= rhs.get();
-    }
+    std::ostream& operator<<(std::ostream&, UID const&);
 }
 
 // hashing support for LogicalIDs
 //
 // lets them be used as associative lookup keys, etc.
-namespace std
-{
-    template<>
-    struct hash<osc::UID> final {
-        size_t operator()(osc::UID const& id) const
-        {
-            return static_cast<size_t>(id.get());
-        }
-    };
+template<>
+struct std::hash<osc::UID> final {
+    size_t operator()(osc::UID const& id) const
+    {
+        return static_cast<size_t>(id.get());
+    }
+};
 
-    template<typename T>
-    struct hash<osc::UIDT<T>> final {
-        size_t operator()(osc::UID const& id) const
-        {
-            return static_cast<size_t>(id.get());
-        }
-    };
-}
+template<typename T>
+struct std::hash<osc::UIDT<T>> final {
+    size_t operator()(osc::UID const& id) const
+    {
+        return static_cast<size_t>(id.get());
+    }
+};

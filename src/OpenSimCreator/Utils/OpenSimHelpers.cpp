@@ -57,6 +57,8 @@
 #include <oscar/Maths/Plane.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Platform/Log.hpp>
+#include <oscar/Graphics/MeshCache.hpp>
+#include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
@@ -849,7 +851,7 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
             rv = TryDeleteItemFromSet(gp->updWrapSet(), pw);
         }
     }
-    else if (auto* geom = FindAncestorWithTypeMut<OpenSim::Geometry>(&c))
+    else if (auto* geom = dynamic_cast<OpenSim::Geometry*>(&c))
     {
         // delete an OpenSim::Geometry from its owning OpenSim::Frame
 

@@ -4,6 +4,7 @@
 #include <oscar/Platform/App.hpp>
 
 #include <imgui.h>
+#include <SDL_events.h>
 
 #include <utility>
 

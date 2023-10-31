@@ -40,10 +40,10 @@ namespace osc
         void setReadWrite(RenderTextureReadWrite);
 
     private:
-        friend class GraphicsBackend;
         friend bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
         friend bool operator!=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
         friend std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
+        friend class GraphicsBackend;
 
         glm::ivec2 m_Dimensions;
         TextureDimensionality m_Dimension;

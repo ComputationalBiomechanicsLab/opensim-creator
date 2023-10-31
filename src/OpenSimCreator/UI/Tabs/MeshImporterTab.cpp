@@ -613,6 +613,15 @@ namespace
             return *m_DefaultObject;
         }
 
+        friend bool operator==(SceneElClass const& lhs, SceneElClass const& rhs)
+        {
+            return lhs.GetID() == rhs.GetID();
+        }
+
+        friend bool operator!=(SceneElClass const& lhs, SceneElClass const& rhs)
+        {
+            return !(lhs == rhs);
+        }
     private:
         UID m_ID;
         std::string m_Name;
@@ -623,18 +632,6 @@ namespace
         std::unique_ptr<SceneEl> m_DefaultObject;
         mutable std::atomic<int32_t> m_UniqueCounter;
     };
-
-    // logical comparison
-    bool operator==(SceneElClass const& a, SceneElClass const& b)
-    {
-        return a.GetID() == b.GetID();
-    }
-
-    // logical comparison
-    bool operator!=(SceneElClass const& a, SceneElClass const& b)
-    {
-        return !(a == b);
-    }
 
     // returns a unique string that can be used to name an instance of the given class
     std::string GenerateName(SceneElClass const& c)
@@ -1967,14 +1964,14 @@ namespace
 
             // EqualityComparable
 
-            bool operator!=(Iterator<T> const& other) const noexcept
+            friend bool operator==(Iterator const& lhs, Iterator const& rhs) noexcept
             {
-                return m_Pos != other.m_Pos;
+                return lhs.m_Pos == rhs.m_Pos;
             }
 
-            bool operator==(Iterator<T> const& other) const noexcept
+            friend bool operator!=(Iterator const& lhs, Iterator const& rhs) noexcept
             {
-                return !(*this != other);
+                return lhs.m_Pos != rhs.m_Pos;
             }
 
             // LegacyInputIterator

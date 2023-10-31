@@ -70,12 +70,12 @@ osc::Logger* osc::log::defaultLoggerRaw() noexcept
 
 osc::LogLevel osc::log::getTracebackLevel()
 {
-    return GetGlobalSinks().tracebackSink->level();
+    return GetGlobalSinks().tracebackSink->getLevel();
 }
 
 void osc::log::setTracebackLevel(LogLevel lvl)
 {
-    GetGlobalSinks().tracebackSink->set_level(lvl);
+    GetGlobalSinks().tracebackSink->setLevel(lvl);
 }
 
 osc::SynchronizedValue<osc::CircularBuffer<osc::LogMessage, osc::log::c_MaxLogTracebackMessages>>& osc::log::getTracebackLog()

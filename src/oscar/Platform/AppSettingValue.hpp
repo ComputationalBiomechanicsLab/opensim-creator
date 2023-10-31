@@ -41,19 +41,17 @@ namespace osc
         bool toBool() const;
         std::string toString() const;
         Color toColor() const;
+
+        friend bool operator==(AppSettingValue const& lhs, AppSettingValue const& rhs) noexcept
+        {
+            return lhs.m_Value == rhs.m_Value;
+        }
+
+        friend bool operator!=(AppSettingValue const& lhs, AppSettingValue const& rhs) noexcept
+        {
+            return lhs.m_Value != rhs.m_Value;
+        }
     private:
-        friend bool operator==(AppSettingValue const&, AppSettingValue const&) noexcept;
-        friend bool operator!=(AppSettingValue const&, AppSettingValue const&) noexcept;
         std::variant<std::string, bool, Color> m_Value;
     };
-
-    inline bool operator==(AppSettingValue const& a, AppSettingValue const& b) noexcept
-    {
-        return a.m_Value == b.m_Value;
-    }
-
-    inline bool operator!=(AppSettingValue const& a, AppSettingValue const& b) noexcept
-    {
-        return a.m_Value != b.m_Value;
-    }
 }

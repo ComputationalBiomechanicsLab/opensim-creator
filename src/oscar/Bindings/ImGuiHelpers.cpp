@@ -23,7 +23,6 @@
 #include <imgui_internal.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
 #include <nonstd/span.hpp>
-#include <SDL_events.h>
 
 #include <algorithm>
 #include <array>

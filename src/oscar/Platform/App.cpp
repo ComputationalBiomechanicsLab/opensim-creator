@@ -160,7 +160,7 @@ namespace
     };
 
     // wrapper class for storing std::type_info as a hashable type
-    class TypeInfoReference {
+    class TypeInfoReference final {
     public:
         explicit TypeInfoReference(std::type_info const& typeInfo) noexcept :
             m_TypeInfo{&typeInfo}
@@ -171,26 +171,23 @@ namespace
         {
             return *m_TypeInfo;
         }
+
+        friend bool operator==(TypeInfoReference const& lhs, TypeInfoReference const& rhs) noexcept
+        {
+            return lhs.get() == rhs.get();
+        }
     private:
         std::type_info const* m_TypeInfo;
     };
+}
 
-    bool operator==(TypeInfoReference const& a, TypeInfoReference const& b) noexcept
+template<>
+struct std::hash<TypeInfoReference> final {
+    size_t operator()(TypeInfoReference const& ref) const noexcept
     {
-        return a.get() == b.get();
+        return ref.get().hash_code();
     }
-}
-
-namespace std
-{
-    template<>
-    struct hash<TypeInfoReference> final {
-        size_t operator()(TypeInfoReference const& ref) const noexcept
-        {
-            return ref.get().hash_code();
-        }
-    };
-}
+};
 
 // main application state
 //

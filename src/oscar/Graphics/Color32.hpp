@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <functional>
+#include <typeindex>  // for std::hash
 
 namespace osc
 {
@@ -36,39 +36,36 @@ namespace osc
             return &a + 1;
         }
 
+        constexpr friend bool operator==(Color32 const& lhs, Color32 const& rhs) noexcept
+        {
+            return
+                lhs.r == rhs.r &&
+                lhs.g == rhs.g &&
+                lhs.b == rhs.b &&
+                lhs.a == rhs.a;
+        }
+
+        constexpr friend bool operator!=(Color32 const& lhs, Color32 const& rhs) noexcept
+        {
+            return !(lhs == rhs);
+        }
+
+        uint32_t toU32() const
+        {
+            return bit_cast<uint32_t>(*this);
+        }
+
         uint8_t r;
         uint8_t g;
         uint8_t b;
         uint8_t a;
     };
-
-    constexpr bool operator==(Color32 const& a, Color32 const& b) noexcept
-    {
-        return
-            a.r == b.r &&
-            a.g == b.g &&
-            a.b == b.b &&
-            a.a == b.a;
-    }
-
-    constexpr bool operator!=(Color32 const& a, Color32 const& b) noexcept
-    {
-        return !(a == b);
-    }
-
-    inline uint32_t ToUint32(Color32 const& color32)
-    {
-        return bit_cast<uint32_t>(color32);
-    }
 }
 
-namespace std
-{
-    template<>
-    struct hash<osc::Color32> final {
-        size_t operator()(osc::Color32 const& color32) const noexcept
-        {
-            return std::hash<uint32_t>{}(ToUint32(color32));
-        }
-    };
-}
+template<>
+struct std::hash<osc::Color32> final {
+    size_t operator()(osc::Color32 const& color32) const noexcept
+    {
+        return std::hash<uint32_t>{}(color32.toU32());
+    }
+};

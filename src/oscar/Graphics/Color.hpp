@@ -120,16 +120,6 @@ namespace osc
         {
         }
 
-        constexpr Color& operator*=(Color const& other) noexcept
-        {
-            r *= other.r;
-            g *= other.g;
-            b *= other.b;
-            a *= other.a;
-
-            return *this;
-        }
-
         constexpr float& operator[](ptrdiff_t i) noexcept
         {
             static_assert(sizeof(Color) == 4*sizeof(float));
@@ -147,47 +137,57 @@ namespace osc
             return glm::vec4{r, g, b, a};
         }
 
+        constexpr friend bool operator==(Color const& lhs, Color const& rhs) noexcept
+        {
+            return
+                lhs.r == rhs.r &&
+                lhs.g == rhs.g &&
+                lhs.b == rhs.b &&
+                lhs.a == rhs.a;
+        }
+
+        constexpr friend bool operator!=(Color const& lhs, Color const& rhs) noexcept
+        {
+            return !(lhs == rhs);
+        }
+
+        constexpr friend Color& operator*=(Color& lhs, Color const& rhs) noexcept
+        {
+            lhs.r *= rhs.r;
+            lhs.g *= rhs.g;
+            lhs.b *= rhs.b;
+            lhs.a *= rhs.a;
+
+            return lhs;
+        }
+
+        constexpr friend Color operator*(Color const& lhs, Color const& rhs) noexcept
+        {
+            return Color
+            {
+                lhs.r * rhs.r,
+                lhs.g * rhs.g,
+                lhs.b * rhs.b,
+                lhs.a * rhs.a,
+            };
+        }
+
+        constexpr friend Color operator*(float lhs, Color const& rhs) noexcept
+        {
+            return Color
+            {
+                lhs * rhs.r,
+                lhs * rhs.g,
+                lhs * rhs.b,
+                lhs * rhs.a,
+            };
+        }
+
         float r;
         float g;
         float b;
         float a;
     };
-
-    constexpr bool operator==(Color const& a, Color const& b) noexcept
-    {
-        return
-            a.r == b.r &&
-            a.g == b.g &&
-            a.b == b.b &&
-            a.a == b.a;
-    }
-
-    constexpr bool operator!=(Color const& a, Color const& b) noexcept
-    {
-        return !(a == b);
-    }
-
-    constexpr Color operator*(Color const& a, Color const& b) noexcept
-    {
-        return Color
-        {
-            a.r * b.r,
-            a.g * b.g,
-            a.b * b.b,
-            a.a * b.a,
-        };
-    }
-
-    constexpr Color operator*(float s, Color const& a) noexcept
-    {
-        return Color
-        {
-            s * a.r,
-            s * a.g,
-            s * a.b,
-            s * a.a,
-        };
-    }
 
     // returns the normalized (0.0 - 1.0) floating-point equivalent of the
     // given 8-bit (0 - 255) color channel value
@@ -267,13 +267,7 @@ namespace osc
 }
 
 // define hashing function for colors
-namespace std
-{
-    // declare a hash function for glm::vec4, so it can be used as a key in
-    // unordered maps
-
-    template<>
-    struct hash<osc::Color> final {
-        size_t operator()(osc::Color const&) const;
-    };
-}
+template<>
+struct std::hash<osc::Color> final {
+    size_t operator()(osc::Color const&) const;
+};

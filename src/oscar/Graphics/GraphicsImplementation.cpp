@@ -634,22 +634,22 @@ namespace
             swap(a.worldMidpoint, b.worldMidpoint);
         }
 
+        friend bool operator==(RenderObject const& lhs, RenderObject const& rhs)
+        {
+            return
+                lhs.material == rhs.material &&
+                lhs.mesh == rhs.mesh &&
+                lhs.maybePropBlock == rhs.maybePropBlock &&
+                lhs.transform == rhs.transform &&
+                lhs.worldMidpoint == rhs.worldMidpoint;
+        }
+
         osc::Material material;
         osc::Mesh mesh;
         std::optional<osc::MaterialPropertyBlock> maybePropBlock;
         Mat4OrTransform transform;
         glm::vec3 worldMidpoint;
     };
-
-    bool operator==(RenderObject const& a, RenderObject const& b)
-    {
-        return
-            a.material == b.material &&
-            a.mesh == b.mesh &&
-            a.maybePropBlock == b.maybePropBlock &&
-            a.transform == b.transform &&
-            a.worldMidpoint == b.worldMidpoint;
-    }
 
     // returns true if the render object is opaque
     bool IsOpaque(RenderObject const& ro)
@@ -1192,7 +1192,7 @@ public:
         m_Width{width},
         m_Format{format}
     {
-        OSC_THROWING_ASSERT(m_Width > 0 && "the width of a cubemap must be a positive number");
+        OSC_ASSERT(m_Width > 0 && "the width of a cubemap must be a positive number");
 
         size_t const numPixelsPerFace = static_cast<size_t>(m_Width*m_Width)*NumBytesPerPixel(m_Format);
         m_Data.resize(osc::NumOptions<osc::CubemapFace>() * numPixelsPerFace);
@@ -1217,7 +1217,7 @@ public:
         size_t const destinationDataEnd = destinationDataStart + numBytesPerCubeFace;
 
         OSC_ASSERT(faceIndex < osc::NumOptions<osc::CubemapFace>() && "invalid cubemap face passed to Cubemap::setPixelData");
-        OSC_THROWING_ASSERT(data.size() == numBytesPerCubeFace && "incorrect amount of data passed to Cubemap::setPixelData: the data must match the dimensions and texture format of the cubemap");
+        OSC_ASSERT(data.size() == numBytesPerCubeFace && "incorrect amount of data passed to Cubemap::setPixelData: the data must match the dimensions and texture format of the cubemap");
         OSC_ASSERT(destinationDataEnd <= m_Data.size() && "out of range assignment detected: this should be handled in the constructor");
 
         std::copy(data.begin(), data.end(), m_Data.begin() + destinationDataStart);
@@ -1623,7 +1623,7 @@ public:
         m_WrapModeW{wrapMode},
         m_FilterMode{filterMode}
     {
-        OSC_THROWING_ASSERT(m_Dimensions.x > 0 && m_Dimensions.y > 0);
+        OSC_ASSERT(m_Dimensions.x > 0 && m_Dimensions.y > 0);
     }
 
     glm::ivec2 getDimensions() const
@@ -1705,7 +1705,7 @@ public:
 
     void setPixels(nonstd::span<Color const> pixels)
     {
-        OSC_THROWING_ASSERT(ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
+        OSC_ASSERT(ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
         EncodePixelsInDesiredFormat(pixels, m_Format, m_PixelData);
     }
 
@@ -1716,7 +1716,7 @@ public:
 
     void setPixels32(nonstd::span<Color32 const> pixels)
     {
-        OSC_THROWING_ASSERT(ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
+        OSC_ASSERT(ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
         EncodePixels32InDesiredFormat(pixels, m_Format, m_PixelData);
     }
 
@@ -1727,8 +1727,8 @@ public:
 
     void setPixelData(nonstd::span<uint8_t const> pixelData)
     {
-        OSC_THROWING_ASSERT(pixelData.size() == NumBytesPerPixel(m_Format)*m_Dimensions.x*m_Dimensions.y && "incorrect number of bytes passed to Texture2D::setPixelData");
-        OSC_THROWING_ASSERT(pixelData.size() == m_PixelData.size());
+        OSC_ASSERT(pixelData.size() == NumBytesPerPixel(m_Format)*m_Dimensions.x*m_Dimensions.y && "incorrect number of bytes passed to Texture2D::setPixelData");
+        OSC_ASSERT(pixelData.size() == m_PixelData.size());
 
         std::copy(pixelData.cbegin(), pixelData.cend(), m_PixelData.begin());
     }
@@ -2204,7 +2204,7 @@ glm::ivec2 osc::RenderTextureDescriptor::getDimensions() const
 
 void osc::RenderTextureDescriptor::setDimensions(glm::ivec2 d)
 {
-    OSC_THROWING_ASSERT(d.x >= 0 && d.y >= 0);
+    OSC_ASSERT(d.x >= 0 && d.y >= 0);
     m_Dimensions = d;
 }
 
@@ -2258,20 +2258,20 @@ void osc::RenderTextureDescriptor::setReadWrite(RenderTextureReadWrite rw)
     m_ReadWrite = rw;
 }
 
-bool osc::operator==(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
+bool osc::operator==(RenderTextureDescriptor const& lhs, RenderTextureDescriptor const& rhs)
 {
     return
-        a.m_Dimensions == b.m_Dimensions &&
-        a.m_Dimension == b.m_Dimension &&
-        a.m_AnialiasingLevel == b.m_AnialiasingLevel &&
-        a.m_ColorFormat == b.m_ColorFormat &&
-        a.m_DepthStencilFormat == b.m_DepthStencilFormat &&
-        a.m_ReadWrite == b.m_ReadWrite;
+        lhs.m_Dimensions == rhs.m_Dimensions &&
+        lhs.m_Dimension == rhs.m_Dimension &&
+        lhs.m_AnialiasingLevel == rhs.m_AnialiasingLevel &&
+        lhs.m_ColorFormat == rhs.m_ColorFormat &&
+        lhs.m_DepthStencilFormat == rhs.m_DepthStencilFormat &&
+        lhs.m_ReadWrite == rhs.m_ReadWrite;
 }
 
-bool osc::operator!=(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
+bool osc::operator!=(RenderTextureDescriptor const& lhs, RenderTextureDescriptor const& rhs)
 {
-    return !(a == b);
+    return !(lhs == rhs);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, RenderTextureDescriptor const& rtd)
@@ -2294,14 +2294,14 @@ public:
         m_Descriptor{descriptor_},
         m_BufferType{type_}
     {
-        OSC_THROWING_ASSERT((getDimensionality() != TextureDimensionality::Cube || getDimensions().x == getDimensions().y) && "cannot construct a Cube renderbuffer with non-square dimensions");
-        OSC_THROWING_ASSERT((getDimensionality() != TextureDimensionality::Cube || getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot construct a Cube renderbuffer that is anti-aliased (not supported by backends like OpenGL)");
+        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube || getDimensions().x == getDimensions().y) && "cannot construct a Cube renderbuffer with non-square dimensions");
+        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube || getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot construct a Cube renderbuffer that is anti-aliased (not supported by backends like OpenGL)");
     }
 
     void reformat(RenderTextureDescriptor const& newDescriptor)
     {
-        OSC_THROWING_ASSERT((newDescriptor.getDimensionality() != TextureDimensionality::Cube || newDescriptor.getDimensions().x == newDescriptor.getDimensions().y) && "cannot reformat a render buffer to a Cube dimensionality with non-square dimensions");
-        OSC_THROWING_ASSERT((newDescriptor.getDimensionality() != TextureDimensionality::Cube || newDescriptor.getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot reformat a renderbuffer to a Cube dimensionality with is anti-aliased (not supported by backends like OpenGL)");
+        OSC_ASSERT((newDescriptor.getDimensionality() != TextureDimensionality::Cube || newDescriptor.getDimensions().x == newDescriptor.getDimensions().y) && "cannot reformat a render buffer to a Cube dimensionality with non-square dimensions");
+        OSC_ASSERT((newDescriptor.getDimensionality() != TextureDimensionality::Cube || newDescriptor.getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot reformat a renderbuffer to a Cube dimensionality with is anti-aliased (not supported by backends like OpenGL)");
 
         if (m_Descriptor != newDescriptor)
         {
@@ -2322,7 +2322,7 @@ public:
 
     void setDimensions(glm::ivec2 newDims)
     {
-        OSC_THROWING_ASSERT((getDimensionality() != TextureDimensionality::Cube || newDims.x == newDims.y) && "cannot set a cubemap to have non-square dimensions");
+        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube || newDims.x == newDims.y) && "cannot set a cubemap to have non-square dimensions");
 
         if (newDims != getDimensions())
         {
@@ -2338,8 +2338,8 @@ public:
 
     void setDimensionality(TextureDimensionality newDimension)
     {
-        OSC_THROWING_ASSERT((newDimension != osc::TextureDimensionality::Cube || getDimensions().x == getDimensions().y) && "cannot set dimensionality to Cube for non-square render buffer");
-        OSC_THROWING_ASSERT((newDimension != TextureDimensionality::Cube || getAntialiasingLevel() == osc::AntiAliasingLevel{1}) && "cannot set dimensionality to Cube for an anti-aliased render buffer (not supported by backends like OpenGL)");
+        OSC_ASSERT((newDimension != osc::TextureDimensionality::Cube || getDimensions().x == getDimensions().y) && "cannot set dimensionality to Cube for non-square render buffer");
+        OSC_ASSERT((newDimension != TextureDimensionality::Cube || getAntialiasingLevel() == osc::AntiAliasingLevel{1}) && "cannot set dimensionality to Cube for an anti-aliased render buffer (not supported by backends like OpenGL)");
 
         if (newDimension != getDimensionality())
         {
@@ -2369,7 +2369,7 @@ public:
 
     void setAntialiasingLevel(AntiAliasingLevel newLevel)
     {
-        OSC_THROWING_ASSERT((getDimensionality() != TextureDimensionality::Cube || newLevel == osc::AntiAliasingLevel{1}) && "cannot set anti-aliasing level >1 on a cube render buffer (it is not supported by backends like OpenGL)");
+        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube || newLevel == osc::AntiAliasingLevel{1}) && "cannot set anti-aliasing level >1 on a cube render buffer (it is not supported by backends like OpenGL)");
 
         if (newLevel != getAntialiasingLevel())
         {
@@ -3805,9 +3805,9 @@ public:
         setValue(propertyName, std::move(t));
     }
 
-    bool operator==(Impl const& other) const
+    friend bool operator==(Impl const& lhs, Impl const& rhs)
     {
-        return m_Values == other.m_Values;
+        return lhs.m_Values == rhs.m_Values;
     }
 
 private:
@@ -3955,14 +3955,14 @@ void osc::MaterialPropertyBlock::setTexture(std::string_view propertyName, Textu
     m_Impl.upd()->setTexture(propertyName, std::move(t));
 }
 
-bool osc::operator==(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b) noexcept
+bool osc::operator==(MaterialPropertyBlock const& lhs, MaterialPropertyBlock const& rhs) noexcept
 {
-    return a.m_Impl == b.m_Impl || *a.m_Impl == *b.m_Impl;
+    return lhs.m_Impl == rhs.m_Impl || *lhs.m_Impl == *rhs.m_Impl;
 }
 
-bool osc::operator!=(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b) noexcept
+bool osc::operator!=(MaterialPropertyBlock const& lhs, MaterialPropertyBlock const& rhs) noexcept
 {
-    return a.m_Impl != b.m_Impl;
+    return !(lhs == rhs);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, MaterialPropertyBlock const&)
@@ -4896,27 +4896,26 @@ public:
         GraphicsBackend::RenderCameraQueue(*this, &renderTarget);
     }
 
-    bool operator==(Impl const& other) const
+    friend bool operator==(Impl const& lhs, Impl const& rhs)
     {
         return
-            m_BackgroundColor == other.m_BackgroundColor &&
-            m_CameraProjection == other.m_CameraProjection &&
-            m_OrthographicSize == other.m_OrthographicSize &&
-            m_PerspectiveFov == other.m_PerspectiveFov &&
-            m_NearClippingPlane == other.m_NearClippingPlane &&
-            m_FarClippingPlane == other.m_FarClippingPlane &&
-            m_ClearFlags == other.m_ClearFlags &&
-            m_MaybeScreenPixelRect == other.m_MaybeScreenPixelRect &&
-            m_MaybeScissorRect == other.m_MaybeScissorRect &&
-            m_Position == other.m_Position &&
-            m_Rotation == other.m_Rotation &&
-            m_MaybeViewMatrixOverride == other.m_MaybeViewMatrixOverride &&
-            m_MaybeProjectionMatrixOverride == other.m_MaybeProjectionMatrixOverride &&
-            m_RenderQueue == other.m_RenderQueue;
+            lhs.m_BackgroundColor == rhs.m_BackgroundColor &&
+            lhs.m_CameraProjection == rhs.m_CameraProjection &&
+            lhs.m_OrthographicSize == rhs.m_OrthographicSize &&
+            lhs.m_PerspectiveFov == rhs.m_PerspectiveFov &&
+            lhs.m_NearClippingPlane == rhs.m_NearClippingPlane &&
+            lhs.m_FarClippingPlane == rhs.m_FarClippingPlane &&
+            lhs.m_ClearFlags == rhs.m_ClearFlags &&
+            lhs.m_MaybeScreenPixelRect == rhs.m_MaybeScreenPixelRect &&
+            lhs.m_MaybeScissorRect == rhs.m_MaybeScissorRect &&
+            lhs.m_Position == rhs.m_Position &&
+            lhs.m_Rotation == rhs.m_Rotation &&
+            lhs.m_MaybeViewMatrixOverride == rhs.m_MaybeViewMatrixOverride &&
+            lhs.m_MaybeProjectionMatrixOverride == rhs.m_MaybeProjectionMatrixOverride &&
+            lhs.m_RenderQueue == rhs.m_RenderQueue;
     }
 
 private:
-
     friend class GraphicsBackend;
 
     Color m_BackgroundColor = Color::clear();
@@ -5143,14 +5142,14 @@ std::ostream& osc::operator<<(std::ostream& o, Camera const& camera)
     return o << "Camera(position = " << camera.getPosition() << ", direction = " << camera.getDirection() << ", projection = " << camera.getCameraProjection() << ')';
 }
 
-bool osc::operator==(Camera const& a, Camera const& b)
+bool osc::operator==(Camera const& lhs, Camera const& rhs)
 {
-    return a.m_Impl == b.m_Impl || *a.m_Impl == *b.m_Impl;
+    return lhs.m_Impl == rhs.m_Impl || *lhs.m_Impl == *rhs.m_Impl;
 }
 
-bool osc::operator!=(Camera const& a, Camera const& b)
+bool osc::operator!=(Camera const& lhs, Camera const& rhs)
 {
-    return !(a == b);
+    return !(lhs == rhs);
 }
 
 
@@ -6543,9 +6542,9 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera, float aspectRa
 void osc::GraphicsBackend::ValidateRenderTarget(RenderTarget& renderTarget)
 {
     // ensure there is at least one color attachment
-    OSC_THROWING_ASSERT(!renderTarget.colors.empty() && "a render target must have one or more color attachments");
+    OSC_ASSERT(!renderTarget.colors.empty() && "a render target must have one or more color attachments");
 
-    OSC_THROWING_ASSERT(renderTarget.colors.front().buffer != nullptr && "a color attachment must have a non-null render buffer");
+    OSC_ASSERT(renderTarget.colors.front().buffer != nullptr && "a color attachment must have a non-null render buffer");
     glm::ivec2 const firstColorBufferDimensions = renderTarget.colors.front().buffer->m_Impl->getDimensions();
     AntiAliasingLevel const firstColorBufferSamples = renderTarget.colors.front().buffer->m_Impl->getAntialiasingLevel();
 
@@ -6553,13 +6552,13 @@ void osc::GraphicsBackend::ValidateRenderTarget(RenderTarget& renderTarget)
     for (auto it = renderTarget.colors.begin()+1; it != renderTarget.colors.end(); ++it)
     {
         RenderTargetColorAttachment const& colorAttachment = *it;
-        OSC_THROWING_ASSERT(colorAttachment.buffer != nullptr);
-        OSC_THROWING_ASSERT(colorAttachment.buffer->m_Impl->getDimensions() == firstColorBufferDimensions);
-        OSC_THROWING_ASSERT(colorAttachment.buffer->m_Impl->getAntialiasingLevel() == firstColorBufferSamples);
+        OSC_ASSERT(colorAttachment.buffer != nullptr);
+        OSC_ASSERT(colorAttachment.buffer->m_Impl->getDimensions() == firstColorBufferDimensions);
+        OSC_ASSERT(colorAttachment.buffer->m_Impl->getAntialiasingLevel() == firstColorBufferSamples);
     }
-    OSC_THROWING_ASSERT(renderTarget.depth.buffer != nullptr);
-    OSC_THROWING_ASSERT(renderTarget.depth.buffer->m_Impl->getDimensions() == firstColorBufferDimensions);
-    OSC_THROWING_ASSERT(renderTarget.depth.buffer->m_Impl->getAntialiasingLevel() == firstColorBufferSamples);
+    OSC_ASSERT(renderTarget.depth.buffer != nullptr);
+    OSC_ASSERT(renderTarget.depth.buffer->m_Impl->getDimensions() == firstColorBufferDimensions);
+    OSC_ASSERT(renderTarget.depth.buffer->m_Impl->getAntialiasingLevel() == firstColorBufferSamples);
 }
 
 osc::Rect osc::GraphicsBackend::CalcViewportRect(

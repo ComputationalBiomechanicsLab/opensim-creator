@@ -23,7 +23,6 @@
 #include <oscar/Utils/SetHelpers.hpp>
 
 #include <IconsFontAwesome5.h>
-#include <SDL_events.h>
 
 #include <filesystem>
 #include <future>

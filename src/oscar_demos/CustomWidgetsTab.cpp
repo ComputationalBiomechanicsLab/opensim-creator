@@ -8,7 +8,6 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <SDL_events.h>
 
 #include <array>
 #include <cmath>
