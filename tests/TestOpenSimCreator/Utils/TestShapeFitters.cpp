@@ -161,11 +161,14 @@ TEST(FitEllipsoid, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedA
     {
         {4.41627617443540f, -28.2484366502307f, 165.041246898544f},
         {9.39508101198322f,   8.71324627349633f,  6.71387132216324f},
+
+        // OSC change: the _signs_ of these direction vectors might be different from the MATLAB script because
+        // OSC's implementation also gurantees that the vectors are right-handed
         osc::to_array<glm::vec3>
         ({
-            glm::vec3{-0.387689357308333f, -0.744763303086706f, 0.543161656052074f},
-            glm::vec3{-0.343850708787853f, -0.429871105312056f, -0.834851796957929},
-            glm::vec3{-0.855256483340491f, 0.510429677030215f, 0.0894309371016929f}
+            glm::vec3{0.387689357308333f, 0.744763303086706f, -0.543161656052074f},
+            glm::vec3{0.343850708787853f, 0.429871105312056f, 0.834851796957929},
+            glm::vec3{0.855256483340491f, -0.510429677030215f, -0.0894309371016929f},
         })
     };
     constexpr float c_MaximumAbsoluteError = 0.0001f;

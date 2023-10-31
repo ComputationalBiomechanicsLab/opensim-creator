@@ -28,6 +28,7 @@
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Platform/Log.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
@@ -41,6 +42,8 @@
 #include <iterator>
 #include <memory>
 #include <optional>
+#include <stdexcept>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -921,6 +924,28 @@ void osc::GenerateModelDecorations(
     float fixupScaleFactor,
     std::function<void(OpenSim::Component const&, SceneDecoration&&)> const& out)
 {
+    GenerateSubcomponentDecorations(
+        meshCache,
+        model,
+        state,
+        model,  // i.e. the subcomponent is the root
+        opts,
+        fixupScaleFactor,
+        out,
+        false
+    );
+}
+
+void osc::GenerateSubcomponentDecorations(
+    MeshCache& meshCache,
+    OpenSim::Model const& model,
+    SimTK::State const& state,
+    OpenSim::Component const& subcomponent,
+    OpenSimDecorationOptions const& opts,
+    float fixupScaleFactor,
+    std::function<void(OpenSim::Component const&, SceneDecoration&&)> const& out,
+    bool inclusiveOfProvidedSubcomponent)
+{
     OSC_PERF("OpenSimRenderer/GenerateModelDecorations");
 
     RendererState rendererState
@@ -933,13 +958,13 @@ void osc::GenerateModelDecorations(
         out,
     };
 
-    for (OpenSim::Component const& c : model.getComponentList())
+    auto const emitDecorationsForComponent = [&](OpenSim::Component const& c)
     {
         // handle OSC-specific decoration specializations, or fallback to generic
         // component decoration handling
         if (!osc::ShouldShowInUI(c))
         {
-            continue;
+            return;
         }
         else if (auto const* const gp = dynamic_cast<OpenSim::GeometryPath const*>(&c))
         {
@@ -982,7 +1007,77 @@ void osc::GenerateModelDecorations(
         {
             rendererState.emitGenericDecorations(c, c);
         }
+    };
+
+    if (inclusiveOfProvidedSubcomponent)
+    {
+        emitDecorationsForComponent(subcomponent);
     }
+    for (OpenSim::Component const& c : subcomponent.getComponentList())
+    {
+        emitDecorationsForComponent(c);
+    }
+}
+
+osc::Mesh osc::ToOscMesh(
+    MeshCache& meshCache,
+    OpenSim::Model const& model,
+    SimTK::State const& state,
+    OpenSim::Mesh const& mesh,
+    OpenSimDecorationOptions const& opts,
+    float fixupScaleFactor)
+{
+    std::vector<SceneDecoration> decs;
+    decs.reserve(1);  // probable
+    GenerateSubcomponentDecorations(
+        meshCache,
+        model,
+        state,
+        mesh,
+        opts,
+        fixupScaleFactor,
+        [&decs](OpenSim::Component const&, SceneDecoration&& dec)
+        {
+            decs.push_back(std::move(dec));
+        }
+    );
+
+    if (decs.empty())
+    {
+        std::stringstream ss;
+        ss << mesh.getAbsolutePathString() << ": could not be converted into an OSC mesh because OpenSim did not emit any decorations for the given OpenSim::Mesh component";
+        throw std::runtime_error{std::move(ss).str()};
+    }
+    if (decs.size() > 1)
+    {
+        auto path = mesh.getAbsolutePathString();
+        log::warn("%s: this OpenSim::Mesh component generated more than one decoration: OSC defaulted to using the first one, but that may not be correct: if you are seeing unusual behavior, then it's because OpenSim is doing something whacky when generating decorations for a mesh", path.c_str());
+    }
+    return std::move(decs[0].mesh);
+}
+
+osc::Mesh osc::ToOscMesh(
+    OpenSim::Model const& model,
+    SimTK::State const& state,
+    OpenSim::Mesh const& mesh)
+{
+    MeshCache cache;
+    OpenSimDecorationOptions opts;
+    return ToOscMesh(cache, model, state, mesh, opts, 1.0f);
+}
+
+osc::Mesh osc::ToOscMeshBakeScaleFactors(
+    OpenSim::Model const& model,
+    SimTK::State const& state,
+    OpenSim::Mesh const& mesh)
+{
+    Mesh rv = ToOscMesh(model, state, mesh);
+
+    Transform t;
+    t.scale = ToVec3(mesh.get_scale_factors());
+    rv.transformVerts(t);
+
+    return rv;
 }
 
 float osc::GetRecommendedScaleFactor(
