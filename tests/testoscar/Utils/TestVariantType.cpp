@@ -1,4 +1,4 @@
-#include <oscar_document/VariantType.hpp>
+#include <oscar/Utils/VariantType.hpp>
 
 #include <gtest/gtest.h>
 #include <oscar/Utils/Cpp20Shims.hpp>
@@ -9,7 +9,7 @@
 
 TEST(VariantType, ToStringReturnsExpectedResults)
 {
-    using osc::doc::VariantType;
+    using osc::VariantType;
 
     struct TestCase final {
         VariantType input;
@@ -26,7 +26,7 @@ TEST(VariantType, ToStringReturnsExpectedResults)
         {VariantType::StringName, "StringName"},
         {VariantType::Vec3, "Vec3"},
     });
-    static_assert(osc::NumOptions<osc::doc::VariantType>() == std::tuple_size<decltype(testCases)>());
+    static_assert(osc::NumOptions<osc::VariantType>() == std::tuple_size<decltype(testCases)>());
 
     for (auto const& tc : testCases)
     {
@@ -36,6 +36,6 @@ TEST(VariantType, ToStringReturnsExpectedResults)
 
 TEST(VariantType, PassingBsValueIntoItReturnsUnknown)
 {
-    auto const bs = static_cast<osc::doc::VariantType>(std::numeric_limits<std::underlying_type_t<osc::doc::VariantType>>::max()-1);
+    auto const bs = static_cast<osc::VariantType>(std::numeric_limits<std::underlying_type_t<osc::VariantType>>::max()-1);
     ASSERT_EQ(to_string(bs), "Unknown");
 }

@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace osc::doc
+namespace osc
 {
     enum class VariantType {
         Nil = 0,

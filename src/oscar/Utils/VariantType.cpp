@@ -9,9 +9,9 @@
 #include <type_traits>
 #include <tuple>
 
-std::string osc::doc::to_string(VariantType v)
+std::string osc::to_string(VariantType v)
 {
-    static auto const s_Lut = osc::to_array<std::string_view>(
+    static auto const s_Lut = to_array<std::string_view>(
     {
         "Nil",
         "Bool",
@@ -22,7 +22,7 @@ std::string osc::doc::to_string(VariantType v)
         "StringName",
         "Vec3",
     });
-    static_assert(std::tuple_size_v<decltype(s_Lut)> == osc::NumOptions<VariantType>());
+    static_assert(std::tuple_size_v<decltype(s_Lut)> == NumOptions<VariantType>());
 
     auto const idx = static_cast<std::underlying_type_t<VariantType>>(v);
     if (0 <= idx && idx < ssize(s_Lut))

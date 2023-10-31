@@ -1,13 +1,13 @@
-#include <oscar_document/PropertyDescription.hpp>
+#include <oscar/DOM/PropertyDescription.hpp>
 
-#include <oscar_document/Variant.hpp>
-#include <oscar_document/VariantType.hpp>
+#include <oscar/Utils/Variant.hpp>
+#include <oscar/Utils/VariantType.hpp>
 
 #include <gtest/gtest.h>
 
-using osc::doc::PropertyDescription;
-using osc::doc::Variant;
-using osc::doc::VariantType;
+using osc::PropertyDescription;
+using osc::Variant;
+using osc::VariantType;
 
 
 TEST(PropertyDescription, CanConstructFromStringNameAndVariant)

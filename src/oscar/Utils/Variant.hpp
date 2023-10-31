@@ -2,8 +2,8 @@
 
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar_document/StringName.hpp>
-#include <oscar_document/VariantType.hpp>
+#include <oscar/Utils/StringName.hpp>
+#include <oscar/Utils/VariantType.hpp>
 
 #include <glm/vec3.hpp>
 
@@ -14,7 +14,7 @@
 #include <utility>
 #include <variant>
 
-namespace osc::doc
+namespace osc
 {
     class Variant final {
     public:
@@ -58,7 +58,7 @@ namespace osc::doc
         }
 
     private:
-        friend struct std::hash<osc::doc::Variant>;
+        friend struct std::hash<osc::Variant>;
 
         std::variant<
             std::monostate,
@@ -79,6 +79,6 @@ namespace osc::doc
 }
 
 template<>
-struct std::hash<osc::doc::Variant> final {
-    size_t operator()(osc::doc::Variant const&) const;
+struct std::hash<osc::Variant> final {
+    size_t operator()(osc::Variant const&) const;
 };

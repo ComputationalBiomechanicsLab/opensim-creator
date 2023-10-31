@@ -30,6 +30,17 @@ add_library(oscar STATIC
     Bindings/Gl.hpp
     Bindings/GlGlm.hpp
 
+    DOM/Node.hpp
+    DOM/NodePath.cpp
+    DOM/NodePath.hpp
+    DOM/Object.cpp
+    DOM/Object.hpp
+    DOM/PropertyDescription.cpp
+    DOM/PropertyDescription.hpp
+    DOM/PropertyTable.cpp
+    DOM/PropertyTable.hpp
+    DOM/PropertyTableEntry.hpp
+
     Formats/CSV.hpp
     Formats/CSV.cpp
     Formats/DAE.hpp
@@ -240,12 +251,18 @@ add_library(oscar STATIC
     Utils/Spsc.hpp
     Utils/StringHelpers.cpp
     Utils/StringHelpers.hpp
+    Utils/StringName.cpp
+    Utils/StringName.hpp
     Utils/SynchronizedValue.hpp
     Utils/UID.cpp
     Utils/UID.hpp
     Utils/UndoRedo.cpp
     Utils/UndoRedo.hpp
+    Utils/Variant.cpp
+    Utils/Variant.hpp
     Utils/VariantHelpers.hpp
+    Utils/VariantType.cpp
+    Utils/VariantType.hpp
 )
 
 target_include_directories(oscar PUBLIC

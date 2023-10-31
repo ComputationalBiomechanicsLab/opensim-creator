@@ -1,4 +1,4 @@
-#include <oscar_document/Variant.hpp>
+#include <oscar/Utils/Variant.hpp>
 
 #include <glm/vec3.hpp>
 #include <gtest/gtest.h>
@@ -6,7 +6,7 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
-#include <oscar_document/StringName.hpp>
+#include <oscar/Utils/StringName.hpp>
 
 #include <charconv>
 #include <stdexcept>
@@ -18,8 +18,8 @@
 
 using osc::Color;
 using osc::StringName;
-using osc::doc::Variant;
-using osc::doc::VariantType;
+using osc::Variant;
+using osc::VariantType;
 
 namespace
 {

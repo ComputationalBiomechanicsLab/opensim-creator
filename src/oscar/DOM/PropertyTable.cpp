@@ -1,15 +1,15 @@
 #include "PropertyTable.hpp"
 
-#include <oscar_document/PropertyDescription.hpp>
-#include <oscar_document/StringName.hpp>
-#include <oscar_document/Variant.hpp>
+#include <oscar/DOM/PropertyDescription.hpp>
+#include <oscar/Utils/StringName.hpp>
+#include <oscar/Utils/Variant.hpp>
 
 #include <nonstd/span.hpp>
 
 #include <cstddef>
 #include <optional>
 
-osc::doc::PropertyTable::PropertyTable(nonstd::span<PropertyDescription const> descriptions)
+osc::PropertyTable::PropertyTable(nonstd::span<PropertyDescription const> descriptions)
 {
     if (descriptions.empty())
     {
@@ -38,7 +38,7 @@ osc::doc::PropertyTable::PropertyTable(nonstd::span<PropertyDescription const> d
     }
 }
 
-std::optional<size_t> osc::doc::PropertyTable::indexOf(StringName const& propertyName) const
+std::optional<size_t> osc::PropertyTable::indexOf(StringName const& propertyName) const
 {
     if (auto const it = m_NameToEntryLookup.find(propertyName); it != m_NameToEntryLookup.end())
     {
@@ -50,7 +50,7 @@ std::optional<size_t> osc::doc::PropertyTable::indexOf(StringName const& propert
     }
 }
 
-void osc::doc::PropertyTable::setValue(size_t propertyIndex, Variant const& newPropertyValue)
+void osc::PropertyTable::setValue(size_t propertyIndex, Variant const& newPropertyValue)
 {
     m_Entries[propertyIndex].setValue(newPropertyValue);
 }

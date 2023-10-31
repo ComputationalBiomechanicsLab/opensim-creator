@@ -1,4 +1,4 @@
-#include <oscar_document/StringName.hpp>
+#include <oscar/Utils/StringName.hpp>
 
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>

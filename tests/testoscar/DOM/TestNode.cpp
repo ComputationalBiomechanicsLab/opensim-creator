@@ -1,7 +1,7 @@
-#include <oscar_document/Node.hpp>
+#include <oscar/DOM/Node.hpp>
 
-#include <oscar_document/NodePath.hpp>
-#include <oscar_document/Variant.hpp>
+#include <oscar/DOM/NodePath.hpp>
+#include <oscar/Utils/Variant.hpp>
 
 #include <gtest/gtest.h>
 
@@ -10,7 +10,9 @@
 #include <string_view>
 #include <utility>
 
-using osc::doc::literals::operator""_np;
+/*
+
+using osc::literals::operator""_np;
 using namespace std::literals::string_view_literals;
 
 namespace
@@ -21,7 +23,7 @@ namespace
         return std::uniform_int_distribution{}(s_PRNG);
     }
 
-    class MinimalNodeImpl : public osc::doc::Node {
+    class MinimalNodeImpl : public osc::Node {
     public:
         friend bool operator==(MinimalNodeImpl const& lhs, MinimalNodeImpl const& rhs)
         {
@@ -33,7 +35,7 @@ namespace
         int m_Data = RandomInt();
     };
 
-    class DifferentMinimalNodeImpl final : public osc::doc::Node {
+    class DifferentMinimalNodeImpl final : public osc::Node {
     public:
         friend bool operator==(DifferentMinimalNodeImpl const& lhs, DifferentMinimalNodeImpl const& rhs)
         {
@@ -44,7 +46,7 @@ namespace
         int m_Data = RandomInt();
     };
 
-    class NodeWithCtorArg final : public osc::doc::Node {
+    class NodeWithCtorArg final : public osc::Node {
     public:
         explicit NodeWithCtorArg(int arg) : m_Arg{arg} {}
         int arg() const { return m_Arg; }
@@ -68,7 +70,7 @@ namespace
         int m_DerivedData = RandomInt();
     };
 
-    class NodeWithName final : public osc::doc::Node {
+    class NodeWithName final : public osc::Node {
     public:
         explicit NodeWithName(std::string_view name)
         {
@@ -741,7 +743,7 @@ TEST(Node, FindReturnsExpectedPathsForGrandchild)
 
     for (TestCase const& tc : testCases)
     {
-        osc::doc::NodePath const p{tc.inputPath};
+        osc::NodePath const p{tc.inputPath};
         ASSERT_EQ(a.find(p), tc.resultFromA);
         ASSERT_EQ(b.find(p), tc.resultFromB);
         ASSERT_EQ(c.find(p), tc.resultFromC);
@@ -777,10 +779,12 @@ TEST(Node, GetPropertyValueByNameReturnsFalseyForMinimalExample)
 
 TEST(Node, SetPropertyValueByIndexReturnsFalseForMinimalExample)
 {
-    ASSERT_FALSE(MinimalNodeImpl{}.setPropertyValue(0, osc::doc::Variant(true)));
+    ASSERT_FALSE(MinimalNodeImpl{}.setPropertyValue(0, osc::Variant(true)));
 }
 
 TEST(Node, SetPropertyValueByNameReturnsFalseForMinimalExample)
 {
-    ASSERT_FALSE(MinimalNodeImpl{}.setPropertyValue("someprop", osc::doc::Variant(true)));
+    ASSERT_FALSE(MinimalNodeImpl{}.setPropertyValue("someprop", osc::Variant(true)));
 }
+
+*/

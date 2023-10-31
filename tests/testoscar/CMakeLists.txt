@@ -2,6 +2,13 @@ include(GoogleTest)
 find_package(GTest REQUIRED CONFIG)
 
 add_executable(testoscar
+    DOM/TestNode.cpp
+    DOM/TestNodePath.cpp
+    DOM/TestObject.cpp
+    DOM/TestPropertyDescription.cpp
+    DOM/TestPropertyTable.cpp
+    DOM/TestPropertyTableEntry.cpp
+
     Formats/TestCSV.cpp
     Formats/TestDAE.cpp
 
@@ -27,6 +34,9 @@ add_executable(testoscar
     Utils/TestCpp20Shims.cpp
     Utils/TestFileChangePoller.cpp
     Utils/TestStringHelpers.cpp
+    Utils/TestStringName.cpp
+    Utils/TestVariant.cpp
+    Utils/TestVariantType.cpp
 
     testoscar.cpp  # entry point
 )

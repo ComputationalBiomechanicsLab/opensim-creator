@@ -1,7 +1,8 @@
 #include "StringName.hpp"
 
-#include <ankerl/unordered_dense.h>
 #include <oscar/Utils/SynchronizedValue.hpp>
+
+#include <ankerl/unordered_dense.h>
 
 #include <atomic>
 #include <cstddef>

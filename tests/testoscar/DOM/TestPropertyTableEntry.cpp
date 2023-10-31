@@ -1,11 +1,11 @@
-#include <oscar_document/PropertyTableEntry.hpp>
+#include <oscar/DOM/PropertyTableEntry.hpp>
 
 #include <gtest/gtest.h>
-#include <oscar_document/PropertyDescription.hpp>
+#include <oscar/DOM/PropertyDescription.hpp>
 
-using osc::doc::PropertyDescription;
-using osc::doc::PropertyTableEntry;
-using osc::doc::Variant;
+using osc::PropertyDescription;
+using osc::PropertyTableEntry;
+using osc::Variant;
 
 TEST(PropertyTableEntry, CanBeConstructedFromAPropertyDescription)
 {

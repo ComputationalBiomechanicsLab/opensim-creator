@@ -1,10 +1,10 @@
 #pragma once
 
-#include <oscar_document/PropertyDescription.hpp>
-#include <oscar_document/StringName.hpp>
-#include <oscar_document/Variant.hpp>
+#include <oscar/DOM/PropertyDescription.hpp>
+#include <oscar/Utils/StringName.hpp>
+#include <oscar/Utils/Variant.hpp>
 
-namespace osc::doc
+namespace osc
 {
     class PropertyTableEntry final {
     public:

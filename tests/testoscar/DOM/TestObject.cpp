@@ -1,6 +1,6 @@
-#include <oscar_document/Object.hpp>
+#include <oscar/DOM/Object.hpp>
 
-#include <oscar_document/PropertyDescription.hpp>
+#include <oscar/DOM/PropertyDescription.hpp>
 
 #include <gtest/gtest.h>
 #include <nonstd/span.hpp>
@@ -11,9 +11,9 @@
 #include <string_view>
 
 /*
-using osc::doc::Object;
-using osc::doc::PropertyDescription;
-using osc::doc::Variant;
+using osc::Object;
+using osc::PropertyDescription;
+using osc::Variant;
 
 namespace
 {

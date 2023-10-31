@@ -1,8 +1,8 @@
 #pragma once
 
-#include <oscar_document/PropertyTable.hpp>
-#include <oscar_document/StringName.hpp>
-#include <oscar_document/VariantType.hpp>
+#include <oscar/DOM/PropertyTable.hpp>
+#include <oscar/Utils/StringName.hpp>
+#include <oscar/Utils/VariantType.hpp>
 
 #include <nonstd/span.hpp>
 
@@ -12,10 +12,10 @@
 #include <string>
 #include <utility>
 
-namespace osc::doc { class PropertyDescription; }
-namespace osc::doc { class Variant; }
+namespace osc { class PropertyDescription; }
+namespace osc { class Variant; }
 
-namespace osc::doc
+namespace osc
 {
     class Object {
     protected:

@@ -9,5 +9,4 @@ each is:
 | `oscar/` | OpenSim-independent framework for creating scientific tooling UIs |
 | `oscar_compiler_configuration/` | Compiler configuration options for `oscar` and `OpenSimCreator` |
 | `oscar_demos/` | Demo that use the `oscar` API to provide something interesting/useful |
-| `oscar_document` | Provides a generic document-object model (DOM) |
-| `oscar_learnopengl` | Implements https://learnopengl.com/ in terms of the `oscar` API |
+| `oscar_learnopengl/` | Implements https://learnopengl.com/ in terms of the `oscar` API |

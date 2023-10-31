@@ -1,10 +1,10 @@
 #pragma once
 
-#include <oscar_document/StringName.hpp>
-#include <oscar_document/Variant.hpp>
-#include <oscar_document/VariantType.hpp>
+#include <oscar/Utils/StringName.hpp>
+#include <oscar/Utils/Variant.hpp>
+#include <oscar/Utils/VariantType.hpp>
 
-namespace osc::doc
+namespace osc
 {
     class PropertyDescription final {
     public:

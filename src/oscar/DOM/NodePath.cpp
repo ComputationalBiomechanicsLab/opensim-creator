@@ -86,13 +86,13 @@ namespace
         for (char* c = pathBegin; c != pathEnd; ++c)
         {
             Lookahead l = getLookahead(c, pathEnd);
-            if (l.a == osc::doc::NodePath::separator && l.b == osc::doc::NodePath::separator)
+            if (l.a == osc::NodePath::separator && l.b == osc::NodePath::separator)
             {
                 shift(c--, 1);
             }
         }
 
-        bool isAbsolute = *pathBegin == osc::doc::NodePath::separator;
+        bool isAbsolute = *pathBegin == osc::NodePath::separator;
         char* cursor = isAbsolute ? pathBegin + 1 : pathBegin;
 
         // skip/dereference relative elements *at the start of a path*
@@ -100,14 +100,14 @@ namespace
             Lookahead l = getLookahead(cursor, pathEnd);
             while (l.a == '.') {
                 switch (l.b) {
-                case osc::doc::NodePath::separator:
+                case osc::NodePath::separator:
                     shift(cursor, 2);
                     break;
                 case nul:
                     shift(cursor, 1);
                     break;
                 case '.': {
-                    if (l.c == osc::doc::NodePath::separator|| l.c == nul) {
+                    if (l.c == osc::NodePath::separator|| l.c == nul) {
                         // starts with '..' element: only allowed if the path
                         // is relative
                         if (isAbsolute)
@@ -118,7 +118,7 @@ namespace
                         // if not absolute, then make sure `contentStart` skips
                         // past these elements because the alg can't reduce
                         // them down
-                        if (l.c == osc::doc::NodePath::separator) {
+                        if (l.c == osc::NodePath::separator) {
                             cursor += 3;
                         } else {
                             cursor += 2;
@@ -155,12 +155,12 @@ namespace
         while (cursor < pathEnd) {
             Lookahead l = getLookahead(cursor, pathEnd);
 
-            if (l.a == '.' && (l.b == nul || l.b == osc::doc::NodePath::separator)) {
+            if (l.a == '.' && (l.b == nul || l.b == osc::NodePath::separator)) {
                 // handle '.' (if found)
-                size_t charsInCurEl = l.b == osc::doc::NodePath::separator ? 2 : 1;
+                size_t charsInCurEl = l.b == osc::NodePath::separator ? 2 : 1;
                 shift(cursor, charsInCurEl);
 
-            } else if (l.a == '.' && l.b == '.' && (l.c == nul || l.c == osc::doc::NodePath::separator)) {
+            } else if (l.a == '.' && l.b == '.' && (l.c == nul || l.c == osc::NodePath::separator)) {
                 // handle '..' (if found)
 
                 if (cursor == contentStart)
@@ -170,13 +170,13 @@ namespace
 
                 // search backwards for previous separator
                 char* prevSeparator = cursor - 2;
-                while (prevSeparator > contentStart && *prevSeparator != osc::doc::NodePath::separator)
+                while (prevSeparator > contentStart && *prevSeparator != osc::NodePath::separator)
                 {
                     --prevSeparator;
                 }
 
                 char* prevStart = prevSeparator <= contentStart ? contentStart : prevSeparator + 1;
-                size_t charsInCurEl = (l.c == osc::doc::NodePath::separator) ? 3 : 2;
+                size_t charsInCurEl = (l.c == osc::NodePath::separator) ? 3 : 2;
                 size_t charsInPrevEl = cursor - prevStart;
 
                 cursor = prevStart;
@@ -184,7 +184,7 @@ namespace
 
             } else {
                 // non-relative element: skip past the next separator or end
-                cursor = std::find(cursor, pathEnd, osc::doc::NodePath::separator) + 1;
+                cursor = std::find(cursor, pathEnd, osc::NodePath::separator) + 1;
             }
         }
 
@@ -194,7 +194,7 @@ namespace
         //   absolute path, so the output should be "", not "/"
         {
             char* beg = isAbsolute ? pathBegin + 1 : pathBegin;
-            if (pathEnd - beg > 0 && pathEnd[-1] == osc::doc::NodePath::separator)
+            if (pathEnd - beg > 0 && pathEnd[-1] == osc::NodePath::separator)
             {
                 --pathEnd;
             }
@@ -207,7 +207,7 @@ namespace
     }
 }
 
-osc::doc::NodePath::NodePath(std::string_view p) :
+osc::NodePath::NodePath(std::string_view p) :
     m_ParsedPath{normalize(std::string{p})}
 {
 }

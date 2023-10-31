@@ -1,7 +1,7 @@
 #pragma once
 
-#include <oscar_document/NodePath.hpp>
-#include <oscar_document/Object.hpp>
+#include <oscar/DOM/NodePath.hpp>
+#include <oscar/DOM/Object.hpp>
 
 #include <oscar/Utils/ClonePtr.hpp>
 #include <oscar/Utils/CStringView.hpp>
@@ -14,10 +14,10 @@
 #include <type_traits>
 #include <utility>
 
-namespace osc::doc { class Variant; }
-namespace osc::doc { class PropertyDescriptions; }
+namespace osc { class Variant; }
+namespace osc { class PropertyDescriptions; }
 
-namespace osc::doc
+namespace osc
 {
     class Node : public Object {
     protected:

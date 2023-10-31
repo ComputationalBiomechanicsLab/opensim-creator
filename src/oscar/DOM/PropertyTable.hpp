@@ -1,7 +1,7 @@
 #pragma once
 
-#include <oscar_document/PropertyTableEntry.hpp>
-#include <oscar_document/StringName.hpp>
+#include <oscar/DOM/PropertyTableEntry.hpp>
+#include <oscar/Utils/StringName.hpp>
 
 #include <nonstd/span.hpp>
 
@@ -10,10 +10,10 @@
 #include <unordered_map>
 #include <vector>
 
-namespace osc::doc { class PropertyDescription; }
-namespace osc::doc { class Variant; }
+namespace osc { class PropertyDescription; }
+namespace osc { class Variant; }
 
-namespace osc::doc
+namespace osc
 {
     class PropertyTable final {
     public:

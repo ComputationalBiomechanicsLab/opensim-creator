@@ -5,7 +5,7 @@
 #include <string>
 #include <string_view>
 
-namespace osc::doc
+namespace osc
 {
     // a pre-parsed tree path
     //
@@ -129,8 +129,8 @@ namespace osc::doc
 }
 
 template<>
-struct std::hash<osc::doc::NodePath> final {
-    size_t operator()(osc::doc::NodePath const& np) const
+struct std::hash<osc::NodePath> final {
+    size_t operator()(osc::NodePath const& np) const
     {
         return std::hash<std::string_view>{}(np);
     }

@@ -1,11 +1,11 @@
-#include <oscar_document/PropertyTable.hpp>
+#include <oscar/DOM/PropertyTable.hpp>
 
 #include <gtest/gtest.h>
+#include <oscar/DOM/PropertyDescription.hpp>
+#include <oscar/DOM/PropertyTableEntry.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
-#include <oscar_document/PropertyDescription.hpp>
-#include <oscar_document/PropertyTableEntry.hpp>
-#include <oscar_document/StringName.hpp>
-#include <oscar_document/Variant.hpp>
+#include <oscar/Utils/StringName.hpp>
+#include <oscar/Utils/Variant.hpp>
 
 #include <algorithm>
 #include <array>
@@ -14,9 +14,9 @@
 #include <tuple>
 #include <unordered_set>
 
-using osc::doc::PropertyDescription;
-using osc::doc::PropertyTable;
-using osc::doc::Variant;
+using osc::PropertyDescription;
+using osc::PropertyTable;
+using osc::Variant;
 
 namespace
 {
