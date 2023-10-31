@@ -182,6 +182,22 @@ TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFault
     }
 }
 
+// useful, because it enables adding random geometry etc. into the component set that the user can
+// later clean up in the UI
+TEST(OpenSimHelpers, CanDeleteAnOffsetFrameFromAModelsComponentSet)
+{
+    OpenSim::Model model;
+    auto& pof = osc::AddModelComponent(model, std::make_unique<OpenSim::PhysicalOffsetFrame>());
+    pof.setParentFrame(model.getGround());
+    osc::FinalizeConnections(model);
+    osc::InitializeModel(model);
+    osc::InitializeState(model);
+
+    ASSERT_EQ(model.get_ComponentSet().getSize(), 1);
+    ASSERT_TRUE(osc::TryDeleteComponentFromModel(model, pof));
+    ASSERT_EQ(model.get_ComponentSet().getSize(), 0);
+}
+
 TEST(OpenSimHelpers, AddModelComponentReturnsProvidedPointer)
 {
     OpenSim::Model m;

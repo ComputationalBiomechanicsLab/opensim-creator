@@ -19,6 +19,7 @@
 #include <OpenSimCreator/UI/Tabs/PerformanceAnalyzerTab.hpp>
 #include <OpenSimCreator/UI/Widgets/ObjectPropertiesEditor.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/ShapeFitters.hpp>
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -30,6 +31,7 @@
 #include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
+#include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 #include <OpenSim/Simulation/Model/OffsetFrame.h>
@@ -45,6 +47,10 @@
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <oscar/Graphics/MeshCache.hpp>
+#include <oscar/Maths/Ellipsoid.hpp>
+#include <oscar/Maths/Plane.hpp>
+#include <oscar/Maths/Sphere.hpp>
+#include <oscar/Maths/Transform.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
@@ -227,6 +233,13 @@ namespace
         }
 
         return true;
+    }
+
+    // updates `appearance` to that of a fitted geometry
+    void UpdAppearanceToFittedGeom(OpenSim::Appearance& appearance)
+    {
+        appearance.set_color({0.0, 1.0, 0.0});
+        appearance.set_opacity(0.3);
     }
 }
 
@@ -1921,4 +1934,219 @@ bool osc::ActionTransformContactGeometry(
         return false;
     }
     return false;
+}
+
+bool osc::ActionFitSphereToMesh(
+    UndoableModelStatePair& model,
+    OpenSim::Mesh const& openSimMesh)
+{
+    // fit a sphere to the mesh
+    Sphere sphere;
+    try
+    {
+        Mesh const mesh = ToOscMeshBakeScaleFactors(model.getModel(), model.getState(), openSimMesh);
+        sphere = FitSphere(mesh);
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("error detected while trying to fit a sphere to a mesh: %s", ex.what());
+        return false;
+    }
+
+    // create an `OpenSim::OffsetFrame` expressed w.r.t. the same frame as the mesh that
+    // places the origin-centered `OpenSim::Sphere` at the computed `origin`
+    auto offsetFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+    offsetFrame->setName("sphere_fit");
+    offsetFrame->connectSocket_parent(dynamic_cast<OpenSim::PhysicalFrame const&>(openSimMesh.getFrame()));
+    offsetFrame->setOffsetTransform(SimTK::Transform{ToSimTKVec3(sphere.origin)});
+
+    // create an origin-centered `OpenSim::Sphere` geometry to visually represent the computed
+    // sphere
+    auto openSimSphere = std::make_unique<OpenSim::Sphere>(sphere.radius);
+    openSimSphere->setName("sphere_geom");
+    openSimSphere->connectSocket_frame(*offsetFrame);
+    UpdAppearanceToFittedGeom(openSimSphere->upd_Appearance());
+
+    // perform undoable model mutation
+    OpenSim::ComponentPath const openSimMeshPath = osc::GetAbsolutePath(openSimMesh);
+    UID const oldVersion = model.getModelVersion();
+    try
+    {
+        OpenSim::Model& mutModel = model.updModel();
+        auto* const mutOpenSimMesh = FindComponentMut<OpenSim::Mesh>(mutModel, openSimMeshPath);
+        if (!mutOpenSimMesh)
+        {
+            model.setModelVersion(oldVersion);  // the provided path doesn't exist in the model
+            return false;
+        }
+
+        std::string const sphereName = openSimSphere->getName();
+        auto& pofRef = AddModelComponent(mutModel, std::move(offsetFrame));
+        AttachGeometry(pofRef, std::move(openSimSphere));
+
+        osc::FinalizeConnections(mutModel);
+        osc::InitializeModel(mutModel);
+        osc::InitializeState(mutModel);
+        model.setSelected(&pofRef);
+
+        std::stringstream ss;
+        ss << "computed " << sphereName;
+        model.commit(std::move(ss).str());
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("error detected while trying to add a sphere fit to the OpenSim model: %s", ex.what());
+        return false;
+    }
+
+    return true;
+}
+
+bool osc::ActionFitEllipsoidToMesh(
+    UndoableModelStatePair& model,
+    OpenSim::Mesh const& openSimMesh)
+{
+    // fit an ellipsoid to the mesh
+    Ellipsoid ellipsoid;
+    try
+    {
+        Mesh const mesh = ToOscMeshBakeScaleFactors(model.getModel(), model.getState(), openSimMesh);
+        ellipsoid = FitEllipsoid(mesh);
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("error detected while trying to fit an ellipsoid to a mesh: %s", ex.what());
+        return false;
+    }
+
+    // create an `OpenSim::OffsetFrame` expressed w.r.t. the same frame as the mesh that
+    // places the origin-centered `OpenSim::Ellipsoid` at the computed ellipsoid's `origin`
+    // and reorients the ellipsoid's XYZ along the computed ellipsoid directions
+    //
+    // (OSC note: `FitEllipsoid` in OSC should yield a right-handed coordinate system)
+    auto offsetFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+    offsetFrame->setName("ellipsoid_fit");
+    offsetFrame->connectSocket_parent(dynamic_cast<OpenSim::PhysicalFrame const&>(openSimMesh.getFrame()));
+    {
+        // compute offset transform for ellipsoid
+        SimTK::Mat33 m;
+        m.col(0) = ToSimTKVec3(ellipsoid.radiiDirections[0]);
+        m.col(1) = ToSimTKVec3(ellipsoid.radiiDirections[1]);
+        m.col(2) = ToSimTKVec3(ellipsoid.radiiDirections[2]);
+        SimTK::Transform const t{SimTK::Rotation{m}, ToSimTKVec3(ellipsoid.origin)};
+        offsetFrame->setOffsetTransform(t);
+    }
+
+    // create an origin-centered `OpenSim::Ellipsoid` geometry to visually represent the computed
+    // ellipsoid
+    auto openSimEllipsoid = std::make_unique<OpenSim::Ellipsoid>(ellipsoid.radii[0], ellipsoid.radii[1], ellipsoid.radii[2]);
+    openSimEllipsoid->setName("ellipsoid_geom");
+    openSimEllipsoid->connectSocket_frame(*offsetFrame);
+    UpdAppearanceToFittedGeom(openSimEllipsoid->upd_Appearance());
+
+    // mutate the model and add the relevant components
+    OpenSim::ComponentPath const openSimMeshPath = osc::GetAbsolutePath(openSimMesh);
+    UID const oldVersion = model.getModelVersion();
+    try
+    {
+        OpenSim::Model& mutModel = model.updModel();
+        auto* const mutOpenSimMesh = FindComponentMut<OpenSim::Mesh>(mutModel, openSimMeshPath);
+        if (!mutOpenSimMesh)
+        {
+            model.setModelVersion(oldVersion);  // the provided path doesn't exist in the model
+            return false;
+        }
+
+        std::string const ellipsoidName = openSimEllipsoid->getName();
+        auto& pofRef = AddModelComponent(mutModel, std::move(offsetFrame));
+        AttachGeometry(pofRef, std::move(openSimEllipsoid));
+
+        osc::FinalizeConnections(mutModel);
+        osc::InitializeModel(mutModel);
+        osc::InitializeState(mutModel);
+        model.setSelected(&pofRef);
+
+        std::stringstream ss;
+        ss << "computed" << ellipsoidName;
+        model.commit(std::move(ss).str());
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("error detected while trying to add a sphere fit to the OpenSim model: %s", ex.what());
+        return false;
+    }
+
+    return true;
+}
+
+bool osc::ActionFitPlaneToMesh(
+    UndoableModelStatePair& model,
+    OpenSim::Mesh const& openSimMesh)
+{
+    // fit a plane to the mesh
+    Plane plane;
+    try
+    {
+        Mesh const mesh = ToOscMeshBakeScaleFactors(model.getModel(), model.getState(), openSimMesh);
+        plane = FitPlane(mesh);
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("error detected while trying to fit a plane to a mesh: %s", ex.what());
+        return false;
+    }
+
+    // create an `OpenSim::OffsetFrame` expressed w.r.t. the same frame as the mesh that
+    // places the origin-centered `OpenSim::Brick` at the computed plane's `origin` and
+    // also reorients the +1 in Y brick along the plane's normal
+    auto offsetFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+    offsetFrame->setName("plane_fit");
+    offsetFrame->connectSocket_parent(dynamic_cast<OpenSim::PhysicalFrame const&>(openSimMesh.getFrame()));
+    {
+        // +1Y in "brick space" should map to the plane's normal
+        glm::quat const q = glm::rotation({0.0f, 1.0f, 0.0f}, plane.normal);
+        offsetFrame->setOffsetTransform(SimTK::Transform{ToSimTKRotation(q), ToSimTKVec3(plane.origin)});
+    }
+
+    // create an origin-centered `OpenSim::Brick` geometry to visually represent the computed
+    // plane
+    auto openSimBrick = std::make_unique<OpenSim::Brick>();
+    openSimBrick->set_half_lengths({0.2, 0.0005, 0.2});  // hard-coded, for now - the thin axis points along the normal
+    openSimBrick->setName("plane_geom");
+    openSimBrick->connectSocket_frame(*offsetFrame);
+    UpdAppearanceToFittedGeom(openSimBrick->upd_Appearance());
+
+    // mutate the model and add the relevant components
+    OpenSim::ComponentPath const openSimMeshPath = osc::GetAbsolutePath(openSimMesh);
+    UID const oldVersion = model.getModelVersion();
+    try
+    {
+        OpenSim::Model& mutModel = model.updModel();
+        auto* const mutOpenSimMesh = FindComponentMut<OpenSim::Mesh>(mutModel, openSimMeshPath);
+        if (!mutOpenSimMesh)
+        {
+            model.setModelVersion(oldVersion);  // the provided path doesn't exist in the model
+            return false;
+        }
+
+        std::string const fitName = offsetFrame->getName();
+        auto& pofRef = AddModelComponent(mutModel, std::move(offsetFrame));
+        AttachGeometry(pofRef, std::move(openSimBrick));
+
+        osc::FinalizeConnections(mutModel);
+        osc::InitializeModel(mutModel);
+        osc::InitializeState(mutModel);
+        model.setSelected(&pofRef);
+
+        std::stringstream ss;
+        ss << "computed " << fitName;
+        model.commit(std::move(ss).str());
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("error detected while trying to add a sphere fit to the OpenSim model: %s", ex.what());
+        return false;
+    }
+
+    return true;
 }

@@ -16,6 +16,7 @@ namespace OpenSim { class Coordinate; }
 namespace OpenSim { class Geometry; }
 namespace OpenSim { class Joint; }
 namespace OpenSim { class Object; }
+namespace OpenSim { class Mesh; }
 namespace OpenSim { class PathPoint; }
 namespace OpenSim { class PhysicalFrame; }
 namespace OpenSim { class PhysicalOffsetFrame; }
@@ -398,5 +399,18 @@ namespace osc
         OpenSim::ContactGeometry const&,
         glm::vec3 const& deltaPosition,
         glm::vec3 const& newEulers
+    );
+
+    bool ActionFitSphereToMesh(
+        UndoableModelStatePair&,
+        OpenSim::Mesh const&
+    );
+    bool ActionFitEllipsoidToMesh(
+        UndoableModelStatePair&,
+        OpenSim::Mesh const&
+    );
+    bool ActionFitPlaneToMesh(
+        UndoableModelStatePair&,
+        OpenSim::Mesh const&
     );
 }
