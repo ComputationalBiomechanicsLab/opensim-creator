@@ -6,14 +6,18 @@
 #include <nonstd/span.hpp>
 
 #include <memory>
+#include <optional>
 #include <random>
 #include <string>
 #include <string_view>
 
 /*
+
+using osc::Color;
 using osc::Object;
 using osc::PropertyDescription;
 using osc::Variant;
+using osc::VariantType;
 
 namespace
 {
@@ -157,6 +161,257 @@ TEST(Object, ObjectWithCustomToStringOverrideReturnsExpectedString)
     ASSERT_EQ(to_string(ObjectWithCustomToStringOverride{expected}), expected);
 }
 
-// todo: object with properties
+TEST(Object, ObjectWithGivenPropertiesWhenClonedReturnsSameNumProperties)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"intprop", Variant{20}},
+        {"floatprop", Variant{10.0f}},
+        {"stringprop", Variant{"str"}},
+    });
+    ObjectWithGivenProperties const orig{descriptions};
+    auto const clone = static_cast<Object const&>(orig).clone();
+    ASSERT_EQ(orig.getNumProperties(), clone->getNumProperties());
+}
+
+TEST(Object, ObjectWithGivenPropertiesWhenClonedHasPropertyNamesInSameOrder)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"intprop", Variant{20}},
+        {"floatprop", Variant{10.0f}},
+        {"stringprop", Variant{"str"}},
+    });
+    ObjectWithGivenProperties const orig{descriptions};
+    auto const clone = static_cast<Object const&>(orig).clone();
+
+    ASSERT_EQ(orig.getNumProperties(), clone->getNumProperties());
+    for (size_t i = 0; i < orig.getNumProperties(); ++i)
+    {
+        ASSERT_EQ(orig.getPropertyName(i), clone->getPropertyName(i));
+    }
+}
+
+TEST(Object, ObjectWithGivenPropertiesWhenClonedHasSamePropertyValues)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"intprop", Variant{20}},
+        {"floatprop", Variant{10.0f}},
+        {"stringprop", Variant{"str"}},
+    });
+    auto const newIntValue = Variant{40};
+
+    ObjectWithGivenProperties orig{descriptions};
+    orig.setPropertyValue("intprop", newIntValue);
+    ASSERT_EQ(orig.getPropertyValue("intprop"), newIntValue);
+
+    auto const clone = static_cast<Object const&>(orig).clone();
+    ASSERT_EQ(clone->getPropertyValue("intprop"), newIntValue);
+}
+
+TEST(Object, ObjectWithGivenPropertiesWhenClonedHasSamePropertyNames)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"intprop", Variant{20}},
+        {"floatprop", Variant{10.0f}},
+        {"stringprop", Variant{"str"}},
+    });
+    ObjectWithGivenProperties const orig{descriptions};
+    auto const clone = static_cast<Object const&>(orig).clone();
+
+    for (PropertyDescription const& description : descriptions)
+    {
+        ASSERT_TRUE(clone->getPropertyIndex(description.getName()));
+    }
+}
+
+TEST(Object, ObjectWithGivenPropertiesWhenClonedHasSameDefaultValues)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"intprop", Variant{20}},
+        {"floatprop", Variant{10.0f}},
+        {"stringprop", Variant{"str"}},
+    });
+    ObjectWithGivenProperties const orig{descriptions};
+    auto const clone = static_cast<Object const&>(orig).clone();
+
+    for (PropertyDescription const& description : descriptions)
+    {
+        ASSERT_EQ(clone->getPropertyDefaultValue(description.getName()), description.getDefaultValue());
+    }
+}
+
+TEST(Object, GetNumPropertiesReturnsZeroWhenProvidedEmptySpan)
+{
+    std::array<PropertyDescription, 0> descriptions{};
+    ObjectWithGivenProperties const a{descriptions};
+    ASSERT_EQ(a.getNumProperties(), 0);
+}
+
+TEST(Object, GetNumPropertiesReturnsOneWhenProvidedOneProperty)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"someprop", Variant{false}},
+    });
+    ObjectWithGivenProperties const a{descriptions};
+    ASSERT_EQ(a.getNumProperties(), 1);
+}
+
+TEST(Object, GetNumPropertiesReturnsTwoWhenProvidedTwoProperties)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"someprop", Variant{false}},
+        {"somecolor", Variant{Color::red()}},
+    });
+    ObjectWithGivenProperties const a{descriptions};
+    ASSERT_EQ(a.getNumProperties(), 2);
+}
+
+TEST(Object, GetNumPropertiesReturnsThreeWhenProvidedThreeProperties)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"someprop", Variant{false}},
+        {"somecolor", Variant{Color::red()}},
+        {"somestring", Variant{"boring"}},
+    });
+    ObjectWithGivenProperties const a{descriptions};
+    ASSERT_EQ(a.getNumProperties(), 3);
+}
+
+TEST(Object, GetNumPropertiesReturnsTwoWhenProvidedThreePropertyDescriptionsWithADuplicatedName)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{false}},
+        {"b", Variant{Color::red()}},
+        {"a", Variant{"boring"}},
+    });
+    ObjectWithGivenProperties const a{descriptions};
+    ASSERT_EQ(a.getNumProperties(), 2);
+}
+
+TEST(Object, GetNumPropertiesReturnsTheFirstProvidedPropertyDescriptionWhenGivenDuplicateNames)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{false}},
+        {"b", Variant{Color::red()}},
+        {"a", Variant{"boring"}},
+    });
+    ObjectWithGivenProperties const a{descriptions};
+    ASSERT_TRUE(a.getPropertyValue("a").getType() == VariantType::Bool);
+}
+
+TEST(Object, GetPropertyNameReturnsPropertiesInTheProvidedOrder)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{false}},
+        {"b", Variant{false}},
+        {"c", Variant{false}},
+        {"d", Variant{false}},
+        {"e", Variant{false}},
+        {"f", Variant{false}},
+        {"g", Variant{false}},
+        {"h", Variant{false}},
+    });
+    ObjectWithGivenProperties const a{descriptions};
+
+    ASSERT_EQ(a.getNumProperties(), descriptions.size());
+    for (size_t i = 0; i < descriptions.size(); ++i)
+    {
+        ASSERT_EQ(a.getPropertyName(i), descriptions.at(i).getName());
+    }
+}
+
+TEST(Object, GetPropertyIndexReturnsNulloptForInvalidName)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{false}},
+    });
+    ObjectWithGivenProperties const a{descriptions};
+    ASSERT_EQ(a.getPropertyIndex("non-existent"), std::nullopt);
+}
+
+TEST(Object, GetPropertyIndexReturnsExpectedIndexForCorrectName)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{false}},
+        {"b", Variant{false}},
+    });
+    ObjectWithGivenProperties const a{descriptions};
+    ASSERT_EQ(a.getPropertyIndex("a"), 0);
+    ASSERT_EQ(a.getPropertyIndex("b"), 1);
+}
+
+TEST(Object, TryGetPropertyDefaultValueReturnsNullptrForInvalidName)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{false}},
+        {"b", Variant{false}},
+    });
+    ObjectWithGivenProperties const a{descriptions};
+    ASSERT_EQ(a.tryGetPropertyDefaultValue("non-existent"), nullptr);
+}
+
+TEST(Object, TryGetPropertyDefaultValueReturnsNonNullptrForCorrectName)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{false}},
+        {"b", Variant{false}},
+    });
+    ObjectWithGivenProperties const a{descriptions};
+    ASSERT_NE(a.tryGetPropertyDefaultValue("a"), nullptr);
+    ASSERT_NE(a.tryGetPropertyDefaultValue("b"), nullptr);
+}
+
+TEST(Object, TryGetPropertyDefaultValueReturnsNonNullptrToCorrectValueForCorrectName)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{1337}},
+        {"b", Variant{-1}},
+    });
+    ObjectWithGivenProperties const a{descriptions};
+    ASSERT_NE(a.tryGetPropertyDefaultValue("a"), nullptr);
+    ASSERT_EQ(*a.tryGetPropertyDefaultValue("a"), 1337);
+}
+
+TEST(Object, GetPropertyDefaultValueThrowsForInvalidName)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{1337}},
+        {"b", Variant{-1}},
+    });
+    ObjectWithGivenProperties const a{descriptions};
+    ASSERT_ANY_THROW({ a.getPropertyDefaultValue("non-existent"); });
+}
+
+TEST(Object, GetPropertyDefaultValueDoesNotThrowForCorrectName)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{1337}},
+        {"b", Variant{-1}},
+    });
+    ObjectWithGivenProperties const a{descriptions};
+    ASSERT_EQ(a.getPropertyDefaultValue("a"), 1337);
+}
+
+// TODO: tryGetPropertyValue
+// TODO: getPropertyValue
+// TODO: trySetPropertyValue
+// TODO: setPropertyValue
 
 */
