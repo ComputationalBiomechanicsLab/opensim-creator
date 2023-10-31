@@ -140,7 +140,7 @@ namespace osc
         // You might be (rightly) wondering why this implementation goes through the
         // bother of using `Identity<T>` classes to distinguish overloads etc. rather
         // than just specializing a template function.
-        // 
+        //
         // It's because standard C++ doesn't allow template specialization on class
         // member functions. See: https://stackoverflow.com/a/3057522
 
