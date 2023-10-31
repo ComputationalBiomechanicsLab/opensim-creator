@@ -37,95 +37,79 @@ namespace osc
         void setName(std::string_view);
 
         template<
-            typename TDerived = Node,
-            typename std::enable_if_t<std::is_base_of_v<Node, TDerived>, bool> = true
+            typename TNode = Node,
+            typename std::enable_if_t<std::is_base_of_v<Node, TNode>, bool> = true
         >
-        TDerived const* getParent() const
+        TNode const* getParent() const
         {
-            return dynamic_cast<TDerived const*>(getParent<Node>());
+            return getParent(Identity<TNode>{});
         }
-        template<>
-        Node const* getParent<Node>() const;
 
         template<
-            typename TDerived = Node,
-            typename std::enable_if_t<std::is_base_of_v<Node, TDerived>, bool> = true
+            typename TNode = Node,
+            typename std::enable_if_t<std::is_base_of_v<Node, TNode>, bool> = true
         >
-        TDerived* updParent()
+        TNode* updParent()
         {
-            return dynamic_cast<TDerived*>(updParent<Node>());
+            return updParent(Identity<TNode>{});
         }
-        template<>
-        Node* updParent<Node>();
 
 
         size_t getNumChildren() const;
 
         template<
-            typename TDerived = Node,
-            typename std::enable_if_t<std::is_base_of_v<Node, TDerived>, bool> = true
+            typename TNode = Node,
+            typename std::enable_if_t<std::is_base_of_v<Node, TNode>, bool> = true
         >
-        TDerived const* getChild(size_t i) const
+        TNode const* getChild(size_t i) const
         {
-            return dynamic_cast<TDerived const*>(getChild<Node>(i));
+            return getChild(i, Identity<TNode>{});
         }
-        template<>
-        Node const* getChild<Node>(size_t) const;
 
         template<
-            typename TDerived = Node,
-            typename std::enable_if_t<std::is_base_of_v<Node, TDerived>, bool> = true
+            typename TNode = Node,
+            typename std::enable_if_t<std::is_base_of_v<Node, TNode>, bool> = true
         >
-        TDerived const* getChild(std::string_view childName) const
+        TNode const* getChild(std::string_view childName) const
         {
-            return dynamic_cast<TDerived const*>(getChild<Node>(childName));
+            return getChild(childName, Identity<TNode>{});
         }
-        template<>
-        Node const* getChild<Node>(std::string_view) const;
 
         template<
-            typename TDerived = Node,
-            typename std::enable_if_t<std::is_base_of_v<Node, TDerived>, bool> = true
+            typename TNode = Node,
+            typename std::enable_if_t<std::is_base_of_v<Node, TNode>, bool> = true
         >
-        TDerived* updChild(size_t i)
+        TNode* updChild(size_t i)
         {
-            return dynamic_cast<TDerived*>(updChild<Node>(i));
+            return updChild(i, Identity<TNode>{});
         }
-        template<>
-        Node* updChild<Node>(size_t);
 
         template<
-            typename TDerived = Node,
-            typename std::enable_if_t<std::is_base_of_v<Node, TDerived>, bool> = true
+            typename TNode = Node,
+            typename std::enable_if_t<std::is_base_of_v<Node, TNode>, bool> = true
         >
-        TDerived* updChild(std::string_view childName)
+        TNode* updChild(std::string_view childName)
         {
-            return dynamic_cast<TDerived*>(updChild<Node>(childName));
+            return updChild(childName, Identity<TNode>{});
         }
-        template<>
-        Node* updChild<Node>(std::string_view childName);
 
         template<
-            typename TDerived,
-            typename std::enable_if_t<std::is_base_of_v<Node, TDerived>, bool> = true
+            typename TNode,
+            typename std::enable_if_t<std::is_base_of_v<Node, TNode>, bool> = true
         >
-        TDerived& addChild(std::unique_ptr<TDerived> p)
+        TNode& addChild(std::unique_ptr<TNode> p)
         {
-            TDerived& rv = *p;
-            addChild<Node>(std::move(p));
-            return rv;
+            return addChild(std::move(p), Identity<TNode>{});
         }
-        template<>
-        Node& addChild<Node>(std::unique_ptr<Node>);
 
         template<
-            typename TDerived,
+            typename TNode,
             typename... Args,
-            typename std::enable_if_t<std::is_base_of_v<Node, TDerived>, bool> = true
+            typename std::enable_if_t<std::is_base_of_v<Node, TNode>, bool> = true
         >
-        TDerived& emplaceChild(Args&&... args)
+        TNode& emplaceChild(Args&&... args)
         {
-            return addChild(std::make_unique<TDerived>(std::forward<Args>(args)...));
+            return addChild(std::make_unique<TNode>(std::forward<Args>(args)...));
         }
 
         bool removeChild(size_t);
@@ -135,28 +119,99 @@ namespace osc
         NodePath getAbsolutePath() const;
 
         template<
-            typename TDerived = Node,
-            typename std::enable_if_t<std::is_base_of_v<Node, TDerived>, bool> = true
+            typename TNode = Node,
+            typename std::enable_if_t<std::is_base_of_v<Node, TNode>, bool> = true
         >
-        TDerived const* find(NodePath const& p) const
+        TNode const* find(NodePath const& p) const
         {
-            return dynamic_cast<TDerived const*>(find<Node>(p));
+            return find(p, Identity<TNode>{});
         }
-        template<>
-        Node const* find<Node>(NodePath const&) const;
 
         template<
-            typename TDerived = Node,
-            typename std::enable_if_t<std::is_base_of_v<Node, TDerived>, bool> = true
+            typename TNode = Node,
+            typename std::enable_if_t<std::is_base_of_v<Node, TNode>, bool> = true
         >
-        TDerived* findMut(NodePath const& p)
+        TNode* findMut(NodePath const& p)
         {
-            return dynamic_cast<TDerived*>(findMut<Node>(p));
+            return dynamic_cast<TNode*>(findMut(p, Identity<TNode>{}));
         }
-        template<>
-        Node* findMut<Node>(NodePath const&);
 
     private:
+        // You might be (rightly) wondering why this implementation goes through the
+        // bother of using `Identity<T>` classes to distinguish overloads etc. rather
+        // than just specializing a template function.
+        // 
+        // It's because standard C++ doesn't allow template specialization on class
+        // member functions. See: https://stackoverflow.com/a/3057522
+
+        template<typename T>
+        struct Identity { using type = T; };
+
+        template<typename TDerived>
+        TDerived const* getParent(Identity<TDerived>) const
+        {
+            return dynamic_cast<TDerived const*>(getParent(Identity<Node>{}));
+        }
+        Node const* getParent(Identity<Node>) const;
+
+        template<typename TDerived>
+        TDerived* updParent(Identity<TDerived>)
+        {
+            return dynamic_cast<TDerived*>(updParent(Identity<Node>{}));
+        }
+        Node* updParent(Identity<Node>);
+
+        template<typename TDerived>
+        TDerived const* getChild(size_t i, Identity<TDerived>) const
+        {
+            return dynamic_cast<TDerived const*>(getChild(i, Identity<Node>{}));
+        }
+        Node const* getChild(size_t, Identity<Node>) const;
+
+        template<typename TDerived>
+        TDerived const* getChild(std::string_view childName, Identity<TDerived>) const
+        {
+            return dynamic_cast<TDerived const*>(getChild(childName, Identity<Node>{}));
+        }
+        Node const* getChild(std::string_view, Identity<Node>) const;
+
+        template<typename TDerived>
+        TDerived* updChild(size_t i, Identity<TDerived>)
+        {
+            return dynamic_cast<TDerived*>(updChild(i, Identity<Node>{}));
+        }
+        Node* updChild(size_t, Identity<Node>);
+
+        template<typename TDerived>
+        TDerived* updChild(std::string_view childName, Identity<TDerived>)
+        {
+            return dynamic_cast<TDerived*>(updChild(childName, Identity<Node>{}));
+        }
+        Node* updChild(std::string_view childName, Identity<Node>);
+
+        template<typename TDerived>
+        TDerived& addChild(std::unique_ptr<TDerived> p, Identity<TDerived>)
+        {
+            TDerived& rv = *p;
+            addChild(std::move(p), Identity<Node>{});
+            return rv;
+        }
+        Node& addChild(std::unique_ptr<Node>, Identity<Node>);
+
+        template<typename TDerived>
+        TDerived const* find(NodePath const& p, Identity<TDerived>) const
+        {
+            return dynamic_cast<TDerived const*>(find(p, Identity<Node>{}));
+        }
+        Node const* find(NodePath const&, Identity<Node>) const;
+
+        template<typename TDerived>
+        TDerived* findMut(NodePath const& p, Identity<TDerived>)
+        {
+            return dynamic_cast<TDerived*>(findMut(p, Identity<Node>{}));
+        }
+        Node* findMut(NodePath const&, Identity<Node>);
+
         // lifetime
         // lifetimed ptr to parent
         // children
