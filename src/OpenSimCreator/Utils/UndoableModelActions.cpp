@@ -2031,18 +2031,14 @@ bool osc::ActionFitEllipsoidToMesh(
     {
         // TODO:
         SimTK::Mat33 m;
-        for (int column = 0; column < 3; ++column)
-        {
-            for (int row = 0; row < 3; ++row)
-            {
-                m[column][row] = static_cast<double>(ellipsoid.radiiDirections[column][row]);
-            }
-        }
+        m.col(0) = ToSimTKVec3(ellipsoid.radiiDirections[0]);
+        m.col(1) = ToSimTKVec3(ellipsoid.radiiDirections[1]);
+        m.col(2) = ToSimTKVec3(ellipsoid.radiiDirections[2]);
         SimTK::Transform const t{SimTK::Rotation{m}, ToSimTKVec3(ellipsoid.origin)};
         offsetFrame->setOffsetTransform(t);
     }
 
-    auto openSimEllipsoid = std::make_unique<OpenSim::Ellipsoid>(ellipsoid.radii[0], ellipsoid.radii[2], ellipsoid.radii[2]);
+    auto openSimEllipsoid = std::make_unique<OpenSim::Ellipsoid>(std::abs(ellipsoid.radii[0]), std::abs(ellipsoid.radii[1]), std::abs(ellipsoid.radii[2]));
     openSimEllipsoid->setName("ellipsoid");
     openSimEllipsoid->connectSocket_frame(*offsetFrame);
     openSimEllipsoid->upd_Appearance().set_color({0.0, 1.0, 0.0});
