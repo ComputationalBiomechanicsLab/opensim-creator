@@ -1982,12 +1982,12 @@ bool osc::ActionFitSphereToMesh(
 
         std::string const sphereName = openSimSphere->getName();
         auto& pofRef = AddModelComponent(mutModel, std::move(offsetFrame));
-        AttachGeometry(pofRef, std::move(openSimSphere));
+        auto& sphereRef = AttachGeometry(pofRef, std::move(openSimSphere));
 
         osc::FinalizeConnections(mutModel);
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
-        model.setSelected(&pofRef);
+        model.setSelected(&sphereRef);
 
         std::stringstream ss;
         ss << "computed " << sphereName;
