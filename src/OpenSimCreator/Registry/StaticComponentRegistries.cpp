@@ -339,6 +339,17 @@ namespace
 
             // probably shouldn't allow two grounds in a model (#521)
             "Ground",
+
+            // these currently (hopefully, temporarily) crash,
+            //
+            // it's because the UI (AddComponentPopup) implementation assumes
+            // that the prototype's socket is connected in order to render the
+            // new 'in X frame' Vec3 editor UI (#800)
+            "ConditionalPathPoint",
+            "Marker",
+            "PathPoint",
+            "PhysicalOffsetFrame",
+            "Station",
         };
     }
 
@@ -749,6 +760,15 @@ osc::ComponentRegistry<OpenSim::Component> const& osc::GetComponentRegistry()
     static auto const s_StaticReg = CreateOtherComponentRegistry(
         "Component",
         "These are all the components that OpenSim Creator knows about, but can't put into an existing category (e.g. Force)"
+    );
+    return s_StaticReg;
+}
+
+osc::ComponentRegistry<OpenSim::Component> const& osc::GetAllRegisteredComponents()
+{
+    static auto const s_StaticReg = CreateRegistry<OpenSim::Component>(
+        "All Components",
+        "These are all the components that OpenSim Creator knows about"
     );
     return s_StaticReg;
 }
