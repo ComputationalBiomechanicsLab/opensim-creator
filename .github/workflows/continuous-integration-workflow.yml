@@ -55,8 +55,8 @@ jobs:
         if-no-files-found: error
 
   macCatalina:
-    name: Build on Mac (catalina)
-    runs-on: macos-11
+    name: Build on Mac (Monterey)
+    runs-on: macos-12
     steps:
 
     - uses: actions/checkout@v2
@@ -67,7 +67,7 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE
         export OSC_BUILD_CONCURRENCY=$(sysctl -n hw.physicalcpu)
-        ./scripts/build_mac-catalina.sh
+        ./scripts/build_mac.sh
 
     - uses: actions/upload-artifact@v2
       with:

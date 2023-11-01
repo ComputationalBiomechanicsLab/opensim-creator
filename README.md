@@ -130,7 +130,7 @@ requires being logged into GitHub; otherwise, you won't see download links).
 6. Build OpenSim Creator in a terminal:
     1. Clone `opensim-creator`: `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator`
     2. `cd` into the source dir: `cd opensim-creator`
-    3. Run the build script: `scripts/build_mac-catalina.sh` (**warning**: can take a long time)
+    3. Run the build script: `scripts/build_mac.sh` (**warning**: can take a long time)
 6. Done:
     1. The `osc-build` directory should contain the built installer
 
