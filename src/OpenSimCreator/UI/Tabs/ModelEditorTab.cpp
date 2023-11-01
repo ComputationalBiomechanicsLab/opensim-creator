@@ -239,7 +239,7 @@ public:
 
     void tryRecoveringFromException(std::exception const& ex)
     {
-        log::error("an std::exception was thrown while drawing the model editor editor");
+        log::error("an std::exception was thrown while drawing the model editor");
         log::error("    message = %s", ex.what());
         log::error("exceptions typically happen when the model is damaged or made invalid by an edit (e.g. setting a property to an invalid value)");
 
@@ -266,6 +266,13 @@ public:
 
                 log::error("sucessfully undone model");
                 m_ExceptionThrownLastFrame = false;  // reset flag
+            }
+            else if (!m_PopupManager.empty())
+            {
+                // exception was thrown last frame, but we can't undo the model, so try to assume that a popup was
+                // causing the problem last frame and clear all popups instead of fully exploding the whole tab
+                log::error("trying to close all currently-open popups, in case that prevents crashes");
+                m_PopupManager.clear();
             }
             else
             {

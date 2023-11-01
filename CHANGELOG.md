@@ -12,6 +12,8 @@ All notable changes to this project will be documented here. The format is based
   coordinate system (#799)
 - Right-clicking a mesh in the model editor now shows a `Fit Analytic Geometry to This` option, which will fit the chosen
   analytic geometry to the mesh's vertices (#798).
+- If a popup in the editor window throws an exception then the editor window will now try to close the popup, rather than
+  fully erroring out to an error tab (#800)
 - Internal: the codebase now contains shape-fitting algorithms for fitting a sphere, plane, or ellipsoid analytic geometry
   to mesh data. The algorithms were written to closely match the shape-fitting codebase that came with "P.Bishop et. al,
   How to Build a Dinosaur, doi:10.1017/pab.2020.46" (#798)
