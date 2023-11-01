@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Widgets/Popup.hpp>
+#include <OpenSimCreator/UI/Middleware/PopupAPI.hpp>
 
 #include <cstddef>
 #include <memory>
@@ -15,7 +15,7 @@ namespace osc { class PanelManager; }
 
 namespace osc
 {
-    class EditorAPI {
+    class EditorAPI : public PopupAPI {
     protected:
         EditorAPI() = default;
         EditorAPI(EditorAPI const&) = default;
@@ -30,11 +30,6 @@ namespace osc
             implPushComponentContextMenuPopup(p);
         }
 
-        void pushPopup(std::unique_ptr<Popup> p)
-        {
-            implPushPopup(std::move(p));
-        }
-
         void addMusclePlot(OpenSim::Coordinate const& coord, OpenSim::Muscle const& muscle)
         {
             implAddMusclePlot(coord, muscle);
@@ -47,7 +42,6 @@ namespace osc
 
     private:
         virtual void implPushComponentContextMenuPopup(OpenSim::ComponentPath const&) = 0;
-        virtual void implPushPopup(std::unique_ptr<Popup>) = 0;
         virtual void implAddMusclePlot(OpenSim::Coordinate const&, OpenSim::Muscle const&) = 0;
         virtual std::shared_ptr<PanelManager> implGetPanelManager() = 0;
     };

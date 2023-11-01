@@ -1705,7 +1705,7 @@ public:
 
     void setPixels(nonstd::span<Color const> pixels)
     {
-        OSC_ASSERT(ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
+        OSC_ASSERT(osc::ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
         EncodePixelsInDesiredFormat(pixels, m_Format, m_PixelData);
     }
 
@@ -1716,7 +1716,7 @@ public:
 
     void setPixels32(nonstd::span<Color32 const> pixels)
     {
-        OSC_ASSERT(ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
+        OSC_ASSERT(osc::ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
         EncodePixels32InDesiredFormat(pixels, m_Format, m_PixelData);
     }
 
@@ -1730,7 +1730,7 @@ public:
         OSC_ASSERT(pixelData.size() == NumBytesPerPixel(m_Format)*m_Dimensions.x*m_Dimensions.y && "incorrect number of bytes passed to Texture2D::setPixelData");
         OSC_ASSERT(pixelData.size() == m_PixelData.size());
 
-        std::copy(pixelData.cbegin(), pixelData.cend(), m_PixelData.begin());
+        std::copy(pixelData.begin(), pixelData.end(), m_PixelData.begin());
     }
 
     void* getTextureHandleHACK() const

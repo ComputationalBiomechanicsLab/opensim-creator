@@ -103,7 +103,7 @@ void osc::RecentFiles::push_back(std::filesystem::path const& path)
     {
         return f.path == path;
     };
-    erase_if(m_Files, hasPath);
+    osc::erase_if(m_Files, hasPath);
 
     m_Files.push_back(RecentFile
     {

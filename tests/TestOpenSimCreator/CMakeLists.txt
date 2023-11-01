@@ -7,6 +7,7 @@ add_executable(TestOpenSimCreator
     Model/TestUndoableModelStatePair.cpp
     Registry/TestStaticComponentRegistries.cpp
     Simulation/TestForwardDynamicSimulation.cpp
+    UI/Widgets/TestAddComponentPopup.cpp
     Utils/TestOpenSimHelpers.cpp
     Utils/TestShapeFitters.cpp
     Utils/TestUndoableModelActions.cpp
