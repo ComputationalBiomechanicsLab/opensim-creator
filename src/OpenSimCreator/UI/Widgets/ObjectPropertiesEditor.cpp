@@ -779,6 +779,11 @@ namespace
                 return std::nullopt;  // the object isn't an OpenSim component
             }
 
+            if (&component->getRoot() != &m_Model->getModel())
+            {
+                return std::nullopt;  // the object is not within the tree of the model
+            }
+
             auto const positionPropName = osc::TryGetPositionalPropertyName(*component);
             if (!positionPropName)
             {

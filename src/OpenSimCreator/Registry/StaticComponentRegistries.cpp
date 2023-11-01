@@ -339,17 +339,6 @@ namespace
 
             // probably shouldn't allow two grounds in a model (#521)
             "Ground",
-
-            // these currently (hopefully, temporarily) crash,
-            //
-            // it's because the UI (AddComponentPopup) implementation assumes
-            // that the prototype's socket is connected in order to render the
-            // new 'in X frame' Vec3 editor UI (#800)
-            "ConditionalPathPoint",
-            "Marker",
-            "PathPoint",
-            "PhysicalOffsetFrame",
-            "Station",
         };
     }
 
