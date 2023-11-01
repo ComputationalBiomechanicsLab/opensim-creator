@@ -3,6 +3,8 @@
 #include <gtest/gtest.h>
 #include <oscar/Utils/EnumHelpers.hpp>
 
+#include <array>
+#include <cstdint>
 #include <type_traits>
 #include <utility>
 

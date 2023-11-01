@@ -170,7 +170,7 @@ target_link_options(oscar_compiler_configuration INTERFACE
         $<$<BOOL:${OSC_USE_ASAN}>:-fsanitize=address>
     >
 )
-target_compile_features(oscar_compiler_configuration INTERFACE cxx_std_17)
+target_compile_features(oscar_compiler_configuration INTERFACE cxx_std_20)
 
 target_link_libraries(oscar_compiler_configuration INTERFACE
 
