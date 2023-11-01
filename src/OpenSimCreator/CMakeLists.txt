@@ -106,6 +106,7 @@ add_library(OpenSimCreator STATIC
 
     UI/Middleware/EditorAPI.hpp
     UI/Middleware/MainUIStateAPI.hpp
+    UI/Middleware/PopupAPI.hpp
     UI/Middleware/SimulatorUIAPI.hpp
 
     UI/Panels/CoordinateEditorPanel.cpp
