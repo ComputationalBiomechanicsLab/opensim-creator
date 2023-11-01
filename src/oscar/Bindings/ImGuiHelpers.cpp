@@ -8,16 +8,18 @@
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
+#include <oscar/Maths/Quat.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/Vec4.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec4.hpp>
-#include <glm/mat4x4.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -46,19 +48,19 @@ namespace
         return static_cast<float>(older[0]);
     }
 
-    glm::vec2 RectMidpoint(ImRect const& r)
+    osc::Vec2 RectMidpoint(ImRect const& r)
     {
-        return 0.5f * (glm::vec2{r.Min} + glm::vec2{r.Max});
+        return 0.5f * (osc::Vec2{r.Min} + osc::Vec2{r.Max});
     }
 
-    glm::vec2 Size(ImRect const& r)
+    osc::Vec2 Size(ImRect const& r)
     {
-        return glm::vec2{r.Max} - glm::vec2{r.Min};
+        return osc::Vec2{r.Max} - osc::Vec2{r.Min};
     }
 
     float ShortestEdgeLength(ImRect const& r)
     {
-        const glm::vec2 sz = Size(r);
+        const osc::Vec2 sz = Size(r);
         return glm::min(sz.x, sz.y);
     }
 
@@ -67,7 +69,7 @@ namespace
         const osc::Color srgb{ImGui::ColorConvertU32ToFloat4(color)};
         const osc::Color brightened = factor * srgb;
         const osc::Color clamped = osc::ClampToLDR(brightened);
-        return ImGui::ColorConvertFloat4ToU32(glm::vec4{clamped});
+        return ImGui::ColorConvertFloat4ToU32(osc::Vec4{clamped});
     }
 }
 
@@ -133,7 +135,7 @@ void osc::ImGuiApplyDarkTheme()
 
 bool osc::UpdatePolarCameraFromImGuiMouseInputs(
     osc::PolarPerspectiveCamera& camera,
-    glm::vec2 viewportDims)
+    Vec2 viewportDims)
 {
     bool modified = false;
 
@@ -162,9 +164,9 @@ bool osc::UpdatePolarCameraFromImGuiMouseInputs(
 
     bool const leftDragging = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
     bool const middleDragging = ImGui::IsMouseDragging(ImGuiMouseButton_Middle);
-    glm::vec2 const delta = ImGui::GetIO().MouseDelta;
+    Vec2 const delta = ImGui::GetIO().MouseDelta;
 
-    if (delta != glm::vec2{0.0f, 0.0f} && (leftDragging || middleDragging))
+    if (delta != Vec2{0.0f, 0.0f} && (leftDragging || middleDragging))
     {
         if (IsCtrlDown())
         {
@@ -374,19 +376,19 @@ bool osc::UpdatePolarCameraFromImGuiInputs(
     return mouseHandled || keyboardHandled;
 }
 
-void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, glm::vec3& eulers)
+void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, Vec3& eulers)
 {
-    glm::vec3 const front = camera.getDirection();
-    glm::vec3 const up = camera.getUpwardsDirection();
-    glm::vec3 const right = glm::cross(front, up);
-    glm::vec2 const mouseDelta = ImGui::GetIO().MouseDelta;
+    Vec3 const front = camera.getDirection();
+    Vec3 const up = camera.getUpwardsDirection();
+    Vec3 const right = glm::cross(front, up);
+    Vec2 const mouseDelta = ImGui::GetIO().MouseDelta;
 
     float const speed = 10.0f;
     float const displacement = speed * ImGui::GetIO().DeltaTime;
     float const sensitivity = 0.005f;
 
     // keyboard: changes camera position
-    glm::vec3 pos = camera.getPosition();
+    Vec3 pos = camera.getPosition();
     if (ImGui::IsKeyDown(ImGuiKey_W))
     {
         pos += displacement * front;
@@ -418,14 +420,14 @@ void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, glm::vec3& eulers)
     eulers.y += sensitivity * -mouseDelta.x;
     eulers.y = std::fmod(eulers.y, 2.0f * osc::fpi);
 
-    camera.setRotation(glm::normalize(glm::quat{eulers}));
+    camera.setRotation(glm::normalize(Quat{eulers}));
 }
 
 osc::Rect osc::ContentRegionAvailScreenRect()
 {
-    glm::vec2 const topLeft = ImGui::GetCursorScreenPos();
-    glm::vec2 const dims = ImGui::GetContentRegionAvail();
-    glm::vec2 const bottomRight = topLeft + dims;
+    Vec2 const topLeft = ImGui::GetCursorScreenPos();
+    Vec2 const dims = ImGui::GetContentRegionAvail();
+    Vec2 const bottomRight = topLeft + dims;
 
     return Rect{topLeft, bottomRight};
 }
@@ -435,18 +437,18 @@ void osc::DrawTextureAsImGuiImage(Texture2D const& t)
     DrawTextureAsImGuiImage(t, t.getDimensions());
 }
 
-void osc::DrawTextureAsImGuiImage(Texture2D const& t, glm::vec2 dims)
+void osc::DrawTextureAsImGuiImage(Texture2D const& t, Vec2 dims)
 {
-    glm::vec2 const topLeftCoord = {0.0f, 1.0f};
-    glm::vec2 const bottomRightCoord = {1.0f, 0.0f};
+    Vec2 const topLeftCoord = {0.0f, 1.0f};
+    Vec2 const bottomRightCoord = {1.0f, 0.0f};
     DrawTextureAsImGuiImage(t, dims, topLeftCoord, bottomRightCoord);
 }
 
 void osc::DrawTextureAsImGuiImage(
     Texture2D const& t,
-    glm::vec2 dims,
-    glm::vec2 topLeftCoord,
-    glm::vec2 bottomRightCoord)
+    Vec2 dims,
+    Vec2 topLeftCoord,
+    Vec2 bottomRightCoord)
 {
     if (void* handle = t.getTextureHandleHACK())
     {
@@ -463,10 +465,10 @@ void osc::DrawTextureAsImGuiImage(RenderTexture const& tex)
     return DrawTextureAsImGuiImage(tex, tex.getDimensions());
 }
 
-void osc::DrawTextureAsImGuiImage(RenderTexture const& t, glm::vec2 dims)
+void osc::DrawTextureAsImGuiImage(RenderTexture const& t, Vec2 dims)
 {
-    glm::vec2 const uv0 = {0.0f, 1.0f};
-    glm::vec2 const uv1 = {1.0f, 0.0f};
+    Vec2 const uv0 = {0.0f, 1.0f};
+    Vec2 const uv1 = {1.0f, 0.0f};
 
     if (void* handle = t.getTextureHandleHACK())
     {
@@ -478,10 +480,10 @@ void osc::DrawTextureAsImGuiImage(RenderTexture const& t, glm::vec2 dims)
     }
 }
 
-glm::vec2 osc::CalcButtonSize(CStringView content)
+osc::Vec2 osc::CalcButtonSize(CStringView content)
 {
-    glm::vec2 const padding = ImGui::GetStyle().FramePadding;
-    glm::vec2 const contentDims = ImGui::CalcTextSize(content.c_str());
+    Vec2 const padding = ImGui::GetStyle().FramePadding;
+    Vec2 const contentDims = ImGui::CalcTextSize(content.c_str());
     return contentDims + 2.0f*padding;
 }
 
@@ -490,7 +492,7 @@ float osc::CalcButtonWidth(CStringView content)
     return CalcButtonSize(content).x;
 }
 
-bool osc::ButtonNoBg(CStringView label, glm::vec2 size)
+bool osc::ButtonNoBg(CStringView label, Vec2 size)
 {
     osc::PushStyleColor(ImGuiCol_Button, Color::clear());
     osc::PushStyleColor(ImGuiCol_ButtonHovered, Color::clear());
@@ -504,7 +506,7 @@ bool osc::ButtonNoBg(CStringView label, glm::vec2 size)
 bool osc::ImageButton(
     CStringView label,
     Texture2D const& t,
-    glm::vec2 dims,
+    Vec2 dims,
     Rect const& textureCoords)
 {
     if (void* handle = t.getTextureHandleHACK())
@@ -518,7 +520,7 @@ bool osc::ImageButton(
     }
 }
 
-bool osc::ImageButton(CStringView label, Texture2D const& t, glm::vec2 dims)
+bool osc::ImageButton(CStringView label, Texture2D const& t, Vec2 dims)
 {
     return ImageButton(label, t, dims, Rect{{0.0f, 1.0f}, {1.0f, 0.0f}});
 }
@@ -595,7 +597,7 @@ bool osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn, float threshold)
         return false;
     }
 
-    glm::vec2 const dragDelta = ImGui::GetMouseDragDelta(btn);
+    Vec2 const dragDelta = ImGui::GetMouseDragDelta(btn);
 
     return glm::length(dragDelta) < threshold;
 }
@@ -670,7 +672,7 @@ void osc::DrawTooltipIfItemHovered(CStringView header, CStringView description)
     }
 }
 
-glm::vec2 osc::CalcAlignmentAxesDimensions()
+osc::Vec2 osc::CalcAlignmentAxesDimensions()
 {
     float const fontSize = ImGui::GetFontSize();
     float const linelen = 2.0f * fontSize;
@@ -679,37 +681,37 @@ glm::vec2 osc::CalcAlignmentAxesDimensions()
     return {edgeLen, edgeLen};
 }
 
-osc::Rect osc::DrawAlignmentAxes(glm::mat4 const& viewMtx)
+osc::Rect osc::DrawAlignmentAxes(Mat4 const& viewMtx)
 {
     float const fontSize = ImGui::GetFontSize();
     float const linelen = 2.0f * fontSize;
     float const circleRadius = 0.6f * fontSize;
     ImU32 const whiteColorU32 = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
 
-    glm::vec2 const topLeft = ImGui::GetCursorScreenPos();
-    glm::vec2 const bottomRight = topLeft + 2.0f*(linelen + circleRadius);
+    Vec2 const topLeft = ImGui::GetCursorScreenPos();
+    Vec2 const bottomRight = topLeft + 2.0f*(linelen + circleRadius);
     Rect const bounds = {topLeft, bottomRight};
-    glm::vec2 const origin = Midpoint(bounds);
+    Vec2 const origin = Midpoint(bounds);
 
     auto const labels = osc::to_array<osc::CStringView>({ "X", "Y", "Z" });
 
     ImDrawList& drawlist = *ImGui::GetWindowDrawList();
     for (size_t i = 0; i < std::size(labels); ++i)
     {
-        glm::vec4 world = {0.0f, 0.0f, 0.0f, 0.0f};
-        world[static_cast<glm::vec4::length_type>(i)] = 1.0f;
+        Vec4 world = {0.0f, 0.0f, 0.0f, 0.0f};
+        world[static_cast<Vec4::length_type>(i)] = 1.0f;
 
-        glm::vec2 view = glm::vec2{viewMtx * world};
+        Vec2 view = Vec2{viewMtx * world};
         view.y = -view.y;  // y goes down in screen-space
 
-        glm::vec2 const p1 = origin;
-        glm::vec2 const p2 = origin + linelen*view;
+        Vec2 const p1 = origin;
+        Vec2 const p2 = origin + linelen*view;
 
         Color color = {0.15f, 0.15f, 0.15f, 1.0f};
         color[i] = 0.7f;
-        ImU32 const colorU32 = ImGui::ColorConvertFloat4ToU32(glm::vec4{color});
+        ImU32 const colorU32 = ImGui::ColorConvertFloat4ToU32(Vec4{color});
 
-        glm::vec2 const ts = ImGui::CalcTextSize(labels[i].c_str());
+        Vec2 const ts = ImGui::CalcTextSize(labels[i].c_str());
 
         drawlist.AddLine(p1, p2, colorU32, 3.0f);
         drawlist.AddCircleFilled(p2, circleRadius, colorU32);
@@ -718,8 +720,8 @@ osc::Rect osc::DrawAlignmentAxes(glm::mat4 const& viewMtx)
         // also, add a faded line for symmetry
         {
             color.a *= 0.15f;
-            ImU32 const colorFadedU32 = ImGui::ColorConvertFloat4ToU32(glm::vec4{color});
-            glm::vec2 const p2rev = origin - linelen*view;
+            ImU32 const colorFadedU32 = ImGui::ColorConvertFloat4ToU32(Vec4{color});
+            Vec2 const p2rev = origin - linelen*view;
             drawlist.AddLine(p1, p2rev, colorFadedU32, 3.0f);
 
         }
@@ -752,7 +754,7 @@ bool osc::InputMetersFloat(CStringView label, float& v, float step, float step_f
     return ImGui::InputFloat(label.c_str(), &v, step, step_fast, "%.6f", flags);
 }
 
-bool osc::InputMetersFloat3(CStringView label, glm::vec3& vec, ImGuiInputTextFlags flags)
+bool osc::InputMetersFloat3(CStringView label, Vec3& vec, ImGuiInputTextFlags flags)
 {
     return ImGui::InputFloat3(label.c_str(), glm::value_ptr(vec), "%.6f", flags);
 }
@@ -815,13 +817,13 @@ osc::Rect osc::GetMainViewportWorkspaceScreenRect()
     return Rect
     {
         viewport.WorkPos,
-        glm::vec2{viewport.WorkPos} + glm::vec2{viewport.WorkSize}
+        Vec2{viewport.WorkPos} + Vec2{viewport.WorkSize}
     };
 }
 
 bool osc::IsMouseInMainViewportWorkspaceScreenRect()
 {
-    glm::vec2 const mousepos = ImGui::GetMousePos();
+    Vec2 const mousepos = ImGui::GetMousePos();
     osc::Rect const hitRect = osc::GetMainViewportWorkspaceScreenRect();
 
     return osc::IsPointInRect(hitRect, mousepos);
@@ -1050,12 +1052,12 @@ bool osc::CircularSliderFloat(
     const ImGuiID id = window->GetID(label.c_str());
 
     // calculate top-level item info for early-cull checks etc.
-    const glm::vec2 labelSize = ImGui::CalcTextSize(label.c_str(), nullptr, true);
-    const glm::vec2 frameDims = {ImGui::CalcItemWidth(), labelSize.y + 2.0f*style.FramePadding.y};
-    const glm::vec2 cursorScreenPos = ImGui::GetCursorScreenPos();
+    const Vec2 labelSize = ImGui::CalcTextSize(label.c_str(), nullptr, true);
+    const Vec2 frameDims = {ImGui::CalcItemWidth(), labelSize.y + 2.0f*style.FramePadding.y};
+    const Vec2 cursorScreenPos = ImGui::GetCursorScreenPos();
     const ImRect frameBB = {cursorScreenPos, cursorScreenPos + frameDims};
     const float labelWidthWithSpacing = labelSize.x > 0.0f ? labelSize.x + style.ItemInnerSpacing.x : 0.0f;
-    const ImRect totalBB = {frameBB.Min, glm::vec2{frameBB.Max} + glm::vec2{labelWidthWithSpacing, 0.0f}};
+    const ImRect totalBB = {frameBB.Min, Vec2{frameBB.Max} + Vec2{labelWidthWithSpacing, 0.0f}};
 
     const bool temporaryTextInputAllowed = (flags & ImGuiSliderFlags_NoInput) == 0;
     ImGui::ItemSize(totalBB, style.FramePadding.y);
@@ -1142,7 +1144,7 @@ bool osc::CircularSliderFloat(
     bool const useCustomRendering = true;
     if (useCustomRendering)
     {
-        const glm::vec2 sliderNobCenter = RectMidpoint(grabBoundingBox);
+        const Vec2 sliderNobCenter = RectMidpoint(grabBoundingBox);
         const float sliderNobRadius = 0.75f * ShortestEdgeLength(grabBoundingBox);
         const float sliderRailThickness = 0.5f * sliderNobRadius;
         const float sliderRailTopY = sliderNobCenter.y - 0.5f*sliderRailThickness;
@@ -1154,8 +1156,8 @@ bool osc::CircularSliderFloat(
 
         // render left-hand rail (brighter)
         {
-            glm::vec2 const lhsRailTopLeft = {frameBB.Min.x, sliderRailTopY};
-            glm::vec2 const lhsRailBottomright = {sliderNobCenter.x, sliderRailBottomY};
+            Vec2 const lhsRailTopLeft = {frameBB.Min.x, sliderRailTopY};
+            Vec2 const lhsRailBottomright = {sliderNobCenter.x, sliderRailBottomY};
             const ImU32 brightenedRailColor = Brighten(railColor, 2.0f);
 
             window->DrawList->AddRectFilled(
@@ -1168,8 +1170,8 @@ bool osc::CircularSliderFloat(
 
         // render right-hand rail
         {
-            glm::vec2 const rhsRailTopLeft = {sliderNobCenter.x, sliderRailTopY};
-            glm::vec2 const rhsRailBottomRight = {frameBB.Max.x, sliderRailBottomY};
+            Vec2 const rhsRailTopLeft = {sliderNobCenter.x, sliderRailTopY};
+            Vec2 const rhsRailBottomRight = {frameBB.Max.x, sliderRailBottomY};
 
             window->DrawList->AddRectFilled(
                 rhsRailTopLeft,

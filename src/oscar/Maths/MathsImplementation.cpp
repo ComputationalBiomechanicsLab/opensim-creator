@@ -5,29 +5,32 @@
 #include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/Disc.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Mat3.hpp>
+#include <oscar/Maths/Mat4.hpp>
+#include <oscar/Maths/Mat4x3.hpp>
 #include <oscar/Maths/RayCollision.hpp>
 #include <oscar/Maths/EulerPerspectiveCamera.hpp>
 #include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/Plane.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
+#include <oscar/Maths/Quat.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/Sphere.hpp>
 #include <oscar/Maths/Tetrahedron.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Triangle.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/Vec4.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/SpanHelpers.hpp>
 
 #include <glm/glm.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
-#include <glm/gtc/quaternion.hpp>
 #include <nonstd/span.hpp>
 
 #include <algorithm>
@@ -43,6 +46,8 @@
 #include <stack>
 #include <stdexcept>
 #include <utility>
+
+using osc::Vec3;
 
 
 // osc::AABB implementation
@@ -196,7 +201,7 @@ namespace
     std::optional<osc::BVHCollision> BVH_GetClosestRayIndexedTriangleCollisionRecursive(
         std::vector<osc::BVHNode> const& nodes,
         std::vector<osc::BVHPrim> const& prims,
-        nonstd::span<glm::vec3 const> verts,
+        nonstd::span<Vec3 const> verts,
         nonstd::span<TIndex const> indices,
         osc::Line const& ray,
         float& closest,
@@ -267,7 +272,7 @@ namespace
     void BuildFromIndexedTriangles(
         std::vector<osc::BVHNode>& nodes,
         std::vector<osc::BVHPrim>& prims,
-        nonstd::span<glm::vec3 const> verts,
+        nonstd::span<Vec3 const> verts,
         nonstd::span<TIndex const> indices)
     {
         // clear out any old data
@@ -301,7 +306,7 @@ namespace
     std::optional<osc::BVHCollision> GetClosestRayIndexedTriangleCollision(
         std::vector<osc::BVHNode> const& nodes,
         std::vector<osc::BVHPrim> const& prims,
-        nonstd::span<glm::vec3 const> verts,
+        nonstd::span<Vec3 const> verts,
         nonstd::span<TIndex const> indices,
         osc::Line const& ray)
     {
@@ -321,7 +326,7 @@ void osc::BVH::clear()
     m_Prims.clear();
 }
 
-void osc::BVH::buildFromIndexedTriangles(nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices)
+void osc::BVH::buildFromIndexedTriangles(nonstd::span<Vec3 const> verts, nonstd::span<uint16_t const> indices)
 {
     BuildFromIndexedTriangles<uint16_t>(
         m_Nodes,
@@ -331,7 +336,7 @@ void osc::BVH::buildFromIndexedTriangles(nonstd::span<glm::vec3 const> verts, no
     );
 }
 
-void osc::BVH::buildFromIndexedTriangles(nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices)
+void osc::BVH::buildFromIndexedTriangles(nonstd::span<Vec3 const> verts, nonstd::span<uint32_t const> indices)
 {
     BuildFromIndexedTriangles<uint32_t>(
         m_Nodes,
@@ -342,7 +347,7 @@ void osc::BVH::buildFromIndexedTriangles(nonstd::span<glm::vec3 const> verts, no
 }
 
 std::optional<osc::BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision(
-    nonstd::span<glm::vec3 const> verts,
+    nonstd::span<Vec3 const> verts,
     nonstd::span<uint16_t const> indices,
     Line const& line) const
 {
@@ -355,7 +360,7 @@ std::optional<osc::BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision
     );
 }
 
-std::optional<osc::BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision(nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices, Line const& line) const
+std::optional<osc::BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision(nonstd::span<Vec3 const> verts, nonstd::span<uint32_t const> indices, Line const& line) const
 {
     return GetClosestRayIndexedTriangleCollision<uint32_t>(
         m_Nodes,
@@ -500,9 +505,9 @@ osc::EulerPerspectiveCamera::EulerPerspectiveCamera() :
 {
 }
 
-glm::vec3 osc::EulerPerspectiveCamera::getFront() const noexcept
+osc::Vec3 osc::EulerPerspectiveCamera::getFront() const noexcept
 {
-    return glm::normalize(glm::vec3
+    return glm::normalize(Vec3
     {
         std::cos(yaw) * std::cos(pitch),
         std::sin(pitch),
@@ -510,22 +515,22 @@ glm::vec3 osc::EulerPerspectiveCamera::getFront() const noexcept
     });
 }
 
-glm::vec3 osc::EulerPerspectiveCamera::getUp() const noexcept
+osc::Vec3 osc::EulerPerspectiveCamera::getUp() const noexcept
 {
-    return glm::vec3{0.0f, 1.0f, 0.0f};
+    return Vec3{0.0f, 1.0f, 0.0f};
 }
 
-glm::vec3 osc::EulerPerspectiveCamera::getRight() const noexcept
+osc::Vec3 osc::EulerPerspectiveCamera::getRight() const noexcept
 {
     return glm::normalize(glm::cross(getFront(), getUp()));
 }
 
-glm::mat4 osc::EulerPerspectiveCamera::getViewMtx() const noexcept
+osc::Mat4 osc::EulerPerspectiveCamera::getViewMtx() const noexcept
 {
     return glm::lookAt(pos, pos + getFront(), getUp());
 }
 
-glm::mat4 osc::EulerPerspectiveCamera::getProjMtx(float aspectRatio) const noexcept
+osc::Mat4 osc::EulerPerspectiveCamera::getProjMtx(float aspectRatio) const noexcept
 {
     return glm::perspective(fov, aspectRatio, znear, zfar);
 }
@@ -551,13 +556,13 @@ std::ostream& osc::operator<<(std::ostream& o, Plane const& p)
 
 namespace
 {
-    glm::vec3 PolarToCartesian(glm::vec3 focus, float radius, float theta, float phi)
+    Vec3 PolarToCartesian(Vec3 focus, float radius, float theta, float phi)
     {
         float x = radius * std::sin(theta) * std::cos(phi);
         float y = radius * std::sin(phi);
         float z = radius * std::cos(theta) * std::cos(phi);
 
-        return -focus + glm::vec3{x, y, z};
+        return -focus + Vec3{x, y, z};
     }
 }
 
@@ -577,7 +582,7 @@ void osc::PolarPerspectiveCamera::reset()
     *this = {};
 }
 
-void osc::PolarPerspectiveCamera::pan(float aspectRatio, glm::vec2 delta) noexcept
+void osc::PolarPerspectiveCamera::pan(float aspectRatio, Vec2 delta) noexcept
 {
     // how much panning is done depends on how far the camera is from the
     // origin (easy, with polar coordinates) *and* the FoV of the camera.
@@ -586,19 +591,19 @@ void osc::PolarPerspectiveCamera::pan(float aspectRatio, glm::vec2 delta) noexce
 
     // this assumes the scene is not rotated, so we need to rotate these
     // axes to match the scene's rotation
-    glm::vec4 defaultPanningAx = {xAmt, yAmt, 0.0f, 1.0f};
-    auto rotTheta = glm::rotate(glm::identity<glm::mat4>(), theta, glm::vec3{0.0f, 1.0f, 0.0f});
-    auto thetaVec = glm::normalize(glm::vec3{std::sin(theta), 0.0f, std::cos(theta)});
-    auto phiAxis = glm::cross(thetaVec, glm::vec3{0.0, 1.0f, 0.0f});
-    auto rotPhi = glm::rotate(glm::identity<glm::mat4>(), phi, phiAxis);
+    Vec4 defaultPanningAx = {xAmt, yAmt, 0.0f, 1.0f};
+    auto rotTheta = glm::rotate(glm::identity<Mat4>(), theta, Vec3{0.0f, 1.0f, 0.0f});
+    auto thetaVec = glm::normalize(Vec3{std::sin(theta), 0.0f, std::cos(theta)});
+    auto phiAxis = glm::cross(thetaVec, Vec3{0.0, 1.0f, 0.0f});
+    auto rotPhi = glm::rotate(glm::identity<Mat4>(), phi, phiAxis);
 
-    glm::vec4 panningAxes = rotPhi * rotTheta * defaultPanningAx;
+    Vec4 panningAxes = rotPhi * rotTheta * defaultPanningAx;
     focusPoint.x += panningAxes.x;
     focusPoint.y += panningAxes.y;
     focusPoint.z += panningAxes.z;
 }
 
-void osc::PolarPerspectiveCamera::drag(glm::vec2 delta) noexcept
+void osc::PolarPerspectiveCamera::drag(Vec2 delta) noexcept
 {
     theta += 2.0f * fpi * -delta.x;
     phi += 2.0f * fpi * delta.y;
@@ -613,7 +618,7 @@ void osc::PolarPerspectiveCamera::rescaleZNearAndZFarBasedOnRadius() noexcept
     zfar = 20.0f * radius;
 }
 
-glm::mat4 osc::PolarPerspectiveCamera::getViewMtx() const noexcept
+osc::Mat4 osc::PolarPerspectiveCamera::getViewMtx() const noexcept
 {
     // camera: at a fixed position pointing at a fixed origin. The "camera"
     // works by translating + rotating all objects around that origin. Rotation
@@ -623,36 +628,36 @@ glm::mat4 osc::PolarPerspectiveCamera::getViewMtx() const noexcept
     // this maths is a complete shitshow and I apologize. It just happens to work for now. It's a polar coordinate
     // system that shifts the world based on the camera pan
 
-    auto rotTheta = glm::rotate(glm::identity<glm::mat4>(), -theta, glm::vec3{0.0f, 1.0f, 0.0f});
-    auto thetaVec = glm::normalize(glm::vec3{std::sin(theta), 0.0f, std::cos(theta)});
-    auto phiAxis = glm::cross(thetaVec, glm::vec3{0.0, 1.0f, 0.0f});
-    auto rotPhi = glm::rotate(glm::identity<glm::mat4>(), -phi, phiAxis);
-    auto panTranslate = glm::translate(glm::identity<glm::mat4>(), focusPoint);
+    auto rotTheta = glm::rotate(glm::identity<Mat4>(), -theta, Vec3{0.0f, 1.0f, 0.0f});
+    auto thetaVec = glm::normalize(Vec3{std::sin(theta), 0.0f, std::cos(theta)});
+    auto phiAxis = glm::cross(thetaVec, Vec3{0.0, 1.0f, 0.0f});
+    auto rotPhi = glm::rotate(glm::identity<Mat4>(), -phi, phiAxis);
+    auto panTranslate = glm::translate(glm::identity<Mat4>(), focusPoint);
     return glm::lookAt(
-        glm::vec3(0.0f, 0.0f, radius),
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3{0.0f, 1.0f, 0.0f}) * rotTheta * rotPhi * panTranslate;
+        Vec3(0.0f, 0.0f, radius),
+        Vec3(0.0f, 0.0f, 0.0f),
+        Vec3{0.0f, 1.0f, 0.0f}) * rotTheta * rotPhi * panTranslate;
 }
 
-glm::mat4 osc::PolarPerspectiveCamera::getProjMtx(float aspectRatio) const noexcept
+osc::Mat4 osc::PolarPerspectiveCamera::getProjMtx(float aspectRatio) const noexcept
 {
     return glm::perspective(fov, aspectRatio, znear, zfar);
 }
 
-glm::vec3 osc::PolarPerspectiveCamera::getPos() const noexcept
+osc::Vec3 osc::PolarPerspectiveCamera::getPos() const noexcept
 {
     return PolarToCartesian(focusPoint, radius, theta, phi);
 }
 
-glm::vec2 osc::PolarPerspectiveCamera::projectOntoScreenRect(glm::vec3 const& worldspaceLoc, Rect const& screenRect) const noexcept
+osc::Vec2 osc::PolarPerspectiveCamera::projectOntoScreenRect(Vec3 const& worldspaceLoc, Rect const& screenRect) const noexcept
 {
-    glm::vec2 dims = Dimensions(screenRect);
-    glm::mat4 MV = getProjMtx(dims.x/dims.y) * getViewMtx();
+    Vec2 dims = Dimensions(screenRect);
+    Mat4 MV = getProjMtx(dims.x/dims.y) * getViewMtx();
 
-    glm::vec4 ndc = MV * glm::vec4{worldspaceLoc, 1.0f};
+    Vec4 ndc = MV * Vec4{worldspaceLoc, 1.0f};
     ndc /= ndc.w;  // perspective divide
 
-    glm::vec2 ndc2D;
+    Vec2 ndc2D;
     ndc2D = {ndc.x, -ndc.y};        // [-1, 1], Y points down
     ndc2D += 1.0f;                  // [0, 2]
     ndc2D *= 0.5f;                  // [0, 1]
@@ -662,10 +667,10 @@ glm::vec2 osc::PolarPerspectiveCamera::projectOntoScreenRect(glm::vec3 const& wo
     return ndc2D;
 }
 
-osc::Line osc::PolarPerspectiveCamera::unprojectTopLeftPosToWorldRay(glm::vec2 pos, glm::vec2 dims) const noexcept
+osc::Line osc::PolarPerspectiveCamera::unprojectTopLeftPosToWorldRay(Vec2 pos, Vec2 dims) const noexcept
 {
-    glm::mat4 const viewMatrix = getViewMtx();
-    glm::mat4 const projectionMatrix = getProjMtx(dims.x/dims.y);
+    Mat4 const viewMatrix = getViewMtx();
+    Mat4 const projectionMatrix = getProjMtx(dims.x/dims.y);
 
     return PerspectiveUnprojectTopLeftScreenPosToWorldRay(
         pos/dims,
@@ -706,7 +711,7 @@ osc::PolarPerspectiveCamera osc::CreateCameraFocusedOn(AABB const& aabb)
     return rv;
 }
 
-glm::vec3 osc::RecommendedLightDirection(osc::PolarPerspectiveCamera const& c)
+osc::Vec3 osc::RecommendedLightDirection(osc::PolarPerspectiveCamera const& c)
 {
     // theta should track with the camera, so that the scene is always
     // illuminated from the viewer's perspective (#275)
@@ -724,7 +729,7 @@ glm::vec3 osc::RecommendedLightDirection(osc::PolarPerspectiveCamera const& c)
     // of the camera with shadow rendering (#10) looks bizzare
     float const phi = fpi4;
 
-    glm::vec3 const p = PolarToCartesian(c.focusPoint, c.radius, theta, phi);
+    Vec3 const p = PolarToCartesian(c.focusPoint, c.radius, theta, phi);
 
     return glm::normalize(-c.focusPoint - p);
 }
@@ -841,19 +846,19 @@ float osc::Volume(Tetrahedron const& t)
     // http://forums.cgsociety.org/t/how-to-calculate-center-of-mass-for-triangular-mesh/1309966
     // https://stackoverflow.com/questions/9866452/calculate-volume-of-any-tetrahedron-given-4-points
 
-    glm::mat4 const m
+    Mat4 const m
     {
-        glm::vec4{t[0], 1.0f},
-        glm::vec4{t[1], 1.0f},
-        glm::vec4{t[2], 1.0f},
-        glm::vec4{t[3], 1.0f},
+        Vec4{t[0], 1.0f},
+        Vec4{t[1], 1.0f},
+        Vec4{t[2], 1.0f},
+        Vec4{t[3], 1.0f},
     };
 
     return glm::determinant(m) / 6.0f;
 }
 
 // returns spatial centerpoint of a given tetrahedron
-glm::vec3 osc::Center(Tetrahedron const& t)
+osc::Vec3 osc::Center(Tetrahedron const& t)
 {
     // arithmetic mean of tetrahedron vertices
     return std::reduce(t.begin(), t.end()) / static_cast<float>(t.size());
@@ -875,7 +880,7 @@ bool osc::operator==(osc::Transform const& lhs, osc::Transform const& rhs) noexc
         lhs.position == rhs.position;
 }
 
-glm::vec3 osc::operator*(Transform const& t, glm::vec3 const& p) noexcept
+osc::Vec3 osc::operator*(Transform const& t, Vec3 const& p) noexcept
 {
     return TransformPoint(t, p);
 }
@@ -978,7 +983,7 @@ namespace
     {
         // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
 
-        glm::vec3 L = l.origin - s.origin;
+        Vec3 L = l.origin - s.origin;
 
         // coefficients of the quadratic implicit:
         //
@@ -1088,9 +1093,9 @@ bool osc::IsEqualWithinRelativeError(float a, float b, float relativeError) noex
     return ::IsEqualWithinRelativeError<float>(a, b, relativeError);
 }
 
-bool osc::IsEqualWithinRelativeError(glm::vec3 const& a, glm::vec3 const& b, float relativeError) noexcept
+bool osc::IsEqualWithinRelativeError(Vec3 const& a, Vec3 const& b, float relativeError) noexcept
 {
-    for (glm::vec3::length_type i = 0; i < glm::vec3::length(); ++i)
+    for (Vec3::length_type i = 0; i < Vec3::length(); ++i)
     {
         if (!IsEqualWithinRelativeError(a[i], b[i], relativeError))
         {
@@ -1106,9 +1111,9 @@ bool osc::IsEqualWithinAbsoluteError(float a, float b, float absError) noexcept
     return difference <= absError;
 }
 
-bool osc::IsEqualWithinAbsoluteError(glm::vec3 const& a, glm::vec3 const& b, float absError) noexcept
+bool osc::IsEqualWithinAbsoluteError(Vec3 const& a, Vec3 const& b, float absError) noexcept
 {
-    for (glm::vec3::length_type i = 0; i < glm::vec3::length(); ++i)
+    for (Vec3::length_type i = 0; i < Vec3::length(); ++i)
     {
         if (!IsEqualWithinAbsoluteError(a[i], b[i], absError))
         {
@@ -1118,19 +1123,19 @@ bool osc::IsEqualWithinAbsoluteError(glm::vec3 const& a, glm::vec3 const& b, flo
     return true;
 }
 
-bool osc::AreAtSameLocation(glm::vec3 const& a, glm::vec3 const& b) noexcept
+bool osc::AreAtSameLocation(Vec3 const& a, Vec3 const& b) noexcept
 {
     constexpr float eps2 = std::numeric_limits<float>::epsilon() * std::numeric_limits<float>::epsilon();
 
-    glm::vec3 const b2a = a - b;
+    Vec3 const b2a = a - b;
     float const len2 = glm::dot(b2a, b2a);
 
     return len2 > eps2;
 }
 
-glm::vec3 osc::Min(glm::vec3 const& a, glm::vec3 const& b) noexcept
+osc::Vec3 osc::Min(Vec3 const& a, Vec3 const& b) noexcept
 {
-    return glm::vec3
+    return Vec3
     {
         std::min(a.x, b.x),
         std::min(a.y, b.y),
@@ -1138,27 +1143,27 @@ glm::vec3 osc::Min(glm::vec3 const& a, glm::vec3 const& b) noexcept
     };
 }
 
-glm::vec2 osc::Min(glm::vec2 const& a, glm::vec2 const& b) noexcept
+osc::Vec2 osc::Min(Vec2 const& a, Vec2 const& b) noexcept
 {
-    return glm::vec2
+    return Vec2
     {
         std::min(a.x, b.x),
         std::min(a.y, b.y),
     };
 }
 
-glm::ivec2 osc::Min(glm::ivec2 const& a, glm::ivec2 const& b) noexcept
+osc::Vec2i osc::Min(Vec2i const& a, Vec2i const& b) noexcept
 {
-    return glm::ivec2
+    return Vec2i
     {
         std::min(a.x, b.x),
         std::min(a.y, b.y),
     };
 }
 
-glm::vec3 osc::Max(glm::vec3 const& a, glm::vec3 const& b) noexcept
+osc::Vec3 osc::Max(Vec3 const& a, Vec3 const& b) noexcept
 {
-    return glm::vec3
+    return Vec3
     {
         std::max(a.x, b.x),
         std::max(a.y, b.y),
@@ -1166,25 +1171,25 @@ glm::vec3 osc::Max(glm::vec3 const& a, glm::vec3 const& b) noexcept
     };
 }
 
-glm::vec2 osc::Max(glm::vec2 const& a, glm::vec2 const& b) noexcept
+osc::Vec2 osc::Max(Vec2 const& a, Vec2 const& b) noexcept
 {
-    return glm::vec2
+    return Vec2
     {
         std::max(a.x, b.x),
         std::max(a.y, b.y),
     };
 }
 
-glm::ivec2 osc::Max(glm::ivec2 const& a, glm::ivec2 const& b) noexcept
+osc::Vec2i osc::Max(Vec2i const& a, Vec2i const& b) noexcept
 {
-    return glm::ivec2
+    return Vec2i
     {
         std::max(a.x, b.x),
         std::max(a.y, b.y),
     };
 }
 
-glm::vec3::length_type osc::LongestDimIndex(glm::vec3 const& v) noexcept
+osc::Vec3::length_type osc::LongestDimIndex(Vec3 const& v) noexcept
 {
     if (v.x > v.y && v.x > v.z)
     {
@@ -1200,7 +1205,7 @@ glm::vec3::length_type osc::LongestDimIndex(glm::vec3 const& v) noexcept
     }
 }
 
-glm::vec2::length_type osc::LongestDimIndex(glm::vec2 v) noexcept
+osc::Vec2::length_type osc::LongestDimIndex(Vec2 v) noexcept
 {
     if (v.x > v.y)
     {
@@ -1212,7 +1217,7 @@ glm::vec2::length_type osc::LongestDimIndex(glm::vec2 v) noexcept
     }
 }
 
-glm::ivec2::length_type osc::LongestDimIndex(glm::ivec2 v) noexcept
+osc::Vec2i::length_type osc::LongestDimIndex(Vec2i v) noexcept
 {
     if (v.x > v.y)
     {
@@ -1224,42 +1229,42 @@ glm::ivec2::length_type osc::LongestDimIndex(glm::ivec2 v) noexcept
     }
 }
 
-float osc::LongestDim(glm::vec3 const& v) noexcept
+float osc::LongestDim(Vec3 const& v) noexcept
 {
     return v[LongestDimIndex(v)];
 }
 
-float osc::LongestDim(glm::vec2 v) noexcept
+float osc::LongestDim(Vec2 v) noexcept
 {
     return v[LongestDimIndex(v)];
 }
 
-glm::ivec2::value_type osc::LongestDim(glm::ivec2 v) noexcept
+osc::Vec2i::value_type osc::LongestDim(Vec2i v) noexcept
 {
     return v[LongestDimIndex(v)];
 }
 
-float osc::AspectRatio(glm::ivec2 v) noexcept
+float osc::AspectRatio(Vec2i v) noexcept
 {
     return static_cast<float>(v.x) / static_cast<float>(v.y);
 }
 
-float osc::AspectRatio(glm::vec2 v) noexcept
+float osc::AspectRatio(Vec2 v) noexcept
 {
     return v.x/v.y;
 }
 
-glm::vec2 osc::Midpoint(glm::vec2 a, glm::vec2 b) noexcept
+osc::Vec2 osc::Midpoint(Vec2 a, Vec2 b) noexcept
 {
     return 0.5f*(a+b);
 }
 
-glm::vec3 osc::Midpoint(glm::vec3 const& a, glm::vec3 const& b) noexcept
+osc::Vec3 osc::Midpoint(Vec3 const& a, Vec3 const& b) noexcept
 {
     return 0.5f*(a+b);
 }
 
-glm::vec3 osc::Midpoint(nonstd::span<glm::vec3 const> vs) noexcept
+osc::Vec3 osc::Midpoint(nonstd::span<Vec3 const> vs) noexcept
 {
     return std::reduce(vs.begin(), vs.end()) / static_cast<float>(vs.size());
 }
@@ -1267,15 +1272,15 @@ glm::vec3 osc::Midpoint(nonstd::span<glm::vec3 const> vs) noexcept
 
 // Geometry
 
-glm::vec3 osc::KahanSum(nonstd::span<glm::vec3 const> vs) noexcept
+osc::Vec3 osc::KahanSum(nonstd::span<Vec3 const> vs) noexcept
 {
-    glm::vec3 sum{};  // accumulator
-    glm::vec3 c{};    // running compensation of low-order bits
+    Vec3 sum{};  // accumulator
+    Vec3 c{};    // running compensation of low-order bits
 
-    for (glm::vec3 const& v : vs)
+    for (Vec3 const& v : vs)
     {
-        glm::vec3 const y = v - c;    // subtract the compensation amount from the next number
-        glm::vec3 const t = sum + y;  // perform the summation (might lose information)
+        Vec3 const y = v - c;    // subtract the compensation amount from the next number
+        Vec3 const t = sum + y;  // perform the summation (might lose information)
 
         c = (t - sum) - y;            // (t-sum) yields the retained (high-order) parts of `y`, so `c` contains the "lost" information
         sum = t;                      // CAREFUL: algebreically, `c` always == 0 - despite the computer's (actual) limited precision, the compiler might elilde all of this
@@ -1284,28 +1289,28 @@ glm::vec3 osc::KahanSum(nonstd::span<glm::vec3 const> vs) noexcept
     return sum;
 }
 
-glm::vec3 osc::NumericallyStableAverage(nonstd::span<glm::vec3 const> vs) noexcept
+osc::Vec3 osc::NumericallyStableAverage(nonstd::span<Vec3 const> vs) noexcept
 {
-    glm::vec3 const sum = KahanSum(vs);
+    Vec3 const sum = KahanSum(vs);
     return sum / static_cast<float>(vs.size());
 }
 
-glm::vec3 osc::TriangleNormal(Triangle const& tri) noexcept
+osc::Vec3 osc::TriangleNormal(Triangle const& tri) noexcept
 {
-    glm::vec3 const ab = tri.p1 - tri.p0;
-    glm::vec3 const ac = tri.p2 - tri.p0;
-    glm::vec3 const perpendiular = glm::cross(ab, ac);
+    Vec3 const ab = tri.p1 - tri.p0;
+    Vec3 const ac = tri.p2 - tri.p0;
+    Vec3 const perpendiular = glm::cross(ab, ac);
     return glm::normalize(perpendiular);
 }
 
-glm::mat3 osc::ToAdjugateMatrix(glm::mat3 const& m) noexcept
+osc::Mat3 osc::ToAdjugateMatrix(Mat3 const& m) noexcept
 {
     // google: "Adjugate Matrix": it's related to the cofactor matrix and is
     // related to the inverse of a matrix through:
     //
     //     inverse(M) = Adjugate(M) / determinant(M);
 
-    glm::mat3 rv;
+    Mat3 rv;
     rv[0][0] = + (m[1][1] * m[2][2] - m[2][1] * m[1][2]);
     rv[1][0] = - (m[1][0] * m[2][2] - m[2][0] * m[1][2]);
     rv[2][0] = + (m[1][0] * m[2][1] - m[2][0] * m[1][1]);
@@ -1318,7 +1323,7 @@ glm::mat3 osc::ToAdjugateMatrix(glm::mat3 const& m) noexcept
     return rv;
 }
 
-glm::mat3 osc::ToNormalMatrix(glm::mat4 const& m) noexcept
+osc::Mat3 osc::ToNormalMatrix(Mat4 const& m) noexcept
 {
     // "On the Transformation of Surface Normals" by Andrew Glassner (1987)
     //
@@ -1334,11 +1339,11 @@ glm::mat3 osc::ToNormalMatrix(glm::mat4 const& m) noexcept
     //  be normalized after mutiplication with a normal matrix anyway, so
     //  nothing is lost"
 
-    glm::mat3 const topLeft{m};
+    Mat3 const topLeft{m};
     return ToAdjugateMatrix(glm::transpose(topLeft));
 }
 
-glm::mat3 osc::ToNormalMatrix(glm::mat4x3 const& m) noexcept
+osc::Mat3 osc::ToNormalMatrix(Mat4x3 const& m) noexcept
 {
     // "On the Transformation of Surface Normals" by Andrew Glassner (1987)
     //
@@ -1354,16 +1359,16 @@ glm::mat3 osc::ToNormalMatrix(glm::mat4x3 const& m) noexcept
     //  be normalized after mutiplication with a normal matrix anyway, so
     //  nothing is lost"
 
-    glm::mat3 const topLeft{m};
+    Mat3 const topLeft{m};
     return ToAdjugateMatrix(glm::transpose(topLeft));
 }
 
-glm::mat4 osc::ToNormalMatrix4(glm::mat4 const& m) noexcept
+osc::Mat4 osc::ToNormalMatrix4(Mat4 const& m) noexcept
 {
     return ToNormalMatrix(m);
 }
 
-glm::mat4 osc::Dir1ToDir2Xform(glm::vec3 const& dir1, glm::vec3 const& dir2) noexcept
+osc::Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2) noexcept
 {
     // this is effectively a rewrite of glm::rotation(vec3 const&, vec3 const& dest);
 
@@ -1372,11 +1377,11 @@ glm::mat4 osc::Dir1ToDir2Xform(glm::vec3 const& dir1, glm::vec3 const& dir2) noe
     if(cosTheta >= static_cast<float>(1.0f) - std::numeric_limits<float>::epsilon())
     {
         // `a` and `b` point in the same direction: return identity transform
-        return glm::mat4{1.0f};
+        return Mat4{1.0f};
     }
 
     float theta{};
-    glm::vec3 rotationAxis{};
+    Vec3 rotationAxis{};
     if(cosTheta < static_cast<float>(-1.0f) + std::numeric_limits<float>::epsilon())
     {
         // `a` and `b` point in opposite directions
@@ -1384,11 +1389,11 @@ glm::mat4 osc::Dir1ToDir2Xform(glm::vec3 const& dir1, glm::vec3 const& dir2) noe
         // - there is no "ideal" rotation axis
         // - so we try "guessing" one and hope it's good (then try another if it isn't)
 
-        rotationAxis = glm::cross(glm::vec3{0.0f, 0.0f, 1.0f}, dir1);
+        rotationAxis = glm::cross(Vec3{0.0f, 0.0f, 1.0f}, dir1);
         if (glm::length2(rotationAxis) < std::numeric_limits<float>::epsilon())
         {
             // bad luck: they were parallel - use a different axis
-            rotationAxis = glm::cross(glm::vec3{1.0f, 0.0f, 0.0f}, dir1);
+            rotationAxis = glm::cross(Vec3{1.0f, 0.0f, 0.0f}, dir1);
         }
 
         theta = osc::fpi;
@@ -1400,58 +1405,58 @@ glm::mat4 osc::Dir1ToDir2Xform(glm::vec3 const& dir1, glm::vec3 const& dir2) noe
         rotationAxis = glm::normalize(glm::cross(dir1, dir2));
     }
 
-    return glm::rotate(glm::mat4{1.0f}, theta, rotationAxis);
+    return glm::rotate(Mat4{1.0f}, theta, rotationAxis);
 }
 
-glm::vec3 osc::ExtractEulerAngleXYZ(glm::quat const& q) noexcept
+osc::Vec3 osc::ExtractEulerAngleXYZ(Quat const& q) noexcept
 {
-    glm::vec3 rv;
+    Vec3 rv;
     glm::extractEulerAngleXYZ(glm::toMat4(q), rv.x, rv.y, rv.z);
     return rv;
 }
 
-glm::vec3 osc::ExtractEulerAngleXYZ(glm::mat4 const& m) noexcept
+osc::Vec3 osc::ExtractEulerAngleXYZ(Mat4 const& m) noexcept
 {
-    glm::vec3 v;
+    Vec3 v;
     glm::extractEulerAngleXYZ(m, v.x, v.y, v.z);
     return v;
 }
 
-glm::vec2 osc::TopleftRelPosToNDCPoint(glm::vec2 relpos)
+osc::Vec2 osc::TopleftRelPosToNDCPoint(Vec2 relpos)
 {
     relpos.y = 1.0f - relpos.y;
     return 2.0f*relpos - 1.0f;
 }
 
-glm::vec2 osc::NDCPointToTopLeftRelPos(glm::vec2 ndcPos)
+osc::Vec2 osc::NDCPointToTopLeftRelPos(Vec2 ndcPos)
 {
     ndcPos = (ndcPos + 1.0f) * 0.5f;
     ndcPos.y = 1.0f - ndcPos.y;
     return ndcPos;
 }
 
-glm::vec4 osc::TopleftRelPosToNDCCube(glm::vec2 relpos)
+osc::Vec4 osc::TopleftRelPosToNDCCube(Vec2 relpos)
 {
     return {TopleftRelPosToNDCPoint(relpos), -1.0f, 1.0f};
 }
 
 osc::Line osc::PerspectiveUnprojectTopLeftScreenPosToWorldRay(
-    glm::vec2 relpos,
-    glm::vec3 cameraWorldspaceOrigin,
-    glm::mat4 const& viewMatrix,
-    glm::mat4 const& projMatrix)
+    Vec2 relpos,
+    Vec3 cameraWorldspaceOrigin,
+    Mat4 const& viewMatrix,
+    Mat4 const& projMatrix)
 {
     // position of point, as if it were on the front of the 3D NDC cube
-    glm::vec4 lineOriginNDC = TopleftRelPosToNDCCube(relpos);
+    Vec4 lineOriginNDC = TopleftRelPosToNDCCube(relpos);
 
-    glm::vec4 lineOriginView = glm::inverse(projMatrix) * lineOriginNDC;
+    Vec4 lineOriginView = glm::inverse(projMatrix) * lineOriginNDC;
     lineOriginView /= lineOriginView.w;  // perspective divide
 
     // location of mouse in worldspace
-    glm::vec3 lineOriginWorld = glm::vec3{glm::inverse(viewMatrix) * lineOriginView};
+    Vec3 lineOriginWorld = Vec3{glm::inverse(viewMatrix) * lineOriginView};
 
     // direction vector from camera to mouse location (i.e. the projection)
-    glm::vec3 lineDirWorld = glm::normalize(lineOriginWorld - cameraWorldspaceOrigin);
+    Vec3 lineDirWorld = glm::normalize(lineOriginWorld - cameraWorldspaceOrigin);
 
     Line rv{};
     rv.dir = lineDirWorld;
@@ -1459,7 +1464,7 @@ osc::Line osc::PerspectiveUnprojectTopLeftScreenPosToWorldRay(
     return rv;
 }
 
-glm::vec2 osc::MinValuePerDimension(Rect const& r) noexcept
+osc::Vec2 osc::MinValuePerDimension(Rect const& r) noexcept
 {
     return Min(r.p1, r.p2);
 }
@@ -1470,28 +1475,28 @@ float osc::Area(Rect const& r) noexcept
     return d.x * d.y;
 }
 
-glm::vec2 osc::Dimensions(Rect const& r) noexcept
+osc::Vec2 osc::Dimensions(Rect const& r) noexcept
 {
     return glm::abs(r.p2 - r.p1);
 }
 
-glm::vec2 osc::BottomLeft(Rect const& r) noexcept
+osc::Vec2 osc::BottomLeft(Rect const& r) noexcept
 {
-    return glm::vec2{glm::min(r.p1.x, r.p2.x), glm::max(r.p1.y, r.p2.y)};
+    return Vec2{glm::min(r.p1.x, r.p2.x), glm::max(r.p1.y, r.p2.y)};
 }
 
 float osc::AspectRatio(Rect const& r) noexcept
 {
-    glm::vec2 dims = Dimensions(r);
+    Vec2 dims = Dimensions(r);
     return dims.x/dims.y;
 }
 
-glm::vec2 osc::Midpoint(Rect const& r) noexcept
+osc::Vec2 osc::Midpoint(Rect const& r) noexcept
 {
     return 0.5f * (r.p1 + r.p2);
 }
 
-osc::Rect osc::BoundingRectOf(nonstd::span<glm::vec2 const> vs)
+osc::Rect osc::BoundingRectOf(nonstd::span<Vec2 const> vs)
 {
     if (vs.empty())
     {
@@ -1521,7 +1526,7 @@ osc::Rect osc::Expand(Rect const& rect, float amt) noexcept
     return rv;
 }
 
-osc::Rect osc::Expand(Rect const& rect, glm::vec2 amt) noexcept
+osc::Rect osc::Expand(Rect const& rect, Vec2 amt) noexcept
 {
     Rect rv
     {
@@ -1535,7 +1540,7 @@ osc::Rect osc::Expand(Rect const& rect, glm::vec2 amt) noexcept
     return rv;
 }
 
-osc::Rect osc::Clamp(Rect const& r, glm::vec2 const& min, glm::vec2 const& max) noexcept
+osc::Rect osc::Clamp(Rect const& r, Vec2 const& min, Vec2 const& max) noexcept
 {
     return
     {
@@ -1546,7 +1551,7 @@ osc::Rect osc::Clamp(Rect const& r, glm::vec2 const& min, glm::vec2 const& max) 
 
 osc::Rect osc::NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const& viewport) noexcept
 {
-    glm::vec2 const viewportDims = Dimensions(viewport);
+    Vec2 const viewportDims = Dimensions(viewport);
 
     // remap [-1, 1] into [0, viewportDims]
     Rect rv
@@ -1562,7 +1567,7 @@ osc::Rect osc::NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const&
     return rv;
 }
 
-osc::Sphere osc::BoundingSphereOf(nonstd::span<glm::vec3 const> points) noexcept
+osc::Sphere osc::BoundingSphereOf(nonstd::span<Vec3 const> points) noexcept
 {
     AABB const aabb = AABBFromVerts(points);
 
@@ -1577,9 +1582,9 @@ osc::Sphere osc::BoundingSphereOf(nonstd::span<glm::vec3 const> points) noexcept
     }
 
     float biggestR2 = 0.0f;
-    for (glm::vec3 const& pos : points)
+    for (Vec3 const& pos : points)
     {
-        glm::vec3 pos2rv = pos - rv.origin;
+        Vec3 pos2rv = pos - rv.origin;
         float r2 = glm::dot(pos2rv, pos2rv);
         biggestR2 = std::max(biggestR2, r2);
     }
@@ -1594,16 +1599,16 @@ osc::Sphere osc::ToSphere(AABB const& aabb) noexcept
     return BoundingSphereOf(ToCubeVerts(aabb));
 }
 
-glm::mat4 osc::FromUnitSphereMat4(Sphere const& s) noexcept
+osc::Mat4 osc::FromUnitSphereMat4(Sphere const& s) noexcept
 {
-    return glm::translate(glm::mat4{1.0f}, s.origin) * glm::scale(glm::mat4{1.0f}, {s.radius, s.radius, s.radius});
+    return glm::translate(Mat4{1.0f}, s.origin) * glm::scale(Mat4{1.0f}, {s.radius, s.radius, s.radius});
 }
 
-glm::mat4 osc::SphereToSphereMat4(Sphere const& a, Sphere const& b) noexcept
+osc::Mat4 osc::SphereToSphereMat4(Sphere const& a, Sphere const& b) noexcept
 {
     float scale = b.radius/a.radius;
-    glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, glm::vec3{scale, scale, scale});
-    glm::mat4 mover = glm::translate(glm::mat4{1.0f}, b.origin - a.origin);
+    Mat4 scaler = glm::scale(Mat4{1.0f}, Vec3{scale, scale, scale});
+    Mat4 mover = glm::translate(Mat4{1.0f}, b.origin - a.origin);
     return mover * scaler;
 }
 
@@ -1623,11 +1628,11 @@ osc::AABB osc::ToAABB(Sphere const& s) noexcept
     return rv;
 }
 
-osc::Line osc::TransformLine(Line const& l, glm::mat4 const& m) noexcept
+osc::Line osc::TransformLine(Line const& l, Mat4 const& m) noexcept
 {
     Line rv{};
-    rv.dir = m * glm::vec4{l.dir, 0.0f};
-    rv.origin = m * glm::vec4{l.origin, 1.0f};
+    rv.dir = m * Vec4{l.dir, 0.0f};
+    rv.origin = m * Vec4{l.origin, 1.0f};
     return rv;
 }
 
@@ -1640,7 +1645,7 @@ osc::Line osc::InverseTransformLine(Line const& l, Transform const& t) noexcept
     };
 }
 
-glm::mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b) noexcept
+osc::Mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b) noexcept
 {
     // this is essentially LERPing [0,1] onto [1, l] to rescale only
     // along the line's original direction
@@ -1656,23 +1661,23 @@ glm::mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b) noexcept
     // - 1-N is sin(theta) of each axis to the normal
     // - LERP is 1.0f + (s - 1.0f)*V, where V is how perpendiular each axis is
 
-    glm::vec3 scalers = 1.0f + ((s - 1.0f) * glm::abs(1.0f - a.normal));
-    glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, scalers);
+    Vec3 scalers = 1.0f + ((s - 1.0f) * glm::abs(1.0f - a.normal));
+    Mat4 scaler = glm::scale(Mat4{1.0f}, scalers);
 
     float cosTheta = glm::dot(a.normal, b.normal);
-    glm::mat4 rotator;
+    Mat4 rotator;
     if (cosTheta > 0.9999f)
     {
-        rotator = glm::mat4{1.0f};
+        rotator = Mat4{1.0f};
     }
     else
     {
         float theta = glm::acos(cosTheta);
-        glm::vec3 axis = glm::cross(a.normal, b.normal);
-        rotator = glm::rotate(glm::mat4{1.0f}, theta, axis);
+        Vec3 axis = glm::cross(a.normal, b.normal);
+        rotator = glm::rotate(Mat4{1.0f}, theta, axis);
     }
 
-    glm::mat4 translator = glm::translate(glm::mat4{1.0f}, b.origin-a.origin);
+    Mat4 translator = glm::translate(Mat4{1.0f}, b.origin-a.origin);
 
     return translator * rotator * scaler;
 }
@@ -1685,19 +1690,19 @@ osc::AABB osc::InvertedAABB() noexcept
     return rv;
 }
 
-glm::vec3 osc::Midpoint(AABB const& a) noexcept
+osc::Vec3 osc::Midpoint(AABB const& a) noexcept
 {
     return 0.5f * (a.min + a.max);
 }
 
-glm::vec3 osc::Dimensions(AABB const& a) noexcept
+osc::Vec3 osc::Dimensions(AABB const& a) noexcept
 {
     return a.max - a.min;
 }
 
 float osc::Volume(AABB const& a) noexcept
 {
-    glm::vec3 d = Dimensions(a);
+    Vec3 d = Dimensions(a);
     return d.x * d.y * d.z;
 }
 
@@ -1718,7 +1723,7 @@ bool osc::IsAPoint(AABB const& a) noexcept
 bool osc::IsZeroVolume(AABB const& a) noexcept
 {
 
-    for (glm::vec3::length_type i = 0; i < 3; ++i)
+    for (Vec3::length_type i = 0; i < 3; ++i)
     {
         if (a.min[i] == a.max[i])
         {
@@ -1728,30 +1733,30 @@ bool osc::IsZeroVolume(AABB const& a) noexcept
     return false;
 }
 
-glm::vec3::length_type osc::LongestDimIndex(AABB const& a) noexcept
+osc::Vec3::length_type osc::LongestDimIndex(AABB const& a) noexcept
 {
     return LongestDimIndex(Dimensions(a));
 }
 
 float osc::LongestDim(AABB const& a) noexcept
 {
-    glm::vec3 const dims = Dimensions(a);
+    Vec3 const dims = Dimensions(a);
     return std::max({dims[0], dims[1], dims[2]});
 }
 
-std::array<glm::vec3, 8> osc::ToCubeVerts(AABB const& aabb) noexcept
+std::array<Vec3, 8> osc::ToCubeVerts(AABB const& aabb) noexcept
 {
-    glm::vec3 d = Dimensions(aabb);
+    Vec3 d = Dimensions(aabb);
 
-    std::array<glm::vec3, 8> rv{};
+    std::array<Vec3, 8> rv{};
     rv[0] = aabb.min;
     rv[1] = aabb.max;
     size_t pos = 2;
-    for (glm::vec3::length_type i = 0; i < 3; ++i)
+    for (Vec3::length_type i = 0; i < 3; ++i)
     {
-        glm::vec3 min = aabb.min;
+        Vec3 min = aabb.min;
         min[i] += d[i];
-        glm::vec3 max = aabb.max;
+        Vec3 max = aabb.max;
         max[i] -= d[i];
         rv[pos++] = min;
         rv[pos++] = max;
@@ -1759,14 +1764,14 @@ std::array<glm::vec3, 8> osc::ToCubeVerts(AABB const& aabb) noexcept
     return rv;
 }
 
-osc::AABB osc::TransformAABB(AABB const& aabb, glm::mat4 const& m) noexcept
+osc::AABB osc::TransformAABB(AABB const& aabb, Mat4 const& m) noexcept
 {
     auto verts = ToCubeVerts(aabb);
 
-    for (glm::vec3& vert : verts)
+    for (Vec3& vert : verts)
     {
-        glm::vec4 p = m * glm::vec4{vert, 1.0f};
-        vert = glm::vec3{p / p.w}; // perspective divide
+        Vec4 p = m * Vec4{vert, 1.0f};
+        vert = Vec3{p / p.w}; // perspective divide
     }
 
     return AABBFromVerts(verts);
@@ -1778,13 +1783,13 @@ osc::AABB osc::TransformAABB(AABB const& aabb, Transform const& t) noexcept
     //
     // screenshot: https://twitter.com/Herschel/status/1188613724665335808
 
-    glm::mat3 const m = ToMat3(t);
+    Mat3 const m = ToMat3(t);
 
     AABB rv{t.position, t.position};  // add in the translation
-    for (glm::vec3::length_type i = 0; i < 3; ++i)
+    for (Vec3::length_type i = 0; i < 3; ++i)
     {
         // form extent by summing smaller and larger terms repsectively
-        for (glm::vec3::length_type j = 0; j < 3; ++j)
+        for (Vec3::length_type j = 0; j < 3; ++j)
         {
             float const e = m[j][i] * aabb.min[j];
             float const f = m[j][i] * aabb.max[j];
@@ -1814,7 +1819,7 @@ osc::AABB osc::AABBFromTriangle(Triangle const& t) noexcept
     return rv;
 }
 
-osc::AABB osc::AABBFromVerts(nonstd::span<glm::vec3 const> vs) noexcept
+osc::AABB osc::AABBFromVerts(nonstd::span<Vec3 const> vs) noexcept
 {
     // edge-case: no points provided
     if (vs.empty())
@@ -1826,7 +1831,7 @@ osc::AABB osc::AABBFromVerts(nonstd::span<glm::vec3 const> vs) noexcept
     AABB rv{vs[0], vs[0]};
     for (size_t i = 1; i < vs.size(); ++i)
     {
-        glm::vec3 const& pos = vs[i];
+        Vec3 const& pos = vs[i];
         rv.min = Min(rv.min, pos);
         rv.max = Max(rv.max, pos);
     }
@@ -1835,7 +1840,7 @@ osc::AABB osc::AABBFromVerts(nonstd::span<glm::vec3 const> vs) noexcept
 }
 
 osc::AABB osc::AABBFromIndexedVerts(
-    nonstd::span<glm::vec3 const> verts,
+    nonstd::span<Vec3 const> verts,
     nonstd::span<uint32_t const> indices)
 {
     AABB rv{};
@@ -1864,7 +1869,7 @@ osc::AABB osc::AABBFromIndexedVerts(
     {
         if (idx < verts.size())  // ignore invalid indices
         {
-            glm::vec3 const& pos = verts[idx];
+            Vec3 const& pos = verts[idx];
             rv.min = Min(rv.min, pos);
             rv.max = Max(rv.max, pos);
         }
@@ -1874,7 +1879,7 @@ osc::AABB osc::AABBFromIndexedVerts(
 }
 
 osc::AABB osc::AABBFromIndexedVerts(
-    nonstd::span<glm::vec3 const> verts,
+    nonstd::span<Vec3 const> verts,
     nonstd::span<uint16_t const> indices)
 {
     AABB rv{};
@@ -1903,7 +1908,7 @@ osc::AABB osc::AABBFromIndexedVerts(
     {
         if (idx < verts.size())  // ignore invalid indices
         {
-            glm::vec3 const& pos = verts[idx];
+            Vec3 const& pos = verts[idx];
             rv.min = Min(rv.min, pos);
             rv.max = Max(rv.max, pos);
         }
@@ -1914,8 +1919,8 @@ osc::AABB osc::AABBFromIndexedVerts(
 
 std::optional<osc::Rect> osc::AABBToScreenNDCRect(
     AABB const& aabb,
-    glm::mat4 const& viewMat,
-    glm::mat4 const& projMat,
+    Mat4 const& viewMat,
+    Mat4 const& projMat,
     float znear,
     float zfar)
 {
@@ -1945,57 +1950,57 @@ std::optional<osc::Rect> osc::AABBToScreenNDCRect(
     AABB ndcAABB = TransformAABB(viewspaceAABB, projMat);
 
     // take the X and Y coordinates of that AABB and ensure they are clamped to within bounds
-    Rect rv{glm::vec2{ndcAABB.min}, glm::vec2{ndcAABB.max}};
+    Rect rv{Vec2{ndcAABB.min}, Vec2{ndcAABB.max}};
     rv.p1 = glm::clamp(rv.p1, {-1.0f, -1.0f}, {1.0f, 1.0f});
     rv.p2 = glm::clamp(rv.p2, { -1.0f, -1.0f }, {1.0f, 1.0f});
 
     return rv;
 }
 
-glm::mat4 osc::SegmentToSegmentMat4(Segment const& a, Segment const& b) noexcept
+osc::Mat4 osc::SegmentToSegmentMat4(Segment const& a, Segment const& b) noexcept
 {
-    glm::vec3 a1ToA2 = a.p2 - a.p1;
-    glm::vec3 b1ToB2 = b.p2 - b.p1;
+    Vec3 a1ToA2 = a.p2 - a.p1;
+    Vec3 b1ToB2 = b.p2 - b.p1;
 
     float aLen = glm::length(a1ToA2);
     float bLen = glm::length(b1ToB2);
 
-    glm::vec3 aDir = a1ToA2/aLen;
-    glm::vec3 bDir = b1ToB2/bLen;
+    Vec3 aDir = a1ToA2/aLen;
+    Vec3 bDir = b1ToB2/bLen;
 
-    glm::vec3 aCenter = (a.p1 + a.p2)/2.0f;
-    glm::vec3 bCenter = (b.p1 + b.p2)/2.0f;
+    Vec3 aCenter = (a.p1 + a.p2)/2.0f;
+    Vec3 bCenter = (b.p1 + b.p2)/2.0f;
 
     // this is essentially LERPing [0,1] onto [1, l] to rescale only
     // along the line's original direction
     float s = bLen/aLen;
-    glm::vec3 scaler = glm::vec3{1.0f, 1.0f, 1.0f} + (s-1.0f)*aDir;
+    Vec3 scaler = Vec3{1.0f, 1.0f, 1.0f} + (s-1.0f)*aDir;
 
-    glm::mat4 rotate = Dir1ToDir2Xform(aDir, bDir);
-    glm::mat4 scale = glm::scale(glm::mat4{1.0f}, scaler);
-    glm::mat4 move = glm::translate(glm::mat4{1.0f}, bCenter - aCenter);
+    Mat4 rotate = Dir1ToDir2Xform(aDir, bDir);
+    Mat4 scale = glm::scale(Mat4{1.0f}, scaler);
+    Mat4 move = glm::translate(Mat4{1.0f}, bCenter - aCenter);
 
     return move * rotate * scale;
 }
 
 osc::Transform osc::SegmentToSegmentTransform(Segment const& a, Segment const& b) noexcept
 {
-    glm::vec3 aLine = a.p2 - a.p1;
-    glm::vec3 bLine = b.p2 - b.p1;
+    Vec3 aLine = a.p2 - a.p1;
+    Vec3 bLine = b.p2 - b.p1;
 
     float aLen = glm::length(aLine);
     float bLen = glm::length(bLine);
 
-    glm::vec3 aDir = aLine/aLen;
-    glm::vec3 bDir = bLine/bLen;
+    Vec3 aDir = aLine/aLen;
+    Vec3 bDir = bLine/bLen;
 
-    glm::vec3 aMid = (a.p1 + a.p2)/2.0f;
-    glm::vec3 bMid = (b.p1 + b.p2)/2.0f;
+    Vec3 aMid = (a.p1 + a.p2)/2.0f;
+    Vec3 bMid = (b.p1 + b.p2)/2.0f;
 
     // for scale: LERP [0,1] onto [1,l] along original direction
     Transform t;
     t.rotation = glm::rotation(aDir, bDir);
-    t.scale = glm::vec3{1.0f, 1.0f, 1.0f} + ((bLen/aLen - 1.0f)*aDir);
+    t.scale = Vec3{1.0f, 1.0f, 1.0f} + ((bLen/aLen - 1.0f)*aDir);
     t.position = bMid - aMid;
 
     return t;
@@ -2015,9 +2020,9 @@ osc::Transform osc::YToYConeToSegmentTransform(Segment const& s, float radius) n
     return YToYCylinderToSegmentTransform(s, radius);
 }
 
-glm::mat3 osc::ToMat3(Transform const& t) noexcept
+osc::Mat3 osc::ToMat3(Transform const& t) noexcept
 {
-    glm::mat3 rv = glm::toMat3(t.rotation);
+    Mat3 rv = glm::toMat3(t.rotation);
 
     rv[0][0] *= t.scale.x;
     rv[0][1] *= t.scale.x;
@@ -2034,9 +2039,9 @@ glm::mat3 osc::ToMat3(Transform const& t) noexcept
     return rv;
 }
 
-glm::mat4 osc::ToMat4(Transform const& t) noexcept
+osc::Mat4 osc::ToMat4(Transform const& t) noexcept
 {
-    glm::mat4 rv = glm::toMat4(t.rotation);
+    Mat4 rv = glm::toMat4(t.rotation);
 
     rv[0][0] *= t.scale.x;
     rv[0][1] *= t.scale.x;
@@ -2057,11 +2062,11 @@ glm::mat4 osc::ToMat4(Transform const& t) noexcept
     return rv;
 }
 
-glm::mat4 osc::ToInverseMat4(Transform const& t) noexcept
+osc::Mat4 osc::ToInverseMat4(Transform const& t) noexcept
 {
-    glm::mat4 translater = glm::translate(glm::mat4{1.0f}, -t.position);
-    glm::mat4 rotater = glm::toMat4(glm::conjugate(t.rotation));
-    glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, 1.0f/t.scale);
+    Mat4 translater = glm::translate(Mat4{1.0f}, -t.position);
+    Mat4 rotater = glm::toMat4(glm::conjugate(t.rotation));
+    Mat4 scaler = glm::scale(Mat4{1.0f}, 1.0f/t.scale);
 
     return scaler * rotater * translater;
 }
@@ -2071,16 +2076,16 @@ glm::mat3x3 osc::ToNormalMatrix(Transform const& t) noexcept
     return ToAdjugateMatrix(glm::transpose(ToMat3(t)));
 }
 
-glm::mat4 osc::ToNormalMatrix4(Transform const& t) noexcept
+osc::Mat4 osc::ToNormalMatrix4(Transform const& t) noexcept
 {
     return ToAdjugateMatrix(glm::transpose(ToMat3(t)));
 }
 
-osc::Transform osc::ToTransform(glm::mat4 const& mtx)
+osc::Transform osc::ToTransform(Mat4 const& mtx)
 {
     Transform rv;
-    glm::vec3 skew;
-    glm::vec4 perspective;
+    Vec3 skew;
+    Vec4 perspective;
     if (!glm::decompose(mtx, rv.scale, rv.rotation, rv.position, skew, perspective))
     {
         throw std::runtime_error{"failed to decompose a matrix into scale, rotation, etc."};
@@ -2088,28 +2093,28 @@ osc::Transform osc::ToTransform(glm::mat4 const& mtx)
     return rv;
 }
 
-glm::vec3 osc::TransformDirection(Transform const& t, glm::vec3 const& localDir) noexcept
+osc::Vec3 osc::TransformDirection(Transform const& t, Vec3 const& localDir) noexcept
 {
     return glm::normalize(t.rotation * (t.scale * localDir));
 }
 
-glm::vec3 osc::InverseTransformDirection(Transform const& t, glm::vec3 const& dir) noexcept
+osc::Vec3 osc::InverseTransformDirection(Transform const& t, Vec3 const& dir) noexcept
 {
     return glm::normalize((glm::conjugate(t.rotation) * dir) / t.scale);
 }
 
-glm::vec3 osc::TransformPoint(Transform const& t, glm::vec3 const& p) noexcept
+osc::Vec3 osc::TransformPoint(Transform const& t, Vec3 const& p) noexcept
 {
-    glm::vec3 rv = p;
+    Vec3 rv = p;
     rv *= t.scale;
     rv = t.rotation * rv;
     rv += t.position;
     return rv;
 }
 
-glm::vec3 osc::InverseTransformPoint(Transform const& t, glm::vec3 const& p) noexcept
+osc::Vec3 osc::InverseTransformPoint(Transform const& t, Vec3 const& p) noexcept
 {
-    glm::vec3 rv = p;
+    Vec3 rv = p;
     rv -= t.position;
     rv = glm::conjugate(t.rotation) * rv;
     rv /= t.scale;
@@ -2117,30 +2122,30 @@ glm::vec3 osc::InverseTransformPoint(Transform const& t, glm::vec3 const& p) noe
 }
 
 void osc::ApplyWorldspaceRotation(Transform& t,
-    glm::vec3 const& eulerAngles,
-    glm::vec3 const& rotationCenter) noexcept
+    Vec3 const& eulerAngles,
+    Vec3 const& rotationCenter) noexcept
 {
-    glm::quat q{eulerAngles};
+    Quat q{eulerAngles};
     t.position = q*(t.position - rotationCenter) + rotationCenter;
     t.rotation = glm::normalize(q*t.rotation);
 }
 
-glm::vec3 osc::ExtractEulerAngleXYZ(Transform const& t) noexcept
+osc::Vec3 osc::ExtractEulerAngleXYZ(Transform const& t) noexcept
 {
-    glm::vec3 rv;
+    Vec3 rv;
     glm::extractEulerAngleXYZ(glm::toMat4(t.rotation), rv.x, rv.y, rv.z);
     return rv;
 }
 
-glm::vec3 osc::ExtractExtrinsicEulerAnglesXYZ(Transform const& t) noexcept
+osc::Vec3 osc::ExtractExtrinsicEulerAnglesXYZ(Transform const& t) noexcept
 {
     return glm::eulerAngles(t.rotation);
 }
 
-bool osc::IsPointInRect(Rect const& r, glm::vec2 const& p) noexcept
+bool osc::IsPointInRect(Rect const& r, Vec2 const& p) noexcept
 {
-    glm::vec2 relPos = p - r.p1;
-    glm::vec2 dims = Dimensions(r);
+    Vec2 relPos = p - r.p1;
+    Vec2 dims = Dimensions(r);
     return (0.0f <= relPos.x && relPos.x <= dims.x) && (0.0f <= relPos.y && relPos.y <= dims.y);
 }
 
@@ -2159,7 +2164,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionAABB(Line const& l, AABB co
     //      is no intersection
     float t0 = std::numeric_limits<float>::lowest();
     float t1 = std::numeric_limits<float>::max();
-    for (glm::vec3::length_type i = 0; i < 3; ++i)
+    for (Vec3::length_type i = 0; i < 3; ++i)
     {
         float invDir = 1.0f / l.dir[i];
         float tNear = (bb.min[i] - l.origin[i]) * invDir;
@@ -2240,7 +2245,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionDisc(Line const& l, Disc co
     }
 
     // figure out whether the plane hit is within the disc's radius
-    glm::vec3 v = maybePlaneCollision->position - d.origin;
+    Vec3 v = maybePlaneCollision->position - d.origin;
     float const d2 = glm::dot(v, v);
     float const r2 = glm::dot(d.radius, d.radius);
 
@@ -2257,7 +2262,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionTriangle(Line const& l, Tri
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution
 
     // compute triangle normal
-    glm::vec3 N = TriangleNormal(tri);
+    Vec3 N = TriangleNormal(tri);
 
     // compute dot product between normal and ray
     float NdotR = glm::dot(N, l.dir);
@@ -2297,7 +2302,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionTriangle(Line const& l, Tri
     }
 
     // intersection point on triangle plane, computed from line equation
-    glm::vec3 P = l.origin + t*l.dir;
+    Vec3 P = l.origin + t*l.dir;
 
     // figure out if that point is inside the triangle's bounds using the
     // "inside-outside" test
@@ -2305,20 +2310,20 @@ std::optional<osc::RayCollision> osc::GetRayCollisionTriangle(Line const& l, Tri
     // test each triangle edge: {0, 1}, {1, 2}, {2, 0}
     for (size_t i = 0; i < 3; ++i)
     {
-        glm::vec3 const& start = tri[i];
-        glm::vec3 const& end = tri[(i+1)%3];
+        Vec3 const& start = tri[i];
+        Vec3 const& end = tri[(i+1)%3];
 
         // corner[n] to corner[n+1]
-        glm::vec3 e = end - start;
+        Vec3 e = end - start;
 
         // corner[n] to P
-        glm::vec3 c = P - start;
+        Vec3 c = P - start;
 
         // cross product of the above indicates whether the vectors are
         // clockwise or anti-clockwise with respect to eachover. It's a
         // right-handed coord system, so anti-clockwise produces a vector
         // that points in same direction as normal
-        glm::vec3 ax = glm::cross(e, c);
+        Vec3 ax = glm::cross(e, c);
 
         // if the dot product of that axis with the normal is <0.0f then
         // the point was "outside"

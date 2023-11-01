@@ -3,10 +3,12 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Mat4.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 
-#include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <nonstd/span.hpp>
 
@@ -126,12 +128,12 @@ namespace
 // graph-writing stuff
 namespace
 {
-    nonstd::span<float const> ToFloatSpan(nonstd::span<glm::vec2 const> s)
+    nonstd::span<float const> ToFloatSpan(nonstd::span<osc::Vec2 const> s)
     {
         return {glm::value_ptr(s[0]), 2 * s.size()};
     }
 
-    nonstd::span<float const> ToFloatSpan(nonstd::span<glm::vec3 const> s)
+    nonstd::span<float const> ToFloatSpan(nonstd::span<osc::Vec3 const> s)
     {
         return {glm::value_ptr(s[0]), 3 * s.size()};
     }
@@ -236,7 +238,7 @@ namespace
 
     void WriteMeshPositionsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        nonstd::span<glm::vec3 const> const vals = geom.mesh.getVerts();
+        nonstd::span<osc::Vec3 const> const vals = geom.mesh.getVerts();
         size_t const floatCount = 3 * vals.size();
         size_t const vertCount = vals.size();
 
@@ -254,7 +256,7 @@ namespace
 
     void WriteMeshNormalsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        nonstd::span<glm::vec3 const> const vals = geom.mesh.getNormals();
+        nonstd::span<osc::Vec3 const> const vals = geom.mesh.getNormals();
         size_t const floatCount = 3 * vals.size();
         size_t const normalCount = vals.size();
 
@@ -272,7 +274,7 @@ namespace
 
     void WriteMeshTextureCoordsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        nonstd::span<glm::vec2 const> const vals = geom.mesh.getTexCoords();
+        nonstd::span<osc::Vec2 const> const vals = geom.mesh.getTexCoords();
         size_t const floatCount = 2 * vals.size();
         size_t const coordCount = vals.size();
 
@@ -361,12 +363,12 @@ namespace
 
     void WriteTransformMatrix(std::ostream& o, osc::Transform const& t)
     {
-        glm::mat4 const m = osc::ToMat4(t);
+        osc::Mat4 const m = osc::ToMat4(t);
 
         // row-major
         o << R"(        <matrix sid="transform">)";
         std::string_view delim;
-        for (glm::mat4::length_type row = 0; row < 4; ++row)
+        for (osc::Mat4::length_type row = 0; row < 4; ++row)
         {
             o << delim << m[0][row];
             delim = " ";

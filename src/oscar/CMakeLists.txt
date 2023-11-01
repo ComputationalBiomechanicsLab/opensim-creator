@@ -108,9 +108,13 @@ add_library(oscar STATIC
     Maths/Line.hpp
     Maths/MathHelpers.hpp
     Maths/MathsImplementation.cpp
+    Maths/Mat3.hpp
+    Maths/Mat4.hpp
+    Maths/Mat4x3.hpp
     Maths/Plane.hpp
     Maths/PointDirection.hpp
     Maths/PolarPerspectiveCamera.hpp
+    Maths/Quat.hpp
     Maths/RayCollision.hpp
     Maths/Rect.hpp
     Maths/Segment.hpp
@@ -118,6 +122,9 @@ add_library(oscar STATIC
     Maths/Tetrahedron.hpp
     Maths/Transform.hpp
     Maths/Triangle.hpp
+    Maths/Vec2.hpp
+    Maths/Vec3.hpp
+    Maths/Vec4.hpp
 
     Platform/App.cpp
     Platform/App.hpp
