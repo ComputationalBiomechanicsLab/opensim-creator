@@ -21,6 +21,8 @@ namespace osc
         void onMount() { openAll(); }
         void openAll();
         void onDraw();
+        [[nodiscard]] bool empty();
+        void clear();
     private:
         std::vector<std::shared_ptr<Popup>> m_Popups;
     };

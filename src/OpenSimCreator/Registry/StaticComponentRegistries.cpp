@@ -752,3 +752,12 @@ osc::ComponentRegistry<OpenSim::Component> const& osc::GetComponentRegistry()
     );
     return s_StaticReg;
 }
+
+osc::ComponentRegistry<OpenSim::Component> const& osc::GetAllRegisteredComponents()
+{
+    static auto const s_StaticReg = CreateRegistry<OpenSim::Component>(
+        "All Components",
+        "These are all the components that OpenSim Creator knows about"
+    );
+    return s_StaticReg;
+}
