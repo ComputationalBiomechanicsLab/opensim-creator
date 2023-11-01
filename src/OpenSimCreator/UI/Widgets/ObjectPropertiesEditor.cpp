@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
 #include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/UI/Middleware/EditorAPI.hpp>
+#include <OpenSimCreator/UI/Middleware/PopupAPI.hpp>
 #include <OpenSimCreator/UI/Widgets/GeometryPathPropertyEditorPopup.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
@@ -398,7 +398,7 @@ namespace
         using property_type = OpenSim::SimpleProperty<std::string>;
 
         StringPropertyEditor(
-            osc::EditorAPI*,
+            osc::PopupAPI*,
             std::shared_ptr<osc::UndoableModelStatePair const> const&,
             std::function<OpenSim::Object const*()> const&,
             std::function<property_type const*()> const& accessor_) :  // NOLINT(modernize-pass-by-value)
@@ -501,7 +501,7 @@ namespace
         using property_type = OpenSim::SimpleProperty<double>;
 
         DoublePropertyEditor(
-            osc::EditorAPI*,
+            osc::PopupAPI*,
             std::shared_ptr<osc::UndoableModelStatePair const> const&,
             std::function<OpenSim::Object const*()> const&,
             std::function<property_type const*()> const& accessor_) :  // NOLINT(modernize-pass-by-value)
@@ -608,7 +608,7 @@ namespace
         using property_type = OpenSim::SimpleProperty<bool>;
 
         BoolPropertyEditor(
-            osc::EditorAPI*,
+            osc::PopupAPI*,
             std::shared_ptr<osc::UndoableModelStatePair const> const&,
             std::function<OpenSim::Object const*()> const&,
             std::function<property_type const*()> const& accessor_) :  // NOLINT(modernize-pass-by-value)
@@ -712,7 +712,7 @@ namespace
         using property_type = OpenSim::SimpleProperty<SimTK::Vec3>;
 
         Vec3PropertyEditor(
-            osc::EditorAPI*,
+            osc::PopupAPI*,
             std::shared_ptr<osc::UndoableModelStatePair const> const& model_,  // NOLINT(modernize-pass-by-value)
             std::function<OpenSim::Object const*()> const& objectAccessor_,  // NOLINT(modernize-pass-by-value)
             std::function<property_type const*()> const& accessor_) :  // NOLINT(modernize-pass-by-value)
@@ -1063,7 +1063,7 @@ namespace
         using property_type = OpenSim::SimpleProperty<SimTK::Vec6>;
 
         Vec6PropertyEditor(
-            osc::EditorAPI*,
+            osc::PopupAPI*,
             std::shared_ptr<osc::UndoableModelStatePair const> const&,
             std::function<OpenSim::Object const*()> const&,
             std::function<property_type const*()> const& accessor_) :  // NOLINT(modernize-pass-by-value)
@@ -1173,7 +1173,7 @@ namespace
         using property_type = OpenSim::SimpleProperty<int>;
 
         IntPropertyEditor(
-            osc::EditorAPI*,
+            osc::PopupAPI*,
             std::shared_ptr<osc::UndoableModelStatePair const> const&,
             std::function<OpenSim::Object const*()> const&,
             std::function<property_type const*()> const& accessor_) :  // NOLINT(modernize-pass-by-value)
@@ -1282,7 +1282,7 @@ namespace
         using property_type = OpenSim::ObjectProperty<OpenSim::Appearance>;
 
         AppearancePropertyEditor(
-            osc::EditorAPI*,
+            osc::PopupAPI*,
             std::shared_ptr<osc::UndoableModelStatePair const> const&,
             std::function<OpenSim::Object const*()> const&,
             std::function<property_type const*()> const& accessor_) :  // NOLINT(modernize-pass-by-value)
@@ -1393,7 +1393,7 @@ namespace
         using property_type = OpenSim::ObjectProperty<OpenSim::HuntCrossleyForce::ContactParametersSet>;
 
         ContactParameterSetEditor(
-            osc::EditorAPI* api,
+            osc::PopupAPI* api,
             std::shared_ptr<osc::UndoableModelStatePair const> const& targetModel_,  // NOLINT(modernize-pass-by-value)
             std::function<OpenSim::Object const*()> const&,
             std::function<property_type const*()> const& accessor_) :  // NOLINT(modernize-pass-by-value)
@@ -1462,7 +1462,7 @@ namespace
             return rv;
         }
 
-        osc::EditorAPI* m_API;
+        osc::PopupAPI* m_API;
         std::shared_ptr<osc::UndoableModelStatePair const> m_TargetModel;
         std::function<property_type const*()> m_Accessor;
         std::optional<osc::ObjectPropertiesEditor> m_MaybeNestedEditor;
@@ -1474,7 +1474,7 @@ namespace
         using property_type = OpenSim::ObjectProperty<OpenSim::GeometryPath>;
 
         GeometryPathPropertyEditor(
-            osc::EditorAPI* api_,
+            osc::PopupAPI* api_,
             std::shared_ptr<osc::UndoableModelStatePair const> const& targetModel_,  // NOLINT(modernize-pass-by-value)
             std::function<OpenSim::Object const*()> const&,
             std::function<property_type const*()> const& accessor_) :  // NOLINT(modernize-pass-by-value)
@@ -1531,7 +1531,7 @@ namespace
             );
         }
 
-        osc::EditorAPI* m_API;
+        osc::PopupAPI* m_API;
         std::shared_ptr<osc::UndoableModelStatePair const> m_TargetModel;
         std::function<property_type const*()> m_Accessor;
 
@@ -1560,7 +1560,7 @@ namespace
         }
 
         std::unique_ptr<VirtualPropertyEditor> tryCreateEditor(
-            osc::EditorAPI* editorAPI,
+            osc::PopupAPI* popupAPI,
             std::shared_ptr<osc::UndoableModelStatePair const> const& targetModel,
             std::function<OpenSim::Object const*()> const& objectAccessor,
             std::function<OpenSim::AbstractProperty const*()> const& propertyAccessor) const
@@ -1579,7 +1579,7 @@ namespace
             }
 
             // else: instantiate new property editor
-            return it->second(editorAPI, targetModel, objectAccessor, propertyAccessor);
+            return it->second(popupAPI, targetModel, objectAccessor, propertyAccessor);
         }
 
     private:
@@ -1600,7 +1600,7 @@ namespace
         };
 
         using PropertyEditorCtor = std::function<std::unique_ptr<VirtualPropertyEditor>(
-            osc::EditorAPI*,
+            osc::PopupAPI*,
             std::shared_ptr<osc::UndoableModelStatePair const> const&,
             std::function<OpenSim::Object const*()> const&,
             std::function<OpenSim::AbstractProperty const*()> const&
@@ -1618,7 +1618,7 @@ namespace
         {
             TypeInfoRef typeInfo = typeid(typename TConcretePropertyEditor::property_type);
             auto ctor = [](
-                osc::EditorAPI* api,
+                osc::PopupAPI* api,
                 std::shared_ptr<osc::UndoableModelStatePair const> const& targetModel,
                 std::function<OpenSim::Object const*()> const& objectAccessor,
                 std::function<OpenSim::AbstractProperty const*()> const& propetyAccessor)
@@ -1655,7 +1655,7 @@ namespace
 class osc::ObjectPropertiesEditor::Impl final {
 public:
     Impl(
-        EditorAPI* api_,
+        PopupAPI* api_,
         std::shared_ptr<osc::UndoableModelStatePair const> targetModel_,
         std::function<OpenSim::Object const*()> objectGetter_) :
 
@@ -1784,7 +1784,7 @@ private:
         return it->second.get();
     }
 
-    EditorAPI* m_API;
+    PopupAPI* m_API;
     std::shared_ptr<osc::UndoableModelStatePair const> m_TargetModel;
     std::function<OpenSim::Object const*()> m_ObjectGetter;
     OpenSim::Object const* m_PreviousObject = nullptr;
@@ -1795,7 +1795,7 @@ private:
 // public API (ObjectPropertiesEditor)
 
 osc::ObjectPropertiesEditor::ObjectPropertiesEditor(
-    EditorAPI* api_,
+    PopupAPI* api_,
     std::shared_ptr<osc::UndoableModelStatePair const> targetModel_,
     std::function<OpenSim::Object const*()> objectGetter_) :
 
