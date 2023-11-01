@@ -781,7 +781,7 @@ namespace
 
             if (&component->getRoot() != &m_Model->getModel())
             {
-                return std::nullopt;  // the object is not within the tree of the model
+                return std::nullopt;  // the object is not within the tree of the model (#800)
             }
 
             auto const positionPropName = osc::TryGetPositionalPropertyName(*component);

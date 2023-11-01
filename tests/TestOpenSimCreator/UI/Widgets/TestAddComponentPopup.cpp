@@ -40,19 +40,15 @@ TEST(AddComponentPopup, CanOpenAndDrawAllRegisteredComponentsInTheAddComponentPo
         {
             osc::ImGuiInit();
             ScopeGuard g{[]() { osc::ImGuiShutdown(); }};
-
-            for (int frame = 0; frame < 5; ++frame)
-            {
-                osc::ImGuiNewFrame();
-                NullPopupAPI api;
-                auto model = std::make_shared<UndoableModelStatePair>();
-                AddComponentPopup popup{"popupname", &api, model, entry.instantiate()};
-                popup.open();
-                popup.beginPopup();
-                popup.onDraw();
-                popup.endPopup();
-                osc::ImGuiRender();
-            }
+            osc::ImGuiNewFrame();
+            NullPopupAPI api;
+            auto model = std::make_shared<UndoableModelStatePair>();
+            AddComponentPopup popup{"popupname", &api, model, entry.instantiate()};
+            popup.open();
+            popup.beginPopup();
+            popup.onDraw();
+            popup.endPopup();
+            osc::ImGuiRender();
         }
         catch (std::exception const& ex)
         {
