@@ -13,7 +13,9 @@ All notable changes to this project will be documented here. The format is based
 - Right-clicking a mesh in the model editor now shows a `Fit Analytic Geometry to This` option, which will fit the chosen
   analytic geometry to the mesh's vertices (#798).
 - If a popup in the editor window throws an exception then the editor window will now try to close the popup, rather than
-  fully erroring out to an error tab (#800)
+  fully erroring out to an error tab (thanks @AdrianHendrik, #800)
+- Fixed a bug where trying to add a `ConditionalPathPoint`, `Marker`, `PathPoint`, `PhysicalOffsetFrame`, or `Station`
+  component via the `Add` menu would crash the tab with a frame-related error message (thanks @AdrianHendrik, #800)
 - Internal: the codebase now contains shape-fitting algorithms for fitting a sphere, plane, or ellipsoid analytic geometry
   to mesh data. The algorithms were written to closely match the shape-fitting codebase that came with "P.Bishop et. al,
   How to Build a Dinosaur, doi:10.1017/pab.2020.46" (#798)
