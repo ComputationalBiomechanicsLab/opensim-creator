@@ -1,8 +1,5 @@
 #include "LOGLSSAOTab.hpp"
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <nonstd/span.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
@@ -28,6 +25,8 @@
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
@@ -42,6 +41,9 @@
 #include <utility>
 #include <vector>
 
+using osc::Vec2i;
+using osc::Vec3;
+
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/SSAO";
@@ -50,30 +52,30 @@ namespace
     {
         osc::Camera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
-        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(50.0f);
         rv.setBackgroundColor(osc::Color::black());
         return rv;
     }
 
-    std::vector<glm::vec3> GenerateSampleKernel(size_t numSamples)
+    std::vector<Vec3> GenerateSampleKernel(size_t numSamples)
     {
         std::default_random_engine rng{std::random_device{}()};
         std::uniform_real_distribution<float> zeroToOne{0.0f, 1.0f};
         std::uniform_real_distribution<float> minusOneToOne{-1.0f, 1.0f};
 
-        std::vector<glm::vec3> rv;
+        std::vector<Vec3> rv;
         rv.reserve(numSamples);
         for (size_t i = 0; i < numSamples; ++i)
         {
             // scale antiAliasingLevel such that they are more aligned to
             // the center of the kernel
             float scale = static_cast<float>(i)/static_cast<float>(numSamples);
-            scale = glm::mix(0.1f, 1.0f, scale*scale);
+            scale = osc::Mix(0.1f, 1.0f, scale*scale);
 
-            glm::vec3 sample = {minusOneToOne(rng), minusOneToOne(rng), minusOneToOne(rng)};
-            sample = glm::normalize(sample);
+            Vec3 sample = {minusOneToOne(rng), minusOneToOne(rng), minusOneToOne(rng)};
+            sample = osc::Normalize(sample);
             sample *= zeroToOne(rng);
             sample *= scale;
 
@@ -102,7 +104,7 @@ namespace
         return rv;
     }
 
-    osc::Texture2D GenerateNoiseTexture(glm::ivec2 dimensions)
+    osc::Texture2D GenerateNoiseTexture(Vec2i dimensions)
     {
         std::vector<osc::Color> const pixels =
             GenerateNoiseTexturePixels(static_cast<size_t>(dimensions.x) * static_cast<size_t>(dimensions.y));
@@ -240,7 +242,7 @@ private:
     void draw3DScene()
     {
         Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
-        glm::vec2 const viewportDims = Dimensions(viewportRect);
+        Vec2 const viewportDims = Dimensions(viewportRect);
         AntiAliasingLevel const antiAliasingLevel = AntiAliasingLevel::none();
 
         // ensure textures/buffers have correct dimensions
@@ -264,8 +266,8 @@ private:
         // render cube
         {
             Transform cubeTransform;
-            cubeTransform.position = glm::vec3{0.0f, 7.0f, 0.0f};
-            cubeTransform.scale = glm::vec3{7.5f};
+            cubeTransform.position = Vec3{0.0f, 7.0f, 0.0f};
+            cubeTransform.scale = Vec3{7.5f};
 
             m_GBuffer.material.setBool("uInvertedNormals", true);
 
@@ -280,7 +282,7 @@ private:
         // render sphere
         {
             Transform modelTransform;
-            modelTransform.position = glm::vec3{0.0f, 0.5f, 0.0f};
+            modelTransform.position = Vec3{0.0f, 0.5f, 0.0f};
 
             m_GBuffer.material.setBool("uInvertedNormals", false);
 
@@ -301,7 +303,7 @@ private:
         m_SSAO.material.setRenderTexture("uNormalTex", m_GBuffer.normal);
         m_SSAO.material.setTexture("uNoiseTex", m_NoiseTexture);
         m_SSAO.material.setVec3Array("uSamples", m_SampleKernel);
-        m_SSAO.material.setVec2("uNoiseScale", Dimensions(viewportRect) / glm::vec2{m_NoiseTexture.getDimensions()});
+        m_SSAO.material.setVec2("uNoiseScale", Dimensions(viewportRect) / Vec2{m_NoiseTexture.getDimensions()});
         m_SSAO.material.setInt("uKernelSize", static_cast<int32_t>(m_SampleKernel.size()));
         m_SSAO.material.setFloat("uRadius", 0.5f);
         m_SSAO.material.setFloat("uBias", 0.125f);
@@ -358,7 +360,7 @@ private:
 
         for (size_t i = 0; i < textures.size(); ++i)
         {
-            glm::vec2 const offset = {static_cast<float>(i)*w, 0.0f};
+            Vec2 const offset = {static_cast<float>(i)*w, 0.0f};
             Rect const overlayRect{viewportRect.p1 + offset, viewportRect.p1 + offset + w};
 
             Graphics::BlitToScreen(*textures[i], overlayRect);
@@ -367,14 +369,14 @@ private:
 
     UID m_TabID;
 
-    std::vector<glm::vec3> m_SampleKernel = GenerateSampleKernel(64);
+    std::vector<Vec3> m_SampleKernel = GenerateSampleKernel(64);
     Texture2D m_NoiseTexture = GenerateNoiseTexture({4, 4});
-    glm::vec3 m_LightPosition = {2.0f, 4.0f, -2.0f};
+    Vec3 m_LightPosition = {2.0f, 4.0f, -2.0f};
     Color m_LightColor = {0.2f, 0.2f, 0.7f, 1.0f};
 
     Camera m_Camera = CreateCameraWithSameParamsAsLearnOpenGL();
     bool m_IsMouseCaptured = true;
-    glm::vec3 m_CameraEulers = {};
+    Vec3 m_CameraEulers = {};
 
     Mesh m_SphereMesh = GenSphere(32, 32);
     Mesh m_CubeMesh = GenCube();
@@ -419,7 +421,7 @@ private:
             },
         };
 
-        void reformat(glm::vec2 dims, AntiAliasingLevel antiAliasingLevel)
+        void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)
         {
             RenderTextureDescriptor desc{dims};
             desc.setAntialiasingLevel(antiAliasingLevel);
@@ -436,7 +438,7 @@ private:
         Material material = LoadSSAOMaterial();
         RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::Red8);
 
-        void reformat(glm::vec2 dims, AntiAliasingLevel antiAliasingLevel)
+        void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)
         {
             outputTexture.setDimensions(dims);
             outputTexture.setAntialiasingLevel(antiAliasingLevel);
@@ -447,7 +449,7 @@ private:
         Material material = LoadBlurMaterial();
         RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::Red8);
 
-        void reformat(glm::vec2 dims, AntiAliasingLevel antiAliasingLevel)
+        void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)
         {
             outputTexture.setDimensions(dims);
             outputTexture.setAntialiasingLevel(antiAliasingLevel);
@@ -458,7 +460,7 @@ private:
         Material material = LoadLightingMaterial();
         RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::ARGB32);
 
-        void reformat(glm::vec2 dims, AntiAliasingLevel antiAliasingLevel)
+        void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)
         {
             outputTexture.setDimensions(dims);
             outputTexture.setAntialiasingLevel(antiAliasingLevel);

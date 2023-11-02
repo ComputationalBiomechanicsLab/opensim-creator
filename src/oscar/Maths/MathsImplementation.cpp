@@ -1150,6 +1150,11 @@ osc::Vec4 osc::Clamp(Vec4 const& v, float min, float max)
     return glm::clamp(v, min, max);
 }
 
+float osc::Mix(float a, float b, float factor)
+{
+    return glm::mix(a, b, factor);
+}
+
 osc::Vec4 osc::Mix(Vec4 const& a, Vec4 const& b, float factor)
 {
     return glm::mix(a, b, factor);
@@ -1208,6 +1213,21 @@ osc::Mat4 osc::Ortho(float left, float right, float bottom, float top, float zNe
 osc::Mat4 osc::Inverse(Mat4 const& mat)
 {
     return glm::inverse(mat);
+}
+
+osc::Mat4 osc::Scale(Mat4 const& m, Vec3 const& v)
+{
+    return glm::scale(m, v);
+}
+
+osc::Mat4 osc::Rotate(Mat4 const& m, float angle, Vec3 const& axis)
+{
+    return glm::rotate(m, angle, axis);
+}
+
+osc::Mat4 osc::Translate(Mat4 const& m, Vec3 const& v)
+{
+    return glm::translate(m, v);
 }
 
 // returns `true` if the values of `a` and `b` are effectively equal

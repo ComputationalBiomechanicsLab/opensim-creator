@@ -30,10 +30,22 @@ namespace osc { struct Segment; }
 namespace osc
 {
     // converts degrees to radians
-    template<typename NumericType>
-    constexpr float Deg2Rad(NumericType degrees)
+    template<typename Number>
+    constexpr Number Deg2Rad(Number degrees)
     {
-        return degrees * static_cast<NumericType>(0.01745329251994329576923690768489);
+        return degrees * static_cast<Number>(0.01745329251994329576923690768489);
+    }
+
+    // converts radians to degrees
+    template<typename Number>
+    constexpr Number Rad2Deg(Number radians)
+    {
+        return radians * static_cast<Number>(57.295779513082320876798154814105);
+    }
+
+    constexpr Vec3 Rad2Deg(Vec3 radians)
+    {
+        return radians * static_cast<Vec3::value_type>(57.295779513082320876798154814105);
     }
 
     constexpr float Clamp(float v, float low, float high)
@@ -48,6 +60,8 @@ namespace osc
     }
 
     Vec4 Clamp(Vec4 const&, float min, float max);
+
+    float Mix(float a, float b, float factor);
     Vec4 Mix(Vec4 const&, Vec4 const&, float);
 
     // returns the cross product of the two arguments
@@ -78,6 +92,11 @@ namespace osc
 
     // computes the inverse of the matrix
     Mat4 Inverse(Mat4 const&);
+
+    // right-hand multiply
+    Mat4 Scale(Mat4 const&, Vec3 const&);
+    Mat4 Rotate(Mat4 const&, float, Vec3 const&);
+    Mat4 Translate(Mat4 const&, Vec3 const&);
 
     // returns `true` if the two arguments are effectively equal (i.e. within machine precision)
     //

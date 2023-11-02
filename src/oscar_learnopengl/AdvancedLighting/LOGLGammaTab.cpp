@@ -1,7 +1,5 @@
 #include "LOGLGammaTab.hpp"
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
@@ -11,7 +9,10 @@
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
@@ -21,9 +22,12 @@
 #include <string>
 #include <utility>
 
+using osc::Vec2;
+using osc::Vec3;
+
 namespace
 {
-    constexpr auto c_PlaneVertices = osc::to_array<glm::vec3>(
+    constexpr auto c_PlaneVertices = osc::to_array<Vec3>(
     {
         { 10.0f, -0.5f,  10.0f},
         {-10.0f, -0.5f,  10.0f},
@@ -33,7 +37,7 @@ namespace
         {-10.0f, -0.5f, -10.0f},
         { 10.0f, -0.5f, -10.0f},
     });
-    constexpr auto c_PlaneTexCoords = osc::to_array<glm::vec2>(
+    constexpr auto c_PlaneTexCoords = osc::to_array<Vec2>(
     {
         {10.0f, 0.0f},
         {0.0f,  0.0f},
@@ -43,7 +47,7 @@ namespace
         {0.0f,  10.0f},
         {10.0f, 10.0f},
     });
-    constexpr auto c_PlaneNormals = osc::to_array<glm::vec3>(
+    constexpr auto c_PlaneNormals = osc::to_array<Vec3>(
     {
         {0.0f, 1.0f, 0.0f},
         {0.0f, 1.0f, 0.0f},
@@ -55,7 +59,7 @@ namespace
     });
     constexpr auto c_PlaneIndices = osc::to_array<uint16_t>({0, 2, 1, 3, 5, 4});
 
-    constexpr auto c_LightPositions = osc::to_array<glm::vec3>(
+    constexpr auto c_LightPositions = osc::to_array<Vec3>(
     {
         {-3.0f, 0.0f, 0.0f},
         {-1.0f, 0.0f, 0.0f},
@@ -87,7 +91,7 @@ namespace
     {
         osc::Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -192,7 +196,7 @@ private:
     Mesh m_PlaneMesh = GeneratePlane();
     Camera m_Camera = CreateSceneCamera();
     bool m_IsMouseCaptured = true;
-    glm::vec3 m_CameraEulers = {};
+    Vec3 m_CameraEulers = {};
 };
 
 

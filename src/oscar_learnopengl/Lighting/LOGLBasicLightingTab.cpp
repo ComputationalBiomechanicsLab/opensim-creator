@@ -2,8 +2,6 @@
 
 #include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
 
-#include <glm/vec3.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
@@ -11,7 +9,9 @@
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/CStringView.hpp>
@@ -28,7 +28,7 @@ namespace
     {
         osc::Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -111,7 +111,7 @@ private:
 
         // render auxiliary UI
         ImGui::Begin("controls");
-        ImGui::InputFloat3("light pos", glm::value_ptr(m_LightTransform.position));
+        ImGui::InputFloat3("light pos", osc::ValuePtr(m_LightTransform.position));
         ImGui::InputFloat("ambient strength", &m_AmbientStrength);
         ImGui::InputFloat("diffuse strength", &m_DiffuseStrength);
         ImGui::InputFloat("specular strength", &m_SpecularStrength);
@@ -140,7 +140,7 @@ private:
     Mesh m_CubeMesh = GenLearnOpenGLCube();
 
     Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
-    glm::vec3 m_CameraEulers = {};
+    Vec3 m_CameraEulers = {};
     bool m_IsMouseCaptured = false;
 
     Transform m_LightTransform;

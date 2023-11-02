@@ -1,6 +1,5 @@
 #include "LOGLFaceCullingTab.hpp"
 
-#include <glm/vec3.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
@@ -12,6 +11,8 @@
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/CStringView.hpp>
@@ -54,7 +55,7 @@ namespace
     {
         osc::Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -148,7 +149,7 @@ private:
     Mesh m_Cube = GenerateCubeSimilarlyToLOGL();
     Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     bool m_IsMouseCaptured = false;
-    glm::vec3 m_CameraEulers = {};
+    Vec3 m_CameraEulers = {};
 };
 
 
