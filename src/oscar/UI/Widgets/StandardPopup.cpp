@@ -2,6 +2,7 @@
 
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/Vec2.hpp>
 
 #include <imgui.h>
 
@@ -15,7 +16,7 @@ osc::StandardPopup::StandardPopup(std::string_view popupName) :
 
 osc::StandardPopup::StandardPopup(
     std::string_view popupName,
-    glm::vec2 dimensions,
+    Vec2 dimensions,
     ImGuiWindowFlags popupFlags) :
 
     m_PopupName{popupName},
@@ -65,7 +66,7 @@ bool osc::StandardPopup::implBeginPopup()
         if (m_MaybePosition)
         {
             ImGui::SetNextWindowPos(
-                static_cast<glm::vec2>(*m_MaybePosition),
+                static_cast<Vec2>(*m_MaybePosition),
                 ImGuiCond_Appearing
             );
         }
@@ -86,14 +87,14 @@ bool osc::StandardPopup::implBeginPopup()
         if (!(m_PopupFlags & ImGuiWindowFlags_AlwaysAutoResize))
         {
             ImGui::SetNextWindowSize(
-                glm::vec2{m_Dimensions},
+                Vec2{m_Dimensions},
                 ImGuiCond_Appearing
             );
         }
         else
         {
             ImGui::SetNextWindowSize(
-                glm::vec2{m_Dimensions}
+                Vec2{m_Dimensions}
             );
         }
 
@@ -120,7 +121,7 @@ bool osc::StandardPopup::implBeginPopup()
         if (m_MaybePosition)
         {
             ImGui::SetNextWindowPos(
-                static_cast<glm::vec2>(*m_MaybePosition),
+                static_cast<Vec2>(*m_MaybePosition),
                 ImGuiCond_Appearing
             );
         }
@@ -191,12 +192,12 @@ void osc::StandardPopup::setRect(Rect const& rect)
     m_Dimensions = osc::Dimensions(rect);
 }
 
-void osc::StandardPopup::setDimensions(glm::vec2 d)
+void osc::StandardPopup::setDimensions(Vec2 d)
 {
     m_Dimensions = d;
 }
 
-void osc::StandardPopup::setPosition(std::optional<glm::vec2> p)
+void osc::StandardPopup::setPosition(std::optional<Vec2> p)
 {
     m_MaybePosition = p;
 }

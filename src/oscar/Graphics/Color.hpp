@@ -1,9 +1,8 @@
 #pragma once
 
 #include <oscar/Graphics/Color32.hpp>
-
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
+#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/Vec4.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -100,12 +99,12 @@ namespace osc
         Color() = default;
 
         // i.e. a "solid" color (no transparency)
-        explicit constexpr Color(glm::vec3 const& v) :
+        explicit constexpr Color(Vec3 const& v) :
             r{v.x}, g{v.y}, b{v.z}, a{1.0f}
         {
         }
 
-        explicit constexpr Color(glm::vec4 const& v) :
+        explicit constexpr Color(Vec4 const& v) :
             r{v.x}, g{v.y}, b{v.z}, a{v.w}
         {
         }
@@ -132,9 +131,9 @@ namespace osc
             return (&r)[i];
         }
 
-        constexpr operator glm::vec4 () const noexcept
+        constexpr operator Vec4 () const noexcept
         {
-            return glm::vec4{r, g, b, a};
+            return Vec4{r, g, b, a};
         }
 
         constexpr friend bool operator==(Color const& lhs, Color const& rhs) noexcept
@@ -223,9 +222,9 @@ namespace osc
     Color ClampToLDR(Color const&) noexcept;
 
     // returns a Vec4 version of a Color
-    inline glm::vec4 ToVec4(Color const& c) noexcept
+    inline Vec4 ToVec4(Color const& c) noexcept
     {
-        return glm::vec4{c};
+        return Vec4{c};
     }
 
     // returns a pointer to the first float element in the color
@@ -247,7 +246,7 @@ namespace osc
 
     // float-/double-based inputs assume normalized color range (i.e. 0 to 1)
     Color32 ToColor32(Color const&) noexcept;
-    Color32 ToColor32(glm::vec4 const&) noexcept;
+    Color32 ToColor32(Vec4 const&) noexcept;
     Color32 ToColor32(float, float, float, float) noexcept;
     Color32 ToColor32(uint32_t) noexcept;  // R at MSB
 

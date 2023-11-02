@@ -13,7 +13,6 @@
 #include <imgui_internal.h>
 #include <nonstd/span.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Formats/CSV.hpp>
 #include <oscar/Formats/OBJ.hpp>
 #include <oscar/Formats/STL.hpp>

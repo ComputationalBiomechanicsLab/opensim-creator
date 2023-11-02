@@ -1,6 +1,5 @@
 #include "TPS3D.hpp"
 
-#include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Formats/CSV.hpp>
 #include <oscar/Utils/ParalellizationHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>

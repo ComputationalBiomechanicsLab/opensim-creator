@@ -1,8 +1,8 @@
 #pragma once
 
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
+#include <oscar/Maths/Vec2.hpp>
 
-#include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
 
 #include <memory>
@@ -25,7 +25,7 @@ namespace osc
         SceneRenderer& operator=(SceneRenderer&&) noexcept;
         ~SceneRenderer() noexcept;
 
-        glm::ivec2 getDimensions() const;
+        Vec2i getDimensions() const;
         AntiAliasingLevel getAntiAliasingLevel() const;
         void render(nonstd::span<SceneDecoration const>, SceneRendererParams const&);
         RenderTexture& updRenderTexture();

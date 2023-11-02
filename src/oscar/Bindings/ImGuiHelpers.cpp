@@ -19,7 +19,6 @@
 #include <oscar/Utils/SynchronizedValue.hpp>
 #include <oscar/Utils/UID.hpp>
 
-#include <glm/gtc/type_ptr.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -61,7 +60,7 @@ namespace
     float ShortestEdgeLength(ImRect const& r)
     {
         const osc::Vec2 sz = Size(r);
-        return glm::min(sz.x, sz.y);
+        return std::min(sz.x, sz.y);
     }
 
     ImU32 Brighten(ImU32 color, float factor)
@@ -278,12 +277,12 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
         else if (shiftDown)
         {
             // rotate in 90-deg increments
-            camera.phi -= glm::radians(90.0f);
+            camera.phi -= Deg2Rad(90.0f);
         }
         else
         {
             // rotate in 10-deg increments
-            camera.phi -= glm::radians(10.0f);
+            camera.phi -= Deg2Rad(10.0f);
         }
         return true;
     }
@@ -297,12 +296,12 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
         else if (shiftDown)
         {
             // rotate in 90-deg increments
-            camera.phi += glm::radians(90.0f);
+            camera.phi += Deg2Rad(90.0f);
         }
         else
         {
             // rotate in 10-deg increments
-            camera.phi += glm::radians(10.0f);
+            camera.phi += Deg2Rad(10.0f);
         }
         return true;
     }
@@ -316,12 +315,12 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
         else if (shiftDown)
         {
             // rotate in 90-deg increments
-            camera.theta += glm::radians(90.0f);
+            camera.theta += Deg2Rad(90.0f);
         }
         else
         {
             // rotate in 10-deg increments
-            camera.theta += glm::radians(10.0f);
+            camera.theta += Deg2Rad(10.0f);
         }
         return true;
     }
@@ -335,12 +334,12 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
         else if (shiftDown)
         {
             // rotate in 90-deg increments
-            camera.theta -= glm::radians(90.0f);
+            camera.theta -= Deg2Rad(90.0f);
         }
         else
         {
             // rotate in 10-deg increments
-            camera.theta -= glm::radians(10.0f);
+            camera.theta -= Deg2Rad(10.0f);
         }
         return true;
     }
@@ -380,7 +379,7 @@ void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, Vec3& eulers)
 {
     Vec3 const front = camera.getDirection();
     Vec3 const up = camera.getUpwardsDirection();
-    Vec3 const right = glm::cross(front, up);
+    Vec3 const right = Cross(front, up);
     Vec2 const mouseDelta = ImGui::GetIO().MouseDelta;
 
     float const speed = 10.0f;
@@ -416,11 +415,11 @@ void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, Vec3& eulers)
     camera.setPosition(pos);
 
     eulers.x += sensitivity * -mouseDelta.y;
-    eulers.x = glm::clamp(eulers.x, -osc::fpi2 + 0.1f, osc::fpi2 - 0.1f);
+    eulers.x = std::clamp(eulers.x, -osc::fpi2 + 0.1f, osc::fpi2 - 0.1f);
     eulers.y += sensitivity * -mouseDelta.x;
     eulers.y = std::fmod(eulers.y, 2.0f * osc::fpi);
 
-    camera.setRotation(glm::normalize(Quat{eulers}));
+    camera.setRotation(Normalize(Quat{eulers}));
 }
 
 osc::Rect osc::ContentRegionAvailScreenRect()
@@ -599,7 +598,7 @@ bool osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn, float threshold)
 
     Vec2 const dragDelta = ImGui::GetMouseDragDelta(btn);
 
-    return glm::length(dragDelta) < threshold;
+    return Length(dragDelta) < threshold;
 }
 
 bool osc::IsDraggingWithAnyMouseButtonDown()
@@ -756,7 +755,7 @@ bool osc::InputMetersFloat(CStringView label, float& v, float step, float step_f
 
 bool osc::InputMetersFloat3(CStringView label, Vec3& vec, ImGuiInputTextFlags flags)
 {
-    return ImGui::InputFloat3(label.c_str(), glm::value_ptr(vec), "%.6f", flags);
+    return ImGui::InputFloat3(label.c_str(), ValuePtr(vec), "%.6f", flags);
 }
 
 bool osc::SliderMetersFloat(CStringView label, float& v, float v_min, float v_max, ImGuiSliderFlags flags)

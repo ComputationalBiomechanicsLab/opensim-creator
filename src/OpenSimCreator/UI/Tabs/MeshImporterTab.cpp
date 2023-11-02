@@ -45,7 +45,6 @@
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
-#include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Bindings/ImGuizmoHelpers.hpp>
 #include <oscar/Formats/CSV.hpp>

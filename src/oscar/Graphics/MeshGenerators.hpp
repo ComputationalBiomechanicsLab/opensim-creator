@@ -1,8 +1,7 @@
 #pragma once
 
 #include <oscar/Graphics/Mesh.hpp>
-
-#include <glm/vec2.hpp>
+#include <oscar/Maths/Vec2.hpp>
 
 #include <cstddef>
 
@@ -56,9 +55,9 @@ namespace osc
     //
     // i.e. the "lowest" grid point is `min`, the next one is `min + (max-min)/steps`
     Mesh GenNxMPoint2DGridWithConnectingLines(
-        glm::vec2 min,
-        glm::vec2 max,
-        glm::ivec2 steps
+        Vec2 min,
+        Vec2 max,
+        Vec2i steps
     );
 
     // returns a triangle mesh where each triangle is part of a quad, and each quad is
@@ -67,5 +66,5 @@ namespace osc
     // - the grid spans from (-1.0f, -1.0f) to (+1.0f, +1.0f) (i.e. NDC) with Z = 0.0f
     // - texture coordinates are assigned to each vertex, and span from (0.0f, 0.0f) to (1.0f, 1.0f)
     // - the utility of this is that the grid can be warped to (effectively) warp the texture in 2D space
-    Mesh GenNxMTriangleQuad2DGrid(glm::ivec2 steps);
+    Mesh GenNxMTriangleQuad2DGrid(Vec2i steps);
 }

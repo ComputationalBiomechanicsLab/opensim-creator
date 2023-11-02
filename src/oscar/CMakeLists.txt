@@ -19,16 +19,13 @@ find_package(unordered_dense REQUIRED CONFIG)
 
 add_library(oscar STATIC
 
-    Bindings/GlmHelpers.cpp
-    Bindings/GlmHelpers.hpp
+    Bindings/Gl.cpp
+    Bindings/Gl.hpp
     Bindings/ImGuiHelpers.cpp
     Bindings/ImGuiHelpers.hpp
     Bindings/ImGuizmoHelpers.cpp
     Bindings/ImGuizmoHelpers.hpp
     Bindings/SDL2Helpers.hpp
-    Bindings/Gl.cpp
-    Bindings/Gl.hpp
-    Bindings/GlGlm.hpp
 
     Formats/CSV.hpp
     Formats/CSV.cpp

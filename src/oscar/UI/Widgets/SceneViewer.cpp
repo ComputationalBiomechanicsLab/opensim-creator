@@ -8,7 +8,6 @@
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 
-#include <glm/vec2.hpp>
 #include <imgui.h>
 #include <nonstd/span.hpp>
 

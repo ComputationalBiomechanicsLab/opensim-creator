@@ -1,4 +1,3 @@
-#include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
@@ -43,6 +42,7 @@
 #include <limits>
 #include <memory>
 #include <numeric>
+#include <sstream>
 #include <stack>
 #include <stdexcept>
 #include <utility>
@@ -901,6 +901,98 @@ osc::Transform& osc::operator/=(Transform& t, float s) noexcept
     return t;
 }
 
+// Mat3
+
+std::ostream& osc::operator<<(std::ostream& o, Mat3 const& m)
+{
+    // prints in row-major, because that's how most people debug matrices
+    for (Mat3::length_type row = 0; row < 3; ++row)
+    {
+        std::string_view delim;
+        for (Mat3::length_type col = 0; col < 3; ++col)
+        {
+            o << delim << m[col][row];
+            delim = " ";
+        }
+        o << '\n';
+    }
+    return o;
+}
+
+// Mat4
+
+std::ostream& osc::operator<<(std::ostream& o, Mat4 const& m)
+{
+    // prints in row-major, because that's how most people debug matrices
+    for (Mat4::length_type row = 0; row < 4; ++row) {
+        std::string_view delim;
+        for (Mat4::length_type col = 0; col < 4; ++col)
+        {
+            o << delim << m[col][row];
+            delim = " ";
+        }
+        o << '\n';
+    }
+    return o;
+}
+
+
+// Mat4x3
+
+std::ostream& osc::operator<<(std::ostream& o, Mat4x3 const& m)
+{
+    // prints in row-major, because that's how most people debug matrices
+    for (Mat4x3::length_type row = 0; row < 3; ++row)
+    {
+        std::string_view delim;
+        for (Mat4x3::length_type col = 0; col < 4; ++col)
+        {
+            o << delim << m[col][row];
+            delim = " ";
+        }
+        o << '\n';
+    }
+    return o;
+}
+
+// Quat
+
+std::ostream& osc::operator<<(std::ostream& o, Quat const& q)
+{
+    return o << "Quat(x = " << q.x << ", y = " << q.y << ", z = " << q.z << ", w = " << q.w << ')';
+}
+
+// Vec2
+
+std::ostream& osc::operator<<(std::ostream& o, Vec2 const& v)
+{
+    return o << "Vec2(" << v.x << ", " << v.y << ')';
+}
+
+std::string osc::to_string(Vec2 const& v)
+{
+    std::stringstream ss;
+    ss << v;
+    return std::move(ss).str();
+}
+
+
+// Vec3
+
+std::ostream& osc::operator<<(std::ostream& o, Vec3 const& v)
+{
+    return o << "Vec3(" << v.x << ", " << v.y << ", " << v.z << ')';
+}
+
+
+// Vec4
+
+std::ostream& osc::operator<<(std::ostream& o, Vec4 const& v)
+{
+    return o << "Vec4(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ')';
+}
+
+
 
 // Geometry implementation
 
@@ -1052,6 +1144,71 @@ namespace
 
 
 // MathHelpers
+
+osc::Vec4 osc::Clamp(Vec4 const& v, float min, float max)
+{
+    return glm::clamp(v, min, max);
+}
+
+osc::Vec4 osc::Mix(Vec4 const& a, Vec4 const& b, float factor)
+{
+    return glm::mix(a, b, factor);
+}
+
+osc::Vec3 osc::Cross(Vec3 const& a, Vec3 const& b)
+{
+    return glm::cross(a, b);
+}
+
+osc::Quat osc::Normalize(Quat const& q)
+{
+    return glm::normalize(q);
+}
+
+osc::Vec3 osc::Normalize(Vec3 const& v)
+{
+    return glm::normalize(v);
+}
+
+osc::Vec2 osc::Normalize(Vec2 const& v)
+{
+    return glm::normalize(v);
+}
+
+float osc::Length(Vec2 const& v)
+{
+    return glm::length(v);
+}
+
+osc::Quat osc::Rotation(Vec3 const& src, Vec3 const& dest)
+{
+    return glm::rotation(src, dest);
+}
+
+osc::Quat osc::AngleAxis(float angle, Vec3 const& axis)
+{
+    return glm::angleAxis(angle, axis);
+}
+
+osc::Mat4 osc::LookAt(Vec3 const& eye, Vec3 const& center, Vec3 const& up)
+{
+    return glm::lookAt(eye, center, up);
+}
+
+osc::Mat4 osc::Perspective(float verticalFOV, float aspectRatio, float zNear, float zFar)
+{
+    return glm::perspective(verticalFOV, aspectRatio, zNear, zFar);
+}
+
+osc::Mat4 osc::Ortho(float left, float right, float bottom, float top, float zNear, float zFar)
+{
+    return glm::ortho(left, right, bottom, top, zNear, zFar);
+}
+
+osc::Mat4 osc::Inverse(Mat4 const& mat)
+{
+    return glm::inverse(mat);
+}
 
 // returns `true` if the values of `a` and `b` are effectively equal
 //

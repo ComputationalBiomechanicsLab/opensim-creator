@@ -1,10 +1,10 @@
 #include "Color.hpp"
 
+#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/Vec4.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
-
-#include <glm/glm.hpp>
-#include <glm/vec4.hpp>
 
 #include <cmath>
 #include <cstdint>
@@ -76,7 +76,7 @@ osc::Color osc::ToSRGB(Color const& c) noexcept
 
 osc::Color osc::Lerp(Color const& a, Color const& b, float t) noexcept
 {
-    return osc::Color{glm::mix(glm::vec4{a}, glm::vec4{b}, glm::clamp(t, 0.0f, 1.0f))};
+    return osc::Color{Mix(Vec4{a}, Vec4{b}, Clamp(t, 0.0f, 1.0f))};
 }
 
 size_t std::hash<osc::Color>::operator()(osc::Color const& color) const
@@ -86,10 +86,10 @@ size_t std::hash<osc::Color>::operator()(osc::Color const& color) const
 
 osc::Color32 osc::ToColor32(Color const& color) noexcept
 {
-    return ToColor32(static_cast<glm::vec4>(color));
+    return ToColor32(static_cast<Vec4>(color));
 }
 
-osc::Color32 osc::ToColor32(glm::vec4 const& v) noexcept
+osc::Color32 osc::ToColor32(Vec4 const& v) noexcept
 {
     return Color32
     {
@@ -124,7 +124,7 @@ osc::Color32 osc::ToColor32(uint32_t v) noexcept
 
 osc::Color osc::ClampToLDR(Color const& c) noexcept
 {
-    return Color{glm::clamp(glm::vec4{c}, 0.0f, 1.0f)};
+    return Color{Clamp(Vec4{c}, 0.0f, 1.0f)};
 }
 
 std::string osc::ToHtmlStringRGBA(Color const& c)

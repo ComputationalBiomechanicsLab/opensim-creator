@@ -29,6 +29,56 @@ namespace osc { struct Segment; }
 //               osc struct
 namespace osc
 {
+    // converts degrees to radians
+    template<typename NumericType>
+    constexpr float Deg2Rad(NumericType degrees)
+    {
+        return degrees * static_cast<NumericType>(0.01745329251994329576923690768489);
+    }
+
+    constexpr float Clamp(float v, float low, float high)
+    {
+        return v < low ? low : high < v ? high : v;
+    }
+
+    constexpr float Dot(Vec3 const& a, Vec3 const& b)
+    {
+        Vec3 const tmp(a * b);
+        return tmp.x + tmp.y + tmp.z;
+    }
+
+    Vec4 Clamp(Vec4 const&, float min, float max);
+    Vec4 Mix(Vec4 const&, Vec4 const&, float);
+
+    // returns the cross product of the two arguments
+    Vec3 Cross(Vec3 const&, Vec3 const&);
+
+    // returns a normalized version of the provided argument
+    Quat Normalize(Quat const&);
+    Vec3 Normalize(Vec3 const&);
+    Vec2 Normalize(Vec2 const&);
+
+    // returns the length of the provided vector
+    float Length(Vec2 const&);
+
+    // computes the rotation from `src` to `dest`
+    Quat Rotation(Vec3 const& src, Vec3 const& dest);
+
+    // computes a rotation from an angle+axis
+    Quat AngleAxis(float angle, Vec3 const& axis);
+
+    // computes a view matrix for the given params
+    Mat4 LookAt(Vec3 const& eye, Vec3 const& center, Vec3 const& up);
+
+    // computes a perspective projection matrix
+    Mat4 Perspective(float verticalFOV, float aspectRatio, float zNear, float zFar);
+
+    // computes an orthogonal projection matrix
+    Mat4 Ortho(float left, float right, float bottom, float top, float zNear, float zFar);
+
+    // computes the inverse of the matrix
+    Mat4 Inverse(Mat4 const&);
+
     // returns `true` if the two arguments are effectively equal (i.e. within machine precision)
     //
     // this algorithm is designed to be correct, rather than fast

@@ -4,8 +4,7 @@
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
-
-#include <glm/vec2.hpp>
+#include <oscar/Maths/Vec2.hpp>
 
 #include <cstddef>
 #include <optional>
@@ -35,7 +34,7 @@ osc::Texture2D osc::GenChequeredFloorTexture()
 
     Texture2D rv
     {
-        glm::vec2{textureWidth, textureHeight},
+        Vec2{textureWidth, textureHeight},
         TextureFormat::RGBA32,
         ColorSpace::sRGB,
         TextureWrapMode::Repeat,

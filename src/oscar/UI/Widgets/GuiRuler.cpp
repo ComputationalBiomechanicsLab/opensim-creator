@@ -1,12 +1,12 @@
 #include "GuiRuler.hpp"
 
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/Scene/SceneCollision.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 #include <imgui.h>
 
 #include <iomanip>
@@ -39,7 +39,7 @@ void osc::GuiRuler::onDraw(
         return;
     }
 
-    glm::vec2 mouseLoc = ImGui::GetMousePos();
+    Vec2 mouseLoc = ImGui::GetMousePos();
     ImDrawList& dl = *ImGui::GetWindowDrawList();
     ImU32 circleMousedOverNothingColor = ImGui::ColorConvertFloat4ToU32({1.0f, 0.0f, 0.0f, 0.6f});
     ImU32 circleColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 0.8f});
@@ -49,9 +49,9 @@ void osc::GuiRuler::onDraw(
     float circleRadius = 5.0f;
     float lineThickness = 3.0f;
 
-    auto drawTooltipWithBg = [&dl, &textBgColor, &textColor](glm::vec2 const& pos, CStringView tooltipText)
+    auto drawTooltipWithBg = [&dl, &textBgColor, &textColor](Vec2 const& pos, CStringView tooltipText)
     {
-        glm::vec2 sz = ImGui::CalcTextSize(tooltipText.c_str());
+        Vec2 sz = ImGui::CalcTextSize(tooltipText.c_str());
         float bgPad = 5.0f;
         float edgeRounding = bgPad - 2.0f;
 
@@ -82,16 +82,16 @@ void osc::GuiRuler::onDraw(
     }
     else if (m_State == State::WaitingForSecondPoint)
     {
-        glm::vec2 startScreenPos = sceneCamera.projectOntoScreenRect(m_StartWorldPos, renderRect);
+        Vec2 startScreenPos = sceneCamera.projectOntoScreenRect(m_StartWorldPos, renderRect);
 
         if (maybeMouseover)
         {
             // user is moused over something, so draw a line + circle between the two hitlocs
-            glm::vec2 endScreenPos = mouseLoc;
-            glm::vec2 lineScreenDir = glm::normalize(startScreenPos - endScreenPos);
-            glm::vec2 offsetVec = 15.0f * glm::vec2{lineScreenDir.y, -lineScreenDir.x};
-            glm::vec2 lineMidpoint = (startScreenPos + endScreenPos) / 2.0f;
-            float lineWorldLen = glm::length(maybeMouseover->worldspaceLocation - m_StartWorldPos);
+            Vec2 endScreenPos = mouseLoc;
+            Vec2 lineScreenDir = Normalize(startScreenPos - endScreenPos);
+            Vec2 offsetVec = 15.0f * Vec2{lineScreenDir.y, -lineScreenDir.x};
+            Vec2 lineMidpoint = (startScreenPos + endScreenPos) / 2.0f;
+            float lineWorldLen = Length(maybeMouseover->worldspaceLocation - m_StartWorldPos);
 
             dl.AddCircleFilled(startScreenPos, circleRadius, circleColor);
             dl.AddLine(startScreenPos, endScreenPos, lineColor, lineThickness);

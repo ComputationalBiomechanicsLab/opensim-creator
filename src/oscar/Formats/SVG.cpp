@@ -1,9 +1,9 @@
 #include "SVG.hpp"
 
 #include <oscar/Graphics/ColorSpace.hpp>
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/Utils/Assertions.hpp>
 
-#include <glm/vec2.hpp>
 #include <lunasvg.h>
 #include <nonstd/span.hpp>
 
@@ -37,7 +37,7 @@ osc::Texture2D osc::ReadSVGIntoTexture(
     doc->setMatrix(m);
 
     // render to a rescaled bitmap
-    glm::vec<2, uint32_t> const bitmapDimensions
+    Vec2u32 const bitmapDimensions
     {
         static_cast<uint32_t>(scale*doc->width()),
         static_cast<uint32_t>(scale*doc->height())

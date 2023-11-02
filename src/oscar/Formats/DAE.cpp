@@ -9,7 +9,6 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 
-#include <glm/gtc/type_ptr.hpp>
 #include <nonstd/span.hpp>
 
 #include <cstdint>
@@ -130,12 +129,12 @@ namespace
 {
     nonstd::span<float const> ToFloatSpan(nonstd::span<osc::Vec2 const> s)
     {
-        return {glm::value_ptr(s[0]), 2 * s.size()};
+        return {osc::ValuePtr(s[0]), 2 * s.size()};
     }
 
     nonstd::span<float const> ToFloatSpan(nonstd::span<osc::Vec3 const> s)
     {
-        return {glm::value_ptr(s[0]), 3 * s.size()};
+        return {osc::ValuePtr(s[0]), 3 * s.size()};
     }
 
     nonstd::span<float const> ToFloatSpan(osc::Color const& v)

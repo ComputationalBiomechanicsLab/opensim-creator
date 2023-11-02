@@ -88,7 +88,7 @@ namespace
 
     void WriteTriangle(std::ostream& o, osc::Triangle const& triangle)
     {
-        WriteVec3IEEE(o, glm::normalize(osc::TriangleNormal(triangle)));
+        WriteVec3IEEE(o, osc::Normalize(osc::TriangleNormal(triangle)));
         WriteVec3IEEE(o, triangle.p0);
         WriteVec3IEEE(o, triangle.p1);
         WriteVec3IEEE(o, triangle.p2);

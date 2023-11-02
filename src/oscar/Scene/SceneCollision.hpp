@@ -1,6 +1,7 @@
 #pragma once
 
-#include <glm/vec3.hpp>
+#include <oscar/Maths/Vec3.hpp>
+
 #include <nonstd/span.hpp>
 
 #include <cstddef>
@@ -11,10 +12,11 @@ namespace osc
 {
     // describes a collision between a ray and a decoration in the scene
     struct SceneCollision final {
+
         SceneCollision(
             std::string decorationID_,
             size_t decorationIndex_,
-            glm::vec3 const& worldspaceLocation_,
+            Vec3 const& worldspaceLocation_,
             float distanceFromRayOrigin_) :
 
             decorationID{std::move(decorationID_)},
@@ -26,7 +28,7 @@ namespace osc
 
         std::string decorationID;
         size_t decorationIndex;
-        glm::vec3 worldspaceLocation;
+        Vec3 worldspaceLocation;
         float distanceFromRayOrigin;
     };
 }
