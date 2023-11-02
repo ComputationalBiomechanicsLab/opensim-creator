@@ -1155,6 +1155,11 @@ float osc::Mix(float a, float b, float factor)
     return glm::mix(a, b, factor);
 }
 
+osc::Vec2 osc::Mix(Vec2 const& a, Vec2 const& b, float factor)
+{
+    return glm::mix(a, b, factor);
+}
+
 osc::Vec3 osc::Mix(Vec3 const& a, Vec3 const& b, float factor)
 {
     return glm::mix(a, b, factor);
@@ -1243,6 +1248,21 @@ osc::Mat4 osc::Rotate(Mat4 const& m, float angle, Vec3 const& axis)
 osc::Mat4 osc::Translate(Mat4 const& m, Vec3 const& v)
 {
     return glm::translate(m, v);
+}
+
+osc::Quat osc::QuatCast(Mat3 const& m)
+{
+    return glm::quat_cast(Mat3{m});
+}
+
+osc::Mat3 osc::ToMat3(Quat const& q)
+{
+    return glm::toMat3(q);
+}
+
+osc::Vec3 osc::EulerAngles(Quat const& q)
+{
+    return glm::eulerAngles(q);
 }
 
 // returns `true` if the values of `a` and `b` are effectively equal

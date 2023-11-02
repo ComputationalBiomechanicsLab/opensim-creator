@@ -1,9 +1,8 @@
 #pragma once
 
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/UI/Panels/Panel.hpp>
 #include <oscar/Utils/CStringView.hpp>
-
-#include <glm/vec3.hpp>
 
 #include <memory>
 #include <string_view>
@@ -28,7 +27,7 @@ namespace osc
         ~ModelEditorViewerPanel() noexcept;
 
         ModelEditorViewerPanelLayer& pushLayer(std::unique_ptr<ModelEditorViewerPanelLayer>);
-        void focusOn(glm::vec3 const&);
+        void focusOn(Vec3 const&);
 
     private:
         CStringView implGetName() const final;

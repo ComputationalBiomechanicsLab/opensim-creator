@@ -10,15 +10,6 @@
 #include <OpenSimCreator/UI/Widgets/MainMenu.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include <glm/mat3x3.hpp>
-#include <glm/mat4x3.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/quaternion.hpp>
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
 #include <ImGuizmo.h>
@@ -60,13 +51,20 @@
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/Line.hpp>
+#include <oscar/Maths/Mat3.hpp>
+#include <oscar/Maths/Mat4.hpp>
+#include <oscar/Maths/Mat4x3.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Quat.hpp>
 #include <oscar/Maths/RayCollision.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Sphere.hpp>
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/Vec4.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/Log.hpp>
@@ -135,11 +133,18 @@ using osc::fpi2;
 using osc::fpi4;
 using osc::AABB;
 using osc::Sphere;
+using osc::Mat3;
+using osc::Mat4;
+using osc::Mat4x3;
 using osc::Mesh;
+using osc::Quat;
 using osc::Transform;
 using osc::PolarPerspectiveCamera;
 using osc::Rect;
 using osc::Line;
+using osc::Vec2;
+using osc::Vec3;
+using osc::Vec4;
 
 // user-facing string constants
 namespace
@@ -200,7 +205,7 @@ namespace
 namespace
 {
     // returns a string representation of a spatial position (e.g. (0.0, 1.0, 3.0))
-    std::string PosString(glm::vec3 const& pos)
+    std::string PosString(Vec3 const& pos)
     {
         std::stringstream ss;
         ss.precision(4);
@@ -230,47 +235,47 @@ namespace
 
     // returns the transform, but rotated such that the given axis points along the
     // given direction
-    Transform PointAxisAlong(Transform const& t, int axis, glm::vec3 const& dir)
+    Transform PointAxisAlong(Transform const& t, int axis, Vec3 const& dir)
     {
-        glm::vec3 beforeDir{};
+        Vec3 beforeDir{};
         beforeDir[axis] = 1.0f;
         beforeDir = t.rotation * beforeDir;
 
-        glm::quat rotBeforeToAfter = glm::rotation(beforeDir, dir);
-        glm::quat newRotation = glm::normalize(rotBeforeToAfter * t.rotation);
+        Quat rotBeforeToAfter = osc::Rotation(beforeDir, dir);
+        Quat newRotation = osc::Normalize(rotBeforeToAfter * t.rotation);
 
         return t.withRotation(newRotation);
     }
 
     // performs the shortest (angular) rotation of a transform such that the
     // designated axis points towards a point in the same space
-    Transform PointAxisTowards(Transform const& t, int axis, glm::vec3 const& p)
+    Transform PointAxisTowards(Transform const& t, int axis, Vec3 const& p)
     {
-        return PointAxisAlong(t, axis, glm::normalize(p - t.position));
+        return PointAxisAlong(t, axis, osc::Normalize(p - t.position));
     }
 
     // perform an intrinsic rotation about a transform's axis
     Transform RotateAlongAxis(Transform const& t, int axis, float angRadians)
     {
-        glm::vec3 ax{};
+        Vec3 ax{};
         ax[axis] = 1.0f;
         ax = t.rotation * ax;
 
-        glm::quat q = glm::angleAxis(angRadians, ax);
+        Quat q = osc::AngleAxis(angRadians, ax);
 
-        return t.withRotation(glm::normalize(q * t.rotation));
+        return t.withRotation(osc::Normalize(q * t.rotation));
     }
 
     Transform ToOsimTransform(SimTK::Transform const& t)
     {
         // extract the SimTK transform into a 4x3 matrix
-        glm::mat4x3 m = osc::ToMat4x3(t);
+        Mat4x3 m = osc::ToMat4x3(t);
 
         // take the 3x3 left-hand side (rotation) and decompose that into a quaternion
-        glm::quat rotation = glm::quat_cast(glm::mat3{m});
+        Quat rotation = osc::QuatCast(Mat3{m});
 
         // take the right-hand column (translation) and assign it as the position
-        glm::vec3 position = m[3];
+        Vec3 position = m[3];
 
         return Transform{position, rotation};
     }
@@ -814,31 +819,31 @@ namespace
         // transform (e.g. only position). There is a perf advantage to only returning
         // what was asked for.
 
-        glm::vec3 GetPos() const
+        Vec3 GetPos() const
         {
             return implGetPos();
         }
-        void SetPos(glm::vec3 const& newPos)
+        void SetPos(Vec3 const& newPos)
         {
             implSetPos(newPos);
         }
 
-        glm::vec3 GetScale() const
+        Vec3 GetScale() const
         {
             return implGetScale();
         }
 
-        void SetScale(glm::vec3 const& newScale)
+        void SetScale(Vec3 const& newScale)
         {
             implSetScale(newScale);
         }
 
-        glm::quat GetRotation() const
+        Quat GetRotation() const
         {
             return implGetRotation();
         }
 
-        void SetRotation(glm::quat const& newRotation)
+        void SetRotation(Quat const& newRotation)
         {
             implSetRotation(newRotation);
         }
@@ -881,33 +886,33 @@ namespace
 
         virtual AABB implCalcBounds() const = 0;
 
-        virtual glm::vec3 implGetPos() const
+        virtual Vec3 implGetPos() const
         {
             return GetXform().position;
         }
-        virtual void implSetPos(glm::vec3 const& newPos)
+        virtual void implSetPos(Vec3 const& newPos)
         {
             Transform t = GetXform();
             t.position = newPos;
             SetXform(t);
         }
 
-        virtual glm::vec3 implGetScale() const
+        virtual Vec3 implGetScale() const
         {
             return GetXform().scale;
         }
-        virtual void implSetScale(glm::vec3 const& newScale)
+        virtual void implSetScale(Vec3 const& newScale)
         {
             Transform t = GetXform();
             t.scale = newScale;
             SetXform(t);
         }
 
-        virtual glm::quat implGetRotation() const
+        virtual Quat implGetRotation() const
         {
             return GetXform().rotation;
         }
-        virtual void implSetRotation(glm::quat const& newRotation)
+        virtual void implSetRotation(Quat const& newRotation)
         {
             Transform t = GetXform();
             t.rotation = newRotation;
@@ -917,19 +922,19 @@ namespace
 
     // SceneEl helper methods
 
-    void ApplyTranslation(SceneEl& el, glm::vec3 const& translation)
+    void ApplyTranslation(SceneEl& el, Vec3 const& translation)
     {
         el.SetPos(el.GetPos() + translation);
     }
 
-    void ApplyRotation(SceneEl& el, glm::vec3 const& eulerAngles, glm::vec3 const& rotationCenter)
+    void ApplyRotation(SceneEl& el, Vec3 const& eulerAngles, Vec3 const& rotationCenter)
     {
         Transform t = el.GetXform();
         ApplyWorldspaceRotation(t, eulerAngles, rotationCenter);
         el.SetXform(t);
     }
 
-    void ApplyScale(SceneEl& el, glm::vec3 const& scaleFactors)
+    void ApplyScale(SceneEl& el, Vec3 const& scaleFactors)
     {
         el.SetScale(el.GetScale() * scaleFactors);
     }
@@ -1387,7 +1392,7 @@ namespace
             m_Xform.scale = {1.0f, 1.0f, 1.0f};
         }
 
-        void implSetScale(glm::vec3 const&) final
+        void implSetScale(Vec3 const&) final
         {
             // ignore: scaling a body, which is a point, does nothing
         }
@@ -1623,7 +1628,7 @@ namespace
             m_Xform.scale = {1.0f, 1.0f, 1.0f};
         }
 
-        void implSetScale(glm::vec3 const&) final
+        void implSetScale(Vec3 const&) final
         {
             // ignore
         }
@@ -1667,7 +1672,7 @@ namespace
         StationEl(
             UIDT<StationEl> id,
             UIDT<BodyEl> attachment,  // can be c_GroundID
-            glm::vec3 const& position,
+            Vec3 const& position,
             std::string const& name) :
 
             m_ID{id},
@@ -1679,7 +1684,7 @@ namespace
 
         StationEl(
             UIDT<BodyEl> attachment,  // can be c_GroundID
-            glm::vec3 const& position,
+            Vec3 const& position,
             std::string const& name) :
 
             m_Attachment{attachment},
@@ -1804,7 +1809,7 @@ namespace
 
         UIDT<StationEl> m_ID;
         UIDT<BodyEl> m_Attachment;  // can be c_GroundID
-        glm::vec3 m_Position{};
+        Vec3 m_Position{};
         std::string m_Name;
     };
 
@@ -1870,15 +1875,15 @@ namespace
         return s_Classes;
     }
 
-    glm::vec3 AverageCenter(MeshEl const& el)
+    Vec3 AverageCenter(MeshEl const& el)
     {
-        glm::vec3 const centerpointInModelSpace = AverageCenterpoint(el.getMeshData());
+        Vec3 const centerpointInModelSpace = AverageCenterpoint(el.getMeshData());
         return el.GetXform() * centerpointInModelSpace;
     }
 
-    glm::vec3 MassCenter(MeshEl const& el)
+    Vec3 MassCenter(MeshEl const& el)
     {
-        glm::vec3 const massCenterInModelSpace = MassCenter(el.getMeshData());
+        Vec3 const massCenterInModelSpace = MassCenter(el.getMeshData());
         return el.GetXform() * massCenterInModelSpace;
     }
 }
@@ -2335,7 +2340,7 @@ namespace
         return mg.GetElByID(id).GetXform();
     }
 
-    glm::vec3 GetPosition(ModelGraph const& mg, UID id)
+    Vec3 GetPosition(ModelGraph const& mg, UID id)
     {
         return mg.GetElByID(id).GetPos();
     }
@@ -2600,7 +2605,7 @@ namespace
     // points an axis of a given element towards some other element in the model graph
     void PointAxisTowards(ModelGraph& mg, UID id, int axis, UID other)
     {
-        glm::vec3 choicePos = GetPosition(mg, other);
+        Vec3 choicePos = GetPosition(mg, other);
         Transform sourceXform = Transform{GetPosition(mg, id)};
 
         mg.UpdElByID(id).SetXform(PointAxisTowards(sourceXform, axis, choicePos));
@@ -2875,9 +2880,9 @@ namespace
         ModelGraph& mg = cmg.UpdScratch();
 
         size_t jointTypeIdx = *osc::IndexOf<OpenSim::WeldJoint>(osc::GetComponentRegistry<OpenSim::Joint>());
-        glm::vec3 parentPos = GetPosition(mg, parentID);
-        glm::vec3 childPos = GetPosition(mg, childID);
-        glm::vec3 midPoint = osc::Midpoint(parentPos, childPos);
+        Vec3 parentPos = GetPosition(mg, parentID);
+        Vec3 childPos = GetPosition(mg, childID);
+        Vec3 midPoint = osc::Midpoint(parentPos, childPos);
 
         auto& jointEl = mg.AddEl<JointEl>(jointTypeIdx, std::string{}, parentID, osc::DowncastID<BodyEl>(childID), Transform{midPoint});
         SelectOnly(mg, jointEl);
@@ -2887,7 +2892,7 @@ namespace
         return true;
     }
 
-    bool TryOrientElementAxisAlongTwoPoints(CommittableModelGraph& cmg, UID id, int axis, glm::vec3 p1, glm::vec3 p2)
+    bool TryOrientElementAxisAlongTwoPoints(CommittableModelGraph& cmg, UID id, int axis, Vec3 p1, Vec3 p2)
     {
         ModelGraph& mg = cmg.UpdScratch();
         SceneEl* el = mg.TryUpdElByID(id);
@@ -2897,7 +2902,7 @@ namespace
             return false;
         }
 
-        glm::vec3 dir = glm::normalize(p2 - p1);
+        Vec3 dir = osc::Normalize(p2 - p1);
         Transform t = el->GetXform();
 
         el->SetXform(PointAxisAlong(t, axis, dir));
@@ -2922,7 +2927,7 @@ namespace
         );
     }
 
-    bool TryTranslateElementBetweenTwoPoints(CommittableModelGraph& cmg, UID id, glm::vec3 const& a, glm::vec3 const& b)
+    bool TryTranslateElementBetweenTwoPoints(CommittableModelGraph& cmg, UID id, Vec3 const& a, Vec3 const& b)
     {
         ModelGraph& mg = cmg.UpdScratch();
         SceneEl* el = mg.TryUpdElByID(id);
@@ -3026,7 +3031,7 @@ namespace
             return false;
         }
 
-        glm::vec3 const boundsMidpoint = Midpoint(mesh->CalcBounds());
+        Vec3 const boundsMidpoint = Midpoint(mesh->CalcBounds());
 
         el->SetPos(boundsMidpoint);
         cmg.Commit("moved " + el->GetLabel());
@@ -3147,7 +3152,7 @@ namespace
     }
 
 
-    UIDT<BodyEl> AddBody(CommittableModelGraph& cmg, glm::vec3 const& pos, UID andTryAttach)
+    UIDT<BodyEl> AddBody(CommittableModelGraph& cmg, Vec3 const& pos, UID andTryAttach)
     {
         ModelGraph& mg = cmg.UpdScratch();
 
@@ -3175,7 +3180,7 @@ namespace
         return AddBody(cmg, {}, c_EmptyID);
     }
 
-    bool AddStationAtLocation(CommittableModelGraph& cmg, SceneEl const& el, glm::vec3 const& loc)
+    bool AddStationAtLocation(CommittableModelGraph& cmg, SceneEl const& el, Vec3 const& loc)
     {
         ModelGraph& mg = cmg.UpdScratch();
 
@@ -3190,7 +3195,7 @@ namespace
         return true;
     }
 
-    bool AddStationAtLocation(CommittableModelGraph& cmg, UID elID, glm::vec3 const& loc)
+    bool AddStationAtLocation(CommittableModelGraph& cmg, UID elID, Vec3 const& loc)
     {
         ModelGraph& mg = cmg.UpdScratch();
 
@@ -3408,14 +3413,14 @@ namespace
         }
     }
 
-    glm::vec3 GetJointAxisLengths(JointEl const& joint)
+    Vec3 GetJointAxisLengths(JointEl const& joint)
     {
         auto const& registry = osc::GetComponentRegistry<OpenSim::Joint>();
         JointDegreesOfFreedom dofs = joint.getJointTypeIndex() < registry.size() ?
             GetDegreesOfFreedom(registry[joint.getJointTypeIndex()].prototype()) :
             JointDegreesOfFreedom{};
 
-        glm::vec3 rv{};
+        Vec3 rv{};
         for (int i = 0; i < 3; ++i)
         {
             rv[i] = dofs.orientation[static_cast<size_t>(i)] == -1 ? 0.6f : 1.0f;
@@ -3483,7 +3488,7 @@ namespace
         auto parentPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         parentPOF->setName(parent.physicalFrame->getName() + "_offset");
         parentPOF->setParentFrame(*parent.physicalFrame);
-        glm::mat4 toParentPofInParent =  ToInverseMat4(IgnoreScale(GetTransform(mg, joint.getParentID()))) * ToMat4(IgnoreScale(joint.GetXform()));
+        Mat4 toParentPofInParent =  ToInverseMat4(IgnoreScale(GetTransform(mg, joint.getParentID()))) * ToMat4(IgnoreScale(joint.GetXform()));
         parentPOF->set_translation(osc::ToSimTKVec3(toParentPofInParent[3]));
         parentPOF->set_orientation(osc::ToSimTKVec3(osc::ExtractEulerAngleXYZ(toParentPofInParent)));
 
@@ -3491,7 +3496,7 @@ namespace
         auto childPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         childPOF->setName(child.physicalFrame->getName() + "_offset");
         childPOF->setParentFrame(*child.physicalFrame);
-        glm::mat4 toChildPofInChild = ToInverseMat4(IgnoreScale(GetTransform(mg, joint.getChildID()))) * ToMat4(IgnoreScale(joint.GetXform()));
+        Mat4 toChildPofInChild = ToInverseMat4(IgnoreScale(GetTransform(mg, joint.getChildID()))) * ToMat4(IgnoreScale(joint.GetXform()));
         childPOF->set_translation(osc::ToSimTKVec3(toChildPofInChild[3]));
         childPOF->set_orientation(osc::ToSimTKVec3(osc::ExtractEulerAngleXYZ(toChildPofInChild)));
 
@@ -3942,7 +3947,7 @@ namespace
                 continue;
             }
 
-            glm::vec3 pos = osc::ToVec3(station.findLocationInFrame(st, m.getGround()));
+            Vec3 pos = osc::ToVec3(station.findLocationInFrame(st, m.getGround()));
             std::string name = station.getName();
 
             rv.AddEl<StationEl>(osc::DowncastID<BodyEl>(attachment), pos, name);
@@ -3970,7 +3975,7 @@ namespace
             Pos{}
         {
         }
-        Hover(UID id_, glm::vec3 pos_) :
+        Hover(UID id_, Vec3 pos_) :
             ID{id_},
             Pos{pos_}
         {
@@ -3985,7 +3990,7 @@ namespace
         }
 
         UID ID;
-        glm::vec3 Pos;
+        Vec3 Pos;
     };
 
     class SharedData final {
@@ -4327,38 +4332,38 @@ namespace
         // UI OVERLAY STUFF
         //
 
-        glm::vec2 WorldPosToScreenPos(glm::vec3 const& worldPos) const
+        Vec2 WorldPosToScreenPos(Vec3 const& worldPos) const
         {
             return GetCamera().projectOntoScreenRect(worldPos, Get3DSceneRect());
         }
 
-        void DrawConnectionLineTriangleAtMidpoint(ImU32 color, glm::vec3 parent, glm::vec3 child) const
+        void DrawConnectionLineTriangleAtMidpoint(ImU32 color, Vec3 parent, Vec3 child) const
         {
             constexpr float triangleWidth = 6.0f * c_ConnectionLineWidth;
             constexpr float triangleWidthSquared = triangleWidth*triangleWidth;
 
-            glm::vec2 parentScr = WorldPosToScreenPos(parent);
-            glm::vec2 childScr = WorldPosToScreenPos(child);
-            glm::vec2 child2ParentScr = parentScr - childScr;
+            Vec2 parentScr = WorldPosToScreenPos(parent);
+            Vec2 childScr = WorldPosToScreenPos(child);
+            Vec2 child2ParentScr = parentScr - childScr;
 
-            if (glm::dot(child2ParentScr, child2ParentScr) < triangleWidthSquared)
+            if (osc::Dot(child2ParentScr, child2ParentScr) < triangleWidthSquared)
             {
                 return;
             }
 
-            glm::vec3 midpoint = osc::Midpoint(parent, child);
-            glm::vec2 midpointScr = WorldPosToScreenPos(midpoint);
-            glm::vec2 directionScr = glm::normalize(child2ParentScr);
-            glm::vec2 directionNormalScr = {-directionScr.y, directionScr.x};
+            Vec3 midpoint = osc::Midpoint(parent, child);
+            Vec2 midpointScr = WorldPosToScreenPos(midpoint);
+            Vec2 directionScr = osc::Normalize(child2ParentScr);
+            Vec2 directionNormalScr = {-directionScr.y, directionScr.x};
 
-            glm::vec2 p1 = midpointScr + (triangleWidth/2.0f)*directionNormalScr;
-            glm::vec2 p2 = midpointScr - (triangleWidth/2.0f)*directionNormalScr;
-            glm::vec2 p3 = midpointScr + triangleWidth*directionScr;
+            Vec2 p1 = midpointScr + (triangleWidth/2.0f)*directionNormalScr;
+            Vec2 p2 = midpointScr - (triangleWidth/2.0f)*directionNormalScr;
+            Vec2 p3 = midpointScr + triangleWidth*directionScr;
 
             ImGui::GetWindowDrawList()->AddTriangleFilled(p1, p2, p3, color);
         }
 
-        void DrawConnectionLine(ImU32 color, glm::vec3 const& parent, glm::vec3 const& child) const
+        void DrawConnectionLine(ImU32 color, Vec3 const& parent, Vec3 const& child) const
         {
             // the line
             ImGui::GetWindowDrawList()->AddLine(WorldPosToScreenPos(parent), WorldPosToScreenPos(child), color, c_ConnectionLineWidth);
@@ -4385,8 +4390,8 @@ namespace
                     continue;
                 }
 
-                glm::vec3 child = el.GetPos();
-                glm::vec3 parent = other->GetPos();
+                Vec3 child = el.GetPos();
+                Vec3 parent = other->GetPos();
 
                 if (el.GetCrossReferenceDirection(i) == CrossrefDirection_ToChild) {
                     std::swap(parent, child);
@@ -4408,7 +4413,7 @@ namespace
                 return;
             }
 
-            DrawConnectionLine(color, glm::vec3{}, el.GetPos());
+            DrawConnectionLine(color, Vec3{}, el.GetPos());
         }
 
         bool ShouldShowConnectionLines(SceneEl const& el) const
@@ -4460,7 +4465,7 @@ namespace
         void DrawConnectionLines(osc::Color const& color, std::unordered_set<UID> const& excludedIDs) const
         {
             ModelGraph const& mg = GetModelGraph();
-            ImU32 colorU32 = ImGui::ColorConvertFloat4ToU32(glm::vec4{color});
+            ImU32 colorU32 = ImGui::ColorConvertFloat4ToU32(Vec4{color});
 
             for (SceneEl const& el : mg.iter())
             {
@@ -4495,7 +4500,7 @@ namespace
         void DrawConnectionLines(Hover const& currentHover) const
         {
             ModelGraph const& mg = GetModelGraph();
-            ImU32 color = ImGui::ColorConvertFloat4ToU32(glm::vec4{m_Colors.connectionLines});
+            ImU32 color = ImGui::ColorConvertFloat4ToU32(Vec4{m_Colors.connectionLines});
 
             for (SceneEl const& el : mg.iter())
             {
@@ -4588,7 +4593,7 @@ namespace
             m_3DSceneRect = newRect;
         }
 
-        glm::vec2 Get3DSceneDims() const
+        Vec2 Get3DSceneDims() const
         {
             return Dimensions(m_3DSceneRect);
         }
@@ -4603,7 +4608,7 @@ namespace
             return m_3DSceneCamera;
         }
 
-        void FocusCameraOn(glm::vec3 const& focusPoint)
+        void FocusCameraOn(Vec3 const& focusPoint)
         {
             m_3DSceneCamera.focusPoint = -focusPoint;
         }
@@ -4799,7 +4804,7 @@ namespace
         Transform GetFloorTransform() const
         {
             Transform t;
-            t.rotation = glm::angleAxis(fpi2, glm::vec3{-1.0f, 0.0f, 0.0f});
+            t.rotation = osc::AngleAxis(fpi2, Vec3{-1.0f, 0.0f, 0.0f});
             t.scale = {m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f};
             return t;
         }
@@ -4829,7 +4834,7 @@ namespace
             return 0.02f * m_SceneScaleFactor;
         }
 
-        Sphere SphereAtTranslation(glm::vec3 const& translation) const
+        Sphere SphereAtTranslation(Vec3 const& translation) const
         {
             return Sphere{translation, GetSphereRadius()};
         }
@@ -4841,7 +4846,7 @@ namespace
             std::vector<DrawableThing>& appendOut,
             float alpha = 1.0f,
             osc::SceneDecorationFlags flags = osc::SceneDecorationFlags::None,
-            glm::vec3 legLen = {1.0f, 1.0f, 1.0f},
+            Vec3 legLen = {1.0f, 1.0f, 1.0f},
             osc::Color coreColor = osc::Color::white()) const
         {
             float const coreRadius = GetSphereRadius();
@@ -4875,8 +4880,8 @@ namespace
                 // - 4.0f * leglen[leg] * radius long
                 // - 0.5f * radius thick
 
-                glm::vec3 const meshDirection = {0.0f, 1.0f, 0.0f};
-                glm::vec3 cylinderDirection = {};
+                Vec3 const meshDirection = {0.0f, 1.0f, 0.0f};
+                Vec3 cylinderDirection = {};
                 cylinderDirection[i] = 1.0f;
 
                 float const actualLegLen = 4.0f * legLen[i] * coreRadius;
@@ -4885,7 +4890,7 @@ namespace
                 t.scale.x = legThickness;
                 t.scale.y = 0.5f * actualLegLen;  // cylinder is 2 units high
                 t.scale.z = legThickness;
-                t.rotation = glm::normalize(xform.rotation * glm::rotation(meshDirection, cylinderDirection));
+                t.rotation = osc::Normalize(xform.rotation * osc::Rotation(meshDirection, cylinderDirection));
                 t.position = xform.position + (t.rotation * (((GetSphereRadius() + (0.5f * actualLegLen)) - cylinderPullback) * meshDirection));
 
                 osc::Color color = {0.0f, 0.0f, 0.0f, alpha};
@@ -4928,15 +4933,15 @@ namespace
                 // cone mesh has a source height of 2, stretches from -1 to +1 in Y
                 float const coneHeight = 0.75f * halfWidth;
 
-                glm::vec3 const meshDirection = {0.0f, 1.0f, 0.0f};
-                glm::vec3 coneDirection = {};
+                Vec3 const meshDirection = {0.0f, 1.0f, 0.0f};
+                Vec3 coneDirection = {};
                 coneDirection[i] = 1.0f;
 
                 Transform t;
                 t.scale.x = 0.5f * halfWidth;
                 t.scale.y = 0.5f * coneHeight;
                 t.scale.z = 0.5f * halfWidth;
-                t.rotation = xform.rotation * glm::rotation(meshDirection, coneDirection);
+                t.rotation = xform.rotation * osc::Rotation(meshDirection, coneDirection);
                 t.position = xform.position + (t.rotation * ((halfWidth + (0.5f * coneHeight)) * meshDirection));
 
                 osc::Color color = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -5044,7 +5049,7 @@ namespace
         Hover Hovertest(std::vector<DrawableThing> const& drawables) const
         {
             Rect const sceneRect = Get3DSceneRect();
-            glm::vec2 const mousePos = ImGui::GetMousePos();
+            Vec2 const mousePos = ImGui::GetMousePos();
 
             if (!IsPointInRect(sceneRect, mousePos))
             {
@@ -5052,8 +5057,8 @@ namespace
                 return Hover{};
             }
 
-            glm::vec2 const sceneDims = Dimensions(sceneRect);
-            glm::vec2 const relMousePos = mousePos - sceneRect.p1;
+            Vec2 const sceneDims = Dimensions(sceneRect);
+            Vec2 const relMousePos = mousePos - sceneRect.p1;
 
             Line const ray = GetCamera().unprojectTopLeftPosToWorldRay(relMousePos, sceneDims);
             bool const hittestMeshes = IsMeshesInteractable();
@@ -5109,7 +5114,7 @@ namespace
                 }
             }
 
-            glm::vec3 const hitPos = closestID != c_EmptyID ? ray.origin + closestDist*ray.dir : glm::vec3{};
+            Vec3 const hitPos = closestID != c_EmptyID ? ray.origin + closestDist*ray.dir : Vec3{};
 
             return Hover{closestID, hitPos};
         }
@@ -5517,7 +5522,7 @@ namespace
         // been clicked
         //
         // the function should return `true` if the points are accepted
-        std::function<bool(glm::vec3, glm::vec3)> onTwoPointsChosen = [](glm::vec3, glm::vec3)
+        std::function<bool(Vec3, Vec3)> onTwoPointsChosen = [](Vec3, Vec3)
         {
             return true;
         };
@@ -5635,8 +5640,8 @@ namespace
                 return;
             }
 
-            glm::vec3 clickedWorldPos = m_MaybeFirstLocation ? *m_MaybeFirstLocation : *m_MaybeSecondLocation;
-            glm::vec2 clickedScrPos = m_Shared->WorldPosToScreenPos(clickedWorldPos);
+            Vec3 clickedWorldPos = m_MaybeFirstLocation ? *m_MaybeFirstLocation : *m_MaybeSecondLocation;
+            Vec2 clickedScrPos = m_Shared->WorldPosToScreenPos(clickedWorldPos);
 
             auto color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
 
@@ -5647,7 +5652,7 @@ namespace
                 return;
             }
 
-            glm::vec2 hoverScrPos = m_Shared->WorldPosToScreenPos(m_MaybeCurrentHover.Pos);
+            Vec2 hoverScrPos = m_Shared->WorldPosToScreenPos(m_MaybeCurrentHover.Pos);
 
             dl->AddCircleFilled(hoverScrPos, 5.0f, color);
             dl->AddLine(clickedScrPos, hoverScrPos, color, 5.0f);
@@ -5662,8 +5667,8 @@ namespace
             }
 
             ImU32 color = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
-            glm::vec2 padding{10.0f, 10.0f};
-            glm::vec2 pos = m_Shared->Get3DSceneRect().p1 + padding;
+            Vec2 padding{10.0f, 10.0f};
+            Vec2 pos = m_Shared->Get3DSceneRect().p1 + padding;
             ImGui::GetWindowDrawList()->AddText(pos, color, m_Options.header.c_str());
         }
 
@@ -5674,8 +5679,8 @@ namespace
             osc::PushStyleColor(ImGuiCol_Button, osc::Color::halfGrey());
 
             osc::CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
-            glm::vec2 const margin = {25.0f, 35.0f};
-            glm::vec2 const buttonTopLeft = m_Shared->Get3DSceneRect().p2 - (osc::CalcButtonSize(text) + margin);
+            Vec2 const margin = {25.0f, 35.0f};
+            Vec2 const buttonTopLeft = m_Shared->Get3DSceneRect().p2 - (osc::CalcButtonSize(text) + margin);
 
             ImGui::SetCursorScreenPos(buttonTopLeft);
             if (ImGui::Button(text.c_str()))
@@ -5734,10 +5739,10 @@ namespace
         Hover m_MaybeCurrentHover;
 
         // (maybe) first mesh location
-        std::optional<glm::vec3> m_MaybeFirstLocation;
+        std::optional<Vec3> m_MaybeFirstLocation;
 
         // (maybe) second mesh location
-        std::optional<glm::vec3> m_MaybeSecondLocation;
+        std::optional<Vec3> m_MaybeSecondLocation;
 
         // buffer that's filled with drawable geometry during a drawcall
         std::vector<DrawableThing> m_DrawablesBuffer;
@@ -6036,15 +6041,15 @@ namespace
             // draw strong connection line between the things being attached to and the hover
             for (UID elAttachingTo : m_Options.maybeElsAttachingTo)
             {
-                glm::vec3 parentPos = GetPosition(m_Shared->GetModelGraph(), elAttachingTo);
-                glm::vec3 childPos = GetPosition(m_Shared->GetModelGraph(), m_MaybeHover.ID);
+                Vec3 parentPos = GetPosition(m_Shared->GetModelGraph(), elAttachingTo);
+                Vec3 childPos = GetPosition(m_Shared->GetModelGraph(), m_MaybeHover.ID);
 
                 if (!m_Options.isAttachingTowardEl)
                 {
                     std::swap(parentPos, childPos);
                 }
 
-                ImU32 strongColorU2 = ImGui::ColorConvertFloat4ToU32(glm::vec4{m_Shared->GetColorConnectionLine()});
+                ImU32 strongColorU2 = ImGui::ColorConvertFloat4ToU32(Vec4{m_Shared->GetColorConnectionLine()});
 
                 m_Shared->DrawConnectionLine(strongColorU2, parentPos, childPos);
             }
@@ -6059,8 +6064,8 @@ namespace
             }
 
             ImU32 color = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
-            glm::vec2 padding = glm::vec2{10.0f, 10.0f};
-            glm::vec2 pos = m_Shared->Get3DSceneRect().p1 + padding;
+            Vec2 padding = Vec2{10.0f, 10.0f};
+            Vec2 pos = m_Shared->Get3DSceneRect().p1 + padding;
             ImGui::GetWindowDrawList()->AddText(pos, color, m_Options.header.c_str());
         }
 
@@ -6071,8 +6076,8 @@ namespace
             osc::PushStyleColor(ImGuiCol_Button, osc::Color::halfGrey());
 
             osc::CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
-            glm::vec2 const margin = {25.0f, 35.0f};
-            glm::vec2 const buttonTopLeft = m_Shared->Get3DSceneRect().p2 - (osc::CalcButtonSize(text) + margin);
+            Vec2 const margin = {25.0f, 35.0f};
+            Vec2 const buttonTopLeft = m_Shared->Get3DSceneRect().p2 - (osc::CalcButtonSize(text) + margin);
 
             ImGui::SetCursorScreenPos(buttonTopLeft);
             if (ImGui::Button(text.c_str()))
@@ -6166,7 +6171,7 @@ namespace
     private:
         struct StationDefinedInGround final {
             std::string name;
-            glm::vec3 location;
+            Vec3 location;
         };
 
         struct StationsDefinedInGround final {
@@ -6219,7 +6224,7 @@ namespace
                 return RowParseError{lineNum, "cannot parse Z as a number"};
             }
 
-            glm::vec3 const locationInGround = {*maybeX, *maybeY, *maybeZ};
+            Vec3 const locationInGround = {*maybeX, *maybeY, *maybeZ};
 
             return StationDefinedInGround{stationName, locationInGround};
         }
@@ -6990,7 +6995,7 @@ private:
     void TransitionToOrientingElementAlongTwoMeshPoints(SceneEl& el, int axis)
     {
         Select2MeshPointsOptions opts;
-        opts.onTwoPointsChosen = [shared = m_Shared, id = el.GetID(), axis](glm::vec3 a, glm::vec3 b)
+        opts.onTwoPointsChosen = [shared = m_Shared, id = el.GetID(), axis](Vec3 a, Vec3 b)
         {
             return TryOrientElementAxisAlongTwoPoints(shared->UpdCommittableModelGraph(), id, axis, a, b);
         };
@@ -7002,7 +7007,7 @@ private:
     void TransitionToTranslatingElementAlongTwoMeshPoints(SceneEl& el)
     {
         Select2MeshPointsOptions opts;
-        opts.onTwoPointsChosen = [shared = m_Shared, id = el.GetID()](glm::vec3 a, glm::vec3 b)
+        opts.onTwoPointsChosen = [shared = m_Shared, id = el.GetID()](Vec3 a, Vec3 b)
         {
             return TryTranslateElementBetweenTwoPoints(shared->UpdCommittableModelGraph(), id, a, b);
         };
@@ -7308,8 +7313,8 @@ private:
         // position editor
         if (CanChangePosition(e))
         {
-            glm::vec3 translation = e.GetPos();
-            if (ImGui::InputFloat3("Translation", glm::value_ptr(translation), "%.6f"))
+            Vec3 translation = e.GetPos();
+            if (ImGui::InputFloat3("Translation", osc::ValuePtr(translation), "%.6f"))
             {
                 mg.UpdElByID(e.GetID()).SetPos(translation);
             }
@@ -7326,11 +7331,11 @@ private:
         // rotation editor
         if (CanChangeRotation(e))
         {
-            glm::vec3 eulerDegs = glm::degrees(glm::eulerAngles(e.GetRotation()));
+            Vec3 eulerDegs = osc::Rad2Deg(osc::EulerAngles(e.GetRotation()));
 
-            if (ImGui::InputFloat3("Rotation (deg)", glm::value_ptr(eulerDegs), "%.6f"))
+            if (ImGui::InputFloat3("Rotation (deg)", osc::ValuePtr(eulerDegs), "%.6f"))
             {
-                glm::quat quatRads = glm::quat{glm::radians(eulerDegs)};
+                Quat quatRads = Quat{osc::Deg2Rad(eulerDegs)};
                 mg.UpdElByID(e.GetID()).SetRotation(quatRads);
             }
             if (ImGui::IsItemDeactivatedAfterEdit())
@@ -7346,8 +7351,8 @@ private:
         // scale factor editor
         if (CanChangeScale(e))
         {
-            glm::vec3 scaleFactors = e.GetScale();
-            if (ImGui::InputFloat3("Scale", glm::value_ptr(scaleFactors), "%.6f"))
+            Vec3 scaleFactors = e.GetScale();
+            if (ImGui::InputFloat3("Scale", osc::ValuePtr(scaleFactors), "%.6f"))
             {
                 mg.UpdElByID(e.GetID()).SetScale(scaleFactors);
             }
@@ -7363,7 +7368,7 @@ private:
     }
 
     // draw content of "Add" menu for some scene element
-    void DrawAddOtherToSceneElActions(SceneEl& el, glm::vec3 const& clickPos)
+    void DrawAddOtherToSceneElActions(SceneEl& el, Vec3 const& clickPos)
     {
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
         osc::ScopeGuard const g1{[]() { ImGui::PopStyleVar(); }};
@@ -7409,21 +7414,21 @@ private:
                 {
                     if (ImGui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
                     {
-                        glm::vec3 const location = Midpoint(meshEl->CalcBounds());
+                        Vec3 const location = Midpoint(meshEl->CalcBounds());
                         AddBody(m_Shared->UpdCommittableModelGraph(), location, meshEl->GetID());
                     }
                     osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription.c_str());
 
                     if (ImGui::MenuItem(ICON_FA_DIVIDE " at mesh average center"))
                     {
-                        glm::vec3 const location = AverageCenter(*meshEl);
+                        Vec3 const location = AverageCenter(*meshEl);
                         AddBody(m_Shared->UpdCommittableModelGraph(), location, meshEl->GetID());
                     }
                     osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription.c_str());
 
                     if (ImGui::MenuItem(ICON_FA_WEIGHT " at mesh mass center"))
                     {
-                        glm::vec3 const location = MassCenter(*meshEl);
+                        Vec3 const location = MassCenter(*meshEl);
                         AddBody(m_Shared->UpdCommittableModelGraph(), location, meshEl->GetID());
                     }
                     osc::DrawTooltipIfItemHovered("Add body", c_StationDescription);
@@ -7474,7 +7479,7 @@ private:
 
                     if (ImGui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
                     {
-                        AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, glm::vec3{});
+                        AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, Vec3{});
                     }
                     osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
 
@@ -7518,7 +7523,7 @@ private:
         }
     }
 
-    void DrawSceneElActions(SceneEl& el, glm::vec3 const& clickPos)
+    void DrawSceneElActions(SceneEl& el, Vec3 const& clickPos)
     {
         if (ImGui::MenuItem(ICON_FA_CAMERA " Focus camera on this"))
         {
@@ -7864,7 +7869,7 @@ private:
                     {
                         osc::Transform const sceneElToGround = sceneEl.GetXform();
                         osc::Transform const meshVertToGround = el.GetXform();
-                        glm::mat4 const meshVertToSceneElVert = osc::ToInverseMat4(sceneElToGround) * osc::ToMat4(meshVertToGround);
+                        Mat4 const meshVertToSceneElVert = osc::ToInverseMat4(sceneElToGround) * osc::ToMat4(meshVertToGround);
 
                         Mesh mesh = el.getMeshData();
                         mesh.transformVerts(meshVertToSceneElVert);
@@ -7875,7 +7880,7 @@ private:
                     {
                         osc::Transform const sceneElToGround = sceneEl.GetXform();
                         osc::Transform const meshVertToGround = el.GetXform();
-                        glm::mat4 const meshVertToSceneElVert = osc::ToInverseMat4(sceneElToGround) * osc::ToMat4(meshVertToGround);
+                        Mat4 const meshVertToSceneElVert = osc::ToInverseMat4(sceneElToGround) * osc::ToMat4(meshVertToGround);
 
                         Mesh mesh = el.getMeshData();
                         mesh.transformVerts(meshVertToSceneElVert);
@@ -7900,7 +7905,7 @@ private:
     }
 
     // draw context menu content for a `GroundEl`
-    void DrawContextMenuContent(GroundEl& el, glm::vec3 const& clickPos)
+    void DrawContextMenuContent(GroundEl& el, Vec3 const& clickPos)
     {
         DrawSceneElContextMenuContentHeader(el);
 
@@ -7910,7 +7915,7 @@ private:
     }
 
     // draw context menu content for a `BodyEl`
-    void DrawContextMenuContent(BodyEl& el, glm::vec3 const& clickPos)
+    void DrawContextMenuContent(BodyEl& el, Vec3 const& clickPos)
     {
         DrawSceneElContextMenuContentHeader(el);
 
@@ -7928,7 +7933,7 @@ private:
     }
 
     // draw context menu content for a `MeshEl`
-    void DrawContextMenuContent(MeshEl& el, glm::vec3 const& clickPos)
+    void DrawContextMenuContent(MeshEl& el, Vec3 const& clickPos)
     {
         DrawSceneElContextMenuContentHeader(el);
 
@@ -7946,7 +7951,7 @@ private:
     }
 
     // draw context menu content for a `JointEl`
-    void DrawContextMenuContent(JointEl& el, glm::vec3 const& clickPos)
+    void DrawContextMenuContent(JointEl& el, Vec3 const& clickPos)
     {
         DrawSceneElContextMenuContentHeader(el);
 
@@ -7964,7 +7969,7 @@ private:
     }
 
     // draw context menu content for a `StationEl`
-    void DrawContextMenuContent(StationEl& el, glm::vec3 const& clickPos)
+    void DrawContextMenuContent(StationEl& el, Vec3 const& clickPos)
     {
         DrawSceneElContextMenuContentHeader(el);
 
@@ -7981,14 +7986,14 @@ private:
     }
 
     // draw context menu content for some scene element
-    void DrawContextMenuContent(SceneEl& el, glm::vec3 const& clickPos)
+    void DrawContextMenuContent(SceneEl& el, Vec3 const& clickPos)
     {
         // helper class for visiting each type of scene element
         class Visitor final : public SceneElVisitor {
         public:
             Visitor(
                 osc::MeshImporterTab::Impl& state,
-                glm::vec3 const& clickPos) :
+                Vec3 const& clickPos) :
 
                 m_State{state},
                 m_ClickPos{clickPos}
@@ -8021,7 +8026,7 @@ private:
             }
         private:
             osc::MeshImporterTab::Impl& m_State;
-            glm::vec3 const& m_ClickPos;
+            Vec3 const& m_ClickPos;
         };
 
         // context menu was opened on a scene element that exists in the modelgraph
@@ -8198,7 +8203,7 @@ private:
         if (ImGui::MenuItem(ICON_FA_MAP_PIN " Station"))
         {
             ModelGraph& mg = m_Shared->UpdModelGraph();
-            auto& e = mg.AddEl<StationEl>(UIDT<StationEl>{}, c_GroundID, glm::vec3{}, GenerateName(StationEl::Class()));
+            auto& e = mg.AddEl<StationEl>(UIDT<StationEl>{}, c_GroundID, Vec3{}, GenerateName(StationEl::Class()));
             SelectOnly(mg, e);
         }
         osc::DrawTooltipIfItemHovered("Add Station", StationEl::Class().GetDescriptionCStr());
@@ -8348,7 +8353,7 @@ private:
         {
             ImGuiStyle const& style = ImGui::GetStyle();
             Rect const& r = m_Shared->Get3DSceneRect();
-            glm::vec2 const topLeft =
+            Vec2 const topLeft =
             {
                 r.p1.x + style.WindowPadding.x,
                 r.p2.y - style.WindowPadding.y - CalcAlignmentAxesDimensions().y,
@@ -8358,7 +8363,7 @@ private:
         }
 
         Rect sceneRect = m_Shared->Get3DSceneRect();
-        glm::vec2 trPos = {sceneRect.p1.x + 100.0f, sceneRect.p2.y - 55.0f};
+        Vec2 trPos = {sceneRect.p1.x + 100.0f, sceneRect.p2.y - 55.0f};
         ImGui::SetCursorScreenPos(trPos);
 
         if (ImGui::Button(ICON_FA_SEARCH_MINUS))
@@ -8445,14 +8450,14 @@ private:
 
         constexpr osc::CStringView mainButtonText = "Convert to OpenSim Model " ICON_FA_ARROW_RIGHT;
         constexpr osc::CStringView settingButtonText = ICON_FA_COG;
-        constexpr glm::vec2 spacingBetweenMainAndSettingsButtons = {1.0f, 0.0f};
-        constexpr glm::vec2 margin = {25.0f, 35.0f};
+        constexpr Vec2 spacingBetweenMainAndSettingsButtons = {1.0f, 0.0f};
+        constexpr Vec2 margin = {25.0f, 35.0f};
 
-        glm::vec2 const mainButtonDims = osc::CalcButtonSize(mainButtonText);
-        glm::vec2 const settingButtonDims = osc::CalcButtonSize(settingButtonText);
-        glm::vec2 const viewportBottomRight = m_Shared->Get3DSceneRect().p2;
+        Vec2 const mainButtonDims = osc::CalcButtonSize(mainButtonText);
+        Vec2 const settingButtonDims = osc::CalcButtonSize(settingButtonText);
+        Vec2 const viewportBottomRight = m_Shared->Get3DSceneRect().p2;
 
-        glm::vec2 const buttonTopLeft =
+        Vec2 const buttonTopLeft =
         {
             viewportBottomRight.x - (margin.x + spacingBetweenMainAndSettingsButtons.x + settingButtonDims.x + mainButtonDims.x),
             viewportBottomRight.y - (margin.y + mainButtonDims.y),
@@ -8561,7 +8566,7 @@ private:
             }
 
             ras /= static_cast<float>(n);
-            ras.rotation = glm::normalize(ras.rotation);
+            ras.rotation = osc::Normalize(ras.rotation);
 
             m_ImGuizmoState.mtx = ToMat4(ras);
         }
@@ -8579,15 +8584,15 @@ private:
         ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
         ImGuizmo::AllowAxisFlip(false);  // user's didn't like this feature in UX sessions
 
-        glm::mat4 delta;
+        Mat4 delta;
         SetImguizmoStyleToOSCStandard();
         bool manipulated = ImGuizmo::Manipulate(
-            glm::value_ptr(m_Shared->GetCamera().getViewMtx()),
-            glm::value_ptr(m_Shared->GetCamera().getProjMtx(AspectRatio(sceneRect))),
+            osc::ValuePtr(m_Shared->GetCamera().getViewMtx()),
+            osc::ValuePtr(m_Shared->GetCamera().getProjMtx(AspectRatio(sceneRect))),
             m_ImGuizmoState.op,
             m_ImGuizmoState.mode,
-            glm::value_ptr(m_ImGuizmoState.mtx),
-            glm::value_ptr(delta),
+            osc::ValuePtr(m_ImGuizmoState.mtx),
+            osc::ValuePtr(delta),
             nullptr,
             nullptr,
             nullptr
@@ -8612,16 +8617,16 @@ private:
             return;
         }
 
-        glm::vec3 translation;
-        glm::vec3 rotation;
-        glm::vec3 scale;
+        Vec3 translation;
+        Vec3 rotation;
+        Vec3 scale;
         ImGuizmo::DecomposeMatrixToComponents(
-            glm::value_ptr(delta),
-            glm::value_ptr(translation),
-            glm::value_ptr(rotation),
-            glm::value_ptr(scale)
+            osc::ValuePtr(delta),
+            osc::ValuePtr(translation),
+            osc::ValuePtr(rotation),
+            osc::ValuePtr(scale)
         );
-        rotation = glm::radians(rotation);
+        rotation = osc::Deg2Rad(rotation);
 
         for (UID id : m_Shared->GetCurrentSelection())
         {
@@ -8893,7 +8898,7 @@ private:
             {
                 ImGui::PopStyleVar();
                 Draw3DViewer();
-                ImGui::SetCursorPos(glm::vec2{ImGui::GetCursorStartPos()} + glm::vec2{10.0f, 10.0f});
+                ImGui::SetCursorPos(Vec2{ImGui::GetCursorStartPos()} + Vec2{10.0f, 10.0f});
                 Draw3DViewerOverlay();
             }
             else
@@ -8927,7 +8932,7 @@ private:
     // ImGuizmo state
     struct {
         bool wasUsingLastFrame = false;
-        glm::mat4 mtx{1.0f};
+        Mat4 mtx{1.0f};
         ImGuizmo::OPERATION op = ImGuizmo::TRANSLATE;
         ImGuizmo::MODE mode = ImGuizmo::WORLD;
     } m_ImGuizmoState;

@@ -6,7 +6,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/UndoableModelActions.hpp>
 
-#include <glm/glm.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <implot.h>
@@ -24,6 +23,7 @@
 #include <oscar/Formats/CSV.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Vec4.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
@@ -119,7 +119,7 @@ namespace
 
     double GetPennationAngle(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
     {
-        return glm::degrees(muscle.getPennationAngle(st));
+        return osc::Rad2Deg(muscle.getPennationAngle(st));
     }
 
     double GetNormalizedFiberLength(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
@@ -1775,7 +1775,7 @@ namespace
 
                 std::string const lineName = IthPlotLineName(plot, i + 1);
 
-                ImPlot::PushStyleColor(ImPlotCol_Line, glm::vec4{color});
+                ImPlot::PushStyleColor(ImPlotCol_Line, osc::Vec4{color});
                 PlotLine(lineName, plot);
                 ImPlot::PopStyleColor(ImPlotCol_Line);
 
@@ -1831,7 +1831,7 @@ namespace
                     ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
                 }
 
-                ImPlot::PushStyleColor(ImPlotCol_Line, glm::vec4{color});
+                ImPlot::PushStyleColor(ImPlotCol_Line, osc::Vec4{color});
                 PlotLine(lineName, plot);
                 ImPlot::PopStyleColor(ImPlotCol_Line);
 

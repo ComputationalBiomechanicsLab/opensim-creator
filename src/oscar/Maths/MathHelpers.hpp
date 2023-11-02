@@ -58,6 +58,12 @@ namespace osc
         return v < low ? low : high < v ? high : v;
     }
 
+    constexpr float Dot(Vec2 const& a, Vec2 const& b)
+    {
+        Vec2 tmp(a * b);
+        return tmp.x + tmp.y;
+    }
+
     constexpr float Dot(Vec3 const& a, Vec3 const& b)
     {
         Vec3 const tmp(a * b);
@@ -67,6 +73,7 @@ namespace osc
     Vec4 Clamp(Vec4 const&, float min, float max);
 
     float Mix(float a, float b, float factor);
+    Vec2 Mix(Vec2 const&, Vec2 const&, float);
     Vec3 Mix(Vec3 const&, Vec3 const&, float);
     Vec4 Mix(Vec4 const&, Vec4 const&, float);
 
@@ -105,6 +112,11 @@ namespace osc
     Mat4 Scale(Mat4 const&, Vec3 const&);
     Mat4 Rotate(Mat4 const&, float, Vec3 const&);
     Mat4 Translate(Mat4 const&, Vec3 const&);
+
+    Quat QuatCast(Mat3 const&);
+    Mat3 ToMat3(Quat const&);
+
+    Vec3 EulerAngles(Quat const&);
 
     // returns `true` if the two arguments are effectively equal (i.e. within machine precision)
     //

@@ -25,7 +25,6 @@
 #include <OpenSimCreator/UI/Widgets/VirtualModelStatePairContextMenu.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include <glm/vec2.hpp>
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
 #include <nonstd/span.hpp>

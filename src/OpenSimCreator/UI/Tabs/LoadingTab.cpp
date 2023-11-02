@@ -6,11 +6,11 @@
 #include <OpenSimCreator/UI/Tabs/ModelEditorTab.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include <glm/vec2.hpp>
 #include <imgui.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/UI/Tabs/TabHost.hpp>
@@ -95,14 +95,14 @@ public:
 
     void onDraw()
     {
-        constexpr glm::vec2 menuDims = {512.0f, 512.0f};
+        constexpr Vec2 menuDims = {512.0f, 512.0f};
 
         Rect const tabRect = osc::GetMainViewportWorkspaceScreenRect();
-        glm::vec2 const windowDims = osc::Dimensions(tabRect);
+        Vec2 const windowDims = osc::Dimensions(tabRect);
 
         // center the menu
         {
-            glm::vec2 const menuTopLeft = (windowDims - menuDims) / 2.0f;
+            Vec2 const menuTopLeft = (windowDims - menuDims) / 2.0f;
             ImGui::SetNextWindowPos(menuTopLeft);
             ImGui::SetNextWindowSize({menuDims.x, -1.0f});
         }
