@@ -5,9 +5,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/UndoableModelActions.hpp>
 
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
 #include <imgui.h>
 #include <ImGuizmo.h>  // care: must be included after imgui
 #include <OpenSim/Common/ComponentPath.h>
@@ -18,9 +15,13 @@
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 #include <oscar/Bindings/ImGuizmoHelpers.hpp>
+#include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
+#include <oscar/Maths/Quat.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/Vec4.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
 #include <Simbody.h>
@@ -30,6 +31,11 @@
 #include <sstream>
 #include <type_traits>
 #include <utility>
+
+using osc::Mat4;
+using osc::Quat;
+using osc::Vec3;
+using osc::Vec4;
 
 // common/virtual manipulator data/APIs
 namespace
@@ -69,17 +75,17 @@ namespace
             return implGetSupportedManipulationOps();
         }
 
-        glm::mat4 getCurrentModelMatrix() const
+        Mat4 getCurrentModelMatrix() const
         {
             return implGetCurrentModelMatrix();
         }
 
-        void onApplyTranslation(glm::vec3 const& deltaTranslationInGround)
+        void onApplyTranslation(Vec3 const& deltaTranslationInGround)
         {
             implOnApplyTranslation(deltaTranslationInGround);
         }
 
-        void onApplyRotation(glm::vec3 const& deltaEulerRadiansInGround)
+        void onApplyRotation(Vec3 const& deltaEulerRadiansInGround)
         {
             implOnApplyRotation(deltaEulerRadiansInGround);
         }
@@ -90,9 +96,9 @@ namespace
         }
     private:
         virtual SupportedManipulationOpFlags implGetSupportedManipulationOps() const = 0;
-        virtual glm::mat4 implGetCurrentModelMatrix() const = 0;
-        virtual void implOnApplyTranslation(glm::vec3 const&) {}  // default to noop
-        virtual void implOnApplyRotation(glm::vec3 const&) {}  // default to noop
+        virtual Mat4 implGetCurrentModelMatrix() const = 0;
+        virtual void implOnApplyTranslation(Vec3 const&) {}  // default to noop
+        virtual void implOnApplyRotation(Vec3 const&) {}  // default to noop
         virtual void implOnSave() = 0;
     };
 
@@ -136,18 +142,18 @@ namespace
 
     private:
         // perform runtime lookup for `TComponent` and forward into concrete implementation
-        glm::mat4 implGetCurrentModelMatrix() const final
+        Mat4 implGetCurrentModelMatrix() const final
         {
             TComponent const* maybeSelected = findSelection();
             if (!maybeSelected)
             {
-                return glm::mat4{1.0f};  // selection of that type does not exist in the model
+                return Mat4{1.0f};  // selection of that type does not exist in the model
             }
             return implGetCurrentModelMatrix(*maybeSelected);
         }
 
         // perform runtime lookup for `TComponent` and forward into concrete implementation
-        void implOnApplyTranslation(glm::vec3 const& deltaTranslationInGround) final
+        void implOnApplyTranslation(Vec3 const& deltaTranslationInGround) final
         {
             TComponent const* maybeSelected = findSelection();
             if (!maybeSelected)
@@ -158,7 +164,7 @@ namespace
         }
 
         // perform runtime lookup for `TComponent` and forward into concrete implementation
-        void implOnApplyRotation(glm::vec3 const& deltaEulerRadiansInGround) final
+        void implOnApplyRotation(Vec3 const& deltaEulerRadiansInGround) final
         {
             TComponent const* maybeSelected = findSelection();
             if (!maybeSelected)
@@ -179,9 +185,9 @@ namespace
         }
 
         // inheritors must implement concrete manipulation methods
-        virtual glm::mat4 implGetCurrentModelMatrix(TComponent const&) const = 0;
-        virtual void implOnApplyTranslation(TComponent const&, glm::vec3 const& deltaTranslationInGround) = 0;
-        virtual void implOnApplyRotation(TComponent const&, glm::vec3 const&) {}  // default to noop
+        virtual Mat4 implGetCurrentModelMatrix(TComponent const&) const = 0;
+        virtual void implOnApplyTranslation(TComponent const&, Vec3 const& deltaTranslationInGround) = 0;
+        virtual void implOnApplyRotation(TComponent const&, Vec3 const&) {}  // default to noop
         virtual void implOnSave(TComponent const&) = 0;
 
         std::shared_ptr<osc::UndoableModelStatePair> m_Model;
@@ -208,23 +214,23 @@ namespace
             return SupportedManipulationOpFlags::Translation;
         }
 
-        glm::mat4 implGetCurrentModelMatrix(
+        Mat4 implGetCurrentModelMatrix(
             OpenSim::Station const& station) const final
         {
             SimTK::State const& state = getState();
-            glm::mat4 currentXformInGround = osc::ToMat4(station.getParentFrame().getRotationInGround(state));
-            currentXformInGround[3] = glm::vec4{osc::ToVec3(station.getLocationInGround(state)), 1.0f};
+            Mat4 currentXformInGround = osc::ToMat4(station.getParentFrame().getRotationInGround(state));
+            currentXformInGround[3] = Vec4{osc::ToVec3(station.getLocationInGround(state)), 1.0f};
 
             return currentXformInGround;
         }
 
         void implOnApplyTranslation(
             OpenSim::Station const& station,
-            glm::vec3 const& deltaTranslationInGround) final
+            Vec3 const& deltaTranslationInGround) final
         {
             SimTK::Rotation const parentToGroundRotation = station.getParentFrame().getRotationInGround(getState());
             SimTK::InverseRotation const& groundToParentRotation = parentToGroundRotation.invert();
-            glm::vec3 const translationInParent = osc::ToVec3(groundToParentRotation * osc::ToSimTKVec3(deltaTranslationInGround));
+            Vec3 const translationInParent = osc::ToVec3(groundToParentRotation * osc::ToSimTKVec3(deltaTranslationInGround));
 
             ActionTranslateStation(getUndoableModel(), station, translationInParent);
         }
@@ -250,23 +256,23 @@ namespace
             return SupportedManipulationOpFlags::Translation;
         }
 
-        glm::mat4 implGetCurrentModelMatrix(
+        Mat4 implGetCurrentModelMatrix(
             OpenSim::PathPoint const& pathPoint) const final
         {
             SimTK::State const& state = getState();
-            glm::mat4 currentXformInGround = osc::ToMat4(pathPoint.getParentFrame().getRotationInGround(state));
-            currentXformInGround[3] = glm::vec4{osc::ToVec3(pathPoint.getLocationInGround(state)), 1.0f};
+            Mat4 currentXformInGround = osc::ToMat4(pathPoint.getParentFrame().getRotationInGround(state));
+            currentXformInGround[3] = Vec4{osc::ToVec3(pathPoint.getLocationInGround(state)), 1.0f};
 
             return currentXformInGround;
         }
 
         void implOnApplyTranslation(
             OpenSim::PathPoint const& pathPoint,
-            glm::vec3 const& deltaTranslationInGround) final
+            Vec3 const& deltaTranslationInGround) final
         {
             SimTK::Rotation const parentToGroundRotation = pathPoint.getParentFrame().getRotationInGround(getState());
             SimTK::InverseRotation const& groundToParentRotation = parentToGroundRotation.invert();
-            glm::vec3 const translationInParent = osc::ToVec3(groundToParentRotation * osc::ToSimTKVec3(deltaTranslationInGround));
+            Vec3 const translationInParent = osc::ToVec3(groundToParentRotation * osc::ToSimTKVec3(deltaTranslationInGround));
 
             ActionTranslatePathPoint(getUndoableModel(), pathPoint, translationInParent);
         }
@@ -292,7 +298,7 @@ namespace
             return SupportedManipulationOpFlags::Translation | SupportedManipulationOpFlags::Rotation;
         }
 
-        glm::mat4 implGetCurrentModelMatrix(
+        Mat4 implGetCurrentModelMatrix(
             OpenSim::PhysicalOffsetFrame const& pof) const final
         {
             return osc::ToMat4x4(pof.getTransformInGround(getState()));
@@ -300,7 +306,7 @@ namespace
 
         void implOnApplyTranslation(
             OpenSim::PhysicalOffsetFrame const& pof,
-            glm::vec3 const& deltaTranslationInGround) final
+            Vec3 const& deltaTranslationInGround) final
         {
             SimTK::Rotation const parentToGroundRotation = pof.getParentFrame().getRotationInGround(getState());
             SimTK::InverseRotation const& groundToParentRotation = parentToGroundRotation.invert();
@@ -317,21 +323,21 @@ namespace
 
         void implOnApplyRotation(
             OpenSim::PhysicalOffsetFrame const& pof,
-            glm::vec3 const& deltaEulerRadiansInGround) final
+            Vec3 const& deltaEulerRadiansInGround) final
         {
             OpenSim::Frame const& parent = pof.getParentFrame();
             SimTK::State const& state = getState();
 
-            glm::quat const deltaRotationInGround{deltaEulerRadiansInGround};
-            glm::quat const oldRotationInGround{osc::ToQuat(pof.getRotationInGround(state))};
-            glm::quat const parentRotationInGround = osc::ToQuat(parent.getRotationInGround(state));
-            glm::quat const newRotationInGround = glm::normalize(deltaRotationInGround * oldRotationInGround);
-            glm::quat const newRotationInParent = glm::inverse(parentRotationInGround) * newRotationInGround;
+            Quat const deltaRotationInGround{deltaEulerRadiansInGround};
+            Quat const oldRotationInGround{osc::ToQuat(pof.getRotationInGround(state))};
+            Quat const parentRotationInGround = osc::ToQuat(parent.getRotationInGround(state));
+            Quat const newRotationInGround = osc::Normalize(deltaRotationInGround * oldRotationInGround);
+            Quat const newRotationInParent = osc::Inverse(parentRotationInGround) * newRotationInGround;
 
             ActionTransformPof(
                 getUndoableModel(),
                 pof,
-                glm::vec3{},  // no translation delta
+                Vec3{},  // no translation delta
                 osc::ExtractEulerAngleXYZ(newRotationInParent)
             );
         }
@@ -359,7 +365,7 @@ namespace
             return SupportedManipulationOpFlags::Rotation | SupportedManipulationOpFlags::Translation;
         }
 
-        glm::mat4 implGetCurrentModelMatrix(
+        Mat4 implGetCurrentModelMatrix(
             OpenSim::WrapObject const& wrapObj) const final
         {
             SimTK::Transform const& wrapToFrame = wrapObj.getTransform();
@@ -371,11 +377,11 @@ namespace
 
         void implOnApplyTranslation(
             OpenSim::WrapObject const& wrapObj,
-            glm::vec3 const& deltaTranslationInGround) final
+            Vec3 const& deltaTranslationInGround) final
         {
             SimTK::Rotation const frameToGroundRotation = wrapObj.getFrame().getTransformInGround(getState()).R();
             SimTK::InverseRotation const& groundToFrameRotation = frameToGroundRotation.invert();
-            glm::vec3 const translationInPofFrame = osc::ToVec3(groundToFrameRotation * osc::ToSimTKVec3(deltaTranslationInGround));
+            Vec3 const translationInPofFrame = osc::ToVec3(groundToFrameRotation * osc::ToSimTKVec3(deltaTranslationInGround));
 
             ActionTransformWrapObject(
                 getUndoableModel(),
@@ -387,21 +393,21 @@ namespace
 
         void implOnApplyRotation(
             OpenSim::WrapObject const& wrapObj,
-            glm::vec3 const& deltaEulerRadiansInGround) final
+            Vec3 const& deltaEulerRadiansInGround) final
         {
             OpenSim::Frame const& parent = wrapObj.getFrame();
             SimTK::State const& state = getState();
 
-            glm::quat const deltaRotationInGround{deltaEulerRadiansInGround};
-            glm::quat const oldRotationInGround{osc::ToQuat(parent.getTransformInGround(state).R() * wrapObj.getTransform().R())};
-            glm::quat const parentRotationInGround = osc::ToQuat(parent.getRotationInGround(state));
-            glm::quat const newRotationInGround = glm::normalize(deltaRotationInGround * oldRotationInGround);
-            glm::quat const newRotationInParent = glm::inverse(parentRotationInGround) * newRotationInGround;
+            Quat const deltaRotationInGround{deltaEulerRadiansInGround};
+            Quat const oldRotationInGround{osc::ToQuat(parent.getTransformInGround(state).R() * wrapObj.getTransform().R())};
+            Quat const parentRotationInGround = osc::ToQuat(parent.getRotationInGround(state));
+            Quat const newRotationInGround = osc::Normalize(deltaRotationInGround * oldRotationInGround);
+            Quat const newRotationInParent = osc::Inverse(parentRotationInGround) * newRotationInGround;
 
             ActionTransformWrapObject(
                 getUndoableModel(),
                 wrapObj,
-                glm::vec3{},  // no translation
+                Vec3{},  // no translation
                 osc::ExtractEulerAngleXYZ(newRotationInParent)
             );
         }
@@ -430,7 +436,7 @@ namespace
             return SupportedManipulationOpFlags::Rotation | SupportedManipulationOpFlags::Translation;
         }
 
-        glm::mat4 implGetCurrentModelMatrix(
+        Mat4 implGetCurrentModelMatrix(
             OpenSim::ContactGeometry const& contactGeom) const final
         {
             SimTK::Transform const wrapToFrame = contactGeom.getTransform();
@@ -442,11 +448,11 @@ namespace
 
         void implOnApplyTranslation(
             OpenSim::ContactGeometry const& contactGeom,
-            glm::vec3 const& deltaTranslationInGround) final
+            Vec3 const& deltaTranslationInGround) final
         {
             SimTK::Rotation const frameToGroundRotation = contactGeom.getFrame().getTransformInGround(getState()).R();
             SimTK::InverseRotation const& groundToFrameRotation = frameToGroundRotation.invert();
-            glm::vec3 const translationInPofFrame = osc::ToVec3(groundToFrameRotation * osc::ToSimTKVec3(deltaTranslationInGround));
+            Vec3 const translationInPofFrame = osc::ToVec3(groundToFrameRotation * osc::ToSimTKVec3(deltaTranslationInGround));
 
             osc::ActionTransformContactGeometry(
                 getUndoableModel(),
@@ -458,21 +464,21 @@ namespace
 
         void implOnApplyRotation(
             OpenSim::ContactGeometry const& contactGeom,
-            glm::vec3 const& deltaEulerRadiansInGround) final
+            Vec3 const& deltaEulerRadiansInGround) final
         {
             OpenSim::Frame const& parent = contactGeom.getFrame();
             SimTK::State const& state = getState();
 
-            glm::quat const deltaRotationInGround{deltaEulerRadiansInGround};
-            glm::quat const oldRotationInGround{osc::ToQuat(parent.getTransformInGround(state).R() * contactGeom.getTransform().R())};
-            glm::quat const parentRotationInGround = osc::ToQuat(parent.getRotationInGround(state));
-            glm::quat const newRotationInGround = glm::normalize(deltaRotationInGround * oldRotationInGround);
-            glm::quat const newRotationInParent = glm::inverse(parentRotationInGround) * newRotationInGround;
+            Quat const deltaRotationInGround{deltaEulerRadiansInGround};
+            Quat const oldRotationInGround{osc::ToQuat(parent.getTransformInGround(state).R() * contactGeom.getTransform().R())};
+            Quat const parentRotationInGround = osc::ToQuat(parent.getRotationInGround(state));
+            Quat const newRotationInGround = osc::Normalize(deltaRotationInGround * oldRotationInGround);
+            Quat const newRotationInParent = osc::Inverse(parentRotationInGround) * newRotationInGround;
 
             osc::ActionTransformContactGeometry(
                 getUndoableModel(),
                 contactGeom,
-                glm::vec3{},  // no translation
+                Vec3{},  // no translation
                 osc::ExtractEulerAngleXYZ(newRotationInParent)
             );
         }
@@ -528,17 +534,17 @@ namespace
         ImGuizmo::AllowAxisFlip(false);
 
         // use rotation from the parent, translation from station
-        glm::mat4 currentXformInGround = manipulator.getCurrentModelMatrix();
-        glm::mat4 deltaInGround;
+        Mat4 currentXformInGround = manipulator.getCurrentModelMatrix();
+        Mat4 deltaInGround;
 
         osc::SetImguizmoStyleToOSCStandard();
         bool const gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
-            glm::value_ptr(camera.getViewMtx()),
-            glm::value_ptr(camera.getProjMtx(AspectRatio(viewportRect))),
+            osc::ValuePtr(camera.getViewMtx()),
+            osc::ValuePtr(camera.getProjMtx(AspectRatio(viewportRect))),
             operation,
             mode,
-            glm::value_ptr(currentXformInGround),
-            glm::value_ptr(deltaInGround),
+            osc::ValuePtr(currentXformInGround),
+            osc::ValuePtr(deltaInGround),
             nullptr,
             nullptr,
             nullptr
@@ -561,16 +567,16 @@ namespace
         // else: apply in-place change to model
 
         // decompose the overall transformation into component parts
-        glm::vec3 translationInGround{};
-        glm::vec3 rotationInGround{};
-        glm::vec3 scaleInGround{};
+        Vec3 translationInGround{};
+        Vec3 rotationInGround{};
+        Vec3 scaleInGround{};
         ImGuizmo::DecomposeMatrixToComponents(
-            glm::value_ptr(deltaInGround),
-            glm::value_ptr(translationInGround),
-            glm::value_ptr(rotationInGround),
-            glm::value_ptr(scaleInGround)
+            osc::ValuePtr(deltaInGround),
+            osc::ValuePtr(translationInGround),
+            osc::ValuePtr(rotationInGround),
+            osc::ValuePtr(scaleInGround)
         );
-        rotationInGround = glm::radians(rotationInGround);
+        rotationInGround = osc::Deg2Rad(rotationInGround);
 
         if (operation == ImGuizmo::TRANSLATE)
         {

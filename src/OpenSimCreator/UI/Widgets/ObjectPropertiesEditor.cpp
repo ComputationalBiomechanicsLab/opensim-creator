@@ -6,10 +6,6 @@
 #include <OpenSimCreator/UI/Widgets/GeometryPathPropertyEditorPopup.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <nonstd/span.hpp>
@@ -27,6 +23,9 @@
 #include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/Vec4.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/Assertions.hpp>
@@ -43,6 +42,10 @@
 #include <typeinfo>
 #include <unordered_map>
 #include <utility>
+
+using osc::Vec2;
+using osc::Vec3;
+using osc::Vec4;
 
 // constants
 namespace
@@ -159,7 +162,7 @@ namespace
     }
 
     // returns a suitable color for the given dimension index (e.g. x == 0)
-    osc::Color IthDimensionColor(glm::vec3::length_type i)
+    osc::Color IthDimensionColor(Vec3::length_type i)
     {
         osc::Color color = {0.0f, 0.0f, 0.0f, 0.6f};
         color[i] = 1.0f;
@@ -171,10 +174,10 @@ namespace
     void DrawColoredDimensionHintVerticalLine(osc::Color const& color)
     {
         ImDrawList* const l = ImGui::GetWindowDrawList();
-        glm::vec2 const p = ImGui::GetCursorScreenPos();
+        Vec2 const p = ImGui::GetCursorScreenPos();
         float const h = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y + 2.0f*ImGui::GetStyle().FrameBorderSize;
-        glm::vec2 const dims = glm::vec2{4.0f, h};
-        l->AddRectFilled(p, p + dims, ImGui::ColorConvertFloat4ToU32(glm::vec4{color}));
+        Vec2 const dims = Vec2{4.0f, h};
+        l->AddRectFilled(p, p + dims, ImGui::ColorConvertFloat4ToU32(Vec4{color}));
         ImGui::SetCursorScreenPos({p.x + 4.0f, p.y});
     }
 
@@ -348,7 +351,7 @@ namespace
 
     std::string GenerateVecFrameAnnotationLabel(
         OpenSim::AbstractProperty const& backingProperty,
-        glm::vec3::length_type ithDimension)
+        Vec3::length_type ithDimension)
     {
         std::stringstream ss;
         ss << "ObjectPropertiesEditor::Vec3/";
@@ -737,12 +740,12 @@ namespace
             {
             }
 
-            glm::vec3 modelValueToEditedValue(glm::vec3 const& modelValue) const
+            Vec3 modelValueToEditedValue(Vec3 const& modelValue) const
             {
                 return osc::ToVec3(static_cast<double>(m_ModelToEditedValueScaler) * (m_ModelToEditedTransform * osc::ToSimTKVec3(modelValue)));
             }
 
-            glm::vec3 editedValueToModelValue(glm::vec3 const& editedValue) const
+            Vec3 editedValueToModelValue(Vec3 const& editedValue) const
             {
                 return osc::ToVec3(m_ModelToEditedTransform.invert() * osc::ToSimTKVec3(editedValue/m_ModelToEditedValueScaler));
             }
@@ -973,12 +976,12 @@ namespace
             // read stored value from edited property
             //
             // care: optional properties have size==0, so perform a range check
-            glm::vec3 const rawValue = osc::ToVec3(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : SimTK::Vec3{});
-            glm::vec3 const editedValue = valueConverter.modelValueToEditedValue(rawValue);
+            Vec3 const rawValue = osc::ToVec3(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : SimTK::Vec3{});
+            Vec3 const editedValue = valueConverter.modelValueToEditedValue(rawValue);
 
             // draw an editor for each component of the Vec3
             bool shouldSave = false;
-            for (glm::vec3::length_type i = 0; i < 3; ++i)
+            for (Vec3::length_type i = 0; i < 3; ++i)
             {
                 ComponentEditorReturn const componentEditorRv = drawVec3ComponentEditor(idx, i, editedValue, valueConverter);
                 shouldSave = shouldSave || componentEditorRv == ComponentEditorReturn::ShouldSave;
@@ -998,8 +1001,8 @@ namespace
         // draws float input for a single component of the Vec3 (e.g. vec.x)
         ComponentEditorReturn drawVec3ComponentEditor(
             int idx,
-            glm::vec3::length_type i,
-            glm::vec3 editedValue,
+            Vec3::length_type i,
+            Vec3 editedValue,
             ValueConverter const& valueConverter)
         {
             ImGui::PushID(i);
@@ -1015,7 +1018,7 @@ namespace
             if (drawRV.wasEdited)
             {
                 // un-convert the value on save
-                glm::vec3 const savedValue = valueConverter.editedValueToModelValue(editedValue);
+                Vec3 const savedValue = valueConverter.editedValueToModelValue(editedValue);
                 m_EditedProperty.setValue(idx, osc::ToSimTKVec3(savedValue));
             }
 

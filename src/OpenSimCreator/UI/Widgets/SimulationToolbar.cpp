@@ -10,6 +10,8 @@
 #include <imgui_internal.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec4.hpp>
 
 #include <memory>
 #include <string>
@@ -31,7 +33,7 @@ namespace
         case osc::SimulationStatus::Error:
             return osc::Color::red();
         default:
-            return osc::Color{glm::vec4{ImGui::GetStyle().Colors[ImGuiCol_Text]}};
+            return osc::Color{osc::Vec4{ImGui::GetStyle().Colors[ImGuiCol_Text]}};
         }
     }
 }
@@ -52,7 +54,7 @@ public:
 
     void onDraw()
     {
-        if (BeginToolbar(m_Label, glm::vec2{5.0f, 5.0f}))
+        if (BeginToolbar(m_Label, Vec2{5.0f, 5.0f}))
         {
             drawContent();
         }

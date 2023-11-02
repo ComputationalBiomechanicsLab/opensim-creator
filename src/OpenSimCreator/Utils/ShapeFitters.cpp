@@ -2,32 +2,37 @@
 
 #include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Sphere.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <Simbody.h>
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <complex>
 #include <numeric>
 #include <vector>
+
+using osc::Vec2;
+using osc::Vec3;
+using osc::Vec3d;
 
 // generic helpers
 namespace
 {
     // returns the contents of `vs` with `subtrahend` subtracted from each element
-    std::vector<glm::vec3> Subtract(
-        nonstd::span<glm::vec3 const> vs,
-        glm::vec3 const& subtrahend)
+    std::vector<Vec3> Subtract(
+        nonstd::span<Vec3 const> vs,
+        Vec3 const& subtrahend)
     {
-        std::vector<glm::vec3> rv;
+        std::vector<Vec3> rv;
         rv.reserve(vs.size());
         for (auto const& v : vs)
         {
@@ -37,14 +42,14 @@ namespace
     }
 
     // returns the element-wise arithmetic mean of `vs`
-    glm::vec3 CalcMean(nonstd::span<glm::vec3 const> vs)
+    Vec3 CalcMean(nonstd::span<Vec3 const> vs)
     {
-        glm::dvec3 accumulator{};
+        Vec3d accumulator{};
         for (auto const& v : vs)
         {
             accumulator += v;
         }
-        return glm::vec3{accumulator / static_cast<double>(vs.size())};
+        return Vec3{accumulator / static_cast<double>(vs.size())};
     }
 }
 
@@ -277,7 +282,7 @@ namespace
     //
     // - lhs: 3xN matrix (rows are x y z, and columns are each point in `vs`)
     // - rhs: Nx3 matrix (rows are each point in `vs`, columns are x, y, z)
-    SimTK::Mat33 CalcCovarianceMatrix(nonstd::span<glm::vec3 const> vs)
+    SimTK::Mat33 CalcCovarianceMatrix(nonstd::span<Vec3 const> vs)
     {
         SimTK::Mat33 rv;
         for (int row = 0; row < 3; ++row)
@@ -299,34 +304,34 @@ namespace
 
     // returns `v` projected onto a plane's 2D surface, where the
     // plane's surface has basis vectors `basis1` and `basis2`
-    glm::vec2 Project3DPointOntoPlane(
-        glm::vec3 const& v,
-        glm::vec3 const& basis1,
-        glm::vec3 const& basis2)
+    Vec2 Project3DPointOntoPlane(
+        Vec3 const& v,
+        Vec3 const& basis1,
+        Vec3 const& basis2)
     {
-        return {glm::dot(v, basis1), glm::dot(v, basis2)};
+        return {osc::Dot(v, basis1), osc::Dot(v, basis2)};
     }
 
     // returns `surfacePoint` un-projected from the 2D surface of a plane, where
     // the plane's surface has basis vectors `basis1` and `basis2`
-    glm::vec3 Unproject2DPlanePointInto3D(
-        glm::vec2 planeSurfacePoint,
-        glm::vec3 const& basis1,
-        glm::vec3 const& basis2)
+    Vec3 Unproject2DPlanePointInto3D(
+        Vec2 planeSurfacePoint,
+        Vec3 const& basis1,
+        Vec3 const& basis2)
     {
         return planeSurfacePoint.x*basis1 + planeSurfacePoint.y*basis2;
     }
 
     // returns `vs` projected onto a plane's 2D surface, where the
     // plane's surface has basis vectors `basis1` and `basis2`
-    std::vector<glm::vec2> Project3DPointsOnto2DSurface(
-        nonstd::span<glm::vec3 const> vs,
-        glm::vec3 const& basis1,
-        glm::vec3 const& basis2)
+    std::vector<Vec2> Project3DPointsOnto2DSurface(
+        nonstd::span<Vec3 const> vs,
+        Vec3 const& basis1,
+        Vec3 const& basis2)
     {
-        std::vector<glm::vec2> rv;
+        std::vector<Vec2> rv;
         rv.reserve(vs.size());
-        for (glm::vec3 const& v : vs)
+        for (Vec3 const& v : vs)
         {
             rv.push_back(Project3DPointOntoPlane(v, basis1, basis2));
         }
@@ -338,7 +343,7 @@ namespace
     //     - Ax^2 + By^2 + Cz^2 + 2Dxy + 2Exz + 2Fyz + 2Gx + 2Hy + 2Iz + J = 0
     //
     // see: https://nl.mathworks.com/matlabcentral/fileexchange/24693-ellipsoid-fit
-    std::array<double, 9> SolveEllipsoidAlgebraicForm(nonstd::span<glm::vec3 const> vs)
+    std::array<double, 9> SolveEllipsoidAlgebraicForm(nonstd::span<Vec3 const> vs)
     {
         // this code is translated like-for-like with the MATLAB version
         // and was checked by comparing debugger output in MATLAB from
@@ -544,7 +549,7 @@ osc::Sphere osc::FitSphere(Mesh const& mesh)
     //     use least-squares to solve for `c`
 
     // get mesh data (care: `osc::Mesh`es are indexed)
-    std::vector<glm::vec3> const points = GetAllIndexedVerts(mesh);
+    std::vector<Vec3> const points = GetAllIndexedVerts(mesh);
     if (points.empty())
     {
         return Sphere{{}, 1.0f};  // edge-case: no points in input mesh
@@ -556,9 +561,9 @@ osc::Sphere osc::FitSphere(Mesh const& mesh)
     SimTK::Matrix A(numPoints, 4);
     for (int i = 0; i < numPoints; ++i)
     {
-        glm::vec3 const vert = points[i];
+        Vec3 const vert = points[i];
 
-        f(i) = glm::dot(vert, vert);  // x^2 + y^2 + z^2
+        f(i) = osc::Dot(vert, vert);  // x^2 + y^2 + z^2
         A(i, 0) = 2.0f*vert[0];
         A(i, 1) = 2.0f*vert[1];
         A(i, 2) = 2.0f*vert[2];
@@ -575,8 +580,8 @@ osc::Sphere osc::FitSphere(Mesh const& mesh)
     double const z0 = c[2];
     double const r2 = c[3] + x0*x0 + y0*y0 + z0*z0;
 
-    glm::vec3 const origin{glm::dvec3{x0, y0, z0}};
-    auto const radius = static_cast<float>(glm::sqrt(r2));
+    Vec3 const origin{Vec3d{x0, y0, z0}};
+    auto const radius = static_cast<float>(std::sqrt(r2));
 
     return Sphere{origin, radius};
 }
@@ -640,7 +645,7 @@ osc::Plane osc::FitPlane(Mesh const& mesh)
     // point on the plane's surface: mathematically, they're all the same plane
 
     // extract point cloud from mesh (osc::Meshes are indexed)
-    std::vector<glm::vec3> const vertices = GetAllIndexedVerts(mesh);
+    std::vector<Vec3> const vertices = GetAllIndexedVerts(mesh);
 
     if (vertices.empty())
     {
@@ -648,10 +653,10 @@ osc::Plane osc::FitPlane(Mesh const& mesh)
     }
 
     // determine the xyz centroid of the point cloud
-    glm::vec3 const centroid = CalcMean(vertices);
+    Vec3 const centroid = CalcMean(vertices);
 
     // shift point cloud such that the centroid is at the origin
-    std::vector<glm::vec3> const verticesReduced = Subtract(vertices, centroid);
+    std::vector<Vec3> const verticesReduced = Subtract(vertices, centroid);
 
     // pack the vertices into a covariance matrix, ready for principal component analysis (PCA)
     SimTK::Mat33 const covarianceMatrix = CalcCovarianceMatrix(verticesReduced);
@@ -663,7 +668,7 @@ osc::Plane osc::FitPlane(Mesh const& mesh)
     SimTK::Vec3 const& basis2 = eigenVectors.col(2);
 
     // project points onto B1 and B2 (plane-space)
-    std::vector<glm::vec2> const projectedPoints = ::Project3DPointsOnto2DSurface(
+    std::vector<Vec2> const projectedPoints = ::Project3DPointsOnto2DSurface(
         verticesReduced,
         ToVec3(basis1),
         ToVec3(basis2)
@@ -673,15 +678,15 @@ osc::Plane osc::FitPlane(Mesh const& mesh)
     Rect const bounds = BoundingRectOf(projectedPoints);
 
     // calculate the midpoint of those bounds in plane-space
-    glm::vec2 const boundsMidpointInPlaneSpace = Midpoint(bounds);
+    Vec2 const boundsMidpointInPlaneSpace = Midpoint(bounds);
 
     // un-project the plane-space midpoint back into mesh-space
-    glm::vec3 const boundsMidPointInReducedSpace = Unproject2DPlanePointInto3D(
+    Vec3 const boundsMidPointInReducedSpace = Unproject2DPlanePointInto3D(
         boundsMidpointInPlaneSpace,
         ToVec3(basis1),
         ToVec3(basis2)
     );
-    glm::vec3 const boundsMidPointInMeshSpace = boundsMidPointInReducedSpace + centroid;
+    Vec3 const boundsMidPointInMeshSpace = boundsMidPointInReducedSpace + centroid;
 
     // return normal and boundsMidPointInMeshSpace
     return Plane{boundsMidPointInMeshSpace, ToVec3(normal)};
@@ -713,7 +718,7 @@ osc::Ellipsoid osc::FitEllipsoid(Mesh const& mesh)
     // but that doesn't mention using eigen analysis, which I imagine Yury is using
     // as a form of PCA?
 
-    std::vector<glm::vec3> const meshVertices = GetAllIndexedVerts(mesh);
+    std::vector<Vec3> const meshVertices = GetAllIndexedVerts(mesh);
     auto const u = SolveEllipsoidAlgebraicForm(meshVertices);
     auto const v = SolveV(u);
     auto const A = CalcA(v);  // form the algebraic form of the ellipsoid

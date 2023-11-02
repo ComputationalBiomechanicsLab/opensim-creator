@@ -1155,6 +1155,11 @@ float osc::Mix(float a, float b, float factor)
     return glm::mix(a, b, factor);
 }
 
+osc::Vec3 osc::Mix(Vec3 const& a, Vec3 const& b, float factor)
+{
+    return glm::mix(a, b, factor);
+}
+
 osc::Vec4 osc::Mix(Vec4 const& a, Vec4 const& b, float factor)
 {
     return glm::mix(a, b, factor);
@@ -1185,6 +1190,11 @@ float osc::Length(Vec2 const& v)
     return glm::length(v);
 }
 
+float osc::Length2(Vec3 const& v)
+{
+    return glm::length2(v);
+}
+
 osc::Quat osc::Rotation(Vec3 const& src, Vec3 const& dest)
 {
     return glm::rotation(src, dest);
@@ -1213,6 +1223,11 @@ osc::Mat4 osc::Ortho(float left, float right, float bottom, float top, float zNe
 osc::Mat4 osc::Inverse(Mat4 const& mat)
 {
     return glm::inverse(mat);
+}
+
+osc::Quat osc::Inverse(Quat const& q)
+{
+    return glm::inverse(q);
 }
 
 osc::Mat4 osc::Scale(Mat4 const& m, Vec3 const& v)

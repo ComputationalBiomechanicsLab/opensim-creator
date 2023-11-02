@@ -36,6 +36,11 @@ namespace osc
         return degrees * static_cast<Number>(0.01745329251994329576923690768489);
     }
 
+    constexpr Vec3 Deg2Rad(Vec3 degrees)
+    {
+        return degrees * static_cast<Vec3::value_type>(0.01745329251994329576923690768489);
+    }
+
     // converts radians to degrees
     template<typename Number>
     constexpr Number Rad2Deg(Number radians)
@@ -62,6 +67,7 @@ namespace osc
     Vec4 Clamp(Vec4 const&, float min, float max);
 
     float Mix(float a, float b, float factor);
+    Vec3 Mix(Vec3 const&, Vec3 const&, float);
     Vec4 Mix(Vec4 const&, Vec4 const&, float);
 
     // returns the cross product of the two arguments
@@ -74,6 +80,7 @@ namespace osc
 
     // returns the length of the provided vector
     float Length(Vec2 const&);
+    float Length2(Vec3 const&);
 
     // computes the rotation from `src` to `dest`
     Quat Rotation(Vec3 const& src, Vec3 const& dest);
@@ -92,6 +99,7 @@ namespace osc
 
     // computes the inverse of the matrix
     Mat4 Inverse(Mat4 const&);
+    Quat Inverse(Quat const&);
 
     // right-hand multiply
     Mat4 Scale(Mat4 const&, Vec3 const&);

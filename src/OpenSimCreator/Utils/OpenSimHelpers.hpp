@@ -1,11 +1,11 @@
 #pragma once
 
-#include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/ComponentPath.h>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/Plane.hpp>
 #include <oscar/Maths/PointDirection.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SimTKcommon/internal/Transform.h>
 
@@ -637,21 +637,21 @@ namespace osc
     // helper functions for pulling path points out of geometry paths (e.g. for rendering)
     struct GeometryPathPoint final {
 
-        explicit GeometryPathPoint(glm::vec3 const& locationInGround_) :
+        explicit GeometryPathPoint(Vec3 const& locationInGround_) :
             locationInGround{locationInGround_}
         {
         }
 
         GeometryPathPoint(
             OpenSim::AbstractPathPoint const& underlyingUserPathPoint,
-            glm::vec3 const& locationInGround_) :
+            Vec3 const& locationInGround_) :
             maybeUnderlyingUserPathPoint{&underlyingUserPathPoint},
             locationInGround{locationInGround_}
         {
         }
 
         OpenSim::AbstractPathPoint const* maybeUnderlyingUserPathPoint = nullptr;
-        glm::vec3 locationInGround{};
+        Vec3 locationInGround{};
     };
     std::vector<GeometryPathPoint> GetAllPathPoints(OpenSim::GeometryPath const&, SimTK::State const&);
 
@@ -659,8 +659,8 @@ namespace osc
     //
     // helper functions for pulling contact forces out of the model (e.g. for rendering)
     struct ForcePoint final {
-        glm::vec3 force;
-        glm::vec3 point;
+        Vec3 force;
+        Vec3 point;
     };
     std::optional<ForcePoint> TryGetContactForceInGround(
         OpenSim::Model const&,
@@ -673,7 +673,7 @@ namespace osc
     // extract point-like information from generic OpenSim components
     struct PointInfo final {
         PointInfo(
-            glm::vec3 location_,
+            Vec3 location_,
             OpenSim::ComponentPath frameAbsPath_) :
 
             location{location_},
@@ -681,7 +681,7 @@ namespace osc
         {
         }
 
-        glm::vec3 location;
+        Vec3 location;
         OpenSim::ComponentPath frameAbsPath;
     };
     bool CanExtractPointInfoFrom(OpenSim::Component const&, SimTK::State const&);

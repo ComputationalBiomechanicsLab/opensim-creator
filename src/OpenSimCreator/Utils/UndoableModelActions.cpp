@@ -48,9 +48,12 @@
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Maths/Ellipsoid.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Plane.hpp>
+#include <oscar/Maths/Quat.hpp>
 #include <oscar/Maths/Sphere.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
@@ -1701,7 +1704,7 @@ bool osc::ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
 bool osc::ActionTranslateStation(
     UndoableModelStatePair& model,
     OpenSim::Station const& station,
-    glm::vec3 const& deltaPosition)
+    Vec3 const& deltaPosition)
 {
     OpenSim::ComponentPath const stationPath = osc::GetAbsolutePath(station);
     UID const oldVersion = model.getModelVersion();
@@ -1741,7 +1744,7 @@ bool osc::ActionTranslateStation(
 bool osc::ActionTranslateStationAndSave(
     UndoableModelStatePair& model,
     OpenSim::Station const& station,
-    glm::vec3 const& deltaPosition)
+    Vec3 const& deltaPosition)
 {
     if (ActionTranslateStation(model, station, deltaPosition))
     {
@@ -1764,7 +1767,7 @@ bool osc::ActionTranslateStationAndSave(
 bool osc::ActionTranslatePathPoint(
     UndoableModelStatePair& model,
     OpenSim::PathPoint const& pathPoint,
-    glm::vec3 const& deltaPosition)
+    Vec3 const& deltaPosition)
 {
     OpenSim::ComponentPath const ppPath = osc::GetAbsolutePath(pathPoint);
     UID const oldVersion = model.getModelVersion();
@@ -1799,7 +1802,7 @@ bool osc::ActionTranslatePathPoint(
 bool osc::ActionTranslatePathPointAndSave(
     UndoableModelStatePair& model,
     OpenSim::PathPoint const& pathPoint,
-    glm::vec3 const& deltaPosition)
+    Vec3 const& deltaPosition)
 {
     if (ActionTranslatePathPoint(model, pathPoint, deltaPosition))
     {
@@ -1822,8 +1825,8 @@ bool osc::ActionTranslatePathPointAndSave(
 bool osc::ActionTransformPof(
     UndoableModelStatePair& model,
     OpenSim::PhysicalOffsetFrame const& pof,
-    glm::vec3 const& deltaTranslationInParentFrame,
-    glm::vec3 const& newPofEulers)
+    Vec3 const& deltaTranslationInParentFrame,
+    Vec3 const& newPofEulers)
 {
     OpenSim::ComponentPath const pofPath = osc::GetAbsolutePath(pof);
     UID const oldVersion = model.getModelVersion();
@@ -1861,8 +1864,8 @@ bool osc::ActionTransformPof(
 bool osc::ActionTransformWrapObject(
     UndoableModelStatePair& model,
     OpenSim::WrapObject const& wo,
-    glm::vec3 const& deltaPosition,
-    glm::vec3 const& newEulers)
+    Vec3 const& deltaPosition,
+    Vec3 const& newEulers)
 {
     OpenSim::ComponentPath const pofPath = osc::GetAbsolutePath(wo);
     UID const oldVersion = model.getModelVersion();
@@ -1900,8 +1903,8 @@ bool osc::ActionTransformWrapObject(
 bool osc::ActionTransformContactGeometry(
     UndoableModelStatePair& model,
     OpenSim::ContactGeometry const& contactGeom,
-    glm::vec3 const& deltaPosition,
-    glm::vec3 const& newEulers)
+    Vec3 const& deltaPosition,
+    Vec3 const& newEulers)
 {
     OpenSim::ComponentPath const pofPath = osc::GetAbsolutePath(contactGeom);
     UID const oldVersion = model.getModelVersion();
@@ -2104,7 +2107,7 @@ bool osc::ActionFitPlaneToMesh(
     offsetFrame->connectSocket_parent(dynamic_cast<OpenSim::PhysicalFrame const&>(openSimMesh.getFrame()));
     {
         // +1Y in "brick space" should map to the plane's normal
-        glm::quat const q = glm::rotation({0.0f, 1.0f, 0.0f}, plane.normal);
+        Quat const q = Rotation({0.0f, 1.0f, 0.0f}, plane.normal);
         offsetFrame->setOffsetTransform(SimTK::Transform{ToSimTKRotation(q), ToSimTKVec3(plane.origin)});
     }
 
