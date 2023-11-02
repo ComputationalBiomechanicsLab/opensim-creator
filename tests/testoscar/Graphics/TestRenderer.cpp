@@ -33,7 +33,13 @@
 #include <oscar/Graphics/ShaderPropertyType.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>
+#include <oscar/Maths/Mat3.hpp>
+#include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Quat.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/Vec4.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Utils/CStringView.hpp>
@@ -47,6 +53,14 @@
 #include <sstream>
 #include <string>
 #include <unordered_set>
+
+using osc::Mat3;
+using osc::Mat4;
+using osc::Quat;
+using osc::Vec2;
+using osc::Vec2i;
+using osc::Vec3;
+using osc::Vec4;
 
 namespace
 {
@@ -400,34 +414,34 @@ namespace
         return osc::Color{GenerateFloat(), GenerateFloat(), GenerateFloat(), GenerateFloat()};
     }
 
-    glm::vec2 GenerateVec2()
+    Vec2 GenerateVec2()
     {
-        return glm::vec2{GenerateFloat(), GenerateFloat()};
+        return Vec2{GenerateFloat(), GenerateFloat()};
     }
 
-    glm::vec3 GenerateVec3()
+    Vec3 GenerateVec3()
     {
-        return glm::vec3{GenerateFloat(), GenerateFloat(), GenerateFloat()};
+        return Vec3{GenerateFloat(), GenerateFloat(), GenerateFloat()};
     }
 
-    glm::vec4 GenerateVec4()
+    Vec4 GenerateVec4()
     {
-        return glm::vec4{GenerateFloat(), GenerateFloat(), GenerateFloat(), GenerateFloat()};
+        return Vec4{GenerateFloat(), GenerateFloat(), GenerateFloat(), GenerateFloat()};
     }
 
-    glm::mat3x3 GenerateMat3x3()
+    Mat3 GenerateMat3x3()
     {
-        return glm::mat3{GenerateVec3(), GenerateVec3(), GenerateVec3()};
+        return Mat3{GenerateVec3(), GenerateVec3(), GenerateVec3()};
     }
 
-    glm::mat4x4 GenerateMat4x4()
+    Mat4 GenerateMat4x4()
     {
-        return glm::mat4{GenerateVec4(), GenerateVec4(), GenerateVec4(), GenerateVec4()};
+        return Mat4{GenerateVec4(), GenerateVec4(), GenerateVec4(), GenerateVec4()};
     }
 
     osc::Texture2D GenerateTexture()
     {
-        osc::Texture2D rv{glm::ivec2{2, 2}};
+        osc::Texture2D rv{Vec2i{2, 2}};
         rv.setPixels(std::vector<osc::Color>(4, osc::Color::red()));
         return rv;
     }
@@ -438,9 +452,9 @@ namespace
         return osc::Material{shader};
     }
 
-    std::vector<glm::vec3> GenerateTriangleVerts()
+    std::vector<Vec3> GenerateTriangleVerts()
     {
-        std::vector<glm::vec3> rv;
+        std::vector<Vec3> rv;
         for (size_t i = 0; i < 30; ++i)
         {
             rv.push_back(GenerateVec3());
@@ -873,7 +887,7 @@ TEST_F(Renderer, MaterialSetVec2OnMaterialCausesGetVec2ToReturnTheProvidedValue)
     osc::Material mat = GenerateMaterial();
 
     std::string key = "someKey";
-    glm::vec2 value = GenerateVec2();
+    Vec2 value = GenerateVec2();
 
     mat.setVec2(key, value);
 
@@ -885,7 +899,7 @@ TEST_F(Renderer, MaterialSetVec2AndThenSetVec3CausesGetVec2ToReturnEmpty)
     osc::Material mat = GenerateMaterial();
 
     std::string key = "someKey";
-    glm::vec2 value = GenerateVec2();
+    Vec2 value = GenerateVec2();
 
     ASSERT_FALSE(mat.getVec2(key).has_value());
 
@@ -914,7 +928,7 @@ TEST_F(Renderer, MaterialSetVec3OnMaterialCausesGetVec3ToReturnTheProvidedValue)
     osc::Material mat = GenerateMaterial();
 
     std::string key = "someKey";
-    glm::vec3 value = GenerateVec3();
+    Vec3 value = GenerateVec3();
 
     mat.setVec3(key, value);
 
@@ -925,13 +939,13 @@ TEST_F(Renderer, MaterialSetVec3ArrayOnMaterialCausesGetVec3ArrayToReutrnTheProv
 {
     osc::Material mat = GenerateMaterial();
     std::string key = "someKey";
-    std::array<glm::vec3, 4> values = {GenerateVec3(), GenerateVec3(), GenerateVec3(), GenerateVec3()};
+    std::array<Vec3, 4> values = {GenerateVec3(), GenerateVec3(), GenerateVec3(), GenerateVec3()};
 
     ASSERT_FALSE(mat.getVec3Array(key));
 
     mat.setVec3Array(key, values);
 
-    nonstd::span<glm::vec3 const> rv = mat.getVec3Array(key).value();
+    nonstd::span<Vec3 const> rv = mat.getVec3Array(key).value();
     ASSERT_TRUE(std::equal(rv.begin(), rv.end(), values.begin(), values.end()));
 }
 
@@ -940,7 +954,7 @@ TEST_F(Renderer, MaterialSetVec4OnMaterialCausesGetVec4ToReturnTheProvidedValue)
     osc::Material mat = GenerateMaterial();
 
     std::string key = "someKey";
-    glm::vec4 value = GenerateVec4();
+    Vec4 value = GenerateVec4();
 
     mat.setVec4(key, value);
 
@@ -952,7 +966,7 @@ TEST_F(Renderer, MaterialSetMat3OnMaterialCausesGetMat3ToReturnTheProvidedValue)
     osc::Material mat = GenerateMaterial();
 
     std::string key = "someKey";
-    glm::mat3 value = GenerateMat3x3();
+    Mat3 value = GenerateMat3x3();
 
     mat.setMat3(key, value);
 
@@ -964,7 +978,7 @@ TEST_F(Renderer, MaterialSetMat4OnMaterialCausesGetMat4ToReturnTheProvidedValue)
     osc::Material mat = GenerateMaterial();
 
     std::string key = "someKey";
-    glm::mat4 value = GenerateMat4x4();
+    Mat4 value = GenerateMat4x4();
 
     mat.setMat4(key, value);
 
@@ -979,7 +993,7 @@ TEST_F(Renderer, MaterialGetMat4ArrayInitiallyReturnsNothing)
 
 TEST_F(Renderer, MaterialSetMat4ArrayCausesGetMat4ArrayToReturnSameSequenceOfValues)
 {
-    auto const mat4Array = osc::to_array<glm::mat4>(
+    auto const mat4Array = osc::to_array<Mat4>(
     {
         GenerateMat4x4(),
         GenerateMat4x4(),
@@ -990,7 +1004,7 @@ TEST_F(Renderer, MaterialSetMat4ArrayCausesGetMat4ArrayToReturnSameSequenceOfVal
     osc::Material mat = GenerateMaterial();
     mat.setMat4Array("someKey", mat4Array);
 
-    std::optional<nonstd::span<glm::mat4 const>> rv = mat.getMat4Array("someKey");
+    std::optional<nonstd::span<Mat4 const>> rv = mat.getMat4Array("someKey");
     ASSERT_TRUE(rv.has_value());
     ASSERT_EQ(mat4Array.size(), rv->size());
     ASSERT_TRUE(std::equal(mat4Array.begin(), mat4Array.end(), rv->begin()));
@@ -1290,7 +1304,7 @@ TEST_F(Renderer, MaterialSetFloatAndThenSetVec3CausesGetFloatToReturnEmpty)
 
     std::string key = "someKey";
     float floatValue = GenerateFloat();
-    glm::vec3 vecValue = GenerateVec3();
+    Vec3 vecValue = GenerateVec3();
 
     mat.setFloat(key, floatValue);
 
@@ -1442,7 +1456,7 @@ TEST_F(Renderer, MaterialPropertyBlockSetVec3CausesGetterToReturnSetValue)
 {
     osc::MaterialPropertyBlock mpb;
     std::string key = "someKey";
-    glm::vec3 value = GenerateVec3();
+    Vec3 value = GenerateVec3();
 
     ASSERT_FALSE(mpb.getVec3(key));
 
@@ -1455,7 +1469,7 @@ TEST_F(Renderer, MaterialPropertyBlockSetVec4CausesGetterToReturnSetValue)
 {
     osc::MaterialPropertyBlock mpb;
     std::string key = "someKey";
-    glm::vec4 value = GenerateVec4();
+    Vec4 value = GenerateVec4();
 
     ASSERT_FALSE(mpb.getVec4(key));
 
@@ -1468,7 +1482,7 @@ TEST_F(Renderer, MaterialPropertyBlockSetMat3CausesGetterToReturnSetValue)
 {
     osc::MaterialPropertyBlock mpb;
     std::string key = "someKey";
-    glm::mat3 value = GenerateMat3x3();
+    Mat3 value = GenerateMat3x3();
 
     ASSERT_FALSE(mpb.getVec4(key));
 
@@ -1577,20 +1591,20 @@ TEST_F(Renderer, MaterialPropertyBlockPrintingToOutputStreamMentionsMaterialProp
 
 TEST_F(Renderer, TextureConstructorThrowsIfGivenZeroOrNegativeSizedDimensions)
 {
-    ASSERT_ANY_THROW({ osc::Texture2D(glm::ivec2(0, 0)); });   // x and y are zero
-    ASSERT_ANY_THROW({ osc::Texture2D(glm::ivec2(0, 1)); });   // x is zero
-    ASSERT_ANY_THROW({ osc::Texture2D(glm::ivec2(1, 0)); });   // y is zero
+    ASSERT_ANY_THROW({ osc::Texture2D(Vec2i(0, 0)); });   // x and y are zero
+    ASSERT_ANY_THROW({ osc::Texture2D(Vec2i(0, 1)); });   // x is zero
+    ASSERT_ANY_THROW({ osc::Texture2D(Vec2i(1, 0)); });   // y is zero
 
-    ASSERT_ANY_THROW({ osc::Texture2D(glm::ivec2(-1, -1)); }); // x any y are negative
-    ASSERT_ANY_THROW({ osc::Texture2D(glm::ivec2(-1, 1)); });  // x is negative
-    ASSERT_ANY_THROW({ osc::Texture2D(glm::ivec2(1, -1)); });  // y is negative
+    ASSERT_ANY_THROW({ osc::Texture2D(Vec2i(-1, -1)); }); // x any y are negative
+    ASSERT_ANY_THROW({ osc::Texture2D(Vec2i(-1, 1)); });  // x is negative
+    ASSERT_ANY_THROW({ osc::Texture2D(Vec2i(1, -1)); });  // y is negative
 }
 
 TEST_F(Renderer, TextureDefaultConstructorCreatesRGBATextureWithExpectedColorSpaceEtc)
 {
-    osc::Texture2D t{glm::ivec2(1, 1)};
+    osc::Texture2D t{Vec2i(1, 1)};
 
-    ASSERT_EQ(t.getDimensions(), glm::ivec2(1, 1));
+    ASSERT_EQ(t.getDimensions(), Vec2i(1, 1));
     ASSERT_EQ(t.getTextureFormat(), osc::TextureFormat::RGBA32);
     ASSERT_EQ(t.getColorSpace(), osc::ColorSpace::sRGB);
     ASSERT_EQ(t.getWrapMode(), osc::TextureWrapMode::Repeat);
@@ -1599,7 +1613,7 @@ TEST_F(Renderer, TextureDefaultConstructorCreatesRGBATextureWithExpectedColorSpa
 
 TEST_F(Renderer, TextureCanSetPixels32OnDefaultConstructedTexture)
 {
-    glm::ivec2 const dimensions = {1, 1};
+    Vec2i const dimensions = {1, 1};
     std::vector<osc::Color32> const pixels(static_cast<size_t>(dimensions.x * dimensions.y));
 
     osc::Texture2D t{dimensions};
@@ -1611,7 +1625,7 @@ TEST_F(Renderer, TextureCanSetPixels32OnDefaultConstructedTexture)
 
 TEST_F(Renderer, TextureSetPixelsThrowsIfNumberOfPixelsDoesNotMatchDimensions)
 {
-    glm::ivec2 const dimensions = {1, 1};
+    Vec2i const dimensions = {1, 1};
     std::vector<osc::Color> const incorrectPixels(dimensions.x * dimensions.y + 1);
 
     osc::Texture2D t{dimensions};
@@ -1621,7 +1635,7 @@ TEST_F(Renderer, TextureSetPixelsThrowsIfNumberOfPixelsDoesNotMatchDimensions)
 
 TEST_F(Renderer, TextureSetPixels32ThrowsIfNumberOfPixelsDoesNotMatchDimensions)
 {
-    glm::ivec2 const dimensions = {1, 1};
+    Vec2i const dimensions = {1, 1};
     std::vector<osc::Color32> const incorrectPixels(dimensions.x * dimensions.y + 1);
 
     osc::Texture2D t{dimensions};
@@ -1630,7 +1644,7 @@ TEST_F(Renderer, TextureSetPixels32ThrowsIfNumberOfPixelsDoesNotMatchDimensions)
 
 TEST_F(Renderer, TextureSetPixelDataThrowsIfNumberOfPixelBytesDoesNotMatchDimensions)
 {
-    glm::ivec2 const dimensions = {1, 1};
+    Vec2i const dimensions = {1, 1};
     std::vector<osc::Color32> const incorrectPixels(dimensions.x * dimensions.y + 1);
 
     osc::Texture2D t{dimensions};
@@ -1641,7 +1655,7 @@ TEST_F(Renderer, TextureSetPixelDataThrowsIfNumberOfPixelBytesDoesNotMatchDimens
 
 TEST_F(Renderer, TextureSetPixelDataDoesNotThrowWhenGivenValidNumberOfPixelBytes)
 {
-    glm::ivec2 const dimensions = {1, 1};
+    Vec2i const dimensions = {1, 1};
     std::vector<osc::Color32> const pixels(static_cast<size_t>(dimensions.x * dimensions.y));
 
     osc::Texture2D t{dimensions};
@@ -1653,7 +1667,7 @@ TEST_F(Renderer, TextureSetPixelDataDoesNotThrowWhenGivenValidNumberOfPixelBytes
 
 TEST_F(Renderer, TextureSetPixelDataWorksFineFor8BitSingleChannelData)
 {
-    glm::ivec2 const dimensions = {1, 1};
+    Vec2i const dimensions = {1, 1};
     std::vector<uint8_t> const singleChannelPixels(static_cast<size_t>(dimensions.x * dimensions.y));
 
     osc::Texture2D t{dimensions, osc::TextureFormat::R8};
@@ -1664,7 +1678,7 @@ TEST_F(Renderer, TextureSetPixelDataWith8BitSingleChannelDataFollowedByGetPixels
 {
     uint8_t const color{0x88};
     float const colorFloat = static_cast<float>(color) / 255.0f;
-    glm::ivec2 const dimensions = {1, 1};
+    Vec2i const dimensions = {1, 1};
     std::vector<uint8_t> const singleChannelPixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
 
     osc::Texture2D t{dimensions, osc::TextureFormat::R8};
@@ -1679,7 +1693,7 @@ TEST_F(Renderer, TextureSetPixelDataWith8BitSingleChannelDataFollowedByGetPixels
 TEST_F(Renderer, TextureSetPixelDataWith8BitSingleChannelDataFollowedByGetPixels32BlanksOutGreenAndRed)
 {
     uint8_t const color{0x88};
-    glm::ivec2 const dimensions = {1, 1};
+    Vec2i const dimensions = {1, 1};
     std::vector<uint8_t> const singleChannelPixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
 
     osc::Texture2D t{dimensions, osc::TextureFormat::R8};
@@ -1694,9 +1708,9 @@ TEST_F(Renderer, TextureSetPixelDataWith8BitSingleChannelDataFollowedByGetPixels
 
 TEST_F(Renderer, TextureSetPixelDataWith32BitFloatingPointValuesFollowedByGetPixelDataReturnsSameSpan)
 {
-    glm::vec4 const color = GenerateVec4();
-    glm::ivec2 const dimensions = {1, 1};
-    std::vector<glm::vec4> const rgbaFloatPixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
+    Vec4 const color = GenerateVec4();
+    Vec2i const dimensions = {1, 1};
+    std::vector<Vec4> const rgbaFloatPixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
 
     osc::Texture2D t(dimensions, osc::TextureFormat::RGBAFloat);
     t.setPixelData(ToByteSpan(rgbaFloatPixels));
@@ -1707,7 +1721,7 @@ TEST_F(Renderer, TextureSetPixelDataWith32BitFloatingPointValuesFollowedByGetPix
 TEST_F(Renderer, TextureSetPixelDataWith32BitFloatingPointValuesFollowedByGetPixelsReturnsSameValues)
 {
     osc::Color const hdrColor = {1.2f, 1.4f, 1.3f, 1.0f};
-    glm::ivec2 const dimensions = {1, 1};
+    Vec2i const dimensions = {1, 1};
     std::vector<osc::Color> const rgbaFloatPixels(static_cast<size_t>(dimensions.x * dimensions.y), hdrColor);
 
     osc::Texture2D t(dimensions, osc::TextureFormat::RGBAFloat);
@@ -1719,7 +1733,7 @@ TEST_F(Renderer, TextureSetPixelDataWith32BitFloatingPointValuesFollowedByGetPix
 TEST_F(Renderer, TextureSetPixelsOnAn8BitTextureLDRClampsTheColorValues)
 {
     osc::Color const hdrColor = {1.2f, 1.4f, 1.3f, 1.0f};
-    glm::ivec2 const dimensions = {1, 1};
+    Vec2i const dimensions = {1, 1};
     std::vector<osc::Color> const hdrPixels(static_cast<size_t>(dimensions.x * dimensions.y), hdrColor);
 
     osc::Texture2D t(dimensions, osc::TextureFormat::RGBA32);  // note: not HDR
@@ -1732,7 +1746,7 @@ TEST_F(Renderer, TextureSetPixelsOnAn8BitTextureLDRClampsTheColorValues)
 TEST_F(Renderer, TextureSetPixels32OnAn8BitTextureDoesntConvert)
 {
     osc::Color32 const color32 = {0x77, 0x63, 0x24, 0x76};
-    glm::ivec2 const dimensions = {1, 1};
+    Vec2i const dimensions = {1, 1};
     std::vector<osc::Color32> const pixels32(static_cast<size_t>(dimensions.x * dimensions.y), color32);
 
     osc::Texture2D t(dimensions, osc::TextureFormat::RGBA32);  // note: matches pixel format
@@ -1745,7 +1759,7 @@ TEST_F(Renderer, TextureSetPixels32OnAn8BitTextureDoesntConvert)
 TEST_F(Renderer, TextureSetPixels32OnA32BitTextureDoesntDetectablyChangeValues)
 {
     osc::Color32 const color32 = {0x77, 0x63, 0x24, 0x76};
-    glm::ivec2 const dimensions = {1, 1};
+    Vec2i const dimensions = {1, 1};
     std::vector<osc::Color32> const pixels32(static_cast<size_t>(dimensions.x * dimensions.y), color32);
 
     osc::Texture2D t(dimensions, osc::TextureFormat::RGBAFloat);  // note: higher precision than input
@@ -2050,7 +2064,7 @@ TEST_F(Renderer, LoadTexture2DFromImageResourceCanLoadImageFile)
         osc::App::resource((std::filesystem::path{OSC_BUILD_RESOURCES_DIR} / "testoscar/awesomeface.png").string()),
         osc::ColorSpace::sRGB
     );
-    ASSERT_EQ(t.getDimensions(), glm::ivec2(512, 512));
+    ASSERT_EQ(t.getDimensions(), Vec2i(512, 512));
 }
 
 TEST_F(Renderer, LoadTexture2DFromImageResourceThrowsIfResourceNotFound)
@@ -2146,9 +2160,9 @@ TEST_F(Renderer, MeshGetVertsReturnsEmptyVertsOnDefaultConstruction)
 TEST_F(Renderer, MeshSetVertsMakesGetCallReturnVerts)
 {
     osc::Mesh m;
-    std::vector<glm::vec3> verts = GenerateTriangleVerts();
+    std::vector<Vec3> verts = GenerateTriangleVerts();
 
-    ASSERT_FALSE(SpansEqual(m.getVerts(), nonstd::span<glm::vec3 const>(verts)));
+    ASSERT_FALSE(SpansEqual(m.getVerts(), nonstd::span<Vec3 const>(verts)));
 }
 
 TEST_F(Renderer, MeshSetVertsCausesCopiedMeshToNotBeEqualToInitialMesh)
@@ -2168,12 +2182,12 @@ TEST_F(Renderer, MeshTransformVertsMakesGetCallReturnVerts)
     osc::Mesh m;
 
     // generate "original" verts
-    std::vector<glm::vec3> originalVerts = GenerateTriangleVerts();
+    std::vector<Vec3> originalVerts = GenerateTriangleVerts();
 
     // create "transformed" version of the verts
-    std::vector<glm::vec3> newVerts;
+    std::vector<Vec3> newVerts;
     newVerts.reserve(originalVerts.size());
-    for (glm::vec3 const& v : originalVerts)
+    for (Vec3 const& v : originalVerts)
     {
         newVerts.push_back(v + 1.0f);
     }
@@ -2181,16 +2195,16 @@ TEST_F(Renderer, MeshTransformVertsMakesGetCallReturnVerts)
     // sanity check that `setVerts` works as expected
     ASSERT_TRUE(m.getVerts().empty());
     m.setVerts(originalVerts);
-    ASSERT_TRUE(SpansEqual(m.getVerts(), nonstd::span<glm::vec3 const>(originalVerts)));
+    ASSERT_TRUE(SpansEqual(m.getVerts(), nonstd::span<Vec3 const>(originalVerts)));
 
     // the verts passed to `transformVerts` should match those returned by getVerts
-    m.transformVerts([&originalVerts](nonstd::span<glm::vec3 const> verts)
+    m.transformVerts([&originalVerts](nonstd::span<Vec3 const> verts)
     {
-        ASSERT_TRUE(SpansEqual(nonstd::span<glm::vec3 const>(originalVerts), verts));
+        ASSERT_TRUE(SpansEqual(nonstd::span<Vec3 const>(originalVerts), verts));
     });
 
     // applying the transformation should return the transformed verts
-    m.transformVerts([&newVerts](nonstd::span<glm::vec3> verts)
+    m.transformVerts([&newVerts](nonstd::span<Vec3> verts)
     {
         ASSERT_EQ(newVerts.size(), verts.size());
         for (size_t i = 0; i < verts.size(); ++i)
@@ -2198,7 +2212,7 @@ TEST_F(Renderer, MeshTransformVertsMakesGetCallReturnVerts)
             verts[i] = newVerts[i];
         }
     });
-    ASSERT_TRUE(SpansEqual(m.getVerts(), nonstd::span<glm::vec3 const>(newVerts)));
+    ASSERT_TRUE(SpansEqual(m.getVerts(), nonstd::span<Vec3 const>(newVerts)));
 }
 
 TEST_F(Renderer, MeshTransformVertsCausesTransformedMeshToNotBeEqualToInitialMesh)
@@ -2208,7 +2222,7 @@ TEST_F(Renderer, MeshTransformVertsCausesTransformedMeshToNotBeEqualToInitialMes
 
     ASSERT_EQ(m, copy);
 
-    copy.transformVerts([](nonstd::span<glm::vec3>) {});  // noop transform also triggers this (meshes aren't value-comparable)
+    copy.transformVerts([](nonstd::span<Vec3>) {});  // noop transform also triggers this (meshes aren't value-comparable)
 
     ASSERT_NE(m, copy);
 }
@@ -2219,15 +2233,15 @@ TEST_F(Renderer, MeshTransformVertsWithTransformAppliesTransformToVerts)
     osc::Transform t;
     t.scale *= 0.25f;
     t.position = {1.0f, 0.25f, 0.125f};
-    t.rotation = glm::quat{glm::vec3{glm::radians(90.0f), 0.0f, 0.0f}};
+    t.rotation = Quat{Vec3{osc::Deg2Rad(90.0f), 0.0f, 0.0f}};
 
     // generate "original" verts
-    std::vector<glm::vec3> originalVerts = GenerateTriangleVerts();
+    std::vector<Vec3> originalVerts = GenerateTriangleVerts();
 
     // precompute "expected" verts
-    std::vector<glm::vec3> expectedVerts;
+    std::vector<Vec3> expectedVerts;
     expectedVerts.reserve(originalVerts.size());
-    for (glm::vec3& v : originalVerts)
+    for (Vec3& v : originalVerts)
     {
         expectedVerts.push_back(t * v);
     }
@@ -2240,7 +2254,7 @@ TEST_F(Renderer, MeshTransformVertsWithTransformAppliesTransformToVerts)
     m.transformVerts(t);
 
     // the mesh's verts should match expectations
-    std::vector<glm::vec3> outputVerts(m.getVerts().begin(), m.getVerts().end());
+    std::vector<Vec3> outputVerts(m.getVerts().begin(), m.getVerts().end());
 
     ASSERT_EQ(outputVerts, expectedVerts);
 }
@@ -2259,25 +2273,25 @@ TEST_F(Renderer, MeshTransformVertsWithTransformCausesTransformedMeshToNotBeEqua
 
 TEST_F(Renderer, MeshTransformVertsWithMat4AppliesTransformToVerts)
 {
-    glm::mat4 mat = []()
+    Mat4 mat = []()
     {
         // create appropriate transform
         osc::Transform t;
         t.scale *= 0.25f;
         t.position = {1.0f, 0.25f, 0.125f};
-        t.rotation = glm::quat{glm::vec3{glm::radians(90.0f), 0.0f, 0.0f}};
+        t.rotation = Quat{Vec3{osc::Deg2Rad(90.0f), 0.0f, 0.0f}};
         return osc::ToMat4(t);
     }();
 
     // generate "original" verts
-    std::vector<glm::vec3> originalVerts = GenerateTriangleVerts();
+    std::vector<Vec3> originalVerts = GenerateTriangleVerts();
 
     // precompute "expected" verts
-    std::vector<glm::vec3> expectedVerts;
+    std::vector<Vec3> expectedVerts;
     expectedVerts.reserve(originalVerts.size());
-    for (glm::vec3& v : originalVerts)
+    for (Vec3& v : originalVerts)
     {
-        expectedVerts.emplace_back(glm::vec3{mat * glm::vec4{v, 1.0f}});
+        expectedVerts.emplace_back(Vec3{mat * Vec4{v, 1.0f}});
     }
 
     // create mesh with "original" verts
@@ -2288,7 +2302,7 @@ TEST_F(Renderer, MeshTransformVertsWithMat4AppliesTransformToVerts)
     m.transformVerts(mat);
 
     // the mesh's verts should match expectations
-    std::vector<glm::vec3> outputVerts(m.getVerts().begin(), m.getVerts().end());
+    std::vector<Vec3> outputVerts(m.getVerts().begin(), m.getVerts().end());
 
     ASSERT_EQ(outputVerts, expectedVerts);
 }
@@ -2300,7 +2314,7 @@ TEST_F(Renderer, MeshTransformVertsWithMat4CausesTransformedMeshToNotBeEqualToIn
 
     ASSERT_EQ(m, copy);
 
-    copy.transformVerts(glm::mat4{1.0f});  // noop transform also triggers this (meshes aren't value-comparable)
+    copy.transformVerts(Mat4{1.0f});  // noop transform also triggers this (meshes aren't value-comparable)
 
     ASSERT_NE(m, copy);
 }
@@ -2314,20 +2328,20 @@ TEST_F(Renderer, MeshGetNormalsReturnsEmptyOnDefaultConstruction)
 TEST_F(Renderer, MeshSetNormalsMakesGetCallReturnSuppliedData)
 {
     osc::Mesh m;
-    std::vector<glm::vec3> normals = {GenerateVec3(), GenerateVec3(), GenerateVec3()};
+    std::vector<Vec3> normals = {GenerateVec3(), GenerateVec3(), GenerateVec3()};
 
     ASSERT_TRUE(m.getNormals().empty());
 
     m.setNormals(normals);
 
-    ASSERT_TRUE(SpansEqual(m.getNormals(), nonstd::span<glm::vec3 const>(normals)));
+    ASSERT_TRUE(SpansEqual(m.getNormals(), nonstd::span<Vec3 const>(normals)));
 }
 
 TEST_F(Renderer, MeshSetNormalsCausesCopiedMeshToNotBeEqualToInitialMesh)
 {
     osc::Mesh m;
     osc::Mesh copy{m};
-    std::vector<glm::vec3> normals = {GenerateVec3(), GenerateVec3(), GenerateVec3()};
+    std::vector<Vec3> normals = {GenerateVec3(), GenerateVec3(), GenerateVec3()};
 
     ASSERT_EQ(m, copy);
 
@@ -2345,20 +2359,20 @@ TEST_F(Renderer, MeshGetTexCoordsReturnsEmptyOnDefaultConstruction)
 TEST_F(Renderer, MeshSetTexCoordsCausesGetToReturnSuppliedData)
 {
     osc::Mesh m;
-    std::vector<glm::vec2> coords = {GenerateVec2(), GenerateVec2(), GenerateVec2()};
+    std::vector<Vec2> coords = {GenerateVec2(), GenerateVec2(), GenerateVec2()};
 
     ASSERT_TRUE(m.getTexCoords().empty());
 
     m.setTexCoords(coords);
 
-    ASSERT_TRUE(SpansEqual(m.getTexCoords(), nonstd::span<glm::vec2 const>(coords)));
+    ASSERT_TRUE(SpansEqual(m.getTexCoords(), nonstd::span<Vec2 const>(coords)));
 }
 
 TEST_F(Renderer, MeshSetTexCoordsCausesCopiedMeshToNotBeEqualToInitialMesh)
 {
     osc::Mesh m;
     osc::Mesh copy{m};
-    std::vector<glm::vec2> coords = {GenerateVec2(), GenerateVec2(), GenerateVec2()};
+    std::vector<Vec2> coords = {GenerateVec2(), GenerateVec2(), GenerateVec2()};
 
     ASSERT_EQ(m, copy);
 
@@ -2370,21 +2384,21 @@ TEST_F(Renderer, MeshSetTexCoordsCausesCopiedMeshToNotBeEqualToInitialMesh)
 TEST_F(Renderer, MeshTransformTexCoordsAppliesTransformToTexCoords)
 {
     osc::Mesh m;
-    std::vector<glm::vec2> coords = {GenerateVec2(), GenerateVec2(), GenerateVec2()};
+    std::vector<Vec2> coords = {GenerateVec2(), GenerateVec2(), GenerateVec2()};
 
     m.setTexCoords(coords);
 
-    ASSERT_TRUE(SpansEqual<glm::vec2>(m.getTexCoords(), coords));
+    ASSERT_TRUE(SpansEqual<Vec2>(m.getTexCoords(), coords));
 
-    auto const transformer = [](glm::vec2 v)
+    auto const transformer = [](Vec2 v)
     {
         return 0.287f * v;  // arbitrary mutation
     };
 
     // mutate mesh
-    m.transformTexCoords([&transformer](nonstd::span<glm::vec2> ts)
+    m.transformTexCoords([&transformer](nonstd::span<Vec2> ts)
     {
-        for (glm::vec2& t : ts)
+        for (Vec2& t : ts)
         {
             t = transformer(t);
         }
@@ -2393,7 +2407,7 @@ TEST_F(Renderer, MeshTransformTexCoordsAppliesTransformToTexCoords)
     // perform equivalent mutation for comparison
     std::transform(coords.begin(), coords.end(), coords.begin(), transformer);
 
-    ASSERT_TRUE(SpansEqual<glm::vec2>(m.getTexCoords(), coords));
+    ASSERT_TRUE(SpansEqual<Vec2>(m.getTexCoords(), coords));
 }
 
 TEST_F(Renderer, MeshGetColorsInitiallyReturnsEmptySpan)
@@ -2422,7 +2436,7 @@ TEST_F(Renderer, MeshGetTangentsInitiallyReturnsEmptySpan)
 TEST_F(Renderer, MeshSetTangentsFollowedByGetTangentsReturnsTangents)
 {
     osc::Mesh m;
-    std::array<glm::vec4, 5> tangents{};
+    std::array<Vec4, 5> tangents{};
 
     m.setTangents(tangents);
     ASSERT_EQ(m.getTangents().size(), tangents.size());
@@ -2443,7 +2457,7 @@ TEST_F(Renderer, MeshGetBoundsReturnsEmptyBoundsOnInitialization)
 
 TEST_F(Renderer, MeshGetBoundsReturnsEmptyForMeshWithUnindexedVerts)
 {
-    auto const pyramid = osc::to_array<glm::vec3>(
+    auto const pyramid = osc::to_array<Vec3>(
     {
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
@@ -2459,7 +2473,7 @@ TEST_F(Renderer, MeshGetBoundsReturnsEmptyForMeshWithUnindexedVerts)
 
 TEST_F(Renderer, MeshGetBooundsReturnsNonemptyForIndexedVerts)
 {
-    auto const pyramid = osc::to_array<glm::vec3>(
+    auto const pyramid = osc::to_array<Vec3>(
     {
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
@@ -2483,7 +2497,7 @@ TEST_F(Renderer, MeshGetBVHReturnsEmptyBVHOnInitialization)
 
 TEST_F(Renderer, MeshGetBVHReturnsExpectedRootNode)
 {
-    auto const pyramid = osc::to_array<glm::vec3>(
+    auto const pyramid = osc::to_array<Vec3>(
     {
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
@@ -2600,7 +2614,7 @@ TEST_F(Renderer, RenderTextureDescriptorSetWithFollowedByGetWithReturnsSetWidth)
 
 
     int newWidth = 31;
-    glm::ivec2 d = d1.getDimensions();
+    Vec2i d = d1.getDimensions();
     d.x = newWidth;
 
     d1.setDimensions(d);
@@ -2624,7 +2638,7 @@ TEST_F(Renderer, RenderTextureDescriptorSetHeightFollowedByGetHeightReturnsSetHe
 {
     osc::RenderTextureDescriptor d1{{1, 1}};
 
-    glm::ivec2 d = d1.getDimensions();
+    Vec2i d = d1.getDimensions();
     d.y = 31;
 
     d1.setDimensions(d);
@@ -2814,7 +2828,7 @@ TEST_F(Renderer, RenderTextureDescriptorCanBeStreamedToAString)
 TEST_F(Renderer, RenderTextureDefaultConstructorCreates1x1RgbaRenderTexture)
 {
     osc::RenderTexture const tex;
-    ASSERT_EQ(tex.getDimensions(), glm::ivec2(1, 1));
+    ASSERT_EQ(tex.getDimensions(), Vec2i(1, 1));
     ASSERT_EQ(tex.getDepthStencilFormat(), osc::DepthStencilFormat::D24_UNorm_S8_UInt);
     ASSERT_EQ(tex.getColorFormat(), osc::RenderTextureFormat::ARGB32);
     ASSERT_EQ(tex.getAntialiasingLevel(), osc::AntiAliasingLevel{1});
@@ -2927,7 +2941,7 @@ TEST_F(Renderer, RenderTextureSetDimensionChangesEquality)
 
 TEST_F(Renderer, RenderTextureCanBeConstructedFromDimensions)
 {
-    glm::ivec2 const dims = {12, 12};
+    Vec2i const dims = {12, 12};
     osc::RenderTexture tex{dims};
     ASSERT_EQ(tex.getDimensions(), dims);
 }
@@ -2962,7 +2976,7 @@ TEST_F(Renderer, RenderTextureFromDescriptorHasExpectedValues)
 
     osc::RenderTexture tex{desc};
 
-    ASSERT_EQ(tex.getDimensions(), glm::ivec2(width, height));
+    ASSERT_EQ(tex.getDimensions(), Vec2i(width, height));
     ASSERT_EQ(tex.getDimensionality(), osc::TextureDimensionality::Cube);
     ASSERT_EQ(tex.getAntialiasingLevel(), aaLevel);
     ASSERT_EQ(tex.getColorFormat(), format);
@@ -3184,7 +3198,7 @@ TEST_F(Renderer, CameraSetCameraProjectionMakesCameraCompareNotEqual)
 TEST_F(Renderer, CameraGetPositionReturnsOriginOnDefaultConstruction)
 {
     osc::Camera camera;
-    ASSERT_EQ(camera.getPosition(), glm::vec3(0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(camera.getPosition(), Vec3(0.0f, 0.0f, 0.0f));
 }
 
 TEST_F(Renderer, CameraSetDirectionToStandardDirectionCausesGetDirectionToReturnTheDirection)
@@ -3196,11 +3210,11 @@ TEST_F(Renderer, CameraSetDirectionToStandardDirectionCausesGetDirectionToReturn
 
     osc::Camera camera;
 
-    glm::vec3 defaultDirection = {0.0f, 0.0f, -1.0f};
+    Vec3 defaultDirection = {0.0f, 0.0f, -1.0f};
 
     ASSERT_EQ(camera.getDirection(), defaultDirection);
 
-    glm::vec3 differentDirection = glm::normalize(glm::vec3{1.0f, 2.0f, -0.5f});
+    Vec3 differentDirection = osc::Normalize(Vec3{1.0f, 2.0f, -0.5f});
     camera.setDirection(differentDirection);
 
     // not guaranteed: the camera stores *rotation*, not *direction*
@@ -3221,13 +3235,13 @@ TEST_F(Renderer, CameraSetDirectionToDifferentDirectionGivesAccurateEnoughResult
 
     osc::Camera camera;
 
-    glm::vec3 newDirection = glm::normalize(glm::vec3{1.0f, 1.0f, 1.0f});
+    Vec3 newDirection = osc::Normalize(Vec3{1.0f, 1.0f, 1.0f});
 
     camera.setDirection(newDirection);
 
-    glm::vec3 returnedDirection = camera.getDirection();
+    Vec3 returnedDirection = camera.getDirection();
 
-    ASSERT_GT(glm::dot(newDirection, returnedDirection), 0.999f);
+    ASSERT_GT(osc::Dot(newDirection, returnedDirection), 0.999f);
 }
 
 TEST_F(Renderer, CameraGetViewMatrixReturnsViewMatrixBasedOnPositonDirectionAndUp)
@@ -3236,8 +3250,8 @@ TEST_F(Renderer, CameraGetViewMatrixReturnsViewMatrixBasedOnPositonDirectionAndU
     camera.setCameraProjection(osc::CameraProjection::Orthographic);
     camera.setPosition({0.0f, 0.0f, 0.0f});
 
-    glm::mat4 viewMatrix = camera.getViewMatrix();
-    glm::mat4 expectedMatrix{1.0f};
+    Mat4 viewMatrix = camera.getViewMatrix();
+    Mat4 expectedMatrix{1.0f};
 
     ASSERT_EQ(viewMatrix, expectedMatrix);
 }
@@ -3250,7 +3264,7 @@ TEST_F(Renderer, CameraSetViewMatrixOverrideSetsANewViewMatrixThatCanBeRetrieved
     camera.setCameraProjection(osc::CameraProjection::Orthographic);
     camera.setPosition({7.0f, 5.0f, -3.0f});
 
-    glm::mat4 viewMatrix{1.0f};
+    Mat4 viewMatrix{1.0f};
     viewMatrix[0][1] = 9.0f;  // change some part of it
 
     camera.setViewMatrixOverride(viewMatrix);
@@ -3261,9 +3275,9 @@ TEST_F(Renderer, CameraSetViewMatrixOverrideSetsANewViewMatrixThatCanBeRetrieved
 TEST_F(Renderer, CameraSetViewMatrixOverrideNulloptResetsTheViewMatrixToUsingStandardCameraPositionEtc)
 {
     osc::Camera camera;
-    glm::mat4 initialViewMatrix = camera.getViewMatrix();
+    Mat4 initialViewMatrix = camera.getViewMatrix();
 
-    glm::mat4 viewMatrix{1.0f};
+    Mat4 viewMatrix{1.0f};
     viewMatrix[0][1] = 9.0f;  // change some part of it
 
     camera.setViewMatrixOverride(viewMatrix);
@@ -3281,8 +3295,8 @@ TEST_F(Renderer, CameraGetProjectionMatrixReturnsProjectionMatrixBasedOnPositonD
     camera.setCameraProjection(osc::CameraProjection::Orthographic);
     camera.setPosition({0.0f, 0.0f, 0.0f});
 
-    glm::mat4 mtx = camera.getProjectionMatrix(1.0f);
-    glm::mat4 expected{1.0f};
+    Mat4 mtx = camera.getProjectionMatrix(1.0f);
+    Mat4 expected{1.0f};
 
     // only compare the Y, Z, and W columns: the X column depends on the aspect ratio of the output
     // target
@@ -3299,7 +3313,7 @@ TEST_F(Renderer, CameraSetProjectionMatrixOverrideSetsANewProjectionMatrixThatCa
     camera.setCameraProjection(osc::CameraProjection::Orthographic);
     camera.setPosition({7.0f, 5.0f, -3.0f});
 
-    glm::mat4 ProjectionMatrix{1.0f};
+    Mat4 ProjectionMatrix{1.0f};
     ProjectionMatrix[0][1] = 9.0f;  // change some part of it
 
     camera.setProjectionMatrixOverride(ProjectionMatrix);
@@ -3310,9 +3324,9 @@ TEST_F(Renderer, CameraSetProjectionMatrixOverrideSetsANewProjectionMatrixThatCa
 TEST_F(Renderer, CameraSetProjectionMatrixNulloptResetsTheProjectionMatrixToUsingStandardCameraPositionEtc)
 {
     osc::Camera camera;
-    glm::mat4 initialProjectionMatrix = camera.getProjectionMatrix(1.0f);
+    Mat4 initialProjectionMatrix = camera.getProjectionMatrix(1.0f);
 
-    glm::mat4 ProjectionMatrix{1.0f};
+    Mat4 ProjectionMatrix{1.0f};
     ProjectionMatrix[0][1] = 9.0f;  // change some part of it
 
     camera.setProjectionMatrixOverride(ProjectionMatrix);
@@ -3328,13 +3342,13 @@ TEST_F(Renderer, CameraGetViewProjectionMatrixReturnsViewMatrixMultipliedByProje
 {
     osc::Camera camera;
 
-    glm::mat4 viewMatrix{1.0f};
+    Mat4 viewMatrix{1.0f};
     viewMatrix[0][3] = 2.5f;  // change some part of it
 
-    glm::mat4 projectionMatrix{1.0f};
+    Mat4 projectionMatrix{1.0f};
     projectionMatrix[0][1] = 9.0f;  // change some part of it
 
-    glm::mat4 expected = projectionMatrix * viewMatrix;
+    Mat4 expected = projectionMatrix * viewMatrix;
 
     camera.setViewMatrixOverride(viewMatrix);
     camera.setProjectionMatrixOverride(projectionMatrix);
@@ -3346,13 +3360,13 @@ TEST_F(Renderer, CameraGetInverseViewProjectionMatrixReturnsExpectedAnswerWhenUs
 {
     osc::Camera camera;
 
-    glm::mat4 viewMatrix{1.0f};
+    Mat4 viewMatrix{1.0f};
     viewMatrix[0][3] = 2.5f;  // change some part of it
 
-    glm::mat4 projectionMatrix{1.0f};
+    Mat4 projectionMatrix{1.0f};
     projectionMatrix[0][1] = 9.0f;  // change some part of it
 
-    glm::mat4 expected = glm::inverse(projectionMatrix * viewMatrix);
+    Mat4 expected = osc::Inverse(projectionMatrix * viewMatrix);
 
     camera.setViewMatrixOverride(viewMatrix);
     camera.setProjectionMatrixOverride(projectionMatrix);
