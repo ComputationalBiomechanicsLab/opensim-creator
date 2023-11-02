@@ -10,7 +10,12 @@ namespace osc
 
     std::ostream& operator<<(std::ostream&, Mat4 const&);
 
-    constexpr float const* ValuePtr(Mat4 const& m)
+    inline float const* ValuePtr(Mat4 const& m)
+    {
+        return &(m[0].x);
+    }
+
+    inline float* ValuePtr(Mat4& m)
     {
         return &(m[0].x);
     }

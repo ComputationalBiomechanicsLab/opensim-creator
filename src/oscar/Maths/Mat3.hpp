@@ -10,7 +10,7 @@ namespace osc
 
     std::ostream& operator<<(std::ostream&, Mat3 const&);
 
-    constexpr float const* ValuePtr(Mat3 const& m)
+    inline float const* ValuePtr(Mat3 const& m)
     {
         return &(m[0].x);
     }

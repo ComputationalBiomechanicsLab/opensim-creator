@@ -12,12 +12,12 @@ namespace osc
 
     std::ostream& operator<<(std::ostream&, Vec3 const&);
 
-    constexpr float const* ValuePtr(Vec3 const& v)
+    inline float const* ValuePtr(Vec3 const& v)
     {
         return &(v.x);
     }
 
-    constexpr float* ValuePtr(Vec3& v)
+    inline float* ValuePtr(Vec3& v)
     {
         return &(v.x);
     }

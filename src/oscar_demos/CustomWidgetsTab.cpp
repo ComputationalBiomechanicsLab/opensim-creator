@@ -1,11 +1,10 @@
 #include "CustomWidgetsTab.hpp"
 
-#include <glm/glm.hpp>
-#include <glm/vec2.hpp>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
@@ -14,13 +13,15 @@
 #include <string>
 #include <utility>
 
+using osc::Vec2;
+
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "Demos/CustomWidgets";
 
-    void WidgetTitle(osc::CStringView title, glm::vec2 pos)
+    void WidgetTitle(osc::CStringView title, Vec2 pos)
     {
-        glm::vec2 const textTopLeft = pos + glm::vec2{ImGui::GetStyle().FramePadding};
+        Vec2 const textTopLeft = pos + Vec2{ImGui::GetStyle().FramePadding};
         ImGui::GetWindowDrawList()->AddText(textTopLeft, ImGui::GetColorU32(ImGuiCol_Text), title.c_str());
     }
 }
@@ -41,7 +42,7 @@ namespace
             ImGui::GetColorU32(enabled ? ImGuiCol_FrameBgActive : ImGuiCol_FrameBgHovered) :
             ImGui::GetColorU32(enabled ? ImGuiCol_CheckMark : ImGuiCol_FrameBg);
 
-        glm::vec2 const pmid
+        Vec2 const pmid
         {
             pos.x + radius + (enabled ? 1.0f : 0.0f) * (size.x - radius * 2),
             pos.y + size.y / 2.0f,
@@ -57,7 +58,7 @@ namespace
         }
         else
         {
-            glm::vec2 const offs = {radius*0.8f, radius*0.8f};
+            Vec2 const offs = {radius*0.8f, radius*0.8f};
             draw_list.AddRectFilled(pmid - offs, pmid + offs, ImGui::GetColorU32(ImGuiCol_SliderGrab), rounding);
         }
     }

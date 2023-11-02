@@ -15,7 +15,7 @@ namespace osc
     std::ostream& operator<<(std::ostream&, Vec2 const&);
     std::string to_string(Vec2 const&);
 
-    constexpr float const* ValuePtr(Vec2 const& v)
+    inline float const* ValuePtr(Vec2 const& v)
     {
         return &(v.x);
     }
