@@ -27,6 +27,7 @@
 #include <oscar/Utils/SetHelpers.hpp>
 
 #include <IconsFontAwesome5.h>
+#include <imgui.h>
 
 #include <filesystem>
 #include <future>
