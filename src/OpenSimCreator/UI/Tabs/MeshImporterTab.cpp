@@ -6779,7 +6779,7 @@ private:
             meshes.insert(m_MaybeHover.ID);
         }
 
-        erase_if(meshes, [&mg](UID meshID) { return !mg.ContainsEl<MeshEl>(meshID); });
+        osc::erase_if(meshes, [&mg](UID meshID) { return !mg.ContainsEl<MeshEl>(meshID); });
 
         if (meshes.empty())
         {

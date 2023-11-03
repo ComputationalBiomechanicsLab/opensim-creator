@@ -1,5 +1,7 @@
 #pragma once
 
+#include <nonstd/span.hpp>
+
 #include <algorithm>
 #include <array>
 #include <atomic>

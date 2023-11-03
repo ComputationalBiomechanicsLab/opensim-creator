@@ -1443,7 +1443,7 @@ namespace
                 {
                     size_t const channelStart = pixelStart + channel*bytesPerChannel;
 
-                    nonstd::span<uint8_t const> src{pixelData.begin() + channelStart, sizeof(float)};
+                    nonstd::span<uint8_t const> src{pixelData.data() + channelStart, sizeof(float)};
                     std::array<uint8_t, sizeof(float)> dest{};
                     std::copy(src.begin(), src.end(), dest.begin());
 
@@ -1506,7 +1506,7 @@ namespace
                 {
                     size_t const channelStart = pixelStart + channel*sizeof(float);
 
-                    nonstd::span<uint8_t const> src{pixelData.begin() + channelStart, sizeof(float)};
+                    nonstd::span<uint8_t const> src{pixelData.data() + channelStart, sizeof(float)};
                     std::array<uint8_t, sizeof(float)> dest{};
                     std::copy(src.begin(), src.end(), dest.begin());
                     auto const channelFloat = osc::bit_cast<float>(dest);
