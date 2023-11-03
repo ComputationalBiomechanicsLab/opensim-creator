@@ -13,7 +13,6 @@ find_package(ImGuizmo REQUIRED CONFIG)
 find_package(implot REQUIRED CONFIG)
 find_package(stb REQUIRED CONFIG)
 find_package(lunasvg REQUIRED CONFIG)
-find_package(span-lite REQUIRED CONFIG)
 find_package(tomlplusplus REQUIRED CONFIG)
 find_package(unordered_dense REQUIRED CONFIG)
 
