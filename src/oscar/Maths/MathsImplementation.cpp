@@ -984,6 +984,13 @@ std::ostream& osc::operator<<(std::ostream& o, Vec3 const& v)
     return o << "Vec3(" << v.x << ", " << v.y << ", " << v.z << ')';
 }
 
+std::string osc::to_string(Vec3 const& v)
+{
+    std::stringstream ss;
+    ss << v;
+    return std::move(ss).str();
+}
+
 
 // Vec4
 

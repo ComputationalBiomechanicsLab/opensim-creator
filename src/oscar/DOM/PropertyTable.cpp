@@ -4,12 +4,11 @@
 #include <oscar/Utils/StringName.hpp>
 #include <oscar/Utils/Variant.hpp>
 
-#include <nonstd/span.hpp>
-
 #include <cstddef>
 #include <optional>
+#include <span>
 
-osc::PropertyTable::PropertyTable(nonstd::span<PropertyDescription const> descriptions)
+osc::PropertyTable::PropertyTable(std::span<PropertyDescription const> descriptions)
 {
     if (descriptions.empty())
     {

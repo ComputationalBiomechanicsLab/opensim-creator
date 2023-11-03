@@ -4,11 +4,10 @@
 #include <oscar/Utils/StringName.hpp>
 #include <oscar/Utils/VariantType.hpp>
 
-#include <nonstd/span.hpp>
-
 #include <cstddef>
 #include <memory>
 #include <optional>
+#include <span>
 #include <string>
 #include <utility>
 
@@ -20,7 +19,7 @@ namespace osc
     class Object {
     protected:
         Object() = default;
-        explicit Object(nonstd::span<PropertyDescription const>);
+        explicit Object(std::span<PropertyDescription const>);
         Object(Object const&) = default;
         Object(Object&&) noexcept = default;
         Object& operator=(Object const&) = default;

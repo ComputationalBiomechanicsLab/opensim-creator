@@ -11,7 +11,7 @@
 
 std::string osc::to_string(VariantType v)
 {
-    static auto const s_Lut = to_array<std::string_view>(
+    static auto const s_Lut = osc::to_array<std::string_view>(
     {
         "Nil",
         "Bool",
@@ -25,7 +25,7 @@ std::string osc::to_string(VariantType v)
     static_assert(std::tuple_size_v<decltype(s_Lut)> == NumOptions<VariantType>());
 
     auto const idx = static_cast<std::underlying_type_t<VariantType>>(v);
-    if (0 <= idx && idx < ssize(s_Lut))
+    if (0 <= idx && idx < osc::ssize(s_Lut))
     {
         return std::string{s_Lut[idx]};
     }

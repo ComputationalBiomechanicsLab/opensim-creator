@@ -1,9 +1,8 @@
 #include <oscar/Utils/Variant.hpp>
 
-#include <glm/vec3.hpp>
 #include <gtest/gtest.h>
-#include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/StringName.hpp>
@@ -20,6 +19,7 @@ using osc::Color;
 using osc::StringName;
 using osc::Variant;
 using osc::VariantType;
+using osc::Vec3;
 
 namespace
 {
@@ -143,14 +143,14 @@ TEST(Variant, CanImplicitlyConstructFromCStringView)
 
 TEST(Variant, CanExplicitlyConstructFromVec3)
 {
-    Variant v{glm::vec3{1.0f, 2.0f, 3.0f}};
-    ASSERT_EQ(v.to<glm::vec3>(), glm::vec3(1.0f, 2.0f, 3.0f));
+    Variant v{Vec3{1.0f, 2.0f, 3.0f}};
+    ASSERT_EQ(v.to<Vec3>(), Vec3(1.0f, 2.0f, 3.0f));
     ASSERT_EQ(v.getType(), VariantType::Vec3);
 }
 
 TEST(Variant, CanImplicitlyConstructFromVec3)
 {
-    static_assert(std::is_convertible_v<glm::vec3, Variant>);
+    static_assert(std::is_convertible_v<Vec3, Variant>);
 }
 
 TEST(Variant, DefaultConstructedValueIsNil)
@@ -190,7 +190,7 @@ TEST(Variant, NilValueToStringNameReturnsEmptyStringName)
 
 TEST(Variant, NilValueToVec3ReturnsZeroedVec3)
 {
-    ASSERT_EQ(Variant{}.to<glm::vec3>(), glm::vec3{});
+    ASSERT_EQ(Variant{}.to<Vec3>(), Vec3{});
 }
 
 TEST(Variant, BoolValueToBoolReturnsExpectedBools)
@@ -233,8 +233,8 @@ TEST(Variant, BoolValueToStringNameReturnsEmptyStringName)
 
 TEST(Variant, BoolValueToVec3ReturnsExpectedVectors)
 {
-    ASSERT_EQ(Variant(false).to<glm::vec3>(), glm::vec3{});
-    ASSERT_EQ(Variant(true).to<glm::vec3>(), glm::vec3(1.0f, 1.0f, 1.0f));
+    ASSERT_EQ(Variant(false).to<Vec3>(), Vec3{});
+    ASSERT_EQ(Variant(true).to<Vec3>(), Vec3(1.0f, 1.0f, 1.0f));
 }
 
 TEST(Variant, ColorToBoolReturnsExpectedValues)
@@ -290,8 +290,8 @@ TEST(Variant, ColorValueToStringReturnsExpectedManualExamples)
 
 TEST(Variant, ColorValueToVec3ReturnsFirst3Channels)
 {
-    ASSERT_EQ(Variant(Color(1.0f, 2.0f, 3.0f)).to<glm::vec3>(), glm::vec3(1.0f, 2.0f, 3.0f));
-    ASSERT_EQ(Variant(Color::red()).to<glm::vec3>(), glm::vec3(1.0f, 0.0f, 0.0f));
+    ASSERT_EQ(Variant(Color(1.0f, 2.0f, 3.0f)).to<Vec3>(), Vec3(1.0f, 2.0f, 3.0f));
+    ASSERT_EQ(Variant(Color::red()).to<Vec3>(), Vec3(1.0f, 0.0f, 0.0f));
 }
 
 TEST(Variant, FloatValueToBoolReturnsExpectedValues)
@@ -347,8 +347,8 @@ TEST(Variant, FloatValueToVec3ReturnsVec3FilledWithFloat)
 {
     for (float v : osc::to_array<float>({-20000.0f, -5.328f, -1.2f, 0.0f, 0.123f, 50.0f, 18000.0f}))
     {
-        glm::vec3 const expected = {v, v, v};
-        ASSERT_EQ(Variant(v).to<glm::vec3>(), expected);
+        Vec3 const expected = {v, v, v};
+        ASSERT_EQ(Variant(v).to<Vec3>(), expected);
     }
 }
 
@@ -408,8 +408,8 @@ TEST(Variant, IntValueToVec3CastsValueToFloatThenPlacesInAllSlots)
     for (int v : osc::to_array<int>({ -12193, -1212, -738, -12, -1, 0, 1, 18, 1294, 1209849}))
     {
         auto const vf = static_cast<float>(v);
-        glm::vec3 const expected = {vf, vf, vf};
-        ASSERT_EQ(Variant(v).to<glm::vec3>(), expected);
+        Vec3 const expected = {vf, vf, vf};
+        ASSERT_EQ(Variant(v).to<Vec3>(), expected);
     }
 }
 
@@ -548,41 +548,41 @@ TEST(Variant, StringValueToVec3AlwaysReturnsZeroedVec)
 
     for (auto const& input : inputs)
     {
-        ASSERT_EQ(Variant{input}.to<glm::vec3>(), glm::vec3{});
+        ASSERT_EQ(Variant{input}.to<Vec3>(), Vec3{});
     }
 }
 
 TEST(Variant, Vec3ValueToBoolReturnsFalseForZeroVec)
 {
-    ASSERT_EQ(Variant{glm::vec3{}}.to<bool>(), false);
+    ASSERT_EQ(Variant{Vec3{}}.to<bool>(), false);
 }
 
 TEST(Variant, Vec3ValueToBoolReturnsFalseIfXIsZeroRegardlessOfOtherComponents)
 {
     // why: because it's consistent with the `toInt()` and `toFloat()` behavior, and
     // one would logically expect `if (v.to<int>())` to behave the same as `if (v.to<bool>())`
-    ASSERT_EQ(Variant{glm::vec3{0.0f}}.to<bool>(), false);
-    ASSERT_EQ(Variant{glm::vec3(0.0f, 0.0f, 1000.0f)}.to<bool>(), false);
-    ASSERT_EQ(Variant{glm::vec3(0.0f, 7.0f, -30.0f)}.to<bool>(), false);
-    ASSERT_EQ(Variant{glm::vec3(0.0f, 2.0f, 1.0f)}.to<bool>(), false);
-    ASSERT_EQ(Variant{glm::vec3(0.0f, 1.0f, 1.0f)}.to<bool>(), false);
-    ASSERT_EQ(Variant{glm::vec3(0.0f, -1.0f, 0.0f)}.to<bool>(), false);
+    ASSERT_EQ(Variant{Vec3{0.0f}}.to<bool>(), false);
+    ASSERT_EQ(Variant{Vec3(0.0f, 0.0f, 1000.0f)}.to<bool>(), false);
+    ASSERT_EQ(Variant{Vec3(0.0f, 7.0f, -30.0f)}.to<bool>(), false);
+    ASSERT_EQ(Variant{Vec3(0.0f, 2.0f, 1.0f)}.to<bool>(), false);
+    ASSERT_EQ(Variant{Vec3(0.0f, 1.0f, 1.0f)}.to<bool>(), false);
+    ASSERT_EQ(Variant{Vec3(0.0f, -1.0f, 0.0f)}.to<bool>(), false);
     static_assert(+0.0f == -0.0f);
-    ASSERT_EQ(Variant{glm::vec3(-0.0f, 0.0f, 1000.0f)}.to<bool>(), false);  // how fun ;)
+    ASSERT_EQ(Variant{Vec3(-0.0f, 0.0f, 1000.0f)}.to<bool>(), false);  // how fun ;)
 }
 
 TEST(Variant, Vec3ValueToBoolReturnsTrueIfXIsNonZeroRegardlessOfOtherComponents)
 {
-    ASSERT_EQ(Variant{glm::vec3{1.0f}}.to<bool>(), true);
-    ASSERT_EQ(Variant{glm::vec3(2.0f, 7.0f, -30.0f)}.to<bool>(), true);
-    ASSERT_EQ(Variant{glm::vec3(30.0f, 2.0f, 1.0f)}.to<bool>(), true);
-    ASSERT_EQ(Variant{glm::vec3(-40.0f, 1.0f, 1.0f)}.to<bool>(), true);
-    ASSERT_EQ(Variant{glm::vec3(std::numeric_limits<float>::quiet_NaN(), -1.0f, 0.0f)}.to<bool>(), true);
+    ASSERT_EQ(Variant{Vec3{1.0f}}.to<bool>(), true);
+    ASSERT_EQ(Variant{Vec3(2.0f, 7.0f, -30.0f)}.to<bool>(), true);
+    ASSERT_EQ(Variant{Vec3(30.0f, 2.0f, 1.0f)}.to<bool>(), true);
+    ASSERT_EQ(Variant{Vec3(-40.0f, 1.0f, 1.0f)}.to<bool>(), true);
+    ASSERT_EQ(Variant{Vec3(std::numeric_limits<float>::quiet_NaN(), -1.0f, 0.0f)}.to<bool>(), true);
 }
 
 TEST(Variant, Vec3ValueToColorExtractsTheElementsIntoRGB)
 {
-    auto const testCases = osc::to_array<glm::vec3>(
+    auto const testCases = osc::to_array<Vec3>(
     {
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
@@ -599,7 +599,7 @@ TEST(Variant, Vec3ValueToColorExtractsTheElementsIntoRGB)
 
 TEST(Variant, Vec3ValueToFloatExtractsXToTheFloat)
 {
-    auto const testCases = osc::to_array<glm::vec3>(
+    auto const testCases = osc::to_array<Vec3>(
     {
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
@@ -616,7 +616,7 @@ TEST(Variant, Vec3ValueToFloatExtractsXToTheFloat)
 
 TEST(Variant, Vec3ValueToIntExtractsXToTheInt)
 {
-    auto const testCases = osc::to_array<glm::vec3>(
+    auto const testCases = osc::to_array<Vec3>(
     {
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
@@ -633,7 +633,7 @@ TEST(Variant, Vec3ValueToIntExtractsXToTheInt)
 
 TEST(Variant, Vec3ValueToStringReturnsSameAsDirectlyConvertingVectorToString)
 {
-    auto const testCases = osc::to_array<glm::vec3>(
+    auto const testCases = osc::to_array<Vec3>(
     {
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
@@ -650,13 +650,13 @@ TEST(Variant, Vec3ValueToStringReturnsSameAsDirectlyConvertingVectorToString)
 
 TEST(Variant, Vec3ValueToStringNameReturnsAnEmptyString)
 {
-    ASSERT_EQ(Variant{glm::vec3{}}.to<StringName>(), StringName{});
-    ASSERT_EQ(Variant{glm::vec3(0.0f, -20.0f, 0.5f)}.to<StringName>(), StringName{});
+    ASSERT_EQ(Variant{Vec3{}}.to<StringName>(), StringName{});
+    ASSERT_EQ(Variant{Vec3(0.0f, -20.0f, 0.5f)}.to<StringName>(), StringName{});
 }
 
 TEST(Variant, Vec3ValueToVec3ReturnsOriginalValue)
 {
-    auto const testCases = osc::to_array<glm::vec3>(
+    auto const testCases = osc::to_array<Vec3>(
     {
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
@@ -667,7 +667,7 @@ TEST(Variant, Vec3ValueToVec3ReturnsOriginalValue)
 
     for (auto const& testCase : testCases)
     {
-        ASSERT_EQ(Variant{testCase}.to<glm::vec3>(), testCase);
+        ASSERT_EQ(Variant{testCase}.to<Vec3>(), testCase);
     }
 }
 
@@ -698,11 +698,11 @@ TEST(Variant, IsAlwaysEqualToACopyOfItself)
         Variant{"1"},
         Variant{"a string"},
         Variant{osc::StringName{"a string name"}},
-        Variant{glm::vec3{}},
-        Variant{glm::vec3{1.0f}},
-        Variant{glm::vec3{-1.0f}},
-        Variant{glm::vec3{0.5f}},
-        Variant{glm::vec3{-0.5f}},
+        Variant{Vec3{}},
+        Variant{Vec3{1.0f}},
+        Variant{Vec3{-1.0f}},
+        Variant{Vec3{0.5f}},
+        Variant{Vec3{-0.5f}},
     });
 
     for (auto const& tc : testCases)
@@ -750,11 +750,11 @@ TEST(Variant, IsNotEqualToOtherValuesEvenIfConversionIsPossible)
         Variant{"1"},
         Variant{"a string"},
         Variant{osc::StringName{"a stringname can be compared to a string, though"}},
-        Variant{glm::vec3{}},
-        Variant{glm::vec3{1.0f}},
-        Variant{glm::vec3{-1.0f}},
-        Variant{glm::vec3{0.5f}},
-        Variant{glm::vec3{-0.5f}},
+        Variant{Vec3{}},
+        Variant{Vec3{1.0f}},
+        Variant{Vec3{-1.0f}},
+        Variant{Vec3{0.5f}},
+        Variant{Vec3{-0.5f}},
     });
 
     for (size_t i = 0; i < testCases.size(); ++i)
@@ -799,11 +799,11 @@ TEST(Variant, CanHashAVarietyOfTypes)
         Variant{"1"},
         Variant{"a string"},
         Variant{osc::StringName{"a string name"}},
-        Variant{glm::vec3{}},
-        Variant{glm::vec3{1.0f}},
-        Variant{glm::vec3{-1.0f}},
-        Variant{glm::vec3{0.5f}},
-        Variant{glm::vec3{-0.5f}},
+        Variant{Vec3{}},
+        Variant{Vec3{1.0f}},
+        Variant{Vec3{-1.0f}},
+        Variant{Vec3{0.5f}},
+        Variant{Vec3{-0.5f}},
     });
 
     for (auto const& testCase : testCases)
@@ -841,11 +841,11 @@ TEST(Variant, FreeFunctionToStringOnVarietyOfTypesReturnsSameAsCallingToStringMe
         Variant{"1"},
         Variant{"a string"},
         Variant{osc::StringName{"a string name"}},
-        Variant{glm::vec3{}},
-        Variant{glm::vec3{1.0f}},
-        Variant{glm::vec3{-1.0f}},
-        Variant{glm::vec3{0.5f}},
-        Variant{glm::vec3{-0.5f}},
+        Variant{Vec3{}},
+        Variant{Vec3{1.0f}},
+        Variant{Vec3{-1.0f}},
+        Variant{Vec3{0.5f}},
+        Variant{Vec3{-0.5f}},
     });
 
     for (auto const& testCase : testCases)
@@ -883,11 +883,11 @@ TEST(Variant, StreamingToOutputStreamProducesSameOutputAsToString)
         Variant{"1"},
         Variant{"a string"},
         Variant{osc::StringName{"a string name"}},
-        Variant{glm::vec3{}},
-        Variant{glm::vec3{1.0f}},
-        Variant{glm::vec3{-1.0f}},
-        Variant{glm::vec3{0.5f}},
-        Variant{glm::vec3{-0.5f}},
+        Variant{Vec3{}},
+        Variant{Vec3{1.0f}},
+        Variant{Vec3{-1.0f}},
+        Variant{Vec3{0.5f}},
+        Variant{Vec3{-0.5f}},
     });
 
     for (auto const& testCase : testCases)
@@ -1070,7 +1070,7 @@ TEST(Variant, StringNameToVec3AlwaysReturnsZeroedVec)
 
     for (auto const& input : inputs)
     {
-        ASSERT_EQ(Variant{osc::StringName{input}}.to<glm::vec3>(), glm::vec3{});
+        ASSERT_EQ(Variant{osc::StringName{input}}.to<Vec3>(), Vec3{});
     }
 }
 

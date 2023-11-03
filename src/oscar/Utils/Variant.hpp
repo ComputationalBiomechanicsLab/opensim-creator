@@ -1,11 +1,10 @@
 #pragma once
 
 #include <oscar/Graphics/Color.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/StringName.hpp>
 #include <oscar/Utils/VariantType.hpp>
-
-#include <glm/vec3.hpp>
 
 #include <cstddef>
 #include <iosfwd>
@@ -29,7 +28,7 @@ namespace osc
         Variant(std::nullopt_t) = delete;
         Variant(CStringView);
         Variant(StringName const&);
-        Variant(glm::vec3);
+        Variant(Vec3);
 
         VariantType getType() const;
 
@@ -40,7 +39,7 @@ namespace osc
         operator int() const;
         operator std::string() const;
         operator StringName() const;
-        operator glm::vec3() const;
+        operator Vec3() const;
 
         // explicit conversion
         template<typename T>
@@ -68,7 +67,7 @@ namespace osc
             int,
             std::string,
             StringName,
-            glm::vec3
+            Vec3
         > m_Data;
     };
 

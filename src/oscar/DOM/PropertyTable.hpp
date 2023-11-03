@@ -3,10 +3,9 @@
 #include <oscar/DOM/PropertyTableEntry.hpp>
 #include <oscar/Utils/StringName.hpp>
 
-#include <nonstd/span.hpp>
-
 #include <cstddef>
 #include <optional>
+#include <span>
 #include <unordered_map>
 #include <vector>
 
@@ -18,7 +17,7 @@ namespace osc
     class PropertyTable final {
     public:
         PropertyTable() = default;
-        explicit PropertyTable(nonstd::span<PropertyDescription const>);
+        explicit PropertyTable(std::span<PropertyDescription const>);
 
         size_t size() const { return m_Entries.size(); }
         PropertyTableEntry const& operator[](size_t propertyIndex) const { return m_Entries[propertyIndex]; }

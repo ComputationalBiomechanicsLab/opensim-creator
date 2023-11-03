@@ -1,14 +1,12 @@
 #include "Variant.hpp"
 
-#include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/VariantHelpers.hpp>
 #include <oscar/Utils/VariantType.hpp>
-
-#include <glm/vec3.hpp>
 
 #include <charconv>
 #include <cstddef>
@@ -80,7 +78,7 @@ osc::Variant::Variant(std::string_view v) : m_Data{std::string{v}} {}
 osc::Variant::Variant(char const* v) : m_Data{std::string{v}} {}
 osc::Variant::Variant(CStringView v) : m_Data{std::string{v}} {}
 osc::Variant::Variant(StringName const& v) : m_Data{v} {}
-osc::Variant::Variant(glm::vec3 v) : m_Data{v} {}
+osc::Variant::Variant(Vec3 v) : m_Data{v} {}
 
 osc::VariantType osc::Variant::getType() const
 {
@@ -94,7 +92,7 @@ osc::VariantType osc::Variant::getType() const
         [&rv](int const&) { rv = VariantType::Int; },
         [&rv](std::string const&) { rv = VariantType::String; },
         [&rv](StringName const&) { rv = VariantType::StringName; },
-        [&rv](glm::vec3 const&) { rv = VariantType::Vec3; },
+        [&rv](Vec3 const&) { rv = VariantType::Vec3; },
     }, m_Data);
     return rv;
 }
@@ -110,7 +108,7 @@ osc::Variant::operator bool() const
         [&rv](float const& v) { rv = v != 0.0f; },
         [&rv](int const& v) { rv = v != 0; },
         [&rv](std::string_view s) { rv = TryInterpretStringAsBool(s); },
-        [&rv](glm::vec3 const& v) { rv = v.x != 0.0f; },
+        [&rv](Vec3 const& v) { rv = v.x != 0.0f; },
     }, m_Data);
     return rv;
 }
@@ -132,7 +130,7 @@ osc::Variant::operator osc::Color() const
                 rv = *c;
             }
         },
-        [&rv](glm::vec3 const& v) { rv = osc::Color{v}; },
+        [&rv](Vec3 const& v) { rv = osc::Color{v}; },
     }, m_Data);
     return rv;
 }
@@ -148,7 +146,7 @@ osc::Variant::operator float() const
         [&rv](float const& v) { rv = v; },
         [&rv](int const& v) { rv = static_cast<float>(v); },
         [&rv](std::string_view s) { rv = ToFloatOrZero(s); },
-        [&rv](glm::vec3 const& v) { rv = v.x; },
+        [&rv](Vec3 const& v) { rv = v.x; },
     }, m_Data);
     return rv;
 }
@@ -164,7 +162,7 @@ osc::Variant::operator int() const
         [&rv](float const& v) { rv = static_cast<int>(v); },
         [&rv](int const& v) { rv = v; },
         [&rv](std::string_view s) { rv = ToIntOrZero(s); },
-        [&rv](glm::vec3 const& v) { rv = static_cast<int>(v.x); },
+        [&rv](Vec3 const& v) { rv = static_cast<int>(v.x); },
     }, m_Data);
     return rv;
 }
@@ -180,7 +178,7 @@ osc::Variant::operator std::string() const
         [&rv](float const& v) { rv = std::to_string(v); },
         [&rv](int const& v) { rv = std::to_string(v); },
         [&rv](std::string_view s) { rv = s; },
-        [&rv](glm::vec3 const& v) { rv = to_string(v); },
+        [&rv](Vec3 const& v) { rv = to_string(v); },
     }, m_Data);
     return rv;
 }
@@ -197,13 +195,13 @@ osc::Variant::operator osc::StringName() const
     return rv;
 }
 
-osc::Variant::operator glm::vec3() const
+osc::Variant::operator osc::Vec3() const
 {
-    glm::vec3 rv{};
+    Vec3 rv{};
     std::visit(Overload
     {
-        [&rv](std::monostate const&) { rv = glm::vec3{}; },
-        [&rv](bool const& v) { rv = v ? glm::vec3{1.0f, 1.0f, 1.0f} : glm::vec3{}; },
+        [&rv](std::monostate const&) { rv = Vec3{}; },
+        [&rv](bool const& v) { rv = v ? Vec3{1.0f, 1.0f, 1.0f} : Vec3{}; },
         [&rv](Color const& v) { rv = {v.r, v.g, v.b}; },
         [&rv](float const& v) { rv = {v, v, v}; },
         [&rv](int const& v)
@@ -211,8 +209,8 @@ osc::Variant::operator glm::vec3() const
             auto const fv = static_cast<float>(v);
             rv = {fv, fv, fv};
         },
-        [&rv](std::string_view) { rv = glm::vec3{}; },
-        [&rv](glm::vec3 const& v) { rv = v; },
+        [&rv](std::string_view) { rv = Vec3{}; },
+        [&rv](Vec3 const& v) { rv = v; },
     }, m_Data);
     return rv;
 }
