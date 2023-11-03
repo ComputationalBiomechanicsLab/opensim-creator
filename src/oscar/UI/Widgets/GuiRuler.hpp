@@ -1,8 +1,7 @@
 #pragma once
 
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Scene/SceneCollision.hpp>
-
-#include <glm/vec3.hpp>
 
 #include <optional>
 #include <string>
@@ -27,6 +26,6 @@ namespace osc
     private:
         enum class State { Inactive, WaitingForFirstPoint, WaitingForSecondPoint };
         State m_State = State::Inactive;
-        glm::vec3 m_StartWorldPos = {0.0f, 0.0f, 0.0f};
+        Vec3 m_StartWorldPos = {};
     };
 }

@@ -2,14 +2,13 @@
 
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/RayCollision.hpp>
-
-#include <glm/vec3.hpp>
-#include <nonstd/span.hpp>
+#include <oscar/Maths/Vec3.hpp>
 
 #include <cstdint>
 #include <cstddef>
 #include <functional>
 #include <optional>
+#include <span>
 #include <utility>
 #include <vector>
 
@@ -99,7 +98,7 @@ namespace osc
 
         BVHCollision(
             float distance_,
-            glm::vec3 position_,
+            Vec3 position_,
             ptrdiff_t id_) :
 
             RayCollision{distance_, position_},
@@ -118,30 +117,30 @@ namespace osc
         //
         // prim.getID() will refer to the index of the first vertex in the triangle
         void buildFromIndexedTriangles(
-            nonstd::span<glm::vec3 const> verts,
-            nonstd::span<uint16_t const> indices
+            std::span<Vec3 const> verts,
+            std::span<uint16_t const> indices
         );
         void buildFromIndexedTriangles(
-            nonstd::span<glm::vec3 const> verts,
-            nonstd::span<uint32_t const> indices
+            std::span<Vec3 const> verts,
+            std::span<uint32_t const> indices
         );
 
         // returns the location of the closest ray-triangle collision along the ray, if any
         std::optional<BVHCollision> getClosestRayIndexedTriangleCollision(
-            nonstd::span<glm::vec3 const> verts,
-            nonstd::span<uint16_t const> indices,
+            std::span<Vec3 const> verts,
+            std::span<uint16_t const> indices,
             Line const&
         ) const;
         std::optional<BVHCollision> getClosestRayIndexedTriangleCollision(
-            nonstd::span<glm::vec3 const> verts,
-            nonstd::span<uint32_t const> indices,
+            std::span<Vec3 const> verts,
+            std::span<uint32_t const> indices,
             Line const&
         ) const;
 
         // AABB BVHes
         //
         // prim.id will refer to the index of the AABB
-        void buildFromAABBs(nonstd::span<AABB const>);
+        void buildFromAABBs(std::span<AABB const>);
 
         // returns prim.id of the AABB (leaf) that the line intersects, or -1 if no intersection
         //

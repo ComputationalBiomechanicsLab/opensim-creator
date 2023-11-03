@@ -7,13 +7,12 @@
 #include <OpenSimCreator/Outputs/VirtualOutputExtractor.hpp>
 #include <OpenSimCreator/UI/Middleware/SimulatorUIAPI.hpp>
 
-#include <glm/vec2.hpp>
 #include <imgui.h>
 #include <implot.h>
 #include <IconsFontAwesome5.h>
-#include <nonstd/span.hpp>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/Assertions.hpp>
@@ -28,6 +27,7 @@
 #include <optional>
 #include <ostream>
 #include <ratio>
+#include <span>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -50,8 +50,8 @@ namespace
 
     // export a timeseries to a CSV file and return the filepath
     std::string ExportTimeseriesToCSV(
-        nonstd::span<float const> times,
-        nonstd::span<float const> values,
+        std::span<float const> times,
+        std::span<float const> values,
         std::string_view header)
     {
         // try prompt user for save location
@@ -92,7 +92,7 @@ namespace
 
     std::vector<float> PopulateFirstNNumericOutputValues(
         OpenSim::Model const& model,
-        nonstd::span<osc::SimulationReport const> reports,
+        std::span<osc::SimulationReport const> reports,
         osc::VirtualOutputExtractor const& output)
     {
         std::vector<float> rv;
@@ -101,7 +101,7 @@ namespace
         return rv;
     }
 
-    std::vector<float> PopulateFirstNTimeValues(nonstd::span<osc::SimulationReport const> reports)
+    std::vector<float> PopulateFirstNTimeValues(std::span<osc::SimulationReport const> reports)
     {
         std::vector<float> times;
         times.reserve(reports.size());
@@ -169,7 +169,7 @@ namespace
         DrawToggleWatchOutputMenuItem(api, output);
     }
 
-    std::filesystem::path TryExportOutputsToCSV(osc::VirtualSimulation& sim, nonstd::span<osc::OutputExtractor const> outputs)
+    std::filesystem::path TryExportOutputsToCSV(osc::VirtualSimulation& sim, std::span<osc::OutputExtractor const> outputs)
     {
         std::vector<osc::SimulationReport> reports = sim.getAllSimulationReports();
         std::vector<float> times = PopulateFirstNTimeValues(reports);
@@ -296,8 +296,8 @@ private:
 
         // draw plot
         float const plotWidth = ImGui::GetContentRegionAvail().x;
-        glm::vec2 plotTopLeft{};
-        glm::vec2 plotBottomRight{};
+        Vec2 plotTopLeft{};
+        Vec2 plotBottomRight{};
 
         {
             OSC_PERF("draw output plot");
@@ -318,7 +318,7 @@ private:
                 ImPlot::PopStyleColor();
                 ImPlot::PopStyleColor();
                 plotTopLeft = ImPlot::GetPlotPos();
-                plotBottomRight = plotTopLeft + glm::vec2{ImPlot::GetPlotSize()};
+                plotBottomRight = plotTopLeft + Vec2{ImPlot::GetPlotSize()};
 
                 ImPlot::EndPlot();
             }
@@ -352,22 +352,22 @@ private:
         // draw a vertical Y line showing the current scrub time over the plots
         {
             float plotScrubLineX = plotTopLeft.x + simScrubPct*(plotBottomRight.x - plotTopLeft.x);
-            glm::vec2 p1 = {plotScrubLineX, plotBottomRight.y};
-            glm::vec2 p2 = {plotScrubLineX, plotTopLeft.y};
+            Vec2 p1 = {plotScrubLineX, plotBottomRight.y};
+            Vec2 p2 = {plotScrubLineX, plotTopLeft.y};
             drawlist->AddLine(p1, p2, currentTimeLineColor);
         }
 
         if (ImGui::IsItemHovered())
         {
-            glm::vec2 mp = ImGui::GetMousePos();
-            glm::vec2 plotLoc = mp - plotTopLeft;
+            Vec2 mp = ImGui::GetMousePos();
+            Vec2 plotLoc = mp - plotTopLeft;
             float relLoc = plotLoc.x / (plotBottomRight.x - plotTopLeft.x);
             osc::SimulationClock::time_point timeLoc = simStartTime + relLoc*(simEndTime - simStartTime);
 
             // draw vertical line to show current X of their hover
             {
-                glm::vec2 p1 = {mp.x, plotBottomRight.y};
-                glm::vec2 p2 = {mp.x, plotTopLeft.y};
+                Vec2 p1 = {mp.x, plotBottomRight.y};
+                Vec2 p2 = {mp.x, plotTopLeft.y};
                 drawlist->AddLine(p1, p2, hoverTimeLineColor);
             }
 
@@ -412,7 +412,7 @@ void osc::SimulationOutputPlot::onDraw()
     m_Impl->onDraw();
 }
 
-std::filesystem::path osc::TryPromptAndSaveOutputsAsCSV(SimulatorUIAPI& api, nonstd::span<OutputExtractor const> outputs)
+std::filesystem::path osc::TryPromptAndSaveOutputsAsCSV(SimulatorUIAPI& api, std::span<OutputExtractor const> outputs)
 {
     return TryExportOutputsToCSV(api.updSimulation(), outputs);
 }

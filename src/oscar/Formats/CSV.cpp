@@ -121,7 +121,7 @@ bool osc::ReadCSVRowIntoVector(
 
 void osc::WriteCSVRow(
     std::ostream& out,
-    nonstd::span<std::string const> columns)
+    std::span<std::string const> columns)
 {
     std::string_view delim;
     for (std::string const& column : columns)

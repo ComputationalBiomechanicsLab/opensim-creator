@@ -1,6 +1,5 @@
 #include "LOGLHDRTab.hpp"
 
-#include <glm/vec3.hpp>
 #include <imgui.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
@@ -16,9 +15,11 @@
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Constants.hpp>
+#include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
@@ -29,9 +30,11 @@
 #include <string>
 #include <utility>
 
+using osc::Vec3;
+
 namespace
 {
-    constexpr auto c_LightPositions = osc::to_array<glm::vec3>(
+    constexpr auto c_LightPositions = osc::to_array<Vec3>(
     {
         { 0.0f,  0.0f, 49.5f},
         {-1.4f, -1.9f, 9.0f},
@@ -64,7 +67,7 @@ namespace
     {
         osc::Camera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
-        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -189,8 +192,8 @@ private:
         Camera orthoCamera;
         orthoCamera.setBackgroundColor(Color::clear());
         orthoCamera.setPixelRect(GetMainViewportWorkspaceScreenRect());
-        orthoCamera.setProjectionMatrixOverride(glm::mat4{1.0f});
-        orthoCamera.setViewMatrixOverride(glm::mat4{1.0f});
+        orthoCamera.setProjectionMatrixOverride(Mat4{1.0f});
+        orthoCamera.setViewMatrixOverride(Mat4{1.0f});
 
         m_TonemapMaterial.setRenderTexture("uTexture", m_SceneHDRTexture);
         m_TonemapMaterial.setBool("uUseTonemap", m_UseTonemap);
@@ -222,7 +225,7 @@ private:
     RenderTexture m_SceneHDRTexture;
     float m_Exposure = 1.0f;
 
-    glm::vec3 m_CameraEulers = {0.0f, osc::fpi, 0.0f};
+    Vec3 m_CameraEulers = {0.0f, osc::fpi, 0.0f};
     bool m_IsMouseCaptured = true;
     bool m_Use16BitFormat = true;
     bool m_UseTonemap = true;

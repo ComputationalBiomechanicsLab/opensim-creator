@@ -1,9 +1,8 @@
 #pragma once
 
-#include <nonstd/span.hpp>
-
 #include <ctime>
 #include <iosfwd>
+#include <span>
 #include <string>
 #include <string_view>
 
@@ -25,7 +24,7 @@ namespace osc
 
     void WriteDecorationsAsDAE(
         std::ostream&,
-        nonstd::span<SceneDecoration const>,
+        std::span<SceneDecoration const>,
         DAEMetadata const&
     );
 }

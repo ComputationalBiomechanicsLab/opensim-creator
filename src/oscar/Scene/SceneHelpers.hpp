@@ -6,15 +6,14 @@
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/RayCollision.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Scene/SceneCollision.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <nonstd/span.hpp>
-
 #include <functional>
 #include <optional>
+#include <span>
 
 namespace osc { struct AABB; }
 namespace osc { class AppConfig; }
@@ -44,7 +43,7 @@ namespace osc
 
     void DrawAABBs(
         MeshCache&,
-        nonstd::span<AABB const>,
+        std::span<AABB const>,
         std::function<void(SceneDecoration&&)> const&
     );
 
@@ -78,8 +77,8 @@ namespace osc
     struct ArrowProperties final {
         ArrowProperties();
 
-        glm::vec3 worldspaceStart;
-        glm::vec3 worldspaceEnd;
+        Vec3 worldspaceStart;
+        Vec3 worldspaceEnd;
         float tipLength;
         float neckThickness;
         float headThickness;
@@ -103,14 +102,14 @@ namespace osc
 
     // updates the given BVH with the given component decorations
     void UpdateSceneBVH(
-        nonstd::span<SceneDecoration const>,
+        std::span<SceneDecoration const>,
         BVH&
     );
 
     // returns all collisions along a ray
     std::vector<SceneCollision> GetAllSceneCollisions(
         BVH const& sceneBVH,
-        nonstd::span<SceneDecoration const>,
+        std::span<SceneDecoration const>,
         Line const& worldspaceRay
     );
 
@@ -127,14 +126,14 @@ namespace osc
         PolarPerspectiveCamera const&,
         Mesh const&,
         Rect const& renderScreenRect,
-        glm::vec2 mouseScreenPos
+        Vec2 mouseScreenPos
     );
 
     // returns scene rendering parameters for an generic panel
     SceneRendererParams CalcStandardDarkSceneRenderParams(
         PolarPerspectiveCamera const&,
         AntiAliasingLevel,
-        glm::vec2 renderDims
+        Vec2 renderDims
     );
 
     // returns a material that can draw a mesh's triangles in wireframe-style

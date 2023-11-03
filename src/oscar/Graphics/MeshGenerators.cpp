@@ -4,11 +4,10 @@
 #include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Triangle.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
-
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 
 #include <array>
 #include <cmath>
@@ -16,17 +15,20 @@
 #include <cstdint>
 #include <vector>
 
+using osc::Vec2;
+using osc::Vec3;
+
 namespace
 {
     struct UntexturedVert final {
-        glm::vec3 pos;
-        glm::vec3 norm;
+        Vec3 pos;
+        Vec3 norm;
     };
 
     struct TexturedVert final {
-        glm::vec3 pos;
-        glm::vec3 norm;
-        glm::vec2 uv;
+        Vec3 pos;
+        Vec3 norm;
+        Vec2 uv;
     };
 
     // standard textured cube with dimensions [-1, +1] in xyz and uv coords of
@@ -177,9 +179,9 @@ namespace
             indices.reserve(s);
         }
 
-        std::vector<glm::vec3> verts;
-        std::vector<glm::vec3> normals;
-        std::vector<glm::vec2> texcoords;
+        std::vector<Vec3> verts;
+        std::vector<Vec3> normals;
+        std::vector<Vec2> texcoords;
         std::vector<uint32_t> indices;
         osc::MeshTopology topology = osc::MeshTopology::Triangles;
     };
@@ -249,9 +251,9 @@ osc::Mesh osc::GenSphere(size_t sectors, size_t stacks)
             float const theta = static_cast<float>(sector) * thetaStep;
             float const x = std::sin(theta) * std::cos(phi);
             float const z = -std::cos(theta) * std::cos(phi);
-            glm::vec3 const pos = {x, y, z};
-            glm::vec3 const normal = pos;
-            glm::vec2 const uv =
+            Vec3 const pos = {x, y, z};
+            Vec3 const normal = pos;
+            Vec2 const uv =
             {
                 static_cast<float>(sector) / static_cast<float>(sectors),
                 static_cast<float>(stack) / static_cast<float>(stacks),
@@ -324,7 +326,7 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
     NewMeshData data;
 
     // helper: push mesh *data* (i.e. vert and normal) to the output
-    auto const pushData = [&data](glm::vec3 const& pos, glm::vec3 const& norm)
+    auto const pushData = [&data](Vec3 const& pos, Vec3 const& norm)
     {
         auto const idx = static_cast<uint32_t>(data.verts.size());
         data.verts.push_back(pos);
@@ -346,7 +348,7 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
         // because the middle is used for all triangles in the fan and the first point
         // is used when completing the loop
 
-        glm::vec3 const topNormal = {0.0f, c_TopDirection, 0.0f};
+        Vec3 const topNormal = {0.0f, c_TopDirection, 0.0f};
         uint32_t const midpointIndex = pushData({0.0f, c_TopY, 0.0f}, topNormal);
         uint32_t const loopStartIndex = pushData({c_Radius, c_TopY, 0.0f}, topNormal);
 
@@ -357,7 +359,7 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
         for (size_t side = 1; side < nsides; ++side)
         {
             float const theta = static_cast<float>(side) * stepAngle;
-            glm::vec3 const p2 = {c_Radius*std::cos(theta), c_TopY, c_Radius*std::sin(theta)};
+            Vec3 const p2 = {c_Radius*std::cos(theta), c_TopY, c_Radius*std::sin(theta)};
             uint32_t const p2Index = pushData(p2, topNormal);
 
             // care: the outer-facing direction must wind counter-clockwise (#626)
@@ -375,7 +377,7 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
         // because the middle is used for all triangles in the fan and the first point
         // is used when completing the loop
 
-        glm::vec3 const bottomNormal = {0.0f, c_BottomDirection, 0.0f};
+        Vec3 const bottomNormal = {0.0f, c_BottomDirection, 0.0f};
         uint32_t const midpointIndex = pushData({0.0f, c_BottomY, 0.0f}, bottomNormal);
         uint32_t const loopStartIndex = pushData({c_Radius, c_BottomY, 0.0f}, bottomNormal);
 
@@ -386,7 +388,7 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
         for (size_t side = 1; side < nsides; ++side)
         {
             float const theta = static_cast<float>(side) * stepAngle;
-            glm::vec3 const p2 = {c_Radius*std::cos(theta), c_BottomY, c_Radius*std::sin(theta)};
+            Vec3 const p2 = {c_Radius*std::cos(theta), c_BottomY, c_Radius*std::sin(theta)};
             uint32_t const p2Index = pushData(p2, bottomNormal);
 
             // care: the outer-facing direction must wind counter-clockwise (#626)
@@ -404,7 +406,7 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
 
     if (smoothShaded)
     {
-        glm::vec3 const initialNormal = glm::vec3{1.0f, 0.0f, 0.0f};
+        Vec3 const initialNormal = Vec3{1.0f, 0.0f, 0.0f};
         uint32_t const firstEdgeTop = pushData({c_Radius, c_TopY, 0.0f}, initialNormal);
         uint32_t const firstEdgeBottom = pushData({c_Radius, c_BottomY, 0.0f}, initialNormal);
 
@@ -418,7 +420,7 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
             float const x = c_Radius * xDir;
             float const z = c_Radius * zDir;
 
-            glm::vec3 const normal = {xDir, 0.0f, zDir};
+            Vec3 const normal = {xDir, 0.0f, zDir};
             uint32_t const e2TopIdx = pushData({x, c_TopY, z}, normal);
             uint32_t const e2BottomIdx = pushData({x, c_BottomY, z}, normal);
 
@@ -447,7 +449,7 @@ osc::Mesh osc::GenUntexturedYToYCone(size_t nsides)
     const float stepAngle = 2.0f*fpi / static_cast<float>(nsides);
 
     uint16_t index = 0;
-    auto const push = [&data, &index](glm::vec3 const& pos, glm::vec3 const& norm)
+    auto const push = [&data, &index](Vec3 const& pos, Vec3 const& norm)
     {
         data.verts.push_back(pos);
         data.normals.push_back(norm);
@@ -456,16 +458,16 @@ osc::Mesh osc::GenUntexturedYToYCone(size_t nsides)
 
     // bottom
     {
-        glm::vec3 const normal = {0.0f, -1.0f, 0.0f};
-        glm::vec3 const middle = {0.0f, bottomY, 0.0f};
+        Vec3 const normal = {0.0f, -1.0f, 0.0f};
+        Vec3 const middle = {0.0f, bottomY, 0.0f};
 
         for (size_t i = 0; i < nsides; ++i)
         {
             float const thetaStart = static_cast<float>(i) * stepAngle;
             float const thetaEnd = static_cast<float>(i + 1) * stepAngle;
 
-            glm::vec3 const p1 = {std::cos(thetaStart), bottomY, std::sin(thetaStart)};
-            glm::vec3 const p2 = {std::cos(thetaEnd), bottomY, std::sin(thetaEnd)};
+            Vec3 const p1 = {std::cos(thetaStart), bottomY, std::sin(thetaStart)};
+            Vec3 const p2 = {std::cos(thetaEnd), bottomY, std::sin(thetaEnd)};
 
             push(middle, normal);
             push(p1, normal);
@@ -487,7 +489,7 @@ osc::Mesh osc::GenUntexturedYToYCone(size_t nsides)
                 {std::cos(thetaStart), bottomY, std::sin(thetaStart)},
             };
 
-            glm::vec3 const normal = osc::TriangleNormal(triangle);
+            Vec3 const normal = osc::TriangleNormal(triangle);
 
             push(triangle.p0, normal);
             push(triangle.p1, normal);
@@ -516,7 +518,7 @@ osc::Mesh osc::GenNbyNGrid(size_t n)
     data.topology = MeshTopology::Lines;
 
     uint16_t index = 0;
-    auto push = [&index, &data](glm::vec3 const& pos)
+    auto push = [&index, &data](Vec3 const& pos)
     {
         data.verts.push_back(pos);
         data.indices.push_back(index++);
@@ -641,13 +643,13 @@ osc::Mesh osc::GenTorus(size_t slices, size_t stacks, float torusCenterToTubeCen
         return osc::Mesh{};
     }
 
-    auto const torusFn = [torusCenterToTubeCenterRadius, tubeRadius](glm::vec2 const uv)
+    auto const torusFn = [torusCenterToTubeCenterRadius, tubeRadius](Vec2 const uv)
     {
         float const theta = 2.0f * fpi * uv.x;
         float const phi = 2.0f * fpi * uv.y;
         float const beta = torusCenterToTubeCenterRadius + tubeRadius*std::cos(phi);
 
-        return glm::vec3
+        return Vec3
         {
             std::cos(theta) * beta,
             std::sin(theta) * beta,
@@ -666,7 +668,7 @@ osc::Mesh osc::GenTorus(size_t slices, size_t stacks, float torusCenterToTubeCen
     {
         for (size_t slice = 0; slice < slices+1; ++slice)
         {
-            glm::vec2 const uv =
+            Vec2 const uv =
             {
                 static_cast<float>(stack)/static_cast<float>(stacks),
                 static_cast<float>(slice)/static_cast<float>(slices),
@@ -736,7 +738,7 @@ osc::Mesh osc::GenTorus(size_t slices, size_t stacks, float torusCenterToTubeCen
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max, glm::ivec2 steps)
+osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(Vec2 min, Vec2 max, Vec2i steps)
 {
     // all Z values in the returned mesh shall be 0
     constexpr float zValue = 0.0f;
@@ -753,7 +755,7 @@ osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max
     }
 
     // create vector of grid points
-    std::vector<glm::vec3> verts;
+    std::vector<Vec3> verts;
     verts.reserve(static_cast<size_t>(steps.x) * static_cast<size_t>(steps.y));
 
     // create vector of line indices (indices to the two points that make a grid line)
@@ -761,7 +763,7 @@ osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max
     indices.reserve(static_cast<size_t>(4) * static_cast<size_t>(steps.x) * static_cast<size_t>(steps.y));
 
     // precompute spatial step between points
-    glm::vec2 const stepSize = (max - min) / glm::vec2{steps - 1};
+    Vec2 const stepSize = (max - min) / Vec2{steps - 1};
 
     // push first row (no verticals)
     {
@@ -773,7 +775,7 @@ osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max
         // emit rest of the first row (only has horizontal links)
         for (int32_t x = 1; x < steps.x; ++x)
         {
-            glm::vec3 const pos = {min.x + static_cast<float>(x)*stepSize.x, min.y, zValue};
+            Vec3 const pos = {min.x + static_cast<float>(x)*stepSize.x, min.y, zValue};
             verts.push_back(pos);
             uint32_t const index = static_cast<int32_t>(verts.size() - 1);
             indices.push_back(index - 1);  // link to previous point
@@ -798,7 +800,7 @@ osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max
         // emit rest of the row (has vertical and horizontal links)
         for (int32_t x = 1; x < steps.x; ++x)
         {
-            glm::vec3 const pos = {min.x + static_cast<float>(x)*stepSize.x, min.y + static_cast<float>(y)*stepSize.y, zValue};
+            Vec3 const pos = {min.x + static_cast<float>(x)*stepSize.x, min.y + static_cast<float>(y)*stepSize.y, zValue};
             verts.push_back(pos);
             uint32_t const index = static_cast<int32_t>(verts.size() - 1);
             indices.push_back(index - 1);        // link the previous point
@@ -819,7 +821,7 @@ osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max
     return rv;
 }
 
-osc::Mesh osc::GenNxMTriangleQuad2DGrid(glm::ivec2 steps)
+osc::Mesh osc::GenNxMTriangleQuad2DGrid(Vec2i steps)
 {
     // all Z values in the returned mesh shall be 0
     constexpr float zValue = 0.0f;
@@ -836,11 +838,11 @@ osc::Mesh osc::GenNxMTriangleQuad2DGrid(glm::ivec2 steps)
     }
 
     // create a vector of triangle verts
-    std::vector<glm::vec3> verts;
+    std::vector<Vec3> verts;
     verts.reserve(static_cast<size_t>(steps.x) * static_cast<size_t>(steps.y));
 
     // create a vector of texture coordinates (1:1 with verts)
-    std::vector<glm::vec2> coords;
+    std::vector<Vec2> coords;
     coords.reserve(static_cast<size_t>(steps.x) * static_cast<size_t>(steps.y));
 
     // create a vector of triangle primitive indices (2 triangles, or 6 indices, per grid cell)
@@ -848,10 +850,10 @@ osc::Mesh osc::GenNxMTriangleQuad2DGrid(glm::ivec2 steps)
     indices.reserve(static_cast<size_t>(6) * static_cast<size_t>(steps.x-1) * static_cast<size_t>(steps.y-1));
 
     // precompute step/min in each direction
-    glm::vec2 const vectorStep = glm::vec2{2.0f, 2.0f} / glm::vec2{steps - 1};
-    glm::vec2 const uvStep = glm::vec2{1.0f, 1.0f} / glm::vec2{steps - 1};
-    glm::vec2 const vectorMin = {-1.0f, -1.0f};
-    glm::vec2 const uvMin = {0.0f, 0.0f};
+    Vec2 const vectorStep = Vec2{2.0f, 2.0f} / Vec2{steps - 1};
+    Vec2 const uvStep = Vec2{1.0f, 1.0f} / Vec2{steps - 1};
+    Vec2 const vectorMin = {-1.0f, -1.0f};
+    Vec2 const uvMin = {0.0f, 0.0f};
 
     // push first row of verts + texture coords for all columns
     for (int32_t col = 0; col < steps.x; ++col)

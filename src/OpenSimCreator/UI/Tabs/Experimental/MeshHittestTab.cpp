@@ -2,7 +2,6 @@
 
 #include <OpenSimCreator/Bindings/SimTKMeshLoader.hpp>
 
-#include <glm/vec3.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
@@ -21,6 +20,8 @@
 #include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Triangle.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
@@ -59,8 +60,8 @@ public:
         auto raycastStart = std::chrono::high_resolution_clock::now();
         {
             Rect r = osc::GetMainViewportWorkspaceScreenRect();
-            glm::vec2 d = osc::Dimensions(r);
-            m_Ray = m_PolarCamera.unprojectTopLeftPosToWorldRay(glm::vec2{ImGui::GetMousePos()} - r.p1, d);
+            Vec2 d = osc::Dimensions(r);
+            m_Ray = m_PolarCamera.unprojectTopLeftPosToWorldRay(Vec2{ImGui::GetMousePos()} - r.p1, d);
 
             m_IsMousedOver = false;
             if (m_UseBVH)
@@ -80,7 +81,7 @@ public:
             }
             else
             {
-                nonstd::span<glm::vec3 const> tris = m_Mesh.getVerts();
+                std::span<Vec3 const> tris = m_Mesh.getVerts();
                 for (size_t i = 0; i < tris.size(); i += 3)
                 {
                     std::optional<RayCollision> const res = GetRayCollisionTriangle(
@@ -111,7 +112,7 @@ public:
         // setup scene
         {
             Rect const viewportRect = osc::GetMainViewportWorkspaceScreenRect();
-            glm::vec2 const viewportRectDims = osc::Dimensions(viewportRect);
+            Vec2 const viewportRectDims = osc::Dimensions(viewportRect);
             m_Camera.setPixelRect(viewportRect);
 
             // update real scene camera from constrained polar camera
@@ -199,11 +200,11 @@ private:
 
     // other state
     bool m_UseBVH = false;
-    std::array<glm::vec3, 3> m_Tris{};
+    std::array<Vec3, 3> m_Tris{};
     std::chrono::microseconds m_RaycastDuration{0};
     PolarPerspectiveCamera m_PolarCamera;
     bool m_IsMousedOver = false;
-    glm::vec3 m_HitPos = {0.0f, 0.0f, 0.0f};
+    Vec3 m_HitPos = {0.0f, 0.0f, 0.0f};
     Line m_Ray{};
 
     PerfPanel m_PerfPanel{"perf"};

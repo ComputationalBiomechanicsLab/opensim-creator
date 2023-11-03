@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glm/vec3.hpp>
+#include <oscar/Maths/Vec3.hpp>
 
 #include <cstddef>
 #include <filesystem>
@@ -262,8 +262,8 @@ namespace osc
 
         BodyDetails();
 
-        glm::vec3 centerOfMass;
-        glm::vec3 inertia;
+        Vec3 centerOfMass;
+        Vec3 inertia;
         float mass;
         std::string parentFrameAbsPath;
         std::string bodyName;
@@ -350,7 +350,7 @@ namespace osc
     bool ActionTranslateStation(
         UndoableModelStatePair&,
         OpenSim::Station const&,
-        glm::vec3 const& deltaPosition
+        Vec3 const& deltaPosition
     );
 
     // sets the location of the given station in its parent frame to its old location plus the provided vector
@@ -359,7 +359,7 @@ namespace osc
     bool ActionTranslateStationAndSave(
         UndoableModelStatePair&,
         OpenSim::Station const&,
-        glm::vec3 const& deltaPosition
+        Vec3 const& deltaPosition
     );
 
     // sets the location of the given path point in its parent frame to its old location plus the provided delta
@@ -368,7 +368,7 @@ namespace osc
     bool ActionTranslatePathPoint(
         UndoableModelStatePair&,
         OpenSim::PathPoint const&,
-        glm::vec3 const& deltaPosition
+        Vec3 const& deltaPosition
     );
 
     // sets the location of the given path point in its parent frame to its old location plus the provided delta
@@ -377,28 +377,28 @@ namespace osc
     bool ActionTranslatePathPointAndSave(
         UndoableModelStatePair&,
         OpenSim::PathPoint const&,
-        glm::vec3 const& deltaPosition
+        Vec3 const& deltaPosition
     );
 
     bool ActionTransformPof(
         UndoableModelStatePair&,
         OpenSim::PhysicalOffsetFrame const&,
-        glm::vec3 const& deltaTranslationInParentFrame,
-        glm::vec3 const& newPofEulers
+        Vec3 const& deltaTranslationInParentFrame,
+        Vec3 const& newPofEulers
     );
 
     bool ActionTransformWrapObject(
         UndoableModelStatePair&,
         OpenSim::WrapObject const&,
-        glm::vec3 const& deltaPosition,
-        glm::vec3 const& newEulers
+        Vec3 const& deltaPosition,
+        Vec3 const& newEulers
     );
 
     bool ActionTransformContactGeometry(
         UndoableModelStatePair&,
         OpenSim::ContactGeometry const&,
-        glm::vec3 const& deltaPosition,
-        glm::vec3 const& newEulers
+        Vec3 const& deltaPosition,
+        Vec3 const& newEulers
     );
 
     bool ActionFitSphereToMesh(

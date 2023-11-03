@@ -1,7 +1,7 @@
 #pragma once
 
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
+#include <oscar/Maths/Mat4.hpp>
+#include <oscar/Maths/Vec3.hpp>
 
 namespace osc
 {
@@ -10,13 +10,13 @@ namespace osc
 
         EulerPerspectiveCamera();
 
-        glm::vec3 getFront() const noexcept;
-        glm::vec3 getUp() const noexcept;
-        glm::vec3 getRight() const noexcept;
-        glm::mat4 getViewMtx() const noexcept;
-        glm::mat4 getProjMtx(float aspectRatio) const noexcept;
+        Vec3 getFront() const noexcept;
+        Vec3 getUp() const noexcept;
+        Vec3 getRight() const noexcept;
+        Mat4 getViewMtx() const noexcept;
+        Mat4 getProjMtx(float aspectRatio) const noexcept;
 
-        glm::vec3 pos;
+        Vec3 pos;
         float pitch;
         float yaw;
         float fov;

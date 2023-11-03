@@ -5,8 +5,7 @@
 #include <oscar/Graphics/RenderTextureFormat.hpp>
 #include <oscar/Graphics/RenderTextureReadWrite.hpp>
 #include <oscar/Graphics/TextureDimensionality.hpp>
-
-#include <glm/vec2.hpp>
+#include <oscar/Maths/Vec2.hpp>
 
 #include <iosfwd>
 
@@ -14,15 +13,15 @@ namespace osc
 {
     class RenderTextureDescriptor final {
     public:
-        RenderTextureDescriptor(glm::ivec2 dimensions);
+        RenderTextureDescriptor(Vec2i dimensions);
         RenderTextureDescriptor(RenderTextureDescriptor const&) = default;
         RenderTextureDescriptor(RenderTextureDescriptor&&) noexcept = default;
         RenderTextureDescriptor& operator=(RenderTextureDescriptor const&) = default;
         RenderTextureDescriptor& operator=(RenderTextureDescriptor&&) noexcept = default;
         ~RenderTextureDescriptor() noexcept = default;
 
-        glm::ivec2 getDimensions() const;
-        void setDimensions(glm::ivec2);
+        Vec2i getDimensions() const;
+        void setDimensions(Vec2i);
 
         TextureDimensionality getDimensionality() const;
         void setDimensionality(TextureDimensionality);
@@ -45,7 +44,7 @@ namespace osc
         friend std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
         friend class GraphicsBackend;
 
-        glm::ivec2 m_Dimensions;
+        Vec2i m_Dimensions;
         TextureDimensionality m_Dimension;
         AntiAliasingLevel m_AnialiasingLevel;
         RenderTextureFormat m_ColorFormat;

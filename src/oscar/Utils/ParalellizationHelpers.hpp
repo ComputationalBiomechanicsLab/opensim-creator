@@ -1,9 +1,8 @@
 #pragma once
 
-#include <nonstd/span.hpp>
-
 #include <cstddef>
 #include <future>
+#include <span>
 #include <thread>
 #include <vector>
 
@@ -17,7 +16,7 @@ namespace osc
     template<typename T, typename UnaryFunction>
     void ForEachParUnseq(
         size_t minChunkSize,
-        nonstd::span<T> vals,
+        std::span<T> vals,
         UnaryFunction f)
     {
         size_t const chunkSize = std::max(minChunkSize, vals.size()/std::thread::hardware_concurrency());

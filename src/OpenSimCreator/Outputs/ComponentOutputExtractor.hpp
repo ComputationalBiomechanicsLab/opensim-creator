@@ -2,13 +2,13 @@
 
 #include <OpenSimCreator/Outputs/VirtualOutputExtractor.hpp>
 
-#include <nonstd/span.hpp>
 #include <oscar/Utils/ClonePtr.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
 #include <type_traits>
 
@@ -43,7 +43,7 @@ namespace osc
     }
 
     std::optional<CStringView> GetOutputSubfieldLabel(OutputSubfield);
-    nonstd::span<OutputSubfield const> GetAllSupportedOutputSubfields();
+    std::span<OutputSubfield const> GetAllSupportedOutputSubfields();
 
     // returns applicable OutputSubfield ORed together
     OutputSubfield GetSupportedSubfields(OpenSim::AbstractOutput const&);
@@ -75,8 +75,8 @@ namespace osc
 
         void getValuesFloat(
             OpenSim::Component const&,
-            nonstd::span<SimulationReport const>,
-            nonstd::span<float> overwriteOut
+            std::span<SimulationReport const>,
+            std::span<float> overwriteOut
         ) const final;
 
         std::string getValueString(

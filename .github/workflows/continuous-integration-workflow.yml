@@ -55,7 +55,7 @@ jobs:
         if-no-files-found: error
 
   macCatalina:
-    name: Build on Mac (catalina)
+    name: Build on Mac (Catalina)
     runs-on: macos-11
     steps:
 
@@ -67,7 +67,9 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE
         export OSC_BUILD_CONCURRENCY=$(sysctl -n hw.physicalcpu)
-        ./scripts/build_mac-catalina.sh
+        export CC=$(brew --prefix llvm@15)/bin/clang
+        export CXX=$(brew --prefix llvm@15)/bin/clang++
+        ./scripts/build_mac.sh
 
     - uses: actions/upload-artifact@v2
       with:

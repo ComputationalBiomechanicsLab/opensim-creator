@@ -5,10 +5,10 @@
 #include <OpenSimCreator/Utils/ParamValue.hpp>
 
 #include <imgui.h>
-#include <nonstd/span.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/UI/Widgets/StandardPopup.hpp>
 
+#include <span>
 #include <string>
 #include <utility>
 #include <variant>
@@ -55,7 +55,7 @@ namespace
 
     bool DrawEditor(osc::ParamBlock& b, int idx, osc::IntegratorMethod im)
     {
-        nonstd::span<osc::CStringView const> const methodStrings =
+        std::span<osc::CStringView const> const methodStrings =
             osc::GetAllIntegratorMethodStrings();
         auto method = static_cast<size_t>(im);
 

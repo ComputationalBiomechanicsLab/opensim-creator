@@ -3,7 +3,6 @@
 #include <OpenSimCreator/Simulation/SimulationReport.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -18,6 +17,7 @@
 #include <cmath>
 #include <memory>
 #include <typeinfo>
+#include <span>
 #include <sstream>
 #include <utility>
 
@@ -190,14 +190,14 @@ public:
     float getValueFloat(OpenSim::Component const& c, SimulationReport const& r) const
     {
         std::array<float, 1> v{};
-        nonstd::span<SimulationReport const> const reports(&r, 1);
+        std::span<SimulationReport const> const reports(&r, 1);
         getValuesFloat(c, reports, v);
         return v.front();
     }
 
     void getValuesFloat(OpenSim::Component const& c,
-                        nonstd::span<SimulationReport const> reports,
-                        nonstd::span<float> out) const
+                        std::span<SimulationReport const> reports,
+                        std::span<float> out) const
     {
         OSC_PERF("osc::ComponentOutputExtractor::getValuesFloat");
         OSC_ASSERT_ALWAYS(reports.size() == out.size());
@@ -296,7 +296,7 @@ std::optional<osc::CStringView> osc::GetOutputSubfieldLabel(OutputSubfield subfi
     }
 }
 
-nonstd::span<osc::OutputSubfield const> osc::GetAllSupportedOutputSubfields()
+std::span<osc::OutputSubfield const> osc::GetAllSupportedOutputSubfields()
 {
     return c_OutputSubfieldsLut;
 }
@@ -355,8 +355,8 @@ float osc::ComponentOutputExtractor::getValueFloat(OpenSim::Component const& c,
 }
 
 void osc::ComponentOutputExtractor::getValuesFloat(OpenSim::Component const& c,
-                                                   nonstd::span<osc::SimulationReport const> reports,
-                                                   nonstd::span<float> out) const
+                                                   std::span<osc::SimulationReport const> reports,
+                                                   std::span<float> out) const
 {
     m_Impl->getValuesFloat(c, reports, out);
 }

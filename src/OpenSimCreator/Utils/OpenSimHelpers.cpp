@@ -4,10 +4,6 @@
 #include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include <glm/glm.hpp>
-#include <glm/vec3.hpp>
-#include <glm/mat4x4.hpp>
-#include <nonstd/span.hpp>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -56,6 +52,7 @@
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Plane.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
@@ -74,12 +71,15 @@
 #include <memory>
 #include <ostream>
 #include <sstream>
+#include <span>
 #include <utility>
 #include <vector>
 
+using osc::Vec3;
+
 namespace
 {
-    constexpr glm::vec3 c_ContactHalfSpaceUpwardsNormal = {-1.0f, 0.0f, 0.0f};
+    constexpr Vec3 c_ContactHalfSpaceUpwardsNormal = {-1.0f, 0.0f, 0.0f};
 }
 
 // helpers
@@ -213,7 +213,7 @@ namespace
         return {0, pfds.size() - 1};
     }
 
-    glm::vec3 GetLocationInGround(OpenSim::PointForceDirection& pf, SimTK::State const& st)
+    Vec3 GetLocationInGround(OpenSim::PointForceDirection& pf, SimTK::State const& st)
     {
         SimTK::Vec3 const location = pf.frame().findStationLocationInGround(st, pf.point());
         return osc::ToVec3(location);
@@ -248,13 +248,13 @@ namespace
             return std::nullopt;  // not enough *unique* PFDs to compute a line of action
         }
 
-        glm::vec3 const originPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first), st);
-        glm::vec3 const pointAfterOriginPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first + 1), st);
-        glm::vec3 const originDir = glm::normalize(pointAfterOriginPos - originPos);
+        Vec3 const originPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first), st);
+        Vec3 const pointAfterOriginPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first + 1), st);
+        Vec3 const originDir = osc::Normalize(pointAfterOriginPos - originPos);
 
-        glm::vec3 const insertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second), st);
-        glm::vec3 const pointAfterInsertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second - 1), st);
-        glm::vec3 const insertionDir = glm::normalize(pointAfterInsertionPos - insertionPos);
+        Vec3 const insertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second), st);
+        Vec3 const pointAfterInsertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second - 1), st);
+        Vec3 const insertionDir = osc::Normalize(pointAfterInsertionPos - insertionPos);
 
         return osc::LinesOfAction
         {
@@ -413,7 +413,7 @@ bool osc::IsInclusiveChildOf(OpenSim::Component const* parent, OpenSim::Componen
     return false;
 }
 
-OpenSim::Component const* osc::IsInclusiveChildOf(nonstd::span<OpenSim::Component const*> parents, OpenSim::Component const* c)
+OpenSim::Component const* osc::IsInclusiveChildOf(std::span<OpenSim::Component const*> parents, OpenSim::Component const* c)
 {
     // TODO: this method signature makes no sense and should be refactored
     for (; c; c = GetOwner(*c))
@@ -492,7 +492,7 @@ float osc::ConvertCoordValueToDisplayValue(OpenSim::Coordinate const& c, double 
 
     if (c.getMotionType() == OpenSim::Coordinate::MotionType::Rotational)
     {
-        rv = glm::degrees(rv);
+        rv = Rad2Deg(rv);
     }
 
     return rv;
@@ -504,7 +504,7 @@ double osc::ConvertCoordDisplayValueToStorageValue(OpenSim::Coordinate const& c,
 
     if (c.getMotionType() == OpenSim::Coordinate::MotionType::Rotational)
     {
-        rv = glm::radians(rv);
+        rv = Deg2Rad(rv);
     }
 
     return rv;
@@ -1308,8 +1308,8 @@ namespace
 
     // helper: try to extract the current (state-dependent) force+torque from a HuntCrossleyForce
     struct ForceTorque final {
-        glm::vec3 force;
-        glm::vec3 torque;
+        Vec3 force;
+        Vec3 torque;
     };
     std::optional<ForceTorque> TryComputeCurrentForceTorque(
         OpenSim::HuntCrossleyForce const& hcf,
@@ -1321,19 +1321,19 @@ namespace
             return std::nullopt;  // edge-case: OpenSim didn't report the expected forces
         }
 
-        glm::vec3 const force
+        Vec3 const force
         {
             static_cast<float>(-forces[0]),
             static_cast<float>(-forces[1]),
             static_cast<float>(-forces[2]),
         };
 
-        if (glm::length2(force) < std::numeric_limits<float>::epsilon())
+        if (osc::Length2(force) < std::numeric_limits<float>::epsilon())
         {
             return std::nullopt;  // edge-case: no force is actually being exherted
         }
 
-        glm::vec3 const torque
+        Vec3 const torque
         {
             static_cast<float>(-forces[3]),
             static_cast<float>(-forces[4]),
@@ -1357,20 +1357,20 @@ namespace
         osc::Transform const body2ground = osc::ToTransform(halfSpace.getFrame().getTransformInGround(state));
         osc::Transform const geom2body = osc::ToTransform(halfSpace.getTransform());
 
-        glm::vec3 const originInGround = body2ground * osc::ToVec3(halfSpace.get_location());
-        glm::vec3 const normalInGround = glm::normalize(body2ground.rotation * geom2body.rotation) * c_ContactHalfSpaceUpwardsNormal;
+        Vec3 const originInGround = body2ground * osc::ToVec3(halfSpace.get_location());
+        Vec3 const normalInGround = osc::Normalize(body2ground.rotation * geom2body.rotation) * c_ContactHalfSpaceUpwardsNormal;
 
         return osc::Plane{originInGround, normalInGround};
     }
 
     // helper: returns the location of the center of pressure of a force+torque on a plane, or
     //         std::nullopt if the to-be-drawn force vector is too small
-    std::optional<glm::vec3> ComputeCenterOfPressure(
+    std::optional<Vec3> ComputeCenterOfPressure(
         osc::Plane const& plane,
         ForceTorque const& forceTorque,
         float minimumForce = std::numeric_limits<float>::epsilon())
     {
-        float const forceScaler = glm::dot(plane.normal, forceTorque.force);
+        float const forceScaler = osc::Dot(plane.normal, forceTorque.force);
 
         if (std::abs(forceScaler) < minimumForce)
         {
@@ -1378,7 +1378,7 @@ namespace
             return std::nullopt;
         }
 
-        if (std::abs(glm::dot(plane.normal, glm::normalize(forceTorque.torque))) >= 1.0f - std::numeric_limits<float>::epsilon())
+        if (std::abs(osc::Dot(plane.normal, osc::Normalize(forceTorque.torque))) >= 1.0f - std::numeric_limits<float>::epsilon())
         {
             // pedantic: the resulting torque is aligned with the plane normal, making
             // the cross product undefined later
@@ -1387,9 +1387,9 @@ namespace
 
         // this maths seems sketchy, it's inspired by SCONE/model_tools.cpp:GetPlaneCop but
         // it feels a bit like `p1` is always going to be zero
-        glm::vec3 const pos = glm::cross(plane.normal, forceTorque.torque) / forceScaler;
-        glm::vec3 const posRelativeToPlaneOrigin = pos - plane.origin;
-        float const p1 = glm::dot(posRelativeToPlaneOrigin, plane.normal);
+        Vec3 const pos = osc::Cross(plane.normal, forceTorque.torque) / forceScaler;
+        Vec3 const posRelativeToPlaneOrigin = pos - plane.origin;
+        float const p1 = osc::Dot(posRelativeToPlaneOrigin, plane.normal);
         float const p2 = forceScaler;
 
         return pos - (p1/p2)*forceTorque.force;
@@ -1417,7 +1417,7 @@ std::optional<osc::ForcePoint> osc::TryGetContactForceInGround(
     }
     ForceTorque const& forceTorque = *maybeForceTorque;
 
-    std::optional<glm::vec3> const maybePosition = ComputeCenterOfPressure(contactPlaneInGround, forceTorque);
+    std::optional<Vec3> const maybePosition = ComputeCenterOfPressure(contactPlaneInGround, forceTorque);
     if (!maybePosition)
     {
         return std::nullopt;  // the resulting force is too small

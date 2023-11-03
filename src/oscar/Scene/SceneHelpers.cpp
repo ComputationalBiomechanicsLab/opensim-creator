@@ -13,40 +13,46 @@
 #include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
+#include <oscar/Maths/Quat.hpp>
 #include <oscar/Maths/RayCollision.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
-
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 #include <filesystem>
 #include <functional>
 #include <optional>
 #include <vector>
 
+using osc::Color;
+using osc::Mesh;
+using osc::MeshCache;
+using osc::Quat;
+using osc::SceneDecoration;
+using osc::Transform;
+using osc::Vec3;
+
 namespace
 {
     void DrawGrid(
-        osc::MeshCache& cache,
-        glm::quat const& rotation,
-        std::function<void(osc::SceneDecoration&&)> const& out)
+        MeshCache& cache,
+        Quat const& rotation,
+        std::function<void(SceneDecoration&&)> const& out)
     {
-        osc::Mesh const grid = cache.get100x100GridMesh();
+        Mesh const grid = cache.get100x100GridMesh();
 
-        osc::Transform t;
-        t.scale *= glm::vec3{50.0f, 50.0f, 1.0f};
+        Transform t;
+        t.scale *= Vec3{50.0f, 50.0f, 1.0f};
         t.rotation = rotation;
 
-        osc::Color const color = {0.7f, 0.7f, 0.7f, 0.15f};
+        Color const color = {0.7f, 0.7f, 0.7f, 0.15f};
 
-        out(osc::SceneDecoration{grid, t, color});
+        out(SceneDecoration{grid, t, color});
     }
 }
 
@@ -80,7 +86,7 @@ void osc::DrawAABB(
 
 void osc::DrawAABBs(
     MeshCache& cache,
-    nonstd::span<AABB const> aabbs,
+    std::span<AABB const> aabbs,
     std::function<void(SceneDecoration&&)> const& out)
 {
     Mesh const cube = cache.getCubeWireMesh();
@@ -117,7 +123,7 @@ void osc::DrawXZFloorLines(
     {
         Transform t;
         t.scale *= scale;
-        t.rotation = glm::angleAxis(fpi2, glm::vec3{0.0f, 0.0f, 1.0f});
+        t.rotation = AngleAxis(fpi2, Vec3{0.0f, 0.0f, 1.0f});
 
         out(SceneDecoration{yLine, t, Color::red()});
     }
@@ -126,7 +132,7 @@ void osc::DrawXZFloorLines(
     {
         Transform t;
         t.scale *= scale;
-        t.rotation = glm::angleAxis(fpi2, glm::vec3{1.0f, 0.0f, 0.0f});
+        t.rotation = AngleAxis(fpi2, Vec3{1.0f, 0.0f, 0.0f});
 
         out(SceneDecoration{yLine, t, Color::blue()});
     }
@@ -136,7 +142,7 @@ void osc::DrawXZGrid(
     MeshCache& cache,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    glm::quat const rotation = glm::angleAxis(fpi2, glm::vec3{1.0f, 0.0f, 0.0f});
+    Quat const rotation = AngleAxis(fpi2, Vec3{1.0f, 0.0f, 0.0f});
     DrawGrid(cache, rotation, out);
 }
 
@@ -144,7 +150,7 @@ void osc::DrawXYGrid(
     MeshCache& cache,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    auto const rotation = glm::identity<glm::quat>();
+    auto const rotation = Identity<Quat>();
     DrawGrid(cache, rotation, out);
 }
 
@@ -152,7 +158,7 @@ void osc::DrawYZGrid(
     MeshCache& cache,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    glm::quat const rotation = glm::angleAxis(fpi2, glm::vec3{0.0f, 1.0f, 0.0f});
+    Quat const rotation = AngleAxis(fpi2, Vec3{0.0f, 1.0f, 0.0f});
     DrawGrid(cache, rotation, out);
 }
 
@@ -171,14 +177,14 @@ void osc::DrawArrow(
     ArrowProperties const& props,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    glm::vec3 startToEnd = props.worldspaceEnd - props.worldspaceStart;
-    float const len = glm::length(startToEnd);
-    glm::vec3 const dir = startToEnd/len;
+    Vec3 startToEnd = props.worldspaceEnd - props.worldspaceStart;
+    float const len = Length(startToEnd);
+    Vec3 const dir = startToEnd/len;
 
-    glm::vec3 const neckStart = props.worldspaceStart;
-    glm::vec3 const neckEnd = props.worldspaceStart + (len - props.tipLength)*dir;
-    glm::vec3 const headStart = neckEnd;
-    glm::vec3 const headEnd = props.worldspaceEnd;
+    Vec3 const neckStart = props.worldspaceStart;
+    Vec3 const neckEnd = props.worldspaceStart + (len - props.tipLength)*dir;
+    Vec3 const headStart = neckEnd;
+    Vec3 const headEnd = props.worldspaceEnd;
 
     // emit neck cylinder
     Transform const neckXform = YToYCylinderToSegmentTransform({neckStart, neckEnd}, props.neckThickness);
@@ -205,7 +211,7 @@ osc::AABB osc::GetWorldspaceAABB(SceneDecoration const& cd)
     return TransformAABB(cd.mesh.getBounds(), cd.transform);
 }
 
-void osc::UpdateSceneBVH(nonstd::span<SceneDecoration const> sceneEls, BVH& bvh)
+void osc::UpdateSceneBVH(std::span<SceneDecoration const> sceneEls, BVH& bvh)
 {
     std::vector<AABB> aabbs;
     aabbs.reserve(sceneEls.size());
@@ -219,7 +225,7 @@ void osc::UpdateSceneBVH(nonstd::span<SceneDecoration const> sceneEls, BVH& bvh)
 
 std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(
     BVH const& bvh,
-    nonstd::span<SceneDecoration const> decorations,
+    std::span<SceneDecoration const> decorations,
     Line const& ray)
 {
     // use scene BVH to intersect the ray with the scene
@@ -261,8 +267,8 @@ std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
     if (maybeCollision)
     {
         // map the ray back into worldspace
-        glm::vec3 const locationWorldspace = transform * maybeCollision->position;
-        float const distance = glm::length(locationWorldspace - worldspaceRay.origin);
+        Vec3 const locationWorldspace = transform * maybeCollision->position;
+        float const distance = Length(locationWorldspace - worldspaceRay.origin);
         return RayCollision{distance, locationWorldspace};
     }
     else
@@ -275,7 +281,7 @@ std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
     PolarPerspectiveCamera const& camera,
     Mesh const& mesh,
     Rect const& renderScreenRect,
-    glm::vec2 mouseScreenPos)
+    Vec2 mouseScreenPos)
 {
     Line const ray = camera.unprojectTopLeftPosToWorldRay(
         mouseScreenPos - renderScreenRect.p1,
@@ -292,7 +298,7 @@ std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
 osc::SceneRendererParams osc::CalcStandardDarkSceneRenderParams(
     PolarPerspectiveCamera const& camera,
     AntiAliasingLevel antiAliasingLevel,
-    glm::vec2 renderDims)
+    Vec2 renderDims)
 {
     osc::SceneRendererParams rv;
     rv.dimensions = renderDims;

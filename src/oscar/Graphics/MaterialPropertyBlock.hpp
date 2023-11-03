@@ -2,12 +2,11 @@
 
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Mat3.hpp>
+#include <oscar/Maths/Mat4.hpp>
+#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/Vec4.hpp>
 #include <oscar/Utils/CopyOnUpdPtr.hpp>
-
-#include <glm/mat3x3.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 
 #include <cstdint>
 #include <iosfwd>
@@ -42,17 +41,17 @@ namespace osc
         std::optional<float> getFloat(std::string_view propertyName) const;
         void setFloat(std::string_view propertyName, float);
 
-        std::optional<glm::vec3> getVec3(std::string_view propertyName) const;
-        void setVec3(std::string_view propertyName, glm::vec3);
+        std::optional<Vec3> getVec3(std::string_view propertyName) const;
+        void setVec3(std::string_view propertyName, Vec3);
 
-        std::optional<glm::vec4> getVec4(std::string_view propertyName) const;
-        void setVec4(std::string_view propertyName, glm::vec4);
+        std::optional<Vec4> getVec4(std::string_view propertyName) const;
+        void setVec4(std::string_view propertyName, Vec4);
 
-        std::optional<glm::mat3> getMat3(std::string_view propertyName) const;
-        void setMat3(std::string_view propertyName, glm::mat3 const&);
+        std::optional<Mat3> getMat3(std::string_view propertyName) const;
+        void setMat3(std::string_view propertyName, Mat3 const&);
 
-        std::optional<glm::mat4> getMat4(std::string_view propertyName) const;
-        void setMat4(std::string_view propertyName, glm::mat4 const&);
+        std::optional<Mat4> getMat4(std::string_view propertyName) const;
+        void setMat4(std::string_view propertyName, Mat4 const&);
 
         std::optional<int32_t> getInt(std::string_view propertyName) const;
         void setInt(std::string_view, int32_t);

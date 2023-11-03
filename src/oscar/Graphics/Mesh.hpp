@@ -2,18 +2,17 @@
 
 #include <oscar/Graphics/MeshIndicesView.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
+#include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/Vec4.hpp>
 #include <oscar/Utils/CopyOnUpdPtr.hpp>
-
-#include <glm/mat4x4.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-#include <nonstd/span.hpp>
 
 #include <cstdint>
 #include <functional>
 #include <iosfwd>
+#include <span>
 #include <vector>
 
 namespace osc { struct AABB; }
@@ -40,30 +39,30 @@ namespace osc
         MeshTopology getTopology() const;
         void setTopology(MeshTopology);
 
-        nonstd::span<glm::vec3 const> getVerts() const;
-        void setVerts(nonstd::span<glm::vec3 const>);
-        void transformVerts(std::function<void(nonstd::span<glm::vec3>)> const&);
+        std::span<Vec3 const> getVerts() const;
+        void setVerts(std::span<Vec3 const>);
+        void transformVerts(std::function<void(std::span<Vec3>)> const&);
         void transformVerts(Transform const&);
-        void transformVerts(glm::mat4 const&);
+        void transformVerts(Mat4 const&);
 
-        nonstd::span<glm::vec3 const> getNormals() const;
-        void setNormals(nonstd::span<glm::vec3 const>);
-        void transformNormals(std::function<void(nonstd::span<glm::vec3>)> const&);
+        std::span<Vec3 const> getNormals() const;
+        void setNormals(std::span<Vec3 const>);
+        void transformNormals(std::function<void(std::span<Vec3>)> const&);
 
-        nonstd::span<glm::vec2 const> getTexCoords() const;
-        void setTexCoords(nonstd::span<glm::vec2 const>);
-        void transformTexCoords(std::function<void(nonstd::span<glm::vec2>)> const&);
+        std::span<Vec2 const> getTexCoords() const;
+        void setTexCoords(std::span<Vec2 const>);
+        void transformTexCoords(std::function<void(std::span<Vec2>)> const&);
 
-        nonstd::span<Color const> getColors() const;
-        void setColors(nonstd::span<Color const>);
+        std::span<Color const> getColors() const;
+        void setColors(std::span<Color const>);
 
-        nonstd::span<glm::vec4 const> getTangents() const;
-        void setTangents(nonstd::span<glm::vec4 const>);
+        std::span<Vec4 const> getTangents() const;
+        void setTangents(std::span<Vec4 const>);
 
         MeshIndicesView getIndices() const;
         void setIndices(MeshIndicesView);
-        void setIndices(nonstd::span<uint16_t const>);
-        void setIndices(nonstd::span<uint32_t const>);
+        void setIndices(std::span<uint16_t const>);
+        void setIndices(std::span<uint32_t const>);
 
         AABB const& getBounds() const;  // local-space
         BVH const& getBVH() const;  // local-space

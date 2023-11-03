@@ -4,7 +4,6 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 
-#include <nonstd/span.hpp>
 #include <simmath/ExplicitEulerIntegrator.h>
 #include <simmath/RungeKutta2Integrator.h>
 #include <simmath/RungeKutta3Integrator.h>
@@ -16,6 +15,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <span>
 
 namespace
 {
@@ -46,12 +46,12 @@ namespace
     static_assert(c_IntegratorMethodStrings.size() == osc::NumOptions<osc::IntegratorMethod>());
 }
 
-nonstd::span<osc::IntegratorMethod const> osc::GetAllIntegratorMethods()
+std::span<osc::IntegratorMethod const> osc::GetAllIntegratorMethods()
 {
     return c_IntegratorMethods;
 }
 
-nonstd::span<osc::CStringView const> osc::GetAllIntegratorMethodStrings()
+std::span<osc::CStringView const> osc::GetAllIntegratorMethodStrings()
 {
     return c_IntegratorMethodStrings;
 }

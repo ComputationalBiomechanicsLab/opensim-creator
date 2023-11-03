@@ -1,8 +1,7 @@
 #pragma once
 
-#include <nonstd/span.hpp>
-
 #include <memory>
+#include <span>
 
 namespace osc { struct SceneDecoration; }
 namespace osc { struct SceneRendererParams; }
@@ -19,7 +18,7 @@ namespace osc
         SceneViewer& operator=(SceneViewer&&) noexcept;
         ~SceneViewer() noexcept;
 
-        void onDraw(nonstd::span<SceneDecoration const>, SceneRendererParams const&);
+        void onDraw(std::span<SceneDecoration const>, SceneRendererParams const&);
 
         bool isHovered() const;
         bool isLeftClicked() const;

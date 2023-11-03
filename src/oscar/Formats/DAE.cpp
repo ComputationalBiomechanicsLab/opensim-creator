@@ -3,16 +3,16 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Mat4.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
-
-#include <glm/mat4x4.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <nonstd/span.hpp>
 
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
+#include <span>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -77,7 +77,7 @@ namespace
         std::vector<DAEInstance> instances;
     };
 
-    DAESceneGraph ToDAESceneGraph(nonstd::span<osc::SceneDecoration const> els)
+    DAESceneGraph ToDAESceneGraph(std::span<osc::SceneDecoration const> els)
     {
         DAESceneGraph rv;
 
@@ -126,23 +126,23 @@ namespace
 // graph-writing stuff
 namespace
 {
-    nonstd::span<float const> ToFloatSpan(nonstd::span<glm::vec2 const> s)
+    std::span<float const> ToFloatSpan(std::span<osc::Vec2 const> s)
     {
-        return {glm::value_ptr(s[0]), 2 * s.size()};
+        return {osc::ValuePtr(s[0]), 2 * s.size()};
     }
 
-    nonstd::span<float const> ToFloatSpan(nonstd::span<glm::vec3 const> s)
+    std::span<float const> ToFloatSpan(std::span<osc::Vec3 const> s)
     {
-        return {glm::value_ptr(s[0]), 3 * s.size()};
+        return {osc::ValuePtr(s[0]), 3 * s.size()};
     }
 
-    nonstd::span<float const> ToFloatSpan(osc::Color const& v)
+    std::span<float const> ToFloatSpan(osc::Color const& v)
     {
         return {osc::ValuePtr(v), 4};
     }
 
     template<typename T>
-    std::string ToDaeList(nonstd::span<T const> vs)
+    std::string ToDaeList(std::span<T const> vs)
     {
         std::stringstream ss;
         std::string_view delim;
@@ -207,7 +207,7 @@ namespace
         o << "    </effect>\n";
     }
 
-    void WriteLibraryEffects(std::ostream& o, nonstd::span<DAEMaterial const> materials)
+    void WriteLibraryEffects(std::ostream& o, std::span<DAEMaterial const> materials)
     {
         o << "  <library_effects>\n";
         for (DAEMaterial const& material : materials)
@@ -224,7 +224,7 @@ namespace
         o << "    </material>\n";
     }
 
-    void WriteLibraryMaterials(std::ostream& o, nonstd::span<DAEMaterial const> materials)
+    void WriteLibraryMaterials(std::ostream& o, std::span<DAEMaterial const> materials)
     {
         o << "  <library_materials>\n";
         for (DAEMaterial const& material : materials)
@@ -236,7 +236,7 @@ namespace
 
     void WriteMeshPositionsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        nonstd::span<glm::vec3 const> const vals = geom.mesh.getVerts();
+        std::span<osc::Vec3 const> const vals = geom.mesh.getVerts();
         size_t const floatCount = 3 * vals.size();
         size_t const vertCount = vals.size();
 
@@ -254,7 +254,7 @@ namespace
 
     void WriteMeshNormalsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        nonstd::span<glm::vec3 const> const vals = geom.mesh.getNormals();
+        std::span<osc::Vec3 const> const vals = geom.mesh.getNormals();
         size_t const floatCount = 3 * vals.size();
         size_t const normalCount = vals.size();
 
@@ -272,7 +272,7 @@ namespace
 
     void WriteMeshTextureCoordsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        nonstd::span<glm::vec2 const> const vals = geom.mesh.getTexCoords();
+        std::span<osc::Vec2 const> const vals = geom.mesh.getTexCoords();
         size_t const floatCount = 2 * vals.size();
         size_t const coordCount = vals.size();
 
@@ -349,7 +349,7 @@ namespace
         o << "    </geometry>\n";
     }
 
-    void WriteLibraryGeometries(std::ostream& o, nonstd::span<DAEGeometry const> geoms)
+    void WriteLibraryGeometries(std::ostream& o, std::span<DAEGeometry const> geoms)
     {
         o << "  <library_geometries>\n";
         for (DAEGeometry const& geom : geoms)
@@ -361,12 +361,12 @@ namespace
 
     void WriteTransformMatrix(std::ostream& o, osc::Transform const& t)
     {
-        glm::mat4 const m = osc::ToMat4(t);
+        osc::Mat4 const m = osc::ToMat4(t);
 
         // row-major
         o << R"(        <matrix sid="transform">)";
         std::string_view delim;
-        for (glm::mat4::length_type row = 0; row < 4; ++row)
+        for (osc::Mat4::length_type row = 0; row < 4; ++row)
         {
             o << delim << m[0][row];
             delim = " ";
@@ -434,7 +434,7 @@ osc::DAEMetadata::DAEMetadata(
 
 void osc::WriteDecorationsAsDAE(
     std::ostream& o,
-    nonstd::span<SceneDecoration const> els,
+    std::span<SceneDecoration const> els,
     DAEMetadata const& metadata)
 {
     DAESceneGraph const graph = ToDAESceneGraph(els);

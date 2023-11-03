@@ -73,7 +73,7 @@ private:
 
             if (ImGuiTableSortSpecs* p = ImGui::TableGetSortSpecs(); p && p->SpecsDirty)
             {
-                nonstd::span<ImGuiTableColumnSortSpecs const> specs(p->Specs, p->SpecsCount);
+                std::span<ImGuiTableColumnSortSpecs const> specs(p->Specs, p->SpecsCount);
 
                 // we know the user can only sort one column (name) so we don't need to permute
                 // through the entire specs structure

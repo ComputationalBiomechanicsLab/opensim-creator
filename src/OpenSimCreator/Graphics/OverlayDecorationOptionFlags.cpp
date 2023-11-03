@@ -1,7 +1,8 @@
 #include "OverlayDecorationOptionFlags.hpp"
 
-#include <nonstd/span.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
+
+#include <span>
 
 namespace
 {
@@ -64,7 +65,7 @@ osc::CStringView osc::GetLabel(OverlayDecorationOptionGroup g)
     }
 }
 
-nonstd::span<osc::OverlayDecorationOptionFlagsMetadata const> osc::GetAllOverlayDecorationOptionFlagsMetadata()
+std::span<osc::OverlayDecorationOptionFlagsMetadata const> osc::GetAllOverlayDecorationOptionFlagsMetadata()
 {
     return c_Metadata;
 }

@@ -4,7 +4,8 @@
 #include <oscar/Graphics/TextureFormat.hpp>
 #include <oscar/Utils/CopyOnUpdPtr.hpp>
 
-#include <nonstd/span.hpp>
+#include <cstdint>
+#include <span>
 
 namespace osc
 {
@@ -22,7 +23,7 @@ namespace osc
 
         // `data` must match the channel layout, bytes per channel, and
         // width*height of the cubemap, or an exception will be thrown
-        void setPixelData(CubemapFace, nonstd::span<uint8_t const>);
+        void setPixelData(CubemapFace, std::span<uint8_t const>);
 
         friend bool operator==(Cubemap const& lhs, Cubemap const& rhs) noexcept
         {

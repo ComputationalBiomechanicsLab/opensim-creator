@@ -1,14 +1,14 @@
 #pragma once
 
-#include <glm/vec3.hpp>
+#include <oscar/Maths/Vec3.hpp>
 
 #include <iosfwd>
 
 namespace osc
 {
     struct Disc final {
-        glm::vec3 origin;
-        glm::vec3 normal;
+        Vec3 origin;
+        Vec3 normal;
         float radius;
     };
 

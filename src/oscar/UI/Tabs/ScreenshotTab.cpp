@@ -14,7 +14,11 @@
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
+#include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/Vec4.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/Screenshot.hpp>
@@ -30,6 +34,8 @@
 #include <utility>
 #include <unordered_set>
 
+using osc::Vec2;
+
 namespace
 {
     constexpr osc::Color c_UnselectedColor = {1.0f, 1.0f, 1.0f, 0.4f};
@@ -43,27 +49,27 @@ namespace
     {
         float const targetAspectRatio = osc::AspectRatio(targetRect);
         float const ratio = targetAspectRatio / aspectRatio;
-        glm::vec2 const targetDims = osc::Dimensions(targetRect);
+        Vec2 const targetDims = osc::Dimensions(targetRect);
 
         if (ratio >= 1.0f)
         {
             // it will touch the top/bottom but may (ratio != 1.0f) fall short of the left/right
-            glm::vec2 const rvDims = {targetDims.x/ratio, targetDims.y};
-            glm::vec2 const rvTopLeft = {targetRect.p1.x + 0.5f*(targetDims.x - rvDims.x), targetRect.p1.y};
+            Vec2 const rvDims = {targetDims.x/ratio, targetDims.y};
+            Vec2 const rvTopLeft = {targetRect.p1.x + 0.5f*(targetDims.x - rvDims.x), targetRect.p1.y};
             return {rvTopLeft, rvTopLeft + rvDims};
         }
         else
         {
             // it will touch the left/right but will not touch the top/bottom
-            glm::vec2 const rvDims = {targetDims.x, ratio*targetDims.y};
-            glm::vec2 const rvTopLeft = {targetRect.p1.x, targetRect.p1.y + 0.5f*(targetDims.y - rvDims.y)};
+            Vec2 const rvDims = {targetDims.x, ratio*targetDims.y};
+            Vec2 const rvTopLeft = {targetRect.p1.x, targetRect.p1.y + 0.5f*(targetDims.y - rvDims.y)};
             return {rvTopLeft, rvTopLeft + rvDims};
         }
     }
 
     osc::Rect MapRect(osc::Rect const& sourceRect, osc::Rect const& targetRect, osc::Rect const& rect)
     {
-        glm::vec2 const scale = osc::Dimensions(targetRect) / osc::Dimensions(sourceRect);
+        Vec2 const scale = osc::Dimensions(targetRect) / osc::Dimensions(sourceRect);
 
         return osc::Rect
         {
@@ -128,8 +134,8 @@ private:
     // returns screenspace rect of the screenshot within the UI
     Rect drawScreenshot()
     {
-        glm::vec2 const screenTopLeft = ImGui::GetCursorScreenPos();
-        Rect const windowRect = {screenTopLeft, screenTopLeft + glm::vec2{ImGui::GetContentRegionAvail()}};
+        Vec2 const screenTopLeft = ImGui::GetCursorScreenPos();
+        Rect const windowRect = {screenTopLeft, screenTopLeft + Vec2{ImGui::GetContentRegionAvail()}};
         Rect const imageRect = ShrinkToFit(windowRect, osc::AspectRatio(m_Screenshot.image.getDimensions()));
         ImGui::SetCursorScreenPos(imageRect.p1);
         DrawTextureAsImGuiImage(m_ImageTexture, osc::Dimensions(imageRect));
@@ -142,7 +148,7 @@ private:
         Color const& unselectedColor,
         Color const& selectedColor)
     {
-        glm::vec2 const mousePos = ImGui::GetMousePos();
+        Vec2 const mousePos = ImGui::GetMousePos();
         bool const leftClickReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
         Rect const imageSourceRect = {{0.0f, 0.0f}, m_Screenshot.image.getDimensions()};
 
@@ -152,10 +158,10 @@ private:
             bool const selected =  Contains(m_SelectedAnnotations, annotation.label);
             bool const hovered = osc::IsPointInRect(annotationRectScreenSpace, mousePos);
 
-            glm::vec4 color = selected ? selectedColor : unselectedColor;
+            Vec4 color = selected ? selectedColor : unselectedColor;
             if (hovered)
             {
-                color.a = glm::clamp(color.a + 0.3f, 0.0f, 1.0f);
+                color.a = Clamp(color.a + 0.3f, 0.0f, 1.0f);
             }
 
             if (hovered && leftClickReleased)
@@ -220,7 +226,7 @@ private:
             {
                 // verts
                 {
-                    std::vector<glm::vec3> verts;
+                    std::vector<Vec3> verts;
                     verts.reserve(drawlist.VtxBuffer.size());
                     for (ImDrawVert const& vert : drawlist.VtxBuffer)
                     {
@@ -235,7 +241,7 @@ private:
                     colors.reserve(drawlist.VtxBuffer.size());
                     for (ImDrawVert const& vert : drawlist.VtxBuffer)
                     {
-                        Color const linearColor{glm::vec4{ImGui::ColorConvertU32ToFloat4(vert.col)}};
+                        Color const linearColor{Vec4{ImGui::ColorConvertU32ToFloat4(vert.col)}};
                         colors.push_back(linearColor);
                     }
                     mesh.setColors(colors);
@@ -253,7 +259,7 @@ private:
             };
 
             Camera c;
-            c.setViewMatrixOverride(glm::mat4{1.0f});
+            c.setViewMatrixOverride(Mat4{1.0f});
 
             {
                 // project screenspace overlays into NDC
@@ -261,7 +267,7 @@ private:
                 float R = static_cast<float>(m_ImageTexture.getDimensions().x);
                 float T = 0.0f;
                 float B = static_cast<float>(m_ImageTexture.getDimensions().y);
-                glm::mat4 const proj =
+                Mat4 const proj =
                 {
                     { 2.0f/(R-L),   0.0f,         0.0f,   0.0f },
                     { 0.0f,         2.0f/(T-B),   0.0f,   0.0f },

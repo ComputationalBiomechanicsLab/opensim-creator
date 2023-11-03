@@ -1,9 +1,9 @@
 #pragma once
 
-#include <nonstd/span.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>
+#include <span>
 #include <string>
 
 namespace OpenSim { class Component; }
@@ -44,8 +44,8 @@ namespace osc
 
         virtual void getValuesFloat(
             OpenSim::Component const&,
-            nonstd::span<SimulationReport const>,
-            nonstd::span<float> overwriteOut
+            std::span<SimulationReport const>,
+            std::span<float> overwriteOut
         ) const = 0;
 
         virtual std::string getValueString(

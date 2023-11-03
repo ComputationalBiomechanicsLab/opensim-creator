@@ -19,16 +19,13 @@ find_package(unordered_dense REQUIRED CONFIG)
 
 add_library(oscar STATIC
 
-    Bindings/GlmHelpers.cpp
-    Bindings/GlmHelpers.hpp
+    Bindings/Gl.cpp
+    Bindings/Gl.hpp
     Bindings/ImGuiHelpers.cpp
     Bindings/ImGuiHelpers.hpp
     Bindings/ImGuizmoHelpers.cpp
     Bindings/ImGuizmoHelpers.hpp
     Bindings/SDL2Helpers.hpp
-    Bindings/Gl.cpp
-    Bindings/Gl.hpp
-    Bindings/GlGlm.hpp
 
     DOM/Node.hpp
     DOM/NodePath.cpp
@@ -119,9 +116,13 @@ add_library(oscar STATIC
     Maths/Line.hpp
     Maths/MathHelpers.hpp
     Maths/MathsImplementation.cpp
+    Maths/Mat3.hpp
+    Maths/Mat4.hpp
+    Maths/Mat4x3.hpp
     Maths/Plane.hpp
     Maths/PointDirection.hpp
     Maths/PolarPerspectiveCamera.hpp
+    Maths/Quat.hpp
     Maths/RayCollision.hpp
     Maths/Rect.hpp
     Maths/Segment.hpp
@@ -129,6 +130,9 @@ add_library(oscar STATIC
     Maths/Tetrahedron.hpp
     Maths/Transform.hpp
     Maths/Triangle.hpp
+    Maths/Vec2.hpp
+    Maths/Vec3.hpp
+    Maths/Vec4.hpp
 
     Platform/App.cpp
     Platform/App.hpp
@@ -287,6 +291,5 @@ target_link_libraries(oscar PUBLIC
     stb
     unordered_dense::unordered_dense
     tomlplusplus::tomlplusplus
-    nonstd::span-lite
     lunasvg::lunasvg
 )

@@ -1,9 +1,9 @@
 #pragma once
 
 #include <oscar/Utils/CStringView.hpp>
-#include <nonstd/span.hpp>
 
 #include <memory>
+#include <span>
 
 namespace SimTK { class Integrator; }
 namespace SimTK { class System; }
@@ -24,8 +24,8 @@ namespace osc
         NUM_OPTIONS,
     };
 
-    nonstd::span<IntegratorMethod const> GetAllIntegratorMethods();
-    nonstd::span<CStringView const> GetAllIntegratorMethodStrings();
+    std::span<IntegratorMethod const> GetAllIntegratorMethods();
+    std::span<CStringView const> GetAllIntegratorMethodStrings();
     CStringView GetIntegratorMethodString(IntegratorMethod);
     std::unique_ptr<SimTK::Integrator> CreateIntegrator(SimTK::System const&, IntegratorMethod);
 }

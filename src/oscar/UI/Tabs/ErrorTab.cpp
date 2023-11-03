@@ -3,10 +3,10 @@
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>
 
-#include <glm/vec2.hpp>
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
 
@@ -28,11 +28,11 @@ private:
         constexpr float padding = 10.0f;
 
         Rect tabRect = osc::GetMainViewportWorkspaceScreenRect();
-        glm::vec2 tabDims = osc::Dimensions(tabRect);
+        Vec2 tabDims = osc::Dimensions(tabRect);
 
         // error message panel
         {
-            glm::vec2 pos{tabRect.p1.x + tabDims.x/2.0f, tabRect.p1.y + padding};
+            Vec2 pos{tabRect.p1.x + tabDims.x/2.0f, tabRect.p1.y + padding};
             ImGui::SetNextWindowPos(pos, ImGuiCond_Once, {0.5f, 0.0f});
             ImGui::SetNextWindowSize({width, 0.0f});
 
@@ -49,7 +49,7 @@ private:
 
         // log message panel
         {
-            glm::vec2 pos{tabRect.p1.x + tabDims.x/2.0f, tabRect.p2.y - padding};
+            Vec2 pos{tabRect.p1.x + tabDims.x/2.0f, tabRect.p2.y - padding};
             ImGui::SetNextWindowPos(pos, ImGuiCond_Once, ImVec2(0.5f, 1.0f));
             ImGui::SetNextWindowSize(ImVec2(width, 0.0f));
 

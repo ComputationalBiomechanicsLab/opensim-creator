@@ -8,17 +8,16 @@
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 
-#include <glm/vec2.hpp>
 #include <imgui.h>
-#include <nonstd/span.hpp>
 
 #include <memory>
+#include <span>
 #include <utility>
 
 class osc::SceneViewer::Impl final {
 public:
 
-    void onDraw(nonstd::span<SceneDecoration const> els, SceneRendererParams const& params)
+    void onDraw(std::span<SceneDecoration const> els, SceneRendererParams const& params)
     {
         m_Renderer.render(els, params);
 
@@ -68,7 +67,7 @@ osc::SceneViewer::SceneViewer(SceneViewer&&) noexcept = default;
 osc::SceneViewer& osc::SceneViewer::operator=(SceneViewer&&) noexcept = default;
 osc::SceneViewer::~SceneViewer() noexcept = default;
 
-void osc::SceneViewer::onDraw(nonstd::span<SceneDecoration const> els, SceneRendererParams const& params)
+void osc::SceneViewer::onDraw(std::span<SceneDecoration const> els, SceneRendererParams const& params)
 {
     m_Impl->onDraw(els, params);
 }

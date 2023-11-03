@@ -1,8 +1,8 @@
 #pragma once
 
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/UI/Widgets/Popup.hpp>
 
-#include <glm/vec2.hpp>
 #include <imgui.h>
 
 #include <optional>
@@ -30,7 +30,7 @@ namespace osc
 
         StandardPopup(
             std::string_view popupName,
-            glm::vec2 dimensions,
+            Vec2 dimensions,
             ImGuiWindowFlags
         );
 
@@ -40,8 +40,8 @@ namespace osc
         bool isModal() const;
         void setModal(bool);
         void setRect(Rect const&);
-        void setDimensions(glm::vec2);
-        void setPosition(std::optional<glm::vec2>);
+        void setDimensions(Vec2);
+        void setPosition(std::optional<Vec2>);
 
     private:
         // this standard implementation supplies these
@@ -59,8 +59,8 @@ namespace osc
         virtual void implOnClose() {}
 
         std::string m_PopupName;
-        glm::ivec2 m_Dimensions;
-        std::optional<glm::ivec2> m_MaybePosition;
+        Vec2i m_Dimensions;
+        std::optional<Vec2i> m_MaybePosition;
         ImGuiWindowFlags m_PopupFlags;
         bool m_ShouldOpen;
         bool m_ShouldClose;

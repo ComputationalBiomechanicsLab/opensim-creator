@@ -1,14 +1,14 @@
 #pragma once
 
-#include <glm/vec2.hpp>
-#include <nonstd/span.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/Scene/SceneCollision.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 
 #include <functional>
 #include <optional>
+#include <span>
 
 namespace OpenSim { class Component; }
 namespace osc { class BVH; }
@@ -23,7 +23,7 @@ namespace osc
 {
     SceneRendererParams CalcSceneRendererParams(
         ModelRendererParams const&,
-        glm::vec2 viewportDims,
+        Vec2 viewportDims,
         AntiAliasingLevel,
         float fixupScaleFactor
     );
@@ -37,9 +37,9 @@ namespace osc
 
     std::optional<SceneCollision> GetClosestCollision(
         BVH const& sceneBVH,
-        nonstd::span<SceneDecoration const> taggedDrawlist,
+        std::span<SceneDecoration const> taggedDrawlist,
         PolarPerspectiveCamera const&,
-        glm::vec2 mouseScreenPos,
+        Vec2 mouseScreenPos,
         Rect const& viewportScreenRect
     );
 }

@@ -4,6 +4,7 @@
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/GraphicsContext.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/AppClock.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
@@ -18,7 +19,6 @@
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>
 
-#include <glm/vec2.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
@@ -248,9 +248,9 @@ public:
         m_QuitRequested = true;
     }
 
-    glm::vec2 dims() const
+    Vec2 dims() const
     {
-        return glm::vec2{sdl::GetWindowSize(m_MainWindow.get())};
+        return Vec2{sdl::GetWindowSize(m_MainWindow.get())};
     }
 
     void setShowCursor(bool v)
@@ -854,7 +854,7 @@ void osc::App::requestQuit()
     m_Impl->requestQuit();
 }
 
-glm::vec2 osc::App::dims() const
+osc::Vec2 osc::App::dims() const
 {
     return m_Impl->dims();
 }

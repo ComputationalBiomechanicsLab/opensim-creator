@@ -4,9 +4,9 @@
 #include <OpenSimCreator/Graphics/OverlayDecorationOptions.hpp>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
 
-#include <glm/vec3.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
+#include <oscar/Maths/Vec3.hpp>
 
 #include <string_view>
 
@@ -22,7 +22,7 @@ namespace osc
         CustomRenderingOptions renderingOptions;
         Color lightColor;
         Color backgroundColor;
-        glm::vec3 floorLocation;
+        Vec3 floorLocation;
         PolarPerspectiveCamera camera;
     };
 

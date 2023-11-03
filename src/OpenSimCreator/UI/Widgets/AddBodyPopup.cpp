@@ -8,10 +8,8 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/UndoableModelActions.hpp>
 
-#include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
-#include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -25,6 +23,7 @@
 #include <oscar/UI/Widgets/StandardPopup.hpp>
 
 #include <memory>
+#include <span>
 #include <string>
 #include <utility>
 

@@ -3,19 +3,18 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 
-#include <nonstd/span.hpp>
-
 #include <string>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
+#include <span>
 #include <sstream>
 #include <utility>
 
 void osc::ForEachFileWithExtensionsRecursive(
     std::filesystem::path const& root,
     std::function<void(std::filesystem::path)> const& consumer,
-    nonstd::span<std::string_view const> extensions)
+    std::span<std::string_view const> extensions)
 {
     if (!std::filesystem::exists(root))
     {
@@ -44,7 +43,7 @@ void osc::ForEachFileWithExtensionsRecursive(
 
 std::vector<std::filesystem::path> osc::FindFilesWithExtensionsRecursive(
     std::filesystem::path const& root,
-    nonstd::span<std::string_view const> extensions)
+    std::span<std::string_view const> extensions)
 {
     std::vector<std::filesystem::path> rv;
     ForEachFileWithExtensionsRecursive(

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glm/vec3.hpp>
+#include <oscar/Maths/Vec3.hpp>
 
 namespace osc
 {
@@ -8,7 +8,7 @@ namespace osc
 
         RayCollision(
             float distance_,
-            glm::vec3 position_) :
+            Vec3 position_) :
 
             distance{distance_},
             position{position_}
@@ -16,6 +16,6 @@ namespace osc
         }
 
         float distance;
-        glm::vec3 position;
+        Vec3 position;
     };
 }

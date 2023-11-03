@@ -4,10 +4,9 @@
 #include <OpenSimCreator/Graphics/OverlayDecorationOptions.hpp>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/AppSettingValue.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>

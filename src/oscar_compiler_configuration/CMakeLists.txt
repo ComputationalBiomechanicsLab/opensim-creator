@@ -62,9 +62,6 @@ target_compile_options(oscar_compiler_configuration INTERFACE
         # warn if an uninitialized variable is initialized by itself
         -Winit-self
 
-        # warn if a variable's name shadows an earlier (higher scope) variable with the same name
-        -Wshadow
-
         # warn if data is casted to a higher alignment (e.g. char -> int64_t)
         #
         # (set to =strict if the code quality is high enough and Clang in CI is high enough)
@@ -170,13 +167,7 @@ target_link_options(oscar_compiler_configuration INTERFACE
         $<$<BOOL:${OSC_USE_ASAN}>:-fsanitize=address>
     >
 )
-target_compile_features(oscar_compiler_configuration INTERFACE cxx_std_17)
-
-target_link_libraries(oscar_compiler_configuration INTERFACE
-
-    # in earlier gcc/clang the <filesystem> implementation must be explicitly linked
-    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:stdc++fs>
-)
+target_compile_features(oscar_compiler_configuration INTERFACE cxx_std_20)
 
 # handle OSC_FORCE_ASSERTS_ENABLED
 if(OSC_FORCE_ASSERTS_ENABLED)

@@ -8,6 +8,7 @@
 #include <iterator>
 #include <limits>
 #include <memory>
+#include <span>
 #include <thread>
 #include <type_traits>
 #include <unordered_set>

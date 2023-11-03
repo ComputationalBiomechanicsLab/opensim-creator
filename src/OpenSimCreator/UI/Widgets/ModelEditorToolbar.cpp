@@ -12,6 +12,7 @@
 #include <IconsFontAwesome5.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/IconCache.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
@@ -40,7 +41,7 @@ public:
 
     void onDraw()
     {
-        if (BeginToolbar(m_Label, glm::vec2{5.0f, 5.0f}))
+        if (BeginToolbar(m_Label, Vec2{5.0f, 5.0f}))
         {
             drawContent();
         }

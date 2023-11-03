@@ -2,6 +2,7 @@
 
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/Vec2.hpp>
 
 #include <utility>
 
@@ -23,7 +24,7 @@ namespace osc
             return m_Texture;
         }
 
-        glm::ivec2 getDimensions() const
+        Vec2i getDimensions() const
         {
             return m_Texture.getDimensions();
         }
