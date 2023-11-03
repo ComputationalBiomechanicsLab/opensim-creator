@@ -1,8 +1,7 @@
 #pragma once
 
 #include <oscar/Maths/Rect.hpp>
-
-#include <glm/vec3.hpp>
+#include <oscar/Maths/Vec3.hpp>
 
 #include <optional>
 #include <string>
@@ -16,7 +15,7 @@ namespace osc
             std::string sourcePanelName_,
             Rect const& viewportScreenRect_,
             std::string componentAbsPathOrEmpty_,
-            std::optional<glm::vec3> maybeClickPositionInGround_) :
+            std::optional<Vec3> maybeClickPositionInGround_) :
 
             sourcePanelName{std::move(sourcePanelName_)},
             viewportScreenRect{viewportScreenRect_},
@@ -28,6 +27,6 @@ namespace osc
         std::string sourcePanelName;
         Rect viewportScreenRect;
         std::string componentAbsPathOrEmpty;
-        std::optional<glm::vec3> maybeClickPositionInGround;
+        std::optional<Vec3> maybeClickPositionInGround;
     };
 }

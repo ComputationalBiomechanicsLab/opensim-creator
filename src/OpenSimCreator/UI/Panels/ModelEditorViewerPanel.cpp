@@ -10,7 +10,6 @@
 #include <OpenSimCreator/UI/Widgets/ModelSelectionGizmo.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include <glm/vec3.hpp>
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -20,6 +19,7 @@
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/UI/Panels/StandardPanel.hpp>
@@ -307,7 +307,7 @@ namespace
                     std::string{state.getPanelName()},
                     state.viewportRect,
                     state.maybeHoveredComponentAbsPath.toString(),
-                    state.maybeBaseLayerHittest ? std::optional<glm::vec3>{state.maybeBaseLayerHittest->worldspaceLocation} : std::nullopt,
+                    state.maybeBaseLayerHittest ? std::optional<osc::Vec3>{state.maybeBaseLayerHittest->worldspaceLocation} : std::nullopt,
                 };
                 params.callOnRightClickHandler(e);
             }
@@ -352,7 +352,7 @@ public:
         return m_State.pushLayer(std::move(layer));
     }
 
-    void focusOn(glm::vec3 const& pos)
+    void focusOn(Vec3 const& pos)
     {
         m_Parameters.updRenderParams().camera.focusPoint = -pos;
     }
@@ -571,7 +571,7 @@ osc::ModelEditorViewerPanelLayer& osc::ModelEditorViewerPanel::pushLayer(std::un
     return m_Impl->pushLayer(std::move(layer));
 }
 
-void osc::ModelEditorViewerPanel::focusOn(glm::vec3 const& pos)
+void osc::ModelEditorViewerPanel::focusOn(Vec3 const& pos)
 {
     m_Impl->focusOn(pos);
 }

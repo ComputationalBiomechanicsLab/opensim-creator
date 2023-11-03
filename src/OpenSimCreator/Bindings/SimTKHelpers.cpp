@@ -1,13 +1,13 @@
 #include "SimTKHelpers.hpp"
 
-#include <glm/gtx/quaternion.hpp>
-#include <glm/mat3x3.hpp>
-#include <glm/mat4x3.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Mat3.hpp>
+#include <oscar/Maths/Mat4.hpp>
+#include <oscar/Maths/Mat4x3.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/Vec4.hpp>
 #include <SimTKcommon/internal/MassProperties.h>
 #include <SimTKcommon/internal/Rotation.h>
 #include <SimTKcommon/internal/Transform.h>
@@ -16,7 +16,7 @@
 
 // public API
 
-SimTK::Vec3 osc::ToSimTKVec3(glm::vec3 const& v)
+SimTK::Vec3 osc::ToSimTKVec3(Vec3 const& v)
 {
     return
     {
@@ -26,7 +26,7 @@ SimTK::Vec3 osc::ToSimTKVec3(glm::vec3 const& v)
     };
 }
 
-SimTK::Mat33 osc::ToSimTKMat3(glm::mat3 const& m)
+SimTK::Mat33 osc::ToSimTKMat3(Mat3 const& m)
 {
     return SimTK::Mat33
     {
@@ -36,7 +36,7 @@ SimTK::Mat33 osc::ToSimTKMat3(glm::mat3 const& m)
     };
 }
 
-SimTK::Inertia osc::ToSimTKInertia(glm::vec3 const& v)
+SimTK::Inertia osc::ToSimTKInertia(Vec3 const& v)
 {
     return
     {
@@ -46,9 +46,9 @@ SimTK::Inertia osc::ToSimTKInertia(glm::vec3 const& v)
     };
 }
 
-SimTK::Transform osc::ToSimTKTransform(glm::mat4x3 const& m)
+SimTK::Transform osc::ToSimTKTransform(Mat4x3 const& m)
 {
-    // glm::mat4 is column-major, SimTK::Transform is effectively row-major
+    // Mat4 is column-major, SimTK::Transform is effectively row-major
 
     SimTK::Rotation const rot{SimTK::Mat33
     {
@@ -66,9 +66,9 @@ SimTK::Transform osc::ToSimTKTransform(Transform const& t)
     return SimTK::Transform{ToSimTKRotation(t.rotation), ToSimTKVec3(t.position)};
 }
 
-SimTK::Rotation osc::ToSimTKRotation(glm::quat const& q)
+SimTK::Rotation osc::ToSimTKRotation(Quat const& q)
 {
-    return SimTK::Rotation{ToSimTKMat3(glm::toMat3(q))};
+    return SimTK::Rotation{ToSimTKMat3(ToMat3(q))};
 }
 
 SimTK::Vec3 osc::ToSimTKRGBVec3(Color const& color)
@@ -76,9 +76,9 @@ SimTK::Vec3 osc::ToSimTKRGBVec3(Color const& color)
     return {color.r, color.g, color.b};
 }
 
-glm::vec3 osc::ToVec3(SimTK::Vec3 const& v)
+osc::Vec3 osc::ToVec3(SimTK::Vec3 const& v)
 {
-    return glm::vec3
+    return Vec3
     {
         static_cast<float>(v[0]),
         static_cast<float>(v[1]),
@@ -86,9 +86,9 @@ glm::vec3 osc::ToVec3(SimTK::Vec3 const& v)
     };
 }
 
-glm::vec4 osc::ToVec4(SimTK::Vec3 const& v, float w)
+osc::Vec4 osc::ToVec4(SimTK::Vec3 const& v, float w)
 {
-    return glm::vec4
+    return Vec4
     {
         static_cast<float>(v[0]),
         static_cast<float>(v[1]),
@@ -97,16 +97,13 @@ glm::vec4 osc::ToVec4(SimTK::Vec3 const& v, float w)
     };
 }
 
-glm::mat4x3 osc::ToMat4x3(SimTK::Transform const& t)
+osc::Mat4x3 osc::ToMat4x3(SimTK::Transform const& t)
 {
-    // glm::mat4x3 is column major:
-    //     see: https://glm.g-truc.net/0.9.2/api/a00001.html
-    //     (and just Google "glm column major?")
+    // - Mat4x3 is column major
     //
-    // SimTK is row-major, carefully read the sourcecode for
-    // `SimTK::Transform`.
+    // - SimTK is row-major, carefully read the sourcecode for `SimTK::Transform`.
 
-    glm::mat4x3 m{};
+    Mat4x3 m{};
 
     // x0 y0 z0 w0
     SimTK::Rotation const& r = t.R();
@@ -139,22 +136,22 @@ glm::mat4x3 osc::ToMat4x3(SimTK::Transform const& t)
     return m;
 }
 
-glm::mat4x4 osc::ToMat4x4(SimTK::Transform const& t)
+osc::Mat4 osc::ToMat4x4(SimTK::Transform const& t)
 {
-    return glm::mat4{ToMat4x3(t)};
+    return Mat4{ToMat4x3(t)};
 }
 
-glm::mat4x4 osc::ToMat4(SimTK::Rotation const& r)
+osc::Mat4 osc::ToMat4(SimTK::Rotation const& r)
 {
     SimTK::Transform const t{r};
     return ToMat4x4(t);
 }
 
-glm::quat osc::ToQuat(SimTK::Rotation const& r)
+osc::Quat osc::ToQuat(SimTK::Rotation const& r)
 {
     SimTK::Quaternion const q = r.convertRotationToQuaternion();
 
-    return glm::quat
+    return Quat
     {
         static_cast<float>(q[0]),
         static_cast<float>(q[1]),

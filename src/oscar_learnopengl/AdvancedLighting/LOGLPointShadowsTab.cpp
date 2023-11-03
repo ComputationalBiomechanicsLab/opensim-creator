@@ -1,7 +1,5 @@
 #include "LOGLPointShadowsTab.hpp"
 
-#include <glm/vec3.hpp>
-#include <glm/gtc/quaternion.hpp>
 #include <IconsFontAwesome5.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
@@ -18,7 +16,10 @@
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureDimensionality.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
@@ -33,15 +34,18 @@
 #include <string>
 #include <utility>
 
+using osc::Vec2i;
+using osc::Vec3;
+
 namespace
 {
-    constexpr glm::ivec2 c_ShadowmapDims = {1024, 1024};
+    constexpr Vec2i c_ShadowmapDims = {1024, 1024};
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/PointShadows";
 
-    constexpr osc::Transform MakeTransform(float scale, glm::vec3 position)
+    constexpr osc::Transform MakeTransform(float scale, Vec3 position)
     {
         osc::Transform rv;
-        rv.scale = glm::vec3(scale);
+        rv.scale = Vec3(scale);
         rv.position = position;
         return rv;
     }
@@ -49,8 +53,8 @@ namespace
     osc::Transform MakeRotatedTransform()
     {
         osc::Transform rv;
-        rv.scale = glm::vec3(0.75f);
-        rv.rotation = glm::angleAxis(glm::radians(60.0f), glm::normalize(glm::vec3{1.0f, 0.0f, 1.0f}));
+        rv.scale = Vec3(0.75f);
+        rv.rotation = osc::AngleAxis(osc::Deg2Rad(60.0f), osc::Normalize(Vec3{1.0f, 0.0f, 1.0f}));
         rv.position = {-1.5f, 2.0f, -3.0f};
         return rv;
     }
@@ -97,7 +101,7 @@ namespace
     {
         osc::Camera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
-        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor(osc::Color::clear());
@@ -182,8 +186,8 @@ private:
         // create a 90 degree cube cone projection matrix
         float const nearPlane = 0.1f;
         float const farPlane = 25.0f;
-        glm::mat4 const projectionMatrix = glm::perspective(
-            glm::radians(90.0f),
+        Mat4 const projectionMatrix = Perspective(
+            Deg2Rad(90.0f),
             AspectRatio(c_ShadowmapDims),
             nearPlane,
             farPlane
@@ -279,7 +283,7 @@ private:
     };
 
     Camera m_SceneCamera = CreateCamera();
-    glm::vec3 m_CameraEulers = {};
+    Vec3 m_CameraEulers = {};
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
         App::resource("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
@@ -287,7 +291,7 @@ private:
     Mesh m_CubeMesh = GenCube();
     std::array<SceneCube, 6> m_SceneCubes = MakeSceneCubes();
     RenderTexture m_DepthTexture = CreateDepthTexture();
-    glm::vec3 m_LightPos = {};
+    Vec3 m_LightPos = {};
     bool m_IsMouseCaptured = false;
     bool m_ShowShadows = true;
     bool m_UseSoftShadows = false;

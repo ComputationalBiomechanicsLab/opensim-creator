@@ -1,13 +1,9 @@
 #include "TPS2DTab.hpp"
 
-#include <glm/mat3x4.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <nonstd/span.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Graphics.hpp>
@@ -16,7 +12,10 @@
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
+#include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
@@ -25,6 +24,7 @@
 #include <oscar/Utils/VariantHelpers.hpp>
 #include <Simbody.h>
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <string>
@@ -35,6 +35,11 @@
 #include <utility>
 #include <variant>
 #include <vector>
+
+using osc::Mat4;
+using osc::Vec2;
+using osc::Vec2i;
+using osc::Vec3;
 
 // 2D TPS algorithm stuff
 //
@@ -50,17 +55,17 @@ namespace
     //
     // this is typically what the user/caller defines
     struct LandmarkPair2D final {
-        glm::vec2 src;
-        glm::vec2 dest;
+        Vec2 src;
+        Vec2 dest;
     };
 
     // this is effectviely the "U" term in the TPS algorithm literature (which is usually U(r) = r^2 * log(r^2))
     //
     // i.e. U(||pi - p||) in the literature is equivalent to `RadialBasisFunction2D(pi, p)` here
-    float RadialBasisFunction2D(glm::vec2 controlPoint, glm::vec2 p)
+    float RadialBasisFunction2D(Vec2 controlPoint, Vec2 p)
     {
-        glm::vec2 const diff = controlPoint - p;
-        float const r2 = glm::dot(diff, diff);
+        Vec2 const diff = controlPoint - p;
+        float const r2 = osc::Dot(diff, diff);
 
         if (r2 == 0.0f)
         {
@@ -80,35 +85,35 @@ namespace
     //      the `wi` and `controlPoint` parts of that equation
     struct TPSNonAffineTerm2D final {
 
-        TPSNonAffineTerm2D(glm::vec2 weight_, glm::vec2 controlPoint_) :
+        TPSNonAffineTerm2D(Vec2 weight_, Vec2 controlPoint_) :
             weight{weight_},
             controlPoint{controlPoint_}
         {
         }
 
-        glm::vec2 weight;
-        glm::vec2 controlPoint;
+        Vec2 weight;
+        Vec2 controlPoint;
     };
 
     // all coefficients in the 2D TPS equation
     //
     // i.e. these are the a1, a2, a3, and w's (+ control points) terms of the equation
     struct TPSCoefficients2D final {
-        glm::vec2 a1 = {0.0f, 0.0f};
-        glm::vec2 a2 = {1.0f, 0.0f};
-        glm::vec2 a3 = {0.0f, 1.0f};
+        Vec2 a1 = {0.0f, 0.0f};
+        Vec2 a2 = {1.0f, 0.0f};
+        Vec2 a3 = {0.0f, 1.0f};
         std::vector<TPSNonAffineTerm2D> weights;
     };
 
     // evaluates the TPS equation with the given coefficients and input point
-    glm::vec2 Evaluate(TPSCoefficients2D const& coefs, glm::vec2 p)
+    Vec2 Evaluate(TPSCoefficients2D const& coefs, Vec2 p)
     {
         // this implementation effectively evaluates both `fx(x, y)` and `fy(x, y)` at
         // the same time, because `TPSCoefficients2D` stores the X and Y variants of the
         // coefficients together in memory (as `vec2`s)
 
         // compute affine terms (a1 + a2*x + a3*y)
-        glm::vec2 rv = coefs.a1 + coefs.a2*p.x + coefs.a3*p.y;
+        Vec2 rv = coefs.a1 + coefs.a2*p.x + coefs.a3*p.y;
 
         // accumulate non-affine terms (effectively: wi * U(||controlPoint - p||))
         for (TPSNonAffineTerm2D const& wt : coefs.weights)
@@ -184,8 +189,8 @@ namespace
         {
             for (int col = 0; col < numPairs; ++col)
             {
-                glm::vec2 const& pi = landmarkPairs[row].src;
-                glm::vec2 const& pj = landmarkPairs[col].src;
+                Vec2 const& pi = landmarkPairs[row].src;
+                Vec2 const& pj = landmarkPairs[col].src;
 
                 L(row, col) = RadialBasisFunction2D(pi, pj);
             }
@@ -262,8 +267,8 @@ namespace
         rv.weights.reserve(numPairs);
         for (int i = 0; i < numPairs; ++i)
         {
-            glm::vec2 weight = {Cx[i], Cy[i]};
-            glm::vec2 controlPoint = landmarkPairs[i].src;
+            Vec2 weight = {Cx[i], Cy[i]};
+            Vec2 controlPoint = landmarkPairs[i].src;
             rv.weights.emplace_back(weight, controlPoint);
         }
 
@@ -279,7 +284,7 @@ namespace
         {
         }
 
-        glm::vec2 transform(glm::vec2 p) const
+        Vec2 transform(Vec2 p) const
         {
             return Evaluate(m_Coefficients, p);
         }
@@ -294,11 +299,11 @@ namespace
     {
         osc::Mesh rv = mesh;
 
-        rv.transformVerts([&t](nonstd::span<glm::vec3> vs)
+        rv.transformVerts([&t](nonstd::span<Vec3> vs)
         {
-            for (glm::vec3& v : vs)
+            for (Vec3& v : vs)
             {
-                v = glm::vec3{t.transform(v), v.z};
+                v = Vec3{t.transform(v), v.z};
             }
         });
 
@@ -314,7 +319,7 @@ namespace
     // - initial (the user did nothing with their mouse yet)
     // - first click (the user clicked the source of a landmark pair and the UI is waiting for the destination)
     struct GUIInitialMouseState final {};
-    struct GUIFirstClickMouseState final { glm::vec2 srcNDCPos; };
+    struct GUIFirstClickMouseState final { Vec2 srcNDCPos; };
     using GUIMouseState = std::variant<GUIInitialMouseState, GUIFirstClickMouseState>;
 }
 
@@ -328,8 +333,8 @@ public:
         m_WireframeMaterial.setTransparent(true);
         m_WireframeMaterial.setWireframeMode(true);
         m_WireframeMaterial.setDepthTested(false);
-        m_Camera.setViewMatrixOverride(glm::mat4{1.0f});
-        m_Camera.setProjectionMatrixOverride(glm::mat4{1.0f});
+        m_Camera.setViewMatrixOverride(Mat4{1.0f});
+        m_Camera.setProjectionMatrixOverride(Mat4{1.0f});
         m_Camera.setBackgroundColor(Color::white());
     }
 
@@ -349,9 +354,9 @@ public:
 
         ImGui::Begin("Input");
         {
-            glm::vec2 const windowDims = ImGui::GetContentRegionAvail();
-            float const minDim = glm::min(windowDims.x, windowDims.y);
-            glm::ivec2 const texDims = glm::ivec2{minDim, minDim};
+            Vec2 const windowDims = ImGui::GetContentRegionAvail();
+            float const minDim = std::min(windowDims.x, windowDims.y);
+            Vec2i const texDims = Vec2i{minDim, minDim};
 
             renderMesh(m_InputGrid, texDims, m_InputRender);
 
@@ -369,14 +374,14 @@ public:
 
         ImGui::End();
 
-        glm::vec2 outputWindowPos;
-        glm::vec2 outputWindowDims;
+        Vec2 outputWindowPos;
+        Vec2 outputWindowDims;
         ImGui::Begin("Output");
         {
             outputWindowPos = ImGui::GetCursorScreenPos();
             outputWindowDims = ImGui::GetContentRegionAvail();
-            float const minDim = glm::min(outputWindowDims.x, outputWindowDims.y);
-            glm::ivec2 const texDims = glm::ivec2{minDim, minDim};
+            float const minDim = std::min(outputWindowDims.x, outputWindowDims.y);
+            Vec2i const texDims = Vec2i{minDim, minDim};
 
             {
                 // apply blending factor, compute warp, apply to grid
@@ -384,7 +389,7 @@ public:
                 std::vector<LandmarkPair2D> pairs = m_LandmarkPairs;
                 for (LandmarkPair2D& p : pairs)
                 {
-                    p.dest = glm::mix(p.src, p.dest, m_BlendingFactor);
+                    p.dest = osc::Mix(p.src, p.dest, m_BlendingFactor);
                 }
                 ThinPlateWarper2D warper{pairs};
                 m_OutputGrid = ApplyThinPlateWarpToMesh(warper, m_InputGrid);
@@ -418,7 +423,7 @@ public:
 private:
 
     // render the given mesh as-is to the given output render texture
-    void renderMesh(Mesh const& mesh, glm::ivec2 dims, std::optional<RenderTexture>& out)
+    void renderMesh(Mesh const& mesh, Vec2i dims, std::optional<RenderTexture>& out)
     {
         RenderTextureDescriptor desc{dims};
         desc.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
@@ -440,8 +445,8 @@ private:
         // render all fully-established landmark pairs
         for (LandmarkPair2D const& p : m_LandmarkPairs)
         {
-            glm::vec2 const p1 = ht.rect.p1 + (Dimensions(ht.rect) * NDCPointToTopLeftRelPos(p.src));
-            glm::vec2 const p2 = ht.rect.p1 + (Dimensions(ht.rect) * NDCPointToTopLeftRelPos(p.dest));
+            Vec2 const p1 = ht.rect.p1 + (Dimensions(ht.rect) * NDCPointToTopLeftRelPos(p.src));
+            Vec2 const p2 = ht.rect.p1 + (Dimensions(ht.rect) * NDCPointToTopLeftRelPos(p.dest));
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist->AddRectFilled(p1 - 12.0f, p1 + 12.0f, m_SrcSquareColor);
@@ -453,8 +458,8 @@ private:
         {
             GUIFirstClickMouseState const& st = std::get<GUIFirstClickMouseState>(m_MouseState);
 
-            glm::vec2 const p1 = ht.rect.p1 + (Dimensions(ht.rect) * NDCPointToTopLeftRelPos(st.srcNDCPos));
-            glm::vec2 const p2 = ImGui::GetMousePos();
+            Vec2 const p1 = ht.rect.p1 + (Dimensions(ht.rect) * NDCPointToTopLeftRelPos(st.srcNDCPos));
+            Vec2 const p2 = ImGui::GetMousePos();
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist->AddRectFilled(p1 - 12.0f, p1 + 12.0f, m_SrcSquareColor);
@@ -475,10 +480,10 @@ private:
     // render any mouse-related overlays for when the user hasn't clicked yet
     void renderMouseUIElements(ImGuiItemHittestResult const& ht, GUIInitialMouseState)
     {
-        glm::vec2 const mouseScreenPos = ImGui::GetMousePos();
-        glm::vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
-        glm::vec2 const mouseImageRelPos = mouseImagePos / Dimensions(ht.rect);
-        glm::vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
+        Vec2 const mouseScreenPos = ImGui::GetMousePos();
+        Vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
+        Vec2 const mouseImageRelPos = mouseImagePos / Dimensions(ht.rect);
+        Vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
 
         osc::DrawTooltipBodyOnly(to_string(mouseImageNDCPos));
 
@@ -491,10 +496,10 @@ private:
     // render any mouse-related overlays for when the user has clicked once
     void renderMouseUIElements(ImGuiItemHittestResult const& ht, GUIFirstClickMouseState st)
     {
-        glm::vec2 const mouseScreenPos = ImGui::GetMousePos();
-        glm::vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
-        glm::vec2 const mouseImageRelPos = mouseImagePos / Dimensions(ht.rect);
-        glm::vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
+        Vec2 const mouseScreenPos = ImGui::GetMousePos();
+        Vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
+        Vec2 const mouseImageRelPos = mouseImagePos / Dimensions(ht.rect);
+        Vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
 
         osc::DrawTooltipBodyOnly(to_string(mouseImageNDCPos) + "*");
 

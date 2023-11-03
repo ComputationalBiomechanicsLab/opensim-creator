@@ -8,7 +8,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/UndoableModelActions.hpp>
 
-#include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
 #include <nonstd/span.hpp>

@@ -2,7 +2,6 @@
 
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
 
-#include <glm/vec3.hpp>
 #include <gtest/gtest.h>
 #include <OpenSimCreator/Bindings/SimTKMeshLoader.hpp>
 #include <oscar/Graphics/Mesh.hpp>
@@ -12,6 +11,7 @@
 #include <oscar/Maths/Plane.hpp>
 #include <oscar/Maths/Sphere.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <cstddef>
@@ -20,13 +20,15 @@
 #include <numeric>
 #include <vector>
 
+using osc::Vec3;
+
 TEST(FitSphere, ReturnsUnitSphereWhenGivenAnEmptyMesh)
 {
     osc::Mesh const emptyMesh;
     osc::Sphere const sphereFit = osc::FitSphere(emptyMesh);
 
     ASSERT_TRUE(emptyMesh.getVerts().empty());
-    ASSERT_EQ(sphereFit.origin, glm::vec3(0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(sphereFit.origin, Vec3(0.0f, 0.0f, 0.0f));
     ASSERT_EQ(sphereFit.radius, 1.0f);
 }
 
@@ -36,7 +38,7 @@ TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenAUnitSphereMesh)
     osc::Mesh const sphereMesh = osc::GenSphere(16, 16);
     osc::Sphere const sphereFit = osc::FitSphere(sphereMesh);
 
-    ASSERT_TRUE(osc::IsEqualWithinAbsoluteError(sphereFit.origin, glm::vec3{}, 0.000001f));
+    ASSERT_TRUE(osc::IsEqualWithinAbsoluteError(sphereFit.origin, Vec3{}, 0.000001f));
     ASSERT_TRUE(osc::IsEqualWithinAbsoluteError(sphereFit.radius, 1.0f, 0.000001f));
 }
 
@@ -45,7 +47,7 @@ TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphere)
     osc::Transform t;
     t.position = {7.0f, 3.0f, 1.5f};
     t.scale = {3.25f, 3.25f, 3.25f};  // keep it spherical
-    t.rotation = glm::angleAxis(glm::radians(45.0f), glm::normalize(glm::vec3{1.0f, 1.0f, 0.0f}));
+    t.rotation = osc::AngleAxis(osc::Deg2Rad(45.0f), osc::Normalize(Vec3{1.0f, 1.0f, 0.0f}));
 
     osc::Mesh sphereMesh = osc::GenSphere(16, 16);
     sphereMesh.transformVerts(t);
@@ -95,8 +97,8 @@ TEST(FitPlane, ReturnsUnitPlanePointingUpInYIfGivenAnEmptyMesh)
     osc::Plane const planeFit = osc::FitPlane(emptyMesh);
 
     ASSERT_TRUE(emptyMesh.getVerts().empty());
-    ASSERT_EQ(planeFit.origin, glm::vec3(0.0f, 0.0f, 0.0f));
-    ASSERT_EQ(planeFit.normal, glm::vec3(0.0f, 1.0f, 0.0f));
+    ASSERT_EQ(planeFit.origin, Vec3(0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(planeFit.normal, Vec3(0.0f, 1.0f, 0.0f));
 }
 
 // reproduction: ensure the C++ rewrite produces similar results to:
@@ -164,11 +166,11 @@ TEST(FitEllipsoid, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedA
 
         // OSC change: the _signs_ of these direction vectors might be different from the MATLAB script because
         // OSC's implementation also gurantees that the vectors are right-handed
-        osc::to_array<glm::vec3>
+        osc::to_array<Vec3>
         ({
-            glm::vec3{0.387689357308333f, 0.744763303086706f, -0.543161656052074f},
-            glm::vec3{0.343850708787853f, 0.429871105312056f, 0.834851796957929},
-            glm::vec3{0.855256483340491f, -0.510429677030215f, -0.0894309371016929f},
+            Vec3{0.387689357308333f, 0.744763303086706f, -0.543161656052074f},
+            Vec3{0.343850708787853f, 0.429871105312056f, 0.834851796957929},
+            Vec3{0.855256483340491f, -0.510429677030215f, -0.0894309371016929f},
         })
     };
     constexpr float c_MaximumAbsoluteError = 0.0001f;
@@ -190,7 +192,7 @@ TEST(FitEllipsoid, DISABLED_ThrowsErrorIfGivenLessThan9Points)
 {
     auto const generateMeshWithNPoints = [](size_t n)
     {
-        std::vector<glm::vec3> verts(n);
+        std::vector<Vec3> verts(n);
         std::vector<uint16_t> indices(n);
         std::iota(indices.begin(), indices.end(), static_cast<uint16_t>(0));
 

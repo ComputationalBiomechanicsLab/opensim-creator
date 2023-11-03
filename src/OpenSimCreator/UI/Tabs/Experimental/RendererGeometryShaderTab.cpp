@@ -2,8 +2,6 @@
 
 #include <OpenSimCreator/Bindings/SimTKMeshLoader.hpp>
 
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
@@ -11,7 +9,9 @@
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/Shader.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <SDL_events.h>
 
@@ -24,7 +24,7 @@ public:
     Impl()
     {
         m_SceneCamera.setPosition({0.0f, 0.0f, 3.0f});
-        m_SceneCamera.setCameraFOV(glm::radians(45.0f));
+        m_SceneCamera.setCameraFOV(Deg2Rad(45.0f));
         m_SceneCamera.setNearClippingPlane(0.1f);
         m_SceneCamera.setFarClippingPlane(100.0f);
     }
@@ -114,7 +114,7 @@ private:
     Mesh m_Mesh = LoadMeshViaSimTK(App::resource("geometry/hat_ribs_scap.vtp"));
     Camera m_SceneCamera;
     bool m_IsMouseCaptured = false;
-    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+    Vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
     Color m_MeshColor = Color::white();
 };
 

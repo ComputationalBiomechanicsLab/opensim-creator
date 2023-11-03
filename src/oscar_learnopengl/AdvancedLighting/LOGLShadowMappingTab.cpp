@@ -1,8 +1,5 @@
 #include "LOGLShadowMappingTab.hpp"
 
-#include <glm/mat4x4.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 #include <IconsFontAwesome5.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
@@ -16,7 +13,11 @@
 #include <oscar/Graphics/RenderTextureDescriptor.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Mat4.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/CStringView.hpp>
@@ -28,6 +29,10 @@
 #include <utility>
 #include <vector>
 
+using osc::Vec2;
+using osc::Vec2i;
+using osc::Vec3;
+
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/ShadowMapping";
@@ -35,7 +40,7 @@ namespace
     // this matches the plane vertices used in the LearnOpenGL tutorial
     osc::Mesh GeneratePlaneMesh()
     {
-        std::vector<glm::vec3> const verts =
+        std::vector<Vec3> const verts =
         {
             { 25.0f, -0.5f,  25.0f},
             {-25.0f, -0.5f,  25.0f},
@@ -46,7 +51,7 @@ namespace
             { 25.0f, -0.5f, -25.0f},
         };
 
-        std::vector<glm::vec3> const normals =
+        std::vector<Vec3> const normals =
         {
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
@@ -57,7 +62,7 @@ namespace
             {0.0f, 1.0f, 0.0f},
         };
 
-        std::vector<glm::vec2> const texCoords =
+        std::vector<Vec2> const texCoords =
         {
             {25.0f,  0.0f},
             {0.0f,  0.0f},
@@ -89,7 +94,7 @@ namespace
     osc::RenderTexture CreateDepthTexture()
     {
         osc::RenderTexture rv;
-        osc::RenderTextureDescriptor shadowmapDescriptor{glm::ivec2{1024, 1024}};
+        osc::RenderTextureDescriptor shadowmapDescriptor{Vec2i{1024, 1024}};
         shadowmapDescriptor.setReadWrite(osc::RenderTextureReadWrite::Linear);
         rv.reformat(shadowmapDescriptor);
         return rv;
@@ -184,20 +189,20 @@ private:
         {
             Transform t;
             t.position = {0.0f, 1.0f, 0.0f};
-            t.scale = glm::vec3{0.5f};
+            t.scale = Vec3{0.5f};
             Graphics::DrawMesh(m_CubeMesh, t, material, m_Camera);
         }
         {
             Transform t;
             t.position = {2.0f, 0.0f, 1.0f};
-            t.scale = glm::vec3{0.5f};
+            t.scale = Vec3{0.5f};
             Graphics::DrawMesh(m_CubeMesh, t, material, m_Camera);
         }
         {
             Transform t;
             t.position = {-1.0f, 0.0f, 2.0f};
-            t.rotation = glm::angleAxis(glm::radians(60.0f), glm::normalize(glm::vec3{1.0f, 0.0f, 1.0f}));
-            t.scale = glm::vec3{0.25f};
+            t.rotation = AngleAxis(Deg2Rad(60.0f), Normalize(Vec3{1.0f, 0.0f, 1.0f}));
+            t.scale = Vec3{0.25f};
             Graphics::DrawMesh(m_CubeMesh, t, material, m_Camera);
         }
     }
@@ -206,8 +211,8 @@ private:
     {
         float const zNear = 1.0f;
         float const zFar = 7.5f;
-        glm::mat4 const lightViewMatrix = glm::lookAt(m_LightPos, glm::vec3{0.0f}, {0.0f, 1.0f, 0.0f});
-        glm::mat4 const lightProjMatrix = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, zNear, zFar);
+        Mat4 const lightViewMatrix = LookAt(m_LightPos, Vec3{0.0f}, {0.0f, 1.0f, 0.0f});
+        Mat4 const lightProjMatrix = Ortho(-10.0f, 10.0f, -10.0f, 10.0f, zNear, zFar);
         m_LatestLightSpaceMatrix = lightProjMatrix * lightViewMatrix;
 
         drawMeshesWithMaterial(m_DepthMaterial);
@@ -220,7 +225,7 @@ private:
     }
 
     Camera m_Camera = CreateCamera();
-    glm::vec3 m_CameraEulers = {};
+    Vec3 m_CameraEulers = {};
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
         App::resource("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
@@ -244,8 +249,8 @@ private:
         },
     };
     RenderTexture m_DepthTexture = CreateDepthTexture();
-    glm::mat4 m_LatestLightSpaceMatrix{1.0f};
-    glm::vec3 m_LightPos = {-2.0f, 4.0f, -1.0f};
+    Mat4 m_LatestLightSpaceMatrix{1.0f};
+    Vec3 m_LightPos = {-2.0f, 4.0f, -1.0f};
     bool m_IsMouseCaptured = false;
 };
 

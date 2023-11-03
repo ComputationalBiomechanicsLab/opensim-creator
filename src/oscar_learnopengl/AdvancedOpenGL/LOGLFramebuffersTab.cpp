@@ -2,8 +2,6 @@
 
 #include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
 
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
@@ -12,8 +10,11 @@
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MaterialPropertyBlock.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
+#include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
@@ -26,9 +27,13 @@
 #include <cstdint>
 #include <memory>
 
+using osc::Mat4;
+using osc::Vec2;
+using osc::Vec3;
+
 namespace
 {
-    constexpr auto c_PlaneVertices = osc::to_array<glm::vec3>(
+    constexpr auto c_PlaneVertices = osc::to_array<Vec3>(
     {
         { 5.0f, -0.5f,  5.0f},
         {-5.0f, -0.5f,  5.0f},
@@ -38,7 +43,7 @@ namespace
         {-5.0f, -0.5f, -5.0f},
         { 5.0f, -0.5f, -5.0f},
     });
-    constexpr auto c_PlaneTexCoords = osc::to_array<glm::vec2>(
+    constexpr auto c_PlaneTexCoords = osc::to_array<Vec2>(
     {
         {2.0f, 0.0f},
         {0.0f, 0.0f},
@@ -69,7 +74,7 @@ namespace
     {
         osc::Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         return rv;
@@ -78,8 +83,8 @@ namespace
     osc::Camera CreateScreenCamera()
     {
         osc::Camera rv;
-        rv.setViewMatrixOverride(glm::mat4{1.0f});
-        rv.setProjectionMatrixOverride(glm::mat4{1.0f});
+        rv.setViewMatrixOverride(Mat4{1.0f});
+        rv.setProjectionMatrixOverride(Mat4{1.0f});
         return rv;
     }
 }
@@ -137,7 +142,7 @@ private:
 
         // setup render texture
         osc::Rect viewportRect = osc::GetMainViewportWorkspaceScreenRect();
-        glm::vec2 viewportRectDims = osc::Dimensions(viewportRect);
+        Vec2 viewportRectDims = osc::Dimensions(viewportRect);
         m_RenderTexture.setDimensions(viewportRectDims);
         m_RenderTexture.setAntialiasingLevel(osc::App::get().getCurrentAntiAliasingLevel());
 
@@ -176,7 +181,7 @@ private:
 
     Camera m_SceneCamera = CreateSceneCamera();
     bool m_IsMouseCaptured = false;
-    glm::vec3 m_CameraEulers = {};
+    Vec3 m_CameraEulers = {};
 
     Texture2D m_ContainerTexture = LoadTexture2DFromImage(
         App::resource("oscar_learnopengl/textures/container.jpg"),

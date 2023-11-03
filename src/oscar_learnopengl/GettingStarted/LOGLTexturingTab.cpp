@@ -1,7 +1,5 @@
 #include "LOGLTexturingTab.hpp"
 
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
@@ -12,7 +10,10 @@
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/UI/Tabs/Tab.hpp>
@@ -23,6 +24,10 @@
 #include <cstdint>
 #include <utility>
 
+using osc::Mat4;
+using osc::Vec2;
+using osc::Vec3;
+
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Texturing";
@@ -32,18 +37,18 @@ namespace
         osc::Mesh quad = osc::GenTexturedQuad();
 
         // transform default quad verts to match LearnOpenGL
-        quad.transformVerts([](nonstd::span<glm::vec3> vs)
+        quad.transformVerts([](nonstd::span<Vec3> vs)
         {
-            for (glm::vec3& v : vs)
+            for (Vec3& v : vs)
             {
                 v *= 0.5f;
             }
         });
 
         // transform default quad texture coordinates to exercise wrap modes
-        quad.transformTexCoords([](nonstd::span<glm::vec2> coords)
+        quad.transformTexCoords([](nonstd::span<Vec2> coords)
         {
-            for (glm::vec2& coord : coords)
+            for (Vec2& coord : coords)
             {
                 coord *= 2.0f;
             }
@@ -92,8 +97,8 @@ namespace
     osc::Camera CreateIdentityCamera()
     {
         osc::Camera rv;
-        rv.setViewMatrixOverride(glm::mat4{1.0f});
-        rv.setProjectionMatrixOverride(glm::mat4{1.0f});
+        rv.setViewMatrixOverride(Mat4{1.0f});
+        rv.setProjectionMatrixOverride(Mat4{1.0f});
         return rv;
     }
 }

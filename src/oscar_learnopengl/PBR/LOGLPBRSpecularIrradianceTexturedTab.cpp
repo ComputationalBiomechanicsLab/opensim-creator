@@ -1,8 +1,5 @@
 #include "LOGLPBRSpecularIrradianceTexturedTab.hpp"
 
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <IconsFontAwesome5.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
@@ -18,8 +15,10 @@
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
+#include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
@@ -32,11 +31,14 @@
 #include <string>
 #include <utility>
 
+using osc::Mat4;
+using osc::Vec3;
+
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/PBR/SpecularIrradianceTextured";
 
-    constexpr auto c_LightPositions = osc::to_array<glm::vec3>(
+    constexpr auto c_LightPositions = osc::to_array<Vec3>(
     {
         {-10.0f,  10.0f, 10.0f},
         { 10.0f,  10.0f, 10.0f},
@@ -44,7 +46,7 @@ namespace
         { 10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<glm::vec3, c_LightPositions.size()> c_LightRadiances = osc::to_array<glm::vec3>(
+    constexpr std::array<Vec3, c_LightPositions.size()> c_LightRadiances = osc::to_array<Vec3>(
     {
         {150.0f, 150.0f, 150.0f},
         {150.0f, 150.0f, 150.0f},
@@ -56,7 +58,7 @@ namespace
     {
         osc::Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -80,8 +82,8 @@ namespace
         cubemapRenderTarget.setColorFormat(osc::RenderTextureFormat::ARGBFloat16);
 
         // create a 90 degree cube cone projection matrix
-        glm::mat4 const projectionMatrix = glm::perspective(
-            glm::radians(90.0f),
+        Mat4 const projectionMatrix = osc::Perspective(
+            osc::Deg2Rad(90.0f),
             1.0f,
             0.1f,
             10.0f
@@ -100,7 +102,7 @@ namespace
         material.setTexture("uEquirectangularMap", hdrTexture);
         material.setMat4Array(
             "uShadowMatrices",
-            osc::CalcCubemapViewProjMatrices(projectionMatrix, glm::vec3{})
+            osc::CalcCubemapViewProjMatrices(projectionMatrix, Vec3{})
         );
 
         osc::Camera camera;
@@ -117,8 +119,8 @@ namespace
         irradianceCubemap.setDimensionality(osc::TextureDimensionality::Cube);
         irradianceCubemap.setColorFormat(osc::RenderTextureFormat::ARGBFloat16);
 
-        glm::mat4 const captureProjection = glm::perspective(
-            glm::radians(90.0f),
+        Mat4 const captureProjection = osc::Perspective(
+            osc::Deg2Rad(90.0f),
             1.0f,
             0.1f,
             10.0f
@@ -139,7 +141,7 @@ namespace
         );
         material.setMat4Array(
             "uShadowMatrices",
-            osc::CalcCubemapViewProjMatrices(captureProjection, glm::vec3{})
+            osc::CalcCubemapViewProjMatrices(captureProjection, Vec3{})
         );
 
         osc::Camera camera;
@@ -160,8 +162,8 @@ namespace
         captureRT.setDimensionality(osc::TextureDimensionality::Cube);
         captureRT.setColorFormat(osc::RenderTextureFormat::ARGBFloat16);
 
-        glm::mat4 const captureProjection = glm::perspective(
-            glm::radians(90.0f),
+        Mat4 const captureProjection = osc::Perspective(
+            osc::Deg2Rad(90.0f),
             1.0f,
             0.1f,
             10.0f
@@ -177,7 +179,7 @@ namespace
             },
         };
         material.setRenderTexture("uEnvironmentMap", environmentMap);
-        material.setMat4Array("uShadowMatrices", osc::CalcCubemapViewProjMatrices(captureProjection, glm::vec3{}));
+        material.setMat4Array("uShadowMatrices", osc::CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
 
         osc::Camera camera;
 
@@ -232,8 +234,8 @@ namespace
 
         // TODO: Graphics::Blit with material
         osc::Camera camera;
-        camera.setProjectionMatrixOverride(glm::mat4{1.0f});
-        camera.setViewMatrixOverride(glm::mat4{1.0f});
+        camera.setProjectionMatrixOverride(Mat4{1.0f});
+        camera.setViewMatrixOverride(Mat4{1.0f});
 
         osc::Graphics::DrawMesh(quad, osc::Transform{}, material, camera);
         camera.renderTo(renderTex);
@@ -399,7 +401,7 @@ private:
 
     void drawSpheres()
     {
-        glm::vec3 pos = {-5.0f, 0.0f, 2.0f};
+        Vec3 pos = {-5.0f, 0.0f, 2.0f};
         for (IBLSpecularObjectTextures const& t : m_ObjectTextures)
         {
             setMaterialMaps(m_PBRMaterial, t);
@@ -412,11 +414,11 @@ private:
 
     void drawLights()
     {
-        for (glm::vec3 const& pos : c_LightPositions)
+        for (Vec3 const& pos : c_LightPositions)
         {
             Transform t;
             t.position = pos;
-            t.scale = glm::vec3{0.5f};
+            t.scale = Vec3{0.5f};
 
             Graphics::DrawMesh(m_SphereMesh, t, m_PBRMaterial, m_Camera);
         }
@@ -465,7 +467,7 @@ private:
     Mesh m_SphereMesh = GenSphere(64, 64);
 
     Camera m_Camera = CreateCamera();
-    glm::vec3 m_CameraEulers = {};
+    Vec3 m_CameraEulers = {};
     bool m_IsMouseCaptured = true;
 
     PerfPanel m_PerfPanel{"Perf"};

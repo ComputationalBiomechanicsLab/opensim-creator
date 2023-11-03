@@ -22,8 +22,6 @@
 #include <OpenSimCreator/Utils/ParamValue.hpp>
 #include <OpenSimCreator/Utils/UndoableModelActions.hpp>
 
-#include <glm/vec2.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <IconsFontAwesome5.h>
@@ -43,6 +41,8 @@
 #include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/App.hpp>
@@ -530,31 +530,31 @@ void osc::DrawWithRespectToMenuContainingMenuItemPerFrame(
 void osc::DrawPointTranslationInformationWithRespectTo(
     OpenSim::Frame const& frame,
     SimTK::State const& state,
-    glm::vec3 locationInGround)
+    Vec3 locationInGround)
 {
     SimTK::Transform const groundToFrame = frame.getTransformInGround(state).invert();
-    glm::vec3 position = osc::ToVec3(groundToFrame * osc::ToSimTKVec3(locationInGround));
+    Vec3 position = osc::ToVec3(groundToFrame * osc::ToSimTKVec3(locationInGround));
 
     ImGui::Text("translation");
     ImGui::SameLine();
     osc::DrawHelpMarker("translation", "Translational offset (in meters) of the point expressed in the chosen frame");
     ImGui::SameLine();
-    ImGui::InputFloat3("##translation", glm::value_ptr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputFloat3("##translation", ValuePtr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
 void osc::DrawDirectionInformationWithRepsectTo(
     OpenSim::Frame const& frame,
     SimTK::State const& state,
-    glm::vec3 directionInGround)
+    Vec3 directionInGround)
 {
     SimTK::Transform const groundToFrame = frame.getTransformInGround(state).invert();
-    glm::vec3 direction = osc::ToVec3(groundToFrame.xformBaseVecToFrame(osc::ToSimTKVec3(directionInGround)));
+    Vec3 direction = osc::ToVec3(groundToFrame.xformBaseVecToFrame(osc::ToSimTKVec3(directionInGround)));
 
     ImGui::Text("direction");
     ImGui::SameLine();
     osc::DrawHelpMarker("direction", "a unit vector expressed in the given frame");
     ImGui::SameLine();
-    ImGui::InputFloat3("##direction", glm::value_ptr(direction), "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputFloat3("##direction", ValuePtr(direction), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
 void osc::DrawFrameInformationExpressedIn(
@@ -563,20 +563,20 @@ void osc::DrawFrameInformationExpressedIn(
     OpenSim::Frame const& otherFrame)
 {
     SimTK::Transform const xform = parent.findTransformBetween(state, otherFrame);
-    glm::vec3 position = osc::ToVec3(xform.p());
-    glm::vec3 rotationEulers = osc::ToVec3(xform.R().convertRotationToBodyFixedXYZ());
+    Vec3 position = osc::ToVec3(xform.p());
+    Vec3 rotationEulers = osc::ToVec3(xform.R().convertRotationToBodyFixedXYZ());
 
     ImGui::Text("translation");
     ImGui::SameLine();
     osc::DrawHelpMarker("translation", "Translational offset (in meters) of the frame's origin expressed in the chosen frame");
     ImGui::SameLine();
-    ImGui::InputFloat3("##translation", glm::value_ptr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputFloat3("##translation", ValuePtr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
 
     ImGui::Text("orientation");
     ImGui::SameLine();
     osc::DrawHelpMarker("orientation", "Orientation offset (in radians) of the frame, expressed in the chosen frame as a frame-fixed x-y-z rotation sequence");
     ImGui::SameLine();
-    ImGui::InputFloat3("##orientation", glm::value_ptr(rotationEulers), "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputFloat3("##orientation", ValuePtr(rotationEulers), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
 bool osc::BeginCalculateMenu(CalculateMenuFlags flags)
@@ -662,7 +662,7 @@ void osc::DrawCalculateOriginMenu(
 {
     if (ImGui::BeginMenu("origin"))
     {
-        glm::vec3 const posInGround = ToVec3(sphere.getFrame().getPositionInGround(state));
+        Vec3 const posInGround = ToVec3(sphere.getFrame().getPositionInGround(state));
         auto const onFrameMenuOpened = [&state, posInGround](OpenSim::Frame const& otherFrame)
         {
             DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
@@ -1056,7 +1056,7 @@ bool osc::DrawCameraControlButtons(
     float const xFirstRow = viewerScreenRect.p1.x + style.WindowPadding.x + osc::CalcAlignmentAxesDimensions().x + style.ItemSpacing.x;
     float const yFirstRow = (viewerScreenRect.p2.y - style.WindowPadding.y - 0.5f*osc::CalcAlignmentAxesDimensions().y) - 0.5f*twoRowHeight;
 
-    glm::vec2 const firstRowTopLeft = {xFirstRow, yFirstRow};
+    Vec2 const firstRowTopLeft = {xFirstRow, yFirstRow};
     float const midRowY = yFirstRow + 0.5f*(buttonHeight + rowSpacing);
 
     bool edited = false;
@@ -1215,13 +1215,13 @@ bool osc::DrawViewerImGuiOverlays(
     bool edited = false;
 
     // draw the top overlays
-    ImGui::SetCursorScreenPos(renderRect.p1 + glm::vec2{ImGui::GetStyle().WindowPadding});
+    ImGui::SetCursorScreenPos(renderRect.p1 + Vec2{ImGui::GetStyle().WindowPadding});
     edited = DrawViewerTopButtonRow(params, drawlist, iconCache, drawExtraElementsInTop) || edited;
 
     // compute bottom overlay positions
     ImGuiStyle const& style = ImGui::GetStyle();
-    glm::vec2 const alignmentAxesDims = osc::CalcAlignmentAxesDimensions();
-    glm::vec2 const axesTopLeft =
+    Vec2 const alignmentAxesDims = osc::CalcAlignmentAxesDimensions();
+    Vec2 const axesTopLeft =
     {
         renderRect.p1.x + style.WindowPadding.x,
         renderRect.p2.y - style.WindowPadding.y - alignmentAxesDims.y
@@ -1242,7 +1242,7 @@ bool osc::DrawViewerImGuiOverlays(
     return edited;
 }
 
-bool osc::BeginToolbar(CStringView label, std::optional<glm::vec2> padding)
+bool osc::BeginToolbar(CStringView label, std::optional<Vec2> padding)
 {
     if (padding)
     {

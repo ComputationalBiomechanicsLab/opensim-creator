@@ -2,8 +2,8 @@
 
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/RayCollision.hpp>
+#include <oscar/Maths/Vec3.hpp>
 
-#include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
 
 #include <cstdint>
@@ -99,7 +99,7 @@ namespace osc
 
         BVHCollision(
             float distance_,
-            glm::vec3 position_,
+            Vec3 position_,
             ptrdiff_t id_) :
 
             RayCollision{distance_, position_},
@@ -118,22 +118,22 @@ namespace osc
         //
         // prim.getID() will refer to the index of the first vertex in the triangle
         void buildFromIndexedTriangles(
-            nonstd::span<glm::vec3 const> verts,
+            nonstd::span<Vec3 const> verts,
             nonstd::span<uint16_t const> indices
         );
         void buildFromIndexedTriangles(
-            nonstd::span<glm::vec3 const> verts,
+            nonstd::span<Vec3 const> verts,
             nonstd::span<uint32_t const> indices
         );
 
         // returns the location of the closest ray-triangle collision along the ray, if any
         std::optional<BVHCollision> getClosestRayIndexedTriangleCollision(
-            nonstd::span<glm::vec3 const> verts,
+            nonstd::span<Vec3 const> verts,
             nonstd::span<uint16_t const> indices,
             Line const&
         ) const;
         std::optional<BVHCollision> getClosestRayIndexedTriangleCollision(
-            nonstd::span<glm::vec3 const> verts,
+            nonstd::span<Vec3 const> verts,
             nonstd::span<uint32_t const> indices,
             Line const&
         ) const;

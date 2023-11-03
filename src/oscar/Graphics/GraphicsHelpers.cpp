@@ -8,16 +8,16 @@
 #include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
+#include <oscar/Maths/Mat4.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Tetrahedron.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/Vec4.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/SpanHelpers.hpp>
 
-#include <glm/mat4x4.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-#include <glm/gtx/transform.hpp>
 #include <nonstd/span.hpp>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -37,6 +37,11 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+using osc::Mat4;
+using osc::Vec2;
+using osc::Vec2i;
+using osc::Vec3;
 
 namespace
 {
@@ -62,7 +67,7 @@ namespace
             stbi_set_flip_vertically_on_load(c_StbTrue);
         }
 
-        glm::ivec2 dims{};
+        Vec2i dims{};
         int numChannels = 0;
         std::unique_ptr<float, decltype(&stbi_image_free)> const pixels =
         {
@@ -123,7 +128,7 @@ namespace
             stbi_set_flip_vertically_on_load(c_StbTrue);
         }
 
-        glm::ivec2 dims{};
+        Vec2i dims{};
         int numChannels = 0;
         std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> const pixels =
         {
@@ -168,8 +173,8 @@ namespace
     // describes the direction of each cube face and which direction is "up"
     // from the perspective of looking at that face from the center of the cube
     struct CubemapFaceDetails final {
-        glm::vec3 direction;
-        glm::vec3 up;
+        osc::Vec3 direction;
+        osc::Vec3 up;
     };
     constexpr auto c_CubemapFacesDetails = osc::to_array<CubemapFaceDetails>(
     {
@@ -181,13 +186,13 @@ namespace
         {{ 0.0f,  0.0f, -1.0f}, {0.0f, -1.0f,  0.0f}},
     });
 
-    glm::mat4 CalcCubemapViewMatrix(CubemapFaceDetails const& faceDetails, glm::vec3 const& cubeCenter)
+    Mat4 CalcCubemapViewMatrix(CubemapFaceDetails const& faceDetails, Vec3 const& cubeCenter)
     {
-        return glm::lookAt(cubeCenter, cubeCenter + faceDetails.direction, faceDetails.up);
+        return osc::LookAt(cubeCenter, cubeCenter + faceDetails.direction, faceDetails.up);
     }
 }
 
-glm::vec3 osc::MassCenter(Mesh const& m)
+osc::Vec3 osc::MassCenter(Mesh const& m)
 {
     // hastily implemented from: http://forums.cgsociety.org/t/how-to-calculate-center-of-mass-for-triangular-mesh/1309966
     //
@@ -208,24 +213,24 @@ glm::vec3 osc::MassCenter(Mesh const& m)
         return {0.0f, 0.0f, 0.0f};
     }
 
-    nonstd::span<glm::vec3 const> const verts = m.getVerts();
+    nonstd::span<Vec3 const> const verts = m.getVerts();
     MeshIndicesView const indices = m.getIndices();
     size_t const len = (indices.size() / 3) * 3;  // paranioa
 
     double totalVolume = 0.0f;
-    glm::dvec3 weightedCenterOfMass = {0.0, 0.0, 0.0};
+    Vec3d weightedCenterOfMass{};
     for (size_t i = 0; i < len; i += 3)
     {
         Tetrahedron tetrahedron
         {
-            glm::vec3{0.0f, 0.0f, 0.0f},  // reference point
+            Vec3{},  // reference point
             verts[indices[i]],
             verts[indices[i+1]],
             verts[indices[i+2]],
         };
 
         double const volume = Volume(tetrahedron);
-        glm::dvec3 const centerOfMass = Center(tetrahedron);
+        Vec3d const centerOfMass = Center(tetrahedron);
 
         totalVolume += volume;
         weightedCenterOfMass += volume * centerOfMass;
@@ -233,12 +238,12 @@ glm::vec3 osc::MassCenter(Mesh const& m)
     return weightedCenterOfMass / totalVolume;
 }
 
-glm::vec3 osc::AverageCenterpoint(Mesh const& m)
+osc::Vec3 osc::AverageCenterpoint(Mesh const& m)
 {
     MeshIndicesView const indices = m.getIndices();
-    nonstd::span<glm::vec3 const> const verts = m.getVerts();
+    nonstd::span<Vec3 const> const verts = m.getVerts();
 
-    glm::vec3 acc = {0.0f, 0.0f, 0.0f};
+    Vec3 acc = {0.0f, 0.0f, 0.0f};
     for (uint32_t index : indices)
     {
         acc += verts[index];
@@ -248,11 +253,11 @@ glm::vec3 osc::AverageCenterpoint(Mesh const& m)
     return acc;
 }
 
-std::vector<glm::vec4> osc::CalcTangentVectors(
+std::vector<osc::Vec4> osc::CalcTangentVectors(
     MeshTopology const& topology,
-    nonstd::span<glm::vec3 const> verts,
-    nonstd::span<glm::vec3 const> normals,
-    nonstd::span<glm::vec2 const> texCoords,
+    nonstd::span<Vec3 const> verts,
+    nonstd::span<Vec3 const> normals,
+    nonstd::span<Vec2 const> texCoords,
     MeshIndicesView const& indices)
 {
     // related:
@@ -265,7 +270,7 @@ std::vector<glm::vec4> osc::CalcTangentVectors(
     // http://image.diku.dk/projects/media/morten.mikkelsen.08.pdf
     // http://www.crytek.com/download/Triangle_mesh_tangent_space_calculation.pdf
 
-    std::vector<glm::vec4> rv;
+    std::vector<Vec4> rv;
 
     // edge-case: there's insufficient topological/normal/coordinate data, so
     //            return fallback-filled ({1,0,0,1}) vector
@@ -300,7 +305,7 @@ std::vector<glm::vec4> osc::CalcTangentVectors(
     //     - increment weight: `weights[i]++`
     rv.assign(verts.size(), {0.0f, 0.0f, 0.0f, 0.0f});
     std::vector<uint16_t> weights(verts.size(), 0);
-    auto const accumulateTangent = [&rv, &weights](auto i, glm::vec4 const& newTangent)
+    auto const accumulateTangent = [&rv, &weights](auto i, Vec4 const& newTangent)
     {
         rv[i] = (static_cast<float>(weights[i])*rv[i] + newTangent)/(static_cast<float>(weights[i]+1));
         weights[i]++;
@@ -310,23 +315,23 @@ std::vector<glm::vec4> osc::CalcTangentVectors(
     for (ptrdiff_t triBegin = 0, end = ssize(indices)-2; triBegin < end; triBegin += 3)
     {
         // compute edge vectors in object and tangent (UV) space
-        glm::vec3 const e1 = verts[indices[triBegin+1]] - verts[indices[triBegin+0]];
-        glm::vec3 const e2 = verts[indices[triBegin+2]] - verts[indices[triBegin+0]];
-        glm::vec2 const dUV1 = texCoords[indices[triBegin+1]] - texCoords[indices[triBegin+0]];  // delta UV for edge 1
-        glm::vec2 const dUV2 = texCoords[indices[triBegin+2]] - texCoords[indices[triBegin+0]];
+        Vec3 const e1 = verts[indices[triBegin+1]] - verts[indices[triBegin+0]];
+        Vec3 const e2 = verts[indices[triBegin+2]] - verts[indices[triBegin+0]];
+        Vec2 const dUV1 = texCoords[indices[triBegin+1]] - texCoords[indices[triBegin+0]];  // delta UV for edge 1
+        Vec2 const dUV2 = texCoords[indices[triBegin+2]] - texCoords[indices[triBegin+0]];
 
         // this is effectively inline-ing a matrix inversion + multiplication, see:
         //
         // - https://www.cs.utexas.edu/~fussell/courses/cs384g-spring2016/lectures/normal_mapping_tangent.pdf
         // - https://learnopengl.com/Advanced-Lighting/Normal-Mapping
         float const invDeterminant = 1.0f/(dUV1.x*dUV2.y - dUV2.x*dUV1.y);
-        glm::vec3 const tangent = invDeterminant * glm::vec3
+        Vec3 const tangent = invDeterminant * Vec3
         {
             dUV2.y*e1.x - dUV1.y*e2.x,
             dUV2.y*e1.y - dUV1.y*e2.y,
             dUV2.y*e1.z - dUV1.y*e2.z,
         };
-        glm::vec3 const bitangent = invDeterminant * glm::vec3
+        Vec3 const bitangent = invDeterminant * Vec3
         {
             -dUV2.x*e1.x + dUV1.x*e2.x,
             -dUV2.x*e1.y + dUV1.x*e2.y,
@@ -340,17 +345,17 @@ std::vector<glm::vec4> osc::CalcTangentVectors(
             auto const triVertIndex = indices[triBegin + iVert];
 
             // Gram-Schmidt orthogonalization (w.r.t. the stored normal)
-            glm::vec3 const normal = glm::normalize(normals[triVertIndex]);
-            glm::vec3 const orthoTangent = glm::normalize(tangent - glm::dot(normal, tangent)*normal);
-            glm::vec3 const orthoBitangent = glm::normalize(bitangent - (glm::dot(orthoTangent, bitangent)*orthoTangent) - (glm::dot(normal, bitangent)*normal));
+            Vec3 const normal = Normalize(normals[triVertIndex]);
+            Vec3 const orthoTangent = Normalize(tangent - Dot(normal, tangent)*normal);
+            Vec3 const orthoBitangent = Normalize(bitangent - (Dot(orthoTangent, bitangent)*orthoTangent) - (Dot(normal, bitangent)*normal));
 
             // this algorithm doesn't produce bitangents. Instead, it writes the
             // "direction" (flip) of the bitangent w.r.t. `cross(normal, tangent)`
             //
             // (the shader can recompute the bitangent from: `cross(normal, tangent) * w`)
-            float const w = glm::dot(glm::cross(normal, orthoTangent), orthoBitangent);
+            float const w = Dot(Cross(normal, orthoTangent), orthoBitangent);
 
-            accumulateTangent(triVertIndex, glm::vec4{orthoTangent, w});
+            accumulateTangent(triVertIndex, Vec4{orthoTangent, w});
         }
     }
     return rv;
@@ -370,7 +375,7 @@ void osc::WriteToPNG(
     Texture2D const& tex,
     std::filesystem::path const& outpath)
 {
-    glm::ivec2 const dims = tex.getDimensions();
+    Vec2i const dims = tex.getDimensions();
     int const stride = 4 * dims.x;
     std::vector<Color32> const pixels = tex.getPixels32();
 
@@ -389,13 +394,13 @@ void osc::WriteToPNG(
     OSC_ASSERT(rv != 0);
 }
 
-std::array<glm::mat4, 6> osc::CalcCubemapViewProjMatrices(
-    glm::mat4 const& projectionMatrix,
-    glm::vec3 cubeCenter)
+std::array<osc::Mat4, 6> osc::CalcCubemapViewProjMatrices(
+    Mat4 const& projectionMatrix,
+    Vec3 cubeCenter)
 {
     static_assert(std::size(c_CubemapFacesDetails) == 6);
 
-    std::array<glm::mat4, 6> rv{};
+    std::array<Mat4, 6> rv{};
     for (size_t i = 0; i < 6; ++i)
     {
         rv[i] = projectionMatrix * CalcCubemapViewMatrix(c_CubemapFacesDetails[i], cubeCenter);
@@ -403,7 +408,7 @@ std::array<glm::mat4, 6> osc::CalcCubemapViewProjMatrices(
     return rv;
 }
 
-void osc::ForEachIndexedVert(Mesh const& mesh, std::function<void(glm::vec3)> const& callback)
+void osc::ForEachIndexedVert(Mesh const& mesh, std::function<void(Vec3)> const& callback)
 {
     auto const verts = mesh.getVerts();
     auto const indices = mesh.getIndices();
@@ -417,12 +422,12 @@ void osc::ForEachIndexedVert(Mesh const& mesh, std::function<void(glm::vec3)> co
     }
 }
 
-std::vector<glm::vec3> osc::GetAllIndexedVerts(Mesh const& mesh)
+std::vector<osc::Vec3> osc::GetAllIndexedVerts(Mesh const& mesh)
 {
     auto const verts = mesh.getVerts();
     auto const indices = mesh.getIndices();
 
-    std::vector<glm::vec3> rv;
+    std::vector<Vec3> rv;
     rv.reserve(indices.size());  // guess: it's likely that all indices are fine
     for (size_t i = 0; i < indices.size(); ++i)
     {

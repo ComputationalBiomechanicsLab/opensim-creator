@@ -5,15 +5,11 @@
 #include <OpenSimCreator/UI/Widgets/MainMenu.hpp>
 #include <OpenSimCreator/Utils/TPS3D.hpp>
 
-#include <glm/mat3x4.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <nonstd/span.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Formats/CSV.hpp>
 #include <oscar/Formats/OBJ.hpp>
 #include <oscar/Formats/STL.hpp>
@@ -30,6 +26,9 @@
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/Vec4.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/Log.hpp>
@@ -83,12 +82,17 @@
 #include <variant>
 #include <vector>
 
+using osc::Color;
+using osc::Vec2;
+using osc::Vec3;
+using osc::Vec4;
+
 // constants
 namespace
 {
-    constexpr glm::vec2 c_OverlayPadding = {10.0f, 10.0f};
-    constexpr osc::Color c_PairedLandmarkColor = osc::Color::green();
-    constexpr osc::Color c_UnpairedLandmarkColor = osc::Color::red();
+    constexpr Vec2 c_OverlayPadding = {10.0f, 10.0f};
+    constexpr Color c_PairedLandmarkColor = Color::green();
+    constexpr Color c_UnpairedLandmarkColor = Color::red();
 }
 
 // Thin-Plate Spline (TPS) document datastructure
@@ -119,8 +123,8 @@ namespace
         }
 
         std::string id;
-        std::optional<glm::vec3> maybeSourceLocation;
-        std::optional<glm::vec3> maybeDestinationLocation;
+        std::optional<Vec3> maybeSourceLocation;
+        std::optional<Vec3> maybeDestinationLocation;
     };
 
     // a TPS document
@@ -130,7 +134,7 @@ namespace
         osc::Mesh sourceMesh = osc::GenSphere(16, 16);
         osc::Mesh destinationMesh = osc::GenUntexturedYToYCylinder(16);
         std::vector<TPSDocumentLandmarkPair> landmarkPairs;
-        std::vector<glm::vec3> nonParticipatingLandmarks;
+        std::vector<Vec3> nonParticipatingLandmarks;
         float blendingFactor = 1.0f;
         size_t nextLandmarkID = 0;
     };
@@ -177,14 +181,14 @@ struct std::hash<TPSDocumentElementID> final {
 namespace
 {
     // returns the (mutable) source/destination of the given landmark pair, if available
-    std::optional<glm::vec3>& UpdLocation(TPSDocumentLandmarkPair& landmarkPair, TPSDocumentInputIdentifier which)
+    std::optional<Vec3>& UpdLocation(TPSDocumentLandmarkPair& landmarkPair, TPSDocumentInputIdentifier which)
     {
         static_assert(osc::NumOptions<TPSDocumentInputIdentifier>() == 2);
         return which == TPSDocumentInputIdentifier::Source ? landmarkPair.maybeSourceLocation : landmarkPair.maybeDestinationLocation;
     }
 
     // returns the source/destination of the given landmark pair, if available
-    std::optional<glm::vec3> const& GetLocation(TPSDocumentLandmarkPair const& landmarkPair, TPSDocumentInputIdentifier which)
+    std::optional<Vec3> const& GetLocation(TPSDocumentLandmarkPair const& landmarkPair, TPSDocumentInputIdentifier which)
     {
         static_assert(osc::NumOptions<TPSDocumentInputIdentifier>() == 2);
         return which == TPSDocumentInputIdentifier::Source ? landmarkPair.maybeSourceLocation : landmarkPair.maybeDestinationLocation;
@@ -270,7 +274,7 @@ namespace
     void AddLandmarkToInput(
         TPSDocument& doc,
         TPSDocumentInputIdentifier which,
-        glm::vec3 const& pos)
+        Vec3 const& pos)
     {
         // first, try assigning it to an empty slot in the existing data
         //
@@ -280,7 +284,7 @@ namespace
         bool wasAssignedToExistingEmptySlot = false;
         for (TPSDocumentLandmarkPair& p : doc.landmarkPairs)
         {
-            std::optional<glm::vec3>& maybeLoc = UpdLocation(p, which);
+            std::optional<Vec3>& maybeLoc = UpdLocation(p, which);
             if (!maybeLoc)
             {
                 maybeLoc = pos;
@@ -318,7 +322,7 @@ namespace
     void ActionAddLandmarkTo(
         osc::UndoRedoT<TPSDocument>& doc,
         TPSDocumentInputIdentifier which,
-        glm::vec3 const& pos)
+        Vec3 const& pos)
     {
         AddLandmarkToInput(doc.updScratch(), which, pos);
         doc.commitScratch("added landmark");
@@ -353,13 +357,13 @@ namespace
             return;  // user didn't select anything
         }
 
-        std::vector<glm::vec3> const landmarks = osc::LoadLandmarksFromCSVFile(*maybeCSVPath);
+        std::vector<Vec3> const landmarks = osc::LoadLandmarksFromCSVFile(*maybeCSVPath);
         if (landmarks.empty())
         {
             return;  // the landmarks file was empty, or had invalid data
         }
 
-        for (glm::vec3 const& landmark : landmarks)
+        for (Vec3 const& landmark : landmarks)
         {
             AddLandmarkToInput(doc.updScratch(), which, landmark);
         }
@@ -376,7 +380,7 @@ namespace
             return;  // user didn't select anything
         }
 
-        std::vector<glm::vec3> const landmarks = osc::LoadLandmarksFromCSVFile(*maybeCSVPath);
+        std::vector<Vec3> const landmarks = osc::LoadLandmarksFromCSVFile(*maybeCSVPath);
         if (landmarks.empty())
         {
             return;  // the landmarks file was empty, or had invalid data
@@ -480,7 +484,7 @@ namespace
 
         for (TPSDocumentLandmarkPair const& p : doc.landmarkPairs)
         {
-            if (std::optional<glm::vec3> const loc = GetLocation(p, which))
+            if (std::optional<Vec3> const loc = GetLocation(p, which))
             {
                 osc::WriteCSVRow(
                     fileOutputStream,
@@ -610,7 +614,7 @@ namespace
     }
 
     void ActionTrySaveWarpedNonParticipatingLandmarksToCSV(
-        nonstd::span<glm::vec3 const> nonParticipatingLandmarkPositions)
+        nonstd::span<Vec3 const> nonParticipatingLandmarkPositions)
     {
         std::optional<std::filesystem::path> const maybeCSVPath =
             osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
@@ -625,7 +629,7 @@ namespace
             return;  // couldn't open file for writing
         }
 
-        for (glm::vec3 const& nonParticipatingLandmark : nonParticipatingLandmarkPositions)
+        for (Vec3 const& nonParticipatingLandmark : nonParticipatingLandmarkPositions)
         {
             osc::WriteCSVRow(
                 fileOutputStream,
@@ -655,7 +659,7 @@ namespace
             return m_CachedResultMesh;
         }
 
-        nonstd::span<glm::vec3 const> getWarpedNonParticipatingLandmarks(TPSDocument const& doc)
+        nonstd::span<Vec3 const> getWarpedNonParticipatingLandmarks(TPSDocument const& doc)
         {
             updateAll(doc);
             return m_CachedResultNonParticipatingLandmarks;
@@ -748,8 +752,8 @@ namespace
         osc::TPSCoefficients3D m_CachedCoefficients;
         osc::Mesh m_CachedSourceMesh;
         osc::Mesh m_CachedResultMesh;
-        std::vector<glm::vec3> m_CachedSourceNonParticipatingLandmarks;
-        std::vector<glm::vec3> m_CachedResultNonParticipatingLandmarks;
+        std::vector<Vec3> m_CachedSourceNonParticipatingLandmarks;
+        std::vector<Vec3> m_CachedResultNonParticipatingLandmarks;
     };
 }
 
@@ -759,14 +763,14 @@ namespace
     // a mouse hovertest result
     struct TPSUIViewportHover final {
 
-        explicit TPSUIViewportHover(glm::vec3 const& worldspaceLocation_) :
+        explicit TPSUIViewportHover(Vec3 const& worldspaceLocation_) :
             worldspaceLocation{worldspaceLocation_}
         {
         }
 
         TPSUIViewportHover(
             TPSDocumentElementID sceneElementID_,
-            glm::vec3 const& worldspaceLocation_) :
+            Vec3 const& worldspaceLocation_) :
 
             maybeSceneElementID{std::move(sceneElementID_)},
             worldspaceLocation{worldspaceLocation_}
@@ -774,7 +778,7 @@ namespace
         }
 
         std::optional<TPSDocumentElementID> maybeSceneElementID = std::nullopt;
-        glm::vec3 worldspaceLocation;
+        Vec3 worldspaceLocation;
     };
 
     // the user's current selection
@@ -875,7 +879,7 @@ namespace
         return state.meshResultCache.getWarpedMesh(state.editedDocument->getScratch());
     }
 
-    nonstd::span<glm::vec3 const> GetResultNonParticipatingLandmarks(TPSUISharedState& state)
+    nonstd::span<Vec3 const> GetResultNonParticipatingLandmarks(TPSUISharedState& state)
     {
         return state.meshResultCache.getWarpedNonParticipatingLandmarks(state.editedDocument->getScratch());
     }
@@ -911,7 +915,7 @@ namespace
     void AppendNonParticipatingLandmark(
         osc::Mesh const& landmarkSphereMesh,
         float baseLandmarkRadius,
-        glm::vec3 const& nonParticipatingLandmarkPos,
+        Vec3 const& nonParticipatingLandmarkPos,
         std::function<void(osc::SceneDecoration&&)> const& out)
     {
         osc::Transform transform{};
@@ -1135,7 +1139,7 @@ namespace
             }
         }
 
-        void drawColorCodedXYZ(glm::vec3 pos)
+        void drawColorCodedXYZ(Vec3 pos)
         {
             ImGui::TextUnformatted("(");
             ImGui::SameLine();
@@ -1349,8 +1353,8 @@ namespace
         {
             // compute top-level UI variables (render rect, mouse pos, etc.)
             osc::Rect const contentRect = osc::ContentRegionAvailScreenRect();
-            glm::vec2 const contentRectDims = osc::Dimensions(contentRect);
-            glm::vec2 const mousePos = ImGui::GetMousePos();
+            Vec2 const contentRectDims = osc::Dimensions(contentRect);
+            Vec2 const mousePos = ImGui::GetMousePos();
             osc::Line const cameraRay = m_Camera.unprojectTopLeftPosToWorldRay(mousePos - contentRect.p1, osc::Dimensions(contentRect));
 
             // mesh hittest: compute whether the user is hovering over the mesh (affects rendering)
@@ -1422,7 +1426,7 @@ namespace
             std::optional<TPSUIViewportHover> rv;
             for (TPSDocumentLandmarkPair const& p : GetScratch(*m_State).landmarkPairs)
             {
-                std::optional<glm::vec3> const maybePos = GetLocation(p, m_DocumentIdentifier);
+                std::optional<Vec3> const maybePos = GetLocation(p, m_DocumentIdentifier);
 
                 if (!maybePos)
                 {
@@ -1434,7 +1438,7 @@ namespace
                 std::optional<osc::RayCollision> const coll = osc::GetRayCollisionSphere(cameraRay, osc::Sphere{*maybePos, m_LandmarkRadius});
                 if (coll)
                 {
-                    if (!rv || glm::length(rv->worldspaceLocation - cameraRay.origin) > coll->distance)
+                    if (!rv || osc::Length(rv->worldspaceLocation - cameraRay.origin) > coll->distance)
                     {
                         TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentInputElementType::Landmark, p.id};
                         rv.emplace(std::move(fullID), *maybePos);
@@ -1613,7 +1617,7 @@ namespace
 
         // renders this panel's 3D scene to a texture
         osc::RenderTexture& renderScene(
-            glm::vec2 dims,
+            Vec2 dims,
             std::optional<osc::RayCollision> const& maybeMeshCollision,
             std::optional<TPSUIViewportHover> const& maybeLandmarkCollision)
         {
@@ -1648,7 +1652,7 @@ namespace
             // append each landmark as a sphere
             for (TPSDocumentLandmarkPair const& p : GetScratch(*m_State).landmarkPairs)
             {
-                std::optional<glm::vec3> const maybeLocation = GetLocation(p, m_DocumentIdentifier);
+                std::optional<Vec3> const maybeLocation = GetLocation(p, m_DocumentIdentifier);
 
                 if (!maybeLocation)
                 {
@@ -1667,18 +1671,18 @@ namespace
 
                 if (m_State->userSelection.contains(fullID))
                 {
-                    glm::vec4 tmpColor = decoration.color;
-                    tmpColor += glm::vec4{0.25f, 0.25f, 0.25f, 0.0f};
-                    tmpColor = glm::clamp(tmpColor, glm::vec4{0.0f}, glm::vec4{1.0f});
+                    Vec4 tmpColor = decoration.color;
+                    tmpColor += Vec4{0.25f, 0.25f, 0.25f, 0.0f};
+                    tmpColor = osc::Clamp(tmpColor, 0.0f, 1.0f);
 
                     decoration.color = osc::Color{tmpColor};
                     decoration.flags = osc::SceneDecorationFlags::IsSelected;
                 }
                 else if (m_State->currentHover && m_State->currentHover->maybeSceneElementID == fullID)
                 {
-                    glm::vec4 tmpColor = decoration.color;
-                    tmpColor += glm::vec4{0.15f, 0.15f, 0.15f, 0.0f};
-                    tmpColor = glm::clamp(tmpColor, glm::vec4{0.0f}, glm::vec4{1.0f});
+                    Vec4 tmpColor = decoration.color;
+                    tmpColor += Vec4{0.15f, 0.15f, 0.15f, 0.0f};
+                    tmpColor = osc::Clamp(tmpColor, 0.0f, 1.0f);
 
                     decoration.color = osc::Color{tmpColor};
                     decoration.flags = osc::SceneDecorationFlags::IsHovered;
@@ -1688,7 +1692,7 @@ namespace
             // append non-participating landmarks as non-user-selctable purple spheres
             if (m_DocumentIdentifier == TPSDocumentInputIdentifier::Source)
             {
-                for (glm::vec3 const& nonParticipatingLandmarkLocation : GetScratch(*m_State).nonParticipatingLandmarks)
+                for (Vec3 const& nonParticipatingLandmarkLocation : GetScratch(*m_State).nonParticipatingLandmarks)
                 {
                     AppendNonParticipatingLandmark(
                         m_State->landmarkSphere,
@@ -1747,7 +1751,7 @@ namespace
         void implDrawContent() final
         {
             // fill the entire available region with the render
-            glm::vec2 const dims = ImGui::GetContentRegionAvail();
+            Vec2 const dims = ImGui::GetContentRegionAvail();
 
             updateCamera();
 
@@ -1934,7 +1938,7 @@ namespace
             }
 
             // draw non-participating landmarks
-            for (glm::vec3 const& nonParticipatingLandmarkPos : GetResultNonParticipatingLandmarks(*m_State))
+            for (Vec3 const& nonParticipatingLandmarkPos : GetResultNonParticipatingLandmarks(*m_State))
             {
                 AppendNonParticipatingLandmark(
                     m_State->landmarkSphere,
@@ -1948,7 +1952,7 @@ namespace
         }
 
         // renders a panel to a texture via its renderer and returns a reference to the rendered texture
-        osc::RenderTexture& renderScene(glm::vec2 dims)
+        osc::RenderTexture& renderScene(Vec2 dims)
         {
             std::vector<osc::SceneDecoration> const decorations = generateDecorations();
             osc::SceneRendererParams const params = CalcStandardDarkSceneRenderParams(
@@ -1970,7 +1974,7 @@ namespace
         osc::ImGuiItemHittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;
         bool m_ShowDestinationMesh = false;
-        glm::vec2 m_OverlayPadding = {10.0f, 10.0f};
+        Vec2 m_OverlayPadding = {10.0f, 10.0f};
         float m_LandmarkRadius = 0.05f;
         float m_CursorXAtExportButton = 0.0f;
     };

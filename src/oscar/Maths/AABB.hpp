@@ -1,14 +1,14 @@
 #pragma once
 
-#include <glm/vec3.hpp>
+#include <oscar/Maths/Vec3.hpp>
 
 #include <iosfwd>
 
 namespace osc
 {
     struct AABB final {
-        glm::vec3 min;
-        glm::vec3 max;
+        Vec3 min;
+        Vec3 max;
     };
 
     bool operator==(AABB const&, AABB const&) noexcept;

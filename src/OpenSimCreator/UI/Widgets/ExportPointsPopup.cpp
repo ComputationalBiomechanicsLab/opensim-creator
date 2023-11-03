@@ -16,6 +16,7 @@
 #include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Formats/CSV.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/UI/Widgets/StandardPopup.hpp>
@@ -35,6 +36,8 @@
 #include <string_view>
 #include <unordered_set>
 #include <utility>
+
+using osc::Vec3;
 
 namespace
 {
@@ -422,7 +425,7 @@ namespace
         return rv;
     }
 
-    glm::vec3 CalcReexpressedFrame(
+    Vec3 CalcReexpressedFrame(
         OpenSim::Model const& model,
         SimTK::State const& state,
         osc::PointInfo const& pointInfo,
@@ -459,7 +462,7 @@ namespace
 
         // else: compute position, name, etc. and emit as a CSV data row
 
-        glm::vec3 const position = maybeGround2ReexpressedFrame ?
+        Vec3 const position = maybeGround2ReexpressedFrame ?
             CalcReexpressedFrame(model, state, *pi, *maybeGround2ReexpressedFrame) :
             pi->location;
 

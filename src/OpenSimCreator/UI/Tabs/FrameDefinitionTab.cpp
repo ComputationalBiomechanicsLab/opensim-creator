@@ -23,9 +23,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/UndoableModelActions.hpp>
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
@@ -45,6 +42,8 @@
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/Log.hpp>
@@ -88,6 +87,9 @@
 #include <utility>
 #include <vector>
 
+using osc::Vec2;
+using osc::Vec3;
+
 // top-level constants
 namespace
 {
@@ -106,7 +108,7 @@ namespace
     SimTK::Vec3 CalcLocationInFrame(
         OpenSim::Frame const& frame,
         SimTK::State const& state,
-        glm::vec3 const& locationInGround)
+        Vec3 const& locationInGround)
     {
         SimTK::Vec3 const translationInGround = osc::ToSimTKVec3(locationInGround);
         return frame.getTransformInGround(state).invert() * translationInGround;
@@ -852,7 +854,7 @@ namespace
     void ActionAddSphereInMeshFrame(
         osc::UndoableModelStatePair& model,
         OpenSim::Mesh const& mesh,
-        std::optional<glm::vec3> const& maybeClickPosInGround)
+        std::optional<Vec3> const& maybeClickPosInGround)
     {
         // if the caller requests a location via a click, set the position accordingly
         SimTK::Vec3 const locationInMeshFrame = maybeClickPosInGround ?
@@ -888,7 +890,7 @@ namespace
     void ActionAddOffsetFrameInMeshFrame(
         osc::UndoableModelStatePair& model,
         OpenSim::Mesh const& mesh,
-        std::optional<glm::vec3> const& maybeClickPosInGround)
+        std::optional<Vec3> const& maybeClickPosInGround)
     {
         // if the caller requests a location via a click, set the position accordingly
         SimTK::Vec3 const locationInMeshFrame = maybeClickPosInGround ?
@@ -1341,7 +1343,7 @@ namespace
             }
 
             // show header
-            ImGui::SetCursorScreenPos(panelState.viewportRect.p1 + glm::vec2{10.0f, 10.0f});
+            ImGui::SetCursorScreenPos(panelState.viewportRect.p1 + Vec2{10.0f, 10.0f});
             ImGui::Text("%s (ESC to cancel)", m_State.popupParams.popupHeaderText.c_str());
 
             // handle completion state (i.e. user selected enough components)
@@ -1356,9 +1358,9 @@ namespace
                 ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
 
                 constexpr osc::CStringView cancellationButtonText = ICON_FA_ARROW_LEFT " Cancel (ESC)";
-                glm::vec2 const margin = {25.0f, 25.0f};
-                glm::vec2 const buttonDims = osc::CalcButtonSize(cancellationButtonText);
-                glm::vec2 const buttonTopLeft = panelState.viewportRect.p2 - (buttonDims + margin);
+                Vec2 const margin = {25.0f, 25.0f};
+                Vec2 const buttonDims = osc::CalcButtonSize(cancellationButtonText);
+                Vec2 const buttonTopLeft = panelState.viewportRect.p2 - (buttonDims + margin);
                 ImGui::SetCursorScreenPos(buttonTopLeft);
                 if (ImGui::Button(cancellationButtonText.c_str()))
                 {
@@ -2537,7 +2539,7 @@ namespace
 
         void onDraw()
         {
-            if (osc::BeginToolbar(m_Label, glm::vec2{5.0f, 5.0f}))
+            if (osc::BeginToolbar(m_Label, Vec2{5.0f, 5.0f}))
             {
                 drawContent();
             }

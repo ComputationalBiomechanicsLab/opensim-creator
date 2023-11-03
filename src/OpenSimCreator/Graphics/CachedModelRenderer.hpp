@@ -1,8 +1,8 @@
 #pragma once
 
-#include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
 #include <oscar/Maths/AABB.hpp>
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Scene/SceneCollision.hpp>
 
@@ -44,7 +44,7 @@ namespace osc
         RenderTexture& onDraw(
             VirtualConstModelStatePair const&,
             ModelRendererParams const&,
-            glm::vec2 dims,
+            Vec2 dims,
             AntiAliasingLevel antiAliasingLevel
         );
         RenderTexture& updRenderTexture();
@@ -53,7 +53,7 @@ namespace osc
         std::optional<AABB> getRootAABB() const;
         std::optional<SceneCollision> getClosestCollision(
             ModelRendererParams const&,
-            glm::vec2 mouseScreenPos,
+            Vec2 mouseScreenPos,
             Rect const& viewportScreenRect
         ) const;
 

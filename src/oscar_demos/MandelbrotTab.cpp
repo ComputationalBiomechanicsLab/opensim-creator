@@ -7,18 +7,21 @@
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
+#include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
-#include <glm/vec2.hpp>
 #include <SDL_events.h>
 
 #include <limits>
 #include <string>
 #include <utility>
+
+using osc::Mat4;
 
 namespace
 {
@@ -27,8 +30,8 @@ namespace
     osc::Camera CreateIdentityCamera()
     {
         osc::Camera camera;
-        camera.setViewMatrixOverride(glm::mat4{1.0f});
-        camera.setProjectionMatrixOverride(glm::mat4{1.0f});
+        camera.setViewMatrixOverride(Mat4{1.0f});
+        camera.setProjectionMatrixOverride(Mat4{1.0f});
         return camera;
     }
 }
@@ -69,7 +72,7 @@ private:
         }
         if (e.type == SDL_MOUSEMOTION && (e.motion.state & SDL_BUTTON_LMASK) != 0)
         {
-            glm::vec2 const screenSpacePanAmount = {static_cast<float>(e.motion.xrel), static_cast<float>(e.motion.yrel)};
+            Vec2 const screenSpacePanAmount = {static_cast<float>(e.motion.xrel), static_cast<float>(e.motion.yrel)};
             applyPan(screenSpacePanAmount);
             return true;
         }
@@ -92,12 +95,12 @@ private:
         m_Camera.renderToScreen();
     }
 
-    void applyZoom(glm::vec2, float)
+    void applyZoom(Vec2, float)
     {
         // TODO: zoom the mandelbrot viewport into the given screen-space location by the given factor
     }
 
-    void applyPan(glm::vec2)
+    void applyPan(Vec2)
     {
         // TODO: pan the mandelbrot viewport by the given screen-space offset vector
     }

@@ -1,6 +1,5 @@
 #include "SceneRenderer.hpp"
 
-#include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
@@ -13,10 +12,13 @@
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Graphics/TextureGenerators.hpp>
 #include <oscar/Maths/Constants.hpp>
+#include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneDecorationFlags.hpp>
@@ -24,10 +26,6 @@
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Perf.hpp>
 
-#include <glm/mat4x4.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/gtx/transform.hpp>
 #include <nonstd/span.hpp>
 
 #include <algorithm>
@@ -36,27 +34,40 @@
 #include <utility>
 #include <vector>
 
+using osc::AABB;
+using osc::Mat4;
+using osc::Material;
+using osc::Mesh;
+using osc::PolarPerspectiveCamera;
+using osc::RenderTexture;
+using osc::SceneDecoration;
+using osc::Sphere;
+using osc::Transform;
+using osc::Vec2;
+using osc::Vec2i;
+using osc::Vec3;
+
 namespace
 {
-    osc::Transform GetFloorTransform(glm::vec3 floorLocation, float fixupScaleFactor)
+    Transform GetFloorTransform(Vec3 floorLocation, float fixupScaleFactor)
     {
-        osc::Transform rv;
-        rv.rotation = glm::angleAxis(-osc::fpi2, glm::vec3{1.0f, 0.0f, 0.0f});
+        Transform rv;
+        rv.rotation = osc::AngleAxis(-osc::fpi2, Vec3{1.0f, 0.0f, 0.0f});
         rv.scale = {100.0f * fixupScaleFactor, 100.0f * fixupScaleFactor, 1.0f};
         rv.position = floorLocation;
         return rv;
     }
 
-    osc::AABB WorldpaceAABB(osc::SceneDecoration const& d)
+    AABB WorldpaceAABB(SceneDecoration const& d)
     {
         return osc::TransformAABB(d.mesh.getBounds(), d.transform);
     }
 
     struct RimHighlights final {
         RimHighlights(
-            osc::Mesh mesh_,
-            glm::mat4 const& transform_,
-            osc::Material material_) :
+            Mesh mesh_,
+            Mat4 const& transform_,
+            Material material_) :
 
             mesh{std::move(mesh_)},
             transform{transform_},
@@ -64,14 +75,14 @@ namespace
         {
         }
 
-        osc::Mesh mesh;
-        glm::mat4 transform;
-        osc::Material material;
+        Mesh mesh;
+        Mat4 transform;
+        Material material;
     };
 
     struct Shadows final {
-        osc::RenderTexture shadowMap;
-        glm::mat4 lightSpaceMat;
+        RenderTexture shadowMap;
+        Mat4 lightSpaceMat;
     };
 
     struct PolarAngles final {
@@ -79,7 +90,7 @@ namespace
         float phi;
     };
 
-    PolarAngles CalcPolarAngles(glm::vec3 const& directionFromOrigin)
+    PolarAngles CalcPolarAngles(Vec3 const& directionFromOrigin)
     {
         // X is left-to-right
         // Y is bottom-to-top
@@ -99,18 +110,20 @@ namespace
     }
 
     struct ShadowCameraMatrices final {
-        glm::mat4 viewMatrix;
-        glm::mat4 projMatrix;
+        Mat4 viewMatrix;
+        Mat4 projMatrix;
     };
 
-    ShadowCameraMatrices CalcShadowCameraMatrices(osc::AABB const& casterAABBs, glm::vec3 const& lightDirection)
+    ShadowCameraMatrices CalcShadowCameraMatrices(
+        AABB const& casterAABBs,
+        Vec3 const& lightDirection)
     {
-        osc::Sphere const casterSphere = osc::ToSphere(casterAABBs);
+        Sphere const casterSphere = osc::ToSphere(casterAABBs);
         PolarAngles const cameraPolarAngles = CalcPolarAngles(-lightDirection);
 
         // pump sphere+polar information into a polar camera in order to
         // calculate the renderer's view/projection matrices
-        osc::PolarPerspectiveCamera polarCamera;
+        PolarPerspectiveCamera polarCamera;
         polarCamera.focusPoint = -casterSphere.origin;
         polarCamera.phi = cameraPolarAngles.phi;
         polarCamera.theta = cameraPolarAngles.theta;
@@ -118,8 +131,8 @@ namespace
         polarCamera.znear = 0.0f;
         polarCamera.zfar = 2.0f * casterSphere.radius;
 
-        glm::mat4 const viewMat = polarCamera.getViewMtx();
-        glm::mat4 const projMat = glm::ortho(
+        Mat4 const viewMat = polarCamera.getViewMtx();
+        Mat4 const projMat = osc::Ortho(
             -casterSphere.radius,
             casterSphere.radius,
             -casterSphere.radius,
@@ -159,7 +172,7 @@ public:
         m_EdgeDetectorMaterial.setDepthTested(false);
     }
 
-    glm::ivec2 getDimensions() const
+    Vec2i getDimensions() const
     {
         return m_OutputTexture.getDimensions();
     }
@@ -345,7 +358,7 @@ private:
         Rect& rimRectNDC = *maybeRimRectNDC;
 
         // compute rim thickness in each direction (aspect ratio might not be 1:1)
-        glm::vec2 const rimThicknessNDC = 2.0f*params.rimThicknessInPixels / glm::vec2{params.dimensions};
+        Vec2 const rimThicknessNDC = 2.0f*params.rimThicknessInPixels / Vec2{params.dimensions};
 
         // expand by the rim thickness, so that the output has space for the rims
         rimRectNDC = osc::Expand(rimRectNDC, rimThicknessNDC);
@@ -414,7 +427,7 @@ private:
         return RimHighlights
         {
             m_QuadMesh,
-            glm::inverse(params.projectionMatrix * params.viewMatrix) * ToMat4(quadMeshToRimsQuad),
+            osc::Inverse(params.projectionMatrix * params.viewMatrix) * ToMat4(quadMeshToRimsQuad),
             m_EdgeDetectorMaterial,
         };
     }
@@ -498,7 +511,7 @@ osc::SceneRenderer::SceneRenderer(SceneRenderer&&) noexcept = default;
 osc::SceneRenderer& osc::SceneRenderer::operator=(SceneRenderer&&) noexcept = default;
 osc::SceneRenderer::~SceneRenderer() noexcept = default;
 
-glm::ivec2 osc::SceneRenderer::getDimensions() const
+osc::Vec2i osc::SceneRenderer::getDimensions() const
 {
     return m_Impl->getDimensions();
 }

@@ -2,7 +2,6 @@
 
 #include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
 
-#include <glm/vec3.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
@@ -13,7 +12,9 @@
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Constants.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
@@ -25,10 +26,12 @@
 #include <cstdint>
 #include <memory>
 
+using osc::Vec3;
+
 namespace
 {
     // worldspace positions of each cube (step 2)
-    constexpr auto c_CubePositions = osc::to_array<glm::vec3>(
+    constexpr auto c_CubePositions = osc::to_array<Vec3>(
     {
         { 0.0f,  0.0f,  0.0f },
         { 2.0f,  5.0f, -15.0f},
@@ -48,7 +51,7 @@ namespace
     {
         osc::Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.2f, 0.3f, 0.3f, 1.0f});
@@ -110,12 +113,12 @@ private:
 
     void implOnTick() final
     {
-        float const rotationSpeed = glm::radians(50.0f);
+        float const rotationSpeed = Deg2Rad(50.0f);
         double const dt = App::get().getFrameDeltaSinceAppStartup().count();
         auto const angle = static_cast<float>(rotationSpeed * dt);
-        glm::vec3 const axis = glm::normalize(glm::vec3{0.5f, 1.0f, 0.0f});
+        Vec3 const axis = Normalize(Vec3{0.5f, 1.0f, 0.0f});
 
-        m_Step1.rotation = glm::angleAxis(angle, axis);
+        m_Step1.rotation = AngleAxis(angle, axis);
     }
 
     void implOnDraw() final
@@ -143,14 +146,14 @@ private:
         }
         else
         {
-            glm::vec3 const axis = glm::normalize(glm::vec3{1.0f, 0.3f, 0.5f});
+            Vec3 const axis = Normalize(Vec3{1.0f, 0.3f, 0.5f});
             for (size_t i = 0; i < c_CubePositions.size(); ++i)
             {
-                glm::vec3 const& pos = c_CubePositions[i];
-                float const angle = glm::radians(static_cast<float>(i++) * 20.0f);
+                Vec3 const& pos = c_CubePositions[i];
+                float const angle = Deg2Rad(static_cast<float>(i++) * 20.0f);
 
                 Transform t;
-                t.rotation = glm::angleAxis(angle, axis);
+                t.rotation = AngleAxis(angle, axis);
                 t.position = pos;
 
                 Graphics::DrawMesh(m_Mesh, t, m_Material, m_Camera);
@@ -168,9 +171,9 @@ private:
                 ImGui::Text("mouse captured (esc to uncapture)");
             }
 
-            glm::vec3 cameraPos = m_Camera.getPosition();
+            Vec3 cameraPos = m_Camera.getPosition();
             ImGui::Text("camera pos = (%f, %f, %f)", cameraPos.x, cameraPos.y, cameraPos.z);
-            glm::vec3 cameraEulers = glm::degrees(m_CameraEulers);
+            Vec3 cameraEulers = osc::Rad2Deg(m_CameraEulers);
             ImGui::Text("camera eulers = (%f, %f, %f)", cameraEulers.x, cameraEulers.y, cameraEulers.z);
             ImGui::End();
 
@@ -189,7 +192,7 @@ private:
     Mesh m_Mesh = GenLearnOpenGLCube();
     Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     bool m_IsMouseCaptured = false;
-    glm::vec3 m_CameraEulers = {};
+    Vec3 m_CameraEulers = {};
 
     bool m_ShowStep1 = false;
     Transform m_Step1;

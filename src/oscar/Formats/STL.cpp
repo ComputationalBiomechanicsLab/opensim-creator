@@ -3,12 +3,12 @@
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Triangle.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/SpanHelpers.hpp>
 
-#include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
 
 #include <algorithm>
@@ -73,7 +73,7 @@ namespace
         }
     }
 
-    void WriteVec3IEEE(std::ostream& o, glm::vec3 const& v)
+    void WriteVec3IEEE(std::ostream& o, osc::Vec3 const& v)
     {
         WriteFloatIEEE(o, v.x);
         WriteFloatIEEE(o, v.y);
@@ -88,7 +88,7 @@ namespace
 
     void WriteTriangle(std::ostream& o, osc::Triangle const& triangle)
     {
-        WriteVec3IEEE(o, glm::normalize(osc::TriangleNormal(triangle)));
+        WriteVec3IEEE(o, osc::Normalize(osc::TriangleNormal(triangle)));
         WriteVec3IEEE(o, triangle.p0);
         WriteVec3IEEE(o, triangle.p1);
         WriteVec3IEEE(o, triangle.p2);
@@ -98,7 +98,7 @@ namespace
     void WriteTriangles(std::ostream& o, osc::Mesh const& mesh)
     {
         osc::MeshIndicesView const indices = mesh.getIndices();
-        nonstd::span<glm::vec3 const> const verts = mesh.getVerts();
+        nonstd::span<osc::Vec3 const> const verts = mesh.getVerts();
 
         for (ptrdiff_t i = 0; i < ssize(indices)-2; i += 3)
         {

@@ -1,7 +1,5 @@
 #include "LOGLPBRLightingTexturedTab.hpp"
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
@@ -14,7 +12,9 @@
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Constants.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
@@ -30,11 +30,13 @@
 #include <utility>
 #include <vector>
 
+using osc::Vec3;
+
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/PBR/LightingTextured";
 
-    constexpr auto c_LightPositions = osc::to_array<glm::vec3>(
+    constexpr auto c_LightPositions = osc::to_array<Vec3>(
     {
         {-10.0f,  10.0f, 10.0f},
         { 10.0f,  10.0f, 10.0f},
@@ -42,7 +44,7 @@ namespace
         { 10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<glm::vec3, c_LightPositions.size()> c_LightRadiances = osc::to_array<glm::vec3>(
+    constexpr std::array<Vec3, c_LightPositions.size()> c_LightRadiances = osc::to_array<Vec3>(
     {
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
@@ -58,7 +60,7 @@ namespace
     {
         osc::Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -207,11 +209,11 @@ private:
 
     void drawLights()
     {
-        for (glm::vec3 const& pos : c_LightPositions)
+        for (Vec3 const& pos : c_LightPositions)
         {
             Transform t;
             t.position = pos;
-            t.scale = glm::vec3{0.5f};
+            t.scale = Vec3{0.5f};
 
             Graphics::DrawMesh(m_SphereMesh, t, m_PBRMaterial, m_Camera);
         }
@@ -220,7 +222,7 @@ private:
     Camera m_Camera = CreateCamera();
     Mesh m_SphereMesh = GenSphere(64, 64);
     Material m_PBRMaterial = CreateMaterial();
-    glm::vec3 m_CameraEulers = {};
+    Vec3 m_CameraEulers = {};
     bool m_IsMouseCaptured = true;
 
     PerfPanel m_PerfPanel{"Perf"};

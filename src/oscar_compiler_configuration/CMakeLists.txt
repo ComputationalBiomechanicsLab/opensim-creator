@@ -62,9 +62,6 @@ target_compile_options(oscar_compiler_configuration INTERFACE
         # warn if an uninitialized variable is initialized by itself
         -Winit-self
 
-        # warn if a variable's name shadows an earlier (higher scope) variable with the same name
-        -Wshadow
-
         # warn if data is casted to a higher alignment (e.g. char -> int64_t)
         #
         # (set to =strict if the code quality is high enough and Clang in CI is high enough)

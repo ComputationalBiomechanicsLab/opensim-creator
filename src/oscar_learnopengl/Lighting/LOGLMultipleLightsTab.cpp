@@ -2,8 +2,6 @@
 
 #include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
 
-#include <glm/vec3.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
@@ -13,7 +11,9 @@
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
@@ -24,15 +24,18 @@
 #include <oscar/Utils/UID.hpp>
 #include <SDL_events.h>
 
+#include <cmath>
 #include <cstdint>
 #include <memory>
+
+using osc::Vec3;
 
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/MultipleLights";
 
     // positions of cubes within the scene
-    constexpr auto c_CubePositions = osc::to_array<glm::vec3>(
+    constexpr auto c_CubePositions = osc::to_array<Vec3>(
     {
         { 0.0f,  0.0f,  0.0f },
         { 2.0f,  5.0f, -15.0f},
@@ -47,7 +50,7 @@ namespace
     });
 
     // positions of point lights within the scene (the camera also has a spotlight)
-    constexpr auto c_PointLightPositions = osc::to_array<glm::vec3>(
+    constexpr auto c_PointLightPositions = osc::to_array<Vec3>(
     {
         { 0.7f,  0.2f,  2.0f },
         { 2.3f, -3.3f, -4.0f },
@@ -65,7 +68,7 @@ namespace
     {
         osc::Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -109,8 +112,8 @@ namespace
         rv.setFloat("uSpotLightConstant", 1.0f);
         rv.setFloat("uSpotLightLinear", 0.09f);
         rv.setFloat("uSpotLightQuadratic", 0.032f);
-        rv.setFloat("uSpotLightCutoff", glm::cos(glm::radians(12.5f)));
-        rv.setFloat("uSpotLightOuterCutoff", glm::cos(glm::radians(15.0f)));
+        rv.setFloat("uSpotLightCutoff", std::cos(osc::Deg2Rad(12.5f)));
+        rv.setFloat("uSpotLightOuterCutoff", std::cos(osc::Deg2Rad(15.0f)));
 
         rv.setVec3Array("uPointLightPos", c_PointLightPositions);
         rv.setFloatArray("uPointLightConstant", c_PointLightConstants);
@@ -199,14 +202,14 @@ private:
         m_MultipleLightsMaterial.setVec3("uSpotLightDirection", m_Camera.getDirection());
 
         // render containers
-        glm::vec3 const axis = glm::normalize(glm::vec3{1.0f, 0.3f, 0.5f});
+        Vec3 const axis = osc::Normalize(Vec3{1.0f, 0.3f, 0.5f});
         for (size_t i = 0; i < c_CubePositions.size(); ++i)
         {
-            glm::vec3 const& pos = c_CubePositions[i];
-            float const angle = glm::radians(static_cast<float>(i++) * 20.0f);
+            Vec3 const& pos = c_CubePositions[i];
+            float const angle = osc::Deg2Rad(static_cast<float>(i++) * 20.0f);
 
             Transform t;
-            t.rotation = glm::angleAxis(angle, axis);
+            t.rotation = osc::AngleAxis(angle, axis);
             t.position = pos;
 
             Graphics::DrawMesh(m_Mesh, t, m_MultipleLightsMaterial, m_Camera);
@@ -215,7 +218,7 @@ private:
         // render lamps
         Transform lampXform;
         lampXform.scale = {0.2f, 0.2f, 0.2f};
-        for (glm::vec3 const& pos : c_PointLightPositions)
+        for (Vec3 const& pos : c_PointLightPositions)
         {
             lampXform.position = pos;
             Graphics::DrawMesh(m_Mesh, lampXform, m_LightCubeMaterial, m_Camera);
@@ -239,7 +242,7 @@ private:
     Mesh m_Mesh = GenLearnOpenGLCube();
 
     Camera m_Camera = CreateCamera();
-    glm::vec3 m_CameraEulers = {};
+    Vec3 m_CameraEulers = {};
     bool m_IsMouseCaptured = false;
 
     float m_MaterialShininess = 64.0f;

@@ -6,12 +6,12 @@
 #include <OpenSimCreator/Model/ModelStatePairInfo.hpp>
 #include <OpenSimCreator/Model/VirtualConstModelStatePair.hpp>
 
-#include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/Scene/SceneCollision.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
@@ -125,7 +125,7 @@ public:
     RenderTexture& onDraw(
         VirtualConstModelStatePair const& modelState,
         ModelRendererParams const& renderParams,
-        glm::vec2 dims,
+        Vec2 dims,
         AntiAliasingLevel antiAliasingLevel)
     {
         OSC_PERF("CachedModelRenderer/onDraw");
@@ -167,7 +167,7 @@ public:
 
     std::optional<SceneCollision> getClosestCollision(
         ModelRendererParams const& params,
-        glm::vec2 mouseScreenPos,
+        Vec2 mouseScreenPos,
         Rect const& viewportScreenRect) const
     {
         return GetClosestCollision(
@@ -203,7 +203,7 @@ osc::CachedModelRenderer::~CachedModelRenderer() noexcept = default;
 osc::RenderTexture& osc::CachedModelRenderer::onDraw(
     VirtualConstModelStatePair const& modelState,
     ModelRendererParams const& renderParams,
-    glm::vec2 dims,
+    Vec2 dims,
     AntiAliasingLevel antiAliasingLevel)
 {
     return m_Impl->onDraw(
@@ -239,7 +239,7 @@ std::optional<osc::AABB> osc::CachedModelRenderer::getRootAABB() const
 
 std::optional<osc::SceneCollision> osc::CachedModelRenderer::getClosestCollision(
     ModelRendererParams const& params,
-    glm::vec2 mouseScreenPos,
+    Vec2 mouseScreenPos,
     Rect const& viewportScreenRect) const
 {
     return m_Impl->getClosestCollision(params, mouseScreenPos, viewportScreenRect);

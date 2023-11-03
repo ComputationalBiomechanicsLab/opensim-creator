@@ -8,7 +8,6 @@
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
 #include <OpenSimCreator/Graphics/MuscleColoringStyle.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
-#include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Platform/Log.hpp>
