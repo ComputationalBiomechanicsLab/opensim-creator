@@ -25,7 +25,6 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <IconsFontAwesome5.h>
-#include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Simulation/Model/Frame.h>
@@ -64,6 +63,7 @@
 #include <fstream>
 #include <map>
 #include <optional>
+#include <span>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -74,7 +74,7 @@
 namespace
 {
     // prompts the user for a save location and then exports a DAE file containing the 3D scene
-    void TryPromptUserToSaveAsDAE(nonstd::span<osc::SceneDecoration const> scene)
+    void TryPromptUserToSaveAsDAE(std::span<osc::SceneDecoration const> scene)
     {
         std::optional<std::filesystem::path> maybeDAEPath =
             osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("dae");
@@ -879,7 +879,7 @@ bool osc::DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions& opts)
 
 bool osc::DrawAdvancedParamsEditor(
     ModelRendererParams& params,
-    nonstd::span<SceneDecoration const> drawlist)
+    std::span<SceneDecoration const> drawlist)
 {
     bool edited = false;
 
@@ -1001,7 +1001,7 @@ bool osc::DrawVisualAidsContextMenuContent(ModelRendererParams& params)
 
 bool osc::DrawViewerTopButtonRow(
     ModelRendererParams& params,
-    nonstd::span<osc::SceneDecoration const> drawlist,
+    std::span<osc::SceneDecoration const> drawlist,
     IconCache& iconCache,
     std::function<bool()> const& drawExtraElements)
 {
@@ -1206,7 +1206,7 @@ bool osc::DrawCameraControlButtons(
 
 bool osc::DrawViewerImGuiOverlays(
     ModelRendererParams& params,
-    nonstd::span<SceneDecoration const> drawlist,
+    std::span<SceneDecoration const> drawlist,
     std::optional<AABB> maybeSceneAABB,
     Rect const& renderRect,
     IconCache& iconCache,

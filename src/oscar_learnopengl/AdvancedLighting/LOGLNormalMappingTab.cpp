@@ -2,7 +2,6 @@
 
 #include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
 
-#include <nonstd/span.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
@@ -31,6 +30,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <span>
 #include <utility>
 #include <vector>
 

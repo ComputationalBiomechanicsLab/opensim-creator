@@ -4,7 +4,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <imgui.h>
-#include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -12,6 +11,7 @@
 #include <oscar/UI/Widgets/StandardPopup.hpp>
 
 #include <algorithm>
+#include <span>
 #include <string>
 
 class osc::Select1PFPopup::Impl final : public StandardPopup {

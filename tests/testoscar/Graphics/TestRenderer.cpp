@@ -48,8 +48,10 @@
 #include <oscar/Utils/StringHelpers.hpp>
 
 #include <array>
+#include <cstdint>
 #include <memory>
 #include <random>
+#include <span>
 #include <sstream>
 #include <string>
 #include <unordered_set>
@@ -469,7 +471,7 @@ namespace
     }
 
     template<typename T>
-    nonstd::span<uint8_t const> ToByteSpan(nonstd::span<T const> vs)
+    std::span<uint8_t const> ToByteSpan(std::span<T const> vs)
     {
         return
         {
@@ -479,13 +481,13 @@ namespace
     }
 
     template<typename T>
-    nonstd::span<uint8_t const> ToByteSpan(std::vector<T> const& vs)
+    std::span<uint8_t const> ToByteSpan(std::vector<T> const& vs)
     {
-        return ToByteSpan(nonstd::span<T const>(vs));
+        return ToByteSpan(std::span<T const>(vs));
     }
 
     template<typename T>
-    bool SpansEqual(nonstd::span<T const> a, nonstd::span<T const> b)
+    bool SpansEqual(std::span<T const> a, std::span<T const> b)
     {
         if (a.size() != b.size())
         {
@@ -790,7 +792,7 @@ TEST_F(Renderer, MaterialCallingGetColorArrayOnMaterialAfterSettingThemReturnsTh
 
     mat.setColorArray(key, colors);
 
-    std::optional<nonstd::span<osc::Color const>> rv = mat.getColorArray(key);
+    std::optional<std::span<osc::Color const>> rv = mat.getColorArray(key);
 
     ASSERT_TRUE(rv);
     ASSERT_EQ(std::size(*rv), std::size(colors));
@@ -878,7 +880,7 @@ TEST_F(Renderer, MaterialSetFloatArrayOnMaterialCausesGetFloatArrayToReturnThePr
 
     mat.setFloatArray(key, values);
 
-    nonstd::span<float const> rv = mat.getFloatArray(key).value();
+    std::span<float const> rv = mat.getFloatArray(key).value();
     ASSERT_TRUE(std::equal(rv.begin(), rv.end(), values.begin(), values.end()));
 }
 
@@ -945,7 +947,7 @@ TEST_F(Renderer, MaterialSetVec3ArrayOnMaterialCausesGetVec3ArrayToReutrnTheProv
 
     mat.setVec3Array(key, values);
 
-    nonstd::span<Vec3 const> rv = mat.getVec3Array(key).value();
+    std::span<Vec3 const> rv = mat.getVec3Array(key).value();
     ASSERT_TRUE(std::equal(rv.begin(), rv.end(), values.begin(), values.end()));
 }
 
@@ -1004,7 +1006,7 @@ TEST_F(Renderer, MaterialSetMat4ArrayCausesGetMat4ArrayToReturnSameSequenceOfVal
     osc::Material mat = GenerateMaterial();
     mat.setMat4Array("someKey", mat4Array);
 
-    std::optional<nonstd::span<Mat4 const>> rv = mat.getMat4Array("someKey");
+    std::optional<std::span<Mat4 const>> rv = mat.getMat4Array("someKey");
     ASSERT_TRUE(rv.has_value());
     ASSERT_EQ(mat4Array.size(), rv->size());
     ASSERT_TRUE(std::equal(mat4Array.begin(), mat4Array.end(), rv->begin()));
@@ -2162,7 +2164,7 @@ TEST_F(Renderer, MeshSetVertsMakesGetCallReturnVerts)
     osc::Mesh m;
     std::vector<Vec3> verts = GenerateTriangleVerts();
 
-    ASSERT_FALSE(SpansEqual(m.getVerts(), nonstd::span<Vec3 const>(verts)));
+    ASSERT_FALSE(SpansEqual(m.getVerts(), std::span<Vec3 const>(verts)));
 }
 
 TEST_F(Renderer, MeshSetVertsCausesCopiedMeshToNotBeEqualToInitialMesh)
@@ -2195,16 +2197,16 @@ TEST_F(Renderer, MeshTransformVertsMakesGetCallReturnVerts)
     // sanity check that `setVerts` works as expected
     ASSERT_TRUE(m.getVerts().empty());
     m.setVerts(originalVerts);
-    ASSERT_TRUE(SpansEqual(m.getVerts(), nonstd::span<Vec3 const>(originalVerts)));
+    ASSERT_TRUE(SpansEqual(m.getVerts(), std::span<Vec3 const>(originalVerts)));
 
     // the verts passed to `transformVerts` should match those returned by getVerts
-    m.transformVerts([&originalVerts](nonstd::span<Vec3 const> verts)
+    m.transformVerts([&originalVerts](std::span<Vec3 const> verts)
     {
-        ASSERT_TRUE(SpansEqual(nonstd::span<Vec3 const>(originalVerts), verts));
+        ASSERT_TRUE(SpansEqual(std::span<Vec3 const>(originalVerts), verts));
     });
 
     // applying the transformation should return the transformed verts
-    m.transformVerts([&newVerts](nonstd::span<Vec3> verts)
+    m.transformVerts([&newVerts](std::span<Vec3> verts)
     {
         ASSERT_EQ(newVerts.size(), verts.size());
         for (size_t i = 0; i < verts.size(); ++i)
@@ -2212,7 +2214,7 @@ TEST_F(Renderer, MeshTransformVertsMakesGetCallReturnVerts)
             verts[i] = newVerts[i];
         }
     });
-    ASSERT_TRUE(SpansEqual(m.getVerts(), nonstd::span<Vec3 const>(newVerts)));
+    ASSERT_TRUE(SpansEqual(m.getVerts(), std::span<Vec3 const>(newVerts)));
 }
 
 TEST_F(Renderer, MeshTransformVertsCausesTransformedMeshToNotBeEqualToInitialMesh)
@@ -2222,7 +2224,7 @@ TEST_F(Renderer, MeshTransformVertsCausesTransformedMeshToNotBeEqualToInitialMes
 
     ASSERT_EQ(m, copy);
 
-    copy.transformVerts([](nonstd::span<Vec3>) {});  // noop transform also triggers this (meshes aren't value-comparable)
+    copy.transformVerts([](std::span<Vec3>) {});  // noop transform also triggers this (meshes aren't value-comparable)
 
     ASSERT_NE(m, copy);
 }
@@ -2334,7 +2336,7 @@ TEST_F(Renderer, MeshSetNormalsMakesGetCallReturnSuppliedData)
 
     m.setNormals(normals);
 
-    ASSERT_TRUE(SpansEqual(m.getNormals(), nonstd::span<Vec3 const>(normals)));
+    ASSERT_TRUE(SpansEqual(m.getNormals(), std::span<Vec3 const>(normals)));
 }
 
 TEST_F(Renderer, MeshSetNormalsCausesCopiedMeshToNotBeEqualToInitialMesh)
@@ -2365,7 +2367,7 @@ TEST_F(Renderer, MeshSetTexCoordsCausesGetToReturnSuppliedData)
 
     m.setTexCoords(coords);
 
-    ASSERT_TRUE(SpansEqual(m.getTexCoords(), nonstd::span<Vec2 const>(coords)));
+    ASSERT_TRUE(SpansEqual(m.getTexCoords(), std::span<Vec2 const>(coords)));
 }
 
 TEST_F(Renderer, MeshSetTexCoordsCausesCopiedMeshToNotBeEqualToInitialMesh)
@@ -2396,7 +2398,7 @@ TEST_F(Renderer, MeshTransformTexCoordsAppliesTransformToTexCoords)
     };
 
     // mutate mesh
-    m.transformTexCoords([&transformer](nonstd::span<Vec2> ts)
+    m.transformTexCoords([&transformer](std::span<Vec2> ts)
     {
         for (Vec2& t : ts)
         {

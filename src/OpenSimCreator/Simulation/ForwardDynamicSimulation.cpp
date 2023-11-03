@@ -9,7 +9,6 @@
 #include <OpenSimCreator/Simulation/SimulationStatus.hpp>
 #include <OpenSimCreator/Utils/ParamBlock.hpp>
 
-#include <nonstd/span.hpp>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Utils/SynchronizedValue.hpp>
 #include <SimTKcommon.h>
@@ -20,6 +19,7 @@
 #include <functional>
 #include <iterator>
 #include <memory>
+#include <span>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -130,7 +130,7 @@ public:
         return m_ParamsAsParamBlock;
     }
 
-    nonstd::span<OutputExtractor const> getOutputExtractors() const
+    std::span<OutputExtractor const> getOutputExtractors() const
     {
         return m_SimulatorOutputExtractors;
     }
@@ -266,7 +266,7 @@ osc::ParamBlock const& osc::ForwardDynamicSimulation::implGetParams() const
     return m_Impl->getParams();
 }
 
-nonstd::span<osc::OutputExtractor const> osc::ForwardDynamicSimulation::implGetOutputExtractors() const
+std::span<osc::OutputExtractor const> osc::ForwardDynamicSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
 }

@@ -605,7 +605,7 @@ namespace
     void EmitPointBasedLine(
         RendererState& rs,
         OpenSim::Component const& hittestTarget,
-        nonstd::span<osc::GeometryPathPoint const> points,
+        std::span<osc::GeometryPathPoint const> points,
         float radius,
         osc::Color const& color)
     {

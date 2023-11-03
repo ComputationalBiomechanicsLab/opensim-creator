@@ -274,6 +274,5 @@ target_link_libraries(oscar PUBLIC
     stb
     unordered_dense::unordered_dense
     tomlplusplus::tomlplusplus
-    nonstd::span-lite
     lunasvg::lunasvg
 )

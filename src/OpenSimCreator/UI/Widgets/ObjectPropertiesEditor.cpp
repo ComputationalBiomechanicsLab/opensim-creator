@@ -8,7 +8,6 @@
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <nonstd/span.hpp>
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Object.h>
@@ -37,6 +36,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <span>
 #include <string>
 #include <type_traits>
 #include <typeinfo>

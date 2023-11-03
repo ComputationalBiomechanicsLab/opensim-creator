@@ -71,12 +71,6 @@ ExternalProject_Add(sdl
         -DSDL_TEST:BOOL=OFF
 )
 
-ExternalProject_Add(span-lite
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/span-lite
-    CMAKE_CACHE_ARGS
-        ${OSC_DEPENDENCY_CMAKE_ARGS}
-)
-
 ExternalProject_Add(tomlplusplus
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tomlplusplus
     CMAKE_CACHE_ARGS

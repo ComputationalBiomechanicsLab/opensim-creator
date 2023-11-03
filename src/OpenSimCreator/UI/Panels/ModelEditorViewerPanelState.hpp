@@ -3,7 +3,6 @@
 #include <OpenSimCreator/Graphics/CachedModelRenderer.hpp>
 #include <OpenSimCreator/UI/Panels/ModelEditorViewerPanelLayer.hpp>
 
-#include <nonstd/span.hpp>
 #include <OpenSim/Common/ComponentPath.h>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/Rect.hpp>
@@ -12,6 +11,7 @@
 #include <oscar/Utils/CStringView.hpp>
 
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -37,7 +37,7 @@ namespace osc
         std::optional<SceneCollision> maybeBaseLayerHittest;
         OpenSim::ComponentPath maybeHoveredComponentAbsPath;
 
-        nonstd::span<osc::SceneDecoration const> getDrawlist() const
+        std::span<osc::SceneDecoration const> getDrawlist() const
         {
             return m_CachedModelRenderer.getDrawlist();
         }

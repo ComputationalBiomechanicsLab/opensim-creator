@@ -2,8 +2,6 @@
 
 #include <oscar/Maths/Vec3.hpp>
 
-#include <nonstd/span.hpp>
-
 #include <cstddef>
 #include <string>
 #include <utility>

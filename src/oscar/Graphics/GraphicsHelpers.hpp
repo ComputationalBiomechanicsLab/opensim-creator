@@ -9,11 +9,10 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 
-#include <nonstd/span.hpp>
-
 #include <array>
 #include <filesystem>
 #include <functional>
+#include <span>
 #include <vector>
 
 namespace osc { class Mesh; }
@@ -39,9 +38,9 @@ namespace osc
     // of the corresponding bitangent vector (i.e. bitangent = cross(normal, tangent) * w)
     std::vector<Vec4> CalcTangentVectors(
         MeshTopology const&,
-        nonstd::span<Vec3 const> verts,
-        nonstd::span<Vec3 const> normals,
-        nonstd::span<Vec2 const> texCoords,
+        std::span<Vec3 const> verts,
+        std::span<Vec3 const> normals,
+        std::span<Vec2 const> texCoords,
         MeshIndicesView const&
     );
 

@@ -11,10 +11,9 @@
 #include <oscar/Scene/SceneCollision.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 
-#include <nonstd/span.hpp>
-
 #include <functional>
 #include <optional>
+#include <span>
 
 namespace osc { struct AABB; }
 namespace osc { class AppConfig; }
@@ -44,7 +43,7 @@ namespace osc
 
     void DrawAABBs(
         MeshCache&,
-        nonstd::span<AABB const>,
+        std::span<AABB const>,
         std::function<void(SceneDecoration&&)> const&
     );
 
@@ -103,14 +102,14 @@ namespace osc
 
     // updates the given BVH with the given component decorations
     void UpdateSceneBVH(
-        nonstd::span<SceneDecoration const>,
+        std::span<SceneDecoration const>,
         BVH&
     );
 
     // returns all collisions along a ray
     std::vector<SceneCollision> GetAllSceneCollisions(
         BVH const& sceneBVH,
-        nonstd::span<SceneDecoration const>,
+        std::span<SceneDecoration const>,
         Line const& worldspaceRay
     );
 

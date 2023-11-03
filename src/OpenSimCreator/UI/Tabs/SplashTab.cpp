@@ -12,7 +12,6 @@
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <nonstd/span.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Formats/SVG.hpp>
 #include <oscar/Graphics/Color.hpp>
@@ -40,6 +39,7 @@
 #include <SDL_events.h>
 
 #include <filesystem>
+#include <span>
 #include <string>
 #include <utility>
 

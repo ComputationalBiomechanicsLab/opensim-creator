@@ -3,7 +3,6 @@
 #include <OpenSimCreator/Registry/ComponentRegistry.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include <nonstd/span.hpp>
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/LinearFunction.h>
@@ -42,6 +41,7 @@
 #include <initializer_list>
 #include <iterator>
 #include <memory>
+#include <span>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>

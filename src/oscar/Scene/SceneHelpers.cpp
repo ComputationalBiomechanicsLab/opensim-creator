@@ -86,7 +86,7 @@ void osc::DrawAABB(
 
 void osc::DrawAABBs(
     MeshCache& cache,
-    nonstd::span<AABB const> aabbs,
+    std::span<AABB const> aabbs,
     std::function<void(SceneDecoration&&)> const& out)
 {
     Mesh const cube = cache.getCubeWireMesh();
@@ -211,7 +211,7 @@ osc::AABB osc::GetWorldspaceAABB(SceneDecoration const& cd)
     return TransformAABB(cd.mesh.getBounds(), cd.transform);
 }
 
-void osc::UpdateSceneBVH(nonstd::span<SceneDecoration const> sceneEls, BVH& bvh)
+void osc::UpdateSceneBVH(std::span<SceneDecoration const> sceneEls, BVH& bvh)
 {
     std::vector<AABB> aabbs;
     aabbs.reserve(sceneEls.size());
@@ -225,7 +225,7 @@ void osc::UpdateSceneBVH(nonstd::span<SceneDecoration const> sceneEls, BVH& bvh)
 
 std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(
     BVH const& bvh,
-    nonstd::span<SceneDecoration const> decorations,
+    std::span<SceneDecoration const> decorations,
     Line const& ray)
 {
     // use scene BVH to intersect the ray with the scene

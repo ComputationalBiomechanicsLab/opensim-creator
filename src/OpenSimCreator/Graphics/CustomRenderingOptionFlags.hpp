@@ -1,10 +1,10 @@
 #pragma once
 
-#include <nonstd/span.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 
 #include <cstdint>
+#include <span>
 #include <type_traits>
 
 namespace osc
@@ -50,5 +50,5 @@ namespace osc
         CStringView label;
         CustomRenderingOptionFlags value;
     };
-    nonstd::span<CustomRenderingOptionFlagsMetadata const> GetAllCustomRenderingOptionFlagsMetadata();
+    std::span<CustomRenderingOptionFlagsMetadata const> GetAllCustomRenderingOptionFlagsMetadata();
 }

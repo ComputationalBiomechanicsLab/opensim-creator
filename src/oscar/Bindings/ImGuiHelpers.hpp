@@ -8,12 +8,12 @@
 #include <oscar/Utils/CStringView.hpp>
 
 #include <imgui.h>
-#include <nonstd/span.hpp>
 
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
 #include <optional>
+#include <span>
 #include <string>
 
 namespace osc { class Camera; }
@@ -114,11 +114,11 @@ namespace osc
     ImGuiItemHittestResult HittestLastImguiItem(float dragThreshold);
 
     // returns `true` if any scancode in the provided range is currently pressed down
-    bool IsAnyKeyDown(nonstd::span<ImGuiKey const>);
+    bool IsAnyKeyDown(std::span<ImGuiKey const>);
     bool IsAnyKeyDown(std::initializer_list<ImGuiKey const>);
 
     // returns `true` if any scancode in the provided range was pressed down this frame
-    bool IsAnyKeyPressed(nonstd::span<ImGuiKey const>);
+    bool IsAnyKeyPressed(std::span<ImGuiKey const>);
     bool IsAnyKeyPressed(std::initializer_list<ImGuiKey const>);
 
     // returns true if the user is pressing either left- or right-Ctrl
@@ -278,7 +278,7 @@ namespace osc
     bool Combo(
         CStringView label,
         size_t* current,
-        nonstd::span<CStringView const> items
+        std::span<CStringView const> items
     );
 
     // converts all color values in all draw commands' vertex buffers from sRGB to linear

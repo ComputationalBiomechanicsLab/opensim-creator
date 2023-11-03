@@ -27,7 +27,6 @@
 
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
-#include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -55,6 +54,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <type_traits>

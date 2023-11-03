@@ -1,9 +1,8 @@
 #pragma once
 
-#include <nonstd/span.hpp>
-
 #include <iosfwd>
 #include <optional>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -23,6 +22,6 @@ namespace osc
     // writes the given columns to the output stream as an ASCII encoded text row
     void WriteCSVRow(
         std::ostream&,
-        nonstd::span<std::string const> columns
+        std::span<std::string const> columns
     );
 }

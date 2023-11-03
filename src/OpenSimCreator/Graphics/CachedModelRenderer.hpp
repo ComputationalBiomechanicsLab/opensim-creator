@@ -1,6 +1,5 @@
 #pragma once
 
-#include <nonstd/span.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
@@ -8,6 +7,7 @@
 
 #include <memory>
 #include <optional>
+#include <span>
 #include <vector>
 
 namespace osc { class AppConfig; }
@@ -49,7 +49,7 @@ namespace osc
         );
         RenderTexture& updRenderTexture();
 
-        nonstd::span<SceneDecoration const> getDrawlist() const;
+        std::span<SceneDecoration const> getDrawlist() const;
         std::optional<AABB> getRootAABB() const;
         std::optional<SceneCollision> getClosestCollision(
             ModelRendererParams const&,

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <nonstd/span.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/Vec3.hpp>
 
 #include <filesystem>
 #include <iosfwd>
+#include <span>
 #include <utility>
 #include <vector>
 
@@ -132,7 +132,7 @@ namespace osc
     Mesh ApplyThinPlateWarpToMesh(TPSCoefficients3D const&, Mesh const&);
 
     // returns points that are the equivalent of applying the 3D TPS warp to each input point
-    std::vector<Vec3> ApplyThinPlateWarpToPoints(TPSCoefficients3D const&, nonstd::span<Vec3 const>);
+    std::vector<Vec3> ApplyThinPlateWarpToPoints(TPSCoefficients3D const&, std::span<Vec3 const>);
 
     // returns 3D landmark positions loaded from a CSV (.landmarks) file
     std::vector<Vec3> LoadLandmarksFromCSVFile(std::filesystem::path const&);

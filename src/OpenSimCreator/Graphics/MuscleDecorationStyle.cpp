@@ -1,12 +1,12 @@
 #include "MuscleDecorationStyle.hpp"
 
-#include <nonstd/span.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 
 #include <array>
 #include <cstddef>
+#include <span>
 
 namespace
 {
@@ -34,7 +34,7 @@ namespace
     static_assert(c_Metadata.size() == osc::NumOptions<osc::MuscleDecorationStyle>());
 }
 
-nonstd::span<osc::MuscleDecorationStyleMetadata const> osc::GetAllMuscleDecorationStyleMetadata()
+std::span<osc::MuscleDecorationStyleMetadata const> osc::GetAllMuscleDecorationStyleMetadata()
 {
     return c_Metadata;
 }

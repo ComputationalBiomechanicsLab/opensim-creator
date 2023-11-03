@@ -1,6 +1,5 @@
 #include "LOGLSSAOTab.hpp"
 
-#include <nonstd/span.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/Camera.hpp>
@@ -37,6 +36,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <random>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>

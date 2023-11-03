@@ -5,12 +5,12 @@
 #include <OpenSimCreator/Simulation/SimulationStatus.hpp>
 #include <OpenSimCreator/Simulation/VirtualSimulation.hpp>
 
-#include <nonstd/span.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>
 
 #include <cstddef>
 #include <filesystem>
 #include <memory>
+#include <span>
 #include <vector>
 
 namespace OpenSim { class Model; }
@@ -47,7 +47,7 @@ namespace osc
         SimulationClock::time_point implGetEndTime() const final;
         float implGetProgress() const final;
         ParamBlock const& implGetParams() const final;
-        nonstd::span<OutputExtractor const> implGetOutputExtractors() const final;
+        std::span<OutputExtractor const> implGetOutputExtractors() const final;
 
         void implRequestStop() final;
         void implStop() final;

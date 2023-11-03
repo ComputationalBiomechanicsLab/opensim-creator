@@ -2,11 +2,10 @@
 
 #include <oscar/Utils/Assertions.hpp>
 
-#include <nonstd/span.hpp>
-
 #include <cstdint>
 #include <cstddef>
 #include <iterator>
+#include <span>
 
 namespace osc
 {
@@ -80,7 +79,7 @@ namespace osc
         {
         }
 
-        MeshIndicesView(nonstd::span<uint16_t const> span) :
+        MeshIndicesView(std::span<uint16_t const> span) :
             m_Ptr{span.data()},
             m_Size{span.size()},
             m_IsU32{false}
@@ -94,7 +93,7 @@ namespace osc
         {
         }
 
-        MeshIndicesView(nonstd::span<uint32_t const> span) :
+        MeshIndicesView(std::span<uint32_t const> span) :
             m_Ptr{span.data()},
             m_Size{span.size()},
             m_IsU32{true}
@@ -116,13 +115,13 @@ namespace osc
             return m_Size;
         }
 
-        nonstd::span<uint16_t const> toU16Span() const
+        std::span<uint16_t const> toU16Span() const
         {
             OSC_ASSERT(!m_IsU32);
             return {m_Ptr.u16, m_Size};
         }
 
-        nonstd::span<uint32_t const> toU32Span() const
+        std::span<uint32_t const> toU32Span() const
         {
             OSC_ASSERT(m_IsU32);
             return {m_Ptr.u32, m_Size};

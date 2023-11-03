@@ -6,7 +6,6 @@
 #include <OpenSimCreator/Model/ModelStatePairInfo.hpp>
 #include <OpenSimCreator/Model/VirtualConstModelStatePair.hpp>
 
-#include <nonstd/span.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>
@@ -22,6 +21,7 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <span>
 #include <utility>
 #include <vector>
 
@@ -84,7 +84,7 @@ namespace
             }
         }
 
-        nonstd::span<osc::SceneDecoration const> getDrawlist() const { return m_Drawlist; }
+        std::span<osc::SceneDecoration const> getDrawlist() const { return m_Drawlist; }
         osc::BVH const& getBVH() const { return m_BVH; }
         std::optional<osc::AABB> getAABB() const { return m_BVH.getRootAABB(); }
 
@@ -155,7 +155,7 @@ public:
         return m_Renderer.updRenderTexture();
     }
 
-    nonstd::span<SceneDecoration const> getDrawlist() const
+    std::span<SceneDecoration const> getDrawlist() const
     {
         return m_DecorationCache.getDrawlist();
     }
@@ -227,7 +227,7 @@ osc::RenderTexture& osc::CachedModelRenderer::updRenderTexture()
     return m_Impl->updRenderTexture();
 }
 
-nonstd::span<osc::SceneDecoration const> osc::CachedModelRenderer::getDrawlist() const
+std::span<osc::SceneDecoration const> osc::CachedModelRenderer::getDrawlist() const
 {
     return m_Impl->getDrawlist();
 }

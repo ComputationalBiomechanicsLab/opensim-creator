@@ -23,11 +23,11 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
-#include <nonstd/span.hpp>
 
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <span>
 #include <string>
 
 namespace
@@ -545,23 +545,23 @@ osc::ImGuiItemHittestResult osc::HittestLastImguiItem(float dragThreshold)
     return rv;
 }
 
-bool osc::IsAnyKeyDown(nonstd::span<ImGuiKey const> keys)
+bool osc::IsAnyKeyDown(std::span<ImGuiKey const> keys)
 {
     return std::any_of(keys.begin(), keys.end(), [](ImGuiKey k) { return ImGui::IsKeyDown(k); });
 }
 
 bool osc::IsAnyKeyDown(std::initializer_list<ImGuiKey const> keys)
 {
-    return IsAnyKeyDown(nonstd::span<ImGuiKey const>{keys.begin(), keys.end()});
+    return IsAnyKeyDown(std::span<ImGuiKey const>{keys.begin(), keys.end()});
 }
 
-bool osc::IsAnyKeyPressed(nonstd::span<ImGuiKey const> keys)
+bool osc::IsAnyKeyPressed(std::span<ImGuiKey const> keys)
 {
     return std::any_of(keys.begin(), keys.end(), [](ImGuiKey k) { return ImGui::IsKeyPressed(k); });
 }
 bool osc::IsAnyKeyPressed(std::initializer_list<ImGuiKey const> keys)
 {
-    return IsAnyKeyPressed(nonstd::span<ImGuiKey const>{keys.begin(), keys.end()});
+    return IsAnyKeyPressed(std::span<ImGuiKey const>{keys.begin(), keys.end()});
 }
 
 bool osc::IsCtrlDown()
@@ -951,7 +951,7 @@ bool osc::Combo(
 bool osc::Combo(
     CStringView label,
     size_t* current,
-    nonstd::span<CStringView const> items)
+    std::span<CStringView const> items)
 {
     return Combo(
         label,

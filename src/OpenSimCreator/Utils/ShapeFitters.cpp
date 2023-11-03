@@ -2,7 +2,6 @@
 
 #include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
 
-#include <nonstd/span.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/Rect.hpp>
@@ -18,6 +17,7 @@
 #include <cmath>
 #include <complex>
 #include <numeric>
+#include <span>
 #include <vector>
 
 using osc::Vec2;
@@ -29,7 +29,7 @@ namespace
 {
     // returns the contents of `vs` with `subtrahend` subtracted from each element
     std::vector<Vec3> Subtract(
-        nonstd::span<Vec3 const> vs,
+        std::span<Vec3 const> vs,
         Vec3 const& subtrahend)
     {
         std::vector<Vec3> rv;
@@ -42,7 +42,7 @@ namespace
     }
 
     // returns the element-wise arithmetic mean of `vs`
-    Vec3 CalcMean(nonstd::span<Vec3 const> vs)
+    Vec3 CalcMean(std::span<Vec3 const> vs)
     {
         Vec3d accumulator{};
         for (auto const& v : vs)
@@ -282,7 +282,7 @@ namespace
     //
     // - lhs: 3xN matrix (rows are x y z, and columns are each point in `vs`)
     // - rhs: Nx3 matrix (rows are each point in `vs`, columns are x, y, z)
-    SimTK::Mat33 CalcCovarianceMatrix(nonstd::span<Vec3 const> vs)
+    SimTK::Mat33 CalcCovarianceMatrix(std::span<Vec3 const> vs)
     {
         SimTK::Mat33 rv;
         for (int row = 0; row < 3; ++row)
@@ -325,7 +325,7 @@ namespace
     // returns `vs` projected onto a plane's 2D surface, where the
     // plane's surface has basis vectors `basis1` and `basis2`
     std::vector<Vec2> Project3DPointsOnto2DSurface(
-        nonstd::span<Vec3 const> vs,
+        std::span<Vec3 const> vs,
         Vec3 const& basis1,
         Vec3 const& basis2)
     {
@@ -343,7 +343,7 @@ namespace
     //     - Ax^2 + By^2 + Cz^2 + 2Dxy + 2Exz + 2Fyz + 2Gx + 2Hy + 2Iz + J = 0
     //
     // see: https://nl.mathworks.com/matlabcentral/fileexchange/24693-ellipsoid-fit
-    std::array<double, 9> SolveEllipsoidAlgebraicForm(nonstd::span<Vec3 const> vs)
+    std::array<double, 9> SolveEllipsoidAlgebraicForm(std::span<Vec3 const> vs)
     {
         // this code is translated like-for-like with the MATLAB version
         // and was checked by comparing debugger output in MATLAB from

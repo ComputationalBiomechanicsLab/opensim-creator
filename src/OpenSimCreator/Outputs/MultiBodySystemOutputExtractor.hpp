@@ -3,11 +3,11 @@
 #include <OpenSimCreator/Outputs/OutputExtractor.hpp>
 #include <OpenSimCreator/Outputs/VirtualOutputExtractor.hpp>
 
-#include <nonstd/span.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <cstddef>
+#include <span>
 #include <string>
 #include <string_view>
 
@@ -43,8 +43,8 @@ namespace osc
 
         void getValuesFloat(
             OpenSim::Component const&,
-            nonstd::span<SimulationReport const>,
-            nonstd::span<float> overwriteOut
+            std::span<SimulationReport const>,
+            std::span<float> overwriteOut
         ) const final;
 
         std::string getValueString(

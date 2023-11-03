@@ -10,7 +10,6 @@
 #include <imgui.h>
 #include <implot.h>
 #include <IconsFontAwesome5.h>
-#include <nonstd/span.hpp>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -28,6 +27,7 @@
 #include <optional>
 #include <ostream>
 #include <ratio>
+#include <span>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -50,8 +50,8 @@ namespace
 
     // export a timeseries to a CSV file and return the filepath
     std::string ExportTimeseriesToCSV(
-        nonstd::span<float const> times,
-        nonstd::span<float const> values,
+        std::span<float const> times,
+        std::span<float const> values,
         std::string_view header)
     {
         // try prompt user for save location
@@ -92,7 +92,7 @@ namespace
 
     std::vector<float> PopulateFirstNNumericOutputValues(
         OpenSim::Model const& model,
-        nonstd::span<osc::SimulationReport const> reports,
+        std::span<osc::SimulationReport const> reports,
         osc::VirtualOutputExtractor const& output)
     {
         std::vector<float> rv;
@@ -101,7 +101,7 @@ namespace
         return rv;
     }
 
-    std::vector<float> PopulateFirstNTimeValues(nonstd::span<osc::SimulationReport const> reports)
+    std::vector<float> PopulateFirstNTimeValues(std::span<osc::SimulationReport const> reports)
     {
         std::vector<float> times;
         times.reserve(reports.size());
@@ -169,7 +169,7 @@ namespace
         DrawToggleWatchOutputMenuItem(api, output);
     }
 
-    std::filesystem::path TryExportOutputsToCSV(osc::VirtualSimulation& sim, nonstd::span<osc::OutputExtractor const> outputs)
+    std::filesystem::path TryExportOutputsToCSV(osc::VirtualSimulation& sim, std::span<osc::OutputExtractor const> outputs)
     {
         std::vector<osc::SimulationReport> reports = sim.getAllSimulationReports();
         std::vector<float> times = PopulateFirstNTimeValues(reports);
@@ -412,7 +412,7 @@ void osc::SimulationOutputPlot::onDraw()
     m_Impl->onDraw();
 }
 
-std::filesystem::path osc::TryPromptAndSaveOutputsAsCSV(SimulatorUIAPI& api, nonstd::span<OutputExtractor const> outputs)
+std::filesystem::path osc::TryPromptAndSaveOutputsAsCSV(SimulatorUIAPI& api, std::span<OutputExtractor const> outputs)
 {
     return TryExportOutputsToCSV(api.updSimulation(), outputs);
 }

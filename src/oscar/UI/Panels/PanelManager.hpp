@@ -4,10 +4,9 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
-#include <nonstd/span.hpp>
-
 #include <cstddef>
 #include <functional>
+#include <span>
 #include <string_view>
 #include <memory>
 

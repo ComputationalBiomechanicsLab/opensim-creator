@@ -10,7 +10,6 @@
 #include <OpenSimCreator/Simulation/SimulationReport.hpp>
 #include <OpenSimCreator/Simulation/SimulationStatus.hpp>
 
-#include <nonstd/span.hpp>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -31,6 +30,7 @@
 #include <memory>
 #include <optional>
 #include <ratio>
+#include <span>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -118,15 +118,15 @@ namespace
 
         float getValueFloat(OpenSim::Component const& c, osc::SimulationReport const& report) const final
         {
-            nonstd::span<osc::SimulationReport const> reports(&report, 1);
+            std::span<osc::SimulationReport const> reports(&report, 1);
             std::array<float, 1> out{};
             getValuesFloat(c, reports, out);
             return out.front();
         }
 
         void getValuesFloat(OpenSim::Component const&,
-                            nonstd::span<osc::SimulationReport const> reports,
-                            nonstd::span<float> overwriteOut) const final
+                            std::span<osc::SimulationReport const> reports,
+                            std::span<float> overwriteOut) const final
         {
             for (size_t i = 0; i < reports.size(); ++i)
             {

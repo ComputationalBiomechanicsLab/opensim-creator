@@ -1,6 +1,5 @@
 #include "LOGLTexturingTab.hpp"
 
-#include <nonstd/span.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
@@ -22,6 +21,7 @@
 #include <oscar/Utils/UID.hpp>
 
 #include <cstdint>
+#include <span>
 #include <utility>
 
 using osc::Mat4;
@@ -37,7 +37,7 @@ namespace
         osc::Mesh quad = osc::GenTexturedQuad();
 
         // transform default quad verts to match LearnOpenGL
-        quad.transformVerts([](nonstd::span<Vec3> vs)
+        quad.transformVerts([](std::span<Vec3> vs)
         {
             for (Vec3& v : vs)
             {
@@ -46,7 +46,7 @@ namespace
         });
 
         // transform default quad texture coordinates to exercise wrap modes
-        quad.transformTexCoords([](nonstd::span<Vec2> coords)
+        quad.transformTexCoords([](std::span<Vec2> coords)
         {
             for (Vec2& coord : coords)
             {

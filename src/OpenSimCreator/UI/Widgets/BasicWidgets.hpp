@@ -1,6 +1,5 @@
 #pragma once
 
-#include <nonstd/span.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
@@ -9,6 +8,7 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <span>
 #include <string>
 #include <type_traits>
 
@@ -161,11 +161,11 @@ namespace osc
     bool DrawRenderingOptionsEditor(CustomRenderingOptions&);
     bool DrawOverlayOptionsEditor(OverlayDecorationOptions&);
     bool DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions&);
-    bool DrawAdvancedParamsEditor(ModelRendererParams&, nonstd::span<SceneDecoration const>);
+    bool DrawAdvancedParamsEditor(ModelRendererParams&, std::span<SceneDecoration const>);
     bool DrawVisualAidsContextMenuContent(ModelRendererParams&);
     bool DrawViewerTopButtonRow(
         ModelRendererParams&,
-        nonstd::span<SceneDecoration const>,
+        std::span<SceneDecoration const>,
         IconCache&,
         std::function<bool()> const& drawExtraElements = []() { return false; }
     );
@@ -177,7 +177,7 @@ namespace osc
     );
     bool DrawViewerImGuiOverlays(
         ModelRendererParams&,
-        nonstd::span<SceneDecoration const>,
+        std::span<SceneDecoration const>,
         std::optional<AABB>,
         Rect const&,
         IconCache&,

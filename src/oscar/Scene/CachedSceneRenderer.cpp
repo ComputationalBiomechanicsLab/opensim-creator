@@ -20,7 +20,7 @@ public:
     }
 
     osc::RenderTexture& render(
-        nonstd::span<SceneDecoration const> decorations,
+        std::span<SceneDecoration const> decorations,
         SceneRendererParams const& params)
     {
         if (params != m_LastRenderingParams ||
@@ -54,7 +54,7 @@ osc::CachedSceneRenderer& osc::CachedSceneRenderer::operator=(CachedSceneRendere
 osc::CachedSceneRenderer::~CachedSceneRenderer() noexcept = default;
 
 osc::RenderTexture& osc::CachedSceneRenderer::render(
-    nonstd::span<SceneDecoration const> decorations,
+    std::span<SceneDecoration const> decorations,
     SceneRendererParams const& params)
 {
     return m_Impl->render(decorations, params);

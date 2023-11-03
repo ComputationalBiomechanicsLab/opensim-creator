@@ -4,7 +4,6 @@
 #include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include <nonstd/span.hpp>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -72,6 +71,7 @@
 #include <memory>
 #include <ostream>
 #include <sstream>
+#include <span>
 #include <utility>
 #include <vector>
 
@@ -413,7 +413,7 @@ bool osc::IsInclusiveChildOf(OpenSim::Component const* parent, OpenSim::Componen
     return false;
 }
 
-OpenSim::Component const* osc::IsInclusiveChildOf(nonstd::span<OpenSim::Component const*> parents, OpenSim::Component const* c)
+OpenSim::Component const* osc::IsInclusiveChildOf(std::span<OpenSim::Component const*> parents, OpenSim::Component const* c)
 {
     // TODO: this method signature makes no sense and should be refactored
     for (; c; c = GetOwner(*c))

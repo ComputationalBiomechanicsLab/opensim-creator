@@ -1,8 +1,7 @@
 #pragma once
 
-#include <nonstd/span.hpp>
-
 #include <memory>
+#include <span>
 
 namespace osc { class AppConfig; }
 namespace osc { class MeshCache; }
@@ -23,7 +22,7 @@ namespace osc
         CachedSceneRenderer& operator=(CachedSceneRenderer&&) noexcept;
         ~CachedSceneRenderer() noexcept;
 
-        RenderTexture& render(nonstd::span<SceneDecoration const>, SceneRendererParams const&);
+        RenderTexture& render(std::span<SceneDecoration const>, SceneRendererParams const&);
 
     private:
         class Impl;

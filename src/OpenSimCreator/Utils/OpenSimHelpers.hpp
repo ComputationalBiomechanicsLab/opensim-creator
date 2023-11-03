@@ -1,6 +1,5 @@
 #pragma once
 
-#include <nonstd/span.hpp>
 #include <OpenSim/Common/ComponentPath.h>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/Plane.hpp>
@@ -13,6 +12,7 @@
 #include <filesystem>
 #include <memory>
 #include <optional>
+#include <span>
 #include <string>
 #include <stdexcept>
 #include <type_traits>
@@ -277,7 +277,7 @@ namespace osc
     //
     // returns `nullptr` if no element in `parents` is an inclusive parent of `c`
     OpenSim::Component const* IsInclusiveChildOf(
-        nonstd::span<OpenSim::Component const*> parents,
+        std::span<OpenSim::Component const*> parents,
         OpenSim::Component const* c
     );
 

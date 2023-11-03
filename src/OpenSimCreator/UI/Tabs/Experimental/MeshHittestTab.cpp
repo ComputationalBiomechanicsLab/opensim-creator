@@ -81,7 +81,7 @@ public:
             }
             else
             {
-                nonstd::span<Vec3 const> tris = m_Mesh.getVerts();
+                std::span<Vec3 const> tris = m_Mesh.getVerts();
                 for (size_t i = 0; i < tris.size(); i += 3)
                 {
                     std::optional<RayCollision> const res = GetRayCollisionTriangle(

@@ -2,7 +2,6 @@
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <nonstd/span.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
@@ -32,6 +31,7 @@
 #include <iostream>
 #include <limits>
 #include <optional>
+#include <span>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -125,7 +125,7 @@ namespace
     }
 
     // computes all coefficients of the TPS equation (a1, a2, a3, and all the w's)
-    TPSCoefficients2D CalcCoefficients(nonstd::span<LandmarkPair2D const> landmarkPairs)
+    TPSCoefficients2D CalcCoefficients(std::span<LandmarkPair2D const> landmarkPairs)
     {
         // this is based on the Bookstein Thin Plate Sline (TPS) warping algorithm
         //
@@ -279,7 +279,7 @@ namespace
     // points
     class ThinPlateWarper2D final {
     public:
-        explicit ThinPlateWarper2D(nonstd::span<LandmarkPair2D const> landmarkPairs) :
+        explicit ThinPlateWarper2D(std::span<LandmarkPair2D const> landmarkPairs) :
             m_Coefficients{CalcCoefficients(landmarkPairs)}
         {
         }
@@ -299,7 +299,7 @@ namespace
     {
         osc::Mesh rv = mesh;
 
-        rv.transformVerts([&t](nonstd::span<Vec3> vs)
+        rv.transformVerts([&t](std::span<Vec3> vs)
         {
             for (Vec3& v : vs)
             {

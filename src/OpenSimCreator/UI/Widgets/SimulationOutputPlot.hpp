@@ -2,10 +2,9 @@
 
 #include <OpenSimCreator/Outputs/OutputExtractor.hpp>
 
-#include <nonstd/span.hpp>
-
 #include <filesystem>
 #include <memory>
+#include <span>
 
 namespace osc { class SimulatorUIAPI; }
 
@@ -32,6 +31,6 @@ namespace osc
     };
 
     // returns empty path if not saved
-    std::filesystem::path TryPromptAndSaveOutputsAsCSV(SimulatorUIAPI&, nonstd::span<OutputExtractor const>);
+    std::filesystem::path TryPromptAndSaveOutputsAsCSV(SimulatorUIAPI&, std::span<OutputExtractor const>);
     std::filesystem::path TryPromptAndSaveAllUserDesiredOutputsAsCSV(SimulatorUIAPI&);
 }

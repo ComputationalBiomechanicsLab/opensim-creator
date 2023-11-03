@@ -7,12 +7,12 @@
 #include <oscar/Maths/Vec4.hpp>
 
 #include <GL/glew.h>
-#include <nonstd/span.hpp>
 
 #include <cstddef>
 #include <exception>
 #include <initializer_list>
 #include <limits>
+#include <span>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -441,7 +441,7 @@ namespace gl
         glUniform3fv(u.geti(), 1, osc::ValuePtr(v));
     }
 
-    inline void Uniform(UniformVec3& u, nonstd::span<osc::Vec3 const> vs) noexcept
+    inline void Uniform(UniformVec3& u, std::span<osc::Vec3 const> vs) noexcept
     {
         static_assert(sizeof(osc::Vec3) == 3 * sizeof(GLfloat));
         glUniform3fv(u.geti(), static_cast<GLsizei>(vs.size()), osc::ValuePtr(vs.front()));
@@ -461,7 +461,7 @@ namespace gl
         glUniformMatrix4fv(u.geti(), 1, false, osc::ValuePtr(mat));
     }
 
-    inline void Uniform(UniformMat4& u, nonstd::span<osc::Mat4 const> ms) noexcept
+    inline void Uniform(UniformMat4& u, std::span<osc::Mat4 const> ms) noexcept
     {
         static_assert(sizeof(osc::Mat4) == 16 * sizeof(GLfloat));
         glUniformMatrix4fv(u.geti(), static_cast<GLsizei>(ms.size()), false, osc::ValuePtr(ms.front()));
@@ -477,7 +477,7 @@ namespace gl
         glUniform2fv(u.geti(), 1, osc::ValuePtr(v));
     }
 
-    inline void Uniform(UniformVec2& u, nonstd::span<osc::Vec2 const> vs) noexcept
+    inline void Uniform(UniformVec2& u, std::span<osc::Vec2 const> vs) noexcept
     {
         static_assert(sizeof(osc::Vec2) == 2 * sizeof(GLfloat));
         glUniform2fv(u.geti(), static_cast<GLsizei>(vs.size()), osc::ValuePtr(vs.front()));
@@ -765,7 +765,7 @@ namespace gl
             return m_BufferSize;
         }
 
-        void assign(nonstd::span<T const> span)
+        void assign(std::span<T const> span)
         {
             BindBuffer(*this);
             BufferData(BufferType, sizeof(T) * span.size(), span.data(), Usage);
@@ -775,13 +775,13 @@ namespace gl
         template<typename Container>
         void assign(Container const& c)
         {
-            assign(nonstd::span<T const>{c.data(), c.size()});
+            assign(std::span<T const>{c.data(), c.size()});
         }
 
         template<size_t N>
         void assign(T const (&arr)[N])
         {
-            assign(nonstd::span<T const>{arr, N});
+            assign(std::span<T const>{arr, N});
         }
 
         void resize(size_t n)

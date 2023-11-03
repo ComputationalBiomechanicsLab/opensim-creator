@@ -61,7 +61,6 @@
 
 #include <ankerl/unordered_dense.h>
 #include <GL/glew.h>
-#include <nonstd/span.hpp>
 
 #include <algorithm>
 #include <array>
@@ -71,6 +70,7 @@
 #include <functional>
 #include <iostream>
 #include <iterator>
+#include <span>
 #include <stdexcept>
 #include <sstream>
 #include <string>
@@ -357,7 +357,7 @@ namespace
     }
 
     template<typename VecOrMat>
-    nonstd::span<typename VecOrMat::value_type const> ToFloatSpan(VecOrMat const& v)
+    std::span<typename VecOrMat::value_type const> ToFloatSpan(VecOrMat const& v)
     {
         return {osc::ValuePtr(v), sizeof(VecOrMat)/sizeof(typename VecOrMat::value_type)};
     }
@@ -890,18 +890,18 @@ namespace osc
         );
 
         static void HandleBatchWithSameMesh(
-            nonstd::span<RenderObject const>,
+            std::span<RenderObject const>,
             std::optional<InstancingState>& ins
         );
 
         static void HandleBatchWithSameMaterialPropertyBlock(
-            nonstd::span<RenderObject const>,
+            std::span<RenderObject const>,
             int32_t& textureSlot,
             std::optional<InstancingState>& ins
         );
 
         static std::optional<InstancingState> UploadInstanceData(
-            nonstd::span<RenderObject const>,
+            std::span<RenderObject const>,
             osc::Shader::Impl const& shaderImpl
         );
 
@@ -913,17 +913,17 @@ namespace osc
 
         static void HandleBatchWithSameMaterial(
             RenderPassState const&,
-            nonstd::span<RenderObject const>
+            std::span<RenderObject const>
         );
 
         static void DrawBatchedByMaterial(
             RenderPassState const&,
-            nonstd::span<RenderObject const>
+            std::span<RenderObject const>
         );
 
         static void DrawBatchedByOpaqueness(
             RenderPassState const&,
-            nonstd::span<RenderObject const>
+            std::span<RenderObject const>
         );
 
         static void ValidateRenderTarget(
@@ -1215,7 +1215,7 @@ public:
         return m_Format;
     }
 
-    void setPixelData(CubemapFace face, nonstd::span<uint8_t const> data)
+    void setPixelData(CubemapFace face, std::span<uint8_t const> data)
     {
         size_t const faceIndex = osc::ToIndex(face);
         auto const numPixels = static_cast<size_t>(m_Width) * static_cast<size_t>(m_Width);
@@ -1326,7 +1326,7 @@ osc::TextureFormat osc::Cubemap::getTextureFormat() const
     return m_Impl->getTextureFormat();
 }
 
-void osc::Cubemap::setPixelData(CubemapFace face, nonstd::span<uint8_t const> channelsRowByRow)
+void osc::Cubemap::setPixelData(CubemapFace face, std::span<uint8_t const> channelsRowByRow)
 {
     m_Impl.upd()->setPixelData(face, channelsRowByRow);
 }
@@ -1406,7 +1406,7 @@ namespace
     }
 
     std::vector<osc::Color> ReadPixelDataAsColor(
-        nonstd::span<uint8_t const> pixelData,
+        std::span<uint8_t const> pixelData,
         osc::TextureFormat pixelDataFormat)
     {
         osc::TextureChannelFormat const channelFormat = osc::ChannelFormat(pixelDataFormat);
@@ -1450,7 +1450,7 @@ namespace
                 {
                     size_t const channelStart = pixelStart + channel*bytesPerChannel;
 
-                    nonstd::span<uint8_t const> src{pixelData.data() + channelStart, sizeof(float)};
+                    std::span<uint8_t const> src{pixelData.data() + channelStart, sizeof(float)};
                     std::array<uint8_t, sizeof(float)> dest{};
                     std::copy(src.begin(), src.end(), dest.begin());
 
@@ -1468,7 +1468,7 @@ namespace
     }
 
     std::vector<osc::Color32> ReadPixelDataAsColor32(
-        nonstd::span<uint8_t const> pixelData,
+        std::span<uint8_t const> pixelData,
         osc::TextureFormat pixelDataFormat)
     {
         osc::TextureChannelFormat const channelFormat = osc::ChannelFormat(pixelDataFormat);
@@ -1513,7 +1513,7 @@ namespace
                 {
                     size_t const channelStart = pixelStart + channel*sizeof(float);
 
-                    nonstd::span<uint8_t const> src{pixelData.data() + channelStart, sizeof(float)};
+                    std::span<uint8_t const> src{pixelData.data() + channelStart, sizeof(float)};
                     std::array<uint8_t, sizeof(float)> dest{};
                     std::copy(src.begin(), src.end(), dest.begin());
                     auto const channelFloat = osc::bit_cast<float>(dest);
@@ -1528,7 +1528,7 @@ namespace
     }
 
     void EncodePixelsInDesiredFormat(
-        nonstd::span<osc::Color const> pixels,
+        std::span<osc::Color const> pixels,
         osc::TextureFormat pixelDataFormat,
         std::vector<uint8_t>& pixelData)
     {
@@ -1570,7 +1570,7 @@ namespace
     }
 
     void EncodePixels32InDesiredFormat(
-        nonstd::span<osc::Color32 const> pixels,
+        std::span<osc::Color32 const> pixels,
         osc::TextureFormat pixelDataFormat,
         std::vector<uint8_t>& pixelData)
     {
@@ -1710,7 +1710,7 @@ public:
         return ReadPixelDataAsColor(m_PixelData, m_Format);
     }
 
-    void setPixels(nonstd::span<Color const> pixels)
+    void setPixels(std::span<Color const> pixels)
     {
         OSC_ASSERT(osc::ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
         EncodePixelsInDesiredFormat(pixels, m_Format, m_PixelData);
@@ -1721,18 +1721,18 @@ public:
         return ReadPixelDataAsColor32(m_PixelData, m_Format);
     }
 
-    void setPixels32(nonstd::span<Color32 const> pixels)
+    void setPixels32(std::span<Color32 const> pixels)
     {
         OSC_ASSERT(osc::ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
         EncodePixels32InDesiredFormat(pixels, m_Format, m_PixelData);
     }
 
-    nonstd::span<uint8_t const> getPixelData() const
+    std::span<uint8_t const> getPixelData() const
     {
         return m_PixelData;
     }
 
-    void setPixelData(nonstd::span<uint8_t const> pixelData)
+    void setPixelData(std::span<uint8_t const> pixelData)
     {
         OSC_ASSERT(pixelData.size() == NumBytesPerPixel(m_Format)*m_Dimensions.x*m_Dimensions.y && "incorrect number of bytes passed to Texture2D::setPixelData");
         OSC_ASSERT(pixelData.size() == m_PixelData.size());
@@ -1992,7 +1992,7 @@ std::vector<osc::Color> osc::Texture2D::getPixels() const
     return m_Impl->getPixels();
 }
 
-void osc::Texture2D::setPixels(nonstd::span<Color const> pixels)
+void osc::Texture2D::setPixels(std::span<Color const> pixels)
 {
     m_Impl.upd()->setPixels(pixels);
 }
@@ -2002,17 +2002,17 @@ std::vector<osc::Color32> osc::Texture2D::getPixels32() const
     return m_Impl->getPixels32();
 }
 
-void osc::Texture2D::setPixels32(nonstd::span<Color32 const> pixels)
+void osc::Texture2D::setPixels32(std::span<Color32 const> pixels)
 {
     m_Impl.upd()->setPixels32(pixels);
 }
 
-nonstd::span<uint8_t const> osc::Texture2D::getPixelData() const
+std::span<uint8_t const> osc::Texture2D::getPixelData() const
 {
     return m_Impl->getPixelData();
 }
 
-void osc::Texture2D::setPixelData(nonstd::span<uint8_t const> pixelData)
+void osc::Texture2D::setPixelData(std::span<uint8_t const> pixelData)
 {
     m_Impl.upd()->setPixelData(pixelData);
 }
@@ -3205,12 +3205,12 @@ public:
         setValue(propertyName, color);
     }
 
-    std::optional<nonstd::span<Color const>> getColorArray(std::string_view propertyName) const
+    std::optional<std::span<Color const>> getColorArray(std::string_view propertyName) const
     {
-        return getValue<std::vector<osc::Color>, nonstd::span<osc::Color const>>(propertyName);
+        return getValue<std::vector<osc::Color>, std::span<osc::Color const>>(propertyName);
     }
 
-    void setColorArray(std::string_view propertyName, nonstd::span<Color const> colors)
+    void setColorArray(std::string_view propertyName, std::span<Color const> colors)
     {
         setValue<std::vector<osc::Color>>(propertyName, std::vector<osc::Color>(colors.begin(), colors.end()));
     }
@@ -3225,12 +3225,12 @@ public:
         setValue(propertyName, value);
     }
 
-    std::optional<nonstd::span<float const>> getFloatArray(std::string_view propertyName) const
+    std::optional<std::span<float const>> getFloatArray(std::string_view propertyName) const
     {
-        return getValue<std::vector<float>, nonstd::span<float const>>(propertyName);
+        return getValue<std::vector<float>, std::span<float const>>(propertyName);
     }
 
-    void setFloatArray(std::string_view propertyName, nonstd::span<float const> v)
+    void setFloatArray(std::string_view propertyName, std::span<float const> v)
     {
         setValue<std::vector<float>>(propertyName, std::vector<float>(v.begin(), v.end()));
     }
@@ -3255,12 +3255,12 @@ public:
         setValue(propertyName, value);
     }
 
-    std::optional<nonstd::span<Vec3 const>> getVec3Array(std::string_view propertyName) const
+    std::optional<std::span<Vec3 const>> getVec3Array(std::string_view propertyName) const
     {
-        return getValue<std::vector<Vec3>, nonstd::span<Vec3 const>>(propertyName);
+        return getValue<std::vector<Vec3>, std::span<Vec3 const>>(propertyName);
     }
 
-    void setVec3Array(std::string_view propertyName, nonstd::span<Vec3 const> value)
+    void setVec3Array(std::string_view propertyName, std::span<Vec3 const> value)
     {
         setValue(propertyName, std::vector<Vec3>(value.begin(), value.end()));
     }
@@ -3295,12 +3295,12 @@ public:
         setValue(propertyName, value);
     }
 
-    std::optional<nonstd::span<Mat4 const>> getMat4Array(std::string_view propertyName) const
+    std::optional<std::span<Mat4 const>> getMat4Array(std::string_view propertyName) const
     {
-        return getValue<std::vector<Mat4>, nonstd::span<Mat4 const>>(propertyName);
+        return getValue<std::vector<Mat4>, std::span<Mat4 const>>(propertyName);
     }
 
-    void setMat4Array(std::string_view propertyName, nonstd::span<Mat4 const> mats)
+    void setMat4Array(std::string_view propertyName, std::span<Mat4 const> mats)
     {
         setValue(propertyName, std::vector<Mat4>(mats.begin(), mats.end()));
     }
@@ -3482,12 +3482,12 @@ void osc::Material::setColor(std::string_view propertyName, Color const& color)
     m_Impl.upd()->setColor(propertyName, color);
 }
 
-std::optional<nonstd::span<osc::Color const>> osc::Material::getColorArray(std::string_view propertyName) const
+std::optional<std::span<osc::Color const>> osc::Material::getColorArray(std::string_view propertyName) const
 {
     return m_Impl->getColorArray(propertyName);
 }
 
-void osc::Material::setColorArray(std::string_view propertyName, nonstd::span<osc::Color const> colors)
+void osc::Material::setColorArray(std::string_view propertyName, std::span<osc::Color const> colors)
 {
     m_Impl.upd()->setColorArray(propertyName, colors);
 }
@@ -3502,12 +3502,12 @@ void osc::Material::setFloat(std::string_view propertyName, float value)
     m_Impl.upd()->setFloat(propertyName, value);
 }
 
-std::optional<nonstd::span<float const>> osc::Material::getFloatArray(std::string_view propertyName) const
+std::optional<std::span<float const>> osc::Material::getFloatArray(std::string_view propertyName) const
 {
     return m_Impl->getFloatArray(propertyName);
 }
 
-void osc::Material::setFloatArray(std::string_view propertyName, nonstd::span<float const> vs)
+void osc::Material::setFloatArray(std::string_view propertyName, std::span<float const> vs)
 {
     m_Impl.upd()->setFloatArray(propertyName, vs);
 }
@@ -3522,12 +3522,12 @@ void osc::Material::setVec2(std::string_view propertyName, Vec2 value)
     m_Impl.upd()->setVec2(propertyName, value);
 }
 
-std::optional<nonstd::span<osc::Vec3 const>> osc::Material::getVec3Array(std::string_view propertyName) const
+std::optional<std::span<osc::Vec3 const>> osc::Material::getVec3Array(std::string_view propertyName) const
 {
     return m_Impl->getVec3Array(propertyName);
 }
 
-void osc::Material::setVec3Array(std::string_view propertyName, nonstd::span<Vec3 const> vs)
+void osc::Material::setVec3Array(std::string_view propertyName, std::span<Vec3 const> vs)
 {
     m_Impl.upd()->setVec3Array(propertyName, vs);
 }
@@ -3572,12 +3572,12 @@ void osc::Material::setMat4(std::string_view propertyName, Mat4 const& mat)
     m_Impl.upd()->setMat4(propertyName, mat);
 }
 
-std::optional<nonstd::span<osc::Mat4 const>> osc::Material::getMat4Array(std::string_view propertyName) const
+std::optional<std::span<osc::Mat4 const>> osc::Material::getMat4Array(std::string_view propertyName) const
 {
     return m_Impl->getMat4Array(propertyName);
 }
 
-void osc::Material::setMat4Array(std::string_view propertyName, nonstd::span<Mat4 const> mats)
+void osc::Material::setMat4Array(std::string_view propertyName, std::span<Mat4 const> mats)
 {
     m_Impl.upd()->setMat4Array(propertyName, mats);
 }
@@ -4030,12 +4030,12 @@ public:
         m_Version->reset();
     }
 
-    nonstd::span<Vec3 const> getVerts() const
+    std::span<Vec3 const> getVerts() const
     {
         return m_Vertices;
     }
 
-    void setVerts(nonstd::span<Vec3 const> verts)
+    void setVerts(std::span<Vec3 const> verts)
     {
         m_Vertices.assign(verts.begin(), verts.end());
 
@@ -4043,7 +4043,7 @@ public:
         m_Version->reset();
     }
 
-    void transformVerts(std::function<void(nonstd::span<Vec3>)> const& f)
+    void transformVerts(std::function<void(std::span<Vec3>)> const& f)
     {
         f(m_Vertices);
 
@@ -4067,61 +4067,61 @@ public:
         }
     }
 
-    nonstd::span<Vec3 const> getNormals() const
+    std::span<Vec3 const> getNormals() const
     {
         return m_Normals;
     }
 
-    void setNormals(nonstd::span<Vec3 const> normals)
+    void setNormals(std::span<Vec3 const> normals)
     {
         m_Normals.assign(normals.begin(), normals.end());
 
         m_Version->reset();
     }
 
-    void transformNormals(std::function<void(nonstd::span<Vec3>)> const& f)
+    void transformNormals(std::function<void(std::span<Vec3>)> const& f)
     {
         f(m_Normals);
         m_Version->reset();
     }
 
-    nonstd::span<Vec2 const> getTexCoords() const
+    std::span<Vec2 const> getTexCoords() const
     {
         return m_TexCoords;
     }
 
-    void setTexCoords(nonstd::span<Vec2 const> coords)
+    void setTexCoords(std::span<Vec2 const> coords)
     {
         m_TexCoords.assign(coords.begin(), coords.end());
 
         m_Version->reset();
     }
 
-    void transformTexCoords(std::function<void(nonstd::span<Vec2>)> const& f)
+    void transformTexCoords(std::function<void(std::span<Vec2>)> const& f)
     {
         f(m_TexCoords);
 
         m_Version->reset();
     }
 
-    nonstd::span<Color const> getColors() const
+    std::span<Color const> getColors() const
     {
         return m_Colors;
     }
 
-    void setColors(nonstd::span<Color const> colors)
+    void setColors(std::span<Color const> colors)
     {
         m_Colors.assign(colors.begin(), colors.end());
 
         m_Version.reset();
     }
 
-    nonstd::span<Vec4 const> getTangents() const
+    std::span<Vec4 const> getTangents() const
     {
         return m_Tangents;
     }
 
-    void setTangents(nonstd::span<Vec4 const> newTangents)
+    void setTangents(std::span<Vec4 const> newTangents)
     {
         m_Tangents.assign(newTangents.begin(), newTangents.end());
 
@@ -4149,7 +4149,7 @@ public:
         indices.isU16() ? setIndices(indices.toU16Span()) : setIndices(indices.toU32Span());
     }
 
-    void setIndices(nonstd::span<uint16_t const> indices)
+    void setIndices(std::span<uint16_t const> indices)
     {
         m_IndicesAre32Bit = false;
         m_NumIndices = indices.size();
@@ -4160,7 +4160,7 @@ public:
         m_Version->reset();
     }
 
-    void setIndices(nonstd::span<std::uint32_t const> vs)
+    void setIndices(std::span<std::uint32_t const> vs)
     {
         auto const isGreaterThanU16Max = [](uint32_t v)
         {
@@ -4258,7 +4258,7 @@ private:
         }
         else if (m_IndicesAre32Bit)
         {
-            nonstd::span<uint32_t const> const indices(&m_IndicesData.front().u32, m_NumIndices);
+            std::span<uint32_t const> const indices(&m_IndicesData.front().u32, m_NumIndices);
 
             if (m_Topology == MeshTopology::Triangles)
             {
@@ -4273,7 +4273,7 @@ private:
         }
         else
         {
-            nonstd::span<uint16_t const> const indices(&m_IndicesData.front().u16.a, m_NumIndices);
+            std::span<uint16_t const> const indices(&m_IndicesData.front().u16.a, m_NumIndices);
 
             if (m_Topology == MeshTopology::Triangles)
             {
@@ -4376,12 +4376,12 @@ private:
         {
             if (m_IndicesAre32Bit)
             {
-                nonstd::span<uint32_t const> const indices(&m_IndicesData.front().u32, m_NumIndices);
+                std::span<uint32_t const> const indices(&m_IndicesData.front().u32, m_NumIndices);
                 OSC_ASSERT_ALWAYS(std::all_of(indices.begin(), indices.end(), [nVerts = m_Vertices.size()](uint32_t i) { return i < nVerts; }));
             }
             else
             {
-                nonstd::span<uint16_t const> const indices(&m_IndicesData.front().u16.a, m_NumIndices);
+                std::span<uint16_t const> const indices(&m_IndicesData.front().u16.a, m_NumIndices);
                 OSC_ASSERT_ALWAYS(std::all_of(indices.begin(), indices.end(), [nVerts = m_Vertices.size()](uint16_t i) { return i < nVerts; }));
             }
         }
@@ -4515,17 +4515,17 @@ void osc::Mesh::setTopology(MeshTopology topology)
     m_Impl.upd()->setTopology(topology);
 }
 
-nonstd::span<osc::Vec3 const> osc::Mesh::getVerts() const
+std::span<osc::Vec3 const> osc::Mesh::getVerts() const
 {
     return m_Impl->getVerts();
 }
 
-void osc::Mesh::setVerts(nonstd::span<Vec3 const> verts)
+void osc::Mesh::setVerts(std::span<Vec3 const> verts)
 {
     m_Impl.upd()->setVerts(verts);
 }
 
-void osc::Mesh::transformVerts(std::function<void(nonstd::span<Vec3>)> const& f)
+void osc::Mesh::transformVerts(std::function<void(std::span<Vec3>)> const& f)
 {
     m_Impl.upd()->transformVerts(f);
 }
@@ -4540,52 +4540,52 @@ void osc::Mesh::transformVerts(Mat4 const& m)
     m_Impl.upd()->transformVerts(m);
 }
 
-nonstd::span<osc::Vec3 const> osc::Mesh::getNormals() const
+std::span<osc::Vec3 const> osc::Mesh::getNormals() const
 {
     return m_Impl->getNormals();
 }
 
-void osc::Mesh::setNormals(nonstd::span<Vec3 const> verts)
+void osc::Mesh::setNormals(std::span<Vec3 const> verts)
 {
     m_Impl.upd()->setNormals(verts);
 }
 
-void osc::Mesh::transformNormals(std::function<void(nonstd::span<Vec3>)> const& f)
+void osc::Mesh::transformNormals(std::function<void(std::span<Vec3>)> const& f)
 {
     m_Impl.upd()->transformNormals(f);
 }
 
-nonstd::span<osc::Vec2 const> osc::Mesh::getTexCoords() const
+std::span<osc::Vec2 const> osc::Mesh::getTexCoords() const
 {
     return m_Impl->getTexCoords();
 }
 
-void osc::Mesh::setTexCoords(nonstd::span<Vec2 const> coords)
+void osc::Mesh::setTexCoords(std::span<Vec2 const> coords)
 {
     m_Impl.upd()->setTexCoords(coords);
 }
 
-void osc::Mesh::transformTexCoords(std::function<void(nonstd::span<Vec2>)> const& f)
+void osc::Mesh::transformTexCoords(std::function<void(std::span<Vec2>)> const& f)
 {
     m_Impl.upd()->transformTexCoords(f);
 }
 
-nonstd::span<osc::Color const> osc::Mesh::getColors() const
+std::span<osc::Color const> osc::Mesh::getColors() const
 {
     return m_Impl->getColors();
 }
 
-void osc::Mesh::setColors(nonstd::span<osc::Color const> colors)
+void osc::Mesh::setColors(std::span<osc::Color const> colors)
 {
     m_Impl.upd()->setColors(colors);
 }
 
-nonstd::span<osc::Vec4 const> osc::Mesh::getTangents() const
+std::span<osc::Vec4 const> osc::Mesh::getTangents() const
 {
     return m_Impl->getTangents();
 }
 
-void osc::Mesh::setTangents(nonstd::span<Vec4 const> newTangents)
+void osc::Mesh::setTangents(std::span<Vec4 const> newTangents)
 {
     m_Impl.upd()->setTangents(newTangents);
 }
@@ -4600,12 +4600,12 @@ void osc::Mesh::setIndices(MeshIndicesView indices)
     m_Impl.upd()->setIndices(indices);
 }
 
-void osc::Mesh::setIndices(nonstd::span<uint16_t const> indices)
+void osc::Mesh::setIndices(std::span<uint16_t const> indices)
 {
     m_Impl.upd()->setIndices(indices);
 }
 
-void osc::Mesh::setIndices(nonstd::span<uint32_t const> indices)
+void osc::Mesh::setIndices(std::span<uint32_t const> indices)
 {
     m_Impl.upd()->setIndices(indices);
 }
@@ -5846,7 +5846,7 @@ void osc::Graphics::CopyTexture(
 
 // helper: upload instancing data for a batch
 std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
-    nonstd::span<RenderObject const> renderObjects,
+    std::span<RenderObject const> renderObjects,
     osc::Shader::Impl const& shaderImpl)
 {
     // preemptively upload instancing data
@@ -5890,7 +5890,7 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
                 if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == osc::ShaderPropertyType::Mat4)
                 {
                     Mat4 const m = ModelMatrix(el);
-                    nonstd::span<float const> const els = ToFloatSpan(m);
+                    std::span<float const> const els = ToFloatSpan(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     floatOffset += els.size();
                 }
@@ -5900,14 +5900,14 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
                 if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderPropertyType::Mat4)
                 {
                     Mat4 const m = NormalMatrix4(el);
-                    nonstd::span<float const> const els = ToFloatSpan(m);
+                    std::span<float const> const els = ToFloatSpan(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     floatOffset += els.size();
                 }
                 else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderPropertyType::Mat3)
                 {
                     Mat3 const m = NormalMatrix(el);
-                    nonstd::span<float const> const els = ToFloatSpan(m);
+                    std::span<float const> const els = ToFloatSpan(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     floatOffset += els.size();
                 }
@@ -5916,7 +5916,7 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
         OSC_ASSERT_ALWAYS(sizeof(float)*floatOffset == renderObjects.size() * byteStride);
 
         auto& vbo = maybeInstancingState.emplace(g_GraphicsContextImpl->updInstanceGPUBuffer(), byteStride).buf;
-        vbo.assign(nonstd::span<float const>{buf.data(), floatOffset});
+        vbo.assign(std::span<float const>{buf.data(), floatOffset});
     }
     return maybeInstancingState;
 }
@@ -5991,7 +5991,7 @@ void osc::GraphicsBackend::UnbindFromInstancedAttributes(
 
 // helper: draw a batch of render objects that have the same material, material block, and mesh
 void osc::GraphicsBackend::HandleBatchWithSameMesh(
-    nonstd::span<RenderObject const> els,
+    std::span<RenderObject const> els,
     std::optional<InstancingState>& ins)
 {
     OSC_PERF("GraphicsBackend::HandleBatchWithSameMesh");
@@ -6063,7 +6063,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
 
 // helper: draw a batch of render objects that have the same material and material block
 void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
-    nonstd::span<RenderObject const> els,
+    std::span<RenderObject const> els,
     int32_t& textureSlot,
     std::optional<InstancingState>& ins)
 {
@@ -6332,7 +6332,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
 // helper: draw a batch of render objects that have the same material
 void osc::GraphicsBackend::HandleBatchWithSameMaterial(
     RenderPassState const& renderPassState,
-    nonstd::span<RenderObject const> els)
+    std::span<RenderObject const> els)
 {
     OSC_PERF("GraphicsBackend::HandleBatchWithSameMaterial");
 
@@ -6439,7 +6439,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
 // helper: draw a sequence of render objects (no presumptions)
 void osc::GraphicsBackend::DrawBatchedByMaterial(
     RenderPassState const& renderPassState,
-    nonstd::span<RenderObject const> els)
+    std::span<RenderObject const> els)
 {
     OSC_PERF("GraphicsBackend::DrawBatchedByMaterial");
 
@@ -6455,7 +6455,7 @@ void osc::GraphicsBackend::DrawBatchedByMaterial(
 
 void osc::GraphicsBackend::DrawBatchedByOpaqueness(
     RenderPassState const& renderPassState,
-    nonstd::span<RenderObject const> els)
+    std::span<RenderObject const> els)
 {
     OSC_PERF("GraphicsBackend::DrawBatchedByOpaqueness");
 

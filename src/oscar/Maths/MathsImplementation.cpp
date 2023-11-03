@@ -30,7 +30,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
-#include <nonstd/span.hpp>
 
 #include <algorithm>
 #include <array>
@@ -42,6 +41,7 @@
 #include <limits>
 #include <memory>
 #include <numeric>
+#include <span>
 #include <sstream>
 #include <stack>
 #include <stdexcept>
@@ -73,7 +73,7 @@ bool osc::operator!=(AABB const& lhs, AABB const& rhs) noexcept
 // BVH helpers
 namespace
 {
-    osc::AABB Union(nonstd::span<osc::BVHPrim const> prims)
+    osc::AABB Union(std::span<osc::BVHPrim const> prims)
     {
         osc::AABB rv = prims.front().getBounds();
         for (auto it = prims.begin() + 1; it != prims.end(); ++it)
@@ -201,8 +201,8 @@ namespace
     std::optional<osc::BVHCollision> BVH_GetClosestRayIndexedTriangleCollisionRecursive(
         std::vector<osc::BVHNode> const& nodes,
         std::vector<osc::BVHPrim> const& prims,
-        nonstd::span<Vec3 const> verts,
-        nonstd::span<TIndex const> indices,
+        std::span<Vec3 const> verts,
+        std::span<TIndex const> indices,
         osc::Line const& ray,
         float& closest,
         ptrdiff_t nodeidx)
@@ -272,8 +272,8 @@ namespace
     void BuildFromIndexedTriangles(
         std::vector<osc::BVHNode>& nodes,
         std::vector<osc::BVHPrim>& prims,
-        nonstd::span<Vec3 const> verts,
-        nonstd::span<TIndex const> indices)
+        std::span<Vec3 const> verts,
+        std::span<TIndex const> indices)
     {
         // clear out any old data
         nodes.clear();
@@ -306,8 +306,8 @@ namespace
     std::optional<osc::BVHCollision> GetClosestRayIndexedTriangleCollision(
         std::vector<osc::BVHNode> const& nodes,
         std::vector<osc::BVHPrim> const& prims,
-        nonstd::span<Vec3 const> verts,
-        nonstd::span<TIndex const> indices,
+        std::span<Vec3 const> verts,
+        std::span<TIndex const> indices,
         osc::Line const& ray)
     {
         if (nodes.empty() || prims.empty() || indices.empty())
@@ -326,7 +326,7 @@ void osc::BVH::clear()
     m_Prims.clear();
 }
 
-void osc::BVH::buildFromIndexedTriangles(nonstd::span<Vec3 const> verts, nonstd::span<uint16_t const> indices)
+void osc::BVH::buildFromIndexedTriangles(std::span<Vec3 const> verts, std::span<uint16_t const> indices)
 {
     BuildFromIndexedTriangles<uint16_t>(
         m_Nodes,
@@ -336,7 +336,7 @@ void osc::BVH::buildFromIndexedTriangles(nonstd::span<Vec3 const> verts, nonstd:
     );
 }
 
-void osc::BVH::buildFromIndexedTriangles(nonstd::span<Vec3 const> verts, nonstd::span<uint32_t const> indices)
+void osc::BVH::buildFromIndexedTriangles(std::span<Vec3 const> verts, std::span<uint32_t const> indices)
 {
     BuildFromIndexedTriangles<uint32_t>(
         m_Nodes,
@@ -347,8 +347,8 @@ void osc::BVH::buildFromIndexedTriangles(nonstd::span<Vec3 const> verts, nonstd:
 }
 
 std::optional<osc::BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision(
-    nonstd::span<Vec3 const> verts,
-    nonstd::span<uint16_t const> indices,
+    std::span<Vec3 const> verts,
+    std::span<uint16_t const> indices,
     Line const& line) const
 {
     return GetClosestRayIndexedTriangleCollision<uint16_t>(
@@ -360,7 +360,7 @@ std::optional<osc::BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision
     );
 }
 
-std::optional<osc::BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision(nonstd::span<Vec3 const> verts, nonstd::span<uint32_t const> indices, Line const& line) const
+std::optional<osc::BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision(std::span<Vec3 const> verts, std::span<uint32_t const> indices, Line const& line) const
 {
     return GetClosestRayIndexedTriangleCollision<uint32_t>(
         m_Nodes,
@@ -371,7 +371,7 @@ std::optional<osc::BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision
     );
 }
 
-void osc::BVH::buildFromAABBs(nonstd::span<AABB const> aabbs)
+void osc::BVH::buildFromAABBs(std::span<AABB const> aabbs)
 {
     // clear out any old data
     clear();
@@ -1476,7 +1476,7 @@ osc::Vec3 osc::Midpoint(Vec3 const& a, Vec3 const& b) noexcept
     return 0.5f*(a+b);
 }
 
-osc::Vec3 osc::Midpoint(nonstd::span<Vec3 const> vs) noexcept
+osc::Vec3 osc::Midpoint(std::span<Vec3 const> vs) noexcept
 {
     return std::reduce(vs.begin(), vs.end()) / static_cast<float>(vs.size());
 }
@@ -1484,7 +1484,7 @@ osc::Vec3 osc::Midpoint(nonstd::span<Vec3 const> vs) noexcept
 
 // Geometry
 
-osc::Vec3 osc::KahanSum(nonstd::span<Vec3 const> vs) noexcept
+osc::Vec3 osc::KahanSum(std::span<Vec3 const> vs) noexcept
 {
     Vec3 sum{};  // accumulator
     Vec3 c{};    // running compensation of low-order bits
@@ -1501,7 +1501,7 @@ osc::Vec3 osc::KahanSum(nonstd::span<Vec3 const> vs) noexcept
     return sum;
 }
 
-osc::Vec3 osc::NumericallyStableAverage(nonstd::span<Vec3 const> vs) noexcept
+osc::Vec3 osc::NumericallyStableAverage(std::span<Vec3 const> vs) noexcept
 {
     Vec3 const sum = KahanSum(vs);
     return sum / static_cast<float>(vs.size());
@@ -1708,7 +1708,7 @@ osc::Vec2 osc::Midpoint(Rect const& r) noexcept
     return 0.5f * (r.p1 + r.p2);
 }
 
-osc::Rect osc::BoundingRectOf(nonstd::span<Vec2 const> vs)
+osc::Rect osc::BoundingRectOf(std::span<Vec2 const> vs)
 {
     if (vs.empty())
     {
@@ -1779,7 +1779,7 @@ osc::Rect osc::NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const&
     return rv;
 }
 
-osc::Sphere osc::BoundingSphereOf(nonstd::span<Vec3 const> points) noexcept
+osc::Sphere osc::BoundingSphereOf(std::span<Vec3 const> points) noexcept
 {
     AABB const aabb = AABBFromVerts(points);
 
@@ -2031,7 +2031,7 @@ osc::AABB osc::AABBFromTriangle(Triangle const& t) noexcept
     return rv;
 }
 
-osc::AABB osc::AABBFromVerts(nonstd::span<Vec3 const> vs) noexcept
+osc::AABB osc::AABBFromVerts(std::span<Vec3 const> vs) noexcept
 {
     // edge-case: no points provided
     if (vs.empty())
@@ -2052,8 +2052,8 @@ osc::AABB osc::AABBFromVerts(nonstd::span<Vec3 const> vs) noexcept
 }
 
 osc::AABB osc::AABBFromIndexedVerts(
-    nonstd::span<Vec3 const> verts,
-    nonstd::span<uint32_t const> indices)
+    std::span<Vec3 const> verts,
+    std::span<uint32_t const> indices)
 {
     AABB rv{};
 
@@ -2091,8 +2091,8 @@ osc::AABB osc::AABBFromIndexedVerts(
 }
 
 osc::AABB osc::AABBFromIndexedVerts(
-    nonstd::span<Vec3 const> verts,
-    nonstd::span<uint16_t const> indices)
+    std::span<Vec3 const> verts,
+    std::span<uint16_t const> indices)
 {
     AABB rv{};
 

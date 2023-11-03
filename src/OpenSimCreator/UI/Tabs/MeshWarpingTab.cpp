@@ -8,7 +8,6 @@
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <nonstd/span.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Formats/CSV.hpp>
 #include <oscar/Formats/OBJ.hpp>
@@ -73,6 +72,7 @@
 #include <iostream>
 #include <limits>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <sstream>
@@ -614,7 +614,7 @@ namespace
     }
 
     void ActionTrySaveWarpedNonParticipatingLandmarksToCSV(
-        nonstd::span<Vec3 const> nonParticipatingLandmarkPositions)
+        std::span<Vec3 const> nonParticipatingLandmarkPositions)
     {
         std::optional<std::filesystem::path> const maybeCSVPath =
             osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
@@ -659,7 +659,7 @@ namespace
             return m_CachedResultMesh;
         }
 
-        nonstd::span<Vec3 const> getWarpedNonParticipatingLandmarks(TPSDocument const& doc)
+        std::span<Vec3 const> getWarpedNonParticipatingLandmarks(TPSDocument const& doc)
         {
             updateAll(doc);
             return m_CachedResultNonParticipatingLandmarks;
@@ -879,7 +879,7 @@ namespace
         return state.meshResultCache.getWarpedMesh(state.editedDocument->getScratch());
     }
 
-    nonstd::span<Vec3 const> GetResultNonParticipatingLandmarks(TPSUISharedState& state)
+    std::span<Vec3 const> GetResultNonParticipatingLandmarks(TPSUISharedState& state)
     {
         return state.meshResultCache.getWarpedNonParticipatingLandmarks(state.editedDocument->getScratch());
     }

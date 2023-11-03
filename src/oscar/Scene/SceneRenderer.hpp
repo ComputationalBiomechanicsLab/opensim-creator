@@ -3,9 +3,8 @@
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Maths/Vec2.hpp>
 
-#include <nonstd/span.hpp>
-
 #include <memory>
+#include <span>
 
 namespace osc { class AppConfig; }
 namespace osc { class MeshCache; }
@@ -27,7 +26,7 @@ namespace osc
 
         Vec2i getDimensions() const;
         AntiAliasingLevel getAntiAliasingLevel() const;
-        void render(nonstd::span<SceneDecoration const>, SceneRendererParams const&);
+        void render(std::span<SceneDecoration const>, SceneRendererParams const&);
         RenderTexture& updRenderTexture();
 
     private:

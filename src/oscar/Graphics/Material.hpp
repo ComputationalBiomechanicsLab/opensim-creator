@@ -14,11 +14,10 @@
 #include <oscar/Maths/Vec4.hpp>
 #include <oscar/Utils/CopyOnUpdPtr.hpp>
 
-#include <nonstd/span.hpp>
-
 #include <cstdint>
 #include <iosfwd>
 #include <optional>
+#include <span>
 #include <string_view>
 
 // note: implementation is in `GraphicsImplementation.cpp`
@@ -41,14 +40,14 @@ namespace osc
         std::optional<Color> getColor(std::string_view propertyName) const;
         void setColor(std::string_view propertyName, Color const&);
 
-        std::optional<nonstd::span<Color const>> getColorArray(std::string_view propertyName) const;
-        void setColorArray(std::string_view propertyName, nonstd::span<Color const>);
+        std::optional<std::span<Color const>> getColorArray(std::string_view propertyName) const;
+        void setColorArray(std::string_view propertyName, std::span<Color const>);
 
         std::optional<float> getFloat(std::string_view propertyName) const;
         void setFloat(std::string_view propertyName, float);
 
-        std::optional<nonstd::span<float const>> getFloatArray(std::string_view propertyName) const;
-        void setFloatArray(std::string_view propertyName, nonstd::span<float const>);
+        std::optional<std::span<float const>> getFloatArray(std::string_view propertyName) const;
+        void setFloatArray(std::string_view propertyName, std::span<float const>);
 
         std::optional<Vec2> getVec2(std::string_view propertyName) const;
         void setVec2(std::string_view propertyName, Vec2);
@@ -56,8 +55,8 @@ namespace osc
         std::optional<Vec3> getVec3(std::string_view propertyName) const;
         void setVec3(std::string_view propertyName, Vec3);
 
-        std::optional<nonstd::span<Vec3 const>> getVec3Array(std::string_view propertyName) const;
-        void setVec3Array(std::string_view propertyName, nonstd::span<Vec3 const>);
+        std::optional<std::span<Vec3 const>> getVec3Array(std::string_view propertyName) const;
+        void setVec3Array(std::string_view propertyName, std::span<Vec3 const>);
 
         std::optional<Vec4> getVec4(std::string_view propertyName) const;
         void setVec4(std::string_view propertyName, Vec4);
@@ -68,8 +67,8 @@ namespace osc
         std::optional<Mat4> getMat4(std::string_view propertyName) const;
         void setMat4(std::string_view propertyName, Mat4 const&);
 
-        std::optional<nonstd::span<Mat4 const>> getMat4Array(std::string_view propertyName) const;
-        void setMat4Array(std::string_view propertyName, nonstd::span<Mat4 const>);
+        std::optional<std::span<Mat4 const>> getMat4Array(std::string_view propertyName) const;
+        void setMat4Array(std::string_view propertyName, std::span<Mat4 const>);
 
         std::optional<int32_t> getInt(std::string_view propertyName) const;
         void setInt(std::string_view propertyName, int32_t);

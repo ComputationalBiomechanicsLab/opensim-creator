@@ -9,8 +9,6 @@
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/SpanHelpers.hpp>
 
-#include <nonstd/span.hpp>
-
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -18,6 +16,7 @@
 #include <iostream>
 #include <iomanip>
 #include <limits>
+#include <span>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -98,7 +97,7 @@ namespace
     void WriteTriangles(std::ostream& o, osc::Mesh const& mesh)
     {
         osc::MeshIndicesView const indices = mesh.getIndices();
-        nonstd::span<osc::Vec3 const> const verts = mesh.getVerts();
+        std::span<osc::Vec3 const> const verts = mesh.getVerts();
 
         for (ptrdiff_t i = 0; i < ssize(indices)-2; i += 3)
         {

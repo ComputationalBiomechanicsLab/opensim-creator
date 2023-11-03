@@ -13,7 +13,6 @@
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
 #include <ImGuizmo.h>
-#include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentSocket.h>
@@ -113,6 +112,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -4538,7 +4538,7 @@ namespace
             Set3DSceneRect(osc::ContentRegionAvailScreenRect());
         }
 
-        void DrawScene(nonstd::span<DrawableThing> drawables)
+        void DrawScene(std::span<DrawableThing> drawables)
         {
             // setup rendering params
             osc::SceneRendererParams p;
@@ -4618,14 +4618,14 @@ namespace
             return m_SceneRenderer.updRenderTexture();
         }
 
-        nonstd::span<osc::Color const> GetColors() const
+        std::span<osc::Color const> GetColors() const
         {
             static_assert(offsetof(Colors, ground) == 0);
             static_assert(sizeof(Colors) % sizeof(osc::Color) == 0);
             return {&m_Colors.ground, sizeof(m_Colors)/sizeof(osc::Color)};
         }
 
-        nonstd::span<osc::Color> UpdColors()
+        std::span<osc::Color> UpdColors()
         {
             static_assert(offsetof(Colors, ground) == 0);
             static_assert(sizeof(Colors) % sizeof(osc::Color) == 0);
@@ -4637,7 +4637,7 @@ namespace
             UpdColors()[i] = newColorValue;
         }
 
-        nonstd::span<char const* const> GetColorLabels() const
+        std::span<char const* const> GetColorLabels() const
         {
             return c_ColorNames;
         }
@@ -4677,14 +4677,14 @@ namespace
             m_Colors.connectionLines = newColor;
         }
 
-        nonstd::span<bool const> GetVisibilityFlags() const
+        std::span<bool const> GetVisibilityFlags() const
         {
             static_assert(offsetof(VisibilityFlags, ground) == 0);
             static_assert(sizeof(VisibilityFlags) % sizeof(bool) == 0);
             return {&m_VisibilityFlags.ground, sizeof(m_VisibilityFlags)/sizeof(bool)};
         }
 
-        nonstd::span<bool> UpdVisibilityFlags()
+        std::span<bool> UpdVisibilityFlags()
         {
             static_assert(offsetof(VisibilityFlags, ground) == 0);
             static_assert(sizeof(VisibilityFlags) % sizeof(bool) == 0);
@@ -4696,7 +4696,7 @@ namespace
             UpdVisibilityFlags()[i] = newVisibilityValue;
         }
 
-        nonstd::span<char const* const> GetVisibilityFlagLabels() const
+        std::span<char const* const> GetVisibilityFlagLabels() const
         {
             return c_VisibilityFlagNames;
         }
@@ -4962,14 +4962,14 @@ namespace
         // HOVERTEST/INTERACTIVITY
         //
 
-        nonstd::span<bool const> GetIneractivityFlags() const
+        std::span<bool const> GetIneractivityFlags() const
         {
             static_assert(offsetof(InteractivityFlags, ground) == 0);
             static_assert(sizeof(InteractivityFlags) % sizeof(bool) == 0);
             return {&m_InteractivityFlags.ground, sizeof(m_InteractivityFlags)/sizeof(bool)};
         }
 
-        nonstd::span<bool> UpdInteractivityFlags()
+        std::span<bool> UpdInteractivityFlags()
         {
             static_assert(offsetof(InteractivityFlags, ground) == 0);
             static_assert(sizeof(InteractivityFlags) % sizeof(bool) == 0);
@@ -4981,7 +4981,7 @@ namespace
             UpdInteractivityFlags()[i] = newInteractivityValue;
         }
 
-        nonstd::span<char const* const> GetInteractivityFlagLabels() const
+        std::span<char const* const> GetInteractivityFlagLabels() const
         {
             return c_InteractivityFlagNames;
         }
@@ -5775,7 +5775,7 @@ namespace
         int numElementsUserMustChoose = 1;
 
         // function that returns true if the "caller" is happy with the user's choice
-        std::function<bool(nonstd::span<UID>)> onUserChoice = [](nonstd::span<UID>)
+        std::function<bool(std::span<UID>)> onUserChoice = [](std::span<UID>)
         {
             return true;
         };
@@ -6197,7 +6197,7 @@ namespace
 
         static std::variant<StationDefinedInGround, RowParseError> TryParseColumns(
             size_t lineNum,
-            nonstd::span<std::string const> columnsText)
+            std::span<std::string const> columnsText)
         {
             if (columnsText.size() < 4)
             {
@@ -6236,7 +6236,7 @@ namespace
             return std::move(ss).str();
         }
 
-        static bool IsWhitespaceRow(nonstd::span<std::string const> cols)
+        static bool IsWhitespaceRow(std::span<std::string const> cols)
         {
             return cols.size() == 1;
         }
@@ -6827,7 +6827,7 @@ private:
         opts.isAttachingTowardEl = false;
         opts.maybeElsBeingReplacedByChoice = existingAttachments;
         opts.header = "choose mesh attachment (ESC to cancel)";
-        opts.onUserChoice = [shared = m_Shared, meshes](nonstd::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, meshes](std::span<UID> choices)
         {
             if (choices.empty())
             {
@@ -6852,7 +6852,7 @@ private:
         opts.header = "choose joint parent (ESC to cancel)";
         opts.maybeElsAttachingTo = {child.GetID()};
         opts.isAttachingTowardEl = false;  // away from the body
-        opts.onUserChoice = [shared = m_Shared, childID = child.GetID()](nonstd::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, childID = child.GetID()](std::span<UID> choices)
         {
             if (choices.empty())
             {
@@ -6876,7 +6876,7 @@ private:
         opts.canChooseStations = true;
         opts.maybeElsAttachingTo = {el.GetID()};
         opts.header = "choose what to point towards (ESC to cancel)";
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID(), axis](nonstd::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.GetID(), axis](std::span<UID> choices)
         {
             if (choices.empty())
             {
@@ -6902,7 +6902,7 @@ private:
         opts.maybeElsAttachingTo = {el.GetID()};
         opts.header = "choose two elements to align the axis along (ESC to cancel)";
         opts.numElementsUserMustChoose = 2;
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID(), axis](nonstd::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.GetID(), axis](std::span<UID> choices)
         {
             if (choices.size() < 2)
             {
@@ -6930,7 +6930,7 @@ private:
         opts.canChooseStations = true;
         opts.maybeElsAttachingTo = {el.GetID()};
         opts.header = "choose what to translate to (ESC to cancel)";
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](nonstd::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](std::span<UID> choices)
         {
             if (choices.empty())
             {
@@ -6953,7 +6953,7 @@ private:
         opts.maybeElsAttachingTo = {el.GetID()};
         opts.header = "choose two elements to translate between (ESC to cancel)";
         opts.numElementsUserMustChoose = 2;
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](nonstd::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](std::span<UID> choices)
         {
             if (choices.size() < 2)
             {
@@ -6978,7 +6978,7 @@ private:
         opts.canChooseMeshes = true;
         opts.maybeElsAttachingTo = {el.GetID()};
         opts.header = "choose which orientation to copy (ESC to cancel)";
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](nonstd::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](std::span<UID> choices)
         {
             if (choices.empty())
             {
@@ -7022,7 +7022,7 @@ private:
         opts.canChooseJoints = false;
         opts.canChooseMeshes = true;
         opts.header = "choose a mesh (ESC to cancel)";
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](nonstd::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](std::span<UID> choices)
         {
             if (choices.empty())
             {
@@ -7042,7 +7042,7 @@ private:
         opts.canChooseJoints = false;
         opts.canChooseMeshes = true;
         opts.header = "choose a mesh (ESC to cancel)";
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](nonstd::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](std::span<UID> choices)
         {
             if (choices.empty())
             {
@@ -7062,7 +7062,7 @@ private:
         opts.canChooseJoints = false;
         opts.canChooseMeshes = true;
         opts.header = "choose a mesh (ESC to cancel)";
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](nonstd::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](std::span<UID> choices)
         {
             if (choices.empty())
             {
@@ -7085,7 +7085,7 @@ private:
         opts.canChooseMeshes = true;
         opts.maybeElsAttachingTo = {el.GetID()};
         opts.header = "choose where to place it (ESC to cancel)";
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](nonstd::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](std::span<UID> choices)
         {
             if (choices.empty())
             {
@@ -7120,7 +7120,7 @@ private:
         opts.canChooseMeshes = Is<MeshEl>(*old);
         opts.maybeElsAttachingTo = {el.GetID()};
         opts.header = "choose what to attach to";
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID(), crossrefIdx](nonstd::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.GetID(), crossrefIdx](std::span<UID> choices)
         {
             if (choices.empty())
             {
@@ -8239,8 +8239,8 @@ private:
 
         if (ImGui::BeginPopupContextItem("##addpainttoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
         {
-            nonstd::span<osc::Color const> colors = m_Shared->GetColors();
-            nonstd::span<char const* const> labels = m_Shared->GetColorLabels();
+            std::span<osc::Color const> colors = m_Shared->GetColors();
+            std::span<char const* const> labels = m_Shared->GetColorLabels();
             OSC_ASSERT(colors.size() == labels.size() && "every color should have a label");
 
             for (size_t i = 0; i < colors.size(); ++i)
@@ -8263,8 +8263,8 @@ private:
 
         if (ImGui::BeginPopupContextItem("##changevisibilitypopup", ImGuiPopupFlags_MouseButtonLeft))
         {
-            nonstd::span<bool const> visibilities = m_Shared->GetVisibilityFlags();
-            nonstd::span<char const* const> labels = m_Shared->GetVisibilityFlagLabels();
+            std::span<bool const> visibilities = m_Shared->GetVisibilityFlags();
+            std::span<char const* const> labels = m_Shared->GetVisibilityFlagLabels();
             OSC_ASSERT(visibilities.size() == labels.size() && "every visibility flag should have a label");
 
             for (size_t i = 0; i < visibilities.size(); ++i)
@@ -8287,8 +8287,8 @@ private:
 
         if (ImGui::BeginPopupContextItem("##changeinteractionlockspopup", ImGuiPopupFlags_MouseButtonLeft))
         {
-            nonstd::span<bool const> interactables = m_Shared->GetIneractivityFlags();
-            nonstd::span<char const* const> labels =  m_Shared->GetInteractivityFlagLabels();
+            std::span<bool const> interactables = m_Shared->GetIneractivityFlags();
+            std::span<char const* const> labels =  m_Shared->GetInteractivityFlagLabels();
             OSC_ASSERT(interactables.size() == labels.size());
 
             for (size_t i = 0; i < interactables.size(); ++i)

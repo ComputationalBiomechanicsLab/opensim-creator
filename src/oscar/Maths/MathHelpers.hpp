@@ -13,12 +13,11 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 
-#include <nonstd/span.hpp>
-
 #include <array>
 #include <cstdint>
 #include <cstddef>
 #include <optional>
+#include <span>
 
 namespace osc { struct Disc; }
 namespace osc { struct Plane; }
@@ -191,13 +190,13 @@ namespace osc
     Vec3 Midpoint(Vec3 const&, Vec3 const&) noexcept;
 
     // returns the unweighted midpoint of all of the provided vectors, or {0.0f, 0.0f, 0.0f} if provided no inputs
-    Vec3 Midpoint(nonstd::span<Vec3 const>) noexcept;
+    Vec3 Midpoint(std::span<Vec3 const>) noexcept;
 
     // returns the sum of `n` vectors using the "Kahan Summation Algorithm" to reduce errors, returns {0.0f, 0.0f, 0.0f} if provided no inputs
-    Vec3 KahanSum(nonstd::span<Vec3 const>) noexcept;
+    Vec3 KahanSum(std::span<Vec3 const>) noexcept;
 
     // returns the average of `n` vectors using whichever numerically stable average happens to work
-    Vec3 NumericallyStableAverage(nonstd::span<Vec3 const>) noexcept;
+    Vec3 NumericallyStableAverage(std::span<Vec3 const>) noexcept;
 
     // returns a normal vector of the supplied (pointed to) triangle (i.e. (v[1]-v[0]) x (v[2]-v[0]))
     Vec3 TriangleNormal(Triangle const&) noexcept;
@@ -289,7 +288,7 @@ namespace osc
     // returns the smallest rectangle that bounds the provided points
     //
     // note: no points --> zero-sized rectangle at the origin
-    Rect BoundingRectOf(nonstd::span<Vec2 const>);
+    Rect BoundingRectOf(std::span<Vec2 const>);
 
     // returns a rectangle that has been expanded along each edge by the given amount
     //
@@ -308,7 +307,7 @@ namespace osc
     // ----- `Sphere` helpers -----
 
     // returns a sphere that bounds the given vertices
-    Sphere BoundingSphereOf(nonstd::span<Vec3 const>) noexcept;
+    Sphere BoundingSphereOf(std::span<Vec3 const>) noexcept;
 
     // returns a sphere that loosely bounds the given AABB
     Sphere ToSphere(AABB const&) noexcept;
@@ -384,13 +383,13 @@ namespace osc
     AABB AABBFromTriangle(Triangle const& t) noexcept;
 
     // returns an AABB that tightly bounds the provided points
-    AABB AABBFromVerts(nonstd::span<Vec3 const>) noexcept;
+    AABB AABBFromVerts(std::span<Vec3 const>) noexcept;
 
     // returns an AABB that tightly bounds the points indexed by the provided 32-bit indices
-    AABB AABBFromIndexedVerts(nonstd::span<Vec3 const> verts, nonstd::span<uint32_t const> indices);
+    AABB AABBFromIndexedVerts(std::span<Vec3 const> verts, std::span<uint32_t const> indices);
 
     // returns an AABB that tightly bounds the points indexed by the provided 16-bit indices
-    AABB AABBFromIndexedVerts(nonstd::span<Vec3 const> verts, nonstd::span<uint16_t const> indices);
+    AABB AABBFromIndexedVerts(std::span<Vec3 const> verts, std::span<uint16_t const> indices);
 
     // (tries to) return a Normalized Device Coordinate (NDC) rectangle, clamped to the NDC clipping
     // bounds ((-1,-1) to (1, 1)), where the rectangle loosely bounds the given worldspace AABB after

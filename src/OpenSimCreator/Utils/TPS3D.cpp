@@ -283,7 +283,7 @@ osc::Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, osc::Mes
 
     osc::Mesh rv = mesh;  // make a local copy of the input mesh
 
-    rv.transformVerts([&coefs](nonstd::span<Vec3> verts)
+    rv.transformVerts([&coefs](std::span<Vec3> verts)
     {
         // parallelize function evaluation, because the mesh may contain *a lot* of
         // verts and the TPS equation may contain *a lot* of coefficients
@@ -298,7 +298,7 @@ osc::Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, osc::Mes
 
 std::vector<osc::Vec3> osc::ApplyThinPlateWarpToPoints(
     TPSCoefficients3D const& coefs,
-    nonstd::span<Vec3 const> points)
+    std::span<Vec3 const> points)
 {
     std::vector<Vec3> rv;
     rv.reserve(points.size());

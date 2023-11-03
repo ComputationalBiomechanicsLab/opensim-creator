@@ -5,13 +5,13 @@
 #include <oscar/Utils/Assertions.hpp>
 
 #include <lunasvg.h>
-#include <nonstd/span.hpp>
 
 #include <algorithm>
 #include <cstdint>
 #include <fstream>
 #include <iterator>
 #include <memory>
+#include <span>
 #include <stdexcept>
 #include <sstream>
 

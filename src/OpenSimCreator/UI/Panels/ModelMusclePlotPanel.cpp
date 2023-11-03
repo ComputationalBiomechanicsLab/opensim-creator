@@ -9,7 +9,6 @@
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <implot.h>
-#include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -38,6 +37,7 @@
 #include <chrono>
 #include <future>
 #include <memory>
+#include <span>
 #include <string>
 #include <string_view>
 #include <sstream>
@@ -718,7 +718,7 @@ namespace
     std::optional<float> ComputeLERPedY(Plot const& p, float x)
     {
         auto lock = p.lockDataPoints();
-        nonstd::span<PlotDataPoint const> const points = *lock;
+        std::span<PlotDataPoint const> const points = *lock;
 
         if (points.empty())
         {
@@ -755,7 +755,7 @@ namespace
     std::optional<PlotDataPoint> FindNearestPoint(Plot const& p, float x)
     {
         auto lock = p.lockDataPoints();
-        nonstd::span<PlotDataPoint const> points = *lock;
+        std::span<PlotDataPoint const> points = *lock;
 
         if (points.empty())
         {
@@ -796,7 +796,7 @@ namespace
     bool IsXInRange(Plot const& p, float x)
     {
         auto lock = p.lockDataPoints();
-        nonstd::span<PlotDataPoint const> const points = *lock;
+        std::span<PlotDataPoint const> const points = *lock;
 
         if (points.size() <= 1)
         {
@@ -809,7 +809,7 @@ namespace
     void PlotLine(osc::CStringView lineName, Plot const& p)
     {
         auto lock = p.lockDataPoints();
-        nonstd::span<PlotDataPoint const> points = *lock;
+        std::span<PlotDataPoint const> points = *lock;
 
 
         float const* xPtr = nullptr;
@@ -1349,7 +1349,7 @@ namespace
     }
 
     // returns the smallest X value accross all given plot lines - if an X value exists
-    std::optional<float> CalcSmallestX(nonstd::span<LineCursor const> cursors)
+    std::optional<float> CalcSmallestX(std::span<LineCursor const> cursors)
     {
         auto it = std::min_element(cursors.begin(), cursors.end(), HasLowerX);
         return it != cursors.end() ? it->peekX() : std::optional<float>{};

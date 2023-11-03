@@ -26,11 +26,10 @@
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Perf.hpp>
 
-#include <nonstd/span.hpp>
-
 #include <algorithm>
 #include <cstddef>
 #include <memory>
+#include <span>
 #include <utility>
 #include <vector>
 
@@ -183,7 +182,7 @@ public:
     }
 
     void render(
-        nonstd::span<SceneDecoration const> decorations,
+        std::span<SceneDecoration const> decorations,
         SceneRendererParams const& params)
     {
         // render any other perspectives on the scene (shadows, rim highlights, etc.)
@@ -313,7 +312,7 @@ public:
 
 private:
     std::optional<RimHighlights> tryGenerateRimHighlights(
-        nonstd::span<SceneDecoration const> decorations,
+        std::span<SceneDecoration const> decorations,
         SceneRendererParams const& params)
     {
         if (!params.drawRims)
@@ -433,7 +432,7 @@ private:
     }
 
     std::optional<Shadows> tryGenerateShadowMap(
-        nonstd::span<SceneDecoration const> decorations,
+        std::span<SceneDecoration const> decorations,
         SceneRendererParams const& params)
     {
         if (!params.drawShadows)
@@ -522,7 +521,7 @@ osc::AntiAliasingLevel osc::SceneRenderer::getAntiAliasingLevel() const
 }
 
 void osc::SceneRenderer::render(
-    nonstd::span<SceneDecoration const> decs,
+    std::span<SceneDecoration const> decs,
     SceneRendererParams const& params)
 {
     m_Impl->render(decs, params);

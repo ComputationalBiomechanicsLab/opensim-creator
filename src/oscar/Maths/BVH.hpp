@@ -4,12 +4,11 @@
 #include <oscar/Maths/RayCollision.hpp>
 #include <oscar/Maths/Vec3.hpp>
 
-#include <nonstd/span.hpp>
-
 #include <cstdint>
 #include <cstddef>
 #include <functional>
 #include <optional>
+#include <span>
 #include <utility>
 #include <vector>
 
@@ -118,30 +117,30 @@ namespace osc
         //
         // prim.getID() will refer to the index of the first vertex in the triangle
         void buildFromIndexedTriangles(
-            nonstd::span<Vec3 const> verts,
-            nonstd::span<uint16_t const> indices
+            std::span<Vec3 const> verts,
+            std::span<uint16_t const> indices
         );
         void buildFromIndexedTriangles(
-            nonstd::span<Vec3 const> verts,
-            nonstd::span<uint32_t const> indices
+            std::span<Vec3 const> verts,
+            std::span<uint32_t const> indices
         );
 
         // returns the location of the closest ray-triangle collision along the ray, if any
         std::optional<BVHCollision> getClosestRayIndexedTriangleCollision(
-            nonstd::span<Vec3 const> verts,
-            nonstd::span<uint16_t const> indices,
+            std::span<Vec3 const> verts,
+            std::span<uint16_t const> indices,
             Line const&
         ) const;
         std::optional<BVHCollision> getClosestRayIndexedTriangleCollision(
-            nonstd::span<Vec3 const> verts,
-            nonstd::span<uint32_t const> indices,
+            std::span<Vec3 const> verts,
+            std::span<uint32_t const> indices,
             Line const&
         ) const;
 
         // AABB BVHes
         //
         // prim.id will refer to the index of the AABB
-        void buildFromAABBs(nonstd::span<AABB const>);
+        void buildFromAABBs(std::span<AABB const>);
 
         // returns prim.id of the AABB (leaf) that the line intersects, or -1 if no intersection
         //

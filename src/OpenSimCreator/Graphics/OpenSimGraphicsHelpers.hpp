@@ -1,6 +1,5 @@
 #pragma once
 
-#include <nonstd/span.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -9,6 +8,7 @@
 
 #include <functional>
 #include <optional>
+#include <span>
 
 namespace OpenSim { class Component; }
 namespace osc { class BVH; }
@@ -37,7 +37,7 @@ namespace osc
 
     std::optional<SceneCollision> GetClosestCollision(
         BVH const& sceneBVH,
-        nonstd::span<SceneDecoration const> taggedDrawlist,
+        std::span<SceneDecoration const> taggedDrawlist,
         PolarPerspectiveCamera const&,
         Vec2 mouseScreenPos,
         Rect const& viewportScreenRect

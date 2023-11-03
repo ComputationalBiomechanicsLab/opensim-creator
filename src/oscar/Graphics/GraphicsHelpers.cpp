@@ -18,7 +18,6 @@
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/SpanHelpers.hpp>
 
-#include <nonstd/span.hpp>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -32,6 +31,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <span>
 #include <stdexcept>
 #include <sstream>
 #include <string>
@@ -99,7 +99,7 @@ namespace
             throw std::runtime_error{std::move(ss).str()};
         }
 
-        nonstd::span<float const> const pixelSpan
+        std::span<float const> const pixelSpan
         {
             pixels.get(),
             static_cast<size_t>(dims.x*dims.y*numChannels)
@@ -213,7 +213,7 @@ osc::Vec3 osc::MassCenter(Mesh const& m)
         return {0.0f, 0.0f, 0.0f};
     }
 
-    nonstd::span<Vec3 const> const verts = m.getVerts();
+    std::span<Vec3 const> const verts = m.getVerts();
     MeshIndicesView const indices = m.getIndices();
     size_t const len = (indices.size() / 3) * 3;  // paranioa
 
@@ -241,7 +241,7 @@ osc::Vec3 osc::MassCenter(Mesh const& m)
 osc::Vec3 osc::AverageCenterpoint(Mesh const& m)
 {
     MeshIndicesView const indices = m.getIndices();
-    nonstd::span<Vec3 const> const verts = m.getVerts();
+    std::span<Vec3 const> const verts = m.getVerts();
 
     Vec3 acc = {0.0f, 0.0f, 0.0f};
     for (uint32_t index : indices)
@@ -255,9 +255,9 @@ osc::Vec3 osc::AverageCenterpoint(Mesh const& m)
 
 std::vector<osc::Vec4> osc::CalcTangentVectors(
     MeshTopology const& topology,
-    nonstd::span<Vec3 const> verts,
-    nonstd::span<Vec3 const> normals,
-    nonstd::span<Vec2 const> texCoords,
+    std::span<Vec3 const> verts,
+    std::span<Vec3 const> normals,
+    std::span<Vec2 const> texCoords,
     MeshIndicesView const& indices)
 {
     // related:

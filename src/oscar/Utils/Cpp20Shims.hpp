@@ -1,7 +1,5 @@
 #pragma once
 
-#include <nonstd/span.hpp>
-
 #include <algorithm>
 #include <array>
 #include <atomic>
@@ -10,6 +8,7 @@
 #include <iterator>
 #include <limits>
 #include <memory>
+#include <span>
 #include <thread>
 #include <type_traits>
 #include <unordered_set>

@@ -63,7 +63,7 @@ public:
         return m_Params;
     }
 
-    nonstd::span<OutputExtractor const> getOutputExtractors() const
+    std::span<OutputExtractor const> getOutputExtractors() const
     {
         return {};
     }
@@ -152,7 +152,7 @@ osc::ParamBlock const& osc::SingleStateSimulation::implGetParams() const
     return m_Impl->getParams();
 }
 
-nonstd::span<osc::OutputExtractor const> osc::SingleStateSimulation::implGetOutputExtractors() const
+std::span<osc::OutputExtractor const> osc::SingleStateSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
 }

@@ -2,7 +2,6 @@
 
 #include <OpenSimCreator/Simulation/SimulationReport.hpp>
 
-#include <nonstd/span.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <simbody/internal/MultibodySystem.h>
@@ -11,6 +10,7 @@
 #include <cmath>
 #include <memory>
 #include <optional>
+#include <span>
 #include <utility>
 #include <vector>
 
@@ -82,8 +82,8 @@ float osc::MultiBodySystemOutputExtractor::getValueFloat(OpenSim::Component cons
 }
 
 void osc::MultiBodySystemOutputExtractor::getValuesFloat(OpenSim::Component const&,
-                                                         nonstd::span<SimulationReport const> reports,
-                                                         nonstd::span<float> out) const
+                                                         std::span<SimulationReport const> reports,
+                                                         std::span<float> out) const
 {
     OSC_ASSERT_ALWAYS(reports.size() == out.size());
     for (size_t i = 0; i < reports.size(); ++i)

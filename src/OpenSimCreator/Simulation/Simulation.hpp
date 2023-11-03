@@ -6,10 +6,10 @@
 #include <OpenSimCreator/Simulation/SimulationReport.hpp>
 
 #include <oscar/Utils/SynchronizedValue.hpp>
-#include <nonstd/span.hpp>
 
 #include <cstddef>
 #include <memory>
+#include <span>
 #include <vector>
 
 namespace osc { class OutputExtractor; }
@@ -43,7 +43,7 @@ namespace osc
         SimulationClock::time_point getEndTime() const { return m_Simulation->getEndTime(); }
         float getProgress() const { return m_Simulation->getProgress(); }
         ParamBlock const& getParams() const { return m_Simulation->getParams(); }
-        nonstd::span<OutputExtractor const> getOutputs() const { return m_Simulation->getOutputExtractors(); }
+        std::span<OutputExtractor const> getOutputs() const { return m_Simulation->getOutputExtractors(); }
 
         void requestStop() { m_Simulation->requestStop(); }
         void stop() { m_Simulation->stop(); }

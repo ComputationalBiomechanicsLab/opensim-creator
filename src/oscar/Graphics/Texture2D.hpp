@@ -10,10 +10,9 @@
 #include <oscar/Utils/CopyOnUpdPtr.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
-#include <nonstd/span.hpp>
-
 #include <cstdint>
 #include <iosfwd>
+#include <span>
 #include <string_view>
 #include <vector>
 
@@ -63,7 +62,7 @@ namespace osc
         //   of the texture, so don't expect `getPixels` to necessarily return
         //   exactly the same values as provided
         std::vector<Color> getPixels() const;
-        void setPixels(nonstd::span<Color const>);
+        void setPixels(std::span<Color const>);
 
         // - must contain pixels row-by-row
         // - the size of the span must equal the width*height of the texture
@@ -71,14 +70,14 @@ namespace osc
         //   of the texture, so don't expect `getPixels` to necessarily return
         //   exactly the same values as provided
         std::vector<Color32> getPixels32() const;
-        void setPixels32(nonstd::span<Color32 const>);
+        void setPixels32(std::span<Color32 const>);
 
         // - must contain pixel _data_ row-by-row
         // - the size of the data span must be equal to:
         //     - width*height*NumBytesPerPixel(getTextureFormat())
         // - will not perform any internal conversion of the data (it's a memcpy)
-        nonstd::span<uint8_t const> getPixelData() const;
-        void setPixelData(nonstd::span<uint8_t const>);
+        std::span<uint8_t const> getPixelData() const;
+        void setPixelData(std::span<uint8_t const>);
 
         friend void swap(Texture2D& a, Texture2D& b) noexcept
         {
