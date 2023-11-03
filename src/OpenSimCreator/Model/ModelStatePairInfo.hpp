@@ -17,8 +17,8 @@ namespace osc
 
         float getFixupScaleFactor() const { return m_FixupScaleFactor; }
 
-        friend bool operator==(ModelStatePairInfo const&, ModelStatePairInfo const&) noexcept;
-        friend bool operator!=(ModelStatePairInfo const&, ModelStatePairInfo const&) noexcept;
+        friend bool operator==(ModelStatePairInfo const&, ModelStatePairInfo const&) = default;
+
     private:
         UID m_ModelVersion;
         UID m_StateVersion;
@@ -26,7 +26,4 @@ namespace osc
         OpenSim::ComponentPath m_Hover;
         float m_FixupScaleFactor = 1.0f;
     };
-
-    bool operator==(ModelStatePairInfo const&, ModelStatePairInfo const&) noexcept;
-    bool operator!=(ModelStatePairInfo const&, ModelStatePairInfo const&) noexcept;
 }

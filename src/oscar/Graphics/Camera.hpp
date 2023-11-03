@@ -129,7 +129,6 @@ namespace osc
 
     private:
         friend bool operator==(Camera const&, Camera const&);
-        friend bool operator!=(Camera const&, Camera const&);
         friend std::ostream& operator<<(std::ostream&, Camera const&);
         friend class GraphicsBackend;
 
@@ -138,6 +137,5 @@ namespace osc
     };
 
     bool operator==(Camera const&, Camera const&);
-    bool operator!=(Camera const&, Camera const&);
     std::ostream& operator<<(std::ostream&, Camera const&);
 }

@@ -18,9 +18,8 @@ namespace osc
             Color clearColor_
         );
 
+        friend bool operator==(RenderTargetColorAttachment const&, RenderTargetColorAttachment const&) = default;
+
         Color clearColor;
     };
-
-    bool operator==(RenderTargetColorAttachment const&, RenderTargetColorAttachment const&) noexcept;
-    bool operator!=(RenderTargetColorAttachment const&, RenderTargetColorAttachment const&) noexcept;
 }

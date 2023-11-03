@@ -38,9 +38,8 @@ namespace osc
         RenderTextureReadWrite getReadWrite() const;
         void setReadWrite(RenderTextureReadWrite);
 
+        friend bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&) = default;
     private:
-        friend bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
-        friend bool operator!=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
         friend std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
         friend class GraphicsBackend;
 
@@ -52,7 +51,5 @@ namespace osc
         RenderTextureReadWrite m_ReadWrite;
     };
 
-    bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
-    bool operator!=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
     std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
 }

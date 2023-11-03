@@ -42,15 +42,8 @@ namespace osc
         std::string toString() const;
         Color toColor() const;
 
-        friend bool operator==(AppSettingValue const& lhs, AppSettingValue const& rhs) noexcept
-        {
-            return lhs.m_Value == rhs.m_Value;
-        }
+        friend bool operator==(AppSettingValue const&, AppSettingValue const&) = default;
 
-        friend bool operator!=(AppSettingValue const& lhs, AppSettingValue const& rhs) noexcept
-        {
-            return lhs.m_Value != rhs.m_Value;
-        }
     private:
         std::variant<std::string, bool, Color> m_Value;
     };

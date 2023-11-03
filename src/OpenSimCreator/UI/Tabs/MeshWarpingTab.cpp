@@ -155,13 +155,7 @@ namespace
         {
         }
 
-        friend bool operator==(TPSDocumentElementID const& lhs, TPSDocumentElementID const& rhs)
-        {
-            return
-                lhs.whichInput == rhs.whichInput &&
-                lhs.elementType == rhs.elementType &&
-                lhs.elementID == rhs.elementID;
-        }
+        friend bool operator==(TPSDocumentElementID const&, TPSDocumentElementID const&) = default;
 
         TPSDocumentInputIdentifier whichInput;
         TPSDocumentInputElementType elementType;

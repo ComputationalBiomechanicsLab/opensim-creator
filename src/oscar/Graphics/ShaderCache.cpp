@@ -37,13 +37,7 @@ namespace
         {
         }
 
-        friend bool operator==(ShaderInputs const& lhs, ShaderInputs const& rhs)
-        {
-            return
-                lhs.vertexShaderPath == rhs.vertexShaderPath &&
-                lhs.geometryShaderPath == rhs.geometryShaderPath &&
-                lhs.fragmentShaderPath == rhs.fragmentShaderPath;
-        }
+        friend bool operator==(ShaderInputs const&, ShaderInputs const&) = default;
 
         std::filesystem::path vertexShaderPath;
         std::filesystem::path geometryShaderPath;

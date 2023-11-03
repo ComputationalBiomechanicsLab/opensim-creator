@@ -69,7 +69,6 @@ namespace osc
 
     private:
         friend bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
-        friend bool operator!=(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
         friend std::ostream& operator<<(std::ostream&, MaterialPropertyBlock const&);
         friend class GraphicsBackend;
 
@@ -78,6 +77,5 @@ namespace osc
     };
 
     bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
-    bool operator!=(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
     std::ostream& operator<<(std::ostream&, MaterialPropertyBlock const&);
 }

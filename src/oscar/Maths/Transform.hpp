@@ -65,6 +65,8 @@ namespace osc
             return Transform{position, rotation, {scale_, scale_, scale_}};
         }
 
+        friend bool operator==(Transform const&, Transform const&) = default;
+
         Vec3 scale = {1.0f, 1.0f, 1.0f};
         Quat rotation = {1.0f, 0.0f, 0.0f, 0.0f};
         Vec3 position = {0.0f, 0.0f, 0.0f};
@@ -72,9 +74,6 @@ namespace osc
 
     // pretty-prints a `Transform` for readability
     std::ostream& operator<<(std::ostream&, Transform const&);
-
-    // returns true if the Transforms compare value-equal
-    bool operator==(Transform const&, Transform const&) noexcept;
 
     // applies the transform to a point vector (equivalent to `TransformPoint`)
     Vec3 operator*(Transform const&, Vec3 const&) noexcept;

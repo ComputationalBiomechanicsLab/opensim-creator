@@ -621,11 +621,6 @@ namespace
         {
             return lhs.GetID() == rhs.GetID();
         }
-
-        friend bool operator!=(SceneElClass const& lhs, SceneElClass const& rhs)
-        {
-            return !(lhs == rhs);
-        }
     private:
         UID m_ID;
         std::string m_Name;
@@ -1968,15 +1963,7 @@ namespace
 
             // EqualityComparable
 
-            friend bool operator==(Iterator const& lhs, Iterator const& rhs) noexcept
-            {
-                return lhs.m_Pos == rhs.m_Pos;
-            }
-
-            friend bool operator!=(Iterator const& lhs, Iterator const& rhs) noexcept
-            {
-                return lhs.m_Pos != rhs.m_Pos;
-            }
+            friend bool operator==(Iterator const&, Iterator const&) = default;
 
             // LegacyInputIterator
 

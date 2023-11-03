@@ -51,19 +51,13 @@ namespace osc
         constexpr char const* begin() const noexcept { return m_Data; }
         constexpr char const* end() const noexcept { return m_Data + m_Size; }
 
-        friend bool operator<(CStringView const& lhs, CStringView const& rhs)
+        constexpr friend auto operator<=>(CStringView const& lhs, CStringView const& rhs)
         {
-            return static_cast<std::string_view>(lhs) < static_cast<std::string_view>(rhs);
+            return static_cast<std::string_view>(lhs) <=> static_cast<std::string_view>(rhs);
         }
-
-        friend bool operator==(CStringView const& lhs, CStringView const& rhs)
+        constexpr friend bool operator==(CStringView const& lhs, CStringView const& rhs)
         {
             return static_cast<std::string_view>(lhs) == static_cast<std::string_view>(rhs);
-        }
-
-        friend bool operator!=(CStringView const& lhs, CStringView const& rhs)
-        {
-            return static_cast<std::string_view>(lhs) != static_cast<std::string_view>(rhs);
         }
     private:
         constexpr CStringView(char const* data_, size_t size_) noexcept : m_Data{data_}, m_Size{size_} {}

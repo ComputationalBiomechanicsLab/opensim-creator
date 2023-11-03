@@ -87,15 +87,7 @@ namespace
             return lhs.m_Name < rhs.m_Name;
         }
 
-        friend bool operator==(MuscleOutput const& lhs, MuscleOutput const& rhs)
-        {
-            return lhs.m_Name == rhs.m_Name && lhs.m_Units == rhs.m_Units && lhs.m_Getter == rhs.m_Getter;
-        }
-
-        friend bool operator!=(MuscleOutput const& lhs, MuscleOutput const& rhs)
-        {
-            return !(lhs == rhs);
-        }
+        friend bool operator==(MuscleOutput const&, MuscleOutput const&) = default;
     private:
         osc::CStringView m_Name;
         osc::CStringView m_Units;
@@ -320,20 +312,7 @@ namespace
             m_RequestedNumDataPoints = v;
         }
 
-        friend bool operator==(PlotParameters const& lhs, PlotParameters const& rhs)
-        {
-            return
-                lhs.m_Commit == rhs.m_Commit &&
-                lhs.m_CoordinatePath == rhs.m_CoordinatePath &&
-                lhs.m_MusclePath == rhs.m_MusclePath &&
-                lhs.m_Output == rhs.m_Output &&
-                lhs.m_RequestedNumDataPoints == rhs.m_RequestedNumDataPoints;
-        }
-
-        friend bool operator!=(PlotParameters const& lhs, PlotParameters const& rhs)
-        {
-            return !(lhs == rhs);
-        }
+        friend bool operator==(PlotParameters const&, PlotParameters const&) = default;
     private:
         osc::ModelStateCommit m_Commit;
         OpenSim::ComponentPath m_CoordinatePath;

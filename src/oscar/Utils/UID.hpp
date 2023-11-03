@@ -45,35 +45,7 @@ namespace osc
             return m_Value > 0;
         }
 
-        constexpr friend bool operator==(UID const& lhs, UID const& rhs) noexcept
-        {
-            return lhs.get() == rhs.get();
-        }
-
-        constexpr friend bool operator!=(UID const& lhs, UID const& rhs) noexcept
-        {
-            return lhs.get() != rhs.get();
-        }
-
-        constexpr friend bool operator<(UID const& lhs, UID const& rhs) noexcept
-        {
-            return lhs.get() < rhs.get();
-        }
-
-        constexpr friend bool operator<=(UID const& lhs, UID const& rhs) noexcept
-        {
-            return lhs.get() <= rhs.get();
-        }
-
-        constexpr friend bool operator>(UID const& lhs, UID const& rhs) noexcept
-        {
-            return lhs.get() > rhs.get();
-        }
-
-        constexpr friend bool operator>=(UID const& lhs, UID const& rhs) noexcept
-        {
-            return lhs.get() >= rhs.get();
-        }
+        friend auto operator<=>(UID const&, UID const&) = default;
 
     private:
         static int64_t GetNextID() noexcept;

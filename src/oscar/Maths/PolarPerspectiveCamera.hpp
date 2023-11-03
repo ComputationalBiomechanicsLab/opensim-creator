@@ -50,6 +50,8 @@ namespace osc
         // converts a `pos` (top-left) in the output `dims` into a line in worldspace by unprojection
         Line unprojectTopLeftPosToWorldRay(Vec2 pos, Vec2 dims) const noexcept;
 
+        friend bool operator==(PolarPerspectiveCamera const&, PolarPerspectiveCamera const&) = default;
+
         float radius;
         float theta;
         float phi;
@@ -58,8 +60,6 @@ namespace osc
         float znear;
         float zfar;
     };
-    bool operator==(PolarPerspectiveCamera const&, PolarPerspectiveCamera const&) noexcept;
-    bool operator!=(PolarPerspectiveCamera const&, PolarPerspectiveCamera const&) noexcept;
 
     PolarPerspectiveCamera CreateCameraWithRadius(float);
     PolarPerspectiveCamera CreateCameraFocusedOn(AABB const&);

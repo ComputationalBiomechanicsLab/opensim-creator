@@ -74,7 +74,6 @@ add_library(oscar STATIC
     Graphics/RenderTargetAttachment.hpp
     Graphics/RenderTargetColorAttachment.cpp
     Graphics/RenderTargetColorAttachment.hpp
-    Graphics/RenderTargetDepthAttachment.cpp
     Graphics/RenderTargetDepthAttachment.hpp
     Graphics/RenderTexture.hpp
     Graphics/RenderTextureDescriptor.hpp
@@ -151,7 +150,6 @@ add_library(oscar STATIC
     Scene/CachedSceneRenderer.cpp
     Scene/CachedSceneRenderer.hpp
     Scene/SceneCollision.hpp
-    Scene/SceneDecoration.cpp
     Scene/SceneDecoration.hpp
     Scene/SceneDecorationFlags.hpp
     Scene/SceneHelpers.cpp

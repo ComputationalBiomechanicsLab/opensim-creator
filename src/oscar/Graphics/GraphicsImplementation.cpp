@@ -641,15 +641,7 @@ namespace
             swap(a.worldMidpoint, b.worldMidpoint);
         }
 
-        friend bool operator==(RenderObject const& lhs, RenderObject const& rhs)
-        {
-            return
-                lhs.material == rhs.material &&
-                lhs.mesh == rhs.mesh &&
-                lhs.maybePropBlock == rhs.maybePropBlock &&
-                lhs.transform == rhs.transform &&
-                lhs.worldMidpoint == rhs.worldMidpoint;
-        }
+        friend bool operator==(RenderObject const&, RenderObject const&) = default;
 
         osc::Material material;
         osc::Mesh mesh;
@@ -2265,22 +2257,6 @@ void osc::RenderTextureDescriptor::setReadWrite(RenderTextureReadWrite rw)
     m_ReadWrite = rw;
 }
 
-bool osc::operator==(RenderTextureDescriptor const& lhs, RenderTextureDescriptor const& rhs)
-{
-    return
-        lhs.m_Dimensions == rhs.m_Dimensions &&
-        lhs.m_Dimension == rhs.m_Dimension &&
-        lhs.m_AnialiasingLevel == rhs.m_AnialiasingLevel &&
-        lhs.m_ColorFormat == rhs.m_ColorFormat &&
-        lhs.m_DepthStencilFormat == rhs.m_DepthStencilFormat &&
-        lhs.m_ReadWrite == rhs.m_ReadWrite;
-}
-
-bool osc::operator!=(RenderTextureDescriptor const& lhs, RenderTextureDescriptor const& rhs)
-{
-    return !(lhs == rhs);
-}
-
 std::ostream& osc::operator<<(std::ostream& o, RenderTextureDescriptor const& rtd)
 {
     return o <<
@@ -3811,10 +3787,7 @@ public:
         setValue(propertyName, std::move(t));
     }
 
-    friend bool operator==(Impl const& lhs, Impl const& rhs)
-    {
-        return lhs.m_Values == rhs.m_Values;
-    }
+    friend bool operator==(Impl const&, Impl const&) = default;
 
 private:
     template<typename T>
@@ -3964,11 +3937,6 @@ void osc::MaterialPropertyBlock::setTexture(std::string_view propertyName, Textu
 bool osc::operator==(MaterialPropertyBlock const& lhs, MaterialPropertyBlock const& rhs) noexcept
 {
     return lhs.m_Impl == rhs.m_Impl || *lhs.m_Impl == *rhs.m_Impl;
-}
-
-bool osc::operator!=(MaterialPropertyBlock const& lhs, MaterialPropertyBlock const& rhs) noexcept
-{
-    return !(lhs == rhs);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, MaterialPropertyBlock const&)
@@ -4907,24 +4875,7 @@ public:
         GraphicsBackend::RenderCameraQueue(*this, &renderTarget);
     }
 
-    friend bool operator==(Impl const& lhs, Impl const& rhs)
-    {
-        return
-            lhs.m_BackgroundColor == rhs.m_BackgroundColor &&
-            lhs.m_CameraProjection == rhs.m_CameraProjection &&
-            lhs.m_OrthographicSize == rhs.m_OrthographicSize &&
-            lhs.m_PerspectiveFov == rhs.m_PerspectiveFov &&
-            lhs.m_NearClippingPlane == rhs.m_NearClippingPlane &&
-            lhs.m_FarClippingPlane == rhs.m_FarClippingPlane &&
-            lhs.m_ClearFlags == rhs.m_ClearFlags &&
-            lhs.m_MaybeScreenPixelRect == rhs.m_MaybeScreenPixelRect &&
-            lhs.m_MaybeScissorRect == rhs.m_MaybeScissorRect &&
-            lhs.m_Position == rhs.m_Position &&
-            lhs.m_Rotation == rhs.m_Rotation &&
-            lhs.m_MaybeViewMatrixOverride == rhs.m_MaybeViewMatrixOverride &&
-            lhs.m_MaybeProjectionMatrixOverride == rhs.m_MaybeProjectionMatrixOverride &&
-            lhs.m_RenderQueue == rhs.m_RenderQueue;
-    }
+    friend bool operator==(Impl const&, Impl const&) = default;
 
 private:
     friend class GraphicsBackend;
@@ -5156,11 +5107,6 @@ std::ostream& osc::operator<<(std::ostream& o, Camera const& camera)
 bool osc::operator==(Camera const& lhs, Camera const& rhs)
 {
     return lhs.m_Impl == rhs.m_Impl || *lhs.m_Impl == *rhs.m_Impl;
-}
-
-bool osc::operator!=(Camera const& lhs, Camera const& rhs)
-{
-    return !(lhs == rhs);
 }
 
 

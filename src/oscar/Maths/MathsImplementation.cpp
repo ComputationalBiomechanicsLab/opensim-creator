@@ -57,16 +57,6 @@ std::ostream& osc::operator<<(std::ostream& o, AABB const& aabb)
     return o << "AABB(min = " << aabb.min << ", max = " << aabb.max << ')';
 }
 
-bool osc::operator==(AABB const& lhs, AABB const& rhs) noexcept
-{
-    return lhs.min == rhs.min && lhs.max == rhs.max;
-}
-
-bool osc::operator!=(AABB const& lhs, AABB const& rhs) noexcept
-{
-    return !(lhs == rhs);
-}
-
 
 // BVH implementation
 
@@ -680,23 +670,6 @@ osc::Line osc::PolarPerspectiveCamera::unprojectTopLeftPosToWorldRay(Vec2 pos, V
     );
 }
 
-bool osc::operator==(PolarPerspectiveCamera const& lhs, PolarPerspectiveCamera const& rhs) noexcept
-{
-    return
-        lhs.radius == rhs.radius &&
-        lhs.theta == rhs.theta &&
-        lhs.phi == rhs.phi &&
-        lhs.focusPoint == rhs.focusPoint &&
-        lhs.fov == rhs.fov &&
-        lhs.znear == rhs.znear &&
-        lhs.zfar == rhs.zfar;
-}
-
-bool osc::operator!=(PolarPerspectiveCamera const& lhs, PolarPerspectiveCamera const& rhs) noexcept
-{
-    return !(lhs == rhs);
-}
-
 osc::PolarPerspectiveCamera osc::CreateCameraWithRadius(float r)
 {
     PolarPerspectiveCamera rv;
@@ -809,16 +782,6 @@ std::ostream& osc::operator<<(std::ostream& o, Rect const& r)
     return o << "Rect(p1 = " << r.p1 << ", p2 = " << r.p2 << ")";
 }
 
-bool osc::operator==(Rect const& lhs, Rect const& rhs) noexcept
-{
-    return lhs.p1 == rhs.p1 && lhs.p2 == rhs.p2;
-}
-
-bool osc::operator!=(Rect const& lhs, Rect const& rhs) noexcept
-{
-    return !(lhs == rhs);
-}
-
 
 // osc::Segment implementation
 
@@ -870,14 +833,6 @@ osc::Vec3 osc::Center(Tetrahedron const& t)
 std::ostream& osc::operator<<(std::ostream& o, Transform const& t)
 {
     return o << "Transform(position = " << t.position << ", rotation = " << t.rotation << ", scale = " << t.scale << ')';
-}
-
-bool osc::operator==(osc::Transform const& lhs, osc::Transform const& rhs) noexcept
-{
-    return
-        lhs.scale == rhs.scale &&
-        lhs.rotation == rhs.rotation &&
-        lhs.position == rhs.position;
 }
 
 osc::Vec3 osc::operator*(Transform const& t, Vec3 const& p) noexcept
