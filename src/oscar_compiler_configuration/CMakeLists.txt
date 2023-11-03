@@ -172,12 +172,6 @@ target_link_options(oscar_compiler_configuration INTERFACE
 )
 target_compile_features(oscar_compiler_configuration INTERFACE cxx_std_20)
 
-target_link_libraries(oscar_compiler_configuration INTERFACE
-
-    # in earlier gcc/clang the <filesystem> implementation must be explicitly linked
-    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:stdc++fs>
-)
-
 # handle OSC_FORCE_ASSERTS_ENABLED
 if(OSC_FORCE_ASSERTS_ENABLED)
     target_compile_definitions(oscar_compiler_configuration INTERFACE -DOSC_FORCE_ASSERTS_ENABLED=1)
