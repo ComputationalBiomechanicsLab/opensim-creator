@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <unordered_map>
+#include <source_location>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -32,10 +33,12 @@ namespace
 
 // public API
 
-int64_t osc::detail::AllocateMeasurementID(std::string_view label, std::string_view filename, unsigned int line)
+int64_t osc::detail::AllocateMeasurementID(
+    std::string_view label,
+    std::source_location location)
 {
-    int64_t id = GenerateID(label, filename, line);
-    auto metadata = std::make_shared<PerfMeasurementMetadata>(id, label, filename, line);
+    int64_t id = GenerateID(label, location.file_name(), location.line());
+    auto metadata = std::make_shared<PerfMeasurementMetadata>(id, label, location.file_name(), location.line());
 
     auto guard = GetMeasurementStorage().lock();
     guard->emplace(std::piecewise_construct, std::tie(id), std::tie(metadata));

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <oscar/Utils/Macros.hpp>
 #include <oscar/Utils/PerfClock.hpp>
 #include <oscar/Utils/PerfMeasurement.hpp>
 
 #include <cstdint>
+#include <source_location>
 #include <string_view>
 #include <vector>
 
@@ -18,8 +18,7 @@ namespace osc
     {
         int64_t AllocateMeasurementID(
             std::string_view label,
-            std::string_view filename,
-            unsigned int line
+            std::source_location
         );
 
         void SubmitMeasurement(
@@ -52,5 +51,5 @@ namespace osc
 #define OSC_PERF_TOKENPASTE(x, y) x##y
 #define OSC_PERF_TOKENPASTE2(x, y) OSC_PERF_TOKENPASTE(x, y)
 #define OSC_PERF(label) \
-    static int64_t const OSC_PERF_TOKENPASTE2(s_TimerID, __LINE__) = osc::detail::AllocateMeasurementID(label, OSC_FILENAME, __LINE__); \
+    static int64_t const OSC_PERF_TOKENPASTE2(s_TimerID, __LINE__) = osc::detail::AllocateMeasurementID(label, std::source_location::current()); \
     osc::detail::PerfTimer const OSC_PERF_TOKENPASTE2(timer, __LINE__) (OSC_PERF_TOKENPASTE2(s_TimerID, __LINE__));
