@@ -53,7 +53,9 @@ namespace osc
 
         constexpr friend auto operator<=>(CStringView const& lhs, CStringView const& rhs)
         {
-            return static_cast<std::string_view>(lhs) <=> static_cast<std::string_view>(rhs);
+            // manual implementation because MacOS's stdlib doesn't have <=> yet
+            int v = static_cast<std::string_view>(lhs).compare(static_cast<std::string_view>(rhs));
+            return v < 0 ? std::strong_ordering::less : v == 0 ? std::strong_ordering::equal : std::strong_ordering::greater;
         }
         constexpr friend bool operator==(CStringView const& lhs, CStringView const& rhs)
         {
