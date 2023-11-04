@@ -9,7 +9,6 @@
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>
-#include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
@@ -26,6 +25,7 @@
 
 #include <filesystem>
 #include <functional>
+#include <numbers>
 #include <optional>
 #include <vector>
 
@@ -123,7 +123,7 @@ void osc::DrawXZFloorLines(
     {
         Transform t;
         t.scale *= scale;
-        t.rotation = AngleAxis(fpi2, Vec3{0.0f, 0.0f, 1.0f});
+        t.rotation = AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{0.0f, 0.0f, 1.0f});
 
         out(SceneDecoration{yLine, t, Color::red()});
     }
@@ -132,7 +132,7 @@ void osc::DrawXZFloorLines(
     {
         Transform t;
         t.scale *= scale;
-        t.rotation = AngleAxis(fpi2, Vec3{1.0f, 0.0f, 0.0f});
+        t.rotation = AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{1.0f, 0.0f, 0.0f});
 
         out(SceneDecoration{yLine, t, Color::blue()});
     }
@@ -142,7 +142,7 @@ void osc::DrawXZGrid(
     MeshCache& cache,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    Quat const rotation = AngleAxis(fpi2, Vec3{1.0f, 0.0f, 0.0f});
+    Quat const rotation = AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{1.0f, 0.0f, 0.0f});
     DrawGrid(cache, rotation, out);
 }
 
@@ -158,7 +158,7 @@ void osc::DrawYZGrid(
     MeshCache& cache,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    Quat const rotation = AngleAxis(fpi2, Vec3{0.0f, 1.0f, 0.0f});
+    Quat const rotation = AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{0.0f, 1.0f, 0.0f});
     DrawGrid(cache, rotation, out);
 }
 

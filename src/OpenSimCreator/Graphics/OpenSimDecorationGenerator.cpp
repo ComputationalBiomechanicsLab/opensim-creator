@@ -23,7 +23,6 @@
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Maths/AABB.hpp>
-#include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/Transform.hpp>
@@ -41,6 +40,7 @@
 #include <cstddef>
 #include <iterator>
 #include <memory>
+#include <numbers>
 #include <optional>
 #include <stdexcept>
 #include <sstream>
@@ -141,7 +141,7 @@ namespace
         float const specificTension = 0.25e6f;  // magic number?
         float const pcsa = f / specificTension;
         float const widthFactor = 0.25f;
-        return widthFactor * std::sqrt(pcsa / osc::fpi);
+        return widthFactor * std::sqrt(pcsa / std::numbers::pi_v<float>);
     }
 
     // helper: returns the size (radius) of a muscle based on caller-provided sizing flags

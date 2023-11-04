@@ -38,7 +38,6 @@
 #include <oscar/Graphics/ShaderLocations.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>
-#include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Mat3.hpp>
 #include <oscar/Maths/Mat4.hpp>
@@ -70,6 +69,7 @@
 #include <functional>
 #include <iostream>
 #include <iterator>
+#include <numbers>
 #include <span>
 #include <stdexcept>
 #include <sstream>
@@ -4883,7 +4883,7 @@ private:
     Color m_BackgroundColor = Color::clear();
     CameraProjection m_CameraProjection = CameraProjection::Perspective;
     float m_OrthographicSize = 2.0f;
-    float m_PerspectiveFov = fpi2;
+    float m_PerspectiveFov = std::numbers::pi_v<float>/2.0f;
     float m_NearClippingPlane = 1.0f;
     float m_FarClippingPlane = -1.0f;
     CameraClearFlags m_ClearFlags = CameraClearFlags::Default;

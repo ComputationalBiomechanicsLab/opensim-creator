@@ -6,7 +6,6 @@
 #include <oscar/Graphics/RenderTexture.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
-#include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Rect.hpp>
@@ -27,6 +26,7 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <numbers>
 #include <span>
 #include <string>
 
@@ -415,9 +415,9 @@ void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, Vec3& eulers)
     camera.setPosition(pos);
 
     eulers.x += sensitivity * -mouseDelta.y;
-    eulers.x = std::clamp(eulers.x, -osc::fpi2 + 0.1f, osc::fpi2 - 0.1f);
+    eulers.x = std::clamp(eulers.x, -std::numbers::pi_v<float>/2.0f + 0.1f, std::numbers::pi_v<float>/2.0f - 0.1f);
     eulers.y += sensitivity * -mouseDelta.x;
-    eulers.y = std::fmod(eulers.y, 2.0f * osc::fpi);
+    eulers.y = std::fmod(eulers.y, 2.0f * std::numbers::pi_v<float>);
 
     camera.setRotation(Normalize(Quat{eulers}));
 }

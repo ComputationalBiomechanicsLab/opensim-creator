@@ -21,7 +21,6 @@
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
-#include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
@@ -71,6 +70,7 @@
 #include <future>
 #include <iostream>
 #include <limits>
+#include <numbers>
 #include <optional>
 #include <span>
 #include <string>

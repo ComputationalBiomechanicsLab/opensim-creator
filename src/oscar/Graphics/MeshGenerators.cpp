@@ -1,7 +1,6 @@
 #include "MeshGenerators.hpp"
 
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Triangle.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -13,6 +12,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <numbers>
 #include <vector>
 
 using osc::Vec2;
@@ -238,12 +238,12 @@ osc::Mesh osc::GenSphere(size_t sectors, size_t stacks)
     // phi = PI/2. The coordinate [1, 0, 0] is theta = PI/2, phi = 0
     std::vector<TexturedVert> points;
 
-    float const thetaStep = 2.0f * fpi / static_cast<float>(sectors);
-    float const phiStep = fpi / static_cast<float>(stacks);
+    float const thetaStep = 2.0f*std::numbers::pi_v<float> / static_cast<float>(sectors);
+    float const phiStep = std::numbers::pi_v<float> / static_cast<float>(stacks);
 
     for (size_t stack = 0; stack <= stacks; ++stack)
     {
-        float const phi = fpi2 - static_cast<float>(stack) * phiStep;
+        float const phi = std::numbers::pi_v<float>/2.0f - static_cast<float>(stack) * phiStep;
         float const y = std::sin(phi);
 
         for (size_t sector = 0; sector <= sectors; ++sector)
@@ -321,7 +321,7 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
 
     OSC_ASSERT(3 <= nsides && nsides < 1000000 && "the backend only supports 32-bit indices, you should double-check that this code would work (change this assertion if it does)");
 
-    float const stepAngle = 2.0f*fpi / static_cast<float>(nsides);
+    float const stepAngle = 2.0f*std::numbers::pi_v<float> / static_cast<float>(nsides);
 
     NewMeshData data;
 
@@ -446,7 +446,7 @@ osc::Mesh osc::GenUntexturedYToYCone(size_t nsides)
 
     constexpr float topY = +1.0f;
     constexpr float bottomY = -1.0f;
-    const float stepAngle = 2.0f*fpi / static_cast<float>(nsides);
+    const float stepAngle = 2.0f*std::numbers::pi_v<float> / static_cast<float>(nsides);
 
     uint16_t index = 0;
     auto const push = [&data, &index](Vec3 const& pos, Vec3 const& norm)
@@ -620,7 +620,7 @@ osc::Mesh osc::GenCircle(size_t nsides)
         data.normals.emplace_back(0.0f, 0.0f, 1.0f);
     };
 
-    float const step = 2.0f*fpi / static_cast<float>(nsides);
+    float const step = 2.0f*std::numbers::pi_v<float> / static_cast<float>(nsides);
     for (size_t i = 0; i < nsides; ++i)
     {
         float const theta1 = static_cast<float>(i) * step;
@@ -645,8 +645,8 @@ osc::Mesh osc::GenTorus(size_t slices, size_t stacks, float torusCenterToTubeCen
 
     auto const torusFn = [torusCenterToTubeCenterRadius, tubeRadius](Vec2 const uv)
     {
-        float const theta = 2.0f * fpi * uv.x;
-        float const phi = 2.0f * fpi * uv.y;
+        float const theta = 2.0f * std::numbers::pi_v<float> * uv.x;
+        float const phi = 2.0f * std::numbers::pi_v<float> * uv.y;
         float const beta = torusCenterToTubeCenterRadius + tubeRadius*std::cos(phi);
 
         return Vec3

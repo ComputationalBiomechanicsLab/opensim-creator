@@ -11,7 +11,6 @@
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
@@ -25,6 +24,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <numbers>
 
 using osc::Vec3;
 

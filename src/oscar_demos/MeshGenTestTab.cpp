@@ -3,7 +3,6 @@
 #include <imgui.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
-#include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>

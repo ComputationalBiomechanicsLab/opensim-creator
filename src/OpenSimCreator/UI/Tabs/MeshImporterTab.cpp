@@ -48,7 +48,6 @@
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
-#include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/Mat3.hpp>
 #include <oscar/Maths/Mat4.hpp>
@@ -111,6 +110,7 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <numbers>
 #include <optional>
 #include <span>
 #include <stdexcept>
@@ -128,9 +128,6 @@
 using osc::ClonePtr;
 using osc::UID;
 using osc::UIDT;
-using osc::fpi;
-using osc::fpi2;
-using osc::fpi4;
 using osc::AABB;
 using osc::Sphere;
 using osc::Mat3;
@@ -218,7 +215,7 @@ namespace
     {
         // adopted from: https://easings.net/#easeOutElastic
 
-        constexpr float c4 = 2.0f*fpi / 3.0f;
+        constexpr float c4 = 2.0f*std::numbers::pi_v<float> / 3.0f;
 
         if (x <= 0.0f)
         {
@@ -284,8 +281,8 @@ namespace
     PolarPerspectiveCamera CreateDefaultCamera()
     {
         PolarPerspectiveCamera rv;
-        rv.phi = fpi4;
-        rv.theta = fpi4;
+        rv.phi = std::numbers::pi_v<float>/4.0f;
+        rv.theta = std::numbers::pi_v<float>/4.0f;
         rv.radius = 2.5f;
         return rv;
     }
@@ -4791,7 +4788,7 @@ namespace
         Transform GetFloorTransform() const
         {
             Transform t;
-            t.rotation = osc::AngleAxis(fpi2, Vec3{-1.0f, 0.0f, 0.0f});
+            t.rotation = osc::AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{-1.0f, 0.0f, 0.0f});
             t.scale = {m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f};
             return t;
         }
@@ -4840,7 +4837,7 @@ namespace
             float const legThickness = 0.5f * coreRadius;
 
             // this is how much the cylinder has to be "pulled in" to the core to hide the edges
-            float const cylinderPullback = coreRadius * std::sin((osc::fpi * legThickness) / coreRadius);
+            float const cylinderPullback = coreRadius * std::sin((std::numbers::pi_v<float> * legThickness) / coreRadius);
 
             // emit origin sphere
             {
@@ -7658,12 +7655,12 @@ private:
 
                 if (ImGui::MenuItem("90 degress"))
                 {
-                    RotateAxisXRadians(m_Shared->UpdCommittableModelGraph(), el, axis, fpi/2.0f);
+                    RotateAxisXRadians(m_Shared->UpdCommittableModelGraph(), el, axis, std::numbers::pi_v<float>/2.0f);
                 }
 
                 if (ImGui::MenuItem("180 degrees"))
                 {
-                    RotateAxisXRadians(m_Shared->UpdCommittableModelGraph(), el, axis, fpi);
+                    RotateAxisXRadians(m_Shared->UpdCommittableModelGraph(), el, axis, std::numbers::pi_v<float>);
                 }
 
                 if (ImGui::MenuItem("Along two mesh points"))
@@ -8382,12 +8379,12 @@ private:
 
         if (ImGui::Button("X"))
         {
-            m_Shared->UpdCamera().theta = fpi2;
+            m_Shared->UpdCamera().theta = std::numbers::pi_v<float>/2.0f;
             m_Shared->UpdCamera().phi = 0.0f;
         }
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {
-            m_Shared->UpdCamera().theta = -fpi2;
+            m_Shared->UpdCamera().theta = -std::numbers::pi_v<float>/2.0f;
             m_Shared->UpdCamera().phi = 0.0f;
         }
         osc::DrawTooltipIfItemHovered("Face camera facing along X", "Right-clicking faces it along X, but in the opposite direction");
@@ -8397,12 +8394,12 @@ private:
         if (ImGui::Button("Y"))
         {
             m_Shared->UpdCamera().theta = 0.0f;
-            m_Shared->UpdCamera().phi = fpi2;
+            m_Shared->UpdCamera().phi = std::numbers::pi_v<float>/2.0f;
         }
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {
             m_Shared->UpdCamera().theta = 0.0f;
-            m_Shared->UpdCamera().phi = -fpi2;
+            m_Shared->UpdCamera().phi = -std::numbers::pi_v<float>/2.0f;
         }
         osc::DrawTooltipIfItemHovered("Face camera facing along Y", "Right-clicking faces it along Y, but in the opposite direction");
 
@@ -8415,7 +8412,7 @@ private:
         }
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {
-            m_Shared->UpdCamera().theta = fpi;
+            m_Shared->UpdCamera().theta = std::numbers::pi_v<float>;
             m_Shared->UpdCamera().phi = 0.0f;
         }
         osc::DrawTooltipIfItemHovered("Face camera facing along Z", "Right-clicking faces it along Z, but in the opposite direction");

@@ -14,7 +14,6 @@
 #include <oscar/Graphics/RenderTextureDescriptor.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
@@ -27,6 +26,7 @@
 #include <SDL_events.h>
 
 #include <array>
+#include <numbers>
 #include <string>
 #include <utility>
 
@@ -225,7 +225,7 @@ private:
     RenderTexture m_SceneHDRTexture;
     float m_Exposure = 1.0f;
 
-    Vec3 m_CameraEulers = {0.0f, osc::fpi, 0.0f};
+    Vec3 m_CameraEulers = {0.0f, std::numbers::pi_v<float>, 0.0f};
     bool m_IsMouseCaptured = true;
     bool m_Use16BitFormat = true;
     bool m_UseTonemap = true;
