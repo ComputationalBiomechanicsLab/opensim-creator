@@ -3,23 +3,22 @@
 #include <oscar/Platform/Log.hpp>
 
 #include <exception>
-#include <source_location>
 #include <sstream>
 #include <stdexcept>
-#include <string>
-#include <string_view>
-#include <utility>
 
 void osc::OnAssertionFailure(
-    std::string_view failingCode,
-    std::source_location location)
+    CStringView failingCode,
+    CStringView func,
+    CStringView file,
+    unsigned int line)
 {
-    std::string const msg = [&failingCode, &location]()
+    std::string const msg = [&]()
     {
         std::stringstream ss;
-        ss << location.file_name() << ':' << location.function_name() << ':' << location.line() << ": '" << failingCode << "' returned false";
+        ss << file << ':' << func << ':' << ':' << line << ": throw_if_not(" << failingCode << ") failed";
         return std::move(ss).str();
     }();
 
+    log::error("%s", msg.c_str());
     throw std::runtime_error{msg};
 }

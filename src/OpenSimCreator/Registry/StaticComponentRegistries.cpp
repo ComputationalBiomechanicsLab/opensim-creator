@@ -34,6 +34,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/Macros.hpp>
 #include <oscar/Utils/SetHelpers.hpp>
 
 #include <algorithm>

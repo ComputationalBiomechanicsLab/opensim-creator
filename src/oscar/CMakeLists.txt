@@ -226,6 +226,7 @@ add_library(oscar STATIC
     Utils/FilesystemHelpers.cpp
     Utils/FilesystemHelpers.hpp
     Utils/HashHelpers.hpp
+    Utils/Macros.hpp
     Utils/ParalellizationHelpers.hpp
     Utils/ParentPtr.hpp
     Utils/Perf.cpp
