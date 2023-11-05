@@ -101,16 +101,12 @@ bool osc::IsEqualCaseInsensitive(std::string_view a, std::string_view b)
 
 bool osc::StartsWith(std::string_view sv, std::string_view prefix)
 {
-    return prefix.size() <= sv.size() && std::equal(prefix.begin(), prefix.end(), sv.begin());
+    return sv.starts_with(prefix);
 }
 
 bool osc::EndsWith(std::string_view sv, std::string_view suffix)
 {
-    if (sv.size() < suffix.size())
-    {
-        return false;
-    }
-    return sv.substr(sv.size() - suffix.size()) == suffix;
+    return sv.ends_with(suffix);
 }
 
 std::string_view osc::TrimLeadingAndTrailingWhitespace(std::string_view sv)
