@@ -28,6 +28,7 @@
 #include <SDL_events.h>
 
 #include <array>
+#include <bit>
 #include <string>
 #include <utility>
 
@@ -160,7 +161,7 @@ namespace
         osc::RenderTexture const& environmentMap)
     {
         int constexpr levelZeroWidth = 128;
-        static_assert(osc::popcount(static_cast<unsigned>(levelZeroWidth)) == 1);
+        static_assert(std::popcount(static_cast<unsigned>(levelZeroWidth)) == 1);
 
         osc::RenderTexture captureRT{{levelZeroWidth, levelZeroWidth}};
         captureRT.setDimensionality(osc::TextureDimensionality::Cube);
@@ -195,7 +196,7 @@ namespace
 
         size_t const maxMipmapLevel = static_cast<size_t>(std::max(
             0,
-            osc::bit_width(static_cast<size_t>(levelZeroWidth)) - 1
+            std::bit_width(static_cast<size_t>(levelZeroWidth)) - 1
         ));
         static_assert(maxMipmapLevel == 7);
 
@@ -352,7 +353,7 @@ private:
         m_PBRMaterial.setVec3Array("uLightColors", c_LightRadiances);
         m_PBRMaterial.setRenderTexture("uIrradianceMap", m_IrradianceMap);
         m_PBRMaterial.setCubemap("uPrefilterMap", m_PrefilterMap);
-        m_PBRMaterial.setFloat("uMaxReflectionLOD", static_cast<float>(osc::bit_width(static_cast<size_t>(m_PrefilterMap.getWidth()) - 1)));
+        m_PBRMaterial.setFloat("uMaxReflectionLOD", static_cast<float>(std::bit_width(static_cast<size_t>(m_PrefilterMap.getWidth()) - 1)));
         m_PBRMaterial.setTexture("uBRDFLut", m_BRDFLookup);
 
         drawSpheres();
