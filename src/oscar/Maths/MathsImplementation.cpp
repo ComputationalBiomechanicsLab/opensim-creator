@@ -368,7 +368,7 @@ void osc::BVH::buildFromAABBs(std::span<AABB const> aabbs)
 
     // build up prim list for each AABB (just copy the AABB)
     m_Prims.reserve(aabbs.size());  // good guess
-    for (ptrdiff_t i = 0; i < osc::ssize(aabbs); ++i)
+    for (ptrdiff_t i = 0; i < std::ssize(aabbs); ++i)
     {
         if (!IsAPoint(aabbs[i]))
         {
@@ -382,7 +382,7 @@ void osc::BVH::buildFromAABBs(std::span<AABB const> aabbs)
             m_Nodes,
             m_Prims,
             0,
-            osc::ssize(m_Prims)
+            std::ssize(m_Prims)
         );
     }
 }

@@ -898,7 +898,7 @@ osc::Mesh osc::GenNxMTriangleQuad2DGrid(Vec2i steps)
     }
 
     OSC_ASSERT(verts.size() == coords.size());
-    OSC_ASSERT(osc::ssize(indices) == static_cast<ptrdiff_t>((steps.x-1)*(steps.y-1)*6));
+    OSC_ASSERT(std::ssize(indices) == static_cast<ptrdiff_t>((steps.x-1)*(steps.y-1)*6));
 
     osc::Mesh rv;
     rv.setTopology(osc::MeshTopology::Triangles);

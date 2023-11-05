@@ -1704,7 +1704,7 @@ public:
 
     void setPixels(std::span<Color const> pixels)
     {
-        OSC_ASSERT(osc::ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
+        OSC_ASSERT(std::ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
         EncodePixelsInDesiredFormat(pixels, m_Format, m_PixelData);
     }
 
@@ -1715,7 +1715,7 @@ public:
 
     void setPixels32(std::span<Color32 const> pixels)
     {
-        OSC_ASSERT(osc::ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
+        OSC_ASSERT(std::ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
         EncodePixels32InDesiredFormat(pixels, m_Format, m_PixelData);
     }
 
@@ -5527,7 +5527,7 @@ public:
             screenshot.setPixelData(pixels);
 
             // copy image to requests [0..n-2]
-            for (ptrdiff_t i = 0, len = osc::ssize(m_ActiveScreenshotRequests)-1; i < len; ++i)
+            for (ptrdiff_t i = 0, len = std::ssize(m_ActiveScreenshotRequests)-1; i < len; ++i)
             {
                 m_ActiveScreenshotRequests[i].set_value(screenshot);
             }

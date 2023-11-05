@@ -1146,7 +1146,7 @@ namespace
             // deletions
             //
             // handle any user-requested deletions by removing the curve from the collection
-            if (0 <= m_PlotTaggedForDeletion && m_PlotTaggedForDeletion < osc::ssize(m_PreviousPlots))
+            if (0 <= m_PlotTaggedForDeletion && m_PlotTaggedForDeletion < std::ssize(m_PreviousPlots))
             {
                 m_PreviousPlots.erase(m_PreviousPlots.begin() + m_PlotTaggedForDeletion);
                 m_PlotTaggedForDeletion = -1;

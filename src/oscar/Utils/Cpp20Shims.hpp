@@ -151,22 +151,6 @@ namespace osc
         inline constexpr double pi = pi_v<double>;
     }
 
-    // C++20: ssize
-    template<typename Container>
-    constexpr auto ssize(Container const& c) ->
-        std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(c.size())>>
-    {
-        using R = std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(c.size())>>;
-        return static_cast<R>(c.size());
-    }
-
-    // C++20: ssize
-    template<typename T, std::ptrdiff_t N>
-    constexpr std::ptrdiff_t ssize(const T (&)[N]) noexcept
-    {
-        return N;
-    }
-
     // C++20: popcount
     //
     // see: https://en.cppreference.com/w/cpp/numeric/popcount

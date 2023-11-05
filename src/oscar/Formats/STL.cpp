@@ -99,7 +99,7 @@ namespace
         osc::MeshIndicesView const indices = mesh.getIndices();
         std::span<osc::Vec3 const> const verts = mesh.getVerts();
 
-        for (ptrdiff_t i = 0; i < ssize(indices)-2; i += 3)
+        for (ptrdiff_t i = 0; i < std::ssize(indices)-2; i += 3)
         {
             osc::Triangle const t
             {

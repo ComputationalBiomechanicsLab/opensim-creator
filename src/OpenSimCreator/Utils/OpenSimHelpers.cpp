@@ -240,8 +240,8 @@ namespace
             GetEffectiveAttachmentIndices(pfds) :
             GetAnatomicalAttachmentIndices(pfds);
 
-        OSC_ASSERT_ALWAYS(0 <= attachmentIndexRange.first && attachmentIndexRange.first < osc::ssize(pfds));
-        OSC_ASSERT_ALWAYS(0 <= attachmentIndexRange.second && attachmentIndexRange.second < osc::ssize(pfds));
+        OSC_ASSERT_ALWAYS(0 <= attachmentIndexRange.first && attachmentIndexRange.first < std::ssize(pfds));
+        OSC_ASSERT_ALWAYS(0 <= attachmentIndexRange.second && attachmentIndexRange.second < std::ssize(pfds));
 
         if (attachmentIndexRange.first >= attachmentIndexRange.second)
         {
