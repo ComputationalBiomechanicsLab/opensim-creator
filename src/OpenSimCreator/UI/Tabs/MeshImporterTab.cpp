@@ -5873,7 +5873,7 @@ namespace
                 return;
             }
 
-            osc::erase_if(m_SelectedEls, [elID = el.GetID()](UID id) { return id == elID; } );
+            std::erase_if(m_SelectedEls, [elID = el.GetID()](UID id) { return id == elID; } );
         }
 
         void TryToggleSelectionStateOf(SceneEl const& el)
@@ -6767,7 +6767,7 @@ private:
             meshes.insert(m_MaybeHover.ID);
         }
 
-        osc::erase_if(meshes, [&mg](UID meshID) { return !mg.ContainsEl<MeshEl>(meshID); });
+        std::erase_if(meshes, [&mg](UID meshID) { return !mg.ContainsEl<MeshEl>(meshID); });
 
         if (meshes.empty())
         {

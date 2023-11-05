@@ -167,53 +167,6 @@ namespace osc
         return N;
     }
 
-    // C++20: erase_if (for unordered_set)
-    //
-    // see: https://en.cppreference.com/w/cpp/container/unordered_set/erase_if
-    template<
-        typename Key,
-        typename Hash,
-        typename KeyEqual,
-        typename Alloc,
-        typename UnaryPredicate
-    >
-    typename std::unordered_set<Key, Hash, KeyEqual, Alloc>::size_type erase_if(
-        std::unordered_set<Key, Hash, KeyEqual, Alloc>& c,
-        UnaryPredicate pred)
-    {
-        auto oldSize = c.size();
-        for (auto it = c.begin(), end = c.end(); it != end;)
-        {
-            if (pred(*it))
-            {
-                it = c.erase(it);
-            }
-            else
-            {
-                ++it;
-            }
-        }
-        return oldSize - c.size();
-    }
-
-    // C++20: std::erase_if (std::vector)
-    //
-    // see: https://en.cppreference.com/w/cpp/container/vector/erase2
-    template<
-        typename T,
-        typename Alloc,
-        typename UnaryPredicate
-    >
-    constexpr typename std::vector<T, Alloc>::size_type erase_if(
-        std::vector<T, Alloc>& c,
-        UnaryPredicate pred)
-    {
-        auto const it = std::remove_if(c.begin(), c.end(), pred);
-        auto const r = std::distance(it, c.end());
-        c.erase(it, c.end());
-        return r;
-    }
-
     // C++20: popcount
     //
     // see: https://en.cppreference.com/w/cpp/numeric/popcount

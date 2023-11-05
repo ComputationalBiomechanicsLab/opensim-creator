@@ -141,7 +141,7 @@ namespace
         OpenSim::Component const& component)
     {
         std::vector<OpenSim::Component const*> allConnectees = GetAnyComponentsConnectedViaSocketTo(root, component);
-        osc::erase_if(allConnectees, [&root, &component](OpenSim::Component const* connectee)
+        std::erase_if(allConnectees, [&root, &component](OpenSim::Component const* connectee)
         {
             return
                 osc::IsInclusiveChildOf(&component, connectee) &&

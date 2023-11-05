@@ -1003,7 +1003,7 @@ namespace
 
         void clearUnlockedPlots()
         {
-            osc::erase_if(m_PreviousPlots, [](std::shared_ptr<Plot> const& p) { return !p->getIsLocked(); });
+            std::erase_if(m_PreviousPlots, [](std::shared_ptr<Plot> const& p) { return !p->getIsLocked(); });
         }
 
         PlottingTaskStatus getPlottingTaskStatus() const
@@ -1102,7 +1102,7 @@ namespace
     private:
         void clearComputedPlots()
         {
-            osc::erase_if(m_PreviousPlots, [](auto const& ptr) { return ptr->tryGetParameters() != nullptr; });
+            std::erase_if(m_PreviousPlots, [](auto const& ptr) { return ptr->tryGetParameters() != nullptr; });
         }
 
         void checkForParameterChangesAndStartPlotting(PlotParameters const& desiredParams)
@@ -1185,7 +1185,7 @@ namespace
                 return i++ < idxOfDeleteableEnd && !p->getIsLocked();
             };
 
-            osc::erase_if(m_PreviousPlots, shouldDelete);
+            std::erase_if(m_PreviousPlots, shouldDelete);
         }
 
         std::shared_ptr<Plot> m_ActivePlot;

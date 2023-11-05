@@ -350,16 +350,7 @@ public:
 
     bool implRemoveUserOutputExtractor(OutputExtractor const& oe) final
     {
-        auto const it = std::find(m_UserOutputExtractors.begin(), m_UserOutputExtractors.end(), oe);
-        if (it != m_UserOutputExtractors.end())
-        {
-            m_UserOutputExtractors.erase(it);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return std::erase(m_UserOutputExtractors, oe) > 0;
     }
 
 private:
