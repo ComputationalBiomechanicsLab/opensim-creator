@@ -145,12 +145,6 @@ namespace osc
         std::thread m_Thread;
     };
 
-    // C++20: <numbers>
-    namespace numbers {
-        template<typename T> inline constexpr T pi_v = static_cast<T>(3.14159265358979323846);
-        inline constexpr double pi = pi_v<double>;
-    }
-
     // C++20: popcount
     //
     // see: https://en.cppreference.com/w/cpp/numeric/popcount
