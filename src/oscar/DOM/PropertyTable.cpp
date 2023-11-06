@@ -16,12 +16,12 @@ osc::PropertyTable::PropertyTable(std::span<PropertyDescription const> descripti
     }
 
     m_Entries.reserve(descriptions.size());
-    m_NameToEntryLookup.reserve(descriptions.size());
+    m_NameToEntryIndexLookup.reserve(descriptions.size());
 
     // insert backwards (later entries 'override' earlier ones)
     for (auto it = descriptions.rbegin(); it != descriptions.rend(); ++it)
     {
-        if (m_NameToEntryLookup.try_emplace(it->getName(), m_Entries.size()).second)
+        if (m_NameToEntryIndexLookup.try_emplace(it->getName(), m_Entries.size()).second)
         {
             m_Entries.emplace_back(*it);
         }
@@ -31,7 +31,7 @@ osc::PropertyTable::PropertyTable(std::span<PropertyDescription const> descripti
     std::reverse(m_Entries.begin(), m_Entries.end());
 
     // reverse indices
-    for (auto& [k, v] : m_NameToEntryLookup)
+    for (auto& [k, v] : m_NameToEntryIndexLookup)
     {
         v = (m_Entries.size()-1) - v;
     }
@@ -39,7 +39,7 @@ osc::PropertyTable::PropertyTable(std::span<PropertyDescription const> descripti
 
 std::optional<size_t> osc::PropertyTable::indexOf(StringName const& propertyName) const
 {
-    if (auto const it = m_NameToEntryLookup.find(propertyName); it != m_NameToEntryLookup.end())
+    if (auto const it = m_NameToEntryIndexLookup.find(propertyName); it != m_NameToEntryIndexLookup.end())
     {
         return it->second;
     }
@@ -51,5 +51,5 @@ std::optional<size_t> osc::PropertyTable::indexOf(StringName const& propertyName
 
 void osc::PropertyTable::setValue(size_t propertyIndex, Variant const& newPropertyValue)
 {
-    m_Entries[propertyIndex].setValue(newPropertyValue);
+    m_Entries.at(propertyIndex).setValue(newPropertyValue);
 }

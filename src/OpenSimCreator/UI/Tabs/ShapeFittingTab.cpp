@@ -7,8 +7,8 @@
 #include <oscar/Maths/Sphere.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/StdVariantHelpers.hpp>
 #include <oscar/Utils/UndoRedo.hpp>
-#include <oscar/Utils/VariantHelpers.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <SDL_events.h>

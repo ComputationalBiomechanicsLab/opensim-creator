@@ -87,9 +87,9 @@
 #include <oscar/Utils/ScopeGuard.hpp>
 #include <oscar/Utils/SetHelpers.hpp>
 #include <oscar/Utils/Spsc.hpp>
+#include <oscar/Utils/StdVariantHelpers.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <oscar/Utils/VariantHelpers.hpp>
 #include <SDL_events.h>
 #include <SimTKcommon.h>
 #include <SimTKcommon/Mechanics.h>

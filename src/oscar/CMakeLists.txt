@@ -253,6 +253,7 @@ add_library(oscar STATIC
     Utils/StringHelpers.hpp
     Utils/StringName.cpp
     Utils/StringName.hpp
+    Utils/StdVariantHelpers.hpp
     Utils/SynchronizedValue.hpp
     Utils/UID.cpp
     Utils/UID.hpp
@@ -260,7 +261,6 @@ add_library(oscar STATIC
     Utils/UndoRedo.hpp
     Utils/Variant.cpp
     Utils/Variant.hpp
-    Utils/VariantHelpers.hpp
     Utils/VariantType.cpp
     Utils/VariantType.hpp
 )

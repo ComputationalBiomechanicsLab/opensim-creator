@@ -49,11 +49,10 @@ namespace osc
         }
 
         friend bool operator==(Variant const&, Variant const&);
-        friend bool operator!=(Variant const&, Variant const&);
 
         friend void swap(Variant& a, Variant& b) noexcept
         {
-            std::swap(a, b);
+            std::swap(a.m_Data, b.m_Data);
         }
 
     private:
@@ -72,7 +71,6 @@ namespace osc
     };
 
     bool operator==(Variant const&, Variant const&);
-    bool operator!=(Variant const&, Variant const&);
     std::string to_string(Variant const&);
     std::ostream& operator<<(std::ostream&, Variant const&);
 }

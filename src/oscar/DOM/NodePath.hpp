@@ -49,15 +49,7 @@ namespace osc
                 return copy;
             }
 
-            friend bool operator==(Iterator const& lhs, Iterator const& rhs)
-            {
-                return lhs.m_Current == rhs.m_Current && lhs.m_Remaining == rhs.m_Remaining;
-            }
-
-            friend bool operator!=(Iterator const& lhs, Iterator const& rhs)
-            {
-                return !(lhs == rhs);
-            }
+            friend bool operator==(Iterator const&, Iterator const&) = default;
 
         private:
             friend class NodePath;
@@ -106,15 +98,7 @@ namespace osc
             return Iterator{};
         }
 
-        friend bool operator==(NodePath const& lhs, NodePath const& rhs)
-        {
-            return lhs.m_ParsedPath == rhs.m_ParsedPath;
-        }
-
-        friend bool operator!=(NodePath const& lhs, NodePath const& rhs)
-        {
-            return lhs.m_ParsedPath != rhs.m_ParsedPath;
-        }
+        friend bool operator==(NodePath const&, NodePath const&) = default;
     private:
         std::string m_ParsedPath;
     };

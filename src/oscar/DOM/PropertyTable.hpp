@@ -26,6 +26,6 @@ namespace osc
 
     private:
         std::vector<PropertyTableEntry> m_Entries;
-        std::unordered_map<StringName, size_t> m_NameToEntryLookup;
+        std::unordered_map<StringName, size_t> m_NameToEntryIndexLookup;
     };
 }

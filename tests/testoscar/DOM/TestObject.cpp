@@ -384,7 +384,7 @@ TEST(Object, TryGetPropertyDefaultValueReturnsNonNullptrToCorrectValueForCorrect
     });
     ObjectWithGivenProperties const a{descriptions};
     ASSERT_NE(a.tryGetPropertyDefaultValue("a"), nullptr);
-    ASSERT_EQ(*a.tryGetPropertyDefaultValue("a"), 1337);
+    ASSERT_EQ(*a.tryGetPropertyDefaultValue("a"), Variant{1337});
 }
 
 TEST(Object, GetPropertyDefaultValueThrowsForInvalidName)
@@ -406,12 +406,108 @@ TEST(Object, GetPropertyDefaultValueDoesNotThrowForCorrectName)
         {"b", Variant{-1}},
     });
     ObjectWithGivenProperties const a{descriptions};
-    ASSERT_EQ(a.getPropertyDefaultValue("a"), 1337);
+    ASSERT_EQ(a.getPropertyDefaultValue("a"), Variant{1337});
 }
 
-// TODO: tryGetPropertyValue
-// TODO: getPropertyValue
+TEST(Object, TryGetPropertyValueReturnsNullptrForInvalidName)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{false}},
+        {"b", Variant{false}},
+    });
+    ObjectWithGivenProperties const a{descriptions};
+    ASSERT_EQ(a.tryGetPropertyValue("non-existent"), nullptr);
+}
+
+TEST(Object, TryGetPropertyValueReturnsNonNullptrForValidName)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{false}},
+        {"b", Variant{false}},
+    });
+    ObjectWithGivenProperties const a{descriptions};
+    ASSERT_NE(a.tryGetPropertyValue("a"), nullptr);
+    ASSERT_NE(a.tryGetPropertyValue("b"), nullptr);
+}
+
+TEST(Object, TryGetPropertyValueReturnsDefaultValueWhenValueHasNotBeenSet)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{1337}},
+        {"b", Variant{false}},
+    });
+    ObjectWithGivenProperties const a{descriptions};
+    ASSERT_TRUE(a.tryGetPropertyValue("a"));
+    ASSERT_EQ(*a.tryGetPropertyValue("a"), Variant{1337});
+}
+
+TEST(Object, TryGetPropertyValueReturnsNewValueAfterTheValueHasBeenSet)
+{
+    auto const oldValue = Variant{10};
+    auto const newValue = Variant{50};
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{false}},
+        {"b", oldValue},
+    });
+
+    ObjectWithGivenProperties a{descriptions};
+    ASSERT_TRUE(a.tryGetPropertyValue("b"));
+    ASSERT_EQ(*a.tryGetPropertyValue("b"), oldValue);
+    a.trySetPropertyValue("b", newValue);
+    ASSERT_TRUE(a.tryGetPropertyValue("b"));
+    ASSERT_EQ(*a.tryGetPropertyValue("b"), newValue);
+}
+
+TEST(Object, GetPropertyValueThrowsIfGivenNonExistentPropertyName)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{false}},
+        {"b", Variant{false}},
+    });
+    ObjectWithGivenProperties const a{descriptions};
+    ASSERT_ANY_THROW({ a.getPropertyValue("a"); });
+}
+
+TEST(Object, GetPropertyValueReturnsValueIfGivenExistentPropertyName)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{false}},
+        {"b", Variant{"second"}},
+    });
+    ObjectWithGivenProperties const a{descriptions};
+    ASSERT_EQ(a.getPropertyValue("a"), Variant{"second"});
+}
+
+TEST(Object, GetPropertyValueReturnsNewValueAfterSettingValue)
+{
+    auto const oldValue = Variant{"old"};
+    auto const newValue = Variant{"new"};
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{false}},
+        {"b", oldValue},
+    });
+
+    ObjectWithGivenProperties a{descriptions};
+    ASSERT_EQ(a.getPropertyValue("b"), oldValue);
+    a.trySetPropertyValue("b", newValue);
+    ASSERT_EQ(a.getPropertyValue("b"), newValue);
+}
+
 // TODO: trySetPropertyValue
 // TODO: setPropertyValue
+
+// TODO: with implCustomPropertyGetter:
+//
+// - tryGetPropertyValue returns getter value if non-nullptr
+// - getPropertyValue returns getter value if non-nullptr
+// - tryGetPropertyValue returns "normal" value if nullptr
+// - getPropertyValue returns "normal" value if nullptr
 
 */

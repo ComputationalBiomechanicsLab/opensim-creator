@@ -28,14 +28,7 @@ namespace osc
             return m_DefaultValue;
         }
 
-        friend bool operator==(PropertyDescription const& lhs, PropertyDescription const& rhs)
-        {
-            return lhs.m_Name == rhs.m_Name && lhs.m_DefaultValue == rhs.m_DefaultValue;
-        }
-        friend bool operator!=(PropertyDescription const& lhs, PropertyDescription const& rhs)
-        {
-            return !(lhs == rhs);
-        }
+        friend bool operator==(PropertyDescription const&, PropertyDescription const&) = default;
 
     private:
         StringName m_Name;

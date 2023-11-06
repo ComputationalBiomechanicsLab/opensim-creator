@@ -55,8 +55,8 @@
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/SpanHelpers.hpp>
+#include <oscar/Utils/StdVariantHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <oscar/Utils/VariantHelpers.hpp>
 
 #include <ankerl/unordered_dense.h>
 #include <GL/glew.h>
