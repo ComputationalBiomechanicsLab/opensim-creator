@@ -37,7 +37,6 @@
 #include <oscar/Formats/STL.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
-#include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -62,6 +61,7 @@
 #include <filesystem>
 #include <fstream>
 #include <map>
+#include <numbers>
 #include <optional>
 #include <span>
 #include <sstream>
@@ -960,8 +960,8 @@ bool osc::DrawAdvancedParamsEditor(
     ImGui::Text("advanced camera properties:");
     ImGui::Separator();
     edited = osc::SliderMetersFloat("radius", params.camera.radius, 0.0f, 10.0f) || edited;
-    edited = ImGui::SliderFloat("theta", &params.camera.theta, 0.0f, 2.0f * osc::fpi) || edited;
-    edited = ImGui::SliderFloat("phi", &params.camera.phi, 0.0f, 2.0f * osc::fpi) || edited;
+    edited = ImGui::SliderFloat("theta", &params.camera.theta, 0.0f, 2.0f * std::numbers::pi_v<float>) || edited;
+    edited = ImGui::SliderFloat("phi", &params.camera.phi, 0.0f, 2.0f * std::numbers::pi_v<float>) || edited;
     edited = ImGui::InputFloat("fov", &params.camera.fov) || edited;
     edited = osc::InputMetersFloat("znear", params.camera.znear) || edited;
     edited = osc::InputMetersFloat("zfar", params.camera.zfar) || edited;

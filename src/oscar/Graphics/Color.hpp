@@ -136,19 +136,7 @@ namespace osc
             return Vec4{r, g, b, a};
         }
 
-        constexpr friend bool operator==(Color const& lhs, Color const& rhs) noexcept
-        {
-            return
-                lhs.r == rhs.r &&
-                lhs.g == rhs.g &&
-                lhs.b == rhs.b &&
-                lhs.a == rhs.a;
-        }
-
-        constexpr friend bool operator!=(Color const& lhs, Color const& rhs) noexcept
-        {
-            return !(lhs == rhs);
-        }
+        friend bool operator==(Color const&, Color const&) = default;
 
         constexpr friend Color& operator*=(Color& lhs, Color const& rhs) noexcept
         {

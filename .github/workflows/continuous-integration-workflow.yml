@@ -40,6 +40,8 @@ jobs:
         cd $GITHUB_WORKSPACE/osc
         sudo apt-get install xvfb  # virtual desktop, for tests
         export OSC_BUILD_CONCURRENCY=$(nproc)
+        export CC=clang
+        export CXX=clang++
         xvfb-run ./scripts/build_debian-buster.sh
 
     - uses: actions/upload-artifact@v2

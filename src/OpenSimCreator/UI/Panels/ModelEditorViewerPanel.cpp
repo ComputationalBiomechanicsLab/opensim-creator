@@ -533,7 +533,7 @@ private:
 
     void layersGarbageCollect()
     {
-        osc::erase_if(m_Layers, [](auto const& layerPtr)
+        std::erase_if(m_Layers, [](auto const& layerPtr)
         {
             return layerPtr->shouldClose();
         });

@@ -312,7 +312,7 @@ std::vector<osc::Vec4> osc::CalcTangentVectors(
     };
 
     // compute tangent vectors from triangle primitives
-    for (ptrdiff_t triBegin = 0, end = ssize(indices)-2; triBegin < end; triBegin += 3)
+    for (ptrdiff_t triBegin = 0, end = std::ssize(indices)-2; triBegin < end; triBegin += 3)
     {
         // compute edge vectors in object and tangent (UV) space
         Vec3 const e1 = verts[indices[triBegin+1]] - verts[indices[triBegin+0]];

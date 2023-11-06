@@ -20,7 +20,6 @@
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
-#include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
@@ -39,6 +38,7 @@
 #include <SDL_events.h>
 
 #include <filesystem>
+#include <numbers>
 #include <span>
 #include <string>
 #include <utility>
@@ -48,9 +48,9 @@ namespace
     osc::PolarPerspectiveCamera GetSplashScreenDefaultPolarCamera()
     {
         osc::PolarPerspectiveCamera rv;
-        rv.phi = osc::fpi4/1.5f;
+        rv.phi = std::numbers::pi_v<float>/6.0f;
         rv.radius = 10.0f;
-        rv.theta = osc::fpi4;
+        rv.theta = std::numbers::pi_v<float>/4.0f;
         return rv;
     }
 

@@ -60,10 +60,5 @@ namespace osc
         {
             return lhs.equals(rhs);
         }
-
-        friend bool operator!=(VirtualOutputExtractor const& lhs, VirtualOutputExtractor const& rhs)
-        {
-            return !lhs.equals(rhs);
-        }
     };
 }

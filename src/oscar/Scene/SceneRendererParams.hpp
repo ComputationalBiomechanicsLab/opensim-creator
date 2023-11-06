@@ -27,6 +27,8 @@ namespace osc
 
         SceneRendererParams();
 
+        friend bool operator==(SceneRendererParams const&, SceneRendererParams const&) = default;
+
         Vec2i dimensions;
         AntiAliasingLevel antiAliasingLevel;
         bool drawMeshNormals;
@@ -50,7 +52,4 @@ namespace osc
         Vec3 floorLocation;
         float fixupScaleFactor;
     };
-
-    bool operator==(SceneRendererParams const&, SceneRendererParams const&);
-    bool operator!=(SceneRendererParams const&, SceneRendererParams const&);
 }

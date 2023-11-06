@@ -36,19 +36,7 @@ namespace osc
             return &a + 1;
         }
 
-        constexpr friend bool operator==(Color32 const& lhs, Color32 const& rhs) noexcept
-        {
-            return
-                lhs.r == rhs.r &&
-                lhs.g == rhs.g &&
-                lhs.b == rhs.b &&
-                lhs.a == rhs.a;
-        }
-
-        constexpr friend bool operator!=(Color32 const& lhs, Color32 const& rhs) noexcept
-        {
-            return !(lhs == rhs);
-        }
+        friend bool operator==(Color32 const&, Color32 const&) = default;
 
         uint32_t toU32() const
         {

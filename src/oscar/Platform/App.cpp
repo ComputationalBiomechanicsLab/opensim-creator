@@ -667,7 +667,7 @@ private:
                 }
 
                 // gc any invalid (i.e. handled) requests
-                osc::erase_if(
+                std::erase_if(
                     m_ActiveAnnotatedScreenshotRequests,
                     [](AnnotatedScreenshotRequest const& req)
                     {

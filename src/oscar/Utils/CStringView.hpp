@@ -51,19 +51,15 @@ namespace osc
         constexpr char const* begin() const noexcept { return m_Data; }
         constexpr char const* end() const noexcept { return m_Data + m_Size; }
 
-        friend bool operator<(CStringView const& lhs, CStringView const& rhs)
+        constexpr friend auto operator<=>(CStringView const& lhs, CStringView const& rhs)
         {
-            return static_cast<std::string_view>(lhs) < static_cast<std::string_view>(rhs);
+            // manual implementation because MacOS's stdlib doesn't have <=> yet
+            int v = static_cast<std::string_view>(lhs).compare(static_cast<std::string_view>(rhs));
+            return v < 0 ? std::strong_ordering::less : v == 0 ? std::strong_ordering::equal : std::strong_ordering::greater;
         }
-
-        friend bool operator==(CStringView const& lhs, CStringView const& rhs)
+        constexpr friend bool operator==(CStringView const& lhs, CStringView const& rhs)
         {
             return static_cast<std::string_view>(lhs) == static_cast<std::string_view>(rhs);
-        }
-
-        friend bool operator!=(CStringView const& lhs, CStringView const& rhs)
-        {
-            return static_cast<std::string_view>(lhs) != static_cast<std::string_view>(rhs);
         }
     private:
         constexpr CStringView(char const* data_, size_t size_) noexcept : m_Data{data_}, m_Size{size_} {}

@@ -25,35 +25,3 @@ osc::SceneRendererParams::SceneRendererParams() :
     fixupScaleFactor{1.0f}
 {
 }
-
-bool osc::operator==(SceneRendererParams const& lhs, SceneRendererParams const& rhs)
-{
-    return
-        lhs.dimensions == rhs.dimensions &&
-        lhs.antiAliasingLevel == rhs.antiAliasingLevel &&
-        lhs.drawMeshNormals == rhs.drawMeshNormals &&
-        lhs.drawRims == rhs.drawRims &&
-        lhs.drawShadows == rhs.drawShadows &&
-        lhs.drawFloor == rhs.drawFloor &&
-        lhs.nearClippingPlane == rhs.nearClippingPlane &&
-        lhs.farClippingPlane == rhs.farClippingPlane &&
-        lhs.viewMatrix == rhs.viewMatrix &&
-        lhs.projectionMatrix == rhs.projectionMatrix &&
-        lhs.viewPos == rhs.viewPos &&
-        lhs.lightDirection == rhs.lightDirection &&
-        lhs.lightColor == rhs.lightColor &&
-        lhs.ambientStrength == rhs.ambientStrength &&
-        lhs.diffuseStrength == rhs.diffuseStrength &&
-        lhs.specularStrength == rhs.specularStrength &&
-        lhs.specularShininess == rhs.specularShininess &&
-        lhs.backgroundColor == rhs.backgroundColor &&
-        lhs.rimColor == rhs.rimColor &&
-        lhs.rimThicknessInPixels == rhs.rimThicknessInPixels &&
-        lhs.floorLocation == rhs.floorLocation &&
-        lhs.fixupScaleFactor == rhs.fixupScaleFactor;
-}
-
-bool osc::operator!=(SceneRendererParams const& lhs, SceneRendererParams const& rhs)
-{
-    return !(lhs == rhs);
-}

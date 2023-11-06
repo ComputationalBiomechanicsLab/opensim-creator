@@ -4,6 +4,10 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Internal: nonstd::span was droppped in favor of C++20's std::span
+- Internal: C++17 was upgraded to C++20, which required some dependency patching
+- Internal: all vector/matrix math was ported from using `glm` directly to using it via an `osc` alias
+
 
 ## [0.5.4] - 2023/11/03
 

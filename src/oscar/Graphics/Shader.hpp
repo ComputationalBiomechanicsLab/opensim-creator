@@ -43,15 +43,7 @@ namespace osc
             swap(a.m_Impl, b.m_Impl);
         }
 
-        friend bool operator==(Shader const& lhs, Shader const& rhs) noexcept
-        {
-            return lhs.m_Impl == rhs.m_Impl;
-        }
-
-        friend bool operator!=(Shader const& lhs, Shader const& rhs) noexcept
-        {
-            return lhs.m_Impl != rhs.m_Impl;
-        }
+        friend bool operator==(Shader const&, Shader const&) = default;
 
     private:
         friend std::ostream& operator<<(std::ostream&, Shader const&);

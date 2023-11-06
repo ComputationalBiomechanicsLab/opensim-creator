@@ -99,11 +99,10 @@ osc::RecentFiles::RecentFiles() :
 void osc::RecentFiles::push_back(std::filesystem::path const& path)
 {
     // remove duplicates
-    auto const hasPath = [&path](RecentFile const& f)
+    std::erase_if(m_Files, [&path](RecentFile const& f)
     {
         return f.path == path;
-    };
-    osc::erase_if(m_Files, hasPath);
+    });
 
     m_Files.push_back(RecentFile
     {

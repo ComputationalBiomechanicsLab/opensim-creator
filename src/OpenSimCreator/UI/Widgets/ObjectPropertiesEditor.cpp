@@ -19,7 +19,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -36,6 +35,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <numbers>
 #include <span>
 #include <string>
 #include <type_traits>
@@ -263,27 +263,27 @@ namespace
                 ImGui::TableSetColumnIndex(1);
                 if (ImGui::Button("1 pi"))
                 {
-                    stepSize = osc::fpi;
+                    stepSize = std::numbers::pi_v<float>;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("1/2 pi"))
                 {
-                    stepSize = osc::fpi2;
+                    stepSize = std::numbers::pi_v<float>/2.0f;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("1/4 pi"))
                 {
-                    stepSize = osc::fpi4;
+                    stepSize = std::numbers::pi_v<float>/4.0f;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("10/180 pi"))
                 {
-                    stepSize = (10.0f/180.0f) * osc::fpi;
+                    stepSize = (10.0f/180.0f) * std::numbers::pi_v<float>;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("1/180 pi"))
                 {
-                    stepSize = (1.0f/180.0f) * osc::fpi;
+                    stepSize = (1.0f/180.0f) * std::numbers::pi_v<float>;
                 }
 
                 ImGui::TableNextRow();

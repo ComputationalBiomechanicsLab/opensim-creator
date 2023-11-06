@@ -1,7 +1,6 @@
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
-#include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/Disc.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Mat3.hpp>
@@ -40,6 +39,7 @@
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <numbers>
 #include <numeric>
 #include <span>
 #include <sstream>
@@ -55,16 +55,6 @@ using osc::Vec3;
 std::ostream& osc::operator<<(std::ostream& o, AABB const& aabb)
 {
     return o << "AABB(min = " << aabb.min << ", max = " << aabb.max << ')';
-}
-
-bool osc::operator==(AABB const& lhs, AABB const& rhs) noexcept
-{
-    return lhs.min == rhs.min && lhs.max == rhs.max;
-}
-
-bool osc::operator!=(AABB const& lhs, AABB const& rhs) noexcept
-{
-    return !(lhs == rhs);
 }
 
 
@@ -378,7 +368,7 @@ void osc::BVH::buildFromAABBs(std::span<AABB const> aabbs)
 
     // build up prim list for each AABB (just copy the AABB)
     m_Prims.reserve(aabbs.size());  // good guess
-    for (ptrdiff_t i = 0; i < osc::ssize(aabbs); ++i)
+    for (ptrdiff_t i = 0; i < std::ssize(aabbs); ++i)
     {
         if (!IsAPoint(aabbs[i]))
         {
@@ -392,7 +382,7 @@ void osc::BVH::buildFromAABBs(std::span<AABB const> aabbs)
             m_Nodes,
             m_Prims,
             0,
-            osc::ssize(m_Prims)
+            std::ssize(m_Prims)
         );
     }
 }
@@ -498,8 +488,8 @@ std::ostream& osc::operator<<(std::ostream& o, Disc const& d)
 osc::EulerPerspectiveCamera::EulerPerspectiveCamera() :
     pos{0.0f, 0.0f, 0.0f},
     pitch{0.0f},
-    yaw{-fpi/2.0f},
-    fov{fpi * 70.0f/180.0f},
+    yaw{-std::numbers::pi_v<float>/2.0f},
+    fov{std::numbers::pi_v<float> * 70.0f/180.0f},
     znear{0.1f},
     zfar{1000.0f}
 {
@@ -568,8 +558,8 @@ namespace
 
 osc::PolarPerspectiveCamera::PolarPerspectiveCamera() :
     radius{1.0f},
-    theta{fpi4},
-    phi{fpi4},
+    theta{std::numbers::pi_v<float>/4.0f},
+    phi{std::numbers::pi_v<float>/4.0f},
     focusPoint{0.0f, 0.0f, 0.0f},
     fov{120.0f},
     znear{0.1f},
@@ -605,8 +595,8 @@ void osc::PolarPerspectiveCamera::pan(float aspectRatio, Vec2 delta) noexcept
 
 void osc::PolarPerspectiveCamera::drag(Vec2 delta) noexcept
 {
-    theta += 2.0f * fpi * -delta.x;
-    phi += 2.0f * fpi * delta.y;
+    theta += 2.0f * std::numbers::pi_v<float> * -delta.x;
+    phi += 2.0f * std::numbers::pi_v<float> * delta.y;
 }
 
 void osc::PolarPerspectiveCamera::rescaleZNearAndZFarBasedOnRadius() noexcept
@@ -680,23 +670,6 @@ osc::Line osc::PolarPerspectiveCamera::unprojectTopLeftPosToWorldRay(Vec2 pos, V
     );
 }
 
-bool osc::operator==(PolarPerspectiveCamera const& lhs, PolarPerspectiveCamera const& rhs) noexcept
-{
-    return
-        lhs.radius == rhs.radius &&
-        lhs.theta == rhs.theta &&
-        lhs.phi == rhs.phi &&
-        lhs.focusPoint == rhs.focusPoint &&
-        lhs.fov == rhs.fov &&
-        lhs.znear == rhs.znear &&
-        lhs.zfar == rhs.zfar;
-}
-
-bool osc::operator!=(PolarPerspectiveCamera const& lhs, PolarPerspectiveCamera const& rhs) noexcept
-{
-    return !(lhs == rhs);
-}
-
 osc::PolarPerspectiveCamera osc::CreateCameraWithRadius(float r)
 {
     PolarPerspectiveCamera rv;
@@ -723,11 +696,11 @@ osc::Vec3 osc::RecommendedLightDirection(osc::PolarPerspectiveCamera const& c)
     // (#318, #168) and, if the camera is too angled relative to the PoV, it's
     // possible to see angled parts of the scene be illuminated from the back (which
     // should be impossible)
-    float const theta = c.theta + fpi4/2.0f;
+    float const theta = c.theta + std::numbers::pi_v<float>/8.0f;
 
     // #549: phi shouldn't track with the camera, because changing the "height"/"slope"
     // of the camera with shadow rendering (#10) looks bizzare
-    float const phi = fpi4;
+    float const phi = std::numbers::pi_v<float>/4.0f;
 
     Vec3 const p = PolarToCartesian(c.focusPoint, c.radius, theta, phi);
 
@@ -736,26 +709,26 @@ osc::Vec3 osc::RecommendedLightDirection(osc::PolarPerspectiveCamera const& c)
 
 void osc::FocusAlongX(osc::PolarPerspectiveCamera& camera)
 {
-    camera.theta = osc::fpi2;
+    camera.theta = std::numbers::pi_v<float>/2.0f;
     camera.phi = 0.0f;
 }
 
 void osc::FocusAlongMinusX(osc::PolarPerspectiveCamera& camera)
 {
-    camera.theta = -osc::fpi2;
+    camera.theta = -std::numbers::pi_v<float>/2.0f;
     camera.phi = 0.0f;
 }
 
 void osc::FocusAlongY(osc::PolarPerspectiveCamera& camera)
 {
     camera.theta = 0.0f;
-    camera.phi = osc::fpi2;
+    camera.phi = std::numbers::pi_v<float>/2.0f;
 }
 
 void osc::FocusAlongMinusY(osc::PolarPerspectiveCamera& camera)
 {
     camera.theta = 0.0f;
-    camera.phi = -osc::fpi2;
+    camera.phi = -std::numbers::pi_v<float>/2.0f;
 }
 
 void osc::FocusAlongZ(osc::PolarPerspectiveCamera& camera)
@@ -766,7 +739,7 @@ void osc::FocusAlongZ(osc::PolarPerspectiveCamera& camera)
 
 void osc::FocusAlongMinusZ(osc::PolarPerspectiveCamera& camera)
 {
-    camera.theta = osc::fpi;
+    camera.theta = std::numbers::pi_v<float>;
     camera.phi = 0.0f;
 }
 
@@ -783,8 +756,8 @@ void osc::ZoomOut(osc::PolarPerspectiveCamera& camera)
 void osc::Reset(osc::PolarPerspectiveCamera& camera)
 {
     camera = {};
-    camera.theta = osc::fpi4;
-    camera.phi = osc::fpi4;
+    camera.theta = std::numbers::pi_v<float>/4.0f;
+    camera.phi = std::numbers::pi_v<float>/4.0f;
 }
 
 void osc::AutoFocus(PolarPerspectiveCamera& camera, AABB const& elementAABB, float)
@@ -807,16 +780,6 @@ void osc::AutoFocus(PolarPerspectiveCamera& camera, AABB const& elementAABB, flo
 std::ostream& osc::operator<<(std::ostream& o, Rect const& r)
 {
     return o << "Rect(p1 = " << r.p1 << ", p2 = " << r.p2 << ")";
-}
-
-bool osc::operator==(Rect const& lhs, Rect const& rhs) noexcept
-{
-    return lhs.p1 == rhs.p1 && lhs.p2 == rhs.p2;
-}
-
-bool osc::operator!=(Rect const& lhs, Rect const& rhs) noexcept
-{
-    return !(lhs == rhs);
 }
 
 
@@ -870,14 +833,6 @@ osc::Vec3 osc::Center(Tetrahedron const& t)
 std::ostream& osc::operator<<(std::ostream& o, Transform const& t)
 {
     return o << "Transform(position = " << t.position << ", rotation = " << t.rotation << ", scale = " << t.scale << ')';
-}
-
-bool osc::operator==(osc::Transform const& lhs, osc::Transform const& rhs) noexcept
-{
-    return
-        lhs.scale == rhs.scale &&
-        lhs.rotation == rhs.rotation &&
-        lhs.position == rhs.position;
 }
 
 osc::Vec3 osc::operator*(Transform const& t, Vec3 const& p) noexcept
@@ -1615,7 +1570,7 @@ osc::Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2) noexcept
             rotationAxis = glm::cross(Vec3{1.0f, 0.0f, 0.0f}, dir1);
         }
 
-        theta = osc::fpi;
+        theta = std::numbers::pi_v<float>;
         rotationAxis = glm::normalize(rotationAxis);
     }
     else

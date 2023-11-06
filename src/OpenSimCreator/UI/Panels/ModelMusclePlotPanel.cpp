@@ -87,15 +87,7 @@ namespace
             return lhs.m_Name < rhs.m_Name;
         }
 
-        friend bool operator==(MuscleOutput const& lhs, MuscleOutput const& rhs)
-        {
-            return lhs.m_Name == rhs.m_Name && lhs.m_Units == rhs.m_Units && lhs.m_Getter == rhs.m_Getter;
-        }
-
-        friend bool operator!=(MuscleOutput const& lhs, MuscleOutput const& rhs)
-        {
-            return !(lhs == rhs);
-        }
+        friend bool operator==(MuscleOutput const&, MuscleOutput const&) = default;
     private:
         osc::CStringView m_Name;
         osc::CStringView m_Units;
@@ -320,20 +312,7 @@ namespace
             m_RequestedNumDataPoints = v;
         }
 
-        friend bool operator==(PlotParameters const& lhs, PlotParameters const& rhs)
-        {
-            return
-                lhs.m_Commit == rhs.m_Commit &&
-                lhs.m_CoordinatePath == rhs.m_CoordinatePath &&
-                lhs.m_MusclePath == rhs.m_MusclePath &&
-                lhs.m_Output == rhs.m_Output &&
-                lhs.m_RequestedNumDataPoints == rhs.m_RequestedNumDataPoints;
-        }
-
-        friend bool operator!=(PlotParameters const& lhs, PlotParameters const& rhs)
-        {
-            return !(lhs == rhs);
-        }
+        friend bool operator==(PlotParameters const&, PlotParameters const&) = default;
     private:
         osc::ModelStateCommit m_Commit;
         OpenSim::ComponentPath m_CoordinatePath;
@@ -1024,7 +1003,7 @@ namespace
 
         void clearUnlockedPlots()
         {
-            osc::erase_if(m_PreviousPlots, [](std::shared_ptr<Plot> const& p) { return !p->getIsLocked(); });
+            std::erase_if(m_PreviousPlots, [](std::shared_ptr<Plot> const& p) { return !p->getIsLocked(); });
         }
 
         PlottingTaskStatus getPlottingTaskStatus() const
@@ -1123,7 +1102,7 @@ namespace
     private:
         void clearComputedPlots()
         {
-            osc::erase_if(m_PreviousPlots, [](auto const& ptr) { return ptr->tryGetParameters() != nullptr; });
+            std::erase_if(m_PreviousPlots, [](auto const& ptr) { return ptr->tryGetParameters() != nullptr; });
         }
 
         void checkForParameterChangesAndStartPlotting(PlotParameters const& desiredParams)
@@ -1167,7 +1146,7 @@ namespace
             // deletions
             //
             // handle any user-requested deletions by removing the curve from the collection
-            if (0 <= m_PlotTaggedForDeletion && m_PlotTaggedForDeletion < osc::ssize(m_PreviousPlots))
+            if (0 <= m_PlotTaggedForDeletion && m_PlotTaggedForDeletion < std::ssize(m_PreviousPlots))
             {
                 m_PreviousPlots.erase(m_PreviousPlots.begin() + m_PlotTaggedForDeletion);
                 m_PlotTaggedForDeletion = -1;
@@ -1206,7 +1185,7 @@ namespace
                 return i++ < idxOfDeleteableEnd && !p->getIsLocked();
             };
 
-            osc::erase_if(m_PreviousPlots, shouldDelete);
+            std::erase_if(m_PreviousPlots, shouldDelete);
         }
 
         std::shared_ptr<Plot> m_ActivePlot;

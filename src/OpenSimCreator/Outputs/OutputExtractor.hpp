@@ -82,11 +82,6 @@ namespace osc
         {
             return *lhs.m_Output == *rhs.m_Output;
         }
-
-        friend bool operator!=(OutputExtractor const& lhs, OutputExtractor const& rhs)
-        {
-            return *lhs.m_Output != *rhs.m_Output;
-        }
     private:
         friend std::string to_string(OutputExtractor const&);
         friend struct std::hash<OutputExtractor>;

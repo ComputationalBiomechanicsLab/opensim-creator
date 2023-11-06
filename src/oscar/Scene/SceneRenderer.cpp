@@ -11,7 +11,6 @@
 #include <oscar/Graphics/RenderTexture.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Graphics/TextureGenerators.hpp>
-#include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
@@ -29,6 +28,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <memory>
+#include <numbers>
 #include <span>
 #include <utility>
 #include <vector>
@@ -51,7 +51,7 @@ namespace
     Transform GetFloorTransform(Vec3 floorLocation, float fixupScaleFactor)
     {
         Transform rv;
-        rv.rotation = osc::AngleAxis(-osc::fpi2, Vec3{1.0f, 0.0f, 0.0f});
+        rv.rotation = osc::AngleAxis(-std::numbers::pi_v<float>/2.0f, Vec3{1.0f, 0.0f, 0.0f});
         rv.scale = {100.0f * fixupScaleFactor, 100.0f * fixupScaleFactor, 1.0f};
         rv.position = floorLocation;
         return rv;

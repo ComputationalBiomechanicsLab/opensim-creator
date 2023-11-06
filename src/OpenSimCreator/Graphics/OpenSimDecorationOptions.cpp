@@ -223,12 +223,3 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
         }
     }
 }
-
-bool osc::operator==(OpenSimDecorationOptions const& lhs, OpenSimDecorationOptions const& rhs) noexcept
-{
-    return
-        lhs.m_MuscleDecorationStyle == rhs.m_MuscleDecorationStyle &&
-        lhs.m_MuscleColoringStyle == rhs.m_MuscleColoringStyle &&
-        lhs.m_MuscleSizingStyle == rhs.m_MuscleSizingStyle &&
-        lhs.m_Flags == rhs.m_Flags;
-}

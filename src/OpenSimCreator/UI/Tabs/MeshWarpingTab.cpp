@@ -21,7 +21,6 @@
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
-#include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
@@ -71,6 +70,7 @@
 #include <future>
 #include <iostream>
 #include <limits>
+#include <numbers>
 #include <optional>
 #include <span>
 #include <string>
@@ -155,13 +155,7 @@ namespace
         {
         }
 
-        friend bool operator==(TPSDocumentElementID const& lhs, TPSDocumentElementID const& rhs)
-        {
-            return
-                lhs.whichInput == rhs.whichInput &&
-                lhs.elementType == rhs.elementType &&
-                lhs.elementID == rhs.elementID;
-        }
+        friend bool operator==(TPSDocumentElementID const&, TPSDocumentElementID const&) = default;
 
         TPSDocumentInputIdentifier whichInput;
         TPSDocumentInputElementType elementType;

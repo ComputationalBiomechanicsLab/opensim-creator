@@ -59,15 +59,7 @@ namespace osc
             swap(a.m_Impl, b.m_Impl);
         }
 
-        friend bool operator==(RenderTexture const& lhs, RenderTexture const& rhs) noexcept
-        {
-            return lhs.m_Impl == rhs.m_Impl;
-        }
-
-        friend bool operator!=(RenderTexture const& lhs, RenderTexture const& rhs) noexcept
-        {
-            return lhs.m_Impl != rhs.m_Impl;
-        }
+        friend bool operator==(RenderTexture const&, RenderTexture const&) = default;
 
         friend std::ostream& operator<<(std::ostream&, RenderTexture const&);
     private:

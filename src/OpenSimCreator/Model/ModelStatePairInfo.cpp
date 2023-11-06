@@ -12,18 +12,3 @@ osc::ModelStatePairInfo::ModelStatePairInfo(VirtualConstModelStatePair const& ms
     m_FixupScaleFactor{msp.getFixupScaleFactor()}
 {
 }
-
-bool osc::operator==(ModelStatePairInfo const& lhs, ModelStatePairInfo const& rhs) noexcept
-{
-    return
-        lhs.m_ModelVersion == rhs.m_ModelVersion &&
-        lhs.m_StateVersion == rhs.m_StateVersion &&
-        lhs.m_Selection == rhs.m_Selection &&
-        lhs.m_Hover == rhs.m_Hover &&
-        lhs.m_FixupScaleFactor == rhs.m_FixupScaleFactor;
-}
-
-bool osc::operator!=(ModelStatePairInfo const& lhs, ModelStatePairInfo const& rhs) noexcept
-{
-    return !(lhs == rhs);
-}

@@ -108,15 +108,7 @@ namespace osc
             swap(a.m_Impl, b.m_Impl);
         }
 
-        friend bool operator==(Material const& lhs, Material const& rhs) noexcept
-        {
-            return lhs.m_Impl == rhs.m_Impl;
-        }
-
-        friend bool operator!=(Material const& lhs, Material const& rhs) noexcept
-        {
-            return lhs.m_Impl != rhs.m_Impl;
-        }
+        friend bool operator==(Material const&, Material const&) noexcept = default;
 
     private:
         friend std::ostream& operator<<(std::ostream&, Material const&);

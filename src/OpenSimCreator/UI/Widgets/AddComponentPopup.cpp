@@ -358,7 +358,7 @@ private:
         ImGui::BeginChild("##pf_pathpoints", {ImGui::GetContentRegionAvail().x, 128.0f});
 
         std::optional<ptrdiff_t> maybeIndexToErase;
-        for (ptrdiff_t i = 0; i < osc::ssize(m_PathPoints); ++i)
+        for (ptrdiff_t i = 0; i < std::ssize(m_PathPoints); ++i)
         {
             PushID(i);
 
@@ -386,15 +386,15 @@ private:
 
             ImGui::SameLine();
 
-            if (i >= osc::ssize(m_PathPoints) - 1)
+            if (i >= std::ssize(m_PathPoints) - 1)
             {
                 ImGui::BeginDisabled();
             }
-            if (ImGui::Button(ICON_FA_ARROW_DOWN) && i < osc::ssize(m_PathPoints) - 1)
+            if (ImGui::Button(ICON_FA_ARROW_DOWN) && i < std::ssize(m_PathPoints) - 1)
             {
                 std::swap(m_PathPoints[i], m_PathPoints[i+1]);
             }
-            if (i >= osc::ssize(m_PathPoints) - 1)
+            if (i >= std::ssize(m_PathPoints) - 1)
             {
                 ImGui::EndDisabled();
             }
