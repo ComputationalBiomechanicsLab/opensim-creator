@@ -3,11 +3,11 @@
 #include <oscar/DOM/PropertyDescription.hpp>
 
 #include <gtest/gtest.h>
-#include <nonstd/span.hpp>
 
 #include <memory>
 #include <optional>
 #include <random>
+#include <span>
 #include <string>
 #include <string_view>
 
@@ -64,7 +64,7 @@ namespace
 
     class ObjectWithGivenProperties final : public Object {
     public:
-        ObjectWithGivenProperties(nonstd::span<PropertyDescription const> props) :
+        ObjectWithGivenProperties(std::span<PropertyDescription const> props) :
             Object{props}
         {
         }

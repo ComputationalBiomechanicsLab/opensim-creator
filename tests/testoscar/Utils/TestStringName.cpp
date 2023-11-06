@@ -4,9 +4,9 @@
 #include <oscar/Utils/CStringView.hpp>
 
 #include <gtest/gtest.h>
-#include <nonstd/span.hpp>
 
 #include <iterator>
+#include <span>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -310,8 +310,8 @@ TEST(StringName, DataReturnsNulTerminatedPointerToFirstElement)
     constexpr auto c_Input = osc::to_array("string");
     StringName s{c_Input.data()};
 
-    nonstd::span<char const> inputSpan(c_Input);
-    nonstd::span<StringName::value_type const> outputSpan{s.data(), std::size(c_Input)};  // plus nul terminator
+    std::span<char const> inputSpan(c_Input);
+    std::span<StringName::value_type const> outputSpan{s.data(), std::size(c_Input)};  // plus nul terminator
 
     ASSERT_TRUE(std::equal(outputSpan.begin(), outputSpan.end(), inputSpan.begin(), inputSpan.end()));
 }
@@ -321,8 +321,8 @@ TEST(StringName, CStringReturnsNulTerminatedPointerToFirstElement)
     constexpr auto c_Input = osc::to_array("string");
     StringName s{c_Input.data()};
 
-    nonstd::span<char const> inputSpan(c_Input);
-    nonstd::span<StringName::value_type const> outputSpan{s.c_str(), std::size(c_Input)};  // plus nul terminator
+    std::span<char const> inputSpan(c_Input);
+    std::span<StringName::value_type const> outputSpan{s.c_str(), std::size(c_Input)};  // plus nul terminator
 
     ASSERT_TRUE(std::equal(outputSpan.begin(), outputSpan.end(), inputSpan.begin(), inputSpan.end()));
 }
