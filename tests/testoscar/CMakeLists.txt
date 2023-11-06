@@ -24,6 +24,7 @@ add_executable(testoscar
     Platform/TestAppSettingValueType.cpp
 
     Utils/TestCStringView.cpp
+    Utils/TestCpp20Shims.cpp
     Utils/TestFileChangePoller.cpp
     Utils/TestStringHelpers.cpp
 

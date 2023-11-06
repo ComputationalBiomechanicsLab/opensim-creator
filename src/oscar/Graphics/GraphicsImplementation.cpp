@@ -63,7 +63,6 @@
 
 #include <algorithm>
 #include <array>
-#include <bit>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -7101,7 +7100,7 @@ void osc::GraphicsBackend::CopyTexture(
     // - https://registry.khronos.org/OpenGL-Refpages/es2.0/xhtml/glTexImage2D.xml
     size_t const maxMipmapLevel = static_cast<size_t>(std::max(
         0,
-        std::bit_width(static_cast<size_t>(destinationCubemap.getWidth())) - 1
+        bit_width(static_cast<size_t>(destinationCubemap.getWidth())) - 1
     ));
 
     OSC_ASSERT(sourceRenderTexture.getDimensionality() == osc::TextureDimensionality::Cube && "provided render texture must be a cubemap to call this method");

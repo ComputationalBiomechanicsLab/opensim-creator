@@ -1,6 +1,7 @@
 #pragma once
 
-#include <bit>
+#include <oscar/Utils/Cpp20Shims.hpp>
+
 #include <cstddef>
 #include <iosfwd>
 #include <string>
@@ -22,7 +23,7 @@ namespace osc
         constexpr AntiAliasingLevel() = default;
 
         explicit constexpr AntiAliasingLevel(int value) noexcept :
-            m_Value{value > 1 ? uint32_t(1) << (std::bit_width(static_cast<unsigned>(value))-1) : 1}
+            m_Value{value > 1 ? uint32_t(1) << (bit_width(static_cast<unsigned>(value))-1) : 1}
         {
         }
 
