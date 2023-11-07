@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <typeindex>  // for std::hash
 #include <utility>
 
 namespace osc
