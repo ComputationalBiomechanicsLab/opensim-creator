@@ -1,6 +1,10 @@
 #include <oscar/DOM/Object.hpp>
 
 #include <oscar/DOM/PropertyDescription.hpp>
+#include <oscar/Graphics/Color.hpp>
+#include <oscar/Utils/StringName.hpp>
+#include <oscar/Utils/Variant.hpp>
+#include <oscar/Utils/VariantType.hpp>
 
 #include <gtest/gtest.h>
 
@@ -16,6 +20,7 @@
 using osc::Color;
 using osc::Object;
 using osc::PropertyDescription;
+using osc::StringName;
 using osc::Variant;
 using osc::VariantType;
 
@@ -73,6 +78,56 @@ namespace
         {
             return std::make_unique<ObjectWithGivenProperties>(*this);
         }
+    };
+
+    class ObjectWithCustomGetterAndSetter final : public Object {
+    public:
+        ObjectWithCustomGetterAndSetter(
+            std::optional<Variant> valueReturnedByGetter_,
+            bool booleanReturnedBySetter_) :
+            m_ValueReturnedByGetter{valueReturnedByGetter_},
+            m_BooleanReturnedBySetter{booleanReturnedBySetter_}
+        {
+        }
+
+        std::optional<StringName> const& getLastGetCallPropertyName() const
+        {
+            return m_LastGetCallPropertyName;
+        }
+
+        std::optional<StringName> const& getLastSetCallPropertyName() const
+        {
+            return m_LastSetCallPropertyName;
+        }
+
+        std::optional<Variant> const& getLastSetCallValue() const
+        {
+            return m_LastSetValue;
+        }
+    private:
+        std::unique_ptr<Object> implClone() const override
+        {
+            return std::make_unique<ObjectWithCustomGetterAndSetter>(*this);
+        }
+
+        Variant const* implCustomPropertyGetter(StringName const& propertyName) const
+        {
+            m_LastGetCallPropertyName = propertyName;
+            return m_ValueReturnedByGetter ? &*m_ValueReturnedByGetter : nullptr;
+        }
+
+        bool implCustomPropertySetter(StringName const&, Variant const& newPropertyValue)
+        {
+            m_LastSetValue = newPropertyValue;
+            return m_BooleanReturnedBySetter;
+        }
+
+        std::optional<Variant> m_ValueReturnedByGetter;
+        bool m_BooleanReturnedBySetter;
+
+        mutable std::optional<StringName> m_LastGetCallPropertyName;
+        std::optional<StringName> m_LastSetCallPropertyName;
+        std::optional<Variant> m_LastSetValue;
     };
 }
 
@@ -500,8 +555,134 @@ TEST(Object, GetPropertyValueReturnsNewValueAfterSettingValue)
     ASSERT_EQ(a.getPropertyValue("b"), newValue);
 }
 
-// TODO: trySetPropertyValue
-// TODO: setPropertyValue
+TEST(Object, TrySetPropertyValueReturnsFalseForNonExistentProperty)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{"first"}},
+        {"b", Variant{"second"}},
+    });
+    ObjectWithGivenProperties a{descriptions};
+    ASSERT_FALSE(a.trySetPropertyValue("non-existent", Variant{"doesnt-matter"}));
+}
+
+TEST(Object, TrySetPropertyValueReturnsFalseIfVariantTypeMismatches)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{"first"}},
+        {"b", Variant{100}},
+    });
+    ObjectWithGivenProperties a{descriptions};
+    ASSERT_FALSE(a.trySetPropertyValue("b", Variant{"not-an-int"}));
+}
+
+TEST(Object, TrySetPropertyValueReturnsTrueForCorrectPropertyNameAndType)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{"old-string"}},
+        {"b", Variant{100}},
+    });
+    ObjectWithGivenProperties a{descriptions};
+    ASSERT_TRUE(a.trySetPropertyValue("a", Variant{"new-string"}));
+}
+
+TEST(Object, TrySetPropertyAfterReturningTrueMeansThatGetPropertyReturnsNewValue)
+{
+    auto const oldValue = Variant{"old-value"};
+    auto const newValue = Variant{"new-value"};
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", oldValue},
+        {"b", Variant{100}},
+    });
+
+    ObjectWithGivenProperties a{descriptions};
+    ASSERT_EQ(a.getPropertyValue("a"), oldValue);
+    ASSERT_TRUE(a.trySetPropertyValue("a", newValue));
+    ASSERT_EQ(a.getPropertyValue("a"), newValue);
+}
+
+TEST(Object, TrySetPropertyAfterReturningTrueMakesTryGetPropertyvalueReturnNewValue)
+{
+    auto const oldValue = Variant{"old-value"};
+    auto const newValue = Variant{"new-value"};
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", oldValue},
+        {"b", Variant{100}},
+    });
+
+    ObjectWithGivenProperties a{descriptions};
+    ASSERT_TRUE(a.tryGetPropertyValue("a"));
+    ASSERT_EQ(*a.tryGetPropertyValue("a"), oldValue);
+    ASSERT_TRUE(a.trySetPropertyValue("a", newValue));
+    ASSERT_TRUE(a.tryGetPropertyValue("a"));
+    ASSERT_EQ(*a.tryGetPropertyValue("a"), newValue);
+}
+
+TEST(Object, SetPropertyValueThrowsAnExceptionForNonExistentPropertyName)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{"some-value"}},
+        {"b", Variant{100}},
+    });
+    ObjectWithGivenProperties a{descriptions};
+
+    ASSERT_ANY_THROW({ a.setPropertyValue("doesnt-exist", Variant{"doesnt-matter"}); });
+}
+
+TEST(Object, SetPropertyValueThrowsIfGivenAMismatchedVariantType)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{"some-value"}},
+        {"b", Variant{100}},
+    });
+    ObjectWithGivenProperties a{descriptions};
+
+    ASSERT_ANY_THROW({ a.setPropertyValue("b", Variant{"not-a-number"}); });
+}
+
+TEST(Object, SetPropertyValueDoesntThrowIfGivenValidArguments)
+{
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", Variant{"some-value"}},
+        {"b", Variant{100}},
+    });
+    ObjectWithGivenProperties a{descriptions};
+
+    ASSERT_NO_THROW({ a.setPropertyValue("b", Variant{200}); });
+}
+
+TEST(Object, SetPropertyValueWithValidArgumentsMakesGetPropertyValueReturnNewValue)
+{
+    auto const oldValue = Variant{"old-value"};
+    auto const newValue = Variant{"new-value"};
+    auto const descriptions = osc::to_array<PropertyDescription>(
+    {
+        {"a", oldValue},
+        {"b", Variant{100}},
+    });
+
+    ObjectWithGivenProperties a{descriptions};
+    ASSERT_EQ(a.getPropertyValue("a"), oldValue);
+    ASSERT_NO_THROW({ a.setPropertyValue("a", newValue); });
+    ASSERT_EQ(a.getPropertyValue("a"), newValue);
+}
+
+TEST(Object, GetPropertyValueOnObjectWithCustomGetterGetsTheValueViaTheCustomGetter)
+{
+    auto const valueReturnedByGetter = Variant{"some-value"};
+
+    ObjectWithCustomGetterAndSetter const obj{valueReturnedByGetter, true};
+
+    // TODO: it isn't obvious what should happen w.r.t. the custom getter not being
+    // in the property table, default values, etc.
+}
 
 // TODO: with implCustomPropertyGetter:
 //
