@@ -1,6 +1,6 @@
 #include <oscar/DOM/Object.hpp>
 
-#include <oscar/DOM/PropertyDescription.hpp>
+#include <oscar/DOM/PropertyInfo.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Utils/StringName.hpp>
 #include <oscar/Utils/Variant.hpp>
@@ -15,15 +15,15 @@
 #include <string>
 #include <string_view>
 
+/*
+
 using osc::Color;
 using osc::Object;
-using osc::PropertyDescription;
+using osc::PropertyInfo;
 using osc::SetPropertyStrategy;
 using osc::StringName;
 using osc::Variant;
 using osc::VariantType;
-
-/*
 
 namespace
 {
@@ -70,7 +70,7 @@ namespace
 
     class ObjectWithGivenProperties final : public Object {
     public:
-        ObjectWithGivenProperties(std::span<PropertyDescription const> props) :
+        ObjectWithGivenProperties(std::span<PropertyInfo const> props) :
             Object{props}
         {
         }
@@ -84,7 +84,7 @@ namespace
     class ObjectWithcustomSetPropertyStrategy final : public Object {
     public:
         ObjectWithcustomSetPropertyStrategy(
-            std::span<PropertyDescription const> propertyDescriptions_,
+            std::span<PropertyInfo const> propertyDescriptions_,
             SetPropertyStrategy strategy_) :
 
             Object{propertyDescriptions_},
@@ -193,7 +193,7 @@ TEST(Object, ObjectWithCustomToStringOverrideReturnsExpectedString)
 
 TEST(Object, ObjectWithGivenPropertiesWhenClonedReturnsSameNumProperties)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"intprop", Variant{20}},
         {"floatprop", Variant{10.0f}},
@@ -206,7 +206,7 @@ TEST(Object, ObjectWithGivenPropertiesWhenClonedReturnsSameNumProperties)
 
 TEST(Object, ObjectWithGivenPropertiesWhenClonedHasPropertyNamesInSameOrder)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"intprop", Variant{20}},
         {"floatprop", Variant{10.0f}},
@@ -224,7 +224,7 @@ TEST(Object, ObjectWithGivenPropertiesWhenClonedHasPropertyNamesInSameOrder)
 
 TEST(Object, ObjectWithGivenPropertiesWhenClonedHasSamePropertyValues)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"intprop", Variant{20}},
         {"floatprop", Variant{10.0f}},
@@ -242,7 +242,7 @@ TEST(Object, ObjectWithGivenPropertiesWhenClonedHasSamePropertyValues)
 
 TEST(Object, ObjectWithGivenPropertiesWhenClonedHasSamePropertyNames)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"intprop", Variant{20}},
         {"floatprop", Variant{10.0f}},
@@ -251,7 +251,7 @@ TEST(Object, ObjectWithGivenPropertiesWhenClonedHasSamePropertyNames)
     ObjectWithGivenProperties const orig{descriptions};
     auto const clone = static_cast<Object const&>(orig).clone();
 
-    for (PropertyDescription const& description : descriptions)
+    for (PropertyInfo const& description : descriptions)
     {
         ASSERT_TRUE(clone->getPropertyIndex(description.getName()));
     }
@@ -259,7 +259,7 @@ TEST(Object, ObjectWithGivenPropertiesWhenClonedHasSamePropertyNames)
 
 TEST(Object, ObjectWithGivenPropertiesWhenClonedHasSameDefaultValues)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"intprop", Variant{20}},
         {"floatprop", Variant{10.0f}},
@@ -268,7 +268,7 @@ TEST(Object, ObjectWithGivenPropertiesWhenClonedHasSameDefaultValues)
     ObjectWithGivenProperties const orig{descriptions};
     auto const clone = static_cast<Object const&>(orig).clone();
 
-    for (PropertyDescription const& description : descriptions)
+    for (PropertyInfo const& description : descriptions)
     {
         ASSERT_EQ(clone->getPropertyDefaultValue(description.getName()), description.getDefaultValue());
     }
@@ -276,14 +276,14 @@ TEST(Object, ObjectWithGivenPropertiesWhenClonedHasSameDefaultValues)
 
 TEST(Object, GetNumPropertiesReturnsZeroWhenProvidedEmptySpan)
 {
-    std::array<PropertyDescription, 0> descriptions{};
+    std::array<PropertyInfo, 0> descriptions{};
     ObjectWithGivenProperties const a{descriptions};
     ASSERT_EQ(a.getNumProperties(), 0);
 }
 
 TEST(Object, GetNumPropertiesReturnsOneWhenProvidedOneProperty)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"someprop", Variant{false}},
     });
@@ -293,7 +293,7 @@ TEST(Object, GetNumPropertiesReturnsOneWhenProvidedOneProperty)
 
 TEST(Object, GetNumPropertiesReturnsTwoWhenProvidedTwoProperties)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"someprop", Variant{false}},
         {"somecolor", Variant{Color::red()}},
@@ -304,7 +304,7 @@ TEST(Object, GetNumPropertiesReturnsTwoWhenProvidedTwoProperties)
 
 TEST(Object, GetNumPropertiesReturnsThreeWhenProvidedThreeProperties)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"someprop", Variant{false}},
         {"somecolor", Variant{Color::red()}},
@@ -316,7 +316,7 @@ TEST(Object, GetNumPropertiesReturnsThreeWhenProvidedThreeProperties)
 
 TEST(Object, GetNumPropertiesReturnsTwoWhenProvidedThreePropertyDescriptionsWithADuplicatedName)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{false}},
         {"b", Variant{Color::red()}},
@@ -328,7 +328,7 @@ TEST(Object, GetNumPropertiesReturnsTwoWhenProvidedThreePropertyDescriptionsWith
 
 TEST(Object, GetNumPropertiesReturnsTheFirstProvidedPropertyDescriptionWhenGivenDuplicateNames)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{false}},
         {"b", Variant{Color::red()}},
@@ -340,7 +340,7 @@ TEST(Object, GetNumPropertiesReturnsTheFirstProvidedPropertyDescriptionWhenGiven
 
 TEST(Object, GetPropertyNameReturnsPropertiesInTheProvidedOrder)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{false}},
         {"b", Variant{false}},
@@ -362,7 +362,7 @@ TEST(Object, GetPropertyNameReturnsPropertiesInTheProvidedOrder)
 
 TEST(Object, GetPropertyIndexReturnsNulloptForInvalidName)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{false}},
     });
@@ -372,7 +372,7 @@ TEST(Object, GetPropertyIndexReturnsNulloptForInvalidName)
 
 TEST(Object, GetPropertyIndexReturnsExpectedIndexForCorrectName)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{false}},
         {"b", Variant{false}},
@@ -384,7 +384,7 @@ TEST(Object, GetPropertyIndexReturnsExpectedIndexForCorrectName)
 
 TEST(Object, TryGetPropertyDefaultValueReturnsNullptrForInvalidName)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{false}},
         {"b", Variant{false}},
@@ -395,7 +395,7 @@ TEST(Object, TryGetPropertyDefaultValueReturnsNullptrForInvalidName)
 
 TEST(Object, TryGetPropertyDefaultValueReturnsNonNullptrForCorrectName)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{false}},
         {"b", Variant{false}},
@@ -407,7 +407,7 @@ TEST(Object, TryGetPropertyDefaultValueReturnsNonNullptrForCorrectName)
 
 TEST(Object, TryGetPropertyDefaultValueReturnsNonNullptrToCorrectValueForCorrectName)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{1337}},
         {"b", Variant{-1}},
@@ -419,7 +419,7 @@ TEST(Object, TryGetPropertyDefaultValueReturnsNonNullptrToCorrectValueForCorrect
 
 TEST(Object, GetPropertyDefaultValueThrowsForInvalidName)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{1337}},
         {"b", Variant{-1}},
@@ -430,7 +430,7 @@ TEST(Object, GetPropertyDefaultValueThrowsForInvalidName)
 
 TEST(Object, GetPropertyDefaultValueDoesNotThrowForCorrectName)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{1337}},
         {"b", Variant{-1}},
@@ -441,7 +441,7 @@ TEST(Object, GetPropertyDefaultValueDoesNotThrowForCorrectName)
 
 TEST(Object, TryGetPropertyValueReturnsNullptrForInvalidName)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{false}},
         {"b", Variant{false}},
@@ -452,7 +452,7 @@ TEST(Object, TryGetPropertyValueReturnsNullptrForInvalidName)
 
 TEST(Object, TryGetPropertyValueReturnsNonNullptrForValidName)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{false}},
         {"b", Variant{false}},
@@ -464,7 +464,7 @@ TEST(Object, TryGetPropertyValueReturnsNonNullptrForValidName)
 
 TEST(Object, TryGetPropertyValueReturnsDefaultValueWhenValueHasNotBeenSet)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{1337}},
         {"b", Variant{false}},
@@ -478,7 +478,7 @@ TEST(Object, TryGetPropertyValueReturnsNewValueAfterTheValueHasBeenSet)
 {
     auto const oldValue = Variant{10};
     auto const newValue = Variant{50};
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{false}},
         {"b", oldValue},
@@ -494,7 +494,7 @@ TEST(Object, TryGetPropertyValueReturnsNewValueAfterTheValueHasBeenSet)
 
 TEST(Object, GetPropertyValueThrowsIfGivenNonExistentPropertyName)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{false}},
         {"b", Variant{false}},
@@ -505,7 +505,7 @@ TEST(Object, GetPropertyValueThrowsIfGivenNonExistentPropertyName)
 
 TEST(Object, GetPropertyValueReturnsValueIfGivenExistentPropertyName)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{false}},
         {"b", Variant{"second"}},
@@ -518,7 +518,7 @@ TEST(Object, GetPropertyValueReturnsNewValueAfterSettingValue)
 {
     auto const oldValue = Variant{"old"};
     auto const newValue = Variant{"new"};
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{false}},
         {"b", oldValue},
@@ -532,7 +532,7 @@ TEST(Object, GetPropertyValueReturnsNewValueAfterSettingValue)
 
 TEST(Object, TrySetPropertyValueReturnsFalseForNonExistentProperty)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{"first"}},
         {"b", Variant{"second"}},
@@ -543,7 +543,7 @@ TEST(Object, TrySetPropertyValueReturnsFalseForNonExistentProperty)
 
 TEST(Object, TrySetPropertyValueReturnsFalseIfVariantTypeMismatches)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{"first"}},
         {"b", Variant{100}},
@@ -554,7 +554,7 @@ TEST(Object, TrySetPropertyValueReturnsFalseIfVariantTypeMismatches)
 
 TEST(Object, TrySetPropertyValueReturnsTrueForCorrectPropertyNameAndType)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{"old-string"}},
         {"b", Variant{100}},
@@ -567,7 +567,7 @@ TEST(Object, TrySetPropertyAfterReturningTrueMeansThatGetPropertyReturnsNewValue
 {
     auto const oldValue = Variant{"old-value"};
     auto const newValue = Variant{"new-value"};
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", oldValue},
         {"b", Variant{100}},
@@ -583,7 +583,7 @@ TEST(Object, TrySetPropertyAfterReturningTrueMakesTryGetPropertyvalueReturnNewVa
 {
     auto const oldValue = Variant{"old-value"};
     auto const newValue = Variant{"new-value"};
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", oldValue},
         {"b", Variant{100}},
@@ -599,7 +599,7 @@ TEST(Object, TrySetPropertyAfterReturningTrueMakesTryGetPropertyvalueReturnNewVa
 
 TEST(Object, SetPropertyValueThrowsAnExceptionForNonExistentPropertyName)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{"some-value"}},
         {"b", Variant{100}},
@@ -611,7 +611,7 @@ TEST(Object, SetPropertyValueThrowsAnExceptionForNonExistentPropertyName)
 
 TEST(Object, SetPropertyValueThrowsIfGivenAMismatchedVariantType)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{"some-value"}},
         {"b", Variant{100}},
@@ -623,7 +623,7 @@ TEST(Object, SetPropertyValueThrowsIfGivenAMismatchedVariantType)
 
 TEST(Object, SetPropertyValueDoesntThrowIfGivenValidArguments)
 {
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", Variant{"some-value"}},
         {"b", Variant{100}},
@@ -637,7 +637,7 @@ TEST(Object, SetPropertyValueWithValidArgumentsMakesGetPropertyValueReturnNewVal
 {
     auto const oldValue = Variant{"old-value"};
     auto const newValue = Variant{"new-value"};
-    auto const descriptions = osc::to_array<PropertyDescription>(
+    auto const descriptions = osc::to_array<PropertyInfo>(
     {
         {"a", oldValue},
         {"b", Variant{100}},

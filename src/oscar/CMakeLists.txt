@@ -26,16 +26,15 @@ add_library(oscar STATIC
     Bindings/ImGuizmoHelpers.hpp
     Bindings/SDL2Helpers.hpp
 
+    DOM/Class.cpp
+    DOM/Class.hpp
     DOM/Node.hpp
     DOM/NodePath.cpp
     DOM/NodePath.hpp
     DOM/Object.cpp
     DOM/Object.hpp
-    DOM/PropertyDescription.cpp
-    DOM/PropertyDescription.hpp
-    DOM/PropertyTable.cpp
-    DOM/PropertyTable.hpp
-    DOM/PropertyTableEntry.hpp
+    DOM/PropertyInfo.cpp
+    DOM/PropertyInfo.hpp
 
     Formats/CSV.hpp
     Formats/CSV.cpp
@@ -264,7 +263,7 @@ add_library(oscar STATIC
     Utils/Variant.hpp
     Utils/VariantType.cpp
     Utils/VariantType.hpp
-)
+ "DOM/Class.cpp")
 
 target_include_directories(oscar PUBLIC
 

@@ -6,9 +6,9 @@
 
 namespace osc
 {
-    class PropertyDescription final {
+    class PropertyInfo final {
     public:
-        PropertyDescription(
+        PropertyInfo(
             StringName const& name_,
             Variant defaultValue_
         );
@@ -28,7 +28,7 @@ namespace osc
             return m_DefaultValue;
         }
 
-        friend bool operator==(PropertyDescription const&, PropertyDescription const&) = default;
+        friend bool operator==(PropertyInfo const&, PropertyInfo const&) = default;
 
     private:
         StringName m_Name;

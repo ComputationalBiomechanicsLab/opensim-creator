@@ -1,4 +1,4 @@
-#include "PropertyDescription.hpp"
+#include "PropertyInfo.hpp"
 
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/StringName.hpp>
@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <utility>
 
-osc::PropertyDescription::PropertyDescription(
+osc::PropertyInfo::PropertyInfo(
     StringName const& name_,
     Variant defaultValue_) :
     m_Name{name_},

@@ -1,89 +1,89 @@
-#include <oscar/DOM/PropertyDescription.hpp>
+#include <oscar/DOM/PropertyInfo.hpp>
 
 #include <oscar/Utils/Variant.hpp>
 #include <oscar/Utils/VariantType.hpp>
 
 #include <gtest/gtest.h>
 
-using osc::PropertyDescription;
+using osc::PropertyInfo;
 using osc::Variant;
 using osc::VariantType;
 
 
-TEST(PropertyDescription, CanConstructFromStringNameAndVariant)
+TEST(PropertyInfo, CanConstructFromStringNameAndVariant)
 {
-    [[maybe_unused]] PropertyDescription const desc{"name", Variant{1.0f}};
+    [[maybe_unused]] PropertyInfo const desc{"name", Variant{1.0f}};
 }
 
-TEST(PropertyDescription, GetNameReturnsSuppliedName)
+TEST(PropertyInfo, GetNameReturnsSuppliedName)
 {
-    PropertyDescription const desc{"suppliedName", Variant{1.0f}};
+    PropertyInfo const desc{"suppliedName", Variant{1.0f}};
     ASSERT_EQ(desc.getName(), "suppliedName");
 }
 
-TEST(PropertyDescription, CanConstructFromStringRValue)
+TEST(PropertyInfo, CanConstructFromStringRValue)
 {
-    ASSERT_NO_THROW({ PropertyDescription(std::string{"rvalue"}, Variant{false}); });
+    ASSERT_NO_THROW({ PropertyInfo(std::string{"rvalue"}, Variant{false}); });
 }
 
-TEST(PropertyDescription, GetTypeReturnsSuppliedType)
+TEST(PropertyInfo, GetTypeReturnsSuppliedType)
 {
-    PropertyDescription const desc{"name", Variant{1.0f}};
+    PropertyInfo const desc{"name", Variant{1.0f}};
     ASSERT_EQ(desc.getType(), VariantType::Float);
 }
 
-TEST(PropertyDescription, ComparesEquivalentWhenGivenSameInformation)
+TEST(PropertyInfo, ComparesEquivalentWhenGivenSameInformation)
 {
-    PropertyDescription const a{"name", Variant{1.0f}};
-    PropertyDescription const b{"name", Variant{1.0f}};
+    PropertyInfo const a{"name", Variant{1.0f}};
+    PropertyInfo const b{"name", Variant{1.0f}};
     ASSERT_EQ(a, b);
 }
 
-TEST(PropertyDescription, ComparesInequivalentWhenGivenDifferentNames)
+TEST(PropertyInfo, ComparesInequivalentWhenGivenDifferentNames)
 {
-    PropertyDescription const a{"a", Variant{1.0f}};
-    PropertyDescription const b{"b", Variant{1.0f}};
+    PropertyInfo const a{"a", Variant{1.0f}};
+    PropertyInfo const b{"b", Variant{1.0f}};
     ASSERT_NE(a, b);
 }
 
-TEST(PropertyDescription, ComparesInequivalentWhenGivenDifferentDefaultValues)
+TEST(PropertyInfo, ComparesInequivalentWhenGivenDifferentDefaultValues)
 {
-    PropertyDescription const a{"name", Variant{1.0f}};
-    PropertyDescription const b{"name", Variant{2.0f}};
+    PropertyInfo const a{"name", Variant{1.0f}};
+    PropertyInfo const b{"name", Variant{2.0f}};
     ASSERT_NE(a, b);
 }
 
-TEST(PropertyDescription, ComparesInequivalentWhenGivenDifferentDefaultValueTypes)
+TEST(PropertyInfo, ComparesInequivalentWhenGivenDifferentDefaultValueTypes)
 {
-    PropertyDescription const a{"name", Variant{1.0f}};
-    PropertyDescription const b{"name", Variant{"different type"}};
+    PropertyInfo const a{"name", Variant{1.0f}};
+    PropertyInfo const b{"name", Variant{"different type"}};
     ASSERT_NE(a, b);
 }
 
-TEST(PropertyDescription, ThrowsAnExceptionWhenConstructedWithANameContainingWhitespace)
+TEST(PropertyInfo, ThrowsAnExceptionWhenConstructedWithANameContainingWhitespace)
 {
     // (basic examples)
 
-    ASSERT_ANY_THROW({ PropertyDescription(" leadingSpace", Variant{true}); });
-    ASSERT_ANY_THROW({ PropertyDescription("trailingSpace ", Variant{true}); });
-    ASSERT_ANY_THROW({ PropertyDescription("inner space", Variant{true}); });
+    ASSERT_ANY_THROW({ PropertyInfo(" leadingSpace", Variant{true}); });
+    ASSERT_ANY_THROW({ PropertyInfo("trailingSpace ", Variant{true}); });
+    ASSERT_ANY_THROW({ PropertyInfo("inner space", Variant{true}); });
 
-    ASSERT_ANY_THROW({ PropertyDescription("\nleadingNewline", Variant{true}); });
-    ASSERT_ANY_THROW({ PropertyDescription("trailingNewline\n", Variant{true}); });
-    ASSERT_ANY_THROW({ PropertyDescription("inner\newline", Variant{true}); });
+    ASSERT_ANY_THROW({ PropertyInfo("\nleadingNewline", Variant{true}); });
+    ASSERT_ANY_THROW({ PropertyInfo("trailingNewline\n", Variant{true}); });
+    ASSERT_ANY_THROW({ PropertyInfo("inner\newline", Variant{true}); });
 
-    ASSERT_ANY_THROW({ PropertyDescription("\tleadingTab", Variant{true}); });
-    ASSERT_ANY_THROW({ PropertyDescription("trailingTab\t", Variant{true}); });
-    ASSERT_ANY_THROW({ PropertyDescription("inner\tTab", Variant{true}); });
+    ASSERT_ANY_THROW({ PropertyInfo("\tleadingTab", Variant{true}); });
+    ASSERT_ANY_THROW({ PropertyInfo("trailingTab\t", Variant{true}); });
+    ASSERT_ANY_THROW({ PropertyInfo("inner\tTab", Variant{true}); });
 }
 
-TEST(PropertyDescription, ThrowsWhenConstructedWithANameContainingAnyASCIIControlCharacters)
+TEST(PropertyInfo, ThrowsWhenConstructedWithANameContainingAnyASCIIControlCharacters)
 {
     auto const test = [](char c)
     {
-        ASSERT_ANY_THROW({ PropertyDescription(std::string{c} + std::string("leading"), Variant(true)); });
-        ASSERT_ANY_THROW({ PropertyDescription(std::string("trailing") + c, Variant(true)); });
-        ASSERT_ANY_THROW({ PropertyDescription(std::string("inner") + c + std::string("usage"), Variant{true}); });
+        ASSERT_ANY_THROW({ PropertyInfo(std::string{c} + std::string("leading"), Variant(true)); });
+        ASSERT_ANY_THROW({ PropertyInfo(std::string("trailing") + c, Variant(true)); });
+        ASSERT_ANY_THROW({ PropertyInfo(std::string("inner") + c + std::string("usage"), Variant{true}); });
     };
 
     constexpr char c_LastControlCharacterInASCII = 0x1F;
