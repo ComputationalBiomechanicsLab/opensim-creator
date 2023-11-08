@@ -15,14 +15,15 @@
 #include <string>
 #include <string_view>
 
-/*
-
 using osc::Color;
 using osc::Object;
 using osc::PropertyDescription;
+using osc::SetPropertyStrategy;
 using osc::StringName;
 using osc::Variant;
 using osc::VariantType;
+
+/*
 
 namespace
 {
@@ -80,54 +81,28 @@ namespace
         }
     };
 
-    class ObjectWithCustomGetterAndSetter final : public Object {
+    class ObjectWithcustomSetPropertyStrategy final : public Object {
     public:
-        ObjectWithCustomGetterAndSetter(
-            std::optional<Variant> valueReturnedByGetter_,
-            bool booleanReturnedBySetter_) :
-            m_ValueReturnedByGetter{valueReturnedByGetter_},
-            m_BooleanReturnedBySetter{booleanReturnedBySetter_}
-        {
-        }
+        ObjectWithcustomSetPropertyStrategy(
+            std::span<PropertyDescription const> propertyDescriptions_,
+            SetPropertyStrategy strategy_) :
 
-        std::optional<StringName> const& getLastGetCallPropertyName() const
+            Object{propertyDescriptions_},
+            m_Strategy{std::move(strategy_)}
         {
-            return m_LastGetCallPropertyName;
-        }
-
-        std::optional<StringName> const& getLastSetCallPropertyName() const
-        {
-            return m_LastSetCallPropertyName;
-        }
-
-        std::optional<Variant> const& getLastSetCallValue() const
-        {
-            return m_LastSetValue;
         }
     private:
         std::unique_ptr<Object> implClone() const override
         {
-            return std::make_unique<ObjectWithCustomGetterAndSetter>(*this);
+            return std::make_unique<ObjectWithcustomSetPropertyStrategy>(*this);
         }
 
-        Variant const* implCustomPropertyGetter(StringName const& propertyName) const
+        SetPropertyStrategy implSetPropertyStrategy(StringName const&, Variant const&)
         {
-            m_LastGetCallPropertyName = propertyName;
-            return m_ValueReturnedByGetter ? &*m_ValueReturnedByGetter : nullptr;
+            return m_Strategy;
         }
 
-        bool implCustomPropertySetter(StringName const&, Variant const& newPropertyValue)
-        {
-            m_LastSetValue = newPropertyValue;
-            return m_BooleanReturnedBySetter;
-        }
-
-        std::optional<Variant> m_ValueReturnedByGetter;
-        bool m_BooleanReturnedBySetter;
-
-        mutable std::optional<StringName> m_LastGetCallPropertyName;
-        std::optional<StringName> m_LastSetCallPropertyName;
-        std::optional<Variant> m_LastSetValue;
+        SetPropertyStrategy m_Strategy;
     };
 }
 
@@ -672,16 +647,6 @@ TEST(Object, SetPropertyValueWithValidArgumentsMakesGetPropertyValueReturnNewVal
     ASSERT_EQ(a.getPropertyValue("a"), oldValue);
     ASSERT_NO_THROW({ a.setPropertyValue("a", newValue); });
     ASSERT_EQ(a.getPropertyValue("a"), newValue);
-}
-
-TEST(Object, GetPropertyValueOnObjectWithCustomGetterGetsTheValueViaTheCustomGetter)
-{
-    auto const valueReturnedByGetter = Variant{"some-value"};
-
-    ObjectWithCustomGetterAndSetter const obj{valueReturnedByGetter, true};
-
-    // TODO: it isn't obvious what should happen w.r.t. the custom getter not being
-    // in the property table, default values, etc.
 }
 
 // TODO: with implCustomPropertyGetter:

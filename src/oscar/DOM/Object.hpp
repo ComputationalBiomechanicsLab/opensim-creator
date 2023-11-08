@@ -2,6 +2,7 @@
 
 #include <oscar/DOM/PropertyTable.hpp>
 #include <oscar/Utils/StringName.hpp>
+#include <oscar/Utils/Variant.hpp>
 #include <oscar/Utils/VariantType.hpp>
 
 #include <cstddef>
@@ -10,12 +11,37 @@
 #include <span>
 #include <string>
 #include <utility>
+#include <variant>
 
 namespace osc { class PropertyDescription; }
-namespace osc { class Variant; }
 
 namespace osc
 {
+    class SetPropertyStrategy final {
+    public:
+        static SetPropertyStrategy Default()
+        {
+            return SetPropertyStrategy{DefaultBehavior{}};
+        }
+        static SetPropertyStrategy CoerceValueTo(Variant val)
+        {
+            return SetPropertyStrategy{CoercedValue{std::move(val)}};
+        }
+        static SetPropertyStrategy NewValueIsInvalid(std::string why)
+        {
+            return SetPropertyStrategy{InvalidValueErrorMessage{std::move(why)}};
+        }
+    private:
+        template<typename TVariantMember>
+        explicit SetPropertyStrategy(TVariantMember&& value_) : m_Data{std::forward<TVariantMember>(value_)} {}
+
+        friend class Object;
+        struct DefaultBehavior final {};
+        struct CoercedValue final { Variant payload; };
+        struct InvalidValueErrorMessage final { std::string payload; };
+        std::variant<DefaultBehavior, CoercedValue, InvalidValueErrorMessage> m_Data;
+    };
+
     class Object {
     protected:
         Object() = default;
@@ -27,15 +53,22 @@ namespace osc
     public:
         virtual ~Object() noexcept = default;
 
-        std::string toString() const { return implToString(); }
-        std::unique_ptr<Object> clone() const { return implClone(); }
+        std::string toString() const
+        {
+            return implToString();
+        }
+
+        std::unique_ptr<Object> clone() const
+        {
+            return implClone();
+        }
 
         size_t getNumProperties() const;
         StringName const& getPropertyName(size_t propertyIndex) const;
 
         std::optional<size_t> getPropertyIndex(StringName const& propertyName) const;
         Variant const* tryGetPropertyDefaultValue(StringName const& propertyName) const;
-        Variant const& getPropertyDefaultValue(StringName const&) const;
+        Variant const& getPropertyDefaultValue(StringName const& propertyName) const;
         Variant const* tryGetPropertyValue(StringName const& propertyName) const;
         Variant const& getPropertyValue(StringName const& propertyName) const;
         bool trySetPropertyValue(StringName const& propertyName, Variant const& newPropertyValue);
@@ -44,21 +77,7 @@ namespace osc
     private:
         virtual std::string implToString() const;
         virtual std::unique_ptr<Object> implClone() const = 0;
-
-        // implementors, override this method to customize the behavior of `get` functions
-        //
-        // - return non-`nullptr` for callers to get a pointer/reference to the value you returned
-        // - return `nullptr` if you want `Object` to try and handle it "normally"
-        virtual Variant const* implCustomPropertyGetter(StringName const& propertyName) const;
-
-        // implementors, override this method to customize the behavior of `set` functions
-        //
-        // - you should set `propertyName` to `newPropertyValue` (by whatever your internal datastructures require)
-        // - return `true` if you want `Object` to handle the set request "normally" (i.e. search+save it into the property table)
-        // - return `false` if want `Object` to do nothing further (e.g. because you've detected an error)
-        //
-        // this is handy for implementing custom validation or data storage
-        virtual bool implCustomPropertySetter(StringName const& propertyName, Variant const& newPropertyValue);
+        virtual SetPropertyStrategy implSetPropertyStrategy(StringName const& propertyName, Variant const& newPropertyValue);
 
         PropertyTable m_PropertyTable;
     };
