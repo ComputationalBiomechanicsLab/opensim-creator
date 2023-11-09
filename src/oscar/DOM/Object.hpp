@@ -19,8 +19,17 @@ namespace osc
         Object& operator=(Object const&) = default;
         Object& operator=(Object&&) noexcept = default;
 
-        bool trySetValueInPropertyTable(StringName const& propertyName, Variant const& newPropertyValue);
+        // directly sets a property's value in this object
+        //
+        // mostly useful for `implCustomSetter`, because it allows implementations
+        // to (e.g.) coerce property values
+        void setPropertyValueRaw(StringName const& propertyName, Variant const& newPropertyValue);
     public:
+
+        // gets the `Class` (osc) of the `Object` type (C++)
+        //
+        // derived types that inherit from `Object` (C++) should ensure that
+        // their associated `Class` (osc) this `Class` as the parent.
         static Class const& getClassStatic();
 
         virtual ~Object() noexcept = default;
@@ -54,6 +63,15 @@ namespace osc
     private:
         virtual std::string implToString() const;
         virtual std::unique_ptr<Object> implClone() const = 0;
+
+        // override this method to implement custom behavior when a property is set on
+        // this object
+        //
+        // - return `true` if your implementation has "handled" the `set` call (i.e. so
+        //   that `Object` knows that it does not need to do anything further)
+        //
+        // - return `false` if your implementation did not handle the `set` call and, therefore,
+        //   `Object` should handle it instead
         virtual bool implCustomSetter(StringName const& propertyName, Variant const& newPropertyValue);
 
         Class m_Class;

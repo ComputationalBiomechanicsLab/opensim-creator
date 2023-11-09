@@ -8,6 +8,8 @@ namespace osc
 {
     class PropertyInfo final {
     public:
+        PropertyInfo() = default;
+
         PropertyInfo(
             StringName const& name_,
             Variant defaultValue_

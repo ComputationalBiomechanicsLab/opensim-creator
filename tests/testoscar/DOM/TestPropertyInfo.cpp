@@ -9,6 +9,13 @@ using osc::PropertyInfo;
 using osc::Variant;
 using osc::VariantType;
 
+TEST(PropertyInfo, DefaultConstructedPropertyInfoHasNoNameAndNilDefaultValue)
+{
+    PropertyInfo info;
+    ASSERT_EQ(info.getName(), "");
+    ASSERT_EQ(info.getType(), VariantType::Nil);
+    ASSERT_EQ(info.getDefaultValue(), Variant{});
+}
 
 TEST(PropertyInfo, CanConstructFromStringNameAndVariant)
 {

@@ -6,7 +6,7 @@ add_executable(testoscar
     DOM/TestNode.cpp
     DOM/TestNodePath.cpp
     DOM/TestObject.cpp
-    DOM/TestPropertyDescription.cpp
+    DOM/TestPropertyInfo.cpp
 
     Formats/TestCSV.cpp
     Formats/TestDAE.cpp
@@ -38,7 +38,7 @@ add_executable(testoscar
     Utils/TestVariantType.cpp
 
     testoscar.cpp  # entry point
- "DOM/TestClass.cpp")
+)
 
 
 configure_file(

@@ -263,7 +263,7 @@ add_library(oscar STATIC
     Utils/Variant.hpp
     Utils/VariantType.cpp
     Utils/VariantType.hpp
- "DOM/Class.cpp")
+)
 
 target_include_directories(oscar PUBLIC
 
