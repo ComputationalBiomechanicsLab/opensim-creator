@@ -857,14 +857,14 @@ namespace
         std::shared_ptr<osc::MeshCache> meshCache = osc::App::singleton<osc::MeshCache>();
     };
 
-    TPSDocument const& GetScratch(TPSUISharedState const& state)
+    TPSDocument const& getScratch(TPSUISharedState const& state)
     {
         return state.editedDocument->getScratch();
     }
 
     osc::Mesh const& GetScratchMesh(TPSUISharedState& state, TPSDocumentInputIdentifier which)
     {
-        return GetMesh(GetScratch(state), which);
+        return GetMesh(getScratch(state), which);
     }
 
     // returns a (potentially cached) post-TPS-warp mesh
@@ -1022,7 +1022,7 @@ namespace
         {
             if (ImGui::Button(ICON_FA_SAVE))
             {
-                ActionSaveLandmarksToPairedCSV(GetScratch(*m_State));
+                ActionSaveLandmarksToPairedCSV(getScratch(*m_State));
             }
             osc::DrawTooltipIfItemHovered(
                 "Save Landmarks to CSV",
@@ -1229,15 +1229,15 @@ namespace
         {
             if (ImGui::MenuItem("Source Landmarks to CSV"))
             {
-                ActionSaveLandmarksToCSV(GetScratch(*m_State), TPSDocumentInputIdentifier::Source);
+                ActionSaveLandmarksToCSV(getScratch(*m_State), TPSDocumentInputIdentifier::Source);
             }
             if (ImGui::MenuItem("Destination Landmarks to CSV"))
             {
-                ActionSaveLandmarksToCSV(GetScratch(*m_State), TPSDocumentInputIdentifier::Destination);
+                ActionSaveLandmarksToCSV(getScratch(*m_State), TPSDocumentInputIdentifier::Destination);
             }
             if (ImGui::MenuItem("Landmark Pairs to CSV"))
             {
-                ActionSaveLandmarksToPairedCSV(GetScratch(*m_State));
+                ActionSaveLandmarksToPairedCSV(getScratch(*m_State));
             }
         }
 
@@ -1418,7 +1418,7 @@ namespace
         std::optional<TPSUIViewportHover> getMouseLandmarkCollisions(osc::Line const& cameraRay) const
         {
             std::optional<TPSUIViewportHover> rv;
-            for (TPSDocumentLandmarkPair const& p : GetScratch(*m_State).landmarkPairs)
+            for (TPSDocumentLandmarkPair const& p : getScratch(*m_State).landmarkPairs)
             {
                 std::optional<Vec3> const maybePos = GetLocation(p, m_DocumentIdentifier);
 
@@ -1523,7 +1523,7 @@ namespace
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("# landmarks");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", CountNumLandmarksForInput(GetScratch(*m_State), m_DocumentIdentifier));
+                ImGui::Text("%zu", CountNumLandmarksForInput(getScratch(*m_State), m_DocumentIdentifier));
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
@@ -1580,7 +1580,7 @@ namespace
                 }
                 if (ImGui::MenuItem("Landmarks to CSV"))
                 {
-                    ActionSaveLandmarksToCSV(GetScratch(*m_State), m_DocumentIdentifier);
+                    ActionSaveLandmarksToCSV(getScratch(*m_State), m_DocumentIdentifier);
                 }
                 ImGui::EndPopup();
             }
@@ -1631,7 +1631,7 @@ namespace
         {
             // generate in-scene 3D decorations
             std::vector<osc::SceneDecoration> decorations;
-            decorations.reserve(6 + CountNumLandmarksForInput(GetScratch(*m_State), m_DocumentIdentifier));  // likely guess
+            decorations.reserve(6 + CountNumLandmarksForInput(getScratch(*m_State), m_DocumentIdentifier));  // likely guess
 
             std::function<void(osc::SceneDecoration&&)> const decorationConsumer =
                 [&decorations](osc::SceneDecoration&& dec) { decorations.push_back(std::move(dec)); };
@@ -1644,7 +1644,7 @@ namespace
             );
 
             // append each landmark as a sphere
-            for (TPSDocumentLandmarkPair const& p : GetScratch(*m_State).landmarkPairs)
+            for (TPSDocumentLandmarkPair const& p : getScratch(*m_State).landmarkPairs)
             {
                 std::optional<Vec3> const maybeLocation = GetLocation(p, m_DocumentIdentifier);
 
@@ -1686,7 +1686,7 @@ namespace
             // append non-participating landmarks as non-user-selctable purple spheres
             if (m_DocumentIdentifier == TPSDocumentInputIdentifier::Source)
             {
-                for (Vec3 const& nonParticipatingLandmarkLocation : GetScratch(*m_State).nonParticipatingLandmarks)
+                for (Vec3 const& nonParticipatingLandmarkLocation : getScratch(*m_State).nonParticipatingLandmarks)
                 {
                     AppendNonParticipatingLandmark(
                         m_State->landmarkSphere,
@@ -1900,7 +1900,7 @@ namespace
             osc::CStringView const label = "blending factor  ";  // deliberate trailing spaces (for alignment with "landmark radius")
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label.c_str()).x - ImGui::GetStyle().ItemInnerSpacing.x - m_OverlayPadding.x);
 
-            float factor = GetScratch(*m_State).blendingFactor;
+            float factor = getScratch(*m_State).blendingFactor;
             if (ImGui::SliderFloat(label.c_str(), &factor, 0.0f, 1.0f))
             {
                 ActionSetBlendFactorWithoutSaving(*m_State->editedDocument, factor);
@@ -1927,7 +1927,7 @@ namespace
 
             if (m_ShowDestinationMesh)
             {
-                osc::SceneDecoration& dec = decorations.emplace_back(GetScratch(*m_State).destinationMesh);
+                osc::SceneDecoration& dec = decorations.emplace_back(getScratch(*m_State).destinationMesh);
                 dec.color = {1.0f, 0.0f, 0.0f, 0.5f};
             }
 

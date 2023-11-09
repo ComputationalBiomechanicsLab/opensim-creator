@@ -216,6 +216,7 @@ add_library(oscar STATIC
     Utils/Assertions.hpp
     Utils/CircularBuffer.hpp
     Utils/ClonePtr.hpp
+    Utils/Concepts.hpp
     Utils/CopyOnUpdPtr.hpp
     Utils/Cpp20Shims.hpp
     Utils/CStringView.hpp

@@ -72,6 +72,15 @@ namespace osc
         Vec3 position = {0.0f, 0.0f, 0.0f};
     };
 
+    template<typename T>
+    constexpr T Identity();
+
+    template<>
+    constexpr Transform Identity()
+    {
+        return Transform{};
+    }
+
     // pretty-prints a `Transform` for readability
     std::ostream& operator<<(std::ostream&, Transform const&);
 

@@ -80,8 +80,8 @@
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/ClonePtr.hpp>
+#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/DefaultConstructOnCopy.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
@@ -126,13 +126,15 @@
 #include <variant>
 
 using osc::App;
+using osc::AABB;
 using osc::ClonePtr;
 using osc::Color;
+using osc::ConstructibleFrom;
 using osc::CStringView;
-using osc::UID;
-using osc::UIDT;
-using osc::AABB;
-using osc::Sphere;
+using osc::DerivedFrom;
+using osc::Identity;
+using osc::Invocable;
+using osc::Line;
 using osc::Mat3;
 using osc::Mat4;
 using osc::Mat4x3;
@@ -140,13 +142,12 @@ using osc::Material;
 using osc::MaterialPropertyBlock;
 using osc::Mesh;
 using osc::MeshCache;
+using osc::operator<<;
 using osc::Overload;
-using osc::Quat;
-using osc::Transform;
 using osc::PolarPerspectiveCamera;
-using osc::Rect;
-using osc::Line;
+using osc::Quat;
 using osc::RayCollision;
+using osc::Rect;
 using osc::RenderTexture;
 using osc::SceneDecoration;
 using osc::SceneDecorationFlags;
@@ -154,9 +155,13 @@ using osc::SceneRenderer;
 using osc::SceneRendererParams;
 using osc::ShaderCache;
 using osc::StandardPopup;
+using osc::Sphere;
+using osc::Transform;
 using osc::Vec2;
 using osc::Vec3;
 using osc::Vec4;
+using osc::UID;
+using osc::UIDT;
 
 // user-facing string constants
 namespace
@@ -438,7 +443,7 @@ namespace
         std::optional<MaterialPropertyBlock> maybePropertyBlock;
     };
 
-    AABB CalcBounds(DrawableThing const& dt)
+    AABB calcBounds(DrawableThing const& dt)
     {
         return osc::TransformAABB(dt.mesh.getBounds(), dt.transform);
     }
@@ -561,79 +566,86 @@ namespace
             CStringView namePluralized,
             CStringView nameOptionallyPluralized,
             CStringView icon,
-            CStringView description,
-            std::unique_ptr<SceneEl> defaultObject) :
+            CStringView description) :
 
-            m_Name{name},
-            m_NamePluralized{namePluralized},
-            m_NameOptionallyPluralized{nameOptionallyPluralized},
-            m_Icon{icon},
-            m_Description{description},
-            m_DefaultObject{std::move(defaultObject)},
-            m_UniqueCounter{0}
+            m_Data{std::make_shared<Data>(name, namePluralized, nameOptionallyPluralized, icon, description)}
         {
         }
 
-        UID GetID() const
+        UID getID() const
         {
-            return m_ID;
+            return m_Data->id;
         }
 
         CStringView getName() const
         {
-            return m_Name;
+            return m_Data->name;
         }
 
         CStringView getNamePluralized() const
         {
-            return m_NamePluralized;
+            return m_Data->namePluralized;
         }
 
         CStringView getNameOptionallyPluralized() const
         {
-            return m_NameOptionallyPluralized;
+            return m_Data->nameOptionallyPluralized;
         }
 
         CStringView getIconUTF8() const
         {
-            return m_Icon;
+            return m_Data->icon;
         }
 
         CStringView getDescription() const
         {
-            return m_Description;
+            return m_Data->description;
         }
 
-        int32_t FetchAddUniqueCounter() const
+        int32_t fetchAddUniqueCounter() const
         {
-            return m_UniqueCounter++;
-        }
-
-        SceneEl const& GetDefaultObject() const
-        {
-            return *m_DefaultObject;
+            return m_Data->uniqueCounter.fetch_add(1, std::memory_order::relaxed);
         }
 
         friend bool operator==(SceneElClass const& lhs, SceneElClass const& rhs)
         {
-            return lhs.GetID() == rhs.GetID();
+            return lhs.m_Data == rhs.m_Data || *lhs.m_Data == *rhs.m_Data;
         }
     private:
-        UID m_ID;
-        std::string m_Name;
-        std::string m_NamePluralized;
-        std::string m_NameOptionallyPluralized;
-        std::string m_Icon;
-        std::string m_Description;
-        std::unique_ptr<SceneEl> m_DefaultObject;
-        mutable std::atomic<int32_t> m_UniqueCounter;
+        struct Data final {
+            Data(
+                CStringView name_,
+                CStringView namePluralized_,
+                CStringView nameOptionallyPluralized_,
+                CStringView icon_,
+                CStringView description_) :
+
+                name{name_},
+                namePluralized{namePluralized_},
+                nameOptionallyPluralized{nameOptionallyPluralized_},
+                icon{icon_},
+                description{description_}
+            {
+            }
+
+            friend bool operator==(Data const&, Data const&) = default;
+
+            UID id;
+            std::string name;
+            std::string namePluralized;
+            std::string nameOptionallyPluralized;
+            std::string icon;
+            std::string description;
+            mutable std::atomic<int32_t> uniqueCounter = 0;
+        };
+        std::shared_ptr<Data const> m_Data;
     };
 
     // returns a unique string that can be used to name an instance of the given class
     std::string GenerateName(SceneElClass const& c)
     {
         std::stringstream ss;
-        ss << c.getName() << c.FetchAddUniqueCounter();
+        ss << c.getName() << c.fetchAddUniqueCounter();
         return std::move(ss).str();
     }
 
@@ -735,7 +747,7 @@ namespace
     public:
         virtual ~SceneEl() noexcept = default;
 
-        SceneElClass const& GetClass() const
+        SceneElClass const& getClass() const
         {
             return implGetClass();
         }
@@ -748,45 +760,46 @@ namespace
 
         // accept visitors so that downstream code can use visitors when they need to
         // handle specific types
-        void Accept(ConstSceneElVisitor& visitor) const
+        void accept(ConstSceneElVisitor& visitor) const
         {
             implAccept(visitor);
         }
-        void Accept(SceneElVisitor& visitor)
+        void accept(SceneElVisitor& visitor)
         {
             implAccept(visitor);
         }
 
         // each scene element may be referencing `n` (>= 0) other scene elements by
         // ID. These methods allow implementations to ask what and how
-        int GetNumCrossReferences() const
+        int getNumCrossReferences() const
         {
             return implGetNumCrossReferences();
         }
 
-        UID GetCrossReferenceConnecteeID(int i) const
+        UID getCrossReferenceConnecteeID(int i) const
         {
             return implGetCrossReferenceConnecteeID(i);
         }
-        void SetCrossReferenceConnecteeID(int i, UID newID)
+        void setCrossReferenceConnecteeID(int i, UID newID)
         {
             implSetCrossReferenceConnecteeID(i, newID);
         }
-        CStringView GetCrossReferenceLabel(int i) const
+
+        CStringView getCrossReferenceLabel(int i) const
         {
             return implGetCrossReferenceLabel(i);
         }
-        CrossrefDirection GetCrossReferenceDirection(int i) const
+        CrossrefDirection getCrossReferenceDirection(int i) const
         {
             return implGetCrossReferenceDirection(i);
         }
 
-        SceneElFlags GetFlags() const
+        SceneElFlags getFlags() const
         {
             return implGetFlags();
         }
 
-        UID GetID() const
+        UID getID() const
         {
             return implGetID();
         }
@@ -796,26 +809,26 @@ namespace
             return implWriteToStream(o);
         }
 
-        CStringView GetLabel() const
+        CStringView getLabel() const
         {
             return implGetLabel();
         }
 
-        void SetLabel(std::string_view newLabel)
+        void setLabel(std::string_view newLabel)
         {
             implSetLabel(newLabel);
         }
 
-        Transform GetXform() const
+        Transform getXForm() const
         {
             return implGetXform();
         }
-        void SetXform(Transform const& newTransform)
+        void setXform(Transform const& newTransform)
         {
             implSetXform(newTransform);
         }
 
-        AABB CalcBounds() const
+        AABB calcBounds() const
         {
             return implCalcBounds();
         }
@@ -827,31 +840,31 @@ namespace
         // transform (e.g. only position). There is a perf advantage to only returning
         // what was asked for.
 
-        Vec3 GetPos() const
+        Vec3 getPos() const
         {
             return implGetPos();
         }
-        void SetPos(Vec3 const& newPos)
+        void setPos(Vec3 const& newPos)
         {
             implSetPos(newPos);
         }
 
-        Vec3 GetScale() const
+        Vec3 getScale() const
         {
             return implGetScale();
         }
 
-        void SetScale(Vec3 const& newScale)
+        void setScale(Vec3 const& newScale)
         {
             implSetScale(newScale);
         }
 
-        Quat GetRotation() const
+        Quat getRotation() const
         {
             return implGetRotation();
         }
 
-        void SetRotation(Quat const& newRotation)
+        void setRotation(Quat const& newRotation)
         {
             implSetRotation(newRotation);
         }
@@ -896,97 +909,135 @@ namespace
 
         virtual Vec3 implGetPos() const
         {
-            return GetXform().position;
+            return getXForm().position;
         }
         virtual void implSetPos(Vec3 const& newPos)
         {
-            Transform t = GetXform();
+            Transform t = getXForm();
             t.position = newPos;
-            SetXform(t);
+            setXform(t);
         }
 
         virtual Vec3 implGetScale() const
         {
-            return GetXform().scale;
+            return getXForm().scale;
         }
         virtual void implSetScale(Vec3 const& newScale)
         {
-            Transform t = GetXform();
+            Transform t = getXForm();
             t.scale = newScale;
-            SetXform(t);
+            setXform(t);
         }
 
         virtual Quat implGetRotation() const
         {
-            return GetXform().rotation;
+            return getXForm().rotation;
         }
         virtual void implSetRotation(Quat const& newRotation)
         {
-            Transform t = GetXform();
+            Transform t = getXForm();
             t.rotation = newRotation;
-            SetXform(t);
+            setXform(t);
         }
     };
 
     // SceneEl helper methods
 
-    void ApplyTranslation(SceneEl& el, Vec3 const& translation)
+    template<class Visitor>
+    auto visit(Visitor&& vis, SceneEl const& el)
     {
-        el.SetPos(el.GetPos() + translation);
+        using StdVariant = std::variant<
+            std::reference_wrapper<GroundEl const>,
+            std::reference_wrapper<MeshEl const>,
+            std::reference_wrapper<BodyEl const>,
+            std::reference_wrapper<JointEl const>,
+            std::reference_wrapper<StationEl const>
+        >;
+        struct ConstVirtualVisitor final : public ConstSceneElVisitor {
+            ConstVirtualVisitor(std::optional<StdVariant>& rv_) :
+                rv{rv_}
+            {
+            }
+
+            void operator()(GroundEl const& el) final { rv = el; }
+            void operator()(MeshEl const& el) final { rv = el; }
+            void operator()(BodyEl const& el) final { rv = el; }
+            void operator()(JointEl const& el) final { rv = el; }
+            void operator()(StationEl const& el) final { rv = el; }
+        private:
+            std::optional<StdVariant>& rv;
+        };
+
+        std::optional<StdVariant> ref;
+        ConstVirtualVisitor visitor{ref};
+        el.accept(visitor);
+        OSC_ASSERT(ref.has_value());
+        return std::visit(std::forward<Visitor>(vis), *ref);
     }
 
-    void ApplyRotation(SceneEl& el, Vec3 const& eulerAngles, Vec3 const& rotationCenter)
+    void ApplyTranslation(SceneEl& el, Vec3 const& translation)
     {
-        Transform t = el.GetXform();
+        el.setPos(el.getPos() + translation);
+    }
+
+    void ApplyRotation(
+        SceneEl& el,
+        Vec3 const& eulerAngles,
+        Vec3 const& rotationCenter)
+    {
+        Transform t = el.getXForm();
         ApplyWorldspaceRotation(t, eulerAngles, rotationCenter);
-        el.SetXform(t);
+        el.setXform(t);
     }
 
     void ApplyScale(SceneEl& el, Vec3 const& scaleFactors)
     {
-        el.SetScale(el.GetScale() * scaleFactors);
+        el.setScale(el.getScale() * scaleFactors);
     }
 
     bool CanChangeLabel(SceneEl const& el)
     {
-        return el.GetFlags() & SceneElFlags::CanChangeLabel;
+        return el.getFlags() & SceneElFlags::CanChangeLabel;
     }
 
     bool CanChangePosition(SceneEl const& el)
     {
-        return el.GetFlags() & SceneElFlags::CanChangePosition;
+        return el.getFlags() & SceneElFlags::CanChangePosition;
     }
 
     bool CanChangeRotation(SceneEl const& el)
     {
-        return el.GetFlags() & SceneElFlags::CanChangeRotation;
+        return el.getFlags() & SceneElFlags::CanChangeRotation;
     }
 
     bool CanChangeScale(SceneEl const& el)
     {
-        return el.GetFlags() & SceneElFlags::CanChangeScale;
+        return el.getFlags() & SceneElFlags::CanChangeScale;
     }
 
     bool CanDelete(SceneEl const& el)
     {
-        return el.GetFlags() & SceneElFlags::CanDelete;
+        return el.getFlags() & SceneElFlags::CanDelete;
     }
 
     bool CanSelect(SceneEl const& el)
     {
-        return el.GetFlags() & SceneElFlags::CanSelect;
+        return el.getFlags() & SceneElFlags::CanSelect;
     }
 
     bool HasPhysicalSize(SceneEl const& el)
     {
-        return el.GetFlags() & SceneElFlags::HasPhysicalSize;
+        return el.getFlags() & SceneElFlags::HasPhysicalSize;
     }
 
-    bool IsCrossReferencing(SceneEl const& el, UID id, CrossrefDirection direction = CrossrefDirection::Both)
+    bool IsCrossReferencing(
+        SceneEl const& el,
+        UID id,
+        CrossrefDirection direction = CrossrefDirection::Both)
     {
-        for (int i = 0, len = el.GetNumCrossReferences(); i < len; ++i)
+        for (int i = 0, len = el.getNumCrossReferences(); i < len; ++i)
         {
-            if (el.GetCrossReferenceConnecteeID(i) == id && (el.GetCrossReferenceDirection(i) & direction) != 0)
+            if (el.getCrossReferenceConnecteeID(i) == id && (el.getCrossReferenceDirection(i) & direction) != 0)
             {
                 return true;
             }
@@ -994,48 +1045,66 @@ namespace
         return false;
     }
 
-    class GroundEl final : public SceneEl {
+    // Curiously Recurring Template Pattern (CRTP) for SceneEl
+    //
+    // automatically defines parts of the SceneEl API using CRTP, so that
+    // downstream classes don't have to repeat themselves
+    template<class T>
+    class SceneElCRTP : public SceneEl {
     public:
-
         static SceneElClass const& Class()
         {
-            static SceneElClass const s_Class =
+            static SceneElClass const s_Class = T::CreateClass();
+            return s_Class;
+        }
+
+        std::unique_ptr<T> clone()
+        {
+            return std::unique_ptr<T>{static_cast<T*>(implClone().release())};
+        }
+    private:
+        SceneElClass const& implGetClass() const final
+        {
+            static_assert(std::is_reference_v<decltype(T::Class())>);
+            static_assert(std::is_same_v<decltype(T::Class()), SceneElClass const&>);
+            return T::Class();
+        }
+
+        std::unique_ptr<SceneEl> implClone() const final
+        {
+            static_assert(std::is_base_of_v<SceneEl, T>);
+            static_assert(std::is_final_v<T>);
+            return std::make_unique<T>(static_cast<T const&>(*this));
+        }
+
+        void implAccept(ConstSceneElVisitor& visitor) const final
+        {
+            static_assert(std::is_base_of_v<SceneEl, T>);
+            static_assert(std::is_final_v<T>);
+            visitor(static_cast<T const&>(*this));
+        }
+
+        void implAccept(SceneElVisitor& visitor) final
+        {
+            static_assert(std::is_base_of_v<SceneEl, T>);
+            static_assert(std::is_final_v<T>);
+            visitor(static_cast<T&>(*this));
+        }
+    };
+
+    class GroundEl final : public SceneElCRTP<GroundEl> {
+    private:
+        friend class SceneElCRTP<GroundEl>;
+        static SceneElClass CreateClass()
+        {
+            return
             {
                 c_GroundLabel,
                 c_GroundLabelPluralized,
                 c_GroundLabelOptionallyPluralized,
                 ICON_FA_DOT_CIRCLE,
                 c_GroundDescription,
-                std::make_unique<GroundEl>(),
             };
-
-            return s_Class;
-        }
-
-        UIDT<BodyEl> GetID() const
-        {
-            return c_GroundID;
-        }
-
-    private:
-        SceneElClass const& implGetClass() const final
-        {
-            return Class();
-        }
-
-        std::unique_ptr<SceneEl> implClone() const final
-        {
-            return std::make_unique<GroundEl>(*this);
-        }
-
-        void implAccept(ConstSceneElVisitor& visitor) const final
-        {
-            visitor(*this);
-        }
-
-        void implAccept(SceneElVisitor& visitor) final
-        {
-            visitor(*this);
         }
 
         SceneElFlags implGetFlags() const final
@@ -1065,7 +1134,7 @@ namespace
 
         Transform implGetXform() const final
         {
-            return Transform{};
+            return Identity<Transform>();
         }
 
         void implSetXform(Transform const&) final
@@ -1089,30 +1158,8 @@ namespace
     // the mesh will be positioned in the model, and so that the user can freely re-attach the mesh and freely
     // move meshes/bodies/joints in the mesh importer without everything else in the scene moving around (which
     // is what would happen in a relative topology-sensitive attachment graph).
-    class MeshEl final : public SceneEl {
+    class MeshEl final : public SceneElCRTP<MeshEl> {
     public:
-        static SceneElClass const& Class()
-        {
-            static SceneElClass const s_Class =
-            {
-                c_MeshLabel,
-                c_MeshLabelPluralized,
-                c_MeshLabelOptionallyPluralized,
-                ICON_FA_CUBE,
-                c_MeshDescription,
-                std::make_unique<MeshEl>(),
-            };
-
-            return s_Class;
-        }
-
-        MeshEl() :
-            m_MeshData{App::singleton<MeshCache>()->getBrickMesh()},
-            m_Path{"invalid"}
-        {
-            // default ctor for prototype storage
-        }
-
         MeshEl(
             UIDT<MeshEl> id,
             UID attachment,  // can be c_GroundID
@@ -1124,20 +1171,6 @@ namespace
             m_MeshData{std::move(meshData)},
             m_Path{std::move(path)}
         {
-        }
-
-        MeshEl(
-            UID attachment,  // can be c_GroundID
-            Mesh const& meshData,
-            std::filesystem::path const& path) :
-
-            MeshEl{UIDT<MeshEl>{}, attachment, meshData, path}
-        {
-        }
-
-        UIDT<MeshEl> GetID() const
-        {
-            return m_ID;
         }
 
         Mesh const& getMeshData() const
@@ -1161,24 +1194,17 @@ namespace
         }
 
     private:
-        SceneElClass const& implGetClass() const final
+        friend class SceneElCRTP<MeshEl>;
+        static SceneElClass CreateClass()
         {
-            return Class();
-        }
-
-        std::unique_ptr<SceneEl> implClone() const final
-        {
-            return std::make_unique<MeshEl>(*this);
-        }
-
-        void implAccept(ConstSceneElVisitor& visitor) const final
-        {
-            visitor(*this);
-        }
-
-        void implAccept(SceneElVisitor& visitor) final
-        {
-            visitor(*this);
+            return
+            {
+                c_MeshLabel,
+                c_MeshLabelPluralized,
+                c_MeshLabelOptionallyPluralized,
+                ICON_FA_CUBE,
+                c_MeshDescription,
+            };
         }
 
         int implGetNumCrossReferences() const final
@@ -1238,18 +1264,18 @@ namespace
                 << ", Xform = " << Xform
                 << ", MeshData = " << &m_MeshData
                 << ", Path = " << m_Path
-                << ", Name = " << Name
+                << ", Name = " << m_Name
                 << ')';
         }
 
         CStringView implGetLabel() const final
         {
-            return Name;
+            return m_Name;
         }
 
         void implSetLabel(std::string_view sv) final
         {
-            Name = SanitizeToOpenSimComponentName(sv);
+            m_Name = SanitizeToOpenSimComponentName(sv);
         }
 
         Transform implGetXform() const final
@@ -1272,34 +1298,14 @@ namespace
         Transform Xform;
         Mesh m_MeshData;
         std::filesystem::path m_Path;
-        std::string Name{SanitizeToOpenSimComponentName(osc::FileNameWithoutExtension(m_Path))};
+        std::string m_Name = SanitizeToOpenSimComponentName(osc::FileNameWithoutExtension(m_Path));
     };
 
     // a body scene element
     //
     // In this mesh importer, bodies are positioned + oriented in ground (see MeshEl for explanation of why).
-    class BodyEl final : public SceneEl {
+    class BodyEl final : public SceneElCRTP<BodyEl> {
     public:
-        static SceneElClass const& Class()
-        {
-            static SceneElClass const s_Class =
-            {
-                c_BodyLabel,
-                c_BodyLabelPluralized,
-                c_BodyLabelOptionallyPluralized,
-                ICON_FA_CIRCLE,
-                c_BodyDescription,
-                std::make_unique<BodyEl>(),
-            };
-
-            return s_Class;
-        }
-
-        BodyEl() : m_Name{"prototype"}
-        {
-            // default ctor for prototype storage
-        }
-
         BodyEl(
             UIDT<BodyEl> id,
             std::string const& name,
@@ -1311,17 +1317,7 @@ namespace
         {
         }
 
-        BodyEl(std::string const& name, Transform const& xform) :
-            BodyEl{UIDT<BodyEl>{}, name, xform}
-        {
-        }
-
-        explicit BodyEl(Transform const& xform) :
-            BodyEl{UIDT<BodyEl>{}, GenerateName(Class()), xform}
-        {
-        }
-
-        UIDT<BodyEl> GetID() const
+        UIDT<BodyEl> getID() const
         {
             return m_ID;
         }
@@ -1337,24 +1333,17 @@ namespace
         }
 
     private:
-        SceneElClass const& implGetClass() const final
+        friend class SceneElCRTP<BodyEl>;
+        static SceneElClass CreateClass()
         {
-            return Class();
-        }
-
-        std::unique_ptr<SceneEl> implClone() const final
-        {
-            return std::make_unique<BodyEl>(*this);
-        }
-
-        void implAccept(ConstSceneElVisitor& visitor) const final
-        {
-            visitor(*this);
-        }
-
-        void implAccept(SceneElVisitor& visitor) final
-        {
-            visitor(*this);
+            return
+            {
+                c_BodyLabel,
+                c_BodyLabelPluralized,
+                c_BodyLabelOptionallyPluralized,
+                ICON_FA_CIRCLE,
+                c_BodyDescription,
+            };
         }
 
         SceneElFlags implGetFlags() const final
@@ -1409,7 +1398,7 @@ namespace
 
         AABB implCalcBounds() const final
         {
-            return AABB{m_Xform.position, m_Xform.position};
+            return AABB{m_Xform.position};
         }
 
         UIDT<BodyEl> m_ID;
@@ -1421,30 +1410,8 @@ namespace
     // a joint scene element
     //
     // see `JointAttachment` comment for an explanation of why it's designed this way.
-    class JointEl final : public SceneEl {
+    class JointEl final : public SceneElCRTP<JointEl> {
     public:
-        static SceneElClass const& Class()
-        {
-            static SceneElClass const s_Class =
-            {
-                c_JointLabel,
-                c_JointLabelPluralized,
-                c_JointLabelOptionallyPluralized,
-                ICON_FA_LINK,
-                c_JointDescription,
-                std::make_unique<JointEl>(),
-            };
-
-            return s_Class;
-        }
-
-        JointEl() :
-            m_JointTypeIndex{0},
-            m_UserAssignedName{"prototype"}
-        {
-            // default ctor for prototype allocation
-        }
-
         JointEl(
             UIDT<JointEl> id,
             size_t jointTypeIdx,
@@ -1462,31 +1429,12 @@ namespace
         {
         }
 
-        JointEl(
-            size_t jointTypeIdx,
-            std::string const& userAssignedName,  // can be empty
-            UID parent,
-            UIDT<BodyEl> child,
-            Transform const& xform) :
-
-            JointEl
-            {
-                UIDT<JointEl>{},
-                jointTypeIdx,
-                userAssignedName,
-                parent,
-                child,
-                xform,
-            }
-        {
-        }
-
-        UIDT<JointEl> GetID() const
+        UIDT<JointEl> getID() const
         {
             return m_ID;
         }
 
-        CStringView GetSpecificTypeName() const
+        CStringView getSpecificTypeName() const
         {
             return osc::At(osc::GetComponentRegistry<OpenSim::Joint>(), m_JointTypeIndex).name();
         }
@@ -1517,24 +1465,17 @@ namespace
         }
 
     private:
-        SceneElClass const& implGetClass() const final
+        friend class SceneElCRTP<JointEl>;
+        static SceneElClass CreateClass()
         {
-            return Class();
-        }
-
-        std::unique_ptr<SceneEl> implClone() const final
-        {
-            return std::make_unique<JointEl>(*this);
-        }
-
-        void implAccept(ConstSceneElVisitor& visitor) const final
-        {
-            visitor(*this);
-        }
-
-        void implAccept(SceneElVisitor& visitor) final
-        {
-            visitor(*this);
+            return
+            {
+                c_JointLabel,
+                c_JointLabelPluralized,
+                c_JointLabelOptionallyPluralized,
+                ICON_FA_LINK,
+                c_JointDescription,
+            };
         }
 
         int implGetNumCrossReferences() const final
@@ -1620,7 +1561,7 @@ namespace
 
         CStringView implGetLabel() const final
         {
-            return m_UserAssignedName.empty() ? GetSpecificTypeName() : m_UserAssignedName;
+            return m_UserAssignedName.empty() ? getSpecificTypeName() : m_UserAssignedName;
         }
 
         void implSetLabel(std::string_view sv) final
@@ -1646,7 +1587,7 @@ namespace
 
         AABB implCalcBounds() const final
         {
-            return AABB{m_Xform.position, m_Xform.position};
+            return AABB{m_Xform.position};
         }
 
         UIDT<JointEl> m_ID;
@@ -1658,28 +1599,8 @@ namespace
     };
 
     // a station (point of interest)
-    class StationEl final : public SceneEl {
+    class StationEl final : public SceneElCRTP<StationEl> {
     public:
-        static SceneElClass const& Class()
-        {
-            static SceneElClass const s_Class =
-            {
-                c_StationLabel,
-                c_StationLabelPluralized,
-                c_StationLabelOptionallyPluralized,
-                ICON_FA_MAP_PIN,
-                c_StationDescription,
-                std::make_unique<StationEl>(),
-            };
-
-            return s_Class;
-        }
-
-        StationEl() : m_Name{"prototype"}
-        {
-            // default ctor for prototype allocation
-        }
-
         StationEl(
             UIDT<StationEl> id,
             UIDT<BodyEl> attachment,  // can be c_GroundID
@@ -1704,35 +1625,23 @@ namespace
         {
         }
 
-        UIDT<StationEl> GetID() const
-        {
-            return m_ID;
-        }
-
         UID getParentID() const
         {
             return m_Attachment;
         }
 
     private:
-        SceneElClass const& implGetClass() const final
+        friend class SceneElCRTP<StationEl>;
+        static SceneElClass CreateClass()
         {
-            return Class();
-        }
-
-        std::unique_ptr<SceneEl> implClone() const final
-        {
-            return std::make_unique<StationEl>(*this);
-        }
-
-        void implAccept(ConstSceneElVisitor& visitor) const final
-        {
-            visitor(*this);
-        }
-
-        void implAccept(SceneElVisitor& visitor) final
-        {
-            visitor(*this);
+            return
+            {
+                c_StationLabel,
+                c_StationLabelPluralized,
+                c_StationLabelOptionallyPluralized,
+                ICON_FA_MAP_PIN,
+                c_StationDescription,
+            };
         }
 
         int implGetNumCrossReferences() const final
@@ -1783,8 +1692,6 @@ namespace
 
         std::ostream& implWriteToStream(std::ostream& o) const final
         {
-            using osc::operator<<;
-
             return o << "StationEl("
                 << "ID = " << m_ID
                 << ", Attachment = " << m_Attachment
@@ -1815,7 +1722,7 @@ namespace
 
         AABB implCalcBounds() const final
         {
-            return AABB{m_Position, m_Position};
+            return AABB{m_Position};
         }
 
         UIDT<StationEl> m_ID;
@@ -1828,74 +1735,55 @@ namespace
     // returns true if a mesh can be attached to the given element
     bool CanAttachMeshTo(SceneEl const& e)
     {
-        struct Visitor final : public ConstSceneElVisitor {
-            void operator()(GroundEl const&) final { result = true; }
-            void operator()(MeshEl const&) final { result = false; }
-            void operator()(BodyEl const&) final { result = true; }
-            void operator()(JointEl const&) final { result = true; }
-            void operator()(StationEl const&) final { result = false; }
-
-            bool result = false;
-        };
-
-        Visitor v;
-        e.Accept(v);
-        return v.result;
+        return visit(Overload
+        {
+            [](GroundEl const&)  { return true; },
+            [](MeshEl const&)    { return false; },
+            [](BodyEl const&)    { return true; },
+            [](JointEl const&)   { return true; },
+            [](StationEl const&) { return false; },
+        }, e);
     }
 
     // returns `true` if a `StationEl` can be attached to the element
     bool CanAttachStationTo(SceneEl const& e)
     {
-        struct Visitor final : public ConstSceneElVisitor {
-            void operator()(GroundEl const&) final { result = true; }
-            void operator()(MeshEl const&) final { result = true; }
-            void operator()(BodyEl const&) final { result = true; }
-            void operator()(JointEl const&) final { result = false; }
-            void operator()(StationEl const&) final { result = false; }
-
-            bool result = false;
-        };
-
-        Visitor v;
-        e.Accept(v);
-        return v.result;
+        return visit(Overload
+        {
+            [](GroundEl const&)  { return true; },
+            [](MeshEl const&)    { return true; },
+            [](BodyEl const&)    { return true; },
+            [](JointEl const&)   { return false; },
+            [](StationEl const&) { return false; },
+        }, e);
     }
 
-    // returns true if the given SceneEl is of a particular scene el type
-    template<typename T>
-    bool Is(SceneEl const& el)
+    auto const& GetSceneElClasses()
     {
-        static_assert(std::is_base_of_v<SceneEl, T>);
-        return dynamic_cast<T const*>(&el);
-    }
-
-    std::vector<SceneElClass const*> GenerateSceneElClassList()
-    {
-        return {
-            &GroundEl::Class(),
-            &MeshEl::Class(),
-            &BodyEl::Class(),
-            &JointEl::Class(),
-            &StationEl::Class()
-        };
-    }
-
-    std::vector<SceneElClass const*> const& GetSceneElClasses()
-    {
-        static std::vector<SceneElClass const*> const s_Classes = GenerateSceneElClassList();
+        static auto const s_Classes = []()
+        {
+            return std::to_array(
+            {
+                GroundEl::Class(),
+                MeshEl::Class(),
+                BodyEl::Class(),
+                JointEl::Class(),
+                StationEl::Class(),
+            });
+        }();
         return s_Classes;
     }
 
     Vec3 AverageCenter(MeshEl const& el)
     {
         Vec3 const centerpointInModelSpace = AverageCenterpoint(el.getMeshData());
-        return el.GetXform() * centerpointInModelSpace;
+        return el.getXForm() * centerpointInModelSpace;
     }
 
     Vec3 MassCenter(MeshEl const& el)
     {
         Vec3 const massCenterInModelSpace = MassCenter(el.getMeshData());
-        return el.GetXform() * massCenterInModelSpace;
+        return el.getXForm() * massCenterInModelSpace;
     }
 }
 
@@ -1916,11 +1804,10 @@ namespace
 {
     class ModelGraph final {
 
+        using SceneElMap = std::map<UID, ClonePtr<SceneEl>>;
+
         // helper class for iterating over model graph elements
-        template<
-            typename T,
-            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
-        >
+        template<DerivedFrom<SceneEl> T>
         class Iterator final {
         public:
             using difference_type = void;
@@ -1933,8 +1820,8 @@ namespace
             // caller-provided iterator
             using InternalIterator = std::conditional_t<
                 std::is_const_v<T>,
-                std::map<UID, ClonePtr<SceneEl>>::const_iterator,
-                std::map<UID, ClonePtr<SceneEl>>::iterator
+                SceneElMap::const_iterator,
+                SceneElMap::iterator
             >;
 
             Iterator(InternalIterator pos_, InternalIterator end_) :
@@ -1952,7 +1839,7 @@ namespace
                 }
             }
 
-            // implict conversion to a const version of the iterator
+            // conversion to a const version of the iterator
             explicit operator Iterator<value_type const>() const noexcept
             {
                 return Iterator<value_type const>{m_Pos, m_End};
@@ -1995,14 +1882,10 @@ namespace
         };
 
         // helper class for an iterable object with a beginning + end
-        template<
-            typename T = SceneEl,
-            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
-        >
+        template<DerivedFrom<SceneEl> T>
         class Iterable final {
         public:
-            using Map = std::map<UID, ClonePtr<SceneEl>>;
-            using MapRef = std::conditional_t<std::is_const_v<T>, Map const&, Map&>;
+            using MapRef = std::conditional_t<std::is_const_v<T>, SceneElMap const&, SceneElMap&>;
 
             explicit Iterable(MapRef els) :
                 m_Begin{els.begin(), els.end()},
@@ -2020,122 +1903,88 @@ namespace
 
     public:
 
-        ModelGraph() :
-            // insert a senteniel ground element into the model graph (it should always
-            // be there)
-            m_Els{{c_GroundID, ClonePtr<SceneEl>{GroundEl{}}}}
-        {
-        }
+        ModelGraph() = default;
 
         std::unique_ptr<ModelGraph> clone() const
         {
             return std::make_unique<ModelGraph>(*this);
         }
 
-        template<
-            typename T = SceneEl,
-            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
-        >
-        T* TryUpdElByID(UID id)
+        template<DerivedFrom<SceneEl> T = SceneEl>
+        T* tryUpdElByID(UID id)
         {
-            return FindElByID<T>(m_Els, id);
+            return findElByID<T>(m_Els, id);
         }
 
-        template<
-            typename T = SceneEl,
-            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
-        >
-        T const* TryGetElByID(UID id) const
+        template<DerivedFrom<SceneEl> T = SceneEl>
+        T const* tryGetElByID(UID id) const
         {
-            return FindElByID<T>(m_Els, id);
+            return findElByID<T>(m_Els, id);
         }
 
-        template<
-            typename T = SceneEl,
-            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
-        >
-        T& UpdElByID(UID id)
+        template<DerivedFrom<SceneEl> T = SceneEl>
+        T& updElByID(UID id)
         {
-            return FindElByIDOrThrow<T>(m_Els, id);
+            return findElByIDOrThrow<T>(m_Els, id);
         }
 
-        template<
-            typename T = SceneEl,
-            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
-        >
-        T const& GetElByID(UID id) const
+        template<DerivedFrom<SceneEl> T = SceneEl>
+        T const& getElByID(UID id) const
         {
-            return FindElByIDOrThrow<T>(m_Els, id);
+            return findElByIDOrThrow<T>(m_Els, id);
         }
 
-        template<
-            typename T = SceneEl,
-            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
-        >
-        bool ContainsEl(UID id) const
+        template<DerivedFrom<SceneEl> T = SceneEl>
+        bool containsEl(UID id) const
         {
-            return TryGetElByID<T>(id);
+            return tryGetElByID<T>(id);
         }
 
-        template<
-            typename T = SceneEl,
-            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
-        >
-        bool ContainsEl(SceneEl const& e) const
+        template<DerivedFrom<SceneEl> T = SceneEl>
+        bool containsEl(SceneEl const& e) const
         {
-            return ContainsEl<T>(e.GetID());
+            return containsEl<T>(e.getID());
         }
 
-        template<
-            typename T = SceneEl,
-            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
-        >
+        template<DerivedFrom<SceneEl> T = SceneEl>
         Iterable<T> iter()
         {
             return Iterable<T>{m_Els};
         }
 
-        template<
-            typename T = SceneEl,
-            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
-        >
+        template<DerivedFrom<SceneEl> T = SceneEl>
         Iterable<T const> iter() const
         {
             return Iterable<T const>{m_Els};
         }
 
-        SceneEl& AddEl(std::unique_ptr<SceneEl> el)
+        SceneEl& addEl(std::unique_ptr<SceneEl> el)
         {
             // ensure element connects to things that already exist in the model
             // graph
 
-            for (int i = 0, len = el->GetNumCrossReferences(); i < len; ++i)
+            for (int i = 0, len = el->getNumCrossReferences(); i < len; ++i)
             {
-                if (!ContainsEl(el->GetCrossReferenceConnecteeID(i)))
+                if (!containsEl(el->getCrossReferenceConnecteeID(i)))
                 {
                     std::stringstream ss;
-                    ss << "cannot add '" << el->GetLabel() << "' (ID = " << el->GetID() << ") to model graph because it contains a cross reference (label = " << el->GetCrossReferenceLabel(i) << ") to a scene element that does not exist in the model graph";
+                    ss << "cannot add '" << el->getLabel() << "' (ID = " << el->getID() << ") to model graph because it contains a cross reference (label = " << el->getCrossReferenceLabel(i) << ") to a scene element that does not exist in the model graph";
                     throw std::runtime_error{std::move(ss).str()};
                 }
             }
 
-            return *m_Els.emplace(el->GetID(), std::move(el)).first->second;
+            return *m_Els.emplace(el->getID(), std::move(el)).first->second;
         }
 
-        template<
-            typename T,
-            typename... Args,
-            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true,
-            typename std::enable_if_t<std::is_constructible_v<T, Args&&...>, bool> = true
-        >
-        T& AddEl(Args&&... args)
+        template<DerivedFrom<SceneEl> T, typename... Args>
+        T& emplaceEl(Args&&... args) requires ConstructibleFrom<T, Args&&...>
         {
-            return static_cast<T&>(AddEl(std::unique_ptr<SceneEl>{std::make_unique<T>(std::forward<Args>(args)...)}));
+            return static_cast<T&>(addEl(std::make_unique<T>(std::forward<Args>(args)...)));
         }
 
-        bool DeleteElByID(UID id)
+        bool deleteElByID(UID id)
         {
-            SceneEl const* el = TryGetElByID(id);
+            SceneEl const* el = tryGetElByID(id);
 
             if (!el)
             {
@@ -2145,11 +1994,11 @@ namespace
             // collect all to-be-deleted elements into one deletion set so that the deletion
             // happens in separate phase from the "search for things to delete" phase
             std::unordered_set<UID> deletionSet;
-            PopulateDeletionSet(*el, deletionSet);
+            populateDeletionSet(*el, deletionSet);
 
             for (UID deletedID : deletionSet)
             {
-                DeSelect(deletedID);
+                deSelect(deletedID);
 
                 // move element into deletion set, rather than deleting it immediately,
                 // so that code that relies on references to the to-be-deleted element
@@ -2158,7 +2007,7 @@ namespace
                 auto it = m_Els.find(deletedID);
                 if (it != m_Els.end())
                 {
-                    m_DeletedEls->push_back(std::move(it->second));
+                    m_DeletedEls.push_back(std::move(it->second));
                     m_Els.erase(it);
                 }
             }
@@ -2166,37 +2015,37 @@ namespace
             return !deletionSet.empty();
         }
 
-        bool DeleteEl(SceneEl const& el)
+        bool deleteEl(SceneEl const& el)
         {
-            return DeleteElByID(el.GetID());
+            return deleteElByID(el.getID());
         }
 
-        void GarbageCollect()
+        void garbageCollect()
         {
-            m_DeletedEls->clear();
+            m_DeletedEls.clear();
         }
 
 
         // selection logic
 
-        std::unordered_set<UID> const& GetSelected() const
+        std::unordered_set<UID> const& getSelected() const
         {
             return m_SelectedEls;
         }
 
-        bool IsSelected(UID id) const
+        bool isSelected(UID id) const
         {
             return Contains(m_SelectedEls, id);
         }
 
-        bool IsSelected(SceneEl const& el) const
+        bool isSelected(SceneEl const& el) const
         {
-            return IsSelected(el.GetID());
+            return isSelected(el.getID());
         }
 
-        void Select(UID id)
+        void select(UID id)
         {
-            SceneEl const* e = TryGetElByID(id);
+            SceneEl const* e = tryGetElByID(id);
 
             if (e && CanSelect(*e))
             {
@@ -2204,46 +2053,41 @@ namespace
             }
         }
 
-        void Select(SceneEl const& el)
+        void select(SceneEl const& el)
         {
-            Select(el.GetID());
+            select(el.getID());
         }
 
-        void DeSelect(UID id)
+        void deSelect(UID id)
         {
             m_SelectedEls.erase(id);
         }
 
-        void DeSelect(SceneEl const& el)
+        void deSelect(SceneEl const& el)
         {
-            DeSelect(el.GetID());
+            deSelect(el.getID());
         }
 
-        void SelectAll()
+        void selectAll()
         {
             for (SceneEl const& e : iter())
             {
                 if (CanSelect(e))
                 {
-                    m_SelectedEls.insert(e.GetID());
+                    m_SelectedEls.insert(e.getID());
                 }
             }
         }
 
-        void DeSelectAll()
+        void deSelectAll()
         {
             m_SelectedEls.clear();
         }
-
     private:
-        template<
-            typename T = SceneEl,
-            typename Container,
-            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
-        >
-        static T* FindElByID(Container& container, UID id)
+        template<DerivedFrom<SceneEl> T = SceneEl, typename Container>
+        static T* findElByID(Container& container, UID id)
         {
-            auto it = container.find(id);
+            auto const it = container.find(id);
 
             if (it == container.end())
             {
@@ -2260,14 +2104,10 @@ namespace
             }
         }
 
-        template<
-            typename T = SceneEl,
-            typename Container,
-            typename std::enable_if_t<std::is_base_of_v<SceneEl, T>, bool> = true
-        >
-        static T& FindElByIDOrThrow(Container& container, UID id)
+        template<DerivedFrom<SceneEl> T = SceneEl, typename Container>
+        static T& findElByIDOrThrow(Container& container, UID id)
         {
-            auto ptr = FindElByID<T>(container, id);
+            auto ptr = findElByID<T>(container, id);
             if (!ptr)
             {
                 std::stringstream msg;
@@ -2278,9 +2118,9 @@ namespace
             return *ptr;
         }
 
-        void PopulateDeletionSet(SceneEl const& deletionTarget, std::unordered_set<UID>& out)
+        void populateDeletionSet(SceneEl const& deletionTarget, std::unordered_set<UID>& out)
         {
-            UID deletedID = deletionTarget.GetID();
+            UID deletedID = deletionTarget.getID();
 
             // add the deletion target to the deletion set (if applicable)
             if (CanDelete(deletionTarget))
@@ -2299,60 +2139,62 @@ namespace
             {
                 if (IsCrossReferencing(el, deletedID))
                 {
-                    PopulateDeletionSet(el, out);
+                    populateDeletionSet(el, out);
                 }
             }
         }
 
-        std::map<UID, ClonePtr<SceneEl>> m_Els;
+        // insert a senteniel ground element into the model graph (it should always
+        // be there)
+        SceneElMap m_Els = {{c_GroundID, ClonePtr<SceneEl>{GroundEl{}}}};
         std::unordered_set<UID> m_SelectedEls;
-        osc::DefaultConstructOnCopy<std::vector<ClonePtr<SceneEl>>> m_DeletedEls;
+        std::vector<ClonePtr<SceneEl>> m_DeletedEls;
     };
 
     void SelectOnly(ModelGraph& mg, SceneEl const& e)
     {
-        mg.DeSelectAll();
-        mg.Select(e);
+        mg.deSelectAll();
+        mg.select(e);
     }
 
     bool HasSelection(ModelGraph const& mg)
     {
-        return !mg.GetSelected().empty();
+        return !mg.getSelected().empty();
     }
 
     void DeleteSelected(ModelGraph& mg)
     {
         // copy deletion set to ensure iterator can't be invalidated by deletion
-        auto selected = mg.GetSelected();
+        auto selected = mg.getSelected();
 
         for (UID id : selected)
         {
-            mg.DeleteElByID(id);
+            mg.deleteElByID(id);
         }
 
-        mg.DeSelectAll();
+        mg.deSelectAll();
     }
 
-    CStringView GetLabel(ModelGraph const& mg, UID id)
+    CStringView getLabel(ModelGraph const& mg, UID id)
     {
-        return mg.GetElByID(id).GetLabel();
+        return mg.getElByID(id).getLabel();
     }
 
     Transform GetTransform(ModelGraph const& mg, UID id)
     {
-        return mg.GetElByID(id).GetXform();
+        return mg.getElByID(id).getXForm();
     }
 
     Vec3 GetPosition(ModelGraph const& mg, UID id)
     {
-        return mg.GetElByID(id).GetPos();
+        return mg.getElByID(id).getPos();
     }
 
     // returns `true` if `body` participates in any joint in the model graph
     bool IsAChildAttachmentInAnyJoint(ModelGraph const& mg, SceneEl const& el)
     {
         auto it = mg.iter<JointEl>();
-        return std::any_of(it.begin(), it.end(), [id = el.GetID()](JointEl const& j)
+        return std::any_of(it.begin(), it.end(), [id = el.getID()](JointEl const& j)
         {
             return j.getChildID() == id;
         });
@@ -2371,12 +2213,12 @@ namespace
             return true;  // is directly attached to itself
         }
 
-        if (jointEl.getParentID() != c_GroundID && !modelGraph.ContainsEl<BodyEl>(jointEl.getParentID()))
+        if (jointEl.getParentID() != c_GroundID && !modelGraph.containsEl<BodyEl>(jointEl.getParentID()))
         {
             return true;  // has a parent ID that's invalid for this model graph
         }
 
-        if (!modelGraph.ContainsEl<BodyEl>(jointEl.getChildID()))
+        if (!modelGraph.containsEl<BodyEl>(jointEl.getChildID()))
         {
             return true;  // has a child ID that's invalid for this model graph
         }
@@ -2385,12 +2227,15 @@ namespace
     }
 
     // returns `true` if a body is indirectly or directly attached to ground
-    bool IsBodyAttachedToGround(ModelGraph const& modelGraph,
+    bool IsBodyAttachedToGround(
+        ModelGraph const& modelGraph,
         BodyEl const& body,
-        std::unordered_set<UID>& previouslyVisitedJoints);
+        std::unordered_set<UID>& previouslyVisitedJoints
+    );
 
     // returns `true` if `joint` is indirectly or directly attached to ground via its parent
-    bool IsJointAttachedToGround(ModelGraph const& modelGraph,
+    bool IsJointAttachedToGround(
+        ModelGraph const& modelGraph,
         JointEl const& joint,
         std::unordered_set<UID>& previousVisits)
     {
@@ -2401,7 +2246,7 @@ namespace
             return true;  // it's directly attached to ground
         }
 
-        auto const* parent = modelGraph.TryGetElByID<BodyEl>(joint.getParentID());
+        auto const* parent = modelGraph.tryGetElByID<BodyEl>(joint.getParentID());
         if (!parent)
         {
             return false;  // joint's parent is garbage
@@ -2412,7 +2257,8 @@ namespace
     }
 
     // returns `true` if `body` is attached to ground
-    bool IsBodyAttachedToGround(ModelGraph const& modelGraph,
+    bool IsBodyAttachedToGround(
+        ModelGraph const& modelGraph,
         BodyEl const& body,
         std::unordered_set<UID>& previouslyVisitedJoints)
     {
@@ -2422,11 +2268,11 @@ namespace
         {
             OSC_ASSERT(!IsGarbageJoint(modelGraph, jointEl));
 
-            if (jointEl.getChildID() == body.GetID())
+            if (jointEl.getChildID() == body.getID())
             {
                 childInAtLeastOneJoint = true;
 
-                bool alreadyVisited = !previouslyVisitedJoints.emplace(jointEl.GetID()).second;
+                bool alreadyVisited = !previouslyVisitedJoints.emplace(jointEl.getID()).second;
                 if (alreadyVisited)
                 {
                     continue;  // skip this joint: was previously visited
@@ -2443,7 +2289,9 @@ namespace
     }
 
     // returns `true` if `modelGraph` contains issues
-    bool GetModelGraphIssues(ModelGraph const& modelGraph, std::vector<std::string>& issuesOut)
+    bool GetModelGraphIssues(
+        ModelGraph const& modelGraph,
+        std::vector<std::string>& issuesOut)
     {
         issuesOut.clear();
 
@@ -2452,7 +2300,7 @@ namespace
             if (IsGarbageJoint(modelGraph, joint))
             {
                 std::stringstream ss;
-                ss << joint.GetLabel() << ": joint is garbage (this is an implementation error)";
+                ss << joint.getLabel() << ": joint is garbage (this is an implementation error)";
                 throw std::runtime_error{std::move(ss).str()};
             }
         }
@@ -2463,7 +2311,7 @@ namespace
             if (!IsBodyAttachedToGround(modelGraph, body, previouslyVisitedJoints))
             {
                 std::stringstream ss;
-                ss << body.GetLabel() << ": body is not attached to ground: it is connected by a joint that, itself, does not connect to ground";
+                ss << body.getLabel() << ": body is not attached to ground: it is connected by a joint that, itself, does not connect to ground";
                 issuesOut.push_back(std::move(ss).str());
             }
         }
@@ -2472,7 +2320,9 @@ namespace
     }
 
     // returns a string representing the subheader of a scene element
-    std::string GetContextMenuSubHeaderText(ModelGraph const& mg, SceneEl const& e)
+    std::string GetContextMenuSubHeaderText(
+        ModelGraph const& mg,
+        SceneEl const& e)
     {
         class Visitor final : public ConstSceneElVisitor {
         public:
@@ -2488,19 +2338,19 @@ namespace
             }
             void operator()(MeshEl const& m) final
             {
-                m_SS << '(' << m.GetClass().getName() << ", " << m.getPath().filename().string() << ", attached to " << GetLabel(m_Mg, m.getParentID()) << ')';
+                m_SS << '(' << m.getClass().getName() << ", " << m.getPath().filename().string() << ", attached to " << getLabel(m_Mg, m.getParentID()) << ')';
             }
             void operator()(BodyEl const& b) final
             {
-                m_SS << '(' << b.GetClass().getName() << ')';
+                m_SS << '(' << b.getClass().getName() << ')';
             }
             void operator()(JointEl const& j) final
             {
-                m_SS << '(' << j.GetSpecificTypeName() << ", " << GetLabel(m_Mg, j.getChildID()) << " --> " << GetLabel(m_Mg, j.getParentID()) << ')';
+                m_SS << '(' << j.getSpecificTypeName() << ", " << getLabel(m_Mg, j.getChildID()) << " --> " << getLabel(m_Mg, j.getParentID()) << ')';
             }
             void operator()(StationEl const& s) final
             {
-                m_SS << '(' << s.GetClass().getName() << ", attached to " << GetLabel(m_Mg, s.getParentID()) << ')';
+                m_SS << '(' << s.getClass().getName() << ", attached to " << getLabel(m_Mg, s.getParentID()) << ')';
             }
 
         private:
@@ -2510,12 +2360,15 @@ namespace
 
         std::stringstream ss;
         Visitor v{ss, mg};
-        e.Accept(v);
+        e.accept(v);
         return std::move(ss).str();
     }
 
     // returns true if the given element (ID) is in the "selection group" of
-    bool IsInSelectionGroupOf(ModelGraph const& mg, UID parent, UID id)
+    bool IsInSelectionGroupOf(
+        ModelGraph const& mg,
+        UID parent,
+        UID id)
     {
         if (id == c_EmptyID || parent == c_EmptyID)
         {
@@ -2529,13 +2382,13 @@ namespace
 
         BodyEl const* bodyEl = nullptr;
 
-        if (auto const* be = mg.TryGetElByID<BodyEl>(parent))
+        if (auto const* be = mg.tryGetElByID<BodyEl>(parent))
         {
             bodyEl = be;
         }
-        else if (auto const* me = mg.TryGetElByID<MeshEl>(parent))
+        else if (auto const* me = mg.tryGetElByID<MeshEl>(parent))
         {
-            bodyEl = mg.TryGetElByID<BodyEl>(me->getParentID());
+            bodyEl = mg.tryGetElByID<BodyEl>(me->getParentID());
         }
 
         if (!bodyEl)
@@ -2543,13 +2396,13 @@ namespace
             return false;  // parent isn't attached to any body (or isn't a body)
         }
 
-        if (auto const* be = mg.TryGetElByID<BodyEl>(id))
+        if (auto const* be = mg.tryGetElByID<BodyEl>(id))
         {
-            return be->GetID() == bodyEl->GetID();
+            return be->getID() == bodyEl->getID();
         }
-        else if (auto const* me = mg.TryGetElByID<MeshEl>(id))
+        else if (auto const* me = mg.tryGetElByID<MeshEl>(id))
         {
-            return me->getParentID() == bodyEl->GetID();
+            return me->getParentID() == bodyEl->getID();
         }
         else
         {
@@ -2558,11 +2411,15 @@ namespace
     }
 
     template<typename Consumer>
-    void ForEachIDInSelectionGroup(ModelGraph const& mg, UID parent, Consumer f)
+    void ForEachIDInSelectionGroup(
+        ModelGraph const& mg,
+        UID parent,
+        Consumer f)
+        requires Invocable<Consumer, UID>
     {
         for (SceneEl const& e : mg.iter())
         {
-            UID id = e.GetID();
+            UID id = e.getID();
 
             if (IsInSelectionGroupOf(mg, parent, id))
             {
@@ -2575,7 +2432,7 @@ namespace
     {
         ForEachIDInSelectionGroup(mg, el, [&mg](UID other)
         {
-            mg.Select(other);
+            mg.select(other);
         });
     }
 
@@ -2588,8 +2445,8 @@ namespace
             explicit Visitor(ModelGraph const& mg) : m_Mg{mg} {}
 
             void operator()(GroundEl const&) final { m_Result = c_GroundID; }
-            void operator()(MeshEl const& meshEl) final { m_Mg.ContainsEl<BodyEl>(meshEl.getParentID()) ? m_Result = osc::DowncastID<BodyEl>(meshEl.getParentID()) : c_GroundID; }
-            void operator()(BodyEl const& bodyEl) final { m_Result = bodyEl.GetID(); }
+            void operator()(MeshEl const& meshEl) final { m_Mg.containsEl<BodyEl>(meshEl.getParentID()) ? m_Result = osc::DowncastID<BodyEl>(meshEl.getParentID()) : c_GroundID; }
+            void operator()(BodyEl const& bodyEl) final { m_Result = bodyEl.getID(); }
             void operator()(JointEl const&) final { m_Result = c_GroundID; }  // can't be attached
             void operator()(StationEl const&) final { m_Result = c_GroundID; }  // can't be attached
 
@@ -2601,27 +2458,34 @@ namespace
         };
 
         Visitor v{mg};
-        el.Accept(v);
+        el.accept(v);
         return v.result();
     }
 
     // points an axis of a given element towards some other element in the model graph
-    void PointAxisTowards(ModelGraph& mg, UID id, int axis, UID other)
+    void PointAxisTowards(
+        ModelGraph& mg,
+        UID id,
+        int axis,
+        UID other)
     {
         Vec3 choicePos = GetPosition(mg, other);
         Transform sourceXform = Transform{GetPosition(mg, id)};
 
-        mg.UpdElByID(id).SetXform(PointAxisTowards(sourceXform, axis, choicePos));
+        mg.updElByID(id).setXform(PointAxisTowards(sourceXform, axis, choicePos));
     }
 
     // returns recommended rim intensity for an element in the model graph
-    SceneDecorationFlags ComputeFlags(ModelGraph const& mg, UID id, UID hoverID = c_EmptyID)
+    SceneDecorationFlags computeFlags(
+        ModelGraph const& mg,
+        UID id,
+        UID hoverID = c_EmptyID)
     {
         if (id == c_EmptyID)
         {
             return SceneDecorationFlags::None;
         }
-        else if (mg.IsSelected(id))
+        else if (mg.isSelected(id))
         {
             return SceneDecorationFlags::IsSelected;
         }
@@ -2658,8 +2522,8 @@ namespace
         ModelGraphCommit(
             UID parentID,  // can be c_EmptyID
             ClonePtr<ModelGraph> modelGraph,
-            std::string_view commitMessage) :
-
+            std::string_view commitMessage
+        ) :
             m_ParentID{parentID},
             m_ModelGraph{std::move(modelGraph)},
             m_CommitMessage{commitMessage},
@@ -2667,12 +2531,30 @@ namespace
         {
         }
 
-        UID GetID() const { return m_ID; }
-        UID GetParentID() const { return m_ParentID; }
-        ModelGraph const& GetModelGraph() const { return *m_ModelGraph; }
-        std::string const& GetCommitMessage() const { return m_CommitMessage; }
-        std::chrono::system_clock::time_point const& GetCommitTime() const { return m_CommitTime; }
-        std::unique_ptr<ModelGraphCommit> clone() { return std::make_unique<ModelGraphCommit>(*this); }
+        UID getID() const
+        {
+            return m_ID;
+        }
+
+        UID getParentID() const
+        {
+            return m_ParentID;
+        }
+
+        ModelGraph const& getModelGraph() const
+        {
+            return *m_ModelGraph;
+        }
+
+        CStringView getCommitMessage() const
+        {
+            return m_CommitMessage;
+        }
+
+        std::chrono::system_clock::time_point getCommitTime() const
+        {
+            return m_CommitTime;
+        }
 
     private:
         UID m_ID;
@@ -2685,12 +2567,17 @@ namespace
     // undoable model graph storage
     class CommittableModelGraph final {
     public:
+        CommittableModelGraph() :
+            CommittableModelGraph{std::make_unique<ModelGraph>()}
+        {
+        }
+
         explicit CommittableModelGraph(std::unique_ptr<ModelGraph> mg) :
             m_Scratch{std::move(mg)},
             m_Current{c_EmptyID},
             m_BranchHead{c_EmptyID}
         {
-            Commit("created model graph");
+            commit("created model graph");
         }
 
         explicit CommittableModelGraph(ModelGraph const& mg) :
@@ -2698,15 +2585,15 @@ namespace
         {
         }
 
-        CommittableModelGraph() :
-            CommittableModelGraph{std::make_unique<ModelGraph>()}
+        UID commit(std::string_view commitMsg)
         {
-        }
+            auto snapshot = std::make_unique<ModelGraphCommit>(
+                m_Current,
+                ClonePtr<ModelGraph>{*m_Scratch},
+                commitMsg
+            );
 
-        UID Commit(std::string_view commitMsg)
-        {
-            auto snapshot = std::make_unique<ModelGraphCommit>(m_Current, ClonePtr<ModelGraph>{*m_Scratch}, commitMsg);
-            UID id = snapshot->GetID();
+            UID id = snapshot->getID();
 
             m_Commits.try_emplace(id, std::move(snapshot));
             m_Current = id;
@@ -2715,15 +2602,15 @@ namespace
             return id;
         }
 
-        ModelGraphCommit const* TryGetCommitByID(UID id) const
+        ModelGraphCommit const* tryGetCommitByID(UID id) const
         {
             auto it = m_Commits.find(id);
             return it != m_Commits.end() ? it->second.get() : nullptr;
         }
 
-        ModelGraphCommit const& GetCommitByID(UID id) const
+        ModelGraphCommit const& getCommitByID(UID id) const
         {
-            ModelGraphCommit const* ptr = TryGetCommitByID(id);
+            ModelGraphCommit const* ptr = tryGetCommitByID(id);
             if (!ptr)
             {
                 std::stringstream ss;
@@ -2733,13 +2620,14 @@ namespace
             return *ptr;
         }
 
-        bool HasCommit(UID id) const
+        bool hasCommit(UID id) const
         {
-            return TryGetCommitByID(id) != nullptr;
+            return tryGetCommitByID(id) != nullptr;
         }
 
         template<typename Consumer>
-        void ForEachCommitUnordered(Consumer f) const
+        void forEachCommitUnordered(Consumer f) const
+            requires Invocable<Consumer, ModelGraphCommit const&>
         {
             for (auto const& [id, commit] : m_Commits)
             {
@@ -2747,87 +2635,87 @@ namespace
             }
         }
 
-        UID GetCheckoutID() const
+        UID getCheckoutID() const
         {
             return m_Current;
         }
 
-        void Checkout(UID id)
+        void checkout(UID id)
         {
-            ModelGraphCommit const* c = TryGetCommitByID(id);
+            ModelGraphCommit const* c = tryGetCommitByID(id);
 
             if (c)
             {
-                m_Scratch = c->GetModelGraph();
-                m_Current = c->GetID();
-                m_BranchHead = c->GetID();
+                m_Scratch = c->getModelGraph();
+                m_Current = c->getID();
+                m_BranchHead = c->getID();
             }
         }
 
-        bool CanUndo() const
+        bool canUndo() const
         {
-            ModelGraphCommit const* c = TryGetCommitByID(m_Current);
-            return c ? c->GetParentID() != c_EmptyID : false;
+            ModelGraphCommit const* c = tryGetCommitByID(m_Current);
+            return c ? c->getParentID() != c_EmptyID : false;
         }
 
-        void Undo()
+        void undo()
         {
-            ModelGraphCommit const* cur = TryGetCommitByID(m_Current);
+            ModelGraphCommit const* cur = tryGetCommitByID(m_Current);
 
             if (!cur)
             {
                 return;
             }
 
-            ModelGraphCommit const* parent = TryGetCommitByID(cur->GetParentID());
+            ModelGraphCommit const* parent = tryGetCommitByID(cur->getParentID());
 
             if (parent)
             {
-                m_Scratch = parent->GetModelGraph();
-                m_Current = parent->GetID();
+                m_Scratch = parent->getModelGraph();
+                m_Current = parent->getID();
                 // don't update m_BranchHead
             }
         }
 
-        bool CanRedo() const
+        bool canRedo() const
         {
-            return m_BranchHead != m_Current && HasCommit(m_BranchHead);
+            return m_BranchHead != m_Current && hasCommit(m_BranchHead);
         }
 
-        void Redo()
+        void redo()
         {
             if (m_BranchHead == m_Current)
             {
                 return;
             }
 
-            ModelGraphCommit const* c = TryGetCommitByID(m_BranchHead);
-            while (c != nullptr && c->GetParentID() != m_Current)
+            ModelGraphCommit const* c = tryGetCommitByID(m_BranchHead);
+            while (c != nullptr && c->getParentID() != m_Current)
             {
-                c = TryGetCommitByID(c->GetParentID());
+                c = tryGetCommitByID(c->getParentID());
             }
 
             if (c)
             {
-                m_Scratch = c->GetModelGraph();
-                m_Current = c->GetID();
+                m_Scratch = c->getModelGraph();
+                m_Current = c->getID();
                 // don't update m_BranchHead
             }
         }
 
-        ModelGraph& UpdScratch()
+        ModelGraph& updScratch()
         {
             return *m_Scratch;
         }
 
-        ModelGraph const& GetScratch() const
+        ModelGraph const& getScratch() const
         {
             return *m_Scratch;
         }
 
-        void GarbageCollect()
+        void garbageCollect()
         {
-            m_Scratch->GarbageCollect();
+            m_Scratch->garbageCollect();
         }
 
     private:
@@ -2837,25 +2725,32 @@ namespace
         std::unordered_map<UID, ClonePtr<ModelGraphCommit>> m_Commits;
     };
 
-    bool PointAxisTowards(CommittableModelGraph& cmg, UID id, int axis, UID other)
+    bool PointAxisTowards(
+        CommittableModelGraph& cmg,
+        UID id,
+        int axis,
+        UID other)
     {
-        PointAxisTowards(cmg.UpdScratch(), id, axis, other);
-        cmg.Commit("reoriented " + GetLabel(cmg.GetScratch(), id));
+        PointAxisTowards(cmg.updScratch(), id, axis, other);
+        cmg.commit("reoriented " + getLabel(cmg.getScratch(), id));
         return true;
     }
 
-    bool TryAssignMeshAttachments(CommittableModelGraph& cmg, std::unordered_set<UID> const& meshIDs, UID newAttachment)
+    bool TryAssignMeshAttachments(
+        CommittableModelGraph& cmg,
+        std::unordered_set<UID> const& meshIDs,
+        UID newAttachment)
     {
-        ModelGraph& mg = cmg.UpdScratch();
+        ModelGraph& mg = cmg.updScratch();
 
-        if (newAttachment != c_GroundID && !mg.ContainsEl<BodyEl>(newAttachment))
+        if (newAttachment != c_GroundID && !mg.containsEl<BodyEl>(newAttachment))
         {
             return false;  // bogus ID passed
         }
 
         for (UID id : meshIDs)
         {
-            auto* ptr = mg.TryUpdElByID<MeshEl>(id);
+            auto* ptr = mg.tryUpdElByID<MeshEl>(id);
             if (!ptr)
             {
                 continue;  // hardening: ignore invalid assignments
@@ -2870,35 +2765,50 @@ namespace
         {
             commitMsg << "es";
         }
-        commitMsg << " to " << mg.GetElByID(newAttachment).GetLabel();
+        commitMsg << " to " << mg.getElByID(newAttachment).getLabel();
 
 
-        cmg.Commit(std::move(commitMsg).str());
+        cmg.commit(std::move(commitMsg).str());
 
         return true;
     }
 
-    bool TryCreateJoint(CommittableModelGraph& cmg, UID childID, UID parentID)
+    bool TryCreateJoint(
+        CommittableModelGraph& cmg,
+        UID childID,
+        UID parentID)
     {
-        ModelGraph& mg = cmg.UpdScratch();
+        ModelGraph& mg = cmg.updScratch();
 
         size_t jointTypeIdx = *osc::IndexOf<OpenSim::WeldJoint>(osc::GetComponentRegistry<OpenSim::Joint>());
         Vec3 parentPos = GetPosition(mg, parentID);
         Vec3 childPos = GetPosition(mg, childID);
         Vec3 midPoint = osc::Midpoint(parentPos, childPos);
 
-        auto& jointEl = mg.AddEl<JointEl>(jointTypeIdx, std::string{}, parentID, osc::DowncastID<BodyEl>(childID), Transform{midPoint});
+        auto& jointEl = mg.emplaceEl<JointEl>(
+            UIDT<JointEl>{},
+            jointTypeIdx,
+            std::string{},
+            parentID,
+            osc::DowncastID<BodyEl>(childID),
+            Transform{midPoint}
+        );
         SelectOnly(mg, jointEl);
 
-        cmg.Commit("added " + jointEl.GetLabel());
+        cmg.commit("added " + jointEl.getLabel());
 
         return true;
     }
 
-    bool TryOrientElementAxisAlongTwoPoints(CommittableModelGraph& cmg, UID id, int axis, Vec3 p1, Vec3 p2)
+    bool TryOrientElementAxisAlongTwoPoints(
+        CommittableModelGraph& cmg,
+        UID id,
+        int axis,
+        Vec3 p1,
+        Vec3 p2)
     {
-        ModelGraph& mg = cmg.UpdScratch();
-        SceneEl* el = mg.TryUpdElByID(id);
+        ModelGraph& mg = cmg.updScratch();
+        SceneEl* el = mg.tryUpdElByID(id);
 
         if (!el)
         {
@@ -2906,10 +2816,10 @@ namespace
         }
 
         Vec3 dir = osc::Normalize(p2 - p1);
-        Transform t = el->GetXform();
+        Transform t = el->getXForm();
 
-        el->SetXform(PointAxisAlong(t, axis, dir));
-        cmg.Commit("reoriented " + el->GetLabel());
+        el->setXform(PointAxisAlong(t, axis, dir));
+        cmg.commit("reoriented " + el->getLabel());
 
         return true;
     }
@@ -2925,257 +2835,291 @@ namespace
             cmg,
             id,
             axis,
-            GetPosition(cmg.GetScratch(), el1),
-            GetPosition(cmg.GetScratch(), el2)
+            GetPosition(cmg.getScratch(), el1),
+            GetPosition(cmg.getScratch(), el2)
         );
     }
 
-    bool TryTranslateElementBetweenTwoPoints(CommittableModelGraph& cmg, UID id, Vec3 const& a, Vec3 const& b)
+    bool TryTranslateElementBetweenTwoPoints(
+        CommittableModelGraph& cmg,
+        UID id,
+        Vec3 const& a,
+        Vec3 const& b)
     {
-        ModelGraph& mg = cmg.UpdScratch();
-        SceneEl* el = mg.TryUpdElByID(id);
+        ModelGraph& mg = cmg.updScratch();
+        SceneEl* el = mg.tryUpdElByID(id);
 
         if (!el)
         {
             return false;
         }
 
-        el->SetPos(osc::Midpoint(a, b));
-        cmg.Commit("translated " + el->GetLabel());
+        el->setPos(osc::Midpoint(a, b));
+        cmg.commit("translated " + el->getLabel());
 
         return true;
     }
 
-    bool TryTranslateBetweenTwoElements(CommittableModelGraph& cmg, UID id, UID a, UID b)
+    bool TryTranslateBetweenTwoElements(
+        CommittableModelGraph& cmg,
+        UID id,
+        UID a,
+        UID b)
     {
-        ModelGraph& mg = cmg.UpdScratch();
+        ModelGraph& mg = cmg.updScratch();
 
-        SceneEl* el = mg.TryUpdElByID(id);
+        SceneEl* el = mg.tryUpdElByID(id);
         if (!el)
         {
             return false;
         }
 
-        SceneEl const* aEl = mg.TryGetElByID(a);
+        SceneEl const* aEl = mg.tryGetElByID(a);
         if (!aEl)
         {
             return false;
         }
 
-        SceneEl const* bEl = mg.TryGetElByID(b);
+        SceneEl const* bEl = mg.tryGetElByID(b);
         if (!bEl)
         {
             return false;
         }
 
-        el->SetPos(osc::Midpoint(aEl->GetPos(), bEl->GetPos()));
-        cmg.Commit("translated " + el->GetLabel());
+        el->setPos(osc::Midpoint(aEl->getPos(), bEl->getPos()));
+        cmg.commit("translated " + el->getLabel());
 
         return true;
     }
 
-    bool TryTranslateElementToAnotherElement(CommittableModelGraph& cmg, UID id, UID other)
+    bool TryTranslateElementToAnotherElement(
+        CommittableModelGraph& cmg,
+        UID id,
+        UID other)
     {
-        ModelGraph& mg = cmg.UpdScratch();
+        ModelGraph& mg = cmg.updScratch();
 
-        SceneEl* el = mg.TryUpdElByID(id);
+        SceneEl* el = mg.tryUpdElByID(id);
         if (!el)
         {
             return false;
         }
 
-        SceneEl* otherEl = mg.TryUpdElByID(other);
+        SceneEl* otherEl = mg.tryUpdElByID(other);
         if (!otherEl)
         {
             return false;
         }
 
-        el->SetPos(otherEl->GetPos());
-        cmg.Commit("moved " + el->GetLabel());
+        el->setPos(otherEl->getPos());
+        cmg.commit("moved " + el->getLabel());
 
         return true;
     }
 
-    bool TryTranslateToMeshAverageCenter(CommittableModelGraph& cmg, UID id, UID meshID)
+    bool TryTranslateToMeshAverageCenter(
+        CommittableModelGraph& cmg,
+        UID id,
+        UID meshID)
     {
-        ModelGraph& mg = cmg.UpdScratch();
+        ModelGraph& mg = cmg.updScratch();
 
-        SceneEl* el = mg.TryUpdElByID(id);
+        SceneEl* el = mg.tryUpdElByID(id);
         if (!el)
         {
             return false;
         }
 
-        auto const* mesh = mg.TryGetElByID<MeshEl>(meshID);
+        auto const* mesh = mg.tryGetElByID<MeshEl>(meshID);
         if (!mesh)
         {
             return false;
         }
 
-        el->SetPos(AverageCenter(*mesh));
-        cmg.Commit("moved " + el->GetLabel());
+        el->setPos(AverageCenter(*mesh));
+        cmg.commit("moved " + el->getLabel());
 
         return true;
     }
 
-    bool TryTranslateToMeshBoundsCenter(CommittableModelGraph& cmg, UID id, UID meshID)
+    bool TryTranslateToMeshBoundsCenter(
+        CommittableModelGraph& cmg,
+        UID id,
+        UID meshID)
     {
-        ModelGraph& mg = cmg.UpdScratch();
+        ModelGraph& mg = cmg.updScratch();
 
-        SceneEl* const el = mg.TryUpdElByID(id);
+        SceneEl* const el = mg.tryUpdElByID(id);
         if (!el)
         {
             return false;
         }
 
-        auto const* mesh = mg.TryGetElByID<MeshEl>(meshID);
+        auto const* mesh = mg.tryGetElByID<MeshEl>(meshID);
         if (!mesh)
         {
             return false;
         }
 
-        Vec3 const boundsMidpoint = Midpoint(mesh->CalcBounds());
+        Vec3 const boundsMidpoint = Midpoint(mesh->calcBounds());
 
-        el->SetPos(boundsMidpoint);
-        cmg.Commit("moved " + el->GetLabel());
+        el->setPos(boundsMidpoint);
+        cmg.commit("moved " + el->getLabel());
 
         return true;
     }
 
-    bool TryTranslateToMeshMassCenter(CommittableModelGraph& cmg, UID id, UID meshID)
+    bool TryTranslateToMeshMassCenter(
+        CommittableModelGraph& cmg,
+        UID id,
+        UID meshID)
     {
-        ModelGraph& mg = cmg.UpdScratch();
+        ModelGraph& mg = cmg.updScratch();
 
-        SceneEl* const el = mg.TryUpdElByID(id);
+        SceneEl* const el = mg.tryUpdElByID(id);
         if (!el)
         {
             return false;
         }
 
-        auto const* mesh = mg.TryGetElByID<MeshEl>(meshID);
+        auto const* mesh = mg.tryGetElByID<MeshEl>(meshID);
         if (!mesh)
         {
             return false;
         }
 
-        el->SetPos(MassCenter(*mesh));
-        cmg.Commit("moved " + el->GetLabel());
+        el->setPos(MassCenter(*mesh));
+        cmg.commit("moved " + el->getLabel());
 
         return true;
     }
 
-    bool TryReassignCrossref(CommittableModelGraph& cmg, UID id, int crossref, UID other)
+    bool TryReassignCrossref(
+        CommittableModelGraph& cmg,
+        UID id,
+        int crossref,
+        UID other)
     {
         if (other == id)
         {
             return false;
         }
 
-        ModelGraph& mg = cmg.UpdScratch();
+        ModelGraph& mg = cmg.updScratch();
 
-        SceneEl* el = mg.TryUpdElByID(id);
+        SceneEl* el = mg.tryUpdElByID(id);
         if (!el)
         {
             return false;
         }
 
-        if (!mg.ContainsEl(other))
+        if (!mg.containsEl(other))
         {
             return false;
         }
 
-        el->SetCrossReferenceConnecteeID(crossref, other);
-        cmg.Commit("reassigned " + el->GetLabel() + " " + el->GetCrossReferenceLabel(crossref));
+        el->setCrossReferenceConnecteeID(crossref, other);
+        cmg.commit("reassigned " + el->getLabel() + " " + el->getCrossReferenceLabel(crossref));
 
         return true;
     }
 
     bool DeleteSelected(CommittableModelGraph& cmg)
     {
-        ModelGraph& mg = cmg.UpdScratch();
+        ModelGraph& mg = cmg.updScratch();
 
         if (!HasSelection(mg))
         {
             return false;
         }
 
-        DeleteSelected(cmg.UpdScratch());
-        cmg.Commit("deleted selection");
+        DeleteSelected(cmg.updScratch());
+        cmg.commit("deleted selection");
 
         return true;
     }
 
     bool DeleteEl(CommittableModelGraph& cmg, UID id)
     {
-        ModelGraph& mg = cmg.UpdScratch();
+        ModelGraph& mg = cmg.updScratch();
 
-        SceneEl* el = mg.TryUpdElByID(id);
+        SceneEl* el = mg.tryUpdElByID(id);
         if (!el)
         {
             return false;
         }
 
-        std::string label = to_string(el->GetLabel());
+        std::string label = to_string(el->getLabel());
 
-        if (!mg.DeleteEl(*el))
+        if (!mg.deleteEl(*el))
         {
             return false;
         }
 
-        cmg.Commit("deleted " + label);
+        cmg.commit("deleted " + label);
         return true;
     }
 
-    void RotateAxisXRadians(CommittableModelGraph& cmg, SceneEl& el, int axis, float radians)
+    void RotateAxisXRadians(
+        CommittableModelGraph& cmg,
+        SceneEl& el,
+        int axis,
+        float radians)
     {
-        el.SetXform(RotateAlongAxis(el.GetXform(), axis, radians));
-        cmg.Commit("reoriented " + el.GetLabel());
+        el.setXform(RotateAlongAxis(el.getXForm(), axis, radians));
+        cmg.commit("reoriented " + el.getLabel());
     }
 
-    bool TryCopyOrientation(CommittableModelGraph& cmg, UID id, UID other)
+    bool TryCopyOrientation(
+        CommittableModelGraph& cmg,
+        UID id,
+        UID other)
     {
-        ModelGraph& mg = cmg.UpdScratch();
+        ModelGraph& mg = cmg.updScratch();
 
-        SceneEl* el = mg.TryUpdElByID(id);
+        SceneEl* el = mg.tryUpdElByID(id);
         if (!el)
         {
             return false;
         }
 
-        SceneEl* otherEl = mg.TryUpdElByID(other);
+        SceneEl* otherEl = mg.tryUpdElByID(other);
         if (!otherEl)
         {
             return false;
         }
 
-        el->SetRotation(otherEl->GetRotation());
-        cmg.Commit("reoriented " + el->GetLabel());
+        el->setRotation(otherEl->getRotation());
+        cmg.commit("reoriented " + el->getLabel());
 
         return true;
     }
 
 
-    UIDT<BodyEl> AddBody(CommittableModelGraph& cmg, Vec3 const& pos, UID andTryAttach)
+    UIDT<BodyEl> AddBody(
+        CommittableModelGraph& cmg,
+        Vec3 const& pos,
+        UID andTryAttach)
     {
-        ModelGraph& mg = cmg.UpdScratch();
+        ModelGraph& mg = cmg.updScratch();
 
-        auto& b = mg.AddEl<BodyEl>(GenerateName(BodyEl::Class()), Transform{pos});
-        mg.DeSelectAll();
-        mg.Select(b.GetID());
+        auto& b = mg.emplaceEl<BodyEl>(UIDT<BodyEl>{}, GenerateName(BodyEl::Class()), Transform{pos});
+        mg.deSelectAll();
+        mg.select(b.getID());
 
-        auto* el = mg.TryUpdElByID<MeshEl>(andTryAttach);
+        auto* el = mg.tryUpdElByID<MeshEl>(andTryAttach);
         if (el)
         {
             if (el->getParentID() == c_GroundID || el->getParentID() == c_EmptyID)
             {
-                el->setParentID(b.GetID());
-                mg.Select(*el);
+                el->setParentID(b.getID());
+                mg.select(*el);
             }
         }
 
-        cmg.Commit(std::string{"added "} + b.GetLabel());
+        cmg.commit(std::string{"added "} + b.getLabel());
 
-        return b.GetID();
+        return b.getID();
     }
 
     UIDT<BodyEl> AddBody(CommittableModelGraph& cmg)
@@ -3183,26 +3127,37 @@ namespace
         return AddBody(cmg, {}, c_EmptyID);
     }
 
-    bool AddStationAtLocation(CommittableModelGraph& cmg, SceneEl const& el, Vec3 const& loc)
+    bool AddStationAtLocation(
+        CommittableModelGraph& cmg,
+        SceneEl const& el,
+        Vec3 const& loc)
     {
-        ModelGraph& mg = cmg.UpdScratch();
+        ModelGraph& mg = cmg.updScratch();
 
         if (!CanAttachStationTo(el))
         {
             return false;
         }
 
-        auto& station = mg.AddEl<StationEl>(UIDT<StationEl>{}, GetStationAttachmentParent(mg, el), loc, GenerateName(StationEl::Class()));
+        auto& station = mg.emplaceEl<StationEl>(
+            UIDT<StationEl>{},
+            GetStationAttachmentParent(mg, el),
+            loc,
+            GenerateName(StationEl::Class())
+        );
         SelectOnly(mg, station);
-        cmg.Commit("added station " + station.GetLabel());
+        cmg.commit("added station " + station.getLabel());
         return true;
     }
 
-    bool AddStationAtLocation(CommittableModelGraph& cmg, UID elID, Vec3 const& loc)
+    bool AddStationAtLocation(
+        CommittableModelGraph& cmg,
+        UID elID,
+        Vec3 const& loc)
     {
-        ModelGraph& mg = cmg.UpdScratch();
+        ModelGraph& mg = cmg.updScratch();
 
-        auto const* el = mg.TryGetElByID(elID);
+        auto const* el = mg.tryGetElByID(elID);
         if (!el)
         {
             return false;
@@ -3226,23 +3181,20 @@ namespace
 
     constexpr bool operator&(ModelCreationFlags const& a, ModelCreationFlags const& b) noexcept
     {
-        auto const aV = static_cast<std::underlying_type_t<ModelCreationFlags>>(a);
-        auto const bV = static_cast<std::underlying_type_t<ModelCreationFlags>>(b);
-        return (aV & bV) != 0;
+        using Underlying = std::underlying_type_t<ModelCreationFlags>;
+        return (static_cast<Underlying>(a) & static_cast<Underlying>(b)) != 0;
     }
 
     constexpr ModelCreationFlags operator+(ModelCreationFlags const& a, ModelCreationFlags const& b) noexcept
     {
-        auto const aV = static_cast<std::underlying_type_t<ModelCreationFlags>>(a);
-        auto const bV = static_cast<std::underlying_type_t<ModelCreationFlags>>(b);
-        return static_cast<ModelCreationFlags>(aV | bV);
+        using Underlying = std::underlying_type_t<ModelCreationFlags>;
+        return static_cast<ModelCreationFlags>(static_cast<Underlying>(a) | static_cast<Underlying>(b));
     }
 
     constexpr ModelCreationFlags operator-(ModelCreationFlags const& a, ModelCreationFlags const& b) noexcept
     {
-        auto const aV = static_cast<std::underlying_type_t<ModelCreationFlags>>(a);
-        auto const bV = static_cast<std::underlying_type_t<ModelCreationFlags>>(b);
-        return static_cast<ModelCreationFlags>(aV & ~bV);
+        using Underlying = std::underlying_type_t<ModelCreationFlags>;
+        return static_cast<ModelCreationFlags>(static_cast<Underlying>(a) & ~static_cast<Underlying>(b));
     }
 
     // stand-in method that should be replaced by actual support for scale-less transforms
@@ -3255,25 +3207,26 @@ namespace
     }
 
     // attaches a mesh to a parent `OpenSim::PhysicalFrame` that is part of an `OpenSim::Model`
-    void AttachMeshElToFrame(MeshEl const& meshEl,
+    void AttachMeshElToFrame(
+        MeshEl const& meshEl,
         Transform const& parentXform,
         OpenSim::PhysicalFrame& parentPhysFrame)
     {
         // create a POF that attaches to the body
         auto meshPhysOffsetFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         meshPhysOffsetFrame->setParentFrame(parentPhysFrame);
-        meshPhysOffsetFrame->setName(std::string{meshEl.GetLabel()} + "_offset");
+        meshPhysOffsetFrame->setName(std::string{meshEl.getLabel()} + "_offset");
 
         // set the POFs transform to be equivalent to the mesh's (in-ground) transform,
         // but in the parent frame
-        SimTK::Transform mesh2ground = ToSimTKTransform(meshEl.GetXform());
+        SimTK::Transform mesh2ground = ToSimTKTransform(meshEl.getXForm());
         SimTK::Transform parent2ground = ToSimTKTransform(parentXform);
         meshPhysOffsetFrame->setOffsetTransform(parent2ground.invert() * mesh2ground);
 
         // attach the mesh data to the transformed POF
         auto mesh = std::make_unique<OpenSim::Mesh>(meshEl.getPath().string());
-        mesh->setName(std::string{meshEl.GetLabel()});
-        mesh->set_scale_factors(osc::ToSimTKVec3(meshEl.GetXform().scale));
+        mesh->setName(std::string{meshEl.getLabel()});
+        mesh->set_scale_factors(osc::ToSimTKVec3(meshEl.getXForm().scale));
         osc::AttachGeometry(*meshPhysOffsetFrame, std::move(mesh));
 
         // make it a child of the parent's physical frame
@@ -3283,11 +3236,13 @@ namespace
     // create a body for the `model`, but don't add it to the model yet
     //
     // *may* add any attached meshes to the model, though
-    std::unique_ptr<OpenSim::Body> CreateDetatchedBody(ModelGraph const& mg, BodyEl const& bodyEl)
+    std::unique_ptr<OpenSim::Body> CreateDetatchedBody(
+        ModelGraph const& mg,
+        BodyEl const& bodyEl)
     {
         auto addedBody = std::make_unique<OpenSim::Body>();
 
-        addedBody->setName(std::string{bodyEl.GetLabel()});
+        addedBody->setName(std::string{bodyEl.getLabel()});
         addedBody->setMass(bodyEl.getMass());
 
         // set the inertia of the emitted body to be nonzero
@@ -3307,9 +3262,9 @@ namespace
         // relevant offset frames etc.)
         for (MeshEl const& mesh : mg.iter<MeshEl>())
         {
-            if (mesh.getParentID() == bodyEl.GetID())
+            if (mesh.getParentID() == bodyEl.getID())
             {
-                AttachMeshElToFrame(mesh, bodyEl.GetXform(), *addedBody);
+                AttachMeshElToFrame(mesh, bodyEl.getXForm(), *addedBody);
             }
         }
 
@@ -3317,7 +3272,8 @@ namespace
     }
 
     // result of a lookup for (effectively) a physicalframe
-    struct JointAttachmentCachedLookupResult {
+    struct JointAttachmentCachedLookupResult final {
+
         // can be nullptr (indicating Ground)
         BodyEl const* bodyEl = nullptr;
 
@@ -3331,7 +3287,8 @@ namespace
     // cached lookup of a physical frame
     //
     // if the frame/body doesn't exist yet, constructs it
-    JointAttachmentCachedLookupResult LookupPhysFrame(ModelGraph const& mg,
+    JointAttachmentCachedLookupResult LookupPhysFrame(
+        ModelGraph const& mg,
         OpenSim::Model& model,
         std::unordered_map<UID, OpenSim::Body*>& visitedBodies,
         UID elID)
@@ -3343,7 +3300,7 @@ namespace
         // - found, not visited before (make it, add it to the model, cache it)
 
         JointAttachmentCachedLookupResult rv;
-        rv.bodyEl = mg.TryGetElByID<BodyEl>(elID);
+        rv.bodyEl = mg.tryGetElByID<BodyEl>(elID);
         rv.createdBody = nullptr;
         rv.physicalFrame = nullptr;
 
@@ -3468,14 +3425,15 @@ namespace
     // - computing relevant offset values for the offset frames, to ensure the bodies/joint-center end up in the right place
     // - setting the joint's default coordinate values based on any differences
     // - RECURSING by figuring out which joints have this joint's child as a parent
-    void AttachJointRecursive(ModelGraph const& mg,
+    void AttachJointRecursive(
+        ModelGraph const& mg,
         OpenSim::Model& model,
         JointEl const& joint,
         std::unordered_map<UID, OpenSim::Body*>& visitedBodies,
         std::unordered_set<UID>& visitedJoints)
     {
         {
-            bool wasInserted = visitedJoints.emplace(joint.GetID()).second;
+            bool wasInserted = visitedJoints.emplace(joint.getID()).second;
             if (!wasInserted)
             {
                 // graph cycle detected: joint was already previously visited and shouldn't be traversed again
@@ -3491,7 +3449,7 @@ namespace
         auto parentPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         parentPOF->setName(parent.physicalFrame->getName() + "_offset");
         parentPOF->setParentFrame(*parent.physicalFrame);
-        Mat4 toParentPofInParent =  ToInverseMat4(IgnoreScale(GetTransform(mg, joint.getParentID()))) * ToMat4(IgnoreScale(joint.GetXform()));
+        Mat4 toParentPofInParent =  ToInverseMat4(IgnoreScale(GetTransform(mg, joint.getParentID()))) * ToMat4(IgnoreScale(joint.getXForm()));
         parentPOF->set_translation(osc::ToSimTKVec3(toParentPofInParent[3]));
         parentPOF->set_orientation(osc::ToSimTKVec3(osc::ExtractEulerAngleXYZ(toParentPofInParent)));
 
@@ -3499,7 +3457,7 @@ namespace
         auto childPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         childPOF->setName(child.physicalFrame->getName() + "_offset");
         childPOF->setParentFrame(*child.physicalFrame);
-        Mat4 toChildPofInChild = ToInverseMat4(IgnoreScale(GetTransform(mg, joint.getChildID()))) * ToMat4(IgnoreScale(joint.GetXform()));
+        Mat4 toChildPofInChild = ToInverseMat4(IgnoreScale(GetTransform(mg, joint.getChildID()))) * ToMat4(IgnoreScale(joint.getXForm()));
         childPOF->set_translation(osc::ToSimTKVec3(toChildPofInChild[3]));
         childPOF->set_orientation(osc::ToSimTKVec3(osc::ExtractEulerAngleXYZ(toChildPofInChild)));
 
@@ -3535,9 +3493,9 @@ namespace
         // if there are any meshes attached to the joint, attach them to the parent
         for (MeshEl const& mesh : mg.iter<MeshEl>())
         {
-            if (mesh.getParentID() == joint.GetID())
+            if (mesh.getParentID() == joint.getID())
             {
-                AttachMeshElToFrame(mesh, joint.GetXform(), parentRef);
+                AttachMeshElToFrame(mesh, joint.getXForm(), parentRef);
             }
         }
 
@@ -3545,7 +3503,7 @@ namespace
         OSC_ASSERT_ALWAYS(child.bodyEl != nullptr && "child should always be an identifiable body element");
         for (JointEl const& otherJoint : mg.iter<JointEl>())
         {
-            if (otherJoint.getParentID() == child.bodyEl->GetID())
+            if (otherJoint.getParentID() == child.bodyEl->getID())
             {
                 AttachJointRecursive(mg, model, otherJoint, visitedBodies, visitedJoints);
             }
@@ -3553,7 +3511,8 @@ namespace
     }
 
     // attaches `BodyEl` into `model` by directly attaching it to ground with a WeldJoint
-    void AttachBodyDirectlyToGround(ModelGraph const& mg,
+    void AttachBodyDirectlyToGround(
+        ModelGraph const& mg,
         OpenSim::Model& model,
         BodyEl const& bodyEl,
         std::unordered_map<UID, OpenSim::Body*>& visitedBodies)
@@ -3564,12 +3523,12 @@ namespace
         auto childFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
 
         // set names
-        weldJoint->setName(std::string{bodyEl.GetLabel()} + "_to_ground");
+        weldJoint->setName(std::string{bodyEl.getLabel()} + "_to_ground");
         parentFrame->setName("ground_offset");
-        childFrame->setName(std::string{bodyEl.GetLabel()} + "_offset");
+        childFrame->setName(std::string{bodyEl.getLabel()} + "_offset");
 
         // make the parent have the same position + rotation as the placed body
-        parentFrame->setOffsetTransform(ToSimTKTransform(bodyEl.GetXform()));
+        parentFrame->setOffsetTransform(ToSimTKTransform(bodyEl.getXForm()));
 
         // attach the parent directly to ground and the child directly to the body
         // and make them the two attachments of the joint
@@ -3579,7 +3538,7 @@ namespace
         weldJoint->connectSocket_child_frame(*childFrame);
 
         // populate the "already visited bodies" cache
-        visitedBodies[bodyEl.GetID()] = addedBody.get();
+        visitedBodies[bodyEl.getID()] = addedBody.get();
 
         // add the components into the OpenSim::Model
         osc::AddFrame(*weldJoint, std::move(parentFrame));
@@ -3599,20 +3558,20 @@ namespace
         JointAttachmentCachedLookupResult res = LookupPhysFrame(mg, model, visitedBodies, stationEl.getParentID());
         OSC_ASSERT_ALWAYS(res.physicalFrame != nullptr && "all physical frames should have been added by this point in the model-building process");
 
-        SimTK::Transform const parentXform = ToSimTKTransform(mg.GetElByID(stationEl.getParentID()).GetXform());
-        SimTK::Transform const stationXform = ToSimTKTransform(stationEl.GetXform());
+        SimTK::Transform const parentXform = ToSimTKTransform(mg.getElByID(stationEl.getParentID()).getXForm());
+        SimTK::Transform const stationXform = ToSimTKTransform(stationEl.getXForm());
         SimTK::Vec3 const locationInParent = (parentXform.invert() * stationXform).p();
 
         if (flags & ModelCreationFlags::ExportStationsAsMarkers)
         {
             // export as markers in the model's markerset (overridden behavior)
-            osc::AddMarker(model, to_string(stationEl.GetLabel()), *res.physicalFrame, locationInParent);
+            osc::AddMarker(model, to_string(stationEl.getLabel()), *res.physicalFrame, locationInParent);
         }
         else
         {
             // export as stations in the given frame (default behavior)
             auto station = std::make_unique<OpenSim::Station>(*res.physicalFrame, locationInParent);
-            station->setName(to_string(stationEl.GetLabel()));
+            station->setName(to_string(stationEl.getLabel()));
 
             osc::AddComponent(*res.physicalFrame, std::move(station));
         }
@@ -3703,7 +3662,9 @@ namespace
 
     // tries to find the first body connected to the given PhysicalFrame by assuming
     // that the frame is either already a body or is an offset to a body
-    OpenSim::PhysicalFrame const* TryInclusiveRecurseToBodyOrGround(OpenSim::Frame const& f, std::unordered_set<OpenSim::Frame const*> visitedFrames)
+    OpenSim::PhysicalFrame const* TryInclusiveRecurseToBodyOrGround(
+        OpenSim::Frame const& f,
+        std::unordered_set<OpenSim::Frame const*> visitedFrames)
     {
         if (!visitedFrames.emplace(&f).second)
         {
@@ -3760,10 +3721,10 @@ namespace
             std::string const name = b.getName();
             Transform const xform = ToOsimTransform(b.getTransformInGround(st));
 
-            auto& el = rv.AddEl<BodyEl>(name, xform);
+            auto& el = rv.emplaceEl<BodyEl>(UIDT<BodyEl>{}, name, xform);
             el.setMass(b.getMass());
 
-            bodyLookup.emplace(&b, el.GetID());
+            bodyLookup.emplace(&b, el.getID());
         }
 
         // then try and import all the joints (by looking at their connectivity)
@@ -3840,8 +3801,8 @@ namespace
 
             Transform const xform = ToOsimTransform(parentFrame.getTransformInGround(st));
 
-            auto& jointEl = rv.AddEl<JointEl>(type, name, parent, child, xform);
-            jointLookup.emplace(&j, jointEl.GetID());
+            auto& jointEl = rv.emplaceEl<JointEl>(UIDT<JointEl>{}, type, name, parent, child, xform);
+            jointLookup.emplace(&j, jointEl.getID());
         }
 
 
@@ -3901,12 +3862,12 @@ namespace
                 continue;
             }
 
-            auto& el = rv.AddEl<MeshEl>(attachment, meshData, realLocation);
+            auto& el = rv.emplaceEl<MeshEl>(UIDT<MeshEl>{}, attachment, meshData, realLocation);
             Transform newTransform = ToOsimTransform(frame.getTransformInGround(st));
             newTransform.scale = osc::ToVec3(mesh.get_scale_factors());
 
-            el.SetXform(newTransform);
-            el.SetLabel(mesh.getName());
+            el.setXform(newTransform);
+            el.setLabel(mesh.getName());
         }
 
         // then try to import all the stations
@@ -3953,7 +3914,7 @@ namespace
             Vec3 pos = osc::ToVec3(station.findLocationInFrame(st, m.getGround()));
             std::string name = station.getName();
 
-            rv.AddEl<StationEl>(osc::DowncastID<BodyEl>(attachment), pos, name);
+            rv.emplaceEl<StationEl>(osc::DowncastID<BodyEl>(attachment), pos, name);
         }
 
         return rv;
@@ -3978,15 +3939,18 @@ namespace
             Pos{}
         {
         }
+
         Hover(UID id_, Vec3 pos_) :
             ID{id_},
             Pos{pos_}
         {
         }
+
         explicit operator bool () const noexcept
         {
             return ID != c_EmptyID;
         }
+
         void reset()
         {
             *this = Hover{};
@@ -4002,7 +3966,7 @@ namespace
 
         explicit SharedData(std::vector<std::filesystem::path> meshFiles)
         {
-            PushMeshLoadRequests(std::move(meshFiles));
+            pushMeshLoadRequests(std::move(meshFiles));
         }
 
 
@@ -4010,21 +3974,21 @@ namespace
         // OpenSim OUTPUT MODEL STUFF
         //
 
-        bool HasOutputModel() const
+        bool hasOutputModel() const
         {
             return m_MaybeOutputModel != nullptr;
         }
 
-        std::unique_ptr<OpenSim::Model>& UpdOutputModel()
+        std::unique_ptr<OpenSim::Model>& updOutputModel()
         {
             return m_MaybeOutputModel;
         }
 
-        void TryCreateOutputModel()
+        void tryCreateOutputModel()
         {
             try
             {
-                m_MaybeOutputModel = CreateOpenSimModelFromModelGraph(GetModelGraph(), m_ModelCreationFlags, m_IssuesBuffer);
+                m_MaybeOutputModel = CreateOpenSimModelFromModelGraph(getModelGraph(), m_ModelCreationFlags, m_IssuesBuffer);
             }
             catch (std::exception const& ex)
             {
@@ -4037,7 +4001,7 @@ namespace
         // MODEL GRAPH STUFF
         //
 
-        bool OpenOsimFileAsModelGraph()
+        bool openOsimFileAsModelGraph()
         {
             std::optional<std::filesystem::path> const maybeOsimPath = osc::PromptUserForFile("osim");
 
@@ -4045,7 +4009,7 @@ namespace
             {
                 m_ModelGraphSnapshots = CommittableModelGraph{CreateModelFromOsimFile(*maybeOsimPath)};
                 m_MaybeModelGraphExportLocation = *maybeOsimPath;
-                m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.GetCheckoutID();
+                m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.getCheckoutID();
                 return true;
             }
             else
@@ -4054,14 +4018,14 @@ namespace
             }
         }
 
-        bool ExportModelGraphTo(std::filesystem::path const& exportPath)
+        bool exportModelGraphTo(std::filesystem::path const& exportPath)
         {
             std::vector<std::string> issues;
             std::unique_ptr<OpenSim::Model> m;
 
             try
             {
-                m = CreateOpenSimModelFromModelGraph(GetModelGraph(), m_ModelCreationFlags, issues);
+                m = CreateOpenSimModelFromModelGraph(getModelGraph(), m_ModelCreationFlags, issues);
             }
             catch (std::exception const& ex)
             {
@@ -4072,7 +4036,7 @@ namespace
             {
                 m->print(exportPath.string());
                 m_MaybeModelGraphExportLocation = exportPath;
-                m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.GetCheckoutID();
+                m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.getCheckoutID();
                 return true;
             }
             else
@@ -4085,7 +4049,7 @@ namespace
             }
         }
 
-        bool ExportAsModelGraphAsOsimFile()
+        bool exportAsModelGraphAsOsimFile()
         {
             std::optional<std::filesystem::path> const maybeExportPath =
                 osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
@@ -4095,55 +4059,55 @@ namespace
                 return false;  // user probably cancelled out
             }
 
-            return ExportModelGraphTo(*maybeExportPath);
+            return exportModelGraphTo(*maybeExportPath);
         }
 
-        bool ExportModelGraphAsOsimFile()
+        bool exportModelGraphAsOsimFile()
         {
             if (m_MaybeModelGraphExportLocation.empty())
             {
-                return ExportAsModelGraphAsOsimFile();
+                return exportAsModelGraphAsOsimFile();
             }
 
-            return ExportModelGraphTo(m_MaybeModelGraphExportLocation);
+            return exportModelGraphTo(m_MaybeModelGraphExportLocation);
         }
 
-        bool IsModelGraphUpToDateWithDisk() const
+        bool isModelGraphUpToDateWithDisk() const
         {
-            return m_MaybeModelGraphExportedUID == m_ModelGraphSnapshots.GetCheckoutID();
+            return m_MaybeModelGraphExportedUID == m_ModelGraphSnapshots.getCheckoutID();
         }
 
-        bool IsCloseRequested() const
+        bool isCloseRequested() const
         {
             return m_CloseRequested;
         }
 
-        void RequestClose()
+        void requestClose()
         {
             m_CloseRequested = true;
         }
 
-        void ResetRequestClose()
+        void resetRequestClose()
         {
             m_CloseRequested = false;
         }
 
-        bool IsNewMeshImpoterTabRequested() const
+        bool isNewMeshImpoterTabRequested() const
         {
             return m_NewTabRequested;
         }
 
-        void RequestNewMeshImporterTab()
+        void requestNewMeshImporterTab()
         {
             m_NewTabRequested = true;
         }
 
-        void ResetRequestNewMeshImporter()
+        void resetRequestNewMeshImporter()
         {
             m_NewTabRequested = false;
         }
 
-        std::string GetDocumentName() const
+        std::string getDocumentName() const
         {
             if (m_MaybeModelGraphExportLocation.empty())
             {
@@ -4155,76 +4119,76 @@ namespace
             }
         }
 
-        std::string GetRecommendedTitle() const
+        std::string getRecommendedTitle() const
         {
             std::stringstream ss;
-            ss << ICON_FA_CUBE << ' ' << GetDocumentName();
+            ss << ICON_FA_CUBE << ' ' << getDocumentName();
             return std::move(ss).str();
         }
 
-        ModelGraph const& GetModelGraph() const
+        ModelGraph const& getModelGraph() const
         {
-            return m_ModelGraphSnapshots.GetScratch();
+            return m_ModelGraphSnapshots.getScratch();
         }
 
-        ModelGraph& UpdModelGraph()
+        ModelGraph& updModelGraph()
         {
-            return m_ModelGraphSnapshots.UpdScratch();
+            return m_ModelGraphSnapshots.updScratch();
         }
 
-        CommittableModelGraph& UpdCommittableModelGraph()
+        CommittableModelGraph& updCommittableModelGraph()
         {
             return m_ModelGraphSnapshots;
         }
 
-        void CommitCurrentModelGraph(std::string_view commitMsg)
+        void commitCurrentModelGraph(std::string_view commitMsg)
         {
-            m_ModelGraphSnapshots.Commit(commitMsg);
+            m_ModelGraphSnapshots.commit(commitMsg);
         }
 
-        bool CanUndoCurrentModelGraph() const
+        bool canUndoCurrentModelGraph() const
         {
-            return m_ModelGraphSnapshots.CanUndo();
+            return m_ModelGraphSnapshots.canUndo();
         }
 
-        void UndoCurrentModelGraph()
+        void undoCurrentModelGraph()
         {
-            m_ModelGraphSnapshots.Undo();
+            m_ModelGraphSnapshots.undo();
         }
 
-        bool CanRedoCurrentModelGraph() const
+        bool canRedoCurrentModelGraph() const
         {
-            return m_ModelGraphSnapshots.CanRedo();
+            return m_ModelGraphSnapshots.canRedo();
         }
 
-        void RedoCurrentModelGraph()
+        void redoCurrentModelGraph()
         {
-            m_ModelGraphSnapshots.Redo();
+            m_ModelGraphSnapshots.redo();
         }
 
-        std::unordered_set<UID> const& GetCurrentSelection() const
+        std::unordered_set<UID> const& getCurrentSelection() const
         {
-            return GetModelGraph().GetSelected();
+            return getModelGraph().getSelected();
         }
 
-        void SelectAll()
+        void selectAll()
         {
-            UpdModelGraph().SelectAll();
+            updModelGraph().selectAll();
         }
 
-        void DeSelectAll()
+        void deSelectAll()
         {
-            UpdModelGraph().DeSelectAll();
+            updModelGraph().deSelectAll();
         }
 
-        bool HasSelection() const
+        bool hasSelection() const
         {
-            return ::HasSelection(GetModelGraph());
+            return ::HasSelection(getModelGraph());
         }
 
-        bool IsSelected(UID id) const
+        bool isSelected(UID id) const
         {
-            return GetModelGraph().IsSelected(id);
+            return getModelGraph().isSelected(id);
         }
 
 
@@ -4232,28 +4196,28 @@ namespace
         // MESH LOADING STUFF
         //
 
-        void PushMeshLoadRequests(UID attachmentPoint, std::vector<std::filesystem::path> paths)
+        void pushMeshLoadRequests(UID attachmentPoint, std::vector<std::filesystem::path> paths)
         {
             m_MeshLoader.send(MeshLoadRequest{attachmentPoint, std::move(paths)});
         }
 
-        void PushMeshLoadRequests(std::vector<std::filesystem::path> paths)
+        void pushMeshLoadRequests(std::vector<std::filesystem::path> paths)
         {
-            PushMeshLoadRequests(c_GroundID, std::move(paths));
+            pushMeshLoadRequests(c_GroundID, std::move(paths));
         }
 
-        void PushMeshLoadRequest(UID attachmentPoint, std::filesystem::path const& path)
+        void pushMeshLoadRequest(UID attachmentPoint, std::filesystem::path const& path)
         {
-            PushMeshLoadRequests(attachmentPoint, std::vector<std::filesystem::path>{path});
+            pushMeshLoadRequests(attachmentPoint, std::vector<std::filesystem::path>{path});
         }
 
-        void PushMeshLoadRequest(std::filesystem::path const& meshFilePath)
+        void pushMeshLoadRequest(std::filesystem::path const& meshFilePath)
         {
-            PushMeshLoadRequest(c_GroundID, meshFilePath);
+            pushMeshLoadRequest(c_GroundID, meshFilePath);
         }
 
         // called when the mesh loader responds with a fully-loaded mesh
-        void PopMeshLoader_OnOKResponse(MeshLoadOKResponse& ok)
+        void popMeshLoaderHandleOKResponse(MeshLoadOKResponse& ok)
         {
             if (ok.meshes.empty())
             {
@@ -4261,19 +4225,19 @@ namespace
             }
 
             // add each loaded mesh into the model graph
-            ModelGraph& mg = UpdModelGraph();
-            mg.DeSelectAll();
+            ModelGraph& mg = updModelGraph();
+            mg.deSelectAll();
 
             for (LoadedMesh const& lm : ok.meshes)
             {
-                SceneEl* el = mg.TryUpdElByID(ok.preferredAttachmentPoint);
+                SceneEl* el = mg.tryUpdElByID(ok.preferredAttachmentPoint);
 
                 if (el)
                 {
-                    auto& mesh = mg.AddEl<MeshEl>(ok.preferredAttachmentPoint, lm.meshData, lm.path);
-                    mesh.SetXform(el->GetXform());
-                    mg.Select(mesh);
-                    mg.Select(*el);
+                    auto& mesh = mg.emplaceEl<MeshEl>(UIDT<MeshEl>{}, ok.preferredAttachmentPoint, lm.meshData, lm.path);
+                    mesh.setXform(el->getXForm());
+                    mg.select(mesh);
+                    mg.select(*el);
                 }
             }
 
@@ -4293,17 +4257,17 @@ namespace
                     commitMsgSS << "loaded " << ok.meshes.size() << " meshes";
                 }
 
-                CommitCurrentModelGraph(std::move(commitMsgSS).str());
+                commitCurrentModelGraph(std::move(commitMsgSS).str());
             }
         }
 
         // called when the mesh loader responds with a mesh loading error
-        void PopMeshLoader_OnErrorResponse(MeshLoadErrorResponse& err)
+        void popMeshLoaderHandleErrorResponse(MeshLoadErrorResponse& err)
         {
             osc::log::error("%s: error loading mesh file: %s", err.path.string().c_str(), err.error.c_str());
         }
 
-        void PopMeshLoader()
+        void popMeshLoader()
         {
             for (auto maybeResponse = m_MeshLoader.poll(); maybeResponse.has_value(); maybeResponse = m_MeshLoader.poll())
             {
@@ -4311,23 +4275,23 @@ namespace
 
                 if (std::holds_alternative<MeshLoadOKResponse>(meshLoaderResp))
                 {
-                    PopMeshLoader_OnOKResponse(std::get<MeshLoadOKResponse>(meshLoaderResp));
+                    popMeshLoaderHandleOKResponse(std::get<MeshLoadOKResponse>(meshLoaderResp));
                 }
                 else
                 {
-                    PopMeshLoader_OnErrorResponse(std::get<MeshLoadErrorResponse>(meshLoaderResp));
+                    popMeshLoaderHandleErrorResponse(std::get<MeshLoadErrorResponse>(meshLoaderResp));
                 }
             }
         }
 
-        std::vector<std::filesystem::path> PromptUserForMeshFiles() const
+        std::vector<std::filesystem::path> promptUserForMeshFiles() const
         {
             return osc::PromptUserForFiles(osc::GetCommaDelimitedListOfSupportedSimTKMeshFormats());
         }
 
-        void PromptUserForMeshFilesAndPushThemOntoMeshLoader()
+        void promptUserForMeshFilesAndPushThemOntoMeshLoader()
         {
-            PushMeshLoadRequests(PromptUserForMeshFiles());
+            pushMeshLoadRequests(promptUserForMeshFiles());
         }
 
 
@@ -4335,91 +4299,101 @@ namespace
         // UI OVERLAY STUFF
         //
 
-        Vec2 WorldPosToScreenPos(Vec3 const& worldPos) const
+        Vec2 worldPosToScreenPos(Vec3 const& worldPos) const
         {
-            return GetCamera().projectOntoScreenRect(worldPos, Get3DSceneRect());
+            return getCamera().projectOntoScreenRect(worldPos, get3DSceneRect());
         }
 
-        void DrawConnectionLineTriangleAtMidpoint(ImU32 color, Vec3 parent, Vec3 child) const
+        void drawConnectionLineTriangleAtMidpoint(
+            ImU32 color,
+            Vec3 parent,
+            Vec3 child) const
         {
             constexpr float triangleWidth = 6.0f * c_ConnectionLineWidth;
             constexpr float triangleWidthSquared = triangleWidth*triangleWidth;
 
-            Vec2 parentScr = WorldPosToScreenPos(parent);
-            Vec2 childScr = WorldPosToScreenPos(child);
-            Vec2 child2ParentScr = parentScr - childScr;
+            Vec2 const parentScr = worldPosToScreenPos(parent);
+            Vec2 const childScr = worldPosToScreenPos(child);
+            Vec2 const child2ParentScr = parentScr - childScr;
 
             if (osc::Dot(child2ParentScr, child2ParentScr) < triangleWidthSquared)
             {
                 return;
             }
 
-            Vec3 midpoint = osc::Midpoint(parent, child);
-            Vec2 midpointScr = WorldPosToScreenPos(midpoint);
-            Vec2 directionScr = osc::Normalize(child2ParentScr);
-            Vec2 directionNormalScr = {-directionScr.y, directionScr.x};
+            Vec3 const midpoint = osc::Midpoint(parent, child);
+            Vec2 const midpointScr = worldPosToScreenPos(midpoint);
+            Vec2 const directionScr = osc::Normalize(child2ParentScr);
+            Vec2 const directionNormalScr = {-directionScr.y, directionScr.x};
 
-            Vec2 p1 = midpointScr + (triangleWidth/2.0f)*directionNormalScr;
-            Vec2 p2 = midpointScr - (triangleWidth/2.0f)*directionNormalScr;
-            Vec2 p3 = midpointScr + triangleWidth*directionScr;
+            Vec2 const p1 = midpointScr + (triangleWidth/2.0f)*directionNormalScr;
+            Vec2 const p2 = midpointScr - (triangleWidth/2.0f)*directionNormalScr;
+            Vec2 const p3 = midpointScr + triangleWidth*directionScr;
 
             ImGui::GetWindowDrawList()->AddTriangleFilled(p1, p2, p3, color);
         }
 
-        void DrawConnectionLine(ImU32 color, Vec3 const& parent, Vec3 const& child) const
+        void drawConnectionLine(
+            ImU32 color,
+            Vec3 const& parent,
+            Vec3 const& child) const
         {
             // the line
-            ImGui::GetWindowDrawList()->AddLine(WorldPosToScreenPos(parent), WorldPosToScreenPos(child), color, c_ConnectionLineWidth);
+            ImGui::GetWindowDrawList()->AddLine(worldPosToScreenPos(parent), worldPosToScreenPos(child), color, c_ConnectionLineWidth);
 
             // the triangle
-            DrawConnectionLineTriangleAtMidpoint(color, parent, child);
+            drawConnectionLineTriangleAtMidpoint(color, parent, child);
         }
 
-        void DrawConnectionLines(SceneEl const& el, ImU32 color, std::unordered_set<UID> const& excludedIDs) const
+        void drawConnectionLines(
+            SceneEl const& el,
+            ImU32 color,
+            std::unordered_set<UID> const& excludedIDs) const
         {
-            for (int i = 0, len = el.GetNumCrossReferences(); i < len; ++i)
+            for (int i = 0, len = el.getNumCrossReferences(); i < len; ++i)
             {
-                UID refID = el.GetCrossReferenceConnecteeID(i);
+                UID refID = el.getCrossReferenceConnecteeID(i);
 
                 if (Contains(excludedIDs, refID))
                 {
                     continue;
                 }
 
-                SceneEl const* other = GetModelGraph().TryGetElByID(refID);
+                SceneEl const* other = getModelGraph().tryGetElByID(refID);
 
                 if (!other)
                 {
                     continue;
                 }
 
-                Vec3 child = el.GetPos();
-                Vec3 parent = other->GetPos();
+                Vec3 child = el.getPos();
+                Vec3 parent = other->getPos();
 
-                if (el.GetCrossReferenceDirection(i) == CrossrefDirection::ToChild) {
+                if (el.getCrossReferenceDirection(i) == CrossrefDirection::ToChild)
+                {
                     std::swap(parent, child);
                 }
 
-                DrawConnectionLine(color, parent, child);
+                drawConnectionLine(color, parent, child);
             }
         }
 
-        void DrawConnectionLines(SceneEl const& el, ImU32 color) const
+        void drawConnectionLines(SceneEl const& el, ImU32 color) const
         {
-            DrawConnectionLines(el, color, std::unordered_set<UID>{});
+            drawConnectionLines(el, color, std::unordered_set<UID>{});
         }
 
-        void DrawConnectionLineToGround(SceneEl const& el, ImU32 color) const
+        void drawConnectionLineToGround(SceneEl const& el, ImU32 color) const
         {
-            if (el.GetID() == c_GroundID)
+            if (el.getID() == c_GroundID)
             {
                 return;
             }
 
-            DrawConnectionLine(color, Vec3{}, el.GetPos());
+            drawConnectionLine(color, Vec3{}, el.getPos());
         }
 
-        bool ShouldShowConnectionLines(SceneEl const& el) const
+        bool shouldShowConnectionLines(SceneEl const& el) const
         {
             class Visitor final : public ConstSceneElVisitor {
             public:
@@ -4432,22 +4406,22 @@ namespace
 
                 void operator()(MeshEl const&) final
                 {
-                    m_Result = m_Shared.IsShowingMeshConnectionLines();
+                    m_Result = m_Shared.isShowingMeshConnectionLines();
                 }
 
                 void operator()(BodyEl const&) final
                 {
-                    m_Result = m_Shared.IsShowingBodyConnectionLines();
+                    m_Result = m_Shared.isShowingBodyConnectionLines();
                 }
 
                 void operator()(JointEl const&) final
                 {
-                    m_Result = m_Shared.IsShowingJointConnectionLines();
+                    m_Result = m_Shared.isShowingJointConnectionLines();
                 }
 
                 void operator()(StationEl const&) final
                 {
-                    m_Result = m_Shared.IsShowingMeshConnectionLines();
+                    m_Result = m_Shared.isShowingMeshConnectionLines();
                 }
 
                 bool result() const
@@ -4461,74 +4435,76 @@ namespace
             };
 
             Visitor v{*this};
-            el.Accept(v);
+            el.accept(v);
             return v.result();
         }
 
-        void DrawConnectionLines(Color const& color, std::unordered_set<UID> const& excludedIDs) const
+        void drawConnectionLines(
+            Color const& color,
+            std::unordered_set<UID> const& excludedIDs) const
         {
-            ModelGraph const& mg = GetModelGraph();
+            ModelGraph const& mg = getModelGraph();
             ImU32 colorU32 = ImGui::ColorConvertFloat4ToU32(Vec4{color});
 
             for (SceneEl const& el : mg.iter())
             {
-                UID id = el.GetID();
+                UID id = el.getID();
 
                 if (Contains(excludedIDs, id))
                 {
                     continue;
                 }
 
-                if (!ShouldShowConnectionLines(el))
+                if (!shouldShowConnectionLines(el))
                 {
                     continue;
                 }
 
-                if (el.GetNumCrossReferences() > 0)
+                if (el.getNumCrossReferences() > 0)
                 {
-                    DrawConnectionLines(el, colorU32, excludedIDs);
+                    drawConnectionLines(el, colorU32, excludedIDs);
                 }
                 else if (!IsAChildAttachmentInAnyJoint(mg, el))
                 {
-                    DrawConnectionLineToGround(el, colorU32);
+                    drawConnectionLineToGround(el, colorU32);
                 }
             }
         }
 
-        void DrawConnectionLines(Color const& color) const
+        void drawConnectionLines(Color const& color) const
         {
-            DrawConnectionLines(color, {});
+            drawConnectionLines(color, {});
         }
 
-        void DrawConnectionLines(Hover const& currentHover) const
+        void drawConnectionLines(Hover const& currentHover) const
         {
-            ModelGraph const& mg = GetModelGraph();
+            ModelGraph const& mg = getModelGraph();
             ImU32 color = ImGui::ColorConvertFloat4ToU32(Vec4{m_Colors.connectionLines});
 
             for (SceneEl const& el : mg.iter())
             {
-                UID id = el.GetID();
+                UID id = el.getID();
 
                 if (id != currentHover.ID && !IsCrossReferencing(el, currentHover.ID))
                 {
                     continue;
                 }
 
-                if (!ShouldShowConnectionLines(el))
+                if (!shouldShowConnectionLines(el))
                 {
                     continue;
                 }
 
-                if (el.GetNumCrossReferences() > 0)
+                if (el.getNumCrossReferences() > 0)
                 {
-                    DrawConnectionLines(el, color);
+                    drawConnectionLines(el, color);
                 }
                 else if (!IsAChildAttachmentInAnyJoint(mg, el))
                 {
-                    DrawConnectionLineToGround(el, color);
+                    drawConnectionLineToGround(el, color);
                 }
             }
-            //DrawConnectionLines(m_Colors.connectionLines);
+            //drawConnectionLines(m_Colors.connectionLines);
         }
 
 
@@ -4536,16 +4512,16 @@ namespace
         // RENDERING STUFF
         //
 
-        void SetContentRegionAvailAsSceneRect()
+        void setContentRegionAvailAsSceneRect()
         {
-            Set3DSceneRect(osc::ContentRegionAvailScreenRect());
+            set3DSceneRect(osc::ContentRegionAvailScreenRect());
         }
 
-        void DrawScene(std::span<DrawableThing> drawables)
+        void drawScene(std::span<DrawableThing> drawables)
         {
             // setup rendering params
             SceneRendererParams p;
-            p.dimensions = osc::Dimensions(Get3DSceneRect());
+            p.dimensions = osc::Dimensions(get3DSceneRect());
             p.antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
             p.drawRims = true;
             p.drawFloor = false;
@@ -4557,13 +4533,21 @@ namespace
             p.lightDirection = osc::RecommendedLightDirection(m_3DSceneCamera);
             p.lightColor = Color::white();
             p.ambientStrength *= 1.5f;
-            p.backgroundColor = GetColorSceneBackground();
+            p.backgroundColor = getColorSceneBackground();
 
             std::vector<SceneDecoration> decs;
             decs.reserve(drawables.size());
             for (DrawableThing const& dt : drawables)
             {
-                decs.emplace_back(dt.mesh, dt.transform, dt.color, std::string{}, dt.flags, dt.maybeMaterial, dt.maybePropertyBlock);
+                decs.emplace_back(
+                    dt.mesh,
+                    dt.transform,
+                    dt.color,
+                    std::string{},
+                    dt.flags,
+                    dt.maybeMaterial,
+                    dt.maybePropertyBlock
+                );
             }
 
             // render
@@ -4573,238 +4557,238 @@ namespace
             osc::DrawTextureAsImGuiImage(m_SceneRenderer.updRenderTexture(), m_SceneRenderer.getDimensions());
 
             // handle hittesting, etc.
-            SetIsRenderHovered(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
+            setIsRenderHovered(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
         }
 
-        bool IsRenderHovered() const
+        bool isRenderHovered() const
         {
             return m_IsRenderHovered;
         }
 
-        void SetIsRenderHovered(bool newIsHovered)
+        void setIsRenderHovered(bool newIsHovered)
         {
             m_IsRenderHovered = newIsHovered;
         }
 
-        Rect const& Get3DSceneRect() const
+        Rect const& get3DSceneRect() const
         {
             return m_3DSceneRect;
         }
 
-        void Set3DSceneRect(Rect const& newRect)
+        void set3DSceneRect(Rect const& newRect)
         {
             m_3DSceneRect = newRect;
         }
 
-        Vec2 Get3DSceneDims() const
+        Vec2 get3DSceneDims() const
         {
             return Dimensions(m_3DSceneRect);
         }
 
-        PolarPerspectiveCamera const& GetCamera() const
+        PolarPerspectiveCamera const& getCamera() const
         {
             return m_3DSceneCamera;
         }
 
-        PolarPerspectiveCamera& UpdCamera()
+        PolarPerspectiveCamera& updCamera()
         {
             return m_3DSceneCamera;
         }
 
-        void FocusCameraOn(Vec3 const& focusPoint)
+        void focusCameraOn(Vec3 const& focusPoint)
         {
             m_3DSceneCamera.focusPoint = -focusPoint;
         }
 
-        RenderTexture& UpdSceneTex()
+        RenderTexture& updSceneTex()
         {
             return m_SceneRenderer.updRenderTexture();
         }
 
-        std::span<Color const> GetColors() const
+        std::span<Color const> getColors() const
         {
             static_assert(offsetof(Colors, ground) == 0);
             static_assert(sizeof(Colors) % sizeof(Color) == 0);
             return {&m_Colors.ground, sizeof(m_Colors)/sizeof(Color)};
         }
 
-        std::span<Color> UpdColors()
+        std::span<Color> updColors()
         {
             static_assert(offsetof(Colors, ground) == 0);
             static_assert(sizeof(Colors) % sizeof(Color) == 0);
             return {&m_Colors.ground, sizeof(m_Colors)/sizeof(Color)};
         }
 
-        void SetColor(size_t i, Color const& newColorValue)
+        void setColor(size_t i, Color const& newColorValue)
         {
-            UpdColors()[i] = newColorValue;
+            updColors()[i] = newColorValue;
         }
 
-        std::span<char const* const> GetColorLabels() const
+        std::span<char const* const> getColorLabels() const
         {
             return c_ColorNames;
         }
 
-        Color const& GetColorSceneBackground() const
+        Color const& getColorSceneBackground() const
         {
             return m_Colors.sceneBackground;
         }
 
-        Color const& GetColorMesh() const
+        Color const& getColorMesh() const
         {
             return m_Colors.meshes;
         }
 
-        void SetColorMesh(Color const& newColor)
+        void setColorMesh(Color const& newColor)
         {
             m_Colors.meshes = newColor;
         }
 
-        Color const& GetColorGround() const
+        Color const& getColorGround() const
         {
             return m_Colors.ground;
         }
 
-        Color const& GetColorStation() const
+        Color const& getColorStation() const
         {
             return m_Colors.stations;
         }
 
-        Color const& GetColorConnectionLine() const
+        Color const& getColorConnectionLine() const
         {
             return m_Colors.connectionLines;
         }
 
-        void SetColorConnectionLine(Color const& newColor)
+        void setColorConnectionLine(Color const& newColor)
         {
             m_Colors.connectionLines = newColor;
         }
 
-        std::span<bool const> GetVisibilityFlags() const
+        std::span<bool const> getVisibilityFlags() const
         {
             static_assert(offsetof(VisibilityFlags, ground) == 0);
             static_assert(sizeof(VisibilityFlags) % sizeof(bool) == 0);
             return {&m_VisibilityFlags.ground, sizeof(m_VisibilityFlags)/sizeof(bool)};
         }
 
-        std::span<bool> UpdVisibilityFlags()
+        std::span<bool> updVisibilityFlags()
         {
             static_assert(offsetof(VisibilityFlags, ground) == 0);
             static_assert(sizeof(VisibilityFlags) % sizeof(bool) == 0);
             return {&m_VisibilityFlags.ground, sizeof(m_VisibilityFlags)/sizeof(bool)};
         }
 
-        void SetVisibilityFlag(size_t i, bool newVisibilityValue)
+        void setVisibilityFlag(size_t i, bool newVisibilityValue)
         {
-            UpdVisibilityFlags()[i] = newVisibilityValue;
+            updVisibilityFlags()[i] = newVisibilityValue;
         }
 
-        std::span<char const* const> GetVisibilityFlagLabels() const
+        std::span<char const* const> getVisibilityFlagLabels() const
         {
             return c_VisibilityFlagNames;
         }
 
-        bool IsShowingMeshes() const
+        bool isShowingMeshes() const
         {
             return m_VisibilityFlags.meshes;
         }
 
-        void SetIsShowingMeshes(bool newIsShowing)
+        void setIsShowingMeshes(bool newIsShowing)
         {
             m_VisibilityFlags.meshes = newIsShowing;
         }
 
-        bool IsShowingBodies() const
+        bool isShowingBodies() const
         {
             return m_VisibilityFlags.bodies;
         }
 
-        void SetIsShowingBodies(bool newIsShowing)
+        void setIsShowingBodies(bool newIsShowing)
         {
             m_VisibilityFlags.bodies = newIsShowing;
         }
 
-        bool IsShowingJointCenters() const
+        bool isShowingJointCenters() const
         {
             return m_VisibilityFlags.joints;
         }
 
-        void SetIsShowingJointCenters(bool newIsShowing)
+        void setIsShowingJointCenters(bool newIsShowing)
         {
             m_VisibilityFlags.joints = newIsShowing;
         }
 
-        bool IsShowingGround() const
+        bool isShowingGround() const
         {
             return m_VisibilityFlags.ground;
         }
 
-        void SetIsShowingGround(bool newIsShowing)
+        void setIsShowingGround(bool newIsShowing)
         {
             m_VisibilityFlags.ground = newIsShowing;
         }
 
-        bool IsShowingFloor() const
+        bool isShowingFloor() const
         {
             return m_VisibilityFlags.floor;
         }
 
-        void SetIsShowingFloor(bool newIsShowing)
+        void setIsShowingFloor(bool newIsShowing)
         {
             m_VisibilityFlags.floor = newIsShowing;
         }
 
-        bool IsShowingStations() const
+        bool isShowingStations() const
         {
             return m_VisibilityFlags.stations;
         }
 
-        void SetIsShowingStations(bool v)
+        void setIsShowingStations(bool v)
         {
             m_VisibilityFlags.stations = v;
         }
 
-        bool IsShowingJointConnectionLines() const
+        bool isShowingJointConnectionLines() const
         {
             return m_VisibilityFlags.jointConnectionLines;
         }
 
-        void SetIsShowingJointConnectionLines(bool newIsShowing)
+        void setIsShowingJointConnectionLines(bool newIsShowing)
         {
             m_VisibilityFlags.jointConnectionLines = newIsShowing;
         }
 
-        bool IsShowingMeshConnectionLines() const
+        bool isShowingMeshConnectionLines() const
         {
             return m_VisibilityFlags.meshConnectionLines;
         }
 
-        void SetIsShowingMeshConnectionLines(bool newIsShowing)
+        void setIsShowingMeshConnectionLines(bool newIsShowing)
         {
             m_VisibilityFlags.meshConnectionLines = newIsShowing;
         }
 
-        bool IsShowingBodyConnectionLines() const
+        bool isShowingBodyConnectionLines() const
         {
             return m_VisibilityFlags.bodyToGroundConnectionLines;
         }
 
-        void SetIsShowingBodyConnectionLines(bool newIsShowing)
+        void setIsShowingBodyConnectionLines(bool newIsShowing)
         {
             m_VisibilityFlags.bodyToGroundConnectionLines = newIsShowing;
         }
 
-        bool IsShowingStationConnectionLines() const
+        bool isShowingStationConnectionLines() const
         {
             return m_VisibilityFlags.stationConnectionLines;
         }
 
-        void SetIsShowingStationConnectionLines(bool newIsShowing)
+        void setIsShowingStationConnectionLines(bool newIsShowing)
         {
             m_VisibilityFlags.stationConnectionLines = newIsShowing;
         }
 
-        Transform GetFloorTransform() const
+        Transform getFloorTransform() const
         {
             Transform t;
             t.rotation = osc::AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{-1.0f, 0.0f, 0.0f});
@@ -4812,9 +4796,9 @@ namespace
             return t;
         }
 
-        DrawableThing GenerateFloorDrawable() const
+        DrawableThing generateFloorDrawable() const
         {
-            Transform t = GetFloorTransform();
+            Transform t = getFloorTransform();
             t.scale *= 0.5f;
 
             Material material{App::singleton<ShaderCache>()->load(App::resource("shaders/SolidColor.vert"), App::resource("shaders/SolidColor.frag"))};
@@ -4832,17 +4816,17 @@ namespace
             return dt;
         }
 
-        float GetSphereRadius() const
+        float getSphereRadius() const
         {
             return 0.02f * m_SceneScaleFactor;
         }
 
-        Sphere SphereAtTranslation(Vec3 const& translation) const
+        Sphere sphereAtTranslation(Vec3 const& translation) const
         {
-            return Sphere{translation, GetSphereRadius()};
+            return Sphere{translation, getSphereRadius()};
         }
 
-        void AppendAsFrame(
+        void appendAsFrame(
             UID logicalID,
             UID groupID,
             Transform const& xform,
@@ -4852,7 +4836,7 @@ namespace
             Vec3 legLen = {1.0f, 1.0f, 1.0f},
             Color coreColor = Color::white()) const
         {
-            float const coreRadius = GetSphereRadius();
+            float const coreRadius = getSphereRadius();
             float const legThickness = 0.5f * coreRadius;
 
             // this is how much the cylinder has to be "pulled in" to the core to hide the edges
@@ -4894,7 +4878,7 @@ namespace
                 t.scale.y = 0.5f * actualLegLen;  // cylinder is 2 units high
                 t.scale.z = legThickness;
                 t.rotation = osc::Normalize(xform.rotation * osc::Rotation(meshDirection, cylinderDirection));
-                t.position = xform.position + (t.rotation * (((GetSphereRadius() + (0.5f * actualLegLen)) - cylinderPullback) * meshDirection));
+                t.position = xform.position + (t.rotation * (((getSphereRadius() + (0.5f * actualLegLen)) - cylinderPullback) * meshDirection));
 
                 Color color = {0.0f, 0.0f, 0.0f, alpha};
                 color[i] = 1.0f;
@@ -4909,12 +4893,13 @@ namespace
             }
         }
 
-        void AppendAsCubeThing(UID logicalID,
+        void appendAsCubeThing(
+            UID logicalID,
             UID groupID,
             Transform const& xform,
             std::vector<DrawableThing>& appendOut) const
         {
-            float const halfWidth = 1.5f * GetSphereRadius();
+            float const halfWidth = 1.5f * getSphereRadius();
 
             // core
             {
@@ -4965,93 +4950,93 @@ namespace
         // HOVERTEST/INTERACTIVITY
         //
 
-        std::span<bool const> GetIneractivityFlags() const
+        std::span<bool const> getIneractivityFlags() const
         {
             static_assert(offsetof(InteractivityFlags, ground) == 0);
             static_assert(sizeof(InteractivityFlags) % sizeof(bool) == 0);
             return {&m_InteractivityFlags.ground, sizeof(m_InteractivityFlags)/sizeof(bool)};
         }
 
-        std::span<bool> UpdInteractivityFlags()
+        std::span<bool> updInteractivityFlags()
         {
             static_assert(offsetof(InteractivityFlags, ground) == 0);
             static_assert(sizeof(InteractivityFlags) % sizeof(bool) == 0);
             return {&m_InteractivityFlags.ground, sizeof(m_InteractivityFlags)/sizeof(bool)};
         }
 
-        void SetInteractivityFlag(size_t i, bool newInteractivityValue)
+        void setInteractivityFlag(size_t i, bool newInteractivityValue)
         {
-            UpdInteractivityFlags()[i] = newInteractivityValue;
+            updInteractivityFlags()[i] = newInteractivityValue;
         }
 
-        std::span<char const* const> GetInteractivityFlagLabels() const
+        std::span<char const* const> getInteractivityFlagLabels() const
         {
             return c_InteractivityFlagNames;
         }
 
-        bool IsMeshesInteractable() const
+        bool isMeshesInteractable() const
         {
             return m_InteractivityFlags.meshes;
         }
 
-        void SetIsMeshesInteractable(bool newIsInteractable)
+        void setIsMeshesInteractable(bool newIsInteractable)
         {
             m_InteractivityFlags.meshes = newIsInteractable;
         }
 
-        bool IsBodiesInteractable() const
+        bool isBodiesInteractable() const
         {
             return m_InteractivityFlags.bodies;
         }
 
-        void SetIsBodiesInteractable(bool newIsInteractable)
+        void setIsBodiesInteractable(bool newIsInteractable)
         {
             m_InteractivityFlags.bodies = newIsInteractable;
         }
 
-        bool IsJointCentersInteractable() const
+        bool isJointCentersInteractable() const
         {
             return m_InteractivityFlags.joints;
         }
 
-        void SetIsJointCentersInteractable(bool newIsInteractable)
+        void setIsJointCentersInteractable(bool newIsInteractable)
         {
             m_InteractivityFlags.joints = newIsInteractable;
         }
 
-        bool IsGroundInteractable() const
+        bool isGroundInteractable() const
         {
             return m_InteractivityFlags.ground;
         }
 
-        void SetIsGroundInteractable(bool newIsInteractable)
+        void setIsGroundInteractable(bool newIsInteractable)
         {
             m_InteractivityFlags.ground = newIsInteractable;
         }
 
-        bool IsStationsInteractable() const
+        bool isStationsInteractable() const
         {
             return m_InteractivityFlags.stations;
         }
 
-        void SetIsStationsInteractable(bool v)
+        void setIsStationsInteractable(bool v)
         {
             m_InteractivityFlags.stations = v;
         }
 
-        float GetSceneScaleFactor() const
+        float getSceneScaleFactor() const
         {
             return m_SceneScaleFactor;
         }
 
-        void SetSceneScaleFactor(float newScaleFactor)
+        void setSceneScaleFactor(float newScaleFactor)
         {
             m_SceneScaleFactor = newScaleFactor;
         }
 
-        Hover Hovertest(std::vector<DrawableThing> const& drawables) const
+        Hover doHovertest(std::vector<DrawableThing> const& drawables) const
         {
-            Rect const sceneRect = Get3DSceneRect();
+            Rect const sceneRect = get3DSceneRect();
             Vec2 const mousePos = ImGui::GetMousePos();
 
             if (!IsPointInRect(sceneRect, mousePos))
@@ -5063,12 +5048,12 @@ namespace
             Vec2 const sceneDims = Dimensions(sceneRect);
             Vec2 const relMousePos = mousePos - sceneRect.p1;
 
-            Line const ray = GetCamera().unprojectTopLeftPosToWorldRay(relMousePos, sceneDims);
-            bool const hittestMeshes = IsMeshesInteractable();
-            bool const hittestBodies = IsBodiesInteractable();
-            bool const hittestJointCenters = IsJointCentersInteractable();
-            bool const hittestGround = IsGroundInteractable();
-            bool const hittestStations = IsStationsInteractable();
+            Line const ray = getCamera().unprojectTopLeftPosToWorldRay(relMousePos, sceneDims);
+            bool const hittestMeshes = isMeshesInteractable();
+            bool const hittestBodies = isBodiesInteractable();
+            bool const hittestJointCenters = isJointCentersInteractable();
+            bool const hittestGround = isGroundInteractable();
+            bool const hittestStations = isStationsInteractable();
 
             UID closestID = c_EmptyID;
             float closestDist = std::numeric_limits<float>::max();
@@ -5126,12 +5111,12 @@ namespace
         // MODEL CREATION FLAGS
         //
 
-        ModelCreationFlags GetModelCreationFlags() const
+        ModelCreationFlags getModelCreationFlags() const
         {
             return m_ModelCreationFlags;
         }
 
-        void SetModelCreationFlags(ModelCreationFlags newFlags)
+        void setModelCreationFlags(ModelCreationFlags newFlags)
         {
             m_ModelCreationFlags = newFlags;
         }
@@ -5140,74 +5125,76 @@ namespace
         // SCENE ELEMENT STUFF (specific methods for specific scene element types)
         //
 
-        void UnassignMesh(MeshEl const& me)
+        void unassignMesh(MeshEl const& me)
         {
-            UpdModelGraph().UpdElByID<MeshEl>(me.GetID()).getParentID() = c_GroundID;
+            updModelGraph().updElByID<MeshEl>(me.getID()).getParentID() = c_GroundID;
 
             std::stringstream ss;
-            ss << "unassigned '" << me.GetLabel() << "' back to ground";
-            CommitCurrentModelGraph(std::move(ss).str());
+            ss << "unassigned '" << me.getLabel() << "' back to ground";
+            commitCurrentModelGraph(std::move(ss).str());
         }
 
-        DrawableThing GenerateMeshElDrawable(MeshEl const& meshEl) const
+        DrawableThing generateMeshElDrawable(MeshEl const& meshEl) const
         {
             DrawableThing rv;
-            rv.id = meshEl.GetID();
+            rv.id = meshEl.getID();
             rv.groupId = c_MeshGroupID;
             rv.mesh = meshEl.getMeshData();
-            rv.transform = meshEl.GetXform();
-            rv.color = meshEl.getParentID() == c_GroundID || meshEl.getParentID() == c_EmptyID ? RedifyColor(GetColorMesh()) : GetColorMesh();
+            rv.transform = meshEl.getXForm();
+            rv.color = meshEl.getParentID() == c_GroundID || meshEl.getParentID() == c_EmptyID ? RedifyColor(getColorMesh()) : getColorMesh();
             rv.flags = SceneDecorationFlags::None;
             return rv;
         }
 
-        DrawableThing GenerateBodyElSphere(BodyEl const& bodyEl, Color const& color) const
+        DrawableThing generateBodyElSphere(BodyEl const& bodyEl, Color const& color) const
         {
             DrawableThing rv;
-            rv.id = bodyEl.GetID();
+            rv.id = bodyEl.getID();
             rv.groupId = c_BodyGroupID;
             rv.mesh = m_SphereMesh;
-            rv.transform = SphereMeshToSceneSphereTransform(SphereAtTranslation(bodyEl.GetXform().position));
+            rv.transform = SphereMeshToSceneSphereTransform(sphereAtTranslation(bodyEl.getXForm().position));
             rv.color = color;
             rv.flags = SceneDecorationFlags::None;
             return rv;
         }
 
-        DrawableThing GenerateGroundSphere(Color const& color) const
+        DrawableThing generateGroundSphere(Color const& color) const
         {
             DrawableThing rv;
             rv.id = c_GroundID;
             rv.groupId = c_GroundGroupID;
             rv.mesh = m_SphereMesh;
-            rv.transform = SphereMeshToSceneSphereTransform(SphereAtTranslation({0.0f, 0.0f, 0.0f}));
+            rv.transform = SphereMeshToSceneSphereTransform(sphereAtTranslation({0.0f, 0.0f, 0.0f}));
             rv.color = color;
             rv.flags = SceneDecorationFlags::None;
             return rv;
         }
 
-        DrawableThing GenerateStationSphere(StationEl const& el, Color const& color) const
+        DrawableThing generateStationSphere(StationEl const& el, Color const& color) const
         {
             DrawableThing rv;
-            rv.id = el.GetID();
+            rv.id = el.getID();
             rv.groupId = c_StationGroupID;
             rv.mesh = m_SphereMesh;
-            rv.transform = SphereMeshToSceneSphereTransform(SphereAtTranslation(el.GetPos()));
+            rv.transform = SphereMeshToSceneSphereTransform(sphereAtTranslation(el.getPos()));
             rv.color = color;
             rv.flags = SceneDecorationFlags::None;
             return rv;
         }
 
-        void AppendBodyElAsCubeThing(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
+        void appendBodyElAsCubeThing(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
         {
-            AppendAsCubeThing(bodyEl.GetID(), c_BodyGroupID, bodyEl.GetXform(), appendOut);
+            appendAsCubeThing(bodyEl.getID(), c_BodyGroupID, bodyEl.getXForm(), appendOut);
         }
 
-        void AppendBodyElAsFrame(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
+        void appendBodyElAsFrame(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
         {
-            AppendAsFrame(bodyEl.GetID(), c_BodyGroupID, bodyEl.GetXform(), appendOut);
+            appendAsFrame(bodyEl.getID(), c_BodyGroupID, bodyEl.getXForm(), appendOut);
         }
 
-        void AppendDrawables(SceneEl const& e, std::vector<DrawableThing>& appendOut) const
+        void appendDrawables(
+            SceneEl const& e,
+            std::vector<DrawableThing>& appendOut) const
         {
             class Visitor final : public ConstSceneElVisitor {
             public:
@@ -5222,40 +5209,40 @@ namespace
 
                 void operator()(GroundEl const&) final
                 {
-                    if (!m_Data.IsShowingGround())
+                    if (!m_Data.isShowingGround())
                     {
                         return;
                     }
 
-                    m_Out.push_back(m_Data.GenerateGroundSphere(m_Data.GetColorGround()));
+                    m_Out.push_back(m_Data.generateGroundSphere(m_Data.getColorGround()));
                 }
                 void operator()(MeshEl const& el) final
                 {
-                    if (!m_Data.IsShowingMeshes())
+                    if (!m_Data.isShowingMeshes())
                     {
                         return;
                     }
 
-                    m_Out.push_back(m_Data.GenerateMeshElDrawable(el));
+                    m_Out.push_back(m_Data.generateMeshElDrawable(el));
                 }
                 void operator()(BodyEl const& el) final
                 {
-                    if (!m_Data.IsShowingBodies())
+                    if (!m_Data.isShowingBodies())
                     {
                         return;
                     }
 
-                    m_Data.AppendBodyElAsCubeThing(el, m_Out);
+                    m_Data.appendBodyElAsCubeThing(el, m_Out);
                 }
                 void operator()(JointEl const& el) final
                 {
-                    if (!m_Data.IsShowingJointCenters()) {
+                    if (!m_Data.isShowingJointCenters()) {
                         return;
                     }
 
-                    m_Data.AppendAsFrame(el.GetID(),
+                    m_Data.appendAsFrame(el.getID(),
                         c_JointGroupID,
-                        el.GetXform(),
+                        el.getXForm(),
                         m_Out,
                         1.0f,
                         SceneDecorationFlags::None,
@@ -5263,12 +5250,12 @@ namespace
                 }
                 void operator()(StationEl const& el) final
                 {
-                    if (!m_Data.IsShowingStations())
+                    if (!m_Data.isShowingStations())
                     {
                         return;
                     }
 
-                    m_Out.push_back(m_Data.GenerateStationSphere(el, m_Data.GetColorStation()));
+                    m_Out.push_back(m_Data.generateStationSphere(el, m_Data.getColorStation()));
                 }
             private:
                 SharedData const& m_Data;
@@ -5276,7 +5263,7 @@ namespace
             };
 
             Visitor visitor{*this, appendOut};
-            e.Accept(visitor);
+            e.accept(visitor);
         }
 
         //
@@ -5354,13 +5341,13 @@ namespace
             {
                 std::vector<std::filesystem::path> buf;
                 std::swap(buf, m_DroppedFiles);
-                PushMeshLoadRequests(std::move(buf));
+                pushMeshLoadRequests(std::move(buf));
             }
 
             // pop any background-loaded meshes
-            PopMeshLoader();
+            popMeshLoader();
 
-            m_ModelGraphSnapshots.GarbageCollect();
+            m_ModelGraphSnapshots.garbageCollect();
         }
 
     private:
@@ -5371,7 +5358,7 @@ namespace
         std::filesystem::path m_MaybeModelGraphExportLocation;
 
         // (maybe) the UID of the model graph when it was last successfully saved to disk (used for dirty checking)
-        UID m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.GetCheckoutID();
+        UID m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.getCheckoutID();
 
         // a batch of files that the user drag-dropped into the UI in the last frame
         std::vector<std::filesystem::path> m_DroppedFiles;
@@ -5517,7 +5504,6 @@ namespace
 // select 2 mesh points layer
 namespace
 {
-
     // runtime options for "Select two mesh points" UI layer
     struct Select2MeshPointsOptions final {
 
@@ -5550,20 +5536,20 @@ namespace
 
     private:
 
-        bool IsBothPointsSelected() const
+        bool isBothPointsSelected() const
         {
             return m_MaybeFirstLocation && m_MaybeSecondLocation;
         }
 
-        bool IsAnyPointSelected() const
+        bool isAnyPointSelected() const
         {
             return m_MaybeFirstLocation || m_MaybeSecondLocation;
         }
 
         // handle the transition that may occur after the user clicks two points
-        void HandlePossibleTransitionToNextStep()
+        void handlePossibleTransitionToNextStep()
         {
-            if (!IsBothPointsSelected())
+            if (!isBothPointsSelected())
             {
                 return;  // user hasn't selected two points yet
             }
@@ -5584,7 +5570,7 @@ namespace
 
         // handle any side-effects of the user interacting with whatever they are
         // hovered over
-        void HandleHovertestSideEffects()
+        void handleHovertestSideEffects()
         {
             if (!m_MaybeCurrentHover)
             {
@@ -5594,35 +5580,35 @@ namespace
             {
                 // LEFT CLICK: set first mouse location
                 m_MaybeFirstLocation = m_MaybeCurrentHover.Pos;
-                HandlePossibleTransitionToNextStep();
+                handlePossibleTransitionToNextStep();
             }
             else if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
             {
                 // RIGHT CLICK: set second mouse location
                 m_MaybeSecondLocation = m_MaybeCurrentHover.Pos;
-                HandlePossibleTransitionToNextStep();
+                handlePossibleTransitionToNextStep();
             }
         }
 
         // generate 3D drawable geometry for this particular layer
-        std::vector<DrawableThing>& GenerateDrawables()
+        std::vector<DrawableThing>& generateDrawables()
         {
             m_DrawablesBuffer.clear();
 
-            ModelGraph const& mg = m_Shared->GetModelGraph();
+            ModelGraph const& mg = m_Shared->getModelGraph();
 
             for (MeshEl const& meshEl : mg.iter<MeshEl>())
             {
-                m_DrawablesBuffer.emplace_back(m_Shared->GenerateMeshElDrawable(meshEl));
+                m_DrawablesBuffer.emplace_back(m_Shared->generateMeshElDrawable(meshEl));
             }
 
-            m_DrawablesBuffer.push_back(m_Shared->GenerateFloorDrawable());
+            m_DrawablesBuffer.push_back(m_Shared->generateFloorDrawable());
 
             return m_DrawablesBuffer;
         }
 
         // draw tooltip that pops up when user is moused over a mesh
-        void DrawHoverTooltip()
+        void drawHoverTooltip()
         {
             if (!m_MaybeCurrentHover)
             {
@@ -5636,15 +5622,15 @@ namespace
         }
 
         // draw 2D overlay over the render, things like connection lines, dots, etc.
-        void DrawOverlay()
+        void drawOverlay()
         {
-            if (!IsAnyPointSelected())
+            if (!isAnyPointSelected())
             {
                 return;
             }
 
             Vec3 clickedWorldPos = m_MaybeFirstLocation ? *m_MaybeFirstLocation : *m_MaybeSecondLocation;
-            Vec2 clickedScrPos = m_Shared->WorldPosToScreenPos(clickedWorldPos);
+            Vec2 clickedScrPos = m_Shared->worldPosToScreenPos(clickedWorldPos);
 
             auto color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
 
@@ -5655,14 +5641,14 @@ namespace
                 return;
             }
 
-            Vec2 hoverScrPos = m_Shared->WorldPosToScreenPos(m_MaybeCurrentHover.Pos);
+            Vec2 hoverScrPos = m_Shared->worldPosToScreenPos(m_MaybeCurrentHover.Pos);
 
             dl->AddCircleFilled(hoverScrPos, 5.0f, color);
             dl->AddLine(clickedScrPos, hoverScrPos, color, 5.0f);
         }
 
         // draw 2D "choose something" text at the top of the render
-        void DrawHeaderText() const
+        void drawHeaderText() const
         {
             if (m_Options.header.empty())
             {
@@ -5671,19 +5657,19 @@ namespace
 
             ImU32 color = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
             Vec2 padding{10.0f, 10.0f};
-            Vec2 pos = m_Shared->Get3DSceneRect().p1 + padding;
+            Vec2 pos = m_Shared->get3DSceneRect().p1 + padding;
             ImGui::GetWindowDrawList()->AddText(pos, color, m_Options.header.c_str());
         }
 
         // draw a user-clickable button for cancelling out of this choosing state
-        void DrawCancelButton()
+        void drawCancelButton()
         {
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
             osc::PushStyleColor(ImGuiCol_Button, Color::halfGrey());
 
             CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
             Vec2 const margin = {25.0f, 35.0f};
-            Vec2 const buttonTopLeft = m_Shared->Get3DSceneRect().p2 - (osc::CalcButtonSize(text) + margin);
+            Vec2 const buttonTopLeft = m_Shared->get3DSceneRect().p2 - (osc::CalcButtonSize(text) + margin);
 
             ImGui::SetCursorScreenPos(buttonTopLeft);
             if (ImGui::Button(text.c_str()))
@@ -5710,26 +5696,26 @@ namespace
                 requestPop();
             }
 
-            bool isRenderHovered = m_Shared->IsRenderHovered();
+            bool isRenderHovered = m_Shared->isRenderHovered();
 
             if (isRenderHovered)
             {
-                UpdatePolarCameraFromImGuiMouseInputs(m_Shared->UpdCamera(), m_Shared->Get3DSceneDims());
+                UpdatePolarCameraFromImGuiMouseInputs(m_Shared->updCamera(), m_Shared->get3DSceneDims());
             }
         }
 
         void implOnDraw() final
         {
-            m_Shared->SetContentRegionAvailAsSceneRect();
-            std::vector<DrawableThing>& drawables = GenerateDrawables();
-            m_MaybeCurrentHover = m_Shared->Hovertest(drawables);
-            HandleHovertestSideEffects();
+            m_Shared->setContentRegionAvailAsSceneRect();
+            std::vector<DrawableThing>& drawables = generateDrawables();
+            m_MaybeCurrentHover = m_Shared->doHovertest(drawables);
+            handleHovertestSideEffects();
 
-            m_Shared->DrawScene(drawables);
-            DrawOverlay();
-            DrawHoverTooltip();
-            DrawHeaderText();
-            DrawCancelButton();
+            m_Shared->drawScene(drawables);
+            drawOverlay();
+            drawHoverTooltip();
+            drawHeaderText();
+            drawCancelButton();
         }
 
         // data that's shared between other UI states
@@ -5805,21 +5791,21 @@ namespace
 
     private:
         // returns true if the user's mouse is hovering over the given scene element
-        bool IsHovered(SceneEl const& el) const
+        bool isHovered(SceneEl const& el) const
         {
-            return el.GetID() == m_MaybeHover.ID;
+            return el.getID() == m_MaybeHover.ID;
         }
 
         // returns true if the user has already selected the given scene element
-        bool IsSelected(SceneEl const& el) const
+        bool isSelected(SceneEl const& el) const
         {
-            return std::find(m_SelectedEls.begin(), m_SelectedEls.end(), el.GetID()) != m_SelectedEls.end();
+            return std::find(m_SelectedEls.begin(), m_SelectedEls.end(), el.getID()) != m_SelectedEls.end();
         }
 
         // returns true if the user can (de)select the given element
-        bool IsSelectable(SceneEl const& el) const
+        bool isSelectable(SceneEl const& el) const
         {
-            if (Contains(m_Options.maybeElsAttachingTo, el.GetID()))
+            if (Contains(m_Options.maybeElsAttachingTo, el.getID()))
             {
                 return false;
             }
@@ -5866,57 +5852,57 @@ namespace
             };
 
             Visitor v{m_Options};
-            el.Accept(v);
+            el.accept(v);
             return v.result();
         }
 
-        void Select(SceneEl const& el)
+        void select(SceneEl const& el)
         {
-            if (!IsSelectable(el))
+            if (!isSelectable(el))
             {
                 return;
             }
 
-            if (IsSelected(el))
+            if (isSelected(el))
             {
                 return;
             }
 
-            m_SelectedEls.push_back(el.GetID());
+            m_SelectedEls.push_back(el.getID());
         }
 
-        void DeSelect(SceneEl const& el)
+        void deSelect(SceneEl const& el)
         {
-            if (!IsSelectable(el))
+            if (!isSelectable(el))
             {
                 return;
             }
 
-            std::erase_if(m_SelectedEls, [elID = el.GetID()](UID id) { return id == elID; } );
+            std::erase_if(m_SelectedEls, [elID = el.getID()](UID id) { return id == elID; } );
         }
 
-        void TryToggleSelectionStateOf(SceneEl const& el)
+        void tryToggleSelectionStateOf(SceneEl const& el)
         {
-            IsSelected(el) ? DeSelect(el) : Select(el);
+            isSelected(el) ? deSelect(el) : select(el);
         }
 
-        void TryToggleSelectionStateOf(UID id)
+        void tryToggleSelectionStateOf(UID id)
         {
-            SceneEl const* el = m_Shared->GetModelGraph().TryGetElByID(id);
+            SceneEl const* el = m_Shared->getModelGraph().tryGetElByID(id);
 
             if (el)
             {
-                TryToggleSelectionStateOf(*el);
+                tryToggleSelectionStateOf(*el);
             }
         }
 
-        SceneDecorationFlags ComputeFlags(SceneEl const& el) const
+        SceneDecorationFlags computeFlags(SceneEl const& el) const
         {
-            if (IsSelected(el))
+            if (isSelected(el))
             {
                 return SceneDecorationFlags::IsSelected;
             }
-            else if (IsHovered(el))
+            else if (isHovered(el))
             {
                 return SceneDecorationFlags::IsHovered;
             }
@@ -5927,11 +5913,11 @@ namespace
         }
 
         // returns a list of 3D drawable scene objects for this layer
-        std::vector<DrawableThing>& GenerateDrawables()
+        std::vector<DrawableThing>& generateDrawables()
         {
             m_DrawablesBuffer.clear();
 
-            ModelGraph const& mg = m_Shared->GetModelGraph();
+            ModelGraph const& mg = m_Shared->getModelGraph();
 
             float fadedAlpha = 0.2f;
             float animScale = EaseOutElastic(m_AnimationFraction);
@@ -5939,18 +5925,18 @@ namespace
             for (SceneEl const& el : mg.iter())
             {
                 size_t start = m_DrawablesBuffer.size();
-                m_Shared->AppendDrawables(el, m_DrawablesBuffer);
+                m_Shared->appendDrawables(el, m_DrawablesBuffer);
                 size_t end = m_DrawablesBuffer.size();
 
-                bool isSelectable = IsSelectable(el);
-                SceneDecorationFlags flags = ComputeFlags(el);
+                bool isSelectableEl = isSelectable(el);
+                SceneDecorationFlags flags = computeFlags(el);
 
                 for (size_t i = start; i < end; ++i)
                 {
                     DrawableThing& d = m_DrawablesBuffer[i];
                     d.flags = flags;
 
-                    if (!isSelectable)
+                    if (!isSelectableEl)
                     {
                         d.color.a = fadedAlpha;
                         d.id = c_EmptyID;
@@ -5964,12 +5950,12 @@ namespace
             }
 
             // floor
-            m_DrawablesBuffer.push_back(m_Shared->GenerateFloorDrawable());
+            m_DrawablesBuffer.push_back(m_Shared->generateFloorDrawable());
 
             return m_DrawablesBuffer;
         }
 
-        void HandlePossibleCompletion()
+        void handlePossibleCompletion()
         {
             if (static_cast<int>(m_SelectedEls.size()) < m_Options.numElementsUserMustChoose)
             {
@@ -5987,38 +5973,38 @@ namespace
         }
 
         // handle any side-effects from the user's mouse hover
-        void HandleHovertestSideEffects()
+        void handleHovertestSideEffects()
         {
             if (!m_MaybeHover)
             {
                 return;
             }
 
-            DrawHoverTooltip();
+            drawHoverTooltip();
 
             if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
             {
-                TryToggleSelectionStateOf(m_MaybeHover.ID);
-                HandlePossibleCompletion();
+                tryToggleSelectionStateOf(m_MaybeHover.ID);
+                handlePossibleCompletion();
             }
         }
 
         // draw 2D tooltip that pops up when user is hovered over something in the scene
-        void DrawHoverTooltip() const
+        void drawHoverTooltip() const
         {
             if (!m_MaybeHover)
             {
                 return;
             }
 
-            SceneEl const* se = m_Shared->GetModelGraph().TryGetElByID(m_MaybeHover.ID);
+            SceneEl const* se = m_Shared->getModelGraph().tryGetElByID(m_MaybeHover.ID);
 
             if (se)
             {
                 ImGui::BeginTooltip();
-                ImGui::TextUnformatted(se->GetLabel().c_str());
+                ImGui::TextUnformatted(se->getLabel().c_str());
                 ImGui::SameLine();
-                ImGui::TextDisabled("(%s, click to choose)", se->GetClass().getName().c_str());
+                ImGui::TextDisabled("(%s, click to choose)", se->getClass().getName().c_str());
                 ImGui::EndTooltip();
             }
         }
@@ -6026,40 +6012,40 @@ namespace
         // draw 2D connection overlay lines that show what's connected to what in the graph
         //
         // depends on layer options
-        void DrawConnectionLines() const
+        void drawConnectionLines() const
         {
             if (!m_MaybeHover)
             {
                 // user isn't hovering anything, so just draw all existing connection
                 // lines, but faintly
-                m_Shared->DrawConnectionLines(FaintifyColor(m_Shared->GetColorConnectionLine()));
+                m_Shared->drawConnectionLines(FaintifyColor(m_Shared->getColorConnectionLine()));
                 return;
             }
 
             // else: user is hovering *something*
 
             // draw all other connection lines but exclude the thing being assigned (if any)
-            m_Shared->DrawConnectionLines(FaintifyColor(m_Shared->GetColorConnectionLine()), m_Options.maybeElsBeingReplacedByChoice);
+            m_Shared->drawConnectionLines(FaintifyColor(m_Shared->getColorConnectionLine()), m_Options.maybeElsBeingReplacedByChoice);
 
             // draw strong connection line between the things being attached to and the hover
             for (UID elAttachingTo : m_Options.maybeElsAttachingTo)
             {
-                Vec3 parentPos = GetPosition(m_Shared->GetModelGraph(), elAttachingTo);
-                Vec3 childPos = GetPosition(m_Shared->GetModelGraph(), m_MaybeHover.ID);
+                Vec3 parentPos = GetPosition(m_Shared->getModelGraph(), elAttachingTo);
+                Vec3 childPos = GetPosition(m_Shared->getModelGraph(), m_MaybeHover.ID);
 
                 if (!m_Options.isAttachingTowardEl)
                 {
                     std::swap(parentPos, childPos);
                 }
 
-                ImU32 strongColorU2 = ImGui::ColorConvertFloat4ToU32(Vec4{m_Shared->GetColorConnectionLine()});
+                ImU32 strongColorU2 = ImGui::ColorConvertFloat4ToU32(Vec4{m_Shared->getColorConnectionLine()});
 
-                m_Shared->DrawConnectionLine(strongColorU2, parentPos, childPos);
+                m_Shared->drawConnectionLine(strongColorU2, parentPos, childPos);
             }
         }
 
         // draw 2D header text in top-left corner of the screen
-        void DrawHeaderText() const
+        void drawHeaderText() const
         {
             if (m_Options.header.empty())
             {
@@ -6068,19 +6054,19 @@ namespace
 
             ImU32 color = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
             Vec2 padding = Vec2{10.0f, 10.0f};
-            Vec2 pos = m_Shared->Get3DSceneRect().p1 + padding;
+            Vec2 pos = m_Shared->get3DSceneRect().p1 + padding;
             ImGui::GetWindowDrawList()->AddText(pos, color, m_Options.header.c_str());
         }
 
         // draw a user-clickable button for cancelling out of this choosing state
-        void DrawCancelButton()
+        void drawCancelButton()
         {
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
             osc::PushStyleColor(ImGuiCol_Button, Color::halfGrey());
 
             CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
             Vec2 const margin = {25.0f, 35.0f};
-            Vec2 const buttonTopLeft = m_Shared->Get3DSceneRect().p2 - (osc::CalcButtonSize(text) + margin);
+            Vec2 const buttonTopLeft = m_Shared->get3DSceneRect().p2 - (osc::CalcButtonSize(text) + margin);
 
             ImGui::SetCursorScreenPos(buttonTopLeft);
             if (ImGui::Button(text.c_str()))
@@ -6107,11 +6093,11 @@ namespace
                 requestPop();
             }
 
-            bool isRenderHovered = m_Shared->IsRenderHovered();
+            bool isRenderHovered = m_Shared->isRenderHovered();
 
             if (isRenderHovered)
             {
-                UpdatePolarCameraFromImGuiMouseInputs(m_Shared->UpdCamera(), m_Shared->Get3DSceneDims());
+                UpdatePolarCameraFromImGuiMouseInputs(m_Shared->updCamera(), m_Shared->get3DSceneDims());
             }
 
             if (m_AnimationFraction < 1.0f)
@@ -6123,17 +6109,17 @@ namespace
 
         void implOnDraw() final
         {
-            m_Shared->SetContentRegionAvailAsSceneRect();
+            m_Shared->setContentRegionAvailAsSceneRect();
 
-            std::vector<DrawableThing>& drawables = GenerateDrawables();
+            std::vector<DrawableThing>& drawables = generateDrawables();
 
-            m_MaybeHover = m_Shared->Hovertest(drawables);
-            HandleHovertestSideEffects();
+            m_MaybeHover = m_Shared->doHovertest(drawables);
+            handleHovertestSideEffects();
 
-            m_Shared->DrawScene(drawables);
-            DrawConnectionLines();
-            DrawHeaderText();
-            DrawCancelButton();
+            m_Shared->drawScene(drawables);
+            drawConnectionLines();
+            drawHeaderText();
+            drawCancelButton();
         }
 
         // data that's shared between other UI states
@@ -6475,12 +6461,12 @@ namespace
             ImportedCSVData const& result,
             StationsDefinedInGround const& data)
         {
-            CommittableModelGraph& undoable = m_Shared->UpdCommittableModelGraph();
+            CommittableModelGraph& undoable = m_Shared->updCommittableModelGraph();
 
-            ModelGraph& graph = undoable.UpdScratch();
+            ModelGraph& graph = undoable.updScratch();
             for (StationDefinedInGround const& station : data.rows)
             {
-                graph.AddEl<StationEl>(
+                graph.emplaceEl<StationEl>(
                     UIDT<StationEl>{},
                     c_GroundID,
                     station.location,
@@ -6490,7 +6476,7 @@ namespace
 
             std::stringstream ss;
             ss << "imported " << result.sourceDataPath;
-            undoable.Commit(std::move(ss).str());
+            undoable.commit(std::move(ss).str());
         }
 
         std::shared_ptr<SharedData> m_Shared;
@@ -6528,12 +6514,12 @@ public:
 
     bool isUnsaved() const
     {
-        return !m_Shared->IsModelGraphUpToDateWithDisk();
+        return !m_Shared->isModelGraphUpToDateWithDisk();
     }
 
     bool trySave()
     {
-        if (m_Shared->IsModelGraphUpToDateWithDisk())
+        if (m_Shared->isModelGraphUpToDateWithDisk())
         {
             // nothing to save
             return true;
@@ -6541,7 +6527,7 @@ public:
         else
         {
             // try to save the changes
-            return m_Shared->ExportAsModelGraphAsOsimFile();
+            return m_Shared->exportAsModelGraphAsOsimFile();
         }
     }
 
@@ -6588,34 +6574,34 @@ public:
         }
 
         // if some screen generated an OpenSim::Model, transition to the main editor
-        if (m_Shared->HasOutputModel())
+        if (m_Shared->hasOutputModel())
         {
-            auto ptr = std::make_unique<UndoableModelStatePair>(std::move(m_Shared->UpdOutputModel()));
-            ptr->setFixupScaleFactor(m_Shared->GetSceneScaleFactor());
+            auto ptr = std::make_unique<UndoableModelStatePair>(std::move(m_Shared->updOutputModel()));
+            ptr->setFixupScaleFactor(m_Shared->getSceneScaleFactor());
             m_Parent->addAndSelectTab<ModelEditorTab>(m_Parent, std::move(ptr));
         }
 
-        m_Name = m_Shared->GetRecommendedTitle();
+        m_Name = m_Shared->getRecommendedTitle();
 
-        if (m_Shared->IsCloseRequested())
+        if (m_Shared->isCloseRequested())
         {
             m_Parent->closeTab(m_TabID);
-            m_Shared->ResetRequestClose();
+            m_Shared->resetRequestClose();
         }
 
-        if (m_Shared->IsNewMeshImpoterTabRequested())
+        if (m_Shared->isNewMeshImpoterTabRequested())
         {
             m_Parent->addAndSelectTab<MeshImporterTab>(m_Parent);
-            m_Shared->ResetRequestNewMeshImporter();
+            m_Shared->resetRequestNewMeshImporter();
         }
     }
 
     void drawMainMenu()
     {
-        DrawMainMenuFileMenu();
-        DrawMainMenuEditMenu();
-        DrawMainMenuWindowMenu();
-        DrawMainMenuAboutMenu();
+        drawMainMenuFileMenu();
+        drawMainMenuEditMenu();
+        drawMainMenuWindowMenu();
+        drawMainMenuAboutMenu();
     }
 
     void onDraw()
@@ -6626,12 +6612,12 @@ public:
         // handle keyboards using ImGui's input poller
         if (!m_Maybe3DViewerModal)
         {
-            UpdateFromImGuiKeyboardState();
+            updateFromImGuiKeyboardState();
         }
 
-        if (!m_Maybe3DViewerModal && m_Shared->IsRenderHovered() && !ImGuizmo::IsUsing())
+        if (!m_Maybe3DViewerModal && m_Shared->isRenderHovered() && !ImGuizmo::IsUsing())
         {
-            UpdatePolarCameraFromImGuiMouseInputs(m_Shared->UpdCamera(), m_Shared->Get3DSceneDims());
+            UpdatePolarCameraFromImGuiMouseInputs(m_Shared->updCamera(), m_Shared->get3DSceneDims());
         }
 
         // draw history panel (if enabled)
@@ -6640,7 +6626,7 @@ public:
             bool v = true;
             if (ImGui::Begin("history", &v))
             {
-                DrawHistoryPanelContent();
+                drawHistoryPanelContent();
             }
             ImGui::End();
 
@@ -6653,7 +6639,7 @@ public:
             bool v = true;
             if (ImGui::Begin("navigator", &v))
             {
-                DrawNavigatorPanelContent();
+                drawNavigatorPanelContent();
             }
             ImGui::End();
 
@@ -6687,7 +6673,7 @@ public:
         }
 
         // draw contextual 3D modal (if there is one), else: draw standard 3D viewer
-        DrawMainViewerPanelOrModal();
+        drawMainViewerPanelOrModal();
 
         // draw any active popups over the scene
         m_PopupManager.onDraw();
@@ -6707,51 +6693,51 @@ private:
     }
 
     // try to select *only* what is currently hovered
-    void SelectJustHover()
+    void selectJustHover()
     {
         if (!m_MaybeHover)
         {
             return;
         }
 
-        m_Shared->UpdModelGraph().Select(m_MaybeHover.ID);
+        m_Shared->updModelGraph().select(m_MaybeHover.ID);
     }
 
     // try to select what is currently hovered *and* anything that is "grouped"
     // with the hovered item
     //
     // "grouped" here specifically means other meshes connected to the same body
-    void SelectAnythingGroupedWithHover()
+    void selectAnythingGroupedWithHover()
     {
         if (!m_MaybeHover)
         {
             return;
         }
 
-        SelectAnythingGroupedWith(m_Shared->UpdModelGraph(), m_MaybeHover.ID);
+        SelectAnythingGroupedWith(m_Shared->updModelGraph(), m_MaybeHover.ID);
     }
 
     // add a body element to whatever's currently hovered at the hover (raycast) position
-    void TryAddBodyToHoveredElement()
+    void tryAddBodyToHoveredElement()
     {
         if (!m_MaybeHover)
         {
             return;
         }
 
-        AddBody(m_Shared->UpdCommittableModelGraph(), m_MaybeHover.Pos, {m_MaybeHover.ID});
+        AddBody(m_Shared->updCommittableModelGraph(), m_MaybeHover.Pos, {m_MaybeHover.ID});
     }
 
-    void TryCreatingJointFromHoveredElement()
+    void tryCreatingJointFromHoveredElement()
     {
         if (!m_MaybeHover)
         {
             return;  // nothing hovered
         }
 
-        ModelGraph const& mg = m_Shared->GetModelGraph();
+        ModelGraph const& mg = m_Shared->getModelGraph();
 
-        SceneEl const* hoveredSceneEl = mg.TryGetElByID(m_MaybeHover.ID);
+        SceneEl const* hoveredSceneEl = mg.tryGetElByID(m_MaybeHover.ID);
 
         if (!hoveredSceneEl)
         {
@@ -6765,28 +6751,28 @@ private:
             return;  // can't attach to it as-if it were a body
         }
 
-        auto const* bodyEl = mg.TryGetElByID<BodyEl>(maybeID);
+        auto const* bodyEl = mg.tryGetElByID<BodyEl>(maybeID);
         if (!bodyEl)
         {
             return;  // suggested attachment parent isn't in the current model graph?
         }
 
-        TransitionToChoosingJointParent(*bodyEl);
+        transitionToChoosingJointParent(*bodyEl);
     }
 
     // try transitioning the shown UI layer to one where the user is assigning a mesh
-    void TryTransitionToAssigningHoverAndSelectionNextFrame()
+    void tryTransitionToAssigningHoverAndSelectionNextFrame()
     {
-        ModelGraph const& mg = m_Shared->GetModelGraph();
+        ModelGraph const& mg = m_Shared->getModelGraph();
 
         std::unordered_set<UID> meshes;
-        meshes.insert(mg.GetSelected().begin(), mg.GetSelected().end());
+        meshes.insert(mg.getSelected().begin(), mg.getSelected().end());
         if (m_MaybeHover)
         {
             meshes.insert(m_MaybeHover.ID);
         }
 
-        std::erase_if(meshes, [&mg](UID meshID) { return !mg.ContainsEl<MeshEl>(meshID); });
+        std::erase_if(meshes, [&mg](UID meshID) { return !mg.containsEl<MeshEl>(meshID); });
 
         if (meshes.empty())
         {
@@ -6796,20 +6782,20 @@ private:
         std::unordered_set<UID> attachments;
         for (UID meshID : meshes)
         {
-            attachments.insert(mg.GetElByID<MeshEl>(meshID).getParentID());
+            attachments.insert(mg.getElByID<MeshEl>(meshID).getParentID());
         }
 
-        TransitionToAssigningMeshesNextFrame(meshes, attachments);
+        transitionToAssigningMeshesNextFrame(meshes, attachments);
     }
 
-    void TryAddingStationAtMousePosToHoveredElement()
+    void tryAddingStationAtMousePosToHoveredElement()
     {
         if (!m_MaybeHover)
         {
             return;
         }
 
-        AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), m_MaybeHover.ID, m_MaybeHover.Pos);
+        AddStationAtLocation(m_Shared->updCommittableModelGraph(), m_MaybeHover.ID, m_MaybeHover.Pos);
     }
 
     //
@@ -6819,7 +6805,7 @@ private:
     //
 
     // transition the shown UI layer to one where the user is assigning a mesh
-    void TransitionToAssigningMeshesNextFrame(std::unordered_set<UID> const& meshes, std::unordered_set<UID> const& existingAttachments)
+    void transitionToAssigningMeshesNextFrame(std::unordered_set<UID> const& meshes, std::unordered_set<UID> const& existingAttachments)
     {
         ChooseElLayerOptions opts;
         opts.canChooseBodies = true;
@@ -6837,7 +6823,7 @@ private:
                 return false;
             }
 
-            return TryAssignMeshAttachments(shared->UpdCommittableModelGraph(), meshes, choices.front());
+            return TryAssignMeshAttachments(shared->updCommittableModelGraph(), meshes, choices.front());
         };
 
         // request a state transition
@@ -6845,7 +6831,7 @@ private:
     }
 
     // transition the shown UI layer to one where the user is choosing a joint parent
-    void TransitionToChoosingJointParent(BodyEl const& child)
+    void transitionToChoosingJointParent(BodyEl const& child)
     {
         ChooseElLayerOptions opts;
         opts.canChooseBodies = true;
@@ -6853,23 +6839,23 @@ private:
         opts.canChooseJoints = false;
         opts.canChooseMeshes = false;
         opts.header = "choose joint parent (ESC to cancel)";
-        opts.maybeElsAttachingTo = {child.GetID()};
+        opts.maybeElsAttachingTo = {child.getID()};
         opts.isAttachingTowardEl = false;  // away from the body
-        opts.onUserChoice = [shared = m_Shared, childID = child.GetID()](std::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, childID = child.getID()](std::span<UID> choices)
         {
             if (choices.empty())
             {
                 return false;
             }
 
-            return TryCreateJoint(shared->UpdCommittableModelGraph(), childID, choices.front());
+            return TryCreateJoint(shared->updCommittableModelGraph(), childID, choices.front());
         };
         m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
     }
 
     // transition the shown UI layer to one where the user is choosing which element in the scene to point
     // an element's axis towards
-    void TransitionToChoosingWhichElementToPointAxisTowards(SceneEl& el, int axis)
+    void transitionToChoosingWhichElementToPointAxisTowards(SceneEl& el, int axis)
     {
         ChooseElLayerOptions opts;
         opts.canChooseBodies = true;
@@ -6877,16 +6863,16 @@ private:
         opts.canChooseJoints = true;
         opts.canChooseMeshes = false;
         opts.canChooseStations = true;
-        opts.maybeElsAttachingTo = {el.GetID()};
+        opts.maybeElsAttachingTo = {el.getID()};
         opts.header = "choose what to point towards (ESC to cancel)";
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID(), axis](std::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.getID(), axis](std::span<UID> choices)
         {
             if (choices.empty())
             {
                 return false;
             }
 
-            return PointAxisTowards(shared->UpdCommittableModelGraph(), id, axis, choices.front());
+            return PointAxisTowards(shared->updCommittableModelGraph(), id, axis, choices.front());
         };
         m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
     }
@@ -6894,7 +6880,7 @@ private:
     // transition the shown UI layer to one where the user is choosing two elements that the given axis
     // should be aligned along (i.e. the direction vector from the first element to the second element
     // becomes the direction vector of the given axis)
-    void TransitionToChoosingTwoElementsToAlignAxisAlong(SceneEl& el, int axis)
+    void transitionToChoosingTwoElementsToAlignAxisAlong(SceneEl& el, int axis)
     {
         ChooseElLayerOptions opts;
         opts.canChooseBodies = true;
@@ -6902,10 +6888,10 @@ private:
         opts.canChooseJoints = true;
         opts.canChooseMeshes = false;
         opts.canChooseStations = true;
-        opts.maybeElsAttachingTo = {el.GetID()};
+        opts.maybeElsAttachingTo = {el.getID()};
         opts.header = "choose two elements to align the axis along (ESC to cancel)";
         opts.numElementsUserMustChoose = 2;
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID(), axis](std::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.getID(), axis](std::span<UID> choices)
         {
             if (choices.size() < 2)
             {
@@ -6913,7 +6899,7 @@ private:
             }
 
             return TryOrientElementAxisAlongTwoElements(
-                shared->UpdCommittableModelGraph(),
+                shared->updCommittableModelGraph(),
                 id,
                 axis,
                 choices[0],
@@ -6923,7 +6909,7 @@ private:
         m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
     }
 
-    void TransitionToChoosingWhichElementToTranslateTo(SceneEl& el)
+    void transitionToChoosingWhichElementToTranslateTo(SceneEl& el)
     {
         ChooseElLayerOptions opts;
         opts.canChooseBodies = true;
@@ -6931,21 +6917,21 @@ private:
         opts.canChooseJoints = true;
         opts.canChooseMeshes = false;
         opts.canChooseStations = true;
-        opts.maybeElsAttachingTo = {el.GetID()};
+        opts.maybeElsAttachingTo = {el.getID()};
         opts.header = "choose what to translate to (ESC to cancel)";
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](std::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.getID()](std::span<UID> choices)
         {
             if (choices.empty())
             {
                 return false;
             }
 
-            return TryTranslateElementToAnotherElement(shared->UpdCommittableModelGraph(), id, choices.front());
+            return TryTranslateElementToAnotherElement(shared->updCommittableModelGraph(), id, choices.front());
         };
         m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
     }
 
-    void TransitionToChoosingElementsToTranslateBetween(SceneEl& el)
+    void transitionToChoosingElementsToTranslateBetween(SceneEl& el)
     {
         ChooseElLayerOptions opts;
         opts.canChooseBodies = true;
@@ -6953,10 +6939,10 @@ private:
         opts.canChooseJoints = true;
         opts.canChooseMeshes = false;
         opts.canChooseStations = true;
-        opts.maybeElsAttachingTo = {el.GetID()};
+        opts.maybeElsAttachingTo = {el.getID()};
         opts.header = "choose two elements to translate between (ESC to cancel)";
         opts.numElementsUserMustChoose = 2;
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](std::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.getID()](std::span<UID> choices)
         {
             if (choices.size() < 2)
             {
@@ -6964,60 +6950,61 @@ private:
             }
 
             return TryTranslateBetweenTwoElements(
-                shared->UpdCommittableModelGraph(),
+                shared->updCommittableModelGraph(),
                 id,
                 choices[0],
-                choices[1]);
+                choices[1]
+            );
         };
         m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
     }
 
-    void TransitionToCopyingSomethingElsesOrientation(SceneEl& el)
+    void transitionToCopyingSomethingElsesOrientation(SceneEl& el)
     {
         ChooseElLayerOptions opts;
         opts.canChooseBodies = true;
         opts.canChooseGround = true;
         opts.canChooseJoints = true;
         opts.canChooseMeshes = true;
-        opts.maybeElsAttachingTo = {el.GetID()};
+        opts.maybeElsAttachingTo = {el.getID()};
         opts.header = "choose which orientation to copy (ESC to cancel)";
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](std::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.getID()](std::span<UID> choices)
         {
             if (choices.empty())
             {
                 return false;
             }
 
-            return TryCopyOrientation(shared->UpdCommittableModelGraph(), id, choices.front());
+            return TryCopyOrientation(shared->updCommittableModelGraph(), id, choices.front());
         };
         m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
     }
 
     // transition the shown UI layer to one where the user is choosing two mesh points that
     // the element should be oriented along
-    void TransitionToOrientingElementAlongTwoMeshPoints(SceneEl& el, int axis)
+    void transitionToOrientingElementAlongTwoMeshPoints(SceneEl& el, int axis)
     {
         Select2MeshPointsOptions opts;
-        opts.onTwoPointsChosen = [shared = m_Shared, id = el.GetID(), axis](Vec3 a, Vec3 b)
+        opts.onTwoPointsChosen = [shared = m_Shared, id = el.getID(), axis](Vec3 a, Vec3 b)
         {
-            return TryOrientElementAxisAlongTwoPoints(shared->UpdCommittableModelGraph(), id, axis, a, b);
+            return TryOrientElementAxisAlongTwoPoints(shared->updCommittableModelGraph(), id, axis, a, b);
         };
         m_Maybe3DViewerModal = std::make_shared<Select2MeshPointsLayer>(*this, m_Shared, opts);
     }
 
     // transition the shown UI layer to one where the user is choosing two mesh points that
     // the element sould be translated to the midpoint of
-    void TransitionToTranslatingElementAlongTwoMeshPoints(SceneEl& el)
+    void transitionToTranslatingElementAlongTwoMeshPoints(SceneEl& el)
     {
         Select2MeshPointsOptions opts;
-        opts.onTwoPointsChosen = [shared = m_Shared, id = el.GetID()](Vec3 a, Vec3 b)
+        opts.onTwoPointsChosen = [shared = m_Shared, id = el.getID()](Vec3 a, Vec3 b)
         {
-            return TryTranslateElementBetweenTwoPoints(shared->UpdCommittableModelGraph(), id, a, b);
+            return TryTranslateElementBetweenTwoPoints(shared->updCommittableModelGraph(), id, a, b);
         };
         m_Maybe3DViewerModal = std::make_shared<Select2MeshPointsLayer>(*this, m_Shared, opts);
     }
 
-    void TransitionToTranslatingElementToMeshAverageCenter(SceneEl& el)
+    void transitionToTranslatingElementToMeshAverageCenter(SceneEl& el)
     {
         ChooseElLayerOptions opts;
         opts.canChooseBodies = false;
@@ -7025,19 +7012,19 @@ private:
         opts.canChooseJoints = false;
         opts.canChooseMeshes = true;
         opts.header = "choose a mesh (ESC to cancel)";
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](std::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.getID()](std::span<UID> choices)
         {
             if (choices.empty())
             {
                 return false;
             }
 
-            return TryTranslateToMeshAverageCenter(shared->UpdCommittableModelGraph(), id, choices.front());
+            return TryTranslateToMeshAverageCenter(shared->updCommittableModelGraph(), id, choices.front());
         };
         m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
     }
 
-    void TransitionToTranslatingElementToMeshBoundsCenter(SceneEl& el)
+    void transitionToTranslatingElementToMeshBoundsCenter(SceneEl& el)
     {
         ChooseElLayerOptions opts;
         opts.canChooseBodies = false;
@@ -7045,19 +7032,19 @@ private:
         opts.canChooseJoints = false;
         opts.canChooseMeshes = true;
         opts.header = "choose a mesh (ESC to cancel)";
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](std::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.getID()](std::span<UID> choices)
         {
             if (choices.empty())
             {
                 return false;
             }
 
-            return TryTranslateToMeshBoundsCenter(shared->UpdCommittableModelGraph(), id, choices.front());
+            return TryTranslateToMeshBoundsCenter(shared->updCommittableModelGraph(), id, choices.front());
         };
         m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
     }
 
-    void TransitionToTranslatingElementToMeshMassCenter(SceneEl& el)
+    void transitionToTranslatingElementToMeshMassCenter(SceneEl& el)
     {
         ChooseElLayerOptions opts;
         opts.canChooseBodies = false;
@@ -7065,51 +7052,51 @@ private:
         opts.canChooseJoints = false;
         opts.canChooseMeshes = true;
         opts.header = "choose a mesh (ESC to cancel)";
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](std::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.getID()](std::span<UID> choices)
         {
             if (choices.empty())
             {
                 return false;
             }
 
-            return TryTranslateToMeshMassCenter(shared->UpdCommittableModelGraph(), id, choices.front());
+            return TryTranslateToMeshMassCenter(shared->updCommittableModelGraph(), id, choices.front());
         };
         m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
     }
 
     // transition the shown UI layer to one where the user is choosing another element that
     // the element should be translated to the midpoint of
-    void TransitionToTranslatingElementToAnotherElementsCenter(SceneEl& el)
+    void transitionToTranslatingElementToAnotherElementsCenter(SceneEl& el)
     {
         ChooseElLayerOptions opts;
         opts.canChooseBodies = true;
         opts.canChooseGround = true;
         opts.canChooseJoints = true;
         opts.canChooseMeshes = true;
-        opts.maybeElsAttachingTo = {el.GetID()};
+        opts.maybeElsAttachingTo = {el.getID()};
         opts.header = "choose where to place it (ESC to cancel)";
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID()](std::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.getID()](std::span<UID> choices)
         {
             if (choices.empty())
             {
                 return false;
             }
 
-            return TryTranslateElementToAnotherElement(shared->UpdCommittableModelGraph(), id, choices.front());
+            return TryTranslateElementToAnotherElement(shared->updCommittableModelGraph(), id, choices.front());
         };
         m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
     }
 
-    void TransitionToReassigningCrossRef(SceneEl& el, int crossrefIdx)
+    void transitionToReassigningCrossRef(SceneEl& el, int crossrefIdx)
     {
-        int nRefs = el.GetNumCrossReferences();
+        int nRefs = el.getNumCrossReferences();
 
         if (crossrefIdx < 0 || crossrefIdx >= nRefs)
         {
             return;  // invalid index?
         }
 
-        SceneEl const* old = m_Shared->GetModelGraph().TryGetElByID(el.GetCrossReferenceConnecteeID(crossrefIdx));
+        SceneEl const* old = m_Shared->getModelGraph().tryGetElByID(el.getCrossReferenceConnecteeID(crossrefIdx));
 
         if (!old)
         {
@@ -7117,55 +7104,55 @@ private:
         }
 
         ChooseElLayerOptions opts;
-        opts.canChooseBodies = Is<BodyEl>(*old) || Is<GroundEl>(*old);
-        opts.canChooseGround = Is<BodyEl>(*old) || Is<GroundEl>(*old);
-        opts.canChooseJoints = Is<JointEl>(*old);
-        opts.canChooseMeshes = Is<MeshEl>(*old);
-        opts.maybeElsAttachingTo = {el.GetID()};
+        opts.canChooseBodies = dynamic_cast<BodyEl const*>(old) || dynamic_cast<GroundEl const*>(old);
+        opts.canChooseGround = dynamic_cast<BodyEl const*>(old) || dynamic_cast<GroundEl const*>(old);
+        opts.canChooseJoints = dynamic_cast<JointEl const*>(old);
+        opts.canChooseMeshes = dynamic_cast<MeshEl const*>(old);
+        opts.maybeElsAttachingTo = {el.getID()};
         opts.header = "choose what to attach to";
-        opts.onUserChoice = [shared = m_Shared, id = el.GetID(), crossrefIdx](std::span<UID> choices)
+        opts.onUserChoice = [shared = m_Shared, id = el.getID(), crossrefIdx](std::span<UID> choices)
         {
             if (choices.empty())
             {
                 return false;
             }
-            return TryReassignCrossref(shared->UpdCommittableModelGraph(), id, crossrefIdx, choices.front());
+            return TryReassignCrossref(shared->updCommittableModelGraph(), id, crossrefIdx, choices.front());
         };
         m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
     }
 
     // ensure any stale references into the modelgrah are cleaned up
-    void GarbageCollectStaleRefs()
+    void garbageCollectStaleRefs()
     {
-        ModelGraph const& mg = m_Shared->GetModelGraph();
+        ModelGraph const& mg = m_Shared->getModelGraph();
 
-        if (m_MaybeHover && !mg.ContainsEl(m_MaybeHover.ID))
+        if (m_MaybeHover && !mg.containsEl(m_MaybeHover.ID))
         {
             m_MaybeHover.reset();
         }
 
-        if (m_MaybeOpenedContextMenu && !mg.ContainsEl(m_MaybeOpenedContextMenu.ID))
+        if (m_MaybeOpenedContextMenu && !mg.containsEl(m_MaybeOpenedContextMenu.ID))
         {
             m_MaybeOpenedContextMenu.reset();
         }
     }
 
     // delete currently-selected scene elements
-    void DeleteSelected()
+    void deleteSelected()
     {
-        ::DeleteSelected(m_Shared->UpdCommittableModelGraph());
-        GarbageCollectStaleRefs();
+        ::DeleteSelected(m_Shared->updCommittableModelGraph());
+        garbageCollectStaleRefs();
     }
 
     // delete a particular scene element
-    void DeleteEl(UID elID)
+    void deleteEl(UID elID)
     {
-        ::DeleteEl(m_Shared->UpdCommittableModelGraph(), elID);
-        GarbageCollectStaleRefs();
+        ::DeleteEl(m_Shared->updCommittableModelGraph(), elID);
+        garbageCollectStaleRefs();
     }
 
     // update this scene from the current keyboard state, as saved by ImGui
-    bool UpdateFromImGuiKeyboardState()
+    bool updateFromImGuiKeyboardState()
     {
         if (ImGui::GetIO().WantCaptureKeyboard)
         {
@@ -7178,31 +7165,31 @@ private:
         if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_N))
         {
             // Ctrl+N: new scene
-            m_Shared->RequestNewMeshImporterTab();
+            m_Shared->requestNewMeshImporterTab();
             return true;
         }
         else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_O))
         {
             // Ctrl+O: open osim
-            m_Shared->OpenOsimFileAsModelGraph();
+            m_Shared->openOsimFileAsModelGraph();
             return true;
         }
         else if (ctrlOrSuperDown && shiftDown && ImGui::IsKeyPressed(ImGuiKey_S))
         {
             // Ctrl+Shift+S: export as: export scene as osim to user-specified location
-            m_Shared->ExportAsModelGraphAsOsimFile();
+            m_Shared->exportAsModelGraphAsOsimFile();
             return true;
         }
         else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_S))
         {
             // Ctrl+S: export: export scene as osim according to typical export heuristic
-            m_Shared->ExportModelGraphAsOsimFile();
+            m_Shared->exportModelGraphAsOsimFile();
             return true;
         }
         else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_W))
         {
             // Ctrl+W: close
-            m_Shared->RequestClose();
+            m_Shared->requestClose();
             return true;
         }
         else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_Q))
@@ -7214,56 +7201,56 @@ private:
         else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_A))
         {
             // Ctrl+A: select all
-            m_Shared->SelectAll();
+            m_Shared->selectAll();
             return true;
         }
         else if (ctrlOrSuperDown && shiftDown && ImGui::IsKeyPressed(ImGuiKey_Z))
         {
             // Ctrl+Shift+Z: redo
-            m_Shared->RedoCurrentModelGraph();
+            m_Shared->redoCurrentModelGraph();
             return true;
         }
         else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_Z))
         {
             // Ctrl+Z: undo
-            m_Shared->UndoCurrentModelGraph();
+            m_Shared->undoCurrentModelGraph();
             return true;
         }
         else if (osc::IsAnyKeyDown({ImGuiKey_Delete, ImGuiKey_Backspace}))
         {
             // Delete/Backspace: delete any selected elements
-            DeleteSelected();
+            deleteSelected();
             return true;
         }
         else if (ImGui::IsKeyPressed(ImGuiKey_B))
         {
             // B: add body to hovered element
-            TryAddBodyToHoveredElement();
+            tryAddBodyToHoveredElement();
             return true;
         }
         else if (ImGui::IsKeyPressed(ImGuiKey_A))
         {
             // A: assign a parent for the hovered element
-            TryTransitionToAssigningHoverAndSelectionNextFrame();
+            tryTransitionToAssigningHoverAndSelectionNextFrame();
             return true;
         }
         else if (ImGui::IsKeyPressed(ImGuiKey_J))
         {
             // J: try to create a joint
-            TryCreatingJointFromHoveredElement();
+            tryCreatingJointFromHoveredElement();
             return true;
         }
         else if (ImGui::IsKeyPressed(ImGuiKey_T))
         {
             // T: try to add a station to the current hover
-            TryAddingStationAtMousePosToHoveredElement();
+            tryAddingStationAtMousePosToHoveredElement();
             return true;
         }
         else if (UpdateImguizmoStateFromKeyboard(m_ImGuizmoState.op, m_ImGuizmoState.mode))
         {
             return true;
         }
-        else if (UpdatePolarCameraFromImGuiKeyboardInputs(m_Shared->UpdCamera(), m_Shared->Get3DSceneRect(), CalcSceneAABB()))
+        else if (UpdatePolarCameraFromImGuiKeyboardInputs(m_Shared->updCamera(), m_Shared->get3DSceneRect(), calcSceneAABB()))
         {
             return true;
         }
@@ -7273,7 +7260,7 @@ private:
         }
     }
 
-    void DrawNothingContextMenuContentHeader()
+    void drawNothingContextMenuContentHeader()
     {
         ImGui::Text(ICON_FA_BOLT " Actions");
         ImGui::SameLine();
@@ -7281,33 +7268,33 @@ private:
         ImGui::Separator();
     }
 
-    void DrawSceneElContextMenuContentHeader(SceneEl const& e)
+    void drawSceneElContextMenuContentHeader(SceneEl const& e)
     {
-        ImGui::Text("%s %s", e.GetClass().getIconUTF8().c_str(), e.GetLabel().c_str());
+        ImGui::Text("%s %s", e.getClass().getIconUTF8().c_str(), e.getLabel().c_str());
         ImGui::SameLine();
-        ImGui::TextDisabled("%s", GetContextMenuSubHeaderText(m_Shared->GetModelGraph(), e).c_str());
+        ImGui::TextDisabled("%s", GetContextMenuSubHeaderText(m_Shared->getModelGraph(), e).c_str());
         ImGui::SameLine();
-        osc::DrawHelpMarker(e.GetClass().getName(), e.GetClass().getDescription());
+        osc::DrawHelpMarker(e.getClass().getName(), e.getClass().getDescription());
         ImGui::Separator();
     }
 
-    void DrawSceneElPropEditors(SceneEl const& e)
+    void drawSceneElPropEditors(SceneEl const& e)
     {
-        ModelGraph& mg = m_Shared->UpdModelGraph();
+        ModelGraph& mg = m_Shared->updModelGraph();
 
         // label/name editor
         if (CanChangeLabel(e))
         {
-            std::string buf{static_cast<std::string_view>(e.GetLabel())};
+            std::string buf{static_cast<std::string_view>(e.getLabel())};
             if (osc::InputString("Name", buf))
             {
-                mg.UpdElByID(e.GetID()).SetLabel(buf);
+                mg.updElByID(e.getID()).setLabel(buf);
             }
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
                 std::stringstream ss;
-                ss << "changed " << e.GetClass().getName() << " name";
-                m_Shared->CommitCurrentModelGraph(std::move(ss).str());
+                ss << "changed " << e.getClass().getName() << " name";
+                m_Shared->commitCurrentModelGraph(std::move(ss).str());
             }
             ImGui::SameLine();
             osc::DrawHelpMarker("Component Name", "This is the name that the component will have in the exported OpenSim model.");
@@ -7316,16 +7303,16 @@ private:
         // position editor
         if (CanChangePosition(e))
         {
-            Vec3 translation = e.GetPos();
+            Vec3 translation = e.getPos();
             if (ImGui::InputFloat3("Translation", osc::ValuePtr(translation), "%.6f"))
             {
-                mg.UpdElByID(e.GetID()).SetPos(translation);
+                mg.updElByID(e.getID()).setPos(translation);
             }
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
                 std::stringstream ss;
-                ss << "changed " << e.GetLabel() << "'s translation";
-                m_Shared->CommitCurrentModelGraph(std::move(ss).str());
+                ss << "changed " << e.getLabel() << "'s translation";
+                m_Shared->commitCurrentModelGraph(std::move(ss).str());
             }
             ImGui::SameLine();
             osc::DrawHelpMarker("Translation", c_TranslationDescription);
@@ -7334,18 +7321,18 @@ private:
         // rotation editor
         if (CanChangeRotation(e))
         {
-            Vec3 eulerDegs = osc::Rad2Deg(osc::EulerAngles(e.GetRotation()));
+            Vec3 eulerDegs = osc::Rad2Deg(osc::EulerAngles(e.getRotation()));
 
             if (ImGui::InputFloat3("Rotation (deg)", osc::ValuePtr(eulerDegs), "%.6f"))
             {
                 Quat quatRads = Quat{osc::Deg2Rad(eulerDegs)};
-                mg.UpdElByID(e.GetID()).SetRotation(quatRads);
+                mg.updElByID(e.getID()).setRotation(quatRads);
             }
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
                 std::stringstream ss;
-                ss << "changed " << e.GetLabel() << "'s rotation";
-                m_Shared->CommitCurrentModelGraph(std::move(ss).str());
+                ss << "changed " << e.getLabel() << "'s rotation";
+                m_Shared->commitCurrentModelGraph(std::move(ss).str());
             }
             ImGui::SameLine();
             osc::DrawHelpMarker("Rotation", "These are the rotation Euler angles for the component in ground. Positive rotations are anti-clockwise along that axis.\n\nNote: the numbers may contain slight rounding error, due to backend constraints. Your values *should* be accurate to a few decimal places.");
@@ -7354,16 +7341,16 @@ private:
         // scale factor editor
         if (CanChangeScale(e))
         {
-            Vec3 scaleFactors = e.GetScale();
+            Vec3 scaleFactors = e.getScale();
             if (ImGui::InputFloat3("Scale", osc::ValuePtr(scaleFactors), "%.6f"))
             {
-                mg.UpdElByID(e.GetID()).SetScale(scaleFactors);
+                mg.updElByID(e.getID()).setScale(scaleFactors);
             }
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
                 std::stringstream ss;
-                ss << "changed " << e.GetLabel() << "'s scale";
-                m_Shared->CommitCurrentModelGraph(std::move(ss).str());
+                ss << "changed " << e.getLabel() << "'s scale";
+                m_Shared->commitCurrentModelGraph(std::move(ss).str());
             }
             ImGui::SameLine();
             osc::DrawHelpMarker("Scale", "These are the scale factors of the component in ground. These scale-factors are applied to the element before any other transform (it scales first, then rotates, then translates).");
@@ -7371,7 +7358,7 @@ private:
     }
 
     // draw content of "Add" menu for some scene element
-    void DrawAddOtherToSceneElActions(SceneEl& el, Vec3 const& clickPos)
+    void drawAddOtherToSceneElActions(SceneEl& el, Vec3 const& clickPos)
     {
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
         ScopeGuard const g1{[]() { ImGui::PopStyleVar(); }};
@@ -7384,7 +7371,7 @@ private:
         {
             if (ImGui::MenuItem(ICON_FA_CUBE " Meshes"))
             {
-                m_Shared->PushMeshLoadRequests(el.GetID(), m_Shared->PromptUserForMeshFiles());
+                m_Shared->pushMeshLoadRequests(el.getID(), m_Shared->promptUserForMeshFiles());
             }
             osc::DrawTooltipIfItemHovered("Add Meshes", c_MeshDescription);
         }
@@ -7397,19 +7384,19 @@ private:
             {
                 if (ImGui::MenuItem(ICON_FA_COMPRESS_ARROWS_ALT " at center"))
                 {
-                    AddBody(m_Shared->UpdCommittableModelGraph(), el.GetPos(), el.GetID());
+                    AddBody(m_Shared->updCommittableModelGraph(), el.getPos(), el.getID());
                 }
                 osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription.c_str());
 
                 if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
                 {
-                    AddBody(m_Shared->UpdCommittableModelGraph(), clickPos, el.GetID());
+                    AddBody(m_Shared->updCommittableModelGraph(), clickPos, el.getID());
                 }
                 osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription.c_str());
 
                 if (ImGui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
                 {
-                    AddBody(m_Shared->UpdCommittableModelGraph());
+                    AddBody(m_Shared->updCommittableModelGraph());
                 }
                 osc::DrawTooltipIfItemHovered("Add body", c_StationDescription);
 
@@ -7417,22 +7404,22 @@ private:
                 {
                     if (ImGui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
                     {
-                        Vec3 const location = Midpoint(meshEl->CalcBounds());
-                        AddBody(m_Shared->UpdCommittableModelGraph(), location, meshEl->GetID());
+                        Vec3 const location = Midpoint(meshEl->calcBounds());
+                        AddBody(m_Shared->updCommittableModelGraph(), location, meshEl->getID());
                     }
                     osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription.c_str());
 
                     if (ImGui::MenuItem(ICON_FA_DIVIDE " at mesh average center"))
                     {
                         Vec3 const location = AverageCenter(*meshEl);
-                        AddBody(m_Shared->UpdCommittableModelGraph(), location, meshEl->GetID());
+                        AddBody(m_Shared->updCommittableModelGraph(), location, meshEl->getID());
                     }
                     osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription.c_str());
 
                     if (ImGui::MenuItem(ICON_FA_WEIGHT " at mesh mass center"))
                     {
                         Vec3 const location = MassCenter(*meshEl);
-                        AddBody(m_Shared->UpdCommittableModelGraph(), location, meshEl->GetID());
+                        AddBody(m_Shared->updCommittableModelGraph(), location, meshEl->getID());
                     }
                     osc::DrawTooltipIfItemHovered("Add body", c_StationDescription);
                 }
@@ -7444,18 +7431,18 @@ private:
         {
             if (ImGui::MenuItem(ICON_FA_CIRCLE " Body"))
             {
-                AddBody(m_Shared->UpdCommittableModelGraph(), el.GetPos(), el.GetID());
+                AddBody(m_Shared->updCommittableModelGraph(), el.getPos(), el.getID());
             }
             osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription.c_str());
         }
         ImGui::PopID();
 
         ImGui::PushID(imguiID++);
-        if (Is<BodyEl>(el))
+        if (auto const* body = dynamic_cast<BodyEl const*>(&el))
         {
             if (ImGui::MenuItem(ICON_FA_LINK " Joint"))
             {
-                TransitionToChoosingJointParent(dynamic_cast<BodyEl const&>(el));
+                transitionToChoosingJointParent(*body);
             }
             osc::DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a WeldJoint between the body and ground.");
         }
@@ -7470,27 +7457,27 @@ private:
                 {
                     if (ImGui::MenuItem(ICON_FA_COMPRESS_ARROWS_ALT " at center"))
                     {
-                        AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, el.GetPos());
+                        AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, el.getPos());
                     }
                     osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
 
                     if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
                     {
-                        AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, clickPos);
+                        AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, clickPos);
                     }
                     osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
 
                     if (ImGui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
                     {
-                        AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, Vec3{});
+                        AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, Vec3{});
                     }
                     osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
 
-                    if (Is<MeshEl>(el))
+                    if (dynamic_cast<MeshEl const*>(&el))
                     {
                         if (ImGui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
                         {
-                            AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, Midpoint(el.CalcBounds()));
+                            AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, Midpoint(el.calcBounds()));
                         }
                         osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
                     }
@@ -7502,7 +7489,7 @@ private:
             {
                 if (ImGui::MenuItem(ICON_FA_MAP_PIN " Station"))
                 {
-                    AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, el.GetPos());
+                    AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, el.getPos());
                 }
                 osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
             }
@@ -7510,41 +7497,41 @@ private:
         }
     }
 
-    void DrawNothingActions()
+    void drawNothingActions()
     {
         if (ImGui::MenuItem(ICON_FA_CUBE " Add Meshes"))
         {
-            m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
+            m_Shared->promptUserForMeshFilesAndPushThemOntoMeshLoader();
         }
         osc::DrawTooltipIfItemHovered("Add Meshes to the model", c_MeshDescription);
 
         if (ImGui::BeginMenu(ICON_FA_PLUS " Add Other"))
         {
-            DrawAddOtherMenuItems();
+            drawAddOtherMenuItems();
 
             ImGui::EndMenu();
         }
     }
 
-    void DrawSceneElActions(SceneEl& el, Vec3 const& clickPos)
+    void drawSceneElActions(SceneEl& el, Vec3 const& clickPos)
     {
         if (ImGui::MenuItem(ICON_FA_CAMERA " Focus camera on this"))
         {
-            m_Shared->FocusCameraOn(Midpoint(el.CalcBounds()));
+            m_Shared->focusCameraOn(Midpoint(el.calcBounds()));
         }
         osc::DrawTooltipIfItemHovered("Focus camera on this scene element", "Focuses the scene camera on this element. This is useful for tracking the camera around that particular object in the scene");
 
         if (ImGui::BeginMenu(ICON_FA_PLUS " Add"))
         {
-            DrawAddOtherToSceneElActions(el, clickPos);
+            drawAddOtherToSceneElActions(el, clickPos);
             ImGui::EndMenu();
         }
 
-        if (Is<BodyEl>(el))
+        if (auto const* body = dynamic_cast<BodyEl const*>(&el))
         {
             if (ImGui::MenuItem(ICON_FA_LINK " Join to"))
             {
-                TransitionToChoosingJointParent(dynamic_cast<BodyEl const&>(el));
+                transitionToChoosingJointParent(*body);
             }
             osc::DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a WeldJoint between the body and ground.");
         }
@@ -7553,8 +7540,8 @@ private:
         {
             if (ImGui::MenuItem(ICON_FA_TRASH " Delete"))
             {
-                ::DeleteEl(m_Shared->UpdCommittableModelGraph(), el.GetID());
-                GarbageCollectStaleRefs();
+                ::DeleteEl(m_Shared->updCommittableModelGraph(), el.getID());
+                garbageCollectStaleRefs();
                 ImGui::CloseCurrentPopup();
             }
             osc::DrawTooltipIfItemHovered("Delete", "Deletes the component from the model. Deletion is undo-able (use the undo/redo feature). Anything attached to this element (e.g. joints, meshes) will also be deleted.");
@@ -7562,7 +7549,7 @@ private:
     }
 
     // draw the "Translate" menu for any generic `SceneEl`
-    void DrawTranslateMenu(SceneEl& el)
+    void drawTranslateMenu(SceneEl& el)
     {
         if (!CanChangePosition(el))
         {
@@ -7576,56 +7563,56 @@ private:
 
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
 
-        for (int i = 0, len = el.GetNumCrossReferences(); i < len; ++i)
+        for (int i = 0, len = el.getNumCrossReferences(); i < len; ++i)
         {
-            std::string label = "To " + el.GetCrossReferenceLabel(i);
+            std::string label = "To " + el.getCrossReferenceLabel(i);
             if (ImGui::MenuItem(label.c_str()))
             {
-                TryTranslateElementToAnotherElement(m_Shared->UpdCommittableModelGraph(), el.GetID(), el.GetCrossReferenceConnecteeID(i));
+                TryTranslateElementToAnotherElement(m_Shared->updCommittableModelGraph(), el.getID(), el.getCrossReferenceConnecteeID(i));
             }
         }
 
         if (ImGui::MenuItem("To (select something)"))
         {
-            TransitionToChoosingWhichElementToTranslateTo(el);
+            transitionToChoosingWhichElementToTranslateTo(el);
         }
 
-        if (el.GetNumCrossReferences() == 2)
+        if (el.getNumCrossReferences() == 2)
         {
-            std::string label = "Between " + el.GetCrossReferenceLabel(0) + " and " + el.GetCrossReferenceLabel(1);
+            std::string label = "Between " + el.getCrossReferenceLabel(0) + " and " + el.getCrossReferenceLabel(1);
             if (ImGui::MenuItem(label.c_str()))
             {
-                UID a = el.GetCrossReferenceConnecteeID(0);
-                UID b = el.GetCrossReferenceConnecteeID(1);
-                TryTranslateBetweenTwoElements(m_Shared->UpdCommittableModelGraph(), el.GetID(), a, b);
+                UID a = el.getCrossReferenceConnecteeID(0);
+                UID b = el.getCrossReferenceConnecteeID(1);
+                TryTranslateBetweenTwoElements(m_Shared->updCommittableModelGraph(), el.getID(), a, b);
             }
         }
 
         if (ImGui::MenuItem("Between two scene elements"))
         {
-            TransitionToChoosingElementsToTranslateBetween(el);
+            transitionToChoosingElementsToTranslateBetween(el);
         }
 
         if (ImGui::MenuItem("Between two mesh points"))
         {
-            TransitionToTranslatingElementAlongTwoMeshPoints(el);
+            transitionToTranslatingElementAlongTwoMeshPoints(el);
         }
 
         if (ImGui::MenuItem("To mesh bounds center"))
         {
-            TransitionToTranslatingElementToMeshBoundsCenter(el);
+            transitionToTranslatingElementToMeshBoundsCenter(el);
         }
         osc::DrawTooltipIfItemHovered("Translate to mesh bounds center", "Translates the given element to the center of the selected mesh's bounding box. The bounding box is the smallest box that contains all mesh vertices");
 
         if (ImGui::MenuItem("To mesh average center"))
         {
-            TransitionToTranslatingElementToMeshAverageCenter(el);
+            transitionToTranslatingElementToMeshAverageCenter(el);
         }
         osc::DrawTooltipIfItemHovered("Translate to mesh average center", "Translates the given element to the average center point of vertices in the selected mesh.\n\nEffectively, this adds each vertex location in the mesh, divides the sum by the number of vertices in the mesh, and sets the translation of the given object to that location.");
 
         if (ImGui::MenuItem("To mesh mass center"))
         {
-            TransitionToTranslatingElementToMeshMassCenter(el);
+            transitionToTranslatingElementToMeshMassCenter(el);
         }
         osc::DrawTooltipIfItemHovered("Translate to mesh mess center", "Translates the given element to the mass center of the selected mesh.\n\nCAREFUL: the algorithm used to do this heavily relies on your triangle winding (i.e. normals) being correct and your mesh being a closed surface. If your mesh doesn't meet these requirements, you might get strange results (apologies: the only way to get around that problems involves complicated voxelization and leak-detection algorithms :( )");
 
@@ -7634,7 +7621,7 @@ private:
     }
 
     // draw the "Reorient" menu for any generic `SceneEl`
-    void DrawReorientMenu(SceneEl& el)
+    void drawReorientMenu(SceneEl& el)
     {
         if (!CanChangeRotation(el))
         {
@@ -7652,39 +7639,39 @@ private:
         {
             auto DrawMenuContent = [&](int axis)
             {
-                for (int i = 0, len = el.GetNumCrossReferences(); i < len; ++i)
+                for (int i = 0, len = el.getNumCrossReferences(); i < len; ++i)
                 {
-                    std::string label = "Towards " + el.GetCrossReferenceLabel(i);
+                    std::string label = "Towards " + el.getCrossReferenceLabel(i);
 
                     if (ImGui::MenuItem(label.c_str()))
                     {
-                        PointAxisTowards(m_Shared->UpdCommittableModelGraph(), el.GetID(), axis, el.GetCrossReferenceConnecteeID(i));
+                        PointAxisTowards(m_Shared->updCommittableModelGraph(), el.getID(), axis, el.getCrossReferenceConnecteeID(i));
                     }
                 }
 
                 if (ImGui::MenuItem("Towards (select something)"))
                 {
-                    TransitionToChoosingWhichElementToPointAxisTowards(el, axis);
+                    transitionToChoosingWhichElementToPointAxisTowards(el, axis);
                 }
 
                 if (ImGui::MenuItem("Along line between (select two elements)"))
                 {
-                    TransitionToChoosingTwoElementsToAlignAxisAlong(el, axis);
+                    transitionToChoosingTwoElementsToAlignAxisAlong(el, axis);
                 }
 
                 if (ImGui::MenuItem("90 degress"))
                 {
-                    RotateAxisXRadians(m_Shared->UpdCommittableModelGraph(), el, axis, std::numbers::pi_v<float>/2.0f);
+                    RotateAxisXRadians(m_Shared->updCommittableModelGraph(), el, axis, std::numbers::pi_v<float>/2.0f);
                 }
 
                 if (ImGui::MenuItem("180 degrees"))
                 {
-                    RotateAxisXRadians(m_Shared->UpdCommittableModelGraph(), el, axis, std::numbers::pi_v<float>);
+                    RotateAxisXRadians(m_Shared->updCommittableModelGraph(), el, axis, std::numbers::pi_v<float>);
                 }
 
                 if (ImGui::MenuItem("Along two mesh points"))
                 {
-                    TransitionToOrientingElementAlongTwoMeshPoints(el, axis);
+                    transitionToOrientingElementAlongTwoMeshPoints(el, axis);
                 }
             };
 
@@ -7709,13 +7696,13 @@ private:
 
         if (ImGui::MenuItem("copy"))
         {
-            TransitionToCopyingSomethingElsesOrientation(el);
+            transitionToCopyingSomethingElsesOrientation(el);
         }
 
         if (ImGui::MenuItem("reset"))
         {
-            el.SetXform(Transform{el.GetPos()});
-            m_Shared->CommitCurrentModelGraph("reset " + el.GetLabel() + " orientation");
+            el.setXform(Transform{el.getPos()});
+            m_Shared->commitCurrentModelGraph("reset " + el.getLabel() + " orientation");
         }
 
         ImGui::PopStyleVar();
@@ -7723,23 +7710,23 @@ private:
     }
 
     // draw the "Mass" editor for a `BodyEl`
-    void DrawMassEditor(BodyEl const& bodyEl)
+    void drawMassEditor(BodyEl const& bodyEl)
     {
         auto curMass = static_cast<float>(bodyEl.getMass());
         if (ImGui::InputFloat("Mass", &curMass, 0.0f, 0.0f, "%.6f"))
         {
-            m_Shared->UpdModelGraph().UpdElByID<BodyEl>(bodyEl.GetID()).setMass(static_cast<double>(curMass));
+            m_Shared->updModelGraph().updElByID<BodyEl>(bodyEl.getID()).setMass(static_cast<double>(curMass));
         }
         if (ImGui::IsItemDeactivatedAfterEdit())
         {
-            m_Shared->CommitCurrentModelGraph("changed body mass");
+            m_Shared->commitCurrentModelGraph("changed body mass");
         }
         ImGui::SameLine();
         osc::DrawHelpMarker("Mass", "The mass of the body. OpenSim defines this as 'unitless'; however, models conventionally use kilograms.");
     }
 
     // draw the "Joint Type" editor for a `JointEl`
-    void DrawJointTypeEditor(JointEl const& jointEl)
+    void drawJointTypeEditor(JointEl const& jointEl)
     {
         size_t currentIdx = jointEl.getJointTypeIndex();
         auto const& registry = osc::GetComponentRegistry<OpenSim::Joint>();
@@ -7747,17 +7734,17 @@ private:
 
         if (osc::Combo("Joint Type", &currentIdx, registry.size(), nameAccessor))
         {
-            m_Shared->UpdModelGraph().UpdElByID<JointEl>(jointEl.GetID()).setJointTypeIndex(currentIdx);
-            m_Shared->CommitCurrentModelGraph("changed joint type");
+            m_Shared->updModelGraph().updElByID<JointEl>(jointEl.getID()).setJointTypeIndex(currentIdx);
+            m_Shared->commitCurrentModelGraph("changed joint type");
         }
         ImGui::SameLine();
         osc::DrawHelpMarker("Joint Type", "This is the type of joint that should be added into the OpenSim model. The joint's type dictates what types of motion are permitted around the joint center. See the official OpenSim documentation for an explanation of each joint type.");
     }
 
     // draw the "Reassign Connection" menu, which lets users change an element's cross reference
-    void DrawReassignCrossrefMenu(SceneEl& el)
+    void drawReassignCrossrefMenu(SceneEl& el)
     {
-        int nRefs = el.GetNumCrossReferences();
+        int nRefs = el.getNumCrossReferences();
 
         if (nRefs == 0)
         {
@@ -7770,10 +7757,10 @@ private:
 
             for (int i = 0; i < nRefs; ++i)
             {
-                CStringView label = el.GetCrossReferenceLabel(i);
+                CStringView label = el.getCrossReferenceLabel(i);
                 if (ImGui::MenuItem(label.c_str()))
                 {
-                    TransitionToReassigningCrossRef(el, i);
+                    transitionToReassigningCrossRef(el, i);
                 }
             }
 
@@ -7782,7 +7769,7 @@ private:
         }
     }
 
-    void ActionPromptUserToSaveMeshAsOBJ(
+    void actionPromptUserToSaveMeshAsOBJ(
         Mesh const& mesh)
     {
         // prompt user for a save location
@@ -7821,7 +7808,7 @@ private:
         );
     }
 
-    void ActionPromptUserToSaveMeshAsSTL(
+    void actionPromptUserToSaveMeshAsSTL(
         Mesh const& mesh)
     {
         // prompt user for a save location
@@ -7855,39 +7842,39 @@ private:
         osc::WriteMeshAsStl(outputFileStream, mesh, stlMetadata);
     }
 
-    void DrawSaveMeshMenu(MeshEl const& el)
+    void drawSaveMeshMenu(MeshEl const& el)
     {
         if (ImGui::BeginMenu(ICON_FA_FILE_EXPORT " Export"))
         {
             ImGui::TextDisabled("With Respect to:");
             ImGui::Separator();
-            for (SceneEl const& sceneEl : m_Shared->GetModelGraph().iter())
+            for (SceneEl const& sceneEl : m_Shared->getModelGraph().iter())
             {
-                if (ImGui::BeginMenu(sceneEl.GetLabel().c_str()))
+                if (ImGui::BeginMenu(sceneEl.getLabel().c_str()))
                 {
                     ImGui::TextDisabled("Format:");
                     ImGui::Separator();
 
                     if (ImGui::MenuItem(".obj"))
                     {
-                        Transform const sceneElToGround = sceneEl.GetXform();
-                        Transform const meshVertToGround = el.GetXform();
+                        Transform const sceneElToGround = sceneEl.getXForm();
+                        Transform const meshVertToGround = el.getXForm();
                         Mat4 const meshVertToSceneElVert = osc::ToInverseMat4(sceneElToGround) * osc::ToMat4(meshVertToGround);
 
                         Mesh mesh = el.getMeshData();
                         mesh.transformVerts(meshVertToSceneElVert);
-                        ActionPromptUserToSaveMeshAsOBJ(mesh);
+                        actionPromptUserToSaveMeshAsOBJ(mesh);
                     }
 
                     if (ImGui::MenuItem(".stl"))
                     {
-                        Transform const sceneElToGround = sceneEl.GetXform();
-                        Transform const meshVertToGround = el.GetXform();
+                        Transform const sceneElToGround = sceneEl.getXForm();
+                        Transform const meshVertToGround = el.getXForm();
                         Mat4 const meshVertToSceneElVert = osc::ToInverseMat4(sceneElToGround) * osc::ToMat4(meshVertToGround);
 
                         Mesh mesh = el.getMeshData();
                         mesh.transformVerts(meshVertToSceneElVert);
-                        ActionPromptUserToSaveMeshAsSTL(mesh);
+                        actionPromptUserToSaveMeshAsSTL(mesh);
                     }
 
                     ImGui::EndMenu();
@@ -7898,98 +7885,94 @@ private:
     }
 
     // draw context menu content for when user right-clicks nothing
-    void DrawNothingContextMenuContent()
+    void drawNothingContextMenuContent()
     {
-        DrawNothingContextMenuContentHeader();
-
+        drawNothingContextMenuContentHeader();
         SpacerDummy();
-
-        DrawNothingActions();
+        drawNothingActions();
     }
 
     // draw context menu content for a `GroundEl`
-    void DrawContextMenuContent(GroundEl& el, Vec3 const& clickPos)
+    void drawContextMenuContent(GroundEl& el, Vec3 const& clickPos)
     {
-        DrawSceneElContextMenuContentHeader(el);
-
+        drawSceneElContextMenuContentHeader(el);
         SpacerDummy();
-
-        DrawSceneElActions(el, clickPos);
+        drawSceneElActions(el, clickPos);
     }
 
     // draw context menu content for a `BodyEl`
-    void DrawContextMenuContent(BodyEl& el, Vec3 const& clickPos)
+    void drawContextMenuContent(BodyEl& el, Vec3 const& clickPos)
     {
-        DrawSceneElContextMenuContentHeader(el);
+        drawSceneElContextMenuContentHeader(el);
 
         SpacerDummy();
 
-        DrawSceneElPropEditors(el);
-        DrawMassEditor(el);
+        drawSceneElPropEditors(el);
+        drawMassEditor(el);
 
         SpacerDummy();
 
-        DrawTranslateMenu(el);
-        DrawReorientMenu(el);
-        DrawReassignCrossrefMenu(el);
-        DrawSceneElActions(el, clickPos);
+        drawTranslateMenu(el);
+        drawReorientMenu(el);
+        drawReassignCrossrefMenu(el);
+        drawSceneElActions(el, clickPos);
     }
 
     // draw context menu content for a `MeshEl`
-    void DrawContextMenuContent(MeshEl& el, Vec3 const& clickPos)
+    void drawContextMenuContent(MeshEl& el, Vec3 const& clickPos)
     {
-        DrawSceneElContextMenuContentHeader(el);
+        drawSceneElContextMenuContentHeader(el);
 
         SpacerDummy();
 
-        DrawSceneElPropEditors(el);
+        drawSceneElPropEditors(el);
 
         SpacerDummy();
 
-        DrawTranslateMenu(el);
-        DrawReorientMenu(el);
-        DrawSaveMeshMenu(el);
-        DrawReassignCrossrefMenu(el);
-        DrawSceneElActions(el, clickPos);
+        drawTranslateMenu(el);
+        drawReorientMenu(el);
+        drawSaveMeshMenu(el);
+        drawReassignCrossrefMenu(el);
+        drawSceneElActions(el, clickPos);
     }
 
     // draw context menu content for a `JointEl`
-    void DrawContextMenuContent(JointEl& el, Vec3 const& clickPos)
+    void drawContextMenuContent(JointEl& el, Vec3 const& clickPos)
     {
-        DrawSceneElContextMenuContentHeader(el);
+        drawSceneElContextMenuContentHeader(el);
 
         SpacerDummy();
 
-        DrawSceneElPropEditors(el);
-        DrawJointTypeEditor(el);
+        drawSceneElPropEditors(el);
+        drawJointTypeEditor(el);
 
         SpacerDummy();
 
-        DrawTranslateMenu(el);
-        DrawReorientMenu(el);
-        DrawReassignCrossrefMenu(el);
-        DrawSceneElActions(el, clickPos);
+        drawTranslateMenu(el);
+        drawReorientMenu(el);
+        drawReassignCrossrefMenu(el);
+        drawSceneElActions(el, clickPos);
     }
 
     // draw context menu content for a `StationEl`
-    void DrawContextMenuContent(StationEl& el, Vec3 const& clickPos)
+    void drawContextMenuContent(StationEl& el, Vec3 const& clickPos)
     {
-        DrawSceneElContextMenuContentHeader(el);
+        drawSceneElContextMenuContentHeader(el);
 
         SpacerDummy();
 
-        DrawSceneElPropEditors(el);
+        drawSceneElPropEditors(el);
 
         SpacerDummy();
 
-        DrawTranslateMenu(el);
-        DrawReorientMenu(el);
-        DrawReassignCrossrefMenu(el);
-        DrawSceneElActions(el, clickPos);
+        drawTranslateMenu(el);
+        drawReorientMenu(el);
+        drawReassignCrossrefMenu(el);
+        drawSceneElActions(el, clickPos);
     }
 
     // draw context menu content for some scene element
-    void DrawContextMenuContent(SceneEl& el, Vec3 const& clickPos)
+    void drawContextMenuContent(SceneEl& el, Vec3 const& clickPos)
     {
         // helper class for visiting each type of scene element
         class Visitor final : public SceneElVisitor {
@@ -8005,27 +7988,27 @@ private:
 
             void operator()(GroundEl& el) final
             {
-                m_State.DrawContextMenuContent(el, m_ClickPos);
+                m_State.drawContextMenuContent(el, m_ClickPos);
             }
 
             void operator()(MeshEl& el) final
             {
-                m_State.DrawContextMenuContent(el, m_ClickPos);
+                m_State.drawContextMenuContent(el, m_ClickPos);
             }
 
             void operator()(BodyEl& el) final
             {
-                m_State.DrawContextMenuContent(el, m_ClickPos);
+                m_State.drawContextMenuContent(el, m_ClickPos);
             }
 
             void operator()(JointEl& el) final
             {
-                m_State.DrawContextMenuContent(el, m_ClickPos);
+                m_State.drawContextMenuContent(el, m_ClickPos);
             }
 
             void operator()(StationEl& el) final
             {
-                m_State.DrawContextMenuContent(el, m_ClickPos);
+                m_State.drawContextMenuContent(el, m_ClickPos);
             }
         private:
             MeshImporterTab::Impl& m_State;
@@ -8034,32 +8017,32 @@ private:
 
         // context menu was opened on a scene element that exists in the modelgraph
         Visitor visitor{*this, clickPos};
-        el.Accept(visitor);
+        el.accept(visitor);
     }
 
     // draw a context menu for the current state (if applicable)
-    void DrawContextMenuContent()
+    void drawContextMenuContent()
     {
         if (!m_MaybeOpenedContextMenu)
         {
             // context menu not open, but just draw the "nothing" menu
             PushID(UID::empty());
             ScopeGuard const g{[]() { ImGui::PopID(); }};
-            DrawNothingContextMenuContent();
+            drawNothingContextMenuContent();
         }
         else if (m_MaybeOpenedContextMenu.ID == c_RightClickedNothingID)
         {
             // context menu was opened on "nothing" specifically
             PushID(UID::empty());
             ScopeGuard const g{[]() { ImGui::PopID(); }};
-            DrawNothingContextMenuContent();
+            drawNothingContextMenuContent();
         }
-        else if (SceneEl* el = m_Shared->UpdModelGraph().TryUpdElByID(m_MaybeOpenedContextMenu.ID))
+        else if (SceneEl* el = m_Shared->updModelGraph().tryUpdElByID(m_MaybeOpenedContextMenu.ID))
         {
             // context menu was opened on a scene element that exists in the modelgraph
-            PushID(el->GetID());
+            PushID(el->getID());
             ScopeGuard const g{[]() { ImGui::PopID(); }};
-            DrawContextMenuContent(*el, m_MaybeOpenedContextMenu.Pos);
+            drawContextMenuContent(*el, m_MaybeOpenedContextMenu.Pos);
         }
 
 
@@ -8072,19 +8055,19 @@ private:
     }
 
     // draw the content of the (undo/redo) "History" panel
-    void DrawHistoryPanelContent()
+    void drawHistoryPanelContent()
     {
-        CommittableModelGraph& storage = m_Shared->UpdCommittableModelGraph();
+        CommittableModelGraph& storage = m_Shared->updCommittableModelGraph();
 
         std::vector<ModelGraphCommit const*> commits;
-        storage.ForEachCommitUnordered([&commits](ModelGraphCommit const& c)
+        storage.forEachCommitUnordered([&commits](ModelGraphCommit const& c)
         {
             commits.push_back(&c);
         });
 
         auto orderedByTime = [](ModelGraphCommit const* a, ModelGraphCommit const* b)
         {
-            return a->GetCommitTime() < b->GetCommitTime();
+            return a->getCommitTime() < b->getCommitTime();
         };
         std::sort(commits.begin(), commits.end(), orderedByTime);
 
@@ -8093,18 +8076,18 @@ private:
         {
             ImGui::PushID(static_cast<int>(i++));
 
-            if (ImGui::Selectable(c->GetCommitMessage().c_str(), c->GetID() == storage.GetCheckoutID()))
+            if (ImGui::Selectable(c->getCommitMessage().c_str(), c->getID() == storage.getCheckoutID()))
             {
-                storage.Checkout(c->GetID());
+                storage.checkout(c->getID());
             }
 
             ImGui::PopID();
         }
     }
 
-    void DrawNavigatorElement(SceneElClass const& c)
+    void drawNavigatorElement(SceneElClass const& c)
     {
-        ModelGraph& mg = m_Shared->UpdModelGraph();
+        ModelGraph& mg = m_Shared->updModelGraph();
 
         ImGui::Text("%s %s", c.getIconUTF8().c_str(), c.getNamePluralized().c_str());
         ImGui::SameLine();
@@ -8115,14 +8098,14 @@ private:
         bool empty = true;
         for (SceneEl const& el : mg.iter())
         {
-            if (el.GetClass() != c)
+            if (el.getClass() != c)
             {
                 continue;
             }
 
             empty = false;
 
-            UID id = el.GetID();
+            UID id = el.getID();
             int styles = 0;
 
             if (id == m_MaybeHover.ID)
@@ -8130,13 +8113,13 @@ private:
                 osc::PushStyleColor(ImGuiCol_Text, Color::yellow());
                 ++styles;
             }
-            else if (m_Shared->IsSelected(id))
+            else if (m_Shared->isSelected(id))
             {
                 osc::PushStyleColor(ImGuiCol_Text, Color::yellow());
                 ++styles;
             }
 
-            ImGui::Text("%s", el.GetLabel().c_str());
+            ImGui::Text("%s", el.getLabel().c_str());
 
             ImGui::PopStyleColor(styles);
 
@@ -8149,9 +8132,9 @@ private:
             {
                 if (!osc::IsShiftDown())
                 {
-                    m_Shared->UpdModelGraph().DeSelectAll();
+                    m_Shared->updModelGraph().deSelectAll();
                 }
-                m_Shared->UpdModelGraph().Select(id);
+                m_Shared->updModelGraph().select(id);
             }
 
             if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
@@ -8169,11 +8152,11 @@ private:
         ImGui::Unindent();
     }
 
-    void DrawNavigatorPanelContent()
+    void drawNavigatorPanelContent()
     {
-        for (SceneElClass const* c : GetSceneElClasses())
+        for (SceneElClass const& c : GetSceneElClasses())
         {
-            DrawNavigatorElement(*c);
+            drawNavigatorElement(c);
             SpacerDummy();
         }
 
@@ -8182,31 +8165,31 @@ private:
         // this can happen when the user right-clicks something in the navigator
         if (ImGui::BeginPopup("##maincontextmenu"))
         {
-            DrawContextMenuContent();
+            drawContextMenuContent();
             ImGui::EndPopup();
         }
     }
 
-    void DrawAddOtherMenuItems()
+    void drawAddOtherMenuItems()
     {
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
 
         if (ImGui::MenuItem(ICON_FA_CUBE " Meshes"))
         {
-            m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
+            m_Shared->promptUserForMeshFilesAndPushThemOntoMeshLoader();
         }
         osc::DrawTooltipIfItemHovered("Add Meshes", c_MeshDescription);
 
         if (ImGui::MenuItem(ICON_FA_CIRCLE " Body"))
         {
-            AddBody(m_Shared->UpdCommittableModelGraph());
+            AddBody(m_Shared->updCommittableModelGraph());
         }
         osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription);
 
         if (ImGui::MenuItem(ICON_FA_MAP_PIN " Station"))
         {
-            ModelGraph& mg = m_Shared->UpdModelGraph();
-            auto& e = mg.AddEl<StationEl>(UIDT<StationEl>{}, c_GroundID, Vec3{}, GenerateName(StationEl::Class()));
+            ModelGraph& mg = m_Shared->updModelGraph();
+            auto& e = mg.emplaceEl<StationEl>(UIDT<StationEl>{}, c_GroundID, Vec3{}, GenerateName(StationEl::Class()));
             SelectOnly(mg, e);
         }
         osc::DrawTooltipIfItemHovered("Add Station", StationEl::Class().getDescription());
@@ -8214,13 +8197,13 @@ private:
         ImGui::PopStyleVar();
     }
 
-    void Draw3DViewerOverlayTopBar()
+    void draw3DViewerOverlayTopBar()
     {
         int imguiID = 0;
 
         if (ImGui::Button(ICON_FA_CUBE " Add Meshes"))
         {
-            m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
+            m_Shared->promptUserForMeshFilesAndPushThemOntoMeshLoader();
         }
         osc::DrawTooltipIfItemHovered("Add Meshes to the model", c_MeshDescription);
 
@@ -8231,7 +8214,7 @@ private:
 
         if (ImGui::BeginPopupContextItem("##additemtoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
         {
-            DrawAddOtherMenuItems();
+            drawAddOtherMenuItems();
             ImGui::EndPopup();
         }
 
@@ -8242,8 +8225,8 @@ private:
 
         if (ImGui::BeginPopupContextItem("##addpainttoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
         {
-            std::span<Color const> colors = m_Shared->GetColors();
-            std::span<char const* const> labels = m_Shared->GetColorLabels();
+            std::span<Color const> colors = m_Shared->getColors();
+            std::span<char const* const> labels = m_Shared->getColorLabels();
             OSC_ASSERT(colors.size() == labels.size() && "every color should have a label");
 
             for (size_t i = 0; i < colors.size(); ++i)
@@ -8252,7 +8235,7 @@ private:
                 ImGui::PushID(imguiID++);
                 if (ImGui::ColorEdit4(labels[i], osc::ValuePtr(colorVal)))
                 {
-                    m_Shared->SetColor(i, colorVal);
+                    m_Shared->setColor(i, colorVal);
                 }
                 ImGui::PopID();
             }
@@ -8266,8 +8249,8 @@ private:
 
         if (ImGui::BeginPopupContextItem("##changevisibilitypopup", ImGuiPopupFlags_MouseButtonLeft))
         {
-            std::span<bool const> visibilities = m_Shared->GetVisibilityFlags();
-            std::span<char const* const> labels = m_Shared->GetVisibilityFlagLabels();
+            std::span<bool const> visibilities = m_Shared->getVisibilityFlags();
+            std::span<char const* const> labels = m_Shared->getVisibilityFlagLabels();
             OSC_ASSERT(visibilities.size() == labels.size() && "every visibility flag should have a label");
 
             for (size_t i = 0; i < visibilities.size(); ++i)
@@ -8276,7 +8259,7 @@ private:
                 ImGui::PushID(imguiID++);
                 if (ImGui::Checkbox(labels[i], &v))
                 {
-                    m_Shared->SetVisibilityFlag(i, v);
+                    m_Shared->setVisibilityFlag(i, v);
                 }
                 ImGui::PopID();
             }
@@ -8290,8 +8273,8 @@ private:
 
         if (ImGui::BeginPopupContextItem("##changeinteractionlockspopup", ImGuiPopupFlags_MouseButtonLeft))
         {
-            std::span<bool const> interactables = m_Shared->GetIneractivityFlags();
-            std::span<char const* const> labels =  m_Shared->GetInteractivityFlagLabels();
+            std::span<bool const> interactables = m_Shared->getIneractivityFlags();
+            std::span<char const* const> labels =  m_Shared->getInteractivityFlagLabels();
             OSC_ASSERT(interactables.size() == labels.size());
 
             for (size_t i = 0; i < interactables.size(); ++i)
@@ -8300,7 +8283,7 @@ private:
                 ImGui::PushID(imguiID++);
                 if (ImGui::Checkbox(labels[i], &v))
                 {
-                    m_Shared->SetInteractivityFlag(i, v);
+                    m_Shared->setInteractivityFlag(i, v);
                 }
                 ImGui::PopID();
             }
@@ -8324,54 +8307,54 @@ private:
             CStringView const tooltipTitle = "Change scene scale factor";
             CStringView const tooltipDesc = "This rescales *some* elements in the scene. Specifically, the ones that have no 'size', such as body frames, joint frames, and the chequered floor texture.\n\nChanging this is handy if you are working on smaller or larger models, where the size of the (decorative) frames and floor are too large/small compared to the model you are working on.\n\nThis is purely decorative and does not affect the exported OpenSim model in any way.";
 
-            float sf = m_Shared->GetSceneScaleFactor();
+            float sf = m_Shared->getSceneScaleFactor();
             ImGui::SetNextItemWidth(ImGui::CalcTextSize("1000.00").x);
             if (ImGui::InputFloat("scene scale factor", &sf))
             {
-                m_Shared->SetSceneScaleFactor(sf);
+                m_Shared->setSceneScaleFactor(sf);
             }
             osc::DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
         }
     }
 
-    std::optional<AABB> CalcSceneAABB() const
+    std::optional<AABB> calcSceneAABB() const
     {
         std::optional<AABB> rv;
         for (DrawableThing const& drawable : m_DrawablesBuffer)
         {
             if (drawable.id != c_EmptyID)
             {
-                AABB const bounds = CalcBounds(drawable);
+                AABB const bounds = calcBounds(drawable);
                 rv = rv ? Union(*rv, bounds) : bounds;
             }
         }
         return rv;
     }
 
-    void Draw3DViewerOverlayBottomBar()
+    void draw3DViewerOverlayBottomBar()
     {
         ImGui::PushID("##3DViewerOverlay");
 
         // bottom-left axes overlay
         {
             ImGuiStyle const& style = ImGui::GetStyle();
-            Rect const& r = m_Shared->Get3DSceneRect();
+            Rect const& r = m_Shared->get3DSceneRect();
             Vec2 const topLeft =
             {
                 r.p1.x + style.WindowPadding.x,
                 r.p2.y - style.WindowPadding.y - CalcAlignmentAxesDimensions().y,
             };
             ImGui::SetCursorScreenPos(topLeft);
-            DrawAlignmentAxes(m_Shared->GetCamera().getViewMtx());
+            DrawAlignmentAxes(m_Shared->getCamera().getViewMtx());
         }
 
-        Rect sceneRect = m_Shared->Get3DSceneRect();
+        Rect sceneRect = m_Shared->get3DSceneRect();
         Vec2 trPos = {sceneRect.p1.x + 100.0f, sceneRect.p2.y - 55.0f};
         ImGui::SetCursorScreenPos(trPos);
 
         if (ImGui::Button(ICON_FA_SEARCH_MINUS))
         {
-            m_Shared->UpdCamera().radius *= 1.2f;
+            m_Shared->updCamera().radius *= 1.2f;
         }
         osc::DrawTooltipIfItemHovered("Zoom Out");
 
@@ -8379,7 +8362,7 @@ private:
 
         if (ImGui::Button(ICON_FA_SEARCH_PLUS))
         {
-            m_Shared->UpdCamera().radius *= 0.8f;
+            m_Shared->updCamera().radius *= 0.8f;
         }
         osc::DrawTooltipIfItemHovered("Zoom In");
 
@@ -8387,9 +8370,9 @@ private:
 
         if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
         {
-            if (std::optional<AABB> const sceneAABB = CalcSceneAABB())
+            if (std::optional<AABB> const sceneAABB = calcSceneAABB())
             {
-                osc::AutoFocus(m_Shared->UpdCamera(), *sceneAABB, osc::AspectRatio(m_Shared->Get3DSceneDims()));
+                osc::AutoFocus(m_Shared->updCamera(), *sceneAABB, osc::AspectRatio(m_Shared->get3DSceneDims()));
             }
         }
         osc::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
@@ -8398,13 +8381,13 @@ private:
 
         if (ImGui::Button("X"))
         {
-            m_Shared->UpdCamera().theta = std::numbers::pi_v<float>/2.0f;
-            m_Shared->UpdCamera().phi = 0.0f;
+            m_Shared->updCamera().theta = std::numbers::pi_v<float>/2.0f;
+            m_Shared->updCamera().phi = 0.0f;
         }
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {
-            m_Shared->UpdCamera().theta = -std::numbers::pi_v<float>/2.0f;
-            m_Shared->UpdCamera().phi = 0.0f;
+            m_Shared->updCamera().theta = -std::numbers::pi_v<float>/2.0f;
+            m_Shared->updCamera().phi = 0.0f;
         }
         osc::DrawTooltipIfItemHovered("Face camera facing along X", "Right-clicking faces it along X, but in the opposite direction");
 
@@ -8412,13 +8395,13 @@ private:
 
         if (ImGui::Button("Y"))
         {
-            m_Shared->UpdCamera().theta = 0.0f;
-            m_Shared->UpdCamera().phi = std::numbers::pi_v<float>/2.0f;
+            m_Shared->updCamera().theta = 0.0f;
+            m_Shared->updCamera().phi = std::numbers::pi_v<float>/2.0f;
         }
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {
-            m_Shared->UpdCamera().theta = 0.0f;
-            m_Shared->UpdCamera().phi = -std::numbers::pi_v<float>/2.0f;
+            m_Shared->updCamera().theta = 0.0f;
+            m_Shared->updCamera().phi = -std::numbers::pi_v<float>/2.0f;
         }
         osc::DrawTooltipIfItemHovered("Face camera facing along Y", "Right-clicking faces it along Y, but in the opposite direction");
 
@@ -8426,13 +8409,13 @@ private:
 
         if (ImGui::Button("Z"))
         {
-            m_Shared->UpdCamera().theta = 0.0f;
-            m_Shared->UpdCamera().phi = 0.0f;
+            m_Shared->updCamera().theta = 0.0f;
+            m_Shared->updCamera().phi = 0.0f;
         }
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {
-            m_Shared->UpdCamera().theta = std::numbers::pi_v<float>;
-            m_Shared->UpdCamera().phi = 0.0f;
+            m_Shared->updCamera().theta = std::numbers::pi_v<float>;
+            m_Shared->updCamera().phi = 0.0f;
         }
         osc::DrawTooltipIfItemHovered("Face camera facing along Z", "Right-clicking faces it along Z, but in the opposite direction");
 
@@ -8440,14 +8423,14 @@ private:
 
         if (ImGui::Button(ICON_FA_CAMERA))
         {
-            m_Shared->UpdCamera() = CreateDefaultCamera();
+            m_Shared->updCamera() = CreateDefaultCamera();
         }
         osc::DrawTooltipIfItemHovered("Reset camera", "Resets the camera to its default position (the position it's in when the wizard is first loaded)");
 
         ImGui::PopID();
     }
 
-    void Draw3DViewerOverlayConvertToOpenSimModelButton()
+    void draw3DViewerOverlayConvertToOpenSimModelButton()
     {
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
 
@@ -8458,7 +8441,7 @@ private:
 
         Vec2 const mainButtonDims = osc::CalcButtonSize(mainButtonText);
         Vec2 const settingButtonDims = osc::CalcButtonSize(settingButtonText);
-        Vec2 const viewportBottomRight = m_Shared->Get3DSceneRect().p2;
+        Vec2 const viewportBottomRight = m_Shared->get3DSceneRect().p2;
 
         Vec2 const buttonTopLeft =
         {
@@ -8470,7 +8453,7 @@ private:
         osc::PushStyleColor(ImGuiCol_Button, Color::darkGreen());
         if (ImGui::Button(mainButtonText.c_str()))
         {
-            m_Shared->TryCreateOutputModel();
+            m_Shared->tryCreateOutputModel();
         }
         osc::PopStyleColor();
 
@@ -8484,7 +8467,7 @@ private:
 
         if (ImGui::BeginPopupContextItem("##settingspopup", ImGuiPopupFlags_MouseButtonLeft))
         {
-            ModelCreationFlags const flags = m_Shared->GetModelCreationFlags();
+            ModelCreationFlags const flags = m_Shared->getModelCreationFlags();
 
             {
                 bool v = flags & ModelCreationFlags::ExportStationsAsMarkers;
@@ -8493,7 +8476,7 @@ private:
                     ModelCreationFlags const newFlags = v ?
                         flags + ModelCreationFlags::ExportStationsAsMarkers :
                         flags - ModelCreationFlags::ExportStationsAsMarkers;
-                    m_Shared->SetModelCreationFlags(newFlags);
+                    m_Shared->setModelCreationFlags(newFlags);
                 }
             }
 
@@ -8501,39 +8484,39 @@ private:
         }
     }
 
-    void Draw3DViewerOverlay()
+    void draw3DViewerOverlay()
     {
-        Draw3DViewerOverlayTopBar();
-        Draw3DViewerOverlayBottomBar();
-        Draw3DViewerOverlayConvertToOpenSimModelButton();
+        draw3DViewerOverlayTopBar();
+        draw3DViewerOverlayBottomBar();
+        draw3DViewerOverlayConvertToOpenSimModelButton();
     }
 
-    void DrawSceneElTooltip(SceneEl const& e) const
+    void drawSceneElTooltip(SceneEl const& e) const
     {
         ImGui::BeginTooltip();
-        ImGui::Text("%s %s", e.GetClass().getIconUTF8().c_str(), e.GetLabel().c_str());
+        ImGui::Text("%s %s", e.getClass().getIconUTF8().c_str(), e.getLabel().c_str());
         ImGui::SameLine();
-        ImGui::TextDisabled("%s", GetContextMenuSubHeaderText(m_Shared->GetModelGraph(), e).c_str());
+        ImGui::TextDisabled("%s", GetContextMenuSubHeaderText(m_Shared->getModelGraph(), e).c_str());
         ImGui::EndTooltip();
     }
 
-    void DrawHoverTooltip()
+    void drawHoverTooltip()
     {
         if (!m_MaybeHover)
         {
             return;  // nothing is hovered
         }
 
-        if (SceneEl const* e = m_Shared->GetModelGraph().TryGetElByID(m_MaybeHover.ID))
+        if (SceneEl const* e = m_Shared->getModelGraph().tryGetElByID(m_MaybeHover.ID))
         {
-            DrawSceneElTooltip(*e);
+            drawSceneElTooltip(*e);
         }
     }
 
     // draws 3D manipulator overlays (drag handles, etc.)
-    void DrawSelection3DManipulatorGizmos()
+    void drawSelection3DManipulatorGizmos()
     {
-        if (!m_Shared->HasSelection())
+        if (!m_Shared->hasSelection())
         {
             return;  // can only manipulate if selecting something
         }
@@ -8545,15 +8528,15 @@ private:
         // because the user might start manipulating during this frame
         if (!ImGuizmo::IsUsing())
         {
-            auto it = m_Shared->GetCurrentSelection().begin();
-            auto end = m_Shared->GetCurrentSelection().end();
+            auto it = m_Shared->getCurrentSelection().begin();
+            auto end = m_Shared->getCurrentSelection().end();
 
             if (it == end)
             {
                 return;  // sanity exit
             }
 
-            ModelGraph const& mg = m_Shared->GetModelGraph();
+            ModelGraph const& mg = m_Shared->getModelGraph();
 
             int n = 0;
 
@@ -8576,7 +8559,7 @@ private:
 
         // else: is using OR nselected > 0 (so draw it)
 
-        Rect sceneRect = m_Shared->Get3DSceneRect();
+        Rect sceneRect = m_Shared->get3DSceneRect();
 
         ImGuizmo::SetRect(
             sceneRect.p1.x,
@@ -8590,8 +8573,8 @@ private:
         Mat4 delta;
         SetImguizmoStyleToOSCStandard();
         bool manipulated = ImGuizmo::Manipulate(
-            osc::ValuePtr(m_Shared->GetCamera().getViewMtx()),
-            osc::ValuePtr(m_Shared->GetCamera().getProjMtx(AspectRatio(sceneRect))),
+            osc::ValuePtr(m_Shared->getCamera().getViewMtx()),
+            osc::ValuePtr(m_Shared->getCamera().getProjMtx(AspectRatio(sceneRect))),
             m_ImGuizmoState.op,
             m_ImGuizmoState.mode,
             osc::ValuePtr(m_ImGuizmoState.mtx),
@@ -8610,7 +8593,7 @@ private:
                                                                // for undo/redo support
         if (wasUsingLastFrame && !isUsingThisFrame)
         {
-            m_Shared->CommitCurrentModelGraph("manipulated selection");
+            m_Shared->commitCurrentModelGraph("manipulated selection");
             App::upd().requestRedraw();
         }
 
@@ -8631,9 +8614,9 @@ private:
         );
         rotation = osc::Deg2Rad(rotation);
 
-        for (UID id : m_Shared->GetCurrentSelection())
+        for (UID id : m_Shared->getCurrentSelection())
         {
-            SceneEl& el = m_Shared->UpdModelGraph().UpdElByID(id);
+            SceneEl& el = m_Shared->updModelGraph().updElByID(id);
             switch (m_ImGuizmoState.op) {
             case ImGuizmo::ROTATE:
                 ApplyRotation(el, rotation, m_ImGuizmoState.mtx[3]);
@@ -8651,9 +8634,9 @@ private:
     }
 
     // perform a hovertest on the current 3D scene to determine what the user's mouse is over
-    Hover HovertestScene(std::vector<DrawableThing> const& drawables)
+    Hover hovertestScene(std::vector<DrawableThing> const& drawables)
     {
-        if (!m_Shared->IsRenderHovered())
+        if (!m_Shared->isRenderHovered())
         {
             return m_MaybeHover;
         }
@@ -8663,13 +8646,13 @@ private:
             return Hover{};
         }
 
-        return m_Shared->Hovertest(drawables);
+        return m_Shared->doHovertest(drawables);
     }
 
     // handle any side effects for current user mouse hover
-    void HandleCurrentHover()
+    void handleCurrentHover()
     {
-        if (!m_Shared->IsRenderHovered())
+        if (!m_Shared->isRenderHovered())
         {
             return;  // nothing hovered
         }
@@ -8682,7 +8665,7 @@ private:
         if (!m_MaybeHover && lcClicked && !isUsingGizmo && !shiftDown)
         {
             // user clicked in some empty part of the screen: clear selection
-            m_Shared->DeSelectAll();
+            m_Shared->deSelectAll();
         }
         else if (m_MaybeHover && lcClicked && !isUsingGizmo)
         {
@@ -8690,60 +8673,60 @@ private:
             if (!shiftDown)
             {
                 // user wasn't holding SHIFT, so clear selection
-                m_Shared->DeSelectAll();
+                m_Shared->deSelectAll();
             }
 
             if (altDown)
             {
                 // ALT: only select the thing the mouse is over
-                SelectJustHover();
+                selectJustHover();
             }
             else
             {
                 // NO ALT: select the "grouped items"
-                SelectAnythingGroupedWithHover();
+                selectAnythingGroupedWithHover();
             }
         }
     }
 
     // generate 3D scene drawables for current state
-    std::vector<DrawableThing>& GenerateDrawables()
+    std::vector<DrawableThing>& generateDrawables()
     {
         m_DrawablesBuffer.clear();
 
-        for (SceneEl const& e : m_Shared->GetModelGraph().iter())
+        for (SceneEl const& e : m_Shared->getModelGraph().iter())
         {
-            m_Shared->AppendDrawables(e, m_DrawablesBuffer);
+            m_Shared->appendDrawables(e, m_DrawablesBuffer);
         }
 
-        if (m_Shared->IsShowingFloor())
+        if (m_Shared->isShowingFloor())
         {
-            m_DrawablesBuffer.push_back(m_Shared->GenerateFloorDrawable());
+            m_DrawablesBuffer.push_back(m_Shared->generateFloorDrawable());
         }
 
         return m_DrawablesBuffer;
     }
 
     // draws main 3D viewer panel
-    void Draw3DViewer()
+    void draw3DViewer()
     {
-        m_Shared->SetContentRegionAvailAsSceneRect();
+        m_Shared->setContentRegionAvailAsSceneRect();
 
-        std::vector<DrawableThing>& sceneEls = GenerateDrawables();
+        std::vector<DrawableThing>& sceneEls = generateDrawables();
 
         // hovertest the generated geometry
-        m_MaybeHover = HovertestScene(sceneEls);
-        HandleCurrentHover();
+        m_MaybeHover = hovertestScene(sceneEls);
+        handleCurrentHover();
 
         // assign rim highlights based on hover
         for (DrawableThing& dt : sceneEls)
         {
-            dt.flags = ComputeFlags(m_Shared->GetModelGraph(), dt.id, m_MaybeHover.ID);
+            dt.flags = computeFlags(m_Shared->getModelGraph(), dt.id, m_MaybeHover.ID);
         }
 
         // draw 3D scene (effectively, as an ImGui::Image)
-        m_Shared->DrawScene(sceneEls);
-        if (m_Shared->IsRenderHovered() && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right) && !ImGuizmo::IsUsing())
+        m_Shared->drawScene(sceneEls);
+        if (m_Shared->isRenderHovered() && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right) && !ImGuizmo::IsUsing())
         {
             m_MaybeOpenedContextMenu = m_MaybeHover;
             ImGui::OpenPopup("##maincontextmenu");
@@ -8753,46 +8736,46 @@ private:
         if (ImGui::BeginPopup("##maincontextmenu"))
         {
             ctxMenuShowing = true;
-            DrawContextMenuContent();
+            drawContextMenuContent();
             ImGui::EndPopup();
         }
 
-        if (m_Shared->IsRenderHovered() && m_MaybeHover && (ctxMenuShowing ? m_MaybeHover.ID != m_MaybeOpenedContextMenu.ID : true))
+        if (m_Shared->isRenderHovered() && m_MaybeHover && (ctxMenuShowing ? m_MaybeHover.ID != m_MaybeOpenedContextMenu.ID : true))
         {
-            DrawHoverTooltip();
+            drawHoverTooltip();
         }
 
         // draw overlays/gizmos
-        DrawSelection3DManipulatorGizmos();
-        m_Shared->DrawConnectionLines(m_MaybeHover);
+        drawSelection3DManipulatorGizmos();
+        m_Shared->drawConnectionLines(m_MaybeHover);
     }
 
-    void DrawMainMenuFileMenu()
+    void drawMainMenuFileMenu()
     {
         if (ImGui::BeginMenu("File"))
         {
             if (ImGui::MenuItem(ICON_FA_FILE " New", "Ctrl+N"))
             {
-                m_Shared->RequestNewMeshImporterTab();
+                m_Shared->requestNewMeshImporterTab();
             }
 
             ImGui::Separator();
 
             if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Import", "Ctrl+O"))
             {
-                m_Shared->OpenOsimFileAsModelGraph();
+                m_Shared->openOsimFileAsModelGraph();
             }
             osc::DrawTooltipIfItemHovered("Import osim into mesh importer", "Try to import an existing osim file into the mesh importer.\n\nBEWARE: the mesh importer is *not* an OpenSim model editor. The import process will delete information from your osim in order to 'jam' it into this screen. The main purpose of this button is to export/import mesh editor scenes, not to edit existing OpenSim models.");
 
             if (ImGui::MenuItem(ICON_FA_SAVE " Export", "Ctrl+S"))
             {
-                m_Shared->ExportModelGraphAsOsimFile();
+                m_Shared->exportModelGraphAsOsimFile();
             }
             osc::DrawTooltipIfItemHovered("Export mesh impoter scene to osim", "Try to export the current mesh importer scene to an osim.\n\nBEWARE: the mesh importer scene may not map 1:1 onto an OpenSim model, so re-importing the scene *may* change a few things slightly. The main utility of this button is to try and save some progress in the mesh importer.");
 
             if (ImGui::MenuItem(ICON_FA_SAVE " Export As", "Shift+Ctrl+S"))
             {
-                m_Shared->ExportAsModelGraphAsOsimFile();
+                m_Shared->exportAsModelGraphAsOsimFile();
             }
             osc::DrawTooltipIfItemHovered("Export mesh impoter scene to osim", "Try to export the current mesh importer scene to an osim.\n\nBEWARE: the mesh importer scene may not map 1:1 onto an OpenSim model, so re-importing the scene *may* change a few things slightly. The main utility of this button is to try and save some progress in the mesh importer.");
 
@@ -8812,7 +8795,7 @@ private:
 
             if (ImGui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W"))
             {
-                m_Shared->RequestClose();
+                m_Shared->requestClose();
             }
 
             if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
@@ -8824,23 +8807,23 @@ private:
         }
     }
 
-    void DrawMainMenuEditMenu()
+    void drawMainMenuEditMenu()
     {
         if (ImGui::BeginMenu("Edit"))
         {
-            if (ImGui::MenuItem(ICON_FA_UNDO " Undo", "Ctrl+Z", false, m_Shared->CanUndoCurrentModelGraph()))
+            if (ImGui::MenuItem(ICON_FA_UNDO " Undo", "Ctrl+Z", false, m_Shared->canUndoCurrentModelGraph()))
             {
-                m_Shared->UndoCurrentModelGraph();
+                m_Shared->undoCurrentModelGraph();
             }
-            if (ImGui::MenuItem(ICON_FA_REDO " Redo", "Ctrl+Shift+Z", false, m_Shared->CanRedoCurrentModelGraph()))
+            if (ImGui::MenuItem(ICON_FA_REDO " Redo", "Ctrl+Shift+Z", false, m_Shared->canRedoCurrentModelGraph()))
             {
-                m_Shared->RedoCurrentModelGraph();
+                m_Shared->redoCurrentModelGraph();
             }
             ImGui::EndMenu();
         }
     }
 
-    void DrawMainMenuWindowMenu()
+    void drawMainMenuWindowMenu()
     {
 
         if (ImGui::BeginMenu("Window"))
@@ -8857,13 +8840,13 @@ private:
         }
     }
 
-    void DrawMainMenuAboutMenu()
+    void drawMainMenuAboutMenu()
     {
         osc::MainMenuAboutTab{}.onDraw();
     }
 
     // draws main 3D viewer, or a modal (if one is active)
-    void DrawMainViewerPanelOrModal()
+    void drawMainViewerPanelOrModal()
     {
         if (m_Maybe3DViewerModal)
         {
@@ -8873,8 +8856,8 @@ private:
             // open it "over" the whole UI as a "modal" - so that the user can't click things
             // outside of the panel
             ImGui::OpenPopup("##visualizermodalpopup");
-            ImGui::SetNextWindowSize(m_Shared->Get3DSceneDims());
-            ImGui::SetNextWindowPos(m_Shared->Get3DSceneRect().p1);
+            ImGui::SetNextWindowSize(m_Shared->get3DSceneDims());
+            ImGui::SetNextWindowPos(m_Shared->get3DSceneRect().p1);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
 
             ImGuiWindowFlags const modalFlags =
@@ -8900,9 +8883,9 @@ private:
             if (ImGui::Begin("wizard_3dViewer"))
             {
                 ImGui::PopStyleVar();
-                Draw3DViewer();
+                draw3DViewer();
                 ImGui::SetCursorPos(Vec2{ImGui::GetCursorStartPos()} + Vec2{10.0f, 10.0f});
-                Draw3DViewerOverlay();
+                draw3DViewerOverlay();
             }
             else
             {

@@ -30,7 +30,7 @@ osc::CStringView osc::OverlayDecorationOptions::getOptionLabel(ptrdiff_t i) cons
 
 osc::CStringView osc::OverlayDecorationOptions::getOptionGroupLabel(ptrdiff_t i) const
 {
-    return GetLabel(At(GetAllOverlayDecorationOptionFlagsMetadata(), i).group);
+    return getLabel(At(GetAllOverlayDecorationOptionFlagsMetadata(), i).group);
 }
 
 bool osc::OverlayDecorationOptions::getDrawXZGrid() const

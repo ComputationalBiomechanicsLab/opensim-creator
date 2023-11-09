@@ -18,14 +18,14 @@ void osc::ComponentSceneDecorationFlagsTagger::operator()(
 {
     if (&component != m_LastComponent)
     {
-        m_Flags = ComputeFlags(component);
+        m_Flags = computeFlags(component);
         m_LastComponent = &component;
     }
 
     decoration.flags = m_Flags;
 }
 
-osc::SceneDecorationFlags osc::ComponentSceneDecorationFlagsTagger::ComputeFlags(
+osc::SceneDecorationFlags osc::ComponentSceneDecorationFlagsTagger::computeFlags(
     OpenSim::Component const& component) const
 {
     SceneDecorationFlags rv = SceneDecorationFlags::CastsShadows;

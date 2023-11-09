@@ -53,7 +53,7 @@ namespace
     });
 }
 
-osc::CStringView osc::GetLabel(OverlayDecorationOptionGroup g)
+osc::CStringView osc::getLabel(OverlayDecorationOptionGroup g)
 {
     switch (g)
     {

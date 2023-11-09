@@ -16,7 +16,7 @@ namespace osc
 
         void operator()(OpenSim::Component const&, SceneDecoration&);
     private:
-        SceneDecorationFlags ComputeFlags(OpenSim::Component const&) const;
+        SceneDecorationFlags computeFlags(OpenSim::Component const&) const;
 
         OpenSim::Component const* m_Selected;
         OpenSim::Component const* m_Hovered;
