@@ -12,7 +12,6 @@
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/UI/Widgets/StandardPopup.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <array>

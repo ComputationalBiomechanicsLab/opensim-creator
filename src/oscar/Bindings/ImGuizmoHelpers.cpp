@@ -2,7 +2,6 @@
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <IconsFontAwesome5.h>

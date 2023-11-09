@@ -5,8 +5,8 @@
 #include <oscar/Maths/Triangle.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Shims/Cpp20/bit.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/SpanHelpers.hpp>
 
 #include <algorithm>

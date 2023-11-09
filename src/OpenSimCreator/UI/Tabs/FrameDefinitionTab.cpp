@@ -62,7 +62,6 @@
 #include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/UI/Widgets/WindowMenu.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>

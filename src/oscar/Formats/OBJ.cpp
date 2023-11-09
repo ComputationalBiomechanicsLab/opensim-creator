@@ -3,7 +3,6 @@
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <cstddef>
 #include <ctime>

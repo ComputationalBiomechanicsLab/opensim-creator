@@ -158,6 +158,10 @@ add_library(oscar STATIC
     Scene/SceneRendererParams.cpp
     Scene/SceneRendererParams.hpp
 
+    Shims/Cpp20/bit.hpp
+    Shims/Cpp20/stop_token.hpp
+    Shims/Cpp20/thread.hpp
+
     UI/Panels/LogViewerPanel.cpp
     UI/Panels/LogViewerPanel.hpp
     UI/Panels/Panel.hpp
@@ -218,7 +222,6 @@ add_library(oscar STATIC
     Utils/ClonePtr.hpp
     Utils/Concepts.hpp
     Utils/CopyOnUpdPtr.hpp
-    Utils/Cpp20Shims.hpp
     Utils/CStringView.hpp
     Utils/DefaultConstructOnCopy.hpp
     Utils/EnumHelpers.hpp

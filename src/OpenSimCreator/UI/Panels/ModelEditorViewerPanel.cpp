@@ -26,7 +26,6 @@
 #include <oscar/UI/Widgets/GuiRuler.hpp>
 #include <oscar/UI/Widgets/IconWithoutMenu.hpp>
 #include <oscar/UI/IconCache.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <cstdint>
 #include <memory>

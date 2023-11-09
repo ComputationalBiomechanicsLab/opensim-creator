@@ -4,7 +4,6 @@
 
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <algorithm>
 #include <chrono>

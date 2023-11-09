@@ -12,7 +12,6 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/Screen.hpp>
 #include <oscar/Platform/Screenshot.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>

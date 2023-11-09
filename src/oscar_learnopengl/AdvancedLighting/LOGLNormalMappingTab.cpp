@@ -22,7 +22,6 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 

@@ -1,9 +1,9 @@
 #include "StringHelpers.hpp"
 
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <limits>
 #include <optional>

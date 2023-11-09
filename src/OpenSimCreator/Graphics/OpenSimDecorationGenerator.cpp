@@ -31,7 +31,6 @@
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <SimTKcommon.h>
 

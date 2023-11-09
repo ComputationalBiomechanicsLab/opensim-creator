@@ -78,7 +78,6 @@
 #include <oscar/UI/Widgets/PopupManager.hpp>
 #include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/ClonePtr.hpp>
 #include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/CStringView.hpp>

@@ -49,7 +49,6 @@
 #include <oscar/UI/Widgets/GuiRuler.hpp>
 #include <oscar/UI/Widgets/IconWithMenu.hpp>
 #include <oscar/UI/IconCache.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <SimTKcommon/basics.h>

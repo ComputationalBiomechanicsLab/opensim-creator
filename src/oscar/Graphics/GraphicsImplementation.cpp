@@ -49,7 +49,6 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/DefaultConstructOnCopy.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>

@@ -1,7 +1,6 @@
 #include "UndoRedo.hpp"
 
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <algorithm>
 #include <chrono>

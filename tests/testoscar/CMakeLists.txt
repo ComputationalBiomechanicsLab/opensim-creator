@@ -23,13 +23,14 @@ add_executable(testoscar
 
     Platform/TestAppSettingValueType.cpp
 
+    Shims/Cpp20/TestBit.cpp
+
     Utils/TestCStringView.cpp
-    Utils/TestCpp20Shims.cpp
     Utils/TestFileChangePoller.cpp
     Utils/TestStringHelpers.cpp
 
     testoscar.cpp  # entry point
-)
+ )
 
 
 configure_file(

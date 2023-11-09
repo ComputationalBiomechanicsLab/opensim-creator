@@ -26,8 +26,9 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Shims/Cpp20/stop_token.hpp>
+#include <oscar/Shims/Cpp20/thread.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>

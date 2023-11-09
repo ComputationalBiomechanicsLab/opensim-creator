@@ -57,7 +57,6 @@
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <SimTKcommon.h>
