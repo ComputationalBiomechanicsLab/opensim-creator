@@ -520,8 +520,6 @@ namespace
     //
     // the UI thread must `.poll()` this to check for responses
     class MeshLoader final {
-        using Worker = osc::spsc::Worker<MeshLoadRequest, MeshLoadResponse, decltype(respondToMeshloadRequest)>;
-
     public:
         MeshLoader() : m_Worker{Worker::create(respondToMeshloadRequest)}
         {
@@ -538,6 +536,7 @@ namespace
         }
 
     private:
+        using Worker = osc::spsc::Worker<MeshLoadRequest, MeshLoadResponse, decltype(respondToMeshloadRequest)>;
         Worker m_Worker;
     };
 }
@@ -683,17 +682,28 @@ namespace
     //
     // helps the UI figure out what it should/shouldn't show for a particular type
     // without having to resort to peppering visitors everywhere
-    using SceneElFlags = int;
-    enum SceneElFlags_ {
-        SceneElFlags_None              = 0,
-        SceneElFlags_CanChangeLabel    = 1<<0,
-        SceneElFlags_CanChangePosition = 1<<1,
-        SceneElFlags_CanChangeRotation = 1<<2,
-        SceneElFlags_CanChangeScale    = 1<<3,
-        SceneElFlags_CanDelete         = 1<<4,
-        SceneElFlags_CanSelect         = 1<<5,
-        SceneElFlags_HasPhysicalSize   = 1<<6,
+    enum class SceneElFlags {
+        None              = 0,
+        CanChangeLabel    = 1<<0,
+        CanChangePosition = 1<<1,
+        CanChangeRotation = 1<<2,
+        CanChangeScale    = 1<<3,
+        CanDelete         = 1<<4,
+        CanSelect         = 1<<5,
+        HasPhysicalSize   = 1<<6,
     };
+
+    constexpr bool operator&(SceneElFlags a, SceneElFlags b)
+    {
+        using Underlying = std::underlying_type_t<SceneElFlags>;
+        return (static_cast<Underlying>(a) & static_cast<Underlying>(b)) != 0;
+    }
+
+    constexpr SceneElFlags operator|(SceneElFlags a, SceneElFlags b)
+    {
+        using Underlying = std::underlying_type_t<SceneElFlags>;
+        return static_cast<SceneElFlags>(static_cast<Underlying>(a) | static_cast<Underlying>(b));
+    }
 
     // returns the "direction" of a cross reference
     //
@@ -934,37 +944,37 @@ namespace
 
     bool CanChangeLabel(SceneEl const& el)
     {
-        return (el.GetFlags() & SceneElFlags_CanChangeLabel) != 0;
+        return el.GetFlags() & SceneElFlags::CanChangeLabel;
     }
 
     bool CanChangePosition(SceneEl const& el)
     {
-        return (el.GetFlags() & SceneElFlags_CanChangePosition) != 0;
+        return el.GetFlags() & SceneElFlags::CanChangePosition;
     }
 
     bool CanChangeRotation(SceneEl const& el)
     {
-        return (el.GetFlags() & SceneElFlags_CanChangeRotation) != 0;
+        return el.GetFlags() & SceneElFlags::CanChangeRotation;
     }
 
     bool CanChangeScale(SceneEl const& el)
     {
-        return (el.GetFlags() & SceneElFlags_CanChangeScale) != 0;
+        return el.GetFlags() & SceneElFlags::CanChangeScale;
     }
 
     bool CanDelete(SceneEl const& el)
     {
-        return (el.GetFlags() & SceneElFlags_CanDelete) != 0;
+        return el.GetFlags() & SceneElFlags::CanDelete;
     }
 
     bool CanSelect(SceneEl const& el)
     {
-        return (el.GetFlags() & SceneElFlags_CanSelect) != 0;
+        return el.GetFlags() & SceneElFlags::CanSelect;
     }
 
     bool HasPhysicalSize(SceneEl const& el)
     {
-        return (el.GetFlags() & SceneElFlags_HasPhysicalSize) != 0;
+        return el.GetFlags() & SceneElFlags::HasPhysicalSize;
     }
 
     bool IsCrossReferencing(SceneEl const& el, UID id, CrossrefDirection direction = CrossrefDirection_Both)
@@ -1025,7 +1035,7 @@ namespace
 
         SceneElFlags implGetFlags() const final
         {
-            return SceneElFlags_None;
+            return SceneElFlags::None;
         }
 
         UID implGetID() const final
@@ -1200,13 +1210,14 @@ namespace
 
         SceneElFlags implGetFlags() const final
         {
-            return SceneElFlags_CanChangeLabel |
-                SceneElFlags_CanChangePosition |
-                SceneElFlags_CanChangeRotation |
-                SceneElFlags_CanChangeScale |
-                SceneElFlags_CanDelete |
-                SceneElFlags_CanSelect |
-                SceneElFlags_HasPhysicalSize;
+            return
+                SceneElFlags::CanChangeLabel |
+                SceneElFlags::CanChangePosition |
+                SceneElFlags::CanChangeRotation |
+                SceneElFlags::CanChangeScale |
+                SceneElFlags::CanDelete |
+                SceneElFlags::CanSelect |
+                SceneElFlags::HasPhysicalSize;
         }
 
         UID implGetID() const final
@@ -1343,11 +1354,12 @@ namespace
 
         SceneElFlags implGetFlags() const final
         {
-            return SceneElFlags_CanChangeLabel |
-                SceneElFlags_CanChangePosition |
-                SceneElFlags_CanChangeRotation |
-                SceneElFlags_CanDelete |
-                SceneElFlags_CanSelect;
+            return
+                SceneElFlags::CanChangeLabel |
+                SceneElFlags::CanChangePosition |
+                SceneElFlags::CanChangeRotation |
+                SceneElFlags::CanDelete |
+                SceneElFlags::CanSelect;
         }
 
         UID implGetID() const final
@@ -1577,11 +1589,12 @@ namespace
 
         SceneElFlags implGetFlags() const final
         {
-            return SceneElFlags_CanChangeLabel |
-                SceneElFlags_CanChangePosition |
-                SceneElFlags_CanChangeRotation |
-                SceneElFlags_CanDelete |
-                SceneElFlags_CanSelect;
+            return
+                SceneElFlags::CanChangeLabel |
+                SceneElFlags::CanChangePosition |
+                SceneElFlags::CanChangeRotation |
+                SceneElFlags::CanDelete |
+                SceneElFlags::CanSelect;
         }
 
         UID implGetID() const final
@@ -1752,10 +1765,10 @@ namespace
         SceneElFlags implGetFlags() const final
         {
             return
-                SceneElFlags_CanChangeLabel |
-                SceneElFlags_CanChangePosition |
-                SceneElFlags_CanDelete |
-                SceneElFlags_CanSelect;
+                SceneElFlags::CanChangeLabel |
+                SceneElFlags::CanChangePosition |
+                SceneElFlags::CanDelete |
+                SceneElFlags::CanSelect;
         }
 
         UID implGetID() const final
