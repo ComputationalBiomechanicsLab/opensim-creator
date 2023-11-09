@@ -656,39 +656,23 @@ namespace
     class JointEl;
     class StationEl;
 
-    // a visitor for `const` scene elements
-    class ConstSceneElVisitor {
-    protected:
-        ConstSceneElVisitor() = default;
-        ConstSceneElVisitor(ConstSceneElVisitor const&) = default;
-        ConstSceneElVisitor(ConstSceneElVisitor&&) noexcept = default;
-        ConstSceneElVisitor& operator=(ConstSceneElVisitor const&) = default;
-        ConstSceneElVisitor& operator=(ConstSceneElVisitor&&) noexcept = default;
-    public:
-        virtual ~ConstSceneElVisitor() noexcept = default;
-        virtual void operator()(GroundEl const&) = 0;
-        virtual void operator()(MeshEl const&) = 0;
-        virtual void operator()(BodyEl const&) = 0;
-        virtual void operator()(JointEl const&) = 0;
-        virtual void operator()(StationEl const&) = 0;
-    };
+    // a variant for storing a `const` reference to a `const` scene element
+    using ConstSceneElVariant = std::variant<
+        std::reference_wrapper<GroundEl const>,
+        std::reference_wrapper<MeshEl const>,
+        std::reference_wrapper<BodyEl const>,
+        std::reference_wrapper<JointEl const>,
+        std::reference_wrapper<StationEl const>
+    >;
 
-    // a visitor for non-`const` scene elements
-    class SceneElVisitor {
-    protected:
-        SceneElVisitor() = default;
-        SceneElVisitor(SceneElVisitor const&) = default;
-        SceneElVisitor(SceneElVisitor&&) noexcept = default;
-        SceneElVisitor& operator=(SceneElVisitor const&) = default;
-        SceneElVisitor& operator=(SceneElVisitor&&) noexcept = default;
-    public:
-        virtual ~SceneElVisitor() noexcept = default;
-        virtual void operator()(GroundEl&) = 0;
-        virtual void operator()(MeshEl&) = 0;
-        virtual void operator()(BodyEl&) = 0;
-        virtual void operator()(JointEl&) = 0;
-        virtual void operator()(StationEl&) = 0;
-    };
+    // a variant for storing a non-`const` reference to a non-`const` scene element
+    using SceneElVariant = std::variant<
+        std::reference_wrapper<GroundEl>,
+        std::reference_wrapper<MeshEl>,
+        std::reference_wrapper<BodyEl>,
+        std::reference_wrapper<JointEl>,
+        std::reference_wrapper<StationEl>
+    >;
 
     // runtime flags for a scene el type
     //
@@ -758,15 +742,14 @@ namespace
             return implClone();
         }
 
-        // accept visitors so that downstream code can use visitors when they need to
-        // handle specific types
-        void accept(ConstSceneElVisitor& visitor) const
+        ConstSceneElVariant toVariant() const
         {
-            implAccept(visitor);
+            return implToVariant();
         }
-        void accept(SceneElVisitor& visitor)
+
+        SceneElVariant toVariant()
         {
-            implAccept(visitor);
+            return implToVariant();
         }
 
         // each scene element may be referencing `n` (>= 0) other scene elements by
@@ -872,8 +855,8 @@ namespace
     private:
         virtual SceneElClass const& implGetClass() const = 0;
         virtual std::unique_ptr<SceneEl> implClone() const = 0;
-        virtual void implAccept(ConstSceneElVisitor&) const = 0;
-        virtual void implAccept(SceneElVisitor&) = 0;
+        virtual ConstSceneElVariant implToVariant() const = 0;
+        virtual SceneElVariant implToVariant() = 0;
         virtual int implGetNumCrossReferences() const
         {
             return 0;
@@ -942,38 +925,6 @@ namespace
     };
 
     // SceneEl helper methods
-
-    template<class Visitor>
-    auto visit(Visitor&& vis, SceneEl const& el)
-    {
-        using StdVariant = std::variant<
-            std::reference_wrapper<GroundEl const>,
-            std::reference_wrapper<MeshEl const>,
-            std::reference_wrapper<BodyEl const>,
-            std::reference_wrapper<JointEl const>,
-            std::reference_wrapper<StationEl const>
-        >;
-        struct ConstVirtualVisitor final : public ConstSceneElVisitor {
-            ConstVirtualVisitor(std::optional<StdVariant>& rv_) :
-                rv{rv_}
-            {
-            }
-
-            void operator()(GroundEl const& el) final { rv = el; }
-            void operator()(MeshEl const& el) final { rv = el; }
-            void operator()(BodyEl const& el) final { rv = el; }
-            void operator()(JointEl const& el) final { rv = el; }
-            void operator()(StationEl const& el) final { rv = el; }
-        private:
-            std::optional<StdVariant>& rv;
-        };
-
-        std::optional<StdVariant> ref;
-        ConstVirtualVisitor visitor{ref};
-        el.accept(visitor);
-        OSC_ASSERT(ref.has_value());
-        return std::visit(std::forward<Visitor>(vis), *ref);
-    }
 
     void ApplyTranslation(SceneEl& el, Vec3 const& translation)
     {
@@ -1077,18 +1028,18 @@ namespace
             return std::make_unique<T>(static_cast<T const&>(*this));
         }
 
-        void implAccept(ConstSceneElVisitor& visitor) const final
+        ConstSceneElVariant implToVariant() const final
         {
             static_assert(std::is_base_of_v<SceneEl, T>);
             static_assert(std::is_final_v<T>);
-            visitor(static_cast<T const&>(*this));
+            return static_cast<T const&>(*this);
         }
 
-        void implAccept(SceneElVisitor& visitor) final
+        SceneElVariant implToVariant() final
         {
             static_assert(std::is_base_of_v<SceneEl, T>);
             static_assert(std::is_final_v<T>);
-            visitor(static_cast<T&>(*this));
+            return static_cast<T&>(*this);
         }
     };
 
@@ -1735,27 +1686,27 @@ namespace
     // returns true if a mesh can be attached to the given element
     bool CanAttachMeshTo(SceneEl const& e)
     {
-        return visit(Overload
+        return std::visit(Overload
         {
             [](GroundEl const&)  { return true; },
             [](MeshEl const&)    { return false; },
             [](BodyEl const&)    { return true; },
             [](JointEl const&)   { return true; },
             [](StationEl const&) { return false; },
-        }, e);
+        }, e.toVariant());
     }
 
     // returns `true` if a `StationEl` can be attached to the element
     bool CanAttachStationTo(SceneEl const& e)
     {
-        return visit(Overload
+        return std::visit(Overload
         {
             [](GroundEl const&)  { return true; },
             [](MeshEl const&)    { return true; },
             [](BodyEl const&)    { return true; },
             [](JointEl const&)   { return false; },
             [](StationEl const&) { return false; },
-        }, e);
+        }, e.toVariant());
     }
 
     auto const& GetSceneElClasses()
@@ -2325,7 +2276,7 @@ namespace
         SceneEl const& e)
     {
         std::stringstream ss;
-        visit(Overload
+        std::visit(Overload
         {
             [&ss](GroundEl const&)
             {
@@ -2347,7 +2298,7 @@ namespace
             {
                 ss << '(' << s.getClass().getName() << ", attached to " << getLabel(mg, s.getParentID()) << ')';
             },
-        }, e);
+        }, e.toVariant());
         return std::move(ss).str();
     }
 
@@ -2427,14 +2378,14 @@ namespace
     // attach to something in the scene
     UIDT<BodyEl> GetStationAttachmentParent(ModelGraph const& mg, SceneEl const& el)
     {
-        return visit(Overload
+        return std::visit(Overload
         {
             [](GroundEl const&) { return c_GroundID; },
             [&mg](MeshEl const& meshEl) { return mg.containsEl<BodyEl>(meshEl.getParentID()) ? osc::DowncastID<BodyEl>(meshEl.getParentID()) : c_GroundID; },
             [](BodyEl const& bodyEl) { return bodyEl.getID(); },
             [](JointEl const&) { return c_GroundID; },
             [](StationEl const&) { return c_GroundID; },
-        }, el);
+        }, el.toVariant());
     }
 
     // points an axis of a given element towards some other element in the model graph
@@ -4370,14 +4321,14 @@ namespace
 
         bool shouldShowConnectionLines(SceneEl const& el) const
         {
-            return visit(Overload
+            return std::visit(Overload
             {
                 []    (GroundEl const&)  { return false; },
                 [this](MeshEl const&)    { return this->isShowingMeshConnectionLines(); },
                 [this](BodyEl const&)    { return this->isShowingBodyConnectionLines(); },
                 [this](JointEl const&)   { return this->isShowingJointConnectionLines(); },
                 [this](StationEl const&) { return this->isShowingMeshConnectionLines(); },
-            }, el);
+            }, el.toVariant());
         }
 
         void drawConnectionLines(
@@ -5143,7 +5094,7 @@ namespace
             SceneEl const& e,
             std::vector<DrawableThing>& appendOut) const
         {
-            visit(Overload
+            std::visit(Overload
             {
                 [this, &appendOut](GroundEl const&)
                 {
@@ -5198,7 +5149,7 @@ namespace
 
                     appendOut.push_back(generateStationSphere(el, getColorStation()));
                 },
-            }, e);
+            }, e.toVariant());
         }
 
         //
@@ -5745,14 +5696,14 @@ namespace
                 return false;
             }
 
-            return visit(Overload
+            return std::visit(Overload
             {
                 [this](GroundEl const&)  { return m_Options.canChooseGround; },
                 [this](MeshEl const&)    { return m_Options.canChooseMeshes; },
                 [this](BodyEl const&)    { return m_Options.canChooseBodies; },
                 [this](JointEl const&)   { return m_Options.canChooseJoints; },
                 [this](StationEl const&) { return m_Options.canChooseStations; },
-            }, el);
+            }, el.toVariant());
         }
 
         void select(SceneEl const& el)
@@ -7873,50 +7824,14 @@ private:
     // draw context menu content for some scene element
     void drawContextMenuContent(SceneEl& el, Vec3 const& clickPos)
     {
-        // helper class for visiting each type of scene element
-        class Visitor final : public SceneElVisitor {
-        public:
-            Visitor(
-                MeshImporterTab::Impl& state,
-                Vec3 const& clickPos) :
-
-                m_State{state},
-                m_ClickPos{clickPos}
-            {
-            }
-
-            void operator()(GroundEl& el) final
-            {
-                m_State.drawContextMenuContent(el, m_ClickPos);
-            }
-
-            void operator()(MeshEl& el) final
-            {
-                m_State.drawContextMenuContent(el, m_ClickPos);
-            }
-
-            void operator()(BodyEl& el) final
-            {
-                m_State.drawContextMenuContent(el, m_ClickPos);
-            }
-
-            void operator()(JointEl& el) final
-            {
-                m_State.drawContextMenuContent(el, m_ClickPos);
-            }
-
-            void operator()(StationEl& el) final
-            {
-                m_State.drawContextMenuContent(el, m_ClickPos);
-            }
-        private:
-            MeshImporterTab::Impl& m_State;
-            Vec3 const& m_ClickPos;
-        };
-
-        // context menu was opened on a scene element that exists in the modelgraph
-        Visitor visitor{*this, clickPos};
-        el.accept(visitor);
+        std::visit(Overload
+        {
+            [this, &clickPos](GroundEl& el)  { this->drawContextMenuContent(el, clickPos); },
+            [this, &clickPos](MeshEl& el)    { this->drawContextMenuContent(el, clickPos); },
+            [this, &clickPos](BodyEl& el)    { this->drawContextMenuContent(el, clickPos); },
+            [this, &clickPos](JointEl& el)   { this->drawContextMenuContent(el, clickPos); },
+            [this, &clickPos](StationEl& el) { this->drawContextMenuContent(el, clickPos); },
+        }, el.toVariant());
     }
 
     // draw a context menu for the current state (if applicable)
