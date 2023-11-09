@@ -1,11 +1,10 @@
 #include "FileChangePoller.hpp"
 
-#include <oscar/Utils/CStringView.hpp>
-
+#include <string_view>
 
 namespace
 {
-    constexpr osc::CStringView c_ModelNoBackingFileSenteniel = "Unassigned";
+    constexpr std::string_view c_ModelNoBackingFileSenteniel = "Unassigned";
 }
 
 std::filesystem::file_time_type GetLastModificationTime(std::string const& path)

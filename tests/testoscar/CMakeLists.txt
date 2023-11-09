@@ -27,6 +27,7 @@ add_executable(testoscar
 
     Utils/TestCStringView.cpp
     Utils/TestFileChangePoller.cpp
+    Utils/TestFilenameExtractor.cpp
     Utils/TestStringHelpers.cpp
 
     testoscar.cpp  # entry point

@@ -5,11 +5,12 @@
 #include <exception>
 #include <sstream>
 #include <stdexcept>
+#include <string_view>
 
 void osc::OnAssertionFailure(
-    CStringView failingCode,
-    CStringView func,
-    CStringView file,
+    std::string_view failingCode,
+    std::string_view func,
+    std::string_view file,
     unsigned int line)
 {
     std::string const msg = [&]()

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <oscar/Utils/Assertions.hpp>
-
 #include <array>
 #include <cstddef>
 #include <iterator>
@@ -384,7 +382,10 @@ namespace osc
 
         constexpr iterator erase(iterator first, iterator last)
         {
-            OSC_ASSERT(last == end() && "can currently only erase elements from end of circular buffer");
+            if (last != end())
+            {
+                throw std::runtime_error{"tried to remove a range of elements in the middle of a circular buffer (can currently only erase elements from end of circular buffer)"};
+            }
 
             std::destroy(first, last);
             m_End -= std::distance(first, last);

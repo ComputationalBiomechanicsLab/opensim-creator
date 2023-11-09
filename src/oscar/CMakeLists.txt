@@ -227,10 +227,10 @@ add_library(oscar STATIC
     Utils/EnumHelpers.hpp
     Utils/FileChangePoller.cpp
     Utils/FileChangePoller.hpp
+    Utils/FilenameExtractor.hpp
     Utils/FilesystemHelpers.cpp
     Utils/FilesystemHelpers.hpp
     Utils/HashHelpers.hpp
-    Utils/Macros.hpp
     Utils/ParalellizationHelpers.hpp
     Utils/ParentPtr.hpp
     Utils/Perf.cpp

@@ -13,14 +13,6 @@ namespace osc
     public:
         using value_type = std::string_view::value_type;
 
-        // factory function for constructing a CStringView from an array of known
-        // compile-time size
-        template<size_t N>
-        static constexpr CStringView FromArray(char const (&s)[N]) noexcept
-        {
-            return {&s[0], N};
-        }
-
         constexpr CStringView() noexcept :
             m_Data{""},
             m_Size{0}
