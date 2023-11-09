@@ -125,7 +125,10 @@
 #include <vector>
 #include <variant>
 
+using osc::App;
 using osc::ClonePtr;
+using osc::Color;
+using osc::CStringView;
 using osc::UID;
 using osc::UIDT;
 using osc::AABB;
@@ -133,12 +136,24 @@ using osc::Sphere;
 using osc::Mat3;
 using osc::Mat4;
 using osc::Mat4x3;
+using osc::Material;
+using osc::MaterialPropertyBlock;
 using osc::Mesh;
+using osc::MeshCache;
+using osc::Overload;
 using osc::Quat;
 using osc::Transform;
 using osc::PolarPerspectiveCamera;
 using osc::Rect;
 using osc::Line;
+using osc::RayCollision;
+using osc::RenderTexture;
+using osc::SceneDecoration;
+using osc::SceneDecorationFlags;
+using osc::SceneRenderer;
+using osc::SceneRendererParams;
+using osc::ShaderCache;
+using osc::StandardPopup;
 using osc::Vec2;
 using osc::Vec3;
 using osc::Vec4;
@@ -146,36 +161,36 @@ using osc::Vec4;
 // user-facing string constants
 namespace
 {
-    constexpr osc::CStringView c_GroundLabel = "Ground";
-    constexpr osc::CStringView c_GroundLabelPluralized = "Ground";
-    constexpr osc::CStringView c_GroundLabelOptionallyPluralized = "Ground(s)";
-    constexpr osc::CStringView c_GroundDescription = "Ground is an inertial reference frame in which the motion of all frames and points may conveniently and efficiently be expressed. It is always defined to be at (0, 0, 0) in 'worldspace' and cannot move. All bodies in the model must eventually attach to ground via joints.";
+    constexpr CStringView c_GroundLabel = "Ground";
+    constexpr CStringView c_GroundLabelPluralized = "Ground";
+    constexpr CStringView c_GroundLabelOptionallyPluralized = "Ground(s)";
+    constexpr CStringView c_GroundDescription = "Ground is an inertial reference frame in which the motion of all frames and points may conveniently and efficiently be expressed. It is always defined to be at (0, 0, 0) in 'worldspace' and cannot move. All bodies in the model must eventually attach to ground via joints.";
 
-    constexpr osc::CStringView c_MeshLabel = "Mesh";
-    constexpr osc::CStringView c_MeshLabelPluralized = "Meshes";
-    constexpr osc::CStringView c_MeshLabelOptionallyPluralized = "Mesh(es)";
-    constexpr osc::CStringView c_MeshDescription = "Meshes are decorational components in the model. They can be translated, rotated, and scaled. Typically, meshes are 'attached' to other elements in the model, such as bodies. When meshes are 'attached' to something, they will 'follow' the thing they are attached to.";
-    constexpr osc::CStringView c_MeshAttachmentCrossrefName = "parent";
+    constexpr CStringView c_MeshLabel = "Mesh";
+    constexpr CStringView c_MeshLabelPluralized = "Meshes";
+    constexpr CStringView c_MeshLabelOptionallyPluralized = "Mesh(es)";
+    constexpr CStringView c_MeshDescription = "Meshes are decorational components in the model. They can be translated, rotated, and scaled. Typically, meshes are 'attached' to other elements in the model, such as bodies. When meshes are 'attached' to something, they will 'follow' the thing they are attached to.";
+    constexpr CStringView c_MeshAttachmentCrossrefName = "parent";
 
-    constexpr osc::CStringView c_BodyLabel = "Body";
-    constexpr osc::CStringView c_BodyLabelPluralized = "Bodies";
-    constexpr osc::CStringView c_BodyLabelOptionallyPluralized = "Body(s)";
-    constexpr osc::CStringView c_BodyDescription = "Bodies are active elements in the model. They define a 'frame' (effectively, a location + orientation) with a mass.\n\nOther body properties (e.g. inertia) can be edited in the main OpenSim Creator editor after you have converted the model into an OpenSim model.";
+    constexpr CStringView c_BodyLabel = "Body";
+    constexpr CStringView c_BodyLabelPluralized = "Bodies";
+    constexpr CStringView c_BodyLabelOptionallyPluralized = "Body(s)";
+    constexpr CStringView c_BodyDescription = "Bodies are active elements in the model. They define a 'frame' (effectively, a location + orientation) with a mass.\n\nOther body properties (e.g. inertia) can be edited in the main OpenSim Creator editor after you have converted the model into an OpenSim model.";
 
-    constexpr osc::CStringView c_JointLabel = "Joint";
-    constexpr osc::CStringView c_JointLabelPluralized = "Joints";
-    constexpr osc::CStringView c_JointLabelOptionallyPluralized = "Joint(s)";
-    constexpr osc::CStringView c_JointDescription = "Joints connect two physical frames (i.e. bodies and ground) together and specifies their relative permissible motion (e.g. PinJoints only allow rotation along one axis).\n\nIn OpenSim, joints are the 'edges' of a directed topology graph where bodies are the 'nodes'. All bodies in the model must ultimately connect to ground via joints.";
-    constexpr osc::CStringView c_JointParentCrossrefName = "parent";
-    constexpr osc::CStringView c_JointChildCrossrefName = "child";
+    constexpr CStringView c_JointLabel = "Joint";
+    constexpr CStringView c_JointLabelPluralized = "Joints";
+    constexpr CStringView c_JointLabelOptionallyPluralized = "Joint(s)";
+    constexpr CStringView c_JointDescription = "Joints connect two physical frames (i.e. bodies and ground) together and specifies their relative permissible motion (e.g. PinJoints only allow rotation along one axis).\n\nIn OpenSim, joints are the 'edges' of a directed topology graph where bodies are the 'nodes'. All bodies in the model must ultimately connect to ground via joints.";
+    constexpr CStringView c_JointParentCrossrefName = "parent";
+    constexpr CStringView c_JointChildCrossrefName = "child";
 
-    constexpr osc::CStringView c_StationLabel = "Station";
-    constexpr osc::CStringView c_StationLabelPluralized = "Stations";
-    constexpr osc::CStringView c_StationLabelOptionallyPluralized = "Station(s)";
-    constexpr osc::CStringView c_StationDescription = "Stations are points of interest in the model. They can be used to compute a 3D location in the frame of the thing they are attached to.\n\nThe utility of stations is that you can use them to visually mark points of interest. Those points of interest will then be defined with respect to whatever they are attached to. This is useful because OpenSim typically requires relative coordinates for things in the model (e.g. muscle paths).";
-    constexpr osc::CStringView c_StationParentCrossrefName = "parent";
+    constexpr CStringView c_StationLabel = "Station";
+    constexpr CStringView c_StationLabelPluralized = "Stations";
+    constexpr CStringView c_StationLabelOptionallyPluralized = "Station(s)";
+    constexpr CStringView c_StationDescription = "Stations are points of interest in the model. They can be used to compute a 3D location in the frame of the thing they are attached to.\n\nThe utility of stations is that you can use them to visually mark points of interest. Those points of interest will then be defined with respect to whatever they are attached to. This is useful because OpenSim typically requires relative coordinates for things in the model (e.g. muscle paths).";
+    constexpr CStringView c_StationParentCrossrefName = "parent";
 
-    constexpr osc::CStringView c_TranslationDescription = "Translation of the component in ground. OpenSim defines this as 'unitless'; however, OpenSim models typically use meters.";
+    constexpr CStringView c_TranslationDescription = "Translation of the component in ground. OpenSim defines this as 'unitless'; however, OpenSim models typically use meters.";
 }
 
 // senteniel UID constants
@@ -238,8 +253,8 @@ namespace
         beforeDir[axis] = 1.0f;
         beforeDir = t.rotation * beforeDir;
 
-        Quat rotBeforeToAfter = osc::Rotation(beforeDir, dir);
-        Quat newRotation = osc::Normalize(rotBeforeToAfter * t.rotation);
+        Quat const rotBeforeToAfter = osc::Rotation(beforeDir, dir);
+        Quat const newRotation = osc::Normalize(rotBeforeToAfter * t.rotation);
 
         return t.withRotation(newRotation);
     }
@@ -258,7 +273,7 @@ namespace
         ax[axis] = 1.0f;
         ax = t.rotation * ax;
 
-        Quat q = osc::AngleAxis(angRadians, ax);
+        Quat const q = osc::AngleAxis(angRadians, ax);
 
         return t.withRotation(osc::Normalize(q * t.rotation));
     }
@@ -266,13 +281,13 @@ namespace
     Transform ToOsimTransform(SimTK::Transform const& t)
     {
         // extract the SimTK transform into a 4x3 matrix
-        Mat4x3 m = osc::ToMat4x3(t);
+        Mat4x3 const m = osc::ToMat4x3(t);
 
         // take the 3x3 left-hand side (rotation) and decompose that into a quaternion
-        Quat rotation = osc::QuatCast(Mat3{m});
+        Quat const rotation = osc::QuatCast(Mat3{m});
 
         // take the right-hand column (translation) and assign it as the position
-        Vec3 position = m[3];
+        Vec3 const position = m[3];
 
         return Transform{position, rotation};
     }
@@ -292,14 +307,14 @@ namespace
         ImGui::Dummy({0.0f, 5.0f});
     }
 
-    osc::Color FaintifyColor(osc::Color const& srcColor)
+    Color FaintifyColor(Color const& srcColor)
     {
-        osc::Color color = srcColor;
+        Color color = srcColor;
         color.a *= 0.2f;
         return color;
     }
 
-    osc::Color RedifyColor(osc::Color const& srcColor)
+    Color RedifyColor(Color const& srcColor)
     {
         constexpr float factor = 0.8f;
         return {srcColor[0], factor * srcColor[1], factor * srcColor[2], factor * srcColor[3]};
@@ -426,10 +441,10 @@ namespace
         UID groupId = c_EmptyID;
         Mesh mesh;
         Transform transform;
-        osc::Color color = osc::Color::black();
-        osc::SceneDecorationFlags flags = osc::SceneDecorationFlags::None;
-        std::optional<osc::Material> maybeMaterial;
-        std::optional<osc::MaterialPropertyBlock> maybePropertyBlock;
+        Color color = Color::black();
+        SceneDecorationFlags flags = SceneDecorationFlags::None;
+        std::optional<Material> maybeMaterial;
+        std::optional<MaterialPropertyBlock> maybePropertyBlock;
     };
 
     AABB CalcBounds(DrawableThing const& dt)
@@ -505,7 +520,7 @@ namespace
         }
 
         // ensure the UI thread redraws after the mesh is loaded
-        osc::App::upd().requestRedraw();
+        App::upd().requestRedraw();
 
         return MeshLoadOKResponse{msg.preferredAttachmentPoint, std::move(loadedMeshes)};
     }
@@ -552,11 +567,11 @@ namespace
     class SceneElClass final {
     public:
         SceneElClass(
-            osc::CStringView name,
-            osc::CStringView namePluralized,
-            osc::CStringView nameOptionallyPluralized,
-            osc::CStringView icon,
-            osc::CStringView description,
+            CStringView name,
+            CStringView namePluralized,
+            CStringView nameOptionallyPluralized,
+            CStringView icon,
+            CStringView description,
             std::unique_ptr<SceneEl> defaultObject) :
 
             m_Name{name},
@@ -756,7 +771,7 @@ namespace
         {
             implSetCrossReferenceConnecteeID(i, newID);
         }
-        osc::CStringView GetCrossReferenceLabel(int i) const
+        CStringView GetCrossReferenceLabel(int i) const
         {
             return implGetCrossReferenceLabel(i);
         }
@@ -780,7 +795,7 @@ namespace
             return implWriteToStream(o);
         }
 
-        osc::CStringView GetLabel() const
+        CStringView GetLabel() const
         {
             return implGetLabel();
         }
@@ -857,7 +872,7 @@ namespace
         {
             throw std::runtime_error{"cannot set cross reference ID: no method implemented"};
         }
-        virtual osc::CStringView implGetCrossReferenceLabel(int) const
+        virtual CStringView implGetCrossReferenceLabel(int) const
         {
             throw std::runtime_error{"cannot get cross reference label: no method implemented"};
         }
@@ -870,7 +885,7 @@ namespace
         virtual UID implGetID() const = 0;
         virtual std::ostream& implWriteToStream(std::ostream&) const = 0;
 
-        virtual osc::CStringView implGetLabel() const = 0;
+        virtual CStringView implGetLabel() const = 0;
         virtual void implSetLabel(std::string_view) = 0;
 
         virtual Transform implGetXform() const = 0;
@@ -1037,7 +1052,7 @@ namespace
             return o << c_GroundLabel << "()";
         }
 
-        osc::CStringView implGetLabel() const final
+        CStringView implGetLabel() const final
         {
             return c_GroundLabel;
         }
@@ -1091,7 +1106,7 @@ namespace
         }
 
         MeshEl() :
-            m_MeshData{osc::App::singleton<osc::MeshCache>()->getBrickMesh()},
+            m_MeshData{App::singleton<MeshCache>()->getBrickMesh()},
             m_Path{"invalid"}
         {
             // default ctor for prototype storage
@@ -1188,7 +1203,7 @@ namespace
             m_Attachment = osc::DowncastID<BodyEl>(id);
         }
 
-        osc::CStringView implGetCrossReferenceLabel(int i) const final
+        CStringView implGetCrossReferenceLabel(int i) const final
         {
             if (i != 0)
             {
@@ -1225,7 +1240,7 @@ namespace
                 << ')';
         }
 
-        osc::CStringView implGetLabel() const final
+        CStringView implGetLabel() const final
         {
             return Name;
         }
@@ -1363,7 +1378,7 @@ namespace
                 << ')';
         }
 
-        osc::CStringView implGetLabel() const final
+        CStringView implGetLabel() const final
         {
             return m_Name;
         }
@@ -1468,7 +1483,7 @@ namespace
             return m_ID;
         }
 
-        osc::CStringView GetSpecificTypeName() const
+        CStringView GetSpecificTypeName() const
         {
             return osc::At(osc::GetComponentRegistry<OpenSim::Joint>(), m_JointTypeIndex).name();
         }
@@ -1483,7 +1498,7 @@ namespace
             return m_Child;
         }
 
-        osc::CStringView getUserAssignedName() const
+        CStringView getUserAssignedName() const
         {
             return m_UserAssignedName;
         }
@@ -1550,7 +1565,7 @@ namespace
             }
         }
 
-        osc::CStringView implGetCrossReferenceLabel(int i) const final
+        CStringView implGetCrossReferenceLabel(int i) const final
         {
             switch (i) {
             case 0:
@@ -1599,7 +1614,7 @@ namespace
                 << ')';
         }
 
-        osc::CStringView implGetLabel() const final
+        CStringView implGetLabel() const final
         {
             return m_UserAssignedName.empty() ? GetSpecificTypeName() : m_UserAssignedName;
         }
@@ -1739,7 +1754,7 @@ namespace
             m_Attachment = osc::DowncastID<BodyEl>(id);
         }
 
-        osc::CStringView implGetCrossReferenceLabel(int i) const final
+        CStringView implGetCrossReferenceLabel(int i) const final
         {
             if (i != 0)
             {
@@ -1774,7 +1789,7 @@ namespace
                 << ')';
         }
 
-        osc::CStringView implGetLabel() const final
+        CStringView implGetLabel() const final
         {
             return m_Name;
         }
@@ -2314,7 +2329,7 @@ namespace
         mg.DeSelectAll();
     }
 
-    osc::CStringView GetLabel(ModelGraph const& mg, UID id)
+    CStringView GetLabel(ModelGraph const& mg, UID id)
     {
         return mg.GetElByID(id).GetLabel();
     }
@@ -2596,27 +2611,27 @@ namespace
     }
 
     // returns recommended rim intensity for an element in the model graph
-    osc::SceneDecorationFlags ComputeFlags(ModelGraph const& mg, UID id, UID hoverID = c_EmptyID)
+    SceneDecorationFlags ComputeFlags(ModelGraph const& mg, UID id, UID hoverID = c_EmptyID)
     {
         if (id == c_EmptyID)
         {
-            return osc::SceneDecorationFlags::None;
+            return SceneDecorationFlags::None;
         }
         else if (mg.IsSelected(id))
         {
-            return osc::SceneDecorationFlags::IsSelected;
+            return SceneDecorationFlags::IsSelected;
         }
         else if (id == hoverID)
         {
-            return osc::SceneDecorationFlags::IsHovered | osc::SceneDecorationFlags::IsChildOfHovered;
+            return SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered;
         }
         else if (IsInSelectionGroupOf(mg, hoverID, id))
         {
-            return osc::SceneDecorationFlags::IsChildOfHovered;
+            return SceneDecorationFlags::IsChildOfHovered;
         }
         else
         {
-            return osc::SceneDecorationFlags::None;
+            return SceneDecorationFlags::None;
         }
     }
 }
@@ -3883,7 +3898,7 @@ namespace
             }
 
             auto& el = rv.AddEl<MeshEl>(attachment, meshData, realLocation);
-            osc::Transform newTransform = ToOsimTransform(frame.getTransformInGround(st));
+            Transform newTransform = ToOsimTransform(frame.getTransformInGround(st));
             newTransform.scale = osc::ToVec3(mesh.get_scale_factors());
 
             el.SetXform(newTransform);
@@ -4446,7 +4461,7 @@ namespace
             return v.result();
         }
 
-        void DrawConnectionLines(osc::Color const& color, std::unordered_set<UID> const& excludedIDs) const
+        void DrawConnectionLines(Color const& color, std::unordered_set<UID> const& excludedIDs) const
         {
             ModelGraph const& mg = GetModelGraph();
             ImU32 colorU32 = ImGui::ColorConvertFloat4ToU32(Vec4{color});
@@ -4476,7 +4491,7 @@ namespace
             }
         }
 
-        void DrawConnectionLines(osc::Color const& color) const
+        void DrawConnectionLines(Color const& color) const
         {
             DrawConnectionLines(color, {});
         }
@@ -4525,9 +4540,9 @@ namespace
         void DrawScene(std::span<DrawableThing> drawables)
         {
             // setup rendering params
-            osc::SceneRendererParams p;
+            SceneRendererParams p;
             p.dimensions = osc::Dimensions(Get3DSceneRect());
-            p.antiAliasingLevel = osc::App::get().getCurrentAntiAliasingLevel();
+            p.antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
             p.drawRims = true;
             p.drawFloor = false;
             p.nearClippingPlane = m_3DSceneCamera.znear;
@@ -4536,11 +4551,11 @@ namespace
             p.projectionMatrix = m_3DSceneCamera.getProjMtx(osc::AspectRatio(p.dimensions));
             p.viewPos = m_3DSceneCamera.getPos();
             p.lightDirection = osc::RecommendedLightDirection(m_3DSceneCamera);
-            p.lightColor = osc::Color::white();
+            p.lightColor = Color::white();
             p.ambientStrength *= 1.5f;
             p.backgroundColor = GetColorSceneBackground();
 
-            std::vector<osc::SceneDecoration> decs;
+            std::vector<SceneDecoration> decs;
             decs.reserve(drawables.size());
             for (DrawableThing const& dt : drawables)
             {
@@ -4597,26 +4612,26 @@ namespace
             m_3DSceneCamera.focusPoint = -focusPoint;
         }
 
-        osc::RenderTexture& UpdSceneTex()
+        RenderTexture& UpdSceneTex()
         {
             return m_SceneRenderer.updRenderTexture();
         }
 
-        std::span<osc::Color const> GetColors() const
+        std::span<Color const> GetColors() const
         {
             static_assert(offsetof(Colors, ground) == 0);
-            static_assert(sizeof(Colors) % sizeof(osc::Color) == 0);
-            return {&m_Colors.ground, sizeof(m_Colors)/sizeof(osc::Color)};
+            static_assert(sizeof(Colors) % sizeof(Color) == 0);
+            return {&m_Colors.ground, sizeof(m_Colors)/sizeof(Color)};
         }
 
-        std::span<osc::Color> UpdColors()
+        std::span<Color> UpdColors()
         {
             static_assert(offsetof(Colors, ground) == 0);
-            static_assert(sizeof(Colors) % sizeof(osc::Color) == 0);
-            return {&m_Colors.ground, sizeof(m_Colors)/sizeof(osc::Color)};
+            static_assert(sizeof(Colors) % sizeof(Color) == 0);
+            return {&m_Colors.ground, sizeof(m_Colors)/sizeof(Color)};
         }
 
-        void SetColor(size_t i, osc::Color const& newColorValue)
+        void SetColor(size_t i, Color const& newColorValue)
         {
             UpdColors()[i] = newColorValue;
         }
@@ -4626,37 +4641,37 @@ namespace
             return c_ColorNames;
         }
 
-        osc::Color const& GetColorSceneBackground() const
+        Color const& GetColorSceneBackground() const
         {
             return m_Colors.sceneBackground;
         }
 
-        osc::Color const& GetColorMesh() const
+        Color const& GetColorMesh() const
         {
             return m_Colors.meshes;
         }
 
-        void SetColorMesh(osc::Color const& newColor)
+        void SetColorMesh(Color const& newColor)
         {
             m_Colors.meshes = newColor;
         }
 
-        osc::Color const& GetColorGround() const
+        Color const& GetColorGround() const
         {
             return m_Colors.ground;
         }
 
-        osc::Color const& GetColorStation() const
+        Color const& GetColorStation() const
         {
             return m_Colors.stations;
         }
 
-        osc::Color const& GetColorConnectionLine() const
+        Color const& GetColorConnectionLine() const
         {
             return m_Colors.connectionLines;
         }
 
-        void SetColorConnectionLine(osc::Color const& newColor)
+        void SetColorConnectionLine(Color const& newColor)
         {
             m_Colors.connectionLines = newColor;
         }
@@ -4798,17 +4813,17 @@ namespace
             Transform t = GetFloorTransform();
             t.scale *= 0.5f;
 
-            osc::Material material{osc::App::singleton<osc::ShaderCache>()->load(osc::App::resource("shaders/SolidColor.vert"), osc::App::resource("shaders/SolidColor.frag"))};
+            Material material{App::singleton<ShaderCache>()->load(App::resource("shaders/SolidColor.vert"), App::resource("shaders/SolidColor.frag"))};
             material.setColor("uColor", m_Colors.gridLines);
             material.setTransparent(true);
 
             DrawableThing dt;
             dt.id = c_EmptyID;
             dt.groupId = c_EmptyID;
-            dt.mesh = osc::App::singleton<osc::MeshCache>()->get100x100GridMesh();
+            dt.mesh = App::singleton<MeshCache>()->get100x100GridMesh();
             dt.transform = t;
             dt.color = m_Colors.gridLines;
-            dt.flags = osc::SceneDecorationFlags::None;
+            dt.flags = SceneDecorationFlags::None;
             dt.maybeMaterial = std::move(material);
             return dt;
         }
@@ -4829,9 +4844,9 @@ namespace
             Transform const& xform,
             std::vector<DrawableThing>& appendOut,
             float alpha = 1.0f,
-            osc::SceneDecorationFlags flags = osc::SceneDecorationFlags::None,
+            SceneDecorationFlags flags = SceneDecorationFlags::None,
             Vec3 legLen = {1.0f, 1.0f, 1.0f},
-            osc::Color coreColor = osc::Color::white()) const
+            Color coreColor = Color::white()) const
         {
             float const coreRadius = GetSphereRadius();
             float const legThickness = 0.5f * coreRadius;
@@ -4851,7 +4866,7 @@ namespace
                 sphere.groupId = groupID;
                 sphere.mesh = m_SphereMesh;
                 sphere.transform = t;
-                sphere.color = osc::Color{coreColor.r, coreColor.g, coreColor.b, coreColor.a * alpha};
+                sphere.color = Color{coreColor.r, coreColor.g, coreColor.b, coreColor.a * alpha};
                 sphere.flags = flags;
             }
 
@@ -4877,7 +4892,7 @@ namespace
                 t.rotation = osc::Normalize(xform.rotation * osc::Rotation(meshDirection, cylinderDirection));
                 t.position = xform.position + (t.rotation * (((GetSphereRadius() + (0.5f * actualLegLen)) - cylinderPullback) * meshDirection));
 
-                osc::Color color = {0.0f, 0.0f, 0.0f, alpha};
+                Color color = {0.0f, 0.0f, 0.0f, alpha};
                 color[i] = 1.0f;
 
                 DrawableThing& se = appendOut.emplace_back();
@@ -4905,10 +4920,10 @@ namespace
                 DrawableThing& originCube = appendOut.emplace_back();
                 originCube.id = logicalID;
                 originCube.groupId = groupID;
-                originCube.mesh = osc::App::singleton<osc::MeshCache>()->getBrickMesh();
+                originCube.mesh = App::singleton<MeshCache>()->getBrickMesh();
                 originCube.transform = scaled;
-                originCube.color = osc::Color::white();
-                originCube.flags = osc::SceneDecorationFlags::None;
+                originCube.color = Color::white();
+                originCube.flags = SceneDecorationFlags::None;
             }
 
             // legs
@@ -4928,16 +4943,16 @@ namespace
                 t.rotation = xform.rotation * osc::Rotation(meshDirection, coneDirection);
                 t.position = xform.position + (t.rotation * ((halfWidth + (0.5f * coneHeight)) * meshDirection));
 
-                osc::Color color = {0.0f, 0.0f, 0.0f, 1.0f};
+                Color color = {0.0f, 0.0f, 0.0f, 1.0f};
                 color[i] = 1.0f;
 
                 DrawableThing& legCube = appendOut.emplace_back();
                 legCube.id = logicalID;
                 legCube.groupId = groupID;
-                legCube.mesh = osc::App::singleton<osc::MeshCache>()->getConeMesh();
+                legCube.mesh = App::singleton<MeshCache>()->getConeMesh();
                 legCube.transform = t;
                 legCube.color = color;
-                legCube.flags = osc::SceneDecorationFlags::None;
+                legCube.flags = SceneDecorationFlags::None;
             }
         }
 
@@ -5085,7 +5100,7 @@ namespace
                     continue;
                 }
 
-                std::optional<osc::RayCollision> const rc = osc::GetClosestWorldspaceRayCollision(
+                std::optional<RayCollision> const rc = osc::GetClosestWorldspaceRayCollision(
                     drawable.mesh,
                     drawable.transform,
                     ray
@@ -5138,11 +5153,11 @@ namespace
             rv.mesh = meshEl.getMeshData();
             rv.transform = meshEl.GetXform();
             rv.color = meshEl.getParentID() == c_GroundID || meshEl.getParentID() == c_EmptyID ? RedifyColor(GetColorMesh()) : GetColorMesh();
-            rv.flags = osc::SceneDecorationFlags::None;
+            rv.flags = SceneDecorationFlags::None;
             return rv;
         }
 
-        DrawableThing GenerateBodyElSphere(BodyEl const& bodyEl, osc::Color const& color) const
+        DrawableThing GenerateBodyElSphere(BodyEl const& bodyEl, Color const& color) const
         {
             DrawableThing rv;
             rv.id = bodyEl.GetID();
@@ -5150,11 +5165,11 @@ namespace
             rv.mesh = m_SphereMesh;
             rv.transform = SphereMeshToSceneSphereTransform(SphereAtTranslation(bodyEl.GetXform().position));
             rv.color = color;
-            rv.flags = osc::SceneDecorationFlags::None;
+            rv.flags = SceneDecorationFlags::None;
             return rv;
         }
 
-        DrawableThing GenerateGroundSphere(osc::Color const& color) const
+        DrawableThing GenerateGroundSphere(Color const& color) const
         {
             DrawableThing rv;
             rv.id = c_GroundID;
@@ -5162,11 +5177,11 @@ namespace
             rv.mesh = m_SphereMesh;
             rv.transform = SphereMeshToSceneSphereTransform(SphereAtTranslation({0.0f, 0.0f, 0.0f}));
             rv.color = color;
-            rv.flags = osc::SceneDecorationFlags::None;
+            rv.flags = SceneDecorationFlags::None;
             return rv;
         }
 
-        DrawableThing GenerateStationSphere(StationEl const& el, osc::Color const& color) const
+        DrawableThing GenerateStationSphere(StationEl const& el, Color const& color) const
         {
             DrawableThing rv;
             rv.id = el.GetID();
@@ -5174,7 +5189,7 @@ namespace
             rv.mesh = m_SphereMesh;
             rv.transform = SphereMeshToSceneSphereTransform(SphereAtTranslation(el.GetPos()));
             rv.color = color;
-            rv.flags = osc::SceneDecorationFlags::None;
+            rv.flags = SceneDecorationFlags::None;
             return rv;
         }
 
@@ -5239,7 +5254,7 @@ namespace
                         el.GetXform(),
                         m_Out,
                         1.0f,
-                        osc::SceneDecorationFlags::None,
+                        SceneDecorationFlags::None,
                         GetJointAxisLengths(el));
                 }
                 void operator()(StationEl const& el) final
@@ -5275,7 +5290,7 @@ namespace
             return static_cast<size_t>(PanelIndex_COUNT);
         }
 
-        osc::CStringView getNthPanelName(size_t n) const
+        CStringView getNthPanelName(size_t n) const
         {
             return c_OpenedPanelNames[n];
         }
@@ -5370,21 +5385,21 @@ namespace
         PolarPerspectiveCamera m_3DSceneCamera = CreateDefaultCamera();
 
         // screenspace rect where the 3D scene is currently being drawn to
-        osc::Rect m_3DSceneRect = {};
+        Rect m_3DSceneRect = {};
 
         // renderer that draws the scene
-        osc::SceneRenderer m_SceneRenderer{osc::App::config(), *osc::App::singleton<osc::MeshCache>(), *osc::App::singleton<osc::ShaderCache>()};
+        SceneRenderer m_SceneRenderer{App::config(), *App::singleton<MeshCache>(), *App::singleton<osc::ShaderCache>()};
 
         // COLORS
         //
         // these are runtime-editable color values for things in the scene
         struct Colors {
-            osc::Color ground{196.0f/255.0f, 196.0f/255.0f, 196.0f/255.0f, 1.0f};
-            osc::Color meshes{1.0f, 1.0f, 1.0f, 1.0f};
-            osc::Color stations{196.0f/255.0f, 0.0f, 0.0f, 1.0f};
-            osc::Color connectionLines{0.6f, 0.6f, 0.6f, 1.0f};
-            osc::Color sceneBackground{48.0f/255.0f, 48.0f/255.0f, 48.0f/255.0f, 1.0f};
-            osc::Color gridLines{0.7f, 0.7f, 0.7f, 0.15f};
+            Color ground{196.0f/255.0f, 196.0f/255.0f, 196.0f/255.0f, 1.0f};
+            Color meshes{1.0f, 1.0f, 1.0f, 1.0f};
+            Color stations{196.0f/255.0f, 0.0f, 0.0f, 1.0f};
+            Color connectionLines{0.6f, 0.6f, 0.6f, 1.0f};
+            Color sceneBackground{48.0f/255.0f, 48.0f/255.0f, 48.0f/255.0f, 1.0f};
+            Color gridLines{0.7f, 0.7f, 0.7f, 0.15f};
         } m_Colors;
         static constexpr auto c_ColorNames = osc::to_array<char const*>(
         {
@@ -5395,7 +5410,7 @@ namespace
             "scene background",
             "grid lines",
         });
-        static_assert(c_ColorNames.size() == sizeof(decltype(m_Colors))/sizeof(osc::Color));
+        static_assert(c_ColorNames.size() == sizeof(decltype(m_Colors))/sizeof(Color));
 
         // VISIBILITY
         //
@@ -5660,9 +5675,9 @@ namespace
         void DrawCancelButton()
         {
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
-            osc::PushStyleColor(ImGuiCol_Button, osc::Color::halfGrey());
+            osc::PushStyleColor(ImGuiCol_Button, Color::halfGrey());
 
-            osc::CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
+            CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
             Vec2 const margin = {25.0f, 35.0f};
             Vec2 const buttonTopLeft = m_Shared->Get3DSceneRect().p2 - (osc::CalcButtonSize(text) + margin);
 
@@ -5891,19 +5906,19 @@ namespace
             }
         }
 
-        osc::SceneDecorationFlags ComputeFlags(SceneEl const& el) const
+        SceneDecorationFlags ComputeFlags(SceneEl const& el) const
         {
             if (IsSelected(el))
             {
-                return osc::SceneDecorationFlags::IsSelected;
+                return SceneDecorationFlags::IsSelected;
             }
             else if (IsHovered(el))
             {
-                return osc::SceneDecorationFlags::IsHovered;
+                return SceneDecorationFlags::IsHovered;
             }
             else
             {
-                return osc::SceneDecorationFlags::None;
+                return SceneDecorationFlags::None;
             }
         }
 
@@ -5924,7 +5939,7 @@ namespace
                 size_t end = m_DrawablesBuffer.size();
 
                 bool isSelectable = IsSelectable(el);
-                osc::SceneDecorationFlags flags = ComputeFlags(el);
+                SceneDecorationFlags flags = ComputeFlags(el);
 
                 for (size_t i = start; i < end; ++i)
                 {
@@ -6057,9 +6072,9 @@ namespace
         void DrawCancelButton()
         {
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
-            osc::PushStyleColor(ImGuiCol_Button, osc::Color::halfGrey());
+            osc::PushStyleColor(ImGuiCol_Button, Color::halfGrey());
 
-            osc::CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
+            CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
             Vec2 const margin = {25.0f, 35.0f};
             Vec2 const buttonTopLeft = m_Shared->Get3DSceneRect().p2 - (osc::CalcButtonSize(text) + margin);
 
@@ -6098,7 +6113,7 @@ namespace
             if (m_AnimationFraction < 1.0f)
             {
                 m_AnimationFraction = std::clamp(m_AnimationFraction + 0.5f*dt, 0.0f, 1.0f);
-                osc::App::upd().requestRedraw();
+                App::upd().requestRedraw();
             }
         }
 
@@ -6140,7 +6155,7 @@ namespace
 // popups
 namespace
 {
-    class ImportStationsFromCSVPopup final : public osc::StandardPopup {
+    class ImportStationsFromCSVPopup final : public StandardPopup {
     public:
         ImportStationsFromCSVPopup(
             std::string_view popupName_,
@@ -6250,7 +6265,7 @@ namespace
                     }
 
                     // else: try parsing the row as a data row
-                    std::visit(osc::Overload
+                    std::visit(Overload
                     {
                         [&successfullyParsedStations](StationDefinedInGround const& success)
                         {
@@ -6295,7 +6310,7 @@ namespace
             {
                 ImGui::Separator();
 
-                std::visit(osc::Overload
+                std::visit(Overload
                 {
                     [this](ImportedCSVData const& data) { drawLoadedFileState(data); },
                     [this](CSVImportError const& error) { drawErrorLoadingFileState(error); }
@@ -6316,7 +6331,7 @@ namespace
             ImGui::Bullet();
             ImGui::TextWrapped("Data rows containing four columns: name (string), x (number), y (number), and z (number)");
 
-            constexpr osc::CStringView c_ExampleInputText = "name,x,y,z\nstationatground,0,0,0\nstation2,1.53,0.2,1.7\nstation3,3.0,2.0,0.0\n";
+            constexpr CStringView c_ExampleInputText = "name,x,y,z\nstationatground,0,0,0\nstation2,1.53,0.2,1.7\nstation3,3.0,2.0,0.0\n";
             ImGui::TextWrapped("Example Input: ");
             ImGui::SameLine();
             if (ImGui::Button(ICON_FA_COPY))
@@ -6356,7 +6371,7 @@ namespace
             drawDisabledOkCancelButtons("Cannot continue: there is an error in the imported data (try again)");
         }
 
-        void drawDisabledOkCancelButtons(osc::CStringView disabledReason)
+        void drawDisabledOkCancelButtons(CStringView disabledReason)
         {
             ImGui::BeginDisabled();
             ImGui::Button("OK");
@@ -6374,7 +6389,7 @@ namespace
 
         void drawLoadedFileState(ImportedCSVData const& result)
         {
-            std::visit(osc::Overload
+            std::visit(Overload
             {
                 [this, &result](StationsDefinedInGround const& data) { drawLoadedFileStateData(result, data); },
             }, result.parsedData);
@@ -6446,7 +6461,7 @@ namespace
 
         void actionAttachResultToModelGraph(ImportedCSVData const& result)
         {
-            std::visit(osc::Overload
+            std::visit(Overload
             {
                 [this, &result](StationsDefinedInGround const& data) { actionAttachStationsInGroundToModelGraph(result, data); },
             }, result.parsedData);
@@ -6558,7 +6573,7 @@ public:
 
     void onTick()
     {
-        auto const dt = static_cast<float>(osc::App::get().getFrameDeltaSinceLastFrame().count());
+        auto const dt = static_cast<float>(App::get().getFrameDeltaSinceLastFrame().count());
 
         m_Shared->tick(dt);
 
@@ -6684,7 +6699,7 @@ private:
     void implRequestPop(Layer&) final
     {
         m_Maybe3DViewerModal.reset();
-        osc::App::upd().requestRedraw();
+        App::upd().requestRedraw();
     }
 
     // try to select *only* what is currently hovered
@@ -7189,7 +7204,7 @@ private:
         else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_Q))
         {
             // Ctrl+Q: quit application
-            osc::App::upd().requestQuit();
+            App::upd().requestQuit();
             return true;
         }
         else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_A))
@@ -7355,11 +7370,11 @@ private:
     void DrawAddOtherToSceneElActions(SceneEl& el, Vec3 const& clickPos)
     {
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
-        osc::ScopeGuard const g1{[]() { ImGui::PopStyleVar(); }};
+        ScopeGuard const g1{[]() { ImGui::PopStyleVar(); }};
 
         int imguiID = 0;
         ImGui::PushID(imguiID++);
-        osc::ScopeGuard const g2{[]() { ImGui::PopID(); }};
+        ScopeGuard const g2{[]() { ImGui::PopID(); }};
 
         if (CanAttachMeshTo(el))
         {
@@ -7751,7 +7766,7 @@ private:
 
             for (int i = 0; i < nRefs; ++i)
             {
-                osc::CStringView label = el.GetCrossReferenceLabel(i);
+                CStringView label = el.GetCrossReferenceLabel(i);
                 if (ImGui::MenuItem(label.c_str()))
                 {
                     TransitionToReassigningCrossRef(el, i);
@@ -7788,8 +7803,8 @@ private:
             return;
         }
 
-        osc::AppMetadata const& appMetadata = osc::App::get().getMetadata();
-        osc::ObjMetadata const objMetadata
+        AppMetadata const& appMetadata = App::get().getMetadata();
+        ObjMetadata const objMetadata
         {
             osc::CalcFullApplicationNameWithVersionAndBuild(appMetadata),
         };
@@ -7798,7 +7813,7 @@ private:
             outputFileStream,
             mesh,
             objMetadata,
-            osc::ObjWriterFlags::NoWriteNormals
+            ObjWriterFlags::NoWriteNormals
         );
     }
 
@@ -7827,8 +7842,8 @@ private:
             return;
         }
 
-        osc::AppMetadata const& appMetadata = osc::App::get().getMetadata();
-        osc::StlMetadata const stlMetadata
+        AppMetadata const& appMetadata = App::get().getMetadata();
+        StlMetadata const stlMetadata
         {
             osc::CalcFullApplicationNameWithVersionAndBuild(appMetadata),
         };
@@ -7851,8 +7866,8 @@ private:
 
                     if (ImGui::MenuItem(".obj"))
                     {
-                        osc::Transform const sceneElToGround = sceneEl.GetXform();
-                        osc::Transform const meshVertToGround = el.GetXform();
+                        Transform const sceneElToGround = sceneEl.GetXform();
+                        Transform const meshVertToGround = el.GetXform();
                         Mat4 const meshVertToSceneElVert = osc::ToInverseMat4(sceneElToGround) * osc::ToMat4(meshVertToGround);
 
                         Mesh mesh = el.getMeshData();
@@ -7862,8 +7877,8 @@ private:
 
                     if (ImGui::MenuItem(".stl"))
                     {
-                        osc::Transform const sceneElToGround = sceneEl.GetXform();
-                        osc::Transform const meshVertToGround = el.GetXform();
+                        Transform const sceneElToGround = sceneEl.GetXform();
+                        Transform const meshVertToGround = el.GetXform();
                         Mat4 const meshVertToSceneElVert = osc::ToInverseMat4(sceneElToGround) * osc::ToMat4(meshVertToGround);
 
                         Mesh mesh = el.getMeshData();
@@ -7976,7 +7991,7 @@ private:
         class Visitor final : public SceneElVisitor {
         public:
             Visitor(
-                osc::MeshImporterTab::Impl& state,
+                MeshImporterTab::Impl& state,
                 Vec3 const& clickPos) :
 
                 m_State{state},
@@ -8009,7 +8024,7 @@ private:
                 m_State.DrawContextMenuContent(el, m_ClickPos);
             }
         private:
-            osc::MeshImporterTab::Impl& m_State;
+            MeshImporterTab::Impl& m_State;
             Vec3 const& m_ClickPos;
         };
 
@@ -8025,21 +8040,21 @@ private:
         {
             // context menu not open, but just draw the "nothing" menu
             PushID(UID::empty());
-            osc::ScopeGuard const g{[]() { ImGui::PopID(); }};
+            ScopeGuard const g{[]() { ImGui::PopID(); }};
             DrawNothingContextMenuContent();
         }
         else if (m_MaybeOpenedContextMenu.ID == c_RightClickedNothingID)
         {
             // context menu was opened on "nothing" specifically
             PushID(UID::empty());
-            osc::ScopeGuard const g{[]() { ImGui::PopID(); }};
+            ScopeGuard const g{[]() { ImGui::PopID(); }};
             DrawNothingContextMenuContent();
         }
         else if (SceneEl* el = m_Shared->UpdModelGraph().TryUpdElByID(m_MaybeOpenedContextMenu.ID))
         {
             // context menu was opened on a scene element that exists in the modelgraph
             PushID(el->GetID());
-            osc::ScopeGuard const g{[]() { ImGui::PopID(); }};
+            ScopeGuard const g{[]() { ImGui::PopID(); }};
             DrawContextMenuContent(*el, m_MaybeOpenedContextMenu.Pos);
         }
 
@@ -8108,12 +8123,12 @@ private:
 
             if (id == m_MaybeHover.ID)
             {
-                osc::PushStyleColor(ImGuiCol_Text, osc::Color::yellow());
+                osc::PushStyleColor(ImGuiCol_Text, Color::yellow());
                 ++styles;
             }
             else if (m_Shared->IsSelected(id))
             {
-                osc::PushStyleColor(ImGuiCol_Text, osc::Color::yellow());
+                osc::PushStyleColor(ImGuiCol_Text, Color::yellow());
                 ++styles;
             }
 
@@ -8139,7 +8154,7 @@ private:
             {
                 m_MaybeOpenedContextMenu = Hover{id, {}};
                 ImGui::OpenPopup("##maincontextmenu");
-                osc::App::upd().requestRedraw();
+                App::upd().requestRedraw();
             }
         }
 
@@ -8223,13 +8238,13 @@ private:
 
         if (ImGui::BeginPopupContextItem("##addpainttoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
         {
-            std::span<osc::Color const> colors = m_Shared->GetColors();
+            std::span<Color const> colors = m_Shared->GetColors();
             std::span<char const* const> labels = m_Shared->GetColorLabels();
             OSC_ASSERT(colors.size() == labels.size() && "every color should have a label");
 
             for (size_t i = 0; i < colors.size(); ++i)
             {
-                osc::Color colorVal = colors[i];
+                Color colorVal = colors[i];
                 ImGui::PushID(imguiID++);
                 if (ImGui::ColorEdit4(labels[i], osc::ValuePtr(colorVal)))
                 {
@@ -8302,8 +8317,8 @@ private:
 
         // scale factor
         {
-            osc::CStringView const tooltipTitle = "Change scene scale factor";
-            osc::CStringView const tooltipDesc = "This rescales *some* elements in the scene. Specifically, the ones that have no 'size', such as body frames, joint frames, and the chequered floor texture.\n\nChanging this is handy if you are working on smaller or larger models, where the size of the (decorative) frames and floor are too large/small compared to the model you are working on.\n\nThis is purely decorative and does not affect the exported OpenSim model in any way.";
+            CStringView const tooltipTitle = "Change scene scale factor";
+            CStringView const tooltipDesc = "This rescales *some* elements in the scene. Specifically, the ones that have no 'size', such as body frames, joint frames, and the chequered floor texture.\n\nChanging this is handy if you are working on smaller or larger models, where the size of the (decorative) frames and floor are too large/small compared to the model you are working on.\n\nThis is purely decorative and does not affect the exported OpenSim model in any way.";
 
             float sf = m_Shared->GetSceneScaleFactor();
             ImGui::SetNextItemWidth(ImGui::CalcTextSize("1000.00").x);
@@ -8432,8 +8447,8 @@ private:
     {
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
 
-        constexpr osc::CStringView mainButtonText = "Convert to OpenSim Model " ICON_FA_ARROW_RIGHT;
-        constexpr osc::CStringView settingButtonText = ICON_FA_COG;
+        constexpr CStringView mainButtonText = "Convert to OpenSim Model " ICON_FA_ARROW_RIGHT;
+        constexpr CStringView settingButtonText = ICON_FA_COG;
         constexpr Vec2 spacingBetweenMainAndSettingsButtons = {1.0f, 0.0f};
         constexpr Vec2 margin = {25.0f, 35.0f};
 
@@ -8592,7 +8607,7 @@ private:
         if (wasUsingLastFrame && !isUsingThisFrame)
         {
             m_Shared->CommitCurrentModelGraph("manipulated selection");
-            osc::App::upd().requestRedraw();
+            App::upd().requestRedraw();
         }
 
         // if no manipulation happened this frame, exit early
@@ -8798,7 +8813,7 @@ private:
 
             if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
             {
-                osc::App::upd().requestQuit();
+                App::upd().requestQuit();
             }
 
             ImGui::EndMenu();
@@ -8952,7 +8967,7 @@ osc::UID osc::MeshImporterTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::MeshImporterTab::implGetName() const
+CStringView osc::MeshImporterTab::implGetName() const
 {
     return m_Impl->getName();
 }
