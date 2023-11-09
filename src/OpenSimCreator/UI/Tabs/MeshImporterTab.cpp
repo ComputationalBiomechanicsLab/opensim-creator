@@ -710,14 +710,19 @@ namespace
     // most of the time, the direction is towards whatever's being connected to,
     // but sometimes it can be the opposite, depending on how the datastructure
     // is ultimately used
-    using CrossrefDirection = int;
-    enum CrossrefDirection_ {
-        CrossrefDirection_None     = 0,
-        CrossrefDirection_ToParent = 1<<0,
-        CrossrefDirection_ToChild  = 1<<1,
+    enum class CrossrefDirection {
+        None     = 0,
+        ToParent = 1<<0,
+        ToChild  = 1<<1,
 
-        CrossrefDirection_Both = CrossrefDirection_ToChild | CrossrefDirection_ToParent
+        Both = ToChild | ToParent
     };
+
+    constexpr bool operator&(CrossrefDirection a, CrossrefDirection b)
+    {
+        using Underlying = std::underlying_type_t<CrossrefDirection>;
+        return (static_cast<Underlying>(a) & static_cast<Underlying>(b)) != 0;
+    }
 
     // base class for all scene elements
     class SceneEl {
@@ -874,7 +879,7 @@ namespace
         }
         virtual CrossrefDirection implGetCrossReferenceDirection(int) const
         {
-            return CrossrefDirection_ToParent;
+            return CrossrefDirection::ToParent;
         }
         virtual SceneElFlags implGetFlags() const = 0;
 
@@ -977,7 +982,7 @@ namespace
         return el.GetFlags() & SceneElFlags::HasPhysicalSize;
     }
 
-    bool IsCrossReferencing(SceneEl const& el, UID id, CrossrefDirection direction = CrossrefDirection_Both)
+    bool IsCrossReferencing(SceneEl const& el, UID id, CrossrefDirection direction = CrossrefDirection::Both)
     {
         for (int i = 0, len = el.GetNumCrossReferences(); i < len; ++i)
         {
@@ -1579,9 +1584,9 @@ namespace
         {
             switch (i) {
             case 0:
-                return CrossrefDirection_ToParent;
+                return CrossrefDirection::ToParent;
             case 1:
-                return CrossrefDirection_ToChild;
+                return CrossrefDirection::ToChild;
             default:
                 throw std::runtime_error{"invalid index accessed for cross reference"};
             }
@@ -4391,7 +4396,7 @@ namespace
                 Vec3 child = el.GetPos();
                 Vec3 parent = other->GetPos();
 
-                if (el.GetCrossReferenceDirection(i) == CrossrefDirection_ToChild) {
+                if (el.GetCrossReferenceDirection(i) == CrossrefDirection::ToChild) {
                     std::swap(parent, child);
                 }
 
