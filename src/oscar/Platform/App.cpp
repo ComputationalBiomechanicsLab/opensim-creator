@@ -32,6 +32,7 @@
 #include <SDL_video.h>
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <cmath>
@@ -47,7 +48,7 @@ namespace
 {
     osc::App* g_ApplicationGlobal = nullptr;
 
-    constexpr auto c_IconRanges = osc::to_array<ImWchar>({ ICON_MIN_FA, ICON_MAX_FA, 0 });
+    constexpr auto c_IconRanges = std::to_array<ImWchar>({ ICON_MIN_FA, ICON_MAX_FA, 0 });
 
     void Sdl_GL_SetAttributeOrThrow(
         SDL_GLattr attr,

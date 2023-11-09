@@ -19,6 +19,7 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
+#include <array>
 #include <string>
 #include <utility>
 
@@ -27,7 +28,7 @@ using osc::Vec3;
 
 namespace
 {
-    constexpr auto c_PlaneVertices = osc::to_array<Vec3>(
+    constexpr auto c_PlaneVertices = std::to_array<Vec3>(
     {
         { 10.0f, -0.5f,  10.0f},
         {-10.0f, -0.5f,  10.0f},
@@ -37,7 +38,7 @@ namespace
         {-10.0f, -0.5f, -10.0f},
         { 10.0f, -0.5f, -10.0f},
     });
-    constexpr auto c_PlaneTexCoords = osc::to_array<Vec2>(
+    constexpr auto c_PlaneTexCoords = std::to_array<Vec2>(
     {
         {10.0f, 0.0f},
         {0.0f,  0.0f},
@@ -47,7 +48,7 @@ namespace
         {0.0f,  10.0f},
         {10.0f, 10.0f},
     });
-    constexpr auto c_PlaneNormals = osc::to_array<Vec3>(
+    constexpr auto c_PlaneNormals = std::to_array<Vec3>(
     {
         {0.0f, 1.0f, 0.0f},
         {0.0f, 1.0f, 0.0f},
@@ -57,9 +58,9 @@ namespace
         {0.0f, 1.0f, 0.0f},
         {0.0f, 1.0f, 0.0f},
     });
-    constexpr auto c_PlaneIndices = osc::to_array<uint16_t>({0, 2, 1, 3, 5, 4});
+    constexpr auto c_PlaneIndices = std::to_array<uint16_t>({0, 2, 1, 3, 5, 4});
 
-    constexpr auto c_LightPositions = osc::to_array<Vec3>(
+    constexpr auto c_LightPositions = std::to_array<Vec3>(
     {
         {-3.0f, 0.0f, 0.0f},
         {-1.0f, 0.0f, 0.0f},
@@ -67,7 +68,7 @@ namespace
         { 3.0f, 0.0f, 0.0f},
     });
 
-    constexpr auto c_LightColors = osc::to_array<osc::Color>(
+    constexpr auto c_LightColors = std::to_array<osc::Color>(
     {
         {0.25f, 0.25f, 0.25f, 1.0f},
         {0.50f, 0.50f, 0.50f, 1.0f},

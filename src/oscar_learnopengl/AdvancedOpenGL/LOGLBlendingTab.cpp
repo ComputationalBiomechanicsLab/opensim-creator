@@ -22,6 +22,7 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
+#include <array>
 #include <cstdint>
 #include <memory>
 
@@ -30,7 +31,7 @@ using osc::Vec3;
 
 namespace
 {
-    constexpr auto c_PlaneVertices = osc::to_array<Vec3>(
+    constexpr auto c_PlaneVertices = std::to_array<Vec3>(
     {
         { 5.0f, -0.5f,  5.0f},
         {-5.0f, -0.5f,  5.0f},
@@ -40,7 +41,7 @@ namespace
         {-5.0f, -0.5f, -5.0f},
         { 5.0f, -0.5f, -5.0f},
     });
-    constexpr auto c_PlaneTexCoords = osc::to_array<Vec2>(
+    constexpr auto c_PlaneTexCoords = std::to_array<Vec2>(
     {
         {2.0f, 0.0f},
         {0.0f, 0.0f},
@@ -50,9 +51,9 @@ namespace
         {0.0f, 2.0f},
         {2.0f, 2.0f},
     });
-    constexpr auto c_PlaneIndices = osc::to_array<uint16_t>({0, 2, 1, 3, 5, 4});
+    constexpr auto c_PlaneIndices = std::to_array<uint16_t>({0, 2, 1, 3, 5, 4});
 
-    constexpr auto c_TransparentVerts = osc::to_array<Vec3>(
+    constexpr auto c_TransparentVerts = std::to_array<Vec3>(
     {
         {0.0f,  0.5f, 0.0f},
         {0.0f, -0.5f, 0.0f},
@@ -62,7 +63,7 @@ namespace
         {1.0f, -0.5f, 0.0f},
         {1.0f,  0.5f, 0.0f},
     });
-    constexpr auto c_TransparentTexCoords = osc::to_array<Vec2>(
+    constexpr auto c_TransparentTexCoords = std::to_array<Vec2>(
     {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
@@ -72,9 +73,9 @@ namespace
         {1.0f, 1.0f},
         {1.0f, 0.0f},
     });
-    constexpr auto c_TransparentIndices = osc::to_array<uint16_t>({0, 1, 2, 3, 4, 5});
+    constexpr auto c_TransparentIndices = std::to_array<uint16_t>({0, 1, 2, 3, 4, 5});
 
-    constexpr auto c_WindowLocations = osc::to_array<Vec3>(
+    constexpr auto c_WindowLocations = std::to_array<Vec3>(
     {
         {-1.5f, 0.0f, -0.48f},
         { 1.5f, 0.0f,  0.51f},

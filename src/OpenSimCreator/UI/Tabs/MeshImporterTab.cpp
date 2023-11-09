@@ -3319,8 +3319,8 @@ namespace
         OpenSim::Joint& joint,
         std::string const& prefix)
     {
-        constexpr auto c_TranslationNames = osc::to_array({"_tx", "_ty", "_tz"});
-        constexpr auto c_RotationNames = osc::to_array({"_rx", "_ry", "_rz"});
+        constexpr auto c_TranslationNames = std::to_array({"_tx", "_ty", "_tz"});
+        constexpr auto c_RotationNames = std::to_array({"_rx", "_ry", "_rz"});
 
         auto const& registry = osc::GetComponentRegistry<OpenSim::Joint>();
         JointDegreesOfFreedom dofs = GetDegreesOfFreedom(osc::Get(registry, joint).prototype());
@@ -5278,7 +5278,7 @@ namespace
             Color sceneBackground{48.0f/255.0f, 48.0f/255.0f, 48.0f/255.0f, 1.0f};
             Color gridLines{0.7f, 0.7f, 0.7f, 0.15f};
         } m_Colors;
-        static constexpr auto c_ColorNames = osc::to_array<char const*>(
+        static constexpr auto c_ColorNames = std::to_array<char const*>(
         {
             "ground",
             "meshes",
@@ -5304,7 +5304,7 @@ namespace
             bool stationConnectionLines = true;
             bool floor = true;
         } m_VisibilityFlags;
-        static constexpr auto c_VisibilityFlagNames = osc::to_array<char const*>(
+        static constexpr auto c_VisibilityFlagNames = std::to_array<char const*>(
         {
             "ground",
             "meshes",
@@ -5329,7 +5329,7 @@ namespace
             bool joints = true;
             bool stations = true;
         } m_InteractivityFlags;
-        static constexpr auto c_InteractivityFlagNames = osc::to_array<char const*>(
+        static constexpr auto c_InteractivityFlagNames = std::to_array<char const*>(
         {
             "ground",
             "meshes",
@@ -5344,7 +5344,7 @@ namespace
         // these are runtime-editable flags that dictate which panels are open
         static inline constexpr size_t c_NumPanelStates = 4;
         std::array<bool, c_NumPanelStates> m_PanelStates{false, true, false, false};
-        static constexpr auto c_OpenedPanelNames = osc::to_array<char const*>(
+        static constexpr auto c_OpenedPanelNames = std::to_array<char const*>(
         {
             "History",
             "Navigator",

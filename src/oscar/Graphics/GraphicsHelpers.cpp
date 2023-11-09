@@ -176,7 +176,7 @@ namespace
         osc::Vec3 direction;
         osc::Vec3 up;
     };
-    constexpr auto c_CubemapFacesDetails = osc::to_array<CubemapFaceDetails>(
+    constexpr auto c_CubemapFacesDetails = std::to_array<CubemapFaceDetails>(
     {
         {{ 1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},
         {{-1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},

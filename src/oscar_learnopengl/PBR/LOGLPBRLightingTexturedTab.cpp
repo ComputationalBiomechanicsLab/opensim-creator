@@ -36,7 +36,7 @@ namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/PBR/LightingTextured";
 
-    constexpr auto c_LightPositions = osc::to_array<Vec3>(
+    constexpr auto c_LightPositions = std::to_array<Vec3>(
     {
         {-10.0f,  10.0f, 10.0f},
         { 10.0f,  10.0f, 10.0f},
@@ -44,7 +44,7 @@ namespace
         { 10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<Vec3, c_LightPositions.size()> c_LightRadiances = osc::to_array<Vec3>(
+    constexpr std::array<Vec3, c_LightPositions.size()> c_LightRadiances = std::to_array<Vec3>(
     {
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},

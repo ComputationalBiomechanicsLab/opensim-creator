@@ -33,6 +33,7 @@
 #include <oscar/Utils/SpanHelpers.hpp>
 #include <SDL_events.h>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <random>
@@ -349,7 +350,7 @@ private:
     {
         float const w = 200.0f;
 
-        auto const textures = osc::to_array<RenderTexture const*>(
+        auto const textures = std::to_array<RenderTexture const*>(
         {
             &m_GBuffer.albedo,
             &m_GBuffer.normal,

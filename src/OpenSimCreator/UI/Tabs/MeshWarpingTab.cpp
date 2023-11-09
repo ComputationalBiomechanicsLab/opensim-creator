@@ -60,6 +60,7 @@
 #include <SDL_events.h>
 #include <Simbody.h>
 
+#include <array>
 #include <cmath>
 #include <chrono>
 #include <cstddef>
@@ -482,7 +483,7 @@ namespace
             {
                 osc::WriteCSVRow(
                     fileOutputStream,
-                    osc::to_array(
+                    std::to_array(
                     {
                         std::to_string(loc->x),
                         std::to_string(loc->y),
@@ -514,7 +515,7 @@ namespace
         // write header
         osc::WriteCSVRow(
             fileOutputStream,
-            osc::to_array<std::string>(
+            std::to_array<std::string>(
             {
                 "source.x",
                 "source.y",
@@ -530,7 +531,7 @@ namespace
         {
             osc::WriteCSVRow(
                 fileOutputStream,
-                osc::to_array(
+                std::to_array(
                 {
                     std::to_string(p.source.x),
                     std::to_string(p.source.y),
@@ -627,7 +628,7 @@ namespace
         {
             osc::WriteCSVRow(
                 fileOutputStream,
-                osc::to_array(
+                std::to_array(
                 {
                     std::to_string(nonParticipatingLandmark.x),
                     std::to_string(nonParticipatingLandmark.y),

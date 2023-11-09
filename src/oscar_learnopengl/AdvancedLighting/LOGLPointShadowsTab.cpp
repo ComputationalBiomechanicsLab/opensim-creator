@@ -77,7 +77,7 @@ namespace
 
     auto MakeSceneCubes()
     {
-        return osc::to_array<SceneCube>(
+        return std::to_array<SceneCube>(
         {
             SceneCube{MakeTransform(5.0f, {}), true},
             SceneCube{MakeTransform(0.5f, {4.0f, -3.5f, 0.0f})},

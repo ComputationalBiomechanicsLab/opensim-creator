@@ -33,6 +33,7 @@
 #include <oscar/Utils/SynchronizedValue.hpp>
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <chrono>
 #include <future>
@@ -958,7 +959,7 @@ namespace
         // write header
         osc::WriteCSVRow(
             fileOutputStream,
-            osc::to_array({ ComputePlotXAxisTitle(params, coord), ComputePlotYAxisTitle(params) })
+            std::to_array({ ComputePlotXAxisTitle(params, coord), ComputePlotYAxisTitle(params) })
         );
 
         // write data rows
@@ -967,7 +968,7 @@ namespace
         {
             osc::WriteCSVRow(
                 fileOutputStream,
-                osc::to_array({ std::to_string(p.x), std::to_string(p.y) })
+                std::to_array({ std::to_string(p.x), std::to_string(p.y) })
             );
         }
     }

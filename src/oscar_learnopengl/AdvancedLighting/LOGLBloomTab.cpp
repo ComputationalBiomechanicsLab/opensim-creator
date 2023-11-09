@@ -26,6 +26,7 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
+#include <array>
 #include <string>
 #include <utility>
 #include <vector>
@@ -38,7 +39,7 @@ namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Bloom";
 
-    constexpr auto c_SceneLightPositions = osc::to_array<Vec3>(
+    constexpr auto c_SceneLightPositions = std::to_array<Vec3>(
     {
         { 0.0f, 0.5f,  1.5f},
         {-4.0f, 0.5f, -3.0f},
@@ -48,7 +49,7 @@ namespace
 
     std::array<osc::Color, c_SceneLightPositions.size()> const& GetSceneLightColors()
     {
-        static auto const s_SceneLightColors = osc::to_array<osc::Color>(
+        static auto const s_SceneLightColors = std::to_array<osc::Color>(
         {
             osc::ToSRGB({ 5.0f, 5.0f,  5.0f}),
             osc::ToSRGB({10.0f, 0.0f,  0.0f}),
@@ -341,7 +342,7 @@ private:
     {
         constexpr float w = 200.0f;
 
-        auto const textures = osc::to_array<RenderTexture const*>(
+        auto const textures = std::to_array<RenderTexture const*>(
         {
             &m_SceneHDRColorOutput,
             &m_SceneHDRThresholdedOutput,

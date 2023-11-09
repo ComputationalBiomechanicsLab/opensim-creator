@@ -34,7 +34,7 @@ using osc::Vec3;
 
 namespace
 {
-    constexpr auto c_LightPositions = osc::to_array<Vec3>(
+    constexpr auto c_LightPositions = std::to_array<Vec3>(
     {
         { 0.0f,  0.0f, 49.5f},
         {-1.4f, -1.9f, 9.0f},
@@ -46,7 +46,7 @@ namespace
 
     std::array<osc::Color, c_LightPositions.size()> GetLightColors()
     {
-        return osc::to_array<osc::Color>(
+        return std::to_array<osc::Color>(
         {
             osc::ToSRGB({200.0f, 200.0f, 200.0f, 1.0f}),
             osc::ToSRGB({0.1f, 0.0f, 0.0f, 1.0f}),

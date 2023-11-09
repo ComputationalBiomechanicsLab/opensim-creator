@@ -72,6 +72,7 @@
 #include <SDL_events.h>
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 
+#include <array>
 #include <atomic>
 #include <cstdint>
 #include <cstddef>
@@ -186,7 +187,7 @@ namespace
     {
         SimTK::PolygonalMesh polygonalMesh;
         {
-            auto const verts = osc::to_array(
+            auto const verts = std::to_array(
             {
                 origin,
                 origin + firstEdge,

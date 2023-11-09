@@ -27,7 +27,7 @@ namespace
 {
     using Geom_ctor_fn = std::unique_ptr<OpenSim::Geometry>();
 
-    constexpr auto c_GeomCtors = osc::to_array<Geom_ctor_fn*>(
+    constexpr auto c_GeomCtors = std::to_array<Geom_ctor_fn*>(
     {
         std::decay_t<Geom_ctor_fn>{[]() -> std::unique_ptr<OpenSim::Geometry>
         {
@@ -66,7 +66,7 @@ namespace
         }},
     });
 
-    constexpr auto c_GeomNames = osc::to_array(
+    constexpr auto c_GeomNames = std::to_array(
     {
         "Brick",
         "Sphere",

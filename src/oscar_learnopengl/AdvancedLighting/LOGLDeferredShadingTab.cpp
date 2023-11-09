@@ -33,6 +33,7 @@
 #include <SDL_events.h>
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <iterator>
 #include <memory>
@@ -48,7 +49,7 @@ namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/DeferredShading";
 
-    constexpr auto c_ObjectPositions = osc::to_array<Vec3>(
+    constexpr auto c_ObjectPositions = std::to_array<Vec3>(
     {
         {-3.0,  -0.5, -3.0},
         { 0.0,  -0.5, -3.0},

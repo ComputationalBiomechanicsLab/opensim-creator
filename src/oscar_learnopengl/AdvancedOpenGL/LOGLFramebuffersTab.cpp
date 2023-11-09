@@ -24,6 +24,7 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
+#include <array>
 #include <cstdint>
 #include <memory>
 
@@ -33,7 +34,7 @@ using osc::Vec3;
 
 namespace
 {
-    constexpr auto c_PlaneVertices = osc::to_array<Vec3>(
+    constexpr auto c_PlaneVertices = std::to_array<Vec3>(
     {
         { 5.0f, -0.5f,  5.0f},
         {-5.0f, -0.5f,  5.0f},
@@ -43,7 +44,7 @@ namespace
         {-5.0f, -0.5f, -5.0f},
         { 5.0f, -0.5f, -5.0f},
     });
-    constexpr auto c_PlaneTexCoords = osc::to_array<Vec2>(
+    constexpr auto c_PlaneTexCoords = std::to_array<Vec2>(
     {
         {2.0f, 0.0f},
         {0.0f, 0.0f},
@@ -53,7 +54,7 @@ namespace
         {0.0f, 2.0f},
         {2.0f, 2.0f},
     });
-    constexpr auto c_PlaneIndices = osc::to_array<uint16_t>(
+    constexpr auto c_PlaneIndices = std::to_array<uint16_t>(
     {
         0, 2, 1,
         3, 5, 4,

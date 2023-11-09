@@ -437,7 +437,7 @@ namespace
 namespace
 {
     // LUT for human-readable form of the above
-    constexpr auto c_ShaderTypeInternalStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_ShaderTypeInternalStrings = std::to_array<osc::CStringView>(
     {
         "Float",
         "Vec2",
@@ -1332,7 +1332,7 @@ void osc::Cubemap::setPixelData(CubemapFace face, std::span<uint8_t const> chann
 
 namespace
 {
-    constexpr auto c_TextureWrapModeStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_TextureWrapModeStrings = std::to_array<osc::CStringView>(
     {
         "Repeat",
         "Clamp",
@@ -1340,7 +1340,7 @@ namespace
     });
     static_assert(c_TextureWrapModeStrings.size() == osc::NumOptions<osc::TextureWrapMode>());
 
-    constexpr auto c_TextureFilterModeStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_TextureFilterModeStrings = std::to_array<osc::CStringView>(
     {
         "Nearest",
         "Linear",
@@ -2023,7 +2023,7 @@ std::ostream& osc::operator<<(std::ostream& o, Texture2D const&)
 
 namespace
 {
-    constexpr auto c_RenderTextureFormatStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_RenderTextureFormatStrings = std::to_array<osc::CStringView>(
     {
         "ARGB32",
         "ARGBFloat16",
@@ -2032,7 +2032,7 @@ namespace
     });
     static_assert(c_RenderTextureFormatStrings.size() == osc::NumOptions<osc::RenderTextureFormat>());
 
-    constexpr auto c_DepthStencilFormatStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_DepthStencilFormatStrings = std::to_array<osc::CStringView>(
     {
         "D24_UNorm_S8_UInt",
     });
@@ -3953,7 +3953,7 @@ std::ostream& osc::operator<<(std::ostream& o, MaterialPropertyBlock const&)
 
 namespace
 {
-    constexpr auto c_MeshTopologyStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_MeshTopologyStrings = std::to_array<osc::CStringView>(
     {
         "Triangles",
         "Lines",
@@ -4608,7 +4608,7 @@ std::ostream& osc::operator<<(std::ostream& o, Mesh const&)
 namespace
 {
     // LUT for human-readable form of the above
-    constexpr auto c_CameraProjectionStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_CameraProjectionStrings = std::to_array<osc::CStringView>(
     {
         "Perspective",
         "Orthographic",
@@ -5122,7 +5122,7 @@ namespace
         GLenum id;
         char const* label;
     };
-    constexpr auto c_RequiredOpenGLCapabilities = osc::to_array<RequiredOpenGLCapability>(
+    constexpr auto c_RequiredOpenGLCapabilities = std::to_array<RequiredOpenGLCapability>(
     {
         // ensures geometry is occlusion-culled correctly
         {GL_DEPTH_TEST, "GL_DEPTH_TEST"},

@@ -43,7 +43,6 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 
@@ -228,7 +227,7 @@ namespace
     )";
 
     // expected, based on the above shader code
-    constexpr std::array<osc::CStringView, 14> c_ExpectedPropertyNames = osc::to_array<osc::CStringView>(
+    constexpr std::array<osc::CStringView, 14> c_ExpectedPropertyNames = std::to_array<osc::CStringView>(
     {
         "uViewProjMat",
         "uLightSpaceMat",
@@ -246,7 +245,7 @@ namespace
         "uFar",
     });
 
-    constexpr std::array<osc::ShaderPropertyType, 14> c_ExpectedPropertyTypes = osc::to_array(
+    constexpr std::array<osc::ShaderPropertyType, 14> c_ExpectedPropertyTypes = std::to_array(
     {
         osc::ShaderPropertyType::Mat4,
         osc::ShaderPropertyType::Mat4,
@@ -779,7 +778,7 @@ TEST_F(Renderer, MaterialGetColorArrayReturnsEmptyOnNewMaterial)
 TEST_F(Renderer, MaterialCanCallSetColorArrayOnNewMaterial)
 {
     osc::Material mat = GenerateMaterial();
-    auto const colors = osc::to_array({osc::Color::black(), osc::Color::blue()});
+    auto const colors = std::to_array({osc::Color::black(), osc::Color::blue()});
 
     mat.setColorArray("someKey", colors);
 }
@@ -787,7 +786,7 @@ TEST_F(Renderer, MaterialCanCallSetColorArrayOnNewMaterial)
 TEST_F(Renderer, MaterialCallingGetColorArrayOnMaterialAfterSettingThemReturnsTheSameColors)
 {
     osc::Material mat = GenerateMaterial();
-    auto const colors = osc::to_array({osc::Color::red(), osc::Color::green(), osc::Color::blue()});
+    auto const colors = std::to_array({osc::Color::red(), osc::Color::green(), osc::Color::blue()});
     osc::CStringView const key = "someKey";
 
     mat.setColorArray(key, colors);
@@ -995,7 +994,7 @@ TEST_F(Renderer, MaterialGetMat4ArrayInitiallyReturnsNothing)
 
 TEST_F(Renderer, MaterialSetMat4ArrayCausesGetMat4ArrayToReturnSameSequenceOfValues)
 {
-    auto const mat4Array = osc::to_array<Mat4>(
+    auto const mat4Array = std::to_array<Mat4>(
     {
         GenerateMat4x4(),
         GenerateMat4x4(),
@@ -2459,7 +2458,7 @@ TEST_F(Renderer, MeshGetBoundsReturnsEmptyBoundsOnInitialization)
 
 TEST_F(Renderer, MeshGetBoundsReturnsEmptyForMeshWithUnindexedVerts)
 {
-    auto const pyramid = osc::to_array<Vec3>(
+    auto const pyramid = std::to_array<Vec3>(
     {
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
@@ -2475,13 +2474,13 @@ TEST_F(Renderer, MeshGetBoundsReturnsEmptyForMeshWithUnindexedVerts)
 
 TEST_F(Renderer, MeshGetBooundsReturnsNonemptyForIndexedVerts)
 {
-    auto const pyramid = osc::to_array<Vec3>(
+    auto const pyramid = std::to_array<Vec3>(
     {
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
         { 0.0f,  1.0f, 0.0f},  // base: top-middle
     });
-    auto const pyramidIndices = osc::to_array<uint16_t>({0, 1, 2});
+    auto const pyramidIndices = std::to_array<uint16_t>({0, 1, 2});
 
     osc::Mesh m;
     m.setVerts(pyramid);
@@ -2499,13 +2498,13 @@ TEST_F(Renderer, MeshGetBVHReturnsEmptyBVHOnInitialization)
 
 TEST_F(Renderer, MeshGetBVHReturnsExpectedRootNode)
 {
-    auto const pyramid = osc::to_array<Vec3>(
+    auto const pyramid = std::to_array<Vec3>(
     {
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
         { 0.0f,  1.0f, 0.0f},  // base: top-middle
     });
-    auto const pyramidIndices = osc::to_array<uint16_t>({0, 1, 2});
+    auto const pyramidIndices = std::to_array<uint16_t>({0, 1, 2});
 
     osc::Mesh m;
     m.setVerts(pyramid);
@@ -3146,7 +3145,7 @@ TEST_F(Renderer, CameraSetClearFlagsWorksAsExpected)
 {
     osc::Camera camera;
 
-    auto const flagsToTest = osc::to_array(
+    auto const flagsToTest = std::to_array(
     {
         osc::CameraClearFlags::SolidColor,
         osc::CameraClearFlags::Depth,

@@ -28,6 +28,7 @@
 #include <Simbody.h>
 
 #include <algorithm>
+#include <array>
 #include <filesystem>
 #include <fstream>
 #include <memory>
@@ -470,7 +471,7 @@ namespace
             osc::GetAbsolutePathString(*c) :
             c->getName();
 
-        auto const columns = osc::to_array<std::string>(
+        auto const columns = std::to_array<std::string>(
         {
             name,
             std::to_string(position[0]),
@@ -503,7 +504,7 @@ namespace
         // write header row
         osc::WriteCSVRow(
             out,
-            osc::to_array<std::string>({ "Name", "X", "Y", "Z" })
+            std::to_array<std::string>({ "Name", "X", "Y", "Z" })
         );
 
         // write data rows

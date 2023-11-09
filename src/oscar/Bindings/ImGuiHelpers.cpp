@@ -692,7 +692,7 @@ osc::Rect osc::DrawAlignmentAxes(Mat4 const& viewMtx)
     Rect const bounds = {topLeft, bottomRight};
     Vec2 const origin = Midpoint(bounds);
 
-    auto const labels = osc::to_array<osc::CStringView>({ "X", "Y", "Z" });
+    auto const labels = std::to_array<osc::CStringView>({ "X", "Y", "Z" });
 
     ImDrawList& drawlist = *ImGui::GetWindowDrawList();
     for (size_t i = 0; i < std::size(labels); ++i)

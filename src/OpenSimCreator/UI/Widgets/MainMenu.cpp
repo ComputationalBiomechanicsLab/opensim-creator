@@ -48,7 +48,7 @@ osc::MainMenuFileTab::MainMenuFileTab() :
     {
         FindFilesWithExtensionsRecursive(
             App::resource("models"),
-            to_array({std::string_view{".osim"}})
+            std::to_array({std::string_view{".osim"}})
         )
     }
 {

@@ -23,7 +23,7 @@
 
 namespace
 {
-    constexpr auto c_LocationInputIDs = osc::to_array<osc::CStringView>({ "##xinput", "##yinput", "##zinput" });
+    constexpr auto c_LocationInputIDs = std::to_array<osc::CStringView>({ "##xinput", "##yinput", "##zinput" });
     static_assert(c_LocationInputIDs.size() == 3);
 
     OpenSim::GeometryPath InitGeometryPathFromPropOrDefault(std::function<OpenSim::ObjectProperty<OpenSim::GeometryPath> const* ()> const& accessor)

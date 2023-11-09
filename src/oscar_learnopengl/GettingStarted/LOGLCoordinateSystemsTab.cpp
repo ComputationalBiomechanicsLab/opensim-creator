@@ -22,6 +22,7 @@
 #include <oscar/Utils/UID.hpp>
 #include <SDL_events.h>
 
+#include <array>
 #include <cstdint>
 #include <memory>
 #include <numbers>
@@ -31,7 +32,7 @@ using osc::Vec3;
 namespace
 {
     // worldspace positions of each cube (step 2)
-    constexpr auto c_CubePositions = osc::to_array<Vec3>(
+    constexpr auto c_CubePositions = std::to_array<Vec3>(
     {
         { 0.0f,  0.0f,  0.0f },
         { 2.0f,  5.0f, -15.0f},

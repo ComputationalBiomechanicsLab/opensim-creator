@@ -7,10 +7,10 @@
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Triangle.hpp>
 #include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 #include <SimTKcommon/internal/PolygonalMesh.h>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
@@ -83,7 +83,7 @@ osc::Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
         {
             // quad (render as two triangles)
 
-            auto const quadVerts = osc::to_array<Vec3>(
+            auto const quadVerts = std::to_array<Vec3>(
             {
                 GetFaceVertex(mesh, face, 0),
                 GetFaceVertex(mesh, face, 1),

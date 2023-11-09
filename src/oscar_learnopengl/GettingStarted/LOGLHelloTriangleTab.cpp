@@ -15,6 +15,7 @@
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
+#include <array>
 #include <cstdint>
 #include <memory>
 
@@ -27,7 +28,7 @@ namespace
 
     osc::Mesh GenerateTriangleMesh()
     {
-        constexpr auto points = osc::to_array<Vec3>(
+        constexpr auto points = std::to_array<Vec3>(
         {
             {-1.0f, -1.0f, 0.0f},  // bottom-left
             { 1.0f, -1.0f, 0.0f},  // bottom-right
@@ -36,14 +37,14 @@ namespace
 
         // care: we're using colors that are equivalent in sRGB and linear
         //       color spaces here
-        constexpr auto colors = osc::to_array<osc::Color>(
+        constexpr auto colors = std::to_array<osc::Color>(
         {
             osc::Color::red(),
             osc::Color::green(),
             osc::Color::blue(),
         });
 
-        constexpr auto indices = osc::to_array<uint16_t>({0, 1, 2});
+        constexpr auto indices = std::to_array<uint16_t>({0, 1, 2});
 
         osc::Mesh m;
         m.setVerts(points);

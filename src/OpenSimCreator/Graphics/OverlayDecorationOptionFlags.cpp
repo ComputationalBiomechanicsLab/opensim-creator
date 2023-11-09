@@ -1,12 +1,11 @@
 #include "OverlayDecorationOptionFlags.hpp"
 
-#include <oscar/Utils/Cpp20Shims.hpp>
-
+#include <array>
 #include <span>
 
 namespace
 {
-    constexpr auto c_Metadata = osc::to_array<osc::OverlayDecorationOptionFlagsMetadata>(
+    constexpr auto c_Metadata = std::to_array<osc::OverlayDecorationOptionFlagsMetadata>(
     {
         osc::OverlayDecorationOptionFlagsMetadata
         {

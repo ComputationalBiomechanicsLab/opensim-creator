@@ -1,6 +1,5 @@
 #include "MuscleColoringStyle.hpp"
 
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 
@@ -10,7 +9,7 @@
 
 namespace
 {
-    constexpr auto c_Metadata = osc::to_array<osc::MuscleColoringStyleMetadata>(
+    constexpr auto c_Metadata = std::to_array<osc::MuscleColoringStyleMetadata>(
     {
         osc::MuscleColoringStyleMetadata
         {

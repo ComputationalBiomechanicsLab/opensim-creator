@@ -38,7 +38,7 @@ namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/PBR/SpecularIrradianceTextured";
 
-    constexpr auto c_LightPositions = osc::to_array<Vec3>(
+    constexpr auto c_LightPositions = std::to_array<Vec3>(
     {
         {-10.0f,  10.0f, 10.0f},
         { 10.0f,  10.0f, 10.0f},
@@ -46,7 +46,7 @@ namespace
         { 10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<Vec3, c_LightPositions.size()> c_LightRadiances = osc::to_array<Vec3>(
+    constexpr std::array<Vec3, c_LightPositions.size()> c_LightRadiances = std::to_array<Vec3>(
     {
         {150.0f, 150.0f, 150.0f},
         {150.0f, 150.0f, 150.0f},
@@ -439,7 +439,7 @@ private:
         ColorSpace::Linear,
         ImageLoadingFlags::FlipVertically
     );
-    std::array<IBLSpecularObjectTextures, 5> m_ObjectTextures = osc::to_array<IBLSpecularObjectTextures>
+    std::array<IBLSpecularObjectTextures, 5> m_ObjectTextures = std::to_array<IBLSpecularObjectTextures>
     ({
         IBLSpecularObjectTextures{App::resource("oscar_learnopengl/textures/pbr/rusted_iron")},
         IBLSpecularObjectTextures{App::resource("oscar_learnopengl/textures/pbr/gold")},

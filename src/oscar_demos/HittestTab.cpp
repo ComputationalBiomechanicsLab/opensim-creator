@@ -21,6 +21,7 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
+#include <array>
 #include <cstdint>
 #include <limits>
 #include <memory>
@@ -33,7 +34,7 @@ namespace
 {
     constexpr osc::CStringView c_TabStringID = "Demos/Hittest";
 
-    constexpr auto c_CrosshairVerts = osc::to_array<Vec3>(
+    constexpr auto c_CrosshairVerts = std::to_array<Vec3>(
     {
         // -X to +X
         {-0.05f, 0.0f, 0.0f},
@@ -44,16 +45,16 @@ namespace
         {0.0f, +0.05f, 0.0f},
     });
 
-    constexpr auto c_CrosshairIndices = osc::to_array<uint16_t>({ 0, 1, 2, 3 });
+    constexpr auto c_CrosshairIndices = std::to_array<uint16_t>({ 0, 1, 2, 3 });
 
-    constexpr auto c_TriangleVerts = osc::to_array<Vec3>(
+    constexpr auto c_TriangleVerts = std::to_array<Vec3>(
     {
         {-10.0f, -10.0f, 0.0f},
         {+0.0f, +10.0f, 0.0f},
         {+10.0f, -10.0f, 0.0f},
     });
 
-    constexpr auto c_TriangleIndices = osc::to_array<uint16_t>({ 0, 1, 2 });
+    constexpr auto c_TriangleIndices = std::to_array<uint16_t>({ 0, 1, 2 });
 
     struct SceneSphere final {
 

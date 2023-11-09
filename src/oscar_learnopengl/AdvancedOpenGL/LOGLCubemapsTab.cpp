@@ -41,7 +41,7 @@ using osc::Vec2i;
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Cubemaps";
-    constexpr auto c_SkyboxTextureFilenames = osc::to_array<osc::CStringView>(
+    constexpr auto c_SkyboxTextureFilenames = std::to_array<osc::CStringView>(
     {
         "skybox_right.jpg",
         "skybox_left.jpg",
@@ -102,7 +102,7 @@ namespace
 
     std::array<CubeMaterial, 3> CreateCubeMaterials()
     {
-        return osc::to_array(
+        return std::to_array(
         {
             CubeMaterial
             {
