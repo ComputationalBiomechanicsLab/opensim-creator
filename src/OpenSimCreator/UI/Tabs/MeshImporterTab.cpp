@@ -231,18 +231,9 @@ namespace
         // adopted from: https://easings.net/#easeOutElastic
 
         constexpr float c4 = 2.0f*std::numbers::pi_v<float> / 3.0f;
+        float const normalized = osc::Clamp(x, 0.0f, 1.0f);
 
-        if (x <= 0.0f)
-        {
-            return 0.0f;
-        }
-
-        if (x >= 1.0f)
-        {
-            return 1.0f;
-        }
-
-        return std::pow(2.0f, -5.0f*x) * std::sin((x*10.0f - 0.75f) * c4) + 1.0f;
+        return std::pow(2.0f, -5.0f*normalized) * std::sin((normalized*10.0f - 0.75f) * c4) + 1.0f;
     }
 
     // returns the transform, but rotated such that the given axis points along the
@@ -589,34 +580,29 @@ namespace
             return m_ID;
         }
 
-        char const* GetNameCStr() const
-        {
-            return m_Name.c_str();
-        }
-
-        std::string_view GetNameSV() const
+        CStringView getName() const
         {
             return m_Name;
         }
 
-        char const* GetNamePluralizedCStr() const
+        CStringView getNamePluralized() const
         {
-            return m_NamePluralized.c_str();
+            return m_NamePluralized;
         }
 
-        char const* GetNameOptionallyPluralized() const
+        CStringView getNameOptionallyPluralized() const
         {
-            return m_NameOptionallyPluralized.c_str();
+            return m_NameOptionallyPluralized;
         }
 
-        char const* GetIconCStr() const
+        CStringView getIconUTF8() const
         {
-            return m_Icon.c_str();
+            return m_Icon;
         }
 
-        char const* GetDescriptionCStr() const
+        CStringView getDescription() const
         {
-            return m_Description.c_str();
+            return m_Description;
         }
 
         int32_t FetchAddUniqueCounter() const
@@ -648,7 +634,7 @@ namespace
     std::string GenerateName(SceneElClass const& c)
     {
         std::stringstream ss;
-        ss << c.GetNameSV() << c.FetchAddUniqueCounter();
+        ss << c.getName() << c.FetchAddUniqueCounter();
         return std::move(ss).str();
     }
 
@@ -2484,11 +2470,11 @@ namespace
             }
             void operator()(MeshEl const& m) final
             {
-                m_SS << '(' << m.GetClass().GetNameSV() << ", " << m.getPath().filename().string() << ", attached to " << GetLabel(m_Mg, m.getParentID()) << ')';
+                m_SS << '(' << m.GetClass().getName() << ", " << m.getPath().filename().string() << ", attached to " << GetLabel(m_Mg, m.getParentID()) << ')';
             }
             void operator()(BodyEl const& b) final
             {
-                m_SS << '(' << b.GetClass().GetNameSV() << ')';
+                m_SS << '(' << b.GetClass().getName() << ')';
             }
             void operator()(JointEl const& j) final
             {
@@ -2496,7 +2482,7 @@ namespace
             }
             void operator()(StationEl const& s) final
             {
-                m_SS << '(' << s.GetClass().GetNameSV() << ", attached to " << GetLabel(m_Mg, s.getParentID()) << ')';
+                m_SS << '(' << s.GetClass().getName() << ", attached to " << GetLabel(m_Mg, s.getParentID()) << ')';
             }
 
         private:
@@ -6014,7 +6000,7 @@ namespace
                 ImGui::BeginTooltip();
                 ImGui::TextUnformatted(se->GetLabel().c_str());
                 ImGui::SameLine();
-                ImGui::TextDisabled("(%s, click to choose)", se->GetClass().GetNameCStr());
+                ImGui::TextDisabled("(%s, click to choose)", se->GetClass().getName().c_str());
                 ImGui::EndTooltip();
             }
         }
@@ -7279,11 +7265,11 @@ private:
 
     void DrawSceneElContextMenuContentHeader(SceneEl const& e)
     {
-        ImGui::Text("%s %s", e.GetClass().GetIconCStr(), e.GetLabel().c_str());
+        ImGui::Text("%s %s", e.GetClass().getIconUTF8().c_str(), e.GetLabel().c_str());
         ImGui::SameLine();
         ImGui::TextDisabled("%s", GetContextMenuSubHeaderText(m_Shared->GetModelGraph(), e).c_str());
         ImGui::SameLine();
-        osc::DrawHelpMarker(e.GetClass().GetNameCStr(), e.GetClass().GetDescriptionCStr());
+        osc::DrawHelpMarker(e.GetClass().getName(), e.GetClass().getDescription());
         ImGui::Separator();
     }
 
@@ -7302,7 +7288,7 @@ private:
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
                 std::stringstream ss;
-                ss << "changed " << e.GetClass().GetNameSV() << " name";
+                ss << "changed " << e.GetClass().getName() << " name";
                 m_Shared->CommitCurrentModelGraph(std::move(ss).str());
             }
             ImGui::SameLine();
@@ -8102,9 +8088,9 @@ private:
     {
         ModelGraph& mg = m_Shared->UpdModelGraph();
 
-        ImGui::Text("%s %s", c.GetIconCStr(), c.GetNamePluralizedCStr());
+        ImGui::Text("%s %s", c.getIconUTF8().c_str(), c.getNamePluralized().c_str());
         ImGui::SameLine();
-        osc::DrawHelpMarker(c.GetNamePluralizedCStr(), c.GetDescriptionCStr());
+        osc::DrawHelpMarker(c.getNamePluralized(), c.getDescription());
         SpacerDummy();
         ImGui::Indent();
 
@@ -8160,7 +8146,7 @@ private:
 
         if (empty)
         {
-            ImGui::TextDisabled("(no %s)", c.GetNamePluralizedCStr());
+            ImGui::TextDisabled("(no %s)", c.getNamePluralized().c_str());
         }
         ImGui::Unindent();
     }
@@ -8205,7 +8191,7 @@ private:
             auto& e = mg.AddEl<StationEl>(UIDT<StationEl>{}, c_GroundID, Vec3{}, GenerateName(StationEl::Class()));
             SelectOnly(mg, e);
         }
-        osc::DrawTooltipIfItemHovered("Add Station", StationEl::Class().GetDescriptionCStr());
+        osc::DrawTooltipIfItemHovered("Add Station", StationEl::Class().getDescription());
 
         ImGui::PopStyleVar();
     }
@@ -8507,7 +8493,7 @@ private:
     void DrawSceneElTooltip(SceneEl const& e) const
     {
         ImGui::BeginTooltip();
-        ImGui::Text("%s %s", e.GetClass().GetIconCStr(), e.GetLabel().c_str());
+        ImGui::Text("%s %s", e.GetClass().getIconUTF8().c_str(), e.GetLabel().c_str());
         ImGui::SameLine();
         ImGui::TextDisabled("%s", GetContextMenuSubHeaderText(m_Shared->GetModelGraph(), e).c_str());
         ImGui::EndTooltip();
