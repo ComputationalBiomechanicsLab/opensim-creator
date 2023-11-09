@@ -2193,8 +2193,8 @@ namespace
     // returns `true` if `body` participates in any joint in the model graph
     bool IsAChildAttachmentInAnyJoint(ModelGraph const& mg, SceneEl const& el)
     {
-        auto it = mg.iter<JointEl>();
-        return std::any_of(it.begin(), it.end(), [id = el.getID()](JointEl const& j)
+        auto iterable = mg.iter<JointEl>();
+        return std::any_of(iterable.begin(), iterable.end(), [id = el.getID()](JointEl const& j)
         {
             return j.getChildID() == id;
         });
@@ -2272,7 +2272,7 @@ namespace
             {
                 childInAtLeastOneJoint = true;
 
-                bool alreadyVisited = !previouslyVisitedJoints.emplace(jointEl.getID()).second;
+                bool const alreadyVisited = !previouslyVisitedJoints.emplace(jointEl.getID()).second;
                 if (alreadyVisited)
                 {
                     continue;  // skip this joint: was previously visited
@@ -2324,43 +2324,30 @@ namespace
         ModelGraph const& mg,
         SceneEl const& e)
     {
-        class Visitor final : public ConstSceneElVisitor {
-        public:
-            Visitor(std::stringstream& ss, ModelGraph const& mg) :
-                m_SS{ss},
-                m_Mg{mg}
-            {
-            }
-
-            void operator()(GroundEl const&) final
-            {
-                m_SS << "(scene origin)";
-            }
-            void operator()(MeshEl const& m) final
-            {
-                m_SS << '(' << m.getClass().getName() << ", " << m.getPath().filename().string() << ", attached to " << getLabel(m_Mg, m.getParentID()) << ')';
-            }
-            void operator()(BodyEl const& b) final
-            {
-                m_SS << '(' << b.getClass().getName() << ')';
-            }
-            void operator()(JointEl const& j) final
-            {
-                m_SS << '(' << j.getSpecificTypeName() << ", " << getLabel(m_Mg, j.getChildID()) << " --> " << getLabel(m_Mg, j.getParentID()) << ')';
-            }
-            void operator()(StationEl const& s) final
-            {
-                m_SS << '(' << s.getClass().getName() << ", attached to " << getLabel(m_Mg, s.getParentID()) << ')';
-            }
-
-        private:
-            std::stringstream& m_SS;
-            ModelGraph const& m_Mg;
-        };
-
         std::stringstream ss;
-        Visitor v{ss, mg};
-        e.accept(v);
+        visit(Overload
+        {
+            [&ss](GroundEl const&)
+            {
+                ss << "(scene origin)";
+            },
+            [&ss, &mg](MeshEl const& m)
+            {
+                ss << '(' << m.getClass().getName() << ", " << m.getPath().filename().string() << ", attached to " << getLabel(mg, m.getParentID()) << ')';
+            },
+            [&ss](BodyEl const& b)
+            {
+                ss << '(' << b.getClass().getName() << ')';
+            },
+            [&ss, &mg](JointEl const& j)
+            {
+                ss << '(' << j.getSpecificTypeName() << ", " << getLabel(mg, j.getChildID()) << " --> " << getLabel(mg, j.getParentID()) << ')';
+            },
+            [&ss, &mg](StationEl const& s)
+            {
+                ss << '(' << s.getClass().getName() << ", attached to " << getLabel(mg, s.getParentID()) << ')';
+            },
+        }, e);
         return std::move(ss).str();
     }
 
@@ -2440,26 +2427,14 @@ namespace
     // attach to something in the scene
     UIDT<BodyEl> GetStationAttachmentParent(ModelGraph const& mg, SceneEl const& el)
     {
-        class Visitor final : public ConstSceneElVisitor {
-        public:
-            explicit Visitor(ModelGraph const& mg) : m_Mg{mg} {}
-
-            void operator()(GroundEl const&) final { m_Result = c_GroundID; }
-            void operator()(MeshEl const& meshEl) final { m_Mg.containsEl<BodyEl>(meshEl.getParentID()) ? m_Result = osc::DowncastID<BodyEl>(meshEl.getParentID()) : c_GroundID; }
-            void operator()(BodyEl const& bodyEl) final { m_Result = bodyEl.getID(); }
-            void operator()(JointEl const&) final { m_Result = c_GroundID; }  // can't be attached
-            void operator()(StationEl const&) final { m_Result = c_GroundID; }  // can't be attached
-
-            UIDT<BodyEl> result() const { return m_Result; }
-
-        private:
-            UIDT<BodyEl> m_Result = c_GroundID;
-            ModelGraph const& m_Mg;
-        };
-
-        Visitor v{mg};
-        el.accept(v);
-        return v.result();
+        return visit(Overload
+        {
+            [](GroundEl const&) { return c_GroundID; },
+            [&mg](MeshEl const& meshEl) { return mg.containsEl<BodyEl>(meshEl.getParentID()) ? osc::DowncastID<BodyEl>(meshEl.getParentID()) : c_GroundID; },
+            [](BodyEl const& bodyEl) { return bodyEl.getID(); },
+            [](JointEl const&) { return c_GroundID; },
+            [](StationEl const&) { return c_GroundID; },
+        }, el);
     }
 
     // points an axis of a given element towards some other element in the model graph
@@ -4395,48 +4370,14 @@ namespace
 
         bool shouldShowConnectionLines(SceneEl const& el) const
         {
-            class Visitor final : public ConstSceneElVisitor {
-            public:
-                explicit Visitor(SharedData const& shared) : m_Shared{shared} {}
-
-                void operator()(GroundEl const&) final
-                {
-                    m_Result = false;
-                }
-
-                void operator()(MeshEl const&) final
-                {
-                    m_Result = m_Shared.isShowingMeshConnectionLines();
-                }
-
-                void operator()(BodyEl const&) final
-                {
-                    m_Result = m_Shared.isShowingBodyConnectionLines();
-                }
-
-                void operator()(JointEl const&) final
-                {
-                    m_Result = m_Shared.isShowingJointConnectionLines();
-                }
-
-                void operator()(StationEl const&) final
-                {
-                    m_Result = m_Shared.isShowingMeshConnectionLines();
-                }
-
-                bool result() const
-                {
-                    return m_Result;
-                }
-
-            private:
-                SharedData const& m_Shared;
-                bool m_Result = false;
-            };
-
-            Visitor v{*this};
-            el.accept(v);
-            return v.result();
+            return visit(Overload
+            {
+                []    (GroundEl const&)  { return false; },
+                [this](MeshEl const&)    { return this->isShowingMeshConnectionLines(); },
+                [this](BodyEl const&)    { return this->isShowingBodyConnectionLines(); },
+                [this](JointEl const&)   { return this->isShowingJointConnectionLines(); },
+                [this](StationEl const&) { return this->isShowingMeshConnectionLines(); },
+            }, el);
         }
 
         void drawConnectionLines(
@@ -4801,7 +4742,13 @@ namespace
             Transform t = getFloorTransform();
             t.scale *= 0.5f;
 
-            Material material{App::singleton<ShaderCache>()->load(App::resource("shaders/SolidColor.vert"), App::resource("shaders/SolidColor.frag"))};
+            Material material
+            {
+                App::singleton<ShaderCache>()->load(
+                    App::resource("shaders/SolidColor.vert"),
+                    App::resource("shaders/SolidColor.frag")
+                )
+            };
             material.setColor("uColor", m_Colors.gridLines);
             material.setTransparent(true);
 
@@ -5196,74 +5143,62 @@ namespace
             SceneEl const& e,
             std::vector<DrawableThing>& appendOut) const
         {
-            class Visitor final : public ConstSceneElVisitor {
-            public:
-                Visitor(
-                    SharedData const& data,
-                    std::vector<DrawableThing>& out) :
-
-                    m_Data{data},
-                    m_Out{out}
+            visit(Overload
+            {
+                [this, &appendOut](GroundEl const&)
                 {
-                }
-
-                void operator()(GroundEl const&) final
-                {
-                    if (!m_Data.isShowingGround())
+                    if (!isShowingGround())
                     {
                         return;
                     }
 
-                    m_Out.push_back(m_Data.generateGroundSphere(m_Data.getColorGround()));
-                }
-                void operator()(MeshEl const& el) final
+                    appendOut.push_back(generateGroundSphere(getColorGround()));
+                },
+                [this, &appendOut](MeshEl const& el)
                 {
-                    if (!m_Data.isShowingMeshes())
+                    if (!isShowingMeshes())
                     {
                         return;
                     }
 
-                    m_Out.push_back(m_Data.generateMeshElDrawable(el));
-                }
-                void operator()(BodyEl const& el) final
+                    appendOut.push_back(generateMeshElDrawable(el));
+                },
+                [this, &appendOut](BodyEl const& el)
                 {
-                    if (!m_Data.isShowingBodies())
+                    if (!isShowingBodies())
                     {
                         return;
                     }
 
-                    m_Data.appendBodyElAsCubeThing(el, m_Out);
-                }
-                void operator()(JointEl const& el) final
+                    appendBodyElAsCubeThing(el, appendOut);
+                },
+                [this, &appendOut](JointEl const& el)
                 {
-                    if (!m_Data.isShowingJointCenters()) {
+                    if (!isShowingJointCenters())
+                    {
                         return;
                     }
 
-                    m_Data.appendAsFrame(el.getID(),
+                    appendAsFrame(
+                        el.getID(),
                         c_JointGroupID,
                         el.getXForm(),
-                        m_Out,
+                        appendOut,
                         1.0f,
                         SceneDecorationFlags::None,
-                        GetJointAxisLengths(el));
-                }
-                void operator()(StationEl const& el) final
+                        GetJointAxisLengths(el)
+                    );
+                },
+                [this, &appendOut](StationEl const& el)
                 {
-                    if (!m_Data.isShowingStations())
+                    if (!isShowingStations())
                     {
                         return;
                     }
 
-                    m_Out.push_back(m_Data.generateStationSphere(el, m_Data.getColorStation()));
-                }
-            private:
-                SharedData const& m_Data;
-                std::vector<DrawableThing>& m_Out;
-            };
-
-            Visitor visitor{*this, appendOut};
-            e.accept(visitor);
+                    appendOut.push_back(generateStationSphere(el, getColorStation()));
+                },
+            }, e);
         }
 
         //
@@ -5810,50 +5745,14 @@ namespace
                 return false;
             }
 
-            struct Visitor final : public ConstSceneElVisitor {
-            public:
-                explicit Visitor(ChooseElLayerOptions const& opts) : m_Opts{opts}
-                {
-                }
-
-                bool result() const
-                {
-                    return m_Result;
-                }
-
-                void operator()(GroundEl const&) final
-                {
-                    m_Result = m_Opts.canChooseGround;
-                }
-
-                void operator()(MeshEl const&) final
-                {
-                    m_Result = m_Opts.canChooseMeshes;
-                }
-
-                void operator()(BodyEl const&) final
-                {
-                    m_Result = m_Opts.canChooseBodies;
-                }
-
-                void operator()(JointEl const&) final
-                {
-                    m_Result = m_Opts.canChooseJoints;
-                }
-
-                void operator()(StationEl const&) final
-                {
-                    m_Result = m_Opts.canChooseStations;
-                }
-
-            private:
-                bool m_Result = false;
-                ChooseElLayerOptions const& m_Opts;
-            };
-
-            Visitor v{m_Options};
-            el.accept(v);
-            return v.result();
+            return visit(Overload
+            {
+                [this](GroundEl const&)  { return m_Options.canChooseGround; },
+                [this](MeshEl const&)    { return m_Options.canChooseMeshes; },
+                [this](BodyEl const&)    { return m_Options.canChooseBodies; },
+                [this](JointEl const&)   { return m_Options.canChooseJoints; },
+                [this](StationEl const&) { return m_Options.canChooseStations; },
+            }, el);
         }
 
         void select(SceneEl const& el)
