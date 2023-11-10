@@ -269,7 +269,7 @@ std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
         // map the ray back into worldspace
         Vec3 const locationWorldspace = transform * maybeCollision->position;
         float const distance = Length(locationWorldspace - worldspaceRay.origin);
-        return RayCollision{distance, locationWorldspace};
+        return RayCollision{.distance = distance, .position = locationWorldspace};
     }
     else
     {

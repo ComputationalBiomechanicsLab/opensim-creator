@@ -10,66 +10,39 @@ namespace osc
     // packaged-up "transform" (orthogonal scale -> rotate -> translate)
     struct Transform final {
 
-        // default-construct as an identity transform
-        constexpr Transform() = default;
-
-        // construct at a given position with an identity rotation and scale
-        constexpr explicit Transform(Vec3 const& position_) noexcept :
-            position{position_}
-        {
-        }
-
-        // construct at a given position and rotation with an identity scale
-        constexpr Transform(Vec3 const& position_,
-                            Quat const& rotation_) noexcept :
-            rotation{rotation_},
-            position{position_}
-        {
-        }
-
-        // construct at a given position, rotation, and scale
-        constexpr Transform(Vec3 const& position_,
-                            Quat const& rotation_,
-                            Vec3 const& scale_) noexcept :
-            scale{scale_},
-            rotation{rotation_},
-            position{position_}
-        {
-        }
-
         // returns a new transform which is the same as the existing one, but with the
         // provided position
         constexpr Transform withPosition(Vec3 const& position_) const noexcept
         {
-            return Transform{position_, rotation, scale};
+            return Transform{.scale = scale, .rotation = rotation, .position = position_};
         }
 
         // returns a new transform which is the same as the existing one, but with
         // the provided rotation
         constexpr Transform withRotation(Quat const& rotation_) const noexcept
         {
-            return Transform{position, rotation_, scale};
+            return Transform{.scale = scale, .rotation = rotation_, .position = position};
         }
 
         // returns a new transform which is the same as the existing one, but with
         // the provided scale
         constexpr Transform withScale(Vec3 const& scale_) const noexcept
         {
-            return Transform{position, rotation, scale_};
+            return Transform{.scale = scale_, .rotation = rotation, .position = position};
         }
 
         // returns a new transform which is the same as the existing one, but with
         // the provided scale (same for all axes)
         constexpr Transform withScale(float scale_) const noexcept
         {
-            return Transform{position, rotation, Vec3{scale_}};
+            return Transform{.scale = Vec3{scale_}, .rotation = rotation, .position = position};
         }
 
         friend bool operator==(Transform const&, Transform const&) = default;
 
-        Vec3 scale = {1.0f, 1.0f, 1.0f};
-        Quat rotation = {1.0f, 0.0f, 0.0f, 0.0f};
-        Vec3 position = {0.0f, 0.0f, 0.0f};
+        Vec3 scale{1.0f};
+        Quat rotation = Identity<Quat>();
+        Vec3 position{};
     };
 
     template<typename T>

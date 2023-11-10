@@ -1076,7 +1076,7 @@ namespace
             }
         }
 
-        return osc::RayCollision{t0, l.origin + t0*l.direction};
+        return osc::RayCollision{.distance = t0, .position = l.origin + t0*l.direction};
     }
 
     template<typename TReal>
@@ -2348,7 +2348,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionAABB(Line const& l, AABB co
         }
     }
 
-    return osc::RayCollision{t0, l.origin + t0*l.direction};
+    return osc::RayCollision{.distance = t0, .position = l.origin + t0*l.direction};
 }
 
 std::optional<osc::RayCollision> osc::GetRayCollisionPlane(Line const& l, Plane const& p) noexcept
@@ -2382,7 +2382,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionPlane(Line const& l, Plane 
     {
         float numerator = glm::dot(p.origin - l.origin, p.normal);
         float distance = numerator / denominator;
-        return osc::RayCollision{distance ,l.origin + distance*l.direction};
+        return osc::RayCollision{.distance = distance, .position = l.origin + distance*l.direction};
     }
     else
     {
@@ -2499,5 +2499,5 @@ std::optional<osc::RayCollision> osc::GetRayCollisionTriangle(Line const& l, Tri
         }
     }
 
-    return osc::RayCollision{t, l.origin + t*l.direction};
+    return osc::RayCollision{.distance = t, .position = l.origin + t*l.direction};
 }

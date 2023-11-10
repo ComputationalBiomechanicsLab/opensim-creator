@@ -162,5 +162,5 @@ osc::Quat osc::ToQuat(SimTK::Rotation const& r)
 
 osc::Transform osc::ToTransform(SimTK::Transform const& t)
 {
-    return Transform{ToVec3(t.p()), ToQuat(t.R())};
+    return Transform{.rotation = ToQuat(t.R()), .position = ToVec3(t.p())};
 }

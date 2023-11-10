@@ -8,21 +8,9 @@ namespace osc
 {
     struct AABB final {
 
-        constexpr AABB() = default;
-
-        explicit constexpr AABB(Vec3 const& v) :
-            min{v},
-            max{v}
+        constexpr static AABB OfPoint(Vec3 const& p)
         {
-        }
-
-        constexpr AABB(
-            Vec3 const& min_,
-            Vec3 const& max_
-        ) :
-            min{min_},
-            max{max_}
-        {
+            return AABB{p, p};
         }
 
         friend bool operator==(AABB const&, AABB const&) = default;

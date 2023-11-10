@@ -272,13 +272,7 @@ namespace
         // extract the SimTK transform into a 4x3 matrix
         Mat4x3 const m = osc::ToMat4x3(t);
 
-        // take the 3x3 left-hand side (rotation) and decompose that into a quaternion
-        Quat const rotation = osc::QuatCast(Mat3{m});
-
-        // take the right-hand column (translation) and assign it as the position
-        Vec3 const position = m[3];
-
-        return Transform{position, rotation};
+        return Transform{.rotation = osc::QuatCast(Mat3{m}), .position = m[3]};
     }
 
     // returns a camera that is in the initial position the camera should be in for this screen
@@ -1242,7 +1236,7 @@ namespace
 
         AABB implCalcBounds() const final
         {
-            return AABB{m_Xform.position};
+            return AABB::OfPoint(m_Xform.position);
         }
 
         UID m_ID;
@@ -1426,7 +1420,7 @@ namespace
 
         AABB implCalcBounds() const final
         {
-            return AABB{m_Xform.position};
+            return AABB::OfPoint(m_Xform.position);
         }
 
         UID m_ID;
@@ -1551,7 +1545,7 @@ namespace
 
         Transform implGetXform() const final
         {
-            return Transform{m_Position};
+            return Transform{.position = m_Position};
         }
 
         void implSetXform(Transform const& t) final
@@ -1561,7 +1555,7 @@ namespace
 
         AABB implCalcBounds() const final
         {
-            return AABB{m_Position};
+            return AABB::OfPoint(m_Position);
         }
 
         UID m_ID;
@@ -2284,7 +2278,7 @@ namespace
         UID other)
     {
         Vec3 const choicePos = GetPosition(mg, other);
-        Transform const sourceXform = Transform{GetPosition(mg, id)};
+        Transform const sourceXform = Transform{.position = GetPosition(mg, id)};
 
         mg.updElByID(id).setXform(PointAxisTowards(sourceXform, axis, choicePos));
     }
@@ -2612,7 +2606,7 @@ namespace
             std::string{},
             parentID,
             childID,
-            Transform{midPoint}
+            Transform{.position = midPoint}
         );
         SelectOnly(mg, jointEl);
 
@@ -2924,7 +2918,7 @@ namespace
     {
         ModelGraph& mg = cmg.updScratch();
 
-        auto const& b = mg.emplaceEl<BodyEl>(UID{}, GenerateName(BodyEl::Class()), Transform{pos});
+        auto const& b = mg.emplaceEl<BodyEl>(UID{}, GenerateName(BodyEl::Class()), Transform{.position = pos});
         mg.deSelectAll();
         mg.select(b.getID());
 
@@ -7550,7 +7544,7 @@ private:
 
         if (ImGui::MenuItem("reset"))
         {
-            el.setXform(Transform{el.getPos()});
+            el.setXform(Transform{.position = el.getPos()});
             m_Shared->commitCurrentModelGraph("reset " + el.getLabel() + " orientation");
         }
 

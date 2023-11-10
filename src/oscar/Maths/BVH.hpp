@@ -101,7 +101,7 @@ namespace osc
             Vec3 position_,
             ptrdiff_t id_) :
 
-            RayCollision{distance_, position_},
+            RayCollision{.distance = distance_, .position = position_},
             id{id_}
         {
         }
