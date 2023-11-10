@@ -4,7 +4,7 @@
 #include <OpenSimCreator/Simulation/SimulationReport.hpp>
 #include <OpenSimCreator/Simulation/SimulationStatus.hpp>
 
-#include <oscar/Utils/SynchronizedValue.hpp>
+#include <oscar/Utils/SynchronizedValueGuard.hpp>
 
 #include <cstddef>
 #include <span>

@@ -1,5 +1,8 @@
 #include "FileChangePoller.hpp"
 
+#include <chrono>
+#include <filesystem>
+#include <string>
 #include <string_view>
 
 namespace

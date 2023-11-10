@@ -2,9 +2,9 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <iosfwd>
 #include <type_traits>
-#include <typeindex>  // for std::hash
 #include <utility>
 
 namespace osc

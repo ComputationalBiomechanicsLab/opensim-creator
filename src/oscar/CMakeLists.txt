@@ -222,6 +222,7 @@ add_library(oscar STATIC
     Utils/ClonePtr.hpp
     Utils/Concepts.hpp
     Utils/CopyOnUpdPtr.hpp
+    Utils/CStringView.cpp
     Utils/CStringView.hpp
     Utils/DefaultConstructOnCopy.hpp
     Utils/EnumHelpers.hpp
@@ -245,6 +246,7 @@ add_library(oscar STATIC
     Utils/StringHelpers.cpp
     Utils/StringHelpers.hpp
     Utils/SynchronizedValue.hpp
+    Utils/SynchronizedValueGuard.hpp
     Utils/UID.cpp
     Utils/UID.hpp
     Utils/UndoRedo.cpp

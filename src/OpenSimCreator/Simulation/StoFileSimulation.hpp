@@ -5,7 +5,7 @@
 #include <OpenSimCreator/Simulation/SimulationStatus.hpp>
 #include <OpenSimCreator/Simulation/VirtualSimulation.hpp>
 
-#include <oscar/Utils/SynchronizedValue.hpp>
+#include <oscar/Utils/SynchronizedValueGuard.hpp>
 
 #include <cstddef>
 #include <filesystem>

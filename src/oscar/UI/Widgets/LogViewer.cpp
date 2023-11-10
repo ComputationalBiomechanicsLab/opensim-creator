@@ -5,7 +5,6 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/CircularBuffer.hpp>
-#include <oscar/Utils/SynchronizedValue.hpp>
 
 #include <imgui.h>
 

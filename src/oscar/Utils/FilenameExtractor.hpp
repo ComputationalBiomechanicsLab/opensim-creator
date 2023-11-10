@@ -6,7 +6,7 @@
 namespace osc
 {
     template<size_t N>
-    inline consteval std::string_view ExtractFilename(char const(&p)[N])
+    consteval std::string_view ExtractFilename(char const(&p)[N])
     {
         std::string_view sv{p};
         for (auto it = sv.rbegin(); it != sv.rend(); ++it)

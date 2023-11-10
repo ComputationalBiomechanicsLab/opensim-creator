@@ -1,33 +1,18 @@
 #pragma once
 
+#include <oscar/Utils/SynchronizedValueGuard.hpp>
+
 #include <mutex>
 #include <type_traits>
 #include <utility>
 
 namespace osc
 {
-    // accessor to a reference to the guarded value
-    template<typename T, typename TGuard = std::lock_guard<std::mutex>>
-    class SynchronizedValueGuard final {
-    public:
-        SynchronizedValueGuard(std::mutex& mutex, T& _ref) :
-            m_Guard{mutex},
-            m_Ptr{&_ref}
-        {
-        }
-
-        T& operator*() & noexcept { return *m_Ptr; }
-        T const& operator*() const & noexcept { return *m_Ptr; }
-        T* operator->() noexcept { return m_Ptr; }
-        T const* operator->() const noexcept { return m_Ptr; }
-
-    private:
-        TGuard m_Guard;
-        T* m_Ptr;
-    };
-
     // represents a `T` value that can only be accessed via a mutexed guard
-    template<typename T>
+    template<
+        typename T,
+        typename TDefaultGuard = std::lock_guard<std::mutex>
+    >
     class SynchronizedValue final {
     public:
         // default-construct T
@@ -35,7 +20,8 @@ namespace osc
 
         // in-place constructor for T
         template<typename... Args>
-        explicit SynchronizedValue(Args&&... args) :
+        explicit SynchronizedValue(Args&&... args)
+            requires std::is_destructible_v<T> && std::is_constructible_v<T, Args...> :
             m_Mutex{},
             m_Value{std::forward<Args>(args)...}
         {
@@ -71,28 +57,32 @@ namespace osc
             return *this;
         }
 
-        T&& value() &&
+        T value() &&
         {
-            auto guard = std::lock_guard{m_Mutex};
+            auto const guard = std::lock_guard{m_Mutex};
             return std::move(m_Value);
         }
 
-        template<typename TGuard = std::lock_guard<std::mutex>>
+        template<typename TGuard = TDefaultGuard>
         SynchronizedValueGuard<T, TGuard> lock()
         {
             return SynchronizedValueGuard<T, TGuard>{m_Mutex, m_Value};
         }
 
-        template<typename TGuard = std::lock_guard<std::mutex>>
+        template<typename TGuard = TDefaultGuard>
         SynchronizedValueGuard<T const, TGuard> lock() const
         {
             return SynchronizedValueGuard<T const, TGuard>{m_Mutex, m_Value};
         }
 
-        template<typename U, typename Getter, typename TGuard = std::lock_guard<std::mutex>>
+        template<
+            typename U,
+            typename Getter,
+            typename TGuard = TDefaultGuard
+        >
         SynchronizedValueGuard<U const, TGuard> lockChild(Getter f) const
+            requires std::is_same_v<decltype(f(std::declval<T>())), U const&>
         {
-            static_assert(std::is_same_v<decltype(f(std::declval<T>())), U const&>, "getter function should return reference to inner child");
             return SynchronizedValueGuard<U const, TGuard>{m_Mutex, f(m_Value)};
         }
 
