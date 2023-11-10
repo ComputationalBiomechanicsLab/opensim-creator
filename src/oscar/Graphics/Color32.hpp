@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <typeindex>  // for std::hash
+#include <functional>
 
 namespace osc
 {
