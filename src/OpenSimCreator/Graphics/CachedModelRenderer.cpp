@@ -30,7 +30,7 @@ namespace
     // cache for decorations generated from a model+state+params
     class CachedDecorationState final {
     public:
-        explicit CachedDecorationState(std::shared_ptr<osc::MeshCache> meshCache_) :
+        explicit CachedDecorationState(std::shared_ptr<osc::SceneMeshCache> meshCache_) :
             m_MeshCache{std::move(meshCache_)}
         {
         }
@@ -89,7 +89,7 @@ namespace
         std::optional<osc::AABB> getAABB() const { return m_BVH.getRootAABB(); }
 
     private:
-        std::shared_ptr<osc::MeshCache> m_MeshCache;
+        std::shared_ptr<osc::SceneMeshCache> m_MeshCache;
         osc::ModelStatePairInfo m_PrevModelStateInfo;
         osc::OpenSimDecorationOptions m_PrevDecorationOptions;
         osc::OverlayDecorationOptions m_PrevOverlayOptions;
@@ -102,7 +102,7 @@ class osc::CachedModelRenderer::Impl final {
 public:
     Impl(
         AppConfig const& config,
-        std::shared_ptr<MeshCache> const& meshCache,
+        std::shared_ptr<SceneMeshCache> const& meshCache,
         ShaderCache& shaderCache) :
 
         m_DecorationCache{meshCache},
@@ -190,7 +190,7 @@ private:
 
 osc::CachedModelRenderer::CachedModelRenderer(
     AppConfig const& config,
-    std::shared_ptr<MeshCache> const& meshCache,
+    std::shared_ptr<SceneMeshCache> const& meshCache,
     ShaderCache& shaderCache) :
 
     m_Impl{std::make_unique<Impl>(config, meshCache, shaderCache)}

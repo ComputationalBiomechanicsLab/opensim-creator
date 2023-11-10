@@ -16,7 +16,6 @@
 #include <vector>
 
 namespace osc { struct AABB; }
-namespace osc { class BVH; }
 namespace osc { struct Color; }
 namespace osc { struct Transform; }
 
@@ -65,7 +64,6 @@ namespace osc
         void setIndices(std::span<uint32_t const>);
 
         AABB const& getBounds() const;  // local-space
-        BVH const& getBVH() const;  // local-space
 
         void clear();
 

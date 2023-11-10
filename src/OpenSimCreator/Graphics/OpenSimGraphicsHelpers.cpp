@@ -48,7 +48,7 @@ osc::SceneRendererParams osc::CalcSceneRendererParams(
 }
 
 void osc::GenerateDecorations(
-    MeshCache& meshCache,
+    SceneMeshCache& meshCache,
     VirtualConstModelStatePair const& msp,
     OpenSimDecorationOptions const& options,
     std::function<void(OpenSim::Component const&, SceneDecoration&&)> const& out)

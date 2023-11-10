@@ -18,59 +18,59 @@
 namespace osc { struct AABB; }
 namespace osc { class AppConfig; }
 namespace osc { class BVH; }
-namespace osc { class Mesh; }
-namespace osc { class MeshCache; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct Rect; }
 namespace osc { struct Segment; }
 namespace osc { struct SceneDecoration; }
+namespace osc { class SceneMesh; }
+namespace osc { class SceneMeshCache; }
 namespace osc { class ShaderCache; }
 namespace osc { struct Transform; }
 
 namespace osc
 {
     void DrawBVH(
-        MeshCache&,
+        SceneMeshCache&,
         BVH const&,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawAABB(
-        MeshCache&,
+        SceneMeshCache&,
         AABB const&,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawAABBs(
-        MeshCache&,
+        SceneMeshCache&,
         std::span<AABB const>,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawBVHLeafNodes(
-        MeshCache&,
+        SceneMeshCache&,
         BVH const&,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawXZFloorLines(
-        MeshCache&,
+        SceneMeshCache&,
         std::function<void(SceneDecoration&&)> const&,
         float scale = 1.0f
     );
 
     void DrawXZGrid(
-        MeshCache&,
+        SceneMeshCache&,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawXYGrid(
-        MeshCache&,
+        SceneMeshCache&,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawYZGrid(
-        MeshCache&,
+        SceneMeshCache&,
         std::function<void(SceneDecoration&&)> const&
     );
 
@@ -85,13 +85,13 @@ namespace osc
         Color color;
     };
     void DrawArrow(
-        MeshCache&,
+        SceneMeshCache&,
         ArrowProperties const&,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawLineSegment(
-        MeshCache&,
+        SceneMeshCache&,
         Segment const&,
         Color const&,
         float radius,
@@ -115,7 +115,7 @@ namespace osc
 
     // returns closest ray-triangle collision in worldspace
     std::optional<RayCollision> GetClosestWorldspaceRayCollision(
-        Mesh const&,
+        SceneMesh const&,
         Transform const&,
         Line const& worldspaceRay
     );
@@ -124,7 +124,7 @@ namespace osc
     // within the given render rectangle
     std::optional<RayCollision> GetClosestWorldspaceRayCollision(
         PolarPerspectiveCamera const&,
-        Mesh const&,
+        SceneMesh const&,
         Rect const& renderScreenRect,
         Vec2 mouseScreenPos
     );

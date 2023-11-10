@@ -1,10 +1,10 @@
 #include "SceneViewer.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
+#include <oscar/Scene/SceneMeshCache.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 
@@ -17,7 +17,9 @@
 class osc::SceneViewer::Impl final {
 public:
 
-    void onDraw(std::span<SceneDecoration const> els, SceneRendererParams const& params)
+    void onDraw(
+        std::span<SceneDecoration const> els,
+        SceneRendererParams const& params)
     {
         m_Renderer.render(els, params);
 
@@ -47,8 +49,8 @@ private:
     SceneRenderer m_Renderer
     {
         App::config(),
-        *App::singleton<osc::MeshCache>(),
-        *App::singleton<osc::ShaderCache>(),
+        *App::singleton<SceneMeshCache>(),
+        *App::singleton<ShaderCache>(),
     };
     bool m_IsHovered = false;
     bool m_IsLeftClicked = false;

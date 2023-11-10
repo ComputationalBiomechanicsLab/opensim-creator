@@ -37,7 +37,6 @@
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/ShaderLocations.hpp>
 #include <oscar/Maths/AABB.hpp>
-#include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Mat3.hpp>
 #include <oscar/Maths/Mat4.hpp>
@@ -4161,11 +4160,6 @@ public:
         return m_AABB;
     }
 
-    BVH const& getBVH() const
-    {
-        return m_TriangleBVH;
-    }
-
     void clear()
     {
         m_Version->reset();
@@ -4217,7 +4211,7 @@ private:
 
     void recalculateBounds()
     {
-        OSC_PERF("bounds/BVH computation");
+        OSC_PERF("mesh bounds computation");
 
         if (m_NumIndices == 0)
         {
@@ -4226,32 +4220,12 @@ private:
         else if (m_IndicesAre32Bit)
         {
             std::span<uint32_t const> const indices(&m_IndicesData.front().u32, m_NumIndices);
-
-            if (m_Topology == MeshTopology::Triangles)
-            {
-                m_TriangleBVH.buildFromIndexedTriangles(m_Vertices, indices);
-                m_AABB = m_TriangleBVH.getRootAABB().value_or(AABB{});
-            }
-            else
-            {
-                m_TriangleBVH.clear();
-                m_AABB = AABBFromIndexedVerts(m_Vertices, indices);
-            }
+            m_AABB = AABBFromIndexedVerts(m_Vertices, indices);
         }
         else
         {
             std::span<uint16_t const> const indices(&m_IndicesData.front().u16.a, m_NumIndices);
-
-            if (m_Topology == MeshTopology::Triangles)
-            {
-                m_TriangleBVH.buildFromIndexedTriangles(m_Vertices, indices);
-                m_AABB = m_TriangleBVH.getRootAABB().value_or(AABB{});
-            }
-            else
-            {
-                m_TriangleBVH.clear();
-                m_AABB = AABBFromIndexedVerts(m_Vertices, indices);
-            }
+            m_AABB = AABBFromIndexedVerts(m_Vertices, indices);
         }
     }
 
@@ -4450,8 +4424,7 @@ private:
     size_t m_NumIndices = 0;
     std::vector<PackedIndex> m_IndicesData;
 
-    AABB m_AABB = {};
-    BVH m_TriangleBVH;
+    AABB m_AABB{};
 
     DefaultConstructOnCopy<std::optional<MeshOpenGLData>> m_MaybeGPUBuffers;
 };
@@ -4580,11 +4553,6 @@ void osc::Mesh::setIndices(std::span<uint32_t const> indices)
 osc::AABB const& osc::Mesh::getBounds() const
 {
     return m_Impl->getBounds();
-}
-
-osc::BVH const& osc::Mesh::getBVH() const
-{
-    return m_Impl->getBVH();
 }
 
 void osc::Mesh::clear()

@@ -105,6 +105,11 @@ namespace osc
             return m_IsU32;
         }
 
+        [[nodiscard]] bool empty() const
+        {
+            return size() == 0;
+        }
+
         size_t size() const
         {
             return m_Size;

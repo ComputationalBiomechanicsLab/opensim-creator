@@ -9,8 +9,8 @@ namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
 namespace OpenSim { class ModelDisplayHints; }
 namespace osc { class OpenSimDecorationOptions; }
-namespace osc { class MeshCache; }
 namespace osc { struct SceneDecoration; }
+namespace osc { class SceneMeshCache; }
 namespace SimTK { class State; }
 
 namespace osc
@@ -19,7 +19,7 @@ namespace osc
     // each of them, tagged with their associated component, to the output
     // consumer
     void GenerateModelDecorations(
-        MeshCache&,
+        SceneMeshCache&,
         OpenSim::Model const&,
         SimTK::State const&,
         OpenSimDecorationOptions const&,
@@ -31,7 +31,7 @@ namespace osc
     // and passes each of them, tagged with their associated (potentially, sub-subcomponent)
     // component to the output consumer
     void GenerateSubcomponentDecorations(
-        MeshCache&,
+        SceneMeshCache&,
         OpenSim::Model const&,
         SimTK::State const&,
         OpenSim::Component const& subcomponent,
@@ -44,7 +44,7 @@ namespace osc
     // tries to convert the given subcomponent mesh into an OSC mesh via the decoration
     // generation API, or throws if it fails in some way
     Mesh ToOscMesh(
-        MeshCache&,
+        SceneMeshCache&,
         OpenSim::Model const&,
         SimTK::State const&,
         OpenSim::Mesh const&,
@@ -69,7 +69,7 @@ namespace osc
 
     // returns the recommended scale factor for the given {model, state} pair
     float GetRecommendedScaleFactor(
-        MeshCache&,
+        SceneMeshCache&,
         OpenSim::Model const&,
         SimTK::State const&,
         OpenSimDecorationOptions const&

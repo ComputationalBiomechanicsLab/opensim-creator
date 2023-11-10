@@ -1,4 +1,4 @@
-#include "MeshCache.hpp"
+#include "SceneMeshCache.hpp"
 
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
@@ -41,38 +41,40 @@ struct std::hash<TorusParameters> final {
     }
 };
 
-class osc::MeshCache::Impl final {
+class osc::SceneMeshCache::Impl final {
 public:
-    Mesh sphere = GenSphere(16, 16);
-    Mesh circle = GenCircle(16);
-    Mesh cylinder = GenUntexturedYToYCylinder(16);
-    Mesh cube = GenCube();
-    Mesh cone = GenUntexturedYToYCone(16);
-    Mesh floor = GenTexturedQuad();
-    Mesh grid100x100 = GenNbyNGrid(1000);
-    Mesh cubeWire = GenCubeLines();
-    Mesh yLine = GenYLine();
-    Mesh texturedQuad = GenTexturedQuad();
+    SceneMesh sphere{GenSphere(16, 16)};
+    SceneMesh circle{GenCircle(16)};
+    SceneMesh cylinder{GenUntexturedYToYCylinder(16)};
+    SceneMesh cube{GenCube()};
+    SceneMesh cone{GenUntexturedYToYCone(16)};
+    SceneMesh floor{GenTexturedQuad()};
+    SceneMesh grid100x100{GenNbyNGrid(1000)};
+    SceneMesh cubeWire{GenCubeLines()};
+    SceneMesh yLine{GenYLine()};
+    SceneMesh texturedQuad{GenTexturedQuad()};
 
-    SynchronizedValue<std::unordered_map<TorusParameters, Mesh>> torusCache;
-    SynchronizedValue<std::unordered_map<std::string, Mesh>> fileCache;
+    SynchronizedValue<std::unordered_map<TorusParameters, SceneMesh>> torusCache;
+    SynchronizedValue<std::unordered_map<std::string, SceneMesh>> fileCache;
 };
 
-osc::MeshCache::MeshCache() :
+osc::SceneMeshCache::SceneMeshCache() :
     m_Impl{std::make_unique<Impl>()}
 {
 }
 
-osc::MeshCache::MeshCache(MeshCache&&) noexcept = default;
-osc::MeshCache& osc::MeshCache::operator=(MeshCache&&) noexcept = default;
-osc::MeshCache::~MeshCache() noexcept = default;
+osc::SceneMeshCache::SceneMeshCache(SceneMeshCache&&) noexcept = default;
+osc::SceneMeshCache& osc::SceneMeshCache::operator=(SceneMeshCache&&) noexcept = default;
+osc::SceneMeshCache::~SceneMeshCache() noexcept = default;
 
-void osc::MeshCache::clear()
+void osc::SceneMeshCache::clear()
 {
     m_Impl->fileCache.lock()->clear();
 }
 
-osc::Mesh osc::MeshCache::get(std::string const& key, std::function<Mesh()> const& getter)
+osc::SceneMesh osc::SceneMeshCache::get(
+    std::string const& key,
+    std::function<SceneMesh()> const& getter)
 {
     auto guard = m_Impl->fileCache.lock();
 
@@ -93,57 +95,57 @@ osc::Mesh osc::MeshCache::get(std::string const& key, std::function<Mesh()> cons
     return it->second;
 }
 
-osc::Mesh osc::MeshCache::getSphereMesh()
+osc::SceneMesh osc::SceneMeshCache::getSphereMesh()
 {
     return m_Impl->sphere;
 }
 
-osc::Mesh osc::MeshCache::getCircleMesh()
+osc::SceneMesh osc::SceneMeshCache::getCircleMesh()
 {
     return m_Impl->circle;
 }
 
-osc::Mesh osc::MeshCache::getCylinderMesh()
+osc::SceneMesh osc::SceneMeshCache::getCylinderMesh()
 {
     return m_Impl->cylinder;
 }
 
-osc::Mesh osc::MeshCache::getBrickMesh()
+osc::SceneMesh osc::SceneMeshCache::getBrickMesh()
 {
     return m_Impl->cube;
 }
 
-osc::Mesh osc::MeshCache::getConeMesh()
+osc::SceneMesh osc::SceneMeshCache::getConeMesh()
 {
     return m_Impl->cone;
 }
 
-osc::Mesh osc::MeshCache::getFloorMesh()
+osc::SceneMesh osc::SceneMeshCache::getFloorMesh()
 {
     return m_Impl->floor;
 }
 
-osc::Mesh osc::MeshCache::get100x100GridMesh()
+osc::SceneMesh osc::SceneMeshCache::get100x100GridMesh()
 {
     return m_Impl->grid100x100;
 }
 
-osc::Mesh osc::MeshCache::getCubeWireMesh()
+osc::SceneMesh osc::SceneMeshCache::getCubeWireMesh()
 {
     return m_Impl->cubeWire;
 }
 
-osc::Mesh osc::MeshCache::getYLineMesh()
+osc::SceneMesh osc::SceneMeshCache::getYLineMesh()
 {
     return m_Impl->yLine;
 }
 
-osc::Mesh osc::MeshCache::getTexturedQuadMesh()
+osc::SceneMesh osc::SceneMeshCache::getTexturedQuadMesh()
 {
     return m_Impl->texturedQuad;
 }
 
-osc::Mesh osc::MeshCache::getTorusMesh(float torusCenterToTubeCenterRadius, float tubeRadius)
+osc::SceneMesh osc::SceneMeshCache::getTorusMesh(float torusCenterToTubeCenterRadius, float tubeRadius)
 {
     TorusParameters const key{torusCenterToTubeCenterRadius, tubeRadius};
 
@@ -152,7 +154,7 @@ osc::Mesh osc::MeshCache::getTorusMesh(float torusCenterToTubeCenterRadius, floa
 
     if (inserted)
     {
-        it->second = GenTorus(12, 12, key.torusCenterToTubeCenterRadius, key.tubeRadius);
+        it->second = SceneMesh{GenTorus(12, 12, key.torusCenterToTubeCenterRadius, key.tubeRadius)};
     }
 
     return it->second;

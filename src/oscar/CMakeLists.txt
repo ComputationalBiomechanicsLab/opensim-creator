@@ -57,8 +57,6 @@ add_library(oscar STATIC
     Graphics/ImageLoadingFlags.hpp
     Graphics/Material.hpp
     Graphics/MaterialPropertyBlock.hpp
-    Graphics/MeshCache.cpp
-    Graphics/MeshCache.hpp
     Graphics/MeshGenerators.cpp
     Graphics/MeshGenerators.hpp
     Graphics/MeshIndicesView.hpp
@@ -156,6 +154,10 @@ add_library(oscar STATIC
     Scene/SceneDecorationFlags.hpp
     Scene/SceneHelpers.cpp
     Scene/SceneHelpers.hpp
+    Scene/SceneMesh.cpp
+    Scene/SceneMesh.hpp
+    Scene/SceneMeshCache.cpp
+    Scene/SceneMeshCache.hpp
     Scene/SceneRenderer.cpp
     Scene/SceneRenderer.hpp
     Scene/SceneRendererParams.cpp

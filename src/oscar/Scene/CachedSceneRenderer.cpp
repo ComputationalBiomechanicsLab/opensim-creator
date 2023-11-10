@@ -12,7 +12,7 @@ class osc::CachedSceneRenderer::Impl final {
 public:
     Impl(
         AppConfig const& config,
-        MeshCache& meshCache,
+        SceneMeshCache& meshCache,
         ShaderCache& shaderCache) :
 
         m_SceneRenderer{config, meshCache, shaderCache}
@@ -44,7 +44,10 @@ private:
 
 // public API (PIMPL)
 
-osc::CachedSceneRenderer::CachedSceneRenderer(AppConfig const& config, MeshCache& meshCache, ShaderCache& shaderCache) :
+osc::CachedSceneRenderer::CachedSceneRenderer(
+    AppConfig const& config,
+    SceneMeshCache& meshCache,
+    ShaderCache& shaderCache) :
     m_Impl{std::make_unique<Impl>(config, meshCache, shaderCache)}
 {
 }
