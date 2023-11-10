@@ -8,6 +8,7 @@
 #include <oscar/Utils/CopyOnUpdPtr.hpp>
 
 #include <iosfwd>
+#include <memory>
 #include <optional>
 
 namespace osc { class RenderBuffer; }

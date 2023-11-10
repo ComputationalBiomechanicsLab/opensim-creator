@@ -62,7 +62,7 @@ namespace osc
         // the provided scale (same for all axes)
         constexpr Transform withScale(float scale_) const noexcept
         {
-            return Transform{position, rotation, {scale_, scale_, scale_}};
+            return Transform{position, rotation, Vec3{scale_}};
         }
 
         friend bool operator==(Transform const&, Transform const&) = default;

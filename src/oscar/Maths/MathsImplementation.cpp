@@ -485,7 +485,7 @@ std::ostream& osc::operator<<(std::ostream& o, Disc const& d)
 // osc::EulerPerspectiveCamera implementation
 
 osc::EulerPerspectiveCamera::EulerPerspectiveCamera() :
-    pos{0.0f, 0.0f, 0.0f},
+    origin{0.0f, 0.0f, 0.0f},
     pitch{0.0f},
     yaw{-std::numbers::pi_v<float>/2.0f},
     fov{std::numbers::pi_v<float> * 70.0f/180.0f},
@@ -516,7 +516,7 @@ osc::Vec3 osc::EulerPerspectiveCamera::getRight() const noexcept
 
 osc::Mat4 osc::EulerPerspectiveCamera::getViewMtx() const noexcept
 {
-    return glm::lookAt(pos, pos + getFront(), getUp());
+    return glm::lookAt(origin, origin + getFront(), getUp());
 }
 
 osc::Mat4 osc::EulerPerspectiveCamera::getProjMtx(float aspectRatio) const noexcept
@@ -529,7 +529,7 @@ osc::Mat4 osc::EulerPerspectiveCamera::getProjMtx(float aspectRatio) const noexc
 
 std::ostream& osc::operator<<(std::ostream& o, Line const& l)
 {
-    return o << "Line(origin = " << l.origin << ", direction = " << l.dir << ')';
+    return o << "Line(origin = " << l.origin << ", direction = " << l.direction << ')';
 }
 
 
@@ -1049,8 +1049,8 @@ namespace
         // if the quadratic has solutions, then there must exist one or two
         // `t`s that are points on the sphere's surface.
 
-        float a = glm::dot(l.dir, l.dir);  // always == 1.0f if d is normalized
-        float b = 2.0f * glm::dot(l.dir, L);
+        float a = glm::dot(l.direction, l.direction);  // always == 1.0f if d is normalized
+        float b = 2.0f * glm::dot(l.direction, L);
         float c = glm::dot(L, L) - glm::dot(s.radius, s.radius);
 
         auto [ok, t0, t1] = solveQuadratic(a, b, c);
@@ -1076,7 +1076,7 @@ namespace
             }
         }
 
-        return osc::RayCollision{t0, l.origin + t0*l.dir};
+        return osc::RayCollision{t0, l.origin + t0*l.direction};
     }
 
     template<typename TReal>
@@ -1625,7 +1625,7 @@ osc::Line osc::PerspectiveUnprojectTopLeftScreenPosToWorldRay(
     Vec3 lineDirWorld = glm::normalize(lineOriginWorld - cameraWorldspaceOrigin);
 
     Line rv{};
-    rv.dir = lineDirWorld;
+    rv.direction = lineDirWorld;
     rv.origin = lineOriginWorld;
     return rv;
 }
@@ -1797,7 +1797,7 @@ osc::AABB osc::ToAABB(Sphere const& s) noexcept
 osc::Line osc::TransformLine(Line const& l, Mat4 const& m) noexcept
 {
     Line rv{};
-    rv.dir = m * Vec4{l.dir, 0.0f};
+    rv.direction = m * Vec4{l.direction, 0.0f};
     rv.origin = m * Vec4{l.origin, 1.0f};
     return rv;
 }
@@ -1807,7 +1807,7 @@ osc::Line osc::InverseTransformLine(Line const& l, Transform const& t) noexcept
     return Line
     {
         InverseTransformPoint(t, l.origin),
-        InverseTransformDirection(t, l.dir),
+        InverseTransformDirection(t, l.direction),
     };
 }
 
@@ -2264,9 +2264,9 @@ osc::Vec3 osc::TransformDirection(Transform const& t, Vec3 const& localDir) noex
     return glm::normalize(t.rotation * (t.scale * localDir));
 }
 
-osc::Vec3 osc::InverseTransformDirection(Transform const& t, Vec3 const& dir) noexcept
+osc::Vec3 osc::InverseTransformDirection(Transform const& t, Vec3 const& direction) noexcept
 {
-    return glm::normalize((glm::conjugate(t.rotation) * dir) / t.scale);
+    return glm::normalize((glm::conjugate(t.rotation) * direction) / t.scale);
 }
 
 osc::Vec3 osc::TransformPoint(Transform const& t, Vec3 const& p) noexcept
@@ -2332,7 +2332,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionAABB(Line const& l, AABB co
     float t1 = std::numeric_limits<float>::max();
     for (Vec3::length_type i = 0; i < 3; ++i)
     {
-        float invDir = 1.0f / l.dir[i];
+        float invDir = 1.0f / l.direction[i];
         float tNear = (bb.min[i] - l.origin[i]) * invDir;
         float tFar = (bb.max[i] - l.origin[i]) * invDir;
         if (tNear > tFar)
@@ -2348,7 +2348,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionAABB(Line const& l, AABB co
         }
     }
 
-    return osc::RayCollision{t0, l.origin + t0*l.dir};
+    return osc::RayCollision{t0, l.origin + t0*l.direction};
 }
 
 std::optional<osc::RayCollision> osc::GetRayCollisionPlane(Line const& l, Plane const& p) noexcept
@@ -2376,13 +2376,13 @@ std::optional<osc::RayCollision> osc::GetRayCollisionPlane(Line const& l, Plane 
     //
     // equation: t = dot(P0 - O, n) / dot(D, n)
 
-    float denominator = glm::dot(p.normal, l.dir);
+    float denominator = glm::dot(p.normal, l.direction);
 
     if (std::abs(denominator) > 1e-6)
     {
         float numerator = glm::dot(p.origin - l.origin, p.normal);
         float distance = numerator / denominator;
-        return osc::RayCollision{distance ,l.origin + distance*l.dir};
+        return osc::RayCollision{distance ,l.origin + distance*l.direction};
     }
     else
     {
@@ -2431,7 +2431,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionTriangle(Line const& l, Tri
     Vec3 N = TriangleNormal(tri);
 
     // compute dot product between normal and ray
-    float NdotR = glm::dot(N, l.dir);
+    float NdotR = glm::dot(N, l.direction);
 
     // if the dot product is small, then the ray is probably very parallel to
     // the triangle (or, perpendicular to the normal) and doesn't intersect
@@ -2468,7 +2468,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionTriangle(Line const& l, Tri
     }
 
     // intersection point on triangle plane, computed from line equation
-    Vec3 P = l.origin + t*l.dir;
+    Vec3 P = l.origin + t*l.direction;
 
     // figure out if that point is inside the triangle's bounds using the
     // "inside-outside" test
@@ -2499,5 +2499,5 @@ std::optional<osc::RayCollision> osc::GetRayCollisionTriangle(Line const& l, Tri
         }
     }
 
-    return osc::RayCollision{t, l.origin + t*l.dir};
+    return osc::RayCollision{t, l.origin + t*l.direction};
 }

@@ -16,7 +16,7 @@ namespace osc
         Mat4 getViewMtx() const noexcept;
         Mat4 getProjMtx(float aspectRatio) const noexcept;
 
-        Vec3 pos;
+        Vec3 origin;
         float pitch;
         float yaw;
         float fov;

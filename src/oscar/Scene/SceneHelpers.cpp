@@ -179,10 +179,10 @@ void osc::DrawArrow(
 {
     Vec3 startToEnd = props.worldspaceEnd - props.worldspaceStart;
     float const len = Length(startToEnd);
-    Vec3 const dir = startToEnd/len;
+    Vec3 const direction = startToEnd/len;
 
     Vec3 const neckStart = props.worldspaceStart;
-    Vec3 const neckEnd = props.worldspaceStart + (len - props.tipLength)*dir;
+    Vec3 const neckEnd = props.worldspaceStart + (len - props.tipLength)*direction;
     Vec3 const headStart = neckEnd;
     Vec3 const headEnd = props.worldspaceEnd;
 

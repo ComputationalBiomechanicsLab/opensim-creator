@@ -107,7 +107,7 @@ namespace
             vec3 normalDir = normalize(aNormalMat * aNormal);
             vec3 fragPos = vec3(aModelMat * vec4(aPos, 1.0));
             vec3 frag2viewDir = normalize(uViewPos - fragPos);
-            vec3 frag2lightDir = normalize(-uLightDir);  // light dir is in the opposite direction
+            vec3 frag2lightDir = normalize(-uLightDir);  // light direction is in the opposite direction
             vec3 halfwayDir = 0.5 * (frag2lightDir + frag2viewDir);
 
             float diffuseAmt = uDiffuseStrength * abs(dot(normalDir, frag2lightDir));

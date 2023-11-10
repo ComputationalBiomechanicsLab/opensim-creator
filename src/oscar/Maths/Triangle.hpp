@@ -15,8 +15,8 @@ namespace osc
             return (&p0)[i];
         }
 
-        Vec3 p0;
-        Vec3 p1;
-        Vec3 p2;
+        Vec3 p0{};
+        Vec3 p1{};
+        Vec3 p2{};
     };
 }

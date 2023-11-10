@@ -160,11 +160,11 @@ using osc::Vec2;
 using osc::Vec3;
 using osc::Vec4;
 using osc::UID;
-using osc::UIDT;
 
-// user-facing string constants
+// constants
 namespace
 {
+    // user-facing strings
     constexpr CStringView c_GroundLabel = "Ground";
     constexpr CStringView c_GroundLabelPluralized = "Ground";
     constexpr CStringView c_GroundLabelOptionallyPluralized = "Ground(s)";
@@ -195,13 +195,10 @@ namespace
     constexpr CStringView c_StationParentCrossrefName = "parent";
 
     constexpr CStringView c_TranslationDescription = "Translation of the component in ground. OpenSim defines this as 'unitless'; however, OpenSim models typically use meters.";
-}
 
-// senteniel UID constants
-namespace
-{
+    // senteniel UIDs
     class BodyEl;
-    UIDT<BodyEl> const c_GroundID;
+    UID const c_GroundID;
     UID const c_EmptyID;
     UID const c_RightClickedNothingID;
     UID const c_GroundGroupID;
@@ -209,11 +206,8 @@ namespace
     UID const c_BodyGroupID;
     UID const c_JointGroupID;
     UID const c_StationGroupID;
-}
 
-// other constants
-namespace
-{
+    // other constants
     constexpr float c_ConnectionLineWidth = 1.0f;
 }
 
@@ -242,13 +236,13 @@ namespace
 
     // returns the transform, but rotated such that the given axis points along the
     // given direction
-    Transform PointAxisAlong(Transform const& t, int axis, Vec3 const& dir)
+    Transform PointAxisAlong(Transform const& t, int axis, Vec3 const& direction)
     {
         Vec3 beforeDir{};
         beforeDir[axis] = 1.0f;
         beforeDir = t.rotation * beforeDir;
 
-        Quat const rotBeforeToAfter = osc::Rotation(beforeDir, dir);
+        Quat const rotBeforeToAfter = osc::Rotation(beforeDir, direction);
         Quat const newRotation = osc::Normalize(rotBeforeToAfter * t.rotation);
 
         return t.withRotation(newRotation);
@@ -273,7 +267,7 @@ namespace
         return t.withRotation(osc::Normalize(q * t.rotation));
     }
 
-    Transform ToOsimTransform(SimTK::Transform const& t)
+    Transform ToTransform(SimTK::Transform const& t)
     {
         // extract the SimTK transform into a 4x3 matrix
         Mat4x3 const m = osc::ToMat4x3(t);
@@ -337,114 +331,6 @@ namespace
             }
         }
         return rv;
-    }
-}
-
-// UI layering support
-//
-// the visualizer can push the 3D visualizer into different modes (here, "layers") that
-// have different behavior. E.g.:
-//
-// - normal mode (editing stuff)
-// - picking another body in the scene mode
-namespace
-{
-    class Layer;
-
-    // the "parent" thing that is hosting the layer
-    class LayerHost {
-    protected:
-        LayerHost() = default;
-        LayerHost(LayerHost const&) = default;
-        LayerHost(LayerHost&&) noexcept = default;
-        LayerHost& operator=(LayerHost const&) = default;
-        LayerHost& operator=(LayerHost&&) noexcept = default;
-    public:
-        virtual ~LayerHost() noexcept = default;
-
-        void requestPop(Layer& layer)
-        {
-            implRequestPop(layer);
-        }
-
-    private:
-        virtual void implRequestPop(Layer&) = 0;
-    };
-
-    // a layer that is hosted by the parent
-    class Layer {
-    protected:
-        explicit Layer(LayerHost& parent) : m_Parent{&parent}
-        {
-        }
-        Layer(Layer const&) = default;
-        Layer(Layer&&) noexcept = default;
-        Layer& operator=(Layer const&) = default;
-        Layer& operator=(Layer&&) noexcept = default;
-    public:
-        virtual ~Layer() noexcept = default;
-
-        bool onEvent(SDL_Event const& e)
-        {
-            return implOnEvent(e);
-        }
-
-        void tick(float dt)
-        {
-            implTick(dt);
-        }
-
-        void onDraw()
-        {
-            implOnDraw();
-        }
-
-    protected:
-        void requestPop()
-        {
-            m_Parent->requestPop(*this);
-        }
-
-    private:
-        virtual bool implOnEvent(SDL_Event const&) = 0;
-        virtual void implTick(float) = 0;
-        virtual void implOnDraw() = 0;
-
-        LayerHost* m_Parent;
-    };
-}
-
-// 3D rendering support
-//
-// this code exists to make the modelgraph, and any other decorations (lines, hovers, selections, etc.)
-// renderable in the UI
-namespace
-{
-    // returns a transform that maps a sphere mesh (defined to be @ 0,0,0 with radius 1)
-    // to some sphere in the scene (e.g. a body/ground)
-    Transform SphereMeshToSceneSphereTransform(Sphere const& sceneSphere)
-    {
-        Transform t;
-        t.scale *= sceneSphere.radius;
-        t.position = sceneSphere.origin;
-        return t;
-    }
-
-    // something that is being drawn in the scene
-    struct DrawableThing final {
-        UID id = c_EmptyID;
-        UID groupId = c_EmptyID;
-        Mesh mesh;
-        Transform transform;
-        Color color = Color::black();
-        SceneDecorationFlags flags = SceneDecorationFlags::None;
-        std::optional<Material> maybeMaterial;
-        std::optional<MaterialPropertyBlock> maybePropertyBlock;
-    };
-
-    AABB calcBounds(DrawableThing const& dt)
-    {
-        return osc::TransformAABB(dt.mesh.getBounds(), dt.transform);
     }
 }
 
@@ -545,7 +431,7 @@ namespace
     };
 }
 
-// scene element support
+// virtual scene element support
 //
 // the editor UI uses custom scene elements, rather than OpenSim types, because they have to
 // support:
@@ -567,7 +453,13 @@ namespace
             CStringView icon,
             CStringView description) :
 
-            m_Data{std::make_shared<Data>(name, namePluralized, nameOptionallyPluralized, icon, description)}
+            m_Data{std::make_shared<Data>(
+                name,
+                namePluralized,
+                nameOptionallyPluralized,
+                icon,
+                description
+            )}
         {
         }
 
@@ -1041,7 +933,14 @@ namespace
             return static_cast<T&>(*this);
         }
     };
+}
 
+// concrete scene element support
+//
+// these are concrete implementors of the virtual scene element API
+namespace
+{
+    // "Ground" of the scene (i.e. origin)
     class GroundEl final : public SceneElCRTP<GroundEl> {
     private:
         friend class SceneElCRTP<GroundEl>;
@@ -1111,7 +1010,7 @@ namespace
     class MeshEl final : public SceneElCRTP<MeshEl> {
     public:
         MeshEl(
-            UIDT<MeshEl> id,
+            UID id,
             UID attachment,  // can be c_GroundID
             Mesh meshData,
             std::filesystem::path path) :
@@ -1177,7 +1076,7 @@ namespace
             {
                 throw std::runtime_error{"invalid index accessed for cross reference"};
             }
-            m_Attachment = osc::DowncastID<BodyEl>(id);
+            m_Attachment = id;
         }
 
         CStringView implGetCrossReferenceLabel(int i) const final
@@ -1243,7 +1142,7 @@ namespace
             return osc::TransformAABB(m_MeshData.getBounds(), Xform);
         }
 
-        UIDT<MeshEl> m_ID;
+        UID m_ID;
         UID m_Attachment;  // can be c_GroundID
         Transform Xform;
         Mesh m_MeshData;
@@ -1257,7 +1156,7 @@ namespace
     class BodyEl final : public SceneElCRTP<BodyEl> {
     public:
         BodyEl(
-            UIDT<BodyEl> id,
+            UID id,
             std::string const& name,
             Transform const& xform) :
 
@@ -1265,11 +1164,6 @@ namespace
             m_Name{SanitizeToOpenSimComponentName(name)},
             m_Xform{xform}
         {
-        }
-
-        UIDT<BodyEl> getID() const
-        {
-            return m_ID;
         }
 
         double getMass() const
@@ -1351,7 +1245,7 @@ namespace
             return AABB{m_Xform.position};
         }
 
-        UIDT<BodyEl> m_ID;
+        UID m_ID;
         std::string m_Name;
         Transform m_Xform;
         double Mass = 1.0f;  // OpenSim goes bananas if a body has a mass <= 0
@@ -1363,11 +1257,11 @@ namespace
     class JointEl final : public SceneElCRTP<JointEl> {
     public:
         JointEl(
-            UIDT<JointEl> id,
+            UID id,
             size_t jointTypeIdx,
             std::string const& userAssignedName,  // can be empty
             UID parent,
-            UIDT<BodyEl> child,
+            UID child,
             Transform const& xform) :
 
             m_ID{id},
@@ -1377,11 +1271,6 @@ namespace
             m_Child{child},
             m_Xform{xform}
         {
-        }
-
-        UIDT<JointEl> getID() const
-        {
-            return m_ID;
         }
 
         CStringView getSpecificTypeName() const
@@ -1394,7 +1283,7 @@ namespace
             return m_Parent;
         }
 
-        UIDT<BodyEl> getChildID() const
+        UID getChildID() const
         {
             return m_Child;
         }
@@ -1452,7 +1341,7 @@ namespace
                 m_Parent = id;
                 break;
             case 1:
-                m_Child = osc::DowncastID<BodyEl>(id);
+                m_Child = id;
                 break;
             default:
                 throw std::runtime_error{"invalid index accessed for cross reference"};
@@ -1540,11 +1429,11 @@ namespace
             return AABB{m_Xform.position};
         }
 
-        UIDT<JointEl> m_ID;
+        UID m_ID;
         size_t m_JointTypeIndex;
         std::string m_UserAssignedName;
         UID m_Parent;  // can be ground
-        UIDT<BodyEl> m_Child;
+        UID m_Child;
         Transform m_Xform;  // joint center
     };
 
@@ -1552,8 +1441,8 @@ namespace
     class StationEl final : public SceneElCRTP<StationEl> {
     public:
         StationEl(
-            UIDT<StationEl> id,
-            UIDT<BodyEl> attachment,  // can be c_GroundID
+            UID id,
+            UID attachment,  // can be c_GroundID
             Vec3 const& position,
             std::string const& name) :
 
@@ -1565,7 +1454,7 @@ namespace
         }
 
         StationEl(
-            UIDT<BodyEl> attachment,  // can be c_GroundID
+            UID attachment,  // can be c_GroundID
             Vec3 const& position,
             std::string const& name) :
 
@@ -1614,7 +1503,7 @@ namespace
             {
                 throw std::runtime_error{"invalid index accessed for cross reference"};
             }
-            m_Attachment = osc::DowncastID<BodyEl>(id);
+            m_Attachment = id;
         }
 
         CStringView implGetCrossReferenceLabel(int i) const final
@@ -1675,8 +1564,8 @@ namespace
             return AABB{m_Position};
         }
 
-        UIDT<StationEl> m_ID;
-        UIDT<BodyEl> m_Attachment;  // can be c_GroundID
+        UID m_ID;
+        UID m_Attachment;  // can be c_GroundID
         Vec3 m_Position{};
         std::string m_Name;
     };
@@ -1843,8 +1732,8 @@ namespace
             {
             }
 
-            Iterator<T> begin() { return m_Begin; }
-            Iterator<T> end() { return m_End; }
+            Iterator<T> begin() const { return m_Begin; }
+            Iterator<T> end() const { return m_End; }
 
         private:
             Iterator<T> m_Begin;
@@ -1934,7 +1823,7 @@ namespace
 
         bool deleteElByID(UID id)
         {
-            SceneEl const* el = tryGetElByID(id);
+            SceneEl const* const el = tryGetElByID(id);
 
             if (!el)
             {
@@ -1954,7 +1843,7 @@ namespace
                 // so that code that relies on references to the to-be-deleted element
                 // still works until an explicit `.GarbageCollect()` call
 
-                auto it = m_Els.find(deletedID);
+                auto const it = m_Els.find(deletedID);
                 if (it != m_Els.end())
                 {
                     m_DeletedEls.push_back(std::move(it->second));
@@ -1995,7 +1884,7 @@ namespace
 
         void select(UID id)
         {
-            SceneEl const* e = tryGetElByID(id);
+            SceneEl const* const e = tryGetElByID(id);
 
             if (e && CanSelect(*e))
             {
@@ -2057,7 +1946,7 @@ namespace
         template<DerivedFrom<SceneEl> T = SceneEl, typename Container>
         static T& findElByIDOrThrow(Container& container, UID id)
         {
-            auto ptr = findElByID<T>(container, id);
+            T* ptr = findElByID<T>(container, id);
             if (!ptr)
             {
                 std::stringstream msg;
@@ -2070,7 +1959,7 @@ namespace
 
         void populateDeletionSet(SceneEl const& deletionTarget, std::unordered_set<UID>& out)
         {
-            UID deletedID = deletionTarget.getID();
+            UID const deletedID = deletionTarget.getID();
 
             // add the deletion target to the deletion set (if applicable)
             if (CanDelete(deletionTarget))
@@ -2115,7 +2004,7 @@ namespace
     void DeleteSelected(ModelGraph& mg)
     {
         // copy deletion set to ensure iterator can't be invalidated by deletion
-        auto selected = mg.getSelected();
+        std::unordered_set<UID> selected = mg.getSelected();
 
         for (UID id : selected)
         {
@@ -2143,7 +2032,7 @@ namespace
     // returns `true` if `body` participates in any joint in the model graph
     bool IsAChildAttachmentInAnyJoint(ModelGraph const& mg, SceneEl const& el)
     {
-        auto iterable = mg.iter<JointEl>();
+        auto const iterable = mg.iter<JointEl>();
         return std::any_of(iterable.begin(), iterable.end(), [id = el.getID()](JointEl const& j)
         {
             return j.getChildID() == id;
@@ -2196,7 +2085,7 @@ namespace
             return true;  // it's directly attached to ground
         }
 
-        auto const* parent = modelGraph.tryGetElByID<BodyEl>(joint.getParentID());
+        auto const* const parent = modelGraph.tryGetElByID<BodyEl>(joint.getParentID());
         if (!parent)
         {
             return false;  // joint's parent is garbage
@@ -2356,7 +2245,7 @@ namespace
     {
         for (SceneEl const& e : mg.iter())
         {
-            UID id = e.getID();
+            UID const id = e.getID();
 
             if (IsInSelectionGroupOf(mg, parent, id))
             {
@@ -2375,12 +2264,12 @@ namespace
 
     // returns the ID of the thing the station should attach to when trying to
     // attach to something in the scene
-    UIDT<BodyEl> GetStationAttachmentParent(ModelGraph const& mg, SceneEl const& el)
+    UID GetStationAttachmentParent(ModelGraph const& mg, SceneEl const& el)
     {
         return std::visit(Overload
         {
             [](GroundEl const&) { return c_GroundID; },
-            [&mg](MeshEl const& meshEl) { return mg.containsEl<BodyEl>(meshEl.getParentID()) ? osc::DowncastID<BodyEl>(meshEl.getParentID()) : c_GroundID; },
+            [&mg](MeshEl const& meshEl) { return mg.containsEl<BodyEl>(meshEl.getParentID()) ? meshEl.getParentID() : c_GroundID; },
             [](BodyEl const& bodyEl) { return bodyEl.getID(); },
             [](JointEl const&) { return c_GroundID; },
             [](StationEl const&) { return c_GroundID; },
@@ -2394,8 +2283,8 @@ namespace
         int axis,
         UID other)
     {
-        Vec3 choicePos = GetPosition(mg, other);
-        Transform sourceXform = Transform{GetPosition(mg, id)};
+        Vec3 const choicePos = GetPosition(mg, other);
+        Transform const sourceXform = Transform{GetPosition(mg, id)};
 
         mg.updElByID(id).setXform(PointAxisTowards(sourceXform, axis, choicePos));
     }
@@ -2518,7 +2407,7 @@ namespace
                 commitMsg
             );
 
-            UID id = snapshot->getID();
+            UID const id = snapshot->getID();
 
             m_Commits.try_emplace(id, std::move(snapshot));
             m_Current = id;
@@ -2529,13 +2418,13 @@ namespace
 
         ModelGraphCommit const* tryGetCommitByID(UID id) const
         {
-            auto it = m_Commits.find(id);
+            auto const it = m_Commits.find(id);
             return it != m_Commits.end() ? it->second.get() : nullptr;
         }
 
         ModelGraphCommit const& getCommitByID(UID id) const
         {
-            ModelGraphCommit const* ptr = tryGetCommitByID(id);
+            ModelGraphCommit const* const ptr = tryGetCommitByID(id);
             if (!ptr)
             {
                 std::stringstream ss;
@@ -2567,7 +2456,7 @@ namespace
 
         void checkout(UID id)
         {
-            ModelGraphCommit const* c = tryGetCommitByID(id);
+            ModelGraphCommit const* const c = tryGetCommitByID(id);
 
             if (c)
             {
@@ -2579,20 +2468,20 @@ namespace
 
         bool canUndo() const
         {
-            ModelGraphCommit const* c = tryGetCommitByID(m_Current);
+            ModelGraphCommit const* const c = tryGetCommitByID(m_Current);
             return c ? c->getParentID() != c_EmptyID : false;
         }
 
         void undo()
         {
-            ModelGraphCommit const* cur = tryGetCommitByID(m_Current);
+            ModelGraphCommit const* const cur = tryGetCommitByID(m_Current);
 
             if (!cur)
             {
                 return;
             }
 
-            ModelGraphCommit const* parent = tryGetCommitByID(cur->getParentID());
+            ModelGraphCommit const* const parent = tryGetCommitByID(cur->getParentID());
 
             if (parent)
             {
@@ -2649,7 +2538,14 @@ namespace
         UID m_BranchHead;  // head of current branch (for redo)
         std::unordered_map<UID, ClonePtr<ModelGraphCommit>> m_Commits;
     };
+}
 
+// undoable action support
+//
+// functions that mutate the undoable datastructure and commit changes at the
+// correct time
+namespace
+{
     bool PointAxisTowards(
         CommittableModelGraph& cmg,
         UID id,
@@ -2675,13 +2571,13 @@ namespace
 
         for (UID id : meshIDs)
         {
-            auto* ptr = mg.tryUpdElByID<MeshEl>(id);
+            auto* const ptr = mg.tryUpdElByID<MeshEl>(id);
             if (!ptr)
             {
                 continue;  // hardening: ignore invalid assignments
             }
 
-            ptr->setParentID(osc::DowncastID<BodyEl>(newAttachment));
+            ptr->setParentID(newAttachment);
         }
 
         std::stringstream commitMsg;
@@ -2705,17 +2601,17 @@ namespace
     {
         ModelGraph& mg = cmg.updScratch();
 
-        size_t jointTypeIdx = *osc::IndexOf<OpenSim::WeldJoint>(osc::GetComponentRegistry<OpenSim::Joint>());
-        Vec3 parentPos = GetPosition(mg, parentID);
-        Vec3 childPos = GetPosition(mg, childID);
-        Vec3 midPoint = osc::Midpoint(parentPos, childPos);
+        size_t const jointTypeIdx = *osc::IndexOf<OpenSim::WeldJoint>(osc::GetComponentRegistry<OpenSim::Joint>());
+        Vec3 const parentPos = GetPosition(mg, parentID);
+        Vec3 const childPos = GetPosition(mg, childID);
+        Vec3 const midPoint = osc::Midpoint(parentPos, childPos);
 
-        auto& jointEl = mg.emplaceEl<JointEl>(
-            UIDT<JointEl>{},
+        auto const& jointEl = mg.emplaceEl<JointEl>(
+            UID{},
             jointTypeIdx,
             std::string{},
             parentID,
-            osc::DowncastID<BodyEl>(childID),
+            childID,
             Transform{midPoint}
         );
         SelectOnly(mg, jointEl);
@@ -2733,17 +2629,17 @@ namespace
         Vec3 p2)
     {
         ModelGraph& mg = cmg.updScratch();
-        SceneEl* el = mg.tryUpdElByID(id);
+        SceneEl* const el = mg.tryUpdElByID(id);
 
         if (!el)
         {
             return false;
         }
 
-        Vec3 dir = osc::Normalize(p2 - p1);
-        Transform t = el->getXForm();
+        Vec3 const direction = osc::Normalize(p2 - p1);
+        Transform const t = el->getXForm();
 
-        el->setXform(PointAxisAlong(t, axis, dir));
+        el->setXform(PointAxisAlong(t, axis, direction));
         cmg.commit("reoriented " + el->getLabel());
 
         return true;
@@ -2772,7 +2668,7 @@ namespace
         Vec3 const& b)
     {
         ModelGraph& mg = cmg.updScratch();
-        SceneEl* el = mg.tryUpdElByID(id);
+        SceneEl* const el = mg.tryUpdElByID(id);
 
         if (!el)
         {
@@ -2793,19 +2689,19 @@ namespace
     {
         ModelGraph& mg = cmg.updScratch();
 
-        SceneEl* el = mg.tryUpdElByID(id);
+        SceneEl* const el = mg.tryUpdElByID(id);
         if (!el)
         {
             return false;
         }
 
-        SceneEl const* aEl = mg.tryGetElByID(a);
+        SceneEl const* const aEl = mg.tryGetElByID(a);
         if (!aEl)
         {
             return false;
         }
 
-        SceneEl const* bEl = mg.tryGetElByID(b);
+        SceneEl const* const bEl = mg.tryGetElByID(b);
         if (!bEl)
         {
             return false;
@@ -2824,13 +2720,13 @@ namespace
     {
         ModelGraph& mg = cmg.updScratch();
 
-        SceneEl* el = mg.tryUpdElByID(id);
+        SceneEl* const el = mg.tryUpdElByID(id);
         if (!el)
         {
             return false;
         }
 
-        SceneEl* otherEl = mg.tryUpdElByID(other);
+        SceneEl const* const otherEl = mg.tryGetElByID(other);
         if (!otherEl)
         {
             return false;
@@ -2849,13 +2745,13 @@ namespace
     {
         ModelGraph& mg = cmg.updScratch();
 
-        SceneEl* el = mg.tryUpdElByID(id);
+        SceneEl* const el = mg.tryUpdElByID(id);
         if (!el)
         {
             return false;
         }
 
-        auto const* mesh = mg.tryGetElByID<MeshEl>(meshID);
+        auto const* const mesh = mg.tryGetElByID<MeshEl>(meshID);
         if (!mesh)
         {
             return false;
@@ -2880,7 +2776,7 @@ namespace
             return false;
         }
 
-        auto const* mesh = mg.tryGetElByID<MeshEl>(meshID);
+        auto const* const mesh = mg.tryGetElByID<MeshEl>(meshID);
         if (!mesh)
         {
             return false;
@@ -2907,7 +2803,7 @@ namespace
             return false;
         }
 
-        auto const* mesh = mg.tryGetElByID<MeshEl>(meshID);
+        auto const* const mesh = mg.tryGetElByID<MeshEl>(meshID);
         if (!mesh)
         {
             return false;
@@ -2932,7 +2828,7 @@ namespace
 
         ModelGraph& mg = cmg.updScratch();
 
-        SceneEl* el = mg.tryUpdElByID(id);
+        SceneEl* const el = mg.tryUpdElByID(id);
         if (!el)
         {
             return false;
@@ -2968,13 +2864,13 @@ namespace
     {
         ModelGraph& mg = cmg.updScratch();
 
-        SceneEl* el = mg.tryUpdElByID(id);
+        SceneEl* const el = mg.tryUpdElByID(id);
         if (!el)
         {
             return false;
         }
 
-        std::string label = to_string(el->getLabel());
+        std::string const label = to_string(el->getLabel());
 
         if (!mg.deleteEl(*el))
         {
@@ -3002,13 +2898,13 @@ namespace
     {
         ModelGraph& mg = cmg.updScratch();
 
-        SceneEl* el = mg.tryUpdElByID(id);
+        SceneEl* const el = mg.tryUpdElByID(id);
         if (!el)
         {
             return false;
         }
 
-        SceneEl* otherEl = mg.tryUpdElByID(other);
+        SceneEl const* const otherEl = mg.tryGetElByID(other);
         if (!otherEl)
         {
             return false;
@@ -3021,18 +2917,18 @@ namespace
     }
 
 
-    UIDT<BodyEl> AddBody(
+    UID AddBody(
         CommittableModelGraph& cmg,
         Vec3 const& pos,
         UID andTryAttach)
     {
         ModelGraph& mg = cmg.updScratch();
 
-        auto& b = mg.emplaceEl<BodyEl>(UIDT<BodyEl>{}, GenerateName(BodyEl::Class()), Transform{pos});
+        auto const& b = mg.emplaceEl<BodyEl>(UID{}, GenerateName(BodyEl::Class()), Transform{pos});
         mg.deSelectAll();
         mg.select(b.getID());
 
-        auto* el = mg.tryUpdElByID<MeshEl>(andTryAttach);
+        auto* const el = mg.tryUpdElByID<MeshEl>(andTryAttach);
         if (el)
         {
             if (el->getParentID() == c_GroundID || el->getParentID() == c_EmptyID)
@@ -3047,7 +2943,7 @@ namespace
         return b.getID();
     }
 
-    UIDT<BodyEl> AddBody(CommittableModelGraph& cmg)
+    UID AddBody(CommittableModelGraph& cmg)
     {
         return AddBody(cmg, {}, c_EmptyID);
     }
@@ -3064,8 +2960,8 @@ namespace
             return false;
         }
 
-        auto& station = mg.emplaceEl<StationEl>(
-            UIDT<StationEl>{},
+        auto const& station = mg.emplaceEl<StationEl>(
+            UID{},
             GetStationAttachmentParent(mg, el),
             loc,
             GenerateName(StationEl::Class())
@@ -3082,7 +2978,7 @@ namespace
     {
         ModelGraph& mg = cmg.updScratch();
 
-        auto const* el = mg.tryGetElByID(elID);
+        auto const* const el = mg.tryGetElByID(elID);
         if (!el)
         {
             return false;
@@ -3126,9 +3022,7 @@ namespace
     // (dare i call them.... frames ;))
     Transform IgnoreScale(Transform const& t)
     {
-        Transform copy{t};
-        copy.scale = {1.0f, 1.0f, 1.0f};
-        return copy;
+        return t.withScale(Vec3{1.0f});
     }
 
     // attaches a mesh to a parent `OpenSim::PhysicalFrame` that is part of an `OpenSim::Model`
@@ -3144,8 +3038,8 @@ namespace
 
         // set the POFs transform to be equivalent to the mesh's (in-ground) transform,
         // but in the parent frame
-        SimTK::Transform mesh2ground = ToSimTKTransform(meshEl.getXForm());
-        SimTK::Transform parent2ground = ToSimTKTransform(parentXform);
+        SimTK::Transform const mesh2ground = ToSimTKTransform(meshEl.getXForm());
+        SimTK::Transform const parent2ground = ToSimTKTransform(parentXform);
         meshPhysOffsetFrame->setOffsetTransform(parent2ground.invert() * mesh2ground);
 
         // attach the mesh data to the transformed POF
@@ -3175,9 +3069,9 @@ namespace
         // the reason we do this is because having a zero inertia on a body can cause
         // the simulator to freak out in some scenarios.
         {
-            double moment = 0.01 * bodyEl.getMass();
-            SimTK::Vec3 moments{moment, moment, moment};
-            SimTK::Vec3 products{0.0, 0.0, 0.0};
+            double const moment = 0.01 * bodyEl.getMass();
+            SimTK::Vec3 const moments{moment, moment, moment};
+            SimTK::Vec3 const products{0.0, 0.0, 0.0};
             addedBody->setInertia(SimTK::Inertia{moments, products});
         }
 
@@ -3231,7 +3125,7 @@ namespace
 
         if (rv.bodyEl)
         {
-            auto it = visitedBodies.find(elID);
+            auto const it = visitedBodies.find(elID);
             if (it == visitedBodies.end())
             {
                 // haven't visited the body before
@@ -3301,7 +3195,7 @@ namespace
     Vec3 GetJointAxisLengths(JointEl const& joint)
     {
         auto const& registry = osc::GetComponentRegistry<OpenSim::Joint>();
-        JointDegreesOfFreedom dofs = joint.getJointTypeIndex() < registry.size() ?
+        JointDegreesOfFreedom const dofs = joint.getJointTypeIndex() < registry.size() ?
             GetDegreesOfFreedom(registry[joint.getJointTypeIndex()].prototype()) :
             JointDegreesOfFreedom{};
 
@@ -3322,7 +3216,7 @@ namespace
         constexpr auto c_RotationNames = std::to_array({"_rx", "_ry", "_rz"});
 
         auto const& registry = osc::GetComponentRegistry<OpenSim::Joint>();
-        JointDegreesOfFreedom dofs = GetDegreesOfFreedom(osc::Get(registry, joint).prototype());
+        JointDegreesOfFreedom const dofs = GetDegreesOfFreedom(osc::Get(registry, joint).prototype());
 
         // translations
         for (int i = 0; i < 3; ++i)
@@ -3358,7 +3252,7 @@ namespace
         std::unordered_set<UID>& visitedJoints)
     {
         {
-            bool wasInserted = visitedJoints.emplace(joint.getID()).second;
+            bool const wasInserted = visitedJoints.emplace(joint.getID()).second;
             if (!wasInserted)
             {
                 // graph cycle detected: joint was already previously visited and shouldn't be traversed again
@@ -3382,7 +3276,7 @@ namespace
         auto childPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         childPOF->setName(child.physicalFrame->getName() + "_offset");
         childPOF->setParentFrame(*child.physicalFrame);
-        Mat4 toChildPofInChild = ToInverseMat4(IgnoreScale(GetTransform(mg, joint.getChildID()))) * ToMat4(IgnoreScale(joint.getXForm()));
+        Mat4 const toChildPofInChild = ToInverseMat4(IgnoreScale(GetTransform(mg, joint.getChildID()))) * ToMat4(IgnoreScale(joint.getXForm()));
         childPOF->set_translation(osc::ToSimTKVec3(toChildPofInChild[3]));
         childPOF->set_orientation(osc::ToSimTKVec3(osc::ExtractEulerAngleXYZ(toChildPofInChild)));
 
@@ -3390,7 +3284,7 @@ namespace
         auto jointUniqPtr = osc::At(osc::GetComponentRegistry<OpenSim::Joint>(), joint.getJointTypeIndex()).instantiate();
 
         // set its name
-        std::string jointName = CalcJointName(joint, *parent.physicalFrame, *child.physicalFrame);
+        std::string const jointName = CalcJointName(joint, *parent.physicalFrame, *child.physicalFrame);
         jointUniqPtr->setName(jointName);
 
         // set joint coordinate names
@@ -3400,7 +3294,7 @@ namespace
         //
         // care: ownership change happens here (#642)
         OpenSim::PhysicalOffsetFrame& parentRef = osc::AddFrame(*jointUniqPtr, std::move(parentPOF));
-        OpenSim::PhysicalOffsetFrame& childRef = osc::AddFrame(*jointUniqPtr, std::move(childPOF));
+        OpenSim::PhysicalOffsetFrame const& childRef = osc::AddFrame(*jointUniqPtr, std::move(childPOF));
         jointUniqPtr->connectSocket_parent_frame(parentRef);
         jointUniqPtr->connectSocket_child_frame(childRef);
 
@@ -3480,7 +3374,7 @@ namespace
         std::unordered_map<UID, OpenSim::Body*>& visitedBodies)
     {
 
-        JointAttachmentCachedLookupResult res = LookupPhysFrame(mg, model, visitedBodies, stationEl.getParentID());
+        JointAttachmentCachedLookupResult const res = LookupPhysFrame(mg, model, visitedBodies, stationEl.getParentID());
         OSC_ASSERT_ALWAYS(res.physicalFrame != nullptr && "all physical frames should have been added by this point in the model-building process");
 
         SimTK::Transform const parentXform = ToSimTKTransform(mg.getElByID(stationEl.getParentID()).getXForm());
@@ -3635,18 +3529,18 @@ namespace
         ModelGraph rv;
 
         // used to figure out how a body in the OpenSim::Model maps into the ModelGraph
-        std::unordered_map<OpenSim::Body const*, UIDT<BodyEl>> bodyLookup;
+        std::unordered_map<OpenSim::Body const*, UID> bodyLookup;
 
         // used to figure out how a joint in the OpenSim::Model maps into the ModelGraph
-        std::unordered_map<OpenSim::Joint const*, UIDT<JointEl>> jointLookup;
+        std::unordered_map<OpenSim::Joint const*, UID> jointLookup;
 
         // import all the bodies from the model file
         for (OpenSim::Body const& b : m.getComponentList<OpenSim::Body>())
         {
             std::string const name = b.getName();
-            Transform const xform = ToOsimTransform(b.getTransformInGround(st));
+            Transform const xform = ToTransform(b.getTransformInGround(st));
 
-            auto& el = rv.emplaceEl<BodyEl>(UIDT<BodyEl>{}, name, xform);
+            auto& el = rv.emplaceEl<BodyEl>(UID{}, name, xform);
             el.setMass(b.getMass());
 
             bodyLookup.emplace(&b, el.getID());
@@ -3658,8 +3552,8 @@ namespace
             OpenSim::PhysicalFrame const& parentFrame = j.getParentFrame();
             OpenSim::PhysicalFrame const& childFrame = j.getChildFrame();
 
-            OpenSim::PhysicalFrame const* parentBodyOrGround = TryInclusiveRecurseToBodyOrGround(parentFrame);
-            OpenSim::PhysicalFrame const* childBodyOrGround = TryInclusiveRecurseToBodyOrGround(childFrame);
+            OpenSim::PhysicalFrame const* const parentBodyOrGround = TryInclusiveRecurseToBodyOrGround(parentFrame);
+            OpenSim::PhysicalFrame const* const childBodyOrGround = TryInclusiveRecurseToBodyOrGround(childFrame);
 
             if (!parentBodyOrGround || !childBodyOrGround)
             {
@@ -3667,25 +3561,24 @@ namespace
                 continue;
             }
 
-            auto maybeType = osc::IndexOf(osc::GetComponentRegistry<OpenSim::Joint>(), j);
+            auto const maybeType = osc::IndexOf(osc::GetComponentRegistry<OpenSim::Joint>(), j);
             if (!maybeType)
             {
                 // joint has a type the mesh importer doesn't support
                 continue;
             }
 
-            size_t type = maybeType.value();
-            std::string name = j.getName();
+            size_t const type = maybeType.value();
+            std::string const name = j.getName();
 
             UID parent = c_EmptyID;
-
             if (dynamic_cast<OpenSim::Ground const*>(parentBodyOrGround))
             {
                 parent = c_GroundID;
             }
             else
             {
-                auto it = bodyLookup.find(dynamic_cast<OpenSim::Body const*>(parentBodyOrGround));
+                auto const it = bodyLookup.find(dynamic_cast<OpenSim::Body const*>(parentBodyOrGround));
                 if (it == bodyLookup.end())
                 {
                     // joint is attached to a body that isn't ground or cached?
@@ -3697,8 +3590,7 @@ namespace
                 }
             }
 
-            UIDT<BodyEl> child = osc::DowncastID<BodyEl>(c_EmptyID);
-
+            UID child = c_EmptyID;
             if (dynamic_cast<OpenSim::Ground const*>(childBodyOrGround))
             {
                 // ground can't be a child in a joint
@@ -3706,7 +3598,7 @@ namespace
             }
             else
             {
-                auto it = bodyLookup.find(dynamic_cast<OpenSim::Body const*>(childBodyOrGround));
+                auto const it = bodyLookup.find(dynamic_cast<OpenSim::Body const*>(childBodyOrGround));
                 if (it == bodyLookup.end())
                 {
                     // joint is attached to a body that isn't ground or cached?
@@ -3724,9 +3616,9 @@ namespace
                 continue;
             }
 
-            Transform const xform = ToOsimTransform(parentFrame.getTransformInGround(st));
+            Transform const xform = ToTransform(parentFrame.getTransformInGround(st));
 
-            auto& jointEl = rv.emplaceEl<JointEl>(UIDT<JointEl>{}, type, name, parent, child, xform);
+            auto& jointEl = rv.emplaceEl<JointEl>(UID{}, type, name, parent, child, xform);
             jointLookup.emplace(&j, jointEl.getID());
         }
 
@@ -3734,7 +3626,7 @@ namespace
         // then try to import all the meshes
         for (OpenSim::Mesh const& mesh : m.getComponentList<OpenSim::Mesh>())
         {
-            std::optional<std::filesystem::path> maybeMeshPath = osc::FindGeometryFileAbsPath(m, mesh);
+            std::optional<std::filesystem::path> const maybeMeshPath = osc::FindGeometryFileAbsPath(m, mesh);
 
             if (!maybeMeshPath)
             {
@@ -3755,7 +3647,7 @@ namespace
             }
 
             OpenSim::Frame const& frame = mesh.getFrame();
-            OpenSim::PhysicalFrame const* frameBodyOrGround = TryInclusiveRecurseToBodyOrGround(frame);
+            OpenSim::PhysicalFrame const* const frameBodyOrGround = TryInclusiveRecurseToBodyOrGround(frame);
 
             if (!frameBodyOrGround)
             {
@@ -3770,7 +3662,7 @@ namespace
             }
             else
             {
-                if (auto bodyIt = bodyLookup.find(dynamic_cast<OpenSim::Body const*>(frameBodyOrGround)); bodyIt != bodyLookup.end())
+                if (auto const bodyIt = bodyLookup.find(dynamic_cast<OpenSim::Body const*>(frameBodyOrGround)); bodyIt != bodyLookup.end())
                 {
                     attachment = bodyIt->second;
                 }
@@ -3787,8 +3679,8 @@ namespace
                 continue;
             }
 
-            auto& el = rv.emplaceEl<MeshEl>(UIDT<MeshEl>{}, attachment, meshData, realLocation);
-            Transform newTransform = ToOsimTransform(frame.getTransformInGround(st));
+            auto& el = rv.emplaceEl<MeshEl>(UID{}, attachment, meshData, realLocation);
+            Transform newTransform = ToTransform(frame.getTransformInGround(st));
             newTransform.scale = osc::ToVec3(mesh.get_scale_factors());
 
             el.setXform(newTransform);
@@ -3810,7 +3702,7 @@ namespace
             }
 
             OpenSim::PhysicalFrame const& frame = station.getParentFrame();
-            OpenSim::PhysicalFrame const* frameBodyOrGround = TryInclusiveRecurseToBodyOrGround(frame);
+            OpenSim::PhysicalFrame const* const frameBodyOrGround = TryInclusiveRecurseToBodyOrGround(frame);
 
             UID attachment = c_EmptyID;
             if (dynamic_cast<OpenSim::Ground const*>(frameBodyOrGround))
@@ -3819,7 +3711,7 @@ namespace
             }
             else
             {
-                if (auto it = bodyLookup.find(dynamic_cast<OpenSim::Body const*>(frameBodyOrGround)); it != bodyLookup.end())
+                if (auto const it = bodyLookup.find(dynamic_cast<OpenSim::Body const*>(frameBodyOrGround)); it != bodyLookup.end())
                 {
                     attachment = it->second;
                 }
@@ -3836,10 +3728,10 @@ namespace
                 continue;
             }
 
-            Vec3 pos = osc::ToVec3(station.findLocationInFrame(st, m.getGround()));
-            std::string name = station.getName();
+            Vec3 const pos = osc::ToVec3(station.findLocationInFrame(st, m.getGround()));
+            std::string const name = station.getName();
 
-            rv.emplaceEl<StationEl>(osc::DowncastID<BodyEl>(attachment), pos, name);
+            rv.emplaceEl<StationEl>(attachment, pos, name);
         }
 
         return rv;
@@ -3848,6 +3740,40 @@ namespace
     ModelGraph CreateModelFromOsimFile(std::filesystem::path const& p)
     {
         return CreateModelGraphFromInMemoryModel(OpenSim::Model{p.string()});
+    }
+}
+
+// 3D rendering support
+//
+// this code exists to make the modelgraph, and any other decorations (lines, hovers, selections, etc.)
+// renderable in the UI
+namespace
+{
+    // returns a transform that maps a sphere mesh (defined to be @ 0,0,0 with radius 1)
+    // to some sphere in the scene (e.g. a body/ground)
+    Transform SphereMeshToSceneSphereTransform(Sphere const& sceneSphere)
+    {
+        Transform t;
+        t.scale *= sceneSphere.radius;
+        t.position = sceneSphere.origin;
+        return t;
+    }
+
+    // something that is being drawn in the scene
+    struct DrawableThing final {
+        UID id = c_EmptyID;
+        UID groupId = c_EmptyID;
+        Mesh mesh;
+        Transform transform;
+        Color color = Color::black();
+        SceneDecorationFlags flags = SceneDecorationFlags::None;
+        std::optional<Material> maybeMaterial;
+        std::optional<MaterialPropertyBlock> maybePropertyBlock;
+    };
+
+    AABB calcBounds(DrawableThing const& dt)
+    {
+        return osc::TransformAABB(dt.mesh.getBounds(), dt.transform);
     }
 }
 
@@ -4159,7 +4085,7 @@ namespace
 
                 if (el)
                 {
-                    auto& mesh = mg.emplaceEl<MeshEl>(UIDT<MeshEl>{}, ok.preferredAttachmentPoint, lm.meshData, lm.path);
+                    auto& mesh = mg.emplaceEl<MeshEl>(UID{}, ok.preferredAttachmentPoint, lm.meshData, lm.path);
                     mesh.setXform(el->getXForm());
                     mg.select(mesh);
                     mg.select(*el);
@@ -4999,7 +4925,7 @@ namespace
                 }
             }
 
-            Vec3 const hitPos = closestID != c_EmptyID ? ray.origin + closestDist*ray.dir : Vec3{};
+            Vec3 const hitPos = closestID != c_EmptyID ? ray.origin + closestDist*ray.direction : Vec3{};
 
             return Hover{closestID, hitPos};
         }
@@ -5383,6 +5309,80 @@ namespace
 
         // changes how a model is created
         ModelCreationFlags m_ModelCreationFlags = ModelCreationFlags::None;
+    };
+}
+
+// UI layering support
+//
+// the visualizer can push the 3D visualizer into different modes (here, "layers") that
+// have different behavior. E.g.:
+//
+// - normal mode (editing stuff)
+// - picking another body in the scene mode
+namespace
+{
+    class Layer;
+
+    // the "parent" thing that is hosting the layer
+    class LayerHost {
+    protected:
+        LayerHost() = default;
+        LayerHost(LayerHost const&) = default;
+        LayerHost(LayerHost&&) noexcept = default;
+        LayerHost& operator=(LayerHost const&) = default;
+        LayerHost& operator=(LayerHost&&) noexcept = default;
+    public:
+        virtual ~LayerHost() noexcept = default;
+
+        void requestPop(Layer& layer)
+        {
+            implRequestPop(layer);
+        }
+
+    private:
+        virtual void implRequestPop(Layer&) = 0;
+    };
+
+    // a layer that is hosted by the parent
+    class Layer {
+    protected:
+        explicit Layer(LayerHost& parent) : m_Parent{&parent}
+        {
+        }
+        Layer(Layer const&) = default;
+        Layer(Layer&&) noexcept = default;
+        Layer& operator=(Layer const&) = default;
+        Layer& operator=(Layer&&) noexcept = default;
+    public:
+        virtual ~Layer() noexcept = default;
+
+        bool onEvent(SDL_Event const& e)
+        {
+            return implOnEvent(e);
+        }
+
+        void tick(float dt)
+        {
+            implTick(dt);
+        }
+
+        void onDraw()
+        {
+            implOnDraw();
+        }
+
+    protected:
+        void requestPop()
+        {
+            m_Parent->requestPop(*this);
+        }
+
+    private:
+        virtual bool implOnEvent(SDL_Event const&) = 0;
+        virtual void implTick(float) = 0;
+        virtual void implOnDraw() = 0;
+
+        LayerHost* m_Parent;
     };
 }
 
@@ -6316,7 +6316,7 @@ namespace
             for (StationDefinedInGround const& station : data.rows)
             {
                 graph.emplaceEl<StationEl>(
-                    UIDT<StationEl>{},
+                    UID{},
                     c_GroundID,
                     station.location,
                     station.name
@@ -6593,7 +6593,7 @@ private:
             return;  // current hover isn't in the current model graph
         }
 
-        UIDT<BodyEl> maybeID = GetStationAttachmentParent(mg, *hoveredSceneEl);
+        UID maybeID = GetStationAttachmentParent(mg, *hoveredSceneEl);
 
         if (maybeID == c_GroundID || maybeID == c_EmptyID)
         {
@@ -8002,7 +8002,7 @@ private:
         if (ImGui::MenuItem(ICON_FA_MAP_PIN " Station"))
         {
             ModelGraph& mg = m_Shared->updModelGraph();
-            auto& e = mg.emplaceEl<StationEl>(UIDT<StationEl>{}, c_GroundID, Vec3{}, GenerateName(StationEl::Class()));
+            auto& e = mg.emplaceEl<StationEl>(UID{}, c_GroundID, Vec3{}, GenerateName(StationEl::Class()));
             SelectOnly(mg, e);
         }
         osc::DrawTooltipIfItemHovered("Add Station", StationEl::Class().getDescription());

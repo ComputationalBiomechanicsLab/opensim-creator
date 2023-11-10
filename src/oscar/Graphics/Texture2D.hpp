@@ -13,7 +13,6 @@
 #include <cstdint>
 #include <iosfwd>
 #include <span>
-#include <string_view>
 #include <vector>
 
 namespace osc { class Texture2D; }

@@ -47,5 +47,5 @@ namespace osc
     bool IsFilenameLexographicallyGreaterThan(std::filesystem::path const& p1, std::filesystem::path const& p2);
 
     // returns true if `path` is within `dir` (non-recursive)
-    bool IsSubpath(std::filesystem::path const& dir, std::filesystem::path const& path);
+    bool IsSubpath(std::filesystem::path const& direction, std::filesystem::path const& path);
 }
