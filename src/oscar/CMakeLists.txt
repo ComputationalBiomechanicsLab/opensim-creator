@@ -95,6 +95,9 @@ add_library(oscar STATIC
 
     Maths/AABB.hpp
     Maths/BVH.hpp
+    Maths/BVHCollision.hpp
+    Maths/BVHNode.hpp
+    Maths/BVHPrim.hpp
     Maths/CollisionTests.hpp
     Maths/Disc.hpp
     Maths/Ellipsoid.hpp
