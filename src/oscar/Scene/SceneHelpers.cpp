@@ -250,7 +250,7 @@ std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
     Transform const& transform,
     Line const& worldspaceRay)
 {
-    if (mesh.getMesh().getTopology() != MeshTopology::Triangles)
+    if (mesh.getTopology() != MeshTopology::Triangles)
     {
         return std::nullopt;
     }
@@ -258,10 +258,10 @@ std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
     // map the ray into the mesh's modelspace, so that we compute a ray-mesh collision
     Line const modelspaceRay = InverseTransformLine(worldspaceRay, transform);
 
-    MeshIndicesView const indices = mesh.getMesh().getIndices();
+    MeshIndicesView const indices = mesh.getIndices();
     std::optional<BVHCollision> const maybeCollision = indices.isU16() ?
-        mesh.getBVH().getClosestRayIndexedTriangleCollision(mesh.getMesh().getVerts(), indices.toU16Span(), modelspaceRay) :
-        mesh.getBVH().getClosestRayIndexedTriangleCollision(mesh.getMesh().getVerts(), indices.toU32Span(), modelspaceRay);
+        mesh.getBVH().getClosestRayIndexedTriangleCollision(mesh.getVerts(), indices.toU16Span(), modelspaceRay) :
+        mesh.getBVH().getClosestRayIndexedTriangleCollision(mesh.getVerts(), indices.toU32Span(), modelspaceRay);
 
     if (maybeCollision)
     {

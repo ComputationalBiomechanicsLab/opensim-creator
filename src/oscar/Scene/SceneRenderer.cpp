@@ -7,7 +7,6 @@
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MaterialPropertyBlock.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/RenderTexture.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Graphics/TextureGenerators.hpp>
@@ -21,6 +20,8 @@
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneDecorationFlags.hpp>
+#include <oscar/Scene/SceneMesh.hpp>
+#include <oscar/Scene/SceneMeshCache.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Perf.hpp>
@@ -149,7 +150,7 @@ class osc::SceneRenderer::Impl final {
 public:
     Impl(
         AppConfig const& config,
-        MeshCache& meshCache,
+        SceneMeshCache& meshCache,
         ShaderCache& shaderCache) :
 
         m_SceneColoredElementsMaterial{shaderCache.load(config.getResourceDir() / "oscar/shaders/SceneRenderer/DrawColoredObjects.vert", config.getResourceDir() / "oscar/shaders/SceneRenderer/DrawColoredObjects.frag")},
@@ -485,7 +486,7 @@ private:
     Material m_DepthWritingMaterial;
     MaterialPropertyBlock m_RimsSelectedColor;
     MaterialPropertyBlock m_RimsHoveredColor;
-    Mesh m_QuadMesh;
+    SceneMesh m_QuadMesh;
     Texture2D m_ChequerTexture = GenChequeredFloorTexture();
     Camera m_Camera;
     RenderTexture m_RimsTexture;
@@ -496,7 +497,7 @@ private:
 
 // public API (PIMPL)
 
-osc::SceneRenderer::SceneRenderer(AppConfig const& config, MeshCache& meshCache, ShaderCache& shaderCache) :
+osc::SceneRenderer::SceneRenderer(AppConfig const& config, SceneMeshCache& meshCache, ShaderCache& shaderCache) :
     m_Impl{std::make_unique<Impl>(config, meshCache, shaderCache)}
 {
 }

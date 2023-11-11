@@ -2489,35 +2489,6 @@ TEST_F(Renderer, MeshGetBooundsReturnsNonemptyForIndexedVerts)
     ASSERT_EQ(m.getBounds(), expected);
 }
 
-TEST_F(Renderer, MeshGetBVHReturnsEmptyBVHOnInitialization)
-{
-    osc::Mesh m;
-    osc::BVH const& bvh = m.getBVH();
-    ASSERT_TRUE(bvh.empty());
-}
-
-TEST_F(Renderer, MeshGetBVHReturnsExpectedRootNode)
-{
-    auto const pyramid = std::to_array<Vec3>(
-    {
-        {-1.0f, -1.0f, 0.0f},  // base: bottom-left
-        { 1.0f, -1.0f, 0.0f},  // base: bottom-right
-        { 0.0f,  1.0f, 0.0f},  // base: top-middle
-    });
-    auto const pyramidIndices = std::to_array<uint16_t>({0, 1, 2});
-
-    osc::Mesh m;
-    m.setVerts(pyramid);
-    m.setIndices(pyramidIndices);
-
-    osc::AABB const expectedRoot = osc::AABBFromVerts(pyramid);
-
-    osc::BVH const& bvh = m.getBVH();
-
-    ASSERT_FALSE(bvh.empty());
-    ASSERT_EQ(expectedRoot, bvh.getRootAABB());
-}
-
 TEST_F(Renderer, MeshCanBeComparedForEquality)
 {
     osc::Mesh m1;

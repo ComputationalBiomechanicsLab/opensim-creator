@@ -7,12 +7,12 @@
 
 #include <imgui.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Scene/SceneCollision.hpp>
+#include <oscar/Scene/SceneMeshCache.hpp>
 #include <oscar/UI/Widgets/GuiRuler.hpp>
 #include <oscar/UI/Widgets/IconWithoutMenu.hpp>
 #include <oscar/UI/IconCache.hpp>
@@ -179,7 +179,7 @@ private:
     CachedModelRenderer m_CachedModelRenderer
     {
         App::get().getConfig(),
-        App::singleton<MeshCache>(),
+        App::singleton<SceneMeshCache>(),
         *App::singleton<ShaderCache>(),
     };
 

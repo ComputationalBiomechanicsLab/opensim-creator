@@ -23,6 +23,8 @@ add_executable(testoscar
 
     Platform/TestAppSettingValueType.cpp
 
+    Scene/TestSceneMesh.cpp
+
     Shims/Cpp20/TestBit.cpp
 
     Utils/TestCStringView.cpp
@@ -31,7 +33,7 @@ add_executable(testoscar
     Utils/TestStringHelpers.cpp
 
     testoscar.cpp  # entry point
- )
+)
 
 
 configure_file(
