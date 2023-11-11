@@ -48,7 +48,7 @@ osc::SceneRendererParams osc::CalcSceneRendererParams(
 }
 
 void osc::GenerateDecorations(
-    SceneMeshCache& meshCache,
+    SceneCache& meshCache,
     VirtualConstModelStatePair const& msp,
     OpenSimDecorationOptions const& options,
     std::function<void(OpenSim::Component const&, SceneDecoration&&)> const& out)
@@ -75,6 +75,7 @@ void osc::GenerateDecorations(
 
 std::optional<osc::SceneCollision> osc::GetClosestCollision(
     BVH const& sceneBVH,
+    SceneCache& sceneCache,
     std::span<SceneDecoration const> taggedDrawlist,
     PolarPerspectiveCamera const& camera,
     Vec2 mouseScreenPos,
@@ -92,6 +93,7 @@ std::optional<osc::SceneCollision> osc::GetClosestCollision(
     // find all collisions along the camera ray
     std::vector<SceneCollision> const collisions = GetAllSceneCollisions(
         sceneBVH,
+        sceneCache,
         taggedDrawlist,
         worldspaceCameraRay
     );

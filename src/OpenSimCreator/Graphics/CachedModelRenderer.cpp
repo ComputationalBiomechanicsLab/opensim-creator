@@ -11,6 +11,7 @@
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Maths/Vec2.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneCollision.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
@@ -30,7 +31,7 @@ namespace
     // cache for decorations generated from a model+state+params
     class CachedDecorationState final {
     public:
-        explicit CachedDecorationState(std::shared_ptr<osc::SceneMeshCache> meshCache_) :
+        explicit CachedDecorationState(std::shared_ptr<osc::SceneCache> meshCache_) :
             m_MeshCache{std::move(meshCache_)}
         {
         }
@@ -87,9 +88,14 @@ namespace
         std::span<osc::SceneDecoration const> getDrawlist() const { return m_Drawlist; }
         osc::BVH const& getBVH() const { return m_BVH; }
         std::optional<osc::AABB> getAABB() const { return m_BVH.getRootAABB(); }
+        osc::SceneCache& updSceneCache() const
+        {
+            // TODO: technically (imo) this breaks `const`
+            return *m_MeshCache;
+        }
 
     private:
-        std::shared_ptr<osc::SceneMeshCache> m_MeshCache;
+        std::shared_ptr<osc::SceneCache> m_MeshCache;
         osc::ModelStatePairInfo m_PrevModelStateInfo;
         osc::OpenSimDecorationOptions m_PrevDecorationOptions;
         osc::OverlayDecorationOptions m_PrevOverlayOptions;
@@ -102,7 +108,7 @@ class osc::CachedModelRenderer::Impl final {
 public:
     Impl(
         AppConfig const& config,
-        std::shared_ptr<SceneMeshCache> const& meshCache,
+        std::shared_ptr<SceneCache> const& meshCache,
         ShaderCache& shaderCache) :
 
         m_DecorationCache{meshCache},
@@ -172,6 +178,7 @@ public:
     {
         return GetClosestCollision(
             m_DecorationCache.getBVH(),
+            m_DecorationCache.updSceneCache(),
             m_DecorationCache.getDrawlist(),
             params.camera,
             mouseScreenPos,
@@ -190,7 +197,7 @@ private:
 
 osc::CachedModelRenderer::CachedModelRenderer(
     AppConfig const& config,
-    std::shared_ptr<SceneMeshCache> const& meshCache,
+    std::shared_ptr<SceneCache> const& meshCache,
     ShaderCache& shaderCache) :
 
     m_Impl{std::make_unique<Impl>(config, meshCache, shaderCache)}

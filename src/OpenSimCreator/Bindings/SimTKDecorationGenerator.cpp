@@ -5,12 +5,12 @@
 
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/Triangle.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/Log.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SimpleSceneDecoration.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <simbody/internal/common.h>
@@ -112,7 +112,7 @@ namespace
     class GeometryImpl final : public SimTK::DecorativeGeometryImplementation {
     public:
         GeometryImpl(
-            osc::MeshCache& meshCache,
+            osc::SceneCache& meshCache,
             SimTK::SimbodyMatterSubsystem const& matter,
             SimTK::State const& st,
             float fixupScaleFactor,
@@ -399,7 +399,7 @@ namespace
             });
         }
 
-        osc::MeshCache& m_MeshCache;
+        osc::SceneCache& m_MeshCache;
         SimTK::SimbodyMatterSubsystem const& m_Matter;
         SimTK::State const& m_State;
         float m_FixupScaleFactor;
@@ -408,7 +408,7 @@ namespace
 }
 
 void osc::GenerateDecorations(
-    MeshCache& meshCache,
+    SceneCache& meshCache,
     SimTK::SimbodyMatterSubsystem const& matter,
     SimTK::State const& state,
     SimTK::DecorativeGeometry const& geom,

@@ -16,7 +16,7 @@
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
@@ -82,7 +82,7 @@ void osc::MainMenuFileTab::onDraw(
         }
         else if (maybeModel && ImGui::IsKeyPressed(ImGuiKey_F5))
         {
-            ActionReloadOsimFromDisk(*maybeModel, *App::singleton<MeshCache>());
+            ActionReloadOsimFromDisk(*maybeModel, *App::singleton<SceneCache>());
         }
     }
 
@@ -188,7 +188,7 @@ void osc::MainMenuFileTab::onDraw(
 
         if (ImGui::MenuItem(ICON_FA_RECYCLE " Reload", "F5", false, modelHasBackingFile) && maybeModel)
         {
-            osc::ActionReloadOsimFromDisk(*maybeModel, *App::singleton<MeshCache>());
+            osc::ActionReloadOsimFromDisk(*maybeModel, *App::singleton<SceneCache>());
         }
         osc::DrawTooltipIfItemHovered("Reload", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
 

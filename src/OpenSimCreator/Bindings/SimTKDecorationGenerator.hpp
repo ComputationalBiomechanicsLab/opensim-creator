@@ -2,7 +2,7 @@
 
 #include <functional>
 
-namespace osc { class MeshCache; }
+namespace osc { class SceneCache; }
 namespace osc { struct SimpleSceneDecoration; }
 namespace SimTK { class DecorativeGeometry; }
 namespace SimTK { class SimbodyMatterSubsystem; }
@@ -13,7 +13,7 @@ namespace osc
     // generates `osc::SimpleSceneDecoration`s for the given `SimTK::DecorativeGeometry`
     // and passes them to the output consumer
     void GenerateDecorations(
-        MeshCache&,
+        SceneCache&,
         SimTK::SimbodyMatterSubsystem const&,
         SimTK::State const&,
         SimTK::DecorativeGeometry const&,

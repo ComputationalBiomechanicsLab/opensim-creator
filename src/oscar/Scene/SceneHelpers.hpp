@@ -4,6 +4,7 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Maths/AABB.hpp>
+#include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/RayCollision.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -18,59 +19,59 @@
 namespace osc { struct AABB; }
 namespace osc { class AppConfig; }
 namespace osc { class BVH; }
+namespace osc { class Mesh; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct Rect; }
 namespace osc { struct Segment; }
 namespace osc { struct SceneDecoration; }
-namespace osc { class SceneMesh; }
-namespace osc { class SceneMeshCache; }
+namespace osc { class SceneCache; }
 namespace osc { class ShaderCache; }
 namespace osc { struct Transform; }
 
 namespace osc
 {
     void DrawBVH(
-        SceneMeshCache&,
+        SceneCache&,
         BVH const&,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawAABB(
-        SceneMeshCache&,
+        SceneCache&,
         AABB const&,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawAABBs(
-        SceneMeshCache&,
+        SceneCache&,
         std::span<AABB const>,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawBVHLeafNodes(
-        SceneMeshCache&,
+        SceneCache&,
         BVH const&,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawXZFloorLines(
-        SceneMeshCache&,
+        SceneCache&,
         std::function<void(SceneDecoration&&)> const&,
         float scale = 1.0f
     );
 
     void DrawXZGrid(
-        SceneMeshCache&,
+        SceneCache&,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawXYGrid(
-        SceneMeshCache&,
+        SceneCache&,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawYZGrid(
-        SceneMeshCache&,
+        SceneCache&,
         std::function<void(SceneDecoration&&)> const&
     );
 
@@ -85,13 +86,13 @@ namespace osc
         Color color;
     };
     void DrawArrow(
-        SceneMeshCache&,
+        SceneCache&,
         ArrowProperties const&,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawLineSegment(
-        SceneMeshCache&,
+        SceneCache&,
         Segment const&,
         Color const&,
         float radius,
@@ -109,13 +110,15 @@ namespace osc
     // returns all collisions along a ray
     std::vector<SceneCollision> GetAllSceneCollisions(
         BVH const& sceneBVH,
+        SceneCache&,
         std::span<SceneDecoration const>,
         Line const& worldspaceRay
     );
 
     // returns closest ray-triangle collision in worldspace
     std::optional<RayCollision> GetClosestWorldspaceRayCollision(
-        SceneMesh const&,
+        Mesh const&,
+        BVH const&,
         Transform const&,
         Line const& worldspaceRay
     );
@@ -124,7 +127,8 @@ namespace osc
     // within the given render rectangle
     std::optional<RayCollision> GetClosestWorldspaceRayCollision(
         PolarPerspectiveCamera const&,
-        SceneMesh const&,
+        Mesh const&,
+        BVH const&,
         Rect const& renderScreenRect,
         Vec2 mouseScreenPos
     );
@@ -141,4 +145,7 @@ namespace osc
         AppConfig const&,
         ShaderCache&
     );
+
+    // returns a triangle BVH for the given triangle mesh, or an empty BVH if the mesh is non-triangular or empty
+    BVH CreateTriangleBVHFromMesh(Mesh const&);
 }

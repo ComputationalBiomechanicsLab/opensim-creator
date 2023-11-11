@@ -9,8 +9,8 @@
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <oscar/Formats/DAE.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Platform/AppConfig.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 
 #include <sstream>
@@ -21,7 +21,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
 {
     osc::GlobalInitOpenSim();
 
-    osc::MeshCache meshCache;
+    osc::SceneCache meshCache;
 
     // turn as many decoration options on as possible, so that the code gets tested
     // against them (#661)

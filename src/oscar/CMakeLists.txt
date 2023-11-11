@@ -149,15 +149,13 @@ add_library(oscar STATIC
 
     Scene/CachedSceneRenderer.cpp
     Scene/CachedSceneRenderer.hpp
+    Scene/SceneCache.cpp
+    Scene/SceneCache.hpp
     Scene/SceneCollision.hpp
     Scene/SceneDecoration.hpp
     Scene/SceneDecorationFlags.hpp
     Scene/SceneHelpers.cpp
     Scene/SceneHelpers.hpp
-    Scene/SceneMesh.cpp
-    Scene/SceneMesh.hpp
-    Scene/SceneMeshCache.cpp
-    Scene/SceneMeshCache.hpp
     Scene/SceneRenderer.cpp
     Scene/SceneRenderer.hpp
     Scene/SceneRendererParams.cpp

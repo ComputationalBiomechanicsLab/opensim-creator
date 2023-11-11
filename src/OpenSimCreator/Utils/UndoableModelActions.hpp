@@ -23,9 +23,9 @@ namespace OpenSim { class PhysicalOffsetFrame; }
 namespace OpenSim { class Station; }
 namespace OpenSim { class WrapObject; }
 namespace osc { class MainUIStateAPI; }
-namespace osc { class MeshCache; }
 namespace osc { class ObjectPropertyEdit; }
 namespace osc { template<typename T> class ParentPtr; }
+namespace osc { class SceneCache; }
 namespace osc { class UndoableModelStatePair; }
 
 namespace osc
@@ -150,7 +150,7 @@ namespace osc
     // force a reload of the model, and its associated assets, from its backing file
     bool ActionReloadOsimFromDisk(
         UndoableModelStatePair&,
-        MeshCache&
+        SceneCache&
     );
 
     // start performing a series of simulations against the model by opening a tab that tries all possible integrators

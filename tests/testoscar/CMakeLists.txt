@@ -23,7 +23,7 @@ add_executable(testoscar
 
     Platform/TestAppSettingValueType.cpp
 
-    Scene/TestSceneMesh.cpp
+    Scene/TestSceneCache.cpp
 
     Shims/Cpp20/TestBit.cpp
 

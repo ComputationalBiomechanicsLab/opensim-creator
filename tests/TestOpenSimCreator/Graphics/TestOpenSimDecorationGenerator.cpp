@@ -8,9 +8,9 @@
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
 #include <OpenSimCreator/Graphics/MuscleColoringStyle.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Platform/Log.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 
@@ -33,7 +33,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithOpenSimMuscleColoringGen
     osc::OpenSimDecorationOptions opts;
     opts.setMuscleColoringStyle(osc::MuscleColoringStyle::OpenSimAppearanceProperty);
 
-    osc::MeshCache meshCache;
+    osc::SceneCache meshCache;
     bool passedTest = false;
     osc::GenerateModelDecorations(
         meshCache,
@@ -73,7 +73,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorScalesFrames)
 
     auto const generateDecorationsWithScaleFactor = [&model, &state](float scaleFactor)
     {
-        osc::MeshCache meshCache;
+        osc::SceneCache meshCache;
 
         std::vector<osc::SceneDecoration> rv;
         osc::GenerateModelDecorations(
@@ -139,7 +139,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorDoesNotScaleE
     // helper
     auto const generateDecorationsWithScaleFactor = [&p, &state](float scaleFactor)
     {
-        osc::MeshCache meshCache;
+        osc::SceneCache meshCache;
 
         std::vector<osc::SceneDecoration> rv;
         osc::GenerateModelDecorations(
@@ -198,7 +198,7 @@ TEST(OpenSimDecorationGenerator, DoesntIncludeTheModelsDirectDecorations)
     OpenSim::Model model{tugOfWarPath.string()};
     osc::InitializeModel(model);
     osc::InitializeState(model);
-    osc::MeshCache meshCache;
+    osc::SceneCache meshCache;
     osc::OpenSimDecorationOptions opts;
 
     bool empty = true;

@@ -3,6 +3,7 @@
 #include <testoscar/testoscarconfig.hpp>
 
 #include <gtest/gtest.h>
+#include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
@@ -10,8 +11,8 @@
 #include <sstream>
 
 using osc::DAEMetadata;
+using osc::Mesh;
 using osc::SceneDecoration;
-using osc::SceneMesh;
 
 TEST(DAE, WriteDecorationsAsDAEWorksForEmptyScene)
 {
@@ -27,7 +28,7 @@ TEST(DAE, WriteDecorationsAsDAEWorksForNonEmptyScene)
 {
     DAEMetadata metadata{TESTOSCAR_APPNAME_STRING, TESTOSCAR_APPNAME_STRING};
 
-    SceneDecoration dec{SceneMesh{osc::GenCube()}};
+    SceneDecoration dec{osc::GenCube()};
 
     std::stringstream ss;
     osc::WriteDecorationsAsDAE(ss, {&dec, 1}, metadata);

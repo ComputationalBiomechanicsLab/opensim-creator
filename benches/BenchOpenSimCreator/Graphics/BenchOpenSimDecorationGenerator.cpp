@@ -6,8 +6,8 @@
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Platform/AppConfig.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <Simbody.h>
 
@@ -23,7 +23,7 @@ static void BM_OpenSimRenderRajagopalDecorations(benchmark::State& state)
     osc::InitializeModel(model);
     SimTK::State const& modelState = osc::InitializeState(model);
 
-    osc::MeshCache meshCache;
+    osc::SceneCache meshCache;
     osc::OpenSimDecorationOptions decorationOptions;
     std::function<void(OpenSim::Component const&, osc::SceneDecoration&&)> outputFunc = [](OpenSim::Component const&, osc::SceneDecoration&&) {};
 

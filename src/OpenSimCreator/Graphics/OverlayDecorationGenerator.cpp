@@ -7,7 +7,7 @@
 #include <functional>
 
 void osc::GenerateOverlayDecorations(
-    SceneMeshCache& meshCache,
+    SceneCache& meshCache,
     OverlayDecorationOptions const& params,
     BVH const& sceneBVH,
     std::function<void(SceneDecoration&&)> const& out)

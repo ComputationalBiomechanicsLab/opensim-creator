@@ -17,7 +17,6 @@
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
@@ -32,6 +31,7 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Scene/CachedSceneRenderer.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
@@ -843,7 +843,7 @@ namespace
         );
 
         // shared sphere mesh (used by rendering code)
-        osc::Mesh landmarkSphere = osc::App::singleton<osc::MeshCache>()->getSphereMesh();
+        osc::Mesh landmarkSphere = osc::App::singleton<osc::SceneCache>()->getSphereMesh();
 
         // current user selection
         TPSUIUserSelection userSelection;
@@ -855,7 +855,7 @@ namespace
         osc::PopupManager popupManager;
 
         // shared mesh cache
-        std::shared_ptr<osc::MeshCache> meshCache = osc::App::singleton<osc::MeshCache>();
+        std::shared_ptr<osc::SceneCache> meshCache = osc::App::singleton<osc::SceneCache>();
     };
 
     TPSDocument const& getScratch(TPSUISharedState const& state)
@@ -866,6 +866,12 @@ namespace
     osc::Mesh const& GetScratchMesh(TPSUISharedState& state, TPSDocumentInputIdentifier which)
     {
         return GetMesh(getScratch(state), which);
+    }
+
+    osc::BVH const& GetScratchMeshBVH(TPSUISharedState& state, TPSDocumentInputIdentifier which)
+    {
+        osc::Mesh const& mesh = GetScratchMesh(state, which);
+        return state.meshCache->getBVH(mesh);
     }
 
     // returns a (potentially cached) post-TPS-warp mesh
@@ -1354,8 +1360,9 @@ namespace
 
             // mesh hittest: compute whether the user is hovering over the mesh (affects rendering)
             osc::Mesh const& inputMesh = GetScratchMesh(*m_State, m_DocumentIdentifier);
+            osc::BVH const& inputMeshBVH = GetScratchMeshBVH(*m_State, m_DocumentIdentifier);
             std::optional<osc::RayCollision> const meshCollision = m_LastTextureHittestResult.isHovered ?
-                osc::GetClosestWorldspaceRayCollision(inputMesh, osc::Transform{}, cameraRay) :
+                osc::GetClosestWorldspaceRayCollision(inputMesh, inputMeshBVH, osc::Transform{}, cameraRay) :
                 std::nullopt;
 
             // landmark hittest: compute whether the user is hovering over a landmark
@@ -1720,7 +1727,7 @@ namespace
         osc::CachedSceneRenderer m_CachedRenderer
         {
             osc::App::config(),
-            *osc::App::singleton<osc::MeshCache>(),
+            *osc::App::singleton<osc::SceneCache>(),
             *osc::App::singleton<osc::ShaderCache>(),
         };
         osc::ImGuiItemHittestResult m_LastTextureHittestResult;
@@ -1963,7 +1970,7 @@ namespace
         osc::CachedSceneRenderer m_CachedRenderer
         {
             osc::App::config(),
-            *osc::App::singleton<osc::MeshCache>(),
+            *osc::App::singleton<osc::SceneCache>(),
             *osc::App::singleton<osc::ShaderCache>(),
         };
         osc::ImGuiItemHittestResult m_LastTextureHittestResult;

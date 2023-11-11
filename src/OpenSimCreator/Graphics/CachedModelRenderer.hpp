@@ -16,7 +16,7 @@ namespace osc { struct ModelRendererParams; }
 namespace osc { struct Rect; }
 namespace osc { class RenderTexture; }
 namespace osc { struct SceneDecoration; }
-namespace osc { class SceneMeshCache; }
+namespace osc { class SceneCache; }
 namespace osc { class ShaderCache; }
 namespace osc { class VirtualConstModelStatePair; }
 
@@ -26,7 +26,7 @@ namespace osc
     public:
         CachedModelRenderer(
             AppConfig const&,
-            std::shared_ptr<SceneMeshCache> const&,
+            std::shared_ptr<SceneCache> const&,
             ShaderCache&
         );
         CachedModelRenderer(CachedModelRenderer const&) = delete;

@@ -21,13 +21,13 @@
 #include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/Log.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
@@ -169,7 +169,7 @@ namespace
     class RendererState final {
     public:
         RendererState(
-            osc::MeshCache& meshCache,
+            osc::SceneCache& meshCache,
             OpenSim::Model const& model,
             SimTK::State const& state,
             osc::OpenSimDecorationOptions const& opts,
@@ -185,7 +185,7 @@ namespace
         {
         }
 
-        osc::MeshCache& updMeshCache()
+        osc::SceneCache& updMeshCache()
         {
             return m_MeshCache;
         }
@@ -299,7 +299,7 @@ namespace
         }
 
     private:
-        osc::MeshCache& m_MeshCache;
+        osc::SceneCache& m_MeshCache;
         osc::Mesh m_SphereMesh = m_MeshCache.getSphereMesh();
         osc::Mesh m_CylinderMesh = m_MeshCache.getCylinderMesh();
         OpenSim::Model const& m_Model;
@@ -918,7 +918,7 @@ namespace
 }
 
 void osc::GenerateModelDecorations(
-    MeshCache& meshCache,
+    SceneCache& meshCache,
     OpenSim::Model const& model,
     SimTK::State const& state,
     OpenSimDecorationOptions const& opts,
@@ -938,7 +938,7 @@ void osc::GenerateModelDecorations(
 }
 
 void osc::GenerateSubcomponentDecorations(
-    MeshCache& meshCache,
+    SceneCache& meshCache,
     OpenSim::Model const& model,
     SimTK::State const& state,
     OpenSim::Component const& subcomponent,
@@ -1021,7 +1021,7 @@ void osc::GenerateSubcomponentDecorations(
 }
 
 osc::Mesh osc::ToOscMesh(
-    MeshCache& meshCache,
+    SceneCache& meshCache,
     OpenSim::Model const& model,
     SimTK::State const& state,
     OpenSim::Mesh const& mesh,
@@ -1062,7 +1062,7 @@ osc::Mesh osc::ToOscMesh(
     SimTK::State const& state,
     OpenSim::Mesh const& mesh)
 {
-    MeshCache cache;
+    SceneCache cache;
     OpenSimDecorationOptions opts;
     return ToOscMesh(cache, model, state, mesh, opts, 1.0f);
 }
@@ -1082,7 +1082,7 @@ osc::Mesh osc::ToOscMeshBakeScaleFactors(
 }
 
 float osc::GetRecommendedScaleFactor(
-    MeshCache& meshCache,
+    SceneCache& meshCache,
     OpenSim::Model const& model,
     SimTK::State const& state,
     OpenSimDecorationOptions const& opts)

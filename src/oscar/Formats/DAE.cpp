@@ -83,7 +83,7 @@ namespace
 
         int64_t latestMesh = 0;
         int64_t latestMaterial = 0;
-        std::unordered_map<osc::SceneMesh, std::string> mesh2id;
+        std::unordered_map<osc::Mesh, std::string> mesh2id;
         std::unordered_map<osc::Color, std::string> color2materialid;
         int64_t latestInstance = 0;
 

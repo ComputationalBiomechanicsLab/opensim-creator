@@ -16,7 +16,6 @@
 #include <oscar/Formats/SVG.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
@@ -28,6 +27,7 @@
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 #include <oscar/UI/Tabs/TabHost.hpp>
@@ -401,7 +401,7 @@ private:
     SceneRenderer m_SceneRenderer
     {
         App::config(),
-        *App::singleton<MeshCache>(),
+        *App::singleton<SceneCache>(),
         *App::singleton<ShaderCache>(),
     };
     SceneRendererParams m_LastSceneRendererParams = GetSplashScreenDefaultRenderParams(m_Camera);

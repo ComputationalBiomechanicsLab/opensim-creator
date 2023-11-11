@@ -42,7 +42,6 @@
 #include <oscar/Formats/STL.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
@@ -67,6 +66,7 @@
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
@@ -140,7 +140,6 @@ using osc::Mat4x3;
 using osc::Material;
 using osc::MaterialPropertyBlock;
 using osc::Mesh;
-using osc::MeshCache;
 using osc::operator<<;
 using osc::Overload;
 using osc::PolarPerspectiveCamera;
@@ -148,6 +147,7 @@ using osc::Quat;
 using osc::RayCollision;
 using osc::Rect;
 using osc::RenderTexture;
+using osc::SceneCache;
 using osc::SceneDecoration;
 using osc::SceneDecorationFlags;
 using osc::SceneRenderer;
@@ -4625,7 +4625,7 @@ namespace
             DrawableThing dt;
             dt.id = c_EmptyID;
             dt.groupId = c_EmptyID;
-            dt.mesh = App::singleton<MeshCache>()->get100x100GridMesh();
+            dt.mesh = App::singleton<SceneCache>()->get100x100GridMesh();
             dt.transform = t;
             dt.color = m_Colors.gridLines;
             dt.flags = SceneDecorationFlags::None;
@@ -4726,7 +4726,7 @@ namespace
                 DrawableThing& originCube = appendOut.emplace_back();
                 originCube.id = logicalID;
                 originCube.groupId = groupID;
-                originCube.mesh = App::singleton<MeshCache>()->getBrickMesh();
+                originCube.mesh = App::singleton<SceneCache>()->getBrickMesh();
                 originCube.transform = scaled;
                 originCube.color = Color::white();
                 originCube.flags = SceneDecorationFlags::None;
@@ -4755,7 +4755,7 @@ namespace
                 DrawableThing& legCube = appendOut.emplace_back();
                 legCube.id = logicalID;
                 legCube.groupId = groupID;
-                legCube.mesh = App::singleton<MeshCache>()->getConeMesh();
+                legCube.mesh = App::singleton<SceneCache>()->getConeMesh();
                 legCube.transform = t;
                 legCube.color = color;
                 legCube.flags = SceneDecorationFlags::None;
@@ -4853,6 +4853,8 @@ namespace
 
         Hover doHovertest(std::vector<DrawableThing> const& drawables) const
         {
+            auto cache = osc::App::singleton<SceneCache>();
+
             Rect const sceneRect = get3DSceneRect();
             Vec2 const mousePos = ImGui::GetMousePos();
 
@@ -4908,6 +4910,7 @@ namespace
 
                 std::optional<RayCollision> const rc = osc::GetClosestWorldspaceRayCollision(
                     drawable.mesh,
+                    cache->getBVH(drawable.mesh),
                     drawable.transform,
                     ray
                 );
@@ -5184,7 +5187,11 @@ namespace
         Rect m_3DSceneRect = {};
 
         // renderer that draws the scene
-        SceneRenderer m_SceneRenderer{App::config(), *App::singleton<MeshCache>(), *App::singleton<osc::ShaderCache>()};
+        SceneRenderer m_SceneRenderer{
+            App::config(),
+            *App::singleton<SceneCache>(),
+            *App::singleton<osc::ShaderCache>()
+        };
 
         // COLORS
         //

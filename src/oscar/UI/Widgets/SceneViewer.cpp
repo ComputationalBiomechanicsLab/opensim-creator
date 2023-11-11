@@ -3,8 +3,8 @@
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
-#include <oscar/Scene/SceneMeshCache.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 
@@ -49,7 +49,7 @@ private:
     SceneRenderer m_Renderer
     {
         App::config(),
-        *App::singleton<SceneMeshCache>(),
+        *App::singleton<SceneCache>(),
         *App::singleton<ShaderCache>(),
     };
     bool m_IsHovered = false;

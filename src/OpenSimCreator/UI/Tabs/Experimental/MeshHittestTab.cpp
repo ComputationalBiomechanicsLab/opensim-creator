@@ -10,7 +10,6 @@
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Maths/BVH.hpp>
@@ -23,6 +22,7 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
@@ -67,8 +67,8 @@ public:
             {
                 MeshIndicesView const indices = m_Mesh.getIndices();
                 std::optional<BVHCollision> const maybeCollision = indices.isU16() ?
-                    m_Mesh.getBVH().getClosestRayIndexedTriangleCollision(m_Mesh.getVerts(), indices.toU16Span(), m_Ray) :
-                    m_Mesh.getBVH().getClosestRayIndexedTriangleCollision(m_Mesh.getVerts(), indices.toU32Span(), m_Ray);
+                    m_MeshBVH.getClosestRayIndexedTriangleCollision(m_Mesh.getVerts(), indices.toU16Span(), m_Ray) :
+                    m_MeshBVH.getClosestRayIndexedTriangleCollision(m_Mesh.getVerts(), indices.toU32Span(), m_Ray);
                 if (maybeCollision)
                 {
                     uint32_t index = m_Mesh.getIndices()[maybeCollision->id];
@@ -145,8 +145,8 @@ public:
             m_Material.setColor("uColor", Color::black());
             m_Material.setDepthTested(true);
             osc::DrawBVH(
-                *App::singleton<MeshCache>(),
-                m_Mesh.getBVH(),
+                *App::singleton<SceneCache>(),
+                m_MeshBVH,
                 [this](osc::SceneDecoration&& dec)
                 {
                     osc::Graphics::DrawMesh(m_CubeLinesMesh, dec.transform, m_Material, m_Camera);
@@ -198,6 +198,7 @@ private:
     Mesh m_CubeLinesMesh = GenCubeLines();
 
     // other state
+    BVH m_MeshBVH = CreateTriangleBVHFromMesh(m_Mesh);
     bool m_UseBVH = false;
     std::array<Vec3, 3> m_Tris{};
     std::chrono::microseconds m_RaycastDuration{0};

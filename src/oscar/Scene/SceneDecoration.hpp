@@ -3,9 +3,9 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MaterialPropertyBlock.hpp>
+#include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Scene/SceneDecorationFlags.hpp>
-#include <oscar/Scene/SceneMesh.hpp>
 #include <oscar/Scene/SimpleSceneDecoration.hpp>
 
 #include <optional>
@@ -17,7 +17,7 @@ namespace osc
     // represents a renderable decoration for a component in a model
     struct SceneDecoration final {
 
-        explicit SceneDecoration(SceneMesh const& mesh_) :
+        explicit SceneDecoration(Mesh const& mesh_) :
             mesh{mesh_}
         {
         }
@@ -37,7 +37,7 @@ namespace osc
         }
 
         SceneDecoration(
-            SceneMesh const& mesh_,
+            Mesh const& mesh_,
             Transform const& transform_,
             Color const& color_) :
 
@@ -48,7 +48,7 @@ namespace osc
         }
 
         SceneDecoration(
-            SceneMesh const& mesh_,
+            Mesh const& mesh_,
             Transform const& transform_,
             Color const& color_,
             std::string id_,
@@ -63,7 +63,7 @@ namespace osc
         }
 
         SceneDecoration(
-            SceneMesh const& mesh_,
+            Mesh const& mesh_,
             Transform const& transform_,
             Color const& color_,
             std::string id_,
@@ -83,7 +83,7 @@ namespace osc
 
         friend bool operator==(SceneDecoration const&, SceneDecoration const&) = default;
 
-        SceneMesh mesh;
+        Mesh mesh;
         Transform transform{};
         Color color = Color::white();
         std::string id;

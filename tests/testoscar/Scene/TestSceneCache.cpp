@@ -1,4 +1,4 @@
-#include <oscar/Scene/SceneMesh.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>
@@ -13,17 +13,18 @@
 using osc::AABB;
 using osc::BVH;
 using osc::Mesh;
-using osc::SceneMesh;
+using osc::SceneCache;
 using osc::Vec3;
 
-TEST(SceneMesh, GetBVHReturnsEmptyBVHOnInitialization)
+TEST(SceneMesh, GetBVHOnEmptyMeshReturnsEmptyBVH)
 {
-    SceneMesh m;
-    BVH const& bvh = m.getBVH();
+    SceneCache c;
+    Mesh m;
+    BVH const& bvh = c.getBVH(m);
     ASSERT_TRUE(bvh.empty());
 }
 
-TEST(SceneMesh, GetBVHReturnsExpectedRootNode)
+TEST(SceneMesh, GetBVHOnNonEmptyMeshReturnsExpectedRootNode)
 {
     auto const pyramid = std::to_array<Vec3>(
     {
@@ -39,7 +40,9 @@ TEST(SceneMesh, GetBVHReturnsExpectedRootNode)
 
     AABB const expectedRoot = osc::AABBFromVerts(pyramid);
 
-    BVH bvh = SceneMesh{m}.getBVH();
+    SceneCache c;
+
+    BVH const& bvh = c.getBVH(m);
 
     ASSERT_FALSE(bvh.empty());
     ASSERT_EQ(expectedRoot, bvh.getRootAABB());
