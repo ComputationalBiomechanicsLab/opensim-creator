@@ -18,17 +18,3 @@ osc::RenderTargetColorAttachment::RenderTargetColorAttachment(
     clearColor{clearColor_}
 {
 }
-
-bool osc::operator==(RenderTargetColorAttachment const& lhs, RenderTargetColorAttachment const& rhs) noexcept
-{
-    return
-        lhs.buffer == rhs.buffer &&
-        lhs.loadAction == rhs.loadAction &&
-        lhs.storeAction == rhs.storeAction &&
-        lhs.clearColor == rhs.clearColor;
-}
-
-bool osc::operator!=(RenderTargetColorAttachment const& lhs, RenderTargetColorAttachment const& rhs) noexcept
-{
-    return !(lhs == rhs);
-}

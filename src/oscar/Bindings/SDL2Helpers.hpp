@@ -2,8 +2,8 @@
 
 #include <SDL.h>
 #undef main
-#include <glm/vec2.hpp>
 
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <stdexcept>
@@ -155,9 +155,9 @@ namespace sdl
     }
 
     // https://wiki.libsdl.org/SDL_GetWindowSize
-    inline glm::ivec2 GetWindowSize(SDL_Window* window)
+    inline osc::Vec2i GetWindowSize(SDL_Window* window)
     {
-        glm::ivec2 d;
+        osc::Vec2i d;
         SDL_GetWindowSize(window, &d.x, &d.y);
         return d;
     }

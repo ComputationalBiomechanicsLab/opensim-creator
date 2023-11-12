@@ -1,9 +1,10 @@
 #include "PopupManager.hpp"
 
 #include <oscar/UI/Widgets/Popup.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <cstddef>
+#include <memory>
+#include <vector>
 
 osc::PopupManager::PopupManager() = default;
 osc::PopupManager::PopupManager(PopupManager&&) noexcept = default;
@@ -27,7 +28,7 @@ void osc::PopupManager::onDraw()
 {
     // begin and (if applicable) draw bottom-to-top in a nested fashion
     ptrdiff_t nOpened = 0;
-    ptrdiff_t nPopups = osc::ssize(m_Popups);  // only draw the popups that existed at the start of this frame, not the ones added during this frame
+    ptrdiff_t nPopups = std::ssize(m_Popups);  // only draw the popups that existed at the start of this frame, not the ones added during this frame
     for (ptrdiff_t i = 0; i < nPopups; ++i)
     {
         if (m_Popups[i]->beginPopup())
@@ -48,7 +49,7 @@ void osc::PopupManager::onDraw()
     }
 
     // garbage-collect any closed popups
-    osc::erase_if(m_Popups, [](auto const& ptr) { return !ptr->isOpen(); });
+    std::erase_if(m_Popups, [](auto const& ptr) { return !ptr->isOpen(); });
 }
 
 bool osc::PopupManager::empty()

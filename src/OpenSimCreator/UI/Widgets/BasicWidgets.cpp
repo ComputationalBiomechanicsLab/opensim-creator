@@ -22,12 +22,9 @@
 #include <OpenSimCreator/Utils/ParamValue.hpp>
 #include <OpenSimCreator/Utils/UndoableModelActions.hpp>
 
-#include <glm/vec2.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <IconsFontAwesome5.h>
-#include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Simulation/Model/Frame.h>
@@ -39,19 +36,20 @@
 #include <oscar/Formats/OBJ.hpp>
 #include <oscar/Formats/STL.hpp>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
-#include <oscar/Maths/Constants.hpp>
+#include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/UI/Widgets/GuiRuler.hpp>
 #include <oscar/UI/Widgets/IconWithMenu.hpp>
 #include <oscar/UI/IconCache.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <SimTKcommon/basics.h>
@@ -63,7 +61,9 @@
 #include <filesystem>
 #include <fstream>
 #include <map>
+#include <numbers>
 #include <optional>
+#include <span>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -74,7 +74,7 @@
 namespace
 {
     // prompts the user for a save location and then exports a DAE file containing the 3D scene
-    void TryPromptUserToSaveAsDAE(nonstd::span<osc::SceneDecoration const> scene)
+    void TryPromptUserToSaveAsDAE(std::span<osc::SceneDecoration const> scene)
     {
         std::optional<std::filesystem::path> maybeDAEPath =
             osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("dae");
@@ -530,31 +530,31 @@ void osc::DrawWithRespectToMenuContainingMenuItemPerFrame(
 void osc::DrawPointTranslationInformationWithRespectTo(
     OpenSim::Frame const& frame,
     SimTK::State const& state,
-    glm::vec3 locationInGround)
+    Vec3 locationInGround)
 {
     SimTK::Transform const groundToFrame = frame.getTransformInGround(state).invert();
-    glm::vec3 position = osc::ToVec3(groundToFrame * osc::ToSimTKVec3(locationInGround));
+    Vec3 position = osc::ToVec3(groundToFrame * osc::ToSimTKVec3(locationInGround));
 
     ImGui::Text("translation");
     ImGui::SameLine();
     osc::DrawHelpMarker("translation", "Translational offset (in meters) of the point expressed in the chosen frame");
     ImGui::SameLine();
-    ImGui::InputFloat3("##translation", glm::value_ptr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputFloat3("##translation", ValuePtr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
 void osc::DrawDirectionInformationWithRepsectTo(
     OpenSim::Frame const& frame,
     SimTK::State const& state,
-    glm::vec3 directionInGround)
+    Vec3 directionInGround)
 {
     SimTK::Transform const groundToFrame = frame.getTransformInGround(state).invert();
-    glm::vec3 direction = osc::ToVec3(groundToFrame.xformBaseVecToFrame(osc::ToSimTKVec3(directionInGround)));
+    Vec3 direction = osc::ToVec3(groundToFrame.xformBaseVecToFrame(osc::ToSimTKVec3(directionInGround)));
 
     ImGui::Text("direction");
     ImGui::SameLine();
     osc::DrawHelpMarker("direction", "a unit vector expressed in the given frame");
     ImGui::SameLine();
-    ImGui::InputFloat3("##direction", glm::value_ptr(direction), "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputFloat3("##direction", ValuePtr(direction), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
 void osc::DrawFrameInformationExpressedIn(
@@ -563,20 +563,20 @@ void osc::DrawFrameInformationExpressedIn(
     OpenSim::Frame const& otherFrame)
 {
     SimTK::Transform const xform = parent.findTransformBetween(state, otherFrame);
-    glm::vec3 position = osc::ToVec3(xform.p());
-    glm::vec3 rotationEulers = osc::ToVec3(xform.R().convertRotationToBodyFixedXYZ());
+    Vec3 position = osc::ToVec3(xform.p());
+    Vec3 rotationEulers = osc::ToVec3(xform.R().convertRotationToBodyFixedXYZ());
 
     ImGui::Text("translation");
     ImGui::SameLine();
     osc::DrawHelpMarker("translation", "Translational offset (in meters) of the frame's origin expressed in the chosen frame");
     ImGui::SameLine();
-    ImGui::InputFloat3("##translation", glm::value_ptr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputFloat3("##translation", ValuePtr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
 
     ImGui::Text("orientation");
     ImGui::SameLine();
     osc::DrawHelpMarker("orientation", "Orientation offset (in radians) of the frame, expressed in the chosen frame as a frame-fixed x-y-z rotation sequence");
     ImGui::SameLine();
-    ImGui::InputFloat3("##orientation", glm::value_ptr(rotationEulers), "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputFloat3("##orientation", ValuePtr(rotationEulers), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
 bool osc::BeginCalculateMenu(CalculateMenuFlags flags)
@@ -662,7 +662,7 @@ void osc::DrawCalculateOriginMenu(
 {
     if (ImGui::BeginMenu("origin"))
     {
-        glm::vec3 const posInGround = ToVec3(sphere.getFrame().getPositionInGround(state));
+        Vec3 const posInGround = ToVec3(sphere.getFrame().getPositionInGround(state));
         auto const onFrameMenuOpened = [&state, posInGround](OpenSim::Frame const& otherFrame)
         {
             DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
@@ -879,7 +879,7 @@ bool osc::DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions& opts)
 
 bool osc::DrawAdvancedParamsEditor(
     ModelRendererParams& params,
-    nonstd::span<SceneDecoration const> drawlist)
+    std::span<SceneDecoration const> drawlist)
 {
     bool edited = false;
 
@@ -960,8 +960,8 @@ bool osc::DrawAdvancedParamsEditor(
     ImGui::Text("advanced camera properties:");
     ImGui::Separator();
     edited = osc::SliderMetersFloat("radius", params.camera.radius, 0.0f, 10.0f) || edited;
-    edited = ImGui::SliderFloat("theta", &params.camera.theta, 0.0f, 2.0f * osc::fpi) || edited;
-    edited = ImGui::SliderFloat("phi", &params.camera.phi, 0.0f, 2.0f * osc::fpi) || edited;
+    edited = ImGui::SliderFloat("theta", &params.camera.theta, 0.0f, 2.0f * std::numbers::pi_v<float>) || edited;
+    edited = ImGui::SliderFloat("phi", &params.camera.phi, 0.0f, 2.0f * std::numbers::pi_v<float>) || edited;
     edited = ImGui::InputFloat("fov", &params.camera.fov) || edited;
     edited = osc::InputMetersFloat("znear", params.camera.znear) || edited;
     edited = osc::InputMetersFloat("zfar", params.camera.zfar) || edited;
@@ -1001,7 +1001,7 @@ bool osc::DrawVisualAidsContextMenuContent(ModelRendererParams& params)
 
 bool osc::DrawViewerTopButtonRow(
     ModelRendererParams& params,
-    nonstd::span<osc::SceneDecoration const> drawlist,
+    std::span<osc::SceneDecoration const> drawlist,
     IconCache& iconCache,
     std::function<bool()> const& drawExtraElements)
 {
@@ -1056,7 +1056,7 @@ bool osc::DrawCameraControlButtons(
     float const xFirstRow = viewerScreenRect.p1.x + style.WindowPadding.x + osc::CalcAlignmentAxesDimensions().x + style.ItemSpacing.x;
     float const yFirstRow = (viewerScreenRect.p2.y - style.WindowPadding.y - 0.5f*osc::CalcAlignmentAxesDimensions().y) - 0.5f*twoRowHeight;
 
-    glm::vec2 const firstRowTopLeft = {xFirstRow, yFirstRow};
+    Vec2 const firstRowTopLeft = {xFirstRow, yFirstRow};
     float const midRowY = yFirstRow + 0.5f*(buttonHeight + rowSpacing);
 
     bool edited = false;
@@ -1206,7 +1206,7 @@ bool osc::DrawCameraControlButtons(
 
 bool osc::DrawViewerImGuiOverlays(
     ModelRendererParams& params,
-    nonstd::span<SceneDecoration const> drawlist,
+    std::span<SceneDecoration const> drawlist,
     std::optional<AABB> maybeSceneAABB,
     Rect const& renderRect,
     IconCache& iconCache,
@@ -1215,13 +1215,13 @@ bool osc::DrawViewerImGuiOverlays(
     bool edited = false;
 
     // draw the top overlays
-    ImGui::SetCursorScreenPos(renderRect.p1 + glm::vec2{ImGui::GetStyle().WindowPadding});
+    ImGui::SetCursorScreenPos(renderRect.p1 + Vec2{ImGui::GetStyle().WindowPadding});
     edited = DrawViewerTopButtonRow(params, drawlist, iconCache, drawExtraElementsInTop) || edited;
 
     // compute bottom overlay positions
     ImGuiStyle const& style = ImGui::GetStyle();
-    glm::vec2 const alignmentAxesDims = osc::CalcAlignmentAxesDimensions();
-    glm::vec2 const axesTopLeft =
+    Vec2 const alignmentAxesDims = osc::CalcAlignmentAxesDimensions();
+    Vec2 const axesTopLeft =
     {
         renderRect.p1.x + style.WindowPadding.x,
         renderRect.p2.y - style.WindowPadding.y - alignmentAxesDims.y
@@ -1242,7 +1242,7 @@ bool osc::DrawViewerImGuiOverlays(
     return edited;
 }
 
-bool osc::BeginToolbar(CStringView label, std::optional<glm::vec2> padding)
+bool osc::BeginToolbar(CStringView label, std::optional<Vec2> padding)
 {
     if (padding)
     {
@@ -1323,7 +1323,7 @@ void osc::DrawReloadModelButton(UndoableModelStatePair& model)
 
     if (ImGui::Button(ICON_FA_RECYCLE))
     {
-        ActionReloadOsimFromDisk(model, *App::singleton<MeshCache>());
+        ActionReloadOsimFromDisk(model, *App::singleton<SceneCache>());
     }
 
     if (!HasInputFileName(model.getModel()))

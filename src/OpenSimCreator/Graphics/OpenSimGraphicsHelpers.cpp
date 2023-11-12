@@ -6,11 +6,11 @@
 #include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp>
 #include <OpenSimCreator/Model/VirtualConstModelStatePair.hpp>
 
-#include <glm/vec2.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
@@ -20,7 +20,7 @@
 
 osc::SceneRendererParams osc::CalcSceneRendererParams(
     ModelRendererParams const& renderParams,
-    glm::vec2 viewportDims,
+    Vec2 viewportDims,
     AntiAliasingLevel antiAliasingLevel,
     float fixupScaleFactor)
 {
@@ -48,7 +48,7 @@ osc::SceneRendererParams osc::CalcSceneRendererParams(
 }
 
 void osc::GenerateDecorations(
-    MeshCache& meshCache,
+    SceneCache& meshCache,
     VirtualConstModelStatePair const& msp,
     OpenSimDecorationOptions const& options,
     std::function<void(OpenSim::Component const&, SceneDecoration&&)> const& out)
@@ -75,15 +75,16 @@ void osc::GenerateDecorations(
 
 std::optional<osc::SceneCollision> osc::GetClosestCollision(
     BVH const& sceneBVH,
-    nonstd::span<SceneDecoration const> taggedDrawlist,
+    SceneCache& sceneCache,
+    std::span<SceneDecoration const> taggedDrawlist,
     PolarPerspectiveCamera const& camera,
-    glm::vec2 mouseScreenPos,
+    Vec2 mouseScreenPos,
     Rect const& viewportScreenRect)
 {
     OSC_PERF("ModelSceneDecorations/getClosestCollision");
 
     // un-project 2D mouse cursor into 3D scene as a ray
-    glm::vec2 const mouseRenderPos = mouseScreenPos - viewportScreenRect.p1;
+    Vec2 const mouseRenderPos = mouseScreenPos - viewportScreenRect.p1;
     Line const worldspaceCameraRay = camera.unprojectTopLeftPosToWorldRay(
         mouseRenderPos,
         Dimensions(viewportScreenRect)
@@ -92,6 +93,7 @@ std::optional<osc::SceneCollision> osc::GetClosestCollision(
     // find all collisions along the camera ray
     std::vector<SceneCollision> const collisions = GetAllSceneCollisions(
         sceneBVH,
+        sceneCache,
         taggedDrawlist,
         worldspaceCameraRay
     );

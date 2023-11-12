@@ -5,12 +5,11 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
-#include <nonstd/span.hpp>
-
 #include <algorithm>
 #include <functional>
 #include <memory>
 #include <optional>
+#include <span>
 #include <sstream>
 #include <string>
 #include <string_view>

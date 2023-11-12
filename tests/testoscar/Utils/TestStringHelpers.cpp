@@ -1,9 +1,9 @@
 #include <oscar/Utils/StringHelpers.hpp>
 
 #include <gtest/gtest.h>
-#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <iostream>
 #include <optional>
@@ -17,7 +17,7 @@ TEST(Algorithms, TrimLeadingAndTrailingWhitespaceWorksAsExpected)
         std::string_view expectedOutput;
     };
 
-    auto const testCases = osc::to_array<TestCase>(
+    auto const testCases = std::to_array<TestCase>(
     {
         // trivial case
         {"", ""},
@@ -121,7 +121,7 @@ namespace
         *o << tc;
     }
 
-    auto constexpr c_TestCases = osc::to_array<TestCase>(
+    auto constexpr c_TestCases = std::to_array<TestCase>(
     {
         // it strips purely-whitespace strings
         {"", std::nullopt},
@@ -226,7 +226,7 @@ TEST(ToHexChars, ReturnsExpectedResults)
         std::pair<char, char> expectedOutput;
     };
 
-    auto const testCases = osc::to_array<TestCase>(
+    auto const testCases = std::to_array<TestCase>(
     {
         {0x00, {'0', '0'}},
         {0x0f, {'0', 'f'}},

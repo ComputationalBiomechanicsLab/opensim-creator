@@ -5,7 +5,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/UndoableModelActions.hpp>
 
-#include <glm/vec2.hpp>
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -41,19 +40,7 @@ namespace
         {
         }
 
-        friend bool operator==(PopupParams const& lhs, PopupParams const& rhs)
-        {
-            return
-                lhs.modelVersion == rhs.modelVersion &&
-                lhs.componentPath == rhs.componentPath &&
-                lhs.socketName == rhs.socketName &&
-                lhs.search == rhs.search;
-        }
-
-        friend bool operator!=(PopupParams const& lhs, PopupParams const& rhs)
-        {
-            return !(lhs == rhs);
-        }
+        friend bool operator==(PopupParams const&, PopupParams const&) = default;
 
         osc::UID modelVersion;
         OpenSim::ComponentPath componentPath;

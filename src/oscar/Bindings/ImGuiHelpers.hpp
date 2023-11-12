@@ -1,19 +1,19 @@
 #pragma once
 
 #include <oscar/Maths/AABB.hpp>
+#include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/mat4x4.hpp>
 #include <imgui.h>
-#include <nonstd/span.hpp>
 
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
 #include <optional>
+#include <span>
 #include <string>
 
 namespace osc { class Camera; }
@@ -31,7 +31,7 @@ namespace osc
     // updates a polar comera's rotation, position, etc. based on ImGui mouse input state
     bool UpdatePolarCameraFromImGuiMouseInputs(
         PolarPerspectiveCamera&,
-        glm::vec2 viewportDims
+        Vec2 viewportDims
     );
     // updates a polar comera's rotation, position, etc. based on ImGui keyboard input state
     bool UpdatePolarCameraFromImGuiKeyboardInputs(
@@ -48,7 +48,7 @@ namespace osc
 
     void UpdateEulerCameraFromImGuiUserInput(
         Camera&,
-        glm::vec3& eulers
+        Vec3& eulers
     );
 
     // returns the ImGui content region available in screenspace as a `Rect`
@@ -62,42 +62,42 @@ namespace osc
     );
     void DrawTextureAsImGuiImage(
         Texture2D const&,
-        glm::vec2 dims
+        Vec2 dims
     );
     void DrawTextureAsImGuiImage(
         Texture2D const&,
-        glm::vec2 dims,
-        glm::vec2 topLeftCoord,
-        glm::vec2 bottomRightCoord
+        Vec2 dims,
+        Vec2 topLeftCoord,
+        Vec2 bottomRightCoord
     );
     void DrawTextureAsImGuiImage(
         RenderTexture const&
     );
     void DrawTextureAsImGuiImage(
         RenderTexture const&,
-        glm::vec2 dims
+        Vec2 dims
     );
 
     // returns the dimensions of a button with the given content
-    glm::vec2 CalcButtonSize(CStringView);
+    Vec2 CalcButtonSize(CStringView);
     float CalcButtonWidth(CStringView);
 
     bool ButtonNoBg(
         CStringView,
-        glm::vec2 size = {0.0f, 0.0f}
+        Vec2 size = {0.0f, 0.0f}
     );
 
     // draws a texture using ImGui::ImageButton
     bool ImageButton(
         CStringView,
         Texture2D const&,
-        glm::vec2 dims,
+        Vec2 dims,
         Rect const& textureCoords
     );
     bool ImageButton(
         CStringView,
         Texture2D const&,
-        glm::vec2 dims
+        Vec2 dims
     );
 
     // returns the screenspace bounding rectangle of the last-drawn item
@@ -114,11 +114,11 @@ namespace osc
     ImGuiItemHittestResult HittestLastImguiItem(float dragThreshold);
 
     // returns `true` if any scancode in the provided range is currently pressed down
-    bool IsAnyKeyDown(nonstd::span<ImGuiKey const>);
+    bool IsAnyKeyDown(std::span<ImGuiKey const>);
     bool IsAnyKeyDown(std::initializer_list<ImGuiKey const>);
 
     // returns `true` if any scancode in the provided range was pressed down this frame
-    bool IsAnyKeyPressed(nonstd::span<ImGuiKey const>);
+    bool IsAnyKeyPressed(std::span<ImGuiKey const>);
     bool IsAnyKeyPressed(std::initializer_list<ImGuiKey const>);
 
     // returns true if the user is pressing either left- or right-Ctrl
@@ -165,8 +165,8 @@ namespace osc
     void DrawTooltipIfItemHovered(CStringView header, CStringView description = {});
 
     // draw overlay axes at the cursor position and return the bounding box of those axes
-    glm::vec2 CalcAlignmentAxesDimensions();
-    Rect DrawAlignmentAxes(glm::mat4 const& viewMtx);
+    Vec2 CalcAlignmentAxesDimensions();
+    Rect DrawAlignmentAxes(Mat4 const& viewMtx);
 
     // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
     void DrawHelpMarker(CStringView header, CStringView desc);
@@ -193,7 +193,7 @@ namespace osc
     // draw an ImGui::InputFloat3 that manipulates in the scene scale (note: some users work with very very small sizes)
     bool InputMetersFloat3(
         CStringView label,
-        glm::vec3&,
+        Vec3&,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
     );
 
@@ -278,7 +278,7 @@ namespace osc
     bool Combo(
         CStringView label,
         size_t* current,
-        nonstd::span<CStringView const> items
+        std::span<CStringView const> items
     );
 
     // converts all color values in all draw commands' vertex buffers from sRGB to linear

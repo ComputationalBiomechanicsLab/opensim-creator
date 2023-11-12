@@ -1,15 +1,14 @@
 #include "MuscleSizingStyle.hpp"
 
-#include <nonstd/span.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 
 #include <array>
 #include <cstddef>
+#include <span>
 
 namespace
 {
-    constexpr auto c_Metadata = osc::to_array<osc::MuscleSizingStyleMetadata>(
+    constexpr auto c_Metadata = std::to_array<osc::MuscleSizingStyleMetadata>(
     {
         osc::MuscleSizingStyleMetadata
         {
@@ -27,7 +26,7 @@ namespace
     static_assert(c_Metadata.size() == osc::NumOptions<osc::MuscleSizingStyle>());
 }
 
-nonstd::span<osc::MuscleSizingStyleMetadata const> osc::GetAllMuscleSizingStyleMetadata()
+std::span<osc::MuscleSizingStyleMetadata const> osc::GetAllMuscleSizingStyleMetadata()
 {
     return c_Metadata;
 }

@@ -17,6 +17,7 @@
 #include <cstddef>
 #include <ctime>
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
@@ -458,7 +459,7 @@ void osc::WriteTracebackToLog(LogLevel lvl)
 
 namespace
 {
-    [[noreturn]] void OSC_critical_error_handler(int sig_num, siginfo_t* info, void* ucontext)
+    [[noreturn]] void OSC_critical_error_handler(int sig_num, siginfo_t*, void*)
     {
         osc::log::error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
         osc::log::error("backtrace:");

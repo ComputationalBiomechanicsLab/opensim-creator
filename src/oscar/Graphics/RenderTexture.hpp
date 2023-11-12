@@ -4,16 +4,16 @@
 #include <oscar/Graphics/RenderTextureDescriptor.hpp>
 #include <oscar/Graphics/RenderTextureFormat.hpp>
 #include <oscar/Graphics/RenderTextureReadWrite.hpp>
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/Utils/CopyOnUpdPtr.hpp>
 
-#include <glm/vec2.hpp>
-
 #include <iosfwd>
+#include <memory>
 #include <optional>
 
 namespace osc { class RenderBuffer; }
 namespace osc { class RenderTexture; }
-namespace osc { void DrawTextureAsImGuiImage(RenderTexture const&, glm::vec2); }
+namespace osc { void DrawTextureAsImGuiImage(RenderTexture const&, Vec2); }
 
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
@@ -24,7 +24,7 @@ namespace osc
     class RenderTexture final {
     public:
         RenderTexture();
-        explicit RenderTexture(glm::ivec2 dimensions);
+        explicit RenderTexture(Vec2i dimensions);
         explicit RenderTexture(RenderTextureDescriptor const&);
         RenderTexture(RenderTexture const&);
         RenderTexture(RenderTexture&&) noexcept;
@@ -32,8 +32,8 @@ namespace osc
         RenderTexture& operator=(RenderTexture&&) noexcept;
         ~RenderTexture() noexcept;
 
-        glm::ivec2 getDimensions() const;
-        void setDimensions(glm::ivec2);
+        Vec2i getDimensions() const;
+        void setDimensions(Vec2i);
 
         TextureDimensionality getDimensionality() const;
         void setDimensionality(TextureDimensionality);
@@ -60,19 +60,11 @@ namespace osc
             swap(a.m_Impl, b.m_Impl);
         }
 
-        friend bool operator==(RenderTexture const& lhs, RenderTexture const& rhs) noexcept
-        {
-            return lhs.m_Impl == rhs.m_Impl;
-        }
-
-        friend bool operator!=(RenderTexture const& lhs, RenderTexture const& rhs) noexcept
-        {
-            return lhs.m_Impl != rhs.m_Impl;
-        }
+        friend bool operator==(RenderTexture const&, RenderTexture const&) = default;
 
         friend std::ostream& operator<<(std::ostream&, RenderTexture const&);
     private:
-        friend void DrawTextureAsImGuiImage(RenderTexture const&, glm::vec2);
+        friend void DrawTextureAsImGuiImage(RenderTexture const&, Vec2);
         void* getTextureHandleHACK() const;  // used by ImGui... for now
 
         friend class GraphicsBackend;

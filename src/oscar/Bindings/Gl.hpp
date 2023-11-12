@@ -1,12 +1,18 @@
 #pragma once
 
+#include <oscar/Maths/Mat3.hpp>
+#include <oscar/Maths/Mat4.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/Vec4.hpp>
+
 #include <GL/glew.h>
-#include <nonstd/span.hpp>
 
 #include <cstddef>
 #include <exception>
 #include <initializer_list>
 #include <limits>
+#include <span>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -420,6 +426,72 @@ namespace gl
         }
     };
 
+    inline void Uniform(UniformMat3& u, osc::Mat3 const& mat) noexcept
+    {
+        glUniformMatrix3fv(u.geti(), 1, false, osc::ValuePtr(mat));
+    }
+
+    inline void Uniform(UniformVec4& u, osc::Vec4 const& v) noexcept
+    {
+        glUniform4fv(u.geti(), 1, osc::ValuePtr(v));
+    }
+
+    inline void Uniform(UniformVec3& u, osc::Vec3 const& v) noexcept
+    {
+        glUniform3fv(u.geti(), 1, osc::ValuePtr(v));
+    }
+
+    inline void Uniform(UniformVec3& u, std::span<osc::Vec3 const> vs) noexcept
+    {
+        static_assert(sizeof(osc::Vec3) == 3 * sizeof(GLfloat));
+        glUniform3fv(u.geti(), static_cast<GLsizei>(vs.size()), osc::ValuePtr(vs.front()));
+    }
+
+    // set a uniform array of vec3s from a userspace container type (e.g. vector<osc::Vec3>)
+    template<typename Container, size_t N>
+    inline std::enable_if_t<std::is_same_v<osc::Vec3, typename Container::value_type>, void>
+        Uniform(UniformArray<glsl::vec3, N>& u, Container& container) noexcept
+    {
+        OSC_ASSERT(container.size() == N);
+        glUniform3fv(u.geti(), static_cast<GLsizei>(container.size()), osc::ValuePtr(*container.data()));
+    }
+
+    inline void Uniform(UniformMat4& u, osc::Mat4 const& mat) noexcept
+    {
+        glUniformMatrix4fv(u.geti(), 1, false, osc::ValuePtr(mat));
+    }
+
+    inline void Uniform(UniformMat4& u, std::span<osc::Mat4 const> ms) noexcept
+    {
+        static_assert(sizeof(osc::Mat4) == 16 * sizeof(GLfloat));
+        glUniformMatrix4fv(u.geti(), static_cast<GLsizei>(ms.size()), false, osc::ValuePtr(ms.front()));
+    }
+
+    inline void Uniform(UniformMat4& u, UniformIdentityValueTag) noexcept
+    {
+        Uniform(u, osc::Identity<osc::Mat4>());
+    }
+
+    inline void Uniform(UniformVec2& u, osc::Vec2 const& v) noexcept
+    {
+        glUniform2fv(u.geti(), 1, osc::ValuePtr(v));
+    }
+
+    inline void Uniform(UniformVec2& u, std::span<osc::Vec2 const> vs) noexcept
+    {
+        static_assert(sizeof(osc::Vec2) == 2 * sizeof(GLfloat));
+        glUniform2fv(u.geti(), static_cast<GLsizei>(vs.size()), osc::ValuePtr(vs.front()));
+    }
+
+    template<typename Container, size_t N>
+    inline std::enable_if_t<std::is_same_v<osc::Vec2, typename Container::value_type>, void>
+        Uniform(UniformArray<glsl::vec2, N>& u, Container const& container) noexcept
+    {
+        glUniform2fv(u.geti(),
+            static_cast<GLsizei>(container.size()),
+            osc::ValuePtr(container.data()));
+    }
+
     // an attribute shader symbol (e.g. `attribute vec3 aPos`) at at particular
     // location in a linked OpenGL program
     template<typename TGlsl>
@@ -693,7 +765,7 @@ namespace gl
             return m_BufferSize;
         }
 
-        void assign(nonstd::span<T const> span)
+        void assign(std::span<T const> span)
         {
             BindBuffer(*this);
             BufferData(BufferType, sizeof(T) * span.size(), span.data(), Usage);
@@ -703,13 +775,13 @@ namespace gl
         template<typename Container>
         void assign(Container const& c)
         {
-            assign(nonstd::span<T const>{c.data(), c.size()});
+            assign(std::span<T const>{c.data(), c.size()});
         }
 
         template<size_t N>
         void assign(T const (&arr)[N])
         {
-            assign(nonstd::span<T const>{arr, N});
+            assign(std::span<T const>{arr, N});
         }
 
         void resize(size_t n)
@@ -1113,6 +1185,11 @@ namespace gl
     inline void ClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) noexcept
     {
         glClearColor(red, green, blue, alpha);
+    }
+
+    inline void ClearColor(osc::Vec4 const& v) noexcept
+    {
+        ClearColor(v[0], v[1], v[2], v[3]);
     }
 
     inline void Viewport(GLint x, GLint y, GLsizei w, GLsizei h) noexcept

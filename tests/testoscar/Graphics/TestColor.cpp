@@ -1,10 +1,14 @@
 #include <oscar/Graphics/Color.hpp>
 
 #include <gtest/gtest.h>
-#include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/Vec4.hpp>
 
 #include <type_traits>
 #include <utility>
+
+using osc::Vec3;
+using osc::Vec4;
 
 TEST(Color, CanConstructFromRGBAFloats)
 {
@@ -39,7 +43,7 @@ TEST(Color, RGBFloatConstructorIsConstexpr)
 
 TEST(Color, CanBeExplicitlyConstructedFromVec3)
 {
-    glm::vec3 const v = {0.25f, 0.387f, 0.1f};
+    Vec3 const v = {0.25f, 0.387f, 0.1f};
     osc::Color const color{v};
 
     // ensure vec3 ctor creates a solid color with a == 1.0f
@@ -51,12 +55,12 @@ TEST(Color, CanBeExplicitlyConstructedFromVec3)
 
 TEST(Color, CanBeExplicitlyConstructedFromVec4)
 {
-    [[maybe_unused]] osc::Color const color{glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}};
+    [[maybe_unused]] osc::Color const color{Vec4{0.0f, 1.0f, 0.0f, 1.0f}};
 }
 
 TEST(Color, CanBeImplicitlyConvertedToVec4)
 {
-    [[maybe_unused]] constexpr glm::vec4 v = osc::Color{0.0f, 0.0f, 1.0f, 0.0f};
+    [[maybe_unused]] constexpr Vec4 v = osc::Color{0.0f, 0.0f, 1.0f, 0.0f};
 }
 
 TEST(Color, BracketOpertatorOnConstColorWorksAsExpected)
@@ -72,13 +76,13 @@ TEST(Color, BracketOpertatorOnConstColorWorksAsExpected)
 TEST(Color, Vec4ConstructorIsConstexpr)
 {
     // must compile
-    [[maybe_unused]] constexpr osc::Color color{glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}};
+    [[maybe_unused]] constexpr osc::Color color{Vec4{0.0f, 1.0f, 0.0f, 1.0f}};
 }
 
 TEST(Color, ToVec4ExplicitlyConvertsToVec4)
 {
     osc::Color const c = {0.75, 0.75, 0.75, 1.0f};
-    glm::vec4 const v = osc::ToVec4(c);
+    Vec4 const v = osc::ToVec4(c);
 
     ASSERT_EQ(v.x, c.r);
     ASSERT_EQ(v.y, c.g);

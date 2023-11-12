@@ -15,6 +15,8 @@ namespace osc
             RenderBufferStoreAction storeAction_
         );
 
+        friend bool operator==(RenderTargetAttachment const&, RenderTargetAttachment const&) = default;
+
         std::shared_ptr<RenderBuffer> buffer;
         RenderBufferLoadAction loadAction;
         RenderBufferStoreAction storeAction;

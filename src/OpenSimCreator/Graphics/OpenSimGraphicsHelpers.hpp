@@ -1,35 +1,35 @@
 #pragma once
 
-#include <glm/vec2.hpp>
-#include <nonstd/span.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/Scene/SceneCollision.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 
 #include <functional>
 #include <optional>
+#include <span>
 
 namespace OpenSim { class Component; }
 namespace osc { class BVH; }
-namespace osc { class MeshCache; }
 namespace osc { struct ModelRendererParams; }
 namespace osc { class OpenSimDecorationOptions; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct SceneDecoration; }
+namespace osc { class SceneCache; }
 namespace osc { class VirtualConstModelStatePair; }
 
 namespace osc
 {
     SceneRendererParams CalcSceneRendererParams(
         ModelRendererParams const&,
-        glm::vec2 viewportDims,
+        Vec2 viewportDims,
         AntiAliasingLevel,
         float fixupScaleFactor
     );
 
     void GenerateDecorations(
-        MeshCache&,
+        SceneCache&,
         VirtualConstModelStatePair const&,
         OpenSimDecorationOptions const&,
         std::function<void(OpenSim::Component const&, SceneDecoration&&)> const& out
@@ -37,9 +37,10 @@ namespace osc
 
     std::optional<SceneCollision> GetClosestCollision(
         BVH const& sceneBVH,
-        nonstd::span<SceneDecoration const> taggedDrawlist,
+        SceneCache&,
+        std::span<SceneDecoration const> taggedDrawlist,
         PolarPerspectiveCamera const&,
-        glm::vec2 mouseScreenPos,
+        Vec2 mouseScreenPos,
         Rect const& viewportScreenRect
     );
 }

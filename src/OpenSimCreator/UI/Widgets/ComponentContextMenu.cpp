@@ -63,7 +63,7 @@ namespace
             // look the Joint up in the type registry so we know where it should be in the ImGui::Combo
             std::optional<size_t> maybeTypeIndex = osc::IndexOf(registry, *joint);
 
-            for (ptrdiff_t i = 0; i < ssize(registry); ++i)
+            for (ptrdiff_t i = 0; i < std::ssize(registry); ++i)
             {
                 bool selected = i == maybeTypeIndex;
                 bool wasSelected = selected;
@@ -79,7 +79,7 @@ namespace
             ImGui::EndMenu();
         }
 
-        if (selectedIdx && *selectedIdx < ssize(registry))
+        if (selectedIdx && *selectedIdx < std::ssize(registry))
         {
             // copy + fixup  a prototype of the user's selection
             osc::ActionChangeJointTypeTo(

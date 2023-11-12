@@ -1,7 +1,5 @@
 #include "LOGLHelloTriangleTab.hpp"
 
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
@@ -9,14 +7,19 @@
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/Shader.hpp>
+#include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
+#include <array>
 #include <cstdint>
 #include <memory>
+
+using osc::Mat4;
+using osc::Vec3;
 
 namespace
 {
@@ -24,7 +27,7 @@ namespace
 
     osc::Mesh GenerateTriangleMesh()
     {
-        constexpr auto points = osc::to_array<glm::vec3>(
+        constexpr auto points = std::to_array<Vec3>(
         {
             {-1.0f, -1.0f, 0.0f},  // bottom-left
             { 1.0f, -1.0f, 0.0f},  // bottom-right
@@ -33,14 +36,14 @@ namespace
 
         // care: we're using colors that are equivalent in sRGB and linear
         //       color spaces here
-        constexpr auto colors = osc::to_array<osc::Color>(
+        constexpr auto colors = std::to_array<osc::Color>(
         {
             osc::Color::red(),
             osc::Color::green(),
             osc::Color::blue(),
         });
 
-        constexpr auto indices = osc::to_array<uint16_t>({0, 1, 2});
+        constexpr auto indices = std::to_array<uint16_t>({0, 1, 2});
 
         osc::Mesh m;
         m.setVerts(points);
@@ -52,8 +55,8 @@ namespace
     osc::Camera CreateSceneCamera()
     {
         osc::Camera rv;
-        rv.setViewMatrixOverride(glm::mat4{1.0f});
-        rv.setProjectionMatrixOverride(glm::mat4{1.0f});
+        rv.setViewMatrixOverride(Mat4{1.0f});
+        rv.setProjectionMatrixOverride(Mat4{1.0f});
         return rv;
     }
 

@@ -39,7 +39,6 @@
 #include <oscar/UI/Tabs/TabHost.hpp>
 #include <oscar/UI/Widgets/Popup.hpp>
 #include <oscar/UI/Widgets/PopupManager.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/FileChangePoller.hpp>
 #include <oscar/Utils/ParentPtr.hpp>

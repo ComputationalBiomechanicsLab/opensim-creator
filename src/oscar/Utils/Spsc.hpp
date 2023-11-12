@@ -1,6 +1,7 @@
 #pragma once
 
-#include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Shims/Cpp20/stop_token.hpp>
+#include <oscar/Shims/Cpp20/thread.hpp>
 
 #include <atomic>
 #include <condition_variable>

@@ -3,6 +3,8 @@
 #include <OpenSimCreator/Model/BasicModelStatePair.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/ParamBlock.hpp>
+#include <oscar/Utils/SynchronizedValue.hpp>
+#include <oscar/Utils/SynchronizedValueGuard.hpp>
 
 #include <Simbody.h>
 
@@ -63,7 +65,7 @@ public:
         return m_Params;
     }
 
-    nonstd::span<OutputExtractor const> getOutputExtractors() const
+    std::span<OutputExtractor const> getOutputExtractors() const
     {
         return {};
     }
@@ -152,7 +154,7 @@ osc::ParamBlock const& osc::SingleStateSimulation::implGetParams() const
     return m_Impl->getParams();
 }
 
-nonstd::span<osc::OutputExtractor const> osc::SingleStateSimulation::implGetOutputExtractors() const
+std::span<osc::OutputExtractor const> osc::SingleStateSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
 }

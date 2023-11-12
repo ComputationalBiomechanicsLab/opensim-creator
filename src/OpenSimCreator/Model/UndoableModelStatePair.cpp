@@ -11,7 +11,6 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Perf.hpp>
-#include <oscar/Utils/SynchronizedValue.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <exception>
@@ -537,17 +536,10 @@ private:
 
     void garbageCollectUnreachable()
     {
-        for (auto it = m_Commits.begin(); it != m_Commits.end();)
+        std::erase_if(m_Commits, [this](auto const& p)
         {
-            if (it->first == m_BranchHead || isAncestor(it->first, m_BranchHead))
-            {
-                ++it;
-            }
-            else
-            {
-                it = m_Commits.erase(it);
-            }
-        }
+            return !(p.first == m_BranchHead || isAncestor(p.first, m_BranchHead));
+        });
     }
 
     // remove out-of-bounds, deleted, out-of-date, etc. commits

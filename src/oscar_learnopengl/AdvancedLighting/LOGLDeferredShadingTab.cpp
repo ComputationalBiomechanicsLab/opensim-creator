@@ -1,6 +1,5 @@
 #include "LOGLDeferredShadingTab.hpp"
 
-#include <glm/vec3.hpp>
 #include <imgui.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
@@ -25,13 +24,15 @@
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <iterator>
 #include <memory>
@@ -40,11 +41,14 @@
 #include <utility>
 #include <vector>
 
+using osc::Vec2;
+using osc::Vec3;
+
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/DeferredShading";
 
-    constexpr auto c_ObjectPositions = osc::to_array<glm::vec3>(
+    constexpr auto c_ObjectPositions = std::to_array<Vec3>(
     {
         {-3.0,  -0.5, -3.0},
         { 0.0,  -0.5, -3.0},
@@ -58,7 +62,7 @@ namespace
     });
     constexpr size_t c_NumLights = 32;
 
-    glm::vec3 GenerateSceneLightPosition(std::default_random_engine& rng)
+    Vec3 GenerateSceneLightPosition(std::default_random_engine& rng)
     {
         std::uniform_real_distribution<float> dist{-3.0f, 3.0f};
         return {dist(rng), dist(rng), dist(rng)};
@@ -70,29 +74,29 @@ namespace
         return {dist(rng), dist(rng), dist(rng), 1.0f};
     }
 
-    std::vector<glm::vec3> GenerateNSceneLightPositions(size_t n)
+    std::vector<Vec3> GenerateNSceneLightPositions(size_t n)
     {
         auto const generator = [rng = std::default_random_engine{std::random_device{}()}]() mutable
         {
             return GenerateSceneLightPosition(rng);
         };
 
-        std::vector<glm::vec3> rv;
+        std::vector<Vec3> rv;
         rv.reserve(n);
         std::generate_n(std::back_inserter(rv), n, generator);
         return rv;
     }
 
-    std::vector<glm::vec3> GenerateNSceneLightColors(size_t n)
+    std::vector<Vec3> GenerateNSceneLightColors(size_t n)
     {
         auto const generator = [rng = std::default_random_engine{std::random_device{}()}]() mutable
         {
             osc::Color const sRGBColor = GenerateSceneLightColor(rng);
             osc::Color const linearColor = osc::ToLinear(sRGBColor);
-            return glm::vec3{linearColor.r, linearColor.g, linearColor.b};
+            return Vec3{linearColor.r, linearColor.g, linearColor.b};
         };
 
-        std::vector<glm::vec3> rv;
+        std::vector<Vec3> rv;
         rv.reserve(n);
         std::generate_n(std::back_inserter(rv), n, generator);
         return rv;
@@ -121,7 +125,7 @@ namespace
     {
         osc::Camera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
-        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor(osc::Color::black());
@@ -167,7 +171,7 @@ namespace
             },
         };
 
-        void reformat(glm::vec2 dims, osc::AntiAliasingLevel antiAliasingLevel)
+        void reformat(Vec2 dims, osc::AntiAliasingLevel antiAliasingLevel)
         {
             osc::RenderTextureDescriptor desc{dims};
             desc.setAntialiasingLevel(antiAliasingLevel);
@@ -251,7 +255,7 @@ private:
     void draw3DScene()
     {
         Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
-        glm::vec2 const viewportDims = Dimensions(viewportRect);
+        Vec2 const viewportDims = Dimensions(viewportRect);
         AntiAliasingLevel const antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
 
         // ensure textures/buffers have correct dimensions
@@ -275,8 +279,8 @@ private:
 
         // render scene cubes
         Transform transform;
-        transform.scale = glm::vec3{0.5f};
-        for (glm::vec3 const& objectPosition : c_ObjectPositions)
+        transform.scale = Vec3{0.5f};
+        for (Vec3 const& objectPosition : c_ObjectPositions)
         {
             transform.position = objectPosition;
             Graphics::DrawMesh(
@@ -297,11 +301,11 @@ private:
         );
         Graphics::BlitToScreen(
             m_GBuffer.normal,
-            Rect{viewportRect.p1 + glm::vec2{200.0f, 0.0f}, viewportRect.p1 + glm::vec2{200.0f, 0.0f} + 200.0f}
+            Rect{viewportRect.p1 + Vec2{200.0f, 0.0f}, viewportRect.p1 + Vec2{200.0f, 0.0f} + 200.0f}
         );
         Graphics::BlitToScreen(
             m_GBuffer.position,
-            Rect{viewportRect.p1 + glm::vec2{400.0f, 0.0f}, viewportRect.p1 + glm::vec2{400.0f, 0.0f} + 200.0f}
+            Rect{viewportRect.p1 + Vec2{400.0f, 0.0f}, viewportRect.p1 + Vec2{400.0f, 0.0f} + 200.0f}
         );
     }
 
@@ -335,7 +339,7 @@ private:
         OSC_ASSERT(m_LightPositions.size() == m_LightColors.size());
 
         Transform transform;
-        transform.scale = glm::vec3{0.125f};
+        transform.scale = Vec3{0.125f};
         for (size_t i = 0; i < m_LightPositions.size(); ++i)
         {
             transform.position = m_LightPositions[i];
@@ -365,11 +369,11 @@ private:
     }
 
     // scene state
-    std::vector<glm::vec3> m_LightPositions = GenerateNSceneLightPositions(c_NumLights);
-    std::vector<glm::vec3> m_LightColors = GenerateNSceneLightColors(c_NumLights);
+    std::vector<Vec3> m_LightPositions = GenerateNSceneLightPositions(c_NumLights);
+    std::vector<Vec3> m_LightColors = GenerateNSceneLightColors(c_NumLights);
     Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     bool m_IsMouseCaptured = true;
-    glm::vec3 m_CameraEulers = {};
+    Vec3 m_CameraEulers = {};
     Mesh m_CubeMesh = GenCube();
     Mesh m_QuadMesh = GenTexturedQuad();
     Texture2D m_DiffuseMap = LoadTexture2DFromImage(

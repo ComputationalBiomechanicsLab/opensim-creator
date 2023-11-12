@@ -1,9 +1,9 @@
 #include "StringHelpers.hpp"
 
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <limits>
 #include <optional>
@@ -13,7 +13,7 @@
 
 namespace
 {
-    auto constexpr c_NibbleToCharacterLUT = osc::to_array(
+    auto constexpr c_NibbleToCharacterLUT = std::to_array(
     {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
     });
@@ -101,16 +101,12 @@ bool osc::IsEqualCaseInsensitive(std::string_view a, std::string_view b)
 
 bool osc::StartsWith(std::string_view sv, std::string_view prefix)
 {
-    return prefix.size() <= sv.size() && std::equal(prefix.begin(), prefix.end(), sv.begin());
+    return sv.starts_with(prefix);
 }
 
 bool osc::EndsWith(std::string_view sv, std::string_view suffix)
 {
-    if (sv.size() < suffix.size())
-    {
-        return false;
-    }
-    return sv.substr(sv.size() - suffix.size()) == suffix;
+    return sv.ends_with(suffix);
 }
 
 std::string_view osc::TrimLeadingAndTrailingWhitespace(std::string_view sv)

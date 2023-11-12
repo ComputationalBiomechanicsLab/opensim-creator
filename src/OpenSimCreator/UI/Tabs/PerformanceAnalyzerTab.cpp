@@ -13,15 +13,14 @@
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <nonstd/span.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Utils/SynchronizedValue.hpp>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <algorithm>
 #include <filesystem>
 #include <optional>
 #include <ostream>
+#include <span>
 #include <string>
 #include <string_view>
 #include <utility>

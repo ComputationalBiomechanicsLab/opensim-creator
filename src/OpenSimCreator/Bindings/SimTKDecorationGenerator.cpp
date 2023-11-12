@@ -3,14 +3,14 @@
 #include <OpenSimCreator/Bindings/SimTKMeshLoader.hpp>
 #include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
 
-#include <glm/glm.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/Triangle.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/Log.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SimpleSceneDecoration.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <simbody/internal/common.h>
@@ -26,6 +26,8 @@
 #include <utility>
 #include <vector>
 
+using osc::Vec3;
+
 // helper functions
 namespace
 {
@@ -34,7 +36,7 @@ namespace
     inline constexpr float c_FrameAxisThickness = 0.0025f;
 
     // extracts scale factors from geometry
-    glm::vec3 GetScaleFactors(SimTK::DecorativeGeometry const& geom)
+    Vec3 GetScaleFactors(SimTK::DecorativeGeometry const& geom)
     {
         SimTK::Vec3 sf = geom.getScaleFactors();
 
@@ -110,7 +112,7 @@ namespace
     class GeometryImpl final : public SimTK::DecorativeGeometryImplementation {
     public:
         GeometryImpl(
-            osc::MeshCache& meshCache,
+            osc::SceneCache& meshCache,
             SimTK::SimbodyMatterSubsystem const& matter,
             SimTK::State const& st,
             float fixupScaleFactor,
@@ -143,8 +145,8 @@ namespace
         {
             osc::Transform const t = ToOscTransform(d);
 
-            glm::vec3 const p1 = TransformPoint(t, osc::ToVec3(d.getPoint1()));
-            glm::vec3 const p2 = TransformPoint(t, osc::ToVec3(d.getPoint2()));
+            Vec3 const p1 = TransformPoint(t, osc::ToVec3(d.getPoint1()));
+            Vec3 const p2 = TransformPoint(t, osc::ToVec3(d.getPoint2()));
 
             float const thickness = c_LineThickness * m_FixupScaleFactor;
 
@@ -249,18 +251,18 @@ namespace
             }
 
             // emit leg cylinders
-            glm::vec3 const axisLengths = t.scale * static_cast<float>(d.getAxisLength());
+            Vec3 const axisLengths = t.scale * static_cast<float>(d.getAxisLength());
             float const legLen = c_FrameAxisLengthRescale * m_FixupScaleFactor;
             float const legThickness = c_FrameAxisThickness * m_FixupScaleFactor;
             for (int axis = 0; axis < 3; ++axis)
             {
-                glm::vec3 dir = {0.0f, 0.0f, 0.0f};
-                dir[axis] = 1.0f;
+                Vec3 direction = {0.0f, 0.0f, 0.0f};
+                direction[axis] = 1.0f;
 
                 osc::Segment const line =
                 {
                     t.position,
-                    t.position + (legLen * axisLengths[axis] * TransformDirection(t, dir))
+                    t.position + (legLen * axisLengths[axis] * TransformDirection(t, direction))
                 };
                 osc::Transform const legXform = YToYCylinderToSegmentTransform(line, legThickness);
 
@@ -323,18 +325,18 @@ namespace
         {
             osc::Transform const t = ToOscTransform(d);
 
-            glm::vec3 const startBase = osc::ToVec3(d.getStartPoint());
-            glm::vec3 const endBase = osc::ToVec3(d.getEndPoint());
+            Vec3 const startBase = osc::ToVec3(d.getStartPoint());
+            Vec3 const endBase = osc::ToVec3(d.getEndPoint());
 
-            glm::vec3 const start = TransformPoint(t, startBase);
-            glm::vec3 const end = TransformPoint(t, endBase);
+            Vec3 const start = TransformPoint(t, startBase);
+            Vec3 const end = TransformPoint(t, endBase);
 
-            glm::vec3 const dir = glm::normalize(end - start);
+            Vec3 const direction = osc::Normalize(end - start);
 
-            glm::vec3 const neckStart = start;
-            glm::vec3 const neckEnd = end - (static_cast<float>(d.getTipLength()) * dir);
-            glm::vec3 const headStart = neckEnd;
-            glm::vec3 const headEnd = end;
+            Vec3 const neckStart = start;
+            Vec3 const neckEnd = end - (static_cast<float>(d.getTipLength()) * direction);
+            Vec3 const headStart = neckEnd;
+            Vec3 const headEnd = end;
 
             float const neckThickness = m_FixupScaleFactor * static_cast<float>(d.getLineThickness());
             float const headThickness = 1.75f * neckThickness;
@@ -377,16 +379,16 @@ namespace
         {
             osc::Transform const t = ToOscTransform(d);
 
-            glm::vec3 const posBase = osc::ToVec3(d.getOrigin());
-            glm::vec3 const posDir = osc::ToVec3(d.getDirection());
+            Vec3 const posBase = osc::ToVec3(d.getOrigin());
+            Vec3 const posDir = osc::ToVec3(d.getDirection());
 
-            glm::vec3 const pos = TransformPoint(t, posBase);
-            glm::vec3 const dir = TransformDirection(t, posDir);
+            Vec3 const pos = TransformPoint(t, posBase);
+            Vec3 const direction = TransformDirection(t, posDir);
 
             auto const radius = static_cast<float>(d.getBaseRadius());
             auto const height = static_cast<float>(d.getHeight());
 
-            osc::Transform coneXform = osc::YToYCylinderToSegmentTransform({pos, pos + height*dir}, radius);
+            osc::Transform coneXform = osc::YToYCylinderToSegmentTransform({pos, pos + height*direction}, radius);
             coneXform.scale *= t.scale;
 
             m_Consumer(osc::SimpleSceneDecoration
@@ -397,7 +399,7 @@ namespace
             });
         }
 
-        osc::MeshCache& m_MeshCache;
+        osc::SceneCache& m_MeshCache;
         SimTK::SimbodyMatterSubsystem const& m_Matter;
         SimTK::State const& m_State;
         float m_FixupScaleFactor;
@@ -406,7 +408,7 @@ namespace
 }
 
 void osc::GenerateDecorations(
-    MeshCache& meshCache,
+    SceneCache& meshCache,
     SimTK::SimbodyMatterSubsystem const& matter,
     SimTK::State const& state,
     SimTK::DecorativeGeometry const& geom,

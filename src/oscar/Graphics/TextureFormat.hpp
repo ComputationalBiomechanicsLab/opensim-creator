@@ -3,7 +3,6 @@
 #include <oscar/Graphics/TextureChannelFormat.hpp>
 
 #include <cstddef>
-#include <cstdint>
 #include <optional>
 
 namespace osc

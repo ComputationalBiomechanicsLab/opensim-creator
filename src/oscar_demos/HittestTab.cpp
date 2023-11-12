@@ -1,6 +1,5 @@
 #include "HittestTab.hpp"
 
-#include <glm/vec3.hpp>
 #include <IconsFontAwesome5.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
@@ -15,23 +14,26 @@
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Sphere.hpp>
 #include <oscar/Maths/Triangle.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
+#include <array>
 #include <cstdint>
 #include <limits>
 #include <memory>
 #include <optional>
 #include <vector>
 
+using osc::Vec3;
+
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "Demos/Hittest";
 
-    constexpr auto c_CrosshairVerts = osc::to_array<glm::vec3>(
+    constexpr auto c_CrosshairVerts = std::to_array<Vec3>(
     {
         // -X to +X
         {-0.05f, 0.0f, 0.0f},
@@ -42,25 +44,25 @@ namespace
         {0.0f, +0.05f, 0.0f},
     });
 
-    constexpr auto c_CrosshairIndices = osc::to_array<uint16_t>({ 0, 1, 2, 3 });
+    constexpr auto c_CrosshairIndices = std::to_array<uint16_t>({ 0, 1, 2, 3 });
 
-    constexpr auto c_TriangleVerts = osc::to_array<glm::vec3>(
+    constexpr auto c_TriangleVerts = std::to_array<Vec3>(
     {
         {-10.0f, -10.0f, 0.0f},
         {+0.0f, +10.0f, 0.0f},
         {+10.0f, -10.0f, 0.0f},
     });
 
-    constexpr auto c_TriangleIndices = osc::to_array<uint16_t>({ 0, 1, 2 });
+    constexpr auto c_TriangleIndices = std::to_array<uint16_t>({ 0, 1, 2 });
 
     struct SceneSphere final {
 
-        explicit SceneSphere(glm::vec3 pos_) :
+        explicit SceneSphere(Vec3 pos_) :
             pos{pos_}
         {
         }
 
-        glm::vec3 pos;
+        Vec3 pos;
         bool isHovered = false;
     };
 
@@ -77,7 +79,7 @@ namespace
             {
                 for (int32_t z = min; z <= max; z += step)
                 {
-                    rv.emplace_back(glm::vec3
+                    rv.emplace_back(Vec3
                     {
                         static_cast<float>(x),
                         50.0f + 2.0f*static_cast<float>(y),
@@ -318,7 +320,7 @@ private:
     AABB m_SceneSphereAABB = m_SphereMesh.getBounds();
     Sphere m_SceneSphereBoundingSphere = BoundingSphereOf(m_SphereMesh.getVerts());
     bool m_IsMouseCaptured = false;
-    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+    Vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
     bool m_IsShowingAABBs = true;
 };
 

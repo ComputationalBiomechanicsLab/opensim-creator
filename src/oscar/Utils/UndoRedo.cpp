@@ -1,7 +1,6 @@
 #include "UndoRedo.hpp"
 
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <algorithm>
 #include <chrono>
@@ -54,13 +53,13 @@ ptrdiff_t osc::UndoRedo::getNumUndoEntriesi() const
 
 osc::UndoRedoEntry const& osc::UndoRedo::getUndoEntry(ptrdiff_t i) const
 {
-    OSC_ASSERT(i < osc::ssize(m_Undo));
+    OSC_ASSERT(i < std::ssize(m_Undo));
     return m_Undo.rbegin()[i];
 }
 
 void osc::UndoRedo::undoTo(ptrdiff_t nthEntry)
 {
-    if (nthEntry >= osc::ssize(m_Undo))
+    if (nthEntry >= std::ssize(m_Undo))
     {
         return;  // out of bounds: ignore request
     }
@@ -102,7 +101,7 @@ ptrdiff_t osc::UndoRedo::getNumRedoEntriesi() const
 
 osc::UndoRedoEntry const& osc::UndoRedo::getRedoEntry(ptrdiff_t i) const
 {
-    OSC_ASSERT(i < osc::ssize(m_Redo));
+    OSC_ASSERT(i < std::ssize(m_Redo));
     return m_Redo.rbegin()[i];
 }
 
@@ -113,7 +112,7 @@ bool osc::UndoRedo::canRedo() const
 
 void osc::UndoRedo::redoTo(ptrdiff_t nthEntry)
 {
-    if (nthEntry >= osc::ssize(m_Redo))
+    if (nthEntry >= std::ssize(m_Redo))
     {
         return;  // out of bounds: ignore request
     }

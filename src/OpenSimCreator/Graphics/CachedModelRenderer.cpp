@@ -6,12 +6,12 @@
 #include <OpenSimCreator/Model/ModelStatePairInfo.hpp>
 #include <OpenSimCreator/Model/VirtualConstModelStatePair.hpp>
 
-#include <glm/vec2.hpp>
-#include <nonstd/span.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneCollision.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <span>
 #include <utility>
 #include <vector>
 
@@ -30,7 +31,7 @@ namespace
     // cache for decorations generated from a model+state+params
     class CachedDecorationState final {
     public:
-        explicit CachedDecorationState(std::shared_ptr<osc::MeshCache> meshCache_) :
+        explicit CachedDecorationState(std::shared_ptr<osc::SceneCache> meshCache_) :
             m_MeshCache{std::move(meshCache_)}
         {
         }
@@ -84,12 +85,17 @@ namespace
             }
         }
 
-        nonstd::span<osc::SceneDecoration const> getDrawlist() const { return m_Drawlist; }
+        std::span<osc::SceneDecoration const> getDrawlist() const { return m_Drawlist; }
         osc::BVH const& getBVH() const { return m_BVH; }
         std::optional<osc::AABB> getAABB() const { return m_BVH.getRootAABB(); }
+        osc::SceneCache& updSceneCache() const
+        {
+            // TODO: technically (imo) this breaks `const`
+            return *m_MeshCache;
+        }
 
     private:
-        std::shared_ptr<osc::MeshCache> m_MeshCache;
+        std::shared_ptr<osc::SceneCache> m_MeshCache;
         osc::ModelStatePairInfo m_PrevModelStateInfo;
         osc::OpenSimDecorationOptions m_PrevDecorationOptions;
         osc::OverlayDecorationOptions m_PrevOverlayOptions;
@@ -102,7 +108,7 @@ class osc::CachedModelRenderer::Impl final {
 public:
     Impl(
         AppConfig const& config,
-        std::shared_ptr<MeshCache> const& meshCache,
+        std::shared_ptr<SceneCache> const& meshCache,
         ShaderCache& shaderCache) :
 
         m_DecorationCache{meshCache},
@@ -125,7 +131,7 @@ public:
     RenderTexture& onDraw(
         VirtualConstModelStatePair const& modelState,
         ModelRendererParams const& renderParams,
-        glm::vec2 dims,
+        Vec2 dims,
         AntiAliasingLevel antiAliasingLevel)
     {
         OSC_PERF("CachedModelRenderer/onDraw");
@@ -155,7 +161,7 @@ public:
         return m_Renderer.updRenderTexture();
     }
 
-    nonstd::span<SceneDecoration const> getDrawlist() const
+    std::span<SceneDecoration const> getDrawlist() const
     {
         return m_DecorationCache.getDrawlist();
     }
@@ -167,11 +173,12 @@ public:
 
     std::optional<SceneCollision> getClosestCollision(
         ModelRendererParams const& params,
-        glm::vec2 mouseScreenPos,
+        Vec2 mouseScreenPos,
         Rect const& viewportScreenRect) const
     {
         return GetClosestCollision(
             m_DecorationCache.getBVH(),
+            m_DecorationCache.updSceneCache(),
             m_DecorationCache.getDrawlist(),
             params.camera,
             mouseScreenPos,
@@ -190,7 +197,7 @@ private:
 
 osc::CachedModelRenderer::CachedModelRenderer(
     AppConfig const& config,
-    std::shared_ptr<MeshCache> const& meshCache,
+    std::shared_ptr<SceneCache> const& meshCache,
     ShaderCache& shaderCache) :
 
     m_Impl{std::make_unique<Impl>(config, meshCache, shaderCache)}
@@ -203,7 +210,7 @@ osc::CachedModelRenderer::~CachedModelRenderer() noexcept = default;
 osc::RenderTexture& osc::CachedModelRenderer::onDraw(
     VirtualConstModelStatePair const& modelState,
     ModelRendererParams const& renderParams,
-    glm::vec2 dims,
+    Vec2 dims,
     AntiAliasingLevel antiAliasingLevel)
 {
     return m_Impl->onDraw(
@@ -227,7 +234,7 @@ osc::RenderTexture& osc::CachedModelRenderer::updRenderTexture()
     return m_Impl->updRenderTexture();
 }
 
-nonstd::span<osc::SceneDecoration const> osc::CachedModelRenderer::getDrawlist() const
+std::span<osc::SceneDecoration const> osc::CachedModelRenderer::getDrawlist() const
 {
     return m_Impl->getDrawlist();
 }
@@ -239,7 +246,7 @@ std::optional<osc::AABB> osc::CachedModelRenderer::getRootAABB() const
 
 std::optional<osc::SceneCollision> osc::CachedModelRenderer::getClosestCollision(
     ModelRendererParams const& params,
-    glm::vec2 mouseScreenPos,
+    Vec2 mouseScreenPos,
     Rect const& viewportScreenRect) const
 {
     return m_Impl->getClosestCollision(params, mouseScreenPos, viewportScreenRect);

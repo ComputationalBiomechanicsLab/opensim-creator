@@ -10,26 +10,24 @@
 #include <OpenSimCreator/UI/Widgets/MainMenu.hpp>
 #include <OpenSimCreator/Utils/UndoableModelActions.hpp>
 
-#include <glm/vec2.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <nonstd/span.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Formats/SVG.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
-#include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 #include <oscar/UI/Tabs/TabHost.hpp>
@@ -40,6 +38,8 @@
 #include <SDL_events.h>
 
 #include <filesystem>
+#include <numbers>
+#include <span>
 #include <string>
 #include <utility>
 
@@ -48,9 +48,9 @@ namespace
     osc::PolarPerspectiveCamera GetSplashScreenDefaultPolarCamera()
     {
         osc::PolarPerspectiveCamera rv;
-        rv.phi = osc::fpi4/1.5f;
+        rv.phi = std::numbers::pi_v<float>/6.0f;
         rv.radius = 10.0f;
-        rv.theta = osc::fpi4;
+        rv.theta = std::numbers::pi_v<float>/4.0f;
         return rv;
     }
 
@@ -169,10 +169,10 @@ private:
         // pretend the attributation bar isn't there (avoid it)
         tabRect.p2.y -= static_cast<float>(std::max(m_TudLogo.getDimensions().y, m_CziLogo.getDimensions().y)) - 2.0f*ImGui::GetStyle().WindowPadding.y;
 
-        glm::vec2 const menuAndTopLogoDims = osc::Min(osc::Dimensions(tabRect), glm::vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
-        glm::vec2 const menuAndTopLogoTopLeft = tabRect.p1 + 0.5f*(Dimensions(tabRect) - menuAndTopLogoDims);
-        glm::vec2 const menuDims = {menuAndTopLogoDims.x, menuAndTopLogoDims.y - m_MainAppLogoDims.y - m_TopLogoPadding.y};
-        glm::vec2 const menuTopLeft = glm::vec2{menuAndTopLogoTopLeft.x, menuAndTopLogoTopLeft.y + m_MainAppLogoDims.y + m_TopLogoPadding.y};
+        Vec2 const menuAndTopLogoDims = osc::Min(osc::Dimensions(tabRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
+        Vec2 const menuAndTopLogoTopLeft = tabRect.p1 + 0.5f*(Dimensions(tabRect) - menuAndTopLogoDims);
+        Vec2 const menuDims = {menuAndTopLogoDims.x, menuAndTopLogoDims.y - m_MainAppLogoDims.y - m_TopLogoPadding.y};
+        Vec2 const menuTopLeft = Vec2{menuAndTopLogoTopLeft.x, menuAndTopLogoTopLeft.y + m_MainAppLogoDims.y + m_TopLogoPadding.y};
 
         return Rect{menuTopLeft, menuTopLeft + menuDims};
     }
@@ -180,7 +180,7 @@ private:
     Rect calcLogoRect() const
     {
         Rect const mmr = calcMainMenuRect();
-        glm::vec2 const topLeft
+        Vec2 const topLeft
         {
             mmr.p1.x + Dimensions(mmr).x/2.0f - m_MainAppLogoDims.x/2.0f,
             mmr.p1.y - m_TopLogoPadding.y - m_MainAppLogoDims.y,
@@ -358,7 +358,7 @@ private:
     void drawAttributationLogos()
     {
         Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
-        glm::vec2 loc = viewportRect.p2;
+        Vec2 loc = viewportRect.p2;
         loc.x = loc.x - 2.0f*ImGui::GetStyle().WindowPadding.x - static_cast<float>(m_CziLogo.getDimensions().x) - 2.0f*ImGui::GetStyle().ItemSpacing.x - static_cast<float>(m_TudLogo.getDimensions().x);
         loc.y = loc.y - 2.0f*ImGui::GetStyle().WindowPadding.y - static_cast<float>(std::max(m_CziLogo.getDimensions().y, m_TudLogo.getDimensions().y));
 
@@ -380,7 +380,7 @@ private:
         float const h = ImGui::GetTextLineHeightWithSpacing();
         float const padding = 5.0f;
 
-        glm::vec2 const pos
+        Vec2 const pos
         {
             tabRect.p1.x + padding,
             tabRect.p2.y - h - padding,
@@ -401,7 +401,7 @@ private:
     SceneRenderer m_SceneRenderer
     {
         App::config(),
-        *App::singleton<MeshCache>(),
+        *App::singleton<SceneCache>(),
         *App::singleton<ShaderCache>(),
     };
     SceneRendererParams m_LastSceneRendererParams = GetSplashScreenDefaultRenderParams(m_Camera);
@@ -411,9 +411,9 @@ private:
     Texture2D m_TudLogo = LoadTextureFromSVGFile(App::resource("textures/tudelft_logo.svg"), 0.5f);
 
     // dimensions of stuff
-    glm::vec2 m_SplashMenuMaxDims = {640.0f, 512.0f};
-    glm::vec2 m_MainAppLogoDims =  m_MainAppLogo.getDimensions();
-    glm::vec2 m_TopLogoPadding = {25.0f, 35.0f};
+    Vec2 m_SplashMenuMaxDims = {640.0f, 512.0f};
+    Vec2 m_MainAppLogoDims =  m_MainAppLogo.getDimensions();
+    Vec2 m_TopLogoPadding = {25.0f, 35.0f};
 
     // UI state
     MainMenuFileTab m_MainMenuFileTab;

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <nonstd/span.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>
+#include <span>
 
 namespace osc
 {
@@ -20,7 +20,7 @@ namespace osc
         CStringView label;
         MuscleSizingStyle value;
     };
-    nonstd::span<MuscleSizingStyleMetadata const> GetAllMuscleSizingStyleMetadata();
+    std::span<MuscleSizingStyleMetadata const> GetAllMuscleSizingStyleMetadata();
     MuscleSizingStyleMetadata const& GetMuscleSizingStyleMetadata(MuscleSizingStyle);
     ptrdiff_t GetIndexOf(MuscleSizingStyle);
 }

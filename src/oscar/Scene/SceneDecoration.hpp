@@ -81,14 +81,14 @@ namespace osc
         {
         }
 
+        friend bool operator==(SceneDecoration const&, SceneDecoration const&) = default;
+
         Mesh mesh;
         Transform transform{};
         Color color = Color::white();
         std::string id;
         SceneDecorationFlags flags = SceneDecorationFlags::None;
-        std::optional<Material> maybeMaterial = std::nullopt;
-        std::optional<MaterialPropertyBlock> maybeMaterialProps = std::nullopt;
+        std::optional<Material> maybeMaterial;
+        std::optional<MaterialPropertyBlock> maybeMaterialProps;
     };
-
-    bool operator==(SceneDecoration const&, SceneDecoration const&) noexcept;
 }

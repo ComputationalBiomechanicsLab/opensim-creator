@@ -1,16 +1,15 @@
 #include "MuscleColoringStyle.hpp"
 
-#include <nonstd/span.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 
 #include <array>
 #include <cstddef>
+#include <span>
 
 namespace
 {
-    constexpr auto c_Metadata = osc::to_array<osc::MuscleColoringStyleMetadata>(
+    constexpr auto c_Metadata = std::to_array<osc::MuscleColoringStyleMetadata>(
     {
         osc::MuscleColoringStyleMetadata
         {
@@ -52,7 +51,7 @@ namespace
     static_assert(c_Metadata.size() == osc::NumOptions<osc::MuscleColoringStyle>());
 }
 
-nonstd::span<osc::MuscleColoringStyleMetadata const> osc::GetAllMuscleColoringStyleMetadata()
+std::span<osc::MuscleColoringStyleMetadata const> osc::GetAllMuscleColoringStyleMetadata()
 {
     return c_Metadata;
 }

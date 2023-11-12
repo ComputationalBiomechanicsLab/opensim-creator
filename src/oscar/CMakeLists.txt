@@ -13,16 +13,12 @@ find_package(ImGuizmo REQUIRED CONFIG)
 find_package(implot REQUIRED CONFIG)
 find_package(stb REQUIRED CONFIG)
 find_package(lunasvg REQUIRED CONFIG)
-find_package(span-lite REQUIRED CONFIG)
 find_package(tomlplusplus REQUIRED CONFIG)
 find_package(unordered_dense REQUIRED CONFIG)
 
 add_library(oscar STATIC
     Bindings/Gl.cpp
     Bindings/Gl.hpp
-    Bindings/GlGlm.hpp
-    Bindings/GlmHelpers.cpp
-    Bindings/GlmHelpers.hpp
     Bindings/ImGuiHelpers.cpp
     Bindings/ImGuiHelpers.hpp
     Bindings/ImGuizmoHelpers.cpp
@@ -62,8 +58,6 @@ add_library(oscar STATIC
     Graphics/ImageLoadingFlags.hpp
     Graphics/Material.hpp
     Graphics/MaterialPropertyBlock.hpp
-    Graphics/MeshCache.cpp
-    Graphics/MeshCache.hpp
     Graphics/MeshGenerators.cpp
     Graphics/MeshGenerators.hpp
     Graphics/MeshIndicesView.hpp
@@ -79,7 +73,6 @@ add_library(oscar STATIC
     Graphics/RenderTargetAttachment.hpp
     Graphics/RenderTargetColorAttachment.cpp
     Graphics/RenderTargetColorAttachment.hpp
-    Graphics/RenderTargetDepthAttachment.cpp
     Graphics/RenderTargetDepthAttachment.hpp
     Graphics/RenderTexture.hpp
     Graphics/RenderTextureDescriptor.hpp
@@ -101,17 +94,23 @@ add_library(oscar STATIC
 
     Maths/AABB.hpp
     Maths/BVH.hpp
+    Maths/BVHCollision.hpp
+    Maths/BVHNode.hpp
+    Maths/BVHPrim.hpp
     Maths/CollisionTests.hpp
-    Maths/Constants.hpp
     Maths/Disc.hpp
     Maths/Ellipsoid.hpp
     Maths/EulerPerspectiveCamera.hpp
     Maths/Line.hpp
     Maths/MathHelpers.hpp
     Maths/MathsImplementation.cpp
+    Maths/Mat3.hpp
+    Maths/Mat4.hpp
+    Maths/Mat4x3.hpp
     Maths/Plane.hpp
     Maths/PointDirection.hpp
     Maths/PolarPerspectiveCamera.hpp
+    Maths/Quat.hpp
     Maths/RayCollision.hpp
     Maths/Rect.hpp
     Maths/Segment.hpp
@@ -119,6 +118,9 @@ add_library(oscar STATIC
     Maths/Tetrahedron.hpp
     Maths/Transform.hpp
     Maths/Triangle.hpp
+    Maths/Vec2.hpp
+    Maths/Vec3.hpp
+    Maths/Vec4.hpp
 
     Platform/App.cpp
     Platform/App.hpp
@@ -148,8 +150,9 @@ add_library(oscar STATIC
 
     Scene/CachedSceneRenderer.cpp
     Scene/CachedSceneRenderer.hpp
+    Scene/SceneCache.cpp
+    Scene/SceneCache.hpp
     Scene/SceneCollision.hpp
-    Scene/SceneDecoration.cpp
     Scene/SceneDecoration.hpp
     Scene/SceneDecorationFlags.hpp
     Scene/SceneHelpers.cpp
@@ -158,6 +161,10 @@ add_library(oscar STATIC
     Scene/SceneRenderer.hpp
     Scene/SceneRendererParams.cpp
     Scene/SceneRendererParams.hpp
+
+    Shims/Cpp20/bit.hpp
+    Shims/Cpp20/stop_token.hpp
+    Shims/Cpp20/thread.hpp
 
     UI/Panels/LogViewerPanel.cpp
     UI/Panels/LogViewerPanel.hpp
@@ -217,17 +224,18 @@ add_library(oscar STATIC
     Utils/Assertions.hpp
     Utils/CircularBuffer.hpp
     Utils/ClonePtr.hpp
+    Utils/Concepts.hpp
     Utils/CopyOnUpdPtr.hpp
-    Utils/Cpp20Shims.hpp
+    Utils/CStringView.cpp
     Utils/CStringView.hpp
     Utils/DefaultConstructOnCopy.hpp
     Utils/EnumHelpers.hpp
     Utils/FileChangePoller.cpp
     Utils/FileChangePoller.hpp
+    Utils/FilenameExtractor.hpp
     Utils/FilesystemHelpers.cpp
     Utils/FilesystemHelpers.hpp
     Utils/HashHelpers.hpp
-    Utils/Macros.hpp
     Utils/ParalellizationHelpers.hpp
     Utils/ParentPtr.hpp
     Utils/Perf.cpp
@@ -242,6 +250,7 @@ add_library(oscar STATIC
     Utils/StringHelpers.cpp
     Utils/StringHelpers.hpp
     Utils/SynchronizedValue.hpp
+    Utils/SynchronizedValueGuard.hpp
     Utils/UID.cpp
     Utils/UID.hpp
     Utils/UndoRedo.cpp
@@ -271,6 +280,5 @@ target_link_libraries(oscar PUBLIC
     stb
     unordered_dense::unordered_dense
     tomlplusplus::tomlplusplus
-    nonstd::span-lite
     lunasvg::lunasvg
 )

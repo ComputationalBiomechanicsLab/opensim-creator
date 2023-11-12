@@ -43,7 +43,7 @@ private:
         if (c)
         {
             std::vector<OpenSim::Component const*> const els = osc::GetPathElements(*c);
-            for (ptrdiff_t i = 0; i < osc::ssize(els)-1; ++i)
+            for (ptrdiff_t i = 0; i < std::ssize(els)-1; ++i)
             {
                 osc::PushID(i);
                 std::string const label = osc::Ellipsis(els[i]->getName(), 15);

@@ -1,16 +1,16 @@
 #include "LogLevel.hpp"
 
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <iterator>
 
 namespace
 {
-    constexpr auto c_LogLevelStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_LogLevelStrings = std::to_array<osc::CStringView>(
     {
         "trace",
         "debug",

@@ -35,15 +35,7 @@ namespace osc
         void forEachOptionAsAppSettingValue(std::function<void(std::string_view, AppSettingValue const&)> const&) const;
         void tryUpdFromValues(std::string_view keyPrefix, std::unordered_map<std::string, AppSettingValue> const&);
 
-        friend bool operator==(CustomRenderingOptions const& lhs, CustomRenderingOptions const& rhs)
-        {
-            return lhs.m_Flags == rhs.m_Flags;
-        }
-
-        friend bool operator!=(CustomRenderingOptions const& lhs, CustomRenderingOptions const& rhs)
-        {
-            return !(lhs == rhs);
-        }
+        friend bool operator==(CustomRenderingOptions const&, CustomRenderingOptions const&) = default;
 
     private:
         CustomRenderingOptionFlags m_Flags = CustomRenderingOptionFlags::Default;

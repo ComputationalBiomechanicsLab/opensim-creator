@@ -6,7 +6,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/ParamBlock.hpp>
 
-#include <nonstd/span.hpp>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -29,6 +28,7 @@
 #include <filesystem>
 #include <memory>
 #include <mutex>
+#include <span>
 #include <string>
 #include <string_view>
 #include <sstream>
@@ -52,7 +52,7 @@ namespace
         return rv;
     }
 
-    void SetCoordsDefaultLocked(nonstd::span<OpenSim::Coordinate*> cs, bool v)
+    void SetCoordsDefaultLocked(std::span<OpenSim::Coordinate*> cs, bool v)
     {
         for (OpenSim::Coordinate* c : cs)
         {
@@ -273,7 +273,7 @@ public:
         return m_ParamBlock;
     }
 
-    nonstd::span<OutputExtractor const> getOutputExtractors() const
+    std::span<OutputExtractor const> getOutputExtractors() const
     {
         return {};
     }
@@ -367,7 +367,7 @@ osc::ParamBlock const& osc::StoFileSimulation::implGetParams() const
     return m_Impl->getParams();
 }
 
-nonstd::span<osc::OutputExtractor const> osc::StoFileSimulation::implGetOutputExtractors() const
+std::span<osc::OutputExtractor const> osc::StoFileSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
 }

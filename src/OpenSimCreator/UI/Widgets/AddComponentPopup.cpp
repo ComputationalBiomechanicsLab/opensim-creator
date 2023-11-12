@@ -21,7 +21,6 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Widgets/StandardPopup.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <SimTKcommon/SmallMatrix.h>
 
@@ -358,7 +357,7 @@ private:
         ImGui::BeginChild("##pf_pathpoints", {ImGui::GetContentRegionAvail().x, 128.0f});
 
         std::optional<ptrdiff_t> maybeIndexToErase;
-        for (ptrdiff_t i = 0; i < ssize(m_PathPoints); ++i)
+        for (ptrdiff_t i = 0; i < std::ssize(m_PathPoints); ++i)
         {
             PushID(i);
 
@@ -386,15 +385,15 @@ private:
 
             ImGui::SameLine();
 
-            if (i >= ssize(m_PathPoints) - 1)
+            if (i >= std::ssize(m_PathPoints) - 1)
             {
                 ImGui::BeginDisabled();
             }
-            if (ImGui::Button(ICON_FA_ARROW_DOWN) && i < ssize(m_PathPoints) - 1)
+            if (ImGui::Button(ICON_FA_ARROW_DOWN) && i < std::ssize(m_PathPoints) - 1)
             {
                 std::swap(m_PathPoints[i], m_PathPoints[i+1]);
             }
-            if (i >= ssize(m_PathPoints) - 1)
+            if (i >= std::ssize(m_PathPoints) - 1)
             {
                 ImGui::EndDisabled();
             }
@@ -588,3 +587,4 @@ void osc::AddComponentPopup::implEndPopup()
 {
     m_Impl->endPopup();
 }
+

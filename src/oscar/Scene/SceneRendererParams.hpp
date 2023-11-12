@@ -2,10 +2,9 @@
 
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/Color.hpp>
-
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/mat4x4.hpp>
+#include <oscar/Maths/Mat4.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 
 namespace osc
 {
@@ -21,14 +20,16 @@ namespace osc
             return {0.89f, 0.89f, 0.89f, 1.0f};
         }
 
-        static constexpr glm::vec3 DefaultFloorLocation()
+        static constexpr Vec3 DefaultFloorLocation()
         {
             return {0.0f, -0.001f, 0.0f};
         }
 
         SceneRendererParams();
 
-        glm::ivec2 dimensions;
+        friend bool operator==(SceneRendererParams const&, SceneRendererParams const&) { return false; }
+
+        Vec2i dimensions;
         AntiAliasingLevel antiAliasingLevel;
         bool drawMeshNormals;
         bool drawRims;
@@ -36,10 +37,10 @@ namespace osc
         bool drawFloor;
         float nearClippingPlane;
         float farClippingPlane;
-        glm::mat4 viewMatrix;
-        glm::mat4 projectionMatrix;
-        glm::vec3 viewPos;
-        glm::vec3 lightDirection;
+        Mat4 viewMatrix;
+        Mat4 projectionMatrix;
+        Vec3 viewPos;
+        Vec3 lightDirection;
         Color lightColor;  // ignores alpha
         float ambientStrength;
         float diffuseStrength;
@@ -47,11 +48,8 @@ namespace osc
         float specularShininess;
         Color backgroundColor;
         Color rimColor;
-        glm::vec2 rimThicknessInPixels;
-        glm::vec3 floorLocation;
+        Vec2 rimThicknessInPixels;
+        Vec3 floorLocation;
         float fixupScaleFactor;
     };
-
-    bool operator==(SceneRendererParams const&, SceneRendererParams const&);
-    bool operator!=(SceneRendererParams const&, SceneRendererParams const&);
 }

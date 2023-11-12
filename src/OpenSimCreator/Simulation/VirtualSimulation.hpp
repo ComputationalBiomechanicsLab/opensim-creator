@@ -4,10 +4,10 @@
 #include <OpenSimCreator/Simulation/SimulationReport.hpp>
 #include <OpenSimCreator/Simulation/SimulationStatus.hpp>
 
-#include <nonstd/span.hpp>
-#include <oscar/Utils/SynchronizedValue.hpp>
+#include <oscar/Utils/SynchronizedValueGuard.hpp>
 
 #include <cstddef>
+#include <span>
 #include <vector>
 
 namespace osc { class OutputExtractor; }
@@ -89,7 +89,7 @@ namespace osc
             return implGetParams();
         }
 
-        nonstd::span<OutputExtractor const> getOutputExtractors() const
+        std::span<OutputExtractor const> getOutputExtractors() const
         {
             return implGetOutputExtractors();
         }
@@ -127,7 +127,7 @@ namespace osc
         virtual SimulationClock::time_point implGetEndTime() const = 0;
         virtual float implGetProgress() const = 0;
         virtual ParamBlock const& implGetParams() const = 0;
-        virtual nonstd::span<OutputExtractor const> implGetOutputExtractors() const = 0;
+        virtual std::span<OutputExtractor const> implGetOutputExtractors() const = 0;
 
         virtual void implRequestStop() = 0;
         virtual void implStop() = 0;

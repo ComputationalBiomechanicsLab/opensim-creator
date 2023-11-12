@@ -2,8 +2,7 @@
 
 namespace osc
 {
-    enum class DepthFunction
-    {
+    enum class DepthFunction {
         Less = 0,
         LessOrEqual,
         NUM_OPTIONS,

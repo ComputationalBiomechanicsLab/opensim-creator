@@ -3,8 +3,7 @@
 #include <oscar/Graphics/BlitFlags.hpp>
 #include <oscar/Graphics/CubemapFace.hpp>
 #include <oscar/Graphics/MaterialPropertyBlock.hpp>
-
-#include <glm/mat4x4.hpp>
+#include <oscar/Maths/Mat4.hpp>
 
 #include <optional>
 
@@ -34,7 +33,7 @@ namespace osc::Graphics
 
     void DrawMesh(
         Mesh const&,
-        glm::mat4 const&,
+        Mat4 const&,
         Material const&,
         Camera&,
         std::optional<MaterialPropertyBlock> const& = std::nullopt

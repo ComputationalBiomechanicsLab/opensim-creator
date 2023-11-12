@@ -2,11 +2,10 @@
 
 #include <oscar/Utils/Assertions.hpp>
 
-#include <nonstd/span.hpp>
-
 #include <cstdint>
 #include <cstddef>
 #include <iterator>
+#include <span>
 
 namespace osc
 {
@@ -46,14 +45,9 @@ namespace osc
                 return m_IsU32 ? *m_Ptr.u32 : static_cast<uint32_t>(*m_Ptr.u16);
             }
 
-            friend bool operator==(Iterator const& lhs, Iterator const& rhs) noexcept
+            friend bool operator==(Iterator const& lhs, Iterator const& rhs)
             {
                 return lhs.m_Ptr.u16 == rhs.m_Ptr.u16 && lhs.m_IsU32 == rhs.m_IsU32;
-            }
-
-            friend bool operator!=(Iterator const& lhs, Iterator const& rhs) noexcept
-            {
-                return !(lhs == rhs);
             }
 
             Iterator& operator++() noexcept
@@ -80,7 +74,7 @@ namespace osc
         {
         }
 
-        MeshIndicesView(nonstd::span<uint16_t const> span) :
+        MeshIndicesView(std::span<uint16_t const> span) :
             m_Ptr{span.data()},
             m_Size{span.size()},
             m_IsU32{false}
@@ -94,7 +88,7 @@ namespace osc
         {
         }
 
-        MeshIndicesView(nonstd::span<uint32_t const> span) :
+        MeshIndicesView(std::span<uint32_t const> span) :
             m_Ptr{span.data()},
             m_Size{span.size()},
             m_IsU32{true}
@@ -111,18 +105,23 @@ namespace osc
             return m_IsU32;
         }
 
+        [[nodiscard]] bool empty() const
+        {
+            return size() == 0;
+        }
+
         size_t size() const
         {
             return m_Size;
         }
 
-        nonstd::span<uint16_t const> toU16Span() const
+        std::span<uint16_t const> toU16Span() const
         {
             OSC_ASSERT(!m_IsU32);
             return {m_Ptr.u16, m_Size};
         }
 
-        nonstd::span<uint32_t const> toU32Span() const
+        std::span<uint32_t const> toU32Span() const
         {
             OSC_ASSERT(m_IsU32);
             return {m_Ptr.u32, m_Size};

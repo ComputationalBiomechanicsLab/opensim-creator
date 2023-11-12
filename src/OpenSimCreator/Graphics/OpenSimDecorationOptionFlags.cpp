@@ -1,14 +1,13 @@
 #include "OpenSimDecorationOptionFlags.hpp"
 
-#include <oscar/Utils/Cpp20Shims.hpp>
-
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <optional>
 
 namespace
 {
-    constexpr auto c_CustomDecorationOptionLabels = osc::to_array<osc::OpenSimDecorationOptionMetadata>(
+    constexpr auto c_CustomDecorationOptionLabels = std::to_array<osc::OpenSimDecorationOptionMetadata>(
     {
         osc::OpenSimDecorationOptionMetadata
         {

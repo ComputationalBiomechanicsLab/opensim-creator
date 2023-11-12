@@ -2,7 +2,6 @@
 
 #include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
 
-#include <glm/vec3.hpp>
 #include <imgui.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
@@ -15,12 +14,15 @@
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Mat3.hpp>
+#include <oscar/Maths/Mat4.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <SDL_events.h>
@@ -31,10 +33,14 @@
 #include <string>
 #include <utility>
 
+using osc::Mat3;
+using osc::Mat4;
+using osc::Vec2i;
+
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Cubemaps";
-    constexpr auto c_SkyboxTextureFilenames = osc::to_array<osc::CStringView>(
+    constexpr auto c_SkyboxTextureFilenames = std::to_array<osc::CStringView>(
     {
         "skybox_right.jpg",
         "skybox_left.jpg",
@@ -54,7 +60,7 @@ namespace
             osc::ColorSpace::sRGB
         );
 
-        glm::ivec2 const dims = t.getDimensions();
+        Vec2i const dims = t.getDimensions();
         OSC_ASSERT(dims.x == dims.y);
 
         // load all face data into the cubemap
@@ -81,7 +87,7 @@ namespace
     {
         osc::Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -95,7 +101,7 @@ namespace
 
     std::array<CubeMaterial, 3> CreateCubeMaterials()
     {
-        return osc::to_array(
+        return std::to_array(
         {
             CubeMaterial
             {
@@ -226,7 +232,7 @@ private:
     void drawSkybox()
     {
         m_Camera.setClearFlags(CameraClearFlags::Nothing);
-        m_Camera.setViewMatrixOverride(glm::mat4{glm::mat3{m_Camera.getViewMatrix()}});
+        m_Camera.setViewMatrixOverride(Mat4{Mat3{m_Camera.getViewMatrix()}});
         Graphics::DrawMesh(
             m_Skybox,
             Transform{},
@@ -280,7 +286,7 @@ private:
 
     Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     bool m_IsMouseCaptured = true;
-    glm::vec3 m_CameraEulers = {};
+    Vec3 m_CameraEulers = {};
 };
 
 

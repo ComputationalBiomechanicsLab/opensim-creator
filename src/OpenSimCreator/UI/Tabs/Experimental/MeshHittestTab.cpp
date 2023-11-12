@@ -2,7 +2,6 @@
 
 #include <OpenSimCreator/Bindings/SimTKMeshLoader.hpp>
 
-#include <glm/vec3.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
@@ -11,7 +10,6 @@
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Maths/BVH.hpp>
@@ -21,11 +19,13 @@
 #include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Triangle.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <array>
@@ -59,16 +59,16 @@ public:
         auto raycastStart = std::chrono::high_resolution_clock::now();
         {
             Rect r = osc::GetMainViewportWorkspaceScreenRect();
-            glm::vec2 d = osc::Dimensions(r);
-            m_Ray = m_PolarCamera.unprojectTopLeftPosToWorldRay(glm::vec2{ImGui::GetMousePos()} - r.p1, d);
+            Vec2 d = osc::Dimensions(r);
+            m_Ray = m_PolarCamera.unprojectTopLeftPosToWorldRay(Vec2{ImGui::GetMousePos()} - r.p1, d);
 
             m_IsMousedOver = false;
             if (m_UseBVH)
             {
                 MeshIndicesView const indices = m_Mesh.getIndices();
                 std::optional<BVHCollision> const maybeCollision = indices.isU16() ?
-                    m_Mesh.getBVH().getClosestRayIndexedTriangleCollision(m_Mesh.getVerts(), indices.toU16Span(), m_Ray) :
-                    m_Mesh.getBVH().getClosestRayIndexedTriangleCollision(m_Mesh.getVerts(), indices.toU32Span(), m_Ray);
+                    m_MeshBVH.getClosestRayIndexedTriangleCollision(m_Mesh.getVerts(), indices.toU16Span(), m_Ray) :
+                    m_MeshBVH.getClosestRayIndexedTriangleCollision(m_Mesh.getVerts(), indices.toU32Span(), m_Ray);
                 if (maybeCollision)
                 {
                     uint32_t index = m_Mesh.getIndices()[maybeCollision->id];
@@ -80,7 +80,7 @@ public:
             }
             else
             {
-                nonstd::span<glm::vec3 const> tris = m_Mesh.getVerts();
+                std::span<Vec3 const> tris = m_Mesh.getVerts();
                 for (size_t i = 0; i < tris.size(); i += 3)
                 {
                     std::optional<RayCollision> const res = GetRayCollisionTriangle(
@@ -111,7 +111,7 @@ public:
         // setup scene
         {
             Rect const viewportRect = osc::GetMainViewportWorkspaceScreenRect();
-            glm::vec2 const viewportRectDims = osc::Dimensions(viewportRect);
+            Vec2 const viewportRectDims = osc::Dimensions(viewportRect);
             m_Camera.setPixelRect(viewportRect);
 
             // update real scene camera from constrained polar camera
@@ -132,7 +132,7 @@ public:
         {
             Mesh m;
             m.setVerts(m_Tris);
-            m.setIndices(osc::to_array<uint16_t>({0, 1, 2}));
+            m.setIndices(std::to_array<uint16_t>({0, 1, 2}));
 
             m_Material.setColor("uColor", Color::black());
             m_Material.setDepthTested(false);
@@ -145,8 +145,8 @@ public:
             m_Material.setColor("uColor", Color::black());
             m_Material.setDepthTested(true);
             osc::DrawBVH(
-                *App::singleton<MeshCache>(),
-                m_Mesh.getBVH(),
+                *App::singleton<SceneCache>(),
+                m_MeshBVH,
                 [this](osc::SceneDecoration&& dec)
                 {
                     osc::Graphics::DrawMesh(m_CubeLinesMesh, dec.transform, m_Material, m_Camera);
@@ -165,7 +165,7 @@ public:
             ImGui::Text("%ld microseconds", static_cast<long>(m_RaycastDuration.count()));
             auto r = m_Ray;
             ImGui::Text("camerapos = (%.2f, %.2f, %.2f)", m_Camera.getPosition().x, m_Camera.getPosition().y, m_Camera.getPosition().z);
-            ImGui::Text("origin = (%.2f, %.2f, %.2f), dir = (%.2f, %.2f, %.2f)", r.origin.x, r.origin.y, r.origin.z, r.dir.x, r.dir.y, r.dir.z);
+            ImGui::Text("origin = (%.2f, %.2f, %.2f), direction = (%.2f, %.2f, %.2f)", r.origin.x, r.origin.y, r.origin.z, r.direction.x, r.direction.y, r.direction.z);
             if (m_IsMousedOver)
             {
                 ImGui::Text("hit = (%.2f, %.2f, %.2f)", m_HitPos.x, m_HitPos.y, m_HitPos.z);
@@ -198,12 +198,13 @@ private:
     Mesh m_CubeLinesMesh = GenCubeLines();
 
     // other state
+    BVH m_MeshBVH = CreateTriangleBVHFromMesh(m_Mesh);
     bool m_UseBVH = false;
-    std::array<glm::vec3, 3> m_Tris{};
+    std::array<Vec3, 3> m_Tris{};
     std::chrono::microseconds m_RaycastDuration{0};
     PolarPerspectiveCamera m_PolarCamera;
     bool m_IsMousedOver = false;
-    glm::vec3 m_HitPos = {0.0f, 0.0f, 0.0f};
+    Vec3 m_HitPos = {0.0f, 0.0f, 0.0f};
     Line m_Ray{};
 
     PerfPanel m_PerfPanel{"perf"};

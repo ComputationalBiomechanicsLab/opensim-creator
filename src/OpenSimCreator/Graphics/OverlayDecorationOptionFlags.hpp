@@ -1,11 +1,11 @@
 #pragma once
 
-#include <nonstd/span.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 
 #include <cstddef>
 #include <cstdint>
+#include <span>
 #include <type_traits>
 
 namespace osc
@@ -61,6 +61,6 @@ namespace osc
         OverlayDecorationOptionGroup group;
         OverlayDecorationOptionFlags value;
     };
-    CStringView GetLabel(OverlayDecorationOptionGroup);
-    nonstd::span<OverlayDecorationOptionFlagsMetadata const> GetAllOverlayDecorationOptionFlagsMetadata();
+    CStringView getLabel(OverlayDecorationOptionGroup);
+    std::span<OverlayDecorationOptionFlagsMetadata const> GetAllOverlayDecorationOptionFlagsMetadata();
 }

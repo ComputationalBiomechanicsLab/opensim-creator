@@ -1,16 +1,15 @@
 #include "SimulationStatus.hpp"
 
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
-#include <nonstd/span.hpp>
 
-#include <cstddef>
 #include <array>
+#include <cstddef>
+#include <span>
 
 namespace
 {
-    constexpr auto c_SimulatorStatuses = osc::to_array<osc::SimulationStatus>(
+    constexpr auto c_SimulatorStatuses = std::to_array<osc::SimulationStatus>(
     {
         osc::SimulationStatus::Initializing,
         osc::SimulationStatus::Running,
@@ -20,7 +19,7 @@ namespace
     });
     static_assert(c_SimulatorStatuses.size() == osc::NumOptions<osc::SimulationStatus>());
 
-    constexpr auto c_SimulatorStatusStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_SimulatorStatusStrings = std::to_array<osc::CStringView>(
     {
         "Initializing",
         "Running",
@@ -34,12 +33,12 @@ namespace
 
 // public API
 
-nonstd::span<osc::SimulationStatus const> osc::GetAllSimulationStatuses()
+std::span<osc::SimulationStatus const> osc::GetAllSimulationStatuses()
 {
     return c_SimulatorStatuses;
 }
 
-nonstd::span<osc::CStringView const> osc::GetAllSimulationStatusStrings()
+std::span<osc::CStringView const> osc::GetAllSimulationStatusStrings()
 {
     return c_SimulatorStatusStrings;
 }

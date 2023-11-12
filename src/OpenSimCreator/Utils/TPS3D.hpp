@@ -1,11 +1,11 @@
 #pragma once
 
-#include <glm/vec3.hpp>
-#include <nonstd/span.hpp>
 #include <oscar/Graphics/Mesh.hpp>
+#include <oscar/Maths/Vec3.hpp>
 
 #include <filesystem>
 #include <iosfwd>
+#include <span>
 #include <utility>
 #include <vector>
 
@@ -27,26 +27,18 @@ namespace osc
         LandmarkPair3D() = default;
 
         LandmarkPair3D(
-            glm::vec3 const& source_,
-            glm::vec3 const& destination_) :
+            Vec3 const& source_,
+            Vec3 const& destination_) :
 
             source{source_},
             destination{destination_}
         {
         }
 
-        friend bool operator==(LandmarkPair3D const& lhs, LandmarkPair3D const& rhs) noexcept
-        {
-            return lhs.source == rhs.source && lhs.destination == rhs.destination;
-        }
+        friend bool operator==(LandmarkPair3D const&, LandmarkPair3D const&) = default;
 
-        friend bool operator!=(LandmarkPair3D const& lhs, LandmarkPair3D const& rhs) noexcept
-        {
-            return !(lhs == rhs);
-        }
-
-        glm::vec3 source;
-        glm::vec3 destination;
+        Vec3 source;
+        Vec3 destination;
     };
 
     std::ostream& operator<<(std::ostream&, LandmarkPair3D const&);
@@ -67,12 +59,12 @@ namespace osc
         {
         }
 
+        friend bool operator==(TPSCoefficientSolverInputs3D const&, TPSCoefficientSolverInputs3D const&) = default;
+
         std::vector<LandmarkPair3D> landmarks;
         float blendingFactor = 1.0f;
     };
 
-    bool operator==(TPSCoefficientSolverInputs3D const&, TPSCoefficientSolverInputs3D const&) noexcept;
-    bool operator!=(TPSCoefficientSolverInputs3D const&, TPSCoefficientSolverInputs3D const&) noexcept;
     std::ostream& operator<<(std::ostream&, TPSCoefficientSolverInputs3D const&);
 
     // a single non-affine term of the 3D TPS equation
@@ -82,26 +74,18 @@ namespace osc
     struct TPSNonAffineTerm3D final {
 
         TPSNonAffineTerm3D(
-            glm::vec3 const& weight_,
-            glm::vec3 const& controlPoint_) :
+            Vec3 const& weight_,
+            Vec3 const& controlPoint_) :
 
             weight{weight_},
             controlPoint{controlPoint_}
         {
         }
 
-        friend bool operator==(TPSNonAffineTerm3D const& lhs, TPSNonAffineTerm3D const& rhs) noexcept
-        {
-            return lhs.weight == rhs.weight && lhs.controlPoint == rhs.controlPoint;
-        }
+        friend bool operator==(TPSNonAffineTerm3D const&, TPSNonAffineTerm3D const&) = default;
 
-        friend bool operator!=(TPSNonAffineTerm3D const& lhs, TPSNonAffineTerm3D const& rhs) noexcept
-        {
-            return !(lhs == rhs);
-        }
-
-        glm::vec3 weight;
-        glm::vec3 controlPoint;
+        Vec3 weight;
+        Vec3 controlPoint;
     };
 
     std::ostream& operator<<(std::ostream&, TPSNonAffineTerm3D const&);
@@ -111,29 +95,29 @@ namespace osc
     // i.e. these are the a1, a2, a3, a4, and w's (+ control points) terms of the equation
     struct TPSCoefficients3D final {
         // default the coefficients to an "identity" warp
-        glm::vec3 a1 = {0.0f, 0.0f, 0.0f};
-        glm::vec3 a2 = {1.0f, 0.0f, 0.0f};
-        glm::vec3 a3 = {0.0f, 1.0f, 0.0f};
-        glm::vec3 a4 = {0.0f, 0.0f, 1.0f};
+        Vec3 a1 = {0.0f, 0.0f, 0.0f};
+        Vec3 a2 = {1.0f, 0.0f, 0.0f};
+        Vec3 a3 = {0.0f, 1.0f, 0.0f};
+        Vec3 a4 = {0.0f, 0.0f, 1.0f};
         std::vector<TPSNonAffineTerm3D> nonAffineTerms;
+
+        friend bool operator==(TPSCoefficients3D const&, TPSCoefficients3D const&) noexcept = default;
     };
 
-    bool operator==(TPSCoefficients3D const&, TPSCoefficients3D const&) noexcept;
-    bool operator!=(TPSCoefficients3D const&, TPSCoefficients3D const&) noexcept;
     std::ostream& operator<<(std::ostream&, TPSCoefficients3D const&);
 
     // computes all coefficients of the 3D TPS equation (a1, a2, a3, a4, and all the w's)
     TPSCoefficients3D CalcCoefficients(TPSCoefficientSolverInputs3D const&);
 
     // evaluates the TPS equation with the given coefficients and input point
-    glm::vec3 EvaluateTPSEquation(TPSCoefficients3D const&, glm::vec3);
+    Vec3 EvaluateTPSEquation(TPSCoefficients3D const&, Vec3);
 
     // returns a mesh that is the equivalent of applying the 3D TPS warp to the mesh
     Mesh ApplyThinPlateWarpToMesh(TPSCoefficients3D const&, Mesh const&);
 
     // returns points that are the equivalent of applying the 3D TPS warp to each input point
-    std::vector<glm::vec3> ApplyThinPlateWarpToPoints(TPSCoefficients3D const&, nonstd::span<glm::vec3 const>);
+    std::vector<Vec3> ApplyThinPlateWarpToPoints(TPSCoefficients3D const&, std::span<Vec3 const>);
 
     // returns 3D landmark positions loaded from a CSV (.landmarks) file
-    std::vector<glm::vec3> LoadLandmarksFromCSVFile(std::filesystem::path const&);
+    std::vector<Vec3> LoadLandmarksFromCSVFile(std::filesystem::path const&);
 }

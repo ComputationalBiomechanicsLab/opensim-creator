@@ -3,7 +3,6 @@
 #include <OpenSimCreator/Outputs/VirtualOutputExtractor.hpp>
 #include <OpenSimCreator/Simulation/SimulationReport.hpp>
 
-#include <nonstd/span.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
@@ -13,6 +12,7 @@
 #include <cmath>
 #include <memory>
 #include <optional>
+#include <span>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -144,8 +144,8 @@ float osc::IntegratorOutputExtractor::getValueFloat(OpenSim::Component const&, S
 }
 
 void osc::IntegratorOutputExtractor::getValuesFloat(OpenSim::Component const&,
-                                           nonstd::span<SimulationReport const> reports,
-                                           nonstd::span<float> out) const
+                                           std::span<SimulationReport const> reports,
+                                           std::span<float> out) const
 {
     OSC_ASSERT_ALWAYS(reports.size() == out.size());
     for (size_t i = 0; i < reports.size(); ++i)

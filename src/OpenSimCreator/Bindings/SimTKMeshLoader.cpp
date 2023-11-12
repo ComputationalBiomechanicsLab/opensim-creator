@@ -2,24 +2,26 @@
 
 #include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
 
-#include <glm/vec3.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Triangle.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 #include <SimTKcommon/internal/PolygonalMesh.h>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
+
+using osc::Vec3;
 
 // helper functions
 namespace
 {
     // get the `vert`th vertex of the `face`th face
-    glm::vec3 GetFaceVertex(SimTK::PolygonalMesh const& mesh, int face, int vert)
+    Vec3 GetFaceVertex(SimTK::PolygonalMesh const& mesh, int face, int vert)
     {
         int const vertidx = mesh.getFaceVertex(face, vert);
         SimTK::Vec3 const& pos = mesh.getVertexPosition(vertidx);
@@ -35,10 +37,10 @@ osc::Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
 
     size_t const numVerts = mesh.getNumVertices();
 
-    std::vector<glm::vec3> verts;
+    std::vector<Vec3> verts;
     verts.reserve(numVerts);
 
-    std::vector<glm::vec3> normals;
+    std::vector<Vec3> normals;
     normals.reserve(numVerts);
 
     std::vector<uint32_t> indices;
@@ -47,7 +49,7 @@ osc::Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
     uint32_t index = 0;
     auto const pushTriangle = [&verts, &normals, &indices, &index](osc::Triangle const& tri)
     {
-        glm::vec3 const normal = osc::TriangleNormal(tri);
+        Vec3 const normal = osc::TriangleNormal(tri);
 
         for (size_t i = 0; i < 3; ++i)
         {
@@ -81,7 +83,7 @@ osc::Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
         {
             // quad (render as two triangles)
 
-            auto const quadVerts = osc::to_array<glm::vec3>(
+            auto const quadVerts = std::to_array<Vec3>(
             {
                 GetFaceVertex(mesh, face, 0),
                 GetFaceVertex(mesh, face, 1),
@@ -99,7 +101,7 @@ osc::Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
             // create a vertex at the average center point and attach
             // every two verices to the center as triangles.
 
-            glm::vec3 center = {0.0f, 0.0f, 0.0f};
+            Vec3 center = {0.0f, 0.0f, 0.0f};
             for (int vert = 0; vert < nVerts; ++vert)
             {
                 center += GetFaceVertex(mesh, face, vert);

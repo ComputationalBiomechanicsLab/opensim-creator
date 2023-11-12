@@ -4,95 +4,95 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Maths/AABB.hpp>
+#include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/RayCollision.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Scene/SceneCollision.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <nonstd/span.hpp>
-
 #include <functional>
 #include <optional>
+#include <span>
 
 namespace osc { struct AABB; }
 namespace osc { class AppConfig; }
 namespace osc { class BVH; }
 namespace osc { class Mesh; }
-namespace osc { class MeshCache; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct Rect; }
 namespace osc { struct Segment; }
 namespace osc { struct SceneDecoration; }
+namespace osc { class SceneCache; }
 namespace osc { class ShaderCache; }
 namespace osc { struct Transform; }
 
 namespace osc
 {
     void DrawBVH(
-        MeshCache&,
+        SceneCache&,
         BVH const&,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawAABB(
-        MeshCache&,
+        SceneCache&,
         AABB const&,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawAABBs(
-        MeshCache&,
-        nonstd::span<AABB const>,
+        SceneCache&,
+        std::span<AABB const>,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawBVHLeafNodes(
-        MeshCache&,
+        SceneCache&,
         BVH const&,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawXZFloorLines(
-        MeshCache&,
+        SceneCache&,
         std::function<void(SceneDecoration&&)> const&,
         float scale = 1.0f
     );
 
     void DrawXZGrid(
-        MeshCache&,
+        SceneCache&,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawXYGrid(
-        MeshCache&,
+        SceneCache&,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawYZGrid(
-        MeshCache&,
+        SceneCache&,
         std::function<void(SceneDecoration&&)> const&
     );
 
     struct ArrowProperties final {
         ArrowProperties();
 
-        glm::vec3 worldspaceStart;
-        glm::vec3 worldspaceEnd;
+        Vec3 worldspaceStart;
+        Vec3 worldspaceEnd;
         float tipLength;
         float neckThickness;
         float headThickness;
         Color color;
     };
     void DrawArrow(
-        MeshCache&,
+        SceneCache&,
         ArrowProperties const&,
         std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawLineSegment(
-        MeshCache&,
+        SceneCache&,
         Segment const&,
         Color const&,
         float radius,
@@ -103,20 +103,22 @@ namespace osc
 
     // updates the given BVH with the given component decorations
     void UpdateSceneBVH(
-        nonstd::span<SceneDecoration const>,
+        std::span<SceneDecoration const>,
         BVH&
     );
 
     // returns all collisions along a ray
     std::vector<SceneCollision> GetAllSceneCollisions(
         BVH const& sceneBVH,
-        nonstd::span<SceneDecoration const>,
+        SceneCache&,
+        std::span<SceneDecoration const>,
         Line const& worldspaceRay
     );
 
     // returns closest ray-triangle collision in worldspace
     std::optional<RayCollision> GetClosestWorldspaceRayCollision(
         Mesh const&,
+        BVH const&,
         Transform const&,
         Line const& worldspaceRay
     );
@@ -126,15 +128,16 @@ namespace osc
     std::optional<RayCollision> GetClosestWorldspaceRayCollision(
         PolarPerspectiveCamera const&,
         Mesh const&,
+        BVH const&,
         Rect const& renderScreenRect,
-        glm::vec2 mouseScreenPos
+        Vec2 mouseScreenPos
     );
 
     // returns scene rendering parameters for an generic panel
     SceneRendererParams CalcStandardDarkSceneRenderParams(
         PolarPerspectiveCamera const&,
         AntiAliasingLevel,
-        glm::vec2 renderDims
+        Vec2 renderDims
     );
 
     // returns a material that can draw a mesh's triangles in wireframe-style
@@ -142,4 +145,7 @@ namespace osc
         AppConfig const&,
         ShaderCache&
     );
+
+    // returns a triangle BVH for the given triangle mesh, or an empty BVH if the mesh is non-triangular or empty
+    BVH CreateTriangleBVHFromMesh(Mesh const&);
 }

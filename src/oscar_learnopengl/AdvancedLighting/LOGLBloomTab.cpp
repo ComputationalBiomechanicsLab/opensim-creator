@@ -1,6 +1,5 @@
 #include "LOGLBloomTab.hpp"
 
-#include <glm/vec3.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
@@ -17,22 +16,29 @@
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
+#include <array>
 #include <string>
 #include <utility>
 #include <vector>
+
+using osc::Mat4;
+using osc::Vec2;
+using osc::Vec3;
 
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Bloom";
 
-    constexpr auto c_SceneLightPositions = osc::to_array<glm::vec3>(
+    constexpr auto c_SceneLightPositions = std::to_array<Vec3>(
     {
         { 0.0f, 0.5f,  1.5f},
         {-4.0f, 0.5f, -3.0f},
@@ -42,7 +48,7 @@ namespace
 
     std::array<osc::Color, c_SceneLightPositions.size()> const& GetSceneLightColors()
     {
-        static auto const s_SceneLightColors = osc::to_array<osc::Color>(
+        static auto const s_SceneLightColors = std::to_array<osc::Color>(
         {
             osc::ToSRGB({ 5.0f, 5.0f,  5.0f}),
             osc::ToSRGB({10.0f, 0.0f,  0.0f}),
@@ -52,50 +58,50 @@ namespace
         return s_SceneLightColors;
     }
 
-    std::vector<glm::mat4> CreateCubeTransforms()
+    std::vector<Mat4> CreateCubeTransforms()
     {
-        std::vector<glm::mat4> rv;
+        std::vector<Mat4> rv;
 
         {
-            glm::mat4 m{1.0f};
-            m = glm::translate(m, glm::vec3(0.0f, 1.5f, 0.0));
-            m = glm::scale(m, glm::vec3(0.5f));
+            Mat4 m{1.0f};
+            m = osc::Translate(m, Vec3(0.0f, 1.5f, 0.0));
+            m = osc::Scale(m, Vec3(0.5f));
             rv.push_back(m);
         }
 
         {
-            glm::mat4 m{1.0f};
-            m = glm::translate(m, glm::vec3(2.0f, 0.0f, 1.0));
-            m = glm::scale(m, glm::vec3(0.5f));
+            Mat4 m{1.0f};
+            m = osc::Translate(m, Vec3(2.0f, 0.0f, 1.0));
+            m = osc::Scale(m, Vec3(0.5f));
             rv.push_back(m);
         }
 
         {
-            glm::mat4 m{1.0f};
-            m = glm::translate(m, glm::vec3(-1.0f, -1.0f, 2.0));
-            m = glm::rotate(m, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+            Mat4 m{1.0f};
+            m = osc::Translate(m, Vec3(-1.0f, -1.0f, 2.0));
+            m = osc::Rotate(m, osc::Deg2Rad(60.0f), osc::Normalize(Vec3(1.0, 0.0, 1.0)));
             rv.push_back(m);
         }
 
         {
-            glm::mat4 m{1.0f};
-            m = glm::translate(m, glm::vec3(0.0f, 2.7f, 4.0));
-            m = glm::rotate(m, glm::radians(23.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
-            m = glm::scale(m, glm::vec3(1.25));
+            Mat4 m{1.0f};
+            m = osc::Translate(m, Vec3(0.0f, 2.7f, 4.0));
+            m = osc::Rotate(m, osc::Deg2Rad(23.0f), osc::Normalize(Vec3(1.0, 0.0, 1.0)));
+            m = osc::Scale(m, Vec3(1.25));
             rv.push_back(m);
         }
 
         {
-            glm::mat4 m(1.0f);
-            m = glm::translate(m, glm::vec3(-2.0f, 1.0f, -3.0));
-            m = glm::rotate(m, glm::radians(124.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+            Mat4 m(1.0f);
+            m = osc::Translate(m, Vec3(-2.0f, 1.0f, -3.0));
+            m = osc::Rotate(m, osc::Deg2Rad(124.0f), osc::Normalize(Vec3(1.0, 0.0, 1.0)));
             rv.push_back(m);
         }
 
         {
-            glm::mat4 m(1.0f);
-            m = glm::translate(m, glm::vec3(-3.0f, 0.0f, 0.0));
-            m = glm::scale(m, glm::vec3(0.5f));
+            Mat4 m(1.0f);
+            m = osc::Translate(m, Vec3(-3.0f, 0.0f, 0.0));
+            m = osc::Scale(m, Vec3(0.5f));
             rv.push_back(m);
         }
 
@@ -183,7 +189,7 @@ private:
 
     void reformatAllTextures(Rect const& viewportRect)
     {
-        glm::vec2 const viewportDims = Dimensions(viewportRect);
+        Vec2 const viewportDims = Dimensions(viewportRect);
         AntiAliasingLevel const msxaaSamples = App::get().getCurrentAntiAliasingLevel();
 
         RenderTextureDescriptor textureDescription{viewportDims};
@@ -215,9 +221,9 @@ private:
 
         // draw floor
         {
-            glm::mat4 floorTransform{1.0f};
-            floorTransform = glm::translate(floorTransform, glm::vec3(0.0f, -1.0f, 0.0));
-            floorTransform = glm::scale(floorTransform, glm::vec3(12.5f, 0.5f, 12.5f));
+            Mat4 floorTransform{1.0f};
+            floorTransform = osc::Translate(floorTransform, Vec3(0.0f, -1.0f, 0.0));
+            floorTransform = osc::Scale(floorTransform, Vec3(12.5f, 0.5f, 12.5f));
 
             MaterialPropertyBlock floorProps;
             floorProps.setTexture("uDiffuseTexture", m_WoodTexture);
@@ -251,9 +257,9 @@ private:
 
         for (size_t i = 0; i < c_SceneLightPositions.size(); ++i)
         {
-            glm::mat4 lightTransform{1.0f};
-            lightTransform = glm::translate(lightTransform, glm::vec3(c_SceneLightPositions[i]));
-            lightTransform = glm::scale(lightTransform, glm::vec3(0.25f));
+            Mat4 lightTransform{1.0f};
+            lightTransform = osc::Translate(lightTransform, Vec3(c_SceneLightPositions[i]));
+            lightTransform = osc::Scale(lightTransform, Vec3(0.25f));
 
             MaterialPropertyBlock lightProps;
             lightProps.setColor("uLightColor", sceneLightColors[i]);
@@ -335,7 +341,7 @@ private:
     {
         constexpr float w = 200.0f;
 
-        auto const textures = osc::to_array<RenderTexture const*>(
+        auto const textures = std::to_array<RenderTexture const*>(
         {
             &m_SceneHDRColorOutput,
             &m_SceneHDRThresholdedOutput,
@@ -345,7 +351,7 @@ private:
 
         for (size_t i = 0; i < textures.size(); ++i)
         {
-            glm::vec2 const offset = {static_cast<float>(i)*w, 0.0f};
+            Vec2 const offset = {static_cast<float>(i)*w, 0.0f};
             Rect const overlayRect
             {
                 viewportRect.p1 + offset,
@@ -409,7 +415,7 @@ private:
 
     Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     bool m_IsMouseCaptured = true;
-    glm::vec3 m_CameraEulers = {};
+    Vec3 m_CameraEulers = {};
 };
 
 

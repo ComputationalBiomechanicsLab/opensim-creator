@@ -2,10 +2,8 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <iosfwd>
-#include <type_traits>
-#include <typeindex>  // for std::hash
-#include <utility>
 
 namespace osc
 {
@@ -45,35 +43,7 @@ namespace osc
             return m_Value > 0;
         }
 
-        constexpr friend bool operator==(UID const& lhs, UID const& rhs) noexcept
-        {
-            return lhs.get() == rhs.get();
-        }
-
-        constexpr friend bool operator!=(UID const& lhs, UID const& rhs) noexcept
-        {
-            return lhs.get() != rhs.get();
-        }
-
-        constexpr friend bool operator<(UID const& lhs, UID const& rhs) noexcept
-        {
-            return lhs.get() < rhs.get();
-        }
-
-        constexpr friend bool operator<=(UID const& lhs, UID const& rhs) noexcept
-        {
-            return lhs.get() <= rhs.get();
-        }
-
-        constexpr friend bool operator>(UID const& lhs, UID const& rhs) noexcept
-        {
-            return lhs.get() > rhs.get();
-        }
-
-        constexpr friend bool operator>=(UID const& lhs, UID const& rhs) noexcept
-        {
-            return lhs.get() >= rhs.get();
-        }
+        friend auto operator<=>(UID const&, UID const&) = default;
 
     private:
         static int64_t GetNextID() noexcept;
@@ -85,47 +55,6 @@ namespace osc
         int64_t m_Value;
     };
 
-    // strongly-typed version of the above
-    //
-    // adds compile-time type checking to IDs
-    template<typename T>
-    class UIDT final : public UID {
-    public:
-
-        UIDT() noexcept : UID{}
-        {
-        }
-
-        // upcasting is automatic
-        template<typename U, typename = std::enable_if_t<std::is_base_of_v<U, T>>>
-        explicit constexpr operator UIDT<U> () const noexcept
-        {
-            return UIDT<U>{*this};
-        }
-
-    private:
-        // unchecked downcast of untyped ID to typed one
-        template<typename U>
-        friend constexpr UIDT<U> DowncastID(UID const&) noexcept;
-
-        explicit constexpr UIDT(UID id) noexcept : UID{std::move(id)}
-        {
-        }
-    };
-
-    template<typename U>
-    constexpr UIDT<U> DowncastID(UID const& id) noexcept
-    {
-        return UIDT<U>{id};
-    }
-
-    template<typename U, typename V>
-    constexpr UIDT<V> DowncastIDT(UIDT<U> const& id) noexcept
-    {
-        static_assert(std::is_base_of_v<V, U>);
-        return UIDT<V>{id};
-    }
-
     std::ostream& operator<<(std::ostream&, UID const&);
 }
 
@@ -134,14 +63,6 @@ namespace osc
 // lets them be used as associative lookup keys, etc.
 template<>
 struct std::hash<osc::UID> final {
-    size_t operator()(osc::UID const& id) const
-    {
-        return static_cast<size_t>(id.get());
-    }
-};
-
-template<typename T>
-struct std::hash<osc::UIDT<T>> final {
     size_t operator()(osc::UID const& id) const
     {
         return static_cast<size_t>(id.get());

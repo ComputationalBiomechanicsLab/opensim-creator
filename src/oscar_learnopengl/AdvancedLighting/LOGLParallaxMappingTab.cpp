@@ -2,9 +2,6 @@
 
 #include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
@@ -18,7 +15,11 @@
 #include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/Vec4.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/CStringView.hpp>
@@ -30,6 +31,10 @@
 #include <utility>
 #include <vector>
 
+using osc::Vec2;
+using osc::Vec3;
+using osc::Vec4;
+
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/ParallaxMapping";
@@ -37,7 +42,7 @@ namespace
     // matches the quad used in LearnOpenGL's parallax mapping tutorial
     osc::Mesh GenerateQuad()
     {
-        std::vector<glm::vec3> const verts =
+        std::vector<Vec3> const verts =
         {
             {-1.0f,  1.0f, 0.0f},
             {-1.0f, -1.0f, 0.0f},
@@ -45,7 +50,7 @@ namespace
             { 1.0f,  1.0f, 0.0f},
         };
 
-        std::vector<glm::vec3> const normals =
+        std::vector<Vec3> const normals =
         {
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
@@ -53,7 +58,7 @@ namespace
             {0.0f, 0.0f, 1.0f},
         };
 
-        std::vector<glm::vec2> const texCoords =
+        std::vector<Vec2> const texCoords =
         {
             {0.0f, 1.0f},
             {0.0f, 0.0f},
@@ -67,7 +72,7 @@ namespace
             0, 2, 3,
         };
 
-        std::vector<glm::vec4> const tangents = osc::CalcTangentVectors(
+        std::vector<Vec4> const tangents = osc::CalcTangentVectors(
             osc::MeshTopology::Triangles,
             verts,
             normals,
@@ -89,7 +94,7 @@ namespace
     {
         osc::Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         return rv;
@@ -222,7 +227,7 @@ private:
 
     // scene state
     Camera m_Camera = CreateCamera();
-    glm::vec3 m_CameraEulers = {};
+    Vec3 m_CameraEulers = {};
     Transform m_QuadTransform;
     Transform m_LightTransform;
     bool m_IsMappingEnabled = true;

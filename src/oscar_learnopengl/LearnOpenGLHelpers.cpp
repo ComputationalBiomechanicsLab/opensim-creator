@@ -1,16 +1,17 @@
 #include "LearnOpenGLHelpers.hpp"
 
-#include <glm/vec3.hpp>
-#include <nonstd/span.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
+#include <oscar/Maths/Vec3.hpp>
+
+#include <span>
 
 osc::Mesh osc::GenLearnOpenGLCube()
 {
-    osc::Mesh cube = osc::GenCube();
+    Mesh cube = osc::GenCube();
 
-    cube.transformVerts([](nonstd::span<glm::vec3> vs)
+    cube.transformVerts([](std::span<Vec3> vs)
     {
-        for (glm::vec3& v : vs)
+        for (Vec3& v : vs)
         {
             v *= 0.5f;
         }

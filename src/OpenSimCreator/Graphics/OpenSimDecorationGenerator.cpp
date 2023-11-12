@@ -6,7 +6,6 @@
 #include <OpenSimCreator/Model/VirtualConstModelStatePair.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include <glm/vec3.hpp>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
@@ -22,17 +21,16 @@
 #include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Maths/AABB.hpp>
-#include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/Log.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <SimTKcommon.h>
 
@@ -41,12 +39,15 @@
 #include <cstddef>
 #include <iterator>
 #include <memory>
+#include <numbers>
 #include <optional>
 #include <stdexcept>
 #include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
+
+using osc::Vec3;
 
 namespace
 {
@@ -139,7 +140,7 @@ namespace
         float const specificTension = 0.25e6f;  // magic number?
         float const pcsa = f / specificTension;
         float const widthFactor = 0.25f;
-        return widthFactor * std::sqrt(pcsa / osc::fpi);
+        return widthFactor * std::sqrt(pcsa / std::numbers::pi_v<float>);
     }
 
     // helper: returns the size (radius) of a muscle based on caller-provided sizing flags
@@ -168,7 +169,7 @@ namespace
     class RendererState final {
     public:
         RendererState(
-            osc::MeshCache& meshCache,
+            osc::SceneCache& meshCache,
             OpenSim::Model const& model,
             SimTK::State const& state,
             osc::OpenSimDecorationOptions const& opts,
@@ -184,7 +185,7 @@ namespace
         {
         }
 
-        osc::MeshCache& updMeshCache()
+        osc::SceneCache& updMeshCache()
         {
             return m_MeshCache;
         }
@@ -298,7 +299,7 @@ namespace
         }
 
     private:
-        osc::MeshCache& m_MeshCache;
+        osc::SceneCache& m_MeshCache;
         osc::Mesh m_SphereMesh = m_MeshCache.getSphereMesh();
         osc::Mesh m_CylinderMesh = m_MeshCache.getCylinderMesh();
         OpenSim::Model const& m_Model;
@@ -322,8 +323,8 @@ namespace
             return;
         }
 
-        glm::vec3 const p1 = TransformInGround(p2p.getBody1(), rs.getState()) * osc::ToVec3(p2p.getPoint1());
-        glm::vec3 const p2 = TransformInGround(p2p.getBody2(), rs.getState()) * osc::ToVec3(p2p.getPoint2());
+        Vec3 const p1 = TransformInGround(p2p.getBody1(), rs.getState()) * osc::ToVec3(p2p.getPoint1());
+        Vec3 const p2 = TransformInGround(p2p.getBody2(), rs.getState()) * osc::ToVec3(p2p.getPoint2());
 
         float const radius = c_GeometryPathBaseRadius * rs.getFixupScaleFactor();
         osc::Transform const cylinderXform = osc::YToYCylinderToSegmentTransform({p1, p2}, radius);
@@ -441,13 +442,13 @@ namespace
         tendonSpherePrototype.transform.scale = {tendonUiRadius, tendonUiRadius, tendonUiRadius};
         tendonSpherePrototype.color = tendonColor;
 
-        auto emitTendonSphere = [&](glm::vec3 const& pos)
+        auto emitTendonSphere = [&](Vec3 const& pos)
         {
             osc::SceneDecoration copy{tendonSpherePrototype};
             copy.transform.position = pos;
             rs.consume(muscle, std::move(copy));
         };
-        auto emitTendonCylinder = [&](glm::vec3 const& p1, glm::vec3 const& p2)
+        auto emitTendonCylinder = [&](Vec3 const& p1, Vec3 const& p2)
         {
             osc::Transform cylinderXform = osc::YToYCylinderToSegmentTransform({p1, p2}, tendonUiRadius);
 
@@ -458,13 +459,13 @@ namespace
                 tendonColor,
             });
         };
-        auto emitFiberSphere = [&](glm::vec3 const& pos)
+        auto emitFiberSphere = [&](Vec3 const& pos)
         {
             osc::SceneDecoration copy{fiberSpherePrototype};
             copy.transform.position = pos;
             rs.consume(muscle, std::move(copy));
         };
-        auto emitFiberCylinder = [&](glm::vec3 const& p1, glm::vec3 const& p2)
+        auto emitFiberCylinder = [&](Vec3 const& p1, Vec3 const& p2)
         {
             osc::Transform cylinderXform = osc::YToYCylinderToSegmentTransform({p1, p2}, fiberUiRadius);
 
@@ -508,15 +509,15 @@ namespace
             // emit remaining tendon cylinder + spheres
 
             osc::GeometryPathPoint const& point = pps[i];
-            glm::vec3 const prevToPos = point.locationInGround - prevPoint.locationInGround;
-            float prevToPosLen = glm::length(prevToPos);
+            Vec3 const prevToPos = point.locationInGround - prevPoint.locationInGround;
+            float prevToPosLen = osc::Length(prevToPos);
             float traversalPos = prevTraversalPos + prevToPosLen;
             float excess = traversalPos - tendonLen;
 
             if (excess > 0.0f)
             {
                 float scaler = (prevToPosLen - excess)/prevToPosLen;
-                glm::vec3 tendonEnd = prevPoint.locationInGround + scaler * prevToPos;
+                Vec3 tendonEnd = prevPoint.locationInGround + scaler * prevToPos;
 
                 emitTendonCylinder(prevPoint.locationInGround, tendonEnd);
                 emitTendonSphere(tendonEnd);
@@ -546,8 +547,8 @@ namespace
             // emit remaining fiber cylinder + spheres
 
             osc::GeometryPathPoint const& point = pps[i];
-            glm::vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
-            float prevToPosLen = glm::length(prevToPos);
+            Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
+            float prevToPosLen = osc::Length(prevToPos);
             float traversalPos = prevTraversalPos + prevToPosLen;
             float excess = traversalPos - fiberEnd;
 
@@ -555,7 +556,7 @@ namespace
             {
                 // emit end point and then exit
                 float scaler = (prevToPosLen - excess)/prevToPosLen;
-                glm::vec3 fiberEndPos = prevPoint.locationInGround + scaler * prevToPos;
+                Vec3 fiberEndPos = prevPoint.locationInGround + scaler * prevToPos;
 
                 emitFiberCylinder(prevPoint.locationInGround, fiberEndPos);
                 emitFiberSphere(fiberEndPos);
@@ -585,8 +586,8 @@ namespace
             // emit remaining fiber cylinder + spheres
 
             osc::GeometryPathPoint const& point = pps[i];
-            glm::vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
-            float prevToPosLen = glm::length(prevToPos);
+            Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
+            float prevToPosLen = osc::Length(prevToPos);
             float traversalPos = prevTraversalPos + prevToPosLen;
 
             emitTendonCylinder(prevPoint.locationInGround, point.locationInGround);
@@ -603,7 +604,7 @@ namespace
     void EmitPointBasedLine(
         RendererState& rs,
         OpenSim::Component const& hittestTarget,
-        nonstd::span<osc::GeometryPathPoint const> points,
+        std::span<osc::GeometryPathPoint const> points,
         float radius,
         osc::Color const& color)
     {
@@ -616,7 +617,7 @@ namespace
         // helper function: emits a sphere decoration
         auto const emitSphere = [&rs, &hittestTarget, radius, color](
             osc::GeometryPathPoint const& pp,
-            glm::vec3 const& upDirection)
+            Vec3 const& upDirection)
         {
             // ensure that user-defined path points are independently selectable (#425)
             OpenSim::Component const& c = pp.maybeUnderlyingUserPathPoint ?
@@ -627,7 +628,7 @@ namespace
             // the "join" between the sphere and cylinders nicer (#593)
             osc::Transform t;
             t.scale *= radius;
-            t.rotation = glm::normalize(glm::rotation(glm::vec3{0.0f, 1.0f, 0.0f}, upDirection));
+            t.rotation = osc::Normalize(osc::Rotation(Vec3{0.0f, 1.0f, 0.0f}, upDirection));
             t.position = pp.locationInGround;
 
             rs.consume(c, osc::SceneDecoration
@@ -640,8 +641,8 @@ namespace
 
         // helper function: emits a cylinder decoration between two points
         auto const emitCylinder = [&rs, &hittestTarget, radius, color](
-            glm::vec3 const& p1,
-            glm::vec3 const& p2)
+            Vec3 const& p1,
+            Vec3 const& p2)
         {
             osc::Transform const cylinderXform =
                 osc::YToYCylinderToSegmentTransform({p1, p2}, radius);
@@ -658,10 +659,10 @@ namespace
         if (rs.getShowPathPoints())
         {
             osc::GeometryPathPoint const& firstPoint = points.front();
-            glm::vec3 const& ppPos = firstPoint.locationInGround;
-            glm::vec3 const direction = points.size() == 1 ?
-                glm::vec3{0.0f, 1.0f, 0.0f} :
-                glm::normalize(points[1].locationInGround - ppPos);
+            Vec3 const& ppPos = firstPoint.locationInGround;
+            Vec3 const direction = points.size() == 1 ?
+                Vec3{0.0f, 1.0f, 0.0f} :
+                osc::Normalize(points[1].locationInGround - ppPos);
 
             emitSphere(firstPoint, direction);
         }
@@ -671,15 +672,15 @@ namespace
         {
             osc::GeometryPathPoint const& point = points[i];
 
-            glm::vec3 const& prevPos = points[i - 1].locationInGround;
-            glm::vec3 const& curPos = point.locationInGround;
+            Vec3 const& prevPos = points[i - 1].locationInGround;
+            Vec3 const& curPos = point.locationInGround;
 
             emitCylinder(prevPos, curPos);
 
             // if required, draw path points
             if (rs.getShowPathPoints())
             {
-                glm::vec3 const direction = glm::normalize(curPos - prevPos);
+                Vec3 const direction = osc::Normalize(curPos - prevPos);
                 emitSphere(point, direction);
             }
         }
@@ -899,7 +900,7 @@ namespace
         float const fixupScaleFactor = rs.getFixupScaleFactor();
         float const lenScale = 0.0025f;
         float const baseRadius = 0.025f;
-        float const tipLength = 0.1f*glm::length((fixupScaleFactor*lenScale)*maybeContact->force);
+        float const tipLength = 0.1f*osc::Length((fixupScaleFactor*lenScale)*maybeContact->force);
 
         osc::ArrowProperties p;
         p.worldspaceStart = maybeContact->point;
@@ -917,7 +918,7 @@ namespace
 }
 
 void osc::GenerateModelDecorations(
-    MeshCache& meshCache,
+    SceneCache& meshCache,
     OpenSim::Model const& model,
     SimTK::State const& state,
     OpenSimDecorationOptions const& opts,
@@ -937,7 +938,7 @@ void osc::GenerateModelDecorations(
 }
 
 void osc::GenerateSubcomponentDecorations(
-    MeshCache& meshCache,
+    SceneCache& meshCache,
     OpenSim::Model const& model,
     SimTK::State const& state,
     OpenSim::Component const& subcomponent,
@@ -1020,7 +1021,7 @@ void osc::GenerateSubcomponentDecorations(
 }
 
 osc::Mesh osc::ToOscMesh(
-    MeshCache& meshCache,
+    SceneCache& meshCache,
     OpenSim::Model const& model,
     SimTK::State const& state,
     OpenSim::Mesh const& mesh,
@@ -1061,7 +1062,7 @@ osc::Mesh osc::ToOscMesh(
     SimTK::State const& state,
     OpenSim::Mesh const& mesh)
 {
-    MeshCache cache;
+    SceneCache cache;
     OpenSimDecorationOptions opts;
     return ToOscMesh(cache, model, state, mesh, opts, 1.0f);
 }
@@ -1081,7 +1082,7 @@ osc::Mesh osc::ToOscMeshBakeScaleFactors(
 }
 
 float osc::GetRecommendedScaleFactor(
-    MeshCache& meshCache,
+    SceneCache& meshCache,
     OpenSim::Model const& model,
     SimTK::State const& state,
     OpenSimDecorationOptions const& opts)

@@ -64,18 +64,12 @@ namespace osc
         void forEachOptionAsAppSettingValue(std::function<void(std::string_view, AppSettingValue const&)> const&) const;
         void tryUpdFromValues(std::string_view keyPrefix, std::unordered_map<std::string, osc::AppSettingValue> const&);
 
-    private:
-        friend bool operator==(OpenSimDecorationOptions const&, OpenSimDecorationOptions const&) noexcept;
-        friend bool operator!=(OpenSimDecorationOptions const& lhs, OpenSimDecorationOptions const& rhs) noexcept
-        {
-            return !(lhs == rhs);
-        }
+        friend bool operator==(OpenSimDecorationOptions const&, OpenSimDecorationOptions const&) = default;
 
+    private:
         MuscleDecorationStyle m_MuscleDecorationStyle;
         MuscleColoringStyle m_MuscleColoringStyle;
         MuscleSizingStyle m_MuscleSizingStyle;
         OpenSimDecorationOptionFlags m_Flags;
     };
-
-    bool operator==(OpenSimDecorationOptions const&, OpenSimDecorationOptions const&) noexcept;
 }

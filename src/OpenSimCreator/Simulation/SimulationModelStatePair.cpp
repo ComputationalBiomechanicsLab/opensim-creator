@@ -8,7 +8,6 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/Utils/SynchronizedValue.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <memory>

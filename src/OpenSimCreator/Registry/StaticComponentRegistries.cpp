@@ -3,7 +3,6 @@
 #include <OpenSimCreator/Registry/ComponentRegistry.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include <nonstd/span.hpp>
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/LinearFunction.h>
@@ -35,13 +34,13 @@
 #include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/Macros.hpp>
 #include <oscar/Utils/SetHelpers.hpp>
 
 #include <algorithm>
 #include <initializer_list>
 #include <iterator>
 #include <memory>
+#include <span>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>

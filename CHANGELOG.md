@@ -4,6 +4,16 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Internal: nonstd::span was droppped in favor of C++20's std::span
+- Internal: C++17 was upgraded to C++20, which required some dependency patching
+- Internal: all vector/matrix math was ported from using `glm` directly to using it via an `osc` alias
+
+
+## [0.5.4] - 2023/11/03
+
+0.5.4 adds support for basic shape fitting into the model editor, some nice-to-have orientation/translation actions in the
+mesh importer, and some bugfixes.
+
 - Stations are now selectable when using the `Translate > To (select something)` and `Reorient > $axis > To (select something)`
   actions in the mesh importer (thanks @emmccain-uva, #796)
 - The mesh importer now has an option to `Reorient > $axis > Along line between (select two elements)`, which is sometimes
@@ -22,6 +32,11 @@ All notable changes to this project will be documented here. The format is based
 
 
 ## [0.5.3] - 2023/10/06
+
+0.5.3 adds support for persisting 3D viewport options between boots of OSC, which is handy if you have preferred visualization
+options that you typically always toggle on/off. It also adds support for importing stations into the mesh importer from a
+CSV (File > Import Stations from CSV in the mesh importer workflow), which is useful for importing (parts of) a muscle path
+into a mesh importer scene.
 
 - 3D viewport settings (e.g. muscle styling, show/hide the floor, background color) are now persisted between
   boots of OSC via a per-user configuration file (thanks @tgeijten, #782)

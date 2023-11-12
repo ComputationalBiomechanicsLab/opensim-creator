@@ -1,11 +1,11 @@
 #pragma once
 
-#include <glm/vec3.hpp>
+#include <oscar/Maths/Vec3.hpp>
 
 namespace osc
 {
     struct PointDirection final {
-        glm::vec3 point;
-        glm::vec3 direction;
+        Vec3 point{};
+        Vec3 direction = {0.0f, 1.0f, 0.0f};
     };
 }

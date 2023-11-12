@@ -1,14 +1,14 @@
 #pragma once
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <nonstd/span.hpp>
 #include <oscar/Maths/AABB.hpp>
+#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <functional>
 #include <memory>
 #include <optional>
+#include <span>
 #include <string>
 #include <type_traits>
 
@@ -74,12 +74,12 @@ namespace osc
     void DrawPointTranslationInformationWithRespectTo(
         OpenSim::Frame const&,
         SimTK::State const&,
-        glm::vec3 locationInGround
+        Vec3 locationInGround
     );
     void DrawDirectionInformationWithRepsectTo(
         OpenSim::Frame const&,
         SimTK::State const&,
-        glm::vec3 directionInGround
+        Vec3 directionInGround
     );
     void DrawFrameInformationExpressedIn(
         OpenSim::Frame const& parent,
@@ -161,11 +161,11 @@ namespace osc
     bool DrawRenderingOptionsEditor(CustomRenderingOptions&);
     bool DrawOverlayOptionsEditor(OverlayDecorationOptions&);
     bool DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions&);
-    bool DrawAdvancedParamsEditor(ModelRendererParams&, nonstd::span<SceneDecoration const>);
+    bool DrawAdvancedParamsEditor(ModelRendererParams&, std::span<SceneDecoration const>);
     bool DrawVisualAidsContextMenuContent(ModelRendererParams&);
     bool DrawViewerTopButtonRow(
         ModelRendererParams&,
-        nonstd::span<SceneDecoration const>,
+        std::span<SceneDecoration const>,
         IconCache&,
         std::function<bool()> const& drawExtraElements = []() { return false; }
     );
@@ -177,7 +177,7 @@ namespace osc
     );
     bool DrawViewerImGuiOverlays(
         ModelRendererParams&,
-        nonstd::span<SceneDecoration const>,
+        std::span<SceneDecoration const>,
         std::optional<AABB>,
         Rect const&,
         IconCache&,
@@ -185,7 +185,7 @@ namespace osc
     );
 
     // toolbar stuff
-    bool BeginToolbar(CStringView label, std::optional<glm::vec2> padding = {});  // behaves the same as ImGui::Begin (i.e. you must call ImGui::End)
+    bool BeginToolbar(CStringView label, std::optional<Vec2> padding = {});  // behaves the same as ImGui::Begin (i.e. you must call ImGui::End)
     void DrawNewModelButton(ParentPtr<MainUIStateAPI> const&);
     void DrawOpenModelButtonWithRecentFilesDropdown(ParentPtr<MainUIStateAPI> const&);
     void DrawSaveModelButton(ParentPtr<MainUIStateAPI> const&, UndoableModelStatePair&);

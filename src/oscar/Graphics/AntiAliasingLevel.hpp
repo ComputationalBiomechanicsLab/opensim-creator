@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Shims/Cpp20/bit.hpp>
 
 #include <cstddef>
 #include <iosfwd>
@@ -43,30 +43,7 @@ namespace osc
             return *this;
         }
 
-        constexpr friend bool operator==(AntiAliasingLevel const& lhs, AntiAliasingLevel const& rhs) noexcept
-        {
-            return lhs.m_Value == rhs.m_Value;
-        }
-
-        constexpr friend bool operator!=(AntiAliasingLevel const& lhs, AntiAliasingLevel const& rhs) noexcept
-        {
-            return lhs.m_Value != rhs.m_Value;
-        }
-
-        constexpr friend bool operator<(AntiAliasingLevel const& lhs, AntiAliasingLevel const& rhs) noexcept
-        {
-            return lhs.m_Value < rhs.m_Value;
-        }
-
-        constexpr friend bool operator<=(AntiAliasingLevel const& lhs, AntiAliasingLevel const& rhs) noexcept
-        {
-            return lhs.m_Value <= rhs.m_Value;
-        }
-
-        constexpr friend bool operator>(AntiAliasingLevel const& lhs, AntiAliasingLevel const& rhs) noexcept
-        {
-            return lhs.m_Value > rhs.m_Value;
-        }
+        friend auto operator<=>(AntiAliasingLevel const&, AntiAliasingLevel const&) = default;
     private:
         uint32_t m_Value = 1;
     };

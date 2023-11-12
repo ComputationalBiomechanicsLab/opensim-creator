@@ -1,8 +1,8 @@
 #include "OBJ.hpp"
 
 #include <oscar/Graphics/Mesh.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <cstddef>
 #include <ctime>
@@ -19,14 +19,14 @@ namespace
         o << "# created: " << std::put_time(&metadata.creationTime, "%Y-%m-%d %H:%M:%S") << '\n';
     }
 
-    std::ostream& WriteVec3(std::ostream& o, glm::vec3 const& v)
+    std::ostream& WriteVec3(std::ostream& o, osc::Vec3 const& v)
     {
         return o << v.x << ' ' << v.y << ' ' << v.z;
     }
 
     void WriteVertices(std::ostream& o, osc::Mesh const& mesh)
     {
-        for (glm::vec3 const& v : mesh.getVerts())
+        for (osc::Vec3 const& v : mesh.getVerts())
         {
             o << "v ";
             WriteVec3(o, v);
@@ -36,7 +36,7 @@ namespace
 
     void WriteNormals(std::ostream& o, osc::Mesh const& mesh)
     {
-        for (glm::vec3 const& v : mesh.getNormals())
+        for (osc::Vec3 const& v : mesh.getNormals())
         {
             o << "vn ";
             WriteVec3(o, v);
@@ -52,7 +52,7 @@ namespace
         }
 
         auto view = mesh.getIndices();
-        for (ptrdiff_t i = 0; i < ssize(view)-2; i += 3)
+        for (ptrdiff_t i = 0; i < std::ssize(view)-2; i += 3)
         {
             // vertex indices start at 1 in OBJ
             uint32_t const i0 = view[i]+1;

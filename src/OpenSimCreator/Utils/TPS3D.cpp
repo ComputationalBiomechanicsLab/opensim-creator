@@ -1,7 +1,8 @@
 #include "TPS3D.hpp"
 
-#include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Formats/CSV.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/ParalellizationHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
@@ -10,12 +11,14 @@
 #include <fstream>
 #include <iostream>
 
+using osc::Vec3;
+
 namespace
 {
     // this is effectviely the "U" term in the TPS algorithm literature
     //
     // i.e. U(||pi - p||) in the literature is equivalent to `RadialBasisFunction3D(pi, p)` here
-    float RadialBasisFunction3D(glm::vec3 const& controlPoint, glm::vec3 const& p)
+    float RadialBasisFunction3D(Vec3 const& controlPoint, Vec3 const& p)
     {
         // this implementation uses the U definition from the following (later) source:
         //
@@ -26,7 +29,7 @@ namespace
         // (e.g. the above book) uses U(v) = |v|. The primary author (Gunz) claims that the original
         // basis function is not as good as just using the magnitude?
 
-        return glm::length(controlPoint - p);
+        return osc::Length(controlPoint - p);
     }
 }
 
@@ -35,16 +38,6 @@ std::ostream& osc::operator<<(std::ostream& o, LandmarkPair3D const& p)
     using osc::operator<<;
     o << "LandmarkPair3D{Src = " << p.source << ", dest = " << p.destination << '}';
     return o;
-}
-
-bool osc::operator==(TPSCoefficientSolverInputs3D const& lhs, TPSCoefficientSolverInputs3D const& rhs) noexcept
-{
-    return lhs.landmarks == rhs.landmarks && lhs.blendingFactor == rhs.blendingFactor;
-}
-
-bool osc::operator!=(TPSCoefficientSolverInputs3D const& lhs, TPSCoefficientSolverInputs3D const& rhs) noexcept
-{
-    return !(lhs == rhs);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, TPSCoefficientSolverInputs3D const& inputs)
@@ -64,21 +57,6 @@ std::ostream& osc::operator<<(std::ostream& o, TPSNonAffineTerm3D const& wt)
 {
     using osc::operator<<;
     return o << "TPSNonAffineTerm3D{Weight = " << wt.weight << ", ControlPoint = " << wt.controlPoint << '}';
-}
-
-bool osc::operator==(TPSCoefficients3D const& lhs, TPSCoefficients3D const& rhs) noexcept
-{
-    return
-        lhs.a1 == rhs.a1 &&
-        lhs.a2 == rhs.a2 &&
-        lhs.a3 == rhs.a3 &&
-        lhs.a4 == rhs.a4 &&
-        lhs.nonAffineTerms == rhs.nonAffineTerms;
-}
-
-bool osc::operator!=(TPSCoefficients3D const& lhs, TPSCoefficients3D const& rhs) noexcept
-{
-    return !(lhs == rhs);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, TPSCoefficients3D const& coefs)
@@ -160,8 +138,8 @@ osc::TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const&
     {
         for (int col = 0; col < numPairs; ++col)
         {
-            glm::vec3 const& pi = inputs.landmarks[row].source;
-            glm::vec3 const& pj = inputs.landmarks[col].source;
+            Vec3 const& pi = inputs.landmarks[row].source;
+            Vec3 const& pj = inputs.landmarks[col].source;
 
             L(row, col) = RadialBasisFunction3D(pi, pj);
         }
@@ -213,7 +191,7 @@ osc::TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const&
     SimTK::Vector Vz(numPairs + 4, 0.0);
     for (int row = 0; row < numPairs; ++row)
     {
-        glm::vec3 const blended = glm::mix(inputs.landmarks[row].source, inputs.landmarks[row].destination, inputs.blendingFactor);
+        Vec3 const blended = Mix(inputs.landmarks[row].source, inputs.landmarks[row].destination, inputs.blendingFactor);
         Vx[row] = blended.x;
         Vy[row] = blended.y;
         Vz[row] = blended.z;
@@ -246,8 +224,8 @@ osc::TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const&
     rv.nonAffineTerms.reserve(numPairs);
     for (int i = 0; i < numPairs; ++i)
     {
-        glm::vec3 const weight = {Cx[i], Cy[i], Cz[i]};
-        glm::vec3 const& controlPoint = inputs.landmarks[i].source;
+        Vec3 const weight = {Cx[i], Cy[i], Cz[i]};
+        Vec3 const& controlPoint = inputs.landmarks[i].source;
         rv.nonAffineTerms.emplace_back(weight, controlPoint);
     }
 
@@ -255,14 +233,14 @@ osc::TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const&
 }
 
 // evaluates the TPS equation with the given coefficients and input point
-glm::vec3 osc::EvaluateTPSEquation(TPSCoefficients3D const& coefs, glm::vec3 p)
+osc::Vec3 osc::EvaluateTPSEquation(TPSCoefficients3D const& coefs, Vec3 p)
 {
     // this implementation effectively evaluates `fx(x, y, z)`, `fy(x, y, z)`, and
     // `fz(x, y, z)` the same time, because `TPSCoefficients3D` stores the X, Y, and Z
     // variants of the coefficients together in memory (as `vec3`s)
 
     // compute affine terms (a1 + a2*x + a3*y + a4*z)
-    glm::dvec3 rv = glm::dvec3{coefs.a1} + glm::dvec3{coefs.a2*p.x} + glm::dvec3{coefs.a3*p.y} + glm::dvec3{coefs.a4*p.z};
+    Vec3d rv = Vec3d{coefs.a1} + Vec3d{coefs.a2*p.x} + Vec3d{coefs.a3*p.y} + Vec3d{coefs.a4*p.z};
 
     // accumulate non-affine terms (effectively: wi * U(||controlPoint - p||))
     for (TPSNonAffineTerm3D const& term : coefs.nonAffineTerms)
@@ -280,11 +258,11 @@ osc::Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, osc::Mes
 
     osc::Mesh rv = mesh;  // make a local copy of the input mesh
 
-    rv.transformVerts([&coefs](nonstd::span<glm::vec3> verts)
+    rv.transformVerts([&coefs](std::span<Vec3> verts)
     {
         // parallelize function evaluation, because the mesh may contain *a lot* of
         // verts and the TPS equation may contain *a lot* of coefficients
-        osc::ForEachParUnseq(8192, verts, [&coefs](glm::vec3& vert)
+        osc::ForEachParUnseq(8192, verts, [&coefs](Vec3& vert)
         {
             vert = EvaluateTPSEquation(coefs, vert);
         });
@@ -293,14 +271,14 @@ osc::Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, osc::Mes
     return rv;
 }
 
-std::vector<glm::vec3> osc::ApplyThinPlateWarpToPoints(
+std::vector<osc::Vec3> osc::ApplyThinPlateWarpToPoints(
     TPSCoefficients3D const& coefs,
-    nonstd::span<glm::vec3 const> points)
+    std::span<Vec3 const> points)
 {
-    std::vector<glm::vec3> rv;
+    std::vector<Vec3> rv;
     rv.reserve(points.size());
 
-    for (glm::vec3 const& point : points)
+    for (Vec3 const& point : points)
     {
         rv.push_back(EvaluateTPSEquation(coefs, point));
     }
@@ -308,9 +286,9 @@ std::vector<glm::vec3> osc::ApplyThinPlateWarpToPoints(
     return rv;
 }
 
-std::vector<glm::vec3> osc::LoadLandmarksFromCSVFile(std::filesystem::path const& p)
+std::vector<osc::Vec3> osc::LoadLandmarksFromCSVFile(std::filesystem::path const& p)
 {
-    std::vector<glm::vec3> rv;
+    std::vector<Vec3> rv;
 
     std::ifstream fileInputStream{p};
     if (!fileInputStream)

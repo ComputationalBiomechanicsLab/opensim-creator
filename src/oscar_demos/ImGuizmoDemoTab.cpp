@@ -1,15 +1,13 @@
 #include "ImGuizmoDemoTab.hpp"
 
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
@@ -31,24 +29,24 @@ private:
     {
         // ImGuizmo::BeginFrame();  already done by MainUIScreen
 
-        glm::mat4 view = m_SceneCamera.getViewMtx();
+        Mat4 view = m_SceneCamera.getViewMtx();
         Rect viewportRect = GetMainViewportWorkspaceScreenRect();
-        glm::vec2 dims = Dimensions(viewportRect);
-        glm::mat4 projection = m_SceneCamera.getProjMtx(AspectRatio(dims));
+        Vec2 dims = Dimensions(viewportRect);
+        Mat4 projection = m_SceneCamera.getProjMtx(AspectRatio(dims));
 
         ImGuizmo::SetRect(viewportRect.p1.x, viewportRect.p1.y, dims.x, dims.y);
-        glm::mat4 identity{1.0f};
-        ImGuizmo::DrawGrid(glm::value_ptr(view), glm::value_ptr(projection), glm::value_ptr(identity), 100.f);
-        ImGuizmo::DrawCubes(glm::value_ptr(view), glm::value_ptr(projection), glm::value_ptr(m_ModelMatrix), 1);
+        Mat4 identity{1.0f};
+        ImGuizmo::DrawGrid(ValuePtr(view), ValuePtr(projection), ValuePtr(identity), 100.f);
+        ImGuizmo::DrawCubes(ValuePtr(view), ValuePtr(projection), ValuePtr(m_ModelMatrix), 1);
 
         ImGui::Checkbox("translate", &m_IsInTranslateMode);
 
         ImGuizmo::Manipulate(
-            glm::value_ptr(view),
-            glm::value_ptr(projection),
+            ValuePtr(view),
+            ValuePtr(projection),
             m_IsInTranslateMode ? ImGuizmo::TRANSLATE : ImGuizmo::ROTATE,
             ImGuizmo::LOCAL,
-            glm::value_ptr(m_ModelMatrix),
+            ValuePtr(m_ModelMatrix),
             nullptr,
             nullptr, //&snap[0],   // snap
             nullptr, // bound sizing?
@@ -67,7 +65,7 @@ private:
     }();
 
     bool m_IsInTranslateMode = false;
-    glm::mat4 m_ModelMatrix{1.0f};
+    Mat4 m_ModelMatrix{1.0f};
 };
 
 

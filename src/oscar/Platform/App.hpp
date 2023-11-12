@@ -1,12 +1,12 @@
 #pragma once
 
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
+#include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/AppClock.hpp>
 #include <oscar/Platform/Screenshot.hpp>
 #include <oscar/Utils/Assertions.hpp>
 
 #include <SDL_events.h>
-#include <glm/vec2.hpp>
 
 #include <cstdint>
 #include <filesystem>
@@ -121,7 +121,7 @@ namespace osc
         void requestQuit();
 
         // returns main window's dimensions (float)
-        glm::vec2 dims() const;
+        Vec2 dims() const;
 
         // sets whether the user's mouse cursor should be shown/hidden
         void setShowCursor(bool);

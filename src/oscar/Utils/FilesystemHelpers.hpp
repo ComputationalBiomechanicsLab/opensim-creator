@@ -1,9 +1,8 @@
 #pragma once
 
-#include <nonstd/span.hpp>
-
 #include <filesystem>
 #include <functional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -15,14 +14,14 @@ namespace osc
     void ForEachFileWithExtensionsRecursive(
         std::filesystem::path const& root,
         std::function<void(std::filesystem::path)> const& consumer,
-        nonstd::span<std::string_view const> extensions
+        std::span<std::string_view const> extensions
     );
 
     // returns all files found recursively in `root` that end with any of the provided
     // `extensions`
     std::vector<std::filesystem::path> FindFilesWithExtensionsRecursive(
         std::filesystem::path const& root,
-        nonstd::span<std::string_view const> extensions
+        std::span<std::string_view const> extensions
     );
 
     // calls `consumer` with each file recursively found in `root`
@@ -48,5 +47,5 @@ namespace osc
     bool IsFilenameLexographicallyGreaterThan(std::filesystem::path const& p1, std::filesystem::path const& p2);
 
     // returns true if `path` is within `dir` (non-recursive)
-    bool IsSubpath(std::filesystem::path const& dir, std::filesystem::path const& path);
+    bool IsSubpath(std::filesystem::path const& direction, std::filesystem::path const& path);
 }

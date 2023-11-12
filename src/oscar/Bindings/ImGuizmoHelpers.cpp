@@ -2,20 +2,20 @@
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <ImGuizmo.h>
 
+#include <array>
 #include <iterator>
 #include <utility>
 
 bool osc::DrawGizmoModeSelector(ImGuizmo::MODE& mode)
 {
-    constexpr auto modeLabels = osc::to_array({ "local", "global" });
-    constexpr auto modes = osc::to_array<ImGuizmo::MODE, 2>({ ImGuizmo::LOCAL, ImGuizmo::WORLD });
+    constexpr auto modeLabels = std::to_array({ "local", "global" });
+    constexpr auto modes = std::to_array<ImGuizmo::MODE, 2>({ ImGuizmo::LOCAL, ImGuizmo::WORLD });
 
     bool rv = false;
     int currentMode = static_cast<int>(std::distance(std::begin(modes), std::find(std::begin(modes), std::end(modes), mode)));

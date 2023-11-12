@@ -1,11 +1,11 @@
 #include "CustomRenderingOptionFlags.hpp"
 
-#include <nonstd/span.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
+#include <array>
+#include <span>
 
 namespace
 {
-    constexpr auto c_Metadata = osc::to_array<osc::CustomRenderingOptionFlagsMetadata>(
+    constexpr auto c_Metadata = std::to_array<osc::CustomRenderingOptionFlagsMetadata>(
     {
         osc::CustomRenderingOptionFlagsMetadata
         {
@@ -34,7 +34,7 @@ namespace
     });
 }
 
-nonstd::span<osc::CustomRenderingOptionFlagsMetadata const> osc::GetAllCustomRenderingOptionFlagsMetadata()
+std::span<osc::CustomRenderingOptionFlagsMetadata const> osc::GetAllCustomRenderingOptionFlagsMetadata()
 {
     return c_Metadata;
 }

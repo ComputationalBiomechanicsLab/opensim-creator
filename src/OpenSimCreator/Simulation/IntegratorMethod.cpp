@@ -1,10 +1,8 @@
 #include "IntegratorMethod.hpp"
 
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 
-#include <nonstd/span.hpp>
 #include <simmath/ExplicitEulerIntegrator.h>
 #include <simmath/RungeKutta2Integrator.h>
 #include <simmath/RungeKutta3Integrator.h>
@@ -16,10 +14,11 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <span>
 
 namespace
 {
-    constexpr auto c_IntegratorMethods = osc::to_array<osc::IntegratorMethod>(
+    constexpr auto c_IntegratorMethods = std::to_array<osc::IntegratorMethod>(
     {
         osc::IntegratorMethod::OpenSimManagerDefault,
         osc::IntegratorMethod::ExplicitEuler,
@@ -32,7 +31,7 @@ namespace
     });
     static_assert(c_IntegratorMethods.size() == osc::NumOptions<osc::IntegratorMethod>());
 
-    constexpr auto c_IntegratorMethodStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_IntegratorMethodStrings = std::to_array<osc::CStringView>(
     {
         "OpenSim::Manager Default",
         "Explicit Euler",
@@ -46,12 +45,12 @@ namespace
     static_assert(c_IntegratorMethodStrings.size() == osc::NumOptions<osc::IntegratorMethod>());
 }
 
-nonstd::span<osc::IntegratorMethod const> osc::GetAllIntegratorMethods()
+std::span<osc::IntegratorMethod const> osc::GetAllIntegratorMethods()
 {
     return c_IntegratorMethods;
 }
 
-nonstd::span<osc::CStringView const> osc::GetAllIntegratorMethodStrings()
+std::span<osc::CStringView const> osc::GetAllIntegratorMethodStrings()
 {
     return c_IntegratorMethodStrings;
 }

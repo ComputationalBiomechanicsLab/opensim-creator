@@ -6,11 +6,9 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/UndoableModelActions.hpp>
 
-#include <glm/glm.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <implot.h>
-#include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -24,20 +22,25 @@
 #include <oscar/Formats/CSV.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Vec4.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Shims/Cpp20/stop_token.hpp>
+#include <oscar/Shims/Cpp20/thread.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>
+#include <oscar/Utils/SynchronizedValueGuard.hpp>
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <chrono>
 #include <future>
 #include <memory>
+#include <span>
 #include <string>
 #include <string_view>
 #include <sstream>
@@ -87,15 +90,7 @@ namespace
             return lhs.m_Name < rhs.m_Name;
         }
 
-        friend bool operator==(MuscleOutput const& lhs, MuscleOutput const& rhs)
-        {
-            return lhs.m_Name == rhs.m_Name && lhs.m_Units == rhs.m_Units && lhs.m_Getter == rhs.m_Getter;
-        }
-
-        friend bool operator!=(MuscleOutput const& lhs, MuscleOutput const& rhs)
-        {
-            return !(lhs == rhs);
-        }
+        friend bool operator==(MuscleOutput const&, MuscleOutput const&) = default;
     private:
         osc::CStringView m_Name;
         osc::CStringView m_Units;
@@ -119,7 +114,7 @@ namespace
 
     double GetPennationAngle(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
     {
-        return glm::degrees(muscle.getPennationAngle(st));
+        return osc::Rad2Deg(muscle.getPennationAngle(st));
     }
 
     double GetNormalizedFiberLength(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
@@ -320,20 +315,7 @@ namespace
             m_RequestedNumDataPoints = v;
         }
 
-        friend bool operator==(PlotParameters const& lhs, PlotParameters const& rhs)
-        {
-            return
-                lhs.m_Commit == rhs.m_Commit &&
-                lhs.m_CoordinatePath == rhs.m_CoordinatePath &&
-                lhs.m_MusclePath == rhs.m_MusclePath &&
-                lhs.m_Output == rhs.m_Output &&
-                lhs.m_RequestedNumDataPoints == rhs.m_RequestedNumDataPoints;
-        }
-
-        friend bool operator!=(PlotParameters const& lhs, PlotParameters const& rhs)
-        {
-            return !(lhs == rhs);
-        }
+        friend bool operator==(PlotParameters const&, PlotParameters const&) = default;
     private:
         osc::ModelStateCommit m_Commit;
         OpenSim::ComponentPath m_CoordinatePath;
@@ -718,7 +700,7 @@ namespace
     std::optional<float> ComputeLERPedY(Plot const& p, float x)
     {
         auto lock = p.lockDataPoints();
-        nonstd::span<PlotDataPoint const> const points = *lock;
+        std::span<PlotDataPoint const> const points = *lock;
 
         if (points.empty())
         {
@@ -755,7 +737,7 @@ namespace
     std::optional<PlotDataPoint> FindNearestPoint(Plot const& p, float x)
     {
         auto lock = p.lockDataPoints();
-        nonstd::span<PlotDataPoint const> points = *lock;
+        std::span<PlotDataPoint const> points = *lock;
 
         if (points.empty())
         {
@@ -796,7 +778,7 @@ namespace
     bool IsXInRange(Plot const& p, float x)
     {
         auto lock = p.lockDataPoints();
-        nonstd::span<PlotDataPoint const> const points = *lock;
+        std::span<PlotDataPoint const> const points = *lock;
 
         if (points.size() <= 1)
         {
@@ -809,7 +791,7 @@ namespace
     void PlotLine(osc::CStringView lineName, Plot const& p)
     {
         auto lock = p.lockDataPoints();
-        nonstd::span<PlotDataPoint const> points = *lock;
+        std::span<PlotDataPoint const> points = *lock;
 
 
         float const* xPtr = nullptr;
@@ -979,7 +961,7 @@ namespace
         // write header
         osc::WriteCSVRow(
             fileOutputStream,
-            osc::to_array({ ComputePlotXAxisTitle(params, coord), ComputePlotYAxisTitle(params) })
+            std::to_array({ ComputePlotXAxisTitle(params, coord), ComputePlotYAxisTitle(params) })
         );
 
         // write data rows
@@ -988,7 +970,7 @@ namespace
         {
             osc::WriteCSVRow(
                 fileOutputStream,
-                osc::to_array({ std::to_string(p.x), std::to_string(p.y) })
+                std::to_array({ std::to_string(p.x), std::to_string(p.y) })
             );
         }
     }
@@ -1024,7 +1006,7 @@ namespace
 
         void clearUnlockedPlots()
         {
-            osc::erase_if(m_PreviousPlots, [](std::shared_ptr<Plot> const& p) { return !p->getIsLocked(); });
+            std::erase_if(m_PreviousPlots, [](std::shared_ptr<Plot> const& p) { return !p->getIsLocked(); });
         }
 
         PlottingTaskStatus getPlottingTaskStatus() const
@@ -1123,7 +1105,7 @@ namespace
     private:
         void clearComputedPlots()
         {
-            osc::erase_if(m_PreviousPlots, [](auto const& ptr) { return ptr->tryGetParameters() != nullptr; });
+            std::erase_if(m_PreviousPlots, [](auto const& ptr) { return ptr->tryGetParameters() != nullptr; });
         }
 
         void checkForParameterChangesAndStartPlotting(PlotParameters const& desiredParams)
@@ -1167,7 +1149,7 @@ namespace
             // deletions
             //
             // handle any user-requested deletions by removing the curve from the collection
-            if (0 <= m_PlotTaggedForDeletion && m_PlotTaggedForDeletion < osc::ssize(m_PreviousPlots))
+            if (0 <= m_PlotTaggedForDeletion && m_PlotTaggedForDeletion < std::ssize(m_PreviousPlots))
             {
                 m_PreviousPlots.erase(m_PreviousPlots.begin() + m_PlotTaggedForDeletion);
                 m_PlotTaggedForDeletion = -1;
@@ -1206,7 +1188,7 @@ namespace
                 return i++ < idxOfDeleteableEnd && !p->getIsLocked();
             };
 
-            osc::erase_if(m_PreviousPlots, shouldDelete);
+            std::erase_if(m_PreviousPlots, shouldDelete);
         }
 
         std::shared_ptr<Plot> m_ActivePlot;
@@ -1349,7 +1331,7 @@ namespace
     }
 
     // returns the smallest X value accross all given plot lines - if an X value exists
-    std::optional<float> CalcSmallestX(nonstd::span<LineCursor const> cursors)
+    std::optional<float> CalcSmallestX(std::span<LineCursor const> cursors)
     {
         auto it = std::min_element(cursors.begin(), cursors.end(), HasLowerX);
         return it != cursors.end() ? it->peekX() : std::optional<float>{};
@@ -1775,7 +1757,7 @@ namespace
 
                 std::string const lineName = IthPlotLineName(plot, i + 1);
 
-                ImPlot::PushStyleColor(ImPlotCol_Line, glm::vec4{color});
+                ImPlot::PushStyleColor(ImPlotCol_Line, osc::Vec4{color});
                 PlotLine(lineName, plot);
                 ImPlot::PopStyleColor(ImPlotCol_Line);
 
@@ -1831,7 +1813,7 @@ namespace
                     ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
                 }
 
-                ImPlot::PushStyleColor(ImPlotCol_Line, glm::vec4{color});
+                ImPlot::PushStyleColor(ImPlotCol_Line, osc::Vec4{color});
                 PlotLine(lineName, plot);
                 ImPlot::PopStyleColor(ImPlotCol_Line);
 

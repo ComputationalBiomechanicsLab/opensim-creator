@@ -12,7 +12,7 @@ class osc::CachedSceneRenderer::Impl final {
 public:
     Impl(
         AppConfig const& config,
-        MeshCache& meshCache,
+        SceneCache& meshCache,
         ShaderCache& shaderCache) :
 
         m_SceneRenderer{config, meshCache, shaderCache}
@@ -20,7 +20,7 @@ public:
     }
 
     osc::RenderTexture& render(
-        nonstd::span<SceneDecoration const> decorations,
+        std::span<SceneDecoration const> decorations,
         SceneRendererParams const& params)
     {
         if (params != m_LastRenderingParams ||
@@ -44,7 +44,10 @@ private:
 
 // public API (PIMPL)
 
-osc::CachedSceneRenderer::CachedSceneRenderer(AppConfig const& config, MeshCache& meshCache, ShaderCache& shaderCache) :
+osc::CachedSceneRenderer::CachedSceneRenderer(
+    AppConfig const& config,
+    SceneCache& meshCache,
+    ShaderCache& shaderCache) :
     m_Impl{std::make_unique<Impl>(config, meshCache, shaderCache)}
 {
 }
@@ -54,7 +57,7 @@ osc::CachedSceneRenderer& osc::CachedSceneRenderer::operator=(CachedSceneRendere
 osc::CachedSceneRenderer::~CachedSceneRenderer() noexcept = default;
 
 osc::RenderTexture& osc::CachedSceneRenderer::render(
-    nonstd::span<SceneDecoration const> decorations,
+    std::span<SceneDecoration const> decorations,
     SceneRendererParams const& params)
 {
     return m_Impl->render(decorations, params);

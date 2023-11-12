@@ -53,33 +53,9 @@ namespace osc
         }
 
         template<typename U>
-        friend bool operator!=(CopyOnUpdPtr const& lhs, CopyOnUpdPtr<U> const& rhs) noexcept
+        friend auto operator<=>(CopyOnUpdPtr const& lhs, CopyOnUpdPtr<U> const& rhs) noexcept
         {
-            return lhs.m_Ptr != rhs.m_Ptr;
-        }
-
-        template<typename U>
-        friend bool operator<(CopyOnUpdPtr const& lhs, CopyOnUpdPtr<U> const& rhs) noexcept
-        {
-            return lhs.m_Ptr < rhs.m_Ptr;
-        }
-
-        template<typename U>
-        friend bool operator>(CopyOnUpdPtr const& lhs, CopyOnUpdPtr<U> const& rhs) noexcept
-        {
-            return lhs.m_Ptr > rhs.m_Ptr;
-        }
-
-        template<typename U>
-        friend bool operator<=(CopyOnUpdPtr const& lhs, CopyOnUpdPtr<U> const& rhs) noexcept
-        {
-            return lhs.m_Ptr <= rhs.m_Ptr;
-        }
-
-        template<typename U>
-        friend bool operator>=(CopyOnUpdPtr const& lhs, CopyOnUpdPtr<U> const& rhs) noexcept
-        {
-            return lhs.m_Ptr >= rhs.m_Ptr;
+            return lhs.m_Ptr <=> rhs.m_Ptr;
         }
 
     private:

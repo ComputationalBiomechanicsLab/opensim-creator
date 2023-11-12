@@ -1,7 +1,6 @@
 #include "ShapeFittingTab.hpp"
 
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/Ellipsoid.hpp>
 #include <oscar/Maths/Plane.hpp>
 #include <oscar/Maths/Sphere.hpp>

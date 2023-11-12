@@ -1,7 +1,7 @@
 #pragma once
 
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/SynchronizedValue.hpp>
+#include <oscar/Utils/SynchronizedValueGuard.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <chrono>
@@ -35,10 +35,7 @@ namespace osc
         UID getModelVersion() const;
         float getFixupScaleFactor() const;
 
-        friend bool operator==(ModelStateCommit const& lhs, ModelStateCommit const& rhs)
-        {
-            return lhs.m_Impl == rhs.m_Impl;
-        }
+        friend bool operator==(ModelStateCommit const&, ModelStateCommit const&) = default;
     private:
         class Impl;
         std::shared_ptr<Impl const> m_Impl;
