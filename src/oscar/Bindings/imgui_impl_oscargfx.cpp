@@ -10,21 +10,34 @@
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
+#include <oscar/Maths/Mat4.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
-#include <glm/vec2.hpp>
-#include <glm/mat4x4.hpp>
 #include <imgui.h>
 
 #include <cstddef>
 #include <cstdint>
 
+using osc::Camera;
+using osc::ColorSpace;
+using osc::CullMode;
+using osc::CStringView;
+using osc::Mat4;
+using osc::Material;
+using osc::Shader;
+using osc::Texture2D;
+using osc::TextureFilterMode;
+using osc::TextureFormat;
+using osc::UID;
+using osc::Vec2i;
+
 namespace
 {
-    constexpr osc::CStringView c_VertexShader = R"(
+    constexpr CStringView c_VertexShader = R"(
         #version 330 core
 
         uniform mat4 uProjMat;
@@ -44,7 +57,7 @@ namespace
         }
     )";
 
-    constexpr osc::CStringView c_FragmentShader = R"(
+    constexpr CStringView c_FragmentShader = R"(
         #version 330 core
 
         uniform sampler2D uTexture;
@@ -60,24 +73,24 @@ namespace
         }
     )";
 
-    osc::Texture2D CreateFontsTexture(osc::UID textureID)
+    Texture2D CreateFontsTexture(UID textureID)
     {
         ImGuiIO& io = ImGui::GetIO();
 
         uint8_t* pixelData = nullptr;
-        glm::ivec2 dims{};
+        Vec2i dims{};
         io.Fonts->GetTexDataAsRGBA32(&pixelData, &dims.x, &dims.y);
         io.Fonts->SetTexID(reinterpret_cast<ImTextureID>(textureID.get()));
         size_t const numBytes = static_cast<size_t>(dims.x)*static_cast<size_t>(dims.y)*static_cast<size_t>(4);
 
-        osc::Texture2D rv
+        Texture2D rv
         {
             dims,
-            osc::TextureFormat::RGBA32,
-            osc::ColorSpace::Linear,
+            TextureFormat::RGBA32,
+            ColorSpace::Linear,
         };
         rv.setPixelData({pixelData, numBytes});
-        rv.setFilterMode(osc::TextureFilterMode::Linear);
+        rv.setFilterMode(TextureFilterMode::Linear);
 
         return rv;
     }
@@ -87,15 +100,15 @@ namespace
         OscarImguiBackendData()
         {
             material.setTransparent(true);
-            material.setCullMode(osc::CullMode::Off);
+            material.setCullMode(CullMode::Off);
             material.setDepthTested(false);
             material.setWireframeMode(false);
         }
 
-        osc::UID fontTextureID;
-        osc::Texture2D fontTexture = CreateFontsTexture(fontTextureID);
-        osc::Material material{osc::Shader{c_VertexShader, c_FragmentShader}};
-        osc::Camera camera;
+        UID fontTextureID;
+        Texture2D fontTexture = CreateFontsTexture(fontTextureID);
+        Material material{Shader{c_VertexShader, c_FragmentShader}};
+        Camera camera;
     };
 
     // Backend data stored in io.BackendRendererUserData to allow support for multiple Dear ImGui contexts
@@ -112,7 +125,7 @@ namespace
         }
     }
 
-    void SetupCameraViewMatrix(ImDrawData& drawData, osc::Camera& camera)
+    void SetupCameraViewMatrix(ImDrawData& drawData, Camera& camera)
     {
         // Our visible imgui space lies from draw_data->DisplayPos (top left) to draw_data->DisplayPos+data_data->DisplaySize (bottom right). DisplayPos is (0,0) for single viewport apps.
         float const L = drawData.DisplayPos.x;
@@ -120,7 +133,7 @@ namespace
         float const T = drawData.DisplayPos.y;
         float const B = drawData.DisplayPos.y + drawData.DisplaySize.y;
 
-        glm::mat4 const projMat =
+        Mat4 const projMat =
         {
             { 2.0f/(R-L),   0.0f,         0.0f,   0.0f },
             { 0.0f,         2.0f/(T-B),   0.0f,   0.0f },
