@@ -82,6 +82,8 @@ osc::SceneCache::~SceneCache() noexcept = default;
 void osc::SceneCache::clear()
 {
     m_Impl->fileCache.lock()->clear();
+    m_Impl->bvhCache.lock()->clear();
+    m_Impl->torusCache.lock()->clear();
 }
 
 osc::Mesh osc::SceneCache::get(
