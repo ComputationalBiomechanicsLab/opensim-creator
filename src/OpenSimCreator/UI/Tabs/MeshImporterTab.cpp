@@ -540,6 +540,7 @@ namespace
     class BodyEl;
     class JointEl;
     class StationEl;
+    class EdgeEl;
 
     // a variant for storing a `const` reference to a `const` scene element
     using ConstSceneElVariant = std::variant<
@@ -547,7 +548,8 @@ namespace
         std::reference_wrapper<MeshEl const>,
         std::reference_wrapper<BodyEl const>,
         std::reference_wrapper<JointEl const>,
-        std::reference_wrapper<StationEl const>
+        std::reference_wrapper<StationEl const>,
+        std::reference_wrapper<EdgeEl const>
     >;
 
     // a variant for storing a non-`const` reference to a non-`const` scene element
@@ -556,7 +558,8 @@ namespace
         std::reference_wrapper<MeshEl>,
         std::reference_wrapper<BodyEl>,
         std::reference_wrapper<JointEl>,
-        std::reference_wrapper<StationEl>
+        std::reference_wrapper<StationEl>,
+        std::reference_wrapper<EdgeEl>
     >;
 
     // runtime flags for a scene el type
@@ -1614,9 +1617,30 @@ namespace
         std::string m_Name;
     };
 
-    /*
-    class EdgeEl : public SceneElCRTP<EdgeEl> {
+    class EdgeEl final : public SceneElCRTP<EdgeEl> {
     public:
+        EdgeEl(
+            UID id_,
+            UID firstAttachmentID_,
+            UID secondAttachmentID_) :
+
+            m_ID{id_},
+            m_FirstAttachmentID{firstAttachmentID_},
+            m_SecondAttachmentID{secondAttachmentID_}
+        {
+        }
+
+        UID getFirstAttachmentID() const
+        {
+            return m_FirstAttachmentID;
+        }
+
+        UID getSecondAttachmentID() const
+        {
+            return m_SecondAttachmentID;
+        }
+    private:
+        friend class SceneElCRTP<EdgeEl>;
         static SceneElClass CreateClass()
         {
             return SceneElClass
@@ -1629,17 +1653,6 @@ namespace
             };
         }
 
-        EdgeEl(
-            UID id_,
-            UID firstAttachmentID_,
-            UID secondAttachmentID_) :
-
-            m_ID{id_},
-            m_FirstAttachmentID{firstAttachmentID_},
-            m_SecondAttachmentID{secondAttachmentID_}
-        {
-        }
-    private:
         int implGetNumCrossReferences() const final
         {
             return 2;
@@ -1716,16 +1729,48 @@ namespace
             m_Label = newLabel;
         }
 
-        Transform implGetXform() const final = 0;  // TODO
-        void implSetXform(Transform const&) final = 0;  // TODO
-        AABB implCalcBounds() const final = 0;  // TODO
+        Transform implGetXform(ISceneElLookup const& lookup) const final
+        {
+            SceneEl const* first = lookup.find(m_FirstAttachmentID);
+            SceneEl const* second = lookup.find(m_FirstAttachmentID);
+            if (first && second)
+            {
+                Vec3 const pos = osc::Midpoint(first->getPos(lookup), second->getPos(lookup));
+                return Transform{.position = pos};
+            }
+            else
+            {
+                return Identity<Transform>();
+            }
+        }
+
+        void implSetXform(ISceneElLookup const&, Transform const&) final
+        {
+            // do nothing: transform is defined by both attachments
+        }
+
+        AABB implCalcBounds(ISceneElLookup const& lookup) const final
+        {
+            SceneEl const* first = lookup.find(m_FirstAttachmentID);
+            SceneEl const* second = lookup.find(m_FirstAttachmentID);
+            if (first && second)
+            {
+                return osc::Union(
+                    AABB::OfPoint(first->getPos(lookup)),
+                    AABB::OfPoint(second->getPos(lookup))
+                );
+            }
+            else
+            {
+                return AABB{};
+            }
+        }
 
         UID m_ID;
         UID m_FirstAttachmentID;
         UID m_SecondAttachmentID;
         std::string m_Label;
     };
-    */
 
     // returns true if a mesh can be attached to the given element
     bool CanAttachMeshTo(SceneEl const& e)
@@ -1737,6 +1782,7 @@ namespace
             [](BodyEl const&)    { return true; },
             [](JointEl const&)   { return true; },
             [](StationEl const&) { return false; },
+            [](EdgeEl const&)    { return false; },
         }, e.toVariant());
     }
 
@@ -1750,6 +1796,7 @@ namespace
             [](BodyEl const&)    { return true; },
             [](JointEl const&)   { return false; },
             [](StationEl const&) { return false; },
+            [](EdgeEl const&)    { return false; },
         }, e.toVariant());
     }
 
@@ -1764,8 +1811,10 @@ namespace
                 BodyEl::Class(),
                 JointEl::Class(),
                 StationEl::Class(),
+                EdgeEl::Class(),
             });
         }();
+        static_assert(std::variant_size_v<SceneElVariant> == std::tuple_size_v<decltype(s_Classes)>);
         return s_Classes;
     }
 
@@ -2347,6 +2396,10 @@ namespace
             {
                 ss << '(' << s.getClass().getName() << ", attached to " << getLabel(mg, s.getParentID()) << ')';
             },
+            [&ss, &mg](EdgeEl const& e)
+            {
+                ss << '(' << e.getClass().getName() << ", " << getLabel(mg, e.getFirstAttachmentID()) << " --> " << getLabel(mg, e.getSecondAttachmentID()) << ')';
+            }
         }, e.toVariant());
         return std::move(ss).str();
     }
@@ -2434,6 +2487,7 @@ namespace
             [](BodyEl const& bodyEl) { return bodyEl.getID(); },
             [](JointEl const&) { return c_GroundID; },
             [](StationEl const&) { return c_GroundID; },
+            [](EdgeEl const&) { return c_GroundID; },
         }, el.toVariant());
     }
 
@@ -4416,6 +4470,7 @@ namespace
                 [this](BodyEl const&)    { return this->isShowingBodyConnectionLines(); },
                 [this](JointEl const&)   { return this->isShowingJointConnectionLines(); },
                 [this](StationEl const&) { return this->isShowingMeshConnectionLines(); },
+                []    (EdgeEl const&)    { return false; },
             }, el.toVariant());
         }
 
@@ -4634,6 +4689,11 @@ namespace
             return m_Colors.stations;
         }
 
+        Color const& getColorEdge() const
+        {
+            return m_Colors.edges;
+        }
+
         Color const& getColorConnectionLine() const
         {
             return m_Colors.connectionLines;
@@ -4726,6 +4786,11 @@ namespace
         void setIsShowingStations(bool v)
         {
             m_VisibilityFlags.stations = v;
+        }
+
+        bool isShowingEdges() const
+        {
+            return m_VisibilityFlags.edges;
         }
 
         bool isShowingJointConnectionLines() const
@@ -5171,6 +5236,12 @@ namespace
             return rv;
         }
 
+        DrawableThing generateEdgeCylinder(EdgeEl const&, Color const&) const
+        {
+            DrawableThing rv;
+            return rv;  // TODO
+        }
+
         void appendBodyElAsCubeThing(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
         {
             appendAsCubeThing(bodyEl.getID(), c_BodyGroupID, bodyEl.getXForm(), appendOut);
@@ -5240,6 +5311,15 @@ namespace
 
                     appendOut.push_back(generateStationSphere(el, getColorStation()));
                 },
+                [this, &appendOut](EdgeEl const& el)
+                {
+                    if (!isShowingEdges())
+                    {
+                        return;
+                    }
+                    appendOut.push_back(generateEdgeCylinder(el, getColorEdge()));
+
+                }
             }, e.toVariant());
         }
 
@@ -5369,6 +5449,7 @@ namespace
             Color ground{196.0f/255.0f, 196.0f/255.0f, 196.0f/255.0f, 1.0f};
             Color meshes{1.0f, 1.0f, 1.0f, 1.0f};
             Color stations{196.0f/255.0f, 0.0f, 0.0f, 1.0f};
+            Color edges = Color::purple();
             Color connectionLines{0.6f, 0.6f, 0.6f, 1.0f};
             Color sceneBackground{48.0f/255.0f, 48.0f/255.0f, 48.0f/255.0f, 1.0f};
             Color gridLines{0.7f, 0.7f, 0.7f, 0.15f};
@@ -5378,6 +5459,7 @@ namespace
             "ground",
             "meshes",
             "stations",
+            "edges",
             "connection lines",
             "scene background",
             "grid lines",
@@ -5393,6 +5475,7 @@ namespace
             bool bodies = true;
             bool joints = true;
             bool stations = true;
+            bool edges = true;
             bool jointConnectionLines = true;
             bool meshConnectionLines = true;
             bool bodyToGroundConnectionLines = true;
@@ -5406,6 +5489,7 @@ namespace
             "bodies",
             "joints",
             "stations",
+            "edges",
             "joint connection lines",
             "mesh connection lines",
             "body-to-ground connection lines",
@@ -5805,6 +5889,7 @@ namespace
         bool canChooseMeshes = true;
         bool canChooseJoints = true;
         bool canChooseStations = false;
+        bool canChooseEdges = false;
 
         // (maybe) elements the assignment is ultimately assigning
         std::unordered_set<UID> maybeElsAttachingTo;
@@ -5872,6 +5957,7 @@ namespace
                 [this](BodyEl const&)    { return m_Options.canChooseBodies; },
                 [this](JointEl const&)   { return m_Options.canChooseJoints; },
                 [this](StationEl const&) { return m_Options.canChooseStations; },
+                [this](EdgeEl const&)    { return m_Options.canChooseEdges; },
             }, el.toVariant());
         }
 
@@ -7990,6 +8076,19 @@ private:
         drawSceneElActions(el, clickPos);
     }
 
+    void drawContextMenuContent(EdgeEl& el, Vec3 const&)
+    {
+        drawSceneElContextMenuContentHeader(el);
+
+        SpacerDummy();
+
+        drawSceneElPropEditors(el);
+
+        SpacerDummy();
+
+        // TODO
+    }
+
     // draw context menu content for some scene element
     void drawContextMenuContent(SceneEl& el, Vec3 const& clickPos)
     {
@@ -8000,6 +8099,7 @@ private:
             [this, &clickPos](BodyEl& el)    { this->drawContextMenuContent(el, clickPos); },
             [this, &clickPos](JointEl& el)   { this->drawContextMenuContent(el, clickPos); },
             [this, &clickPos](StationEl& el) { this->drawContextMenuContent(el, clickPos); },
+            [this, &clickPos](EdgeEl& el)    { this->drawContextMenuContent(el, clickPos); },
         }, el.toVariant());
     }
 
