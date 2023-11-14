@@ -3473,6 +3473,37 @@ TEST_F(Renderer, CameraSetClearFlagsCausesCopyToReturnNonEqual)
     ASSERT_NE(camera, copy);
 }
 
+TEST_F(Renderer, DrawMeshDoesNotThrowWithStandardArgs)
+{
+    osc::Mesh const mesh;
+    osc::Transform const transform = osc::Identity<osc::Transform>();
+    osc::Material const material = GenerateMaterial();
+    osc::Camera camera;
+
+    ASSERT_NO_THROW({ osc::Graphics::DrawMesh(mesh, transform, material, camera); });
+}
+
+TEST_F(Renderer, DrawMeshThrowsIfGivenOutOfBoundsSubMeshIndex)
+{
+    osc::Mesh const mesh;
+    osc::Transform const transform = osc::Identity<osc::Transform>();
+    osc::Material const material = GenerateMaterial();
+    osc::Camera camera;
+
+    ASSERT_ANY_THROW({ osc::Graphics::DrawMesh(mesh, transform, material, camera, std::nullopt, 0); });
+}
+
+TEST_F(Renderer, DrawMeshDoesNotThrowIfGivenInBoundsSubMesh)
+{
+    osc::Mesh mesh;
+    mesh.pushSubMeshDescriptor({0, 0, osc::MeshTopology::Triangles});
+    osc::Transform const transform = osc::Identity<osc::Transform>();
+    osc::Material const material = GenerateMaterial();
+    osc::Camera camera;
+
+    ASSERT_NO_THROW({ osc::Graphics::DrawMesh(mesh, transform, material, camera, std::nullopt, 0); });
+}
+
 // TODO MeshSetIndicesU16CausesGetNumIndicesToEqualSuppliedNumberOfIndices
 // TODO Mesh::getIndices
 // TODO Mesh::setIndices U16

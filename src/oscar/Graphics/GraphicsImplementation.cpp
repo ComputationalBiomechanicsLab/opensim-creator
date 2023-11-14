@@ -956,7 +956,8 @@ namespace osc
             Transform const&,
             Material const&,
             Camera&,
-            std::optional<MaterialPropertyBlock> const&
+            std::optional<MaterialPropertyBlock> const&,
+            std::optional<size_t>
         );
 
         static void DrawMesh(
@@ -964,7 +965,8 @@ namespace osc
             Mat4 const&,
             Material const&,
             Camera&,
-            std::optional<MaterialPropertyBlock> const&
+            std::optional<MaterialPropertyBlock> const&,
+            std::optional<size_t>
         );
 
         static void Blit(
@@ -5728,9 +5730,10 @@ void osc::Graphics::DrawMesh(
     Transform const& transform,
     Material const& material,
     Camera& camera,
-    std::optional<MaterialPropertyBlock> const& maybeMaterialPropertyBlock)
+    std::optional<MaterialPropertyBlock> const& maybeMaterialPropertyBlock,
+    std::optional<size_t> maybeSubMeshIndex)
 {
-    GraphicsBackend::DrawMesh(mesh, transform, material, camera, maybeMaterialPropertyBlock);
+    GraphicsBackend::DrawMesh(mesh, transform, material, camera, maybeMaterialPropertyBlock, maybeSubMeshIndex);
 }
 
 void osc::Graphics::DrawMesh(
@@ -5738,9 +5741,10 @@ void osc::Graphics::DrawMesh(
     Mat4 const& transform,
     Material const& material,
     Camera& camera,
-    std::optional<MaterialPropertyBlock> const& maybeMaterialPropertyBlock)
+    std::optional<MaterialPropertyBlock> const& maybeMaterialPropertyBlock,
+    std::optional<size_t> maybeSubMeshIndex)
 {
-    GraphicsBackend::DrawMesh(mesh, transform, material, camera, maybeMaterialPropertyBlock);
+    GraphicsBackend::DrawMesh(mesh, transform, material, camera, maybeMaterialPropertyBlock, maybeSubMeshIndex);
 }
 
 void osc::Graphics::Blit(Texture2D const& source, RenderTexture& dest)
@@ -6912,8 +6916,10 @@ void osc::GraphicsBackend::DrawMesh(
     Transform const& transform,
     Material const& material,
     Camera& camera,
-    std::optional<MaterialPropertyBlock> const& maybeMaterialPropertyBlock)
+    std::optional<MaterialPropertyBlock> const& maybeMaterialPropertyBlock,
+    std::optional<size_t>)
 {
+    // TODO: use sub mesh index
     camera.m_Impl.upd()->m_RenderQueue.emplace_back(mesh, transform, material, maybeMaterialPropertyBlock);
 }
 
@@ -6922,8 +6928,10 @@ void osc::GraphicsBackend::DrawMesh(
     Mat4 const& transform,
     Material const& material,
     Camera& camera,
-    std::optional<MaterialPropertyBlock> const& maybeMaterialPropertyBlock)
+    std::optional<MaterialPropertyBlock> const& maybeMaterialPropertyBlock,
+    std::optional<size_t>)
 {
+    // TODO: use sub mesh index
     camera.m_Impl.upd()->m_RenderQueue.emplace_back(mesh, transform, material, maybeMaterialPropertyBlock);
 }
 
