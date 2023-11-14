@@ -14,7 +14,7 @@ namespace osc
 {
     class LOGLPBRDiffuseIrradianceTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit LOGLPBRDiffuseIrradianceTab(ParentPtr<TabHost> const&);
         LOGLPBRDiffuseIrradianceTab(LOGLPBRDiffuseIrradianceTab const&) = delete;

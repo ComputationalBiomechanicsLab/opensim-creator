@@ -214,7 +214,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLFramebuffersTab::id() noexcept
+osc::CStringView osc::LOGLFramebuffersTab::id()
 {
     return c_TabStringID;
 }

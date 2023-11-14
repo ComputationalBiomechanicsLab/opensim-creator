@@ -126,7 +126,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLTexturingTab::id() noexcept
+osc::CStringView osc::LOGLTexturingTab::id()
 {
     return c_TabStringID;
 }

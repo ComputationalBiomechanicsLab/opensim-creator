@@ -576,7 +576,7 @@ namespace osc
     // the value was set)
     bool TrySetAppearancePropertyIsVisibleTo(OpenSim::Component&, bool);
 
-    Color GetSuggestedBoneColor() noexcept;  // best guess, based on shaders etc.
+    Color GetSuggestedBoneColor();  // best guess, based on shaders etc.
 
     // returns `true` if the given model's display properties asks to show frames
     bool IsShowingFrames(OpenSim::Model const&);

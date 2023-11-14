@@ -11,17 +11,17 @@ namespace osc
 {
     struct alignas(alignof(uint32_t)) Color32 final {
 
-        static constexpr size_t length() noexcept
+        static constexpr size_t length()
         {
             return 4;
         }
 
-        constexpr uint8_t& operator[](ptrdiff_t i) noexcept
+        constexpr uint8_t& operator[](ptrdiff_t i)
         {
             return (&r)[i];
         }
 
-        constexpr uint8_t const& operator[](ptrdiff_t i) const noexcept
+        constexpr uint8_t const& operator[](ptrdiff_t i) const
         {
             return (&r)[i];
         }
@@ -52,7 +52,7 @@ namespace osc
 
 template<>
 struct std::hash<osc::Color32> final {
-    size_t operator()(osc::Color32 const& color32) const noexcept
+    size_t operator()(osc::Color32 const& color32) const
     {
         return std::hash<uint32_t>{}(color32.toU32());
     }

@@ -123,7 +123,7 @@ private:
 
 // public API
 
-osc::CStringView osc::MandelbrotTab::id() noexcept
+osc::CStringView osc::MandelbrotTab::id()
 {
     return c_TabStringID;
 }

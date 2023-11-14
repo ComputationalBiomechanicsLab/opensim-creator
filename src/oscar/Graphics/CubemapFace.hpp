@@ -16,17 +16,17 @@ namespace osc
         NUM_OPTIONS,
     };
 
-    constexpr CubemapFace FirstCubemapFace() noexcept
+    constexpr CubemapFace FirstCubemapFace()
     {
         return CubemapFace::PositiveX;
     }
 
-    constexpr CubemapFace LastCubemapFace() noexcept
+    constexpr CubemapFace LastCubemapFace()
     {
         return CubemapFace::NegativeZ;
     }
 
-    constexpr CubemapFace Next(CubemapFace face) noexcept
+    constexpr CubemapFace Next(CubemapFace face)
     {
         return static_cast<CubemapFace>(osc::to_underlying(face) + 1);
     }

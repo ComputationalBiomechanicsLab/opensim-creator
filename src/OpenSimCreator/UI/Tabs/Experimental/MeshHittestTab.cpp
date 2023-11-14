@@ -213,7 +213,7 @@ private:
 
 // public API (PIMPL)
 
-osc::CStringView osc::MeshHittestTab::id() noexcept
+osc::CStringView osc::MeshHittestTab::id()
 {
     return "OpenSim/Experimental/MeshHittest";
 }

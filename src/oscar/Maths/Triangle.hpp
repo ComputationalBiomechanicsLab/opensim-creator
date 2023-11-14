@@ -8,7 +8,7 @@ namespace osc
 {
     struct Triangle final {
 
-        Vec3 const& operator[](size_t i) const noexcept
+        Vec3 const& operator[](size_t i) const
         {
             static_assert(sizeof(Triangle) == 3*sizeof(Vec3));
             static_assert(offsetof(Triangle, p0) == 0);

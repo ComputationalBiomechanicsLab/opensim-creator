@@ -30,7 +30,7 @@ namespace osc
             using iterator_category = std::random_access_iterator_tag;
             friend class Iterator<!IsConst>;
 
-            constexpr Iterator(T* _data, ptrdiff_t _pos) noexcept :
+            constexpr Iterator(T* _data, ptrdiff_t _pos) :
                 data{_data},
                 pos{_pos}
             {
@@ -39,27 +39,27 @@ namespace osc
             // implicit conversion from non-const iterator to a const one
 
             template<bool _IsConst = IsConst>
-            [[nodiscard]] constexpr operator typename std::enable_if_t<!_IsConst, Iterator<true>>() const noexcept
+            [[nodiscard]] constexpr operator typename std::enable_if_t<!_IsConst, Iterator<true>>() const
             {
                 return Iterator<true>{data, pos};
             }
 
             // LegacyIterator
 
-            constexpr Iterator& operator++() noexcept
+            constexpr Iterator& operator++()
             {
                 pos = (pos + 1) % N;
                 return *this;
             }
 
             template<bool _IsConst = IsConst>
-            [[nodiscard]] constexpr typename std::enable_if_t<_IsConst, T const&> operator*() const noexcept
+            [[nodiscard]] constexpr typename std::enable_if_t<_IsConst, T const&> operator*() const
             {
                 return data[pos];
             }
 
             template<bool _IsConst = IsConst>
-            [[nodiscard]] constexpr typename std::enable_if_t<!_IsConst, T&> operator*() const noexcept
+            [[nodiscard]] constexpr typename std::enable_if_t<!_IsConst, T&> operator*() const
             {
                 return data[pos];
             }
@@ -67,13 +67,13 @@ namespace osc
             // EqualityComparable
 
             template<bool OtherConst>
-            [[nodiscard]] constexpr friend bool operator!=(Iterator const& lhs, Iterator<OtherConst> const& rhs) noexcept
+            [[nodiscard]] constexpr friend bool operator!=(Iterator const& lhs, Iterator<OtherConst> const& rhs)
             {
                 return lhs.pos != rhs.pos;
             }
 
             template<bool OtherConst>
-            [[nodiscard]] constexpr friend bool operator==(Iterator const& lhs, Iterator<OtherConst> const& rhs) noexcept
+            [[nodiscard]] constexpr friend bool operator==(Iterator const& lhs, Iterator<OtherConst> const& rhs)
             {
                 return !(lhs != rhs);
             }
@@ -81,20 +81,20 @@ namespace osc
             // LegacyInputIterator
 
             template<bool _IsConst = IsConst>
-            [[nodiscard]] constexpr typename std::enable_if_t<_IsConst, T const*> operator->() const noexcept
+            [[nodiscard]] constexpr typename std::enable_if_t<_IsConst, T const*> operator->() const
             {
                 return &data[pos];
             }
 
             template<bool _IsConst = IsConst>
-            [[nodiscard]] constexpr typename std::enable_if_t<!_IsConst, T*> operator->() const noexcept
+            [[nodiscard]] constexpr typename std::enable_if_t<!_IsConst, T*> operator->() const
             {
                 return &data[pos];
             }
 
             // LegacyForwardIterator
 
-            constexpr Iterator operator++(int) noexcept
+            constexpr Iterator operator++(int)
             {
                 Iterator copy{*this};
                 ++(*this);
@@ -103,13 +103,13 @@ namespace osc
 
             // LegacyBidirectionalIterator
 
-            constexpr Iterator& operator--() noexcept
+            constexpr Iterator& operator--()
             {
                 pos = pos == 0 ? N - 1 : pos - 1;
                 return *this;
             }
 
-            constexpr Iterator operator--(int) noexcept
+            constexpr Iterator operator--(int)
             {
                 Iterator copy{*this};
                 --(*this);
@@ -118,20 +118,20 @@ namespace osc
 
             // LegacyRandomAccessIterator
 
-            constexpr Iterator& operator+=(difference_type i) noexcept
+            constexpr Iterator& operator+=(difference_type i)
             {
                 pos = (pos + i) % N;
                 return *this;
             }
 
-            constexpr Iterator operator+(difference_type i) const noexcept
+            constexpr Iterator operator+(difference_type i) const
             {
                 Iterator copy{*this};
                 copy += i;
                 return copy;
             }
 
-            constexpr Iterator& operator-=(difference_type i) noexcept
+            constexpr Iterator& operator-=(difference_type i)
             {
                 difference_type im = (i % N);
 
@@ -147,7 +147,7 @@ namespace osc
                 return *this;
             }
 
-            constexpr Iterator operator-(difference_type i) const noexcept
+            constexpr Iterator operator-(difference_type i) const
             {
                 Iterator copy{*this};
                 copy -= i;
@@ -155,43 +155,43 @@ namespace osc
             }
 
             template<bool OtherConst>
-            constexpr difference_type operator-(Iterator<OtherConst> const& other) const noexcept
+            constexpr difference_type operator-(Iterator<OtherConst> const& other) const
             {
                 return pos - other.pos;
             }
 
             template<bool _IsConst = IsConst>
-            [[nodiscard]] constexpr typename std::enable_if_t<_IsConst, T const&> operator[](difference_type i) const noexcept
+            [[nodiscard]] constexpr typename std::enable_if_t<_IsConst, T const&> operator[](difference_type i) const
             {
                 return data[(pos + i) % N];
             }
 
             template<bool _IsConst = IsConst>
-            [[nodiscard]] constexpr typename std::enable_if_t<!_IsConst, T&> operator[](difference_type i) const noexcept
+            [[nodiscard]] constexpr typename std::enable_if_t<!_IsConst, T&> operator[](difference_type i) const
             {
                 return data[(pos + i) % N];
             }
 
             template<bool OtherConst>
-            constexpr bool operator<(Iterator<OtherConst> const& other) const noexcept
+            constexpr bool operator<(Iterator<OtherConst> const& other) const
             {
                 return pos < other.pos;
             }
 
             template<bool OtherConst>
-            constexpr bool operator>(Iterator<OtherConst> const& other) const noexcept
+            constexpr bool operator>(Iterator<OtherConst> const& other) const
             {
                 return pos > other.pos;
             }
 
             template<bool OtherConst>
-            constexpr bool operator>=(Iterator<OtherConst> const& other) const noexcept
+            constexpr bool operator>=(Iterator<OtherConst> const& other) const
             {
                 return !(*this < other);
             }
 
             template<bool OtherConst>
-            constexpr bool operator<=(Iterator<OtherConst> const& other) const noexcept
+            constexpr bool operator<=(Iterator<OtherConst> const& other) const
             {
                 return !(*this > other);
             }
@@ -234,99 +234,99 @@ namespace osc
             return (*this)[pos];
         }
 
-        [[nodiscard]] constexpr reference operator[](size_type pos) noexcept {
+        [[nodiscard]] constexpr reference operator[](size_type pos) {
             size_type idx = (static_cast<size_type>(m_Begin) + pos) % N;
             return *std::launder(reinterpret_cast<T*>(m_RawStorage.data() + idx));
         }
 
-        [[nodiscard]] constexpr const_reference operator[](size_type pos) const noexcept {
+        [[nodiscard]] constexpr const_reference operator[](size_type pos) const {
             size_type idx = (static_cast<size_type>(m_Begin) + pos) % N;
             return *std::launder(reinterpret_cast<T const*>(m_RawStorage.data() + idx));
         }
 
-        [[nodiscard]] constexpr reference front() noexcept {
+        [[nodiscard]] constexpr reference front() {
             return *std::launder(reinterpret_cast<T*>(m_RawStorage.data() + static_cast<size_type>(m_Begin)));
         }
 
-        [[nodiscard]] constexpr const_reference front() const noexcept {
+        [[nodiscard]] constexpr const_reference front() const {
             *std::launder(reinterpret_cast<T*>(m_RawStorage.data() + static_cast<size_type>(m_Begin)));
         }
 
-        [[nodiscard]] constexpr reference back() noexcept {
+        [[nodiscard]] constexpr reference back() {
             return *rbegin();
         }
 
-        [[nodiscard]] constexpr const_reference back() const noexcept {
+        [[nodiscard]] constexpr const_reference back() const {
             return *rbegin();
         }
 
         // iterators
 
-        [[nodiscard]] constexpr const_iterator begin() const noexcept {
+        [[nodiscard]] constexpr const_iterator begin() const {
             // the iterator is designed to handle const-ness
             T const* const_ptr = std::launder(reinterpret_cast<T const*>(m_RawStorage.data()));
             return const_iterator{const_cast<T*>(const_ptr), m_Begin};
         }
 
-        [[nodiscard]] constexpr iterator begin() noexcept {
+        [[nodiscard]] constexpr iterator begin() {
             T* ptr = std::launder(reinterpret_cast<T*>(m_RawStorage.data()));
             return iterator{ptr, m_Begin};
         }
 
-        [[nodiscard]] constexpr const_iterator cbegin() const noexcept {
+        [[nodiscard]] constexpr const_iterator cbegin() const {
             return begin();
         }
 
-        [[nodiscard]] constexpr const_iterator end() const noexcept {
+        [[nodiscard]] constexpr const_iterator end() const {
             // the iterator is designed to handle const-ness
             T const* const_ptr = std::launder(reinterpret_cast<T const*>(m_RawStorage.data()));
             return const_iterator{const_cast<T*>(const_ptr), m_End};
         }
 
-        [[nodiscard]] constexpr iterator end() noexcept {
+        [[nodiscard]] constexpr iterator end() {
             T* ptr = std::launder(reinterpret_cast<T*>(m_RawStorage.data()));
             return iterator{ptr, m_End};
         }
 
-        [[nodiscard]] constexpr const_iterator cend() const noexcept {
+        [[nodiscard]] constexpr const_iterator cend() const {
             return end();
         }
 
-        [[nodiscard]] constexpr const_reverse_iterator rbegin() const noexcept {
+        [[nodiscard]] constexpr const_reverse_iterator rbegin() const {
             return const_reverse_iterator{end()};
         }
 
-        [[nodiscard]] constexpr reverse_iterator rbegin() noexcept {
+        [[nodiscard]] constexpr reverse_iterator rbegin() {
             return reverse_iterator{end()};
         }
 
-        [[nodiscard]] constexpr const_reverse_iterator crbegin() const noexcept {
+        [[nodiscard]] constexpr const_reverse_iterator crbegin() const {
             return const_reverse_iterator{end()};
         }
 
-        [[nodiscard]] constexpr const_reverse_iterator rend() const noexcept {
+        [[nodiscard]] constexpr const_reverse_iterator rend() const {
             return const_reverse_iterator{begin()};
         }
 
-        [[nodiscard]] constexpr reverse_iterator rend() noexcept {
+        [[nodiscard]] constexpr reverse_iterator rend() {
             return reverse_iterator{begin()};
         }
 
-        [[nodiscard]] constexpr const_reverse_iterator crend() const noexcept {
+        [[nodiscard]] constexpr const_reverse_iterator crend() const {
             return const_reverse_iterator{begin()};
         }
 
         // capacity
 
-        [[nodiscard]] constexpr bool empty() const noexcept {
+        [[nodiscard]] constexpr bool empty() const {
             return m_Begin == m_End;
         }
 
-        [[nodiscard]] constexpr size_type size() const noexcept {
+        [[nodiscard]] constexpr size_type size() const {
             return m_End >= m_Begin ? m_End - m_Begin : (N - m_Begin) + m_End;
         }
 
-        [[nodiscard]] constexpr size_type max_size() const noexcept {
+        [[nodiscard]] constexpr size_type max_size() const {
             return N;
         }
 
@@ -336,7 +336,7 @@ namespace osc
         // so that the backing storage does not have a strict requirement of
         // having to contain redundant default-constrcuted elements
 
-        constexpr void clear() noexcept
+        constexpr void clear()
         {
             std::destroy(this->begin(), this->end());
             m_Begin = 0;

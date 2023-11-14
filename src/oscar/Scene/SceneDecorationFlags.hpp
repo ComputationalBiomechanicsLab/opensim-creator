@@ -15,17 +15,17 @@ namespace osc
         CastsShadows         = 1u<<6u,
     };
 
-    constexpr SceneDecorationFlags operator|(SceneDecorationFlags a, SceneDecorationFlags b) noexcept
+    constexpr SceneDecorationFlags operator|(SceneDecorationFlags a, SceneDecorationFlags b)
     {
         return static_cast<SceneDecorationFlags>(osc::to_underlying(a) | osc::to_underlying(b));
     }
 
-    constexpr SceneDecorationFlags& operator|=(SceneDecorationFlags& a, SceneDecorationFlags b) noexcept
+    constexpr SceneDecorationFlags& operator|=(SceneDecorationFlags& a, SceneDecorationFlags b)
     {
         return a = a | b;
     }
 
-    constexpr bool operator&(SceneDecorationFlags a, SceneDecorationFlags b) noexcept
+    constexpr bool operator&(SceneDecorationFlags a, SceneDecorationFlags b)
     {
         return osc::to_underlying(a) & osc::to_underlying(b);
     }

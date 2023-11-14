@@ -254,7 +254,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLMultipleLightsTab::id() noexcept
+osc::CStringView osc::LOGLMultipleLightsTab::id()
 {
     return c_TabStringID;
 }

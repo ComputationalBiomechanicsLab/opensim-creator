@@ -37,7 +37,7 @@ private:
 
 // public API
 
-osc::CStringView osc::ImPlotDemoTab::id() noexcept
+osc::CStringView osc::ImPlotDemoTab::id()
 {
     return c_TabStringID;
 }

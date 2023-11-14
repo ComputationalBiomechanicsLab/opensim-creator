@@ -2797,7 +2797,7 @@ private:
 
 // public API (PIMPL)
 
-osc::CStringView osc::FrameDefinitionTab::id() noexcept
+osc::CStringView osc::FrameDefinitionTab::id()
 {
     return c_TabStringID;
 }

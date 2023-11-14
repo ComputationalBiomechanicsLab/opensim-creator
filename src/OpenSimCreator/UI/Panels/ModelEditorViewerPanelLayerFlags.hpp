@@ -13,17 +13,17 @@ namespace osc
         Default = CapturesMouseInputs,
     };
 
-    constexpr bool operator&(ModelEditorViewerPanelLayerFlags a, ModelEditorViewerPanelLayerFlags b) noexcept
+    constexpr bool operator&(ModelEditorViewerPanelLayerFlags a, ModelEditorViewerPanelLayerFlags b)
     {
         return osc::to_underlying(a) & osc::to_underlying(b);
     }
 
-    constexpr ModelEditorViewerPanelLayerFlags operator|(ModelEditorViewerPanelLayerFlags a, ModelEditorViewerPanelLayerFlags b) noexcept
+    constexpr ModelEditorViewerPanelLayerFlags operator|(ModelEditorViewerPanelLayerFlags a, ModelEditorViewerPanelLayerFlags b)
     {
         return static_cast<ModelEditorViewerPanelLayerFlags>(osc::to_underlying(a) | osc::to_underlying(b));
     }
 
-    constexpr ModelEditorViewerPanelLayerFlags& operator|=(ModelEditorViewerPanelLayerFlags& a, ModelEditorViewerPanelLayerFlags b) noexcept
+    constexpr ModelEditorViewerPanelLayerFlags& operator|=(ModelEditorViewerPanelLayerFlags& a, ModelEditorViewerPanelLayerFlags b)
     {
         return a = a | b;
     }

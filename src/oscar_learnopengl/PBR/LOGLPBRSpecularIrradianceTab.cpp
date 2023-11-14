@@ -458,7 +458,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLPBRSpecularIrradianceTab::id() noexcept
+osc::CStringView osc::LOGLPBRSpecularIrradianceTab::id()
 {
     return c_TabStringID;
 }

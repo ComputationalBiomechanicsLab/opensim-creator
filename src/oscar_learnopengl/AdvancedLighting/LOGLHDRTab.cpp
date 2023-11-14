@@ -233,7 +233,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLHDRTab::id() noexcept
+osc::CStringView osc::LOGLHDRTab::id()
 {
     return c_TabStringID;
 }

@@ -93,7 +93,7 @@ namespace osc
         None,
         NoCalculatorIcon,
     };
-    constexpr bool operator&(CalculateMenuFlags a, CalculateMenuFlags b) noexcept
+    constexpr bool operator&(CalculateMenuFlags a, CalculateMenuFlags b)
     {
         return (osc::to_underlying(a) & osc::to_underlying(b)) != 0;
     }

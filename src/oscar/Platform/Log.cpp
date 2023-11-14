@@ -57,12 +57,12 @@ namespace
 
 // public API
 
-std::shared_ptr<osc::Logger> osc::log::defaultLogger() noexcept
+std::shared_ptr<osc::Logger> osc::log::defaultLogger()
 {
     return GetGlobalSinks().defaultLogSink;
 }
 
-osc::Logger* osc::log::defaultLoggerRaw() noexcept
+osc::Logger* osc::log::defaultLoggerRaw()
 {
     return GetGlobalSinks().defaultLogSink.get();
 }

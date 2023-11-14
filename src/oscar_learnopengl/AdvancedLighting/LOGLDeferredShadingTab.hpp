@@ -14,7 +14,7 @@ namespace osc
 {
     class LOGLDeferredShadingTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit LOGLDeferredShadingTab(ParentPtr<TabHost> const&);
         LOGLDeferredShadingTab(LOGLDeferredShadingTab const&) = delete;

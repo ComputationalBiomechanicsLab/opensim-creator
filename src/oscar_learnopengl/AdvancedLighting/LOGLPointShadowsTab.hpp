@@ -14,7 +14,7 @@ namespace osc
 {
     class LOGLPointShadowsTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit LOGLPointShadowsTab(ParentPtr<TabHost> const&);
         LOGLPointShadowsTab(LOGLPointShadowsTab const&) = delete;

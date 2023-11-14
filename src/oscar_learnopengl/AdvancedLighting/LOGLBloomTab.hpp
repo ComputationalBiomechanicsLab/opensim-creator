@@ -14,7 +14,7 @@ namespace osc
 {
     class LOGLBloomTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit LOGLBloomTab(ParentPtr<TabHost> const&);
         LOGLBloomTab(LOGLBloomTab const&) = delete;

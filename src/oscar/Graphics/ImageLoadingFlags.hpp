@@ -19,7 +19,7 @@ namespace osc
         FlipVertically = 1u<<0u,
     };
 
-    constexpr bool operator&(ImageLoadingFlags a, ImageLoadingFlags b) noexcept
+    constexpr bool operator&(ImageLoadingFlags a, ImageLoadingFlags b)
     {
         return osc::to_underlying(a) & osc::to_underlying(b);
     }

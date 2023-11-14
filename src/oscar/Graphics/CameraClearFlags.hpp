@@ -15,12 +15,12 @@ namespace osc
         Default = SolidColor | Depth,
     };
 
-    constexpr CameraClearFlags operator|(CameraClearFlags a, CameraClearFlags b) noexcept
+    constexpr CameraClearFlags operator|(CameraClearFlags a, CameraClearFlags b)
     {
         return static_cast<CameraClearFlags>(osc::to_underlying(a) | osc::to_underlying(b));
     }
 
-    constexpr bool operator&(CameraClearFlags a, CameraClearFlags b) noexcept
+    constexpr bool operator&(CameraClearFlags a, CameraClearFlags b)
     {
         return osc::to_underlying(a) & osc::to_underlying(b);
     }

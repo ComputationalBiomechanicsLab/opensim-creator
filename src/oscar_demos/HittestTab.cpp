@@ -327,7 +327,7 @@ private:
 
 // public API
 
-osc::CStringView osc::HittestTab::id() noexcept
+osc::CStringView osc::HittestTab::id()
 {
     return c_TabStringID;
 }

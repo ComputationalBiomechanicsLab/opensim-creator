@@ -28,7 +28,7 @@ osc::CStringView osc::ToCStringView(LogLevel level)
     return c_LogLevelStrings.at(static_cast<ptrdiff_t>(level));
 }
 
-std::optional<osc::LogLevel> osc::FromIndex(size_t i) noexcept
+std::optional<osc::LogLevel> osc::FromIndex(size_t i)
 {
     if (ToIndex(FirstLogLevel()) <= i && i <= ToIndex(LastLogLevel()))
     {

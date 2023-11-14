@@ -25,11 +25,11 @@ namespace osc
         //      have a delta.x of 0.5f
 
         // pan: pan along the current view plane
-        void pan(float aspectRatio, Vec2 mouseDelta) noexcept;
+        void pan(float aspectRatio, Vec2 mouseDelta);
 
         // drag: spin the view around the origin, such that the distance between
         //       the camera and the origin remains constant
-        void drag(Vec2 mouseDelta) noexcept;
+        void drag(Vec2 mouseDelta);
 
         // autoscale znear and zfar based on the camera's distance from what it's looking at
         //
@@ -37,18 +37,18 @@ namespace osc
         // both the culling planes of the camera *and* rescales the Z values of elements
         // in the scene. If the znear-to-zfar range is too large then Z-fighting will happen
         // and the scene will look wrong.
-        void rescaleZNearAndZFarBasedOnRadius() noexcept;
+        void rescaleZNearAndZFarBasedOnRadius();
 
-        Mat4 getViewMtx() const noexcept;
-        Mat4 getProjMtx(float aspectRatio) const noexcept;
+        Mat4 getViewMtx() const;
+        Mat4 getProjMtx(float aspectRatio) const;
 
         // project's a worldspace coordinate onto a screen-space rectangle
-        Vec2 projectOntoScreenRect(Vec3 const& worldspaceLoc, Rect const& screenRect) const noexcept;
+        Vec2 projectOntoScreenRect(Vec3 const& worldspaceLoc, Rect const& screenRect) const;
 
-        Vec3 getPos() const noexcept;
+        Vec3 getPos() const;
 
         // converts a `pos` (top-left) in the output `dims` into a line in worldspace by unprojection
-        Line unprojectTopLeftPosToWorldRay(Vec2 pos, Vec2 dims) const noexcept;
+        Line unprojectTopLeftPosToWorldRay(Vec2 pos, Vec2 dims) const;
 
         friend bool operator==(PolarPerspectiveCamera const&, PolarPerspectiveCamera const&) = default;
 

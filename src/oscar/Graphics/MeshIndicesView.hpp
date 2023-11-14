@@ -34,13 +34,13 @@ namespace osc
             using reference = value_type;
             using iterator_category = std::forward_iterator_tag;
 
-            Iterator(U32PtrOrU16Ptr ptr, bool isU32) noexcept :
+            Iterator(U32PtrOrU16Ptr ptr, bool isU32) :
                 m_Ptr{ptr},
                 m_IsU32{isU32}
             {
             }
 
-            uint32_t operator*() const noexcept
+            uint32_t operator*() const
             {
                 return m_IsU32 ? *m_Ptr.u32 : static_cast<uint32_t>(*m_Ptr.u16);
             }
@@ -50,7 +50,7 @@ namespace osc
                 return lhs.m_Ptr.u16 == rhs.m_Ptr.u16 && lhs.m_IsU32 == rhs.m_IsU32;
             }
 
-            Iterator& operator++() noexcept
+            Iterator& operator++()
             {
                 if (m_IsU32) { ++m_Ptr.u32; } else { ++m_Ptr.u16; }
                 return *this;
@@ -132,12 +132,12 @@ namespace osc
             return !m_IsU32 ? static_cast<uint32_t>(m_Ptr.u16[i]) : m_Ptr.u32[i];
         }
 
-        Iterator begin() const noexcept
+        Iterator begin() const
         {
             return Iterator{m_Ptr, m_IsU32};
         }
 
-        Iterator end() const noexcept
+        Iterator end() const
         {
             return Iterator{m_IsU32 ? U32PtrOrU16Ptr{m_Ptr.u32 + m_Size} : U32PtrOrU16Ptr{m_Ptr.u16 + m_Size}, m_IsU32};
         }

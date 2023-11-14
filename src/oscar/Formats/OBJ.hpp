@@ -20,7 +20,7 @@ namespace osc
         Default = None,
     };
 
-    constexpr bool operator&(ObjWriterFlags a, ObjWriterFlags b) noexcept
+    constexpr bool operator&(ObjWriterFlags a, ObjWriterFlags b)
     {
         return osc::to_underlying(a) & osc::to_underlying(b);
     }

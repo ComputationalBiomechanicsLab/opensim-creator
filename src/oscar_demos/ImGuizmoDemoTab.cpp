@@ -71,7 +71,7 @@ private:
 
 // public API
 
-osc::CStringView osc::ImGuizmoDemoTab::id() noexcept
+osc::CStringView osc::ImGuizmoDemoTab::id()
 {
     return "Demos/ImGuizmo";
 }

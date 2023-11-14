@@ -257,7 +257,7 @@ private:
 
 // public API (PIMPL)
 
-osc::CStringView osc::LOGLShadowMappingTab::id() noexcept
+osc::CStringView osc::LOGLShadowMappingTab::id()
 {
     return c_TabStringID;
 }

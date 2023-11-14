@@ -13,7 +13,7 @@ namespace osc
 {
     class ImGuizmoDemoTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit ImGuizmoDemoTab(ParentPtr<TabHost> const&);
         ImGuizmoDemoTab(ImGuizmoDemoTab const&) = delete;

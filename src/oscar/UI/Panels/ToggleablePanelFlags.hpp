@@ -16,12 +16,12 @@ namespace osc
         Default = IsEnabledByDefault,
     };
 
-    constexpr ToggleablePanelFlags operator-(ToggleablePanelFlags a, ToggleablePanelFlags b) noexcept
+    constexpr ToggleablePanelFlags operator-(ToggleablePanelFlags a, ToggleablePanelFlags b)
     {
         return static_cast<ToggleablePanelFlags>(osc::to_underlying(a) & ~osc::to_underlying(b));
     }
 
-    constexpr bool operator&(ToggleablePanelFlags a, ToggleablePanelFlags b) noexcept
+    constexpr bool operator&(ToggleablePanelFlags a, ToggleablePanelFlags b)
     {
         return osc::to_underlying(a) & osc::to_underlying(b);
     }

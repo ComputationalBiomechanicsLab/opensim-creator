@@ -112,7 +112,7 @@ private:
 
 // public API
 
-osc::CStringView osc::MeshGenTestTab::id() noexcept
+osc::CStringView osc::MeshGenTestTab::id()
 {
     return c_TabStringID;
 }

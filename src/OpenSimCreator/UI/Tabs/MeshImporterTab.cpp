@@ -1671,14 +1671,14 @@ namespace
             }
 
             // conversion to a const version of the iterator
-            explicit operator Iterator<value_type const>() const noexcept
+            explicit operator Iterator<value_type const>() const
             {
                 return Iterator<value_type const>{m_Pos, m_End};
             }
 
             // LegacyIterator
 
-            Iterator& operator++() noexcept
+            Iterator& operator++()
             {
                 while (++m_Pos != m_End)
                 {
@@ -1690,7 +1690,7 @@ namespace
                 return *this;
             }
 
-            reference operator*() const noexcept
+            reference operator*() const
             {
                 return dynamic_cast<reference>(*m_Pos->second);
             }
@@ -1701,7 +1701,7 @@ namespace
 
             // LegacyInputIterator
 
-            pointer operator->() const noexcept
+            pointer operator->() const
             {
 
                 return &dynamic_cast<reference>(*m_Pos->second);
@@ -2992,17 +2992,17 @@ namespace
         ExportStationsAsMarkers,
     };
 
-    constexpr bool operator&(ModelCreationFlags const& a, ModelCreationFlags const& b) noexcept
+    constexpr bool operator&(ModelCreationFlags const& a, ModelCreationFlags const& b)
     {
         return (osc::to_underlying(a) & osc::to_underlying(b)) != 0;
     }
 
-    constexpr ModelCreationFlags operator+(ModelCreationFlags const& a, ModelCreationFlags const& b) noexcept
+    constexpr ModelCreationFlags operator+(ModelCreationFlags const& a, ModelCreationFlags const& b)
     {
         return static_cast<ModelCreationFlags>(osc::to_underlying(a) | osc::to_underlying(b));
     }
 
-    constexpr ModelCreationFlags operator-(ModelCreationFlags const& a, ModelCreationFlags const& b) noexcept
+    constexpr ModelCreationFlags operator-(ModelCreationFlags const& a, ModelCreationFlags const& b)
     {
         return static_cast<ModelCreationFlags>(osc::to_underlying(a) & ~osc::to_underlying(b));
     }
@@ -3786,7 +3786,7 @@ namespace
         {
         }
 
-        explicit operator bool () const noexcept
+        explicit operator bool () const
         {
             return ID != c_EmptyID;
         }

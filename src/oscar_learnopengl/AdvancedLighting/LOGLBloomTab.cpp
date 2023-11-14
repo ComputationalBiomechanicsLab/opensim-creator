@@ -421,7 +421,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLBloomTab::id() noexcept
+osc::CStringView osc::LOGLBloomTab::id()
 {
     return c_TabStringID;
 }

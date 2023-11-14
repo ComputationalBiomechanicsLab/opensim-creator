@@ -97,7 +97,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLHelloTriangleTab::id() noexcept
+osc::CStringView osc::LOGLHelloTriangleTab::id()
 {
     return c_TabStringID;
 }

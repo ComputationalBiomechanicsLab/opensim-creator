@@ -20,7 +20,7 @@ namespace osc
         {
         }
 
-        T const& prototype() const noexcept
+        T const& prototype() const
         {
             auto const& base = static_cast<ComponentRegistryEntryBase const&>(*this);
             return static_cast<T const&>(base.prototype());

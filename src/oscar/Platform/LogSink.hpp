@@ -21,17 +21,17 @@ namespace osc
             implLog(view);
         }
 
-        [[nodiscard]] LogLevel getLevel() const noexcept
+        [[nodiscard]] LogLevel getLevel() const
         {
             return m_SinkLevel;
         }
 
-        void setLevel(LogLevel level) noexcept
+        void setLevel(LogLevel level)
         {
             m_SinkLevel = level;
         }
 
-        [[nodiscard]] bool shouldLog(LogLevel level) const noexcept
+        [[nodiscard]] bool shouldLog(LogLevel level) const
         {
             return level >= m_SinkLevel;
         }

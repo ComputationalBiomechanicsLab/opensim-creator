@@ -14,7 +14,7 @@ namespace osc
 {
     class LOGLShadowMappingTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit LOGLShadowMappingTab(ParentPtr<TabHost> const&);
         LOGLShadowMappingTab(LOGLShadowMappingTab const&) = delete;

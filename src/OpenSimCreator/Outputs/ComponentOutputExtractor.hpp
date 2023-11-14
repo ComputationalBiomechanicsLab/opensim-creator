@@ -30,12 +30,12 @@ namespace osc
         Default = None,
     };
 
-    constexpr OutputSubfield operator|(OutputSubfield a, OutputSubfield b) noexcept
+    constexpr OutputSubfield operator|(OutputSubfield a, OutputSubfield b)
     {
         return static_cast<OutputSubfield>(osc::to_underlying(a) | osc::to_underlying(b));
     }
 
-    constexpr bool operator&(OutputSubfield a, OutputSubfield b) noexcept
+    constexpr bool operator&(OutputSubfield a, OutputSubfield b)
     {
         return (osc::to_underlying(a) & osc::to_underlying(b)) != 0;
     }

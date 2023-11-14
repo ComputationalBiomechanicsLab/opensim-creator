@@ -42,7 +42,7 @@ int64_t osc::detail::AllocateMeasurementID(std::string_view label, std::string_v
     return id;
 }
 
-void osc::detail::SubmitMeasurement(int64_t id, PerfClock::time_point start, PerfClock::time_point end) noexcept
+void osc::detail::SubmitMeasurement(int64_t id, PerfClock::time_point start, PerfClock::time_point end)
 {
     auto guard = GetMeasurementStorage().lock();
     auto it = guard->find(id);

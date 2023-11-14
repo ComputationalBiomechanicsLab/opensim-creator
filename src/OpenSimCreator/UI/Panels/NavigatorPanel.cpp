@@ -43,39 +43,39 @@ namespace
             m_Data[m_Size++] = v;
         }
 
-        T const* begin() const noexcept {
+        T const* begin() const {
             return m_Data.data();
         }
 
-        T* begin() noexcept {
+        T* begin() {
             return m_Data.data();
         }
 
-        T const* end() const noexcept {
+        T const* end() const {
             return m_Data.data() + m_Size;
         }
 
-        T* end() noexcept {
+        T* end() {
             return m_Data.data() + m_Size;
         }
 
-        size_t size() const noexcept {
+        size_t size() const {
             return m_Size;
         }
 
-        ptrdiff_t sizei() const noexcept {
+        ptrdiff_t sizei() const {
             return static_cast<ptrdiff_t>(m_Size);
         }
 
-        bool empty() const noexcept {
+        bool empty() const {
             return m_Size == 0;
         }
 
-        void resize(size_t newsize) noexcept {
+        void resize(size_t newsize) {
             m_Size = newsize;
         }
 
-        void clear() noexcept {
+        void clear() {
             m_Size = 0;
         }
 
@@ -83,7 +83,7 @@ namespace
             return m_Data[idx];
         }
 
-        T const& operator[](size_t i) const noexcept {
+        T const& operator[](size_t i) const {
             return m_Data[i];
         }
 

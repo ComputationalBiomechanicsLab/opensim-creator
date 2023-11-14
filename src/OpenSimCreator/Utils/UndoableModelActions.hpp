@@ -236,7 +236,7 @@ namespace osc
         None,
         TryReexpressComponentInNewConnectee,
     };
-    constexpr bool operator&(SocketReassignmentFlags a, SocketReassignmentFlags b) noexcept
+    constexpr bool operator&(SocketReassignmentFlags a, SocketReassignmentFlags b)
     {
         return osc::to_underlying(a) & osc::to_underlying(b);
     }

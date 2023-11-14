@@ -543,7 +543,7 @@ namespace
         using is_transparent = void;
         using is_avalanching = void;
 
-        [[nodiscard]] auto operator()(std::string_view str) const noexcept -> uint64_t {
+        [[nodiscard]] auto operator()(std::string_view str) const -> uint64_t {
             return ankerl::unordered_dense::hash<std::string_view>{}(str);
         }
     };
@@ -1012,7 +1012,7 @@ namespace
 {
     // returns the memory alignment of data that is to be copied from the
     // CPU (packed) to the GPU (unpacked)
-    constexpr GLint ToOpenGLUnpackAlignment(osc::TextureFormat format) noexcept
+    constexpr GLint ToOpenGLUnpackAlignment(osc::TextureFormat format)
     {
         static_assert(osc::NumOptions<osc::TextureFormat>() == 5);
 
@@ -1037,7 +1037,7 @@ namespace
     // represent the given format+colorspace combo
     constexpr GLenum ToOpenGLInternalFormat(
         osc::TextureFormat format,
-        osc::ColorSpace colorSpace) noexcept
+        osc::ColorSpace colorSpace)
     {
         static_assert(osc::NumOptions<osc::TextureFormat>() == 5);
         static_assert(osc::NumOptions<osc::ColorSpace>() == 2);
@@ -1069,7 +1069,7 @@ namespace
         NUM_OPTIONS,
     };
 
-    constexpr GLenum ToOpenGLDataType(CPUDataType t) noexcept
+    constexpr GLenum ToOpenGLDataType(CPUDataType t)
     {
         static_assert(osc::NumOptions<CPUDataType>() == 4);
 
@@ -1088,7 +1088,7 @@ namespace
         }
     }
 
-    constexpr CPUDataType ToEquivalentCPUDataType(osc::TextureFormat format) noexcept
+    constexpr CPUDataType ToEquivalentCPUDataType(osc::TextureFormat format)
     {
         static_assert(osc::NumOptions<osc::TextureFormat>() == 5);
         static_assert(osc::NumOptions<CPUDataType>() == 4);
@@ -1117,7 +1117,7 @@ namespace
         NUM_OPTIONS,
     };
 
-    constexpr CPUImageFormat ToEquivalentCPUImageFormat(osc::TextureFormat format) noexcept
+    constexpr CPUImageFormat ToEquivalentCPUImageFormat(osc::TextureFormat format)
     {
         static_assert(osc::NumOptions<osc::TextureFormat>() == 5);
         static_assert(osc::NumOptions<CPUImageFormat>() == 4);
@@ -1139,7 +1139,7 @@ namespace
         }
     }
 
-    constexpr GLenum ToOpenGLFormat(CPUImageFormat t) noexcept
+    constexpr GLenum ToOpenGLFormat(CPUImageFormat t)
     {
         static_assert(osc::NumOptions<CPUImageFormat>() == 4);
 
@@ -1158,7 +1158,7 @@ namespace
         }
     }
 
-    constexpr GLenum ToOpenGLTextureEnum(osc::CubemapFace f) noexcept
+    constexpr GLenum ToOpenGLTextureEnum(osc::CubemapFace f)
     {
         static_assert(osc::NumOptions<osc::CubemapFace>() == 6);
         static_assert(static_cast<GLenum>(osc::CubemapFace::PositiveX) == 0);
@@ -1826,7 +1826,7 @@ std::ostream& osc::operator<<(std::ostream& o, TextureFilterMode twm)
     return o << c_TextureFilterModeStrings.at(static_cast<size_t>(twm));
 }
 
-size_t osc::NumChannels(TextureFormat format) noexcept
+size_t osc::NumChannels(TextureFormat format)
 {
     static_assert(NumOptions<TextureFormat>() == 5);
 
@@ -1841,7 +1841,7 @@ size_t osc::NumChannels(TextureFormat format) noexcept
     }
 }
 
-osc::TextureChannelFormat osc::ChannelFormat(TextureFormat f) noexcept
+osc::TextureChannelFormat osc::ChannelFormat(TextureFormat f)
 {
     static_assert(NumOptions<TextureFormat>() == 5);
 
@@ -1856,12 +1856,12 @@ osc::TextureChannelFormat osc::ChannelFormat(TextureFormat f) noexcept
     }
 }
 
-size_t osc::NumBytesPerPixel(TextureFormat format) noexcept
+size_t osc::NumBytesPerPixel(TextureFormat format)
 {
     return NumChannels(format) * NumBytesPerChannel(ChannelFormat(format));
 }
 
-std::optional<osc::TextureFormat> osc::ToTextureFormat(size_t numChannels, TextureChannelFormat channelFormat) noexcept
+std::optional<osc::TextureFormat> osc::ToTextureFormat(size_t numChannels, TextureChannelFormat channelFormat)
 {
     static_assert(NumOptions<TextureChannelFormat>() == 2);
     bool const isByteOriented = channelFormat == TextureChannelFormat::Uint8;
@@ -2067,7 +2067,7 @@ namespace
 
     constexpr CPUImageFormat ToEquivalentCPUImageFormat(
         osc::RenderBufferType type,
-        osc::RenderTextureDescriptor const& desc) noexcept
+        osc::RenderTextureDescriptor const& desc)
     {
         static_assert(osc::NumOptions<osc::RenderBufferType>() == 2);
         static_assert(osc::NumOptions<osc::DepthStencilFormat>() == 1);
@@ -2097,7 +2097,7 @@ namespace
 
     constexpr CPUDataType ToEquivalentCPUDataType(
         osc::RenderBufferType type,
-        osc::RenderTextureDescriptor const& desc) noexcept
+        osc::RenderTextureDescriptor const& desc)
     {
         static_assert(osc::NumOptions<osc::RenderBufferType>() == 2);
         static_assert(osc::NumOptions<osc::DepthStencilFormat>() == 1);
@@ -3932,7 +3932,7 @@ void osc::MaterialPropertyBlock::setTexture(std::string_view propertyName, Textu
     m_Impl.upd()->setTexture(propertyName, std::move(t));
 }
 
-bool osc::operator==(MaterialPropertyBlock const& lhs, MaterialPropertyBlock const& rhs) noexcept
+bool osc::operator==(MaterialPropertyBlock const& lhs, MaterialPropertyBlock const& rhs)
 {
     return lhs.m_Impl == rhs.m_Impl || *lhs.m_Impl == *rhs.m_Impl;
 }
@@ -5181,7 +5181,7 @@ namespace
     }
 
     // maps an OpenGL debug message severity level to a log level
-    constexpr osc::LogLevel OpenGLDebugSevToLogLvl(GLenum sev) noexcept
+    constexpr osc::LogLevel OpenGLDebugSevToLogLvl(GLenum sev)
     {
         switch (sev)
         {
@@ -5199,7 +5199,7 @@ namespace
     }
 
     // returns a string representation of an OpenGL debug message severity level
-    constexpr osc::CStringView OpenGLDebugSevToStrView(GLenum sev) noexcept
+    constexpr osc::CStringView OpenGLDebugSevToStrView(GLenum sev)
     {
         switch (sev)
         {
@@ -5217,7 +5217,7 @@ namespace
     }
 
     // returns a string representation of an OpenGL debug message source
-    constexpr osc::CStringView OpenGLDebugSrcToStrView(GLenum src) noexcept
+    constexpr osc::CStringView OpenGLDebugSrcToStrView(GLenum src)
     {
         switch (src)
         {
@@ -5239,7 +5239,7 @@ namespace
     }
 
     // returns a string representation of an OpenGL debug message type
-    constexpr osc::CStringView OpenGLDebugTypeToStrView(GLenum type) noexcept
+    constexpr osc::CStringView OpenGLDebugTypeToStrView(GLenum type)
     {
         switch (type)
         {

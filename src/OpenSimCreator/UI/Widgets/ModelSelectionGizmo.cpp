@@ -48,12 +48,12 @@ namespace
         Rotation    = 1u<<1u,
     };
 
-    constexpr SupportedManipulationOpFlags operator|(SupportedManipulationOpFlags a, SupportedManipulationOpFlags b) noexcept
+    constexpr SupportedManipulationOpFlags operator|(SupportedManipulationOpFlags a, SupportedManipulationOpFlags b)
     {
         return static_cast<SupportedManipulationOpFlags>(osc::to_underlying(a) | osc::to_underlying(b));
     }
 
-    constexpr bool operator&(SupportedManipulationOpFlags a, SupportedManipulationOpFlags b) noexcept
+    constexpr bool operator&(SupportedManipulationOpFlags a, SupportedManipulationOpFlags b)
     {
         return (osc::to_underlying(a) & osc::to_underlying(b)) != 0u;
     }

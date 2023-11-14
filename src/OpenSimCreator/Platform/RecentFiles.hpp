@@ -11,6 +11,7 @@ namespace osc
     class RecentFiles final {
     public:
         RecentFiles();
+        RecentFiles(RecentFiles&&) noexcept = default;
         RecentFiles(RecentFiles const&) = delete;
         RecentFiles& operator=(RecentFiles const&) = delete;
         RecentFiles& operator=(RecentFiles&&) noexcept = delete;

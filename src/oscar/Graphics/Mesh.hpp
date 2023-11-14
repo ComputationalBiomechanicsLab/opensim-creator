@@ -72,7 +72,7 @@ namespace osc
             swap(a.m_Impl, b.m_Impl);
         }
 
-        friend bool operator==(Mesh const&, Mesh const&) noexcept = default;
+        friend bool operator==(Mesh const&, Mesh const&) = default;
         friend std::ostream& operator<<(std::ostream&, Mesh const&);
     private:
         friend class GraphicsBackend;
