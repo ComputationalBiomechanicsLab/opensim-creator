@@ -17,6 +17,7 @@
 
 namespace osc { struct AABB; }
 namespace osc { struct Color; }
+namespace osc { class SubMeshDescriptor; }
 namespace osc { struct Transform; }
 
 // note: implementation is in `GraphicsImplementation.cpp`
@@ -66,6 +67,11 @@ namespace osc
         AABB const& getBounds() const;  // local-space
 
         void clear();
+
+        size_t getSubMeshCount() const;
+        void pushSubMeshDescriptor(SubMeshDescriptor const&);
+        SubMeshDescriptor const& getSubMeshDescriptor(size_t) const;
+        void clearSubMeshDescriptors();
 
         friend void swap(Mesh& a, Mesh& b) noexcept
         {

@@ -21,12 +21,13 @@
 #include <oscar/Graphics/RenderTexture.hpp>
 #include <oscar/Graphics/RenderTextureDescriptor.hpp>
 #include <oscar/Graphics/RenderTextureFormat.hpp>
+#include <oscar/Graphics/Shader.hpp>
+#include <oscar/Graphics/ShaderPropertyType.hpp>
+#include <oscar/Graphics/SubMeshDescriptor.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/ShaderPropertyType.hpp>
 
 // other includes...
 
@@ -4173,6 +4174,27 @@ public:
         m_NumIndices = 0;
         m_IndicesData.clear();
         m_AABB = {};
+        m_SubMeshDescriptors.clear();
+    }
+
+    size_t getSubMeshCount() const
+    {
+        return m_SubMeshDescriptors.size();
+    }
+
+    void pushSubMeshDescriptor(SubMeshDescriptor const& desc)
+    {
+        m_SubMeshDescriptors.push_back(desc);
+    }
+
+    SubMeshDescriptor const& getSubMeshDescriptor(size_t i) const
+    {
+        return m_SubMeshDescriptors.at(i);
+    }
+
+    void clearSubMeshDescriptors()
+    {
+        m_SubMeshDescriptors.clear();
     }
 
     // non-PIMPL methods
@@ -4426,6 +4448,8 @@ private:
 
     AABB m_AABB{};
 
+    std::vector<SubMeshDescriptor> m_SubMeshDescriptors;
+
     DefaultConstructOnCopy<std::optional<MeshOpenGLData>> m_MaybeGPUBuffers;
 };
 
@@ -4558,6 +4582,26 @@ osc::AABB const& osc::Mesh::getBounds() const
 void osc::Mesh::clear()
 {
     m_Impl.upd()->clear();
+}
+
+size_t osc::Mesh::getSubMeshCount() const
+{
+    return m_Impl->getSubMeshCount();
+}
+
+void osc::Mesh::pushSubMeshDescriptor(SubMeshDescriptor const& desc)
+{
+    m_Impl.upd()->pushSubMeshDescriptor(desc);
+}
+
+osc::SubMeshDescriptor const& osc::Mesh::getSubMeshDescriptor(size_t i) const
+{
+    return m_Impl->getSubMeshDescriptor(i);
+}
+
+void osc::Mesh::clearSubMeshDescriptors()
+{
+    m_Impl.upd()->clearSubMeshDescriptors();
 }
 
 std::ostream& osc::operator<<(std::ostream& o, Mesh const&)

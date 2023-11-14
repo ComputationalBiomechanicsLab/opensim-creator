@@ -11,6 +11,7 @@ add_executable(testoscar
     Graphics/TestCubemapFace.cpp
     Graphics/TestCullMode.cpp
     Graphics/TestGraphicsHelpers.cpp
+    Graphics/TestSubMeshDescriptor.cpp
     Graphics/TestRenderer.cpp
     Graphics/TestRenderTarget.cpp
     Graphics/TestRenderTargetColorAttachment.cpp

@@ -25,12 +25,13 @@
 #include <oscar/Graphics/RenderTextureDescriptor.hpp>
 #include <oscar/Graphics/RenderTextureFormat.hpp>
 #include <oscar/Graphics/RenderTextureReadWrite.hpp>
+#include <oscar/Graphics/Shader.hpp>
+#include <oscar/Graphics/ShaderPropertyType.hpp>
+#include <oscar/Graphics/SubMeshDescriptor.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
 #include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/ShaderPropertyType.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/Mat3.hpp>
@@ -2523,6 +2524,102 @@ TEST_F(Renderer, MeshCanBeWrittenToOutputStreamForDebugging)
     ASSERT_FALSE(ss.str().empty());
 }
 
+TEST_F(Renderer, MeshGetSubMeshCountReturnsZeroForDefaultConstructedMesh)
+{
+    ASSERT_EQ(osc::Mesh{}.getSubMeshCount(), 0);
+}
+
+TEST_F(Renderer, MeshGetSubMeshCountReturnsZeroForMeshWithSomeData)
+{
+    auto const pyramid = std::to_array<Vec3>(
+    {
+        {-1.0f, -1.0f, 0.0f},  // base: bottom-left
+        { 1.0f, -1.0f, 0.0f},  // base: bottom-right
+        { 0.0f,  1.0f, 0.0f},  // base: top-middle
+    });
+    auto const pyramidIndices = std::to_array<uint16_t>({0, 1, 2});
+
+    osc::Mesh m;
+    m.setVerts(pyramid);
+    m.setIndices(pyramidIndices);
+
+    ASSERT_EQ(m.getSubMeshCount(), 0);
+}
+
+TEST_F(Renderer, MeshPushSubMeshDescriptorMakesGetMeshSubCountIncrease)
+{
+    osc::Mesh m;
+    ASSERT_EQ(m.getSubMeshCount(), 0);
+    m.pushSubMeshDescriptor(osc::SubMeshDescriptor{0, 10, osc::MeshTopology::Triangles});
+    ASSERT_EQ(m.getSubMeshCount(), 1);
+    m.pushSubMeshDescriptor(osc::SubMeshDescriptor{5, 30, osc::MeshTopology::Lines});
+    ASSERT_EQ(m.getSubMeshCount(), 2);
+}
+
+TEST_F(Renderer, MeshPushSubMeshDescriptorMakesGetSubMeshDescriptorReturnPushedDescriptor)
+{
+    osc::Mesh m;
+    osc::SubMeshDescriptor const descriptor{0, 10, osc::MeshTopology::Triangles};
+
+    ASSERT_EQ(m.getSubMeshCount(), 0);
+    m.pushSubMeshDescriptor(descriptor);
+    ASSERT_EQ(m.getSubMeshDescriptor(0), descriptor);
+}
+
+TEST_F(Renderer, MeshPushSecondDescriptorMakesGetReturnExpectedResults)
+{
+    osc::Mesh m;
+    osc::SubMeshDescriptor const firstDesc{0, 10, osc::MeshTopology::Triangles};
+    osc::SubMeshDescriptor const secondDesc{5, 15, osc::MeshTopology::Lines};
+
+    m.pushSubMeshDescriptor(firstDesc);
+    m.pushSubMeshDescriptor(secondDesc);
+
+    ASSERT_EQ(m.getSubMeshCount(), 2);
+    ASSERT_EQ(m.getSubMeshDescriptor(0), firstDesc);
+    ASSERT_EQ(m.getSubMeshDescriptor(1), secondDesc);
+}
+
+TEST_F(Renderer, MeshGetSubMeshDescriptorThrowsOOBExceptionIfOOBAccessed)
+{
+    osc::Mesh m;
+
+    ASSERT_EQ(m.getSubMeshCount(), 0);
+    ASSERT_ANY_THROW({ m.getSubMeshDescriptor(0); });
+
+    m.pushSubMeshDescriptor({0, 10, osc::MeshTopology::Triangles});
+    ASSERT_EQ(m.getSubMeshCount(), 1);
+    ASSERT_NO_THROW({ m.getSubMeshDescriptor(0); });
+    ASSERT_ANY_THROW({ m.getSubMeshDescriptor(1); });
+}
+
+TEST_F(Renderer, MeshClearSubMeshDescriptorsDoesNothingOnEmptyMesh)
+{
+    osc::Mesh m;
+    ASSERT_NO_THROW({ m.clearSubMeshDescriptors(); });
+}
+
+TEST_F(Renderer, MeshClearSubMeshDescriptorsClearsAllDescriptors)
+{
+    osc::Mesh m;
+    m.pushSubMeshDescriptor({0, 10, osc::MeshTopology::Triangles});
+    m.pushSubMeshDescriptor({5, 15, osc::MeshTopology::Lines});
+
+    ASSERT_EQ(m.getSubMeshCount(), 2);
+    ASSERT_NO_THROW({ m.clearSubMeshDescriptors(); });
+    ASSERT_EQ(m.getSubMeshCount(), 0);
+}
+
+TEST_F(Renderer, MeshGeneralClearMethodAlsoClearsSubMeshDescriptors)
+{
+    osc::Mesh m;
+    m.pushSubMeshDescriptor({0, 10, osc::MeshTopology::Triangles});
+    m.pushSubMeshDescriptor({5, 15, osc::MeshTopology::Lines});
+
+    ASSERT_EQ(m.getSubMeshCount(), 2);
+    ASSERT_NO_THROW({ m.clear(); });
+    ASSERT_EQ(m.getSubMeshCount(), 0);
+}
 TEST_F(Renderer, RenderTextureFormatCanBeIteratedOverAndStreamedToString)
 {
     for (size_t i = 0; i < osc::NumOptions<osc::RenderTextureFormat>(); ++i)
