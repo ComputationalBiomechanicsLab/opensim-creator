@@ -1,11 +1,11 @@
 #pragma once
 
+#include <oscar/Shims/Cpp23/utility.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>
 #include <optional>
 #include <string_view>
-#include <type_traits>
 
 namespace osc
 {
@@ -28,8 +28,7 @@ namespace osc
 
     constexpr LogLevel Next(LogLevel lvl) noexcept
     {
-        using Underlying = std::underlying_type_t<LogLevel>;
-        return static_cast<LogLevel>(static_cast<Underlying>(lvl) + 1);
+        return static_cast<LogLevel>(osc::to_underlying(lvl) + 1);
     }
 
     constexpr LogLevel LastLogLevel() noexcept

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <cstdint>
-#include <type_traits>
+#include <oscar/Shims/Cpp23/utility.hpp>
 
 namespace osc
 {
@@ -18,8 +17,7 @@ namespace osc
 
     constexpr SceneDecorationFlags operator|(SceneDecorationFlags a, SceneDecorationFlags b) noexcept
     {
-        using T = std::underlying_type_t<SceneDecorationFlags>;
-        return static_cast<SceneDecorationFlags>(static_cast<T>(a) | static_cast<T>(b));
+        return static_cast<SceneDecorationFlags>(osc::to_underlying(a) | osc::to_underlying(b));
     }
 
     constexpr SceneDecorationFlags& operator|=(SceneDecorationFlags& a, SceneDecorationFlags b) noexcept
@@ -29,7 +27,6 @@ namespace osc
 
     constexpr bool operator&(SceneDecorationFlags a, SceneDecorationFlags b) noexcept
     {
-        using T = std::underlying_type_t<SceneDecorationFlags>;
-        return static_cast<T>(a) & static_cast<T>(b);
+        return osc::to_underlying(a) & osc::to_underlying(b);
     }
 }

@@ -164,6 +164,7 @@ add_library(oscar STATIC
     Shims/Cpp20/bit.hpp
     Shims/Cpp20/stop_token.hpp
     Shims/Cpp20/thread.hpp
+    Shims/Cpp23/utility.hpp
 
     UI/Panels/LogViewerPanel.cpp
     UI/Panels/LogViewerPanel.hpp

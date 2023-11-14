@@ -1,8 +1,8 @@
 #pragma once
 
-#include <cstddef>
+#include <oscar/Shims/Cpp23/utility.hpp>
+
 #include <cstdint>
-#include <type_traits>
 
 namespace osc
 {
@@ -17,13 +17,11 @@ namespace osc
 
     constexpr CameraClearFlags operator|(CameraClearFlags a, CameraClearFlags b) noexcept
     {
-        using T = std::underlying_type_t<CameraClearFlags>;
-        return static_cast<CameraClearFlags>(static_cast<T>(a) | static_cast<T>(b));
+        return static_cast<CameraClearFlags>(osc::to_underlying(a) | osc::to_underlying(b));
     }
 
     constexpr bool operator&(CameraClearFlags a, CameraClearFlags b) noexcept
     {
-        using T = std::underlying_type_t<CameraClearFlags>;
-        return static_cast<T>(a) & static_cast<T>(b);
+        return osc::to_underlying(a) & osc::to_underlying(b);
     }
 }

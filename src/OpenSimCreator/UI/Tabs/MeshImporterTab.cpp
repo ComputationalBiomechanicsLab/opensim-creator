@@ -71,6 +71,7 @@
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/Shims/Cpp23/utility.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/TabHost.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>
@@ -576,14 +577,12 @@ namespace
 
     constexpr bool operator&(SceneElFlags a, SceneElFlags b)
     {
-        using Underlying = std::underlying_type_t<SceneElFlags>;
-        return (static_cast<Underlying>(a) & static_cast<Underlying>(b)) != 0;
+        return (osc::to_underlying(a) & osc::to_underlying(b)) != 0;
     }
 
     constexpr SceneElFlags operator|(SceneElFlags a, SceneElFlags b)
     {
-        using Underlying = std::underlying_type_t<SceneElFlags>;
-        return static_cast<SceneElFlags>(static_cast<Underlying>(a) | static_cast<Underlying>(b));
+        return static_cast<SceneElFlags>(osc::to_underlying(a) | osc::to_underlying(b));
     }
 
     // returns the "direction" of a cross reference
@@ -601,8 +600,7 @@ namespace
 
     constexpr bool operator&(CrossrefDirection a, CrossrefDirection b)
     {
-        using Underlying = std::underlying_type_t<CrossrefDirection>;
-        return (static_cast<Underlying>(a) & static_cast<Underlying>(b)) != 0;
+        return (osc::to_underlying(a) & osc::to_underlying(b)) != 0;
     }
 
     // base class for all scene elements
@@ -2996,20 +2994,17 @@ namespace
 
     constexpr bool operator&(ModelCreationFlags const& a, ModelCreationFlags const& b) noexcept
     {
-        using Underlying = std::underlying_type_t<ModelCreationFlags>;
-        return (static_cast<Underlying>(a) & static_cast<Underlying>(b)) != 0;
+        return (osc::to_underlying(a) & osc::to_underlying(b)) != 0;
     }
 
     constexpr ModelCreationFlags operator+(ModelCreationFlags const& a, ModelCreationFlags const& b) noexcept
     {
-        using Underlying = std::underlying_type_t<ModelCreationFlags>;
-        return static_cast<ModelCreationFlags>(static_cast<Underlying>(a) | static_cast<Underlying>(b));
+        return static_cast<ModelCreationFlags>(osc::to_underlying(a) | osc::to_underlying(b));
     }
 
     constexpr ModelCreationFlags operator-(ModelCreationFlags const& a, ModelCreationFlags const& b) noexcept
     {
-        using Underlying = std::underlying_type_t<ModelCreationFlags>;
-        return static_cast<ModelCreationFlags>(static_cast<Underlying>(a) & ~static_cast<Underlying>(b));
+        return static_cast<ModelCreationFlags>(osc::to_underlying(a) & ~osc::to_underlying(b));
     }
 
     // stand-in method that should be replaced by actual support for scale-less transforms

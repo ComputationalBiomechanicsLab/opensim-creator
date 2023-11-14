@@ -1,7 +1,8 @@
 #pragma once
 
+#include <oscar/Shims/Cpp23/utility.hpp>
+
 #include <cstdint>
-#include <type_traits>
 
 namespace osc
 {
@@ -17,13 +18,11 @@ namespace osc
 
     constexpr ToggleablePanelFlags operator-(ToggleablePanelFlags a, ToggleablePanelFlags b) noexcept
     {
-        using T = std::underlying_type_t<ToggleablePanelFlags>;
-        return static_cast<ToggleablePanelFlags>(static_cast<T>(a) & ~static_cast<T>(b));
+        return static_cast<ToggleablePanelFlags>(osc::to_underlying(a) & ~osc::to_underlying(b));
     }
 
     constexpr bool operator&(ToggleablePanelFlags a, ToggleablePanelFlags b) noexcept
     {
-        using T = std::underlying_type_t<ToggleablePanelFlags>;
-        return static_cast<T>(a) & static_cast<T>(b);
+        return osc::to_underlying(a) & osc::to_underlying(b);
     }
 }

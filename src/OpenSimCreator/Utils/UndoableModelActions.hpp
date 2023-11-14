@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Maths/Vec3.hpp>
+#include <oscar/Shims/Cpp23/utility.hpp>
 
 #include <cstddef>
 #include <filesystem>
@@ -237,8 +238,7 @@ namespace osc
     };
     constexpr bool operator&(SocketReassignmentFlags a, SocketReassignmentFlags b) noexcept
     {
-        using Underlying = std::underlying_type_t<SocketReassignmentFlags>;
-        return static_cast<Underlying>(a) & static_cast<Underlying>(b);
+        return osc::to_underlying(a) & osc::to_underlying(b);
     }
 
     // attempts to reassign a component's socket connection (returns false and writes to `error` on failure)

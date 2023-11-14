@@ -22,6 +22,7 @@
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
+#include <oscar/Shims/Cpp23/utility.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
 #include <Simbody.h>
@@ -49,14 +50,12 @@ namespace
 
     constexpr SupportedManipulationOpFlags operator|(SupportedManipulationOpFlags a, SupportedManipulationOpFlags b) noexcept
     {
-        using T = std::underlying_type_t<SupportedManipulationOpFlags>;
-        return static_cast<SupportedManipulationOpFlags>(static_cast<T>(a) | static_cast<T>(b));
+        return static_cast<SupportedManipulationOpFlags>(osc::to_underlying(a) | osc::to_underlying(b));
     }
 
     constexpr bool operator&(SupportedManipulationOpFlags a, SupportedManipulationOpFlags b) noexcept
     {
-        using T = std::underlying_type_t<SupportedManipulationOpFlags>;
-        return (static_cast<T>(a) & static_cast<T>(b)) != 0u;
+        return (osc::to_underlying(a) & osc::to_underlying(b)) != 0u;
     }
 
     // type-erased virtual base class that each concrete manipulator inherits from

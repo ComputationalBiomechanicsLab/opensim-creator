@@ -3,6 +3,7 @@
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
+#include <oscar/Shims/Cpp23/utility.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <functional>
@@ -94,9 +95,7 @@ namespace osc
     };
     constexpr bool operator&(CalculateMenuFlags a, CalculateMenuFlags b) noexcept
     {
-        auto const aV = static_cast<std::underlying_type_t<CalculateMenuFlags>>(a);
-        auto const bV = static_cast<std::underlying_type_t<CalculateMenuFlags>>(b);
-        return (aV & bV) != 0;
+        return (osc::to_underlying(a) & osc::to_underlying(b)) != 0;
     }
     bool BeginCalculateMenu(
         CalculateMenuFlags = CalculateMenuFlags::None

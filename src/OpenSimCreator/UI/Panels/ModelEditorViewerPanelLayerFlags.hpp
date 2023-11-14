@@ -1,7 +1,8 @@
 #pragma once
 
+#include <oscar/Shims/Cpp23/utility.hpp>
+
 #include <cstdint>
-#include <type_traits>
 
 namespace osc
 {
@@ -14,14 +15,12 @@ namespace osc
 
     constexpr bool operator&(ModelEditorViewerPanelLayerFlags a, ModelEditorViewerPanelLayerFlags b) noexcept
     {
-        using T = std::underlying_type_t<ModelEditorViewerPanelLayerFlags>;
-        return static_cast<T>(a) & static_cast<T>(b);
+        return osc::to_underlying(a) & osc::to_underlying(b);
     }
 
     constexpr ModelEditorViewerPanelLayerFlags operator|(ModelEditorViewerPanelLayerFlags a, ModelEditorViewerPanelLayerFlags b) noexcept
     {
-        using T = std::underlying_type_t<ModelEditorViewerPanelLayerFlags>;
-        return static_cast<ModelEditorViewerPanelLayerFlags>(static_cast<T>(a) | static_cast<T>(b));
+        return static_cast<ModelEditorViewerPanelLayerFlags>(osc::to_underlying(a) | osc::to_underlying(b));
     }
 
     constexpr ModelEditorViewerPanelLayerFlags& operator|=(ModelEditorViewerPanelLayerFlags& a, ModelEditorViewerPanelLayerFlags b) noexcept
