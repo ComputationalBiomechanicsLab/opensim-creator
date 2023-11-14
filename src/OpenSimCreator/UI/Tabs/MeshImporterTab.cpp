@@ -1675,8 +1675,10 @@ namespace
             switch (i) {
             case 0:
                 m_FirstAttachmentID = newAttachmentID;
+                return;
             case 1:
                 m_SecondAttachmentID = newAttachmentID;
+                return;
             default:
                 throw std::runtime_error{"invalid index passed when looking up a cross refernece"};
             }
