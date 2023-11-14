@@ -1802,6 +1802,20 @@ namespace
         }, e.toVariant());
     }
 
+    // returns `true` if `EdgeEl` can be attached to `el`
+    bool CanAttachEdgeTo(SceneEl const& el)
+    {
+        return std::visit(Overload
+        {
+            [](GroundEl const&)  { return true; },
+            [](MeshEl const&)    { return true; },
+            [](BodyEl const&)    { return true; },
+            [](JointEl const&)   { return true; },
+            [](StationEl const&) { return true; },
+            [](EdgeEl const&)    { return false; },
+        }, el.toVariant());
+    }
+
     auto const& GetSceneElClasses()
     {
         static auto const s_Classes = []()
@@ -7505,7 +7519,7 @@ private:
                 {
                     AddBody(m_Shared->updCommittableModelGraph());
                 }
-                osc::DrawTooltipIfItemHovered("Add body", c_StationDescription);
+                osc::DrawTooltipIfItemHovered("Add body", c_BodyDescription.c_str());
 
                 if (auto const* meshEl = dynamic_cast<MeshEl const*>(&el))
                 {
@@ -7528,7 +7542,7 @@ private:
                         Vec3 const location = MassCenter(*meshEl);
                         AddBody(m_Shared->updCommittableModelGraph(), location, meshEl->getID());
                     }
-                    osc::DrawTooltipIfItemHovered("Add body", c_StationDescription);
+                    osc::DrawTooltipIfItemHovered("Add body", c_BodyDescription.c_str());
                 }
 
                 ImGui::EndMenu();
@@ -7600,8 +7614,19 @@ private:
                 }
                 osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
             }
-
         }
+        ImGui::PopID();
+
+        ImGui::PushID(imguiID++);
+        if (CanAttachEdgeTo(el))
+        {
+            if (ImGui::MenuItem(ICON_FA_ARROWS_ALT "Edge"))
+            {
+                // TODO: transition into picking the other side of the edge
+            }
+            osc::DrawTooltipIfItemHovered("Add Edge", EdgeEl::Class().getDescription());
+        }
+        // ~ScopeGuard: implicitly calls ImGui::PopID()
     }
 
     void drawNothingActions()
@@ -8278,6 +8303,12 @@ private:
             SelectOnly(mg, e);
         }
         osc::DrawTooltipIfItemHovered("Add Station", StationEl::Class().getDescription());
+
+        if (ImGui::MenuItem(ICON_FA_ARROWS_ALT " Edge"))
+        {
+            // TODO: transition into selecting two elements (or cancelling)
+        }
+        osc::DrawTooltipIfItemHovered("Add Edge", EdgeEl::Class().getDescription());
 
         ImGui::PopStyleVar();
     }
