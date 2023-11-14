@@ -2315,7 +2315,7 @@ TEST_F(Renderer, MeshTransformVertsWithMat4CausesTransformedMeshToNotBeEqualToIn
 
     ASSERT_EQ(m, copy);
 
-    copy.transformVerts(Mat4{1.0f});  // noop transform also triggers this (meshes aren't value-comparable)
+    copy.transformVerts(osc::Identity<Mat4>());  // noop transform also triggers this (meshes aren't value-comparable)
 
     ASSERT_NE(m, copy);
 }
@@ -3223,7 +3223,7 @@ TEST_F(Renderer, CameraGetViewMatrixReturnsViewMatrixBasedOnPositonDirectionAndU
     camera.setPosition({0.0f, 0.0f, 0.0f});
 
     Mat4 viewMatrix = camera.getViewMatrix();
-    Mat4 expectedMatrix{1.0f};
+    Mat4 expectedMatrix = osc::Identity<Mat4>();
 
     ASSERT_EQ(viewMatrix, expectedMatrix);
 }
@@ -3236,7 +3236,7 @@ TEST_F(Renderer, CameraSetViewMatrixOverrideSetsANewViewMatrixThatCanBeRetrieved
     camera.setCameraProjection(osc::CameraProjection::Orthographic);
     camera.setPosition({7.0f, 5.0f, -3.0f});
 
-    Mat4 viewMatrix{1.0f};
+    Mat4 viewMatrix = osc::Identity<Mat4>();
     viewMatrix[0][1] = 9.0f;  // change some part of it
 
     camera.setViewMatrixOverride(viewMatrix);
@@ -3249,7 +3249,7 @@ TEST_F(Renderer, CameraSetViewMatrixOverrideNulloptResetsTheViewMatrixToUsingSta
     osc::Camera camera;
     Mat4 initialViewMatrix = camera.getViewMatrix();
 
-    Mat4 viewMatrix{1.0f};
+    Mat4 viewMatrix = osc::Identity<Mat4>();
     viewMatrix[0][1] = 9.0f;  // change some part of it
 
     camera.setViewMatrixOverride(viewMatrix);
@@ -3268,7 +3268,7 @@ TEST_F(Renderer, CameraGetProjectionMatrixReturnsProjectionMatrixBasedOnPositonD
     camera.setPosition({0.0f, 0.0f, 0.0f});
 
     Mat4 mtx = camera.getProjectionMatrix(1.0f);
-    Mat4 expected{1.0f};
+    Mat4 expected = osc::Identity<Mat4>();
 
     // only compare the Y, Z, and W columns: the X column depends on the aspect ratio of the output
     // target
@@ -3285,7 +3285,7 @@ TEST_F(Renderer, CameraSetProjectionMatrixOverrideSetsANewProjectionMatrixThatCa
     camera.setCameraProjection(osc::CameraProjection::Orthographic);
     camera.setPosition({7.0f, 5.0f, -3.0f});
 
-    Mat4 ProjectionMatrix{1.0f};
+    Mat4 ProjectionMatrix = osc::Identity<Mat4>();
     ProjectionMatrix[0][1] = 9.0f;  // change some part of it
 
     camera.setProjectionMatrixOverride(ProjectionMatrix);
@@ -3298,7 +3298,7 @@ TEST_F(Renderer, CameraSetProjectionMatrixNulloptResetsTheProjectionMatrixToUsin
     osc::Camera camera;
     Mat4 initialProjectionMatrix = camera.getProjectionMatrix(1.0f);
 
-    Mat4 ProjectionMatrix{1.0f};
+    Mat4 ProjectionMatrix = osc::Identity<Mat4>();
     ProjectionMatrix[0][1] = 9.0f;  // change some part of it
 
     camera.setProjectionMatrixOverride(ProjectionMatrix);
@@ -3314,10 +3314,10 @@ TEST_F(Renderer, CameraGetViewProjectionMatrixReturnsViewMatrixMultipliedByProje
 {
     osc::Camera camera;
 
-    Mat4 viewMatrix{1.0f};
+    Mat4 viewMatrix = osc::Identity<Mat4>();
     viewMatrix[0][3] = 2.5f;  // change some part of it
 
-    Mat4 projectionMatrix{1.0f};
+    Mat4 projectionMatrix = osc::Identity<Mat4>();
     projectionMatrix[0][1] = 9.0f;  // change some part of it
 
     Mat4 expected = projectionMatrix * viewMatrix;
@@ -3332,10 +3332,10 @@ TEST_F(Renderer, CameraGetInverseViewProjectionMatrixReturnsExpectedAnswerWhenUs
 {
     osc::Camera camera;
 
-    Mat4 viewMatrix{1.0f};
+    Mat4 viewMatrix = osc::Identity<Mat4>();
     viewMatrix[0][3] = 2.5f;  // change some part of it
 
-    Mat4 projectionMatrix{1.0f};
+    Mat4 projectionMatrix = osc::Identity<Mat4>();
     projectionMatrix[0][1] = 9.0f;  // change some part of it
 
     Mat4 expected = osc::Inverse(projectionMatrix * viewMatrix);

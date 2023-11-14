@@ -4857,7 +4857,7 @@ private:
     std::optional<Rect> m_MaybeScreenPixelRect = std::nullopt;
     std::optional<Rect> m_MaybeScissorRect = std::nullopt;
     Vec3 m_Position = {};
-    Quat m_Rotation = {1.0f, 0.0f, 0.0f, 0.0f};
+    Quat m_Rotation = Identity<Quat>();
     std::optional<Mat4> m_MaybeViewMatrixOverride;
     std::optional<Mat4> m_MaybeProjectionMatrixOverride;
     std::vector<RenderObject> m_RenderQueue;
@@ -6889,8 +6889,8 @@ void osc::GraphicsBackend::Blit(
 {
     Camera c;
     c.setBackgroundColor(Color::clear());
-    c.setProjectionMatrixOverride(Mat4{1.0f});
-    c.setViewMatrixOverride(Mat4{1.0f});
+    c.setProjectionMatrixOverride(Identity<Mat4>());
+    c.setViewMatrixOverride(Identity<Mat4>());
 
     Material m = g_GraphicsContextImpl->getQuadMaterial();
     m.setTexture("uTexture", source);
@@ -6919,8 +6919,8 @@ void osc::GraphicsBackend::BlitToScreen(
     Camera c;
     c.setBackgroundColor(Color::clear());
     c.setPixelRect(rect);
-    c.setProjectionMatrixOverride(Mat4{1.0f});
-    c.setViewMatrixOverride(Mat4{1.0f});
+    c.setProjectionMatrixOverride(Identity<Mat4>());
+    c.setViewMatrixOverride(Identity<Mat4>());
     c.setClearFlags(CameraClearFlags::Nothing);
 
     Material copy{material};
@@ -6939,8 +6939,8 @@ void osc::GraphicsBackend::BlitToScreen(
     Camera c;
     c.setBackgroundColor(Color::clear());
     c.setPixelRect(rect);
-    c.setProjectionMatrixOverride(Mat4{1.0f});
-    c.setViewMatrixOverride(Mat4{1.0f});
+    c.setProjectionMatrixOverride(Identity<Mat4>());
+    c.setViewMatrixOverride(Identity<Mat4>());
     c.setClearFlags(CameraClearFlags::Nothing);
 
     Material copy{g_GraphicsContextImpl->getQuadMaterial()};

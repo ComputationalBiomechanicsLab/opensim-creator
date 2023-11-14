@@ -30,8 +30,8 @@ namespace
     osc::Camera CreateIdentityCamera()
     {
         osc::Camera camera;
-        camera.setViewMatrixOverride(Mat4{1.0f});
-        camera.setProjectionMatrixOverride(Mat4{1.0f});
+        camera.setViewMatrixOverride(osc::Identity<Mat4>());
+        camera.setProjectionMatrixOverride(osc::Identity<Mat4>());
         return camera;
     }
 }

@@ -249,7 +249,7 @@ private:
         },
     };
     RenderTexture m_DepthTexture = CreateDepthTexture();
-    Mat4 m_LatestLightSpaceMatrix{1.0f};
+    Mat4 m_LatestLightSpaceMatrix = Identity<Mat4>();
     Vec3 m_LightPos = {-2.0f, 4.0f, -1.0f};
     bool m_IsMouseCaptured = false;
 };

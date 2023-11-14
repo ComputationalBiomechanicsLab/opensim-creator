@@ -8727,7 +8727,7 @@ private:
     // ImGuizmo state
     struct {
         bool wasUsingLastFrame = false;
-        Mat4 mtx{1.0f};
+        Mat4 mtx = Identity<Mat4>();
         ImGuizmo::OPERATION op = ImGuizmo::TRANSLATE;
         ImGuizmo::MODE mode = ImGuizmo::WORLD;
     } m_ImGuizmoState;

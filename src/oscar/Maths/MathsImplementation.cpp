@@ -1543,7 +1543,7 @@ osc::Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
     if(cosTheta >= static_cast<float>(1.0f) - std::numeric_limits<float>::epsilon())
     {
         // `a` and `b` point in the same direction: return identity transform
-        return Mat4{1.0f};
+        return Identity<Mat4>();
     }
 
     float theta{};
@@ -1571,7 +1571,7 @@ osc::Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
         rotationAxis = glm::normalize(glm::cross(dir1, dir2));
     }
 
-    return glm::rotate(Mat4{1.0f}, theta, rotationAxis);
+    return glm::rotate(Identity<Mat4>(), theta, rotationAxis);
 }
 
 osc::Vec3 osc::ExtractEulerAngleXYZ(Quat const& q)
@@ -1767,14 +1767,14 @@ osc::Sphere osc::ToSphere(AABB const& aabb)
 
 osc::Mat4 osc::FromUnitSphereMat4(Sphere const& s)
 {
-    return glm::translate(Mat4{1.0f}, s.origin) * glm::scale(Mat4{1.0f}, {s.radius, s.radius, s.radius});
+    return glm::translate(Identity<Mat4>(), s.origin) * glm::scale(Identity<Mat4>(), {s.radius, s.radius, s.radius});
 }
 
 osc::Mat4 osc::SphereToSphereMat4(Sphere const& a, Sphere const& b)
 {
     float scale = b.radius/a.radius;
-    Mat4 scaler = glm::scale(Mat4{1.0f}, Vec3{scale, scale, scale});
-    Mat4 mover = glm::translate(Mat4{1.0f}, b.origin - a.origin);
+    Mat4 scaler = glm::scale(Identity<Mat4>(), Vec3{scale});
+    Mat4 mover = glm::translate(Identity<Mat4>(), b.origin - a.origin);
     return mover * scaler;
 }
 
@@ -1828,22 +1828,22 @@ osc::Mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b)
     // - LERP is 1.0f + (s - 1.0f)*V, where V is how perpendiular each axis is
 
     Vec3 scalers = 1.0f + ((s - 1.0f) * glm::abs(1.0f - a.normal));
-    Mat4 scaler = glm::scale(Mat4{1.0f}, scalers);
+    Mat4 scaler = glm::scale(Identity<Mat4>(), scalers);
 
     float cosTheta = glm::dot(a.normal, b.normal);
     Mat4 rotator;
     if (cosTheta > 0.9999f)
     {
-        rotator = Mat4{1.0f};
+        rotator = Identity<Mat4>();
     }
     else
     {
         float theta = glm::acos(cosTheta);
         Vec3 axis = glm::cross(a.normal, b.normal);
-        rotator = glm::rotate(Mat4{1.0f}, theta, axis);
+        rotator = glm::rotate(Identity<Mat4>(), theta, axis);
     }
 
-    Mat4 translator = glm::translate(Mat4{1.0f}, b.origin-a.origin);
+    Mat4 translator = glm::translate(Identity<Mat4>(), b.origin-a.origin);
 
     return translator * rotator * scaler;
 }
@@ -2143,8 +2143,8 @@ osc::Mat4 osc::SegmentToSegmentMat4(Segment const& a, Segment const& b)
     Vec3 scaler = Vec3{1.0f, 1.0f, 1.0f} + (s-1.0f)*aDir;
 
     Mat4 rotate = Dir1ToDir2Xform(aDir, bDir);
-    Mat4 scale = glm::scale(Mat4{1.0f}, scaler);
-    Mat4 move = glm::translate(Mat4{1.0f}, bCenter - aCenter);
+    Mat4 scale = glm::scale(Identity<Mat4>(), scaler);
+    Mat4 move = glm::translate(Identity<Mat4>(), bCenter - aCenter);
 
     return move * rotate * scale;
 }
@@ -2230,9 +2230,9 @@ osc::Mat4 osc::ToMat4(Transform const& t)
 
 osc::Mat4 osc::ToInverseMat4(Transform const& t)
 {
-    Mat4 translater = glm::translate(Mat4{1.0f}, -t.position);
+    Mat4 translater = glm::translate(Identity<Mat4>(), -t.position);
     Mat4 rotater = glm::toMat4(glm::conjugate(t.rotation));
-    Mat4 scaler = glm::scale(Mat4{1.0f}, 1.0f/t.scale);
+    Mat4 scaler = glm::scale(Identity<Mat4>(), 1.0f/t.scale);
 
     return scaler * rotater * translater;
 }

@@ -260,7 +260,7 @@ private:
             };
 
             Camera c;
-            c.setViewMatrixOverride(Mat4{1.0f});
+            c.setViewMatrixOverride(Identity<Mat4>());
 
             {
                 // project screenspace overlays into NDC
