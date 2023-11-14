@@ -605,6 +605,26 @@ namespace
         return (static_cast<Underlying>(a) & static_cast<Underlying>(b)) != 0;
     }
 
+    // virtual interface to something that can be used to lookup scene elements in
+    // some larger document
+    class ISceneElLookup {
+    protected:
+        ISceneElLookup() = default;
+        ISceneElLookup(ISceneElLookup const&) = default;
+        ISceneElLookup(ISceneElLookup&&) noexcept = default;
+        ISceneElLookup& operator=(ISceneElLookup const&) = default;
+        ISceneElLookup& operator=(ISceneElLookup&&) noexcept = default;
+    public:
+        virtual ~ISceneElLookup() noexcept = default;
+
+        SceneEl const* find(UID id) const
+        {
+            return implFind(id);
+        }
+    private:
+        virtual SceneEl const* implFind(UID) const = 0;
+    };
+
     // base class for all scene elements
     class SceneEl {
     protected:
@@ -687,18 +707,18 @@ namespace
             implSetLabel(newLabel);
         }
 
-        Transform getXForm() const
+        Transform getXForm(ISceneElLookup const& lookup) const
         {
-            return implGetXform();
+            return implGetXform(lookup);
         }
-        void setXform(Transform const& newTransform)
+        void setXform(ISceneElLookup const& lookup, Transform const& newTransform)
         {
-            implSetXform(newTransform);
+            implSetXform(lookup, newTransform);
         }
 
-        AABB calcBounds() const
+        AABB calcBounds(ISceneElLookup const& lookup) const
         {
-            return implCalcBounds();
+            return implCalcBounds(lookup);
         }
 
         // helper methods (overrideable)
@@ -708,33 +728,33 @@ namespace
         // transform (e.g. only position). There is a perf advantage to only returning
         // what was asked for.
 
-        Vec3 getPos() const
+        Vec3 getPos(ISceneElLookup const& lookup) const
         {
-            return implGetPos();
+            return implGetPos(lookup);
         }
-        void setPos(Vec3 const& newPos)
+        void setPos(ISceneElLookup const& lookup, Vec3 const& newPos)
         {
-            implSetPos(newPos);
-        }
-
-        Vec3 getScale() const
-        {
-            return implGetScale();
+            implSetPos(lookup, newPos);
         }
 
-        void setScale(Vec3 const& newScale)
+        Vec3 getScale(ISceneElLookup const& lookup) const
         {
-            implSetScale(newScale);
+            return implGetScale(lookup);
         }
 
-        Quat getRotation() const
+        void setScale(ISceneElLookup const& lookup, Vec3 const& newScale)
         {
-            return implGetRotation();
+            implSetScale(lookup, newScale);
         }
 
-        void setRotation(Quat const& newRotation)
+        Quat getRotation(ISceneElLookup const& lookup) const
         {
-            implSetRotation(newRotation);
+            return implGetRotation(lookup);
+        }
+
+        void setRotation(ISceneElLookup const& lookup, Quat const& newRotation)
+        {
+            implSetRotation(lookup, newRotation);
         }
 
     private:
@@ -770,65 +790,66 @@ namespace
         virtual CStringView implGetLabel() const = 0;
         virtual void implSetLabel(std::string_view) = 0;
 
-        virtual Transform implGetXform() const = 0;
-        virtual void implSetXform(Transform const&) = 0;
+        virtual Transform implGetXform(ISceneElLookup const&) const = 0;
+        virtual void implSetXform(ISceneElLookup const&, Transform const&) = 0;
 
-        virtual AABB implCalcBounds() const = 0;
+        virtual AABB implCalcBounds(ISceneElLookup const&) const = 0;
 
-        virtual Vec3 implGetPos() const
+        virtual Vec3 implGetPos(ISceneElLookup const& lookup) const
         {
-            return getXForm().position;
+            return getXForm(lookup).position;
         }
-        virtual void implSetPos(Vec3 const& newPos)
+        virtual void implSetPos(ISceneElLookup const& lookup, Vec3 const& newPos)
         {
-            Transform t = getXForm();
+            Transform t = getXForm(lookup);
             t.position = newPos;
-            setXform(t);
+            setXform(lookup, t);
         }
 
-        virtual Vec3 implGetScale() const
+        virtual Vec3 implGetScale(ISceneElLookup const& lookup) const
         {
-            return getXForm().scale;
+            return getXForm(lookup).scale;
         }
-        virtual void implSetScale(Vec3 const& newScale)
+        virtual void implSetScale(ISceneElLookup const& lookup, Vec3 const& newScale)
         {
-            Transform t = getXForm();
+            Transform t = getXForm(lookup);
             t.scale = newScale;
-            setXform(t);
+            setXform(lookup, t);
         }
 
-        virtual Quat implGetRotation() const
+        virtual Quat implGetRotation(ISceneElLookup const& lookup) const
         {
-            return getXForm().rotation;
+            return getXForm(lookup).rotation;
         }
-        virtual void implSetRotation(Quat const& newRotation)
+        virtual void implSetRotation(ISceneElLookup const& lookup, Quat const& newRotation)
         {
-            Transform t = getXForm();
+            Transform t = getXForm(lookup);
             t.rotation = newRotation;
-            setXform(t);
+            setXform(lookup, t);
         }
     };
 
     // SceneEl helper methods
 
-    void ApplyTranslation(SceneEl& el, Vec3 const& translation)
+    void ApplyTranslation(SceneEl& el, ISceneElLookup const& lookup, Vec3 const& translation)
     {
-        el.setPos(el.getPos() + translation);
+        el.setPos(lookup, el.getPos(lookup) + translation);
     }
 
     void ApplyRotation(
         SceneEl& el,
+        ISceneElLookup const& lookup,
         Vec3 const& eulerAngles,
         Vec3 const& rotationCenter)
     {
-        Transform t = el.getXForm();
+        Transform t = el.getXForm(lookup);
         ApplyWorldspaceRotation(t, eulerAngles, rotationCenter);
-        el.setXform(t);
+        el.setXform(lookup, t);
     }
 
-    void ApplyScale(SceneEl& el, Vec3 const& scaleFactors)
+    void ApplyScale(SceneEl& el, ISceneElLookup const& lookup, Vec3 const& scaleFactors)
     {
-        el.setScale(el.getScale() * scaleFactors);
+        el.setScale(lookup, el.getScale(lookup) * scaleFactors);
     }
 
     bool CanChangeLabel(SceneEl const& el)
@@ -975,17 +996,17 @@ namespace
             // ignore: cannot set ground's name
         }
 
-        Transform implGetXform() const final
+        Transform implGetXform(ISceneElLookup const&) const final
         {
             return Identity<Transform>();
         }
 
-        void implSetXform(Transform const&) final
+        void implSetXform(ISceneElLookup const&, Transform const&) final
         {
             // ignore: cannot change ground's xform
         }
 
-        AABB implCalcBounds() const final
+        AABB implCalcBounds(ISceneElLookup const&) const final
         {
             return AABB{};
         }
@@ -1034,6 +1055,21 @@ namespace
         void setParentID(UID newParent)
         {
             m_Attachment = newParent;
+        }
+
+        Transform getXForm() const
+        {
+            return m_Transform;
+        }
+
+        void setXform(Transform const& t)
+        {
+            m_Transform = t;
+        }
+
+        AABB calcBounds() const
+        {
+            return osc::TransformAABB(m_MeshData.getBounds(), m_Transform);
         }
 
     private:
@@ -1104,7 +1140,7 @@ namespace
             return o << "MeshEl("
                 << "ID = " << m_ID
                 << ", Attachment = " << m_Attachment
-                << ", Xform = " << Xform
+                << ", m_Transform = " << m_Transform
                 << ", MeshData = " << &m_MeshData
                 << ", Path = " << m_Path
                 << ", Name = " << m_Name
@@ -1121,24 +1157,24 @@ namespace
             m_Name = SanitizeToOpenSimComponentName(sv);
         }
 
-        Transform implGetXform() const final
+        Transform implGetXform(ISceneElLookup const&) const final
         {
-            return Xform;
+            return getXForm();
         }
 
-        void implSetXform(Transform const& t) final
+        void implSetXform(ISceneElLookup const&, Transform const& t) final
         {
-            Xform = t;
+            setXform(t);
         }
 
-        AABB implCalcBounds() const final
+        AABB implCalcBounds(ISceneElLookup const&) const final
         {
-            return osc::TransformAABB(m_MeshData.getBounds(), Xform);
+            return calcBounds();
         }
 
         UID m_ID;
         UID m_Attachment;  // can be c_GroundID
-        Transform Xform;
+        Transform m_Transform;
         Mesh m_MeshData;
         std::filesystem::path m_Path;
         std::string m_Name = SanitizeToOpenSimComponentName(osc::FileNameWithoutExtension(m_Path));
@@ -1170,6 +1206,10 @@ namespace
             Mass = newMass;
         }
 
+        Transform getXForm() const
+        {
+            return m_Xform;
+        }
     private:
         friend class SceneElCRTP<BodyEl>;
         static SceneElClass CreateClass()
@@ -1203,7 +1243,7 @@ namespace
         {
             return o << "BodyEl(ID = " << m_ID
                 << ", Name = " << m_Name
-                << ", Xform = " << m_Xform
+                << ", m_Transform = " << m_Xform
                 << ", Mass = " << Mass
                 << ')';
         }
@@ -1218,23 +1258,23 @@ namespace
             m_Name = SanitizeToOpenSimComponentName(sv);
         }
 
-        Transform implGetXform() const final
+        Transform implGetXform(ISceneElLookup const&) const final
         {
-            return m_Xform;
+            return getXForm();
         }
 
-        void implSetXform(Transform const& newXform) final
+        void implSetXform(ISceneElLookup const&, Transform const& newXform) final
         {
             m_Xform = newXform;
             m_Xform.scale = {1.0f, 1.0f, 1.0f};
         }
 
-        void implSetScale(Vec3 const&) final
+        void implSetScale(ISceneElLookup const&, Vec3 const&) final
         {
             // ignore: scaling a body, which is a point, does nothing
         }
 
-        AABB implCalcBounds() const final
+        AABB implCalcBounds(ISceneElLookup const&) const final
         {
             return AABB::OfPoint(m_Xform.position);
         }
@@ -1295,6 +1335,11 @@ namespace
         void setJointTypeIndex(size_t i)
         {
             m_JointTypeIndex = i;
+        }
+
+        Transform getXForm() const
+        {
+            return m_Xform;
         }
 
     private:
@@ -1388,7 +1433,7 @@ namespace
                 << ", UserAssignedName = " << m_UserAssignedName
                 << ", Parent = " << m_Parent
                 << ", Child = " << m_Child
-                << ", Xform = " << m_Xform
+                << ", m_Transform = " << m_Xform
                 << ')';
         }
 
@@ -1402,23 +1447,23 @@ namespace
             m_UserAssignedName = SanitizeToOpenSimComponentName(sv);
         }
 
-        Transform implGetXform() const final
+        Transform implGetXform(ISceneElLookup const&) const final
         {
-            return m_Xform;
+            return getXForm();
         }
 
-        void implSetXform(Transform const& t) final
+        void implSetXform(ISceneElLookup const&, Transform const& t) final
         {
             m_Xform = t;
             m_Xform.scale = {1.0f, 1.0f, 1.0f};
         }
 
-        void implSetScale(Vec3 const&) final
+        void implSetScale(ISceneElLookup const&, Vec3 const&) final
         {
             // ignore
         }
 
-        AABB implCalcBounds() const final
+        AABB implCalcBounds(ISceneElLookup const&) const final
         {
             return AABB::OfPoint(m_Xform.position);
         }
@@ -1461,6 +1506,11 @@ namespace
         UID getParentID() const
         {
             return m_Attachment;
+        }
+
+        Transform getXForm() const
+        {
+            return Transform{.position = m_Position};
         }
 
     private:
@@ -1543,17 +1593,17 @@ namespace
             m_Name = SanitizeToOpenSimComponentName(sv);
         }
 
-        Transform implGetXform() const final
+        Transform implGetXform(ISceneElLookup const&) const final
         {
-            return Transform{.position = m_Position};
+            return getXForm();
         }
 
-        void implSetXform(Transform const& t) final
+        void implSetXform(ISceneElLookup const&, Transform const& t) final
         {
             m_Position = t.position;
         }
 
-        AABB implCalcBounds() const final
+        AABB implCalcBounds(ISceneElLookup const&) const final
         {
             return AABB::OfPoint(m_Position);
         }
@@ -1564,6 +1614,118 @@ namespace
         std::string m_Name;
     };
 
+    /*
+    class EdgeEl : public SceneElCRTP<EdgeEl> {
+    public:
+        static SceneElClass CreateClass()
+        {
+            return SceneElClass
+            {
+                "Edge",
+                "Edges",
+                "Edge(s)",
+                ICON_FA_ARROWS_ALT,
+                "An edge between the centers of two other scene elements",
+            };
+        }
+
+        EdgeEl(
+            UID id_,
+            UID firstAttachmentID_,
+            UID secondAttachmentID_) :
+
+            m_ID{id_},
+            m_FirstAttachmentID{firstAttachmentID_},
+            m_SecondAttachmentID{secondAttachmentID_}
+        {
+        }
+    private:
+        int implGetNumCrossReferences() const final
+        {
+            return 2;
+        }
+
+        UID implGetCrossReferenceConnecteeID(int i) const final
+        {
+            switch (i) {
+            case 0:
+                return m_FirstAttachmentID;
+            case 1:
+                return m_SecondAttachmentID;
+            default:
+                throw std::runtime_error{"invalid index passed when looking up a cross refernece"};
+            }
+        }
+
+        void implSetCrossReferenceConnecteeID(int i, UID newAttachmentID) final
+        {
+            switch (i) {
+            case 0:
+                m_FirstAttachmentID = newAttachmentID;
+            case 1:
+                m_SecondAttachmentID = newAttachmentID;
+            default:
+                throw std::runtime_error{"invalid index passed when looking up a cross refernece"};
+            }
+        }
+
+        CStringView implGetCrossReferenceLabel(int i) const final
+        {
+            switch (i) {
+            case 0:
+                return "First Point";
+            case 1:
+                return "Second Point";
+            default:
+                throw std::runtime_error{"invalid index passed when looking up a cross refernece"};
+            }
+            throw std::runtime_error{"cannot get cross reference label: no method implemented"};
+        }
+
+        CrossrefDirection implGetCrossReferenceDirection(int) const final
+        {
+            return CrossrefDirection::ToParent;
+        }
+
+        SceneElFlags implGetFlags() const final
+        {
+            return
+                SceneElFlags::CanChangeLabel |
+                SceneElFlags::CanDelete |
+                SceneElFlags::CanSelect |
+                SceneElFlags::HasPhysicalSize;
+        }
+
+        UID implGetID() const final
+        {
+            return m_ID;
+        }
+
+        std::ostream& implWriteToStream(std::ostream& out) const final
+        {
+            return out << "Edge(id = " << m_ID << ", lhs = " << m_FirstAttachmentID << ", rhs = " << m_SecondAttachmentID << ')';
+        }
+
+        CStringView implGetLabel() const
+        {
+            return m_Label;
+        }
+
+        void implSetLabel(std::string_view newLabel) final
+        {
+            m_Label = newLabel;
+        }
+
+        Transform implGetXform() const final = 0;  // TODO
+        void implSetXform(Transform const&) final = 0;  // TODO
+        AABB implCalcBounds() const final = 0;  // TODO
+
+        UID m_ID;
+        UID m_FirstAttachmentID;
+        UID m_SecondAttachmentID;
+        std::string m_Label;
+    };
+    */
 
     // returns true if a mesh can be attached to the given element
     bool CanAttachMeshTo(SceneEl const& e)
@@ -1635,7 +1797,7 @@ namespace
 //   aliased mutations
 namespace
 {
-    class ModelGraph final {
+    class ModelGraph final : public ISceneElLookup {
 
         using SceneElMap = std::map<UID, ClonePtr<SceneEl>>;
 
@@ -1951,6 +2113,11 @@ namespace
             return *ptr;
         }
 
+        SceneEl const* implFind(UID id) const final
+        {
+            return findElByID(m_Els, id);
+        }
+
         void populateDeletionSet(SceneEl const& deletionTarget, std::unordered_set<UID>& out)
         {
             UID const deletedID = deletionTarget.getID();
@@ -2015,12 +2182,12 @@ namespace
 
     Transform GetTransform(ModelGraph const& mg, UID id)
     {
-        return mg.getElByID(id).getXForm();
+        return mg.getElByID(id).getXForm(mg);
     }
 
     Vec3 GetPosition(ModelGraph const& mg, UID id)
     {
-        return mg.getElByID(id).getPos();
+        return mg.getElByID(id).getPos(mg);
     }
 
     // returns `true` if `body` participates in any joint in the model graph
@@ -2280,7 +2447,7 @@ namespace
         Vec3 const choicePos = GetPosition(mg, other);
         Transform const sourceXform = Transform{.position = GetPosition(mg, id)};
 
-        mg.updElByID(id).setXform(PointAxisTowards(sourceXform, axis, choicePos));
+        mg.updElByID(id).setXform(mg, PointAxisTowards(sourceXform, axis, choicePos));
     }
 
     // returns recommended rim intensity for an element in the model graph
@@ -2631,9 +2798,9 @@ namespace
         }
 
         Vec3 const direction = osc::Normalize(p2 - p1);
-        Transform const t = el->getXForm();
+        Transform const t = el->getXForm(mg);
 
-        el->setXform(PointAxisAlong(t, axis, direction));
+        el->setXform(mg, PointAxisAlong(t, axis, direction));
         cmg.commit("reoriented " + el->getLabel());
 
         return true;
@@ -2669,7 +2836,7 @@ namespace
             return false;
         }
 
-        el->setPos(osc::Midpoint(a, b));
+        el->setPos(mg, osc::Midpoint(a, b));
         cmg.commit("translated " + el->getLabel());
 
         return true;
@@ -2701,7 +2868,7 @@ namespace
             return false;
         }
 
-        el->setPos(osc::Midpoint(aEl->getPos(), bEl->getPos()));
+        el->setPos(mg, osc::Midpoint(aEl->getPos(mg), bEl->getPos(mg)));
         cmg.commit("translated " + el->getLabel());
 
         return true;
@@ -2726,7 +2893,7 @@ namespace
             return false;
         }
 
-        el->setPos(otherEl->getPos());
+        el->setPos(mg, otherEl->getPos(mg));
         cmg.commit("moved " + el->getLabel());
 
         return true;
@@ -2751,7 +2918,7 @@ namespace
             return false;
         }
 
-        el->setPos(AverageCenter(*mesh));
+        el->setPos(mg, AverageCenter(*mesh));
         cmg.commit("moved " + el->getLabel());
 
         return true;
@@ -2778,7 +2945,7 @@ namespace
 
         Vec3 const boundsMidpoint = Midpoint(mesh->calcBounds());
 
-        el->setPos(boundsMidpoint);
+        el->setPos(mg, boundsMidpoint);
         cmg.commit("moved " + el->getLabel());
 
         return true;
@@ -2803,7 +2970,7 @@ namespace
             return false;
         }
 
-        el->setPos(MassCenter(*mesh));
+        el->setPos(mg, MassCenter(*mesh));
         cmg.commit("moved " + el->getLabel());
 
         return true;
@@ -2881,7 +3048,8 @@ namespace
         int axis,
         float radians)
     {
-        el.setXform(RotateAlongAxis(el.getXForm(), axis, radians));
+        ModelGraph& mg = cmg.updScratch();
+        el.setXform(mg, RotateAlongAxis(el.getXForm(mg), axis, radians));
         cmg.commit("reoriented " + el.getLabel());
     }
 
@@ -2904,7 +3072,7 @@ namespace
             return false;
         }
 
-        el->setRotation(otherEl->getRotation());
+        el->setRotation(mg, otherEl->getRotation(mg));
         cmg.commit("reoriented " + el->getLabel());
 
         return true;
@@ -3371,7 +3539,7 @@ namespace
         JointAttachmentCachedLookupResult const res = LookupPhysFrame(mg, model, visitedBodies, stationEl.getParentID());
         OSC_ASSERT_ALWAYS(res.physicalFrame != nullptr && "all physical frames should have been added by this point in the model-building process");
 
-        SimTK::Transform const parentXform = ToSimTKTransform(mg.getElByID(stationEl.getParentID()).getXForm());
+        SimTK::Transform const parentXform = ToSimTKTransform(mg.getElByID(stationEl.getParentID()).getXForm(mg));
         SimTK::Transform const stationXform = ToSimTKTransform(stationEl.getXForm());
         SimTK::Vec3 const locationInParent = (parentXform.invert() * stationXform).p();
 
@@ -4080,7 +4248,7 @@ namespace
                 if (el)
                 {
                     auto& mesh = mg.emplaceEl<MeshEl>(UID{}, ok.preferredAttachmentPoint, lm.meshData, lm.path);
-                    mesh.setXform(el->getXForm());
+                    mesh.setXform(el->getXForm(mg));
                     mg.select(mesh);
                     mg.select(*el);
                 }
@@ -4195,6 +4363,7 @@ namespace
             ImU32 color,
             std::unordered_set<UID> const& excludedIDs) const
         {
+            ModelGraph const& mg = getModelGraph();
             for (int i = 0, len = el.getNumCrossReferences(); i < len; ++i)
             {
                 UID refID = el.getCrossReferenceConnecteeID(i);
@@ -4204,15 +4373,15 @@ namespace
                     continue;
                 }
 
-                SceneEl const* other = getModelGraph().tryGetElByID(refID);
+                SceneEl const* other = mg.tryGetElByID(refID);
 
                 if (!other)
                 {
                     continue;
                 }
 
-                Vec3 child = el.getPos();
-                Vec3 parent = other->getPos();
+                Vec3 child = el.getPos(mg);
+                Vec3 parent = other->getPos(mg);
 
                 if (el.getCrossReferenceDirection(i) == CrossrefDirection::ToChild)
                 {
@@ -4235,7 +4404,7 @@ namespace
                 return;
             }
 
-            drawConnectionLine(color, Vec3{}, el.getPos());
+            drawConnectionLine(color, Vec3{}, el.getPos(getModelGraph()));
         }
 
         bool shouldShowConnectionLines(SceneEl const& el) const
@@ -4996,7 +5165,7 @@ namespace
             rv.id = el.getID();
             rv.groupId = c_StationGroupID;
             rv.mesh = m_SphereMesh;
-            rv.transform = SphereMeshToSceneSphereTransform(sphereAtTranslation(el.getPos()));
+            rv.transform = SphereMeshToSceneSphereTransform(sphereAtTranslation(el.getPos(getModelGraph())));
             rv.color = color;
             rv.flags = SceneDecorationFlags::None;
             return rv;
@@ -7153,10 +7322,10 @@ private:
         // position editor
         if (CanChangePosition(e))
         {
-            Vec3 translation = e.getPos();
+            Vec3 translation = e.getPos(mg);
             if (ImGui::InputFloat3("Translation", osc::ValuePtr(translation), "%.6f"))
             {
-                mg.updElByID(e.getID()).setPos(translation);
+                mg.updElByID(e.getID()).setPos(mg, translation);
             }
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
@@ -7171,12 +7340,12 @@ private:
         // rotation editor
         if (CanChangeRotation(e))
         {
-            Vec3 eulerDegs = osc::Rad2Deg(osc::EulerAngles(e.getRotation()));
+            Vec3 eulerDegs = osc::Rad2Deg(osc::EulerAngles(e.getRotation(m_Shared->getModelGraph())));
 
             if (ImGui::InputFloat3("Rotation (deg)", osc::ValuePtr(eulerDegs), "%.6f"))
             {
                 Quat quatRads = Quat{osc::Deg2Rad(eulerDegs)};
-                mg.updElByID(e.getID()).setRotation(quatRads);
+                mg.updElByID(e.getID()).setRotation(mg, quatRads);
             }
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
@@ -7191,10 +7360,10 @@ private:
         // scale factor editor
         if (CanChangeScale(e))
         {
-            Vec3 scaleFactors = e.getScale();
+            Vec3 scaleFactors = e.getScale(mg);
             if (ImGui::InputFloat3("Scale", osc::ValuePtr(scaleFactors), "%.6f"))
             {
-                mg.updElByID(e.getID()).setScale(scaleFactors);
+                mg.updElByID(e.getID()).setScale(mg, scaleFactors);
             }
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
@@ -7234,7 +7403,7 @@ private:
             {
                 if (ImGui::MenuItem(ICON_FA_COMPRESS_ARROWS_ALT " at center"))
                 {
-                    AddBody(m_Shared->updCommittableModelGraph(), el.getPos(), el.getID());
+                    AddBody(m_Shared->updCommittableModelGraph(), el.getPos(m_Shared->getModelGraph()), el.getID());
                 }
                 osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription.c_str());
 
@@ -7281,7 +7450,7 @@ private:
         {
             if (ImGui::MenuItem(ICON_FA_CIRCLE " Body"))
             {
-                AddBody(m_Shared->updCommittableModelGraph(), el.getPos(), el.getID());
+                AddBody(m_Shared->updCommittableModelGraph(), el.getPos(m_Shared->getModelGraph()), el.getID());
             }
             osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription.c_str());
         }
@@ -7307,7 +7476,7 @@ private:
                 {
                     if (ImGui::MenuItem(ICON_FA_COMPRESS_ARROWS_ALT " at center"))
                     {
-                        AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, el.getPos());
+                        AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, el.getPos(m_Shared->getModelGraph()));
                     }
                     osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
 
@@ -7327,7 +7496,7 @@ private:
                     {
                         if (ImGui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
                         {
-                            AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, Midpoint(el.calcBounds()));
+                            AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, Midpoint(el.calcBounds(m_Shared->getModelGraph())));
                         }
                         osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
                     }
@@ -7339,7 +7508,7 @@ private:
             {
                 if (ImGui::MenuItem(ICON_FA_MAP_PIN " Station"))
                 {
-                    AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, el.getPos());
+                    AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, el.getPos(m_Shared->getModelGraph()));
                 }
                 osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
             }
@@ -7367,7 +7536,7 @@ private:
     {
         if (ImGui::MenuItem(ICON_FA_CAMERA " Focus camera on this"))
         {
-            m_Shared->focusCameraOn(Midpoint(el.calcBounds()));
+            m_Shared->focusCameraOn(Midpoint(el.calcBounds(m_Shared->getModelGraph())));
         }
         osc::DrawTooltipIfItemHovered("Focus camera on this scene element", "Focuses the scene camera on this element. This is useful for tracking the camera around that particular object in the scene");
 
@@ -7551,7 +7720,7 @@ private:
 
         if (ImGui::MenuItem("reset"))
         {
-            el.setXform(Transform{.position = el.getPos()});
+            el.setXform(m_Shared->getModelGraph(), Transform{.position = el.getPos(m_Shared->getModelGraph())});
             m_Shared->commitCurrentModelGraph("reset " + el.getLabel() + " orientation");
         }
 
@@ -7707,7 +7876,7 @@ private:
 
                     if (ImGui::MenuItem(".obj"))
                     {
-                        Transform const sceneElToGround = sceneEl.getXForm();
+                        Transform const sceneElToGround = sceneEl.getXForm(m_Shared->getModelGraph());
                         Transform const meshVertToGround = el.getXForm();
                         Mat4 const meshVertToSceneElVert = osc::ToInverseMat4(sceneElToGround) * osc::ToMat4(meshVertToGround);
 
@@ -7718,7 +7887,7 @@ private:
 
                     if (ImGui::MenuItem(".stl"))
                     {
-                        Transform const sceneElToGround = sceneEl.getXForm();
+                        Transform const sceneElToGround = sceneEl.getXForm(m_Shared->getModelGraph());
                         Transform const meshVertToGround = el.getXForm();
                         Mat4 const meshVertToSceneElVert = osc::ToInverseMat4(sceneElToGround) * osc::ToMat4(meshVertToGround);
 
@@ -8433,13 +8602,13 @@ private:
             SceneEl& el = m_Shared->updModelGraph().updElByID(id);
             switch (m_ImGuizmoState.op) {
             case ImGuizmo::ROTATE:
-                ApplyRotation(el, rotation, m_ImGuizmoState.mtx[3]);
+                ApplyRotation(el, m_Shared->getModelGraph(), rotation, m_ImGuizmoState.mtx[3]);
                 break;
             case ImGuizmo::TRANSLATE:
-                ApplyTranslation(el, translation);
+                ApplyTranslation(el, m_Shared->getModelGraph(), translation);
                 break;
             case ImGuizmo::SCALE:
-                ApplyScale(el, scale);
+                ApplyScale(el, m_Shared->getModelGraph(), scale);
                 break;
             default:
                 break;
