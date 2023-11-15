@@ -24,9 +24,9 @@ namespace osc
         Default = None,
     };
 
-    constexpr bool operator&(OverlayDecorationOptionFlags a, OverlayDecorationOptionFlags b)
+    constexpr bool operator&(OverlayDecorationOptionFlags lhs, OverlayDecorationOptionFlags rhs)
     {
-        return (osc::to_underlying(a) & osc::to_underlying(b)) != 0;
+        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
     }
 
     constexpr void SetOption(OverlayDecorationOptionFlags& flags, OverlayDecorationOptionFlags flag, bool v)

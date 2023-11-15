@@ -61,9 +61,9 @@ namespace
         std::string name;
     };
 
-    bool operator<(ConnecteeOption const& a, ConnecteeOption const& b)
+    bool operator<(ConnecteeOption const& lhs, ConnecteeOption const& rhs)
     {
-        return std::tie(a.name, a.absPath.toString()) < std::tie(b.name, b.absPath.toString());
+        return std::tie(lhs.name, lhs.absPath.toString()) < std::tie(rhs.name, rhs.absPath.toString());
     }
 
     // generate a list of possible connectee options, given a set of popup parameters

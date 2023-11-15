@@ -575,14 +575,14 @@ namespace
         HasPhysicalSize   = 1<<6,
     };
 
-    constexpr bool operator&(SceneElFlags a, SceneElFlags b)
+    constexpr bool operator&(SceneElFlags lhs, SceneElFlags rhs)
     {
-        return (osc::to_underlying(a) & osc::to_underlying(b)) != 0;
+        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
     }
 
-    constexpr SceneElFlags operator|(SceneElFlags a, SceneElFlags b)
+    constexpr SceneElFlags operator|(SceneElFlags lhs, SceneElFlags rhs)
     {
-        return static_cast<SceneElFlags>(osc::to_underlying(a) | osc::to_underlying(b));
+        return static_cast<SceneElFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
     }
 
     // returns the "direction" of a cross reference
@@ -598,9 +598,9 @@ namespace
         Both = ToChild | ToParent
     };
 
-    constexpr bool operator&(CrossrefDirection a, CrossrefDirection b)
+    constexpr bool operator&(CrossrefDirection lhs, CrossrefDirection rhs)
     {
-        return (osc::to_underlying(a) & osc::to_underlying(b)) != 0;
+        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
     }
 
     // base class for all scene elements
@@ -2992,19 +2992,19 @@ namespace
         ExportStationsAsMarkers,
     };
 
-    constexpr bool operator&(ModelCreationFlags const& a, ModelCreationFlags const& b)
+    constexpr bool operator&(ModelCreationFlags const& lhs, ModelCreationFlags const& rhs)
     {
-        return (osc::to_underlying(a) & osc::to_underlying(b)) != 0;
+        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
     }
 
-    constexpr ModelCreationFlags operator+(ModelCreationFlags const& a, ModelCreationFlags const& b)
+    constexpr ModelCreationFlags operator+(ModelCreationFlags const& lhs, ModelCreationFlags const& rhs)
     {
-        return static_cast<ModelCreationFlags>(osc::to_underlying(a) | osc::to_underlying(b));
+        return static_cast<ModelCreationFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
     }
 
-    constexpr ModelCreationFlags operator-(ModelCreationFlags const& a, ModelCreationFlags const& b)
+    constexpr ModelCreationFlags operator-(ModelCreationFlags const& lhs, ModelCreationFlags const& rhs)
     {
-        return static_cast<ModelCreationFlags>(osc::to_underlying(a) & ~osc::to_underlying(b));
+        return static_cast<ModelCreationFlags>(osc::to_underlying(lhs) & ~osc::to_underlying(rhs));
     }
 
     // stand-in method that should be replaced by actual support for scale-less transforms

@@ -48,14 +48,14 @@ namespace
         Rotation    = 1u<<1u,
     };
 
-    constexpr SupportedManipulationOpFlags operator|(SupportedManipulationOpFlags a, SupportedManipulationOpFlags b)
+    constexpr SupportedManipulationOpFlags operator|(SupportedManipulationOpFlags lhs, SupportedManipulationOpFlags rhs)
     {
-        return static_cast<SupportedManipulationOpFlags>(osc::to_underlying(a) | osc::to_underlying(b));
+        return static_cast<SupportedManipulationOpFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
     }
 
-    constexpr bool operator&(SupportedManipulationOpFlags a, SupportedManipulationOpFlags b)
+    constexpr bool operator&(SupportedManipulationOpFlags lhs, SupportedManipulationOpFlags rhs)
     {
-        return (osc::to_underlying(a) & osc::to_underlying(b)) != 0u;
+        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0u;
     }
 
     // type-erased virtual base class that each concrete manipulator inherits from

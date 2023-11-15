@@ -20,9 +20,9 @@ namespace osc
         Default = None,
     };
 
-    constexpr bool operator&(ObjWriterFlags a, ObjWriterFlags b)
+    constexpr bool operator&(ObjWriterFlags lhs, ObjWriterFlags rhs)
     {
-        return osc::to_underlying(a) & osc::to_underlying(b);
+        return osc::to_underlying(lhs) & osc::to_underlying(rhs);
     }
 
     struct ObjMetadata final {

@@ -13,18 +13,18 @@ namespace osc
         Default = CapturesMouseInputs,
     };
 
-    constexpr bool operator&(ModelEditorViewerPanelLayerFlags a, ModelEditorViewerPanelLayerFlags b)
+    constexpr bool operator&(ModelEditorViewerPanelLayerFlags lhs, ModelEditorViewerPanelLayerFlags rhs)
     {
-        return osc::to_underlying(a) & osc::to_underlying(b);
+        return osc::to_underlying(lhs) & osc::to_underlying(rhs);
     }
 
-    constexpr ModelEditorViewerPanelLayerFlags operator|(ModelEditorViewerPanelLayerFlags a, ModelEditorViewerPanelLayerFlags b)
+    constexpr ModelEditorViewerPanelLayerFlags operator|(ModelEditorViewerPanelLayerFlags lhs, ModelEditorViewerPanelLayerFlags rhs)
     {
-        return static_cast<ModelEditorViewerPanelLayerFlags>(osc::to_underlying(a) | osc::to_underlying(b));
+        return static_cast<ModelEditorViewerPanelLayerFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
     }
 
-    constexpr ModelEditorViewerPanelLayerFlags& operator|=(ModelEditorViewerPanelLayerFlags& a, ModelEditorViewerPanelLayerFlags b)
+    constexpr ModelEditorViewerPanelLayerFlags& operator|=(ModelEditorViewerPanelLayerFlags& lhs, ModelEditorViewerPanelLayerFlags rhs)
     {
-        return a = a | b;
+        return lhs = lhs | rhs;
     }
 }

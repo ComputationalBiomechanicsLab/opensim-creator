@@ -93,9 +93,9 @@ namespace osc
         None,
         NoCalculatorIcon,
     };
-    constexpr bool operator&(CalculateMenuFlags a, CalculateMenuFlags b)
+    constexpr bool operator&(CalculateMenuFlags lhs, CalculateMenuFlags rhs)
     {
-        return (osc::to_underlying(a) & osc::to_underlying(b)) != 0;
+        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
     }
     bool BeginCalculateMenu(
         CalculateMenuFlags = CalculateMenuFlags::None

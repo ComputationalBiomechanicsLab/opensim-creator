@@ -30,14 +30,14 @@ namespace osc
         Default = None,
     };
 
-    constexpr OutputSubfield operator|(OutputSubfield a, OutputSubfield b)
+    constexpr OutputSubfield operator|(OutputSubfield lhs, OutputSubfield rhs)
     {
-        return static_cast<OutputSubfield>(osc::to_underlying(a) | osc::to_underlying(b));
+        return static_cast<OutputSubfield>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
     }
 
-    constexpr bool operator&(OutputSubfield a, OutputSubfield b)
+    constexpr bool operator&(OutputSubfield lhs, OutputSubfield rhs)
     {
-        return (osc::to_underlying(a) & osc::to_underlying(b)) != 0;
+        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
     }
 
     std::optional<CStringView> GetOutputSubfieldLabel(OutputSubfield);

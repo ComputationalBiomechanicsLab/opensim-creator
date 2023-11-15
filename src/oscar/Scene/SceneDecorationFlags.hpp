@@ -15,18 +15,18 @@ namespace osc
         CastsShadows         = 1u<<6u,
     };
 
-    constexpr SceneDecorationFlags operator|(SceneDecorationFlags a, SceneDecorationFlags b)
+    constexpr SceneDecorationFlags operator|(SceneDecorationFlags lhs, SceneDecorationFlags rhs)
     {
-        return static_cast<SceneDecorationFlags>(osc::to_underlying(a) | osc::to_underlying(b));
+        return static_cast<SceneDecorationFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
     }
 
-    constexpr SceneDecorationFlags& operator|=(SceneDecorationFlags& a, SceneDecorationFlags b)
+    constexpr SceneDecorationFlags& operator|=(SceneDecorationFlags& lhs, SceneDecorationFlags rhs)
     {
-        return a = a | b;
+        return lhs = lhs | rhs;
     }
 
-    constexpr bool operator&(SceneDecorationFlags a, SceneDecorationFlags b)
+    constexpr bool operator&(SceneDecorationFlags lhs, SceneDecorationFlags rhs)
     {
-        return osc::to_underlying(a) & osc::to_underlying(b);
+        return osc::to_underlying(lhs) & osc::to_underlying(rhs);
     }
 }

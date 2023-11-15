@@ -59,7 +59,7 @@ std::unique_ptr<osc::Tab> osc::TabRegistryEntry::createTab(ParentPtr<TabHost> co
     return m_Impl->createTab(host);
 }
 
-bool osc::operator<(TabRegistryEntry const& a, TabRegistryEntry const& b)
+bool osc::operator<(TabRegistryEntry const& lhs, TabRegistryEntry const& rhs)
 {
-    return a.getName() < b.getName();
+    return lhs.getName() < rhs.getName();
 }

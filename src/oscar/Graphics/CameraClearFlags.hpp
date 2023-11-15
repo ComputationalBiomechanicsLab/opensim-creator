@@ -15,13 +15,13 @@ namespace osc
         Default = SolidColor | Depth,
     };
 
-    constexpr CameraClearFlags operator|(CameraClearFlags a, CameraClearFlags b)
+    constexpr CameraClearFlags operator|(CameraClearFlags lhs, CameraClearFlags rhs)
     {
-        return static_cast<CameraClearFlags>(osc::to_underlying(a) | osc::to_underlying(b));
+        return static_cast<CameraClearFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
     }
 
-    constexpr bool operator&(CameraClearFlags a, CameraClearFlags b)
+    constexpr bool operator&(CameraClearFlags lhs, CameraClearFlags rhs)
     {
-        return osc::to_underlying(a) & osc::to_underlying(b);
+        return osc::to_underlying(lhs) & osc::to_underlying(rhs);
     }
 }

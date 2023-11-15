@@ -236,9 +236,9 @@ namespace osc
         None,
         TryReexpressComponentInNewConnectee,
     };
-    constexpr bool operator&(SocketReassignmentFlags a, SocketReassignmentFlags b)
+    constexpr bool operator&(SocketReassignmentFlags lhs, SocketReassignmentFlags rhs)
     {
-        return osc::to_underlying(a) & osc::to_underlying(b);
+        return osc::to_underlying(lhs) & osc::to_underlying(rhs);
     }
 
     // attempts to reassign a component's socket connection (returns false and writes to `error` on failure)

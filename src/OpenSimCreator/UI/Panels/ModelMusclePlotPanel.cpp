@@ -349,9 +349,9 @@ namespace
     };
 
     // plot data points are naturally ordered by their independent (X) variable
-    bool operator<(PlotDataPoint const& a, PlotDataPoint const& b)
+    bool operator<(PlotDataPoint const& lhs, PlotDataPoint const& rhs)
     {
-        return a.x < b.x;
+        return lhs.x < rhs.x;
     }
 
     // virtual interface to a thing that can receive datapoints from a plotter

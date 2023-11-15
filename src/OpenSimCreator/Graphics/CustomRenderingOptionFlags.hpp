@@ -21,9 +21,9 @@ namespace osc
         Default = DrawFloor | Shadows | DrawSelectionRims,
     };
 
-    constexpr bool operator&(CustomRenderingOptionFlags a, CustomRenderingOptionFlags b)
+    constexpr bool operator&(CustomRenderingOptionFlags lhs, CustomRenderingOptionFlags rhs)
     {
-        return (osc::to_underlying(a) & osc::to_underlying(b)) != 0;
+        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
     }
 
     constexpr void SetOption(CustomRenderingOptionFlags& flags, CustomRenderingOptionFlags flag, bool v)

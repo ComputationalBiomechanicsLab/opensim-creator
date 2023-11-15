@@ -26,9 +26,9 @@ namespace osc
         Default = ShouldShowPointToPointSprings,
     };
 
-    constexpr bool operator&(OpenSimDecorationOptionFlags a, OpenSimDecorationOptionFlags b)
+    constexpr bool operator&(OpenSimDecorationOptionFlags lhs, OpenSimDecorationOptionFlags rhs)
     {
-        return (osc::to_underlying(a) & osc::to_underlying(b)) != 0;
+        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
     }
 
     struct OpenSimDecorationOptionMetadata final {

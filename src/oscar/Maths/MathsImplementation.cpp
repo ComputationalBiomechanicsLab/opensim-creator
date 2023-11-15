@@ -834,25 +834,25 @@ std::ostream& osc::operator<<(std::ostream& o, Transform const& t)
     return o << "Transform(position = " << t.position << ", rotation = " << t.rotation << ", scale = " << t.scale << ')';
 }
 
-osc::Vec3 osc::operator*(Transform const& t, Vec3 const& p)
+osc::Vec3 osc::operator*(Transform const& lhs, Vec3 const& rhs)
 {
-    return TransformPoint(t, p);
+    return TransformPoint(lhs, rhs);
 }
 
-osc::Transform& osc::operator+=(Transform& t, Transform const& o)
+osc::Transform& osc::operator+=(Transform& lhs, Transform const& rhs)
 {
-    t.position += o.position;
-    t.rotation += o.rotation;
-    t.scale += o.scale;
-    return t;
+    lhs.position += rhs.position;
+    lhs.rotation += rhs.rotation;
+    lhs.scale += rhs.scale;
+    return lhs;
 }
 
-osc::Transform& osc::operator/=(Transform& t, float s)
+osc::Transform& osc::operator/=(Transform& lhs, float rhs)
 {
-    t.position /= s;
-    t.rotation /= s;
-    t.scale /= s;
-    return t;
+    lhs.position /= rhs;
+    lhs.rotation /= rhs;
+    lhs.scale /= rhs;
+    return lhs;
 }
 
 // Mat3

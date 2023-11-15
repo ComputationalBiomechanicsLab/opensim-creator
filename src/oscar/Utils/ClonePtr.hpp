@@ -131,9 +131,9 @@ namespace osc
         }
 
         template<typename T2, typename D2>
-        friend bool operator==(ClonePtr const& x, ClonePtr<T2, D2> const& y)
+        friend bool operator==(ClonePtr const& lhs, ClonePtr<T2, D2> const& rhs)
         {
-            return x.get() == y.get();
+            return lhs.get() == rhs.get();
         }
 
         friend std::ostream& operator<<(std::ostream& o, ClonePtr const& p)
