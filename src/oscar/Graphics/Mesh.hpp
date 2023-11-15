@@ -17,6 +17,7 @@
 
 namespace osc { struct AABB; }
 namespace osc { struct Color; }
+namespace osc { class SubMeshDescriptor; }
 namespace osc { struct Transform; }
 
 // note: implementation is in `GraphicsImplementation.cpp`
@@ -67,12 +68,17 @@ namespace osc
 
         void clear();
 
+        size_t getSubMeshCount() const;
+        void pushSubMeshDescriptor(SubMeshDescriptor const&);
+        SubMeshDescriptor const& getSubMeshDescriptor(size_t) const;
+        void clearSubMeshDescriptors();
+
         friend void swap(Mesh& a, Mesh& b) noexcept
         {
             swap(a.m_Impl, b.m_Impl);
         }
 
-        friend bool operator==(Mesh const&, Mesh const&) noexcept = default;
+        friend bool operator==(Mesh const&, Mesh const&) = default;
         friend std::ostream& operator<<(std::ostream&, Mesh const&);
     private:
         friend class GraphicsBackend;

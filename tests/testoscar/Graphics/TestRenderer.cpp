@@ -25,12 +25,13 @@
 #include <oscar/Graphics/RenderTextureDescriptor.hpp>
 #include <oscar/Graphics/RenderTextureFormat.hpp>
 #include <oscar/Graphics/RenderTextureReadWrite.hpp>
+#include <oscar/Graphics/Shader.hpp>
+#include <oscar/Graphics/ShaderPropertyType.hpp>
+#include <oscar/Graphics/SubMeshDescriptor.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
 #include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/ShaderPropertyType.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/Mat3.hpp>
@@ -2315,7 +2316,7 @@ TEST_F(Renderer, MeshTransformVertsWithMat4CausesTransformedMeshToNotBeEqualToIn
 
     ASSERT_EQ(m, copy);
 
-    copy.transformVerts(Mat4{1.0f});  // noop transform also triggers this (meshes aren't value-comparable)
+    copy.transformVerts(osc::Identity<Mat4>());  // noop transform also triggers this (meshes aren't value-comparable)
 
     ASSERT_NE(m, copy);
 }
@@ -2523,6 +2524,102 @@ TEST_F(Renderer, MeshCanBeWrittenToOutputStreamForDebugging)
     ASSERT_FALSE(ss.str().empty());
 }
 
+TEST_F(Renderer, MeshGetSubMeshCountReturnsZeroForDefaultConstructedMesh)
+{
+    ASSERT_EQ(osc::Mesh{}.getSubMeshCount(), 0);
+}
+
+TEST_F(Renderer, MeshGetSubMeshCountReturnsZeroForMeshWithSomeData)
+{
+    auto const pyramid = std::to_array<Vec3>(
+    {
+        {-1.0f, -1.0f, 0.0f},  // base: bottom-left
+        { 1.0f, -1.0f, 0.0f},  // base: bottom-right
+        { 0.0f,  1.0f, 0.0f},  // base: top-middle
+    });
+    auto const pyramidIndices = std::to_array<uint16_t>({0, 1, 2});
+
+    osc::Mesh m;
+    m.setVerts(pyramid);
+    m.setIndices(pyramidIndices);
+
+    ASSERT_EQ(m.getSubMeshCount(), 0);
+}
+
+TEST_F(Renderer, MeshPushSubMeshDescriptorMakesGetMeshSubCountIncrease)
+{
+    osc::Mesh m;
+    ASSERT_EQ(m.getSubMeshCount(), 0);
+    m.pushSubMeshDescriptor(osc::SubMeshDescriptor{0, 10, osc::MeshTopology::Triangles});
+    ASSERT_EQ(m.getSubMeshCount(), 1);
+    m.pushSubMeshDescriptor(osc::SubMeshDescriptor{5, 30, osc::MeshTopology::Lines});
+    ASSERT_EQ(m.getSubMeshCount(), 2);
+}
+
+TEST_F(Renderer, MeshPushSubMeshDescriptorMakesGetSubMeshDescriptorReturnPushedDescriptor)
+{
+    osc::Mesh m;
+    osc::SubMeshDescriptor const descriptor{0, 10, osc::MeshTopology::Triangles};
+
+    ASSERT_EQ(m.getSubMeshCount(), 0);
+    m.pushSubMeshDescriptor(descriptor);
+    ASSERT_EQ(m.getSubMeshDescriptor(0), descriptor);
+}
+
+TEST_F(Renderer, MeshPushSecondDescriptorMakesGetReturnExpectedResults)
+{
+    osc::Mesh m;
+    osc::SubMeshDescriptor const firstDesc{0, 10, osc::MeshTopology::Triangles};
+    osc::SubMeshDescriptor const secondDesc{5, 15, osc::MeshTopology::Lines};
+
+    m.pushSubMeshDescriptor(firstDesc);
+    m.pushSubMeshDescriptor(secondDesc);
+
+    ASSERT_EQ(m.getSubMeshCount(), 2);
+    ASSERT_EQ(m.getSubMeshDescriptor(0), firstDesc);
+    ASSERT_EQ(m.getSubMeshDescriptor(1), secondDesc);
+}
+
+TEST_F(Renderer, MeshGetSubMeshDescriptorThrowsOOBExceptionIfOOBAccessed)
+{
+    osc::Mesh m;
+
+    ASSERT_EQ(m.getSubMeshCount(), 0);
+    ASSERT_ANY_THROW({ m.getSubMeshDescriptor(0); });
+
+    m.pushSubMeshDescriptor({0, 10, osc::MeshTopology::Triangles});
+    ASSERT_EQ(m.getSubMeshCount(), 1);
+    ASSERT_NO_THROW({ m.getSubMeshDescriptor(0); });
+    ASSERT_ANY_THROW({ m.getSubMeshDescriptor(1); });
+}
+
+TEST_F(Renderer, MeshClearSubMeshDescriptorsDoesNothingOnEmptyMesh)
+{
+    osc::Mesh m;
+    ASSERT_NO_THROW({ m.clearSubMeshDescriptors(); });
+}
+
+TEST_F(Renderer, MeshClearSubMeshDescriptorsClearsAllDescriptors)
+{
+    osc::Mesh m;
+    m.pushSubMeshDescriptor({0, 10, osc::MeshTopology::Triangles});
+    m.pushSubMeshDescriptor({5, 15, osc::MeshTopology::Lines});
+
+    ASSERT_EQ(m.getSubMeshCount(), 2);
+    ASSERT_NO_THROW({ m.clearSubMeshDescriptors(); });
+    ASSERT_EQ(m.getSubMeshCount(), 0);
+}
+
+TEST_F(Renderer, MeshGeneralClearMethodAlsoClearsSubMeshDescriptors)
+{
+    osc::Mesh m;
+    m.pushSubMeshDescriptor({0, 10, osc::MeshTopology::Triangles});
+    m.pushSubMeshDescriptor({5, 15, osc::MeshTopology::Lines});
+
+    ASSERT_EQ(m.getSubMeshCount(), 2);
+    ASSERT_NO_THROW({ m.clear(); });
+    ASSERT_EQ(m.getSubMeshCount(), 0);
+}
 TEST_F(Renderer, RenderTextureFormatCanBeIteratedOverAndStreamedToString)
 {
     for (size_t i = 0; i < osc::NumOptions<osc::RenderTextureFormat>(); ++i)
@@ -3223,7 +3320,7 @@ TEST_F(Renderer, CameraGetViewMatrixReturnsViewMatrixBasedOnPositonDirectionAndU
     camera.setPosition({0.0f, 0.0f, 0.0f});
 
     Mat4 viewMatrix = camera.getViewMatrix();
-    Mat4 expectedMatrix{1.0f};
+    Mat4 expectedMatrix = osc::Identity<Mat4>();
 
     ASSERT_EQ(viewMatrix, expectedMatrix);
 }
@@ -3236,7 +3333,7 @@ TEST_F(Renderer, CameraSetViewMatrixOverrideSetsANewViewMatrixThatCanBeRetrieved
     camera.setCameraProjection(osc::CameraProjection::Orthographic);
     camera.setPosition({7.0f, 5.0f, -3.0f});
 
-    Mat4 viewMatrix{1.0f};
+    Mat4 viewMatrix = osc::Identity<Mat4>();
     viewMatrix[0][1] = 9.0f;  // change some part of it
 
     camera.setViewMatrixOverride(viewMatrix);
@@ -3249,7 +3346,7 @@ TEST_F(Renderer, CameraSetViewMatrixOverrideNulloptResetsTheViewMatrixToUsingSta
     osc::Camera camera;
     Mat4 initialViewMatrix = camera.getViewMatrix();
 
-    Mat4 viewMatrix{1.0f};
+    Mat4 viewMatrix = osc::Identity<Mat4>();
     viewMatrix[0][1] = 9.0f;  // change some part of it
 
     camera.setViewMatrixOverride(viewMatrix);
@@ -3268,7 +3365,7 @@ TEST_F(Renderer, CameraGetProjectionMatrixReturnsProjectionMatrixBasedOnPositonD
     camera.setPosition({0.0f, 0.0f, 0.0f});
 
     Mat4 mtx = camera.getProjectionMatrix(1.0f);
-    Mat4 expected{1.0f};
+    Mat4 expected = osc::Identity<Mat4>();
 
     // only compare the Y, Z, and W columns: the X column depends on the aspect ratio of the output
     // target
@@ -3285,7 +3382,7 @@ TEST_F(Renderer, CameraSetProjectionMatrixOverrideSetsANewProjectionMatrixThatCa
     camera.setCameraProjection(osc::CameraProjection::Orthographic);
     camera.setPosition({7.0f, 5.0f, -3.0f});
 
-    Mat4 ProjectionMatrix{1.0f};
+    Mat4 ProjectionMatrix = osc::Identity<Mat4>();
     ProjectionMatrix[0][1] = 9.0f;  // change some part of it
 
     camera.setProjectionMatrixOverride(ProjectionMatrix);
@@ -3298,7 +3395,7 @@ TEST_F(Renderer, CameraSetProjectionMatrixNulloptResetsTheProjectionMatrixToUsin
     osc::Camera camera;
     Mat4 initialProjectionMatrix = camera.getProjectionMatrix(1.0f);
 
-    Mat4 ProjectionMatrix{1.0f};
+    Mat4 ProjectionMatrix = osc::Identity<Mat4>();
     ProjectionMatrix[0][1] = 9.0f;  // change some part of it
 
     camera.setProjectionMatrixOverride(ProjectionMatrix);
@@ -3314,10 +3411,10 @@ TEST_F(Renderer, CameraGetViewProjectionMatrixReturnsViewMatrixMultipliedByProje
 {
     osc::Camera camera;
 
-    Mat4 viewMatrix{1.0f};
+    Mat4 viewMatrix = osc::Identity<Mat4>();
     viewMatrix[0][3] = 2.5f;  // change some part of it
 
-    Mat4 projectionMatrix{1.0f};
+    Mat4 projectionMatrix = osc::Identity<Mat4>();
     projectionMatrix[0][1] = 9.0f;  // change some part of it
 
     Mat4 expected = projectionMatrix * viewMatrix;
@@ -3332,10 +3429,10 @@ TEST_F(Renderer, CameraGetInverseViewProjectionMatrixReturnsExpectedAnswerWhenUs
 {
     osc::Camera camera;
 
-    Mat4 viewMatrix{1.0f};
+    Mat4 viewMatrix = osc::Identity<Mat4>();
     viewMatrix[0][3] = 2.5f;  // change some part of it
 
-    Mat4 projectionMatrix{1.0f};
+    Mat4 projectionMatrix = osc::Identity<Mat4>();
     projectionMatrix[0][1] = 9.0f;  // change some part of it
 
     Mat4 expected = osc::Inverse(projectionMatrix * viewMatrix);
@@ -3374,6 +3471,37 @@ TEST_F(Renderer, CameraSetClearFlagsCausesCopyToReturnNonEqual)
     camera.setClearFlags(osc::CameraClearFlags::Nothing);
 
     ASSERT_NE(camera, copy);
+}
+
+TEST_F(Renderer, DrawMeshDoesNotThrowWithStandardArgs)
+{
+    osc::Mesh const mesh;
+    osc::Transform const transform = osc::Identity<osc::Transform>();
+    osc::Material const material = GenerateMaterial();
+    osc::Camera camera;
+
+    ASSERT_NO_THROW({ osc::Graphics::DrawMesh(mesh, transform, material, camera); });
+}
+
+TEST_F(Renderer, DrawMeshThrowsIfGivenOutOfBoundsSubMeshIndex)
+{
+    osc::Mesh const mesh;
+    osc::Transform const transform = osc::Identity<osc::Transform>();
+    osc::Material const material = GenerateMaterial();
+    osc::Camera camera;
+
+    ASSERT_ANY_THROW({ osc::Graphics::DrawMesh(mesh, transform, material, camera, std::nullopt, 0); });
+}
+
+TEST_F(Renderer, DrawMeshDoesNotThrowIfGivenInBoundsSubMesh)
+{
+    osc::Mesh mesh;
+    mesh.pushSubMeshDescriptor({0, 0, osc::MeshTopology::Triangles});
+    osc::Transform const transform = osc::Identity<osc::Transform>();
+    osc::Material const material = GenerateMaterial();
+    osc::Camera camera;
+
+    ASSERT_NO_THROW({ osc::Graphics::DrawMesh(mesh, transform, material, camera, std::nullopt, 0); });
 }
 
 // TODO MeshSetIndicesU16CausesGetNumIndicesToEqualSuppliedNumberOfIndices

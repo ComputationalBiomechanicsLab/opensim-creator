@@ -72,12 +72,12 @@ namespace sdl
             }
         }
 
-        SDL_Window* get() const noexcept
+        SDL_Window* get() const
         {
             return m_WindowHandle;
         }
 
-        SDL_Window& operator*() const noexcept
+        SDL_Window& operator*() const
         {
             return *m_WindowHandle;
         }
@@ -127,7 +127,7 @@ namespace sdl
             }
         }
 
-        SDL_GLContext get() noexcept
+        SDL_GLContext get()
         {
             return m_ContextHandle;
         }

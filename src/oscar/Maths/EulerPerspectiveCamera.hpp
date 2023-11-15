@@ -10,11 +10,11 @@ namespace osc
 
         EulerPerspectiveCamera();
 
-        Vec3 getFront() const noexcept;
-        Vec3 getUp() const noexcept;
-        Vec3 getRight() const noexcept;
-        Mat4 getViewMtx() const noexcept;
-        Mat4 getProjMtx(float aspectRatio) const noexcept;
+        Vec3 getFront() const;
+        Vec3 getUp() const;
+        Vec3 getRight() const;
+        Mat4 getViewMtx() const;
+        Mat4 getProjMtx(float aspectRatio) const;
 
         Vec3 origin;
         float pitch;

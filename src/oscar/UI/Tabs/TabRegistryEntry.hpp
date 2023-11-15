@@ -32,5 +32,5 @@ namespace osc
         std::shared_ptr<Impl> m_Impl;
     };
 
-    bool operator<(TabRegistryEntry const&, TabRegistryEntry const&) noexcept;
+    bool operator<(TabRegistryEntry const&, TabRegistryEntry const&);
 }

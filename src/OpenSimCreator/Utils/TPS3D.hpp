@@ -101,7 +101,7 @@ namespace osc
         Vec3 a4 = {0.0f, 0.0f, 1.0f};
         std::vector<TPSNonAffineTerm3D> nonAffineTerms;
 
-        friend bool operator==(TPSCoefficients3D const&, TPSCoefficients3D const&) noexcept = default;
+        friend bool operator==(TPSCoefficients3D const&, TPSCoefficients3D const&) = default;
     };
 
     std::ostream& operator<<(std::ostream&, TPSCoefficients3D const&);

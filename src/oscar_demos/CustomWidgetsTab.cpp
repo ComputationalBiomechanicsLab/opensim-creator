@@ -128,7 +128,7 @@ private:
 
 // public API
 
-osc::CStringView osc::CustomWidgetsTab::id() noexcept
+osc::CStringView osc::CustomWidgetsTab::id()
 {
     return c_TabStringID;
 }

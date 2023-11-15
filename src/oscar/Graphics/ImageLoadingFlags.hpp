@@ -1,7 +1,8 @@
 #pragma once
 
+#include <oscar/Shims/Cpp23/utility.hpp>
+
 #include <cstdint>
-#include <type_traits>
 
 namespace osc
 {
@@ -18,9 +19,8 @@ namespace osc
         FlipVertically = 1u<<0u,
     };
 
-    constexpr bool operator&(ImageLoadingFlags a, ImageLoadingFlags b) noexcept
+    constexpr bool operator&(ImageLoadingFlags lhs, ImageLoadingFlags rhs)
     {
-        using T = std::underlying_type_t<ImageLoadingFlags>;
-        return static_cast<T>(a) & static_cast<T>(b);
+        return osc::to_underlying(lhs) & osc::to_underlying(rhs);
     }
 }

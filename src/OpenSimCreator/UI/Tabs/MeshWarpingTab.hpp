@@ -14,7 +14,7 @@ namespace osc
 {
     class MeshWarpingTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit MeshWarpingTab(ParentPtr<TabHost> const&);
         MeshWarpingTab(MeshWarpingTab const&) = delete;

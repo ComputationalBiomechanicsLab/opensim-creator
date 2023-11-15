@@ -33,7 +33,7 @@ namespace
         {
         }
 
-        friend bool operator==(TorusParameters const&, TorusParameters const&) noexcept = default;
+        friend bool operator==(TorusParameters const&, TorusParameters const&) = default;
 
         float torusCenterToTubeCenterRadius;
         float tubeRadius;
@@ -42,7 +42,7 @@ namespace
 
 template<>
 struct std::hash<TorusParameters> final {
-    size_t operator()(TorusParameters const& p) const noexcept
+    size_t operator()(TorusParameters const& p) const
     {
         return osc::HashOf(p.torusCenterToTubeCenterRadius, p.tubeRadius);
     }

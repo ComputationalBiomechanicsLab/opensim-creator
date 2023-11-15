@@ -50,7 +50,7 @@ private:
 
 // public API
 
-osc::CStringView osc::CookiecutterTab::id() noexcept
+osc::CStringView osc::CookiecutterTab::id()
 {
     return c_TabStringID;
 }

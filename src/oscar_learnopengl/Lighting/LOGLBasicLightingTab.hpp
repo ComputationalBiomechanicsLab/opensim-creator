@@ -14,7 +14,7 @@ namespace osc
 {
     class LOGLBasicLightingTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit LOGLBasicLightingTab(ParentPtr<TabHost> const&);
         LOGLBasicLightingTab(LOGLBasicLightingTab const&) = delete;

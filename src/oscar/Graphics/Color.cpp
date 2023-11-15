@@ -28,7 +28,7 @@
 //
 // (because I am a lazy bastard)
 
-float osc::ToLinear(float colorChannelValue) noexcept
+float osc::ToLinear(float colorChannelValue)
 {
     if (colorChannelValue <= 0.04045f)
     {
@@ -40,7 +40,7 @@ float osc::ToLinear(float colorChannelValue) noexcept
     }
 }
 
-float osc::ToSRGB(float colorChannelValue) noexcept
+float osc::ToSRGB(float colorChannelValue)
 {
     if (colorChannelValue <= 0.0031308f)
     {
@@ -52,7 +52,7 @@ float osc::ToSRGB(float colorChannelValue) noexcept
     }
 }
 
-osc::Color osc::ToLinear(Color const& c) noexcept
+osc::Color osc::ToLinear(Color const& c)
 {
     return
     {
@@ -63,7 +63,7 @@ osc::Color osc::ToLinear(Color const& c) noexcept
     };
 }
 
-osc::Color osc::ToSRGB(Color const& c) noexcept
+osc::Color osc::ToSRGB(Color const& c)
 {
     return
     {
@@ -74,7 +74,7 @@ osc::Color osc::ToSRGB(Color const& c) noexcept
     };
 }
 
-osc::Color osc::Lerp(Color const& a, Color const& b, float t) noexcept
+osc::Color osc::Lerp(Color const& a, Color const& b, float t)
 {
     return osc::Color{Mix(Vec4{a}, Vec4{b}, Clamp(t, 0.0f, 1.0f))};
 }
@@ -84,12 +84,12 @@ size_t std::hash<osc::Color>::operator()(osc::Color const& color) const
     return osc::HashOf(color.r, color.g, color.b, color.a);
 }
 
-osc::Color32 osc::ToColor32(Color const& color) noexcept
+osc::Color32 osc::ToColor32(Color const& color)
 {
     return ToColor32(static_cast<Vec4>(color));
 }
 
-osc::Color32 osc::ToColor32(Vec4 const& v) noexcept
+osc::Color32 osc::ToColor32(Vec4 const& v)
 {
     return Color32
     {
@@ -100,7 +100,7 @@ osc::Color32 osc::ToColor32(Vec4 const& v) noexcept
     };
 }
 
-osc::Color32 osc::ToColor32(float r, float g, float b, float a) noexcept
+osc::Color32 osc::ToColor32(float r, float g, float b, float a)
 {
     return Color32
     {
@@ -111,7 +111,7 @@ osc::Color32 osc::ToColor32(float r, float g, float b, float a) noexcept
     };
 }
 
-osc::Color32 osc::ToColor32(uint32_t v) noexcept
+osc::Color32 osc::ToColor32(uint32_t v)
 {
     return Color32
     {
@@ -122,7 +122,7 @@ osc::Color32 osc::ToColor32(uint32_t v) noexcept
     };
 }
 
-osc::Color osc::ClampToLDR(Color const& c) noexcept
+osc::Color osc::ClampToLDR(Color const& c)
 {
     return Color{Clamp(Vec4{c}, 0.0f, 1.0f)};
 }

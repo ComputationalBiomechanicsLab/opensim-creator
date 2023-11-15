@@ -120,7 +120,7 @@ osc::PerfPanel::PerfPanel(std::string_view panelName) :
 
 osc::PerfPanel::PerfPanel(PerfPanel&&) noexcept = default;
 osc::PerfPanel& osc::PerfPanel::operator=(PerfPanel&&) noexcept = default;
-osc::PerfPanel::~PerfPanel() = default;
+osc::PerfPanel::~PerfPanel() noexcept = default;
 
 osc::CStringView osc::PerfPanel::implGetName() const
 {

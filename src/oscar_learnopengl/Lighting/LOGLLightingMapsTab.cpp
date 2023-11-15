@@ -168,7 +168,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLLightingMapsTab::id() noexcept
+osc::CStringView osc::LOGLLightingMapsTab::id()
 {
     return c_TabStringID;
 }

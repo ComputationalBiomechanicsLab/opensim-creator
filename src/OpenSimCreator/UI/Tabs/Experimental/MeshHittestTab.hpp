@@ -13,7 +13,7 @@ namespace osc
 {
     class MeshHittestTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit MeshHittestTab(ParentPtr<TabHost> const&);
         MeshHittestTab(MeshHittestTab const&) = delete;

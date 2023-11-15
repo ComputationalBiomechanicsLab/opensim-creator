@@ -27,7 +27,7 @@ private:
 
 // public API
 
-osc::CStringView osc::ImGuiDemoTab::id() noexcept
+osc::CStringView osc::ImGuiDemoTab::id()
 {
     return c_TabStringID;
 }

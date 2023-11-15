@@ -108,7 +108,7 @@ namespace osc
             swap(a.m_Impl, b.m_Impl);
         }
 
-        friend bool operator==(Material const&, Material const&) noexcept = default;
+        friend bool operator==(Material const&, Material const&) = default;
 
     private:
         friend std::ostream& operator<<(std::ostream&, Material const&);

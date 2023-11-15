@@ -15,7 +15,7 @@ namespace osc
 {
     class CookiecutterTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit CookiecutterTab(ParentPtr<TabHost> const&);
         CookiecutterTab(CookiecutterTab const&) = delete;

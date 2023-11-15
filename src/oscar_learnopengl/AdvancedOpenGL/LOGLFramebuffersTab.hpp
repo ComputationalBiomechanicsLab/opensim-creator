@@ -14,7 +14,7 @@ namespace osc
 {
     class LOGLFramebuffersTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit LOGLFramebuffersTab(ParentPtr<TabHost> const&);
         LOGLFramebuffersTab(LOGLFramebuffersTab const&) = delete;

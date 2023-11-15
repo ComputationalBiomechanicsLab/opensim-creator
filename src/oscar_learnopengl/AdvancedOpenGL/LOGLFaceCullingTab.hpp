@@ -14,7 +14,7 @@ namespace osc
 {
     class LOGLFaceCullingTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit LOGLFaceCullingTab(ParentPtr<TabHost> const&);
         LOGLFaceCullingTab(LOGLFaceCullingTab const&) = delete;

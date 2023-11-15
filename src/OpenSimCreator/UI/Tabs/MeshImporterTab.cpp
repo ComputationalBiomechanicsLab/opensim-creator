@@ -71,6 +71,7 @@
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/Shims/Cpp23/utility.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/TabHost.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>
@@ -574,16 +575,14 @@ namespace
         HasPhysicalSize   = 1<<6,
     };
 
-    constexpr bool operator&(SceneElFlags a, SceneElFlags b)
+    constexpr bool operator&(SceneElFlags lhs, SceneElFlags rhs)
     {
-        using Underlying = std::underlying_type_t<SceneElFlags>;
-        return (static_cast<Underlying>(a) & static_cast<Underlying>(b)) != 0;
+        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
     }
 
-    constexpr SceneElFlags operator|(SceneElFlags a, SceneElFlags b)
+    constexpr SceneElFlags operator|(SceneElFlags lhs, SceneElFlags rhs)
     {
-        using Underlying = std::underlying_type_t<SceneElFlags>;
-        return static_cast<SceneElFlags>(static_cast<Underlying>(a) | static_cast<Underlying>(b));
+        return static_cast<SceneElFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
     }
 
     // returns the "direction" of a cross reference
@@ -599,10 +598,9 @@ namespace
         Both = ToChild | ToParent
     };
 
-    constexpr bool operator&(CrossrefDirection a, CrossrefDirection b)
+    constexpr bool operator&(CrossrefDirection lhs, CrossrefDirection rhs)
     {
-        using Underlying = std::underlying_type_t<CrossrefDirection>;
-        return (static_cast<Underlying>(a) & static_cast<Underlying>(b)) != 0;
+        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
     }
 
     // base class for all scene elements
@@ -1673,14 +1671,14 @@ namespace
             }
 
             // conversion to a const version of the iterator
-            explicit operator Iterator<value_type const>() const noexcept
+            explicit operator Iterator<value_type const>() const
             {
                 return Iterator<value_type const>{m_Pos, m_End};
             }
 
             // LegacyIterator
 
-            Iterator& operator++() noexcept
+            Iterator& operator++()
             {
                 while (++m_Pos != m_End)
                 {
@@ -1692,7 +1690,7 @@ namespace
                 return *this;
             }
 
-            reference operator*() const noexcept
+            reference operator*() const
             {
                 return dynamic_cast<reference>(*m_Pos->second);
             }
@@ -1703,7 +1701,7 @@ namespace
 
             // LegacyInputIterator
 
-            pointer operator->() const noexcept
+            pointer operator->() const
             {
 
                 return &dynamic_cast<reference>(*m_Pos->second);
@@ -2994,22 +2992,19 @@ namespace
         ExportStationsAsMarkers,
     };
 
-    constexpr bool operator&(ModelCreationFlags const& a, ModelCreationFlags const& b) noexcept
+    constexpr bool operator&(ModelCreationFlags const& lhs, ModelCreationFlags const& rhs)
     {
-        using Underlying = std::underlying_type_t<ModelCreationFlags>;
-        return (static_cast<Underlying>(a) & static_cast<Underlying>(b)) != 0;
+        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
     }
 
-    constexpr ModelCreationFlags operator+(ModelCreationFlags const& a, ModelCreationFlags const& b) noexcept
+    constexpr ModelCreationFlags operator+(ModelCreationFlags const& lhs, ModelCreationFlags const& rhs)
     {
-        using Underlying = std::underlying_type_t<ModelCreationFlags>;
-        return static_cast<ModelCreationFlags>(static_cast<Underlying>(a) | static_cast<Underlying>(b));
+        return static_cast<ModelCreationFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
     }
 
-    constexpr ModelCreationFlags operator-(ModelCreationFlags const& a, ModelCreationFlags const& b) noexcept
+    constexpr ModelCreationFlags operator-(ModelCreationFlags const& lhs, ModelCreationFlags const& rhs)
     {
-        using Underlying = std::underlying_type_t<ModelCreationFlags>;
-        return static_cast<ModelCreationFlags>(static_cast<Underlying>(a) & ~static_cast<Underlying>(b));
+        return static_cast<ModelCreationFlags>(osc::to_underlying(lhs) & ~osc::to_underlying(rhs));
     }
 
     // stand-in method that should be replaced by actual support for scale-less transforms
@@ -3791,7 +3786,7 @@ namespace
         {
         }
 
-        explicit operator bool () const noexcept
+        explicit operator bool () const
         {
             return ID != c_EmptyID;
         }
@@ -8732,7 +8727,7 @@ private:
     // ImGuizmo state
     struct {
         bool wasUsingLastFrame = false;
-        Mat4 mtx{1.0f};
+        Mat4 mtx = Identity<Mat4>();
         ImGuizmo::OPERATION op = ImGuizmo::TRANSLATE;
         ImGuizmo::MODE mode = ImGuizmo::WORLD;
     } m_ImGuizmoState;

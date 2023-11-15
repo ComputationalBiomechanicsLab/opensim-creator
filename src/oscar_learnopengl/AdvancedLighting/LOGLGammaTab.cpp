@@ -202,7 +202,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLGammaTab::id() noexcept
+osc::CStringView osc::LOGLGammaTab::id()
 {
     return c_TabStringID;
 }

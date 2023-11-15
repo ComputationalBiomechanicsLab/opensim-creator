@@ -14,7 +14,7 @@ namespace osc
 {
     class LOGLLightingMapsTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit LOGLLightingMapsTab(ParentPtr<TabHost> const&);
         LOGLLightingMapsTab(LOGLLightingMapsTab const&) = delete;

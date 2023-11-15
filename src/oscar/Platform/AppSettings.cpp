@@ -145,7 +145,7 @@ R"(# configuration options
             using is_transparent = void;
             using is_avalanching = void;
 
-            [[nodiscard]] auto operator()(std::string_view str) const noexcept -> uint64_t {
+            [[nodiscard]] auto operator()(std::string_view str) const -> uint64_t {
                 return ankerl::unordered_dense::hash<std::string_view>{}(str);
             }
         };

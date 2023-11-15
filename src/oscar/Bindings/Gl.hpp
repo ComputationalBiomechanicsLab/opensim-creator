@@ -72,7 +72,7 @@ namespace gl
             }
         }
 
-        GLuint get() const noexcept
+        GLuint get() const
         {
             return m_ShaderHandle;
         }
@@ -94,17 +94,17 @@ namespace gl
 
         Shader() : m_ShaderHandle{type} {}
 
-        GLuint get() const noexcept
+        GLuint get() const
         {
             return m_ShaderHandle.get();
         }
 
-        ShaderHandle& handle() noexcept
+        ShaderHandle& handle()
         {
             return m_ShaderHandle;
         }
 
-        ShaderHandle const& handle() const noexcept
+        ShaderHandle const& handle() const
         {
             return m_ShaderHandle;
         }
@@ -159,7 +159,7 @@ namespace gl
             }
         }
 
-        GLuint get() const noexcept
+        GLuint get() const
         {
             return m_ProgramHandle;
         }
@@ -170,24 +170,24 @@ namespace gl
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUseProgram.xhtml
-    inline void UseProgram(Program const& p) noexcept
+    inline void UseProgram(Program const& p)
     {
         glUseProgram(p.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUseProgram.xhtml
-    inline void UseProgram() noexcept
+    inline void UseProgram()
     {
         glUseProgram(static_cast<GLuint>(0));
     }
 
-    inline void AttachShader(Program& p, ShaderHandle const& sh) noexcept
+    inline void AttachShader(Program& p, ShaderHandle const& sh)
     {
         glAttachShader(p.get(), sh.get());
     }
 
     template<GLuint ShaderType>
-    inline void AttachShader(Program& p, Shader<ShaderType> const& s) noexcept
+    inline void AttachShader(Program& p, Shader<ShaderType> const& s)
     {
         glAttachShader(p.get(), s.get());
     }
@@ -285,7 +285,7 @@ namespace gl
     template<typename TGlsl>
     class Uniform_ {
     public:
-        constexpr Uniform_(GLint _location) noexcept :
+        constexpr Uniform_(GLint _location) :
             m_UniformLocation{_location}
         {
         }
@@ -295,12 +295,12 @@ namespace gl
         {
         }
 
-        [[nodiscard]] constexpr GLuint get() const noexcept
+        [[nodiscard]] constexpr GLuint get() const
         {
             return static_cast<GLuint>(m_UniformLocation);
         }
 
-        [[nodiscard]] constexpr GLint geti() const noexcept
+        [[nodiscard]] constexpr GLint geti() const
         {
             return m_UniformLocation;
         }
@@ -344,54 +344,54 @@ namespace gl
     };
 
     // set the value of a `float` uniform in the currently bound program
-    inline void Uniform(UniformFloat& u, GLfloat value) noexcept
+    inline void Uniform(UniformFloat& u, GLfloat value)
     {
         glUniform1f(u.geti(), value);
     }
 
     // set the value of an `GLint` uniform in the currently bound program
-    inline void Uniform(UniformInt& u, GLint value) noexcept
+    inline void Uniform(UniformInt& u, GLint value)
     {
         glUniform1i(u.geti(), value);
     }
 
     // set the value of an array-like uniform `GLint`
-    inline void Uniform(UniformInt const& u, GLsizei n, GLint const* data) noexcept
+    inline void Uniform(UniformInt const& u, GLsizei n, GLint const* data)
     {
         glUniform1iv(u.geti(), n, data);
     }
 
     // set the value of a `vec3` uniform
-    inline void Uniform(UniformVec3& u, float x, float y, float z) noexcept
+    inline void Uniform(UniformVec3& u, float x, float y, float z)
     {
         glUniform3f(u.geti(), x, y, z);
     }
 
     // set the value of a `vec3` uniform
-    inline void Uniform(UniformVec3& u, float const vs[3]) noexcept
+    inline void Uniform(UniformVec3& u, float const vs[3])
     {
         glUniform3fv(u.geti(), 1, vs);
     }
 
     // set the value of a `sampler2D` uniform
-    inline void Uniform(UniformSampler2D& u, GLint v) noexcept
+    inline void Uniform(UniformSampler2D& u, GLint v)
     {
         glUniform1i(u.geti(), v);
     }
 
-    inline void Uniform(UniformSamplerCube& u, GLint v) noexcept
+    inline void Uniform(UniformSamplerCube& u, GLint v)
     {
         glUniform1i(u.geti(), v);
     }
 
     // set the value of an `sampler2DMS` uniform
-    inline void Uniform(UniformSampler2DMS& u, GLint v) noexcept
+    inline void Uniform(UniformSampler2DMS& u, GLint v)
     {
         glUniform1i(u.geti(), v);
     }
 
     // set the value of a `bool` uniform
-    inline void Uniform(UniformBool& u, bool v) noexcept
+    inline void Uniform(UniformBool& u, bool v)
     {
         glUniform1i(u.geti(), v);
     }
@@ -410,7 +410,7 @@ namespace gl
         static_assert(N >= 0);
 
     public:
-        constexpr UniformArray(GLint location) noexcept :
+        constexpr UniformArray(GLint location) :
             Uniform_<TGlsl>{location}
         {
         }
@@ -420,28 +420,28 @@ namespace gl
         {
         }
 
-        [[nodiscard]] constexpr size_t size() const noexcept
+        [[nodiscard]] constexpr size_t size() const
         {
             return N;
         }
     };
 
-    inline void Uniform(UniformMat3& u, osc::Mat3 const& mat) noexcept
+    inline void Uniform(UniformMat3& u, osc::Mat3 const& mat)
     {
         glUniformMatrix3fv(u.geti(), 1, false, osc::ValuePtr(mat));
     }
 
-    inline void Uniform(UniformVec4& u, osc::Vec4 const& v) noexcept
+    inline void Uniform(UniformVec4& u, osc::Vec4 const& v)
     {
         glUniform4fv(u.geti(), 1, osc::ValuePtr(v));
     }
 
-    inline void Uniform(UniformVec3& u, osc::Vec3 const& v) noexcept
+    inline void Uniform(UniformVec3& u, osc::Vec3 const& v)
     {
         glUniform3fv(u.geti(), 1, osc::ValuePtr(v));
     }
 
-    inline void Uniform(UniformVec3& u, std::span<osc::Vec3 const> vs) noexcept
+    inline void Uniform(UniformVec3& u, std::span<osc::Vec3 const> vs)
     {
         static_assert(sizeof(osc::Vec3) == 3 * sizeof(GLfloat));
         glUniform3fv(u.geti(), static_cast<GLsizei>(vs.size()), osc::ValuePtr(vs.front()));
@@ -450,34 +450,34 @@ namespace gl
     // set a uniform array of vec3s from a userspace container type (e.g. vector<osc::Vec3>)
     template<typename Container, size_t N>
     inline std::enable_if_t<std::is_same_v<osc::Vec3, typename Container::value_type>, void>
-        Uniform(UniformArray<glsl::vec3, N>& u, Container& container) noexcept
+        Uniform(UniformArray<glsl::vec3, N>& u, Container& container)
     {
         OSC_ASSERT(container.size() == N);
         glUniform3fv(u.geti(), static_cast<GLsizei>(container.size()), osc::ValuePtr(*container.data()));
     }
 
-    inline void Uniform(UniformMat4& u, osc::Mat4 const& mat) noexcept
+    inline void Uniform(UniformMat4& u, osc::Mat4 const& mat)
     {
         glUniformMatrix4fv(u.geti(), 1, false, osc::ValuePtr(mat));
     }
 
-    inline void Uniform(UniformMat4& u, std::span<osc::Mat4 const> ms) noexcept
+    inline void Uniform(UniformMat4& u, std::span<osc::Mat4 const> ms)
     {
         static_assert(sizeof(osc::Mat4) == 16 * sizeof(GLfloat));
         glUniformMatrix4fv(u.geti(), static_cast<GLsizei>(ms.size()), false, osc::ValuePtr(ms.front()));
     }
 
-    inline void Uniform(UniformMat4& u, UniformIdentityValueTag) noexcept
+    inline void Uniform(UniformMat4& u, UniformIdentityValueTag)
     {
         Uniform(u, osc::Identity<osc::Mat4>());
     }
 
-    inline void Uniform(UniformVec2& u, osc::Vec2 const& v) noexcept
+    inline void Uniform(UniformVec2& u, osc::Vec2 const& v)
     {
         glUniform2fv(u.geti(), 1, osc::ValuePtr(v));
     }
 
-    inline void Uniform(UniformVec2& u, std::span<osc::Vec2 const> vs) noexcept
+    inline void Uniform(UniformVec2& u, std::span<osc::Vec2 const> vs)
     {
         static_assert(sizeof(osc::Vec2) == 2 * sizeof(GLfloat));
         glUniform2fv(u.geti(), static_cast<GLsizei>(vs.size()), osc::ValuePtr(vs.front()));
@@ -485,7 +485,7 @@ namespace gl
 
     template<typename Container, size_t N>
     inline std::enable_if_t<std::is_same_v<osc::Vec2, typename Container::value_type>, void>
-        Uniform(UniformArray<glsl::vec2, N>& u, Container const& container) noexcept
+        Uniform(UniformArray<glsl::vec2, N>& u, Container const& container)
     {
         glUniform2fv(u.geti(),
             static_cast<GLsizei>(container.size()),
@@ -499,7 +499,7 @@ namespace gl
     public:
         using glsl_type = TGlsl;
 
-        constexpr Attribute(GLint location) noexcept :
+        constexpr Attribute(GLint location) :
             m_AttributeLocation{location}
         {
         }
@@ -509,12 +509,12 @@ namespace gl
         {
         }
 
-        [[nodiscard]] constexpr GLuint get() const noexcept
+        [[nodiscard]] constexpr GLuint get() const
         {
             return static_cast<GLuint>(m_AttributeLocation);
         }
 
-        [[nodiscard]] constexpr GLint geti() const noexcept
+        [[nodiscard]] constexpr GLint geti() const
         {
             return m_AttributeLocation;
         }
@@ -542,7 +542,7 @@ namespace gl
     inline void VertexAttribPointer(Attribute<TGlsl> const& attr,
                                     bool normalized,
                                     size_t stride,
-                                    size_t offset) noexcept
+                                    size_t offset)
     {
         static_assert(TGlsl::size <= 4 || TGlsl::type == GL_FLOAT);
 
@@ -584,7 +584,7 @@ namespace gl
     // this is a higher-level version of `glEnableVertexAttribArray`, because it
     // also "magically" handles attributes that span multiple locations (e.g. mat4)
     template<typename TGlsl>
-    inline void EnableVertexAttribArray(Attribute<TGlsl> const& loc) noexcept
+    inline void EnableVertexAttribArray(Attribute<TGlsl> const& loc)
     {
         static_assert(TGlsl::size <= 4 || TGlsl::type == GL_FLOAT);
 
@@ -604,7 +604,7 @@ namespace gl
     }
 
     template<typename TGlsl>
-    inline void DisableVertexAttribArray(Attribute<TGlsl> const& loc) noexcept
+    inline void DisableVertexAttribArray(Attribute<TGlsl> const& loc)
     {
         static_assert(TGlsl::size <= 4 || TGlsl::type == GL_FLOAT);
 
@@ -629,7 +629,7 @@ namespace gl
     // this is a higher-level version of `glVertexAttribDivisor`, because it
     // also "magically" handles attributes that span multiple locations (e.g. mat4)
     template<typename TGlsl>
-    inline void VertexAttribDivisor(Attribute<TGlsl> const& loc, GLuint divisor) noexcept
+    inline void VertexAttribDivisor(Attribute<TGlsl> const& loc, GLuint divisor)
     {
         static_assert(TGlsl::size <= 4 || TGlsl::type == GL_FLOAT);
 
@@ -682,7 +682,7 @@ namespace gl
             }
         }
 
-        GLuint get() const noexcept
+        GLuint get() const
         {
             return m_BufferHandle;
         }
@@ -702,24 +702,24 @@ namespace gl
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindBuffer.xhtml
-    inline void BindBuffer(GLenum target, BufferHandle const& handle) noexcept
+    inline void BindBuffer(GLenum target, BufferHandle const& handle)
     {
         glBindBuffer(target, handle.get());
     }
 
     template<GLenum TBuffer>
-    inline void BindBuffer(TypedBufferHandle<TBuffer> const& handle) noexcept
+    inline void BindBuffer(TypedBufferHandle<TBuffer> const& handle)
     {
         glBindBuffer(TBuffer, handle.get());
     }
 
     template<GLenum TBuffer>
-    inline void UnbindBuffer(TypedBufferHandle<TBuffer> const&) noexcept
+    inline void UnbindBuffer(TypedBufferHandle<TBuffer> const&)
     {
         glBindBuffer(TBuffer, 0);
     }
 
-    inline void BufferData(GLenum target, GLsizeiptr size, const void* data, GLenum usage) noexcept
+    inline void BufferData(GLenum target, GLsizeiptr size, const void* data, GLenum usage)
     {
         glBufferData(target, size, data, usage);
     }
@@ -760,7 +760,7 @@ namespace gl
         {
         }
 
-        [[nodiscard]] constexpr size_t size() const noexcept
+        [[nodiscard]] constexpr size_t size() const
         {
             return m_BufferSize;
         }
@@ -821,7 +821,7 @@ namespace gl
     };
 
     template<typename Buffer>
-    inline void BindBuffer(Buffer const& buf) noexcept
+    inline void BindBuffer(Buffer const& buf)
     {
         glBindBuffer(Buffer::BufferType, buf.get());
     }
@@ -830,7 +830,7 @@ namespace gl
     // argument, so that the index type to an element-based drawcall can
     // be computed at compile-time
     template<typename T>
-    inline constexpr GLenum indexType() noexcept
+    inline constexpr GLenum indexType()
     {
         static_assert(std::is_integral_v<T>, "element indices are integers");
         static_assert(std::is_unsigned_v<T>, "element indices are unsigned data types (in the GL spec)");
@@ -852,7 +852,7 @@ namespace gl
     // utility overload of index_type specifically for EBOs (the most common
     // use-case in downstream code)
     template<typename T>
-    inline constexpr GLenum indexType(gl::ElementArrayBuffer<T> const&) noexcept
+    inline constexpr GLenum indexType(gl::ElementArrayBuffer<T> const&)
     {
         return indexType<T>();
     }
@@ -893,7 +893,7 @@ namespace gl
             }
         }
 
-        GLuint get() const noexcept
+        GLuint get() const
         {
             return m_VaoHandle;
         }
@@ -904,13 +904,13 @@ namespace gl
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml
-    inline void BindVertexArray(VertexArray const& vao) noexcept
+    inline void BindVertexArray(VertexArray const& vao)
     {
         glBindVertexArray(vao.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml
-    inline void BindVertexArray() noexcept
+    inline void BindVertexArray()
     {
         glBindVertexArray(static_cast<GLuint>(0));
     }
@@ -951,7 +951,7 @@ namespace gl
             }
         }
 
-        GLuint get() const noexcept
+        GLuint get() const
         {
             return m_TextureHandle;
         }
@@ -961,19 +961,19 @@ namespace gl
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glActiveTexture.xhtml
-    inline void ActiveTexture(GLenum texture) noexcept
+    inline void ActiveTexture(GLenum texture)
     {
         glActiveTexture(texture);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
-    inline void BindTexture(GLenum target, TextureHandle const& texture) noexcept
+    inline void BindTexture(GLenum target, TextureHandle const& texture)
     {
         glBindTexture(target, texture.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
-    inline void BindTexture() noexcept
+    inline void BindTexture()
     {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
@@ -984,17 +984,17 @@ namespace gl
     public:
         static constexpr GLenum type = TextureType;
 
-        [[nodiscard]] constexpr GLuint get() const noexcept
+        [[nodiscard]] constexpr GLuint get() const
         {
             return m_TextureHandle.get();
         }
 
-        constexpr TextureHandle const& handle() const noexcept
+        constexpr TextureHandle const& handle() const
         {
             return m_TextureHandle;
         }
 
-        constexpr TextureHandle& handle() noexcept
+        constexpr TextureHandle& handle()
         {
             return m_TextureHandle;
         }
@@ -1008,7 +1008,7 @@ namespace gl
     class Texture2DMultisample : public Texture<GL_TEXTURE_2D_MULTISAMPLE> {};
 
     template<typename Texture>
-    inline void BindTexture(Texture const& t) noexcept
+    inline void BindTexture(Texture const& t)
     {
         glBindTexture(t.type, t.get());
     }
@@ -1049,7 +1049,7 @@ namespace gl
             }
         }
 
-        GLuint get() const noexcept
+        GLuint get() const
         {
             return m_FboHandle;
         }
@@ -1060,7 +1060,7 @@ namespace gl
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindFramebuffer.xhtml
-    inline void BindFramebuffer(GLenum target, FrameBuffer const& fb) noexcept
+    inline void BindFramebuffer(GLenum target, FrameBuffer const& fb)
     {
         glBindFramebuffer(target, fb.get());
     }
@@ -1069,7 +1069,7 @@ namespace gl
     struct WindowFbo final {};
     static constexpr WindowFbo windowFbo{};
 
-    inline void BindFramebuffer(GLenum target, WindowFbo) noexcept
+    inline void BindFramebuffer(GLenum target, WindowFbo)
     {
         glBindFramebuffer(target, 0);
     }
@@ -1077,7 +1077,7 @@ namespace gl
     // assign a 2D texture to the framebuffer (so that subsequent draws/reads
     // to/from the FBO use the texture)
     template<typename Texture>
-    inline void FramebufferTexture2D(GLenum target, GLenum attachment, Texture const& t, GLint level) noexcept
+    inline void FramebufferTexture2D(GLenum target, GLenum attachment, Texture const& t, GLint level)
     {
         glFramebufferTexture2D(target, attachment, t.type, t.get(), level);
     }
@@ -1118,7 +1118,7 @@ namespace gl
             }
         }
 
-        GLuint get() const noexcept
+        GLuint get() const
         {
             return m_RenderBuffer;
         }
@@ -1129,76 +1129,76 @@ namespace gl
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glBindRenderbuffer.xml
-    inline void BindRenderBuffer(RenderBuffer& rb) noexcept
+    inline void BindRenderBuffer(RenderBuffer& rb)
     {
         glBindRenderbuffer(GL_RENDERBUFFER, rb.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glBindRenderbuffer.xml
-    inline void BindRenderBuffer() noexcept
+    inline void BindRenderBuffer()
     {
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
     }
 
-    inline void FramebufferRenderbuffer(GLenum target, GLenum attachment, RenderBuffer const& rb) noexcept
+    inline void FramebufferRenderbuffer(GLenum target, GLenum attachment, RenderBuffer const& rb)
     {
         glFramebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, rb.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glRenderbufferStorage.xhtml
-    inline void RenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) noexcept
+    inline void RenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height)
     {
         glRenderbufferStorage(target, internalformat, width, height);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glClear.xhtml
-    inline void Clear(GLbitfield mask) noexcept
+    inline void Clear(GLbitfield mask)
     {
         glClear(mask);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawArrays.xhtml
-    inline void DrawArrays(GLenum mode, GLint first, GLsizei count) noexcept
+    inline void DrawArrays(GLenum mode, GLint first, GLsizei count)
     {
         glDrawArrays(mode, first, count);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawArraysInstanced.xhtml
-    inline void DrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei instancecount) noexcept
+    inline void DrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei instancecount)
     {
         glDrawArraysInstanced(mode, first, count, instancecount);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glVertexAttribDivisor.xhtml
     template<typename Attribute>
-    inline void VertexAttribDivisor(Attribute loc, GLuint divisor) noexcept
+    inline void VertexAttribDivisor(Attribute loc, GLuint divisor)
     {
         glVertexAttribDivisor(loc.get(), divisor);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawElements.xhtml
-    inline void DrawElements(GLenum mode, GLsizei count, GLenum type, const void* indices) noexcept
+    inline void DrawElements(GLenum mode, GLsizei count, GLenum type, const void* indices)
     {
         glDrawElements(mode, count, type, indices);
     }
 
-    inline void ClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) noexcept
+    inline void ClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha)
     {
         glClearColor(red, green, blue, alpha);
     }
 
-    inline void ClearColor(osc::Vec4 const& v) noexcept
+    inline void ClearColor(osc::Vec4 const& v)
     {
         ClearColor(v[0], v[1], v[2], v[3]);
     }
 
-    inline void Viewport(GLint x, GLint y, GLsizei w, GLsizei h) noexcept
+    inline void Viewport(GLint x, GLint y, GLsizei w, GLsizei h)
     {
         glViewport(x, y, w, h);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexParameter.xhtml
-    inline void TexParameteri(GLenum target, GLenum pname, GLint param) noexcept
+    inline void TexParameteri(GLenum target, GLenum pname, GLint param)
     {
         glTexParameteri(target, pname, param);
     }
@@ -1212,7 +1212,7 @@ namespace gl
         GLint border,
         GLenum format,
         GLenum type,
-        const void* pixels) noexcept
+        const void* pixels)
     {
         glTexImage2D(
             target,
@@ -1229,19 +1229,19 @@ namespace gl
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexParameter.xhtml
     template<typename Texture>
-    inline void TextureParameteri(Texture const& texture, GLenum pname, GLint param) noexcept
+    inline void TextureParameteri(Texture const& texture, GLenum pname, GLint param)
     {
         glTextureParameteri(texture.raw_handle(), pname, param);
     }
 
     template<typename... T>
-    inline void DrawBuffers(T&&... vs) noexcept
+    inline void DrawBuffers(T&&... vs)
     {
         GLenum attachments[sizeof...(vs)] = {static_cast<GLenum>(vs)...};
         glDrawBuffers(sizeof...(vs), attachments);
     }
 
-    inline bool IsCurrentFboComplete() noexcept
+    inline bool IsCurrentFboComplete()
     {
         return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
     }
@@ -1257,7 +1257,7 @@ namespace gl
         GLint dstX1,
         GLint dstY1,
         GLbitfield mask,
-        GLenum filter) noexcept
+        GLenum filter)
     {
         glBlitFramebuffer(
             srcX0,
@@ -1273,29 +1273,29 @@ namespace gl
         );
     }
 
-    inline void DrawBuffer(GLenum mode) noexcept
+    inline void DrawBuffer(GLenum mode)
     {
         glDrawBuffer(mode);
     }
 
-    inline GLint GetInteger(GLenum pname) noexcept
+    inline GLint GetInteger(GLenum pname)
     {
         GLint out;
         glGetIntegerv(pname, &out);
         return out;
     }
 
-    inline GLenum GetEnum(GLenum pname) noexcept
+    inline GLenum GetEnum(GLenum pname)
     {
         return static_cast<GLenum>(GetInteger(pname));
     }
 
-    inline void Enable(GLenum cap) noexcept
+    inline void Enable(GLenum cap)
     {
         glEnable(cap);
     }
 
-    inline void Disable(GLenum cap) noexcept
+    inline void Disable(GLenum cap)
     {
         glDisable(cap);
     }

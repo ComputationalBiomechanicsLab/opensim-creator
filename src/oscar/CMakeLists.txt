@@ -83,6 +83,7 @@ add_library(oscar STATIC
     Graphics/ShaderCache.hpp
     Graphics/ShaderLocations.hpp
     Graphics/ShaderPropertyType.hpp
+    Graphics/SubMeshDescriptor.hpp
     Graphics/Texture2D.hpp
     Graphics/TextureChannelFormat.hpp
     Graphics/TextureDimensionality.hpp
@@ -165,6 +166,7 @@ add_library(oscar STATIC
     Shims/Cpp20/bit.hpp
     Shims/Cpp20/stop_token.hpp
     Shims/Cpp20/thread.hpp
+    Shims/Cpp23/utility.hpp
 
     UI/Panels/LogViewerPanel.cpp
     UI/Panels/LogViewerPanel.hpp

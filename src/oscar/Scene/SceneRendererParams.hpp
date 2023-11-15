@@ -12,12 +12,12 @@ namespace osc
 
         static constexpr Color DefaultLightColor()
         {
-            return {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f, 1.0f};
+            return {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
         }
 
         static constexpr Color DefaultBackgroundColor()
         {
-            return {0.89f, 0.89f, 0.89f, 1.0f};
+            return {0.89f, 0.89f, 0.89f};
         }
 
         static constexpr Vec3 DefaultFloorLocation()
@@ -27,7 +27,7 @@ namespace osc
 
         SceneRendererParams();
 
-        friend bool operator==(SceneRendererParams const&, SceneRendererParams const&) { return false; }
+        friend bool operator==(SceneRendererParams const&, SceneRendererParams const&) = default;
 
         Vec2i dimensions;
         AntiAliasingLevel antiAliasingLevel;

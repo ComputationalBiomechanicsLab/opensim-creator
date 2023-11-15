@@ -191,8 +191,8 @@ private:
         Camera orthoCamera;
         orthoCamera.setBackgroundColor(Color::clear());
         orthoCamera.setPixelRect(GetMainViewportWorkspaceScreenRect());
-        orthoCamera.setProjectionMatrixOverride(Mat4{1.0f});
-        orthoCamera.setViewMatrixOverride(Mat4{1.0f});
+        orthoCamera.setProjectionMatrixOverride(Identity<Mat4>());
+        orthoCamera.setViewMatrixOverride(Identity<Mat4>());
 
         m_TonemapMaterial.setRenderTexture("uTexture", m_SceneHDRTexture);
         m_TonemapMaterial.setBool("uUseTonemap", m_UseTonemap);
@@ -233,7 +233,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLHDRTab::id() noexcept
+osc::CStringView osc::LOGLHDRTab::id()
 {
     return c_TabStringID;
 }

@@ -26,11 +26,11 @@ namespace osc
             int64_t id,
             PerfClock::time_point start,
             PerfClock::time_point end
-        ) noexcept;
+        );
 
         class PerfTimer final {
         public:
-            explicit PerfTimer(int64_t id) noexcept :
+            explicit PerfTimer(int64_t id) :
                 m_ID{id}
             {
             }

@@ -14,7 +14,7 @@ namespace osc
 {
     class LOGLParallaxMappingTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit LOGLParallaxMappingTab(ParentPtr<TabHost> const&);
         LOGLParallaxMappingTab(LOGLParallaxMappingTab const&) = delete;

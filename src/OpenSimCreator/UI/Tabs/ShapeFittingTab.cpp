@@ -64,7 +64,7 @@ private:
 
 // public API
 
-osc::CStringView osc::ShapeFittingTab::id() noexcept
+osc::CStringView osc::ShapeFittingTab::id()
 {
     return c_TabStringID;
 }

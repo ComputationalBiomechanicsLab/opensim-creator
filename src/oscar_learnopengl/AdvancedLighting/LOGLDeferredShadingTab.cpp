@@ -406,7 +406,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLDeferredShadingTab::id() noexcept
+osc::CStringView osc::LOGLDeferredShadingTab::id()
 {
     return c_TabStringID;
 }

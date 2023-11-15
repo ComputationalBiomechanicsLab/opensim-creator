@@ -292,7 +292,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLCubemapsTab::id() noexcept
+osc::CStringView osc::LOGLCubemapsTab::id()
 {
     return c_TabStringID;
 }

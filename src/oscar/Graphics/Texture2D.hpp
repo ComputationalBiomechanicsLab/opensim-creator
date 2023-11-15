@@ -83,7 +83,7 @@ namespace osc
             swap(a.m_Impl, b.m_Impl);
         }
 
-        friend bool operator==(Texture2D const&, Texture2D const&) noexcept = default;
+        friend bool operator==(Texture2D const&, Texture2D const&) = default;
 
     private:
         friend std::ostream& operator<<(std::ostream&, Texture2D const&);

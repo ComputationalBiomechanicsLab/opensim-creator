@@ -19,8 +19,8 @@
 namespace osc::log
 {
     // global logging API
-    std::shared_ptr<Logger> defaultLogger() noexcept;
-    Logger* defaultLoggerRaw() noexcept;
+    std::shared_ptr<Logger> defaultLogger();
+    Logger* defaultLoggerRaw();
 
     inline LogLevel level()
     {

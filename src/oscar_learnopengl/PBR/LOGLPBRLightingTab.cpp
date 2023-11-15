@@ -213,7 +213,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLPBRLightingTab::id() noexcept
+osc::CStringView osc::LOGLPBRLightingTab::id()
 {
     return c_TabStringID;
 }
