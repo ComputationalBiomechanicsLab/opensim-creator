@@ -605,13 +605,15 @@ namespace
             osc::Mesh mesh_,
             osc::Transform const& transform_,
             osc::Material material_,
-            std::optional<osc::MaterialPropertyBlock> maybePropBlock_) :
+            std::optional<osc::MaterialPropertyBlock> maybePropBlock_,
+            std::optional<size_t> maybeSubMeshIndex_) :
 
             material{std::move(material_)},
             mesh{std::move(mesh_)},
             maybePropBlock{std::move(maybePropBlock_)},
             transform{transform_},
-            worldMidpoint{material.getTransparent() ? osc::TransformPoint(transform_, osc::Midpoint(mesh.getBounds())) : Vec3{}}
+            worldMidpoint{material.getTransparent() ? osc::TransformPoint(transform_, osc::Midpoint(mesh.getBounds())) : Vec3{}},
+            maybeSubMeshIndex{maybeSubMeshIndex_}
         {
         }
 
@@ -619,13 +621,15 @@ namespace
             osc::Mesh mesh_,
             Mat4 const& transform_,
             osc::Material material_,
-            std::optional<osc::MaterialPropertyBlock> maybePropBlock_) :
+            std::optional<osc::MaterialPropertyBlock> maybePropBlock_,
+            std::optional<size_t> maybeSubMeshIndex_) :
 
             material{std::move(material_)},
             mesh{std::move(mesh_)},
             maybePropBlock{std::move(maybePropBlock_)},
             transform{transform_},
-            worldMidpoint{material.getTransparent() ? transform_ * Vec4{osc::Midpoint(mesh.getBounds()), 1.0f} : Vec3{}}
+            worldMidpoint{material.getTransparent() ? transform_ * Vec4{osc::Midpoint(mesh.getBounds()), 1.0f} : Vec3{}},
+            maybeSubMeshIndex{maybeSubMeshIndex_}
         {
         }
 
@@ -647,6 +651,7 @@ namespace
         std::optional<osc::MaterialPropertyBlock> maybePropBlock;
         Mat4OrTransform transform;
         Vec3 worldMidpoint;
+        std::optional<size_t> maybeSubMeshIndex;
     };
 
     // returns true if the render object is opaque
@@ -750,43 +755,87 @@ namespace
         osc::Mesh const* m_Mesh;
     };
 
-    // sort a sequence of `RenderObject`s for optimal drawing
-    std::vector<RenderObject>::iterator SortRenderQueue(std::vector<RenderObject>::iterator begin, std::vector<RenderObject>::iterator end, Vec3 cameraPos)
-    {
-        // split queue into [opaque | transparent]
-        auto const opaqueEnd = std::partition(begin, end, IsOpaque);
-
-        // optimize the opaque partition (it can be reordered safely)
+    class RenderObjectHasSubMeshIndex final {
+    public:
+        explicit RenderObjectHasSubMeshIndex(std::optional<size_t> maybeSubMeshIndex_) :
+            m_MaybeSubMeshIndex{maybeSubMeshIndex_}
         {
-            // first, sub-parititon by material (top-level batch)
-            auto materialBatchStart = begin;
-            while (materialBatchStart != opaqueEnd)
+        }
+
+        bool operator()(RenderObject const& ro) const
+        {
+            return ro.maybeSubMeshIndex == m_MaybeSubMeshIndex;
+        }
+    private:
+        std::optional<size_t> m_MaybeSubMeshIndex;
+    };
+
+    // sort a sequence of `RenderObject`s for optimal drawing
+    std::vector<RenderObject>::iterator SortRenderQueue(
+        std::vector<RenderObject>::iterator renderQueueBegin,
+        std::vector<RenderObject>::iterator renderQueueEnd,
+        Vec3 cameraPos)
+    {
+        // partition the render queue into [opaqueObjects | transparentObjects]
+        auto const opaqueObjectsEnd = std::partition(renderQueueBegin, renderQueueEnd, IsOpaque);
+
+        // optimize the opaqueObjects partition (it can be reordered safely)
+        //
+        // first, batch opaqueObjects into `RenderObject`s that have the same `Material`
+        auto materialBatchStart = renderQueueBegin;
+        while (materialBatchStart != opaqueObjectsEnd)
+        {
+            auto const materialBatchEnd = std::partition(
+                materialBatchStart,
+                opaqueObjectsEnd,
+                RenderObjectHasMaterial{&materialBatchStart->material}
+            );
+
+            // second, batch `RenderObject`s with the same `Material` into sub-batches
+            // with the same `MaterialPropertyBlock`
+            auto materialPropBlockBatchStart = materialBatchStart;
+            while (materialPropBlockBatchStart != materialBatchEnd)
             {
-                auto const materialBatchEnd = std::partition(materialBatchStart, opaqueEnd, RenderObjectHasMaterial{&materialBatchStart->material});
+                auto const materialPropBlockBatchEnd = std::partition(
+                    materialPropBlockBatchStart,
+                    materialBatchEnd,
+                    RenderObjectHasMaterialPropertyBlock{&materialPropBlockBatchStart->maybePropBlock}
+                );
 
-                // then sub-sub-partition by material property block
-                auto propBatchStart = materialBatchStart;
-                while (propBatchStart != materialBatchEnd)
+                // third, batch `RenderObject`s with the same `Material` and `MaterialPropertyBlock`s
+                // into sub-batches with the same `Mesh`
+                auto meshBatchStart = materialPropBlockBatchStart;
+                while (meshBatchStart != materialPropBlockBatchEnd)
                 {
-                    auto const propBatchEnd = std::partition(propBatchStart, materialBatchEnd, RenderObjectHasMaterialPropertyBlock{&propBatchStart->maybePropBlock});
+                    auto const meshBatchEnd = std::partition(
+                        meshBatchStart,
+                        materialPropBlockBatchEnd,
+                        RenderObjectHasMesh{&meshBatchStart->mesh}
+                    );
 
-                    // then sub-sub-sub-partition by mesh
-                    auto meshBatchStart = propBatchStart;
-                    while (meshBatchStart != propBatchEnd)
+                    // fourth, batch `RenderObject`s with the same `Material`, `MaterialPropertyBlock`,
+                    // and `Mesh` into sub-batches with the same sub-mesh index
+                    auto subMeshBatchStart = meshBatchStart;
+                    while (subMeshBatchStart != meshBatchEnd)
                     {
-                        auto const meshBatchEnd = std::partition(meshBatchStart, propBatchEnd, RenderObjectHasMesh{&meshBatchStart->mesh});
-                        meshBatchStart = meshBatchEnd;
+                        auto const subMeshBatchEnd = std::partition(
+                            subMeshBatchStart,
+                            meshBatchEnd,
+                            RenderObjectHasSubMeshIndex{subMeshBatchStart->maybeSubMeshIndex}
+                        );
+                        subMeshBatchStart = subMeshBatchEnd;
                     }
-                    propBatchStart = propBatchEnd;
+                    meshBatchStart = meshBatchEnd;
                 }
-                materialBatchStart = materialBatchEnd;
+                materialPropBlockBatchStart = materialPropBlockBatchEnd;
             }
+            materialBatchStart = materialBatchEnd;
         }
 
         // sort the transparent partition by distance from camera (back-to-front)
-        std::sort(opaqueEnd, end, RenderObjectIsFartherFrom{cameraPos});
+        std::sort(opaqueObjectsEnd, renderQueueEnd, RenderObjectIsFartherFrom{cameraPos});
 
-        return opaqueEnd;
+        return opaqueObjectsEnd;
     }
 
     // top-level state for a single call to `render`
@@ -880,17 +929,6 @@ namespace osc
             InstancingState& ins
         );
 
-        static void HandleBatchWithSameMesh(
-            std::span<RenderObject const>,
-            std::optional<InstancingState>& ins
-        );
-
-        static void HandleBatchWithSameMaterialPropertyBlock(
-            std::span<RenderObject const>,
-            int32_t& textureSlot,
-            std::optional<InstancingState>& ins
-        );
-
         static std::optional<InstancingState> UploadInstanceData(
             std::span<RenderObject const>,
             osc::Shader::Impl const& shaderImpl
@@ -902,12 +940,28 @@ namespace osc
             int32_t& textureSlot
         );
 
+        static void HandleBatchWithSameSubMesh(
+            std::span<RenderObject const>,
+            std::optional<InstancingState>& ins
+        );
+
+        static void HandleBatchWithSameMesh(
+            std::span<RenderObject const>,
+            std::optional<InstancingState>& ins
+        );
+
+        static void HandleBatchWithSameMaterialPropertyBlock(
+            std::span<RenderObject const>,
+            int32_t& textureSlot,
+            std::optional<InstancingState>& ins
+        );
+
         static void HandleBatchWithSameMaterial(
             RenderPassState const&,
             std::span<RenderObject const>
         );
 
-        static void DrawBatchedByMaterial(
+        static void DrawRenderObjects(
             RenderPassState const&,
             std::span<RenderObject const>
         );
@@ -4210,25 +4264,35 @@ public:
         return (*m_MaybeGPUBuffers)->vao;
     }
 
-    void draw()
+    void drawInstanced(
+        size_t n,
+        std::optional<size_t> maybeSubMeshIndex)
     {
-        gl::DrawElements(
-            ToOpenGLTopology(m_Topology),
-            static_cast<GLsizei>(m_NumIndices),
-            m_IndicesAre32Bit ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT,
-            nullptr
-        );
-    }
+        if (maybeSubMeshIndex)
+        {
+            size_t const meshDataStride = calcByteStrideBetweenElements();
 
-    void drawInstanced(size_t n)
-    {
-        glDrawElementsInstanced(
-            ToOpenGLTopology(m_Topology),
-            static_cast<GLsizei>(m_NumIndices),
-            m_IndicesAre32Bit ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT,
-            nullptr,
-            static_cast<GLsizei>(n)
-        );
+            // draw only the specified sub-mesh
+            SubMeshDescriptor const& desc = m_SubMeshDescriptors.at(*maybeSubMeshIndex);
+            glDrawElementsInstanced(
+                ToOpenGLTopology(desc.getTopology()),
+                static_cast<GLsizei>(desc.getIndexCount()),
+                m_IndicesAre32Bit ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT,
+                reinterpret_cast<void*>(static_cast<intptr_t>(desc.getIndexStart() * meshDataStride)),
+                static_cast<GLsizei>(n)
+            );
+        }
+        else
+        {
+            // draw all mesh data
+            glDrawElementsInstanced(
+                ToOpenGLTopology(m_Topology),
+                static_cast<GLsizei>(m_NumIndices),
+                m_IndicesAre32Bit ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT,
+                nullptr,
+                static_cast<GLsizei>(n)
+            );
+        }
     }
 
 private:
@@ -4270,23 +4334,7 @@ private:
         static_assert(sizeof(decltype(m_Tangents)::value_type) == 4*sizeof(float));
 
         // calculate the number of bytes between each entry in the packed VBO
-        size_t byteStride = sizeof(decltype(m_Vertices)::value_type);
-        if (hasNormals)
-        {
-            byteStride += sizeof(decltype(m_Normals)::value_type);
-        }
-        if (hasTexCoords)
-        {
-            byteStride += sizeof(decltype(m_TexCoords)::value_type);
-        }
-        if (hasColors)
-        {
-            byteStride += sizeof(decltype(m_Colors)::value_type);
-        }
-        if (hasTangents)
-        {
-            byteStride += sizeof(decltype(m_Tangents)::value_type);
-        }
+        size_t byteStride = calcByteStrideBetweenElements();
 
         // check that the data stored in this mesh object is valid before indexing into it
         OSC_ASSERT_ALWAYS((!hasNormals || m_Normals.size() == m_Vertices.size()) && "number of normals != number of verts");
@@ -4433,6 +4481,34 @@ private:
         gl::BindVertexArray();  // VAO configuration complete
 
         buffers.dataVersion = *m_Version;
+    }
+
+    size_t calcByteStrideBetweenElements() const
+    {
+        bool const hasNormals = !m_Normals.empty();
+        bool const hasTexCoords = !m_TexCoords.empty();
+        bool const hasColors = !m_Colors.empty();
+        bool const hasTangents = !m_Tangents.empty();
+
+        // calculate the number of bytes between each entry in the packed VBO
+        size_t byteStride = sizeof(decltype(m_Vertices)::value_type);
+        if (hasNormals)
+        {
+            byteStride += sizeof(decltype(m_Normals)::value_type);
+        }
+        if (hasTexCoords)
+        {
+            byteStride += sizeof(decltype(m_TexCoords)::value_type);
+        }
+        if (hasColors)
+        {
+            byteStride += sizeof(decltype(m_Colors)::value_type);
+        }
+        if (hasTangents)
+        {
+            byteStride += sizeof(decltype(m_Tangents)::value_type);
+        }
+        return byteStride;
     }
 
     DefaultConstructOnCopy<UID> m_UID;
@@ -5805,6 +5881,75 @@ void osc::Graphics::CopyTexture(
 //
 /////////////////////////
 
+
+// helper: binds to instanced attributes (per-drawcall)
+void osc::GraphicsBackend::BindToInstancedAttributes(
+        Shader::Impl const& shaderImpl,
+        InstancingState& ins)
+{
+    gl::BindBuffer(ins.buf);
+
+    size_t byteOffset = 0;
+    if (shaderImpl.m_MaybeInstancedModelMatAttr)
+    {
+        if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4)
+        {
+            gl::AttributeMat4 const mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->location};
+            gl::VertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
+            gl::VertexAttribDivisor(mmtxAttr, 1);
+            gl::EnableVertexAttribArray(mmtxAttr);
+            byteOffset += sizeof(float) * 16;
+        }
+    }
+    if (shaderImpl.m_MaybeInstancedNormalMatAttr)
+    {
+        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4)
+        {
+            gl::AttributeMat4 const mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
+            gl::VertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
+            gl::VertexAttribDivisor(mmtxAttr, 1);
+            gl::EnableVertexAttribArray(mmtxAttr);
+            // unused: byteOffset += sizeof(float) * 16;
+        }
+        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3)
+        {
+            gl::AttributeMat3 const mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
+            gl::VertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
+            gl::VertexAttribDivisor(mmtxAttr, 1);
+            gl::EnableVertexAttribArray(mmtxAttr);
+            // unused: byteOffset += sizeof(float) * 9;
+        }
+    }
+}
+
+// helper: unbinds from instanced attributes (per-drawcall)
+void osc::GraphicsBackend::UnbindFromInstancedAttributes(
+    Shader::Impl const& shaderImpl,
+    InstancingState&)
+{
+    if (shaderImpl.m_MaybeInstancedModelMatAttr)
+    {
+        if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4)
+        {
+            gl::AttributeMat4 const mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->location};
+            gl::DisableVertexAttribArray(mmtxAttr);
+        }
+    }
+    if (shaderImpl.m_MaybeInstancedNormalMatAttr)
+    {
+        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4)
+        {
+            gl::AttributeMat4 const mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
+            gl::DisableVertexAttribArray(mmtxAttr);
+        }
+        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3)
+        {
+            gl::AttributeMat3 const mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
+            gl::DisableVertexAttribArray(mmtxAttr);
+        }
+    }
+}
+
 // helper: upload instancing data for a batch
 std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
     std::span<RenderObject const> renderObjects,
@@ -5881,182 +6026,6 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
     }
     return maybeInstancingState;
 }
-
-// helper: binds to instanced attributes (per-drawcall)
-void osc::GraphicsBackend::BindToInstancedAttributes(
-        Shader::Impl const& shaderImpl,
-        InstancingState& ins)
-{
-    gl::BindBuffer(ins.buf);
-
-    size_t byteOffset = 0;
-    if (shaderImpl.m_MaybeInstancedModelMatAttr)
-    {
-        if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4)
-        {
-            gl::AttributeMat4 const mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->location};
-            gl::VertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
-            gl::VertexAttribDivisor(mmtxAttr, 1);
-            gl::EnableVertexAttribArray(mmtxAttr);
-            byteOffset += sizeof(float) * 16;
-        }
-    }
-    if (shaderImpl.m_MaybeInstancedNormalMatAttr)
-    {
-        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4)
-        {
-            gl::AttributeMat4 const mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
-            gl::VertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
-            gl::VertexAttribDivisor(mmtxAttr, 1);
-            gl::EnableVertexAttribArray(mmtxAttr);
-            // unused: byteOffset += sizeof(float) * 16;
-        }
-        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3)
-        {
-            gl::AttributeMat3 const mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
-            gl::VertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
-            gl::VertexAttribDivisor(mmtxAttr, 1);
-            gl::EnableVertexAttribArray(mmtxAttr);
-            // unused: byteOffset += sizeof(float) * 9;
-        }
-    }
-}
-
-// helper: unbinds from instanced attributes (per-drawcall)
-void osc::GraphicsBackend::UnbindFromInstancedAttributes(
-    Shader::Impl const& shaderImpl,
-    InstancingState&)
-{
-    if (shaderImpl.m_MaybeInstancedModelMatAttr)
-    {
-        if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4)
-        {
-            gl::AttributeMat4 const mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->location};
-            gl::DisableVertexAttribArray(mmtxAttr);
-        }
-    }
-    if (shaderImpl.m_MaybeInstancedNormalMatAttr)
-    {
-        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4)
-        {
-            gl::AttributeMat4 const mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
-            gl::DisableVertexAttribArray(mmtxAttr);
-        }
-        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3)
-        {
-            gl::AttributeMat3 const mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
-            gl::DisableVertexAttribArray(mmtxAttr);
-        }
-    }
-}
-
-// helper: draw a batch of render objects that have the same material, material block, and mesh
-void osc::GraphicsBackend::HandleBatchWithSameMesh(
-    std::span<RenderObject const> els,
-    std::optional<InstancingState>& ins)
-{
-    OSC_PERF("GraphicsBackend::HandleBatchWithSameMesh");
-
-    auto& meshImpl = const_cast<Mesh::Impl&>(*els.front().mesh.m_Impl);
-    Shader::Impl const& shaderImpl = *els.front().material.m_Impl->m_Shader.m_Impl;
-
-    gl::BindVertexArray(meshImpl.updVertexArray());
-
-    // if the shader requires per-instance uniforms, then we *have* to render one
-    // instance at a time
-    if (shaderImpl.m_MaybeModelMatUniform || shaderImpl.m_MaybeNormalMatUniform)
-    {
-        for (RenderObject const& el : els)
-        {
-            // try binding to uModel (standard)
-            if (shaderImpl.m_MaybeModelMatUniform)
-            {
-                if (shaderImpl.m_MaybeModelMatUniform->shaderType == ShaderPropertyType::Mat4)
-                {
-                    gl::UniformMat4 u{shaderImpl.m_MaybeModelMatUniform->location};
-                    gl::Uniform(u, ModelMatrix(el));
-                }
-            }
-
-            // try binding to uNormalMat (standard)
-            if (shaderImpl.m_MaybeNormalMatUniform)
-            {
-                if (shaderImpl.m_MaybeNormalMatUniform->shaderType == osc::ShaderPropertyType::Mat3)
-                {
-                    gl::UniformMat3 u{shaderImpl.m_MaybeNormalMatUniform->location};
-                    gl::Uniform(u, NormalMatrix(el));
-                }
-                else if (shaderImpl.m_MaybeNormalMatUniform->shaderType == osc::ShaderPropertyType::Mat4)
-                {
-                    gl::UniformMat4 u{shaderImpl.m_MaybeNormalMatUniform->location};
-                    gl::Uniform(u, NormalMatrix4(el));
-                }
-            }
-
-            if (ins)
-            {
-                BindToInstancedAttributes(shaderImpl, *ins);
-            }
-            meshImpl.drawInstanced(1);
-            if (ins)
-            {
-                UnbindFromInstancedAttributes(shaderImpl, *ins);
-                ins->baseOffset += 1 * ins->stride;
-            }
-        }
-    }
-    else
-    {
-        if (ins)
-        {
-            BindToInstancedAttributes(shaderImpl, *ins);
-        }
-        meshImpl.drawInstanced(els.size());
-        if (ins)
-        {
-            UnbindFromInstancedAttributes(shaderImpl, *ins);
-            ins->baseOffset += els.size() * ins->stride;
-        }
-    }
-
-    gl::BindVertexArray();
-}
-
-// helper: draw a batch of render objects that have the same material and material block
-void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
-    std::span<RenderObject const> els,
-    int32_t& textureSlot,
-    std::optional<InstancingState>& ins)
-{
-    OSC_PERF("GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock");
-
-    Material::Impl const& matImpl = *els.front().material.m_Impl;
-    Shader::Impl const& shaderImpl = *matImpl.m_Shader.m_Impl;
-    FastStringHashtable<ShaderElement> const& uniforms = shaderImpl.getUniforms();
-
-    // bind property block variables (if applicable)
-    if (els.front().maybePropBlock)
-    {
-        for (auto const& [name, value] : els.front().maybePropBlock->m_Impl->m_Values)
-        {
-            auto const it = uniforms.find(name);
-            if (it != uniforms.end())
-            {
-                TryBindMaterialValueToShaderElement(it->second, value, textureSlot);
-            }
-        }
-    }
-
-    // batch by mesh
-    auto batchIt = els.begin();
-    while (batchIt != els.end())
-    {
-        auto const batchEnd = std::find_if_not(batchIt, els.end(), RenderObjectHasMesh{&batchIt->mesh});
-        HandleBatchWithSameMesh({batchIt, batchEnd}, ins);
-        batchIt = batchEnd;
-    }
-}
-
 
 void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     ShaderElement const& se,
@@ -6241,8 +6210,8 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     {
         static_assert(osc::NumOptions<TextureDimensionality>() == 2);
         std::visit(Overload
-        {
-            [&textureSlot, &se](SingleSampledTexture& sst)
+            {
+                [&textureSlot, &se](SingleSampledTexture& sst)
             {
                 gl::ActiveTexture(GL_TEXTURE0 + textureSlot);
                 gl::BindTexture(sst.texture2D);
@@ -6266,7 +6235,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
                 gl::Uniform(u, textureSlot);
                 ++textureSlot;
             },
-        }, const_cast<RenderTexture::Impl&>(*std::get<RenderTexture>(v).m_Impl).getColorRenderBufferData());
+            }, const_cast<RenderTexture::Impl&>(*std::get<RenderTexture>(v).m_Impl).getColorRenderBufferData());
 
         break;
     }
@@ -6290,7 +6259,145 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     }
 }
 
-// helper: draw a batch of render objects that have the same material
+// helper: draw a batch of `RenderObject`s that have the same:
+//
+//   - Material
+//   - MaterialPropertyBlock
+//   - Mesh
+//   - sub-Mesh index (can be std::nullopt, to mean 'the entire mesh')
+void osc::GraphicsBackend::HandleBatchWithSameSubMesh(
+    std::span<RenderObject const> els,
+    std::optional<InstancingState>& ins)
+{
+    auto& meshImpl = const_cast<Mesh::Impl&>(*els.front().mesh.m_Impl);
+    Shader::Impl const& shaderImpl = *els.front().material.m_Impl->m_Shader.m_Impl;
+    std::optional<size_t> const maybeSubMeshIndex = els.front().maybeSubMeshIndex;
+
+    gl::BindVertexArray(meshImpl.updVertexArray());
+
+    if (shaderImpl.m_MaybeModelMatUniform || shaderImpl.m_MaybeNormalMatUniform)
+    {
+        // if the shader requires per-instance uniforms, then we *have* to render one
+        // instance at a time
+
+        for (RenderObject const& el : els)
+        {
+            // try binding to uModel (standard)
+            if (shaderImpl.m_MaybeModelMatUniform)
+            {
+                if (shaderImpl.m_MaybeModelMatUniform->shaderType == ShaderPropertyType::Mat4)
+                {
+                    gl::UniformMat4 u{shaderImpl.m_MaybeModelMatUniform->location};
+                    gl::Uniform(u, ModelMatrix(el));
+                }
+            }
+
+            // try binding to uNormalMat (standard)
+            if (shaderImpl.m_MaybeNormalMatUniform)
+            {
+                if (shaderImpl.m_MaybeNormalMatUniform->shaderType == osc::ShaderPropertyType::Mat3)
+                {
+                    gl::UniformMat3 u{shaderImpl.m_MaybeNormalMatUniform->location};
+                    gl::Uniform(u, NormalMatrix(el));
+                }
+                else if (shaderImpl.m_MaybeNormalMatUniform->shaderType == osc::ShaderPropertyType::Mat4)
+                {
+                    gl::UniformMat4 u{shaderImpl.m_MaybeNormalMatUniform->location};
+                    gl::Uniform(u, NormalMatrix4(el));
+                }
+            }
+
+            if (ins)
+            {
+                BindToInstancedAttributes(shaderImpl, *ins);
+            }
+            meshImpl.drawInstanced(1, maybeSubMeshIndex);
+            if (ins)
+            {
+                UnbindFromInstancedAttributes(shaderImpl, *ins);
+                ins->baseOffset += 1 * ins->stride;
+            }
+        }
+    }
+    else
+    {
+        // else: the shader supports instanced data, so we can draw multiple meshes in one call
+
+        if (ins)
+        {
+            BindToInstancedAttributes(shaderImpl, *ins);
+        }
+        meshImpl.drawInstanced(els.size(), maybeSubMeshIndex);
+        if (ins)
+        {
+            UnbindFromInstancedAttributes(shaderImpl, *ins);
+            ins->baseOffset += els.size() * ins->stride;
+        }
+    }
+
+    gl::BindVertexArray();
+}
+
+// helper: draw a batch of `RenderObject`s that have the same:
+//
+//   - Material
+//   - MaterialPropertyBlock
+//   - Mesh
+void osc::GraphicsBackend::HandleBatchWithSameMesh(
+    std::span<RenderObject const> els,
+    std::optional<InstancingState>& ins)
+{
+    // batch by sub-Mesh index
+    auto batchIt = els.begin();
+    while (batchIt != els.end())
+    {
+        auto const batchEnd = std::find_if_not(batchIt, els.end(), RenderObjectHasSubMeshIndex{batchIt->maybeSubMeshIndex});
+        HandleBatchWithSameSubMesh({batchIt, batchEnd}, ins);
+        batchIt = batchEnd;
+    }
+}
+
+// helper: draw a batch of `RenderObject`s that have the same:
+//
+//   - Material
+//   - MaterialPropertyBlock
+void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
+    std::span<RenderObject const> els,
+    int32_t& textureSlot,
+    std::optional<InstancingState>& ins)
+{
+    OSC_PERF("GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock");
+
+    Material::Impl const& matImpl = *els.front().material.m_Impl;
+    Shader::Impl const& shaderImpl = *matImpl.m_Shader.m_Impl;
+    FastStringHashtable<ShaderElement> const& uniforms = shaderImpl.getUniforms();
+
+    // bind property block variables (if applicable)
+    if (els.front().maybePropBlock)
+    {
+        for (auto const& [name, value] : els.front().maybePropBlock->m_Impl->m_Values)
+        {
+            auto const it = uniforms.find(name);
+            if (it != uniforms.end())
+            {
+                TryBindMaterialValueToShaderElement(it->second, value, textureSlot);
+            }
+        }
+    }
+
+    // batch by mesh
+    auto batchIt = els.begin();
+    while (batchIt != els.end())
+    {
+        auto const batchEnd = std::find_if_not(batchIt, els.end(), RenderObjectHasMesh{&batchIt->mesh});
+        HandleBatchWithSameMesh({batchIt, batchEnd}, ins);
+        batchIt = batchEnd;
+    }
+}
+
+// helper: draw a batch of `RenderObject`s that have the same:
+//
+//   - Material
 void osc::GraphicsBackend::HandleBatchWithSameMaterial(
     RenderPassState const& renderPassState,
     std::span<RenderObject const> els)
@@ -6397,12 +6504,12 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
     }
 }
 
-// helper: draw a sequence of render objects (no presumptions)
-void osc::GraphicsBackend::DrawBatchedByMaterial(
+// helper: draw a sequence of `RenderObject`s
+void osc::GraphicsBackend::DrawRenderObjects(
     RenderPassState const& renderPassState,
     std::span<RenderObject const> els)
 {
-    OSC_PERF("GraphicsBackend::DrawBatchedByMaterial");
+    OSC_PERF("GraphicsBackend::DrawRenderObjects");
 
     // batch by material
     auto batchIt = els.begin();
@@ -6429,7 +6536,7 @@ void osc::GraphicsBackend::DrawBatchedByOpaqueness(
         {
             // [batchIt..opaqueEnd] contains opaque elements
             gl::Disable(GL_BLEND);
-            DrawBatchedByMaterial(renderPassState, {batchIt, opaqueEnd});
+            DrawRenderObjects(renderPassState, {batchIt, opaqueEnd});
 
             batchIt = opaqueEnd;
         }
@@ -6439,7 +6546,7 @@ void osc::GraphicsBackend::DrawBatchedByOpaqueness(
             // [opaqueEnd..els.end()] contains transparent elements
             auto const transparentEnd = std::find_if(opaqueEnd, els.end(), IsOpaque);
             gl::Enable(GL_BLEND);
-            DrawBatchedByMaterial(renderPassState, {opaqueEnd, transparentEnd});
+            DrawRenderObjects(renderPassState, {opaqueEnd, transparentEnd});
 
             batchIt = transparentEnd;
         }
@@ -6917,10 +7024,20 @@ void osc::GraphicsBackend::DrawMesh(
     Material const& material,
     Camera& camera,
     std::optional<MaterialPropertyBlock> const& maybeMaterialPropertyBlock,
-    std::optional<size_t>)
+    std::optional<size_t> maybeSubMeshIndex)
 {
-    // TODO: use sub mesh index
-    camera.m_Impl.upd()->m_RenderQueue.emplace_back(mesh, transform, material, maybeMaterialPropertyBlock);
+    if (maybeSubMeshIndex && *maybeSubMeshIndex >= mesh.getSubMeshCount())
+    {
+        throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
+    }
+
+    camera.m_Impl.upd()->m_RenderQueue.emplace_back(
+        mesh,
+        transform,
+        material,
+        maybeMaterialPropertyBlock,
+        maybeSubMeshIndex
+    );
 }
 
 void osc::GraphicsBackend::DrawMesh(
@@ -6929,10 +7046,20 @@ void osc::GraphicsBackend::DrawMesh(
     Material const& material,
     Camera& camera,
     std::optional<MaterialPropertyBlock> const& maybeMaterialPropertyBlock,
-    std::optional<size_t>)
+    std::optional<size_t> maybeSubMeshIndex)
 {
-    // TODO: use sub mesh index
-    camera.m_Impl.upd()->m_RenderQueue.emplace_back(mesh, transform, material, maybeMaterialPropertyBlock);
+    if (maybeSubMeshIndex && *maybeSubMeshIndex >= mesh.getSubMeshCount())
+    {
+        throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
+    }
+
+    camera.m_Impl.upd()->m_RenderQueue.emplace_back(
+        mesh,
+        transform,
+        material,
+        maybeMaterialPropertyBlock,
+        maybeSubMeshIndex
+    );
 }
 
 void osc::GraphicsBackend::Blit(
