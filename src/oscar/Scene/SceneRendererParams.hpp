@@ -27,7 +27,7 @@ namespace osc
 
         SceneRendererParams();
 
-        friend bool operator==(SceneRendererParams const&, SceneRendererParams const&) { return false; }
+        friend bool operator==(SceneRendererParams const&, SceneRendererParams const&) = default;
 
         Vec2i dimensions;
         AntiAliasingLevel antiAliasingLevel;
