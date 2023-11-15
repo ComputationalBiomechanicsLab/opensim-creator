@@ -28,7 +28,7 @@ namespace osc
     public:
         class Iterator final {
         public:
-            using difference_type = void;
+            using difference_type = size_t;
             using value_type = uint32_t;
             using pointer = void;
             using reference = value_type;

@@ -642,6 +642,7 @@ namespace
             swap(a.maybePropBlock, b.maybePropBlock);
             swap(a.transform, b.transform);
             swap(a.worldMidpoint, b.worldMidpoint);
+            swap(a.maybeSubMeshIndex, b.maybeSubMeshIndex);
         }
 
         friend bool operator==(RenderObject const&, RenderObject const&) = default;
@@ -4268,31 +4269,28 @@ public:
         size_t n,
         std::optional<size_t> maybeSubMeshIndex)
     {
-        if (maybeSubMeshIndex)
-        {
-            size_t const meshDataStride = calcByteStrideBetweenElements();
+        SubMeshDescriptor const descriptor = maybeSubMeshIndex ?
+            m_SubMeshDescriptors.at(*maybeSubMeshIndex) :         // draw the requested sub-mesh
+            SubMeshDescriptor{0, m_NumIndices, m_Topology};       // else: draw the entire mesh as a "sub mesh"
 
-            // draw only the specified sub-mesh
-            SubMeshDescriptor const& desc = m_SubMeshDescriptors.at(*maybeSubMeshIndex);
-            glDrawElementsInstanced(
-                ToOpenGLTopology(desc.getTopology()),
-                static_cast<GLsizei>(desc.getIndexCount()),
-                m_IndicesAre32Bit ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT,
-                reinterpret_cast<void*>(static_cast<intptr_t>(desc.getIndexStart() * meshDataStride)),
-                static_cast<GLsizei>(n)
-            );
-        }
-        else
-        {
-            // draw all mesh data
-            glDrawElementsInstanced(
-                ToOpenGLTopology(m_Topology),
-                static_cast<GLsizei>(m_NumIndices),
-                m_IndicesAre32Bit ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT,
-                nullptr,
-                static_cast<GLsizei>(n)
-            );
-        }
+        // convert mesh/descriptor data types into OpenGL-compatible formats
+        GLenum const mode = ToOpenGLTopology(descriptor.getTopology());
+        GLsizei const count = static_cast<GLsizei>(descriptor.getIndexCount());
+        GLenum const type = m_IndicesAre32Bit ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT;
+
+        size_t const bytesPerIndex = m_IndicesAre32Bit ? sizeof(GLint) : sizeof(GLshort);
+        size_t const firstIndexByteOffset = descriptor.getIndexStart() * bytesPerIndex;
+        void const* indices = reinterpret_cast<void*>(static_cast<intptr_t>(firstIndexByteOffset));
+
+        GLsizei const instanceCount = static_cast<GLsizei>(n);
+
+        glDrawElementsInstanced(
+            mode,
+            count,
+            type,
+            indices,
+            instanceCount
+        );
     }
 
 private:
@@ -4334,7 +4332,23 @@ private:
         static_assert(sizeof(decltype(m_Tangents)::value_type) == 4*sizeof(float));
 
         // calculate the number of bytes between each entry in the packed VBO
-        size_t byteStride = calcByteStrideBetweenElements();
+        size_t byteStride = sizeof(decltype(m_Vertices)::value_type);
+        if (hasNormals)
+        {
+            byteStride += sizeof(decltype(m_Normals)::value_type);
+        }
+        if (hasTexCoords)
+        {
+            byteStride += sizeof(decltype(m_TexCoords)::value_type);
+        }
+        if (hasColors)
+        {
+            byteStride += sizeof(decltype(m_Colors)::value_type);
+        }
+        if (hasTangents)
+        {
+            byteStride += sizeof(decltype(m_Tangents)::value_type);
+        }
 
         // check that the data stored in this mesh object is valid before indexing into it
         OSC_ASSERT_ALWAYS((!hasNormals || m_Normals.size() == m_Vertices.size()) && "number of normals != number of verts");
@@ -4481,34 +4495,6 @@ private:
         gl::BindVertexArray();  // VAO configuration complete
 
         buffers.dataVersion = *m_Version;
-    }
-
-    size_t calcByteStrideBetweenElements() const
-    {
-        bool const hasNormals = !m_Normals.empty();
-        bool const hasTexCoords = !m_TexCoords.empty();
-        bool const hasColors = !m_Colors.empty();
-        bool const hasTangents = !m_Tangents.empty();
-
-        // calculate the number of bytes between each entry in the packed VBO
-        size_t byteStride = sizeof(decltype(m_Vertices)::value_type);
-        if (hasNormals)
-        {
-            byteStride += sizeof(decltype(m_Normals)::value_type);
-        }
-        if (hasTexCoords)
-        {
-            byteStride += sizeof(decltype(m_TexCoords)::value_type);
-        }
-        if (hasColors)
-        {
-            byteStride += sizeof(decltype(m_Colors)::value_type);
-        }
-        if (hasTangents)
-        {
-            byteStride += sizeof(decltype(m_Tangents)::value_type);
-        }
-        return byteStride;
     }
 
     DefaultConstructOnCopy<UID> m_UID;
