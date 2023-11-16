@@ -3,6 +3,7 @@
 #include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
 #include <OpenSimCreator/Bindings/SimTKMeshLoader.hpp>
 #include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/ModelGraph/ModelGraphStrings.hpp>
 #include <OpenSimCreator/Registry/ComponentRegistry.hpp>
 #include <OpenSimCreator/Registry/StaticComponentRegistries.hpp>
 #include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
@@ -144,6 +145,7 @@ using osc::Mat4x3;
 using osc::Material;
 using osc::MaterialPropertyBlock;
 using osc::Mesh;
+using osc::ModelGraphStrings;
 using osc::operator<<;
 using osc::Overload;
 using osc::PolarPerspectiveCamera;
@@ -168,38 +170,6 @@ using osc::UID;
 // constants
 namespace
 {
-    // user-facing strings
-    constexpr CStringView c_GroundLabel = "Ground";
-    constexpr CStringView c_GroundLabelPluralized = "Ground";
-    constexpr CStringView c_GroundLabelOptionallyPluralized = "Ground(s)";
-    constexpr CStringView c_GroundDescription = "Ground is an inertial reference frame in which the motion of all frames and points may conveniently and efficiently be expressed. It is always defined to be at (0, 0, 0) in 'worldspace' and cannot move. All bodies in the model must eventually attach to ground via joints.";
-
-    constexpr CStringView c_MeshLabel = "Mesh";
-    constexpr CStringView c_MeshLabelPluralized = "Meshes";
-    constexpr CStringView c_MeshLabelOptionallyPluralized = "Mesh(es)";
-    constexpr CStringView c_MeshDescription = "Meshes are decorational components in the model. They can be translated, rotated, and scaled. Typically, meshes are 'attached' to other elements in the model, such as bodies. When meshes are 'attached' to something, they will 'follow' the thing they are attached to.";
-    constexpr CStringView c_MeshAttachmentCrossrefName = "parent";
-
-    constexpr CStringView c_BodyLabel = "Body";
-    constexpr CStringView c_BodyLabelPluralized = "Bodies";
-    constexpr CStringView c_BodyLabelOptionallyPluralized = "Body(s)";
-    constexpr CStringView c_BodyDescription = "Bodies are active elements in the model. They define a 'frame' (effectively, a location + orientation) with a mass.\n\nOther body properties (e.g. inertia) can be edited in the main OpenSim Creator editor after you have converted the model into an OpenSim model.";
-
-    constexpr CStringView c_JointLabel = "Joint";
-    constexpr CStringView c_JointLabelPluralized = "Joints";
-    constexpr CStringView c_JointLabelOptionallyPluralized = "Joint(s)";
-    constexpr CStringView c_JointDescription = "Joints connect two physical frames (i.e. bodies and ground) together and specifies their relative permissible motion (e.g. PinJoints only allow rotation along one axis).\n\nIn OpenSim, joints are the 'edges' of a directed topology graph where bodies are the 'nodes'. All bodies in the model must ultimately connect to ground via joints.";
-    constexpr CStringView c_JointParentCrossrefName = "parent";
-    constexpr CStringView c_JointChildCrossrefName = "child";
-
-    constexpr CStringView c_StationLabel = "Station";
-    constexpr CStringView c_StationLabelPluralized = "Stations";
-    constexpr CStringView c_StationLabelOptionallyPluralized = "Station(s)";
-    constexpr CStringView c_StationDescription = "Stations are points of interest in the model. They can be used to compute a 3D location in the frame of the thing they are attached to.\n\nThe utility of stations is that you can use them to visually mark points of interest. Those points of interest will then be defined with respect to whatever they are attached to. This is useful because OpenSim typically requires relative coordinates for things in the model (e.g. muscle paths).";
-    constexpr CStringView c_StationParentCrossrefName = "parent";
-
-    constexpr CStringView c_TranslationDescription = "Translation of the component in ground. OpenSim defines this as 'unitless'; however, OpenSim models typically use meters.";
-
     // senteniel UIDs
     class BodyEl;
     UID const c_GroundID;
@@ -856,11 +826,11 @@ namespace
         {
             return
             {
-                c_GroundLabel,
-                c_GroundLabelPluralized,
-                c_GroundLabelOptionallyPluralized,
+                ModelGraphStrings::c_GroundLabel,
+                ModelGraphStrings::c_GroundLabelPluralized,
+                ModelGraphStrings::c_GroundLabelOptionallyPluralized,
                 ICON_FA_DOT_CIRCLE,
-                c_GroundDescription,
+                ModelGraphStrings::c_GroundDescription,
             };
         }
 
@@ -876,12 +846,12 @@ namespace
 
         std::ostream& implWriteToStream(std::ostream& o) const final
         {
-            return o << c_GroundLabel << "()";
+            return o << ModelGraphStrings::c_GroundLabel << "()";
         }
 
         CStringView implGetLabel() const final
         {
-            return c_GroundLabel;
+            return ModelGraphStrings::c_GroundLabel;
         }
 
         Transform implGetXform(ISceneElLookup const&) const final
@@ -961,11 +931,11 @@ namespace
         {
             return
             {
-                c_MeshLabel,
-                c_MeshLabelPluralized,
-                c_MeshLabelOptionallyPluralized,
+                ModelGraphStrings::c_MeshLabel,
+                ModelGraphStrings::c_MeshLabelPluralized,
+                ModelGraphStrings::c_MeshLabelOptionallyPluralized,
                 ICON_FA_CUBE,
-                c_MeshDescription,
+                ModelGraphStrings::c_MeshDescription,
             };
         }
 
@@ -973,7 +943,7 @@ namespace
         {
             return
             {
-                {m_Attachment, c_MeshAttachmentCrossrefName, CrossrefDirection::ToParent},
+                {m_Attachment, ModelGraphStrings::c_MeshAttachmentCrossrefName, CrossrefDirection::ToParent},
             };
         }
 
@@ -1084,11 +1054,11 @@ namespace
         {
             return
             {
-                c_BodyLabel,
-                c_BodyLabelPluralized,
-                c_BodyLabelOptionallyPluralized,
+                ModelGraphStrings::c_BodyLabel,
+                ModelGraphStrings::c_BodyLabelPluralized,
+                ModelGraphStrings::c_BodyLabelOptionallyPluralized,
                 ICON_FA_CIRCLE,
-                c_BodyDescription,
+                ModelGraphStrings::c_BodyDescription,
             };
         }
 
@@ -1211,11 +1181,11 @@ namespace
         {
             return
             {
-                c_JointLabel,
-                c_JointLabelPluralized,
-                c_JointLabelOptionallyPluralized,
+                ModelGraphStrings::c_JointLabel,
+                ModelGraphStrings::c_JointLabelPluralized,
+                ModelGraphStrings::c_JointLabelOptionallyPluralized,
                 ICON_FA_LINK,
-                c_JointDescription,
+                ModelGraphStrings::c_JointDescription,
             };
         }
 
@@ -1223,8 +1193,8 @@ namespace
         {
             return
             {
-                {m_Parent, c_JointParentCrossrefName, CrossrefDirection::ToParent},
-                {m_Child,  c_JointChildCrossrefName,  CrossrefDirection::ToChild },
+                {m_Parent, ModelGraphStrings::c_JointParentCrossrefName, CrossrefDirection::ToParent},
+                {m_Child,  ModelGraphStrings::c_JointChildCrossrefName,  CrossrefDirection::ToChild },
             };
         }
 
@@ -1345,11 +1315,11 @@ namespace
         {
             return
             {
-                c_StationLabel,
-                c_StationLabelPluralized,
-                c_StationLabelOptionallyPluralized,
+                ModelGraphStrings::c_StationLabel,
+                ModelGraphStrings::c_StationLabelPluralized,
+                ModelGraphStrings::c_StationLabelOptionallyPluralized,
                 ICON_FA_MAP_PIN,
-                c_StationDescription,
+                ModelGraphStrings::c_StationDescription,
             };
         }
 
@@ -1357,7 +1327,7 @@ namespace
         {
             return
             {
-                {m_Attachment, c_StationParentCrossrefName, CrossrefDirection::ToParent},
+                {m_Attachment, ModelGraphStrings::c_StationParentCrossrefName, CrossrefDirection::ToParent},
             };
         }
 
@@ -6992,7 +6962,7 @@ private:
                 m_Shared->commitCurrentModelGraph(std::move(ss).str());
             }
             ImGui::SameLine();
-            osc::DrawHelpMarker("Translation", c_TranslationDescription);
+            osc::DrawHelpMarker("Translation", ModelGraphStrings::c_TranslationDescription);
         }
 
         // rotation editor
@@ -7050,7 +7020,7 @@ private:
             {
                 m_Shared->pushMeshLoadRequests(el.getID(), m_Shared->promptUserForMeshFiles());
             }
-            osc::DrawTooltipIfItemHovered("Add Meshes", c_MeshDescription);
+            osc::DrawTooltipIfItemHovered("Add Meshes", ModelGraphStrings::c_MeshDescription);
         }
         ImGui::PopID();
 
@@ -7063,19 +7033,19 @@ private:
                 {
                     AddBody(m_Shared->updCommittableModelGraph(), el.getPos(m_Shared->getModelGraph()), el.getID());
                 }
-                osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription.c_str());
+                osc::DrawTooltipIfItemHovered("Add Body", ModelGraphStrings::c_BodyDescription.c_str());
 
                 if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
                 {
                     AddBody(m_Shared->updCommittableModelGraph(), clickPos, el.getID());
                 }
-                osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription.c_str());
+                osc::DrawTooltipIfItemHovered("Add Body", ModelGraphStrings::c_BodyDescription.c_str());
 
                 if (ImGui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
                 {
                     AddBody(m_Shared->updCommittableModelGraph());
                 }
-                osc::DrawTooltipIfItemHovered("Add body", c_BodyDescription.c_str());
+                osc::DrawTooltipIfItemHovered("Add body", ModelGraphStrings::c_BodyDescription.c_str());
 
                 if (auto const* meshEl = dynamic_cast<MeshEl const*>(&el))
                 {
@@ -7084,21 +7054,21 @@ private:
                         Vec3 const location = Midpoint(meshEl->calcBounds());
                         AddBody(m_Shared->updCommittableModelGraph(), location, meshEl->getID());
                     }
-                    osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription.c_str());
+                    osc::DrawTooltipIfItemHovered("Add Body", ModelGraphStrings::c_BodyDescription.c_str());
 
                     if (ImGui::MenuItem(ICON_FA_DIVIDE " at mesh average center"))
                     {
                         Vec3 const location = AverageCenter(*meshEl);
                         AddBody(m_Shared->updCommittableModelGraph(), location, meshEl->getID());
                     }
-                    osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription.c_str());
+                    osc::DrawTooltipIfItemHovered("Add Body", ModelGraphStrings::c_BodyDescription.c_str());
 
                     if (ImGui::MenuItem(ICON_FA_WEIGHT " at mesh mass center"))
                     {
                         Vec3 const location = MassCenter(*meshEl);
                         AddBody(m_Shared->updCommittableModelGraph(), location, meshEl->getID());
                     }
-                    osc::DrawTooltipIfItemHovered("Add body", c_BodyDescription.c_str());
+                    osc::DrawTooltipIfItemHovered("Add body", ModelGraphStrings::c_BodyDescription.c_str());
                 }
 
                 ImGui::EndMenu();
@@ -7110,7 +7080,7 @@ private:
             {
                 AddBody(m_Shared->updCommittableModelGraph(), el.getPos(m_Shared->getModelGraph()), el.getID());
             }
-            osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription.c_str());
+            osc::DrawTooltipIfItemHovered("Add Body", ModelGraphStrings::c_BodyDescription.c_str());
         }
         ImGui::PopID();
 
@@ -7136,19 +7106,19 @@ private:
                     {
                         AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, el.getPos(m_Shared->getModelGraph()));
                     }
-                    osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
+                    osc::DrawTooltipIfItemHovered("Add Station", ModelGraphStrings::c_StationDescription);
 
                     if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
                     {
                         AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, clickPos);
                     }
-                    osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
+                    osc::DrawTooltipIfItemHovered("Add Station", ModelGraphStrings::c_StationDescription);
 
                     if (ImGui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
                     {
                         AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, Vec3{});
                     }
-                    osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
+                    osc::DrawTooltipIfItemHovered("Add Station", ModelGraphStrings::c_StationDescription);
 
                     if (dynamic_cast<MeshEl const*>(&el))
                     {
@@ -7156,7 +7126,7 @@ private:
                         {
                             AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, Midpoint(el.calcBounds(m_Shared->getModelGraph())));
                         }
-                        osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
+                        osc::DrawTooltipIfItemHovered("Add Station", ModelGraphStrings::c_StationDescription);
                     }
 
                     ImGui::EndMenu();
@@ -7168,7 +7138,7 @@ private:
                 {
                     AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, el.getPos(m_Shared->getModelGraph()));
                 }
-                osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
+                osc::DrawTooltipIfItemHovered("Add Station", ModelGraphStrings::c_StationDescription);
             }
         }
         ImGui::PopID();
@@ -7191,7 +7161,7 @@ private:
         {
             m_Shared->promptUserForMeshFilesAndPushThemOntoMeshLoader();
         }
-        osc::DrawTooltipIfItemHovered("Add Meshes to the model", c_MeshDescription);
+        osc::DrawTooltipIfItemHovered("Add Meshes to the model", ModelGraphStrings::c_MeshDescription);
 
         if (ImGui::BeginMenu(ICON_FA_PLUS " Add Other"))
         {
@@ -7819,13 +7789,13 @@ private:
         {
             m_Shared->promptUserForMeshFilesAndPushThemOntoMeshLoader();
         }
-        osc::DrawTooltipIfItemHovered("Add Meshes", c_MeshDescription);
+        osc::DrawTooltipIfItemHovered("Add Meshes", ModelGraphStrings::c_MeshDescription);
 
         if (ImGui::MenuItem(ICON_FA_CIRCLE " Body"))
         {
             AddBody(m_Shared->updCommittableModelGraph());
         }
-        osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription);
+        osc::DrawTooltipIfItemHovered("Add Body", ModelGraphStrings::c_BodyDescription);
 
         if (ImGui::MenuItem(ICON_FA_MAP_PIN " Station"))
         {
@@ -7852,7 +7822,7 @@ private:
         {
             m_Shared->promptUserForMeshFilesAndPushThemOntoMeshLoader();
         }
-        osc::DrawTooltipIfItemHovered("Add Meshes to the model", c_MeshDescription);
+        osc::DrawTooltipIfItemHovered("Add Meshes to the model", ModelGraphStrings::c_MeshDescription);
 
         ImGui::SameLine();
 

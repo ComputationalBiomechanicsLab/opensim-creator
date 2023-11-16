@@ -55,6 +55,8 @@ add_library(OpenSimCreator STATIC
     Model/VirtualConstModelStatePair.hpp
     Model/VirtualModelStatePair.hpp
 
+    ModelGraph/ModelGraphStrings.hpp
+
     Outputs/ComponentOutputExtractor.cpp
     Outputs/ComponentOutputExtractor.hpp
     Outputs/IntegratorOutputExtractor.cpp
