@@ -47,6 +47,7 @@
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
+#include <oscar/Maths/EasingFunctions.hpp>
 #include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/Mat3.hpp>
 #include <oscar/Maths/Mat4.hpp>
@@ -73,6 +74,7 @@
 #include <oscar/Scene/SceneRendererParams.hpp>
 #include <oscar/Shims/Cpp23/utility.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
+#include <oscar/UI/Panels/UndoRedoPanel.hpp>
 #include <oscar/UI/Tabs/TabHost.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>
 #include <oscar/UI/Widgets/Popup.hpp>
@@ -89,6 +91,7 @@
 #include <oscar/Utils/Spsc.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
+#include <oscar/Utils/UndoRedo.hpp>
 #include <oscar/Utils/VariantHelpers.hpp>
 #include <SDL_events.h>
 #include <SimTKcommon.h>
@@ -224,58 +227,6 @@ namespace
         return std::move(ss).str();
     }
 
-    // returns easing function Y value for an X in the range [0, 1.0f]
-    float EaseOutElastic(float x)
-    {
-        // adopted from: https://easings.net/#easeOutElastic
-
-        constexpr float c4 = 2.0f*std::numbers::pi_v<float> / 3.0f;
-        float const normalized = osc::Clamp(x, 0.0f, 1.0f);
-
-        return std::pow(2.0f, -5.0f*normalized) * std::sin((normalized*10.0f - 0.75f) * c4) + 1.0f;
-    }
-
-    // returns the transform, but rotated such that the given axis points along the
-    // given direction
-    Transform PointAxisAlong(Transform const& t, int axis, Vec3 const& direction)
-    {
-        Vec3 beforeDir{};
-        beforeDir[axis] = 1.0f;
-        beforeDir = t.rotation * beforeDir;
-
-        Quat const rotBeforeToAfter = osc::Rotation(beforeDir, direction);
-        Quat const newRotation = osc::Normalize(rotBeforeToAfter * t.rotation);
-
-        return t.withRotation(newRotation);
-    }
-
-    // performs the shortest (angular) rotation of a transform such that the
-    // designated axis points towards a point in the same space
-    Transform PointAxisTowards(Transform const& t, int axis, Vec3 const& p)
-    {
-        return PointAxisAlong(t, axis, osc::Normalize(p - t.position));
-    }
-
-    // perform an intrinsic rotation about a transform's axis
-    Transform RotateAlongAxis(Transform const& t, int axis, float angRadians)
-    {
-        Vec3 ax{};
-        ax[axis] = 1.0f;
-        ax = t.rotation * ax;
-
-        Quat const q = osc::AngleAxis(angRadians, ax);
-
-        return t.withRotation(osc::Normalize(q * t.rotation));
-    }
-
-    Transform ToTransform(SimTK::Transform const& t)
-    {
-        // extract the SimTK transform into a 4x3 matrix
-        Mat4x3 const m = osc::ToMat4x3(t);
-
-        return Transform{.rotation = osc::QuatCast(Mat3{m}), .position = m[3]};
-    }
-
     // returns a camera that is in the initial position the camera should be in for this screen
     PolarPerspectiveCamera CreateDefaultCamera()
     {
@@ -302,30 +253,6 @@ namespace
     {
         constexpr float factor = 0.8f;
         return {srcColor[0], factor * srcColor[1], factor * srcColor[2], factor * srcColor[3]};
-    }
-
-    // returns true if `c` is a character that can appear within the name of
-    // an OpenSim::Component
-    bool IsValidOpenSimComponentNameCharacter(char c)
-    {
-        return
-            std::isalpha(static_cast<uint8_t>(c)) != 0 ||
-            ('0' <= c && c <= '9') ||
-            (c == '-' || c == '_');
-    }
-
-    // returns a sanitized form of the `s` that OpenSim should accept
-    std::string SanitizeToOpenSimComponentName(std::string_view sv)
-    {
-        std::string rv;
-        for (char c : sv)
-        {
-            if (IsValidOpenSimComponentNameCharacter(c))
-            {
-                rv += c;
-            }
-        }
-        return rv;
     }
 }
 
@@ -524,6 +451,7 @@ namespace
             std::string description;
             mutable std::atomic<int32_t> uniqueCounter = 0;
         };
+
         std::shared_ptr<Data const> m_Data;
     };
 
@@ -606,6 +534,39 @@ namespace
         return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
     }
 
+    class CrossrefDescriptor final {
+    public:
+        CrossrefDescriptor(
+            UID connecteeID_,
+            CStringView label_,
+            CrossrefDirection direction_) :
+
+            m_ConnecteeID{connecteeID_},
+            m_Label{label_},
+            m_Direction{direction_}
+        {
+        }
+
+        UID getConnecteeID() const
+        {
+            return m_ConnecteeID;
+        }
+
+        CStringView getLabel() const
+        {
+            return m_Label;
+        }
+
+        CrossrefDirection getDirection() const
+        {
+            return m_Direction;
+        }
+    private:
+        UID m_ConnecteeID;
+        CStringView m_Label;
+        CrossrefDirection m_Direction;
+    };
+
     // virtual interface to something that can be used to lookup scene elements in
     // some larger document
     class ISceneElLookup {
@@ -642,7 +603,6 @@ namespace
             return implGetClass();
         }
 
-        // allow runtime cloning of a particular instance
         std::unique_ptr<SceneEl> clone() const
         {
             return implClone();
@@ -658,17 +618,16 @@ namespace
             return implToVariant();
         }
 
-        // each scene element may be referencing `n` (>= 0) other scene elements by
-        // ID. These methods allow implementations to ask what and how
         int getNumCrossReferences() const
         {
-            return implGetNumCrossReferences();
+            return static_cast<int>(implGetCrossReferences().size());
         }
 
         UID getCrossReferenceConnecteeID(int i) const
         {
-            return implGetCrossReferenceConnecteeID(i);
+            return implGetCrossReferences().at(i).getConnecteeID();
         }
+
         void setCrossReferenceConnecteeID(int i, UID newID)
         {
             implSetCrossReferenceConnecteeID(i, newID);
@@ -676,16 +635,12 @@ namespace
 
         CStringView getCrossReferenceLabel(int i) const
         {
-            return implGetCrossReferenceLabel(i);
-        }
-        CrossrefDirection getCrossReferenceDirection(int i) const
-        {
-            return implGetCrossReferenceDirection(i);
+            return implGetCrossReferences().at(i).getLabel();
         }
 
-        SceneElFlags getFlags() const
+        CrossrefDirection getCrossReferenceDirection(int i) const
         {
-            return implGetFlags();
+            return implGetCrossReferences().at(i).getDirection();
         }
 
         UID getID() const
@@ -717,45 +672,104 @@ namespace
             implSetXform(lookup, newTransform);
         }
 
+        Vec3 getPos(ISceneElLookup const& lookup) const
+        {
+            return getXForm(lookup).position;
+        }
+        void setPos(ISceneElLookup const& lookup, Vec3 const& newPos)
+        {
+            setXform(lookup, getXForm(lookup).withPosition(newPos));
+        }
+
+        Vec3 getScale(ISceneElLookup const& lookup) const
+        {
+            return getXForm(lookup).scale;
+        }
+
+        void setScale(ISceneElLookup const& lookup, Vec3 const& newScale)
+        {
+            setXform(lookup, getXForm(lookup).withScale(newScale));
+        }
+
+        Quat getRotation(ISceneElLookup const& lookup) const
+        {
+            return getXForm(lookup).rotation;
+        }
+
+        void setRotation(ISceneElLookup const& lookup, Quat const& newRotation)
+        {
+            setXform(lookup, getXForm(lookup).withRotation(newRotation));
+        }
+
         AABB calcBounds(ISceneElLookup const& lookup) const
         {
             return implCalcBounds(lookup);
         }
 
-        // helper methods (overrideable)
-        //
-        // these position/scale/rotation methods are here as member virtual functions
-        // because downstream classes may only actually hold a subset of a full
-        // transform (e.g. only position). There is a perf advantage to only returning
-        // what was asked for.
-
-        Vec3 getPos(ISceneElLookup const& lookup) const
+        void applyTranslation(ISceneElLookup const& lookup, Vec3 const& translation)
         {
-            return implGetPos(lookup);
-        }
-        void setPos(ISceneElLookup const& lookup, Vec3 const& newPos)
-        {
-            implSetPos(lookup, newPos);
+            setPos(lookup, getPos(lookup) + translation);
         }
 
-        Vec3 getScale(ISceneElLookup const& lookup) const
+        void applyRotation(
+            ISceneElLookup const& lookup,
+            Vec3 const& eulerAngles,
+            Vec3 const& rotationCenter)
         {
-            return implGetScale(lookup);
+            Transform t = getXForm(lookup);
+            ApplyWorldspaceRotation(t, eulerAngles, rotationCenter);
+            setXform(lookup, t);
         }
 
-        void setScale(ISceneElLookup const& lookup, Vec3 const& newScale)
+        void applyScale(ISceneElLookup const& lookup, Vec3 const& scaleFactors)
         {
-            implSetScale(lookup, newScale);
+            setScale(lookup, getScale(lookup) * scaleFactors);
         }
 
-        Quat getRotation(ISceneElLookup const& lookup) const
+        bool canChangeLabel() const
         {
-            return implGetRotation(lookup);
+            return implGetFlags() & SceneElFlags::CanChangeLabel;
         }
 
-        void setRotation(ISceneElLookup const& lookup, Quat const& newRotation)
+        bool canChangePosition() const
         {
-            implSetRotation(lookup, newRotation);
+            return implGetFlags() & SceneElFlags::CanChangePosition;
+        }
+
+        bool canChangeRotation() const
+        {
+            return implGetFlags() & SceneElFlags::CanChangeRotation;
+        }
+
+        bool canChangeScale() const
+        {
+            return implGetFlags() & SceneElFlags::CanChangeScale;
+        }
+
+        bool canDelete() const
+        {
+            return implGetFlags() & SceneElFlags::CanDelete;
+        }
+
+        bool canSelect() const
+        {
+            return implGetFlags() & SceneElFlags::CanSelect;
+        }
+
+        bool hasPhysicalSize() const
+        {
+            return implGetFlags() & SceneElFlags::HasPhysicalSize;
+        }
+
+        bool isCrossReferencing(
+            UID id,
+            CrossrefDirection direction = CrossrefDirection::Both) const
+        {
+            auto const crossRefs = implGetCrossReferences();
+            return std::any_of(crossRefs.begin(), crossRefs.end(), [id, direction](CrossrefDescriptor const& desc)
+            {
+                return desc.getConnecteeID() == id && (desc.getDirection() & direction);
+            });
         }
 
     private:
@@ -763,145 +777,23 @@ namespace
         virtual std::unique_ptr<SceneEl> implClone() const = 0;
         virtual ConstSceneElVariant implToVariant() const = 0;
         virtual SceneElVariant implToVariant() = 0;
-        virtual int implGetNumCrossReferences() const
-        {
-            return 0;
-        }
-        virtual UID implGetCrossReferenceConnecteeID(int) const
-        {
-            throw std::runtime_error{"cannot get cross reference ID: no method implemented"};
-        }
-        virtual void implSetCrossReferenceConnecteeID(int, UID)
-        {
-            throw std::runtime_error{"cannot set cross reference ID: no method implemented"};
-        }
-        virtual CStringView implGetCrossReferenceLabel(int) const
-        {
-            throw std::runtime_error{"cannot get cross reference label: no method implemented"};
-        }
-        virtual CrossrefDirection implGetCrossReferenceDirection(int) const
-        {
-            return CrossrefDirection::ToParent;
-        }
         virtual SceneElFlags implGetFlags() const = 0;
 
-        virtual UID implGetID() const = 0;
+        virtual std::vector<CrossrefDescriptor> implGetCrossReferences() const { return {}; }
+        virtual void implSetCrossReferenceConnecteeID(int, UID) {}
+
         virtual std::ostream& implWriteToStream(std::ostream&) const = 0;
 
+        virtual UID implGetID() const = 0;
+
         virtual CStringView implGetLabel() const = 0;
-        virtual void implSetLabel(std::string_view) = 0;
+        virtual void implSetLabel(std::string_view) {}
 
         virtual Transform implGetXform(ISceneElLookup const&) const = 0;
-        virtual void implSetXform(ISceneElLookup const&, Transform const&) = 0;
+        virtual void implSetXform(ISceneElLookup const&, Transform const&) {}
 
         virtual AABB implCalcBounds(ISceneElLookup const&) const = 0;
-
-        virtual Vec3 implGetPos(ISceneElLookup const& lookup) const
-        {
-            return getXForm(lookup).position;
-        }
-        virtual void implSetPos(ISceneElLookup const& lookup, Vec3 const& newPos)
-        {
-            Transform t = getXForm(lookup);
-            t.position = newPos;
-            setXform(lookup, t);
-        }
-
-        virtual Vec3 implGetScale(ISceneElLookup const& lookup) const
-        {
-            return getXForm(lookup).scale;
-        }
-        virtual void implSetScale(ISceneElLookup const& lookup, Vec3 const& newScale)
-        {
-            Transform t = getXForm(lookup);
-            t.scale = newScale;
-            setXform(lookup, t);
-        }
-
-        virtual Quat implGetRotation(ISceneElLookup const& lookup) const
-        {
-            return getXForm(lookup).rotation;
-        }
-        virtual void implSetRotation(ISceneElLookup const& lookup, Quat const& newRotation)
-        {
-            Transform t = getXForm(lookup);
-            t.rotation = newRotation;
-            setXform(lookup, t);
-        }
     };
-
-    // SceneEl helper methods
-
-    void ApplyTranslation(SceneEl& el, ISceneElLookup const& lookup, Vec3 const& translation)
-    {
-        el.setPos(lookup, el.getPos(lookup) + translation);
-    }
-
-    void ApplyRotation(
-        SceneEl& el,
-        ISceneElLookup const& lookup,
-        Vec3 const& eulerAngles,
-        Vec3 const& rotationCenter)
-    {
-        Transform t = el.getXForm(lookup);
-        ApplyWorldspaceRotation(t, eulerAngles, rotationCenter);
-        el.setXform(lookup, t);
-    }
-
-    void ApplyScale(SceneEl& el, ISceneElLookup const& lookup, Vec3 const& scaleFactors)
-    {
-        el.setScale(lookup, el.getScale(lookup) * scaleFactors);
-    }
-
-    bool CanChangeLabel(SceneEl const& el)
-    {
-        return el.getFlags() & SceneElFlags::CanChangeLabel;
-    }
-
-    bool CanChangePosition(SceneEl const& el)
-    {
-        return el.getFlags() & SceneElFlags::CanChangePosition;
-    }
-
-    bool CanChangeRotation(SceneEl const& el)
-    {
-        return el.getFlags() & SceneElFlags::CanChangeRotation;
-    }
-
-    bool CanChangeScale(SceneEl const& el)
-    {
-        return el.getFlags() & SceneElFlags::CanChangeScale;
-    }
-
-    bool CanDelete(SceneEl const& el)
-    {
-        return el.getFlags() & SceneElFlags::CanDelete;
-    }
-
-    bool CanSelect(SceneEl const& el)
-    {
-        return el.getFlags() & SceneElFlags::CanSelect;
-    }
-
-    bool HasPhysicalSize(SceneEl const& el)
-    {
-        return el.getFlags() & SceneElFlags::HasPhysicalSize;
-    }
-
-    bool IsCrossReferencing(
-        SceneEl const& el,
-        UID id,
-        CrossrefDirection direction = CrossrefDirection::Both)
-    {
-        for (int i = 0, len = el.getNumCrossReferences(); i < len; ++i)
-        {
-            if (el.getCrossReferenceConnecteeID(i) == id && (el.getCrossReferenceDirection(i) & direction) != 0)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
 
     // Curiously Recurring Template Pattern (CRTP) for SceneEl
     //
@@ -992,19 +884,9 @@ namespace
             return c_GroundLabel;
         }
 
-        void implSetLabel(std::string_view) final
-        {
-            // ignore: cannot set ground's name
-        }
-
         Transform implGetXform(ISceneElLookup const&) const final
         {
             return Identity<Transform>();
-        }
-
-        void implSetXform(ISceneElLookup const&, Transform const&) final
-        {
-            // ignore: cannot change ground's xform
         }
 
         AABB implCalcBounds(ISceneElLookup const&) const final
@@ -1087,18 +969,12 @@ namespace
             };
         }
 
-        int implGetNumCrossReferences() const final
+        std::vector<CrossrefDescriptor> implGetCrossReferences() const final
         {
-            return 1;
-        }
-
-        UID implGetCrossReferenceConnecteeID(int i) const final
-        {
-            if (i != 0)
+            return
             {
-                throw std::runtime_error{"invalid index accessed for cross reference"};
-            }
-            return m_Attachment;
+                {m_Attachment, c_MeshAttachmentCrossrefName, CrossrefDirection::ToParent},
+            };
         }
 
         void implSetCrossReferenceConnecteeID(int i, UID id) final
@@ -1108,15 +984,6 @@ namespace
                 throw std::runtime_error{"invalid index accessed for cross reference"};
             }
             m_Attachment = id;
-        }
-
-        CStringView implGetCrossReferenceLabel(int i) const final
-        {
-            if (i != 0)
-            {
-                throw std::runtime_error{"invalid index accessed for cross reference"};
-            }
-            return c_MeshAttachmentCrossrefName;
         }
 
         SceneElFlags implGetFlags() const final
@@ -1155,7 +1022,7 @@ namespace
 
         void implSetLabel(std::string_view sv) final
         {
-            m_Name = SanitizeToOpenSimComponentName(sv);
+            m_Name = osc::SanitizeToOpenSimComponentName(sv);
         }
 
         Transform implGetXform(ISceneElLookup const&) const final
@@ -1178,7 +1045,7 @@ namespace
         Transform m_Transform;
         Mesh m_MeshData;
         std::filesystem::path m_Path;
-        std::string m_Name = SanitizeToOpenSimComponentName(osc::FileNameWithoutExtension(m_Path));
+        std::string m_Name = osc::SanitizeToOpenSimComponentName(osc::FileNameWithoutExtension(m_Path));
     };
 
     // a body scene element
@@ -1192,7 +1059,7 @@ namespace
             Transform const& xform) :
 
             m_ID{id},
-            m_Name{SanitizeToOpenSimComponentName(name)},
+            m_Name{osc::SanitizeToOpenSimComponentName(name)},
             m_Xform{xform}
         {
         }
@@ -1256,7 +1123,7 @@ namespace
 
         void implSetLabel(std::string_view sv) final
         {
-            m_Name = SanitizeToOpenSimComponentName(sv);
+            m_Name = osc::SanitizeToOpenSimComponentName(sv);
         }
 
         Transform implGetXform(ISceneElLookup const&) const final
@@ -1268,11 +1135,6 @@ namespace
         {
             m_Xform = newXform;
             m_Xform.scale = {1.0f, 1.0f, 1.0f};
-        }
-
-        void implSetScale(ISceneElLookup const&, Vec3 const&) final
-        {
-            // ignore: scaling a body, which is a point, does nothing
         }
 
         AABB implCalcBounds(ISceneElLookup const&) const final
@@ -1301,7 +1163,7 @@ namespace
 
             m_ID{id},
             m_JointTypeIndex{jointTypeIdx},
-            m_UserAssignedName{SanitizeToOpenSimComponentName(userAssignedName)},
+            m_UserAssignedName{osc::SanitizeToOpenSimComponentName(userAssignedName)},
             m_Parent{parent},
             m_Child{child},
             m_Xform{xform}
@@ -1357,21 +1219,13 @@ namespace
             };
         }
 
-        int implGetNumCrossReferences() const final
+        std::vector<CrossrefDescriptor> implGetCrossReferences() const final
         {
-            return 2;
-        }
-
-        UID implGetCrossReferenceConnecteeID(int i) const final
-        {
-            switch (i) {
-            case 0:
-                return m_Parent;
-            case 1:
-                return m_Child;
-            default:
-                throw std::runtime_error{"invalid index accessed for cross reference"};
-            }
+            return
+            {
+                {m_Parent, c_JointParentCrossrefName, CrossrefDirection::ToParent},
+                {m_Child,  c_JointChildCrossrefName,  CrossrefDirection::ToChild },
+            };
         }
 
         void implSetCrossReferenceConnecteeID(int i, UID id) final
@@ -1383,30 +1237,6 @@ namespace
             case 1:
                 m_Child = id;
                 break;
-            default:
-                throw std::runtime_error{"invalid index accessed for cross reference"};
-            }
-        }
-
-        CStringView implGetCrossReferenceLabel(int i) const final
-        {
-            switch (i) {
-            case 0:
-                return c_JointParentCrossrefName;
-            case 1:
-                return c_JointChildCrossrefName;
-            default:
-                throw std::runtime_error{"invalid index accessed for cross reference"};
-            }
-        }
-
-        CrossrefDirection implGetCrossReferenceDirection(int i) const final
-        {
-            switch (i) {
-            case 0:
-                return CrossrefDirection::ToParent;
-            case 1:
-                return CrossrefDirection::ToChild;
             default:
                 throw std::runtime_error{"invalid index accessed for cross reference"};
             }
@@ -1445,7 +1275,7 @@ namespace
 
         void implSetLabel(std::string_view sv) final
         {
-            m_UserAssignedName = SanitizeToOpenSimComponentName(sv);
+            m_UserAssignedName = osc::SanitizeToOpenSimComponentName(sv);
         }
 
         Transform implGetXform(ISceneElLookup const&) const final
@@ -1457,11 +1287,6 @@ namespace
         {
             m_Xform = t;
             m_Xform.scale = {1.0f, 1.0f, 1.0f};
-        }
-
-        void implSetScale(ISceneElLookup const&, Vec3 const&) final
-        {
-            // ignore
         }
 
         AABB implCalcBounds(ISceneElLookup const&) const final
@@ -1489,7 +1314,7 @@ namespace
             m_ID{id},
             m_Attachment{attachment},
             m_Position{position},
-            m_Name{SanitizeToOpenSimComponentName(name)}
+            m_Name{osc::SanitizeToOpenSimComponentName(name)}
         {
         }
 
@@ -1500,7 +1325,7 @@ namespace
 
             m_Attachment{attachment},
             m_Position{position},
-            m_Name{SanitizeToOpenSimComponentName(name)}
+            m_Name{osc::SanitizeToOpenSimComponentName(name)}
         {
         }
 
@@ -1528,18 +1353,12 @@ namespace
             };
         }
 
-        int implGetNumCrossReferences() const final
+        std::vector<CrossrefDescriptor> implGetCrossReferences() const final
         {
-            return 1;
-        }
-
-        UID implGetCrossReferenceConnecteeID(int i) const final
-        {
-            if (i != 0)
+            return
             {
-                throw std::runtime_error{"invalid index accessed for cross reference"};
-            }
-            return m_Attachment;
+                {m_Attachment, c_StationParentCrossrefName, CrossrefDirection::ToParent},
+            };
         }
 
         void implSetCrossReferenceConnecteeID(int i, UID id) final
@@ -1549,15 +1368,6 @@ namespace
                 throw std::runtime_error{"invalid index accessed for cross reference"};
             }
             m_Attachment = id;
-        }
-
-        CStringView implGetCrossReferenceLabel(int i) const final
-        {
-            if (i != 0)
-            {
-                throw std::runtime_error{"invalid index accessed for cross reference"};
-            }
-            return c_StationParentCrossrefName;
         }
 
         SceneElFlags implGetFlags() const final
@@ -1591,7 +1401,7 @@ namespace
 
         void implSetLabel(std::string_view sv) final
         {
-            m_Name = SanitizeToOpenSimComponentName(sv);
+            m_Name = osc::SanitizeToOpenSimComponentName(sv);
         }
 
         Transform implGetXform(ISceneElLookup const&) const final
@@ -1651,21 +1461,13 @@ namespace
             };
         }
 
-        int implGetNumCrossReferences() const final
+        std::vector<CrossrefDescriptor> implGetCrossReferences() const final
         {
-            return 2;
-        }
-
-        UID implGetCrossReferenceConnecteeID(int i) const final
-        {
-            switch (i) {
-            case 0:
-                return m_FirstAttachmentID;
-            case 1:
-                return m_SecondAttachmentID;
-            default:
-                throw std::runtime_error{"invalid index passed when looking up a cross refernece"};
-            }
+            return
+            {
+                {m_FirstAttachmentID,  "First Point",  CrossrefDirection::ToParent},
+                {m_SecondAttachmentID, "Second Point", CrossrefDirection::ToParent},
+            };
         }
 
         void implSetCrossReferenceConnecteeID(int i, UID newAttachmentID) final
@@ -1680,24 +1482,6 @@ namespace
             default:
                 throw std::runtime_error{"invalid index passed when looking up a cross refernece"};
             }
-        }
-
-        CStringView implGetCrossReferenceLabel(int i) const final
-        {
-            switch (i) {
-            case 0:
-                return "First Point";
-            case 1:
-                return "Second Point";
-            default:
-                throw std::runtime_error{"invalid index passed when looking up a cross refernece"};
-            }
-            throw std::runtime_error{"cannot get cross reference label: no method implemented"};
-        }
-
-        CrossrefDirection implGetCrossReferenceDirection(int) const final
-        {
-            return CrossrefDirection::ToParent;
         }
 
         SceneElFlags implGetFlags() const final
@@ -1755,10 +1539,11 @@ namespace
             SceneEl const* second = lookup.find(m_FirstAttachmentID);
             if (first && second)
             {
-                return osc::Union(
-                    AABB::OfPoint(first->getPos(lookup)),
-                    AABB::OfPoint(second->getPos(lookup))
-                );
+                return osc::BoundingAABBOf(std::to_array(
+                {
+                    first->getPos(lookup),
+                    second->getPos(lookup),
+                }));
             }
             else
             {
@@ -1868,7 +1653,7 @@ namespace
         template<DerivedFrom<SceneEl> T>
         class Iterator final {
         public:
-            using difference_type = void;
+            using difference_type = ptrdiff_t;
             using value_type = T;
             using pointer = T*;
             using const_pointer = T const*;
@@ -1962,11 +1747,6 @@ namespace
     public:
 
         ModelGraph() = default;
-
-        std::unique_ptr<ModelGraph> clone() const
-        {
-            return std::make_unique<ModelGraph>(*this);
-        }
 
         template<DerivedFrom<SceneEl> T = SceneEl>
         T* tryUpdElByID(UID id)
@@ -2105,7 +1885,7 @@ namespace
         {
             SceneEl const* const e = tryGetElByID(id);
 
-            if (e && CanSelect(*e))
+            if (e && e->canSelect())
             {
                 m_SelectedEls.insert(id);
             }
@@ -2130,7 +1910,7 @@ namespace
         {
             for (SceneEl const& e : iter())
             {
-                if (CanSelect(e))
+                if (e.canSelect())
                 {
                     m_SelectedEls.insert(e.getID());
                 }
@@ -2186,7 +1966,7 @@ namespace
             UID const deletedID = deletionTarget.getID();
 
             // add the deletion target to the deletion set (if applicable)
-            if (CanDelete(deletionTarget))
+            if (deletionTarget.canDelete())
             {
                 if (!out.emplace(deletedID).second)
                 {
@@ -2200,7 +1980,7 @@ namespace
 
             for (SceneEl const& el : iter())
             {
-                if (IsCrossReferencing(el, deletedID))
+                if (el.isCrossReferencing(deletedID))
                 {
                     populateDeletionSet(el, out);
                 }
@@ -2547,234 +2327,15 @@ namespace
     }
 }
 
-// undo/redo/snapshot support
-//
-// the editor has to support undo/redo/snapshots, because it's feasible that the user
-// will want to undo a change they make.
-//
-// this implementation leans on the fact that the modelgraph (above) tries to follow value
-// semantics, so copying an entire modelgraph into a buffer results in an independent copy
-// that can't be indirectly mutated via references from other copies
-namespace
-{
-    // a single immutable and independent snapshot of the model, with a commit message + time
-    // explaining what the snapshot "is" (e.g. "loaded file", "rotated body") and when it was
-    // created
-    class ModelGraphCommit final {
-    public:
-        ModelGraphCommit(
-            UID parentID,  // can be c_EmptyID
-            ClonePtr<ModelGraph> modelGraph,
-            std::string_view commitMessage
-        ) :
-            m_ParentID{parentID},
-            m_ModelGraph{std::move(modelGraph)},
-            m_CommitMessage{commitMessage},
-            m_CommitTime{std::chrono::system_clock::now()}
-        {
-        }
-
-        UID getID() const
-        {
-            return m_ID;
-        }
-
-        UID getParentID() const
-        {
-            return m_ParentID;
-        }
-
-        ModelGraph const& getModelGraph() const
-        {
-            return *m_ModelGraph;
-        }
-
-        CStringView getCommitMessage() const
-        {
-            return m_CommitMessage;
-        }
-
-        std::chrono::system_clock::time_point getCommitTime() const
-        {
-            return m_CommitTime;
-        }
-
-    private:
-        UID m_ID;
-        UID m_ParentID;
-        ClonePtr<ModelGraph> m_ModelGraph;
-        std::string m_CommitMessage;
-        std::chrono::system_clock::time_point m_CommitTime;
-    };
-
-    // undoable model graph storage
-    class CommittableModelGraph final {
-    public:
-        CommittableModelGraph() :
-            CommittableModelGraph{std::make_unique<ModelGraph>()}
-        {
-        }
-
-        explicit CommittableModelGraph(std::unique_ptr<ModelGraph> mg) :
-            m_Scratch{std::move(mg)},
-            m_Current{c_EmptyID},
-            m_BranchHead{c_EmptyID}
-        {
-            commit("created model graph");
-        }
-
-        explicit CommittableModelGraph(ModelGraph const& mg) :
-            CommittableModelGraph{std::make_unique<ModelGraph>(mg)}
-        {
-        }
-
-        UID commit(std::string_view commitMsg)
-        {
-            auto snapshot = std::make_unique<ModelGraphCommit>(
-                m_Current,
-                ClonePtr<ModelGraph>{*m_Scratch},
-                commitMsg
-            );
-
-            UID const id = snapshot->getID();
-
-            m_Commits.try_emplace(id, std::move(snapshot));
-            m_Current = id;
-            m_BranchHead = id;
-
-            return id;
-        }
-
-        ModelGraphCommit const* tryGetCommitByID(UID id) const
-        {
-            auto const it = m_Commits.find(id);
-            return it != m_Commits.end() ? it->second.get() : nullptr;
-        }
-
-        ModelGraphCommit const& getCommitByID(UID id) const
-        {
-            ModelGraphCommit const* const ptr = tryGetCommitByID(id);
-            if (!ptr)
-            {
-                std::stringstream ss;
-                ss << "failed to find commit with ID = " << id;
-                throw std::runtime_error{std::move(ss).str()};
-            }
-            return *ptr;
-        }
-
-        bool hasCommit(UID id) const
-        {
-            return tryGetCommitByID(id) != nullptr;
-        }
-
-        template<typename Consumer>
-        void forEachCommitUnordered(Consumer f) const
-            requires Invocable<Consumer, ModelGraphCommit const&>
-        {
-            for (auto const& [id, commit] : m_Commits)
-            {
-                f(*commit);
-            }
-        }
-
-        UID getCheckoutID() const
-        {
-            return m_Current;
-        }
-
-        void checkout(UID id)
-        {
-            ModelGraphCommit const* const c = tryGetCommitByID(id);
-
-            if (c)
-            {
-                m_Scratch = c->getModelGraph();
-                m_Current = c->getID();
-                m_BranchHead = c->getID();
-            }
-        }
-
-        bool canUndo() const
-        {
-            ModelGraphCommit const* const c = tryGetCommitByID(m_Current);
-            return c ? c->getParentID() != c_EmptyID : false;
-        }
-
-        void undo()
-        {
-            ModelGraphCommit const* const cur = tryGetCommitByID(m_Current);
-
-            if (!cur)
-            {
-                return;
-            }
-
-            ModelGraphCommit const* const parent = tryGetCommitByID(cur->getParentID());
-
-            if (parent)
-            {
-                m_Scratch = parent->getModelGraph();
-                m_Current = parent->getID();
-                // don't update m_BranchHead
-            }
-        }
-
-        bool canRedo() const
-        {
-            return m_BranchHead != m_Current && hasCommit(m_BranchHead);
-        }
-
-        void redo()
-        {
-            if (m_BranchHead == m_Current)
-            {
-                return;
-            }
-
-            ModelGraphCommit const* c = tryGetCommitByID(m_BranchHead);
-            while (c != nullptr && c->getParentID() != m_Current)
-            {
-                c = tryGetCommitByID(c->getParentID());
-            }
-
-            if (c)
-            {
-                m_Scratch = c->getModelGraph();
-                m_Current = c->getID();
-                // don't update m_BranchHead
-            }
-        }
-
-        ModelGraph& updScratch()
-        {
-            return *m_Scratch;
-        }
-
-        ModelGraph const& getScratch() const
-        {
-            return *m_Scratch;
-        }
-
-        void garbageCollect()
-        {
-            m_Scratch->garbageCollect();
-        }
-
-    private:
-        ClonePtr<ModelGraph> m_Scratch;  // mutable staging area
-        UID m_Current;  // where scratch will commit to
-        UID m_BranchHead;  // head of current branch (for redo)
-        std::unordered_map<UID, ClonePtr<ModelGraphCommit>> m_Commits;
-    };
-}
-
 // undoable action support
 //
 // functions that mutate the undoable datastructure and commit changes at the
 // correct time
 namespace
 {
+    // model graphs can be stored in a generic UndoRedo container
+    using CommittableModelGraph = osc::UndoRedoT<ModelGraph>;
+
     bool PointAxisTowards(
         CommittableModelGraph& cmg,
         UID id,
@@ -2782,7 +2343,7 @@ namespace
         UID other)
     {
         PointAxisTowards(cmg.updScratch(), id, axis, other);
-        cmg.commit("reoriented " + getLabel(cmg.getScratch(), id));
+        cmg.commitScratch("reoriented " + getLabel(cmg.getScratch(), id));
         return true;
     }
 
@@ -2818,7 +2379,7 @@ namespace
         commitMsg << " to " << mg.getElByID(newAttachment).getLabel();
 
 
-        cmg.commit(std::move(commitMsg).str());
+        cmg.commitScratch(std::move(commitMsg).str());
 
         return true;
     }
@@ -2845,7 +2406,7 @@ namespace
         );
         SelectOnly(mg, jointEl);
 
-        cmg.commit("added " + jointEl.getLabel());
+        cmg.commitScratch("added " + jointEl.getLabel());
 
         return true;
     }
@@ -2869,7 +2430,7 @@ namespace
         Transform const t = el->getXForm(mg);
 
         el->setXform(mg, PointAxisAlong(t, axis, direction));
-        cmg.commit("reoriented " + el->getLabel());
+        cmg.commitScratch("reoriented " + el->getLabel());
 
         return true;
     }
@@ -2905,7 +2466,7 @@ namespace
         }
 
         el->setPos(mg, osc::Midpoint(a, b));
-        cmg.commit("translated " + el->getLabel());
+        cmg.commitScratch("translated " + el->getLabel());
 
         return true;
     }
@@ -2937,7 +2498,7 @@ namespace
         }
 
         el->setPos(mg, osc::Midpoint(aEl->getPos(mg), bEl->getPos(mg)));
-        cmg.commit("translated " + el->getLabel());
+        cmg.commitScratch("translated " + el->getLabel());
 
         return true;
     }
@@ -2962,7 +2523,7 @@ namespace
         }
 
         el->setPos(mg, otherEl->getPos(mg));
-        cmg.commit("moved " + el->getLabel());
+        cmg.commitScratch("moved " + el->getLabel());
 
         return true;
     }
@@ -2987,7 +2548,7 @@ namespace
         }
 
         el->setPos(mg, AverageCenter(*mesh));
-        cmg.commit("moved " + el->getLabel());
+        cmg.commitScratch("moved " + el->getLabel());
 
         return true;
     }
@@ -3014,7 +2575,7 @@ namespace
         Vec3 const boundsMidpoint = Midpoint(mesh->calcBounds());
 
         el->setPos(mg, boundsMidpoint);
-        cmg.commit("moved " + el->getLabel());
+        cmg.commitScratch("moved " + el->getLabel());
 
         return true;
     }
@@ -3039,7 +2600,7 @@ namespace
         }
 
         el->setPos(mg, MassCenter(*mesh));
-        cmg.commit("moved " + el->getLabel());
+        cmg.commitScratch("moved " + el->getLabel());
 
         return true;
     }
@@ -3069,7 +2630,7 @@ namespace
         }
 
         el->setCrossReferenceConnecteeID(crossref, other);
-        cmg.commit("reassigned " + el->getLabel() + " " + el->getCrossReferenceLabel(crossref));
+        cmg.commitScratch("reassigned " + el->getLabel() + " " + el->getCrossReferenceLabel(crossref));
 
         return true;
     }
@@ -3084,7 +2645,7 @@ namespace
         }
 
         DeleteSelected(cmg.updScratch());
-        cmg.commit("deleted selection");
+        cmg.commitScratch("deleted selection");
 
         return true;
     }
@@ -3106,7 +2667,7 @@ namespace
             return false;
         }
 
-        cmg.commit("deleted " + label);
+        cmg.commitScratch("deleted " + label);
         return true;
     }
 
@@ -3118,7 +2679,7 @@ namespace
     {
         ModelGraph& mg = cmg.updScratch();
         el.setXform(mg, RotateAlongAxis(el.getXForm(mg), axis, radians));
-        cmg.commit("reoriented " + el.getLabel());
+        cmg.commitScratch("reoriented " + el.getLabel());
     }
 
     bool TryCopyOrientation(
@@ -3141,7 +2702,7 @@ namespace
         }
 
         el->setRotation(mg, otherEl->getRotation(mg));
-        cmg.commit("reoriented " + el->getLabel());
+        cmg.commitScratch("reoriented " + el->getLabel());
 
         return true;
     }
@@ -3168,7 +2729,7 @@ namespace
             }
         }
 
-        cmg.commit(std::string{"added "} + b.getLabel());
+        cmg.commitScratch(std::string{"added "} + b.getLabel());
 
         return b.getID();
     }
@@ -3197,7 +2758,7 @@ namespace
             GenerateName(StationEl::Class())
         );
         SelectOnly(mg, station);
-        cmg.commit("added station " + station.getLabel());
+        cmg.commitScratch("added station " + station.getLabel());
         return true;
     }
 
@@ -3765,7 +3326,7 @@ namespace
         for (OpenSim::Body const& b : m.getComponentList<OpenSim::Body>())
         {
             std::string const name = b.getName();
-            Transform const xform = ToTransform(b.getTransformInGround(st));
+            Transform const xform = osc::ToTransform(b.getTransformInGround(st));
 
             auto& el = rv.emplaceEl<BodyEl>(UID{}, name, xform);
             el.setMass(b.getMass());
@@ -3843,7 +3404,7 @@ namespace
                 continue;
             }
 
-            Transform const xform = ToTransform(parentFrame.getTransformInGround(st));
+            Transform const xform = osc::ToTransform(parentFrame.getTransformInGround(st));
 
             auto& jointEl = rv.emplaceEl<JointEl>(UID{}, type, name, parent, child, xform);
             jointLookup.emplace(&j, jointEl.getID());
@@ -3907,7 +3468,7 @@ namespace
             }
 
             auto& el = rv.emplaceEl<MeshEl>(UID{}, attachment, meshData, realLocation);
-            Transform newTransform = ToTransform(frame.getTransformInGround(st));
+            Transform newTransform = osc::ToTransform(frame.getTransformInGround(st));
             newTransform.scale = osc::ToVec3(mesh.get_scale_factors());
 
             el.setXform(newTransform);
@@ -4087,7 +3648,7 @@ namespace
             {
                 m_ModelGraphSnapshots = CommittableModelGraph{CreateModelFromOsimFile(*maybeOsimPath)};
                 m_MaybeModelGraphExportLocation = *maybeOsimPath;
-                m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.getCheckoutID();
+                m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.getHeadID();
                 return true;
             }
             else
@@ -4114,7 +3675,7 @@ namespace
             {
                 m->print(exportPath.string());
                 m_MaybeModelGraphExportLocation = exportPath;
-                m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.getCheckoutID();
+                m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.getHeadID();
                 return true;
             }
             else
@@ -4152,7 +3713,7 @@ namespace
 
         bool isModelGraphUpToDateWithDisk() const
         {
-            return m_MaybeModelGraphExportedUID == m_ModelGraphSnapshots.getCheckoutID();
+            return m_MaybeModelGraphExportedUID == m_ModelGraphSnapshots.getHeadID();
         }
 
         bool isCloseRequested() const
@@ -4221,7 +3782,7 @@ namespace
 
         void commitCurrentModelGraph(std::string_view commitMsg)
         {
-            m_ModelGraphSnapshots.commit(commitMsg);
+            m_ModelGraphSnapshots.commitScratch(commitMsg);
         }
 
         bool canUndoCurrentModelGraph() const
@@ -4531,7 +4092,7 @@ namespace
             {
                 UID id = el.getID();
 
-                if (id != currentHover.ID && !IsCrossReferencing(el, currentHover.ID))
+                if (id != currentHover.ID && !el.isCrossReferencing(currentHover.ID))
                 {
                     continue;
                 }
@@ -5415,7 +4976,7 @@ namespace
             // pop any background-loaded meshes
             popMeshLoader();
 
-            m_ModelGraphSnapshots.garbageCollect();
+            m_ModelGraphSnapshots.updScratch().garbageCollect();
         }
 
     private:
@@ -5426,7 +4987,7 @@ namespace
         std::filesystem::path m_MaybeModelGraphExportLocation;
 
         // (maybe) the UID of the model graph when it was last successfully saved to disk (used for dirty checking)
-        UID m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.getCheckoutID();
+        UID m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.getHeadID();
 
         // a batch of files that the user drag-dropped into the UI in the last frame
         std::vector<std::filesystem::path> m_DroppedFiles;
@@ -6036,7 +5597,7 @@ namespace
             ModelGraph const& mg = m_Shared->getModelGraph();
 
             float fadedAlpha = 0.2f;
-            float animScale = EaseOutElastic(m_AnimationFraction);
+            float animScale = osc::EaseOutElastic(m_AnimationFraction);
 
             for (SceneEl const& el : mg.iter())
             {
@@ -6592,7 +6153,7 @@ namespace
 
             std::stringstream ss;
             ss << "imported " << result.sourceDataPath;
-            undoable.commit(std::move(ss).str());
+            undoable.commitScratch(std::move(ss).str());
         }
 
         std::shared_ptr<SharedData> m_Shared;
@@ -7399,7 +6960,7 @@ private:
         ModelGraph& mg = m_Shared->updModelGraph();
 
         // label/name editor
-        if (CanChangeLabel(e))
+        if (e.canChangeLabel())
         {
             std::string buf{static_cast<std::string_view>(e.getLabel())};
             if (osc::InputString("Name", buf))
@@ -7417,7 +6978,7 @@ private:
         }
 
         // position editor
-        if (CanChangePosition(e))
+        if (e.canChangePosition())
         {
             Vec3 translation = e.getPos(mg);
             if (ImGui::InputFloat3("Translation", osc::ValuePtr(translation), "%.6f"))
@@ -7435,7 +6996,7 @@ private:
         }
 
         // rotation editor
-        if (CanChangeRotation(e))
+        if (e.canChangeRotation())
         {
             Vec3 eulerDegs = osc::Rad2Deg(osc::EulerAngles(e.getRotation(m_Shared->getModelGraph())));
 
@@ -7455,7 +7016,7 @@ private:
         }
 
         // scale factor editor
-        if (CanChangeScale(e))
+        if (e.canChangeScale())
         {
             Vec3 scaleFactors = e.getScale(mg);
             if (ImGui::InputFloat3("Scale", osc::ValuePtr(scaleFactors), "%.6f"))
@@ -7494,7 +7055,7 @@ private:
         ImGui::PopID();
 
         ImGui::PushID(imguiID++);
-        if (HasPhysicalSize(el))
+        if (el.hasPhysicalSize())
         {
             if (ImGui::BeginMenu(ICON_FA_CIRCLE " Body"))
             {
@@ -7567,7 +7128,7 @@ private:
         ImGui::PushID(imguiID++);
         if (CanAttachStationTo(el))
         {
-            if (HasPhysicalSize(el))
+            if (el.hasPhysicalSize())
             {
                 if (ImGui::BeginMenu(ICON_FA_MAP_PIN " Station"))
                 {
@@ -7663,7 +7224,7 @@ private:
             osc::DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a WeldJoint between the body and ground.");
         }
 
-        if (CanDelete(el))
+        if (el.canDelete())
         {
             if (ImGui::MenuItem(ICON_FA_TRASH " Delete"))
             {
@@ -7678,7 +7239,7 @@ private:
     // draw the "Translate" menu for any generic `SceneEl`
     void drawTranslateMenu(SceneEl& el)
     {
-        if (!CanChangePosition(el))
+        if (!el.canChangePosition())
         {
             return;  // can't change its position
         }
@@ -7750,7 +7311,7 @@ private:
     // draw the "Reorient" menu for any generic `SceneEl`
     void drawReorientMenu(SceneEl& el)
     {
-        if (!CanChangeRotation(el))
+        if (!el.canChangeRotation())
         {
             return;  // can't change its rotation
         }
@@ -8162,32 +7723,7 @@ private:
     // draw the content of the (undo/redo) "History" panel
     void drawHistoryPanelContent()
     {
-        CommittableModelGraph& storage = m_Shared->updCommittableModelGraph();
-
-        std::vector<ModelGraphCommit const*> commits;
-        storage.forEachCommitUnordered([&commits](ModelGraphCommit const& c)
-        {
-            commits.push_back(&c);
-        });
-
-        auto orderedByTime = [](ModelGraphCommit const* a, ModelGraphCommit const* b)
-        {
-            return a->getCommitTime() < b->getCommitTime();
-        };
-        std::sort(commits.begin(), commits.end(), orderedByTime);
-
-        int i = 0;
-        for (ModelGraphCommit const* c : commits)
-        {
-            ImGui::PushID(static_cast<int>(i++));
-
-            if (ImGui::Selectable(c->getCommitMessage().c_str(), c->getID() == storage.getCheckoutID()))
-            {
-                storage.checkout(c->getID());
-            }
-
-            ImGui::PopID();
-        }
+        osc::UndoRedoPanel::DrawContent(m_Shared->updCommittableModelGraph());
     }
 
     void drawNavigatorElement(SceneElClass const& c)
@@ -8730,13 +8266,13 @@ private:
             SceneEl& el = m_Shared->updModelGraph().updElByID(id);
             switch (m_ImGuizmoState.op) {
             case ImGuizmo::ROTATE:
-                ApplyRotation(el, m_Shared->getModelGraph(), rotation, m_ImGuizmoState.mtx[3]);
+                el.applyRotation(m_Shared->getModelGraph(), rotation, m_ImGuizmoState.mtx[3]);
                 break;
             case ImGuizmo::TRANSLATE:
-                ApplyTranslation(el, m_Shared->getModelGraph(), translation);
+                el.applyTranslation(m_Shared->getModelGraph(), translation);
                 break;
             case ImGuizmo::SCALE:
-                ApplyScale(el, m_Shared->getModelGraph(), scale);
+                el.applyScale(m_Shared->getModelGraph(), scale);
                 break;
             default:
                 break;

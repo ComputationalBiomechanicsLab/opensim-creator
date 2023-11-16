@@ -41,6 +41,11 @@ osc::UndoRedoEntry const& osc::UndoRedo::getHead() const
     return m_Head;
 }
 
+osc::UID osc::UndoRedo::getHeadID() const
+{
+    return m_Head.getID();
+}
+
 size_t osc::UndoRedo::getNumUndoEntries() const
 {
     return m_Undo.size();

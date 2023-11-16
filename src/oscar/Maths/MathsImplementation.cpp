@@ -2,6 +2,7 @@
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Disc.hpp>
+#include <oscar/Maths/EasingFunctions.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Mat3.hpp>
 #include <oscar/Maths/Mat4.hpp>
@@ -2308,6 +2309,34 @@ osc::Vec3 osc::ExtractExtrinsicEulerAnglesXYZ(Transform const& t)
     return glm::eulerAngles(t.rotation);
 }
 
+osc::Transform osc::PointAxisAlong(Transform const& t, int axisIndex, Vec3 const& newDirection)
+{
+    Vec3 beforeDir{};
+    beforeDir[axisIndex] = 1.0f;
+    beforeDir = t.rotation * beforeDir;
+
+    Quat const rotBeforeToAfter = osc::Rotation(beforeDir, newDirection);
+    Quat const newRotation = osc::Normalize(rotBeforeToAfter * t.rotation);
+
+    return t.withRotation(newRotation);
+}
+
+osc::Transform osc::PointAxisTowards(Transform const& t, int axisIndex, Vec3 const& location)
+{
+    return PointAxisAlong(t, axisIndex, osc::Normalize(location - t.position));
+}
+
+osc::Transform osc::RotateAlongAxis(Transform const& t, int axisIndex, float angRadians)
+{
+    Vec3 ax{};
+    ax[axisIndex] = 1.0f;
+    ax = t.rotation * ax;
+
+    Quat const q = osc::AngleAxis(angRadians, ax);
+
+    return t.withRotation(osc::Normalize(q * t.rotation));
+}
+
 bool osc::IsPointInRect(Rect const& r, Vec2 const& p)
 {
     Vec2 relPos = p - r.p1;
@@ -2500,4 +2529,14 @@ std::optional<osc::RayCollision> osc::GetRayCollisionTriangle(Line const& l, Tri
     }
 
     return osc::RayCollision{.distance = t, .position = l.origin + t*l.direction};
+}
+
+float osc::EaseOutElastic(float x)
+{
+    // adopted from: https://easings.net/#easeOutElastic
+
+    constexpr float c4 = 2.0f*std::numbers::pi_v<float> / 3.0f;
+    float const normalized = osc::Clamp(x, 0.0f, 1.0f);
+
+    return std::pow(2.0f, -5.0f*normalized) * std::sin((normalized*10.0f - 0.75f) * c4) + 1.0f;
 }

@@ -385,6 +385,9 @@ namespace osc
     // returns an AABB that tightly bounds the provided points
     AABB AABBFromVerts(std::span<Vec3 const>);
 
+    // returns an AABB that tightly bounds the provided points (alias that matches BoundingSphereOf, etc.)
+    inline AABB BoundingAABBOf(std::span<Vec3 const> vs) { return AABBFromVerts(vs); }
+
     // returns an AABB that tightly bounds the points indexed by the provided 32-bit indices
     AABB AABBFromIndexedVerts(std::span<Vec3 const> verts, std::span<uint32_t const> indices);
 
@@ -489,4 +492,19 @@ namespace osc
     //
     // see: https://en.wikipedia.org/wiki/Euler_angles#Conventions_by_extrinsic_rotations
     Vec3 ExtractExtrinsicEulerAnglesXYZ(Transform const&);
+
+    // returns the provided transform, but rotated such that the given axis, as expressed
+    // in the original transform, will instead point along the new direction
+    Transform PointAxisAlong(Transform const&, int axisIndex, Vec3 const& newDirection);
+
+    // returns the provided transform, but rotated such that the given axis, as expressed
+    // in the original transform, will instead point towards the given point
+    //
+    // alternate explanation: "performs the shortest (angular) rotation of the given
+    // transform such that the given axis points towards a point in the same space"
+    Transform PointAxisTowards(Transform const&, int axisIndex, Vec3 const& location);
+
+    // returns the provided transform, but intrinsically rotated along the given axis by
+    // the given number of radians
+    Transform RotateAlongAxis(Transform const&, int axisIndex, float angRadians);
 }

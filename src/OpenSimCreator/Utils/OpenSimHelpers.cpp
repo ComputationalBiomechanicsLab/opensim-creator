@@ -1657,3 +1657,24 @@ std::optional<osc::ComponentSpatialRepresentation> osc::TryGetSpatialRepresentat
     }
     return std::nullopt;
 }
+
+bool osc::IsValidOpenSimComponentNameCharacter(char c)
+{
+    return
+        std::isalpha(static_cast<uint8_t>(c)) != 0 ||
+        ('0' <= c && c <= '9') ||
+        (c == '-' || c == '_');
+}
+
+std::string osc::SanitizeToOpenSimComponentName(std::string_view sv)
+{
+    std::string rv;
+    for (char c : sv)
+    {
+        if (IsValidOpenSimComponentNameCharacter(c))
+        {
+            rv += c;
+        }
+    }
+    return rv;
+}
