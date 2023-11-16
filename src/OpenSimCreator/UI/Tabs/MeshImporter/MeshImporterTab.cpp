@@ -28,6 +28,7 @@
 #include <OpenSimCreator/Registry/ComponentRegistry.hpp>
 #include <OpenSimCreator/Registry/StaticComponentRegistries.hpp>
 #include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
+#include <OpenSimCreator/UI/Tabs/MeshImporter/MeshLoader.hpp>
 #include <OpenSimCreator/UI/Tabs/ModelEditorTab.hpp>
 #include <OpenSimCreator/UI/Widgets/MainMenu.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
@@ -141,12 +142,18 @@ using osc::Identity;
 using osc::Invocable;
 using osc::ISceneElLookup;
 using osc::Line;
+using osc::LoadedMesh;
 using osc::Mat3;
 using osc::Mat4;
 using osc::Mat4x3;
 using osc::Material;
 using osc::MaterialPropertyBlock;
 using osc::Mesh;
+using osc::MeshLoader;
+using osc::MeshLoadRequest;
+using osc::MeshLoadOKResponse;
+using osc::MeshLoadErrorResponse;
+using osc::MeshLoadResponse;
 using osc::ModelCreationFlags;
 using osc::ModelGraph;
 using osc::ModelGraphIDs;
@@ -185,7 +192,7 @@ using osc::EdgeEl;
 
 using osc::CommittableModelGraph;
 
-// generic helper functions
+// helper functions
 namespace
 {
     // returns a string representation of a spatial position (e.g. (0.0, 1.0, 3.0))
@@ -224,111 +231,7 @@ namespace
         constexpr float factor = 0.8f;
         return {srcColor[0], factor * srcColor[1], factor * srcColor[2], factor * srcColor[3]};
     }
-}
 
-// background mesh loading support
-//
-// loading mesh files can be slow, so all mesh loading is done on a background worker
-// that:
-//
-//   - receives a mesh loading request
-//   - loads the mesh
-//   - sends the loaded mesh (or error) as a response
-//
-// the main (UI) thread then regularly polls the response channel and handles the (loaded)
-// mesh appropriately
-namespace
-{
-    // a mesh loading request
-    struct MeshLoadRequest final {
-        UID preferredAttachmentPoint;
-        std::vector<std::filesystem::path> paths;
-    };
-
-    // a successfully-loaded mesh
-    struct LoadedMesh final {
-        std::filesystem::path path;
-        Mesh meshData;
-    };
-
-    // an OK response to a mesh loading request
-    struct MeshLoadOKResponse final {
-        UID preferredAttachmentPoint;
-        std::vector<LoadedMesh> meshes;
-    };
-
-    // an ERROR response to a mesh loading request
-    struct MeshLoadErrorResponse final {
-        UID preferredAttachmentPoint;
-        std::filesystem::path path;
-        std::string error;
-    };
-
-    // an OK or ERROR response to a mesh loading request
-    using MeshLoadResponse = std::variant<MeshLoadOKResponse, MeshLoadErrorResponse>;
-
-    // returns an OK or ERROR response to a mesh load request
-    MeshLoadResponse respondToMeshloadRequest(MeshLoadRequest msg)  // NOLINT(performance-unnecessary-value-param)
-    {
-        std::vector<LoadedMesh> loadedMeshes;
-        loadedMeshes.reserve(msg.paths.size());
-
-        for (std::filesystem::path const& path : msg.paths)
-        {
-            try
-            {
-                loadedMeshes.push_back(LoadedMesh{path, osc::LoadMeshViaSimTK(path)});
-            }
-            catch (std::exception const& ex)
-            {
-                // swallow the exception and emit a log error
-                //
-                // older implementations used to cancel loading the entire batch by returning
-                // an MeshLoadErrorResponse, but that wasn't a good idea because there are
-                // times when a user will drag in a bunch of files and expect all the valid
-                // ones to load (#303)
-
-                osc::log::error("%s: error loading mesh file: %s", path.string().c_str(), ex.what());
-            }
-        }
-
-        // ensure the UI thread redraws after the mesh is loaded
-        App::upd().requestRedraw();
-
-        return MeshLoadOKResponse{msg.preferredAttachmentPoint, std::move(loadedMeshes)};
-    }
-
-    // a class that loads meshes in a background thread
-    //
-    // the UI thread must `.poll()` this to check for responses
-    class MeshLoader final {
-    public:
-        MeshLoader() : m_Worker{Worker::create(respondToMeshloadRequest)}
-        {
-        }
-
-        void send(MeshLoadRequest req)
-        {
-            m_Worker.send(std::move(req));
-        }
-
-        std::optional<MeshLoadResponse> poll()
-        {
-            return m_Worker.poll();
-        }
-
-    private:
-        using Worker = osc::spsc::Worker<MeshLoadRequest, MeshLoadResponse, decltype(respondToMeshloadRequest)>;
-        Worker m_Worker;
-    };
-}
-
-// 3D rendering support
-//
-// this code exists to make the modelgraph, and any other decorations (lines, hovers, selections, etc.)
-// renderable in the UI
-namespace
-{
     // returns a transform that maps a sphere mesh (defined to be @ 0,0,0 with radius 1)
     // to some sphere in the scene (e.g. a body/ground)
     Transform SphereMeshToSceneSphereTransform(Sphere const& sceneSphere)
