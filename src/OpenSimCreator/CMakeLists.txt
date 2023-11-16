@@ -55,10 +55,14 @@ add_library(OpenSimCreator STATIC
     Model/VirtualConstModelStatePair.hpp
     Model/VirtualModelStatePair.hpp
 
+    ModelGraph/CrossrefDescriptor.hpp
+    ModelGraph/CrossrefDirection.hpp
     ModelGraph/ModelGraphIDs.cpp
     ModelGraph/ModelGraphIDs.hpp
     ModelGraph/ModelGraphStrings.hpp
     ModelGraph/SceneElClass.hpp
+    ModelGraph/SceneElFlags.hpp
+    ModelGraph/SceneElVariant.hpp
 
     Outputs/ComponentOutputExtractor.cpp
     Outputs/ComponentOutputExtractor.hpp

@@ -3,9 +3,12 @@
 #include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
 #include <OpenSimCreator/Bindings/SimTKMeshLoader.hpp>
 #include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/ModelGraph/CrossrefDescriptor.hpp>
+#include <OpenSimCreator/ModelGraph/CrossrefDirection.hpp>
 #include <OpenSimCreator/ModelGraph/ModelGraphIDs.hpp>
 #include <OpenSimCreator/ModelGraph/ModelGraphStrings.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElClass.hpp>
+#include <OpenSimCreator/ModelGraph/SceneElFlags.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElVariant.hpp>
 #include <OpenSimCreator/Registry/ComponentRegistry.hpp>
 #include <OpenSimCreator/Registry/StaticComponentRegistries.hpp>
@@ -138,6 +141,8 @@ using osc::ClonePtr;
 using osc::Color;
 using osc::ConstructibleFrom;
 using osc::ConstSceneElVariant;
+using osc::CrossrefDescriptor;
+using osc::CrossrefDirection;
 using osc::CStringView;
 using osc::DerivedFrom;
 using osc::Identity;
@@ -162,6 +167,7 @@ using osc::SceneCache;
 using osc::SceneDecoration;
 using osc::SceneDecorationFlags;
 using osc::SceneElClass;
+using osc::SceneElFlags;
 using osc::SceneElVariant;
 using osc::SceneRenderer;
 using osc::SceneRendererParams;
@@ -185,82 +191,6 @@ using osc::UID;
 // - easy UI integration (GLM datatypes, designed to be easy to dump into OpenGL, etc.)
 namespace
 {
-    // runtime flags for a scene el type
-    //
-    // helps the UI figure out what it should/shouldn't show for a particular type
-    // without having to resort to peppering visitors everywhere
-    enum class SceneElFlags {
-        None              = 0,
-        CanChangeLabel    = 1<<0,
-        CanChangePosition = 1<<1,
-        CanChangeRotation = 1<<2,
-        CanChangeScale    = 1<<3,
-        CanDelete         = 1<<4,
-        CanSelect         = 1<<5,
-        HasPhysicalSize   = 1<<6,
-    };
-
-    constexpr bool operator&(SceneElFlags lhs, SceneElFlags rhs)
-    {
-        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
-    }
-
-    constexpr SceneElFlags operator|(SceneElFlags lhs, SceneElFlags rhs)
-    {
-        return static_cast<SceneElFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
-    }
-
-    // returns the "direction" of a cross reference
-    //
-    // most of the time, the direction is towards whatever's being connected to,
-    // but sometimes it can be the opposite, depending on how the datastructure
-    // is ultimately used
-    enum class CrossrefDirection {
-        None     = 0,
-        ToParent = 1<<0,
-        ToChild  = 1<<1,
-
-        Both = ToChild | ToParent
-    };
-
-    constexpr bool operator&(CrossrefDirection lhs, CrossrefDirection rhs)
-    {
-        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
-    }
-
-    class CrossrefDescriptor final {
-    public:
-        CrossrefDescriptor(
-            UID connecteeID_,
-            CStringView label_,
-            CrossrefDirection direction_) :
-
-            m_ConnecteeID{connecteeID_},
-            m_Label{label_},
-            m_Direction{direction_}
-        {
-        }
-
-        UID getConnecteeID() const
-        {
-            return m_ConnecteeID;
-        }
-
-        CStringView getLabel() const
-        {
-            return m_Label;
-        }
-
-        CrossrefDirection getDirection() const
-        {
-            return m_Direction;
-        }
-    private:
-        UID m_ConnecteeID;
-        CStringView m_Label;
-        CrossrefDirection m_Direction;
-    };
-
     // virtual interface to something that can be used to lookup scene elements in
     // some larger document
     class SceneEl;
