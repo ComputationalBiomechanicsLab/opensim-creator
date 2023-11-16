@@ -180,6 +180,8 @@ add_library(OpenSimCreator STATIC
     UI/Tabs/Experimental/TPS2DTab.cpp
     UI/Tabs/Experimental/TPS2DTab.hpp
     UI/Tabs/MeshImporter/DrawableThing.hpp
+    UI/Tabs/MeshImporter/ImportStationsFromCSVPopup.cpp
+    UI/Tabs/MeshImporter/ImportStationsFromCSVPopup.hpp
     UI/Tabs/MeshImporter/MeshImporterHover.hpp
     UI/Tabs/MeshImporter/MeshImporterSharedState.hpp
     UI/Tabs/MeshImporter/MeshImporterTab.cpp
@@ -267,7 +269,7 @@ add_library(OpenSimCreator STATIC
     Utils/TPS3D.hpp
     Utils/UndoableModelActions.cpp
     Utils/UndoableModelActions.hpp
-)
+ "UI/Tabs/MeshImporter/ImportStationsFromCSVPopup.cpp")
 
 # OpenSimCreatorConfig.hpp
 #
