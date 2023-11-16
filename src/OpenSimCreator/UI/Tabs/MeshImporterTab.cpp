@@ -10,6 +10,7 @@
 #include <OpenSimCreator/ModelGraph/ModelGraphStrings.hpp>
 #include <OpenSimCreator/ModelGraph/SceneEl.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElClass.hpp>
+#include <OpenSimCreator/ModelGraph/SceneElCRTP.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElFlags.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElVariant.hpp>
 #include <OpenSimCreator/Registry/ComponentRegistry.hpp>
@@ -169,6 +170,7 @@ using osc::RenderTexture;
 using osc::SceneCache;
 using osc::SceneDecoration;
 using osc::SceneDecorationFlags;
+using osc::SceneEl;
 using osc::SceneElClass;
 using osc::SceneElFlags;
 using osc::SceneElVariant;
@@ -182,67 +184,6 @@ using osc::Vec2;
 using osc::Vec3;
 using osc::Vec4;
 using osc::UID;
-
-// virtual scene element support
-//
-// the editor UI uses custom scene elements, rather than OpenSim types, because they have to
-// support:
-//
-// - visitor patterns (custom UI elements tailored to each known type)
-// - value semantics (undo/redo, rollbacks, etc.)
-// - groundspace manipulation (3D gizmos, drag and drop)
-// - easy UI integration (GLM datatypes, designed to be easy to dump into OpenGL, etc.)
-namespace osc
-{
-    // Curiously Recurring Template Pattern (CRTP) for SceneEl
-    //
-    // automatically defines parts of the SceneEl API using CRTP, so that
-    // downstream classes don't have to repeat themselves
-    template<class T>
-    class SceneElCRTP : public SceneEl {
-    public:
-        static SceneElClass const& Class()
-        {
-            static SceneElClass const s_Class = T::CreateClass();
-            return s_Class;
-        }
-
-        std::unique_ptr<T> clone()
-        {
-            return std::unique_ptr<T>{static_cast<T*>(implClone().release())};
-        }
-    private:
-        SceneElClass const& implGetClass() const final
-        {
-            static_assert(std::is_reference_v<decltype(T::Class())>);
-            static_assert(std::is_same_v<decltype(T::Class()), SceneElClass const&>);
-            return T::Class();
-        }
-
-        std::unique_ptr<SceneEl> implClone() const final
-        {
-            static_assert(std::is_base_of_v<SceneEl, T>);
-            static_assert(std::is_final_v<T>);
-            return std::make_unique<T>(static_cast<T const&>(*this));
-        }
-
-        ConstSceneElVariant implToVariant() const final
-        {
-            static_assert(std::is_base_of_v<SceneEl, T>);
-            static_assert(std::is_final_v<T>);
-            return static_cast<T const&>(*this);
-        }
-
-        SceneElVariant implToVariant() final
-        {
-            static_assert(std::is_base_of_v<SceneEl, T>);
-            static_assert(std::is_final_v<T>);
-            return static_cast<T&>(*this);
-        }
-    };
-}
-
-using osc::SceneEl;
 
 // concrete scene element support
 //
