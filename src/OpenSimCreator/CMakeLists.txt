@@ -70,11 +70,14 @@ add_library(OpenSimCreator STATIC
     ModelGraph/JointEl.hpp
     ModelGraph/MeshEl.cpp
     ModelGraph/MeshEl.hpp
+    ModelGraph/ModelCreationFlags.hpp
     ModelGraph/ModelGraph.hpp
     ModelGraph/ModelGraphHelpers.cpp
     ModelGraph/ModelGraphHelpers.hpp
     ModelGraph/ModelGraphIDs.cpp
     ModelGraph/ModelGraphIDs.hpp
+    ModelGraph/ModelGraphOpenSimBridge.cpp
+    ModelGraph/ModelGraphOpenSimBridge.hpp
     ModelGraph/ModelGraphStrings.hpp
     ModelGraph/SceneEl.cpp
     ModelGraph/SceneEl.hpp
