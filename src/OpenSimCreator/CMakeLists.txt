@@ -68,6 +68,8 @@ add_library(OpenSimCreator STATIC
     ModelGraph/MeshEl.cpp
     ModelGraph/MeshEl.hpp
     ModelGraph/ModelGraph.hpp
+    ModelGraph/ModelGraphHelpers.cpp
+    ModelGraph/ModelGraphHelpers.hpp
     ModelGraph/ModelGraphIDs.cpp
     ModelGraph/ModelGraphIDs.hpp
     ModelGraph/ModelGraphStrings.hpp
@@ -252,7 +254,7 @@ add_library(OpenSimCreator STATIC
     Utils/TPS3D.hpp
     Utils/UndoableModelActions.cpp
     Utils/UndoableModelActions.hpp
-)
+ "ModelGraph/ModelGraphHelpers.cpp")
 
 # OpenSimCreatorConfig.hpp
 #
