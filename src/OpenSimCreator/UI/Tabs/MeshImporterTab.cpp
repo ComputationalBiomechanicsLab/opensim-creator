@@ -169,144 +169,6 @@ using osc::Vec3;
 using osc::Vec4;
 using osc::UID;
 
-// generic helper functions
-namespace
-{
-    // returns a string representation of a spatial position (e.g. (0.0, 1.0, 3.0))
-    std::string PosString(Vec3 const& pos)
-    {
-        std::stringstream ss;
-        ss.precision(4);
-        ss << '(' << pos.x << ", " << pos.y << ", " << pos.z << ')';
-        return std::move(ss).str();
-    }
-
-    // returns a camera that is in the initial position the camera should be in for this screen
-    PolarPerspectiveCamera CreateDefaultCamera()
-    {
-        PolarPerspectiveCamera rv;
-        rv.phi = std::numbers::pi_v<float>/4.0f;
-        rv.theta = std::numbers::pi_v<float>/4.0f;
-        rv.radius = 2.5f;
-        return rv;
-    }
-
-    void SpacerDummy()
-    {
-        ImGui::Dummy({0.0f, 5.0f});
-    }
-
-    Color FaintifyColor(Color const& srcColor)
-    {
-        Color color = srcColor;
-        color.a *= 0.2f;
-        return color;
-    }
-
-    Color RedifyColor(Color const& srcColor)
-    {
-        constexpr float factor = 0.8f;
-        return {srcColor[0], factor * srcColor[1], factor * srcColor[2], factor * srcColor[3]};
-    }
-}
-
-// background mesh loading support
-//
-// loading mesh files can be slow, so all mesh loading is done on a background worker
-// that:
-//
-//   - receives a mesh loading request
-//   - loads the mesh
-//   - sends the loaded mesh (or error) as a response
-//
-// the main (UI) thread then regularly polls the response channel and handles the (loaded)
-// mesh appropriately
-namespace
-{
-    // a mesh loading request
-    struct MeshLoadRequest final {
-        UID preferredAttachmentPoint;
-        std::vector<std::filesystem::path> paths;
-    };
-
-    // a successfully-loaded mesh
-    struct LoadedMesh final {
-        std::filesystem::path path;
-        Mesh meshData;
-    };
-
-    // an OK response to a mesh loading request
-    struct MeshLoadOKResponse final {
-        UID preferredAttachmentPoint;
-        std::vector<LoadedMesh> meshes;
-    };
-
-    // an ERROR response to a mesh loading request
-    struct MeshLoadErrorResponse final {
-        UID preferredAttachmentPoint;
-        std::filesystem::path path;
-        std::string error;
-    };
-
-    // an OK or ERROR response to a mesh loading request
-    using MeshLoadResponse = std::variant<MeshLoadOKResponse, MeshLoadErrorResponse>;
-
-    // returns an OK or ERROR response to a mesh load request
-    MeshLoadResponse respondToMeshloadRequest(MeshLoadRequest msg)  // NOLINT(performance-unnecessary-value-param)
-    {
-        std::vector<LoadedMesh> loadedMeshes;
-        loadedMeshes.reserve(msg.paths.size());
-
-        for (std::filesystem::path const& path : msg.paths)
-        {
-            try
-            {
-                loadedMeshes.push_back(LoadedMesh{path, osc::LoadMeshViaSimTK(path)});
-            }
-            catch (std::exception const& ex)
-            {
-                // swallow the exception and emit a log error
-                //
-                // older implementations used to cancel loading the entire batch by returning
-                // an MeshLoadErrorResponse, but that wasn't a good idea because there are
-                // times when a user will drag in a bunch of files and expect all the valid
-                // ones to load (#303)
-
-                osc::log::error("%s: error loading mesh file: %s", path.string().c_str(), ex.what());
-            }
-        }
-
-        // ensure the UI thread redraws after the mesh is loaded
-        App::upd().requestRedraw();
-
-        return MeshLoadOKResponse{msg.preferredAttachmentPoint, std::move(loadedMeshes)};
-    }
-
-    // a class that loads meshes in a background thread
-    //
-    // the UI thread must `.poll()` this to check for responses
-    class MeshLoader final {
-    public:
-        MeshLoader() : m_Worker{Worker::create(respondToMeshloadRequest)}
-        {
-        }
-
-        void send(MeshLoadRequest req)
-        {
-            m_Worker.send(std::move(req));
-        }
-
-        std::optional<MeshLoadResponse> poll()
-        {
-            return m_Worker.poll();
-        }
-
-    private:
-        using Worker = osc::spsc::Worker<MeshLoadRequest, MeshLoadResponse, decltype(respondToMeshloadRequest)>;
-        Worker m_Worker;
-    };
-}
-
 // virtual scene element support
 //
 // the editor UI uses custom scene elements, rather than OpenSim types, because they have to
@@ -3483,6 +3345,144 @@ namespace
     {
         return CreateModelGraphFromInMemoryModel(OpenSim::Model{p.string()});
     }
+}
+
+// generic helper functions
+namespace
+{
+    // returns a string representation of a spatial position (e.g. (0.0, 1.0, 3.0))
+    std::string PosString(Vec3 const& pos)
+    {
+        std::stringstream ss;
+        ss.precision(4);
+        ss << '(' << pos.x << ", " << pos.y << ", " << pos.z << ')';
+        return std::move(ss).str();
+    }
+
+    // returns a camera that is in the initial position the camera should be in for this screen
+    PolarPerspectiveCamera CreateDefaultCamera()
+    {
+        PolarPerspectiveCamera rv;
+        rv.phi = std::numbers::pi_v<float>/4.0f;
+        rv.theta = std::numbers::pi_v<float>/4.0f;
+        rv.radius = 2.5f;
+        return rv;
+    }
+
+    void SpacerDummy()
+    {
+        ImGui::Dummy({0.0f, 5.0f});
+    }
+
+    Color FaintifyColor(Color const& srcColor)
+    {
+        Color color = srcColor;
+        color.a *= 0.2f;
+        return color;
+    }
+
+    Color RedifyColor(Color const& srcColor)
+    {
+        constexpr float factor = 0.8f;
+        return {srcColor[0], factor * srcColor[1], factor * srcColor[2], factor * srcColor[3]};
+    }
+}
+
+// background mesh loading support
+//
+// loading mesh files can be slow, so all mesh loading is done on a background worker
+// that:
+//
+//   - receives a mesh loading request
+//   - loads the mesh
+//   - sends the loaded mesh (or error) as a response
+//
+// the main (UI) thread then regularly polls the response channel and handles the (loaded)
+// mesh appropriately
+namespace
+{
+    // a mesh loading request
+    struct MeshLoadRequest final {
+        UID preferredAttachmentPoint;
+        std::vector<std::filesystem::path> paths;
+    };
+
+    // a successfully-loaded mesh
+    struct LoadedMesh final {
+        std::filesystem::path path;
+        Mesh meshData;
+    };
+
+    // an OK response to a mesh loading request
+    struct MeshLoadOKResponse final {
+        UID preferredAttachmentPoint;
+        std::vector<LoadedMesh> meshes;
+    };
+
+    // an ERROR response to a mesh loading request
+    struct MeshLoadErrorResponse final {
+        UID preferredAttachmentPoint;
+        std::filesystem::path path;
+        std::string error;
+    };
+
+    // an OK or ERROR response to a mesh loading request
+    using MeshLoadResponse = std::variant<MeshLoadOKResponse, MeshLoadErrorResponse>;
+
+    // returns an OK or ERROR response to a mesh load request
+    MeshLoadResponse respondToMeshloadRequest(MeshLoadRequest msg)  // NOLINT(performance-unnecessary-value-param)
+    {
+        std::vector<LoadedMesh> loadedMeshes;
+        loadedMeshes.reserve(msg.paths.size());
+
+        for (std::filesystem::path const& path : msg.paths)
+        {
+            try
+            {
+                loadedMeshes.push_back(LoadedMesh{path, osc::LoadMeshViaSimTK(path)});
+            }
+            catch (std::exception const& ex)
+            {
+                // swallow the exception and emit a log error
+                //
+                // older implementations used to cancel loading the entire batch by returning
+                // an MeshLoadErrorResponse, but that wasn't a good idea because there are
+                // times when a user will drag in a bunch of files and expect all the valid
+                // ones to load (#303)
+
+                osc::log::error("%s: error loading mesh file: %s", path.string().c_str(), ex.what());
+            }
+        }
+
+        // ensure the UI thread redraws after the mesh is loaded
+        App::upd().requestRedraw();
+
+        return MeshLoadOKResponse{msg.preferredAttachmentPoint, std::move(loadedMeshes)};
+    }
+
+    // a class that loads meshes in a background thread
+    //
+    // the UI thread must `.poll()` this to check for responses
+    class MeshLoader final {
+    public:
+        MeshLoader() : m_Worker{Worker::create(respondToMeshloadRequest)}
+        {
+        }
+
+        void send(MeshLoadRequest req)
+        {
+            m_Worker.send(std::move(req));
+        }
+
+        std::optional<MeshLoadResponse> poll()
+        {
+            return m_Worker.poll();
+        }
+
+    private:
+        using Worker = osc::spsc::Worker<MeshLoadRequest, MeshLoadResponse, decltype(respondToMeshloadRequest)>;
+        Worker m_Worker;
+    };
 }
 
 // 3D rendering support
