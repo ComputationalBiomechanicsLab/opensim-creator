@@ -57,9 +57,12 @@ add_library(OpenSimCreator STATIC
 
     ModelGraph/CrossrefDescriptor.hpp
     ModelGraph/CrossrefDirection.hpp
+    ModelGraph/ISceneElLookup.hpp
     ModelGraph/ModelGraphIDs.cpp
     ModelGraph/ModelGraphIDs.hpp
     ModelGraph/ModelGraphStrings.hpp
+    ModelGraph/SceneEl.cpp
+    ModelGraph/SceneEl.hpp
     ModelGraph/SceneElClass.hpp
     ModelGraph/SceneElFlags.hpp
     ModelGraph/SceneElVariant.hpp
@@ -234,7 +237,7 @@ add_library(OpenSimCreator STATIC
     Utils/TPS3D.hpp
     Utils/UndoableModelActions.cpp
     Utils/UndoableModelActions.hpp
- "ModelGraph/ModelGraphIDs.cpp")
+ "ModelGraph/ModelGraphIDs.cpp" "ModelGraph/SceneEl.cpp")
 
 # OpenSimCreatorConfig.hpp
 #

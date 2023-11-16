@@ -5,8 +5,10 @@
 #include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/ModelGraph/CrossrefDescriptor.hpp>
 #include <OpenSimCreator/ModelGraph/CrossrefDirection.hpp>
+#include <OpenSimCreator/ModelGraph/ISceneElLookup.hpp>
 #include <OpenSimCreator/ModelGraph/ModelGraphIDs.hpp>
 #include <OpenSimCreator/ModelGraph/ModelGraphStrings.hpp>
+#include <OpenSimCreator/ModelGraph/SceneEl.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElClass.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElFlags.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElVariant.hpp>
@@ -147,6 +149,7 @@ using osc::CStringView;
 using osc::DerivedFrom;
 using osc::Identity;
 using osc::Invocable;
+using osc::ISceneElLookup;
 using osc::Line;
 using osc::Mat3;
 using osc::Mat4;
@@ -189,237 +192,8 @@ using osc::UID;
 // - value semantics (undo/redo, rollbacks, etc.)
 // - groundspace manipulation (3D gizmos, drag and drop)
 // - easy UI integration (GLM datatypes, designed to be easy to dump into OpenGL, etc.)
-namespace
+namespace osc
 {
-    // virtual interface to something that can be used to lookup scene elements in
-    // some larger document
-    class SceneEl;
-    class ISceneElLookup {
-    protected:
-        ISceneElLookup() = default;
-        ISceneElLookup(ISceneElLookup const&) = default;
-        ISceneElLookup(ISceneElLookup&&) noexcept = default;
-        ISceneElLookup& operator=(ISceneElLookup const&) = default;
-        ISceneElLookup& operator=(ISceneElLookup&&) noexcept = default;
-    public:
-        virtual ~ISceneElLookup() noexcept = default;
-
-        SceneEl const* find(UID id) const
-        {
-            return implFind(id);
-        }
-    private:
-        virtual SceneEl const* implFind(UID) const = 0;
-    };
-
-    // base class for all scene elements
-    class SceneEl {
-    protected:
-        SceneEl() = default;
-        SceneEl(SceneEl const&) = default;
-        SceneEl(SceneEl&&) noexcept = default;
-        SceneEl& operator=(SceneEl const&) = default;
-        SceneEl& operator=(SceneEl&&) noexcept = default;
-    public:
-        virtual ~SceneEl() noexcept = default;
-
-        SceneElClass const& getClass() const
-        {
-            return implGetClass();
-        }
-
-        std::unique_ptr<SceneEl> clone() const
-        {
-            return implClone();
-        }
-
-        ConstSceneElVariant toVariant() const
-        {
-            return implToVariant();
-        }
-
-        SceneElVariant toVariant()
-        {
-            return implToVariant();
-        }
-
-        int getNumCrossReferences() const
-        {
-            return static_cast<int>(implGetCrossReferences().size());
-        }
-
-        UID getCrossReferenceConnecteeID(int i) const
-        {
-            return implGetCrossReferences().at(i).getConnecteeID();
-        }
-
-        void setCrossReferenceConnecteeID(int i, UID newID)
-        {
-            implSetCrossReferenceConnecteeID(i, newID);
-        }
-
-        CStringView getCrossReferenceLabel(int i) const
-        {
-            return implGetCrossReferences().at(i).getLabel();
-        }
-
-        CrossrefDirection getCrossReferenceDirection(int i) const
-        {
-            return implGetCrossReferences().at(i).getDirection();
-        }
-
-        UID getID() const
-        {
-            return implGetID();
-        }
-
-        std::ostream& operator<<(std::ostream& o) const
-        {
-            return implWriteToStream(o);
-        }
-
-        CStringView getLabel() const
-        {
-            return implGetLabel();
-        }
-
-        void setLabel(std::string_view newLabel)
-        {
-            implSetLabel(newLabel);
-        }
-
-        Transform getXForm(ISceneElLookup const& lookup) const
-        {
-            return implGetXform(lookup);
-        }
-        void setXform(ISceneElLookup const& lookup, Transform const& newTransform)
-        {
-            implSetXform(lookup, newTransform);
-        }
-
-        Vec3 getPos(ISceneElLookup const& lookup) const
-        {
-            return getXForm(lookup).position;
-        }
-        void setPos(ISceneElLookup const& lookup, Vec3 const& newPos)
-        {
-            setXform(lookup, getXForm(lookup).withPosition(newPos));
-        }
-
-        Vec3 getScale(ISceneElLookup const& lookup) const
-        {
-            return getXForm(lookup).scale;
-        }
-
-        void setScale(ISceneElLookup const& lookup, Vec3 const& newScale)
-        {
-            setXform(lookup, getXForm(lookup).withScale(newScale));
-        }
-
-        Quat getRotation(ISceneElLookup const& lookup) const
-        {
-            return getXForm(lookup).rotation;
-        }
-
-        void setRotation(ISceneElLookup const& lookup, Quat const& newRotation)
-        {
-            setXform(lookup, getXForm(lookup).withRotation(newRotation));
-        }
-
-        AABB calcBounds(ISceneElLookup const& lookup) const
-        {
-            return implCalcBounds(lookup);
-        }
-
-        void applyTranslation(ISceneElLookup const& lookup, Vec3 const& translation)
-        {
-            setPos(lookup, getPos(lookup) + translation);
-        }
-
-        void applyRotation(
-            ISceneElLookup const& lookup,
-            Vec3 const& eulerAngles,
-            Vec3 const& rotationCenter)
-        {
-            Transform t = getXForm(lookup);
-            ApplyWorldspaceRotation(t, eulerAngles, rotationCenter);
-            setXform(lookup, t);
-        }
-
-        void applyScale(ISceneElLookup const& lookup, Vec3 const& scaleFactors)
-        {
-            setScale(lookup, getScale(lookup) * scaleFactors);
-        }
-
-        bool canChangeLabel() const
-        {
-            return implGetFlags() & SceneElFlags::CanChangeLabel;
-        }
-
-        bool canChangePosition() const
-        {
-            return implGetFlags() & SceneElFlags::CanChangePosition;
-        }
-
-        bool canChangeRotation() const
-        {
-            return implGetFlags() & SceneElFlags::CanChangeRotation;
-        }
-
-        bool canChangeScale() const
-        {
-            return implGetFlags() & SceneElFlags::CanChangeScale;
-        }
-
-        bool canDelete() const
-        {
-            return implGetFlags() & SceneElFlags::CanDelete;
-        }
-
-        bool canSelect() const
-        {
-            return implGetFlags() & SceneElFlags::CanSelect;
-        }
-
-        bool hasPhysicalSize() const
-        {
-            return implGetFlags() & SceneElFlags::HasPhysicalSize;
-        }
-
-        bool isCrossReferencing(
-            UID id,
-            CrossrefDirection direction = CrossrefDirection::Both) const
-        {
-            auto const crossRefs = implGetCrossReferences();
-            return std::any_of(crossRefs.begin(), crossRefs.end(), [id, direction](CrossrefDescriptor const& desc)
-            {
-                return desc.getConnecteeID() == id && (desc.getDirection() & direction);
-            });
-        }
-
-    private:
-        virtual SceneElClass const& implGetClass() const = 0;
-        virtual std::unique_ptr<SceneEl> implClone() const = 0;
-        virtual ConstSceneElVariant implToVariant() const = 0;
-        virtual SceneElVariant implToVariant() = 0;
-        virtual SceneElFlags implGetFlags() const = 0;
-
-        virtual std::vector<CrossrefDescriptor> implGetCrossReferences() const { return {}; }
-        virtual void implSetCrossReferenceConnecteeID(int, UID) {}
-
-        virtual std::ostream& implWriteToStream(std::ostream&) const = 0;
-
-        virtual UID implGetID() const = 0;
-
-        virtual CStringView implGetLabel() const = 0;
-        virtual void implSetLabel(std::string_view) {}
-
-        virtual Transform implGetXform(ISceneElLookup const&) const = 0;
-        virtual void implSetXform(ISceneElLookup const&, Transform const&) {}
-
-        virtual AABB implCalcBounds(ISceneElLookup const&) const = 0;
-    };
-
     // Curiously Recurring Template Pattern (CRTP) for SceneEl
     //
     // automatically defines parts of the SceneEl API using CRTP, so that
@@ -467,6 +241,8 @@ namespace
         }
     };
 }
+
+using osc::SceneEl;
 
 // concrete scene element support
 //
@@ -6870,7 +6646,7 @@ private:
 
                     if (ImGui::MenuItem(ICON_FA_WEIGHT " at mesh mass center"))
                     {
-                        Vec3 const location = MassCenter(*meshEl);
+                        Vec3 const location = ::MassCenter(*meshEl);
                         AddBody(m_Shared->updCommittableModelGraph(), location, meshEl->getID());
                     }
                     osc::DrawTooltipIfItemHovered("Add body", ModelGraphStrings::c_BodyDescription.c_str());
