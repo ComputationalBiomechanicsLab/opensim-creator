@@ -6,6 +6,7 @@
 #include <OpenSimCreator/ModelGraph/ModelGraphIDs.hpp>
 #include <OpenSimCreator/ModelGraph/ModelGraphStrings.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElClass.hpp>
+#include <OpenSimCreator/ModelGraph/SceneElVariant.hpp>
 #include <OpenSimCreator/Registry/ComponentRegistry.hpp>
 #include <OpenSimCreator/Registry/StaticComponentRegistries.hpp>
 #include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
@@ -136,6 +137,7 @@ using osc::AABB;
 using osc::ClonePtr;
 using osc::Color;
 using osc::ConstructibleFrom;
+using osc::ConstSceneElVariant;
 using osc::CStringView;
 using osc::DerivedFrom;
 using osc::Identity;
@@ -160,6 +162,7 @@ using osc::SceneCache;
 using osc::SceneDecoration;
 using osc::SceneDecorationFlags;
 using osc::SceneElClass;
+using osc::SceneElVariant;
 using osc::SceneRenderer;
 using osc::SceneRendererParams;
 using osc::ShaderCache;
@@ -182,34 +185,6 @@ using osc::UID;
 // - easy UI integration (GLM datatypes, designed to be easy to dump into OpenGL, etc.)
 namespace
 {
-    // forward decls for supported scene elements
-    class GroundEl;
-    class MeshEl;
-    class BodyEl;
-    class JointEl;
-    class StationEl;
-    class EdgeEl;
-
-    // a variant for storing a `const` reference to a `const` scene element
-    using ConstSceneElVariant = std::variant<
-        std::reference_wrapper<GroundEl const>,
-        std::reference_wrapper<MeshEl const>,
-        std::reference_wrapper<BodyEl const>,
-        std::reference_wrapper<JointEl const>,
-        std::reference_wrapper<StationEl const>,
-        std::reference_wrapper<EdgeEl const>
-    >;
-
-    // a variant for storing a non-`const` reference to a non-`const` scene element
-    using SceneElVariant = std::variant<
-        std::reference_wrapper<GroundEl>,
-        std::reference_wrapper<MeshEl>,
-        std::reference_wrapper<BodyEl>,
-        std::reference_wrapper<JointEl>,
-        std::reference_wrapper<StationEl>,
-        std::reference_wrapper<EdgeEl>
-    >;
-
     // runtime flags for a scene el type
     //
     // helps the UI figure out what it should/shouldn't show for a particular type
@@ -566,7 +541,7 @@ namespace
 // concrete scene element support
 //
 // these are concrete implementors of the virtual scene element API
-namespace
+namespace osc
 {
     // "Ground" of the scene (i.e. origin)
     class GroundEl final : public SceneElCRTP<GroundEl> {
@@ -1276,7 +1251,17 @@ namespace
         UID m_SecondAttachmentID;
         std::string m_Label;
     };
+}
 
+using osc::GroundEl;
+using osc::MeshEl;
+using osc::BodyEl;
+using osc::JointEl;
+using osc::StationEl;
+using osc::EdgeEl;
+
+namespace
+{
     // returns true if a mesh can be attached to the given element
     bool CanAttachMeshTo(SceneEl const& e)
     {
