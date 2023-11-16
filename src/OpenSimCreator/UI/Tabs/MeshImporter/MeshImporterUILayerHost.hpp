@@ -1,6 +1,6 @@
 #pragma once
 
-namespace osc { class MeshImporterLayer; }
+namespace osc { class MeshImporterUILayer; }
 
 namespace osc
 {
@@ -15,12 +15,12 @@ namespace osc
     public:
         virtual ~MeshImporterUILayerHost() noexcept = default;
 
-        void requestPop(MeshImporterLayer& layer)
+        void requestPop(MeshImporterUILayer& layer)
         {
             implRequestPop(layer);
         }
 
     private:
-        virtual void implRequestPop(MeshImporterLayer&) = 0;
+        virtual void implRequestPop(MeshImporterUILayer&) = 0;
     };
 }
