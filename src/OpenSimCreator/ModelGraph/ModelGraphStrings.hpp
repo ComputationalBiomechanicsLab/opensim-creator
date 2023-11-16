@@ -4,6 +4,7 @@
 
 namespace osc
 {
+    // a collection of user-facing strings that are presented in the model graph
     class ModelGraphStrings final {
     public:
         static constexpr CStringView c_GroundLabel = "Ground";

@@ -55,6 +55,8 @@ add_library(OpenSimCreator STATIC
     Model/VirtualConstModelStatePair.hpp
     Model/VirtualModelStatePair.hpp
 
+    ModelGraph/ModelGraphIDs.cpp
+    ModelGraph/ModelGraphIDs.hpp
     ModelGraph/ModelGraphStrings.hpp
 
     Outputs/ComponentOutputExtractor.cpp
@@ -227,7 +229,7 @@ add_library(OpenSimCreator STATIC
     Utils/TPS3D.hpp
     Utils/UndoableModelActions.cpp
     Utils/UndoableModelActions.hpp
-)
+ "ModelGraph/ModelGraphIDs.cpp")
 
 # OpenSimCreatorConfig.hpp
 #

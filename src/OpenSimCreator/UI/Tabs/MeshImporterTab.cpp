@@ -3,6 +3,7 @@
 #include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
 #include <OpenSimCreator/Bindings/SimTKMeshLoader.hpp>
 #include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/ModelGraph/ModelGraphIDs.hpp>
 #include <OpenSimCreator/ModelGraph/ModelGraphStrings.hpp>
 #include <OpenSimCreator/Registry/ComponentRegistry.hpp>
 #include <OpenSimCreator/Registry/StaticComponentRegistries.hpp>
@@ -145,6 +146,7 @@ using osc::Mat4x3;
 using osc::Material;
 using osc::MaterialPropertyBlock;
 using osc::Mesh;
+using osc::ModelGraphIDs;
 using osc::ModelGraphStrings;
 using osc::operator<<;
 using osc::Overload;
@@ -166,24 +168,6 @@ using osc::Vec2;
 using osc::Vec3;
 using osc::Vec4;
 using osc::UID;
-
-// constants
-namespace
-{
-    // senteniel UIDs
-    class BodyEl;
-    UID const c_GroundID;
-    UID const c_EmptyID;
-    UID const c_RightClickedNothingID;
-    UID const c_GroundGroupID;
-    UID const c_MeshGroupID;
-    UID const c_BodyGroupID;
-    UID const c_JointGroupID;
-    UID const c_StationGroupID;
-
-    // other constants
-    constexpr float c_ConnectionLineWidth = 1.0f;
-}
 
 // generic helper functions
 namespace
@@ -841,7 +825,7 @@ namespace
 
         UID implGetID() const final
         {
-            return c_GroundID;
+            return ModelGraphIDs::Ground();
         }
 
         std::ostream& implWriteToStream(std::ostream& o) const final
@@ -879,7 +863,7 @@ namespace
     public:
         MeshEl(
             UID id,
-            UID attachment,  // can be c_GroundID
+            UID attachment,  // can be ModelGraphIDs::Ground()
             Mesh meshData,
             std::filesystem::path path) :
 
@@ -1011,7 +995,7 @@ namespace
         }
 
         UID m_ID;
-        UID m_Attachment;  // can be c_GroundID
+        UID m_Attachment;  // can be ModelGraphIDs::Ground()
         Transform m_Transform;
         Mesh m_MeshData;
         std::filesystem::path m_Path;
@@ -1277,7 +1261,7 @@ namespace
     public:
         StationEl(
             UID id,
-            UID attachment,  // can be c_GroundID
+            UID attachment,  // can be ModelGraphIDs::Ground()
             Vec3 const& position,
             std::string const& name) :
 
@@ -1289,7 +1273,7 @@ namespace
         }
 
         StationEl(
-            UID attachment,  // can be c_GroundID
+            UID attachment,  // can be ModelGraphIDs::Ground()
             Vec3 const& position,
             std::string const& name) :
 
@@ -1390,7 +1374,7 @@ namespace
         }
 
         UID m_ID;
-        UID m_Attachment;  // can be c_GroundID
+        UID m_Attachment;  // can be ModelGraphIDs::Ground()
         Vec3 m_Position{};
         std::string m_Name;
     };
@@ -1959,7 +1943,7 @@ namespace
 
         // insert a senteniel ground element into the model graph (it should always
         // be there)
-        SceneElMap m_Els = {{c_GroundID, ClonePtr<SceneEl>{GroundEl{}}}};
+        SceneElMap m_Els = {{ModelGraphIDs::Ground(), ClonePtr<SceneEl>{GroundEl{}}}};
         std::unordered_set<UID> m_SelectedEls;
         std::vector<ClonePtr<SceneEl>> m_DeletedEls;
     };
@@ -2016,7 +2000,7 @@ namespace
     // returns `true` if a Joint is complete b.s.
     bool IsGarbageJoint(ModelGraph const& modelGraph, JointEl const& jointEl)
     {
-        if (jointEl.getChildID() == c_GroundID)
+        if (jointEl.getChildID() == ModelGraphIDs::Ground())
         {
             return true;  // ground cannot be a child in a joint
         }
@@ -2026,7 +2010,7 @@ namespace
             return true;  // is directly attached to itself
         }
 
-        if (jointEl.getParentID() != c_GroundID && !modelGraph.containsEl<BodyEl>(jointEl.getParentID()))
+        if (jointEl.getParentID() != ModelGraphIDs::Ground() && !modelGraph.containsEl<BodyEl>(jointEl.getParentID()))
         {
             return true;  // has a parent ID that's invalid for this model graph
         }
@@ -2054,7 +2038,7 @@ namespace
     {
         OSC_ASSERT_ALWAYS(!IsGarbageJoint(modelGraph, joint));
 
-        if (joint.getParentID() == c_GroundID)
+        if (joint.getParentID() == ModelGraphIDs::Ground())
         {
             return true;  // it's directly attached to ground
         }
@@ -2174,7 +2158,7 @@ namespace
         UID parent,
         UID id)
     {
-        if (id == c_EmptyID || parent == c_EmptyID)
+        if (id == ModelGraphIDs::Empty() || parent == ModelGraphIDs::Empty())
         {
             return false;
         }
@@ -2246,12 +2230,12 @@ namespace
     {
         return std::visit(Overload
         {
-            [](GroundEl const&) { return c_GroundID; },
-            [&mg](MeshEl const& meshEl) { return mg.containsEl<BodyEl>(meshEl.getParentID()) ? meshEl.getParentID() : c_GroundID; },
+            [](GroundEl const&) { return ModelGraphIDs::Ground(); },
+            [&mg](MeshEl const& meshEl) { return mg.containsEl<BodyEl>(meshEl.getParentID()) ? meshEl.getParentID() : ModelGraphIDs::Ground(); },
             [](BodyEl const& bodyEl) { return bodyEl.getID(); },
-            [](JointEl const&) { return c_GroundID; },
-            [](StationEl const&) { return c_GroundID; },
-            [](EdgeEl const&) { return c_GroundID; },
+            [](JointEl const&) { return ModelGraphIDs::Ground(); },
+            [](StationEl const&) { return ModelGraphIDs::Ground(); },
+            [](EdgeEl const&) { return ModelGraphIDs::Ground(); },
         }, el.toVariant());
     }
 
@@ -2272,9 +2256,9 @@ namespace
     SceneDecorationFlags computeFlags(
         ModelGraph const& mg,
         UID id,
-        UID hoverID = c_EmptyID)
+        UID hoverID = ModelGraphIDs::Empty())
     {
-        if (id == c_EmptyID)
+        if (id == ModelGraphIDs::Empty())
         {
             return SceneDecorationFlags::None;
         }
@@ -2324,7 +2308,7 @@ namespace
     {
         ModelGraph& mg = cmg.updScratch();
 
-        if (newAttachment != c_GroundID && !mg.containsEl<BodyEl>(newAttachment))
+        if (newAttachment != ModelGraphIDs::Ground() && !mg.containsEl<BodyEl>(newAttachment))
         {
             return false;  // bogus ID passed
         }
@@ -2692,7 +2676,7 @@ namespace
         auto* const el = mg.tryUpdElByID<MeshEl>(andTryAttach);
         if (el)
         {
-            if (el->getParentID() == c_GroundID || el->getParentID() == c_EmptyID)
+            if (el->getParentID() == ModelGraphIDs::Ground() || el->getParentID() == ModelGraphIDs::Empty())
             {
                 el->setParentID(b.getID());
                 mg.select(*el);
@@ -2706,7 +2690,7 @@ namespace
 
     UID AddBody(CommittableModelGraph& cmg)
     {
-        return AddBody(cmg, {}, c_EmptyID);
+        return AddBody(cmg, {}, ModelGraphIDs::Empty());
     }
 
     bool AddStationAtLocation(
@@ -3179,7 +3163,7 @@ namespace
         // add any meshes that are directly connected to ground (i.e. meshes that are not attached to a body)
         for (MeshEl const& meshEl : mg.iter<MeshEl>())
         {
-            if (meshEl.getParentID() == c_GroundID)
+            if (meshEl.getParentID() == ModelGraphIDs::Ground())
             {
                 AttachMeshElToFrame(meshEl, Transform{}, model->updGround());
             }
@@ -3203,7 +3187,7 @@ namespace
         // note: these bodies may use the non-participating bodies (above) as parents
         for (JointEl const& jointEl : mg.iter<JointEl>())
         {
-            if (jointEl.getParentID() == c_GroundID || visitedBodies.find(jointEl.getParentID()) != visitedBodies.end())
+            if (jointEl.getParentID() == ModelGraphIDs::Ground() || visitedBodies.find(jointEl.getParentID()) != visitedBodies.end())
             {
                 AttachJointRecursive(mg, *model, jointEl, visitedBodies, visitedJoints);
             }
@@ -3329,10 +3313,10 @@ namespace
             size_t const type = maybeType.value();
             std::string const name = j.getName();
 
-            UID parent = c_EmptyID;
+            UID parent = ModelGraphIDs::Empty();
             if (dynamic_cast<OpenSim::Ground const*>(parentBodyOrGround))
             {
-                parent = c_GroundID;
+                parent = ModelGraphIDs::Ground();
             }
             else
             {
@@ -3348,7 +3332,7 @@ namespace
                 }
             }
 
-            UID child = c_EmptyID;
+            UID child = ModelGraphIDs::Empty();
             if (dynamic_cast<OpenSim::Ground const*>(childBodyOrGround))
             {
                 // ground can't be a child in a joint
@@ -3368,7 +3352,7 @@ namespace
                 }
             }
 
-            if (parent == c_EmptyID || child == c_EmptyID)
+            if (parent == ModelGraphIDs::Empty() || child == ModelGraphIDs::Empty())
             {
                 // something horrible happened above
                 continue;
@@ -3413,10 +3397,10 @@ namespace
                 continue;
             }
 
-            UID attachment = c_EmptyID;
+            UID attachment = ModelGraphIDs::Empty();
             if (dynamic_cast<OpenSim::Ground const*>(frameBodyOrGround))
             {
-                attachment = c_GroundID;
+                attachment = ModelGraphIDs::Ground();
             }
             else
             {
@@ -3431,7 +3415,7 @@ namespace
                 }
             }
 
-            if (attachment == c_EmptyID)
+            if (attachment == ModelGraphIDs::Empty())
             {
                 // couldn't figure out what to attach to
                 continue;
@@ -3462,10 +3446,10 @@ namespace
             OpenSim::PhysicalFrame const& frame = station.getParentFrame();
             OpenSim::PhysicalFrame const* const frameBodyOrGround = TryInclusiveRecurseToBodyOrGround(frame);
 
-            UID attachment = c_EmptyID;
+            UID attachment = ModelGraphIDs::Empty();
             if (dynamic_cast<OpenSim::Ground const*>(frameBodyOrGround))
             {
-                attachment = c_GroundID;
+                attachment = ModelGraphIDs::Ground();
             }
             else
             {
@@ -3480,7 +3464,7 @@ namespace
                 }
             }
 
-            if (attachment == c_EmptyID)
+            if (attachment == ModelGraphIDs::Empty())
             {
                 // can't figure out what to attach to
                 continue;
@@ -3519,8 +3503,8 @@ namespace
 
     // something that is being drawn in the scene
     struct DrawableThing final {
-        UID id = c_EmptyID;
-        UID groupId = c_EmptyID;
+        UID id = ModelGraphIDs::Empty();
+        UID groupId = ModelGraphIDs::Empty();
         Mesh mesh;
         Transform transform;
         Color color = Color::black();
@@ -3544,7 +3528,7 @@ namespace
     class Hover final {
     public:
         Hover() :
-            ID{c_EmptyID},
+            ID{ModelGraphIDs::Empty()},
             Pos{}
         {
         }
@@ -3557,7 +3541,7 @@ namespace
 
         explicit operator bool () const
         {
-            return ID != c_EmptyID;
+            return ID != ModelGraphIDs::Empty();
         }
 
         void reset()
@@ -3812,7 +3796,7 @@ namespace
 
         void pushMeshLoadRequests(std::vector<std::filesystem::path> paths)
         {
-            pushMeshLoadRequests(c_GroundID, std::move(paths));
+            pushMeshLoadRequests(ModelGraphIDs::Ground(), std::move(paths));
         }
 
         void pushMeshLoadRequest(UID attachmentPoint, std::filesystem::path const& path)
@@ -3822,7 +3806,7 @@ namespace
 
         void pushMeshLoadRequest(std::filesystem::path const& meshFilePath)
         {
-            pushMeshLoadRequest(c_GroundID, meshFilePath);
+            pushMeshLoadRequest(ModelGraphIDs::Ground(), meshFilePath);
         }
 
         // called when the mesh loader responds with a fully-loaded mesh
@@ -3995,7 +3979,7 @@ namespace
 
         void drawConnectionLineToGround(SceneEl const& el, ImU32 color) const
         {
-            if (el.getID() == c_GroundID)
+            if (el.getID() == ModelGraphIDs::Ground())
             {
                 return;
             }
@@ -4399,8 +4383,8 @@ namespace
             material.setTransparent(true);
 
             DrawableThing dt;
-            dt.id = c_EmptyID;
-            dt.groupId = c_EmptyID;
+            dt.id = ModelGraphIDs::Empty();
+            dt.groupId = ModelGraphIDs::Empty();
             dt.mesh = App::singleton<SceneCache>()->get100x100GridMesh();
             dt.transform = t;
             dt.color = m_Colors.gridLines;
@@ -4650,36 +4634,36 @@ namespace
             bool const hittestGround = isGroundInteractable();
             bool const hittestStations = isStationsInteractable();
 
-            UID closestID = c_EmptyID;
+            UID closestID = ModelGraphIDs::Empty();
             float closestDist = std::numeric_limits<float>::max();
             for (DrawableThing const& drawable : drawables)
             {
-                if (drawable.id == c_EmptyID)
+                if (drawable.id == ModelGraphIDs::Empty())
                 {
                     continue;  // no hittest data
                 }
 
-                if (drawable.groupId == c_BodyGroupID && !hittestBodies)
+                if (drawable.groupId == ModelGraphIDs::BodyGroup() && !hittestBodies)
                 {
                     continue;
                 }
 
-                if (drawable.groupId == c_MeshGroupID && !hittestMeshes)
+                if (drawable.groupId == ModelGraphIDs::MeshGroup() && !hittestMeshes)
                 {
                     continue;
                 }
 
-                if (drawable.groupId == c_JointGroupID && !hittestJointCenters)
+                if (drawable.groupId == ModelGraphIDs::JointGroup() && !hittestJointCenters)
                 {
                     continue;
                 }
 
-                if (drawable.groupId == c_GroundGroupID && !hittestGround)
+                if (drawable.groupId == ModelGraphIDs::GroundGroup() && !hittestGround)
                 {
                     continue;
                 }
 
-                if (drawable.groupId == c_StationGroupID && !hittestStations)
+                if (drawable.groupId == ModelGraphIDs::StationGroup() && !hittestStations)
                 {
                     continue;
                 }
@@ -4698,7 +4682,7 @@ namespace
                 }
             }
 
-            Vec3 const hitPos = closestID != c_EmptyID ? ray.origin + closestDist*ray.direction : Vec3{};
+            Vec3 const hitPos = closestID != ModelGraphIDs::Empty() ? ray.origin + closestDist*ray.direction : Vec3{};
 
             return Hover{closestID, hitPos};
         }
@@ -4723,7 +4707,7 @@ namespace
 
         void unassignMesh(MeshEl const& me)
         {
-            updModelGraph().updElByID<MeshEl>(me.getID()).getParentID() = c_GroundID;
+            updModelGraph().updElByID<MeshEl>(me.getID()).getParentID() = ModelGraphIDs::Ground();
 
             std::stringstream ss;
             ss << "unassigned '" << me.getLabel() << "' back to ground";
@@ -4734,10 +4718,10 @@ namespace
         {
             DrawableThing rv;
             rv.id = meshEl.getID();
-            rv.groupId = c_MeshGroupID;
+            rv.groupId = ModelGraphIDs::MeshGroup();
             rv.mesh = meshEl.getMeshData();
             rv.transform = meshEl.getXForm();
-            rv.color = meshEl.getParentID() == c_GroundID || meshEl.getParentID() == c_EmptyID ? RedifyColor(getColorMesh()) : getColorMesh();
+            rv.color = meshEl.getParentID() == ModelGraphIDs::Ground() || meshEl.getParentID() == ModelGraphIDs::Empty() ? RedifyColor(getColorMesh()) : getColorMesh();
             rv.flags = SceneDecorationFlags::None;
             return rv;
         }
@@ -4746,7 +4730,7 @@ namespace
         {
             DrawableThing rv;
             rv.id = bodyEl.getID();
-            rv.groupId = c_BodyGroupID;
+            rv.groupId = ModelGraphIDs::BodyGroup();
             rv.mesh = m_SphereMesh;
             rv.transform = SphereMeshToSceneSphereTransform(sphereAtTranslation(bodyEl.getXForm().position));
             rv.color = color;
@@ -4757,8 +4741,8 @@ namespace
         DrawableThing generateGroundSphere(Color const& color) const
         {
             DrawableThing rv;
-            rv.id = c_GroundID;
-            rv.groupId = c_GroundGroupID;
+            rv.id = ModelGraphIDs::Ground();
+            rv.groupId = ModelGraphIDs::GroundGroup();
             rv.mesh = m_SphereMesh;
             rv.transform = SphereMeshToSceneSphereTransform(sphereAtTranslation({0.0f, 0.0f, 0.0f}));
             rv.color = color;
@@ -4770,7 +4754,7 @@ namespace
         {
             DrawableThing rv;
             rv.id = el.getID();
-            rv.groupId = c_StationGroupID;
+            rv.groupId = ModelGraphIDs::StationGroup();
             rv.mesh = m_SphereMesh;
             rv.transform = SphereMeshToSceneSphereTransform(sphereAtTranslation(el.getPos(getModelGraph())));
             rv.color = color;
@@ -4786,12 +4770,12 @@ namespace
 
         void appendBodyElAsCubeThing(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
         {
-            appendAsCubeThing(bodyEl.getID(), c_BodyGroupID, bodyEl.getXForm(), appendOut);
+            appendAsCubeThing(bodyEl.getID(), ModelGraphIDs::BodyGroup(), bodyEl.getXForm(), appendOut);
         }
 
         void appendBodyElAsFrame(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
         {
-            appendAsFrame(bodyEl.getID(), c_BodyGroupID, bodyEl.getXForm(), appendOut);
+            appendAsFrame(bodyEl.getID(), ModelGraphIDs::BodyGroup(), bodyEl.getXForm(), appendOut);
         }
 
         void appendDrawables(
@@ -4836,7 +4820,7 @@ namespace
 
                     appendAsFrame(
                         el.getID(),
-                        c_JointGroupID,
+                        ModelGraphIDs::JointGroup(),
                         el.getXForm(),
                         appendOut,
                         1.0f,
@@ -5105,6 +5089,8 @@ namespace
 
         // changes how a model is created
         ModelCreationFlags m_ModelCreationFlags = ModelCreationFlags::None;
+
+        static constexpr float c_ConnectionLineWidth = 1.0f;
     };
 }
 
@@ -5586,8 +5572,8 @@ namespace
                     if (!isSelectableEl)
                     {
                         d.color.a = fadedAlpha;
-                        d.id = c_EmptyID;
-                        d.groupId = c_EmptyID;
+                        d.id = ModelGraphIDs::Empty();
+                        d.groupId = ModelGraphIDs::Empty();
                     }
                     else
                     {
@@ -6115,7 +6101,7 @@ namespace
             {
                 graph.emplaceEl<StationEl>(
                     UID{},
-                    c_GroundID,
+                    ModelGraphIDs::Ground(),
                     station.location,
                     station.name
                 );
@@ -6393,7 +6379,7 @@ private:
 
         UID maybeID = GetStationAttachmentParent(mg, *hoveredSceneEl);
 
-        if (maybeID == c_GroundID || maybeID == c_EmptyID)
+        if (maybeID == ModelGraphIDs::Ground() || maybeID == ModelGraphIDs::Empty())
         {
             return;  // can't attach to it as-if it were a body
         }
@@ -7666,7 +7652,7 @@ private:
             ScopeGuard const g{[]() { ImGui::PopID(); }};
             drawNothingContextMenuContent();
         }
-        else if (m_MaybeOpenedContextMenu.ID == c_RightClickedNothingID)
+        else if (m_MaybeOpenedContextMenu.ID == ModelGraphIDs::RightClickedNothing())
         {
             // context menu was opened on "nothing" specifically
             PushID(UID::empty());
@@ -7800,7 +7786,7 @@ private:
         if (ImGui::MenuItem(ICON_FA_MAP_PIN " Station"))
         {
             ModelGraph& mg = m_Shared->updModelGraph();
-            auto& e = mg.emplaceEl<StationEl>(UID{}, c_GroundID, Vec3{}, GenerateName(StationEl::Class()));
+            auto& e = mg.emplaceEl<StationEl>(UID{}, ModelGraphIDs::Ground(), Vec3{}, GenerateName(StationEl::Class()));
             SelectOnly(mg, e);
         }
         osc::DrawTooltipIfItemHovered("Add Station", StationEl::Class().getDescription());
@@ -7939,7 +7925,7 @@ private:
         std::optional<AABB> rv;
         for (DrawableThing const& drawable : m_DrawablesBuffer)
         {
-            if (drawable.id != c_EmptyID)
+            if (drawable.id != ModelGraphIDs::Empty())
             {
                 AABB const bounds = calcBounds(drawable);
                 rv = rv ? Union(*rv, bounds) : bounds;
