@@ -4,6 +4,7 @@
 #include <OpenSimCreator/Bindings/SimTKMeshLoader.hpp>
 #include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/ModelGraph/BodyEl.hpp>
+#include <OpenSimCreator/ModelGraph/CommittableModelGraph.hpp>
 #include <OpenSimCreator/ModelGraph/CrossrefDescriptor.hpp>
 #include <OpenSimCreator/ModelGraph/CrossrefDirection.hpp>
 #include <OpenSimCreator/ModelGraph/EdgeEl.hpp>
@@ -208,9 +209,6 @@ using osc::EdgeEl;
 // correct time
 namespace osc
 {
-    // model graphs can be stored in a generic UndoRedo container
-    using CommittableModelGraph = osc::UndoRedoT<ModelGraph>;
-
     bool PointAxisTowards(
         CommittableModelGraph& cmg,
         UID id,

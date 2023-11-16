@@ -57,6 +57,7 @@ add_library(OpenSimCreator STATIC
 
     ModelGraph/BodyEl.cpp
     ModelGraph/BodyEl.hpp
+    ModelGraph/CommittableModelGraph.hpp
     ModelGraph/CrossrefDescriptor.hpp
     ModelGraph/CrossrefDirection.hpp
     ModelGraph/EdgeEl.cpp
