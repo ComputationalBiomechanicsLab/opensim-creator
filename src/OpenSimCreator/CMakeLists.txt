@@ -74,6 +74,8 @@ add_library(OpenSimCreator STATIC
     ModelGraph/SceneElCRTP.hpp
     ModelGraph/SceneElFlags.hpp
     ModelGraph/SceneElVariant.hpp
+    ModelGraph/StationEl.cpp
+    ModelGraph/StationEl.hpp
 
     Outputs/ComponentOutputExtractor.cpp
     Outputs/ComponentOutputExtractor.hpp
