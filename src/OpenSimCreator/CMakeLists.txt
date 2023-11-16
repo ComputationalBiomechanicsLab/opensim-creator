@@ -58,6 +58,8 @@ add_library(OpenSimCreator STATIC
     ModelGraph/BodyEl.cpp
     ModelGraph/BodyEl.hpp
     ModelGraph/CommittableModelGraph.hpp
+    ModelGraph/CommittableModelGraphActions.cpp
+    ModelGraph/CommittableModelGraphActions.hpp
     ModelGraph/CrossrefDescriptor.hpp
     ModelGraph/CrossrefDirection.hpp
     ModelGraph/EdgeEl.cpp
@@ -255,7 +257,7 @@ add_library(OpenSimCreator STATIC
     Utils/TPS3D.hpp
     Utils/UndoableModelActions.cpp
     Utils/UndoableModelActions.hpp
- "ModelGraph/ModelGraphHelpers.cpp")
+)
 
 # OpenSimCreatorConfig.hpp
 #
