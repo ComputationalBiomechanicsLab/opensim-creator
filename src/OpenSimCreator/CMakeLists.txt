@@ -179,12 +179,12 @@ add_library(OpenSimCreator STATIC
     UI/Tabs/Experimental/RendererGeometryShaderTab.hpp
     UI/Tabs/Experimental/TPS2DTab.cpp
     UI/Tabs/Experimental/TPS2DTab.hpp
+    UI/Tabs/MeshImporter/MeshImporterTab.cpp
+    UI/Tabs/MeshImporter/MeshImporterTab.hpp
     UI/Tabs/FrameDefinitionTab.cpp
     UI/Tabs/FrameDefinitionTab.hpp
     UI/Tabs/LoadingTab.cpp
     UI/Tabs/LoadingTab.hpp
-    UI/Tabs/MeshImporterTab.cpp
-    UI/Tabs/MeshImporterTab.hpp
     UI/Tabs/MeshWarpingTab.cpp
     UI/Tabs/MeshWarpingTab.hpp
     UI/Tabs/ModelEditorTab.cpp

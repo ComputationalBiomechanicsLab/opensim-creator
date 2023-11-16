@@ -3,9 +3,9 @@
 #include <OpenSimCreator/Platform/RecentFile.hpp>
 #include <OpenSimCreator/Platform/RecentFiles.hpp>
 #include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
+#include <OpenSimCreator/UI/Tabs/MeshImporter/MeshImporterTab.hpp>
 #include <OpenSimCreator/UI/Tabs/FrameDefinitionTab.hpp>
 #include <OpenSimCreator/UI/Tabs/LoadingTab.hpp>
-#include <OpenSimCreator/UI/Tabs/MeshImporterTab.hpp>
 #include <OpenSimCreator/UI/Tabs/MeshWarpingTab.hpp>
 #include <OpenSimCreator/UI/Widgets/MainMenu.hpp>
 #include <OpenSimCreator/Utils/UndoableModelActions.hpp>
