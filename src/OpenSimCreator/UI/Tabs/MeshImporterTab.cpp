@@ -5,6 +5,7 @@
 #include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/ModelGraph/ModelGraphIDs.hpp>
 #include <OpenSimCreator/ModelGraph/ModelGraphStrings.hpp>
+#include <OpenSimCreator/ModelGraph/SceneElClass.hpp>
 #include <OpenSimCreator/Registry/ComponentRegistry.hpp>
 #include <OpenSimCreator/Registry/StaticComponentRegistries.hpp>
 #include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
@@ -158,6 +159,7 @@ using osc::RenderTexture;
 using osc::SceneCache;
 using osc::SceneDecoration;
 using osc::SceneDecorationFlags;
+using osc::SceneElClass;
 using osc::SceneRenderer;
 using osc::SceneRendererParams;
 using osc::ShaderCache;
@@ -180,105 +182,6 @@ using osc::UID;
 // - easy UI integration (GLM datatypes, designed to be easy to dump into OpenGL, etc.)
 namespace
 {
-    // a "class" for a scene element
-    class SceneEl;
-    class SceneElClass final {
-    public:
-        SceneElClass(
-            CStringView name,
-            CStringView namePluralized,
-            CStringView nameOptionallyPluralized,
-            CStringView icon,
-            CStringView description) :
-
-            m_Data{std::make_shared<Data>(
-                name,
-                namePluralized,
-                nameOptionallyPluralized,
-                icon,
-                description
-            )}
-        {
-        }
-
-        UID getID() const
-        {
-            return m_Data->id;
-        }
-
-        CStringView getName() const
-        {
-            return m_Data->name;
-        }
-
-        CStringView getNamePluralized() const
-        {
-            return m_Data->namePluralized;
-        }
-
-        CStringView getNameOptionallyPluralized() const
-        {
-            return m_Data->nameOptionallyPluralized;
-        }
-
-        CStringView getIconUTF8() const
-        {
-            return m_Data->icon;
-        }
-
-        CStringView getDescription() const
-        {
-            return m_Data->description;
-        }
-
-        int32_t fetchAddUniqueCounter() const
-        {
-            return m_Data->uniqueCounter.fetch_add(1, std::memory_order::relaxed);
-        }
-
-        friend bool operator==(SceneElClass const& lhs, SceneElClass const& rhs)
-        {
-            return lhs.m_Data == rhs.m_Data || *lhs.m_Data == *rhs.m_Data;
-        }
-    private:
-        struct Data final {
-            Data(
-                CStringView name_,
-                CStringView namePluralized_,
-                CStringView nameOptionallyPluralized_,
-                CStringView icon_,
-                CStringView description_) :
-
-                name{name_},
-                namePluralized{namePluralized_},
-                nameOptionallyPluralized{nameOptionallyPluralized_},
-                icon{icon_},
-                description{description_}
-            {
-            }
-
-            friend bool operator==(Data const&, Data const&) = default;
-
-            UID id;
-            std::string name;
-            std::string namePluralized;
-            std::string nameOptionallyPluralized;
-            std::string icon;
-            std::string description;
-            mutable std::atomic<int32_t> uniqueCounter = 0;
-        };
-
-        std::shared_ptr<Data const> m_Data;
-    };
-
-    // returns a unique string that can be used to name an instance of the given class
-    std::string GenerateName(SceneElClass const& c)
-    {
-        std::stringstream ss;
-        ss << c.getName() << c.fetchAddUniqueCounter();
-        return std::move(ss).str();
-    }
-
     // forward decls for supported scene elements
     class GroundEl;
     class MeshEl;
@@ -385,6 +288,7 @@ namespace
 
     // virtual interface to something that can be used to lookup scene elements in
     // some larger document
+    class SceneEl;
     class ISceneElLookup {
     protected:
         ISceneElLookup() = default;
@@ -2531,7 +2435,7 @@ namespace
     {
         ModelGraph& mg = cmg.updScratch();
 
-        auto const& b = mg.emplaceEl<BodyEl>(UID{}, GenerateName(BodyEl::Class()), Transform{.position = pos});
+        auto const& b = mg.emplaceEl<BodyEl>(UID{}, BodyEl::Class().generateName(), Transform{.position = pos});
         mg.deSelectAll();
         mg.select(b.getID());
 
@@ -2571,7 +2475,7 @@ namespace
             UID{},
             GetStationAttachmentParent(mg, el),
             loc,
-            GenerateName(StationEl::Class())
+            StationEl::Class().generateName()
         );
         SelectOnly(mg, station);
         cmg.commitScratch("added station " + station.getLabel());
@@ -7786,7 +7690,7 @@ private:
         if (ImGui::MenuItem(ICON_FA_MAP_PIN " Station"))
         {
             ModelGraph& mg = m_Shared->updModelGraph();
-            auto& e = mg.emplaceEl<StationEl>(UID{}, ModelGraphIDs::Ground(), Vec3{}, GenerateName(StationEl::Class()));
+            auto& e = mg.emplaceEl<StationEl>(UID{}, ModelGraphIDs::Ground(), Vec3{}, StationEl::Class().generateName());
             SelectOnly(mg, e);
         }
         osc::DrawTooltipIfItemHovered("Add Station", StationEl::Class().getDescription());

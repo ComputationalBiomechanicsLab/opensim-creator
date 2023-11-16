@@ -58,6 +58,7 @@ add_library(OpenSimCreator STATIC
     ModelGraph/ModelGraphIDs.cpp
     ModelGraph/ModelGraphIDs.hpp
     ModelGraph/ModelGraphStrings.hpp
+    ModelGraph/SceneElClass.hpp
 
     Outputs/ComponentOutputExtractor.cpp
     Outputs/ComponentOutputExtractor.hpp
