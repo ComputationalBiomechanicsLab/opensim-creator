@@ -13,7 +13,7 @@ namespace osc
         WindowMenu(WindowMenu&&) noexcept;
         WindowMenu& operator=(WindowMenu const&) = delete;
         WindowMenu& operator=(WindowMenu&&) noexcept;
-        ~WindowMenu();
+        ~WindowMenu() noexcept;
 
         void onDraw();
     private:

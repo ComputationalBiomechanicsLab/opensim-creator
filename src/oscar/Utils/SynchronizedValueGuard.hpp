@@ -17,10 +17,10 @@ namespace osc
         {
         }
 
-        T& operator*() & noexcept { return *m_Ptr; }
-        T const& operator*() const & noexcept { return *m_Ptr; }
-        T* operator->() noexcept { return m_Ptr; }
-        T const* operator->() const noexcept { return m_Ptr; }
+        T& operator*() & { return *m_Ptr; }
+        T const& operator*() const & { return *m_Ptr; }
+        T* operator->() { return m_Ptr; }
+        T const* operator->() const { return m_Ptr; }
 
     private:
         TGuard m_Guard;

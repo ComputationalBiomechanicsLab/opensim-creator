@@ -17,17 +17,17 @@ namespace osc
             std::shared_ptr<OpenSim::Component const>
         );
 
-        CStringView name() const noexcept
+        CStringView name() const
         {
             return m_Name;
         }
 
-        CStringView description() const noexcept
+        CStringView description() const
         {
             return m_Description;
         }
 
-        OpenSim::Component const& prototype() const noexcept
+        OpenSim::Component const& prototype() const
         {
             return *m_Prototype;
         }

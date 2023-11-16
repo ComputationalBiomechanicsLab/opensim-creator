@@ -14,7 +14,7 @@ namespace osc
 {
     class LOGLGammaTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit LOGLGammaTab(ParentPtr<TabHost> const&);
         LOGLGammaTab(LOGLGammaTab const&) = delete;

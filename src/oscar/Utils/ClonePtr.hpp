@@ -15,17 +15,17 @@ namespace osc
         typedef T* pointer;
         typedef T element_type;
 
-        ClonePtr() noexcept : m_Value{nullptr}
+        ClonePtr() : m_Value{nullptr}
         {
         }
-        ClonePtr(std::nullptr_t) noexcept : m_Value{nullptr}
+        ClonePtr(std::nullptr_t) : m_Value{nullptr}
         {
         }
         explicit ClonePtr(T* ptr) noexcept : m_Value{ptr}
         {
             // takes ownership
         }
-        explicit ClonePtr(std::unique_ptr<T, Deleter> ptr) noexcept : m_Value{std::move(ptr)}
+        explicit ClonePtr(std::unique_ptr<T, Deleter> ptr) : m_Value{std::move(ptr)}
         {
             // takes ownership
         }
@@ -82,13 +82,13 @@ namespace osc
             return *this;
         }
 
-        ClonePtr& operator=(std::nullptr_t) noexcept
+        ClonePtr& operator=(std::nullptr_t)
         {
             reset();
             return *this;
         }
 
-        T* release() noexcept
+        T* release()
         {
             return m_Value.release();
         }
@@ -100,27 +100,27 @@ namespace osc
         {
             m_Value.swap(other.m_Value);
         }
-        T* get() const noexcept
+        T* get() const
         {
             return m_Value.get();
         }
-        Deleter& get_deleter() noexcept
+        Deleter& get_deleter()
         {
             return m_Value.get_deleter();
         }
-        Deleter const& get_deleter() const noexcept
+        Deleter const& get_deleter() const
         {
             return m_Value.get_deleter();
         }
-        explicit operator bool() const noexcept
+        explicit operator bool() const
         {
             return m_Value;
         }
-        T& operator*() const noexcept
+        T& operator*() const
         {
             return *m_Value;
         }
-        T* operator->() const noexcept
+        T* operator->() const
         {
             return m_Value.get();
         }
@@ -131,9 +131,9 @@ namespace osc
         }
 
         template<typename T2, typename D2>
-        friend bool operator==(ClonePtr const& x, ClonePtr<T2, D2> const& y)
+        friend bool operator==(ClonePtr const& lhs, ClonePtr<T2, D2> const& rhs)
         {
-            return x.get() == y.get();
+            return lhs.get() == rhs.get();
         }
 
         friend std::ostream& operator<<(std::ostream& o, ClonePtr const& p)

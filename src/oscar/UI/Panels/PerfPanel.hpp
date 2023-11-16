@@ -15,7 +15,7 @@ namespace osc
         PerfPanel(PerfPanel&&) noexcept;
         PerfPanel& operator=(PerfPanel const&) = delete;
         PerfPanel& operator=(PerfPanel&&) noexcept;
-        ~PerfPanel();
+        ~PerfPanel() noexcept;
 
     private:
         CStringView implGetName() const final;

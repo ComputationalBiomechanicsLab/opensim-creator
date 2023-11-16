@@ -1080,7 +1080,7 @@ bool osc::TrySetAppearancePropertyIsVisibleTo(OpenSim::Component& c, bool v)
     }
 }
 
-osc::Color osc::GetSuggestedBoneColor() noexcept
+osc::Color osc::GetSuggestedBoneColor()
 {
     Color usualDefault = {232.0f / 255.0f, 216.0f / 255.0f, 200.0f/255.0f, 1.0f};
     float brightenAmount = 0.1f;

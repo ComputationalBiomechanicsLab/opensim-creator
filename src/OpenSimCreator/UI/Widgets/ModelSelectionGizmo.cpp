@@ -22,6 +22,7 @@
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
+#include <oscar/Shims/Cpp23/utility.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
 #include <Simbody.h>
@@ -47,16 +48,14 @@ namespace
         Rotation    = 1u<<1u,
     };
 
-    constexpr SupportedManipulationOpFlags operator|(SupportedManipulationOpFlags a, SupportedManipulationOpFlags b) noexcept
+    constexpr SupportedManipulationOpFlags operator|(SupportedManipulationOpFlags lhs, SupportedManipulationOpFlags rhs)
     {
-        using T = std::underlying_type_t<SupportedManipulationOpFlags>;
-        return static_cast<SupportedManipulationOpFlags>(static_cast<T>(a) | static_cast<T>(b));
+        return static_cast<SupportedManipulationOpFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
     }
 
-    constexpr bool operator&(SupportedManipulationOpFlags a, SupportedManipulationOpFlags b) noexcept
+    constexpr bool operator&(SupportedManipulationOpFlags lhs, SupportedManipulationOpFlags rhs)
     {
-        using T = std::underlying_type_t<SupportedManipulationOpFlags>;
-        return (static_cast<T>(a) & static_cast<T>(b)) != 0u;
+        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0u;
     }
 
     // type-erased virtual base class that each concrete manipulator inherits from
@@ -147,7 +146,7 @@ namespace
             TComponent const* maybeSelected = findSelection();
             if (!maybeSelected)
             {
-                return Mat4{1.0f};  // selection of that type does not exist in the model
+                return osc::Identity<Mat4>();  // selection of that type does not exist in the model
             }
             return implGetCurrentModelMatrix(*maybeSelected);
         }

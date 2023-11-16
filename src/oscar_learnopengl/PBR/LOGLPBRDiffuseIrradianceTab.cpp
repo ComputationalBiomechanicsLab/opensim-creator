@@ -344,7 +344,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLPBRDiffuseIrradianceTab::id() noexcept
+osc::CStringView osc::LOGLPBRDiffuseIrradianceTab::id()
 {
     return c_TabStringID;
 }

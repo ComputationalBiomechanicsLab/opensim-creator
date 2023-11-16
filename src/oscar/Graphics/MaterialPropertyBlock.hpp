@@ -68,7 +68,7 @@ namespace osc
         }
 
     private:
-        friend bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
+        friend bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
         friend std::ostream& operator<<(std::ostream&, MaterialPropertyBlock const&);
         friend class GraphicsBackend;
 
@@ -76,6 +76,6 @@ namespace osc
         CopyOnUpdPtr<Impl> m_Impl;
     };
 
-    bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
+    bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
     std::ostream& operator<<(std::ostream&, MaterialPropertyBlock const&);
 }

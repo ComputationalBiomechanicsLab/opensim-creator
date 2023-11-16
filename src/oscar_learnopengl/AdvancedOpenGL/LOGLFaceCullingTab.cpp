@@ -155,7 +155,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLFaceCullingTab::id() noexcept
+osc::CStringView osc::LOGLFaceCullingTab::id()
 {
     return c_TabStringID;
 }

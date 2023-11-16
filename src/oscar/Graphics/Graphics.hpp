@@ -28,7 +28,8 @@ namespace osc::Graphics
         Transform const&,
         Material const&,
         Camera&,
-        std::optional<MaterialPropertyBlock> const& = std::nullopt
+        std::optional<MaterialPropertyBlock> const& = std::nullopt,
+        std::optional<size_t> maybeSubMeshIndex = std::nullopt
     );
 
     void DrawMesh(
@@ -36,7 +37,8 @@ namespace osc::Graphics
         Mat4 const&,
         Material const&,
         Camera&,
-        std::optional<MaterialPropertyBlock> const& = std::nullopt
+        std::optional<MaterialPropertyBlock> const& = std::nullopt,
+        std::optional<size_t> maybeSubMeshIndex = std::nullopt
     );
 
     // blit: use a shader to copy a GPU texture to a GPU render texture or

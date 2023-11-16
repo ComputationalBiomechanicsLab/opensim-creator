@@ -203,7 +203,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLCoordinateSystemsTab::id() noexcept
+osc::CStringView osc::LOGLCoordinateSystemsTab::id()
 {
     return c_TabStringID;
 }

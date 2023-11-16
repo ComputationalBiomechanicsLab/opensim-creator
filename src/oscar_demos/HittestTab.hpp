@@ -14,7 +14,7 @@ namespace osc
 {
     class HittestTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit HittestTab(ParentPtr<TabHost> const&);
         HittestTab(HittestTab const&) = delete;

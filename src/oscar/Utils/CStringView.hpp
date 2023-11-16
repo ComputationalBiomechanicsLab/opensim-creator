@@ -12,58 +12,60 @@ namespace osc
     public:
         using value_type = std::string_view::value_type;
 
-        constexpr CStringView() noexcept = default;
+        constexpr CStringView() = default;
 
-        constexpr CStringView(char const* s) noexcept :
+        constexpr CStringView(char const* s) :
             m_Data{s ? s : ""}
         {
         }
 
-        constexpr CStringView(std::nullptr_t) noexcept :
+        constexpr CStringView(std::nullptr_t) :
             CStringView{}
         {
         }
 
-        CStringView(std::string const& s) noexcept :
+        CStringView(std::string const& s) :
             m_Data{s.c_str()},
             m_Size{s.size()}
         {
         }
 
-        constexpr CStringView(CStringView const&) noexcept = default;
-        constexpr CStringView& operator=(CStringView const&) noexcept = default;
+        constexpr CStringView(CStringView const&) = default;
+        constexpr CStringView(CStringView&&) noexcept = default;
+        constexpr CStringView& operator=(CStringView const&) = default;
+        constexpr CStringView& operator=(CStringView&&) noexcept = default;
 
-        constexpr size_t size() const noexcept
+        constexpr size_t size() const
         {
             return m_Size;
         }
 
-        constexpr size_t length() const noexcept
+        constexpr size_t length() const
         {
             return m_Size;
         }
 
-        [[nodiscard]] constexpr bool empty() const noexcept
+        [[nodiscard]] constexpr bool empty() const
         {
             return m_Size == 0;
         }
 
-        constexpr char const* c_str() const noexcept
+        constexpr char const* c_str() const
         {
             return m_Data;
         }
 
-        constexpr operator std::string_view () const noexcept
+        constexpr operator std::string_view () const
         {
             return std::string_view{m_Data, m_Size};
         }
 
-        constexpr char const* begin() const noexcept
+        constexpr char const* begin() const
         {
             return m_Data;
         }
 
-        constexpr char const* end() const noexcept
+        constexpr char const* end() const
         {
             return m_Data + m_Size;
         }

@@ -14,7 +14,7 @@ namespace osc
 {
     class LOGLCoordinateSystemsTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit LOGLCoordinateSystemsTab(ParentPtr<TabHost> const&);
         LOGLCoordinateSystemsTab(LOGLCoordinateSystemsTab const&) = delete;

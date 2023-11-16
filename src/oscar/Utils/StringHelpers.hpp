@@ -64,6 +64,6 @@ namespace osc
     // e.g. 0x00 --> ('0', '0')
     //      0xf0 --> ('f', '0')
     //      0x02 --> ('0', '2')
-    std::pair<char, char> ToHexChars(uint8_t) noexcept;
-    std::optional<uint8_t> TryParseHexCharsAsByte(char, char) noexcept;
+    std::pair<char, char> ToHexChars(uint8_t);
+    std::optional<uint8_t> TryParseHexCharsAsByte(char, char);
 }

@@ -63,28 +63,28 @@ namespace
         std::vector<Mat4> rv;
 
         {
-            Mat4 m{1.0f};
+            Mat4 m = osc::Identity<Mat4>();
             m = osc::Translate(m, Vec3(0.0f, 1.5f, 0.0));
             m = osc::Scale(m, Vec3(0.5f));
             rv.push_back(m);
         }
 
         {
-            Mat4 m{1.0f};
+            Mat4 m = osc::Identity<Mat4>();
             m = osc::Translate(m, Vec3(2.0f, 0.0f, 1.0));
             m = osc::Scale(m, Vec3(0.5f));
             rv.push_back(m);
         }
 
         {
-            Mat4 m{1.0f};
+            Mat4 m = osc::Identity<Mat4>();
             m = osc::Translate(m, Vec3(-1.0f, -1.0f, 2.0));
             m = osc::Rotate(m, osc::Deg2Rad(60.0f), osc::Normalize(Vec3(1.0, 0.0, 1.0)));
             rv.push_back(m);
         }
 
         {
-            Mat4 m{1.0f};
+            Mat4 m = osc::Identity<Mat4>();
             m = osc::Translate(m, Vec3(0.0f, 2.7f, 4.0));
             m = osc::Rotate(m, osc::Deg2Rad(23.0f), osc::Normalize(Vec3(1.0, 0.0, 1.0)));
             m = osc::Scale(m, Vec3(1.25));
@@ -92,14 +92,14 @@ namespace
         }
 
         {
-            Mat4 m(1.0f);
+            Mat4 m = osc::Identity<Mat4>();
             m = osc::Translate(m, Vec3(-2.0f, 1.0f, -3.0));
             m = osc::Rotate(m, osc::Deg2Rad(124.0f), osc::Normalize(Vec3(1.0, 0.0, 1.0)));
             rv.push_back(m);
         }
 
         {
-            Mat4 m(1.0f);
+            Mat4 m = osc::Identity<Mat4>();
             m = osc::Translate(m, Vec3(-3.0f, 0.0f, 0.0));
             m = osc::Scale(m, Vec3(0.5f));
             rv.push_back(m);
@@ -221,9 +221,9 @@ private:
 
         // draw floor
         {
-            Mat4 floorTransform{1.0f};
-            floorTransform = osc::Translate(floorTransform, Vec3(0.0f, -1.0f, 0.0));
-            floorTransform = osc::Scale(floorTransform, Vec3(12.5f, 0.5f, 12.5f));
+            Mat4 floorTransform = Identity<Mat4>();
+            floorTransform = Translate(floorTransform, Vec3(0.0f, -1.0f, 0.0));
+            floorTransform = Scale(floorTransform, Vec3(12.5f, 0.5f, 12.5f));
 
             MaterialPropertyBlock floorProps;
             floorProps.setTexture("uDiffuseTexture", m_WoodTexture);
@@ -257,9 +257,9 @@ private:
 
         for (size_t i = 0; i < c_SceneLightPositions.size(); ++i)
         {
-            Mat4 lightTransform{1.0f};
-            lightTransform = osc::Translate(lightTransform, Vec3(c_SceneLightPositions[i]));
-            lightTransform = osc::Scale(lightTransform, Vec3(0.25f));
+            Mat4 lightTransform = Identity<Mat4>();
+            lightTransform = Translate(lightTransform, Vec3(c_SceneLightPositions[i]));
+            lightTransform = Scale(lightTransform, Vec3(0.25f));
 
             MaterialPropertyBlock lightProps;
             lightProps.setColor("uLightColor", sceneLightColors[i]);
@@ -421,7 +421,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLBloomTab::id() noexcept
+osc::CStringView osc::LOGLBloomTab::id()
 {
     return c_TabStringID;
 }

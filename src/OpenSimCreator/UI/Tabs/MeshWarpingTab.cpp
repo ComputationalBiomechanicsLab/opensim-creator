@@ -166,7 +166,7 @@ namespace
 
 template<>
 struct std::hash<TPSDocumentElementID> final {
-    size_t operator()(TPSDocumentElementID const& el) const noexcept
+    size_t operator()(TPSDocumentElementID const& el) const
     {
         return osc::HashOf(el.whichInput, el.elementType, el.elementID);
     }
@@ -2129,7 +2129,7 @@ private:
 
 // public API (PIMPL)
 
-osc::CStringView osc::MeshWarpingTab::id() noexcept
+osc::CStringView osc::MeshWarpingTab::id()
 {
     return "OpenSim/Warping";
 }

@@ -301,7 +301,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLPointShadowsTab::id() noexcept
+osc::CStringView osc::LOGLPointShadowsTab::id()
 {
     return c_TabStringID;
 }

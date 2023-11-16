@@ -154,7 +154,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLBasicLightingTab::id() noexcept
+osc::CStringView osc::LOGLBasicLightingTab::id()
 {
     return c_TabStringID;
 }

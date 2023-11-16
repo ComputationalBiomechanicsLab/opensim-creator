@@ -237,8 +237,8 @@ namespace
 
         // TODO: Graphics::Blit with material
         osc::Camera camera;
-        camera.setProjectionMatrixOverride(Mat4{1.0f});
-        camera.setViewMatrixOverride(Mat4{1.0f});
+        camera.setProjectionMatrixOverride(osc::Identity<Mat4>());
+        camera.setViewMatrixOverride(osc::Identity<Mat4>());
 
         osc::Graphics::DrawMesh(quad, osc::Transform{}, material, camera);
         camera.renderTo(renderTex);
@@ -458,7 +458,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLPBRSpecularIrradianceTab::id() noexcept
+osc::CStringView osc::LOGLPBRSpecularIrradianceTab::id()
 {
     return c_TabStringID;
 }

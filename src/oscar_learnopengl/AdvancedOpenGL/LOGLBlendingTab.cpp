@@ -243,7 +243,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLBlendingTab::id() noexcept
+osc::CStringView osc::LOGLBlendingTab::id()
 {
     return c_TabStringID;
 }

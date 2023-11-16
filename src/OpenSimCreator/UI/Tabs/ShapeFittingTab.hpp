@@ -15,7 +15,7 @@ namespace osc
 {
     class ShapeFittingTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit ShapeFittingTab(ParentPtr<TabHost> const&);
         ShapeFittingTab(ShapeFittingTab const&) = delete;

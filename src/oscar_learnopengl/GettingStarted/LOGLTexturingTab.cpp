@@ -97,8 +97,8 @@ namespace
     osc::Camera CreateIdentityCamera()
     {
         osc::Camera rv;
-        rv.setViewMatrixOverride(Mat4{1.0f});
-        rv.setProjectionMatrixOverride(Mat4{1.0f});
+        rv.setViewMatrixOverride(osc::Identity<Mat4>());
+        rv.setProjectionMatrixOverride(osc::Identity<Mat4>());
         return rv;
     }
 }
@@ -126,7 +126,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLTexturingTab::id() noexcept
+osc::CStringView osc::LOGLTexturingTab::id()
 {
     return c_TabStringID;
 }

@@ -7,6 +7,7 @@
 #include <oscar_demos/ImPlotDemoTab.hpp>
 #include <oscar_demos/MandelbrotTab.hpp>
 #include <oscar_demos/MeshGenTestTab.hpp>
+#include <oscar_demos/SubMeshTab.hpp>
 
 #include <oscar/UI/Tabs/TabRegistry.hpp>
 #include <oscar/UI/Tabs/TabRegistryEntry.hpp>
@@ -37,4 +38,5 @@ void osc::RegisterDemoTabs(TabRegistry& registry)
     RegisterTab<ImGuizmoDemoTab>(registry);
     RegisterTab<MandelbrotTab>(registry);
     RegisterTab<MeshGenTestTab>(registry);
+    RegisterTab<SubMeshTab>(registry);
 }

@@ -17,7 +17,7 @@ namespace osc
         }
     public:
 
-        T const* get() const noexcept
+        T const* get() const
         {
             return m_Ptr.get();
         }
@@ -31,12 +31,12 @@ namespace osc
             return m_Ptr.get();
         }
 
-        T const& operator*() const noexcept
+        T const& operator*() const
         {
             return *get();
         }
 
-        T const* operator->() const noexcept
+        T const* operator->() const
         {
             return get();
         }
@@ -47,13 +47,13 @@ namespace osc
         }
 
         template<typename U>
-        friend bool operator==(CopyOnUpdPtr const& lhs, CopyOnUpdPtr<U> const& rhs) noexcept
+        friend bool operator==(CopyOnUpdPtr const& lhs, CopyOnUpdPtr<U> const& rhs)
         {
             return lhs.m_Ptr == rhs.m_Ptr;
         }
 
         template<typename U>
-        friend auto operator<=>(CopyOnUpdPtr const& lhs, CopyOnUpdPtr<U> const& rhs) noexcept
+        friend auto operator<=>(CopyOnUpdPtr const& lhs, CopyOnUpdPtr<U> const& rhs)
         {
             return lhs.m_Ptr <=> rhs.m_Ptr;
         }

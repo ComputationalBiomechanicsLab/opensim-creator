@@ -237,7 +237,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLParallaxMappingTab::id() noexcept
+osc::CStringView osc::LOGLParallaxMappingTab::id()
 {
     return c_TabStringID;
 }

@@ -473,7 +473,7 @@ private:
 
 // public API (PIMPL)
 
-osc::CStringView osc::LOGLSSAOTab::id() noexcept
+osc::CStringView osc::LOGLSSAOTab::id()
 {
     return c_TabStringID;
 }

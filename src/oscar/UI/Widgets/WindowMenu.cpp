@@ -14,7 +14,7 @@ osc::WindowMenu::WindowMenu(std::shared_ptr<PanelManager> panelManager) :
 }
 osc::WindowMenu::WindowMenu(WindowMenu&&) noexcept = default;
 osc::WindowMenu& osc::WindowMenu::operator=(WindowMenu&&) noexcept = default;
-osc::WindowMenu::~WindowMenu() = default;
+osc::WindowMenu::~WindowMenu() noexcept = default;
 
 void osc::WindowMenu::onDraw()
 {

@@ -243,7 +243,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLNormalMappingTab::id() noexcept
+osc::CStringView osc::LOGLNormalMappingTab::id()
 {
     return c_TabStringID;
 }

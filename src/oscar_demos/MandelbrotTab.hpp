@@ -15,7 +15,7 @@ namespace osc
 {
     class MandelbrotTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit MandelbrotTab(ParentPtr<TabHost> const&);
         MandelbrotTab(MandelbrotTab const&) = delete;

@@ -1,5 +1,7 @@
 #include "OpenSimDecorationOptionFlags.hpp"
 
+#include <oscar/Shims/Cpp23/utility.hpp>
+
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -79,14 +81,12 @@ void osc::SetIthOption(OpenSimDecorationOptionFlags& flags, size_t i, bool v)
 
 void osc::SetOption(OpenSimDecorationOptionFlags& flags, OpenSimDecorationOptionFlags flag, bool v)
 {
-    using Underlying = std::underlying_type_t<OpenSimDecorationOptionFlags>;
-
     if (v)
     {
-        flags = static_cast<OpenSimDecorationOptionFlags>(static_cast<Underlying>(flags) | static_cast<Underlying>(flag));
+        flags = static_cast<OpenSimDecorationOptionFlags>(osc::to_underlying(flags) | osc::to_underlying(flag));
     }
     else
     {
-        flags = static_cast<OpenSimDecorationOptionFlags>(static_cast<Underlying>(flags) & ~static_cast<Underlying>(flag));
+        flags = static_cast<OpenSimDecorationOptionFlags>(osc::to_underlying(flags) & ~osc::to_underlying(flag));
     }
 }

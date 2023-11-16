@@ -55,8 +55,8 @@ namespace
     osc::Camera CreateSceneCamera()
     {
         osc::Camera rv;
-        rv.setViewMatrixOverride(Mat4{1.0f});
-        rv.setProjectionMatrixOverride(Mat4{1.0f});
+        rv.setViewMatrixOverride(osc::Identity<Mat4>());
+        rv.setProjectionMatrixOverride(osc::Identity<Mat4>());
         return rv;
     }
 
@@ -97,7 +97,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLHelloTriangleTab::id() noexcept
+osc::CStringView osc::LOGLHelloTriangleTab::id()
 {
     return c_TabStringID;
 }

@@ -13,7 +13,7 @@ namespace osc
 {
     class LOGLHelloTriangleTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit LOGLHelloTriangleTab(ParentPtr<TabHost> const&);
         LOGLHelloTriangleTab(LOGLHelloTriangleTab const&) = delete;

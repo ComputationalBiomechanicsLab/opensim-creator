@@ -1,8 +1,8 @@
 #pragma once
 
-#include <cstddef>
+#include <oscar/Shims/Cpp23/utility.hpp>
+
 #include <cstdint>
-#include <type_traits>
 
 namespace osc
 {
@@ -15,15 +15,13 @@ namespace osc
         Default = SolidColor | Depth,
     };
 
-    constexpr CameraClearFlags operator|(CameraClearFlags a, CameraClearFlags b) noexcept
+    constexpr CameraClearFlags operator|(CameraClearFlags lhs, CameraClearFlags rhs)
     {
-        using T = std::underlying_type_t<CameraClearFlags>;
-        return static_cast<CameraClearFlags>(static_cast<T>(a) | static_cast<T>(b));
+        return static_cast<CameraClearFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
     }
 
-    constexpr bool operator&(CameraClearFlags a, CameraClearFlags b) noexcept
+    constexpr bool operator&(CameraClearFlags lhs, CameraClearFlags rhs)
     {
-        using T = std::underlying_type_t<CameraClearFlags>;
-        return static_cast<T>(a) & static_cast<T>(b);
+        return osc::to_underlying(lhs) & osc::to_underlying(rhs);
     }
 }

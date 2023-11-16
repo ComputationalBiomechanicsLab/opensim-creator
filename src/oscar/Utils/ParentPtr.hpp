@@ -29,14 +29,14 @@ namespace osc
         }
 
         // normal copy construction
-        ParentPtr(ParentPtr const&) noexcept = default;
+        ParentPtr(ParentPtr const&) = default;
 
         // coercing copy construction: only applies when `T` can be implicitly converted to `U`
         template<
             typename U,
             typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = true
         >
-        ParentPtr(ParentPtr<U> const& other) noexcept :
+        ParentPtr(ParentPtr<U> const& other) :
             m_Parent{other.m_Parent}
         {
         }
@@ -55,14 +55,14 @@ namespace osc
         }
 
         // normal copy assignment
-        ParentPtr& operator=(ParentPtr const&) noexcept = default;
+        ParentPtr& operator=(ParentPtr const&) = default;
 
         // coercing copy assignment: only applies when `T` can be implicitly converted to `U`
         template<
             typename U,
             typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = false
         >
-        ParentPtr& operator=(ParentPtr<U> const& other) noexcept
+        ParentPtr& operator=(ParentPtr<U> const& other)
         {
             m_Parent = other.m_Parent;
         }

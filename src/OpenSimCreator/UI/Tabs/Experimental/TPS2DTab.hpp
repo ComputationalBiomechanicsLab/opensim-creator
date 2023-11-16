@@ -13,7 +13,7 @@ namespace osc
 {
     class TPS2DTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit TPS2DTab(ParentPtr<TabHost> const&);
         TPS2DTab(TPS2DTab const&) = delete;
