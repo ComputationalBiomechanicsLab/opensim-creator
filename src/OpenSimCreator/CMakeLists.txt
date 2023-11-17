@@ -206,8 +206,6 @@ add_library(OpenSimCreator STATIC
     UI/Tabs/OpenSimCreatorTabRegistry.hpp
     UI/Tabs/PerformanceAnalyzerTab.cpp
     UI/Tabs/PerformanceAnalyzerTab.hpp
-    UI/Tabs/ShapeFittingTab.cpp
-    UI/Tabs/ShapeFittingTab.hpp
     UI/Tabs/SimulatorTab.cpp
     UI/Tabs/SimulatorTab.hpp
     UI/Tabs/SplashTab.cpp
