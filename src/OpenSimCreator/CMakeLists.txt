@@ -190,6 +190,7 @@ add_library(OpenSimCreator STATIC
     UI/Tabs/MeshImporter/MeshImporterUILayerHost.hpp
     UI/Tabs/MeshImporter/MeshLoader.cpp
     UI/Tabs/MeshImporter/MeshLoader.hpp
+    UI/Tabs/MeshImporter/Select2MeshPointsLayer.hpp
     UI/Tabs/FrameDefinitionTab.cpp
     UI/Tabs/FrameDefinitionTab.hpp
     UI/Tabs/LoadingTab.cpp
