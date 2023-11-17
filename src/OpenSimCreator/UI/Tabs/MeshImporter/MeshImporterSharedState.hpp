@@ -730,6 +730,7 @@ namespace osc
                         return;
                     }
                     appendOut.push_back(generateEdgeArrowNeck(el, getColorEdge()));
+                    appendOut.push_back(generateEdgeArrowHead(el, getColorEdge()));
 
                 }
                 }, e.toVariant());
@@ -1423,16 +1424,37 @@ namespace osc
 
         DrawableThing generateEdgeArrowNeck(EdgeEl const& el, Color const& color) const
         {
+            float const tipLength = 0.025f*m_SceneScaleFactor;
             auto const edgePoints = el.getEdgeLineInGround(getModelGraph());
             Segment const cylinderMeshSegment = {{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
-            Segment const edgeSegment = {edgePoints.first, edgePoints.second};
+            Segment const completeEdgeSegment = {edgePoints.first, edgePoints.second};
+            Segment const neckSegment = {completeEdgeSegment.p1, completeEdgeSegment.p2 - tipLength*(completeEdgeSegment.p2 - completeEdgeSegment.p1)};
 
             DrawableThing rv;
             rv.id = el.getID();
             rv.groupId = ModelGraphIDs::EdgeGroup();
             rv.mesh = m_CylinderMesh;
-            rv.transform = SegmentToSegmentTransform(cylinderMeshSegment, edgeSegment);
-            rv.transform.scale *= Vec3{0.01f * m_SceneScaleFactor, 1.0f, 0.01f * m_SceneScaleFactor};  // make the cylinder smaller
+            rv.transform = SegmentToSegmentTransform(cylinderMeshSegment, neckSegment);
+            rv.transform.scale *= Vec3{0.01f * m_SceneScaleFactor, 1.0f, 0.01f * m_SceneScaleFactor};  // make cylinder diameter smaller
+            rv.color = color;
+            rv.flags = SceneDecorationFlags::None;
+            return rv;
+        }
+
+        DrawableThing generateEdgeArrowHead(EdgeEl const& el, Color const& color) const
+        {
+            float const tipLength = 0.025f*m_SceneScaleFactor;
+            auto const edgePoints = el.getEdgeLineInGround(getModelGraph());
+            Segment const coneMeshSegment = {{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
+            Segment const completeEdgeSegment = {edgePoints.first, edgePoints.second};
+            Segment const headSegment = {completeEdgeSegment.p2 - tipLength*(completeEdgeSegment.p2 - completeEdgeSegment.p1), completeEdgeSegment.p2};
+
+            DrawableThing rv;
+            rv.id = el.getID();
+            rv.groupId = ModelGraphIDs::EdgeGroup();
+            rv.mesh = m_CylinderMesh;
+            rv.transform = SegmentToSegmentTransform(coneMeshSegment, headSegment);
+            rv.transform.scale *= Vec3{0.02f * m_SceneScaleFactor, 1.0f, 0.02f * m_SceneScaleFactor};  // make cone diameter smaller
             rv.color = color;
             rv.flags = SceneDecorationFlags::None;
             return rv;
@@ -1484,6 +1506,9 @@ namespace osc
 
         // cylinder mesh used by various scene elements
         Mesh m_CylinderMesh = GenUntexturedYToYCylinder(16);
+
+        // cone mesh used to render scene elements
+        Mesh m_ConeMesh = GenUntexturedYToYCone(16);
 
         // main 3D scene camera
         PolarPerspectiveCamera m_3DSceneCamera = CreateDefaultCamera();
