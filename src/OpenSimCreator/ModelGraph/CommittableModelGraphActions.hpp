@@ -138,4 +138,10 @@ namespace osc
         UID elID,
         Vec3 const& loc
     );
+
+    bool CreateEdgeBetween(
+        CommittableModelGraph&,
+        UID firstSideID,
+        UID secondSideID
+    );
 }

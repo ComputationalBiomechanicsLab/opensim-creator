@@ -465,3 +465,11 @@ bool osc::AddStationAtLocation(
 
     return AddStationAtLocation(cmg, *el, loc);
 }
+
+bool osc::CreateEdgeBetween(
+    CommittableModelGraph&,
+    UID,
+    UID)
+{
+    return true;  // TODO
+}

@@ -710,6 +710,46 @@ private:
         m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
     }
 
+    void transitionToPickingEdgeElSecondSide(SceneEl const& firstSide)
+    {
+        ChooseElLayerOptions opts;
+        opts.canChooseBodies = true;
+        opts.canChooseGround = true;
+        opts.canChooseJoints = true;
+        opts.canChooseMeshes = true;
+        opts.maybeElsAttachingTo = {firstSide.getID()};
+        opts.header = "choose other edge side";
+        opts.onUserChoice = [shared = m_Shared, firstSideID = firstSide.getID()](std::span<UID> choices)
+        {
+            if (choices.empty())
+            {
+                return false;
+            }
+            return CreateEdgeBetween(shared->updCommittableModelGraph(), firstSideID, choices.front());
+        };
+        m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
+    }
+
+    void transitionToChoosingBothEdgeElSides()
+    {
+        ChooseElLayerOptions opts;
+        opts.canChooseBodies = true;
+        opts.canChooseGround = true;
+        opts.canChooseJoints = true;
+        opts.canChooseMeshes = true;
+        opts.numElementsUserMustChoose = 2;
+        opts.header = "choose two points for edge";
+        opts.onUserChoice = [shared = m_Shared](std::span<UID> choices)
+        {
+            if (choices.size() < 2)
+            {
+                return false;
+            }
+            return CreateEdgeBetween(shared->updCommittableModelGraph(), choices[0], choices[1]);
+        };
+        m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
+    }
+
     // ensure any stale references into the modelgrah are cleaned up
     void garbageCollectStaleRefs()
     {
@@ -1090,7 +1130,7 @@ private:
         {
             if (ImGui::MenuItem(ICON_FA_ARROWS_ALT "Edge"))
             {
-                // TODO: transition into picking the other side of the edge
+                transitionToPickingEdgeElSecondSide(el);
             }
             osc::DrawTooltipIfItemHovered("Add Edge", EdgeEl::Class().getDescription());
         }
@@ -1749,7 +1789,7 @@ private:
 
         if (ImGui::MenuItem(ICON_FA_ARROWS_ALT " Edge"))
         {
-            // TODO: transition into selecting two elements (or cancelling)
+            transitionToChoosingBothEdgeElSides();
         }
         osc::DrawTooltipIfItemHovered("Add Edge", EdgeEl::Class().getDescription());
 
