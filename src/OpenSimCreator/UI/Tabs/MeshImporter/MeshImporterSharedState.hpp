@@ -70,7 +70,6 @@
 #include <vector>
 
 namespace OpenSim { class Model; }
-namespace osc { class RenderTexture; }
 
 namespace osc
 {
@@ -85,7 +84,6 @@ namespace osc
         {
             pushMeshLoadRequests(std::move(meshFiles));
         }
-
 
         //
         // OpenSim OUTPUT MODEL STUFF
@@ -113,7 +111,6 @@ namespace osc
             }
         }
 
-
         //
         // MODEL GRAPH STUFF
         //
@@ -131,37 +128,6 @@ namespace osc
             }
             else
             {
-                return false;
-            }
-        }
-
-        bool exportModelGraphTo(std::filesystem::path const& exportPath)
-        {
-            std::vector<std::string> issues;
-            std::unique_ptr<OpenSim::Model> m;
-
-            try
-            {
-                m = CreateOpenSimModelFromModelGraph(getModelGraph(), m_ModelCreationFlags, issues);
-            }
-            catch (std::exception const& ex)
-            {
-                osc::log::error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
-            }
-
-            if (m)
-            {
-                m->print(exportPath.string());
-                m_MaybeModelGraphExportLocation = exportPath;
-                m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.getHeadID();
-                return true;
-            }
-            else
-            {
-                for (std::string const& issue : issues)
-                {
-                    osc::log::error("%s", issue.c_str());
-                }
                 return false;
             }
         }
@@ -222,18 +188,6 @@ namespace osc
         void resetRequestNewMeshImporter()
         {
             m_NewTabRequested = false;
-        }
-
-        std::string getDocumentName() const
-        {
-            if (m_MaybeModelGraphExportLocation.empty())
-            {
-                return "untitled.osim";
-            }
-            else
-            {
-                return m_MaybeModelGraphExportLocation.filename().string();
-            }
         }
 
         std::string getRecommendedTitle() const
@@ -308,109 +262,24 @@ namespace osc
             return getModelGraph().isSelected(id);
         }
 
-
         //
         // MESH LOADING STUFF
         //
-
-        void pushMeshLoadRequests(UID attachmentPoint, std::vector<std::filesystem::path> paths)
-        {
-            m_MeshLoader.send(MeshLoadRequest{attachmentPoint, std::move(paths)});
-        }
-
-        void pushMeshLoadRequests(std::vector<std::filesystem::path> paths)
-        {
-            pushMeshLoadRequests(ModelGraphIDs::Ground(), std::move(paths));
-        }
-
-        void pushMeshLoadRequest(UID attachmentPoint, std::filesystem::path const& path)
-        {
-            pushMeshLoadRequests(attachmentPoint, std::vector<std::filesystem::path>{path});
-        }
-
-        void pushMeshLoadRequest(std::filesystem::path const& meshFilePath)
-        {
-            pushMeshLoadRequest(ModelGraphIDs::Ground(), meshFilePath);
-        }
-
-        // called when the mesh loader responds with a fully-loaded mesh
-        void popMeshLoaderHandleOKResponse(MeshLoadOKResponse& ok)
-        {
-            if (ok.meshes.empty())
-            {
-                return;
-            }
-
-            // add each loaded mesh into the model graph
-            ModelGraph& mg = updModelGraph();
-            mg.deSelectAll();
-
-            for (LoadedMesh const& lm : ok.meshes)
-            {
-                SceneEl* el = mg.tryUpdElByID(ok.preferredAttachmentPoint);
-
-                if (el)
-                {
-                    auto& mesh = mg.emplaceEl<MeshEl>(UID{}, ok.preferredAttachmentPoint, lm.meshData, lm.path);
-                    mesh.setXform(el->getXForm(mg));
-                    mg.select(mesh);
-                    mg.select(*el);
-                }
-            }
-
-            // commit
-            {
-                std::stringstream commitMsgSS;
-                if (ok.meshes.empty())
-                {
-                    commitMsgSS << "loaded 0 meshes";
-                }
-                else if (ok.meshes.size() == 1)
-                {
-                    commitMsgSS << "loaded " << ok.meshes[0].path.filename();
-                }
-                else
-                {
-                    commitMsgSS << "loaded " << ok.meshes.size() << " meshes";
-                }
-
-                commitCurrentModelGraph(std::move(commitMsgSS).str());
-            }
-        }
-
-        // called when the mesh loader responds with a mesh loading error
-        void popMeshLoaderHandleErrorResponse(MeshLoadErrorResponse& err)
-        {
-            osc::log::error("%s: error loading mesh file: %s", err.path.string().c_str(), err.error.c_str());
-        }
-
-        void popMeshLoader()
-        {
-            for (auto maybeResponse = m_MeshLoader.poll(); maybeResponse.has_value(); maybeResponse = m_MeshLoader.poll())
-            {
-                MeshLoadResponse& meshLoaderResp = *maybeResponse;
-
-                if (std::holds_alternative<MeshLoadOKResponse>(meshLoaderResp))
-                {
-                    popMeshLoaderHandleOKResponse(std::get<MeshLoadOKResponse>(meshLoaderResp));
-                }
-                else
-                {
-                    popMeshLoaderHandleErrorResponse(std::get<MeshLoadErrorResponse>(meshLoaderResp));
-                }
-            }
-        }
 
         std::vector<std::filesystem::path> promptUserForMeshFiles() const
         {
             return osc::PromptUserForFiles(osc::GetCommaDelimitedListOfSupportedSimTKMeshFormats());
         }
 
+        void pushMeshLoadRequests(UID attachmentPoint, std::vector<std::filesystem::path> paths)
+        {
+            m_MeshLoader.send(MeshLoadRequest{attachmentPoint, std::move(paths)});
+        }
+
         void promptUserForMeshFilesAndPushThemOntoMeshLoader()
         {
             pushMeshLoadRequests(promptUserForMeshFiles());
         }
-
 
         //
         // UI OVERLAY STUFF
@@ -419,35 +288,6 @@ namespace osc
         Vec2 worldPosToScreenPos(Vec3 const& worldPos) const
         {
             return getCamera().projectOntoScreenRect(worldPos, get3DSceneRect());
-        }
-
-        void drawConnectionLineTriangleAtMidpoint(
-            ImU32 color,
-            Vec3 parent,
-            Vec3 child) const
-        {
-            constexpr float triangleWidth = 6.0f * c_ConnectionLineWidth;
-            constexpr float triangleWidthSquared = triangleWidth*triangleWidth;
-
-            Vec2 const parentScr = worldPosToScreenPos(parent);
-            Vec2 const childScr = worldPosToScreenPos(child);
-            Vec2 const child2ParentScr = parentScr - childScr;
-
-            if (osc::Dot(child2ParentScr, child2ParentScr) < triangleWidthSquared)
-            {
-                return;
-            }
-
-            Vec3 const midpoint = osc::Midpoint(parent, child);
-            Vec2 const midpointScr = worldPosToScreenPos(midpoint);
-            Vec2 const directionScr = osc::Normalize(child2ParentScr);
-            Vec2 const directionNormalScr = {-directionScr.y, directionScr.x};
-
-            Vec2 const p1 = midpointScr + (triangleWidth/2.0f)*directionNormalScr;
-            Vec2 const p2 = midpointScr - (triangleWidth/2.0f)*directionNormalScr;
-            Vec2 const p3 = midpointScr + triangleWidth*directionScr;
-
-            ImGui::GetWindowDrawList()->AddTriangleFilled(p1, p2, p3, color);
         }
 
         void drawConnectionLine(
@@ -460,68 +300,6 @@ namespace osc
 
             // the triangle
             drawConnectionLineTriangleAtMidpoint(color, parent, child);
-        }
-
-        void drawConnectionLines(
-            SceneEl const& el,
-            ImU32 color,
-            std::unordered_set<UID> const& excludedIDs) const
-        {
-            ModelGraph const& mg = getModelGraph();
-            for (int i = 0, len = el.getNumCrossReferences(); i < len; ++i)
-            {
-                UID refID = el.getCrossReferenceConnecteeID(i);
-
-                if (excludedIDs.find(refID) != excludedIDs.end())
-                {
-                    continue;
-                }
-
-                SceneEl const* other = mg.tryGetElByID(refID);
-
-                if (!other)
-                {
-                    continue;
-                }
-
-                Vec3 child = el.getPos(mg);
-                Vec3 parent = other->getPos(mg);
-
-                if (el.getCrossReferenceDirection(i) == CrossrefDirection::ToChild)
-                {
-                    std::swap(parent, child);
-                }
-
-                drawConnectionLine(color, parent, child);
-            }
-        }
-
-        void drawConnectionLines(SceneEl const& el, ImU32 color) const
-        {
-            drawConnectionLines(el, color, std::unordered_set<UID>{});
-        }
-
-        void drawConnectionLineToGround(SceneEl const& el, ImU32 color) const
-        {
-            if (el.getID() == ModelGraphIDs::Ground())
-            {
-                return;
-            }
-
-            drawConnectionLine(color, Vec3{}, el.getPos(getModelGraph()));
-        }
-
-        bool shouldShowConnectionLines(SceneEl const& el) const
-        {
-            return std::visit(Overload
-            {
-                []    (GroundEl const&)  { return false; },
-                [this](MeshEl const&)    { return this->isShowingMeshConnectionLines(); },
-                [this](BodyEl const&)    { return this->isShowingBodyConnectionLines(); },
-                [this](JointEl const&)   { return this->isShowingJointConnectionLines(); },
-                [this](StationEl const&) { return this->isShowingMeshConnectionLines(); },
-                []    (EdgeEl const&)    { return false; },
-            }, el.toVariant());
         }
 
         void drawConnectionLines(
@@ -592,7 +370,6 @@ namespace osc
             //drawConnectionLines(m_Colors.connectionLines);
         }
 
-
         //
         // RENDERING STUFF
         //
@@ -602,7 +379,7 @@ namespace osc
             set3DSceneRect(osc::ContentRegionAvailScreenRect());
         }
 
-        void drawScene(std::span<DrawableThing> drawables)
+        void drawScene(std::span<DrawableThing const> drawables)
         {
             // setup rendering params
             SceneRendererParams p;
@@ -650,19 +427,9 @@ namespace osc
             return m_IsRenderHovered;
         }
 
-        void setIsRenderHovered(bool newIsHovered)
-        {
-            m_IsRenderHovered = newIsHovered;
-        }
-
         Rect const& get3DSceneRect() const
         {
             return m_3DSceneRect;
-        }
-
-        void set3DSceneRect(Rect const& newRect)
-        {
-            m_3DSceneRect = newRect;
         }
 
         Vec2 get3DSceneDims() const
@@ -690,19 +457,7 @@ namespace osc
             m_3DSceneCamera.focusPoint = -focusPoint;
         }
 
-        RenderTexture& updSceneTex()
-        {
-            return m_SceneRenderer.updRenderTexture();
-        }
-
         std::span<Color const> getColors() const
-        {
-            static_assert(offsetof(Colors, ground) == 0);
-            static_assert(sizeof(Colors) % sizeof(Color) == 0);
-            return {&m_Colors.ground, sizeof(m_Colors)/sizeof(Color)};
-        }
-
-        std::span<Color> updColors()
         {
             static_assert(offsetof(Colors, ground) == 0);
             static_assert(sizeof(Colors) % sizeof(Color) == 0);
@@ -719,54 +474,12 @@ namespace osc
             return c_ColorNames;
         }
 
-        Color const& getColorSceneBackground() const
-        {
-            return m_Colors.sceneBackground;
-        }
-
-        Color const& getColorMesh() const
-        {
-            return m_Colors.meshes;
-        }
-
-        void setColorMesh(Color const& newColor)
-        {
-            m_Colors.meshes = newColor;
-        }
-
-        Color const& getColorGround() const
-        {
-            return m_Colors.ground;
-        }
-
-        Color const& getColorStation() const
-        {
-            return m_Colors.stations;
-        }
-
-        Color const& getColorEdge() const
-        {
-            return m_Colors.edges;
-        }
-
         Color const& getColorConnectionLine() const
         {
             return m_Colors.connectionLines;
         }
 
-        void setColorConnectionLine(Color const& newColor)
-        {
-            m_Colors.connectionLines = newColor;
-        }
-
         std::span<bool const> getVisibilityFlags() const
-        {
-            static_assert(offsetof(VisibilityFlags, ground) == 0);
-            static_assert(sizeof(VisibilityFlags) % sizeof(bool) == 0);
-            return {&m_VisibilityFlags.ground, sizeof(m_VisibilityFlags)/sizeof(bool)};
-        }
-
-        std::span<bool> updVisibilityFlags()
         {
             static_assert(offsetof(VisibilityFlags, ground) == 0);
             static_assert(sizeof(VisibilityFlags) % sizeof(bool) == 0);
@@ -783,117 +496,9 @@ namespace osc
             return c_VisibilityFlagNames;
         }
 
-        bool isShowingMeshes() const
-        {
-            return m_VisibilityFlags.meshes;
-        }
-
-        void setIsShowingMeshes(bool newIsShowing)
-        {
-            m_VisibilityFlags.meshes = newIsShowing;
-        }
-
-        bool isShowingBodies() const
-        {
-            return m_VisibilityFlags.bodies;
-        }
-
-        void setIsShowingBodies(bool newIsShowing)
-        {
-            m_VisibilityFlags.bodies = newIsShowing;
-        }
-
-        bool isShowingJointCenters() const
-        {
-            return m_VisibilityFlags.joints;
-        }
-
-        void setIsShowingJointCenters(bool newIsShowing)
-        {
-            m_VisibilityFlags.joints = newIsShowing;
-        }
-
-        bool isShowingGround() const
-        {
-            return m_VisibilityFlags.ground;
-        }
-
-        void setIsShowingGround(bool newIsShowing)
-        {
-            m_VisibilityFlags.ground = newIsShowing;
-        }
-
         bool isShowingFloor() const
         {
             return m_VisibilityFlags.floor;
-        }
-
-        void setIsShowingFloor(bool newIsShowing)
-        {
-            m_VisibilityFlags.floor = newIsShowing;
-        }
-
-        bool isShowingStations() const
-        {
-            return m_VisibilityFlags.stations;
-        }
-
-        void setIsShowingStations(bool v)
-        {
-            m_VisibilityFlags.stations = v;
-        }
-
-        bool isShowingEdges() const
-        {
-            return m_VisibilityFlags.edges;
-        }
-
-        bool isShowingJointConnectionLines() const
-        {
-            return m_VisibilityFlags.jointConnectionLines;
-        }
-
-        void setIsShowingJointConnectionLines(bool newIsShowing)
-        {
-            m_VisibilityFlags.jointConnectionLines = newIsShowing;
-        }
-
-        bool isShowingMeshConnectionLines() const
-        {
-            return m_VisibilityFlags.meshConnectionLines;
-        }
-
-        void setIsShowingMeshConnectionLines(bool newIsShowing)
-        {
-            m_VisibilityFlags.meshConnectionLines = newIsShowing;
-        }
-
-        bool isShowingBodyConnectionLines() const
-        {
-            return m_VisibilityFlags.bodyToGroundConnectionLines;
-        }
-
-        void setIsShowingBodyConnectionLines(bool newIsShowing)
-        {
-            m_VisibilityFlags.bodyToGroundConnectionLines = newIsShowing;
-        }
-
-        bool isShowingStationConnectionLines() const
-        {
-            return m_VisibilityFlags.stationConnectionLines;
-        }
-
-        void setIsShowingStationConnectionLines(bool newIsShowing)
-        {
-            m_VisibilityFlags.stationConnectionLines = newIsShowing;
-        }
-
-        Transform getFloorTransform() const
-        {
-            Transform t;
-            t.rotation = osc::AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{-1.0f, 0.0f, 0.0f});
-            t.scale = {m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f};
-            return t;
         }
 
         DrawableThing generateFloorDrawable() const
@@ -922,148 +527,11 @@ namespace osc
             return dt;
         }
 
-        float getSphereRadius() const
-        {
-            return 0.02f * m_SceneScaleFactor;
-        }
-
-        Sphere sphereAtTranslation(Vec3 const& translation) const
-        {
-            return Sphere{translation, getSphereRadius()};
-        }
-
-        void appendAsFrame(
-            UID logicalID,
-            UID groupID,
-            Transform const& xform,
-            std::vector<DrawableThing>& appendOut,
-            float alpha = 1.0f,
-            SceneDecorationFlags flags = SceneDecorationFlags::None,
-            Vec3 legLen = {1.0f, 1.0f, 1.0f},
-            Color coreColor = Color::white()) const
-        {
-            float const coreRadius = getSphereRadius();
-            float const legThickness = 0.5f * coreRadius;
-
-            // this is how much the cylinder has to be "pulled in" to the core to hide the edges
-            float const cylinderPullback = coreRadius * std::sin((std::numbers::pi_v<float> * legThickness) / coreRadius);
-
-            // emit origin sphere
-            {
-                Transform t;
-                t.scale *= coreRadius;
-                t.rotation = xform.rotation;
-                t.position = xform.position;
-
-                DrawableThing& sphere = appendOut.emplace_back();
-                sphere.id = logicalID;
-                sphere.groupId = groupID;
-                sphere.mesh = m_SphereMesh;
-                sphere.transform = t;
-                sphere.color = Color{coreColor.r, coreColor.g, coreColor.b, coreColor.a * alpha};
-                sphere.flags = flags;
-            }
-
-            // emit "legs"
-            for (int i = 0; i < 3; ++i)
-            {
-                // cylinder meshes are -1.0f to 1.0f in Y, so create a transform that maps the
-                // mesh onto the legs, which are:
-                //
-                // - 4.0f * leglen[leg] * radius long
-                // - 0.5f * radius thick
-
-                Vec3 const meshDirection = {0.0f, 1.0f, 0.0f};
-                Vec3 cylinderDirection = {};
-                cylinderDirection[i] = 1.0f;
-
-                float const actualLegLen = 4.0f * legLen[i] * coreRadius;
-
-                Transform t;
-                t.scale.x = legThickness;
-                t.scale.y = 0.5f * actualLegLen;  // cylinder is 2 units high
-                t.scale.z = legThickness;
-                t.rotation = osc::Normalize(xform.rotation * osc::Rotation(meshDirection, cylinderDirection));
-                t.position = xform.position + (t.rotation * (((getSphereRadius() + (0.5f * actualLegLen)) - cylinderPullback) * meshDirection));
-
-                Color color = {0.0f, 0.0f, 0.0f, alpha};
-                color[i] = 1.0f;
-
-                DrawableThing& se = appendOut.emplace_back();
-                se.id = logicalID;
-                se.groupId = groupID;
-                se.mesh = m_CylinderMesh;
-                se.transform = t;
-                se.color = color;
-                se.flags = flags;
-            }
-        }
-
-        void appendAsCubeThing(
-            UID logicalID,
-            UID groupID,
-            Transform const& xform,
-            std::vector<DrawableThing>& appendOut) const
-        {
-            float const halfWidth = 1.5f * getSphereRadius();
-
-            // core
-            {
-                Transform scaled{xform};
-                scaled.scale *= halfWidth;
-
-                DrawableThing& originCube = appendOut.emplace_back();
-                originCube.id = logicalID;
-                originCube.groupId = groupID;
-                originCube.mesh = App::singleton<SceneCache>()->getBrickMesh();
-                originCube.transform = scaled;
-                originCube.color = Color::white();
-                originCube.flags = SceneDecorationFlags::None;
-            }
-
-            // legs
-            for (int i = 0; i < 3; ++i)
-            {
-                // cone mesh has a source height of 2, stretches from -1 to +1 in Y
-                float const coneHeight = 0.75f * halfWidth;
-
-                Vec3 const meshDirection = {0.0f, 1.0f, 0.0f};
-                Vec3 coneDirection = {};
-                coneDirection[i] = 1.0f;
-
-                Transform t;
-                t.scale.x = 0.5f * halfWidth;
-                t.scale.y = 0.5f * coneHeight;
-                t.scale.z = 0.5f * halfWidth;
-                t.rotation = xform.rotation * osc::Rotation(meshDirection, coneDirection);
-                t.position = xform.position + (t.rotation * ((halfWidth + (0.5f * coneHeight)) * meshDirection));
-
-                Color color = {0.0f, 0.0f, 0.0f, 1.0f};
-                color[i] = 1.0f;
-
-                DrawableThing& legCube = appendOut.emplace_back();
-                legCube.id = logicalID;
-                legCube.groupId = groupID;
-                legCube.mesh = App::singleton<SceneCache>()->getConeMesh();
-                legCube.transform = t;
-                legCube.color = color;
-                legCube.flags = SceneDecorationFlags::None;
-            }
-        }
-
-
         //
         // HOVERTEST/INTERACTIVITY
         //
 
         std::span<bool const> getIneractivityFlags() const
-        {
-            static_assert(offsetof(InteractivityFlags, ground) == 0);
-            static_assert(sizeof(InteractivityFlags) % sizeof(bool) == 0);
-            return {&m_InteractivityFlags.ground, sizeof(m_InteractivityFlags)/sizeof(bool)};
-        }
-
-        std::span<bool> updInteractivityFlags()
         {
             static_assert(offsetof(InteractivityFlags, ground) == 0);
             static_assert(sizeof(InteractivityFlags) % sizeof(bool) == 0);
@@ -1078,56 +546,6 @@ namespace osc
         std::span<char const* const> getInteractivityFlagLabels() const
         {
             return c_InteractivityFlagNames;
-        }
-
-        bool isMeshesInteractable() const
-        {
-            return m_InteractivityFlags.meshes;
-        }
-
-        void setIsMeshesInteractable(bool newIsInteractable)
-        {
-            m_InteractivityFlags.meshes = newIsInteractable;
-        }
-
-        bool isBodiesInteractable() const
-        {
-            return m_InteractivityFlags.bodies;
-        }
-
-        void setIsBodiesInteractable(bool newIsInteractable)
-        {
-            m_InteractivityFlags.bodies = newIsInteractable;
-        }
-
-        bool isJointCentersInteractable() const
-        {
-            return m_InteractivityFlags.joints;
-        }
-
-        void setIsJointCentersInteractable(bool newIsInteractable)
-        {
-            m_InteractivityFlags.joints = newIsInteractable;
-        }
-
-        bool isGroundInteractable() const
-        {
-            return m_InteractivityFlags.ground;
-        }
-
-        void setIsGroundInteractable(bool newIsInteractable)
-        {
-            m_InteractivityFlags.ground = newIsInteractable;
-        }
-
-        bool isStationsInteractable() const
-        {
-            return m_InteractivityFlags.stations;
-        }
-
-        void setIsStationsInteractable(bool v)
-        {
-            m_InteractivityFlags.stations = v;
         }
 
         float getSceneScaleFactor() const
@@ -1234,15 +652,6 @@ namespace osc
         // SCENE ELEMENT STUFF (specific methods for specific scene element types)
         //
 
-        void unassignMesh(MeshEl const& me)
-        {
-            updModelGraph().updElByID<MeshEl>(me.getID()).getParentID() = ModelGraphIDs::Ground();
-
-            std::stringstream ss;
-            ss << "unassigned '" << me.getLabel() << "' back to ground";
-            commitCurrentModelGraph(std::move(ss).str());
-        }
-
         DrawableThing generateMeshElDrawable(MeshEl const& meshEl) const
         {
             DrawableThing rv;
@@ -1253,69 +662,6 @@ namespace osc
             rv.color = meshEl.getParentID() == ModelGraphIDs::Ground() || meshEl.getParentID() == ModelGraphIDs::Empty() ? RedifyColor(getColorMesh()) : getColorMesh();
             rv.flags = SceneDecorationFlags::None;
             return rv;
-        }
-
-        DrawableThing generateBodyElSphere(BodyEl const& bodyEl, Color const& color) const
-        {
-            DrawableThing rv;
-            rv.id = bodyEl.getID();
-            rv.groupId = ModelGraphIDs::BodyGroup();
-            rv.mesh = m_SphereMesh;
-            rv.transform = SphereMeshToSceneSphereTransform(sphereAtTranslation(bodyEl.getXForm().position));
-            rv.color = color;
-            rv.flags = SceneDecorationFlags::None;
-            return rv;
-        }
-
-        DrawableThing generateGroundSphere(Color const& color) const
-        {
-            DrawableThing rv;
-            rv.id = ModelGraphIDs::Ground();
-            rv.groupId = ModelGraphIDs::GroundGroup();
-            rv.mesh = m_SphereMesh;
-            rv.transform = SphereMeshToSceneSphereTransform(sphereAtTranslation({0.0f, 0.0f, 0.0f}));
-            rv.color = color;
-            rv.flags = SceneDecorationFlags::None;
-            return rv;
-        }
-
-        DrawableThing generateStationSphere(StationEl const& el, Color const& color) const
-        {
-            DrawableThing rv;
-            rv.id = el.getID();
-            rv.groupId = ModelGraphIDs::StationGroup();
-            rv.mesh = m_SphereMesh;
-            rv.transform = SphereMeshToSceneSphereTransform(sphereAtTranslation(el.getPos(getModelGraph())));
-            rv.color = color;
-            rv.flags = SceneDecorationFlags::None;
-            return rv;
-        }
-
-        DrawableThing generateEdgeCylinder(EdgeEl const& el, Color const& color) const
-        {
-            auto const edgePoints = el.getEdgeLineInGround(getModelGraph());
-            Segment const cylinderMeshSegment = {{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
-            Segment const edgeSegment = {edgePoints.first, edgePoints.second};
-
-            DrawableThing rv;
-            rv.id = el.getID();
-            rv.groupId = ModelGraphIDs::EdgeGroup();
-            rv.mesh = m_CylinderMesh;
-            rv.transform = SegmentToSegmentTransform(cylinderMeshSegment, edgeSegment);
-            rv.transform.scale *= Vec3{0.01f * m_SceneScaleFactor, 1.0f, 0.01f * m_SceneScaleFactor};  // make the cylinder smaller
-            rv.color = color;
-            rv.flags = SceneDecorationFlags::None;
-            return rv;
-        }
-
-        void appendBodyElAsCubeThing(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
-        {
-            appendAsCubeThing(bodyEl.getID(), ModelGraphIDs::BodyGroup(), bodyEl.getXForm(), appendOut);
-        }
-
-        void appendBodyElAsFrame(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
-        {
-            appendAsFrame(bodyEl.getID(), ModelGraphIDs::BodyGroup(), bodyEl.getXForm(), appendOut);
         }
 
         void appendDrawables(
@@ -1474,6 +820,624 @@ namespace osc
         }
 
     private:
+        bool exportModelGraphTo(std::filesystem::path const& exportPath)
+        {
+            std::vector<std::string> issues;
+            std::unique_ptr<OpenSim::Model> m;
+
+            try
+            {
+                m = CreateOpenSimModelFromModelGraph(getModelGraph(), m_ModelCreationFlags, issues);
+            }
+            catch (std::exception const& ex)
+            {
+                osc::log::error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
+            }
+
+            if (m)
+            {
+                m->print(exportPath.string());
+                m_MaybeModelGraphExportLocation = exportPath;
+                m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.getHeadID();
+                return true;
+            }
+            else
+            {
+                for (std::string const& issue : issues)
+                {
+                    osc::log::error("%s", issue.c_str());
+                }
+                return false;
+            }
+        }
+
+        std::string getDocumentName() const
+        {
+            if (m_MaybeModelGraphExportLocation.empty())
+            {
+                return "untitled.osim";
+            }
+            else
+            {
+                return m_MaybeModelGraphExportLocation.filename().string();
+            }
+        }
+
+        void pushMeshLoadRequests(std::vector<std::filesystem::path> paths)
+        {
+            pushMeshLoadRequests(ModelGraphIDs::Ground(), std::move(paths));
+        }
+
+        void pushMeshLoadRequest(UID attachmentPoint, std::filesystem::path const& path)
+        {
+            pushMeshLoadRequests(attachmentPoint, std::vector<std::filesystem::path>{path});
+        }
+
+        void pushMeshLoadRequest(std::filesystem::path const& meshFilePath)
+        {
+            pushMeshLoadRequest(ModelGraphIDs::Ground(), meshFilePath);
+        }
+
+        // called when the mesh loader responds with a fully-loaded mesh
+        void popMeshLoaderHandleOKResponse(MeshLoadOKResponse& ok)
+        {
+            if (ok.meshes.empty())
+            {
+                return;
+            }
+
+            // add each loaded mesh into the model graph
+            ModelGraph& mg = updModelGraph();
+            mg.deSelectAll();
+
+            for (LoadedMesh const& lm : ok.meshes)
+            {
+                SceneEl* el = mg.tryUpdElByID(ok.preferredAttachmentPoint);
+
+                if (el)
+                {
+                    auto& mesh = mg.emplaceEl<MeshEl>(UID{}, ok.preferredAttachmentPoint, lm.meshData, lm.path);
+                    mesh.setXform(el->getXForm(mg));
+                    mg.select(mesh);
+                    mg.select(*el);
+                }
+            }
+
+            // commit
+            {
+                std::stringstream commitMsgSS;
+                if (ok.meshes.empty())
+                {
+                    commitMsgSS << "loaded 0 meshes";
+                }
+                else if (ok.meshes.size() == 1)
+                {
+                    commitMsgSS << "loaded " << ok.meshes[0].path.filename();
+                }
+                else
+                {
+                    commitMsgSS << "loaded " << ok.meshes.size() << " meshes";
+                }
+
+                commitCurrentModelGraph(std::move(commitMsgSS).str());
+            }
+        }
+
+        // called when the mesh loader responds with a mesh loading error
+        void popMeshLoaderHandleErrorResponse(MeshLoadErrorResponse& err)
+        {
+            osc::log::error("%s: error loading mesh file: %s", err.path.string().c_str(), err.error.c_str());
+        }
+
+        void popMeshLoader()
+        {
+            for (auto maybeResponse = m_MeshLoader.poll(); maybeResponse.has_value(); maybeResponse = m_MeshLoader.poll())
+            {
+                MeshLoadResponse& meshLoaderResp = *maybeResponse;
+
+                if (std::holds_alternative<MeshLoadOKResponse>(meshLoaderResp))
+                {
+                    popMeshLoaderHandleOKResponse(std::get<MeshLoadOKResponse>(meshLoaderResp));
+                }
+                else
+                {
+                    popMeshLoaderHandleErrorResponse(std::get<MeshLoadErrorResponse>(meshLoaderResp));
+                }
+            }
+        }
+
+        void drawConnectionLineTriangleAtMidpoint(
+            ImU32 color,
+            Vec3 parent,
+            Vec3 child) const
+        {
+            constexpr float triangleWidth = 6.0f * c_ConnectionLineWidth;
+            constexpr float triangleWidthSquared = triangleWidth*triangleWidth;
+
+            Vec2 const parentScr = worldPosToScreenPos(parent);
+            Vec2 const childScr = worldPosToScreenPos(child);
+            Vec2 const child2ParentScr = parentScr - childScr;
+
+            if (osc::Dot(child2ParentScr, child2ParentScr) < triangleWidthSquared)
+            {
+                return;
+            }
+
+            Vec3 const midpoint = osc::Midpoint(parent, child);
+            Vec2 const midpointScr = worldPosToScreenPos(midpoint);
+            Vec2 const directionScr = osc::Normalize(child2ParentScr);
+            Vec2 const directionNormalScr = {-directionScr.y, directionScr.x};
+
+            Vec2 const p1 = midpointScr + (triangleWidth/2.0f)*directionNormalScr;
+            Vec2 const p2 = midpointScr - (triangleWidth/2.0f)*directionNormalScr;
+            Vec2 const p3 = midpointScr + triangleWidth*directionScr;
+
+            ImGui::GetWindowDrawList()->AddTriangleFilled(p1, p2, p3, color);
+        }
+
+        void drawConnectionLines(
+            SceneEl const& el,
+            ImU32 color,
+            std::unordered_set<UID> const& excludedIDs) const
+        {
+            ModelGraph const& mg = getModelGraph();
+            for (int i = 0, len = el.getNumCrossReferences(); i < len; ++i)
+            {
+                UID refID = el.getCrossReferenceConnecteeID(i);
+
+                if (excludedIDs.find(refID) != excludedIDs.end())
+                {
+                    continue;
+                }
+
+                SceneEl const* other = mg.tryGetElByID(refID);
+
+                if (!other)
+                {
+                    continue;
+                }
+
+                Vec3 child = el.getPos(mg);
+                Vec3 parent = other->getPos(mg);
+
+                if (el.getCrossReferenceDirection(i) == CrossrefDirection::ToChild)
+                {
+                    std::swap(parent, child);
+                }
+
+                drawConnectionLine(color, parent, child);
+            }
+        }
+
+        void drawConnectionLines(SceneEl const& el, ImU32 color) const
+        {
+            drawConnectionLines(el, color, std::unordered_set<UID>{});
+        }
+
+        void drawConnectionLineToGround(SceneEl const& el, ImU32 color) const
+        {
+            if (el.getID() == ModelGraphIDs::Ground())
+            {
+                return;
+            }
+
+            drawConnectionLine(color, Vec3{}, el.getPos(getModelGraph()));
+        }
+
+        bool shouldShowConnectionLines(SceneEl const& el) const
+        {
+            return std::visit(Overload
+            {
+                []    (GroundEl const&)  { return false; },
+                [this](MeshEl const&)    { return this->isShowingMeshConnectionLines(); },
+                [this](BodyEl const&)    { return this->isShowingBodyConnectionLines(); },
+                [this](JointEl const&)   { return this->isShowingJointConnectionLines(); },
+                [this](StationEl const&) { return this->isShowingMeshConnectionLines(); },
+                []    (EdgeEl const&)    { return false; },
+            }, el.toVariant());
+        }
+
+        void setIsRenderHovered(bool newIsHovered)
+        {
+            m_IsRenderHovered = newIsHovered;
+        }
+
+        void set3DSceneRect(Rect const& newRect)
+        {
+            m_3DSceneRect = newRect;
+        }
+
+        std::span<Color> updColors()
+        {
+            static_assert(offsetof(Colors, ground) == 0);
+            static_assert(sizeof(Colors) % sizeof(Color) == 0);
+            return {&m_Colors.ground, sizeof(m_Colors)/sizeof(Color)};
+        }
+
+        Color const& getColorSceneBackground() const
+        {
+            return m_Colors.sceneBackground;
+        }
+
+        Color const& getColorGround() const
+        {
+            return m_Colors.ground;
+        }
+
+        Color const& getColorMesh() const
+        {
+            return m_Colors.meshes;
+        }
+
+        Color const& getColorStation() const
+        {
+            return m_Colors.stations;
+        }
+
+        Color const& getColorEdge() const
+        {
+            return m_Colors.edges;
+        }
+
+        std::span<bool> updVisibilityFlags()
+        {
+            static_assert(offsetof(VisibilityFlags, ground) == 0);
+            static_assert(sizeof(VisibilityFlags) % sizeof(bool) == 0);
+            return {&m_VisibilityFlags.ground, sizeof(m_VisibilityFlags)/sizeof(bool)};
+        }
+
+        bool isShowingMeshes() const
+        {
+            return m_VisibilityFlags.meshes;
+        }
+
+        void setIsShowingMeshes(bool newIsShowing)
+        {
+            m_VisibilityFlags.meshes = newIsShowing;
+        }
+
+        bool isShowingBodies() const
+        {
+            return m_VisibilityFlags.bodies;
+        }
+
+        void setIsShowingBodies(bool newIsShowing)
+        {
+            m_VisibilityFlags.bodies = newIsShowing;
+        }
+
+        bool isShowingJointCenters() const
+        {
+            return m_VisibilityFlags.joints;
+        }
+
+        void setIsShowingJointCenters(bool newIsShowing)
+        {
+            m_VisibilityFlags.joints = newIsShowing;
+        }
+
+        bool isShowingGround() const
+        {
+            return m_VisibilityFlags.ground;
+        }
+
+        void setIsShowingGround(bool newIsShowing)
+        {
+            m_VisibilityFlags.ground = newIsShowing;
+        }
+
+        void setIsShowingFloor(bool newIsShowing)
+        {
+            m_VisibilityFlags.floor = newIsShowing;
+        }
+
+        bool isShowingStations() const
+        {
+            return m_VisibilityFlags.stations;
+        }
+
+        void setIsShowingStations(bool v)
+        {
+            m_VisibilityFlags.stations = v;
+        }
+
+        bool isShowingEdges() const
+        {
+            return m_VisibilityFlags.edges;
+        }
+
+        bool isShowingJointConnectionLines() const
+        {
+            return m_VisibilityFlags.jointConnectionLines;
+        }
+
+        void setIsShowingJointConnectionLines(bool newIsShowing)
+        {
+            m_VisibilityFlags.jointConnectionLines = newIsShowing;
+        }
+
+        bool isShowingMeshConnectionLines() const
+        {
+            return m_VisibilityFlags.meshConnectionLines;
+        }
+
+        void setIsShowingMeshConnectionLines(bool newIsShowing)
+        {
+            m_VisibilityFlags.meshConnectionLines = newIsShowing;
+        }
+
+        bool isShowingBodyConnectionLines() const
+        {
+            return m_VisibilityFlags.bodyToGroundConnectionLines;
+        }
+
+        void setIsShowingBodyConnectionLines(bool newIsShowing)
+        {
+            m_VisibilityFlags.bodyToGroundConnectionLines = newIsShowing;
+        }
+
+        bool isShowingStationConnectionLines() const
+        {
+            return m_VisibilityFlags.stationConnectionLines;
+        }
+
+        void setIsShowingStationConnectionLines(bool newIsShowing)
+        {
+            m_VisibilityFlags.stationConnectionLines = newIsShowing;
+        }
+
+        Transform getFloorTransform() const
+        {
+            Transform t;
+            t.rotation = osc::AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{-1.0f, 0.0f, 0.0f});
+            t.scale = {m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f};
+            return t;
+        }
+
+        float getSphereRadius() const
+        {
+            return 0.02f * m_SceneScaleFactor;
+        }
+
+        Sphere sphereAtTranslation(Vec3 const& translation) const
+        {
+            return Sphere{translation, getSphereRadius()};
+        }
+
+        void appendAsFrame(
+            UID logicalID,
+            UID groupID,
+            Transform const& xform,
+            std::vector<DrawableThing>& appendOut,
+            float alpha = 1.0f,
+            SceneDecorationFlags flags = SceneDecorationFlags::None,
+            Vec3 legLen = {1.0f, 1.0f, 1.0f},
+            Color coreColor = Color::white()) const
+        {
+            float const coreRadius = getSphereRadius();
+            float const legThickness = 0.5f * coreRadius;
+
+            // this is how much the cylinder has to be "pulled in" to the core to hide the edges
+            float const cylinderPullback = coreRadius * std::sin((std::numbers::pi_v<float> * legThickness) / coreRadius);
+
+            // emit origin sphere
+            {
+                Transform t;
+                t.scale *= coreRadius;
+                t.rotation = xform.rotation;
+                t.position = xform.position;
+
+                DrawableThing& sphere = appendOut.emplace_back();
+                sphere.id = logicalID;
+                sphere.groupId = groupID;
+                sphere.mesh = m_SphereMesh;
+                sphere.transform = t;
+                sphere.color = Color{coreColor.r, coreColor.g, coreColor.b, coreColor.a * alpha};
+                sphere.flags = flags;
+            }
+
+            // emit "legs"
+            for (int i = 0; i < 3; ++i)
+            {
+                // cylinder meshes are -1.0f to 1.0f in Y, so create a transform that maps the
+                // mesh onto the legs, which are:
+                //
+                // - 4.0f * leglen[leg] * radius long
+                // - 0.5f * radius thick
+
+                Vec3 const meshDirection = {0.0f, 1.0f, 0.0f};
+                Vec3 cylinderDirection = {};
+                cylinderDirection[i] = 1.0f;
+
+                float const actualLegLen = 4.0f * legLen[i] * coreRadius;
+
+                Transform t;
+                t.scale.x = legThickness;
+                t.scale.y = 0.5f * actualLegLen;  // cylinder is 2 units high
+                t.scale.z = legThickness;
+                t.rotation = osc::Normalize(xform.rotation * osc::Rotation(meshDirection, cylinderDirection));
+                t.position = xform.position + (t.rotation * (((getSphereRadius() + (0.5f * actualLegLen)) - cylinderPullback) * meshDirection));
+
+                Color color = {0.0f, 0.0f, 0.0f, alpha};
+                color[i] = 1.0f;
+
+                DrawableThing& se = appendOut.emplace_back();
+                se.id = logicalID;
+                se.groupId = groupID;
+                se.mesh = m_CylinderMesh;
+                se.transform = t;
+                se.color = color;
+                se.flags = flags;
+            }
+        }
+
+        void appendAsCubeThing(
+            UID logicalID,
+            UID groupID,
+            Transform const& xform,
+            std::vector<DrawableThing>& appendOut) const
+        {
+            float const halfWidth = 1.5f * getSphereRadius();
+
+            // core
+            {
+                Transform scaled{xform};
+                scaled.scale *= halfWidth;
+
+                DrawableThing& originCube = appendOut.emplace_back();
+                originCube.id = logicalID;
+                originCube.groupId = groupID;
+                originCube.mesh = App::singleton<SceneCache>()->getBrickMesh();
+                originCube.transform = scaled;
+                originCube.color = Color::white();
+                originCube.flags = SceneDecorationFlags::None;
+            }
+
+            // legs
+            for (int i = 0; i < 3; ++i)
+            {
+                // cone mesh has a source height of 2, stretches from -1 to +1 in Y
+                float const coneHeight = 0.75f * halfWidth;
+
+                Vec3 const meshDirection = {0.0f, 1.0f, 0.0f};
+                Vec3 coneDirection = {};
+                coneDirection[i] = 1.0f;
+
+                Transform t;
+                t.scale.x = 0.5f * halfWidth;
+                t.scale.y = 0.5f * coneHeight;
+                t.scale.z = 0.5f * halfWidth;
+                t.rotation = xform.rotation * osc::Rotation(meshDirection, coneDirection);
+                t.position = xform.position + (t.rotation * ((halfWidth + (0.5f * coneHeight)) * meshDirection));
+
+                Color color = {0.0f, 0.0f, 0.0f, 1.0f};
+                color[i] = 1.0f;
+
+                DrawableThing& legCube = appendOut.emplace_back();
+                legCube.id = logicalID;
+                legCube.groupId = groupID;
+                legCube.mesh = App::singleton<SceneCache>()->getConeMesh();
+                legCube.transform = t;
+                legCube.color = color;
+                legCube.flags = SceneDecorationFlags::None;
+            }
+        }
+
+        std::span<bool> updInteractivityFlags()
+        {
+            static_assert(offsetof(InteractivityFlags, ground) == 0);
+            static_assert(sizeof(InteractivityFlags) % sizeof(bool) == 0);
+            return {&m_InteractivityFlags.ground, sizeof(m_InteractivityFlags)/sizeof(bool)};
+        }
+
+        bool isMeshesInteractable() const
+        {
+            return m_InteractivityFlags.meshes;
+        }
+
+        void setIsMeshesInteractable(bool newIsInteractable)
+        {
+            m_InteractivityFlags.meshes = newIsInteractable;
+        }
+
+        bool isBodiesInteractable() const
+        {
+            return m_InteractivityFlags.bodies;
+        }
+
+        void setIsBodiesInteractable(bool newIsInteractable)
+        {
+            m_InteractivityFlags.bodies = newIsInteractable;
+        }
+
+        bool isJointCentersInteractable() const
+        {
+            return m_InteractivityFlags.joints;
+        }
+
+        void setIsJointCentersInteractable(bool newIsInteractable)
+        {
+            m_InteractivityFlags.joints = newIsInteractable;
+        }
+
+        bool isGroundInteractable() const
+        {
+            return m_InteractivityFlags.ground;
+        }
+
+        void setIsGroundInteractable(bool newIsInteractable)
+        {
+            m_InteractivityFlags.ground = newIsInteractable;
+        }
+
+        bool isStationsInteractable() const
+        {
+            return m_InteractivityFlags.stations;
+        }
+
+        void setIsStationsInteractable(bool v)
+        {
+            m_InteractivityFlags.stations = v;
+        }
+
+        void appendBodyElAsCubeThing(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
+        {
+            appendAsCubeThing(bodyEl.getID(), ModelGraphIDs::BodyGroup(), bodyEl.getXForm(), appendOut);
+        }
+
+        DrawableThing generateBodyElSphere(BodyEl const& bodyEl, Color const& color) const
+        {
+            DrawableThing rv;
+            rv.id = bodyEl.getID();
+            rv.groupId = ModelGraphIDs::BodyGroup();
+            rv.mesh = m_SphereMesh;
+            rv.transform = SphereMeshToSceneSphereTransform(sphereAtTranslation(bodyEl.getXForm().position));
+            rv.color = color;
+            rv.flags = SceneDecorationFlags::None;
+            return rv;
+        }
+
+        DrawableThing generateGroundSphere(Color const& color) const
+        {
+            DrawableThing rv;
+            rv.id = ModelGraphIDs::Ground();
+            rv.groupId = ModelGraphIDs::GroundGroup();
+            rv.mesh = m_SphereMesh;
+            rv.transform = SphereMeshToSceneSphereTransform(sphereAtTranslation({0.0f, 0.0f, 0.0f}));
+            rv.color = color;
+            rv.flags = SceneDecorationFlags::None;
+            return rv;
+        }
+
+        DrawableThing generateStationSphere(StationEl const& el, Color const& color) const
+        {
+            DrawableThing rv;
+            rv.id = el.getID();
+            rv.groupId = ModelGraphIDs::StationGroup();
+            rv.mesh = m_SphereMesh;
+            rv.transform = SphereMeshToSceneSphereTransform(sphereAtTranslation(el.getPos(getModelGraph())));
+            rv.color = color;
+            rv.flags = SceneDecorationFlags::None;
+            return rv;
+        }
+
+        DrawableThing generateEdgeCylinder(EdgeEl const& el, Color const& color) const
+        {
+            auto const edgePoints = el.getEdgeLineInGround(getModelGraph());
+            Segment const cylinderMeshSegment = {{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
+            Segment const edgeSegment = {edgePoints.first, edgePoints.second};
+
+            DrawableThing rv;
+            rv.id = el.getID();
+            rv.groupId = ModelGraphIDs::EdgeGroup();
+            rv.mesh = m_CylinderMesh;
+            rv.transform = SegmentToSegmentTransform(cylinderMeshSegment, edgeSegment);
+            rv.transform.scale *= Vec3{0.01f * m_SceneScaleFactor, 1.0f, 0.01f * m_SceneScaleFactor};  // make the cylinder smaller
+            rv.color = color;
+            rv.flags = SceneDecorationFlags::None;
+            return rv;
+        }
+
         Color RedifyColor(Color const& srcColor) const
         {
             constexpr float factor = 0.8f;
