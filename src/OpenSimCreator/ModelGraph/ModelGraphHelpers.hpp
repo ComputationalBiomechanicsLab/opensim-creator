@@ -1,7 +1,6 @@
 #pragma once
 
 #include <OpenSimCreator/ModelGraph/ModelGraph.hpp>
-#include <OpenSimCreator/ModelGraph/ModelGraphIDs.hpp>
 #include <OpenSimCreator/ModelGraph/SceneEl.hpp>
 
 #include <oscar/Maths/Transform.hpp>
@@ -12,6 +11,7 @@
 #include <oscar/Utils/UID.hpp>
 
 #include <string>
+#include <optional>
 #include <unordered_set>
 #include <vector>
 
@@ -109,6 +109,6 @@ namespace osc
     SceneDecorationFlags computeFlags(
         ModelGraph const&,
         UID id,
-        UID hoverID = ModelGraphIDs::Empty()
+        std::optional<UID> maybeHoverID = std::nullopt
     );
 }

@@ -3,17 +3,15 @@
 #include <OpenSimCreator/ModelGraph/CrossrefDescriptor.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElCRTP.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElFlags.hpp>
-#include <OpenSimCreator/ModelGraph/ModelGraphIDs.hpp>
-#include <OpenSimCreator/ModelGraph/ModelGraphStrings.hpp>
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <cstddef>
-#include <iostream>
+#include <iosfwd>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -31,7 +29,8 @@ namespace osc
             std::string const& userAssignedName,  // can be empty
             UID parent,
             UID child,
-            Transform const& xform);
+            Transform const& xform
+        );
 
         CStringView getSpecificTypeName() const;
 
@@ -67,26 +66,9 @@ namespace osc
 
     private:
         friend class SceneElCRTP<JointEl>;
-        static SceneElClass CreateClass()
-        {
-            return
-            {
-                ModelGraphStrings::c_JointLabel,
-                ModelGraphStrings::c_JointLabelPluralized,
-                ModelGraphStrings::c_JointLabelOptionallyPluralized,
-                ICON_FA_LINK,
-                ModelGraphStrings::c_JointDescription,
-            };
-        }
+        static SceneElClass CreateClass();
 
-        std::vector<CrossrefDescriptor> implGetCrossReferences() const final
-        {
-            return
-            {
-                {m_Parent, ModelGraphStrings::c_JointParentCrossrefName, CrossrefDirection::ToParent},
-                {m_Child,  ModelGraphStrings::c_JointChildCrossrefName,  CrossrefDirection::ToChild },
-            };
-        }
+        std::vector<CrossrefDescriptor> implGetCrossReferences() const final;
 
         void implSetCrossReferenceConnecteeID(int i, UID id) final
         {
@@ -117,16 +99,7 @@ namespace osc
             return m_ID;
         }
 
-        std::ostream& implWriteToStream(std::ostream& o) const final
-        {
-            return o << "JointEl(ID = " << m_ID
-                << ", JointTypeIndex = " << m_JointTypeIndex
-                << ", UserAssignedName = " << m_UserAssignedName
-                << ", Parent = " << m_Parent
-                << ", Child = " << m_Child
-                << ", m_Transform = " << m_Xform
-                << ')';
-        }
+        std::ostream& implWriteToStream(std::ostream&) const final;
 
         CStringView implGetLabel() const final
         {

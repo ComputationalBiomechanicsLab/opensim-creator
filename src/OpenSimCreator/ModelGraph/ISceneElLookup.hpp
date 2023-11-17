@@ -2,11 +2,12 @@
 
 #include <oscar/Utils/UID.hpp>
 
+namespace osc { class SceneEl; }
+
 namespace osc
 {
     // virtual interface to something that can be used to lookup scene elements in
     // some larger document
-    class SceneEl;
     class ISceneElLookup {
     protected:
         ISceneElLookup() = default;

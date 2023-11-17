@@ -2,16 +2,13 @@
 
 #include <OpenSimCreator/ModelGraph/SceneElCRTP.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElFlags.hpp>
-#include <OpenSimCreator/ModelGraph/ModelGraphIDs.hpp>
-#include <OpenSimCreator/ModelGraph/ModelGraphStrings.hpp>
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
-#include <iostream>
+#include <iosfwd>
 
 namespace osc
 {
@@ -19,37 +16,18 @@ namespace osc
     class GroundEl final : public SceneElCRTP<GroundEl> {
     private:
         friend class SceneElCRTP<GroundEl>;
-        static SceneElClass CreateClass()
-        {
-            return
-            {
-                ModelGraphStrings::c_GroundLabel,
-                ModelGraphStrings::c_GroundLabelPluralized,
-                ModelGraphStrings::c_GroundLabelOptionallyPluralized,
-                ICON_FA_DOT_CIRCLE,
-                ModelGraphStrings::c_GroundDescription,
-            };
-        }
+        static SceneElClass CreateClass();
 
         SceneElFlags implGetFlags() const final
         {
             return SceneElFlags::None;
         }
 
-        UID implGetID() const final
-        {
-            return ModelGraphIDs::Ground();
-        }
+        UID implGetID() const final;
 
-        std::ostream& implWriteToStream(std::ostream& o) const final
-        {
-            return o << ModelGraphStrings::c_GroundLabel << "()";
-        }
+        std::ostream& implWriteToStream(std::ostream&) const final;
 
-        CStringView implGetLabel() const final
-        {
-            return ModelGraphStrings::c_GroundLabel;
-        }
+        CStringView implGetLabel() const final;
 
         Transform implGetXform(ISceneElLookup const&) const final
         {

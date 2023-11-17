@@ -304,8 +304,10 @@ void osc::PointAxisTowards(
 osc::SceneDecorationFlags osc::computeFlags(
     ModelGraph const& mg,
     UID id,
-    UID hoverID)
+    std::optional<UID> maybeHoverID)
 {
+    UID const hoverID = maybeHoverID ? *maybeHoverID : ModelGraphIDs::Empty();
+
     if (id == ModelGraphIDs::Empty())
     {
         return SceneDecorationFlags::None;

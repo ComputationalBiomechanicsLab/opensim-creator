@@ -1,16 +1,22 @@
 #include "JointEl.hpp"
 
+#include <OpenSimCreator/ModelGraph/CrossrefDescriptor.hpp>
+#include <OpenSimCreator/ModelGraph/CrossrefDirection.hpp>
+#include <OpenSimCreator/ModelGraph/ModelGraphStrings.hpp>
 #include <OpenSimCreator/Registry/ComponentRegistry.hpp>
 #include <OpenSimCreator/Registry/StaticComponentRegistries.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
+#include <IconsFontAwesome5.h>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/SpanHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <cstddef>
+#include <iostream>
 #include <string>
+#include <vector>
 
 osc::JointEl::JointEl(
     UID id,
@@ -29,9 +35,41 @@ osc::JointEl::JointEl(
 {
 }
 
+osc::SceneElClass osc::JointEl::CreateClass()
+{
+    return
+    {
+        ModelGraphStrings::c_JointLabel,
+        ModelGraphStrings::c_JointLabelPluralized,
+        ModelGraphStrings::c_JointLabelOptionallyPluralized,
+        ICON_FA_LINK,
+        ModelGraphStrings::c_JointDescription,
+    };
+}
+
+std::vector<osc::CrossrefDescriptor> osc::JointEl::implGetCrossReferences() const
+{
+    return
+    {
+        {m_Parent, ModelGraphStrings::c_JointParentCrossrefName, CrossrefDirection::ToParent},
+        {m_Child,  ModelGraphStrings::c_JointChildCrossrefName,  CrossrefDirection::ToChild },
+    };
+}
+
 osc::CStringView osc::JointEl::getSpecificTypeName() const
 {
     return osc::At(osc::GetComponentRegistry<OpenSim::Joint>(), m_JointTypeIndex).name();
+}
+
+std::ostream& osc::JointEl::implWriteToStream(std::ostream& o) const
+{
+    return o << "JointEl(ID = " << m_ID
+        << ", JointTypeIndex = " << m_JointTypeIndex
+        << ", UserAssignedName = " << m_UserAssignedName
+        << ", Parent = " << m_Parent
+        << ", Child = " << m_Child
+        << ", m_Transform = " << m_Xform
+        << ')';
 }
 
 void osc::JointEl::implSetLabel(std::string_view sv)

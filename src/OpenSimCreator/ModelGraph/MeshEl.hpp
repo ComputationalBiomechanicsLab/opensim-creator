@@ -1,22 +1,19 @@
 #pragma once
 
 #include <OpenSimCreator/ModelGraph/CrossrefDescriptor.hpp>
-#include <OpenSimCreator/ModelGraph/ModelGraphIDs.hpp>
-#include <OpenSimCreator/ModelGraph/ModelGraphStrings.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElClass.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElCRTP.hpp>
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <filesystem>
-#include <iostream>
+#include <iosfwd>
 #include <stdexcept>
 #include <string>
-#include <utility>
+#include <string_view>
 #include <vector>
 
 namespace osc
@@ -74,25 +71,9 @@ namespace osc
 
     private:
         friend class SceneElCRTP<MeshEl>;
-        static SceneElClass CreateClass()
-        {
-            return
-            {
-                ModelGraphStrings::c_MeshLabel,
-                ModelGraphStrings::c_MeshLabelPluralized,
-                ModelGraphStrings::c_MeshLabelOptionallyPluralized,
-                ICON_FA_CUBE,
-                ModelGraphStrings::c_MeshDescription,
-            };
-        }
+        static SceneElClass CreateClass();
 
-        std::vector<CrossrefDescriptor> implGetCrossReferences() const final
-        {
-            return
-            {
-                {m_Attachment, ModelGraphStrings::c_MeshAttachmentCrossrefName, CrossrefDirection::ToParent},
-            };
-        }
+        std::vector<CrossrefDescriptor> implGetCrossReferences() const final;
 
         void implSetCrossReferenceConnecteeID(int i, UID id) final
         {
@@ -120,17 +101,7 @@ namespace osc
             return m_ID;
         }
 
-        std::ostream& implWriteToStream(std::ostream& o) const final
-        {
-            return o << "MeshEl("
-                << "ID = " << m_ID
-                << ", Attachment = " << m_Attachment
-                << ", m_Transform = " << m_Transform
-                << ", MeshData = " << &m_MeshData
-                << ", Path = " << m_Path
-                << ", Name = " << m_Name
-                << ')';
-        }
+        std::ostream& implWriteToStream(std::ostream&) const final;
 
         CStringView implGetLabel() const final
         {

@@ -1,16 +1,17 @@
 #pragma once
 
 #include <OpenSimCreator/ModelGraph/CrossrefDescriptor.hpp>
+#include <OpenSimCreator/ModelGraph/SceneElClass.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElCRTP.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElFlags.hpp>
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
-#include <iostream>
+#include <iosfwd>
+#include <stdexcept>
 #include <string_view>
 #include <vector>
 
@@ -40,17 +41,7 @@ namespace osc
         }
     private:
         friend class SceneElCRTP<EdgeEl>;
-        static SceneElClass CreateClass()
-        {
-            return SceneElClass
-            {
-                "Edge",
-                "Edges",
-                "Edge(s)",
-                ICON_FA_ARROWS_ALT,
-                "An edge between the centers of two other scene elements",
-            };
-        }
+        static SceneElClass CreateClass();
 
         std::vector<CrossrefDescriptor> implGetCrossReferences() const final
         {
@@ -89,10 +80,7 @@ namespace osc
             return m_ID;
         }
 
-        std::ostream& implWriteToStream(std::ostream& out) const final
-        {
-            return out << "Edge(id = " << m_ID << ", lhs = " << m_FirstAttachmentID << ", rhs = " << m_SecondAttachmentID << ')';
-        }
+        std::ostream& implWriteToStream(std::ostream&) const final;
 
         CStringView implGetLabel() const
         {

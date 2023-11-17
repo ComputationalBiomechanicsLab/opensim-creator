@@ -64,6 +64,7 @@ add_library(OpenSimCreator STATIC
     ModelGraph/CrossrefDirection.hpp
     ModelGraph/EdgeEl.cpp
     ModelGraph/EdgeEl.hpp
+    ModelGraph/GroundEl.cpp
     ModelGraph/GroundEl.hpp
     ModelGraph/ISceneElLookup.hpp
     ModelGraph/JointEl.cpp
@@ -71,6 +72,7 @@ add_library(OpenSimCreator STATIC
     ModelGraph/MeshEl.cpp
     ModelGraph/MeshEl.hpp
     ModelGraph/ModelCreationFlags.hpp
+    ModelGraph/ModelGraph.cpp
     ModelGraph/ModelGraph.hpp
     ModelGraph/ModelGraphHelpers.cpp
     ModelGraph/ModelGraphHelpers.hpp
@@ -271,7 +273,7 @@ add_library(OpenSimCreator STATIC
     Utils/TPS3D.hpp
     Utils/UndoableModelActions.cpp
     Utils/UndoableModelActions.hpp
- "UI/Tabs/MeshImporter/ImportStationsFromCSVPopup.cpp")
+)
 
 # OpenSimCreatorConfig.hpp
 #

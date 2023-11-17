@@ -1,19 +1,17 @@
 #pragma once
 
-#include <OpenSimCreator/ModelGraph/ModelGraphIDs.hpp>
-#include <OpenSimCreator/ModelGraph/ModelGraphStrings.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElClass.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElCRTP.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElFlags.hpp>
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
-#include <iostream>
+#include <iosfwd>
 #include <string>
+#include <string_view>
 
 namespace osc
 {
@@ -44,17 +42,7 @@ namespace osc
         }
     private:
         friend class SceneElCRTP<BodyEl>;
-        static SceneElClass CreateClass()
-        {
-            return
-            {
-                ModelGraphStrings::c_BodyLabel,
-                ModelGraphStrings::c_BodyLabelPluralized,
-                ModelGraphStrings::c_BodyLabelOptionallyPluralized,
-                ICON_FA_CIRCLE,
-                ModelGraphStrings::c_BodyDescription,
-            };
-        }
+        static SceneElClass CreateClass();
 
         SceneElFlags implGetFlags() const final
         {
@@ -71,14 +59,7 @@ namespace osc
             return m_ID;
         }
 
-        std::ostream& implWriteToStream(std::ostream& o) const final
-        {
-            return o << "BodyEl(ID = " << m_ID
-                << ", Name = " << m_Name
-                << ", m_Transform = " << m_Xform
-                << ", Mass = " << Mass
-                << ')';
-        }
+        std::ostream& implWriteToStream(std::ostream&) const final;
 
         CStringView implGetLabel() const final
         {

@@ -4,6 +4,7 @@
 #include <OpenSimCreator/ModelGraph/JointEl.hpp>
 #include <OpenSimCreator/ModelGraph/MeshEl.hpp>
 #include <OpenSimCreator/ModelGraph/ModelGraph.hpp>
+#include <OpenSimCreator/ModelGraph/ModelGraphIDs.hpp>
 #include <OpenSimCreator/ModelGraph/ModelGraphHelpers.hpp>
 #include <OpenSimCreator/ModelGraph/SceneEl.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElHelpers.hpp>

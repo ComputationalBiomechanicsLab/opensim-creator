@@ -1,8 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/ModelGraph/GroundEl.hpp>
 #include <OpenSimCreator/ModelGraph/ISceneElLookup.hpp>
-#include <OpenSimCreator/ModelGraph/ModelGraphIDs.hpp>
 #include <OpenSimCreator/ModelGraph/SceneEl.hpp>
 
 #include <oscar/Utils/ClonePtr.hpp>
@@ -136,7 +134,7 @@ namespace osc
 
     public:
 
-        ModelGraph() = default;
+        ModelGraph();
 
         template<DerivedFrom<SceneEl> T = SceneEl>
         T* tryUpdElByID(UID id)
@@ -379,7 +377,7 @@ namespace osc
 
         // insert a senteniel ground element into the model graph (it should always
         // be there)
-        SceneElMap m_Els = {{ModelGraphIDs::Ground(), ClonePtr<SceneEl>{GroundEl{}}}};
+        SceneElMap m_Els;
         std::unordered_set<UID> m_SelectedEls;
         std::vector<ClonePtr<SceneEl>> m_DeletedEls;
     };

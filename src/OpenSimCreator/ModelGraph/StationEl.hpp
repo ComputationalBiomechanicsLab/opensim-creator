@@ -3,16 +3,13 @@
 #include <OpenSimCreator/ModelGraph/CrossrefDescriptor.hpp>
 #include <OpenSimCreator/ModelGraph/CrossrefDirection.hpp>
 #include <OpenSimCreator/ModelGraph/SceneElCRTP.hpp>
-#include <OpenSimCreator/ModelGraph/ModelGraphIDs.hpp>
-#include <OpenSimCreator/ModelGraph/ModelGraphStrings.hpp>
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/UID.hpp>
 
-#include <iostream>
+#include <iosfwd>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -48,25 +45,9 @@ namespace osc
 
     private:
         friend class SceneElCRTP<StationEl>;
-        static SceneElClass CreateClass()
-        {
-            return
-            {
-                ModelGraphStrings::c_StationLabel,
-                ModelGraphStrings::c_StationLabelPluralized,
-                ModelGraphStrings::c_StationLabelOptionallyPluralized,
-                ICON_FA_MAP_PIN,
-                ModelGraphStrings::c_StationDescription,
-            };
-        }
+        static SceneElClass CreateClass();
 
-        std::vector<CrossrefDescriptor> implGetCrossReferences() const final
-        {
-            return
-            {
-                {m_Attachment, ModelGraphStrings::c_StationParentCrossrefName, CrossrefDirection::ToParent},
-            };
-        }
+        std::vector<CrossrefDescriptor> implGetCrossReferences() const final;
 
         void implSetCrossReferenceConnecteeID(int i, UID id) final
         {
@@ -91,15 +72,7 @@ namespace osc
             return m_ID;
         }
 
-        std::ostream& implWriteToStream(std::ostream& o) const final
-        {
-            return o << "StationEl("
-                << "ID = " << m_ID
-                << ", Attachment = " << m_Attachment
-                << ", Position = " << m_Position
-                << ", Name = " << m_Name
-                << ')';
-        }
+        std::ostream& implWriteToStream(std::ostream&) const final;
 
         CStringView implGetLabel() const final
         {
