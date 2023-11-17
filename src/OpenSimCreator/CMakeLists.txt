@@ -179,6 +179,7 @@ add_library(OpenSimCreator STATIC
     UI/Tabs/Experimental/RendererGeometryShaderTab.hpp
     UI/Tabs/Experimental/TPS2DTab.cpp
     UI/Tabs/Experimental/TPS2DTab.hpp
+    UI/Tabs/MeshImporter/ChooseElLayer.hpp
     UI/Tabs/MeshImporter/DrawableThing.hpp
     UI/Tabs/MeshImporter/ImportStationsFromCSVPopup.cpp
     UI/Tabs/MeshImporter/ImportStationsFromCSVPopup.hpp
