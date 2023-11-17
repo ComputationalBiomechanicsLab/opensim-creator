@@ -16,7 +16,7 @@
 std::pair<osc::Vec3, osc::Vec3> osc::EdgeEl::getEdgeLineInGround(ISceneElLookup const& lookup) const
 {
     SceneEl const* first = lookup.find(m_FirstAttachmentID);
-    SceneEl const* second = lookup.find(m_FirstAttachmentID);
+    SceneEl const* second = lookup.find(m_SecondAttachmentID);
     if (first && second)
     {
         return {first->getPos(lookup), second->getPos(lookup)};

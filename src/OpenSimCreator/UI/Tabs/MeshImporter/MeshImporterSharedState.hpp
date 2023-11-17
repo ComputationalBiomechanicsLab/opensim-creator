@@ -51,6 +51,7 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <oscar/Utils/VariantHelpers.hpp>
+#include <SDL_events.h>
 
 #include <array>
 #include <cstddef>
@@ -1301,6 +1302,7 @@ namespace osc
             rv.groupId = ModelGraphIDs::EdgeGroup();
             rv.mesh = m_CylinderMesh;
             rv.transform = SegmentToSegmentTransform(cylinderMeshSegment, edgeSegment);
+            rv.transform.scale *= Vec3{0.01f * m_SceneScaleFactor, 1.0f, 0.01f * m_SceneScaleFactor};  // make the cylinder smaller
             rv.color = color;
             rv.flags = SceneDecorationFlags::None;
             return rv;
