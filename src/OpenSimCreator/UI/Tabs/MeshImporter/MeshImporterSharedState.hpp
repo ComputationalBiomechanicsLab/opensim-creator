@@ -107,7 +107,7 @@ namespace osc
             }
             catch (std::exception const& ex)
             {
-                osc::log::error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
+                log::error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
             }
         }
 
@@ -117,11 +117,11 @@ namespace osc
 
         bool openOsimFileAsModelGraph()
         {
-            std::optional<std::filesystem::path> const maybeOsimPath = osc::PromptUserForFile("osim");
+            std::optional<std::filesystem::path> const maybeOsimPath = PromptUserForFile("osim");
 
             if (maybeOsimPath)
             {
-                m_ModelGraphSnapshots = CommittableModelGraph{osc::CreateModelFromOsimFile(*maybeOsimPath)};
+                m_ModelGraphSnapshots = CommittableModelGraph{CreateModelFromOsimFile(*maybeOsimPath)};
                 m_MaybeModelGraphExportLocation = *maybeOsimPath;
                 m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.getHeadID();
                 return true;
@@ -135,7 +135,7 @@ namespace osc
         bool exportAsModelGraphAsOsimFile()
         {
             std::optional<std::filesystem::path> const maybeExportPath =
-                osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
+                PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
 
             if (!maybeExportPath)
             {
@@ -268,7 +268,7 @@ namespace osc
 
         std::vector<std::filesystem::path> promptUserForMeshFiles() const
         {
-            return osc::PromptUserForFiles(osc::GetCommaDelimitedListOfSupportedSimTKMeshFormats());
+            return PromptUserForFiles(GetCommaDelimitedListOfSupportedSimTKMeshFormats());
         }
 
         void pushMeshLoadRequests(UID attachmentPoint, std::vector<std::filesystem::path> paths)
@@ -376,23 +376,23 @@ namespace osc
 
         void setContentRegionAvailAsSceneRect()
         {
-            set3DSceneRect(osc::ContentRegionAvailScreenRect());
+            set3DSceneRect(ContentRegionAvailScreenRect());
         }
 
         void drawScene(std::span<DrawableThing const> drawables)
         {
             // setup rendering params
             SceneRendererParams p;
-            p.dimensions = osc::Dimensions(get3DSceneRect());
+            p.dimensions = Dimensions(get3DSceneRect());
             p.antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
             p.drawRims = true;
             p.drawFloor = false;
             p.nearClippingPlane = m_3DSceneCamera.znear;
             p.farClippingPlane = m_3DSceneCamera.zfar;
             p.viewMatrix = m_3DSceneCamera.getViewMtx();
-            p.projectionMatrix = m_3DSceneCamera.getProjMtx(osc::AspectRatio(p.dimensions));
+            p.projectionMatrix = m_3DSceneCamera.getProjMtx(AspectRatio(p.dimensions));
             p.viewPos = m_3DSceneCamera.getPos();
-            p.lightDirection = osc::RecommendedLightDirection(m_3DSceneCamera);
+            p.lightDirection = RecommendedLightDirection(m_3DSceneCamera);
             p.lightColor = Color::white();
             p.ambientStrength *= 1.5f;
             p.backgroundColor = getColorSceneBackground();
@@ -416,7 +416,7 @@ namespace osc
             m_SceneRenderer.render(decs, p);
 
             // send texture to ImGui
-            osc::DrawTextureAsImGuiImage(m_SceneRenderer.updRenderTexture(), m_SceneRenderer.getDimensions());
+            DrawTextureAsImGuiImage(m_SceneRenderer.updRenderTexture(), m_SceneRenderer.getDimensions());
 
             // handle hittesting, etc.
             setIsRenderHovered(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
@@ -560,7 +560,7 @@ namespace osc
 
         MeshImporterHover doHovertest(std::vector<DrawableThing> const& drawables) const
         {
-            auto cache = osc::App::singleton<SceneCache>();
+            auto cache = App::singleton<SceneCache>();
 
             Rect const sceneRect = get3DSceneRect();
             Vec2 const mousePos = ImGui::GetMousePos();
@@ -615,7 +615,7 @@ namespace osc
                     continue;
                 }
 
-                std::optional<RayCollision> const rc = osc::GetClosestWorldspaceRayCollision(
+                std::optional<RayCollision> const rc = GetClosestWorldspaceRayCollision(
                     drawable.mesh,
                     cache->getBVH(drawable.mesh),
                     drawable.transform,
@@ -729,7 +729,7 @@ namespace osc
                     {
                         return;
                     }
-                    appendOut.push_back(generateEdgeCylinder(el, getColorEdge()));
+                    appendOut.push_back(generateEdgeArrowNeck(el, getColorEdge()));
 
                 }
                 }, e.toVariant());
@@ -775,12 +775,12 @@ namespace osc
             m_PanelStates[idx] = v;
         }
 
-        osc::LogViewer& updLogViewer()
+        LogViewer& updLogViewer()
         {
             return m_Logviewer;
         }
 
-        osc::PerfPanel& updPerfPanel()
+        PerfPanel& updPerfPanel()
         {
             return m_PerfPanel;
         }
@@ -831,7 +831,7 @@ namespace osc
             }
             catch (std::exception const& ex)
             {
-                osc::log::error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
+                log::error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
             }
 
             if (m)
@@ -845,7 +845,7 @@ namespace osc
             {
                 for (std::string const& issue : issues)
                 {
-                    osc::log::error("%s", issue.c_str());
+                    log::error("%s", issue.c_str());
                 }
                 return false;
             }
@@ -926,7 +926,7 @@ namespace osc
         // called when the mesh loader responds with a mesh loading error
         void popMeshLoaderHandleErrorResponse(MeshLoadErrorResponse& err)
         {
-            osc::log::error("%s: error loading mesh file: %s", err.path.string().c_str(), err.error.c_str());
+            log::error("%s: error loading mesh file: %s", err.path.string().c_str(), err.error.c_str());
         }
 
         void popMeshLoader()
@@ -958,14 +958,14 @@ namespace osc
             Vec2 const childScr = worldPosToScreenPos(child);
             Vec2 const child2ParentScr = parentScr - childScr;
 
-            if (osc::Dot(child2ParentScr, child2ParentScr) < triangleWidthSquared)
+            if (Dot(child2ParentScr, child2ParentScr) < triangleWidthSquared)
             {
                 return;
             }
 
-            Vec3 const midpoint = osc::Midpoint(parent, child);
+            Vec3 const midpoint = Midpoint(parent, child);
             Vec2 const midpointScr = worldPosToScreenPos(midpoint);
-            Vec2 const directionScr = osc::Normalize(child2ParentScr);
+            Vec2 const directionScr = Normalize(child2ParentScr);
             Vec2 const directionNormalScr = {-directionScr.y, directionScr.x};
 
             Vec2 const p1 = midpointScr + (triangleWidth/2.0f)*directionNormalScr;
@@ -1189,7 +1189,7 @@ namespace osc
         Transform getFloorTransform() const
         {
             Transform t;
-            t.rotation = osc::AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{-1.0f, 0.0f, 0.0f});
+            t.rotation = AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{-1.0f, 0.0f, 0.0f});
             t.scale = {m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f};
             return t;
         }
@@ -1255,7 +1255,7 @@ namespace osc
                 t.scale.x = legThickness;
                 t.scale.y = 0.5f * actualLegLen;  // cylinder is 2 units high
                 t.scale.z = legThickness;
-                t.rotation = osc::Normalize(xform.rotation * osc::Rotation(meshDirection, cylinderDirection));
+                t.rotation = Normalize(xform.rotation * Rotation(meshDirection, cylinderDirection));
                 t.position = xform.position + (t.rotation * (((getSphereRadius() + (0.5f * actualLegLen)) - cylinderPullback) * meshDirection));
 
                 Color color = {0.0f, 0.0f, 0.0f, alpha};
@@ -1307,7 +1307,7 @@ namespace osc
                 t.scale.x = 0.5f * halfWidth;
                 t.scale.y = 0.5f * coneHeight;
                 t.scale.z = 0.5f * halfWidth;
-                t.rotation = xform.rotation * osc::Rotation(meshDirection, coneDirection);
+                t.rotation = xform.rotation * Rotation(meshDirection, coneDirection);
                 t.position = xform.position + (t.rotation * ((halfWidth + (0.5f * coneHeight)) * meshDirection));
 
                 Color color = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -1421,7 +1421,7 @@ namespace osc
             return rv;
         }
 
-        DrawableThing generateEdgeCylinder(EdgeEl const& el, Color const& color) const
+        DrawableThing generateEdgeArrowNeck(EdgeEl const& el, Color const& color) const
         {
             auto const edgePoints = el.getEdgeLineInGround(getModelGraph());
             Segment const cylinderMeshSegment = {{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
@@ -1480,10 +1480,10 @@ namespace osc
         MeshLoader m_MeshLoader;
 
         // sphere mesh used by various scene elements
-        Mesh m_SphereMesh = osc::GenSphere(12, 12);
+        Mesh m_SphereMesh = GenSphere(12, 12);
 
         // cylinder mesh used by various scene elements
-        Mesh m_CylinderMesh = osc::GenUntexturedYToYCylinder(16);
+        Mesh m_CylinderMesh = GenUntexturedYToYCylinder(16);
 
         // main 3D scene camera
         PolarPerspectiveCamera m_3DSceneCamera = CreateDefaultCamera();
@@ -1495,7 +1495,7 @@ namespace osc
         SceneRenderer m_SceneRenderer{
             App::config(),
             *App::singleton<SceneCache>(),
-            *App::singleton<osc::ShaderCache>()
+            *App::singleton<ShaderCache>()
         };
 
         // COLORS
@@ -1588,8 +1588,8 @@ namespace osc
         });
         static_assert(c_OpenedPanelNames.size() == c_NumPanelStates);
         static_assert(PanelIndex_COUNT == c_NumPanelStates);
-        osc::LogViewer m_Logviewer;
-        osc::PerfPanel m_PerfPanel{"Performance"};
+        LogViewer m_Logviewer;
+        PerfPanel m_PerfPanel{"Performance"};
 
         // scale factor for all non-mesh, non-overlay scene elements (e.g.
         // the floor, bodies)
