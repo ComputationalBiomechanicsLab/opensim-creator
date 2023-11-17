@@ -13,6 +13,7 @@
 
 #include <iosfwd>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -25,10 +26,12 @@ namespace osc
     public:
         EdgeEl(
             UID id_,
+            std::string_view label_,
             UID firstAttachmentID_,
             UID secondAttachmentID_) :
 
             m_ID{id_},
+            m_Label{label_},
             m_FirstAttachmentID{firstAttachmentID_},
             m_SecondAttachmentID{secondAttachmentID_}
         {
@@ -108,8 +111,8 @@ namespace osc
         AABB implCalcBounds(ISceneElLookup const&) const final;
 
         UID m_ID;
+        std::string m_Label;
         UID m_FirstAttachmentID;
         UID m_SecondAttachmentID;
-        std::string m_Label;
     };
 }
