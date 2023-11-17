@@ -31,6 +31,7 @@
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Maths/RayCollision.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/Sphere.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -1289,10 +1290,20 @@ namespace osc
             return rv;
         }
 
-        DrawableThing generateEdgeCylinder(EdgeEl const&, Color const&) const
+        DrawableThing generateEdgeCylinder(EdgeEl const& el, Color const& color) const
         {
+            auto const edgePoints = el.getEdgeLineInGround(getModelGraph());
+            Segment const cylinderMeshSegment = {{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
+            Segment const edgeSegment = {edgePoints.first, edgePoints.second};
+
             DrawableThing rv;
-            return rv;  // TODO
+            rv.id = el.getID();
+            rv.groupId = ModelGraphIDs::EdgeGroup();
+            rv.mesh = m_CylinderMesh;
+            rv.transform = SegmentToSegmentTransform(cylinderMeshSegment, edgeSegment);
+            rv.color = color;
+            rv.flags = SceneDecorationFlags::None;
+            return rv;
         }
 
         void appendBodyElAsCubeThing(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const

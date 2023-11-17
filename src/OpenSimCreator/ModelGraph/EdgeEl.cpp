@@ -11,6 +11,21 @@
 #include <oscar/Maths/Vec3.hpp>
 
 #include <iostream>
+#include <utility>
+
+std::pair<osc::Vec3, osc::Vec3> osc::EdgeEl::getEdgeLineInGround(ISceneElLookup const& lookup) const
+{
+    SceneEl const* first = lookup.find(m_FirstAttachmentID);
+    SceneEl const* second = lookup.find(m_FirstAttachmentID);
+    if (first && second)
+    {
+        return {first->getPos(lookup), second->getPos(lookup)};
+    }
+    else
+    {
+        return {Vec3{}, Vec3{}};
+    }
+}
 
 osc::SceneElClass osc::EdgeEl::CreateClass()
 {
@@ -46,18 +61,6 @@ std::ostream& osc::EdgeEl::implWriteToStream(std::ostream& out) const
 
 osc::AABB osc::EdgeEl::implCalcBounds(ISceneElLookup const& lookup) const
 {
-    SceneEl const* first = lookup.find(m_FirstAttachmentID);
-    SceneEl const* second = lookup.find(m_FirstAttachmentID);
-    if (first && second)
-    {
-        return osc::BoundingAABBOf(std::to_array(
-        {
-            first->getPos(lookup),
-            second->getPos(lookup),
-        }));
-    }
-    else
-    {
-        return AABB{};
-    }
+    auto const p = getEdgeLineInGround(lookup);
+    return BoundingAABBOf(std::to_array({p.first, p.second}));
 }

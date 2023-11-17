@@ -7,13 +7,17 @@
 
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <iosfwd>
 #include <stdexcept>
 #include <string_view>
+#include <utility>
 #include <vector>
+
+namespace osc { class ISceneElLookup; }
 
 namespace osc
 {
@@ -29,6 +33,8 @@ namespace osc
             m_SecondAttachmentID{secondAttachmentID_}
         {
         }
+
+        std::pair<Vec3, Vec3> getEdgeLineInGround(ISceneElLookup const&) const;
 
         UID getFirstAttachmentID() const
         {

@@ -1581,7 +1581,7 @@ private:
 
         ImGui::Dummy({0.0f, 5.0f});
 
-        // TODO
+        // TODO edge-specific context menu actions
     }
 
     // draw context menu content for some scene element

@@ -15,6 +15,7 @@ namespace osc
         static UID BodyGroup() { return GetAllIDs().BodyGroup; }
         static UID JointGroup() { return GetAllIDs().JointGroup; }
         static UID StationGroup() { return GetAllIDs().StationGroup; }
+        static UID EdgeGroup() { return GetAllIDs().EdgeGroup; }
     private:
         struct AllIDs final {
             UID Ground;
@@ -25,6 +26,7 @@ namespace osc
             UID BodyGroup;
             UID JointGroup;
             UID StationGroup;
+            UID EdgeGroup;
         };
         static AllIDs const& GetAllIDs();
     };
