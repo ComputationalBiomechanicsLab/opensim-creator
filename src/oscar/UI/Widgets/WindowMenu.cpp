@@ -27,7 +27,7 @@ void osc::WindowMenu::onDraw()
 
 void osc::WindowMenu::drawContent()
 {
-    osc::PanelManager& manager = *m_PanelManager;
+    PanelManager& manager = *m_PanelManager;
 
     size_t numMenuItemsPrinted = 0;
 
@@ -35,7 +35,7 @@ void osc::WindowMenu::drawContent()
     for (size_t i = 0; i < manager.getNumToggleablePanels(); ++i)
     {
         bool activated = manager.isToggleablePanelActivated(i);
-        osc::CStringView const name = manager.getToggleablePanelName(i);
+        CStringView const name = manager.getToggleablePanelName(i);
         if (ImGui::MenuItem(name.c_str(), nullptr, &activated))
         {
             manager.setToggleablePanelActivated(i, activated);
@@ -50,7 +50,7 @@ void osc::WindowMenu::drawContent()
         for (size_t i = 0; i < manager.getNumDynamicPanels(); ++i)
         {
             bool activated = true;
-            osc::CStringView const name = manager.getDynamicPanelName(i);
+            CStringView const name = manager.getDynamicPanelName(i);
             if (ImGui::MenuItem(name.c_str(), nullptr, &activated))
             {
                 manager.deactivateDynamicPanel(i);
@@ -68,7 +68,7 @@ void osc::WindowMenu::drawContent()
         {
             for (size_t i = 0; i < manager.getNumSpawnablePanels(); ++i)
             {
-                osc::CStringView const name = manager.getSpawnablePanelBaseName(i);
+                CStringView const name = manager.getSpawnablePanelBaseName(i);
                 if (ImGui::MenuItem(name.c_str()))
                 {
                     manager.createDynamicPanel(i);

@@ -54,16 +54,16 @@ public:
     {
     }
 
-    Mesh sphere{GenSphere(16, 16)};
-    Mesh circle{GenCircle(16)};
-    Mesh cylinder{GenUntexturedYToYCylinder(16)};
-    Mesh cube{GenCube()};
-    Mesh cone{GenUntexturedYToYCone(16)};
-    Mesh floor{GenTexturedQuad()};
-    Mesh grid100x100{GenNbyNGrid(1000)};
-    Mesh cubeWire{GenCubeLines()};
-    Mesh yLine{GenYLine()};
-    Mesh texturedQuad{GenTexturedQuad()};
+    Mesh sphere = GenSphere(16, 16);
+    Mesh circle = GenCircle(16);
+    Mesh cylinder = GenUntexturedYToYCylinder(16);
+    Mesh cube = GenCube();
+    Mesh cone = GenUntexturedYToYCone(16);
+    Mesh floor = GenTexturedQuad();
+    Mesh grid100x100 = GenNbyNGrid(1000);
+    Mesh cubeWire = GenCubeLines();
+    Mesh yLine = GenYLine();
+    Mesh texturedQuad = GenTexturedQuad();
 
     SynchronizedValue<std::unordered_map<TorusParameters, Mesh>> torusCache;
     SynchronizedValue<std::unordered_map<std::string, Mesh>> fileCache;

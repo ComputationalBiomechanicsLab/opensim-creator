@@ -35,6 +35,7 @@
 #include <vector>
 
 using osc::AABB;
+using osc::AntiAliasingLevel;
 using osc::Mat4;
 using osc::Material;
 using osc::Mesh;
@@ -177,7 +178,7 @@ public:
         return m_OutputTexture.getDimensions();
     }
 
-    osc::AntiAliasingLevel getAntiAliasingLevel() const
+    AntiAliasingLevel getAntiAliasingLevel() const
     {
         return m_OutputTexture.getAntialiasingLevel();
     }

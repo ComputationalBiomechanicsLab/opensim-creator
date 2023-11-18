@@ -19,7 +19,7 @@ public:
     {
     }
 
-    osc::RenderTexture& render(
+    RenderTexture& render(
         std::span<SceneDecoration const> decorations,
         SceneRendererParams const& params)
     {
@@ -36,9 +36,9 @@ public:
     }
 
 private:
-    osc::SceneRendererParams m_LastRenderingParams;
-    std::vector<osc::SceneDecoration> m_LastDecorationList;
-    osc::SceneRenderer m_SceneRenderer;
+    SceneRendererParams m_LastRenderingParams;
+    std::vector<SceneDecoration> m_LastDecorationList;
+    SceneRenderer m_SceneRenderer;
 };
 
 
