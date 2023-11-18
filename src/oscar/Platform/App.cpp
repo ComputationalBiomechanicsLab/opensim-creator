@@ -43,17 +43,25 @@
 #include <stdexcept>
 #include <unordered_map>
 
+using osc::App;
+using osc::AppClock;
+using osc::AppConfig;
+using osc::CStringView;
+using osc::Screenshot;
+using osc::ScreenshotAnnotation;
+using osc::Texture2D;
+
 namespace
 {
-    osc::App* g_ApplicationGlobal = nullptr;
+    App* g_ApplicationGlobal = nullptr;
 
     constexpr auto c_IconRanges = std::to_array<ImWchar>({ ICON_MIN_FA, ICON_MAX_FA, 0 });
 
     void Sdl_GL_SetAttributeOrThrow(
         SDL_GLattr attr,
-        osc::CStringView attrReadableName,
+        CStringView attrReadableName,
         int value,
-        osc::CStringView valueReadableName)
+        CStringView valueReadableName)
     {
         if (SDL_GL_SetAttribute(attr, value))
         {
@@ -75,7 +83,7 @@ namespace
         return true;
     }
 
-    bool ConfigureApplicationLog(osc::AppConfig const& config)
+    bool ConfigureApplicationLog(AppConfig const& config)
     {
         if (auto logger = osc::log::defaultLogger())
         {
@@ -85,13 +93,13 @@ namespace
     }
 
     // returns a resource from the config-provided `resources/` dir
-    std::filesystem::path GetResource(osc::AppConfig const& c, std::string_view p)
+    std::filesystem::path GetResource(AppConfig const& c, std::string_view p)
     {
         return c.getResourceDir() / p;
     }
 
     // initialize the main application window
-    sdl::Window CreateMainAppWindow(osc::CStringView applicationName)
+    sdl::Window CreateMainAppWindow(CStringView applicationName)
     {
         osc::log::info("initializing main application window");
 
@@ -114,7 +122,7 @@ namespace
         return sdl::CreateWindoww(applicationName.c_str(), x, y, width, height, flags);
     }
 
-    osc::AppClock::duration ConvertPerfTicksToFClockDuration(Uint64 ticks, Uint64 frequency)
+    AppClock::duration ConvertPerfTicksToFClockDuration(Uint64 ticks, Uint64 frequency)
     {
         auto const dticks = static_cast<double>(ticks);
         auto const dfrequency = static_cast<double>(frequency);
@@ -123,7 +131,7 @@ namespace
         return osc::AppClock::duration{duration};
     }
 
-    osc::AppClock::time_point ConvertPerfCounterToFClock(Uint64 ticks, Uint64 frequency)
+    AppClock::time_point ConvertPerfCounterToFClock(Uint64 ticks, Uint64 frequency)
     {
         return osc::AppClock::time_point{ConvertPerfTicksToFClockDuration(ticks, frequency)};
     }
@@ -139,7 +147,7 @@ namespace
 
         AnnotatedScreenshotRequest(
             uint64_t frameRequested_,
-            std::future<osc::Texture2D> underlyingFuture_) :
+            std::future<Texture2D> underlyingFuture_) :
 
             frameRequested{frameRequested_},
             underlyingScreenshotFuture{std::move(underlyingFuture_)}
@@ -150,13 +158,13 @@ namespace
         uint64_t frameRequested;
 
         // underlying (to-be-waited-on) future for the screenshot
-        std::future<osc::Texture2D> underlyingScreenshotFuture;
+        std::future<Texture2D> underlyingScreenshotFuture;
 
         // our promise to the caller, who is waiting for an annotated image
-        std::promise<osc::Screenshot> resultPromise;
+        std::promise<Screenshot> resultPromise;
 
         // annotations made during the requested frame (if any)
-        std::vector<osc::ScreenshotAnnotation> annotations;
+        std::vector<ScreenshotAnnotation> annotations;
     };
 
     // wrapper class for storing std::type_info as a hashable type
@@ -447,7 +455,7 @@ public:
         setMainWindowSubTitle({});
     }
 
-    osc::AppConfig const& getConfig() const
+    AppConfig const& getConfig() const
     {
         return m_ApplicationConfig;
     }
@@ -486,7 +494,7 @@ public:
         return m_MainWindow;
     }
 
-    osc::GraphicsContext& updGraphicsContext()
+    GraphicsContext& updGraphicsContext()
     {
         return m_GraphicsContext;
     }
