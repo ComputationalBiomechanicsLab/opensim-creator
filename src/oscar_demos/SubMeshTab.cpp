@@ -24,13 +24,14 @@
 #include <utility>
 #include <vector>
 
+using osc::CStringView;
 using osc::Mesh;
 using osc::SubMeshDescriptor;
 using osc::Vec3;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "Demos/SubMeshes";
+    constexpr CStringView c_TabStringID = "Demos/SubMeshes";
 
     Mesh GenerateMeshWithSubMeshes()
     {
@@ -105,7 +106,7 @@ private:
         for (size_t subMeshIndex = 0; subMeshIndex < m_MeshWithSubmeshes.getSubMeshCount(); ++subMeshIndex)
         {
 
-            osc::Graphics::DrawMesh(
+            Graphics::DrawMesh(
                 m_MeshWithSubmeshes,
                 Identity<Transform>(),
                 m_Material,
@@ -133,7 +134,7 @@ private:
 
 // public API
 
-osc::CStringView osc::SubMeshTab::id()
+CStringView osc::SubMeshTab::id()
 {
     return c_TabStringID;
 }
@@ -152,7 +153,7 @@ osc::UID osc::SubMeshTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::SubMeshTab::implGetName() const
+CStringView osc::SubMeshTab::implGetName() const
 {
     return m_Impl->getName();
 }

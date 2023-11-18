@@ -13,9 +13,11 @@
 
 #include <memory>
 
+using osc::CStringView;
+
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "Demos/ImGuizmo";
+    constexpr CStringView c_TabStringID = "Demos/ImGuizmo";
 }
 
 class osc::ImGuizmoDemoTab::Impl final : public osc::StandardTabBase {

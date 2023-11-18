@@ -21,15 +21,17 @@
 #include <string>
 #include <utility>
 
+using osc::Camera;
+using osc::CStringView;
 using osc::Mat4;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "Demos/Mandelbrot";
+    constexpr CStringView c_TabStringID = "Demos/Mandelbrot";
 
-    osc::Camera CreateIdentityCamera()
+    Camera CreateIdentityCamera()
     {
-        osc::Camera camera;
+        Camera camera;
         camera.setViewMatrixOverride(osc::Identity<Mat4>());
         camera.setProjectionMatrixOverride(osc::Identity<Mat4>());
         return camera;
