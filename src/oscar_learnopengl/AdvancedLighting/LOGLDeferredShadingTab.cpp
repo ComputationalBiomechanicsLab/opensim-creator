@@ -41,12 +41,26 @@
 #include <utility>
 #include <vector>
 
+using osc::App;
+using osc::Camera;
+using osc::Color;
+using osc::CStringView;
+using osc::Material;
+using osc::RenderBufferLoadAction;
+using osc::RenderBufferStoreAction;
+using osc::RenderTarget;
+using osc::RenderTargetDepthAttachment;
+using osc::RenderTargetColorAttachment;
+using osc::RenderTexture;
+using osc::RenderTextureDescriptor;
+using osc::RenderTextureFormat;
+using osc::Shader;
 using osc::Vec2;
 using osc::Vec3;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/DeferredShading";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/DeferredShading";
 
     constexpr auto c_ObjectPositions = std::to_array<Vec3>(
     {
@@ -68,7 +82,7 @@ namespace
         return {dist(rng), dist(rng), dist(rng)};
     }
 
-    osc::Color GenerateSceneLightColor(std::default_random_engine& rng)
+    Color GenerateSceneLightColor(std::default_random_engine& rng)
     {
         std::uniform_real_distribution<float> dist{0.5f, 1.0f};
         return {dist(rng), dist(rng), dist(rng), 1.0f};
@@ -91,8 +105,8 @@ namespace
     {
         auto const generator = [rng = std::default_random_engine{std::random_device{}()}]() mutable
         {
-            osc::Color const sRGBColor = GenerateSceneLightColor(rng);
-            osc::Color const linearColor = osc::ToLinear(sRGBColor);
+            Color const sRGBColor = GenerateSceneLightColor(rng);
+            Color const linearColor = osc::ToLinear(sRGBColor);
             return Vec3{linearColor.r, linearColor.g, linearColor.b};
         };
 
@@ -102,81 +116,81 @@ namespace
         return rv;
     }
 
-    osc::Material LoadGBufferMaterial()
+    Material LoadGBufferMaterial()
     {
-        return osc::Material
+        return Material
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.frag"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.vert"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.frag"),
             },
         };
     }
 
-    osc::RenderTexture RenderTextureWithColorFormat(osc::RenderTextureFormat f)
+    RenderTexture RenderTextureWithColorFormat(RenderTextureFormat f)
     {
-        osc::RenderTexture rv;
+        RenderTexture rv;
         rv.setColorFormat(f);
         return rv;
     }
 
-    osc::Camera CreateCameraThatMatchesLearnOpenGL()
+    Camera CreateCameraThatMatchesLearnOpenGL()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
-        rv.setBackgroundColor(osc::Color::black());
+        rv.setBackgroundColor(Color::black());
         return rv;
     }
 
     struct GBufferRenderingState final {
-        osc::Material material = LoadGBufferMaterial();
-        osc::RenderTexture albedo = RenderTextureWithColorFormat(osc::RenderTextureFormat::ARGB32);
-        osc::RenderTexture normal = RenderTextureWithColorFormat(osc::RenderTextureFormat::ARGBFloat16);
-        osc::RenderTexture position = RenderTextureWithColorFormat(osc::RenderTextureFormat::ARGBFloat16);
-        osc::RenderTarget renderTarget
+        Material material = LoadGBufferMaterial();
+        RenderTexture albedo = RenderTextureWithColorFormat(RenderTextureFormat::ARGB32);
+        RenderTexture normal = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
+        RenderTexture position = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
+        RenderTarget renderTarget
         {
             {
-                osc::RenderTargetColorAttachment
+                RenderTargetColorAttachment
                 {
                     albedo.updColorBuffer(),
-                    osc::RenderBufferLoadAction::Clear,
-                    osc::RenderBufferStoreAction::Resolve,
-                    osc::Color::black(),
+                    RenderBufferLoadAction::Clear,
+                    RenderBufferStoreAction::Resolve,
+                    Color::black(),
                 },
-                osc::RenderTargetColorAttachment
+                RenderTargetColorAttachment
                 {
                     normal.updColorBuffer(),
-                    osc::RenderBufferLoadAction::Clear,
-                    osc::RenderBufferStoreAction::Resolve,
-                    osc::Color::black(),
+                    RenderBufferLoadAction::Clear,
+                    RenderBufferStoreAction::Resolve,
+                    Color::black(),
                 },
-                osc::RenderTargetColorAttachment
+                RenderTargetColorAttachment
                 {
                     position.updColorBuffer(),
-                    osc::RenderBufferLoadAction::Clear,
-                    osc::RenderBufferStoreAction::Resolve,
-                    osc::Color::black(),
+                    RenderBufferLoadAction::Clear,
+                    RenderBufferStoreAction::Resolve,
+                    Color::black(),
                 },
             },
 
-            osc::RenderTargetDepthAttachment
+            RenderTargetDepthAttachment
             {
                 albedo.updDepthBuffer(),
-                osc::RenderBufferLoadAction::Clear,
-                osc::RenderBufferStoreAction::DontCare,
+                RenderBufferLoadAction::Clear,
+                RenderBufferStoreAction::DontCare,
             },
         };
 
         void reformat(Vec2 dims, osc::AntiAliasingLevel antiAliasingLevel)
         {
-            osc::RenderTextureDescriptor desc{dims};
+            RenderTextureDescriptor desc{dims};
             desc.setAntialiasingLevel(antiAliasingLevel);
 
-            for (osc::RenderTexture* tex : {&albedo, &normal, &position})
+            for (RenderTexture* tex : {&albedo, &normal, &position})
             {
                 desc.setColorFormat(tex->getColorFormat());
                 tex->reformat(desc);
@@ -185,12 +199,12 @@ namespace
     };
 
     struct LightPassState final {
-        osc::Material material
+        Material material
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.frag"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.vert"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.frag"),
             },
         };
     };
@@ -406,7 +420,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLDeferredShadingTab::id()
+CStringView osc::LOGLDeferredShadingTab::id()
 {
     return c_TabStringID;
 }
@@ -425,7 +439,7 @@ osc::UID osc::LOGLDeferredShadingTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLDeferredShadingTab::implGetName() const
+CStringView osc::LOGLDeferredShadingTab::implGetName() const
 {
     return m_Impl->getName();
 }

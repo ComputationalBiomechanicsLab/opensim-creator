@@ -21,13 +21,22 @@
 
 #include <memory>
 
+using osc::App;
+using osc::Camera;
+using osc::ColorSpace;
+using osc::CStringView;
+using osc::ImageLoadingFlags;
+using osc::Material;
+using osc::Shader;
+using osc::Texture2D;
+
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/LightingMaps";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/LightingMaps";
 
-    osc::Camera CreateCamera()
+    Camera CreateCamera()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
@@ -35,25 +44,25 @@ namespace
         return rv;
     }
 
-    osc::Material CreateLightMappingMaterial()
+    Material CreateLightMappingMaterial()
     {
-        osc::Texture2D diffuseMap = osc::LoadTexture2DFromImage(
-            osc::App::resource("oscar_learnopengl/textures/container2.png"),
-            osc::ColorSpace::sRGB,
-            osc::ImageLoadingFlags::FlipVertically
+        Texture2D diffuseMap = osc::LoadTexture2DFromImage(
+            App::resource("oscar_learnopengl/textures/container2.png"),
+            ColorSpace::sRGB,
+            ImageLoadingFlags::FlipVertically
         );
-        osc::Texture2D specularMap = osc::LoadTexture2DFromImage(
-            osc::App::resource("oscar_learnopengl/textures/container2_specular.png"),
-            osc::ColorSpace::sRGB,
-            osc::ImageLoadingFlags::FlipVertically
+        Texture2D specularMap = osc::LoadTexture2DFromImage(
+            App::resource("oscar_learnopengl/textures/container2_specular.png"),
+            ColorSpace::sRGB,
+            ImageLoadingFlags::FlipVertically
         );
 
-        osc::Material rv
+        Material rv
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.frag"),
+                App::slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.vert"),
+                App::slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.frag"),
             },
         };
         rv.setTexture("uMaterialDiffuse", diffuseMap);
@@ -128,7 +137,7 @@ private:
 
         // draw lamp
         m_LightCubeMaterial.setColor("uLightColor", Color::white());
-        osc::Graphics::DrawMesh(m_Mesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
+        Graphics::DrawMesh(m_Mesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
 
         // render 3D scene
         m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
@@ -168,7 +177,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLLightingMapsTab::id()
+CStringView osc::LOGLLightingMapsTab::id()
 {
     return c_TabStringID;
 }
@@ -187,7 +196,7 @@ osc::UID osc::LOGLLightingMapsTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLLightingMapsTab::implGetName() const
+CStringView osc::LOGLLightingMapsTab::implGetName() const
 {
     return m_Impl->getName();
 }
