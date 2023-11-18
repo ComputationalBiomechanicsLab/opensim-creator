@@ -46,8 +46,15 @@
 #include <stdexcept>
 #include <utility>
 
+using osc::AABB;
+using osc::BVHCollision;
+using osc::BVHNode;
+using osc::BVHPrim;
+using osc::Line;
+using osc::RayCollision;
+using osc::Sphere;
+using osc::Triangle;
 using osc::Vec3;
-
 
 // osc::AABB implementation
 
@@ -62,9 +69,9 @@ std::ostream& osc::operator<<(std::ostream& o, AABB const& aabb)
 // BVH helpers
 namespace
 {
-    osc::AABB Union(std::span<osc::BVHPrim const> prims)
+    AABB Union(std::span<BVHPrim const> prims)
     {
-        osc::AABB rv = prims.front().getBounds();
+        AABB rv = prims.front().getBounds();
         for (auto it = prims.begin() + 1; it != prims.end(); ++it)
         {
             rv = Union(rv, it->getBounds());
@@ -72,22 +79,22 @@ namespace
         return rv;
     }
 
-    bool HasAVolume(osc::Triangle const& t)
+    bool HasAVolume(Triangle const& t)
     {
         return !(t.p0 == t.p1 || t.p0 == t.p2 || t.p1 == t.p2);
     }
 
     // recursively build the BVH
     void BVH_RecursiveBuild(
-        std::vector<osc::BVHNode>& nodes,
-        std::vector<osc::BVHPrim>& prims,
+        std::vector<BVHNode>& nodes,
+        std::vector<BVHPrim>& prims,
         ptrdiff_t const begin,
         ptrdiff_t const n)
     {
         if (n == 1)
         {
             // recursion bottomed out: create a leaf node
-            nodes.push_back(osc::BVHNode::leaf(
+            nodes.push_back(BVHNode::leaf(
                 prims.at(begin).getBounds(),
                 begin
             ));
@@ -102,14 +109,14 @@ namespace
             // allocate an appropriate internal node
 
             // compute bounding box of remaining (children) prims
-            osc::AABB const aabb = Union({prims.begin() + begin, static_cast<size_t>(n)});
+            AABB const aabb = Union({prims.begin() + begin, static_cast<size_t>(n)});
 
             // compute slicing position along the longest dimension
             auto const longestDimIdx = LongestDimIndex(aabb);
             float const midpointX2 = aabb.min[longestDimIdx] + aabb.max[longestDimIdx];
 
             // returns true if a given primitive is below the midpoint along the dim
-            auto const isBelowMidpoint = [longestDimIdx, midpointX2](osc::BVHPrim const& p)
+            auto const isBelowMidpoint = [longestDimIdx, midpointX2](BVHPrim const& p)
             {
                 float const primMidpointX2 = p.getBounds().min[longestDimIdx] + p.getBounds().max[longestDimIdx];
                 return primMidpointX2 <= midpointX2;
@@ -129,7 +136,7 @@ namespace
             internalNodeLoc = static_cast<ptrdiff_t>(nodes.size());
 
             // push the internal node
-            nodes.push_back(osc::BVHNode::node(
+            nodes.push_back(BVHNode::node(
                 aabb,
                 0  // the number of left-hand nodes is set later
             ));
@@ -152,16 +159,16 @@ namespace
     //
     // populates outparam with all AABB hits in depth-first order
     bool BVH_GetRayAABBCollisionsRecursive(
-        std::vector<osc::BVHNode> const& nodes,
-        std::vector<osc::BVHPrim> const& prims,
-        osc::Line const& ray,
+        std::vector<BVHNode> const& nodes,
+        std::vector<BVHPrim> const& prims,
+        Line const& ray,
         ptrdiff_t nodeidx,
-        std::vector<osc::BVHCollision>& out)
+        std::vector<BVHCollision>& out)
     {
-        osc::BVHNode const& node = nodes[nodeidx];
+        BVHNode const& node = nodes[nodeidx];
 
         // check ray-AABB intersection with the BVH node
-        std::optional<osc::RayCollision> res = osc::GetRayCollisionAABB(ray, node.getBounds());
+        std::optional<RayCollision> res = osc::GetRayCollisionAABB(ray, node.getBounds());
 
         if (!res)
         {
@@ -187,17 +194,17 @@ namespace
     }
 
     template<typename TIndex>
-    std::optional<osc::BVHCollision> BVH_GetClosestRayIndexedTriangleCollisionRecursive(
-        std::vector<osc::BVHNode> const& nodes,
-        std::vector<osc::BVHPrim> const& prims,
+    std::optional<BVHCollision> BVH_GetClosestRayIndexedTriangleCollisionRecursive(
+        std::vector<BVHNode> const& nodes,
+        std::vector<BVHPrim> const& prims,
         std::span<Vec3 const> verts,
         std::span<TIndex const> indices,
-        osc::Line const& ray,
+        Line const& ray,
         float& closest,
         ptrdiff_t nodeidx)
     {
-        osc::BVHNode const& node = nodes[nodeidx];
-        std::optional<osc::RayCollision> const res = osc::GetRayCollisionAABB(ray, node.getBounds());
+        BVHNode const& node = nodes[nodeidx];
+        std::optional<RayCollision> const res = osc::GetRayCollisionAABB(ray, node.getBounds());
 
         if (!res)
         {
@@ -213,21 +220,21 @@ namespace
         {
             // leaf node: check ray-triangle intersection
 
-            osc::BVHPrim const& p = prims.at(node.getFirstPrimOffset());
+            BVHPrim const& p = prims.at(node.getFirstPrimOffset());
 
-            osc::Triangle const triangle =
+            Triangle const triangle =
             {
                 osc::At(verts, osc::At(indices, p.getID())),
                 osc::At(verts, osc::At(indices, p.getID()+1)),
                 osc::At(verts, osc::At(indices, p.getID()+2)),
             };
 
-            std::optional<osc::RayCollision> const rayTriangleColl = osc::GetRayCollisionTriangle(ray, triangle);
+            std::optional<RayCollision> const rayTriangleColl = osc::GetRayCollisionTriangle(ray, triangle);
 
             if (rayTriangleColl && rayTriangleColl->distance < closest)
             {
                 closest = rayTriangleColl->distance;
-                return osc::BVHCollision{rayTriangleColl->distance, rayTriangleColl->position, p.getID()};
+                return BVHCollision{rayTriangleColl->distance, rayTriangleColl->position, p.getID()};
             }
             else
             {
@@ -236,7 +243,7 @@ namespace
         }
 
         // else: internal node: recurse
-        std::optional<osc::BVHCollision> const lhs = BVH_GetClosestRayIndexedTriangleCollisionRecursive(
+        std::optional<BVHCollision> const lhs = BVH_GetClosestRayIndexedTriangleCollisionRecursive(
             nodes,
             prims,
             verts,
@@ -245,7 +252,7 @@ namespace
             closest,
             nodeidx+1
         );
-        std::optional<osc::BVHCollision> const rhs = BVH_GetClosestRayIndexedTriangleCollisionRecursive(
+        std::optional<BVHCollision> const rhs = BVH_GetClosestRayIndexedTriangleCollisionRecursive(
             nodes,
             prims,
             verts,
@@ -259,8 +266,8 @@ namespace
 
     template<typename TIndex>
     void BuildFromIndexedTriangles(
-        std::vector<osc::BVHNode>& nodes,
-        std::vector<osc::BVHPrim>& prims,
+        std::vector<BVHNode>& nodes,
+        std::vector<BVHPrim>& prims,
         std::span<Vec3 const> verts,
         std::span<TIndex const> indices)
     {
@@ -293,8 +300,8 @@ namespace
 
     template<typename TIndex>
     std::optional<osc::BVHCollision> GetClosestRayIndexedTriangleCollision(
-        std::vector<osc::BVHNode> const& nodes,
-        std::vector<osc::BVHPrim> const& prims,
+        std::vector<BVHNode> const& nodes,
+        std::vector<BVHPrim> const& prims,
         std::span<Vec3 const> verts,
         std::span<TIndex const> indices,
         osc::Line const& ray)
@@ -349,7 +356,10 @@ std::optional<osc::BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision
     );
 }
 
-std::optional<osc::BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision(std::span<Vec3 const> verts, std::span<uint32_t const> indices, Line const& line) const
+std::optional<osc::BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision(
+    std::span<Vec3 const> verts,
+    std::span<uint32_t const> indices,
+    Line const& line) const
 {
     return GetClosestRayIndexedTriangleCollision<uint32_t>(
         m_Nodes,
@@ -388,7 +398,7 @@ void osc::BVH::buildFromAABBs(std::span<AABB const> aabbs)
 
 std::vector<osc::BVHCollision> osc::BVH::getRayAABBCollisions(Line const& ray) const
 {
-    std::vector<osc::BVHCollision> rv;
+    std::vector<BVHCollision> rv;
 
     if (m_Nodes.empty() || m_Prims.empty())
     {
@@ -678,8 +688,8 @@ osc::PolarPerspectiveCamera osc::CreateCameraWithRadius(float r)
 
 osc::PolarPerspectiveCamera osc::CreateCameraFocusedOn(AABB const& aabb)
 {
-    osc::PolarPerspectiveCamera rv;
-    osc::AutoFocus(rv, aabb);
+    PolarPerspectiveCamera rv;
+    AutoFocus(rv, aabb);
     return rv;
 }
 
@@ -1025,7 +1035,7 @@ namespace
         return res;
     }
 
-    std::optional<osc::RayCollision> GetRayCollisionSphereAnalytic(osc::Sphere const& s, osc::Line const& l)
+    std::optional<RayCollision> GetRayCollisionSphereAnalytic(Sphere const& s, Line const& l)
     {
         // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
 
@@ -1076,7 +1086,7 @@ namespace
             }
         }
 
-        return osc::RayCollision{.distance = t0, .position = l.origin + t0*l.direction};
+        return RayCollision{.distance = t0, .position = l.origin + t0*l.direction};
     }
 
     template<typename TReal>
@@ -2499,5 +2509,5 @@ std::optional<osc::RayCollision> osc::GetRayCollisionTriangle(Line const& l, Tri
         }
     }
 
-    return osc::RayCollision{.distance = t, .position = l.origin + t*l.direction};
+    return RayCollision{.distance = t, .position = l.origin + t*l.direction};
 }
