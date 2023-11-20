@@ -4,6 +4,7 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- `osc::App` now writes the `osc` executable's directory and user directory to the log (handy for debugging, #811)
 - Internal: nonstd::span was droppped in favor of C++20's std::span
 - Internal: C++17 was upgraded to C++20, which required some dependency patching
 - Internal: all vector/matrix math was ported from using `glm` directly to using it via an `osc` alias

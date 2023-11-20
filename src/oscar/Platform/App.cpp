@@ -135,6 +135,23 @@ namespace
     {
         return osc::AppClock::time_point{ConvertPerfTicksToFClockDuration(ticks, frequency)};
     }
+
+    std::filesystem::path GetCurrentExeDirAndLogIt()
+    {
+        auto const rv = osc::CurrentExeDir();
+        osc::log::info("executable directory: %s", rv.string().c_str());
+        return rv;
+    }
+
+    // computes the user's data directory and also logs it to the console for user-facing feedback
+    std::filesystem::path GetUserDataDirAndLogIt(
+        CStringView organizationName,
+        CStringView applicationName)
+    {
+        auto const rv = osc::GetUserDataDir(organizationName, applicationName);
+        osc::log::info("user data directory: %s", rv.string().c_str());
+        return rv;
+    }
 }
 
 namespace
@@ -708,10 +725,10 @@ private:
     AppMetadata m_Metadata;
 
     // path to the directory that the executable is contained within
-    std::filesystem::path m_ExecutableDirPath = osc::CurrentExeDir();
+    std::filesystem::path m_ExecutableDirPath = GetCurrentExeDirAndLogIt();
 
     // compute where a write-able user data dir is
-    std::filesystem::path m_UserDataDirPath = osc::GetUserDataDir(
+    std::filesystem::path m_UserDataDirPath = GetUserDataDirAndLogIt(
         m_Metadata.getOrganizationName(),
         m_Metadata.getApplicationName()
     );
