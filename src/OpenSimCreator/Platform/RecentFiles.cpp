@@ -27,14 +27,14 @@ namespace
         return std::chrono::seconds(std::time(nullptr));
     }
 
-    bool LastOpenedGreaterThanOrEqualTo(osc::RecentFile const& a, osc::RecentFile const& b)
+    bool LastOpenedGreaterThan(osc::RecentFile const& a, osc::RecentFile const& b)
     {
-        return a.lastOpenedUnixTimestamp >= b.lastOpenedUnixTimestamp;
+        return a.lastOpenedUnixTimestamp > b.lastOpenedUnixTimestamp;
     }
 
     void SortNewestToOldest(std::vector<osc::RecentFile>& files)
     {
-        std::sort(files.begin(), files.end(), LastOpenedGreaterThanOrEqualTo);
+        std::sort(files.begin(), files.end(), LastOpenedGreaterThan);
     }
 
     // load the "recent files" file that the application persists to disk
