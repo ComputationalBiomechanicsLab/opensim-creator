@@ -12,6 +12,8 @@
 #include <iterator>
 #include <utility>
 
+using osc::CStringView;
+
 bool osc::DrawGizmoModeSelector(ImGuizmo::MODE& mode)
 {
     constexpr auto modeLabels = std::to_array({ "local", "global" });
@@ -27,8 +29,8 @@ bool osc::DrawGizmoModeSelector(ImGuizmo::MODE& mode)
         rv = true;
     }
     ImGui::PopStyleVar();
-    constexpr osc::CStringView tooltipTitle = "Manipulation coordinate system";
-    constexpr osc::CStringView tooltipDesc = "This affects whether manipulations (such as the arrow gizmos that you can use to translate things) are performed relative to the global coordinate system or the selection's (local) one. Local manipulations can be handy when translating/rotating something that's already rotated.";
+    constexpr CStringView tooltipTitle = "Manipulation coordinate system";
+    constexpr CStringView tooltipDesc = "This affects whether manipulations (such as the arrow gizmos that you can use to translate things) are performed relative to the global coordinate system or the selection's (local) one. Local manipulations can be handy when translating/rotating something that's already rotated.";
     osc::DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
 
     return rv;

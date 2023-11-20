@@ -28,11 +28,20 @@
 #include <cstdint>
 #include <memory>
 
+using osc::App;
+using osc::Camera;
+using osc::Color;
+using osc::ColorSpace;
+using osc::CStringView;
+using osc::ImageLoadingFlags;
+using osc::Material;
+using osc::Shader;
+using osc::Texture2D;
 using osc::Vec3;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/MultipleLights";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/MultipleLights";
 
     // positions of cubes within the scene
     constexpr auto c_CubePositions = std::to_array<Vec3>(
@@ -64,9 +73,9 @@ namespace
     constexpr auto c_PointLightLinears = std::to_array<float>({0.09f, 0.09f, 0.09f, 0.09f});
     constexpr auto c_PointLightQuadratics = std::to_array<float>({0.032f, 0.032f, 0.032f, 0.032f});
 
-    osc::Camera CreateCamera()
+    Camera CreateCamera()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
@@ -75,26 +84,26 @@ namespace
         return rv;
     }
 
-    osc::Material CreateMultipleLightsMaterial()
+    Material CreateMultipleLightsMaterial()
     {
-        osc::Texture2D diffuseMap = osc::LoadTexture2DFromImage(
-            osc::App::resource("oscar_learnopengl/textures/container2.png"),
-            osc::ColorSpace::sRGB,
-            osc::ImageLoadingFlags::FlipVertically
+        Texture2D diffuseMap = osc::LoadTexture2DFromImage(
+            App::resource("oscar_learnopengl/textures/container2.png"),
+            ColorSpace::sRGB,
+            ImageLoadingFlags::FlipVertically
         );
 
-        osc::Texture2D specularMap = osc::LoadTexture2DFromImage(
-            osc::App::resource("oscar_learnopengl/textures/container2_specular.png"),
-            osc::ColorSpace::sRGB,
-            osc::ImageLoadingFlags::FlipVertically
+        Texture2D specularMap = osc::LoadTexture2DFromImage(
+            App::resource("oscar_learnopengl/textures/container2_specular.png"),
+            ColorSpace::sRGB,
+            ImageLoadingFlags::FlipVertically
         );
 
-        osc::Material rv
+        Material rv
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.frag"),
+                App::slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.vert"),
+                App::slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.frag"),
             },
         };
 
@@ -126,17 +135,17 @@ namespace
         return rv;
     }
 
-    osc::Material CreateLightCubeMaterial()
+    Material CreateLightCubeMaterial()
     {
-        osc::Material rv
+        Material rv
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
+                App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
+                App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
             },
         };
-        rv.setColor("uLightColor", osc::Color::white());
+        rv.setColor("uLightColor", Color::white());
         return rv;
     }
 }
@@ -254,7 +263,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLMultipleLightsTab::id()
+CStringView osc::LOGLMultipleLightsTab::id()
 {
     return c_TabStringID;
 }
@@ -273,7 +282,7 @@ osc::UID osc::LOGLMultipleLightsTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLMultipleLightsTab::implGetName() const
+CStringView osc::LOGLMultipleLightsTab::implGetName() const
 {
     return m_Impl->getName();
 }

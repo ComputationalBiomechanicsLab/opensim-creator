@@ -30,12 +30,29 @@
 #include <string>
 #include <utility>
 
+using osc::App;
+using osc::Camera;
+using osc::ColorSpace;
+using osc::CStringView;
+using osc::Cubemap;
+using osc::ImageLoadingFlags;
 using osc::Mat4;
+using osc::Material;
+using osc::Mesh;
+using osc::RenderTexture;
+using osc::RenderTextureFormat;
+using osc::Shader;
+using osc::Texture2D;
+using osc::TextureDimensionality;
+using osc::TextureFilterMode;
+using osc::TextureFormat;
+using osc::TextureWrapMode;
+using osc::Transform;
 using osc::Vec3;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/PBR/SpecularIrradianceTextured";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/PBR/SpecularIrradianceTextured";
 
     constexpr auto c_LightPositions = std::to_array<Vec3>(
     {
@@ -53,9 +70,9 @@ namespace
         {150.0f, 150.0f, 150.0f},
     });
 
-    osc::Camera CreateCamera()
+    Camera CreateCamera()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
@@ -64,21 +81,21 @@ namespace
         return rv;
     }
 
-    osc::RenderTexture LoadEquirectangularHDRTextureIntoCubemap()
+    RenderTexture LoadEquirectangularHDRTextureIntoCubemap()
     {
         int constexpr renderWidth = 512;
 
-        osc::Texture2D hdrTexture = osc::LoadTexture2DFromImage(
-            osc::App::resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
-            osc::ColorSpace::Linear,
-            osc::ImageLoadingFlags::FlipVertically
+        Texture2D hdrTexture = osc::LoadTexture2DFromImage(
+            App::resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
+            ColorSpace::Linear,
+            ImageLoadingFlags::FlipVertically
         );
-        hdrTexture.setWrapMode(osc::TextureWrapMode::Clamp);
-        hdrTexture.setFilterMode(osc::TextureFilterMode::Linear);
+        hdrTexture.setWrapMode(TextureWrapMode::Clamp);
+        hdrTexture.setFilterMode(TextureFilterMode::Linear);
 
-        osc::RenderTexture cubemapRenderTarget{{renderWidth, renderWidth}};
-        cubemapRenderTarget.setDimensionality(osc::TextureDimensionality::Cube);
-        cubemapRenderTarget.setColorFormat(osc::RenderTextureFormat::ARGBFloat16);
+        RenderTexture cubemapRenderTarget{{renderWidth, renderWidth}};
+        cubemapRenderTarget.setDimensionality(TextureDimensionality::Cube);
+        cubemapRenderTarget.setColorFormat(RenderTextureFormat::ARGBFloat16);
 
         // create a 90 degree cube cone projection matrix
         Mat4 const projectionMatrix = osc::Perspective(
@@ -89,13 +106,13 @@ namespace
         );
 
         // create material that projects all 6 faces onto the output cubemap
-        osc::Material material
+        Material material
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/EquirectangularToCubemap.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/EquirectangularToCubemap.geom"),
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/EquirectangularToCubemap.frag"),
+                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/EquirectangularToCubemap.vert"),
+                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/EquirectangularToCubemap.geom"),
+                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/EquirectangularToCubemap.frag"),
             }
         };
         material.setTexture("uEquirectangularMap", hdrTexture);
@@ -104,19 +121,19 @@ namespace
             osc::CalcCubemapViewProjMatrices(projectionMatrix, Vec3{})
         );
 
-        osc::Camera camera;
-        osc::Graphics::DrawMesh(osc::GenCube(), osc::Transform{}, material, camera);
+        Camera camera;
+        osc::Graphics::DrawMesh(osc::GenCube(), Transform{}, material, camera);
         camera.renderTo(cubemapRenderTarget);
 
-        // TODO: some way of copying it into an `osc::Cubemap` would make sense
+        // TODO: some way of copying it into an `Cubemap` would make sense
         return cubemapRenderTarget;
     }
 
-    osc::RenderTexture CreateIrradianceCubemap(osc::RenderTexture const& skybox)
+    RenderTexture CreateIrradianceCubemap(RenderTexture const& skybox)
     {
-        osc::RenderTexture irradianceCubemap{{32, 32}};
-        irradianceCubemap.setDimensionality(osc::TextureDimensionality::Cube);
-        irradianceCubemap.setColorFormat(osc::RenderTextureFormat::ARGBFloat16);
+        RenderTexture irradianceCubemap{{32, 32}};
+        irradianceCubemap.setDimensionality(TextureDimensionality::Cube);
+        irradianceCubemap.setColorFormat(RenderTextureFormat::ARGBFloat16);
 
         Mat4 const captureProjection = osc::Perspective(
             osc::Deg2Rad(90.0f),
@@ -125,13 +142,13 @@ namespace
             10.0f
         );
 
-        osc::Material material
+        Material material
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/IrradianceConvolution.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/IrradianceConvolution.geom"),
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/IrradianceConvolution.frag"),
+                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/IrradianceConvolution.vert"),
+                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/IrradianceConvolution.geom"),
+                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/IrradianceConvolution.frag"),
             },
         };
         material.setRenderTexture(
@@ -143,23 +160,23 @@ namespace
             osc::CalcCubemapViewProjMatrices(captureProjection, Vec3{})
         );
 
-        osc::Camera camera;
-        osc::Graphics::DrawMesh(osc::GenCube(), osc::Transform{}, material, camera);
+        Camera camera;
+        osc::Graphics::DrawMesh(osc::GenCube(), Transform{}, material, camera);
         camera.renderTo(irradianceCubemap);
 
-        // TODO: some way of copying it into an `osc::Cubemap` would make sense
+        // TODO: some way of copying it into an `Cubemap` would make sense
         return irradianceCubemap;
     }
 
-    osc::Cubemap CreatePreFilteredEnvironmentMap(
-        osc::RenderTexture const& environmentMap)
+    Cubemap CreatePreFilteredEnvironmentMap(
+        RenderTexture const& environmentMap)
     {
         int constexpr levelZeroWidth = 128;
         static_assert(osc::popcount(static_cast<unsigned>(levelZeroWidth)) == 1);
 
-        osc::RenderTexture captureRT{{levelZeroWidth, levelZeroWidth}};
-        captureRT.setDimensionality(osc::TextureDimensionality::Cube);
-        captureRT.setColorFormat(osc::RenderTextureFormat::ARGBFloat16);
+        RenderTexture captureRT{{levelZeroWidth, levelZeroWidth}};
+        captureRT.setDimensionality(TextureDimensionality::Cube);
+        captureRT.setColorFormat(RenderTextureFormat::ARGBFloat16);
 
         Mat4 const captureProjection = osc::Perspective(
             osc::Deg2Rad(90.0f),
@@ -168,21 +185,21 @@ namespace
             10.0f
         );
 
-        osc::Material material
+        Material material
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/Prefilter.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/Prefilter.geom"),
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/Prefilter.frag"),
+                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/Prefilter.vert"),
+                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/Prefilter.geom"),
+                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/Prefilter.frag"),
             },
         };
         material.setRenderTexture("uEnvironmentMap", environmentMap);
         material.setMat4Array("uShadowMatrices", osc::CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
 
-        osc::Camera camera;
+        Camera camera;
 
-        osc::Cubemap rv{levelZeroWidth, osc::TextureFormat::RGBAFloat};
+        Cubemap rv{levelZeroWidth, TextureFormat::RGBAFloat};
         // TODO: wrap-s/t/r == GL_CLAMP_TO_EDGE
         // TODO: ensure GL_TEXTURE_MIN_FILTER is GL_LINEAR_MIPMAP_LINEAR
         // TODO: ensure GL_TEXTURE_MAG_FILTER is GL_LINEAR
@@ -204,7 +221,7 @@ namespace
             float const roughness = static_cast<float>(mip)/static_cast<float>(maxMipmapLevel);
             material.setFloat("uRoughness", roughness);
 
-            osc::Graphics::DrawMesh(osc::GenCube(), osc::Transform{}, material, camera);
+            osc::Graphics::DrawMesh(osc::GenCube(), Transform{}, material, camera);
             camera.renderTo(captureRT);
             osc::Graphics::CopyTexture(captureRT, rv, mip);
         }
@@ -212,53 +229,53 @@ namespace
         return rv;
     }
 
-    osc::Texture2D Create2DBRDFLookup()
+    Texture2D Create2DBRDFLookup()
     {
-        osc::RenderTexture renderTex
+        RenderTexture renderTex
         {
             {512, 512}
         };
-        renderTex.setColorFormat(osc::RenderTextureFormat::ARGBFloat16);  // TODO RG16F in LearnOpenGL
+        renderTex.setColorFormat(RenderTextureFormat::ARGBFloat16);  // TODO RG16F in LearnOpenGL
 
-        osc::Material material
+        Material material
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/BRDF.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/BRDF.frag"),
+                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/BRDF.vert"),
+                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/BRDF.frag"),
             },
         };
 
-        osc::Mesh quad = osc::GenTexturedQuad();
+        Mesh quad = osc::GenTexturedQuad();
 
         // TODO: Graphics::Blit with material
-        osc::Camera camera;
+        Camera camera;
         camera.setProjectionMatrixOverride(osc::Identity<Mat4>());
         camera.setViewMatrixOverride(osc::Identity<Mat4>());
 
-        osc::Graphics::DrawMesh(quad, osc::Transform{}, material, camera);
+        osc::Graphics::DrawMesh(quad, Transform{}, material, camera);
         camera.renderTo(renderTex);
 
-        osc::Texture2D rv
+        Texture2D rv
         {
             {512, 512},
-            osc::TextureFormat::RGBFloat,  // TODO: RG16F in LearnOpenGL
-            osc::ColorSpace::Linear,
-            osc::TextureWrapMode::Clamp,
-            osc::TextureFilterMode::Linear,
+            TextureFormat::RGBFloat,  // TODO: RG16F in LearnOpenGL
+            ColorSpace::Linear,
+            TextureWrapMode::Clamp,
+            TextureFilterMode::Linear,
         };
         osc::Graphics::CopyTexture(renderTex, rv);
         return rv;
     }
 
-    osc::Material CreateMaterial()
+    Material CreateMaterial()
     {
-        osc::Material rv
+        Material rv
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/PBR.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/PBR.frag"),
+                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/PBR.vert"),
+                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/PBR.frag"),
             },
         };
         rv.setFloat("uAO", 1.0f);
@@ -273,25 +290,25 @@ namespace
 
         std::filesystem::path dir;
 
-        osc::Texture2D albedoMap = osc::LoadTexture2DFromImage(
+        Texture2D albedoMap = osc::LoadTexture2DFromImage(
             dir / "albedo.png",
-            osc::ColorSpace::sRGB
+            ColorSpace::sRGB
         );
-        osc::Texture2D normalMap = osc::LoadTexture2DFromImage(
+        Texture2D normalMap = osc::LoadTexture2DFromImage(
             dir / "normal.png",
-            osc::ColorSpace::Linear
+            ColorSpace::Linear
         );
-        osc::Texture2D metallicMap = osc::LoadTexture2DFromImage(
+        Texture2D metallicMap = osc::LoadTexture2DFromImage(
             dir / "metallic.png",
-            osc::ColorSpace::Linear
+            ColorSpace::Linear
         );
-        osc::Texture2D roughnessMap = osc::LoadTexture2DFromImage(
+        Texture2D roughnessMap = osc::LoadTexture2DFromImage(
             dir / "roughness.png",
-            osc::ColorSpace::Linear
+            ColorSpace::Linear
         );
-        osc::Texture2D aoMap = osc::LoadTexture2DFromImage(
+        Texture2D aoMap = osc::LoadTexture2DFromImage(
             dir / "ao.png",
-            osc::ColorSpace::Linear
+            ColorSpace::Linear
         );
     };
 }
@@ -428,12 +445,12 @@ private:
         m_BackgroundMaterial.setRenderTexture("uEnvironmentMap", m_ProjectedMap);
         m_BackgroundMaterial.setDepthFunction(DepthFunction::LessOrEqual);  // for skybox depth trick
         Graphics::DrawMesh(m_CubeMesh, Transform{}, m_BackgroundMaterial, m_Camera);
-        m_Camera.setClearFlags(osc::CameraClearFlags::Nothing);
+        m_Camera.setClearFlags(CameraClearFlags::Nothing);
         m_Camera.renderTo(m_OutputRender);
-        m_Camera.setClearFlags(osc::CameraClearFlags::Default);
+        m_Camera.setClearFlags(CameraClearFlags::Default);
     }
 
-    Texture2D m_Texture = osc::LoadTexture2DFromImage(
+    Texture2D m_Texture = LoadTexture2DFromImage(
         App::resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
         ColorSpace::Linear,
         ImageLoadingFlags::FlipVertically
@@ -475,7 +492,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLPBRSpecularIrradianceTexturedTab::id()
+CStringView osc::LOGLPBRSpecularIrradianceTexturedTab::id()
 {
     return c_TabStringID;
 }
@@ -494,7 +511,7 @@ osc::UID osc::LOGLPBRSpecularIrradianceTexturedTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLPBRSpecularIrradianceTexturedTab::implGetName() const
+CStringView osc::LOGLPBRSpecularIrradianceTexturedTab::implGetName() const
 {
     return m_Impl->getName();
 }

@@ -80,10 +80,38 @@
 #include <variant>
 #include <vector>
 
+using osc::Color;
+using osc::Color32;
+using osc::ColorSpace;
+using osc::CStringView;
+using osc::Cubemap;
+using osc::CubemapFace;
+using osc::CullMode;
+using osc::DepthFunction;
+using osc::DepthStencilFormat;
+using osc::LogLevel;
 using osc::Mat3;
 using osc::Mat4;
+using osc::Material;
+using osc::MaterialPropertyBlock;
+using osc::Mesh;
+using osc::MeshTopology;
+using osc::Overload;
 using osc::Quat;
+using osc::RenderBufferType;
+using osc::RenderTexture;
+using osc::RenderTextureDescriptor;
+using osc::RenderTextureFormat;
+using osc::RenderTextureReadWrite;
+using osc::ShaderPropertyType;
+using osc::Texture2D;
+using osc::TextureChannelFormat;
+using osc::TextureDimensionality;
+using osc::TextureFilterMode;
+using osc::TextureFormat;
+using osc::TextureWrapMode;
 using osc::Transform;
+using osc::UID;
 using osc::Vec2;
 using osc::Vec2i;
 using osc::Vec3;
@@ -97,7 +125,7 @@ namespace
     // it's here, rather than in an external resource file, because it is eagerly
     // loaded while the graphics backend is initialized (i.e. potentially before
     // the application is fully loaded)
-    constexpr osc::CStringView c_QuadVertexShaderSrc = R"(
+    constexpr CStringView c_QuadVertexShaderSrc = R"(
         #version 330 core
 
         layout (location = 0) in vec3 aPos;
@@ -117,7 +145,7 @@ namespace
     // it's here, rather than in an external resource file, because it is eagerly
     // loaded while the graphics backend is initialized (i.e. potentially before
     // the application is fully loaded)
-    constexpr osc::CStringView c_QuadFragmentShaderSrc = R"(
+    constexpr CStringView c_QuadFragmentShaderSrc = R"(
         #version 330 core
 
         uniform sampler2D uTexture;
@@ -131,19 +159,19 @@ namespace
         }
     )";
 
-    osc::CStringView GLStringToCStringView(GLubyte const* stringPtr)
+    CStringView GLStringToCStringView(GLubyte const* stringPtr)
     {
-        static_assert(sizeof(GLubyte) == sizeof(osc::CStringView::value_type));
-        static_assert(alignof(GLubyte) == alignof(osc::CStringView::value_type));
-        return stringPtr ? osc::CStringView{reinterpret_cast<char const*>(stringPtr)} : osc::CStringView{};
+        static_assert(sizeof(GLubyte) == sizeof(CStringView::value_type));
+        static_assert(alignof(GLubyte) == alignof(CStringView::value_type));
+        return stringPtr ? CStringView{reinterpret_cast<char const*>(stringPtr)} : CStringView{};
     }
 
-    osc::CStringView GLGetCStringView(GLenum name)
+    CStringView GLGetCStringView(GLenum name)
     {
         return GLStringToCStringView(glGetString(name));
     }
 
-    osc::CStringView GLGetCStringViewi(GLenum name, GLuint index)
+    CStringView GLGetCStringViewi(GLenum name, GLuint index)
     {
         return GLStringToCStringView(glGetStringi(name, index));
     }
@@ -154,7 +182,7 @@ namespace
     }
 
     // returns the `Name String`s of all extensions that OSC's OpenGL backend might use
-    std::vector<osc::CStringView> GetAllOpenGLExtensionsUsedByOSC()
+    std::vector<CStringView> GetAllOpenGLExtensionsUsedByOSC()
     {
         // most entries in this list were initially from a mixture of:
         //
@@ -277,11 +305,11 @@ namespace
         return numExtensionsSupportedByBackend >= 0 ? static_cast<size_t>(numExtensionsSupportedByBackend) : 0;
     }
 
-    std::vector<osc::CStringView> GetAllExtensionsSupportedByCurrentOpenGLBackend()
+    std::vector<CStringView> GetAllExtensionsSupportedByCurrentOpenGLBackend()
     {
         size_t const numExtensions = GetNumExtensionsSupportedByBackend();
 
-        std::vector<osc::CStringView> rv;
+        std::vector<CStringView> rv;
         rv.reserve(numExtensions);
         for (size_t i = 0; i < numExtensions; ++i)
         {
@@ -290,7 +318,7 @@ namespace
         return rv;
     }
 
-    void ValidateOpenGLBackendExtensionSupport(osc::LogLevel logLevel)
+    void ValidateOpenGLBackendExtensionSupport(LogLevel logLevel)
     {
         // note: the OpenGL specification _requires_ that a backend supports
         // (effectively) RGBA, RG, and RED textures with the following data
@@ -309,13 +337,13 @@ namespace
             return;
         }
 
-        std::vector<osc::CStringView> extensionsRequiredByOSC = GetAllOpenGLExtensionsUsedByOSC();
+        std::vector<CStringView> extensionsRequiredByOSC = GetAllOpenGLExtensionsUsedByOSC();
         std::sort(extensionsRequiredByOSC.begin(), extensionsRequiredByOSC.end());
 
-        std::vector<osc::CStringView> extensionSupportedByBackend = GetAllExtensionsSupportedByCurrentOpenGLBackend();
+        std::vector<CStringView> extensionSupportedByBackend = GetAllExtensionsSupportedByCurrentOpenGLBackend();
         std::sort(extensionSupportedByBackend.begin(), extensionSupportedByBackend.end());
 
-        std::vector<osc::CStringView> missingExtensions;
+        std::vector<CStringView> missingExtensions;
         missingExtensions.reserve(extensionsRequiredByOSC.size());  // pessimistic guess
         std::set_difference(
             extensionsRequiredByOSC.begin(),
@@ -369,8 +397,8 @@ namespace
 namespace
 {
     using MaterialValue = std::variant<
-        osc::Color,
-        std::vector<osc::Color>,
+        Color,
+        std::vector<Color>,
         float,
         std::vector<float>,
         Vec2,
@@ -382,52 +410,52 @@ namespace
         std::vector<Mat4>,
         int32_t,
         bool,
-        osc::Texture2D,
-        osc::RenderTexture,
-        osc::Cubemap
+        Texture2D,
+        RenderTexture,
+        Cubemap
     >;
 
-    osc::ShaderPropertyType GetShaderType(MaterialValue const& v)
+    ShaderPropertyType GetShaderType(MaterialValue const& v)
     {
         using osc::VariantIndex;
 
         switch (v.index())
         {
-        case VariantIndex<MaterialValue, osc::Color>():
-        case VariantIndex<MaterialValue, std::vector<osc::Color>>():
-            return osc::ShaderPropertyType::Vec4;
+        case VariantIndex<MaterialValue, Color>():
+        case VariantIndex<MaterialValue, std::vector<Color>>():
+            return ShaderPropertyType::Vec4;
         case VariantIndex<MaterialValue, Vec2>():
-            return osc::ShaderPropertyType::Vec2;
+            return ShaderPropertyType::Vec2;
         case VariantIndex<MaterialValue, float>():
         case VariantIndex<MaterialValue, std::vector<float>>():
-            return osc::ShaderPropertyType::Float;
+            return ShaderPropertyType::Float;
         case VariantIndex<MaterialValue, Vec3>():
         case VariantIndex<MaterialValue, std::vector<Vec3>>():
-            return osc::ShaderPropertyType::Vec3;
+            return ShaderPropertyType::Vec3;
         case VariantIndex<MaterialValue, Vec4>():
-            return osc::ShaderPropertyType::Vec4;
+            return ShaderPropertyType::Vec4;
         case VariantIndex<MaterialValue, Mat3>():
-            return osc::ShaderPropertyType::Mat3;
+            return ShaderPropertyType::Mat3;
         case VariantIndex<MaterialValue, Mat4>():
         case VariantIndex<MaterialValue, std::vector<Mat4>>():
-            return osc::ShaderPropertyType::Mat4;
+            return ShaderPropertyType::Mat4;
         case VariantIndex<MaterialValue, int32_t>():
-            return osc::ShaderPropertyType::Int;
+            return ShaderPropertyType::Int;
         case VariantIndex<MaterialValue, bool>():
-            return osc::ShaderPropertyType::Bool;
-        case VariantIndex<MaterialValue, osc::Texture2D>():
-            return osc::ShaderPropertyType::Sampler2D;
-        case VariantIndex<MaterialValue, osc::RenderTexture>():
+            return ShaderPropertyType::Bool;
+        case VariantIndex<MaterialValue, Texture2D>():
+            return ShaderPropertyType::Sampler2D;
+        case VariantIndex<MaterialValue, RenderTexture>():
         {
-            static_assert(osc::NumOptions<osc::TextureDimensionality>() == 2);
-            return std::get<osc::RenderTexture>(v).getDimensionality() == osc::TextureDimensionality::Tex2D ?
-                osc::ShaderPropertyType::Sampler2D :
-                osc::ShaderPropertyType::SamplerCube;
+            static_assert(osc::NumOptions<TextureDimensionality>() == 2);
+            return std::get<RenderTexture>(v).getDimensionality() == TextureDimensionality::Tex2D ?
+                ShaderPropertyType::Sampler2D :
+                ShaderPropertyType::SamplerCube;
         }
-        case VariantIndex<MaterialValue, osc::Cubemap>():
-            return osc::ShaderPropertyType::SamplerCube;
+        case VariantIndex<MaterialValue, Cubemap>():
+            return ShaderPropertyType::SamplerCube;
         default:
-            return osc::ShaderPropertyType::Unknown;
+            return ShaderPropertyType::Unknown;
         }
     }
 }
@@ -436,7 +464,7 @@ namespace
 namespace
 {
     // LUT for human-readable form of the above
-    constexpr auto c_ShaderTypeInternalStrings = std::to_array<osc::CStringView>(
+    constexpr auto c_ShaderTypeInternalStrings = std::to_array<CStringView>(
     {
         "Float",
         "Vec2",
@@ -450,33 +478,33 @@ namespace
         "SamplerCube",
         "Unknown",
     });
-    static_assert(c_ShaderTypeInternalStrings.size() == osc::NumOptions<osc::ShaderPropertyType>());
+    static_assert(c_ShaderTypeInternalStrings.size() == osc::NumOptions<ShaderPropertyType>());
 
     // convert a GL shader type to an internal shader type
-    osc::ShaderPropertyType GLShaderTypeToShaderTypeInternal(GLenum e)
+    ShaderPropertyType GLShaderTypeToShaderTypeInternal(GLenum e)
     {
         switch (e)
         {
         case GL_FLOAT:
-            return osc::ShaderPropertyType::Float;
+            return ShaderPropertyType::Float;
         case GL_FLOAT_VEC2:
-            return osc::ShaderPropertyType::Vec2;
+            return ShaderPropertyType::Vec2;
         case GL_FLOAT_VEC3:
-            return osc::ShaderPropertyType::Vec3;
+            return ShaderPropertyType::Vec3;
         case GL_FLOAT_VEC4:
-            return osc::ShaderPropertyType::Vec4;
+            return ShaderPropertyType::Vec4;
         case GL_FLOAT_MAT3:
-            return osc::ShaderPropertyType::Mat3;
+            return ShaderPropertyType::Mat3;
         case GL_FLOAT_MAT4:
-            return osc::ShaderPropertyType::Mat4;
+            return ShaderPropertyType::Mat4;
         case GL_INT:
-            return osc::ShaderPropertyType::Int;
+            return ShaderPropertyType::Int;
         case GL_BOOL:
-            return osc::ShaderPropertyType::Bool;
+            return ShaderPropertyType::Bool;
         case GL_SAMPLER_2D:
-            return osc::ShaderPropertyType::Sampler2D;
+            return ShaderPropertyType::Sampler2D;
         case GL_SAMPLER_CUBE:
-            return osc::ShaderPropertyType::SamplerCube;
+            return ShaderPropertyType::SamplerCube;
         case GL_INT_VEC2:
         case GL_INT_VEC3:
         case GL_INT_VEC4:
@@ -501,7 +529,7 @@ namespace
         case GL_FLOAT_MAT4x3:
         case GL_FLOAT_MAT2:
         default:
-            return osc::ShaderPropertyType::Unknown;
+            return ShaderPropertyType::Unknown;
         }
     }
 
@@ -520,7 +548,7 @@ namespace
     struct ShaderElement final {
         ShaderElement(
             int32_t location_,
-            osc::ShaderPropertyType shaderType_,
+            ShaderPropertyType shaderType_,
             int32_t size_) :
 
             location{location_},
@@ -530,7 +558,7 @@ namespace
         }
 
         int32_t location;
-        osc::ShaderPropertyType shaderType;
+        ShaderPropertyType shaderType;
         int32_t size;
     };
 
@@ -563,7 +591,7 @@ namespace
 {
     // transform storage: either as a matrix or a transform
     //
-    // calling code is allowed to submit transforms as either osc::Transform (preferred) or
+    // calling code is allowed to submit transforms as either Transform (preferred) or
     // osc::Mat4 (can be handier)
     //
     // these need to be stored as-is, because that's the smallest possible representation and
@@ -573,7 +601,7 @@ namespace
 
     Mat4 ToMat4(Mat4OrTransform const& matrixOrTransform)
     {
-        return std::visit(osc::Overload
+        return std::visit(Overload
         {
             [](Mat4 const& matrix) { return matrix; },
             [](Transform const& transform) { return ToMat4(transform); }
@@ -582,7 +610,7 @@ namespace
 
     Mat4 ToNormalMat4(Mat4OrTransform const& matrixOrTransform)
     {
-        return std::visit(osc::Overload
+        return std::visit(Overload
         {
             [](Mat4 const& matrix) { return osc::ToNormalMatrix4(matrix); },
             [](Transform const& transform) { return osc::ToNormalMatrix4(transform); }
@@ -591,7 +619,7 @@ namespace
 
     Mat4 ToNormalMat3(Mat4OrTransform const& matrixOrTransform)
     {
-        return std::visit(osc::Overload
+        return std::visit(Overload
         {
             [](Mat4 const& matrix) { return osc::ToNormalMatrix(matrix); },
             [](Transform const& transform) { return osc::ToNormalMatrix(transform); }
@@ -602,10 +630,10 @@ namespace
     struct RenderObject final {
 
         RenderObject(
-            osc::Mesh mesh_,
-            osc::Transform const& transform_,
-            osc::Material material_,
-            std::optional<osc::MaterialPropertyBlock> maybePropBlock_,
+            Mesh mesh_,
+            Transform const& transform_,
+            Material material_,
+            std::optional<MaterialPropertyBlock> maybePropBlock_,
             std::optional<size_t> maybeSubMeshIndex_) :
 
             material{std::move(material_)},
@@ -618,10 +646,10 @@ namespace
         }
 
         RenderObject(
-            osc::Mesh mesh_,
+            Mesh mesh_,
             Mat4 const& transform_,
-            osc::Material material_,
-            std::optional<osc::MaterialPropertyBlock> maybePropBlock_,
+            Material material_,
+            std::optional<MaterialPropertyBlock> maybePropBlock_,
             std::optional<size_t> maybeSubMeshIndex_) :
 
             material{std::move(material_)},
@@ -647,9 +675,9 @@ namespace
 
         friend bool operator==(RenderObject const&, RenderObject const&) = default;
 
-        osc::Material material;
-        osc::Mesh mesh;
-        std::optional<osc::MaterialPropertyBlock> maybePropBlock;
+        Material material;
+        Mesh mesh;
+        std::optional<MaterialPropertyBlock> maybePropBlock;
         Mat4OrTransform transform;
         Vec3 worldMidpoint;
         std::optional<size_t> maybeSubMeshIndex;
@@ -709,7 +737,7 @@ namespace
 
     class RenderObjectHasMaterial final {
     public:
-        explicit RenderObjectHasMaterial(osc::Material const* material) :
+        explicit RenderObjectHasMaterial(Material const* material) :
             m_Material{material}
         {
             OSC_ASSERT(m_Material != nullptr);
@@ -720,12 +748,12 @@ namespace
             return ro.material == *m_Material;
         }
     private:
-        osc::Material const* m_Material;
+        Material const* m_Material;
     };
 
     class RenderObjectHasMaterialPropertyBlock final {
     public:
-        explicit RenderObjectHasMaterialPropertyBlock(std::optional<osc::MaterialPropertyBlock> const* mpb) :
+        explicit RenderObjectHasMaterialPropertyBlock(std::optional<MaterialPropertyBlock> const* mpb) :
             m_Mpb{mpb}
         {
             OSC_ASSERT(m_Mpb != nullptr);
@@ -737,12 +765,12 @@ namespace
         }
 
     private:
-        std::optional<osc::MaterialPropertyBlock> const* m_Mpb;
+        std::optional<MaterialPropertyBlock> const* m_Mpb;
     };
 
     class RenderObjectHasMesh final {
     public:
-        explicit RenderObjectHasMesh(osc::Mesh const* mesh) :
+        explicit RenderObjectHasMesh(Mesh const* mesh) :
             m_Mesh{mesh}
         {
             OSC_ASSERT(m_Mesh != nullptr);
@@ -753,7 +781,7 @@ namespace
             return ro.mesh == *m_Mesh;
         }
     private:
-        osc::Mesh const* m_Mesh;
+        Mesh const* m_Mesh;
     };
 
     class RenderObjectHasSubMeshIndex final {
@@ -859,10 +887,10 @@ namespace
         Mat4 viewProjectionMatrix = projectionMatrix * viewMatrix;
     };
 
-    // the OpenGL data associated with an osc::Texture2D
+    // the OpenGL data associated with an Texture2D
     struct Texture2DOpenGLData final {
         gl::Texture2D texture;
-        osc::UID textureParamsVersion;
+        UID textureParamsVersion;
     };
 
 
@@ -883,9 +911,9 @@ namespace
         SingleSampledCubemap
     >;
 
-    // the OpenGL data associated with an osc::Mesh
+    // the OpenGL data associated with an Mesh
     struct MeshOpenGLData final {
-        osc::UID dataVersion;
+        UID dataVersion;
         gl::TypedBufferHandle<GL_ARRAY_BUFFER> arrayBuffer;
         gl::TypedBufferHandle<GL_ELEMENT_ARRAY_BUFFER> indicesBuffer;
         gl::VertexArray vao;
@@ -932,7 +960,7 @@ namespace osc
 
         static std::optional<InstancingState> UploadInstanceData(
             std::span<RenderObject const>,
-            osc::Shader::Impl const& shaderImpl
+            Shader::Impl const& shaderImpl
         );
 
         static void TryBindMaterialValueToShaderElement(
@@ -1070,21 +1098,21 @@ namespace
 {
     // returns the memory alignment of data that is to be copied from the
     // CPU (packed) to the GPU (unpacked)
-    constexpr GLint ToOpenGLUnpackAlignment(osc::TextureFormat format)
+    constexpr GLint ToOpenGLUnpackAlignment(TextureFormat format)
     {
-        static_assert(osc::NumOptions<osc::TextureFormat>() == 5);
+        static_assert(osc::NumOptions<TextureFormat>() == 5);
 
         switch (format)
         {
-        case osc::TextureFormat::R8:
+        case TextureFormat::R8:
             return 1;
-        case osc::TextureFormat::RGB24:
+        case TextureFormat::RGB24:
             return 1;
-        case osc::TextureFormat::RGBA32:
+        case TextureFormat::RGBA32:
             return 4;
-        case osc::TextureFormat::RGBFloat:
+        case TextureFormat::RGBFloat:
             return 4;
-        case osc::TextureFormat::RGBAFloat:
+        case TextureFormat::RGBAFloat:
             return 4;
         default:
             return 1;
@@ -1094,23 +1122,23 @@ namespace
     // returns the format OpenGL will use internally (i.e. on the GPU) to
     // represent the given format+colorspace combo
     constexpr GLenum ToOpenGLInternalFormat(
-        osc::TextureFormat format,
-        osc::ColorSpace colorSpace)
+        TextureFormat format,
+        ColorSpace colorSpace)
     {
-        static_assert(osc::NumOptions<osc::TextureFormat>() == 5);
-        static_assert(osc::NumOptions<osc::ColorSpace>() == 2);
+        static_assert(osc::NumOptions<TextureFormat>() == 5);
+        static_assert(osc::NumOptions<ColorSpace>() == 2);
 
         switch (format)
         {
-        case osc::TextureFormat::R8:
+        case TextureFormat::R8:
             return GL_R8;
-        case osc::TextureFormat::RGB24:
-            return colorSpace == osc::ColorSpace::sRGB ? GL_SRGB8 : GL_RGB8;
-        case osc::TextureFormat::RGBA32:
-            return colorSpace == osc::ColorSpace::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
-        case osc::TextureFormat::RGBFloat:
+        case TextureFormat::RGB24:
+            return colorSpace == ColorSpace::sRGB ? GL_SRGB8 : GL_RGB8;
+        case TextureFormat::RGBA32:
+            return colorSpace == ColorSpace::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+        case TextureFormat::RGBFloat:
             return GL_RGB32F;
-        case osc::TextureFormat::RGBAFloat:
+        case TextureFormat::RGBAFloat:
             return GL_RGBA32F;
         default:
             return GL_RGBA8;
@@ -1146,19 +1174,19 @@ namespace
         }
     }
 
-    constexpr CPUDataType ToEquivalentCPUDataType(osc::TextureFormat format)
+    constexpr CPUDataType ToEquivalentCPUDataType(TextureFormat format)
     {
-        static_assert(osc::NumOptions<osc::TextureFormat>() == 5);
+        static_assert(osc::NumOptions<TextureFormat>() == 5);
         static_assert(osc::NumOptions<CPUDataType>() == 4);
 
         switch (format)
         {
-        case osc::TextureFormat::R8:
-        case osc::TextureFormat::RGB24:
-        case osc::TextureFormat::RGBA32:
+        case TextureFormat::R8:
+        case TextureFormat::RGB24:
+        case TextureFormat::RGBA32:
             return CPUDataType::UnsignedByte;
-        case osc::TextureFormat::RGBFloat:
-        case osc::TextureFormat::RGBAFloat:
+        case TextureFormat::RGBFloat:
+        case TextureFormat::RGBAFloat:
             return CPUDataType::Float;
         default:
             return CPUDataType::UnsignedByte;  // static_assert means this isn't actually hit
@@ -1175,22 +1203,22 @@ namespace
         NUM_OPTIONS,
     };
 
-    constexpr CPUImageFormat ToEquivalentCPUImageFormat(osc::TextureFormat format)
+    constexpr CPUImageFormat ToEquivalentCPUImageFormat(TextureFormat format)
     {
-        static_assert(osc::NumOptions<osc::TextureFormat>() == 5);
+        static_assert(osc::NumOptions<TextureFormat>() == 5);
         static_assert(osc::NumOptions<CPUImageFormat>() == 4);
 
         switch (format)
         {
-        case osc::TextureFormat::R8:
+        case TextureFormat::R8:
             return CPUImageFormat::R8;
-        case osc::TextureFormat::RGB24:
+        case TextureFormat::RGB24:
             return CPUImageFormat::RGB;
-        case osc::TextureFormat::RGBA32:
+        case TextureFormat::RGBA32:
             return CPUImageFormat::RGBA;
-        case osc::TextureFormat::RGBFloat:
+        case TextureFormat::RGBFloat:
             return CPUImageFormat::RGB;
-        case osc::TextureFormat::RGBAFloat:
+        case TextureFormat::RGBAFloat:
             return CPUImageFormat::RGBA;
         default:
             return CPUImageFormat::RGBA;  // static_assert means this isn't actually hit
@@ -1216,11 +1244,11 @@ namespace
         }
     }
 
-    constexpr GLenum ToOpenGLTextureEnum(osc::CubemapFace f)
+    constexpr GLenum ToOpenGLTextureEnum(CubemapFace f)
     {
-        static_assert(osc::NumOptions<osc::CubemapFace>() == 6);
-        static_assert(static_cast<GLenum>(osc::CubemapFace::PositiveX) == 0);
-        static_assert(static_cast<GLenum>(osc::CubemapFace::NegativeZ) == 5);
+        static_assert(osc::NumOptions<CubemapFace>() == 6);
+        static_assert(static_cast<GLenum>(CubemapFace::PositiveX) == 0);
+        static_assert(static_cast<GLenum>(CubemapFace::NegativeZ) == 5);
         static_assert(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z - GL_TEXTURE_CUBE_MAP_POSITIVE_X == 5);
 
         return GL_TEXTURE_CUBE_MAP_POSITIVE_X + static_cast<GLenum>(f);
@@ -1235,7 +1263,7 @@ namespace
 
 namespace
 {
-    // the OpenGL data associated with an osc::Texture2D
+    // the OpenGL data associated with an Texture2D
     struct CubemapOpenGLData final {
         gl::TextureCubemap texture;
     };
@@ -1250,7 +1278,7 @@ public:
         OSC_ASSERT(m_Width > 0 && "the width of a cubemap must be a positive number");
 
         size_t const numPixelsPerFace = static_cast<size_t>(m_Width*m_Width)*NumBytesPerPixel(m_Format);
-        m_Data.resize(osc::NumOptions<osc::CubemapFace>() * numPixelsPerFace);
+        m_Data.resize(NumOptions<CubemapFace>() * numPixelsPerFace);
     }
 
     int32_t getWidth() const
@@ -1265,13 +1293,13 @@ public:
 
     void setPixelData(CubemapFace face, std::span<uint8_t const> data)
     {
-        size_t const faceIndex = osc::ToIndex(face);
+        size_t const faceIndex = ToIndex(face);
         auto const numPixels = static_cast<size_t>(m_Width) * static_cast<size_t>(m_Width);
         size_t const numBytesPerCubeFace = numPixels * NumBytesPerPixel(m_Format);
         size_t const destinationDataStart = faceIndex * numBytesPerCubeFace;
         size_t const destinationDataEnd = destinationDataStart + numBytesPerCubeFace;
 
-        OSC_ASSERT(faceIndex < osc::NumOptions<osc::CubemapFace>() && "invalid cubemap face passed to Cubemap::setPixelData");
+        OSC_ASSERT(faceIndex < NumOptions<CubemapFace>() && "invalid cubemap face passed to Cubemap::setPixelData");
         OSC_ASSERT(data.size() == numBytesPerCubeFace && "incorrect amount of data passed to Cubemap::setPixelData: the data must match the dimensions and texture format of the cubemap");
         OSC_ASSERT(destinationDataEnd <= m_Data.size() && "out of range assignment detected: this should be handled in the constructor");
 
@@ -1300,7 +1328,7 @@ private:
         size_t const numBytesPerPixel = NumBytesPerPixel(m_Format);
         size_t const numBytesPerRow = m_Width * numBytesPerPixel;
         size_t const numBytesPerFace = m_Width * numBytesPerRow;
-        size_t const numFaces = osc::NumOptions<osc::CubemapFace>();
+        size_t const numFaces = NumOptions<CubemapFace>();
         size_t const numBytesInCubemap = numFaces * numBytesPerFace;
         CPUDataType const cpuDataType = ToEquivalentCPUDataType(m_Format);  // TextureFormat's datatype == CPU format's datatype for cubemaps
         CPUImageFormat const cpuChannelLayout = ToEquivalentCPUImageFormat(m_Format);  // TextureFormat's layout == CPU formats's layout for cubemaps
@@ -1310,20 +1338,20 @@ private:
         OSC_ASSERT(numBytesPerRow % unpackAlignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
         OSC_ASSERT(IsAlignedAtLeast(m_Data.data(), unpackAlignment) && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
         OSC_ASSERT(numBytesInCubemap <= m_Data.size() && "the number of bytes in the cubemap (CPU-side) is less than expected: this is a developer bug");
-        static_assert(osc::NumOptions<osc::TextureFormat>() == 5, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
+        static_assert(NumOptions<TextureFormat>() == 5, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
 
         // upload cubemap to GPU
         static_assert(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z - GL_TEXTURE_CUBE_MAP_POSITIVE_X == 5);
         gl::BindTexture((*m_MaybeGPUTexture)->texture);
         gl::PixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment);
-        for (GLint faceIdx = 0; faceIdx < static_cast<GLint>(osc::NumOptions<osc::CubemapFace>()); ++faceIdx)
+        for (GLint faceIdx = 0; faceIdx < static_cast<GLint>(NumOptions<CubemapFace>()); ++faceIdx)
         {
             size_t const faceBytesBegin = faceIdx * numBytesPerFace;
 
             gl::TexImage2D(
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIdx,
                 0,
-                ToOpenGLInternalFormat(m_Format, osc::ColorSpace::sRGB),  // cubemaps are always sRGB
+                ToOpenGLInternalFormat(m_Format, ColorSpace::sRGB),  // cubemaps are always sRGB
                 m_Width,
                 m_Width,
                 0,
@@ -1388,76 +1416,76 @@ void osc::Cubemap::setPixelData(CubemapFace face, std::span<uint8_t const> chann
 
 namespace
 {
-    constexpr auto c_TextureWrapModeStrings = std::to_array<osc::CStringView>(
+    constexpr auto c_TextureWrapModeStrings = std::to_array<CStringView>(
     {
         "Repeat",
         "Clamp",
         "Mirror",
     });
-    static_assert(c_TextureWrapModeStrings.size() == osc::NumOptions<osc::TextureWrapMode>());
+    static_assert(c_TextureWrapModeStrings.size() == osc::NumOptions<TextureWrapMode>());
 
-    constexpr auto c_TextureFilterModeStrings = std::to_array<osc::CStringView>(
+    constexpr auto c_TextureFilterModeStrings = std::to_array<CStringView>(
     {
         "Nearest",
         "Linear",
         "Mipmap",
     });
-    static_assert(c_TextureFilterModeStrings.size() == osc::NumOptions<osc::TextureFilterMode>());
+    static_assert(c_TextureFilterModeStrings.size() == osc::NumOptions<TextureFilterMode>());
 
-    GLint ToGLTextureMinFilterParam(osc::TextureFilterMode m)
+    GLint ToGLTextureMinFilterParam(TextureFilterMode m)
     {
-        static_assert(osc::NumOptions<osc::TextureFilterMode>() == 3);
+        static_assert(osc::NumOptions<TextureFilterMode>() == 3);
 
         switch (m)
         {
-        case osc::TextureFilterMode::Nearest:
+        case TextureFilterMode::Nearest:
             return GL_NEAREST;
-        case osc::TextureFilterMode::Linear:
+        case TextureFilterMode::Linear:
             return GL_LINEAR;
-        case osc::TextureFilterMode::Mipmap:
+        case TextureFilterMode::Mipmap:
             return GL_LINEAR_MIPMAP_LINEAR;
         default:
             return GL_LINEAR;
         }
     }
 
-    GLint ToGLTextureMagFilterParam(osc::TextureFilterMode m)
+    GLint ToGLTextureMagFilterParam(TextureFilterMode m)
     {
-        static_assert(osc::NumOptions<osc::TextureFilterMode>() == 3);
+        static_assert(osc::NumOptions<TextureFilterMode>() == 3);
 
         switch (m)
         {
-        case osc::TextureFilterMode::Nearest:
+        case TextureFilterMode::Nearest:
             return GL_NEAREST;
-        case osc::TextureFilterMode::Linear:
-        case osc::TextureFilterMode::Mipmap:
+        case TextureFilterMode::Linear:
+        case TextureFilterMode::Mipmap:
         default:
             return GL_LINEAR;
         }
     }
 
-    GLint ToGLTextureTextureWrapParam(osc::TextureWrapMode m)
+    GLint ToGLTextureTextureWrapParam(TextureWrapMode m)
     {
-        static_assert(osc::NumOptions<osc::TextureWrapMode>() == 3);
+        static_assert(osc::NumOptions<TextureWrapMode>() == 3);
 
         switch (m)
         {
-        case osc::TextureWrapMode::Repeat:
+        case TextureWrapMode::Repeat:
             return GL_REPEAT;
-        case osc::TextureWrapMode::Clamp:
+        case TextureWrapMode::Clamp:
             return GL_CLAMP_TO_EDGE;
-        case osc::TextureWrapMode::Mirror:
+        case TextureWrapMode::Mirror:
             return GL_MIRRORED_REPEAT;
         default:
             return GL_REPEAT;
         }
     }
 
-    std::vector<osc::Color> ReadPixelDataAsColor(
+    std::vector<Color> ReadPixelDataAsColor(
         std::span<uint8_t const> pixelData,
-        osc::TextureFormat pixelDataFormat)
+        TextureFormat pixelDataFormat)
     {
-        osc::TextureChannelFormat const channelFormat = osc::ChannelFormat(pixelDataFormat);
+        TextureChannelFormat const channelFormat = osc::ChannelFormat(pixelDataFormat);
 
         size_t const numChannels = osc::NumChannels(pixelDataFormat);
         size_t const bytesPerChannel = osc::NumBytesPerChannel(channelFormat);
@@ -1466,18 +1494,18 @@ namespace
 
         OSC_ASSERT(pixelData.size() % bytesPerPixel == 0);
 
-        std::vector<osc::Color> rv;
+        std::vector<Color> rv;
         rv.reserve(numPixels);
 
-        static_assert(osc::NumOptions<osc::TextureChannelFormat>() == 2);
-        if (channelFormat == osc::TextureChannelFormat::Uint8)
+        static_assert(osc::NumOptions<TextureChannelFormat>() == 2);
+        if (channelFormat == TextureChannelFormat::Uint8)
         {
-            // unpack 8-bit channel bytes into floating-point osc::Color channels
+            // unpack 8-bit channel bytes into floating-point Color channels
             for (size_t pixel = 0; pixel < numPixels; ++pixel)
             {
                 size_t const pixelStart = bytesPerPixel * pixel;
 
-                osc::Color color = osc::Color::black();
+                Color color = Color::black();
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
                     size_t const channelStart = pixelStart + channel;
@@ -1486,14 +1514,14 @@ namespace
                 rv.push_back(color);
             }
         }
-        else if (channelFormat == osc::TextureChannelFormat::Float32 && bytesPerChannel == sizeof(float))
+        else if (channelFormat == TextureChannelFormat::Float32 && bytesPerChannel == sizeof(float))
         {
-            // read 32-bit channel floats into osc::Color channels
+            // read 32-bit channel floats into Color channels
             for (size_t pixel = 0; pixel < numPixels; ++pixel)
             {
                 size_t const pixelStart = bytesPerPixel * pixel;
 
-                osc::Color color = osc::Color::black();
+                Color color = Color::black();
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
                     size_t const channelStart = pixelStart + channel*bytesPerChannel;
@@ -1515,29 +1543,29 @@ namespace
         return rv;
     }
 
-    std::vector<osc::Color32> ReadPixelDataAsColor32(
+    std::vector<Color32> ReadPixelDataAsColor32(
         std::span<uint8_t const> pixelData,
-        osc::TextureFormat pixelDataFormat)
+        TextureFormat pixelDataFormat)
     {
-        osc::TextureChannelFormat const channelFormat = osc::ChannelFormat(pixelDataFormat);
+        TextureChannelFormat const channelFormat = osc::ChannelFormat(pixelDataFormat);
 
         size_t const numChannels = osc::NumChannels(pixelDataFormat);
         size_t const bytesPerChannel = osc::NumBytesPerChannel(channelFormat);
         size_t const bytesPerPixel = bytesPerChannel * numChannels;
         size_t const numPixels = pixelData.size() / bytesPerPixel;
 
-        std::vector<osc::Color32> rv;
+        std::vector<Color32> rv;
         rv.reserve(numPixels);
 
-        static_assert(osc::NumOptions<osc::TextureChannelFormat>() == 2);
-        if (channelFormat == osc::TextureChannelFormat::Uint8)
+        static_assert(osc::NumOptions<TextureChannelFormat>() == 2);
+        if (channelFormat == TextureChannelFormat::Uint8)
         {
-            // read 8-bit channel bytes into 8-bit osc::Color32 color channels
+            // read 8-bit channel bytes into 8-bit Color32 color channels
             for (size_t pixel = 0; pixel < numPixels; ++pixel)
             {
                 size_t const pixelStart = bytesPerPixel * pixel;
 
-                osc::Color32 color = {0x00, 0x00, 0x00, 0xff};
+                Color32 color = {0x00, 0x00, 0x00, 0xff};
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
                     size_t const channelStart = pixelStart + channel;
@@ -1548,15 +1576,15 @@ namespace
         }
         else
         {
-            static_assert(std::is_same_v<osc::Color::value_type, float>);
+            static_assert(std::is_same_v<Color::value_type, float>);
             OSC_ASSERT(bytesPerChannel == sizeof(float));
 
-            // pack 32-bit channel floats into 8-bit osc::Color32 color channels
+            // pack 32-bit channel floats into 8-bit Color32 color channels
             for (size_t pixel = 0; pixel < numPixels; ++pixel)
             {
                 size_t const pixelStart = bytesPerPixel * pixel;
 
-                osc::Color32 color = {0x00, 0x00, 0x00, 0xff};
+                Color32 color = {0x00, 0x00, 0x00, 0xff};
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
                     size_t const channelStart = pixelStart + channel*sizeof(float);
@@ -1576,11 +1604,11 @@ namespace
     }
 
     void EncodePixelsInDesiredFormat(
-        std::span<osc::Color const> pixels,
-        osc::TextureFormat pixelDataFormat,
+        std::span<Color const> pixels,
+        TextureFormat pixelDataFormat,
         std::vector<uint8_t>& pixelData)
     {
-        osc::TextureChannelFormat const channelFormat = osc::ChannelFormat(pixelDataFormat);
+        TextureChannelFormat const channelFormat = osc::ChannelFormat(pixelDataFormat);
 
         size_t const numChannels = osc::NumChannels(pixelDataFormat);
         size_t const bytesPerChannel = osc::NumBytesPerChannel(channelFormat);
@@ -1591,12 +1619,12 @@ namespace
         pixelData.clear();
         pixelData.reserve(numOutputBytes);
 
-        OSC_ASSERT(numChannels <= osc::Color::length());
-        static_assert(osc::NumOptions<osc::TextureChannelFormat>() == 2);
-        if (channelFormat == osc::TextureChannelFormat::Uint8)
+        OSC_ASSERT(numChannels <= Color::length());
+        static_assert(osc::NumOptions<TextureChannelFormat>() == 2);
+        if (channelFormat == TextureChannelFormat::Uint8)
         {
             // clamp pixels, convert them to bytes, add them to pixel data buffer
-            for (osc::Color const& pixel : pixels)
+            for (Color const& pixel : pixels)
             {
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
@@ -1607,7 +1635,7 @@ namespace
         else
         {
             // write pixels to pixel data buffer as-is (they're floats already)
-            for (osc::Color const& pixel : pixels)
+            for (Color const& pixel : pixels)
             {
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
@@ -1618,11 +1646,11 @@ namespace
     }
 
     void EncodePixels32InDesiredFormat(
-        std::span<osc::Color32 const> pixels,
-        osc::TextureFormat pixelDataFormat,
+        std::span<Color32 const> pixels,
+        TextureFormat pixelDataFormat,
         std::vector<uint8_t>& pixelData)
     {
-        osc::TextureChannelFormat const channelFormat = osc::ChannelFormat(pixelDataFormat);
+        TextureChannelFormat const channelFormat = osc::ChannelFormat(pixelDataFormat);
 
         size_t const numChannels = osc::NumChannels(pixelDataFormat);
         size_t const bytesPerChannel = osc::NumBytesPerChannel(channelFormat);
@@ -1633,12 +1661,12 @@ namespace
         pixelData.clear();
         pixelData.reserve(numOutputBytes);
 
-        OSC_ASSERT(numChannels <= osc::Color32::length());
-        static_assert(osc::NumOptions<osc::TextureChannelFormat>() == 2);
-        if (channelFormat == osc::TextureChannelFormat::Uint8)
+        OSC_ASSERT(numChannels <= Color32::length());
+        static_assert(osc::NumOptions<TextureChannelFormat>() == 2);
+        if (channelFormat == TextureChannelFormat::Uint8)
         {
             // write pixels to pixel data buffer as-is (they're bytes already)
-            for (osc::Color32 const& pixel : pixels)
+            for (Color32 const& pixel : pixels)
             {
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
@@ -1649,7 +1677,7 @@ namespace
         else
         {
             // upscale pixels to float32s and write the floats to the pixel buffer
-            for (osc::Color32 const& pixel : pixels)
+            for (Color32 const& pixel : pixels)
             {
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
@@ -1826,7 +1854,7 @@ private:
         CPUDataType const cpuDataType = ToEquivalentCPUDataType(m_Format);  // TextureFormat's datatype == CPU format's datatype for cubemaps
         CPUImageFormat const cpuChannelLayout = ToEquivalentCPUImageFormat(m_Format);  // TextureFormat's layout == CPU formats's layout for cubemaps
 
-        static_assert(osc::NumOptions<osc::TextureFormat>() == 5, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
+        static_assert(osc::NumOptions<TextureFormat>() == 5, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
         OSC_ASSERT(numBytesPerRow % unpackAlignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
         OSC_ASSERT(IsAlignedAtLeast(m_PixelData.data(), unpackAlignment) && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
 
@@ -2079,60 +2107,60 @@ std::ostream& osc::operator<<(std::ostream& o, Texture2D const&)
 
 namespace
 {
-    constexpr auto c_RenderTextureFormatStrings = std::to_array<osc::CStringView>(
+    constexpr auto c_RenderTextureFormatStrings = std::to_array<CStringView>(
     {
         "ARGB32",
         "ARGBFloat16",
         "Red8",
         "Depth",
     });
-    static_assert(c_RenderTextureFormatStrings.size() == osc::NumOptions<osc::RenderTextureFormat>());
+    static_assert(c_RenderTextureFormatStrings.size() == osc::NumOptions<RenderTextureFormat>());
 
-    constexpr auto c_DepthStencilFormatStrings = std::to_array<osc::CStringView>(
+    constexpr auto c_DepthStencilFormatStrings = std::to_array<CStringView>(
     {
         "D24_UNorm_S8_UInt",
     });
-    static_assert(c_DepthStencilFormatStrings.size() == osc::NumOptions<osc::DepthStencilFormat>());
+    static_assert(c_DepthStencilFormatStrings.size() == osc::NumOptions<DepthStencilFormat>());
 
     GLenum ToInternalOpenGLColorFormat(
-        osc::RenderBufferType type,
-        osc::RenderTextureDescriptor const& desc)
+        RenderBufferType type,
+        RenderTextureDescriptor const& desc)
     {
-        static_assert(osc::NumOptions<osc::RenderBufferType>() == 2, "review code below, which treats RenderBufferType as a bool");
-        if (type == osc::RenderBufferType::Depth)
+        static_assert(osc::NumOptions<RenderBufferType>() == 2, "review code below, which treats RenderBufferType as a bool");
+        if (type == RenderBufferType::Depth)
         {
             return GL_DEPTH24_STENCIL8;
         }
         else
         {
-            static_assert(osc::NumOptions<osc::RenderTextureFormat>() == 4);
-            static_assert(osc::NumOptions<osc::RenderTextureReadWrite>() == 2);
+            static_assert(osc::NumOptions<RenderTextureFormat>() == 4);
+            static_assert(osc::NumOptions<RenderTextureReadWrite>() == 2);
 
             switch (desc.getColorFormat())
             {
             default:
-            case osc::RenderTextureFormat::ARGB32:
-                return desc.getReadWrite() == osc::RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
-            case osc::RenderTextureFormat::ARGBFloat16:
+            case RenderTextureFormat::ARGB32:
+                return desc.getReadWrite() == RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+            case RenderTextureFormat::ARGBFloat16:
                 return GL_RGBA16F;
-            case osc::RenderTextureFormat::Red8:
+            case RenderTextureFormat::Red8:
                 return GL_RED;
-            case osc::RenderTextureFormat::Depth:
+            case RenderTextureFormat::Depth:
                 return GL_R32F;
             }
         }
     }
 
     constexpr CPUImageFormat ToEquivalentCPUImageFormat(
-        osc::RenderBufferType type,
-        osc::RenderTextureDescriptor const& desc)
+        RenderBufferType type,
+        RenderTextureDescriptor const& desc)
     {
-        static_assert(osc::NumOptions<osc::RenderBufferType>() == 2);
-        static_assert(osc::NumOptions<osc::DepthStencilFormat>() == 1);
-        static_assert(osc::NumOptions<osc::RenderTextureFormat>() == 4);
+        static_assert(osc::NumOptions<RenderBufferType>() == 2);
+        static_assert(osc::NumOptions<DepthStencilFormat>() == 1);
+        static_assert(osc::NumOptions<RenderTextureFormat>() == 4);
         static_assert(osc::NumOptions<CPUImageFormat>() == 4);
 
-        if (type == osc::RenderBufferType::Depth)
+        if (type == RenderBufferType::Depth)
         {
             return CPUImageFormat::DepthStencil;
         }
@@ -2141,28 +2169,28 @@ namespace
             switch (desc.getColorFormat())
             {
             default:
-            case osc::RenderTextureFormat::ARGB32:
+            case RenderTextureFormat::ARGB32:
                 return CPUImageFormat::RGBA;
-            case osc::RenderTextureFormat::ARGBFloat16:
+            case RenderTextureFormat::ARGBFloat16:
                 return CPUImageFormat::RGBA;
-            case osc::RenderTextureFormat::Red8:
+            case RenderTextureFormat::Red8:
                 return CPUImageFormat::R8;
-            case osc::RenderTextureFormat::Depth:
+            case RenderTextureFormat::Depth:
                 return CPUImageFormat::R8;
             }
         }
     }
 
     constexpr CPUDataType ToEquivalentCPUDataType(
-        osc::RenderBufferType type,
-        osc::RenderTextureDescriptor const& desc)
+        RenderBufferType type,
+        RenderTextureDescriptor const& desc)
     {
-        static_assert(osc::NumOptions<osc::RenderBufferType>() == 2);
-        static_assert(osc::NumOptions<osc::DepthStencilFormat>() == 1);
-        static_assert(osc::NumOptions<osc::RenderTextureFormat>() == 4);
+        static_assert(osc::NumOptions<RenderBufferType>() == 2);
+        static_assert(osc::NumOptions<DepthStencilFormat>() == 1);
+        static_assert(osc::NumOptions<RenderTextureFormat>() == 4);
         static_assert(osc::NumOptions<CPUDataType>() == 4);
 
-        if (type == osc::RenderBufferType::Depth)
+        if (type == RenderBufferType::Depth)
         {
             return CPUDataType::UnsignedInt24_8;
         }
@@ -2171,63 +2199,63 @@ namespace
             switch (desc.getColorFormat())
             {
             default:
-            case osc::RenderTextureFormat::ARGB32:
+            case RenderTextureFormat::ARGB32:
                 return CPUDataType::UnsignedByte;
-            case osc::RenderTextureFormat::ARGBFloat16:
+            case RenderTextureFormat::ARGBFloat16:
                 return CPUDataType::HalfFloat;
-            case osc::RenderTextureFormat::Red8:
+            case RenderTextureFormat::Red8:
                 return CPUDataType::UnsignedByte;
-            case osc::RenderTextureFormat::Depth:
+            case RenderTextureFormat::Depth:
                 return CPUDataType::Float;
             }
         }
     }
 
-    constexpr GLenum ToImageColorFormat(osc::TextureFormat f)
+    constexpr GLenum ToImageColorFormat(TextureFormat f)
     {
-        static_assert(osc::NumOptions<osc::TextureFormat>() == 5);
+        static_assert(osc::NumOptions<TextureFormat>() == 5);
 
         switch (f)
         {
-        case osc::TextureFormat::RGBA32:
+        case TextureFormat::RGBA32:
             return GL_RGBA;
-        case osc::TextureFormat::RGB24:
+        case TextureFormat::RGB24:
             return GL_RGB;
-        case osc::TextureFormat::R8:
+        case TextureFormat::R8:
             return GL_RED;
-        case osc::TextureFormat::RGBFloat:
+        case TextureFormat::RGBFloat:
             return GL_RGB;
-        case osc::TextureFormat::RGBAFloat:
+        case TextureFormat::RGBAFloat:
             return GL_RGBA;
         default:
             return GL_RGBA;
         }
     }
 
-    constexpr GLint ToImagePixelPackAlignment(osc::TextureFormat f)
+    constexpr GLint ToImagePixelPackAlignment(TextureFormat f)
     {
-        static_assert(osc::NumOptions<osc::TextureFormat>() == 5);
+        static_assert(osc::NumOptions<TextureFormat>() == 5);
 
         switch (f)
         {
-        case osc::TextureFormat::RGBA32:
+        case TextureFormat::RGBA32:
             return 4;
-        case osc::TextureFormat::RGB24:
+        case TextureFormat::RGB24:
             return 1;
-        case osc::TextureFormat::R8:
+        case TextureFormat::R8:
             return 1;
-        case osc::TextureFormat::RGBFloat:
+        case TextureFormat::RGBFloat:
             return 4;
-        case osc::TextureFormat::RGBAFloat:
+        case TextureFormat::RGBAFloat:
             return 4;
         default:
             return 1;
         }
     }
 
-    constexpr GLenum ToImageDataType(osc::TextureFormat)
+    constexpr GLenum ToImageDataType(TextureFormat)
     {
-        static_assert(osc::NumOptions<osc::TextureFormat>() == 5);
+        static_assert(osc::NumOptions<TextureFormat>() == 5);
         return GL_UNSIGNED_BYTE;
     }
 }
@@ -2377,8 +2405,8 @@ public:
 
     void setDimensionality(TextureDimensionality newDimension)
     {
-        OSC_ASSERT((newDimension != osc::TextureDimensionality::Cube || getDimensions().x == getDimensions().y) && "cannot set dimensionality to Cube for non-square render buffer");
-        OSC_ASSERT((newDimension != TextureDimensionality::Cube || getAntialiasingLevel() == osc::AntiAliasingLevel{1}) && "cannot set dimensionality to Cube for an anti-aliased render buffer (not supported by backends like OpenGL)");
+        OSC_ASSERT((newDimension != TextureDimensionality::Cube || getDimensions().x == getDimensions().y) && "cannot set dimensionality to Cube for non-square render buffer");
+        OSC_ASSERT((newDimension != TextureDimensionality::Cube || getAntialiasingLevel() == AntiAliasingLevel{1}) && "cannot set dimensionality to Cube for an anti-aliased render buffer (not supported by backends like OpenGL)");
 
         if (newDimension != getDimensionality())
         {
@@ -2408,7 +2436,7 @@ public:
 
     void setAntialiasingLevel(AntiAliasingLevel newLevel)
     {
-        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube || newLevel == osc::AntiAliasingLevel{1}) && "cannot set anti-aliasing level >1 on a cube render buffer (it is not supported by backends like OpenGL)");
+        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube || newLevel == AntiAliasingLevel{1}) && "cannot set anti-aliasing level >1 on a cube render buffer (it is not supported by backends like OpenGL)");
 
         if (newLevel != getAntialiasingLevel())
         {
@@ -2458,8 +2486,8 @@ public:
     {
         // dispatch _which_ texture handles are created based on render buffer params
 
-        static_assert(osc::NumOptions<osc::TextureDimensionality>() == 2);
-        if (getDimensionality() == osc::TextureDimensionality::Tex2D)
+        static_assert(osc::NumOptions<TextureDimensionality>() == 2);
+        if (getDimensionality() == TextureDimensionality::Tex2D)
         {
             if (m_Descriptor.getAntialiasingLevel() <= AntiAliasingLevel{1})
             {
@@ -2484,8 +2512,8 @@ public:
         Vec2i const dimensions = m_Descriptor.getDimensions();
 
         // setup resolved texture
-        static_assert(osc::NumOptions<osc::RenderTextureFormat>() == 4, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
-        static_assert(osc::NumOptions<osc::RenderBufferType>() == 2, "review code below, which treats RenderBufferType as a bool");
+        static_assert(osc::NumOptions<RenderTextureFormat>() == 4, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
+        static_assert(osc::NumOptions<RenderBufferType>() == 2, "review code below, which treats RenderBufferType as a bool");
         gl::BindTexture(t.texture2D);
         gl::TexImage2D(
             GL_TEXTURE_2D,
@@ -2542,8 +2570,8 @@ public:
         gl::BindRenderBuffer();
 
         // setup resolved texture
-        static_assert(osc::NumOptions<osc::RenderTextureFormat>() == 4, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
-        static_assert(osc::NumOptions<osc::RenderBufferType>() == 2, "review code below, which treats RenderBufferType as a bool");
+        static_assert(osc::NumOptions<RenderTextureFormat>() == 4, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
+        static_assert(osc::NumOptions<RenderBufferType>() == 2, "review code below, which treats RenderBufferType as a bool");
         gl::BindTexture(data.singleSampledTexture);
         gl::TexImage2D(
             GL_TEXTURE_2D,
@@ -2589,8 +2617,8 @@ public:
         Vec2i const dimensions = m_Descriptor.getDimensions();
 
         // setup resolved texture
-        static_assert(osc::NumOptions<osc::RenderTextureFormat>() == 4, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
-        static_assert(osc::NumOptions<osc::RenderBufferType>() == 2, "review code below, which treats RenderBufferType as a bool");
+        static_assert(osc::NumOptions<RenderTextureFormat>() == 4, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
+        static_assert(osc::NumOptions<RenderBufferType>() == 2, "review code below, which treats RenderBufferType as a bool");
 
         gl::BindTexture(t.textureCubemap);
         for (int i = 0; i < 6; ++i)
@@ -3187,29 +3215,29 @@ std::ostream& osc::operator<<(std::ostream& o, Shader const& shader)
 
 namespace
 {
-    GLenum ToGLDepthFunc(osc::DepthFunction f)
+    GLenum ToGLDepthFunc(DepthFunction f)
     {
-        static_assert(osc::NumOptions<osc::DepthFunction>() == 2);
+        static_assert(osc::NumOptions<DepthFunction>() == 2);
 
         switch (f)
         {
-        case osc::DepthFunction::LessOrEqual:
+        case DepthFunction::LessOrEqual:
             return GL_LEQUAL;
-        case osc::DepthFunction::Less:
+        case DepthFunction::Less:
         default:
             return GL_LESS;
         }
     }
 
-    GLenum ToGLCullFaceEnum(osc::CullMode cullMode)
+    GLenum ToGLCullFaceEnum(CullMode cullMode)
     {
-        static_assert(osc::NumOptions<osc::CullMode>() == 3);
+        static_assert(osc::NumOptions<CullMode>() == 3);
 
         switch (cullMode)
         {
-        case osc::CullMode::Front:
+        case CullMode::Front:
             return GL_FRONT;
-        case osc::CullMode::Back:
+        case CullMode::Back:
         default:
             return GL_BACK;
         }
@@ -3239,12 +3267,12 @@ public:
 
     std::optional<std::span<Color const>> getColorArray(std::string_view propertyName) const
     {
-        return getValue<std::vector<osc::Color>, std::span<osc::Color const>>(propertyName);
+        return getValue<std::vector<Color>, std::span<Color const>>(propertyName);
     }
 
     void setColorArray(std::string_view propertyName, std::span<Color const> colors)
     {
-        setValue<std::vector<osc::Color>>(propertyName, std::vector<osc::Color>(colors.begin(), colors.end()));
+        setValue<std::vector<Color>>(propertyName, std::vector<Color>(colors.begin(), colors.end()));
     }
 
     std::optional<float> getFloat(std::string_view propertyName) const
@@ -3484,8 +3512,8 @@ private:
     bool m_IsTransparent = false;
     bool m_IsDepthTested = true;
     bool m_IsWireframeMode = false;
-    DepthFunction m_DepthFunction = osc::DepthFunction::Default;
-    CullMode m_CullMode = osc::CullMode::Default;
+    DepthFunction m_DepthFunction = DepthFunction::Default;
+    CullMode m_CullMode = CullMode::Default;
 };
 
 osc::Material::Material(Shader shader) :
@@ -4009,12 +4037,12 @@ std::ostream& osc::operator<<(std::ostream& o, MaterialPropertyBlock const&)
 
 namespace
 {
-    constexpr auto c_MeshTopologyStrings = std::to_array<osc::CStringView>(
+    constexpr auto c_MeshTopologyStrings = std::to_array<CStringView>(
     {
         "Triangles",
         "Lines",
     });
-    static_assert(c_MeshTopologyStrings.size() == osc::NumOptions<osc::MeshTopology>());
+    static_assert(c_MeshTopologyStrings.size() == osc::NumOptions<MeshTopology>());
 
     union PackedIndex {
         uint32_t u32;
@@ -4024,15 +4052,15 @@ namespace
     static_assert(sizeof(PackedIndex) == sizeof(uint32_t));
     static_assert(alignof(PackedIndex) == alignof(uint32_t));
 
-    GLenum ToOpenGLTopology(osc::MeshTopology t)
+    GLenum ToOpenGLTopology(MeshTopology t)
     {
-        static_assert(osc::NumOptions<osc::MeshTopology>() == 2);
+        static_assert(osc::NumOptions<MeshTopology>() == 2);
 
         switch (t)
         {
-        case osc::MeshTopology::Triangles:
+        case MeshTopology::Triangles:
             return GL_TRIANGLES;
-        case osc::MeshTopology::Lines:
+        case MeshTopology::Lines:
             return GL_LINES;
         default:
             return GL_TRIANGLES;
@@ -4683,7 +4711,7 @@ std::ostream& osc::operator<<(std::ostream& o, Mesh const&)
 namespace
 {
     // LUT for human-readable form of the above
-    constexpr auto c_CameraProjectionStrings = std::to_array<osc::CStringView>(
+    constexpr auto c_CameraProjectionStrings = std::to_array<CStringView>(
     {
         "Perspective",
         "Orthographic",
@@ -5256,7 +5284,7 @@ namespace
         // relies on
         //
         // reports anything missing to the log at the provided log level
-        ValidateOpenGLBackendExtensionSupport(osc::LogLevel::debug);
+        ValidateOpenGLBackendExtensionSupport(LogLevel::debug);
 
         for (auto const& capability : c_RequiredOpenGLCapabilities)
         {
@@ -5289,25 +5317,25 @@ namespace
     }
 
     // maps an OpenGL debug message severity level to a log level
-    constexpr osc::LogLevel OpenGLDebugSevToLogLvl(GLenum sev)
+    constexpr LogLevel OpenGLDebugSevToLogLvl(GLenum sev)
     {
         switch (sev)
         {
         case GL_DEBUG_SEVERITY_HIGH:
-            return osc::LogLevel::err;
+            return LogLevel::err;
         case GL_DEBUG_SEVERITY_MEDIUM:
-            return osc::LogLevel::warn;
+            return LogLevel::warn;
         case GL_DEBUG_SEVERITY_LOW:
-            return osc::LogLevel::debug;
+            return LogLevel::debug;
         case GL_DEBUG_SEVERITY_NOTIFICATION:
-            return osc::LogLevel::trace;
+            return LogLevel::trace;
         default:
-            return osc::LogLevel::info;
+            return LogLevel::info;
         }
     }
 
     // returns a string representation of an OpenGL debug message severity level
-    constexpr osc::CStringView OpenGLDebugSevToStrView(GLenum sev)
+    constexpr CStringView OpenGLDebugSevToStrView(GLenum sev)
     {
         switch (sev)
         {
@@ -5325,7 +5353,7 @@ namespace
     }
 
     // returns a string representation of an OpenGL debug message source
-    constexpr osc::CStringView OpenGLDebugSrcToStrView(GLenum src)
+    constexpr CStringView OpenGLDebugSrcToStrView(GLenum src)
     {
         switch (src)
         {
@@ -5347,7 +5375,7 @@ namespace
     }
 
     // returns a string representation of an OpenGL debug message type
-    constexpr osc::CStringView OpenGLDebugTypeToStrView(GLenum type)
+    constexpr CStringView OpenGLDebugTypeToStrView(GLenum type)
     {
         switch (type)
         {
@@ -5419,10 +5447,10 @@ namespace
         const GLchar* message,
         void const*)
     {
-        osc::LogLevel const lvl = OpenGLDebugSevToLogLvl(severity);
-        osc::CStringView const sourceCStr = OpenGLDebugSrcToStrView(source);
-        osc::CStringView const typeCStr = OpenGLDebugTypeToStrView(type);
-        osc::CStringView const severityCStr = OpenGLDebugSevToStrView(severity);
+        LogLevel const lvl = OpenGLDebugSevToLogLvl(severity);
+        CStringView const sourceCStr = OpenGLDebugSrcToStrView(source);
+        CStringView const typeCStr = OpenGLDebugTypeToStrView(type);
+        CStringView const severityCStr = OpenGLDebugSevToStrView(severity);
 
         osc::log::log(lvl,
             R"(OpenGL Debug message:
@@ -5578,7 +5606,7 @@ public:
         if (!m_ActiveScreenshotRequests.empty())
         {
             // copy GPU-side window framebuffer into CPU-side `osc::Image` object
-            Vec2i const dims = osc::App::get().dims();
+            Vec2i const dims = App::get().dims();
 
             std::vector<uint8_t> pixels(static_cast<size_t>(4*dims.x*dims.y));
             OSC_ASSERT(IsAlignedAtLeast(pixels.data(), 4) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
@@ -5939,7 +5967,7 @@ void osc::GraphicsBackend::UnbindFromInstancedAttributes(
 // helper: upload instancing data for a batch
 std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
     std::span<RenderObject const> renderObjects,
-    osc::Shader::Impl const& shaderImpl)
+    Shader::Impl const& shaderImpl)
 {
     // preemptively upload instancing data
     std::optional<InstancingState> maybeInstancingState;
@@ -5950,18 +5978,18 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
         size_t byteStride = 0;
         if (shaderImpl.m_MaybeInstancedModelMatAttr)
         {
-            if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == osc::ShaderPropertyType::Mat4)
+            if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4)
             {
                 byteStride += sizeof(float) * 16;
             }
         }
         if (shaderImpl.m_MaybeInstancedNormalMatAttr)
         {
-            if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderPropertyType::Mat4)
+            if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4)
             {
                 byteStride += sizeof(float) * 16;
             }
-            else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderPropertyType::Mat3)
+            else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3)
             {
                 byteStride += sizeof(float) * 9;
             }
@@ -5979,7 +6007,7 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
         {
             if (shaderImpl.m_MaybeInstancedModelMatAttr)
             {
-                if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == osc::ShaderPropertyType::Mat4)
+                if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4)
                 {
                     Mat4 const m = ModelMatrix(el);
                     std::span<float const> const els = ToFloatSpan(m);
@@ -5989,14 +6017,14 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
             }
             if (shaderImpl.m_MaybeInstancedNormalMatAttr)
             {
-                if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderPropertyType::Mat4)
+                if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4)
                 {
                     Mat4 const m = NormalMatrix4(el);
                     std::span<float const> const els = ToFloatSpan(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     floatOffset += els.size();
                 }
-                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderPropertyType::Mat3)
+                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3)
                 {
                     Mat3 const m = NormalMatrix(el);
                     std::span<float const> const els = ToFloatSpan(m);
@@ -6025,19 +6053,19 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
 
     switch (v.index())
     {
-    case VariantIndex<MaterialValue, osc::Color>():
+    case VariantIndex<MaterialValue, Color>():
     {
         // colors are converted from sRGB to linear when passed to
         // the shader
 
-        Vec4 const linearColor = osc::ToLinear(std::get<osc::Color>(v));
+        Vec4 const linearColor = osc::ToLinear(std::get<Color>(v));
         gl::UniformVec4 u{se.location};
         gl::Uniform(u, linearColor);
         break;
     }
-    case VariantIndex<MaterialValue, std::vector<osc::Color>>():
+    case VariantIndex<MaterialValue, std::vector<Color>>():
     {
-        auto const& colors = std::get<std::vector<osc::Color>>(v);
+        auto const& colors = std::get<std::vector<Color>>(v);
         int32_t const numToAssign = std::min(se.size, static_cast<int32_t>(colors.size()));
 
         if (numToAssign > 0)
@@ -6281,12 +6309,12 @@ void osc::GraphicsBackend::HandleBatchWithSameSubMesh(
             // try binding to uNormalMat (standard)
             if (shaderImpl.m_MaybeNormalMatUniform)
             {
-                if (shaderImpl.m_MaybeNormalMatUniform->shaderType == osc::ShaderPropertyType::Mat3)
+                if (shaderImpl.m_MaybeNormalMatUniform->shaderType == ShaderPropertyType::Mat3)
                 {
                     gl::UniformMat3 u{shaderImpl.m_MaybeNormalMatUniform->location};
                     gl::Uniform(u, NormalMatrix(el));
                 }
-                else if (shaderImpl.m_MaybeNormalMatUniform->shaderType == osc::ShaderPropertyType::Mat4)
+                else if (shaderImpl.m_MaybeNormalMatUniform->shaderType == ShaderPropertyType::Mat4)
                 {
                     gl::UniformMat4 u{shaderImpl.m_MaybeNormalMatUniform->location};
                     gl::Uniform(u, NormalMatrix4(el));
@@ -6789,13 +6817,13 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
 
         // if requested, clear the buffers
         {
-            static_assert(osc::NumOptions<osc::RenderBufferLoadAction>() == 2);
+            static_assert(osc::NumOptions<RenderBufferLoadAction>() == 2);
 
             // if requested, clear color buffers
             for (size_t i = 0; i < maybeCustomRenderTarget->colors.size(); ++i)
             {
                 RenderTargetColorAttachment& colorAttachment = maybeCustomRenderTarget->colors[i];
-                if (colorAttachment.loadAction == osc::RenderBufferLoadAction::Clear)
+                if (colorAttachment.loadAction == RenderBufferLoadAction::Clear)
                 {
                     glClearBufferfv(
                         GL_COLOR,
@@ -6806,7 +6834,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
             }
 
             // if requested, clear depth buffer
-            if (maybeCustomRenderTarget->depth.loadAction == osc::RenderBufferLoadAction::Clear)
+            if (maybeCustomRenderTarget->depth.loadAction == RenderBufferLoadAction::Clear)
             {
                 gl::Clear(GL_DEPTH_BUFFER_BIT);
             }
@@ -7235,7 +7263,7 @@ void osc::GraphicsBackend::CopyTexture(
         bit_width(static_cast<size_t>(destinationCubemap.getWidth())) - 1
     ));
 
-    OSC_ASSERT(sourceRenderTexture.getDimensionality() == osc::TextureDimensionality::Cube && "provided render texture must be a cubemap to call this method");
+    OSC_ASSERT(sourceRenderTexture.getDimensionality() == TextureDimensionality::Cube && "provided render texture must be a cubemap to call this method");
     OSC_ASSERT(mip <= maxMipmapLevel);
 
     // blit each face of the source cubemap into the output cubemap

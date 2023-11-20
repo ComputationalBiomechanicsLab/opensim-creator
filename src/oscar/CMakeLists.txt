@@ -100,6 +100,7 @@ add_library(oscar STATIC
     Maths/BVHPrim.hpp
     Maths/CollisionTests.hpp
     Maths/Disc.hpp
+    Maths/EasingFunctions.hpp
     Maths/Ellipsoid.hpp
     Maths/EulerPerspectiveCamera.hpp
     Maths/Line.hpp

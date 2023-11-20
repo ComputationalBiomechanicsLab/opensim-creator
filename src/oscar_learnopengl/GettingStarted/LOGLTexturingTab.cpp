@@ -24,17 +24,26 @@
 #include <span>
 #include <utility>
 
+using osc::App;
+using osc::Camera;
+using osc::ColorSpace;
+using osc::CStringView;
+using osc::ImageLoadingFlags;
 using osc::Mat4;
+using osc::Material;
+using osc::Mesh;
+using osc::Shader;
+using osc::Texture2D;
 using osc::Vec2;
 using osc::Vec3;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Texturing";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/Texturing";
 
-    osc::Mesh GenerateTexturedQuadMesh()
+    Mesh GenerateTexturedQuadMesh()
     {
-        osc::Mesh quad = osc::GenTexturedQuad();
+        Mesh quad = osc::GenTexturedQuad();
 
         // transform default quad verts to match LearnOpenGL
         quad.transformVerts([](std::span<Vec3> vs)
@@ -57,23 +66,23 @@ namespace
         return quad;
     }
 
-    osc::Material LoadTexturedMaterial()
+    Material LoadTexturedMaterial()
     {
-        osc::Material rv
+        Material rv
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.frag"),
+                App::slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.vert"),
+                App::slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.frag"),
             },
         };
 
         // set uTexture1
         {
-            osc::Texture2D container = osc::LoadTexture2DFromImage(
-                osc::App::resource("oscar_learnopengl/textures/container.jpg"),
-                osc::ColorSpace::sRGB,
-                osc::ImageLoadingFlags::FlipVertically
+            Texture2D container = osc::LoadTexture2DFromImage(
+                App::resource("oscar_learnopengl/textures/container.jpg"),
+                ColorSpace::sRGB,
+                ImageLoadingFlags::FlipVertically
             );
             container.setWrapMode(osc::TextureWrapMode::Clamp);
 
@@ -82,10 +91,10 @@ namespace
 
         // set uTexture2
         {
-            osc::Texture2D face = osc::LoadTexture2DFromImage(
-                osc::App::resource("oscar_learnopengl/textures/awesomeface.png"),
-                osc::ColorSpace::sRGB,
-                osc::ImageLoadingFlags::FlipVertically
+            Texture2D face = osc::LoadTexture2DFromImage(
+                App::resource("oscar_learnopengl/textures/awesomeface.png"),
+                ColorSpace::sRGB,
+                ImageLoadingFlags::FlipVertically
             );
 
             rv.setTexture("uTexture2", face);
@@ -94,9 +103,9 @@ namespace
         return rv;
     }
 
-    osc::Camera CreateIdentityCamera()
+    Camera CreateIdentityCamera()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setViewMatrixOverride(osc::Identity<Mat4>());
         rv.setProjectionMatrixOverride(osc::Identity<Mat4>());
         return rv;
@@ -126,7 +135,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLTexturingTab::id()
+CStringView osc::LOGLTexturingTab::id()
 {
     return c_TabStringID;
 }
@@ -145,7 +154,7 @@ osc::UID osc::LOGLTexturingTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLTexturingTab::implGetName() const
+CStringView osc::LOGLTexturingTab::implGetName() const
 {
     return m_Impl->getName();
 }

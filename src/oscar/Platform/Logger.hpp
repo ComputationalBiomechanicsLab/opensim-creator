@@ -14,7 +14,6 @@
 #include <utility>
 #include <vector>
 
-
 namespace osc
 {
     class Logger final {

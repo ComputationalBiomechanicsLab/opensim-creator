@@ -31,16 +31,26 @@
 #include <utility>
 #include <vector>
 
+using osc::App;
+using osc::Camera;
+using osc::ColorSpace;
+using osc::CStringView;
+using osc::Material;
+using osc::Mesh;
+using osc::MeshIndicesView;
+using osc::MeshTopology;
+using osc::Shader;
+using osc::Texture2D;
 using osc::Vec2;
 using osc::Vec3;
 using osc::Vec4;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/ParallaxMapping";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/ParallaxMapping";
 
     // matches the quad used in LearnOpenGL's parallax mapping tutorial
-    osc::Mesh GenerateQuad()
+    Mesh GenerateQuad()
     {
         std::vector<Vec3> const verts =
         {
@@ -73,15 +83,15 @@ namespace
         };
 
         std::vector<Vec4> const tangents = osc::CalcTangentVectors(
-            osc::MeshTopology::Triangles,
+            MeshTopology::Triangles,
             verts,
             normals,
             texCoords,
-            osc::MeshIndicesView{indices}
+            MeshIndicesView{indices}
         );
         OSC_ASSERT_ALWAYS(tangents.size() == verts.size());
 
-        osc::Mesh rv;
+        Mesh rv;
         rv.setVerts(verts);
         rv.setNormals(normals);
         rv.setTexCoords(texCoords);
@@ -90,9 +100,9 @@ namespace
         return rv;
     }
 
-    osc::Camera CreateCamera()
+    Camera CreateCamera()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
@@ -100,27 +110,27 @@ namespace
         return rv;
     }
 
-    osc::Material CreateParallaxMappingMaterial()
+    Material CreateParallaxMappingMaterial()
     {
-        osc::Texture2D diffuseMap = osc::LoadTexture2DFromImage(
-            osc::App::resource("oscar_learnopengl/textures/bricks2.jpg"),
-            osc::ColorSpace::sRGB
+        Texture2D diffuseMap = osc::LoadTexture2DFromImage(
+            App::resource("oscar_learnopengl/textures/bricks2.jpg"),
+            ColorSpace::sRGB
         );
-        osc::Texture2D normalMap = osc::LoadTexture2DFromImage(
-            osc::App::resource("oscar_learnopengl/textures/bricks2_normal.jpg"),
-            osc::ColorSpace::Linear
+        Texture2D normalMap = osc::LoadTexture2DFromImage(
+            App::resource("oscar_learnopengl/textures/bricks2_normal.jpg"),
+            ColorSpace::Linear
         );
-        osc::Texture2D displacementMap = osc::LoadTexture2DFromImage(
-            osc::App::resource("oscar_learnopengl/textures/bricks2_disp.jpg"),
-            osc::ColorSpace::Linear
+        Texture2D displacementMap = osc::LoadTexture2DFromImage(
+            App::resource("oscar_learnopengl/textures/bricks2_disp.jpg"),
+            ColorSpace::Linear
         );
 
-        osc::Material rv
+        Material rv
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.frag"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.vert"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.frag"),
             },
         };
         rv.setTexture("uDiffuseMap", diffuseMap);
@@ -130,14 +140,14 @@ namespace
         return rv;
     }
 
-    osc::Material CreateLightCubeMaterial()
+    Material CreateLightCubeMaterial()
     {
-        return osc::Material
+        return Material
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
+                App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
+                App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
             },
         };
     }
@@ -237,7 +247,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLParallaxMappingTab::id()
+CStringView osc::LOGLParallaxMappingTab::id()
 {
     return c_TabStringID;
 }
@@ -256,7 +266,7 @@ osc::UID osc::LOGLParallaxMappingTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLParallaxMappingTab::implGetName() const
+CStringView osc::LOGLParallaxMappingTab::implGetName() const
 {
     return m_Impl->getName();
 }

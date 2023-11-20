@@ -5,7 +5,7 @@
 #include <OpenSimCreator/Simulation/Simulation.hpp>
 #include <OpenSimCreator/Simulation/StoFileSimulation.hpp>
 #include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
-#include <OpenSimCreator/UI/Tabs/MeshImporterTab.hpp>
+#include <OpenSimCreator/UI/Tabs/MeshImporter/MeshImporterTab.hpp>
 #include <OpenSimCreator/UI/Tabs/SimulatorTab.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/UndoableModelActions.hpp>

@@ -22,6 +22,15 @@
 #include <string>
 #include <utility>
 
+using osc::App;
+using osc::Camera;
+using osc::Color;
+using osc::ColorSpace;
+using osc::CStringView;
+using osc::Material;
+using osc::Mesh;
+using osc::Shader;
+using osc::Texture2D;
 using osc::Vec2;
 using osc::Vec3;
 
@@ -67,7 +76,7 @@ namespace
         { 3.0f, 0.0f, 0.0f},
     });
 
-    constexpr auto c_LightColors = std::to_array<osc::Color>(
+    constexpr auto c_LightColors = std::to_array<Color>(
     {
         {0.25f, 0.25f, 0.25f, 1.0f},
         {0.50f, 0.50f, 0.50f, 1.0f},
@@ -75,11 +84,11 @@ namespace
         {1.00f, 1.00f, 1.00f, 1.0f},
     });
 
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Gamma";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/Gamma";
 
-    osc::Mesh GeneratePlane()
+    Mesh GeneratePlane()
     {
-        osc::Mesh rv;
+        Mesh rv;
         rv.setVerts(c_PlaneVertices);
         rv.setTexCoords(c_PlaneTexCoords);
         rv.setNormals(c_PlaneNormals);
@@ -87,9 +96,9 @@ namespace
         return rv;
     }
 
-    osc::Camera CreateSceneCamera()
+    Camera CreateSceneCamera()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
@@ -98,19 +107,19 @@ namespace
         return rv;
     }
 
-    osc::Material CreateFloorMaterial()
+    Material CreateFloorMaterial()
     {
-        osc::Texture2D woodTexture = osc::LoadTexture2DFromImage(
-            osc::App::resource("oscar_learnopengl/textures/wood.png"),
-            osc::ColorSpace::sRGB
+        Texture2D woodTexture = osc::LoadTexture2DFromImage(
+            App::resource("oscar_learnopengl/textures/wood.png"),
+            ColorSpace::sRGB
         );
 
-        osc::Material rv
+        Material rv
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.frag"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.vert"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.frag"),
             },
         };
         rv.setTexture("uFloorTexture", woodTexture);
@@ -202,7 +211,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLGammaTab::id()
+CStringView osc::LOGLGammaTab::id()
 {
     return c_TabStringID;
 }
@@ -221,7 +230,7 @@ osc::UID osc::LOGLGammaTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLGammaTab::implGetName() const
+CStringView osc::LOGLGammaTab::implGetName() const
 {
     return m_Impl->getName();
 }

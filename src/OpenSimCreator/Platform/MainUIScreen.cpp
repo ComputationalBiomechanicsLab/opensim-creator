@@ -4,8 +4,8 @@
 #include <OpenSimCreator/Outputs/OutputExtractor.hpp>
 #include <OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp>
 #include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
+#include <OpenSimCreator/UI/Tabs/MeshImporter/MeshImporterTab.hpp>
 #include <OpenSimCreator/UI/Tabs/LoadingTab.hpp>
-#include <OpenSimCreator/UI/Tabs/MeshImporterTab.hpp>
 #include <OpenSimCreator/UI/Tabs/ModelEditorTab.hpp>
 #include <OpenSimCreator/UI/Tabs/SplashTab.hpp>
 #include <OpenSimCreator/Utils/ParamBlock.hpp>

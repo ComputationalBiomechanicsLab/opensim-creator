@@ -15,11 +15,18 @@
 #include <unordered_map>
 #include <utility>
 
+using osc::AntiAliasingLevel;
+using osc::AppSettings;
+using osc::AppSettingValue;
+using osc::AppSettingValueType;
+using osc::CStringView;
+using osc::LogLevel;
+
 namespace
 {
-    constexpr osc::AntiAliasingLevel c_NumMSXAASamples{4};
+    constexpr AntiAliasingLevel c_NumMSXAASamples{4};
 
-    std::filesystem::path GetResourcesDirFallbackPath(osc::AppSettings const& settings)
+    std::filesystem::path GetResourcesDirFallbackPath(AppSettings const& settings)
     {
         if (auto const systemConfig = settings.getSystemConfigurationFileLocation())
         {
@@ -47,7 +54,7 @@ namespace
         return resourcesRelToExe;
     }
 
-    std::filesystem::path GetResourcesDir(osc::AppSettings const& settings)
+    std::filesystem::path GetResourcesDir(AppSettings const& settings)
     {
         // care: the resources directory is _very_, __very__ imporant
         //
@@ -55,7 +62,7 @@ namespace
         // boot correctly, which will result in great dissapointment, so this code
         // has to try its best
 
-        constexpr osc::CStringView resourcesKey = "resources";
+        constexpr CStringView resourcesKey = "resources";
 
         auto const resourceDirSettingValue = settings.getValue(resourcesKey);
         if (!resourceDirSettingValue)
@@ -63,7 +70,7 @@ namespace
             return GetResourcesDirFallbackPath(settings);
         }
 
-        if (resourceDirSettingValue->type() != osc::AppSettingValueType::String)
+        if (resourceDirSettingValue->type() != AppSettingValueType::String)
         {
             osc::log::error("application setting for '%s' is not a string: falling back", resourcesKey.c_str());
             return GetResourcesDirFallbackPath(settings);
@@ -91,9 +98,9 @@ namespace
         return resourceDir;
     }
 
-    std::filesystem::path GetHTMLDocsDir(osc::AppSettings const& settings)
+    std::filesystem::path GetHTMLDocsDir(AppSettings const& settings)
     {
-        constexpr osc::CStringView docsKey = "docs";
+        constexpr CStringView docsKey = "docs";
 
         auto const docsSettingValue = settings.getValue(docsKey);
         if (!docsSettingValue)
@@ -116,15 +123,15 @@ namespace
         return std::filesystem::path{};
     }
 
-    bool GetMultiViewport(osc::AppSettings const& settings)
+    bool GetMultiViewport(AppSettings const& settings)
     {
         return settings
             .getValue("experimental_feature_flags/multiple_viewports")
-            .value_or(osc::AppSettingValue{false})
+            .value_or(AppSettingValue{false})
             .toBool();
     }
 
-    std::unordered_map<std::string, bool> GetPanelsEnabledState(osc::AppSettings const&)
+    std::unordered_map<std::string, bool> GetPanelsEnabledState(AppSettings const&)
     {
         return
         {
@@ -142,7 +149,7 @@ namespace
         };
     }
 
-    std::optional<std::string> GetInitialTab(osc::AppSettings const& settings)
+    std::optional<std::string> GetInitialTab(AppSettings const& settings)
     {
         if (auto v = settings.getValue("initial_tab"))
         {
@@ -154,15 +161,15 @@ namespace
         }
     }
 
-    osc::LogLevel GetLogLevel(osc::AppSettings const& settings)
+    LogLevel GetLogLevel(AppSettings const& settings)
     {
         if (auto const v = settings.getValue("log_level"))
         {
-            return osc::TryParseAsLogLevel(v->toString()).value_or(osc::LogLevel::DEFAULT);
+            return osc::TryParseAsLogLevel(v->toString()).value_or(LogLevel::DEFAULT);
         }
         else
         {
-            return osc::LogLevel::DEFAULT;
+            return LogLevel::DEFAULT;
         }
     }
 }

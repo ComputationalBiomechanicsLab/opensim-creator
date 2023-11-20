@@ -28,6 +28,10 @@
 #include <span>
 #include <string>
 
+using osc::Color;
+using osc::Vec2;
+using osc::Vec4;
+
 namespace
 {
     inline constexpr float c_DefaultDragThreshold = 5.0f;
@@ -45,28 +49,28 @@ namespace
         return static_cast<float>(older[0]);
     }
 
-    osc::Vec2 RectMidpoint(ImRect const& r)
+    Vec2 RectMidpoint(ImRect const& r)
     {
-        return 0.5f * (osc::Vec2{r.Min} + osc::Vec2{r.Max});
+        return 0.5f * (Vec2{r.Min} + Vec2{r.Max});
     }
 
-    osc::Vec2 Size(ImRect const& r)
+    Vec2 Size(ImRect const& r)
     {
-        return osc::Vec2{r.Max} - osc::Vec2{r.Min};
+        return Vec2{r.Max} - Vec2{r.Min};
     }
 
     float ShortestEdgeLength(ImRect const& r)
     {
-        const osc::Vec2 sz = Size(r);
+        const Vec2 sz = Size(r);
         return std::min(sz.x, sz.y);
     }
 
     ImU32 Brighten(ImU32 color, float factor)
     {
-        const osc::Color srgb{ImGui::ColorConvertU32ToFloat4(color)};
-        const osc::Color brightened = factor * srgb;
-        const osc::Color clamped = osc::ClampToLDR(brightened);
-        return ImGui::ColorConvertFloat4ToU32(osc::Vec4{clamped});
+        const Color srgb{ImGui::ColorConvertU32ToFloat4(color)};
+        const Color brightened = factor * srgb;
+        const Color clamped = osc::ClampToLDR(brightened);
+        return ImGui::ColorConvertFloat4ToU32(Vec4{clamped});
     }
 }
 
@@ -131,7 +135,7 @@ void osc::ImGuiApplyDarkTheme()
 }
 
 bool osc::UpdatePolarCameraFromImGuiMouseInputs(
-    osc::PolarPerspectiveCamera& camera,
+    PolarPerspectiveCamera& camera,
     Vec2 viewportDims)
 {
     bool modified = false;
@@ -207,7 +211,7 @@ bool osc::UpdatePolarCameraFromImGuiMouseInputs(
 bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
     PolarPerspectiveCamera& camera,
     Rect const& viewportRect,
-    std::optional<osc::AABB> maybeSceneAABB)
+    std::optional<AABB> maybeSceneAABB)
 {
     bool const shiftDown = osc::IsShiftDown();
     bool const ctrlOrSuperDown = osc::IsCtrlOrSuperDown();
@@ -357,7 +361,7 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
 bool osc::UpdatePolarCameraFromImGuiInputs(
     PolarPerspectiveCamera& camera,
     Rect const& viewportRect,
-    std::optional<osc::AABB> maybeSceneAABB)
+    std::optional<AABB> maybeSceneAABB)
 {
 
     ImGuiIO& io = ImGui::GetIO();
@@ -690,7 +694,7 @@ osc::Rect osc::DrawAlignmentAxes(Mat4 const& viewMtx)
     Rect const bounds = {topLeft, bottomRight};
     Vec2 const origin = Midpoint(bounds);
 
-    auto const labels = std::to_array<osc::CStringView>({ "X", "Y", "Z" });
+    auto const labels = std::to_array<CStringView>({ "X", "Y", "Z" });
 
     ImDrawList& drawlist = *ImGui::GetWindowDrawList();
     for (size_t i = 0; i < std::size(labels); ++i)
@@ -821,7 +825,7 @@ osc::Rect osc::GetMainViewportWorkspaceScreenRect()
 bool osc::IsMouseInMainViewportWorkspaceScreenRect()
 {
     Vec2 const mousepos = ImGui::GetMousePos();
-    osc::Rect const hitRect = osc::GetMainViewportWorkspaceScreenRect();
+    Rect const hitRect = osc::GetMainViewportWorkspaceScreenRect();
 
     return osc::IsPointInRect(hitRect, mousepos);
 }

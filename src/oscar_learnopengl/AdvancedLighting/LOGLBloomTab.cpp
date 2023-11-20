@@ -30,13 +30,16 @@
 #include <utility>
 #include <vector>
 
+using osc::Camera;
+using osc::Color;
+using osc::CStringView;
 using osc::Mat4;
 using osc::Vec2;
 using osc::Vec3;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Bloom";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/Bloom";
 
     constexpr auto c_SceneLightPositions = std::to_array<Vec3>(
     {
@@ -46,9 +49,9 @@ namespace
         {-0.8f, 2.4f, -1.0f},
     });
 
-    std::array<osc::Color, c_SceneLightPositions.size()> const& GetSceneLightColors()
+    std::array<Color, c_SceneLightPositions.size()> const& GetSceneLightColors()
     {
-        static auto const s_SceneLightColors = std::to_array<osc::Color>(
+        static auto const s_SceneLightColors = std::to_array<Color>(
         {
             osc::ToSRGB({ 5.0f, 5.0f,  5.0f}),
             osc::ToSRGB({10.0f, 0.0f,  0.0f}),
@@ -108,9 +111,9 @@ namespace
         return rv;
     }
 
-    osc::Camera CreateCameraThatMatchesLearnOpenGL()
+    Camera CreateCameraThatMatchesLearnOpenGL()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
@@ -253,7 +256,7 @@ private:
 
     void drawLightBoxesToCamera()
     {
-        std::array<osc::Color, c_SceneLightPositions.size()> const& sceneLightColors = GetSceneLightColors();
+        std::array<Color, c_SceneLightPositions.size()> const& sceneLightColors = GetSceneLightColors();
 
         for (size_t i = 0; i < c_SceneLightPositions.size(); ++i)
         {
@@ -421,7 +424,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLBloomTab::id()
+CStringView osc::LOGLBloomTab::id()
 {
     return c_TabStringID;
 }
@@ -440,7 +443,7 @@ osc::UID osc::LOGLBloomTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLBloomTab::implGetName() const
+CStringView osc::LOGLBloomTab::implGetName() const
 {
     return m_Impl->getName();
 }

@@ -11,22 +11,28 @@
 #include <string>
 #include <string_view>
 
+using osc::ObjMetadata;
+using osc::ObjWriterFlags;
+using osc::Mesh;
+using osc::MeshTopology;
+using osc::Vec3;
+
 namespace
 {
-    void WriteHeader(std::ostream& o, osc::ObjMetadata const& metadata)
+    void WriteHeader(std::ostream& o, ObjMetadata const& metadata)
     {
         o << "# " << metadata.authoringTool << '\n';
         o << "# created: " << std::put_time(&metadata.creationTime, "%Y-%m-%d %H:%M:%S") << '\n';
     }
 
-    std::ostream& WriteVec3(std::ostream& o, osc::Vec3 const& v)
+    std::ostream& WriteVec3(std::ostream& o, Vec3 const& v)
     {
         return o << v.x << ' ' << v.y << ' ' << v.z;
     }
 
-    void WriteVertices(std::ostream& o, osc::Mesh const& mesh)
+    void WriteVertices(std::ostream& o, Mesh const& mesh)
     {
-        for (osc::Vec3 const& v : mesh.getVerts())
+        for (Vec3 const& v : mesh.getVerts())
         {
             o << "v ";
             WriteVec3(o, v);
@@ -34,9 +40,9 @@ namespace
         }
     }
 
-    void WriteNormals(std::ostream& o, osc::Mesh const& mesh)
+    void WriteNormals(std::ostream& o, Mesh const& mesh)
     {
-        for (osc::Vec3 const& v : mesh.getNormals())
+        for (Vec3 const& v : mesh.getNormals())
         {
             o << "vn ";
             WriteVec3(o, v);
@@ -44,9 +50,9 @@ namespace
         }
     }
 
-    void WriteFaces(std::ostream& o, osc::Mesh const& mesh, osc::ObjWriterFlags flags)
+    void WriteFaces(std::ostream& o, Mesh const& mesh, ObjWriterFlags flags)
     {
-        if (mesh.getTopology() != osc::MeshTopology::Triangles)
+        if (mesh.getTopology() != MeshTopology::Triangles)
         {
             return;
         }
@@ -59,7 +65,7 @@ namespace
             uint32_t const i1 = view[i+1]+1;
             uint32_t const i2 = view[i+2]+1;
 
-            if (!(flags & osc::ObjWriterFlags::NoWriteNormals))
+            if (!(flags & ObjWriterFlags::NoWriteNormals))
             {
                 o << "f " << i0 << "//" << i0 << ' ' << i1  << "//" << i1 << ' ' << i2 << "//" << i2 << '\n';
             }

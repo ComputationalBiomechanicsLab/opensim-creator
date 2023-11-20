@@ -26,6 +26,8 @@
 #include <memory>
 #include <numbers>
 
+using osc::Camera;
+using osc::CStringView;
 using osc::Vec3;
 
 namespace
@@ -45,11 +47,11 @@ namespace
         {-1.3f,  1.0f, -1.5f },
     });
 
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/CoordinateSystems";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/CoordinateSystems";
 
-    osc::Camera CreateCameraThatMatchesLearnOpenGL()
+    Camera CreateCameraThatMatchesLearnOpenGL()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
@@ -203,7 +205,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLCoordinateSystemsTab::id()
+CStringView osc::LOGLCoordinateSystemsTab::id()
 {
     return c_TabStringID;
 }
@@ -222,7 +224,7 @@ osc::UID osc::LOGLCoordinateSystemsTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLCoordinateSystemsTab::implGetName() const
+CStringView osc::LOGLCoordinateSystemsTab::implGetName() const
 {
     return m_Impl->getName();
 }

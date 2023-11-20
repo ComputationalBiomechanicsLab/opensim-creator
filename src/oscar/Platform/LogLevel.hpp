@@ -7,7 +7,6 @@
 #include <optional>
 #include <string_view>
 
-
 namespace osc
 {
     enum class LogLevel {

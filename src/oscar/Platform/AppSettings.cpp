@@ -28,9 +28,15 @@
 #include <utility>
 #include <vector>
 
+using osc::AppSettings;
+using osc::AppSettingValue;
+using osc::AppSettingValueType;
+using osc::CStringView;
+using osc::SynchronizedValue;
+
 namespace
 {
-    constexpr osc::CStringView c_ConfigFileHeader =
+    constexpr CStringView c_ConfigFileHeader =
 R"(# configuration options
 #
 # you can manually add config options here: they will override the system configuration file, e.g.:
@@ -59,13 +65,13 @@ R"(# configuration options
     // a value stored in the AppSettings lookup table
     class AppSettingsLookupValue final {
     public:
-        AppSettingsLookupValue(AppSettingScope scope, osc::AppSettingValue value) :
+        AppSettingsLookupValue(AppSettingScope scope, AppSettingValue value) :
             m_Scope{scope},
             m_Value{std::move(value)}
         {
         }
 
-        osc::AppSettingValue const& getValue() const
+        AppSettingValue const& getValue() const
         {
             return m_Value;
         }
@@ -77,13 +83,13 @@ R"(# configuration options
 
     private:
         AppSettingScope m_Scope;
-        osc::AppSettingValue m_Value;
+        AppSettingValue m_Value;
     };
 
     // a lookup containing all app setting values
     class AppSettingsLookup final {
     public:
-        std::optional<osc::AppSettingValue> getValue(std::string_view key) const
+        std::optional<AppSettingValue> getValue(std::string_view key) const
         {
             if (auto const v = lookup(key))
             {
@@ -98,7 +104,7 @@ R"(# configuration options
         void setValue(
             std::string_view key,
             AppSettingScope scope,
-            osc::AppSettingValue value)
+            AppSettingValue value)
         {
             m_Data.insert_or_assign(
                 key,
@@ -292,11 +298,11 @@ R"(# configuration options
                 }
                 else if (auto const* stringValue = node.as_string())
                 {
-                    out.setValue(keyPrefix + std::string{k.str()}, scope, osc::AppSettingValue{**stringValue});
+                    out.setValue(keyPrefix + std::string{k.str()}, scope, AppSettingValue{**stringValue});
                 }
                 else if (auto const* boolValue = node.as_boolean())
                 {
-                    out.setValue(keyPrefix + std::string{k.str()}, scope, osc::AppSettingValue{**boolValue});
+                    out.setValue(keyPrefix + std::string{k.str()}, scope, AppSettingValue{**boolValue});
                 }
             }
 
@@ -387,17 +393,17 @@ R"(# configuration options
     void InsertIntoTomlTable(
         toml::table& table,
         std::string_view key,
-        osc::AppSettingValue const& value)
+        AppSettingValue const& value)
     {
-        static_assert(osc::NumOptions<osc::AppSettingValueType>() == 3);
+        static_assert(osc::NumOptions<AppSettingValueType>() == 3);
 
         switch (value.type())
         {
-        case osc::AppSettingValueType::Bool:
+        case AppSettingValueType::Bool:
             table.insert(key, value.toBool());
             break;
-        case osc::AppSettingValueType::String:
-        case osc::AppSettingValueType::Color:
+        case AppSettingValueType::String:
+        case AppSettingValueType::Color:
         default:
             table.insert(key, value.toString());
             break;
@@ -443,12 +449,12 @@ R"(# configuration options
             return m_SystemConfigPath;
         }
 
-        std::optional<osc::AppSettingValue> getValue(std::string_view key) const
+        std::optional<AppSettingValue> getValue(std::string_view key) const
         {
             return m_AppSettings.getValue(key);
         }
 
-        void setValue(std::string_view key, osc::AppSettingValue value)
+        void setValue(std::string_view key, AppSettingValue value)
         {
             m_AppSettings.setValue(key, AppSettingScope::User, std::move(value));
             m_IsDirty = true;
@@ -573,7 +579,7 @@ namespace
 {
     class GlobalAppSettingsLookup final {
     public:
-        std::shared_ptr<osc::AppSettings::Impl> get(
+        std::shared_ptr<AppSettings::Impl> get(
             std::string_view organizationName_,
             std::string_view applicationName_,
             std::string_view applicationConfigFileName_)
@@ -581,7 +587,7 @@ namespace
             auto [it, inserted] = m_Data.try_emplace(Key{organizationName_, applicationName_, applicationConfigFileName_});
             if (inserted)
             {
-                it->second = std::make_shared<osc::AppSettings::Impl>(organizationName_, applicationName_, applicationConfigFileName_);
+                it->second = std::make_shared<AppSettings::Impl>(organizationName_, applicationName_, applicationConfigFileName_);
             }
             return it->second;
         }
@@ -595,15 +601,15 @@ namespace
             }
         };
 
-        std::unordered_map<Key, std::shared_ptr<osc::AppSettings::Impl>, KeyHasher> m_Data;
+        std::unordered_map<Key, std::shared_ptr<AppSettings::Impl>, KeyHasher> m_Data;
     };
 
-    std::shared_ptr<osc::AppSettings::Impl> GetGloballySharedImplSettings(
+    std::shared_ptr<AppSettings::Impl> GetGloballySharedImplSettings(
         std::string_view organizationName_,
         std::string_view applicationName_,
         std::string_view applicationConfigFileName_)
     {
-        static osc::SynchronizedValue<GlobalAppSettingsLookup> s_SettingsLookup;
+        static SynchronizedValue<GlobalAppSettingsLookup> s_SettingsLookup;
         return s_SettingsLookup.lock()->get(organizationName_, applicationName_, applicationConfigFileName_);
     }
 }
