@@ -1,0 +1,11 @@
+# usage: ASAN_OPTIONS=detect_leaks=1 LSAN_OPTIONS=suppressions=suppressions.supp ./osc-build/tests/TestOpenSimCreator/TestOpenSimCreator
+leak:SDL
+leak:NS
+leak:dyld4
+leak:WindowData
+leak:_dispatch_client_callout
+leak:HIView
+leak:glDrawElementsInstanced
+leak:glDrawElementsBaseVertex
+leak:CUICoreThemeRenderer
+
