@@ -4,7 +4,6 @@
 #include <OpenSimCreator/ModelGraph/BodyEl.hpp>
 #include <OpenSimCreator/ModelGraph/CommittableModelGraph.hpp>
 #include <OpenSimCreator/ModelGraph/CrossrefDirection.hpp>
-#include <OpenSimCreator/ModelGraph/EdgeEl.hpp>
 #include <OpenSimCreator/ModelGraph/GroundEl.hpp>
 #include <OpenSimCreator/ModelGraph/JointEl.hpp>
 #include <OpenSimCreator/ModelGraph/MeshEl.hpp>
@@ -669,8 +668,8 @@ namespace osc
             std::vector<DrawableThing>& appendOut) const
         {
             std::visit(Overload
-                {
-                    [this, &appendOut](GroundEl const&)
+            {
+                [this, &appendOut](GroundEl const&)
                 {
                     if (!isShowingGround())
                     {
@@ -723,17 +722,7 @@ namespace osc
 
                     appendOut.push_back(generateStationSphere(el, getColorStation()));
                 },
-                [this, &appendOut](EdgeEl const& el)
-                {
-                    if (!isShowingEdges())
-                    {
-                        return;
-                    }
-                    appendOut.push_back(generateEdgeArrowNeck(el, getColorEdge()));
-                    appendOut.push_back(generateEdgeArrowHead(el, getColorEdge()));
-
-                }
-                }, e.toVariant());
+            }, e.toVariant());
         }
 
         //
@@ -1034,7 +1023,6 @@ namespace osc
                 [this](BodyEl const&)    { return this->isShowingBodyConnectionLines(); },
                 [this](JointEl const&)   { return this->isShowingJointConnectionLines(); },
                 [this](StationEl const&) { return this->isShowingMeshConnectionLines(); },
-                []    (EdgeEl const&)    { return false; },
             }, el.toVariant());
         }
 
@@ -1073,11 +1061,6 @@ namespace osc
         Color const& getColorStation() const
         {
             return m_Colors.stations;
-        }
-
-        Color const& getColorEdge() const
-        {
-            return m_Colors.edges;
         }
 
         std::span<bool> updVisibilityFlags()
@@ -1140,11 +1123,6 @@ namespace osc
         void setIsShowingStations(bool v)
         {
             m_VisibilityFlags.stations = v;
-        }
-
-        bool isShowingEdges() const
-        {
-            return m_VisibilityFlags.edges;
         }
 
         bool isShowingJointConnectionLines() const
@@ -1422,44 +1400,6 @@ namespace osc
             return rv;
         }
 
-        DrawableThing generateEdgeArrowNeck(EdgeEl const& el, Color const& color) const
-        {
-            float const tipLength = 0.025f*m_SceneScaleFactor;
-            auto const edgePoints = el.getEdgeLineInGround(getModelGraph());
-            Segment const cylinderMeshSegment = {{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
-            Segment const completeEdgeSegment = {edgePoints.first, edgePoints.second};
-            Segment const neckSegment = {completeEdgeSegment.p1, completeEdgeSegment.p2 - tipLength*(completeEdgeSegment.p2 - completeEdgeSegment.p1)};
-
-            DrawableThing rv;
-            rv.id = el.getID();
-            rv.groupId = ModelGraphIDs::EdgeGroup();
-            rv.mesh = m_CylinderMesh;
-            rv.transform = SegmentToSegmentTransform(cylinderMeshSegment, neckSegment);
-            rv.transform.scale *= Vec3{0.01f * m_SceneScaleFactor, 1.0f, 0.01f * m_SceneScaleFactor};  // make cylinder diameter smaller
-            rv.color = color;
-            rv.flags = SceneDecorationFlags::None;
-            return rv;
-        }
-
-        DrawableThing generateEdgeArrowHead(EdgeEl const& el, Color const& color) const
-        {
-            float const tipLength = 0.025f*m_SceneScaleFactor;
-            auto const edgePoints = el.getEdgeLineInGround(getModelGraph());
-            Segment const coneMeshSegment = {{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
-            Segment const completeEdgeSegment = {edgePoints.first, edgePoints.second};
-            Segment const headSegment = {completeEdgeSegment.p2 - tipLength*(completeEdgeSegment.p2 - completeEdgeSegment.p1), completeEdgeSegment.p2};
-
-            DrawableThing rv;
-            rv.id = el.getID();
-            rv.groupId = ModelGraphIDs::EdgeGroup();
-            rv.mesh = m_CylinderMesh;
-            rv.transform = SegmentToSegmentTransform(coneMeshSegment, headSegment);
-            rv.transform.scale *= Vec3{0.02f * m_SceneScaleFactor, 1.0f, 0.02f * m_SceneScaleFactor};  // make cone diameter smaller
-            rv.color = color;
-            rv.flags = SceneDecorationFlags::None;
-            return rv;
-        }
-
         Color RedifyColor(Color const& srcColor) const
         {
             constexpr float factor = 0.8f;
@@ -1530,7 +1470,6 @@ namespace osc
             Color ground{196.0f/255.0f, 196.0f/255.0f, 196.0f/255.0f, 1.0f};
             Color meshes{1.0f, 1.0f, 1.0f, 1.0f};
             Color stations{196.0f/255.0f, 0.0f, 0.0f, 1.0f};
-            Color edges = Color::purple();
             Color connectionLines{0.6f, 0.6f, 0.6f, 1.0f};
             Color sceneBackground{48.0f/255.0f, 48.0f/255.0f, 48.0f/255.0f, 1.0f};
             Color gridLines{0.7f, 0.7f, 0.7f, 0.15f};
@@ -1540,7 +1479,6 @@ namespace osc
             "ground",
             "meshes",
             "stations",
-            "edges",
             "connection lines",
             "scene background",
             "grid lines",
@@ -1556,7 +1494,6 @@ namespace osc
             bool bodies = true;
             bool joints = true;
             bool stations = true;
-            bool edges = true;
             bool jointConnectionLines = true;
             bool meshConnectionLines = true;
             bool bodyToGroundConnectionLines = true;
@@ -1570,7 +1507,6 @@ namespace osc
             "bodies",
             "joints",
             "stations",
-            "edges",
             "joint connection lines",
             "mesh connection lines",
             "body-to-ground connection lines",

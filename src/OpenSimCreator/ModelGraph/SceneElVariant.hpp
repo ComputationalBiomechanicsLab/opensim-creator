@@ -10,7 +10,6 @@ namespace osc
     class BodyEl;
     class JointEl;
     class StationEl;
-    class EdgeEl;
 
     // a variant for storing a `const` reference to a `const` scene element
     using ConstSceneElVariant = std::variant<
@@ -18,8 +17,7 @@ namespace osc
         std::reference_wrapper<MeshEl const>,
         std::reference_wrapper<BodyEl const>,
         std::reference_wrapper<JointEl const>,
-        std::reference_wrapper<StationEl const>,
-        std::reference_wrapper<EdgeEl const>
+        std::reference_wrapper<StationEl const>
     >;
 
     // a variant for storing a non-`const` reference to a non-`const` scene element
@@ -28,7 +26,6 @@ namespace osc
         std::reference_wrapper<MeshEl>,
         std::reference_wrapper<BodyEl>,
         std::reference_wrapper<JointEl>,
-        std::reference_wrapper<StationEl>,
-        std::reference_wrapper<EdgeEl>
+        std::reference_wrapper<StationEl>
     >;
 }

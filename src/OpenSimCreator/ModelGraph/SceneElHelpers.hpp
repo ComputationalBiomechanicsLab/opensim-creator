@@ -19,9 +19,6 @@ namespace osc
     // returns `true` if a `StationEl` can be attached to the element
     bool CanAttachStationTo(SceneEl const&);
 
-    // returns `true` if `EdgeEl` can be attached to `el`
-    bool CanAttachEdgeTo(SceneEl const&);
-
     std::array<SceneElClass, std::variant_size_v<SceneElVariant>> const& GetSceneElClasses();
 
     Vec3 AverageCenter(MeshEl const&);

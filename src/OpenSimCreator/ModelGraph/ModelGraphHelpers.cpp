@@ -1,7 +1,6 @@
 #include "ModelGraphHelpers.hpp"
 
 #include <OpenSimCreator/ModelGraph/BodyEl.hpp>
-#include <OpenSimCreator/ModelGraph/EdgeEl.hpp>
 #include <OpenSimCreator/ModelGraph/JointEl.hpp>
 #include <OpenSimCreator/ModelGraph/MeshEl.hpp>
 #include <OpenSimCreator/ModelGraph/ModelGraph.hpp>
@@ -194,29 +193,25 @@ std::string osc::GetContextMenuSubHeaderText(
     std::visit(Overload
     {
         [&ss](GroundEl const&)
-    {
-        ss << "(scene origin)";
-    },
-    [&ss, &mg](MeshEl const& m)
-    {
-        ss << '(' << m.getClass().getName() << ", " << m.getPath().filename().string() << ", attached to " << getLabel(mg, m.getParentID()) << ')';
-    },
-    [&ss](BodyEl const& b)
-    {
-        ss << '(' << b.getClass().getName() << ')';
-    },
-    [&ss, &mg](JointEl const& j)
-    {
-        ss << '(' << j.getSpecificTypeName() << ", " << getLabel(mg, j.getChildID()) << " --> " << getLabel(mg, j.getParentID()) << ')';
-    },
-    [&ss, &mg](StationEl const& s)
-    {
-        ss << '(' << s.getClass().getName() << ", attached to " << getLabel(mg, s.getParentID()) << ')';
-    },
-    [&ss, &mg](EdgeEl const& e)
-    {
-        ss << '(' << e.getClass().getName() << ", " << getLabel(mg, e.getFirstAttachmentID()) << " --> " << getLabel(mg, e.getSecondAttachmentID()) << ')';
-    }
+        {
+            ss << "(scene origin)";
+        },
+        [&ss, &mg](MeshEl const& m)
+        {
+            ss << '(' << m.getClass().getName() << ", " << m.getPath().filename().string() << ", attached to " << getLabel(mg, m.getParentID()) << ')';
+        },
+        [&ss](BodyEl const& b)
+        {
+            ss << '(' << b.getClass().getName() << ')';
+        },
+        [&ss, &mg](JointEl const& j)
+        {
+            ss << '(' << j.getSpecificTypeName() << ", " << getLabel(mg, j.getChildID()) << " --> " << getLabel(mg, j.getParentID()) << ')';
+        },
+        [&ss, &mg](StationEl const& s)
+        {
+            ss << '(' << s.getClass().getName() << ", attached to " << getLabel(mg, s.getParentID()) << ')';
+        },
     }, e.toVariant());
     return std::move(ss).str();
 }
@@ -284,7 +279,6 @@ osc::UID osc::GetStationAttachmentParent(ModelGraph const& mg, SceneEl const& el
         [](BodyEl const& bodyEl) { return bodyEl.getID(); },
         [](JointEl const&) { return ModelGraphIDs::Ground(); },
         [](StationEl const&) { return ModelGraphIDs::Ground(); },
-        [](EdgeEl const&) { return ModelGraphIDs::Ground(); },
     }, el.toVariant());
 }
 

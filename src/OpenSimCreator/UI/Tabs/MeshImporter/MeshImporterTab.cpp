@@ -4,7 +4,6 @@
 #include <OpenSimCreator/ModelGraph/BodyEl.hpp>
 #include <OpenSimCreator/ModelGraph/CommittableModelGraph.hpp>
 #include <OpenSimCreator/ModelGraph/CommittableModelGraphActions.hpp>
-#include <OpenSimCreator/ModelGraph/EdgeEl.hpp>
 #include <OpenSimCreator/ModelGraph/GroundEl.hpp>
 #include <OpenSimCreator/ModelGraph/JointEl.hpp>
 #include <OpenSimCreator/ModelGraph/MeshEl.hpp>
@@ -710,46 +709,6 @@ private:
         m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
     }
 
-    void transitionToPickingEdgeElSecondSide(SceneEl const& firstSide)
-    {
-        ChooseElLayerOptions opts;
-        opts.canChooseBodies = true;
-        opts.canChooseGround = true;
-        opts.canChooseJoints = true;
-        opts.canChooseMeshes = true;
-        opts.maybeElsAttachingTo = {firstSide.getID()};
-        opts.header = "choose other edge side";
-        opts.onUserChoice = [shared = m_Shared, firstSideID = firstSide.getID()](std::span<UID> choices)
-        {
-            if (choices.empty())
-            {
-                return false;
-            }
-            return CreateEdgeBetween(shared->updCommittableModelGraph(), firstSideID, choices.front());
-        };
-        m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
-    }
-
-    void transitionToChoosingBothEdgeElSides()
-    {
-        ChooseElLayerOptions opts;
-        opts.canChooseBodies = true;
-        opts.canChooseGround = true;
-        opts.canChooseJoints = true;
-        opts.canChooseMeshes = true;
-        opts.numElementsUserMustChoose = 2;
-        opts.header = "choose two points for edge";
-        opts.onUserChoice = [shared = m_Shared](std::span<UID> choices)
-        {
-            if (choices.size() < 2)
-            {
-                return false;
-            }
-            return CreateEdgeBetween(shared->updCommittableModelGraph(), choices[0], choices[1]);
-        };
-        m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
-    }
-
     // ensure any stale references into the modelgrah are cleaned up
     void garbageCollectStaleRefs()
     {
@@ -1122,17 +1081,6 @@ private:
                 }
                 osc::DrawTooltipIfItemHovered("Add Station", ModelGraphStrings::c_StationDescription);
             }
-        }
-        ImGui::PopID();
-
-        ImGui::PushID(imguiID++);
-        if (CanAttachEdgeTo(el))
-        {
-            if (ImGui::MenuItem(ICON_FA_ARROWS_ALT "Edge"))
-            {
-                transitionToPickingEdgeElSecondSide(el);
-            }
-            osc::DrawTooltipIfItemHovered("Add Edge", EdgeEl::Class().getDescription());
         }
         // ~ScopeGuard: implicitly calls ImGui::PopID()
     }
@@ -1611,19 +1559,6 @@ private:
         drawSceneElActions(el, clickPos);
     }
 
-    void drawContextMenuContent(EdgeEl& el, Vec3 const&)
-    {
-        drawSceneElContextMenuContentHeader(el);
-
-        ImGui::Dummy({0.0f, 5.0f});
-
-        drawSceneElPropEditors(el);
-
-        ImGui::Dummy({0.0f, 5.0f});
-
-        // TODO edge-specific context menu actions
-    }
-
     // draw context menu content for some scene element
     void drawContextMenuContent(SceneEl& el, Vec3 const& clickPos)
     {
@@ -1634,7 +1569,6 @@ private:
             [this, &clickPos](BodyEl& el)    { this->drawContextMenuContent(el, clickPos); },
             [this, &clickPos](JointEl& el)   { this->drawContextMenuContent(el, clickPos); },
             [this, &clickPos](StationEl& el) { this->drawContextMenuContent(el, clickPos); },
-            [this, &clickPos](EdgeEl& el)    { this->drawContextMenuContent(el, clickPos); },
         }, el.toVariant());
     }
 
@@ -1786,12 +1720,6 @@ private:
             SelectOnly(mg, e);
         }
         osc::DrawTooltipIfItemHovered("Add Station", StationEl::Class().getDescription());
-
-        if (ImGui::MenuItem(ICON_FA_ARROWS_ALT " Edge"))
-        {
-            transitionToChoosingBothEdgeElSides();
-        }
-        osc::DrawTooltipIfItemHovered("Add Edge", EdgeEl::Class().getDescription());
 
         ImGui::PopStyleVar();
     }

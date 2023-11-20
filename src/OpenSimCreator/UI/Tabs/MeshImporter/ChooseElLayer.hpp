@@ -40,7 +40,6 @@ namespace osc
         bool canChooseMeshes = true;
         bool canChooseJoints = true;
         bool canChooseStations = false;
-        bool canChooseEdges = false;
 
         // (maybe) elements the assignment is ultimately assigning
         std::unordered_set<UID> maybeElsAttachingTo;
@@ -108,7 +107,6 @@ namespace osc
                 [this](BodyEl const&)    { return m_Options.canChooseBodies; },
                 [this](JointEl const&)   { return m_Options.canChooseJoints; },
                 [this](StationEl const&) { return m_Options.canChooseStations; },
-                [this](EdgeEl const&)    { return m_Options.canChooseEdges; },
             }, el.toVariant());
         }
 

@@ -1,7 +1,6 @@
 #include "CommittableModelGraphActions.hpp"
 
 #include <OpenSimCreator/ModelGraph/BodyEl.hpp>
-#include <OpenSimCreator/ModelGraph/EdgeEl.hpp>
 #include <OpenSimCreator/ModelGraph/JointEl.hpp>
 #include <OpenSimCreator/ModelGraph/MeshEl.hpp>
 #include <OpenSimCreator/ModelGraph/ModelGraph.hpp>
@@ -465,34 +464,4 @@ bool osc::AddStationAtLocation(
     }
 
     return AddStationAtLocation(cmg, *el, loc);
-}
-
-bool osc::CreateEdgeBetween(
-    CommittableModelGraph& cmg,
-    UID firstSideID,
-    UID secondSideID)
-{
-    ModelGraph& mg = cmg.updScratch();
-
-    auto const* const firstSideEl = mg.tryGetElByID(firstSideID);
-    if (!firstSideEl || !CanAttachEdgeTo(*firstSideEl))
-    {
-        return false;
-    }
-
-    auto const* const secondSideEl = mg.tryGetElByID(secondSideID);
-    if (!secondSideEl || !CanAttachEdgeTo(*secondSideEl))
-    {
-        return false;
-    }
-
-    auto const& edge = mg.emplaceEl<EdgeEl>(
-        UID{},
-        EdgeEl::Class().generateName(),
-        firstSideID,
-        secondSideID
-    );
-    SelectOnly(mg, edge);
-    cmg.commitScratch("added edge " + edge.getLabel());
-    return true;
 }
