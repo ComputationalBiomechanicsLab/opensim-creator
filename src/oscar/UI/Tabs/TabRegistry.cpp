@@ -25,12 +25,12 @@ public:
 
     std::optional<TabRegistryEntry> getByName(std::string_view name) const
     {
-        auto const it = std::find_if(m_Entries.begin(), m_Entries.end(), [name](osc::TabRegistryEntry const& e)
+        auto const it = std::find_if(m_Entries.begin(), m_Entries.end(), [name](TabRegistryEntry const& e)
         {
             return e.getName() == name;
         });
 
-        return it != m_Entries.end() ? *it : std::optional<osc::TabRegistryEntry>{};
+        return it != m_Entries.end() ? *it : std::optional<TabRegistryEntry>{};
     }
 
 private:

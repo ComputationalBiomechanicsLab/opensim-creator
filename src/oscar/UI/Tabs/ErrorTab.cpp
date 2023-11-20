@@ -27,8 +27,8 @@ private:
         constexpr float width = 800.0f;
         constexpr float padding = 10.0f;
 
-        Rect tabRect = osc::GetMainViewportWorkspaceScreenRect();
-        Vec2 tabDims = osc::Dimensions(tabRect);
+        Rect tabRect = GetMainViewportWorkspaceScreenRect();
+        Vec2 tabDims = Dimensions(tabRect);
 
         // error message panel
         {

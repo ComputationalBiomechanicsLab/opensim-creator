@@ -11,9 +11,9 @@
 #include <utility>
 
 osc::IconWithMenu::IconWithMenu(
-    osc::Icon icon,
-    osc::CStringView title,
-    osc::CStringView description,
+    Icon icon,
+    CStringView title,
+    CStringView description,
     std::function<bool()> contentRenderer) :
 
     m_IconWithoutMenu{std::move(icon), title, description},

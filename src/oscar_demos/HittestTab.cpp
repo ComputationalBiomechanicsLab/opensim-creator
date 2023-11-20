@@ -27,11 +27,18 @@
 #include <optional>
 #include <vector>
 
+using osc::Camera;
+using osc::Color;
+using osc::CStringView;
+using osc::Line;
+using osc::MaterialPropertyBlock;
+using osc::Mesh;
+using osc::MeshTopology;
 using osc::Vec3;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "Demos/Hittest";
+    constexpr CStringView c_TabStringID = "Demos/Hittest";
 
     constexpr auto c_CrosshairVerts = std::to_array<Vec3>(
     {
@@ -91,31 +98,31 @@ namespace
         return rv;
     }
 
-    osc::Mesh GenerateCrosshairMesh()
+    Mesh GenerateCrosshairMesh()
     {
-        osc::Mesh rv;
-        rv.setTopology(osc::MeshTopology::Lines);
+        Mesh rv;
+        rv.setTopology(MeshTopology::Lines);
         rv.setVerts(c_CrosshairVerts);
         rv.setIndices(c_CrosshairIndices);
         return rv;
     }
 
-    osc::Mesh GenerateTriangleMesh()
+    Mesh GenerateTriangleMesh()
     {
-        osc::Mesh rv;
+        Mesh rv;
         rv.setVerts(c_TriangleVerts);
         rv.setIndices(c_TriangleIndices);
         return rv;
     }
 
-    osc::MaterialPropertyBlock GeneratePropertyBlock(osc::Color const& color)
+    MaterialPropertyBlock GeneratePropertyBlock(Color const& color)
     {
-        osc::MaterialPropertyBlock p;
+        MaterialPropertyBlock p;
         p.setColor("uColor", color);
         return p;
     }
 
-    osc::Line GetCameraRay(osc::Camera const& camera)
+    Line GetCameraRay(Camera const& camera)
     {
         return
         {

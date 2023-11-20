@@ -27,7 +27,7 @@ private:
         UndoRedoPanel::DrawContent(*m_Storage);
     }
 
-    std::shared_ptr<osc::UndoRedo> m_Storage;
+    std::shared_ptr<UndoRedo> m_Storage;
 };
 
 
@@ -76,7 +76,7 @@ void osc::UndoRedoPanel::DrawContent(UndoRedo& storage)
     }
 }
 
-osc::UndoRedoPanel::UndoRedoPanel(std::string_view panelName_, std::shared_ptr<osc::UndoRedo> storage_) :
+osc::UndoRedoPanel::UndoRedoPanel(std::string_view panelName_, std::shared_ptr<UndoRedo> storage_) :
     m_Impl{std::make_unique<Impl>(panelName_, std::move(storage_))}
 {
 }

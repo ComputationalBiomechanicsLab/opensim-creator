@@ -25,6 +25,9 @@
 #include <cstdint>
 #include <memory>
 
+using osc::Camera;
+using osc::CStringView;
+using osc::Mesh;
 using osc::Vec2;
 using osc::Vec3;
 
@@ -83,29 +86,29 @@ namespace
         { 0.5f, 0.0f, -0.6},
     });
 
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Blending";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/Blending";
 
-    osc::Mesh GeneratePlane()
+    Mesh GeneratePlane()
     {
-        osc::Mesh rv;
+        Mesh rv;
         rv.setVerts(c_PlaneVertices);
         rv.setTexCoords(c_PlaneTexCoords);
         rv.setIndices(c_PlaneIndices);
         return rv;
     }
 
-    osc::Mesh GenerateTransparent()
+    Mesh GenerateTransparent()
     {
-        osc::Mesh rv;
+        Mesh rv;
         rv.setVerts(c_TransparentVerts);
         rv.setTexCoords(c_TransparentTexCoords);
         rv.setIndices(c_TransparentIndices);
         return rv;
     }
 
-    osc::Camera CreateCameraThatMatchesLearnOpenGL()
+    Camera CreateCameraThatMatchesLearnOpenGL()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
@@ -243,7 +246,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLBlendingTab::id()
+CStringView osc::LOGLBlendingTab::id()
 {
     return c_TabStringID;
 }
@@ -262,7 +265,7 @@ osc::UID osc::LOGLBlendingTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLBlendingTab::implGetName() const
+CStringView osc::LOGLBlendingTab::implGetName() const
 {
     return m_Impl->getName();
 }

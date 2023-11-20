@@ -14,6 +14,9 @@
 #include <numbers>
 #include <vector>
 
+using osc::Mesh;
+using osc::MeshTopology;
+using osc::Triangle;
 using osc::Vec2;
 using osc::Vec3;
 
@@ -99,7 +102,7 @@ namespace
         {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
     }};
 
-    // a cube wire mesh, suitable for `osc::MeshTopology::Lines` drawing
+    // a cube wire mesh, suitable for `MeshTopology::Lines` drawing
     //
     // a pair of verts per edge of the cube. The cube has 12 edges, so 24 lines
     constexpr std::array<UntexturedVert, 24> c_CubeEdgeLines =
@@ -167,7 +170,7 @@ namespace
             normals.clear();
             texcoords.clear();
             indices.clear();
-            topology = osc::MeshTopology::Triangles;
+            topology = MeshTopology::Triangles;
         }
 
         void reserve(size_t s)
@@ -182,12 +185,12 @@ namespace
         std::vector<Vec3> normals;
         std::vector<Vec2> texcoords;
         std::vector<uint32_t> indices;
-        osc::MeshTopology topology = osc::MeshTopology::Triangles;
+        MeshTopology topology = MeshTopology::Triangles;
     };
 
-    osc::Mesh CreateMeshFromData(NewMeshData&& data)
+    Mesh CreateMeshFromData(NewMeshData&& data)
     {
-        osc::Mesh rv;
+        Mesh rv;
         rv.setTopology(data.topology);
         rv.setVerts(data.verts);
         rv.setNormals(data.normals);
@@ -488,7 +491,7 @@ osc::Mesh osc::GenUntexturedYToYCone(size_t nsides)
                 {std::cos(thetaStart), bottomY, std::sin(thetaStart)},
             };
 
-            Vec3 const normal = osc::TriangleNormal(triangle);
+            Vec3 const normal = TriangleNormal(triangle);
 
             push(triangle.p0, normal);
             push(triangle.p1, normal);
@@ -639,7 +642,7 @@ osc::Mesh osc::GenTorus(size_t slices, size_t stacks, float torusCenterToTubeCen
 
     if (slices < 3 || stacks < 3)
     {
-        return osc::Mesh{};
+        return Mesh{};
     }
 
     auto const torusFn = [torusCenterToTubeCenterRadius, tubeRadius](Vec2 const uv)
@@ -708,28 +711,28 @@ osc::Mesh osc::GenTorus(size_t slices, size_t stacks, float torusCenterToTubeCen
         data.normals.resize(data.verts.size());
         for (size_t i = 0; i+2 < data.indices.size(); i += 3)
         {
-            osc::Triangle const t =
+            Triangle const t =
             {
                 data.verts.at(data.indices[i]),
                 data.verts.at(data.indices[i+1]),
                 data.verts.at(data.indices[i+2]),
             };
-            osc::Triangle const t1 =
+            Triangle const t1 =
             {
                 data.verts.at(data.indices[i+1]),
                 data.verts.at(data.indices[i+2]),
                 data.verts.at(data.indices[i]),
             };
-            osc::Triangle const t2 =
+            Triangle const t2 =
             {
                 data.verts.at(data.indices[i+2]),
                 data.verts.at(data.indices[i]),
                 data.verts.at(data.indices[i+1]),
             };
 
-            data.normals.at(data.indices[i]) = osc::TriangleNormal(t);
-            data.normals.at(data.indices[i+1]) = osc::TriangleNormal(t1);
-            data.normals.at(data.indices[i+2]) = osc::TriangleNormal(t2);
+            data.normals.at(data.indices[i]) = TriangleNormal(t);
+            data.normals.at(data.indices[i+1]) = TriangleNormal(t1);
+            data.normals.at(data.indices[i+2]) = TriangleNormal(t2);
         }
         OSC_ASSERT(data.normals.size() == data.verts.size());
     }
@@ -813,8 +816,8 @@ osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(Vec2 min, Vec2 max, Vec2i st
     OSC_ASSERT(indices.size() <= static_cast<size_t>(4 * steps.y * steps.y) && "too many indices were emitted?");
 
     // emit data as a renderable mesh
-    osc::Mesh rv;
-    rv.setTopology(osc::MeshTopology::Lines);
+    Mesh rv;
+    rv.setTopology(MeshTopology::Lines);
     rv.setVerts(verts);
     rv.setIndices(indices);
     return rv;
@@ -899,8 +902,8 @@ osc::Mesh osc::GenNxMTriangleQuad2DGrid(Vec2i steps)
     OSC_ASSERT(verts.size() == coords.size());
     OSC_ASSERT(std::ssize(indices) == static_cast<ptrdiff_t>((steps.x-1)*(steps.y-1)*6));
 
-    osc::Mesh rv;
-    rv.setTopology(osc::MeshTopology::Triangles);
+    Mesh rv;
+    rv.setTopology(MeshTopology::Triangles);
     rv.setVerts(verts);
     rv.setTexCoords(coords);
     rv.setIndices(indices);

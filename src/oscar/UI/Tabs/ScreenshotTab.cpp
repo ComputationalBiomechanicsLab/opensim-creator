@@ -35,18 +35,20 @@
 #include <utility>
 #include <unordered_set>
 
+using osc::Color;
+using osc::Rect;
 using osc::Vec2;
 
 namespace
 {
-    constexpr osc::Color c_UnselectedColor = {1.0f, 1.0f, 1.0f, 0.4f};
-    constexpr osc::Color c_SelectedColor = {1.0f, 0.0f, 0.0f, 0.8f};
+    constexpr Color c_UnselectedColor = {1.0f, 1.0f, 1.0f, 0.4f};
+    constexpr Color c_SelectedColor = {1.0f, 0.0f, 0.0f, 0.8f};
 
     // returns a rect that fully spans at least one dimension of the target rect, but has
     // the given aspect ratio
     //
     // the returned rectangle is in the same space as the target rectangle
-    osc::Rect ShrinkToFit(osc::Rect targetRect, float aspectRatio)
+    Rect ShrinkToFit(Rect targetRect, float aspectRatio)
     {
         float const targetAspectRatio = osc::AspectRatio(targetRect);
         float const ratio = targetAspectRatio / aspectRatio;
@@ -68,11 +70,11 @@ namespace
         }
     }
 
-    osc::Rect MapRect(osc::Rect const& sourceRect, osc::Rect const& targetRect, osc::Rect const& rect)
+    Rect MapRect(Rect const& sourceRect, Rect const& targetRect, Rect const& rect)
     {
         Vec2 const scale = osc::Dimensions(targetRect) / osc::Dimensions(sourceRect);
 
-        return osc::Rect
+        return Rect
         {
             targetRect.p1 + scale*(rect.p1 - sourceRect.p1),
             targetRect.p1 + scale*(rect.p2 - sourceRect.p1),

@@ -27,7 +27,10 @@
 #include <cstdint>
 #include <memory>
 
+using osc::Camera;
+using osc::CStringView;
 using osc::Mat4;
+using osc::Mesh;
 using osc::Vec2;
 using osc::Vec3;
 
@@ -59,20 +62,20 @@ namespace
         3, 5, 4,
     });
 
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Framebuffers";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/Framebuffers";
 
-    osc::Mesh GeneratePlane()
+    Mesh GeneratePlane()
     {
-        osc::Mesh rv;
+        Mesh rv;
         rv.setVerts(c_PlaneVertices);
         rv.setTexCoords(c_PlaneTexCoords);
         rv.setIndices(c_PlaneIndices);
         return rv;
     }
 
-    osc::Camera CreateSceneCamera()
+    Camera CreateSceneCamera()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
@@ -80,9 +83,9 @@ namespace
         return rv;
     }
 
-    osc::Camera CreateScreenCamera()
+    Camera CreateScreenCamera()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setViewMatrixOverride(osc::Identity<Mat4>());
         rv.setProjectionMatrixOverride(osc::Identity<Mat4>());
         return rv;
@@ -141,10 +144,10 @@ private:
         }
 
         // setup render texture
-        osc::Rect viewportRect = osc::GetMainViewportWorkspaceScreenRect();
+        Rect viewportRect = osc::GetMainViewportWorkspaceScreenRect();
         Vec2 viewportRectDims = osc::Dimensions(viewportRect);
         m_RenderTexture.setDimensions(viewportRectDims);
-        m_RenderTexture.setAntialiasingLevel(osc::App::get().getCurrentAntiAliasingLevel());
+        m_RenderTexture.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
 
         // render scene
         {
@@ -152,13 +155,13 @@ private:
             m_SceneRenderMaterial.setTexture("uTexture1", m_ContainerTexture);
             Transform t;
             t.position = { -1.0f, 0.0f, -1.0f };
-            osc::Graphics::DrawMesh(m_CubeMesh, t, m_SceneRenderMaterial, m_SceneCamera);
+            Graphics::DrawMesh(m_CubeMesh, t, m_SceneRenderMaterial, m_SceneCamera);
             t.position = { 1.0f, 0.0f, -1.0f };
-            osc::Graphics::DrawMesh(m_CubeMesh, t, m_SceneRenderMaterial, m_SceneCamera);
+            Graphics::DrawMesh(m_CubeMesh, t, m_SceneRenderMaterial, m_SceneCamera);
 
             // floor
             m_SceneRenderMaterial.setTexture("uTexture1", m_MetalTexture);
-            osc::Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_SceneRenderMaterial, m_SceneCamera);
+            Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_SceneRenderMaterial, m_SceneCamera);
         }
         m_SceneCamera.renderTo(m_RenderTexture);
 
@@ -214,7 +217,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLFramebuffersTab::id()
+CStringView osc::LOGLFramebuffersTab::id()
 {
     return c_TabStringID;
 }
@@ -233,7 +236,7 @@ osc::UID osc::LOGLFramebuffersTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLFramebuffersTab::implGetName() const
+CStringView osc::LOGLFramebuffersTab::implGetName() const
 {
     return m_Impl->getName();
 }

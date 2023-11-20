@@ -9,6 +9,7 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
@@ -18,26 +19,37 @@
 #include <string_view>
 #include <unordered_map>
 
+using osc::Color;
+using osc::DAEMetadata;
+using osc::Mat4;
+using osc::Mesh;
+using osc::MeshIndicesView;
+using osc::MeshTopology;
+using osc::SceneDecoration;
+using osc::Transform;
+using osc::Vec2;
+using osc::Vec3;
+
 // scene-to-graph conversion stuff
 namespace
 {
     struct DAEGeometry final {
 
-        DAEGeometry(std::string geometryID_, osc::Mesh mesh_) :
+        DAEGeometry(std::string geometryID_, Mesh mesh_) :
             geometryID{std::move(geometryID_)},
             mesh{std::move(mesh_)}
         {
         }
 
         std::string geometryID;
-        osc::Mesh mesh;
+        Mesh mesh;
     };
 
     struct DAEMaterial final {
 
         DAEMaterial(
             std::string materialID_,
-            osc::Color const& color_) :
+            Color const& color_) :
 
             materialID{std::move(materialID_)},
             color{color_}
@@ -45,7 +57,7 @@ namespace
         }
 
         std::string materialID;
-        osc::Color color;
+        Color color;
     };
 
     struct DAEInstance final {
@@ -54,7 +66,7 @@ namespace
             std::string instanceID_,
             std::string geometryID_,
             std::string materialID_,
-            osc::Transform const& transform_) :
+            Transform const& transform_) :
 
             instanceID{std::move(instanceID_)},
             geometryID{std::move(geometryID_)},
@@ -66,7 +78,7 @@ namespace
         std::string instanceID;
         std::string geometryID;
         std::string materialID;
-        osc::Transform transform;
+        Transform transform;
     };
 
     // internal representation of a datastructure that more closely resembles
@@ -77,19 +89,19 @@ namespace
         std::vector<DAEInstance> instances;
     };
 
-    DAESceneGraph ToDAESceneGraph(std::span<osc::SceneDecoration const> els)
+    DAESceneGraph ToDAESceneGraph(std::span<SceneDecoration const> els)
     {
         DAESceneGraph rv;
 
         int64_t latestMesh = 0;
         int64_t latestMaterial = 0;
-        std::unordered_map<osc::Mesh, std::string> mesh2id;
-        std::unordered_map<osc::Color, std::string> color2materialid;
+        std::unordered_map<Mesh, std::string> mesh2id;
+        std::unordered_map<Color, std::string> color2materialid;
         int64_t latestInstance = 0;
 
-        for (osc::SceneDecoration const& el : els)
+        for (SceneDecoration const& el : els)
         {
-            if (el.mesh.getTopology() != osc::MeshTopology::Triangles)
+            if (el.mesh.getTopology() != MeshTopology::Triangles)
             {
                 continue;  // unsupported
             }
@@ -126,17 +138,17 @@ namespace
 // graph-writing stuff
 namespace
 {
-    std::span<float const> ToFloatSpan(std::span<osc::Vec2 const> s)
+    std::span<float const> ToFloatSpan(std::span<Vec2 const> s)
     {
         return {osc::ValuePtr(s[0]), 2 * s.size()};
     }
 
-    std::span<float const> ToFloatSpan(std::span<osc::Vec3 const> s)
+    std::span<float const> ToFloatSpan(std::span<Vec3 const> s)
     {
         return {osc::ValuePtr(s[0]), 3 * s.size()};
     }
 
-    std::span<float const> ToFloatSpan(osc::Color const& v)
+    std::span<float const> ToFloatSpan(Color const& v)
     {
         return {osc::ValuePtr(v), 4};
     }
@@ -172,7 +184,7 @@ namespace
         o << '\n';
     }
 
-    void WriteTopLevelAssetBlock(std::ostream& o, osc::DAEMetadata const& metadata)
+    void WriteTopLevelAssetBlock(std::ostream& o, DAEMetadata const& metadata)
     {
         o << "  <asset>\n";
         o << "    <contributor>\n";
@@ -236,7 +248,7 @@ namespace
 
     void WriteMeshPositionsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        std::span<osc::Vec3 const> const vals = geom.mesh.getVerts();
+        std::span<Vec3 const> const vals = geom.mesh.getVerts();
         size_t const floatCount = 3 * vals.size();
         size_t const vertCount = vals.size();
 
@@ -254,7 +266,7 @@ namespace
 
     void WriteMeshNormalsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        std::span<osc::Vec3 const> const vals = geom.mesh.getNormals();
+        std::span<Vec3 const> const vals = geom.mesh.getNormals();
         size_t const floatCount = 3 * vals.size();
         size_t const normalCount = vals.size();
 
@@ -272,7 +284,7 @@ namespace
 
     void WriteMeshTextureCoordsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        std::span<osc::Vec2 const> const vals = geom.mesh.getTexCoords();
+        std::span<Vec2 const> const vals = geom.mesh.getTexCoords();
         size_t const floatCount = 2 * vals.size();
         size_t const coordCount = vals.size();
 
@@ -296,7 +308,7 @@ namespace
 
     void WriteMeshTriangles(std::ostream& o, DAEGeometry const& geom)
     {
-        osc::MeshIndicesView const indices = geom.mesh.getIndices();
+        MeshIndicesView const indices = geom.mesh.getIndices();
         size_t const numTriangles = indices.size() / 3;
 
         o << "        <triangles count=\"" << numTriangles << "\">\n";
@@ -359,14 +371,14 @@ namespace
         o << "  </library_geometries>\n";
     }
 
-    void WriteTransformMatrix(std::ostream& o, osc::Transform const& t)
+    void WriteTransformMatrix(std::ostream& o, Transform const& t)
     {
-        osc::Mat4 const m = osc::ToMat4(t);
+        Mat4 const m = osc::ToMat4(t);
 
         // row-major
         o << R"(        <matrix sid="transform">)";
         std::string_view delim;
-        for (osc::Mat4::length_type row = 0; row < 4; ++row)
+        for (Mat4::length_type row = 0; row < 4; ++row)
         {
             o << delim << m[0][row];
             delim = " ";

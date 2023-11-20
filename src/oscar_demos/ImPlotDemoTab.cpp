@@ -6,9 +6,11 @@
 
 #include <memory>
 
+using osc::CStringView;
+
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "Demos/ImPlot";
+    constexpr CStringView c_TabStringID = "Demos/ImPlot";
 }
 
 class osc::ImPlotDemoTab::Impl final : public osc::StandardTabBase {

@@ -31,15 +31,18 @@
 
 #include <memory>
 
+using osc::TabHost;
+using osc::TabRegistryEntry;
+
 namespace
 {
     template<typename TabType>
     void RegisterTab(osc::TabRegistry& registry)
     {
-        osc::TabRegistryEntry entry
+        TabRegistryEntry entry
         {
             TabType::id(),
-            [](osc::ParentPtr<osc::TabHost> const& h) { return std::make_unique<TabType>(h); },
+            [](osc::ParentPtr<TabHost> const& h) { return std::make_unique<TabType>(h); },
         };
         registry.registerTab(entry);
     }
