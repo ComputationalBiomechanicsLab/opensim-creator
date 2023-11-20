@@ -1,9 +1,9 @@
 #include <oscar/Utils/VariantType.hpp>
 
 #include <gtest/gtest.h>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 
+#include <array>
 #include <limits>
 #include <type_traits>
 
@@ -15,7 +15,7 @@ TEST(VariantType, ToStringReturnsExpectedResults)
         VariantType input;
         std::string_view expectedOutput;
     };
-    auto const testCases = osc::to_array<TestCase>(
+    auto const testCases = std::to_array<TestCase>(
     {
         {VariantType::Nil, "Nil"},
         {VariantType::Bool, "Bool"},

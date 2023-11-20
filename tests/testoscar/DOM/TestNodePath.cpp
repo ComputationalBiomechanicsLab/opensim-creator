@@ -1,7 +1,6 @@
 #include <oscar/DOM/NodePath.hpp>
 
 #include <gtest/gtest.h>
-#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <array>
 #include <iostream>
@@ -211,7 +210,7 @@ TEST(NodePath, HasExpectedNumberOfElementsForTestInputs)
         osc::NodePath::iterator::difference_type expectedOutput;
     };
 
-    auto const tcs = osc::to_array<TestCase>(
+    auto const tcs = std::to_array<TestCase>(
     {
         {"", 0},
         {"/", 0},
@@ -242,7 +241,7 @@ TEST(NodePath, NormalizesInputsAsExpected)
         std::string_view expectedOutput;
     };
 
-    auto const tcs = osc::to_array<TestCase>(
+    auto const tcs = std::to_array<TestCase>(
     {
         {"",                       "" },
         {"/",                      "/" },
@@ -290,7 +289,7 @@ TEST(NodePath, NormalizesInputsAsExpected)
 
 TEST(NodePath, ThrowsIfGivenInvalidInputs)
 {
-    auto const inputs = osc::to_array<std::string_view>(
+    auto const inputs = std::to_array<std::string_view>(
     {
         "a/../..",
         "./a/../..",

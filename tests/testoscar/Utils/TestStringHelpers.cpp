@@ -276,7 +276,7 @@ TEST(TryParseHexCharsAsByte, ReturnsExpectedResults)
 
 TEST(StringHelpers, IsValidIdentifierReturnsTrueForTypicalIdentifiers)
 {
-    auto const testCases = osc::to_array(
+    auto const testCases = std::to_array(
     {
         "f",
         "g",
@@ -299,7 +299,7 @@ TEST(StringHelpers, IsValidIdentifierReturnsTrueForTypicalIdentifiers)
 
 TEST(StringHelpers, IsValidIdentifierReturnsFalseWhenGivenAnIdentifierWithLeadingNumbers)
 {
-    auto const testCases = osc::to_array(
+    auto const testCases = std::to_array(
     {
         "1f",
         "2g",
@@ -340,7 +340,7 @@ TEST(StringHelpers, IsValidIdentifierReturnsFalseWhenGivenIdentifiersWithInvalid
         }
     };
 
-    auto const invalidRanges = osc::to_array<std::pair<int, int>>(
+    auto const invalidRanges = std::to_array<std::pair<int, int>>(
     {
         {0, 0x1F},    // control chars
         {0x20, 0x2F}, // SPC ! " # $ % & ' ( ) * +  ' - /

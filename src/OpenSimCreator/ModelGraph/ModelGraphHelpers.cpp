@@ -14,8 +14,8 @@
 #include <oscar/Scene/SceneDecorationFlags.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/StdVariantHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <oscar/Utils/VariantHelpers.hpp>
 
 #include <algorithm>
 #include <sstream>

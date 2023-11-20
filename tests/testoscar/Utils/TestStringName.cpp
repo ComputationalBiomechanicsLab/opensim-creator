@@ -1,10 +1,10 @@
 #include <oscar/Utils/StringName.hpp>
 
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <gtest/gtest.h>
 
+#include <array>
 #include <iterator>
 #include <span>
 #include <sstream>
@@ -15,9 +15,9 @@
 using osc::CStringView;
 using osc::StringName;
 
-constexpr auto c_LongStringToAvoidSSOData = osc::to_array("somequitelongstringthatprobablyneedstobeheapallocatedsothatmemoryanalyzershaveabetterchance");
+constexpr auto c_LongStringToAvoidSSOData = std::to_array("somequitelongstringthatprobablyneedstobeheapallocatedsothatmemoryanalyzershaveabetterchance");
 constexpr char const* const c_LongStringToAvoidSSO = c_LongStringToAvoidSSOData.data();
-constexpr auto c_AnotherStringToAvoidSSOData = osc::to_array("somedifferencequitelongstringthatprobablyneedstobeheapallocatedbutwhoknows");
+constexpr auto c_AnotherStringToAvoidSSOData = std::to_array("somedifferencequitelongstringthatprobablyneedstobeheapallocatedbutwhoknows");
 constexpr char const* const c_AnotherStringToAvoidSSO = c_AnotherStringToAvoidSSOData.data();
 
 TEST(StringName, CanBeDefaultConstructed)
@@ -307,7 +307,7 @@ TEST(StringName, BackReturnsLastCharacter)
 
 TEST(StringName, DataReturnsNulTerminatedPointerToFirstElement)
 {
-    constexpr auto c_Input = osc::to_array("string");
+    constexpr auto c_Input = std::to_array("string");
     StringName s{c_Input.data()};
 
     std::span<char const> inputSpan(c_Input);
@@ -318,7 +318,7 @@ TEST(StringName, DataReturnsNulTerminatedPointerToFirstElement)
 
 TEST(StringName, CStringReturnsNulTerminatedPointerToFirstElement)
 {
-    constexpr auto c_Input = osc::to_array("string");
+    constexpr auto c_Input = std::to_array("string");
     StringName s{c_Input.data()};
 
     std::span<char const> inputSpan(c_Input);

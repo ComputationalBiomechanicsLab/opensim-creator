@@ -14,6 +14,7 @@
 
 using osc::detail::StringNameData;
 using osc::StringName;
+using osc::SynchronizedValue;
 
 namespace
 {
@@ -68,14 +69,14 @@ namespace
         std::equal_to<>
     >;
 
-    osc::SynchronizedValue<StringNameLookup>& GetGlobalStringNameLUT()
+    SynchronizedValue<StringNameLookup>& GetGlobalStringNameLUT()
     {
-        static osc::SynchronizedValue<StringNameLookup> s_Lut;
+        static SynchronizedValue<StringNameLookup> s_Lut;
         return s_Lut;
     }
 
     template<typename StringLike>
-    osc::detail::StringNameData& PossiblyConstructThenGetData(StringLike&& input)
+    StringNameData& PossiblyConstructThenGetData(StringLike&& input)
     {
         auto [it, inserted] = GetGlobalStringNameLUT().lock()->emplace(std::forward<StringLike>(input));
         if (!inserted)
@@ -85,7 +86,7 @@ namespace
         return **it;
     }
 
-    void DecrementThenPossiblyDestroyData(osc::detail::StringNameData& data)
+    void DecrementThenPossiblyDestroyData(StringNameData& data)
     {
         if (data.decrementOwnerCount())
         {

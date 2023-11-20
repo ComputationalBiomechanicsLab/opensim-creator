@@ -4,9 +4,9 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/StringName.hpp>
 
+#include <array>
 #include <charconv>
 #include <stdexcept>
 #include <sstream>
@@ -270,7 +270,7 @@ TEST(Variant, ColorToIntReturnsExpectedValues)
 
 TEST(Variant, ColorValueToStringReturnsSameAsToHtmlStringRGBA)
 {
-    auto const colors = osc::to_array(
+    auto const colors = std::to_array(
     {
         Color::red(),
         Color::magenta(),
@@ -305,7 +305,7 @@ TEST(Variant, FloatValueToBoolReturnsExpectedValues)
 
 TEST(Variant, FloatValueToColorReturnsExpectedColor)
 {
-    for (float v : osc::to_array<float>({0.0f, 0.5f, 0.75, 1.0f}))
+    for (float v : std::to_array<float>({0.0f, 0.5f, 0.75, 1.0f}))
     {
         Color const expected = {v, v, v};
         ASSERT_EQ(Variant(v).to<Color>(), expected);
@@ -321,7 +321,7 @@ TEST(Variant, FloatValueToFloatReturnsInput)
 
 TEST(Variant, FloatValueToIntReturnsCastedResult)
 {
-    for (float v : osc::to_array<float>({-0.5f, -0.123f, 0.0f, 1.0f, 1337.0f}))
+    for (float v : std::to_array<float>({-0.5f, -0.123f, 0.0f, 1.0f, 1337.0f}))
     {
         int const expected = static_cast<int>(v);
         ASSERT_EQ(Variant(v).to<int>(), expected);
@@ -330,7 +330,7 @@ TEST(Variant, FloatValueToIntReturnsCastedResult)
 
 TEST(Variant, FloatValueToStringReturnsToStringedResult)
 {
-    for (float v : osc::to_array<float>({-5.35f, -2.0f, -1.0f, 0.0f, 0.123f, 18000.0f}))
+    for (float v : std::to_array<float>({-5.35f, -2.0f, -1.0f, 0.0f, 0.123f, 18000.0f}))
     {
         std::string const expected = std::to_string(v);
         ASSERT_EQ(Variant(v).to<std::string>(), expected);
@@ -345,7 +345,7 @@ TEST(Variant, FloatValueToStringNameReturnsEmptyStringName)
 
 TEST(Variant, FloatValueToVec3ReturnsVec3FilledWithFloat)
 {
-    for (float v : osc::to_array<float>({-20000.0f, -5.328f, -1.2f, 0.0f, 0.123f, 50.0f, 18000.0f}))
+    for (float v : std::to_array<float>({-20000.0f, -5.328f, -1.2f, 0.0f, 0.123f, 50.0f, 18000.0f}))
     {
         Vec3 const expected = {v, v, v};
         ASSERT_EQ(Variant(v).to<Vec3>(), expected);
@@ -372,7 +372,7 @@ TEST(Variant, IntValueToColorReturnsBlackOrWhite)
 
 TEST(Variant, IntValueToFloatReturnsIntCastedToFloat)
 {
-    for (int v : osc::to_array<int>({-10000, -1000, -1, 0, 1, 17, 23000}))
+    for (int v : std::to_array<int>({-10000, -1000, -1, 0, 1, 17, 23000}))
     {
         auto const expected = static_cast<float>(v);
         ASSERT_EQ(Variant(v).to<float>(), expected);
@@ -381,7 +381,7 @@ TEST(Variant, IntValueToFloatReturnsIntCastedToFloat)
 
 TEST(Variant, IntValueToIntReturnsTheSuppliedInt)
 {
-    for (int v : osc::to_array<int>({ -123028, -2381, -32, -2, 0, 1, 1488, 5098}))
+    for (int v : std::to_array<int>({ -123028, -2381, -32, -2, 0, 1, 1488, 5098}))
     {
         ASSERT_EQ(Variant(v).to<int>(), v);
     }
@@ -389,7 +389,7 @@ TEST(Variant, IntValueToIntReturnsTheSuppliedInt)
 
 TEST(Variant, IntValueToStringReturnsStringifiedInt)
 {
-    for (int v : osc::to_array<int>({ -121010, -13482, -1923, -123, -92, -7, 0, 1, 1294, 1209849}))
+    for (int v : std::to_array<int>({ -121010, -13482, -1923, -123, -92, -7, 0, 1, 1294, 1209849}))
     {
         std::string const expected = std::to_string(v);
         ASSERT_EQ(Variant(v).to<std::string>(), expected);
@@ -405,7 +405,7 @@ TEST(Variant, IntValueToStringNameReturnsEmptyString)
 
 TEST(Variant, IntValueToVec3CastsValueToFloatThenPlacesInAllSlots)
 {
-    for (int v : osc::to_array<int>({ -12193, -1212, -738, -12, -1, 0, 1, 18, 1294, 1209849}))
+    for (int v : std::to_array<int>({ -12193, -1212, -738, -12, -1, 0, 1, 18, 1294, 1209849}))
     {
         auto const vf = static_cast<float>(v);
         Vec3 const expected = {vf, vf, vf};
@@ -446,7 +446,7 @@ TEST(Variant, StringValueColorReturnsBlackIfStringIsInvalidHTMLColorString)
 
 TEST(Variant, StringValueToFloatTriesToParseStringAsFloatAndReturnsZeroOnFailure)
 {
-    auto const inputs = osc::to_array<std::string_view>(
+    auto const inputs = std::to_array<std::string_view>(
     {
         "-1.0",
         "20e-10",
@@ -467,7 +467,7 @@ TEST(Variant, StringValueToFloatTriesToParseStringAsFloatAndReturnsZeroOnFailure
 
 TEST(Variant, StringValueToIntTriesToParseStringAsBase10Int)
 {
-    auto const inputs = osc::to_array<std::string_view>(
+    auto const inputs = std::to_array<std::string_view>(
     {
         "-1.0",
         "20e-10",
@@ -488,7 +488,7 @@ TEST(Variant, StringValueToIntTriesToParseStringAsBase10Int)
 
 TEST(Variant, StringValueToStringReturnsSuppliedString)
 {
-    auto const inputs = osc::to_array<std::string_view>(
+    auto const inputs = std::to_array<std::string_view>(
     {
         "some\tstring",
         "-1.0",
@@ -510,7 +510,7 @@ TEST(Variant, StringValueToStringReturnsSuppliedString)
 
 TEST(Variant, StringValueToStringNameReturnsSuppliedStringAsAStringName)
 {
-    auto const inputs = osc::to_array<std::string_view>(
+    auto const inputs = std::to_array<std::string_view>(
     {
         "some\tstring",
         "-1.0",
@@ -532,7 +532,7 @@ TEST(Variant, StringValueToStringNameReturnsSuppliedStringAsAStringName)
 
 TEST(Variant, StringValueToVec3AlwaysReturnsZeroedVec)
 {
-    auto const inputs = osc::to_array<std::string_view>(
+    auto const inputs = std::to_array<std::string_view>(
     {
         "some\tstring",
         "-1.0",
@@ -582,7 +582,7 @@ TEST(Variant, Vec3ValueToBoolReturnsTrueIfXIsNonZeroRegardlessOfOtherComponents)
 
 TEST(Variant, Vec3ValueToColorExtractsTheElementsIntoRGB)
 {
-    auto const testCases = osc::to_array<Vec3>(
+    auto const testCases = std::to_array<Vec3>(
     {
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
@@ -599,7 +599,7 @@ TEST(Variant, Vec3ValueToColorExtractsTheElementsIntoRGB)
 
 TEST(Variant, Vec3ValueToFloatExtractsXToTheFloat)
 {
-    auto const testCases = osc::to_array<Vec3>(
+    auto const testCases = std::to_array<Vec3>(
     {
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
@@ -616,7 +616,7 @@ TEST(Variant, Vec3ValueToFloatExtractsXToTheFloat)
 
 TEST(Variant, Vec3ValueToIntExtractsXToTheInt)
 {
-    auto const testCases = osc::to_array<Vec3>(
+    auto const testCases = std::to_array<Vec3>(
     {
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
@@ -633,7 +633,7 @@ TEST(Variant, Vec3ValueToIntExtractsXToTheInt)
 
 TEST(Variant, Vec3ValueToStringReturnsSameAsDirectlyConvertingVectorToString)
 {
-    auto const testCases = osc::to_array<Vec3>(
+    auto const testCases = std::to_array<Vec3>(
     {
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
@@ -656,7 +656,7 @@ TEST(Variant, Vec3ValueToStringNameReturnsAnEmptyString)
 
 TEST(Variant, Vec3ValueToVec3ReturnsOriginalValue)
 {
-    auto const testCases = osc::to_array<Vec3>(
+    auto const testCases = std::to_array<Vec3>(
     {
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
@@ -673,7 +673,7 @@ TEST(Variant, Vec3ValueToVec3ReturnsOriginalValue)
 
 TEST(Variant, IsAlwaysEqualToACopyOfItself)
 {
-    auto const testCases = osc::to_array<Variant>(
+    auto const testCases = std::to_array<Variant>(
     {
         Variant{false},
         Variant{true},
@@ -710,7 +710,7 @@ TEST(Variant, IsAlwaysEqualToACopyOfItself)
         ASSERT_EQ(tc, tc) << "input: " << tc.to<std::string>();
     }
 
-    auto const exceptions = osc::to_array<Variant>(
+    auto const exceptions = std::to_array<Variant>(
     {
         Variant{std::numeric_limits<float>::quiet_NaN()},
         Variant{std::numeric_limits<float>::signaling_NaN()},
@@ -723,7 +723,7 @@ TEST(Variant, IsAlwaysEqualToACopyOfItself)
 
 TEST(Variant, IsNotEqualToOtherValuesEvenIfConversionIsPossible)
 {
-    auto const testCases = osc::to_array<Variant>(
+    auto const testCases = std::to_array<Variant>(
     {
         Variant{false},
         Variant{true},
@@ -772,7 +772,7 @@ TEST(Variant, IsNotEqualToOtherValuesEvenIfConversionIsPossible)
 
 TEST(Variant, CanHashAVarietyOfTypes)
 {
-    auto const testCases = osc::to_array<Variant>(
+    auto const testCases = std::to_array<Variant>(
     {
         Variant{false},
         Variant{true},
@@ -814,7 +814,7 @@ TEST(Variant, CanHashAVarietyOfTypes)
 
 TEST(Variant, FreeFunctionToStringOnVarietyOfTypesReturnsSameAsCallingToStringMemberFunction)
 {
-    auto const testCases = osc::to_array<Variant>(
+    auto const testCases = std::to_array<Variant>(
     {
         Variant{false},
         Variant{true},
@@ -856,7 +856,7 @@ TEST(Variant, FreeFunctionToStringOnVarietyOfTypesReturnsSameAsCallingToStringMe
 
 TEST(Variant, StreamingToOutputStreamProducesSameOutputAsToString)
 {
-    auto const testCases = osc::to_array<Variant>(
+    auto const testCases = std::to_array<Variant>(
     {
         Variant{false},
         Variant{true},
@@ -900,7 +900,7 @@ TEST(Variant, StreamingToOutputStreamProducesSameOutputAsToString)
 
 TEST(Variant, HashesForStringValuesMatchStdStringEtc)
 {
-    auto const strings = osc::to_array<std::string_view>(
+    auto const strings = std::to_array<std::string_view>(
     {
         "false",
         "true",
@@ -968,7 +968,7 @@ TEST(Variant, StringNameValueToColorReturnsBlackIfStringIsInvalidHTMLColorString
 
 TEST(Variant, StringNameValueToFloatTriesToParseStringAsFloatAndReturnsZeroOnFailure)
 {
-    auto const inputs = osc::to_array<std::string_view>(
+    auto const inputs = std::to_array<std::string_view>(
     {
         "-1.0",
         "20e-10",
@@ -989,7 +989,7 @@ TEST(Variant, StringNameValueToFloatTriesToParseStringAsFloatAndReturnsZeroOnFai
 
 TEST(Variant, StringNameValueToIntTriesToParseStringAsBase10Int)
 {
-    auto const inputs = osc::to_array<std::string_view>(
+    auto const inputs = std::to_array<std::string_view>(
     {
         "-1.0",
         "20e-10",
@@ -1010,7 +1010,7 @@ TEST(Variant, StringNameValueToIntTriesToParseStringAsBase10Int)
 
 TEST(Variant, StringNameValueToStringReturnsSuppliedString)
 {
-    auto const inputs = osc::to_array<std::string_view>(
+    auto const inputs = std::to_array<std::string_view>(
     {
         "some\tstring",
         "-1.0",
@@ -1032,7 +1032,7 @@ TEST(Variant, StringNameValueToStringReturnsSuppliedString)
 
 TEST(Variant, StringNameValueToStringNameReturnsSuppliedStringName)
 {
-    auto const inputs = osc::to_array<std::string_view>(
+    auto const inputs = std::to_array<std::string_view>(
     {
         "some\tstring",
         "-1.0",
@@ -1054,7 +1054,7 @@ TEST(Variant, StringNameValueToStringNameReturnsSuppliedStringName)
 
 TEST(Variant, StringNameToVec3AlwaysReturnsZeroedVec)
 {
-    auto const inputs = osc::to_array<std::string_view>(
+    auto const inputs = std::to_array<std::string_view>(
     {
         "some\tstring",
         "-1.0",
@@ -1076,7 +1076,7 @@ TEST(Variant, StringNameToVec3AlwaysReturnsZeroedVec)
 
 TEST(Variant, HashOfStringNameVariantIsSameAsHashOfStringVariant)
 {
-    auto const inputs = osc::to_array<std::string_view>(
+    auto const inputs = std::to_array<std::string_view>(
     {
         "some\tstring",
         "-1.0",
@@ -1101,7 +1101,7 @@ TEST(Variant, HashOfStringNameVariantIsSameAsHashOfStringVariant)
 
 TEST(Variant, StringNameVariantComparesEqualToEquivalentStringVariant)
 {
-    auto const inputs = osc::to_array<std::string_view>(
+    auto const inputs = std::to_array<std::string_view>(
     {
         "some\tstring",
         "-1.0",
@@ -1125,7 +1125,7 @@ TEST(Variant, StringNameVariantComparesEqualToEquivalentStringVariant)
 
 TEST(Variant, StringNameVariantComparesEqualToEquivalentStringVariantReversed)
 {
-    auto const inputs = osc::to_array<std::string_view>(
+    auto const inputs = std::to_array<std::string_view>(
     {
         "some\tstring",
         "-1.0",
