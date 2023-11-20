@@ -95,6 +95,12 @@ osc::RecentFiles::RecentFiles() :
 {
 }
 
+osc::RecentFiles::RecentFiles(std::filesystem::path const& recentFilesFile) :
+    m_DiskLocation{recentFilesFile},
+    m_Files{LoadRecentFilesFile(m_DiskLocation)}
+{
+}
+
 void osc::RecentFiles::push_back(std::filesystem::path const& path)
 {
     // remove duplicates

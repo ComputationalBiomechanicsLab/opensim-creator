@@ -5,6 +5,7 @@ add_executable(TestOpenSimCreator
 
     Graphics/TestOpenSimDecorationGenerator.cpp
     Model/TestUndoableModelStatePair.cpp
+    Platform/TestRecentFiles.cpp
     Registry/TestStaticComponentRegistries.cpp
     Simulation/TestForwardDynamicSimulation.cpp
     UI/Widgets/TestAddComponentPopup.cpp
