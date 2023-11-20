@@ -6,16 +6,18 @@
 #include <memory>
 #include <string>
 
+namespace osc { class BVH; }
+
 namespace osc
 {
-    class MeshCache final {
+    class SceneCache final {
     public:
-        MeshCache();
-        MeshCache(MeshCache const&) = delete;
-        MeshCache(MeshCache&&) noexcept;
-        MeshCache& operator=(MeshCache const&) = delete;
-        MeshCache& operator=(MeshCache&&) noexcept;
-        ~MeshCache() noexcept;
+        SceneCache();
+        SceneCache(SceneCache const&) = delete;
+        SceneCache(SceneCache&&) noexcept;
+        SceneCache& operator=(SceneCache const&) = delete;
+        SceneCache& operator=(SceneCache&&) noexcept;
+        ~SceneCache() noexcept;
 
         // clear all cached meshes (can be slow: forces a full reload)
         void clear();
@@ -34,6 +36,8 @@ namespace osc
         Mesh getYLineMesh();
         Mesh getTexturedQuadMesh();
         Mesh getTorusMesh(float torusCenterToTubeCenterRadius, float tubeRadius);
+
+        BVH const& getBVH(Mesh const&);
 
     private:
         class Impl;

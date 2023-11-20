@@ -67,8 +67,6 @@ add_library(oscar STATIC
     Graphics/ImageLoadingFlags.hpp
     Graphics/Material.hpp
     Graphics/MaterialPropertyBlock.hpp
-    Graphics/MeshCache.cpp
-    Graphics/MeshCache.hpp
     Graphics/MeshGenerators.cpp
     Graphics/MeshGenerators.hpp
     Graphics/MeshIndicesView.hpp
@@ -94,6 +92,7 @@ add_library(oscar STATIC
     Graphics/ShaderCache.hpp
     Graphics/ShaderLocations.hpp
     Graphics/ShaderPropertyType.hpp
+    Graphics/SubMeshDescriptor.hpp
     Graphics/Texture2D.hpp
     Graphics/TextureChannelFormat.hpp
     Graphics/TextureDimensionality.hpp
@@ -105,8 +104,12 @@ add_library(oscar STATIC
 
     Maths/AABB.hpp
     Maths/BVH.hpp
+    Maths/BVHCollision.hpp
+    Maths/BVHNode.hpp
+    Maths/BVHPrim.hpp
     Maths/CollisionTests.hpp
     Maths/Disc.hpp
+    Maths/EasingFunctions.hpp
     Maths/Ellipsoid.hpp
     Maths/EulerPerspectiveCamera.hpp
     Maths/Line.hpp
@@ -158,6 +161,8 @@ add_library(oscar STATIC
 
     Scene/CachedSceneRenderer.cpp
     Scene/CachedSceneRenderer.hpp
+    Scene/SceneCache.cpp
+    Scene/SceneCache.hpp
     Scene/SceneCollision.hpp
     Scene/SceneDecoration.hpp
     Scene/SceneDecorationFlags.hpp
@@ -167,6 +172,11 @@ add_library(oscar STATIC
     Scene/SceneRenderer.hpp
     Scene/SceneRendererParams.cpp
     Scene/SceneRendererParams.hpp
+
+    Shims/Cpp20/bit.hpp
+    Shims/Cpp20/stop_token.hpp
+    Shims/Cpp20/thread.hpp
+    Shims/Cpp23/utility.hpp
 
     UI/Panels/LogViewerPanel.cpp
     UI/Panels/LogViewerPanel.hpp
@@ -228,16 +238,16 @@ add_library(oscar STATIC
     Utils/ClonePtr.hpp
     Utils/Concepts.hpp
     Utils/CopyOnUpdPtr.hpp
-    Utils/Cpp20Shims.hpp
+    Utils/CStringView.cpp
     Utils/CStringView.hpp
     Utils/DefaultConstructOnCopy.hpp
     Utils/EnumHelpers.hpp
     Utils/FileChangePoller.cpp
     Utils/FileChangePoller.hpp
+    Utils/FilenameExtractor.hpp
     Utils/FilesystemHelpers.cpp
     Utils/FilesystemHelpers.hpp
     Utils/HashHelpers.hpp
-    Utils/Macros.hpp
     Utils/ParalellizationHelpers.hpp
     Utils/ParentPtr.hpp
     Utils/Perf.cpp
@@ -255,6 +265,7 @@ add_library(oscar STATIC
     Utils/StringName.hpp
     Utils/StdVariantHelpers.hpp
     Utils/SynchronizedValue.hpp
+    Utils/SynchronizedValueGuard.hpp
     Utils/UID.cpp
     Utils/UID.hpp
     Utils/UndoRedo.cpp

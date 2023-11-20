@@ -14,7 +14,7 @@ namespace osc
 {
     class RendererGeometryShaderTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit RendererGeometryShaderTab(ParentPtr<TabHost> const&);
         RendererGeometryShaderTab(RendererGeometryShaderTab const&) = delete;

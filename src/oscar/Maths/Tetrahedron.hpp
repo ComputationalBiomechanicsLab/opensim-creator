@@ -33,7 +33,7 @@ namespace osc
             return 4;
         }
 
-        std::array<Vec3, 4> verts;
+        std::array<Vec3, 4> verts{};
     };
 
     float Volume(Tetrahedron const&);

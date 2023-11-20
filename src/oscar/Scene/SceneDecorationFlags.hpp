@@ -1,7 +1,6 @@
 #pragma once
 
-#include <cstdint>
-#include <type_traits>
+#include <oscar/Shims/Cpp23/utility.hpp>
 
 namespace osc
 {
@@ -16,20 +15,18 @@ namespace osc
         CastsShadows         = 1u<<6u,
     };
 
-    constexpr SceneDecorationFlags operator|(SceneDecorationFlags a, SceneDecorationFlags b) noexcept
+    constexpr SceneDecorationFlags operator|(SceneDecorationFlags lhs, SceneDecorationFlags rhs)
     {
-        using T = std::underlying_type_t<SceneDecorationFlags>;
-        return static_cast<SceneDecorationFlags>(static_cast<T>(a) | static_cast<T>(b));
+        return static_cast<SceneDecorationFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
     }
 
-    constexpr SceneDecorationFlags& operator|=(SceneDecorationFlags& a, SceneDecorationFlags b) noexcept
+    constexpr SceneDecorationFlags& operator|=(SceneDecorationFlags& lhs, SceneDecorationFlags rhs)
     {
-        return a = a | b;
+        return lhs = lhs | rhs;
     }
 
-    constexpr bool operator&(SceneDecorationFlags a, SceneDecorationFlags b) noexcept
+    constexpr bool operator&(SceneDecorationFlags lhs, SceneDecorationFlags rhs)
     {
-        using T = std::underlying_type_t<SceneDecorationFlags>;
-        return static_cast<T>(a) & static_cast<T>(b);
+        return osc::to_underlying(lhs) & osc::to_underlying(rhs);
     }
 }

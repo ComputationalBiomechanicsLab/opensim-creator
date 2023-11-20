@@ -21,39 +21,48 @@
 #include <string>
 #include <utility>
 
+using osc::App;
+using osc::Camera;
+using osc::ColorSpace;
+using osc::CStringView;
+using osc::Material;
+using osc::Mesh;
+using osc::Shader;
+using osc::Transform;
+
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/FaceCulling";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/FaceCulling";
 
-    osc::Mesh GenerateCubeSimilarlyToLOGL()
+    Mesh GenerateCubeSimilarlyToLOGL()
     {
-        osc::Mesh m = osc::GenCube();
-        m.transformVerts(osc::Transform{}.withScale(0.5f));
+        Mesh m = osc::GenCube();
+        m.transformVerts(Transform{}.withScale(0.5f));
         return m;
     }
 
-    osc::Material GenerateUVTestingTextureMappedMaterial()
+    Material GenerateUVTestingTextureMappedMaterial()
     {
-        osc::Material rv
+        Material rv
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.vert"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
             },
         };
 
         rv.setTexture("uTexture", osc::LoadTexture2DFromImage(
-            osc::App::resource("oscar_learnopengl/textures/uv_checker.jpg"),
-            osc::ColorSpace::sRGB
+            App::resource("oscar_learnopengl/textures/uv_checker.jpg"),
+            ColorSpace::sRGB
         ));
 
         return rv;
     }
 
-    osc::Camera CreateCameraThatMatchesLearnOpenGL()
+    Camera CreateCameraThatMatchesLearnOpenGL()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
@@ -155,7 +164,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLFaceCullingTab::id() noexcept
+CStringView osc::LOGLFaceCullingTab::id()
 {
     return c_TabStringID;
 }
@@ -174,7 +183,7 @@ osc::UID osc::LOGLFaceCullingTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLFaceCullingTab::implGetName() const
+CStringView osc::LOGLFaceCullingTab::implGetName() const
 {
     return m_Impl->getName();
 }

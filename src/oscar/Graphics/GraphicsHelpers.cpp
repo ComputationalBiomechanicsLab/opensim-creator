@@ -15,7 +15,6 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/SpanHelpers.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -38,7 +37,12 @@
 #include <utility>
 #include <vector>
 
+using osc::ColorSpace;
+using osc::ImageLoadingFlags;
 using osc::Mat4;
+using osc::Texture2D;
+using osc::TextureChannelFormat;
+using osc::TextureFormat;
 using osc::Vec2;
 using osc::Vec2i;
 using osc::Vec3;
@@ -55,14 +59,14 @@ namespace
         return std::lock_guard{s_StbiMutex};
     }
 
-    osc::Texture2D Load32BitTexture(
+    Texture2D Load32BitTexture(
         std::filesystem::path const& p,
-        osc::ColorSpace colorSpace,
-        osc::ImageLoadingFlags flags)
+        ColorSpace colorSpace,
+        ImageLoadingFlags flags)
     {
         auto const guard = LockStbiAPI();
 
-        if (flags & osc::ImageLoadingFlags::FlipVertically)
+        if (flags & ImageLoadingFlags::FlipVertically)
         {
             stbi_set_flip_vertically_on_load(c_StbTrue);
         }
@@ -75,7 +79,7 @@ namespace
             stbi_image_free,
         };
 
-        if (flags & osc::ImageLoadingFlags::FlipVertically)
+        if (flags & ImageLoadingFlags::FlipVertically)
         {
             stbi_set_flip_vertically_on_load(c_StbFalse);
         }
@@ -87,9 +91,9 @@ namespace
             throw std::runtime_error{std::move(ss).str()};
         }
 
-        std::optional<osc::TextureFormat> const format = osc::ToTextureFormat(
+        std::optional<TextureFormat> const format = osc::ToTextureFormat(
             static_cast<size_t>(numChannels),
-            osc::TextureChannelFormat::Float32
+            TextureChannelFormat::Float32
         );
 
         if (!format)
@@ -105,7 +109,7 @@ namespace
             static_cast<size_t>(dims.x*dims.y*numChannels)
         };
 
-        osc::Texture2D rv
+        Texture2D rv
         {
             dims,
             *format,
@@ -116,14 +120,14 @@ namespace
         return rv;
     }
 
-    osc::Texture2D Load8BitTexture(
+    Texture2D Load8BitTexture(
         std::filesystem::path const& p,
-        osc::ColorSpace colorSpace,
-        osc::ImageLoadingFlags flags)
+        ColorSpace colorSpace,
+        ImageLoadingFlags flags)
     {
         auto const guard = LockStbiAPI();
 
-        if (flags & osc::ImageLoadingFlags::FlipVertically)
+        if (flags & ImageLoadingFlags::FlipVertically)
         {
             stbi_set_flip_vertically_on_load(c_StbTrue);
         }
@@ -136,7 +140,7 @@ namespace
             stbi_image_free,
         };
 
-        if (flags & osc::ImageLoadingFlags::FlipVertically)
+        if (flags & ImageLoadingFlags::FlipVertically)
         {
             stbi_set_flip_vertically_on_load(c_StbFalse);
         }
@@ -148,9 +152,9 @@ namespace
             throw std::runtime_error{std::move(ss).str()};
         }
 
-        std::optional<osc::TextureFormat> const format = osc::ToTextureFormat(
+        std::optional<TextureFormat> const format = osc::ToTextureFormat(
             static_cast<size_t>(numChannels),
-            osc::TextureChannelFormat::Uint8
+            TextureChannelFormat::Uint8
         );
 
         if (!format)
@@ -160,7 +164,7 @@ namespace
             throw std::runtime_error{std::move(ss).str()};
         }
 
-        osc::Texture2D rv
+        Texture2D rv
         {
             dims,
             *format,
@@ -173,10 +177,10 @@ namespace
     // describes the direction of each cube face and which direction is "up"
     // from the perspective of looking at that face from the center of the cube
     struct CubemapFaceDetails final {
-        osc::Vec3 direction;
-        osc::Vec3 up;
+        Vec3 direction;
+        Vec3 up;
     };
-    constexpr auto c_CubemapFacesDetails = osc::to_array<CubemapFaceDetails>(
+    constexpr auto c_CubemapFacesDetails = std::to_array<CubemapFaceDetails>(
     {
         {{ 1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},
         {{-1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},

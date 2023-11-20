@@ -14,7 +14,7 @@ namespace osc
 {
     class LOGLNormalMappingTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit LOGLNormalMappingTab(ParentPtr<TabHost> const&);
         LOGLNormalMappingTab(LOGLNormalMappingTab const&) = delete;

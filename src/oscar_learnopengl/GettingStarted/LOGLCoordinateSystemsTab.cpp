@@ -17,21 +17,23 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <SDL_events.h>
 
+#include <array>
 #include <cstdint>
 #include <memory>
 #include <numbers>
 
+using osc::Camera;
+using osc::CStringView;
 using osc::Vec3;
 
 namespace
 {
     // worldspace positions of each cube (step 2)
-    constexpr auto c_CubePositions = osc::to_array<Vec3>(
+    constexpr auto c_CubePositions = std::to_array<Vec3>(
     {
         { 0.0f,  0.0f,  0.0f },
         { 2.0f,  5.0f, -15.0f},
@@ -45,11 +47,11 @@ namespace
         {-1.3f,  1.0f, -1.5f },
     });
 
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/CoordinateSystems";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/CoordinateSystems";
 
-    osc::Camera CreateCameraThatMatchesLearnOpenGL()
+    Camera CreateCameraThatMatchesLearnOpenGL()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
@@ -203,7 +205,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLCoordinateSystemsTab::id() noexcept
+CStringView osc::LOGLCoordinateSystemsTab::id()
 {
     return c_TabStringID;
 }
@@ -222,7 +224,7 @@ osc::UID osc::LOGLCoordinateSystemsTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLCoordinateSystemsTab::implGetName() const
+CStringView osc::LOGLCoordinateSystemsTab::implGetName() const
 {
     return m_Impl->getName();
 }

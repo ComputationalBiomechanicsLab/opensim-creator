@@ -21,32 +21,32 @@ namespace osc
     public:
         using value_type = ComponentRegistryEntryBase;
 
-        CStringView name() const noexcept
+        CStringView name() const
         {
             return m_Name;
         }
 
-        CStringView description() const noexcept
+        CStringView description() const
         {
             return m_Description;
         }
 
-        value_type const* begin() const noexcept
+        value_type const* begin() const
         {
             return m_Entries.data();
         }
 
-        value_type const* end() const noexcept
+        value_type const* end() const
         {
             return m_Entries.data() + m_Entries.size();
         }
 
-        size_t size() const noexcept
+        size_t size() const
         {
             return m_Entries.size();
         }
 
-        value_type const& operator[](size_t i) const noexcept
+        value_type const& operator[](size_t i) const
         {
             return m_Entries[i];
         }

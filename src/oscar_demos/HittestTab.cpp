@@ -17,23 +17,30 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
+#include <array>
 #include <cstdint>
 #include <limits>
 #include <memory>
 #include <optional>
 #include <vector>
 
+using osc::Camera;
+using osc::Color;
+using osc::CStringView;
+using osc::Line;
+using osc::MaterialPropertyBlock;
+using osc::Mesh;
+using osc::MeshTopology;
 using osc::Vec3;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "Demos/Hittest";
+    constexpr CStringView c_TabStringID = "Demos/Hittest";
 
-    constexpr auto c_CrosshairVerts = osc::to_array<Vec3>(
+    constexpr auto c_CrosshairVerts = std::to_array<Vec3>(
     {
         // -X to +X
         {-0.05f, 0.0f, 0.0f},
@@ -44,16 +51,16 @@ namespace
         {0.0f, +0.05f, 0.0f},
     });
 
-    constexpr auto c_CrosshairIndices = osc::to_array<uint16_t>({ 0, 1, 2, 3 });
+    constexpr auto c_CrosshairIndices = std::to_array<uint16_t>({ 0, 1, 2, 3 });
 
-    constexpr auto c_TriangleVerts = osc::to_array<Vec3>(
+    constexpr auto c_TriangleVerts = std::to_array<Vec3>(
     {
         {-10.0f, -10.0f, 0.0f},
         {+0.0f, +10.0f, 0.0f},
         {+10.0f, -10.0f, 0.0f},
     });
 
-    constexpr auto c_TriangleIndices = osc::to_array<uint16_t>({ 0, 1, 2 });
+    constexpr auto c_TriangleIndices = std::to_array<uint16_t>({ 0, 1, 2 });
 
     struct SceneSphere final {
 
@@ -91,31 +98,31 @@ namespace
         return rv;
     }
 
-    osc::Mesh GenerateCrosshairMesh()
+    Mesh GenerateCrosshairMesh()
     {
-        osc::Mesh rv;
-        rv.setTopology(osc::MeshTopology::Lines);
+        Mesh rv;
+        rv.setTopology(MeshTopology::Lines);
         rv.setVerts(c_CrosshairVerts);
         rv.setIndices(c_CrosshairIndices);
         return rv;
     }
 
-    osc::Mesh GenerateTriangleMesh()
+    Mesh GenerateTriangleMesh()
     {
-        osc::Mesh rv;
+        Mesh rv;
         rv.setVerts(c_TriangleVerts);
         rv.setIndices(c_TriangleIndices);
         return rv;
     }
 
-    osc::MaterialPropertyBlock GeneratePropertyBlock(osc::Color const& color)
+    MaterialPropertyBlock GeneratePropertyBlock(Color const& color)
     {
-        osc::MaterialPropertyBlock p;
+        MaterialPropertyBlock p;
         p.setColor("uColor", color);
         return p;
     }
 
-    osc::Line GetCameraRay(osc::Camera const& camera)
+    Line GetCameraRay(Camera const& camera)
     {
         return
         {
@@ -327,7 +334,7 @@ private:
 
 // public API
 
-osc::CStringView osc::HittestTab::id() noexcept
+osc::CStringView osc::HittestTab::id()
 {
     return c_TabStringID;
 }

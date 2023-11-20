@@ -3,7 +3,6 @@
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/MeshIndicesView.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
@@ -20,6 +19,7 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/AppConfig.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 
@@ -31,8 +31,8 @@
 
 using osc::Color;
 using osc::Mesh;
-using osc::MeshCache;
 using osc::Quat;
+using osc::SceneCache;
 using osc::SceneDecoration;
 using osc::Transform;
 using osc::Vec3;
@@ -40,7 +40,7 @@ using osc::Vec3;
 namespace
 {
     void DrawGrid(
-        MeshCache& cache,
+        SceneCache& cache,
         Quat const& rotation,
         std::function<void(SceneDecoration&&)> const& out)
     {
@@ -57,7 +57,7 @@ namespace
 }
 
 void osc::DrawBVH(
-    MeshCache& cache,
+    SceneCache& cache,
     BVH const& sceneBVH,
     std::function<void(SceneDecoration&&)> const& out)
 {
@@ -71,7 +71,7 @@ void osc::DrawBVH(
 }
 
 void osc::DrawAABB(
-    MeshCache& cache,
+    SceneCache& cache,
     AABB const& aabb,
     std::function<void(SceneDecoration&&)> const& out)
 {
@@ -85,7 +85,7 @@ void osc::DrawAABB(
 }
 
 void osc::DrawAABBs(
-    MeshCache& cache,
+    SceneCache& cache,
     std::span<AABB const> aabbs,
     std::function<void(SceneDecoration&&)> const& out)
 {
@@ -102,7 +102,7 @@ void osc::DrawAABBs(
 }
 
 void osc::DrawBVHLeafNodes(
-    MeshCache& cache,
+    SceneCache& cache,
     BVH const& bvh,
     std::function<void(SceneDecoration&&)> const& out)
 {
@@ -113,7 +113,7 @@ void osc::DrawBVHLeafNodes(
 }
 
 void osc::DrawXZFloorLines(
-    MeshCache& cache,
+    SceneCache& cache,
     std::function<void(SceneDecoration&&)> const& out,
     float scale)
 {
@@ -139,7 +139,7 @@ void osc::DrawXZFloorLines(
 }
 
 void osc::DrawXZGrid(
-    MeshCache& cache,
+    SceneCache& cache,
     std::function<void(SceneDecoration&&)> const& out)
 {
     Quat const rotation = AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{1.0f, 0.0f, 0.0f});
@@ -147,7 +147,7 @@ void osc::DrawXZGrid(
 }
 
 void osc::DrawXYGrid(
-    MeshCache& cache,
+    SceneCache& cache,
     std::function<void(SceneDecoration&&)> const& out)
 {
     auto const rotation = Identity<Quat>();
@@ -155,7 +155,7 @@ void osc::DrawXYGrid(
 }
 
 void osc::DrawYZGrid(
-    MeshCache& cache,
+    SceneCache& cache,
     std::function<void(SceneDecoration&&)> const& out)
 {
     Quat const rotation = AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{0.0f, 1.0f, 0.0f});
@@ -173,16 +173,16 @@ osc::ArrowProperties::ArrowProperties() :
 }
 
 void osc::DrawArrow(
-    MeshCache& cache,
+    SceneCache& cache,
     ArrowProperties const& props,
     std::function<void(SceneDecoration&&)> const& out)
 {
     Vec3 startToEnd = props.worldspaceEnd - props.worldspaceStart;
     float const len = Length(startToEnd);
-    Vec3 const dir = startToEnd/len;
+    Vec3 const direction = startToEnd/len;
 
     Vec3 const neckStart = props.worldspaceStart;
-    Vec3 const neckEnd = props.worldspaceStart + (len - props.tipLength)*dir;
+    Vec3 const neckEnd = props.worldspaceStart + (len - props.tipLength)*direction;
     Vec3 const headStart = neckEnd;
     Vec3 const headEnd = props.worldspaceEnd;
 
@@ -196,7 +196,7 @@ void osc::DrawArrow(
 }
 
 void osc::DrawLineSegment(
-    MeshCache& cache,
+    SceneCache& cache,
     Segment const& segment,
     Color const& color,
     float radius,
@@ -225,6 +225,7 @@ void osc::UpdateSceneBVH(std::span<SceneDecoration const> sceneEls, BVH& bvh)
 
 std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(
     BVH const& bvh,
+    SceneCache& sceneCache,
     std::span<SceneDecoration const> decorations,
     Line const& ray)
 {
@@ -236,7 +237,13 @@ std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(
     for (BVHCollision const& c : sceneCollisions)
     {
         SceneDecoration const& decoration = decorations[c.id];
-        std::optional<RayCollision> const maybeCollision = GetClosestWorldspaceRayCollision(decoration.mesh, decoration.transform, ray);
+        BVH const& decorationBVH = sceneCache.getBVH(decoration.mesh);
+        std::optional<RayCollision> const maybeCollision = GetClosestWorldspaceRayCollision(
+            decoration.mesh,
+            decorationBVH,
+            decoration.transform,
+            ray
+        );
 
         if (maybeCollision)
         {
@@ -248,6 +255,7 @@ std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(
 
 std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
     Mesh const& mesh,
+    BVH const& triangleBVH,
     Transform const& transform,
     Line const& worldspaceRay)
 {
@@ -261,15 +269,15 @@ std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
 
     MeshIndicesView const indices = mesh.getIndices();
     std::optional<BVHCollision> const maybeCollision = indices.isU16() ?
-        mesh.getBVH().getClosestRayIndexedTriangleCollision(mesh.getVerts(), indices.toU16Span(), modelspaceRay) :
-        mesh.getBVH().getClosestRayIndexedTriangleCollision(mesh.getVerts(), indices.toU32Span(), modelspaceRay);
+        triangleBVH.getClosestRayIndexedTriangleCollision(mesh.getVerts(), indices.toU16Span(), modelspaceRay) :
+        triangleBVH.getClosestRayIndexedTriangleCollision(mesh.getVerts(), indices.toU32Span(), modelspaceRay);
 
     if (maybeCollision)
     {
         // map the ray back into worldspace
         Vec3 const locationWorldspace = transform * maybeCollision->position;
         float const distance = Length(locationWorldspace - worldspaceRay.origin);
-        return RayCollision{distance, locationWorldspace};
+        return RayCollision{.distance = distance, .position = locationWorldspace};
     }
     else
     {
@@ -280,6 +288,7 @@ std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
 std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
     PolarPerspectiveCamera const& camera,
     Mesh const& mesh,
+    BVH const& triangleBVH,
     Rect const& renderScreenRect,
     Vec2 mouseScreenPos)
 {
@@ -290,6 +299,7 @@ std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
 
     return osc::GetClosestWorldspaceRayCollision(
         mesh,
+        triangleBVH,
         Transform{},
         ray
     );
@@ -324,4 +334,30 @@ osc::Material osc::CreateWireframeOverlayMaterial(
     material.setWireframeMode(true);
     material.setTransparent(true);
     return material;
+}
+
+osc::BVH osc::CreateTriangleBVHFromMesh(Mesh const& mesh)
+{
+    BVH rv;
+
+    auto const indices = mesh.getIndices();
+
+    if (indices.empty())
+    {
+        return rv;
+    }
+    else if (mesh.getTopology() != MeshTopology::Triangles)
+    {
+        return rv;
+    }
+    else if (indices.isU32())
+    {
+        rv.buildFromIndexedTriangles(mesh.getVerts() , indices.toU32Span());
+    }
+    else
+    {
+        rv.buildFromIndexedTriangles(mesh.getVerts(), indices.toU16Span());
+    }
+
+    return rv;
 }

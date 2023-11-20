@@ -2,20 +2,22 @@
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <ImGuizmo.h>
 
+#include <array>
 #include <iterator>
 #include <utility>
 
+using osc::CStringView;
+
 bool osc::DrawGizmoModeSelector(ImGuizmo::MODE& mode)
 {
-    constexpr auto modeLabels = osc::to_array({ "local", "global" });
-    constexpr auto modes = osc::to_array<ImGuizmo::MODE, 2>({ ImGuizmo::LOCAL, ImGuizmo::WORLD });
+    constexpr auto modeLabels = std::to_array({ "local", "global" });
+    constexpr auto modes = std::to_array<ImGuizmo::MODE, 2>({ ImGuizmo::LOCAL, ImGuizmo::WORLD });
 
     bool rv = false;
     int currentMode = static_cast<int>(std::distance(std::begin(modes), std::find(std::begin(modes), std::end(modes), mode)));
@@ -27,8 +29,8 @@ bool osc::DrawGizmoModeSelector(ImGuizmo::MODE& mode)
         rv = true;
     }
     ImGui::PopStyleVar();
-    constexpr osc::CStringView tooltipTitle = "Manipulation coordinate system";
-    constexpr osc::CStringView tooltipDesc = "This affects whether manipulations (such as the arrow gizmos that you can use to translate things) are performed relative to the global coordinate system or the selection's (local) one. Local manipulations can be handy when translating/rotating something that's already rotated.";
+    constexpr CStringView tooltipTitle = "Manipulation coordinate system";
+    constexpr CStringView tooltipDesc = "This affects whether manipulations (such as the arrow gizmos that you can use to translate things) are performed relative to the global coordinate system or the selection's (local) one. Local manipulations can be handy when translating/rotating something that's already rotated.";
     osc::DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
 
     return rv;

@@ -12,8 +12,8 @@
 #include <oscar/Maths/Sphere.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
@@ -166,7 +166,7 @@ TEST(FitEllipsoid, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedA
 
         // OSC change: the _signs_ of these direction vectors might be different from the MATLAB script because
         // OSC's implementation also gurantees that the vectors are right-handed
-        osc::to_array<Vec3>
+        std::to_array<Vec3>
         ({
             Vec3{0.387689357308333f, 0.744763303086706f, -0.543161656052074f},
             Vec3{0.343850708787853f, 0.429871105312056f, 0.834851796957929},

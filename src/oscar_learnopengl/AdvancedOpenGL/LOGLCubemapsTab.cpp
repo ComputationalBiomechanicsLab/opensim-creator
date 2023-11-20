@@ -23,7 +23,6 @@
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <SDL_events.h>
@@ -34,14 +33,23 @@
 #include <string>
 #include <utility>
 
+using osc::App;
+using osc::Camera;
+using osc::ColorSpace;
+using osc::CStringView;
+using osc::Cubemap;
+using osc::CubemapFace;
 using osc::Mat3;
 using osc::Mat4;
+using osc::Material;
+using osc::Shader;
+using osc::Texture2D;
 using osc::Vec2i;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Cubemaps";
-    constexpr auto c_SkyboxTextureFilenames = osc::to_array<osc::CStringView>(
+    constexpr CStringView c_TabStringID = "LearnOpenGL/Cubemaps";
+    constexpr auto c_SkyboxTextureFilenames = std::to_array<CStringView>(
     {
         "skybox_right.jpg",
         "skybox_left.jpg",
@@ -50,30 +58,30 @@ namespace
         "skybox_front.jpg",
         "skybox_back.jpg",
     });
-    static_assert(c_SkyboxTextureFilenames.size() == osc::NumOptions<osc::CubemapFace>());
+    static_assert(c_SkyboxTextureFilenames.size() == osc::NumOptions<CubemapFace>());
     static_assert(c_SkyboxTextureFilenames.size() > 1);
 
-    osc::Cubemap LoadCubemap(std::filesystem::path const& resourcesDir)
+    Cubemap LoadCubemap(std::filesystem::path const& resourcesDir)
     {
         // load the first face, so we know the width
-        osc::Texture2D t = osc::LoadTexture2DFromImage(
+        Texture2D t = osc::LoadTexture2DFromImage(
             resourcesDir / "oscar_learnopengl" / "textures" / std::string_view{c_SkyboxTextureFilenames.front()},
-            osc::ColorSpace::sRGB
+            ColorSpace::sRGB
         );
 
         Vec2i const dims = t.getDimensions();
         OSC_ASSERT(dims.x == dims.y);
 
         // load all face data into the cubemap
-        static_assert(osc::NumOptions<osc::CubemapFace>() == c_SkyboxTextureFilenames.size());
+        static_assert(osc::NumOptions<CubemapFace>() == c_SkyboxTextureFilenames.size());
 
-        osc::Cubemap cubemap{dims.x, t.getTextureFormat()};
+        Cubemap cubemap{dims.x, t.getTextureFormat()};
         cubemap.setPixelData(osc::FirstCubemapFace(), t.getPixelData());
-        for (osc::CubemapFace f = osc::Next(osc::FirstCubemapFace()); f <= osc::LastCubemapFace(); f = osc::Next(f))
+        for (CubemapFace f = osc::Next(osc::FirstCubemapFace()); f <= osc::LastCubemapFace(); f = osc::Next(f))
         {
             t = osc::LoadTexture2DFromImage(
                 resourcesDir / "oscar_learnopengl" / "textures" / std::string_view{c_SkyboxTextureFilenames[osc::ToIndex(f)]},
-                osc::ColorSpace::sRGB
+                ColorSpace::sRGB
             );
             OSC_ASSERT(t.getDimensions().x == dims.x);
             OSC_ASSERT(t.getDimensions().y == dims.x);
@@ -84,9 +92,9 @@ namespace
         return cubemap;
     }
 
-    osc::Camera CreateCameraThatMatchesLearnOpenGL()
+    Camera CreateCameraThatMatchesLearnOpenGL()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
@@ -96,47 +104,47 @@ namespace
     }
 
     struct CubeMaterial final {
-        osc::CStringView label;
-        osc::Material material;
+        CStringView label;
+        Material material;
     };
 
     std::array<CubeMaterial, 3> CreateCubeMaterials()
     {
-        return osc::to_array(
+        return std::to_array(
         {
             CubeMaterial
             {
                 "Basic",
-                osc::Material
+                Material
                 {
-                    osc::Shader
+                    Shader
                     {
-                        osc::App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Basic.vert"),
-                        osc::App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Basic.frag"),
+                        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Basic.vert"),
+                        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Basic.frag"),
                     },
                 },
             },
             CubeMaterial
             {
                 "Reflection",
-                osc::Material
+                Material
                 {
-                    osc::Shader
+                    Shader
                     {
-                        osc::App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Reflection.vert"),
-                        osc::App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Reflection.frag"),
+                        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Reflection.vert"),
+                        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Reflection.frag"),
                     },
                 },
             },
             CubeMaterial
             {
                 "Refraction",
-                osc::Material
+                Material
                 {
-                    osc::Shader
+                    Shader
                     {
-                        osc::App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Refraction.vert"),
-                        osc::App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Refraction.frag"),
+                        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Refraction.vert"),
+                        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Refraction.frag"),
                     },
                 },
             },
@@ -293,7 +301,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLCubemapsTab::id() noexcept
+CStringView osc::LOGLCubemapsTab::id()
 {
     return c_TabStringID;
 }
@@ -312,7 +320,7 @@ osc::UID osc::LOGLCubemapsTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLCubemapsTab::implGetName() const
+CStringView osc::LOGLCubemapsTab::implGetName() const
 {
     return m_Impl->getName();
 }

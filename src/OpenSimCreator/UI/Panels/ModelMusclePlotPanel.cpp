@@ -26,13 +26,16 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Shims/Cpp20/stop_token.hpp>
+#include <oscar/Shims/Cpp20/thread.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>
+#include <oscar/Utils/SynchronizedValueGuard.hpp>
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <chrono>
 #include <future>
@@ -346,9 +349,9 @@ namespace
     };
 
     // plot data points are naturally ordered by their independent (X) variable
-    bool operator<(PlotDataPoint const& a, PlotDataPoint const& b)
+    bool operator<(PlotDataPoint const& lhs, PlotDataPoint const& rhs)
     {
-        return a.x < b.x;
+        return lhs.x < rhs.x;
     }
 
     // virtual interface to a thing that can receive datapoints from a plotter
@@ -958,7 +961,7 @@ namespace
         // write header
         osc::WriteCSVRow(
             fileOutputStream,
-            osc::to_array({ ComputePlotXAxisTitle(params, coord), ComputePlotYAxisTitle(params) })
+            std::to_array({ ComputePlotXAxisTitle(params, coord), ComputePlotYAxisTitle(params) })
         );
 
         // write data rows
@@ -967,7 +970,7 @@ namespace
         {
             osc::WriteCSVRow(
                 fileOutputStream,
-                osc::to_array({ std::to_string(p.x), std::to_string(p.y) })
+                std::to_array({ std::to_string(p.x), std::to_string(p.y) })
             );
         }
     }

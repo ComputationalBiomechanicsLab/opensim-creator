@@ -37,7 +37,7 @@
 #include <oscar/Formats/OBJ.hpp>
 #include <oscar/Formats/STL.hpp>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
+#include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
@@ -48,6 +48,7 @@
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
@@ -62,7 +63,6 @@
 #include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/UI/Widgets/WindowMenu.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
@@ -72,6 +72,7 @@
 #include <SDL_events.h>
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 
+#include <array>
 #include <atomic>
 #include <cstdint>
 #include <cstddef>
@@ -186,7 +187,7 @@ namespace
     {
         SimTK::PolygonalMesh polygonalMesh;
         {
-            auto const verts = osc::to_array(
+            auto const verts = std::to_array(
             {
                 origin,
                 origin + firstEdge,
@@ -1155,7 +1156,7 @@ namespace
         {
         }
 
-        std::shared_ptr<osc::MeshCache> meshCache = osc::App::singleton<osc::MeshCache>();
+        std::shared_ptr<osc::SceneCache> meshCache = osc::App::singleton<osc::SceneCache>();
         std::shared_ptr<osc::UndoableModelStatePair> model;
         ChooseComponentsEditorLayerParameters popupParams;
         osc::ModelRendererParams renderParams;
@@ -1245,7 +1246,7 @@ namespace
             ChooseComponentsEditorLayerParameters parameters_) :
 
             m_State{std::move(model_), std::move(parameters_)},
-            m_Renderer{osc::App::config(), *osc::App::singleton<osc::MeshCache>(), *osc::App::singleton<osc::ShaderCache>()}
+            m_Renderer{osc::App::config(), *osc::App::singleton<osc::SceneCache>(), *osc::App::singleton<osc::ShaderCache>()}
         {
         }
 
@@ -1321,6 +1322,7 @@ namespace
             {
                 std::optional<osc::SceneCollision> const collision = osc::GetClosestCollision(
                     m_Decorations.bvh,
+                    *m_State.meshCache,
                     m_Decorations.decorations,
                     m_State.renderParams.camera,
                     ImGui::GetMousePos(),
@@ -2795,7 +2797,7 @@ private:
 
 // public API (PIMPL)
 
-osc::CStringView osc::FrameDefinitionTab::id() noexcept
+osc::CStringView osc::FrameDefinitionTab::id()
 {
     return c_TabStringID;
 }

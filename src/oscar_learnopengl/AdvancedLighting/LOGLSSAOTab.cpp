@@ -28,11 +28,11 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/SpanHelpers.hpp>
 #include <SDL_events.h>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <random>
@@ -41,21 +41,34 @@
 #include <utility>
 #include <vector>
 
+using osc::App;
+using osc::Camera;
+using osc::Color;
+using osc::ColorSpace;
+using osc::CStringView;
+using osc::Material;
+using osc::Texture2D;
+using osc::TextureFilterMode;
+using osc::TextureFormat;
+using osc::TextureWrapMode;
+using osc::RenderTexture;
+using osc::RenderTextureFormat;
+using osc::Shader;
 using osc::Vec2i;
 using osc::Vec3;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/SSAO";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/SSAO";
 
-    osc::Camera CreateCameraWithSameParamsAsLearnOpenGL()
+    Camera CreateCameraWithSameParamsAsLearnOpenGL()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(50.0f);
-        rv.setBackgroundColor(osc::Color::black());
+        rv.setBackgroundColor(Color::black());
         return rv;
     }
 
@@ -85,12 +98,12 @@ namespace
         return rv;
     }
 
-    std::vector<osc::Color> GenerateNoiseTexturePixels(size_t numPixels)
+    std::vector<Color> GenerateNoiseTexturePixels(size_t numPixels)
     {
         std::default_random_engine rng{std::random_device{}()};
         std::uniform_real_distribution<float> minusOneToOne{-1.0f, 1.0f};
 
-        std::vector<osc::Color> rv;
+        std::vector<Color> rv;
         rv.reserve(numPixels);
         for (size_t i = 0; i < numPixels; ++i)
         {
@@ -104,74 +117,74 @@ namespace
         return rv;
     }
 
-    osc::Texture2D GenerateNoiseTexture(Vec2i dimensions)
+    Texture2D GenerateNoiseTexture(Vec2i dimensions)
     {
-        std::vector<osc::Color> const pixels =
+        std::vector<Color> const pixels =
             GenerateNoiseTexturePixels(static_cast<size_t>(dimensions.x) * static_cast<size_t>(dimensions.y));
 
-        osc::Texture2D rv
+        Texture2D rv
         {
             dimensions,
-            osc::TextureFormat::RGBAFloat,
-            osc::ColorSpace::Linear,
-            osc::TextureWrapMode::Repeat,
-            osc::TextureFilterMode::Linear,
+            TextureFormat::RGBAFloat,
+            ColorSpace::Linear,
+            TextureWrapMode::Repeat,
+            TextureFilterMode::Linear,
         };
-        rv.setPixelData(osc::ViewSpanAsUint8Span<osc::Color>(pixels));
+        rv.setPixelData(osc::ViewSpanAsUint8Span<Color>(pixels));
         return rv;
     }
 
-    osc::Material LoadGBufferMaterial()
+    Material LoadGBufferMaterial()
     {
-        return osc::Material
+        return Material
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.frag"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.vert"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.frag"),
             },
         };
     }
 
-    osc::RenderTexture RenderTextureWithColorFormat(osc::RenderTextureFormat f)
+    RenderTexture RenderTextureWithColorFormat(RenderTextureFormat f)
     {
-        osc::RenderTexture rv;
+        RenderTexture rv;
         rv.setColorFormat(f);
         return rv;
     }
 
-    osc::Material LoadSSAOMaterial()
+    Material LoadSSAOMaterial()
     {
-        return osc::Material
+        return Material
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.frag"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.vert"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.frag"),
             },
         };
     }
 
-    osc::Material LoadBlurMaterial()
+    Material LoadBlurMaterial()
     {
-        return osc::Material
+        return Material
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.frag"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.vert"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.frag"),
             },
         };
     }
 
-    osc::Material LoadLightingMaterial()
+    Material LoadLightingMaterial()
     {
-        return osc::Material
+        return Material
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.frag"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.vert"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.frag"),
             },
         };
     }
@@ -349,7 +362,7 @@ private:
     {
         float const w = 200.0f;
 
-        auto const textures = osc::to_array<RenderTexture const*>(
+        auto const textures = std::to_array<RenderTexture const*>(
         {
             &m_GBuffer.albedo,
             &m_GBuffer.normal,
@@ -473,7 +486,7 @@ private:
 
 // public API (PIMPL)
 
-osc::CStringView osc::LOGLSSAOTab::id() noexcept
+CStringView osc::LOGLSSAOTab::id()
 {
     return c_TabStringID;
 }
@@ -492,7 +505,7 @@ osc::UID osc::LOGLSSAOTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLSSAOTab::implGetName() const
+CStringView osc::LOGLSSAOTab::implGetName() const
 {
     return m_Impl->getName();
 }

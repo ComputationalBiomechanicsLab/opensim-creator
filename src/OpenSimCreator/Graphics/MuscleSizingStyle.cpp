@@ -1,6 +1,5 @@
 #include "MuscleSizingStyle.hpp"
 
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 
 #include <array>
@@ -9,7 +8,7 @@
 
 namespace
 {
-    constexpr auto c_Metadata = osc::to_array<osc::MuscleSizingStyleMetadata>(
+    constexpr auto c_Metadata = std::to_array<osc::MuscleSizingStyleMetadata>(
     {
         osc::MuscleSizingStyleMetadata
         {

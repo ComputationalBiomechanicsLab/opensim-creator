@@ -22,7 +22,6 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
@@ -34,16 +33,26 @@
 #include <utility>
 #include <vector>
 
+using osc::App;
+using osc::Camera;
+using osc::ColorSpace;
+using osc::CStringView;
+using osc::Material;
+using osc::Mesh;
+using osc::MeshIndicesView;
+using osc::MeshTopology;
+using osc::Shader;
+using osc::Texture2D;
 using osc::Vec2;
 using osc::Vec3;
 using osc::Vec4;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/NormalMapping";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/NormalMapping";
 
     // matches the quad used in LearnOpenGL's normal mapping tutorial
-    osc::Mesh GenerateQuad()
+    Mesh GenerateQuad()
     {
         std::vector<Vec3> const verts =
         {
@@ -76,15 +85,15 @@ namespace
         };
 
         std::vector<Vec4> const tangents = osc::CalcTangentVectors(
-            osc::MeshTopology::Triangles,
+            MeshTopology::Triangles,
             verts,
             normals,
             texCoords,
-            osc::MeshIndicesView{indices}
+            MeshIndicesView{indices}
         );
         OSC_ASSERT_ALWAYS(tangents.size() == verts.size());
 
-        osc::Mesh rv;
+        Mesh rv;
         rv.setVerts(verts);
         rv.setNormals(normals);
         rv.setTexCoords(texCoords);
@@ -93,9 +102,9 @@ namespace
         return rv;
     }
 
-    osc::Camera CreateCamera()
+    Camera CreateCamera()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
@@ -103,23 +112,23 @@ namespace
         return rv;
     }
 
-    osc::Material CreateNormalMappingMaterial()
+    Material CreateNormalMappingMaterial()
     {
-        osc::Texture2D diffuseMap = osc::LoadTexture2DFromImage(
-            osc::App::resource("oscar_learnopengl/textures/brickwall.jpg"),
-            osc::ColorSpace::sRGB
+        Texture2D diffuseMap = osc::LoadTexture2DFromImage(
+            App::resource("oscar_learnopengl/textures/brickwall.jpg"),
+            ColorSpace::sRGB
         );
-        osc::Texture2D normalMap = osc::LoadTexture2DFromImage(
-            osc::App::resource("oscar_learnopengl/textures/brickwall_normal.jpg"),
-            osc::ColorSpace::Linear
+        Texture2D normalMap = osc::LoadTexture2DFromImage(
+            App::resource("oscar_learnopengl/textures/brickwall_normal.jpg"),
+            ColorSpace::Linear
         );
 
-        osc::Material rv
+        Material rv
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.frag"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.vert"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.frag"),
             },
         };
         rv.setTexture("uDiffuseMap", diffuseMap);
@@ -128,14 +137,14 @@ namespace
         return rv;
     }
 
-    osc::Material CreateLightCubeMaterial()
+    Material CreateLightCubeMaterial()
     {
-        return osc::Material
+        return Material
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
+                App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
+                App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
             },
         };
     }
@@ -244,7 +253,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLNormalMappingTab::id() noexcept
+CStringView osc::LOGLNormalMappingTab::id()
 {
     return c_TabStringID;
 }
@@ -263,7 +272,7 @@ osc::UID osc::LOGLNormalMappingTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLNormalMappingTab::implGetName() const
+CStringView osc::LOGLNormalMappingTab::implGetName() const
 {
     return m_Impl->getName();
 }

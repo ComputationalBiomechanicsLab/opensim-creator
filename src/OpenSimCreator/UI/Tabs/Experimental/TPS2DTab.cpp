@@ -333,8 +333,8 @@ public:
         m_WireframeMaterial.setTransparent(true);
         m_WireframeMaterial.setWireframeMode(true);
         m_WireframeMaterial.setDepthTested(false);
-        m_Camera.setViewMatrixOverride(Mat4{1.0f});
-        m_Camera.setProjectionMatrixOverride(Mat4{1.0f});
+        m_Camera.setViewMatrixOverride(Identity<Mat4>());
+        m_Camera.setProjectionMatrixOverride(Identity<Mat4>());
         m_Camera.setBackgroundColor(Color::white());
     }
 
@@ -547,7 +547,7 @@ private:
 
 // public API (PIMPL)
 
-osc::CStringView osc::TPS2DTab::id() noexcept
+osc::CStringView osc::TPS2DTab::id()
 {
     return "OpenSim/Experimental/TPS2D";
 }

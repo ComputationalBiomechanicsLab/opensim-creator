@@ -17,7 +17,6 @@
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
@@ -32,6 +31,7 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Scene/CachedSceneRenderer.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
@@ -49,7 +49,6 @@
 #include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/UI/Widgets/UndoButton.hpp>
 #include <oscar/UI/Widgets/WindowMenu.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
@@ -60,6 +59,8 @@
 #include <SDL_events.h>
 #include <Simbody.h>
 
+#include <algorithm>
+#include <array>
 #include <cmath>
 #include <chrono>
 #include <cstddef>
@@ -165,7 +166,7 @@ namespace
 
 template<>
 struct std::hash<TPSDocumentElementID> final {
-    size_t operator()(TPSDocumentElementID const& el) const noexcept
+    size_t operator()(TPSDocumentElementID const& el) const
     {
         return osc::HashOf(el.whichInput, el.elementType, el.elementID);
     }
@@ -482,7 +483,7 @@ namespace
             {
                 osc::WriteCSVRow(
                     fileOutputStream,
-                    osc::to_array(
+                    std::to_array(
                     {
                         std::to_string(loc->x),
                         std::to_string(loc->y),
@@ -514,7 +515,7 @@ namespace
         // write header
         osc::WriteCSVRow(
             fileOutputStream,
-            osc::to_array<std::string>(
+            std::to_array<std::string>(
             {
                 "source.x",
                 "source.y",
@@ -530,7 +531,7 @@ namespace
         {
             osc::WriteCSVRow(
                 fileOutputStream,
-                osc::to_array(
+                std::to_array(
                 {
                     std::to_string(p.source.x),
                     std::to_string(p.source.y),
@@ -627,7 +628,7 @@ namespace
         {
             osc::WriteCSVRow(
                 fileOutputStream,
-                osc::to_array(
+                std::to_array(
                 {
                     std::to_string(nonParticipatingLandmark.x),
                     std::to_string(nonParticipatingLandmark.y),
@@ -842,7 +843,7 @@ namespace
         );
 
         // shared sphere mesh (used by rendering code)
-        osc::Mesh landmarkSphere = osc::App::singleton<osc::MeshCache>()->getSphereMesh();
+        osc::Mesh landmarkSphere = osc::App::singleton<osc::SceneCache>()->getSphereMesh();
 
         // current user selection
         TPSUIUserSelection userSelection;
@@ -854,17 +855,23 @@ namespace
         osc::PopupManager popupManager;
 
         // shared mesh cache
-        std::shared_ptr<osc::MeshCache> meshCache = osc::App::singleton<osc::MeshCache>();
+        std::shared_ptr<osc::SceneCache> meshCache = osc::App::singleton<osc::SceneCache>();
     };
 
-    TPSDocument const& GetScratch(TPSUISharedState const& state)
+    TPSDocument const& getScratch(TPSUISharedState const& state)
     {
         return state.editedDocument->getScratch();
     }
 
     osc::Mesh const& GetScratchMesh(TPSUISharedState& state, TPSDocumentInputIdentifier which)
     {
-        return GetMesh(GetScratch(state), which);
+        return GetMesh(getScratch(state), which);
+    }
+
+    osc::BVH const& GetScratchMeshBVH(TPSUISharedState& state, TPSDocumentInputIdentifier which)
+    {
+        osc::Mesh const& mesh = GetScratchMesh(state, which);
+        return state.meshCache->getBVH(mesh);
     }
 
     // returns a (potentially cached) post-TPS-warp mesh
@@ -1022,7 +1029,7 @@ namespace
         {
             if (ImGui::Button(ICON_FA_SAVE))
             {
-                ActionSaveLandmarksToPairedCSV(GetScratch(*m_State));
+                ActionSaveLandmarksToPairedCSV(getScratch(*m_State));
             }
             osc::DrawTooltipIfItemHovered(
                 "Save Landmarks to CSV",
@@ -1229,15 +1236,15 @@ namespace
         {
             if (ImGui::MenuItem("Source Landmarks to CSV"))
             {
-                ActionSaveLandmarksToCSV(GetScratch(*m_State), TPSDocumentInputIdentifier::Source);
+                ActionSaveLandmarksToCSV(getScratch(*m_State), TPSDocumentInputIdentifier::Source);
             }
             if (ImGui::MenuItem("Destination Landmarks to CSV"))
             {
-                ActionSaveLandmarksToCSV(GetScratch(*m_State), TPSDocumentInputIdentifier::Destination);
+                ActionSaveLandmarksToCSV(getScratch(*m_State), TPSDocumentInputIdentifier::Destination);
             }
             if (ImGui::MenuItem("Landmark Pairs to CSV"))
             {
-                ActionSaveLandmarksToPairedCSV(GetScratch(*m_State));
+                ActionSaveLandmarksToPairedCSV(getScratch(*m_State));
             }
         }
 
@@ -1353,8 +1360,9 @@ namespace
 
             // mesh hittest: compute whether the user is hovering over the mesh (affects rendering)
             osc::Mesh const& inputMesh = GetScratchMesh(*m_State, m_DocumentIdentifier);
+            osc::BVH const& inputMeshBVH = GetScratchMeshBVH(*m_State, m_DocumentIdentifier);
             std::optional<osc::RayCollision> const meshCollision = m_LastTextureHittestResult.isHovered ?
-                osc::GetClosestWorldspaceRayCollision(inputMesh, osc::Transform{}, cameraRay) :
+                osc::GetClosestWorldspaceRayCollision(inputMesh, inputMeshBVH, osc::Transform{}, cameraRay) :
                 std::nullopt;
 
             // landmark hittest: compute whether the user is hovering over a landmark
@@ -1418,7 +1426,7 @@ namespace
         std::optional<TPSUIViewportHover> getMouseLandmarkCollisions(osc::Line const& cameraRay) const
         {
             std::optional<TPSUIViewportHover> rv;
-            for (TPSDocumentLandmarkPair const& p : GetScratch(*m_State).landmarkPairs)
+            for (TPSDocumentLandmarkPair const& p : getScratch(*m_State).landmarkPairs)
             {
                 std::optional<Vec3> const maybePos = GetLocation(p, m_DocumentIdentifier);
 
@@ -1523,7 +1531,7 @@ namespace
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("# landmarks");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", CountNumLandmarksForInput(GetScratch(*m_State), m_DocumentIdentifier));
+                ImGui::Text("%zu", CountNumLandmarksForInput(getScratch(*m_State), m_DocumentIdentifier));
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
@@ -1580,7 +1588,7 @@ namespace
                 }
                 if (ImGui::MenuItem("Landmarks to CSV"))
                 {
-                    ActionSaveLandmarksToCSV(GetScratch(*m_State), m_DocumentIdentifier);
+                    ActionSaveLandmarksToCSV(getScratch(*m_State), m_DocumentIdentifier);
                 }
                 ImGui::EndPopup();
             }
@@ -1631,7 +1639,7 @@ namespace
         {
             // generate in-scene 3D decorations
             std::vector<osc::SceneDecoration> decorations;
-            decorations.reserve(6 + CountNumLandmarksForInput(GetScratch(*m_State), m_DocumentIdentifier));  // likely guess
+            decorations.reserve(6 + CountNumLandmarksForInput(getScratch(*m_State), m_DocumentIdentifier));  // likely guess
 
             std::function<void(osc::SceneDecoration&&)> const decorationConsumer =
                 [&decorations](osc::SceneDecoration&& dec) { decorations.push_back(std::move(dec)); };
@@ -1644,7 +1652,7 @@ namespace
             );
 
             // append each landmark as a sphere
-            for (TPSDocumentLandmarkPair const& p : GetScratch(*m_State).landmarkPairs)
+            for (TPSDocumentLandmarkPair const& p : getScratch(*m_State).landmarkPairs)
             {
                 std::optional<Vec3> const maybeLocation = GetLocation(p, m_DocumentIdentifier);
 
@@ -1686,7 +1694,7 @@ namespace
             // append non-participating landmarks as non-user-selctable purple spheres
             if (m_DocumentIdentifier == TPSDocumentInputIdentifier::Source)
             {
-                for (Vec3 const& nonParticipatingLandmarkLocation : GetScratch(*m_State).nonParticipatingLandmarks)
+                for (Vec3 const& nonParticipatingLandmarkLocation : getScratch(*m_State).nonParticipatingLandmarks)
                 {
                     AppendNonParticipatingLandmark(
                         m_State->landmarkSphere,
@@ -1719,7 +1727,7 @@ namespace
         osc::CachedSceneRenderer m_CachedRenderer
         {
             osc::App::config(),
-            *osc::App::singleton<osc::MeshCache>(),
+            *osc::App::singleton<osc::SceneCache>(),
             *osc::App::singleton<osc::ShaderCache>(),
         };
         osc::ImGuiItemHittestResult m_LastTextureHittestResult;
@@ -1900,7 +1908,7 @@ namespace
             osc::CStringView const label = "blending factor  ";  // deliberate trailing spaces (for alignment with "landmark radius")
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label.c_str()).x - ImGui::GetStyle().ItemInnerSpacing.x - m_OverlayPadding.x);
 
-            float factor = GetScratch(*m_State).blendingFactor;
+            float factor = getScratch(*m_State).blendingFactor;
             if (ImGui::SliderFloat(label.c_str(), &factor, 0.0f, 1.0f))
             {
                 ActionSetBlendFactorWithoutSaving(*m_State->editedDocument, factor);
@@ -1927,7 +1935,7 @@ namespace
 
             if (m_ShowDestinationMesh)
             {
-                osc::SceneDecoration& dec = decorations.emplace_back(GetScratch(*m_State).destinationMesh);
+                osc::SceneDecoration& dec = decorations.emplace_back(getScratch(*m_State).destinationMesh);
                 dec.color = {1.0f, 0.0f, 0.0f, 0.5f};
             }
 
@@ -1962,7 +1970,7 @@ namespace
         osc::CachedSceneRenderer m_CachedRenderer
         {
             osc::App::config(),
-            *osc::App::singleton<osc::MeshCache>(),
+            *osc::App::singleton<osc::SceneCache>(),
             *osc::App::singleton<osc::ShaderCache>(),
         };
         osc::ImGuiItemHittestResult m_LastTextureHittestResult;
@@ -2121,7 +2129,7 @@ private:
 
 // public API (PIMPL)
 
-osc::CStringView osc::MeshWarpingTab::id() noexcept
+osc::CStringView osc::MeshWarpingTab::id()
 {
     return "OpenSim/Warping";
 }

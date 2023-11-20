@@ -40,7 +40,6 @@
 #include <oscar/UI/Tabs/TabHost.hpp>
 #include <oscar/UI/Widgets/PopupManager.hpp>
 #include <oscar/UI/Widgets/WindowMenu.hpp>
-#include <oscar/Utils/SynchronizedValue.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <SimTKcommon/basics.h>

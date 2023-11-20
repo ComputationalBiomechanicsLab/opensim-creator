@@ -22,23 +22,26 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
+#include <array>
 #include <string>
 #include <utility>
 #include <vector>
 
+using osc::Camera;
+using osc::Color;
+using osc::CStringView;
 using osc::Mat4;
 using osc::Vec2;
 using osc::Vec3;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Bloom";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/Bloom";
 
-    constexpr auto c_SceneLightPositions = osc::to_array<Vec3>(
+    constexpr auto c_SceneLightPositions = std::to_array<Vec3>(
     {
         { 0.0f, 0.5f,  1.5f},
         {-4.0f, 0.5f, -3.0f},
@@ -46,9 +49,9 @@ namespace
         {-0.8f, 2.4f, -1.0f},
     });
 
-    std::array<osc::Color, c_SceneLightPositions.size()> const& GetSceneLightColors()
+    std::array<Color, c_SceneLightPositions.size()> const& GetSceneLightColors()
     {
-        static auto const s_SceneLightColors = osc::to_array<osc::Color>(
+        static auto const s_SceneLightColors = std::to_array<Color>(
         {
             osc::ToSRGB({ 5.0f, 5.0f,  5.0f}),
             osc::ToSRGB({10.0f, 0.0f,  0.0f}),
@@ -63,28 +66,28 @@ namespace
         std::vector<Mat4> rv;
 
         {
-            Mat4 m{1.0f};
+            Mat4 m = osc::Identity<Mat4>();
             m = osc::Translate(m, Vec3(0.0f, 1.5f, 0.0));
             m = osc::Scale(m, Vec3(0.5f));
             rv.push_back(m);
         }
 
         {
-            Mat4 m{1.0f};
+            Mat4 m = osc::Identity<Mat4>();
             m = osc::Translate(m, Vec3(2.0f, 0.0f, 1.0));
             m = osc::Scale(m, Vec3(0.5f));
             rv.push_back(m);
         }
 
         {
-            Mat4 m{1.0f};
+            Mat4 m = osc::Identity<Mat4>();
             m = osc::Translate(m, Vec3(-1.0f, -1.0f, 2.0));
             m = osc::Rotate(m, osc::Deg2Rad(60.0f), osc::Normalize(Vec3(1.0, 0.0, 1.0)));
             rv.push_back(m);
         }
 
         {
-            Mat4 m{1.0f};
+            Mat4 m = osc::Identity<Mat4>();
             m = osc::Translate(m, Vec3(0.0f, 2.7f, 4.0));
             m = osc::Rotate(m, osc::Deg2Rad(23.0f), osc::Normalize(Vec3(1.0, 0.0, 1.0)));
             m = osc::Scale(m, Vec3(1.25));
@@ -92,14 +95,14 @@ namespace
         }
 
         {
-            Mat4 m(1.0f);
+            Mat4 m = osc::Identity<Mat4>();
             m = osc::Translate(m, Vec3(-2.0f, 1.0f, -3.0));
             m = osc::Rotate(m, osc::Deg2Rad(124.0f), osc::Normalize(Vec3(1.0, 0.0, 1.0)));
             rv.push_back(m);
         }
 
         {
-            Mat4 m(1.0f);
+            Mat4 m = osc::Identity<Mat4>();
             m = osc::Translate(m, Vec3(-3.0f, 0.0f, 0.0));
             m = osc::Scale(m, Vec3(0.5f));
             rv.push_back(m);
@@ -108,9 +111,9 @@ namespace
         return rv;
     }
 
-    osc::Camera CreateCameraThatMatchesLearnOpenGL()
+    Camera CreateCameraThatMatchesLearnOpenGL()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
@@ -221,9 +224,9 @@ private:
 
         // draw floor
         {
-            Mat4 floorTransform{1.0f};
-            floorTransform = osc::Translate(floorTransform, Vec3(0.0f, -1.0f, 0.0));
-            floorTransform = osc::Scale(floorTransform, Vec3(12.5f, 0.5f, 12.5f));
+            Mat4 floorTransform = Identity<Mat4>();
+            floorTransform = Translate(floorTransform, Vec3(0.0f, -1.0f, 0.0));
+            floorTransform = Scale(floorTransform, Vec3(12.5f, 0.5f, 12.5f));
 
             MaterialPropertyBlock floorProps;
             floorProps.setTexture("uDiffuseTexture", m_WoodTexture);
@@ -253,13 +256,13 @@ private:
 
     void drawLightBoxesToCamera()
     {
-        std::array<osc::Color, c_SceneLightPositions.size()> const& sceneLightColors = GetSceneLightColors();
+        std::array<Color, c_SceneLightPositions.size()> const& sceneLightColors = GetSceneLightColors();
 
         for (size_t i = 0; i < c_SceneLightPositions.size(); ++i)
         {
-            Mat4 lightTransform{1.0f};
-            lightTransform = osc::Translate(lightTransform, Vec3(c_SceneLightPositions[i]));
-            lightTransform = osc::Scale(lightTransform, Vec3(0.25f));
+            Mat4 lightTransform = Identity<Mat4>();
+            lightTransform = Translate(lightTransform, Vec3(c_SceneLightPositions[i]));
+            lightTransform = Scale(lightTransform, Vec3(0.25f));
 
             MaterialPropertyBlock lightProps;
             lightProps.setColor("uLightColor", sceneLightColors[i]);
@@ -341,7 +344,7 @@ private:
     {
         constexpr float w = 200.0f;
 
-        auto const textures = osc::to_array<RenderTexture const*>(
+        auto const textures = std::to_array<RenderTexture const*>(
         {
             &m_SceneHDRColorOutput,
             &m_SceneHDRThresholdedOutput,
@@ -421,7 +424,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLBloomTab::id() noexcept
+CStringView osc::LOGLBloomTab::id()
 {
     return c_TabStringID;
 }
@@ -440,7 +443,7 @@ osc::UID osc::LOGLBloomTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLBloomTab::implGetName() const
+CStringView osc::LOGLBloomTab::implGetName() const
 {
     return m_Impl->getName();
 }

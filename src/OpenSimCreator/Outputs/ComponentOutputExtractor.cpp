@@ -7,7 +7,6 @@
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <SimTKcommon/SmallMatrix.h>
@@ -24,7 +23,7 @@
 // constants
 namespace
 {
-    constexpr auto c_OutputSubfieldsLut = osc::to_array(
+    constexpr auto c_OutputSubfieldsLut = std::to_array(
     {
         osc::OutputSubfield::X,
         osc::OutputSubfield::Y,

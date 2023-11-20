@@ -13,7 +13,7 @@ namespace osc
 {
     class ImPlotDemoTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit ImPlotDemoTab(ParentPtr<TabHost> const&);
         ImPlotDemoTab(ImPlotDemoTab const&) = delete;

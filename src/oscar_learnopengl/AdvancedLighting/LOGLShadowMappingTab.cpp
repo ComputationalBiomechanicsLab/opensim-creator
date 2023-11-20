@@ -29,16 +29,22 @@
 #include <utility>
 #include <vector>
 
+using osc::Camera;
+using osc::CStringView;
+using osc::Mesh;
+using osc::RenderTexture;
+using osc::RenderTextureDescriptor;
+using osc::RenderTextureReadWrite;
 using osc::Vec2;
 using osc::Vec2i;
 using osc::Vec3;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/ShadowMapping";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/ShadowMapping";
 
     // this matches the plane vertices used in the LearnOpenGL tutorial
-    osc::Mesh GeneratePlaneMesh()
+    Mesh GeneratePlaneMesh()
     {
         std::vector<Vec3> const verts =
         {
@@ -75,7 +81,7 @@ namespace
 
         std::vector<uint16_t> const indices = {0, 1, 2, 3, 4, 5};
 
-        osc::Mesh rv;
+        Mesh rv;
         rv.setVerts(verts);
         rv.setNormals(normals);
         rv.setTexCoords(texCoords);
@@ -83,19 +89,19 @@ namespace
         return rv;
     }
 
-    osc::Camera CreateCamera()
+    Camera CreateCamera()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         return rv;
     }
 
-    osc::RenderTexture CreateDepthTexture()
+    RenderTexture CreateDepthTexture()
     {
-        osc::RenderTexture rv;
-        osc::RenderTextureDescriptor shadowmapDescriptor{Vec2i{1024, 1024}};
-        shadowmapDescriptor.setReadWrite(osc::RenderTextureReadWrite::Linear);
+        RenderTexture rv;
+        RenderTextureDescriptor shadowmapDescriptor{Vec2i{1024, 1024}};
+        shadowmapDescriptor.setReadWrite(RenderTextureReadWrite::Linear);
         rv.reformat(shadowmapDescriptor);
         return rv;
     }
@@ -249,7 +255,7 @@ private:
         },
     };
     RenderTexture m_DepthTexture = CreateDepthTexture();
-    Mat4 m_LatestLightSpaceMatrix{1.0f};
+    Mat4 m_LatestLightSpaceMatrix = Identity<Mat4>();
     Vec3 m_LightPos = {-2.0f, 4.0f, -1.0f};
     bool m_IsMouseCaptured = false;
 };
@@ -257,7 +263,7 @@ private:
 
 // public API (PIMPL)
 
-osc::CStringView osc::LOGLShadowMappingTab::id() noexcept
+CStringView osc::LOGLShadowMappingTab::id()
 {
     return c_TabStringID;
 }
@@ -276,7 +282,7 @@ osc::UID osc::LOGLShadowMappingTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLShadowMappingTab::implGetName() const
+CStringView osc::LOGLShadowMappingTab::implGetName() const
 {
     return m_Impl->getName();
 }

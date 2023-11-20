@@ -12,22 +12,29 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
+#include <array>
 #include <cstdint>
 #include <memory>
 
+using osc::App;
+using osc::Camera;
+using osc::Color;
+using osc::CStringView;
 using osc::Mat4;
+using osc::Material;
+using osc::Mesh;
+using osc::Shader;
 using osc::Vec3;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/HelloTriangle";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/HelloTriangle";
 
-    osc::Mesh GenerateTriangleMesh()
+    Mesh GenerateTriangleMesh()
     {
-        constexpr auto points = osc::to_array<Vec3>(
+        constexpr auto points = std::to_array<Vec3>(
         {
             {-1.0f, -1.0f, 0.0f},  // bottom-left
             { 1.0f, -1.0f, 0.0f},  // bottom-right
@@ -36,38 +43,38 @@ namespace
 
         // care: we're using colors that are equivalent in sRGB and linear
         //       color spaces here
-        constexpr auto colors = osc::to_array<osc::Color>(
+        constexpr auto colors = std::to_array<Color>(
         {
-            osc::Color::red(),
-            osc::Color::green(),
-            osc::Color::blue(),
+            Color::red(),
+            Color::green(),
+            Color::blue(),
         });
 
-        constexpr auto indices = osc::to_array<uint16_t>({0, 1, 2});
+        constexpr auto indices = std::to_array<uint16_t>({0, 1, 2});
 
-        osc::Mesh m;
+        Mesh m;
         m.setVerts(points);
         m.setColors(colors);
         m.setIndices(indices);
         return m;
     }
 
-    osc::Camera CreateSceneCamera()
+    Camera CreateSceneCamera()
     {
-        osc::Camera rv;
-        rv.setViewMatrixOverride(Mat4{1.0f});
-        rv.setProjectionMatrixOverride(Mat4{1.0f});
+        Camera rv;
+        rv.setViewMatrixOverride(osc::Identity<Mat4>());
+        rv.setProjectionMatrixOverride(osc::Identity<Mat4>());
         return rv;
     }
 
-    osc::Material CreateTriangleMaterial()
+    Material CreateTriangleMaterial()
     {
-        return osc::Material
+        return Material
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/GettingStarted/HelloTriangle.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/GettingStarted/HelloTriangle.frag"),
+                App::slurp("oscar_learnopengl/shaders/GettingStarted/HelloTriangle.vert"),
+                App::slurp("oscar_learnopengl/shaders/GettingStarted/HelloTriangle.frag"),
             },
         };
     }
@@ -83,7 +90,7 @@ public:
 private:
     void implOnDraw() final
     {
-        Graphics::DrawMesh(m_TriangleMesh, osc::Transform{}, m_Material, m_Camera);
+        Graphics::DrawMesh(m_TriangleMesh, Transform{}, m_Material, m_Camera);
 
         m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
         m_Camera.renderToScreen();
@@ -97,7 +104,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLHelloTriangleTab::id() noexcept
+CStringView osc::LOGLHelloTriangleTab::id()
 {
     return c_TabStringID;
 }
@@ -116,7 +123,7 @@ osc::UID osc::LOGLHelloTriangleTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLHelloTriangleTab::implGetName() const
+CStringView osc::LOGLHelloTriangleTab::implGetName() const
 {
     return m_Impl->getName();
 }

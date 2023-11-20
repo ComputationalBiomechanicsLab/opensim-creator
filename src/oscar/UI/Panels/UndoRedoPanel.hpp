@@ -13,6 +13,8 @@ namespace osc
     // a user-visible panel that lists undo/redo history
     class UndoRedoPanel final : public Panel {
     public:
+        static void DrawContent(UndoRedo&);
+
         UndoRedoPanel(std::string_view panelName, std::shared_ptr<UndoRedo>);
         UndoRedoPanel(UndoRedoPanel const&) = delete;
         UndoRedoPanel(UndoRedoPanel&&) noexcept;

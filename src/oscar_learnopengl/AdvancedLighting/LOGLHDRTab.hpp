@@ -15,7 +15,7 @@ namespace osc
 {
     class LOGLHDRTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit LOGLHDRTab(ParentPtr<TabHost> const&);
         LOGLHDRTab(LOGLHDRTab const&) = delete;

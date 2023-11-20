@@ -21,7 +21,6 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
@@ -30,11 +29,20 @@
 #include <string>
 #include <utility>
 
+using osc::App;
+using osc::Camera;
+using osc::Color;
+using osc::ColorSpace;
+using osc::CStringView;
+using osc::Material;
+using osc::Texture2D;
+using osc::Shader;
+using osc::Transform;
 using osc::Vec3;
 
 namespace
 {
-    constexpr auto c_LightPositions = osc::to_array<Vec3>(
+    constexpr auto c_LightPositions = std::to_array<Vec3>(
     {
         { 0.0f,  0.0f, 49.5f},
         {-1.4f, -1.9f, 9.0f},
@@ -42,11 +50,11 @@ namespace
         { 0.8f, -1.7f, 6.0f},
     });
 
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/HDR";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/HDR";
 
-    std::array<osc::Color, c_LightPositions.size()> GetLightColors()
+    std::array<Color, c_LightPositions.size()> GetLightColors()
     {
-        return osc::to_array<osc::Color>(
+        return std::to_array<Color>(
         {
             osc::ToSRGB({200.0f, 200.0f, 200.0f, 1.0f}),
             osc::ToSRGB({0.1f, 0.0f, 0.0f, 1.0f}),
@@ -55,17 +63,17 @@ namespace
         });
     }
 
-    osc::Transform CalcCorridoorTransform()
+    Transform CalcCorridoorTransform()
     {
-        osc::Transform rv;
+        Transform rv;
         rv.position = {0.0f, 0.0f, 25.0f};
         rv.scale = {2.5f, 2.5f, 27.5f};
         return rv;
     }
 
-    osc::Camera CreateSceneCamera()
+    Camera CreateSceneCamera()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
@@ -74,19 +82,19 @@ namespace
         return rv;
     }
 
-    osc::Material CreateSceneMaterial()
+    Material CreateSceneMaterial()
     {
-        osc::Texture2D woodTexture = osc::LoadTexture2DFromImage(
-            osc::App::resource("oscar_learnopengl/textures/wood.png"),
-            osc::ColorSpace::sRGB
+        Texture2D woodTexture = osc::LoadTexture2DFromImage(
+            App::resource("oscar_learnopengl/textures/wood.png"),
+            ColorSpace::sRGB
         );
 
-        osc::Material rv
+        Material rv
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.frag"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.vert"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.frag"),
             },
         };
         rv.setVec3Array("uSceneLightPositions", c_LightPositions);
@@ -96,14 +104,14 @@ namespace
         return rv;
     }
 
-    osc::Material CreateTonemapMaterial()
+    Material CreateTonemapMaterial()
     {
-        return osc::Material
+        return Material
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Tonemap.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Tonemap.frag"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Tonemap.vert"),
+                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Tonemap.frag"),
             },
         };
     }
@@ -192,8 +200,8 @@ private:
         Camera orthoCamera;
         orthoCamera.setBackgroundColor(Color::clear());
         orthoCamera.setPixelRect(GetMainViewportWorkspaceScreenRect());
-        orthoCamera.setProjectionMatrixOverride(Mat4{1.0f});
-        orthoCamera.setViewMatrixOverride(Mat4{1.0f});
+        orthoCamera.setProjectionMatrixOverride(Identity<Mat4>());
+        orthoCamera.setViewMatrixOverride(Identity<Mat4>());
 
         m_TonemapMaterial.setRenderTexture("uTexture", m_SceneHDRTexture);
         m_TonemapMaterial.setBool("uUseTonemap", m_UseTonemap);
@@ -234,7 +242,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLHDRTab::id() noexcept
+CStringView osc::LOGLHDRTab::id()
 {
     return c_TabStringID;
 }
@@ -253,7 +261,7 @@ osc::UID osc::LOGLHDRTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLHDRTab::implGetName() const
+CStringView osc::LOGLHDRTab::implGetName() const
 {
     return m_Impl->getName();
 }

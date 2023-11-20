@@ -14,7 +14,6 @@
 #include <utility>
 #include <vector>
 
-
 namespace osc
 {
     class Logger final {
@@ -104,17 +103,17 @@ namespace osc
             log(LogLevel::critical, fmt, args...);
         }
 
-        [[nodiscard]] std::vector<std::shared_ptr<LogSink>> const& sinks() const noexcept
+        [[nodiscard]] std::vector<std::shared_ptr<LogSink>> const& sinks() const
         {
             return m_Sinks;
         }
 
-        [[nodiscard]] std::vector<std::shared_ptr<LogSink>>& sinks() noexcept
+        [[nodiscard]] std::vector<std::shared_ptr<LogSink>>& sinks()
         {
             return m_Sinks;
         }
 
-        [[nodiscard]] LogLevel get_level() const noexcept
+        [[nodiscard]] LogLevel get_level() const
         {
             return level;
         }

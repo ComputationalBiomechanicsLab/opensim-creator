@@ -8,9 +8,9 @@
 #include <utility>
 
 osc::IconWithoutMenu::IconWithoutMenu(
-    osc::Icon icon,
-    osc::CStringView title,
-    osc::CStringView description) :
+    Icon icon,
+    CStringView title,
+    CStringView description) :
 
     m_Icon{std::move(icon)},
     m_Title{title},
@@ -21,7 +21,7 @@ osc::IconWithoutMenu::IconWithoutMenu(
 
 bool osc::IconWithoutMenu::onDraw()
 {
-    bool rv = osc::ImageButton(m_ButtonID, m_Icon.getTexture(), m_Icon.getDimensions(), m_Icon.getTextureCoordinates());
-    osc::DrawTooltipIfItemHovered(m_Title, m_Description);
+    bool const rv = ImageButton(m_ButtonID, m_Icon.getTexture(), m_Icon.getDimensions(), m_Icon.getTextureCoordinates());
+    DrawTooltipIfItemHovered(m_Title, m_Description);
     return rv;
 }

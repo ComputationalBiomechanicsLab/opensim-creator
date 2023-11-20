@@ -2,7 +2,6 @@
 
 #include <OpenSimCreator/Graphics/CustomRenderingOptionFlags.hpp>
 
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/SpanHelpers.hpp>

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Shims/Cpp23/utility.hpp>
+
 #include <cstdint>
 #include <ctime>
 #include <iosfwd>
@@ -18,10 +20,9 @@ namespace osc
         Default = None,
     };
 
-    constexpr bool operator&(ObjWriterFlags a, ObjWriterFlags b) noexcept
+    constexpr bool operator&(ObjWriterFlags lhs, ObjWriterFlags rhs)
     {
-        using T = std::underlying_type_t<ObjWriterFlags>;
-        return static_cast<T>(a) & static_cast<T>(b);
+        return osc::to_underlying(lhs) & osc::to_underlying(rhs);
     }
 
     struct ObjMetadata final {

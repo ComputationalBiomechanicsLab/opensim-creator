@@ -5,7 +5,6 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/CircularBuffer.hpp>
-#include <oscar/Utils/SynchronizedValue.hpp>
 
 #include <imgui.h>
 
@@ -14,23 +13,26 @@
 #include <type_traits>
 #include <utility>
 
+using osc::LogLevel;
+using osc::LogMessage;
+
 namespace
 {
-    ImVec4 ToColor(osc::LogLevel lvl)
+    ImVec4 ToColor(LogLevel lvl)
     {
         switch (lvl)
         {
-        case osc::LogLevel::trace:
+        case LogLevel::trace:
             return ImVec4{0.5f, 0.5f, 0.5f, 1.0f};
-        case osc::LogLevel::debug:
+        case LogLevel::debug:
             return ImVec4{0.8f, 0.8f, 0.8f, 1.0f};
-        case osc::LogLevel::info:
+        case LogLevel::info:
             return ImVec4{0.5f, 0.5f, 1.0f, 1.0f};
-        case osc::LogLevel::warn:
+        case LogLevel::warn:
             return ImVec4{1.0f, 1.0f, 0.0f, 1.0f};
-        case osc::LogLevel::err:
+        case LogLevel::err:
             return ImVec4{1.0f, 0.0f, 0.0f, 1.0f};
-        case osc::LogLevel::critical:
+        case LogLevel::critical:
             return ImVec4{1.0f, 0.0f, 0.0f, 1.0f};
         default:
             return ImVec4{1.0f, 1.0f, 1.0f, 1.0f};
@@ -44,7 +46,7 @@ namespace
         auto& guarded_content = osc::log::getTracebackLog();
         {
             auto const& content = guarded_content.lock();
-            for (osc::LogMessage const& msg : *content)
+            for (LogMessage const& msg : *content)
             {
                 ss << '[' << ToCStringView(msg.level) << "] " << msg.payload << '\n';
             }

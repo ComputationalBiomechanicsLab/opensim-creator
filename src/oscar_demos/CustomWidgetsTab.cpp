@@ -13,13 +13,14 @@
 #include <string>
 #include <utility>
 
+using osc::CStringView;
 using osc::Vec2;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "Demos/CustomWidgets";
+    constexpr CStringView c_TabStringID = "Demos/CustomWidgets";
 
-    void WidgetTitle(osc::CStringView title, Vec2 pos)
+    void WidgetTitle(CStringView title, Vec2 pos)
     {
         Vec2 const textTopLeft = pos + Vec2{ImGui::GetStyle().FramePadding};
         ImGui::GetWindowDrawList()->AddText(textTopLeft, ImGui::GetColorU32(ImGuiCol_Text), title.c_str());
@@ -63,7 +64,7 @@ namespace
         }
     }
 
-    bool Toggle(osc::CStringView label, bool* v)
+    bool Toggle(CStringView label, bool* v)
     {
         ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32_BLACK_TRANS);
 
@@ -128,7 +129,7 @@ private:
 
 // public API
 
-osc::CStringView osc::CustomWidgetsTab::id() noexcept
+osc::CStringView osc::CustomWidgetsTab::id()
 {
     return c_TabStringID;
 }

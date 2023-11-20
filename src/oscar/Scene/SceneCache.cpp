@@ -1,8 +1,11 @@
-#include "MeshCache.hpp"
+#include "SceneCache.hpp"
 
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
+#include <oscar/Graphics/MeshTopology.hpp>
+#include <oscar/Maths/BVH.hpp>
 #include <oscar/Platform/Log.hpp>
+#include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>
 
@@ -12,6 +15,10 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+using osc::BVH;
+using osc::Mesh;
+using osc::MeshTopology;
 
 namespace
 {
@@ -26,7 +33,7 @@ namespace
         {
         }
 
-        friend bool operator==(TorusParameters const&, TorusParameters const&) noexcept = default;
+        friend bool operator==(TorusParameters const&, TorusParameters const&) = default;
 
         float torusCenterToTubeCenterRadius;
         float tubeRadius;
@@ -35,14 +42,18 @@ namespace
 
 template<>
 struct std::hash<TorusParameters> final {
-    size_t operator()(TorusParameters const& p) const noexcept
+    size_t operator()(TorusParameters const& p) const
     {
         return osc::HashOf(p.torusCenterToTubeCenterRadius, p.tubeRadius);
     }
 };
 
-class osc::MeshCache::Impl final {
+class osc::SceneCache::Impl final {
 public:
+    Impl()
+    {
+    }
+
     Mesh sphere = GenSphere(16, 16);
     Mesh circle = GenCircle(16);
     Mesh cylinder = GenUntexturedYToYCylinder(16);
@@ -56,23 +67,28 @@ public:
 
     SynchronizedValue<std::unordered_map<TorusParameters, Mesh>> torusCache;
     SynchronizedValue<std::unordered_map<std::string, Mesh>> fileCache;
+    SynchronizedValue<std::unordered_map<Mesh, std::unique_ptr<BVH>>> bvhCache;
 };
 
-osc::MeshCache::MeshCache() :
+osc::SceneCache::SceneCache() :
     m_Impl{std::make_unique<Impl>()}
 {
 }
 
-osc::MeshCache::MeshCache(MeshCache&&) noexcept = default;
-osc::MeshCache& osc::MeshCache::operator=(MeshCache&&) noexcept = default;
-osc::MeshCache::~MeshCache() noexcept = default;
+osc::SceneCache::SceneCache(SceneCache&&) noexcept = default;
+osc::SceneCache& osc::SceneCache::operator=(SceneCache&&) noexcept = default;
+osc::SceneCache::~SceneCache() noexcept = default;
 
-void osc::MeshCache::clear()
+void osc::SceneCache::clear()
 {
     m_Impl->fileCache.lock()->clear();
+    m_Impl->bvhCache.lock()->clear();
+    m_Impl->torusCache.lock()->clear();
 }
 
-osc::Mesh osc::MeshCache::get(std::string const& key, std::function<Mesh()> const& getter)
+osc::Mesh osc::SceneCache::get(
+    std::string const& key,
+    std::function<Mesh()> const& getter)
 {
     auto guard = m_Impl->fileCache.lock();
 
@@ -93,57 +109,57 @@ osc::Mesh osc::MeshCache::get(std::string const& key, std::function<Mesh()> cons
     return it->second;
 }
 
-osc::Mesh osc::MeshCache::getSphereMesh()
+osc::Mesh osc::SceneCache::getSphereMesh()
 {
     return m_Impl->sphere;
 }
 
-osc::Mesh osc::MeshCache::getCircleMesh()
+osc::Mesh osc::SceneCache::getCircleMesh()
 {
     return m_Impl->circle;
 }
 
-osc::Mesh osc::MeshCache::getCylinderMesh()
+osc::Mesh osc::SceneCache::getCylinderMesh()
 {
     return m_Impl->cylinder;
 }
 
-osc::Mesh osc::MeshCache::getBrickMesh()
+osc::Mesh osc::SceneCache::getBrickMesh()
 {
     return m_Impl->cube;
 }
 
-osc::Mesh osc::MeshCache::getConeMesh()
+osc::Mesh osc::SceneCache::getConeMesh()
 {
     return m_Impl->cone;
 }
 
-osc::Mesh osc::MeshCache::getFloorMesh()
+osc::Mesh osc::SceneCache::getFloorMesh()
 {
     return m_Impl->floor;
 }
 
-osc::Mesh osc::MeshCache::get100x100GridMesh()
+osc::Mesh osc::SceneCache::get100x100GridMesh()
 {
     return m_Impl->grid100x100;
 }
 
-osc::Mesh osc::MeshCache::getCubeWireMesh()
+osc::Mesh osc::SceneCache::getCubeWireMesh()
 {
     return m_Impl->cubeWire;
 }
 
-osc::Mesh osc::MeshCache::getYLineMesh()
+osc::Mesh osc::SceneCache::getYLineMesh()
 {
     return m_Impl->yLine;
 }
 
-osc::Mesh osc::MeshCache::getTexturedQuadMesh()
+osc::Mesh osc::SceneCache::getTexturedQuadMesh()
 {
     return m_Impl->texturedQuad;
 }
 
-osc::Mesh osc::MeshCache::getTorusMesh(float torusCenterToTubeCenterRadius, float tubeRadius)
+osc::Mesh osc::SceneCache::getTorusMesh(float torusCenterToTubeCenterRadius, float tubeRadius)
 {
     TorusParameters const key{torusCenterToTubeCenterRadius, tubeRadius};
 
@@ -152,8 +168,19 @@ osc::Mesh osc::MeshCache::getTorusMesh(float torusCenterToTubeCenterRadius, floa
 
     if (inserted)
     {
-        it->second = GenTorus(12, 12, key.torusCenterToTubeCenterRadius, key.tubeRadius);
+        it->second = Mesh{GenTorus(12, 12, key.torusCenterToTubeCenterRadius, key.tubeRadius)};
     }
 
     return it->second;
+}
+
+osc::BVH const& osc::SceneCache::getBVH(Mesh const& mesh)
+{
+    auto guard = m_Impl->bvhCache.lock();
+    auto [it, inserted] = guard->try_emplace(mesh, nullptr);
+    if (inserted)
+    {
+        it->second = std::make_unique<BVH>(CreateTriangleBVHFromMesh(mesh));
+    }
+    return *it->second;
 }

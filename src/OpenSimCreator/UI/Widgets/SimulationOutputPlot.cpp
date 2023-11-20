@@ -17,7 +17,6 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Perf.hpp>
-#include <oscar/Utils/SynchronizedValue.hpp>
 #include <SimTKcommon.h>
 
 #include <algorithm>

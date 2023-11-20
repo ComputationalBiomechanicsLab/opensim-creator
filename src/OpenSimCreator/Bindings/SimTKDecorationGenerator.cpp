@@ -5,12 +5,12 @@
 
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/Triangle.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/Log.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SimpleSceneDecoration.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <simbody/internal/common.h>
@@ -112,7 +112,7 @@ namespace
     class GeometryImpl final : public SimTK::DecorativeGeometryImplementation {
     public:
         GeometryImpl(
-            osc::MeshCache& meshCache,
+            osc::SceneCache& meshCache,
             SimTK::SimbodyMatterSubsystem const& matter,
             SimTK::State const& st,
             float fixupScaleFactor,
@@ -256,13 +256,13 @@ namespace
             float const legThickness = c_FrameAxisThickness * m_FixupScaleFactor;
             for (int axis = 0; axis < 3; ++axis)
             {
-                Vec3 dir = {0.0f, 0.0f, 0.0f};
-                dir[axis] = 1.0f;
+                Vec3 direction = {0.0f, 0.0f, 0.0f};
+                direction[axis] = 1.0f;
 
                 osc::Segment const line =
                 {
                     t.position,
-                    t.position + (legLen * axisLengths[axis] * TransformDirection(t, dir))
+                    t.position + (legLen * axisLengths[axis] * TransformDirection(t, direction))
                 };
                 osc::Transform const legXform = YToYCylinderToSegmentTransform(line, legThickness);
 
@@ -331,10 +331,10 @@ namespace
             Vec3 const start = TransformPoint(t, startBase);
             Vec3 const end = TransformPoint(t, endBase);
 
-            Vec3 const dir = osc::Normalize(end - start);
+            Vec3 const direction = osc::Normalize(end - start);
 
             Vec3 const neckStart = start;
-            Vec3 const neckEnd = end - (static_cast<float>(d.getTipLength()) * dir);
+            Vec3 const neckEnd = end - (static_cast<float>(d.getTipLength()) * direction);
             Vec3 const headStart = neckEnd;
             Vec3 const headEnd = end;
 
@@ -383,12 +383,12 @@ namespace
             Vec3 const posDir = osc::ToVec3(d.getDirection());
 
             Vec3 const pos = TransformPoint(t, posBase);
-            Vec3 const dir = TransformDirection(t, posDir);
+            Vec3 const direction = TransformDirection(t, posDir);
 
             auto const radius = static_cast<float>(d.getBaseRadius());
             auto const height = static_cast<float>(d.getHeight());
 
-            osc::Transform coneXform = osc::YToYCylinderToSegmentTransform({pos, pos + height*dir}, radius);
+            osc::Transform coneXform = osc::YToYCylinderToSegmentTransform({pos, pos + height*direction}, radius);
             coneXform.scale *= t.scale;
 
             m_Consumer(osc::SimpleSceneDecoration
@@ -399,7 +399,7 @@ namespace
             });
         }
 
-        osc::MeshCache& m_MeshCache;
+        osc::SceneCache& m_MeshCache;
         SimTK::SimbodyMatterSubsystem const& m_Matter;
         SimTK::State const& m_State;
         float m_FixupScaleFactor;
@@ -408,7 +408,7 @@ namespace
 }
 
 void osc::GenerateDecorations(
-    MeshCache& meshCache,
+    SceneCache& meshCache,
     SimTK::SimbodyMatterSubsystem const& matter,
     SimTK::State const& state,
     SimTK::DecorativeGeometry const& geom,

@@ -12,11 +12,11 @@
 
 namespace OpenSim { class Component; }
 namespace osc { class BVH; }
-namespace osc { class MeshCache; }
 namespace osc { struct ModelRendererParams; }
 namespace osc { class OpenSimDecorationOptions; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct SceneDecoration; }
+namespace osc { class SceneCache; }
 namespace osc { class VirtualConstModelStatePair; }
 
 namespace osc
@@ -29,7 +29,7 @@ namespace osc
     );
 
     void GenerateDecorations(
-        MeshCache&,
+        SceneCache&,
         VirtualConstModelStatePair const&,
         OpenSimDecorationOptions const&,
         std::function<void(OpenSim::Component const&, SceneDecoration&&)> const& out
@@ -37,6 +37,7 @@ namespace osc
 
     std::optional<SceneCollision> GetClosestCollision(
         BVH const& sceneBVH,
+        SceneCache&,
         std::span<SceneDecoration const> taggedDrawlist,
         PolarPerspectiveCamera const&,
         Vec2 mouseScreenPos,

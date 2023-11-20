@@ -5,7 +5,7 @@
 #include <OpenSimCreator/Simulation/Simulation.hpp>
 #include <OpenSimCreator/Simulation/StoFileSimulation.hpp>
 #include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
-#include <OpenSimCreator/UI/Tabs/MeshImporterTab.hpp>
+#include <OpenSimCreator/UI/Tabs/MeshImporter/MeshImporterTab.hpp>
 #include <OpenSimCreator/UI/Tabs/SimulatorTab.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/UndoableModelActions.hpp>
@@ -16,14 +16,13 @@
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
@@ -48,7 +47,7 @@ osc::MainMenuFileTab::MainMenuFileTab() :
     {
         FindFilesWithExtensionsRecursive(
             App::resource("models"),
-            to_array({std::string_view{".osim"}})
+            std::to_array({std::string_view{".osim"}})
         )
     }
 {
@@ -83,7 +82,7 @@ void osc::MainMenuFileTab::onDraw(
         }
         else if (maybeModel && ImGui::IsKeyPressed(ImGuiKey_F5))
         {
-            ActionReloadOsimFromDisk(*maybeModel, *App::singleton<MeshCache>());
+            ActionReloadOsimFromDisk(*maybeModel, *App::singleton<SceneCache>());
         }
     }
 
@@ -189,7 +188,7 @@ void osc::MainMenuFileTab::onDraw(
 
         if (ImGui::MenuItem(ICON_FA_RECYCLE " Reload", "F5", false, modelHasBackingFile) && maybeModel)
         {
-            osc::ActionReloadOsimFromDisk(*maybeModel, *App::singleton<MeshCache>());
+            osc::ActionReloadOsimFromDisk(*maybeModel, *App::singleton<SceneCache>());
         }
         osc::DrawTooltipIfItemHovered("Reload", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
 

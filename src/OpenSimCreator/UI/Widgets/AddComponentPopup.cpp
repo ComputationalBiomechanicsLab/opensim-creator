@@ -21,7 +21,6 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Widgets/StandardPopup.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <SimTKcommon/SmallMatrix.h>
 
@@ -588,3 +587,4 @@ void osc::AddComponentPopup::implEndPopup()
 {
     m_Impl->endPopup();
 }
+

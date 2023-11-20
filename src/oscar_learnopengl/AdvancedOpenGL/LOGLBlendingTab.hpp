@@ -14,7 +14,7 @@ namespace osc
 {
     class LOGLBlendingTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit LOGLBlendingTab(ParentPtr<TabHost> const&);
         LOGLBlendingTab(LOGLBlendingTab const&) = delete;

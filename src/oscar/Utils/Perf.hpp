@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/Utils/Macros.hpp>
+#include <oscar/Utils/FilenameExtractor.hpp>
 #include <oscar/Utils/PerfClock.hpp>
 #include <oscar/Utils/PerfMeasurement.hpp>
 
@@ -26,11 +26,11 @@ namespace osc
             int64_t id,
             PerfClock::time_point start,
             PerfClock::time_point end
-        ) noexcept;
+        );
 
         class PerfTimer final {
         public:
-            explicit PerfTimer(int64_t id) noexcept :
+            explicit PerfTimer(int64_t id) :
                 m_ID{id}
             {
             }
@@ -52,5 +52,5 @@ namespace osc
 #define OSC_PERF_TOKENPASTE(x, y) x##y
 #define OSC_PERF_TOKENPASTE2(x, y) OSC_PERF_TOKENPASTE(x, y)
 #define OSC_PERF(label) \
-    static int64_t const OSC_PERF_TOKENPASTE2(s_TimerID, __LINE__) = osc::detail::AllocateMeasurementID(label, OSC_FILENAME, __LINE__); \
+    static int64_t const OSC_PERF_TOKENPASTE2(s_TimerID, __LINE__) = osc::detail::AllocateMeasurementID(label, osc::ExtractFilename(__FILE__), __LINE__); \
     osc::detail::PerfTimer const OSC_PERF_TOKENPASTE2(timer, __LINE__) (OSC_PERF_TOKENPASTE2(s_TimerID, __LINE__));

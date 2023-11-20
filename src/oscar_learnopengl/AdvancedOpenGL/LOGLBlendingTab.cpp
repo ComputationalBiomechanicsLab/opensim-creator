@@ -18,19 +18,22 @@
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
+#include <array>
 #include <cstdint>
 #include <memory>
 
+using osc::Camera;
+using osc::CStringView;
+using osc::Mesh;
 using osc::Vec2;
 using osc::Vec3;
 
 namespace
 {
-    constexpr auto c_PlaneVertices = osc::to_array<Vec3>(
+    constexpr auto c_PlaneVertices = std::to_array<Vec3>(
     {
         { 5.0f, -0.5f,  5.0f},
         {-5.0f, -0.5f,  5.0f},
@@ -40,7 +43,7 @@ namespace
         {-5.0f, -0.5f, -5.0f},
         { 5.0f, -0.5f, -5.0f},
     });
-    constexpr auto c_PlaneTexCoords = osc::to_array<Vec2>(
+    constexpr auto c_PlaneTexCoords = std::to_array<Vec2>(
     {
         {2.0f, 0.0f},
         {0.0f, 0.0f},
@@ -50,9 +53,9 @@ namespace
         {0.0f, 2.0f},
         {2.0f, 2.0f},
     });
-    constexpr auto c_PlaneIndices = osc::to_array<uint16_t>({0, 2, 1, 3, 5, 4});
+    constexpr auto c_PlaneIndices = std::to_array<uint16_t>({0, 2, 1, 3, 5, 4});
 
-    constexpr auto c_TransparentVerts = osc::to_array<Vec3>(
+    constexpr auto c_TransparentVerts = std::to_array<Vec3>(
     {
         {0.0f,  0.5f, 0.0f},
         {0.0f, -0.5f, 0.0f},
@@ -62,7 +65,7 @@ namespace
         {1.0f, -0.5f, 0.0f},
         {1.0f,  0.5f, 0.0f},
     });
-    constexpr auto c_TransparentTexCoords = osc::to_array<Vec2>(
+    constexpr auto c_TransparentTexCoords = std::to_array<Vec2>(
     {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
@@ -72,9 +75,9 @@ namespace
         {1.0f, 1.0f},
         {1.0f, 0.0f},
     });
-    constexpr auto c_TransparentIndices = osc::to_array<uint16_t>({0, 1, 2, 3, 4, 5});
+    constexpr auto c_TransparentIndices = std::to_array<uint16_t>({0, 1, 2, 3, 4, 5});
 
-    constexpr auto c_WindowLocations = osc::to_array<Vec3>(
+    constexpr auto c_WindowLocations = std::to_array<Vec3>(
     {
         {-1.5f, 0.0f, -0.48f},
         { 1.5f, 0.0f,  0.51f},
@@ -83,29 +86,29 @@ namespace
         { 0.5f, 0.0f, -0.6},
     });
 
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Blending";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/Blending";
 
-    osc::Mesh GeneratePlane()
+    Mesh GeneratePlane()
     {
-        osc::Mesh rv;
+        Mesh rv;
         rv.setVerts(c_PlaneVertices);
         rv.setTexCoords(c_PlaneTexCoords);
         rv.setIndices(c_PlaneIndices);
         return rv;
     }
 
-    osc::Mesh GenerateTransparent()
+    Mesh GenerateTransparent()
     {
-        osc::Mesh rv;
+        Mesh rv;
         rv.setVerts(c_TransparentVerts);
         rv.setTexCoords(c_TransparentTexCoords);
         rv.setIndices(c_TransparentIndices);
         return rv;
     }
 
-    osc::Camera CreateCameraThatMatchesLearnOpenGL()
+    Camera CreateCameraThatMatchesLearnOpenGL()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
@@ -243,7 +246,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLBlendingTab::id() noexcept
+CStringView osc::LOGLBlendingTab::id()
 {
     return c_TabStringID;
 }
@@ -262,7 +265,7 @@ osc::UID osc::LOGLBlendingTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLBlendingTab::implGetName() const
+CStringView osc::LOGLBlendingTab::implGetName() const
 {
     return m_Impl->getName();
 }

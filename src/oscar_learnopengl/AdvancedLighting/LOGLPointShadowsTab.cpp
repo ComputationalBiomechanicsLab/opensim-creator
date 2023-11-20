@@ -23,7 +23,6 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <SDL_events.h>
@@ -34,25 +33,34 @@
 #include <string>
 #include <utility>
 
+using osc::Camera;
+using osc::Color;
+using osc::CStringView;
+using osc::RenderTexture;
+using osc::RenderTextureDescriptor;
+using osc::RenderTextureFormat;
+using osc::RenderTextureReadWrite;
+using osc::TextureDimensionality;
+using osc::Transform;
 using osc::Vec2i;
 using osc::Vec3;
 
 namespace
 {
     constexpr Vec2i c_ShadowmapDims = {1024, 1024};
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/PointShadows";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/PointShadows";
 
-    constexpr osc::Transform MakeTransform(float scale, Vec3 position)
+    constexpr Transform MakeTransform(float scale, Vec3 position)
     {
-        osc::Transform rv;
+        Transform rv;
         rv.scale = Vec3(scale);
         rv.position = position;
         return rv;
     }
 
-    osc::Transform MakeRotatedTransform()
+    Transform MakeRotatedTransform()
     {
-        osc::Transform rv;
+        Transform rv;
         rv.scale = Vec3(0.75f);
         rv.rotation = osc::AngleAxis(osc::Deg2Rad(60.0f), osc::Normalize(Vec3{1.0f, 0.0f, 1.0f}));
         rv.position = {-1.5f, 2.0f, -3.0f};
@@ -60,24 +68,24 @@ namespace
     }
 
     struct SceneCube final {
-        explicit SceneCube(osc::Transform transform_) :
+        explicit SceneCube(Transform transform_) :
             transform{transform_}
         {
         }
 
-        SceneCube(osc::Transform transform_, bool invertNormals_) :
+        SceneCube(Transform transform_, bool invertNormals_) :
             transform{transform_},
             invertNormals{invertNormals_}
         {
         }
 
-        osc::Transform transform;
+        Transform transform;
         bool invertNormals = false;
     };
 
     auto MakeSceneCubes()
     {
-        return osc::to_array<SceneCube>(
+        return std::to_array<SceneCube>(
         {
             SceneCube{MakeTransform(5.0f, {}), true},
             SceneCube{MakeTransform(0.5f, {4.0f, -3.5f, 0.0f})},
@@ -88,23 +96,23 @@ namespace
         });
     }
 
-    osc::RenderTexture CreateDepthTexture()
+    RenderTexture CreateDepthTexture()
     {
-        osc::RenderTextureDescriptor desc{c_ShadowmapDims};
-        desc.setDimensionality(osc::TextureDimensionality::Cube);
-        desc.setReadWrite(osc::RenderTextureReadWrite::Linear);
-        desc.setColorFormat(osc::RenderTextureFormat::Depth);
-        return osc::RenderTexture{desc};
+        RenderTextureDescriptor desc{c_ShadowmapDims};
+        desc.setDimensionality(TextureDimensionality::Cube);
+        desc.setReadWrite(RenderTextureReadWrite::Linear);
+        desc.setColorFormat(RenderTextureFormat::Depth);
+        return RenderTexture{desc};
     }
 
-    osc::Camera CreateCamera()
+    Camera CreateCamera()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
-        rv.setBackgroundColor(osc::Color::clear());
+        rv.setBackgroundColor(Color::clear());
         return rv;
     }
 }
@@ -302,7 +310,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLPointShadowsTab::id() noexcept
+CStringView osc::LOGLPointShadowsTab::id()
 {
     return c_TabStringID;
 }
@@ -321,7 +329,7 @@ osc::UID osc::LOGLPointShadowsTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLPointShadowsTab::implGetName() const
+CStringView osc::LOGLPointShadowsTab::implGetName() const
 {
     return m_Impl->getName();
 }

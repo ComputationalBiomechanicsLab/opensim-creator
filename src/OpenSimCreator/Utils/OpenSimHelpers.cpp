@@ -54,10 +54,9 @@
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/Log.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <SimTKcommon.h>
@@ -1081,7 +1080,7 @@ bool osc::TrySetAppearancePropertyIsVisibleTo(OpenSim::Component& c, bool v)
     }
 }
 
-osc::Color osc::GetSuggestedBoneColor() noexcept
+osc::Color osc::GetSuggestedBoneColor()
 {
     Color usualDefault = {232.0f / 255.0f, 216.0f / 255.0f, 200.0f/255.0f, 1.0f};
     float brightenAmount = 0.1f;
@@ -1657,4 +1656,25 @@ std::optional<osc::ComponentSpatialRepresentation> osc::TryGetSpatialRepresentat
         }
     }
     return std::nullopt;
+}
+
+bool osc::IsValidOpenSimComponentNameCharacter(char c)
+{
+    return
+        std::isalpha(static_cast<uint8_t>(c)) != 0 ||
+        ('0' <= c && c <= '9') ||
+        (c == '-' || c == '_');
+}
+
+std::string osc::SanitizeToOpenSimComponentName(std::string_view sv)
+{
+    std::string rv;
+    for (char c : sv)
+    {
+        if (IsValidOpenSimComponentNameCharacter(c))
+        {
+            rv += c;
+        }
+    }
+    return rv;
 }

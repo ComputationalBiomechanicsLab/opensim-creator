@@ -121,7 +121,7 @@ private:
 
 // public API (PIMPL)
 
-osc::CStringView osc::RendererGeometryShaderTab::id() noexcept
+osc::CStringView osc::RendererGeometryShaderTab::id()
 {
     return "OpenSim/Experimental/GeometryShader";
 }

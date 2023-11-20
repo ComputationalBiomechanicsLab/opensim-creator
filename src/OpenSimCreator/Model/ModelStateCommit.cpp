@@ -5,7 +5,7 @@
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/SynchronizedValue.hpp>
+#include <oscar/Utils/SynchronizedValueGuard.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <chrono>

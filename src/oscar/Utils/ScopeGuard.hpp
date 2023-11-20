@@ -7,7 +7,7 @@ namespace osc
     template<typename Dtor>
     class ScopeGuard final {
     public:
-        explicit ScopeGuard(Dtor&& dtor_) noexcept :
+        explicit ScopeGuard(Dtor&& dtor_) :
             m_OnScopeExit{std::forward<Dtor&&>(dtor_)}
         {
         }
@@ -15,7 +15,7 @@ namespace osc
         ScopeGuard(ScopeGuard&&) noexcept = delete;
         ScopeGuard& operator=(ScopeGuard const&) = delete;
         ScopeGuard& operator=(ScopeGuard&&) noexcept = delete;
-        ~ScopeGuard() noexcept
+        ~ScopeGuard() noexcept(noexcept(m_OnScopeExit()))
         {
             m_OnScopeExit();
         }

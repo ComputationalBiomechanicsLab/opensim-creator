@@ -55,6 +55,41 @@ add_library(OpenSimCreator STATIC
     Model/VirtualConstModelStatePair.hpp
     Model/VirtualModelStatePair.hpp
 
+    ModelGraph/BodyEl.cpp
+    ModelGraph/BodyEl.hpp
+    ModelGraph/CommittableModelGraph.hpp
+    ModelGraph/CommittableModelGraphActions.cpp
+    ModelGraph/CommittableModelGraphActions.hpp
+    ModelGraph/CrossrefDescriptor.hpp
+    ModelGraph/CrossrefDirection.hpp
+    ModelGraph/GroundEl.cpp
+    ModelGraph/GroundEl.hpp
+    ModelGraph/ISceneElLookup.hpp
+    ModelGraph/JointEl.cpp
+    ModelGraph/JointEl.hpp
+    ModelGraph/MeshEl.cpp
+    ModelGraph/MeshEl.hpp
+    ModelGraph/ModelCreationFlags.hpp
+    ModelGraph/ModelGraph.cpp
+    ModelGraph/ModelGraph.hpp
+    ModelGraph/ModelGraphHelpers.cpp
+    ModelGraph/ModelGraphHelpers.hpp
+    ModelGraph/ModelGraphIDs.cpp
+    ModelGraph/ModelGraphIDs.hpp
+    ModelGraph/ModelGraphOpenSimBridge.cpp
+    ModelGraph/ModelGraphOpenSimBridge.hpp
+    ModelGraph/ModelGraphStrings.hpp
+    ModelGraph/SceneEl.cpp
+    ModelGraph/SceneEl.hpp
+    ModelGraph/SceneElClass.hpp
+    ModelGraph/SceneElCRTP.hpp
+    ModelGraph/SceneElFlags.hpp
+    ModelGraph/SceneElHelpers.cpp
+    ModelGraph/SceneElHelpers.hpp
+    ModelGraph/SceneElVariant.hpp
+    ModelGraph/StationEl.cpp
+    ModelGraph/StationEl.hpp
+
     Outputs/ComponentOutputExtractor.cpp
     Outputs/ComponentOutputExtractor.hpp
     Outputs/IntegratorOutputExtractor.cpp
@@ -144,12 +179,23 @@ add_library(OpenSimCreator STATIC
     UI/Tabs/Experimental/RendererGeometryShaderTab.hpp
     UI/Tabs/Experimental/TPS2DTab.cpp
     UI/Tabs/Experimental/TPS2DTab.hpp
+    UI/Tabs/MeshImporter/ChooseElLayer.hpp
+    UI/Tabs/MeshImporter/DrawableThing.hpp
+    UI/Tabs/MeshImporter/ImportStationsFromCSVPopup.cpp
+    UI/Tabs/MeshImporter/ImportStationsFromCSVPopup.hpp
+    UI/Tabs/MeshImporter/MeshImporterHover.hpp
+    UI/Tabs/MeshImporter/MeshImporterSharedState.hpp
+    UI/Tabs/MeshImporter/MeshImporterTab.cpp
+    UI/Tabs/MeshImporter/MeshImporterTab.hpp
+    UI/Tabs/MeshImporter/MeshImporterUILayer.hpp
+    UI/Tabs/MeshImporter/MeshImporterUILayerHost.hpp
+    UI/Tabs/MeshImporter/MeshLoader.cpp
+    UI/Tabs/MeshImporter/MeshLoader.hpp
+    UI/Tabs/MeshImporter/Select2MeshPointsLayer.hpp
     UI/Tabs/FrameDefinitionTab.cpp
     UI/Tabs/FrameDefinitionTab.hpp
     UI/Tabs/LoadingTab.cpp
     UI/Tabs/LoadingTab.hpp
-    UI/Tabs/MeshImporterTab.cpp
-    UI/Tabs/MeshImporterTab.hpp
     UI/Tabs/MeshWarpingTab.cpp
     UI/Tabs/MeshWarpingTab.hpp
     UI/Tabs/ModelEditorTab.cpp
@@ -158,8 +204,6 @@ add_library(OpenSimCreator STATIC
     UI/Tabs/OpenSimCreatorTabRegistry.hpp
     UI/Tabs/PerformanceAnalyzerTab.cpp
     UI/Tabs/PerformanceAnalyzerTab.hpp
-    UI/Tabs/ShapeFittingTab.cpp
-    UI/Tabs/ShapeFittingTab.hpp
     UI/Tabs/SimulatorTab.cpp
     UI/Tabs/SimulatorTab.hpp
     UI/Tabs/SplashTab.cpp

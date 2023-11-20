@@ -1,7 +1,8 @@
 #pragma once
 
+#include <oscar/Shims/Cpp23/utility.hpp>
+
 #include <cstddef>
-#include <type_traits>
 
 namespace osc
 {
@@ -15,27 +16,25 @@ namespace osc
         NUM_OPTIONS,
     };
 
-    constexpr CubemapFace FirstCubemapFace() noexcept
+    constexpr CubemapFace FirstCubemapFace()
     {
         return CubemapFace::PositiveX;
     }
 
-    constexpr CubemapFace LastCubemapFace() noexcept
+    constexpr CubemapFace LastCubemapFace()
     {
         return CubemapFace::NegativeZ;
     }
 
-    constexpr CubemapFace Next(CubemapFace face) noexcept
+    constexpr CubemapFace Next(CubemapFace face)
     {
-        using Underlying = std::underlying_type_t<CubemapFace>;
-        return static_cast<CubemapFace>(static_cast<Underlying>(face) + 1);
+        return static_cast<CubemapFace>(osc::to_underlying(face) + 1);
     }
 
     constexpr size_t ToIndex(CubemapFace face)
     {
-        using Underlying = std::underlying_type_t<CubemapFace>;
-        static_assert(static_cast<Underlying>(FirstCubemapFace()) == 0);
-        static_assert(static_cast<Underlying>(LastCubemapFace()) - static_cast<Underlying>(FirstCubemapFace()) == 5);
+        static_assert(osc::to_underlying(FirstCubemapFace()) == 0);
+        static_assert(osc::to_underlying(LastCubemapFace()) - osc::to_underlying(FirstCubemapFace()) == 5);
         return static_cast<size_t>(face);
     }
 }

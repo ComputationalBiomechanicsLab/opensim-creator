@@ -1,9 +1,9 @@
 #include "StringHelpers.hpp"
 
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <limits>
 #include <optional>
@@ -13,7 +13,7 @@
 
 namespace
 {
-    auto constexpr c_NibbleToCharacterLUT = osc::to_array(
+    auto constexpr c_NibbleToCharacterLUT = std::to_array(
     {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
     });
@@ -214,7 +214,7 @@ std::string_view osc::SubstringAfterLast(std::string_view sv, std::string_view::
     }
 }
 
-std::pair<char, char> osc::ToHexChars(uint8_t b) noexcept
+std::pair<char, char> osc::ToHexChars(uint8_t b)
 {
     static_assert((std::numeric_limits<decltype(b)>::max() & 0xf) < c_NibbleToCharacterLUT.size());
     static_assert(((std::numeric_limits<decltype(b)>::max()>>1) & 0xf) < c_NibbleToCharacterLUT.size());
@@ -224,7 +224,7 @@ std::pair<char, char> osc::ToHexChars(uint8_t b) noexcept
     return {msn, lsn};
 }
 
-std::optional<uint8_t> osc::TryParseHexCharsAsByte(char a, char b) noexcept
+std::optional<uint8_t> osc::TryParseHexCharsAsByte(char a, char b)
 {
     // you might be wondering why we aren't using a library function, it's
     // because:

@@ -10,7 +10,6 @@
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Maths/BVH.hpp>
@@ -23,10 +22,10 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <array>
@@ -68,8 +67,8 @@ public:
             {
                 MeshIndicesView const indices = m_Mesh.getIndices();
                 std::optional<BVHCollision> const maybeCollision = indices.isU16() ?
-                    m_Mesh.getBVH().getClosestRayIndexedTriangleCollision(m_Mesh.getVerts(), indices.toU16Span(), m_Ray) :
-                    m_Mesh.getBVH().getClosestRayIndexedTriangleCollision(m_Mesh.getVerts(), indices.toU32Span(), m_Ray);
+                    m_MeshBVH.getClosestRayIndexedTriangleCollision(m_Mesh.getVerts(), indices.toU16Span(), m_Ray) :
+                    m_MeshBVH.getClosestRayIndexedTriangleCollision(m_Mesh.getVerts(), indices.toU32Span(), m_Ray);
                 if (maybeCollision)
                 {
                     uint32_t index = m_Mesh.getIndices()[maybeCollision->id];
@@ -133,7 +132,7 @@ public:
         {
             Mesh m;
             m.setVerts(m_Tris);
-            m.setIndices(osc::to_array<uint16_t>({0, 1, 2}));
+            m.setIndices(std::to_array<uint16_t>({0, 1, 2}));
 
             m_Material.setColor("uColor", Color::black());
             m_Material.setDepthTested(false);
@@ -146,8 +145,8 @@ public:
             m_Material.setColor("uColor", Color::black());
             m_Material.setDepthTested(true);
             osc::DrawBVH(
-                *App::singleton<MeshCache>(),
-                m_Mesh.getBVH(),
+                *App::singleton<SceneCache>(),
+                m_MeshBVH,
                 [this](osc::SceneDecoration&& dec)
                 {
                     osc::Graphics::DrawMesh(m_CubeLinesMesh, dec.transform, m_Material, m_Camera);
@@ -166,7 +165,7 @@ public:
             ImGui::Text("%ld microseconds", static_cast<long>(m_RaycastDuration.count()));
             auto r = m_Ray;
             ImGui::Text("camerapos = (%.2f, %.2f, %.2f)", m_Camera.getPosition().x, m_Camera.getPosition().y, m_Camera.getPosition().z);
-            ImGui::Text("origin = (%.2f, %.2f, %.2f), dir = (%.2f, %.2f, %.2f)", r.origin.x, r.origin.y, r.origin.z, r.dir.x, r.dir.y, r.dir.z);
+            ImGui::Text("origin = (%.2f, %.2f, %.2f), direction = (%.2f, %.2f, %.2f)", r.origin.x, r.origin.y, r.origin.z, r.direction.x, r.direction.y, r.direction.z);
             if (m_IsMousedOver)
             {
                 ImGui::Text("hit = (%.2f, %.2f, %.2f)", m_HitPos.x, m_HitPos.y, m_HitPos.z);
@@ -199,6 +198,7 @@ private:
     Mesh m_CubeLinesMesh = GenCubeLines();
 
     // other state
+    BVH m_MeshBVH = CreateTriangleBVHFromMesh(m_Mesh);
     bool m_UseBVH = false;
     std::array<Vec3, 3> m_Tris{};
     std::chrono::microseconds m_RaycastDuration{0};
@@ -213,7 +213,7 @@ private:
 
 // public API (PIMPL)
 
-osc::CStringView osc::MeshHittestTab::id() noexcept
+osc::CStringView osc::MeshHittestTab::id()
 {
     return "OpenSim/Experimental/MeshHittest";
 }

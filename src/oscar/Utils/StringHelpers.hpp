@@ -58,7 +58,7 @@ namespace osc
     // or linux. When they are, feel free to nuke this from orbit.
     //
     // see the unittest suite for some of the more unusual things to consider
-    std::optional<float> FromCharsStripWhitespace(std::string_view sv);
+    std::optional<float> FromCharsStripWhitespace(std::string_view);
 
     // returns a string that *may* be truncated with ellipsis (...) if the length
     // of the input character sequence exceeds the given maximum length
@@ -74,6 +74,6 @@ namespace osc
     // e.g. 0x00 --> ('0', '0')
     //      0xf0 --> ('f', '0')
     //      0x02 --> ('0', '2')
-    std::pair<char, char> ToHexChars(uint8_t) noexcept;
-    std::optional<uint8_t> TryParseHexCharsAsByte(char, char) noexcept;
+    std::pair<char, char> ToHexChars(uint8_t);
+    std::optional<uint8_t> TryParseHexCharsAsByte(char, char);
 }

@@ -1,6 +1,7 @@
 #pragma once
 
-#include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Shims/Cpp20/stop_token.hpp>
+#include <oscar/Shims/Cpp20/thread.hpp>
 
 #include <atomic>
 #include <condition_variable>
@@ -81,7 +82,7 @@ namespace osc::spsc
             m_Impl->m_Condvar.notify_one();
         }
 
-        [[nodiscard]] bool isReceiverHungUp() noexcept
+        [[nodiscard]] bool isReceiverHungUp()
         {
             return m_Impl->m_NumReceivers <= 0;
         }
@@ -164,7 +165,7 @@ namespace osc::spsc
             }
         }
 
-        [[nodiscard]] bool isSenderHungUp() noexcept
+        [[nodiscard]] bool isSenderHungUp()
         {
             return m_Impl->m_NumSenders <= 0;
         }

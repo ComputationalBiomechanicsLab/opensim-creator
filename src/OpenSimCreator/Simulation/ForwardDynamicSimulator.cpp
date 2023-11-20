@@ -14,7 +14,8 @@
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Platform/Log.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Shims/Cpp20/stop_token.hpp>
+#include <oscar/Shims/Cpp20/thread.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <SimTKsimbody.h>

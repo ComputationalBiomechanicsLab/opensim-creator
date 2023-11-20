@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 
+#include <array>
 #include <string>
 
 TEST(AppSettingValue, CanExplicitlyConstructFromStringRValue)
@@ -65,7 +66,7 @@ TEST(AppSettingValue, StringValueToBoolReturnsExpectedBoolValues)
 
 TEST(AppSettingValue, ColorValueToStringReturnsSameAsToHtmlStringRGBA)
 {
-    auto const colors = osc::to_array(
+    auto const colors = std::to_array(
     {
         osc::Color::red(),
         osc::Color::magenta(),

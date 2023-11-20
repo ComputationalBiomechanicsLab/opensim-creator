@@ -46,7 +46,6 @@
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Maths/Ellipsoid.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Plane.hpp>
@@ -57,6 +56,7 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/UID.hpp>
@@ -515,7 +515,7 @@ bool osc::ActionCopyModelPathToClipboard(UndoableModelStatePair const& uim)
 bool osc::ActionAutoscaleSceneScaleFactor(UndoableModelStatePair& uim)
 {
     float const sf = osc::GetRecommendedScaleFactor(
-        *osc::App::singleton<osc::MeshCache>(),
+        *osc::App::singleton<osc::SceneCache>(),
         uim.getModel(),
         uim.getState(),
         OpenSimDecorationOptions{}
@@ -627,7 +627,7 @@ bool osc::ActionOpenOsimInExternalEditor(UndoableModelStatePair& uim)
     return true;
 }
 
-bool osc::ActionReloadOsimFromDisk(UndoableModelStatePair& uim, MeshCache& meshCache)
+bool osc::ActionReloadOsimFromDisk(UndoableModelStatePair& uim, SceneCache& meshCache)
 {
     if (!osc::HasInputFileName(uim.getModel()))
     {

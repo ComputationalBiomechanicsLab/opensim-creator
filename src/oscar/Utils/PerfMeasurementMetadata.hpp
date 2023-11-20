@@ -1,7 +1,5 @@
 #pragma once
 
-#include <oscar/Utils/CStringView.hpp>
-
 #include <cstdint>
 #include <string>
 #include <string_view>
@@ -28,12 +26,12 @@ namespace osc
             return m_ID;
         }
 
-        CStringView getLabel() const
+        std::string const& getLabel() const
         {
             return m_Label;
         }
 
-        CStringView getFilename() const
+        std::string const& getFilename() const
         {
             return m_Filename;
         }

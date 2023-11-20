@@ -17,7 +17,6 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
@@ -30,13 +29,20 @@
 #include <utility>
 #include <vector>
 
+using osc::App;
+using osc::Camera;
+using osc::ColorSpace;
+using osc::CStringView;
+using osc::Material;
+using osc::Shader;
+using osc::Texture2D;
 using osc::Vec3;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/PBR/LightingTextured";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/PBR/LightingTextured";
 
-    constexpr auto c_LightPositions = osc::to_array<Vec3>(
+    constexpr auto c_LightPositions = std::to_array<Vec3>(
     {
         {-10.0f,  10.0f, 10.0f},
         { 10.0f,  10.0f, 10.0f},
@@ -44,7 +50,7 @@ namespace
         { 10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<Vec3, c_LightPositions.size()> c_LightRadiances = osc::to_array<Vec3>(
+    constexpr std::array<Vec3, c_LightPositions.size()> c_LightRadiances = std::to_array<Vec3>(
     {
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
@@ -56,9 +62,9 @@ namespace
     constexpr int c_NumCols = 7;
     constexpr float c_CellSpacing = 2.5f;
 
-    osc::Camera CreateCamera()
+    Camera CreateCamera()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
@@ -67,35 +73,35 @@ namespace
         return rv;
     }
 
-    osc::Material CreateMaterial()
+    Material CreateMaterial()
     {
-        osc::Texture2D albedo = osc::LoadTexture2DFromImage(
-            osc::App::resource("oscar_learnopengl/textures/pbr/rusted_iron/albedo.png"),
-            osc::ColorSpace::sRGB
+        Texture2D albedo = osc::LoadTexture2DFromImage(
+            App::resource("oscar_learnopengl/textures/pbr/rusted_iron/albedo.png"),
+            ColorSpace::sRGB
         );
-        osc::Texture2D normal = osc::LoadTexture2DFromImage(
-            osc::App::resource("oscar_learnopengl/textures/pbr/rusted_iron/normal.png"),
-            osc::ColorSpace::Linear
+        Texture2D normal = osc::LoadTexture2DFromImage(
+            App::resource("oscar_learnopengl/textures/pbr/rusted_iron/normal.png"),
+            ColorSpace::Linear
         );
-        osc::Texture2D metallic = osc::LoadTexture2DFromImage(
-            osc::App::resource("oscar_learnopengl/textures/pbr/rusted_iron/metallic.png"),
-            osc::ColorSpace::Linear
+        Texture2D metallic = osc::LoadTexture2DFromImage(
+            App::resource("oscar_learnopengl/textures/pbr/rusted_iron/metallic.png"),
+            ColorSpace::Linear
         );
-        osc::Texture2D roughness = osc::LoadTexture2DFromImage(
-            osc::App::resource("oscar_learnopengl/textures/pbr/rusted_iron/roughness.png"),
-            osc::ColorSpace::Linear
+        Texture2D roughness = osc::LoadTexture2DFromImage(
+            App::resource("oscar_learnopengl/textures/pbr/rusted_iron/roughness.png"),
+            ColorSpace::Linear
         );
-        osc::Texture2D ao = osc::LoadTexture2DFromImage(
-            osc::App::resource("oscar_learnopengl/textures/pbr/rusted_iron/ao.png"),
-            osc::ColorSpace::Linear
+        Texture2D ao = osc::LoadTexture2DFromImage(
+            App::resource("oscar_learnopengl/textures/pbr/rusted_iron/ao.png"),
+            ColorSpace::Linear
         );
 
-        osc::Material rv
+        Material rv
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.frag"),
+                App::slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.vert"),
+                App::slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.frag"),
             },
         };
         rv.setTexture("uAlbedoMap", albedo);
@@ -231,7 +237,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLPBRLightingTexturedTab::id() noexcept
+CStringView osc::LOGLPBRLightingTexturedTab::id()
 {
     return c_TabStringID;
 }
@@ -250,7 +256,7 @@ osc::UID osc::LOGLPBRLightingTexturedTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLPBRLightingTexturedTab::implGetName() const
+CStringView osc::LOGLPBRLightingTexturedTab::implGetName() const
 {
     return m_Impl->getName();
 }

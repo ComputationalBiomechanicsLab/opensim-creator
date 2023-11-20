@@ -1,5 +1,6 @@
 #pragma once
 
+#include <oscar/Shims/Cpp23/utility.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 
@@ -20,22 +21,20 @@ namespace osc
         Default = DrawFloor | Shadows | DrawSelectionRims,
     };
 
-    constexpr bool operator&(CustomRenderingOptionFlags a, CustomRenderingOptionFlags b)
+    constexpr bool operator&(CustomRenderingOptionFlags lhs, CustomRenderingOptionFlags rhs)
     {
-        using Underlying = std::underlying_type_t<CustomRenderingOptionFlags>;
-        return (static_cast<Underlying>(a) & static_cast<Underlying>(b)) != 0;
+        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
     }
 
     constexpr void SetOption(CustomRenderingOptionFlags& flags, CustomRenderingOptionFlags flag, bool v)
     {
-        using Underlying = std::underlying_type_t<CustomRenderingOptionFlags>;
         if (v)
         {
-            flags = static_cast<CustomRenderingOptionFlags>(static_cast<Underlying>(flags) | static_cast<Underlying>(flag));
+            flags = static_cast<CustomRenderingOptionFlags>(osc::to_underlying(flags) | osc::to_underlying(flag));
         }
         else
         {
-            flags = static_cast<CustomRenderingOptionFlags>(static_cast<Underlying>(flags) & ~static_cast<Underlying>(flag));
+            flags = static_cast<CustomRenderingOptionFlags>(osc::to_underlying(flags) & ~osc::to_underlying(flag));
         }
     }
 

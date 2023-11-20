@@ -14,6 +14,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <string_view>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
@@ -576,7 +577,7 @@ namespace osc
     // the value was set)
     bool TrySetAppearancePropertyIsVisibleTo(OpenSim::Component&, bool);
 
-    Color GetSuggestedBoneColor() noexcept;  // best guess, based on shaders etc.
+    Color GetSuggestedBoneColor();  // best guess, based on shaders etc.
 
     // returns `true` if the given model's display properties asks to show frames
     bool IsShowingFrames(OpenSim::Model const&);
@@ -855,4 +856,12 @@ namespace osc
         OpenSim::Component const&,
         SimTK::State const&
     );
+
+    // returns `true` if the given character is permitted to appear within the name
+    // of an `OpenSim::Component`
+    bool IsValidOpenSimComponentNameCharacter(char);
+
+    // returns a sanitized form of the given string that OpenSim would (probably) accept
+    // as a component name
+    std::string SanitizeToOpenSimComponentName(std::string_view);
 }

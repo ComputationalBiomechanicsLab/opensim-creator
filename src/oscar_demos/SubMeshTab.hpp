@@ -13,16 +13,16 @@ namespace osc { class TabHost; }
 
 namespace osc
 {
-    class ShapeFittingTab final : public Tab {
+    class SubMeshTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
-        explicit ShapeFittingTab(ParentPtr<TabHost> const&);
-        ShapeFittingTab(ShapeFittingTab const&) = delete;
-        ShapeFittingTab(ShapeFittingTab&&) noexcept;
-        ShapeFittingTab& operator=(ShapeFittingTab const&) = delete;
-        ShapeFittingTab& operator=(ShapeFittingTab&&) noexcept;
-        ~ShapeFittingTab() noexcept override;
+        explicit SubMeshTab(ParentPtr<TabHost> const&);
+        SubMeshTab(SubMeshTab const&) = delete;
+        SubMeshTab(SubMeshTab&&) noexcept;
+        SubMeshTab& operator=(SubMeshTab const&) = delete;
+        SubMeshTab& operator=(SubMeshTab&&) noexcept;
+        ~SubMeshTab() noexcept override;
 
     private:
         UID implGetID() const final;

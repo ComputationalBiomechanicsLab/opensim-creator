@@ -20,13 +20,16 @@
 
 #include <memory>
 
+using osc::Camera;
+using osc::CStringView;
+
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/BasicLighting";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/BasicLighting";
 
-    osc::Camera CreateCameraThatMatchesLearnOpenGL()
+    Camera CreateCameraThatMatchesLearnOpenGL()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
@@ -100,7 +103,7 @@ private:
         m_LightingMaterial.setFloat("uAmbientStrength", m_AmbientStrength);
         m_LightingMaterial.setFloat("uDiffuseStrength", m_DiffuseStrength);
         m_LightingMaterial.setFloat("uSpecularStrength", m_SpecularStrength);
-        Graphics::DrawMesh(m_CubeMesh, osc::Transform{}, m_LightingMaterial, m_Camera);
+        Graphics::DrawMesh(m_CubeMesh, Transform{}, m_LightingMaterial, m_Camera);
 
         // draw lamp
         m_LightCubeMaterial.setColor("uLightColor", m_LightColor);
@@ -154,7 +157,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLBasicLightingTab::id() noexcept
+CStringView osc::LOGLBasicLightingTab::id()
 {
     return c_TabStringID;
 }
@@ -173,7 +176,7 @@ osc::UID osc::LOGLBasicLightingTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLBasicLightingTab::implGetName() const
+CStringView osc::LOGLBasicLightingTab::implGetName() const
 {
     return m_Impl->getName();
 }

@@ -17,6 +17,7 @@ add_executable(testoscar
     Graphics/TestCubemapFace.cpp
     Graphics/TestCullMode.cpp
     Graphics/TestGraphicsHelpers.cpp
+    Graphics/TestSubMeshDescriptor.cpp
     Graphics/TestRenderer.cpp
     Graphics/TestRenderTarget.cpp
     Graphics/TestRenderTargetColorAttachment.cpp
@@ -29,9 +30,13 @@ add_executable(testoscar
 
     Platform/TestAppSettingValueType.cpp
 
+    Scene/TestSceneCache.cpp
+
+    Shims/Cpp20/TestBit.cpp
+
     Utils/TestCStringView.cpp
-    Utils/TestCpp20Shims.cpp
     Utils/TestFileChangePoller.cpp
+    Utils/TestFilenameExtractor.cpp
     Utils/TestStringHelpers.cpp
     Utils/TestStringName.cpp
     Utils/TestVariant.cpp

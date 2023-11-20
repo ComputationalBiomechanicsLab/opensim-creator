@@ -3,7 +3,6 @@
 #include <oscar/Graphics/TextureChannelFormat.hpp>
 
 #include <cstddef>
-#include <cstdint>
 #include <optional>
 
 namespace osc
@@ -17,8 +16,8 @@ namespace osc
         NUM_OPTIONS,
     };
 
-    size_t NumChannels(TextureFormat) noexcept;
-    TextureChannelFormat ChannelFormat(TextureFormat) noexcept;
-    size_t NumBytesPerPixel(TextureFormat) noexcept;
-    std::optional<TextureFormat> ToTextureFormat(size_t numChannels, TextureChannelFormat) noexcept;
+    size_t NumChannels(TextureFormat);
+    TextureChannelFormat ChannelFormat(TextureFormat);
+    size_t NumBytesPerPixel(TextureFormat);
+    std::optional<TextureFormat> ToTextureFormat(size_t numChannels, TextureChannelFormat);
 }

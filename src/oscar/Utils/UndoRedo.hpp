@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/UID.hpp>
 
 #include <chrono>
 #include <cstddef>
@@ -28,6 +29,11 @@ namespace osc
     public:
         virtual ~UndoRedoEntryMetadata() noexcept;
 
+        UID getID() const
+        {
+            return m_ID;
+        }
+
         std::chrono::system_clock::time_point getTime() const
         {
             return m_Time;
@@ -38,6 +44,7 @@ namespace osc
             return m_Message;
         }
     private:
+        UID m_ID;
         std::chrono::system_clock::time_point m_Time;
         std::string m_Message;
     };
@@ -74,6 +81,11 @@ namespace osc
         }
 
     public:
+        UID getID() const
+        {
+            return m_Data->getID();
+        }
+
         std::chrono::system_clock::time_point getTime() const
         {
             return m_Data->getTime();
@@ -122,6 +134,7 @@ namespace osc
 
         void commitScratch(std::string_view commitMsg);
         UndoRedoEntry const& getHead() const;
+        UID getHeadID() const;
 
         size_t getNumUndoEntries() const;
         ptrdiff_t getNumUndoEntriesi() const;

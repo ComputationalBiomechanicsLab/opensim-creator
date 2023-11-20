@@ -13,9 +13,11 @@
 #include <utility>
 #include <vector>
 
+using osc::PerfMeasurement;
+
 namespace
 {
-    bool LexographicallyHighestLabel(osc::PerfMeasurement const& a, osc::PerfMeasurement const& b)
+    bool LexographicallyHighestLabel(PerfMeasurement const& a, PerfMeasurement const& b)
     {
         return std::string_view{a.getLabel()} > std::string_view{b.getLabel()};
     }
@@ -120,7 +122,7 @@ osc::PerfPanel::PerfPanel(std::string_view panelName) :
 
 osc::PerfPanel::PerfPanel(PerfPanel&&) noexcept = default;
 osc::PerfPanel& osc::PerfPanel::operator=(PerfPanel&&) noexcept = default;
-osc::PerfPanel::~PerfPanel() = default;
+osc::PerfPanel::~PerfPanel() noexcept = default;
 
 osc::CStringView osc::PerfPanel::implGetName() const
 {

@@ -24,54 +24,59 @@ public:
 private:
     void implDrawContent() final
     {
-        if (ImGui::Button("undo"))
-        {
-            m_Storage->undo();
-        }
-
-        ImGui::SameLine();
-
-        if (ImGui::Button("redo"))
-        {
-            m_Storage->redo();
-        }
-
-        int imguiID = 0;
-
-        // draw undo entries oldest (highest index) to newest (lowest index)
-        for (ptrdiff_t i = m_Storage->getNumUndoEntriesi()-1; 0 <= i && i < m_Storage->getNumUndoEntriesi(); --i)
-        {
-            ImGui::PushID(imguiID++);
-            if (ImGui::Selectable(m_Storage->getUndoEntry(i).getMessage().c_str()))
-            {
-                m_Storage->undoTo(i);
-            }
-            ImGui::PopID();
-        }
-
-        ImGui::PushID(imguiID++);
-        ImGui::Text("  %s", m_Storage->getHead().getMessage().c_str());
-        ImGui::PopID();
-
-        // draw redo entries oldest (lowest index) to newest (highest index)
-        for (ptrdiff_t i = 0; i < m_Storage->getNumRedoEntriesi(); ++i)
-        {
-            ImGui::PushID(imguiID++);
-            if (ImGui::Selectable(m_Storage->getRedoEntry(i).getMessage().c_str()))
-            {
-                m_Storage->redoTo(i);
-            }
-            ImGui::PopID();
-        }
+        UndoRedoPanel::DrawContent(*m_Storage);
     }
 
-    std::shared_ptr<osc::UndoRedo> m_Storage;
+    std::shared_ptr<UndoRedo> m_Storage;
 };
 
 
 // public API (PIMPL)
 
-osc::UndoRedoPanel::UndoRedoPanel(std::string_view panelName_, std::shared_ptr<osc::UndoRedo> storage_) :
+void osc::UndoRedoPanel::DrawContent(UndoRedo& storage)
+{
+    if (ImGui::Button("undo"))
+    {
+        storage.undo();
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("redo"))
+    {
+        storage.redo();
+    }
+
+    int imguiID = 0;
+
+    // draw undo entries oldest (highest index) to newest (lowest index)
+    for (ptrdiff_t i = storage.getNumUndoEntriesi()-1; 0 <= i && i < storage.getNumUndoEntriesi(); --i)
+    {
+        ImGui::PushID(imguiID++);
+        if (ImGui::Selectable(storage.getUndoEntry(i).getMessage().c_str()))
+        {
+            storage.undoTo(i);
+        }
+        ImGui::PopID();
+    }
+
+    ImGui::PushID(imguiID++);
+    ImGui::Text("  %s", storage.getHead().getMessage().c_str());
+    ImGui::PopID();
+
+    // draw redo entries oldest (lowest index) to newest (highest index)
+    for (ptrdiff_t i = 0; i < storage.getNumRedoEntriesi(); ++i)
+    {
+        ImGui::PushID(imguiID++);
+        if (ImGui::Selectable(storage.getRedoEntry(i).getMessage().c_str()))
+        {
+            storage.redoTo(i);
+        }
+        ImGui::PopID();
+    }
+}
+
+osc::UndoRedoPanel::UndoRedoPanel(std::string_view panelName_, std::shared_ptr<UndoRedo> storage_) :
     m_Impl{std::make_unique<Impl>(panelName_, std::move(storage_))}
 {
 }

@@ -20,20 +20,23 @@
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
+#include <array>
 #include <cstdint>
 #include <memory>
 
+using osc::Camera;
+using osc::CStringView;
 using osc::Mat4;
+using osc::Mesh;
 using osc::Vec2;
 using osc::Vec3;
 
 namespace
 {
-    constexpr auto c_PlaneVertices = osc::to_array<Vec3>(
+    constexpr auto c_PlaneVertices = std::to_array<Vec3>(
     {
         { 5.0f, -0.5f,  5.0f},
         {-5.0f, -0.5f,  5.0f},
@@ -43,7 +46,7 @@ namespace
         {-5.0f, -0.5f, -5.0f},
         { 5.0f, -0.5f, -5.0f},
     });
-    constexpr auto c_PlaneTexCoords = osc::to_array<Vec2>(
+    constexpr auto c_PlaneTexCoords = std::to_array<Vec2>(
     {
         {2.0f, 0.0f},
         {0.0f, 0.0f},
@@ -53,26 +56,26 @@ namespace
         {0.0f, 2.0f},
         {2.0f, 2.0f},
     });
-    constexpr auto c_PlaneIndices = osc::to_array<uint16_t>(
+    constexpr auto c_PlaneIndices = std::to_array<uint16_t>(
     {
         0, 2, 1,
         3, 5, 4,
     });
 
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Framebuffers";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/Framebuffers";
 
-    osc::Mesh GeneratePlane()
+    Mesh GeneratePlane()
     {
-        osc::Mesh rv;
+        Mesh rv;
         rv.setVerts(c_PlaneVertices);
         rv.setTexCoords(c_PlaneTexCoords);
         rv.setIndices(c_PlaneIndices);
         return rv;
     }
 
-    osc::Camera CreateSceneCamera()
+    Camera CreateSceneCamera()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
@@ -80,11 +83,11 @@ namespace
         return rv;
     }
 
-    osc::Camera CreateScreenCamera()
+    Camera CreateScreenCamera()
     {
-        osc::Camera rv;
-        rv.setViewMatrixOverride(Mat4{1.0f});
-        rv.setProjectionMatrixOverride(Mat4{1.0f});
+        Camera rv;
+        rv.setViewMatrixOverride(osc::Identity<Mat4>());
+        rv.setProjectionMatrixOverride(osc::Identity<Mat4>());
         return rv;
     }
 }
@@ -141,10 +144,10 @@ private:
         }
 
         // setup render texture
-        osc::Rect viewportRect = osc::GetMainViewportWorkspaceScreenRect();
+        Rect viewportRect = osc::GetMainViewportWorkspaceScreenRect();
         Vec2 viewportRectDims = osc::Dimensions(viewportRect);
         m_RenderTexture.setDimensions(viewportRectDims);
-        m_RenderTexture.setAntialiasingLevel(osc::App::get().getCurrentAntiAliasingLevel());
+        m_RenderTexture.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
 
         // render scene
         {
@@ -152,13 +155,13 @@ private:
             m_SceneRenderMaterial.setTexture("uTexture1", m_ContainerTexture);
             Transform t;
             t.position = { -1.0f, 0.0f, -1.0f };
-            osc::Graphics::DrawMesh(m_CubeMesh, t, m_SceneRenderMaterial, m_SceneCamera);
+            Graphics::DrawMesh(m_CubeMesh, t, m_SceneRenderMaterial, m_SceneCamera);
             t.position = { 1.0f, 0.0f, -1.0f };
-            osc::Graphics::DrawMesh(m_CubeMesh, t, m_SceneRenderMaterial, m_SceneCamera);
+            Graphics::DrawMesh(m_CubeMesh, t, m_SceneRenderMaterial, m_SceneCamera);
 
             // floor
             m_SceneRenderMaterial.setTexture("uTexture1", m_MetalTexture);
-            osc::Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_SceneRenderMaterial, m_SceneCamera);
+            Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_SceneRenderMaterial, m_SceneCamera);
         }
         m_SceneCamera.renderTo(m_RenderTexture);
 
@@ -214,7 +217,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLFramebuffersTab::id() noexcept
+CStringView osc::LOGLFramebuffersTab::id()
 {
     return c_TabStringID;
 }
@@ -233,7 +236,7 @@ osc::UID osc::LOGLFramebuffersTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLFramebuffersTab::implGetName() const
+CStringView osc::LOGLFramebuffersTab::implGetName() const
 {
     return m_Impl->getName();
 }

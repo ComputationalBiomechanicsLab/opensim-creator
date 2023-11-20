@@ -25,19 +25,19 @@ namespace osc
         {
         }
 
-        value_type const* begin() const noexcept
+        value_type const* begin() const
         {
             auto const& base = static_cast<ComponentRegistryBase const&>(*this);
             return static_cast<value_type const*>(base.begin());
         }
 
-        value_type const* end() const noexcept
+        value_type const* end() const
         {
             auto const& base = static_cast<ComponentRegistryBase const&>(*this);
             return static_cast<value_type const*>(base.end());
         }
 
-        value_type const& operator[](size_t i) const noexcept
+        value_type const& operator[](size_t i) const
         {
             auto const& base = static_cast<ComponentRegistryBase const&>(*this);
             return static_cast<value_type const&>(base[i]);

@@ -15,7 +15,6 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
@@ -24,13 +23,18 @@
 #include <string>
 #include <utility>
 
+using osc::App;
+using osc::Camera;
+using osc::CStringView;
+using osc::Material;
+using osc::Shader;
 using osc::Vec3;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/PBR/Lighting";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/PBR/Lighting";
 
-    constexpr auto c_LightPositions = osc::to_array<Vec3>(
+    constexpr auto c_LightPositions = std::to_array<Vec3>(
     {
         {-10.0f,  10.0f, 10.0f},
         { 10.0f,  10.0f, 10.0f},
@@ -38,7 +42,7 @@ namespace
         { 10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<Vec3, c_LightPositions.size()> c_LightRadiances = osc::to_array<Vec3>(
+    constexpr std::array<Vec3, c_LightPositions.size()> c_LightRadiances = std::to_array<Vec3>(
     {
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
@@ -50,9 +54,9 @@ namespace
     constexpr int c_NumCols = 7;
     constexpr float c_CellSpacing = 2.5f;
 
-    osc::Camera CreateCamera()
+    Camera CreateCamera()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
@@ -61,14 +65,14 @@ namespace
         return rv;
     }
 
-    osc::Material CreateMaterial()
+    Material CreateMaterial()
     {
-        osc::Material rv
+        Material rv
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.frag"),
+                App::slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.vert"),
+                App::slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.frag"),
             },
         };
         rv.setFloat("uAO", 1.0f);
@@ -214,7 +218,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLPBRLightingTab::id() noexcept
+CStringView osc::LOGLPBRLightingTab::id()
 {
     return c_TabStringID;
 }
@@ -233,7 +237,7 @@ osc::UID osc::LOGLPBRLightingTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLPBRLightingTab::implGetName() const
+CStringView osc::LOGLPBRLightingTab::implGetName() const
 {
     return m_Impl->getName();
 }

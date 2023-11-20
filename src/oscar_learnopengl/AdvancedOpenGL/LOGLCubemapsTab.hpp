@@ -14,7 +14,7 @@ namespace osc
 {
     class LOGLCubemapsTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit LOGLCubemapsTab(ParentPtr<TabHost> const&);
         LOGLCubemapsTab(LOGLCubemapsTab const&) = delete;

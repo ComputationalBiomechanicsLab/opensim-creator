@@ -36,7 +36,7 @@
 #include <oscar/Formats/OBJ.hpp>
 #include <oscar/Formats/STL.hpp>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
+#include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -45,11 +45,11 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/UI/Widgets/GuiRuler.hpp>
 #include <oscar/UI/Widgets/IconWithMenu.hpp>
 #include <oscar/UI/IconCache.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <SimTKcommon/basics.h>
@@ -1323,7 +1323,7 @@ void osc::DrawReloadModelButton(UndoableModelStatePair& model)
 
     if (ImGui::Button(ICON_FA_RECYCLE))
     {
-        ActionReloadOsimFromDisk(model, *App::singleton<MeshCache>());
+        ActionReloadOsimFromDisk(model, *App::singleton<SceneCache>());
     }
 
     if (!HasInputFileName(model.getModel()))

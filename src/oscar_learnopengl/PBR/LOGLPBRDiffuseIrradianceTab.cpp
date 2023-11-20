@@ -23,21 +23,34 @@
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <SDL_events.h>
 
 #include <array>
 #include <string>
 #include <utility>
 
+using osc::App;
+using osc::Camera;
+using osc::ColorSpace;
+using osc::CStringView;
+using osc::ImageLoadingFlags;
 using osc::Mat4;
+using osc::Material;
+using osc::RenderTexture;
+using osc::RenderTextureFormat;
+using osc::Shader;
+using osc::Texture2D;
+using osc::TextureDimensionality;
+using osc::TextureFilterMode;
+using osc::TextureWrapMode;
+using osc::Transform;
 using osc::Vec3;
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/PBR/DiffuseIrradiance";
+    constexpr CStringView c_TabStringID = "LearnOpenGL/PBR/DiffuseIrradiance";
 
-    constexpr auto c_LightPositions = osc::to_array<Vec3>(
+    constexpr auto c_LightPositions = std::to_array<Vec3>(
     {
         {-10.0f,  10.0f, 10.0f},
         { 10.0f,  10.0f, 10.0f},
@@ -45,7 +58,7 @@ namespace
         { 10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<Vec3, c_LightPositions.size()> c_LightRadiances = osc::to_array<Vec3>(
+    constexpr std::array<Vec3, c_LightPositions.size()> c_LightRadiances = std::to_array<Vec3>(
     {
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
@@ -57,9 +70,9 @@ namespace
     constexpr int c_NumCols = 7;
     constexpr float c_CellSpacing = 2.5f;
 
-    osc::Camera CreateCamera()
+    Camera CreateCamera()
     {
-        osc::Camera rv;
+        Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(osc::Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
@@ -68,19 +81,19 @@ namespace
         return rv;
     }
 
-    osc::RenderTexture LoadEquirectangularHDRTextureIntoCubemap()
+    RenderTexture LoadEquirectangularHDRTextureIntoCubemap()
     {
-        osc::Texture2D hdrTexture = osc::LoadTexture2DFromImage(
-            osc::App::resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
-            osc::ColorSpace::Linear,
-            osc::ImageLoadingFlags::FlipVertically
+        Texture2D hdrTexture = osc::LoadTexture2DFromImage(
+            App::resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
+            ColorSpace::Linear,
+            ImageLoadingFlags::FlipVertically
         );
-        hdrTexture.setWrapMode(osc::TextureWrapMode::Clamp);
-        hdrTexture.setFilterMode(osc::TextureFilterMode::Linear);
+        hdrTexture.setWrapMode(TextureWrapMode::Clamp);
+        hdrTexture.setFilterMode(TextureFilterMode::Linear);
 
-        osc::RenderTexture cubemapRenderTarget{{512, 512}};
-        cubemapRenderTarget.setDimensionality(osc::TextureDimensionality::Cube);
-        cubemapRenderTarget.setColorFormat(osc::RenderTextureFormat::ARGBFloat16);
+        RenderTexture cubemapRenderTarget{{512, 512}};
+        cubemapRenderTarget.setDimensionality(TextureDimensionality::Cube);
+        cubemapRenderTarget.setColorFormat(RenderTextureFormat::ARGBFloat16);
 
         // create a 90 degree cube cone projection matrix
         Mat4 const projectionMatrix = osc::Perspective(
@@ -91,13 +104,13 @@ namespace
         );
 
         // create material that projects all 6 faces onto the output cubemap
-        osc::Material material
+        Material material
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/EquirectangularToCubemap.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/EquirectangularToCubemap.geom"),
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/EquirectangularToCubemap.frag"),
+                App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/EquirectangularToCubemap.vert"),
+                App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/EquirectangularToCubemap.geom"),
+                App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/EquirectangularToCubemap.frag"),
             }
         };
         material.setTexture("uEquirectangularMap", hdrTexture);
@@ -106,19 +119,19 @@ namespace
             osc::CalcCubemapViewProjMatrices(projectionMatrix, Vec3{})
         );
 
-        osc::Camera camera;
-        osc::Graphics::DrawMesh(osc::GenCube(), osc::Transform{}, material, camera);
+        Camera camera;
+        osc::Graphics::DrawMesh(osc::GenCube(), Transform{}, material, camera);
         camera.renderTo(cubemapRenderTarget);
 
         // TODO: some way of copying it into an `osc::Cubemap` would make sense
         return cubemapRenderTarget;
     }
 
-    osc::RenderTexture CreateIrradianceCubemap(osc::RenderTexture const& skybox)
+    RenderTexture CreateIrradianceCubemap(RenderTexture const& skybox)
     {
-        osc::RenderTexture irradianceCubemap{{32, 32}};
-        irradianceCubemap.setDimensionality(osc::TextureDimensionality::Cube);
-        irradianceCubemap.setColorFormat(osc::RenderTextureFormat::ARGBFloat16);
+        RenderTexture irradianceCubemap{{32, 32}};
+        irradianceCubemap.setDimensionality(TextureDimensionality::Cube);
+        irradianceCubemap.setColorFormat(RenderTextureFormat::ARGBFloat16);
 
         Mat4 const captureProjection = osc::Perspective(
             osc::Deg2Rad(90.0f),
@@ -127,13 +140,13 @@ namespace
             10.0f
         );
 
-        osc::Material material
+        Material material
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Convolution.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Convolution.geom"),
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Convolution.frag"),
+                App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Convolution.vert"),
+                App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Convolution.geom"),
+                App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Convolution.frag"),
             }
         };
         material.setRenderTexture(
@@ -145,22 +158,22 @@ namespace
             osc::CalcCubemapViewProjMatrices(captureProjection, Vec3{})
         );
 
-        osc::Camera camera;
-        osc::Graphics::DrawMesh(osc::GenCube(), osc::Transform{}, material, camera);
+        Camera camera;
+        osc::Graphics::DrawMesh(osc::GenCube(), Transform{}, material, camera);
         camera.renderTo(irradianceCubemap);
 
         // TODO: some way of copying it into an `osc::Cubemap` would make sense
         return irradianceCubemap;
     }
 
-    osc::Material CreateMaterial()
+    Material CreateMaterial()
     {
-        osc::Material rv
+        Material rv
         {
-            osc::Shader
+            Shader
             {
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/PBR.vert"),
-                osc::App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/PBR.frag"),
+                App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/PBR.vert"),
+                App::slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/PBR.frag"),
             },
         };
         rv.setFloat("uAO", 1.0f);
@@ -297,9 +310,9 @@ private:
         m_BackgroundMaterial.setDepthFunction(DepthFunction::LessOrEqual);  // for skybox depth trick
         Graphics::DrawMesh(m_CubeMesh, Transform{}, m_BackgroundMaterial, m_Camera);
         m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
-        m_Camera.setClearFlags(osc::CameraClearFlags::Nothing);
+        m_Camera.setClearFlags(CameraClearFlags::Nothing);
         m_Camera.renderToScreen();
-        m_Camera.setClearFlags(osc::CameraClearFlags::Default);
+        m_Camera.setClearFlags(CameraClearFlags::Default);
     }
 
     void draw2DUI()
@@ -345,7 +358,7 @@ private:
 
 // public API
 
-osc::CStringView osc::LOGLPBRDiffuseIrradianceTab::id() noexcept
+CStringView osc::LOGLPBRDiffuseIrradianceTab::id()
 {
     return c_TabStringID;
 }
@@ -364,7 +377,7 @@ osc::UID osc::LOGLPBRDiffuseIrradianceTab::implGetID() const
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LOGLPBRDiffuseIrradianceTab::implGetName() const
+CStringView osc::LOGLPBRDiffuseIrradianceTab::implGetName() const
 {
     return m_Impl->getName();
 }

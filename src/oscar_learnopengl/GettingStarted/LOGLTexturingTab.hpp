@@ -13,7 +13,7 @@ namespace osc
 {
     class LOGLTexturingTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit LOGLTexturingTab(ParentPtr<TabHost> const&);
         LOGLTexturingTab(LOGLTexturingTab const&) = delete;

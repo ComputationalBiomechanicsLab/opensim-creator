@@ -16,6 +16,10 @@
 #include <utility>
 #include <vector>
 
+using osc::CStringView;
+using osc::Panel;
+using osc::ToggleablePanelFlags;
+
 namespace
 {
     // an that the user can toggle in-place at runtime
@@ -23,8 +27,8 @@ namespace
     public:
         ToggleablePanel(
             std::string_view name_,
-            std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_,
-            osc::ToggleablePanelFlags flags_) :
+            std::function<std::shared_ptr<Panel>(std::string_view)> constructorFunc_,
+            ToggleablePanelFlags flags_) :
 
             m_Name{name_},
             m_ConstructorFunc{std::move(constructorFunc_)},
@@ -33,19 +37,19 @@ namespace
         {
         }
 
-        osc::Panel* updPtrOrNull()
+        Panel* updPtrOrNull()
         {
             return m_Instance ? m_Instance->get() : nullptr;
         }
 
-        osc::CStringView getName() const
+        CStringView getName() const
         {
             return m_Name;
         }
 
         bool isEnabledByDefault() const
         {
-            return m_Flags & osc::ToggleablePanelFlags::IsEnabledByDefault;
+            return m_Flags & ToggleablePanelFlags::IsEnabledByDefault;
         }
 
         bool isActivated() const
@@ -98,9 +102,9 @@ namespace
 
     private:
         std::string m_Name;
-        std::function<std::shared_ptr<osc::Panel>(std::string_view)> m_ConstructorFunc;
-        osc::ToggleablePanelFlags m_Flags;
-        std::optional<std::shared_ptr<osc::Panel>> m_Instance;
+        std::function<std::shared_ptr<Panel>(std::string_view)> m_ConstructorFunc;
+        ToggleablePanelFlags m_Flags;
+        std::optional<std::shared_ptr<Panel>> m_Instance;
     };
 
     class DynamicPanel final {
@@ -108,7 +112,7 @@ namespace
         DynamicPanel(
             std::string_view baseName,
             size_t instanceNumber,
-            std::shared_ptr<osc::Panel> instance) :
+            std::shared_ptr<Panel> instance) :
 
             m_SpawnerID{std::hash<std::string_view>{}(baseName)},
             m_InstanceNumber{instanceNumber},
@@ -117,7 +121,7 @@ namespace
             m_Instance->open();
         }
 
-        osc::Panel* updPtrOrNull()
+        Panel* updPtrOrNull()
         {
             return m_Instance.get();
         }
@@ -132,7 +136,7 @@ namespace
             return m_InstanceNumber;
         }
 
-        osc::CStringView getName() const
+        CStringView getName() const
         {
             return m_Instance->getName();
         }
@@ -150,7 +154,7 @@ namespace
     private:
         size_t m_SpawnerID;
         size_t m_InstanceNumber;
-        std::shared_ptr<osc::Panel> m_Instance;
+        std::shared_ptr<Panel> m_Instance;
     };
 
     // declaration for a panel that can spawn new dyanmic panels (above)
@@ -158,7 +162,7 @@ namespace
     public:
         SpawnablePanel(
             std::string_view baseName_,
-            std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_,
+            std::function<std::shared_ptr<Panel>(std::string_view)> constructorFunc_,
             size_t numInitiallyOpenedPanels_) :
 
             m_BaseName{baseName_},
@@ -172,7 +176,7 @@ namespace
             return std::hash<std::string_view>{}(m_BaseName);
         }
 
-        osc::CStringView getBaseName() const
+        CStringView getBaseName() const
         {
             return m_BaseName;
         }
@@ -194,7 +198,7 @@ namespace
 
     private:
         std::string m_BaseName;
-        std::function<std::shared_ptr<osc::Panel>(std::string_view)> m_ConstructorFunc;
+        std::function<std::shared_ptr<Panel>(std::string_view)> m_ConstructorFunc;
         size_t m_NumInitiallyOpenedPanels;
     };
 }
@@ -204,7 +208,7 @@ public:
 
     void registerToggleablePanel(
         std::string_view baseName,
-        std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_,
+        std::function<std::shared_ptr<Panel>(std::string_view)> constructorFunc_,
         ToggleablePanelFlags flags_)
     {
         m_ToggleablePanels.emplace_back(baseName, std::move(constructorFunc_), flags_);
@@ -212,7 +216,7 @@ public:
 
     void registerSpawnablePanel(
         std::string_view baseName,
-        std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_,
+        std::function<std::shared_ptr<Panel>(std::string_view)> constructorFunc_,
         size_t numInitiallyOpenedPanels)
     {
         m_SpawnablePanels.emplace_back(baseName, std::move(constructorFunc_), numInitiallyOpenedPanels);

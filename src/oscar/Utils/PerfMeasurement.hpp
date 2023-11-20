@@ -1,12 +1,12 @@
 #pragma once
 
-#include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/PerfClock.hpp>
 #include <oscar/Utils/PerfMeasurementMetadata.hpp>
 
 #include <chrono>
 #include <cstdint>
 #include <memory>
+#include <string>
 
 namespace osc
 {
@@ -23,12 +23,12 @@ namespace osc
             return m_Metadata->getID();
         }
 
-        CStringView getLabel() const
+        std::string const& getLabel() const
         {
             return m_Metadata->getLabel();
         }
 
-        CStringView getFilename() const
+        std::string const& getFilename() const
         {
             return m_Metadata->getFilename();
         }

@@ -1,9 +1,10 @@
 #include "PopupManager.hpp"
 
 #include <oscar/UI/Widgets/Popup.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <cstddef>
+#include <memory>
+#include <vector>
 
 osc::PopupManager::PopupManager() = default;
 osc::PopupManager::PopupManager(PopupManager&&) noexcept = default;

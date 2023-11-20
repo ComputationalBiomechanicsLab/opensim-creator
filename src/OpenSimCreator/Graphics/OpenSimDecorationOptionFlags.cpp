@@ -1,14 +1,15 @@
 #include "OpenSimDecorationOptionFlags.hpp"
 
-#include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Shims/Cpp23/utility.hpp>
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <optional>
 
 namespace
 {
-    constexpr auto c_CustomDecorationOptionLabels = osc::to_array<osc::OpenSimDecorationOptionMetadata>(
+    constexpr auto c_CustomDecorationOptionLabels = std::to_array<osc::OpenSimDecorationOptionMetadata>(
     {
         osc::OpenSimDecorationOptionMetadata
         {
@@ -80,14 +81,12 @@ void osc::SetIthOption(OpenSimDecorationOptionFlags& flags, size_t i, bool v)
 
 void osc::SetOption(OpenSimDecorationOptionFlags& flags, OpenSimDecorationOptionFlags flag, bool v)
 {
-    using Underlying = std::underlying_type_t<OpenSimDecorationOptionFlags>;
-
     if (v)
     {
-        flags = static_cast<OpenSimDecorationOptionFlags>(static_cast<Underlying>(flags) | static_cast<Underlying>(flag));
+        flags = static_cast<OpenSimDecorationOptionFlags>(osc::to_underlying(flags) | osc::to_underlying(flag));
     }
     else
     {
-        flags = static_cast<OpenSimDecorationOptionFlags>(static_cast<Underlying>(flags) & ~static_cast<Underlying>(flag));
+        flags = static_cast<OpenSimDecorationOptionFlags>(osc::to_underlying(flags) & ~osc::to_underlying(flag));
     }
 }

@@ -1,7 +1,6 @@
 #include "UndoRedo.hpp"
 
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <algorithm>
 #include <chrono>
@@ -40,6 +39,11 @@ void osc::UndoRedo::commitScratch(std::string_view commitMsg)
 osc::UndoRedoEntry const& osc::UndoRedo::getHead() const
 {
     return m_Head;
+}
+
+osc::UID osc::UndoRedo::getHeadID() const
+{
+    return m_Head.getID();
 }
 
 size_t osc::UndoRedo::getNumUndoEntries() const

@@ -1,12 +1,13 @@
 #include "STL.hpp"
 
+#include <oscar/Graphics/CullMode.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Triangle.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Shims/Cpp20/bit.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/SpanHelpers.hpp>
 
 #include <algorithm>
@@ -22,16 +23,22 @@
 #include <string>
 #include <string_view>
 
+using osc::Mesh;
+using osc::MeshIndicesView;
+using osc::StlMetadata;
+using osc::Triangle;
+using osc::Vec3;
+
 namespace
 {
-    std::string CreateHeaderText(osc::StlMetadata const& metadata)
+    std::string CreateHeaderText(StlMetadata const& metadata)
     {
         std::stringstream ss;
         ss << "created " << std::put_time(&metadata.creationTime, "%Y-%m-%d %H:%M:%S") << " by " << metadata.authoringTool;
         return std::move(ss).str();
     }
 
-    void WriteHeader(std::ostream& o, osc::StlMetadata const& metadata)
+    void WriteHeader(std::ostream& o, StlMetadata const& metadata)
     {
         constexpr size_t c_NumBytesInSTLHeader = 80;
         constexpr size_t c_MaxCharsInSTLHeader = c_NumBytesInSTLHeader - 1;  // nul-terminator
@@ -57,7 +64,7 @@ namespace
         o << static_cast<uint8_t>((v>>24) & 0xff);
     }
 
-    void WriteNumTriangles(std::ostream& o, osc::Mesh const& mesh)
+    void WriteNumTriangles(std::ostream& o, Mesh const& mesh)
     {
         OSC_ASSERT(mesh.getIndices().size()/3 <= std::numeric_limits<uint32_t>::max());
         WriteLittleEndianU32(o, static_cast<uint32_t>(mesh.getIndices().size()/3));
@@ -72,7 +79,7 @@ namespace
         }
     }
 
-    void WriteVec3IEEE(std::ostream& o, osc::Vec3 const& v)
+    void WriteVec3IEEE(std::ostream& o, Vec3 const& v)
     {
         WriteFloatIEEE(o, v.x);
         WriteFloatIEEE(o, v.y);
@@ -85,7 +92,7 @@ namespace
         o << static_cast<uint8_t>(0x00);
     }
 
-    void WriteTriangle(std::ostream& o, osc::Triangle const& triangle)
+    void WriteTriangle(std::ostream& o, Triangle const& triangle)
     {
         WriteVec3IEEE(o, osc::Normalize(osc::TriangleNormal(triangle)));
         WriteVec3IEEE(o, triangle.p0);
@@ -94,14 +101,14 @@ namespace
         WriteAttributeCount(o);
     }
 
-    void WriteTriangles(std::ostream& o, osc::Mesh const& mesh)
+    void WriteTriangles(std::ostream& o, Mesh const& mesh)
     {
-        osc::MeshIndicesView const indices = mesh.getIndices();
-        std::span<osc::Vec3 const> const verts = mesh.getVerts();
+        MeshIndicesView const indices = mesh.getIndices();
+        std::span<Vec3 const> const verts = mesh.getVerts();
 
         for (ptrdiff_t i = 0; i < std::ssize(indices)-2; i += 3)
         {
-            osc::Triangle const t
+            Triangle const t
             {
                 osc::At(verts, indices[i]),
                 osc::At(verts, indices[i+1]),

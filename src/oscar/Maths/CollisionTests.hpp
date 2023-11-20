@@ -15,10 +15,10 @@ namespace osc { struct Triangle; }
 
 namespace osc
 {
-    bool IsPointInRect(Rect const&, Vec2 const&) noexcept;
-    std::optional<RayCollision> GetRayCollisionSphere(Line const&, Sphere const&) noexcept;
-    std::optional<RayCollision> GetRayCollisionAABB(Line const&, AABB const&) noexcept;
-    std::optional<RayCollision> GetRayCollisionPlane(Line const&, Plane const&) noexcept;
-    std::optional<RayCollision> GetRayCollisionDisc(Line const&, Disc const&) noexcept;
-    std::optional<RayCollision> GetRayCollisionTriangle(Line const&, Triangle const&) noexcept;
+    bool IsPointInRect(Rect const&, Vec2 const&);
+    std::optional<RayCollision> GetRayCollisionSphere(Line const&, Sphere const&);
+    std::optional<RayCollision> GetRayCollisionAABB(Line const&, AABB const&);
+    std::optional<RayCollision> GetRayCollisionPlane(Line const&, Plane const&);
+    std::optional<RayCollision> GetRayCollisionDisc(Line const&, Disc const&);
+    std::optional<RayCollision> GetRayCollisionTriangle(Line const&, Triangle const&);
 }

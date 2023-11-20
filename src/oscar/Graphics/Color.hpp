@@ -16,7 +16,7 @@ namespace osc
 
         using value_type = float;
 
-        static constexpr size_t length() noexcept
+        static constexpr size_t length()
         {
             return 4;
         }
@@ -119,26 +119,26 @@ namespace osc
         {
         }
 
-        constexpr float& operator[](ptrdiff_t i) noexcept
+        constexpr float& operator[](ptrdiff_t i)
         {
             static_assert(sizeof(Color) == 4*sizeof(float));
             return (&r)[i];
         }
 
-        constexpr float const& operator[](ptrdiff_t i) const noexcept
+        constexpr float const& operator[](ptrdiff_t i) const
         {
             static_assert(sizeof(Color) == 4*sizeof(float));
             return (&r)[i];
         }
 
-        constexpr operator Vec4 () const noexcept
+        constexpr operator Vec4 () const
         {
             return Vec4{r, g, b, a};
         }
 
         friend bool operator==(Color const&, Color const&) = default;
 
-        constexpr friend Color& operator*=(Color& lhs, Color const& rhs) noexcept
+        constexpr friend Color& operator*=(Color& lhs, Color const& rhs)
         {
             lhs.r *= rhs.r;
             lhs.g *= rhs.g;
@@ -148,7 +148,7 @@ namespace osc
             return lhs;
         }
 
-        constexpr friend Color operator*(Color const& lhs, Color const& rhs) noexcept
+        constexpr friend Color operator*(Color const& lhs, Color const& rhs)
         {
             return Color
             {
@@ -159,7 +159,7 @@ namespace osc
             };
         }
 
-        constexpr friend Color operator*(float lhs, Color const& rhs) noexcept
+        constexpr friend Color operator*(float lhs, Color const& rhs)
         {
             return Color
             {
@@ -178,7 +178,7 @@ namespace osc
 
     // returns the normalized (0.0 - 1.0) floating-point equivalent of the
     // given 8-bit (0 - 255) color channel value
-    constexpr float ToFloatingPointColorChannel(uint8_t channelValue) noexcept
+    constexpr float ToFloatingPointColorChannel(uint8_t channelValue)
     {
         return (1.0f/255.0f) * static_cast<float>(channelValue);
     }
@@ -187,7 +187,7 @@ namespace osc
     // floating-point color channel value
     //
     // input values that fall outside of the 0.0 - 1.0 range are clamped to that range
-    constexpr uint8_t ToClamped8BitColorChannel(float channelValue) noexcept
+    constexpr uint8_t ToClamped8BitColorChannel(float channelValue)
     {
         channelValue = channelValue >= 0.0f ? channelValue : 0.0f;
         channelValue = channelValue <= 1.0f ? channelValue : 1.0f;
@@ -195,22 +195,22 @@ namespace osc
     }
 
     // returns the linear version of one (presumed to be) sRGB color channel value
-    float ToLinear(float colorChannelValue) noexcept;
+    float ToLinear(float colorChannelValue);
 
     // returns the linear version of one (presumed to be) linear color channel value
-    float ToSRGB(float colorChannelValue) noexcept;
+    float ToSRGB(float colorChannelValue);
 
     // returns the linear version of a (presumed to be) sRGB color
-    Color ToLinear(Color const&) noexcept;
+    Color ToLinear(Color const&);
 
     // returns a color that is the (presumed to be) linear color with the sRGB gamma curve applied
-    Color ToSRGB(Color const&) noexcept;
+    Color ToSRGB(Color const&);
 
     // returns a color that is clamped to the low-dynamic range (LDR, i.e. [0, 1])
-    Color ClampToLDR(Color const&) noexcept;
+    Color ClampToLDR(Color const&);
 
     // returns a Vec4 version of a Color
-    inline Vec4 ToVec4(Color const& c) noexcept
+    inline Vec4 ToVec4(Color const& c)
     {
         return Vec4{c};
     }
@@ -230,13 +230,13 @@ namespace osc
     // linearly interpolates between `a` and `b` by `t`
     //
     // `t` is clamped to [0.0f, 1.0f]. When `t` is 0, returns `a`. When `t` is 1, returns `b`
-    Color Lerp(Color const& a, Color const& b, float t) noexcept;
+    Color Lerp(Color const& a, Color const& b, float t);
 
     // float-/double-based inputs assume normalized color range (i.e. 0 to 1)
-    Color32 ToColor32(Color const&) noexcept;
-    Color32 ToColor32(Vec4 const&) noexcept;
-    Color32 ToColor32(float, float, float, float) noexcept;
-    Color32 ToColor32(uint32_t) noexcept;  // R at MSB
+    Color32 ToColor32(Color const&);
+    Color32 ToColor32(Vec4 const&);
+    Color32 ToColor32(float, float, float, float);
+    Color32 ToColor32(uint32_t);  // R at MSB
 
     // returns the color as a hexadecimal string in the format "#rrggbbaa", as
     // commonly-used in web applications, configuration files, etc.

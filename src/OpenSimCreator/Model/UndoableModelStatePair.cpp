@@ -11,7 +11,6 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Perf.hpp>
-#include <oscar/Utils/SynchronizedValue.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <exception>

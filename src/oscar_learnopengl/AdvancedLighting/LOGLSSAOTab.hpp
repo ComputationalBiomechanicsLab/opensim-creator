@@ -14,7 +14,7 @@ namespace osc
 {
     class LOGLSSAOTab final : public Tab {
     public:
-        static CStringView id() noexcept;
+        static CStringView id();
 
         explicit LOGLSSAOTab(ParentPtr<TabHost> const&);
         LOGLSSAOTab(LOGLSSAOTab const&) = delete;

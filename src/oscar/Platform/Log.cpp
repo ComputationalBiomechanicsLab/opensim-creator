@@ -1,18 +1,24 @@
 #include "Log.hpp"
 
 #include <oscar/Platform/Log.hpp>
-#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>
 #include <iostream>
 #include <mutex>
 
+using osc::CircularBuffer;
+using osc::Logger;
+using osc::LogMessage;
+using osc::LogMessageView;
+using osc::LogSink;
+using osc::SynchronizedValue;
+
 namespace
 {
-    class StdoutSink final : public osc::LogSink {
+    class StdoutSink final : public LogSink {
     private:
-        void implLog(osc::LogMessageView const& msg) final
+        void implLog(LogMessageView const& msg) final
         {
             static std::mutex s_StdoutMutex;
 
@@ -21,31 +27,31 @@ namespace
         }
     };
 
-    class CircularLogSink final : public osc::LogSink {
+    class CircularLogSink final : public LogSink {
     public:
-        osc::SynchronizedValue<osc::CircularBuffer<osc::LogMessage, osc::log::c_MaxLogTracebackMessages>>& updMessages()
+        SynchronizedValue<CircularBuffer<LogMessage, osc::log::c_MaxLogTracebackMessages>>& updMessages()
         {
             return m_Messages;
         }
     private:
-        void implLog(osc::LogMessageView const& msg) final
+        void implLog(LogMessageView const& msg) final
         {
             auto l = m_Messages.lock();
             l->emplace_back(msg);
         }
 
-        osc::SynchronizedValue<osc::CircularBuffer<osc::LogMessage, osc::log::c_MaxLogTracebackMessages>> m_Messages;
+        SynchronizedValue<CircularBuffer<LogMessage, osc::log::c_MaxLogTracebackMessages>> m_Messages;
     };
 
     struct GlobalSinks final {
         GlobalSinks() :
-            defaultLogSink{std::make_shared<osc::Logger>("default", std::make_shared<StdoutSink>())},
+            defaultLogSink{std::make_shared<Logger>("default", std::make_shared<StdoutSink>())},
             tracebackSink{std::make_shared<CircularLogSink>()}
         {
             defaultLogSink->sinks().push_back(tracebackSink);
         }
 
-        std::shared_ptr<osc::Logger> defaultLogSink;
+        std::shared_ptr<Logger> defaultLogSink;
         std::shared_ptr<CircularLogSink> tracebackSink;
     };
 
@@ -58,12 +64,12 @@ namespace
 
 // public API
 
-std::shared_ptr<osc::Logger> osc::log::defaultLogger() noexcept
+std::shared_ptr<osc::Logger> osc::log::defaultLogger()
 {
     return GetGlobalSinks().defaultLogSink;
 }
 
-osc::Logger* osc::log::defaultLoggerRaw() noexcept
+osc::Logger* osc::log::defaultLoggerRaw()
 {
     return GetGlobalSinks().defaultLogSink.get();
 }

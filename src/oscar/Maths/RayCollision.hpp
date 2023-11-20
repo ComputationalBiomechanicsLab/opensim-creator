@@ -5,17 +5,7 @@
 namespace osc
 {
     struct RayCollision {
-
-        RayCollision(
-            float distance_,
-            Vec3 position_) :
-
-            distance{distance_},
-            position{position_}
-        {
-        }
-
-        float distance;
-        Vec3 position;
+        float distance{};
+        Vec3 position{};
     };
 }

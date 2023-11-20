@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/Outputs/VirtualOutputExtractor.hpp>
 
+#include <oscar/Shims/Cpp23/utility.hpp>
 #include <oscar/Utils/ClonePtr.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
@@ -10,7 +11,6 @@
 #include <optional>
 #include <span>
 #include <string>
-#include <type_traits>
 
 namespace OpenSim { class AbstractOutput; }
 namespace OpenSim { class Component; }
@@ -30,16 +30,14 @@ namespace osc
         Default = None,
     };
 
-    constexpr OutputSubfield operator|(OutputSubfield a, OutputSubfield b) noexcept
+    constexpr OutputSubfield operator|(OutputSubfield lhs, OutputSubfield rhs)
     {
-        using Ut = std::underlying_type_t<OutputSubfield>;
-        return static_cast<OutputSubfield>(static_cast<Ut>(a) | static_cast<Ut>(b));
+        return static_cast<OutputSubfield>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
     }
 
-    constexpr bool operator&(OutputSubfield a, OutputSubfield b) noexcept
+    constexpr bool operator&(OutputSubfield lhs, OutputSubfield rhs)
     {
-        using Ut = std::underlying_type_t<OutputSubfield>;
-        return (static_cast<Ut>(a) & static_cast<Ut>(b)) != 0;
+        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
     }
 
     std::optional<CStringView> GetOutputSubfieldLabel(OutputSubfield);
