@@ -11,10 +11,10 @@ namespace osc
 
         BVHCollision(
             float distance_,
-            Vec3 position_,
+            Vec3 const& position_,
             ptrdiff_t id_) :
 
-            RayCollision{.distance = distance_, .position = position_},
+            RayCollision{distance_, position_},
             id{id_}
         {
         }

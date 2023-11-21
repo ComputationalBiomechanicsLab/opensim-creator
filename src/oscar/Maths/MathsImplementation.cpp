@@ -280,7 +280,7 @@ namespace
         prims.reserve(indices.size()/3);  // good guess
         for (size_t i = 0; (i+2) < indices.size(); i += 3)
         {
-            osc::Triangle const t
+            Triangle const t
             {
                 osc::At(verts, indices[i]),
                 osc::At(verts, indices[i+1]),
@@ -1094,7 +1094,7 @@ namespace
             }
         }
 
-        return RayCollision{.distance = t0, .position = l.origin + t0*l.direction};
+        return RayCollision{t0, l.origin + t0*l.direction};
     }
 
     template<typename TReal>
@@ -2394,7 +2394,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionAABB(Line const& l, AABB co
         }
     }
 
-    return osc::RayCollision{.distance = t0, .position = l.origin + t0*l.direction};
+    return RayCollision{t0, l.origin + t0*l.direction};
 }
 
 std::optional<osc::RayCollision> osc::GetRayCollisionPlane(Line const& l, Plane const& p)
@@ -2428,7 +2428,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionPlane(Line const& l, Plane 
     {
         float numerator = glm::dot(p.origin - l.origin, p.normal);
         float distance = numerator / denominator;
-        return osc::RayCollision{.distance = distance, .position = l.origin + distance*l.direction};
+        return RayCollision{distance, l.origin + distance*l.direction};
     }
     else
     {
@@ -2545,7 +2545,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionTriangle(Line const& l, Tri
         }
     }
 
-    return RayCollision{.distance = t, .position = l.origin + t*l.direction};
+    return RayCollision{t, l.origin + t*l.direction};
 }
 
 float osc::EaseOutElastic(float x)

@@ -13,7 +13,7 @@ namespace osc
     public:
         ImportStationsFromCSVPopup(
             std::string_view,
-            std::shared_ptr<MeshImporterSharedState>
+            std::shared_ptr<MeshImporterSharedState> const&
         );
         ImportStationsFromCSVPopup(ImportStationsFromCSVPopup const&) = delete;
         ImportStationsFromCSVPopup(ImportStationsFromCSVPopup&&) noexcept;

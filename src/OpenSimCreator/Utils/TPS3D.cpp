@@ -11,7 +11,6 @@
 #include <fstream>
 #include <iostream>
 
-using osc::Mesh;
 using osc::Vec3;
 
 namespace

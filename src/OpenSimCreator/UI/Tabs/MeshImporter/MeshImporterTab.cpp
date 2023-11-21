@@ -692,10 +692,10 @@ private:
         }
 
         ChooseElLayerOptions opts;
-        opts.canChooseBodies = dynamic_cast<BodyEl const*>(old) || dynamic_cast<GroundEl const*>(old);
-        opts.canChooseGround = dynamic_cast<BodyEl const*>(old) || dynamic_cast<GroundEl const*>(old);
-        opts.canChooseJoints = dynamic_cast<JointEl const*>(old);
-        opts.canChooseMeshes = dynamic_cast<MeshEl const*>(old);
+        opts.canChooseBodies = (dynamic_cast<BodyEl const*>(old) != nullptr) || (dynamic_cast<GroundEl const*>(old) != nullptr);
+        opts.canChooseGround = (dynamic_cast<BodyEl const*>(old) != nullptr) || (dynamic_cast<GroundEl const*>(old) != nullptr);
+        opts.canChooseJoints = dynamic_cast<JointEl const*>(old) != nullptr;
+        opts.canChooseMeshes = dynamic_cast<MeshEl const*>(old) != nullptr;
         opts.maybeElsAttachingTo = {el.getID()};
         opts.header = "choose what to attach to";
         opts.onUserChoice = [shared = m_Shared, id = el.getID(), crossrefIdx](std::span<UID> choices)

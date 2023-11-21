@@ -18,7 +18,6 @@
 
 using osc::BVH;
 using osc::Mesh;
-using osc::MeshTopology;
 
 namespace
 {
@@ -50,10 +49,6 @@ struct std::hash<TorusParameters> final {
 
 class osc::SceneCache::Impl final {
 public:
-    Impl()
-    {
-    }
-
     Mesh sphere = GenSphere(16, 16);
     Mesh circle = GenCircle(16);
     Mesh cylinder = GenUntexturedYToYCylinder(16);

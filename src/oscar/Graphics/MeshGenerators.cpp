@@ -16,7 +16,6 @@
 
 using osc::Mesh;
 using osc::MeshTopology;
-using osc::Triangle;
 using osc::Vec2;
 using osc::Vec3;
 

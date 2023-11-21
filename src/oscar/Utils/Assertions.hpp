@@ -17,7 +17,7 @@ namespace osc
 
 // always execute this assertion - even if in release mode /w debug flags disabled
 #define OSC_ASSERT_ALWAYS(expr)                                                                                       \
-    (static_cast<bool>(expr) ? static_cast<void>(0) : osc::OnAssertionFailure(#expr, __func__, osc::ExtractFilename(__FILE__), __LINE__))
+    (static_cast<bool>(expr) ? static_cast<void>(0) : osc::OnAssertionFailure(#expr, static_cast<char const*>(__func__), osc::ExtractFilename(__FILE__), __LINE__))
 
 #ifdef OSC_FORCE_ASSERTS_ENABLED
 #define OSC_ASSERT(expr) OSC_ASSERT_ALWAYS(expr)

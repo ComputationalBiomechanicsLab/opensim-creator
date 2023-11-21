@@ -11,7 +11,6 @@
 #include <sstream>
 
 using osc::DAEMetadata;
-using osc::Mesh;
 using osc::SceneDecoration;
 
 TEST(DAE, WriteDecorationsAsDAEWorksForEmptyScene)

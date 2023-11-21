@@ -277,7 +277,7 @@ std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
         // map the ray back into worldspace
         Vec3 const locationWorldspace = transform * maybeCollision->position;
         float const distance = Length(locationWorldspace - worldspaceRay.origin);
-        return RayCollision{.distance = distance, .position = locationWorldspace};
+        return RayCollision{distance, locationWorldspace};
     }
     else
     {
@@ -310,7 +310,7 @@ osc::SceneRendererParams osc::CalcStandardDarkSceneRenderParams(
     AntiAliasingLevel antiAliasingLevel,
     Vec2 renderDims)
 {
-    osc::SceneRendererParams rv;
+    SceneRendererParams rv;
     rv.dimensions = renderDims;
     rv.antiAliasingLevel = antiAliasingLevel;
     rv.drawMeshNormals = false;

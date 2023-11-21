@@ -4,7 +4,7 @@
 
 TEST(ExtractFilename, ReturnsBlankForBlankString)
 {
-    static_assert(osc::ExtractFilename("") == "");
+    static_assert(osc::ExtractFilename("").empty());
 }
 
 TEST(FilenameExtractor, WorksAsIntendedForUnixPaths)
@@ -14,7 +14,7 @@ TEST(FilenameExtractor, WorksAsIntendedForUnixPaths)
 
 TEST(FilenameExtractor, WorksAsIntendedForWindowsPaths)
 {
-    static_assert(osc::ExtractFilename("C:\\Users\\user\\file.cpp") == "file.cpp");
+    static_assert(osc::ExtractFilename(R"(C:\Users\user\file.cpp)") == "file.cpp");
 }
 
 TEST(FilenameExtractor, WorksForMixedPath)
