@@ -1162,16 +1162,6 @@ osc::Vec2 osc::Normalize(Vec2 const& v)
     return glm::normalize(v);
 }
 
-float osc::Length(Vec2 const& v)
-{
-    return glm::length(v);
-}
-
-float osc::Length2(Vec3 const& v)
-{
-    return glm::length2(v);
-}
-
 osc::Quat osc::Rotation(Vec3 const& src, Vec3 const& dest)
 {
     return glm::rotation(src, dest);
