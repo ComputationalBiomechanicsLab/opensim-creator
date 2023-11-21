@@ -2,6 +2,11 @@ include(GoogleTest)
 find_package(GTest REQUIRED CONFIG)
 
 add_executable(testoscar
+    DOM/TestClass.cpp
+    DOM/TestNode.cpp
+    DOM/TestNodePath.cpp
+    DOM/TestObject.cpp
+    DOM/TestPropertyInfo.cpp
 
     Formats/TestCSV.cpp
     Formats/TestDAE.cpp
