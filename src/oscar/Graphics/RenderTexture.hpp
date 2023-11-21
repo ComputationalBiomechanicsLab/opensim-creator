@@ -26,11 +26,6 @@ namespace osc
         RenderTexture();
         explicit RenderTexture(Vec2i dimensions);
         explicit RenderTexture(RenderTextureDescriptor const&);
-        RenderTexture(RenderTexture const&);
-        RenderTexture(RenderTexture&&) noexcept;
-        RenderTexture& operator=(RenderTexture const&);
-        RenderTexture& operator=(RenderTexture&&) noexcept;
-        ~RenderTexture() noexcept;
 
         Vec2i getDimensions() const;
         void setDimensions(Vec2i);

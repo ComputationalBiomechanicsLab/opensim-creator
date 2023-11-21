@@ -26,11 +26,6 @@ namespace osc
     class Material final {
     public:
         explicit Material(Shader);
-        Material(Material const&);
-        Material(Material&&) noexcept;
-        Material& operator=(Material const&);
-        Material& operator=(Material&&) noexcept;
-        ~Material() noexcept;
 
         Shader const& getShader() const;
 

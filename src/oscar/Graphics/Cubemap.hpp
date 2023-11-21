@@ -12,11 +12,6 @@ namespace osc
     class Cubemap final {
     public:
         Cubemap(int32_t width, TextureFormat format);
-        Cubemap(Cubemap const&);
-        Cubemap(Cubemap&&) noexcept;
-        Cubemap& operator=(Cubemap const&);
-        Cubemap& operator=(Cubemap&&) noexcept;
-        ~Cubemap() noexcept;
 
         int32_t getWidth() const;
         TextureFormat getTextureFormat() const;

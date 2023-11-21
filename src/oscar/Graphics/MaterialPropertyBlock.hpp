@@ -23,11 +23,6 @@ namespace osc
     class MaterialPropertyBlock final {
     public:
         MaterialPropertyBlock();
-        MaterialPropertyBlock(MaterialPropertyBlock const&);
-        MaterialPropertyBlock(MaterialPropertyBlock&&) noexcept;
-        MaterialPropertyBlock& operator=(MaterialPropertyBlock const&);
-        MaterialPropertyBlock& operator=(MaterialPropertyBlock&&) noexcept;
-        ~MaterialPropertyBlock() noexcept;
 
         void clear();
         bool isEmpty() const;

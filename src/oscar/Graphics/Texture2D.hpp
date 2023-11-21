@@ -33,11 +33,6 @@ namespace osc
             TextureWrapMode = TextureWrapMode::Repeat,
             TextureFilterMode = TextureFilterMode::Linear
         );
-        Texture2D(Texture2D const&);
-        Texture2D(Texture2D&&) noexcept;
-        Texture2D& operator=(Texture2D const&);
-        Texture2D& operator=(Texture2D&&) noexcept;
-        ~Texture2D() noexcept;
 
         Vec2i getDimensions() const;
         TextureFormat getTextureFormat() const;
