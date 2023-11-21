@@ -4,6 +4,9 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+
+## [0.5.4] - 2023/11/21
+
 - `osc::App` now writes the `osc` executable's directory and user directory to the log (handy for debugging, #811)
 - Fixed a crash on MacOS where a `std::sort` algorithm usage did not strictly comply with `Compare` (#811)
 - Internal: nonstd::span was droppped in favor of C++20's std::span
