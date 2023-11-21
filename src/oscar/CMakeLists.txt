@@ -26,16 +26,6 @@ add_library(oscar STATIC
     Bindings/ImGuizmoHelpers.hpp
     Bindings/SDL2Helpers.hpp
 
-    DOM/Class.cpp
-    DOM/Class.hpp
-    DOM/Node.hpp
-    DOM/NodePath.cpp
-    DOM/NodePath.hpp
-    DOM/Object.cpp
-    DOM/Object.hpp
-    DOM/PropertyInfo.cpp
-    DOM/PropertyInfo.hpp
-
     Formats/CSV.hpp
     Formats/CSV.cpp
     Formats/DAE.hpp
