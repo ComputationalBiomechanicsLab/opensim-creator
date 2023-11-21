@@ -95,8 +95,8 @@ osc::RecentFiles::RecentFiles() :
 {
 }
 
-osc::RecentFiles::RecentFiles(std::filesystem::path const& recentFilesFile) :
-    m_DiskLocation{recentFilesFile},
+osc::RecentFiles::RecentFiles(std::filesystem::path recentFilesFile) :
+    m_DiskLocation{std::move(recentFilesFile)},
     m_Files{LoadRecentFilesFile(m_DiskLocation)}
 {
 }

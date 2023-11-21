@@ -10,7 +10,7 @@
 
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/VariantHelpers.hpp>
+#include <oscar/Utils/StdVariantHelpers.hpp>
 
 #include <array>
 #include <variant>

@@ -2,8 +2,8 @@
 
 #include <oscar/Platform/AppSettingValueType.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/StdVariantHelpers.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
-#include <oscar/Utils/VariantHelpers.hpp>
 
 #include <string>
 #include <variant>

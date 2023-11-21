@@ -13,6 +13,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -357,7 +358,7 @@ private:
 
 osc::ImportStationsFromCSVPopup::ImportStationsFromCSVPopup(
     std::string_view popupName_,
-    std::shared_ptr<MeshImporterSharedState> state_) :
+    std::shared_ptr<MeshImporterSharedState> const& state_) :
     m_Impl{std::make_unique<Impl>(popupName_, state_)}
 {
 }

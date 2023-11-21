@@ -54,8 +54,8 @@
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/SpanHelpers.hpp>
+#include <oscar/Utils/StdVariantHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <oscar/Utils/VariantHelpers.hpp>
 
 #include <ankerl/unordered_dense.h>
 #include <GL/glew.h>
@@ -4303,14 +4303,14 @@ public:
 
         // convert mesh/descriptor data types into OpenGL-compatible formats
         GLenum const mode = ToOpenGLTopology(descriptor.getTopology());
-        GLsizei const count = static_cast<GLsizei>(descriptor.getIndexCount());
+        auto const count = static_cast<GLsizei>(descriptor.getIndexCount());
         GLenum const type = m_IndicesAre32Bit ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT;
 
         size_t const bytesPerIndex = m_IndicesAre32Bit ? sizeof(GLint) : sizeof(GLshort);
         size_t const firstIndexByteOffset = descriptor.getIndexStart() * bytesPerIndex;
         void const* indices = reinterpret_cast<void*>(static_cast<intptr_t>(firstIndexByteOffset));
 
-        GLsizei const instanceCount = static_cast<GLsizei>(n);
+        auto const instanceCount = static_cast<GLsizei>(n);
 
         glDrawElementsInstanced(
             mode,

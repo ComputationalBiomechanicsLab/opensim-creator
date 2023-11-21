@@ -252,13 +252,19 @@ add_library(oscar STATIC
     Utils/Spsc.hpp
     Utils/StringHelpers.cpp
     Utils/StringHelpers.hpp
+    Utils/StringName.cpp
+    Utils/StringName.hpp
+    Utils/StdVariantHelpers.hpp
     Utils/SynchronizedValue.hpp
     Utils/SynchronizedValueGuard.hpp
     Utils/UID.cpp
     Utils/UID.hpp
     Utils/UndoRedo.cpp
     Utils/UndoRedo.hpp
-    Utils/VariantHelpers.hpp
+    Utils/Variant.cpp
+    Utils/Variant.hpp
+    Utils/VariantType.cpp
+    Utils/VariantType.hpp
 )
 
 target_include_directories(oscar PUBLIC

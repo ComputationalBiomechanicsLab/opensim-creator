@@ -48,8 +48,8 @@
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/StdVariantHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <oscar/Utils/VariantHelpers.hpp>
 #include <SDL_events.h>
 
 #include <array>

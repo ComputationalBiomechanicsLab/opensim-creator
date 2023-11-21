@@ -74,6 +74,10 @@
 #include <utility>
 #include <vector>
 
+using osc::LinesOfAction;
+using osc::Plane;
+using osc::PointDirection;
+using osc::Transform;
 using osc::Vec3;
 
 namespace
@@ -224,7 +228,7 @@ namespace
         bool useEffectiveInsertion = true;
     };
 
-    std::optional<osc::LinesOfAction> TryGetLinesOfAction(
+    std::optional<LinesOfAction> TryGetLinesOfAction(
         OpenSim::Muscle const& muscle,
         SimTK::State const& st,
         LinesOfActionConfig const& config)
@@ -255,10 +259,10 @@ namespace
         Vec3 const pointAfterInsertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second - 1), st);
         Vec3 const insertionDir = osc::Normalize(pointAfterInsertionPos - insertionPos);
 
-        return osc::LinesOfAction
+        return LinesOfAction
         {
-            osc::PointDirection{originPos, originDir},
-            osc::PointDirection{insertionPos, insertionDir},
+            PointDirection{originPos, originDir},
+            PointDirection{insertionPos, insertionDir},
         };
     }
 
@@ -300,7 +304,7 @@ OpenSim::Component* osc::UpdOwner(OpenSim::Component& root, OpenSim::Component c
 {
     if (auto const* constOwner = GetOwner(c))
     {
-        return FindComponentMut(root, osc::GetAbsolutePath(*constOwner));
+        return FindComponentMut(root, GetAbsolutePath(*constOwner));
     }
     else
     {
@@ -749,7 +753,7 @@ bool osc::ShouldShowInUI(OpenSim::Component const& c)
 
 bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
 {
-    OpenSim::Component* const owner = osc::UpdOwner(m, c);
+    OpenSim::Component* const owner = UpdOwner(m, c);
 
     if (!owner)
     {
@@ -786,7 +790,7 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
     {
         if (pw.getWrapObject() == &c)
         {
-            log::error("cannot delete %s: it is used in a path wrap (%s)", c.getName().c_str(), osc::GetAbsolutePathString(pw).c_str());
+            log::error("cannot delete %s: it is used in a path wrap (%s)", c.getName().c_str(), GetAbsolutePathString(pw).c_str());
             return false;
         }
     }
@@ -866,7 +870,7 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
             // assignment
 
             auto& prop = dynamic_cast<OpenSim::ObjectProperty<OpenSim::Geometry>&>(frame->updProperty_attached_geometry());
-            auto copy = osc::Clone(prop);
+            auto copy = Clone(prop);
             copy->clear();
 
             for (int i = 0; i < prop.size(); ++i)
@@ -885,7 +889,7 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
 
     if (!rv)
     {
-        osc::log::error("cannot delete %s: OpenSim Creator doesn't know how to delete a %s from its parent (maybe it can't?)", c.getName().c_str(), c.getConcreteClassName().c_str());
+        log::error("cannot delete %s: OpenSim Creator doesn't know how to delete a %s from its parent (maybe it can't?)", c.getName().c_str(), c.getConcreteClassName().c_str());
     }
 
     return rv;
@@ -939,7 +943,7 @@ bool osc::ActivateAllWrapObjectsIn(OpenSim::Model& m)
 
 std::unique_ptr<osc::UndoableModelStatePair> osc::LoadOsimIntoUndoableModel(std::filesystem::path const& p)
 {
-    return std::make_unique<osc::UndoableModelStatePair>(p);
+    return std::make_unique<UndoableModelStatePair>(p);
 }
 
 void osc::InitializeModel(OpenSim::Model& model)
@@ -948,17 +952,6 @@ void osc::InitializeModel(OpenSim::Model& model)
     model.finalizeFromProperties();  // clears potentially-stale member components (required for `clearConnections`)
     model.clearConnections();        // clears any potentially stale pointers that can be retained by OpenSim::Socket<T> (see #263)
     model.buildSystem();             // creates a new underlying physics system
-
-    // HACK: ensure OpenSim::Coordinate::getMinRange()/getMaxRange() are callable without
-    //       throwing exceptions (i.e. catch it here, rather than at some undetermined
-    //       later time)
-    //
-    // see #654
-    for (OpenSim::Coordinate const& c : model.getComponentList<OpenSim::Coordinate>())
-    {
-        c.getRangeMin();
-        c.getRangeMax();
-    }
 }
 
 void osc::FinalizeConnections(OpenSim::Model& model)
@@ -984,7 +977,7 @@ void osc::FinalizeFromProperties(OpenSim::Model& model)
 
 std::optional<size_t> osc::FindJointInParentJointSet(OpenSim::Joint const& joint)
 {
-    auto const* parentJointset = osc::GetOwner<OpenSim::JointSet>(joint);
+    auto const* parentJointset = GetOwner<OpenSim::JointSet>(joint);
     if (!parentJointset)
     {
         // it's a joint, but it's not owned by a JointSet, so the implementation cannot switch
@@ -1142,7 +1135,7 @@ void osc::GetAbsolutePathString(OpenSim::Component const& c, std::string& out)
     ptrdiff_t nEls = 0;
     std::array<OpenSim::Component const*, c_MaxEls> els{};
     OpenSim::Component const* cur = &c;
-    OpenSim::Component const* next = osc::GetOwner(*cur);
+    OpenSim::Component const* next = GetOwner(*cur);
 
     if (!next)
     {
@@ -1155,7 +1148,7 @@ void osc::GetAbsolutePathString(OpenSim::Component const& c, std::string& out)
     {
         els[nEls++] = cur;
         cur = next;
-        next = osc::GetOwner(*cur);
+        next = GetOwner(*cur);
     }
 
     if (nEls >= c_MaxEls)
@@ -1204,7 +1197,7 @@ OpenSim::ComponentPath osc::GetAbsolutePathOrEmpty(OpenSim::Component const* c)
 {
     if (c)
     {
-        return osc::GetAbsolutePath(*c);
+        return GetAbsolutePath(*c);
     }
     else
     {
@@ -1345,7 +1338,7 @@ namespace
     // helper: convert an OpenSim::ContactHalfSpace, which is defined in a frame with an offset,
     //         etc. into a simpler "plane in groundspace" representation that's more useful
     //         for rendering
-    osc::Plane ToAnalyticPlaneInGround(
+    Plane ToAnalyticPlaneInGround(
         OpenSim::ContactHalfSpace const& halfSpace,
         SimTK::State const& state)
     {
@@ -1353,19 +1346,19 @@ namespace
         //
         // - if there's a plane, then the plane's location+normal are needed in order
         //   to figure out where the force is exherted
-        osc::Transform const body2ground = osc::ToTransform(halfSpace.getFrame().getTransformInGround(state));
-        osc::Transform const geom2body = osc::ToTransform(halfSpace.getTransform());
+        Transform const body2ground = osc::ToTransform(halfSpace.getFrame().getTransformInGround(state));
+        Transform const geom2body = osc::ToTransform(halfSpace.getTransform());
 
         Vec3 const originInGround = body2ground * osc::ToVec3(halfSpace.get_location());
         Vec3 const normalInGround = osc::Normalize(body2ground.rotation * geom2body.rotation) * c_ContactHalfSpaceUpwardsNormal;
 
-        return osc::Plane{originInGround, normalInGround};
+        return Plane{originInGround, normalInGround};
     }
 
     // helper: returns the location of the center of pressure of a force+torque on a plane, or
     //         std::nullopt if the to-be-drawn force vector is too small
     std::optional<Vec3> ComputeCenterOfPressure(
-        osc::Plane const& plane,
+        Plane const& plane,
         ForceTorque const& forceTorque,
         float minimumForce = std::numeric_limits<float>::epsilon())
     {
@@ -1406,7 +1399,7 @@ std::optional<osc::ForcePoint> osc::TryGetContactForceInGround(
     {
         return std::nullopt;  // couldn't find a ContactHalfSpace
     }
-    osc::Plane const contactPlaneInGround = ToAnalyticPlaneInGround(*maybeContactHalfSpace, state);
+    Plane const contactPlaneInGround = ToAnalyticPlaneInGround(*maybeContactHalfSpace, state);
 
     // try and compute the force vectors
     std::optional<ForceTorque> const maybeForceTorque = TryComputeCurrentForceTorque(hcf, state);
@@ -1444,7 +1437,7 @@ std::optional<osc::PointInfo> osc::TryExtractPointInfo(
         // HACK: OpenSim redundantly stores path point information in a child called 'station'.
         // These must be filtered because, otherwise, the user will just see a bunch of
         // 'station' entries below each path point
-        if (station->getName() == "station" && osc::OwnerIs<OpenSim::PathPoint>(*station))
+        if (station->getName() == "station" && OwnerIs<OpenSim::PathPoint>(*station))
         {
             return std::nullopt;
         }
@@ -1452,7 +1445,7 @@ std::optional<osc::PointInfo> osc::TryExtractPointInfo(
         return PointInfo
         {
             ToVec3(station->get_location()),
-            osc::GetAbsolutePath(station->getParentFrame()),
+            GetAbsolutePath(station->getParentFrame()),
         };
     }
     else if (auto const* pp = dynamic_cast<OpenSim::PathPoint const*>(&c))
@@ -1460,7 +1453,7 @@ std::optional<osc::PointInfo> osc::TryExtractPointInfo(
         return PointInfo
         {
             ToVec3(pp->getLocation(st)),
-            osc::GetAbsolutePath(pp->getParentFrame()),
+            GetAbsolutePath(pp->getParentFrame()),
         };
     }
     else if (auto const* point = dynamic_cast<OpenSim::Point const*>(&c))

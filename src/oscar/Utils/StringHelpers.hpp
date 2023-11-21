@@ -30,6 +30,16 @@ namespace osc
     // returns true if `s` ends with `suffix`
     bool EndsWith(std::string_view sv, std::string_view suffix);
 
+    // returns true if:
+    //
+    // - `sv is nonempty
+    // - the first character of `sv` is in the set [_a-zA-Z]
+    // - the remaining characters of `sv` are in the set [_a-zA-Z0-9]
+    // - (sorry UTF8ers)
+    //
+    // (i.e. it would be a valid identifier in, say, a scripting language or tree)
+    bool IsValidIdentifier(std::string_view sv);
+
     // returns a substring of `sv` without leading/trailing whitespace
     std::string_view TrimLeadingAndTrailingWhitespace(std::string_view sv);
 

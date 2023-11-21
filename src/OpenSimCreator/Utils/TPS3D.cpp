@@ -252,11 +252,11 @@ osc::Vec3 osc::EvaluateTPSEquation(TPSCoefficients3D const& coefs, Vec3 p)
 }
 
 // returns a mesh that is the equivalent of applying the 3D TPS warp to each vertex of the mesh
-osc::Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, osc::Mesh const& mesh)
+osc::Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, Mesh const& mesh)
 {
     OSC_PERF("ApplyThinPlateWarpToMesh");
 
-    osc::Mesh rv = mesh;  // make a local copy of the input mesh
+    Mesh rv = mesh;  // make a local copy of the input mesh
 
     rv.transformVerts([&coefs](std::span<Vec3> verts)
     {
