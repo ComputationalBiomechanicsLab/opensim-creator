@@ -563,7 +563,7 @@ osc::Sphere osc::FitSphere(Mesh const& mesh)
     {
         Vec3 const vert = points[i];
 
-        f(i) = osc::Dot(vert, vert);  // x^2 + y^2 + z^2
+        f(i) = Dot(vert, vert);  // x^2 + y^2 + z^2
         A(i, 0) = 2.0f*vert[0];
         A(i, 1) = 2.0f*vert[1];
         A(i, 2) = 2.0f*vert[2];
@@ -649,7 +649,7 @@ osc::Plane osc::FitPlane(Mesh const& mesh)
 
     if (vertices.empty())
     {
-        return osc::Plane{{}, {0.0f, 1.0f, 0.0f}};  // edge-case: return unit plane
+        return Plane{{}, {0.0f, 1.0f, 0.0f}};  // edge-case: return unit plane
     }
 
     // determine the xyz centroid of the point cloud

@@ -10,10 +10,12 @@
 #include <vector>
 #include <variant>
 
+using osc::ParamValue;
+
 namespace
 {
     struct Param final {
-        Param(std::string_view name_, std::string_view description_, osc::ParamValue value_) :
+        Param(std::string_view name_, std::string_view description_, ParamValue value_) :
             name{name_},
             description{description_},
             value{value_}
@@ -22,7 +24,7 @@ namespace
 
         std::string name;
         std::string description;
-        osc::ParamValue value;
+        ParamValue value;
     };
 }
 
