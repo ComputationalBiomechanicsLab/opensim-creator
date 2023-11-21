@@ -307,9 +307,13 @@ TEST(OpenSimModel, DeletingElementFromCoordinateRangeShouldThrowEarly)
     auto& coord = model.updComponent<OpenSim::Coordinate>("/jointset/joint/rotation");
     coord.updProperty_range().clear();  // uh oh: a coordinate with no range (also applies when deleting only one element)
 
-    model.finalizeConnections();  // should throw (but this bug indicates it does not)
-
-    ASSERT_ANY_THROW({ coord.getRangeMin(); });  // throws (shouldn't: should throw in finalizeFromProperties/finalizeConnections)
+    // before #654, this didn't used to throw
+    //
+    // there was a HACK in OpenSimHelpers.cpp to work around bit. However, it is now fixed
+    // in opensim-org/opensim-core:
+    //
+    // https://github.com/opensim-org/opensim-core/pull/3546
+    ASSERT_ANY_THROW({ model.finalizeConnections(); });  // should throw (but this bug indicates it does not)
 }
 
 // repro for #472

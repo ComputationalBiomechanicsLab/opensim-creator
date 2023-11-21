@@ -35,7 +35,6 @@
 #include <vector>
 
 using osc::AABB;
-using osc::AntiAliasingLevel;
 using osc::Mat4;
 using osc::Material;
 using osc::Mesh;

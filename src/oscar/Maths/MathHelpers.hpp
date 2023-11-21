@@ -85,8 +85,16 @@ namespace osc
     Vec2 Normalize(Vec2 const&);
 
     // returns the length of the provided vector
-    float Length(Vec2 const&);
-    float Length2(Vec3 const&);
+    template<typename Vec>
+    float Length(Vec const& v)
+    {
+        return std::sqrt(Dot(v, v));
+    }
+    template<typename Vec>
+    float Length2(Vec const& v)
+    {
+        return Dot(v, v);
+    }
 
     // computes the rotation from `src` to `dest`
     Quat Rotation(Vec3 const& src, Vec3 const& dest);

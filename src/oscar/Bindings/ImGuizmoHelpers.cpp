@@ -12,8 +12,6 @@
 #include <iterator>
 #include <utility>
 
-using osc::CStringView;
-
 bool osc::DrawGizmoModeSelector(ImGuizmo::MODE& mode)
 {
     constexpr auto modeLabels = std::to_array({ "local", "global" });

@@ -4,11 +4,21 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+
+## [0.5.4] - 2023/11/21
+
+0.5.4 is purely a bugfix release that fixes a crash that can happen when booting OSC on MacOS (see #811, thanks
+@SAI-sentinal-ai for reporting it):
+
+- Fixed a crash on MacOS where a `std::sort` algorithm usage did not strictly comply with `Compare` (thanks @SAI-sentinal-ai, #811)
 - `osc::App` now writes the `osc` executable's directory and user directory to the log (handy for debugging, #811)
-- Fixed a crash on MacOS where a `std::sort` algorithm usage did not strictly comply with `Compare` (#811)
 - Internal: nonstd::span was droppped in favor of C++20's std::span
 - Internal: C++17 was upgraded to C++20, which required some dependency patching
 - Internal: all vector/matrix math was ported from using `glm` directly to using it via an `osc` alias
+- Internal: opensim-core was upgraded to enable C++20 support and remove all currently-known memory leaks
+- Internal: opensim-core was updated to use the commit with C++20 fixes (b4d78a2, see #3620 in opensim-org/opensim-core)
+- Internal: the HACK that was used internally by OSC to handle the OpenSim bug reported in #654 was removed, because
+            the opensim-core that OSC now uses contains opensim-org/opensim-core/#3546 (upstream patch to #654)
 
 
 ## [0.5.4] - 2023/11/03
