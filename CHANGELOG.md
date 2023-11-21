@@ -7,8 +7,11 @@ All notable changes to this project will be documented here. The format is based
 
 ## [0.5.4] - 2023/11/21
 
+0.5.4 is purely a bugfix release that fixes a crash that can happen when booting OSC on MacOS (see #811, thanks
+@SAI-sentinal-ai for reporting it):
+
+- Fixed a crash on MacOS where a `std::sort` algorithm usage did not strictly comply with `Compare` (thanks @SAI-sentinal-ai, #811)
 - `osc::App` now writes the `osc` executable's directory and user directory to the log (handy for debugging, #811)
-- Fixed a crash on MacOS where a `std::sort` algorithm usage did not strictly comply with `Compare` (#811)
 - Internal: nonstd::span was droppped in favor of C++20's std::span
 - Internal: C++17 was upgraded to C++20, which required some dependency patching
 - Internal: all vector/matrix math was ported from using `glm` directly to using it via an `osc` alias
