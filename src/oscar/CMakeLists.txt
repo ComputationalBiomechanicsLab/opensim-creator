@@ -102,7 +102,9 @@ add_library(oscar STATIC
     Maths/EasingFunctions.hpp
     Maths/Ellipsoid.hpp
     Maths/EulerPerspectiveCamera.hpp
+    Maths/LengthType.hpp
     Maths/Line.hpp
+    Maths/Mat.hpp
     Maths/MathHelpers.hpp
     Maths/MathsImplementation.cpp
     Maths/Mat3.hpp
@@ -111,6 +113,8 @@ add_library(oscar STATIC
     Maths/Plane.hpp
     Maths/PointDirection.hpp
     Maths/PolarPerspectiveCamera.hpp
+    Maths/Qua.hpp
+    Maths/Qualifier.hpp
     Maths/Quat.hpp
     Maths/RayCollision.hpp
     Maths/Rect.hpp
@@ -119,6 +123,7 @@ add_library(oscar STATIC
     Maths/Tetrahedron.hpp
     Maths/Transform.hpp
     Maths/Triangle.hpp
+    Maths/Vec.hpp
     Maths/Vec2.hpp
     Maths/Vec3.hpp
     Maths/Vec4.hpp

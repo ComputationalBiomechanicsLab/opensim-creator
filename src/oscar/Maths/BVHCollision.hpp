@@ -19,6 +19,6 @@ namespace osc
         {
         }
 
-        ptrdiff_t id;
+        ptrdiff_t id{};
     };
 }

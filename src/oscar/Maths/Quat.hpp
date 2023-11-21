@@ -1,12 +1,12 @@
 #pragma once
 
-#include <glm/gtx/quaternion.hpp>
+#include <oscar/Maths/Qua.hpp>
 
 #include <iosfwd>
 
 namespace osc
 {
-    using Quat = glm::quat;
+    using Quat = Qua<float>;
 
     std::ostream& operator<<(std::ostream&, Quat const&);
 
