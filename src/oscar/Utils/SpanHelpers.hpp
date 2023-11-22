@@ -9,29 +9,17 @@
 
 namespace osc
 {
-    template<BitCastable T>
-    std::span<std::byte const> ObjectRepresentationToByteSpan(T const& v)
+    template<ObjectRepresentationByte Byte = std::byte, BitCastable T>
+    std::span<Byte const> ViewObjectRepresentation(T const& v)
     {
-        return {reinterpret_cast<std::byte const*>(&v), sizeof(T)};
+        return {reinterpret_cast<Byte const*>(&v), sizeof(T)};
     }
 
-    template<BitCastable T>
-    std::span<uint8_t const> ObjectRepresentationToUint8Span(T const& v)
-    {
-        return {reinterpret_cast<uint8_t const*>(&v), sizeof(T)};
-    }
-
-    template<BitCastable T>
-    std::span<uint8_t const> DataToUint8Span(std::span<T const> vs)
-    {
-        return {reinterpret_cast<uint8_t const*>(vs.data()), sizeof(T) * vs.size()};
-    }
-
-    template<ContiguousContainer Container>
-    std::span<uint8_t const> DataToUint8Span(Container const& c)
+    template<ObjectRepresentationByte Byte = std::byte, ContiguousContainer Container>
+    std::span<Byte const> ViewObjectRepresentations(Container const& c)
         requires BitCastable<typename Container::value_type>
     {
-        return {reinterpret_cast<uint8_t const*>(c.data()), sizeof(Container::value_type) * c.size()};
+        return {reinterpret_cast<Byte const*>(c.data()), sizeof(typename Container::value_type) * c.size()};
     }
 
     template<typename T>

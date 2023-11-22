@@ -130,7 +130,7 @@ namespace
             TextureWrapMode::Repeat,
             TextureFilterMode::Linear,
         };
-        rv.setPixelData(osc::DataToUint8Span(pixels));
+        rv.setPixelData(osc::ViewObjectRepresentations<uint8_t>(pixels));
         return rv;
     }
 

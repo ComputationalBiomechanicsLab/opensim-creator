@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <functional>
 #include <iterator>
 #include <type_traits>
@@ -34,10 +35,20 @@ namespace osc
         RandomAccessIterator<typename Container::iterator> &&
         requires(Container& c)
         {
-            { c.data() } -> SameAs<typename Container::value_type*>;
+            { c.data() } -> SameAs<typename Container::pointer>;
         };
 
+    // see:
+    //
+    // - std::bit_cast (similar constraints)
+    // - https://en.cppreference.com/w/cpp/language/object#Object_representation_and_value_representation
+    //   > "For TriviallyCopyable types, value representation is a part of the object representation"
     template<class T>
     concept BitCastable =
         std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>;
+
+    // see: https://en.cppreference.com/w/cpp/language/object#Object_representation_and_value_representation
+    template<class T>
+    concept ObjectRepresentationByte =
+        (SameAs<T, unsigned char> || SameAs<T, std::byte>) && sizeof(T) == 1;
 }

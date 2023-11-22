@@ -39,6 +39,6 @@ osc::Texture2D osc::GenChequeredFloorTexture()
         TextureWrapMode::Repeat,
         TextureFilterMode::Mipmap,
     };
-    rv.setPixelData(DataToUint8Span(pixels));
+    rv.setPixelData(ViewObjectRepresentations<uint8_t>(pixels));
     return rv;
 }

@@ -379,7 +379,7 @@ namespace
     template<typename T>
     void PushAsBytes(T const& v, std::vector<uint8_t>& out)
     {
-        auto const bytes = osc::ObjectRepresentationToUint8Span(v);
+        auto const bytes = osc::ViewObjectRepresentation<uint8_t>(v);
         out.insert(out.end(), bytes.begin(), bytes.end());
     }
 
