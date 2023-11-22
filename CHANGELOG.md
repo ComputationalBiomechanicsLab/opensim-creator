@@ -5,9 +5,9 @@ All notable changes to this project will be documented here. The format is based
 ## [Unreleased]
 
 
-## [0.5.4] - 2023/11/21
+## [0.5.5] - 2023/11/21
 
-0.5.4 is purely a bugfix release that fixes a crash that can happen when booting OSC on MacOS (see #811, thanks
+0.5.5 is purely a bugfix release that fixes a crash that can happen when booting OSC on MacOS (see #811, thanks
 @SAI-sentinal-ai for reporting it):
 
 - Fixed a crash on MacOS where a `std::sort` algorithm usage did not strictly comply with `Compare` (thanks @SAI-sentinal-ai, #811)
