@@ -381,6 +381,12 @@ namespace osc
     // returns `Min(rect.p1, rect.p2)`: i.e. the smallest X and the smallest Y of the rectangle's points
     Vec2 MinValuePerDimension(Rect const&);
 
+    template<typename T, Qualifier Q>
+    constexpr T Area(Vec<2, T, Q> const& v)
+    {
+        return v.x * v.y;
+    }
+
     // returns the area of the rectangle
     float Area(Rect const&);
 

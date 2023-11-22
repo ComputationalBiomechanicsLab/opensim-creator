@@ -115,7 +115,7 @@ namespace
             *format,
             colorSpace,
         };
-        rv.setPixelData(osc::ViewSpanAsUint8Span(pixelSpan));
+        rv.setPixelData(osc::DataToUint8Span(pixelSpan));
 
         return rv;
     }

@@ -160,8 +160,8 @@ namespace
     //
     // populates outparam with all AABB hits in depth-first order
     bool BVH_GetRayAABBCollisionsRecursive(
-        std::vector<BVHNode> const& nodes,
-        std::vector<BVHPrim> const& prims,
+        std::span<BVHNode const> nodes,
+        std::span<BVHPrim const> prims,
         Line const& ray,
         ptrdiff_t nodeidx,
         std::vector<BVHCollision>& out)
@@ -196,8 +196,8 @@ namespace
 
     template<typename TIndex>
     std::optional<BVHCollision> BVH_GetClosestRayIndexedTriangleCollisionRecursive(
-        std::vector<BVHNode> const& nodes,
-        std::vector<BVHPrim> const& prims,
+        std::span<BVHNode const> nodes,
+        std::span<BVHPrim const> prims,
         std::span<Vec3 const> verts,
         std::span<TIndex const> indices,
         Line const& ray,
@@ -221,7 +221,7 @@ namespace
         {
             // leaf node: check ray-triangle intersection
 
-            BVHPrim const& p = prims.at(node.getFirstPrimOffset());
+            BVHPrim const& p = osc::At(prims, node.getFirstPrimOffset());
 
             Triangle const triangle =
             {
@@ -301,8 +301,8 @@ namespace
 
     template<typename TIndex>
     std::optional<osc::BVHCollision> GetClosestRayIndexedTriangleCollision(
-        std::vector<BVHNode> const& nodes,
-        std::vector<BVHPrim> const& prims,
+        std::span<BVHNode const> nodes,
+        std::span<BVHPrim const> prims,
         std::span<Vec3 const> verts,
         std::span<TIndex const> indices,
         osc::Line const& ray)

@@ -1,32 +1,37 @@
 #pragma once
 
+#include <oscar/Utils/Concepts.hpp>
+
 #include <cstddef>
 #include <cstdint>
 #include <span>
 #include <stdexcept>
-#include <type_traits>
 
 namespace osc
 {
-    template<typename T>
-    std::span<std::byte const> ViewAsByteSpan(T const& v)
-        requires std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>
+    template<BitCastable T>
+    std::span<std::byte const> ObjectRepresentationToByteSpan(T const& v)
     {
         return {reinterpret_cast<std::byte const*>(&v), sizeof(T)};
     }
 
-    template<typename T>
-    std::span<uint8_t const> ViewAsUint8Span(T const& v)
-        requires std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>
+    template<BitCastable T>
+    std::span<uint8_t const> ObjectRepresentationToUint8Span(T const& v)
     {
         return {reinterpret_cast<uint8_t const*>(&v), sizeof(T)};
     }
 
-    template<typename T>
-    std::span<uint8_t const> ViewSpanAsUint8Span(std::span<T const> const& vs)
-        requires std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>
+    template<BitCastable T>
+    std::span<uint8_t const> DataToUint8Span(std::span<T const> vs)
     {
         return {reinterpret_cast<uint8_t const*>(vs.data()), sizeof(T) * vs.size()};
+    }
+
+    template<ContiguousContainer Container>
+    std::span<uint8_t const> DataToUint8Span(Container const& c)
+        requires BitCastable<typename Container::value_type>
+    {
+        return {reinterpret_cast<uint8_t const*>(c.data()), sizeof(Container::value_type) * c.size()};
     }
 
     template<typename T>

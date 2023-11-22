@@ -234,6 +234,7 @@ std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(
 
     // perform ray-triangle intersections tests on the scene hits
     std::vector<SceneCollision> rv;
+    rv.reserve(sceneCollisions.size());  // upper bound
     for (BVHCollision const& c : sceneCollisions)
     {
         SceneDecoration const& decoration = decorations[c.id];
