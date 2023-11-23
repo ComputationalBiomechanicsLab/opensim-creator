@@ -29,7 +29,7 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/SpanHelpers.hpp>
+#include <oscar/Utils/ObjectRepresentation.hpp>
 #include <SDL_events.h>
 
 #include <array>

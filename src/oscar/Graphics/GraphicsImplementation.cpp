@@ -52,8 +52,8 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/DefaultConstructOnCopy.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/ObjectRepresentation.hpp>
 #include <oscar/Utils/Perf.hpp>
-#include <oscar/Utils/SpanHelpers.hpp>
 #include <oscar/Utils/StdVariantHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 

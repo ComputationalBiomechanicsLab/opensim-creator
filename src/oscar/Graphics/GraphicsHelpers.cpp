@@ -15,7 +15,7 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/SpanHelpers.hpp>
+#include <oscar/Utils/ObjectRepresentation.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>

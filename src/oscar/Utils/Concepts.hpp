@@ -30,6 +30,9 @@ namespace osc
     concept RandomAccessIterator =
         DerivedFrom<typename std::iterator_traits<I>::iterator_category, std::random_access_iterator_tag>;
 
+    template<class T>
+    concept RandomAccessContainer = RandomAccessIterator<typename T::iterator>;
+
     template<class Container>
     concept ContiguousContainer =
         RandomAccessIterator<typename Container::iterator> &&

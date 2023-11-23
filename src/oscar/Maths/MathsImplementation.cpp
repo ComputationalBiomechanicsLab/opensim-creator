@@ -23,7 +23,7 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/SpanHelpers.hpp>
+#include <oscar/Utils/At.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

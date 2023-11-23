@@ -10,7 +10,6 @@
 #include <IconsFontAwesome5.h>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/SpanHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <cstddef>

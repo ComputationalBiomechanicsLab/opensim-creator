@@ -227,6 +227,7 @@ add_library(oscar STATIC
     UI/IconCache.cpp
     UI/IconCache.hpp
 
+    Utils/At.hpp
     Utils/Assertions.cpp
     Utils/Assertions.hpp
     Utils/CircularBuffer.hpp
@@ -243,6 +244,7 @@ add_library(oscar STATIC
     Utils/FilesystemHelpers.cpp
     Utils/FilesystemHelpers.hpp
     Utils/HashHelpers.hpp
+    Utils/ObjectRepresentation.hpp
     Utils/ParalellizationHelpers.hpp
     Utils/ParentPtr.hpp
     Utils/Perf.cpp
@@ -252,7 +254,6 @@ add_library(oscar STATIC
     Utils/PerfMeasurementMetadata.hpp
     Utils/ScopeGuard.hpp
     Utils/SetHelpers.hpp
-    Utils/SpanHelpers.hpp
     Utils/Spsc.hpp
     Utils/StringHelpers.cpp
     Utils/StringHelpers.hpp

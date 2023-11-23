@@ -6,7 +6,7 @@
 #include <oscar/Graphics/TextureFormat.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Vec2.hpp>
-#include <oscar/Utils/SpanHelpers.hpp>
+#include <oscar/Utils/ObjectRepresentation.hpp>
 
 #include <cstddef>
 #include <optional>
