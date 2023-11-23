@@ -1725,7 +1725,7 @@ private:
         OpenSim::Object const& obj,
         OpenSim::AbstractProperty const& prop)
     {
-        if (osc::StartsWith(prop.getName(), "socket_"))
+        if (prop.getName().starts_with("socket_"))
         {
             // #542: ignore properties that begin with `socket_`, because
             // they are proxy properties to the object's sockets and should

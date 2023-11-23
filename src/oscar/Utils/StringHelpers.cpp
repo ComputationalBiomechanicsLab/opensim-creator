@@ -99,16 +99,6 @@ bool osc::IsEqualCaseInsensitive(std::string_view a, std::string_view b)
     return std::equal(a.begin(), a.end(), b.begin(), b.end(), compareChars);
 }
 
-bool osc::StartsWith(std::string_view sv, std::string_view prefix)
-{
-    return sv.starts_with(prefix);
-}
-
-bool osc::EndsWith(std::string_view sv, std::string_view suffix)
-{
-    return sv.ends_with(suffix);
-}
-
 bool osc::IsValidIdentifier(std::string_view sv)
 {
     // helpers

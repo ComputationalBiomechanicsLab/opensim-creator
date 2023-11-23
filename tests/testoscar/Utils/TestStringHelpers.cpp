@@ -178,29 +178,6 @@ TEST_P(FromCharsStripWhitespace, Check)
     std::optional<float> rv = osc::FromCharsStripWhitespace(c.input);
     ASSERT_EQ(rv, c.expectedOutput);
 }
-
-TEST(EndsWith, WorksWithBlankString)
-{
-    ASSERT_TRUE(osc::EndsWith("", ""));
-}
-
-TEST(EndsWith, TrueInObviousCases)
-{
-    ASSERT_TRUE(osc::EndsWith("somefile.osim", "osim"));
-    ASSERT_TRUE(osc::EndsWith("sto", "sto"));
-}
-
-TEST(EndsWith, FalseInObviousCases)
-{
-    ASSERT_FALSE(osc::EndsWith("somefile.osim", "sto"));
-    ASSERT_FALSE(osc::EndsWith("", " "));
-}
-
-TEST(EndsWith, FalseWhenSearchStringIsLonger)
-{
-    ASSERT_FALSE(osc::EndsWith("somefile.osim", "_somefile.osim"));
-}
-
 TEST(ToHexChars, ReturnsExpectedResultsWhenComparedToAlternateImplementation)
 {
     // test by comparing with
