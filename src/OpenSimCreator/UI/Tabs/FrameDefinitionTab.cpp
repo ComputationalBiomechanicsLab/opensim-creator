@@ -65,7 +65,6 @@
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
-#include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/SetHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
@@ -826,7 +825,7 @@ namespace
         OpenSim::Model& mutableModel = model.updModel();
         for (std::filesystem::path const& meshPath : meshPaths)
         {
-            std::string const meshName = osc::FileNameWithoutExtension(meshPath);
+            std::string const meshName = meshPath.filename().replace_extension().string();
 
             // add an offset frame that is connected to ground - this will become
             // the mesh's offset frame

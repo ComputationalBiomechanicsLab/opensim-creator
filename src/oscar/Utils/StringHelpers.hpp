@@ -26,7 +26,7 @@ namespace osc
 
     // returns true if:
     //
-    // - `sv is nonempty
+    // - `sv` is nonempty
     // - the first character of `sv` is in the set [_a-zA-Z]
     // - the remaining characters of `sv` are in the set [_a-zA-Z0-9]
     // - (sorry UTF8ers)

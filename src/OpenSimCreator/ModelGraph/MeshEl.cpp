@@ -9,7 +9,6 @@
 #include <IconsFontAwesome5.h>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <filesystem>
@@ -27,7 +26,7 @@ osc::MeshEl::MeshEl(
     m_Attachment{attachment},
     m_MeshData{std::move(meshData)},
     m_Path{std::move(path)},
-    m_Name{SanitizeToOpenSimComponentName(FileNameWithoutExtension(m_Path))}
+    m_Name{SanitizeToOpenSimComponentName(m_Path.filename().replace_extension().string())}
 {
 }
 

@@ -93,7 +93,7 @@ bool osc::IsEqualCaseInsensitive(std::string_view a, std::string_view b)
 {
     auto const compareChars = [](std::string_view::value_type c1, std::string_view::value_type c2)
     {
-        return std::tolower(c1) == std::tolower(c2);
+        return std::tolower(static_cast<unsigned char>(c1)) == std::tolower(static_cast<unsigned char>(c2));
     };
 
     return std::equal(a.begin(), a.end(), b.begin(), b.end(), compareChars);
