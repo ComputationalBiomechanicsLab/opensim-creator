@@ -1052,12 +1052,12 @@ namespace
             // append non-participating landmarks as non-user-selctable purple spheres
             if (m_DocumentIdentifier == TPSDocumentInputIdentifier::Source)
             {
-                for (Vec3 const& nonParticipatingLandmarkLocation : getScratch(*m_State).nonParticipatingLandmarks)
+                for (auto const& nonParticipatingLandmark : getScratch(*m_State).nonParticipatingLandmarks)
                 {
                     AppendNonParticipatingLandmark(
                         m_State->landmarkSphere,
                         m_LandmarkRadius,
-                        nonParticipatingLandmarkLocation,
+                        nonParticipatingLandmark.position,
                         decorationConsumer
                     );
                 }

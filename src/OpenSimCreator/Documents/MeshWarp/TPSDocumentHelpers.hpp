@@ -93,6 +93,32 @@ namespace osc
         return rv;
     }
 
+    // returns the positions of all non-participating landmarks in-order
+    std::vector<Vec3> GetNonParticipatingLandmarkPositions(TPSDocument const& doc)
+    {
+        std::vector<Vec3> rv;
+        rv.reserve(doc.nonParticipatingLandmarks.size());
+        for (auto const& nonParticipatingLandmark : doc.nonParticipatingLandmarks)
+        {
+            rv.push_back(nonParticipatingLandmark.position);
+        }
+        return rv;
+    }
+
+    bool NonParticipatingLandmarkPositionsEqual(TPSDocument const& doc, std::span<Vec3 const> positions)
+    {
+        return std::equal(
+            doc.nonParticipatingLandmarks.begin(),
+            doc.nonParticipatingLandmarks.end(),
+            positions.begin(),
+            positions.end(),
+            [](TPSDocumentNonParticipatingLandmark const& lm, Vec3 const& pos)
+            {
+                return lm.position == pos;
+            }
+        );
+    }
+
     // returns the count of landmarks in the document for which `which` is defined
     size_t CountNumLandmarksForInput(TPSDocument const& doc, TPSDocumentInputIdentifier which)
     {

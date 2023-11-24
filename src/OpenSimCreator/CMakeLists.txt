@@ -17,6 +17,7 @@ add_library(OpenSimCreator STATIC
     Documents/MeshWarp/TPSDocumentInputElementType.hpp
     Documents/MeshWarp/TPSDocumentInputIdentifier.hpp
     Documents/MeshWarp/TPSDocumentLandmarkPair.hpp
+    Documents/MeshWarp/TPSDocumentNonParticipatingLandmark.hpp
     Documents/MeshWarp/TPSResultCache.hpp
     Documents/MeshWarp/UndoableTPSDocument.hpp
     Documents/MeshWarp/UndoableTPSDocumentActions.hpp

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/MeshWarp/TPSDocumentLandmarkPair.hpp>
+#include <OpenSimCreator/Documents/MeshWarp/TPSDocumentNonParticipatingLandmark.hpp>
 
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
@@ -18,7 +19,7 @@ namespace osc
         Mesh sourceMesh = GenSphere(16, 16);
         Mesh destinationMesh = GenUntexturedYToYCylinder(16);
         std::vector<TPSDocumentLandmarkPair> landmarkPairs;
-        std::vector<Vec3> nonParticipatingLandmarks;
+        std::vector<TPSDocumentNonParticipatingLandmark> nonParticipatingLandmarks;
         float blendingFactor = 1.0f;
     };
 }

@@ -6,6 +6,7 @@
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/Vec3.hpp>
 
+#include <algorithm>
 #include <span>
 #include <utility>
 #include <vector>
@@ -46,9 +47,28 @@ namespace osc
 
         bool updateSourceNonParticipatingLandmarks(TPSDocument const& doc)
         {
-            if (m_CachedSourceNonParticipatingLandmarks != doc.nonParticipatingLandmarks)
+            auto const& docLandmarks = doc.nonParticipatingLandmarks;
+
+            bool const samePositions = std::equal(
+                docLandmarks.begin(),
+                docLandmarks.end(),
+                m_CachedSourceNonParticipatingLandmarks.begin(),
+                m_CachedSourceNonParticipatingLandmarks.end(),
+                [](TPSDocumentNonParticipatingLandmark const& lm, Vec3 const& pos)
+                {
+                    return lm.position == pos;
+                }
+            );
+
+            if (!samePositions)
             {
-                m_CachedSourceNonParticipatingLandmarks = doc.nonParticipatingLandmarks;
+                m_CachedSourceNonParticipatingLandmarks.clear();
+                std::transform(
+                    docLandmarks.begin(),
+                    docLandmarks.end(),
+                    std::back_inserter(m_CachedSourceNonParticipatingLandmarks),
+                    [](auto const& lm) { return lm.position; }
+                );
                 return true;
             }
             else
