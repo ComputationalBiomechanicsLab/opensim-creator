@@ -1,8 +1,10 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/MeshWarp/TPSDocument.hpp>
+#include <OpenSimCreator/Documents/MeshWarp/TPSDocumentElementID.hpp>
 #include <OpenSimCreator/Documents/MeshWarp/TPSDocumentLandmarkPair.hpp>
 #include <OpenSimCreator/Documents/MeshWarp/TPSDocumentInputIdentifier.hpp>
+#include <OpenSimCreator/Documents/MeshWarp/TPSDocumentInputElementType.hpp>
 #include <OpenSimCreator/Utils/TPS3D.hpp>
 
 #include <oscar/Graphics/Mesh.hpp>
@@ -170,5 +172,31 @@ namespace osc
             TPSDocumentLandmarkPair& p = doc.landmarkPairs.emplace_back(NextLandmarkID(doc));
             UpdLocation(p, which) = pos;
         }
+    }
+
+    // returns `true` if the given element was deleted from the document
+    bool DeleteElementByID(TPSDocument& doc, TPSDocumentElementID const& id)
+    {
+        if (id.elementType == TPSDocumentInputElementType::Landmark)
+        {
+            auto const pairHasID = [&id](TPSDocumentLandmarkPair const& p) { return p.id == id.elementID; };
+            auto const it = std::find_if(
+                doc.landmarkPairs.begin(),
+                doc.landmarkPairs.end(),
+                pairHasID
+            );
+            if (it != doc.landmarkPairs.end())
+            {
+                UpdLocation(*it, id.whichInput).reset();
+
+                if (!HasSourceOrDestinationLocation(*it))
+                {
+                    // the landmark now has no data associated with it: garbage collect it
+                    doc.landmarkPairs.erase(it);
+                }
+                return true;
+            }
+        }
+        return false;
     }
 }

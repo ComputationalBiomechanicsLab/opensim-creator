@@ -162,36 +162,17 @@ namespace osc
         UndoableTPSDocument& doc,
         std::unordered_set<TPSDocumentElementID> const& elementIDs)
     {
-        if (elementIDs.empty())
-        {
-            return;
-        }
-
         TPSDocument& scratch = doc.updScratch();
+        bool somethingDeleted = false;
         for (TPSDocumentElementID const& id : elementIDs)
         {
-            if (id.elementType == TPSDocumentInputElementType::Landmark)
-            {
-                auto const pairHasID = [&id](TPSDocumentLandmarkPair const& p) { return p.id == id.elementID; };
-                auto const it = std::find_if(
-                    scratch.landmarkPairs.begin(),
-                    scratch.landmarkPairs.end(),
-                    pairHasID
-                );
-                if (it != scratch.landmarkPairs.end())
-                {
-                    UpdLocation(*it, id.whichInput).reset();
-
-                    if (!HasSourceOrDestinationLocation(*it))
-                    {
-                        // the landmark now has no data associated with it: garbage collect it
-                        scratch.landmarkPairs.erase(it);
-                    }
-                }
-            }
+            somethingDeleted = DeleteElementByID(scratch, id) || somethingDeleted;
         }
 
-        doc.commitScratch("deleted elements");
+        if (somethingDeleted)
+        {
+            doc.commitScratch("deleted elements");
+        }
     }
 
     // saves all source/destination landmarks to a simple headerless CSV file (matches loading)
