@@ -13,7 +13,6 @@
 #include <cstddef>
 #include <optional>
 #include <sstream>
-#include <string>
 #include <utility>
 
 // TPS document helper functions
@@ -101,12 +100,29 @@ namespace osc
         return std::count_if(doc.landmarkPairs.begin(), doc.landmarkPairs.end(), hasLocation);
     }
 
-    // returns the next available (presumably, unique) landmark ID
-    std::string NextLandmarkID(TPSDocument& doc)
+    // returns `true` if a landmark with the given name exists in the document
+    bool ContainsLandmarkWithName(TPSDocument const& doc, StringName const& name)
     {
-        std::stringstream ss;
-        ss << "landmark_" << doc.nextLandmarkID++;
-        return std::move(ss).str();
+        auto const& pairs = doc.landmarkPairs;
+        return std::any_of(pairs.begin(), pairs.end(), [&name](auto const& p) { return p.id == name; });
+    }
+
+    // returns the next available (presumably, unique) landmark ID
+    StringName NextLandmarkID(TPSDocument const& doc)
+    {
+        // keep generating a name until an unused one is found
+        for (size_t i = 0; i < std::numeric_limits<size_t>::max()-1; ++i)
+        {
+            std::stringstream ss;
+            ss << "landmark_" << i;
+            StringName name{std::move(ss).str()};
+
+            if (!ContainsLandmarkWithName(doc, name))
+            {
+                return name;
+            }
+        }
+        throw std::runtime_error{"unable to generate a unique name for the landmark"};
     }
 
     // helper: add a source/destination landmark at the given location

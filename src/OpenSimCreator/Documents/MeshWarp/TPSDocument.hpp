@@ -20,6 +20,5 @@ namespace osc
         std::vector<TPSDocumentLandmarkPair> landmarkPairs;
         std::vector<Vec3> nonParticipatingLandmarks;
         float blendingFactor = 1.0f;
-        size_t nextLandmarkID = 0;
     };
 }

@@ -4,6 +4,9 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- The mesh importer now correctly recycles landmark names - even if they were previously generated
+  and deleted
+
 
 ## [0.5.5] - 2023/11/21
 
