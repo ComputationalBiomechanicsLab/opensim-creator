@@ -8,11 +8,13 @@
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/StringName.hpp>
 
 #include <algorithm>
 #include <cstddef>
 #include <optional>
 #include <sstream>
+#include <string_view>
 #include <utility>
 
 // TPS document helper functions
@@ -100,29 +102,42 @@ namespace osc
         return std::count_if(doc.landmarkPairs.begin(), doc.landmarkPairs.end(), hasLocation);
     }
 
-    // returns `true` if a landmark with the given name exists in the document
-    bool ContainsLandmarkWithName(TPSDocument const& doc, StringName const& name)
+    // returns `true` if an element in the container has `.id` == `id`
+    template<class Container>
+    bool ContainsElementWithID(Container const& c, StringName const& id)
     {
-        auto const& pairs = doc.landmarkPairs;
-        return std::any_of(pairs.begin(), pairs.end(), [&name](auto const& p) { return p.id == name; });
+        return std::any_of(c.begin(), c.end(), [&id](auto const& el) { return el.id == id; });
     }
 
-    // returns the next available (presumably, unique) landmark ID
-    StringName NextLandmarkID(TPSDocument const& doc)
+    // returns the next available unique ID with the given prefix
+    template<class Container>
+    StringName NextUniqueID(Container const& c, std::string_view prefix)
     {
         // keep generating a name until an unused one is found
         for (size_t i = 0; i < std::numeric_limits<size_t>::max()-1; ++i)
         {
             std::stringstream ss;
-            ss << "landmark_" << i;
+            ss << prefix << i;
             StringName name{std::move(ss).str()};
 
-            if (!ContainsLandmarkWithName(doc, name))
+            if (!ContainsElementWithID(c, name))
             {
                 return name;
             }
         }
-        throw std::runtime_error{"unable to generate a unique name for the landmark"};
+        throw std::runtime_error{"unable to generate a unique name for a scene element"};
+    }
+
+    // returns the next available unique landmark ID
+    StringName NextLandmarkID(TPSDocument const& doc)
+    {
+        return NextUniqueID(doc.landmarkPairs, "landmark_");
+    }
+
+    // returns the next available unique non-participating landmark ID
+    StringName NextNonParticipatingLandmarkID(TPSDocument const& doc)
+    {
+        return NextUniqueID(doc.nonParticipatingLandmarks, "datapoint_");
     }
 
     // helper: add a source/destination landmark at the given location

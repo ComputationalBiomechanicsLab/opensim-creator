@@ -111,11 +111,14 @@ namespace osc
             return;  // the landmarks file was empty, or had invalid data
         }
 
-        // add the new landmarks to the scratch space
-        doc.updScratch().nonParticipatingLandmarks.insert(
-            doc.updScratch().nonParticipatingLandmarks.end(),
+        std::transform(
             landmarks.begin(),
-            landmarks.end()
+            landmarks.end(),
+            std::back_inserter(doc.updScratch().nonParticipatingLandmarks),
+            [&readonlyDoc = doc.getScratch()](Vec3 const& landmark)
+            {
+                return TPSDocumentNonParticipatingLandmark{NextNonParticipatingLandmarkID(readonlyDoc), landmark};
+            }
         );
         doc.commitScratch("added non-participating landmarks");
     }
