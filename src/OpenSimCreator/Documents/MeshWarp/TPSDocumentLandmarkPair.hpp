@@ -1,9 +1,9 @@
 #pragma once
 
 #include <oscar/Maths/Vec3.hpp>
+#include <oscar/Utils/StringName.hpp>
 
 #include <optional>
-#include <string>
 #include <utility>
 
 namespace osc
@@ -11,12 +11,12 @@ namespace osc
     // a landmark pair in the TPS document (might be midway through definition)
     struct TPSDocumentLandmarkPair final {
 
-        explicit TPSDocumentLandmarkPair(std::string id_) :
+        explicit TPSDocumentLandmarkPair(StringName id_) :
             id{std::move(id_)}
         {
         }
 
-        std::string id;
+        StringName id;
         std::optional<Vec3> maybeSourceLocation;
         std::optional<Vec3> maybeDestinationLocation;
     };

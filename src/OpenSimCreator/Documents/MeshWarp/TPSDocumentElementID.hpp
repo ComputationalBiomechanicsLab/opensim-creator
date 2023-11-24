@@ -4,10 +4,10 @@
 #include <OpenSimCreator/Documents/MeshWarp/TPSDocumentInputIdentifier.hpp>
 
 #include <oscar/Utils/HashHelpers.hpp>
+#include <oscar/Utils/StringName.hpp>
 
 #include <cstddef>
 #include <functional>
-#include <string>
 #include <utility>
 
 namespace osc
@@ -20,7 +20,7 @@ namespace osc
         TPSDocumentElementID(
             TPSDocumentInputIdentifier whichInput_,
             TPSDocumentInputElementType elementType_,
-            std::string elementID_) :
+            StringName elementID_) :
 
             whichInput{whichInput_},
             elementType{elementType_},
@@ -32,7 +32,7 @@ namespace osc
 
         TPSDocumentInputIdentifier whichInput;
         TPSDocumentInputElementType elementType;
-        std::string elementID;
+        StringName elementID;
     };
 }
 
