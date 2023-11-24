@@ -18,6 +18,7 @@
 #include <sstream>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 // TPS document helper functions
 namespace osc
@@ -196,6 +197,12 @@ namespace osc
                 }
                 return true;
             }
+        }
+        else if (id.elementType == TPSDocumentInputElementType::NonParticipatingLandmark)
+        {
+            auto const landmarkHasID = [&id](TPSDocumentNonParticipatingLandmark const& lm) { return lm.id == id.elementID; };
+            auto const numElsDeleted = std::erase_if(doc.nonParticipatingLandmarks, landmarkHasID);
+            return numElsDeleted > 0;
         }
         return false;
     }
