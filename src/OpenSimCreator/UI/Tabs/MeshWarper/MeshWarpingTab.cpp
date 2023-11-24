@@ -90,15 +90,46 @@
 #include <variant>
 #include <vector>
 
+using osc::App;
+using osc::BVH;
+using osc::CachedSceneRenderer;
 using osc::Color;
+using osc::CStringView;
+using osc::ImGuiItemHittestResult;
+using osc::Line;
+using osc::LogViewerPanel;
+using osc::MainMenuAboutTab;
+using osc::Material;
+using osc::Mesh;
+using osc::PanelManager;
+using osc::PerfPanel;
+using osc::PolarPerspectiveCamera;
+using osc::PopupManager;
+using osc::RayCollision;
+using osc::Rect;
+using osc::RedoButton;
+using osc::RenderTexture;
+using osc::SceneCache;
+using osc::SceneDecoration;
+using osc::SceneRendererParams;
+using osc::ShaderCache;
+using osc::Sphere;
+using osc::StandardPanel;
+using osc::TabHost;
+using osc::ToggleablePanelFlags;
 using osc::TPSDocumentElementID;
 using osc::TPSDocumentInputIdentifier;
 using osc::TPSDocumentInputElementType;
 using osc::TPSDocumentLandmarkPair;
 using osc::TPSDocument;
+using osc::Transform;
+using osc::UID;
+using osc::UndoButton;
+using osc::UndoRedoPanel;
 using osc::Vec2;
 using osc::Vec3;
 using osc::Vec4;
+using osc::WindowMenu;
 
 using namespace osc;
 
@@ -165,8 +196,8 @@ namespace
     struct TPSUISharedState final {
 
         TPSUISharedState(
-            osc::UID tabID_,
-            osc::ParentPtr<osc::TabHost> parent_) :
+            UID tabID_,
+            osc::ParentPtr<TabHost> parent_) :
 
             tabID{tabID_},
             tabHost{std::move(parent_)}
@@ -174,10 +205,10 @@ namespace
         }
 
         // ID of the top-level TPS3D tab
-        osc::UID tabID;
+        UID tabID;
 
         // handle to the screen that owns the TPS3D tab
-        osc::ParentPtr<osc::TabHost> tabHost;
+        osc::ParentPtr<TabHost> tabHost;
 
         // cached TPS3D algorithm result (to prevent recomputing it each frame)
         TPSResultCache meshResultCache;
@@ -192,16 +223,16 @@ namespace
         bool onlyLinkRotation = false;
 
         // shared linked camera
-        osc::PolarPerspectiveCamera linkedCameraBase = CreateCameraFocusedOn(editedDocument->getScratch().sourceMesh.getBounds());
+        PolarPerspectiveCamera linkedCameraBase = CreateCameraFocusedOn(editedDocument->getScratch().sourceMesh.getBounds());
 
         // wireframe material, used to draw scene elements in a wireframe style
-        osc::Material wireframeMaterial = osc::CreateWireframeOverlayMaterial(
-            osc::App::config(),
-            *osc::App::singleton<osc::ShaderCache>()
+        Material wireframeMaterial = osc::CreateWireframeOverlayMaterial(
+            App::config(),
+            *App::singleton<ShaderCache>()
         );
 
         // shared sphere mesh (used by rendering code)
-        osc::Mesh landmarkSphere = osc::App::singleton<osc::SceneCache>()->getSphereMesh();
+        Mesh landmarkSphere = App::singleton<SceneCache>()->getSphereMesh();
 
         // current user selection
         TPSUIUserSelection userSelection;
@@ -210,10 +241,10 @@ namespace
         std::optional<TPSUIViewportHover> currentHover;
 
         // currently active tab-wide popups
-        osc::PopupManager popupManager;
+        PopupManager popupManager;
 
         // shared mesh cache
-        std::shared_ptr<osc::SceneCache> meshCache = osc::App::singleton<osc::SceneCache>();
+        std::shared_ptr<SceneCache> meshCache = App::singleton<SceneCache>();
     };
 
     TPSDocument const& getScratch(TPSUISharedState const& state)
@@ -221,19 +252,19 @@ namespace
         return state.editedDocument->getScratch();
     }
 
-    osc::Mesh const& GetScratchMesh(TPSUISharedState& state, TPSDocumentInputIdentifier which)
+    Mesh const& GetScratchMesh(TPSUISharedState& state, TPSDocumentInputIdentifier which)
     {
         return GetMesh(getScratch(state), which);
     }
 
-    osc::BVH const& GetScratchMeshBVH(TPSUISharedState& state, TPSDocumentInputIdentifier which)
+    BVH const& GetScratchMeshBVH(TPSUISharedState& state, TPSDocumentInputIdentifier which)
     {
-        osc::Mesh const& mesh = GetScratchMesh(state, which);
+        Mesh const& mesh = GetScratchMesh(state, which);
         return state.meshCache->getBVH(mesh);
     }
 
     // returns a (potentially cached) post-TPS-warp mesh
-    osc::Mesh const& GetResultMesh(TPSUISharedState& state)
+    Mesh const& GetResultMesh(TPSUISharedState& state)
     {
         return state.meshResultCache.getWarpedMesh(state.editedDocument->getScratch());
     }
@@ -246,14 +277,14 @@ namespace
     // append decorations that are common to all panels to the given output vector
     void AppendCommonDecorations(
         TPSUISharedState const& sharedState,
-        osc::Mesh const& tpsSourceOrDestinationMesh,
+        Mesh const& tpsSourceOrDestinationMesh,
         bool wireframeMode,
-        std::function<void(osc::SceneDecoration&&)> const& out,
-        osc::Color meshColor = osc::Color::white())
+        std::function<void(SceneDecoration&&)> const& out,
+        Color meshColor = Color::white())
     {
         // draw the mesh
         {
-            osc::SceneDecoration dec{tpsSourceOrDestinationMesh};
+            SceneDecoration dec{tpsSourceOrDestinationMesh};
             dec.color = meshColor;
             out(std::move(dec));
         }
@@ -261,7 +292,7 @@ namespace
         // if requested, also draw wireframe overlays for the mesh
         if (wireframeMode)
         {
-            osc::SceneDecoration dec{tpsSourceOrDestinationMesh};
+            SceneDecoration dec{tpsSourceOrDestinationMesh};
             dec.maybeMaterial = sharedState.wireframeMaterial;
             out(std::move(dec));
         }
@@ -272,16 +303,16 @@ namespace
     }
 
     void AppendNonParticipatingLandmark(
-        osc::Mesh const& landmarkSphereMesh,
+        Mesh const& landmarkSphereMesh,
         float baseLandmarkRadius,
         Vec3 const& nonParticipatingLandmarkPos,
-        std::function<void(osc::SceneDecoration&&)> const& out)
+        std::function<void(SceneDecoration&&)> const& out)
     {
-        osc::Transform transform{};
+        Transform transform{};
         transform.scale *= 0.75f*baseLandmarkRadius;
         transform.position = nonParticipatingLandmarkPos;
 
-        out(osc::SceneDecoration{landmarkSphereMesh, transform, osc::Color::purple()});
+        out(SceneDecoration{landmarkSphereMesh, transform, Color::purple()});
     }
 }
 
@@ -446,8 +477,8 @@ namespace
 
         std::string m_Label;
         std::shared_ptr<TPSUISharedState> m_State;
-        osc::UndoButton m_UndoButton{m_State->editedDocument};
-        osc::RedoButton m_RedoButton{m_State->editedDocument};
+        UndoButton m_UndoButton{m_State->editedDocument};
+        RedoButton m_RedoButton{m_State->editedDocument};
     };
 
     // widget: bottom status bar (shows status messages, hover information, etc.)
@@ -504,7 +535,7 @@ namespace
             ImGui::SameLine();
             for (int i = 0; i < 3; ++i)
             {
-                osc::Color color = {0.5f, 0.5f, 0.5f, 1.0f};
+                Color color = {0.5f, 0.5f, 0.5f, 1.0f};
                 color[i] = 1.0f;
 
                 osc::PushStyleColor(ImGuiCol_Text, color);
@@ -562,7 +593,7 @@ namespace
 
             if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit"))
             {
-                osc::App::upd().requestQuit();
+                App::upd().requestQuit();
             }
         }
 
@@ -648,7 +679,7 @@ namespace
     public:
         explicit TPS3DMainMenu(
             std::shared_ptr<TPSUISharedState> const& tabState_,
-            std::shared_ptr<osc::PanelManager> const& panelManager_) :
+            std::shared_ptr<PanelManager> const& panelManager_) :
             m_FileMenu{tabState_},
             m_EditMenu{tabState_},
             m_WindowMenu{panelManager_}
@@ -665,8 +696,8 @@ namespace
     private:
         TPS3DFileMenu m_FileMenu;
         TPS3DEditMenu m_EditMenu;
-        osc::WindowMenu m_WindowMenu;
-        osc::MainMenuAboutTab m_AboutTab;
+        WindowMenu m_WindowMenu;
+        MainMenuAboutTab m_AboutTab;
     };
 }
 
@@ -676,9 +707,9 @@ namespace
 namespace
 {
     // generic base class for the panels shown in the TPS3D tab
-    class MeshWarpingTabPanel : public osc::StandardPanel {
+    class MeshWarpingTabPanel : public StandardPanel {
     public:
-        using osc::StandardPanel::StandardPanel;
+        using StandardPanel::StandardPanel;
 
     private:
         void implBeforeImGuiBegin() final
@@ -711,16 +742,16 @@ namespace
         void implDrawContent() final
         {
             // compute top-level UI variables (render rect, mouse pos, etc.)
-            osc::Rect const contentRect = osc::ContentRegionAvailScreenRect();
+            Rect const contentRect = osc::ContentRegionAvailScreenRect();
             Vec2 const contentRectDims = osc::Dimensions(contentRect);
             Vec2 const mousePos = ImGui::GetMousePos();
-            osc::Line const cameraRay = m_Camera.unprojectTopLeftPosToWorldRay(mousePos - contentRect.p1, osc::Dimensions(contentRect));
+            Line const cameraRay = m_Camera.unprojectTopLeftPosToWorldRay(mousePos - contentRect.p1, osc::Dimensions(contentRect));
 
             // mesh hittest: compute whether the user is hovering over the mesh (affects rendering)
-            osc::Mesh const& inputMesh = GetScratchMesh(*m_State, m_DocumentIdentifier);
-            osc::BVH const& inputMeshBVH = GetScratchMeshBVH(*m_State, m_DocumentIdentifier);
-            std::optional<osc::RayCollision> const meshCollision = m_LastTextureHittestResult.isHovered ?
-                osc::GetClosestWorldspaceRayCollision(inputMesh, inputMeshBVH, osc::Transform{}, cameraRay) :
+            Mesh const& inputMesh = GetScratchMesh(*m_State, m_DocumentIdentifier);
+            BVH const& inputMeshBVH = GetScratchMeshBVH(*m_State, m_DocumentIdentifier);
+            std::optional<RayCollision> const meshCollision = m_LastTextureHittestResult.isHovered ?
+                osc::GetClosestWorldspaceRayCollision(inputMesh, inputMeshBVH, Transform{}, cameraRay) :
                 std::nullopt;
 
             // landmark hittest: compute whether the user is hovering over a landmark
@@ -743,7 +774,7 @@ namespace
             updateCamera();
 
             // render: draw the scene into the content rect and hittest it
-            osc::RenderTexture& renderTexture = renderScene(contentRectDims, meshCollision, landmarkCollision);
+            RenderTexture& renderTexture = renderScene(contentRectDims, meshCollision, landmarkCollision);
             osc::DrawTextureAsImGuiImage(renderTexture);
             m_LastTextureHittestResult = osc::HittestLastImguiItem();
 
@@ -781,7 +812,7 @@ namespace
         }
 
         // returns the closest collision, if any, between the provided camera ray and a landmark
-        std::optional<TPSUIViewportHover> getMouseLandmarkCollisions(osc::Line const& cameraRay) const
+        std::optional<TPSUIViewportHover> getMouseLandmarkCollisions(Line const& cameraRay) const
         {
             std::optional<TPSUIViewportHover> rv;
             for (TPSDocumentLandmarkPair const& p : getScratch(*m_State).landmarkPairs)
@@ -795,7 +826,7 @@ namespace
                 }
                 // else: hittest the landmark as a sphere
 
-                std::optional<osc::RayCollision> const coll = osc::GetRayCollisionSphere(cameraRay, osc::Sphere{*maybePos, m_LandmarkRadius});
+                std::optional<RayCollision> const coll = osc::GetRayCollisionSphere(cameraRay, Sphere{*maybePos, m_LandmarkRadius});
                 if (coll)
                 {
                     if (!rv || osc::Length(rv->worldspaceLocation - cameraRay.origin) > coll->distance)
@@ -809,8 +840,8 @@ namespace
         }
 
         void handleInputAndHoverEvents(
-            osc::ImGuiItemHittestResult const& htResult,
-            std::optional<osc::RayCollision> const& meshCollision,
+            ImGuiItemHittestResult const& htResult,
+            std::optional<RayCollision> const& meshCollision,
             std::optional<TPSUIViewportHover> const& landmarkCollision)
         {
             // event: if the user left-clicks and something is hovered, select it; otherwise, add a landmark
@@ -847,7 +878,7 @@ namespace
         }
 
         // draws 2D ImGui overlays over the scene render
-        void drawOverlays(osc::Rect const& renderRect)
+        void drawOverlays(Rect const& renderRect)
         {
             ImGui::SetCursorScreenPos(renderRect.p1 + c_OverlayPadding);
 
@@ -970,37 +1001,37 @@ namespace
             // are in different scales (e.g. millimeters)
             ImGuiSliderFlags const flags = ImGuiSliderFlags_Logarithmic;
 
-            osc::CStringView const label = "landmark radius";
+            CStringView const label = "landmark radius";
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label.c_str()).x - ImGui::GetStyle().ItemInnerSpacing.x - c_OverlayPadding.x);
             ImGui::SliderFloat(label.c_str(), &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
 
         // renders this panel's 3D scene to a texture
-        osc::RenderTexture& renderScene(
+        RenderTexture& renderScene(
             Vec2 dims,
-            std::optional<osc::RayCollision> const& maybeMeshCollision,
+            std::optional<RayCollision> const& maybeMeshCollision,
             std::optional<TPSUIViewportHover> const& maybeLandmarkCollision)
         {
-            osc::SceneRendererParams const params = CalcStandardDarkSceneRenderParams(
+            SceneRendererParams const params = CalcStandardDarkSceneRenderParams(
                 m_Camera,
-                osc::App::get().getCurrentAntiAliasingLevel(),
+                App::get().getCurrentAntiAliasingLevel(),
                 dims
             );
-            std::vector<osc::SceneDecoration> const decorations = generateDecorations(maybeMeshCollision, maybeLandmarkCollision);
+            std::vector<SceneDecoration> const decorations = generateDecorations(maybeMeshCollision, maybeLandmarkCollision);
             return m_CachedRenderer.render(decorations, params);
         }
 
         // returns a fresh list of 3D decorations for this panel's 3D render
-        std::vector<osc::SceneDecoration> generateDecorations(
-            std::optional<osc::RayCollision> const& maybeMeshCollision,
+        std::vector<SceneDecoration> generateDecorations(
+            std::optional<RayCollision> const& maybeMeshCollision,
             std::optional<TPSUIViewportHover> const& maybeLandmarkCollision) const
         {
             // generate in-scene 3D decorations
-            std::vector<osc::SceneDecoration> decorations;
+            std::vector<SceneDecoration> decorations;
             decorations.reserve(6 + CountNumLandmarksForInput(getScratch(*m_State), m_DocumentIdentifier));  // likely guess
 
-            std::function<void(osc::SceneDecoration&&)> const decorationConsumer =
-                [&decorations](osc::SceneDecoration&& dec) { decorations.push_back(std::move(dec)); };
+            std::function<void(SceneDecoration&&)> const decorationConsumer =
+                [&decorations](SceneDecoration&& dec) { decorations.push_back(std::move(dec)); };
 
             AppendCommonDecorations(
                 *m_State,
@@ -1021,13 +1052,13 @@ namespace
 
                 TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentInputElementType::Landmark, p.id};
 
-                osc::Transform transform{};
+                Transform transform{};
                 transform.scale *= m_LandmarkRadius;
                 transform.position = *maybeLocation;
 
-                osc::Color const& color = IsFullyPaired(p) ? c_PairedLandmarkColor : c_UnpairedLandmarkColor;
+                Color const& color = IsFullyPaired(p) ? c_PairedLandmarkColor : c_UnpairedLandmarkColor;
 
-                osc::SceneDecoration& decoration = decorations.emplace_back(m_State->landmarkSphere, transform, color);
+                SceneDecoration& decoration = decorations.emplace_back(m_State->landmarkSphere, transform, color);
 
                 if (m_State->userSelection.contains(fullID))
                 {
@@ -1035,8 +1066,8 @@ namespace
                     tmpColor += Vec4{0.25f, 0.25f, 0.25f, 0.0f};
                     tmpColor = osc::Clamp(tmpColor, 0.0f, 1.0f);
 
-                    decoration.color = osc::Color{tmpColor};
-                    decoration.flags = osc::SceneDecorationFlags::IsSelected;
+                    decoration.color = Color{tmpColor};
+                    decoration.flags = SceneDecorationFlags::IsSelected;
                 }
                 else if (m_State->currentHover && m_State->currentHover->maybeSceneElementID == fullID)
                 {
@@ -1044,8 +1075,8 @@ namespace
                     tmpColor += Vec4{0.15f, 0.15f, 0.15f, 0.0f};
                     tmpColor = osc::Clamp(tmpColor, 0.0f, 1.0f);
 
-                    decoration.color = osc::Color{tmpColor};
-                    decoration.flags = osc::SceneDecorationFlags::IsHovered;
+                    decoration.color = Color{tmpColor};
+                    decoration.flags = SceneDecorationFlags::IsHovered;
                 }
             }
 
@@ -1066,11 +1097,11 @@ namespace
             // if applicable, show mouse-to-mesh collision as faded landmark as a placement hint for user
             if (maybeMeshCollision && !maybeLandmarkCollision)
             {
-                osc::Transform transform{};
+                Transform transform{};
                 transform.scale *= m_LandmarkRadius;
                 transform.position = maybeMeshCollision->position;
 
-                osc::Color color = c_UnpairedLandmarkColor;
+                Color color = c_UnpairedLandmarkColor;
                 color.a *= 0.25f;
 
                 decorations.emplace_back(m_State->landmarkSphere, transform, color);
@@ -1081,14 +1112,14 @@ namespace
 
         std::shared_ptr<TPSUISharedState> m_State;
         TPSDocumentInputIdentifier m_DocumentIdentifier;
-        osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(GetScratchMesh(*m_State, m_DocumentIdentifier).getBounds());
-        osc::CachedSceneRenderer m_CachedRenderer
+        PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(GetScratchMesh(*m_State, m_DocumentIdentifier).getBounds());
+        CachedSceneRenderer m_CachedRenderer
         {
-            osc::App::config(),
-            *osc::App::singleton<osc::SceneCache>(),
-            *osc::App::singleton<osc::ShaderCache>(),
+            App::config(),
+            *App::singleton<SceneCache>(),
+            *App::singleton<ShaderCache>(),
         };
-        osc::ImGuiItemHittestResult m_LastTextureHittestResult;
+        ImGuiItemHittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;
         float m_LandmarkRadius = 0.05f;
     };
@@ -1116,7 +1147,7 @@ namespace
             updateCamera();
 
             // render it via ImGui and hittest it
-            osc::RenderTexture& renderTexture = renderScene(dims);
+            RenderTexture& renderTexture = renderScene(dims);
             osc::DrawTextureAsImGuiImage(renderTexture);
             m_LastTextureHittestResult = osc::HittestLastImguiItem();
 
@@ -1150,7 +1181,7 @@ namespace
         }
 
         // draw ImGui overlays over a result panel
-        void drawOverlays(osc::Rect const& renderRect)
+        void drawOverlays(Rect const& renderRect)
         {
             // ImGui: set cursor to draw over the top-right of the render texture (with padding)
             ImGui::SetCursorScreenPos(renderRect.p1 + m_OverlayPadding);
@@ -1254,7 +1285,7 @@ namespace
             // are in different scales (e.g. millimeters)
             ImGuiSliderFlags const flags = ImGuiSliderFlags_Logarithmic;
 
-            osc::CStringView const label = "landmark radius";
+            CStringView const label = "landmark radius";
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label.c_str()).x - ImGui::GetStyle().ItemInnerSpacing.x - c_OverlayPadding.x);
             ImGui::SliderFloat(label.c_str(), &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
@@ -1263,7 +1294,7 @@ namespace
         {
             ImGui::SetCursorPosX(m_CursorXAtExportButton);  // align with "export" button in row above
 
-            osc::CStringView const label = "blending factor  ";  // deliberate trailing spaces (for alignment with "landmark radius")
+            CStringView const label = "blending factor  ";  // deliberate trailing spaces (for alignment with "landmark radius")
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label.c_str()).x - ImGui::GetStyle().ItemInnerSpacing.x - m_OverlayPadding.x);
 
             float factor = getScratch(*m_State).blendingFactor;
@@ -1278,11 +1309,11 @@ namespace
         }
 
         // returns 3D decorations for the given result panel
-        std::vector<osc::SceneDecoration> generateDecorations() const
+        std::vector<SceneDecoration> generateDecorations() const
         {
-            std::vector<osc::SceneDecoration> decorations;
-            std::function<void(osc::SceneDecoration&&)> const decorationConsumer =
-                [&decorations](osc::SceneDecoration&& dec) { decorations.push_back(std::move(dec)); };
+            std::vector<SceneDecoration> decorations;
+            std::function<void(SceneDecoration&&)> const decorationConsumer =
+                [&decorations](SceneDecoration&& dec) { decorations.push_back(std::move(dec)); };
 
             AppendCommonDecorations(
                 *m_State,
@@ -1293,7 +1324,7 @@ namespace
 
             if (m_ShowDestinationMesh)
             {
-                osc::SceneDecoration& dec = decorations.emplace_back(getScratch(*m_State).destinationMesh);
+                SceneDecoration& dec = decorations.emplace_back(getScratch(*m_State).destinationMesh);
                 dec.color = {1.0f, 0.0f, 0.0f, 0.5f};
             }
 
@@ -1312,26 +1343,26 @@ namespace
         }
 
         // renders a panel to a texture via its renderer and returns a reference to the rendered texture
-        osc::RenderTexture& renderScene(Vec2 dims)
+        RenderTexture& renderScene(Vec2 dims)
         {
-            std::vector<osc::SceneDecoration> const decorations = generateDecorations();
-            osc::SceneRendererParams const params = CalcStandardDarkSceneRenderParams(
+            std::vector<SceneDecoration> const decorations = generateDecorations();
+            SceneRendererParams const params = CalcStandardDarkSceneRenderParams(
                 m_Camera,
-                osc::App::get().getCurrentAntiAliasingLevel(),
+                App::get().getCurrentAntiAliasingLevel(),
                 dims
             );
             return m_CachedRenderer.render(decorations, params);
         }
 
         std::shared_ptr<TPSUISharedState> m_State;
-        osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(GetResultMesh(*m_State).getBounds());
-        osc::CachedSceneRenderer m_CachedRenderer
+        PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(GetResultMesh(*m_State).getBounds());
+        CachedSceneRenderer m_CachedRenderer
         {
-            osc::App::config(),
-            *osc::App::singleton<osc::SceneCache>(),
-            *osc::App::singleton<osc::ShaderCache>(),
+            App::config(),
+            *App::singleton<SceneCache>(),
+            *App::singleton<ShaderCache>(),
         };
-        osc::ImGuiItemHittestResult m_LastTextureHittestResult;
+        ImGuiItemHittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;
         bool m_ShowDestinationMesh = false;
         Vec2 m_OverlayPadding = {10.0f, 10.0f};
@@ -1340,7 +1371,7 @@ namespace
     };
 
     // pushes all available panels the TPS3D tab can render into the out param
-    void PushBackAvailablePanels(std::shared_ptr<TPSUISharedState> const& state, osc::PanelManager& out)
+    void PushBackAvailablePanels(std::shared_ptr<TPSUISharedState> const& state, PanelManager& out)
     {
         out.registerToggleablePanel(
             "Source Mesh",
@@ -1359,26 +1390,26 @@ namespace
 
         out.registerToggleablePanel(
             "History",
-            [state](std::string_view panelName) { return std::make_shared<osc::UndoRedoPanel>(panelName, state->editedDocument); },
-            osc::ToggleablePanelFlags::Default - osc::ToggleablePanelFlags::IsEnabledByDefault
+            [state](std::string_view panelName) { return std::make_shared<UndoRedoPanel>(panelName, state->editedDocument); },
+            ToggleablePanelFlags::Default - ToggleablePanelFlags::IsEnabledByDefault
         );
 
         out.registerToggleablePanel(
             "Log",
-            [](std::string_view panelName) { return std::make_shared<osc::LogViewerPanel>(panelName); },
-            osc::ToggleablePanelFlags::Default - osc::ToggleablePanelFlags::IsEnabledByDefault
+            [](std::string_view panelName) { return std::make_shared<LogViewerPanel>(panelName); },
+            ToggleablePanelFlags::Default - ToggleablePanelFlags::IsEnabledByDefault
         );
 
         out.registerToggleablePanel(
             "Performance",
-            [](std::string_view panelName) { return std::make_shared<osc::PerfPanel>(panelName); },
-            osc::ToggleablePanelFlags::Default - osc::ToggleablePanelFlags::IsEnabledByDefault
+            [](std::string_view panelName) { return std::make_shared<PerfPanel>(panelName); },
+            ToggleablePanelFlags::Default - ToggleablePanelFlags::IsEnabledByDefault
         );
     }
 }
 
 // top-level tab implementation
-class osc::MeshWarpingTab::Impl final {
+class MeshWarpingTab::Impl final {
 public:
 
     explicit Impl(ParentPtr<TabHost> const& parent_) : m_Parent{parent_}
@@ -1487,7 +1518,7 @@ private:
 
 // public API (PIMPL)
 
-osc::CStringView osc::MeshWarpingTab::id()
+CStringView osc::MeshWarpingTab::id()
 {
     return "OpenSim/Warping";
 }
