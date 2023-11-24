@@ -145,14 +145,14 @@ namespace
 namespace
 {
     // a mouse hovertest result
-    struct TPSUIViewportHover final {
+    struct MeshWarpingTabHover final {
 
-        explicit TPSUIViewportHover(Vec3 const& worldspaceLocation_) :
+        explicit MeshWarpingTabHover(Vec3 const& worldspaceLocation_) :
             worldspaceLocation{worldspaceLocation_}
         {
         }
 
-        TPSUIViewportHover(
+        MeshWarpingTabHover(
             TPSDocumentElementID sceneElementID_,
             Vec3 const& worldspaceLocation_) :
 
@@ -166,7 +166,7 @@ namespace
     };
 
     // the user's current selection
-    struct TPSUIUserSelection final {
+    struct MeshWaringTabUserSelection final {
 
         void clear()
         {
@@ -193,9 +193,9 @@ namespace
     };
 
     // top-level UI state that is shared by all UI panels
-    struct TPSUISharedState final {
+    struct MeshWarpingTabSharedState final {
 
-        TPSUISharedState(
+        MeshWarpingTabSharedState(
             UID tabID_,
             osc::ParentPtr<TabHost> parent_) :
 
@@ -235,10 +235,10 @@ namespace
         Mesh landmarkSphere = App::singleton<SceneCache>()->getSphereMesh();
 
         // current user selection
-        TPSUIUserSelection userSelection;
+        MeshWaringTabUserSelection userSelection;
 
         // current user hover: reset per-frame
-        std::optional<TPSUIViewportHover> currentHover;
+        std::optional<MeshWarpingTabHover> currentHover;
 
         // currently active tab-wide popups
         PopupManager popupManager;
@@ -247,36 +247,36 @@ namespace
         std::shared_ptr<SceneCache> meshCache = App::singleton<SceneCache>();
     };
 
-    TPSDocument const& getScratch(TPSUISharedState const& state)
+    TPSDocument const& getScratch(MeshWarpingTabSharedState const& state)
     {
         return state.editedDocument->getScratch();
     }
 
-    Mesh const& GetScratchMesh(TPSUISharedState& state, TPSDocumentInputIdentifier which)
+    Mesh const& GetScratchMesh(MeshWarpingTabSharedState& state, TPSDocumentInputIdentifier which)
     {
         return GetMesh(getScratch(state), which);
     }
 
-    BVH const& GetScratchMeshBVH(TPSUISharedState& state, TPSDocumentInputIdentifier which)
+    BVH const& GetScratchMeshBVH(MeshWarpingTabSharedState& state, TPSDocumentInputIdentifier which)
     {
         Mesh const& mesh = GetScratchMesh(state, which);
         return state.meshCache->getBVH(mesh);
     }
 
     // returns a (potentially cached) post-TPS-warp mesh
-    Mesh const& GetResultMesh(TPSUISharedState& state)
+    Mesh const& GetResultMesh(MeshWarpingTabSharedState& state)
     {
         return state.meshResultCache.getWarpedMesh(state.editedDocument->getScratch());
     }
 
-    std::span<Vec3 const> GetResultNonParticipatingLandmarks(TPSUISharedState& state)
+    std::span<Vec3 const> GetResultNonParticipatingLandmarks(MeshWarpingTabSharedState& state)
     {
         return state.meshResultCache.getWarpedNonParticipatingLandmarks(state.editedDocument->getScratch());
     }
 
     // append decorations that are common to all panels to the given output vector
     void AppendCommonDecorations(
-        TPSUISharedState const& sharedState,
+        MeshWarpingTabSharedState const& sharedState,
         Mesh const& tpsSourceOrDestinationMesh,
         bool wireframeMode,
         std::function<void(SceneDecoration&&)> const& out,
@@ -321,11 +321,11 @@ namespace
 namespace
 {
     // the top toolbar (contains icons for new, save, open, undo, redo, etc.)
-    class TPS3DToolbar final {
+    class MeshWarpingTabToolbar final {
     public:
-        TPS3DToolbar(
+        MeshWarpingTabToolbar(
             std::string_view label,
-            std::shared_ptr<TPSUISharedState> tabState_) :
+            std::shared_ptr<MeshWarpingTabSharedState> tabState_) :
 
             m_Label{label},
             m_State{std::move(tabState_)}
@@ -476,17 +476,17 @@ namespace
         }
 
         std::string m_Label;
-        std::shared_ptr<TPSUISharedState> m_State;
+        std::shared_ptr<MeshWarpingTabSharedState> m_State;
         UndoButton m_UndoButton{m_State->editedDocument};
         RedoButton m_RedoButton{m_State->editedDocument};
     };
 
     // widget: bottom status bar (shows status messages, hover information, etc.)
-    class TPS3DStatusBar final {
+    class MeshWarpingTabStatusBar final {
     public:
-        TPS3DStatusBar(
+        MeshWarpingTabStatusBar(
             std::string_view label,
-            std::shared_ptr<TPSUISharedState> tabState_) :
+            std::shared_ptr<MeshWarpingTabSharedState> tabState_) :
 
             m_Label{label},
             m_State{std::move(tabState_)}
@@ -515,7 +515,7 @@ namespace
             }
         }
 
-        void drawCurrentHoverInfo(TPSUIViewportHover const& hover)
+        void drawCurrentHoverInfo(MeshWarpingTabHover const& hover)
         {
             drawColorCodedXYZ(hover.worldspaceLocation);
             ImGui::SameLine();
@@ -547,13 +547,13 @@ namespace
         }
 
         std::string m_Label;
-        std::shared_ptr<TPSUISharedState> m_State;
+        std::shared_ptr<MeshWarpingTabSharedState> m_State;
     };
 
     // widget: the 'file' menu (a sub menu of the main menu)
-    class TPS3DFileMenu final {
+    class MeshWarpingTabFileMenu final {
     public:
-        explicit TPS3DFileMenu(std::shared_ptr<TPSUISharedState> tabState_) :
+        explicit MeshWarpingTabFileMenu(std::shared_ptr<MeshWarpingTabSharedState> tabState_) :
             m_State{std::move(tabState_)}
         {
         }
@@ -637,13 +637,13 @@ namespace
             }
         }
 
-        std::shared_ptr<TPSUISharedState> m_State;
+        std::shared_ptr<MeshWarpingTabSharedState> m_State;
     };
 
     // widget: the 'edit' menu (a sub menu of the main menu)
-    class TPS3DEditMenu final {
+    class MeshWarpingTabEditMenu final {
     public:
-        explicit TPS3DEditMenu(std::shared_ptr<TPSUISharedState> tabState_) :
+        explicit MeshWarpingTabEditMenu(std::shared_ptr<MeshWarpingTabSharedState> tabState_) :
             m_State{std::move(tabState_)}
         {
         }
@@ -671,14 +671,14 @@ namespace
             }
         }
 
-        std::shared_ptr<TPSUISharedState> m_State;
+        std::shared_ptr<MeshWarpingTabSharedState> m_State;
     };
 
     // widget: the main menu (contains multiple submenus: 'file', 'edit', 'about', etc.)
-    class TPS3DMainMenu final {
+    class MeshWarpingTabMainMenu final {
     public:
-        explicit TPS3DMainMenu(
-            std::shared_ptr<TPSUISharedState> const& tabState_,
+        explicit MeshWarpingTabMainMenu(
+            std::shared_ptr<MeshWarpingTabSharedState> const& tabState_,
             std::shared_ptr<PanelManager> const& panelManager_) :
             m_FileMenu{tabState_},
             m_EditMenu{tabState_},
@@ -694,8 +694,8 @@ namespace
             m_AboutTab.onDraw();
         }
     private:
-        TPS3DFileMenu m_FileMenu;
-        TPS3DEditMenu m_EditMenu;
+        MeshWarpingTabFileMenu m_FileMenu;
+        MeshWarpingTabEditMenu m_EditMenu;
         WindowMenu m_WindowMenu;
         MainMenuAboutTab m_AboutTab;
     };
@@ -723,11 +723,11 @@ namespace
     };
 
     // an "input" panel (i.e. source or destination mesh, before warping)
-    class TPS3DInputPanel final : public MeshWarpingTabPanel {
+    class MeshWarpingTabInputMeshPanel final : public MeshWarpingTabPanel {
     public:
-        TPS3DInputPanel(
+        MeshWarpingTabInputMeshPanel(
             std::string_view panelName_,
-            std::shared_ptr<TPSUISharedState> state_,
+            std::shared_ptr<MeshWarpingTabSharedState> state_,
             TPSDocumentInputIdentifier documentIdentifier_) :
 
             MeshWarpingTabPanel{panelName_, ImGuiDockNodeFlags_PassthruCentralNode},
@@ -755,7 +755,7 @@ namespace
                 std::nullopt;
 
             // landmark hittest: compute whether the user is hovering over a landmark
-            std::optional<TPSUIViewportHover> landmarkCollision = m_LastTextureHittestResult.isHovered ?
+            std::optional<MeshWarpingTabHover> landmarkCollision = m_LastTextureHittestResult.isHovered ?
                 getMouseLandmarkCollisions(cameraRay) :
                 std::nullopt;
 
@@ -812,9 +812,9 @@ namespace
         }
 
         // returns the closest collision, if any, between the provided camera ray and a landmark
-        std::optional<TPSUIViewportHover> getMouseLandmarkCollisions(Line const& cameraRay) const
+        std::optional<MeshWarpingTabHover> getMouseLandmarkCollisions(Line const& cameraRay) const
         {
-            std::optional<TPSUIViewportHover> rv;
+            std::optional<MeshWarpingTabHover> rv;
             for (TPSDocumentLandmarkPair const& p : getScratch(*m_State).landmarkPairs)
             {
                 std::optional<Vec3> const maybePos = GetLocation(p, m_DocumentIdentifier);
@@ -842,7 +842,7 @@ namespace
         void handleInputAndHoverEvents(
             ImGuiItemHittestResult const& htResult,
             std::optional<RayCollision> const& meshCollision,
-            std::optional<TPSUIViewportHover> const& landmarkCollision)
+            std::optional<MeshWarpingTabHover> const& landmarkCollision)
         {
             // event: if the user left-clicks and something is hovered, select it; otherwise, add a landmark
             if (htResult.isLeftClickReleasedWithoutDragging)
@@ -1010,7 +1010,7 @@ namespace
         RenderTexture& renderScene(
             Vec2 dims,
             std::optional<RayCollision> const& maybeMeshCollision,
-            std::optional<TPSUIViewportHover> const& maybeLandmarkCollision)
+            std::optional<MeshWarpingTabHover> const& maybeLandmarkCollision)
         {
             SceneRendererParams const params = CalcStandardDarkSceneRenderParams(
                 m_Camera,
@@ -1024,7 +1024,7 @@ namespace
         // returns a fresh list of 3D decorations for this panel's 3D render
         std::vector<SceneDecoration> generateDecorations(
             std::optional<RayCollision> const& maybeMeshCollision,
-            std::optional<TPSUIViewportHover> const& maybeLandmarkCollision) const
+            std::optional<MeshWarpingTabHover> const& maybeLandmarkCollision) const
         {
             // generate in-scene 3D decorations
             std::vector<SceneDecoration> decorations;
@@ -1110,7 +1110,7 @@ namespace
             return decorations;
         }
 
-        std::shared_ptr<TPSUISharedState> m_State;
+        std::shared_ptr<MeshWarpingTabSharedState> m_State;
         TPSDocumentInputIdentifier m_DocumentIdentifier;
         PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(GetScratchMesh(*m_State, m_DocumentIdentifier).getBounds());
         CachedSceneRenderer m_CachedRenderer
@@ -1125,12 +1125,12 @@ namespace
     };
 
     // a "result" panel (i.e. after applying a warp to the source)
-    class TPS3DResultPanel final : public MeshWarpingTabPanel {
+    class MeshWarpingTabResultMeshPanel final : public MeshWarpingTabPanel {
     public:
 
-        TPS3DResultPanel(
+        MeshWarpingTabResultMeshPanel(
             std::string_view panelName_,
-            std::shared_ptr<TPSUISharedState> state_) :
+            std::shared_ptr<MeshWarpingTabSharedState> state_) :
 
             MeshWarpingTabPanel{panelName_},
             m_State{std::move(state_)}
@@ -1354,7 +1354,7 @@ namespace
             return m_CachedRenderer.render(decorations, params);
         }
 
-        std::shared_ptr<TPSUISharedState> m_State;
+        std::shared_ptr<MeshWarpingTabSharedState> m_State;
         PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(GetResultMesh(*m_State).getBounds());
         CachedSceneRenderer m_CachedRenderer
         {
@@ -1371,21 +1371,21 @@ namespace
     };
 
     // pushes all available panels the TPS3D tab can render into the out param
-    void PushBackAvailablePanels(std::shared_ptr<TPSUISharedState> const& state, PanelManager& out)
+    void PushBackAvailablePanels(std::shared_ptr<MeshWarpingTabSharedState> const& state, PanelManager& out)
     {
         out.registerToggleablePanel(
             "Source Mesh",
-            [state](std::string_view panelName) { return std::make_shared<TPS3DInputPanel>(panelName, state, TPSDocumentInputIdentifier::Source); }
+            [state](std::string_view panelName) { return std::make_shared<MeshWarpingTabInputMeshPanel>(panelName, state, TPSDocumentInputIdentifier::Source); }
         );
 
         out.registerToggleablePanel(
             "Destination Mesh",
-            [state](std::string_view panelName) { return std::make_shared<TPS3DInputPanel>(panelName, state, TPSDocumentInputIdentifier::Destination); }
+            [state](std::string_view panelName) { return std::make_shared<MeshWarpingTabInputMeshPanel>(panelName, state, TPSDocumentInputIdentifier::Destination); }
         );
 
         out.registerToggleablePanel(
             "Result",
-            [state](std::string_view panelName) { return std::make_shared<TPS3DResultPanel>(panelName, state); }
+            [state](std::string_view panelName) { return std::make_shared<MeshWarpingTabResultMeshPanel>(panelName, state); }
         );
 
         out.registerToggleablePanel(
@@ -1504,15 +1504,15 @@ private:
     ParentPtr<TabHost> m_Parent;
 
     // top-level state that all panels can potentially access
-    std::shared_ptr<TPSUISharedState> m_SharedState = std::make_shared<TPSUISharedState>(m_TabID, m_Parent);
+    std::shared_ptr<MeshWarpingTabSharedState> m_SharedState = std::make_shared<MeshWarpingTabSharedState>(m_TabID, m_Parent);
 
     // available/active panels that the user can toggle via the `window` menu
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
 
     // not-user-toggleable widgets
-    TPS3DMainMenu m_MainMenu{m_SharedState, m_PanelManager};
-    TPS3DToolbar m_TopToolbar{"##TPS3DToolbar", m_SharedState};
-    TPS3DStatusBar m_StatusBar{"##TPS3DStatusBar", m_SharedState};
+    MeshWarpingTabMainMenu m_MainMenu{m_SharedState, m_PanelManager};
+    MeshWarpingTabToolbar m_TopToolbar{"##MeshWarpingTabToolbar", m_SharedState};
+    MeshWarpingTabStatusBar m_StatusBar{"##MeshWarpingTabStatusBar", m_SharedState};
 };
 
 
