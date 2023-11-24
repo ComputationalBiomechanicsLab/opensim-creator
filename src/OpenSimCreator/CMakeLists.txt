@@ -202,6 +202,18 @@ add_library(OpenSimCreator STATIC
     UI/Tabs/MeshImporter/Select2MeshPointsLayer.hpp
     UI/Tabs/MeshWarper/MeshWarpingTab.cpp
     UI/Tabs/MeshWarper/MeshWarpingTab.hpp
+    UI/Tabs/MeshWarper/MeshWarpingTabDecorationGenerators.hpp
+    UI/Tabs/MeshWarper/MeshWarpingTabEditMenu.hpp
+    UI/Tabs/MeshWarper/MeshWarpingTabFileMenu.hpp
+    UI/Tabs/MeshWarper/MeshWarpingTabHover.hpp
+    UI/Tabs/MeshWarper/MeshWarpingTabInputMeshPanel.hpp
+    UI/Tabs/MeshWarper/MeshWarpingTabMainMenu.hpp
+    UI/Tabs/MeshWarper/MeshWarpingTabPanel.hpp
+    UI/Tabs/MeshWarper/MeshWarpingTabResultMeshPanel.hpp
+    UI/Tabs/MeshWarper/MeshWarpingTabSharedState.hpp
+    UI/Tabs/MeshWarper/MeshWarpingTabStatusBar.hpp
+    UI/Tabs/MeshWarper/MeshWarpingTabToolbar.hpp
+    UI/Tabs/MeshWarper/MeshWarpingTabUserSelection.hpp
     UI/Tabs/FrameDefinitionTab.cpp
     UI/Tabs/FrameDefinitionTab.hpp
     UI/Tabs/LoadingTab.cpp
