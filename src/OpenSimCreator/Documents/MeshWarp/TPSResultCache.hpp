@@ -56,7 +56,7 @@ namespace osc
                 m_CachedSourceNonParticipatingLandmarks.end(),
                 [](TPSDocumentNonParticipatingLandmark const& lm, Vec3 const& pos)
                 {
-                    return lm.position == pos;
+                    return lm.location == pos;
                 }
             );
 
@@ -67,7 +67,7 @@ namespace osc
                     docLandmarks.begin(),
                     docLandmarks.end(),
                     std::back_inserter(m_CachedSourceNonParticipatingLandmarks),
-                    [](auto const& lm) { return lm.position; }
+                    [](auto const& lm) { return lm.location; }
                 );
                 return true;
             }

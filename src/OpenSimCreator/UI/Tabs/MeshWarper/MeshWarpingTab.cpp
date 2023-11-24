@@ -1057,7 +1057,7 @@ namespace
                     AppendNonParticipatingLandmark(
                         m_State->landmarkSphere,
                         m_LandmarkRadius,
-                        nonParticipatingLandmark.position,
+                        nonParticipatingLandmark.location,
                         decorationConsumer
                     );
                 }

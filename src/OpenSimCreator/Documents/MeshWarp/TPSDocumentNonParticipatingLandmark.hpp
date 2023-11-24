@@ -5,6 +5,6 @@
 namespace osc
 {
     struct TPSDocumentNonParticipatingLandmark final {
-        Vec3 position;
+        Vec3 location;
     };
 }
