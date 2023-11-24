@@ -1,8 +1,9 @@
 #include "ComponentContextMenu.hpp"
 
-#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/Registry/ComponentRegistry.hpp>
-#include <OpenSimCreator/Registry/StaticComponentRegistries.hpp>
+#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.hpp>
+#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/UI/Middleware/EditorAPI.hpp>
 #include <OpenSimCreator/UI/Widgets/BasicWidgets.hpp>
 #include <OpenSimCreator/UI/Widgets/ModelActionsMenuItems.hpp>
@@ -11,7 +12,6 @@
 #include <OpenSimCreator/UI/Widgets/Select1PFPopup.hpp>
 #include <OpenSimCreator/UI/Widgets/SelectGeometryPopup.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
-#include <OpenSimCreator/Utils/UndoableModelActions.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>

@@ -2,12 +2,92 @@ find_package(OpenSim REQUIRED CONFIG)
 
 add_library(OpenSimCreator STATIC
 
-    Bindings/SimTKDecorationGenerator.cpp
-    Bindings/SimTKDecorationGenerator.hpp
-    Bindings/SimTKMeshLoader.cpp
-    Bindings/SimTKMeshLoader.hpp
-    Bindings/SimTKHelpers.cpp
-    Bindings/SimTKHelpers.hpp
+    ComponentRegistry/ComponentRegistry.hpp
+    ComponentRegistry/ComponentRegistryBase.cpp
+    ComponentRegistry/ComponentRegistryBase.hpp
+    ComponentRegistry/ComponentRegistryEntry.hpp
+    ComponentRegistry/ComponentRegistryEntryBase.cpp
+    ComponentRegistry/ComponentRegistryEntryBase.hpp
+    ComponentRegistry/StaticComponentRegistries.cpp
+    ComponentRegistry/StaticComponentRegistries.hpp
+
+    Documents/MeshWarp/TPSDocument.hpp
+    Documents/MeshWarp/TPSDocumentElementID.hpp
+    Documents/MeshWarp/TPSDocumentInputElementType.hpp
+    Documents/MeshWarp/TPSDocumentInputIdentifier.hpp
+    Documents/MeshWarp/TPSDocumentLandmarkPair.hpp
+
+    Documents/Model/BasicModelStatePair.cpp
+    Documents/Model/BasicModelStatePair.hpp
+    Documents/Model/ModelStateCommit.cpp
+    Documents/Model/ModelStateCommit.hpp
+    Documents/Model/ModelStatePairInfo.cpp
+    Documents/Model/ModelStatePairInfo.hpp
+    Documents/Model/ObjectPropertyEdit.cpp
+    Documents/Model/ObjectPropertyEdit.hpp
+    Documents/Model/UndoableModelActions.cpp
+    Documents/Model/UndoableModelActions.hpp
+    Documents/Model/UndoableModelStatePair.cpp
+    Documents/Model/UndoableModelStatePair.hpp
+    Documents/Model/VirtualConstModelStatePair.hpp
+    Documents/Model/VirtualModelStatePair.hpp
+
+    Documents/ModelGraph/BodyEl.cpp
+    Documents/ModelGraph/BodyEl.hpp
+    Documents/ModelGraph/CommittableModelGraph.hpp
+    Documents/ModelGraph/CommittableModelGraphActions.cpp
+    Documents/ModelGraph/CommittableModelGraphActions.hpp
+    Documents/ModelGraph/CrossrefDescriptor.hpp
+    Documents/ModelGraph/CrossrefDirection.hpp
+    Documents/ModelGraph/GroundEl.cpp
+    Documents/ModelGraph/GroundEl.hpp
+    Documents/ModelGraph/ISceneElLookup.hpp
+    Documents/ModelGraph/JointEl.cpp
+    Documents/ModelGraph/JointEl.hpp
+    Documents/ModelGraph/MeshEl.cpp
+    Documents/ModelGraph/MeshEl.hpp
+    Documents/ModelGraph/ModelCreationFlags.hpp
+    Documents/ModelGraph/ModelGraph.cpp
+    Documents/ModelGraph/ModelGraph.hpp
+    Documents/ModelGraph/ModelGraphHelpers.cpp
+    Documents/ModelGraph/ModelGraphHelpers.hpp
+    Documents/ModelGraph/ModelGraphIDs.cpp
+    Documents/ModelGraph/ModelGraphIDs.hpp
+    Documents/ModelGraph/ModelGraphOpenSimBridge.cpp
+    Documents/ModelGraph/ModelGraphOpenSimBridge.hpp
+    Documents/ModelGraph/ModelGraphStrings.hpp
+    Documents/ModelGraph/SceneEl.cpp
+    Documents/ModelGraph/SceneEl.hpp
+    Documents/ModelGraph/SceneElClass.hpp
+    Documents/ModelGraph/SceneElCRTP.hpp
+    Documents/ModelGraph/SceneElFlags.hpp
+    Documents/ModelGraph/SceneElHelpers.cpp
+    Documents/ModelGraph/SceneElHelpers.hpp
+    Documents/ModelGraph/SceneElVariant.hpp
+    Documents/ModelGraph/StationEl.cpp
+    Documents/ModelGraph/StationEl.hpp
+
+    Documents/Simulation/ForwardDynamicSimulation.cpp
+    Documents/Simulation/ForwardDynamicSimulation.hpp
+    Documents/Simulation/ForwardDynamicSimulator.cpp
+    Documents/Simulation/ForwardDynamicSimulator.hpp
+    Documents/Simulation/ForwardDynamicSimulatorParams.cpp
+    Documents/Simulation/ForwardDynamicSimulatorParams.hpp
+    Documents/Simulation/IntegratorMethod.cpp
+    Documents/Simulation/IntegratorMethod.hpp
+    Documents/Simulation/Simulation.hpp
+    Documents/Simulation/SimulationClock.hpp
+    Documents/Simulation/SimulationModelStatePair.cpp
+    Documents/Simulation/SimulationModelStatePair.hpp
+    Documents/Simulation/SimulationReport.cpp
+    Documents/Simulation/SimulationReport.hpp
+    Documents/Simulation/SimulationStatus.cpp
+    Documents/Simulation/SimulationStatus.hpp
+    Documents/Simulation/SingleStateSimulation.cpp
+    Documents/Simulation/SingleStateSimulation.hpp
+    Documents/Simulation/StoFileSimulation.hpp
+    Documents/Simulation/StoFileSimulation.cpp
+    Documents/Simulation/VirtualSimulation.hpp
 
     Graphics/CachedModelRenderer.cpp
     Graphics/CachedModelRenderer.hpp
@@ -41,103 +121,26 @@ add_library(OpenSimCreator STATIC
     Graphics/OverlayDecorationOptionFlags.hpp
     Graphics/OverlayDecorationOptions.cpp
     Graphics/OverlayDecorationOptions.hpp
+    Graphics/SimTKDecorationGenerator.cpp
+    Graphics/SimTKDecorationGenerator.hpp
+    Graphics/SimTKMeshLoader.cpp
+    Graphics/SimTKMeshLoader.hpp
 
-    Model/BasicModelStatePair.cpp
-    Model/BasicModelStatePair.hpp
-    Model/ModelStateCommit.cpp
-    Model/ModelStateCommit.hpp
-    Model/ModelStatePairInfo.cpp
-    Model/ModelStatePairInfo.hpp
-    Model/ObjectPropertyEdit.cpp
-    Model/ObjectPropertyEdit.hpp
-    Model/UndoableModelStatePair.cpp
-    Model/UndoableModelStatePair.hpp
-    Model/VirtualConstModelStatePair.hpp
-    Model/VirtualModelStatePair.hpp
+    OutputExtractors/ComponentOutputExtractor.cpp
+    OutputExtractors/ComponentOutputExtractor.hpp
+    OutputExtractors/IntegratorOutputExtractor.cpp
+    OutputExtractors/IntegratorOutputExtractor.hpp
+    OutputExtractors/MultiBodySystemOutputExtractor.cpp
+    OutputExtractors/MultiBodySystemOutputExtractor.hpp
+    OutputExtractors/OutputExtractor.cpp
+    OutputExtractors/OutputExtractor.hpp
+    OutputExtractors/VirtualOutputExtractor.hpp
 
-    ModelGraph/BodyEl.cpp
-    ModelGraph/BodyEl.hpp
-    ModelGraph/CommittableModelGraph.hpp
-    ModelGraph/CommittableModelGraphActions.cpp
-    ModelGraph/CommittableModelGraphActions.hpp
-    ModelGraph/CrossrefDescriptor.hpp
-    ModelGraph/CrossrefDirection.hpp
-    ModelGraph/GroundEl.cpp
-    ModelGraph/GroundEl.hpp
-    ModelGraph/ISceneElLookup.hpp
-    ModelGraph/JointEl.cpp
-    ModelGraph/JointEl.hpp
-    ModelGraph/MeshEl.cpp
-    ModelGraph/MeshEl.hpp
-    ModelGraph/ModelCreationFlags.hpp
-    ModelGraph/ModelGraph.cpp
-    ModelGraph/ModelGraph.hpp
-    ModelGraph/ModelGraphHelpers.cpp
-    ModelGraph/ModelGraphHelpers.hpp
-    ModelGraph/ModelGraphIDs.cpp
-    ModelGraph/ModelGraphIDs.hpp
-    ModelGraph/ModelGraphOpenSimBridge.cpp
-    ModelGraph/ModelGraphOpenSimBridge.hpp
-    ModelGraph/ModelGraphStrings.hpp
-    ModelGraph/SceneEl.cpp
-    ModelGraph/SceneEl.hpp
-    ModelGraph/SceneElClass.hpp
-    ModelGraph/SceneElCRTP.hpp
-    ModelGraph/SceneElFlags.hpp
-    ModelGraph/SceneElHelpers.cpp
-    ModelGraph/SceneElHelpers.hpp
-    ModelGraph/SceneElVariant.hpp
-    ModelGraph/StationEl.cpp
-    ModelGraph/StationEl.hpp
-
-    Outputs/ComponentOutputExtractor.cpp
-    Outputs/ComponentOutputExtractor.hpp
-    Outputs/IntegratorOutputExtractor.cpp
-    Outputs/IntegratorOutputExtractor.hpp
-    Outputs/MultiBodySystemOutputExtractor.cpp
-    Outputs/MultiBodySystemOutputExtractor.hpp
-    Outputs/OutputExtractor.cpp
-    Outputs/OutputExtractor.hpp
-    Outputs/VirtualOutputExtractor.hpp
-
-    Platform/MainUIScreen.cpp
-    Platform/MainUIScreen.hpp
     Platform/OpenSimCreatorApp.cpp
     Platform/OpenSimCreatorApp.hpp
     Platform/RecentFile.hpp
     Platform/RecentFiles.cpp
     Platform/RecentFiles.hpp
-
-    Registry/ComponentRegistry.hpp
-    Registry/ComponentRegistryBase.cpp
-    Registry/ComponentRegistryBase.hpp
-    Registry/ComponentRegistryEntry.hpp
-    Registry/ComponentRegistryEntryBase.cpp
-    Registry/ComponentRegistryEntryBase.hpp
-    Registry/StaticComponentRegistries.cpp
-    Registry/StaticComponentRegistries.hpp
-
-    Simulation/ForwardDynamicSimulation.cpp
-    Simulation/ForwardDynamicSimulation.hpp
-    Simulation/ForwardDynamicSimulator.cpp
-    Simulation/ForwardDynamicSimulator.hpp
-    Simulation/ForwardDynamicSimulatorParams.cpp
-    Simulation/ForwardDynamicSimulatorParams.hpp
-    Simulation/IntegratorMethod.cpp
-    Simulation/IntegratorMethod.hpp
-    Simulation/Simulation.hpp
-    Simulation/SimulationClock.hpp
-    Simulation/SimulationModelStatePair.cpp
-    Simulation/SimulationModelStatePair.hpp
-    Simulation/SimulationReport.cpp
-    Simulation/SimulationReport.hpp
-    Simulation/SimulationStatus.cpp
-    Simulation/SimulationStatus.hpp
-    Simulation/SingleStateSimulation.cpp
-    Simulation/SingleStateSimulation.hpp
-    Simulation/StoFileSimulation.hpp
-    Simulation/StoFileSimulation.cpp
-    Simulation/VirtualSimulation.hpp
 
     UI/Middleware/EditorAPI.hpp
     UI/Middleware/MainUIStateAPI.hpp
@@ -192,12 +195,12 @@ add_library(OpenSimCreator STATIC
     UI/Tabs/MeshImporter/MeshLoader.cpp
     UI/Tabs/MeshImporter/MeshLoader.hpp
     UI/Tabs/MeshImporter/Select2MeshPointsLayer.hpp
+    UI/Tabs/MeshWarper/MeshWarpingTab.cpp
+    UI/Tabs/MeshWarper/MeshWarpingTab.hpp
     UI/Tabs/FrameDefinitionTab.cpp
     UI/Tabs/FrameDefinitionTab.hpp
     UI/Tabs/LoadingTab.cpp
     UI/Tabs/LoadingTab.hpp
-    UI/Tabs/MeshWarpingTab.cpp
-    UI/Tabs/MeshWarpingTab.hpp
     UI/Tabs/ModelEditorTab.cpp
     UI/Tabs/ModelEditorTab.hpp
     UI/Tabs/OpenSimCreatorTabRegistry.cpp
@@ -258,6 +261,9 @@ add_library(OpenSimCreator STATIC
     UI/Widgets/VirtualModelStatePairContextMenu.cpp
     UI/Widgets/VirtualModelStatePairContextMenu.hpp
 
+    UI/MainUIScreen.cpp
+    UI/MainUIScreen.hpp
+
     Utils/OpenSimHelpers.cpp
     Utils/OpenSimHelpers.hpp
     Utils/ParamBlock.hpp
@@ -265,10 +271,10 @@ add_library(OpenSimCreator STATIC
     Utils/ParamValue.hpp
     Utils/ShapeFitters.cpp
     Utils/ShapeFitters.hpp
+    Utils/SimTKHelpers.cpp
+    Utils/SimTKHelpers.hpp
     Utils/TPS3D.cpp
     Utils/TPS3D.hpp
-    Utils/UndoableModelActions.cpp
-    Utils/UndoableModelActions.hpp
 )
 
 # OpenSimCreatorConfig.hpp

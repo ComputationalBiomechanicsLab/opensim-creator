@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/ModelGraph/ModelGraphIDs.hpp>
+#include <OpenSimCreator/Documents/ModelGraph/ModelGraphIDs.hpp>
 
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/UID.hpp>

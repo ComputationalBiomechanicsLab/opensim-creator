@@ -10,12 +10,12 @@
 #include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.hpp>
+#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/Log.hpp>
-#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/Platform/OpenSimCreatorApp.hpp>
-#include <OpenSimCreator/Registry/ComponentRegistry.hpp>
-#include <OpenSimCreator/Registry/StaticComponentRegistries.hpp>
 
 #include <filesystem>
 #include <memory>

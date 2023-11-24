@@ -1,6 +1,6 @@
 #include "SimulationViewerPanel.hpp"
 
-#include <OpenSimCreator/Model/VirtualModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/VirtualModelStatePair.hpp>
 #include <OpenSimCreator/UI/Panels/SimulationViewerPanelParameters.hpp>
 #include <OpenSimCreator/UI/Panels/SimulationViewerRightClickEvent.hpp>
 #include <OpenSimCreator/UI/Widgets/BasicWidgets.hpp>

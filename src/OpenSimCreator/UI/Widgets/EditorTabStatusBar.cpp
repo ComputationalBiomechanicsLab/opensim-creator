@@ -1,6 +1,6 @@
 #include "EditorTabStatusBar.hpp"
 
-#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/UI/Middleware/EditorAPI.hpp>
 #include <OpenSimCreator/UI/Widgets/ComponentContextMenu.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>

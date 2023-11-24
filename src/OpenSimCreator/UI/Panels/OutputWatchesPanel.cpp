@@ -1,8 +1,8 @@
 #include "OutputWatchesPanel.hpp"
 
-#include <OpenSimCreator/Simulation/SimulationReport.hpp>
-#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/Outputs/OutputExtractor.hpp>
+#include <OpenSimCreator/Documents/Simulation/SimulationReport.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/OutputExtractors/OutputExtractor.hpp>
 #include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
 
 #include <IconsFontAwesome5.h>

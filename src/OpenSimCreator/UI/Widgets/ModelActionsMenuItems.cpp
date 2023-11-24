@@ -1,7 +1,7 @@
 #include "ModelActionsMenuItems.hpp"
 
-#include <OpenSimCreator/Registry/ComponentRegistry.hpp>
-#include <OpenSimCreator/Registry/StaticComponentRegistries.hpp>
+#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.hpp>
+#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.hpp>
 #include <OpenSimCreator/UI/Middleware/EditorAPI.hpp>
 #include <OpenSimCreator/UI/Widgets/AddBodyPopup.hpp>
 #include <OpenSimCreator/UI/Widgets/AddComponentPopup.hpp>

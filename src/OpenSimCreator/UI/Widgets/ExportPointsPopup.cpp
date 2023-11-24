@@ -1,8 +1,8 @@
 #include "ExportPointsPopup.hpp"
 
-#include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
-#include <OpenSimCreator/Model/VirtualConstModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/VirtualConstModelStatePair.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>

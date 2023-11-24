@@ -1,26 +1,26 @@
 #include "BasicWidgets.hpp"
 
-#include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
-#include <OpenSimCreator/Bindings/SimTKMeshLoader.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/VirtualModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Simulation/IntegratorMethod.hpp>
+#include <OpenSimCreator/Documents/Simulation/SimulationModelStatePair.hpp>
 #include <OpenSimCreator/Graphics/CustomRenderingOptions.hpp>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
 #include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp>
 #include <OpenSimCreator/Graphics/ModelRendererParams.hpp>
 #include <OpenSimCreator/Graphics/MuscleDecorationStyle.hpp>
 #include <OpenSimCreator/Graphics/MuscleSizingStyle.hpp>
-#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/Model/VirtualModelStatePair.hpp>
-#include <OpenSimCreator/Outputs/ComponentOutputExtractor.hpp>
-#include <OpenSimCreator/Outputs/OutputExtractor.hpp>
+#include <OpenSimCreator/Graphics/SimTKMeshLoader.hpp>
+#include <OpenSimCreator/OutputExtractors/ComponentOutputExtractor.hpp>
+#include <OpenSimCreator/OutputExtractors/OutputExtractor.hpp>
 #include <OpenSimCreator/Platform/RecentFile.hpp>
 #include <OpenSimCreator/Platform/RecentFiles.hpp>
-#include <OpenSimCreator/Simulation/IntegratorMethod.hpp>
-#include <OpenSimCreator/Simulation/SimulationModelStatePair.hpp>
 #include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/ParamBlock.hpp>
 #include <OpenSimCreator/Utils/ParamValue.hpp>
-#include <OpenSimCreator/Utils/UndoableModelActions.hpp>
+#include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 
 #include <imgui.h>
 #include <imgui_internal.h>

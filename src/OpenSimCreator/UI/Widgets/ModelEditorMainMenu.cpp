@@ -1,6 +1,7 @@
 #include "ModelEditorMainMenu.hpp"
 
-#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/Middleware/EditorAPI.hpp>
 #include <OpenSimCreator/UI/Panels/ModelMusclePlotPanel.hpp>
@@ -9,7 +10,6 @@
 #include <OpenSimCreator/UI/Widgets/ModelActionsMenuItems.hpp>
 #include <OpenSimCreator/UI/Widgets/ParamBlockEditorPopup.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
-#include <OpenSimCreator/Utils/UndoableModelActions.hpp>
 
 #include <imgui.h>
 #include <IconsFontAwesome5.h>

@@ -1,12 +1,12 @@
 #include "PerformanceAnalyzerTab.hpp"
 
-#include <OpenSimCreator/Model/BasicModelStatePair.hpp>
-#include <OpenSimCreator/Outputs/OutputExtractor.hpp>
-#include <OpenSimCreator/Simulation/ForwardDynamicSimulation.hpp>
-#include <OpenSimCreator/Simulation/ForwardDynamicSimulator.hpp>
-#include <OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp>
-#include <OpenSimCreator/Simulation/IntegratorMethod.hpp>
-#include <OpenSimCreator/Simulation/SimulationStatus.hpp>
+#include <OpenSimCreator/Documents/Model/BasicModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulation.hpp>
+#include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulator.hpp>
+#include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.hpp>
+#include <OpenSimCreator/Documents/Simulation/IntegratorMethod.hpp>
+#include <OpenSimCreator/Documents/Simulation/SimulationStatus.hpp>
+#include <OpenSimCreator/OutputExtractors/OutputExtractor.hpp>
 #include <OpenSimCreator/UI/Widgets/ParamBlockEditorPopup.hpp>
 #include <OpenSimCreator/Utils/ParamBlock.hpp>
 #include <OpenSimCreator/Utils/ParamValue.hpp>

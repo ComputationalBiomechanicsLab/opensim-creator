@@ -3,8 +3,8 @@
 #include <OpenSimCreator/UI/Tabs/Experimental/MeshHittestTab.hpp>
 #include <OpenSimCreator/UI/Tabs/Experimental/RendererGeometryShaderTab.hpp>
 #include <OpenSimCreator/UI/Tabs/Experimental/TPS2DTab.hpp>
+#include <OpenSimCreator/UI/Tabs/MeshWarper/MeshWarpingTab.hpp>
 #include <OpenSimCreator/UI/Tabs/FrameDefinitionTab.hpp>
-#include <OpenSimCreator/UI/Tabs/MeshWarpingTab.hpp>
 
 #include <oscar/UI/Tabs/TabRegistry.hpp>
 #include <oscar/Utils/ParentPtr.hpp>

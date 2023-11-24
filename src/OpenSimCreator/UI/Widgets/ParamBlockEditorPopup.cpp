@@ -1,6 +1,6 @@
 #include "ParamBlockEditorPopup.hpp"
 
-#include <OpenSimCreator/Simulation/IntegratorMethod.hpp>
+#include <OpenSimCreator/Documents/Simulation/IntegratorMethod.hpp>
 #include <OpenSimCreator/Utils/ParamBlock.hpp>
 #include <OpenSimCreator/Utils/ParamValue.hpp>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/Outputs/OutputExtractor.hpp>
+#include <OpenSimCreator/OutputExtractors/OutputExtractor.hpp>
 
 #include <filesystem>
 #include <memory>

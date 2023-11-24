@@ -1,6 +1,6 @@
 #include "ImportStationsFromCSVPopup.hpp"
 
-#include <OpenSimCreator/ModelGraph/StationEl.hpp>
+#include <OpenSimCreator/Documents/ModelGraph/StationEl.hpp>
 #include <OpenSimCreator/UI/Tabs/MeshImporter/MeshImporterSharedState.hpp>
 
 #include <oscar/Formats/CSV.hpp>

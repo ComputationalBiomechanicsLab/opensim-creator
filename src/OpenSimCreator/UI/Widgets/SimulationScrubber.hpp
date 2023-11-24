@@ -1,7 +1,7 @@
 #pragma once
 
-#include <OpenSimCreator/Simulation/SimulationClock.hpp>
-#include <OpenSimCreator/Simulation/SimulationReport.hpp>
+#include <OpenSimCreator/Documents/Simulation/SimulationClock.hpp>
+#include <OpenSimCreator/Documents/Simulation/SimulationReport.hpp>
 
 #include <memory>
 #include <optional>

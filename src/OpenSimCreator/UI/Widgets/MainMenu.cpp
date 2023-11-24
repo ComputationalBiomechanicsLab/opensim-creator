@@ -1,14 +1,14 @@
 #include "MainMenu.hpp"
 
-#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Simulation/Simulation.hpp>
+#include <OpenSimCreator/Documents/Simulation/StoFileSimulation.hpp>
 #include <OpenSimCreator/Platform/RecentFiles.hpp>
-#include <OpenSimCreator/Simulation/Simulation.hpp>
-#include <OpenSimCreator/Simulation/StoFileSimulation.hpp>
 #include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/Tabs/MeshImporter/MeshImporterTab.hpp>
 #include <OpenSimCreator/UI/Tabs/SimulatorTab.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
-#include <OpenSimCreator/Utils/UndoableModelActions.hpp>
 
 #include <imgui.h>
 #include <IconsFontAwesome5.h>

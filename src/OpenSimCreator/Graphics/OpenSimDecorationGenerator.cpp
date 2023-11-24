@@ -1,10 +1,10 @@
 #include "OpenSimDecorationGenerator.hpp"
 
-#include <OpenSimCreator/Bindings/SimTKDecorationGenerator.hpp>
-#include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/VirtualConstModelStatePair.hpp>
+#include <OpenSimCreator/Graphics/SimTKDecorationGenerator.hpp>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
-#include <OpenSimCreator/Model/VirtualConstModelStatePair.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ModelDisplayHints.h>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <OpenSimCreator/ModelGraph/MeshEl.hpp>
-#include <OpenSimCreator/ModelGraph/ModelGraph.hpp>
+#include <OpenSimCreator/Documents/ModelGraph/MeshEl.hpp>
+#include <OpenSimCreator/Documents/ModelGraph/ModelGraph.hpp>
 #include <OpenSimCreator/UI/Tabs/MeshImporter/DrawableThing.hpp>
 #include <OpenSimCreator/UI/Tabs/MeshImporter/MeshImporterHover.hpp>
 #include <OpenSimCreator/UI/Tabs/MeshImporter/MeshImporterSharedState.hpp>

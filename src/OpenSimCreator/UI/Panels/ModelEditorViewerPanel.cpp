@@ -1,7 +1,7 @@
 #include "ModelEditorViewerPanel.hpp"
 
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Graphics/CachedModelRenderer.hpp>
-#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/UI/Panels/ModelEditorViewerPanelLayer.hpp>
 #include <OpenSimCreator/UI/Panels/ModelEditorViewerPanelParameters.hpp>
 #include <OpenSimCreator/UI/Panels/ModelEditorViewerPanelRightClickEvent.hpp>

@@ -1,6 +1,6 @@
 #include "LoadingTab.hpp"
 
-#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Platform/RecentFiles.hpp>
 #include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/Tabs/ModelEditorTab.hpp>

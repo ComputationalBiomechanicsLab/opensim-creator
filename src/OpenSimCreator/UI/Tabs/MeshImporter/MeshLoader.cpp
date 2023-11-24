@@ -1,6 +1,6 @@
 #include "MeshLoader.hpp"
 
-#include <OpenSimCreator/Bindings/SimTKMeshLoader.hpp>
+#include <OpenSimCreator/Graphics/SimTKMeshLoader.hpp>
 
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>

@@ -1,6 +1,6 @@
 #include "SimulationToolbar.hpp"
 
-#include <OpenSimCreator/Simulation/Simulation.hpp>
+#include <OpenSimCreator/Documents/Simulation/Simulation.hpp>
 #include <OpenSimCreator/UI/Widgets/BasicWidgets.hpp>
 #include <OpenSimCreator/UI/Widgets/SimulationScrubber.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>

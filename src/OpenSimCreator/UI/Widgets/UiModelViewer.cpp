@@ -1,8 +1,8 @@
 #include "UiModelViewer.hpp"
 
+#include <OpenSimCreator/Documents/Model/VirtualConstModelStatePair.hpp>
 #include <OpenSimCreator/Graphics/CachedModelRenderer.hpp>
 #include <OpenSimCreator/Graphics/ModelRendererParams.hpp>
-#include <OpenSimCreator/Model/VirtualConstModelStatePair.hpp>
 #include <OpenSimCreator/UI/Widgets/BasicWidgets.hpp>
 
 #include <imgui.h>

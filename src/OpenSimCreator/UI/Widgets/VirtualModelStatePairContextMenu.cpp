@@ -1,6 +1,6 @@
 #include "VirtualModelStatePairContextMenu.hpp"
 
-#include <OpenSimCreator/Model/VirtualModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/VirtualModelStatePair.hpp>
 #include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/Widgets/BasicWidgets.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>

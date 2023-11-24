@@ -1,9 +1,9 @@
 #include "ModelSelectionGizmo.hpp"
 
-#include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
-#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
-#include <OpenSimCreator/Utils/UndoableModelActions.hpp>
+#include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 
 #include <imgui.h>
 #include <ImGuizmo.h>  // care: must be included after imgui

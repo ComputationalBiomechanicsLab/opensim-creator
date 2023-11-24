@@ -1,10 +1,10 @@
 #include "SimulationOutputPlot.hpp"
 
-#include <OpenSimCreator/Simulation/SimulationClock.hpp>
-#include <OpenSimCreator/Simulation/SimulationReport.hpp>
-#include <OpenSimCreator/Simulation/VirtualSimulation.hpp>
-#include <OpenSimCreator/Outputs/OutputExtractor.hpp>
-#include <OpenSimCreator/Outputs/VirtualOutputExtractor.hpp>
+#include <OpenSimCreator/Documents/Simulation/SimulationClock.hpp>
+#include <OpenSimCreator/Documents/Simulation/SimulationReport.hpp>
+#include <OpenSimCreator/Documents/Simulation/VirtualSimulation.hpp>
+#include <OpenSimCreator/OutputExtractors/OutputExtractor.hpp>
+#include <OpenSimCreator/OutputExtractors/VirtualOutputExtractor.hpp>
 #include <OpenSimCreator/UI/Middleware/SimulatorUIAPI.hpp>
 
 #include <imgui.h>

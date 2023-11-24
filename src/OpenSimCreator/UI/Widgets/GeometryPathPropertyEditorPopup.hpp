@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/Model/ObjectPropertyEdit.hpp>
+#include <OpenSimCreator/Documents/Model/ObjectPropertyEdit.hpp>
 
 #include <oscar/UI/Widgets/Popup.hpp>
 

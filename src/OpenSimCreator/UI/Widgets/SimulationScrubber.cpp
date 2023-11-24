@@ -1,7 +1,7 @@
 #include "SimulationScrubber.hpp"
 
-#include <OpenSimCreator/Simulation/Simulation.hpp>
-#include <OpenSimCreator/Simulation/SimulationClock.hpp>
+#include <OpenSimCreator/Documents/Simulation/Simulation.hpp>
+#include <OpenSimCreator/Documents/Simulation/SimulationClock.hpp>
 #include <OpenSimCreator/UI/Middleware/SimulatorUIAPI.hpp>
 
 #include <imgui.h>

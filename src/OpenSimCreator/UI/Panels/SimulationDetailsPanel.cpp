@@ -1,6 +1,6 @@
 #include "SimulationDetailsPanel.hpp"
 
-#include <OpenSimCreator/Simulation/Simulation.hpp>
+#include <OpenSimCreator/Documents/Simulation/Simulation.hpp>
 #include <OpenSimCreator/UI/Widgets/BasicWidgets.hpp>
 #include <OpenSimCreator/UI/Widgets/SimulationOutputPlot.hpp>
 

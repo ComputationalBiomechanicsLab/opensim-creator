@@ -1,6 +1,6 @@
 #include "MeshHittestTab.hpp"
 
-#include <OpenSimCreator/Bindings/SimTKMeshLoader.hpp>
+#include <OpenSimCreator/Graphics/SimTKMeshLoader.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>

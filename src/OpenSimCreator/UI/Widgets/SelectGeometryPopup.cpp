@@ -1,6 +1,6 @@
 #include "SelectGeometryPopup.hpp"
 
-#include <OpenSimCreator/Bindings/SimTKMeshLoader.hpp>
+#include <OpenSimCreator/Graphics/SimTKMeshLoader.hpp>
 
 #include <imgui.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
