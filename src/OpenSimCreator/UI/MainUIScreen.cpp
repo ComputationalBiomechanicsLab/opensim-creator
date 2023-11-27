@@ -3,11 +3,11 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.hpp>
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.hpp>
-#include <OpenSimCreator/UI/Middleware/MainUIStateAPI.hpp>
-#include <OpenSimCreator/UI/Tabs/MeshImporter/MeshImporterTab.hpp>
-#include <OpenSimCreator/UI/Tabs/LoadingTab.hpp>
-#include <OpenSimCreator/UI/Tabs/ModelEditorTab.hpp>
-#include <OpenSimCreator/UI/Tabs/SplashTab.hpp>
+#include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.hpp>
+#include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.hpp>
+#include <OpenSimCreator/UI/LoadingTab.hpp>
+#include <OpenSimCreator/UI/MainUIStateAPI.hpp>
+#include <OpenSimCreator/UI/SplashTab.hpp>
 #include <OpenSimCreator/Utils/ParamBlock.hpp>
 
 #include <IconsFontAwesome5.h>
