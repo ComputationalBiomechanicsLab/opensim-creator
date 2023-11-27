@@ -6,6 +6,8 @@ All notable changes to this project will be documented here. The format is based
 
 - The mesh importer now correctly recycles landmark names - even if they were previously generated
   and deleted
+- The mesh importer now has a toggleable (default: off, initially) `Navigator` panel that shows
+  the names and statuses of all landmarks in the scene (#807)
 
 
 ## [0.5.5] - 2023/11/21
