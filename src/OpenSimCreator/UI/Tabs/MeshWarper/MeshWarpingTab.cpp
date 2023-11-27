@@ -3,6 +3,7 @@
 #include <OpenSimCreator/Documents/MeshWarp/TPSDocumentInputIdentifier.hpp>
 #include <OpenSimCreator/UI/Tabs/MeshWarper/MeshWarpingTabInputMeshPanel.hpp>
 #include <OpenSimCreator/UI/Tabs/MeshWarper/MeshWarpingTabMainMenu.hpp>
+#include <OpenSimCreator/UI/Tabs/MeshWarper/MeshWarpingTabNavigatorPanel.hpp>
 #include <OpenSimCreator/UI/Tabs/MeshWarper/MeshWarpingTabResultMeshPanel.hpp>
 #include <OpenSimCreator/UI/Tabs/MeshWarper/MeshWarpingTabSharedState.hpp>
 #include <OpenSimCreator/UI/Tabs/MeshWarper/MeshWarpingTabStatusBar.hpp>
@@ -73,6 +74,15 @@ public:
             [](std::string_view panelName)
             {
                 return std::make_shared<PerfPanel>(panelName);
+            },
+            ToggleablePanelFlags::Default - ToggleablePanelFlags::IsEnabledByDefault
+        );
+
+        m_PanelManager->registerToggleablePanel(
+            "Navigator",
+            [state = m_SharedState](std::string_view panelName)
+            {
+                return std::make_shared<MeshWarpingTabNavigatorPanel>(panelName, state);
             },
             ToggleablePanelFlags::Default - ToggleablePanelFlags::IsEnabledByDefault
         );

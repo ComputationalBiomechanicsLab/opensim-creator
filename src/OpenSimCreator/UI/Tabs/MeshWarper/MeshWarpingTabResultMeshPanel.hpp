@@ -239,6 +239,7 @@ namespace osc
                     m_State->landmarkSphere,
                     m_LandmarkRadius,
                     nonParticipatingLandmarkPos,
+                    m_State->nonParticipatingLandmarkColor,
                     decorationConsumer
                 );
             }

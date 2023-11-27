@@ -46,12 +46,13 @@ namespace osc
         Mesh const& landmarkSphereMesh,
         float baseLandmarkRadius,
         Vec3 const& nonParticipatingLandmarkPos,
+        Color const& nonParticipatingLandmarkColor,
         std::function<void(SceneDecoration&&)> const& out)
     {
         Transform transform{};
         transform.scale *= 0.75f*baseLandmarkRadius;
         transform.position = nonParticipatingLandmarkPos;
 
-        out(SceneDecoration{landmarkSphereMesh, transform, Color::purple()});
+        out(SceneDecoration{landmarkSphereMesh, transform, nonParticipatingLandmarkColor});
     }
 }

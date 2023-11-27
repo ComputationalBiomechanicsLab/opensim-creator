@@ -785,6 +785,11 @@ void osc::PopID()
     ImGui::PopID();
 }
 
+ImU32 osc::ToImU32(Color const& color)
+{
+    return ImGui::ColorConvertFloat4ToU32(Vec4{color});
+}
+
 void osc::PushStyleColor(ImGuiCol index, Color const& c)
 {
     ImGui::PushStyleColor(index, {c.r, c.g, c.b, c.a});
@@ -865,6 +870,23 @@ void osc::TextCentered(CStringView s)
     float const textWidth   = ImGui::CalcTextSize(s.c_str()).x;
 
     ImGui::SetCursorPosX(0.5f * (windowWidth - textWidth));
+    ImGui::TextUnformatted(s.c_str());
+}
+
+void osc::TextDisabledAndCentered(CStringView s)
+{
+    ImGui::BeginDisabled();
+    TextCentered(s);
+    ImGui::EndDisabled();
+}
+
+void osc::TextColumnCentered(CStringView s)
+{
+    float const columnWidth = ImGui::GetColumnWidth();
+    float const columnOffset = ImGui::GetCursorPos().x;
+    float const textWidth = ImGui::CalcTextSize(s.c_str()).x;
+
+    ImGui::SetCursorPosX(columnOffset + 0.5f*(columnWidth-textWidth));
     ImGui::TextUnformatted(s.c_str());
 }
 

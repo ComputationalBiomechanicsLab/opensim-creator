@@ -208,6 +208,7 @@ add_library(OpenSimCreator STATIC
     UI/Tabs/MeshWarper/MeshWarpingTabHover.hpp
     UI/Tabs/MeshWarper/MeshWarpingTabInputMeshPanel.hpp
     UI/Tabs/MeshWarper/MeshWarpingTabMainMenu.hpp
+    UI/Tabs/MeshWarper/MeshWarpingTabNavigatorPanel.hpp
     UI/Tabs/MeshWarper/MeshWarpingTabPanel.hpp
     UI/Tabs/MeshWarper/MeshWarpingTabResultMeshPanel.hpp
     UI/Tabs/MeshWarper/MeshWarpingTabSharedState.hpp

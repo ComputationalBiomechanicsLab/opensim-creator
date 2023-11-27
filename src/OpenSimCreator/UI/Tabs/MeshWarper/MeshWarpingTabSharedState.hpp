@@ -114,5 +114,6 @@ namespace osc
         Vec2 overlayPadding = {10.0f, 10.0f};
         Color pairedLandmarkColor = Color::green();
         Color unpairedLandmarkColor = Color::red();
+        Color nonParticipatingLandmarkColor = Color::purple();
     };
 }

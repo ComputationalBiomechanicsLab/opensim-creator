@@ -413,6 +413,7 @@ namespace osc
                         m_State->landmarkSphere,
                         m_LandmarkRadius,
                         nonParticipatingLandmark.location,
+                        m_State->nonParticipatingLandmarkColor,
                         decorationConsumer
                     );
                 }

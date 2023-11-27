@@ -82,6 +82,18 @@ namespace osc
         }
     }
 
+    // returns `true` if the document contains at least one "morphing" landmarks (i.e. ignores non-participating landmarks)
+    bool ContainsLandmarks(TPSDocument const& doc)
+    {
+        return !doc.landmarkPairs.empty();
+    }
+
+    // returns `true` if the document contains at least one non-participating landmark
+    bool ContainsNonParticipatingLandmarks(TPSDocument const& doc)
+    {
+        return !doc.nonParticipatingLandmarks.empty();
+    }
+
     // returns all fully paired landmarks in `doc`
     std::vector<LandmarkPair3D> GetLandmarkPairs(TPSDocument const& doc)
     {
