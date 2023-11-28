@@ -205,7 +205,7 @@ namespace osc
             {
                 if (!closest || Length(closest->worldspaceLocation - cameraRay.origin) > collision->distance)
                 {
-                    TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentElementType::Landmark, nonPariticpatingLandmark.id};
+                    TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentElementType::NonParticipatingLandmark, nonPariticpatingLandmark.id};
                     closest.emplace(std::move(fullID), nonPariticpatingLandmark.location);
                 }
             }
@@ -297,7 +297,7 @@ namespace osc
             }
             if (m_State->currentHover && m_State->currentHover->maybeSceneElementID == landmarkID)
             {
-                decoration.color = ClampToLDR(MultiplyLuminance(decoration.color, 1.4f));
+                decoration.color = ToSRGB(ClampToLDR(MultiplyLuminance(ToLinear(decoration.color), 1.2f)));
                 decoration.flags |= SceneDecorationFlags::IsHovered;
             }
 
@@ -322,16 +322,28 @@ namespace osc
             TPSDocumentNonParticipatingLandmark const& npl,
             std::function<void(SceneDecoration&&)> const& decorationConsumer) const
         {
-            decorationConsumer(SceneDecoration
+            SceneDecoration decoration
             {
                 m_State->landmarkSphere,
                 Transform
                 {
                     .scale = Vec3{GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius},
-                    .position = npl.location,
+                    .position = npl.location
                 },
-                m_State->nonParticipatingLandmarkColor
-            });
+                m_State->nonParticipatingLandmarkColor,
+            };
+            TPSDocumentElementID const id{m_DocumentIdentifier, TPSDocumentElementType::NonParticipatingLandmark, npl.id};
+            if (m_State->userSelection.contains(id))
+            {
+                decoration.flags |= SceneDecorationFlags::IsSelected;
+            }
+            if (m_State->currentHover && m_State->currentHover->maybeSceneElementID == id)
+            {
+                decoration.color = ToSRGB(ClampToLDR(MultiplyLuminance(ToLinear(decoration.color), 1.2f)));
+                decoration.flags |= SceneDecorationFlags::IsHovered;
+            }
+
+            decorationConsumer(std::move(decoration));
         }
 
         void generateDecorationsForMouseOverMeshHover(
