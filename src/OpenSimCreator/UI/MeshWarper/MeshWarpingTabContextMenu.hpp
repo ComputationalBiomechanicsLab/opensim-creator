@@ -7,12 +7,17 @@
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.hpp>
+#include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
 
 #include <imgui.h>
+#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 
 #include <memory>
+#include <optional>
+#include <string>
 #include <string_view>
 #include <utility>
 
@@ -25,7 +30,7 @@ namespace osc
             std::shared_ptr<MeshWarpingTabSharedState> shared_,
             TPSDocumentElementID rightClickedID_) :
 
-            StandardPopup{label_, {10.0f, 10.0f}, ImGuiWindowFlags_NoMouseInputs},
+            StandardPopup{label_},
             m_Shared{std::move(shared_)},
             m_ElementID{std::move(rightClickedID_)}
         {
@@ -53,17 +58,101 @@ namespace osc
             }
         }
 
-        void drawContextMenu(TPSDocumentLandmarkPair const&)
+        void drawContextMenu(TPSDocumentLandmarkPair const& lm)
         {
-            ImGui::Text("right-clicked landmark");
+            // header
+            DrawContextMenuHeader(Ellipsis(lm.id, 15), "Landmark");
+            DrawContextMenuSeparator();
+
+            // name editor
+            if (!m_ActiveNameEdit)
+            {
+                m_ActiveNameEdit = lm.id;
+            }
+            InputString("name", *m_ActiveNameEdit);
+            if (ItemValueShouldBeSaved())
+            {
+                ActionRenameLandmark(*m_Shared->editedDocument, lm.id, *m_ActiveNameEdit);
+                m_ActiveNameEdit.reset();
+            }
+
+            if (lm.maybeSourceLocation)
+            {
+                if (!m_ActivePositionEdit)
+                {
+                    m_ActivePositionEdit = lm.maybeSourceLocation;
+                }
+                InputMetersFloat3("source", *m_ActivePositionEdit);
+                if (ItemValueShouldBeSaved())
+                {
+                    ActionSetLandmarkPosition(*m_Shared->editedDocument, lm.id, TPSDocumentInputIdentifier::Source, *m_ActivePositionEdit);
+                    m_ActivePositionEdit.reset();
+                }
+            }
+            else
+            {
+                if (ImGui::Button("add source"))
+                {
+                    ActionSetLandmarkPosition(*m_Shared->editedDocument, lm.id, TPSDocumentInputIdentifier::Source, {});
+                }
+            }
+
+            if (lm.maybeDestinationLocation)
+            {
+                if (!m_ActiveDestinationPositionEdit)
+                {
+                    m_ActiveDestinationPositionEdit = lm.maybeDestinationLocation;
+                }
+                InputMetersFloat3("destination", *m_ActiveDestinationPositionEdit);
+                if (ItemValueShouldBeSaved())
+                {
+                    ActionSetLandmarkPosition(*m_Shared->editedDocument, lm.id, TPSDocumentInputIdentifier::Source, *m_ActiveDestinationPositionEdit);
+                    m_ActivePositionEdit.reset();
+                }
+            }
+            else
+            {
+                if (ImGui::Button("add destination"))
+                {
+                    ActionSetLandmarkPosition(*m_Shared->editedDocument, lm.id, TPSDocumentInputIdentifier::Destination, {});
+                }
+            }
         }
 
-        void drawContextMenu(TPSDocumentNonParticipatingLandmark const&)
+        void drawContextMenu(TPSDocumentNonParticipatingLandmark const& npl)
         {
-            ImGui::Text("right-clicked non-participating");
+            // header
+            DrawContextMenuHeader(Ellipsis(npl.id, 15), "Non-Participating Landmark");
+            DrawContextMenuSeparator();
+
+            // name editor
+            if (!m_ActiveNameEdit)
+            {
+                m_ActiveNameEdit = npl.id;
+            }
+            InputString("name", *m_ActiveNameEdit);
+            if (ItemValueShouldBeSaved())
+            {
+                ActionRenameNonParticipatingLandmark(*m_Shared->editedDocument, npl.id, *m_ActiveNameEdit);
+                m_ActiveNameEdit.reset();
+            }
+
+            if (!m_ActivePositionEdit)
+            {
+                m_ActivePositionEdit = npl.location;
+            }
+            InputMetersFloat3("location", *m_ActivePositionEdit);
+            if (ItemValueShouldBeSaved())
+            {
+                ActionSetNonParticipatingLandmarkPosition(*m_Shared->editedDocument, npl.id, *m_ActivePositionEdit);
+                m_ActivePositionEdit.reset();
+            }
         }
 
         std::shared_ptr<MeshWarpingTabSharedState> m_Shared;
         TPSDocumentElementID m_ElementID;
+        std::optional<std::string> m_ActiveNameEdit;
+        std::optional<Vec3> m_ActivePositionEdit;
+        std::optional<Vec3> m_ActiveDestinationPositionEdit;
     };
 }

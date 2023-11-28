@@ -40,6 +40,7 @@ namespace osc
 {
     void DrawComponentHoverTooltip(OpenSim::Component const&);
     void DrawNothingRightClickedContextMenuHeader();
+    void DrawContextMenuHeader(CStringView title, CStringView subtitle);
     void DrawRightClickedComponentContextMenuHeader(OpenSim::Component const&);
     void DrawContextMenuSeparator();
     void DrawSelectOwnerMenu(VirtualModelStatePair&, OpenSim::Component const&);

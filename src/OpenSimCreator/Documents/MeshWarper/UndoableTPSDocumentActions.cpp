@@ -38,6 +38,23 @@ void osc::ActionAddLandmarkTo(
     doc.commitScratch("added landmark");
 }
 
+void osc::ActionSetLandmarkPosition(
+    UndoableTPSDocument&,
+    StringName const&,
+    TPSDocumentInputIdentifier,
+    Vec3 const&)
+{
+    // TODO
+}
+
+void osc::ActionRenameLandmark(
+    UndoableTPSDocument&,
+    StringName const&,
+    std::string_view)
+{
+    // TODO
+}
+
 // prompts the user to browse for an input mesh and assigns it to the document
 void osc::ActionBrowseForNewMesh(
     UndoableTPSDocument& doc,
@@ -335,4 +352,20 @@ void osc::ActionTrySaveWarpedNonParticipatingLandmarksToCSV(
             })
         );
     }
+}
+
+void osc::ActionSetNonParticipatingLandmarkPosition(
+    UndoableTPSDocument&,
+    StringName const&,
+    Vec3 const&)
+{
+    // TODO
+}
+
+void osc::ActionRenameNonParticipatingLandmark(
+    UndoableTPSDocument&,
+    StringName const&,
+    std::string_view)
+{
+    // TODO
 }

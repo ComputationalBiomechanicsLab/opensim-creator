@@ -301,11 +301,16 @@ void osc::DrawNothingRightClickedContextMenuHeader()
     ImGui::TextDisabled("(nothing selected)");
 }
 
+void osc::DrawContextMenuHeader(CStringView title, CStringView subtitle)
+{
+    ImGui::TextUnformatted(title.c_str());
+    ImGui::SameLine();
+    ImGui::TextDisabled("%s", subtitle.c_str());
+}
+
 void osc::DrawRightClickedComponentContextMenuHeader(OpenSim::Component const& c)
 {
-    ImGui::TextUnformatted(Ellipsis(c.getName(), 15).c_str());
-    ImGui::SameLine();
-    ImGui::TextDisabled("%s", c.getConcreteClassName().c_str());
+    DrawContextMenuHeader(Ellipsis(c.getName(), 15), c.getConcreteClassName());
 }
 
 void osc::DrawContextMenuSeparator()
