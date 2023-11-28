@@ -536,9 +536,9 @@ private:
     Camera m_Camera;
     std::optional<RenderTexture> m_InputRender;
     std::optional<RenderTexture> m_OutputRender;
-    ImU32 m_SrcSquareColor = ImGui::ColorConvertFloat4ToU32({1.0f, 0.0f, 0.0f, 1.0f});
-    ImU32 m_DestCircleColor = ImGui::ColorConvertFloat4ToU32({0.0f, 1.0f, 0.0f, 1.0f});
-    ImU32 m_ConnectionLineColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
+    ImU32 m_SrcSquareColor = ToImU32(Color::red());
+    ImU32 m_DestCircleColor = ToImU32(Color::blue());
+    ImU32 m_ConnectionLineColor = ToImU32(Color::white());
 
     // log panel (handy for debugging)
     LogViewerPanel m_LogViewerPanel{"Log"};

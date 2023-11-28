@@ -313,11 +313,6 @@ std::optional<osc::Color> osc::TryParseHtmlString(std::string_view v)
     }
 }
 
-osc::Color osc::MultiplyRGBLDR(Color const& color, float factor)
-{
-    return ClampToLDR(color * Color{factor, factor, factor, 1.0f});
-}
-
 osc::Color osc::MultiplyLuminance(Color const& c, float factor)
 {
     auto hsla = ToHSLA(c);

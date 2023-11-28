@@ -387,7 +387,7 @@ private:
         };
 
         ImDrawList* const dl = ImGui::GetForegroundDrawList();
-        ImU32 const color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
+        ImU32 const color = ToImU32(Color::black());
         std::string const text = CalcFullApplicationNameWithVersionAndBuild(App::get().getMetadata());
         dl->AddText(pos, color, text.c_str());
     }

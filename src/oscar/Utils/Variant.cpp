@@ -118,7 +118,7 @@ osc::Variant::operator osc::Color() const
         [](std::monostate const&) { return Color::black(); },
         [](bool const& v) { return v ? Color::white() : Color::black(); },
         [](Color const& v) { return v; },
-        [](float const& v) { return Color{v, v, v}; },
+        [](float const& v) { return Color{v}; },
         [](int const& v) { return v ? Color::white() : Color::black(); },
         [](std::string_view s)
         {

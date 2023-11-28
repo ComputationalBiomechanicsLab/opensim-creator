@@ -100,9 +100,23 @@ namespace osc
 
         Color() = default;
 
-        // i.e. a "solid" color (no transparency)
+        explicit constexpr Color(float v) :
+            r{v}, g{v}, b{v}
+        {
+        }
+
+        constexpr Color(float v, float alpha) :
+            r{v}, g{v}, b{v}, a{alpha}
+        {
+        }
+
         explicit constexpr Color(Vec3 const& v) :
-            r{v.x}, g{v.y}, b{v.z}, a{1.0f}
+            r{v.x}, g{v.y}, b{v.z}
+        {
+        }
+
+        constexpr Color(Vec3 const& v, float alpha) :
+            r{v.x}, g{v.y}, b{v.z}, a{alpha}
         {
         }
 
@@ -117,7 +131,7 @@ namespace osc
         }
 
         constexpr Color(float r_, float g_, float b_) :
-            r{r_}, g{g_}, b{b_}, a{1.0f}
+            r{r_}, g{g_}, b{b_}
         {
         }
 
@@ -170,6 +184,11 @@ namespace osc
                 lhs * rhs.b,
                 lhs * rhs.a,
             };
+        }
+
+        constexpr Color withAlpha(float a_)
+        {
+            return Color{r, g, b, a_};
         }
 
         float r = 1.0f;
@@ -261,10 +280,6 @@ namespace osc
     //   - etc.
     std::string ToHtmlStringRGBA(Color const&);
     std::optional<Color> TryParseHtmlString(std::string_view);
-
-    // returns a color that is the result of multiply `color`'s RGB
-    // channels by `factor` followed by clamping the result to LDR
-    Color MultiplyRGBLDR(Color const& color, float factor);
 
     // returns a color that is the result of converting the color to HSLA,
     // multiplying it's luminance (L) by `factor`, and converting it back to RGBA

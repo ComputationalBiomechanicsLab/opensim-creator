@@ -224,6 +224,7 @@ namespace osc
 
     // convert a color to ImU32 (used by ImGui's drawlist)
     ImU32 ToImU32(Color const&);
+    Color ToColor(ImU32);
 
     // push an Color as an ImGui style color var (via ImGui::PushStyleColor())
     void PushStyleColor(ImGuiCol, Color const&);

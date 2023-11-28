@@ -12,6 +12,7 @@
 #include <IconsFontAwesome5.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
@@ -274,8 +275,8 @@ private:
     {
         OSC_ASSERT(m_OutputExtractor.getOutputType() == osc::OutputType::Float);
 
-        ImU32 const currentTimeLineColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 0.0f, 0.6f});
-        ImU32 const hoverTimeLineColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 0.0f, 0.3f});
+        ImU32 const currentTimeLineColor = ToImU32(Color::yellow().withAlpha(0.6f));
+        ImU32 const hoverTimeLineColor = ToImU32(Color::yellow().withAlpha(0.3f));
 
         // collect data
         ptrdiff_t const nReports = sim.getNumReports();

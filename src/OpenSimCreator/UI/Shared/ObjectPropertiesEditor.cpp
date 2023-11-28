@@ -177,7 +177,7 @@ namespace
         Vec2 const p = ImGui::GetCursorScreenPos();
         float const h = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y + 2.0f*ImGui::GetStyle().FrameBorderSize;
         Vec2 const dims = Vec2{4.0f, h};
-        l->AddRectFilled(p, p + dims, ImGui::ColorConvertFloat4ToU32(Vec4{color}));
+        l->AddRectFilled(p, p + dims, osc::ToImU32(color));
         ImGui::SetCursorScreenPos({p.x + 4.0f, p.y});
     }
 

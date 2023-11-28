@@ -160,7 +160,7 @@ namespace osc
             Vec3 clickedWorldPos = m_MaybeFirstLocation ? *m_MaybeFirstLocation : *m_MaybeSecondLocation;
             Vec2 clickedScrPos = m_Shared->worldPosToScreenPos(clickedWorldPos);
 
-            auto color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
+            auto color = ToImU32(Color::black());
 
             ImDrawList* dl = ImGui::GetWindowDrawList();
             dl->AddCircleFilled(clickedScrPos, 5.0f, color);
@@ -183,7 +183,7 @@ namespace osc
                 return;
             }
 
-            ImU32 color = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
+            ImU32 color = ToImU32(Color::white());
             Vec2 padding{10.0f, 10.0f};
             Vec2 pos = m_Shared->get3DSceneRect().p1 + padding;
             ImGui::GetWindowDrawList()->AddText(pos, color, m_Options.header.c_str());

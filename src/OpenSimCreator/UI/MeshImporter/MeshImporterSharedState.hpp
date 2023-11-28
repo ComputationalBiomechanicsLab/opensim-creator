@@ -306,7 +306,7 @@ namespace osc
             std::unordered_set<UID> const& excludedIDs) const
         {
             ModelGraph const& mg = getModelGraph();
-            ImU32 colorU32 = ImGui::ColorConvertFloat4ToU32(Vec4{color});
+            ImU32 colorU32 = ToImU32(color);
 
             for (SceneEl const& el : mg.iter())
             {
@@ -341,7 +341,7 @@ namespace osc
         void drawConnectionLines(MeshImporterHover const& currentHover) const
         {
             ModelGraph const& mg = getModelGraph();
-            ImU32 color = ImGui::ColorConvertFloat4ToU32(Vec4{m_Colors.connectionLines});
+            ImU32 color = ToImU32(m_Colors.connectionLines);
 
             for (SceneEl const& el : mg.iter())
             {
@@ -1211,7 +1211,7 @@ namespace osc
                 sphere.groupId = groupID;
                 sphere.mesh = m_SphereMesh;
                 sphere.transform = t;
-                sphere.color = Color{coreColor.r, coreColor.g, coreColor.b, coreColor.a * alpha};
+                sphere.color = coreColor.withAlpha(coreColor.a * alpha);
                 sphere.flags = flags;
             }
 

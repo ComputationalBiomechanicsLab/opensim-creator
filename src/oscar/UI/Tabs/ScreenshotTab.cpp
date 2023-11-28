@@ -244,7 +244,7 @@ private:
                     colors.reserve(drawlist.VtxBuffer.size());
                     for (ImDrawVert const& vert : drawlist.VtxBuffer)
                     {
-                        Color const linearColor{Vec4{ImGui::ColorConvertU32ToFloat4(vert.col)}};
+                        Color const linearColor = ToColor(vert.col);
                         colors.push_back(linearColor);
                     }
                     mesh.setColors(colors);

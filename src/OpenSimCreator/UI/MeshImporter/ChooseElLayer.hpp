@@ -9,6 +9,7 @@
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterUILayer.hpp>
 
 #include <imgui.h>
+#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/EasingFunctions.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -292,7 +293,7 @@ namespace osc
                     std::swap(parentPos, childPos);
                 }
 
-                ImU32 strongColorU2 = ImGui::ColorConvertFloat4ToU32(Vec4{m_Shared->getColorConnectionLine()});
+                ImU32 strongColorU2 = ToImU32(m_Shared->getColorConnectionLine());
 
                 m_Shared->drawConnectionLine(strongColorU2, parentPos, childPos);
             }
@@ -306,7 +307,7 @@ namespace osc
                 return;
             }
 
-            ImU32 color = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
+            ImU32 color = ToImU32(Color::white());
             Vec2 padding = Vec2{10.0f, 10.0f};
             Vec2 pos = m_Shared->get3DSceneRect().p1 + padding;
             ImGui::GetWindowDrawList()->AddText(pos, color, m_Options.header.c_str());

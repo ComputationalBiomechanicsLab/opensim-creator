@@ -67,10 +67,10 @@ namespace
 
     ImU32 Brighten(ImU32 color, float factor)
     {
-        const Color srgb{ImGui::ColorConvertU32ToFloat4(color)};
+        const Color srgb = osc::ToColor(color);
         const Color brightened = factor * srgb;
         const Color clamped = osc::ClampToLDR(brightened);
-        return ImGui::ColorConvertFloat4ToU32(Vec4{clamped});
+        return osc::ToImU32(clamped);
     }
 }
 
@@ -687,7 +687,7 @@ osc::Rect osc::DrawAlignmentAxes(Mat4 const& viewMtx)
     float const fontSize = ImGui::GetFontSize();
     float const linelen = 2.0f * fontSize;
     float const circleRadius = 0.6f * fontSize;
-    ImU32 const whiteColorU32 = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
+    ImU32 const whiteColorU32 = ToImU32(Color::white());
 
     Vec2 const topLeft = ImGui::GetCursorScreenPos();
     Vec2 const bottomRight = topLeft + 2.0f*(linelen + circleRadius);
@@ -710,7 +710,7 @@ osc::Rect osc::DrawAlignmentAxes(Mat4 const& viewMtx)
 
         Color color = {0.15f, 0.15f, 0.15f, 1.0f};
         color[i] = 0.7f;
-        ImU32 const colorU32 = ImGui::ColorConvertFloat4ToU32(Vec4{color});
+        ImU32 const colorU32 = ToImU32(color);
 
         Vec2 const ts = ImGui::CalcTextSize(labels[i].c_str());
 
@@ -721,7 +721,7 @@ osc::Rect osc::DrawAlignmentAxes(Mat4 const& viewMtx)
         // also, add a faded line for symmetry
         {
             color.a *= 0.15f;
-            ImU32 const colorFadedU32 = ImGui::ColorConvertFloat4ToU32(Vec4{color});
+            ImU32 const colorFadedU32 = ToImU32(color);
             Vec2 const p2rev = origin - linelen*view;
             drawlist.AddLine(p1, p2rev, colorFadedU32, 3.0f);
 
@@ -788,6 +788,11 @@ void osc::PopID()
 ImU32 osc::ToImU32(Color const& color)
 {
     return ImGui::ColorConvertFloat4ToU32(Vec4{color});
+}
+
+osc::Color osc::ToColor(ImU32 u32color)
+{
+    return Color{Vec4{ImGui::ColorConvertU32ToFloat4(u32color)}};
 }
 
 void osc::PushStyleColor(ImGuiCol index, Color const& c)

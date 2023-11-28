@@ -1,5 +1,7 @@
 #include "GuiRuler.hpp"
 
+#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Maths/Rect.hpp>
@@ -41,11 +43,11 @@ void osc::GuiRuler::onDraw(
 
     Vec2 mouseLoc = ImGui::GetMousePos();
     ImDrawList& dl = *ImGui::GetWindowDrawList();
-    ImU32 circleMousedOverNothingColor = ImGui::ColorConvertFloat4ToU32({1.0f, 0.0f, 0.0f, 0.6f});
-    ImU32 circleColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 0.8f});
+    ImU32 circleMousedOverNothingColor = ToImU32(Color::red().withAlpha(0.6f));
+    ImU32 circleColor = ToImU32(Color::white().withAlpha(0.8f));
     ImU32 lineColor = circleColor;
-    ImU32 textBgColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
-    ImU32 textColor = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
+    ImU32 textBgColor = ToImU32(Color::white());
+    ImU32 textColor = ToImU32(Color::black());
     float circleRadius = 5.0f;
     float lineThickness = 3.0f;
 

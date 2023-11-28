@@ -57,7 +57,7 @@ namespace
         auto ar = static_cast<float>(geom.getOpacity());
         ar = ar < 0.0f ? 1.0f : ar;
 
-        return osc::Color{osc::ToVec4(rgb, ar)};
+        return osc::Color{osc::ToVec3(rgb), ar};
     }
 
     // creates a geometry-to-ground transform for the given geometry

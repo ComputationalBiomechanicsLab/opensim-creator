@@ -41,6 +41,25 @@ namespace
     constexpr float c_HLSLConversionTolerance = 0.0001f;
 }
 
+TEST(Color, DefaultConstructedIsRed)
+{
+    static_assert(Color{} == Color{1.0f, 0.0f, 0.0f});
+}
+
+TEST(Color, ConstructedWith1ArgFillsRGBWithTheArg)
+{
+    static_assert(Color{0.23f} == Color{0.23f, 0.23f, 0.23f, 1.0f});
+}
+
+TEST(Color, ConstructedWith2ArgsFillsRGBWithFirstAndAlphaWithSecond)
+{
+    static_assert(Color{0.83f, 0.4f} == Color{0.83f, 0.83f, 0.83f, 0.4f});
+}
+
+TEST(Color, ConstructedWithVec3AndAlphaRepacksCorrectly)
+{
+    static_assert(Color{Vec3{0.1f, 0.2f, 0.3f}, 0.7f} == Color{0.1f, 0.2f, 0.3f, 0.7f});
+}
 TEST(Color, CanConstructFromRGBAFloats)
 {
     Color const color{5.0f, 4.0f, 3.0f, 2.0f};
@@ -304,6 +323,11 @@ TEST(Color, CanGetYellowColor)
     ASSERT_EQ(Color::yellow(), Color(1.0f, 1.0f, 0.0f, 1.0f));
 }
 
+TEST(Color, WithAlphaWorksAsExpected)
+{
+    static_assert(Color::white().withAlpha(0.33f) == Color{1.0f, 1.0f, 1.0f, 0.33f});
+}
+
 TEST(Color, ValuePtrConstVersionReturnsAddressOfColor)
 {
     Color const color = Color::red();
@@ -416,12 +440,6 @@ TEST(Color, TryParseHtmlStringReturnsExpectedValues)
     ASSERT_EQ(osc::TryParseHtmlString(" #ff0000ff"), std::nullopt);  // caller handles whitespace
     ASSERT_EQ(osc::TryParseHtmlString("ff0000ff"), std::nullopt);  // caller must put the # prefix before the string
     ASSERT_EQ(osc::TryParseHtmlString("red"), std::nullopt);  // literal color strings (e.g. as in Unity) aren't supported (yet)
-}
-
-TEST(Color, MultiplyRGBLDRWorksAsExpected)
-{
-    ASSERT_EQ(Color(0.75f*0.25f, 0.75f*0.25f, 0.75f*0.25f, 1.0f), osc::MultiplyRGBLDR(Color(0.75f, 0.75f, 0.75f, 1.0f), 0.25f));
-    ASSERT_EQ(Color(1.0f, 1.0f, 1.0f, 1.0f), osc::MultiplyRGBLDR(Color(0.75f, 0.75f, 0.75f, 1.0f), 2.0f));
 }
 
 TEST(Color, ToHSLAWorksAsExpected)
