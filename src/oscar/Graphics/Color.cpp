@@ -144,7 +144,7 @@ osc::ColorHSLA osc::ToHSLA(Color const& c)
     auto const [min, max] = std::minmax({r, g, b});
     float const delta = max - min;
 
-    float const hue = [r, g, b, min, max, delta]()
+    float const hue = [&]()
     {
         if (delta == 0.0f)
         {
@@ -175,7 +175,7 @@ osc::ColorHSLA osc::ToHSLA(Color const& c)
 
     float const lightness = 0.5f*(min + max);
 
-    float const saturation = [min, max, lightness]()
+    float const saturation = [&]()
     {
         if (lightness == 0.0f)
         {
