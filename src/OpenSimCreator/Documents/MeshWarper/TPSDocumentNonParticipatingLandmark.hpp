@@ -1,11 +1,14 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElement.hpp>
+
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/StringName.hpp>
 
 namespace osc
 {
-    struct TPSDocumentNonParticipatingLandmark final {
+    struct TPSDocumentNonParticipatingLandmark final : public TPSDocumentElement {
+    public:
         TPSDocumentNonParticipatingLandmark(
             StringName const& id_,
             Vec3 const& location_) :
@@ -17,5 +20,11 @@ namespace osc
 
         StringName id;
         Vec3 location;
+
+    private:
+        StringName const& implGetID() const final
+        {
+            return id;
+        }
     };
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputElementType.hpp>
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementType.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.hpp>
 
 #include <oscar/Utils/HashHelpers.hpp>
@@ -19,7 +19,7 @@ namespace osc
 
         TPSDocumentElementID(
             TPSDocumentInputIdentifier whichInput_,
-            TPSDocumentInputElementType elementType_,
+            TPSDocumentElementType elementType_,
             StringName elementID_) :
 
             whichInput{whichInput_},
@@ -31,7 +31,7 @@ namespace osc
         friend bool operator==(TPSDocumentElementID const&, TPSDocumentElementID const&) = default;
 
         TPSDocumentInputIdentifier whichInput;
-        TPSDocumentInputElementType elementType;
+        TPSDocumentElementType elementType;
         StringName elementID;
     };
 }

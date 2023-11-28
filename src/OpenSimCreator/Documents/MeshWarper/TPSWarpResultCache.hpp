@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocument.hpp>
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentHelpers.hpp>
 #include <OpenSimCreator/Utils/TPS3D.hpp>
 
 #include <oscar/Graphics/Mesh.hpp>

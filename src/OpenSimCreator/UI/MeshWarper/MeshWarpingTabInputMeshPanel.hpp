@@ -154,7 +154,7 @@ namespace osc
                 {
                     if (!rv || osc::Length(rv->worldspaceLocation - cameraRay.origin) > coll->distance)
                     {
-                        TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentInputElementType::Landmark, p.id};
+                        TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentElementType::Landmark, p.id};
                         rv.emplace(std::move(fullID), *maybePos);
                     }
                 }
@@ -388,7 +388,7 @@ namespace osc
                     continue;  // no source/destination location for the landmark
                 }
 
-                TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentInputElementType::Landmark, p.id};
+                TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentElementType::Landmark, p.id};
 
                 Transform transform{};
                 transform.scale *= m_LandmarkRadius;

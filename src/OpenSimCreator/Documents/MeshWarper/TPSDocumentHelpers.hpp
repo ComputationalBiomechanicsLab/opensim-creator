@@ -1,10 +1,11 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocument.hpp>
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElement.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.hpp>
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementType.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.hpp>
-#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputElementType.hpp>
 #include <OpenSimCreator/Utils/TPS3D.hpp>
 
 #include <oscar/Graphics/Mesh.hpp>
@@ -23,6 +24,39 @@
 // TPS document helper functions
 namespace osc
 {
+    // if it exists in `doc`, returns a pointer to the identified element; otherwise, returns `nullptr`
+    TPSDocumentElement const* FindElement(TPSDocument const& doc, TPSDocumentElementID const& id)
+    {
+        static_assert(NumOptions<TPSDocumentElementType>() == 2);
+
+        if (id.elementType == TPSDocumentElementType::Landmark)
+        {
+            for (auto const& landmark : doc.landmarkPairs)
+            {
+                if (landmark.id == id.elementID)
+                {
+                    return &landmark;
+                }
+            }
+            return nullptr;
+        }
+        else if (id.elementType == TPSDocumentElementType::NonParticipatingLandmark)
+        {
+            for (auto const& npl : doc.nonParticipatingLandmarks)
+            {
+                if (npl.id == id.elementID)
+                {
+                    return &npl;
+                }
+            }
+            return nullptr;
+        }
+        else
+        {
+            return nullptr;
+        }
+    }
+
     // returns the (mutable) source/destination of the given landmark pair, if available
     std::optional<Vec3>& UpdLocation(TPSDocumentLandmarkPair& landmarkPair, TPSDocumentInputIdentifier which)
     {
@@ -190,7 +224,7 @@ namespace osc
     // returns `true` if the given element was deleted from the document
     bool DeleteElementByID(TPSDocument& doc, TPSDocumentElementID const& id)
     {
-        if (id.elementType == TPSDocumentInputElementType::Landmark)
+        if (id.elementType == TPSDocumentElementType::Landmark)
         {
             auto const pairHasID = [&id](TPSDocumentLandmarkPair const& p) { return p.id == id.elementID; };
             auto const it = std::find_if(
@@ -210,7 +244,7 @@ namespace osc
                 return true;
             }
         }
-        else if (id.elementType == TPSDocumentInputElementType::NonParticipatingLandmark)
+        else if (id.elementType == TPSDocumentElementType::NonParticipatingLandmark)
         {
             auto const landmarkHasID = [&id](TPSDocumentNonParticipatingLandmark const& lm) { return lm.id == id.elementID; };
             auto const numElsDeleted = std::erase_if(doc.nonParticipatingLandmarks, landmarkHasID);

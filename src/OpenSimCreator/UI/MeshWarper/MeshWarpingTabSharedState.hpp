@@ -3,7 +3,7 @@
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocument.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentHelpers.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.hpp>
-#include <OpenSimCreator/Documents/MeshWarper/TPSResultCache.hpp>
+#include <OpenSimCreator/Documents/MeshWarper/TPSWarpResultCache.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/UndoableTPSDocument.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabHover.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabUserSelection.hpp>

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElement.hpp>
+
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/StringName.hpp>
 
@@ -9,7 +11,7 @@
 namespace osc
 {
     // a landmark pair in the TPS document (might be midway through definition)
-    struct TPSDocumentLandmarkPair final {
+    struct TPSDocumentLandmarkPair final : public TPSDocumentElement {
 
         explicit TPSDocumentLandmarkPair(StringName id_) :
             id{std::move(id_)}
@@ -19,5 +21,11 @@ namespace osc
         StringName id;
         std::optional<Vec3> maybeSourceLocation;
         std::optional<Vec3> maybeDestinationLocation;
+
+    private:
+        StringName const& implGetID() const final
+        {
+            return id;
+        }
     };
 }
