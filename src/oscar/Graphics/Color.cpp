@@ -15,6 +15,64 @@
 #include <string_view>
 #include <utility>
 
+namespace
+{
+    float CalcNormalizedHLSAHue(
+        float r,
+        float g,
+        float b,
+        float,
+        float max,
+        float delta)
+    {
+        if (delta == 0.0f)
+        {
+            return 0.0f;
+        }
+
+        // figure out projection of color onto hue hexagon
+        float segment = 0.0f;
+        float shift = 0.0f;
+        if (max == r)
+        {
+            segment = (g - b)/delta;
+            shift = (segment < 0.0f ? 360.0f/60.0f : 0.0f);
+        }
+        else if (max == g)
+        {
+            segment = (b - r)/delta;
+            shift = 120.0f/60.0f;
+        }
+        else  // max == b
+        {
+            segment = (r - g)/delta;
+            shift = 240.0f/60.0f;
+        }
+
+        return (segment + shift)/6.0f;  // normalize
+    }
+
+    float CalcHLSASaturation(float lightness, float min, float max)
+    {
+        if (lightness == 0.0f)
+        {
+            return 0.0f;
+        }
+        else if (lightness <= 0.5f)
+        {
+            return 0.5f * (max - min)/lightness;
+        }
+        else if (lightness < 1.0f)
+        {
+            return 0.5f * (max - min)/(1.0f - lightness);
+        }
+        else  // lightness == 1.0f
+        {
+            return 0.0f;
+        }
+    }
+}
+
 std::ostream& osc::operator<<(std::ostream& o, Color const& c)
 {
     return o << "Color(r = " << c.r << ", g = " << c.g << ", b = " << c.b << ", a = " << c.a << ')';
@@ -144,56 +202,9 @@ osc::ColorHSLA osc::ToHSLA(Color const& c)
     auto const [min, max] = std::minmax({r, g, b});
     float const delta = max - min;
 
-    float const hue = [&]()
-    {
-        if (delta == 0.0f)
-        {
-            return 0.0f;
-        }
-
-        // figure out projection of color onto hue hexagon
-        float segment = 0.0f;
-        float shift = 0.0f;
-        if (max == r)
-        {
-            segment = (g - b)/delta;
-            shift = (segment < 0.0f ? 360.0f/60.0f : 0.0f);
-        }
-        else if (max == g)
-        {
-            segment = (b - r)/delta;
-            shift = 120.0f/60.0f;
-        }
-        else  // max == b
-        {
-            segment = (r - g)/delta;
-            shift = 240.0f/60.0f;
-        }
-
-        return (segment + shift)/6.0f;  // normalize
-    }();
-
+    float const hue = CalcNormalizedHLSAHue(r, g, b, min, max, delta);
     float const lightness = 0.5f*(min + max);
-
-    float const saturation = [&]()
-    {
-        if (lightness == 0.0f)
-        {
-            return 0.0f;
-        }
-        else if (lightness <= 0.5f)
-        {
-            return 0.5f * (max - min)/lightness;
-        }
-        else if (lightness < 1.0f)
-        {
-            return 0.5f * (max - min)/(1.0f - lightness);
-        }
-        else  // lightness == 1.0f
-        {
-            return 0.0f;
-        }
-    }();
+    float const saturation = CalcHLSASaturation(lightness, min, max);
 
     return {hue, saturation, lightness, a};
 }
