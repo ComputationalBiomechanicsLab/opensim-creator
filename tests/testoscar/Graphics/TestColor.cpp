@@ -1,18 +1,49 @@
 #include <oscar/Graphics/Color.hpp>
 
 #include <gtest/gtest.h>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 
+#include <array>
+#include <iostream>
 #include <type_traits>
 #include <utility>
 
+using osc::Color;
+using osc::ColorHSLA;
+using osc::Color32;
 using osc::Vec3;
 using osc::Vec4;
 
+namespace
+{
+    // these testing values were pulled out of inkscape, which is assumed to
+    // have correct RGB-to-HSL relations
+    struct KnownRGBAToHSLAConversions final {
+        Color input;
+        ColorHSLA expectedOutput;
+    };
+    constexpr auto c_RGBAToHSLACases = std::to_array<KnownRGBAToHSLAConversions>(
+    {
+         // RGBA                     // HSLA
+         // r     g     b     a      // h (degrees) s     l     a
+        {{  1.0f, 0.0f, 0.0f, 1.0f}, {  0.0f,       1.0f, 0.5f, 1.0f}},  // red
+        {{  0.0f, 1.0f, 0.0f, 1.0f}, {  120.0f,     1.0f, 0.5f, 1.0f}},  // green
+        {{  0.0f, 0.0f, 1.0f, 1.0f}, {  240.0f,     1.0f, 0.5f, 1.0f}},  // blue
+    });
+
+    std::ostream& operator<<(std::ostream& o, KnownRGBAToHSLAConversions const& tc)
+    {
+        return o << "rgba = " << tc.input << ", hsla = " << tc.expectedOutput;
+    }
+
+    constexpr float c_HLSLConversionTolerance = 0.0001f;
+}
+
 TEST(Color, CanConstructFromRGBAFloats)
 {
-    osc::Color const color{5.0f, 4.0f, 3.0f, 2.0f};
+    Color const color{5.0f, 4.0f, 3.0f, 2.0f};
     ASSERT_EQ(color.r, 5.0f);
     ASSERT_EQ(color.g, 4.0f);
     ASSERT_EQ(color.b, 3.0f);
@@ -22,12 +53,12 @@ TEST(Color, CanConstructFromRGBAFloats)
 TEST(Color, RGBAFloatConstructorIsConstexpr)
 {
     // must compile
-    [[maybe_unused]] constexpr osc::Color color{0.0f, 0.0f, 0.0f, 0.0f};
+    [[maybe_unused]] constexpr Color color{0.0f, 0.0f, 0.0f, 0.0f};
 }
 
 TEST(Color, CanConstructFromRGBFloats)
 {
-    osc::Color const color{5.0f, 4.0f, 3.0f};
+    Color const color{5.0f, 4.0f, 3.0f};
     ASSERT_EQ(color.r, 5.0f);
     ASSERT_EQ(color.g, 4.0f);
     ASSERT_EQ(color.b, 3.0f);
@@ -38,13 +69,13 @@ TEST(Color, CanConstructFromRGBFloats)
 TEST(Color, RGBFloatConstructorIsConstexpr)
 {
     // must compile
-    [[maybe_unused]] constexpr osc::Color color{0.0f, 0.0f, 0.0f};
+    [[maybe_unused]] constexpr Color color{0.0f, 0.0f, 0.0f};
 }
 
 TEST(Color, CanBeExplicitlyConstructedFromVec3)
 {
     Vec3 const v = {0.25f, 0.387f, 0.1f};
-    osc::Color const color{v};
+    Color const color{v};
 
     // ensure vec3 ctor creates a solid color with a == 1.0f
     ASSERT_EQ(color.r, v.x);
@@ -55,17 +86,17 @@ TEST(Color, CanBeExplicitlyConstructedFromVec3)
 
 TEST(Color, CanBeExplicitlyConstructedFromVec4)
 {
-    [[maybe_unused]] osc::Color const color{Vec4{0.0f, 1.0f, 0.0f, 1.0f}};
+    [[maybe_unused]] Color const color{Vec4{0.0f, 1.0f, 0.0f, 1.0f}};
 }
 
 TEST(Color, CanBeImplicitlyConvertedToVec4)
 {
-    [[maybe_unused]] constexpr Vec4 v = osc::Color{0.0f, 0.0f, 1.0f, 0.0f};
+    [[maybe_unused]] constexpr Vec4 v = Color{0.0f, 0.0f, 1.0f, 0.0f};
 }
 
 TEST(Color, BracketOpertatorOnConstColorWorksAsExpected)
 {
-    osc::Color const color = {0.32f, 0.41f, 0.78f, 0.93f};
+    Color const color = {0.32f, 0.41f, 0.78f, 0.93f};
 
     ASSERT_EQ(color[0], color.r);
     ASSERT_EQ(color[1], color.g);
@@ -76,12 +107,12 @@ TEST(Color, BracketOpertatorOnConstColorWorksAsExpected)
 TEST(Color, Vec4ConstructorIsConstexpr)
 {
     // must compile
-    [[maybe_unused]] constexpr osc::Color color{Vec4{0.0f, 1.0f, 0.0f, 1.0f}};
+    [[maybe_unused]] constexpr Color color{Vec4{0.0f, 1.0f, 0.0f, 1.0f}};
 }
 
 TEST(Color, ToVec4ExplicitlyConvertsToVec4)
 {
-    osc::Color const c = {0.75, 0.75, 0.75, 1.0f};
+    Color const c = {0.75, 0.75, 0.75, 1.0f};
     Vec4 const v = osc::ToVec4(c);
 
     ASSERT_EQ(v.x, c.r);
@@ -92,42 +123,42 @@ TEST(Color, ToVec4ExplicitlyConvertsToVec4)
 
 TEST(Color, EqualityReturnsTrueForEquivalentColors)
 {
-    osc::Color const a = {1.0f, 0.0f, 1.0f, 0.5f};
-    osc::Color const b = {1.0f, 0.0f, 1.0f, 0.5f};
+    Color const a = {1.0f, 0.0f, 1.0f, 0.5f};
+    Color const b = {1.0f, 0.0f, 1.0f, 0.5f};
 
     ASSERT_TRUE(a == b);
 }
 
 TEST(Color, EqualityReturnsFalseForInequivalentColors)
 {
-    osc::Color const a = {0.0f, 0.0f, 1.0f, 0.5f};
-    osc::Color const b = {1.0f, 0.0f, 1.0f, 0.5f};
+    Color const a = {0.0f, 0.0f, 1.0f, 0.5f};
+    Color const b = {1.0f, 0.0f, 1.0f, 0.5f};
 
     ASSERT_FALSE(a == b);
 }
 
 TEST(Color, InequalityReturnsTrueForInequivalentColors)
 {
-    osc::Color const a = {0.0f, 0.0f, 1.0f, 0.5f};
-    osc::Color const b = {1.0f, 0.0f, 1.0f, 0.5f};
+    Color const a = {0.0f, 0.0f, 1.0f, 0.5f};
+    Color const b = {1.0f, 0.0f, 1.0f, 0.5f};
 
     ASSERT_TRUE(a != b);
 }
 
 TEST(Color, InequalityReturnsFalseForEquivalentColors)
 {
-    osc::Color const a = {0.0f, 0.0f, 1.0f, 0.5f};
-    osc::Color const b = {0.0f, 0.0f, 1.0f, 0.5f};
+    Color const a = {0.0f, 0.0f, 1.0f, 0.5f};
+    Color const b = {0.0f, 0.0f, 1.0f, 0.5f};
 
     ASSERT_FALSE(a != b);
 }
 
 TEST(Color, CanMultiplyColors)
 {
-    osc::Color const a = {0.64f, 0.90f, 0.21f, 0.89f};
-    osc::Color const b = {0.12f, 0.10f, 0.23f, 0.01f};
+    Color const a = {0.64f, 0.90f, 0.21f, 0.89f};
+    Color const b = {0.12f, 0.10f, 0.23f, 0.01f};
 
-    osc::Color const rv = a * b;
+    Color const rv = a * b;
 
     ASSERT_EQ(rv.r, a.r * b.r);
     ASSERT_EQ(rv.g, a.g * b.g);
@@ -137,10 +168,10 @@ TEST(Color, CanMultiplyColors)
 
 TEST(Color, CanBeMutablyMultiplied)
 {
-    osc::Color const a = {0.64f, 0.90f, 0.21f, 0.89f};
-    osc::Color const b = {0.12f, 0.10f, 0.23f, 0.01f};
+    Color const a = {0.64f, 0.90f, 0.21f, 0.89f};
+    Color const b = {0.12f, 0.10f, 0.23f, 0.01f};
 
-    osc::Color rv = a;
+    Color rv = a;
     rv *= b;
 
     ASSERT_EQ(rv.r, a.r * b.r);
@@ -173,8 +204,8 @@ TEST(Color, ToSRGBReturnsSRGBVersionOfOneColorChannel)
 
 TEST(Color, ToLinearReturnsLinearizedVersionOfColor)
 {
-    osc::Color const sRGBColor = {0.5f, 0.5f, 0.5f, 0.5f};
-    osc::Color const linearColor = osc::ToLinear(sRGBColor);
+    Color const sRGBColor = {0.5f, 0.5f, 0.5f, 0.5f};
+    Color const linearColor = osc::ToLinear(sRGBColor);
 
     ASSERT_EQ(linearColor.r, osc::ToLinear(sRGBColor.r));
     ASSERT_EQ(linearColor.g, osc::ToLinear(sRGBColor.g));
@@ -184,8 +215,8 @@ TEST(Color, ToLinearReturnsLinearizedVersionOfColor)
 
 TEST(Color, ToSRGBReturnsColorWithGammaCurveApplied)
 {
-    osc::Color const linearColor = {0.25f, 0.25f, 0.25f, 0.6f};
-    osc::Color const sRGBColor = osc::ToSRGB(linearColor);
+    Color const linearColor = {0.25f, 0.25f, 0.25f, 0.6f};
+    Color const sRGBColor = osc::ToSRGB(linearColor);
 
     ASSERT_EQ(sRGBColor.r, osc::ToSRGB(linearColor.r));
     ASSERT_EQ(sRGBColor.g, osc::ToSRGB(linearColor.g));
@@ -195,8 +226,8 @@ TEST(Color, ToSRGBReturnsColorWithGammaCurveApplied)
 
 TEST(Color, ToLinearFollowedByToSRGBEffectivelyReuturnsOriginalColor)
 {
-    osc::Color const originalColor = {0.1f, 0.1f, 0.1f, 0.5f};
-    osc::Color const converted = osc::ToSRGB(osc::ToLinear(originalColor));
+    Color const originalColor = {0.1f, 0.1f, 0.1f, 0.5f};
+    Color const converted = osc::ToSRGB(osc::ToLinear(originalColor));
 
     constexpr float tolerance = 0.0001f;
     ASSERT_NEAR(originalColor.r, converted.r, tolerance);
@@ -207,8 +238,8 @@ TEST(Color, ToLinearFollowedByToSRGBEffectivelyReuturnsOriginalColor)
 
 TEST(Color, ToRgba32ReturnsRgba32VersionOfTheColor)
 {
-    osc::Color const color = {0.85f, 0.62f, 0.3f, 0.5f};
-    osc::Color32 const expected
+    Color const color = {0.85f, 0.62f, 0.3f, 0.5f};
+    Color32 const expected
     {
         static_cast<uint8_t>(color.r * static_cast<float>(0xff)),
         static_cast<uint8_t>(color.g * static_cast<float>(0xff)),
@@ -216,7 +247,7 @@ TEST(Color, ToRgba32ReturnsRgba32VersionOfTheColor)
         static_cast<uint8_t>(color.a * static_cast<float>(0xff)),
     };
 
-    osc::Color32 const got = osc::ToColor32(color);
+    Color32 const got = osc::ToColor32(color);
 
     ASSERT_EQ(expected.r, got.r);
     ASSERT_EQ(expected.g, got.g);
@@ -226,77 +257,77 @@ TEST(Color, ToRgba32ReturnsRgba32VersionOfTheColor)
 
 TEST(Color, ToColor32ClampsHDRValues)
 {
-    osc::Color const color = {1.5f, 0.0f, 2.0f, 1.0f};
-    osc::Color32 const expected = {0xff, 0x00, 0xff, 0xff};
+    Color const color = {1.5f, 0.0f, 2.0f, 1.0f};
+    Color32 const expected = {0xff, 0x00, 0xff, 0xff};
     ASSERT_EQ(osc::ToColor32(color), expected);
 }
 
 TEST(Color, ToColor32ClampsNegativeValues)
 {
-    osc::Color const color = {-1.0f, 0.0f, 1.0f, 1.0f};
-    osc::Color32 const expected = {0x00, 0x00, 0xff, 0xff};
+    Color const color = {-1.0f, 0.0f, 1.0f, 1.0f};
+    Color32 const expected = {0x00, 0x00, 0xff, 0xff};
     ASSERT_EQ(osc::ToColor32(color), expected);
 }
 
 TEST(Color, CanGetBlackColor)
 {
-    ASSERT_EQ(osc::Color::black(), osc::Color(0.0f, 0.0f, 0.0f, 1.0f));
+    ASSERT_EQ(Color::black(), Color(0.0f, 0.0f, 0.0f, 1.0f));
 }
 
 TEST(Color, CanGetBlueColor)
 {
-    ASSERT_EQ(osc::Color::blue(), osc::Color(0.0f, 0.0f, 1.0f, 1.0f));
+    ASSERT_EQ(Color::blue(), Color(0.0f, 0.0f, 1.0f, 1.0f));
 }
 
 TEST(Color, CanGetClearColor)
 {
-    ASSERT_EQ(osc::Color::clear(), osc::Color(0.0f, 0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(Color::clear(), Color(0.0f, 0.0f, 0.0f, 0.0f));
 }
 
 TEST(Color, CanGetGreenColor)
 {
-    ASSERT_EQ(osc::Color::green(), osc::Color(0.0f, 1.0f, 0.0f, 1.0f));
+    ASSERT_EQ(Color::green(), Color(0.0f, 1.0f, 0.0f, 1.0f));
 }
 
 TEST(Color, CanGetRedColor)
 {
-    ASSERT_EQ(osc::Color::red(), osc::Color(1.0f, 0.0f, 0.0f, 1.0f));
+    ASSERT_EQ(Color::red(), Color(1.0f, 0.0f, 0.0f, 1.0f));
 }
 
 TEST(Color, CanGetWhiteColor)
 {
-    ASSERT_EQ(osc::Color::white(), osc::Color(1.0f, 1.0f, 1.0f, 1.0f));
+    ASSERT_EQ(Color::white(), Color(1.0f, 1.0f, 1.0f, 1.0f));
 }
 
 TEST(Color, CanGetYellowColor)
 {
-    ASSERT_EQ(osc::Color::yellow(), osc::Color(1.0f, 1.0f, 0.0f, 1.0f));
+    ASSERT_EQ(Color::yellow(), Color(1.0f, 1.0f, 0.0f, 1.0f));
 }
 
 TEST(Color, ValuePtrConstVersionReturnsAddressOfColor)
 {
-    osc::Color const color = osc::Color::red();
+    Color const color = Color::red();
     ASSERT_EQ(&color.r, osc::ValuePtr(color));
 }
 
 TEST(Color, ValuePtrMutatingVersionReturnsAddressOfColor)
 {
-    osc::Color color = osc::Color::red();
+    Color color = Color::red();
     ASSERT_EQ(&color.r, osc::ValuePtr(color));
 }
 
 TEST(Color, LerpWithZeroReturnsFirstColor)
 {
-    osc::Color const a = osc::Color::red();
-    osc::Color const b = osc::Color::blue();
+    Color const a = Color::red();
+    Color const b = Color::blue();
 
     ASSERT_EQ(osc::Lerp(a, b, 0.0f), a);
 }
 
 TEST(Color, LerpWithOneReturnsSecondColor)
 {
-    osc::Color const a = osc::Color::red();
-    osc::Color const b = osc::Color::blue();
+    Color const a = Color::red();
+    Color const b = Color::blue();
 
     ASSERT_EQ(osc::Lerp(a, b, 1.0f), b);
 }
@@ -305,8 +336,8 @@ TEST(Color, LerpBelowZeroReturnsFirstColor)
 {
     // tests that `t` is appropriately clamped
 
-    osc::Color const a = osc::Color::red();
-    osc::Color const b = osc::Color::blue();
+    Color const a = Color::red();
+    Color const b = Color::blue();
 
     ASSERT_EQ(osc::Lerp(a, b, -1.0f), a);
 }
@@ -315,20 +346,20 @@ TEST(Color, LerpAboveOneReturnsSecondColor)
 {
     // tests that `t` is appropriately clamped
 
-    osc::Color const a = osc::Color::red();
-    osc::Color const b = osc::Color::blue();
+    Color const a = Color::red();
+    Color const b = Color::blue();
 
     ASSERT_EQ(osc::Lerp(a, b, 2.0f), b);
 }
 
 TEST(Color, LerpBetweenTheTwoColorsReturnsExpectedResult)
 {
-    osc::Color const a = osc::Color::red();
-    osc::Color const b = osc::Color::blue();
+    Color const a = Color::red();
+    Color const b = Color::blue();
     float const t = 0.5f;
     float const tolerance = 0.0001f;
 
-    osc::Color const rv = osc::Lerp(a, b, t);
+    Color const rv = osc::Lerp(a, b, t);
 
     for (size_t i = 0; i < 4; ++i)
     {
@@ -338,51 +369,84 @@ TEST(Color, LerpBetweenTheTwoColorsReturnsExpectedResult)
 
 TEST(Color, CanBeHashed)
 {
-    osc::Color const a = osc::Color::red();
-    osc::Color const b = osc::Color::blue();
+    Color const a = Color::red();
+    Color const b = Color::blue();
 
-    ASSERT_NE(std::hash<osc::Color>{}(a), std::hash<osc::Color>{}(b));
+    ASSERT_NE(std::hash<Color>{}(a), std::hash<Color>{}(b));
 }
 
 TEST(Color, ToHtmlStringRGBAReturnsExpectedValues)
 {
-    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color::red()), "#ff0000ff");
-    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color::green()), "#00ff00ff");
-    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color::blue()), "#0000ffff");
-    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color::black()), "#000000ff");
-    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color::clear()), "#00000000");
-    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color::white()), "#ffffffff");
-    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color::yellow()), "#ffff00ff");
-    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color::cyan()), "#00ffffff");
-    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color::magenta()), "#ff00ffff");
+    ASSERT_EQ(osc::ToHtmlStringRGBA(Color::red()), "#ff0000ff");
+    ASSERT_EQ(osc::ToHtmlStringRGBA(Color::green()), "#00ff00ff");
+    ASSERT_EQ(osc::ToHtmlStringRGBA(Color::blue()), "#0000ffff");
+    ASSERT_EQ(osc::ToHtmlStringRGBA(Color::black()), "#000000ff");
+    ASSERT_EQ(osc::ToHtmlStringRGBA(Color::clear()), "#00000000");
+    ASSERT_EQ(osc::ToHtmlStringRGBA(Color::white()), "#ffffffff");
+    ASSERT_EQ(osc::ToHtmlStringRGBA(Color::yellow()), "#ffff00ff");
+    ASSERT_EQ(osc::ToHtmlStringRGBA(Color::cyan()), "#00ffffff");
+    ASSERT_EQ(osc::ToHtmlStringRGBA(Color::magenta()), "#ff00ffff");
 
     // ... and HDR values are LDR clamped
-    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color(1.5f, 1.5f, 0.0f, 1.0f)), "#ffff00ff");
+    ASSERT_EQ(osc::ToHtmlStringRGBA(Color(1.5f, 1.5f, 0.0f, 1.0f)), "#ffff00ff");
 
     // ... and negative values are clamped
-    ASSERT_EQ(osc::ToHtmlStringRGBA(osc::Color(-1.0f, 0.0f, 0.0f, 1.0f)), "#000000ff");
+    ASSERT_EQ(osc::ToHtmlStringRGBA(Color(-1.0f, 0.0f, 0.0f, 1.0f)), "#000000ff");
 }
 
 TEST(Color, TryParseHtmlStringReturnsExpectedValues)
 {
     // when caller specifies all channels
-    ASSERT_EQ(osc::TryParseHtmlString("#ff0000ff"), osc::Color::red());
-    ASSERT_EQ(osc::TryParseHtmlString("#00ff00ff"), osc::Color::green());
-    ASSERT_EQ(osc::TryParseHtmlString("#0000ffff"), osc::Color::blue());
-    ASSERT_EQ(osc::TryParseHtmlString("#000000ff"), osc::Color::black());
-    ASSERT_EQ(osc::TryParseHtmlString("#ffff00ff"), osc::Color::yellow());
-    ASSERT_EQ(osc::TryParseHtmlString("#00000000"), osc::Color::clear());
+    ASSERT_EQ(osc::TryParseHtmlString("#ff0000ff"), Color::red());
+    ASSERT_EQ(osc::TryParseHtmlString("#00ff00ff"), Color::green());
+    ASSERT_EQ(osc::TryParseHtmlString("#0000ffff"), Color::blue());
+    ASSERT_EQ(osc::TryParseHtmlString("#000000ff"), Color::black());
+    ASSERT_EQ(osc::TryParseHtmlString("#ffff00ff"), Color::yellow());
+    ASSERT_EQ(osc::TryParseHtmlString("#00000000"), Color::clear());
 
     // no colorspace conversion occurs on intermediate values (e.g. no sRGB-to-linear)
-    ASSERT_EQ(osc::TryParseHtmlString("#110000ff"), osc::Color((1.0f*16.0f + 1.0f)/255.0f, 0.0f, 0.0f, 1.0f));
+    ASSERT_EQ(osc::TryParseHtmlString("#110000ff"), Color((1.0f*16.0f + 1.0f)/255.0f, 0.0f, 0.0f, 1.0f));
 
     // when caller specifies 3 channels, assume alpha == 1.0
-    ASSERT_EQ(osc::TryParseHtmlString("#ff0000"), osc::Color::red());
-    ASSERT_EQ(osc::TryParseHtmlString("#000000"), osc::Color::black());
+    ASSERT_EQ(osc::TryParseHtmlString("#ff0000"), Color::red());
+    ASSERT_EQ(osc::TryParseHtmlString("#000000"), Color::black());
 
     // unparseable input
     ASSERT_EQ(osc::TryParseHtmlString("not a color"), std::nullopt);
     ASSERT_EQ(osc::TryParseHtmlString(" #ff0000ff"), std::nullopt);  // caller handles whitespace
     ASSERT_EQ(osc::TryParseHtmlString("ff0000ff"), std::nullopt);  // caller must put the # prefix before the string
     ASSERT_EQ(osc::TryParseHtmlString("red"), std::nullopt);  // literal color strings (e.g. as in Unity) aren't supported (yet)
+}
+
+TEST(Color, MultiplyRGBLDRWorksAsExpected)
+{
+    ASSERT_EQ(Color(0.75f*0.25f, 0.75f*0.25f, 0.75f*0.25f, 1.0f), osc::MultiplyRGBLDR(Color(0.75f, 0.75f, 0.75f, 1.0f), 0.25f));
+    ASSERT_EQ(Color(1.0f, 1.0f, 1.0f, 1.0f), osc::MultiplyRGBLDR(Color(0.75f, 0.75f, 0.75f, 1.0f), 2.0f));
+}
+
+TEST(Color, ToHSLAWorksAsExpected)
+{
+    for (auto const& [rgba, expected] : c_RGBAToHSLACases)
+    {
+        auto const got = osc::ToHSLA(rgba);
+        ASSERT_NEAR(got.h, expected.h/360.0f, c_HLSLConversionTolerance);
+        ASSERT_NEAR(got.s, expected.s, c_HLSLConversionTolerance);
+        ASSERT_NEAR(got.l, expected.l, c_HLSLConversionTolerance);
+        ASSERT_NEAR(got.a, expected.a, c_HLSLConversionTolerance);
+    }
+}
+
+TEST(Color, HSLAToColorWorksAsExpected)
+{
+    for (auto const& tc : c_RGBAToHSLACases)
+    {
+        auto normalized = tc.expectedOutput;
+        normalized.h /= 360.0f;
+
+        auto const got = osc::ToColor(normalized);
+        ASSERT_NEAR(got.r, tc.input.r, c_HLSLConversionTolerance) << tc << ", got = " << got;
+        ASSERT_NEAR(got.g, tc.input.g, c_HLSLConversionTolerance) << tc << ", got = " << got;
+        ASSERT_NEAR(got.b, tc.input.b, c_HLSLConversionTolerance) << tc << ", got = " << got;
+        ASSERT_NEAR(got.a, tc.input.a, c_HLSLConversionTolerance) << tc << ", got = " << got;
+    }
 }

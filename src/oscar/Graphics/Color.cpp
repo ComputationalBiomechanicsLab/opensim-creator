@@ -6,12 +6,19 @@
 #include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <iostream>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
+
+std::ostream& osc::operator<<(std::ostream& o, Color const& c)
+{
+    return o << "Color(r = " << c.r << ", g = " << c.g << ", b = " << c.b << ", a = " << c.a << ')';
+}
 
 // the sRGB <--> linear relationship is commonly simplified to:
 //
@@ -27,7 +34,6 @@
 // - https://stackoverflow.com/questions/61138110/what-is-the-correct-gamma-correction-function
 //
 // (because I am a lazy bastard)
-
 float osc::ToLinear(float colorChannelValue)
 {
     if (colorChannelValue <= 0.04045f)
@@ -127,6 +133,108 @@ osc::Color osc::ClampToLDR(Color const& c)
     return Color{Clamp(Vec4{c}, 0.0f, 1.0f)};
 }
 
+osc::ColorHSLA osc::ToHSLA(Color const& c)
+{
+    // sources:
+    //
+    // - https://web.cs.uni-paderborn.de/cgvb/colormaster/web/color-systems/hsl.html
+    // - https://stackoverflow.com/questions/39118528/rgb-to-hsl-conversion
+
+    auto const [r, g, b, a] = ClampToLDR(c);
+    auto const [min, max] = std::minmax({r, g, b});
+    float const delta = max - min;
+
+    float const hue = [r, g, b, min, max, delta]()
+    {
+        if (delta == 0.0f)
+        {
+            return 0.0f;
+        }
+
+        // figure out projection of color onto hue hexagon
+        float segment = 0.0f;
+        float shift = 0.0f;
+        if (max == r)
+        {
+            segment = (g - b)/delta;
+            shift = (segment < 0.0f ? 360.0f/60.0f : 0.0f);
+        }
+        else if (max == g)
+        {
+            segment = (b - r)/delta;
+            shift = 120.0f/60.0f;
+        }
+        else  // max == b
+        {
+            segment = (r - g)/delta;
+            shift = 240.0f/60.0f;
+        }
+
+        return (segment + shift)/6.0f;  // normalize
+    }();
+
+    float const lightness = 0.5f*(min + max);
+
+    float const saturation = [min, max, lightness]()
+    {
+        if (lightness == 0.0f)
+        {
+            return 0.0f;
+        }
+        else if (lightness <= 0.5f)
+        {
+            return 0.5f * (max - min)/lightness;
+        }
+        else if (lightness < 1.0f)
+        {
+            return 0.5f * (max - min)/(1.0f - lightness);
+        }
+        else  // lightness == 1.0f
+        {
+            return 0.0f;
+        }
+    }();
+
+    return {hue, saturation, lightness, a};
+}
+
+osc::Color osc::ToColor(ColorHSLA const& c)
+{
+    // see: https://web.cs.uni-paderborn.de/cgvb/colormaster/web/color-systems/hsl.html
+
+    auto const [h, s, l, a] = c;
+
+    if (l <= 0.0f)
+    {
+        return Color::black();
+    }
+
+    if (l >= 1.0f)
+    {
+        return Color::white();
+    }
+
+    float const hp = std::fmod(6.0f*h, 6.0f);
+    float const c1 = std::floor(hp);
+    float const c2 = hp - c1;
+    float const d = l <= 0.5f ? s*l : s*(1.0f - l);
+    float const u1 = l + d;
+    float const u2 = l - d;
+    float const u3 = u1 - (u1 - u2)*c2;
+    float const u4 = u2 + (u1 - u2)*c2;
+
+    switch (static_cast<int>(c1))
+    {
+    default:
+    case 0: return {u1, u4, u2, a};
+    case 1: return {u3, u1, u2, a};
+    case 2: return {u2, u1, u4, a};
+    case 3: return {u2, u3, u1, a};
+    case 4: return {u4, u2, u1, a};
+    case 5: return {u1, u2, u3, a};
+    }
+}
+
 std::string osc::ToHtmlStringRGBA(Color const& c)
 {
     std::string rv;
@@ -192,4 +300,16 @@ std::optional<osc::Color> osc::TryParseHtmlString(std::string_view v)
         // invalid hex string
         return std::nullopt;
     }
+}
+
+osc::Color osc::MultiplyRGBLDR(Color const& color, float factor)
+{
+    return ClampToLDR(color * Color{factor, factor, factor, 1.0f});
+}
+
+osc::Color osc::MultiplyLuminance(Color const& c, float factor)
+{
+    auto hsla = ToHSLA(c);
+    hsla.l *= factor;
+    return ToColor(hsla);
 }

@@ -45,6 +45,9 @@ add_library(oscar STATIC
     Graphics/CameraProjection.hpp
     Graphics/Color.cpp
     Graphics/Color.hpp
+    Graphics/ColorHSLA.hpp
+    Graphics/ColorHSLA.cpp
+    Graphics/ColorSpace.hpp
     Graphics/Color32.hpp
     Graphics/Cubemap.hpp
     Graphics/CubemapFace.hpp
@@ -271,7 +274,7 @@ add_library(oscar STATIC
     Utils/Variant.hpp
     Utils/VariantType.cpp
     Utils/VariantType.hpp
-)
+ "Graphics/ColorHSLA.cpp")
 
 target_include_directories(oscar PUBLIC
 

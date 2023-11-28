@@ -140,28 +140,75 @@ namespace osc
         std::optional<MeshWarpingTabHover> getMouseLandmarkCollisions(Line const& cameraRay) const
         {
             std::optional<MeshWarpingTabHover> rv;
-            for (TPSDocumentLandmarkPair const& p : m_State->getScratch().landmarkPairs)
+            hittestLandmarks(cameraRay, rv);
+            hittestNonParticipatingLandmarks(cameraRay, rv);
+            return rv;
+        }
+
+        // 3D hittests landmarks and updates `closest` if a closer collision is found
+        void hittestLandmarks(
+            Line const& cameraRay,
+            std::optional<MeshWarpingTabHover>& closest) const
+        {
+            for (TPSDocumentLandmarkPair const& landmark : m_State->getScratch().landmarkPairs)
             {
-                std::optional<Vec3> const maybePos = GetLocation(p, m_DocumentIdentifier);
+                hittestLandmark(cameraRay, closest, landmark);
+            }
+        }
 
-                if (!maybePos)
-                {
-                    // doesn't have a source/destination landmark
-                    continue;
-                }
-                // else: hittest the landmark as a sphere
+        // 3D hittests one landmark and updates `closest` if a closer collision is found
+        void hittestLandmark(
+            Line const& cameraRay,
+            std::optional<MeshWarpingTabHover>& closest,
+            TPSDocumentLandmarkPair const& landmark) const
+        {
+            std::optional<Vec3> const maybePos = GetLocation(landmark, m_DocumentIdentifier);
+            if (!maybePos)
+            {
+                return;  // landmark doesn't have a source/destination
+            }
 
-                std::optional<RayCollision> const coll = GetRayCollisionSphere(cameraRay, Sphere{*maybePos, m_LandmarkRadius});
-                if (coll)
+            // hittest the landmark as an analytic sphere
+            Sphere const landmarkSphere = {.origin = *maybePos, .radius = m_LandmarkRadius};
+            if (auto const collision = GetRayCollisionSphere(cameraRay, landmarkSphere))
+            {
+                if (!closest || Length(closest->worldspaceLocation - cameraRay.origin) > collision->distance)
                 {
-                    if (!rv || Length(rv->worldspaceLocation - cameraRay.origin) > coll->distance)
-                    {
-                        TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentElementType::Landmark, p.id};
-                        rv.emplace(std::move(fullID), *maybePos);
-                    }
+                    TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentElementType::Landmark, landmark.id};
+                    closest.emplace(std::move(fullID), *maybePos);
                 }
             }
-            return rv;
+        }
+
+        // 3D hittests non-participating landmarks and updates `closest` if a closer collision is found
+        void hittestNonParticipatingLandmarks(
+            Line const& cameraRay,
+            std::optional<MeshWarpingTabHover>& closest) const
+        {
+            for (auto const& nonPariticpatingLandmark : m_State->getScratch().nonParticipatingLandmarks)
+            {
+                hittestNonParticipatingLandmark(cameraRay, closest, nonPariticpatingLandmark);
+            }
+        }
+
+        // 3D hittests one non-participating landmark and updates `closest` if a closer collision is found
+        void hittestNonParticipatingLandmark(
+            Line const& cameraRay,
+            std::optional<MeshWarpingTabHover>& closest,
+            TPSDocumentNonParticipatingLandmark const& nonPariticpatingLandmark) const
+        {
+            // hittest non-participating landmark as an analytic sphere
+
+            Sphere const decorationSphere = {.origin = nonPariticpatingLandmark.location, .radius = GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius};
+
+            if (auto const collision = GetRayCollisionSphere(cameraRay, decorationSphere))
+            {
+                if (!closest || Length(closest->worldspaceLocation - cameraRay.origin) > collision->distance)
+                {
+                    TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentElementType::Landmark, nonPariticpatingLandmark.id};
+                    closest.emplace(std::move(fullID), nonPariticpatingLandmark.location);
+                }
+            }
         }
 
         // renders this panel's 3D scene to a texture
@@ -231,39 +278,27 @@ namespace osc
             std::function<void(SceneDecoration&&)> const& decorationConsumer) const
         {
             std::optional<Vec3> const maybeLocation = GetLocation(landmarkPair, m_DocumentIdentifier);
-
             if (!maybeLocation)
             {
                 return;  // no source/destination location for the landmark
             }
 
-            TPSDocumentElementID const fullID{m_DocumentIdentifier, TPSDocumentElementType::Landmark, landmarkPair.id};
-
-            Transform transform{};
-            transform.scale *= m_LandmarkRadius;
-            transform.position = *maybeLocation;
-
-            Color const& color = IsFullyPaired(landmarkPair) ? m_State->pairedLandmarkColor : m_State->unpairedLandmarkColor;
-
-            SceneDecoration decoration{m_State->landmarkSphere, transform, color};
-
-            if (m_State->userSelection.contains(fullID))
+            SceneDecoration decoration
             {
-                Vec4 tmpColor = decoration.color;
-                tmpColor += Vec4{0.25f, 0.25f, 0.25f, 0.0f};
-                tmpColor = Clamp(tmpColor, 0.0f, 1.0f);
+                m_State->landmarkSphere,
+                Transform{.scale = Vec3{m_LandmarkRadius}, .position = *maybeLocation},
+                IsFullyPaired(landmarkPair) ? m_State->pairedLandmarkColor : m_State->unpairedLandmarkColor
+            };
 
-                decoration.color = Color{tmpColor};
-                decoration.flags = SceneDecorationFlags::IsSelected;
+            TPSDocumentElementID const landmarkID{m_DocumentIdentifier, TPSDocumentElementType::Landmark, landmarkPair.id};
+            if (m_State->userSelection.contains(landmarkID))
+            {
+                decoration.flags |= SceneDecorationFlags::IsSelected;
             }
-            else if (m_State->currentHover && m_State->currentHover->maybeSceneElementID == fullID)
+            if (m_State->currentHover && m_State->currentHover->maybeSceneElementID == landmarkID)
             {
-                Vec4 tmpColor = decoration.color;
-                tmpColor += Vec4{0.15f, 0.15f, 0.15f, 0.0f};
-                tmpColor = Clamp(tmpColor, 0.0f, 1.0f);
-
-                decoration.color = Color{tmpColor};
-                decoration.flags = SceneDecorationFlags::IsHovered;
+                decoration.color = ClampToLDR(MultiplyLuminance(decoration.color, 1.4f));
+                decoration.flags |= SceneDecorationFlags::IsHovered;
             }
 
             decorationConsumer(std::move(decoration));

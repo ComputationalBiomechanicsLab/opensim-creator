@@ -1,11 +1,13 @@
 #pragma once
 
+#include <oscar/Graphics/ColorHSLA.hpp>
 #include <oscar/Graphics/Color32.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 
 #include <cstddef>
 #include <cstdint>
+#include <iosfwd>
 #include <optional>
 #include <string>
 
@@ -170,11 +172,13 @@ namespace osc
             };
         }
 
-        float r;
-        float g;
-        float b;
-        float a;
+        float r = 1.0f;
+        float g = 0.0f;
+        float b = 0.0f;
+        float a = 1.0f;
     };
+
+    std::ostream& operator<<(std::ostream&, Color const&);
 
     // returns the normalized (0.0 - 1.0) floating-point equivalent of the
     // given 8-bit (0 - 255) color channel value
@@ -208,6 +212,12 @@ namespace osc
 
     // returns a color that is clamped to the low-dynamic range (LDR, i.e. [0, 1])
     Color ClampToLDR(Color const&);
+
+    // returns the HSL(A) equivalent of the given (RGBA) color
+    ColorHSLA ToHSLA(Color const&);
+
+    // returns the color (RGBA) equivalent of the given HSL color
+    Color ToColor(ColorHSLA const&);
 
     // returns a Vec4 version of a Color
     inline Vec4 ToVec4(Color const& c)
@@ -251,6 +261,14 @@ namespace osc
     //   - etc.
     std::string ToHtmlStringRGBA(Color const&);
     std::optional<Color> TryParseHtmlString(std::string_view);
+
+    // returns a color that is the result of multiply `color`'s RGB
+    // channels by `factor` followed by clamping the result to LDR
+    Color MultiplyRGBLDR(Color const& color, float factor);
+
+    // returns a color that is the result of converting the color to HSLA,
+    // multiplying it's luminance (L) by `factor`, and converting it back to RGBA
+    Color MultiplyLuminance(Color const& color, float factor);
 }
 
 // define hashing function for colors
