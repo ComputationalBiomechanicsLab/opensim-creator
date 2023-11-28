@@ -34,11 +34,11 @@ namespace osc
         {
             if (ImGui::MenuItem("Undo", nullptr, nullptr, m_State->editedDocument->canUndo()))
             {
-                ActionUndo(*m_State->editedDocument);
+                m_State->editedDocument->undo();
             }
             if (ImGui::MenuItem("Redo", nullptr, nullptr, m_State->editedDocument->canRedo()))
             {
-                ActionRedo(*m_State->editedDocument);
+                m_State->editedDocument->redo();
             }
         }
 

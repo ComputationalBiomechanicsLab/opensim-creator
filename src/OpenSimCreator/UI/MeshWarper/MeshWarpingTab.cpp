@@ -157,13 +157,13 @@ private:
         if (ctrlOrSuperDown && e.keysym.mod & KMOD_SHIFT && e.keysym.sym == SDLK_z)
         {
             // Ctrl+Shift+Z: redo
-            ActionRedo(*m_SharedState->editedDocument);
+            m_SharedState->editedDocument->redo();
             return true;
         }
         else if (ctrlOrSuperDown && e.keysym.sym == SDLK_z)
         {
             // Ctrl+Z: undo
-            ActionUndo(*m_SharedState->editedDocument);
+            m_SharedState->editedDocument->undo();
             return true;
         }
         else
