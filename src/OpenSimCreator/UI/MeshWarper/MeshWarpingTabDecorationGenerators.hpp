@@ -42,17 +42,9 @@ namespace osc
         DrawXZFloorLines(*sharedState.meshCache, out, 100.0f);
     }
 
-    void AppendNonParticipatingLandmark(
-        Mesh const& landmarkSphereMesh,
-        float baseLandmarkRadius,
-        Vec3 const& nonParticipatingLandmarkPos,
-        Color const& nonParticipatingLandmarkColor,
-        std::function<void(SceneDecoration&&)> const& out)
+    // returns the amount by which non-participating landmarks should be scaled w.r.t. pariticpating ones
+    constexpr float GetNonParticipatingLandmarkScaleFactor()
     {
-        Transform transform{};
-        transform.scale *= 0.75f*baseLandmarkRadius;
-        transform.position = nonParticipatingLandmarkPos;
-
-        out(SceneDecoration{landmarkSphereMesh, transform, nonParticipatingLandmarkColor});
+        return 0.75f;
     }
 }

@@ -235,13 +235,16 @@ namespace osc
             // draw non-participating landmarks
             for (Vec3 const& nonParticipatingLandmarkPos : m_State->getResultNonParticipatingLandmarks())
             {
-                AppendNonParticipatingLandmark(
+                decorationConsumer(SceneDecoration
+                {
                     m_State->landmarkSphere,
-                    m_LandmarkRadius,
-                    nonParticipatingLandmarkPos,
-                    m_State->nonParticipatingLandmarkColor,
-                    decorationConsumer
-                );
+                    Transform
+                    {
+                        .scale = Vec3{GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius},
+                        .position = nonParticipatingLandmarkPos,
+                    },
+                    m_State->nonParticipatingLandmarkColor
+                });
             }
 
             return decorations;

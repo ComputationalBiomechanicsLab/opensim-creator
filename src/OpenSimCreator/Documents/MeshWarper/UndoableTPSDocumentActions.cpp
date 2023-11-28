@@ -183,12 +183,12 @@ void osc::ActionSaveLandmarksToCSV(TPSDocument const& doc, TPSDocumentInputIdent
             WriteCSVRow(
                 fileOutputStream,
                 std::to_array(
-                    {
-                        std::to_string(loc->x),
-                        std::to_string(loc->y),
-                        std::to_string(loc->z),
-                    })
-                    );
+                {
+                    std::to_string(loc->x),
+                    std::to_string(loc->y),
+                    std::to_string(loc->z),
+                })
+            );
         }
     }
 }
@@ -215,15 +215,15 @@ void osc::ActionSaveLandmarksToPairedCSV(TPSDocument const& doc)
     WriteCSVRow(
         fileOutputStream,
         std::to_array<std::string>(
-            {
-                "source.x",
-                "source.y",
-                "source.z",
-                "dest.x",
-                "dest.y",
-                "dest.z",
-            })
-            );
+        {
+            "source.x",
+            "source.y",
+            "source.z",
+            "dest.x",
+            "dest.y",
+            "dest.z",
+        })
+    );
 
     // write data rows
     for (LandmarkPair3D const& p : pairs)
@@ -231,16 +231,16 @@ void osc::ActionSaveLandmarksToPairedCSV(TPSDocument const& doc)
         WriteCSVRow(
             fileOutputStream,
             std::to_array(
-                {
-                    std::to_string(p.source.x),
-                    std::to_string(p.source.y),
-                    std::to_string(p.source.z),
+            {
+                std::to_string(p.source.x),
+                std::to_string(p.source.y),
+                std::to_string(p.source.z),
 
-                    std::to_string(p.destination.x),
-                    std::to_string(p.destination.y),
-                    std::to_string(p.destination.z),
-                })
-                );
+                std::to_string(p.destination.x),
+                std::to_string(p.destination.y),
+                std::to_string(p.destination.z),
+            })
+        );
     }
 }
 
@@ -328,11 +328,11 @@ void osc::ActionTrySaveWarpedNonParticipatingLandmarksToCSV(
         WriteCSVRow(
             fileOutputStream,
             std::to_array(
-                {
-                    std::to_string(nonParticipatingLandmark.x),
-                    std::to_string(nonParticipatingLandmark.y),
-                    std::to_string(nonParticipatingLandmark.z),
-                })
-                );
+            {
+                std::to_string(nonParticipatingLandmark.x),
+                std::to_string(nonParticipatingLandmark.y),
+                std::to_string(nonParticipatingLandmark.z),
+            })
+        );
     }
 }
