@@ -237,13 +237,13 @@ namespace osc
             {
                 decorationConsumer(SceneDecoration
                 {
-                    m_State->landmarkSphere,
-                    Transform
+                    .mesh = m_State->landmarkSphere,
+                    .transform =
                     {
                         .scale = Vec3{GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius},
                         .position = nonParticipatingLandmarkPos,
                     },
-                    m_State->nonParticipatingLandmarkColor
+                    .color = m_State->nonParticipatingLandmarkColor
                 });
             }
 

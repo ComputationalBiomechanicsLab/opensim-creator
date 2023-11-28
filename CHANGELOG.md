@@ -9,6 +9,8 @@ All notable changes to this project will be documented here. The format is based
 - The mesh warper UI now has a toggleable (default: off, initially) `Navigator` panel that shows
   the names and statuses of all landmarks in the scene (#807)
 - Hovering over a landmark in the mesh warper UI now brightens the landmark slightly
+- Fixed a bug where user-defined muscle points could not be selected if the user was rendering muscles
+  in tendons+fibers mode (#706)
 
 
 ## [0.5.5] - 2023/11/21

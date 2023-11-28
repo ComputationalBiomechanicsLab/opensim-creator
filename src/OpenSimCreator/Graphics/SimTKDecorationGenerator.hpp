@@ -3,14 +3,14 @@
 #include <functional>
 
 namespace osc { class SceneCache; }
-namespace osc { struct SimpleSceneDecoration; }
+namespace osc { struct SceneDecoration; }
 namespace SimTK { class DecorativeGeometry; }
 namespace SimTK { class SimbodyMatterSubsystem; }
 namespace SimTK { class State; }
 
 namespace osc
 {
-    // generates `osc::SimpleSceneDecoration`s for the given `SimTK::DecorativeGeometry`
+    // generates `osc::SceneDecoration`s for the given `SimTK::DecorativeGeometry`
     // and passes them to the output consumer
     void GenerateDecorations(
         SceneCache&,
@@ -18,6 +18,6 @@ namespace osc
         SimTK::State const&,
         SimTK::DecorativeGeometry const&,
         float fixupScaleFactor,
-        std::function<void(SimpleSceneDecoration&&)> const& out
+        std::function<void(SceneDecoration&&)> const& out
     );
 }

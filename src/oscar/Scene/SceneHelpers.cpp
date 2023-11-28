@@ -22,6 +22,7 @@
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/Utils/At.hpp>
 
 #include <filesystem>
 #include <functional>
@@ -44,15 +45,16 @@ namespace
         Quat const& rotation,
         std::function<void(SceneDecoration&&)> const& out)
     {
-        Mesh const grid = cache.get100x100GridMesh();
-
-        Transform t;
-        t.scale *= Vec3{50.0f, 50.0f, 1.0f};
-        t.rotation = rotation;
-
-        Color const color = {0.7f, 0.7f, 0.7f, 0.15f};
-
-        out(SceneDecoration{grid, t, color});
+        out(SceneDecoration
+        {
+            .mesh = cache.get100x100GridMesh(),
+            .transform =
+            {
+                .scale = Vec3{50.0f, 50.0f, 1.0f},
+                .rotation = rotation,
+            },
+            .color = {0.7f, 0.7f, 0.7f, 0.15f},
+        });
     }
 }
 
@@ -63,10 +65,16 @@ void osc::DrawBVH(
 {
     sceneBVH.forEachLeafOrInnerNodeUnordered([cube = cache.getCubeWireMesh(), &out](BVHNode const& node)
     {
-        Transform t;
-        t.scale *= 0.5f * Dimensions(node.getBounds());
-        t.position = Midpoint(node.getBounds());
-        out(SceneDecoration{cube, t, Color::black()});
+        out(SceneDecoration
+        {
+            .mesh = cube,
+            .transform =
+            {
+                .scale = 0.5f * Dimensions(node.getBounds()),
+                .position = Midpoint(node.getBounds()),
+            },
+            .color = Color::black()
+        });
     });
 }
 
@@ -75,13 +83,7 @@ void osc::DrawAABB(
     AABB const& aabb,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    Mesh const cube = cache.getCubeWireMesh();
-
-    Transform t;
-    t.scale = 0.5f * Dimensions(aabb);
-    t.position = Midpoint(aabb);
-
-    out(SceneDecoration{cube, t, Color::black()});
+    DrawAABBs(cache, {{aabb}}, out);
 }
 
 void osc::DrawAABBs(
@@ -90,14 +92,18 @@ void osc::DrawAABBs(
     std::function<void(SceneDecoration&&)> const& out)
 {
     Mesh const cube = cache.getCubeWireMesh();
-
     for (AABB const& aabb : aabbs)
     {
-        Transform t;
-        t.scale = 0.5f * Dimensions(aabb);
-        t.position = Midpoint(aabb);
-
-        out(SceneDecoration{cube, t, Color::black()});
+        out(SceneDecoration
+        {
+            .mesh = cube,
+            .transform =
+            {
+                .scale = 0.5f * Dimensions(aabb),
+                .position = Midpoint(aabb),
+            },
+            .color = Color::black(),
+        });
     }
 }
 
@@ -120,22 +126,28 @@ void osc::DrawXZFloorLines(
     Mesh const yLine = cache.getYLineMesh();
 
     // X line
+    out(SceneDecoration
     {
-        Transform t;
-        t.scale *= scale;
-        t.rotation = AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{0.0f, 0.0f, 1.0f});
-
-        out(SceneDecoration{yLine, t, Color::red()});
-    }
+        .mesh = yLine,
+        .transform =
+        {
+            .scale = Vec3{scale},
+            .rotation = AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{0.0f, 0.0f, 1.0f}),
+        },
+        .color = Color::red()
+    });
 
     // Z line
+    out(SceneDecoration
     {
-        Transform t;
-        t.scale *= scale;
-        t.rotation = AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{1.0f, 0.0f, 0.0f});
-
-        out(SceneDecoration{yLine, t, Color::blue()});
-    }
+        .mesh = yLine,
+        .transform =
+        {
+            .scale = Vec3{scale},
+            .rotation = AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{1.0f, 0.0f, 0.0f}),
+        },
+        .color = Color::blue(),
+    });
 }
 
 void osc::DrawXZGrid(
@@ -237,7 +249,7 @@ std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(
     rv.reserve(sceneCollisions.size());  // upper bound
     for (BVHCollision const& c : sceneCollisions)
     {
-        SceneDecoration const& decoration = decorations[c.id];
+        SceneDecoration const& decoration = At(decorations, c.id);
         BVH const& decorationBVH = sceneCache.getBVH(decoration.mesh);
         std::optional<RayCollision> const maybeCollision = GetClosestWorldspaceRayCollision(
             decoration.mesh,

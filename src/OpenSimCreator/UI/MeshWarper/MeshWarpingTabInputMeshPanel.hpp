@@ -285,9 +285,9 @@ namespace osc
 
             SceneDecoration decoration
             {
-                m_State->landmarkSphere,
-                Transform{.scale = Vec3{m_LandmarkRadius}, .position = *maybeLocation},
-                IsFullyPaired(landmarkPair) ? m_State->pairedLandmarkColor : m_State->unpairedLandmarkColor
+                .mesh = m_State->landmarkSphere,
+                .transform = {.scale = Vec3{m_LandmarkRadius}, .position = *maybeLocation},
+                .color = IsFullyPaired(landmarkPair) ? m_State->pairedLandmarkColor : m_State->unpairedLandmarkColor
             };
 
             TPSDocumentElementID const landmarkID{m_DocumentIdentifier, TPSDocumentElementType::Landmark, landmarkPair.id};
@@ -324,13 +324,13 @@ namespace osc
         {
             SceneDecoration decoration
             {
-                m_State->landmarkSphere,
-                Transform
+                .mesh = m_State->landmarkSphere,
+                .transform =
                 {
                     .scale = Vec3{GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius},
-                    .position = npl.location
+                    .position = npl.location,
                 },
-                m_State->nonParticipatingLandmarkColor,
+                .color = m_State->nonParticipatingLandmarkColor,
             };
             TPSDocumentElementID const id{m_DocumentIdentifier, TPSDocumentElementType::NonParticipatingLandmark, npl.id};
             if (m_State->userSelection.contains(id))

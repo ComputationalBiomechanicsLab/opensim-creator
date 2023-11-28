@@ -23,18 +23,20 @@ namespace osc
         Color meshColor = Color::white())
     {
         // draw the mesh
+        out(SceneDecoration
         {
-            SceneDecoration dec{tpsSourceOrDestinationMesh};
-            dec.color = meshColor;
-            out(std::move(dec));
-        }
+            .mesh = tpsSourceOrDestinationMesh,
+            .color = meshColor,
+        });
 
         // if requested, also draw wireframe overlays for the mesh
         if (wireframeMode)
         {
-            SceneDecoration dec{tpsSourceOrDestinationMesh};
-            dec.maybeMaterial = sharedState.wireframeMaterial;
-            out(std::move(dec));
+            out(SceneDecoration
+            {
+                .mesh = tpsSourceOrDestinationMesh,
+                .maybeMaterial = sharedState.wireframeMaterial
+            });
         }
 
         // add grid decorations

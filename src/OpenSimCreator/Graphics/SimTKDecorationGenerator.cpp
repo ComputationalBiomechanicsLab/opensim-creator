@@ -11,7 +11,7 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Scene/SceneCache.hpp>
-#include <oscar/Scene/SimpleSceneDecoration.hpp>
+#include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <simbody/internal/common.h>
 #include <simbody/internal/MobilizedBody.h>
@@ -26,6 +26,7 @@
 #include <utility>
 #include <vector>
 
+using osc::SceneDecoration;
 using osc::Vec3;
 
 // helper functions
@@ -116,7 +117,7 @@ namespace
             SimTK::SimbodyMatterSubsystem const& matter,
             SimTK::State const& st,
             float fixupScaleFactor,
-            std::function<void(osc::SimpleSceneDecoration&&)> const& out) :
+            std::function<void(SceneDecoration&&)> const& out) :
 
             m_MeshCache{meshCache},
             m_Matter{matter},
@@ -153,7 +154,7 @@ namespace
             osc::Transform cylinderXform = osc::YToYCylinderToSegmentTransform({p1, p2}, thickness);
             cylinderXform.scale *= t.scale;
 
-            m_Consumer(osc::SimpleSceneDecoration
+            m_Consumer(SceneDecoration
             {
                 m_MeshCache.getCylinderMesh(),
                 cylinderXform,
@@ -166,7 +167,7 @@ namespace
             osc::Transform t = ToOscTransform(d);
             t.scale *= osc::ToVec3(d.getHalfLengths());
 
-            m_Consumer(osc::SimpleSceneDecoration
+            m_Consumer(SceneDecoration
             {
                 m_MeshCache.getBrickMesh(),
                 t,
@@ -183,7 +184,7 @@ namespace
             t.scale.y *= static_cast<float>(d.getHalfHeight());
             t.scale.z *= radius;
 
-            m_Consumer(osc::SimpleSceneDecoration
+            m_Consumer(SceneDecoration
             {
                 m_MeshCache.getCylinderMesh(),
                 t,
@@ -199,7 +200,7 @@ namespace
             t.scale.x *= radius;
             t.scale.y *= radius;
 
-            m_Consumer(osc::SimpleSceneDecoration
+            m_Consumer(SceneDecoration
             {
                 m_MeshCache.getCircleMesh(),
                 t,
@@ -212,7 +213,7 @@ namespace
             osc::Transform t = ToOscTransform(d);
             t.scale *= m_FixupScaleFactor * static_cast<float>(d.getRadius());
 
-            m_Consumer(osc::SimpleSceneDecoration
+            m_Consumer(SceneDecoration
             {
                 m_MeshCache.getSphereMesh(),
                 t,
@@ -225,7 +226,7 @@ namespace
             osc::Transform t = ToOscTransform(d);
             t.scale *= osc::ToVec3(d.getRadii());
 
-            m_Consumer(osc::SimpleSceneDecoration
+            m_Consumer(SceneDecoration
             {
                 m_MeshCache.getSphereMesh(),
                 t,
@@ -242,7 +243,7 @@ namespace
                 float const radius = 0.05f * c_FrameAxisLengthRescale * m_FixupScaleFactor;
                 osc::Transform const sphereXform = t.withScale(radius);
 
-                m_Consumer(osc::SimpleSceneDecoration
+                m_Consumer(SceneDecoration
                 {
                     m_MeshCache.getSphereMesh(),
                     sphereXform,
@@ -269,7 +270,7 @@ namespace
                 osc::Color color = {0.0f, 0.0f, 0.0f, 1.0f};
                 color[axis] = 1.0f;
 
-                m_Consumer(osc::SimpleSceneDecoration
+                m_Consumer(SceneDecoration
                 {
                     m_MeshCache.getCylinderMesh(),
                     legXform,
@@ -300,7 +301,7 @@ namespace
             std::string const id = std::to_string(HashOf(d.getMesh()));
             auto const meshLoaderFunc = [&d]() { return osc::ToOscMesh(d.getMesh()); };
 
-            m_Consumer(osc::SimpleSceneDecoration
+            m_Consumer(SceneDecoration
             {
                 m_MeshCache.get(id, meshLoaderFunc),
                 ToOscTransform(d),
@@ -313,7 +314,7 @@ namespace
             std::string const& path = d.getMeshFile();
             auto const meshLoader = [&path](){ return osc::LoadMeshViaSimTK(path); };
 
-            m_Consumer(osc::SimpleSceneDecoration
+            m_Consumer(SceneDecoration
             {
                 m_MeshCache.get(path, meshLoader),
                 ToOscTransform(d),
@@ -345,7 +346,7 @@ namespace
 
             // emit neck cylinder
             osc::Transform const neckXform = osc::YToYCylinderToSegmentTransform({neckStart, neckEnd}, neckThickness);
-            m_Consumer(osc::SimpleSceneDecoration
+            m_Consumer(SceneDecoration
             {
                 m_MeshCache.getCylinderMesh(),
                 neckXform,
@@ -354,7 +355,7 @@ namespace
 
             // emit head cone
             osc::Transform const headXform = osc::YToYCylinderToSegmentTransform({headStart, headEnd}, headThickness);
-            m_Consumer(osc::SimpleSceneDecoration
+            m_Consumer(SceneDecoration
             {
                 m_MeshCache.getConeMesh(),
                 headXform,
@@ -367,7 +368,7 @@ namespace
             auto const torusCenterToTubeCenterRadius = static_cast<float>(d.getTorusRadius());
             auto const tubeRadius = static_cast<float>(d.getTubeRadius());
 
-            m_Consumer(osc::SimpleSceneDecoration
+            m_Consumer(SceneDecoration
             {
                 m_MeshCache.getTorusMesh(torusCenterToTubeCenterRadius, tubeRadius),
                 ToOscTransform(d),
@@ -391,7 +392,7 @@ namespace
             osc::Transform coneXform = osc::YToYCylinderToSegmentTransform({pos, pos + height*direction}, radius);
             coneXform.scale *= t.scale;
 
-            m_Consumer(osc::SimpleSceneDecoration
+            m_Consumer(SceneDecoration
             {
                 m_MeshCache.getConeMesh(),
                 coneXform,
@@ -403,7 +404,7 @@ namespace
         SimTK::SimbodyMatterSubsystem const& m_Matter;
         SimTK::State const& m_State;
         float m_FixupScaleFactor;
-        std::function<void(osc::SimpleSceneDecoration&&)> const& m_Consumer;
+        std::function<void(SceneDecoration&&)> const& m_Consumer;
     };
 }
 
@@ -413,7 +414,7 @@ void osc::GenerateDecorations(
     SimTK::State const& state,
     SimTK::DecorativeGeometry const& geom,
     float fixupScaleFactor,
-    std::function<void(SimpleSceneDecoration&&)> const& out)
+    std::function<void(SceneDecoration&&)> const& out)
 {
     GeometryImpl impl{meshCache, matter, state, fixupScaleFactor, out};
     geom.implementGeometry(impl);

@@ -5,86 +5,42 @@
 #include <oscar/Graphics/MaterialPropertyBlock.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Scene/SceneDecorationFlags.hpp>
-#include <oscar/Scene/SimpleSceneDecoration.hpp>
 
 #include <optional>
 #include <string>
-#include <utility>
 
 namespace osc
 {
     // represents a renderable decoration for a component in a model
     struct SceneDecoration final {
 
-        explicit SceneDecoration(Mesh const& mesh_) :
-            mesh{mesh_}
-        {
-        }
-
-        explicit SceneDecoration(SimpleSceneDecoration const& dec) :
-            mesh{dec.mesh},
-            transform{dec.transform},
-            color{dec.color}
-        {
-        }
-
-        explicit SceneDecoration(SimpleSceneDecoration&& dec) :
-            mesh{std::move(dec.mesh)},
-            transform{std::move(dec.transform)},
-            color{std::move(dec.color)}
-        {
-        }
-
-        SceneDecoration(
-            Mesh const& mesh_,
-            Transform const& transform_,
-            Color const& color_) :
-
-            mesh{mesh_},
-            transform{transform_},
-            color{color_}
-        {
-        }
-
-        SceneDecoration(
-            Mesh const& mesh_,
-            Transform const& transform_,
-            Color const& color_,
-            std::string id_,
-            SceneDecorationFlags flags_) :
-
-            mesh{mesh_},
-            transform{transform_},
-            color{color_},
-            id{std::move(id_)},
-            flags{std::move(flags_)}
-        {
-        }
-
-        SceneDecoration(
-            Mesh const& mesh_,
-            Transform const& transform_,
-            Color const& color_,
-            std::string id_,
-            SceneDecorationFlags flags_,
-            std::optional<Material> maybeMaterial_,
-            std::optional<MaterialPropertyBlock> maybeProps_ = std::nullopt) :
-
-            mesh{mesh_},
-            transform{transform_},
-            color{color_},
-            id{std::move(id_)},
-            flags{std::move(flags_)},
-            maybeMaterial{std::move(maybeMaterial_)},
-            maybeMaterialProps{std::move(maybeProps_)}
-        {
-        }
-
         friend bool operator==(SceneDecoration const&, SceneDecoration const&) = default;
 
+        SceneDecoration withPosition(Vec3 const& position_) const
+        {
+            SceneDecoration copy{*this};
+            copy.transform.position = position_;
+            return copy;
+        }
+
+        SceneDecoration withTransform(Transform const& transform_) const
+        {
+            SceneDecoration copy{*this};
+            copy.transform = transform_;
+            return copy;
+        }
+
+        SceneDecoration withColor(Color const& color_) const
+        {
+            SceneDecoration copy{*this};
+            copy.color = color_;
+            return copy;
+        }
+
         Mesh mesh;
-        Transform transform{};
+        Transform transform;
         Color color = Color::white();
         std::string id;
         SceneDecorationFlags flags = SceneDecorationFlags::None;

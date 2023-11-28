@@ -3,6 +3,7 @@
 #include <oscar/Maths/Vec3.hpp>
 
 #include <cstddef>
+#include <limits>
 #include <string>
 #include <utility>
 
@@ -10,23 +11,9 @@ namespace osc
 {
     // describes a collision between a ray and a decoration in the scene
     struct SceneCollision final {
-
-        SceneCollision(
-            std::string decorationID_,
-            size_t decorationIndex_,
-            Vec3 const& worldspaceLocation_,
-            float distanceFromRayOrigin_) :
-
-            decorationID{std::move(decorationID_)},
-            decorationIndex{decorationIndex_},
-            worldspaceLocation{worldspaceLocation_},
-            distanceFromRayOrigin{distanceFromRayOrigin_}
-        {
-        }
-
         std::string decorationID;
-        size_t decorationIndex;
-        Vec3 worldspaceLocation;
-        float distanceFromRayOrigin;
+        size_t decorationIndex = 0;
+        Vec3 worldspaceLocation{};
+        float distanceFromRayOrigin = std::numeric_limits<float>::max();
     };
 }
