@@ -228,18 +228,18 @@ namespace osc
 
             if (m_ShowDestinationMesh)
             {
-                SceneDecoration& dec = decorations.emplace_back(m_State->getScratch().destinationMesh);
-                dec.color = {1.0f, 0.0f, 0.0f, 0.5f};
+                decorationConsumer({
+                    .mesh = m_State->getScratch().destinationMesh,
+                    .color = Color::red().withAlpha(0.5f),
+                });
             }
 
             // draw non-participating landmarks
             for (Vec3 const& nonParticipatingLandmarkPos : m_State->getResultNonParticipatingLandmarks())
             {
-                decorationConsumer(SceneDecoration
-                {
+                decorationConsumer({
                     .mesh = m_State->landmarkSphere,
-                    .transform =
-                    {
+                    .transform = {
                         .scale = Vec3{GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius},
                         .position = nonParticipatingLandmarkPos,
                     },

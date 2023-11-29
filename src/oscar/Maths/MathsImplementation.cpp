@@ -1739,6 +1739,11 @@ osc::Vec3 osc::Dimensions(AABB const& a)
     return a.max - a.min;
 }
 
+osc::Vec3 osc::HalfWidths(AABB const& a)
+{
+    return 0.5f*Dimensions(a);
+}
+
 float osc::Volume(AABB const& a)
 {
     Vec3 d = Dimensions(a);

@@ -76,14 +76,12 @@ namespace osc
     );
 
     struct ArrowProperties final {
-        ArrowProperties();
-
-        Vec3 worldspaceStart;
-        Vec3 worldspaceEnd;
-        float tipLength;
-        float neckThickness;
-        float headThickness;
-        Color color;
+        Vec3 worldspaceStart{};
+        Vec3 worldspaceEnd{};
+        float tipLength{};
+        float neckThickness{};
+        float headThickness{};
+        Color color = Color::black();
     };
     void DrawArrow(
         SceneCache&,

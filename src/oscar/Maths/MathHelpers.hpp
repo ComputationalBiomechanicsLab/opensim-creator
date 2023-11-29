@@ -469,6 +469,9 @@ namespace osc
     // returns the dimensions of an AABB
     Vec3 Dimensions(AABB const&);
 
+    // returns the half-widths of an AABB (effectively, Dimensions(aabb)/2.0)
+    Vec3 HalfWidths(AABB const&);
+
     // returns the volume of the AABB
     float Volume(AABB const&);
 

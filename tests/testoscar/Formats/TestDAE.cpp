@@ -27,10 +27,10 @@ TEST(DAE, WriteDecorationsAsDAEWorksForNonEmptyScene)
 {
     DAEMetadata metadata{TESTOSCAR_APPNAME_STRING, TESTOSCAR_APPNAME_STRING};
 
-    SceneDecoration dec{osc::GenCube()};
+    SceneDecoration const dec{.mesh = osc::GenCube()};
 
     std::stringstream ss;
-    osc::WriteDecorationsAsDAE(ss, {&dec, 1}, metadata);
+    osc::WriteDecorationsAsDAE(ss, {{dec}}, metadata);
 
     ASSERT_FALSE(ss.str().empty());
 }

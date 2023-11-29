@@ -350,14 +350,11 @@ namespace osc
             Vec3 const& meshCollisionPosition,
             std::function<void(SceneDecoration&&)> const& decorationConsumer) const
         {
-            Transform transform{};
-            transform.scale *= m_LandmarkRadius;
-            transform.position = meshCollisionPosition;
-
-            Color color = m_State->unpairedLandmarkColor;
-            color.a *= 0.25f;  // faded
-
-            decorationConsumer(SceneDecoration{m_State->landmarkSphere, transform, color});
+            decorationConsumer({
+                .mesh = m_State->landmarkSphere,
+                .transform = {.scale = Vec3{m_LandmarkRadius}, .position = meshCollisionPosition},
+                .color = m_State->unpairedLandmarkColor.withAlpha(0.25f),  // faded
+            });
         }
 
         // handle any input-related side-effects

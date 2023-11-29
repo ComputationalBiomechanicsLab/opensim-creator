@@ -400,7 +400,7 @@ namespace osc
             decs.reserve(drawables.size());
             for (DrawableThing const& dt : drawables)
             {
-                decs.emplace_back(
+                decs.push_back({
                     dt.mesh,
                     dt.transform,
                     dt.color,
@@ -408,7 +408,7 @@ namespace osc
                     dt.flags,
                     dt.maybeMaterial,
                     dt.maybePropertyBlock
-                );
+                });
             }
 
             // render
