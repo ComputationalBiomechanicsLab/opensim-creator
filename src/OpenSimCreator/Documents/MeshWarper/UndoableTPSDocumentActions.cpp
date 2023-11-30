@@ -224,7 +224,7 @@ void osc::ActionLoadNonParticipatingLandmarksFromCSV(UndoableTPSDocument& doc)
     doc.commitScratch("added non-participating landmarks");
 }
 
-void osc::ActionSaveLandmarksToCSV(TPSDocument const& doc, TPSDocumentInputIdentifier which)
+void osc::ActionSaveLandmarksToCSV(TPSDocument const& doc, TPSDocumentInputIdentifier which, TPSDocumentCSVFlags flags)
 {
     std::optional<std::filesystem::path> const maybeCSVPath =
         PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
@@ -233,25 +233,43 @@ void osc::ActionSaveLandmarksToCSV(TPSDocument const& doc, TPSDocumentInputIdent
         return;  // user didn't select a save location
     }
 
-    std::ofstream fileOutputStream{*maybeCSVPath};
-    if (!fileOutputStream)
+    std::ofstream fout{*maybeCSVPath};
+    if (!fout)
     {
         return;  // couldn't open file for writing
     }
 
+    // if applicable, emit header
+    if (!(flags & TPSDocumentCSVFlags::NoHeader))
+    {
+        if (flags & TPSDocumentCSVFlags::NoNames)
+        {
+            WriteCSVRow(fout, {{"x", "y", "z"}});
+        }
+        else
+        {
+            WriteCSVRow(fout, {{"name", "x", "y", "z"}});
+        }
+    }
+
+    // emit data rows
     for (TPSDocumentLandmarkPair const& p : doc.landmarkPairs)
     {
         if (std::optional<Vec3> const loc = GetLocation(p, which))
         {
-            WriteCSVRow(
-                fileOutputStream,
-                std::to_array(
-                {
-                    std::to_string(loc->x),
-                    std::to_string(loc->y),
-                    std::to_string(loc->z),
-                })
-            );
+            using std::to_string;
+            auto x = loc->x;
+            auto y = loc->y;
+            auto z = loc->z;
+
+            if (flags & TPSDocumentCSVFlags::NoNames)
+            {
+                WriteCSVRow(fout, {{to_string(x), to_string(y), to_string(z)}});
+            }
+            else
+            {
+                WriteCSVRow(fout, {{std::string{p.name}, to_string(x), to_string(y), to_string(z)}});
+            }
         }
     }
 }

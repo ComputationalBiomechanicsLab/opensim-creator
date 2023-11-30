@@ -112,7 +112,7 @@ namespace osc
             }
             else
             {
-                if (ImGui::Button("add destination"))
+                if (ButtonCentered("add destination"))
                 {
                     ActionSetLandmarkPosition(*m_Shared->editedDocument, lm.uid, TPSDocumentInputIdentifier::Destination, Vec3{});
                 }

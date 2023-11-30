@@ -1,5 +1,6 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentCSVFlags.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/UndoableTPSDocument.hpp>
@@ -61,7 +62,7 @@ namespace osc
     void ActionLoadNonParticipatingLandmarksFromCSV(UndoableTPSDocument&);
 
     // saves all source/destination landmarks to a simple headerless CSV file (matches loading)
-    void ActionSaveLandmarksToCSV(TPSDocument const&, TPSDocumentInputIdentifier);
+    void ActionSaveLandmarksToCSV(TPSDocument const&, TPSDocumentInputIdentifier, TPSDocumentCSVFlags = TPSDocumentCSVFlags::None);
 
     // saves all pairable landmarks in the TPS document to a user-specified CSV file
     void ActionSavePairedLandmarksToCSV(TPSDocument const&);
