@@ -158,7 +158,7 @@ namespace osc
                 }
                 if (ImGui::MenuItem("Warped Non-Participating Landmarks to CSV"))
                 {
-                    ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->getResultNonParticipatingLandmarks());
+                    ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->getResultNonParticipatingLandmarkLocations());
                 }
                 if (ImGui::MenuItem("Landmark Pairs to CSV"))
                 {
@@ -243,7 +243,7 @@ namespace osc
             }
 
             // draw non-participating landmarks
-            for (Vec3 const& nonParticipatingLandmarkPos : m_State->getResultNonParticipatingLandmarks())
+            for (Vec3 const& nonParticipatingLandmarkPos : m_State->getResultNonParticipatingLandmarkLocations())
             {
                 decorationConsumer({
                     .mesh = m_State->landmarkSphere,

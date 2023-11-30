@@ -64,9 +64,9 @@ namespace osc
             return meshResultCache.getWarpedMesh(editedDocument->getScratch());
         }
 
-        std::span<Vec3 const> getResultNonParticipatingLandmarks()
+        std::span<Vec3 const> getResultNonParticipatingLandmarkLocations()
         {
-            return meshResultCache.getWarpedNonParticipatingLandmarks(editedDocument->getScratch());
+            return meshResultCache.getWarpedNonParticipatingLandmarkLocations(editedDocument->getScratch());
         }
 
         // ID of the top-level TPS3D tab

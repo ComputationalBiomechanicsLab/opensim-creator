@@ -26,7 +26,7 @@ namespace osc
             return m_CachedResultMesh;
         }
 
-        std::span<Vec3 const> getWarpedNonParticipatingLandmarks(TPSDocument const& doc)
+        std::span<Vec3 const> getWarpedNonParticipatingLandmarkLocations(TPSDocument const& doc)
         {
             updateAll(doc);
             return m_CachedResultNonParticipatingLandmarks;

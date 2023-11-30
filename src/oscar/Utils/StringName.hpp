@@ -1,5 +1,6 @@
 #pragma once
 
+#include <oscar/Shims/Cpp20/string_view.hpp>
 #include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
@@ -180,15 +181,10 @@ namespace osc
             return std::string_view{lhs} == std::string_view{rhs};
         }
 
-        friend auto operator<=>(StringName const& lhs, StringName const& rhs) noexcept
-        {
-            return std::string_view{lhs} <=> std::string_view{rhs};
-        }
-
         template<ConvertibleTo<std::string_view> StringLike>
         friend auto operator<=>(StringName const& lhs, StringLike const& rhs)
         {
-            return std::string_view{lhs} <=> std::string_view{rhs};
+            return ThreeWayComparison(std::string_view{lhs}, std::string_view{rhs});
         }
 
     private:
