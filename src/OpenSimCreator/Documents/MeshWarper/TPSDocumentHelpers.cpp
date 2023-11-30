@@ -195,7 +195,7 @@ std::vector<NamedLandmarkPair3D> osc::GetNamedLandmarkPairs(TPSDocument const& d
     {
         if (IsFullyPaired(p))
         {
-            rv.push_back(NamedLandmarkPair3D{*p.maybeSourceLocation, *p.maybeDestinationLocation, p.name});
+            rv.push_back(NamedLandmarkPair3D{{*p.maybeSourceLocation, *p.maybeDestinationLocation}, p.name});
         }
     }
     return rv;
