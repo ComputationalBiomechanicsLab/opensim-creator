@@ -135,7 +135,11 @@ namespace osc
 
     // returns `true` if the given element was deleted from the document
     bool DeleteElementByID(TPSDocument&, TPSDocumentElementID const&);
+    bool DeleteElementByID(TPSDocument&, UID);
 
     // returns the name of the element, or an alternative if the element cannot be found
     CStringView FindElementNameOr(TPSDocument const&, TPSDocumentElementID const&, CStringView alternative = "unknown");
+
+    // returns all element IDs for all elements in the document
+    std::vector<TPSDocumentElementID> GetAllElementIDs(TPSDocument const&);
 }

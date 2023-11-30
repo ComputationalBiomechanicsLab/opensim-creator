@@ -33,9 +33,9 @@ namespace osc
     private:
         void drawContent()
         {
-            if (ImGui::MenuItem(ICON_FA_FILE " New"))
+            if (ImGui::MenuItem(ICON_FA_FILE " New", "Ctrl+N"))
             {
-                ActionCreateNewDocument(*m_State->editedDocument);
+                ActionCreateNewDocument(m_State->updUndoable());
             }
 
             if (ImGui::BeginMenu(ICON_FA_FILE_IMPORT " Import"))
@@ -50,12 +50,12 @@ namespace osc
                 ImGui::EndMenu();
             }
 
-            if (ImGui::MenuItem(ICON_FA_TIMES " Close"))
+            if (ImGui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W"))
             {
-                m_State->tabHost->closeTab(m_State->tabID);
+                m_State->closeTab();
             }
 
-            if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit"))
+            if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
             {
                 App::upd().requestQuit();
             }
@@ -65,23 +65,23 @@ namespace osc
         {
             if (ImGui::MenuItem("Source Mesh"))
             {
-                ActionLoadMeshFile(*m_State->editedDocument, TPSDocumentInputIdentifier::Source);
+                ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Source);
             }
             if (ImGui::MenuItem("Destination Mesh"))
             {
-                ActionLoadMeshFile(*m_State->editedDocument, TPSDocumentInputIdentifier::Destination);
+                ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Destination);
             }
             if (ImGui::MenuItem("Source Landmarks from CSV"))
             {
-                ActionLoadLandmarksFromCSV(*m_State->editedDocument, TPSDocumentInputIdentifier::Source);
+                ActionLoadLandmarksFromCSV(m_State->updUndoable(), TPSDocumentInputIdentifier::Source);
             }
             if (ImGui::MenuItem("Destination Landmarks from CSV"))
             {
-                ActionLoadLandmarksFromCSV(*m_State->editedDocument, TPSDocumentInputIdentifier::Destination);
+                ActionLoadLandmarksFromCSV(m_State->updUndoable(), TPSDocumentInputIdentifier::Destination);
             }
             if (ImGui::MenuItem("Non-Participating Landmarks from CSV"))
             {
-                ActionLoadNonParticipatingLandmarksFromCSV(*m_State->editedDocument);
+                ActionLoadNonParticipatingLandmarksFromCSV(m_State->updUndoable());
             }
         }
 

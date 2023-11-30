@@ -9,6 +9,7 @@
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.hpp>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
 
+#include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/Log.hpp>
@@ -31,7 +32,7 @@ namespace osc
             TPSDocumentElementID rightClickedID_) :
 
             StandardPopup{label_},
-            m_Shared{std::move(shared_)},
+            m_State{std::move(shared_)},
             m_ElementID{std::move(rightClickedID_)}
         {
             setModal(false);
@@ -39,7 +40,7 @@ namespace osc
     private:
         void implDrawContent() final
         {
-            TPSDocumentElement const* el = FindElement(m_Shared->getScratch(), m_ElementID);
+            TPSDocumentElement const* el = FindElement(m_State->getScratch(), m_ElementID);
             if (!el)
             {
                 requestClose();  // element cannot be found in document (deleted? renamed?)
@@ -72,7 +73,7 @@ namespace osc
             InputString("name", *m_ActiveNameEdit);
             if (ItemValueShouldBeSaved())
             {
-                ActionRenameLandmark(*m_Shared->editedDocument, lm.uid, *m_ActiveNameEdit);
+                ActionRenameLandmark(m_State->updUndoable(), lm.uid, *m_ActiveNameEdit);
                 m_ActiveNameEdit.reset();
             }
 
@@ -82,10 +83,10 @@ namespace osc
                 {
                     m_ActivePositionEdit = lm.maybeSourceLocation;
                 }
-                InputMetersFloat3("source", *m_ActivePositionEdit);
+                InputMetersFloat3("source           ", *m_ActivePositionEdit);  // (padded to align with `destination`)
                 if (ItemValueShouldBeSaved())
                 {
-                    ActionSetLandmarkPosition(*m_Shared->editedDocument, lm.uid, TPSDocumentInputIdentifier::Source, *m_ActivePositionEdit);
+                    ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Source, *m_ActivePositionEdit);
                     m_ActivePositionEdit.reset();
                 }
             }
@@ -93,7 +94,7 @@ namespace osc
             {
                 if (ImGui::Button("add source"))
                 {
-                    ActionSetLandmarkPosition(*m_Shared->editedDocument, lm.uid, TPSDocumentInputIdentifier::Source, Vec3{});
+                    ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Source, Vec3{});
                 }
             }
 
@@ -106,7 +107,7 @@ namespace osc
                 InputMetersFloat3("destination", *m_ActiveDestinationPositionEdit);
                 if (ItemValueShouldBeSaved())
                 {
-                    ActionSetLandmarkPosition(*m_Shared->editedDocument, lm.uid, TPSDocumentInputIdentifier::Destination, *m_ActiveDestinationPositionEdit);
+                    ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Destination, *m_ActiveDestinationPositionEdit);
                     m_ActivePositionEdit.reset();
                 }
             }
@@ -114,8 +115,16 @@ namespace osc
             {
                 if (ButtonCentered("add destination"))
                 {
-                    ActionSetLandmarkPosition(*m_Shared->editedDocument, lm.uid, TPSDocumentInputIdentifier::Destination, Vec3{});
+                    ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Destination, Vec3{});
                 }
+            }
+
+            DrawContextMenuSeparator();
+
+            if (ImGui::MenuItem(ICON_FA_TRASH " Delete", "Del"))
+            {
+                ActionDeleteElementByID(m_State->updUndoable(), lm.uid);
+                return;  // CARE: `lm` is now dead
             }
         }
 
@@ -133,7 +142,7 @@ namespace osc
             InputString("name", *m_ActiveNameEdit);
             if (ItemValueShouldBeSaved())
             {
-                ActionRenameNonParticipatingLandmark(*m_Shared->editedDocument, npl.uid, *m_ActiveNameEdit);
+                ActionRenameNonParticipatingLandmark(m_State->updUndoable(), npl.uid, *m_ActiveNameEdit);
                 m_ActiveNameEdit.reset();
             }
 
@@ -144,12 +153,20 @@ namespace osc
             InputMetersFloat3("location", *m_ActivePositionEdit);
             if (ItemValueShouldBeSaved())
             {
-                ActionSetNonParticipatingLandmarkPosition(*m_Shared->editedDocument, npl.uid, *m_ActivePositionEdit);
+                ActionSetNonParticipatingLandmarkPosition(m_State->updUndoable(), npl.uid, *m_ActivePositionEdit);
                 m_ActivePositionEdit.reset();
+            }
+
+            DrawContextMenuSeparator();
+
+            if (ImGui::MenuItem(ICON_FA_TRASH " Delete", "Delete"))
+            {
+                ActionDeleteElementByID(m_State->updUndoable(), npl.uid);
+                return;  // CARE: `npl` is now dead
             }
         }
 
-        std::shared_ptr<MeshWarpingTabSharedState> m_Shared;
+        std::shared_ptr<MeshWarpingTabSharedState> m_State;
         TPSDocumentElementID m_ElementID;
         std::optional<std::string> m_ActiveNameEdit;
         std::optional<Vec3> m_ActivePositionEdit;

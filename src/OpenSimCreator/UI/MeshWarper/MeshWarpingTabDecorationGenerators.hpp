@@ -23,8 +23,7 @@ namespace osc
         Color meshColor = Color::white())
     {
         // draw the mesh
-        out(SceneDecoration
-        {
+        out({
             .mesh = tpsSourceOrDestinationMesh,
             .color = meshColor,
         });
@@ -32,10 +31,9 @@ namespace osc
         // if requested, also draw wireframe overlays for the mesh
         if (wireframeMode)
         {
-            out(SceneDecoration
-            {
+            out({
                 .mesh = tpsSourceOrDestinationMesh,
-                .maybeMaterial = sharedState.wireframeMaterial
+                .maybeMaterial = sharedState.wireframeMaterial,
             });
         }
 

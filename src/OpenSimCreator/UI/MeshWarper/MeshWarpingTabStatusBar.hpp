@@ -19,7 +19,7 @@ namespace osc
     public:
         MeshWarpingTabStatusBar(
             std::string_view label,
-            std::shared_ptr<MeshWarpingTabSharedState> tabState_) :
+            std::shared_ptr<MeshWarpingTabSharedState const> tabState_) :
 
             m_Label{label},
             m_State{std::move(tabState_)}
@@ -80,6 +80,6 @@ namespace osc
         }
 
         std::string m_Label;
-        std::shared_ptr<MeshWarpingTabSharedState> m_State;
+        std::shared_ptr<MeshWarpingTabSharedState const> m_State;
     };
 }

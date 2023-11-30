@@ -122,7 +122,15 @@ TPSDocumentElement const* osc::FindElement(TPSDocument const& doc, TPSDocumentEl
     static_assert(NumOptions<TPSDocumentElementType>() == 2);
 
     switch (id.type) {
-    case TPSDocumentElementType::Landmark: return FindLandmarkPair(doc, id.uid);
+    case TPSDocumentElementType::Landmark:
+        if (auto const* p = FindLandmarkPair(doc, id.uid); GetLocation(*p, id.input))
+        {
+            return p;
+        }
+        else
+        {
+            return nullptr;
+        }
     case TPSDocumentElementType::NonParticipatingLandmark: return FindNonParticipatingLandmark(doc, id.uid);
     default: return nullptr;
     }
@@ -318,6 +326,13 @@ bool osc::DeleteElementByID(TPSDocument& doc, TPSDocumentElementID const& id)
     return false;
 }
 
+bool osc::DeleteElementByID(TPSDocument& doc, UID id)
+{
+    return
+        std::erase_if(doc.landmarkPairs, std::bind_front(HasUID<TPSDocumentLandmarkPair>, id)) > 0 ||
+        std::erase_if(doc.nonParticipatingLandmarks, std::bind_front(HasUID<TPSDocumentNonParticipatingLandmark>, id)) > 0;
+}
+
 CStringView osc::FindElementNameOr(
     TPSDocument const& doc,
     TPSDocumentElementID const& id,
@@ -331,4 +346,20 @@ CStringView osc::FindElementNameOr(
     {
         return alternative;
     }
+}
+
+std::vector<TPSDocumentElementID> osc::GetAllElementIDs(TPSDocument const& doc)
+{
+    std::vector<TPSDocumentElementID> rv;
+    rv.reserve(2*doc.landmarkPairs.size() + doc.nonParticipatingLandmarks.size());
+    for (auto const& lm : doc.landmarkPairs)
+    {
+        rv.push_back(TPSDocumentElementID{lm.uid, TPSDocumentElementType::Landmark, TPSDocumentInputIdentifier::Source});
+        rv.push_back(TPSDocumentElementID{lm.uid, TPSDocumentElementType::Landmark, TPSDocumentInputIdentifier::Destination});
+    }
+    for (auto const& npl : doc.nonParticipatingLandmarks)
+    {
+        rv.push_back(TPSDocumentElementID{npl.uid, TPSDocumentElementType::NonParticipatingLandmark, TPSDocumentInputIdentifier::Source});
+    }
+    return rv;
 }

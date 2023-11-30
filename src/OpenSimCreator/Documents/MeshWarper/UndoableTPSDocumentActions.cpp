@@ -194,6 +194,14 @@ void osc::ActionDeleteSceneElementsByID(
     }
 }
 
+void osc::ActionDeleteElementByID(UndoableTPSDocument& doc, UID id)
+{
+    if (DeleteElementByID(doc.updScratch(), id))
+    {
+        doc.commitScratch("deleted element");
+    }
+}
+
 void osc::ActionLoadMeshFile(
     UndoableTPSDocument& doc,
     TPSDocumentInputIdentifier which)

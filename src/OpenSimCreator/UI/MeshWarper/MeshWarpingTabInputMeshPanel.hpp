@@ -33,7 +33,6 @@
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
-#include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <functional>
@@ -57,9 +56,7 @@ namespace osc
             m_State{std::move(state_)},
             m_DocumentIdentifier{documentIdentifier_}
         {
-            OSC_ASSERT(m_State != nullptr && "the input panel requires a valid sharedState state");
         }
-
     private:
         // draws all of the panel's content
         void implDrawContent() final
@@ -287,15 +284,15 @@ namespace osc
             {
                 .mesh = m_State->landmarkSphere,
                 .transform = {.scale = Vec3{m_LandmarkRadius}, .position = *maybeLocation},
-                .color = IsFullyPaired(landmarkPair) ? m_State->pairedLandmarkColor : m_State->unpairedLandmarkColor
+                .color = IsFullyPaired(landmarkPair) ? m_State->pairedLandmarkColor : m_State->unpairedLandmarkColor,
             };
 
             TPSDocumentElementID const landmarkID{landmarkPair.uid, TPSDocumentElementType::Landmark, m_DocumentIdentifier};
-            if (m_State->userSelection.contains(landmarkID))
+            if (m_State->isSelected(landmarkID))
             {
                 decoration.flags |= SceneDecorationFlags::IsSelected;
             }
-            if (m_State->currentHover && m_State->currentHover->maybeSceneElementID == landmarkID)
+            if (m_State->isHovered(landmarkID))
             {
                 decoration.color = ToSRGB(ClampToLDR(MultiplyLuminance(ToLinear(decoration.color), 1.2f)));
                 decoration.flags |= SceneDecorationFlags::IsHovered;
@@ -333,11 +330,11 @@ namespace osc
                 .color = m_State->nonParticipatingLandmarkColor,
             };
             TPSDocumentElementID const id{npl.uid, TPSDocumentElementType::NonParticipatingLandmark, m_DocumentIdentifier};
-            if (m_State->userSelection.contains(id))
+            if (m_State->isSelected(id))
             {
                 decoration.flags |= SceneDecorationFlags::IsSelected;
             }
-            if (m_State->currentHover && m_State->currentHover->maybeSceneElementID == id)
+            if (m_State->isHovered(id))
             {
                 decoration.color = ToSRGB(ClampToLDR(MultiplyLuminance(ToLinear(decoration.color), 1.2f)));
                 decoration.flags |= SceneDecorationFlags::IsHovered;
@@ -370,14 +367,14 @@ namespace osc
                 {
                     if (!IsShiftDown())
                     {
-                        m_State->userSelection.clear();
+                        m_State->clearSelection();
                     }
-                    m_State->userSelection.select(*landmarkCollision->maybeSceneElementID);
+                    m_State->select(*landmarkCollision->maybeSceneElementID);
                 }
                 else if (meshCollision)
                 {
                     ActionAddLandmark(
-                        *m_State->editedDocument,
+                        m_State->updUndoable(),
                         m_DocumentIdentifier,
                         meshCollision->position
                     );
@@ -389,13 +386,11 @@ namespace osc
             {
                 if (landmarkCollision && landmarkCollision->maybeSceneElementID)
                 {
-                    auto popup = std::make_shared<MeshWarpingTabContextMenu>(
+                    m_State->emplacePopup<MeshWarpingTabContextMenu>(
                         "##MeshInputContextMenu",
                         m_State,
                         *landmarkCollision->maybeSceneElementID
                     );
-                    popup->open();
-                    m_State->popupManager.push_back(std::move(popup));
                 }
             }
 
@@ -404,10 +399,10 @@ namespace osc
             if (htResult.isHovered && IsAnyKeyPressed({ImGuiKey_Delete, ImGuiKey_Backspace}))
             {
                 ActionDeleteSceneElementsByID(
-                    *m_State->editedDocument,
+                    m_State->updUndoable(),
                     m_State->userSelection.getUnderlyingSet()
                 );
-                m_State->userSelection.clear();
+                m_State->clearSelection();
             }
         }
 
@@ -482,16 +477,16 @@ namespace osc
             {
                 if (ImGui::MenuItem("Mesh"))
                 {
-                    ActionLoadMeshFile(*m_State->editedDocument, m_DocumentIdentifier);
+                    ActionLoadMeshFile(m_State->updUndoable(), m_DocumentIdentifier);
                 }
                 if (ImGui::MenuItem("Landmarks from CSV"))
                 {
-                    ActionLoadLandmarksFromCSV(*m_State->editedDocument, m_DocumentIdentifier);
+                    ActionLoadLandmarksFromCSV(m_State->updUndoable(), m_DocumentIdentifier);
                 }
                 if (m_DocumentIdentifier == TPSDocumentInputIdentifier::Source &&
                     ImGui::MenuItem("Non-Participating Landmarks from CSV"))
                 {
-                    ActionLoadNonParticipatingLandmarksFromCSV(*m_State->editedDocument);
+                    ActionLoadNonParticipatingLandmarksFromCSV(m_State->updUndoable());
                 }
                 ImGui::EndPopup();
             }
@@ -531,7 +526,7 @@ namespace osc
                 AutoFocus(m_Camera, m_State->getScratchMesh(m_DocumentIdentifier).getBounds(), AspectRatio(m_LastTextureHittestResult.rect));
                 m_State->linkedCameraBase = m_Camera;
             }
-            osc::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
+            DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
         }
 
         // draws a slider that lets the user edit how large the landmarks are

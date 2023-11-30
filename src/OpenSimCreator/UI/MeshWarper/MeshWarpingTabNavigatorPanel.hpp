@@ -24,8 +24,9 @@ namespace osc
         MeshWarpingTabNavigatorPanel(
             std::string_view label_,
             std::shared_ptr<MeshWarpingTabSharedState> shared_) :
+
             StandardPanel{label_},
-            m_Shared{std::move(shared_)}
+            m_State{std::move(shared_)}
         {
         }
     private:
@@ -33,7 +34,7 @@ namespace osc
         {
             ImGui::TextUnformatted("Landmarks:");
             ImGui::Separator();
-            if (ContainsLandmarks(m_Shared->getScratch()))
+            if (ContainsLandmarks(m_State->getScratch()))
             {
                 drawLandmarksTable();
             }
@@ -46,7 +47,7 @@ namespace osc
 
             ImGui::TextUnformatted("Non-Participating Landmarks:");
             ImGui::Separator();
-            if (ContainsNonParticipatingLandmarks(m_Shared->getScratch()))
+            if (ContainsNonParticipatingLandmarks(m_State->getScratch()))
             {
                 drawNonPariticpatingLandmarksTable();
             }
@@ -74,7 +75,7 @@ namespace osc
             ImGui::TableHeadersRow();
 
             int id = 0;
-            for (auto const& lm : m_Shared->getScratch().landmarkPairs)
+            for (auto const& lm : m_State->getScratch().landmarkPairs)
             {
                 ImGui::PushID(++id);
                 drawLandmarksTableRow(lm);
@@ -114,7 +115,7 @@ namespace osc
         {
             Color const textColor =
                 maybeLocation ?
-                    (paired ? m_Shared->pairedLandmarkColor : m_Shared->unpairedLandmarkColor) :
+                    (paired ? m_State->pairedLandmarkColor : m_State->unpairedLandmarkColor) :
                     Color::halfGrey();
 
             Vec2 const midpoint = calcColumnMidpointScreenPos();
@@ -167,7 +168,7 @@ namespace osc
             ImGui::TableHeadersRow();
 
             int id = 0;
-            for (auto const& npl : m_Shared->getScratch().nonParticipatingLandmarks)
+            for (auto const& npl : m_State->getScratch().nonParticipatingLandmarks)
             {
                 ImGui::PushID(++id);
                 drawNonParticipatingLandmarksTableRow(npl);
@@ -190,7 +191,7 @@ namespace osc
             ImGui::GetWindowDrawList()->AddCircleFilled(
                 calcColumnMidpointScreenPos(),
                 calcCircleRadius(),
-                ToImU32(m_Shared->nonParticipatingLandmarkColor)
+                ToImU32(m_State->nonParticipatingLandmarkColor)
             );
         }
 
@@ -211,6 +212,6 @@ namespace osc
             return Vec2{ImGui::GetCursorScreenPos()} + Vec2{0.5f*ImGui::GetColumnWidth(), 0.5f*ImGui::GetTextLineHeight()};
         }
 
-        std::shared_ptr<MeshWarpingTabSharedState> m_Shared;
+        std::shared_ptr<MeshWarpingTabSharedState> m_State;
     };
 }

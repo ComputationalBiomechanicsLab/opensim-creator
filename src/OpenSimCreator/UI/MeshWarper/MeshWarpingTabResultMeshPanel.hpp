@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/Documents/MeshWarper/UndoableTPSDocumentActions.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabPanel.hpp>
+#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabDecorationGenerators.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.hpp>
 
 #include <IconsFontAwesome5.h>
@@ -9,6 +10,7 @@
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/RenderTexture.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
@@ -17,7 +19,6 @@
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
-#include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <functional>
@@ -31,7 +32,6 @@ namespace osc
     // a "result" panel (i.e. after applying a warp to the source)
     class MeshWarpingTabResultMeshPanel final : public MeshWarpingTabPanel {
     public:
-
         MeshWarpingTabResultMeshPanel(
             std::string_view panelName_,
             std::shared_ptr<MeshWarpingTabSharedState> state_) :
@@ -39,9 +39,7 @@ namespace osc
             MeshWarpingTabPanel{panelName_},
             m_State{std::move(state_)}
         {
-            OSC_ASSERT(m_State != nullptr && "the input panel requires a valid sharedState state");
         }
-
     private:
         void implDrawContent() final
         {
@@ -77,7 +75,7 @@ namespace osc
             // update camera if user drags it around etc.
             if (m_LastTextureHittestResult.isHovered)
             {
-                if (osc::UpdatePolarCameraFromImGuiMouseInputs(m_Camera, osc::Dimensions(m_LastTextureHittestResult.rect)))
+                if (UpdatePolarCameraFromImGuiMouseInputs(m_Camera, Dimensions(m_LastTextureHittestResult.rect)))
                 {
                     m_State->linkedCameraBase = m_Camera;  // reflects latest modification
                 }
@@ -158,11 +156,11 @@ namespace osc
                 }
                 if (ImGui::MenuItem("Warped Non-Participating Landmarks to CSV"))
                 {
-                    ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->editedDocument->getScratch(), m_State->meshResultCache);
+                    ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->getScratch(), m_State->meshResultCache);
                 }
                 if (ImGui::MenuItem("Warped Non-Participating Landmark Positions to CSV"))
                 {
-                    ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->editedDocument->getScratch(), m_State->meshResultCache, TPSDocumentCSVFlags::NoHeader | TPSDocumentCSVFlags::NoNames);
+                    ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->getScratch(), m_State->meshResultCache, TPSDocumentCSVFlags::NoHeader | TPSDocumentCSVFlags::NoNames);
                 }
                 if (ImGui::MenuItem("Landmark Pairs to CSV"))
                 {
@@ -181,14 +179,14 @@ namespace osc
         {
             if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
             {
-                osc::AutoFocus(
+                AutoFocus(
                     m_Camera,
                     m_State->getResultMesh().getBounds(),
                     AspectRatio(m_LastTextureHittestResult.rect)
                 );
                 m_State->linkedCameraBase = m_Camera;
             }
-            osc::DrawTooltipIfItemHovered(
+            DrawTooltipIfItemHovered(
                 "Autoscale Scene",
                 "Zooms camera to try and fit everything in the scene into the viewer"
             );
@@ -216,11 +214,11 @@ namespace osc
             float factor = m_State->getScratch().blendingFactor;
             if (ImGui::SliderFloat(label.c_str(), &factor, 0.0f, 1.0f))
             {
-                ActionSetBlendFactorWithoutCommitting(*m_State->editedDocument, factor);
+                ActionSetBlendFactorWithoutCommitting(m_State->updUndoable(), factor);
             }
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
-                ActionSetBlendFactor(*m_State->editedDocument, factor);
+                ActionSetBlendFactor(m_State->updUndoable(), factor);
             }
         }
 
@@ -255,7 +253,7 @@ namespace osc
                         .scale = Vec3{GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius},
                         .position = nonParticipatingLandmarkPos,
                     },
-                    .color = m_State->nonParticipatingLandmarkColor
+                    .color = m_State->nonParticipatingLandmarkColor,
                 });
             }
 

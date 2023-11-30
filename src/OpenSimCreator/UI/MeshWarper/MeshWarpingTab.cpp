@@ -29,7 +29,7 @@ public:
     {
         m_PanelManager->registerToggleablePanel(
             "Source Mesh",
-            [state = m_SharedState](std::string_view panelName)
+            [state = m_Shared](std::string_view panelName)
             {
                 return std::make_shared<MeshWarpingTabInputMeshPanel>(panelName, state, TPSDocumentInputIdentifier::Source);
             }
@@ -37,7 +37,7 @@ public:
 
         m_PanelManager->registerToggleablePanel(
             "Destination Mesh",
-            [state = m_SharedState](std::string_view panelName)
+            [state = m_Shared](std::string_view panelName)
             {
                 return std::make_shared<MeshWarpingTabInputMeshPanel>(panelName, state, TPSDocumentInputIdentifier::Destination);
             }
@@ -45,7 +45,7 @@ public:
 
         m_PanelManager->registerToggleablePanel(
             "Result",
-            [state = m_SharedState](std::string_view panelName)
+            [state = m_Shared](std::string_view panelName)
             {
                 return std::make_shared<MeshWarpingTabResultMeshPanel>(panelName, state);
             }
@@ -53,7 +53,7 @@ public:
 
         m_PanelManager->registerToggleablePanel(
             "History",
-            [state = m_SharedState](std::string_view panelName)
+            [state = m_Shared](std::string_view panelName)
             {
                 return std::make_shared<UndoRedoPanel>(panelName, state->editedDocument);
             },
@@ -80,7 +80,7 @@ public:
 
         m_PanelManager->registerToggleablePanel(
             "Landmark Navigator",
-            [state = m_SharedState](std::string_view panelName)
+            [state = m_Shared](std::string_view panelName)
             {
                 return std::make_shared<MeshWarpingTabNavigatorPanel>(panelName, state);
             },
@@ -102,7 +102,7 @@ public:
     {
         App::upd().makeMainEventLoopWaiting();
         m_PanelManager->onMount();
-        m_SharedState->popupManager.onMount();
+        m_Shared->popupManager.onMount();
     }
 
     void onUnmount()
@@ -126,7 +126,7 @@ public:
     void onTick()
     {
         // re-perform hover test each frame
-        m_SharedState->currentHover.reset();
+        m_Shared->currentHover.reset();
 
         // garbage collect panel data
         m_PanelManager->onTick();
@@ -146,7 +146,7 @@ public:
         m_StatusBar.onDraw();
 
         // draw active popups over the UI
-        m_SharedState->popupManager.onDraw();
+        m_Shared->popupManager.onDraw();
     }
 
 private:
@@ -157,13 +157,43 @@ private:
         if (ctrlOrSuperDown && e.keysym.mod & KMOD_SHIFT && e.keysym.sym == SDLK_z)
         {
             // Ctrl+Shift+Z: redo
-            m_SharedState->editedDocument->redo();
+            m_Shared->redo();
             return true;
         }
         else if (ctrlOrSuperDown && e.keysym.sym == SDLK_z)
         {
             // Ctrl+Z: undo
-            m_SharedState->editedDocument->undo();
+            m_Shared->undo();
+            return true;
+        }
+        else if (ctrlOrSuperDown && e.keysym.sym == SDLK_n)
+        {
+            // Ctrl+N: redo
+            ActionCreateNewDocument(m_Shared->updUndoable());
+            return true;
+        }
+        else if (ctrlOrSuperDown && e.keysym.sym == SDLK_w)
+        {
+            // Ctrl+W: new
+            m_Shared->closeTab();
+            return true;
+        }
+        else if (ctrlOrSuperDown && e.keysym.sym == SDLK_q)
+        {
+            // Ctrl+Q: quit
+            App::upd().requestQuit();
+            return true;
+        }
+        else if (ctrlOrSuperDown && e.keysym.sym == SDLK_a)
+        {
+            // Ctrl+A: select all
+            m_Shared->selectAll();
+            return true;
+        }
+        else if (e.keysym.sym == SDLK_ESCAPE)
+        {
+            // ESCAPE: clear selection
+            m_Shared->clearSelection();
             return true;
         }
         else
@@ -176,15 +206,15 @@ private:
     ParentPtr<TabHost> m_Parent;
 
     // top-level state that all panels can potentially access
-    std::shared_ptr<MeshWarpingTabSharedState> m_SharedState = std::make_shared<MeshWarpingTabSharedState>(m_TabID, m_Parent);
+    std::shared_ptr<MeshWarpingTabSharedState> m_Shared = std::make_shared<MeshWarpingTabSharedState>(m_TabID, m_Parent);
 
     // available/active panels that the user can toggle via the `window` menu
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
 
     // not-user-toggleable widgets
-    MeshWarpingTabMainMenu m_MainMenu{m_SharedState, m_PanelManager};
-    MeshWarpingTabToolbar m_TopToolbar{"##MeshWarpingTabToolbar", m_SharedState};
-    MeshWarpingTabStatusBar m_StatusBar{"##MeshWarpingTabStatusBar", m_SharedState};
+    MeshWarpingTabMainMenu m_MainMenu{m_Shared, m_PanelManager};
+    MeshWarpingTabToolbar m_TopToolbar{"##MeshWarpingTabToolbar", m_Shared};
+    MeshWarpingTabStatusBar m_StatusBar{"##MeshWarpingTabStatusBar", m_Shared};
 };
 
 

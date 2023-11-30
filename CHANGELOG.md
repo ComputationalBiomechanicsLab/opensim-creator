@@ -28,6 +28,7 @@ All notable changes to this project will be documented here. The format is based
   - It's assumed that CSV files with >= 4 columns have the name in the first column
   - If a non-participating landmark with the same name is already in the scene then it will overwrite it's location
   - The previous functionality (of handling CSV files with 3 columns) has not changed
+- The mesh warper UI now supports more keybindings, which are now also listed in the top menu bar
 
 
 ## [0.5.5] - 2023/11/21

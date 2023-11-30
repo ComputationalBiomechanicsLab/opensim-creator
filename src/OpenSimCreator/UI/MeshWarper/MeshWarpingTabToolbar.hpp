@@ -83,9 +83,9 @@ namespace osc
         {
             if (ImGui::Button(ICON_FA_FILE))
             {
-                ActionCreateNewDocument(*m_State->editedDocument);
+                ActionCreateNewDocument(m_State->updUndoable());
             }
-            osc::DrawTooltipIfItemHovered(
+            DrawTooltipIfItemHovered(
                 "Create New Document",
                 "Creates the default scene (undoable)"
             );
@@ -98,15 +98,15 @@ namespace osc
             {
                 if (ImGui::MenuItem("Load Source Mesh"))
                 {
-                    ActionLoadMeshFile(*m_State->editedDocument, TPSDocumentInputIdentifier::Source);
+                    ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Source);
                 }
                 if (ImGui::MenuItem("Load Destination Mesh"))
                 {
-                    ActionLoadMeshFile(*m_State->editedDocument, TPSDocumentInputIdentifier::Destination);
+                    ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Destination);
                 }
                 ImGui::EndPopup();
             }
-            osc::DrawTooltipIfItemHovered(
+            DrawTooltipIfItemHovered(
                 "Open File",
                 "Open Source/Destination data"
             );
@@ -118,7 +118,7 @@ namespace osc
             {
                 ActionSavePairedLandmarksToCSV(m_State->getScratch(), TPSDocumentCSVFlags::NoNames);
             }
-            osc::DrawTooltipIfItemHovered(
+            DrawTooltipIfItemHovered(
                 "Save Landmarks to CSV (no names)",
                 "Saves all pair-able landmarks to a CSV file, for external processing\n\n(legacy behavior: does not export names: use 'File' menu if you want the names)"
             );
@@ -133,8 +133,7 @@ namespace osc
 
         void drawResetLandmarksButton()
         {
-            bool const hasLandmarks =
-                !m_State->editedDocument->getScratch().landmarkPairs.empty();
+            bool const hasLandmarks = ContainsLandmarks(m_State->getScratch());
 
             if (!hasLandmarks)
             {
@@ -143,7 +142,7 @@ namespace osc
 
             if (ImGui::Button(ICON_FA_ERASER " clear landmarks"))
             {
-                ActionClearAllLandmarks(*m_State->editedDocument);
+                ActionClearAllLandmarks(m_State->updUndoable());
             }
 
             if (!hasLandmarks)
@@ -155,7 +154,7 @@ namespace osc
         void drawResetNonParticipatingLandmarksButton()
         {
             bool const hasNonParticipatingLandmarks =
-                !m_State->editedDocument->getScratch().nonParticipatingLandmarks.empty();
+                ContainsNonParticipatingLandmarks(m_State->getScratch());
 
             if (!hasNonParticipatingLandmarks)
             {
@@ -164,7 +163,7 @@ namespace osc
 
             if (ImGui::Button(ICON_FA_ERASER " clear non-participating landmarks"))
             {
-                ActionClearAllNonParticipatingLandmarks(*m_State->editedDocument);
+                ActionClearAllNonParticipatingLandmarks(m_State->updUndoable());
             }
 
             if (!hasNonParticipatingLandmarks)

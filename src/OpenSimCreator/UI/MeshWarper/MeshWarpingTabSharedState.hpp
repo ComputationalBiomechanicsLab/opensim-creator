@@ -20,6 +20,7 @@
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/UI/Tabs/TabHost.hpp>
 #include <oscar/UI/Widgets/PopupManager.hpp>
+#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/UID.hpp>
 
@@ -47,6 +48,16 @@ namespace osc
             return editedDocument->getScratch();
         }
 
+        UndoableTPSDocument const& getUndoable() const
+        {
+            return *editedDocument;
+        }
+
+        UndoableTPSDocument& updUndoable()
+        {
+            return *editedDocument;
+        }
+
         Mesh const& getScratchMesh(TPSDocumentInputIdentifier which) const
         {
             return GetMesh(getScratch(), which);
@@ -67,6 +78,80 @@ namespace osc
         std::span<Vec3 const> getResultNonParticipatingLandmarkLocations()
         {
             return meshResultCache.getWarpedNonParticipatingLandmarkLocations(editedDocument->getScratch());
+        }
+
+        bool isHovered(TPSDocumentElementID const& id) const
+        {
+            return currentHover && currentHover->maybeSceneElementID == id;
+        }
+
+        bool hasSelection() const
+        {
+            // TODO: should probably gc the selection
+            for (auto const& el : userSelection.getUnderlyingSet())
+            {
+                if (FindElement(getScratch(), el))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        bool isSelected(TPSDocumentElementID const& id) const
+        {
+            return userSelection.contains(id);
+        }
+
+        void select(TPSDocumentElementID const& id)
+        {
+            userSelection.select(id);
+        }
+
+        void clearSelection()
+        {
+            userSelection.clear();
+        }
+
+        void selectAll()
+        {
+            for (auto const& el : GetAllElementIDs(editedDocument->getScratch()))
+            {
+                userSelection.select(el);
+            }
+        }
+
+        void closeTab()
+        {
+            tabHost->closeTab(tabID);
+        }
+
+        bool canUndo() const
+        {
+            return editedDocument->canUndo();
+        }
+
+        void undo()
+        {
+            editedDocument->undo();
+        }
+
+        bool canRedo() const
+        {
+            return editedDocument->canRedo();
+        }
+
+        void redo()
+        {
+            editedDocument->redo();
+        }
+
+        template<DerivedFrom<Popup> TPopup, class... Args>
+        void emplacePopup(Args&&... args)
+        {
+            auto p = std::make_shared<TPopup>(std::forward<Args>(args)...);
+            p->open();
+            popupManager.push_back(std::move(p));
         }
 
         // ID of the top-level TPS3D tab

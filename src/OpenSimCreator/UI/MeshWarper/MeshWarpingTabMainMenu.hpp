@@ -18,6 +18,7 @@ namespace osc
         explicit MeshWarpingTabMainMenu(
             std::shared_ptr<MeshWarpingTabSharedState> const& tabState_,
             std::shared_ptr<PanelManager> const& panelManager_) :
+
             m_FileMenu{tabState_},
             m_EditMenu{tabState_},
             m_WindowMenu{panelManager_}

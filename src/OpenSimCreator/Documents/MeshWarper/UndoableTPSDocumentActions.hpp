@@ -52,6 +52,7 @@ namespace osc
 
     // deletes the specified landmarks from the TPS document
     void ActionDeleteSceneElementsByID(UndoableTPSDocument&, std::unordered_set<TPSDocumentElementID> const&);
+    void ActionDeleteElementByID(UndoableTPSDocument&, UID);
 
     // prompts the user to browse for an input mesh and assigns it to the document
     void ActionLoadMeshFile(UndoableTPSDocument&, TPSDocumentInputIdentifier);
