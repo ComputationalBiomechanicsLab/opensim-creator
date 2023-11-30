@@ -5,6 +5,7 @@
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentHelpers.hpp>
+#include <OpenSimCreator/Documents/MeshWarper/TPSWarpResultCache.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/UndoableTPSDocument.hpp>
 #include <OpenSimCreator/Graphics/SimTKMeshLoader.hpp>
 #include <OpenSimCreator/Utils/TPS3D.hpp>
@@ -390,31 +391,51 @@ void osc::ActionTrySaveMeshToStlFile(Mesh const& mesh)
 }
 
 void osc::ActionSaveWarpedNonParticipatingLandmarksToCSV(
-    std::span<Vec3 const> nonParticipatingLandmarkPositions)
+    TPSDocument const& doc,
+    TPSResultCache& cache,
+    TPSDocumentCSVFlags flags)
 {
-    std::optional<std::filesystem::path> const maybeCSVPath =
-        PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+    auto const maybeCSVPath = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
     if (!maybeCSVPath)
     {
         return;  // user didn't select a save location
     }
 
-    std::ofstream fileOutputStream{*maybeCSVPath};
-    if (!fileOutputStream)
+    std::ofstream fout{*maybeCSVPath};
+    if (!fout)
     {
         return;  // couldn't open file for writing
     }
 
-    for (Vec3 const& nonParticipatingLandmark : nonParticipatingLandmarkPositions)
+    // if applicable, write header row
+    if (!(flags & TPSDocumentCSVFlags::NoHeader))
     {
-        WriteCSVRow(
-            fileOutputStream,
-            std::to_array(
-            {
-                std::to_string(nonParticipatingLandmark.x),
-                std::to_string(nonParticipatingLandmark.y),
-                std::to_string(nonParticipatingLandmark.z),
-            })
-        );
+        if (flags & TPSDocumentCSVFlags::NoNames)
+        {
+            WriteCSVRow(fout, {{"x", "y", "z"}});
+        }
+        else
+        {
+            WriteCSVRow(fout, {{"name", "x", "y", "z"}});
+        }
+    }
+
+    // write data rows
+    std::span<Vec3 const> const warpedLocations = cache.getWarpedNonParticipatingLandmarkLocations(doc);
+    OSC_ASSERT(warpedLocations.size() == doc.nonParticipatingLandmarks.size());
+    for (size_t i = 0; i < warpedLocations.size(); ++i)
+    {
+        using std::to_string;
+
+        Vec3 const pos = warpedLocations[i];
+        if (flags & TPSDocumentCSVFlags::NoNames)
+        {
+            WriteCSVRow(fout, {{to_string(pos.x), to_string(pos.y), to_string(pos.z)}});
+        }
+        else
+        {
+            std::string name = std::string{doc.nonParticipatingLandmarks.at(i).name};
+            WriteCSVRow(fout, {{name, to_string(pos.x), to_string(pos.y), to_string(pos.z)}});
+        }
     }
 }

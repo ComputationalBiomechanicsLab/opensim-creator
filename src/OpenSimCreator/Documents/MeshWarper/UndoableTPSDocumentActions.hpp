@@ -15,6 +15,7 @@
 
 namespace osc { class Mesh; }
 namespace osc { struct TPSDocument; }
+namespace osc { class TPSResultCache; }
 
 // user-enactable actions
 namespace osc
@@ -74,5 +75,9 @@ namespace osc
     void ActionTrySaveMeshToStlFile(Mesh const&);
 
     // prompts the user to save the (already warped) points to a CSV file
-    void ActionSaveWarpedNonParticipatingLandmarksToCSV(std::span<Vec3 const>);
+    void ActionSaveWarpedNonParticipatingLandmarksToCSV(
+        TPSDocument const&,
+        TPSResultCache&,
+        TPSDocumentCSVFlags = TPSDocumentCSVFlags::None
+    );
 }

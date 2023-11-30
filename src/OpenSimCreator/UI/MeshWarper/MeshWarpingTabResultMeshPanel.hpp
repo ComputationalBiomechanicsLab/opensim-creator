@@ -158,7 +158,11 @@ namespace osc
                 }
                 if (ImGui::MenuItem("Warped Non-Participating Landmarks to CSV"))
                 {
-                    ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->getResultNonParticipatingLandmarkLocations());
+                    ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->editedDocument->getScratch(), m_State->meshResultCache);
+                }
+                if (ImGui::MenuItem("Warped Non-Participating Landmark Positions to CSV"))
+                {
+                    ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->editedDocument->getScratch(), m_State->meshResultCache, TPSDocumentCSVFlags::NoHeader | TPSDocumentCSVFlags::NoNames);
                 }
                 if (ImGui::MenuItem("Landmark Pairs to CSV"))
                 {
