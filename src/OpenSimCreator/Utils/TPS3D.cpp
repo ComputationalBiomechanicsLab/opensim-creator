@@ -1,15 +1,13 @@
 #include "TPS3D.hpp"
 
-#include <oscar/Formats/CSV.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/ParalellizationHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
 #include <Simbody.h>
 
-#include <fstream>
 #include <iostream>
+#include <vector>
 
 using osc::Vec3;
 
@@ -274,40 +272,6 @@ std::vector<osc::Vec3> osc::ApplyThinPlateWarpToPoints(
     for (Vec3 const& point : points)
     {
         rv.push_back(EvaluateTPSEquation(coefs, point));
-    }
-
-    return rv;
-}
-
-std::vector<osc::Vec3> osc::LoadLandmarksFromCSVFile(std::filesystem::path const& p)
-{
-    std::vector<Vec3> rv;
-
-    std::ifstream fileInputStream{p};
-    if (!fileInputStream)
-    {
-        return rv;  // some kind of error opening the file
-    }
-
-    std::vector<std::string> cols;
-    while (osc::ReadCSVRowIntoVector(fileInputStream, cols))
-    {
-        if (cols.size() < 3)
-        {
-            continue;  // too few columns: ignore
-        }
-
-        // 4 columns implies that the first is probably a label column
-        ptrdiff_t const offset = cols.size() == 4 ? 1 : 0;
-
-        std::optional<float> const x = osc::FromCharsStripWhitespace(cols[offset+0]);
-        std::optional<float> const y = osc::FromCharsStripWhitespace(cols[offset+1]);
-        std::optional<float> const z = osc::FromCharsStripWhitespace(cols[offset+2]);
-        if (!(x && y && z))
-        {
-            continue;  // a column was non-numeric: ignore entire line
-        }
-        rv.emplace_back(*x, *y, *z);
     }
 
     return rv;

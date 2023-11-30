@@ -33,6 +33,12 @@ namespace osc
     // if it exists in the document, returns a pointer to the identified element; otherwise, returns `nullptr`
     TPSDocumentElement const* FindElement(TPSDocument const& doc, TPSDocumentElementID const&);
 
+    // if it exists in the document, returns a pointer to the landmark that has the given name; otherwise, returns `nullptr`
+    TPSDocumentLandmarkPair const* FindLandmarkPairByName(TPSDocument const&, StringName const&);
+    TPSDocumentLandmarkPair* FindLandmarkPairByName(TPSDocument&, StringName const&);
+    TPSDocumentNonParticipatingLandmark const* FindNonParticipatingLandmarkByName(TPSDocument const&, StringName const&);
+    TPSDocumentNonParticipatingLandmark* FindNonParticipatingLandmarkByName(TPSDocument&, StringName const&);
+
     // returns `true` if the document contains an element (landmark, non-participating landmark, etc.) with the given name
     bool ContainsElementWithName(TPSDocument const& doc, StringName const&);
 
@@ -113,7 +119,19 @@ namespace osc
     StringName NextNonParticipatingLandmarkName(TPSDocument const&);
 
     // adds a source/destination landmark at the given location
-    void AddLandmarkToInput(TPSDocument&, TPSDocumentInputIdentifier, Vec3 const&);
+    void AddLandmarkToInput(
+        TPSDocument&,
+        TPSDocumentInputIdentifier,
+        Vec3 const&,
+        std::optional<std::string_view> suggestedName = std::nullopt
+    );
+
+    // adds a non-participating landmark to the document
+    void AddNonParticipatingLandmark(
+        TPSDocument&,
+        Vec3 const&,
+        std::optional<std::string_view> suggestedName = std::nullopt
+    );
 
     // returns `true` if the given element was deleted from the document
     bool DeleteElementByID(TPSDocument&, TPSDocumentElementID const&);

@@ -18,6 +18,16 @@ All notable changes to this project will be documented here. The format is based
   - The previous functionality (no names) is exposed as "Landmark Pairs to CSV (no names)"
 - The mesh warper's CSV exporter for warped non-participating landmarks now includes a name column (#807)
   - The previous functionality (of exporting no names) is exposed as "Warped Non-Participating Landmark Positions to CSV"
+- The mesh warper's CSV importer can now import named landmarks (#807):
+  - It's assumed that CSV files with >= 4 columns have the name in the first column
+  - If a landmark with the same name is already available for mesh mesh you're importing for, it overwrites the location
+  - Otherwise, it either pairs the landmark (if a landmark with same name is found for the other mesh), or creates a new
+    landmark with the given name
+  - The previous functionality (of handling CSV files with 3 columns) has not changed
+- The mesh warper's CSV importer can now import named non-participating landmarks (#807):
+  - It's assumed that CSV files with >= 4 columns have the name in the first column
+  - If a non-participating landmark with the same name is already in the scene then it will overwrite it's location
+  - The previous functionality (of handling CSV files with 3 columns) has not changed
 
 
 ## [0.5.5] - 2023/11/21

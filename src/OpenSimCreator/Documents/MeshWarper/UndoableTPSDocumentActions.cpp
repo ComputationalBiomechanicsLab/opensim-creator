@@ -18,6 +18,7 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 
 #include <algorithm>
 #include <array>
@@ -28,6 +29,42 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
+
+using namespace osc;
+
+namespace
+{
+    struct LandmarkCSVRow {
+        std::optional<std::string> maybeName;
+        Vec3 position;
+    };
+    std::optional<LandmarkCSVRow> ParseLandmarkCSVRow(std::span<std::string const> cols)
+    {
+        if (cols.size() < 3)
+        {
+            return std::nullopt;  // too few columns
+        }
+
+        // >=4 columns implies that the first column is probably a label
+        std::optional<std::string> maybeName;
+        std::span<std::string const> data = cols;
+        if (cols.size() >= 4)
+        {
+            maybeName = cols.front();
+            data = data.subspan(1);
+        }
+
+        std::optional<float> const x = FromCharsStripWhitespace(data[0]);
+        std::optional<float> const y = FromCharsStripWhitespace(data[1]);
+        std::optional<float> const z = FromCharsStripWhitespace(data[2]);
+        if (!(x && y && z))
+        {
+            return std::nullopt;  // a column was non-numeric: ignore entire line
+        }
+
+        return LandmarkCSVRow{maybeName, {*x, *y, *z}};
+    }
+}
 
 void osc::ActionAddLandmark(
     UndoableTPSDocument& doc,
@@ -177,22 +214,25 @@ void osc::ActionLoadLandmarksFromCSV(
     UndoableTPSDocument& doc,
     TPSDocumentInputIdentifier which)
 {
-    std::optional<std::filesystem::path> const maybeCSVPath =
-        PromptUserForFile("csv");
+    auto const maybeCSVPath = PromptUserForFile("csv");
     if (!maybeCSVPath)
     {
         return;  // user didn't select anything
     }
 
-    std::vector<Vec3> const landmarks = LoadLandmarksFromCSVFile(*maybeCSVPath);
-    if (landmarks.empty())
+    std::ifstream fin{*maybeCSVPath};
+    if (!fin)
     {
-        return;  // the landmarks file was empty, or had invalid data
+        return;  // some kind of error opening the file
     }
 
-    for (Vec3 const& landmark : landmarks)
+    std::vector<std::string> cols;
+    while (ReadCSVRowIntoVector(fin, cols))
     {
-        AddLandmarkToInput(doc.updScratch(), which, landmark);
+        if (auto const row = ParseLandmarkCSVRow(cols))
+        {
+            AddLandmarkToInput(doc.updScratch(), which, row->position, row->maybeName);
+        }
     }
 
     doc.commitScratch("loaded landmarks");
@@ -200,28 +240,27 @@ void osc::ActionLoadLandmarksFromCSV(
 
 void osc::ActionLoadNonParticipatingLandmarksFromCSV(UndoableTPSDocument& doc)
 {
-    std::optional<std::filesystem::path> const maybeCSVPath =
-        PromptUserForFile("csv");
+    auto const maybeCSVPath = PromptUserForFile("csv");
     if (!maybeCSVPath)
     {
         return;  // user didn't select anything
     }
 
-    std::vector<Vec3> const landmarks = LoadLandmarksFromCSVFile(*maybeCSVPath);
-    if (landmarks.empty())
+    std::ifstream fin{*maybeCSVPath};
+    if (!fin)
     {
-        return;  // the landmarks file was empty, or had invalid data
+        return;  // some kind of error opening the file
     }
 
-    std::transform(
-        landmarks.begin(),
-        landmarks.end(),
-        std::back_inserter(doc.updScratch().nonParticipatingLandmarks),
-        [&readonlyDoc = doc.getScratch()](Vec3 const& landmark)
+    std::vector<std::string> cols;
+    while (ReadCSVRowIntoVector(fin, cols))
+    {
+        if (auto const row = ParseLandmarkCSVRow(cols))
         {
-            return TPSDocumentNonParticipatingLandmark{NextNonParticipatingLandmarkName(readonlyDoc), landmark};
+            AddNonParticipatingLandmark(doc.updScratch(), row->position, row->maybeName);
         }
-    );
+    }
+
     doc.commitScratch("added non-participating landmarks");
 }
 

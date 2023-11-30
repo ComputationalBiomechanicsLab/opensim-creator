@@ -128,13 +128,29 @@ TPSDocumentElement const* osc::FindElement(TPSDocument const& doc, TPSDocumentEl
     }
 }
 
+TPSDocumentLandmarkPair const* osc::FindLandmarkPairByName(TPSDocument const& doc, StringName const& name)
+{
+    return NullableFindIf(doc.landmarkPairs, std::bind_front(HasName<TPSDocumentLandmarkPair>, name));
+}
+
+TPSDocumentLandmarkPair* osc::FindLandmarkPairByName(TPSDocument& doc, StringName const& name)
+{
+    return NullableFindIf(doc.landmarkPairs, std::bind_front(HasName<TPSDocumentLandmarkPair>, name));
+}
+
+TPSDocumentNonParticipatingLandmark const* osc::FindNonParticipatingLandmarkByName(TPSDocument const& doc, StringName const& name)
+{
+    return NullableFindIf(doc.nonParticipatingLandmarks, std::bind_front(HasName<TPSDocumentNonParticipatingLandmark>, name));
+}
+
+TPSDocumentNonParticipatingLandmark* osc::FindNonParticipatingLandmarkByName(TPSDocument& doc, StringName const& name)
+{
+    return NullableFindIf(doc.nonParticipatingLandmarks, std::bind_front(HasName<TPSDocumentNonParticipatingLandmark>, name));
+}
+
 bool osc::ContainsElementWithName(TPSDocument const& doc, StringName const& name)
 {
-    auto const& lms = doc.landmarkPairs;
-    auto const& npls = doc.nonParticipatingLandmarks;
-    return
-        std::any_of(lms.begin(), lms.end(), std::bind_front(HasName<TPSDocumentLandmarkPair>, name)) ||
-        std::any_of(npls.begin(), npls.end(), std::bind_front(HasName<TPSDocumentNonParticipatingLandmark>, name));
+    return FindLandmarkPairByName(doc, name) || FindNonParticipatingLandmarkByName(doc, name);
 }
 
 std::optional<LandmarkPair3D> osc::TryExtractLandmarkPair(TPSDocumentLandmarkPair const& p)
@@ -198,31 +214,79 @@ StringName osc::NextNonParticipatingLandmarkName(TPSDocument const& doc)
 void osc::AddLandmarkToInput(
     TPSDocument& doc,
     TPSDocumentInputIdentifier which,
-    Vec3 const& pos)
+    Vec3 const& pos,
+    std::optional<std::string_view> suggestedName)
 {
-    // first, try assigning it to an empty slot in the existing data
-    //
-    // (e.g. imagine the caller added a few source points and is now
-    //       trying to add destination points - they should probably
-    //       be paired in-sequence with the unpaired source points)
-    bool wasAssignedToExistingEmptySlot = false;
-    for (TPSDocumentLandmarkPair& p : doc.landmarkPairs)
+    if (suggestedName)
     {
-        std::optional<Vec3>& maybeLoc = UpdLocation(p, which);
-        if (!maybeLoc)
+        // if a name is suggested, then lookup the landmark by name and
+        // overwrite the location; otherwise, create a new landmark with
+        // the name (this is _probably_ what the user intended)
+
+        StringName const name{*suggestedName};
+        auto* p = FindLandmarkPairByName(doc, name);
+        if (!p)
         {
-            maybeLoc = pos;
-            wasAssignedToExistingEmptySlot = true;
-            break;
+            p = &doc.landmarkPairs.emplace_back(name);
+        }
+        UpdLocation(*p, which) = pos;
+    }
+    else
+    {
+        // no name suggested: so assume that the user wants to pair the
+        // landmarks in-order with landmarks that have no corresponding
+        // location yet; otherwise, create a new (half) landmark with
+        // a generated name
+
+        bool wasAssignedToExistingEmptySlot = false;
+        for (TPSDocumentLandmarkPair& p : doc.landmarkPairs)
+        {
+            std::optional<Vec3>& maybeLoc = UpdLocation(p, which);
+            if (!maybeLoc)
+            {
+                maybeLoc = pos;
+                wasAssignedToExistingEmptySlot = true;
+                break;
+            }
+        }
+
+        // if there wasn't an empty slot, then create a new landmark pair and
+        // assign the location to the relevant part of the pair
+        if (!wasAssignedToExistingEmptySlot)
+        {
+            TPSDocumentLandmarkPair& p = doc.landmarkPairs.emplace_back(NextLandmarkName(doc));
+            UpdLocation(p, which) = pos;
         }
     }
+}
 
-    // if there wasn't an empty slot, then create a new landmark pair and
-    // assign the location to the relevant part of the pair
-    if (!wasAssignedToExistingEmptySlot)
+void osc::AddNonParticipatingLandmark(
+    TPSDocument& doc,
+    Vec3 const& location,
+    std::optional<std::string_view> suggestedName)
+{
+    if (suggestedName)
     {
-        TPSDocumentLandmarkPair& p = doc.landmarkPairs.emplace_back(NextLandmarkName(doc));
-        UpdLocation(p, which) = pos;
+        // if a name is suggested, then lookup the non-participating landmark
+        // by name and overwrite the location; otherwise, create a new
+        // landmark with the name (this is _probably_ what the user intended)
+
+        StringName const name{*suggestedName};
+        auto* p = FindNonParticipatingLandmarkByName(doc, name);
+        if (p)
+        {
+            p->location = location;
+        }
+        else
+        {
+            doc.nonParticipatingLandmarks.emplace_back(name, location);
+        }
+    }
+    else
+    {
+        // if no name is suggested, generate one
+
+        doc.nonParticipatingLandmarks.emplace_back(NextNonParticipatingLandmarkName(doc), location);
     }
 }
 
