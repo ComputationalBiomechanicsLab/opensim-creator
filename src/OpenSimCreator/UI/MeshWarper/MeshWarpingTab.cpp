@@ -79,7 +79,7 @@ public:
         );
 
         m_PanelManager->registerToggleablePanel(
-            "Navigator",
+            "Landmark Navigator",
             [state = m_SharedState](std::string_view panelName)
             {
                 return std::make_shared<MeshWarpingTabNavigatorPanel>(panelName, state);
