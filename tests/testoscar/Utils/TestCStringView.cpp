@@ -1,6 +1,7 @@
 #include <oscar/Utils/CStringView.hpp>
 
 #include <gtest/gtest.h>
+#include <oscar/Shims/Cpp20/string_view.hpp>
 
 #include <algorithm>
 #include <array>
@@ -48,7 +49,7 @@ TEST(CStringView, ThreeWayComparisonBehavesIdenticallyToStringViewComparision)
         CStringView csv{elCStr};
         for (char const* otherCStr : svs)
         {
-            ASSERT_EQ(sv <=> std::string_view{otherCStr}, csv <=> CStringView{otherCStr});
+            ASSERT_EQ(ThreeWayComparison(sv, std::string_view{otherCStr}), csv <=> CStringView{otherCStr});
         }
     };
     std::for_each(svs.begin(), svs.end(), sameThreeWayResultWithAllOtherElements);
