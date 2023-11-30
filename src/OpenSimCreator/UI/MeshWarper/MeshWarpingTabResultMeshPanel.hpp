@@ -150,15 +150,15 @@ namespace osc
             {
                 if (ImGui::MenuItem("Mesh to OBJ"))
                 {
-                    ActionTrySaveMeshToObj(m_State->getResultMesh());
+                    ActionTrySaveMeshToObjFile(m_State->getResultMesh());
                 }
                 if (ImGui::MenuItem("Mesh to STL"))
                 {
-                    ActionTrySaveMeshToStl(m_State->getResultMesh());
+                    ActionTrySaveMeshToStlFile(m_State->getResultMesh());
                 }
                 if (ImGui::MenuItem("Non-Participating Landmarks to CSV"))
                 {
-                    ActionTrySaveWarpedNonParticipatingLandmarksToCSV(m_State->getResultNonParticipatingLandmarks());
+                    ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->getResultNonParticipatingLandmarks());
                 }
                 ImGui::EndPopup();
             }
@@ -204,11 +204,11 @@ namespace osc
             float factor = m_State->getScratch().blendingFactor;
             if (ImGui::SliderFloat(label.c_str(), &factor, 0.0f, 1.0f))
             {
-                ActionSetBlendFactorWithoutSaving(*m_State->editedDocument, factor);
+                ActionSetBlendFactorWithoutCommitting(*m_State->editedDocument, factor);
             }
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
-                ActionSetBlendFactorAndSave(*m_State->editedDocument, factor);
+                ActionSetBlendFactor(*m_State->editedDocument, factor);
             }
         }
 

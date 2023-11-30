@@ -376,7 +376,7 @@ namespace osc
                 }
                 else if (meshCollision)
                 {
-                    ActionAddLandmarkTo(
+                    ActionAddLandmark(
                         *m_State->editedDocument,
                         m_DocumentIdentifier,
                         meshCollision->position
@@ -482,16 +482,16 @@ namespace osc
             {
                 if (ImGui::MenuItem("Mesh"))
                 {
-                    ActionBrowseForNewMesh(*m_State->editedDocument, m_DocumentIdentifier);
+                    ActionLoadMeshFile(*m_State->editedDocument, m_DocumentIdentifier);
                 }
                 if (ImGui::MenuItem("Landmarks from CSV"))
                 {
-                    ActionLoadLandmarksCSV(*m_State->editedDocument, m_DocumentIdentifier);
+                    ActionLoadLandmarksFromCSV(*m_State->editedDocument, m_DocumentIdentifier);
                 }
                 if (m_DocumentIdentifier == TPSDocumentInputIdentifier::Source &&
                     ImGui::MenuItem("Non-Participating Landmarks from CSV"))
                 {
-                    ActionLoadNonParticipatingPointsCSV(*m_State->editedDocument);
+                    ActionLoadNonParticipatingLandmarksFromCSV(*m_State->editedDocument);
                 }
                 ImGui::EndPopup();
             }
@@ -505,11 +505,11 @@ namespace osc
             {
                 if (ImGui::MenuItem("Mesh to OBJ"))
                 {
-                    ActionTrySaveMeshToObj(m_State->getScratchMesh(m_DocumentIdentifier));
+                    ActionTrySaveMeshToObjFile(m_State->getScratchMesh(m_DocumentIdentifier));
                 }
                 if (ImGui::MenuItem("Mesh to STL"))
                 {
-                    ActionTrySaveMeshToStl(m_State->getScratchMesh(m_DocumentIdentifier));
+                    ActionTrySaveMeshToStlFile(m_State->getScratchMesh(m_DocumentIdentifier));
                 }
                 if (ImGui::MenuItem("Landmarks to CSV"))
                 {

@@ -28,8 +28,7 @@
 #include <unordered_set>
 #include <vector>
 
-// adds a landmark to the source mesh
-void osc::ActionAddLandmarkTo(
+void osc::ActionAddLandmark(
     UndoableTPSDocument& doc,
     TPSDocumentInputIdentifier which,
     Vec3 const& pos)
@@ -75,8 +74,89 @@ void osc::ActionRenameLandmark(
     doc.commitScratch("set landmark name");
 }
 
-// prompts the user to browse for an input mesh and assigns it to the document
-void osc::ActionBrowseForNewMesh(
+void osc::ActionSetNonParticipatingLandmarkPosition(
+    UndoableTPSDocument& doc,
+    UID id,
+    Vec3 const& newPos)
+{
+    auto* lm = FindNonParticipatingLandmark(doc.updScratch(), id);
+    if (!lm)
+    {
+        return;
+    }
+
+    lm->location = newPos;
+    doc.commitScratch("change non-participating landmark position");
+}
+
+void osc::ActionRenameNonParticipatingLandmark(
+    UndoableTPSDocument& doc,
+    UID id,
+    std::string_view newName)
+{
+    auto* lm = FindNonParticipatingLandmark(doc.updScratch(), id);
+    if (!lm)
+    {
+        return;  // cannot find to-be-renamed element in document
+    }
+
+    StringName name{newName};
+    if (ContainsElementWithName(doc.getScratch(), name))
+    {
+        return;  // cannot rename to new name (already taken)
+    }
+
+    lm->name = std::move(name);
+    doc.commitScratch("set non-participating landmark name");
+}
+
+void osc::ActionSetBlendFactorWithoutCommitting(UndoableTPSDocument& doc, float factor)
+{
+    doc.updScratch().blendingFactor = factor;
+}
+
+void osc::ActionSetBlendFactor(UndoableTPSDocument& doc, float factor)
+{
+    ActionSetBlendFactorWithoutCommitting(doc, factor);
+    doc.commitScratch("changed blend factor");
+}
+
+void osc::ActionCreateNewDocument(UndoableTPSDocument& doc)
+{
+    doc.updScratch() = TPSDocument{};
+    doc.commitScratch("created new document");
+}
+
+void osc::ActionClearAllLandmarks(UndoableTPSDocument& doc)
+{
+    doc.updScratch().landmarkPairs.clear();
+    doc.commitScratch("cleared all landmarks");
+}
+
+void osc::ActionClearAllNonParticipatingLandmarks(UndoableTPSDocument& doc)
+{
+    doc.updScratch().nonParticipatingLandmarks.clear();
+    doc.commitScratch("cleared all non-participating landmarks");
+}
+
+void osc::ActionDeleteSceneElementsByID(
+    UndoableTPSDocument& doc,
+    std::unordered_set<TPSDocumentElementID> const& elementIDs)
+{
+    TPSDocument& scratch = doc.updScratch();
+    bool somethingDeleted = false;
+    for (TPSDocumentElementID const& id : elementIDs)
+    {
+        somethingDeleted = DeleteElementByID(scratch, id) || somethingDeleted;
+    }
+
+    if (somethingDeleted)
+    {
+        doc.commitScratch("deleted elements");
+    }
+}
+
+void osc::ActionLoadMeshFile(
     UndoableTPSDocument& doc,
     TPSDocumentInputIdentifier which)
 {
@@ -92,8 +172,7 @@ void osc::ActionBrowseForNewMesh(
     doc.commitScratch("changed mesh");
 }
 
-// loads landmarks from a CSV file into source/destination slot of the document
-void osc::ActionLoadLandmarksCSV(
+void osc::ActionLoadLandmarksFromCSV(
     UndoableTPSDocument& doc,
     TPSDocumentInputIdentifier which)
 {
@@ -118,7 +197,7 @@ void osc::ActionLoadLandmarksCSV(
     doc.commitScratch("loaded landmarks");
 }
 
-void osc::ActionLoadNonParticipatingPointsCSV(UndoableTPSDocument& doc)
+void osc::ActionLoadNonParticipatingLandmarksFromCSV(UndoableTPSDocument& doc)
 {
     std::optional<std::filesystem::path> const maybeCSVPath =
         PromptUserForFile("csv");
@@ -145,59 +224,6 @@ void osc::ActionLoadNonParticipatingPointsCSV(UndoableTPSDocument& doc)
     doc.commitScratch("added non-participating landmarks");
 }
 
-// sets the TPS blending factor for the result, but does not save the change to undo/redo storage
-void osc::ActionSetBlendFactorWithoutSaving(UndoableTPSDocument& doc, float factor)
-{
-    doc.updScratch().blendingFactor = factor;
-}
-
-// sets the TPS blending factor for the result and saves the change to undo/redo storage
-void osc::ActionSetBlendFactorAndSave(UndoableTPSDocument& doc, float factor)
-{
-    ActionSetBlendFactorWithoutSaving(doc, factor);
-    doc.commitScratch("changed blend factor");
-}
-
-// creates a "fresh" (default) TPS document
-void osc::ActionCreateNewDocument(UndoableTPSDocument& doc)
-{
-    doc.updScratch() = TPSDocument{};
-    doc.commitScratch("created new document");
-}
-
-// clears all user-assigned landmarks in the TPS document
-void osc::ActionClearAllLandmarks(UndoableTPSDocument& doc)
-{
-    doc.updScratch().landmarkPairs.clear();
-    doc.commitScratch("cleared all landmarks");
-}
-
-// clears all non-participating landmarks in the TPS document
-void osc::ActionClearNonParticipatingLandmarks(UndoableTPSDocument& doc)
-{
-    doc.updScratch().nonParticipatingLandmarks.clear();
-    doc.commitScratch("cleared all non-participating landmarks");
-}
-
-// deletes the specified landmarks from the TPS document
-void osc::ActionDeleteSceneElementsByID(
-    UndoableTPSDocument& doc,
-    std::unordered_set<TPSDocumentElementID> const& elementIDs)
-{
-    TPSDocument& scratch = doc.updScratch();
-    bool somethingDeleted = false;
-    for (TPSDocumentElementID const& id : elementIDs)
-    {
-        somethingDeleted = DeleteElementByID(scratch, id) || somethingDeleted;
-    }
-
-    if (somethingDeleted)
-    {
-        doc.commitScratch("deleted elements");
-    }
-}
-
-// saves all source/destination landmarks to a simple headerless CSV file (matches loading)
 void osc::ActionSaveLandmarksToCSV(TPSDocument const& doc, TPSDocumentInputIdentifier which)
 {
     std::optional<std::filesystem::path> const maybeCSVPath =
@@ -230,8 +256,7 @@ void osc::ActionSaveLandmarksToCSV(TPSDocument const& doc, TPSDocumentInputIdent
     }
 }
 
-// saves all pairable landmarks in the TPS document to a user-specified CSV file
-void osc::ActionSaveLandmarksToPairedCSV(TPSDocument const& doc)
+void osc::ActionSavePairedLandmarksToCSV(TPSDocument const& doc)
 {
     std::optional<std::filesystem::path> const maybeCSVPath =
         PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
@@ -281,8 +306,7 @@ void osc::ActionSaveLandmarksToPairedCSV(TPSDocument const& doc)
     }
 }
 
-// prompts the user to save the mesh to an obj file
-void osc::ActionTrySaveMeshToObj(Mesh const& mesh)
+void osc::ActionTrySaveMeshToObjFile(Mesh const& mesh)
 {
     std::optional<std::filesystem::path> const maybeSavePath =
         PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
@@ -315,8 +339,7 @@ void osc::ActionTrySaveMeshToObj(Mesh const& mesh)
     );
 }
 
-// prompts the user to save the mesh to an stl file
-void osc::ActionTrySaveMeshToStl(Mesh const& mesh)
+void osc::ActionTrySaveMeshToStlFile(Mesh const& mesh)
 {
     std::optional<std::filesystem::path> const maybeSTLPath =
         PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
@@ -344,7 +367,7 @@ void osc::ActionTrySaveMeshToStl(Mesh const& mesh)
     WriteMeshAsStl(outputFileStream, mesh, stlMetadata);
 }
 
-void osc::ActionTrySaveWarpedNonParticipatingLandmarksToCSV(
+void osc::ActionSaveWarpedNonParticipatingLandmarksToCSV(
     std::span<Vec3 const> nonParticipatingLandmarkPositions)
 {
     std::optional<std::filesystem::path> const maybeCSVPath =
@@ -372,40 +395,4 @@ void osc::ActionTrySaveWarpedNonParticipatingLandmarksToCSV(
             })
         );
     }
-}
-
-void osc::ActionSetNonParticipatingLandmarkPosition(
-    UndoableTPSDocument& doc,
-    UID id,
-    Vec3 const& newPos)
-{
-    auto* lm = FindNonParticipatingLandmark(doc.updScratch(), id);
-    if (!lm)
-    {
-        return;
-    }
-
-    lm->location = newPos;
-    doc.commitScratch("change non-participating landmark position");
-}
-
-void osc::ActionRenameNonParticipatingLandmark(
-    UndoableTPSDocument& doc,
-    UID id,
-    std::string_view newName)
-{
-    auto* lm = FindNonParticipatingLandmark(doc.updScratch(), id);
-    if (!lm)
-    {
-        return;  // cannot find to-be-renamed element in document
-    }
-
-    StringName name{newName};
-    if (ContainsElementWithName(doc.getScratch(), name))
-    {
-        return;  // cannot rename to new name (already taken)
-    }
-
-    lm->name = std::move(name);
-    doc.commitScratch("set non-participating landmark name");
 }

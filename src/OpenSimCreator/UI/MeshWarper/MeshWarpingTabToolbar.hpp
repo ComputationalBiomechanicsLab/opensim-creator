@@ -97,11 +97,11 @@ namespace osc
             {
                 if (ImGui::MenuItem("Load Source Mesh"))
                 {
-                    ActionBrowseForNewMesh(*m_State->editedDocument, TPSDocumentInputIdentifier::Source);
+                    ActionLoadMeshFile(*m_State->editedDocument, TPSDocumentInputIdentifier::Source);
                 }
                 if (ImGui::MenuItem("Load Destination Mesh"))
                 {
-                    ActionBrowseForNewMesh(*m_State->editedDocument, TPSDocumentInputIdentifier::Destination);
+                    ActionLoadMeshFile(*m_State->editedDocument, TPSDocumentInputIdentifier::Destination);
                 }
                 ImGui::EndPopup();
             }
@@ -115,7 +115,7 @@ namespace osc
         {
             if (ImGui::Button(ICON_FA_SAVE))
             {
-                ActionSaveLandmarksToPairedCSV(m_State->getScratch());
+                ActionSavePairedLandmarksToCSV(m_State->getScratch());
             }
             osc::DrawTooltipIfItemHovered(
                 "Save Landmarks to CSV",
@@ -163,7 +163,7 @@ namespace osc
 
             if (ImGui::Button(ICON_FA_ERASER " clear non-participating landmarks"))
             {
-                ActionClearNonParticipatingLandmarks(*m_State->editedDocument);
+                ActionClearAllNonParticipatingLandmarks(*m_State->editedDocument);
             }
 
             if (!hasNonParticipatingLandmarks)

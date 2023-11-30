@@ -65,23 +65,23 @@ namespace osc
         {
             if (ImGui::MenuItem("Source Mesh"))
             {
-                ActionBrowseForNewMesh(*m_State->editedDocument, TPSDocumentInputIdentifier::Source);
+                ActionLoadMeshFile(*m_State->editedDocument, TPSDocumentInputIdentifier::Source);
             }
             if (ImGui::MenuItem("Destination Mesh"))
             {
-                ActionBrowseForNewMesh(*m_State->editedDocument, TPSDocumentInputIdentifier::Destination);
+                ActionLoadMeshFile(*m_State->editedDocument, TPSDocumentInputIdentifier::Destination);
             }
             if (ImGui::MenuItem("Source Landmarks from CSV"))
             {
-                ActionLoadLandmarksCSV(*m_State->editedDocument, TPSDocumentInputIdentifier::Source);
+                ActionLoadLandmarksFromCSV(*m_State->editedDocument, TPSDocumentInputIdentifier::Source);
             }
             if (ImGui::MenuItem("Destination Landmarks from CSV"))
             {
-                ActionLoadLandmarksCSV(*m_State->editedDocument, TPSDocumentInputIdentifier::Destination);
+                ActionLoadLandmarksFromCSV(*m_State->editedDocument, TPSDocumentInputIdentifier::Destination);
             }
             if (ImGui::MenuItem("Non-Participating Landmarks from CSV"))
             {
-                ActionLoadNonParticipatingPointsCSV(*m_State->editedDocument);
+                ActionLoadNonParticipatingLandmarksFromCSV(*m_State->editedDocument);
             }
         }
 
@@ -97,7 +97,7 @@ namespace osc
             }
             if (ImGui::MenuItem("Landmark Pairs to CSV"))
             {
-                ActionSaveLandmarksToPairedCSV(m_State->getScratch());
+                ActionSavePairedLandmarksToCSV(m_State->getScratch());
             }
         }
 
