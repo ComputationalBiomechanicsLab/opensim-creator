@@ -4,11 +4,10 @@
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.hpp>
 
 #include <oscar/Utils/HashHelpers.hpp>
-#include <oscar/Utils/StringName.hpp>
+#include <oscar/Utils/UID.hpp>
 
 #include <cstddef>
 #include <functional>
-#include <utility>
 
 namespace osc
 {
@@ -17,22 +16,11 @@ namespace osc
     // (handy for selection logic etc.)
     struct TPSDocumentElementID final {
 
-        TPSDocumentElementID(
-            TPSDocumentInputIdentifier whichInput_,
-            TPSDocumentElementType elementType_,
-            StringName elementID_) :
-
-            whichInput{whichInput_},
-            elementType{elementType_},
-            elementID{std::move(elementID_)}
-        {
-        }
-
         friend bool operator==(TPSDocumentElementID const&, TPSDocumentElementID const&) = default;
 
-        TPSDocumentInputIdentifier whichInput;
-        TPSDocumentElementType elementType;
-        StringName elementID;
+        UID uid;
+        TPSDocumentElementType type;
+        TPSDocumentInputIdentifier input = TPSDocumentInputIdentifier::Source;
     };
 }
 
@@ -40,6 +28,6 @@ template<>
 struct std::hash<osc::TPSDocumentElementID> final {
     size_t operator()(osc::TPSDocumentElementID const& el) const
     {
-        return osc::HashOf(el.whichInput, el.elementType, el.elementID);
+        return osc::HashOf(el.uid, el.type, el.input);
     }
 };

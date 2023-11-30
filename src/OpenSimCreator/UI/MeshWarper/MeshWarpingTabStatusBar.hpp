@@ -54,7 +54,7 @@ namespace osc
             ImGui::SameLine();
             if (hover.maybeSceneElementID)
             {
-                ImGui::TextDisabled("(left-click to select %s)", hover.maybeSceneElementID->elementID.c_str());
+                ImGui::TextDisabled("(left-click to select %s)", FindElementNameOr(m_State->getScratch(), *hover.maybeSceneElementID).c_str());
             }
             else
             {

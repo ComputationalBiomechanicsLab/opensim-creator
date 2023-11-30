@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Utils/CStringView.hpp>
+
 namespace osc { class StringName; }
 
 namespace osc
@@ -14,11 +16,11 @@ namespace osc
     public:
         virtual ~TPSDocumentElement() noexcept = default;
 
-        StringName const& getID() const
+        CStringView getName() const
         {
-            return implGetID();
+            return implGetName();
         }
     private:
-        virtual StringName const& implGetID() const = 0;
+        virtual CStringView implGetName() const = 0;
     };
 }

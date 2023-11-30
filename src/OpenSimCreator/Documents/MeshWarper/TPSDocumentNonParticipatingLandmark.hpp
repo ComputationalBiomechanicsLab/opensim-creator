@@ -4,27 +4,29 @@
 
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/StringName.hpp>
+#include <oscar/Utils/UID.hpp>
 
 namespace osc
 {
     struct TPSDocumentNonParticipatingLandmark final : public TPSDocumentElement {
     public:
         TPSDocumentNonParticipatingLandmark(
-            StringName const& id_,
+            StringName const& name_,
             Vec3 const& location_) :
 
-            id{id_},
+            name{name_},
             location{location_}
         {
         }
 
-        StringName id;
+        UID uid;
+        StringName name;
         Vec3 location;
 
     private:
-        StringName const& implGetID() const final
+        CStringView implGetName() const final
         {
-            return id;
+            return name;
         }
     };
 }

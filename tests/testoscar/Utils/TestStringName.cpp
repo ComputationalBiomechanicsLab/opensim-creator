@@ -72,9 +72,16 @@ TEST(StringName, DefaultConstructedImplicitlyConvertsIntoBlankStringView)
     ASSERT_EQ(static_cast<std::string_view>(StringName{}), std::string_view{});
 }
 
-TEST(StringName, DefaultConstructedImplicitlyConvertsIntoBlankCStringView)
+TEST(StringName, DefaultConstructedExplicitlyConvertsIntoCStringView)
 {
     ASSERT_EQ(static_cast<CStringView>(StringName{}), CStringView{});
+}
+
+TEST(StringName, CanBeUsedToCallCStringViewFunctions)
+{
+    StringName sn;
+    auto const f = [](CStringView) {};
+    f(sn);  // should compile
 }
 
 TEST(StringName, DefaultConstructedBeginEqualsEnd)
@@ -233,18 +240,6 @@ TEST(StringName, CanConstructFromString)
 TEST(StringName, CanConstructFromCString)
 {
     ASSERT_NO_THROW({ StringName("somecstring"); });
-}
-
-TEST(StringName, CanImplicitlyConstructFromCString)
-{
-    auto const f = [](StringName const&) {};
-    f("cstring");  // should compile
-}
-
-TEST(StringName, CanImplicitlyConstructFromStringView)
-{
-    auto const f = [](StringName const&) {};
-    f(std::string_view{"cstring"});  // should compile
 }
 
 TEST(StringName, CanImplicitlyConstructFromCStringView)

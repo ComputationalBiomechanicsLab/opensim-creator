@@ -17,6 +17,11 @@ namespace osc
         std::is_destructible_v<T> &&
         std::is_constructible_v<T, Args...>;
 
+    template<class From, class To>
+    concept ConvertibleTo =
+        std::is_convertible_v<From, To> &&
+        requires { static_cast<To>(std::declval<From>()); };
+
     template< class F, class... Args >
     concept Invocable = requires(F&& f, Args&&... args)
     {
@@ -40,6 +45,13 @@ namespace osc
         {
             { c.data() } -> SameAs<typename Container::pointer>;
         };
+
+    template<class Sequence>
+    concept Iterable = requires(Sequence s)
+    {
+        std::begin(s);
+        std::end(s);
+    };
 
     // see:
     //

@@ -42,7 +42,7 @@ namespace osc
             TPSDocumentElement const* el = FindElement(m_Shared->getScratch(), m_ElementID);
             if (!el)
             {
-                requestClose();
+                requestClose();  // element cannot be found in document (deleted? renamed?)
             }
             else if (auto const* landmarkPair = dynamic_cast<TPSDocumentLandmarkPair const*>(el))
             {
@@ -54,25 +54,25 @@ namespace osc
             }
             else
             {
-                requestClose();  // defensive programming
+                requestClose();  // (defensive programming)
             }
         }
 
         void drawContextMenu(TPSDocumentLandmarkPair const& lm)
         {
             // header
-            DrawContextMenuHeader(Ellipsis(lm.id, 15), "Landmark");
+            DrawContextMenuHeader(Ellipsis(lm.name, 15), "Landmark");
             DrawContextMenuSeparator();
 
             // name editor
             if (!m_ActiveNameEdit)
             {
-                m_ActiveNameEdit = lm.id;
+                m_ActiveNameEdit = lm.name;
             }
             InputString("name", *m_ActiveNameEdit);
             if (ItemValueShouldBeSaved())
             {
-                ActionRenameLandmark(*m_Shared->editedDocument, lm.id, *m_ActiveNameEdit);
+                ActionRenameLandmark(*m_Shared->editedDocument, lm.uid, *m_ActiveNameEdit);
                 m_ActiveNameEdit.reset();
             }
 
@@ -85,7 +85,7 @@ namespace osc
                 InputMetersFloat3("source", *m_ActivePositionEdit);
                 if (ItemValueShouldBeSaved())
                 {
-                    ActionSetLandmarkPosition(*m_Shared->editedDocument, lm.id, TPSDocumentInputIdentifier::Source, *m_ActivePositionEdit);
+                    ActionSetLandmarkPosition(*m_Shared->editedDocument, lm.uid, TPSDocumentInputIdentifier::Source, *m_ActivePositionEdit);
                     m_ActivePositionEdit.reset();
                 }
             }
@@ -93,7 +93,7 @@ namespace osc
             {
                 if (ImGui::Button("add source"))
                 {
-                    ActionSetLandmarkPosition(*m_Shared->editedDocument, lm.id, TPSDocumentInputIdentifier::Source, {});
+                    ActionSetLandmarkPosition(*m_Shared->editedDocument, lm.uid, TPSDocumentInputIdentifier::Source, Vec3{});
                 }
             }
 
@@ -106,7 +106,7 @@ namespace osc
                 InputMetersFloat3("destination", *m_ActiveDestinationPositionEdit);
                 if (ItemValueShouldBeSaved())
                 {
-                    ActionSetLandmarkPosition(*m_Shared->editedDocument, lm.id, TPSDocumentInputIdentifier::Source, *m_ActiveDestinationPositionEdit);
+                    ActionSetLandmarkPosition(*m_Shared->editedDocument, lm.uid, TPSDocumentInputIdentifier::Destination, *m_ActiveDestinationPositionEdit);
                     m_ActivePositionEdit.reset();
                 }
             }
@@ -114,7 +114,7 @@ namespace osc
             {
                 if (ImGui::Button("add destination"))
                 {
-                    ActionSetLandmarkPosition(*m_Shared->editedDocument, lm.id, TPSDocumentInputIdentifier::Destination, {});
+                    ActionSetLandmarkPosition(*m_Shared->editedDocument, lm.uid, TPSDocumentInputIdentifier::Destination, Vec3{});
                 }
             }
         }
@@ -122,18 +122,18 @@ namespace osc
         void drawContextMenu(TPSDocumentNonParticipatingLandmark const& npl)
         {
             // header
-            DrawContextMenuHeader(Ellipsis(npl.id, 15), "Non-Participating Landmark");
+            DrawContextMenuHeader(Ellipsis(npl.name, 15), "Non-Participating Landmark");
             DrawContextMenuSeparator();
 
             // name editor
             if (!m_ActiveNameEdit)
             {
-                m_ActiveNameEdit = npl.id;
+                m_ActiveNameEdit = npl.name;
             }
             InputString("name", *m_ActiveNameEdit);
             if (ItemValueShouldBeSaved())
             {
-                ActionRenameNonParticipatingLandmark(*m_Shared->editedDocument, npl.id, *m_ActiveNameEdit);
+                ActionRenameNonParticipatingLandmark(*m_Shared->editedDocument, npl.uid, *m_ActiveNameEdit);
                 m_ActiveNameEdit.reset();
             }
 
@@ -144,7 +144,7 @@ namespace osc
             InputMetersFloat3("location", *m_ActivePositionEdit);
             if (ItemValueShouldBeSaved())
             {
-                ActionSetNonParticipatingLandmarkPosition(*m_Shared->editedDocument, npl.id, *m_ActivePositionEdit);
+                ActionSetNonParticipatingLandmarkPosition(*m_Shared->editedDocument, npl.uid, *m_ActivePositionEdit);
                 m_ActivePositionEdit.reset();
             }
         }

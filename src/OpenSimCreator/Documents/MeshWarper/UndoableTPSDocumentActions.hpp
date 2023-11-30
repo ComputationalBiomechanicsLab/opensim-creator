@@ -6,6 +6,7 @@
 
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/StringName.hpp>
+#include <oscar/Utils/UID.hpp>
 
 #include <span>
 #include <string_view>
@@ -21,10 +22,10 @@ namespace osc
     void ActionAddLandmarkTo(UndoableTPSDocument&, TPSDocumentInputIdentifier, Vec3 const&);
 
     // adds a source/destination position to an existing landmark
-    void ActionSetLandmarkPosition(UndoableTPSDocument&, StringName const& landmarkID, TPSDocumentInputIdentifier, Vec3 const&);
+    void ActionSetLandmarkPosition(UndoableTPSDocument&, UID, TPSDocumentInputIdentifier, Vec3 const&);
 
-    // renames the landmark to `newName` - provided the name isn't already taken by another landmark
-    void ActionRenameLandmark(UndoableTPSDocument&, StringName const& oldName, std::string_view newName);
+    // tries to rename the landmark to `newName`, returns the actual new name (even if it hasn't changed)
+    void ActionRenameLandmark(UndoableTPSDocument&, UID, std::string_view newName);
 
     // prompts the user to browse for an input mesh and assigns it to the document
     void ActionBrowseForNewMesh(UndoableTPSDocument&, TPSDocumentInputIdentifier);
@@ -69,9 +70,9 @@ namespace osc
     void ActionTrySaveWarpedNonParticipatingLandmarksToCSV(std::span<Vec3 const>);
 
     // sets the IDed non-participating landmark's location to the given location
-    void ActionSetNonParticipatingLandmarkPosition(UndoableTPSDocument&, StringName const& id, Vec3 const& newLocation);
+    void ActionSetNonParticipatingLandmarkPosition(UndoableTPSDocument&, UID, Vec3 const&);
 
-    // renames the non-participating landmark to `newName` - provided the name isn't already taken by another non-participating landmark
-    void ActionRenameNonParticipatingLandmark(UndoableTPSDocument&, StringName const& oldName, std::string_view newName);
+    // tries to rename the non-particiapting landmark to `newName`, returns the actual new name (even if it hasn't changed)
+    void ActionRenameNonParticipatingLandmark(UndoableTPSDocument&, UID, std::string_view newName);
 }
 

@@ -9,6 +9,7 @@
 #include <imgui.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Maths/Circle.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/UI/Panels/StandardPanel.hpp>
 
@@ -89,7 +90,7 @@ namespace osc
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             ImGui::AlignTextToFramePadding();
-            TextColumnCentered(p.id.c_str());
+            TextColumnCentered(p.name);
 
             bool const fullyPaired = IsFullyPaired(p);
 
@@ -182,7 +183,7 @@ namespace osc
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             ImGui::AlignTextToFramePadding();
-            TextColumnCentered(npl.id.c_str());
+            TextColumnCentered(npl.name);
 
             // source column
             ImGui::TableSetColumnIndex(1);

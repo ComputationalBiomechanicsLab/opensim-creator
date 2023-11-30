@@ -11,6 +11,7 @@ All notable changes to this project will be documented here. The format is based
 - Hovering over a landmark in the mesh warper UI now brightens the landmark slightly
 - Fixed a bug where user-defined muscle points could not be selected if the user was rendering muscles
   in tendons+fibers mode (#706)
+- Landmarks in the mesh warper UI can now be renamed and repositioned via a right-click context menu (#807)
 
 
 ## [0.5.5] - 2023/11/21

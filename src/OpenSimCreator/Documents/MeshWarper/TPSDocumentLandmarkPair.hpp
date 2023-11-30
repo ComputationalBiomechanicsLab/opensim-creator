@@ -4,6 +4,7 @@
 
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/StringName.hpp>
+#include <oscar/Utils/UID.hpp>
 
 #include <optional>
 #include <utility>
@@ -13,19 +14,20 @@ namespace osc
     // a landmark pair in the TPS document (might be midway through definition)
     struct TPSDocumentLandmarkPair final : public TPSDocumentElement {
 
-        explicit TPSDocumentLandmarkPair(StringName id_) :
-            id{std::move(id_)}
+        explicit TPSDocumentLandmarkPair(StringName name_) :
+            name{std::move(name_)}
         {
         }
 
-        StringName id;
+        UID uid;
+        StringName name;
         std::optional<Vec3> maybeSourceLocation;
         std::optional<Vec3> maybeDestinationLocation;
 
     private:
-        StringName const& implGetID() const final
+        CStringView implGetName() const final
         {
-            return id;
+            return name;
         }
     };
 }

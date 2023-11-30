@@ -174,7 +174,7 @@ namespace osc
             {
                 if (!closest || Length(closest->worldspaceLocation - cameraRay.origin) > collision->distance)
                 {
-                    TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentElementType::Landmark, landmark.id};
+                    TPSDocumentElementID fullID{landmark.uid, TPSDocumentElementType::Landmark, m_DocumentIdentifier};
                     closest.emplace(std::move(fullID), *maybePos);
                 }
             }
@@ -205,7 +205,7 @@ namespace osc
             {
                 if (!closest || Length(closest->worldspaceLocation - cameraRay.origin) > collision->distance)
                 {
-                    TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentElementType::NonParticipatingLandmark, nonPariticpatingLandmark.id};
+                    TPSDocumentElementID fullID{nonPariticpatingLandmark.uid, TPSDocumentElementType::NonParticipatingLandmark, m_DocumentIdentifier};
                     closest.emplace(std::move(fullID), nonPariticpatingLandmark.location);
                 }
             }
@@ -290,7 +290,7 @@ namespace osc
                 .color = IsFullyPaired(landmarkPair) ? m_State->pairedLandmarkColor : m_State->unpairedLandmarkColor
             };
 
-            TPSDocumentElementID const landmarkID{m_DocumentIdentifier, TPSDocumentElementType::Landmark, landmarkPair.id};
+            TPSDocumentElementID const landmarkID{landmarkPair.uid, TPSDocumentElementType::Landmark, m_DocumentIdentifier};
             if (m_State->userSelection.contains(landmarkID))
             {
                 decoration.flags |= SceneDecorationFlags::IsSelected;
@@ -332,7 +332,7 @@ namespace osc
                 },
                 .color = m_State->nonParticipatingLandmarkColor,
             };
-            TPSDocumentElementID const id{m_DocumentIdentifier, TPSDocumentElementType::NonParticipatingLandmark, npl.id};
+            TPSDocumentElementID const id{npl.uid, TPSDocumentElementType::NonParticipatingLandmark, m_DocumentIdentifier};
             if (m_State->userSelection.contains(id))
             {
                 decoration.flags |= SceneDecorationFlags::IsSelected;

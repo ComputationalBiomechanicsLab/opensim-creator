@@ -9,6 +9,8 @@
 
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/Vec3.hpp>
+#include <oscar/Utils/Concepts.hpp>
+#include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/StringName.hpp>
 
@@ -19,8 +21,19 @@
 // TPS document helper functions
 namespace osc
 {
-    // if it exists in `doc`, returns a pointer to the identified element; otherwise, returns `nullptr`
-    TPSDocumentElement const* FindElement(TPSDocument const&, TPSDocumentElementID const&);
+    // if it exists in the document, returns a pointer to the identified landmark pair; otherwise, returns `nullptr`
+    TPSDocumentLandmarkPair const* FindLandmarkPair(TPSDocument const&, UID);
+    TPSDocumentLandmarkPair* FindLandmarkPair(TPSDocument&, UID);
+
+    // if it exists in the document, returns a pointer to the identified non-participating landmark; otherwise, returns `nullptr`
+    TPSDocumentNonParticipatingLandmark const* FindNonParticipatingLandmark(TPSDocument const&, UID);
+    TPSDocumentNonParticipatingLandmark* FindNonParticipatingLandmark(TPSDocument&, UID);
+
+    // if it exists in the document, returns a pointer to the identified element; otherwise, returns `nullptr`
+    TPSDocumentElement const* FindElement(TPSDocument const& doc, TPSDocumentElementID const&);
+
+    // returns `true` if the document contains an element (landmark, non-participating landmark, etc.) with the given name
+    bool ContainsElementWithName(TPSDocument const& doc, StringName const&);
 
     // returns the (mutable) source/destination of the given landmark pair, if available
     inline std::optional<Vec3>& UpdLocation(TPSDocumentLandmarkPair& landmarkPair, TPSDocumentInputIdentifier which)
@@ -89,15 +102,18 @@ namespace osc
     // returns the count of landmarks in the document for which `which` is defined
     size_t CountNumLandmarksForInput(TPSDocument const&, TPSDocumentInputIdentifier);
 
-    // returns the next available unique landmark ID
-    StringName NextLandmarkID(TPSDocument const&);
+    // returns the next available unique landmark name
+    StringName NextLandmarkName(TPSDocument const&);
 
-    // returns the next available unique non-participating landmark ID
-    StringName NextNonParticipatingLandmarkID(TPSDocument const&);
+    // returns the next available unique non-participating landmark name
+    StringName NextNonParticipatingLandmarkName(TPSDocument const&);
 
-    // helper: add a source/destination landmark at the given location
+    // adds a source/destination landmark at the given location
     void AddLandmarkToInput(TPSDocument&, TPSDocumentInputIdentifier, Vec3 const&);
 
     // returns `true` if the given element was deleted from the document
     bool DeleteElementByID(TPSDocument&, TPSDocumentElementID const&);
+
+    // returns the name of the element, or an alternative if the element cannot be found
+    CStringView FindElementNameOr(TPSDocument const&, TPSDocumentElementID const&, CStringView alternative = "unknown");
 }

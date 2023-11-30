@@ -1,5 +1,6 @@
 #pragma once
 
+#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <atomic>
@@ -64,17 +65,18 @@ namespace osc
         using reverse_iterator = std::string::const_reverse_iterator;
         using const_reverse_iterator = std::string::const_reverse_iterator;
 
-        StringName();
-        StringName(std::string&&);
-        StringName(std::string_view);
-        StringName(char const*);
-        StringName(std::nullptr_t) = delete;
+        explicit StringName();
+        explicit StringName(std::string&&);
+        explicit StringName(std::string_view);
+        explicit StringName(char const*);
+        explicit StringName(std::nullptr_t) = delete;
 
         StringName(StringName const& other) noexcept :
             m_Data{other.m_Data}
         {
             m_Data->incrementOwnerCount();
         }
+
         StringName& operator=(StringName const& other) noexcept
         {
             if (other == *this)
@@ -87,6 +89,7 @@ namespace osc
             m_Data->incrementOwnerCount();
             return *this;
         }
+
         ~StringName() noexcept;
 
         friend void swap(StringName& a, StringName& b) noexcept
@@ -129,7 +132,7 @@ namespace osc
             return m_Data->value();
         }
 
-        explicit operator CStringView() const noexcept
+        operator CStringView() const noexcept
         {
             return m_Data->value();
         }
@@ -169,84 +172,23 @@ namespace osc
             std::swap(m_Data, other.m_Data);
         }
 
-        friend bool operator==(StringName const& lhs, StringName const& rhs) noexcept
+        friend bool operator==(StringName const&, StringName const&) noexcept = default;
+
+        template<ConvertibleTo<std::string_view> StringLike>
+        friend bool operator==(StringName const& lhs, StringLike const& rhs)
         {
-            return lhs.m_Data == rhs.m_Data;
+            return std::string_view{lhs} == std::string_view{rhs};
         }
 
-        friend bool operator==(StringName const& lhs, std::string_view rhs) noexcept
+        friend auto operator<=>(StringName const& lhs, StringName const& rhs) noexcept
         {
-            return lhs.m_Data->value() == rhs;
+            return std::string_view{lhs} <=> std::string_view{rhs};
         }
 
-        friend bool operator==(std::string_view lhs, StringName const& rhs) noexcept
+        template<ConvertibleTo<std::string_view> StringLike>
+        friend auto operator<=>(StringName const& lhs, StringLike const& rhs)
         {
-            return lhs == rhs.m_Data->value();
-        }
-
-        friend bool operator==(StringName const& lhs, char const* rhs) noexcept
-        {
-            return lhs.m_Data->value() == std::string_view{rhs};
-        }
-
-        friend bool operator==(char const* lhs, StringName const& rhs) noexcept
-        {
-            return std::string_view{lhs} == rhs.m_Data->value();
-        }
-
-        friend bool operator!=(StringName const& lhs, StringName const& rhs) noexcept
-        {
-            return lhs.m_Data != rhs.m_Data;
-        }
-
-        friend bool operator!=(StringName const& lhs, std::string_view rhs) noexcept
-        {
-            return lhs.m_Data->value() != rhs;
-        }
-
-        friend bool operator!=(std::string_view lhs, StringName const& rhs) noexcept
-        {
-            return lhs != rhs.m_Data->value();
-        }
-
-        friend bool operator!=(StringName const& lhs, char const* rhs) noexcept
-        {
-            return lhs.m_Data->value() != std::string_view{rhs};
-        }
-
-        friend bool operator!=(char const* lhs, StringName const& rhs) noexcept
-        {
-            return std::string_view{lhs} != rhs.m_Data->value();
-        }
-
-        friend bool operator<(StringName const& lhs, StringName const& rhs) noexcept
-        {
-            return lhs.m_Data->value() < rhs.m_Data->value();
-        }
-
-        friend bool operator<(StringName const& lhs, std::string_view rhs) noexcept
-        {
-            return lhs.m_Data->value() < rhs;
-        }
-
-        friend bool operator>(StringName const& lhs, StringName const& rhs) noexcept
-        {
-            return lhs.m_Data->value() > rhs.m_Data->value();
-        }
-
-        friend bool operator<=(StringName const& lhs, StringName const& rhs) noexcept
-        {
-            return lhs.m_Data->value() <= rhs.m_Data->value();
-        }
-
-        friend bool operator>=(StringName const& lhs, StringName const& rhs) noexcept
-        {
-            return lhs.m_Data->value() >= rhs.m_Data->value();
-        }
-
-        friend std::ostream& operator<<(std::ostream& os, StringName const& str) noexcept
-        {
-            return os << static_cast<std::string_view>(str);
+            return std::string_view{lhs} <=> std::string_view{rhs};
         }
 
     private:

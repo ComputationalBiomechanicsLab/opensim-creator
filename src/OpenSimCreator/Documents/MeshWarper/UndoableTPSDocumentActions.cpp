@@ -39,20 +39,40 @@ void osc::ActionAddLandmarkTo(
 }
 
 void osc::ActionSetLandmarkPosition(
-    UndoableTPSDocument&,
-    StringName const&,
-    TPSDocumentInputIdentifier,
-    Vec3 const&)
+    UndoableTPSDocument& doc,
+    UID id,
+    TPSDocumentInputIdentifier side,
+    Vec3 const& newPos)
 {
-    // TODO
+    TPSDocumentLandmarkPair* p = FindLandmarkPair(doc.updScratch(), id);
+    if (!p)
+    {
+        return;
+    }
+
+    UpdLocation(*p, side) = newPos;
+    doc.commitScratch("set landmark position");
 }
 
 void osc::ActionRenameLandmark(
-    UndoableTPSDocument&,
-    StringName const&,
-    std::string_view)
+    UndoableTPSDocument& doc,
+    UID id,
+    std::string_view newName)
 {
-    // TODO
+    TPSDocumentLandmarkPair* p = FindLandmarkPair(doc.updScratch(), id);
+    if (!p)
+    {
+        return;
+    }
+
+    StringName name{newName};
+    if (ContainsElementWithName(doc.getScratch(), name))
+    {
+        return;  // cannot rename (already taken)
+    }
+
+    p->name = std::move(name);
+    doc.commitScratch("set landmark name");
 }
 
 // prompts the user to browse for an input mesh and assigns it to the document
@@ -119,7 +139,7 @@ void osc::ActionLoadNonParticipatingPointsCSV(UndoableTPSDocument& doc)
         std::back_inserter(doc.updScratch().nonParticipatingLandmarks),
         [&readonlyDoc = doc.getScratch()](Vec3 const& landmark)
         {
-            return TPSDocumentNonParticipatingLandmark{NextNonParticipatingLandmarkID(readonlyDoc), landmark};
+            return TPSDocumentNonParticipatingLandmark{NextNonParticipatingLandmarkName(readonlyDoc), landmark};
         }
     );
     doc.commitScratch("added non-participating landmarks");
@@ -355,17 +375,37 @@ void osc::ActionTrySaveWarpedNonParticipatingLandmarksToCSV(
 }
 
 void osc::ActionSetNonParticipatingLandmarkPosition(
-    UndoableTPSDocument&,
-    StringName const&,
-    Vec3 const&)
+    UndoableTPSDocument& doc,
+    UID id,
+    Vec3 const& newPos)
 {
-    // TODO
+    auto* lm = FindNonParticipatingLandmark(doc.updScratch(), id);
+    if (!lm)
+    {
+        return;
+    }
+
+    lm->location = newPos;
+    doc.commitScratch("change non-participating landmark position");
 }
 
 void osc::ActionRenameNonParticipatingLandmark(
-    UndoableTPSDocument&,
-    StringName const&,
-    std::string_view)
+    UndoableTPSDocument& doc,
+    UID id,
+    std::string_view newName)
 {
-    // TODO
+    auto* lm = FindNonParticipatingLandmark(doc.updScratch(), id);
+    if (!lm)
+    {
+        return;  // cannot find to-be-renamed element in document
+    }
+
+    StringName name{newName};
+    if (ContainsElementWithName(doc.getScratch(), name))
+    {
+        return;  // cannot rename to new name (already taken)
+    }
+
+    lm->name = std::move(name);
+    doc.commitScratch("set non-participating landmark name");
 }
