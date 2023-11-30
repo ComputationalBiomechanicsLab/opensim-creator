@@ -65,7 +65,7 @@ namespace osc
     void ActionSaveLandmarksToCSV(TPSDocument const&, TPSDocumentInputIdentifier, TPSDocumentCSVFlags = TPSDocumentCSVFlags::None);
 
     // saves all pairable landmarks in the TPS document to a user-specified CSV file
-    void ActionSavePairedLandmarksToCSV(TPSDocument const&);
+    void ActionSavePairedLandmarksToCSV(TPSDocument const&, TPSDocumentCSVFlags = TPSDocumentCSVFlags::None);
 
     // prompts the user to save the mesh to an obj file
     void ActionTrySaveMeshToObjFile(Mesh const&);

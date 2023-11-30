@@ -33,13 +33,6 @@ namespace
     }
 }
 
-std::ostream& osc::operator<<(std::ostream& o, LandmarkPair3D const& p)
-{
-    using osc::operator<<;
-    o << "LandmarkPair3D{Src = " << p.source << ", dest = " << p.destination << '}';
-    return o;
-}
-
 std::ostream& osc::operator<<(std::ostream& o, TPSCoefficientSolverInputs3D const& inputs)
 {
     o << "TPSCoefficientSolverInputs3D{landmarks = [";

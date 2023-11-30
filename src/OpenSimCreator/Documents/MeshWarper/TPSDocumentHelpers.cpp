@@ -90,29 +90,34 @@ namespace
     {
         return NullableFindIf(doc.nonParticipatingLandmarks, std::bind_front(HasUID<TPSDocumentNonParticipatingLandmark>, id));
     }
+
+    size_t CountFullyPaired(TPSDocument const& doc)
+    {
+        return std::count_if(doc.landmarkPairs.begin(), doc.landmarkPairs.end(), IsFullyPaired);
+    }
 }
 
-osc::TPSDocumentLandmarkPair const* osc::FindLandmarkPair(TPSDocument const& doc, UID uid)
+TPSDocumentLandmarkPair const* osc::FindLandmarkPair(TPSDocument const& doc, UID uid)
 {
     return FindLandmarkPairImpl(doc, uid);
 }
 
-osc::TPSDocumentLandmarkPair* osc::FindLandmarkPair(TPSDocument& doc, UID uid)
+TPSDocumentLandmarkPair* osc::FindLandmarkPair(TPSDocument& doc, UID uid)
 {
     return FindLandmarkPairImpl(doc, uid);
 }
 
-osc::TPSDocumentNonParticipatingLandmark const* osc::FindNonParticipatingLandmark(TPSDocument const& doc, UID id)
+TPSDocumentNonParticipatingLandmark const* osc::FindNonParticipatingLandmark(TPSDocument const& doc, UID id)
 {
     return FindNonParticipatingLandmarkImpl(doc, id);
 }
 
-osc::TPSDocumentNonParticipatingLandmark* osc::FindNonParticipatingLandmark(TPSDocument& doc, UID id)
+TPSDocumentNonParticipatingLandmark* osc::FindNonParticipatingLandmark(TPSDocument& doc, UID id)
 {
     return FindNonParticipatingLandmarkImpl(doc, id);
 }
 
-osc::TPSDocumentElement const* osc::FindElement(TPSDocument const& doc, TPSDocumentElementID const& id)
+TPSDocumentElement const* osc::FindElement(TPSDocument const& doc, TPSDocumentElementID const& id)
 {
     static_assert(NumOptions<TPSDocumentElementType>() == 2);
 
@@ -132,7 +137,7 @@ bool osc::ContainsElementWithName(TPSDocument const& doc, StringName const& name
         std::any_of(npls.begin(), npls.end(), std::bind_front(HasName<TPSDocumentNonParticipatingLandmark>, name));
 }
 
-std::optional<osc::LandmarkPair3D> osc::TryExtractLandmarkPair(TPSDocumentLandmarkPair const& p)
+std::optional<LandmarkPair3D> osc::TryExtractLandmarkPair(TPSDocumentLandmarkPair const& p)
 {
     if (IsFullyPaired(p))
     {
@@ -144,16 +149,29 @@ std::optional<osc::LandmarkPair3D> osc::TryExtractLandmarkPair(TPSDocumentLandma
     }
 }
 
-std::vector<osc::LandmarkPair3D> osc::GetLandmarkPairs(TPSDocument const& doc)
+std::vector<LandmarkPair3D> osc::GetLandmarkPairs(TPSDocument const& doc)
 {
     std::vector<LandmarkPair3D> rv;
-    rv.reserve(std::count_if(doc.landmarkPairs.begin(), doc.landmarkPairs.end(), IsFullyPaired));
-
-    for (TPSDocumentLandmarkPair const& p : doc.landmarkPairs)
+    rv.reserve(CountFullyPaired(doc));
+    for (auto const& p : doc.landmarkPairs)
     {
-        if (std::optional<LandmarkPair3D> maybePair = TryExtractLandmarkPair(p))
+        if (IsFullyPaired(p))
         {
-            rv.emplace_back(std::move(maybePair).value());
+            rv.push_back(LandmarkPair3D{*p.maybeSourceLocation, *p.maybeDestinationLocation});
+        }
+    }
+    return rv;
+}
+
+std::vector<NamedLandmarkPair3D> osc::GetNamedLandmarkPairs(TPSDocument const& doc)
+{
+    std::vector<NamedLandmarkPair3D> rv;
+    rv.reserve(CountFullyPaired(doc));
+    for (auto const& p : doc.landmarkPairs)
+    {
+        if (IsFullyPaired(p))
+        {
+            rv.push_back(NamedLandmarkPair3D{*p.maybeSourceLocation, *p.maybeDestinationLocation, p.name});
         }
     }
     return rv;
@@ -236,7 +254,7 @@ bool osc::DeleteElementByID(TPSDocument& doc, TPSDocumentElementID const& id)
     return false;
 }
 
-osc::CStringView osc::FindElementNameOr(
+CStringView osc::FindElementNameOr(
     TPSDocument const& doc,
     TPSDocumentElementID const& id,
     CStringView alternative)

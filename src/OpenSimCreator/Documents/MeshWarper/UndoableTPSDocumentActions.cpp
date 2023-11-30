@@ -274,7 +274,7 @@ void osc::ActionSaveLandmarksToCSV(TPSDocument const& doc, TPSDocumentInputIdent
     }
 }
 
-void osc::ActionSavePairedLandmarksToCSV(TPSDocument const& doc)
+void osc::ActionSavePairedLandmarksToCSV(TPSDocument const& doc, TPSDocumentCSVFlags flags)
 {
     std::optional<std::filesystem::path> const maybeCSVPath =
         PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
@@ -283,44 +283,48 @@ void osc::ActionSavePairedLandmarksToCSV(TPSDocument const& doc)
         return;  // user didn't select a save location
     }
 
-    std::ofstream fileOutputStream{*maybeCSVPath};
-    if (!fileOutputStream)
+    std::ofstream fout{*maybeCSVPath};
+    if (!fout)
     {
         return;  // couldn't open file for writing
     }
 
-    std::vector<LandmarkPair3D> const pairs = GetLandmarkPairs(doc);
+    std::vector<NamedLandmarkPair3D> const pairs = GetNamedLandmarkPairs(doc);
 
-    // write header
-    WriteCSVRow(
-        fileOutputStream,
-        std::to_array<std::string>(
+    // if applicable, write header row
+    if (!(flags & TPSDocumentCSVFlags::NoHeader))
+    {
+        if (flags & TPSDocumentCSVFlags::NoNames)
         {
-            "source.x",
-            "source.y",
-            "source.z",
-            "dest.x",
-            "dest.y",
-            "dest.z",
-        })
-    );
+            WriteCSVRow(fout, {{"source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"}});
+        }
+        else
+        {
+            WriteCSVRow(fout, {{"name", "source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"}});
+        }
+    }
 
     // write data rows
-    for (LandmarkPair3D const& p : pairs)
+    std::vector<std::string> cols;
+    cols.reserve(flags & TPSDocumentCSVFlags::NoNames ? 6 : 7);
+    for (auto const& p : pairs)
     {
-        WriteCSVRow(
-            fileOutputStream,
-            std::to_array(
-            {
-                std::to_string(p.source.x),
-                std::to_string(p.source.y),
-                std::to_string(p.source.z),
+        using std::to_string;
 
-                std::to_string(p.destination.x),
-                std::to_string(p.destination.y),
-                std::to_string(p.destination.z),
-            })
-        );
+        if (!(flags & TPSDocumentCSVFlags::NoNames))
+        {
+            cols.push_back(std::string{p.name});
+        }
+        cols.push_back(to_string(p.source.x));
+        cols.push_back(to_string(p.source.y));
+        cols.push_back(to_string(p.source.z));
+        cols.push_back(to_string(p.destination.x));
+        cols.push_back(to_string(p.destination.y));
+        cols.push_back(to_string(p.destination.z));
+
+        WriteCSVRow(fout, cols);
+
+        cols.clear();
     }
 }
 

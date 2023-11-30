@@ -156,9 +156,17 @@ namespace osc
                 {
                     ActionTrySaveMeshToStlFile(m_State->getResultMesh());
                 }
-                if (ImGui::MenuItem("Non-Participating Landmarks to CSV"))
+                if (ImGui::MenuItem("Warped Non-Participating Landmarks to CSV"))
                 {
                     ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->getResultNonParticipatingLandmarks());
+                }
+                if (ImGui::MenuItem("Landmark Pairs to CSV"))
+                {
+                    ActionSavePairedLandmarksToCSV(m_State->getScratch());
+                }
+                if (ImGui::MenuItem("Landmark Pairs to CSV (no names)"))
+                {
+                    ActionSavePairedLandmarksToCSV(m_State->getScratch(), TPSDocumentCSVFlags::NoNames);
                 }
                 ImGui::EndPopup();
             }

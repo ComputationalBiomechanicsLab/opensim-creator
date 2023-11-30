@@ -13,7 +13,9 @@ All notable changes to this project will be documented here. The format is based
   in tendons+fibers mode (#706)
 - Landmarks in the mesh warper UI can now be renamed and repositioned via a right-click context menu (#807)
 - The mesh warper's CSV exporter for landmarks now includes a header row and name column (#807)
-  - The previous functionality (just numbers) is exposed as "(only positions, no header or names)"
+  - The previous functionality (just positions) is exposed as "Landmark Positions to CSV"
+- The mesh warper's CSV exporter for landmakr pairs now includes a name column (#807)
+  - The previous functionality (no names) is exposed as "Landmark Pairs to CSV (no names)"
 
 
 ## [0.5.5] - 2023/11/21

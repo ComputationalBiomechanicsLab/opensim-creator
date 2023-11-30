@@ -515,7 +515,7 @@ namespace osc
                 {
                     ActionSaveLandmarksToCSV(m_State->getScratch(), m_DocumentIdentifier);
                 }
-                if (ImGui::MenuItem("Landmarks to CSV (only positions, no header or names)"))
+                if (ImGui::MenuItem("Landmark Positions to CSV"))
                 {
                     ActionSaveLandmarksToCSV(m_State->getScratch(), m_DocumentIdentifier, TPSDocumentCSVFlags::NoHeader | TPSDocumentCSVFlags::NoNames);
                 }

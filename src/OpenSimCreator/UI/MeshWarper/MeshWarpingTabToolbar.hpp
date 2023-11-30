@@ -1,5 +1,6 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/MeshWarper/UndoableTPSDocumentActions.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.hpp>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
 
@@ -115,11 +116,11 @@ namespace osc
         {
             if (ImGui::Button(ICON_FA_SAVE))
             {
-                ActionSavePairedLandmarksToCSV(m_State->getScratch());
+                ActionSavePairedLandmarksToCSV(m_State->getScratch(), TPSDocumentCSVFlags::NoNames);
             }
             osc::DrawTooltipIfItemHovered(
-                "Save Landmarks to CSV",
-                "Saves all pair-able landmarks to a CSV file, for external processing"
+                "Save Landmarks to CSV (no names)",
+                "Saves all pair-able landmarks to a CSV file, for external processing\n\n(legacy behavior: does not export names: use 'File' menu if you want the names)"
             );
         }
 

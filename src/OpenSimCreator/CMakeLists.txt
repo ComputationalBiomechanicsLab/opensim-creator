@@ -46,6 +46,7 @@ add_library(OpenSimCreator STATIC
     Documents/MeshImporter/StationEl.cpp
     Documents/MeshImporter/StationEl.hpp
 
+    Documents/MeshWarper/NamedLandmarkPair3D.hpp
     Documents/MeshWarper/TPSDocument.cpp
     Documents/MeshWarper/TPSDocument.hpp
     Documents/MeshWarper/TPSDocumentCSVFlags.hpp
@@ -289,6 +290,8 @@ add_library(OpenSimCreator STATIC
     UI/SplashTab.cpp
     UI/SplashTab.hpp
 
+    Utils/LandmarkPair3D.cpp
+    Utils/LandmarkPair3D.hpp
     Utils/OpenSimHelpers.cpp
     Utils/OpenSimHelpers.hpp
     Utils/ParamBlock.hpp

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <OpenSimCreator/Utils/LandmarkPair3D.hpp>
+
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/Vec3.hpp>
 
@@ -19,30 +21,6 @@
 // - blog explanation #2: https://khanhha.github.io/posts/Thin-Plate-Splines-Warping/
 namespace osc
 {
-    // a single source-to-destination landmark pair in 3D space
-    //
-    // this is typically what the user/caller defines
-    struct LandmarkPair3D final {
-
-        LandmarkPair3D() = default;
-
-        LandmarkPair3D(
-            Vec3 const& source_,
-            Vec3 const& destination_) :
-
-            source{source_},
-            destination{destination_}
-        {
-        }
-
-        friend bool operator==(LandmarkPair3D const&, LandmarkPair3D const&) = default;
-
-        Vec3 source;
-        Vec3 destination;
-    };
-
-    std::ostream& operator<<(std::ostream&, LandmarkPair3D const&);
-
     // required inputs to the 3D TPS algorithm
     //
     // these are supplied by the user and used to solve for the coefficients

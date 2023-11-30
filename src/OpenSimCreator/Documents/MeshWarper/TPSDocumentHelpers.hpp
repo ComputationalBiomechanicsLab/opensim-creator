@@ -1,11 +1,12 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/MeshWarper/NamedLandmarkPair3D.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocument.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElement.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.hpp>
-#include <OpenSimCreator/Utils/TPS3D.hpp>
+#include <OpenSimCreator/Utils/LandmarkPair3D.hpp>
 
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/Vec3.hpp>
@@ -81,9 +82,6 @@ namespace osc
         return p.maybeSourceLocation || p.maybeDestinationLocation;
     }
 
-    // returns source + destination landmark pair, if both are fully defined; otherwise, returns std::nullopt
-    std::optional<LandmarkPair3D> TryExtractLandmarkPair(TPSDocumentLandmarkPair const&);
-
     // returns `true` if the document contains at least one "morphing" landmarks (i.e. ignores non-participating landmarks)
     inline bool ContainsLandmarks(TPSDocument const& doc)
     {
@@ -96,8 +94,14 @@ namespace osc
         return !doc.nonParticipatingLandmarks.empty();
     }
 
+    // returns source + destination landmark pair, if both are fully defined; otherwise, returns std::nullopt
+    std::optional<LandmarkPair3D> TryExtractLandmarkPair(TPSDocumentLandmarkPair const&);
+
     // returns all fully paired landmarks in `doc`
     std::vector<LandmarkPair3D> GetLandmarkPairs(TPSDocument const&);
+
+    // returns all fully paired landmarks, incl. their names, in `doc`
+    std::vector<NamedLandmarkPair3D> GetNamedLandmarkPairs(TPSDocument const&);
 
     // returns the count of landmarks in the document for which `which` is defined
     size_t CountNumLandmarksForInput(TPSDocument const&, TPSDocumentInputIdentifier);

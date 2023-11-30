@@ -99,6 +99,10 @@ namespace osc
             {
                 ActionSavePairedLandmarksToCSV(m_State->getScratch());
             }
+            if (ImGui::MenuItem("Landmark Pairs to CSV (no names)"))
+            {
+                ActionSavePairedLandmarksToCSV(m_State->getScratch(), TPSDocumentCSVFlags::NoNames);
+            }
         }
 
         std::shared_ptr<MeshWarpingTabSharedState> m_State;
