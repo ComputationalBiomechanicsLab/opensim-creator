@@ -18,11 +18,11 @@ MIClass osc::mi::Ground::CreateClass()
 {
     return
     {
-        ModelGraphStrings::c_GroundLabel,
-        ModelGraphStrings::c_GroundLabelPluralized,
-        ModelGraphStrings::c_GroundLabelOptionallyPluralized,
+        MIStrings::c_GroundLabel,
+        MIStrings::c_GroundLabelPluralized,
+        MIStrings::c_GroundLabelOptionallyPluralized,
         ICON_FA_DOT_CIRCLE,
-        ModelGraphStrings::c_GroundDescription,
+        MIStrings::c_GroundDescription,
     };
 }
 
@@ -33,10 +33,10 @@ UID osc::mi::Ground::implGetID() const
 
 std::ostream& osc::mi::Ground::implWriteToStream(std::ostream& o) const
 {
-    return o << ModelGraphStrings::c_GroundLabel << "()";
+    return o << MIStrings::c_GroundLabel << "()";
 }
 
 CStringView osc::mi::Ground::implGetLabel() const
 {
-    return ModelGraphStrings::c_GroundLabel;
+    return MIStrings::c_GroundLabel;
 }

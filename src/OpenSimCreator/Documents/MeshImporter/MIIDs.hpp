@@ -4,7 +4,7 @@
 
 namespace osc::mi
 {
-    // a collection of senteniel IDs used in the modelgraph
+    // a collection of senteniel IDs used in the mesh importer
     class MIIDs final {
     public:
         static UID Ground() { return GetAllIDs().Ground; }

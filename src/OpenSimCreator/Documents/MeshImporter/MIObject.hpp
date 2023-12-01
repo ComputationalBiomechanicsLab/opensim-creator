@@ -22,15 +22,7 @@ namespace osc::mi { class MIClass; }
 
 namespace osc::mi
 {
-    // virtual scene element support
-    //
-    // the editor UI uses custom scene elements, rather than OpenSim types, because they have to
-    // support:
-    //
-    // - visitor patterns (custom UI elements tailored to each known type)
-    // - value semantics (undo/redo, rollbacks, etc.)
-    // - groundspace manipulation (3D gizmos, drag and drop)
-    // - easy UI integration (GLM datatypes, designed to be easy to dump into OpenGL, etc.)
+    // an object, as defined by the mesh importer
     class MIObject {
     protected:
         MIObject() = default;

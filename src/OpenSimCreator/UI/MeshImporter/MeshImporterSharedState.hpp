@@ -102,7 +102,7 @@ namespace osc::mi
         {
             try
             {
-                m_MaybeOutputModel = CreateOpenSimModelFromModelGraph(getModelGraph(), m_ModelCreationFlags, m_IssuesBuffer);
+                m_MaybeOutputModel = CreateOpenSimModelFromMeshImporterDocument(getModelGraph(), m_ModelCreationFlags, m_IssuesBuffer);
             }
             catch (std::exception const& ex)
             {
@@ -817,7 +817,7 @@ namespace osc::mi
 
             try
             {
-                m = CreateOpenSimModelFromModelGraph(getModelGraph(), m_ModelCreationFlags, issues);
+                m = CreateOpenSimModelFromMeshImporterDocument(getModelGraph(), m_ModelCreationFlags, issues);
             }
             catch (std::exception const& ex)
             {

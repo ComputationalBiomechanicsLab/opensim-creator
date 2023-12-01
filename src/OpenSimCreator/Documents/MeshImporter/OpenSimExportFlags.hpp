@@ -4,7 +4,7 @@
 
 namespace osc::mi
 {
-    // user-editable flags that affect how the model is created from the model graph
+    // user-editable flags that affect how an OpenSim::Model is created by the mesh importer
     enum class ModelCreationFlags {
         None,
         ExportStationsAsMarkers,

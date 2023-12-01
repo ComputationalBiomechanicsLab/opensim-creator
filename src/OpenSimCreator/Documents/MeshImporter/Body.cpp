@@ -34,11 +34,11 @@ MIClass osc::mi::Body::CreateClass()
 {
     return
     {
-        ModelGraphStrings::c_BodyLabel,
-        ModelGraphStrings::c_BodyLabelPluralized,
-        ModelGraphStrings::c_BodyLabelOptionallyPluralized,
+        MIStrings::c_BodyLabel,
+        MIStrings::c_BodyLabelPluralized,
+        MIStrings::c_BodyLabelOptionallyPluralized,
         ICON_FA_CIRCLE,
-        ModelGraphStrings::c_BodyDescription,
+        MIStrings::c_BodyDescription,
     };
 }
 

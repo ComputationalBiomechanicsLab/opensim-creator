@@ -34,7 +34,7 @@ namespace osc::mi
         UID parentID
     );
 
-    bool TryOrientElementAxisAlongTwoPoints(
+    bool TryOrientObjectAxisAlongTwoPoints(
         UndoableDocument&,
         UID id,
         int axis,
@@ -42,7 +42,7 @@ namespace osc::mi
         Vec3 p2
     );
 
-    bool TryOrientElementAxisAlongTwoElements(
+    bool TryOrientObjectAxisAlongTwoObjects(
         UndoableDocument&,
         UID id,
         int axis,
@@ -50,21 +50,21 @@ namespace osc::mi
         UID el2
     );
 
-    bool TryTranslateElementBetweenTwoPoints(
+    bool TryTranslateObjectBetweenTwoPoints(
         UndoableDocument&,
         UID id,
-        Vec3 const& a,
-        Vec3 const& b
+        Vec3 const&,
+        Vec3 const&
     );
 
-    bool TryTranslateBetweenTwoElements(
+    bool TryTranslateBetweenTwoObjects(
         UndoableDocument&,
         UID id,
         UID a,
         UID b
     );
 
-    bool TryTranslateElementToAnotherElement(
+    bool TryTranslateObjectToAnotherObject(
         UndoableDocument&,
         UID id,
         UID other
@@ -99,7 +99,7 @@ namespace osc::mi
         UndoableDocument&
     );
 
-    bool DeleteEl(
+    bool DeleteObject(
         UndoableDocument&,
         UID id
     );
@@ -119,7 +119,7 @@ namespace osc::mi
 
     UID AddBody(
         UndoableDocument&,
-        Vec3 const& pos,
+        Vec3 const&,
         UID andTryAttach
     );
 
@@ -129,13 +129,13 @@ namespace osc::mi
 
     bool AddStationAtLocation(
         UndoableDocument&,
-        MIObject const& el,
-        Vec3 const& loc
+        MIObject const& attachment,
+        Vec3 const&
     );
 
     bool AddStationAtLocation(
         UndoableDocument&,
-        UID elID,
-        Vec3 const& loc
+        UID attachment,
+        Vec3 const&
     );
 }

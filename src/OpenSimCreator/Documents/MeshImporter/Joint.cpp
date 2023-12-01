@@ -42,11 +42,11 @@ MIClass osc::mi::Joint::CreateClass()
 {
     return
     {
-        ModelGraphStrings::c_JointLabel,
-        ModelGraphStrings::c_JointLabelPluralized,
-        ModelGraphStrings::c_JointLabelOptionallyPluralized,
+        MIStrings::c_JointLabel,
+        MIStrings::c_JointLabelPluralized,
+        MIStrings::c_JointLabelOptionallyPluralized,
         ICON_FA_LINK,
-        ModelGraphStrings::c_JointDescription,
+        MIStrings::c_JointDescription,
     };
 }
 
@@ -54,8 +54,8 @@ std::vector<CrossrefDescriptor> osc::mi::Joint::implGetCrossReferences() const
 {
     return
     {
-        {m_Parent, ModelGraphStrings::c_JointParentCrossrefName, CrossrefDirection::ToParent},
-        {m_Child,  ModelGraphStrings::c_JointChildCrossrefName,  CrossrefDirection::ToChild },
+        {m_Parent, MIStrings::c_JointParentCrossrefName, CrossrefDirection::ToParent},
+        {m_Child,  MIStrings::c_JointChildCrossrefName,  CrossrefDirection::ToChild },
     };
 }
 
@@ -71,7 +71,7 @@ std::ostream& osc::mi::Joint::implWriteToStream(std::ostream& o) const
         << ", UserAssignedName = " << m_UserAssignedName
         << ", Parent = " << m_Parent
         << ", Child = " << m_Child
-        << ", m_Transform = " << m_Xform
+        << ", Transform = " << m_Xform
         << ')';
 }
 

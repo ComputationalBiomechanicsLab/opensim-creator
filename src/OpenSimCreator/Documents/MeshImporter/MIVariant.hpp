@@ -11,7 +11,7 @@ namespace osc::mi
     class Joint;
     class StationEl;
 
-    // a variant for storing a `const` reference to a `const` scene element
+    // a variant for storing a `const` reference to a `const` object
     using ConstSceneElVariant = std::variant<
         std::reference_wrapper<Ground const>,
         std::reference_wrapper<Mesh const>,
@@ -20,7 +20,7 @@ namespace osc::mi
         std::reference_wrapper<StationEl const>
     >;
 
-    // a variant for storing a non-`const` reference to a non-`const` scene element
+    // a variant for storing a non-`const` reference to a non-`const` object
     using SceneElVariant = std::variant<
         std::reference_wrapper<Ground>,
         std::reference_wrapper<Mesh>,

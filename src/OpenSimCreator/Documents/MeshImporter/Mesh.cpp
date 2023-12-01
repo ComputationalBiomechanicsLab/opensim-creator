@@ -43,11 +43,11 @@ MIClass osc::mi::Mesh::CreateClass()
 {
     return
     {
-        ModelGraphStrings::c_MeshLabel,
-        ModelGraphStrings::c_MeshLabelPluralized,
-        ModelGraphStrings::c_MeshLabelOptionallyPluralized,
+        MIStrings::c_MeshLabel,
+        MIStrings::c_MeshLabelPluralized,
+        MIStrings::c_MeshLabelOptionallyPluralized,
         ICON_FA_CUBE,
-        ModelGraphStrings::c_MeshDescription,
+        MIStrings::c_MeshDescription,
     };
 }
 
@@ -55,7 +55,7 @@ std::vector<CrossrefDescriptor> osc::mi::Mesh::implGetCrossReferences() const
 {
     return
     {
-        {m_Attachment, ModelGraphStrings::c_MeshAttachmentCrossrefName, CrossrefDirection::ToParent},
+        {m_Attachment, MIStrings::c_MeshAttachmentCrossrefName, CrossrefDirection::ToParent},
     };
 }
 

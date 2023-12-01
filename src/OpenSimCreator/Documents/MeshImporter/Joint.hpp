@@ -18,9 +18,7 @@
 
 namespace osc::mi
 {
-    // a joint scene element
-    //
-    // see `JointAttachment` comment for an explanation of why it's designed this way.
+    // a joint, as defined by the mesh importer
     class Joint final : public MIObjectCRTP<Joint> {
     public:
         Joint(

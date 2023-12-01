@@ -4,7 +4,7 @@
 
 namespace osc::mi
 {
-    // a collection of user-facing strings that are presented in the model graph
+    // a collection of user-facing strings that are used by the mesh importer
     class MIStrings final {
     public:
         static constexpr CStringView c_GroundLabel = "Ground";
@@ -15,7 +15,7 @@ namespace osc::mi
         static constexpr CStringView c_MeshLabel = "Mesh";
         static constexpr CStringView c_MeshLabelPluralized = "Meshes";
         static constexpr CStringView c_MeshLabelOptionallyPluralized = "Mesh(es)";
-        static constexpr CStringView c_MeshDescription = "Meshes are decorational components in the model. They can be translated, rotated, and scaled. Typically, meshes are 'attached' to other elements in the model, such as bodies. When meshes are 'attached' to something, they will 'follow' the thing they are attached to.";
+        static constexpr CStringView c_MeshDescription = "Meshes are decorational components in the model. They can be translated, rotated, and scaled. Typically, meshes are 'attached' to other objects in the model, such as bodies. When meshes are 'attached' to something, they will 'follow' the thing they are attached to.";
         static constexpr CStringView c_MeshAttachmentCrossrefName = "parent";
 
         static constexpr CStringView c_BodyLabel = "Body";

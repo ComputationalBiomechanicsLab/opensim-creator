@@ -13,10 +13,10 @@ namespace osc::mi { class MIObject; }
 
 namespace osc::mi
 {
-    // returns true if a mesh can be attached to the given element
+    // returns true if a mesh can be attached to the given object
     bool CanAttachMeshTo(MIObject const&);
 
-    // returns `true` if a `StationEl` can be attached to the element
+    // returns `true` if a `StationEl` can be attached to the object
     bool CanAttachStationTo(MIObject const&);
 
     std::array<MIClass, std::variant_size_v<SceneElVariant>> const& GetSceneElClasses();

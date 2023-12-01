@@ -45,11 +45,11 @@ MIClass osc::mi::StationEl::CreateClass()
 {
     return
     {
-        ModelGraphStrings::c_StationLabel,
-        ModelGraphStrings::c_StationLabelPluralized,
-        ModelGraphStrings::c_StationLabelOptionallyPluralized,
+        MIStrings::c_StationLabel,
+        MIStrings::c_StationLabelPluralized,
+        MIStrings::c_StationLabelOptionallyPluralized,
         ICON_FA_MAP_PIN,
-        ModelGraphStrings::c_StationDescription,
+        MIStrings::c_StationDescription,
     };
 }
 
@@ -57,7 +57,7 @@ std::vector<CrossrefDescriptor> osc::mi::StationEl::implGetCrossReferences() con
 {
     return
     {
-        {m_Attachment, ModelGraphStrings::c_StationParentCrossrefName, CrossrefDirection::ToParent},
+        {m_Attachment, MIStrings::c_StationParentCrossrefName, CrossrefDirection::ToParent},
     };
 }
 

@@ -12,10 +12,7 @@
 
 namespace osc::mi
 {
-    // a "class" for an element in the mesh importer document
-    //
-    // "why not `Class`?": because the top-level osc:: namespace
-    // is likely to have a `Class` definition
+    // a "class" for an object in the mesh importer document
     class MIClass final {
     public:
         MIClass(

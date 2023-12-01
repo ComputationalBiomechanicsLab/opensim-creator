@@ -18,16 +18,7 @@
 
 namespace osc::mi
 {
-    // a mesh in the scene
-    //
-    // In this mesh importer, meshes are always positioned + oriented in ground. At OpenSim::Model generation
-    // time, the implementation does necessary maths to attach the meshes into the Model in the relevant relative
-    // coordinate system.
-    //
-    // The reason the editor uses ground-based coordinates is so that users have freeform control over where
-    // the mesh will be positioned in the model, and so that the user can freely re-attach the mesh and freely
-    // move meshes/bodies/joints in the mesh importer without everything else in the scene moving around (which
-    // is what would happen in a relative topology-sensitive attachment graph).
+    // a mesh, as defined by the mesh importer
     class Mesh final : public MIObjectCRTP<Mesh> {
     public:
         Mesh(

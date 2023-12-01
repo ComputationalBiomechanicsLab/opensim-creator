@@ -117,7 +117,7 @@ bool osc::mi::IsBodyAttachedToGround(
     return !childInAtLeastOneJoint;
 }
 
-bool osc::mi::GetModelGraphIssues(
+bool osc::mi::GetIssues(
     Document const& doc,
     std::vector<std::string>& issuesOut)
 {

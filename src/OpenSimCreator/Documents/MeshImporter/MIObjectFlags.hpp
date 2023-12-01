@@ -4,10 +4,7 @@
 
 namespace osc::mi
 {
-    // runtime flags for a scene el type
-    //
-    // helps the UI figure out what it should/shouldn't show for a particular type
-    // without having to resort to peppering visitors everywhere
+    // runtime flags for a mesh importer object
     enum class MIObjectFlags {
         None              = 0,
         CanChangeLabel    = 1<<0,

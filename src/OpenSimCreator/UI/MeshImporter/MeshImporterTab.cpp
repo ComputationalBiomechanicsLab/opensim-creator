@@ -486,7 +486,7 @@ private:
                 return false;
             }
 
-            return TryOrientElementAxisAlongTwoElements(
+            return TryOrientObjectAxisAlongTwoObjects(
                 shared->updCommittableModelGraph(),
                 id,
                 axis,
@@ -514,7 +514,7 @@ private:
                 return false;
             }
 
-            return TryTranslateElementToAnotherElement(shared->updCommittableModelGraph(), id, choices.front());
+            return TryTranslateObjectToAnotherObject(shared->updCommittableModelGraph(), id, choices.front());
         };
         m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
     }
@@ -537,7 +537,7 @@ private:
                 return false;
             }
 
-            return TryTranslateBetweenTwoElements(
+            return TryTranslateBetweenTwoObjects(
                 shared->updCommittableModelGraph(),
                 id,
                 choices[0],
@@ -575,7 +575,7 @@ private:
         Select2MeshPointsOptions opts;
         opts.onTwoPointsChosen = [shared = m_Shared, id = el.getID(), axis](Vec3 a, Vec3 b)
         {
-            return TryOrientElementAxisAlongTwoPoints(shared->updCommittableModelGraph(), id, axis, a, b);
+            return TryOrientObjectAxisAlongTwoPoints(shared->updCommittableModelGraph(), id, axis, a, b);
         };
         m_Maybe3DViewerModal = std::make_shared<Select2MeshPointsLayer>(*this, m_Shared, opts);
     }
@@ -587,7 +587,7 @@ private:
         Select2MeshPointsOptions opts;
         opts.onTwoPointsChosen = [shared = m_Shared, id = el.getID()](Vec3 a, Vec3 b)
         {
-            return TryTranslateElementBetweenTwoPoints(shared->updCommittableModelGraph(), id, a, b);
+            return TryTranslateObjectBetweenTwoPoints(shared->updCommittableModelGraph(), id, a, b);
         };
         m_Maybe3DViewerModal = std::make_shared<Select2MeshPointsLayer>(*this, m_Shared, opts);
     }
@@ -670,7 +670,7 @@ private:
                 return false;
             }
 
-            return TryTranslateElementToAnotherElement(shared->updCommittableModelGraph(), id, choices.front());
+            return TryTranslateObjectToAnotherObject(shared->updCommittableModelGraph(), id, choices.front());
         };
         m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
     }
@@ -735,7 +735,7 @@ private:
     // delete a particular scene element
     void deleteEl(UID elID)
     {
-        DeleteEl(m_Shared->updCommittableModelGraph(), elID);
+        DeleteObject(m_Shared->updCommittableModelGraph(), elID);
         garbageCollectStaleRefs();
     }
 
@@ -903,7 +903,7 @@ private:
                 m_Shared->commitCurrentModelGraph(std::move(ss).str());
             }
             ImGui::SameLine();
-            DrawHelpMarker("Translation", ModelGraphStrings::c_TranslationDescription);
+            DrawHelpMarker("Translation", MIStrings::c_TranslationDescription);
         }
 
         // rotation editor
@@ -961,7 +961,7 @@ private:
             {
                 m_Shared->pushMeshLoadRequests(el.getID(), m_Shared->promptUserForMeshFiles());
             }
-            DrawTooltipIfItemHovered("Add Meshes", ModelGraphStrings::c_MeshDescription);
+            DrawTooltipIfItemHovered("Add Meshes", MIStrings::c_MeshDescription);
         }
         ImGui::PopID();
 
@@ -974,19 +974,19 @@ private:
                 {
                     AddBody(m_Shared->updCommittableModelGraph(), el.getPos(m_Shared->getModelGraph()), el.getID());
                 }
-                DrawTooltipIfItemHovered("Add Body", ModelGraphStrings::c_BodyDescription.c_str());
+                DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription.c_str());
 
                 if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
                 {
                     AddBody(m_Shared->updCommittableModelGraph(), clickPos, el.getID());
                 }
-                DrawTooltipIfItemHovered("Add Body", ModelGraphStrings::c_BodyDescription.c_str());
+                DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription.c_str());
 
                 if (ImGui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
                 {
                     AddBody(m_Shared->updCommittableModelGraph());
                 }
-                DrawTooltipIfItemHovered("Add body", ModelGraphStrings::c_BodyDescription.c_str());
+                DrawTooltipIfItemHovered("Add body", MIStrings::c_BodyDescription.c_str());
 
                 if (auto const* mesh = dynamic_cast<Mesh const*>(&el))
                 {
@@ -995,21 +995,21 @@ private:
                         Vec3 const location = Midpoint(mesh->calcBounds());
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
-                    DrawTooltipIfItemHovered("Add Body", ModelGraphStrings::c_BodyDescription.c_str());
+                    DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription.c_str());
 
                     if (ImGui::MenuItem(ICON_FA_DIVIDE " at mesh average center"))
                     {
                         Vec3 const location = AverageCenter(*mesh);
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
-                    DrawTooltipIfItemHovered("Add Body", ModelGraphStrings::c_BodyDescription.c_str());
+                    DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription.c_str());
 
                     if (ImGui::MenuItem(ICON_FA_WEIGHT " at mesh mass center"))
                     {
                         Vec3 const location = MassCenter(*mesh);
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
-                    DrawTooltipIfItemHovered("Add body", ModelGraphStrings::c_BodyDescription.c_str());
+                    DrawTooltipIfItemHovered("Add body", MIStrings::c_BodyDescription.c_str());
                 }
 
                 ImGui::EndMenu();
@@ -1021,7 +1021,7 @@ private:
             {
                 AddBody(m_Shared->updCommittableModelGraph(), el.getPos(m_Shared->getModelGraph()), el.getID());
             }
-            DrawTooltipIfItemHovered("Add Body", ModelGraphStrings::c_BodyDescription.c_str());
+            DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription.c_str());
         }
         ImGui::PopID();
 
@@ -1047,19 +1047,19 @@ private:
                     {
                         AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, el.getPos(m_Shared->getModelGraph()));
                     }
-                    DrawTooltipIfItemHovered("Add Station", ModelGraphStrings::c_StationDescription);
+                    DrawTooltipIfItemHovered("Add Station", MIStrings::c_StationDescription);
 
                     if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
                     {
                         AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, clickPos);
                     }
-                    DrawTooltipIfItemHovered("Add Station", ModelGraphStrings::c_StationDescription);
+                    DrawTooltipIfItemHovered("Add Station", MIStrings::c_StationDescription);
 
                     if (ImGui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
                     {
                         AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, Vec3{});
                     }
-                    DrawTooltipIfItemHovered("Add Station", ModelGraphStrings::c_StationDescription);
+                    DrawTooltipIfItemHovered("Add Station", MIStrings::c_StationDescription);
 
                     if (dynamic_cast<Mesh const*>(&el))
                     {
@@ -1067,7 +1067,7 @@ private:
                         {
                             AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, Midpoint(el.calcBounds(m_Shared->getModelGraph())));
                         }
-                        DrawTooltipIfItemHovered("Add Station", ModelGraphStrings::c_StationDescription);
+                        DrawTooltipIfItemHovered("Add Station", MIStrings::c_StationDescription);
                     }
 
                     ImGui::EndMenu();
@@ -1079,7 +1079,7 @@ private:
                 {
                     AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, el.getPos(m_Shared->getModelGraph()));
                 }
-                DrawTooltipIfItemHovered("Add Station", ModelGraphStrings::c_StationDescription);
+                DrawTooltipIfItemHovered("Add Station", MIStrings::c_StationDescription);
             }
         }
         // ~ScopeGuard: implicitly calls ImGui::PopID()
@@ -1091,7 +1091,7 @@ private:
         {
             m_Shared->promptUserForMeshFilesAndPushThemOntoMeshLoader();
         }
-        DrawTooltipIfItemHovered("Add Meshes to the model", ModelGraphStrings::c_MeshDescription);
+        DrawTooltipIfItemHovered("Add Meshes to the model", MIStrings::c_MeshDescription);
 
         if (ImGui::BeginMenu(ICON_FA_PLUS " Add Other"))
         {
@@ -1128,7 +1128,7 @@ private:
         {
             if (ImGui::MenuItem(ICON_FA_TRASH " Delete"))
             {
-                DeleteEl(m_Shared->updCommittableModelGraph(), el.getID());
+                DeleteObject(m_Shared->updCommittableModelGraph(), el.getID());
                 garbageCollectStaleRefs();
                 ImGui::CloseCurrentPopup();
             }
@@ -1156,7 +1156,7 @@ private:
             std::string label = "To " + el.getCrossReferenceLabel(i);
             if (ImGui::MenuItem(label.c_str()))
             {
-                TryTranslateElementToAnotherElement(m_Shared->updCommittableModelGraph(), el.getID(), el.getCrossReferenceConnecteeID(i));
+                TryTranslateObjectToAnotherObject(m_Shared->updCommittableModelGraph(), el.getID(), el.getCrossReferenceConnecteeID(i));
             }
         }
 
@@ -1172,7 +1172,7 @@ private:
             {
                 UID a = el.getCrossReferenceConnecteeID(0);
                 UID b = el.getCrossReferenceConnecteeID(1);
-                TryTranslateBetweenTwoElements(m_Shared->updCommittableModelGraph(), el.getID(), a, b);
+                TryTranslateBetweenTwoObjects(m_Shared->updCommittableModelGraph(), el.getID(), a, b);
             }
         }
 
@@ -1705,13 +1705,13 @@ private:
         {
             m_Shared->promptUserForMeshFilesAndPushThemOntoMeshLoader();
         }
-        DrawTooltipIfItemHovered("Add Meshes", ModelGraphStrings::c_MeshDescription);
+        DrawTooltipIfItemHovered("Add Meshes", MIStrings::c_MeshDescription);
 
         if (ImGui::MenuItem(ICON_FA_CIRCLE " Body"))
         {
             AddBody(m_Shared->updCommittableModelGraph());
         }
-        DrawTooltipIfItemHovered("Add Body", ModelGraphStrings::c_BodyDescription);
+        DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription);
 
         if (ImGui::MenuItem(ICON_FA_MAP_PIN " Station"))
         {
@@ -1732,7 +1732,7 @@ private:
         {
             m_Shared->promptUserForMeshFilesAndPushThemOntoMeshLoader();
         }
-        DrawTooltipIfItemHovered("Add Meshes to the model", ModelGraphStrings::c_MeshDescription);
+        DrawTooltipIfItemHovered("Add Meshes to the model", MIStrings::c_MeshDescription);
 
         ImGui::SameLine();
 

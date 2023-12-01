@@ -6,8 +6,7 @@ namespace osc::mi { class MIObject; }
 
 namespace osc::mi
 {
-    // virtual interface to something that can be used to lookup scene elements in
-    // some larger document
+    // virtual interface to something that can be used to lookup objects in some larger document
     class IObjectFinder {
     protected:
         IObjectFinder() = default;

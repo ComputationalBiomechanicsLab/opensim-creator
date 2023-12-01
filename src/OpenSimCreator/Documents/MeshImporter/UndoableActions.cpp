@@ -27,31 +27,31 @@
 using osc::UID;
 
 bool osc::mi::PointAxisTowards(
-    UndoableDocument& cmg,
+    UndoableDocument& udoc,
     UID id,
     int axis,
     UID other)
 {
-    PointAxisTowards(cmg.updScratch(), id, axis, other);
-    cmg.commitScratch("reoriented " + cmg.getScratch().getLabelByID(id));
+    PointAxisTowards(udoc.updScratch(), id, axis, other);
+    udoc.commitScratch("reoriented " + udoc.getScratch().getLabelByID(id));
     return true;
 }
 
 bool osc::mi::TryAssignMeshAttachments(
-    UndoableDocument& cmg,
+    UndoableDocument& udoc,
     std::unordered_set<UID> const& meshIDs,
     UID newAttachment)
 {
-    Document& mg = cmg.updScratch();
+    Document& doc = udoc.updScratch();
 
-    if (newAttachment != MIIDs::Ground() && !mg.contains<Body>(newAttachment))
+    if (newAttachment != MIIDs::Ground() && !doc.contains<Body>(newAttachment))
     {
         return false;  // bogus ID passed
     }
 
     for (UID id : meshIDs)
     {
-        auto* const ptr = mg.tryUpdByID<Mesh>(id);
+        auto* const ptr = doc.tryUpdByID<Mesh>(id);
         if (!ptr)
         {
             continue;  // hardening: ignore invalid assignments
@@ -66,27 +66,27 @@ bool osc::mi::TryAssignMeshAttachments(
     {
         commitMsg << "es";
     }
-    commitMsg << " to " << mg.getByID(newAttachment).getLabel();
+    commitMsg << " to " << doc.getByID(newAttachment).getLabel();
 
 
-    cmg.commitScratch(std::move(commitMsg).str());
+    udoc.commitScratch(std::move(commitMsg).str());
 
     return true;
 }
 
 bool osc::mi::TryCreateJoint(
-    UndoableDocument& cmg,
+    UndoableDocument& udoc,
     UID childID,
     UID parentID)
 {
-    Document& mg = cmg.updScratch();
+    Document& doc = udoc.updScratch();
 
     size_t const jointTypeIdx = *IndexOf<OpenSim::WeldJoint>(GetComponentRegistry<OpenSim::Joint>());
-    Vec3 const parentPos = mg.getPosByID(parentID);
-    Vec3 const childPos = mg.getPosByID(childID);
+    Vec3 const parentPos = doc.getPosByID(parentID);
+    Vec3 const childPos = doc.getPosByID(childID);
     Vec3 const midPoint = Midpoint(parentPos, childPos);
 
-    auto const& jointEl = mg.emplace<Joint>(
+    auto const& joint = doc.emplace<Joint>(
         UID{},
         jointTypeIdx,
         std::string{},
@@ -94,169 +94,168 @@ bool osc::mi::TryCreateJoint(
         childID,
         Transform{.position = midPoint}
     );
-    mg.selectOnly(jointEl);
+    doc.selectOnly(joint);
 
-    cmg.commitScratch("added " + jointEl.getLabel());
+    udoc.commitScratch("added " + joint.getLabel());
 
     return true;
 }
 
-bool osc::mi::TryOrientElementAxisAlongTwoPoints(
-    UndoableDocument& cmg,
+bool osc::mi::TryOrientObjectAxisAlongTwoPoints(
+    UndoableDocument& udoc,
     UID id,
     int axis,
     Vec3 p1,
     Vec3 p2)
 {
-    Document& mg = cmg.updScratch();
-    MIObject* const el = mg.tryUpdByID(id);
+    Document& doc = udoc.updScratch();
 
-    if (!el)
+    MIObject* const obj = doc.tryUpdByID(id);
+    if (!obj)
     {
         return false;
     }
 
     Vec3 const direction = Normalize(p2 - p1);
-    Transform const t = el->getXForm(mg);
+    Transform const t = obj->getXForm(doc);
 
-    el->setXform(mg, PointAxisAlong(t, axis, direction));
-    cmg.commitScratch("reoriented " + el->getLabel());
+    obj->setXform(doc, PointAxisAlong(t, axis, direction));
+    udoc.commitScratch("reoriented " + obj->getLabel());
 
     return true;
 }
 
-bool osc::mi::TryOrientElementAxisAlongTwoElements(
-    UndoableDocument& cmg,
+bool osc::mi::TryOrientObjectAxisAlongTwoObjects(
+    UndoableDocument& udoc,
     UID id,
     int axis,
-    UID el1,
-    UID el2)
+    UID obj1,
+    UID obj2)
 {
-    return TryOrientElementAxisAlongTwoPoints(
-        cmg,
+    return TryOrientObjectAxisAlongTwoPoints(
+        udoc,
         id,
         axis,
-        cmg.getScratch().getPosByID(el1),
-        cmg.getScratch().getPosByID(el2)
+        udoc.getScratch().getPosByID(obj1),
+        udoc.getScratch().getPosByID(obj2)
     );
 }
 
-bool osc::mi::TryTranslateElementBetweenTwoPoints(
-    UndoableDocument& cmg,
+bool osc::mi::TryTranslateObjectBetweenTwoPoints(
+    UndoableDocument& udoc,
     UID id,
     Vec3 const& a,
     Vec3 const& b)
 {
-    Document& mg = cmg.updScratch();
-    MIObject* const el = mg.tryUpdByID(id);
-
-    if (!el)
+    Document& doc = udoc.updScratch();
+    MIObject* const obj = doc.tryUpdByID(id);
+    if (!obj)
     {
         return false;
     }
 
-    el->setPos(mg, Midpoint(a, b));
-    cmg.commitScratch("translated " + el->getLabel());
+    obj->setPos(doc, Midpoint(a, b));
+    udoc.commitScratch("translated " + obj->getLabel());
 
     return true;
 }
 
-bool osc::mi::TryTranslateBetweenTwoElements(
-    UndoableDocument& cmg,
+bool osc::mi::TryTranslateBetweenTwoObjects(
+    UndoableDocument& udoc,
     UID id,
     UID a,
     UID b)
 {
-    Document& mg = cmg.updScratch();
+    Document& doc = udoc.updScratch();
 
-    MIObject* const el = mg.tryUpdByID(id);
-    if (!el)
+    MIObject* const obj = doc.tryUpdByID(id);
+    if (!obj)
     {
         return false;
     }
 
-    MIObject const* const aEl = mg.tryGetByID(a);
-    if (!aEl)
+    MIObject const* const objA = doc.tryGetByID(a);
+    if (!objA)
     {
         return false;
     }
 
-    MIObject const* const bEl = mg.tryGetByID(b);
-    if (!bEl)
+    MIObject const* const objB = doc.tryGetByID(b);
+    if (!objB)
     {
         return false;
     }
 
-    el->setPos(mg, Midpoint(aEl->getPos(mg), bEl->getPos(mg)));
-    cmg.commitScratch("translated " + el->getLabel());
+    obj->setPos(doc, Midpoint(objA->getPos(doc), objB->getPos(doc)));
+    udoc.commitScratch("translated " + obj->getLabel());
 
     return true;
 }
 
-bool osc::mi::TryTranslateElementToAnotherElement(
-    UndoableDocument& cmg,
+bool osc::mi::TryTranslateObjectToAnotherObject(
+    UndoableDocument& udoc,
     UID id,
     UID other)
 {
-    Document& mg = cmg.updScratch();
+    Document& doc = udoc.updScratch();
 
-    MIObject* const el = mg.tryUpdByID(id);
-    if (!el)
+    MIObject* const obj = doc.tryUpdByID(id);
+    if (!obj)
     {
         return false;
     }
 
-    MIObject const* const otherEl = mg.tryGetByID(other);
-    if (!otherEl)
+    MIObject const* const otherObj = doc.tryGetByID(other);
+    if (!otherObj)
     {
         return false;
     }
 
-    el->setPos(mg, otherEl->getPos(mg));
-    cmg.commitScratch("moved " + el->getLabel());
+    obj->setPos(doc, otherObj->getPos(doc));
+    udoc.commitScratch("moved " + obj->getLabel());
 
     return true;
 }
 
 bool osc::mi::TryTranslateToMeshAverageCenter(
-    UndoableDocument& cmg,
+    UndoableDocument& udoc,
     UID id,
     UID meshID)
 {
-    Document& mg = cmg.updScratch();
+    Document& doc = udoc.updScratch();
 
-    MIObject* const el = mg.tryUpdByID(id);
-    if (!el)
+    MIObject* const obj = doc.tryUpdByID(id);
+    if (!obj)
     {
         return false;
     }
 
-    auto const* const mesh = mg.tryGetByID<Mesh>(meshID);
+    auto const* const mesh = doc.tryGetByID<Mesh>(meshID);
     if (!mesh)
     {
         return false;
     }
 
-    el->setPos(mg, AverageCenter(*mesh));
-    cmg.commitScratch("moved " + el->getLabel());
+    obj->setPos(doc, AverageCenter(*mesh));
+    udoc.commitScratch("moved " + obj->getLabel());
 
     return true;
 }
 
 bool osc::mi::TryTranslateToMeshBoundsCenter(
-    UndoableDocument& cmg,
+    UndoableDocument& udoc,
     UID id,
     UID meshID)
 {
-    Document& mg = cmg.updScratch();
+    Document& doc = udoc.updScratch();
 
-    MIObject* const el = mg.tryUpdByID(id);
-    if (!el)
+    MIObject* const obj = doc.tryUpdByID(id);
+    if (!obj)
     {
         return false;
     }
 
-    auto const* const mesh = mg.tryGetByID<Mesh>(meshID);
+    auto const* const mesh = doc.tryGetByID<Mesh>(meshID);
     if (!mesh)
     {
         return false;
@@ -264,39 +263,39 @@ bool osc::mi::TryTranslateToMeshBoundsCenter(
 
     Vec3 const boundsMidpoint = Midpoint(mesh->calcBounds());
 
-    el->setPos(mg, boundsMidpoint);
-    cmg.commitScratch("moved " + el->getLabel());
+    obj->setPos(doc, boundsMidpoint);
+    udoc.commitScratch("moved " + obj->getLabel());
 
     return true;
 }
 
 bool osc::mi::TryTranslateToMeshMassCenter(
-    UndoableDocument& cmg,
+    UndoableDocument& udoc,
     UID id,
     UID meshID)
 {
-    Document& mg = cmg.updScratch();
+    Document& doc = udoc.updScratch();
 
-    MIObject* const el = mg.tryUpdByID(id);
-    if (!el)
+    MIObject* const obj = doc.tryUpdByID(id);
+    if (!obj)
     {
         return false;
     }
 
-    auto const* const mesh = mg.tryGetByID<Mesh>(meshID);
+    auto const* const mesh = doc.tryGetByID<Mesh>(meshID);
     if (!mesh)
     {
         return false;
     }
 
-    el->setPos(mg, MassCenter(*mesh));
-    cmg.commitScratch("moved " + el->getLabel());
+    obj->setPos(doc, MassCenter(*mesh));
+    udoc.commitScratch("moved " + obj->getLabel());
 
     return true;
 }
 
 bool osc::mi::TryReassignCrossref(
-    UndoableDocument& cmg,
+    UndoableDocument& udoc,
     UID id,
     int crossref,
     UID other)
@@ -306,161 +305,161 @@ bool osc::mi::TryReassignCrossref(
         return false;
     }
 
-    Document& mg = cmg.updScratch();
+    Document& doc = udoc.updScratch();
 
-    MIObject* const el = mg.tryUpdByID(id);
-    if (!el)
+    MIObject* const obj = doc.tryUpdByID(id);
+    if (!obj)
     {
         return false;
     }
 
-    if (!mg.contains(other))
+    if (!doc.contains(other))
     {
         return false;
     }
 
-    el->setCrossReferenceConnecteeID(crossref, other);
-    cmg.commitScratch("reassigned " + el->getLabel() + " " + el->getCrossReferenceLabel(crossref));
+    obj->setCrossReferenceConnecteeID(crossref, other);
+    udoc.commitScratch("reassigned " + obj->getLabel() + " " + obj->getCrossReferenceLabel(crossref));
 
     return true;
 }
 
-bool osc::mi::DeleteSelected(UndoableDocument& cmg)
+bool osc::mi::DeleteSelected(UndoableDocument& udoc)
 {
-    Document& mg = cmg.updScratch();
-    if (!mg.hasSelection())
+    Document& doc = udoc.updScratch();
+    if (!doc.hasSelection())
     {
         return false;
     }
-    mg.deleteSelected();
-    cmg.commitScratch("deleted selection");
+    doc.deleteSelected();
+    udoc.commitScratch("deleted selection");
     return true;
 }
 
-bool osc::mi::DeleteEl(UndoableDocument& cmg, UID id)
+bool osc::mi::DeleteObject(UndoableDocument& udoc, UID id)
 {
-    Document& mg = cmg.updScratch();
+    Document& doc = udoc.updScratch();
 
-    MIObject* const el = mg.tryUpdByID(id);
-    if (!el)
+    MIObject* const obj = doc.tryUpdByID(id);
+    if (!obj)
     {
         return false;
     }
 
-    std::string const label = to_string(el->getLabel());
+    std::string const label = to_string(obj->getLabel());
 
-    if (!mg.deleteByID(el->getID()))
+    if (!doc.deleteByID(obj->getID()))
     {
         return false;
     }
 
-    cmg.commitScratch("deleted " + label);
+    udoc.commitScratch("deleted " + label);
     return true;
 }
 
 void osc::mi::RotateAxisXRadians(
-    UndoableDocument& cmg,
+    UndoableDocument& udoc,
     MIObject& el,
     int axis,
     float radians)
 {
-    Document& mg = cmg.updScratch();
-    el.setXform(mg, RotateAlongAxis(el.getXForm(mg), axis, radians));
-    cmg.commitScratch("reoriented " + el.getLabel());
+    Document& doc = udoc.updScratch();
+    el.setXform(doc, RotateAlongAxis(el.getXForm(doc), axis, radians));
+    udoc.commitScratch("reoriented " + el.getLabel());
 }
 
 bool osc::mi::TryCopyOrientation(
-    UndoableDocument& cmg,
+    UndoableDocument& udoc,
     UID id,
     UID other)
 {
-    Document& mg = cmg.updScratch();
+    Document& doc = udoc.updScratch();
 
-    MIObject* const el = mg.tryUpdByID(id);
-    if (!el)
+    MIObject* const obj = doc.tryUpdByID(id);
+    if (!obj)
     {
         return false;
     }
 
-    MIObject const* const otherEl = mg.tryGetByID(other);
-    if (!otherEl)
+    MIObject const* const otherObj = doc.tryGetByID(other);
+    if (!otherObj)
     {
         return false;
     }
 
-    el->setRotation(mg, otherEl->getRotation(mg));
-    cmg.commitScratch("reoriented " + el->getLabel());
+    obj->setRotation(doc, otherObj->getRotation(doc));
+    udoc.commitScratch("reoriented " + obj->getLabel());
 
     return true;
 }
 
 
 UID osc::mi::AddBody(
-    UndoableDocument& cmg,
+    UndoableDocument& udoc,
     Vec3 const& pos,
     UID andTryAttach)
 {
-    Document& mg = cmg.updScratch();
+    Document& doc = udoc.updScratch();
 
-    auto const& b = mg.emplace<Body>(UID{}, Body::Class().generateName(), Transform{.position = pos});
-    mg.deSelectAll();
-    mg.select(b.getID());
+    auto const& b = doc.emplace<Body>(UID{}, Body::Class().generateName(), Transform{.position = pos});
+    doc.deSelectAll();
+    doc.select(b.getID());
 
-    auto* const el = mg.tryUpdByID<Mesh>(andTryAttach);
-    if (el)
+    auto* const obj = doc.tryUpdByID<Mesh>(andTryAttach);
+    if (obj)
     {
-        if (el->getParentID() == MIIDs::Ground() || el->getParentID() == MIIDs::Empty())
+        if (obj->getParentID() == MIIDs::Ground() || obj->getParentID() == MIIDs::Empty())
         {
-            el->setParentID(b.getID());
-            mg.select(*el);
+            obj->setParentID(b.getID());
+            doc.select(*obj);
         }
     }
 
-    cmg.commitScratch(std::string{"added "} + b.getLabel());
+    udoc.commitScratch(std::string{"added "} + b.getLabel());
 
     return b.getID();
 }
 
-UID osc::mi::AddBody(UndoableDocument& cmg)
+UID osc::mi::AddBody(UndoableDocument& udoc)
 {
-    return AddBody(cmg, {}, MIIDs::Empty());
+    return AddBody(udoc, {}, MIIDs::Empty());
 }
 
 bool osc::mi::AddStationAtLocation(
-    UndoableDocument& cmg,
-    MIObject const& el,
+    UndoableDocument& udoc,
+    MIObject const& obj,
     Vec3 const& loc)
 {
-    Document& mg = cmg.updScratch();
+    Document& doc = udoc.updScratch();
 
-    if (!CanAttachStationTo(el))
+    if (!CanAttachStationTo(obj))
     {
         return false;
     }
 
-    auto const& station = mg.emplace<StationEl>(
+    auto const& station = doc.emplace<StationEl>(
         UID{},
-        GetStationAttachmentParent(mg, el),
+        GetStationAttachmentParent(doc, obj),
         loc,
         StationEl::Class().generateName()
     );
-    mg.selectOnly(station);
-    cmg.commitScratch("added station " + station.getLabel());
+    doc.selectOnly(station);
+    udoc.commitScratch("added station " + station.getLabel());
     return true;
 }
 
 bool osc::mi::AddStationAtLocation(
-    UndoableDocument& cmg,
-    UID elID,
+    UndoableDocument& udoc,
+    UID attachment,
     Vec3 const& loc)
 {
-    Document& mg = cmg.updScratch();
+    Document& doc = udoc.updScratch();
 
-    auto const* const el = mg.tryGetByID(elID);
-    if (!el)
+    auto const* const obj = doc.tryGetByID(attachment);
+    if (!obj)
     {
         return false;
     }
 
-    return AddStationAtLocation(cmg, *el, loc);
+    return AddStationAtLocation(udoc, *obj, loc);
 }

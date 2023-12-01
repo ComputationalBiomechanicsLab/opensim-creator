@@ -20,7 +20,7 @@ namespace osc::mi { class Joint; }
 
 namespace osc::mi
 {
-    // returns `true` if `body` participates in any joint in the model graph
+    // returns `true` if `body` participates in any joint in the document
     bool IsAChildAttachmentInAnyJoint(Document const&, MIObject const&);
 
     // returns `true` if a Joint is complete b.s.
@@ -47,19 +47,19 @@ namespace osc::mi
         std::unordered_set<UID>&
     );
 
-    // returns `true` if `modelGraph` contains issues
-    bool GetModelGraphIssues(
+    // returns `true` if the document contains issues and populates the output vector with messages
+    bool GetIssues(
         Document const&,
         std::vector<std::string>&
     );
 
-    // returns a string representing the subheader of a scene element
+    // returns a string representing the subheader of an object
     std::string GetContextMenuSubHeaderText(
         Document const&,
         MIObject const&
     );
 
-    // returns true if the given element (ID) is in the "selection group" of
+    // returns true if the given object ('s ID) is in the "selection group" of the parent
     bool IsInSelectionGroupOf(
         Document const&,
         UID parent,
@@ -87,10 +87,10 @@ namespace osc::mi
     void SelectAnythingGroupedWith(Document&, UID);
 
     // returns the ID of the thing the station should attach to when trying to
-    // attach to something in the scene
+    // attach to something in the document
     UID GetStationAttachmentParent(Document const&, MIObject const&);
 
-    // points an axis of a given element towards some other element in the model graph
+    // points an axis of a given object towards some other object in the document
     void PointAxisTowards(
         Document&,
         UID,
@@ -98,7 +98,7 @@ namespace osc::mi
         UID
     );
 
-    // returns recommended rim intensity for an element in the model graph
+    // returns decoration flags for an object in the document
     SceneDecorationFlags computeFlags(
         Document const&,
         UID id,
