@@ -1,6 +1,9 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElement.hpp>
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.hpp>
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementType.hpp>
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.hpp>
 
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/StringName.hpp>
@@ -17,6 +20,16 @@ namespace osc
         explicit TPSDocumentLandmarkPair(StringName name_) :
             name{std::move(name_)}
         {
+        }
+
+        TPSDocumentElementID sourceID() const
+        {
+            return TPSDocumentElementID{uid, TPSDocumentElementType::Landmark, TPSDocumentInputIdentifier::Source};
+        }
+
+        TPSDocumentElementID destinationID() const
+        {
+            return TPSDocumentElementID{uid, TPSDocumentElementType::Landmark, TPSDocumentInputIdentifier::Destination};
         }
 
         UID uid;

@@ -72,7 +72,6 @@ namespace osc
             ImGui::TableSetupColumn("Name", 0, 0.7f*ImGui::GetContentRegionAvail().x);
             ImGui::TableSetupColumn("Source", 0, 0.15f*ImGui::GetContentRegionAvail().x);
             ImGui::TableSetupColumn("Destination", 0, 0.15f*ImGui::GetContentRegionAvail().x);
-            ImGui::TableHeadersRow();
 
             int id = 0;
             for (auto const& lm : m_State->getScratch().landmarkPairs)
@@ -93,46 +92,66 @@ namespace osc
             ImGui::AlignTextToFramePadding();
             TextColumnCentered(p.name);
 
-            bool const fullyPaired = IsFullyPaired(p);
-
             // source column
             ImGui::TableSetColumnIndex(1);
-            Circle const srcCircle = tryDrawLandmarkDot(fullyPaired, p.maybeSourceLocation);
+            Circle const srcCircle = drawLandmarkCircle(
+                m_State->isSelected(p.sourceID()),
+                m_State->isHovered(p.sourceID()),
+                IsFullyPaired(p),
+                p.maybeSourceLocation.has_value()
+            );
 
             // destination column
             ImGui::TableSetColumnIndex(2);
-            Circle const destCircle = tryDrawLandmarkDot(fullyPaired, p.maybeDestinationLocation);
+            Circle const destCircle = drawLandmarkCircle(
+                m_State->isSelected(p.destinationID()),
+                m_State->isHovered(p.destinationID()),
+                IsFullyPaired(p),
+                p.maybeDestinationLocation.has_value()
+            );
 
-            if (fullyPaired)
+            if (IsFullyPaired(p))
             {
                 drawConnectingLine(srcCircle, destCircle);
             }
         }
 
-        Circle tryDrawLandmarkDot(
-            bool paired,
-            std::optional<Vec3> const& maybeLocation)
+        Circle drawLandmarkCircle(
+            bool isSelected,
+            bool isHovered,
+            bool isPaired,
+            bool hasLocation)
         {
-            Color const textColor =
-                maybeLocation ?
-                    (paired ? m_State->pairedLandmarkColor : m_State->unpairedLandmarkColor) :
-                    Color::halfGrey();
-
-            Vec2 const midpoint = calcColumnMidpointScreenPos();
-            ImU32 const textImGuiColor = ToImU32(textColor);
-            float const radius = calcCircleRadius();
+            Circle const circle{.origin = calcColumnMidpointScreenPos(), .radius = calcCircleRadius()};
+            ImU32 const color = ToImU32(landmarkDotColor(hasLocation, isPaired));
 
             auto& dl = *ImGui::GetWindowDrawList();
-            if (maybeLocation)
+            if (hasLocation)
             {
-                dl.AddCircleFilled(midpoint, radius, textImGuiColor);
+                dl.AddCircleFilled(circle.origin, circle.radius, color);
             }
             else
             {
-                dl.AddCircle(midpoint, radius, textImGuiColor);
+                dl.AddCircle(circle.origin, circle.radius, color);
             }
 
-            return Circle{.origin = midpoint, .radius = radius};
+            tryDrawCircleHighlight(circle, isSelected, isHovered);
+
+            return circle;
+        }
+
+        void tryDrawCircleHighlight(Circle const& circle, bool isSelected, bool isHovered)
+        {
+            auto& dl = *ImGui::GetWindowDrawList();
+            float const thickness = 2.0f;
+            if (isSelected)
+            {
+                dl.AddCircle(circle.origin, circle.radius + thickness, ToImU32(Color::yellow()), 0, thickness);
+            }
+            else if (isHovered)
+            {
+                dl.AddCircle(circle.origin, circle.radius + thickness, ToImU32(Color::yellow().withAlpha(0.5f)), 0, thickness);
+            }
         }
 
         void drawConnectingLine(Circle const& src, Circle const& dest)
@@ -165,7 +184,6 @@ namespace osc
 
             ImGui::TableSetupColumn("Name", 0, 0.7f*ImGui::GetContentRegionAvail().x);
             ImGui::TableSetupColumn("Location", 0, 0.3f*ImGui::GetContentRegionAvail().x);
-            ImGui::TableHeadersRow();
 
             int id = 0;
             for (auto const& npl : m_State->getScratch().nonParticipatingLandmarks)
@@ -188,11 +206,41 @@ namespace osc
 
             // source column
             ImGui::TableSetColumnIndex(1);
+            drawNonParticipatingLandmarkCircle(
+                m_State->isSelected(npl.getID()),
+                m_State->isHovered(npl.getID())
+            );
+        }
+
+        void drawNonParticipatingLandmarkCircle(
+            bool isSelected,
+            bool isHovered)
+        {
+            Circle const circle{.origin = calcColumnMidpointScreenPos(), .radius = calcCircleRadius()};
+
             ImGui::GetWindowDrawList()->AddCircleFilled(
-                calcColumnMidpointScreenPos(),
-                calcCircleRadius(),
+                circle.origin,
+                circle.radius,
                 ToImU32(m_State->nonParticipatingLandmarkColor)
             );
+
+            tryDrawCircleHighlight(circle, isSelected, isHovered);
+        }
+
+        Color landmarkDotColor(bool hasLocation, bool isPaired) const
+        {
+            if (hasLocation)
+            {
+                if (isPaired)
+                {
+                    return m_State->pairedLandmarkColor;
+                }
+                else
+                {
+                    return m_State->unpairedLandmarkColor;
+                }
+            }
+            return Color::halfGrey();
         }
 
         ImGuiTableFlags getTableFlags() const

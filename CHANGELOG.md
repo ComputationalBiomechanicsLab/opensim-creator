@@ -31,6 +31,7 @@ All notable changes to this project will be documented here. The format is based
 - The mesh warper UI now supports more keybindings, which are now also listed in the top menu bar
 - Non-participating landmarks can now be added to the source mesh in the mesh warper by Ctrl+Clicking on the mesh
 - The clear (non-participating) landmarks buttons in the mesh warper are now in an `Actions` menu
+- The mesh warper landmark navigator panel now highlights which landmarks are hovered/selected
 
 
 ## [0.5.5] - 2023/11/21

@@ -52,7 +52,7 @@ namespace
     }
 
     template<Named T>
-    bool HasName(std::string_view const& name, T const& v)
+    bool HasName(std::string_view name, T const& v)
     {
         return v.name == name;
     }

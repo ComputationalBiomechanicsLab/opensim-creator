@@ -1,6 +1,8 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElement.hpp>
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementType.hpp>
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.hpp>
 
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/StringName.hpp>
@@ -17,6 +19,11 @@ namespace osc
             name{name_},
             location{location_}
         {
+        }
+
+        TPSDocumentElementID getID() const
+        {
+            return TPSDocumentElementID{uid, TPSDocumentElementType::NonParticipatingLandmark};
         }
 
         UID uid;
