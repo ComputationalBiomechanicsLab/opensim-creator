@@ -15,7 +15,7 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/SpanHelpers.hpp>
+#include <oscar/Utils/ObjectRepresentation.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -115,7 +115,7 @@ namespace
             *format,
             colorSpace,
         };
-        rv.setPixelData(osc::ViewSpanAsUint8Span(pixelSpan));
+        rv.setPixelData(osc::ViewObjectRepresentations<uint8_t>(pixelSpan));
 
         return rv;
     }

@@ -22,6 +22,7 @@
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/Utils/At.hpp>
 
 #include <filesystem>
 #include <functional>
@@ -29,12 +30,9 @@
 #include <optional>
 #include <vector>
 
-using osc::Color;
-using osc::Mesh;
 using osc::Quat;
 using osc::SceneCache;
 using osc::SceneDecoration;
-using osc::Transform;
 using osc::Vec3;
 
 namespace
@@ -44,15 +42,14 @@ namespace
         Quat const& rotation,
         std::function<void(SceneDecoration&&)> const& out)
     {
-        Mesh const grid = cache.get100x100GridMesh();
-
-        Transform t;
-        t.scale *= Vec3{50.0f, 50.0f, 1.0f};
-        t.rotation = rotation;
-
-        Color const color = {0.7f, 0.7f, 0.7f, 0.15f};
-
-        out(SceneDecoration{grid, t, color});
+        out({
+            .mesh = cache.get100x100GridMesh(),
+            .transform = {
+                .scale = Vec3{50.0f, 50.0f, 1.0f},
+                .rotation = rotation,
+            },
+            .color = {0.7f, 0.15f},
+        });
     }
 }
 
@@ -63,10 +60,14 @@ void osc::DrawBVH(
 {
     sceneBVH.forEachLeafOrInnerNodeUnordered([cube = cache.getCubeWireMesh(), &out](BVHNode const& node)
     {
-        Transform t;
-        t.scale *= 0.5f * Dimensions(node.getBounds());
-        t.position = Midpoint(node.getBounds());
-        out(SceneDecoration{cube, t, Color::black()});
+        out({
+            .mesh = cube,
+            .transform = {
+                .scale = HalfWidths(node.getBounds()),
+                .position = Midpoint(node.getBounds()),
+            },
+            .color = Color::black(),
+        });
     });
 }
 
@@ -75,13 +76,7 @@ void osc::DrawAABB(
     AABB const& aabb,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    Mesh const cube = cache.getCubeWireMesh();
-
-    Transform t;
-    t.scale = 0.5f * Dimensions(aabb);
-    t.position = Midpoint(aabb);
-
-    out(SceneDecoration{cube, t, Color::black()});
+    DrawAABBs(cache, {{aabb}}, out);
 }
 
 void osc::DrawAABBs(
@@ -90,14 +85,16 @@ void osc::DrawAABBs(
     std::function<void(SceneDecoration&&)> const& out)
 {
     Mesh const cube = cache.getCubeWireMesh();
-
     for (AABB const& aabb : aabbs)
     {
-        Transform t;
-        t.scale = 0.5f * Dimensions(aabb);
-        t.position = Midpoint(aabb);
-
-        out(SceneDecoration{cube, t, Color::black()});
+        out({
+            .mesh = cube,
+            .transform = {
+                .scale = HalfWidths(aabb),
+                .position = Midpoint(aabb),
+            },
+            .color = Color::black(),
+        });
     }
 }
 
@@ -120,29 +117,31 @@ void osc::DrawXZFloorLines(
     Mesh const yLine = cache.getYLineMesh();
 
     // X line
-    {
-        Transform t;
-        t.scale *= scale;
-        t.rotation = AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{0.0f, 0.0f, 1.0f});
-
-        out(SceneDecoration{yLine, t, Color::red()});
-    }
+    out({
+        .mesh = yLine,
+        .transform = {
+            .scale = Vec3{scale},
+            .rotation = AngleAxis(Deg2Rad(90.0f), Vec3{0.0f, 0.0f, 1.0f}),
+        },
+        .color = Color::red(),
+    });
 
     // Z line
-    {
-        Transform t;
-        t.scale *= scale;
-        t.rotation = AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{1.0f, 0.0f, 0.0f});
-
-        out(SceneDecoration{yLine, t, Color::blue()});
-    }
+    out({
+        .mesh = yLine,
+        .transform = {
+            .scale = Vec3{scale},
+            .rotation = AngleAxis(Deg2Rad(90.0f), Vec3{1.0f, 0.0f, 0.0f}),
+        },
+        .color = Color::blue(),
+    });
 }
 
 void osc::DrawXZGrid(
     SceneCache& cache,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    Quat const rotation = AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{1.0f, 0.0f, 0.0f});
+    Quat const rotation = AngleAxis(Deg2Rad(90.0f), Vec3{1.0f, 0.0f, 0.0f});
     DrawGrid(cache, rotation, out);
 }
 
@@ -150,26 +149,15 @@ void osc::DrawXYGrid(
     SceneCache& cache,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    auto const rotation = Identity<Quat>();
-    DrawGrid(cache, rotation, out);
+    DrawGrid(cache, Identity<Quat>(), out);
 }
 
 void osc::DrawYZGrid(
     SceneCache& cache,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    Quat const rotation = AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{0.0f, 1.0f, 0.0f});
+    Quat const rotation = AngleAxis(Deg2Rad(90.0f), Vec3{0.0f, 1.0f, 0.0f});
     DrawGrid(cache, rotation, out);
-}
-
-osc::ArrowProperties::ArrowProperties() :
-    worldspaceStart{},
-    worldspaceEnd{},
-    tipLength{},
-    neckThickness{},
-    headThickness{},
-    color{Color::black()}
-{
 }
 
 void osc::DrawArrow(
@@ -187,12 +175,18 @@ void osc::DrawArrow(
     Vec3 const headEnd = props.worldspaceEnd;
 
     // emit neck cylinder
-    Transform const neckXform = YToYCylinderToSegmentTransform({neckStart, neckEnd}, props.neckThickness);
-    out(SceneDecoration{cache.getCylinderMesh(), neckXform, props.color});
+    out({
+        .mesh = cache.getCylinderMesh(),
+        .transform = YToYCylinderToSegmentTransform({neckStart, neckEnd}, props.neckThickness),
+        .color = props.color
+    });
 
     // emit head cone
-    Transform const headXform = YToYCylinderToSegmentTransform({headStart, headEnd}, props.headThickness);
-    out(SceneDecoration{cache.getConeMesh(), headXform, props.color});
+    out({
+        .mesh = cache.getConeMesh(),
+        .transform = YToYCylinderToSegmentTransform({headStart, headEnd}, props.headThickness),
+        .color = props.color
+    });
 }
 
 void osc::DrawLineSegment(
@@ -202,8 +196,11 @@ void osc::DrawLineSegment(
     float radius,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    Transform const cylinderXform = YToYCylinderToSegmentTransform(segment, radius);
-    out(SceneDecoration{cache.getCylinderMesh(), cylinderXform, color});
+    out({
+        .mesh = cache.getCylinderMesh(),
+        .transform = YToYCylinderToSegmentTransform(segment, radius),
+        .color = color,
+    });
 }
 
 osc::AABB osc::GetWorldspaceAABB(SceneDecoration const& cd)
@@ -234,20 +231,26 @@ std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(
 
     // perform ray-triangle intersections tests on the scene hits
     std::vector<SceneCollision> rv;
+    rv.reserve(sceneCollisions.size());  // upper bound
     for (BVHCollision const& c : sceneCollisions)
     {
-        SceneDecoration const& decoration = decorations[c.id];
+        SceneDecoration const& decoration = At(decorations, c.id);
         BVH const& decorationBVH = sceneCache.getBVH(decoration.mesh);
+
         std::optional<RayCollision> const maybeCollision = GetClosestWorldspaceRayCollision(
             decoration.mesh,
             decorationBVH,
             decoration.transform,
             ray
         );
-
         if (maybeCollision)
         {
-            rv.emplace_back(decoration.id, static_cast<size_t>(c.id), maybeCollision->position, maybeCollision->distance);
+            rv.push_back({
+                .decorationID = decoration.id,
+                .decorationIndex = static_cast<size_t>(c.id),
+                .worldspaceLocation = maybeCollision->position,
+                .distanceFromRayOrigin = maybeCollision->distance,
+            });
         }
     }
     return rv;
@@ -300,7 +303,7 @@ std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
     return osc::GetClosestWorldspaceRayCollision(
         mesh,
         triangleBVH,
-        Transform{},
+        Identity<Transform>(),
         ray
     );
 }
@@ -319,7 +322,7 @@ osc::SceneRendererParams osc::CalcStandardDarkSceneRenderParams(
     rv.projectionMatrix = camera.getProjMtx(AspectRatio(renderDims));
     rv.viewPos = camera.getPos();
     rv.lightDirection = RecommendedLightDirection(camera);
-    rv.backgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
+    rv.backgroundColor = {0.1f, 1.0f};
     return rv;
 }
 
@@ -330,7 +333,7 @@ osc::Material osc::CreateWireframeOverlayMaterial(
     std::filesystem::path const vertShader = config.getResourceDir() / "oscar/shaders/SceneRenderer/SolidColor.vert";
     std::filesystem::path const fragShader = config.getResourceDir() / "oscar/shaders/SceneRenderer/SolidColor.frag";
     Material material{cache.load(vertShader, fragShader)};
-    material.setColor("uDiffuseColor", {0.0f, 0.0f, 0.0f, 0.6f});
+    material.setColor("uDiffuseColor", {0.0f, 0.6f});
     material.setWireframeMode(true);
     material.setTransparent(true);
     return material;

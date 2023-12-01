@@ -1,10 +1,10 @@
 #include "CachedModelRenderer.hpp"
 
+#include <OpenSimCreator/Documents/Model/ModelStatePairInfo.hpp>
+#include <OpenSimCreator/Documents/Model/VirtualConstModelStatePair.hpp>
 #include <OpenSimCreator/Graphics/ModelRendererParams.hpp>
 #include <OpenSimCreator/Graphics/OpenSimGraphicsHelpers.hpp>
 #include <OpenSimCreator/Graphics/OverlayDecorationGenerator.hpp>
-#include <OpenSimCreator/Model/ModelStatePairInfo.hpp>
-#include <OpenSimCreator/Model/VirtualConstModelStatePair.hpp>
 
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Maths/AABB.hpp>

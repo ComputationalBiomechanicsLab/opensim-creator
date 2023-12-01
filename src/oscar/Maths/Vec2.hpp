@@ -1,6 +1,8 @@
 #pragma once
 
-#include <glm/vec2.hpp>
+#include <oscar/Maths/Vec.hpp>
+
+#include <glm/detail/type_vec2.hpp>
 
 #include <cstdint>
 #include <iosfwd>
@@ -8,9 +10,9 @@
 
 namespace osc
 {
-    using Vec2 = glm::vec2;
-    using Vec2i = glm::ivec2;
-    using Vec2u32 = glm::vec<2, uint32_t>;
+    using Vec2 = Vec<2, float>;
+    using Vec2i = Vec<2, int>;
+    using Vec2u32 = Vec<2, uint32_t>;
 
     std::ostream& operator<<(std::ostream&, Vec2 const&);
     std::string to_string(Vec2 const&);

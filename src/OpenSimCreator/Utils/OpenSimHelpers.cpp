@@ -1,8 +1,8 @@
 #include "OpenSimHelpers.hpp"
 
-#include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
-#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Component.h>

@@ -1,11 +1,11 @@
-#include <OpenSimCreator/UI/Widgets/AddComponentPopup.hpp>
+#include <OpenSimCreator/UI/ModelEditor/AddComponentPopup.hpp>
 
-#include <OpenSimCreator/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.hpp>
+#include <OpenSimCreator/ComponentRegistry/ComponentRegistryEntry.hpp>
+#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.hpp>
-#include <OpenSimCreator/Registry/ComponentRegistry.hpp>
-#include <OpenSimCreator/Registry/ComponentRegistryEntry.hpp>
-#include <OpenSimCreator/Registry/StaticComponentRegistries.hpp>
-#include <OpenSimCreator/UI/Middleware/PopupAPI.hpp>
+#include <OpenSimCreator/UI/PopupAPI.hpp>
 
 #include <gtest/gtest.h>
 #include <OpenSim/Common/Component.h>

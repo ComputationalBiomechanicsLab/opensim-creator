@@ -25,6 +25,7 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
+#include <array>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -52,35 +53,35 @@ namespace
     // matches the quad used in LearnOpenGL's parallax mapping tutorial
     Mesh GenerateQuad()
     {
-        std::vector<Vec3> const verts =
+        auto const verts = std::to_array<Vec3>(
         {
             {-1.0f,  1.0f, 0.0f},
             {-1.0f, -1.0f, 0.0f},
             { 1.0f, -1.0f, 0.0f},
             { 1.0f,  1.0f, 0.0f},
-        };
+        });
 
-        std::vector<Vec3> const normals =
+        auto const normals = std::to_array<Vec3>(
         {
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
-        };
+        });
 
-        std::vector<Vec2> const texCoords =
+        auto const texCoords = std::to_array<Vec2>(
         {
             {0.0f, 1.0f},
             {0.0f, 0.0f},
             {1.0f, 0.0f},
             {1.0f, 1.0f},
-        };
+        });
 
-        std::vector<uint16_t> const indices =
+        auto const indices = std::to_array<uint16_t>(
         {
             0, 1, 2,
             0, 2, 3,
-        };
+        });
 
         std::vector<Vec4> const tangents = osc::CalcTangentVectors(
             MeshTopology::Triangles,

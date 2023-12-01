@@ -1,12 +1,14 @@
 #pragma once
 
-#include <glm/mat4x4.hpp>
+#include <oscar/Maths/Mat.hpp>
+
+#include <glm/detail/type_mat4x4.hpp>
 
 #include <iosfwd>
 
 namespace osc
 {
-    using Mat4 = glm::mat4;
+    using Mat4 = Mat<4, 4, float>;
 
     std::ostream& operator<<(std::ostream&, Mat4 const&);
 

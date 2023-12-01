@@ -1,12 +1,14 @@
 #pragma once
 
-#include <glm/mat3x3.hpp>
+#include <oscar/Maths/Mat.hpp>
+
+#include <glm/detail/type_mat3x3.hpp>
 
 #include <iosfwd>
 
 namespace osc
 {
-    using Mat3 = glm::mat3;
+    using Mat3 = Mat<3, 3, float>;
 
     std::ostream& operator<<(std::ostream&, Mat3 const&);
 

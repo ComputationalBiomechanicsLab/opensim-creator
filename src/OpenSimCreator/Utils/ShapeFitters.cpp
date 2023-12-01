@@ -1,6 +1,6 @@
 ﻿#include "ShapeFitters.hpp"
 
-#include <OpenSimCreator/Bindings/SimTKHelpers.hpp>
+#include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Mesh.hpp>

@@ -26,11 +26,6 @@ namespace osc
     class Camera final {
     public:
         Camera();
-        Camera(Camera const&);
-        Camera(Camera&&) noexcept;
-        Camera& operator=(Camera const&);
-        Camera& operator=(Camera&&) noexcept;
-        ~Camera() noexcept;
 
         // reset to default parameters
         void reset();

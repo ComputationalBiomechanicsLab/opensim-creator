@@ -1,10 +1,10 @@
 #include "OpenSimGraphicsHelpers.hpp"
 
+#include <OpenSimCreator/Documents/Model/VirtualConstModelStatePair.hpp>
 #include <OpenSimCreator/Graphics/ModelRendererParams.hpp>
 #include <OpenSimCreator/Graphics/ComponentAbsPathDecorationTagger.hpp>
 #include <OpenSimCreator/Graphics/ComponentSceneDecorationFlagsTagger.hpp>
 #include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp>
-#include <OpenSimCreator/Model/VirtualConstModelStatePair.hpp>
 
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Maths/Line.hpp>

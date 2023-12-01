@@ -1,10 +1,12 @@
 #pragma once
 
 #include <oscar/Maths/AABB.hpp>
+#include <oscar/Maths/LengthType.hpp>
 #include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/Mat3.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Mat4x3.hpp>
+#include <oscar/Maths/Qualifier.hpp>
 #include <oscar/Maths/Quat.hpp>
 #include <oscar/Maths/Sphere.hpp>
 #include <oscar/Maths/Transform.hpp>
@@ -13,11 +15,15 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 
+#include <glm/glm.hpp>
+
 #include <array>
+#include <cmath>
 #include <cstdint>
 #include <cstddef>
 #include <optional>
 #include <span>
+#include <type_traits>
 
 namespace osc { struct Disc; }
 namespace osc { struct Plane; }
@@ -29,71 +35,154 @@ namespace osc { struct Segment; }
 namespace osc
 {
     // converts degrees to radians
-    template<typename Number>
-    constexpr Number Deg2Rad(Number degrees)
+    template<typename GenType>
+    constexpr GenType Deg2Rad(GenType degrees)
+        requires std::is_arithmetic_v<GenType>
     {
-        return degrees * static_cast<Number>(0.01745329251994329576923690768489);
+        return glm::radians(degrees);
     }
 
-    constexpr Vec3 Deg2Rad(Vec3 degrees)
+    // converts degrees to radians for each element in the vector
+    template<LengthType L, typename T, Qualifier Q>
+    constexpr Vec<L, T, Q> Deg2Rad(Vec<L, T, Q> const& v)
+        requires std::is_arithmetic_v<T>
     {
-        return degrees * static_cast<Vec3::value_type>(0.01745329251994329576923690768489);
+        return glm::radians(v);
     }
 
     // converts radians to degrees
-    template<typename Number>
-    constexpr Number Rad2Deg(Number radians)
+    template<typename GenType>
+    constexpr GenType Rad2Deg(GenType radians)
+        requires std::is_arithmetic_v<GenType>
     {
-        return radians * static_cast<Number>(57.295779513082320876798154814105);
+        return glm::degrees(radians);
     }
 
-    constexpr Vec3 Rad2Deg(Vec3 radians)
+    // converts degrees to radians for each element in the vector
+    template<LengthType L, typename T, Qualifier Q>
+    constexpr Vec<L, T, Q> Rad2Deg(Vec<L, T, Q> const& v)
+        requires std::is_arithmetic_v<T>
     {
-        return radians * static_cast<Vec3::value_type>(57.295779513082320876798154814105);
+        return glm::degrees(v);
     }
 
-    constexpr float Clamp(float v, float low, float high)
+    // returns the dot product of the provided two vectors
+    template<LengthType L, typename T, Qualifier Q>
+    constexpr T Dot(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b)
+        requires std::is_arithmetic_v<T>
     {
-        return v < low ? low : high < v ? high : v;
+        return glm::dot(a, b);
     }
 
-    constexpr float Dot(Vec2 const& a, Vec2 const& b)
+    // returns the smallest of `a` and `b`
+    template<typename GenType>
+    constexpr GenType Min(GenType a, GenType b)
+        requires std::is_arithmetic_v<GenType>
     {
-        Vec2 tmp(a * b);
-        return tmp.x + tmp.y;
+        return glm::min(a, b);
     }
 
-    constexpr float Dot(Vec3 const& a, Vec3 const& b)
+    // returns a vector containing min(a[dim], b[dim]) for each element
+    template<LengthType L, typename T, Qualifier Q>
+    constexpr Vec<L, T, Q> Min(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b)
+        requires std::is_arithmetic_v<T>
     {
-        Vec3 const tmp(a * b);
-        return tmp.x + tmp.y + tmp.z;
+        return glm::min(a, b);
     }
 
-    Vec4 Clamp(Vec4 const&, float min, float max);
+    // returns the largest of `a` and `b`
+    template<typename GenType>
+    constexpr GenType Max(GenType a, GenType b)
+        requires std::is_arithmetic_v<GenType>
+    {
+        return glm::max(a, b);
+    }
 
-    float Mix(float a, float b, float factor);
-    Vec2 Mix(Vec2 const&, Vec2 const&, float);
-    Vec3 Mix(Vec3 const&, Vec3 const&, float);
-    Vec4 Mix(Vec4 const&, Vec4 const&, float);
+    // returns a vector containing max(a[i], b[i]) for each element
+    template<LengthType L, typename T, Qualifier Q>
+    constexpr Vec<L, T, Q> Max(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b)
+        requires std::is_arithmetic_v<T>
+    {
+        return glm::max(a, b);
+    }
 
-    // returns the cross product of the two arguments
-    Vec3 Cross(Vec3 const&, Vec3 const&);
+    // clamps `v` between `low` and `high` (inclusive)
+    template<typename GenType>
+    constexpr GenType Clamp(GenType v, GenType low, GenType high)
+        requires std::is_arithmetic_v<GenType>
+    {
+        return glm::clamp(v, low, high);
+    }
+
+    // clamps each element in `x` between the corresponding elements in `minVal` and `maxVal`
+    template<LengthType L, typename T, Qualifier Q>
+    constexpr Vec<L, T, Q> Clamp(Vec<L, T, Q> const& x, Vec<L, T, Q> const& minVal, Vec<L, T, Q> const& maxVal)
+        requires std::is_arithmetic_v<T>
+    {
+        return glm::clamp(x, minVal, maxVal);
+    }
+
+    // clamps each element in `x` between `minVal` and `maxVal`
+    template<LengthType L, typename T, Qualifier Q>
+    constexpr Vec<L, T, Q> Clamp(Vec<L, T, Q> const& x, T const& minVal, T const& maxVal)
+        requires std::is_arithmetic_v<T>
+    {
+        return glm::clamp(x, minVal, maxVal);
+    }
+
+    // linearly interpolates between `x` and `y` with factor `a`
+    template<typename GenType, typename UInterpolant>
+    constexpr GenType Mix(GenType const& x, GenType const& y, UInterpolant const& a)
+        requires std::is_arithmetic_v<GenType> && std::is_floating_point_v<UInterpolant>
+    {
+        return glm::mix(x, y, a);
+    }
+
+    // linearly interpolates between each element in `x` and `y` with factor `a`
+    template<LengthType L, typename T, Qualifier Q, typename UInterpolant>
+    constexpr Vec<L, T, Q> Mix(Vec<L, T, Q> const& x, Vec<L, T, Q> const& y, UInterpolant const& a)
+        requires std::is_arithmetic_v<T> && std::is_floating_point_v<UInterpolant>
+    {
+        return glm::mix(x, y, a);
+    }
+
+    // calculates the cross product of the two vectors
+    template<typename T, Qualifier Q>
+    constexpr Vec<3, T, Q> Cross(Vec<3, T, Q> const& x, Vec<3, T, Q> const& y)
+        requires std::is_floating_point_v<T>
+    {
+        return glm::cross(x, y);
+    }
 
     // returns a normalized version of the provided argument
-    Quat Normalize(Quat const&);
-    Vec3 Normalize(Vec3 const&);
-    Vec2 Normalize(Vec2 const&);
+    template<typename T, Qualifier Q>
+    Qua<T, Q> Normalize(Qua<T, Q> const& q)
+        requires std::is_floating_point_v<T>
+    {
+        return glm::normalize(q);
+    }
+
+    template<LengthType L, typename T, Qualifier Q>
+    Vec<L, T, Q> Normalize(Vec<L, T, Q> const& v)
+        requires std::is_floating_point_v<T>
+    {
+        return glm::normalize(v);
+    }
 
     // returns the length of the provided vector
-    template<typename Vec>
-    float Length(Vec const& v)
+    template<LengthType L, typename T, Qualifier Q>
+    float Length(Vec<L, T, Q> const& v)
+        requires std::is_floating_point_v<T>
     {
-        return std::sqrt(Dot(v, v));
+        return glm::length(v);
     }
-    template<typename Vec>
-    float Length2(Vec const& v)
+
+    // returns the squared length of the provided vector
+    template<LengthType L, typename T, Qualifier Q>
+    float Length2(Vec<L, T, Q> const& v)
+        requires std::is_floating_point_v<T>
     {
-        return Dot(v, v);
+        return glm::length2(v);
     }
 
     // computes the rotation from `src` to `dest`
@@ -138,34 +227,48 @@ namespace osc
     //          requires scaling)
     bool IsEqualWithinRelativeError(double, double, double relativeError);
     bool IsEqualWithinRelativeError(float, float, float relativeError);
-    bool IsEqualWithinRelativeError(Vec3 const&, Vec3 const&, float relativeError);
+
+    template<LengthType L, typename T, Qualifier Q>
+    bool IsEqualWithinRelativeError(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b, float relativeError)
+    {
+        for (LengthType i = 0; i < L; ++i)
+        {
+            if (!IsEqualWithinRelativeError(a[i], b[i], relativeError))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
 
     // returns `true` if the first two arguments are within `absoluteError` of eachover
     bool IsEqualWithinAbsoluteError(float, float, float absError);
-    bool IsEqualWithinAbsoluteError(Vec3 const&, Vec3 const&, float absError);
+
+    template<LengthType L, typename T, Qualifier Q>
+    bool IsEqualWithinAbsoluteError(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b, float absError)
+    {
+        for (LengthType i = 0; i < L; ++i)
+        {
+            if (!IsEqualWithinAbsoluteError(a[i], b[i], absError))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
 
     // ----- VecX/MatX helpers -----
 
     // returns true if the provided vectors are at the same location
+    template<LengthType L, typename T, Qualifier Q>
+    bool AreAtSameLocation(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b)
+    {
+        constexpr T eps2 = std::numeric_limits<T>::epsilon() * std::numeric_limits<T>::epsilon();
+        auto const b2a = a - b;
+        return Dot(b2a, b2a) > eps2;
+    }
+
     bool AreAtSameLocation(Vec3 const&, Vec3 const&);
-
-    // returns a vector containing min(a[dim], b[dim]) for each dimension
-    Vec3 Min(Vec3 const&, Vec3 const&);
-
-    // returns a vector containing min(a[dim], b[dim]) for each dimension
-    Vec2 Min(Vec2 const&, Vec2 const&);
-
-    // returns a vector containing min(a[dim], b[dim]) for each dimension
-    Vec2i Min(Vec2i const&, Vec2i const&);
-
-    // returns a vector containing max(a[dim], b[dim]) for each dimension
-    Vec3 Max(Vec3 const&, Vec3 const&);
-
-    // returns a vector containing max(a[dim], b[dim]) for each dimension
-    Vec2 Max(Vec2 const&, Vec2 const&);
-
-    // returns a vector containing min(a[dim], b[dim]) for each dimension
-    Vec2i Max(Vec2i const&, Vec2i const&);
 
     // returns the *index* of a vector's longest dimension
     Vec3::length_type LongestDimIndex(Vec3 const&);
@@ -278,6 +381,12 @@ namespace osc
     // returns `Min(rect.p1, rect.p2)`: i.e. the smallest X and the smallest Y of the rectangle's points
     Vec2 MinValuePerDimension(Rect const&);
 
+    template<typename T, Qualifier Q>
+    constexpr T Area(Vec<2, T, Q> const& v)
+    {
+        return v.x * v.y;
+    }
+
     // returns the area of the rectangle
     float Area(Rect const&);
 
@@ -360,6 +469,9 @@ namespace osc
     // returns the dimensions of an AABB
     Vec3 Dimensions(AABB const&);
 
+    // returns the half-widths of an AABB (effectively, Dimensions(aabb)/2.0)
+    Vec3 HalfWidths(AABB const&);
+
     // returns the volume of the AABB
     float Volume(AABB const&);
 
@@ -388,7 +500,7 @@ namespace osc
     AABB TransformAABB(AABB const&, Transform const&);
 
     // returns an AAB that tightly bounds the provided triangle
-    AABB AABBFromTriangle(Triangle const& t);
+    AABB AABBFromTriangle(Triangle const&);
 
     // returns an AABB that tightly bounds the provided points
     AABB AABBFromVerts(std::span<Vec3 const>);

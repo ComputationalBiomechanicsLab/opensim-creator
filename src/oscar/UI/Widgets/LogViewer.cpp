@@ -121,7 +121,7 @@ public:
         auto const& contentGuard = guardedContent.lock();
         for (LogMessage const& msg : *contentGuard)
         {
-            ImGui::PushStyleColor(ImGuiCol_Text, ToColor(msg.level));
+            ImGui::PushStyleColor(ImGuiCol_Text, ::ToColor(msg.level));
             ImGui::Text("[%s]", ToCStringView(msg.level).c_str());
             ImGui::PopStyleColor();
             ImGui::SameLine();

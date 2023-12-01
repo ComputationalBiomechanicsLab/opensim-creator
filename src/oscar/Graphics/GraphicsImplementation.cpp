@@ -52,8 +52,8 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/DefaultConstructOnCopy.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/ObjectRepresentation.hpp>
 #include <oscar/Utils/Perf.hpp>
-#include <oscar/Utils/SpanHelpers.hpp>
 #include <oscar/Utils/StdVariantHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 
@@ -379,7 +379,7 @@ namespace
     template<typename T>
     void PushAsBytes(T const& v, std::vector<uint8_t>& out)
     {
-        auto const bytes = osc::ViewAsUint8Span(v);
+        auto const bytes = osc::ViewObjectRepresentation<uint8_t>(v);
         out.insert(out.end(), bytes.begin(), bytes.end());
     }
 
@@ -1386,11 +1386,6 @@ osc::Cubemap::Cubemap(int32_t width, TextureFormat format) :
     m_Impl{make_cow<Impl>(width, format)}
 {
 }
-osc::Cubemap::Cubemap(Cubemap const&) = default;
-osc::Cubemap::Cubemap(Cubemap&&) noexcept = default;
-osc::Cubemap& osc::Cubemap::operator=(Cubemap const&) = default;
-osc::Cubemap& osc::Cubemap::operator=(Cubemap&&) noexcept = default;
-osc::Cubemap::~Cubemap() noexcept = default;
 
 int32_t osc::Cubemap::getWidth() const
 {
@@ -1987,11 +1982,7 @@ osc::Texture2D::Texture2D(
     m_Impl{make_cow<Impl>(dimensions, format, colorSpace, wrapMode, filterMode)}
 {
 }
-osc::Texture2D::Texture2D(Texture2D const&) = default;
-osc::Texture2D::Texture2D(Texture2D&&) noexcept = default;
-osc::Texture2D& osc::Texture2D::operator=(Texture2D const&) = default;
-osc::Texture2D& osc::Texture2D::operator=(Texture2D&&) noexcept = default;
-osc::Texture2D::~Texture2D() noexcept = default;
+
 
 osc::Vec2i osc::Texture2D::getDimensions() const
 {
@@ -2855,12 +2846,6 @@ osc::RenderTexture::RenderTexture(RenderTextureDescriptor const& desc) :
 {
 }
 
-osc::RenderTexture::RenderTexture(RenderTexture const&) = default;
-osc::RenderTexture::RenderTexture(RenderTexture&&) noexcept = default;
-osc::RenderTexture& osc::RenderTexture::operator=(RenderTexture const&) = default;
-osc::RenderTexture& osc::RenderTexture::operator=(RenderTexture&&) noexcept = default;
-osc::RenderTexture::~RenderTexture() noexcept = default;
-
 osc::Vec2i osc::RenderTexture::getDimensions() const
 {
     return m_Impl->getDimensions();
@@ -3145,12 +3130,6 @@ osc::Shader::Shader(CStringView vertexShader, CStringView geometryShader, CStrin
     m_Impl{make_cow<Impl>(vertexShader, geometryShader, fragmentShader)}
 {
 }
-
-osc::Shader::Shader(Shader const&) = default;
-osc::Shader::Shader(Shader&&) noexcept = default;
-osc::Shader& osc::Shader::operator=(Shader const&) = default;
-osc::Shader& osc::Shader::operator=(Shader&&) noexcept = default;
-osc::Shader::~Shader() noexcept = default;
 
 size_t osc::Shader::getPropertyCount() const
 {
@@ -3520,12 +3499,6 @@ osc::Material::Material(Shader shader) :
     m_Impl{make_cow<Impl>(std::move(shader))}
 {
 }
-
-osc::Material::Material(Material const&) = default;
-osc::Material::Material(Material&&) noexcept = default;
-osc::Material& osc::Material::operator=(Material const&) = default;
-osc::Material& osc::Material::operator=(Material&&) noexcept = default;
-osc::Material::~Material() noexcept = default;
 
 osc::Shader const& osc::Material::getShader() const
 {
@@ -3911,12 +3884,6 @@ osc::MaterialPropertyBlock::MaterialPropertyBlock() :
     }()}
 {
 }
-
-osc::MaterialPropertyBlock::MaterialPropertyBlock(MaterialPropertyBlock const&) = default;
-osc::MaterialPropertyBlock::MaterialPropertyBlock(MaterialPropertyBlock&&) noexcept = default;
-osc::MaterialPropertyBlock& osc::MaterialPropertyBlock::operator=(MaterialPropertyBlock const&) = default;
-osc::MaterialPropertyBlock& osc::MaterialPropertyBlock::operator=(MaterialPropertyBlock&&) noexcept = default;
-osc::MaterialPropertyBlock::~MaterialPropertyBlock() noexcept = default;
 
 void osc::MaterialPropertyBlock::clear()
 {
@@ -4555,12 +4522,6 @@ osc::Mesh::Mesh() :
 {
 }
 
-osc::Mesh::Mesh(Mesh const&) = default;
-osc::Mesh::Mesh(Mesh&&) noexcept = default;
-osc::Mesh& osc::Mesh::operator=(Mesh const&) = default;
-osc::Mesh& osc::Mesh::operator=(Mesh&&) noexcept = default;
-osc::Mesh::~Mesh() noexcept = default;
-
 osc::MeshTopology osc::Mesh::getTopology() const
 {
     return m_Impl->getTopology();
@@ -5010,12 +4971,6 @@ osc::Camera::Camera() :
     m_Impl{make_cow<Impl>()}
 {
 }
-
-osc::Camera::Camera(Camera const&) = default;
-osc::Camera::Camera(Camera&&) noexcept = default;
-osc::Camera& osc::Camera::operator=(Camera const&) = default;
-osc::Camera& osc::Camera::operator=(Camera&&) noexcept = default;
-osc::Camera::~Camera() noexcept = default;
 
 void osc::Camera::reset()
 {

@@ -222,6 +222,10 @@ namespace osc
     // symmetric equivalent to `ImGui::PopID();`
     void PopID();
 
+    // convert a color to ImU32 (used by ImGui's drawlist)
+    ImU32 ToImU32(Color const&);
+    Color ToColor(ImU32);
+
     // push an Color as an ImGui style color var (via ImGui::PushStyleColor())
     void PushStyleColor(ImGuiCol, Color const&);
     void PopStyleColor(int count = 1);
@@ -252,6 +256,12 @@ namespace osc
 
     // draw text, but centered on the current window/line
     void TextCentered(CStringView);
+
+    // draw disabled text, but centered on the current window/line
+    void TextDisabledAndCentered(CStringView);
+
+    // draw text that's centered in the current ImGui::Table column
+    void TextColumnCentered(CStringView);
 
     // draw faded (muted) text
     void TextFaded(CStringView);

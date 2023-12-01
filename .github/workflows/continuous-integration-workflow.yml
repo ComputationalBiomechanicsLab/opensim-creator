@@ -17,7 +17,7 @@ jobs:
     - name: run build_windows.py
       run: |
         cd $env:GITHUB_WORKSPACE\osc
-        python scripts\\build_windows.py || exit /b
+        python scripts\\build_windows.py -j2 || exit /b
 
     - uses: actions/upload-artifact@v2
       with:

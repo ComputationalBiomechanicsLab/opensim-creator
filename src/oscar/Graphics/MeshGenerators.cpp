@@ -840,15 +840,15 @@ osc::Mesh osc::GenNxMTriangleQuad2DGrid(Vec2i steps)
 
     // create a vector of triangle verts
     std::vector<Vec3> verts;
-    verts.reserve(static_cast<size_t>(steps.x) * static_cast<size_t>(steps.y));
+    verts.reserve(Area(steps));
 
     // create a vector of texture coordinates (1:1 with verts)
     std::vector<Vec2> coords;
-    coords.reserve(static_cast<size_t>(steps.x) * static_cast<size_t>(steps.y));
+    coords.reserve(Area(steps));
 
     // create a vector of triangle primitive indices (2 triangles, or 6 indices, per grid cell)
     std::vector<uint32_t> indices;
-    indices.reserve(static_cast<size_t>(6) * static_cast<size_t>(steps.x-1) * static_cast<size_t>(steps.y-1));
+    indices.reserve(static_cast<size_t>(6) * Area(steps-1));
 
     // precompute step/min in each direction
     Vec2 const vectorStep = Vec2{2.0f, 2.0f} / Vec2{steps - 1};

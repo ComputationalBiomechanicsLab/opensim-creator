@@ -3,17 +3,17 @@ find_package(GTest REQUIRED CONFIG)
 
 add_executable(TestOpenSimCreator
 
+    ComponentRegistry/TestStaticComponentRegistries.cpp
+    Documents/Model/TestUndoableModelActions.cpp
+    Documents/Model/TestUndoableModelStatePair.cpp
+    Documents/Simulation/TestForwardDynamicSimulation.cpp
     Graphics/TestOpenSimDecorationGenerator.cpp
-    Model/TestUndoableModelStatePair.cpp
+    MetaTests/TestOpenSimLibraryAPI.cpp
     Platform/TestRecentFiles.cpp
-    Registry/TestStaticComponentRegistries.cpp
-    Simulation/TestForwardDynamicSimulation.cpp
     UI/Widgets/TestAddComponentPopup.cpp
     Utils/TestOpenSimHelpers.cpp
     Utils/TestShapeFitters.cpp
-    Utils/TestUndoableModelActions.cpp
 
-    TestOpenSimLibraryAPI.cpp
     TestOpenSimCreator.cpp  # entrypoint (main)
 )
 

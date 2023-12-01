@@ -1,8 +1,9 @@
 #pragma once
 
+#include <oscar/Maths/Vec.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 
-#include <glm/vec3.hpp>
+#include <glm/detail/type_vec3.hpp>
 
 #include <cstddef>
 #include <iosfwd>
@@ -10,9 +11,9 @@
 
 namespace osc
 {
-    using Vec3 = glm::vec3;
-    using Vec3f = Vec3;
-    using Vec3d = glm::dvec3;
+    using Vec3  = Vec<3, float>;
+    using Vec3f = Vec<3, float>;
+    using Vec3d = Vec<3, double>;
 
     std::ostream& operator<<(std::ostream&, Vec3 const&);
     std::string to_string(Vec3 const&);

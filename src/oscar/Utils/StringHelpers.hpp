@@ -24,15 +24,9 @@ namespace osc
     // returns true if `a` is equal to `b` (case-insensitive)
     bool IsEqualCaseInsensitive(std::string_view a, std::string_view b);
 
-    // returns true if `s` begins with `prefix`
-    bool StartsWith(std::string_view sv, std::string_view prefix);
-
-    // returns true if `s` ends with `suffix`
-    bool EndsWith(std::string_view sv, std::string_view suffix);
-
     // returns true if:
     //
-    // - `sv is nonempty
+    // - `sv` is nonempty
     // - the first character of `sv` is in the set [_a-zA-Z]
     // - the remaining characters of `sv` are in the set [_a-zA-Z0-9]
     // - (sorry UTF8ers)
