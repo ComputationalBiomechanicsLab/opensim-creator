@@ -219,7 +219,7 @@ void osc::MainMenuFileTab::onDraw(
 
     if (ImGui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
     {
-        api->addAndSelectTab<MeshImporterTab>(api);
+        api->addAndSelectTab<mi::MeshImporterTab>(api);
     }
     App::upd().addFrameAnnotation("MainMenu/ImportMeshesMenuItem", osc::GetItemRect());
 

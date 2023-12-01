@@ -2,7 +2,7 @@
 
 #include <oscar/Shims/Cpp23/utility.hpp>
 
-namespace osc
+namespace osc::mi
 {
     // returns the "direction" of a cross reference
     //

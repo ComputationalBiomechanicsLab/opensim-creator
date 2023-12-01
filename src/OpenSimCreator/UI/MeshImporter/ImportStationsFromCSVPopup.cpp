@@ -1,6 +1,6 @@
 #include "ImportStationsFromCSVPopup.hpp"
 
-#include <OpenSimCreator/Documents/MeshImporter/StationEl.hpp>
+#include <OpenSimCreator/Documents/MeshImporter/Station.hpp>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterSharedState.hpp>
 
 #include <oscar/Formats/CSV.hpp>
@@ -17,7 +17,7 @@
 #include <variant>
 #include <vector>
 
-class osc::ImportStationsFromCSVPopup::Impl final : public StandardPopup {
+class osc::mi::ImportStationsFromCSVPopup::Impl final : public StandardPopup {
 public:
     Impl(
         std::string_view popupName_,
@@ -67,19 +67,19 @@ private:
 
         std::string const& stationName = columnsText[0];
 
-        std::optional<float> const maybeX = osc::FromCharsStripWhitespace(columnsText[1]);
+        std::optional<float> const maybeX = FromCharsStripWhitespace(columnsText[1]);
         if (!maybeX)
         {
             return RowParseError{lineNum, "cannot parse X as a number"};
         }
 
-        std::optional<float> const maybeY = osc::FromCharsStripWhitespace(columnsText[2]);
+        std::optional<float> const maybeY = FromCharsStripWhitespace(columnsText[2]);
         if (!maybeY)
         {
             return RowParseError{lineNum, "cannot parse Y as a number"};
         }
 
-        std::optional<float> const maybeZ = osc::FromCharsStripWhitespace(columnsText[3]);
+        std::optional<float> const maybeZ = FromCharsStripWhitespace(columnsText[3]);
         if (!maybeZ)
         {
             return RowParseError{lineNum, "cannot parse Z as a number"};
@@ -105,7 +105,7 @@ private:
     static CSVImportResult TryReadCSVInput(std::filesystem::path const& path, std::istream& input)
     {
         // input must contain at least one (header) row
-        if (!osc::ReadCSVRow(input))
+        if (!ReadCSVRow(input))
         {
             return CSVImportError{path, "cannot read a header row from the input (is the file empty?)"};
         }
@@ -118,7 +118,7 @@ private:
         {
             size_t lineNum = 1;
             for (std::vector<std::string> row;
-                !maybeParseError && osc::ReadCSVRowIntoVector(input, row);
+                !maybeParseError && ReadCSVRowIntoVector(input, row);
                 ++lineNum)
             {
                 if (IsWhitespaceRow(row))
@@ -198,7 +198,7 @@ private:
         ImGui::SameLine();
         if (ImGui::Button(ICON_FA_COPY))
         {
-            osc::SetClipboardText(c_ExampleInputText);
+            SetClipboardText(c_ExampleInputText);
         }
         osc::DrawTooltipBodyOnlyIfItemHovered("Copy example input to clipboard");
         ImGui::Indent();
@@ -333,14 +333,14 @@ private:
         ImportedCSVData const& result,
         StationsDefinedInGround const& data)
     {
-        CommittableModelGraph& undoable = m_Shared->updCommittableModelGraph();
+        UndoableDocument& undoable = m_Shared->updCommittableModelGraph();
 
-        ModelGraph& graph = undoable.updScratch();
+        Document& graph = undoable.updScratch();
         for (StationDefinedInGround const& station : data.rows)
         {
             graph.emplaceEl<StationEl>(
                 UID{},
-                ModelGraphIDs::Ground(),
+                MIIDs::Ground(),
                 station.location,
                 station.name
             );
@@ -356,42 +356,42 @@ private:
 };
 
 
-osc::ImportStationsFromCSVPopup::ImportStationsFromCSVPopup(
+osc::mi::ImportStationsFromCSVPopup::ImportStationsFromCSVPopup(
     std::string_view popupName_,
     std::shared_ptr<MeshImporterSharedState> const& state_) :
     m_Impl{std::make_unique<Impl>(popupName_, state_)}
 {
 }
-osc::ImportStationsFromCSVPopup::ImportStationsFromCSVPopup(ImportStationsFromCSVPopup&&) noexcept = default;
-osc::ImportStationsFromCSVPopup& osc::ImportStationsFromCSVPopup::operator=(ImportStationsFromCSVPopup&&) noexcept = default;
-osc::ImportStationsFromCSVPopup::~ImportStationsFromCSVPopup() noexcept = default;
+osc::mi::ImportStationsFromCSVPopup::ImportStationsFromCSVPopup(ImportStationsFromCSVPopup&&) noexcept = default;
+osc::mi::ImportStationsFromCSVPopup& osc::mi::ImportStationsFromCSVPopup::operator=(ImportStationsFromCSVPopup&&) noexcept = default;
+osc::mi::ImportStationsFromCSVPopup::~ImportStationsFromCSVPopup() noexcept = default;
 
-bool osc::ImportStationsFromCSVPopup::implIsOpen() const
+bool osc::mi::ImportStationsFromCSVPopup::implIsOpen() const
 {
     return m_Impl->isOpen();
 }
 
-void osc::ImportStationsFromCSVPopup::implOpen()
+void osc::mi::ImportStationsFromCSVPopup::implOpen()
 {
     m_Impl->open();
 }
 
-void osc::ImportStationsFromCSVPopup::implClose()
+void osc::mi::ImportStationsFromCSVPopup::implClose()
 {
     m_Impl->close();
 }
 
-bool osc::ImportStationsFromCSVPopup::implBeginPopup()
+bool osc::mi::ImportStationsFromCSVPopup::implBeginPopup()
 {
     return m_Impl->beginPopup();
 }
 
-void osc::ImportStationsFromCSVPopup::implOnDraw()
+void osc::mi::ImportStationsFromCSVPopup::implOnDraw()
 {
     m_Impl->onDraw();
 }
 
-void osc::ImportStationsFromCSVPopup::implEndPopup()
+void osc::mi::ImportStationsFromCSVPopup::implEndPopup()
 {
     m_Impl->endPopup();
 }

@@ -1,16 +1,16 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/MeshImporter/ModelGraphIDs.hpp>
+#include <OpenSimCreator/Documents/MeshImporter/MIIDs.hpp>
 
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/UID.hpp>
 
-namespace osc
+namespace osc::mi
 {
     class MeshImporterHover final {
     public:
         MeshImporterHover() :
-            ID{ModelGraphIDs::Empty()},
+            ID{MIIDs::Empty()},
             Pos{}
         {
         }
@@ -23,7 +23,7 @@ namespace osc
 
         explicit operator bool () const
         {
-            return ID != ModelGraphIDs::Empty();
+            return ID != MIIDs::Empty();
         }
 
         void reset()

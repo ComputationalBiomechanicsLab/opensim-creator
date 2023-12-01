@@ -5,9 +5,9 @@
 #include <memory>
 #include <string_view>
 
-namespace osc { class MeshImporterSharedState; }
+namespace osc::mi { class MeshImporterSharedState; }
 
-namespace osc
+namespace osc::mi
 {
     class ImportStationsFromCSVPopup final : public Popup {
     public:

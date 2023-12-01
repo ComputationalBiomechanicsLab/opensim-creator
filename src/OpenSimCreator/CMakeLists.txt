@@ -11,40 +11,40 @@ add_library(OpenSimCreator STATIC
     ComponentRegistry/StaticComponentRegistries.cpp
     ComponentRegistry/StaticComponentRegistries.hpp
 
-    Documents/MeshImporter/BodyEl.cpp
-    Documents/MeshImporter/BodyEl.hpp
-    Documents/MeshImporter/CommittableModelGraph.hpp
-    Documents/MeshImporter/CommittableModelGraphActions.cpp
-    Documents/MeshImporter/CommittableModelGraphActions.hpp
+    Documents/MeshImporter/Body.cpp
+    Documents/MeshImporter/Body.hpp
     Documents/MeshImporter/CrossrefDescriptor.hpp
     Documents/MeshImporter/CrossrefDirection.hpp
-    Documents/MeshImporter/GroundEl.cpp
-    Documents/MeshImporter/GroundEl.hpp
-    Documents/MeshImporter/ISceneElLookup.hpp
-    Documents/MeshImporter/JointEl.cpp
-    Documents/MeshImporter/JointEl.hpp
-    Documents/MeshImporter/MeshEl.cpp
-    Documents/MeshImporter/MeshEl.hpp
-    Documents/MeshImporter/ModelCreationFlags.hpp
-    Documents/MeshImporter/ModelGraph.cpp
-    Documents/MeshImporter/ModelGraph.hpp
-    Documents/MeshImporter/ModelGraphHelpers.cpp
-    Documents/MeshImporter/ModelGraphHelpers.hpp
-    Documents/MeshImporter/ModelGraphIDs.cpp
-    Documents/MeshImporter/ModelGraphIDs.hpp
-    Documents/MeshImporter/ModelGraphOpenSimBridge.cpp
-    Documents/MeshImporter/ModelGraphOpenSimBridge.hpp
-    Documents/MeshImporter/ModelGraphStrings.hpp
-    Documents/MeshImporter/SceneEl.cpp
-    Documents/MeshImporter/SceneEl.hpp
-    Documents/MeshImporter/SceneElClass.hpp
-    Documents/MeshImporter/SceneElCRTP.hpp
-    Documents/MeshImporter/SceneElFlags.hpp
-    Documents/MeshImporter/SceneElHelpers.cpp
-    Documents/MeshImporter/SceneElHelpers.hpp
-    Documents/MeshImporter/SceneElVariant.hpp
-    Documents/MeshImporter/StationEl.cpp
-    Documents/MeshImporter/StationEl.hpp
+    Documents/MeshImporter/Document.cpp
+    Documents/MeshImporter/Document.hpp
+    Documents/MeshImporter/DocumentHelpers.cpp
+    Documents/MeshImporter/DocumentHelpers.hpp
+    Documents/MeshImporter/Ground.cpp
+    Documents/MeshImporter/Ground.hpp
+    Documents/MeshImporter/IObjectFinder.hpp
+    Documents/MeshImporter/Joint.cpp
+    Documents/MeshImporter/Joint.hpp
+    Documents/MeshImporter/Mesh.cpp
+    Documents/MeshImporter/Mesh.hpp
+    Documents/MeshImporter/MIClass.hpp
+    Documents/MeshImporter/MIIDs.cpp
+    Documents/MeshImporter/MIObject.cpp
+    Documents/MeshImporter/MIObject.hpp
+    Documents/MeshImporter/MIObjectCRTP.hpp
+    Documents/MeshImporter/MIObjectFlags.hpp
+    Documents/MeshImporter/MIObjectHelpers.cpp
+    Documents/MeshImporter/MIObjectHelpers.hpp
+    Documents/MeshImporter/MIIDs.hpp
+    Documents/MeshImporter/MIStrings.hpp
+    Documents/MeshImporter/MIVariant.hpp
+    Documents/MeshImporter/OpenSimBridge.cpp
+    Documents/MeshImporter/OpenSimBridge.hpp
+    Documents/MeshImporter/OpenSimExportFlags.hpp
+    Documents/MeshImporter/Station.cpp
+    Documents/MeshImporter/Station.hpp
+    Documents/MeshImporter/UndoableActions.cpp
+    Documents/MeshImporter/UndoableActions.hpp
+    Documents/MeshImporter/UndoableDocument.hpp
 
     Documents/MeshWarper/NamedLandmarkPair3D.hpp
     Documents/MeshWarper/TPSDocument.cpp

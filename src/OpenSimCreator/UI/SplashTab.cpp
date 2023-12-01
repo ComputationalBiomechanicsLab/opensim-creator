@@ -267,7 +267,7 @@ private:
         }
         if (ImGui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
         {
-            m_Parent->addAndSelectTab<MeshImporterTab>(m_Parent);
+            m_Parent->addAndSelectTab<mi::MeshImporterTab>(m_Parent);
         }
         App::upd().addFrameAnnotation("SplashTab/ImportMeshesMenuItem", GetItemRect());
         if (ImGui::MenuItem(ICON_FA_BOOK " Open Documentation"))
@@ -284,7 +284,7 @@ private:
         }
         if (ImGui::MenuItem(ICON_FA_MAGIC " Mesh Importer"))
         {
-            m_Parent->addAndSelectTab<MeshImporterTab>(m_Parent);
+            m_Parent->addAndSelectTab<mi::MeshImporterTab>(m_Parent);
         }
         if (ImGui::MenuItem(ICON_FA_CUBE " Mesh Warping"))
         {

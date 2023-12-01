@@ -1,7 +1,7 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/MeshImporter/MeshEl.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/ModelGraph.hpp>
+#include <OpenSimCreator/Documents/MeshImporter/Document.hpp>
+#include <OpenSimCreator/Documents/MeshImporter/Mesh.hpp>
 #include <OpenSimCreator/UI/MeshImporter/DrawableThing.hpp>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterHover.hpp>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterSharedState.hpp>
@@ -21,7 +21,7 @@
 #include <vector>
 
 // select 2 mesh points layer
-namespace osc
+namespace osc::mi
 {
     // runtime options for "Select two mesh points" UI layer
     struct Select2MeshPointsOptions final {
@@ -114,11 +114,11 @@ namespace osc
         {
             m_DrawablesBuffer.clear();
 
-            ModelGraph const& mg = m_Shared->getModelGraph();
+            Document const& mg = m_Shared->getModelGraph();
 
-            for (MeshEl const& meshEl : mg.iter<MeshEl>())
+            for (Mesh const& meshEl : mg.iter<Mesh>())
             {
-                m_DrawablesBuffer.emplace_back(m_Shared->generateMeshElDrawable(meshEl));
+                m_DrawablesBuffer.emplace_back(m_Shared->generateMeshDrawable(meshEl));
             }
 
             m_DrawablesBuffer.push_back(m_Shared->generateFloorDrawable());
@@ -193,11 +193,11 @@ namespace osc
         void drawCancelButton()
         {
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
-            osc::PushStyleColor(ImGuiCol_Button, Color::halfGrey());
+            PushStyleColor(ImGuiCol_Button, Color::halfGrey());
 
             CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
             Vec2 const margin = {25.0f, 35.0f};
-            Vec2 const buttonTopLeft = m_Shared->get3DSceneRect().p2 - (osc::CalcButtonSize(text) + margin);
+            Vec2 const buttonTopLeft = m_Shared->get3DSceneRect().p2 - (CalcButtonSize(text) + margin);
 
             ImGui::SetCursorScreenPos(buttonTopLeft);
             if (ImGui::Button(text.c_str()))
@@ -205,7 +205,7 @@ namespace osc
                 requestPop();
             }
 
-            osc::PopStyleColor();
+            PopStyleColor();
             ImGui::PopStyleVar();
         }
 
