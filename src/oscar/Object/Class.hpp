@@ -1,12 +1,12 @@
 #pragma once
 
-#include <oscar/Utils/StringName.hpp>
-
 #include <cstddef>
 #include <memory>
 #include <optional>
 #include <span>
+#include <string_view>
 
+namespace osc { class StringName; }
 namespace osc { class PropertyInfo; }
 
 namespace osc
@@ -16,7 +16,7 @@ namespace osc
         Class();
 
         Class(
-            StringName const& className_,
+            std::string_view className_,
             Class const& parentClass_ = Class{},
             std::span<PropertyInfo const> propertyList_ = std::span<PropertyInfo const>{}
         );

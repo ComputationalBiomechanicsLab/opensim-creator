@@ -1,14 +1,24 @@
 #pragma once
 
 #include <oscar/Utils/StringName.hpp>
-#include <oscar/Utils/Variant.hpp>
-#include <oscar/Utils/VariantType.hpp>
+#include <oscar/Variant/Variant.hpp>
+#include <oscar/Variant/VariantType.hpp>
+
+#include <string_view>
 
 namespace osc
 {
     class PropertyInfo final {
     public:
         PropertyInfo() = default;
+
+        PropertyInfo(
+            std::string_view name_,
+            Variant defaultValue_) :
+
+            PropertyInfo{StringName{name_}, std::move(defaultValue_)}
+        {
+        }
 
         PropertyInfo(
             StringName const& name_,

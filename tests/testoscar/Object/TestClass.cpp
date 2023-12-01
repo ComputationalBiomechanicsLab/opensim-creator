@@ -1,9 +1,9 @@
-#include <oscar/DOM/Class.hpp>
+#include <oscar/Object/Class.hpp>
 
 #include <gtest/gtest.h>
-#include <oscar/DOM/PropertyInfo.hpp>
+#include <oscar/Object/PropertyInfo.hpp>
 #include <oscar/Utils/StringName.hpp>
-#include <oscar/Utils/Variant.hpp>
+#include <oscar/Variant/Variant.hpp>
 
 #include <algorithm>
 #include <array>
@@ -136,7 +136,7 @@ TEST(Class, ConstructorThrowsIfGivenPropertyInfoThatIsDuplicatedInGrandparent)
 
 TEST(Class, GetNameReturnsNameProvidedViaConstructor)
 {
-    StringName const className = "SomeClass";
+    StringName const className{"SomeClass"};
     ASSERT_EQ(Class{className}.getName(), className);
 }
 
@@ -221,20 +221,20 @@ TEST(Class, EqualityReturnsTrueForTwoDefaultConstructedClasses)
 
 TEST(Class, EqualityReturnsTrueForTwoClassesWithTheSameName)
 {
-    StringName const className = "SomeClass";
+    StringName const className{"SomeClass"};
     ASSERT_EQ(Class{className}, Class{className});
 }
 
 TEST(Class, EqualityReturnsTrueForTwoClassesWithSameNameAndSameParent)
 {
-    StringName const className = "SomeClass";
+    StringName const className{"SomeClass"};
     Class const parent{"ParentClass"};
     ASSERT_EQ(Class(className, parent), Class(className, parent));
 }
 
 TEST(Class, EqualityReturnsTrueForTwoClassesWithSameNameAndParentAndProperties)
 {
-    StringName const className = "SomeClass";
+    StringName const className{"SomeClass"};
     Class const parent{"ParentClass"};
     auto const props = std::to_array<PropertyInfo>(
     {
@@ -247,7 +247,7 @@ TEST(Class, EqualityReturnsTrueForTwoClassesWithSameNameAndParentAndProperties)
 
 TEST(Class, EqualityReutrnsTrueForCopiedClass)
 {
-    StringName const className = "SomeClass";
+    StringName const className{"SomeClass"};
     Class const parent{"ParentClass"};
     auto const props = std::to_array<PropertyInfo>(
     {
@@ -268,13 +268,13 @@ TEST(Class, EqualityReturnsFalseIfNamesDiffer)
 
 TEST(Class, EqualityReturnsFalseIfNamesSameButParentDiffers)
 {
-    StringName const className = "SomeClass";
+    StringName const className{"SomeClass"};
     ASSERT_NE(Class(className, Class("FirstParent")), Class(className, Class("SecondParent")));
 }
 
 TEST(Class, EqualityReturnsFalseIfNamesAndParentClassSameButPropListDiffers)
 {
-    StringName const className = "SomeClass";
+    StringName const className{"SomeClass"};
     Class const parent{"ParentClass"};
     auto const firstProps = std::to_array<PropertyInfo>(
     {

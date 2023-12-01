@@ -1,8 +1,8 @@
 #pragma once
 
-#include <oscar/DOM/Class.hpp>
+#include <oscar/Object/Class.hpp>
 #include <oscar/Utils/StringName.hpp>
-#include <oscar/Utils/Variant.hpp>
+#include <oscar/Variant/Variant.hpp>
 
 #include <cstddef>
 #include <memory>

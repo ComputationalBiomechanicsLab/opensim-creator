@@ -6,7 +6,7 @@
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/StdVariantHelpers.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
-#include <oscar/Utils/VariantType.hpp>
+#include <oscar/Variant/VariantType.hpp>
 
 #include <charconv>
 #include <cstddef>

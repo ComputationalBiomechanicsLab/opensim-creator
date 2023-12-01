@@ -1,6 +1,6 @@
 #include "Class.hpp"
 
-#include <oscar/DOM/PropertyInfo.hpp>
+#include <oscar/Object/PropertyInfo.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/StringName.hpp>
 
@@ -68,11 +68,11 @@ public:
     Impl() = default;
 
     Impl(
-        StringName const& className_,
+        std::string_view className_,
         Class const& parentClass_,
         std::span<PropertyInfo const> propertyList_
     ) :
-        m_ClassName{ValidateAsClassName(className_)},
+        m_ClassName{ValidateAsClassName(StringName{className_})},
         m_MaybeParentClass{parentClass_},
         m_PropertyList{ConcatIntoVector(parentClass_.getPropertyList(), propertyList_)},
         m_PropertyNameToPropertyListIndexMap{CreateIndexLookupThrowIfDuplicatesDetected(m_PropertyList)}
@@ -122,7 +122,7 @@ osc::Class::Class()
 }
 
 osc::Class::Class(
-    StringName const& className_,
+    std::string_view className_,
     Class const& parentClass_,
     std::span<PropertyInfo const> propertyList_
 ) :

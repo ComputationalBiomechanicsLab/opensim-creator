@@ -1,7 +1,7 @@
 #pragma once
 
-#include <oscar/DOM/NodePath.hpp>
-#include <oscar/DOM/Object.hpp>
+#include <oscar/Object/NodePath.hpp>
+#include <oscar/Object/Object.hpp>
 
 #include <oscar/Utils/ClonePtr.hpp>
 #include <oscar/Utils/Concepts.hpp>

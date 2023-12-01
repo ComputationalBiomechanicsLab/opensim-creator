@@ -1,4 +1,4 @@
-#include <oscar/Utils/VariantType.hpp>
+#include <oscar/Variant/VariantType.hpp>
 
 #include <gtest/gtest.h>
 #include <oscar/Utils/EnumHelpers.hpp>

@@ -4,7 +4,7 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/StringName.hpp>
-#include <oscar/Utils/VariantType.hpp>
+#include <oscar/Variant/VariantType.hpp>
 
 #include <cstddef>
 #include <iosfwd>

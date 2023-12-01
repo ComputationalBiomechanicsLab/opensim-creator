@@ -1,7 +1,7 @@
-#include <oscar/DOM/PropertyInfo.hpp>
+#include <oscar/Object/PropertyInfo.hpp>
 
-#include <oscar/Utils/Variant.hpp>
-#include <oscar/Utils/VariantType.hpp>
+#include <oscar/Variant/Variant.hpp>
+#include <oscar/Variant/VariantType.hpp>
 
 #include <gtest/gtest.h>
 

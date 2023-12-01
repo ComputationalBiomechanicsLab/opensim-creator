@@ -1,10 +1,10 @@
-#include <oscar/DOM/Object.hpp>
+#include <oscar/Object/Object.hpp>
 
-#include <oscar/DOM/PropertyInfo.hpp>
+#include <oscar/Object/PropertyInfo.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Utils/StringName.hpp>
-#include <oscar/Utils/Variant.hpp>
-#include <oscar/Utils/VariantType.hpp>
+#include <oscar/Variant/Variant.hpp>
+#include <oscar/Variant/VariantType.hpp>
 
 #include <gtest/gtest.h>
 

@@ -2,7 +2,7 @@
 
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/StringName.hpp>
-#include <oscar/Utils/Variant.hpp>
+#include <oscar/Variant/Variant.hpp>
 
 #include <sstream>
 #include <stdexcept>

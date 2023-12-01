@@ -193,6 +193,14 @@ namespace osc
     };
 
     std::ostream& operator<<(std::ostream&, StringName const&);
+
+    namespace literals
+    {
+        inline StringName operator""_sn(char const* s, size_t len)
+        {
+            return StringName{std::string_view(s, len)};
+        }
+    }
 }
 
 template<>

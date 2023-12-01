@@ -1,7 +1,7 @@
-#include <oscar/DOM/Node.hpp>
+#include <oscar/Object/Node.hpp>
 
-#include <oscar/DOM/NodePath.hpp>
-#include <oscar/Utils/Variant.hpp>
+#include <oscar/Object/NodePath.hpp>
+#include <oscar/Variant/Variant.hpp>
 
 #include <gtest/gtest.h>
 

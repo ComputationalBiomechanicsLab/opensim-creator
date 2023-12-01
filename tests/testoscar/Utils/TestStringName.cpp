@@ -10,6 +10,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 
 using osc::CStringView;
@@ -455,4 +456,10 @@ TEST(StringName, CanBeStreamedToOStreamAndProducesIdenticalOutputToString)
     snss << StringName{str};
 
     ASSERT_EQ(strss.str(), snss.str());
+}
+
+TEST(StringName, CanConstructFromSuffixedLiteral)
+{
+    using namespace osc::literals;
+    static_assert(std::is_same_v<StringName, decltype("hello"_sn)>);
 }

@@ -1,4 +1,4 @@
-#include <oscar/Utils/Variant.hpp>
+#include <oscar/Variant/Variant.hpp>
 
 #include <gtest/gtest.h>
 #include <oscar/Graphics/Color.hpp>
