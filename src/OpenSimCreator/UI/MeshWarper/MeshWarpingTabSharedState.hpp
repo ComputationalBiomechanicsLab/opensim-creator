@@ -82,7 +82,7 @@ namespace osc
 
         bool isHovered(TPSDocumentElementID const& id) const
         {
-            return currentHover && currentHover->maybeSceneElementID == id;
+            return currentHover && currentHover->isHovering(id);
         }
 
         bool hasSelection() const

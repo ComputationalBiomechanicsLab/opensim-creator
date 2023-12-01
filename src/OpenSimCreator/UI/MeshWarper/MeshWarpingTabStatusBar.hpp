@@ -50,15 +50,20 @@ namespace osc
 
         void drawCurrentHoverInfo(MeshWarpingTabHover const& hover)
         {
-            drawColorCodedXYZ(hover.worldspaceLocation);
+            drawColorCodedXYZ(hover.getWorldspaceLocation());
             ImGui::SameLine();
-            if (hover.maybeSceneElementID)
+            if (hover.isHoveringASceneElement())
             {
-                ImGui::TextDisabled("(left-click to select %s)", FindElementNameOr(m_State->getScratch(), *hover.maybeSceneElementID).c_str());
+                ImGui::TextDisabled("(Click: select %s)", FindElementNameOr(m_State->getScratch(), *hover.getSceneElementID()).c_str());
+            }
+            else if (hover.getInput() == TPSDocumentInputIdentifier::Source)
+            {
+                ImGui::TextDisabled("(Click: add a landmark, Ctrl+Click: add non-participating landmark)");
             }
             else
             {
-                ImGui::TextDisabled("(left-click to add a landmark)");
+                static_assert(NumOptions<TPSDocumentInputIdentifier>() == 2);
+                ImGui::TextDisabled("(Click: add a landmark)");
             }
         }
 

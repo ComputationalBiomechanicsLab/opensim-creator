@@ -186,7 +186,7 @@ namespace osc
             };
         }
 
-        constexpr Color withAlpha(float a_)
+        constexpr Color withAlpha(float a_) const
         {
             return Color{r, g, b, a_};
         }

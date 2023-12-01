@@ -76,6 +76,14 @@ void osc::ActionAddLandmark(
     doc.commitScratch("added landmark");
 }
 
+void osc::ActionAddNonParticipatingLandmark(
+    UndoableTPSDocument& doc,
+    Vec3 const& pos)
+{
+    AddNonParticipatingLandmark(doc.updScratch(), pos);
+    doc.commitScratch("added non-participating landmark");
+}
+
 void osc::ActionSetLandmarkPosition(
     UndoableTPSDocument& doc,
     UID id,

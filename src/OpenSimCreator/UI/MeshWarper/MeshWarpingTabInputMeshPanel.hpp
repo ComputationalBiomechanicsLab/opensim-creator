@@ -88,7 +88,7 @@ namespace osc
             }
             else if (meshCollision)
             {
-                m_State->currentHover.emplace(meshCollision->position);
+                m_State->currentHover.emplace(m_DocumentIdentifier, meshCollision->position);
             }
 
             // update camera: NOTE: make sure it's updated *before* rendering; otherwise, it'll be one frame late
@@ -169,7 +169,7 @@ namespace osc
             Sphere const landmarkSphere = {.origin = *maybePos, .radius = m_LandmarkRadius};
             if (auto const collision = GetRayCollisionSphere(cameraRay, landmarkSphere))
             {
-                if (!closest || Length(closest->worldspaceLocation - cameraRay.origin) > collision->distance)
+                if (!closest || Length(closest->getWorldspaceLocation() - cameraRay.origin) > collision->distance)
                 {
                     TPSDocumentElementID fullID{landmark.uid, TPSDocumentElementType::Landmark, m_DocumentIdentifier};
                     closest.emplace(std::move(fullID), *maybePos);
@@ -196,11 +196,14 @@ namespace osc
         {
             // hittest non-participating landmark as an analytic sphere
 
-            Sphere const decorationSphere = {.origin = nonPariticpatingLandmark.location, .radius = GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius};
+            Sphere const decorationSphere = {
+                .origin = nonPariticpatingLandmark.location,
+                .radius = GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius
+            };
 
             if (auto const collision = GetRayCollisionSphere(cameraRay, decorationSphere))
             {
-                if (!closest || Length(closest->worldspaceLocation - cameraRay.origin) > collision->distance)
+                if (!closest || Length(closest->getWorldspaceLocation() - cameraRay.origin) > collision->distance)
                 {
                     TPSDocumentElementID fullID{nonPariticpatingLandmark.uid, TPSDocumentElementType::NonParticipatingLandmark, m_DocumentIdentifier};
                     closest.emplace(std::move(fullID), nonPariticpatingLandmark.location);
@@ -347,10 +350,20 @@ namespace osc
             Vec3 const& meshCollisionPosition,
             std::function<void(SceneDecoration&&)> const& decorationConsumer) const
         {
+            bool const nonParticipating = isUserPlacingNonParticipatingLandmark();
+
+            Color const color = nonParticipating ?
+                m_State->nonParticipatingLandmarkColor :
+                m_State->unpairedLandmarkColor;
+
+            float const radius = nonParticipating ?
+                GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius :
+                m_LandmarkRadius;
+
             decorationConsumer({
                 .mesh = m_State->landmarkSphere,
-                .transform = {.scale = Vec3{m_LandmarkRadius}, .position = meshCollisionPosition},
-                .color = m_State->unpairedLandmarkColor.withAlpha(0.25f),  // faded
+                .transform = {.scale = Vec3{radius}, .position = meshCollisionPosition},
+                .color = color.withAlpha(0.8f),  // faded
             });
         }
 
@@ -363,33 +376,37 @@ namespace osc
             // event: if the user left-clicks and something is hovered, select it; otherwise, add a landmark
             if (htResult.isLeftClickReleasedWithoutDragging)
             {
-                if (landmarkCollision && landmarkCollision->maybeSceneElementID)
+                if (landmarkCollision && landmarkCollision->isHoveringASceneElement())
                 {
                     if (!IsShiftDown())
                     {
                         m_State->clearSelection();
                     }
-                    m_State->select(*landmarkCollision->maybeSceneElementID);
+                    m_State->select(*landmarkCollision->getSceneElementID());
                 }
                 else if (meshCollision)
                 {
-                    ActionAddLandmark(
-                        m_State->updUndoable(),
-                        m_DocumentIdentifier,
-                        meshCollision->position
-                    );
+                    auto const pos = meshCollision->position;
+                    if (isUserPlacingNonParticipatingLandmark())
+                    {
+                        ActionAddNonParticipatingLandmark(m_State->updUndoable(), pos);
+                    }
+                    else
+                    {
+                        ActionAddLandmark(m_State->updUndoable(), m_DocumentIdentifier, pos);
+                    }
                 }
             }
 
             // event: if the user right-clicks on a landmark then open the context menu for that landmark
             if (htResult.isRightClickReleasedWithoutDragging)
             {
-                if (landmarkCollision && landmarkCollision->maybeSceneElementID)
+                if (landmarkCollision && landmarkCollision->isHoveringASceneElement())
                 {
                     m_State->emplacePopup<MeshWarpingTabContextMenu>(
                         "##MeshInputContextMenu",
                         m_State,
-                        *landmarkCollision->maybeSceneElementID
+                        *landmarkCollision->getSceneElementID()
                     );
                 }
             }
@@ -539,6 +556,14 @@ namespace osc
             CStringView const label = "landmark radius";
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label.c_str()).x - ImGui::GetStyle().ItemInnerSpacing.x - m_State->overlayPadding.x);
             ImGui::SliderFloat(label.c_str(), &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
+        }
+
+        bool isUserPlacingNonParticipatingLandmark() const
+        {
+            static_assert(NumOptions<TPSDocumentInputIdentifier>() == 2);
+            bool const isSourceMesh = m_DocumentIdentifier == TPSDocumentInputIdentifier::Source;
+            bool const isCtrlPressed = IsAnyKeyDown({ImGuiKey_LeftCtrl, ImGuiKey_RightCtrl});
+            return isSourceMesh && isCtrlPressed;
         }
 
         std::shared_ptr<MeshWarpingTabSharedState> m_State;

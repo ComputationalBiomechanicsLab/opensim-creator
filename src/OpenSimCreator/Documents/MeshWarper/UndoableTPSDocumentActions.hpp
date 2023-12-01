@@ -23,6 +23,9 @@ namespace osc
     // adds a landmark to an input mesh
     void ActionAddLandmark(UndoableTPSDocument&, TPSDocumentInputIdentifier, Vec3 const&);
 
+    // adds a non-participating landmark to the source mesh
+    void ActionAddNonParticipatingLandmark(UndoableTPSDocument&, Vec3 const&);
+
     // adds a source/destination position to an existing landmark
     void ActionSetLandmarkPosition(UndoableTPSDocument&, UID, TPSDocumentInputIdentifier, Vec3 const&);
 

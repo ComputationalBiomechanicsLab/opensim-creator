@@ -29,6 +29,7 @@ All notable changes to this project will be documented here. The format is based
   - If a non-participating landmark with the same name is already in the scene then it will overwrite it's location
   - The previous functionality (of handling CSV files with 3 columns) has not changed
 - The mesh warper UI now supports more keybindings, which are now also listed in the top menu bar
+- Non-participating landmarks can now be added to the source mesh in the mesh warper by Ctrl+Clicking on the mesh
 
 
 ## [0.5.5] - 2023/11/21
