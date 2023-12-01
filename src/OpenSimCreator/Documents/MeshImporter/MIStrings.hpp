@@ -5,7 +5,7 @@
 namespace osc::mi
 {
     // a collection of user-facing strings that are presented in the model graph
-    class ModelGraphStrings final {
+    class MIStrings final {
     public:
         static constexpr CStringView c_GroundLabel = "Ground";
         static constexpr CStringView c_GroundLabelPluralized = "Ground";

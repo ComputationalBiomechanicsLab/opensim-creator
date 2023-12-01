@@ -253,7 +253,7 @@ namespace osc::mi
 
         bool hasSelection() const
         {
-            return HasSelection(getModelGraph());
+            return getModelGraph().hasSelection();
         }
 
         bool isSelected(UID id) const
@@ -886,7 +886,7 @@ namespace osc::mi
 
                 if (el)
                 {
-                    auto& mesh = mg.emplaceEl<Mesh>(UID{}, ok.preferredAttachmentPoint, lm.meshData, lm.path);
+                    auto& mesh = mg.emplace<Mesh>(UID{}, ok.preferredAttachmentPoint, lm.meshData, lm.path);
                     mesh.setXform(el->getXForm(mg));
                     mg.select(mesh);
                     mg.select(*el);

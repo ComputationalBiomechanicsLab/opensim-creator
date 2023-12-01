@@ -6,6 +6,6 @@
 #include <oscar/Utils/ClonePtr.hpp>
 
 osc::mi::Document::Document() :
-    m_Els{{MIIDs::Ground(), ClonePtr<MIObject>{Ground{}}}}
+    m_Objects{{MIIDs::Ground(), ClonePtr<MIObject>{Ground{}}}}
 {
 }

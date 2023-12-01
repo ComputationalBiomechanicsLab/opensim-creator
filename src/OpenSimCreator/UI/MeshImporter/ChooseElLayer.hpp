@@ -90,7 +90,7 @@ namespace osc::mi
         // returns true if the user has already selected the given scene element
         bool isSelected(MIObject const& el) const
         {
-            return std::find(m_SelectedEls.begin(), m_SelectedEls.end(), el.getID()) != m_SelectedEls.end();
+            return std::find(m_SelectedObjectIDs.begin(), m_SelectedObjectIDs.end(), el.getID()) != m_SelectedObjectIDs.end();
         }
 
         // returns true if the user can (de)select the given element
@@ -123,7 +123,7 @@ namespace osc::mi
                 return;
             }
 
-            m_SelectedEls.push_back(el.getID());
+            m_SelectedObjectIDs.push_back(el.getID());
         }
 
         void deSelect(MIObject const& el)
@@ -133,7 +133,7 @@ namespace osc::mi
                 return;
             }
 
-            std::erase_if(m_SelectedEls, [elID = el.getID()](UID id) { return id == elID; } );
+            std::erase_if(m_SelectedObjectIDs, [elID = el.getID()](UID id) { return id == elID; } );
         }
 
         void tryToggleSelectionStateOf(MIObject const& el)
@@ -212,12 +212,12 @@ namespace osc::mi
 
         void handlePossibleCompletion()
         {
-            if (static_cast<int>(m_SelectedEls.size()) < m_Options.numElementsUserMustChoose)
+            if (static_cast<int>(m_SelectedObjectIDs.size()) < m_Options.numElementsUserMustChoose)
             {
                 return;  // user hasn't selected enough stuff yet
             }
 
-            if (m_Options.onUserChoice(m_SelectedEls))
+            if (m_Options.onUserChoice(m_SelectedObjectIDs))
             {
                 requestPop();
             }
@@ -285,8 +285,8 @@ namespace osc::mi
             // draw strong connection line between the things being attached to and the hover
             for (UID elAttachingTo : m_Options.maybeElsAttachingTo)
             {
-                Vec3 parentPos = GetPosition(m_Shared->getModelGraph(), elAttachingTo);
-                Vec3 childPos = GetPosition(m_Shared->getModelGraph(), m_MaybeHover.ID);
+                Vec3 parentPos = m_Shared->getModelGraph().getPosByID(elAttachingTo);
+                Vec3 childPos = m_Shared->getModelGraph().getPosByID(m_MaybeHover.ID);
 
                 if (!m_Options.isAttachingTowardEl)
                 {
@@ -394,7 +394,7 @@ namespace osc::mi
         MeshImporterHover m_MaybeHover;
 
         // elements selected by user
-        std::vector<UID> m_SelectedEls;
+        std::vector<UID> m_SelectedObjectIDs;
 
         // buffer that's filled with drawable geometry during a drawcall
         std::vector<DrawableThing> m_DrawablesBuffer;

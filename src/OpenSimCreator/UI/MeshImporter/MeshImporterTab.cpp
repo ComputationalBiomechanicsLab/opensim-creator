@@ -360,7 +360,7 @@ private:
             meshes.insert(m_MaybeHover.ID);
         }
 
-        std::erase_if(meshes, [&mg](UID meshID) { return !mg.containsEl<Mesh>(meshID); });
+        std::erase_if(meshes, [&mg](UID meshID) { return !mg.contains<Mesh>(meshID); });
 
         if (meshes.empty())
         {
@@ -370,7 +370,7 @@ private:
         std::unordered_set<UID> attachments;
         for (UID meshID : meshes)
         {
-            attachments.insert(mg.getElByID<Mesh>(meshID).getParentID());
+            attachments.insert(mg.getByID<Mesh>(meshID).getParentID());
         }
 
         transitionToAssigningMeshesNextFrame(meshes, attachments);
@@ -714,12 +714,12 @@ private:
     {
         Document const& mg = m_Shared->getModelGraph();
 
-        if (m_MaybeHover && !mg.containsEl(m_MaybeHover.ID))
+        if (m_MaybeHover && !mg.contains(m_MaybeHover.ID))
         {
             m_MaybeHover.reset();
         }
 
-        if (m_MaybeOpenedContextMenu && !mg.containsEl(m_MaybeOpenedContextMenu.ID))
+        if (m_MaybeOpenedContextMenu && !mg.contains(m_MaybeOpenedContextMenu.ID))
         {
             m_MaybeOpenedContextMenu.reset();
         }
@@ -876,7 +876,7 @@ private:
             std::string buf{static_cast<std::string_view>(e.getLabel())};
             if (InputString("Name", buf))
             {
-                mg.updElByID(e.getID()).setLabel(buf);
+                mg.updByID(e.getID()).setLabel(buf);
             }
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
@@ -894,7 +894,7 @@ private:
             Vec3 translation = e.getPos(mg);
             if (ImGui::InputFloat3("Translation", ValuePtr(translation), "%.6f"))
             {
-                mg.updElByID(e.getID()).setPos(mg, translation);
+                mg.updByID(e.getID()).setPos(mg, translation);
             }
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
@@ -914,7 +914,7 @@ private:
             if (ImGui::InputFloat3("Rotation (deg)", ValuePtr(eulerDegs), "%.6f"))
             {
                 Quat quatRads = Quat{Deg2Rad(eulerDegs)};
-                mg.updElByID(e.getID()).setRotation(mg, quatRads);
+                mg.updByID(e.getID()).setRotation(mg, quatRads);
             }
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
@@ -932,7 +932,7 @@ private:
             Vec3 scaleFactors = e.getScale(mg);
             if (ImGui::InputFloat3("Scale", ValuePtr(scaleFactors), "%.6f"))
             {
-                mg.updElByID(e.getID()).setScale(mg, scaleFactors);
+                mg.updByID(e.getID()).setScale(mg, scaleFactors);
             }
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
@@ -1303,7 +1303,7 @@ private:
         auto curMass = static_cast<float>(bodyEl.getMass());
         if (ImGui::InputFloat("Mass", &curMass, 0.0f, 0.0f, "%.6f"))
         {
-            m_Shared->updModelGraph().updElByID<Body>(bodyEl.getID()).setMass(static_cast<double>(curMass));
+            m_Shared->updModelGraph().updByID<Body>(bodyEl.getID()).setMass(static_cast<double>(curMass));
         }
         if (ImGui::IsItemDeactivatedAfterEdit())
         {
@@ -1322,7 +1322,7 @@ private:
 
         if (Combo("Joint Type", &currentIdx, registry.size(), nameAccessor))
         {
-            m_Shared->updModelGraph().updElByID<Joint>(jointEl.getID()).setJointTypeIndex(currentIdx);
+            m_Shared->updModelGraph().updByID<Joint>(jointEl.getID()).setJointTypeIndex(currentIdx);
             m_Shared->commitCurrentModelGraph("changed joint type");
         }
         ImGui::SameLine();
@@ -1716,8 +1716,8 @@ private:
         if (ImGui::MenuItem(ICON_FA_MAP_PIN " Station"))
         {
             Document& mg = m_Shared->updModelGraph();
-            auto& e = mg.emplaceEl<StationEl>(UID{}, MIIDs::Ground(), Vec3{}, StationEl::Class().generateName());
-            SelectOnly(mg, e);
+            auto& e = mg.emplace<StationEl>(UID{}, MIIDs::Ground(), Vec3{}, StationEl::Class().generateName());
+            mg.selectOnly(e);
         }
         DrawTooltipIfItemHovered("Add Station", StationEl::Class().getDescription());
 
@@ -2067,13 +2067,13 @@ private:
 
             int n = 0;
 
-            Transform ras = GetTransform(mg, *it);
+            Transform ras = mg.getXFormByID(*it);
             ++it;
             ++n;
 
             while (it != end)
             {
-                ras += GetTransform(mg, *it);
+                ras += mg.getXFormByID(*it);
                 ++it;
                 ++n;
             }
@@ -2143,7 +2143,7 @@ private:
 
         for (UID id : m_Shared->getCurrentSelection())
         {
-            MIObject& el = m_Shared->updModelGraph().updElByID(id);
+            MIObject& el = m_Shared->updModelGraph().updByID(id);
             switch (m_ImGuizmoState.op) {
             case ImGuizmo::ROTATE:
                 el.applyRotation(m_Shared->getModelGraph(), rotation, m_ImGuizmoState.mtx[3]);

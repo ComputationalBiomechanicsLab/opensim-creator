@@ -33,7 +33,7 @@ bool osc::mi::PointAxisTowards(
     UID other)
 {
     PointAxisTowards(cmg.updScratch(), id, axis, other);
-    cmg.commitScratch("reoriented " + getLabel(cmg.getScratch(), id));
+    cmg.commitScratch("reoriented " + cmg.getScratch().getLabelByID(id));
     return true;
 }
 
@@ -44,7 +44,7 @@ bool osc::mi::TryAssignMeshAttachments(
 {
     Document& mg = cmg.updScratch();
 
-    if (newAttachment != MIIDs::Ground() && !mg.containsEl<Body>(newAttachment))
+    if (newAttachment != MIIDs::Ground() && !mg.contains<Body>(newAttachment))
     {
         return false;  // bogus ID passed
     }
@@ -66,7 +66,7 @@ bool osc::mi::TryAssignMeshAttachments(
     {
         commitMsg << "es";
     }
-    commitMsg << " to " << mg.getElByID(newAttachment).getLabel();
+    commitMsg << " to " << mg.getByID(newAttachment).getLabel();
 
 
     cmg.commitScratch(std::move(commitMsg).str());
@@ -82,11 +82,11 @@ bool osc::mi::TryCreateJoint(
     Document& mg = cmg.updScratch();
 
     size_t const jointTypeIdx = *IndexOf<OpenSim::WeldJoint>(GetComponentRegistry<OpenSim::Joint>());
-    Vec3 const parentPos = GetPosition(mg, parentID);
-    Vec3 const childPos = GetPosition(mg, childID);
+    Vec3 const parentPos = mg.getPosByID(parentID);
+    Vec3 const childPos = mg.getPosByID(childID);
     Vec3 const midPoint = Midpoint(parentPos, childPos);
 
-    auto const& jointEl = mg.emplaceEl<Joint>(
+    auto const& jointEl = mg.emplace<Joint>(
         UID{},
         jointTypeIdx,
         std::string{},
@@ -94,7 +94,7 @@ bool osc::mi::TryCreateJoint(
         childID,
         Transform{.position = midPoint}
     );
-    SelectOnly(mg, jointEl);
+    mg.selectOnly(jointEl);
 
     cmg.commitScratch("added " + jointEl.getLabel());
 
@@ -136,8 +136,8 @@ bool osc::mi::TryOrientElementAxisAlongTwoElements(
         cmg,
         id,
         axis,
-        GetPosition(cmg.getScratch(), el1),
-        GetPosition(cmg.getScratch(), el2)
+        cmg.getScratch().getPosByID(el1),
+        cmg.getScratch().getPosByID(el2)
     );
 }
 
@@ -314,7 +314,7 @@ bool osc::mi::TryReassignCrossref(
         return false;
     }
 
-    if (!mg.containsEl(other))
+    if (!mg.contains(other))
     {
         return false;
     }
@@ -328,15 +328,12 @@ bool osc::mi::TryReassignCrossref(
 bool osc::mi::DeleteSelected(UndoableDocument& cmg)
 {
     Document& mg = cmg.updScratch();
-
-    if (!HasSelection(mg))
+    if (!mg.hasSelection())
     {
         return false;
     }
-
-    DeleteSelected(cmg.updScratch());
+    mg.deleteSelected();
     cmg.commitScratch("deleted selection");
-
     return true;
 }
 
@@ -352,7 +349,7 @@ bool osc::mi::DeleteEl(UndoableDocument& cmg, UID id)
 
     std::string const label = to_string(el->getLabel());
 
-    if (!mg.deleteEl(*el))
+    if (!mg.deleteByID(el->getID()))
     {
         return false;
     }
@@ -405,7 +402,7 @@ UID osc::mi::AddBody(
 {
     Document& mg = cmg.updScratch();
 
-    auto const& b = mg.emplaceEl<Body>(UID{}, Body::Class().generateName(), Transform{.position = pos});
+    auto const& b = mg.emplace<Body>(UID{}, Body::Class().generateName(), Transform{.position = pos});
     mg.deSelectAll();
     mg.select(b.getID());
 
@@ -441,13 +438,13 @@ bool osc::mi::AddStationAtLocation(
         return false;
     }
 
-    auto const& station = mg.emplaceEl<StationEl>(
+    auto const& station = mg.emplace<StationEl>(
         UID{},
         GetStationAttachmentParent(mg, el),
         loc,
         StationEl::Class().generateName()
     );
-    SelectOnly(mg, station);
+    mg.selectOnly(station);
     cmg.commitScratch("added station " + station.getLabel());
     return true;
 }

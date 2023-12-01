@@ -20,13 +20,6 @@ namespace osc::mi { class Joint; }
 
 namespace osc::mi
 {
-    void SelectOnly(Document&, MIObject const&);
-    bool HasSelection(Document const&);
-    void DeleteSelected(Document&);
-    CStringView getLabel(Document const&, UID);
-    Transform GetTransform(Document const&, UID);
-    Vec3 GetPosition(Document const&, UID);
-
     // returns `true` if `body` participates in any joint in the model graph
     bool IsAChildAttachmentInAnyJoint(Document const&, MIObject const&);
 
@@ -62,7 +55,7 @@ namespace osc::mi
 
     // returns a string representing the subheader of a scene element
     std::string GetContextMenuSubHeaderText(
-        Document const& mg,
+        Document const&,
         MIObject const&
     );
 
@@ -75,16 +68,16 @@ namespace osc::mi
 
     template<typename Consumer>
     void ForEachIDInSelectionGroup(
-        Document const& mg,
+        Document const& doc,
         UID parent,
         Consumer f)
         requires Invocable<Consumer, UID>
     {
-        for (MIObject const& e : mg.iter())
+        for (MIObject const& obj : doc.iter())
         {
-            UID const id = e.getID();
+            UID const id = obj.getID();
 
-            if (IsInSelectionGroupOf(mg, parent, id))
+            if (IsInSelectionGroupOf(doc, parent, id))
             {
                 f(id);
             }

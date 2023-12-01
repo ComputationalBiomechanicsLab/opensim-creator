@@ -291,7 +291,7 @@ namespace
         auto parentPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         parentPOF->setName(parent.physicalFrame->getName() + "_offset");
         parentPOF->setParentFrame(*parent.physicalFrame);
-        Mat4 toParentPofInParent =  ToInverseMat4(IgnoreScale(GetTransform(mg, joint.getParentID()))) * ToMat4(IgnoreScale(joint.getXForm()));
+        Mat4 toParentPofInParent =  ToInverseMat4(IgnoreScale(mg.getXFormByID(joint.getParentID()))) * ToMat4(IgnoreScale(joint.getXForm()));
         parentPOF->set_translation(ToSimTKVec3(toParentPofInParent[3]));
         parentPOF->set_orientation(ToSimTKVec3(ExtractEulerAngleXYZ(toParentPofInParent)));
 
@@ -299,7 +299,7 @@ namespace
         auto childPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         childPOF->setName(child.physicalFrame->getName() + "_offset");
         childPOF->setParentFrame(*child.physicalFrame);
-        Mat4 const toChildPofInChild = ToInverseMat4(IgnoreScale(GetTransform(mg, joint.getChildID()))) * ToMat4(IgnoreScale(joint.getXForm()));
+        Mat4 const toChildPofInChild = ToInverseMat4(IgnoreScale(mg.getXFormByID(joint.getChildID()))) * ToMat4(IgnoreScale(joint.getXForm()));
         childPOF->set_translation(ToSimTKVec3(toChildPofInChild[3]));
         childPOF->set_orientation(ToSimTKVec3(ExtractEulerAngleXYZ(toChildPofInChild)));
 
@@ -400,7 +400,7 @@ namespace
         JointAttachmentCachedLookupResult const res = LookupPhysFrame(mg, model, visitedBodies, stationEl.getParentID());
         OSC_ASSERT_ALWAYS(res.physicalFrame != nullptr && "all physical frames should have been added by this point in the model-building process");
 
-        SimTK::Transform const parentXform = ToSimTKTransform(mg.getElByID(stationEl.getParentID()).getXForm(mg));
+        SimTK::Transform const parentXform = ToSimTKTransform(mg.getByID(stationEl.getParentID()).getXForm(mg));
         SimTK::Transform const stationXform = ToSimTKTransform(stationEl.getXForm());
         SimTK::Vec3 const locationInParent = (parentXform.invert() * stationXform).p();
 
@@ -480,7 +480,7 @@ namespace
             std::string const name = b.getName();
             Transform const xform = ToTransform(b.getTransformInGround(st));
 
-            auto& el = rv.emplaceEl<Body>(UID{}, name, xform);
+            auto& el = rv.emplace<Body>(UID{}, name, xform);
             el.setMass(b.getMass());
 
             bodyLookup.emplace(&b, el.getID());
@@ -558,7 +558,7 @@ namespace
 
             Transform const xform = ToTransform(parentFrame.getTransformInGround(st));
 
-            auto& jointEl = rv.emplaceEl<Joint>(UID{}, type, name, parent, child, xform);
+            auto& jointEl = rv.emplace<Joint>(UID{}, type, name, parent, child, xform);
             jointLookup.emplace(&j, jointEl.getID());
         }
 
@@ -619,7 +619,7 @@ namespace
                 continue;
             }
 
-            auto& el = rv.emplaceEl<Mesh>(UID{}, attachment, meshData, realLocation);
+            auto& el = rv.emplace<Mesh>(UID{}, attachment, meshData, realLocation);
             Transform newTransform = ToTransform(frame.getTransformInGround(st));
             newTransform.scale = ToVec3(mesh.get_scale_factors());
 
@@ -671,7 +671,7 @@ namespace
             Vec3 const pos = ToVec3(station.findLocationInFrame(st, m.getGround()));
             std::string const name = station.getName();
 
-            rv.emplaceEl<StationEl>(attachment, pos, name);
+            rv.emplace<StationEl>(attachment, pos, name);
         }
 
         return rv;

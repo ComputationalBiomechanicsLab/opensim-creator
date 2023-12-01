@@ -338,7 +338,7 @@ private:
         Document& graph = undoable.updScratch();
         for (StationDefinedInGround const& station : data.rows)
         {
-            graph.emplaceEl<StationEl>(
+            graph.emplace<StationEl>(
                 UID{},
                 MIIDs::Ground(),
                 station.location,
