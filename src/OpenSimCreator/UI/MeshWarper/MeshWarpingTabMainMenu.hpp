@@ -1,5 +1,6 @@
 #pragma once
 
+#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabActionsMenu.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabEditMenu.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabFileMenu.hpp>
@@ -21,6 +22,7 @@ namespace osc
 
             m_FileMenu{tabState_},
             m_EditMenu{tabState_},
+            m_ActionsMenu{tabState_},
             m_WindowMenu{panelManager_}
         {
         }
@@ -29,12 +31,14 @@ namespace osc
         {
             m_FileMenu.onDraw();
             m_EditMenu.onDraw();
+            m_ActionsMenu.onDraw();
             m_WindowMenu.onDraw();
             m_AboutTab.onDraw();
         }
     private:
         MeshWarpingTabFileMenu m_FileMenu;
         MeshWarpingTabEditMenu m_EditMenu;
+        MeshWarpingTabActionsMenu m_ActionsMenu;
         WindowMenu m_WindowMenu;
         MainMenuAboutTab m_AboutTab;
     };

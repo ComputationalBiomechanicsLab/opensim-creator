@@ -68,15 +68,6 @@ namespace osc
 
             ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
             ImGui::SameLine();
-
-            // landmark stuff
-            drawResetLandmarksButton();
-            ImGui::SameLine();
-
-            ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-            ImGui::SameLine();
-
-            drawResetNonParticipatingLandmarksButton();
         }
 
         void drawNewDocumentButton()
@@ -128,45 +119,12 @@ namespace osc
         {
             ImGui::Checkbox("link cameras", &m_State->linkCameras);
             ImGui::SameLine();
+            if (!m_State->linkCameras)
+            {
+                ImGui::BeginDisabled();
+            }
             ImGui::Checkbox("only link rotation", &m_State->onlyLinkRotation);
-        }
-
-        void drawResetLandmarksButton()
-        {
-            bool const hasLandmarks = ContainsLandmarks(m_State->getScratch());
-
-            if (!hasLandmarks)
-            {
-                ImGui::BeginDisabled();
-            }
-
-            if (ImGui::Button(ICON_FA_ERASER " clear landmarks"))
-            {
-                ActionClearAllLandmarks(m_State->updUndoable());
-            }
-
-            if (!hasLandmarks)
-            {
-                ImGui::EndDisabled();
-            }
-        }
-
-        void drawResetNonParticipatingLandmarksButton()
-        {
-            bool const hasNonParticipatingLandmarks =
-                ContainsNonParticipatingLandmarks(m_State->getScratch());
-
-            if (!hasNonParticipatingLandmarks)
-            {
-                ImGui::BeginDisabled();
-            }
-
-            if (ImGui::Button(ICON_FA_ERASER " clear non-participating landmarks"))
-            {
-                ActionClearAllNonParticipatingLandmarks(m_State->updUndoable());
-            }
-
-            if (!hasNonParticipatingLandmarks)
+            if (!m_State->linkCameras)
             {
                 ImGui::EndDisabled();
             }

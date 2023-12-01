@@ -176,6 +176,8 @@ add_library(OpenSimCreator STATIC
 
     UI/MeshWarper/MeshWarpingTab.cpp
     UI/MeshWarper/MeshWarpingTab.hpp
+    UI/MeshWarper/MeshWarpingTabActionsMenu.hpp
+    UI/MeshWarper/MeshWarpingTabContextMenu.hpp
     UI/MeshWarper/MeshWarpingTabDecorationGenerators.hpp
     UI/MeshWarper/MeshWarpingTabEditMenu.hpp
     UI/MeshWarper/MeshWarpingTabFileMenu.hpp
