@@ -92,16 +92,11 @@ private:
                 m_RenderParams.drawFloor = false;
                 m_RenderParams.drawMeshNormals = true;
 
-                SceneDecoration d
+                m_Viewer.onDraw({{SceneDecoration
                 {
-                    m_AllMeshes[m_CurrentMesh],
-                    Transform{},
-                    {1.0f, 1.0f, 1.0f, 1.0f},
-                    "NO_ID",
-                    SceneDecorationFlags{}
-                };
-
-                m_Viewer.onDraw(std::span<SceneDecoration const>{&d, 1}, m_RenderParams);
+                    .mesh = m_AllMeshes[m_CurrentMesh],
+                    .color = Color::white(),
+                }}}, m_RenderParams);
             }
         }
         ImGui::End();

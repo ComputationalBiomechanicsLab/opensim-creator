@@ -55,6 +55,9 @@ add_library(oscar STATIC
     Graphics/CameraProjection.hpp
     Graphics/Color.cpp
     Graphics/Color.hpp
+    Graphics/ColorHSLA.hpp
+    Graphics/ColorHSLA.cpp
+    Graphics/ColorSpace.hpp
     Graphics/Color32.hpp
     Graphics/Cubemap.hpp
     Graphics/CubemapFace.hpp
@@ -107,12 +110,15 @@ add_library(oscar STATIC
     Maths/BVHCollision.hpp
     Maths/BVHNode.hpp
     Maths/BVHPrim.hpp
+    Maths/Circle.hpp
     Maths/CollisionTests.hpp
     Maths/Disc.hpp
     Maths/EasingFunctions.hpp
     Maths/Ellipsoid.hpp
     Maths/EulerPerspectiveCamera.hpp
+    Maths/LengthType.hpp
     Maths/Line.hpp
+    Maths/Mat.hpp
     Maths/MathHelpers.hpp
     Maths/MathsImplementation.cpp
     Maths/Mat3.hpp
@@ -121,6 +127,8 @@ add_library(oscar STATIC
     Maths/Plane.hpp
     Maths/PointDirection.hpp
     Maths/PolarPerspectiveCamera.hpp
+    Maths/Qua.hpp
+    Maths/Qualifier.hpp
     Maths/Quat.hpp
     Maths/RayCollision.hpp
     Maths/Rect.hpp
@@ -129,6 +137,7 @@ add_library(oscar STATIC
     Maths/Tetrahedron.hpp
     Maths/Transform.hpp
     Maths/Triangle.hpp
+    Maths/Vec.hpp
     Maths/Vec2.hpp
     Maths/Vec3.hpp
     Maths/Vec4.hpp
@@ -232,6 +241,7 @@ add_library(oscar STATIC
     UI/IconCache.cpp
     UI/IconCache.hpp
 
+    Utils/At.hpp
     Utils/Assertions.cpp
     Utils/Assertions.hpp
     Utils/CircularBuffer.hpp
@@ -248,6 +258,7 @@ add_library(oscar STATIC
     Utils/FilesystemHelpers.cpp
     Utils/FilesystemHelpers.hpp
     Utils/HashHelpers.hpp
+    Utils/ObjectRepresentation.hpp
     Utils/ParalellizationHelpers.hpp
     Utils/ParentPtr.hpp
     Utils/Perf.cpp
@@ -257,7 +268,6 @@ add_library(oscar STATIC
     Utils/PerfMeasurementMetadata.hpp
     Utils/ScopeGuard.hpp
     Utils/SetHelpers.hpp
-    Utils/SpanHelpers.hpp
     Utils/Spsc.hpp
     Utils/StringHelpers.cpp
     Utils/StringHelpers.hpp
@@ -274,7 +284,7 @@ add_library(oscar STATIC
     Utils/Variant.hpp
     Utils/VariantType.cpp
     Utils/VariantType.hpp
-)
+ "Graphics/ColorHSLA.cpp")
 
 target_include_directories(oscar PUBLIC
 

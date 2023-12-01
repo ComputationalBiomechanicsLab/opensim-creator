@@ -3,7 +3,7 @@
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
 
 #include <gtest/gtest.h>
-#include <OpenSimCreator/Bindings/SimTKMeshLoader.hpp>
+#include <OpenSimCreator/Graphics/SimTKMeshLoader.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Maths/Ellipsoid.hpp>

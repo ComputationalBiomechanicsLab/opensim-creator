@@ -1,12 +1,14 @@
 #pragma once
 
-#include <glm/vec4.hpp>
+#include <oscar/Maths/Vec.hpp>
+
+#include <glm/detail/type_vec4.hpp>
 
 #include <iosfwd>
 
 namespace osc
 {
-    using Vec4 = glm::vec4;
+    using Vec4 = Vec<4, float>;
 
     std::ostream& operator<<(std::ostream&, Vec4 const&);
 

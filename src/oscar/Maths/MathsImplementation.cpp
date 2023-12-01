@@ -23,7 +23,7 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/SpanHelpers.hpp>
+#include <oscar/Utils/At.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -160,8 +160,8 @@ namespace
     //
     // populates outparam with all AABB hits in depth-first order
     bool BVH_GetRayAABBCollisionsRecursive(
-        std::vector<BVHNode> const& nodes,
-        std::vector<BVHPrim> const& prims,
+        std::span<BVHNode const> nodes,
+        std::span<BVHPrim const> prims,
         Line const& ray,
         ptrdiff_t nodeidx,
         std::vector<BVHCollision>& out)
@@ -196,8 +196,8 @@ namespace
 
     template<typename TIndex>
     std::optional<BVHCollision> BVH_GetClosestRayIndexedTriangleCollisionRecursive(
-        std::vector<BVHNode> const& nodes,
-        std::vector<BVHPrim> const& prims,
+        std::span<BVHNode const> nodes,
+        std::span<BVHPrim const> prims,
         std::span<Vec3 const> verts,
         std::span<TIndex const> indices,
         Line const& ray,
@@ -221,7 +221,7 @@ namespace
         {
             // leaf node: check ray-triangle intersection
 
-            BVHPrim const& p = prims.at(node.getFirstPrimOffset());
+            BVHPrim const& p = osc::At(prims, node.getFirstPrimOffset());
 
             Triangle const triangle =
             {
@@ -301,8 +301,8 @@ namespace
 
     template<typename TIndex>
     std::optional<osc::BVHCollision> GetClosestRayIndexedTriangleCollision(
-        std::vector<BVHNode> const& nodes,
-        std::vector<BVHPrim> const& prims,
+        std::span<BVHNode const> nodes,
+        std::span<BVHPrim const> prims,
         std::span<Vec3 const> verts,
         std::span<TIndex const> indices,
         osc::Line const& ray)
@@ -1117,51 +1117,6 @@ namespace
 
 // MathHelpers
 
-osc::Vec4 osc::Clamp(Vec4 const& v, float min, float max)
-{
-    return glm::clamp(v, min, max);
-}
-
-float osc::Mix(float a, float b, float factor)
-{
-    return glm::mix(a, b, factor);
-}
-
-osc::Vec2 osc::Mix(Vec2 const& a, Vec2 const& b, float factor)
-{
-    return glm::mix(a, b, factor);
-}
-
-osc::Vec3 osc::Mix(Vec3 const& a, Vec3 const& b, float factor)
-{
-    return glm::mix(a, b, factor);
-}
-
-osc::Vec4 osc::Mix(Vec4 const& a, Vec4 const& b, float factor)
-{
-    return glm::mix(a, b, factor);
-}
-
-osc::Vec3 osc::Cross(Vec3 const& a, Vec3 const& b)
-{
-    return glm::cross(a, b);
-}
-
-osc::Quat osc::Normalize(Quat const& q)
-{
-    return glm::normalize(q);
-}
-
-osc::Vec3 osc::Normalize(Vec3 const& v)
-{
-    return glm::normalize(v);
-}
-
-osc::Vec2 osc::Normalize(Vec2 const& v)
-{
-    return glm::normalize(v);
-}
-
 osc::Quat osc::Rotation(Vec3 const& src, Vec3 const& dest)
 {
     return glm::rotation(src, dest);
@@ -1267,100 +1222,10 @@ bool osc::IsEqualWithinRelativeError(float a, float b, float relativeError)
     return ::IsEqualWithinRelativeError<float>(a, b, relativeError);
 }
 
-bool osc::IsEqualWithinRelativeError(Vec3 const& a, Vec3 const& b, float relativeError)
-{
-    for (Vec3::length_type i = 0; i < Vec3::length(); ++i)
-    {
-        if (!IsEqualWithinRelativeError(a[i], b[i], relativeError))
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
 bool osc::IsEqualWithinAbsoluteError(float a, float b, float absError)
 {
     auto const difference = std::abs(a - b);
     return difference <= absError;
-}
-
-bool osc::IsEqualWithinAbsoluteError(Vec3 const& a, Vec3 const& b, float absError)
-{
-    for (Vec3::length_type i = 0; i < Vec3::length(); ++i)
-    {
-        if (!IsEqualWithinAbsoluteError(a[i], b[i], absError))
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool osc::AreAtSameLocation(Vec3 const& a, Vec3 const& b)
-{
-    constexpr float eps2 = std::numeric_limits<float>::epsilon() * std::numeric_limits<float>::epsilon();
-
-    Vec3 const b2a = a - b;
-    float const len2 = glm::dot(b2a, b2a);
-
-    return len2 > eps2;
-}
-
-osc::Vec3 osc::Min(Vec3 const& a, Vec3 const& b)
-{
-    return Vec3
-    {
-        std::min(a.x, b.x),
-        std::min(a.y, b.y),
-        std::min(a.z, b.z),
-    };
-}
-
-osc::Vec2 osc::Min(Vec2 const& a, Vec2 const& b)
-{
-    return Vec2
-    {
-        std::min(a.x, b.x),
-        std::min(a.y, b.y),
-    };
-}
-
-osc::Vec2i osc::Min(Vec2i const& a, Vec2i const& b)
-{
-    return Vec2i
-    {
-        std::min(a.x, b.x),
-        std::min(a.y, b.y),
-    };
-}
-
-osc::Vec3 osc::Max(Vec3 const& a, Vec3 const& b)
-{
-    return Vec3
-    {
-        std::max(a.x, b.x),
-        std::max(a.y, b.y),
-        std::max(a.z, b.z),
-    };
-}
-
-osc::Vec2 osc::Max(Vec2 const& a, Vec2 const& b)
-{
-    return Vec2
-    {
-        std::max(a.x, b.x),
-        std::max(a.y, b.y),
-    };
-}
-
-osc::Vec2i osc::Max(Vec2i const& a, Vec2i const& b)
-{
-    return Vec2i
-    {
-        std::max(a.x, b.x),
-        std::max(a.y, b.y),
-    };
 }
 
 osc::Vec3::length_type osc::LongestDimIndex(Vec3 const& v)
@@ -1874,6 +1739,11 @@ osc::Vec3 osc::Dimensions(AABB const& a)
     return a.max - a.min;
 }
 
+osc::Vec3 osc::HalfWidths(AABB const& a)
+{
+    return 0.5f*Dimensions(a);
+}
+
 float osc::Volume(AABB const& a)
 {
     Vec3 d = Dimensions(a);
@@ -2245,7 +2115,7 @@ osc::Mat4 osc::ToInverseMat4(Transform const& t)
     return scaler * rotater * translater;
 }
 
-glm::mat3x3 osc::ToNormalMatrix(Transform const& t)
+osc::Mat3 osc::ToNormalMatrix(Transform const& t)
 {
     return ToAdjugateMatrix(glm::transpose(ToMat3(t)));
 }

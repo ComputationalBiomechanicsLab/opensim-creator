@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cstddef>
 #include <functional>
+#include <iterator>
 #include <type_traits>
 
 namespace osc
@@ -15,9 +17,53 @@ namespace osc
         std::is_destructible_v<T> &&
         std::is_constructible_v<T, Args...>;
 
+    template<class From, class To>
+    concept ConvertibleTo =
+        std::is_convertible_v<From, To> &&
+        requires { static_cast<To>(std::declval<From>()); };
+
     template< class F, class... Args >
     concept Invocable = requires(F&& f, Args&&... args)
     {
         std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
     };
+
+    template<class T, class U>
+    concept SameAs = std::is_same_v<T, U>;
+
+    template<class I>
+    concept RandomAccessIterator =
+        DerivedFrom<typename std::iterator_traits<I>::iterator_category, std::random_access_iterator_tag>;
+
+    template<class T>
+    concept RandomAccessContainer = RandomAccessIterator<typename T::iterator>;
+
+    template<class Container>
+    concept ContiguousContainer =
+        RandomAccessIterator<typename Container::iterator> &&
+        requires(Container& c)
+        {
+            { c.data() } -> SameAs<typename Container::pointer>;
+        };
+
+    template<class Sequence>
+    concept Iterable = requires(Sequence s)
+    {
+        std::begin(s);
+        std::end(s);
+    };
+
+    // see:
+    //
+    // - std::bit_cast (similar constraints)
+    // - https://en.cppreference.com/w/cpp/language/object#Object_representation_and_value_representation
+    //   > "For TriviallyCopyable types, value representation is a part of the object representation"
+    template<class T>
+    concept BitCastable =
+        std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>;
+
+    // see: https://en.cppreference.com/w/cpp/language/object#Object_representation_and_value_representation
+    template<class T>
+    concept ObjectRepresentationByte =
+        (SameAs<T, unsigned char> || SameAs<T, std::byte>) && sizeof(T) == 1;
 }

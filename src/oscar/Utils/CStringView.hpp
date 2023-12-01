@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Shims/Cpp20/string_view.hpp>
+
 #include <cstddef>
 #include <string>
 #include <string_view>
@@ -70,15 +72,13 @@ namespace osc
             return m_Data + m_Size;
         }
 
-        constexpr friend auto operator<=>(CStringView const& lhs, CStringView const& rhs)
-        {
-            // manual implementation because MacOS's stdlib doesn't have <=> yet
-            auto const v = static_cast<std::string_view>(lhs).compare(static_cast<std::string_view>(rhs));
-            return v < 0 ? std::strong_ordering::less : v == 0 ? std::strong_ordering::equal : std::strong_ordering::greater;
-        }
         constexpr friend bool operator==(CStringView const& lhs, CStringView const& rhs)
         {
             return static_cast<std::string_view>(lhs) == static_cast<std::string_view>(rhs);
+        }
+        constexpr friend auto operator<=>(CStringView const& lhs, CStringView const& rhs)
+        {
+            return ThreeWayComparison(std::string_view{lhs}, std::string_view{rhs});
         }
     private:
         char const* m_Data = "";

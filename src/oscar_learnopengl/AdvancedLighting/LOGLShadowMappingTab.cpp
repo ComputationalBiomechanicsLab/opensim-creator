@@ -46,8 +46,9 @@ namespace
     // this matches the plane vertices used in the LearnOpenGL tutorial
     Mesh GeneratePlaneMesh()
     {
-        std::vector<Vec3> const verts =
-        {
+        Mesh rv;
+        rv.setVerts(
+        {{
             { 25.0f, -0.5f,  25.0f},
             {-25.0f, -0.5f,  25.0f},
             {-25.0f, -0.5f, -25.0f},
@@ -55,10 +56,9 @@ namespace
             { 25.0f, -0.5f,  25.0f},
             {-25.0f, -0.5f, -25.0f},
             { 25.0f, -0.5f, -25.0f},
-        };
-
-        std::vector<Vec3> const normals =
-        {
+        }});
+        rv.setNormals(
+        {{
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
@@ -66,10 +66,9 @@ namespace
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
-        };
-
-        std::vector<Vec2> const texCoords =
-        {
+        }});
+        rv.setTexCoords(
+        {{
             {25.0f,  0.0f},
             {0.0f,  0.0f},
             {0.0f, 25.0f},
@@ -77,15 +76,11 @@ namespace
             {25.0f,  0.0f},
             {0.0f, 25.0f},
             {25.0f, 25.0f},
-        };
-
-        std::vector<uint16_t> const indices = {0, 1, 2, 3, 4, 5};
-
-        Mesh rv;
-        rv.setVerts(verts);
-        rv.setNormals(normals);
-        rv.setTexCoords(texCoords);
-        rv.setIndices(indices);
+        }});
+        rv.setIndices(std::to_array<uint16_t>(
+        {
+            0, 1, 2, 3, 4, 5
+        }));
         return rv;
     }
 

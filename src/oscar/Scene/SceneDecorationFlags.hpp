@@ -6,13 +6,13 @@ namespace osc
 {
     enum class SceneDecorationFlags {
         None                 = 0,
-        IsSelected           = 1u<<0u,
-        IsChildOfSelected    = 1u<<1u,
-        IsHovered            = 1u<<2u,
-        IsChildOfHovered     = 1u<<3u,
-        IsShowingOnly        = 1u<<4u,
-        IsChildOfShowingOnly = 1u<<5u,
-        CastsShadows         = 1u<<6u,
+        IsSelected           = 1<<0,
+        IsChildOfSelected    = 1<<1,
+        IsHovered            = 1<<2,
+        IsChildOfHovered     = 1<<3,
+        IsShowingOnly        = 1<<4,
+        IsChildOfShowingOnly = 1<<5,
+        CastsShadows         = 1<<6,
     };
 
     constexpr SceneDecorationFlags operator|(SceneDecorationFlags lhs, SceneDecorationFlags rhs)

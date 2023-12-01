@@ -1,6 +1,6 @@
 #include "OpenSimCreatorApp.hpp"
 
-#include <OpenSimCreator/UI/Tabs/OpenSimCreatorTabRegistry.hpp>
+#include <OpenSimCreator/UI/OpenSimCreatorTabRegistry.hpp>
 #include <OpenSimCreator/OpenSimCreatorConfig.hpp>
 
 #include <oscar/Platform/App.hpp>

@@ -27,11 +27,6 @@ namespace osc
             CStringView geometryShader,
             CStringView fragmentShader
         );
-        Shader(Shader const&);
-        Shader(Shader&&) noexcept;
-        Shader& operator=(Shader const&);
-        Shader& operator=(Shader&&) noexcept;
-        ~Shader() noexcept;
 
         size_t getPropertyCount() const;
         std::optional<ptrdiff_t> findPropertyIndex(std::string_view propertyName) const;

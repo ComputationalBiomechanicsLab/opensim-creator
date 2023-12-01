@@ -10,6 +10,7 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Scene/SceneCollision.hpp>
+#include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 
 #include <functional>
@@ -23,7 +24,6 @@ namespace osc { class Mesh; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct Rect; }
 namespace osc { struct Segment; }
-namespace osc { struct SceneDecoration; }
 namespace osc { class SceneCache; }
 namespace osc { class ShaderCache; }
 namespace osc { struct Transform; }
@@ -76,14 +76,12 @@ namespace osc
     );
 
     struct ArrowProperties final {
-        ArrowProperties();
-
-        Vec3 worldspaceStart;
-        Vec3 worldspaceEnd;
-        float tipLength;
-        float neckThickness;
-        float headThickness;
-        Color color;
+        Vec3 worldspaceStart{};
+        Vec3 worldspaceEnd{};
+        float tipLength{};
+        float neckThickness{};
+        float headThickness{};
+        Color color = Color::black();
     };
     void DrawArrow(
         SceneCache&,

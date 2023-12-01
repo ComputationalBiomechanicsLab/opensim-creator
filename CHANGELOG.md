@@ -4,10 +4,39 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- The mesh warper UI now correctly recycles landmark names - even if they were previously generated
+  and deleted
+- The mesh warper UI now has a toggleable (default: off, initially) `Navigator` panel that shows
+  the names and statuses of all landmarks in the scene (#807)
+- Hovering over a landmark in the mesh warper UI now brightens the landmark slightly
+- Fixed a bug where user-defined muscle points could not be selected if the user was rendering muscles
+  in tendons+fibers mode (#706)
+- Landmarks in the mesh warper UI can now be renamed and repositioned via a right-click context menu (#807)
+- The mesh warper's CSV exporter for landmarks now includes a header row and name column (#807)
+  - The previous functionality (just positions) is exposed as "Landmark Positions to CSV"
+- The mesh warper's CSV exporter for fully-paired landmark pairs now includes a name column (#807)
+  - The previous functionality (no names) is exposed as "Landmark Pairs to CSV (no names)"
+- The mesh warper's CSV exporter for warped non-participating landmarks now includes a name column (#807)
+  - The previous functionality (of exporting no names) is exposed as "Warped Non-Participating Landmark Positions to CSV"
+- The mesh warper's CSV importer can now import named landmarks (#807):
+  - It's assumed that CSV files with >= 4 columns have the name in the first column
+  - If a landmark with the same name is already available for mesh mesh you're importing for, it overwrites the location
+  - Otherwise, it either pairs the landmark (if a landmark with same name is found for the other mesh), or creates a new
+    landmark with the given name
+  - The previous functionality (of handling CSV files with 3 columns) has not changed
+- The mesh warper's CSV importer can now import named non-participating landmarks (#807):
+  - It's assumed that CSV files with >= 4 columns have the name in the first column
+  - If a non-participating landmark with the same name is already in the scene then it will overwrite it's location
+  - The previous functionality (of handling CSV files with 3 columns) has not changed
+- The mesh warper UI now supports more keybindings, which are now also listed in the top menu bar
+- Non-participating landmarks can now be added to the source mesh in the mesh warper by Ctrl+Clicking on the mesh
+- The clear (non-participating) landmarks buttons in the mesh warper are now in an `Actions` menu
+- The mesh warper landmark navigator panel now highlights which landmarks are hovered/selected
 
-## [0.5.4] - 2023/11/21
 
-0.5.4 is purely a bugfix release that fixes a crash that can happen when booting OSC on MacOS (see #811, thanks
+## [0.5.5] - 2023/11/21
+
+0.5.5 is purely a bugfix release that fixes a crash that can happen when booting OSC on MacOS (see #811, thanks
 @SAI-sentinal-ai for reporting it):
 
 - Fixed a crash on MacOS where a `std::sort` algorithm usage did not strictly comply with `Compare` (thanks @SAI-sentinal-ai, #811)

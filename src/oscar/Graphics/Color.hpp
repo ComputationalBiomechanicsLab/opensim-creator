@@ -1,11 +1,13 @@
 #pragma once
 
+#include <oscar/Graphics/ColorHSLA.hpp>
 #include <oscar/Graphics/Color32.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 
 #include <cstddef>
 #include <cstdint>
+#include <iosfwd>
 #include <optional>
 #include <string>
 
@@ -98,9 +100,23 @@ namespace osc
 
         Color() = default;
 
-        // i.e. a "solid" color (no transparency)
+        explicit constexpr Color(float v) :
+            r{v}, g{v}, b{v}
+        {
+        }
+
+        constexpr Color(float v, float alpha) :
+            r{v}, g{v}, b{v}, a{alpha}
+        {
+        }
+
         explicit constexpr Color(Vec3 const& v) :
-            r{v.x}, g{v.y}, b{v.z}, a{1.0f}
+            r{v.x}, g{v.y}, b{v.z}
+        {
+        }
+
+        constexpr Color(Vec3 const& v, float alpha) :
+            r{v.x}, g{v.y}, b{v.z}, a{alpha}
         {
         }
 
@@ -115,7 +131,7 @@ namespace osc
         }
 
         constexpr Color(float r_, float g_, float b_) :
-            r{r_}, g{g_}, b{b_}, a{1.0f}
+            r{r_}, g{g_}, b{b_}
         {
         }
 
@@ -170,11 +186,18 @@ namespace osc
             };
         }
 
-        float r;
-        float g;
-        float b;
-        float a;
+        constexpr Color withAlpha(float a_) const
+        {
+            return Color{r, g, b, a_};
+        }
+
+        float r = 1.0f;
+        float g = 0.0f;
+        float b = 0.0f;
+        float a = 1.0f;
     };
+
+    std::ostream& operator<<(std::ostream&, Color const&);
 
     // returns the normalized (0.0 - 1.0) floating-point equivalent of the
     // given 8-bit (0 - 255) color channel value
@@ -208,6 +231,12 @@ namespace osc
 
     // returns a color that is clamped to the low-dynamic range (LDR, i.e. [0, 1])
     Color ClampToLDR(Color const&);
+
+    // returns the HSL(A) equivalent of the given (RGBA) color
+    ColorHSLA ToHSLA(Color const&);
+
+    // returns the color (RGBA) equivalent of the given HSL color
+    Color ToColor(ColorHSLA const&);
 
     // returns a Vec4 version of a Color
     inline Vec4 ToVec4(Color const& c)
@@ -251,6 +280,10 @@ namespace osc
     //   - etc.
     std::string ToHtmlStringRGBA(Color const&);
     std::optional<Color> TryParseHtmlString(std::string_view);
+
+    // returns a color that is the result of converting the color to HSLA,
+    // multiplying it's luminance (L) by `factor`, and converting it back to RGBA
+    Color MultiplyLuminance(Color const& color, float factor);
 }
 
 // define hashing function for colors

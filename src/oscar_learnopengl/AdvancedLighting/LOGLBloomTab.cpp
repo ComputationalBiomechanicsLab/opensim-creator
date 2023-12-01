@@ -64,6 +64,7 @@ namespace
     std::vector<Mat4> CreateCubeTransforms()
     {
         std::vector<Mat4> rv;
+        rv.reserve(6);
 
         {
             Mat4 m = osc::Identity<Mat4>();

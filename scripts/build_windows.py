@@ -1,4 +1,6 @@
+import argparse
 import logging
+import multiprocessing
 import os
 import pprint
 import subprocess
@@ -18,25 +20,43 @@ def _log_dir_contents(path: str):
 
 class BuildConfiguration:
 
-    def __init__(self):
-        _default_build_type = "RelWithDebInfo"
-        _default_build_concurrency = 1  # OpenSim crashes CI if this is too large
-        _default_build_target = "package"
-        _default_build_docs = "OFF"
+    def __init__(
+            self,
+            *,
+            base_build_type="RelWithDebInfo",
+            build_dir=os.curdir,
+            build_concurrency=multiprocessing.cpu_count(),
+            build_target="package",
+            build_docs="OFF",
+            build_skip_osc=False):
 
-        self.osc_base_build_type = os.getenv("OSC_BASE_BUILD_TYPE", _default_build_type)
-        self.osc_deps_build_type = os.getenv("OSC_DEPS_BUILD_TYPE", self.osc_base_build_type)
-        self.osc_build_type = os.getenv("OSC_BUILD_TYPE", self.osc_base_build_type)
-        self.concurrency = int(os.getenv("OSC_BUILD_CONCURRENCY", _default_build_concurrency))
-        self.build_target = os.getenv("OSC_BUILD_TARGET", _default_build_target)
-        self.build_docs = _is_truthy_envvar(os.getenv("OSC_BUILD_DOCS", _default_build_docs))
+        self.base_build_type = os.getenv("OSC_BASE_BUILD_TYPE", base_build_type)
+        self.osc_deps_build_type = os.getenv("OSC_DEPS_BUILD_TYPE")
+        self.osc_build_type = os.getenv("OSC_BUILD_TYPE")
+        self.concurrency = int(os.getenv("OSC_BUILD_CONCURRENCY", build_concurrency))
+        self.build_target = os.getenv("OSC_BUILD_TARGET", build_target)
+        self.build_docs = _is_truthy_envvar(os.getenv("OSC_BUILD_DOCS", build_docs))
         self.generator_flags = f'-G"Visual Studio 17 2022" -A x64'
-        self.dependencies_build_dir = "osc-dependencies-build"
-        self.dependencies_install_dir = "osc-dependencies-install"
-        self.osc_build_dir = "osc-build"
+        self.build_dir = build_dir
+        self.skip_osc = build_skip_osc
 
     def __repr__(self):
         return pprint.pformat(vars(self))
+
+    def get_dependencies_build_dir(self):
+        return os.path.join(self.build_dir, "osc-dependencies-build")
+
+    def get_dependencies_install_dir(self):
+        return os.path.join(self.build_dir, "osc-dependencies-install")
+
+    def get_osc_build_dir(self):
+        return os.path.join(self.build_dir, "osc-build")
+
+    def get_osc_deps_build_type(self):
+        return self.osc_deps_build_type or self.base_build_type
+
+    def get_osc_build_type(self):
+        return self.osc_build_type or self.base_build_type
 
 class Section:
     def __init__(self, name):
@@ -63,37 +83,56 @@ def install_system_dependencies(conf: BuildConfiguration):
 
 def build_osc_dependencies(conf: BuildConfiguration):
     with Section("build osc dependencies"):
-        _run(f'cmake -S third_party/ -B "{conf.dependencies_build_dir}" {conf.generator_flags} -DCMAKE_INSTALL_PREFIX="{conf.dependencies_install_dir}"')
-        _run(f'cmake --build {conf.dependencies_build_dir} --config {conf.osc_deps_build_type} -j{conf.concurrency}')
+        _run(f'cmake -S third_party/ -B "{conf.get_dependencies_build_dir()}" {conf.generator_flags} -DCMAKE_INSTALL_PREFIX="{conf.get_dependencies_install_dir()}"')
+        _run(f'cmake --build {conf.get_dependencies_build_dir()} --config {conf.get_osc_deps_build_type()} -j{conf.concurrency}')
 
     with Section("log osc dependencies build/install dirs"):
-        _log_dir_contents(conf.dependencies_build_dir)
-        _log_dir_contents(conf.dependencies_install_dir)
+        _log_dir_contents(conf.get_dependencies_build_dir())
+        _log_dir_contents(conf.get_dependencies_install_dir())
 
 def build_osc(conf: BuildConfiguration):
+    if conf.skip_osc:
+        logging.info("--skip-osc was provided: skipping the OSC build")
+        return
+
     with Section("build osc"):
-        test_osc_path = os.path.join(conf.osc_build_dir, 'tests', 'TestOpenSimCreator', conf.osc_build_type, 'TestOpenSimCreator')
-        test_oscar_path = os.path.join(conf.osc_build_dir, 'tests', 'testoscar', conf.osc_build_type, 'testoscar')
-        other_build_args = f'--config {conf.osc_build_type} -j{conf.concurrency}'
+        test_osc_path = os.path.join(conf.get_osc_build_dir(), 'tests', 'TestOpenSimCreator', conf.get_osc_build_type(), 'TestOpenSimCreator')
+        test_oscar_path = os.path.join(conf.get_osc_build_dir(), 'tests', 'testoscar', conf.get_osc_build_type(), 'testoscar')
+        other_build_args = f'--config {conf.get_osc_build_type()} -j{conf.concurrency}'
 
         # configure
-        _run(f'cmake -S . -B {conf.osc_build_dir} {conf.generator_flags} -DCMAKE_PREFIX_PATH={os.path.abspath(conf.dependencies_install_dir)} -DOSC_BUILD_DOCS={"ON" if conf.build_docs else "OFF"}')
+        _run(f'cmake -S . -B {conf.get_osc_build_dir()} {conf.generator_flags} -DCMAKE_PREFIX_PATH={os.path.abspath(conf.get_dependencies_install_dir())} -DOSC_BUILD_DOCS={"ON" if conf.build_docs else "OFF"}')
 
         # build+run oscar test suite
-        _run(f'cmake --build {conf.osc_build_dir} --target testoscar {other_build_args}')
+        _run(f'cmake --build {conf.get_osc_build_dir()} --target testoscar {other_build_args}')
         _run(f'{test_oscar_path} --gtest_filter="-Renderer*')
 
         # build+run OpenSimCreator test suite
-        _run(f'cmake --build {conf.osc_build_dir} --target TestOpenSimCreator {other_build_args}')
+        _run(f'cmake --build {conf.get_osc_build_dir()} --target TestOpenSimCreator {other_build_args}')
         _run(f'{test_osc_path} --gtest_filter="-Renderer*" --gtest_filter="-AddComponentPopup*"')
 
         # build final output target (usually, the installer)
-        _run(f'cmake --build {conf.osc_build_dir} --target {conf.build_target} {other_build_args}')
+        _run(f'cmake --build {conf.get_osc_build_dir()} --target {conf.build_target} {other_build_args}')
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
 
+    # create build configuration with defaults (+ environment overrides)
     conf = BuildConfiguration()
+
+    # parse CLI args
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--jobs', '-j', type=int, default=conf.concurrency)
+    parser.add_argument('--skip-osc', help='skip building OSC (handy if you plan on building OSC via Visual Studio)', default=conf.skip_osc, action='store_true')
+    parser.add_argument('--build-dir', '-B', help='build binaries in the specified directory', type=str, default=conf.build_dir)
+    parser.add_argument('--build-type', help='the type of build to produce (CMake string: Debug, Release, RelWithDebInfo, etc.)', type=str, default=conf.base_build_type)
+
+    # overwrite build configuration with any CLI args
+    args = parser.parse_args()
+    conf.concurrency = args.jobs
+    conf.skip_osc = args.skip_osc
+    conf.build_dir = args.build_dir
+    conf.base_build_type = args.build_type
 
     log_build_params(conf)
     ensure_submodules_are_up_to_date(conf)

@@ -8,7 +8,7 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Shims/Cpp20/bit.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/SpanHelpers.hpp>
+#include <oscar/Utils/At.hpp>
 
 #include <algorithm>
 #include <array>

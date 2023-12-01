@@ -201,7 +201,7 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
         // suffixed with the dot-less version of the extension (e.g. "somecsv")
 
         std::string const fullExtension = std::string{"."} + *maybeExtension;
-        if (!EndsWith(path.get(), fullExtension))
+        if (!std::string_view{path.get()}.ends_with(fullExtension))
         {
             p += fullExtension;
         }

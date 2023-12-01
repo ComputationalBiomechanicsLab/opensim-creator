@@ -30,11 +30,6 @@ namespace osc
     class Mesh final {
     public:
         Mesh();
-        Mesh(Mesh const&);
-        Mesh(Mesh&&) noexcept;
-        Mesh& operator=(Mesh const&);
-        Mesh& operator=(Mesh&&) noexcept;
-        ~Mesh() noexcept;
 
         MeshTopology getTopology() const;
         void setTopology(MeshTopology);

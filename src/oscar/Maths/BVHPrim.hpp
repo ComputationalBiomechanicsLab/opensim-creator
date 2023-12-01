@@ -25,7 +25,7 @@ namespace osc
         }
 
     private:
-        ptrdiff_t m_ID;
-        AABB m_Bounds;
+        ptrdiff_t m_ID{};
+        AABB m_Bounds{};
     };
 }

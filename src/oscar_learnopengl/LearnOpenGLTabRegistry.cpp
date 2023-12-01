@@ -32,12 +32,13 @@
 #include <memory>
 
 using osc::TabHost;
+using osc::TabRegistry;
 using osc::TabRegistryEntry;
 
 namespace
 {
     template<typename TabType>
-    void RegisterTab(osc::TabRegistry& registry)
+    void RegisterTab(TabRegistry& registry)
     {
         TabRegistryEntry entry
         {

@@ -7,7 +7,10 @@
 
 namespace osc
 {
-    class UID {
+    // Unique ID
+    //
+    // an ID that is guaranteed to be unique upon non-copy/move construction
+    class UID final {
     public:
         static constexpr UID invalid()
         {
