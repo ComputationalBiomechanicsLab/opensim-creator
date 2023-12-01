@@ -30,7 +30,8 @@
 #include <unordered_set>
 #include <vector>
 
-using namespace osc;
+using osc::FromCharsStripWhitespace;
+using osc::Vec3;
 
 namespace
 {

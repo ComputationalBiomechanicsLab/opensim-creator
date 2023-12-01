@@ -17,8 +17,6 @@
 #include <utility>
 #include <variant>
 
-using namespace std::literals::string_literals;
-
 namespace
 {
     bool TryInterpretStringAsBool(std::string_view s)
@@ -159,10 +157,12 @@ osc::Variant::operator int() const
 
 osc::Variant::operator std::string() const
 {
+    using namespace std::literals::string_literals;
+
     return std::visit(Overload
     {
         [](std::monostate const&) { return "<null>"s; },
-        [](bool const& v) { return std::string{v ? "true" : "false"}; },
+        [](bool const& v) { return v ? "true"s : "false"s; },
         [](Color const& v) { return ToHtmlStringRGBA(v); },
         [](float const& v) { return std::to_string(v); },
         [](int const& v) { return std::to_string(v); },

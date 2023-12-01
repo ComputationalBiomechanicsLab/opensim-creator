@@ -7,7 +7,8 @@
 #include <array>
 #include <string_view>
 
-using namespace osc;
+using osc::CStringView;
+using osc::ThreeWayComparison;
 TEST(CStringView, WhenPassedNullCstringYieldsEmptyCStringView)
 {
     char const* p = nullptr;
