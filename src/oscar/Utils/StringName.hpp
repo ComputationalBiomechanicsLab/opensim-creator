@@ -191,6 +191,8 @@ namespace osc
         friend struct std::hash<StringName>;
         detail::StringNameData* m_Data;
     };
+
+    std::ostream& operator<<(std::ostream&, StringName const&);
 }
 
 template<>

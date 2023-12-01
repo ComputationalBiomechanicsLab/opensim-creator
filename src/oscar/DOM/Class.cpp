@@ -109,7 +109,7 @@ public:
     friend bool operator==(Impl const&, Impl const&) = default;
 
 private:
-    StringName m_ClassName = "Object";
+    StringName m_ClassName{"Object"};
     std::optional<Class> m_MaybeParentClass;
     std::vector<PropertyInfo> m_PropertyList;
     std::unordered_map<StringName, size_t> m_PropertyNameToPropertyListIndexMap;
