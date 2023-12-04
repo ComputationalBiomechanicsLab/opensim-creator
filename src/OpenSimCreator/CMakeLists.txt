@@ -80,6 +80,16 @@ add_library(OpenSimCreator STATIC
 
     Documents/ModelWarper/Document.cpp
     Documents/ModelWarper/Document.hpp
+    Documents/ModelWarper/FrameDefinitionLookup.cpp
+    Documents/ModelWarper/FrameDefinitionLookup.hpp
+    Documents/ModelWarper/IWarpableFrameDefinition.hpp
+    Documents/ModelWarper/LandmarkPairing.hpp
+    Documents/ModelWarper/MeshWarpPairing.cpp
+    Documents/ModelWarper/MeshWarpPairing.hpp
+    Documents/ModelWarper/MeshWarpPairingLookup.cpp
+    Documents/ModelWarper/MeshWarpPairingLookup.hpp
+    Documents/ModelWarper/ModelWarpConfiguration.cpp
+    Documents/ModelWarper/ModelWarpConfiguration.hpp
 
     Documents/Simulation/ForwardDynamicSimulation.cpp
     Documents/Simulation/ForwardDynamicSimulation.hpp
