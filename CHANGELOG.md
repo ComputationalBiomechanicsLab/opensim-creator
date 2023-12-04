@@ -32,6 +32,10 @@ All notable changes to this project will be documented here. The format is based
 - Non-participating landmarks can now be added to the source mesh in the mesh warper by Ctrl+Clicking on the mesh
 - The clear (non-participating) landmarks buttons in the mesh warper are now in an `Actions` menu
 - The mesh warper landmark navigator panel now highlights which landmarks are hovered/selected
+- Tooltips now appear after a short delay, rather than immediately, making them less annoying for users that
+  know what they're doing
+- A couple of tooltips were removed from the mesh importer where the tooltip was overlapping the submenu
+  that the user's mouse hover opened
 - Internal: the mesh importer was heavily refactored in readiness for a feature push
 
 

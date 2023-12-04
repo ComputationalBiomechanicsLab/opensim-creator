@@ -1220,7 +1220,6 @@ private:
         {
             return;  // top-level menu isn't open
         }
-        DrawTooltipIfItemHovered("Reorient the scene element", "Rotates the scene element in without changing its position");
 
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
 

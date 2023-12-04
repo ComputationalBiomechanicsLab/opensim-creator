@@ -645,9 +645,11 @@ void osc::DrawTooltipBodyOnly(CStringView label)
     EndTooltip();
 }
 
-void osc::DrawTooltipBodyOnlyIfItemHovered(CStringView label)
+void osc::DrawTooltipBodyOnlyIfItemHovered(
+    CStringView label,
+    ImGuiHoveredFlags flags)
 {
-    if (ImGui::IsItemHovered())
+    if (ImGui::IsItemHovered(flags))
     {
         DrawTooltipBodyOnly(label);
     }
@@ -665,9 +667,12 @@ void osc::DrawTooltip(CStringView header, CStringView description)
     EndTooltip();
 }
 
-void osc::DrawTooltipIfItemHovered(CStringView header, CStringView description)
+void osc::DrawTooltipIfItemHovered(
+    CStringView header,
+    CStringView description,
+    ImGuiHoveredFlags flags)
 {
-    if (ImGui::IsItemHovered())
+    if (ImGui::IsItemHovered(flags))
     {
         DrawTooltip(header, description);
     }
@@ -735,14 +740,14 @@ osc::Rect osc::DrawAlignmentAxes(Mat4 const& viewMtx)
 void osc::DrawHelpMarker(CStringView header, CStringView desc)
 {
     ImGui::TextDisabled("(?)");
-    DrawTooltipIfItemHovered(header, desc);
+    DrawTooltipIfItemHovered(header, desc, ImGuiHoveredFlags_None);
 }
 
 // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
 void osc::DrawHelpMarker(CStringView desc)
 {
     ImGui::TextDisabled("(?)");
-    DrawTooltipIfItemHovered(desc);
+    DrawTooltipIfItemHovered(desc, {}, ImGuiHoveredFlags_None);
 }
 
 bool osc::InputString(CStringView label, std::string& editedString, ImGuiInputTextFlags flags)
