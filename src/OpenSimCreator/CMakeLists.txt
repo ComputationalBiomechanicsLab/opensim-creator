@@ -234,6 +234,8 @@ add_library(OpenSimCreator STATIC
     UI/ModelWarper/FileMenu.cpp
     UI/ModelWarper/FileMenu.hpp
     UI/ModelWarper/MainMenu.hpp
+    UI/ModelWarper/ModelViewerPanel.cpp
+    UI/ModelWarper/ModelViewerPanel.hpp
     UI/ModelWarper/ModelWarperTab.cpp
     UI/ModelWarper/ModelWarperTab.hpp
     UI/ModelWarper/Toolbar.cpp

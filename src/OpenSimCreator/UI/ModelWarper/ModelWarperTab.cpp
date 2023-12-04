@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/UI/ModelWarper/ChecklistPanel.hpp>
 #include <OpenSimCreator/UI/ModelWarper/MainMenu.hpp>
+#include <OpenSimCreator/UI/ModelWarper/ModelViewerPanel.hpp>
 #include <OpenSimCreator/UI/ModelWarper/Toolbar.hpp>
 #include <OpenSimCreator/UI/ModelWarper/UIState.hpp>
 
@@ -33,6 +34,14 @@ public:
             [state = m_State](std::string_view panelName)
             {
                 return std::make_shared<ChecklistPanel>(panelName, state);
+            }
+        );
+
+        m_PanelManager->registerToggleablePanel(
+            "Model Warp Viewer",
+            [state = m_State](std::string_view panelName)
+            {
+                return std::make_shared<ModelViewerPanel>(panelName, state);
             }
         );
     }
