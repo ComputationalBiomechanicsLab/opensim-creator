@@ -1471,11 +1471,16 @@ private:
         }
     }
 
+    void drawContextMenuSpacer()
+    {
+        ImGui::Dummy({0.0f, 0.0f});
+    }
+
     // draw context menu content for when user right-clicks nothing
     void drawNothingContextMenuContent()
     {
         drawNothingContextMenuContentHeader();
-        ImGui::Dummy({0.0f, 5.0f});
+        drawContextMenuSpacer();
         drawNothingActions();
     }
 
@@ -1483,7 +1488,7 @@ private:
     void drawContextMenuContent(Ground& el, Vec3 const& clickPos)
     {
         drawMIObjectContextMenuContentHeader(el);
-        ImGui::Dummy({0.0f, 5.0f});
+        drawContextMenuSpacer();
         drawMIObjectActions(el, clickPos);
     }
 
@@ -1492,12 +1497,14 @@ private:
     {
         drawMIObjectContextMenuContentHeader(el);
 
-        ImGui::Dummy({0.0f, 5.0f});
+        drawContextMenuSpacer();
 
         drawMIObjectPropEditors(el);
         drawMassEditor(el);
 
-        ImGui::Dummy({0.0f, 5.0f});
+        drawContextMenuSpacer();
+        ImGui::Separator();
+        drawContextMenuSpacer();
 
         drawTranslateMenu(el);
         drawReorientMenu(el);
@@ -1510,11 +1517,13 @@ private:
     {
         drawMIObjectContextMenuContentHeader(el);
 
-        ImGui::Dummy({0.0f, 5.0f});
+        drawContextMenuSpacer();
 
         drawMIObjectPropEditors(el);
 
-        ImGui::Dummy({0.0f, 5.0f});
+        drawContextMenuSpacer();
+        ImGui::Separator();
+        drawContextMenuSpacer();
 
         drawTranslateMenu(el);
         drawReorientMenu(el);
@@ -1528,12 +1537,14 @@ private:
     {
         drawMIObjectContextMenuContentHeader(el);
 
-        ImGui::Dummy({0.0f, 5.0f});
+        drawContextMenuSpacer();
 
         drawMIObjectPropEditors(el);
         drawJointTypeEditor(el);
 
-        ImGui::Dummy({0.0f, 5.0f});
+        drawContextMenuSpacer();
+        ImGui::Separator();
+        drawContextMenuSpacer();
 
         drawTranslateMenu(el);
         drawReorientMenu(el);
@@ -1546,11 +1557,13 @@ private:
     {
         drawMIObjectContextMenuContentHeader(el);
 
-        ImGui::Dummy({0.0f, 5.0f});
+        drawContextMenuSpacer();
 
         drawMIObjectPropEditors(el);
 
-        ImGui::Dummy({0.0f, 5.0f});
+        drawContextMenuSpacer();
+        ImGui::Separator();
+        drawContextMenuSpacer();
 
         drawTranslateMenu(el);
         drawReorientMenu(el);
