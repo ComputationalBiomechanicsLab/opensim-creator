@@ -9,12 +9,15 @@
 #include <string>
 #include <utility>
 
+using osc::CStringView;
+using osc::StandardTabBase;
+
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "CookiecutterTab";
+    constexpr CStringView c_TabStringID = "CookiecutterTab";
 }
 
-class osc::CookiecutterTab::Impl final : public osc::StandardTabBase {
+class osc::CookiecutterTab::Impl final : public StandardTabBase {
 public:
     Impl() : StandardTabBase{c_TabStringID}
     {

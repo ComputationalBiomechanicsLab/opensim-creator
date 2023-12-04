@@ -78,6 +78,9 @@ add_library(OpenSimCreator STATIC
     Documents/Model/VirtualConstModelStatePair.hpp
     Documents/Model/VirtualModelStatePair.hpp
 
+    Documents/ModelWarper/Document.cpp
+    Documents/ModelWarper/Document.hpp
+
     Documents/Simulation/ForwardDynamicSimulation.cpp
     Documents/Simulation/ForwardDynamicSimulation.hpp
     Documents/Simulation/ForwardDynamicSimulator.cpp
@@ -226,10 +229,22 @@ add_library(OpenSimCreator STATIC
     UI/ModelEditor/Select1PFPopup.cpp
     UI/ModelEditor/Select1PFPopup.hpp
 
+    UI/ModelWarper/ChecklistPanel.cpp
+    UI/ModelWarper/ChecklistPanel.hpp
+    UI/ModelWarper/FileMenu.cpp
+    UI/ModelWarper/FileMenu.hpp
+    UI/ModelWarper/MainMenu.hpp
+    UI/ModelWarper/ModelWarperTab.cpp
+    UI/ModelWarper/ModelWarperTab.hpp
+    UI/ModelWarper/Toolbar.cpp
+    UI/ModelWarper/Toolbar.hpp
+    UI/ModelWarper/UIState.hpp
+
     UI/Shared/BasicWidgets.cpp
     UI/Shared/BasicWidgets.hpp
     UI/Shared/GeometryPathPropertyEditorPopup.cpp
     UI/Shared/GeometryPathPropertyEditorPopup.hpp
+
     UI/Shared/MainMenu.cpp
     UI/Shared/MainMenu.hpp
     UI/Shared/ModelEditorViewerPanel.cpp
