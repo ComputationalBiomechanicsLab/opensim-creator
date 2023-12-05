@@ -54,7 +54,6 @@ add_library(OpenSimCreator STATIC
     Documents/MeshWarper/NamedLandmarkPair3D.hpp
     Documents/MeshWarper/TPSDocument.cpp
     Documents/MeshWarper/TPSDocument.hpp
-    Documents/MeshWarper/TPSDocumentCSVFlags.hpp
     Documents/MeshWarper/TPSDocumentElement.hpp
     Documents/MeshWarper/TPSDocumentElementID.hpp
     Documents/MeshWarper/TPSDocumentElementType.hpp
