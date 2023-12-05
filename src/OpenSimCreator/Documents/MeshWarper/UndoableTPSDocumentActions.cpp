@@ -407,8 +407,10 @@ void osc::ActionSaveWarpedNonParticipatingLandmarksToCSV(
         return;  // couldn't open file for writing
     }
 
-    auto const warpedLocations = cache.getWarpedNonParticipatingLandmarkLocations(doc);
-    lm::WriteLandmarksToCSV(fout, [&doc, locations = cache.getWarpedNonParticipatingLandmarkLocations(doc), i = static_cast<size_t>(0)]() mutable
+    lm::WriteLandmarksToCSV(fout, [
+        &doc,
+        locations = cache.getWarpedNonParticipatingLandmarkLocations(doc),
+        i = static_cast<size_t>(0)]() mutable
     {
         std::optional<lm::Landmark> rv;
         for (; !rv && i < locations.size(); ++i)
