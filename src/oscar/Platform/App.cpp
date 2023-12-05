@@ -95,7 +95,7 @@ namespace
     // returns a resource from the config-provided `resources/` dir
     std::filesystem::path GetResource(AppConfig const& c, std::string_view p)
     {
-        return c.getResourceDir() / p;
+        return std::filesystem::weakly_canonical(c.getResourceDir() / p);
     }
 
     // initialize the main application window

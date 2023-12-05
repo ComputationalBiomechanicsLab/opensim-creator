@@ -8,7 +8,9 @@
 
 #include <filesystem>
 
+namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
+namespace osc::mow { class MeshWarpPairing; }
 
 namespace osc::mow
 {
@@ -22,6 +24,16 @@ namespace osc::mow
         Document& operator=(Document const&);
         Document& operator=(Document&&) noexcept;
         ~Document() noexcept;
+
+        OpenSim::Model const& getModel() const
+        {
+            return *m_Model;
+        }
+
+        MeshWarpPairing const* findMeshWarp(std::string const& meshComponentAbsPath) const
+        {
+            return m_MeshWarpPairingLookup.lookup(meshComponentAbsPath);
+        }
     private:
         ClonePtr<OpenSim::Model const> m_Model;
         ModelWarpConfiguration m_TopLevelWarpConfig;

@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.hpp>
 
+#include <filesystem>
 #include <string>
 #include <unordered_map>
 
@@ -12,7 +13,10 @@ namespace osc::mow
     class MeshWarpPairingLookup final {
     public:
         MeshWarpPairingLookup() = default;
-        explicit MeshWarpPairingLookup(OpenSim::Model const&);
+        MeshWarpPairingLookup(
+            std::filesystem::path const& modelFileLocation,
+            OpenSim::Model const&
+        );
 
         MeshWarpPairing const* lookup(std::string const& meshComponentAbsPath) const
         {

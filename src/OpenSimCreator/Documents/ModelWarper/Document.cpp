@@ -10,8 +10,8 @@ osc::mow::Document::Document() :
 osc::mow::Document::Document(std::filesystem::path osimPath) :
     m_Model{std::make_unique<OpenSim::Model>(osimPath.string())},
     m_TopLevelWarpConfig{osimPath},
-    m_MeshWarpPairingLookup{*m_Model},
-    m_FrameDefinitionLookup{*m_Model, m_TopLevelWarpConfig}
+    m_MeshWarpPairingLookup{osimPath, *m_Model},
+    m_FrameDefinitionLookup{osimPath, *m_Model, m_TopLevelWarpConfig}
 {
 }
 

@@ -4,6 +4,7 @@
 
 #include <oscar/Utils/ClonePtr.hpp>
 
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -17,7 +18,11 @@ namespace osc::mow
     public:
         FrameDefinitionLookup() = default;
 
-        FrameDefinitionLookup(OpenSim::Model const&, ModelWarpConfiguration const&);
+        FrameDefinitionLookup(
+            std::filesystem::path const& modelPath,
+            OpenSim::Model const&,
+            ModelWarpConfiguration const&
+        );
 
         IWarpableFrameDefinition const* lookup(std::string const& frameComponentAbsPath) const
         {

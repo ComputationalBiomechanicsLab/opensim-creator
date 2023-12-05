@@ -36,6 +36,9 @@ All notable changes to this project will be documented here. The format is based
   know what they're doing
 - A couple of tooltips were removed from the mesh importer where the tooltip was overlapping the submenu
   that the user's mouse hover opened
+- The software now internally tries to only use canonical-form filepaths, so that all filepaths displayed to
+  the user are in the same format as their OS (e.g. `C:\somedir\to\model.osim` on windows,
+  `/home/user/dir/model.osim` on Linux)
 - Internal: the mesh importer was heavily refactored in readiness for a feature push
 
 

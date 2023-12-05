@@ -21,6 +21,16 @@ namespace osc::mow
         {
         }
 
+        std::string const& getName() const
+        {
+            return m_Name;
+        }
+
+        bool isFullyPaired() const
+        {
+            return m_MaybeSourcePos && m_MaybeDestinationPos;
+        }
+
     private:
         std::string m_Name;
         std::optional<Vec3> m_MaybeSourcePos;
