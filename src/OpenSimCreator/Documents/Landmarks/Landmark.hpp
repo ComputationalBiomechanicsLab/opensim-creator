@@ -9,6 +9,6 @@ namespace osc::lm
 {
     struct Landmark final {
         std::optional<std::string> maybeName;
-        Vec3 location;
+        Vec3 position;
     };
 }
