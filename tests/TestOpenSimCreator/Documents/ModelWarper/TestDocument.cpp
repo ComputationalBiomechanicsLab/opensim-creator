@@ -18,7 +18,6 @@ namespace
     {
         auto p = std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources/TestOpenSimCreator/Document/ModelWarper";
         p = std::filesystem::weakly_canonical(p);
-        p.make_preferred();
         return p;
     }
 }

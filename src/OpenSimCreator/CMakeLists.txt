@@ -11,6 +11,11 @@ add_library(OpenSimCreator STATIC
     ComponentRegistry/StaticComponentRegistries.cpp
     ComponentRegistry/StaticComponentRegistries.hpp
 
+    Documents/Landmarks/Landmark.hpp
+    Documents/Landmarks/LandmarkCSVFlags.hpp
+    Documents/Landmarks/LandmarkHelpers.cpp
+    Documents/Landmarks/LandmarkHelpers.hpp
+
     Documents/MeshImporter/Body.cpp
     Documents/MeshImporter/Body.hpp
     Documents/MeshImporter/CrossrefDescriptor.hpp

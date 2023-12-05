@@ -4,6 +4,7 @@ find_package(GTest REQUIRED CONFIG)
 add_executable(TestOpenSimCreator
 
     ComponentRegistry/TestStaticComponentRegistries.cpp
+    Documents/Landmarks/TestLandmarkHelpers.cpp
     Documents/Model/TestUndoableModelActions.cpp
     Documents/Model/TestUndoableModelStatePair.cpp
     Documents/ModelWarper/TestDocument.cpp
