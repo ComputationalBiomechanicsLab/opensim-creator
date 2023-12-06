@@ -371,35 +371,6 @@ target_link_libraries(OpenSimCreator PUBLIC
     osimExampleComponents
 )
 
-# HACK: fix simbody not linking all necessary libraries
-if(WIN32)
-    # https://stackoverflow.com/questions/71250816/cmake-how-to-handle-dependencies-of-imported-library-targets-with-target-runti
-
-    add_library(hack_libgcc_s_sjlj-1 SHARED IMPORTED)
-    set_target_properties(hack_libgcc_s_sjlj-1 PROPERTIES
-        IMPORTED_IMPLIB "${Simbody_LIB_DIR}/libblas.lib"
-        IMPORTED_LOCATION "${Simbody_BIN_DIR}/libgcc_s_sjlj-1.dll"
-    )
-
-    add_library(hack_libgfortran-3 SHARED IMPORTED)
-    set_target_properties(hack_libgfortran-3 PROPERTIES
-        IMPORTED_IMPLIB "${Simbody_LIB_DIR}/libblas.lib"
-        IMPORTED_LOCATION "${Simbody_BIN_DIR}/libgfortran-3.dll"
-    )
-
-    add_library(hack_libquadmath-0 SHARED IMPORTED)
-    set_target_properties(hack_libquadmath-0 PROPERTIES
-        IMPORTED_IMPLIB "${Simbody_LIB_DIR}/libblas.lib"
-        IMPORTED_LOCATION "${Simbody_BIN_DIR}/libquadmath-0.dll"
-    )
-
-    target_link_libraries(OpenSimCreator PUBLIC
-        hack_libgcc_s_sjlj-1
-        hack_libgfortran-3
-        hack_libquadmath-0
-    )
-endif()
-
 # additional compile options (on top of `oscar_compiler_configuration`)
 target_compile_options(OpenSimCreator PUBLIC
 
@@ -408,11 +379,6 @@ target_compile_options(OpenSimCreator PUBLIC
 
         # disable warning 4996: Simbody uses a deprecated iterator class
         /wd4996
-
-        # disable "assignment within conditional expression" warning
-        #
-        # it's detected in `OpenSim/Common/Component.h:2521
-        /wd4706
 
         # disable warning about signed/unsigned comparison mismatch
         /wd4389
