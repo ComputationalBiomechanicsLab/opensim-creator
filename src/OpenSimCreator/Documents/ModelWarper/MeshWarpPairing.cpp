@@ -14,6 +14,8 @@
 #include <utility>
 #include <vector>
 
+using osc::lm::Landmark;
+using osc::lm::ReadLandmarksFromCSV;
 using osc::mow::LandmarkPairing;
 
 namespace
@@ -52,68 +54,80 @@ namespace
         }
     }
 
-    void TryLoadSourceLandmarks(
-        std::filesystem::path const& path,
-        std::vector<LandmarkPairing>& out)
+    std::vector<Landmark> TryReadLandmarksFromCSVIntoVector(std::filesystem::path const& path)
     {
+        std::vector<Landmark> rv;
+
         std::ifstream in{path};
         if (!in)
         {
-            osc::log::info("%s: cannot open source landmark file", path.string().c_str());
-            return;
+            osc::log::info("%s: cannot open landmark file", path.string().c_str());
+            return rv;
         }
 
-        osc::lm::ReadLandmarksFromCSV(in, [&out](auto&& lm)
-        {
-            out.emplace_back(std::move(lm.maybeName).value_or(std::string{}), lm.position, std::nullopt);
-        });
+        ReadLandmarksFromCSV(in, [&rv](auto&& lm) { rv.push_back(std::move(lm)); });
+        return rv;
     }
 
-    void TryLoadAndPairDestinationLandmarks(
-        std::filesystem::path const& path,
-        std::vector<LandmarkPairing>& out)
+    bool SameNameOrBothUnnamed(Landmark const& a, Landmark const& b)
     {
-        std::ifstream in{path};
-        if (!in)
-        {
-            osc::log::info("%s: cannot open destination landmark file", path.string().c_str());
-            return;
-        }
+        return a.maybeName == b.maybeName;
+    }
 
-        osc::lm::ReadLandmarksFromCSV(in, [&out, nsource = out.size()](auto&& lm)
-        {
-            auto const begin = out.begin();
-            auto const end = out.begin() + nsource;
-            auto const it = std::find_if(begin, end, [&lm](auto const& p)
-            {
-                return p.getName() == lm.maybeName.value_or(std::string{});
-            });
+    std::string GenerateName(size_t suffix)
+    {
+        std::stringstream ss;
+        ss << "unnamed_" << suffix;
+        return std::move(ss).str();
+    }
 
-            if (it != end)
+    std::vector<LandmarkPairing> PairLandmarks(std::vector<Landmark> a, std::vector<Landmark> b)
+    {
+        size_t nunnamed = 0;
+        std::vector<LandmarkPairing> rv;
+
+        // handle/pair all elements in `a`
+        for (auto& lm : a)
+        {
+            auto const it = std::find_if(b.begin(), b.end(), std::bind_front(SameNameOrBothUnnamed, lm));
+            std::string name = lm.maybeName ? *std::move(lm.maybeName) : GenerateName(nunnamed++);
+
+            if (it != b.end())
             {
-                it->setDestinationPos(lm.position);
+                rv.emplace_back(std::move(name), lm.position, it->position);
+                b.erase(it);  // pop element from b
             }
             else
             {
-                out.emplace_back(std::move(lm.maybeName).value_or(std::string{}), std::nullopt, lm.position);
+                rv.emplace_back(std::move(name), lm.position, std::nullopt);
             }
-        });
+        }
+
+        // handle remaining (unpaired) elements in `b`
+        for (auto& lm : b)
+        {
+            std::string name = lm.maybeName ? std::move(lm.maybeName).value() : GenerateName(nunnamed++);
+            rv.emplace_back(name, std::nullopt, lm.position);
+        }
+
+        return rv;
     }
 
     std::vector<LandmarkPairing> TryLoadPairedLandmarks(
         [[maybe_unused]] std::optional<std::filesystem::path> const& maybeSourceLandmarksCSV,
         [[maybe_unused]] std::optional<std::filesystem::path> const& maybeDestinationLandmarksCSV)
     {
-        std::vector<LandmarkPairing> rv;
+        std::vector<Landmark> src;
         if (maybeSourceLandmarksCSV)
         {
-            TryLoadSourceLandmarks(*maybeSourceLandmarksCSV, rv);
+            src = TryReadLandmarksFromCSVIntoVector(*maybeSourceLandmarksCSV);
         }
+        std::vector<Landmark> dest;
         if (maybeDestinationLandmarksCSV)
         {
-            TryLoadAndPairDestinationLandmarks(*maybeDestinationLandmarksCSV, rv);
+            dest = TryReadLandmarksFromCSVIntoVector(*maybeDestinationLandmarksCSV);
         }
-        return rv;
+        return PairLandmarks(std::move(src), std::move(dest));
     }
 }
 

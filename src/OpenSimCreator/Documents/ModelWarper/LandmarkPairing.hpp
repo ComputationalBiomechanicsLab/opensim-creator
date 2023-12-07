@@ -26,9 +26,24 @@ namespace osc::mow
             return m_Name;
         }
 
+        void setName(std::string newName)
+        {
+            m_Name = std::move(newName);
+        }
+
+        bool hasSourcePos() const
+        {
+            return m_MaybeSourcePos.has_value();
+        }
+
+        bool hasDestinationPos() const
+        {
+            return m_MaybeDestinationPos.has_value();
+        }
+
         bool isFullyPaired() const
         {
-            return m_MaybeSourcePos && m_MaybeDestinationPos;
+            return hasSourcePos() && hasDestinationPos();
         }
 
         void setDestinationPos(std::optional<Vec3> p)

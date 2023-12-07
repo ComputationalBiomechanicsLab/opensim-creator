@@ -21,7 +21,7 @@ namespace osc::mow
             return m_SourceMeshAbsoluteFilepath;
         }
 
-        bool hasSourceLandmarksFile() const
+        bool hasSourceLandmarksFilepath() const
         {
             return m_SourceLandmarksAbsoluteFilepath.has_value();
         }
@@ -29,6 +29,11 @@ namespace osc::mow
         std::optional<std::filesystem::path> const& tryGetSourceLandmarksFilepath() const
         {
             return m_SourceLandmarksAbsoluteFilepath;
+        }
+
+        bool hasDestinationMeshFilepath() const
+        {
+            return m_DestinationMeshAbsoluteFilepath.has_value();
         }
 
         std::optional<std::filesystem::path> const& tryGetDestinationMeshAbsoluteFilepath() const
