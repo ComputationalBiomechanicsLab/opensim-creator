@@ -26,14 +26,24 @@ namespace osc::mow
             return m_SourceLandmarksAbsoluteFilepath.has_value();
         }
 
-        std::optional<std::filesystem::path> const& tryGetSourceLandmarksFile() const
+        std::optional<std::filesystem::path> const& tryGetSourceLandmarksFilepath() const
         {
             return m_SourceLandmarksAbsoluteFilepath;
         }
 
-        bool hasDestinationLandmarksFile() const
+        std::optional<std::filesystem::path> const& tryGetDestinationMeshAbsoluteFilepath() const
         {
-            return m_DestinationMeshAbsoluteFilepath.has_value();
+            return m_DestinationMeshAbsoluteFilepath;
+        }
+
+        bool hasDestinationLandmarksFilepath() const
+        {
+            return m_DestinationLandmarksAbsoluteFilepath.has_value();
+        }
+
+        std::optional<std::filesystem::path> const& tryGetDestinationLandmarksFilepath() const
+        {
+            return m_DestinationLandmarksAbsoluteFilepath;
         }
 
         size_t getNumLandmarks() const
@@ -44,6 +54,7 @@ namespace osc::mow
         size_t getNumFullyPairedLandmarks() const;
 
         bool hasLandmarkNamed(std::string_view) const;
+        LandmarkPairing const* tryGetLandmarkPairingByName(std::string_view) const;
 
     private:
         std::filesystem::path m_SourceMeshAbsoluteFilepath;

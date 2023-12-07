@@ -146,3 +146,13 @@ bool osc::mow::MeshWarpPairing::hasLandmarkNamed(std::string_view name) const
         [name](auto const& lm) { return lm.getName() == name; }
     );
 }
+
+osc::mow::LandmarkPairing const* osc::mow::MeshWarpPairing::tryGetLandmarkPairingByName(std::string_view name) const
+{
+    auto const it = std::find_if(
+        m_Landmarks.begin(),
+        m_Landmarks.end(),
+        [name](auto const& lm) { return lm.getName() == name; }
+    );
+    return it != m_Landmarks.end() ? &(*it) : nullptr;
+}
