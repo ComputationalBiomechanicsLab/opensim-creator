@@ -16,7 +16,7 @@ namespace osc::mow
             std::string_view panelName_,
             std::shared_ptr<UIState> state_);
         ModelViewerPanel(ModelViewerPanel const&) = delete;
-        ModelViewerPanel(ModelViewerPanel&&);
+        ModelViewerPanel(ModelViewerPanel&&) noexcept;
         ModelViewerPanel& operator=(ModelViewerPanel const&) = delete;
         ModelViewerPanel& operator=(ModelViewerPanel&&) noexcept;
         ~ModelViewerPanel() noexcept;

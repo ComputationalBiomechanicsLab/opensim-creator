@@ -21,7 +21,7 @@ namespace osc
         }
 
         PropertyInfo(
-            StringName const& name_,
+            StringName name_,
             Variant defaultValue_
         );
 

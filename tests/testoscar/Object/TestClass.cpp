@@ -256,7 +256,7 @@ TEST(Class, EqualityReutrnsTrueForCopiedClass)
     });
 
     Class const original{className, parent, props};
-    Class const copy = original;
+    Class const copy = original;  // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(copy, original);
 }

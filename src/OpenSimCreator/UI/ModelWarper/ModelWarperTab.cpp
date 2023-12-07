@@ -17,7 +17,6 @@
 #include <utility>
 
 using osc::CStringView;
-using osc::StandardTabBase;
 using osc::UID;
 
 namespace

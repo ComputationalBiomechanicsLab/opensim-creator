@@ -9,9 +9,9 @@
 #include <utility>
 
 osc::PropertyInfo::PropertyInfo(
-    StringName const& name_,
+    StringName name_,
     Variant defaultValue_) :
-    m_Name{name_},
+    m_Name{std::move(name_)},
     m_DefaultValue{std::move(defaultValue_)}
 {
     if (!IsValidIdentifier(m_Name))

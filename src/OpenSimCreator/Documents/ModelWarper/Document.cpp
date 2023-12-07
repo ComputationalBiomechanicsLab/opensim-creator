@@ -7,7 +7,7 @@ osc::mow::Document::Document() :
 {
 }
 
-osc::mow::Document::Document(std::filesystem::path osimPath) :
+osc::mow::Document::Document(std::filesystem::path const& osimPath) :
     m_Model{std::make_unique<OpenSim::Model>(osimPath.string())},
     m_TopLevelWarpConfig{osimPath},
     m_MeshWarpPairingLookup{osimPath, *m_Model},

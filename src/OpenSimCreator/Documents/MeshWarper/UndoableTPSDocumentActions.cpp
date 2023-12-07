@@ -34,7 +34,6 @@
 #include <unordered_set>
 #include <vector>
 
-using osc::FromCharsStripWhitespace;
 using osc::Vec3;
 
 void osc::ActionAddLandmark(
@@ -314,7 +313,7 @@ void osc::ActionSavePairedLandmarksToCSV(TPSDocument const& doc, lm::LandmarkCSV
 
         if (!(flags & lm::LandmarkCSVFlags::NoNames))
         {
-            cols.push_back(std::string{p.name});
+            cols.emplace_back(std::string{p.name});
         }
         cols.push_back(to_string(p.source.x));
         cols.push_back(to_string(p.source.y));

@@ -18,7 +18,7 @@ namespace osc::mow
     class Document final {
     public:
         Document();
-        explicit Document(std::filesystem::path osimPath);
+        explicit Document(std::filesystem::path const& osimPath);
         Document(Document const&);
         Document(Document&&) noexcept;
         Document& operator=(Document const&);

@@ -52,8 +52,8 @@
 
 namespace
 {
-    using namespace osc;
-    using namespace osc::mi;
+    using namespace osc;  // NOLINT(google-build-using-namespace)
+    using namespace osc::mi;  // NOLINT(google-build-using-namespace)
     using Mesh = osc::mi::Mesh;
 
     // stand-in method that should be replaced by actual support for scale-less transforms

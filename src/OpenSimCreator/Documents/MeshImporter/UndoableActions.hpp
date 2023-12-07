@@ -46,8 +46,8 @@ namespace osc::mi
         UndoableDocument&,
         UID id,
         int axis,
-        UID el1,
-        UID el2
+        UID obj1,
+        UID obj2
     );
 
     bool TryTranslateObjectBetweenTwoPoints(
@@ -129,7 +129,7 @@ namespace osc::mi
 
     bool AddStationAtLocation(
         UndoableDocument&,
-        MIObject const& attachment,
+        MIObject const& obj,
         Vec3 const&
     );
 

@@ -24,9 +24,7 @@
 #include <unordered_set>
 #include <variant>
 
-using osc::CStringView;
 using osc::SceneDecorationFlags;
-using osc::Transform;
 using osc::UID;
 using osc::Vec3;
 

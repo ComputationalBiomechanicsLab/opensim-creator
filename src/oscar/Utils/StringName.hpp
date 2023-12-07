@@ -78,6 +78,12 @@ namespace osc
             m_Data->incrementOwnerCount();
         }
 
+        StringName(StringName&& tmp) noexcept :
+            m_Data{tmp.m_Data}
+        {
+            m_Data->incrementOwnerCount();
+        }
+
         StringName& operator=(StringName const& other) noexcept
         {
             if (other == *this)
@@ -87,6 +93,19 @@ namespace osc
 
             this->~StringName();
             m_Data = other.m_Data;
+            m_Data->incrementOwnerCount();
+            return *this;
+        }
+
+        StringName& operator=(StringName&& tmp) noexcept
+        {
+            if (tmp == *this)
+            {
+                return *this;
+            }
+
+            this->~StringName();
+            m_Data = tmp.m_Data;
             m_Data->incrementOwnerCount();
             return *this;
         }
@@ -193,14 +212,6 @@ namespace osc
     };
 
     std::ostream& operator<<(std::ostream&, StringName const&);
-
-    namespace literals
-    {
-        inline StringName operator""_sn(char const* s, size_t len)
-        {
-            return StringName{std::string_view(s, len)};
-        }
-    }
 }
 
 template<>

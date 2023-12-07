@@ -458,8 +458,3 @@ TEST(StringName, CanBeStreamedToOStreamAndProducesIdenticalOutputToString)
     ASSERT_EQ(strss.str(), snss.str());
 }
 
-TEST(StringName, CanConstructFromSuffixedLiteral)
-{
-    using namespace osc::literals;
-    static_assert(std::is_same_v<StringName, decltype("hello"_sn)>);
-}

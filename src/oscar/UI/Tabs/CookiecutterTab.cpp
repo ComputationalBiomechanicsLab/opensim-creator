@@ -10,7 +10,6 @@
 #include <utility>
 
 using osc::CStringView;
-using osc::StandardTabBase;
 
 namespace
 {

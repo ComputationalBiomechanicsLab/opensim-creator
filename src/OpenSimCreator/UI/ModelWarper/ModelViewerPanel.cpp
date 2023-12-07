@@ -36,7 +36,7 @@ osc::mow::ModelViewerPanel::ModelViewerPanel(
 {
 }
 
-osc::mow::ModelViewerPanel::ModelViewerPanel(ModelViewerPanel&&) = default;
+osc::mow::ModelViewerPanel::ModelViewerPanel(ModelViewerPanel&&) noexcept = default;
 osc::mow::ModelViewerPanel& osc::mow::ModelViewerPanel::operator=(ModelViewerPanel&&) noexcept = default;
 osc::mow::ModelViewerPanel::~ModelViewerPanel() noexcept = default;
 
