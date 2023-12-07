@@ -43,7 +43,7 @@ TEST(ModelWarpingDocument, AfterConstructingFromBasicOsimFileTheReturnedModelCon
     doc.getModel().getComponent("bodyset/some_body");
 }
 
-TEST(ModelWarpingDocument, DISABLED_FindsAndLoadsAssociatedMeshAndSourceLandmarks)
+TEST(ModelWarpingDocument, FindsAndLoadsAssociatedMeshAndSourceLandmarks)
 {
     // these fixture paths were created manually
     struct Paths final {

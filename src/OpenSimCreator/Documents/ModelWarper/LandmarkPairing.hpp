@@ -31,6 +31,11 @@ namespace osc::mow
             return m_MaybeSourcePos && m_MaybeDestinationPos;
         }
 
+        void setDestinationPos(std::optional<Vec3> p)
+        {
+            m_MaybeDestinationPos = p;
+        }
+
     private:
         std::string m_Name;
         std::optional<Vec3> m_MaybeSourcePos;

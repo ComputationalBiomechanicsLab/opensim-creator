@@ -1,9 +1,18 @@
 #include "MeshWarpPairing.hpp"
 
+#include <OpenSimCreator/Documents/Landmarks/LandmarkHelpers.hpp>
+
+#include <oscar/Platform/Log.hpp>
+
 #include <algorithm>
 #include <filesystem>
+#include <fstream>
 #include <functional>
 #include <optional>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 using osc::mow::LandmarkPairing;
 
@@ -43,11 +52,68 @@ namespace
         }
     }
 
+    void TryLoadSourceLandmarks(
+        std::filesystem::path const& path,
+        std::vector<LandmarkPairing>& out)
+    {
+        std::ifstream in{path};
+        if (!in)
+        {
+            osc::log::info("%s: cannot open source landmark file", path.string().c_str());
+            return;
+        }
+
+        osc::lm::ReadLandmarksFromCSV(in, [&out](auto&& lm)
+        {
+            out.emplace_back(std::move(lm.maybeName).value_or(std::string{}), lm.position, std::nullopt);
+        });
+    }
+
+    void TryLoadAndPairDestinationLandmarks(
+        std::filesystem::path const& path,
+        std::vector<LandmarkPairing>& out)
+    {
+        std::ifstream in{path};
+        if (!in)
+        {
+            osc::log::info("%s: cannot open destination landmark file", path.string().c_str());
+            return;
+        }
+
+        osc::lm::ReadLandmarksFromCSV(in, [&out, nsource = out.size()](auto&& lm)
+        {
+            auto const begin = out.begin();
+            auto const end = out.begin() + nsource;
+            auto const it = std::find_if(begin, end, [&lm](auto const& p)
+            {
+                return p.getName() == lm.maybeName.value_or(std::string{});
+            });
+
+            if (it != end)
+            {
+                it->setDestinationPos(lm.position);
+            }
+            else
+            {
+                out.emplace_back(std::move(lm.maybeName).value_or(std::string{}), std::nullopt, lm.position);
+            }
+        });
+    }
+
     std::vector<LandmarkPairing> TryLoadPairedLandmarks(
         [[maybe_unused]] std::optional<std::filesystem::path> const& maybeSourceLandmarksCSV,
         [[maybe_unused]] std::optional<std::filesystem::path> const& maybeDestinationLandmarksCSV)
     {
-        return {};
+        std::vector<LandmarkPairing> rv;
+        if (maybeSourceLandmarksCSV)
+        {
+            TryLoadSourceLandmarks(*maybeSourceLandmarksCSV, rv);
+        }
+        if (maybeDestinationLandmarksCSV)
+        {
+            TryLoadAndPairDestinationLandmarks(*maybeDestinationLandmarksCSV, rv);
+        }
+        return rv;
     }
 }
 
