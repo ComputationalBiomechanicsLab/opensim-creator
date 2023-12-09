@@ -142,6 +142,7 @@ namespace
         Texture2D fontTexture = CreateFontsTexture(fontTextureID);
         Material material{Shader{c_VertexShader, c_FragmentShader}};
         Camera camera;
+        Mesh mesh;
         std::unordered_map<UID, std::variant<Texture2D, RenderTexture>> texturesSubmittedThisFrame = {{fontTextureID, fontTexture}};
     };
 
@@ -260,7 +261,7 @@ namespace
         ImDrawData const& drawData,
         ImDrawList const& drawList)
     {
-        Mesh mesh;
+        Mesh& mesh = bd.mesh;
         mesh.setVerts(ExtractPos(drawList.VtxBuffer));
         mesh.setColors(ExtractColors(drawList.VtxBuffer));
         mesh.setTexCoords(ExtractTexCoords(drawList.VtxBuffer));
@@ -271,6 +272,7 @@ namespace
         {
             RenderDrawCommand(bd, drawData, drawList, mesh, drawList.CmdBuffer[i]);
         }
+        mesh.clear();
     }
 
     template<class Texture>
