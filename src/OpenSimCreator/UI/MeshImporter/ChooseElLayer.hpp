@@ -1,8 +1,8 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/MeshImporter/ModelGraph.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/ModelGraphIDs.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/SceneEl.hpp>
+#include <OpenSimCreator/Documents/MeshImporter/Document.hpp>
+#include <OpenSimCreator/Documents/MeshImporter/MIIDs.hpp>
+#include <OpenSimCreator/Documents/MeshImporter/MIObject.hpp>
 #include <OpenSimCreator/UI/MeshImporter/DrawableThing.hpp>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterHover.hpp>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterSharedState.hpp>
@@ -30,7 +30,7 @@
 #include <vector>
 
 // choose specific element layer
-namespace osc
+namespace osc::mi
 {
     // options for when the UI transitions into "choose something" mode
     struct ChooseElLayerOptions final {
@@ -82,19 +82,19 @@ namespace osc
 
     private:
         // returns true if the user's mouse is hovering over the given scene element
-        bool isHovered(SceneEl const& el) const
+        bool isHovered(MIObject const& el) const
         {
             return el.getID() == m_MaybeHover.ID;
         }
 
         // returns true if the user has already selected the given scene element
-        bool isSelected(SceneEl const& el) const
+        bool isSelected(MIObject const& el) const
         {
-            return std::find(m_SelectedEls.begin(), m_SelectedEls.end(), el.getID()) != m_SelectedEls.end();
+            return std::find(m_SelectedObjectIDs.begin(), m_SelectedObjectIDs.end(), el.getID()) != m_SelectedObjectIDs.end();
         }
 
         // returns true if the user can (de)select the given element
-        bool isSelectable(SceneEl const& el) const
+        bool isSelectable(MIObject const& el) const
         {
             if (m_Options.maybeElsAttachingTo.find(el.getID()) != m_Options.maybeElsAttachingTo.end())
             {
@@ -103,15 +103,15 @@ namespace osc
 
             return std::visit(Overload
             {
-                [this](GroundEl const&)  { return m_Options.canChooseGround; },
-                [this](MeshEl const&)    { return m_Options.canChooseMeshes; },
-                [this](BodyEl const&)    { return m_Options.canChooseBodies; },
-                [this](JointEl const&)   { return m_Options.canChooseJoints; },
+                [this](Ground const&)  { return m_Options.canChooseGround; },
+                [this](Mesh const&)    { return m_Options.canChooseMeshes; },
+                [this](Body const&)    { return m_Options.canChooseBodies; },
+                [this](Joint const&)   { return m_Options.canChooseJoints; },
                 [this](StationEl const&) { return m_Options.canChooseStations; },
             }, el.toVariant());
         }
 
-        void select(SceneEl const& el)
+        void select(MIObject const& el)
         {
             if (!isSelectable(el))
             {
@@ -123,27 +123,27 @@ namespace osc
                 return;
             }
 
-            m_SelectedEls.push_back(el.getID());
+            m_SelectedObjectIDs.push_back(el.getID());
         }
 
-        void deSelect(SceneEl const& el)
+        void deSelect(MIObject const& el)
         {
             if (!isSelectable(el))
             {
                 return;
             }
 
-            std::erase_if(m_SelectedEls, [elID = el.getID()](UID id) { return id == elID; } );
+            std::erase_if(m_SelectedObjectIDs, [elID = el.getID()](UID id) { return id == elID; } );
         }
 
-        void tryToggleSelectionStateOf(SceneEl const& el)
+        void tryToggleSelectionStateOf(MIObject const& el)
         {
             isSelected(el) ? deSelect(el) : select(el);
         }
 
         void tryToggleSelectionStateOf(UID id)
         {
-            SceneEl const* el = m_Shared->getModelGraph().tryGetElByID(id);
+            MIObject const* el = m_Shared->getModelGraph().tryGetByID(id);
 
             if (el)
             {
@@ -151,7 +151,7 @@ namespace osc
             }
         }
 
-        SceneDecorationFlags computeFlags(SceneEl const& el) const
+        SceneDecorationFlags computeFlags(MIObject const& el) const
         {
             if (isSelected(el))
             {
@@ -172,12 +172,12 @@ namespace osc
         {
             m_DrawablesBuffer.clear();
 
-            ModelGraph const& mg = m_Shared->getModelGraph();
+            Document const& mg = m_Shared->getModelGraph();
 
             float fadedAlpha = 0.2f;
-            float animScale = osc::EaseOutElastic(m_AnimationFraction);
+            float animScale = EaseOutElastic(m_AnimationFraction);
 
-            for (SceneEl const& el : mg.iter())
+            for (MIObject const& el : mg.iter())
             {
                 size_t start = m_DrawablesBuffer.size();
                 m_Shared->appendDrawables(el, m_DrawablesBuffer);
@@ -194,8 +194,8 @@ namespace osc
                     if (!isSelectableEl)
                     {
                         d.color.a = fadedAlpha;
-                        d.id = ModelGraphIDs::Empty();
-                        d.groupId = ModelGraphIDs::Empty();
+                        d.id = MIIDs::Empty();
+                        d.groupId = MIIDs::Empty();
                     }
                     else
                     {
@@ -212,12 +212,12 @@ namespace osc
 
         void handlePossibleCompletion()
         {
-            if (static_cast<int>(m_SelectedEls.size()) < m_Options.numElementsUserMustChoose)
+            if (static_cast<int>(m_SelectedObjectIDs.size()) < m_Options.numElementsUserMustChoose)
             {
                 return;  // user hasn't selected enough stuff yet
             }
 
-            if (m_Options.onUserChoice(m_SelectedEls))
+            if (m_Options.onUserChoice(m_SelectedObjectIDs))
             {
                 requestPop();
             }
@@ -252,7 +252,7 @@ namespace osc
                 return;
             }
 
-            SceneEl const* se = m_Shared->getModelGraph().tryGetElByID(m_MaybeHover.ID);
+            MIObject const* se = m_Shared->getModelGraph().tryGetByID(m_MaybeHover.ID);
 
             if (se)
             {
@@ -285,8 +285,8 @@ namespace osc
             // draw strong connection line between the things being attached to and the hover
             for (UID elAttachingTo : m_Options.maybeElsAttachingTo)
             {
-                Vec3 parentPos = GetPosition(m_Shared->getModelGraph(), elAttachingTo);
-                Vec3 childPos = GetPosition(m_Shared->getModelGraph(), m_MaybeHover.ID);
+                Vec3 parentPos = m_Shared->getModelGraph().getPosByID(elAttachingTo);
+                Vec3 childPos = m_Shared->getModelGraph().getPosByID(m_MaybeHover.ID);
 
                 if (!m_Options.isAttachingTowardEl)
                 {
@@ -394,7 +394,7 @@ namespace osc
         MeshImporterHover m_MaybeHover;
 
         // elements selected by user
-        std::vector<UID> m_SelectedEls;
+        std::vector<UID> m_SelectedObjectIDs;
 
         // buffer that's filled with drawable geometry during a drawcall
         std::vector<DrawableThing> m_DrawablesBuffer;

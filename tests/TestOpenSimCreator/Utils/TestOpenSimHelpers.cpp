@@ -22,6 +22,34 @@
 #include <string>
 #include <vector>
 
+namespace
+{
+    class InnerParent : public OpenSim::Component {
+        OpenSim_DECLARE_ABSTRACT_OBJECT(InnerParent, OpenSim::Component);
+    };
+
+    class Child1 final : public InnerParent {
+        OpenSim_DECLARE_CONCRETE_OBJECT(Child1, OpenSim::Component);
+    };
+
+    class Child2 final : public InnerParent {
+        OpenSim_DECLARE_CONCRETE_OBJECT(Child2, OpenSim::Component);
+    };
+
+    class Root final : public OpenSim::Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(Root, OpenSim::Component);
+        OpenSim_DECLARE_PROPERTY(child1, Child1, "first child");
+        OpenSim_DECLARE_PROPERTY(child2, Child2, "second child");
+
+    public:
+        Root()
+        {
+            constructProperty_child1(Child1{});
+            constructProperty_child2(Child2{});
+        }
+    };
+}
+
 // repro for #263 (https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/263)
 //
 // Effectively, this is what the joint switcher in the UI is doing. It is permitted for the
@@ -240,4 +268,29 @@ TEST(OpenSimHelpers, DISABLED_FinalizeConnectionsWithUnusualJointTopologyDoesNot
     {
         osc::FinalizeConnections(model);  // the HACK should make this work fine
     }
+}
+
+TEST(OpenSimHelpers, ForEachIsNotCalledOnRootComponent)
+{
+    Root root;
+    root.finalizeFromProperties();
+    size_t n = 0;
+    osc::ForEachComponent(root, [&n](OpenSim::Component const&){ ++n; });
+    ASSERT_EQ(n, 2);
+}
+
+TEST(OpenSimHelpers, GetNumChildrenReturnsExpectedNumber)
+{
+    Root root;
+    root.finalizeFromProperties();
+    ASSERT_EQ(osc::GetNumChildren(root), 2);
+}
+
+TEST(OpenSimHelpers, TypedGetNumChildrenOnlyCountsChildrenWithGivenType)
+{
+    Root root;
+    root.finalizeFromProperties();
+    ASSERT_EQ(osc::GetNumChildren<Child1>(root), 1);
+    ASSERT_EQ(osc::GetNumChildren<Child2>(root), 1);
+    ASSERT_EQ(osc::GetNumChildren<InnerParent>(root), 2);
 }

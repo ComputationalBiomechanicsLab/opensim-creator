@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/MeshImporter/ModelGraphIDs.hpp>
+#include <OpenSimCreator/Documents/MeshImporter/MIIDs.hpp>
 
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Material.hpp>
@@ -14,13 +14,13 @@
 
 #include <optional>
 
-namespace osc
+namespace osc::mi
 {
     // something that is being drawn in the scene
     struct DrawableThing final {
-        UID id = ModelGraphIDs::Empty();
-        UID groupId = ModelGraphIDs::Empty();
-        Mesh mesh;
+        UID id = MIIDs::Empty();
+        UID groupId = MIIDs::Empty();
+        osc::Mesh mesh;
         Transform transform;
         Color color = Color::black();
         SceneDecorationFlags flags = SceneDecorationFlags::None;

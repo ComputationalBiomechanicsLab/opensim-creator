@@ -66,4 +66,10 @@ namespace osc
     template<class T>
     concept ObjectRepresentationByte =
         (SameAs<T, unsigned char> || SameAs<T, std::byte>) && sizeof(T) == 1;
+
+    template<class T, class DerefType>
+    concept DereferencesTo = requires(T ptr)
+    {
+        {*ptr} -> ConvertibleTo<DerefType>;
+    };
 }

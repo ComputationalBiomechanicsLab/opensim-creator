@@ -156,9 +156,8 @@ target_link_options(oscar_compiler_configuration INTERFACE
         # make `ld` emit symbols for all functions - even if they aren't
         # externally used (with an exe, only `main` is used, really)
         #
-        # this makes the binary a little bigger (~400 KB) but means
-        # that the application can emit its own stack trace /w function
-        # names - even in Release mode.
+        # this makes the binary a bigger, but means that the application
+        # can emit its own stack trace /w function names - even in Release mode.
         -rdynamic
     >
 

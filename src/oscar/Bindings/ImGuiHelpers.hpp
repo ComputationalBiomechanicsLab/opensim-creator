@@ -156,13 +156,20 @@ namespace osc
     void DrawTooltipBodyOnly(CStringView);
 
     // draws an overlay tooltip (content only) if the last item is hovered
-    void DrawTooltipBodyOnlyIfItemHovered(CStringView);
+    void DrawTooltipBodyOnlyIfItemHovered(
+        CStringView,
+        ImGuiHoveredFlags flags = ImGuiHoveredFlags_ForTooltip
+    );
 
     // draws an overlay tooltip with a header and description
     void DrawTooltip(CStringView header, CStringView description = {});
 
-    // equivalent to `if (ImGui::IsItemHovered()) DrawTooltip(header, description);`
-    void DrawTooltipIfItemHovered(CStringView header, CStringView description = {});
+    // equivalent to `if (ImGui::IsItemHovered(flags)) DrawTooltip(header, description);`
+    void DrawTooltipIfItemHovered(
+        CStringView header,
+        CStringView description = {},
+        ImGuiHoveredFlags flags = ImGuiHoveredFlags_ForTooltip
+    );
 
     // draw overlay axes at the cursor position and return the bounding box of those axes
     Vec2 CalcAlignmentAxesDimensions();

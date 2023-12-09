@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-osc::MeshLoadResponse osc::respondToMeshloadRequest(MeshLoadRequest msg)  // NOLINT(performance-unnecessary-value-param)
+osc::mi::MeshLoadResponse osc::mi::respondToMeshloadRequest(MeshLoadRequest msg)  // NOLINT(performance-unnecessary-value-param)
 {
     std::vector<LoadedMesh> loadedMeshes;
     loadedMeshes.reserve(msg.paths.size());
@@ -19,7 +19,7 @@ osc::MeshLoadResponse osc::respondToMeshloadRequest(MeshLoadRequest msg)  // NOL
     {
         try
         {
-            loadedMeshes.push_back(LoadedMesh{path, osc::LoadMeshViaSimTK(path)});
+            loadedMeshes.push_back(LoadedMesh{path, LoadMeshViaSimTK(path)});
         }
         catch (std::exception const& ex)
         {
@@ -30,7 +30,7 @@ osc::MeshLoadResponse osc::respondToMeshloadRequest(MeshLoadRequest msg)  // NOL
             // times when a user will drag in a bunch of files and expect all the valid
             // ones to load (#303)
 
-            osc::log::error("%s: error loading mesh file: %s", path.string().c_str(), ex.what());
+            log::error("%s: error loading mesh file: %s", path.string().c_str(), ex.what());
         }
     }
 

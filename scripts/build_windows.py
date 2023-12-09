@@ -28,6 +28,7 @@ class BuildConfiguration:
             build_concurrency=multiprocessing.cpu_count(),
             build_target="package",
             build_docs="OFF",
+            build_skip_submodules=False,
             build_skip_osc=False):
 
         self.base_build_type = os.getenv("OSC_BASE_BUILD_TYPE", base_build_type)
@@ -38,6 +39,7 @@ class BuildConfiguration:
         self.build_docs = _is_truthy_envvar(os.getenv("OSC_BUILD_DOCS", build_docs))
         self.generator_flags = f'-G"Visual Studio 17 2022" -A x64'
         self.build_dir = build_dir
+        self.skip_submodules = build_skip_submodules
         self.skip_osc = build_skip_osc
 
     def __repr__(self):
@@ -71,6 +73,10 @@ def log_build_params(conf: BuildConfiguration):
         logging.info(conf)
 
 def ensure_submodules_are_up_to_date(conf: BuildConfiguration):
+    if (conf.skip_submodules):
+        logging.info('--skip-submodules was provided: skipping git submodule update')
+        return
+
     with Section("update git submodules"):
         _run("git submodule update --init --recursive")
 
@@ -123,6 +129,7 @@ def main():
     # parse CLI args
     parser = argparse.ArgumentParser()
     parser.add_argument('--jobs', '-j', type=int, default=conf.concurrency)
+    parser.add_argument('--skip-submodules', help='skip running git submodule update --init --recursive', default=conf.skip_submodules, action='store_true')
     parser.add_argument('--skip-osc', help='skip building OSC (handy if you plan on building OSC via Visual Studio)', default=conf.skip_osc, action='store_true')
     parser.add_argument('--build-dir', '-B', help='build binaries in the specified directory', type=str, default=conf.build_dir)
     parser.add_argument('--build-type', help='the type of build to produce (CMake string: Debug, Release, RelWithDebInfo, etc.)', type=str, default=conf.base_build_type)
@@ -130,6 +137,7 @@ def main():
     # overwrite build configuration with any CLI args
     args = parser.parse_args()
     conf.concurrency = args.jobs
+    conf.skip_submodules = args.skip_submodules
     conf.skip_osc = args.skip_osc
     conf.build_dir = args.build_dir
     conf.base_build_type = args.build_type

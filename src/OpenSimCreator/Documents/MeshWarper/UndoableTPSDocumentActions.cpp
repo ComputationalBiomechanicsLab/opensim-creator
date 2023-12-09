@@ -1,5 +1,8 @@
 #include "UndoableTPSDocumentActions.hpp"
 
+#include <OpenSimCreator/Documents/Landmarks/Landmark.hpp>
+#include <OpenSimCreator/Documents/Landmarks/LandmarkCSVFlags.hpp>
+#include <OpenSimCreator/Documents/Landmarks/LandmarkHelpers.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocument.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.hpp>
@@ -18,6 +21,7 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Utils/At.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 
 #include <algorithm>
@@ -30,42 +34,7 @@
 #include <unordered_set>
 #include <vector>
 
-using osc::FromCharsStripWhitespace;
 using osc::Vec3;
-
-namespace
-{
-    struct LandmarkCSVRow {
-        std::optional<std::string> maybeName;
-        Vec3 position;
-    };
-    std::optional<LandmarkCSVRow> ParseLandmarkCSVRow(std::span<std::string const> cols)
-    {
-        if (cols.size() < 3)
-        {
-            return std::nullopt;  // too few columns
-        }
-
-        // >=4 columns implies that the first column is probably a label
-        std::optional<std::string> maybeName;
-        std::span<std::string const> data = cols;
-        if (cols.size() >= 4)
-        {
-            maybeName = cols.front();
-            data = data.subspan(1);
-        }
-
-        std::optional<float> const x = FromCharsStripWhitespace(data[0]);
-        std::optional<float> const y = FromCharsStripWhitespace(data[1]);
-        std::optional<float> const z = FromCharsStripWhitespace(data[2]);
-        if (!(x && y && z))
-        {
-            return std::nullopt;  // a column was non-numeric: ignore entire line
-        }
-
-        return LandmarkCSVRow{maybeName, {*x, *y, *z}};
-    }
-}
 
 void osc::ActionAddLandmark(
     UndoableTPSDocument& doc,
@@ -243,14 +212,10 @@ void osc::ActionLoadLandmarksFromCSV(
         return;  // some kind of error opening the file
     }
 
-    std::vector<std::string> cols;
-    while (ReadCSVRowIntoVector(fin, cols))
+    lm::ReadLandmarksFromCSV(fin, [&doc, which](auto&& landmark)
     {
-        if (auto const row = ParseLandmarkCSVRow(cols))
-        {
-            AddLandmarkToInput(doc.updScratch(), which, row->position, row->maybeName);
-        }
-    }
+        AddLandmarkToInput(doc.updScratch(), which, landmark.position, std::move(landmark.maybeName));
+    });
 
     doc.commitScratch("loaded landmarks");
 }
@@ -269,19 +234,18 @@ void osc::ActionLoadNonParticipatingLandmarksFromCSV(UndoableTPSDocument& doc)
         return;  // some kind of error opening the file
     }
 
-    std::vector<std::string> cols;
-    while (ReadCSVRowIntoVector(fin, cols))
+    lm::ReadLandmarksFromCSV(fin, [&doc](auto&& landmark)
     {
-        if (auto const row = ParseLandmarkCSVRow(cols))
-        {
-            AddNonParticipatingLandmark(doc.updScratch(), row->position, row->maybeName);
-        }
-    }
+        AddNonParticipatingLandmark(doc.updScratch(), landmark.position, std::move(landmark.maybeName));
+    });
 
     doc.commitScratch("added non-participating landmarks");
 }
 
-void osc::ActionSaveLandmarksToCSV(TPSDocument const& doc, TPSDocumentInputIdentifier which, TPSDocumentCSVFlags flags)
+void osc::ActionSaveLandmarksToCSV(
+    TPSDocument const& doc,
+    TPSDocumentInputIdentifier which,
+    lm::LandmarkCSVFlags flags)
 {
     std::optional<std::filesystem::path> const maybeCSVPath =
         PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
@@ -296,42 +260,21 @@ void osc::ActionSaveLandmarksToCSV(TPSDocument const& doc, TPSDocumentInputIdent
         return;  // couldn't open file for writing
     }
 
-    // if applicable, emit header
-    if (!(flags & TPSDocumentCSVFlags::NoHeader))
+    lm::WriteLandmarksToCSV(fout, [which, it = doc.landmarkPairs.begin(), end = doc.landmarkPairs.end()]() mutable
     {
-        if (flags & TPSDocumentCSVFlags::NoNames)
+        std::optional<lm::Landmark> rv;
+        for (; !rv && it != end; ++it)
         {
-            WriteCSVRow(fout, {{"x", "y", "z"}});
-        }
-        else
-        {
-            WriteCSVRow(fout, {{"name", "x", "y", "z"}});
-        }
-    }
-
-    // emit data rows
-    for (TPSDocumentLandmarkPair const& p : doc.landmarkPairs)
-    {
-        if (std::optional<Vec3> const loc = GetLocation(p, which))
-        {
-            using std::to_string;
-            auto x = loc->x;
-            auto y = loc->y;
-            auto z = loc->z;
-
-            if (flags & TPSDocumentCSVFlags::NoNames)
+            if (auto location = GetLocation(*it, which))
             {
-                WriteCSVRow(fout, {{to_string(x), to_string(y), to_string(z)}});
-            }
-            else
-            {
-                WriteCSVRow(fout, {{std::string{p.name}, to_string(x), to_string(y), to_string(z)}});
+                rv = lm::Landmark{std::string{it->name}, *location};
             }
         }
-    }
+        return rv;
+    }, flags);
 }
 
-void osc::ActionSavePairedLandmarksToCSV(TPSDocument const& doc, TPSDocumentCSVFlags flags)
+void osc::ActionSavePairedLandmarksToCSV(TPSDocument const& doc, lm::LandmarkCSVFlags flags)
 {
     std::optional<std::filesystem::path> const maybeCSVPath =
         PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
@@ -349,9 +292,9 @@ void osc::ActionSavePairedLandmarksToCSV(TPSDocument const& doc, TPSDocumentCSVF
     std::vector<NamedLandmarkPair3D> const pairs = GetNamedLandmarkPairs(doc);
 
     // if applicable, write header row
-    if (!(flags & TPSDocumentCSVFlags::NoHeader))
+    if (!(flags & lm::LandmarkCSVFlags::NoHeader))
     {
-        if (flags & TPSDocumentCSVFlags::NoNames)
+        if (flags & lm::LandmarkCSVFlags::NoNames)
         {
             WriteCSVRow(fout, {{"source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"}});
         }
@@ -363,14 +306,14 @@ void osc::ActionSavePairedLandmarksToCSV(TPSDocument const& doc, TPSDocumentCSVF
 
     // write data rows
     std::vector<std::string> cols;
-    cols.reserve(flags & TPSDocumentCSVFlags::NoNames ? 6 : 7);
+    cols.reserve(flags & lm::LandmarkCSVFlags::NoNames ? 6 : 7);
     for (auto const& p : pairs)
     {
         using std::to_string;
 
-        if (!(flags & TPSDocumentCSVFlags::NoNames))
+        if (!(flags & lm::LandmarkCSVFlags::NoNames))
         {
-            cols.push_back(std::string{p.name});
+            cols.emplace_back(std::string{p.name});
         }
         cols.push_back(to_string(p.source.x));
         cols.push_back(to_string(p.source.y));
@@ -449,7 +392,7 @@ void osc::ActionTrySaveMeshToStlFile(Mesh const& mesh)
 void osc::ActionSaveWarpedNonParticipatingLandmarksToCSV(
     TPSDocument const& doc,
     TPSResultCache& cache,
-    TPSDocumentCSVFlags flags)
+    lm::LandmarkCSVFlags flags)
 {
     auto const maybeCSVPath = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
     if (!maybeCSVPath)
@@ -463,35 +406,17 @@ void osc::ActionSaveWarpedNonParticipatingLandmarksToCSV(
         return;  // couldn't open file for writing
     }
 
-    // if applicable, write header row
-    if (!(flags & TPSDocumentCSVFlags::NoHeader))
+    lm::WriteLandmarksToCSV(fout, [
+        &doc,
+        locations = cache.getWarpedNonParticipatingLandmarkLocations(doc),
+        i = static_cast<size_t>(0)]() mutable
     {
-        if (flags & TPSDocumentCSVFlags::NoNames)
-        {
-            WriteCSVRow(fout, {{"x", "y", "z"}});
-        }
-        else
-        {
-            WriteCSVRow(fout, {{"name", "x", "y", "z"}});
-        }
-    }
-
-    // write data rows
-    std::span<Vec3 const> const warpedLocations = cache.getWarpedNonParticipatingLandmarkLocations(doc);
-    OSC_ASSERT(warpedLocations.size() == doc.nonParticipatingLandmarks.size());
-    for (size_t i = 0; i < warpedLocations.size(); ++i)
-    {
-        using std::to_string;
-
-        Vec3 const pos = warpedLocations[i];
-        if (flags & TPSDocumentCSVFlags::NoNames)
-        {
-            WriteCSVRow(fout, {{to_string(pos.x), to_string(pos.y), to_string(pos.z)}});
-        }
-        else
+        std::optional<lm::Landmark> rv;
+        for (; !rv && i < locations.size(); ++i)
         {
             std::string name = std::string{doc.nonParticipatingLandmarks.at(i).name};
-            WriteCSVRow(fout, {{name, to_string(pos.x), to_string(pos.y), to_string(pos.z)}});
+            rv = lm::Landmark{std::move(name), At(locations, i)};
         }
-    }
+        return rv;
+    }, flags);
 }

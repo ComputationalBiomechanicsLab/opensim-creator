@@ -21,7 +21,7 @@
 //
 // the main (UI) thread then regularly polls the response channel and handles the (loaded)
 // mesh appropriately
-namespace osc
+namespace osc::mi
 {
     // a mesh loading request
     struct MeshLoadRequest final {
@@ -32,7 +32,7 @@ namespace osc
     // a successfully-loaded mesh
     struct LoadedMesh final {
         std::filesystem::path path;
-        Mesh meshData;
+        osc::Mesh meshData;
     };
 
     // an OK response to a mesh loading request
@@ -74,7 +74,7 @@ namespace osc
         }
 
     private:
-        using Worker = osc::spsc::Worker<
+        using Worker = spsc::Worker<
             MeshLoadRequest,
             MeshLoadResponse,
             decltype(respondToMeshloadRequest)

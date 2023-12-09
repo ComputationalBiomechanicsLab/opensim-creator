@@ -11,7 +11,7 @@
 //
 // - normal mode (editing stuff)
 // - picking another body in the scene mode
-namespace osc
+namespace osc::mi
 {
     // a layer that is hosted by the parent
     class MeshImporterUILayer {

@@ -385,6 +385,16 @@ std::vector<OpenSim::Component const*> osc::GetPathElements(OpenSim::Component c
     return rv;
 }
 
+void osc::ForEachComponent(
+    OpenSim::Component const& component,
+    std::function<void(OpenSim::Component const&)> const& f)
+{
+    for (OpenSim::Component const& c : component.getComponentList())
+    {
+        f(c);
+    }
+}
+
 size_t osc::GetNumChildren(OpenSim::Component const& c)
 {
     size_t rv = 0;
@@ -732,7 +742,7 @@ std::optional<std::filesystem::path> osc::FindGeometryFileAbsPath(
         return std::nullopt;
     }
 
-    return std::optional<std::filesystem::path>{std::filesystem::absolute({attempts.back()})};
+    return std::optional<std::filesystem::path>{std::filesystem::weakly_canonical({attempts.back()})};
 }
 
 bool osc::ShouldShowInUI(OpenSim::Component const& c)

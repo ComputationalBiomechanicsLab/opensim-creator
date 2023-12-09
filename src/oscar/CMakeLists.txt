@@ -133,6 +133,16 @@ add_library(oscar STATIC
     Maths/Vec3.hpp
     Maths/Vec4.hpp
 
+    Object/Class.cpp
+    Object/Class.hpp
+    Object/Node.hpp
+    Object/NodePath.cpp
+    Object/NodePath.hpp
+    Object/Object.cpp
+    Object/Object.hpp
+    Object/PropertyInfo.cpp
+    Object/PropertyInfo.hpp
+
     Platform/App.cpp
     Platform/App.hpp
     Platform/AppClock.hpp
@@ -271,11 +281,12 @@ add_library(oscar STATIC
     Utils/UID.hpp
     Utils/UndoRedo.cpp
     Utils/UndoRedo.hpp
-    Utils/Variant.cpp
-    Utils/Variant.hpp
-    Utils/VariantType.cpp
-    Utils/VariantType.hpp
- "Graphics/ColorHSLA.cpp")
+
+    Variant/Variant.cpp
+    Variant/Variant.hpp
+    Variant/VariantType.cpp
+    Variant/VariantType.hpp
+)
 
 target_include_directories(oscar PUBLIC
 

@@ -52,7 +52,7 @@ namespace
             sv = sv.substr(0, sv.size()-1);
         }
 
-        return std::filesystem::path{sv};
+        return std::filesystem::weakly_canonical(sv);
     }
 }
 
@@ -117,7 +117,7 @@ std::optional<std::filesystem::path> osc::PromptUserForFile(
     if (path && result == NFD_OKAY)
     {
         static_assert(std::is_same_v<nfdchar_t, char>);
-        return std::filesystem::path{path.get()};
+        return std::filesystem::weakly_canonical(path.get());
     }
     else
     {
@@ -144,7 +144,7 @@ std::vector<std::filesystem::path> osc::PromptUserForFiles(
         rv.reserve(len);
         for (size_t i = 0; i < len; ++i)
         {
-            rv.emplace_back(NFD_PathSet_GetPath(&s, i));
+            rv.emplace_back(std::filesystem::weakly_canonical(NFD_PathSet_GetPath(&s, i)));
         }
 
         NFD_PathSet_Free(&s);
@@ -190,7 +190,7 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
     }
 
     static_assert(std::is_same_v<nfdchar_t, char>);
-    std::filesystem::path p{path.get()};
+    auto p = std::filesystem::weakly_canonical(path.get());
 
     if (maybeExtension)
     {

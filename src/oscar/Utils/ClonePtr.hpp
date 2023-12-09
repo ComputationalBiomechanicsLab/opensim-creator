@@ -55,7 +55,7 @@ namespace osc
             }
             else if (&other != this)
             {
-                m_Value = other.m_Value->clone();
+                m_Value = std::unique_ptr<T>{other.m_Value->clone()};
             }
             return *this;
         }

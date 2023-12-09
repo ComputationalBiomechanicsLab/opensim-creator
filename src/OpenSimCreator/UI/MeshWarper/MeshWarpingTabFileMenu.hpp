@@ -1,5 +1,6 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/Landmarks/LandmarkCSVFlags.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/UndoableTPSDocumentActions.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.hpp>
@@ -10,6 +11,8 @@
 
 #include <memory>
 #include <utility>
+
+using osc::lm::LandmarkCSVFlags;
 
 namespace osc
 {
@@ -101,7 +104,7 @@ namespace osc
             }
             if (ImGui::MenuItem("Landmark Pairs to CSV (no names)"))
             {
-                ActionSavePairedLandmarksToCSV(m_State->getScratch(), TPSDocumentCSVFlags::NoNames);
+                ActionSavePairedLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoNames);
             }
         }
 

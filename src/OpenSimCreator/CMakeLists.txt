@@ -11,45 +11,49 @@ add_library(OpenSimCreator STATIC
     ComponentRegistry/StaticComponentRegistries.cpp
     ComponentRegistry/StaticComponentRegistries.hpp
 
-    Documents/MeshImporter/BodyEl.cpp
-    Documents/MeshImporter/BodyEl.hpp
-    Documents/MeshImporter/CommittableModelGraph.hpp
-    Documents/MeshImporter/CommittableModelGraphActions.cpp
-    Documents/MeshImporter/CommittableModelGraphActions.hpp
+    Documents/Landmarks/Landmark.hpp
+    Documents/Landmarks/LandmarkCSVFlags.hpp
+    Documents/Landmarks/LandmarkHelpers.cpp
+    Documents/Landmarks/LandmarkHelpers.hpp
+
+    Documents/MeshImporter/Body.cpp
+    Documents/MeshImporter/Body.hpp
     Documents/MeshImporter/CrossrefDescriptor.hpp
     Documents/MeshImporter/CrossrefDirection.hpp
-    Documents/MeshImporter/GroundEl.cpp
-    Documents/MeshImporter/GroundEl.hpp
-    Documents/MeshImporter/ISceneElLookup.hpp
-    Documents/MeshImporter/JointEl.cpp
-    Documents/MeshImporter/JointEl.hpp
-    Documents/MeshImporter/MeshEl.cpp
-    Documents/MeshImporter/MeshEl.hpp
-    Documents/MeshImporter/ModelCreationFlags.hpp
-    Documents/MeshImporter/ModelGraph.cpp
-    Documents/MeshImporter/ModelGraph.hpp
-    Documents/MeshImporter/ModelGraphHelpers.cpp
-    Documents/MeshImporter/ModelGraphHelpers.hpp
-    Documents/MeshImporter/ModelGraphIDs.cpp
-    Documents/MeshImporter/ModelGraphIDs.hpp
-    Documents/MeshImporter/ModelGraphOpenSimBridge.cpp
-    Documents/MeshImporter/ModelGraphOpenSimBridge.hpp
-    Documents/MeshImporter/ModelGraphStrings.hpp
-    Documents/MeshImporter/SceneEl.cpp
-    Documents/MeshImporter/SceneEl.hpp
-    Documents/MeshImporter/SceneElClass.hpp
-    Documents/MeshImporter/SceneElCRTP.hpp
-    Documents/MeshImporter/SceneElFlags.hpp
-    Documents/MeshImporter/SceneElHelpers.cpp
-    Documents/MeshImporter/SceneElHelpers.hpp
-    Documents/MeshImporter/SceneElVariant.hpp
-    Documents/MeshImporter/StationEl.cpp
-    Documents/MeshImporter/StationEl.hpp
+    Documents/MeshImporter/Document.cpp
+    Documents/MeshImporter/Document.hpp
+    Documents/MeshImporter/DocumentHelpers.cpp
+    Documents/MeshImporter/DocumentHelpers.hpp
+    Documents/MeshImporter/Ground.cpp
+    Documents/MeshImporter/Ground.hpp
+    Documents/MeshImporter/IObjectFinder.hpp
+    Documents/MeshImporter/Joint.cpp
+    Documents/MeshImporter/Joint.hpp
+    Documents/MeshImporter/Mesh.cpp
+    Documents/MeshImporter/Mesh.hpp
+    Documents/MeshImporter/MIClass.hpp
+    Documents/MeshImporter/MIIDs.cpp
+    Documents/MeshImporter/MIObject.cpp
+    Documents/MeshImporter/MIObject.hpp
+    Documents/MeshImporter/MIObjectCRTP.hpp
+    Documents/MeshImporter/MIObjectFlags.hpp
+    Documents/MeshImporter/MIObjectHelpers.cpp
+    Documents/MeshImporter/MIObjectHelpers.hpp
+    Documents/MeshImporter/MIIDs.hpp
+    Documents/MeshImporter/MIStrings.hpp
+    Documents/MeshImporter/MIVariant.hpp
+    Documents/MeshImporter/OpenSimBridge.cpp
+    Documents/MeshImporter/OpenSimBridge.hpp
+    Documents/MeshImporter/OpenSimExportFlags.hpp
+    Documents/MeshImporter/Station.cpp
+    Documents/MeshImporter/Station.hpp
+    Documents/MeshImporter/UndoableActions.cpp
+    Documents/MeshImporter/UndoableActions.hpp
+    Documents/MeshImporter/UndoableDocument.hpp
 
     Documents/MeshWarper/NamedLandmarkPair3D.hpp
     Documents/MeshWarper/TPSDocument.cpp
     Documents/MeshWarper/TPSDocument.hpp
-    Documents/MeshWarper/TPSDocumentCSVFlags.hpp
     Documents/MeshWarper/TPSDocumentElement.hpp
     Documents/MeshWarper/TPSDocumentElementID.hpp
     Documents/MeshWarper/TPSDocumentElementType.hpp
@@ -77,6 +81,19 @@ add_library(OpenSimCreator STATIC
     Documents/Model/UndoableModelStatePair.hpp
     Documents/Model/VirtualConstModelStatePair.hpp
     Documents/Model/VirtualModelStatePair.hpp
+
+    Documents/ModelWarper/Document.cpp
+    Documents/ModelWarper/Document.hpp
+    Documents/ModelWarper/FrameDefinitionLookup.cpp
+    Documents/ModelWarper/FrameDefinitionLookup.hpp
+    Documents/ModelWarper/IWarpableFrameDefinition.hpp
+    Documents/ModelWarper/LandmarkPairing.hpp
+    Documents/ModelWarper/MeshWarpPairing.cpp
+    Documents/ModelWarper/MeshWarpPairing.hpp
+    Documents/ModelWarper/MeshWarpPairingLookup.cpp
+    Documents/ModelWarper/MeshWarpPairingLookup.hpp
+    Documents/ModelWarper/ModelWarpConfiguration.cpp
+    Documents/ModelWarper/ModelWarpConfiguration.hpp
 
     Documents/Simulation/ForwardDynamicSimulation.cpp
     Documents/Simulation/ForwardDynamicSimulation.hpp
@@ -226,10 +243,24 @@ add_library(OpenSimCreator STATIC
     UI/ModelEditor/Select1PFPopup.cpp
     UI/ModelEditor/Select1PFPopup.hpp
 
+    UI/ModelWarper/ChecklistPanel.cpp
+    UI/ModelWarper/ChecklistPanel.hpp
+    UI/ModelWarper/FileMenu.cpp
+    UI/ModelWarper/FileMenu.hpp
+    UI/ModelWarper/MainMenu.hpp
+    UI/ModelWarper/ModelViewerPanel.cpp
+    UI/ModelWarper/ModelViewerPanel.hpp
+    UI/ModelWarper/ModelWarperTab.cpp
+    UI/ModelWarper/ModelWarperTab.hpp
+    UI/ModelWarper/Toolbar.cpp
+    UI/ModelWarper/Toolbar.hpp
+    UI/ModelWarper/UIState.hpp
+
     UI/Shared/BasicWidgets.cpp
     UI/Shared/BasicWidgets.hpp
     UI/Shared/GeometryPathPropertyEditorPopup.cpp
     UI/Shared/GeometryPathPropertyEditorPopup.hpp
+
     UI/Shared/MainMenu.cpp
     UI/Shared/MainMenu.hpp
     UI/Shared/ModelEditorViewerPanel.cpp
@@ -340,35 +371,6 @@ target_link_libraries(OpenSimCreator PUBLIC
     osimExampleComponents
 )
 
-# HACK: fix simbody not linking all necessary libraries
-if(WIN32)
-    # https://stackoverflow.com/questions/71250816/cmake-how-to-handle-dependencies-of-imported-library-targets-with-target-runti
-
-    add_library(hack_libgcc_s_sjlj-1 SHARED IMPORTED)
-    set_target_properties(hack_libgcc_s_sjlj-1 PROPERTIES
-        IMPORTED_IMPLIB "${Simbody_LIB_DIR}/libblas.lib"
-        IMPORTED_LOCATION "${Simbody_BIN_DIR}/libgcc_s_sjlj-1.dll"
-    )
-
-    add_library(hack_libgfortran-3 SHARED IMPORTED)
-    set_target_properties(hack_libgfortran-3 PROPERTIES
-        IMPORTED_IMPLIB "${Simbody_LIB_DIR}/libblas.lib"
-        IMPORTED_LOCATION "${Simbody_BIN_DIR}/libgfortran-3.dll"
-    )
-
-    add_library(hack_libquadmath-0 SHARED IMPORTED)
-    set_target_properties(hack_libquadmath-0 PROPERTIES
-        IMPORTED_IMPLIB "${Simbody_LIB_DIR}/libblas.lib"
-        IMPORTED_LOCATION "${Simbody_BIN_DIR}/libquadmath-0.dll"
-    )
-
-    target_link_libraries(OpenSimCreator PUBLIC
-        hack_libgcc_s_sjlj-1
-        hack_libgfortran-3
-        hack_libquadmath-0
-    )
-endif()
-
 # additional compile options (on top of `oscar_compiler_configuration`)
 target_compile_options(OpenSimCreator PUBLIC
 
@@ -377,11 +379,6 @@ target_compile_options(OpenSimCreator PUBLIC
 
         # disable warning 4996: Simbody uses a deprecated iterator class
         /wd4996
-
-        # disable "assignment within conditional expression" warning
-        #
-        # it's detected in `OpenSim/Common/Component.h:2521
-        /wd4706
 
         # disable warning about signed/unsigned comparison mismatch
         /wd4389

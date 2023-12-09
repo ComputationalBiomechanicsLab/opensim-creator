@@ -87,7 +87,7 @@ namespace
             configFileDir = osc::CurrentExeDir().parent_path();  // assume the `bin/` dir is one-up from the config
         }
         std::filesystem::path const configuredResourceDir{resourceDirSettingValue->toString()};
-        std::filesystem::path resourceDir = configFileDir / configuredResourceDir;
+        auto resourceDir = std::filesystem::weakly_canonical(configFileDir / configuredResourceDir);
 
         if (!std::filesystem::exists(resourceDir))
         {
@@ -112,7 +112,7 @@ namespace
         if (auto const configLocation = settings.getValueFilesystemSource(docsKey))
         {
             std::filesystem::path const configDir = configLocation->parent_path();
-            std::filesystem::path docsLocation = configDir / docsSettingValue->toString();
+            std::filesystem::path docsLocation = std::filesystem::weakly_canonical(configDir / docsSettingValue->toString());
             if (std::filesystem::exists(docsLocation))
             {
                 return docsLocation;
@@ -203,6 +203,11 @@ osc::AppConfig::AppConfig(
 osc::AppConfig::AppConfig(AppConfig&&) noexcept = default;
 osc::AppConfig& osc::AppConfig::operator=(AppConfig&&) noexcept = default;
 osc::AppConfig::~AppConfig() noexcept = default;
+
+std::filesystem::path osc::AppConfig::getResourcePath(std::string_view k) const
+{
+    return std::filesystem::weakly_canonical(getResourceDir() / k);
+}
 
 std::filesystem::path const& osc::AppConfig::getResourceDir() const
 {

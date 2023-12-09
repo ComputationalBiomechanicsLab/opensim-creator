@@ -5,7 +5,7 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
-namespace osc
+namespace osc::mi
 {
     class CrossrefDescriptor final {
     public:

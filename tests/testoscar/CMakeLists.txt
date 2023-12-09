@@ -2,7 +2,6 @@ include(GoogleTest)
 find_package(GTest REQUIRED CONFIG)
 
 add_executable(testoscar
-
     Formats/TestCSV.cpp
     Formats/TestDAE.cpp
 
@@ -23,6 +22,12 @@ add_executable(testoscar
 
     Maths/TestBVH.cpp
 
+    Object/TestClass.cpp
+    Object/TestNode.cpp
+    Object/TestNodePath.cpp
+    Object/TestObject.cpp
+    Object/TestPropertyInfo.cpp
+
     Platform/TestAppSettingValueType.cpp
 
     Scene/TestSceneCache.cpp
@@ -34,8 +39,9 @@ add_executable(testoscar
     Utils/TestFilenameExtractor.cpp
     Utils/TestStringHelpers.cpp
     Utils/TestStringName.cpp
-    Utils/TestVariant.cpp
-    Utils/TestVariantType.cpp
+
+    Variant/TestVariant.cpp
+    Variant/TestVariantType.cpp
 
     testoscar.cpp  # entry point
 )

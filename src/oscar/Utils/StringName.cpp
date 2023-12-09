@@ -7,6 +7,7 @@
 #include <atomic>
 #include <cstddef>
 #include <functional>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -107,3 +108,8 @@ osc::StringName::StringName(std::string&& tmp) : m_Data{&PossiblyConstructThenGe
 osc::StringName::StringName(char const* c) : StringName{std::string_view{c}} {}
 osc::StringName::StringName(std::string_view sv) : m_Data{&PossiblyConstructThenGetData(sv)} {}
 osc::StringName::~StringName() noexcept { DecrementThenPossiblyDestroyData(*m_Data); }
+
+std::ostream& osc::operator<<(std::ostream& o, StringName const& s)
+{
+    return o << std::string_view{s};
+}

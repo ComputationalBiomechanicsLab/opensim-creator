@@ -10,6 +10,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 
 using osc::CStringView;
@@ -446,7 +447,14 @@ TEST(StringName, NonEmptyStringNameHasSameHashAsEquivalentStringView)
     ASSERT_EQ(std::hash<StringName>{}(StringName{c_LongStringToAvoidSSO}), std::hash<std::string_view>{}(std::string_view{c_LongStringToAvoidSSO}));
 }
 
-// TODO: test less than (and reverse ops, and ops with non-StringName, etc.)
-// TODO: test greater than (and reverse ops, and ops with non-StringName, etc.)
-// TODO: test less than or equal to (and reverse ops, and ops with non-StringName, etc.)
-// TODO: test greater than or equal to (and reverse ops, and ops with non-StringName, etc.)
+TEST(StringName, CanBeStreamedToOStreamAndProducesIdenticalOutputToString)
+{
+    std::string str{"some streamed string"};
+    std::stringstream strss;
+    strss << str;
+    std::stringstream snss;
+    snss << StringName{str};
+
+    ASSERT_EQ(strss.str(), snss.str());
+}
+

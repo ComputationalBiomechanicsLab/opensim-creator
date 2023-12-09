@@ -12,7 +12,7 @@
 namespace osc { class MainUIStateAPI; }
 namespace osc { template<typename T> class ParentPtr; }
 
-namespace osc
+namespace osc::mi
 {
     class MeshImporterTab final : public Tab {
     public:

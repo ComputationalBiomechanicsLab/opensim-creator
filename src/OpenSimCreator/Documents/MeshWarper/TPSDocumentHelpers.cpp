@@ -164,7 +164,9 @@ osc::TPSDocumentNonParticipatingLandmark* osc::FindNonParticipatingLandmarkByNam
 
 bool osc::ContainsElementWithName(TPSDocument const& doc, StringName const& name)
 {
-    return FindLandmarkPairByName(doc, name) || FindNonParticipatingLandmarkByName(doc, name);
+    return
+        FindLandmarkPairByName(doc, name) != nullptr ||
+        FindNonParticipatingLandmarkByName(doc, name) != nullptr;
 }
 
 std::optional<osc::LandmarkPair3D> osc::TryExtractLandmarkPair(TPSDocumentLandmarkPair const& p)

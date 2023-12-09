@@ -510,7 +510,7 @@ bool osc::ActionCopyModelPathToClipboard(UndoableModelStatePair const& uim)
         return false;
     }
 
-    std::filesystem::path const absPath = std::filesystem::absolute(uim.getFilesystemPath());
+    std::filesystem::path const absPath = std::filesystem::weakly_canonical(uim.getFilesystemPath());
 
     SetClipboardText(absPath.string().c_str());
 

@@ -555,7 +555,7 @@ private:
 
         if (ImGui::MenuItem(ICON_FA_CUBE " Mesh Importer"))
         {
-            selectTab(addTab(std::make_unique<MeshImporterTab>(getTabHostAPI())));
+            selectTab(addTab(std::make_unique<mi::MeshImporterTab>(getTabHostAPI())));
         }
 
         std::shared_ptr<TabRegistry const> const tabs = osc::App::singleton<TabRegistry>();

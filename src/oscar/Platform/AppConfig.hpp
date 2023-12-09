@@ -26,6 +26,9 @@ namespace osc
         AppConfig& operator=(AppConfig&&) noexcept;
         ~AppConfig() noexcept;
 
+        // returns canonicalized path to the given resource key (e.g. a/b/c)
+        std::filesystem::path getResourcePath(std::string_view k) const;
+
         // get the full path to the runtime `resources/` dir
         std::filesystem::path const& getResourceDir() const;
 
