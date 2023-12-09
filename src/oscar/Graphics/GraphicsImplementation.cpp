@@ -1811,13 +1811,6 @@ public:
         std::copy(pixelData.begin(), pixelData.end(), m_PixelData.begin());
     }
 
-    void* getTextureHandleHACK() const
-    {
-        // yes, this is a shitshow of casting, const-casting, etc. - it's purely here until and osc-specific
-        // ImGui backend is written
-        return reinterpret_cast<void*>(static_cast<uintptr_t>(const_cast<Impl&>(*this).updTexture().get()));
-    }
-
     // non PIMPL method
 
     gl::Texture2D& updTexture()
@@ -2047,11 +2040,6 @@ osc::TextureFilterMode osc::Texture2D::getFilterMode() const
 void osc::Texture2D::setFilterMode(TextureFilterMode twm)
 {
     m_Impl.upd()->setFilterMode(twm);
-}
-
-void* osc::Texture2D::getTextureHandleHACK() const
-{
-    return m_Impl->getTextureHandleHACK();
 }
 
 std::vector<osc::Color> osc::Texture2D::getPixels() const
@@ -2795,20 +2783,6 @@ public:
         return m_DepthBuffer->m_Impl->updRenderBufferData();
     }
 
-    void* getTextureHandleHACK() const
-    {
-        // yes, this is a shitshow of casting, const-casting, etc. - it's purely here until and osc-specific
-        // ImGui backend is written
-        void* rv = nullptr;
-        std::visit(Overload
-        {
-            [&rv](SingleSampledTexture& sst) { rv = reinterpret_cast<void*>(static_cast<uintptr_t>(sst.texture2D.get())); },
-            [&rv](MultisampledRBOAndResolvedTexture& mst) { rv = reinterpret_cast<void*>(static_cast<uintptr_t>(mst.singleSampledTexture.get())); },
-            [](SingleSampledCubemap&) {}
-        },  const_cast<Impl&>(*this).getColorRenderBufferData());
-        return rv;
-    }
-
     bool hasBeenRenderedTo() const
     {
         return m_ColorBuffer->m_Impl->hasBeenRenderedTo();
@@ -2919,11 +2893,6 @@ std::shared_ptr<osc::RenderBuffer> osc::RenderTexture::updColorBuffer()
 std::shared_ptr<osc::RenderBuffer> osc::RenderTexture::updDepthBuffer()
 {
     return m_Impl.upd()->updDepthBuffer();
-}
-
-void* osc::RenderTexture::getTextureHandleHACK() const
-{
-    return m_Impl->getTextureHandleHACK();
 }
 
 std::ostream& osc::operator<<(std::ostream& o, RenderTexture const&)

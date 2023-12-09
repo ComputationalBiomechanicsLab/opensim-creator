@@ -1,6 +1,7 @@
 #include "ImGuiHelpers.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Bindings/imgui_impl_oscargfx.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/RenderTexture.hpp>
@@ -451,14 +452,8 @@ void osc::DrawTextureAsImGuiImage(
     Vec2 topLeftCoord,
     Vec2 bottomRightCoord)
 {
-    if (void* handle = t.getTextureHandleHACK())
-    {
-        ImGui::Image(handle, dims, topLeftCoord, bottomRightCoord);
-    }
-    else
-    {
-        ImGui::Dummy(dims);
-    }
+    auto const handle = ImGui_ImplOscarGfx_AllocateTextureID(t);
+    ImGui::Image(handle, dims, topLeftCoord, bottomRightCoord);
 }
 
 void osc::DrawTextureAsImGuiImage(RenderTexture const& tex)
@@ -470,15 +465,8 @@ void osc::DrawTextureAsImGuiImage(RenderTexture const& t, Vec2 dims)
 {
     Vec2 const uv0 = {0.0f, 1.0f};
     Vec2 const uv1 = {1.0f, 0.0f};
-
-    if (void* handle = t.getTextureHandleHACK())
-    {
-        ImGui::Image(handle, dims, uv0, uv1);
-    }
-    else
-    {
-        ImGui::Dummy(dims);
-    }
+    auto const handle = ImGui_ImplOscarGfx_AllocateTextureID(t);
+    ImGui::Image(handle, dims, uv0, uv1);
 }
 
 osc::Vec2 osc::CalcButtonSize(CStringView content)
@@ -510,15 +498,8 @@ bool osc::ImageButton(
     Vec2 dims,
     Rect const& textureCoords)
 {
-    if (void* handle = t.getTextureHandleHACK())
-    {
-        return ImGui::ImageButton(label.c_str(), handle, dims, textureCoords.p1, textureCoords.p2);
-    }
-    else
-    {
-        ImGui::Dummy(dims);
-        return false;
-    }
+    auto const handle = ImGui_ImplOscarGfx_AllocateTextureID(t);
+    return ImGui::ImageButton(label.c_str(), handle, dims, textureCoords.p1, textureCoords.p2);
 }
 
 bool osc::ImageButton(CStringView label, Texture2D const& t, Vec2 dims)
