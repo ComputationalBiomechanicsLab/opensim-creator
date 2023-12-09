@@ -65,7 +65,7 @@ namespace
             return rv;
         }
 
-        ReadLandmarksFromCSV(in, [&rv](auto&& lm) { rv.push_back(std::move(lm)); });
+        ReadLandmarksFromCSV(in, [&rv](auto&& lm) { rv.push_back(std::forward(lm)); });
         return rv;
     }
 

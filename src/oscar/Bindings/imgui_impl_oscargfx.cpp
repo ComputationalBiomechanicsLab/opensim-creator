@@ -291,8 +291,7 @@ bool ImGui_ImplOscarGfx_Init()
     OSC_ASSERT(io.BackendRendererUserData == nullptr && "an oscar ImGui renderer backend is already initialized - this is a developer error (double-initialization)");
 
     // init backend data
-    OscarImguiBackendData* bd = new OscarImguiBackendData{};
-    io.BackendRendererUserData = static_cast<void*>(bd);
+    io.BackendRendererUserData = static_cast<void*>(new OscarImguiBackendData{});
     io.BackendRendererName = "imgui_impl_osc";
 
     return true;
@@ -310,7 +309,7 @@ void ImGui_ImplOscarGfx_Shutdown()
     ImGuiIO& io = ImGui::GetIO();
     io.BackendRendererName = nullptr;
     io.BackendRendererUserData = nullptr;
-    delete bd;
+    delete bd;  // NOLINT(cppcoreguidelines-owning-memory)
 }
 
 void ImGui_ImplOscarGfx_NewFrame()
