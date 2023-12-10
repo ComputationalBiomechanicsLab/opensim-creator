@@ -2,6 +2,9 @@
 
 #include <oscar/Graphics/MeshIndicesView.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
+#include <oscar/Graphics/VertexAttribute.hpp>
+#include <oscar/Graphics/VertexAttributeDescriptor.hpp>
+#include <oscar/Graphics/VertexAttributeFormat.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Triangle.hpp>
@@ -9,12 +12,15 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 #include <oscar/Utils/CopyOnUpdPtr.hpp>
+#include <oscar/Utils/ObjectRepresentation.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <iosfwd>
+#include <optional>
 #include <span>
+#include <type_traits>
 #include <vector>
 
 namespace osc { struct AABB; }
@@ -64,7 +70,6 @@ namespace osc
         void setIndices(MeshIndicesView);
         void setIndices(std::span<uint16_t const>);
         void setIndices(std::span<uint32_t const>);
-
         void forEachIndexedVert(std::function<void(Vec3)> const&) const;
         void forEachIndexedTriangle(std::function<void(Triangle)> const&) const;
 
@@ -76,6 +81,24 @@ namespace osc
         void pushSubMeshDescriptor(SubMeshDescriptor const&);
         SubMeshDescriptor const& getSubMeshDescriptor(size_t) const;
         void clearSubMeshDescriptors();
+
+        // TODO: these aren't implemented yet!
+        size_t getVertexAttributeCount() const;
+        VertexAttributeDescriptor getVertexAttribute(size_t) const;
+        std::vector<VertexAttributeDescriptor> getVertexAttributes() const;
+        bool hasVertexAttribute(VertexAttribute) const;
+        std::optional<size_t> getVertexAttributeDimension(VertexAttribute) const;
+        std::optional<VertexAttributeFormat> getVertexAttributeFormat(VertexAttribute) const;
+        std::optional<size_t> getVertexAttributeOffset(VertexAttribute) const;
+        size_t getVertexBufferStride() const;
+        void setVertexBufferParams(size_t n, std::span<VertexAttributeDescriptor>);
+        void setVertexBufferData(std::span<uint8_t const>, size_t stride);
+        template<class T>
+        void setVertexBufferData(std::span<T const> vs)
+            requires std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>
+        {
+            setVertexBufferData(ViewObjectRepresentations<uint8_t>(vs));
+        }
 
         friend void swap(Mesh& a, Mesh& b) noexcept
         {
