@@ -63,38 +63,38 @@ public:
             m_Ray = m_PolarCamera.unprojectTopLeftPosToWorldRay(Vec2{ImGui::GetMousePos()} - r.p1, d);
 
             m_IsMousedOver = false;
+            auto const verts = m_Mesh.getVerts();
             if (m_UseBVH)
             {
                 MeshIndicesView const indices = m_Mesh.getIndices();
                 std::optional<BVHCollision> const maybeCollision = indices.isU16() ?
-                    m_MeshBVH.getClosestRayIndexedTriangleCollision(m_Mesh.getVerts(), indices.toU16Span(), m_Ray) :
-                    m_MeshBVH.getClosestRayIndexedTriangleCollision(m_Mesh.getVerts(), indices.toU32Span(), m_Ray);
+                    m_MeshBVH.getClosestRayIndexedTriangleCollision(verts, indices.toU16Span(), m_Ray) :
+                    m_MeshBVH.getClosestRayIndexedTriangleCollision(verts, indices.toU32Span(), m_Ray);
                 if (maybeCollision)
                 {
                     uint32_t index = m_Mesh.getIndices()[maybeCollision->id];
                     m_IsMousedOver = true;
-                    m_Tris[0] = m_Mesh.getVerts()[index];
-                    m_Tris[1] = m_Mesh.getVerts()[index+1];
-                    m_Tris[2] = m_Mesh.getVerts()[index+2];
+                    m_Tris[0] = verts[index];
+                    m_Tris[1] = verts[index+1];
+                    m_Tris[2] = verts[index+2];
                 }
             }
             else
             {
-                std::span<Vec3 const> tris = m_Mesh.getVerts();
-                for (size_t i = 0; i < tris.size(); i += 3)
+                for (size_t i = 0; i < verts.size(); i += 3)
                 {
                     std::optional<RayCollision> const res = GetRayCollisionTriangle(
                         m_Ray,
-                        Triangle{tris[i], tris[i+1], tris[i+2]}
+                        Triangle{verts[i], verts[i+1], verts[i+2]}
                     );
                     if (res)
                     {
                         m_HitPos = res->position;
                         m_IsMousedOver = true;
 
-                        m_Tris[0] = tris[i];
-                        m_Tris[1] = tris[i + 1];
-                        m_Tris[2] = tris[i + 2];
+                        m_Tris[0] = verts[i];
+                        m_Tris[1] = verts[i + 1];
+                        m_Tris[2] = verts[i + 2];
 
                         break;
                     }

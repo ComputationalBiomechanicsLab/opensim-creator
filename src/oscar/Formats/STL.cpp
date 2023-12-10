@@ -104,7 +104,7 @@ namespace
     void WriteTriangles(std::ostream& o, Mesh const& mesh)
     {
         MeshIndicesView const indices = mesh.getIndices();
-        std::span<Vec3 const> const verts = mesh.getVerts();
+        auto const verts = mesh.getVerts();
 
         for (ptrdiff_t i = 0; i < std::ssize(indices)-2; i += 3)
         {

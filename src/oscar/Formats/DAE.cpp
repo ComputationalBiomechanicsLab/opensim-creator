@@ -248,7 +248,7 @@ namespace
 
     void WriteMeshPositionsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        std::span<Vec3 const> const vals = geom.mesh.getVerts();
+        auto const vals = geom.mesh.getVerts();
         size_t const floatCount = 3 * vals.size();
         size_t const vertCount = vals.size();
 

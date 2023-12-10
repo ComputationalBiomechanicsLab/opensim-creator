@@ -217,7 +217,7 @@ osc::Vec3 osc::MassCenter(Mesh const& m)
         return {0.0f, 0.0f, 0.0f};
     }
 
-    std::span<Vec3 const> const verts = m.getVerts();
+    auto const verts = m.getVerts();
     MeshIndicesView const indices = m.getIndices();
     size_t const len = (indices.size() / 3) * 3;  // paranioa
 
@@ -245,7 +245,7 @@ osc::Vec3 osc::MassCenter(Mesh const& m)
 osc::Vec3 osc::AverageCenterpoint(Mesh const& m)
 {
     MeshIndicesView const indices = m.getIndices();
-    std::span<Vec3 const> const verts = m.getVerts();
+    auto const verts = m.getVerts();
 
     Vec3 acc = {0.0f, 0.0f, 0.0f};
     for (uint32_t index : indices)
