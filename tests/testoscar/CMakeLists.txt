@@ -6,6 +6,8 @@ add_executable(testoscar
     Formats/TestDAE.cpp
 
     Graphics/TestAntiAliasingLevel.cpp
+    Graphics/TestCamera.cpp
+    Graphics/TestCameraProjection.cpp
     Graphics/TestColor.cpp
     Graphics/TestCubemap.cpp
     Graphics/TestCubemapFace.cpp
@@ -44,6 +46,8 @@ add_executable(testoscar
     Variant/TestVariant.cpp
     Variant/TestVariantType.cpp
 
+    TestingHelpers.cpp
+    TestingHelpers.hpp
     testoscar.cpp  # entry point
 )
 
@@ -54,6 +58,9 @@ configure_file(
 )
 
 target_include_directories(testoscar PUBLIC
+
+    # so that the source code can `#include <testoscar/SomeModule.hpp>`
+    ${CMAKE_CURRENT_SOURCE_DIR}/..
 
     # so that source code can `#include <tesetoscar/testoscarconfig.hpp>`
     "${CMAKE_CURRENT_BINARY_DIR}/generated/"

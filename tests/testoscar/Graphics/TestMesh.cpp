@@ -1,5 +1,7 @@
 #include <oscar/Graphics/Mesh.hpp>
 
+#include <testoscar/TestingHelpers.hpp>
+
 #include <gtest/gtest.h>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
@@ -15,10 +17,19 @@
 #include <oscar/Utils/Concepts.hpp>
 
 #include <algorithm>
+#include <array>
+#include <cstddef>
+#include <cstdint>
 #include <random>
+#include <span>
+#include <sstream>
 #include <utility>
 #include <vector>
 
+using osc::testing::ContainersEqual;
+using osc::testing::GenerateTriangleVerts;
+using osc::testing::GenerateVec2;
+using osc::testing::GenerateVec3;
 using osc::AABB;
 using osc::Color;
 using osc::ContiguousContainer;
@@ -34,48 +45,6 @@ using osc::Transform;
 using osc::Vec2;
 using osc::Vec3;
 using osc::Vec4;
-
-namespace
-{
-    std::default_random_engine& GetRngEngine()
-    {
-        // the RNG is deliberately deterministic, so that
-        // test errors are reproducible
-        static std::default_random_engine e{};  // NOLINT(cert-msc32-c,cert-msc51-cpp)
-        return e;
-    }
-
-    float GenerateFloat()
-    {
-        return static_cast<float>(std::uniform_real_distribution{}(GetRngEngine()));
-    }
-
-    Vec2 GenerateVec2()
-    {
-        return Vec2{GenerateFloat(), GenerateFloat()};
-    }
-
-    Vec3 GenerateVec3()
-    {
-        return Vec3{GenerateFloat(), GenerateFloat(), GenerateFloat()};
-    }
-
-    std::vector<Vec3> GenerateTriangleVerts()
-    {
-        std::vector<Vec3> rv;
-        for (size_t i = 0; i < 30; ++i)
-        {
-            rv.push_back(GenerateVec3());
-        }
-        return rv;
-    }
-
-    template<ContiguousContainer T, ContiguousContainer U>
-    bool ContainersEqual(T const& a, U const& b)
-    {
-        return std::equal(a.begin(), a.end(), b.begin(), b.end());
-    }
-}
 
 TEST(Mesh, CanBeDefaultConstructed)
 {
