@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <span>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -34,8 +35,9 @@ namespace
 {
     constexpr CStringView c_TabStringID = "Demos/SubMeshes";
 
-    template<class T>
-    void Append(std::vector<T>& out, std::span<T const> els)
+    template<class T, class U>
+    void Append(T& out, U els)
+        requires std::is_same_v<typename T::value_type, typename U::value_type>
     {
         out.insert(out.end(), els.begin(), els.end());
     }

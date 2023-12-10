@@ -4028,7 +4028,7 @@ public:
         return !m_Vertices.empty();
     }
 
-    std::span<Vec3 const> getVerts() const
+    std::vector<Vec3> getVerts() const
     {
         return m_Vertices;
     }
@@ -4069,7 +4069,7 @@ public:
         return !m_Normals.empty();
     }
 
-    std::span<Vec3 const> getNormals() const
+    std::vector<Vec3> getNormals() const
     {
         return m_Normals;
     }
@@ -4092,7 +4092,7 @@ public:
         return !m_TexCoords.empty();
     }
 
-    std::span<Vec2 const> getTexCoords() const
+    std::vector<Vec2> getTexCoords() const
     {
         return m_TexCoords;
     }
@@ -4110,7 +4110,7 @@ public:
         m_Version->reset();
     }
 
-    std::span<Color const> getColors() const
+    std::vector<Color> getColors() const
     {
         return m_Colors;
     }
@@ -4122,7 +4122,7 @@ public:
         m_Version.reset();
     }
 
-    std::span<Vec4 const> getTangents() const
+    std::vector<Vec4> getTangents() const
     {
         return m_Tangents;
     }
@@ -4193,6 +4193,32 @@ public:
 
         recalculateBounds();
         m_Version->reset();
+    }
+
+    void forEachIndexedVert(std::function<void(Vec3)> const& f) const
+    {
+        for (auto idx : getIndices())
+        {
+            f(m_Vertices.at(idx));
+        }
+    }
+
+    void forEachIndexedTriangle(std::function<void(Triangle)> const& f) const
+    {
+        if (m_Topology != MeshTopology::Triangles)
+        {
+            return;
+        }
+        MeshIndicesView const indices = getIndices();
+        size_t const steps = (indices.size() / 3) * 3;
+        for (size_t i = 0; i < steps; i += 3)
+        {
+            f(Triangle{
+                m_Vertices.at(indices[i]),
+                m_Vertices.at(indices[i+1]),
+                m_Vertices.at(indices[i+2]),
+            });
+        }
     }
 
     AABB const& getBounds() const
@@ -4529,7 +4555,7 @@ bool osc::Mesh::hasVerts() const
     return m_Impl->hasVerts();
 }
 
-std::span<osc::Vec3 const> osc::Mesh::getVerts() const
+std::vector<Vec3> osc::Mesh::getVerts() const
 {
     return m_Impl->getVerts();
 }
@@ -4559,7 +4585,7 @@ bool osc::Mesh::hasNormals() const
     return m_Impl->hasNormals();
 }
 
-std::span<osc::Vec3 const> osc::Mesh::getNormals() const
+std::vector<Vec3> osc::Mesh::getNormals() const
 {
     return m_Impl->getNormals();
 }
@@ -4579,7 +4605,7 @@ bool osc::Mesh::hasTexCoords() const
     return m_Impl->hasTexCoords();
 }
 
-std::span<osc::Vec2 const> osc::Mesh::getTexCoords() const
+std::vector<Vec2> osc::Mesh::getTexCoords() const
 {
     return m_Impl->getTexCoords();
 }
@@ -4594,7 +4620,7 @@ void osc::Mesh::transformTexCoords(std::function<void(Vec2&)> const& f)
     m_Impl.upd()->transformTexCoords(f);
 }
 
-std::span<osc::Color const> osc::Mesh::getColors() const
+std::vector<Color> osc::Mesh::getColors() const
 {
     return m_Impl->getColors();
 }
@@ -4604,7 +4630,7 @@ void osc::Mesh::setColors(std::span<osc::Color const> colors)
     m_Impl.upd()->setColors(colors);
 }
 
-std::span<osc::Vec4 const> osc::Mesh::getTangents() const
+std::vector<Vec4> osc::Mesh::getTangents() const
 {
     return m_Impl->getTangents();
 }
@@ -4632,6 +4658,16 @@ void osc::Mesh::setIndices(std::span<uint16_t const> indices)
 void osc::Mesh::setIndices(std::span<uint32_t const> indices)
 {
     m_Impl.upd()->setIndices(indices);
+}
+
+void osc::Mesh::forEachIndexedVert(std::function<void(Vec3)> const& f) const
+{
+    m_Impl->forEachIndexedVert(f);
+}
+
+void osc::Mesh::forEachIndexedTriangle(std::function<void(Triangle)> const& f) const
+{
+    m_Impl->forEachIndexedTriangle(f);
 }
 
 osc::AABB const& osc::Mesh::getBounds() const

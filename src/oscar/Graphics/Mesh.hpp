@@ -4,11 +4,13 @@
 #include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Triangle.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 #include <oscar/Utils/CopyOnUpdPtr.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <iosfwd>
@@ -36,32 +38,35 @@ namespace osc
 
         bool hasVerts() const;
         size_t getNumVerts() const;
-        std::span<Vec3 const> getVerts() const;
+        std::vector<Vec3> getVerts() const;
         void setVerts(std::span<Vec3 const>);
         void transformVerts(std::function<void(Vec3&)> const&);
         void transformVerts(Transform const&);
         void transformVerts(Mat4 const&);
 
         bool hasNormals() const;
-        std::span<Vec3 const> getNormals() const;
+        std::vector<Vec3> getNormals() const;
         void setNormals(std::span<Vec3 const>);
         void transformNormals(std::function<void(Vec3&)> const&);
 
         bool hasTexCoords() const;
-        std::span<Vec2 const> getTexCoords() const;
+        std::vector<Vec2> getTexCoords() const;
         void setTexCoords(std::span<Vec2 const>);
         void transformTexCoords(std::function<void(Vec2&)> const&);
 
-        std::span<Color const> getColors() const;
+        std::vector<Color> getColors() const;
         void setColors(std::span<Color const>);
 
-        std::span<Vec4 const> getTangents() const;
+        std::vector<Vec4> getTangents() const;
         void setTangents(std::span<Vec4 const>);
 
         MeshIndicesView getIndices() const;
         void setIndices(MeshIndicesView);
         void setIndices(std::span<uint16_t const>);
         void setIndices(std::span<uint32_t const>);
+
+        void forEachIndexedVert(std::function<void(Vec3)> const&) const;
+        void forEachIndexedTriangle(std::function<void(Triangle)> const&) const;
 
         AABB const& getBounds() const;  // local-space
 

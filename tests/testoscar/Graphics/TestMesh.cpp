@@ -461,6 +461,100 @@ TEST(Mesh, GetNumIndicesReturnsZeroOnDefaultConstruction)
     ASSERT_EQ(m.getIndices().size(), 0);
 }
 
+TEST(Mesh, ForEachIndexedVertNotCalledWithEmptyMesh)
+{
+    size_t ncalls = 0;
+    Mesh{}.forEachIndexedVert([&ncalls](auto&&) { ++ncalls; });
+    ASSERT_EQ(ncalls, 0);
+}
+
+TEST(Mesh, ForEachIndexedVertNotCalledWhenOnlyVertexDataSupplied)
+{
+    Mesh m;
+    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});
+    size_t ncalls = 0;
+    m.forEachIndexedVert([&ncalls](auto&&) { ++ncalls; });
+    ASSERT_EQ(ncalls, 0);
+}
+
+TEST(Mesh, ForEachIndexedVertCalledWhenSuppliedCorrectlyIndexedMesh)
+{
+    Mesh m;
+    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});
+    m.setIndices(std::to_array<uint16_t>({0, 1, 2}));
+    size_t ncalls = 0;
+    m.forEachIndexedVert([&ncalls](auto&&) { ++ncalls; });
+    ASSERT_EQ(ncalls, 3);
+}
+
+TEST(Mesh, ForEachIndexedVertCalledEvenWhenMeshIsNonTriangular)
+{
+    Mesh m;
+    m.setTopology(MeshTopology::Lines);
+    m.setVerts({{Vec3{}, Vec3{}, Vec3{}, Vec3{}}});
+    m.setIndices(std::to_array<uint16_t>({0, 1, 2, 3}));
+    size_t ncalls = 0;
+    m.forEachIndexedVert([&ncalls](auto&&) { ++ncalls; });
+    ASSERT_EQ(ncalls, 4);
+}
+
+TEST(Mesh, ForEachIndexedTriangleNotCalledWithEmptyMesh)
+{
+    size_t ncalls = 0;
+    Mesh{}.forEachIndexedTriangle([&ncalls](auto&&) { ++ncalls; });
+    ASSERT_EQ(ncalls, 0);
+}
+
+TEST(Mesh, ForEachIndexedTriangleNotCalledWhenMeshhasNoIndicies)
+{
+    Mesh m;
+    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});  // unindexed
+    size_t ncalls = 0;
+    m.forEachIndexedTriangle([&ncalls](auto&&) { ++ncalls; });
+    ASSERT_EQ(ncalls, 0);
+}
+
+TEST(Mesh, ForEachIndexedTriangleCalledIfMeshContainsIndexedTriangles)
+{
+    Mesh m;
+    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});
+    m.setIndices(std::to_array<uint16_t>({0, 1, 2}));
+    size_t ncalls = 0;
+    m.forEachIndexedTriangle([&ncalls](auto&&) { ++ncalls; });
+    ASSERT_EQ(ncalls, 1);
+}
+
+TEST(Mesh, ForEachIndexedTriangleNotCalledIfMeshContainsInsufficientIndices)
+{
+    Mesh m;
+    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});
+    m.setIndices(std::to_array<uint16_t>({0, 1}));  // too few
+    size_t ncalls = 0;
+    m.forEachIndexedTriangle([&ncalls](auto&&) { ++ncalls; });
+    ASSERT_EQ(ncalls, 0);
+}
+
+TEST(Mesh, ForEachIndexedTriangleCalledMultipleTimesForMultipleTriangles)
+{
+    Mesh m;
+    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});
+    m.setIndices(std::to_array<uint16_t>({0, 1, 2, 1, 2, 0}));
+    size_t ncalls = 0;
+    m.forEachIndexedTriangle([&ncalls](auto&&) { ++ncalls; });
+    ASSERT_EQ(ncalls, 2);
+}
+
+TEST(Mesh, ForEachIndexedTriangleNotCalledIfMeshTopologyIsLines)
+{
+    Mesh m;
+    m.setTopology(MeshTopology::Lines);
+    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});
+    m.setIndices(std::to_array<uint16_t>({0, 1, 2, 1, 2, 0}));
+    size_t ncalls = 0;
+    m.forEachIndexedTriangle([&ncalls](auto&&) { ++ncalls; });
+    ASSERT_EQ(ncalls, 0);
+}
+
 TEST(Mesh, GetBoundsReturnsEmptyBoundsOnInitialization)
 {
     Mesh m;

@@ -8,7 +8,7 @@
 namespace osc
 {
     template<RandomAccessContainer T>
-    auto At(T const& vs, size_t i) -> typename T::reference
+    auto At(T const& vs, size_t i) -> decltype(vs[i])
     {
         if (i <= vs.size())
         {

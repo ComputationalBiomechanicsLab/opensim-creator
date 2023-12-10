@@ -251,15 +251,14 @@ osc::Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, Mesh con
     Mesh rv = mesh;  // make a local copy of the input mesh
 
     // copy out the vertices
-    std::vector<Vec3> verts{rv.getVerts().begin(), rv.getVerts().end()};
 
     // parallelize function evaluation, because the mesh may contain *a lot* of
     // verts and the TPS equation may contain *a lot* of coefficients
+    auto verts = rv.getVerts();
     osc::ForEachParUnseq(8192, std::span<Vec3>(verts), [&coefs](Vec3& vert)
     {
         vert = EvaluateTPSEquation(coefs, vert);
     });
-
     rv.setVerts(verts);
 
     return rv;
