@@ -19,6 +19,8 @@ add_executable(testoscar
     Graphics/TestRenderTarget.cpp
     Graphics/TestRenderTargetColorAttachment.cpp
     Graphics/TestRenderTargetDepthAttachment.cpp
+    Graphics/TestRenderTexture.cpp
+    Graphics/TestRenderTextureDescriptor.cpp
     Graphics/TestRenderTextureFormat.cpp
     Graphics/TestTextureChannelFormat.cpp
     Graphics/TestTextureFormat.cpp
