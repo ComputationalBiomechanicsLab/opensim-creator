@@ -2967,32 +2967,3 @@ TEST_F(Renderer, DrawMeshDoesNotThrowIfGivenInBoundsSubMesh)
 
     ASSERT_NO_THROW({ osc::Graphics::DrawMesh(mesh, transform, material, camera, std::nullopt, 0); });
 }
-
-// TODO MeshSetIndicesU16CausesGetNumIndicesToEqualSuppliedNumberOfIndices
-// TODO Mesh::getIndices
-// TODO Mesh::setIndices U16
-// TODO Mesh::setIndices U32
-// TODO Mesh::setIndices MeshIndicesView
-// TODO Mesh ensure > 2^16 indices are allowed
-// TODO Mesh::clear
-//
-// TODO: RenderTexture (all)
-
-// TODO: texture: ensure texture debug string contains useful information etc.
-
-// TODO: Camera: orthographic size
-// TODO: Camera: fov
-// TODO: Camera: clipping planes
-// TODO: Camera: texture
-// TODO: Camera: pixel rect
-// TODO: Camera: pixel dims
-// TODO: Camera: scissor rect
-// TODO: Camera: position
-// TODO: Camera: direction
-// TODO: Camera: up
-// TODO: Camera: matrix
-// TODO: Camera: render
-// TODO: Camera: operator<<
-// TODO: Camera: to_string
-// TODO: Camera: hash
-// TODO: Camera: ensure output strings are actually useful
