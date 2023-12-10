@@ -24,7 +24,6 @@ using osc::Dot;
 using osc::Identity;
 using osc::Mat4;
 using osc::Normalize;
-using osc::NumOptions;
 using osc::Vec3;
 
 TEST(Camera, CanDefaultConstruct)
