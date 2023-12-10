@@ -27,7 +27,7 @@ TEST(FitSphere, ReturnsUnitSphereWhenGivenAnEmptyMesh)
     osc::Mesh const emptyMesh;
     osc::Sphere const sphereFit = osc::FitSphere(emptyMesh);
 
-    ASSERT_FALSE(emptyMesh.hasVertexData());
+    ASSERT_FALSE(emptyMesh.hasVerts());
     ASSERT_EQ(sphereFit.origin, Vec3(0.0f, 0.0f, 0.0f));
     ASSERT_EQ(sphereFit.radius, 1.0f);
 }
@@ -96,7 +96,7 @@ TEST(FitPlane, ReturnsUnitPlanePointingUpInYIfGivenAnEmptyMesh)
     osc::Mesh const emptyMesh;
     osc::Plane const planeFit = osc::FitPlane(emptyMesh);
 
-    ASSERT_FALSE(emptyMesh.hasVertexData());
+    ASSERT_FALSE(emptyMesh.hasVerts());
     ASSERT_EQ(planeFit.origin, Vec3(0.0f, 0.0f, 0.0f));
     ASSERT_EQ(planeFit.normal, Vec3(0.0f, 1.0f, 0.0f));
 }

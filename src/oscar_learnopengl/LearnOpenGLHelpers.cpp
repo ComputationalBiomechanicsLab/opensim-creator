@@ -8,14 +8,6 @@
 osc::Mesh osc::GenLearnOpenGLCube()
 {
     Mesh cube = osc::GenCube();
-
-    cube.transformVerts([](std::span<Vec3> vs)
-    {
-        for (Vec3& v : vs)
-        {
-            v *= 0.5f;
-        }
-    });
-
+    cube.transformVerts([](Vec3& v) { v *= 0.5f; });
     return cube;
 }

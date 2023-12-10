@@ -34,22 +34,23 @@ namespace osc
         MeshTopology getTopology() const;
         void setTopology(MeshTopology);
 
-        bool hasVertexData() const;
+        bool hasVerts() const;
         size_t getNumVerts() const;
-
         std::span<Vec3 const> getVerts() const;
         void setVerts(std::span<Vec3 const>);
-        void transformVerts(std::function<void(std::span<Vec3>)> const&);
+        void transformVerts(std::function<void(Vec3&)> const&);
         void transformVerts(Transform const&);
         void transformVerts(Mat4 const&);
 
+        bool hasNormals() const;
         std::span<Vec3 const> getNormals() const;
         void setNormals(std::span<Vec3 const>);
-        void transformNormals(std::function<void(std::span<Vec3>)> const&);
+        void transformNormals(std::function<void(Vec3&)> const&);
 
+        bool hasTexCoords() const;
         std::span<Vec2 const> getTexCoords() const;
         void setTexCoords(std::span<Vec2 const>);
-        void transformTexCoords(std::function<void(std::span<Vec2>)> const&);
+        void transformTexCoords(std::function<void(Vec2&)> const&);
 
         std::span<Color const> getColors() const;
         void setColors(std::span<Color const>);

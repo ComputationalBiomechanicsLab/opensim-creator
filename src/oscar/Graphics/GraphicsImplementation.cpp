@@ -4018,19 +4018,14 @@ public:
         m_Version->reset();
     }
 
-    bool hasVertexData() const
-    {
-        return
-            !m_Vertices.empty() ||
-            !m_Normals.empty() ||
-            !m_TexCoords.empty() ||
-            !m_Colors.empty() ||
-            !m_Tangents.empty();
-    }
-
     size_t getNumVerts() const
     {
         return m_Vertices.size();
+    }
+
+    bool hasVerts() const
+    {
+        return !m_Vertices.empty();
     }
 
     std::span<Vec3 const> getVerts() const
@@ -4046,10 +4041,9 @@ public:
         m_Version->reset();
     }
 
-    void transformVerts(std::function<void(std::span<Vec3>)> const& f)
+    void transformVerts(std::function<void(Vec3&)> const& f)
     {
-        f(m_Vertices);
-
+        std::for_each(m_Vertices.begin(), m_Vertices.end(), f);
         recalculateBounds();
         m_Version->reset();
     }
@@ -4070,6 +4064,11 @@ public:
         }
     }
 
+    bool hasNormals() const
+    {
+        return !m_Normals.empty();
+    }
+
     std::span<Vec3 const> getNormals() const
     {
         return m_Normals;
@@ -4082,10 +4081,15 @@ public:
         m_Version->reset();
     }
 
-    void transformNormals(std::function<void(std::span<Vec3>)> const& f)
+    void transformNormals(std::function<void(Vec3&)> const& f)
     {
-        f(m_Normals);
+        std::for_each(m_Normals.begin(), m_Normals.end(), f);
         m_Version->reset();
+    }
+
+    bool hasTexCoords() const
+    {
+        return !m_TexCoords.empty();
     }
 
     std::span<Vec2 const> getTexCoords() const
@@ -4100,10 +4104,9 @@ public:
         m_Version->reset();
     }
 
-    void transformTexCoords(std::function<void(std::span<Vec2>)> const& f)
+    void transformTexCoords(std::function<void(Vec2&)> const& f)
     {
-        f(m_TexCoords);
-
+        std::for_each(m_TexCoords.begin(), m_TexCoords.end(), f);
         m_Version->reset();
     }
 
@@ -4516,14 +4519,14 @@ void osc::Mesh::setTopology(MeshTopology topology)
     m_Impl.upd()->setTopology(topology);
 }
 
-bool osc::Mesh::hasVertexData() const
-{
-    return m_Impl->hasVertexData();
-}
-
 size_t osc::Mesh::getNumVerts() const
 {
     return m_Impl->getNumVerts();
+}
+
+bool osc::Mesh::hasVerts() const
+{
+    return m_Impl->hasVerts();
 }
 
 std::span<osc::Vec3 const> osc::Mesh::getVerts() const
@@ -4536,7 +4539,7 @@ void osc::Mesh::setVerts(std::span<Vec3 const> verts)
     m_Impl.upd()->setVerts(verts);
 }
 
-void osc::Mesh::transformVerts(std::function<void(std::span<Vec3>)> const& f)
+void osc::Mesh::transformVerts(std::function<void(Vec3&)> const& f)
 {
     m_Impl.upd()->transformVerts(f);
 }
@@ -4551,6 +4554,11 @@ void osc::Mesh::transformVerts(Mat4 const& m)
     m_Impl.upd()->transformVerts(m);
 }
 
+bool osc::Mesh::hasNormals() const
+{
+    return m_Impl->hasNormals();
+}
+
 std::span<osc::Vec3 const> osc::Mesh::getNormals() const
 {
     return m_Impl->getNormals();
@@ -4561,9 +4569,14 @@ void osc::Mesh::setNormals(std::span<Vec3 const> verts)
     m_Impl.upd()->setNormals(verts);
 }
 
-void osc::Mesh::transformNormals(std::function<void(std::span<Vec3>)> const& f)
+void osc::Mesh::transformNormals(std::function<void(Vec3&)> const& f)
 {
     m_Impl.upd()->transformNormals(f);
+}
+
+bool osc::Mesh::hasTexCoords() const
+{
+    return m_Impl->hasTexCoords();
 }
 
 std::span<osc::Vec2 const> osc::Mesh::getTexCoords() const
@@ -4576,7 +4589,7 @@ void osc::Mesh::setTexCoords(std::span<Vec2 const> coords)
     m_Impl.upd()->setTexCoords(coords);
 }
 
-void osc::Mesh::transformTexCoords(std::function<void(std::span<Vec2>)> const& f)
+void osc::Mesh::transformTexCoords(std::function<void(Vec2&)> const& f)
 {
     m_Impl.upd()->transformTexCoords(f);
 }

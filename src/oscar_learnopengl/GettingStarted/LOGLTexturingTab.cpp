@@ -46,22 +46,10 @@ namespace
         Mesh quad = osc::GenTexturedQuad();
 
         // transform default quad verts to match LearnOpenGL
-        quad.transformVerts([](std::span<Vec3> vs)
-        {
-            for (Vec3& v : vs)
-            {
-                v *= 0.5f;
-            }
-        });
+        quad.transformVerts([](Vec3& v) { v *= 0.5f; });
 
         // transform default quad texture coordinates to exercise wrap modes
-        quad.transformTexCoords([](std::span<Vec2> coords)
-        {
-            for (Vec2& coord : coords)
-            {
-                coord *= 2.0f;
-            }
-        });
+        quad.transformTexCoords([](Vec2& coord) { coord *= 2.0f; });
 
         return quad;
     }

@@ -119,56 +119,6 @@ TEST(Mesh, SetTopologyCausesCopiedMeshTobeNotEqualToInitialMesh)
     ASSERT_NE(m, copy);
 }
 
-TEST(Mesh, HasVertexDataReturnsFalseForNewlyConstructedMesh)
-{
-    ASSERT_FALSE(Mesh{}.hasVertexData());
-}
-
-TEST(Mesh, HasVertexDataReturnsTrueAfterSettingVertsThenFalseAfterClearing)
-{
-    Mesh m;
-    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});
-    ASSERT_TRUE(m.hasVertexData());
-    m.clear();
-    ASSERT_FALSE(m.hasVertexData());
-}
-
-TEST(Mesh, HasVertexDataReturnsTrueAfterSettingNormalsThenFalseAfterClearing)
-{
-    Mesh m;
-    m.setNormals({{Vec3{}, Vec3{}, Vec3{}}});
-    ASSERT_TRUE(m.hasVertexData());
-    m.clear();
-    ASSERT_FALSE(m.hasVertexData());
-}
-
-TEST(Mesh, HasVertexDataReturnsTrueAfterSettingTexCoordsThenFalseAfterClearing)
-{
-    Mesh m;
-    m.setTexCoords({{Vec2{}, Vec2{}}});
-    ASSERT_TRUE(m.hasVertexData());
-    m.clear();
-    ASSERT_FALSE(m.hasVertexData());
-}
-
-TEST(Mesh, HasVertexDataRetrunsTrueAfterSettingColorsThenFalseAfterClearing)
-{
-    Mesh m;
-    m.setColors({{Color::black(), Color::white()}});
-    ASSERT_TRUE(m.hasVertexData());
-    m.clear();
-    ASSERT_FALSE(m.hasVertexData());
-}
-
-TEST(Mesh, HasVertexDataReturnsTrueAfteSettingTangentsThenFalseAfterClearing)
-{
-    Mesh m;
-    m.setTangents({{Vec4{}, Vec4{}}});
-    ASSERT_TRUE(m.hasVertexData());
-    m.clear();
-    ASSERT_FALSE(m.hasVertexData());
-}
-
 TEST(Mesh, GetNumVertsInitiallyEmpty)
 {
     ASSERT_EQ(Mesh{}.getNumVerts(), 0);
@@ -179,6 +129,18 @@ TEST(Mesh, Assigning3VertsMakesGetNumVertsReturn3Verts)
     Mesh m;
     m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});
     ASSERT_EQ(m.getNumVerts(), 3);
+}
+
+TEST(Mesh, HasVertsInitiallyfalse)
+{
+    ASSERT_FALSE(Mesh{}.hasVerts());
+}
+
+TEST(Mesh, HasVertsTrueAfterSettingVerts)
+{
+    Mesh m;
+    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});
+    ASSERT_TRUE(m.hasVerts());
 }
 
 TEST(Mesh, GetVertsReturnsEmptyVertsOnDefaultConstruction)
@@ -223,24 +185,19 @@ TEST(Mesh, TransformVertsMakesGetCallReturnVerts)
     }
 
     // sanity check that `setVerts` works as expected
-    ASSERT_TRUE(m.getVerts().empty());
+    ASSERT_FALSE(m.hasVerts());
     m.setVerts(originalVerts);
     ASSERT_TRUE(ContainersEqual(m.getVerts(), originalVerts));
 
     // the verts passed to `transformVerts` should match those returned by getVerts
-    m.transformVerts([&originalVerts](std::span<Vec3 const> verts)
-    {
-        ASSERT_TRUE(ContainersEqual(originalVerts, verts));
-    });
+    std::vector<Vec3> vertsPassedToTransformVerts;
+    m.transformVerts([&vertsPassedToTransformVerts](Vec3& v) { vertsPassedToTransformVerts.push_back(v); });
+    ASSERT_EQ(vertsPassedToTransformVerts, originalVerts);
 
     // applying the transformation should return the transformed verts
-    m.transformVerts([&newVerts](std::span<Vec3> verts)
+    m.transformVerts([&newVerts, i = 0](Vec3& v) mutable
     {
-        ASSERT_EQ(newVerts.size(), verts.size());
-        for (size_t i = 0; i < verts.size(); ++i)
-        {
-            verts[i] = newVerts[i];
-        }
+        v = newVerts.at(i++);
     });
     ASSERT_TRUE(ContainersEqual(m.getVerts(), newVerts));
 }
@@ -252,7 +209,7 @@ TEST(Mesh, TransformVertsCausesTransformedMeshToNotBeEqualToInitialMesh)
 
     ASSERT_EQ(m, copy);
 
-    copy.transformVerts([](std::span<Vec3>) {});  // noop transform also triggers this (meshes aren't value-comparable)
+    copy.transformVerts([](Vec3&) {});  // noop transform also triggers this (meshes aren't value-comparable)
 
     ASSERT_NE(m, copy);
 }
@@ -341,6 +298,34 @@ TEST(Mesh, TransformVertsWithMat4CausesTransformedMeshToNotBeEqualToInitialMesh)
     ASSERT_NE(m, copy);
 }
 
+TEST(Mesh, HasNormalsReturnsFalseForNewlyConstructedMesh)
+{
+    ASSERT_FALSE(Mesh{}.hasNormals());
+}
+
+TEST(Mesh, AssigningNormalsMakesHasNormalsReturnTrue)
+{
+    Mesh m;
+    m.setNormals({{Vec3{}, Vec3{}, Vec3{}}});
+    ASSERT_TRUE(m.hasNormals());
+}
+
+TEST(Mesh, ClearingMeshClearsHasNormals)
+{
+    Mesh m;
+    m.setNormals({{Vec3{}, Vec3{}, Vec3{}}});
+    ASSERT_TRUE(m.hasNormals());
+    m.clear();
+    ASSERT_FALSE(m.hasNormals());
+}
+
+TEST(Mesh, HasNormalsReturnsFalseIfOnlyAssigningVerts)
+{
+    Mesh m;
+    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});
+    ASSERT_FALSE(m.hasNormals());
+}
+
 TEST(Mesh, GetNormalsReturnsEmptyOnDefaultConstruction)
 {
     Mesh m;
@@ -370,6 +355,18 @@ TEST(Mesh, SetNormalsCausesCopiedMeshToNotBeEqualToInitialMesh)
     copy.setNormals(normals);
 
     ASSERT_NE(m, copy);
+}
+
+TEST(Mesh, HasTexCoordsReturnsFalseForDefaultConstructedMesh)
+{
+    ASSERT_FALSE(Mesh{}.hasNormals());
+}
+
+TEST(Mesh, HasTexCoordsReturnsTrueAfterAssingingTextCoords)
+{
+    Mesh m;
+    m.setTexCoords({{Vec2{}, Vec2{}}});
+    ASSERT_TRUE(m.hasTexCoords());
 }
 
 TEST(Mesh, GetTexCoordsReturnsEmptyOnDefaultConstruction)
@@ -418,13 +415,7 @@ TEST(Mesh, TransformTexCoordsAppliesTransformToTexCoords)
     };
 
     // mutate mesh
-    m.transformTexCoords([&transformer](std::span<Vec2> ts)
-    {
-        for (Vec2& t : ts)
-        {
-            t = transformer(t);
-        }
-    });
+    m.transformTexCoords([&transformer](Vec2& uv) { uv = transformer(uv); });
 
     // perform equivalent mutation for comparison
     std::transform(coords.begin(), coords.end(), coords.begin(), transformer);

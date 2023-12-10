@@ -266,7 +266,7 @@ namespace
 
     void WriteMeshNormalsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        std::span<Vec3 const> const vals = geom.mesh.getNormals();
+        auto const vals = geom.mesh.getNormals();
         size_t const floatCount = 3 * vals.size();
         size_t const normalCount = vals.size();
 
@@ -313,11 +313,11 @@ namespace
 
         o << "        <triangles count=\"" << numTriangles << "\">\n";
         o << R"(            <input semantic="VERTEX" source="#)" << geom.geometryID << "-vertices\" offset=\"0\" />\n";
-        if (!geom.mesh.getNormals().empty())
+        if (geom.mesh.hasNormals())
         {
             o << R"(            <input semantic="NORMAL" source="#)" << geom.geometryID << "-normals\" offset=\"0\" />\n";
         }
-        if (!geom.mesh.getTexCoords().empty())
+        if (geom.mesh.hasTexCoords())
         {
             o << R"(            <input semantic="TEXCOORD" source="#)" << geom.geometryID << "-map-0\" offset=\"0\" set=\"0\"/>\n";
         }
@@ -339,11 +339,11 @@ namespace
         o << '\n';
 
         WriteMeshPositionsSource(o, geom);
-        if (!geom.mesh.getNormals().empty())
+        if (geom.mesh.hasNormals())
         {
             WriteMeshNormalsSource(o, geom);
         }
-        if (!geom.mesh.getTexCoords().empty())
+        if (geom.mesh.hasTexCoords())
         {
             WriteMeshTextureCoordsSource(o, geom);
         }

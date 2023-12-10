@@ -298,15 +298,7 @@ namespace
     osc::Mesh ApplyThinPlateWarpToMesh(ThinPlateWarper2D const& t, osc::Mesh const& mesh)
     {
         osc::Mesh rv = mesh;
-
-        rv.transformVerts([&t](std::span<Vec3> vs)
-        {
-            for (Vec3& v : vs)
-            {
-                v = Vec3{t.transform(v), v.z};
-            }
-        });
-
+        rv.transformVerts([&t](Vec3& v) { v = Vec3{t.transform(v), v.z}; });
         return rv;
     }
 }
