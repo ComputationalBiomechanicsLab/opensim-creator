@@ -130,7 +130,7 @@ namespace osc
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("# verts");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", m_State->getResultMesh().getVerts().size());
+                ImGui::Text("%zu", m_State->getResultMesh().getNumVerts());
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);

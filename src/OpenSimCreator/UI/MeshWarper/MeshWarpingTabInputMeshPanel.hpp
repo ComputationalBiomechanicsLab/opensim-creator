@@ -477,7 +477,7 @@ namespace osc
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("# verts");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", m_State->getScratchMesh(m_DocumentIdentifier).getVerts().size());
+                ImGui::Text("%zu", m_State->getScratchMesh(m_DocumentIdentifier).getNumVerts());
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);

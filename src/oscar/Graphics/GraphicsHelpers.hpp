@@ -5,6 +5,7 @@
 #include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Mat4.hpp>
+#include <oscar/Maths/Sphere.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
@@ -81,4 +82,7 @@ namespace osc
     //
     // with range-checking on the indices (invalid indices are ignored)
     std::vector<Vec3> GetAllIndexedVerts(Mesh const&);
+
+    // returns the bounding sphere of the given mesh
+    Sphere BoundingSphereOf(Mesh const&);
 }

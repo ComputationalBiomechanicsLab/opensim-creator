@@ -20,6 +20,7 @@
 
 #include <array>
 #include <cstdint>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
@@ -32,6 +33,12 @@ using osc::Vec3;
 namespace
 {
     constexpr CStringView c_TabStringID = "Demos/SubMeshes";
+
+    template<class T>
+    void Append(std::vector<T>& out, std::span<T const> els)
+    {
+        out.insert(out.end(), els.begin(), els.end());
+    }
 
     Mesh GenerateMeshWithSubMeshes()
     {
@@ -49,8 +56,8 @@ namespace
 
         for (auto const& mesh : meshes)
         {
-            allVerts.insert(allVerts.end(), mesh.getVerts().begin(), mesh.getVerts().end());
-            allNormals.insert(allNormals.end(), mesh.getNormals().begin(), mesh.getNormals().end());
+            Append(allVerts, mesh.getVerts());
+            Append(allNormals, mesh.getNormals());
 
             size_t firstIndex = allIndices.size();
             for (auto index : mesh.getIndices())

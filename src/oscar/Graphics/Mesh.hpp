@@ -34,6 +34,9 @@ namespace osc
         MeshTopology getTopology() const;
         void setTopology(MeshTopology);
 
+        bool hasVertexData() const;
+        size_t getNumVerts() const;
+
         std::span<Vec3 const> getVerts() const;
         void setVerts(std::span<Vec3 const>);
         void transformVerts(std::function<void(std::span<Vec3>)> const&);

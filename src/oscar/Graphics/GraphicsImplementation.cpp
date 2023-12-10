@@ -4018,6 +4018,21 @@ public:
         m_Version->reset();
     }
 
+    bool hasVertexData() const
+    {
+        return
+            !m_Vertices.empty() ||
+            !m_Normals.empty() ||
+            !m_TexCoords.empty() ||
+            !m_Colors.empty() ||
+            !m_Tangents.empty();
+    }
+
+    size_t getNumVerts() const
+    {
+        return m_Vertices.size();
+    }
+
     std::span<Vec3 const> getVerts() const
     {
         return m_Vertices;
@@ -4499,6 +4514,16 @@ osc::MeshTopology osc::Mesh::getTopology() const
 void osc::Mesh::setTopology(MeshTopology topology)
 {
     m_Impl.upd()->setTopology(topology);
+}
+
+bool osc::Mesh::hasVertexData() const
+{
+    return m_Impl->hasVertexData();
+}
+
+size_t osc::Mesh::getNumVerts() const
+{
+    return m_Impl->getNumVerts();
 }
 
 std::span<osc::Vec3 const> osc::Mesh::getVerts() const

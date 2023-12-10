@@ -443,3 +443,8 @@ std::vector<osc::Vec3> osc::GetAllIndexedVerts(Mesh const& mesh)
     }
     return rv;
 }
+
+osc::Sphere osc::BoundingSphereOf(Mesh const& mesh)
+{
+    return BoundingSphereOf(mesh.getVerts());
+}

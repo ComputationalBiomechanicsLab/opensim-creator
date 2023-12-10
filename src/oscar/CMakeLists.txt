@@ -87,7 +87,6 @@ add_library(oscar STATIC
     Graphics/ShaderLocations.hpp
     Graphics/ShaderPropertyType.hpp
     Graphics/SubMeshDescriptor.hpp
-    Graphics/Texture2D.hpp
     Graphics/TextureChannelFormat.hpp
     Graphics/TextureDimensionality.hpp
     Graphics/TextureFilterMode.hpp
@@ -95,6 +94,10 @@ add_library(oscar STATIC
     Graphics/TextureGenerators.cpp
     Graphics/TextureGenerators.hpp
     Graphics/TextureWrapMode.hpp
+    Graphics/Texture2D.hpp
+    Graphics/VertexAttribute.hpp
+    Graphics/VertexAttributeDescriptor.hpp
+    Graphics/VertexAttributeFormat.hpp
 
     Maths/AABB.hpp
     Maths/BVH.hpp
