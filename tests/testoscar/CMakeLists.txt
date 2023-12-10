@@ -24,6 +24,7 @@ add_executable(testoscar
     Graphics/TestRenderTextureFormat.cpp
     Graphics/TestTextureChannelFormat.cpp
     Graphics/TestTextureFormat.cpp
+    Graphics/TestTexture2D.cpp
 
     Maths/TestBVH.cpp
 
