@@ -254,7 +254,7 @@ private:
             Disc const sceneDisc{
                 .origin = {0.0f, 0.0f, 0.0f},
                 .normal = {0.0f, 1.0f, 0.0f},
-                .radius = {10.0f},
+                .radius = 10.0f,
             };
 
             std::optional<RayCollision> const maybeCollision = GetRayCollisionDisc(ray, sceneDisc);
