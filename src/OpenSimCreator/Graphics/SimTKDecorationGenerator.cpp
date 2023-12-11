@@ -303,7 +303,7 @@ namespace
         void implementMeshFileGeometry(SimTK::DecorativeMeshFile const& d) final
         {
             std::string const& path = d.getMeshFile();
-            auto const meshLoader = [&path](){ return osc::LoadMeshViaSimTK(path); };
+            auto const meshLoader = [&d](){ return osc::ToOscMesh(d.getMesh()); };
 
             m_Consumer({
                 .mesh = m_MeshCache.get(path, meshLoader),
