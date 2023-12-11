@@ -1,0 +1,21 @@
+[frames]
+
+    [frames.first]
+    associated_mesh = "sphere.obj"
+    origin_location = "LM1"
+    axis_edge_begin = "LM2"
+    axis_edge_end = "LM3"
+    axis_edge_axis = "-x"
+    nonparallel_edge_begin = "LM4"
+    nonparallel_edge_end = "LM5"
+    cross_product_edge_axis = "-y"
+
+    [frames.second]
+    associated_mesh = "cylinder.obj"
+    origin_location = "LM5"
+    axis_edge_begin = "LM6"
+    axis_edge_end = "LM7"
+    axis_edge_axis = "+z"
+    nonparallel_edge_begin = "LM8"
+    nonparallel_edge_end = "LM9"
+    cross_product_edge_axis = "-x"
