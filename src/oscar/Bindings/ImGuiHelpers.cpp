@@ -611,10 +611,10 @@ bool osc::IsDraggingWithAnyMouseButtonDown()
         ImGui::IsMouseDragging(ImGuiMouseButton_Right);
 }
 
-void osc::BeginTooltip()
+void osc::BeginTooltip(std::optional<float> wrapWidth)
 {
     ImGui::BeginTooltip();
-    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+    ImGui::PushTextWrapPos(wrapWidth.value_or(ImGui::GetFontSize() * 35.0f));
 }
 
 void osc::EndTooltip()

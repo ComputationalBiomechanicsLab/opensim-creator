@@ -59,5 +59,9 @@ void osc::mow::UIState::actionOpenModel(std::optional<std::filesystem::path> pat
     {
         path = PromptUserForFile("osim");
     }
-    m_Document = std::make_shared<Document>(std::move(path).value());
+
+    if (path)
+    {
+        m_Document = std::make_shared<Document>(std::move(path).value());
+    }
 }

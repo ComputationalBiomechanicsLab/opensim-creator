@@ -267,6 +267,16 @@ size_t osc::mow::MeshWarpPairing::getNumUnpairedLandmarks() const
     return getNumLandmarks() - getNumFullyPairedLandmarks();
 }
 
+bool osc::mow::MeshWarpPairing::hasSourceLandmarks() const
+{
+    return getNumSourceLandmarks() > 0;
+}
+
+bool osc::mow::MeshWarpPairing::hasDestinationLandmarks() const
+{
+    return getNumDestinationLandmarks() > 0;
+}
+
 bool osc::mow::MeshWarpPairing::hasUnpairedLandmarks() const
 {
     return getNumFullyPairedLandmarks() < getNumLandmarks();

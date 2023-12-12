@@ -146,7 +146,7 @@ namespace osc
     bool IsDraggingWithAnyMouseButtonDown();
 
     // (lower-level tooltip methods: prefer using higher-level 'DrawTooltip(txt)' methods)
-    void BeginTooltip();
+    void BeginTooltip(std::optional<float> wrapWidth = std::nullopt);
     void EndTooltip();
     void TooltipHeaderText(CStringView);
     void TooltipDescriptionSpacer();

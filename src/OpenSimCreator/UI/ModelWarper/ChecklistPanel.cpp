@@ -11,6 +11,8 @@
 #include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
+#include <cstddef>
+#include <functional>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -21,13 +23,185 @@ using osc::Color;
 using osc::CStringView;
 using osc::DerivedFrom;
 using osc::DrawHelpMarker;
+using osc::FindGeometryFileAbsPath;
 using osc::GetAbsolutePathString;
 using osc::EndTooltip;
 using osc::PopStyleColor;
+using osc::TextCentered;
 using osc::TextUnformatted;
 using osc::mow::MeshWarpPairing;
 using osc::mow::UIState;
 
+// data stuff
+namespace
+{
+    struct InputCheck {
+        enum class State { Ok, Warning, Error };
+
+        InputCheck(
+            std::string description_,
+            bool passOrFail_) :
+
+            description{std::move(description_)},
+            state{passOrFail_ ? State::Ok : State::Error}
+        {
+        }
+
+        InputCheck(
+            std::string description_,
+            State state_) :
+
+            description{std::move(description_)},
+            state{state_}
+        {
+        }
+
+        std::string description;
+        State state;
+    };
+
+    enum class SearchState { Continue, Stop };
+    void ForEachCheck(
+        MeshWarpPairing const& p,
+        std::function<SearchState(InputCheck)> const& callback)
+    {
+        // has a source landmarks file
+        {
+            std::stringstream ss;
+            ss << "has source landmarks file at " << p.recommendedSourceLandmarksFilepath().string();
+            if (callback({ std::move(ss).str(), p.hasSourceLandmarksFilepath() }) == SearchState::Stop)
+            {
+                return;
+            }
+        }
+
+        // has source landmarks
+        {
+            if (callback({ "source landmarks file contains landmarks", p.hasSourceLandmarks() }) == SearchState::Stop)
+            {
+                return;
+            }
+        }
+
+        // has destination mesh file
+        {
+            std::stringstream ss;
+            ss << "has destination mesh file at " << p.recommendedDestinationMeshFilepath().string();
+            if (callback({ std::move(ss).str(), p.hasDestinationMeshFilepath() }) == SearchState::Stop)
+            {
+                return;
+            }
+        }
+
+        // has destination landmarks file
+        {
+            std::stringstream ss;
+            ss << "has destination landmarks file at " << p.recommendedDestinationLandmarksFilepath().string();
+            if (callback({ std::move(ss).str(), p.hasDestinationLandmarksFilepath() }) == SearchState::Stop)
+            {
+                return;
+            }
+        }
+
+        // has destination landmarks
+        {
+            if (callback({ "destination landmarks file contains landmarks", p.hasDestinationLandmarks() }) == SearchState::Stop)
+            {
+                return;
+            }
+        }
+
+        // has at least a few paired landmarks
+        {
+            if (callback({ "at least three landmarks can be paired between source/destination", p.getNumFullyPairedLandmarks() >= 3 }) == SearchState::Stop)
+            {
+                return;
+            }
+        }
+
+        // (warning): has no unpaired landmarks
+        {
+            if (callback({ "there are no unpaired landmarks", p.getNumUnpairedLandmarks() == 0 ? InputCheck::State::Ok : InputCheck::State::Warning }) == SearchState::Stop)
+            {
+                return;
+            }
+        }
+    }
+
+    void ForEachCheck(
+        MeshWarpPairing const* p,
+        std::function<SearchState(InputCheck)> const& callback)
+    {
+        if (p)
+        {
+            return ForEachCheck(*p, callback);
+        }
+        else
+        {
+            callback({ "no mesh warp pairing found: this is probably an implementation error (maybe reload?)", InputCheck::State::Error });
+            return;
+        }
+    }
+
+    InputCheck::State CalcWorstState(MeshWarpPairing const* p)
+    {
+        InputCheck::State worst = InputCheck::State::Ok;
+        ForEachCheck(p, [&worst](InputCheck c)
+        {
+            if (c.state == InputCheck::State::Error)
+            {
+                worst = InputCheck::State::Error;
+                return SearchState::Stop;
+            }
+            else if (c.state == InputCheck::State::Warning)
+            {
+                worst = InputCheck::State::Warning;
+                return SearchState::Continue;
+            }
+            else
+            {
+                return SearchState::Continue;
+            }
+        });
+        return worst;
+    }
+
+    struct PairingDetail final {
+        std::string name;
+        std::string value;
+    };
+
+    void ForEachDetailIn(
+        MeshWarpPairing const& p,
+        std::function<void(PairingDetail)> const& callback)
+    {
+        callback({ "source mesh filepath", p.getSourceMeshAbsoluteFilepath().string() });
+        callback({ "source landmarks expected filepath", p.recommendedSourceLandmarksFilepath().string() });
+        callback({ "has source landmarks file?", p.hasSourceLandmarksFilepath() ? "yes" : "no" });
+        callback({ "number of source landmarks", std::to_string(p.getNumSourceLandmarks()) });
+        callback({ "destination mesh expected filepath", p.recommendedDestinationMeshFilepath().string() });
+        callback({ "has destination mesh?", p.hasDestinationMeshFilepath() ? "yes" : "no" });
+        callback({ "destination landmarks expected filepath", p.recommendedDestinationLandmarksFilepath().string() });
+        callback({ "has destination landmarks file?", p.hasDestinationLandmarksFilepath() ? "yes" : "no" });
+        callback({ "number of destination landmarks", std::to_string(p.getNumDestinationLandmarks()) });
+        callback({ "number of paired landmarks", std::to_string(p.getNumFullyPairedLandmarks()) });
+        callback({ "number of unpaired landmarks", std::to_string(p.getNumUnpairedLandmarks()) });
+    }
+
+    void ForEachDetailIn(
+        OpenSim::Mesh const& mesh,
+        MeshWarpPairing const* maybePairing,
+        std::function<void(PairingDetail)> const& callback)
+    {
+        callback({ "OpenSim::Mesh path in the OpenSim::Model", GetAbsolutePathString(mesh) });
+        if (maybePairing)
+        {
+            ForEachDetailIn(*maybePairing, callback);
+        }
+    }
+}
+
+// UI (generic)
 namespace
 {
     struct EntryStyling final {
@@ -35,27 +209,36 @@ namespace
         Color color;
     };
 
+    EntryStyling ToStyle(InputCheck::State s)
+    {
+        switch (s)
+        {
+        case InputCheck::State::Ok:
+            return {.icon = ICON_FA_CHECK, .color = Color::green()};
+        case InputCheck::State::Warning:
+            return {.icon = ICON_FA_EXCLAMATION, .color = Color::orange()};
+        default:
+        case InputCheck::State::Error:
+            return {.icon = ICON_FA_TIMES, .color = Color::red()};
+        }
+    }
+
     EntryStyling CalcStyle(UIState const& state, OpenSim::Mesh const& mesh)
     {
-        MeshWarpPairing const* maybeWarp = state.findMeshWarp(mesh);
-
-        if (!maybeWarp || maybeWarp->getNumFullyPairedLandmarks() == 0)
-        {
-            return {.icon = ICON_FA_CROSS, .color = Color::red()};
-        }
-        else if (maybeWarp->hasUnpairedLandmarks())
-        {
-            return {.icon = ICON_FA_EXCLAMATION, .color = Color::orange()};
-        }
-        else
-        {
-            return {.icon = ICON_FA_CHECK, .color = Color::green()};
-        }
+        InputCheck::State const worst = CalcWorstState(state.findMeshWarp(mesh));
+        return ToStyle(worst);
     }
 
     EntryStyling CalcStyle(UIState const&, OpenSim::Frame const&)
     {
-        return {.icon = ICON_FA_CROSS, .color = Color::red()};
+        return {.icon = ICON_FA_TIMES, .color = Color::red()};
+    }
+
+    void DrawIcon(EntryStyling const& style)
+    {
+        PushStyleColor(ImGuiCol_Text, style.color);
+        TextUnformatted(style.icon);
+        PopStyleColor();
     }
 
     void DrawEntryIconAndText(
@@ -63,9 +246,7 @@ namespace
         OpenSim::Component const& component,
         EntryStyling style)
     {
-        PushStyleColor(ImGuiCol_Text, style.color);
-        TextUnformatted(style.icon);
-        PopStyleColor();
+        DrawIcon(style);
         ImGui::SameLine();
         TextUnformatted(component.getName());
     }
@@ -84,47 +265,75 @@ namespace
         ImGui::Separator();
         ImGui::Dummy({0.0f, 3.0f});
     }
+}
 
-    std::string CalcStatusString(UIState const& state, OpenSim::Mesh const& mesh)
+// UI (meshes/mesh pairing)
+namespace
+{
+    void DrawDetailsTable(
+        OpenSim::Mesh const& mesh,
+        MeshWarpPairing const* maybePairing)
     {
-        MeshWarpPairing const* p = state.findMeshWarp(mesh);
-        if (!p)
+        if (ImGui::BeginTable("##Details", 2))
         {
-            return "could not find a mesh warp pairing for this mesh: this is probably an implementation error";
+            ImGui::TableSetupColumn("Label");
+            ImGui::TableSetupColumn("Value");
+            ImGui::TableHeadersRow();
+
+            ForEachDetailIn(mesh, maybePairing, [](PairingDetail detail)
+            {
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                TextUnformatted(detail.name);
+                ImGui::TableSetColumnIndex(1);
+                TextUnformatted(detail.value);
+            });
+            ImGui::EndTable();
         }
-        if (!p->hasSourceLandmarksFilepath())
+    }
+
+    void DrawMeshTooltipChecklist(MeshWarpPairing const* maybePairing)
+    {
+        ImGui::Indent(5.0f);
+        int id = 0;
+        ForEachCheck(maybePairing, [&id](InputCheck check)
         {
-            std::stringstream ss;
-            ss << "has no source landmarks file: expected one at: " << p->recommendedSourceLandmarksFilepath();
-            return std::move(ss).str();
-        }
-        if (!p->hasDestinationMeshFilepath())
-        {
-            std::stringstream ss;
-            ss << "has no destination mesh file: one is expected at: " << p->recommendedDestinationMeshFilepath();
-            return std::move(ss).str();
-        }
-        if (!p->hasDestinationLandmarksFilepath())
-        {
-            std::stringstream ss;
-            ss << "has no destination landmarks file: one expected at: " << p->recommendedDestinationLandmarksFilepath();
-            return std::move(ss).str();
-        }
+            ImGui::PushID(id);
+            auto style = ToStyle(check.state);
+            DrawIcon(style);
+            ImGui::SameLine();
+            TextUnformatted(check.description);
+            ImGui::PopID();
+            return SearchState::Continue;
+        });
+        ImGui::Unindent(5.0f);
     }
 
     void DrawTooltipContent(UIState const& state, OpenSim::Mesh const& mesh)
     {
         DrawTooltipHeader(state, mesh);
+
+        MeshWarpPairing const* maybePairing = state.findMeshWarp(mesh);
+
+        ImGui::Text("Checklist:");
+        ImGui::Dummy({0.0f, 3.0f});
+        DrawMeshTooltipChecklist(maybePairing);
+
+        ImGui::NewLine();
+
+        ImGui::Text("Details:");
+        ImGui::Dummy({0.0f, 3.0f});
+        DrawDetailsTable(mesh, maybePairing);
     }
 
     void DrawMeshEntry(UIState const& state, OpenSim::Mesh const& mesh)
     {
         DrawEntryIconAndText(state, mesh);
-        if (ImGui::IsItemHovered())
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip))
         {
-            BeginTooltip();
+            ImGui::BeginTooltip();
             DrawTooltipContent(state, mesh);
-            EndTooltip();
+            ImGui::EndTooltip();
         }
     }
 
@@ -148,7 +357,11 @@ namespace
             ImGui::PopID();
         }
     }
+}
 
+// UI (frames)
+namespace
+{
     void DrawTooltipContent(UIState const& state, OpenSim::Frame const& frame)
     {
         DrawTooltipHeader(state, frame);
@@ -157,7 +370,7 @@ namespace
     void DrawFrameEntry(UIState const& state, OpenSim::Frame const& frame)
     {
         DrawEntryIconAndText(state, frame);
-        if (ImGui::IsItemHovered())
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip))
         {
             BeginTooltip();
             DrawTooltipContent(state, frame);

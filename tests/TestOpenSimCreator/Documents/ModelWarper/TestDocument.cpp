@@ -69,6 +69,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSimpleCase)
     // ... and source landmarks were loaded...
     ASSERT_TRUE(pairing->hasSourceLandmarksFilepath());
     ASSERT_EQ(pairing->tryGetSourceLandmarksFilepath(), paths.landmarks);
+    ASSERT_TRUE(pairing->hasSourceLandmarks());
     ASSERT_EQ(pairing->getNumSourceLandmarks(), 7);
 
     // ... but no destination mesh is found...
@@ -76,6 +77,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSimpleCase)
 
     // ... and no destination landmarks were found (not provided in this fixture)...
     ASSERT_FALSE(pairing->hasDestinationLandmarksFilepath());
+    ASSERT_FALSE(pairing->hasDestinationLandmarks());
     ASSERT_EQ(pairing->getNumDestinationLandmarks(), 0);
 
     // ... therefore, every landmark is unpaired...
@@ -127,6 +129,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsPairedCase)
     // ... and source landmarks were found ...
     ASSERT_TRUE(pairing->hasSourceLandmarksFilepath());
     ASSERT_EQ(pairing->tryGetSourceLandmarksFilepath(), paths.landmarks);
+    ASSERT_TRUE(pairing->hasSourceLandmarks());
     ASSERT_EQ(pairing->getNumSourceLandmarks(), 7);
 
     // ... and the destination mesh filepath is correctly identified...
@@ -136,6 +139,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsPairedCase)
     // ... and the destination landmarks file was found & loaded ...
     ASSERT_TRUE(pairing->hasDestinationLandmarksFilepath());
     ASSERT_EQ(pairing->tryGetDestinationLandmarksFilepath(), paths.destinationLandmarks);
+    ASSERT_TRUE(pairing->hasDestinationLandmarks());
     ASSERT_EQ(pairing->getNumDestinationLandmarks(), 7);
 
     /// ... and all landmarks are fully paired...
@@ -188,6 +192,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingDestinationLMsCase)
     // ... and source landmarks were found ...
     ASSERT_TRUE(pairing->hasSourceLandmarksFilepath());
     ASSERT_EQ(pairing->tryGetSourceLandmarksFilepath(), paths.landmarks);
+    ASSERT_TRUE(pairing->hasSourceLandmarks());
     ASSERT_EQ(pairing->getNumLandmarks(), 7);
 
     // ... and the destination mesh file is correctly identified...
@@ -204,6 +209,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingDestinationLMsCase)
     // ... therefore, all landmarks are unpaired
     ASSERT_TRUE(pairing->hasUnpairedLandmarks());
     ASSERT_EQ(pairing->getNumLandmarks(), pairing->getNumUnpairedLandmarks());
+    ASSERT_FALSE(pairing->hasDestinationLandmarks());
     ASSERT_EQ(pairing->getNumFullyPairedLandmarks(), 0);
 
     // ... and the landmarks are loaded one-sided
@@ -251,6 +257,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingSourceLMsCase)
     // ... but no source landmarks file was found ...
     ASSERT_FALSE(pairing->hasSourceLandmarksFilepath());
     ASSERT_FALSE(pairing->tryGetSourceLandmarksFilepath().has_value());
+    ASSERT_FALSE(pairing->hasSourceLandmarks());
 
     // ... (you can still ask where the destination landmarks file _should_ be, though)...
     ASSERT_EQ(pairing->recommendedSourceLandmarksFilepath(), paths.landmarks);
@@ -264,6 +271,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingSourceLMsCase)
     ASSERT_EQ(pairing->tryGetDestinationLandmarksFilepath(), paths.destinationLandmarks);
 
     // ... so destination landmarks are available ...
+    ASSERT_TRUE(pairing->hasDestinationLandmarks());
     ASSERT_EQ(pairing->getNumDestinationLandmarks(), 7);
     ASSERT_EQ(pairing->getNumLandmarks(), pairing->getNumDestinationLandmarks());;
 
@@ -311,11 +319,13 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSimpleUnnamedCase)
     // ... and source landmarks were found ...
     ASSERT_TRUE(pairing->hasSourceLandmarksFilepath());
     ASSERT_EQ(pairing->tryGetSourceLandmarksFilepath(), paths.landmarks);
+    ASSERT_TRUE(pairing->hasSourceLandmarks());
     ASSERT_EQ(pairing->getNumLandmarks(), 7);
 
     // ... but no destination mesh/landmarks were found...
     ASSERT_FALSE(pairing->hasDestinationMeshFilepath());
     ASSERT_FALSE(pairing->hasDestinationLandmarksFilepath());
+    ASSERT_FALSE(pairing->hasDestinationLandmarks());
 
     // ... so the landmarks are unpaired...
     ASSERT_EQ(pairing->getNumFullyPairedLandmarks(), 0);
@@ -365,6 +375,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSparselyNamedPairedCase)
     // ... and source landmarks were found ...
     ASSERT_TRUE(pairing->hasSourceLandmarksFilepath());
     ASSERT_EQ(pairing->tryGetSourceLandmarksFilepath(), paths.landmarks);
+    ASSERT_TRUE(pairing->hasSourceLandmarks());
     ASSERT_EQ(pairing->getNumSourceLandmarks(), 7);
     ASSERT_EQ(pairing->getNumLandmarks(), 7);
 
@@ -377,6 +388,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSparselyNamedPairedCase)
     ASSERT_EQ(pairing->tryGetDestinationLandmarksFilepath(), paths.destinationLandmarks);
 
     /// ... and the destination landmarks were loaded correctly paired with the source landmarks...
+    ASSERT_TRUE(pairing->hasDestinationLandmarks());
     ASSERT_EQ(pairing->getNumDestinationLandmarks(), 7);
     ASSERT_EQ(pairing->getNumFullyPairedLandmarks(), pairing->getNumLandmarks());
 

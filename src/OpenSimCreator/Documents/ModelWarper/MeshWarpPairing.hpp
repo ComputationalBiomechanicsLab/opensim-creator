@@ -35,6 +35,8 @@ namespace osc::mow
         size_t getNumDestinationLandmarks() const;
         size_t getNumFullyPairedLandmarks() const;
         size_t getNumUnpairedLandmarks() const;
+        bool hasSourceLandmarks() const;
+        bool hasDestinationLandmarks() const;
         bool hasUnpairedLandmarks() const;
 
         bool hasLandmarkNamed(std::string_view) const;
