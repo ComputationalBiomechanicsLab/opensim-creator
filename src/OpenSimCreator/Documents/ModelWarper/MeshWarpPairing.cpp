@@ -29,20 +29,6 @@ namespace
         return expected;
     }
 
-    std::optional<std::filesystem::path> TryFindAssociatedLandmarksFile(
-        std::filesystem::path const& meshAbsolutePath)
-    {
-        std::filesystem::path expected = CalcExpectedAssociatedLandmarksFile(meshAbsolutePath);
-        if (std::filesystem::exists(expected))
-        {
-            return expected;
-        }
-        else
-        {
-            return std::nullopt;
-        }
-    }
-
     std::filesystem::path CalcExpectedDestinationMeshFilepath(
         std::filesystem::path const& osimFilepath,
         std::filesystem::path const& sourceMeshFilepath)
@@ -50,21 +36,6 @@ namespace
         std::filesystem::path expected = osimFilepath.parent_path() / "DestinationGeometry" / sourceMeshFilepath.filename();
         expected = std::filesystem::weakly_canonical(expected);
         return expected;
-    }
-
-    std::optional<std::filesystem::path> TryFindDestinationMesh(
-        std::filesystem::path const& osimFilepath,
-        std::filesystem::path const& sourceMeshFilepath)
-    {
-        std::filesystem::path expected = CalcExpectedDestinationMeshFilepath(osimFilepath, sourceMeshFilepath);
-        if (std::filesystem::exists(expected))
-        {
-            return expected;
-        }
-        else
-        {
-            return std::nullopt;
-        }
     }
 
     std::vector<Landmark> TryReadLandmarksFromCSVIntoVector(std::filesystem::path const& path)
