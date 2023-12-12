@@ -26,11 +26,11 @@
 #include <utility>
 #include <vector>
 
-using osc::testing::ContainersEqual;
 using osc::testing::GenerateTriangleVerts;
 using osc::testing::GenerateVec2;
 using osc::testing::GenerateVec3;
 using osc::AABB;
+using osc::AABBFromVerts;
 using osc::Color;
 using osc::ContiguousContainer;
 using osc::Deg2Rad;
@@ -154,7 +154,9 @@ TEST(Mesh, SetVertsMakesGetCallReturnVerts)
     Mesh m;
     std::vector<Vec3> verts = GenerateTriangleVerts();
 
-    ASSERT_FALSE(ContainersEqual(m.getVerts(), verts));
+    m.setVerts(verts);
+
+    ASSERT_EQ(m.getVerts(), verts);
 }
 
 TEST(Mesh, SetVertsCausesCopiedMeshToNotBeEqualToInitialMesh)
@@ -178,7 +180,6 @@ TEST(Mesh, TransformVertsMakesGetCallReturnVerts)
 
     // create "transformed" version of the verts
     std::vector<Vec3> newVerts;
-    newVerts.reserve(originalVerts.size());
     for (Vec3 const& v : originalVerts)
     {
         newVerts.push_back(v + 1.0f);
@@ -187,7 +188,7 @@ TEST(Mesh, TransformVertsMakesGetCallReturnVerts)
     // sanity check that `setVerts` works as expected
     ASSERT_FALSE(m.hasVerts());
     m.setVerts(originalVerts);
-    ASSERT_TRUE(ContainersEqual(m.getVerts(), originalVerts));
+    ASSERT_EQ(m.getVerts(), originalVerts);
 
     // the verts passed to `transformVerts` should match those returned by getVerts
     std::vector<Vec3> vertsPassedToTransformVerts;
@@ -199,7 +200,7 @@ TEST(Mesh, TransformVertsMakesGetCallReturnVerts)
     {
         v = newVerts.at(i++);
     });
-    ASSERT_TRUE(ContainersEqual(m.getVerts(), newVerts));
+    ASSERT_EQ(m.getVerts(), newVerts);
 }
 
 TEST(Mesh, TransformVertsCausesTransformedMeshToNotBeEqualToInitialMesh)
@@ -217,10 +218,11 @@ TEST(Mesh, TransformVertsCausesTransformedMeshToNotBeEqualToInitialMesh)
 TEST(Mesh, TransformVertsWithTransformAppliesTransformToVerts)
 {
     // create appropriate transform
-    Transform t;
-    t.scale *= 0.25f;
-    t.position = {1.0f, 0.25f, 0.125f};
-    t.rotation = Quat{Vec3{Deg2Rad(90.0f), 0.0f, 0.0f}};
+    Transform const t = {
+        .scale = Vec3{0.25f},
+        .rotation = Quat{Vec3{Deg2Rad(90.0f), 0.0f, 0.0f}},
+        .position = {1.0f, 0.25f, 0.125f},
+    };
 
     // generate "original" verts
     std::vector<Vec3> originalVerts = GenerateTriangleVerts();
@@ -241,7 +243,7 @@ TEST(Mesh, TransformVertsWithTransformAppliesTransformToVerts)
     m.transformVerts(t);
 
     // the mesh's verts should match expectations
-    ASSERT_TRUE(ContainersEqual(m.getVerts(), expectedVerts));
+    ASSERT_EQ(m.getVerts(), expectedVerts);
 }
 
 TEST(Mesh, TransformVertsWithTransformCausesTransformedMeshToNotBeEqualToInitialMesh)
@@ -251,7 +253,7 @@ TEST(Mesh, TransformVertsWithTransformCausesTransformedMeshToNotBeEqualToInitial
 
     ASSERT_EQ(m, copy);
 
-    copy.transformVerts(Transform{});  // noop transform also triggers this (meshes aren't value-comparable)
+    copy.transformVerts(Identity<Transform>());  // noop transform also triggers this (meshes aren't value-comparable)
 
     ASSERT_NE(m, copy);
 }
@@ -283,7 +285,7 @@ TEST(Mesh, TransformVertsWithMat4AppliesTransformToVerts)
     m.transformVerts(mat);
 
     // the mesh's verts should match expectations
-    ASSERT_TRUE(ContainersEqual(m.getVerts(), expectedVerts));
+    ASSERT_EQ(m.getVerts(), expectedVerts);
 }
 
 TEST(Mesh, TransformVertsWithMat4CausesTransformedMeshToNotBeEqualToInitialMesh)
@@ -341,7 +343,7 @@ TEST(Mesh, SetNormalsMakesGetCallReturnSuppliedData)
 
     m.setNormals(normals);
 
-    ASSERT_TRUE(ContainersEqual(m.getNormals(), normals));
+    ASSERT_EQ(m.getNormals(), normals);
 }
 
 TEST(Mesh, SetNormalsCausesCopiedMeshToNotBeEqualToInitialMesh)
@@ -384,7 +386,7 @@ TEST(Mesh, SetTexCoordsCausesGetToReturnSuppliedData)
 
     m.setTexCoords(coords);
 
-    ASSERT_TRUE(ContainersEqual(m.getTexCoords(), coords));
+    ASSERT_EQ(m.getTexCoords(), coords);
 }
 
 TEST(Mesh, SetTexCoordsCausesCopiedMeshToNotBeEqualToInitialMesh)
@@ -407,7 +409,7 @@ TEST(Mesh, TransformTexCoordsAppliesTransformToTexCoords)
 
     m.setTexCoords(coords);
 
-    ASSERT_TRUE(ContainersEqual(m.getTexCoords(), coords));
+    ASSERT_EQ(m.getTexCoords(), coords);
 
     auto const transformer = [](Vec2 v)
     {
@@ -420,7 +422,7 @@ TEST(Mesh, TransformTexCoordsAppliesTransformToTexCoords)
     // perform equivalent mutation for comparison
     std::transform(coords.begin(), coords.end(), coords.begin(), transformer);
 
-    ASSERT_TRUE(ContainersEqual(m.getTexCoords(), coords));
+    ASSERT_EQ(m.getTexCoords(), coords);
 }
 
 TEST(Mesh, GetColorsInitiallyReturnsEmptySpan)
@@ -591,8 +593,7 @@ TEST(Mesh, GetBooundsReturnsNonemptyForIndexedVerts)
     Mesh m;
     m.setVerts(pyramid);
     m.setIndices(pyramidIndices);
-    AABB expected = osc::AABBFromVerts(pyramid);
-    ASSERT_EQ(m.getBounds(), expected);
+    ASSERT_EQ(m.getBounds(), AABBFromVerts(pyramid));
 }
 
 TEST(Mesh, CanBeComparedForEquality)
