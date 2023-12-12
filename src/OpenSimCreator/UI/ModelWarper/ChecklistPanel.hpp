@@ -8,6 +8,9 @@
 #include <string_view>
 #include <utility>
 
+namespace OpenSim { class Frame; }
+namespace OpenSim { class Mesh; }
+
 namespace osc::mow
 {
     class ChecklistPanel final : public StandardPanel {

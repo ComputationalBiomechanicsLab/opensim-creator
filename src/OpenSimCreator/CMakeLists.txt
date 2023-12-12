@@ -11,6 +11,13 @@ add_library(OpenSimCreator STATIC
     ComponentRegistry/StaticComponentRegistries.cpp
     ComponentRegistry/StaticComponentRegistries.hpp
 
+    Documents/Frames/FrameAxis.cpp
+    Documents/Frames/FrameAxis.hpp
+    Documents/Frames/FrameDefinition.hpp
+    Documents/Frames/FramesFile.hpp
+    Documents/Frames/FramesHelpers.cpp
+    Documents/Frames/FramesHelpers.hpp
+
     Documents/Landmarks/Landmark.hpp
     Documents/Landmarks/LandmarkCSVFlags.hpp
     Documents/Landmarks/LandmarkHelpers.cpp
@@ -254,6 +261,7 @@ add_library(OpenSimCreator STATIC
     UI/ModelWarper/ModelWarperTab.hpp
     UI/ModelWarper/Toolbar.cpp
     UI/ModelWarper/Toolbar.hpp
+    UI/ModelWarper/UIState.cpp
     UI/ModelWarper/UIState.hpp
 
     UI/Shared/BasicWidgets.cpp

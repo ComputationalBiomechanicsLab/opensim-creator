@@ -6,6 +6,7 @@
 #include <oscar/Shims/Cpp23/utility.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -187,6 +188,9 @@ namespace osc
     // toolbar stuff
     bool BeginToolbar(CStringView label, std::optional<Vec2> padding = {});  // behaves the same as ImGui::Begin (i.e. you must call ImGui::End)
     void DrawNewModelButton(ParentPtr<MainUIStateAPI> const&);
+    void DrawOpenModelButtonWithRecentFilesDropdown(
+        std::function<void(std::optional<std::filesystem::path>)> const& onUserClickedOpenOrSelectedFile
+    );
     void DrawOpenModelButtonWithRecentFilesDropdown(ParentPtr<MainUIStateAPI> const&);
     void DrawSaveModelButton(ParentPtr<MainUIStateAPI> const&, UndoableModelStatePair&);
     void DrawReloadModelButton(UndoableModelStatePair&);

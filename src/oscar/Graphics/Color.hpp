@@ -83,6 +83,11 @@ namespace osc
             return {1.0f, 1.0f, 0.0f};
         }
 
+        static constexpr Color orange()
+        {
+            return {255.0f/255.0f, 165.0f/255.0f, 0.0f};
+        }
+
         static constexpr Color cyan()
         {
             return {0.0f, 1.0f, 1.0f};

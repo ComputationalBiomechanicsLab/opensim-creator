@@ -39,6 +39,7 @@ All notable changes to this project will be documented here. The format is based
 - The software now internally tries to only use canonical-form filepaths, so that all filepaths displayed to
   the user are in the same format as their OS (e.g. `C:\somedir\to\model.osim` on windows,
   `/home/user/dir/model.osim` on Linux)
+- Fixed mesh files being double-loaded by the rendering backend, which should improve osim loading times
 - Internal: the mesh importer was heavily refactored in readiness for a feature push
 
 

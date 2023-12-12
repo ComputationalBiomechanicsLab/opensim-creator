@@ -592,10 +592,10 @@ bool osc::IsDraggingWithAnyMouseButtonDown()
         ImGui::IsMouseDragging(ImGuiMouseButton_Right);
 }
 
-void osc::BeginTooltip()
+void osc::BeginTooltip(std::optional<float> wrapWidth)
 {
     ImGui::BeginTooltip();
-    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+    ImGui::PushTextWrapPos(wrapWidth.value_or(ImGui::GetFontSize() * 35.0f));
 }
 
 void osc::EndTooltip()
@@ -606,7 +606,7 @@ void osc::EndTooltip()
 
 void osc::TooltipHeaderText(CStringView s)
 {
-    ImGui::TextUnformatted(s.c_str());
+    TextUnformatted(s);
 }
 
 void osc::TooltipDescriptionSpacer()
@@ -729,6 +729,11 @@ void osc::DrawHelpMarker(CStringView desc)
 {
     ImGui::TextDisabled("(?)");
     DrawTooltipIfItemHovered(desc, {}, ImGuiHoveredFlags_None);
+}
+
+void osc::TextUnformatted(CStringView label)
+{
+    ImGui::TextUnformatted(label.c_str());
 }
 
 bool osc::InputString(CStringView label, std::string& editedString, ImGuiInputTextFlags flags)
@@ -861,7 +866,7 @@ void osc::TextCentered(CStringView s)
     float const textWidth   = ImGui::CalcTextSize(s.c_str()).x;
 
     ImGui::SetCursorPosX(0.5f * (windowWidth - textWidth));
-    ImGui::TextUnformatted(s.c_str());
+    TextUnformatted(s);
 }
 
 void osc::TextDisabledAndCentered(CStringView s)
@@ -878,20 +883,20 @@ void osc::TextColumnCentered(CStringView s)
     float const textWidth = ImGui::CalcTextSize(s.c_str()).x;
 
     ImGui::SetCursorPosX(columnOffset + 0.5f*(columnWidth-textWidth));
-    ImGui::TextUnformatted(s.c_str());
+    TextUnformatted(s);
 }
 
 void osc::TextFaded(CStringView s)
 {
     ImGui::PushStyleColor(ImGuiCol_Text, {0.7f, 0.7f, 0.7f, 1.0f});
-    ImGui::TextUnformatted(s.c_str());
+    TextUnformatted(s);
     ImGui::PopStyleColor();
 }
 
 void osc::TextWarning(CStringView s)
 {
     PushStyleColor(ImGuiCol_Text, Color::yellow());
-    ImGui::TextUnformatted(s.c_str());
+    TextUnformatted(s);
     PopStyleColor();
 }
 

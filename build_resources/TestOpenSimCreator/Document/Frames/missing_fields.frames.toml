@@ -1,0 +1,13 @@
+# error: it's valid toml, but required fields are missing from a frame
+
+[frames]
+
+    [frames.first]
+    associated_mesh = "sphere.obj"
+    # origin_location = "LM2"  # uh oh: required
+    axis_edge_begin = "LM2"
+    axis_edge_end = "LM3"
+    # axis_edge_axis = "-x"  # uh oh #2: also required
+    nonparallel_edge_begin = "some_other_lm"
+    nonparallel_edge_end = "another_one"
+    # cross_product_edge_axis = "+y"  # uh oh #3

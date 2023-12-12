@@ -146,7 +146,7 @@ namespace osc
     bool IsDraggingWithAnyMouseButtonDown();
 
     // (lower-level tooltip methods: prefer using higher-level 'DrawTooltip(txt)' methods)
-    void BeginTooltip();
+    void BeginTooltip(std::optional<float> wrapWidth = std::nullopt);
     void EndTooltip();
     void TooltipHeaderText(CStringView);
     void TooltipDescriptionSpacer();
@@ -180,6 +180,9 @@ namespace osc
 
     // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
     void DrawHelpMarker(CStringView);
+
+    // draw the provided string view using ImGui::TextUnformatted
+    void TextUnformatted(CStringView);
 
     // draw an ImGui::InputText that manipulates a std::string
     bool InputString(

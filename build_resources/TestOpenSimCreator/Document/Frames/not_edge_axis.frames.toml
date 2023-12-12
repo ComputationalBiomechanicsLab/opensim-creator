@@ -1,0 +1,15 @@
+# error: axis edge refers to the same point on either side, so it
+# is definitely not going to become an edge later on in the pipeline
+# when the landmarks are looked up
+
+[frames]
+
+    [frames.first]
+    associated_mesh = "sphere.obj"
+    origin_location = "LM1"
+    axis_edge_begin = "LM2"
+    axis_edge_end = "LM2"  # uh oh
+    axis_edge_axis = "-x"
+    nonparallel_edge_begin = "some_other_lm"
+    nonparallel_edge_end = "another_one"
+    cross_product_edge_axis = "+y"
