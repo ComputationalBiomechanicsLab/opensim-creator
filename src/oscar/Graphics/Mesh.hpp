@@ -42,6 +42,8 @@ namespace osc
         MeshTopology getTopology() const;
         void setTopology(MeshTopology);
 
+        // vertex data: reassigning this causes attribute-like data (normals,
+        // texture coordinates, colors, tangents) to be resized
         bool hasVerts() const;
         size_t getNumVerts() const;
         std::vector<Vec3> getVerts() const;

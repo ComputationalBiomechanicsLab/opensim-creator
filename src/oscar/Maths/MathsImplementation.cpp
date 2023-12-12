@@ -2156,6 +2156,11 @@ osc::Vec3 osc::TransformPoint(Transform const& t, Vec3 const& p)
     return rv;
 }
 
+osc::Vec3 osc::TransformPoint(Mat4 const& m, Vec3 const& p)
+{
+    return Vec3{m * Vec4{p, 1.0f}};
+}
+
 osc::Vec3 osc::InverseTransformPoint(Transform const& t, Vec3 const& p)
 {
     Vec3 rv = p;

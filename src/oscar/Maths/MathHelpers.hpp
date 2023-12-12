@@ -577,6 +577,7 @@ namespace osc
 
     // returns a vector that is the equivalent of the provided vector after applying the transform
     Vec3 TransformPoint(Transform const&, Vec3 const&);
+    Vec3 TransformPoint(Mat4 const&, Vec3 const&);
 
     // returns a vector that is the equivalent of the provided vector after applying the inverse of the transform
     Vec3 InverseTransformPoint(Transform const&, Vec3 const&);

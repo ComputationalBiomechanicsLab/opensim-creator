@@ -10,6 +10,7 @@
 #include <oscar/Utils/Concepts.hpp>
 
 #include <algorithm>
+#include <iterator>
 #include <random>
 #include <vector>
 
@@ -27,10 +28,33 @@ namespace osc::testing
     Mat3 GenerateMat3x3();
     Mat4 GenerateMat4x4();
     std::vector<Vec3> GenerateTriangleVerts();
+    std::vector<Vec3> GenerateVertices(size_t);
+    std::vector<Vec3> GenerateNormals(size_t);
+    std::vector<Vec2> GenerateTexCoords(size_t);
+    std::vector<Color> GenerateColors(size_t);
+    std::vector<Vec4> GenerateTangents(size_t);
 
     template<ContiguousContainer T, ContiguousContainer U>
     bool ContainersEqual(T const& a, U const& b)
     {
-        return std::equal(a.begin(), a.end(), b.begin(), b.end());
+        using std::begin;
+        using std::end;
+        return std::equal(begin(a), end(a), begin(b), end(b));
+    }
+
+    template<class Container, class UnaryOperation>
+    auto MapToVector(Container const& src, UnaryOperation op)
+    {
+        using std::begin;
+        using std::end;
+
+        std::vector<decltype(op(std::declval<decltype(*begin(src))>()))> rv;
+        rv.reserve(std::distance(begin(src), end(src)));
+        for (auto const& el : src)
+        {
+            rv.push_back(op(el));
+        }
+        return rv;
     }
 }
+

@@ -1,13 +1,31 @@
 #include "TestingHelpers.hpp"
 
+#include <oscar/Maths/MathHelpers.hpp>
+
 #include <random>
 
 using osc::Color;
+using osc::Normalize;
 using osc::Mat3;
 using osc::Mat4;
 using osc::Vec2;
 using osc::Vec3;
 using osc::Vec4;
+
+namespace
+{
+    template<class Generator>
+    auto GenerateVector(size_t n, Generator f)
+    {
+        std::vector<decltype(f())> rv;
+        rv.reserve(n);
+        for (size_t i = 0; i < n; ++i)
+        {
+            rv.push_back(f());
+        }
+        return rv;
+    }
+}
 
 std::default_random_engine& osc::testing::GetRngEngine()
 {
@@ -64,10 +82,30 @@ Mat4 osc::testing::GenerateMat4x4()
 
 std::vector<Vec3> osc::testing::GenerateTriangleVerts()
 {
-    std::vector<Vec3> rv;
-    for (size_t i = 0; i < 30; ++i)
-    {
-        rv.push_back(GenerateVec3());
-    }
-    return rv;
+    return GenerateVector(30, GenerateVec3);
+}
+
+std::vector<Vec3> osc::testing::GenerateVertices(size_t n)
+{
+    return GenerateVector(n, GenerateVec3);
+}
+
+std::vector<Vec3> osc::testing::GenerateNormals(size_t n)
+{
+    return GenerateVector(n, []() { return Normalize(GenerateVec3()); });
+}
+
+std::vector<Vec2> osc::testing::GenerateTexCoords(size_t n)
+{
+    return GenerateVector(n, GenerateVec2);
+}
+
+std::vector<Color> osc::testing::GenerateColors(size_t n)
+{
+    return GenerateVector(n, GenerateColor);
+}
+
+std::vector<Vec4> osc::testing::GenerateTangents(size_t n)
+{
+    return GenerateVector(n, GenerateVec4);
 }

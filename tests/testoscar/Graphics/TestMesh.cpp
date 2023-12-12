@@ -20,15 +20,22 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <random>
 #include <span>
 #include <sstream>
 #include <utility>
 #include <vector>
 
+using osc::testing::GenerateColors;
+using osc::testing::GenerateNormals;
+using osc::testing::GenerateTangents;
+using osc::testing::GenerateTexCoords;
 using osc::testing::GenerateTriangleVerts;
 using osc::testing::GenerateVec2;
 using osc::testing::GenerateVec3;
+using osc::testing::GenerateVertices;
+using osc::testing::MapToVector;
 using osc::AABB;
 using osc::AABBFromVerts;
 using osc::Color;
@@ -42,31 +49,32 @@ using osc::Quat;
 using osc::SubMeshDescriptor;
 using osc::ToMat4;
 using osc::Transform;
+using osc::TransformPoint;
 using osc::Vec2;
 using osc::Vec3;
 using osc::Vec4;
 
 TEST(Mesh, CanBeDefaultConstructed)
 {
-    Mesh mesh;
+    Mesh const mesh;
 }
 
 TEST(Mesh, CanBeCopyConstructed)
 {
-    Mesh m;
+    Mesh const m;
     Mesh{m};
 }
 
 TEST(Mesh, CanBeMoveConstructed)
 {
     Mesh m1;
-    Mesh m2{std::move(m1)};
+    Mesh const m2{std::move(m1)};
 }
 
 TEST(Mesh, CanBeCopyAssigned)
 {
     Mesh m1;
-    Mesh m2;
+    Mesh const m2;
 
     m1 = m2;
 }
@@ -81,14 +89,14 @@ TEST(Mesh, CanBeMoveAssigned)
 
 TEST(Mesh, CanGetTopology)
 {
-    Mesh m;
+    Mesh const m;
 
     m.getTopology();
 }
 
 TEST(Mesh, GetTopologyDefaultsToTriangles)
 {
-    Mesh m;
+    Mesh const m;
 
     ASSERT_EQ(m.getTopology(), MeshTopology::Triangles);
 }
@@ -96,25 +104,25 @@ TEST(Mesh, GetTopologyDefaultsToTriangles)
 TEST(Mesh, SetTopologyCausesGetTopologyToUseSetValue)
 {
     Mesh m;
-    MeshTopology topography = MeshTopology::Lines;
+    auto const newTopology = MeshTopology::Lines;
 
     ASSERT_NE(m.getTopology(), MeshTopology::Lines);
 
-    m.setTopology(topography);
+    m.setTopology(newTopology);
 
-    ASSERT_EQ(m.getTopology(), topography);
+    ASSERT_EQ(m.getTopology(), newTopology);
 }
 
 TEST(Mesh, SetTopologyCausesCopiedMeshTobeNotEqualToInitialMesh)
 {
-    Mesh m;
+    Mesh const m;
     Mesh copy{m};
-    MeshTopology topology = MeshTopology::Lines;
+    auto const newTopology = MeshTopology::Lines;
 
     ASSERT_EQ(m, copy);
-    ASSERT_NE(copy.getTopology(), topology);
+    ASSERT_NE(copy.getTopology(), newTopology);
 
-    copy.setTopology(topology);
+    copy.setTopology(newTopology);
 
     ASSERT_NE(m, copy);
 }
@@ -127,7 +135,7 @@ TEST(Mesh, GetNumVertsInitiallyEmpty)
 TEST(Mesh, Assigning3VertsMakesGetNumVertsReturn3Verts)
 {
     Mesh m;
-    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});
+    m.setVerts(GenerateVertices(3));
     ASSERT_EQ(m.getNumVerts(), 3);
 }
 
@@ -139,20 +147,19 @@ TEST(Mesh, HasVertsInitiallyfalse)
 TEST(Mesh, HasVertsTrueAfterSettingVerts)
 {
     Mesh m;
-    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});
+    m.setVerts(GenerateVertices(6));
     ASSERT_TRUE(m.hasVerts());
 }
 
 TEST(Mesh, GetVertsReturnsEmptyVertsOnDefaultConstruction)
 {
-    Mesh m;
-    ASSERT_TRUE(m.getVerts().empty());
+    ASSERT_TRUE(Mesh{}.getVerts().empty());
 }
 
 TEST(Mesh, SetVertsMakesGetCallReturnVerts)
 {
     Mesh m;
-    std::vector<Vec3> verts = GenerateTriangleVerts();
+    auto const verts = GenerateVertices(9);
 
     m.setVerts(verts);
 
@@ -161,29 +168,60 @@ TEST(Mesh, SetVertsMakesGetCallReturnVerts)
 
 TEST(Mesh, SetVertsCausesCopiedMeshToNotBeEqualToInitialMesh)
 {
-    Mesh m;
+    Mesh const m;
     Mesh copy{m};
 
     ASSERT_EQ(m, copy);
 
-    copy.setVerts(GenerateTriangleVerts());
+    copy.setVerts(GenerateVertices(30));
 
     ASSERT_NE(m, copy);
 }
+
+TEST(Mesh, ShrinkingVertsCausesNormalsToShrinkAlso)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    ASSERT_EQ(m.getVerts().size(), 6);
+    ASSERT_TRUE(m.getNormals().empty());
+    m.setNormals(GenerateNormals(6));
+    ASSERT_EQ(m.getVerts().size(), m.getNormals().size()) << "initial assignment should be fine";
+    m.setVerts(GenerateVertices(3));  // note: smaller
+    ASSERT_EQ(m.getVerts().size(), m.getNormals().size()) << "normals should also shrink";
+}
+
+TEST(Mesh, ExpandingVertsCausesNormalsToExpandWithZeroedNormals)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    auto const normals = GenerateNormals(6);
+    m.setNormals(normals);
+    m.setVerts(GenerateVertices(12));  // note: larger by 6
+    auto const newNormals = m.getNormals();
+
+    ASSERT_EQ(newNormals.size(), m.getVerts().size());
+    ASSERT_GT(newNormals.size(), normals.size());
+
+    // old part should be the same
+    ASSERT_TRUE(std::equal(normals.begin(), normals.end(), newNormals.begin()));
+    // new part should be zeroed
+    auto const isZeroVector = [](Vec3 const& v) { return v == Vec3{}; };
+    ASSERT_TRUE(std::all_of(newNormals.begin()+normals.size(), newNormals.end(), isZeroVector));
+}
+
+// TODO: tex coords shrink/expand
+// TODO: colors shrink/expand
+// TODO: tangents shrink/expand
 
 TEST(Mesh, TransformVertsMakesGetCallReturnVerts)
 {
     Mesh m;
 
     // generate "original" verts
-    std::vector<Vec3> originalVerts = GenerateTriangleVerts();
+    auto const originalVerts = GenerateVertices(30);
 
     // create "transformed" version of the verts
-    std::vector<Vec3> newVerts;
-    for (Vec3 const& v : originalVerts)
-    {
-        newVerts.push_back(v + 1.0f);
-    }
+    auto const newVerts = MapToVector(originalVerts, [](auto const& v) { return v + 1.0f; });
 
     // sanity check that `setVerts` works as expected
     ASSERT_FALSE(m.hasVerts());
@@ -205,7 +243,7 @@ TEST(Mesh, TransformVertsMakesGetCallReturnVerts)
 
 TEST(Mesh, TransformVertsCausesTransformedMeshToNotBeEqualToInitialMesh)
 {
-    Mesh m;
+    Mesh const m;
     Mesh copy{m};
 
     ASSERT_EQ(m, copy);
@@ -218,37 +256,32 @@ TEST(Mesh, TransformVertsCausesTransformedMeshToNotBeEqualToInitialMesh)
 TEST(Mesh, TransformVertsWithTransformAppliesTransformToVerts)
 {
     // create appropriate transform
-    Transform const t = {
+    Transform const transform = {
         .scale = Vec3{0.25f},
         .rotation = Quat{Vec3{Deg2Rad(90.0f), 0.0f, 0.0f}},
         .position = {1.0f, 0.25f, 0.125f},
     };
 
     // generate "original" verts
-    std::vector<Vec3> originalVerts = GenerateTriangleVerts();
+    auto const original = GenerateVertices(30);
 
     // precompute "expected" verts
-    std::vector<Vec3> expectedVerts;
-    expectedVerts.reserve(originalVerts.size());
-    for (Vec3& v : originalVerts)
-    {
-        expectedVerts.push_back(t * v);
-    }
+    auto const expected = MapToVector(original, [&transform](auto const& p) { return TransformPoint(transform, p); });
 
     // create mesh with "original" verts
     Mesh m;
-    m.setVerts(originalVerts);
+    m.setVerts(original);
 
     // then apply the transform
-    m.transformVerts(t);
+    m.transformVerts(transform);
 
     // the mesh's verts should match expectations
-    ASSERT_EQ(m.getVerts(), expectedVerts);
+    ASSERT_EQ(m.getVerts(), expected);
 }
 
 TEST(Mesh, TransformVertsWithTransformCausesTransformedMeshToNotBeEqualToInitialMesh)
 {
-    Mesh m;
+    Mesh const m;
     Mesh copy{m};
 
     ASSERT_EQ(m, copy);
@@ -267,37 +300,32 @@ TEST(Mesh, TransformVertsWithMat4AppliesTransformToVerts)
     });
 
     // generate "original" verts
-    std::vector<Vec3> originalVerts = GenerateTriangleVerts();
+    auto const original = GenerateVertices(30);
 
     // precompute "expected" verts
-    std::vector<Vec3> expectedVerts;
-    expectedVerts.reserve(originalVerts.size());
-    for (Vec3& v : originalVerts)
-    {
-        expectedVerts.emplace_back(Vec3{mat * Vec4{v, 1.0f}});
-    }
+    auto const expected = MapToVector(original, [&mat](auto const& p) { return TransformPoint(mat, p); });
 
     // create mesh with "original" verts
     Mesh m;
-    m.setVerts(originalVerts);
+    m.setVerts(original);
 
     // then apply the transform
     m.transformVerts(mat);
 
     // the mesh's verts should match expectations
-    ASSERT_EQ(m.getVerts(), expectedVerts);
+    ASSERT_EQ(m.getVerts(), expected);
 }
 
 TEST(Mesh, TransformVertsWithMat4CausesTransformedMeshToNotBeEqualToInitialMesh)
 {
-    Mesh m;
+    Mesh const m;
     Mesh copy{m};
 
     ASSERT_EQ(m, copy);
 
-    copy.transformVerts(Identity<Mat4>());  // noop transform also triggers this (meshes aren't value-comparable)
+    copy.transformVerts(Identity<Mat4>());  // noop
 
-    ASSERT_NE(m, copy);
+    ASSERT_NE(m, copy) << "should be non-equal because mesh equality is reference-based (if it becomes value-based, delete this test)";
 }
 
 TEST(Mesh, HasNormalsReturnsFalseForNewlyConstructedMesh)
@@ -305,17 +333,34 @@ TEST(Mesh, HasNormalsReturnsFalseForNewlyConstructedMesh)
     ASSERT_FALSE(Mesh{}.hasNormals());
 }
 
-TEST(Mesh, AssigningNormalsMakesHasNormalsReturnTrue)
+TEST(Mesh, AssigningOnlyNormalsButNoVertsMakesHasNormalsStillReturnFalse)
 {
     Mesh m;
-    m.setNormals({{Vec3{}, Vec3{}, Vec3{}}});
-    ASSERT_TRUE(m.hasNormals());
+    m.setNormals(GenerateNormals(6));
+    ASSERT_FALSE(m.hasNormals()) << "shouldn't have any normals, because the caller didn't first assign any vertices";
+}
+
+TEST(Mesh, AssigningNormalsAndThenVerticiesMakesNormalsAssignmentFail)
+{
+    Mesh m;
+    m.setNormals(GenerateNormals(9));
+    m.setVerts(GenerateVertices(9));
+    ASSERT_FALSE(m.hasNormals()) << "shouldn't have any normals, because the caller assigned the vertices _after_ assigning the normals (must be first)";
+}
+
+TEST(Mesh, AssigningVerticesAndThenNormalsMakesHasNormalsReturnTrue)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    m.setNormals(GenerateNormals(6));
+    ASSERT_TRUE(m.hasNormals()) << "this should work: the caller assigned vertices (good) _and then_ normals (also good)";
 }
 
 TEST(Mesh, ClearingMeshClearsHasNormals)
 {
     Mesh m;
-    m.setNormals({{Vec3{}, Vec3{}, Vec3{}}});
+    m.setVerts(GenerateVertices(3));
+    m.setNormals(GenerateNormals(3));
     ASSERT_TRUE(m.hasNormals());
     m.clear();
     ASSERT_FALSE(m.hasNormals());
@@ -324,8 +369,8 @@ TEST(Mesh, ClearingMeshClearsHasNormals)
 TEST(Mesh, HasNormalsReturnsFalseIfOnlyAssigningVerts)
 {
     Mesh m;
-    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});
-    ASSERT_FALSE(m.hasNormals());
+    m.setVerts(GenerateVertices(3));
+    ASSERT_FALSE(m.hasNormals()) << "shouldn't have normals: the caller didn't assign any vertices first";
 }
 
 TEST(Mesh, GetNormalsReturnsEmptyOnDefaultConstruction)
@@ -334,40 +379,102 @@ TEST(Mesh, GetNormalsReturnsEmptyOnDefaultConstruction)
     ASSERT_TRUE(m.getNormals().empty());
 }
 
-TEST(Mesh, SetNormalsMakesGetCallReturnSuppliedData)
+TEST(Mesh, AssigningOnlyNormalsMakesGetNormalsReturnNothing)
 {
     Mesh m;
-    std::vector<Vec3> normals = {GenerateVec3(), GenerateVec3(), GenerateVec3()};
+    m.setNormals(GenerateNormals(3));
 
-    ASSERT_TRUE(m.getNormals().empty());
-
-    m.setNormals(normals);
-
-    ASSERT_EQ(m.getNormals(), normals);
+    ASSERT_TRUE(m.getNormals().empty()) << "should be empty, because the caller didn't first assign any vertices";
 }
 
-TEST(Mesh, SetNormalsCausesCopiedMeshToNotBeEqualToInitialMesh)
+TEST(Mesh, AssigningNormalsAfterVerticesBehavesAsExpected)
 {
     Mesh m;
+    auto const normals = GenerateNormals(3);
+
+    m.setVerts(GenerateVertices(3));
+    m.setNormals(normals);
+
+    ASSERT_EQ(m.getNormals(), normals) << "should assign the normals: the caller did what's expected";
+}
+
+TEST(Mesh, AssigningFewerNormalsThanVerticesShouldntAssignTheNormals)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(9));
+    m.setNormals(GenerateNormals(6));  // note: less than num verts
+    ASSERT_FALSE(m.hasNormals()) << "normals were not assigned: different size from vertices";
+}
+
+TEST(Mesh, AssigningMoreNormalsThanVerticesShouldntAssignTheNormals)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(9));
+    m.setNormals(GenerateNormals(12));
+    ASSERT_FALSE(m.hasNormals()) << "normals were not assigned: different size from vertices";
+}
+
+TEST(Mesh, SuccessfullyAsssigningNormalsChangesMeshEquality)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(12));
+
     Mesh copy{m};
-    std::vector<Vec3> normals = {GenerateVec3(), GenerateVec3(), GenerateVec3()};
-
     ASSERT_EQ(m, copy);
-
-    copy.setNormals(normals);
-
+    copy.setNormals(GenerateNormals(12));
     ASSERT_NE(m, copy);
+}
+
+TEST(Mesh, FailingToAssignNormalsDoesNotChangeMeshEquality)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(12));
+
+    Mesh copy{m};
+    ASSERT_EQ(m, copy);
+    copy.setNormals(GenerateNormals(9));  // will fail: different size
+    ASSERT_EQ(m, copy);
+}
+
+TEST(Mesh, TransformNormalsTransormsTheNormals)
+{
+    auto const transform = [](Vec3 const& n) { return -n; };
+    auto const original = GenerateNormals(16);
+    auto const expected = MapToVector(original, transform);
+
+    Mesh m;
+    m.setVerts(GenerateVertices(16));
+    m.setNormals(original);
+    ASSERT_EQ(m.getNormals(), original);
+    m.transformNormals(transform);
+    ASSERT_EQ(m.getNormals(), expected);
 }
 
 TEST(Mesh, HasTexCoordsReturnsFalseForDefaultConstructedMesh)
 {
-    ASSERT_FALSE(Mesh{}.hasNormals());
+    ASSERT_FALSE(Mesh{}.hasTexCoords());
 }
 
-TEST(Mesh, HasTexCoordsReturnsTrueAfterAssingingTextCoords)
+TEST(Mesh, AssigningOnlyTexCoordsCausesHasTexCoordsToReturnFalse)
 {
     Mesh m;
-    m.setTexCoords({{Vec2{}, Vec2{}}});
+    m.setTexCoords(GenerateTexCoords(3));
+    ASSERT_FALSE(m.hasTexCoords()) << "texture coordinates not assigned: no vertices";
+}
+
+TEST(Mesh, AssigningTexCoordsAndThenVerticesCausesHasTexCoordsToReturnFalse)
+{
+    Mesh m;
+    m.setTexCoords(GenerateTexCoords(3));
+    m.setVerts(GenerateVertices(3));
+    ASSERT_FALSE(m.hasTexCoords()) << "texture coordinates not assigned: assigned in the wrong order";
+}
+
+TEST(Mesh, AssigningVerticesAndThenTexCoordsCausesHasTexCoordsToReturnTrue)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    m.setTexCoords(GenerateTexCoords(6));
     ASSERT_TRUE(m.hasTexCoords());
 }
 
@@ -377,69 +484,111 @@ TEST(Mesh, GetTexCoordsReturnsEmptyOnDefaultConstruction)
     ASSERT_TRUE(m.getTexCoords().empty());
 }
 
-TEST(Mesh, SetTexCoordsCausesGetToReturnSuppliedData)
+TEST(Mesh, GetTexCoordsReturnsEmptyIfNoVerticesToAssignTheTexCoordsTo)
 {
     Mesh m;
-    std::vector<Vec2> coords = {GenerateVec2(), GenerateVec2(), GenerateVec2()};
-
+    m.setTexCoords(GenerateTexCoords(6));
     ASSERT_TRUE(m.getTexCoords().empty());
+}
 
+TEST(Mesh, GetTexCoordsReturnsSetCoordinatesWhenUsedNormally)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(12));
+    auto const coords = GenerateTexCoords(12);
     m.setTexCoords(coords);
-
     ASSERT_EQ(m.getTexCoords(), coords);
 }
 
-TEST(Mesh, SetTexCoordsCausesCopiedMeshToNotBeEqualToInitialMesh)
+TEST(Mesh, SetTexCoordsDoesNotSetCoordsIfGivenLessCoordsThanVerts)
 {
     Mesh m;
+    m.setVerts(GenerateVertices(12));
+    m.setTexCoords(GenerateTexCoords(9));  // note: less
+    ASSERT_FALSE(m.hasTexCoords());
+    ASSERT_TRUE(m.getTexCoords().empty());
+}
+
+TEST(Mesh, SetTexCoordsDoesNotSetCoordsIfGivenMoreCoordsThanVerts)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(12));
+    m.setTexCoords(GenerateTexCoords(15));  // note: more
+    ASSERT_FALSE(m.hasTexCoords());
+    ASSERT_TRUE(m.getTexCoords().empty());
+}
+
+TEST(Mesh, SuccessfulSetCoordsCausesCopiedMeshToBeNotEqualToOriginalMesh)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(12));
     Mesh copy{m};
-    std::vector<Vec2> coords = {GenerateVec2(), GenerateVec2(), GenerateVec2()};
-
     ASSERT_EQ(m, copy);
-
-    copy.setTexCoords(coords);
-
+    copy.setTexCoords(GenerateTexCoords(12));
     ASSERT_NE(m, copy);
+}
+
+TEST(Mesh, FailingSetCoordsCausesCopiedMeshToRemainEqualToOrignalMesh)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(12));
+    Mesh copy{m};
+    ASSERT_EQ(m, copy);
+    copy.setTexCoords(GenerateTexCoords(15));  // note: wrong size
+    ASSERT_EQ(m, copy);
 }
 
 TEST(Mesh, TransformTexCoordsAppliesTransformToTexCoords)
 {
+    auto const transform = [](Vec2 const& uv) { return 0.287f * uv; };
+    auto const original = GenerateTexCoords(3);
+    auto const expected = MapToVector(original, transform);
+
     Mesh m;
-    std::vector<Vec2> coords = {GenerateVec2(), GenerateVec2(), GenerateVec2()};
-
-    m.setTexCoords(coords);
-
-    ASSERT_EQ(m.getTexCoords(), coords);
-
-    auto const transformer = [](Vec2 v)
-    {
-        return 0.287f * v;  // arbitrary mutation
-    };
-
-    // mutate mesh
-    m.transformTexCoords([&transformer](Vec2& uv) { uv = transformer(uv); });
-
-    // perform equivalent mutation for comparison
-    std::transform(coords.begin(), coords.end(), coords.begin(), transformer);
-
-    ASSERT_EQ(m.getTexCoords(), coords);
+    m.setVerts(GenerateVertices(3));
+    m.setTexCoords(original);
+    ASSERT_EQ(m.getTexCoords(), original);
+    m.transformTexCoords(transform);
+    ASSERT_EQ(m.getTexCoords(), expected);
 }
 
 TEST(Mesh, GetColorsInitiallyReturnsEmptySpan)
 {
+    ASSERT_TRUE(Mesh{}.getColors().empty());
+}
+
+TEST(Mesh, GetColorsRemainsEmptyIfAssignedWithNoVerts)
+{
     Mesh m;
+    ASSERT_TRUE(m.getColors().empty());
+    m.setColors(GenerateColors(3));
+    ASSERT_TRUE(m.getColors().empty()) << "no verticies to assign colors to";
+}
+
+TEST(Mesh, GetColorsReturnsSetColorsWhenAssignedToVertices)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(9));
+    auto const colors = GenerateColors(9);
+    m.setColors(colors);
+    ASSERT_FALSE(m.getColors().empty());
+    ASSERT_EQ(m.getColors(), colors);
+}
+
+TEST(Mesh, SetColorsAssignmentFailsIfGivenFewerColorsThanVerts)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(9));
+    m.setColors(GenerateColors(6));  // note: less
     ASSERT_TRUE(m.getColors().empty());
 }
 
-TEST(Mesh, SetColorsFollowedByGetColorsReturnsColors)
+TEST(Mesh, SetColorsAssignmentFailsIfGivenMoreColorsThanVerts)
 {
     Mesh m;
-    std::array<Color, 3> colors{};
-
-    m.setColors(colors);
-
-    auto rv = m.getColors();
-    ASSERT_EQ(rv.size(), colors.size());
+    m.setVerts(GenerateVertices(9));
+    m.setColors(GenerateColors(12));  // note: more
+    ASSERT_TRUE(m.getColors().empty());
 }
 
 TEST(Mesh, GetTangentsInitiallyReturnsEmptySpan)
@@ -448,13 +597,37 @@ TEST(Mesh, GetTangentsInitiallyReturnsEmptySpan)
     ASSERT_TRUE(m.getTangents().empty());
 }
 
-TEST(Mesh, SetTangentsFollowedByGetTangentsReturnsTangents)
+TEST(Mesh, SetTangentsFailsWhenAssigningWithNoVerts)
 {
     Mesh m;
-    std::array<Vec4, 5> tangents{};
+    m.setTangents(GenerateTangents(3));
+    ASSERT_TRUE(m.getTangents().empty());
+}
 
+TEST(Mesh, SetTangentsWorksWhenAssigningToCorrectNumberOfVertices)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(15));
+    auto const tangents = GenerateTangents(15);
     m.setTangents(tangents);
-    ASSERT_EQ(m.getTangents().size(), tangents.size());
+    ASSERT_FALSE(m.getTangents().empty());
+    ASSERT_EQ(m.getTangents(), tangents);
+}
+
+TEST(Mesh, SetTangentsFailsIfFewerTangentsThanVerts)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(15));
+    m.setTangents(GenerateTangents(12));  // note: fewer
+    ASSERT_TRUE(m.getTangents().empty());
+}
+
+TEST(Mesh, SetTangentsFailsIfMoreTangentsThanVerts)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(15));
+    m.setTangents(GenerateTangents(18));  // note: more
+    ASSERT_TRUE(m.getTangents().empty());
 }
 
 TEST(Mesh, GetNumIndicesReturnsZeroOnDefaultConstruction)
