@@ -20,13 +20,19 @@ using osc::mow::LandmarkPairing;
 
 namespace
 {
-    std::optional<std::filesystem::path> TryFindAssociatedLandmarksFile(
+    std::filesystem::path CalcExpectedAssociatedLandmarksFile(
         std::filesystem::path const& meshAbsolutePath)
     {
         std::filesystem::path expected{meshAbsolutePath};
         expected.replace_extension(".landmarks.csv");
         expected = std::filesystem::weakly_canonical(expected);
+        return expected;
+    }
 
+    std::optional<std::filesystem::path> TryFindAssociatedLandmarksFile(
+        std::filesystem::path const& meshAbsolutePath)
+    {
+        std::filesystem::path expected = CalcExpectedAssociatedLandmarksFile(meshAbsolutePath);
         if (std::filesystem::exists(expected))
         {
             return expected;
@@ -37,13 +43,20 @@ namespace
         }
     }
 
-    std::optional<std::filesystem::path> TryFindDestinationMesh(
+    std::filesystem::path CalcExpectedDestinationMeshFilepath(
         std::filesystem::path const& osimFilepath,
         std::filesystem::path const& sourceMeshFilepath)
     {
         std::filesystem::path expected = osimFilepath.parent_path() / "DestinationGeometry" / sourceMeshFilepath.filename();
         expected = std::filesystem::weakly_canonical(expected);
+        return expected;
+    }
 
+    std::optional<std::filesystem::path> TryFindDestinationMesh(
+        std::filesystem::path const& osimFilepath,
+        std::filesystem::path const& sourceMeshFilepath)
+    {
+        std::filesystem::path expected = CalcExpectedDestinationMeshFilepath(osimFilepath, sourceMeshFilepath);
         if (std::filesystem::exists(expected))
         {
             return expected;
@@ -136,11 +149,108 @@ osc::mow::MeshWarpPairing::MeshWarpPairing(
     std::filesystem::path const& sourceMeshFilepath) :
 
     m_SourceMeshAbsoluteFilepath{std::filesystem::weakly_canonical(sourceMeshFilepath)},
-    m_SourceLandmarksAbsoluteFilepath{TryFindAssociatedLandmarksFile(m_SourceMeshAbsoluteFilepath)},
-    m_DestinationMeshAbsoluteFilepath{TryFindDestinationMesh(osimFilepath, m_SourceMeshAbsoluteFilepath)},
-    m_DestinationLandmarksAbsoluteFilepath{m_DestinationMeshAbsoluteFilepath ? TryFindAssociatedLandmarksFile(*m_DestinationMeshAbsoluteFilepath) : std::nullopt},
-    m_Landmarks{TryLoadPairedLandmarks(m_SourceLandmarksAbsoluteFilepath, m_DestinationLandmarksAbsoluteFilepath)}
+    m_ExpectedSourceLandmarksAbsoluteFilepath{CalcExpectedAssociatedLandmarksFile(m_SourceMeshAbsoluteFilepath)},
+    m_SourceLandmarksFileExists{std::filesystem::exists(m_ExpectedSourceLandmarksAbsoluteFilepath)},
+    m_ExpectedDestinationMeshAbsoluteFilepath{CalcExpectedDestinationMeshFilepath(osimFilepath, m_SourceMeshAbsoluteFilepath)},
+    m_DestinationMeshFileExists{std::filesystem::exists(m_ExpectedDestinationMeshAbsoluteFilepath)},
+    m_ExpectedDestinationLandmarksAbsoluteFilepath{CalcExpectedAssociatedLandmarksFile(m_ExpectedDestinationMeshAbsoluteFilepath)},
+    m_DestinationLandmarksFileExists{std::filesystem::exists(m_ExpectedDestinationLandmarksAbsoluteFilepath)},
+    m_Landmarks{TryLoadPairedLandmarks(tryGetSourceLandmarksFilepath(), tryGetDestinationLandmarksFilepath())}
 {
+}
+
+std::filesystem::path osc::mow::MeshWarpPairing::getSourceMeshAbsoluteFilepath() const
+{
+    return m_SourceMeshAbsoluteFilepath;
+}
+
+bool osc::mow::MeshWarpPairing::hasSourceLandmarksFilepath() const
+{
+    return m_SourceLandmarksFileExists;
+}
+
+std::filesystem::path osc::mow::MeshWarpPairing::recommendedSourceLandmarksFilepath() const
+{
+    return m_ExpectedSourceLandmarksAbsoluteFilepath;
+}
+
+std::optional<std::filesystem::path> osc::mow::MeshWarpPairing::tryGetSourceLandmarksFilepath() const
+{
+    if (m_SourceLandmarksFileExists)
+    {
+        return m_ExpectedSourceLandmarksAbsoluteFilepath;
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+
+bool osc::mow::MeshWarpPairing::hasDestinationMeshFilepath() const
+{
+    return m_DestinationMeshFileExists;
+}
+
+std::filesystem::path osc::mow::MeshWarpPairing::recommendedDestinationMeshFilepath() const
+{
+     return m_ExpectedDestinationMeshAbsoluteFilepath;
+}
+
+std::optional<std::filesystem::path> osc::mow::MeshWarpPairing::tryGetDestinationMeshAbsoluteFilepath() const
+{
+    if (m_DestinationMeshFileExists)
+    {
+        return m_ExpectedDestinationMeshAbsoluteFilepath;
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+
+bool osc::mow::MeshWarpPairing::hasDestinationLandmarksFilepath() const
+{
+    return m_DestinationLandmarksFileExists;
+}
+
+std::filesystem::path osc::mow::MeshWarpPairing::recommendedDestinationLandmarksFilepath() const
+{
+    return m_ExpectedDestinationLandmarksAbsoluteFilepath;
+}
+
+std::optional<std::filesystem::path> osc::mow::MeshWarpPairing::tryGetDestinationLandmarksFilepath() const
+{
+    if (m_DestinationLandmarksFileExists)
+    {
+        return m_ExpectedDestinationLandmarksAbsoluteFilepath;
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+
+size_t osc::mow::MeshWarpPairing::getNumLandmarks() const
+{
+    return m_Landmarks.size();
+}
+
+size_t osc::mow::MeshWarpPairing::getNumSourceLandmarks() const
+{
+    return std::count_if(
+        m_Landmarks.begin(),
+        m_Landmarks.end(),
+        std::mem_fn(&LandmarkPairing::hasSourcePos)
+    );
+}
+
+size_t osc::mow::MeshWarpPairing::getNumDestinationLandmarks() const
+{
+    return std::count_if(
+        m_Landmarks.begin(),
+        m_Landmarks.end(),
+        std::mem_fn(&LandmarkPairing::hasDestinationPos)
+    );
 }
 
 size_t osc::mow::MeshWarpPairing::getNumFullyPairedLandmarks() const
@@ -150,6 +260,16 @@ size_t osc::mow::MeshWarpPairing::getNumFullyPairedLandmarks() const
         m_Landmarks.end(),
         std::mem_fn(&LandmarkPairing::isFullyPaired)
     );
+}
+
+size_t osc::mow::MeshWarpPairing::getNumUnpairedLandmarks() const
+{
+    return getNumLandmarks() - getNumFullyPairedLandmarks();
+}
+
+bool osc::mow::MeshWarpPairing::hasUnpairedLandmarks() const
+{
+    return getNumFullyPairedLandmarks() < getNumLandmarks();
 }
 
 bool osc::mow::MeshWarpPairing::hasLandmarkNamed(std::string_view name) const

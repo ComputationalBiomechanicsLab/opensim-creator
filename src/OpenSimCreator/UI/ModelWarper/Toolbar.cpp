@@ -4,6 +4,8 @@
 
 #include <imgui.h>
 
+#include <utility>
+
 void osc::mow::Toolbar::onDraw()
 {
     if (BeginToolbar(m_Label))
@@ -15,5 +17,8 @@ void osc::mow::Toolbar::onDraw()
 
 void osc::mow::Toolbar::drawContent()
 {
-    ImGui::Text("todo");
+    DrawOpenModelButtonWithRecentFilesDropdown([this](auto maybeSelection)
+    {
+        m_State->actionOpenModel(std::move(maybeSelection));
+    });
 }

@@ -1273,12 +1273,13 @@ void osc::DrawNewModelButton(ParentPtr<MainUIStateAPI> const& api)
     osc::DrawTooltipIfItemHovered("New Model", "Creates a new OpenSim model in a new tab");
 }
 
-void osc::DrawOpenModelButtonWithRecentFilesDropdown(ParentPtr<MainUIStateAPI> const& api)
+void osc::DrawOpenModelButtonWithRecentFilesDropdown(
+    std::function<void(std::optional<std::filesystem::path>)> const& onUserClickedOpenOrSelectedFile)
 {
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
     if (ImGui::Button(ICON_FA_FOLDER_OPEN))
     {
-        ActionOpenModel(api);
+        onUserClickedOpenOrSelectedFile(std::nullopt);
     }
     osc::DrawTooltipIfItemHovered("Open Model", "Opens an existing osim file in a new tab");
     ImGui::SameLine();
@@ -1298,13 +1299,28 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(ParentPtr<MainUIStateAPI> c
             ImGui::PushID(imguiID++);
             if (ImGui::Selectable(rf.path.filename().string().c_str()))
             {
-                ActionOpenModel(api, rf.path);
+                onUserClickedOpenOrSelectedFile(rf.path);
             }
             ImGui::PopID();
         }
 
         ImGui::EndPopup();
     }
+}
+
+void osc::DrawOpenModelButtonWithRecentFilesDropdown(ParentPtr<MainUIStateAPI> const& api)
+{
+    DrawOpenModelButtonWithRecentFilesDropdown([&api](auto maybeFile)
+    {
+        if (maybeFile)
+        {
+            ActionOpenModel(api, *maybeFile);
+        }
+        else
+        {
+            ActionOpenModel(api);
+        }
+    });
 }
 
 void osc::DrawSaveModelButton(
