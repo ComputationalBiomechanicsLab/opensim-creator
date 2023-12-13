@@ -17,6 +17,7 @@
 using osc::lm::Landmark;
 using osc::lm::ReadLandmarksFromCSV;
 using osc::mow::LandmarkPairing;
+using osc::mow::MeshWarpPairing;
 
 namespace
 {
@@ -262,7 +263,7 @@ bool osc::mow::MeshWarpPairing::hasLandmarkNamed(std::string_view name) const
     );
 }
 
-osc::mow::LandmarkPairing const* osc::mow::MeshWarpPairing::tryGetLandmarkPairingByName(std::string_view name) const
+LandmarkPairing const* osc::mow::MeshWarpPairing::tryGetLandmarkPairingByName(std::string_view name) const
 {
     auto const it = std::find_if(
         m_Landmarks.begin(),
@@ -270,4 +271,107 @@ osc::mow::LandmarkPairing const* osc::mow::MeshWarpPairing::tryGetLandmarkPairin
         [name](auto const& lm) { return lm.getName() == name; }
     );
     return it != m_Landmarks.end() ? &(*it) : nullptr;
+}
+
+void osc::mow::MeshWarpPairing::forEachDetail(std::function<void(Detail)> const& callback) const
+{
+    callback({ "source mesh filepath", getSourceMeshAbsoluteFilepath().string() });
+    callback({ "source landmarks expected filepath", recommendedSourceLandmarksFilepath().string() });
+    callback({ "has source landmarks file?", hasSourceLandmarksFilepath() ? "yes" : "no" });
+    callback({ "number of source landmarks", std::to_string(getNumSourceLandmarks()) });
+    callback({ "destination mesh expected filepath", recommendedDestinationMeshFilepath().string() });
+    callback({ "has destination mesh?", hasDestinationMeshFilepath() ? "yes" : "no" });
+    callback({ "destination landmarks expected filepath", recommendedDestinationLandmarksFilepath().string() });
+    callback({ "has destination landmarks file?", hasDestinationLandmarksFilepath() ? "yes" : "no" });
+    callback({ "number of destination landmarks", std::to_string(getNumDestinationLandmarks()) });
+    callback({ "number of paired landmarks", std::to_string(getNumFullyPairedLandmarks()) });
+    callback({ "number of unpaired landmarks", std::to_string(getNumUnpairedLandmarks()) });
+}
+
+void osc::mow::MeshWarpPairing::forEachCheck(std::function<SearchState(Check)> const& callback) const
+{
+    // has a source landmarks file
+    {
+        std::stringstream ss;
+        ss << "has source landmarks file at " << recommendedSourceLandmarksFilepath().string();
+        if (callback({ std::move(ss).str(), hasSourceLandmarksFilepath() }) == SearchState::Stop)
+        {
+            return;
+        }
+    }
+
+    // has source landmarks
+    {
+        if (callback({ "source landmarks file contains landmarks", hasSourceLandmarks() }) == SearchState::Stop)
+        {
+            return;
+        }
+    }
+
+    // has destination mesh file
+    {
+        std::stringstream ss;
+        ss << "has destination mesh file at " << recommendedDestinationMeshFilepath().string();
+        if (callback({ std::move(ss).str(), hasDestinationMeshFilepath() }) == SearchState::Stop)
+        {
+            return;
+        }
+    }
+
+    // has destination landmarks file
+    {
+        std::stringstream ss;
+        ss << "has destination landmarks file at " << recommendedDestinationLandmarksFilepath().string();
+        if (callback({ std::move(ss).str(), hasDestinationLandmarksFilepath() }) == SearchState::Stop)
+        {
+            return;
+        }
+    }
+
+    // has destination landmarks
+    {
+        if (callback({ "destination landmarks file contains landmarks", hasDestinationLandmarks() }) == SearchState::Stop)
+        {
+            return;
+        }
+    }
+
+    // has at least a few paired landmarks
+    {
+        if (callback({ "at least three landmarks can be paired between source/destination", getNumFullyPairedLandmarks() >= 3 }) == SearchState::Stop)
+        {
+            return;
+        }
+    }
+
+    // (warning): has no unpaired landmarks
+    {
+        if (callback({ "there are no unpaired landmarks", getNumUnpairedLandmarks() == 0 ? State::Ok : State::Warning }) == SearchState::Stop)
+        {
+            return;
+        }
+    }
+}
+
+MeshWarpPairing::State osc::mow::MeshWarpPairing::state() const
+{
+    State worst = State::Ok;
+    forEachCheck([&worst](Check c)
+    {
+        if (c.state == State::Error)
+        {
+            worst = State::Error;
+            return SearchState::Stop;
+        }
+        else if (c.state == State::Warning)
+        {
+            worst = State::Warning;
+            return SearchState::Continue;
+        }
+        else
+        {
+            return SearchState::Continue;
+        }
+    });
+    return worst;
 }

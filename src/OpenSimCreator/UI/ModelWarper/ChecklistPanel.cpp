@@ -35,169 +35,36 @@ using osc::mow::UIState;
 // data stuff
 namespace
 {
-    struct InputCheck {
-        enum class State { Ok, Warning, Error };
-
-        InputCheck(
-            std::string description_,
-            bool passOrFail_) :
-
-            description{std::move(description_)},
-            state{passOrFail_ ? State::Ok : State::Error}
-        {
-        }
-
-        InputCheck(
-            std::string description_,
-            State state_) :
-
-            description{std::move(description_)},
-            state{state_}
-        {
-        }
-
-        std::string description;
-        State state;
-    };
-
-    enum class SearchState { Continue, Stop };
     void ForEachCheck(
-        MeshWarpPairing const& p,
-        std::function<SearchState(InputCheck)> const& callback)
+        MeshWarpPairing const* maybePairing,
+        std::function<MeshWarpPairing::SearchState(MeshWarpPairing::Check)> const& callback)
     {
-        // has a source landmarks file
+        if (maybePairing)
         {
-            std::stringstream ss;
-            ss << "has source landmarks file at " << p.recommendedSourceLandmarksFilepath().string();
-            if (callback({ std::move(ss).str(), p.hasSourceLandmarksFilepath() }) == SearchState::Stop)
-            {
-                return;
-            }
-        }
-
-        // has source landmarks
-        {
-            if (callback({ "source landmarks file contains landmarks", p.hasSourceLandmarks() }) == SearchState::Stop)
-            {
-                return;
-            }
-        }
-
-        // has destination mesh file
-        {
-            std::stringstream ss;
-            ss << "has destination mesh file at " << p.recommendedDestinationMeshFilepath().string();
-            if (callback({ std::move(ss).str(), p.hasDestinationMeshFilepath() }) == SearchState::Stop)
-            {
-                return;
-            }
-        }
-
-        // has destination landmarks file
-        {
-            std::stringstream ss;
-            ss << "has destination landmarks file at " << p.recommendedDestinationLandmarksFilepath().string();
-            if (callback({ std::move(ss).str(), p.hasDestinationLandmarksFilepath() }) == SearchState::Stop)
-            {
-                return;
-            }
-        }
-
-        // has destination landmarks
-        {
-            if (callback({ "destination landmarks file contains landmarks", p.hasDestinationLandmarks() }) == SearchState::Stop)
-            {
-                return;
-            }
-        }
-
-        // has at least a few paired landmarks
-        {
-            if (callback({ "at least three landmarks can be paired between source/destination", p.getNumFullyPairedLandmarks() >= 3 }) == SearchState::Stop)
-            {
-                return;
-            }
-        }
-
-        // (warning): has no unpaired landmarks
-        {
-            if (callback({ "there are no unpaired landmarks", p.getNumUnpairedLandmarks() == 0 ? InputCheck::State::Ok : InputCheck::State::Warning }) == SearchState::Stop)
-            {
-                return;
-            }
-        }
-    }
-
-    void ForEachCheck(
-        MeshWarpPairing const* p,
-        std::function<SearchState(InputCheck)> const& callback)
-    {
-        if (p)
-        {
-            return ForEachCheck(*p, callback);
+            maybePairing->forEachCheck(callback);
         }
         else
         {
-            callback({ "no mesh warp pairing found: this is probably an implementation error (maybe reload?)", InputCheck::State::Error });
-            return;
+            callback({ "no mesh warp pairing found: this is probably an implementation error (maybe reload?)", MeshWarpPairing::State::Error });
         }
-    }
-
-    InputCheck::State CalcWorstState(MeshWarpPairing const* p)
-    {
-        InputCheck::State worst = InputCheck::State::Ok;
-        ForEachCheck(p, [&worst](InputCheck c)
-        {
-            if (c.state == InputCheck::State::Error)
-            {
-                worst = InputCheck::State::Error;
-                return SearchState::Stop;
-            }
-            else if (c.state == InputCheck::State::Warning)
-            {
-                worst = InputCheck::State::Warning;
-                return SearchState::Continue;
-            }
-            else
-            {
-                return SearchState::Continue;
-            }
-        });
-        return worst;
-    }
-
-    struct PairingDetail final {
-        std::string name;
-        std::string value;
-    };
-
-    void ForEachDetailIn(
-        MeshWarpPairing const& p,
-        std::function<void(PairingDetail)> const& callback)
-    {
-        callback({ "source mesh filepath", p.getSourceMeshAbsoluteFilepath().string() });
-        callback({ "source landmarks expected filepath", p.recommendedSourceLandmarksFilepath().string() });
-        callback({ "has source landmarks file?", p.hasSourceLandmarksFilepath() ? "yes" : "no" });
-        callback({ "number of source landmarks", std::to_string(p.getNumSourceLandmarks()) });
-        callback({ "destination mesh expected filepath", p.recommendedDestinationMeshFilepath().string() });
-        callback({ "has destination mesh?", p.hasDestinationMeshFilepath() ? "yes" : "no" });
-        callback({ "destination landmarks expected filepath", p.recommendedDestinationLandmarksFilepath().string() });
-        callback({ "has destination landmarks file?", p.hasDestinationLandmarksFilepath() ? "yes" : "no" });
-        callback({ "number of destination landmarks", std::to_string(p.getNumDestinationLandmarks()) });
-        callback({ "number of paired landmarks", std::to_string(p.getNumFullyPairedLandmarks()) });
-        callback({ "number of unpaired landmarks", std::to_string(p.getNumUnpairedLandmarks()) });
     }
 
     void ForEachDetailIn(
         OpenSim::Mesh const& mesh,
         MeshWarpPairing const* maybePairing,
-        std::function<void(PairingDetail)> const& callback)
+        std::function<void(MeshWarpPairing::Detail)> const& callback)
     {
         callback({ "OpenSim::Mesh path in the OpenSim::Model", GetAbsolutePathString(mesh) });
+
         if (maybePairing)
         {
-            ForEachDetailIn(*maybePairing, callback);
+            maybePairing->forEachDetail(callback);
         }
+    }
+
+    MeshWarpPairing::State StateOrError(MeshWarpPairing const* maybePairing)
+    {
+        return maybePairing ? maybePairing->state() : MeshWarpPairing::State::Error;
     }
 }
 
@@ -209,24 +76,23 @@ namespace
         Color color;
     };
 
-    EntryStyling ToStyle(InputCheck::State s)
+    EntryStyling ToStyle(MeshWarpPairing::State s)
     {
         switch (s)
         {
-        case InputCheck::State::Ok:
+        case MeshWarpPairing::State::Ok:
             return {.icon = ICON_FA_CHECK, .color = Color::green()};
-        case InputCheck::State::Warning:
+        case MeshWarpPairing::State::Warning:
             return {.icon = ICON_FA_EXCLAMATION, .color = Color::orange()};
         default:
-        case InputCheck::State::Error:
+        case MeshWarpPairing::State::Error:
             return {.icon = ICON_FA_TIMES, .color = Color::red()};
         }
     }
 
     EntryStyling CalcStyle(UIState const& state, OpenSim::Mesh const& mesh)
     {
-        InputCheck::State const worst = CalcWorstState(state.findMeshWarp(mesh));
-        return ToStyle(worst);
+        return ToStyle(StateOrError(state.findMeshWarp(mesh)));
     }
 
     EntryStyling CalcStyle(UIState const&, OpenSim::Frame const&)
@@ -280,7 +146,7 @@ namespace
             ImGui::TableSetupColumn("Value");
             ImGui::TableHeadersRow();
 
-            ForEachDetailIn(mesh, maybePairing, [](PairingDetail detail)
+            ForEachDetailIn(mesh, maybePairing, [](auto detail)
             {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
@@ -296,7 +162,7 @@ namespace
     {
         ImGui::Indent(5.0f);
         int id = 0;
-        ForEachCheck(maybePairing, [&id](InputCheck check)
+        ForEachCheck(maybePairing, [&id](auto check)
         {
             ImGui::PushID(id);
             auto style = ToStyle(check.state);
@@ -304,7 +170,7 @@ namespace
             ImGui::SameLine();
             TextUnformatted(check.description);
             ImGui::PopID();
-            return SearchState::Continue;
+            return MeshWarpPairing::SearchState::Continue;
         });
         ImGui::Unindent(5.0f);
     }
