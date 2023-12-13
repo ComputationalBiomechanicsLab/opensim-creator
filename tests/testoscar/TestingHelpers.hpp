@@ -56,5 +56,15 @@ namespace osc::testing
         }
         return rv;
     }
+
+    template<class T>
+    std::vector<T> ResizedVectorCopy(std::vector<T> const& v, size_t newSize, T const& filler = {})
+    {
+        std::vector<T> rv;
+        rv.reserve(newSize);
+        rv.insert(rv.end(), v.begin(), v.begin() + std::min(v.size(), newSize));
+        rv.resize(newSize, filler);
+        return rv;
+    }
 }
 

@@ -36,6 +36,7 @@ using osc::testing::GenerateVec2;
 using osc::testing::GenerateVec3;
 using osc::testing::GenerateVertices;
 using osc::testing::MapToVector;
+using osc::testing::ResizedVectorCopy;
 using osc::AABB;
 using osc::AABBFromVerts;
 using osc::Color;
@@ -180,38 +181,99 @@ TEST(Mesh, SetVertsCausesCopiedMeshToNotBeEqualToInitialMesh)
 
 TEST(Mesh, ShrinkingVertsCausesNormalsToShrinkAlso)
 {
+    auto const normals = GenerateNormals(6);
+
     Mesh m;
     m.setVerts(GenerateVertices(6));
-    ASSERT_EQ(m.getVerts().size(), 6);
-    ASSERT_TRUE(m.getNormals().empty());
-    m.setNormals(GenerateNormals(6));
-    ASSERT_EQ(m.getVerts().size(), m.getNormals().size()) << "initial assignment should be fine";
-    m.setVerts(GenerateVertices(3));  // note: smaller
-    ASSERT_EQ(m.getVerts().size(), m.getNormals().size()) << "normals should also shrink";
+    m.setNormals(normals);
+    m.setVerts(GenerateVertices(3));
+
+    ASSERT_EQ(m.getNormals(), ResizedVectorCopy(normals, 3));
 }
 
 TEST(Mesh, ExpandingVertsCausesNormalsToExpandWithZeroedNormals)
 {
+    auto const normals = GenerateNormals(6);
+
     Mesh m;
     m.setVerts(GenerateVertices(6));
-    auto const normals = GenerateNormals(6);
     m.setNormals(normals);
-    m.setVerts(GenerateVertices(12));  // note: larger by 6
-    auto const newNormals = m.getNormals();
+    m.setVerts(GenerateVertices(12));
 
-    ASSERT_EQ(newNormals.size(), m.getVerts().size());
-    ASSERT_GT(newNormals.size(), normals.size());
-
-    // old part should be the same
-    ASSERT_TRUE(std::equal(normals.begin(), normals.end(), newNormals.begin()));
-    // new part should be zeroed
-    auto const isZeroVector = [](Vec3 const& v) { return v == Vec3{}; };
-    ASSERT_TRUE(std::all_of(newNormals.begin()+normals.size(), newNormals.end(), isZeroVector));
+    ASSERT_EQ(m.getNormals(), ResizedVectorCopy(normals, 12, Vec3{}));
 }
 
-// TODO: tex coords shrink/expand
-// TODO: colors shrink/expand
-// TODO: tangents shrink/expand
+TEST(Mesh, ShrinkingVertsCausesTexCoordsToShrinkAlso)
+{
+    auto uvs = GenerateTexCoords(6);
+
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    m.setTexCoords(uvs);
+    m.setVerts(GenerateVertices(3));
+
+    ASSERT_EQ(m.getTexCoords(), ResizedVectorCopy(uvs, 3));
+}
+
+TEST(Mesh, ExpandingVertsCausesTexCoordsToExpandWithZeroedTexCoords)
+{
+    auto const uvs = GenerateTexCoords(6);
+
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    m.setTexCoords(uvs);
+    m.setVerts(GenerateVertices(12));
+
+    ASSERT_EQ(m.getTexCoords(), ResizedVectorCopy(uvs, 12, Vec2{}));
+}
+
+TEST(Mesh, ShrinkingVertsCausesColorsToShrinkAlso)
+{
+    auto const colors = GenerateColors(6);
+
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    m.setColors(colors);
+    m.setVerts(GenerateVertices(3));
+
+    ASSERT_EQ(m.getColors(), ResizedVectorCopy(colors, 3));
+}
+
+TEST(Mesh, ExpandingVertsCausesColorsToExpandWithClearColor)
+{
+    auto const colors = GenerateColors(6);
+
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    m.setColors(colors);
+    m.setVerts(GenerateVertices(12));
+
+    ASSERT_EQ(m.getColors(), ResizedVectorCopy(colors, 12, Color::clear()));
+}
+
+TEST(Mesh, ShrinkingVertsCausesTangentsToShrinkAlso)
+{
+    auto const tangents = GenerateTangents(6);
+
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    m.setTangents(GenerateTangents(6));
+    m.setVerts(GenerateVertices(3));
+
+    ASSERT_EQ(m.getTangents(), ResizedVectorCopy(tangents, 3));
+}
+
+TEST(Mesh, ExpandingVertsCausesTangentsToExpandAlsoAsZeroedTangents)
+{
+    auto const tangents = GenerateTangents(6);
+
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    m.setTangents(GenerateTangents(6));
+    m.setVerts(GenerateVertices(12));
+
+    ASSERT_EQ(m.getTangents(), ResizedVectorCopy(tangents, 12, Vec4{}));
+}
 
 TEST(Mesh, TransformVertsMakesGetCallReturnVerts)
 {
