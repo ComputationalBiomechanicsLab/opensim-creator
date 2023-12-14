@@ -29,7 +29,7 @@ namespace
 
     ParseResult ParseRow(size_t lineNum, std::span<std::string const> cols)
     {
-        if (cols.empty() || cols.size() == 1 && TrimLeadingAndTrailingWhitespace(cols.front()).empty())
+        if (cols.empty() || (cols.size() == 1 && TrimLeadingAndTrailingWhitespace(cols.front()).empty()))
         {
             return SkipRow{};  // whitespace row, or trailing newline
         }
