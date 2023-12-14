@@ -961,3 +961,195 @@ TEST(Mesh, GeneralClearMethodAlsoClearsSubMeshDescriptors)
     ASSERT_NO_THROW({ m.clear(); });
     ASSERT_EQ(m.getSubMeshCount(), 0);
 }
+
+TEST(Mesh, GetVertexAttributeCountInitiallyZero)
+{
+    ASSERT_EQ(Mesh{}.getVertexAttributeCount(), 0);
+}
+
+TEST(Mesh, GetVertexAttributeCountBecomes1AfterSettingVerts)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    ASSERT_EQ(m.getVertexAttributeCount(), 1);
+}
+
+TEST(Mesh, GetVertexAttributeCountRezeroesIfVerticesAreCleared)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    ASSERT_EQ(m.getVertexAttributeCount(), 1);
+    m.setVerts({});
+    ASSERT_EQ(m.getVertexAttributeCount(), 0);
+}
+
+TEST(Mesh, GetVertexAttributeCountGoesToTwoAfterSetting)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    m.setNormals(GenerateNormals(6));
+    ASSERT_EQ(m.getVertexAttributeCount(), 2);
+}
+
+TEST(Mesh, GetVertexAttributeCountGoesDownAsExpectedWrtNormals)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(12));
+    m.setNormals(GenerateNormals(12));
+    ASSERT_EQ(m.getVertexAttributeCount(), 2);
+    m.setNormals({});  // clear normals: should only clear the normals
+    ASSERT_EQ(m.getVertexAttributeCount(), 1);
+    m.setNormals(GenerateNormals(12));
+    ASSERT_EQ(m.getVertexAttributeCount(), 2);
+    m.setVerts({});  // clear verts: should clear vertices + attributes (here: normals)
+    ASSERT_EQ(m.getVertexAttributeCount(), 0);
+}
+
+TEST(Mesh, GetVertexAttributeCountIsZeroAfterClearingWholeMeshWrtNormals)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    m.setNormals(GenerateNormals(6));
+    ASSERT_EQ(m.getVertexAttributeCount(), 2);
+    m.clear();
+    ASSERT_EQ(m.getVertexAttributeCount(), 0);
+}
+
+TEST(Mesh, GetVertexAttributeCountGoesToTwoAfterAssigningTexCoords)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    m.setTexCoords(GenerateTexCoords(6));
+    ASSERT_EQ(m.getVertexAttributeCount(), 2);
+}
+
+TEST(Mesh, GetVertexAttributeCountGoesBackToOneAfterClearingTexCoords)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    m.setTexCoords(GenerateTexCoords(6));
+    ASSERT_EQ(m.getVertexAttributeCount(), 2);
+    m.setTexCoords({}); // clear them
+    ASSERT_EQ(m.getVertexAttributeCount(), 1);
+}
+
+TEST(Mesh, GetVertexAttributeCountBehavesAsExpectedWrtTexCoords)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    m.setTexCoords(GenerateTexCoords(6));
+    ASSERT_EQ(m.getVertexAttributeCount(), 2);
+    m.setVerts({});
+    ASSERT_EQ(m.getVertexAttributeCount(), 0);
+    m.setVerts(GenerateVertices(6));
+    ASSERT_EQ(m.getVertexAttributeCount(), 1);
+    m.setTexCoords(GenerateTexCoords(6));
+    ASSERT_EQ(m.getVertexAttributeCount(), 2);
+    m.clear();
+    ASSERT_EQ(m.getVertexAttributeCount(), 0);
+}
+
+TEST(Mesh, GetVertexAttributeCountBehavesAsExpectedWrtColors)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(12));
+    m.setColors(GenerateColors(12));
+    ASSERT_EQ(m.getVertexAttributeCount(), 2);
+    m.setColors({});
+    ASSERT_EQ(m.getVertexAttributeCount(), 1);
+    m.setColors(GenerateColors(12));
+    ASSERT_EQ(m.getVertexAttributeCount(), 2);
+    m.setVerts({});
+    ASSERT_EQ(m.getVertexAttributeCount(), 0);
+    m.setVerts(GenerateVertices(12));
+    m.setColors(GenerateColors(12));
+    ASSERT_EQ(m.getVertexAttributeCount(), 2);
+    m.clear();
+    ASSERT_EQ(m.getVertexAttributeCount(), 0);
+}
+
+TEST(Mesh, GetVertexAttributeCountBehavesAsExpectedWrtTangents)
+{
+    Mesh m;
+    ASSERT_EQ(m.getVertexAttributeCount(), 0);
+    m.setVerts(GenerateVertices(9));
+    ASSERT_EQ(m.getVertexAttributeCount(), 1);
+    m.setTangents(GenerateTangents(9));
+    ASSERT_EQ(m.getVertexAttributeCount(), 2);
+    m.setTangents({});
+    ASSERT_EQ(m.getVertexAttributeCount(), 1);
+    m.setTangents(GenerateTangents(9));
+    ASSERT_EQ(m.getVertexAttributeCount(), 2);
+    m.setVerts({});
+    ASSERT_EQ(m.getVertexAttributeCount(), 0);
+    m.setVerts(GenerateVertices(9));
+    m.setTangents(GenerateTangents(9));
+    ASSERT_EQ(m.getVertexAttributeCount(), 2);
+    m.clear();
+    ASSERT_EQ(m.getVertexAttributeCount(), 0);
+}
+
+TEST(Mesh, GetVertexAttributeCountBehavesAsExpectedForMultipleAttributes)
+{
+    Mesh m;
+
+    // first, try adding all possible attributes
+    ASSERT_EQ(m.getVertexAttributeCount(), 0);
+    m.setVerts(GenerateVertices(6));
+    ASSERT_EQ(m.getVertexAttributeCount(), 1);
+    m.setNormals(GenerateNormals(6));
+    ASSERT_EQ(m.getVertexAttributeCount(), 2);
+    m.setTexCoords(GenerateTexCoords(6));
+    ASSERT_EQ(m.getVertexAttributeCount(), 3);
+    m.setColors(GenerateColors(6));
+    ASSERT_EQ(m.getVertexAttributeCount(), 4);
+    m.setTangents(GenerateTangents(6));
+    ASSERT_EQ(m.getVertexAttributeCount(), 5);
+
+    // then make sure that assigning over them doesn't change
+    // the number of attributes (i.e. it's an in-place assignment)
+    ASSERT_EQ(m.getVertexAttributeCount(), 5);
+    m.setVerts(GenerateVertices(6));
+    ASSERT_EQ(m.getVertexAttributeCount(), 5);
+    m.setNormals(GenerateNormals(6));
+    ASSERT_EQ(m.getVertexAttributeCount(), 5);
+    m.setTexCoords(GenerateTexCoords(6));
+    ASSERT_EQ(m.getVertexAttributeCount(), 5);
+    m.setColors(GenerateColors(6));
+    ASSERT_EQ(m.getVertexAttributeCount(), 5);
+    m.setTangents(GenerateTangents(6));
+    ASSERT_EQ(m.getVertexAttributeCount(), 5);
+
+    // then make sure that attributes can be deleted in a different
+    // order from assignment, and attribute count behaves as-expected
+    {
+        Mesh copy = m;
+        ASSERT_EQ(copy.getVertexAttributeCount(), 5);
+        copy.setTexCoords({});
+        ASSERT_EQ(copy.getVertexAttributeCount(), 4);
+        copy.setColors({});
+        ASSERT_EQ(copy.getVertexAttributeCount(), 3);
+        copy.setNormals({});
+        ASSERT_EQ(copy.getVertexAttributeCount(), 2);
+        copy.setTangents({});
+        ASSERT_EQ(copy.getVertexAttributeCount(), 1);
+        copy.setVerts({});
+        ASSERT_EQ(copy.getVertexAttributeCount(), 0);
+    }
+
+    // ... and Mesh::clear behaves as expected
+    {
+        Mesh copy = m;
+        ASSERT_EQ(copy.getVertexAttributeCount(), 5);
+        copy.clear();
+        ASSERT_EQ(copy.getVertexAttributeCount(), 0);
+    }
+
+    // ... and clearing the verts first clears all attributes
+    {
+        Mesh copy = m;
+        ASSERT_EQ(copy.getVertexAttributeCount(), 5);
+        copy.setVerts({});
+        ASSERT_EQ(copy.getVertexAttributeCount(), 0);
+    }
+}
