@@ -87,7 +87,7 @@ namespace osc
         // TODO: these aren't implemented yet!
         size_t getVertexAttributeCount() const;
         std::vector<VertexAttributeDescriptor> getVertexAttributes() const;
-        void setVertexBufferParams(size_t n, std::span<VertexAttributeDescriptor>);
+        void setVertexBufferParams(size_t n, std::span<VertexAttributeDescriptor const>);
         size_t getVertexBufferStride() const;
         void setVertexBufferData(std::span<uint8_t const>, size_t stride);
         template<class T>

@@ -20,6 +20,8 @@ namespace osc
         {
         }
 
+        friend bool operator==(VertexAttributeDescriptor const&, VertexAttributeDescriptor const&) = default;
+
         VertexAttribute attribute;
         VertexAttributeFormat format;
         size_t dimension;
