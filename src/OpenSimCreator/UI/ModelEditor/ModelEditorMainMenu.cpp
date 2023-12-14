@@ -6,6 +6,7 @@
 #include <OpenSimCreator/UI/ModelEditor/ExportPointsPopup.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ModelActionsMenuItems.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ModelMusclePlotPanel.hpp>
+#include <OpenSimCreator/UI/Shared/ImportStationsFromCSVPopup.hpp>
 #include <OpenSimCreator/UI/Shared/MainMenu.hpp>
 #include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.hpp>
 #include <OpenSimCreator/UI/MainUIStateAPI.hpp>
@@ -92,6 +93,17 @@ private:
             if (ImGui::MenuItem(ICON_FA_EDIT " Edit simulation settings"))
             {
                 m_EditorAPI->pushPopup(std::make_unique<osc::ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
+            }
+
+            if (ImGui::MenuItem("         Import Points"))
+            {
+                m_EditorAPI->pushPopup(std::make_unique<ImportStationsFromCSVPopup>(
+                    "Import Points",
+                    [model = m_Model](auto lms)
+                    {
+                        ActionImportLandmarks(*model, lms.landmarks, lms.maybeLabel);
+                    }
+                ));
             }
 
             if (ImGui::MenuItem("         Export Points"))

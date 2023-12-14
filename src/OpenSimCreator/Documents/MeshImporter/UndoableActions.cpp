@@ -463,3 +463,24 @@ bool osc::mi::AddStationAtLocation(
 
     return AddStationAtLocation(udoc, *obj, loc);
 }
+
+void osc::mi::ActionImportLandmarks(
+    UndoableDocument& udoc,
+    std::span<lm::NamedLandmark const> landmarks,
+    std::optional<std::string> maybeName)
+{
+    Document& doc = udoc.updScratch();
+    for (auto const& lm : landmarks)
+    {
+        doc.emplace<StationEl>(
+            UID{},
+            MIIDs::Ground(),
+            lm.position,
+            lm.name
+        );
+    }
+
+    std::stringstream ss;
+    ss << "imported " << maybeName.value_or("landmarks");
+    udoc.commitScratch(std::move(ss).str());
+}

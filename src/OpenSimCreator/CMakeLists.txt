@@ -22,6 +22,7 @@ add_library(OpenSimCreator STATIC
     Documents/Landmarks/LandmarkCSVFlags.hpp
     Documents/Landmarks/LandmarkHelpers.cpp
     Documents/Landmarks/LandmarkHelpers.hpp
+    Documents/Landmarks/NamedLandmark.hpp
 
     Documents/MeshImporter/Body.cpp
     Documents/MeshImporter/Body.hpp
@@ -186,8 +187,6 @@ add_library(OpenSimCreator STATIC
 
     UI/MeshImporter/ChooseElLayer.hpp
     UI/MeshImporter/DrawableThing.hpp
-    UI/MeshImporter/ImportStationsFromCSVPopup.cpp
-    UI/MeshImporter/ImportStationsFromCSVPopup.hpp
     UI/MeshImporter/MeshImporterHover.hpp
     UI/MeshImporter/MeshImporterSharedState.hpp
     UI/MeshImporter/MeshImporterTab.cpp
@@ -268,7 +267,8 @@ add_library(OpenSimCreator STATIC
     UI/Shared/BasicWidgets.hpp
     UI/Shared/GeometryPathPropertyEditorPopup.cpp
     UI/Shared/GeometryPathPropertyEditorPopup.hpp
-
+    UI/Shared/ImportStationsFromCSVPopup.cpp
+    UI/Shared/ImportStationsFromCSVPopup.hpp
     UI/Shared/MainMenu.cpp
     UI/Shared/MainMenu.hpp
     UI/Shared/ModelEditorViewerPanel.cpp

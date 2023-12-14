@@ -10,5 +10,7 @@ namespace osc::lm
     struct Landmark final {
         std::optional<std::string> maybeName;
         Vec3 position;
+
+        friend bool operator==(Landmark const&, Landmark const&) = default;
     };
 }

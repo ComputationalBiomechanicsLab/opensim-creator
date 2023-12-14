@@ -3,7 +3,9 @@
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
 
 #include <gtest/gtest.h>
+#include <oscar/Maths/Vec3.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <filesystem>
 #include <fstream>
@@ -11,11 +13,15 @@
 #include <sstream>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
+using osc::lm::GenerateNames;
 using osc::lm::Landmark;
 using osc::lm::LandmarkCSVFlags;
+using osc::lm::NamedLandmark;
 using osc::lm::ReadLandmarksFromCSV;
 using osc::lm::WriteLandmarksToCSV;
+using osc::Vec3;
 
 namespace
 {
@@ -168,4 +174,59 @@ TEST(LandmarkHelpers, WriteLandmarksToCSVWritesOnlyXYZIfNoNameRequested)
     WriteLandmarksToCSV(out, VectorReadingIterator(landmarks), LandmarkCSVFlags::NoNames);
 
     ASSERT_EQ(out.str(), "x,y,z\n");
+}
+
+TEST(LandmarkHelpers, GenerateNamesDoesNotChangeInputIfInputIsFullyNamed)
+{
+    std::vector<Landmark> const input =
+    {
+        {"p1",   {}},
+        {"p2",   {0.0f, 1.0f, 0.0f}},
+        {"etc.", {1.0f, 1.0f, 0.0f}},
+    };
+    auto const output = GenerateNames(input);
+
+    ASSERT_TRUE(std::equal(output.begin(), output.end(), input.begin(), input.end()));
+}
+
+TEST(LandmarkHelpers, GenerateNamesGeneratesPrefixedNameForUnnamedInputs)
+{
+    std::vector<Landmark> const input =
+    {
+        {"p1",         {}},
+        {std::nullopt, {0.0f, 1.0f, 0.0f}},
+        {"etc.",       {1.0f, 1.0f, 0.0f}},
+    };
+    std::vector<NamedLandmark> const expectedOutput =
+    {
+        {"p1", Vec3{}},
+        {"someprefix_0", Vec3{0.0f, 1.0f, 0.0f}},
+        {"etc.", Vec3{1.0f, 1.0f, 0.0f}},
+    };
+    auto const output = GenerateNames(input, "someprefix_");
+
+    ASSERT_TRUE(std::equal(output.begin(), output.end(), expectedOutput.begin(), expectedOutput.end()));
+}
+
+TEST(LandmarkHelpers, GenerateNamesBehavesAsExpectedInPathologicalCase)
+{
+    std::vector<Landmark> const input =
+    {
+        {"p1",           {}},
+        {std::nullopt,   {0.0f, 1.0f, 0.0f}},
+        {"someprefix_0", {1.0f, 1.0f, 0.0f}},  // uh oh
+        {"someprefix_1", {2.0f, 0.0f, 0.0f}},  // uhhhh oh
+        {std::nullopt,   {}},
+    };
+    std::vector<NamedLandmark> const expectedOutput =
+    {
+        {"p1",           {}},
+        {"someprefix_2", {0.0f, 1.0f, 0.0f}},
+        {"someprefix_0", {1.0f, 1.0f, 0.0f}},
+        {"someprefix_1", {2.0f, 0.0f, 0.0f}},
+        {"someprefix_3", {}},
+    };
+    auto const output = GenerateNames(input, "someprefix_");
+
+    ASSERT_TRUE(std::equal(output.begin(), output.end(), expectedOutput.begin(), expectedOutput.end()));
 }

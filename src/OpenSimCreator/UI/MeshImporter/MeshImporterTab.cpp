@@ -18,12 +18,12 @@
 #include <OpenSimCreator/Documents/MeshImporter/UndoableDocument.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/UI/MeshImporter/DrawableThing.hpp>
-#include <OpenSimCreator/UI/MeshImporter/ImportStationsFromCSVPopup.hpp>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterHover.hpp>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterSharedState.hpp>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterUILayer.hpp>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterUILayerHost.hpp>
 #include <OpenSimCreator/UI/MeshImporter/Select2MeshPointsLayer.hpp>
+#include <OpenSimCreator/UI/Shared/ImportStationsFromCSVPopup.hpp>
 #include <OpenSimCreator/UI/MainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.hpp>
 #include <OpenSimCreator/UI/MeshImporter/ChooseElLayer.hpp>
@@ -2324,7 +2324,14 @@ private:
             {
                 auto popup = std::make_shared<ImportStationsFromCSVPopup>(
                     "Import Stations from CSV",
-                    m_Shared
+                    [state = m_Shared](auto data)
+                    {
+                        ActionImportLandmarks(
+                            state->updCommittableModelGraph(),
+                            data.landmarks,
+                            data.maybeLabel
+                        );
+                    }
                 );
                 popup->open();
                 m_PopupManager.push_back(std::move(popup));
