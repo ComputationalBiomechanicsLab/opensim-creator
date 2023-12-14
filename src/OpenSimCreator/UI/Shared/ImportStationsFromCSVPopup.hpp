@@ -1,19 +1,28 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/Landmarks/NamedLandmark.hpp>
+
 #include <oscar/UI/Widgets/Popup.hpp>
 
+#include <functional>
 #include <memory>
+#include <optional>
+#include <string>
 #include <string_view>
+#include <vector>
 
-namespace osc::mi { class MeshImporterSharedState; }
-
-namespace osc::mi
+namespace osc
 {
     class ImportStationsFromCSVPopup final : public Popup {
     public:
+        struct ImportedData final {
+            std::optional<std::string> maybeLabel;
+            std::vector<lm::NamedLandmark> landmarks;
+        };
+
         ImportStationsFromCSVPopup(
             std::string_view,
-            std::shared_ptr<MeshImporterSharedState> const&
+            std::function<void(ImportedData)> const& onImport
         );
         ImportStationsFromCSVPopup(ImportStationsFromCSVPopup const&) = delete;
         ImportStationsFromCSVPopup(ImportStationsFromCSVPopup&&) noexcept;

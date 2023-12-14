@@ -2158,3 +2158,31 @@ bool osc::ActionFitPlaneToMesh(
 
     return true;
 }
+
+bool osc::ActionImportLandmarks(
+    UndoableModelStatePair& model,
+    std::span<lm::NamedLandmark const> lms,
+    std::optional<std::string> maybeName)
+{
+    try
+    {
+        OpenSim::Model& mutModel = model.updModel();
+        for (auto const& lm : lms)
+        {
+            AddMarker(mutModel, lm.name, mutModel.getGround(), ToSimTKVec3(lm.position));
+        }
+        FinalizeConnections(mutModel);
+        InitializeModel(mutModel);
+        InitializeState(mutModel);
+
+        std::stringstream ss;
+        ss << "imported " << maybeName.value_or("markers");
+        model.commit(std::move(ss).str());
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("error detected while trying to import landmarks to the model: %s", ex.what());
+        return false;
+    }
+    return true;
+}

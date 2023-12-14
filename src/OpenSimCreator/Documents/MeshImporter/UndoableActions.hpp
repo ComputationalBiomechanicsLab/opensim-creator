@@ -143,7 +143,7 @@ namespace osc::mi
         Vec3 const&
     );
 
-    void ActionImportLandmarksToModelGraph(
+    void ActionImportLandmarks(
         UndoableDocument&,
         std::span<lm::NamedLandmark const>,
         std::optional<std::string> maybeLandmarksIdentifier = std::nullopt

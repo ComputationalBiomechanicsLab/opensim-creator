@@ -195,7 +195,7 @@ namespace
             });
 
             SimTK::Array_<int> face;
-            face.reserve(static_cast<unsigned int>(verts.size()));
+            face.reserve(static_cast<decltype(face)::size_type>(verts.size()));
             for (SimTK::Vec3 const& vert : verts)
             {
                 face.push_back(polygonalMesh.addVertex(vert));

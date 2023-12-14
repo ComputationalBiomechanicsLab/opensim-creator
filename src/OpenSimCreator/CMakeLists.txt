@@ -187,8 +187,6 @@ add_library(OpenSimCreator STATIC
 
     UI/MeshImporter/ChooseElLayer.hpp
     UI/MeshImporter/DrawableThing.hpp
-    UI/MeshImporter/ImportStationsFromCSVPopup.cpp
-    UI/MeshImporter/ImportStationsFromCSVPopup.hpp
     UI/MeshImporter/MeshImporterHover.hpp
     UI/MeshImporter/MeshImporterSharedState.hpp
     UI/MeshImporter/MeshImporterTab.cpp
@@ -230,8 +228,6 @@ add_library(OpenSimCreator STATIC
     UI/ModelEditor/EditorTabStatusBar.hpp
     UI/ModelEditor/ExportPointsPopup.cpp
     UI/ModelEditor/ExportPointsPopup.hpp
-    UI/ModelEditor/ImportPointsPopup.cpp
-    UI/ModelEditor/ImportPointsPopup.hpp
     UI/ModelEditor/ModelActionsMenuItems.cpp
     UI/ModelEditor/ModelActionsMenuItems.hpp
     UI/ModelEditor/ModelEditorTab.cpp
@@ -271,7 +267,8 @@ add_library(OpenSimCreator STATIC
     UI/Shared/BasicWidgets.hpp
     UI/Shared/GeometryPathPropertyEditorPopup.cpp
     UI/Shared/GeometryPathPropertyEditorPopup.hpp
-
+    UI/Shared/ImportStationsFromCSVPopup.cpp
+    UI/Shared/ImportStationsFromCSVPopup.hpp
     UI/Shared/MainMenu.cpp
     UI/Shared/MainMenu.hpp
     UI/Shared/ModelEditorViewerPanel.cpp

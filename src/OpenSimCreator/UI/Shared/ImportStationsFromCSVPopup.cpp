@@ -5,31 +5,34 @@
 #include <OpenSimCreator/Documents/Landmarks/NamedLandmark.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/Station.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/UndoableActions.hpp>
-#include <OpenSimCreator/UI/MeshImporter/MeshImporterSharedState.hpp>
 
+#include <IconsFontAwesome5.h>
+#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Formats/CSV.hpp>
+#include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/Vec3.hpp>
+#include <oscar/Platform/os.hpp>
 #include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 
 #include <filesystem>
+#include <fstream>
 #include <memory>
 #include <optional>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <utility>
-#include <variant>
 #include <vector>
 
-class osc::mi::ImportStationsFromCSVPopup::Impl final : public StandardPopup {
+class osc::ImportStationsFromCSVPopup::Impl final : public StandardPopup {
 public:
     Impl(
         std::string_view popupName_,
-        std::shared_ptr<MeshImporterSharedState> shared_) :
+        std::function<void(ImportedData)> const& onImport_) :
 
         StandardPopup{popupName_},
-        m_Shared{std::move(shared_)}
+        m_OnImportCallback{onImport_}
     {
         setModal(true);
     }
@@ -62,7 +65,7 @@ private:
 
     void drawHelpText()
     {
-        ImGui::TextWrapped("Use this tool to import CSV data containing 3D locations as stations into the mesh importer scene. The CSV file should contain:");
+        ImGui::TextWrapped("Use this tool to import CSV data containing 3D locations as stations into the document. The CSV file should contain:");
         ImGui::Bullet();
         ImGui::TextWrapped("A header row of four columns, ideally labelled 'name', 'x', 'y', and 'z'");
         ImGui::Bullet();
@@ -241,57 +244,55 @@ private:
             return;
         }
 
-        std::optional<std::string> label = m_MaybeImportPath ? m_MaybeImportPath->string() : std::optional<std::string>{};
-        ActionImportLandmarksToModelGraph(
-            m_Shared->updCommittableModelGraph(),
-            m_ImportedLandmarks,
-            label
-        );
+        m_OnImportCallback({
+            .maybeLabel = m_MaybeImportPath ? m_MaybeImportPath->string() : std::optional<std::string>{},
+            .landmarks = m_ImportedLandmarks,
+        });
     }
 
-    std::shared_ptr<MeshImporterSharedState> m_Shared;
+    std::function<void(ImportedData)> m_OnImportCallback;
     std::optional<std::filesystem::path> m_MaybeImportPath;
     std::vector<lm::NamedLandmark> m_ImportedLandmarks;
     std::vector<std::string> m_ImportWarnings;
 };
 
 
-osc::mi::ImportStationsFromCSVPopup::ImportStationsFromCSVPopup(
+osc::ImportStationsFromCSVPopup::ImportStationsFromCSVPopup(
     std::string_view popupName_,
-    std::shared_ptr<MeshImporterSharedState> const& state_) :
-    m_Impl{std::make_unique<Impl>(popupName_, state_)}
+    std::function<void(ImportedData)> const& onImport) :
+    m_Impl{std::make_unique<Impl>(popupName_, onImport)}
 {
 }
-osc::mi::ImportStationsFromCSVPopup::ImportStationsFromCSVPopup(ImportStationsFromCSVPopup&&) noexcept = default;
-osc::mi::ImportStationsFromCSVPopup& osc::mi::ImportStationsFromCSVPopup::operator=(ImportStationsFromCSVPopup&&) noexcept = default;
-osc::mi::ImportStationsFromCSVPopup::~ImportStationsFromCSVPopup() noexcept = default;
+osc::ImportStationsFromCSVPopup::ImportStationsFromCSVPopup(ImportStationsFromCSVPopup&&) noexcept = default;
+osc::ImportStationsFromCSVPopup& osc::ImportStationsFromCSVPopup::operator=(ImportStationsFromCSVPopup&&) noexcept = default;
+osc::ImportStationsFromCSVPopup::~ImportStationsFromCSVPopup() noexcept = default;
 
-bool osc::mi::ImportStationsFromCSVPopup::implIsOpen() const
+bool osc::ImportStationsFromCSVPopup::implIsOpen() const
 {
     return m_Impl->isOpen();
 }
 
-void osc::mi::ImportStationsFromCSVPopup::implOpen()
+void osc::ImportStationsFromCSVPopup::implOpen()
 {
     m_Impl->open();
 }
 
-void osc::mi::ImportStationsFromCSVPopup::implClose()
+void osc::ImportStationsFromCSVPopup::implClose()
 {
     m_Impl->close();
 }
 
-bool osc::mi::ImportStationsFromCSVPopup::implBeginPopup()
+bool osc::ImportStationsFromCSVPopup::implBeginPopup()
 {
     return m_Impl->beginPopup();
 }
 
-void osc::mi::ImportStationsFromCSVPopup::implOnDraw()
+void osc::ImportStationsFromCSVPopup::implOnDraw()
 {
     m_Impl->onDraw();
 }
 
-void osc::mi::ImportStationsFromCSVPopup::implEndPopup()
+void osc::ImportStationsFromCSVPopup::implEndPopup()
 {
     m_Impl->endPopup();
 }

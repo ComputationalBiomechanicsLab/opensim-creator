@@ -44,6 +44,8 @@ All notable changes to this project will be documented here. The format is based
   a header row, and is generally more permissive in what it accepts. Instead of refusing to import data, it will
   instead show a warning with appropriate parsing errors, which the user can ignore (to import everything that
   passed the validation checks).
+- You can now import 3D datapoints as markers into an existing OpenSim model via the `Tools -> Import Points`
+  menu option
 - Internal: the mesh importer was heavily refactored in readiness for a feature push
 
 

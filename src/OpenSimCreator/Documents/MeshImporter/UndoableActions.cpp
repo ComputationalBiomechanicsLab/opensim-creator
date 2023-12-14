@@ -464,7 +464,7 @@ bool osc::mi::AddStationAtLocation(
     return AddStationAtLocation(udoc, *obj, loc);
 }
 
-void osc::mi::ActionImportLandmarksToModelGraph(
+void osc::mi::ActionImportLandmarks(
     UndoableDocument& udoc,
     std::span<lm::NamedLandmark const> landmarks,
     std::optional<std::string> maybeName)

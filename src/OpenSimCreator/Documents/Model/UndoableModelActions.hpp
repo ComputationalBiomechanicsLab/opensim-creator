@@ -1,11 +1,15 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/Landmarks/NamedLandmark.hpp>
+
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Shims/Cpp23/utility.hpp>
 
 #include <cstddef>
 #include <filesystem>
 #include <memory>
+#include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -412,5 +416,11 @@ namespace osc
     bool ActionFitPlaneToMesh(
         UndoableModelStatePair&,
         OpenSim::Mesh const&
+    );
+
+    bool ActionImportLandmarks(
+        UndoableModelStatePair&,
+        std::span<lm::NamedLandmark const>,
+        std::optional<std::string> maybeName
     );
 }
