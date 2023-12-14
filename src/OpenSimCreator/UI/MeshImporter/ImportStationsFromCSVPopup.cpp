@@ -1,6 +1,10 @@
 #include "ImportStationsFromCSVPopup.hpp"
 
+#include <OpenSimCreator/Documents/Landmarks/Landmark.hpp>
+#include <OpenSimCreator/Documents/Landmarks/LandmarkHelpers.hpp>
+#include <OpenSimCreator/Documents/Landmarks/NamedLandmark.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/Station.hpp>
+#include <OpenSimCreator/Documents/MeshImporter/UndoableActions.hpp>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterSharedState.hpp>
 
 #include <oscar/Formats/CSV.hpp>
@@ -11,6 +15,7 @@
 #include <filesystem>
 #include <memory>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -30,169 +35,39 @@ public:
     }
 
 private:
-    struct StationDefinedInGround final {
-        std::string name;
-        Vec3 location;
-    };
-
-    struct StationsDefinedInGround final {
-        std::vector<StationDefinedInGround> rows;
-    };
-
-    struct ImportedCSVData final {
-        std::filesystem::path sourceDataPath;
-        std::variant<StationsDefinedInGround> parsedData;
-    };
-
-    struct CSVImportError final {
-        std::filesystem::path userSelectedPath;
-        std::string message;
-    };
-
-    using CSVImportResult = std::variant<ImportedCSVData, CSVImportError>;
-
-    struct RowParseError final {
-        size_t lineNum;
-        std::string errorMsg;
-    };
-
-    static std::variant<StationDefinedInGround, RowParseError> TryParseColumns(
-        size_t lineNum,
-        std::span<std::string const> columnsText)
-    {
-        if (columnsText.size() < 4)
-        {
-            return RowParseError{lineNum, "too few columns in this row (expecting at least 4)"};
-        }
-
-        std::string const& stationName = columnsText[0];
-
-        std::optional<float> const maybeX = FromCharsStripWhitespace(columnsText[1]);
-        if (!maybeX)
-        {
-            return RowParseError{lineNum, "cannot parse X as a number"};
-        }
-
-        std::optional<float> const maybeY = FromCharsStripWhitespace(columnsText[2]);
-        if (!maybeY)
-        {
-            return RowParseError{lineNum, "cannot parse Y as a number"};
-        }
-
-        std::optional<float> const maybeZ = FromCharsStripWhitespace(columnsText[3]);
-        if (!maybeZ)
-        {
-            return RowParseError{lineNum, "cannot parse Z as a number"};
-        }
-
-        Vec3 const locationInGround = {*maybeX, *maybeY, *maybeZ};
-
-        return StationDefinedInGround{stationName, locationInGround};
-    }
-
-    static std::string to_string(RowParseError const& e)
-    {
-        std::stringstream ss;
-        ss << "line " << e.lineNum << ": " << e.errorMsg;
-        return std::move(ss).str();
-    }
-
-    static bool IsWhitespaceRow(std::span<std::string const> cols)
-    {
-        return cols.size() == 1;
-    }
-
-    static CSVImportResult TryReadCSVInput(std::filesystem::path const& path, std::istream& input)
-    {
-        // input must contain at least one (header) row
-        if (!ReadCSVRow(input))
-        {
-            return CSVImportError{path, "cannot read a header row from the input (is the file empty?)"};
-        }
-
-        // then try to read each row as a data row, propagating errors
-        // accordingly
-
-        StationsDefinedInGround successfullyParsedStations;
-        std::optional<RowParseError> maybeParseError;
-        {
-            size_t lineNum = 1;
-            for (std::vector<std::string> row;
-                !maybeParseError && ReadCSVRowIntoVector(input, row);
-                ++lineNum)
-            {
-                if (IsWhitespaceRow(row))
-                {
-                    continue;  // skip
-                }
-
-                // else: try parsing the row as a data row
-                std::visit(Overload
-                    {
-                        [&successfullyParsedStations](StationDefinedInGround const& success)
-                    {
-                        successfullyParsedStations.rows.push_back(success);
-                    },
-                    [&maybeParseError](RowParseError const& fail)
-                    {
-                        maybeParseError = fail;
-                    },
-                    }, TryParseColumns(lineNum, row));
-            }
-        }
-
-        if (maybeParseError)
-        {
-            return CSVImportError{path, to_string(*maybeParseError)};
-        }
-        else
-        {
-            return ImportedCSVData{path, std::move(successfullyParsedStations)};
-        }
-    }
-
-    static CSVImportResult TryReadCSVFile(std::filesystem::path const& path)
-    {
-        std::ifstream f{path};
-        if (!f)
-        {
-            return CSVImportError{path, "cannot open the provided file for reading"};
-        }
-        f.setf(std::ios_base::skipws);
-
-        return TryReadCSVInput(path, f);
-    }
-
     void implDrawContent() final
     {
         drawHelpText();
-
         ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
-        if (m_MaybeImportResult.has_value())
-        {
-            ImGui::Separator();
 
-            std::visit(Overload
-                {
-                    [this](ImportedCSVData const& data) { drawLoadedFileState(data); },
-                    [this](CSVImportError const& error) { drawErrorLoadingFileState(error); }
-                }, *m_MaybeImportResult);
+        if (!m_MaybeImportPath)
+        {
+            drawSelectInitialFileState();
+            ImGui::Dummy({0.0f, 0.75f*ImGui::GetTextLineHeight()});
         }
         else
         {
-            drawSelectInitialFileState();
+            ImGui::Separator();
+            drawLandmarkEntries();
+            drawWarnings();
+
+            ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+            ImGui::Separator();
+            ImGui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
+
         }
+        drawPossiblyDisabledOkOrCancelButtons();
         ImGui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
     }
 
     void drawHelpText()
     {
-        ImGui::TextWrapped("Use this tool to import CSV data containing 3D locations as stations into the mesh importer scene. The CSV file should contain");
+        ImGui::TextWrapped("Use this tool to import CSV data containing 3D locations as stations into the mesh importer scene. The CSV file should contain:");
         ImGui::Bullet();
         ImGui::TextWrapped("A header row of four columns, ideally labelled 'name', 'x', 'y', and 'z'");
         ImGui::Bullet();
         ImGui::TextWrapped("Data rows containing four columns: name (string), x (number), y (number), and z (number)");
-
+        ImGui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
         constexpr CStringView c_ExampleInputText = "name,x,y,z\nstationatground,0,0,0\nstation2,1.53,0.2,1.7\nstation3,3.0,2.0,0.0\n";
         ImGui::TextWrapped("Example Input: ");
         ImGui::SameLine();
@@ -200,7 +75,7 @@ private:
         {
             SetClipboardText(c_ExampleInputText);
         }
-        osc::DrawTooltipBodyOnlyIfItemHovered("Copy example input to clipboard");
+        DrawTooltipBodyOnlyIfItemHovered("Copy example input to clipboard");
         ImGui::Indent();
         ImGui::TextWrapped("%s", c_ExampleInputText.c_str());
         ImGui::Unindent();
@@ -208,74 +83,21 @@ private:
 
     void drawSelectInitialFileState()
     {
-        if (osc::ButtonCentered(ICON_FA_FILE " Select File"))
+        if (ButtonCentered(ICON_FA_FILE " Select File"))
         {
             actionTryPromptingUserForCSVFile();
         }
-
-        ImGui::Dummy({0.0f, 0.75f*ImGui::GetTextLineHeight()});
-
-        drawDisabledOkCancelButtons("Cannot continue: nothing has been imported (select a file first)");
     }
 
-    void drawErrorLoadingFileState(CSVImportError const& error)
+    void drawLandmarkEntries()
     {
-        ImGui::Text("Error loading %s: %s ", error.userSelectedPath.string().c_str(), error.message.c_str());
-        if (ImGui::Button("Try Again (Select File)"))
+        if (!m_MaybeImportPath || m_ImportedLandmarks.empty())
         {
-            actionTryPromptingUserForCSVFile();
+            return;
         }
 
-        ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
-        ImGui::Separator();
-        ImGui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
-
-        drawDisabledOkCancelButtons("Cannot continue: there is an error in the imported data (try again)");
-    }
-
-    void drawDisabledOkCancelButtons(CStringView disabledReason)
-    {
-        ImGui::BeginDisabled();
-        ImGui::Button("OK");
-        ImGui::EndDisabled();
-        if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-        {
-            osc::DrawTooltipBodyOnly(disabledReason);
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Cancel"))
-        {
-            close();
-        }
-    }
-
-    void drawLoadedFileState(ImportedCSVData const& result)
-    {
-        std::visit(Overload
-            {
-                [this, &result](StationsDefinedInGround const& data) { drawLoadedFileStateData(result, data); },
-            }, result.parsedData);
-
-        ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
-        ImGui::Separator();
-        ImGui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
-
-        if (ImGui::Button("OK"))
-        {
-            actionAttachResultToModelGraph(result);
-            close();
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Cancel"))
-        {
-            close();
-        }
-    }
-
-    void drawLoadedFileStateData(ImportedCSVData const& result, StationsDefinedInGround const& data)
-    {
-        osc::TextCentered(result.sourceDataPath.string());
-        osc::TextCentered(std::string{"("} + std::to_string(data.rows.size()) + " data rows)");
+        TextCentered(m_MaybeImportPath->string());
+        TextCentered(std::string{"("} + std::to_string(m_ImportedLandmarks.size()) + " data rows)");
 
         ImGui::Dummy({0.0f, 0.2f*ImGui::GetTextLineHeight()});
         if (ImGui::BeginTable("##importtable", 4, ImGuiTableFlags_ScrollY, {0.0f, 10.0f*ImGui::GetTextLineHeight()}))
@@ -287,19 +109,19 @@ private:
             ImGui::TableHeadersRow();
 
             int id = 0;
-            for (StationDefinedInGround const& row : data.rows)
+            for (auto const& station : m_ImportedLandmarks)
             {
                 ImGui::PushID(id++);
                 ImGui::TableNextRow();
                 int column = 0;
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::TextUnformatted(row.name.c_str());
+                ImGui::TextUnformatted(station.name.c_str());
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::Text("%f", row.location.x);
+                ImGui::Text("%f", station.position.x);
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::Text("%f", row.location.y);
+                ImGui::Text("%f", station.position.y);
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::Text("%f", row.location.z);
+                ImGui::Text("%f", station.position.z);
                 ImGui::PopID();
             }
 
@@ -307,52 +129,130 @@ private:
         }
         ImGui::Dummy({0.0f, 0.2f*ImGui::GetTextLineHeight()});
 
-        if (osc::ButtonCentered(ICON_FA_FILE " Select Different File"))
+        if (ImGui::Button(ICON_FA_FILE " Select Different File"))
         {
             actionTryPromptingUserForCSVFile();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button(ICON_FA_RECYCLE " Reload Same File"))
+        {
+            actionLoadCSVFile(*m_MaybeImportPath);
+        }
+    }
+
+    void drawWarnings()
+    {
+        if (m_ImportWarnings.empty())
+        {
+            return;
+        }
+
+        PushStyleColor(ImGuiCol_Text, Color::orange());
+        ImGui::Text(ICON_FA_EXCLAMATION " input file contains issues");
+        PopStyleColor();
+
+        if (ImGui::IsItemHovered())
+        {
+            BeginTooltip();
+            ImGui::Indent();
+            int id = 0;
+            for (auto const& warning : m_ImportWarnings)
+            {
+                ImGui::PushID(id++);
+                TextUnformatted(warning);
+                ImGui::PopID();
+            }
+            EndTooltip();
+        }
+    }
+
+    void drawPossiblyDisabledOkOrCancelButtons()
+    {
+        std::optional<CStringView> disabledReason;
+        if (!m_MaybeImportPath)
+        {
+            disabledReason = "Cannot continue: nothing has been imported (select a file first)";
+        }
+        if (m_ImportedLandmarks.empty())
+        {
+            disabledReason = "Cannot continue: there are no landmarks to import";
+        }
+
+        if (disabledReason)
+        {
+            ImGui::BeginDisabled();
+        }
+        if (ImGui::Button("OK"))
+        {
+            actionAttachResultToModelGraph();
+            close();
+        }
+        if (disabledReason)
+        {
+            ImGui::EndDisabled();
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            {
+                DrawTooltipBodyOnly(*disabledReason);
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel"))
+        {
+            close();
         }
     }
 
     void actionTryPromptingUserForCSVFile()
     {
-        if (auto path = osc::PromptUserForFile("csv"))
+        if (auto const path = PromptUserForFile("csv"))
         {
-            m_MaybeImportResult = TryReadCSVFile(*path);
+            actionLoadCSVFile(*path);
         }
     }
 
-    void actionAttachResultToModelGraph(ImportedCSVData const& result)
+    void actionLoadCSVFile(std::filesystem::path const& path)
     {
-        std::visit(Overload
-            {
-                [this, &result](StationsDefinedInGround const& data) { actionAttachStationsInGroundToModelGraph(result, data); },
-            }, result.parsedData);
-    }
+        m_MaybeImportPath = path;
+        m_ImportedLandmarks.clear();
+        m_ImportWarnings.clear();
 
-    void actionAttachStationsInGroundToModelGraph(
-        ImportedCSVData const& result,
-        StationsDefinedInGround const& data)
-    {
-        UndoableDocument& undoable = m_Shared->updCommittableModelGraph();
-
-        Document& graph = undoable.updScratch();
-        for (StationDefinedInGround const& station : data.rows)
+        std::ifstream ifs{path};
+        if (!ifs)
         {
-            graph.emplace<StationEl>(
-                UID{},
-                MIIDs::Ground(),
-                station.location,
-                station.name
-            );
+            std::stringstream ss;
+            ss << path << ": could not load the given path";
+            m_ImportWarnings.push_back(std::move(ss).str());
+            return;
         }
 
-        std::stringstream ss;
-        ss << "imported " << result.sourceDataPath;
-        undoable.commitScratch(std::move(ss).str());
+        std::vector<lm::Landmark> lms;
+        lm::ReadLandmarksFromCSV(
+            ifs,
+            [&lms](lm::Landmark&& lm) { lms.push_back(lm); },
+            [this](lm::CSVParseWarning warning) { m_ImportWarnings.push_back(to_string(warning)); }
+        );
+        m_ImportedLandmarks = GenerateNames(lms);
+    }
+
+    void actionAttachResultToModelGraph()
+    {
+        if (m_ImportedLandmarks.empty())
+        {
+            return;
+        }
+
+        std::optional<std::string> label = m_MaybeImportPath ? m_MaybeImportPath->string() : std::optional<std::string>{};
+        ActionImportLandmarksToModelGraph(
+            m_Shared->updCommittableModelGraph(),
+            m_ImportedLandmarks,
+            label
+        );
     }
 
     std::shared_ptr<MeshImporterSharedState> m_Shared;
-    std::optional<CSVImportResult> m_MaybeImportResult;
+    std::optional<std::filesystem::path> m_MaybeImportPath;
+    std::vector<lm::NamedLandmark> m_ImportedLandmarks;
+    std::vector<std::string> m_ImportWarnings;
 };
 
 

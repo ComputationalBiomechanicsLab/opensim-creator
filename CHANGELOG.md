@@ -40,6 +40,10 @@ All notable changes to this project will be documented here. The format is based
   the user are in the same format as their OS (e.g. `C:\somedir\to\model.osim` on windows,
   `/home/user/dir/model.osim` on Linux)
 - Fixed mesh files being double-loaded by the rendering backend, which should improve osim loading times
+- The "Import Stations from CSV" popup in the mesh importer is now able to import CSVs without a name column, or
+  a header row, and is generally more permissive in what it accepts. Instead of refusing to import data, it will
+  instead show a warning with appropriate parsing errors, which the user can ignore (to import everything that
+  passed the validation checks).
 - Internal: the mesh importer was heavily refactored in readiness for a feature push
 
 

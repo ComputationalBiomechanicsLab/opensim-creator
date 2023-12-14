@@ -1,10 +1,14 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/Landmarks/NamedLandmark.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/UndoableDocument.hpp>
 
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/UID.hpp>
 
+#include <optional>
+#include <span>
+#include <string>
 #include <unordered_set>
 
 namespace osc::mi { class MIObject; }
@@ -137,5 +141,11 @@ namespace osc::mi
         UndoableDocument&,
         UID attachment,
         Vec3 const&
+    );
+
+    void ActionImportLandmarksToModelGraph(
+        UndoableDocument&,
+        std::span<lm::NamedLandmark const>,
+        std::optional<std::string> maybeLandmarksIdentifier = std::nullopt
     );
 }
