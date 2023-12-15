@@ -186,6 +186,18 @@ osc::Color32 osc::ToColor32(uint32_t v)
     };
 }
 
+osc::Color osc::ToColor(Color32 c)
+{
+    constexpr float scale = 1.0f/255.0f;
+    return
+    {
+        scale * static_cast<float>(c.r),
+        scale * static_cast<float>(c.g),
+        scale * static_cast<float>(c.b),
+        scale * static_cast<float>(c.a),
+    };
+}
+
 osc::Color osc::ClampToLDR(Color const& c)
 {
     return Color{Clamp(Vec4{c}, 0.0f, 1.0f)};

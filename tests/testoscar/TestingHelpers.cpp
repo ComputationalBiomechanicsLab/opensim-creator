@@ -2,9 +2,11 @@
 
 #include <oscar/Maths/MathHelpers.hpp>
 
+#include <numeric>
 #include <random>
 
 using osc::Color;
+using osc::Color32;
 using osc::Normalize;
 using osc::Mat3;
 using osc::Mat4;
@@ -50,9 +52,19 @@ bool osc::testing::GenerateBool()
     return GenerateInt() % 2 == 0;
 }
 
+uint8_t osc::testing::GenerateUint8()
+{
+    return static_cast<uint8_t>(std::uniform_int_distribution{0, 255}(GetRngEngine()));
+}
+
 Color osc::testing::GenerateColor()
 {
     return Color{GenerateFloat(), GenerateFloat(), GenerateFloat(), GenerateFloat()};
+}
+
+Color32 osc::testing::GenerateColor32()
+{
+    return {GenerateUint8(), GenerateUint8(), GenerateUint8(), GenerateUint8()};
 }
 
 Vec2 osc::testing::GenerateVec2()
@@ -108,4 +120,11 @@ std::vector<Color> osc::testing::GenerateColors(size_t n)
 std::vector<Vec4> osc::testing::GenerateTangents(size_t n)
 {
     return GenerateVector(n, GenerateVec4);
+}
+
+std::vector<uint16_t> osc::testing::GenerateIndices(size_t start, size_t end)
+{
+    std::vector<uint16_t> rv(end - start);
+    std::iota(rv.begin(), rv.end(), static_cast<uint16_t>(start));
+    return rv;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Graphics/Color.hpp>
+#include <oscar/Graphics/Color32.hpp>
 #include <oscar/Maths/Mat3.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Transform.hpp>
@@ -10,6 +11,8 @@
 #include <oscar/Utils/Concepts.hpp>
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <iterator>
 #include <random>
 #include <vector>
@@ -21,7 +24,9 @@ namespace osc::testing
     float GenerateFloat();
     int GenerateInt();
     bool GenerateBool();
+    uint8_t GenerateUint8();
     Color GenerateColor();
+    Color32 GenerateColor32();
     Vec2 GenerateVec2();
     Vec3 GenerateVec3();
     Vec4 GenerateVec4();
@@ -33,6 +38,7 @@ namespace osc::testing
     std::vector<Vec2> GenerateTexCoords(size_t);
     std::vector<Color> GenerateColors(size_t);
     std::vector<Vec4> GenerateTangents(size_t);
+    std::vector<uint16_t> GenerateIndices(size_t start, size_t end);
 
     template<ContiguousContainer T, ContiguousContainer U>
     bool ContainersEqual(T const& a, U const& b)

@@ -28,18 +28,23 @@
 #include <vector>
 
 using osc::testing::GenerateColors;
+using osc::testing::GenerateColor32;
+using osc::testing::GenerateIndices;
 using osc::testing::GenerateNormals;
 using osc::testing::GenerateTangents;
 using osc::testing::GenerateTexCoords;
 using osc::testing::GenerateTriangleVerts;
 using osc::testing::GenerateVec2;
 using osc::testing::GenerateVec3;
+using osc::testing::GenerateVec4;
 using osc::testing::GenerateVertices;
 using osc::testing::MapToVector;
 using osc::testing::ResizedVectorCopy;
 using osc::AABB;
 using osc::AABBFromVerts;
+using osc::BoundingAABBOf;
 using osc::Color;
+using osc::Color32;
 using osc::ContiguousContainer;
 using osc::Deg2Rad;
 using osc::Identity;
@@ -48,6 +53,8 @@ using osc::Mesh;
 using osc::MeshTopology;
 using osc::Quat;
 using osc::SubMeshDescriptor;
+using osc::ToColor;
+using osc::ToColor32;
 using osc::ToMat4;
 using osc::Transform;
 using osc::TransformPoint;
@@ -1335,4 +1342,371 @@ TEST(Mesh, GetVertexAttributesReturnsExpectedForCombinations)
         std::vector<VertexAttributeDescriptor> const expected = {};
         ASSERT_EQ(copy.getVertexAttributes(), expected);
     }
+}
+
+TEST(Mesh, SetVertexBufferParamsWithEmptyDescriptorIgnoresN)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(9));
+
+    ASSERT_EQ(m.getNumVerts(), 9);
+    ASSERT_EQ(m.getVertexAttributeCount(), 1);
+
+    m.setVertexBufferParams(15, {});  // i.e. no data, incl. positions
+
+    ASSERT_EQ(m.getNumVerts(), 0);  // i.e. the 15 was effectively ignored, because there's no attributes
+    ASSERT_EQ(m.getVertexAttributeCount(), 0);
+}
+
+TEST(Mesh, SetVertexBufferParamsWithEmptyDescriptorClearsAllAttributesNotJustPosition)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    m.setNormals(GenerateNormals(6));
+    m.setColors(GenerateColors(6));
+
+    ASSERT_EQ(m.getNumVerts(), 6);
+    ASSERT_EQ(m.getVertexAttributeCount(), 3);
+
+    m.setVertexBufferParams(24, {});
+
+    ASSERT_EQ(m.getNumVerts(), 0);
+    ASSERT_EQ(m.getVertexAttributeCount(), 0);
+}
+
+TEST(Mesh, SetVertexBufferParamsExpandsPositionsWithZeroedVectors)
+{
+    auto const verts = GenerateVertices(6);
+
+    Mesh m;
+    m.setVerts(verts);
+    m.setVertexBufferParams(12, {{
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 3}
+    }});
+
+    auto expected = verts;
+    expected.resize(12, Vec3{});
+
+    ASSERT_EQ(m.getVerts(), expected);
+}
+
+TEST(Mesh, SetVertexBufferParamsCanShrinkPositionVectors)
+{
+    auto const verts = GenerateVertices(12);
+
+    Mesh m;
+    m.setVerts(verts);
+    m.setVertexBufferParams(6, {{
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 3}
+    }});
+
+    auto expected = verts;
+    expected.resize(6);
+
+    ASSERT_EQ(m.getVerts(), expected);
+}
+
+TEST(Mesh, SetVertexBufferParamsWhenDimensionalityOfVerticesIs2ZeroesTheMissingDimension)
+{
+    auto const verts = GenerateVertices(6);
+
+    Mesh m;
+    m.setVerts(verts);
+    m.setVertexBufferParams(6, {{
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 2},  // 2D storage
+    }});
+
+    auto const expected = MapToVector(verts, [](Vec3 const& v) { return Vec3{v.x, v.y, 0.0f}; });
+
+    ASSERT_EQ(m.getVerts(), expected);
+}
+
+TEST(Mesh, SetVertexBufferParamsCanBeUsedToRemoveAParticularAttribute)
+{
+    auto const verts = GenerateVertices(6);
+    auto const tangents = GenerateTangents(6);
+
+    Mesh m;
+    m.setVerts(verts);
+    m.setNormals(GenerateNormals(6));
+    m.setTangents(tangents);
+
+    ASSERT_EQ(m.getVertexAttributeCount(), 3);
+
+    m.setVertexBufferParams(6, {{
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 3},
+        {VertexAttribute::Tangent,  VertexAttributeFormat::Float32, 4},
+        // i.e. remove the normals
+    }});
+
+    ASSERT_EQ(m.getNumVerts(), 6);
+    ASSERT_EQ(m.getVertexAttributeCount(), 2);
+    ASSERT_EQ(m.getVerts(), verts);
+    ASSERT_EQ(m.getTangents(), tangents);
+}
+
+TEST(Mesh, SetVertexBufferParamsCanBeUsedToAddAParticularAttributeAsZeroed)
+{
+    auto const verts = GenerateVertices(6);
+    auto const tangents = GenerateTangents(6);
+
+    Mesh m;
+    m.setVerts(verts);
+    m.setTangents(tangents);
+
+    ASSERT_EQ(m.getVertexAttributeCount(), 2);
+
+    m.setVertexBufferParams(6, {{
+        // existing
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 3},
+        {VertexAttribute::Tangent,  VertexAttributeFormat::Float32, 4},
+        // new
+        {VertexAttribute::Color,    VertexAttributeFormat::Float32, 4},
+        {VertexAttribute::TexCoord, VertexAttributeFormat::Float32, 2},
+    }});
+
+    ASSERT_EQ(m.getVerts(), verts);
+    ASSERT_EQ(m.getTangents(), tangents);
+    ASSERT_EQ(m.getColors(), std::vector<Color>(6));
+    ASSERT_EQ(m.getTexCoords(), std::vector<Vec2>(6));
+}
+
+TEST(Mesh, SetVertexBufferParamsCanBeUsedToRearrangeAttributes)
+{
+    auto const verts = GenerateVertices(6);
+    auto const normals = GenerateNormals(6);
+    auto const colors = GenerateColors(6);
+    auto const tangents = GenerateTangents(6);
+
+    Mesh m;
+    m.setVerts(verts);
+    m.setNormals(normals);
+    m.setColors(colors);
+    m.setTangents(tangents);
+
+    std::vector<VertexAttributeDescriptor> const layoutBefore = {
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 3},
+        {VertexAttribute::Normal,   VertexAttributeFormat::Float32, 3},
+        {VertexAttribute::Color,    VertexAttributeFormat::Float32, 4},
+        {VertexAttribute::Tangent,  VertexAttributeFormat::Float32, 4},
+    };
+
+    ASSERT_EQ(m.getVertexAttributes(), layoutBefore);
+
+    std::vector<VertexAttributeDescriptor> const layoutAfter = {
+        {VertexAttribute::Tangent,  VertexAttributeFormat::Float32, 4},
+        {VertexAttribute::Normal,   VertexAttributeFormat::Float32, 3},
+        {VertexAttribute::Color,    VertexAttributeFormat::Float32, 4},
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 3},
+    };
+
+    m.setVertexBufferParams(6, layoutAfter);
+
+    ASSERT_EQ(m.getVertexAttributes(), layoutAfter);
+    ASSERT_EQ(m.getVerts(), verts);
+    ASSERT_EQ(m.getNormals(), normals);
+    ASSERT_EQ(m.getColors(), colors);
+    ASSERT_EQ(m.getTangents(), tangents);
+}
+
+TEST(Mesh, SetVertexBufferParamsThrowsIfGivenDuplicateAttributes)
+{
+    using enum VertexAttribute;
+    for (auto attr : {Position, Normal, TexCoord, Color, Tangent})
+    {
+        std::vector<VertexAttributeDescriptor> const badAttrs = {
+            {attr, VertexAttributeFormat::Float32, 3},
+            {attr, VertexAttributeFormat::Float32, 3},  // uh oh
+        };
+
+        Mesh m;
+        ASSERT_ANY_THROW({ m.setVertexBufferParams(6, badAttrs); });
+    }
+}
+
+TEST(Mesh, SetVertexBufferParamsThrowsIfItCausesIndicesToGoOutOfBounds)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    m.setIndices(GenerateIndices(0, 6));
+
+    ASSERT_ANY_THROW({ m.setVertexBufferParams(3, m.getVertexAttributes()); })  << "should throw because indices are now OOB";
+}
+
+TEST(Mesh, SetVertexBufferParamsCanBeUsedToReformatToU8NormFormat)
+{
+    auto const colors = GenerateColors(9);
+
+    Mesh m;
+    m.setVerts(GenerateVertices(9));
+    m.setColors(colors);
+
+    m.setVertexBufferParams(9, {{
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 3},
+        {VertexAttribute::Color,    VertexAttributeFormat::UNorm8, 4},
+    }});
+
+    auto const expected = MapToVector(colors, [](Color const& c) {
+        return ToColor(ToColor32(c));
+    });
+
+    ASSERT_EQ(m.getColors(), expected);
+}
+
+TEST(Mesh, GetVertexBufferStrideReturnsExpectedResults)
+{
+    Mesh m;
+    ASSERT_EQ(m.getVertexBufferStride(), 0);
+    m.setVertexBufferParams(3, {{
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 3},
+    }});
+    ASSERT_EQ(m.getVertexBufferStride(), 3*sizeof(float));
+    m.setVertexBufferParams(3, {{
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 2},
+    }});
+    ASSERT_EQ(m.getVertexBufferStride(), 2*sizeof(float));
+    m.setVertexBufferParams(3, {{
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 2},
+        {VertexAttribute::Color,    VertexAttributeFormat::Float32, 4},
+    }});
+    ASSERT_EQ(m.getVertexBufferStride(), 2*sizeof(float)+4*sizeof(float));
+    m.setVertexBufferParams(3, {{
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 2},
+        {VertexAttribute::Color,    VertexAttributeFormat::UNorm8, 4},
+    }});
+    ASSERT_EQ(m.getVertexBufferStride(), 2*sizeof(float)+4);
+    m.setVertexBufferParams(3, {{
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 2},
+        {VertexAttribute::Color,    VertexAttributeFormat::UNorm8, 3},
+    }});
+    ASSERT_EQ(m.getVertexBufferStride(), 2*sizeof(float)+4) << "care: padding for alignment must be considered";
+    m.setVertexBufferParams(3, {{
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 2},
+        {VertexAttribute::Color,    VertexAttributeFormat::UNorm8, 2},
+    }});
+    ASSERT_EQ(m.getVertexBufferStride(), 2*sizeof(float)+4) << "care: padding for alignment must be considered";
+    m.setVertexBufferParams(3, {{
+        {VertexAttribute::Position, VertexAttributeFormat::UNorm8, 2},
+        {VertexAttribute::Color,    VertexAttributeFormat::UNorm8, 2},
+    }});
+    ASSERT_EQ(m.getVertexBufferStride(), 4);
+    m.setVertexBufferParams(3, {{
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 2},
+        {VertexAttribute::Color,    VertexAttributeFormat::UNorm8, 2},
+        {VertexAttribute::Tangent,  VertexAttributeFormat::Float32, 4},
+    }});
+    ASSERT_EQ(m.getVertexBufferStride(), 7);
+}
+
+TEST(Mesh, SetVertexBufferDataWorksForSimplestCase)
+{
+    struct Entry final {
+        Vec3 vert = GenerateVec3();
+    };
+    std::vector<Entry> const data(12);
+
+    Mesh m;
+    m.setVertexBufferParams(12, {{
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 3},
+    }});
+    m.setVertexBufferData(data);
+
+    auto const expected = MapToVector(data, [](auto const& entry) { return entry.vert; });
+
+    ASSERT_EQ(m.getVerts(), expected);
+}
+
+TEST(Mesh, SetVertexBufferDataFailsInSimpleCaseIfAttributeMismatches)
+{
+    struct Entry final {
+        Vec3 vert = GenerateVec3();
+    };
+    std::vector<Entry> const data(12);
+
+    Mesh m;
+    m.setVertexBufferParams(12, {{
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 2},  // uh oh: wrong dimensionality
+    }});
+    ASSERT_ANY_THROW({ m.setVertexBufferData(data); });
+}
+
+TEST(Mesh, SetVertexBufferDataFailsInSimpleCaseIfNMismatches)
+{
+    struct Entry final {
+        Vec3 vert = GenerateVec3();
+    };
+    std::vector<Entry> const data(12);
+
+    Mesh m;
+    m.setVertexBufferParams(6, {{  // uh oh: wrong N
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 3},
+    }});
+    ASSERT_ANY_THROW({ m.setVertexBufferData(data); });
+}
+
+TEST(Mesh, SetVertexBufferDataDoesntFailIfTheCallerLuckilyProducesSameLayout)
+{
+    struct Entry final {
+        Vec4 vert = GenerateVec4();  // note: Vec4
+    };
+    std::vector<Entry> const data(12);
+
+    Mesh m;
+    m.setVertexBufferParams(24, {{  // uh oh
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 2},  // ah, but, the total size will now luckily match...
+    }});
+    ASSERT_NO_THROW({ m.setVertexBufferData(data); });  // and it won't throw because the API cannot know any better...
+}
+
+TEST(Mesh, SetVertexBufferDataThrowsIfLayoutNotProvided)
+{
+    struct Entry final {
+        Vec3 verts;
+    };
+    std::vector<Entry> const data(12);
+
+    Mesh m;
+    ASSERT_ANY_THROW({ m.setVertexBufferData(data); }) << "should throw: caller didn't call 'setVertexBufferParams' first";
+}
+
+TEST(Mesh, SetVertexBufferDataWorksAsExpectedForImguiStyleCase)
+{
+    struct SimilarToImGuiVert final {
+        Vec2 pos = GenerateVec2();
+        Vec2 uv = GenerateVec2();
+        Color32 col = GenerateColor32();
+    };
+    std::vector<SimilarToImGuiVert> const data(16);
+    auto const expectedVerts = MapToVector(data, [](auto const& v) { return Vec3{v.pos, 0.0f}; });
+    auto const expectedTexCoords = MapToVector(data, [](auto const& v) { return v.uv; });
+    auto const expectedColors = MapToVector(data, [](auto const& v) { return ToColor(v.col); });
+
+    Mesh m;
+    m.setVertexBufferParams(16, {{
+        {VertexAttribute::Position, VertexAttributeFormat::Float32, 2},
+        {VertexAttribute::TexCoord, VertexAttributeFormat::Float32, 2},
+        {VertexAttribute::Color,    VertexAttributeFormat::UNorm8,  4},
+    }});
+
+    ASSERT_EQ(m.getVertexBufferStride(), sizeof(SimilarToImGuiVert));
+    ASSERT_NO_THROW({ m.setVertexBufferData(data); });
+    ASSERT_EQ(m.getVerts(), expectedVerts);
+    ASSERT_EQ(m.getTexCoords(), expectedTexCoords);
+    ASSERT_EQ(m.getColors(), expectedColors);
+}
+
+TEST(Mesh, SetVertexBufferDataRecalculatesBounds)
+{
+    auto firstVerts = GenerateVertices(6);
+    auto secondVerts = MapToVector(firstVerts, [](auto const& v) { return 2.0f*v; });  // i.e. has different bounds
+
+    Mesh m;
+    m.setVerts(firstVerts);
+    m.setIndices(GenerateIndices(0, 6));
+
+    ASSERT_EQ(m.getBounds(), BoundingAABBOf(firstVerts));
+
+    m.setVertexBufferData(secondVerts);
+
+    ASSERT_EQ(m.getBounds(), BoundingAABBOf(secondVerts));
 }

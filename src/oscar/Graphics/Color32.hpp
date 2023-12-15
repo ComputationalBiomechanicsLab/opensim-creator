@@ -43,10 +43,10 @@ namespace osc
             return bit_cast<uint32_t>(*this);
         }
 
-        uint8_t r = 0xff;
+        uint8_t r = 0x00;
         uint8_t g = 0x00;
         uint8_t b = 0x00;
-        uint8_t a = 0xff;
+        uint8_t a = 0x00;
     };
 }
 

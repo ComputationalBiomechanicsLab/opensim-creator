@@ -106,7 +106,7 @@ namespace osc
         Color() = default;
 
         explicit constexpr Color(float v) :
-            r{v}, g{v}, b{v}
+            r{v}, g{v}, b{v}, a{1.0f}
         {
         }
 
@@ -116,7 +116,7 @@ namespace osc
         }
 
         explicit constexpr Color(Vec3 const& v) :
-            r{v.x}, g{v.y}, b{v.z}
+            r{v.x}, g{v.y}, b{v.z}, a{1.0f}
         {
         }
 
@@ -136,7 +136,7 @@ namespace osc
         }
 
         constexpr Color(float r_, float g_, float b_) :
-            r{r_}, g{g_}, b{b_}
+            r{r_}, g{g_}, b{b_}, a{1.0f}
         {
         }
 
@@ -196,10 +196,10 @@ namespace osc
             return Color{r, g, b, a_};
         }
 
-        float r = 1.0f;
+        float r = 0.0f;
         float g = 0.0f;
         float b = 0.0f;
-        float a = 1.0f;
+        float a = 0.0f;
     };
 
     std::ostream& operator<<(std::ostream&, Color const&);
@@ -271,6 +271,7 @@ namespace osc
     Color32 ToColor32(Vec4 const&);
     Color32 ToColor32(float, float, float, float);
     Color32 ToColor32(uint32_t);  // R at MSB
+    Color ToColor(Color32);
 
     // returns the color as a hexadecimal string in the format "#rrggbbaa", as
     // commonly-used in web applications, configuration files, etc.
