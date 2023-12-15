@@ -112,6 +112,7 @@ using osc::TextureFormat;
 using osc::TextureWrapMode;
 using osc::Transform;
 using osc::UID;
+using osc::VertexAttributeDescriptor;
 using osc::Vec2;
 using osc::Vec2i;
 using osc::Vec3;
@@ -4262,6 +4263,31 @@ public:
         m_SubMeshDescriptors.clear();
     }
 
+    size_t getVertexAttributeCount() const
+    {
+        return 0;  // TODO
+    }
+
+    std::vector<VertexAttributeDescriptor> getVertexAttributes() const
+    {
+        return {};  // TODO
+    }
+
+    void setVertexBufferParams(size_t, std::span<VertexAttributeDescriptor const>)
+    {
+        // TODO
+    }
+
+    size_t getVertexBufferStride() const
+    {
+        return 0;  // TODO
+    }
+
+    void setVertexBufferData(std::span<uint8_t const>)
+    {
+        // TODO
+    }
+
     // non-PIMPL methods
 
     gl::VertexArray& updVertexArray()
@@ -4698,6 +4724,31 @@ osc::SubMeshDescriptor const& osc::Mesh::getSubMeshDescriptor(size_t i) const
 void osc::Mesh::clearSubMeshDescriptors()
 {
     m_Impl.upd()->clearSubMeshDescriptors();
+}
+
+size_t osc::Mesh::getVertexAttributeCount() const
+{
+    return m_Impl->getVertexAttributeCount();
+}
+
+std::vector<VertexAttributeDescriptor> osc::Mesh::getVertexAttributes() const
+{
+    return m_Impl->getVertexAttributes();
+}
+
+void osc::Mesh::setVertexBufferParams(size_t n, std::span<VertexAttributeDescriptor const> params)
+{
+    m_Impl.upd()->setVertexBufferParams(n, params);
+}
+
+size_t osc::Mesh::getVertexBufferStride() const
+{
+    return m_Impl->getVertexBufferStride();
+}
+
+void osc::Mesh::setVertexBufferData(std::span<uint8_t const> data)
+{
+    m_Impl.upd()->setVertexBufferData(data);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, Mesh const&)
