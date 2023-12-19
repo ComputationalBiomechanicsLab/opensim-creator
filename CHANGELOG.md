@@ -46,6 +46,8 @@ All notable changes to this project will be documented here. The format is based
   passed the validation checks).
 - You can now import 3D datapoints as markers into an existing OpenSim model via the `Tools -> Import Points`
   menu option
+- Mousing over the connectee in the reassign sockets context menu now shows a tooltip that also lists the
+  component type
 - Internal: the mesh importer was heavily refactored in readiness for a feature push
 
 
