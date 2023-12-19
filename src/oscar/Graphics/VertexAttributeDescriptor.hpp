@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Graphics/VertexAttribute.hpp>
+#include <oscar/Graphics/VertexAttributeComponentCount.hpp>
 #include <oscar/Graphics/VertexAttributeFormat.hpp>
 
 #include <cstddef>
@@ -12,7 +13,7 @@ namespace osc
         VertexAttributeDescriptor(
             VertexAttribute attribute_,
             VertexAttributeFormat format_,
-            size_t dimension_) :
+            VertexAttributeComponentCount dimension_) :
 
             attribute{attribute_},
             format{format_},
@@ -24,6 +25,6 @@ namespace osc
 
         VertexAttribute attribute;
         VertexAttributeFormat format;
-        size_t dimension;
+        VertexAttributeComponentCount dimension;
     };
 }

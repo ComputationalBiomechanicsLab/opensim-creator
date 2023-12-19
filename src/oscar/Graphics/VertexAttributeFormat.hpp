@@ -8,5 +8,7 @@ namespace osc
 
         // 8-bit unsigned normalized number ([0, 1] - handy for LDR colors)
         UNorm8,
+
+        NUM_OPTIONS,
     };
 }
