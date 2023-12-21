@@ -29,10 +29,10 @@ class osc::ImportStationsFromCSVPopup::Impl final : public StandardPopup {
 public:
     Impl(
         std::string_view popupName_,
-        std::function<void(ImportedData)> const& onImport_) :
+        std::function<void(ImportedData)> onImport_) :
 
         StandardPopup{popupName_},
-        m_OnImportCallback{onImport_}
+        m_OnImportCallback{std::move(onImport_)}
     {
         setModal(true);
     }
@@ -232,7 +232,7 @@ private:
         lm::ReadLandmarksFromCSV(
             ifs,
             [&lms](lm::Landmark&& lm) { lms.push_back(lm); },
-            [this](lm::CSVParseWarning warning) { m_ImportWarnings.push_back(to_string(warning)); }
+            [this](lm::CSVParseWarning const& warning) { m_ImportWarnings.push_back(to_string(warning)); }
         );
         m_ImportedLandmarks = GenerateNames(lms);
     }
@@ -259,8 +259,8 @@ private:
 
 osc::ImportStationsFromCSVPopup::ImportStationsFromCSVPopup(
     std::string_view popupName_,
-    std::function<void(ImportedData)> const& onImport) :
-    m_Impl{std::make_unique<Impl>(popupName_, onImport)}
+    std::function<void(ImportedData)> onImport) :
+    m_Impl{std::make_unique<Impl>(popupName_, std::move(onImport))}
 {
 }
 osc::ImportStationsFromCSVPopup::ImportStationsFromCSVPopup(ImportStationsFromCSVPopup&&) noexcept = default;

@@ -17,7 +17,6 @@
 using osc::lm::Landmark;
 using osc::lm::ReadLandmarksFromCSV;
 using osc::mow::LandmarkPairing;
-using osc::mow::MeshWarpPairing;
 using osc::mow::ValidationCheck;
 
 namespace
@@ -357,7 +356,7 @@ void osc::mow::MeshWarpPairing::forEachCheck(std::function<ValidationCheckConsum
 ValidationCheck::State osc::mow::MeshWarpPairing::state() const
 {
     ValidationCheck::State worst = ValidationCheck::State::Ok;
-    forEachCheck([&worst](ValidationCheck c)
+    forEachCheck([&worst](ValidationCheck const& c)
     {
         if (c.state == ValidationCheck::State::Error)
         {

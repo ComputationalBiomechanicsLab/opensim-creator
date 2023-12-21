@@ -22,7 +22,7 @@ namespace osc
 
         ImportStationsFromCSVPopup(
             std::string_view,
-            std::function<void(ImportedData)> const& onImport
+            std::function<void(ImportedData)> onImport
         );
         ImportStationsFromCSVPopup(ImportStationsFromCSVPopup const&) = delete;
         ImportStationsFromCSVPopup(ImportStationsFromCSVPopup&&) noexcept;

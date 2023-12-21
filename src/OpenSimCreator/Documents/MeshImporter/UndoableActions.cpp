@@ -481,6 +481,6 @@ void osc::mi::ActionImportLandmarks(
     }
 
     std::stringstream ss;
-    ss << "imported " << maybeName.value_or("landmarks");
+    ss << "imported " << std::move(maybeName).value_or("landmarks");
     udoc.commitScratch(std::move(ss).str());
 }
