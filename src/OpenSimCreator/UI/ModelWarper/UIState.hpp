@@ -22,7 +22,9 @@ namespace osc::mow
         OpenSim::Model const& getModel() const;
 
         size_t getNumWarpableMeshesInModel() const;
-        void forEachWarpableMeshInModel(std::function<void(OpenSim::Mesh const&)> const&) const;
+        void forEachWarpableMeshInModel(
+            std::function<void(OpenSim::Mesh const&)> const&
+        ) const;
         void forEachMeshWarpDetail(
             OpenSim::Mesh const&,
             std::function<void(Detail)> const&
@@ -37,6 +39,10 @@ namespace osc::mow
 
         size_t getNumWarpableFramesInModel() const;
         void forEachWarpableFrameInModel(std::function<void(OpenSim::PhysicalOffsetFrame const&)> const&) const;
+        void forEachFrameDefinitionCheck(
+            OpenSim::PhysicalOffsetFrame const&,
+            std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&
+        ) const;
 
         void actionOpenModel(std::optional<std::filesystem::path> path = std::nullopt);
     private:

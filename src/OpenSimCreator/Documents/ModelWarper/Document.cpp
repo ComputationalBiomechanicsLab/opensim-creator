@@ -7,6 +7,9 @@
 #include <cstddef>
 #include <functional>
 #include <memory>
+#include <sstream>
+#include <string>
+#include <utility>
 
 using osc::mow::ValidationCheck;
 
@@ -87,4 +90,51 @@ void osc::mow::Document::forEachWarpableFrameInModel(
     {
         callback(frame);
     }
+}
+
+void osc::mow::Document::forEachFrameDefinitionCheck(
+    OpenSim::PhysicalOffsetFrame const&,
+    std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
+{
+    // check for frames file
+    {
+        std::stringstream ss;
+        ss << "has a frame definition file at " << recommendedFrameDefinitionFilepath().string();
+        if (callback({std::move(ss).str(), hasFrameDefinitionFile()}) == ValidationCheckConsumerResponse::Stop)
+        {
+            return;
+        }
+    }
+
+    // check for top-level parse errors in frames file
+    {
+        std::stringstream ss;
+        ValidationCheck::State state = ValidationCheck::State::Ok;
+        if (!hasFrameDefinitionFile())
+        {
+            ss << "frame definition file error: the file does not exist";
+            state = ValidationCheck::State::Error;
+        }
+        else if (auto err = getFramesFileLoadError())
+        {
+            ss << "frame definition file error: " << *err;
+            state = ValidationCheck::State::Error;
+        }
+        else
+        {
+            ss << "frame definition file contains no errors";
+        }
+
+        if (callback({std::move(ss).str(), state}) == ValidationCheckConsumerResponse::Stop)
+        {
+            return;
+        }
+    }
+
+    // - check associated mesh is found
+    // - check origin location landmark
+    // - check axis edge begin landmark
+    // - check axis edge end landmark
+    // - check nonparallel edge begin landmark
+    // - check nonparallel edge end landmark
 }

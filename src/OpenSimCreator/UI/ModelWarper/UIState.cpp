@@ -77,6 +77,13 @@ void osc::mow::UIState::forEachWarpableFrameInModel(std::function<void(OpenSim::
     m_Document->forEachWarpableFrameInModel(callback);
 }
 
+void osc::mow::UIState::forEachFrameDefinitionCheck(
+    OpenSim::PhysicalOffsetFrame const& frame,
+    std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
+{
+    m_Document->forEachFrameDefinitionCheck(frame, callback);
+}
+
 void osc::mow::UIState::actionOpenModel(std::optional<std::filesystem::path> path)
 {
     if (!path)

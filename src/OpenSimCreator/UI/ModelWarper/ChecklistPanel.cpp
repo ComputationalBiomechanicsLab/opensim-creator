@@ -192,9 +192,8 @@ namespace
 // UI (frames)
 namespace
 {
-    void DrawTooltipChecklist(UIState const&, OpenSim::Frame const&)
+    void DrawTooltipChecklist(UIState const& state, OpenSim::PhysicalOffsetFrame const& frame)
     {
-        /*
         ImGui::Indent(5.0f);
         int id = 0;
         state.forEachFrameDefinitionCheck(frame, [&id](auto check)
@@ -205,18 +204,14 @@ namespace
             ImGui::SameLine();
             TextUnformatted(check.description);
             ImGui::PopID();
-            return MeshWarpPairing::SearchState::Continue;
+            return ValidationCheckConsumerResponse::Continue;
         });
         ImGui::Unindent(5.0f);
-        */
-        // - the model has a .frames.toml file
-        // - the .frames.toml file contains a definition for the given frame
-        // - the associated mesh was found
-        // - all referred-to landmarks were found
-        // - therefore, the frame is warp-able
     }
 
-    void DrawTooltipContent(UIState const& state, OpenSim::Frame const& frame)
+    void DrawTooltipContent(
+        UIState const& state,
+        OpenSim::PhysicalOffsetFrame const& frame)
     {
         DrawTooltipHeader(state, frame);
 
@@ -225,7 +220,9 @@ namespace
         DrawTooltipChecklist(state, frame);
     }
 
-    void DrawChecklistEntry(UIState const& state, OpenSim::Frame const& frame)
+    void DrawChecklistEntry(
+        UIState const& state,
+        OpenSim::PhysicalOffsetFrame const& frame)
     {
         DrawEntryIconAndText(state, frame);
         if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip))

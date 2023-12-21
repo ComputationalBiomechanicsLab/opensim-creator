@@ -55,13 +55,28 @@ namespace osc::mow
         }
 
         size_t getNumWarpableMeshesInModel() const;
-        void forEachWarpableMeshInModel(std::function<void(OpenSim::Mesh const&)> const&) const;
-        void forEachMeshWarpDetail(OpenSim::Mesh const&, std::function<void(Detail)> const&) const;
-        void forEachMeshWarpCheck(OpenSim::Mesh const&, std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&) const;
+        void forEachWarpableMeshInModel(
+            std::function<void(OpenSim::Mesh const&)> const&
+        ) const;
+        void forEachMeshWarpDetail(
+            OpenSim::Mesh const&,
+            std::function<void(Detail)> const&
+        ) const;
+        void forEachMeshWarpCheck(
+            OpenSim::Mesh const&,
+            std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&
+        ) const;
         ValidationCheck::State getMeshWarpState(OpenSim::Mesh const&) const;
 
         size_t getNumWarpableFramesInModel() const;
-        void forEachWarpableFrameInModel(std::function<void(OpenSim::PhysicalOffsetFrame const&)> const&) const;
+        void forEachWarpableFrameInModel(
+            std::function<void(OpenSim::PhysicalOffsetFrame const&)> const&
+        ) const;
+        void forEachFrameDefinitionCheck(
+            OpenSim::PhysicalOffsetFrame const&,
+            std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&
+        ) const;
+
     private:
         ClonePtr<OpenSim::Model const> m_Model;
         ModelWarpConfiguration m_TopLevelWarpConfig;
