@@ -18,6 +18,7 @@ using osc::lm::Landmark;
 using osc::lm::ReadLandmarksFromCSV;
 using osc::mow::LandmarkPairing;
 using osc::mow::MeshWarpPairing;
+using osc::mow::ValidationCheck;
 
 namespace
 {
@@ -288,7 +289,7 @@ void osc::mow::MeshWarpPairing::forEachDetail(std::function<void(Detail)> const&
     callback({ "number of unpaired landmarks", std::to_string(getNumUnpairedLandmarks()) });
 }
 
-void osc::mow::MeshWarpPairing::forEachCheck(std::function<SearchState(Check)> const& callback) const
+void osc::mow::MeshWarpPairing::forEachCheck(std::function<SearchState(ValidationCheck)> const& callback) const
 {
     // has a source landmarks file
     {
@@ -346,26 +347,26 @@ void osc::mow::MeshWarpPairing::forEachCheck(std::function<SearchState(Check)> c
 
     // (warning): has no unpaired landmarks
     {
-        if (callback({ "there are no unpaired landmarks", getNumUnpairedLandmarks() == 0 ? State::Ok : State::Warning }) == SearchState::Stop)
+        if (callback({ "there are no unpaired landmarks", getNumUnpairedLandmarks() == 0 ? ValidationCheck::State::Ok : ValidationCheck::State::Warning }) == SearchState::Stop)
         {
             return;
         }
     }
 }
 
-MeshWarpPairing::State osc::mow::MeshWarpPairing::state() const
+ValidationCheck::State osc::mow::MeshWarpPairing::state() const
 {
-    State worst = State::Ok;
-    forEachCheck([&worst](Check c)
+    ValidationCheck::State worst = ValidationCheck::State::Ok;
+    forEachCheck([&worst](ValidationCheck c)
     {
-        if (c.state == State::Error)
+        if (c.state == ValidationCheck::State::Error)
         {
-            worst = State::Error;
+            worst = ValidationCheck::State::Error;
             return SearchState::Stop;
         }
-        else if (c.state == State::Warning)
+        else if (c.state == ValidationCheck::State::Warning)
         {
-            worst = State::Warning;
+            worst = ValidationCheck::State::Warning;
             return SearchState::Continue;
         }
         else

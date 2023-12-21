@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/ModelWarper/LandmarkPairing.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.hpp>
 
 #include <cstddef>
 #include <filesystem>
@@ -50,35 +51,10 @@ namespace osc::mow
         };
         void forEachDetail(std::function<void(Detail)> const&) const;
 
-        enum class State { Ok, Warning, Error };
-
-        struct Check final {
-            Check(
-                std::string description_,
-                bool passOrFail_) :
-
-                description{std::move(description_)},
-                state{passOrFail_ ? State::Ok : State::Error}
-            {
-            }
-
-            Check(
-                std::string description_,
-                State state_) :
-
-                description{std::move(description_)},
-                state{state_}
-            {
-            }
-
-            std::string description;
-            State state;
-        };
-
         enum class SearchState { Continue, Stop };
-        void forEachCheck(std::function<SearchState(Check)> const& callback) const;
+        void forEachCheck(std::function<SearchState(ValidationCheck)> const& callback) const;
 
-        State state() const;
+        ValidationCheck::State state() const;
 
     private:
         std::filesystem::path m_SourceMeshAbsoluteFilepath;

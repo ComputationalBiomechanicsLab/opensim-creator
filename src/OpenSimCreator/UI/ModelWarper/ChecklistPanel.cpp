@@ -1,6 +1,8 @@
 #include "ChecklistPanel.hpp"
 
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -32,13 +34,14 @@ using osc::TextCentered;
 using osc::TextUnformatted;
 using osc::mow::MeshWarpPairing;
 using osc::mow::UIState;
+using osc::mow::ValidationCheck;
 
 // data stuff
 namespace
 {
     void ForEachCheck(
         MeshWarpPairing const* maybePairing,
-        std::function<MeshWarpPairing::SearchState(MeshWarpPairing::Check)> const& callback)
+        std::function<MeshWarpPairing::SearchState(ValidationCheck)> const& callback)
     {
         if (maybePairing)
         {
@@ -46,7 +49,7 @@ namespace
         }
         else
         {
-            callback({ "no mesh warp pairing found: this is probably an implementation error (maybe reload?)", MeshWarpPairing::State::Error });
+            callback({ "no mesh warp pairing found: this is probably an implementation error (maybe reload?)", ValidationCheck::State::Error });
         }
     }
 
@@ -63,9 +66,9 @@ namespace
         }
     }
 
-    MeshWarpPairing::State StateOrError(MeshWarpPairing const* maybePairing)
+    ValidationCheck::State StateOrError(MeshWarpPairing const* maybePairing)
     {
-        return maybePairing ? maybePairing->state() : MeshWarpPairing::State::Error;
+        return maybePairing ? maybePairing->state() : ValidationCheck::State::Error;
     }
 }
 
@@ -77,16 +80,16 @@ namespace
         Color color;
     };
 
-    EntryStyling ToStyle(MeshWarpPairing::State s)
+    EntryStyling ToStyle(ValidationCheck::State s)
     {
         switch (s)
         {
-        case MeshWarpPairing::State::Ok:
+        case ValidationCheck::State::Ok:
             return {.icon = ICON_FA_CHECK, .color = Color::green()};
-        case MeshWarpPairing::State::Warning:
+        case ValidationCheck::State::Warning:
             return {.icon = ICON_FA_EXCLAMATION, .color = Color::orange()};
         default:
-        case MeshWarpPairing::State::Error:
+        case ValidationCheck::State::Error:
             return {.icon = ICON_FA_TIMES, .color = Color::red()};
         }
     }
