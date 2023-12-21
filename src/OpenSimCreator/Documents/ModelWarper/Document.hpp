@@ -4,6 +4,8 @@
 #include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.hpp>
 #include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairingLookup.hpp>
 #include <OpenSimCreator/Documents/ModelWarper/ModelWarpConfiguration.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.hpp>
 
 #include <oscar/Utils/ClonePtr.hpp>
 
@@ -54,7 +56,7 @@ namespace osc::mow
         size_t getNumWarpableMeshesInModel() const;
         void forEachWarpableMeshInModel(std::function<void(OpenSim::Mesh const&)> const&) const;
         void forEachMeshWarpDetail(OpenSim::Mesh const&, std::function<void(MeshWarpPairing::Detail)> const&) const;
-        void forEachMeshWarpCheck(OpenSim::Mesh const&, std::function<MeshWarpPairing::SearchState(ValidationCheck)> const&) const;
+        void forEachMeshWarpCheck(OpenSim::Mesh const&, std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&) const;
         ValidationCheck::State getMeshWarpState(OpenSim::Mesh const&) const;
 
         size_t getNumWarpableFramesInModel() const;

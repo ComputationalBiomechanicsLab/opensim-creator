@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/Documents/ModelWarper/LandmarkPairing.hpp>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.hpp>
 
 #include <cstddef>
 #include <filesystem>
@@ -50,9 +51,7 @@ namespace osc::mow
             std::string value;
         };
         void forEachDetail(std::function<void(Detail)> const&) const;
-
-        enum class SearchState { Continue, Stop };
-        void forEachCheck(std::function<SearchState(ValidationCheck)> const& callback) const;
+        void forEachCheck(std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const;
 
         ValidationCheck::State state() const;
 

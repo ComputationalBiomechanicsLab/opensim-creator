@@ -52,7 +52,7 @@ void osc::mow::UIState::forEachMeshWarpDetail(OpenSim::Mesh const& mesh, std::fu
     m_Document->forEachMeshWarpDetail(mesh, callback);
 }
 
-void osc::mow::UIState::forEachMeshWarpCheck(OpenSim::Mesh const& mesh, std::function<MeshWarpPairing::SearchState(ValidationCheck)> const& callback) const
+void osc::mow::UIState::forEachMeshWarpCheck(OpenSim::Mesh const& mesh, std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
 {
     m_Document->forEachMeshWarpCheck(mesh, callback);
 }

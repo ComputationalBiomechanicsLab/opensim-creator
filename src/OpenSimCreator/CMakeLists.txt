@@ -103,6 +103,7 @@ add_library(OpenSimCreator STATIC
     Documents/ModelWarper/ModelWarpConfiguration.cpp
     Documents/ModelWarper/ModelWarpConfiguration.hpp
     Documents/ModelWarper/ValidationCheck.hpp
+    Documents/ModelWarper/ValidationCheckConsumerResponse.hpp
 
     Documents/Simulation/ForwardDynamicSimulation.cpp
     Documents/Simulation/ForwardDynamicSimulation.hpp

@@ -43,20 +43,6 @@ void osc::mow::Document::forEachWarpableMeshInModel(
     }
 }
 
-size_t osc::mow::Document::getNumWarpableFramesInModel() const
-{
-    return GetNumChildren<OpenSim::PhysicalOffsetFrame>(*m_Model);
-}
-
-void osc::mow::Document::forEachWarpableFrameInModel(
-    std::function<void(OpenSim::PhysicalOffsetFrame const&)> const& callback) const
-{
-    for (auto const& frame : m_Model->getComponentList<OpenSim::PhysicalOffsetFrame>())
-    {
-        callback(frame);
-    }
-}
-
 void osc::mow::Document::forEachMeshWarpDetail(
     OpenSim::Mesh const& mesh,
     std::function<void(MeshWarpPairing::Detail)> const& callback) const
@@ -71,7 +57,7 @@ void osc::mow::Document::forEachMeshWarpDetail(
 
 void osc::mow::Document::forEachMeshWarpCheck(
     OpenSim::Mesh const& mesh,
-    std::function<MeshWarpPairing::SearchState(ValidationCheck)> const& callback) const
+    std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
 {
     if (MeshWarpPairing const* p = m_MeshWarpPairingLookup.lookup(GetAbsolutePathString(mesh)))
     {
@@ -87,4 +73,18 @@ ValidationCheck::State osc::mow::Document::getMeshWarpState(OpenSim::Mesh const&
 {
     MeshWarpPairing const* p = m_MeshWarpPairingLookup.lookup(GetAbsolutePathString(mesh));
     return p ? p->state() : ValidationCheck::State::Error;
+}
+
+size_t osc::mow::Document::getNumWarpableFramesInModel() const
+{
+    return GetNumChildren<OpenSim::PhysicalOffsetFrame>(*m_Model);
+}
+
+void osc::mow::Document::forEachWarpableFrameInModel(
+    std::function<void(OpenSim::PhysicalOffsetFrame const&)> const& callback) const
+{
+    for (auto const& frame : m_Model->getComponentList<OpenSim::PhysicalOffsetFrame>())
+    {
+        callback(frame);
+    }
 }

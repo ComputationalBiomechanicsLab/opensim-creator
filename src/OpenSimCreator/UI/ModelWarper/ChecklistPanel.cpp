@@ -3,6 +3,7 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.hpp>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -35,6 +36,7 @@ using osc::TextUnformatted;
 using osc::mow::MeshWarpPairing;
 using osc::mow::UIState;
 using osc::mow::ValidationCheck;
+using osc::mow::ValidationCheckConsumerResponse;
 
 // UI (generic)
 namespace
@@ -136,7 +138,7 @@ namespace
             ImGui::SameLine();
             TextUnformatted(check.description);
             ImGui::PopID();
-            return MeshWarpPairing::SearchState::Continue;
+            return ValidationCheckConsumerResponse::Continue;
         });
         ImGui::Unindent(5.0f);
     }
@@ -192,6 +194,21 @@ namespace
 {
     void DrawTooltipChecklist(UIState const&, OpenSim::Frame const&)
     {
+        /*
+        ImGui::Indent(5.0f);
+        int id = 0;
+        state.forEachFrameDefinitionCheck(frame, [&id](auto check)
+        {
+            ImGui::PushID(id);
+            auto style = ToStyle(check.state);
+            DrawIcon(style);
+            ImGui::SameLine();
+            TextUnformatted(check.description);
+            ImGui::PopID();
+            return MeshWarpPairing::SearchState::Continue;
+        });
+        ImGui::Unindent(5.0f);
+        */
         // - the model has a .frames.toml file
         // - the .frames.toml file contains a definition for the given frame
         // - the associated mesh was found
