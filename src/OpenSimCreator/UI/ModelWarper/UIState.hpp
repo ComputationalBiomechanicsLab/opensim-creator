@@ -8,6 +8,7 @@
 #include <optional>
 #include <vector>
 
+namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
 namespace OpenSim { class PhysicalOffsetFrame; }
 
