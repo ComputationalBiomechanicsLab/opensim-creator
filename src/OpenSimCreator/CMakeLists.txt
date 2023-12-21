@@ -14,6 +14,7 @@ add_library(OpenSimCreator STATIC
     Documents/Frames/FrameAxis.cpp
     Documents/Frames/FrameAxis.hpp
     Documents/Frames/FrameDefinition.hpp
+    Documents/Frames/FramesFile.cpp
     Documents/Frames/FramesFile.hpp
     Documents/Frames/FramesHelpers.cpp
     Documents/Frames/FramesHelpers.hpp
@@ -94,7 +95,6 @@ add_library(OpenSimCreator STATIC
     Documents/ModelWarper/Document.hpp
     Documents/ModelWarper/FrameDefinitionLookup.cpp
     Documents/ModelWarper/FrameDefinitionLookup.hpp
-    Documents/ModelWarper/IWarpableFrameDefinition.hpp
     Documents/ModelWarper/LandmarkPairing.hpp
     Documents/ModelWarper/MeshWarpPairing.cpp
     Documents/ModelWarper/MeshWarpPairing.hpp

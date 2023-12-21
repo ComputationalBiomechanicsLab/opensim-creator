@@ -144,3 +144,20 @@ TEST(FramesHelpers, CanLoadFramesFileWithAbsoluteComponentPaths)
     ASSERT_EQ(parsed.getNumFrameDefinitions(), 1);
     ASSERT_EQ(parsed.getFrameDefinition(0).getName(), "/jointset/joint/child/offset_frame");
 }
+
+TEST(FramesHelpers, FindFrameDefinitionByNameReturnsNullptrForNonExistentName)
+{
+    std::ifstream f = OpenFixtureFile("basic.frames.toml");
+    FramesFile const parsed = ReadFramesFromTOML(f);
+
+    ASSERT_EQ(parsed.findFrameDefinitionByName("doesnt-exist"), nullptr);
+}
+
+TEST(FramesHelpers, FindFrameDefinitionByNameReturnsNonNullptrForExistentName)
+{
+    std::ifstream f = OpenFixtureFile("basic.frames.toml");
+    FramesFile const parsed = ReadFramesFromTOML(f);
+
+    ASSERT_NE(parsed.findFrameDefinitionByName("first"), nullptr);
+    ASSERT_EQ(*parsed.findFrameDefinitionByName("first"), parsed.getFrameDefinition(0));
+}

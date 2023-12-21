@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/Frames/FrameDefinition.hpp>
+#include <OpenSimCreator/Documents/Frames/FramesFile.hpp>
 
 #include <oscar/Utils/ClonePtr.hpp>
 
@@ -9,6 +10,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <variant>
 
 namespace OpenSim { class Model; }
 namespace osc::mow { class ModelWarpConfiguration; }
@@ -25,30 +27,25 @@ namespace osc::mow
             ModelWarpConfiguration const&
         );
 
-        bool hasFrameDefinitionFile() const
-        {
-            return m_FrameDefinitionFileExists;
-        }
+        bool hasFrameDefinitionFile() const;
+        std::filesystem::path recommendedFrameDefinitionFilepath() const;
+        bool hasFramesFileLoadError() const;
+        std::optional<std::string> getFramesFileLoadError() const;
 
-        std::filesystem::path recommendedFrameDefinitionFilepath() const
-        {
-            return m_ExpectedFrameDefinitionFilepath;
-        }
+        frames::FrameDefinition const* lookup(std::string const& frameComponentAbsPath) const;
 
-        frames::FrameDefinition const* lookup(std::string const& frameComponentAbsPath) const
-        {
-            if (auto const it = m_Lut.find(frameComponentAbsPath); it != m_Lut.end())
-            {
-                return &it->second;
-            }
-            else
-            {
-                return nullptr;
-            }
-        }
     private:
+        struct DefaultInitialized final {};
+        struct FileDoesntExist final {};
+        using InnerVariant = std::variant<
+            DefaultInitialized,
+            frames::FramesFile,
+            FileDoesntExist,
+            std::string
+        >;
+        static InnerVariant TryLoadFramesFile(std::filesystem::path const&);
+
         std::filesystem::path m_ExpectedFrameDefinitionFilepath;
-        bool m_FrameDefinitionFileExists;
-        std::unordered_map<std::string, frames::FrameDefinition> m_Lut;
+        InnerVariant m_FramesFileOrLoadError = DefaultInitialized{};
     };
 }

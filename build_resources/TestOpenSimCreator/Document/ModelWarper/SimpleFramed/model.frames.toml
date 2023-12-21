@@ -3,7 +3,11 @@
 
 [frames]
 
-    [frames.first]
+    # a frame must be identified using a full abspath to the associated
+    # frame in the OpenSim model (it's unambiguous, because user models
+    # might contain offset frames to bodies that are named the same (e.g.
+    # two called "pelvis_offset"))
+    [frames."/jointset/weldjoint/ground_offset"]
     associated_mesh = "sphere.obj"
     origin_location = "LM2"
     axis_edge_begin = "LM2"

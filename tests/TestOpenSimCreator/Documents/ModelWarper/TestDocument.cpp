@@ -423,3 +423,39 @@ TEST(ModelWarpingDocument, RecommendedFrameDefinitionFilepathWorksAsExpected)
     std::filesystem::path const expectedFramesPath = GetFixturesDir() / "SimpleFramed" / "model.frames.toml";
     ASSERT_EQ(Document{modelPath}.recommendedFrameDefinitionFilepath(), expectedFramesPath);
 }
+
+TEST(ModelWarpingDocument, HasFramesFileLoadErrorReturnsFalseForNormalCase)
+{
+    std::filesystem::path const modelPath = GetFixturesDir() / "SimpleFramed" / "model.osim";
+    ASSERT_FALSE(Document{modelPath}.hasFramesFileLoadError());
+}
+
+TEST(ModelWarpingDocument, HasFramesFileLoadErrorReturnsTrueForBadCase)
+{
+    std::filesystem::path const modelPath = GetFixturesDir() / "BadFramesFile" / "model.osim";
+    ASSERT_TRUE(Document{modelPath}.hasFramesFileLoadError());
+}
+
+TEST(ModelWarpingDocument, GetFramesFileLoadErrorReturnsNulloptForNormalCase)
+{
+    std::filesystem::path const modelPath = GetFixturesDir() / "SimpleFramed" / "model.osim";
+    ASSERT_EQ(Document{modelPath}.getFramesFileLoadError(), std::nullopt);
+}
+
+TEST(ModelWarpingDocument, GetFramesFileLoadErrorReturnsNonNulloptForBadCase)
+{
+    std::filesystem::path const modelPath = GetFixturesDir() / "BadFramesFile" / "model.osim";
+    ASSERT_NE(Document{modelPath}.getFramesFileLoadError(), std::nullopt);
+}
+
+TEST(ModelWarpingDocument, FindFrameDefinitionReturnsNullptrForNonExistentFrame)
+{
+    Document const doc{GetFixturesDir() / "SimpleFramed" / "model.osim"};
+    ASSERT_EQ(doc.findFrameDefinition("some-nonexistent-framedef"), nullptr);
+}
+
+TEST(ModelWarpingDocument, FindFrameDefinitionReturnsNonNullptrForExistentFrame)
+{
+    Document const doc{GetFixturesDir() / "SimpleFramed" / "model.osim"};
+    ASSERT_NE(doc.findFrameDefinition("/jointset/weldjoint/ground_offset"), nullptr);
+}

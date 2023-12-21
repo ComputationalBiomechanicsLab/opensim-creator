@@ -9,6 +9,7 @@
 #include <filesystem>
 
 namespace OpenSim { class Model; }
+namespace osc::frames { class FrameDefinition; }
 namespace osc::mow { class MeshWarpPairing; }
 
 namespace osc::mow
@@ -34,6 +35,16 @@ namespace osc::mow
             return m_FrameDefinitionLookup.recommendedFrameDefinitionFilepath();
         }
 
+        bool hasFramesFileLoadError() const
+        {
+            return m_FrameDefinitionLookup.hasFramesFileLoadError();
+        }
+
+        std::optional<std::string> getFramesFileLoadError() const
+        {
+            return m_FrameDefinitionLookup.getFramesFileLoadError();
+        }
+
         OpenSim::Model const& getModel() const
         {
             return *m_Model;
@@ -42,6 +53,11 @@ namespace osc::mow
         MeshWarpPairing const* findMeshWarp(std::string const& meshComponentAbsPath) const
         {
             return m_MeshWarpPairingLookup.lookup(meshComponentAbsPath);
+        }
+
+        frames::FrameDefinition const* findFrameDefinition(std::string const& frameComponentAbsPath) const
+        {
+            return m_FrameDefinitionLookup.lookup(frameComponentAbsPath);
         }
     private:
         ClonePtr<OpenSim::Model const> m_Model;
