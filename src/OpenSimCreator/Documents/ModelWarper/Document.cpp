@@ -131,6 +131,7 @@ void osc::mow::Document::forEachFrameDefinitionCheck(
         }
     }
 
+    // TODO
     // - check associated mesh is found
     // - check origin location landmark
     // - check axis edge begin landmark
