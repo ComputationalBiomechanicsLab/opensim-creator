@@ -41,11 +41,9 @@ std::vector<OpenSim::Mesh const*> osc::mow::UIState::getWarpableMeshes() const
     return SortedComponentPointers<OpenSim::Mesh>(getModel());
 }
 
-std::vector<OpenSim::Frame const*> osc::mow::UIState::getWarpableFrames() const
+std::vector<OpenSim::PhysicalOffsetFrame const*> osc::mow::UIState::getWarpableFrames() const
 {
-    auto ptrs = SortedComponentPointers<OpenSim::Frame>(getModel());
-    std::erase_if(ptrs, [](auto const* ptr) { return dynamic_cast<OpenSim::Ground const*>(ptr); });  // do not show Ground (not warpable)
-    return ptrs;
+    return SortedComponentPointers<OpenSim::PhysicalOffsetFrame>(getModel());
 }
 
 MeshWarpPairing const* osc::mow::UIState::findMeshWarp(OpenSim::Mesh const& mesh) const

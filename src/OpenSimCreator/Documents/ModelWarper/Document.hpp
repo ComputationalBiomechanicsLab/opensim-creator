@@ -8,7 +8,6 @@
 
 #include <filesystem>
 
-namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
 namespace osc::mow { class MeshWarpPairing; }
 
@@ -24,6 +23,16 @@ namespace osc::mow
         Document& operator=(Document const&);
         Document& operator=(Document&&) noexcept;
         ~Document() noexcept;
+
+        bool hasFrameDefinitionFile() const
+        {
+            return m_FrameDefinitionLookup.hasFrameDefinitionFile();
+        }
+
+        std::filesystem::path recommendedFrameDefinitionFilepath() const
+        {
+            return m_FrameDefinitionLookup.recommendedFrameDefinitionFilepath();
+        }
 
         OpenSim::Model const& getModel() const
         {

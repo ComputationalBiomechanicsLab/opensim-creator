@@ -403,3 +403,23 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSparselyNamedPairedCase)
         ASSERT_TRUE(p->isFullyPaired());
     }
 }
+
+TEST(ModelWarpingDocument, HasFrameDefinitionFileReturnsFalseForSimpleNonFramedCase)
+{
+    std::filesystem::path const modelPath = GetFixturesDir() / "Simple" / "model.osim";
+    ASSERT_FALSE(Document{modelPath}.hasFrameDefinitionFile());
+}
+
+TEST(ModelWarpingDocument, HasFrameDefinitionFileReturnsTrueForSimpleFramedCase)
+{
+    std::filesystem::path const modelPath = GetFixturesDir() / "SimpleFramed" / "model.osim";
+    ASSERT_TRUE(Document{modelPath}.hasFrameDefinitionFile());
+}
+
+
+TEST(ModelWarpingDocument, RecommendedFrameDefinitionFilepathWorksAsExpected)
+{
+    std::filesystem::path const modelPath = GetFixturesDir() / "SimpleFramed" / "model.osim";
+    std::filesystem::path const expectedFramesPath = GetFixturesDir() / "SimpleFramed" / "model.frames.toml";
+    ASSERT_EQ(Document{modelPath}.recommendedFrameDefinitionFilepath(), expectedFramesPath);
+}

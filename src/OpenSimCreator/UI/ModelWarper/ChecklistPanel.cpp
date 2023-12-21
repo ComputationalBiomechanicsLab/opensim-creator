@@ -5,6 +5,7 @@
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
@@ -211,7 +212,7 @@ namespace
         ImGui::SameLine();
         ImGui::TextDisabled("(%zu)", ptrs.size());
         ImGui::SameLine();
-        DrawHelpMarker("Shows which meshes are present in the source model, whether they have associated landmarks, and whether there is a known destination mesh");
+        DrawHelpMarker("Shows which meshes are elegible for warping in the source model - and whether the model warper has enough information to warp them (plus any other useful validation checks)");
 
         ImGui::Separator();
 
@@ -228,12 +229,25 @@ namespace
 // UI (frames)
 namespace
 {
+    void DrawTooltipChecklist(UIState const&, OpenSim::Frame const&)
+    {
+        // - the model has a .frames.toml file
+        // - the .frames.toml file contains a definition for the given frame
+        // - the associated mesh was found
+        // - all referred-to landmarks were found
+        // - therefore, the frame is warp-able
+    }
+
     void DrawTooltipContent(UIState const& state, OpenSim::Frame const& frame)
     {
         DrawTooltipHeader(state, frame);
+
+        ImGui::Text("Checklist:");
+        ImGui::Dummy({0.0f, 3.0f});
+        DrawTooltipChecklist(state, frame);
     }
 
-    void DrawFrameEntry(UIState const& state, OpenSim::Frame const& frame)
+    void DrawChecklistEntry(UIState const& state, OpenSim::Frame const& frame)
     {
         DrawEntryIconAndText(state, frame);
         if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip))
@@ -244,23 +258,28 @@ namespace
         }
     }
 
+    void DrawFramesSectionHeader(size_t numWarpableFrames)
+    {
+        ImGui::Text("Warpable Frames");
+        ImGui::SameLine();
+        ImGui::TextDisabled("(%zu)", numWarpableFrames);
+        ImGui::SameLine();
+        DrawHelpMarker("Shows which frames are eligible for warping in the source model - and whether the model warper has enough information to warp them");
+    }
+
     void DrawFramesSection(UIState const& state)
     {
-        auto ptrs = state.getWarpableFrames();
+        auto const ptrs = state.getWarpableFrames();
 
-        ImGui::Text("Frames");
-        ImGui::SameLine();
-        ImGui::TextDisabled("(%zu)", ptrs.size());
-        ImGui::SameLine();
-        DrawHelpMarker("Shows frames in the source model, and whether they are warp-able or not");
+        DrawFramesSectionHeader(ptrs.size());
 
         ImGui::Separator();
 
         int id = 0;
-        for (OpenSim::Frame const* frame : ptrs)
+        for (auto const* frame : ptrs)
         {
             ImGui::PushID(id++);
-            DrawFrameEntry(state, *frame);
+            DrawChecklistEntry(state, *frame);
             ImGui::PopID();
         }
     }

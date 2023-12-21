@@ -1,11 +1,12 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/ModelWarper/IWarpableFrameDefinition.hpp>
+#include <OpenSimCreator/Documents/Frames/FrameDefinition.hpp>
 
 #include <oscar/Utils/ClonePtr.hpp>
 
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 
@@ -24,11 +25,21 @@ namespace osc::mow
             ModelWarpConfiguration const&
         );
 
-        IWarpableFrameDefinition const* lookup(std::string const& frameComponentAbsPath) const
+        bool hasFrameDefinitionFile() const
+        {
+            return m_FrameDefinitionFileExists;
+        }
+
+        std::filesystem::path recommendedFrameDefinitionFilepath() const
+        {
+            return m_ExpectedFrameDefinitionFilepath;
+        }
+
+        frames::FrameDefinition const* lookup(std::string const& frameComponentAbsPath) const
         {
             if (auto const it = m_Lut.find(frameComponentAbsPath); it != m_Lut.end())
             {
-                return it->second.get();
+                return &it->second;
             }
             else
             {
@@ -36,6 +47,8 @@ namespace osc::mow
             }
         }
     private:
-        std::unordered_map<std::string, ClonePtr<IWarpableFrameDefinition>> m_Lut;
+        std::filesystem::path m_ExpectedFrameDefinitionFilepath;
+        bool m_FrameDefinitionFileExists;
+        std::unordered_map<std::string, frames::FrameDefinition> m_Lut;
     };
 }

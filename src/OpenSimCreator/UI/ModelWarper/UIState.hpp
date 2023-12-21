@@ -8,8 +8,8 @@
 #include <optional>
 #include <vector>
 
-namespace OpenSim { class Frame; }
 namespace OpenSim { class Model; }
+namespace OpenSim { class PhysicalOffsetFrame; }
 
 namespace osc::mow
 {
@@ -17,7 +17,7 @@ namespace osc::mow
     public:
         OpenSim::Model const& getModel() const;
         std::vector<OpenSim::Mesh const*> getWarpableMeshes() const;
-        std::vector<OpenSim::Frame const*> getWarpableFrames() const;
+        std::vector<OpenSim::PhysicalOffsetFrame const*> getWarpableFrames() const;
         MeshWarpPairing const* findMeshWarp(OpenSim::Mesh const&) const;
 
         void actionOpenModel(std::optional<std::filesystem::path> path = std::nullopt);
