@@ -1,5 +1,9 @@
 #include "UIState.hpp"
 
+#include <OpenSimCreator/Documents/ModelWarper/Detail.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/Document.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <OpenSim/Common/Component.h>
@@ -9,6 +13,7 @@
 #include <oscar/Platform/os.hpp>
 
 #include <algorithm>
+#include <cstddef>
 #include <filesystem>
 #include <optional>
 #include <vector>
@@ -47,7 +52,7 @@ void osc::mow::UIState::forEachWarpableMeshInModel(std::function<void(OpenSim::M
     return m_Document->forEachWarpableMeshInModel(callback);
 }
 
-void osc::mow::UIState::forEachMeshWarpDetail(OpenSim::Mesh const& mesh, std::function<void(MeshWarpPairing::Detail)> const& callback) const
+void osc::mow::UIState::forEachMeshWarpDetail(OpenSim::Mesh const& mesh, std::function<void(Detail)> const& callback) const
 {
     m_Document->forEachMeshWarpDetail(mesh, callback);
 }

@@ -91,6 +91,7 @@ add_library(OpenSimCreator STATIC
     Documents/Model/VirtualConstModelStatePair.hpp
     Documents/Model/VirtualModelStatePair.hpp
 
+    Documents/ModelWarper/Detail.hpp
     Documents/ModelWarper/Document.cpp
     Documents/ModelWarper/Document.hpp
     Documents/ModelWarper/FrameDefinitionLookup.cpp

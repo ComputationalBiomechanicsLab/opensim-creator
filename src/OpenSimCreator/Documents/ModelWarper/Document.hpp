@@ -1,5 +1,6 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/ModelWarper/Detail.hpp>
 #include <OpenSimCreator/Documents/ModelWarper/FrameDefinitionLookup.hpp>
 #include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.hpp>
 #include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairingLookup.hpp>
@@ -55,7 +56,7 @@ namespace osc::mow
 
         size_t getNumWarpableMeshesInModel() const;
         void forEachWarpableMeshInModel(std::function<void(OpenSim::Mesh const&)> const&) const;
-        void forEachMeshWarpDetail(OpenSim::Mesh const&, std::function<void(MeshWarpPairing::Detail)> const&) const;
+        void forEachMeshWarpDetail(OpenSim::Mesh const&, std::function<void(Detail)> const&) const;
         void forEachMeshWarpCheck(OpenSim::Mesh const&, std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&) const;
         ValidationCheck::State getMeshWarpState(OpenSim::Mesh const&) const;
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/ModelWarper/Detail.hpp>
 #include <OpenSimCreator/Documents/ModelWarper/LandmarkPairing.hpp>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.hpp>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.hpp>
@@ -46,10 +47,6 @@ namespace osc::mow
         bool hasLandmarkNamed(std::string_view) const;
         LandmarkPairing const* tryGetLandmarkPairingByName(std::string_view) const;
 
-        struct Detail final {
-            std::string name;
-            std::string value;
-        };
         void forEachDetail(std::function<void(Detail)> const&) const;
         void forEachCheck(std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const;
 

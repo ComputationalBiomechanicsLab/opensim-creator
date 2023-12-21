@@ -45,7 +45,7 @@ void osc::mow::Document::forEachWarpableMeshInModel(
 
 void osc::mow::Document::forEachMeshWarpDetail(
     OpenSim::Mesh const& mesh,
-    std::function<void(MeshWarpPairing::Detail)> const& callback) const
+    std::function<void(Detail)> const& callback) const
 {
     callback({ "OpenSim::Mesh path in the OpenSim::Model", GetAbsolutePathString(mesh) });
 
