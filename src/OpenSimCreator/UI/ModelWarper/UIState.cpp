@@ -14,6 +14,7 @@
 #include <vector>
 
 using osc::mow::MeshWarpPairing;
+using osc::mow::ValidationCheck;
 using osc::IsNameLexographicallyLowerThan;
 
 namespace
@@ -36,19 +37,39 @@ OpenSim::Model const& osc::mow::UIState::getModel() const
     return m_Document->getModel();
 }
 
-std::vector<OpenSim::Mesh const*> osc::mow::UIState::getWarpableMeshes() const
+size_t osc::mow::UIState::getNumWarpableMeshesInModel() const
 {
-    return SortedComponentPointers<OpenSim::Mesh>(getModel());
+    return m_Document->getNumWarpableMeshesInModel();
 }
 
-std::vector<OpenSim::PhysicalOffsetFrame const*> osc::mow::UIState::getWarpableFrames() const
+void osc::mow::UIState::forEachWarpableMeshInModel(std::function<void(OpenSim::Mesh const&)> const& callback) const
 {
-    return SortedComponentPointers<OpenSim::PhysicalOffsetFrame>(getModel());
+    return m_Document->forEachWarpableMeshInModel(callback);
 }
 
-MeshWarpPairing const* osc::mow::UIState::findMeshWarp(OpenSim::Mesh const& mesh) const
+void osc::mow::UIState::forEachMeshWarpDetail(OpenSim::Mesh const& mesh, std::function<void(MeshWarpPairing::Detail)> const& callback) const
 {
-    return m_Document->findMeshWarp(GetAbsolutePathString(mesh));
+    m_Document->forEachMeshWarpDetail(mesh, callback);
+}
+
+void osc::mow::UIState::forEachMeshWarpCheck(OpenSim::Mesh const& mesh, std::function<MeshWarpPairing::SearchState(ValidationCheck)> const& callback) const
+{
+    m_Document->forEachMeshWarpCheck(mesh, callback);
+}
+
+ValidationCheck::State osc::mow::UIState::getMeshWarpState(OpenSim::Mesh const& mesh) const
+{
+    return m_Document->getMeshWarpState(mesh);
+}
+
+size_t osc::mow::UIState::getNumWarpableFramesInModel() const
+{
+    return m_Document->getNumWarpableFramesInModel();
+}
+
+void osc::mow::UIState::forEachWarpableFrameInModel(std::function<void(OpenSim::PhysicalOffsetFrame const&)> const& callback) const
+{
+    m_Document->forEachWarpableFrameInModel(callback);
 }
 
 void osc::mow::UIState::actionOpenModel(std::optional<std::filesystem::path> path)

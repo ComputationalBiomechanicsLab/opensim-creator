@@ -31,8 +31,7 @@ namespace
 
 osc::mow::FrameDefinitionLookup::FrameDefinitionLookup(
     std::filesystem::path const& modelPath,
-    OpenSim::Model const&,
-    ModelWarpConfiguration const&) :
+    OpenSim::Model const&) :
 
     m_ExpectedFrameDefinitionFilepath{CalcExpectedFrameDefinitionFileLocation(modelPath)},
     m_FramesFileOrLoadError{TryLoadFramesFile(m_ExpectedFrameDefinitionFilepath)}

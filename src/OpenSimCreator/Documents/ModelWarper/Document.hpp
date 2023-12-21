@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/ModelWarper/FrameDefinitionLookup.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.hpp>
 #include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairingLookup.hpp>
 #include <OpenSimCreator/Documents/ModelWarper/ModelWarpConfiguration.hpp>
 
@@ -8,9 +9,9 @@
 
 #include <filesystem>
 
+namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
-namespace osc::frames { class FrameDefinition; }
-namespace osc::mow { class MeshWarpPairing; }
+namespace OpenSim { class PhysicalOffsetFrame; }
 
 namespace osc::mow
 {
@@ -50,15 +51,14 @@ namespace osc::mow
             return *m_Model;
         }
 
-        MeshWarpPairing const* findMeshWarp(std::string const& meshComponentAbsPath) const
-        {
-            return m_MeshWarpPairingLookup.lookup(meshComponentAbsPath);
-        }
+        size_t getNumWarpableMeshesInModel() const;
+        void forEachWarpableMeshInModel(std::function<void(OpenSim::Mesh const&)> const&) const;
+        void forEachMeshWarpDetail(OpenSim::Mesh const&, std::function<void(MeshWarpPairing::Detail)> const&) const;
+        void forEachMeshWarpCheck(OpenSim::Mesh const&, std::function<MeshWarpPairing::SearchState(ValidationCheck)> const&) const;
+        ValidationCheck::State getMeshWarpState(OpenSim::Mesh const&) const;
 
-        frames::FrameDefinition const* findFrameDefinition(std::string const& frameComponentAbsPath) const
-        {
-            return m_FrameDefinitionLookup.lookup(frameComponentAbsPath);
-        }
+        size_t getNumWarpableFramesInModel() const;
+        void forEachWarpableFrameInModel(std::function<void(OpenSim::PhysicalOffsetFrame const&)> const&) const;
     private:
         ClonePtr<OpenSim::Model const> m_Model;
         ModelWarpConfiguration m_TopLevelWarpConfig;

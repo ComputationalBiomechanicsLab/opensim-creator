@@ -23,8 +23,7 @@ namespace osc::mow
 
         FrameDefinitionLookup(
             std::filesystem::path const& modelPath,
-            OpenSim::Model const&,
-            ModelWarpConfiguration const&
+            OpenSim::Model const&
         );
 
         bool hasFrameDefinitionFile() const;

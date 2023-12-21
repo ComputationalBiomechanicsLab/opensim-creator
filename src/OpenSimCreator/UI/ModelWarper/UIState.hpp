@@ -17,9 +17,15 @@ namespace osc::mow
     class UIState final {
     public:
         OpenSim::Model const& getModel() const;
-        std::vector<OpenSim::Mesh const*> getWarpableMeshes() const;
-        std::vector<OpenSim::PhysicalOffsetFrame const*> getWarpableFrames() const;
-        MeshWarpPairing const* findMeshWarp(OpenSim::Mesh const&) const;
+
+        size_t getNumWarpableMeshesInModel() const;
+        void forEachWarpableMeshInModel(std::function<void(OpenSim::Mesh const&)> const&) const;
+        size_t getNumWarpableFramesInModel() const;
+        void forEachWarpableFrameInModel(std::function<void(OpenSim::PhysicalOffsetFrame const&)> const&) const;
+
+        void forEachMeshWarpDetail(OpenSim::Mesh const&, std::function<void(MeshWarpPairing::Detail)> const&) const;
+        void forEachMeshWarpCheck(OpenSim::Mesh const&, std::function<MeshWarpPairing::SearchState(ValidationCheck)> const&) const;
+        ValidationCheck::State getMeshWarpState(OpenSim::Mesh const&) const;
 
         void actionOpenModel(std::optional<std::filesystem::path> path = std::nullopt);
     private:
