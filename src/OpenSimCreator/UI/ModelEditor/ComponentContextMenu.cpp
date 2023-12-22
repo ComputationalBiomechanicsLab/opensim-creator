@@ -521,6 +521,11 @@ private:
                             m_Model->setSelected(dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject()));
                             requestClose();
                         }
+                        if (auto const* connectee = dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject());
+                            connectee && ImGui::IsItemHovered())
+                        {
+                            DrawComponentHoverTooltip(*connectee);
+                        }
 
                         ImGui::TableSetColumnIndex(column++);
                         if (ImGui::SmallButton("change"))

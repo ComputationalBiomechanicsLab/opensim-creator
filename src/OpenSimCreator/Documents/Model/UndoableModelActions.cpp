@@ -2176,7 +2176,7 @@ bool osc::ActionImportLandmarks(
         InitializeState(mutModel);
 
         std::stringstream ss;
-        ss << "imported " << maybeName.value_or("markers");
+        ss << "imported " << std::move(maybeName).value_or("markers");
         model.commit(std::move(ss).str());
     }
     catch (std::exception const& ex)

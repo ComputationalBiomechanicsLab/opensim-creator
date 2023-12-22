@@ -1,5 +1,9 @@
 #include "UIState.hpp"
 
+#include <OpenSimCreator/Documents/ModelWarper/Detail.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/Document.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <OpenSim/Common/Component.h>
@@ -9,12 +13,12 @@
 #include <oscar/Platform/os.hpp>
 
 #include <algorithm>
+#include <cstddef>
 #include <filesystem>
 #include <optional>
 #include <vector>
 
-using osc::mow::MeshWarpPairing;
-using osc::IsNameLexographicallyLowerThan;
+using osc::mow::ValidationCheck;
 
 namespace
 {
@@ -26,7 +30,7 @@ namespace
         {
             rv.push_back(&v);
         }
-        std::sort(rv.begin(), rv.end(), IsNameLexographicallyLowerThan<T const*>);
+        std::sort(rv.begin(), rv.end(), osc::IsNameLexographicallyLowerThan<T const*>);
         return rv;
     }
 }
@@ -36,21 +40,46 @@ OpenSim::Model const& osc::mow::UIState::getModel() const
     return m_Document->getModel();
 }
 
-std::vector<OpenSim::Mesh const*> osc::mow::UIState::getWarpableMeshes() const
+size_t osc::mow::UIState::getNumWarpableMeshesInModel() const
 {
-    return SortedComponentPointers<OpenSim::Mesh>(getModel());
+    return m_Document->getNumWarpableMeshesInModel();
 }
 
-std::vector<OpenSim::Frame const*> osc::mow::UIState::getWarpableFrames() const
+void osc::mow::UIState::forEachWarpableMeshInModel(std::function<void(OpenSim::Mesh const&)> const& callback) const
 {
-    auto ptrs = SortedComponentPointers<OpenSim::Frame>(getModel());
-    std::erase_if(ptrs, [](auto const* ptr) { return dynamic_cast<OpenSim::Ground const*>(ptr); });  // do not show Ground (not warpable)
-    return ptrs;
+    return m_Document->forEachWarpableMeshInModel(callback);
 }
 
-MeshWarpPairing const* osc::mow::UIState::findMeshWarp(OpenSim::Mesh const& mesh) const
+void osc::mow::UIState::forEachMeshWarpDetail(OpenSim::Mesh const& mesh, std::function<void(Detail)> const& callback) const
 {
-    return m_Document->findMeshWarp(GetAbsolutePathString(mesh));
+    m_Document->forEachMeshWarpDetail(mesh, callback);
+}
+
+void osc::mow::UIState::forEachMeshWarpCheck(OpenSim::Mesh const& mesh, std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
+{
+    m_Document->forEachMeshWarpCheck(mesh, callback);
+}
+
+ValidationCheck::State osc::mow::UIState::getMeshWarpState(OpenSim::Mesh const& mesh) const
+{
+    return m_Document->getMeshWarpState(mesh);
+}
+
+size_t osc::mow::UIState::getNumWarpableFramesInModel() const
+{
+    return m_Document->getNumWarpableFramesInModel();
+}
+
+void osc::mow::UIState::forEachWarpableFrameInModel(std::function<void(OpenSim::PhysicalOffsetFrame const&)> const& callback) const
+{
+    m_Document->forEachWarpableFrameInModel(callback);
+}
+
+void osc::mow::UIState::forEachFrameDefinitionCheck(
+    OpenSim::PhysicalOffsetFrame const& frame,
+    std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
+{
+    m_Document->forEachFrameDefinitionCheck(frame, callback);
 }
 
 void osc::mow::UIState::actionOpenModel(std::optional<std::filesystem::path> path)

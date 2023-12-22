@@ -17,7 +17,7 @@
 using osc::lm::Landmark;
 using osc::lm::ReadLandmarksFromCSV;
 using osc::mow::LandmarkPairing;
-using osc::mow::MeshWarpPairing;
+using osc::mow::ValidationCheck;
 
 namespace
 {
@@ -50,7 +50,7 @@ namespace
             return rv;
         }
 
-        ReadLandmarksFromCSV(in, [&rv](auto&& lm) { rv.push_back(std::forward<Landmark>(lm)); });
+        ReadLandmarksFromCSV(in, [&rv](auto&& lm) { rv.push_back(std::forward<decltype(lm)>(lm)); });
         return rv;
     }
 
@@ -288,13 +288,13 @@ void osc::mow::MeshWarpPairing::forEachDetail(std::function<void(Detail)> const&
     callback({ "number of unpaired landmarks", std::to_string(getNumUnpairedLandmarks()) });
 }
 
-void osc::mow::MeshWarpPairing::forEachCheck(std::function<SearchState(Check)> const& callback) const
+void osc::mow::MeshWarpPairing::forEachCheck(std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
 {
     // has a source landmarks file
     {
         std::stringstream ss;
         ss << "has source landmarks file at " << recommendedSourceLandmarksFilepath().string();
-        if (callback({ std::move(ss).str(), hasSourceLandmarksFilepath() }) == SearchState::Stop)
+        if (callback({ std::move(ss).str(), hasSourceLandmarksFilepath() }) == ValidationCheckConsumerResponse::Stop)
         {
             return;
         }
@@ -302,7 +302,7 @@ void osc::mow::MeshWarpPairing::forEachCheck(std::function<SearchState(Check)> c
 
     // has source landmarks
     {
-        if (callback({ "source landmarks file contains landmarks", hasSourceLandmarks() }) == SearchState::Stop)
+        if (callback({ "source landmarks file contains landmarks", hasSourceLandmarks() }) == ValidationCheckConsumerResponse::Stop)
         {
             return;
         }
@@ -312,7 +312,7 @@ void osc::mow::MeshWarpPairing::forEachCheck(std::function<SearchState(Check)> c
     {
         std::stringstream ss;
         ss << "has destination mesh file at " << recommendedDestinationMeshFilepath().string();
-        if (callback({ std::move(ss).str(), hasDestinationMeshFilepath() }) == SearchState::Stop)
+        if (callback({ std::move(ss).str(), hasDestinationMeshFilepath() }) == ValidationCheckConsumerResponse::Stop)
         {
             return;
         }
@@ -322,7 +322,7 @@ void osc::mow::MeshWarpPairing::forEachCheck(std::function<SearchState(Check)> c
     {
         std::stringstream ss;
         ss << "has destination landmarks file at " << recommendedDestinationLandmarksFilepath().string();
-        if (callback({ std::move(ss).str(), hasDestinationLandmarksFilepath() }) == SearchState::Stop)
+        if (callback({ std::move(ss).str(), hasDestinationLandmarksFilepath() }) == ValidationCheckConsumerResponse::Stop)
         {
             return;
         }
@@ -330,7 +330,7 @@ void osc::mow::MeshWarpPairing::forEachCheck(std::function<SearchState(Check)> c
 
     // has destination landmarks
     {
-        if (callback({ "destination landmarks file contains landmarks", hasDestinationLandmarks() }) == SearchState::Stop)
+        if (callback({ "destination landmarks file contains landmarks", hasDestinationLandmarks() }) == ValidationCheckConsumerResponse::Stop)
         {
             return;
         }
@@ -338,7 +338,7 @@ void osc::mow::MeshWarpPairing::forEachCheck(std::function<SearchState(Check)> c
 
     // has at least a few paired landmarks
     {
-        if (callback({ "at least three landmarks can be paired between source/destination", getNumFullyPairedLandmarks() >= 3 }) == SearchState::Stop)
+        if (callback({ "at least three landmarks can be paired between source/destination", getNumFullyPairedLandmarks() >= 3 }) == ValidationCheckConsumerResponse::Stop)
         {
             return;
         }
@@ -346,31 +346,31 @@ void osc::mow::MeshWarpPairing::forEachCheck(std::function<SearchState(Check)> c
 
     // (warning): has no unpaired landmarks
     {
-        if (callback({ "there are no unpaired landmarks", getNumUnpairedLandmarks() == 0 ? State::Ok : State::Warning }) == SearchState::Stop)
+        if (callback({ "there are no unpaired landmarks", getNumUnpairedLandmarks() == 0 ? ValidationCheck::State::Ok : ValidationCheck::State::Warning }) == ValidationCheckConsumerResponse::Stop)
         {
             return;
         }
     }
 }
 
-MeshWarpPairing::State osc::mow::MeshWarpPairing::state() const
+ValidationCheck::State osc::mow::MeshWarpPairing::state() const
 {
-    State worst = State::Ok;
-    forEachCheck([&worst](Check c)
+    ValidationCheck::State worst = ValidationCheck::State::Ok;
+    forEachCheck([&worst](ValidationCheck const& c)
     {
-        if (c.state == State::Error)
+        if (c.state == ValidationCheck::State::Error)
         {
-            worst = State::Error;
-            return SearchState::Stop;
+            worst = ValidationCheck::State::Error;
+            return ValidationCheckConsumerResponse::Stop;
         }
-        else if (c.state == State::Warning)
+        else if (c.state == ValidationCheck::State::Warning)
         {
-            worst = State::Warning;
-            return SearchState::Continue;
+            worst = ValidationCheck::State::Warning;
+            return ValidationCheckConsumerResponse::Continue;
         }
         else
         {
-            return SearchState::Continue;
+            return ValidationCheckConsumerResponse::Continue;
         }
     });
     return worst;

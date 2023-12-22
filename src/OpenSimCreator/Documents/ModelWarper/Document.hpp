@@ -1,8 +1,12 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/ModelWarper/Detail.hpp>
 #include <OpenSimCreator/Documents/ModelWarper/FrameDefinitionLookup.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.hpp>
 #include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairingLookup.hpp>
 #include <OpenSimCreator/Documents/ModelWarper/ModelWarpConfiguration.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.hpp>
 
 #include <oscar/Utils/ClonePtr.hpp>
 
@@ -10,7 +14,7 @@
 
 namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
-namespace osc::mow { class MeshWarpPairing; }
+namespace OpenSim { class PhysicalOffsetFrame; }
 
 namespace osc::mow
 {
@@ -25,15 +29,54 @@ namespace osc::mow
         Document& operator=(Document&&) noexcept;
         ~Document() noexcept;
 
+        bool hasFrameDefinitionFile() const
+        {
+            return m_FrameDefinitionLookup.hasFrameDefinitionFile();
+        }
+
+        std::filesystem::path recommendedFrameDefinitionFilepath() const
+        {
+            return m_FrameDefinitionLookup.recommendedFrameDefinitionFilepath();
+        }
+
+        bool hasFramesFileLoadError() const
+        {
+            return m_FrameDefinitionLookup.hasFramesFileLoadError();
+        }
+
+        std::optional<std::string> getFramesFileLoadError() const
+        {
+            return m_FrameDefinitionLookup.getFramesFileLoadError();
+        }
+
         OpenSim::Model const& getModel() const
         {
             return *m_Model;
         }
 
-        MeshWarpPairing const* findMeshWarp(std::string const& meshComponentAbsPath) const
-        {
-            return m_MeshWarpPairingLookup.lookup(meshComponentAbsPath);
-        }
+        size_t getNumWarpableMeshesInModel() const;
+        void forEachWarpableMeshInModel(
+            std::function<void(OpenSim::Mesh const&)> const&
+        ) const;
+        void forEachMeshWarpDetail(
+            OpenSim::Mesh const&,
+            std::function<void(Detail)> const&
+        ) const;
+        void forEachMeshWarpCheck(
+            OpenSim::Mesh const&,
+            std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&
+        ) const;
+        ValidationCheck::State getMeshWarpState(OpenSim::Mesh const&) const;
+
+        size_t getNumWarpableFramesInModel() const;
+        void forEachWarpableFrameInModel(
+            std::function<void(OpenSim::PhysicalOffsetFrame const&)> const&
+        ) const;
+        void forEachFrameDefinitionCheck(
+            OpenSim::PhysicalOffsetFrame const&,
+            std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&
+        ) const;
+
     private:
         ClonePtr<OpenSim::Model const> m_Model;
         ModelWarpConfiguration m_TopLevelWarpConfig;

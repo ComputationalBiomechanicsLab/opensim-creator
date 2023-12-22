@@ -1,0 +1,14 @@
+# basic file that names a frame as the full absolute path to
+# a component in an OpenSim model (less ambiguous)
+
+[frames]
+
+    [frames."/jointset/joint/child/offset_frame"]
+    associated_mesh = "sphere.obj"
+    origin_location = "LM2"
+    axis_edge_begin = "LM2"
+    axis_edge_end = "LM3"
+    axis_edge_axis = "-x"
+    nonparallel_edge_begin = "some_other_lm"
+    nonparallel_edge_end = "another_one"
+    cross_product_edge_axis = "+y"

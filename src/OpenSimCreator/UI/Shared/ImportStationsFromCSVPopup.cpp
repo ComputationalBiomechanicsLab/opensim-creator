@@ -29,10 +29,10 @@ class osc::ImportStationsFromCSVPopup::Impl final : public StandardPopup {
 public:
     Impl(
         std::string_view popupName_,
-        std::function<void(ImportedData)> const& onImport_) :
+        std::function<void(ImportedData)> onImport_) :
 
         StandardPopup{popupName_},
-        m_OnImportCallback{onImport_}
+        m_OnImportCallback{std::move(onImport_)}
     {
         setModal(true);
     }
@@ -67,9 +67,9 @@ private:
     {
         ImGui::TextWrapped("Use this tool to import CSV data containing 3D locations as stations into the document. The CSV file should contain:");
         ImGui::Bullet();
-        ImGui::TextWrapped("A header row of four columns, ideally labelled 'name', 'x', 'y', and 'z'");
+        ImGui::TextWrapped("(optional) A header row of four columns, ideally labelled 'name', 'x', 'y', and 'z'");
         ImGui::Bullet();
-        ImGui::TextWrapped("Data rows containing four columns: name (string), x (number), y (number), and z (number)");
+        ImGui::TextWrapped("Data rows containing four columns: name (optional, string), x (number), y (number), and z (number)");
         ImGui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
         constexpr CStringView c_ExampleInputText = "name,x,y,z\nstationatground,0,0,0\nstation2,1.53,0.2,1.7\nstation3,3.0,2.0,0.0\n";
         ImGui::TextWrapped("Example Input: ");
@@ -232,7 +232,7 @@ private:
         lm::ReadLandmarksFromCSV(
             ifs,
             [&lms](lm::Landmark&& lm) { lms.push_back(lm); },
-            [this](lm::CSVParseWarning warning) { m_ImportWarnings.push_back(to_string(warning)); }
+            [this](lm::CSVParseWarning const& warning) { m_ImportWarnings.push_back(to_string(warning)); }
         );
         m_ImportedLandmarks = GenerateNames(lms);
     }
@@ -259,8 +259,8 @@ private:
 
 osc::ImportStationsFromCSVPopup::ImportStationsFromCSVPopup(
     std::string_view popupName_,
-    std::function<void(ImportedData)> const& onImport) :
-    m_Impl{std::make_unique<Impl>(popupName_, onImport)}
+    std::function<void(ImportedData)> onImport) :
+    m_Impl{std::make_unique<Impl>(popupName_, std::move(onImport))}
 {
 }
 osc::ImportStationsFromCSVPopup::ImportStationsFromCSVPopup(ImportStationsFromCSVPopup&&) noexcept = default;

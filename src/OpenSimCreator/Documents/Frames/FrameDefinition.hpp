@@ -68,6 +68,8 @@ namespace osc::frames
         {
             return m_CrossProductEdgeAxis;
         }
+
+        friend bool operator==(FrameDefinition const&, FrameDefinition const&) = default;
     private:
         std::string m_Name;
         std::string m_AssociatedMeshName;

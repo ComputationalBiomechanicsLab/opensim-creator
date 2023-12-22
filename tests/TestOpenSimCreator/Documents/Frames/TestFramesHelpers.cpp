@@ -135,3 +135,29 @@ TEST(FramesHelpers, ThrowsIfGivenNonEdgeNonparallelAxis)
     std::ifstream f = OpenFixtureFile("not_edge_nonparallel.frames.toml");
     ASSERT_ANY_THROW({ ReadFramesFromTOML(f); });
 }
+
+TEST(FramesHelpers, CanLoadFramesFileWithAbsoluteComponentPaths)
+{
+    std::ifstream f = OpenFixtureFile("frame_with_abspath.frames.toml");
+    FramesFile const parsed = ReadFramesFromTOML(f);
+
+    ASSERT_EQ(parsed.getNumFrameDefinitions(), 1);
+    ASSERT_EQ(parsed.getFrameDefinition(0).getName(), "/jointset/joint/child/offset_frame");
+}
+
+TEST(FramesHelpers, FindFrameDefinitionByNameReturnsNullptrForNonExistentName)
+{
+    std::ifstream f = OpenFixtureFile("basic.frames.toml");
+    FramesFile const parsed = ReadFramesFromTOML(f);
+
+    ASSERT_EQ(parsed.findFrameDefinitionByName("doesnt-exist"), nullptr);
+}
+
+TEST(FramesHelpers, FindFrameDefinitionByNameReturnsNonNullptrForExistentName)
+{
+    std::ifstream f = OpenFixtureFile("basic.frames.toml");
+    FramesFile const parsed = ReadFramesFromTOML(f);
+
+    ASSERT_NE(parsed.findFrameDefinitionByName("first"), nullptr);
+    ASSERT_EQ(*parsed.findFrameDefinitionByName("first"), parsed.getFrameDefinition(0));
+}

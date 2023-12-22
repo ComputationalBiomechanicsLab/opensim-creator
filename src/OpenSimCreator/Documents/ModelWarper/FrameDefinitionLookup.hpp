@@ -1,13 +1,16 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/ModelWarper/IWarpableFrameDefinition.hpp>
+#include <OpenSimCreator/Documents/Frames/FrameDefinition.hpp>
+#include <OpenSimCreator/Documents/Frames/FramesFile.hpp>
 
 #include <oscar/Utils/ClonePtr.hpp>
 
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
+#include <variant>
 
 namespace OpenSim { class Model; }
 namespace osc::mow { class ModelWarpConfiguration; }
@@ -20,22 +23,28 @@ namespace osc::mow
 
         FrameDefinitionLookup(
             std::filesystem::path const& modelPath,
-            OpenSim::Model const&,
-            ModelWarpConfiguration const&
+            OpenSim::Model const&
         );
 
-        IWarpableFrameDefinition const* lookup(std::string const& frameComponentAbsPath) const
-        {
-            if (auto const it = m_Lut.find(frameComponentAbsPath); it != m_Lut.end())
-            {
-                return it->second.get();
-            }
-            else
-            {
-                return nullptr;
-            }
-        }
+        bool hasFrameDefinitionFile() const;
+        std::filesystem::path recommendedFrameDefinitionFilepath() const;
+        bool hasFramesFileLoadError() const;
+        std::optional<std::string> getFramesFileLoadError() const;
+
+        frames::FrameDefinition const* lookup(std::string const& frameComponentAbsPath) const;
+
     private:
-        std::unordered_map<std::string, ClonePtr<IWarpableFrameDefinition>> m_Lut;
+        struct DefaultInitialized final {};
+        struct FileDoesntExist final {};
+        using InnerVariant = std::variant<
+            DefaultInitialized,
+            frames::FramesFile,
+            FileDoesntExist,
+            std::string
+        >;
+        static InnerVariant TryLoadFramesFile(std::filesystem::path const&);
+
+        std::filesystem::path m_ExpectedFrameDefinitionFilepath;
+        InnerVariant m_FramesFileOrLoadError = DefaultInitialized{};
     };
 }

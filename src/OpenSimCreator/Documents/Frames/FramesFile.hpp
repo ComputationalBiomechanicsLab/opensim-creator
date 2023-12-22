@@ -3,6 +3,7 @@
 #include <OpenSimCreator/Documents/Frames/FrameDefinition.hpp>
 
 #include <cstddef>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -29,6 +30,8 @@ namespace osc::frames
         {
             return m_FrameDefs.at(i);
         }
+
+        FrameDefinition const* findFrameDefinitionByName(std::string_view name) const;
     private:
         std::vector<FrameDefinition> m_FrameDefs;
     };

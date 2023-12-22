@@ -1,6 +1,9 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/ModelWarper/Detail.hpp>
 #include <OpenSimCreator/Documents/ModelWarper/LandmarkPairing.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.hpp>
 
 #include <cstddef>
 #include <filesystem>
@@ -44,41 +47,10 @@ namespace osc::mow
         bool hasLandmarkNamed(std::string_view) const;
         LandmarkPairing const* tryGetLandmarkPairingByName(std::string_view) const;
 
-        struct Detail final {
-            std::string name;
-            std::string value;
-        };
         void forEachDetail(std::function<void(Detail)> const&) const;
+        void forEachCheck(std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const;
 
-        enum class State { Ok, Warning, Error };
-
-        struct Check final {
-            Check(
-                std::string description_,
-                bool passOrFail_) :
-
-                description{std::move(description_)},
-                state{passOrFail_ ? State::Ok : State::Error}
-            {
-            }
-
-            Check(
-                std::string description_,
-                State state_) :
-
-                description{std::move(description_)},
-                state{state_}
-            {
-            }
-
-            std::string description;
-            State state;
-        };
-
-        enum class SearchState { Continue, Stop };
-        void forEachCheck(std::function<SearchState(Check)> const& callback) const;
-
-        State state() const;
+        ValidationCheck::State state() const;
 
     private:
         std::filesystem::path m_SourceMeshAbsoluteFilepath;
