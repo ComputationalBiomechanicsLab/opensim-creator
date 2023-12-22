@@ -70,19 +70,19 @@ public:
         );
 
         m_PanelManager->registerToggleablePanel(
-            "Performance",
-            [](std::string_view panelName)
+            "Landmark Navigator",
+            [state = m_Shared](std::string_view panelName)
             {
-                return std::make_shared<PerfPanel>(panelName);
+                return std::make_shared<MeshWarpingTabNavigatorPanel>(panelName, state);
             },
             ToggleablePanelFlags::Default - ToggleablePanelFlags::IsEnabledByDefault
         );
 
         m_PanelManager->registerToggleablePanel(
-            "Landmark Navigator",
-            [state = m_Shared](std::string_view panelName)
+            "Performance",
+            [](std::string_view panelName)
             {
-                return std::make_shared<MeshWarpingTabNavigatorPanel>(panelName, state);
+                return std::make_shared<PerfPanel>(panelName);
             },
             ToggleablePanelFlags::Default - ToggleablePanelFlags::IsEnabledByDefault
         );
