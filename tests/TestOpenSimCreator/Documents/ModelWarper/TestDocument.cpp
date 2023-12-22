@@ -10,7 +10,6 @@
 #include <stdexcept>
 
 using osc::mow::Document;
-using osc::mow::MeshWarpPairing;
 
 namespace
 {
