@@ -4,13 +4,60 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+## [0.5.6] - 2023/12/22
+
+Happy holidays!
+
+0.5.6 tries to make it easier to get 3D datapoints in/out of various workflows. This improves interop
+between mesh-based workflows (e.g. the mesh warper) and model-/scene-based workflows (osim editor, mesh
+importer). Alongside those changes, the mesh warping workflow was improved with better UX and more data
+import/export options.
+
+0.5.6 also includes QoL changes that (e.g.) make `.osim`s load faster, tooltips less annoying, and filepaths
+easier to copy+paste.
+
+### General Changes
+
+- Added `Tools -> Import Points` to the `osim` editor workflow:
+
+  - Imports 3D datapoints defined in ground from a CSV file
+  - The datapoints will be imported into the `osim` model as OpenSim markers
+  - This feature is handy in conjunction with OSC's ability to re-express datapoints in frames (Right-click marker ->
+    `Sockets` -> `Connectee` -> `change` -> `Re-Express in chosen frame`)
+  - It's also handy in conjunction with calculating quantities (Right-click marker -> `Calculate` -> `Position`)
+
+- The `Import Stations from CSV` popup in the mesh importer is now more permissive in what it accepts:
+
+  - It is now able to import CSVs without a name column, or a header row.
+  - Instead of refusing to import all of the data when there's a validation issue, it will instead present
+    a user-facing that can be ignored (i.e. to import all rows that validated fine).
+
+- Fixed a bug where muscle points could not be selected via a 3D viewport if the user is rendering muscles
+  with tendons+fibers (#706)
+- Fixed mesh files being double-loaded by the rendering backend. This should generally improve osim loading times
+- Fixed an upstream bug in simbody's `vtp` parser (see simbody/simbody/#773). This should generally improve
+  osim loading times - if the osim contains `vtp` meshes.
+- In general, tooltips should now appear after a short delay, rather than immediately. This makes them
+  less annoying when rapidly hovering over right-click menus.
+- A couple of tooltips were removed from the mesh importer in cases where the tooltip was overlapping the
+  submenu that the user's mouse hover opened. This was because it was annoying to have a tooltip cover the submenu.
+- OSC now internally tries to only show users canonical-form filepaths. This means that more filepaths
+  displayed to user should match the format used by their OS (e.g. `C:\somedir\to\model.osim` on Windows,
+  `/home/user/dir/model.osim` on Linux), which makes those paths easier to copy+paste into other software
+  (e.g. Windows explorer).
+- Mousing over the connectee in the reassign sockets context menu now shows a tooltip that also lists the
+  component type.
+
+### Mesh Warper Changes
+
+**tl;dr**, the mesh warping workflow was improved such that it has better data interop with the mesh
+importer and model editor workflows. The UX was improved by adding more keybinds, visual feedback, and options.
+
 - The mesh warper UI now correctly recycles landmark names - even if they were previously generated
   and deleted
-- The mesh warper UI now has a toggleable (default: off, initially) `Navigator` panel that shows
+- The mesh warper UI now has a toggle-able (default: off, initially) `Landmark Navigator` panel that shows
   the names and statuses of all landmarks in the scene (#807)
 - Hovering over a landmark in the mesh warper UI now brightens the landmark slightly
-- Fixed a bug where user-defined muscle points could not be selected if the user was rendering muscles
-  in tendons+fibers mode (#706)
 - Landmarks in the mesh warper UI can now be renamed and repositioned via a right-click context menu (#807)
 - The mesh warper's CSV exporter for landmarks now includes a header row and name column (#807)
   - The previous functionality (just positions) is exposed as "Landmark Positions to CSV"
@@ -28,27 +75,12 @@ All notable changes to this project will be documented here. The format is based
   - It's assumed that CSV files with >= 4 columns have the name in the first column
   - If a non-participating landmark with the same name is already in the scene then it will overwrite it's location
   - The previous functionality (of handling CSV files with 3 columns) has not changed
-- The mesh warper UI now supports more keybindings, which are now also listed in the top menu bar
-- Non-participating landmarks can now be added to the source mesh in the mesh warper by Ctrl+Clicking on the mesh
-- The clear (non-participating) landmarks buttons in the mesh warper are now in an `Actions` menu
+- The mesh warper UI now supports more keybindings, which are now also listed next to the menu items contained within
+  the the top menu bar
+- Non-participating landmarks can now be added to the source mesh in the mesh warper by Ctrl+Clicking on the surface
+  of the mesh
+- The `clear landmarks`/`clear non-participating landmarks` buttons were moved from the toolbar to the `Actions` menu
 - The mesh warper landmark navigator panel now highlights which landmarks are hovered/selected
-- Tooltips now appear after a short delay, rather than immediately, making them less annoying for users that
-  know what they're doing
-- A couple of tooltips were removed from the mesh importer where the tooltip was overlapping the submenu
-  that the user's mouse hover opened
-- The software now internally tries to only use canonical-form filepaths, so that all filepaths displayed to
-  the user are in the same format as their OS (e.g. `C:\somedir\to\model.osim` on windows,
-  `/home/user/dir/model.osim` on Linux)
-- Fixed mesh files being double-loaded by the rendering backend, which should improve osim loading times
-- The "Import Stations from CSV" popup in the mesh importer is now able to import CSVs without a name column, or
-  a header row, and is generally more permissive in what it accepts. Instead of refusing to import data, it will
-  instead show a warning with appropriate parsing errors, which the user can ignore (to import everything that
-  passed the validation checks).
-- You can now import 3D datapoints as markers into an existing OpenSim model via the `Tools -> Import Points`
-  menu option
-- Mousing over the connectee in the reassign sockets context menu now shows a tooltip that also lists the
-  component type
-- Internal: the mesh importer was heavily refactored in readiness for a feature push
 
 
 ## [0.5.5] - 2023/11/21
