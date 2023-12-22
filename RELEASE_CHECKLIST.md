@@ -10,11 +10,12 @@ test suite isn't available that covers the changes).
 - [ ] Create an issue called something like `Release XX.xx.pp`
 - [ ] Copy this checklist into it
 - [ ] Bump OSC's version number in `CMakeLists.txt` (`project`)
-- [ ] Clean-build OSC on Linux with:
-  - `-DCMAKE_BUILD_TYPE=Debug` (incl. for Simbody+OpenSim)
-  - `CC=clang CXX=clang++ CCFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address` (incl. for Simbody+OpenSim)
-  - `-DOSC_FORCE_ASSERTS_ENABLED=ON`
-  - `-DOSC_FORCE_UNDEFINE_NDEBUG=ON`
+- [ ] Clean-build a debug version of OSC:
+```bash
+git clone --recurse-submodules https://github.com/ComputationalBiomechanicsLab/opensim-creator
+cd opensim-creator
+./scripts/build_linux_debugging.sh
+```
 - [ ] Ensure test suite passes with debug+ASAN build
 - [ ] Manually spot-check new changes with debug+ASAN build
 - [ ] Go through manual QA process (list below)
