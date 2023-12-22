@@ -91,6 +91,7 @@ using osc::CStringView;
 using osc::Cubemap;
 using osc::CubemapFace;
 using osc::CullMode;
+using osc::DefaultConstructOnCopy;
 using osc::DepthFunction;
 using osc::DepthStencilFormat;
 using osc::LogLevel;
@@ -4100,9 +4101,9 @@ namespace
     >
     void Encode(std::byte* p, T const& v)
     {
-        for (size_t i = 0; i < ComponentCount; ++i)
+        for (typename T::length_type i = 0; i < ComponentCount; ++i)
         {
-            Encode<T, EncodingFormat>(p + i*ComponentEncodedSize(EncodingFormat), v[i]);
+            Encode<typename T::value_type, EncodingFormat>(p + i*ComponentEncodedSize(EncodingFormat), v[i]);
         }
     }
 
@@ -4114,9 +4115,9 @@ namespace
     T Decode(std::byte const* p)
     {
         T rv{};
-        for (size_t i = 0; i < ComponentCount; ++i)
+        for (typename T::length_type i = 0; i < ComponentCount; ++i)
         {
-            rv[i] = Decode<EncodingFormat, T>(p + i*ComponentEncodedSize(EncodingFormat));
+            rv[i] = Decode<EncodingFormat, typename T::value_type>(p + i*ComponentEncodedSize(EncodingFormat));
         }
         return rv;
     }
@@ -4208,156 +4209,169 @@ namespace
         }
     }
 
-    /*
-
     // reperesents vertex data on the CPU
     class VertexBuffer final {
     public:
 
         // proxies access to a value in the vertex buffer's bytes
         //
-        // this is necessary because the vertex buffer can store a different
-        // number of dimensions, and a different format from, the caller at
-        // runtime (e.g. the caller might want T == Vec3 == 3*float for
-        // normals, but the vertex buffer may contain 2*uint_16 for them)
-        template<VecOrColor T>
+        // - necessary because the API-facing datatype might not match the runtime format
+        //   of the buffer (e.g. the buffer encodes floats as normalized 16-bit integers)
+        //
+        // - also because dimensionality may not match (e.g. the buffer stores 2-dimensional
+        //   values for what is otherwise a 3-dimensional attribute)
+        template<UserFacingVertexData T, bool IsConst>
         class AttributeValueProxy final {
         public:
-            using Byte = std::conditional_t<
-                std::is_const_v<T>,
-                std::byte,
-                std::byte const
-            >;
+            using Byte = std::conditional_t<IsConst, std::byte const, std::byte>;
 
-            ValueProxy(
+            AttributeValueProxy(
                 Byte* bufferData_,
-                size_t dimension_,
-                VertexAttributeFormat format_) :
+                MultiComponentEncoder<T> encoder_,
+                MultiComponentDecoder<T> decoder_) :
 
                 m_BufferData{bufferData_},
-                m_Dimension{dimension_},
-                m_Format{format_}
+                m_Encoder{encoder_},
+                m_Decoder{decoder_}
             {
             }
 
-            ValueProxy& operator=(T const& v) requires !std::is_const_v<T>
+            AttributeValueProxy& operator=(T const& v) requires !IsConst
             {
-                for (size_t i = 0; i < m_Dimension; ++i)
-                {
-                    EncodeAttributeValue(m_Ptr + (i*ComponentEncodedSize(m_Format)), m_Format,
-                        m_Ptr[i * ComponentEncodedSize(m_Format)] = v[i];
-                }
+                m_Encoder(m_BufferData, v);
             }
 
-            explicit operator std::remove_const_t<T> () const
+            operator T () const
             {
-                T rv{};
-                for (size_t i = 0; i < m_Dimension; ++i)
-                {
-                    rv[i] = m_Ptr[i];
-                }
-                return rv;
+                return m_Decoder(m_BufferData);
             }
         private:
             Byte* m_BufferData;
-            size_t m_Dimension;
-            VertexAttributeFormat m_Format;
+            MultiComponentEncoder<T> m_Encoder;
+            MultiComponentDecoder<T> m_Decoder;
         };
 
-        template<VecOrColor T>
+        // iterator for vertex buffer's contents (via proxies)
+        //
+        // - the vertex buffer is a contiguous range of bytes
+        //
+        // - proxies: the bytes aren't necessarily densely-packed `T`s:
+        //
+        //   - might contain `U`s and `V`s between each `T` (i.e. it's an interlaced buffer)
+        //   - the bytes may be encoded differently from `T` (e.g. float is encoded as normalized uint16_t)
+        //   - the number of elements in `T` may differ from the number of encoded elements (e.g. Vec3 --> Vec2)
+        template<UserFacingVertexData T, bool IsConst>
         class AttributeValueIterator final {
         public:
             using difference_type = ptrdiff_t;
-            using value_type = T;
-            using pointer = T*;
-            using const_pointer = T const*;
-            using reference = T const&;
-            using iterator_category = std::random_access_iterator;
+            using value_type = AttributeValueProxy<T, IsConst>;
+            using reference = value_type;
+            using iterator_category = std::bidirectional_iterator_tag;
 
-            using ElementType = std::conditional_t<
-                std::is_const_v<T>,
-                typename T::value_type const*,
-                typename T::value_type*
-            >;
+            using Byte = std::conditional_t<IsConst, std::byte const, std::byte>;
 
             AttributeValueIterator(
-                ElementType* ptrToFirstDimension_,
-                size_t dimension_,
-                size_t strideInDimensionUnits_) :
+                Byte* data_,
+                size_t stride_,
+                VertexAttributeFormat format_,
+                VertexAttributeComponentCount count_) :
 
-                m_PtrToFirstDimension{ptrToFirstDimension_},
-                m_Dimension{dimension_},
-                m_StrideInDimensionUnits{strideInDimensionUnits_}
+                m_Data{data_},
+                m_Stride{stride_},
+                m_Encoder{GetEncoder<T>(format_, count_)},
+                m_Decoder{GetDecoder<T>(format_, count_)}
             {
             }
 
-            // LegacyIterator
+            AttributeValueProxy<T, IsConst> operator*() const
+            {
+                return AttributeValueProxy<T, IsConst>{m_Data, m_Encoder, m_Decoder};
+            }
 
             AttributeValueIterator& operator++()
             {
-                m_PtrToFirstDimension += m_StrideInDimensionUnits;
+                m_Data += m_Stride;
                 return *this;
             }
 
-            value_type operator*() const
+            AttributeValueIterator operator++(int)
             {
-
+                auto tmp = *this;
+                ++(*this);
+                return tmp;
             }
 
+            AttributeValueIterator& operator--()
+            {
+                m_Data -= m_Stride;
+                return *this;
+            }
+
+            AttributeValueIterator operator--(int)
+            {
+                auto tmp = *this;
+                --(*this);
+                return tmp;
+            }
+
+            friend bool operator==(AttributeValueIterator const&, AttributeValueIterator const&) = default;
         private:
-            ElementType* m_PtrToFirstDimension;
-            size_t m_Dimension;
-            size_t m_StrideInDimensionUnits;
+            Byte* m_Data;
+            size_t m_Stride;
+            MultiComponentEncoder<T> m_Encoder;
+            MultiComponentDecoder<T> m_Decoder;
         };
 
-        size_t size() const
-        {
-            return m_NumVerts;
-        }
+        // range (C++20) for vertex buffer's contents
+        template<UserFacingVertexData T, bool IsConst>
+        class AttributeValueRange final {
+        public:
+            using Byte = std::conditional_t<IsConst, std::byte const, std::byte>;
 
-        [[nodiscard]] bool empty() const
-        {
-            return m_NumVerts <= 0;
-        }
+            AttributeValueRange(
+                std::span<Byte> data_,
+                size_t offset_,
+                size_t stride_,
+                VertexAttributeFormat format_,
+                VertexAttributeComponentCount componentCount_) :
 
-        void clear()
-        {
-            m_NumVerts = 0;
-            m_VertexDescriptor.clear();
-            m_Data.clear();
-        }
+                m_Data{data_},
+                m_Offset{offset_},
+                m_Stride{stride_},
+                m_Format{format_},
+                m_ComponentCount{componentCount_}
+            {
+            }
 
-        template<class T>
-        AttributeValueIterator<T> iter(VertexAttribute) const
-        {
-            return {};
-        }
+            AttributeValueIterator<T, IsConst> begin() const
+            {
+                return {m_Data.data() + m_Offset, m_Stride, m_Format, m_ComponentCount};
+            }
 
-        template<class T>
-        std::vector<T> extract(VertexAttribute) const
-        {
-            return {};  // todo
-        }
+            AttributeValueIterator<T, IsConst> end() const
+            {
+                return {m_Data.data() + m_Offset + m_Data.size(), m_Stride, m_Format, m_ComponentCount};
+            }
+        private:
+            std::span<Byte> m_Data;
+            size_t m_Offset;
+            size_t m_Stride;
+            VertexAttributeFormat m_Format;
+            VertexAttributeComponentCount m_ComponentCount;
+        };
 
-        template<class T>
-        void insert(VertexAttribute, std::span<T const> els)
-        {
-            // m_Vertices.assign(verts.begin(), verts.end());
-        }
     private:
         struct OpenGLData final {
             gl::TypedBufferHandle<GL_ARRAY_BUFFER> vbo;
             gl::VertexArray vao;
         };
 
-        size_t m_NumVerts;
+        size_t m_NumVerts = 0;
         std::vector<VertexAttributeDescriptor> m_VertexDescriptor;
         std::vector<std::byte> m_Data;
         bool m_DirtyOnCPU = true;
-
         DefaultConstructOnCopy<std::optional<MeshOpenGLData>> m_GPUBuffers;
     };
-    */
 }
 
 class osc::Mesh::Impl final {
