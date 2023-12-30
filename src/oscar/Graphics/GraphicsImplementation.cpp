@@ -28,10 +28,12 @@
 #include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
+#include <oscar/Graphics/Unorm8.hpp>
 #include <oscar/Graphics/VertexAttribute.hpp>
-#include <oscar/Graphics/VertexAttributeComponentCount.hpp>
 #include <oscar/Graphics/VertexAttributeDescriptor.hpp>
 #include <oscar/Graphics/VertexAttributeFormat.hpp>
+#include <oscar/Graphics/VertexAttributeFormatDetails.hpp>
+#include <oscar/Graphics/VertexFormat.hpp>
 
 // other includes...
 
@@ -59,6 +61,7 @@
 #include <oscar/Utils/ObjectRepresentation.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/StdVariantHelpers.hpp>
+#include <oscar/Utils/Typelist.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <ankerl/unordered_dense.h>
@@ -94,6 +97,7 @@ using osc::CullMode;
 using osc::DefaultConstructOnCopy;
 using osc::DepthFunction;
 using osc::DepthStencilFormat;
+using osc::GetDetails;
 using osc::LogLevel;
 using osc::Mat3;
 using osc::Mat4;
@@ -119,13 +123,16 @@ using osc::TextureFormat;
 using osc::TextureWrapMode;
 using osc::Transform;
 using osc::UID;
-using osc::VertexAttributeComponentCount;
+using osc::Unorm8;
 using osc::VertexAttributeDescriptor;
 using osc::VertexAttributeFormat;
+using osc::VertexAttributeFormatCPUType;
 using osc::Vec2;
 using osc::Vec2i;
 using osc::Vec3;
 using osc::Vec4;
+using osc::VertexAttribute;
+using osc::VertexFormat;
 
 // shader source
 namespace
@@ -4023,243 +4030,194 @@ namespace
         SameAs<T, Color> ||
         SameAs<T, Color32>;
 
-    // the number of bytes required to encode a single component in the given
-    // format
-    constexpr size_t ComponentEncodedSize(VertexAttributeFormat f)
-    {
-        static_assert(NumOptions<VertexAttributeFormat>() == 2);
-        switch (f)
-        {
-        case VertexAttributeFormat::UNorm8: return sizeof(uint8_t);
-        case VertexAttributeFormat::Float32: return sizeof(float);
-        default: return 1;
-        }
-    }
+    // types that are encode-/decode-able into a vertex buffer
+    template<class T>
+    concept VertexBufferComponent =
+        SameAs<T, float> ||
+        SameAs<T, Unorm8>;
 
     // low-level single-component Decode/Encode functions
-    template<VertexAttributeFormat EncodingFormat, class DecodedValue>
+    template<VertexBufferComponent EncodedValue, class DecodedValue>
     DecodedValue Decode(std::byte const*);
 
-    template<class DecodedValue, VertexAttributeFormat EncodingFormat>
+    template<class DecodedValue, VertexBufferComponent EncodedValue>
     void Encode(std::byte*, DecodedValue);
 
     template<>
-    float Decode<VertexAttributeFormat::Float32, float>(std::byte const* p)
+    float Decode<float, float>(std::byte const* p)
     {
-        return *reinterpret_cast<float const*>(p);
+        return *std::launder(reinterpret_cast<float const*>(p));
     }
 
     template<>
-    void Encode<float, VertexAttributeFormat::Float32>(std::byte* p, float v)
+    void Encode<float, float>(std::byte* p, float v)
     {
-        *reinterpret_cast<float*>(p) = v;
+        *std::launder(reinterpret_cast<float*>(p)) = v;
     }
 
     template<>
-    float Decode<VertexAttributeFormat::UNorm8, float>(std::byte const* p)
+    float Decode<Unorm8, float>(std::byte const* p)
     {
-        uint8_t const v = static_cast<uint8_t>(*p);
-        return static_cast<float>(v)/255.0f;
+        return Unorm8{*p}.normalized();
     }
 
     template<>
-    void Encode<float, VertexAttributeFormat::UNorm8>(std::byte* p, float v)
+    void Encode<float, Unorm8>(std::byte* p, float v)
     {
-        *p = static_cast<std::byte>(255.0f*v);
+        *p = Unorm8{v}.byte();
     }
 
     template<>
-    uint8_t Decode<VertexAttributeFormat::Float32, uint8_t>(std::byte const* p)
+    Unorm8 Decode<float, Unorm8>(std::byte const* p)
     {
-        float const v = *reinterpret_cast<float const*>(p);
-        return static_cast<uint8_t>(255.0f*v);
+        float const v = *std::launder(reinterpret_cast<float const*>(p));
+        return Unorm8{v};
     }
 
     template<>
-    void Encode<uint8_t, VertexAttributeFormat::Float32>(std::byte* p, uint8_t v)
+    void Encode<Unorm8, float>(std::byte* p, Unorm8 v)
     {
-        *reinterpret_cast<float*>(p) = static_cast<float>(v)/255.0f;
+        *std::launder(reinterpret_cast<float*>(p)) = v.normalized();
     }
 
     template<>
-    uint8_t Decode<VertexAttributeFormat::UNorm8, uint8_t>(std::byte const* p)
+    Unorm8 Decode<Unorm8, Unorm8>(std::byte const* p)
     {
-        return static_cast<uint8_t>(*p);
+        return Unorm8{*p};
     }
 
     template<>
-    void Encode<uint8_t, VertexAttributeFormat::UNorm8>(std::byte* p, uint8_t v)
+    void Encode<Unorm8, Unorm8>(std::byte* p, Unorm8 v)
     {
-        *p = static_cast<std::byte>(v);
+        *p = v.byte();
     }
 
     // mid-level multi-component Decode/Encode functions
-    template<
-        UserFacingVertexData T,
-        VertexAttributeFormat EncodingFormat,
-        size_t ComponentCount
-    >
+    template<UserFacingVertexData T, VertexAttributeFormat EncodingFormat>
     void Encode(std::byte* p, T const& v)
     {
-        for (typename T::length_type i = 0; i < ComponentCount; ++i)
+        constexpr auto details = GetDetails(EncodingFormat);
+
+        for (typename T::length_type i = 0; i < details.numComponents; ++i)
         {
-            Encode<typename T::value_type, EncodingFormat>(p + i*ComponentEncodedSize(EncodingFormat), v[i]);
+            Encode<typename T::value_type, EncodingFormat>(p + i*details.sizeOfComponent, v[i]);
         }
     }
 
-    template<
-        UserFacingVertexData T,
-        VertexAttributeFormat EncodingFormat,
-        size_t ComponentCount
-    >
+    template<VertexAttributeFormat EncodingFormat, UserFacingVertexData T>
     T Decode(std::byte const* p)
     {
+        constexpr auto details = GetDetails(EncodingFormat);
+
         T rv{};
-        for (typename T::length_type i = 0; i < ComponentCount; ++i)
+        for (typename T::length_type i = 0; i < details.numComponents; ++i)
         {
-            rv[i] = Decode<EncodingFormat, typename T::value_type>(p + i*ComponentEncodedSize(EncodingFormat));
+            rv[i] = Decode<EncodingFormat, typename T::value_type>(p + i*details.sizeOfComponent);
         }
         return rv;
     }
 
-    // aliases for higher-level iterators etc.
-
+    // high-level, compile-time multi-component Decode + Encode definition
     template<UserFacingVertexData T>
-    using MultiComponentEncoder = void(*)(std::byte*, T const&);
+    class MultiComponentEncoding final {
+    public:
+        explicit MultiComponentEncoding(VertexAttributeFormat f)
+        {
+            static_assert(NumOptions<VertexAttributeFormat>() == 4);
 
-    template<UserFacingVertexData T>
-    using MultiComponentDecoder = T(*)(std::byte const*);
-
-    // mid-/high-level runtime encoder lookup
-    //
-    // enables implementations to lookup the exact encoder used ahead of time
-    template<UserFacingVertexData T>
-    constexpr MultiComponentEncoder<T> GetEncoder(
-        VertexAttributeFormat format,
-        VertexAttributeComponentCount count)
-    {
-        static_assert(NumOptions<VertexAttributeFormat>() == 2);
-        static_assert(VertexAttributeComponentCount::min() == 1);
-        static_assert(VertexAttributeComponentCount::max() == 4);
-
-        switch (format) {
-        case VertexAttributeFormat::UNorm8:
-            switch (count.get()) {
-            case 1:
-                return Encode<T, VertexAttributeFormat::UNorm8, 1>;
-            case 2:
-                return Encode<T, VertexAttributeFormat::UNorm8, 2>;
-            case 3:
-                return Encode<T, VertexAttributeFormat::UNorm8, 3>;
+            using enum VertexAttributeFormat;
+            switch (f) {
+            case Float32x2:
+                m_Encoder = Encode<T, Float32x2>;
+                m_Decoder = Decode<Float32x2, T>;
+                break;
+            case Float32x3:
+                m_Encoder = Encode<T, Float32x3>;
+                m_Decoder = Decode<Float32x3, T>;
+                break;
             default:
-            case 4:
-                return Encode<T, VertexAttributeFormat::UNorm8, 4>;
-            }
-        default:
-        case VertexAttributeFormat::Float32:
-            switch (count.get()) {
-            case 1:
-                return Encode<T, VertexAttributeFormat::Float32, 1>;
-            case 2:
-                return Encode<T, VertexAttributeFormat::Float32, 2>;
-            case 3:
-                return Encode<T, VertexAttributeFormat::Float32, 3>;
-            default:
-            case 4:
-                return Encode<T, VertexAttributeFormat::Float32, 4>;
+            case Float32x4:
+                m_Encoder = Encode<T, Float32x4>;
+                m_Decoder = Decode<Float32x4, T>;
+                break;
+            case Unorm8x4:
+                m_Encoder = Encode<T, Unorm8x4>;
+                m_Decoder = Decode<Unorm8x4, T>;
+                break;
             }
         }
+
+        void encode(std::byte* b, T const& v) const
+        {
+            m_Encoder(b, v);
+        }
+
+        T decode(std::byte const* b) const
+        {
+            return m_Decoder(b);
+        }
+    private:
+        using Encoder = void(*)(std::byte*, T const&);
+        Encoder m_Encoder;
+
+        using Decoder = T(*)(std::byte const*);
+        Decoder m_Decoder;
+    };
+
+    // compile-time reencoding function
+    //
+    // decodes in-memory data in a source format, converts it to a desination format, and then
+    // writes it to the destination
+    template<VertexAttributeFormat SourceFormat, VertexAttributeFormat DestinationFormat>
+    void Reencode(std::span<std::byte const> src, std::span<std::byte> dest)
+    {
+        auto const decoded = Decode<SourceFormat, VertexAttributeFormatCPUType<SourceFormat>>(src);
+        auto const converted = VertexAttributeFormatCPUType<DestinationFormat>{decoded};
+        Encode<VertexAttributeFormatCPUType<DestinationFormat>, DestinationFormat>(dest, converted);
     }
 
-    template<UserFacingVertexData T>
-    constexpr MultiComponentDecoder<T> GetDecoder(
-        VertexAttributeFormat format,
-        VertexAttributeComponentCount count)
-    {
-        static_assert(NumOptions<VertexAttributeFormat>() == 2);
-        static_assert(VertexAttributeComponentCount::min() == 1);
-        static_assert(VertexAttributeComponentCount::max() == 4);
+    // type-erased (i.e. runtime) reencoder function
+    using ReencoderFunction = void(*)(std::span<std::byte const>, std::span<std::byte>);
 
-        switch (format) {
-        case VertexAttributeFormat::UNorm8:
-            switch (count.get()) {
-            case 1:
-                return Decode<T, VertexAttributeFormat::UNorm8, 1>;
-            case 2:
-                return Decode<T, VertexAttributeFormat::UNorm8, 2>;
-            case 3:
-                return Decode<T, VertexAttributeFormat::UNorm8, 3>;
-            default:
-            case 4:
-                return Decode<T, VertexAttributeFormat::UNorm8, 4>;
-            }
-        default:
-        case VertexAttributeFormat::Float32:
-            switch (count.get()) {
-            case 1:
-                return Decode<T, VertexAttributeFormat::Float32, 1>;
-            case 2:
-                return Decode<T, VertexAttributeFormat::Float32, 2>;
-            case 3:
-                return Decode<T, VertexAttributeFormat::Float32, 3>;
-            default:
-            case 4:
-                return Decode<T, VertexAttributeFormat::Float32, 4>;
-            }
-        }
+    // storage for a reencoder lut
+    using ReencoderLut = std::array<ReencoderFunction, NumOptions<VertexAttributeFormat>()*NumOptions<VertexAttributeFormat>()>;
+
+    constexpr ReencoderLut MakeReencoderLut()
+    {
+        return {};  // TODO: indexed by Src U Dest
     }
 
     // reperesents vertex data on the CPU
     class VertexBuffer final {
     public:
 
-        // proxies access to a value in the vertex buffer's bytes
-        //
-        // - necessary because the API-facing datatype might not match the runtime format
-        //   of the buffer (e.g. the buffer encodes floats as normalized 16-bit integers)
-        //
-        // - also because dimensionality may not match (e.g. the buffer stores 2-dimensional
-        //   values for what is otherwise a 3-dimensional attribute)
+        // proxies (via encoders/decoders) access to a value in the vertex buffer's bytes
         template<UserFacingVertexData T, bool IsConst>
         class AttributeValueProxy final {
         public:
             using Byte = std::conditional_t<IsConst, std::byte const, std::byte>;
 
-            AttributeValueProxy(
-                Byte* bufferData_,
-                MultiComponentEncoder<T> encoder_,
-                MultiComponentDecoder<T> decoder_) :
-
-                m_BufferData{bufferData_},
-                m_Encoder{encoder_},
-                m_Decoder{decoder_}
+            AttributeValueProxy(Byte* data_, MultiComponentEncoding<T> encoding_) :
+                m_Data{data_},
+                m_Encoding{encoding_}
             {
             }
 
             AttributeValueProxy& operator=(T const& v) requires !IsConst
             {
-                m_Encoder(m_BufferData, v);
+                m_Encoding.encode(m_Data, v);
             }
 
             operator T () const
             {
-                return m_Decoder(m_BufferData);
+                return m_Encoding.decode(m_Data);
             }
         private:
-            Byte* m_BufferData;
-            MultiComponentEncoder<T> m_Encoder;
-            MultiComponentDecoder<T> m_Decoder;
+            Byte* m_Data;
+            MultiComponentEncoding<T> m_Encoding;
         };
 
-        // iterator for vertex buffer's contents (via proxies)
-        //
-        // - the vertex buffer is a contiguous range of bytes
-        //
-        // - proxies: the bytes aren't necessarily densely-packed `T`s:
-        //
-        //   - might contain `U`s and `V`s between each `T` (i.e. it's an interlaced buffer)
-        //   - the bytes may be encoded differently from `T` (e.g. float is encoded as normalized uint16_t)
-        //   - the number of elements in `T` may differ from the number of encoded elements (e.g. Vec3 --> Vec2)
+        // iterator for vertex buffer's contents (via encoders/decoders)
         template<UserFacingVertexData T, bool IsConst>
         class AttributeValueIterator final {
         public:
@@ -4273,19 +4231,17 @@ namespace
             AttributeValueIterator(
                 Byte* data_,
                 size_t stride_,
-                VertexAttributeFormat format_,
-                VertexAttributeComponentCount count_) :
+                MultiComponentEncoding<T> encoding_) :
 
                 m_Data{data_},
                 m_Stride{stride_},
-                m_Encoder{GetEncoder<T>(format_, count_)},
-                m_Decoder{GetDecoder<T>(format_, count_)}
+                m_Encoding{encoding_}
             {
             }
 
             AttributeValueProxy<T, IsConst> operator*() const
             {
-                return AttributeValueProxy<T, IsConst>{m_Data, m_Encoder, m_Decoder};
+                return AttributeValueProxy<T, IsConst>{m_Data, m_Encoding};
             }
 
             AttributeValueIterator& operator++()
@@ -4318,8 +4274,7 @@ namespace
         private:
             Byte* m_Data;
             size_t m_Stride;
-            MultiComponentEncoder<T> m_Encoder;
-            MultiComponentDecoder<T> m_Decoder;
+            MultiComponentEncoding<T> m_Encoding;
         };
 
         // range (C++20) for vertex buffer's contents
@@ -4330,47 +4285,130 @@ namespace
 
             AttributeValueRange(
                 std::span<Byte> data_,
-                size_t offset_,
                 size_t stride_,
-                VertexAttributeFormat format_,
-                VertexAttributeComponentCount componentCount_) :
+                VertexAttributeFormat format_) :
 
                 m_Data{data_},
-                m_Offset{offset_},
                 m_Stride{stride_},
-                m_Format{format_},
-                m_ComponentCount{componentCount_}
+                m_Encoding{format_}
             {
             }
 
             AttributeValueIterator<T, IsConst> begin() const
             {
-                return {m_Data.data() + m_Offset, m_Stride, m_Format, m_ComponentCount};
+                return {m_Data.data(), m_Stride, m_Encoding};
             }
 
             AttributeValueIterator<T, IsConst> end() const
             {
-                return {m_Data.data() + m_Offset + m_Data.size(), m_Stride, m_Format, m_ComponentCount};
+                return {m_Data.data() + m_Data.size(), m_Stride, m_Encoding};
             }
         private:
             std::span<Byte> m_Data;
-            size_t m_Offset;
             size_t m_Stride;
-            VertexAttributeFormat m_Format;
-            VertexAttributeComponentCount m_ComponentCount;
+            MultiComponentEncoding<T> m_Encoding;
         };
 
+        // default ctor: make an empty buffer
+        VertexBuffer() = default;
+
+        // formatted ctor: make a buffer of the specified size+format
+        VertexBuffer(size_t numVerts, VertexFormat const& format) :
+            m_Data(numVerts * format.stride()),
+            m_VertexFormat{format}
+        {
+        }
+
+        size_t numVerts() const
+        {
+            return !m_VertexFormat.empty() ? (m_Data.size() / m_VertexFormat.stride()) : 0;
+        }
+
+        std::span<std::byte const> bytes() const
+        {
+            return m_Data;
+        }
+
+        template<UserFacingVertexData T>
+        std::vector<T> read(VertexAttribute attr) const
+        {
+            if (auto const layout = m_VertexFormat.attributeLayout(attr))
+            {
+                auto const range = AttributeValueRange<T, true>
+                {
+                    std::span{m_Data}.subspan(layout->offset()),
+                    m_VertexFormat.stride(),
+                    *layout
+                };
+                return std::vector<T>(range.begin(), range.end());
+            }
+            else
+            {
+                return {};
+            }
+        }
+
+        template<UserFacingVertexData T>
+        void write(VertexAttribute attr, std::span<T const> els)
+        {
+            if (attr != VertexAttribute::Position)
+            {
+                if (els.size() != numVerts())
+                {
+                    // non-`Position` attributes must be size-matched
+                    return;
+                }
+
+                if (!m_VertexFormat.contains(VertexAttribute::Position))
+                {
+                    // callers must've already assigned `Position` before this
+                    // function is able to assign additional attributes
+                    return;
+                }
+            }
+
+            if (!m_VertexFormat.contains(attr))
+            {
+                VertexFormat newFormat{m_VertexFormat};
+                newFormat.insert({attr, DefaultFormat(attr)});
+                setParams(els.size(), newFormat);
+            }
+            else if (els.size() != numVerts())
+            {
+                setParams(els.size(), m_VertexFormat);
+            }
+
+            // write els to vertex buffer
+            auto const layout = m_VertexFormat.attributeLayout(attr);
+            OSC_ASSERT(layout.has_value());
+
+            AttributeValueRange<T, false> range
+            {
+                std::span{m_Data}.subspan(layout->offset()),
+                m_VertexFormat.stride(),
+                *layout
+            };
+            std::copy(els.begin(), els.end(), range.begin(), range.end());
+        }
+
+        void setParams(size_t newNumVerts, VertexFormat const& newFormat)
+        {
+            if (newFormat != m_VertexFormat)
+            {
+                std::vector<std::byte> newBuf(newNumVerts * newFormat.stride());
+            }
+            else if (newNumVerts != numVerts())
+            {
+                // just resize
+            }
+            else
+            {
+                // no change in format or size, do nothing
+            }
+        }
     private:
-        struct OpenGLData final {
-            gl::TypedBufferHandle<GL_ARRAY_BUFFER> vbo;
-            gl::VertexArray vao;
-        };
-
-        size_t m_NumVerts = 0;
-        std::vector<VertexAttributeDescriptor> m_VertexDescriptor;
         std::vector<std::byte> m_Data;
-        bool m_DirtyOnCPU = true;
-        DefaultConstructOnCopy<std::optional<MeshOpenGLData>> m_GPUBuffers;
+        VertexFormat m_VertexFormat;
     };
 }
 
@@ -4637,12 +4675,13 @@ public:
         return 0;  // TODO
     }
 
-    std::vector<VertexAttributeDescriptor> getVertexAttributes() const
+    VertexFormat const& getVertexAttributes() const
     {
-        return {};  // TODO
+        static VertexFormat s_Todo;
+        return s_Todo;
     }
 
-    void setVertexBufferParams(size_t, std::span<VertexAttributeDescriptor const>)
+    void setVertexBufferParams(size_t, VertexFormat const&)
     {
         // TODO
     }
@@ -4828,7 +4867,6 @@ private:
 
         // activate relevant attributes based on buffer layout
         int64_t byteOffset = 0;
-
 
         {
             // mesh always has vertices
@@ -5100,14 +5138,14 @@ size_t osc::Mesh::getVertexAttributeCount() const
     return m_Impl->getVertexAttributeCount();
 }
 
-std::vector<VertexAttributeDescriptor> osc::Mesh::getVertexAttributes() const
+VertexFormat const& osc::Mesh::getVertexAttributes() const
 {
     return m_Impl->getVertexAttributes();
 }
 
-void osc::Mesh::setVertexBufferParams(size_t n, std::span<VertexAttributeDescriptor const> params)
+void osc::Mesh::setVertexBufferParams(size_t n, VertexFormat const& format)
 {
-    m_Impl.upd()->setVertexBufferParams(n, params);
+    m_Impl.upd()->setVertexBufferParams(n, format);
 }
 
 size_t osc::Mesh::getVertexBufferStride() const

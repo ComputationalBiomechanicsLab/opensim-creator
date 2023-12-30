@@ -2,9 +2,6 @@
 
 #include <oscar/Graphics/MeshIndicesView.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
-#include <oscar/Graphics/VertexAttribute.hpp>
-#include <oscar/Graphics/VertexAttributeDescriptor.hpp>
-#include <oscar/Graphics/VertexAttributeFormat.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Triangle.hpp>
@@ -28,6 +25,7 @@ namespace osc { struct AABB; }
 namespace osc { struct Color; }
 namespace osc { class SubMeshDescriptor; }
 namespace osc { struct Transform; }
+namespace osc { class VertexFormat; }
 
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
@@ -116,8 +114,8 @@ namespace osc
         // callers can (e.g.) upload all of their vertex data in one shot (rather than
         // calling each of the 'basic' methods above one-by-one, etc.)
         size_t getVertexAttributeCount() const;
-        std::vector<VertexAttributeDescriptor> getVertexAttributes() const;
-        void setVertexBufferParams(size_t n, std::span<VertexAttributeDescriptor const>);
+        VertexFormat const& getVertexAttributes() const;
+        void setVertexBufferParams(size_t n, VertexFormat const&);
         size_t getVertexBufferStride() const;
         void setVertexBufferData(std::span<uint8_t const>);
         template<ContiguousContainer Container>

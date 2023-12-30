@@ -302,8 +302,8 @@ TEST(Color, ToColorFromColor32ReturnsExpectedOutputs)
 {
     ASSERT_EQ(ToColor(Color32(0xff, 0x00, 0x00, 0xff)), Color(1.0f, 0.0f, 0.0f, 1.0f));
     ASSERT_EQ(ToColor(Color32(0x00, 0xff, 0x00, 0xff)), Color(0.0f, 1.0f, 0.0f, 1.0f));
-    ASSERT_EQ(ToColor(Color32(0x00, 0xff, 0xff, 0xff)), Color(0.0f, 0.0f, 1.0f, 1.0f));
-    ASSERT_EQ(ToColor(Color32(0x00, 0xff, 0xff, 0x00)), Color(0.0f, 0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(ToColor(Color32(0x00, 0x00, 0xff, 0xff)), Color(0.0f, 0.0f, 1.0f, 1.0f));
+    ASSERT_EQ(ToColor(Color32(0x00, 0xff, 0xff, 0x00)), Color(0.0f, 1.0f, 1.0f, 0.0f));
 }
 
 TEST(Color, CanGetBlackColor)

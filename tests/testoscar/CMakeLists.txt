@@ -25,6 +25,10 @@ add_executable(testoscar
     Graphics/TestTextureChannelFormat.cpp
     Graphics/TestTextureFormat.cpp
     Graphics/TestTexture2D.cpp
+    Graphics/TestUnorm8.cpp
+    Graphics/TestVertexAttribute.cpp
+    Graphics/TestVertexAttributeFormatDetails.cpp
+    Graphics/TestVertexFormat.cpp
 
     Maths/TestBVH.cpp
 
@@ -43,8 +47,10 @@ add_executable(testoscar
     Utils/TestCStringView.cpp
     Utils/TestFileChangePoller.cpp
     Utils/TestFilenameExtractor.cpp
+    Utils/TestNonTypelist.cpp
     Utils/TestStringHelpers.cpp
     Utils/TestStringName.cpp
+    Utils/TestTypelist.cpp
 
     Variant/TestVariant.cpp
     Variant/TestVariantType.cpp

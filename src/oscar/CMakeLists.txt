@@ -95,9 +95,13 @@ add_library(oscar STATIC
     Graphics/TextureGenerators.hpp
     Graphics/TextureWrapMode.hpp
     Graphics/Texture2D.hpp
+    Graphics/Unorm8.hpp
     Graphics/VertexAttribute.hpp
     Graphics/VertexAttributeDescriptor.hpp
     Graphics/VertexAttributeFormat.hpp
+    Graphics/VertexAttributeFormatDetails.hpp
+    Graphics/VertexFormat.cpp
+    Graphics/VertexFormat.hpp
 
     Maths/AABB.hpp
     Maths/BVH.hpp
@@ -262,6 +266,7 @@ add_library(oscar STATIC
     Utils/FilesystemHelpers.cpp
     Utils/FilesystemHelpers.hpp
     Utils/HashHelpers.hpp
+    Utils/NonTypelist.hpp
     Utils/ObjectRepresentation.hpp
     Utils/ParalellizationHelpers.hpp
     Utils/ParentPtr.hpp
@@ -280,6 +285,7 @@ add_library(oscar STATIC
     Utils/StdVariantHelpers.hpp
     Utils/SynchronizedValue.hpp
     Utils/SynchronizedValueGuard.hpp
+    Utils/Typelist.hpp
     Utils/UID.cpp
     Utils/UID.hpp
     Utils/UndoRedo.cpp
