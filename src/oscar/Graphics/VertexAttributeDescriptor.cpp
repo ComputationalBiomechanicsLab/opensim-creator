@@ -7,5 +7,5 @@
 
 size_t osc::VertexAttributeDescriptor::stride() const
 {
-	return detail::GetDetails(m_Format).stride();
+    return detail::GetDetails(m_Format).stride();
 }
