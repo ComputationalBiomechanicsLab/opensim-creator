@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/Graphics/Unorm8.hpp>
+#include <oscar/Graphics/Detail/Unorm8.hpp>
 #include <oscar/Graphics/VertexAttribute.hpp>
 #include <oscar/Graphics/VertexAttributeFormat.hpp>
 #include <oscar/Maths/Vec.hpp>
@@ -11,7 +11,7 @@
 
 #include <cstddef>
 
-namespace osc
+namespace osc::detail
 {
     struct VertexAttributeFormatDetails final {
         friend bool operator==(VertexAttributeFormatDetails const&, VertexAttributeFormatDetails const&) = default;
@@ -50,28 +50,28 @@ namespace osc
     }
 
     template<VertexAttributeFormat>
-    class VertexAttributeFormatCPU;
+    struct VertexAttributeFormatCPU;
 
     template<>
-    class VertexAttributeFormatCPU<VertexAttributeFormat::Float32x2> final {
+    struct VertexAttributeFormatCPU<VertexAttributeFormat::Float32x2> final {
         using type = Vec2;
     };
 
     template<>
-    class VertexAttributeFormatCPU<VertexAttributeFormat::Float32x3> final {
+    struct VertexAttributeFormatCPU<VertexAttributeFormat::Float32x3> final {
         using type = Vec3;
     };
 
     template<>
-    class VertexAttributeFormatCPU<VertexAttributeFormat::Float32x4> final {
+    struct VertexAttributeFormatCPU<VertexAttributeFormat::Float32x4> final {
         using type = Vec4;
     };
 
     template<>
-    class VertexAttributeFormatCPU<VertexAttributeFormat::Unorm8x4> final {
+    struct VertexAttributeFormatCPU<VertexAttributeFormat::Unorm8x4> final {
         using type = Vec<4, Unorm8>;
     };
 
     template<VertexAttributeFormat Format>
-    using VertexAttributeFormatCPUType = VertexAttributeFormatCPU<Format>;
+    using VertexAttributeFormatCPUType = VertexAttributeFormatCPU<Format>::type;
 }

@@ -1,7 +1,7 @@
 #include "VertexFormat.hpp"
 
+#include <oscar/Graphics/Detail/VertexAttributeFormatDetails.hpp>
 #include <oscar/Graphics/VertexAttributeDescriptor.hpp>
-#include <oscar/Graphics/VertexAttributeFormatDetails.hpp>
 
 #include <algorithm>
 #include <cstddef>

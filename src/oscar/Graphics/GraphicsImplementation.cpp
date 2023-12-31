@@ -1,5 +1,7 @@
 // these are the things that this file "implements"
 
+#include <oscar/Graphics/Detail/Unorm8.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeFormatDetails.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/CameraClearFlags.hpp>
 #include <oscar/Graphics/CameraProjection.hpp>
@@ -28,11 +30,9 @@
 #include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
-#include <oscar/Graphics/Unorm8.hpp>
 #include <oscar/Graphics/VertexAttribute.hpp>
 #include <oscar/Graphics/VertexAttributeDescriptor.hpp>
 #include <oscar/Graphics/VertexAttributeFormat.hpp>
-#include <oscar/Graphics/VertexAttributeFormatDetails.hpp>
 #include <oscar/Graphics/VertexFormat.hpp>
 
 // other includes...
@@ -58,10 +58,10 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/DefaultConstructOnCopy.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/NonTypelist.hpp>
 #include <oscar/Utils/ObjectRepresentation.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/StdVariantHelpers.hpp>
-#include <oscar/Utils/Typelist.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <ankerl/unordered_dense.h>
@@ -87,6 +87,10 @@
 #include <variant>
 #include <vector>
 
+using osc::detail::DefaultFormat;
+using osc::detail::GetDetails;
+using osc::detail::Unorm8;
+using osc::detail::VertexAttributeFormatCPUType;
 using osc::Color;
 using osc::Color32;
 using osc::ColorSpace;
@@ -97,7 +101,6 @@ using osc::CullMode;
 using osc::DefaultConstructOnCopy;
 using osc::DepthFunction;
 using osc::DepthStencilFormat;
-using osc::GetDetails;
 using osc::LogLevel;
 using osc::Mat3;
 using osc::Mat4;
@@ -105,6 +108,8 @@ using osc::Material;
 using osc::MaterialPropertyBlock;
 using osc::Mesh;
 using osc::MeshTopology;
+using osc::NonTypelist;
+using osc::NonTypelistSizeV;
 using osc::NumOptions;
 using osc::Overload;
 using osc::Quat;
@@ -123,10 +128,9 @@ using osc::TextureFormat;
 using osc::TextureWrapMode;
 using osc::Transform;
 using osc::UID;
-using osc::Unorm8;
 using osc::VertexAttributeDescriptor;
 using osc::VertexAttributeFormat;
-using osc::VertexAttributeFormatCPUType;
+using osc::Vec;
 using osc::Vec2;
 using osc::Vec2i;
 using osc::Vec3;
@@ -4027,6 +4031,7 @@ namespace
         SameAs<T, Vec2> ||
         SameAs<T, Vec3> ||
         SameAs<T, Vec4> ||
+        SameAs<T, Vec<4, Unorm8>> ||  // HACK: not really user-facing, but used internally
         SameAs<T, Color> ||
         SameAs<T, Color32>;
 
@@ -4094,25 +4099,27 @@ namespace
 
     // mid-level multi-component Decode/Encode functions
     template<UserFacingVertexData T, VertexAttributeFormat EncodingFormat>
-    void Encode(std::byte* p, T const& v)
+    void EncodeMany(std::byte* p, T const& v)
     {
+        using ComponentType = VertexAttributeFormatCPUType<EncodingFormat>::value_type;
         constexpr auto details = GetDetails(EncodingFormat);
 
         for (typename T::length_type i = 0; i < details.numComponents; ++i)
         {
-            Encode<typename T::value_type, EncodingFormat>(p + i*details.sizeOfComponent, v[i]);
+            Encode<typename T::value_type, ComponentType>(p + i*details.sizeOfComponent, v[i]);
         }
     }
 
     template<VertexAttributeFormat EncodingFormat, UserFacingVertexData T>
-    T Decode(std::byte const* p)
+    T DecodeMany(std::byte const* p)
     {
+        using ComponentType = VertexAttributeFormatCPUType<EncodingFormat>::value_type;
         constexpr auto details = GetDetails(EncodingFormat);
 
         T rv{};
         for (typename T::length_type i = 0; i < details.numComponents; ++i)
         {
-            rv[i] = Decode<EncodingFormat, typename T::value_type>(p + i*details.sizeOfComponent);
+            rv[i] = Decode<ComponentType, typename T::value_type>(p + i*details.sizeOfComponent);
         }
         return rv;
     }
@@ -4128,21 +4135,21 @@ namespace
             using enum VertexAttributeFormat;
             switch (f) {
             case Float32x2:
-                m_Encoder = Encode<T, Float32x2>;
-                m_Decoder = Decode<Float32x2, T>;
+                m_Encoder = EncodeMany<T, Float32x2>;
+                m_Decoder = DecodeMany<Float32x2, T>;
                 break;
             case Float32x3:
-                m_Encoder = Encode<T, Float32x3>;
-                m_Decoder = Decode<Float32x3, T>;
+                m_Encoder = EncodeMany<T, Float32x3>;
+                m_Decoder = DecodeMany<Float32x3, T>;
                 break;
             default:
             case Float32x4:
-                m_Encoder = Encode<T, Float32x4>;
-                m_Decoder = Decode<Float32x4, T>;
+                m_Encoder = EncodeMany<T, Float32x4>;
+                m_Decoder = DecodeMany<Float32x4, T>;
                 break;
             case Unorm8x4:
-                m_Encoder = Encode<T, Unorm8x4>;
-                m_Decoder = Decode<Unorm8x4, T>;
+                m_Encoder = EncodeMany<T, Unorm8x4>;
+                m_Decoder = DecodeMany<Unorm8x4, T>;
                 break;
             }
         }
@@ -4164,28 +4171,79 @@ namespace
         Decoder m_Decoder;
     };
 
-    // compile-time reencoding function
+    // a single compile-time reencoding function
     //
     // decodes in-memory data in a source format, converts it to a desination format, and then
-    // writes it to the destination
+    // writes it to the destination memory
     template<VertexAttributeFormat SourceFormat, VertexAttributeFormat DestinationFormat>
     void Reencode(std::span<std::byte const> src, std::span<std::byte> dest)
     {
-        auto const decoded = Decode<SourceFormat, VertexAttributeFormatCPUType<SourceFormat>>(src);
-        auto const converted = VertexAttributeFormatCPUType<DestinationFormat>{decoded};
-        Encode<VertexAttributeFormatCPUType<DestinationFormat>, DestinationFormat>(dest, converted);
+        auto const decoded = DecodeMany<SourceFormat, VertexAttributeFormatCPUType<SourceFormat>>(src.data());
+        VertexAttributeFormatCPUType<DestinationFormat> converted{};
+        for (int i = 0; i < std::min(decoded.length(), converted.length()); ++i)
+        {
+            converted[i] = typename VertexAttributeFormatCPUType<DestinationFormat>::value_type{decoded[i]};
+        }
+        EncodeMany<VertexAttributeFormatCPUType<DestinationFormat>, DestinationFormat>(dest.data(), converted);
     }
 
     // type-erased (i.e. runtime) reencoder function
     using ReencoderFunction = void(*)(std::span<std::byte const>, std::span<std::byte>);
 
-    // storage for a reencoder lut
-    using ReencoderLut = std::array<ReencoderFunction, NumOptions<VertexAttributeFormat>()*NumOptions<VertexAttributeFormat>()>;
+    // compile-time lookup table (LUT) for runtime reencoder functions
+    class ReencoderLut final {
+    public:
+        constexpr ReencoderLut()
+        {
+            using FormatList = NonTypelist<VertexAttributeFormat,
+                VertexAttributeFormat::Float32x2,
+                VertexAttributeFormat::Float32x3,
+                VertexAttributeFormat::Float32x4,
+                VertexAttributeFormat::Unorm8x4
+            >;
+            static_assert(NonTypelistSizeV<FormatList> == NumOptions<VertexAttributeFormat>());
+            WriteEntriesTopLevel(*this, FormatList{});
 
-    constexpr ReencoderLut MakeReencoderLut()
-    {
-        return {};  // TODO: indexed by Src U Dest
-    }
+            for (auto entry : m_Storage)
+            {
+                OSC_ASSERT_ALWAYS(entry != nullptr);
+            }
+        }
+
+        constexpr void assign(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat, ReencoderFunction f)
+        {
+            size_t index = static_cast<size_t>(sourceFormat)*NumOptions<VertexAttributeFormat>() + static_cast<size_t>(destinationFormat);
+            m_Storage.at(index) = f;
+        }
+
+        constexpr ReencoderFunction const& lookup(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat) const
+        {
+            size_t index = static_cast<size_t>(sourceFormat)*NumOptions<VertexAttributeFormat>() + static_cast<size_t>(destinationFormat);
+            return m_Storage.at(index);
+        }
+    private:
+        template<VertexAttributeFormat... Formats>
+        static constexpr void WriteEntriesTopLevel(ReencoderLut& lut, NonTypelist<VertexAttributeFormat, Formats...>)
+        {
+            (WriteEntries<Formats, Formats...>(lut), ...);
+        }
+
+        template<VertexAttributeFormat SourceFormat, VertexAttributeFormat... DestinationFormats>
+        static constexpr void WriteEntries(ReencoderLut& lut)
+        {
+            (WriteEntry<SourceFormat, DestinationFormats>(lut), ...);
+        }
+
+        template<VertexAttributeFormat SourceFormat, VertexAttributeFormat DestinationFormat>
+        static constexpr void WriteEntry(ReencoderLut& lut)
+        {
+            lut.assign(SourceFormat, DestinationFormat, Reencode<SourceFormat, DestinationFormat>);
+        }
+
+        std::array<ReencoderFunction, NumOptions<VertexAttributeFormat>()*NumOptions<VertexAttributeFormat>()> m_Storage{};
+    };
+
+    constexpr ReencoderLut c_ReencoderLUT;
 
     // reperesents vertex data on the CPU
     class VertexBuffer final {

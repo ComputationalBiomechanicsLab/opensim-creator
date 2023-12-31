@@ -5,6 +5,8 @@ add_executable(testoscar
     Formats/TestCSV.cpp
     Formats/TestDAE.cpp
 
+    Graphics/Detail/TestUnorm8.cpp
+    Graphics/Detail/TestVertexAttributeFormatDetails.cpp
     Graphics/TestAntiAliasingLevel.cpp
     Graphics/TestCamera.cpp
     Graphics/TestCameraProjection.cpp
@@ -25,9 +27,7 @@ add_executable(testoscar
     Graphics/TestTextureChannelFormat.cpp
     Graphics/TestTextureFormat.cpp
     Graphics/TestTexture2D.cpp
-    Graphics/TestUnorm8.cpp
     Graphics/TestVertexAttribute.cpp
-    Graphics/TestVertexAttributeFormatDetails.cpp
     Graphics/TestVertexFormat.cpp
 
     Maths/TestBVH.cpp

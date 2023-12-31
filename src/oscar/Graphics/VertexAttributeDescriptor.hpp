@@ -2,7 +2,6 @@
 
 #include <oscar/Graphics/VertexAttribute.hpp>
 #include <oscar/Graphics/VertexAttributeFormat.hpp>
-#include <oscar/Graphics/VertexAttributeFormatDetails.hpp>
 
 #include <cstddef>
 
@@ -23,7 +22,7 @@ namespace osc
 
         VertexAttribute attribute() const { return m_Attribute; }
         VertexAttributeFormat format() const { return m_Format; }
-        size_t stride() const { return GetDetails(m_Format).stride(); }
+        size_t stride() const;
 
     private:
         VertexAttribute m_Attribute;

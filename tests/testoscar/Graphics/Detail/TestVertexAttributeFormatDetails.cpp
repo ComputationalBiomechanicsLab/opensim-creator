@@ -1,4 +1,4 @@
-#include <oscar/Graphics/VertexAttributeFormatDetails.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeFormatDetails.hpp>
 
 #include <gtest/gtest.h>
 #include <oscar/Graphics/VertexAttributeFormat.hpp>
@@ -7,10 +7,10 @@
 #include <array>
 #include <tuple>
 
+using osc::detail::GetDetails;
+using osc::detail::VertexAttributeFormatDetails;
 using osc::NumOptions;
-using osc::GetDetails;
 using osc::VertexAttributeFormat;
-using osc::VertexAttributeFormatDetails;
 
 TEST(VertexAttributeFormatDetails, SizeOfReturnsExpectedResults)
 {

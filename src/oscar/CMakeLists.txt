@@ -38,6 +38,8 @@ add_library(oscar STATIC
     Formats/SVG.hpp
     Formats/SVG.cpp
 
+    Graphics/Detail/Unorm8.hpp
+    Graphics/Detail/VertexAttributeFormatDetails.hpp
     Graphics/AntiAliasingLevel.cpp
     Graphics/AntiAliasingLevel.hpp
     Graphics/BlitFlags.hpp
@@ -95,11 +97,10 @@ add_library(oscar STATIC
     Graphics/TextureGenerators.hpp
     Graphics/TextureWrapMode.hpp
     Graphics/Texture2D.hpp
-    Graphics/Unorm8.hpp
     Graphics/VertexAttribute.hpp
+    Graphics/VertexAttributeDescriptor.cpp
     Graphics/VertexAttributeDescriptor.hpp
     Graphics/VertexAttributeFormat.hpp
-    Graphics/VertexAttributeFormatDetails.hpp
     Graphics/VertexFormat.cpp
     Graphics/VertexFormat.hpp
 

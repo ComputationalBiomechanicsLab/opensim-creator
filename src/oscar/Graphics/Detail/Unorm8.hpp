@@ -4,13 +4,13 @@
 #include <cstdint>
 #include <compare>
 
-namespace osc
+namespace osc::detail
 {
     // CPU representation of an 8-bit unsigned integer that represents
     // a "normalized" (i.e. [0, 1]) floating-point value
     class Unorm8 final {
     public:
-        constexpr Unorm8() = default;
+        Unorm8() = default;
         explicit constexpr Unorm8(std::byte rawValue) : m_Value{static_cast<uint8_t>(rawValue)} {}
         explicit constexpr Unorm8(float normalizedValue) : m_Value{toNormalizedUint8(normalizedValue)} {}
 
@@ -30,6 +30,6 @@ namespace osc
             return static_cast<uint8_t>(saturated);
         }
 
-        uint8_t m_Value = 0;
+        uint8_t m_Value;
     };
 }

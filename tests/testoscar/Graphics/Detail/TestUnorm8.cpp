@@ -1,4 +1,4 @@
-#include <oscar/Graphics/Unorm8.hpp>
+#include <oscar/Graphics/Detail/Unorm8.hpp>
 
 #include <gtest/gtest.h>
 #include <oscar/Maths/Vec.hpp>
@@ -6,7 +6,7 @@
 
 #include <limits>
 
-using osc::Unorm8;
+using osc::detail::Unorm8;
 using osc::Vec;
 using osc::Vec3;
 
