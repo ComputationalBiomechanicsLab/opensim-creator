@@ -107,6 +107,11 @@ namespace osc
 
         friend bool operator==(VertexFormat const&, VertexFormat const&) = default;
 
+        void clear()
+        {
+            *this = VertexFormat{};
+        }
+
         [[nodiscard]] bool empty() const
         {
             return m_AttributeDescriptions.empty();

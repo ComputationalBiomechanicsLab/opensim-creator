@@ -4163,6 +4163,8 @@ namespace
         {
             return m_Decoder(b);
         }
+
+        friend bool operator==(MultiComponentEncoding const&, MultiComponentEncoding const&) = default;
     private:
         using Encoder = void(*)(std::byte*, T const&);
         Encoder m_Encoder;
@@ -4219,7 +4221,9 @@ namespace
         constexpr ReencoderFunction const& lookup(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat) const
         {
             size_t index = static_cast<size_t>(sourceFormat)*NumOptions<VertexAttributeFormat>() + static_cast<size_t>(destinationFormat);
-            return m_Storage.at(index);
+            ReencoderFunction const& rv = m_Storage.at(index);
+            OSC_ASSERT(rv != nullptr);
+            return rv;
         }
     private:
         template<VertexAttributeFormat... Formats>
@@ -4281,11 +4285,15 @@ namespace
     {
         size_t const srcStride = srcFormat.stride();
         size_t const destStride = destFormat.stride();
-        size_t const n = src.size() / srcStride;
+
+        if (srcStride == 0 || destStride == 0)
+        {
+            return;  // no reencoding necessary
+        }
 
         OSC_ASSERT(src.size() % srcStride == 0);
         OSC_ASSERT(dest.size() % destStride == 0);
-        OSC_ASSERT(n == dest.size() / destStride);
+        size_t const n = std::min(src.size() / srcStride, dest.size() / destStride);
 
         auto const reencoders = GetReencoders(srcFormat, destFormat);
         for (size_t i = 0; i < n; ++i)
@@ -4296,7 +4304,9 @@ namespace
             for (auto const& reencoder : reencoders)
             {
                 auto const srcAttrData = srcData.subspan(reencoder.sourceOffset, reencoder.sourceStride);
+                OSC_ASSERT(srcAttrData.size() == reencoder.sourceStride);
                 auto const destAttrData = destData.subspan(reencoder.destintionOffset, reencoder.destinationStride);
+                OSC_ASSERT(destAttrData.size() == reencoder.destinationStride);
                 reencoder.reencode(srcAttrData, destAttrData);
             }
         }
@@ -4321,6 +4331,7 @@ namespace
             AttributeValueProxy& operator=(T const& v) requires !IsConst
             {
                 m_Encoding.encode(m_Data, v);
+                return *this;
             }
 
             operator T () const
@@ -4385,6 +4396,13 @@ namespace
                 return tmp;
             }
 
+            AttributeValueIterator operator+(size_t n) const
+            {
+                auto copy = *this;
+                copy.m_Data += n*copy.m_Stride;
+                return copy;
+            }
+
             friend bool operator==(AttributeValueIterator const&, AttributeValueIterator const&) = default;
         private:
             Byte* m_Data;
@@ -4434,9 +4452,30 @@ namespace
         {
         }
 
+        void clear()
+        {
+            m_Data.clear();
+            m_VertexFormat.clear();
+        }
+
         size_t numVerts() const
         {
             return !m_VertexFormat.empty() ? (m_Data.size() / m_VertexFormat.stride()) : 0;
+        }
+
+        size_t numAttributes() const
+        {
+            return m_VertexFormat.numAttributes();
+        }
+
+        size_t stride() const
+        {
+            return m_VertexFormat.stride();
+        }
+
+        [[nodiscard]] bool hasVerts() const
+        {
+            return numVerts() > 0;
         }
 
         std::span<std::byte const> bytes() const
@@ -4449,23 +4488,70 @@ namespace
             return m_VertexFormat;
         }
 
+        bool hasAttribute(VertexAttribute attr) const
+        {
+            return m_VertexFormat.contains(attr);
+        }
+
         template<UserFacingVertexData T>
-        std::vector<T> read(VertexAttribute attr) const
+        auto iter(VertexAttribute attr) const
         {
             if (auto const layout = m_VertexFormat.attributeLayout(attr))
             {
-                auto const range = AttributeValueRange<T, true>
+                size_t const start = layout->offset();
+                size_t const end = layout->offset() + layout->stride();
+                size_t const count = m_Data.size() - (m_VertexFormat.stride() - end);
+                return AttributeValueRange<T, true>
                 {
-                    std::span{m_Data}.subspan(layout->offset()),
+                    std::span{m_Data}.subspan(start, count),
                     m_VertexFormat.stride(),
-                    *layout
+                    layout->format(),
                 };
-                return std::vector<T>(range.begin(), range.end());
             }
             else
             {
-                return {};
+                // return an empty iterator
+                return AttributeValueRange<T, true>
+                {
+                    std::span<std::byte const>{},
+                    1,
+                    VertexAttributeFormat::Float32x3,  // dummy
+                };
             }
+        }
+
+        template<UserFacingVertexData T>
+        auto iter(VertexAttribute attr)
+        {
+            if (auto const layout = m_VertexFormat.attributeLayout(attr))
+            {
+                size_t const start = layout->offset();
+                size_t const end = layout->offset() + layout->stride();
+                size_t const count = m_Data.size() - (m_VertexFormat.stride() - end);
+                return AttributeValueRange<T, false>
+                {
+                    std::span{m_Data}.subspan(start, count),
+                    m_VertexFormat.stride(),
+                    layout->format(),
+                };
+            }
+            else
+            {
+                // return an empty iterator
+                return AttributeValueRange<T, false>
+                {
+                    std::span<std::byte>{},
+                    1,
+                    VertexAttributeFormat::Float32x3,  // dummy
+                };
+            }
+        }
+
+        template<UserFacingVertexData T>
+        std::vector<T> read(VertexAttribute attr) const
+        {
+            auto range = iter<T>(attr);
+            return std::vector<T>(range.begin(), range.end());
         }
 
         template<UserFacingVertexData T>
@@ -4499,16 +4585,19 @@ namespace
             }
 
             // write els to vertex buffer
-            auto const layout = m_VertexFormat.attributeLayout(attr);
-            OSC_ASSERT(layout.has_value());
+            auto range = iter<T>(attr);
+            std::copy(els.begin(), els.end(), range.begin());
+        }
 
-            AttributeValueRange<T, false> range
+        template<class T>
+        void transformAttribute(VertexAttribute attr, std::function<void(T&)> const& f)
+        {
+            for (auto&& proxy : iter<T>(attr))
             {
-                std::span{m_Data}.subspan(layout->offset()),
-                m_VertexFormat.stride(),
-                *layout
-            };
-            std::copy(els.begin(), els.end(), range.begin(), range.end());
+                T v{proxy};
+                f(v);
+                proxy = v;
+            }
         }
 
         void setParams(size_t newNumVerts, VertexFormat const& newFormat)
@@ -4518,7 +4607,7 @@ namespace
                 std::vector<std::byte> newBuf(newNumVerts * newFormat.stride());
                 ReEncodeVertexBuffer(m_Data, m_VertexFormat, newBuf, newFormat);
                 m_Data = std::move(newBuf);
-                m_VertexFormat = std::move(m_VertexFormat);
+                m_VertexFormat = newFormat;
             }
             else if (newNumVerts != numVerts())
             {
@@ -4528,6 +4617,12 @@ namespace
             {
                 // no change in format or size, do nothing
             }
+        }
+
+        void setData(std::span<std::byte const> newData)
+        {
+            OSC_ASSERT(newData.size() % stride() == 0);
+            m_Data.assign(newData.begin(), newData.end());
         }
     private:
         std::vector<std::byte> m_Data;
@@ -4551,117 +4646,112 @@ public:
 
     size_t getNumVerts() const
     {
-        return m_Vertices.size();
+        return m_VertexBuffer.numVerts();
     }
 
     bool hasVerts() const
     {
-        return !m_Vertices.empty();
+        return m_VertexBuffer.hasVerts();
     }
 
     std::vector<Vec3> getVerts() const
     {
-        return m_Vertices;
+        return m_VertexBuffer.read<Vec3>(VertexAttribute::Position);
     }
 
     void setVerts(std::span<Vec3 const> verts)
     {
-        m_Vertices.assign(verts.begin(), verts.end());
-
+        m_VertexBuffer.write<Vec3>(VertexAttribute::Position, verts);
         recalculateBounds();
         m_Version->reset();
     }
 
     void transformVerts(std::function<void(Vec3&)> const& f)
     {
-        std::for_each(m_Vertices.begin(), m_Vertices.end(), f);
+        m_VertexBuffer.transformAttribute(VertexAttribute::Position, f);
         recalculateBounds();
         m_Version->reset();
     }
 
     void transformVerts(Transform const& t)
     {
-        for (Vec3& v : m_Vertices)
+        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Position, [&t](Vec3& v)
         {
             v = t * v;
-        }
+        });
     }
 
     void transformVerts(Mat4 const& m)
     {
-        for (Vec3& v : m_Vertices)
+        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Position, [&m](Vec3& v)
         {
             v = Vec3{m * Vec4{v, 1.0f}};
-        }
+        });
     }
 
     bool hasNormals() const
     {
-        return !m_Normals.empty();
+        return m_VertexBuffer.hasAttribute(VertexAttribute::Normal);
     }
 
     std::vector<Vec3> getNormals() const
     {
-        return m_Normals;
+        return m_VertexBuffer.read<Vec3>(VertexAttribute::Normal);
     }
 
     void setNormals(std::span<Vec3 const> normals)
     {
-        m_Normals.assign(normals.begin(), normals.end());
-
+        m_VertexBuffer.write<Vec3>(VertexAttribute::Normal, normals);
         m_Version->reset();
     }
 
     void transformNormals(std::function<void(Vec3&)> const& f)
     {
-        std::for_each(m_Normals.begin(), m_Normals.end(), f);
+        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Normal, f);
         m_Version->reset();
     }
 
     bool hasTexCoords() const
     {
-        return !m_TexCoords.empty();
+        return m_VertexBuffer.hasAttribute(VertexAttribute::TexCoord0);
     }
 
     std::vector<Vec2> getTexCoords() const
     {
-        return m_TexCoords;
+        return m_VertexBuffer.read<Vec2>(VertexAttribute::TexCoord0);
     }
 
     void setTexCoords(std::span<Vec2 const> coords)
     {
-        m_TexCoords.assign(coords.begin(), coords.end());
-
+        m_VertexBuffer.write<Vec2>(VertexAttribute::TexCoord0, coords);
         m_Version->reset();
     }
 
     void transformTexCoords(std::function<void(Vec2&)> const& f)
     {
-        std::for_each(m_TexCoords.begin(), m_TexCoords.end(), f);
+        m_VertexBuffer.transformAttribute(VertexAttribute::TexCoord0, f);
         m_Version->reset();
     }
 
     std::vector<Color> getColors() const
     {
-        return m_Colors;
+        return m_VertexBuffer.read<Color>(VertexAttribute::Color);
     }
 
     void setColors(std::span<Color const> colors)
     {
-        m_Colors.assign(colors.begin(), colors.end());
-
+        m_VertexBuffer.write<Color>(VertexAttribute::Color, colors);
         m_Version.reset();
     }
 
     std::vector<Vec4> getTangents() const
     {
-        return m_Tangents;
+        return m_VertexBuffer.read<Vec4>(VertexAttribute::Tangent);
     }
 
     void setTangents(std::span<Vec4 const> newTangents)
     {
-        m_Tangents.assign(newTangents.begin(), newTangents.end());
-
+        m_VertexBuffer.write<Vec4>(VertexAttribute::Tangent, newTangents);
         m_Version->reset();
     }
 
@@ -4728,9 +4818,10 @@ public:
 
     void forEachIndexedVert(std::function<void(Vec3)> const& f) const
     {
+        auto begin = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position).begin();
         for (auto idx : getIndices())
         {
-            f(m_Vertices.at(idx));
+            f(*(begin + idx));
         }
     }
 
@@ -4742,12 +4833,14 @@ public:
         }
         MeshIndicesView const indices = getIndices();
         size_t const steps = (indices.size() / 3) * 3;
+
+        auto begin = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position).begin();
         for (size_t i = 0; i < steps; i += 3)
         {
             f(Triangle{
-                m_Vertices.at(indices[i]),
-                m_Vertices.at(indices[i+1]),
-                m_Vertices.at(indices[i+2]),
+                *(begin + indices[i]),
+                *(begin + indices[i+1]),
+                *(begin + indices[i+2]),
             });
         }
     }
@@ -4761,11 +4854,7 @@ public:
     {
         m_Version->reset();
         m_Topology = MeshTopology::Triangles;
-        m_Vertices.clear();
-        m_Normals.clear();
-        m_TexCoords.clear();
-        m_Colors.clear();
-        m_Tangents.clear();
+        m_VertexBuffer.clear();
         m_IndicesAre32Bit = false;
         m_NumIndices = 0;
         m_IndicesData.clear();
@@ -4795,28 +4884,31 @@ public:
 
     size_t getVertexAttributeCount() const
     {
-        return 0;  // TODO
+        return m_VertexBuffer.numAttributes();
     }
 
     VertexFormat const& getVertexAttributes() const
     {
-        static VertexFormat s_Todo;
-        return s_Todo;
+        return m_VertexBuffer.format();
     }
 
-    void setVertexBufferParams(size_t, VertexFormat const&)
+    void setVertexBufferParams(size_t newNumVerts, VertexFormat const& newFormat)
     {
-        // TODO
+        m_VertexBuffer.setParams(newNumVerts, newFormat);
+        recalculateBounds();  // can maybe be skipped if position format is the same
+        m_Version->reset();
     }
 
     size_t getVertexBufferStride() const
     {
-        return 0;  // TODO
+        return m_VertexBuffer.stride();
     }
 
-    void setVertexBufferData(std::span<uint8_t const>)
+    void setVertexBufferData(std::span<uint8_t const> newData)
     {
-        // TODO
+        m_VertexBuffer.setData({reinterpret_cast<std::byte const*>(newData.data()), newData.size()});
+        recalculateBounds();
+        m_Version->reset();
     }
 
     // non-PIMPL methods
@@ -4868,20 +4960,34 @@ private:
         {
             m_AABB = {};
         }
-        else if (m_IndicesAre32Bit)
+
+        m_AABB.min =
         {
-            std::span<uint32_t const> const indices(&m_IndicesData.front().u32, m_NumIndices);
-            m_AABB = AABBFromIndexedVerts(m_Vertices, indices);
-        }
-        else
+            std::numeric_limits<float>::max(),
+            std::numeric_limits<float>::max(),
+            std::numeric_limits<float>::max(),
+        };
+
+        m_AABB.max =
         {
-            std::span<uint16_t const> const indices(&m_IndicesData.front().u16.a, m_NumIndices);
-            m_AABB = AABBFromIndexedVerts(m_Vertices, indices);
+            std::numeric_limits<float>::lowest(),
+            std::numeric_limits<float>::lowest(),
+            std::numeric_limits<float>::lowest(),
+        };
+
+        auto begin = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position).begin();
+        for (auto idx : getIndices())
+        {
+            Vec3 pos = *(begin + idx);
+            m_AABB.min = Min(m_AABB.min, pos);
+            m_AABB.max = Max(m_AABB.max, pos);
         }
     }
 
     void uploadToGPU()
     {
+        // TODO
+        /*
         bool const hasNormals = !m_Normals.empty();
         bool const hasTexCoords = !m_TexCoords.empty();
         bool const hasColors = !m_Colors.empty();
@@ -5059,16 +5165,13 @@ private:
         gl::BindVertexArray();  // VAO configuration complete
 
         buffers.dataVersion = *m_Version;
+        */
     }
 
     DefaultConstructOnCopy<UID> m_UID;
     DefaultConstructOnCopy<UID> m_Version;
     MeshTopology m_Topology = MeshTopology::Triangles;
-    std::vector<Vec3> m_Vertices;
-    std::vector<Vec3> m_Normals;
-    std::vector<Vec2> m_TexCoords;
-    std::vector<Vec4> m_Tangents;
-    std::vector<Color> m_Colors;
+    VertexBuffer m_VertexBuffer;
 
     bool m_IndicesAre32Bit = false;
     size_t m_NumIndices = 0;

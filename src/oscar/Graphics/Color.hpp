@@ -17,8 +17,9 @@ namespace osc
     struct Color final {
 
         using value_type = float;
+        using length_type = size_t;
 
-        static constexpr size_t length()
+        static constexpr length_type length()
         {
             return 4;
         }
@@ -140,13 +141,13 @@ namespace osc
         {
         }
 
-        constexpr float& operator[](ptrdiff_t i)
+        constexpr float& operator[](length_type i)
         {
             static_assert(sizeof(Color) == 4*sizeof(float));
             return (&r)[i];
         }
 
-        constexpr float const& operator[](ptrdiff_t i) const
+        constexpr float const& operator[](length_type i) const
         {
             static_assert(sizeof(Color) == 4*sizeof(float));
             return (&r)[i];
