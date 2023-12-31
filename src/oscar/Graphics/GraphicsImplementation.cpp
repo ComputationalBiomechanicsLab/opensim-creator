@@ -4245,6 +4245,63 @@ namespace
 
     constexpr ReencoderLut c_ReencoderLUT;
 
+    struct VertexBufferAttributeReencoder final {
+        ReencoderFunction reencode;
+        size_t sourceOffset;
+        size_t sourceStride;
+        size_t destintionOffset;
+        size_t destinationStride;
+    };
+
+    std::vector<VertexBufferAttributeReencoder> GetReencoders(VertexFormat const& srcFormat, VertexFormat const& destFormat)
+    {
+        std::vector<VertexBufferAttributeReencoder> rv;
+        rv.reserve(destFormat.numAttributes());  // guess
+        for (auto const destLayout : destFormat.attributeLayouts())
+        {
+            if (auto srcLayout = srcFormat.attributeLayout(destLayout.attribute()))
+            {
+                rv.push_back({
+                    c_ReencoderLUT.lookup(srcLayout->format(), destLayout.format()),
+                    srcLayout->offset(),
+                    srcLayout->stride(),
+                    destLayout.offset(),
+                    destLayout.stride(),
+                });
+            }
+        }
+        return rv;
+    }
+
+    void ReEncodeVertexBuffer(
+        std::span<std::byte const> src,
+        VertexFormat const& srcFormat,
+        std::span<std::byte> dest,
+        VertexFormat const& destFormat)
+    {
+        size_t const srcStride = srcFormat.stride();
+        size_t const destStride = destFormat.stride();
+        size_t const n = src.size() / srcStride;
+
+        OSC_ASSERT(src.size() % srcStride == 0);
+        OSC_ASSERT(dest.size() % destStride == 0);
+        OSC_ASSERT(n == dest.size() / destStride);
+
+        auto const reencoders = GetReencoders(srcFormat, destFormat);
+        for (size_t i = 0; i < n; ++i)
+        {
+            auto const srcData = src.subspan(n*srcStride, srcStride);
+            auto const destData = dest.subspan(n*destStride, destStride);
+
+            for (auto const& reencoder : reencoders)
+            {
+                auto const srcAttrData = srcData.subspan(reencoder.sourceOffset, reencoder.sourceStride);
+                auto const destAttrData = destData.subspan(reencoder.destintionOffset, reencoder.destinationStride);
+                reencoder.reencode(srcAttrData, destAttrData);
+            }
+        }
+    }
+
     // reperesents vertex data on the CPU
     class VertexBuffer final {
     public:
@@ -4387,6 +4444,11 @@ namespace
             return m_Data;
         }
 
+        VertexFormat const& format() const
+        {
+            return m_VertexFormat;
+        }
+
         template<UserFacingVertexData T>
         std::vector<T> read(VertexAttribute attr) const
         {
@@ -4454,16 +4516,13 @@ namespace
             if (newFormat != m_VertexFormat)
             {
                 std::vector<std::byte> newBuf(newNumVerts * newFormat.stride());
-                // TODO:
-                // collect reencoders + source-offset + destination-offset for each attribute
-                // for each stride of a vertex format:
-                //     compute source data span via source offset
-                //     compute destination data span via destination offset
-                //     pump these through the reencoder
+                ReEncodeVertexBuffer(m_Data, m_VertexFormat, newBuf, newFormat);
+                m_Data = std::move(newBuf);
+                m_VertexFormat = std::move(m_VertexFormat);
             }
             else if (newNumVerts != numVerts())
             {
-                // just resize
+                m_Data.resize(newNumVerts * m_VertexFormat.stride());
             }
             else
             {
