@@ -4454,6 +4454,12 @@ namespace
             if (newFormat != m_VertexFormat)
             {
                 std::vector<std::byte> newBuf(newNumVerts * newFormat.stride());
+                // TODO:
+                // collect reencoders + source-offset + destination-offset for each attribute
+                // for each stride of a vertex format:
+                //     compute source data span via source offset
+                //     compute destination data span via destination offset
+                //     pump these through the reencoder
             }
             else if (newNumVerts != numVerts())
             {
