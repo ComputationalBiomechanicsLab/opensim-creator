@@ -30,7 +30,7 @@ namespace osc::detail
         case VertexAttributeFormat::Float32x2: return {2, sizeof(float)};
         case VertexAttributeFormat::Float32x3: return {3, sizeof(float)};
         case VertexAttributeFormat::Float32x4: return {4, sizeof(float)};
-        case VertexAttributeFormat::Unorm8x4:  return {4, sizeof(char)};
+        case VertexAttributeFormat::Unorm8x4:  return {4, sizeof(Unorm8)};
         default:                               return {4, sizeof(float)};
         }
     }

@@ -4051,12 +4051,14 @@ namespace
     template<>
     float Decode<float, float>(std::byte const* p)
     {
+        OSC_ASSERT(reinterpret_cast<uintptr_t>(p) % sizeof(float) == 0);
         return *std::launder(reinterpret_cast<float const*>(p));
     }
 
     template<>
     void Encode<float, float>(std::byte* p, float v)
     {
+        OSC_ASSERT(reinterpret_cast<uintptr_t>(p) % sizeof(float) == 0);
         *std::launder(reinterpret_cast<float*>(p)) = v;
     }
 
@@ -4075,6 +4077,7 @@ namespace
     template<>
     Unorm8 Decode<float, Unorm8>(std::byte const* p)
     {
+        OSC_ASSERT(reinterpret_cast<uintptr_t>(p) % sizeof(float) == 0);
         float const v = *std::launder(reinterpret_cast<float const*>(p));
         return Unorm8{v};
     }
@@ -4082,6 +4085,7 @@ namespace
     template<>
     void Encode<Unorm8, float>(std::byte* p, Unorm8 v)
     {
+        OSC_ASSERT(reinterpret_cast<uintptr_t>(p) % sizeof(float) == 0);
         *std::launder(reinterpret_cast<float*>(p)) = v.normalized();
     }
 
@@ -4103,8 +4107,9 @@ namespace
     {
         using ComponentType = VertexAttributeFormatCPUType<EncodingFormat>::value_type;
         constexpr auto details = GetDetails(EncodingFormat);
+        constexpr auto n = std::min(T::length(), static_cast<T::length_type>(details.numComponents));
 
-        for (typename T::length_type i = 0; i < details.numComponents; ++i)
+        for (typename T::length_type i = 0; i < n; ++i)
         {
             Encode<typename T::value_type, ComponentType>(p + i*details.sizeOfComponent, v[i]);
         }
@@ -4115,9 +4120,10 @@ namespace
     {
         using ComponentType = VertexAttributeFormatCPUType<EncodingFormat>::value_type;
         constexpr auto details = GetDetails(EncodingFormat);
+        constexpr auto n = std::min(T::length(), static_cast<T::length_type>(details.numComponents));
 
         T rv{};
-        for (typename T::length_type i = 0; i < details.numComponents; ++i)
+        for (typename T::length_type i = 0; i < n; ++i)
         {
             rv[i] = Decode<ComponentType, typename T::value_type>(p + i*details.sizeOfComponent);
         }
@@ -4180,13 +4186,20 @@ namespace
     template<VertexAttributeFormat SourceFormat, VertexAttributeFormat DestinationFormat>
     void Reencode(std::span<std::byte const> src, std::span<std::byte> dest)
     {
-        auto const decoded = DecodeMany<SourceFormat, VertexAttributeFormatCPUType<SourceFormat>>(src.data());
-        VertexAttributeFormatCPUType<DestinationFormat> converted{};
-        for (int i = 0; i < std::min(decoded.length(), converted.length()); ++i)
+        using SourceCPUFormat = VertexAttributeFormatCPUType<SourceFormat>;
+        using DestCPUFormat = VertexAttributeFormatCPUType<DestinationFormat>;
+        constexpr auto n = std::min(SourceCPUFormat::length(), DestCPUFormat::length());
+
+        OSC_ASSERT_ALWAYS(src.size() >= GetDetails(SourceFormat).stride());
+        OSC_ASSERT_ALWAYS(dest.size() >= GetDetails(DestinationFormat).stride());
+
+        auto const decoded = DecodeMany<SourceFormat, SourceCPUFormat>(src.data());
+        DestCPUFormat converted{};
+        for (int i = 0; i < n; ++i)
         {
-            converted[i] = typename VertexAttributeFormatCPUType<DestinationFormat>::value_type{decoded[i]};
+            converted[i] = typename DestCPUFormat::value_type{decoded[i]};
         }
-        EncodeMany<VertexAttributeFormatCPUType<DestinationFormat>, DestinationFormat>(dest.data(), converted);
+        EncodeMany<DestCPUFormat, DestinationFormat>(dest.data(), converted);
     }
 
     // type-erased (i.e. runtime) reencoder function
@@ -4214,18 +4227,19 @@ namespace
 
         constexpr void assign(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat, ReencoderFunction f)
         {
-            size_t index = static_cast<size_t>(sourceFormat)*NumOptions<VertexAttributeFormat>() + static_cast<size_t>(destinationFormat);
-            m_Storage.at(index) = f;
+            m_Storage.at(indexOf(sourceFormat, destinationFormat)) = f;
         }
 
         constexpr ReencoderFunction const& lookup(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat) const
         {
-            size_t index = static_cast<size_t>(sourceFormat)*NumOptions<VertexAttributeFormat>() + static_cast<size_t>(destinationFormat);
-            ReencoderFunction const& rv = m_Storage.at(index);
-            OSC_ASSERT(rv != nullptr);
-            return rv;
+            return m_Storage.at(indexOf(sourceFormat, destinationFormat));
         }
     private:
+        constexpr size_t indexOf(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat) const
+        {
+            return static_cast<size_t>(sourceFormat)*NumOptions<VertexAttributeFormat>() + static_cast<size_t>(destinationFormat);
+        }
+
         template<VertexAttributeFormat... Formats>
         static constexpr void WriteEntriesTopLevel(ReencoderLut& lut, NonTypelist<VertexAttributeFormat, Formats...>)
         {
@@ -4261,9 +4275,10 @@ namespace
     {
         std::vector<VertexBufferAttributeReencoder> rv;
         rv.reserve(destFormat.numAttributes());  // guess
+
         for (auto const destLayout : destFormat.attributeLayouts())
         {
-            if (auto srcLayout = srcFormat.attributeLayout(destLayout.attribute()))
+            if (auto const srcLayout = srcFormat.attributeLayout(destLayout.attribute()))
             {
                 rv.push_back({
                     c_ReencoderLUT.lookup(srcLayout->format(), destLayout.format()),
@@ -4298,15 +4313,16 @@ namespace
         auto const reencoders = GetReencoders(srcFormat, destFormat);
         for (size_t i = 0; i < n; ++i)
         {
-            auto const srcData = src.subspan(n*srcStride, srcStride);
-            auto const destData = dest.subspan(n*destStride, destStride);
+            auto const srcData = src.subspan(i*srcStride);
+            auto const destData = dest.subspan(i*destStride);
 
             for (auto const& reencoder : reencoders)
             {
+                OSC_ASSERT(reencoder.sourceOffset + reencoder.sourceStride <= srcStride);
+                OSC_ASSERT(reencoder.destintionOffset + reencoder.destinationStride <= destStride);
+
                 auto const srcAttrData = srcData.subspan(reencoder.sourceOffset, reencoder.sourceStride);
-                OSC_ASSERT(srcAttrData.size() == reencoder.sourceStride);
                 auto const destAttrData = destData.subspan(reencoder.destintionOffset, reencoder.destinationStride);
-                OSC_ASSERT(destAttrData.size() == reencoder.destinationStride);
                 reencoder.reencode(srcAttrData, destAttrData);
             }
         }
@@ -4350,7 +4366,7 @@ namespace
             using difference_type = ptrdiff_t;
             using value_type = AttributeValueProxy<T, IsConst>;
             using reference = value_type;
-            using iterator_category = std::bidirectional_iterator_tag;
+            using iterator_category = std::random_access_iterator_tag;
 
             using Byte = std::conditional_t<IsConst, std::byte const, std::byte>;
 
@@ -4372,7 +4388,7 @@ namespace
 
             AttributeValueIterator& operator++()
             {
-                m_Data += m_Stride;
+                *this += 1;
                 return *this;
             }
 
@@ -4385,7 +4401,7 @@ namespace
 
             AttributeValueIterator& operator--()
             {
-                m_Data -= m_Stride;
+                *this -= 1;
                 return *this;
             }
 
@@ -4396,11 +4412,59 @@ namespace
                 return tmp;
             }
 
-            AttributeValueIterator operator+(size_t n) const
+            AttributeValueIterator& operator+=(difference_type i)
+            {
+                m_Data += i*m_Stride;
+                return *this;
+            }
+
+            AttributeValueIterator operator+(difference_type i) const
             {
                 auto copy = *this;
-                copy.m_Data += n*copy.m_Stride;
+                copy += i;
                 return copy;
+            }
+
+            AttributeValueIterator& operator-=(difference_type i)
+            {
+                m_Data -= i*m_Stride;
+            }
+
+            AttributeValueIterator operator-(difference_type i)
+            {
+                auto copy = *this;
+                copy -= i;
+                return copy;
+            }
+
+            difference_type operator-(AttributeValueIterator const& rhs) const
+            {
+                return (m_Data - rhs.m_Data) / m_Stride;
+            }
+
+            AttributeValueProxy<T, IsConst> operator[](difference_type n) const
+            {
+                return *(*this + n);
+            }
+
+            bool operator<(AttributeValueIterator const& rhs) const
+            {
+                return m_Data < rhs.m_Data;
+            }
+
+            bool operator>(AttributeValueIterator const& rhs) const
+            {
+                return m_Data > rhs.m_Data;
+            }
+
+            bool operator<=(AttributeValueIterator const& rhs) const
+            {
+                return m_Data <= rhs.m_Data;
+            }
+
+            bool operator>=(AttributeValueIterator const& rhs) const
+            {
+                return m_Data >= rhs.m_Data;
             }
 
             friend bool operator==(AttributeValueIterator const&, AttributeValueIterator const&) = default;
@@ -4415,6 +4479,9 @@ namespace
         class AttributeValueRange final {
         public:
             using Byte = std::conditional_t<IsConst, std::byte const, std::byte>;
+            using iterator = AttributeValueIterator<T, IsConst>;
+
+            AttributeValueRange() = default;
 
             AttributeValueRange(
                 std::span<Byte> data_,
@@ -4425,21 +4492,34 @@ namespace
                 m_Stride{stride_},
                 m_Encoding{format_}
             {
+                OSC_ASSERT(m_Data.size() % m_Stride == 0);
             }
 
-            AttributeValueIterator<T, IsConst> begin() const
+            iterator begin() const
             {
                 return {m_Data.data(), m_Stride, m_Encoding};
             }
 
-            AttributeValueIterator<T, IsConst> end() const
+            iterator end() const
             {
                 return {m_Data.data() + m_Data.size(), m_Stride, m_Encoding};
             }
+
+            iterator::value_type at(iterator::difference_type i) const
+            {
+                auto const beg = begin();
+                auto const en = end();
+                auto const n = std::distance(beg, en);
+                if (i >= n)
+                {
+                    throw std::out_of_range{"an attribute value was out-of-range: this is usually because of out-of-range mesh indices"};
+                }
+                return beg[i];
+            }
         private:
-            std::span<Byte> m_Data;
-            size_t m_Stride;
-            MultiComponentEncoding<T> m_Encoding;
+            std::span<Byte> m_Data{};
+            size_t m_Stride = 1;  // care: divide by zero in an iterator is UB
+            MultiComponentEncoding<T> m_Encoding{VertexAttributeFormat::Float32x3};  // dummy, for default ctor
         };
 
         // default ctor: make an empty buffer
@@ -4498,25 +4578,17 @@ namespace
         {
             if (auto const layout = m_VertexFormat.attributeLayout(attr))
             {
-                size_t const start = layout->offset();
-                size_t const end = layout->offset() + layout->stride();
-                size_t const count = m_Data.size() - (m_VertexFormat.stride() - end);
+                std::span<std::byte const> offsetSpan{m_Data.data() + layout->offset(), m_Data.size()};
                 return AttributeValueRange<T, true>
                 {
-                    std::span{m_Data}.subspan(start, count),
+                    offsetSpan,
                     m_VertexFormat.stride(),
                     layout->format(),
                 };
             }
             else
             {
-                // return an empty iterator
-                return AttributeValueRange<T, true>
-                {
-                    std::span<std::byte const>{},
-                    1,
-                    VertexAttributeFormat::Float32x3,  // dummy
-                };
+                return AttributeValueRange<T, true>{};
             }
         }
 
@@ -4525,25 +4597,17 @@ namespace
         {
             if (auto const layout = m_VertexFormat.attributeLayout(attr))
             {
-                size_t const start = layout->offset();
-                size_t const end = layout->offset() + layout->stride();
-                size_t const count = m_Data.size() - (m_VertexFormat.stride() - end);
+                std::span<std::byte> offsetSpan{m_Data.data() + layout->offset(), m_Data.size()};
                 return AttributeValueRange<T, false>
                 {
-                    std::span{m_Data}.subspan(start, count),
+                    offsetSpan,
                     m_VertexFormat.stride(),
                     layout->format(),
                 };
             }
             else
             {
-                // return an empty iterator
-                return AttributeValueRange<T, false>
-                {
-                    std::span<std::byte>{},
-                    1,
-                    VertexAttributeFormat::Float32x3,  // dummy
-                };
+                return AttributeValueRange<T, false>{};
             }
         }
 
@@ -4662,14 +4726,16 @@ public:
     void setVerts(std::span<Vec3 const> verts)
     {
         m_VertexBuffer.write<Vec3>(VertexAttribute::Position, verts);
-        recalculateBounds();
+
+        rangeCheckIndicesAndRecalculateBounds();
         m_Version->reset();
     }
 
     void transformVerts(std::function<void(Vec3&)> const& f)
     {
         m_VertexBuffer.transformAttribute(VertexAttribute::Position, f);
-        recalculateBounds();
+
+        rangeCheckIndicesAndRecalculateBounds();
         m_Version->reset();
     }
 
@@ -4679,6 +4745,9 @@ public:
         {
             v = t * v;
         });
+
+        rangeCheckIndicesAndRecalculateBounds();
+        m_Version->reset();
     }
 
     void transformVerts(Mat4 const& m)
@@ -4687,6 +4756,9 @@ public:
         {
             v = Vec3{m * Vec4{v, 1.0f}};
         });
+
+        rangeCheckIndicesAndRecalculateBounds();
+        m_Version->reset();
     }
 
     bool hasNormals() const
@@ -4702,12 +4774,14 @@ public:
     void setNormals(std::span<Vec3 const> normals)
     {
         m_VertexBuffer.write<Vec3>(VertexAttribute::Normal, normals);
+
         m_Version->reset();
     }
 
     void transformNormals(std::function<void(Vec3&)> const& f)
     {
         m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Normal, f);
+
         m_Version->reset();
     }
 
@@ -4724,12 +4798,14 @@ public:
     void setTexCoords(std::span<Vec2 const> coords)
     {
         m_VertexBuffer.write<Vec2>(VertexAttribute::TexCoord0, coords);
+
         m_Version->reset();
     }
 
     void transformTexCoords(std::function<void(Vec2&)> const& f)
     {
         m_VertexBuffer.transformAttribute(VertexAttribute::TexCoord0, f);
+
         m_Version->reset();
     }
 
@@ -4741,6 +4817,7 @@ public:
     void setColors(std::span<Color const> colors)
     {
         m_VertexBuffer.write<Color>(VertexAttribute::Color, colors);
+
         m_Version.reset();
     }
 
@@ -4752,6 +4829,7 @@ public:
     void setTangents(std::span<Vec4 const> newTangents)
     {
         m_VertexBuffer.write<Vec4>(VertexAttribute::Tangent, newTangents);
+
         m_Version->reset();
     }
 
@@ -4783,7 +4861,7 @@ public:
         m_IndicesData.resize((indices.size()+1)/2);
         std::copy(indices.begin(), indices.end(), &m_IndicesData.front().u16.a);
 
-        recalculateBounds();
+        rangeCheckIndicesAndRecalculateBounds();
         m_Version->reset();
     }
 
@@ -4812,16 +4890,16 @@ public:
             }
         }
 
-        recalculateBounds();
+        rangeCheckIndicesAndRecalculateBounds();
         m_Version->reset();
     }
 
     void forEachIndexedVert(std::function<void(Vec3)> const& f) const
     {
-        auto begin = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position).begin();
+        auto const positions = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position).begin();
         for (auto idx : getIndices())
         {
-            f(*(begin + idx));
+            f(positions[idx]);
         }
     }
 
@@ -4831,16 +4909,17 @@ public:
         {
             return;
         }
+
         MeshIndicesView const indices = getIndices();
         size_t const steps = (indices.size() / 3) * 3;
 
-        auto begin = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position).begin();
+        auto const positions = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position).begin();
         for (size_t i = 0; i < steps; i += 3)
         {
             f(Triangle{
-                *(begin + indices[i]),
-                *(begin + indices[i+1]),
-                *(begin + indices[i+2]),
+                positions[indices[i]],
+                positions[indices[i+1]],
+                positions[indices[i+2]],
             });
         }
     }
@@ -4895,7 +4974,8 @@ public:
     void setVertexBufferParams(size_t newNumVerts, VertexFormat const& newFormat)
     {
         m_VertexBuffer.setParams(newNumVerts, newFormat);
-        recalculateBounds();  // can maybe be skipped if position format is the same
+
+        rangeCheckIndicesAndRecalculateBounds();
         m_Version->reset();
     }
 
@@ -4907,7 +4987,8 @@ public:
     void setVertexBufferData(std::span<uint8_t const> newData)
     {
         m_VertexBuffer.setData({reinterpret_cast<std::byte const*>(newData.data()), newData.size()});
-        recalculateBounds();
+
+        rangeCheckIndicesAndRecalculateBounds();
         m_Version->reset();
     }
 
@@ -4952,10 +5033,8 @@ public:
 
 private:
 
-    void recalculateBounds()
+    void rangeCheckIndicesAndRecalculateBounds()
     {
-        OSC_PERF("mesh bounds computation");
-
         if (m_NumIndices == 0)
         {
             m_AABB = {};
@@ -4975,10 +5054,10 @@ private:
             std::numeric_limits<float>::lowest(),
         };
 
-        auto begin = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position).begin();
+        auto range = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
         for (auto idx : getIndices())
         {
-            Vec3 pos = *(begin + idx);
+            Vec3 pos = range.at(idx);  // and bounds-check, while we're in the area
             m_AABB.min = Min(m_AABB.min, pos);
             m_AABB.max = Max(m_AABB.max, pos);
         }

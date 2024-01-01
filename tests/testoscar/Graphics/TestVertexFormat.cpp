@@ -116,6 +116,19 @@ TEST(VertexFormat, ThrowsIfProvidedAttributesOutOfOrder)
     ASSERT_ANY_THROW({ VertexFormat{lst}; });
 }
 
+TEST(VertexFormat, ClearMakesFormatEquivalentToEmptyFormat)
+{
+    VertexFormat f = {
+        {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
+        {VertexAttribute::Normal,    VertexAttributeFormat::Float32x3},
+    };
+
+    f.clear();
+
+    ASSERT_TRUE(f.empty());
+    ASSERT_EQ(f, VertexFormat{});
+}
+
 TEST(VertexFormat, StrideReturnsZeroOnDefaultConstruction)
 {
     ASSERT_EQ(VertexFormat{}.stride(), 0);

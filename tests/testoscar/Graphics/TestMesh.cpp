@@ -282,9 +282,11 @@ TEST(Mesh, ExpandingVertsCausesTangentsToExpandAlsoAsZeroedTangents)
     Mesh m;
     m.setVerts(GenerateVertices(6));
     m.setTangents(GenerateTangents(6));
-    m.setVerts(GenerateVertices(12));
+    m.setVerts(GenerateVertices(12));  // resized
 
-    ASSERT_EQ(m.getTangents(), ResizedVectorCopy(tangents, 12, Vec4{}));
+    auto const expected = ResizedVectorCopy(tangents, 12, Vec4{});
+    auto const got = m.getTangents();
+    ASSERT_EQ(got, expected);
 }
 
 TEST(Mesh, TransformVertsMakesGetCallReturnVerts)
