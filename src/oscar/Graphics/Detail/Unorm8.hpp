@@ -21,13 +21,13 @@ namespace osc::detail
 
         std::byte byte() const { return static_cast<std::byte>(m_Value); }
         uint8_t raw() const { return m_Value; }
-        float normalized() const { return static_cast<float>(m_Value)/255.0f; };
+        float normalized() const { return (1.0f/255.0f) * static_cast<float>(m_Value); };
     private:
         static constexpr uint8_t toNormalizedUint8(float v)
         {
             // care: NaN should return 0.0f
             float const saturated = v > 0.0f ? (v < 1.0f ? v : 1.0f) : 0.0f;
-            return static_cast<uint8_t>(saturated);
+            return static_cast<uint8_t>(255.0f * saturated);
         }
 
         uint8_t m_Value;

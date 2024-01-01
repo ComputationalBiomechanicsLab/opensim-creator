@@ -322,3 +322,42 @@ TEST(VertexFormat, InsertOverwritesExistingAttributesFormatIfAlreadyInFormat)
 
     ASSERT_EQ(f, expected);
 }
+
+TEST(VertexFormat, EraseWithNonPresentVertexAttributeDoesNothing)
+{
+    VertexFormat const before =
+    {
+        {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
+        {VertexAttribute::Tangent, VertexAttributeFormat::Unorm8x4},
+    };
+    VertexFormat after = before;
+    after.erase(VertexAttribute::Color);
+
+    ASSERT_EQ(after, before);
+}
+
+TEST(VertexFormat, EraseErasesExistentAttribute)
+{
+    VertexFormat f =
+    {
+        {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
+        {VertexAttribute::Tangent, VertexAttributeFormat::Unorm8x4},
+    };
+    f.erase(VertexAttribute::Tangent);
+    VertexFormat const expected =
+    {
+        {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
+    };
+    ASSERT_EQ(f, expected);
+}
+
+TEST(VertexFormat, ErasePositionWipesAllAttributes)
+{
+    VertexFormat f =
+    {
+        {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
+        {VertexAttribute::Tangent, VertexAttributeFormat::Unorm8x4},
+    };
+    f.erase(VertexAttribute::Position);
+    ASSERT_EQ(f, VertexFormat{});
+}

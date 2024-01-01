@@ -40,3 +40,8 @@ TEST(Unorm8, CanCreateUsualVec3FromVec3OfUNorms)
     Vec3 const expected{Unorm8{0.1f}.normalized(), Unorm8{0.2f}.normalized(), Unorm8{0.3f}.normalized()};
     ASSERT_EQ(converted, expected);
 }
+
+TEST(Unorm8, ConvertsAsExpected)
+{
+    ASSERT_EQ(Unorm8{0.5f}, Unorm8{static_cast<std::byte>(127)});
+}

@@ -162,6 +162,7 @@ namespace osc
         }
 
         void insert(VertexAttributeDescriptor const&);
+        void erase(VertexAttribute);
     private:
         std::vector<VertexAttributeDescriptor> m_AttributeDescriptions;
     };

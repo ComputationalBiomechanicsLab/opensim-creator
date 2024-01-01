@@ -58,3 +58,15 @@ void osc::VertexFormat::insert(VertexAttributeDescriptor const& desc)
         m_AttributeDescriptions.insert(it, desc);
     }
 }
+
+void osc::VertexFormat::erase(VertexAttribute attr)
+{
+    if (attr == VertexAttribute::Position)
+    {
+        // clearing Position clears the position (primary) data and all other attributes
+        clear();
+        return;
+    }
+
+    std::erase_if(m_AttributeDescriptions, [attr](auto const& desc) { return desc.attribute() == attr; });
+}

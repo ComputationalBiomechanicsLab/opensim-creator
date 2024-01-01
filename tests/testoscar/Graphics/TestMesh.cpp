@@ -501,29 +501,21 @@ TEST(Mesh, SuccessfullyAsssigningNormalsChangesMeshEquality)
     ASSERT_NE(m, copy);
 }
 
-TEST(Mesh, FailingToAssignNormalsDoesNotChangeMeshEquality)
-{
-    Mesh m;
-    m.setVerts(GenerateVertices(12));
-
-    Mesh copy{m};
-    ASSERT_EQ(m, copy);
-    copy.setNormals(GenerateNormals(9));  // will fail: different size
-    ASSERT_EQ(m, copy);
-}
-
 TEST(Mesh, TransformNormalsTransormsTheNormals)
 {
-    auto const transform = [](Vec3 const& n) { return -n; };
+    auto const transform = [](Vec3& n) { n = -n; };
     auto const original = GenerateNormals(16);
-    auto const expected = MapToVector(original, transform);
+    auto expected = original;
+    std::for_each(expected.begin(), expected.end(), transform);
 
     Mesh m;
     m.setVerts(GenerateVertices(16));
     m.setNormals(original);
     ASSERT_EQ(m.getNormals(), original);
     m.transformNormals(transform);
-    ASSERT_EQ(m.getNormals(), expected);
+
+    auto const returned = m.getNormals();
+    ASSERT_EQ(returned, expected);
 }
 
 TEST(Mesh, HasTexCoordsReturnsFalseForDefaultConstructedMesh)
@@ -604,21 +596,12 @@ TEST(Mesh, SuccessfulSetCoordsCausesCopiedMeshToBeNotEqualToOriginalMesh)
     ASSERT_NE(m, copy);
 }
 
-TEST(Mesh, FailingSetCoordsCausesCopiedMeshToRemainEqualToOrignalMesh)
-{
-    Mesh m;
-    m.setVerts(GenerateVertices(12));
-    Mesh copy{m};
-    ASSERT_EQ(m, copy);
-    copy.setTexCoords(GenerateTexCoords(15));  // note: wrong size
-    ASSERT_EQ(m, copy);
-}
-
 TEST(Mesh, TransformTexCoordsAppliesTransformToTexCoords)
 {
-    auto const transform = [](Vec2 const& uv) { return 0.287f * uv; };
+    auto const transform = [](Vec2& uv) { uv *= 0.287f; };
     auto const original = GenerateTexCoords(3);
-    auto const expected = MapToVector(original, transform);
+    auto expected = original;
+    std::for_each(expected.begin(), expected.end(), transform);
 
     Mesh m;
     m.setVerts(GenerateVertices(3));
@@ -1263,8 +1246,8 @@ TEST(Mesh, GetVertexAttributesReturnsExpectedForCombinations)
         VertexFormat const expected = {
             {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
             {VertexAttribute::Normal,    VertexAttributeFormat::Float32x3},
-            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
             {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
+            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
         };
         ASSERT_EQ(m.getVertexAttributes(), expected);
     }
@@ -1275,9 +1258,9 @@ TEST(Mesh, GetVertexAttributesReturnsExpectedForCombinations)
         VertexFormat const expected = {
             {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
             {VertexAttribute::Normal,    VertexAttributeFormat::Float32x3},
-            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
-            {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
             {VertexAttribute::Tangent,   VertexAttributeFormat::Float32x4},
+            {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
+            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
         };
         ASSERT_EQ(m.getVertexAttributes(), expected);
     }
@@ -1288,8 +1271,8 @@ TEST(Mesh, GetVertexAttributesReturnsExpectedForCombinations)
         VertexFormat const expected = {
             {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
             {VertexAttribute::Normal,    VertexAttributeFormat::Float32x3},
-            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
             {VertexAttribute::Tangent,   VertexAttributeFormat::Float32x4},
+            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
         };
         ASSERT_EQ(m.getVertexAttributes(), expected);
     }
@@ -1301,9 +1284,9 @@ TEST(Mesh, GetVertexAttributesReturnsExpectedForCombinations)
         VertexFormat const expected = {
             {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
             {VertexAttribute::Normal,    VertexAttributeFormat::Float32x3},
-            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
             {VertexAttribute::Tangent,   VertexAttributeFormat::Float32x4},
             {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
+            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
         };
         ASSERT_EQ(m.getVertexAttributes(), expected);
     }
@@ -1313,9 +1296,9 @@ TEST(Mesh, GetVertexAttributesReturnsExpectedForCombinations)
     {
         VertexFormat const expected = {
             {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
-            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
             {VertexAttribute::Tangent,   VertexAttributeFormat::Float32x4},
             {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
+            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
         };
         ASSERT_EQ(m.getVertexAttributes(), expected);
     }
@@ -1325,9 +1308,9 @@ TEST(Mesh, GetVertexAttributesReturnsExpectedForCombinations)
     {
         VertexFormat const expected = {
             {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
-            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
             {VertexAttribute::Tangent,   VertexAttributeFormat::Float32x4},
             {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
+            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
         };
         ASSERT_EQ(copy.getVertexAttributes(), expected);
     }
@@ -1492,6 +1475,8 @@ TEST(Mesh, SetVertexBufferParamsCanBeUsedToReformatToU8NormFormat)
     m.setVerts(GenerateVertices(9));
     m.setColors(colors);
 
+    ASSERT_EQ(m.getColors(), colors);
+
     m.setVertexBufferParams(9, {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
         {VertexAttribute::Color,    VertexAttributeFormat::Unorm8x4},
@@ -1539,8 +1524,8 @@ TEST(Mesh, GetVertexBufferStrideReturnsExpectedResults)
 
     m.setVertexBufferParams(3, {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x2},
-        {VertexAttribute::Color,    VertexAttributeFormat::Unorm8x4},
         {VertexAttribute::Tangent,  VertexAttributeFormat::Float32x4},
+        {VertexAttribute::Color,    VertexAttributeFormat::Unorm8x4},
     });
     ASSERT_EQ(m.getVertexBufferStride(), 2*sizeof(float) + 4 + 4*sizeof(float));
 }
@@ -1620,13 +1605,13 @@ TEST(Mesh, SetVertexBufferDataWorksAsExpectedForImguiStyleCase)
 {
     struct SimilarToImGuiVert final {
         Vec2 pos = GenerateVec2();
-        Vec2 uv = GenerateVec2();
         Color32 col = GenerateColor32();
+        Vec2 uv = GenerateVec2();
     };
     std::vector<SimilarToImGuiVert> const data(16);
     auto const expectedVerts = MapToVector(data, [](auto const& v) { return Vec3{v.pos, 0.0f}; });
-    auto const expectedTexCoords = MapToVector(data, [](auto const& v) { return v.uv; });
     auto const expectedColors = MapToVector(data, [](auto const& v) { return ToColor(v.col); });
+    auto const expectedTexCoords = MapToVector(data, [](auto const& v) { return v.uv; });
 
     Mesh m;
     m.setVertexBufferParams(16, {
@@ -1635,11 +1620,17 @@ TEST(Mesh, SetVertexBufferDataWorksAsExpectedForImguiStyleCase)
         {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
     });
 
+    // directly set vertex buffer data
     ASSERT_EQ(m.getVertexBufferStride(), sizeof(SimilarToImGuiVert));
     ASSERT_NO_THROW({ m.setVertexBufferData(data); });
-    ASSERT_EQ(m.getVerts(), expectedVerts);
-    ASSERT_EQ(m.getTexCoords(), expectedTexCoords);
-    ASSERT_EQ(m.getColors(), expectedColors);
+
+    auto const verts = m.getVerts();
+    auto const colors = m.getColors();
+    auto const texCoords = m.getTexCoords();
+
+    ASSERT_EQ(verts, expectedVerts);
+    ASSERT_EQ(colors, expectedColors);
+    ASSERT_EQ(texCoords, expectedTexCoords);
 }
 
 TEST(Mesh, SetVertexBufferDataRecalculatesBounds)

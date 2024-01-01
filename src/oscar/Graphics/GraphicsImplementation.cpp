@@ -4621,6 +4621,15 @@ namespace
         template<UserFacingVertexData T>
         void write(VertexAttribute attr, std::span<T const> els)
         {
+            // edge-case: size == 0 should be treated as "wipe it"
+            if (els.size() == 0 && m_VertexFormat.contains(attr))
+            {
+                VertexFormat newFormat{m_VertexFormat};
+                newFormat.erase(attr);
+                setParams(numVerts(), newFormat);
+                return;
+            }
+
             if (attr != VertexAttribute::Position)
             {
                 if (els.size() != numVerts())
@@ -4639,12 +4648,14 @@ namespace
 
             if (!m_VertexFormat.contains(attr))
             {
+                // reformat
                 VertexFormat newFormat{m_VertexFormat};
                 newFormat.insert({attr, DefaultFormat(attr)});
                 setParams(els.size(), newFormat);
             }
             else if (els.size() != numVerts())
             {
+                // resize
                 setParams(els.size(), m_VertexFormat);
             }
 
@@ -4685,7 +4696,7 @@ namespace
 
         void setData(std::span<std::byte const> newData)
         {
-            OSC_ASSERT(newData.size() % stride() == 0);
+            OSC_ASSERT(newData.size() == m_Data.size() && "provided data size does not match the size of the vertex buffer");
             m_Data.assign(newData.begin(), newData.end());
         }
     private:
@@ -5038,6 +5049,7 @@ private:
         if (m_NumIndices == 0)
         {
             m_AABB = {};
+            return;
         }
 
         m_AABB.min =
