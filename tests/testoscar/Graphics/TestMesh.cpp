@@ -269,10 +269,12 @@ TEST(Mesh, ShrinkingVertsCausesTangentsToShrinkAlso)
 
     Mesh m;
     m.setVerts(GenerateVertices(6));
-    m.setTangents(GenerateTangents(6));
+    m.setTangents(tangents);
     m.setVerts(GenerateVertices(3));
 
-    ASSERT_EQ(m.getTangents(), ResizedVectorCopy(tangents, 3));
+    auto const expected = ResizedVectorCopy(tangents, 3);
+    auto const got = m.getTangents();
+    ASSERT_EQ(got, expected);
 }
 
 TEST(Mesh, ExpandingVertsCausesTangentsToExpandAlsoAsZeroedTangents)
@@ -281,7 +283,7 @@ TEST(Mesh, ExpandingVertsCausesTangentsToExpandAlsoAsZeroedTangents)
 
     Mesh m;
     m.setVerts(GenerateVertices(6));
-    m.setTangents(GenerateTangents(6));
+    m.setTangents(tangents);
     m.setVerts(GenerateVertices(12));  // resized
 
     auto const expected = ResizedVectorCopy(tangents, 12, Vec4{});
