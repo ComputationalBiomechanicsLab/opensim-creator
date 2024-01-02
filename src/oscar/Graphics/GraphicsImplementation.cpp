@@ -42,10 +42,10 @@
 
 #include <oscar/Bindings/Gl.hpp>
 #include <oscar/Bindings/SDL2Helpers.hpp>
+#include <oscar/Graphics/Detail/ShaderLocations.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/Color32.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/ShaderLocations.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Mat3.hpp>

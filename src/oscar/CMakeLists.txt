@@ -38,6 +38,7 @@ add_library(oscar STATIC
     Formats/SVG.hpp
     Formats/SVG.cpp
 
+    Graphics/Detail/ShaderLocations.hpp
     Graphics/Detail/Unorm8.hpp
     Graphics/Detail/VertexAttributeFormatHelpers.hpp
     Graphics/Detail/VertexAttributeFormatList.hpp
@@ -92,7 +93,6 @@ add_library(oscar STATIC
     Graphics/Shader.hpp
     Graphics/ShaderCache.cpp
     Graphics/ShaderCache.hpp
-    Graphics/ShaderLocations.hpp
     Graphics/ShaderPropertyType.hpp
     Graphics/SubMeshDescriptor.hpp
     Graphics/TextureChannelFormat.hpp
