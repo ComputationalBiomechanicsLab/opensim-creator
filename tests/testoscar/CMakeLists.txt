@@ -17,6 +17,7 @@ add_executable(testoscar
     Graphics/TestGraphicsHelpers.cpp
     Graphics/TestSubMeshDescriptor.cpp
     Graphics/TestMesh.cpp
+    Graphics/TestMeshUpdateFlags.cpp
     Graphics/TestRenderer.cpp
     Graphics/TestRenderTarget.cpp
     Graphics/TestRenderTargetColorAttachment.cpp

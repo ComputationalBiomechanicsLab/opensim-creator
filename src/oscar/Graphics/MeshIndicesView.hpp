@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/Concepts.hpp>
 
 #include <cstdint>
 #include <cstddef>
@@ -74,13 +75,6 @@ namespace osc
         {
         }
 
-        MeshIndicesView(std::span<uint16_t const> span) :
-            m_Ptr{span.data()},
-            m_Size{span.size()},
-            m_IsU32{false}
-        {
-        }
-
         MeshIndicesView(uint32_t const* ptr, size_t size) :
             m_Ptr{ptr},
             m_Size{size},
@@ -88,10 +82,12 @@ namespace osc
         {
         }
 
-        MeshIndicesView(std::span<uint32_t const> span) :
-            m_Ptr{span.data()},
-            m_Size{span.size()},
-            m_IsU32{true}
+        template<ContiguousContainer Container>
+        MeshIndicesView(Container const& c)
+            requires
+                SameAs<typename Container::value_type, uint16_t> ||
+                SameAs<typename Container::value_type, uint32_t>
+            : MeshIndicesView{c.data(), c.size()}
         {
         }
 

@@ -31,6 +31,7 @@
 
 #include <imgui.h>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <unordered_map>
@@ -41,13 +42,13 @@ using osc::Camera;
 using osc::CameraClearFlags;
 using osc::Color;
 using osc::ColorSpace;
-using osc::ConvertDrawDataFromSRGBToLinear;
 using osc::CullMode;
 using osc::CStringView;
 using osc::Mat4;
 using osc::Material;
 using osc::Mesh;
 using osc::MeshTopology;
+using osc::MeshUpdateFlags;
 using osc::Rect;
 using osc::RenderTexture;
 using osc::Shader;
@@ -132,6 +133,50 @@ namespace
         rv.setFilterMode(TextureFilterMode::Linear);
 
         return rv;
+    }
+
+    // create a lookup table that maps sRGB color bytes to linear-space color bytes
+    std::array<uint8_t, 256> CreateSRGBToLinearLUT()
+    {
+        std::array<uint8_t, 256> rv{};
+        for (size_t i = 0; i < 256; ++i)
+        {
+            auto const ldrColor = static_cast<uint8_t>(i);
+            float const hdrColor = osc::ToFloatingPointColorChannel(ldrColor);
+            float const linearHdrColor = osc::ToLinear(hdrColor);
+            uint8_t const linearLdrColor = osc::ToClamped8BitColorChannel(linearHdrColor);
+            rv[i] = linearLdrColor;
+        }
+        return rv;
+    }
+
+    std::array<uint8_t, 256> const& GetSRGBToLinearLUT()
+    {
+        static std::array<uint8_t, 256> const s_LUT = CreateSRGBToLinearLUT();
+        return s_LUT;
+    }
+
+    void ConvertDrawDataFromSRGBToLinear(ImDrawList& dl)
+    {
+        std::array<uint8_t, 256> const& lut = GetSRGBToLinearLUT();
+
+        for (ImDrawVert& v : dl.VtxBuffer)
+        {
+            auto const rSRGB = static_cast<uint8_t>((v.col >> IM_COL32_R_SHIFT) & 0xFF);
+            auto const gSRGB = static_cast<uint8_t>((v.col >> IM_COL32_G_SHIFT) & 0xFF);
+            auto const bSRGB = static_cast<uint8_t>((v.col >> IM_COL32_B_SHIFT) & 0xFF);
+            auto const aSRGB = static_cast<uint8_t>((v.col >> IM_COL32_A_SHIFT) & 0xFF);
+
+            uint8_t const rLinear = lut[rSRGB];
+            uint8_t const gLinear = lut[gSRGB];
+            uint8_t const bLinear = lut[bSRGB];
+
+            v.col =
+                static_cast<ImU32>(rLinear) << IM_COL32_R_SHIFT |
+                static_cast<ImU32>(gLinear) << IM_COL32_G_SHIFT |
+                static_cast<ImU32>(bLinear) << IM_COL32_B_SHIFT |
+                static_cast<ImU32>(aSRGB) << IM_COL32_A_SHIFT;
+        }
     }
 
     struct OscarImguiBackendData final {
@@ -265,17 +310,36 @@ namespace
     void RenderDrawList(
         OscarImguiBackendData& bd,
         ImDrawData const& drawData,
-        ImDrawList const& drawList)
+        ImDrawList& drawList)
     {
+        // HACK: convert all ImGui-provided colors from sRGB to linear
+        //
+        // this is necessary because the ImGui OpenGL backend's shaders
+        // assume all color vertices and colors from textures are in
+        // sRGB, but OSC can provide ImGui with linear OR sRGB textures
+        // because OSC assumes the OpenGL backend is using automatic
+        // color conversion support (in ImGui, it isn't)
+        //
+        // so what we do here is linearize all colors from ImGui and
+        // always provide textures in the OSC style. The shaders in ImGui
+        // then write linear color values to the screen, but because we
+        // are *also* enabling GL_FRAMEBUFFER_SRGB, the OpenGL backend
+        // will correctly convert those linear colors to sRGB if necessary
+        // automatically
+        //
+        // (this shitshow is because ImGui's OpenGL backend behaves differently
+        //  from OSCs - ultimately, we need an ImGui_ImplOSC backend)
+        ConvertDrawDataFromSRGBToLinear(drawList);
+
         Mesh& mesh = bd.mesh;
-        VertexFormat const format = {
+        mesh.clear();
+        mesh.setVertexBufferParams(drawList.VtxBuffer.Size, {
             {VertexAttribute::Position,  VertexAttributeFormat::Float32x2},
             {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
             {VertexAttribute::Color,     VertexAttributeFormat::Unorm8x4},
-        };
-        mesh.setVertexBufferParams(drawList.VtxBuffer.Size, format);
+        });
         mesh.setVertexBufferData(std::span<ImDrawVert>{drawList.VtxBuffer.Data, static_cast<size_t>(drawList.VtxBuffer.Size)});
-        mesh.setIndices(drawList.IdxBuffer);
+        mesh.setIndices({drawList.IdxBuffer.Data, static_cast<size_t>(drawList.IdxBuffer.size())}, MeshUpdateFlags::DontRecalculateBounds | MeshUpdateFlags::DontValidateIndices);
 
         // iterate through command buffer
         for (int i = 0; i < drawList.CmdBuffer.Size; ++i)
@@ -336,25 +400,6 @@ void ImGui_ImplOscarGfx_RenderDrawData(ImDrawData* drawData)
 {
     OscarImguiBackendData* bd = GetBackendData();
     OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error");
-
-    // HACK: convert all ImGui-provided colors from sRGB to linear
-    //
-    // this is necessary because the ImGui OpenGL backend's shaders
-    // assume all color vertices and colors from textures are in
-    // sRGB, but OSC can provide ImGui with linear OR sRGB textures
-    // because OSC assumes the OpenGL backend is using automatic
-    // color conversion support (in ImGui, it isn't)
-    //
-    // so what we do here is linearize all colors from ImGui and
-    // always provide textures in the OSC style. The shaders in ImGui
-    // then write linear color values to the screen, but because we
-    // are *also* enabling GL_FRAMEBUFFER_SRGB, the OpenGL backend
-    // will correctly convert those linear colors to sRGB if necessary
-    // automatically
-    //
-    // (this shitshow is because ImGui's OpenGL backend behaves differently
-    //  from OSCs - ultimately, we need an ImGui_ImplOSC backend)
-    ConvertDrawDataFromSRGBToLinear(*drawData);  // TODO: do this as part of encoding into `osc::Mesh`
 
     SetupCameraViewMatrix(*drawData, bd->camera);
     for (int n = 0; n < drawData->CmdListsCount; ++n)

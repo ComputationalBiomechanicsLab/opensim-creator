@@ -4051,14 +4051,12 @@ namespace
     template<>
     float Decode<float, float>(std::byte const* p)
     {
-        OSC_ASSERT(reinterpret_cast<uintptr_t>(p) % sizeof(float) == 0);
         return *std::launder(reinterpret_cast<float const*>(p));
     }
 
     template<>
     void Encode<float, float>(std::byte* p, float v)
     {
-        OSC_ASSERT(reinterpret_cast<uintptr_t>(p) % sizeof(float) == 0);
         *std::launder(reinterpret_cast<float*>(p)) = v;
     }
 
@@ -4077,7 +4075,6 @@ namespace
     template<>
     Unorm8 Decode<float, Unorm8>(std::byte const* p)
     {
-        OSC_ASSERT(reinterpret_cast<uintptr_t>(p) % sizeof(float) == 0);
         float const v = *std::launder(reinterpret_cast<float const*>(p));
         return Unorm8{v};
     }
@@ -4085,7 +4082,6 @@ namespace
     template<>
     void Encode<Unorm8, float>(std::byte* p, Unorm8 v)
     {
-        OSC_ASSERT(reinterpret_cast<uintptr_t>(p) % sizeof(float) == 0);
         *std::launder(reinterpret_cast<float*>(p)) = v.normalized();
     }
 
@@ -4189,9 +4185,6 @@ namespace
         using SourceCPUFormat = VertexAttributeFormatCPUType<SourceFormat>;
         using DestCPUFormat = VertexAttributeFormatCPUType<DestinationFormat>;
         constexpr auto n = std::min(SourceCPUFormat::length(), DestCPUFormat::length());
-
-        OSC_ASSERT_ALWAYS(src.size() >= GetDetails(SourceFormat).stride());
-        OSC_ASSERT_ALWAYS(dest.size() >= GetDetails(DestinationFormat).stride());
 
         auto const decoded = DecodeMany<SourceFormat, SourceCPUFormat>(src.data());
         DestCPUFormat converted{};
@@ -4305,9 +4298,9 @@ namespace
         {
             return;  // no reencoding necessary
         }
-
         OSC_ASSERT(src.size() % srcStride == 0);
         OSC_ASSERT(dest.size() % destStride == 0);
+
         size_t const n = std::min(src.size() / srcStride, dest.size() / destStride);
 
         auto const reencoders = GetReencoders(srcFormat, destFormat);
@@ -4318,9 +4311,6 @@ namespace
 
             for (auto const& reencoder : reencoders)
             {
-                OSC_ASSERT(reencoder.sourceOffset + reencoder.sourceStride <= srcStride);
-                OSC_ASSERT(reencoder.destintionOffset + reencoder.destinationStride <= destStride);
-
                 auto const srcAttrData = srcData.subspan(reencoder.sourceOffset, reencoder.sourceStride);
                 auto const destAttrData = destData.subspan(reencoder.destintionOffset, reencoder.destinationStride);
                 reencoder.reencode(srcAttrData, destAttrData);
@@ -4492,7 +4482,7 @@ namespace
                 m_Stride{stride_},
                 m_Encoding{format_}
             {
-                OSC_ASSERT(m_Data.size() % m_Stride == 0);
+
             }
 
             iterator begin() const
@@ -4679,8 +4669,15 @@ namespace
 
         void setParams(size_t newNumVerts, VertexFormat const& newFormat)
         {
+            if (m_Data.empty())
+            {
+                // zero-initialize the buffer in the "new" format
+                m_Data.resize(newNumVerts * newFormat.stride());
+                m_VertexFormat = newFormat;
+            }
             if (newFormat != m_VertexFormat)
             {
+                // initialize a new buffer and re-encode the old one in the new format
                 std::vector<std::byte> newBuf(newNumVerts * newFormat.stride());
                 ReEncodeVertexBuffer(m_Data, m_VertexFormat, newBuf, newFormat);
                 m_Data = std::move(newBuf);
@@ -4688,6 +4685,7 @@ namespace
             }
             else if (newNumVerts != numVerts())
             {
+                // resize (zero-initialized, if growing) the buffer
                 m_Data.resize(newNumVerts * m_VertexFormat.stride());
             }
             else
@@ -4862,49 +4860,9 @@ public:
         }
     }
 
-    void setIndices(MeshIndicesView indices)
+    void setIndices(MeshIndicesView indices, MeshUpdateFlags flags)
     {
-        indices.isU16() ? setIndices(indices.toU16Span()) : setIndices(indices.toU32Span());
-    }
-
-    void setIndices(std::span<uint16_t const> indices)
-    {
-        m_IndicesAre32Bit = false;
-        m_NumIndices = indices.size();
-        m_IndicesData.resize((indices.size()+1)/2);
-        std::copy(indices.begin(), indices.end(), &m_IndicesData.front().u16.a);
-
-        rangeCheckIndicesAndRecalculateBounds();
-        m_Version->reset();
-    }
-
-    void setIndices(std::span<std::uint32_t const> vs)
-    {
-        auto const isGreaterThanU16Max = [](uint32_t v)
-        {
-            return v > std::numeric_limits<uint16_t>::max();
-        };
-
-        if (std::any_of(vs.begin(), vs.end(), isGreaterThanU16Max))
-        {
-            m_IndicesAre32Bit = true;
-            m_NumIndices = vs.size();
-            m_IndicesData.resize(vs.size());
-            std::copy(vs.begin(), vs.end(), &m_IndicesData.front().u32);
-        }
-        else
-        {
-            m_IndicesAre32Bit = false;
-            m_NumIndices = vs.size();
-            m_IndicesData.resize((vs.size()+1)/2);
-            for (size_t i = 0; i < vs.size(); ++i)
-            {
-                (&m_IndicesData.front().u16.a)[i] = static_cast<uint16_t>(vs[i]);
-            }
-        }
-
-        rangeCheckIndicesAndRecalculateBounds();
-        m_Version->reset();
+        indices.isU16() ? setIndices(indices.toU16Span(), flags) : setIndices(indices.toU32Span(), flags);
     }
 
     void forEachIndexedVert(std::function<void(Vec3)> const& f) const
@@ -4997,11 +4955,11 @@ public:
         return m_VertexBuffer.stride();
     }
 
-    void setVertexBufferData(std::span<uint8_t const> newData)
+    void setVertexBufferData(std::span<uint8_t const> newData, MeshUpdateFlags flags)
     {
         m_VertexBuffer.setData({reinterpret_cast<std::byte const*>(newData.data()), newData.size()});
 
-        rangeCheckIndicesAndRecalculateBounds();
+        rangeCheckIndicesAndRecalculateBounds(flags);
         m_Version->reset();
     }
 
@@ -5046,34 +5004,99 @@ public:
 
 private:
 
-    void rangeCheckIndicesAndRecalculateBounds()
+    void setIndices(std::span<uint16_t const> indices, MeshUpdateFlags flags)
     {
-        if (m_NumIndices == 0)
+        m_IndicesAre32Bit = false;
+        m_NumIndices = indices.size();
+        m_IndicesData.resize((indices.size()+1)/2);
+        std::copy(indices.begin(), indices.end(), &m_IndicesData.front().u16.a);
+
+        rangeCheckIndicesAndRecalculateBounds(flags);
+        m_Version->reset();
+    }
+
+    void setIndices(std::span<std::uint32_t const> vs, MeshUpdateFlags flags)
+    {
+        auto const isGreaterThanU16Max = [](uint32_t v)
         {
-            m_AABB = {};
-            return;
+            return v > std::numeric_limits<uint16_t>::max();
+        };
+
+        if (std::any_of(vs.begin(), vs.end(), isGreaterThanU16Max))
+        {
+            m_IndicesAre32Bit = true;
+            m_NumIndices = vs.size();
+            m_IndicesData.resize(vs.size());
+            std::copy(vs.begin(), vs.end(), &m_IndicesData.front().u32);
+        }
+        else
+        {
+            m_IndicesAre32Bit = false;
+            m_NumIndices = vs.size();
+            m_IndicesData.resize((vs.size()+1)/2);
+            for (size_t i = 0; i < vs.size(); ++i)
+            {
+                (&m_IndicesData.front().u16.a)[i] = static_cast<uint16_t>(vs[i]);
+            }
         }
 
-        m_AABB.min =
-        {
-            std::numeric_limits<float>::max(),
-            std::numeric_limits<float>::max(),
-            std::numeric_limits<float>::max(),
-        };
+        rangeCheckIndicesAndRecalculateBounds(flags);
+        m_Version->reset();
+    }
 
-        m_AABB.max =
-        {
-            std::numeric_limits<float>::lowest(),
-            std::numeric_limits<float>::lowest(),
-            std::numeric_limits<float>::lowest(),
-        };
+    void rangeCheckIndicesAndRecalculateBounds(
+        MeshUpdateFlags flags = MeshUpdateFlags::Default)
+    {
+        // note: recalculating bounds will always validate indices anyway, because it's assumed
+        //       that the caller's intention is that all indices are valid when computing the
+        //       bounds
+        bool const checkIndices = !((flags & MeshUpdateFlags::DontValidateIndices) && (flags & MeshUpdateFlags::DontRecalculateBounds));
 
-        auto range = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
-        for (auto idx : getIndices())
+        //       ... but it's perfectly reasonable for the caller to only want the indices to be
+        //       validated, leaving the bounds untouched
+        bool const recalculateBounds = !(flags & MeshUpdateFlags::DontRecalculateBounds);
+
+        if (checkIndices && recalculateBounds)
         {
-            Vec3 pos = range.at(idx);  // and bounds-check, while we're in the area
-            m_AABB.min = Min(m_AABB.min, pos);
-            m_AABB.max = Max(m_AABB.max, pos);
+            if (m_NumIndices == 0)
+            {
+                m_AABB = {};
+                return;
+            }
+
+            // recalculate bounds while also checking indices
+            m_AABB.min =
+            {
+                std::numeric_limits<float>::max(),
+                std::numeric_limits<float>::max(),
+                std::numeric_limits<float>::max(),
+            };
+
+            m_AABB.max =
+            {
+                std::numeric_limits<float>::lowest(),
+                std::numeric_limits<float>::lowest(),
+                std::numeric_limits<float>::lowest(),
+            };
+
+            auto range = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
+            for (auto idx : getIndices())
+            {
+                Vec3 pos = range.at(idx);  // bounds-check index
+                m_AABB.min = Min(m_AABB.min, pos);
+                m_AABB.max = Max(m_AABB.max, pos);
+            }
+        }
+        else if (checkIndices && !recalculateBounds)
+        {
+            for (auto meshIndex : getIndices())
+            {
+                OSC_ASSERT(meshIndex < m_VertexBuffer.numVerts() && "a mesh index is out of bounds");
+            }
+        }
+        else
+        {
+            return;  // do nothing
         }
     }
 
@@ -5331,19 +5354,9 @@ osc::MeshIndicesView osc::Mesh::getIndices() const
     return m_Impl->getIndices();
 }
 
-void osc::Mesh::setIndices(MeshIndicesView indices)
+void osc::Mesh::setIndices(MeshIndicesView indices, MeshUpdateFlags flags)
 {
-    m_Impl.upd()->setIndices(indices);
-}
-
-void osc::Mesh::setIndices(std::span<uint16_t const> indices)
-{
-    m_Impl.upd()->setIndices(indices);
-}
-
-void osc::Mesh::setIndices(std::span<uint32_t const> indices)
-{
-    m_Impl.upd()->setIndices(indices);
+    m_Impl.upd()->setIndices(indices, flags);
 }
 
 void osc::Mesh::forEachIndexedVert(std::function<void(Vec3)> const& f) const
@@ -5406,9 +5419,9 @@ size_t osc::Mesh::getVertexBufferStride() const
     return m_Impl->getVertexBufferStride();
 }
 
-void osc::Mesh::setVertexBufferData(std::span<uint8_t const> data)
+void osc::Mesh::setVertexBufferData(std::span<uint8_t const> data, MeshUpdateFlags flags)
 {
-    m_Impl.upd()->setVertexBufferData(data);
+    m_Impl.upd()->setVertexBufferData(data, flags);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, Mesh const&)

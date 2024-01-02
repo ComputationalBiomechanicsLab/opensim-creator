@@ -981,56 +981,6 @@ bool osc::Combo(
     );
 }
 
-namespace
-{
-    // create a lookup table that maps sRGB color bytes to linear-space color bytes
-    std::array<uint8_t, 256> CreateSRGBToLinearLUT()
-    {
-        std::array<uint8_t, 256> rv{};
-        for (size_t i = 0; i < 256; ++i)
-        {
-            auto const ldrColor = static_cast<uint8_t>(i);
-            float const hdrColor = osc::ToFloatingPointColorChannel(ldrColor);
-            float const linearHdrColor = osc::ToLinear(hdrColor);
-            uint8_t const linearLdrColor = osc::ToClamped8BitColorChannel(linearHdrColor);
-            rv[i] = linearLdrColor;
-        }
-        return rv;
-    }
-
-    std::array<uint8_t, 256> const& GetSRGBToLinearLUT()
-    {
-        static std::array<uint8_t, 256> const s_LUT = CreateSRGBToLinearLUT();
-        return s_LUT;
-    }
-}
-
-void osc::ConvertDrawDataFromSRGBToLinear(ImDrawData& dd)
-{
-    std::array<uint8_t, 256> const& lut = GetSRGBToLinearLUT();
-
-    for (int i = 0; i < dd.CmdListsCount; ++i)
-    {
-        for (ImDrawVert& v : dd.CmdLists[i]->VtxBuffer)
-        {
-            auto const rSRGB = static_cast<uint8_t>((v.col >> IM_COL32_R_SHIFT) & 0xFF);
-            auto const gSRGB = static_cast<uint8_t>((v.col >> IM_COL32_G_SHIFT) & 0xFF);
-            auto const bSRGB = static_cast<uint8_t>((v.col >> IM_COL32_B_SHIFT) & 0xFF);
-            auto const aSRGB = static_cast<uint8_t>((v.col >> IM_COL32_A_SHIFT) & 0xFF);
-
-            uint8_t const rLinear = lut[rSRGB];
-            uint8_t const gLinear = lut[gSRGB];
-            uint8_t const bLinear = lut[bSRGB];
-
-            v.col =
-                static_cast<ImU32>(rLinear) << IM_COL32_R_SHIFT |
-                static_cast<ImU32>(gLinear) << IM_COL32_G_SHIFT |
-                static_cast<ImU32>(bLinear) << IM_COL32_B_SHIFT |
-                static_cast<ImU32>(aSRGB) << IM_COL32_A_SHIFT;
-        }
-    }
-}
-
 void osc::VerticalSeperator()
 {
     ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);

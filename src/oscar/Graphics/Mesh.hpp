@@ -2,6 +2,7 @@
 
 #include <oscar/Graphics/MeshIndicesView.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
+#include <oscar/Graphics/MeshUpdateFlags.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Triangle.hpp>
@@ -81,9 +82,7 @@ namespace osc
         //
         // all meshes _must_ be indexed: even if you're just drawing a single triangle
         MeshIndicesView getIndices() const;
-        void setIndices(MeshIndicesView);
-        void setIndices(std::span<uint16_t const>);
-        void setIndices(std::span<uint32_t const>);
+        void setIndices(MeshIndicesView, MeshUpdateFlags = MeshUpdateFlags::Default);
         void forEachIndexedVert(std::function<void(Vec3)> const&) const;
         void forEachIndexedTriangle(std::function<void(Triangle)> const&) const;
 
@@ -117,13 +116,15 @@ namespace osc
         VertexFormat const& getVertexAttributes() const;
         void setVertexBufferParams(size_t n, VertexFormat const&);
         size_t getVertexBufferStride() const;
-        void setVertexBufferData(std::span<uint8_t const>);
+        void setVertexBufferData(std::span<uint8_t const>, MeshUpdateFlags = MeshUpdateFlags::Default);
         template<ContiguousContainer Container>
-        void setVertexBufferData(Container const& container)
-            requires std::is_trivially_copyable_v<typename Container::value_type> && std::is_trivially_destructible_v<typename Container::value_type>
+        void setVertexBufferData(Container const& container, MeshUpdateFlags flags = MeshUpdateFlags::Default)
+            requires
+                std::is_trivially_copyable_v<typename Container::value_type> &&
+                std::is_trivially_destructible_v<typename Container::value_type>
         {
             std::span<typename Container::value_type const> const span{container};
-            setVertexBufferData(ViewObjectRepresentations<uint8_t>(span));
+            setVertexBufferData(ViewObjectRepresentations<uint8_t>(span), flags);
         }
 
         friend void swap(Mesh& a, Mesh& b) noexcept

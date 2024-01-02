@@ -68,6 +68,7 @@ add_library(oscar STATIC
     Graphics/MeshIndicesView.hpp
     Graphics/Mesh.hpp
     Graphics/MeshTopology.hpp
+    Graphics/MeshUpdateFlags.hpp
     Graphics/RenderBuffer.hpp
     Graphics/RenderBufferLoadAction.hpp
     Graphics/RenderBufferStoreAction.hpp
