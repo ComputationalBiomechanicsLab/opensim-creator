@@ -7,12 +7,13 @@
 namespace osc
 {
     enum class CubemapFace {
-        PositiveX = 0,
+        PositiveX,
         NegativeX,
         PositiveY,
         NegativeY,
         PositiveZ,
         NegativeZ,
+
         NUM_OPTIONS,
     };
 

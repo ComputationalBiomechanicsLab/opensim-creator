@@ -3,8 +3,9 @@
 namespace osc
 {
     enum class RenderBufferType {
-        Color = 0,
+        Color,
         Depth,
+
         NUM_OPTIONS,
     };
 }

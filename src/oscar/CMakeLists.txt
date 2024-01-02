@@ -39,7 +39,12 @@ add_library(oscar STATIC
     Formats/SVG.cpp
 
     Graphics/Detail/Unorm8.hpp
-    Graphics/Detail/VertexAttributeFormatDetails.hpp
+    Graphics/Detail/VertexAttributeFormatHelpers.hpp
+    Graphics/Detail/VertexAttributeFormatList.hpp
+    Graphics/Detail/VertexAttributeFormatTraits.hpp
+    Graphics/Detail/VertexAttributeHelpers.hpp
+    Graphics/Detail/VertexAttributeList.hpp
+    Graphics/Detail/VertexAttributeTraits.hpp
     Graphics/AntiAliasingLevel.cpp
     Graphics/AntiAliasingLevel.hpp
     Graphics/BlitFlags.hpp

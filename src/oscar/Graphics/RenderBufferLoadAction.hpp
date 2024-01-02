@@ -3,8 +3,9 @@
 namespace osc
 {
     enum class RenderBufferLoadAction {
-        Load = 0,
+        Load,
         Clear,
+
         NUM_OPTIONS,
     };
 }

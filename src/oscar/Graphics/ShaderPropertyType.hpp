@@ -7,7 +7,7 @@ namespace osc
 {
     // data type of a material-assignable property parsed from the shader code
     enum class ShaderPropertyType {
-        Float = 0,
+        Float,
         Vec2,
         Vec3,
         Vec4,
@@ -18,6 +18,7 @@ namespace osc
         Sampler2D,
         SamplerCube,
         Unknown,
+
         NUM_OPTIONS,
     };
 

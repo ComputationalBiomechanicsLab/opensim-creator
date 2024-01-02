@@ -1,7 +1,10 @@
 // these are the things that this file "implements"
 
 #include <oscar/Graphics/Detail/Unorm8.hpp>
-#include <oscar/Graphics/Detail/VertexAttributeFormatDetails.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeFormatHelpers.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeFormatList.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeFormatTraits.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/CameraClearFlags.hpp>
 #include <oscar/Graphics/CameraProjection.hpp>
@@ -88,9 +91,11 @@
 #include <vector>
 
 using osc::detail::DefaultFormat;
-using osc::detail::GetDetails;
+using osc::detail::NumComponents;
+using osc::detail::SizeOfComponent;
 using osc::detail::Unorm8;
-using osc::detail::VertexAttributeFormatCPUType;
+using osc::detail::VertexAttributeFormatList;
+using osc::detail::VertexAttributeFormatTraits;
 using osc::Color;
 using osc::Color32;
 using osc::ColorSpace;
@@ -4101,27 +4106,29 @@ namespace
     template<UserFacingVertexData T, VertexAttributeFormat EncodingFormat>
     void EncodeMany(std::byte* p, T const& v)
     {
-        using ComponentType = VertexAttributeFormatCPUType<EncodingFormat>::value_type;
-        constexpr auto details = GetDetails(EncodingFormat);
-        constexpr auto n = std::min(T::length(), static_cast<T::length_type>(details.numComponents));
+        using ComponentType = VertexAttributeFormatTraits<EncodingFormat>::component_type;
+        constexpr auto numComponents = NumComponents(EncodingFormat);
+        constexpr auto sizeOfComponent = SizeOfComponent(EncodingFormat);
+        constexpr auto n = std::min(T::length(), static_cast<T::length_type>(numComponents));
 
         for (typename T::length_type i = 0; i < n; ++i)
         {
-            Encode<typename T::value_type, ComponentType>(p + i*details.sizeOfComponent, v[i]);
+            Encode<typename T::value_type, ComponentType>(p + i*sizeOfComponent, v[i]);
         }
     }
 
     template<VertexAttributeFormat EncodingFormat, UserFacingVertexData T>
     T DecodeMany(std::byte const* p)
     {
-        using ComponentType = VertexAttributeFormatCPUType<EncodingFormat>::value_type;
-        constexpr auto details = GetDetails(EncodingFormat);
-        constexpr auto n = std::min(T::length(), static_cast<T::length_type>(details.numComponents));
+        using ComponentType = VertexAttributeFormatTraits<EncodingFormat>::component_type;
+        constexpr auto numComponents = NumComponents(EncodingFormat);
+        constexpr auto sizeOfComponent = SizeOfComponent(EncodingFormat);
+        constexpr auto n = std::min(T::length(), static_cast<T::length_type>(numComponents));
 
         T rv{};
         for (typename T::length_type i = 0; i < n; ++i)
         {
-            rv[i] = Decode<ComponentType, typename T::value_type>(p + i*details.sizeOfComponent);
+            rv[i] = Decode<ComponentType, typename T::value_type>(p + i*sizeOfComponent);
         }
         return rv;
     }
@@ -4182,8 +4189,8 @@ namespace
     template<VertexAttributeFormat SourceFormat, VertexAttributeFormat DestinationFormat>
     void Reencode(std::span<std::byte const> src, std::span<std::byte> dest)
     {
-        using SourceCPUFormat = VertexAttributeFormatCPUType<SourceFormat>;
-        using DestCPUFormat = VertexAttributeFormatCPUType<DestinationFormat>;
+        using SourceCPUFormat = VertexAttributeFormatTraits<SourceFormat>::type;
+        using DestCPUFormat = VertexAttributeFormatTraits<DestinationFormat>::type;
         constexpr auto n = std::min(SourceCPUFormat::length(), DestCPUFormat::length());
 
         auto const decoded = DecodeMany<SourceFormat, SourceCPUFormat>(src.data());
@@ -4203,14 +4210,7 @@ namespace
     public:
         constexpr ReencoderLut()
         {
-            using FormatList = NonTypelist<VertexAttributeFormat,
-                VertexAttributeFormat::Float32x2,
-                VertexAttributeFormat::Float32x3,
-                VertexAttributeFormat::Float32x4,
-                VertexAttributeFormat::Unorm8x4
-            >;
-            static_assert(NonTypelistSizeV<FormatList> == NumOptions<VertexAttributeFormat>());
-            WriteEntriesTopLevel(*this, FormatList{});
+            WriteEntriesTopLevel(*this, VertexAttributeFormatList{});
 
             for (auto entry : m_Storage)
             {
@@ -5122,7 +5122,7 @@ private:
 
     static GLint GetVertexAttributeSize(VertexAttributeFormat const& format)
     {
-        return static_cast<GLint>(GetDetails(format).numComponents);
+        return static_cast<GLint>(NumComponents(format));
     }
 
     static GLenum GetVertexAttributeType(VertexAttributeFormat const& format)

@@ -9,7 +9,7 @@ namespace osc
     // the order of elements in this enum matches the order of data within a
     // vertex buffer
     enum class VertexAttribute : int8_t {
-        Position = 0,
+        Position,
         Normal,
         Tangent,
         Color,

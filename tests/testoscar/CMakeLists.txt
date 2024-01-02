@@ -6,7 +6,11 @@ add_executable(testoscar
     Formats/TestDAE.cpp
 
     Graphics/Detail/TestUnorm8.cpp
-    Graphics/Detail/TestVertexAttributeFormatDetails.cpp
+
+    Graphics/Detail/TestVertexAttributeFormatHelpers.cpp
+    Graphics/Detail/TestVertexAttributeHelpers.cpp
+    Graphics/Detail/TestVertexAttributeFormatList.cpp
+    Graphics/Detail/TestVertexAttributeList.cpp
     Graphics/TestAntiAliasingLevel.cpp
     Graphics/TestCamera.cpp
     Graphics/TestCameraProjection.cpp
@@ -59,7 +63,7 @@ add_executable(testoscar
     TestingHelpers.cpp
     TestingHelpers.hpp
     testoscar.cpp  # entry point
-)
+ "Graphics/Detail/TestVertexAttributeHelpers.cpp")
 
 
 configure_file(
