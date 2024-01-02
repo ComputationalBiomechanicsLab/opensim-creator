@@ -529,7 +529,7 @@ private:
     std::optional<RenderTexture> m_InputRender;
     std::optional<RenderTexture> m_OutputRender;
     ImU32 m_SrcSquareColor = ToImU32(Color::red());
-    ImU32 m_DestCircleColor = ToImU32(Color::blue());
+    ImU32 m_DestCircleColor = ToImU32(Color::green());
     ImU32 m_ConnectionLineColor = ToImU32(Color::white());
 
     // log panel (handy for debugging)
