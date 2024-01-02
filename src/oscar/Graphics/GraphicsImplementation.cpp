@@ -4508,9 +4508,7 @@ namespace
             iterator::value_type at(iterator::difference_type i) const
             {
                 auto const beg = begin();
-                auto const en = end();
-                auto const n = std::distance(beg, en);
-                if (i >= n)
+                if (i >= std::distance(beg, end()))
                 {
                     throw std::out_of_range{"an attribute value was out-of-range: this is usually because of out-of-range mesh indices"};
                 }
@@ -4566,6 +4564,11 @@ namespace
         VertexFormat const& format() const
         {
             return m_VertexFormat;
+        }
+
+        auto attributeLayouts() const
+        {
+            return m_VertexFormat.attributeLayouts();
         }
 
         bool hasAttribute(VertexAttribute attr) const
@@ -4660,8 +4663,7 @@ namespace
             }
 
             // write els to vertex buffer
-            auto range = iter<T>(attr);
-            std::copy(els.begin(), els.end(), range.begin());
+            std::copy(els.begin(), els.end(), iter<T>(attr).begin());
         }
 
         template<class T>
@@ -5075,76 +5077,78 @@ private:
         }
     }
 
+    static GLuint GetVertexAttributeIndex(VertexAttribute attr)
+    {
+        static_assert(NumOptions<VertexAttribute>() == 5);
+
+        switch (attr) {
+        case VertexAttribute::Position:
+            return shader_locations::aPos;
+        case VertexAttribute::Normal:
+            return shader_locations::aNormal;
+        case VertexAttribute::Tangent:
+            return shader_locations::aTangent;
+        case VertexAttribute::Color:
+            return shader_locations::aColor;
+        case VertexAttribute::TexCoord0:
+            return shader_locations::aTexCoord;
+        default:
+            throw std::runtime_error{"nyi"};
+        }
+    }
+
+    static GLint GetVertexAttributeSize(VertexAttributeFormat const& format)
+    {
+        return static_cast<GLint>(GetDetails(format).numComponents);
+    }
+
+    static GLenum GetVertexAttributeType(VertexAttributeFormat const& format)
+    {
+        static_assert(NumOptions<VertexAttributeFormat>() == 4);
+
+        switch (format) {
+        case VertexAttributeFormat::Float32x2:
+        case VertexAttributeFormat::Float32x3:
+        case VertexAttributeFormat::Float32x4:
+            return GL_FLOAT;
+        case VertexAttributeFormat::Unorm8x4:
+            return GL_UNSIGNED_BYTE;
+        default:
+            throw std::runtime_error{"nyi"};
+        }
+    }
+
+    static GLboolean GetVertexAttributeNormalized(VertexAttributeFormat const& format)
+    {
+        static_assert(NumOptions<VertexAttributeFormat>() == 4);
+
+        switch (format) {
+        case VertexAttributeFormat::Float32x2:
+        case VertexAttributeFormat::Float32x3:
+        case VertexAttributeFormat::Float32x4:
+            return GL_FALSE;
+        case VertexAttributeFormat::Unorm8x4:
+            return GL_TRUE;
+        default:
+            throw std::runtime_error{"nyi"};
+        }
+    }
+
+    static void OpenGLBindVertexAttribute(VertexFormat const& format, VertexFormat::VertexAttributeLayout const& layout)
+    {
+        glVertexAttribPointer(
+            GetVertexAttributeIndex(layout.attribute()),
+            GetVertexAttributeSize(layout.format()),
+            GetVertexAttributeType(layout.format()),
+            GetVertexAttributeNormalized(layout.format()),
+            static_cast<GLsizei>(format.stride()),
+            reinterpret_cast<void*>(static_cast<uintptr_t>(layout.offset()))
+        );
+        glEnableVertexAttribArray(GetVertexAttributeIndex(layout.attribute()));
+    }
+
     void uploadToGPU()
     {
-        // TODO
-        /*
-        bool const hasNormals = !m_Normals.empty();
-        bool const hasTexCoords = !m_TexCoords.empty();
-        bool const hasColors = !m_Colors.empty();
-        bool const hasTangents = !m_Tangents.empty();
-
-        // `sizeof(decltype(T)::value_type)` is used in this function
-        //
-        // check at compile-time that the resulting type is as-expected
-        static_assert(sizeof(decltype(m_Vertices)::value_type) == 3*sizeof(float));
-        static_assert(sizeof(decltype(m_Normals)::value_type) == 3*sizeof(float));
-        static_assert(sizeof(decltype(m_TexCoords)::value_type) == 2*sizeof(float));
-        static_assert(sizeof(decltype(m_Colors)::value_type) == 4*sizeof(float));
-        static_assert(sizeof(decltype(m_Tangents)::value_type) == 4*sizeof(float));
-
-        // calculate the number of bytes between each entry in the packed VBO
-        size_t byteStride = sizeof(decltype(m_Vertices)::value_type);
-        if (hasNormals)
-        {
-            byteStride += sizeof(decltype(m_Normals)::value_type);
-        }
-        if (hasTexCoords)
-        {
-            byteStride += sizeof(decltype(m_TexCoords)::value_type);
-        }
-        if (hasColors)
-        {
-            byteStride += sizeof(decltype(m_Colors)::value_type);
-        }
-        if (hasTangents)
-        {
-            byteStride += sizeof(decltype(m_Tangents)::value_type);
-        }
-
-        // check that the data stored in this mesh object is valid before indexing into it
-        OSC_ASSERT_ALWAYS((!hasNormals || m_Normals.size() == m_Vertices.size()) && "number of normals != number of verts");
-        OSC_ASSERT_ALWAYS((!hasTexCoords || m_TexCoords.size() == m_Vertices.size()) && "number of uvs != number of verts");
-        OSC_ASSERT_ALWAYS((!hasColors || m_Colors.size() == m_Vertices.size()) && "number of colors != number of verts");
-        OSC_ASSERT_ALWAYS((!hasTangents || m_Tangents.size() == m_Vertices.size()) && "number of tangents != number of verts");
-
-        // allocate+pack mesh data into CPU-side vector
-        std::vector<uint8_t> data;
-        data.reserve(byteStride * m_Vertices.size());
-        for (size_t i = 0; i < m_Vertices.size(); ++i)
-        {
-            PushAsBytes(m_Vertices[i], data);
-            if (hasNormals)
-            {
-                PushAsBytes(m_Normals[i], data);
-            }
-            if (hasTexCoords)
-            {
-                PushAsBytes(m_TexCoords[i], data);
-            }
-            if (hasColors)
-            {
-                PushAsBytes(m_Colors[i], data);
-            }
-            if (hasTangents)
-            {
-                PushAsBytes(m_Tangents[i], data);
-            }
-        }
-
-        // check that the above packing procedure worked as expected
-        OSC_ASSERT(data.size() == byteStride*m_Vertices.size() && "error packing mesh data into a CPU buffer: unexpected final size");
-
         // allocate GPU-side buffers (or re-use the last ones)
         if (!(*m_MaybeGPUBuffers))
         {
@@ -5153,110 +5157,42 @@ private:
         MeshOpenGLData& buffers = **m_MaybeGPUBuffers;
 
         // upload CPU-side vector data into the GPU-side buffer
-        static_assert(alignof(float) == alignof(GLfloat), "OpenGL: glBufferData: clients must align data elements consistently with the requirements of the client platform");
-        gl::BindBuffer(GL_ARRAY_BUFFER, buffers.arrayBuffer);
-        gl::BufferData(GL_ARRAY_BUFFER, static_cast<GLsizei>(data.size()), data.data(), GL_STATIC_DRAW);
-
-        // check that the indices stored in this mesh object are all valid
-        //
-        // this is to ensure nothing bizzare happens in the GPU at runtime (e.g. indexing
-        // into invalid locations in the VBO - #460)
-        if (m_NumIndices > 0)
-        {
-            if (m_IndicesAre32Bit)
-            {
-                std::span<uint32_t const> const indices(&m_IndicesData.front().u32, m_NumIndices);
-                OSC_ASSERT_ALWAYS(std::all_of(indices.begin(), indices.end(), [nVerts = m_Vertices.size()](uint32_t i) { return i < nVerts; }));
-            }
-            else
-            {
-                std::span<uint16_t const> const indices(&m_IndicesData.front().u16.a, m_NumIndices);
-                OSC_ASSERT_ALWAYS(std::all_of(indices.begin(), indices.end(), [nVerts = m_Vertices.size()](uint16_t i) { return i < nVerts; }));
-            }
-        }
+        OSC_ASSERT(reinterpret_cast<uintptr_t>(m_VertexBuffer.bytes().data()) % alignof(float) == 0);
+        gl::BindBuffer(
+            GL_ARRAY_BUFFER,
+            buffers.arrayBuffer
+        );
+        gl::BufferData(
+            GL_ARRAY_BUFFER,
+            static_cast<GLsizei>(m_VertexBuffer.bytes().size()),
+            m_VertexBuffer.bytes().data(),
+            GL_STATIC_DRAW
+        );
 
         // upload CPU-side element data into the GPU-side buffer
         size_t const eboNumBytes = m_NumIndices * (m_IndicesAre32Bit ? sizeof(uint32_t) : sizeof(uint16_t));
-        gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.indicesBuffer);
-        gl::BufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizei>(eboNumBytes), m_IndicesData.data(), GL_STATIC_DRAW);
+        gl::BindBuffer(
+            GL_ELEMENT_ARRAY_BUFFER,
+            buffers.indicesBuffer
+        );
+        gl::BufferData(
+            GL_ELEMENT_ARRAY_BUFFER,
+            static_cast<GLsizei>(eboNumBytes),
+            m_IndicesData.data(),
+            GL_STATIC_DRAW
+        );
 
         // configure mesh-level VAO
         gl::BindVertexArray(buffers.vao);
         gl::BindBuffer(GL_ARRAY_BUFFER, buffers.arrayBuffer);
         gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.indicesBuffer);
-
-        // activate relevant attributes based on buffer layout
-        int64_t byteOffset = 0;
-
+        for (auto&& layout : m_VertexBuffer.attributeLayouts())
         {
-            // mesh always has vertices
-            glVertexAttribPointer(
-                shader_locations::aPos,
-                3,
-                GL_FLOAT,
-                GL_FALSE,
-                static_cast<GLsizei>(byteStride),
-                reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset))
-            );
-            glEnableVertexAttribArray(shader_locations::aPos);
-            byteOffset += sizeof(decltype(m_Vertices)::value_type);
+            OpenGLBindVertexAttribute(m_VertexBuffer.format(), layout);
         }
-        if (hasNormals)
-        {
-            glVertexAttribPointer(
-                shader_locations::aNormal,
-                3,
-                GL_FLOAT,
-                GL_FALSE,
-                static_cast<GLsizei>(byteStride),
-                reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset))
-            );
-            glEnableVertexAttribArray(shader_locations::aNormal);
-            byteOffset += sizeof(decltype(m_Normals)::value_type);
-        }
-        if (hasTexCoords)
-        {
-            glVertexAttribPointer(
-                shader_locations::aTexCoord,
-                2,
-                GL_FLOAT,
-                GL_FALSE,
-                static_cast<GLsizei>(byteStride),
-                reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset))
-            );
-            glEnableVertexAttribArray(shader_locations::aTexCoord);
-            byteOffset += sizeof(decltype(m_TexCoords)::value_type);
-        }
-        if (hasColors)
-        {
-            glVertexAttribPointer(
-                shader_locations::aColor,
-                4,
-                GL_FLOAT,
-                GL_TRUE,
-                static_cast<GLsizei>(byteStride),
-                reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset))
-            );
-            glEnableVertexAttribArray(shader_locations::aColor);
-            byteOffset += sizeof(decltype(m_Colors)::value_type);
-        }
-        if (hasTangents)
-        {
-            glVertexAttribPointer(
-                shader_locations::aTangent,
-                3,
-                GL_FLOAT,
-                GL_FALSE,
-                static_cast<GLsizei>(byteStride),
-                reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset))
-            );
-            glEnableVertexAttribArray(shader_locations::aTangent);
-            // unused: byteOffset += sizeof(decltype(m_Tangents)::value_type);
-        }
-        gl::BindVertexArray();  // VAO configuration complete
+        gl::BindVertexArray();
 
         buffers.dataVersion = *m_Version;
-        */
     }
 
     DefaultConstructOnCopy<UID> m_UID;

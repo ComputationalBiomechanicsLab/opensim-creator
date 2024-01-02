@@ -22,11 +22,15 @@ osc::VertexFormat::VertexFormat(std::initializer_list<VertexAttributeDescriptor>
         throw std::runtime_error{"Invalid first VertexAttributeDescriptor: the 'Position' field must come first"};
     }
 
-    for (size_t i = 0; i < m_AttributeDescriptions.size()-1; ++i)
+    for (auto const& desc : m_AttributeDescriptions)
     {
-        if (!(m_AttributeDescriptions[i].attribute() < m_AttributeDescriptions[i+1].attribute()))
+        auto const hasAttr = [attr = desc.attribute()](auto const& d)
         {
-            throw std::runtime_error{"Invalid VertexAttributeDescriptor ordering: must be provided in the same order as VertexAttribute"};
+            return d.attribute() == attr;
+        };
+        if (std::count_if(m_AttributeDescriptions.begin(), m_AttributeDescriptions.end(), hasAttr) > 1)
+        {
+            throw std::runtime_error{"Duplicate attributes passed to VertexFormat: each VertexAttribute should be unique"};
         }
     }
 }

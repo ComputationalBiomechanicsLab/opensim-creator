@@ -14,6 +14,9 @@
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
+#include <oscar/Graphics/VertexAttribute.hpp>
+#include <oscar/Graphics/VertexAttributeFormat.hpp>
+#include <oscar/Graphics/VertexFormat.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -57,6 +60,9 @@ using osc::Vec2;
 using osc::Vec2i;
 using osc::Vec3;
 using osc::Vec4;
+using osc::VertexAttribute;
+using osc::VertexAttributeFormat;
+using osc::VertexFormat;
 
 namespace
 {
@@ -262,9 +268,13 @@ namespace
         ImDrawList const& drawList)
     {
         Mesh& mesh = bd.mesh;
-        mesh.setVerts(ExtractPos(drawList.VtxBuffer));
-        mesh.setColors(ExtractColors(drawList.VtxBuffer));
-        mesh.setTexCoords(ExtractTexCoords(drawList.VtxBuffer));
+        VertexFormat const format = {
+            {VertexAttribute::Position,  VertexAttributeFormat::Float32x2},
+            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
+            {VertexAttribute::Color,     VertexAttributeFormat::Unorm8x4},
+        };
+        mesh.setVertexBufferParams(drawList.VtxBuffer.Size, format);
+        mesh.setVertexBufferData(std::span<ImDrawVert>{drawList.VtxBuffer.Data, static_cast<size_t>(drawList.VtxBuffer.Size)});
         mesh.setIndices(drawList.IdxBuffer);
 
         // iterate through command buffer

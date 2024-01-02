@@ -94,28 +94,6 @@ TEST(VertexFormat, ThrowsIfSameAttributeSuppliedMultipleTimes)
     ASSERT_ANY_THROW({ VertexFormat{lst}; });
 }
 
-TEST(VertexFormat, ThrowsIfProvidedAttributesOutOfOrder)
-{
-    // the implementation should throw if the caller provides the attributes out-of-order
-    //
-    // this is stricter than necessary (the implementation _could_ reorder things), but is
-    // currently enforced by the API so that all downstream code conforms to the rule
-    //
-    // the reason why the rule's important is because using ordered attributes makes (e.g.)
-    // searching through attributes in the list, performing set-intersection between two lists
-    // (e.g. for buffer reformatting) easier for the graphics engine
-
-    static_assert(VertexAttribute::Color > VertexAttribute::Tangent);
-    std::initializer_list<VertexAttributeDescriptor> const lst = {
-        {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
-        {VertexAttribute::Normal,    VertexAttributeFormat::Float32x3},
-        {VertexAttribute::Color,     VertexAttributeFormat::Unorm8x4},  // out of order
-        {VertexAttribute::Tangent,   VertexAttributeFormat::Unorm8x4},
-        {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
-    };
-    ASSERT_ANY_THROW({ VertexFormat{lst}; });
-}
-
 TEST(VertexFormat, ClearMakesFormatEquivalentToEmptyFormat)
 {
     VertexFormat f = {
