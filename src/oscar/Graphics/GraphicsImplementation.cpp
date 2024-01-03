@@ -4127,24 +4127,23 @@ namespace
         {
             static_assert(NumOptions<VertexAttributeFormat>() == 4);
 
-            using enum VertexAttributeFormat;
             switch (f) {
-            case Float32x2:
-                m_Encoder = EncodeMany<T, Float32x2>;
-                m_Decoder = DecodeMany<Float32x2, T>;
+            case VertexAttributeFormat::Float32x2:
+                m_Encoder = EncodeMany<T, VertexAttributeFormat::Float32x2>;
+                m_Decoder = DecodeMany<VertexAttributeFormat::Float32x2, T>;
                 break;
-            case Float32x3:
-                m_Encoder = EncodeMany<T, Float32x3>;
-                m_Decoder = DecodeMany<Float32x3, T>;
+            case VertexAttributeFormat::Float32x3:
+                m_Encoder = EncodeMany<T, VertexAttributeFormat::Float32x3>;
+                m_Decoder = DecodeMany<VertexAttributeFormat::Float32x3, T>;
                 break;
             default:
-            case Float32x4:
-                m_Encoder = EncodeMany<T, Float32x4>;
-                m_Decoder = DecodeMany<Float32x4, T>;
+            case VertexAttributeFormat::Float32x4:
+                m_Encoder = EncodeMany<T, VertexAttributeFormat::Float32x4>;
+                m_Decoder = DecodeMany<VertexAttributeFormat::Float32x4, T>;
                 break;
-            case Unorm8x4:
-                m_Encoder = EncodeMany<T, Unorm8x4>;
-                m_Decoder = DecodeMany<Unorm8x4, T>;
+            case VertexAttributeFormat::Unorm8x4:
+                m_Encoder = EncodeMany<T, VertexAttributeFormat::Unorm8x4>;
+                m_Decoder = DecodeMany<VertexAttributeFormat::Unorm8x4, T>;
                 break;
             }
         }
