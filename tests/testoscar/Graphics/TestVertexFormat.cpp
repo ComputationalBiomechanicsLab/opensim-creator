@@ -66,8 +66,7 @@ TEST(VertexFormat, ThrowsIfPositionIsMissing)
     //
     // ... it doesn't matter if you provide any/all of the other data
 
-    using enum VertexAttribute;
-    for (VertexAttribute a : {Normal, Tangent, Color, TexCoord0})
+    for (VertexAttribute a : {VertexAttribute::Normal, VertexAttribute::Tangent, VertexAttribute::Color, VertexAttribute::TexCoord0})
     {
         std::initializer_list<VertexAttributeDescriptor> const lst = {
             {a, VertexAttributeFormat::Float32x3},  // format/dimensionality is flexible w.r.t. the chosen attribute
