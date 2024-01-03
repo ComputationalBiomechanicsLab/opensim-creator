@@ -237,8 +237,6 @@ namespace
     {
         OSC_ASSERT(drawCommand.UserCallback == nullptr && "user callbacks are not supported in oscar's ImGui renderer impl");
 
-        // imgui_impl_opengl3.cpp L530-605
-
         // Will project scissor/clipping rectangles into framebuffer space
         ImVec2 clip_off = drawData.DisplayPos;         // (0,0) unless using multi-viewports
         ImVec2 clip_scale = drawData.FramebufferScale; // (1,1) unless using retina display which are often (2,2)
