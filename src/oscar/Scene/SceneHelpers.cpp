@@ -226,15 +226,11 @@ std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(
     std::span<SceneDecoration const> decorations,
     Line const& ray)
 {
-    // use scene BVH to intersect the ray with the scene
-    std::vector<BVHCollision> const sceneCollisions = bvh.getRayAABBCollisions(ray);
-
-    // perform ray-triangle intersections tests on the scene hits
     std::vector<SceneCollision> rv;
-    rv.reserve(sceneCollisions.size());  // upper bound
-    for (BVHCollision const& c : sceneCollisions)
+    bvh.forEachRayCollision(ray, [&sceneCache, &decorations, &ray, &rv](BVHCollision sceneCollision)
     {
-        SceneDecoration const& decoration = At(decorations, c.id);
+        // perform ray-triangle intersection tests on the scene collisions
+        SceneDecoration const& decoration = At(decorations, sceneCollision.id);
         BVH const& decorationBVH = sceneCache.getBVH(decoration.mesh);
 
         std::optional<RayCollision> const maybeCollision = GetClosestWorldspaceRayCollision(
@@ -243,16 +239,17 @@ std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(
             decoration.transform,
             ray
         );
+
         if (maybeCollision)
         {
             rv.push_back({
                 .decorationID = decoration.id,
-                .decorationIndex = static_cast<size_t>(c.id),
+                .decorationIndex = static_cast<size_t>(sceneCollision.id),
                 .worldspaceLocation = maybeCollision->position,
                 .distanceFromRayOrigin = maybeCollision->distance,
             });
         }
-    }
+    });
     return rv;
 }
 
@@ -270,22 +267,18 @@ std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
     // map the ray into the mesh's modelspace, so that we compute a ray-mesh collision
     Line const modelspaceRay = InverseTransformLine(worldspaceRay, transform);
 
-    MeshIndicesView const indices = mesh.getIndices();
-    std::optional<BVHCollision> const maybeCollision = indices.isU16() ?
-        triangleBVH.getClosestRayIndexedTriangleCollision(mesh.getVerts(), indices.toU16Span(), modelspaceRay) :
-        triangleBVH.getClosestRayIndexedTriangleCollision(mesh.getVerts(), indices.toU32Span(), modelspaceRay);
-
-    if (maybeCollision)
+    // then find the closest (if any) ray-triangle collision
+    std::optional<RayCollision> rv;
+    triangleBVH.forEachRayCollision(modelspaceRay, [&transform, &worldspaceRay, &rv](BVHCollision collision)
     {
-        // map the ray back into worldspace
-        Vec3 const locationWorldspace = transform * maybeCollision->position;
+        Vec3 const locationWorldspace = transform * collision.position;
         float const distance = Length(locationWorldspace - worldspaceRay.origin);
-        return RayCollision{distance, locationWorldspace};
-    }
-    else
-    {
-        return std::nullopt;
-    }
+        if (!rv || rv->distance > distance)
+        {
+            rv = RayCollision{distance, locationWorldspace};
+        }
+    });
+    return rv;
 }
 
 std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(

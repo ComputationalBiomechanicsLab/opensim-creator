@@ -153,17 +153,15 @@ namespace osc
 
         size_t stride() const
         {
-            size_t rv = 0;
-            for (auto const& desc : m_AttributeDescriptions)
-            {
-                rv += desc.stride();
-            }
-            return rv;
+            return m_Stride;
         }
 
         void insert(VertexAttributeDescriptor const&);
         void erase(VertexAttribute);
     private:
+        size_t computeStride() const;
+
         std::vector<VertexAttributeDescriptor> m_AttributeDescriptions;
+        size_t m_Stride = 0;
     };
 }

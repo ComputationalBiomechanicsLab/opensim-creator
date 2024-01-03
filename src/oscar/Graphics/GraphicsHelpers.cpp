@@ -401,16 +401,7 @@ std::array<osc::Mat4, 6> osc::CalcCubemapViewProjMatrices(
 
 void osc::ForEachIndexedVert(Mesh const& mesh, std::function<void(Vec3)> const& callback)
 {
-    auto const verts = mesh.getVerts();
-    auto const indices = mesh.getIndices();
-    for (size_t i = 0; i < indices.size(); ++i)
-    {
-        static_assert(std::is_unsigned_v<decltype(indices[i])>);
-        if (auto index = indices[i]; index < verts.size())
-        {
-            callback(verts[index]);
-        }
-    }
+    mesh.forEachIndexedVert(callback);
 }
 
 std::vector<osc::Vec3> osc::GetAllIndexedVerts(Mesh const& mesh)
