@@ -1,4 +1,4 @@
-#include <oscar/Utils/NonTypeList.hpp>
+#include <oscar/Utils/NonTypelist.hpp>
 
 #include <gtest/gtest.h>
 

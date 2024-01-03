@@ -26,6 +26,13 @@ namespace osc
             return (&r)[i];
         }
 
+        constexpr Color32() = default;
+
+        constexpr Color32(uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_) :
+            r{r_}, g{g_}, b{b_}, a{a_}
+        {
+        }
+
         uint8_t const* begin() const
         {
             return &r;

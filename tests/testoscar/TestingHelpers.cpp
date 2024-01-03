@@ -7,7 +7,6 @@
 
 using osc::Color;
 using osc::Color32;
-using osc::Normalize;
 using osc::Mat3;
 using osc::Mat4;
 using osc::Vec2;

@@ -133,7 +133,6 @@ using osc::TextureFormat;
 using osc::TextureWrapMode;
 using osc::Transform;
 using osc::UID;
-using osc::VertexAttributeDescriptor;
 using osc::VertexAttributeFormat;
 using osc::Vec;
 using osc::Vec2;
@@ -4078,19 +4077,6 @@ namespace
     }
 
     template<>
-    Unorm8 Decode<float, Unorm8>(std::byte const* p)
-    {
-        float const v = *std::launder(reinterpret_cast<float const*>(p));
-        return Unorm8{v};
-    }
-
-    template<>
-    void Encode<Unorm8, float>(std::byte* p, Unorm8 v)
-    {
-        *std::launder(reinterpret_cast<float*>(p)) = v.normalized();
-    }
-
-    template<>
     Unorm8 Decode<Unorm8, Unorm8>(std::byte const* p)
     {
         return Unorm8{*p};
@@ -4106,10 +4092,10 @@ namespace
     template<UserFacingVertexData T, VertexAttributeFormat EncodingFormat>
     void EncodeMany(std::byte* p, T const& v)
     {
-        using ComponentType = VertexAttributeFormatTraits<EncodingFormat>::component_type;
+        using ComponentType = typename VertexAttributeFormatTraits<EncodingFormat>::component_type;
         constexpr auto numComponents = NumComponents(EncodingFormat);
         constexpr auto sizeOfComponent = SizeOfComponent(EncodingFormat);
-        constexpr auto n = std::min(T::length(), static_cast<T::length_type>(numComponents));
+        constexpr auto n = std::min(T::length(), static_cast<typename T::length_type>(numComponents));
 
         for (typename T::length_type i = 0; i < n; ++i)
         {
@@ -4120,10 +4106,10 @@ namespace
     template<VertexAttributeFormat EncodingFormat, UserFacingVertexData T>
     T DecodeMany(std::byte const* p)
     {
-        using ComponentType = VertexAttributeFormatTraits<EncodingFormat>::component_type;
+        using ComponentType = typename VertexAttributeFormatTraits<EncodingFormat>::component_type;
         constexpr auto numComponents = NumComponents(EncodingFormat);
         constexpr auto sizeOfComponent = SizeOfComponent(EncodingFormat);
-        constexpr auto n = std::min(T::length(), static_cast<T::length_type>(numComponents));
+        constexpr auto n = std::min(T::length(), static_cast<typename T::length_type>(numComponents));
 
         T rv{};
         for (typename T::length_type i = 0; i < n; ++i)
@@ -4189,8 +4175,8 @@ namespace
     template<VertexAttributeFormat SourceFormat, VertexAttributeFormat DestinationFormat>
     void Reencode(std::span<std::byte const> src, std::span<std::byte> dest)
     {
-        using SourceCPUFormat = VertexAttributeFormatTraits<SourceFormat>::type;
-        using DestCPUFormat = VertexAttributeFormatTraits<DestinationFormat>::type;
+        using SourceCPUFormat = typename VertexAttributeFormatTraits<SourceFormat>::type;
+        using DestCPUFormat = typename VertexAttributeFormatTraits<DestinationFormat>::type;
         constexpr auto n = std::min(SourceCPUFormat::length(), DestCPUFormat::length());
 
         auto const decoded = DecodeMany<SourceFormat, SourceCPUFormat>(src.data());
@@ -4207,28 +4193,8 @@ namespace
 
     // compile-time lookup table (LUT) for runtime reencoder functions
     class ReencoderLut final {
-    public:
-        constexpr ReencoderLut()
-        {
-            WriteEntriesTopLevel(*this, VertexAttributeFormatList{});
-
-            for (auto entry : m_Storage)
-            {
-                OSC_ASSERT_ALWAYS(entry != nullptr);
-            }
-        }
-
-        constexpr void assign(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat, ReencoderFunction f)
-        {
-            m_Storage.at(indexOf(sourceFormat, destinationFormat)) = f;
-        }
-
-        constexpr ReencoderFunction const& lookup(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat) const
-        {
-            return m_Storage.at(indexOf(sourceFormat, destinationFormat));
-        }
     private:
-        constexpr size_t indexOf(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat) const
+        static constexpr size_t indexOf(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat)
         {
             return static_cast<size_t>(sourceFormat)*NumOptions<VertexAttributeFormat>() + static_cast<size_t>(destinationFormat);
         }
@@ -4250,7 +4216,28 @@ namespace
         {
             lut.assign(SourceFormat, DestinationFormat, Reencode<SourceFormat, DestinationFormat>);
         }
+    public:
+        constexpr ReencoderLut()
+        {
+            WriteEntriesTopLevel(*this, VertexAttributeFormatList{});
 
+            for (auto entry : m_Storage)
+            {
+                OSC_ASSERT_ALWAYS(entry != nullptr);
+            }
+        }
+
+        constexpr void assign(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat, ReencoderFunction f)
+        {
+            m_Storage.at(indexOf(sourceFormat, destinationFormat)) = f;
+        }
+
+        constexpr ReencoderFunction const& lookup(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat) const
+        {
+            return m_Storage.at(indexOf(sourceFormat, destinationFormat));
+        }
+
+    private:
         std::array<ReencoderFunction, NumOptions<VertexAttributeFormat>()*NumOptions<VertexAttributeFormat>()> m_Storage{};
     };
 
@@ -4334,13 +4321,13 @@ namespace
             {
             }
 
-            AttributeValueProxy& operator=(T const& v) requires !IsConst
+            AttributeValueProxy& operator=(T const& v) requires (!IsConst)
             {
                 m_Encoding.encode(m_Data, v);
                 return *this;
             }
 
-            operator T () const
+            operator T () const  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
             {
                 return m_Encoding.decode(m_Data);
             }
@@ -4470,6 +4457,8 @@ namespace
         public:
             using Byte = std::conditional_t<IsConst, std::byte const, std::byte>;
             using iterator = AttributeValueIterator<T, IsConst>;
+            using value_type = typename iterator::value_type;
+            using difference_type = typename iterator::difference_type;
 
             AttributeValueRange() = default;
 
@@ -4482,7 +4471,6 @@ namespace
                 m_Stride{stride_},
                 m_Encoding{format_}
             {
-
             }
 
             iterator begin() const
@@ -4495,7 +4483,7 @@ namespace
                 return {m_Data.data() + m_Data.size(), m_Stride, m_Encoding};
             }
 
-            iterator::value_type at(iterator::difference_type i) const
+            value_type at(difference_type i) const
             {
                 auto const beg = begin();
                 if (i >= std::distance(beg, end()))
@@ -4615,7 +4603,7 @@ namespace
         void write(VertexAttribute attr, std::span<T const> els)
         {
             // edge-case: size == 0 should be treated as "wipe it"
-            if (els.size() == 0 && m_VertexFormat.contains(attr))
+            if (els.empty() && m_VertexFormat.contains(attr))
             {
                 VertexFormat newFormat{m_VertexFormat};
                 newFormat.erase(attr);

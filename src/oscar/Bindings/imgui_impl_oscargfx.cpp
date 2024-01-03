@@ -40,7 +40,6 @@
 
 using osc::Camera;
 using osc::CameraClearFlags;
-using osc::Color;
 using osc::ColorSpace;
 using osc::CullMode;
 using osc::CStringView;
@@ -63,7 +62,6 @@ using osc::Vec3;
 using osc::Vec4;
 using osc::VertexAttribute;
 using osc::VertexAttributeFormat;
-using osc::VertexFormat;
 
 namespace
 {
@@ -272,39 +270,6 @@ namespace
             osc::Graphics::DrawMesh(mesh, osc::Identity<Mat4>(), bd.material, bd.camera, std::nullopt, idx);
             bd.camera.renderToScreen();
         }
-    }
-
-    std::vector<Vec3> ExtractPos(std::span<ImDrawVert const> s)
-    {
-        std::vector<Vec3> rv;
-        rv.reserve(s.size());
-        for (auto const& v : s)
-        {
-            rv.emplace_back(v.pos.x, v.pos.y, 0.0f);
-        }
-        return rv;
-    }
-
-    std::vector<Color> ExtractColors(std::span<ImDrawVert const> s)
-    {
-        std::vector<Color> rv;
-        rv.reserve(s.size());
-        for (auto const& v : s)
-        {
-            rv.push_back(osc::ToColor(v.col));
-        }
-        return rv;
-    }
-
-    std::vector<Vec2> ExtractTexCoords(std::span<ImDrawVert const> s)
-    {
-        std::vector<Vec2> rv;
-        rv.reserve(s.size());
-        for (auto const& v : s)
-        {
-            rv.emplace_back(v.uv.x, v.uv.y);
-        }
-        return rv;
     }
 
     void RenderDrawList(

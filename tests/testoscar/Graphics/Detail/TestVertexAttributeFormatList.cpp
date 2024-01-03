@@ -6,6 +6,8 @@
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/NonTypelist.hpp>
 
+#include <array>
+
 using osc::detail::VertexAttributeFormatList;
 using osc::detail::VertexAttributeFormatTraits;
 using osc::NonTypelist;
@@ -18,7 +20,7 @@ namespace
     template<VertexAttributeFormat... Formats>
     constexpr void InstantiateTraits(NonTypelist<VertexAttributeFormat, Formats...>)
     {
-        (VertexAttributeFormatTraits<Formats>{}, ...);
+        std::to_array({VertexAttributeFormatTraits<Formats>::num_components...});
     }
 }
 

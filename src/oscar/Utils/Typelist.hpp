@@ -52,5 +52,5 @@ namespace osc
     };
 
     template<typename TList, size_t Index>
-    using TypeAtT = TypeAt<TList, Index>::type;
+    using TypeAtT = typename TypeAt<TList, Index>::type;
 }
