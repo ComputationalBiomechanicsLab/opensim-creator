@@ -20,7 +20,7 @@ namespace
     template<VertexAttribute... Attributes>
     constexpr void InstantiateTraits(NonTypelist<VertexAttribute, Attributes...>)
     {
-        std::to_array({VertexAttributeTraits<Attributes>::default_format...});
+        [[maybe_unused]] auto a = std::to_array({VertexAttributeTraits<Attributes>::default_format...});
     }
 }
 
