@@ -8,6 +8,11 @@ namespace osc
 {
     struct Triangle final {
 
+        constexpr size_t size() const
+        {
+            return 3;
+        }
+
         Vec3 const* data() const
         {
             return &p0;
