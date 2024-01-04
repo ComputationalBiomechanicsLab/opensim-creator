@@ -27,6 +27,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -406,19 +407,9 @@ void osc::ForEachIndexedVert(Mesh const& mesh, std::function<void(Vec3)> const& 
 
 std::vector<osc::Vec3> osc::GetAllIndexedVerts(Mesh const& mesh)
 {
-    auto const verts = mesh.getVerts();
-    auto const indices = mesh.getIndices();
-
     std::vector<Vec3> rv;
-    rv.reserve(indices.size());  // guess: it's likely that all indices are fine
-    for (size_t i = 0; i < indices.size(); ++i)
-    {
-        static_assert(std::is_unsigned_v<decltype(indices[i])>);
-        if (auto index = indices[i]; index < verts.size())
-        {
-            rv.push_back(verts[index]);
-        }
-    }
+    rv.reserve(mesh.getNumIndices());
+    mesh.forEachIndexedVert([&rv](Vec3 v) { rv.push_back(v); });
     return rv;
 }
 

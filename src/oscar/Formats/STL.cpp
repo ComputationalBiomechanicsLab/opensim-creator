@@ -66,8 +66,8 @@ namespace
 
     void WriteNumTriangles(std::ostream& o, Mesh const& mesh)
     {
-        OSC_ASSERT(mesh.getIndices().size()/3 <= std::numeric_limits<uint32_t>::max());
-        WriteLittleEndianU32(o, static_cast<uint32_t>(mesh.getIndices().size()/3));
+        OSC_ASSERT(mesh.getNumIndices()/3 <= std::numeric_limits<uint32_t>::max());
+        WriteLittleEndianU32(o, static_cast<uint32_t>(mesh.getNumIndices()/3));
     }
 
     void WriteFloatIEEE(std::ostream& o, float v)
@@ -103,19 +103,7 @@ namespace
 
     void WriteTriangles(std::ostream& o, Mesh const& mesh)
     {
-        MeshIndicesView const indices = mesh.getIndices();
-        auto const verts = mesh.getVerts();
-
-        for (ptrdiff_t i = 0; i < std::ssize(indices)-2; i += 3)
-        {
-            Triangle const t
-            {
-                osc::At(verts, indices[i]),
-                osc::At(verts, indices[i+1]),
-                osc::At(verts, indices[i+2]),
-            };
-            WriteTriangle(o, t);
-        }
+        mesh.forEachIndexedTriangle([&o](Triangle t) { WriteTriangle(o, t); });
     }
 }
 

@@ -136,7 +136,7 @@ namespace osc
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("# triangles");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", m_State->getResultMesh().getIndices().size()/3);
+                ImGui::Text("%zu", m_State->getResultMesh().getNumIndices()/3);
 
                 ImGui::EndTable();
             }

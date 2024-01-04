@@ -483,7 +483,7 @@ namespace osc
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("# triangles");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", m_State->getScratchMesh(m_DocumentIdentifier).getIndices().size()/3);
+                ImGui::Text("%zu", m_State->getScratchMesh(m_DocumentIdentifier).getNumIndices()/3);
 
                 ImGui::EndTable();
             }

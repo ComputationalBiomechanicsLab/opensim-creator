@@ -695,7 +695,19 @@ TEST(Mesh, SetTangentsFailsIfMoreTangentsThanVerts)
 TEST(Mesh, GetNumIndicesReturnsZeroOnDefaultConstruction)
 {
     Mesh m;
-    ASSERT_EQ(m.getIndices().size(), 0);
+    ASSERT_EQ(m.getNumIndices(), 0);
+}
+
+TEST(Mesh, GetNumIndicesReturnsNumberOfAssignedIndices)
+{
+    auto const verts = GenerateVertices(3);
+    auto const indices = GenerateIndices(0, 3);
+
+    Mesh m;
+    m.setVerts(verts);
+    m.setIndices(indices);
+
+    ASSERT_EQ(m.getNumIndices(), 3);
 }
 
 TEST(Mesh, ForEachIndexedVertNotCalledWithEmptyMesh)

@@ -31,9 +31,6 @@ namespace osc { class VertexFormat; }
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
-    // mesh
-    //
-    //
     class Mesh final {
     public:
         Mesh();
@@ -81,6 +78,7 @@ namespace osc
         // to draw in which order from the underlying vertex buffer
         //
         // all meshes _must_ be indexed: even if you're just drawing a single triangle
+        size_t getNumIndices() const;
         MeshIndicesView getIndices() const;
         void setIndices(MeshIndicesView, MeshUpdateFlags = MeshUpdateFlags::Default);
         void forEachIndexedVert(std::function<void(Vec3)> const&) const;

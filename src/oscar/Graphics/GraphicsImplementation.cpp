@@ -4836,6 +4836,11 @@ public:
         m_Version->reset();
     }
 
+    size_t getNumIndices() const
+    {
+        return m_NumIndices;
+    }
+
     MeshIndicesView getIndices() const
     {
         if (m_NumIndices <= 0)
@@ -5363,6 +5368,11 @@ std::vector<Vec4> osc::Mesh::getTangents() const
 void osc::Mesh::setTangents(std::span<Vec4 const> newTangents)
 {
     m_Impl.upd()->setTangents(newTangents);
+}
+
+size_t osc::Mesh::getNumIndices() const
+{
+    return m_Impl->getNumIndices();
 }
 
 osc::MeshIndicesView osc::Mesh::getIndices() const
