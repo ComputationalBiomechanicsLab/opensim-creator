@@ -12,6 +12,7 @@
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Quat.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Triangle.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
@@ -34,6 +35,7 @@ using osc::testing::GenerateIndices;
 using osc::testing::GenerateNormals;
 using osc::testing::GenerateTangents;
 using osc::testing::GenerateTexCoords;
+using osc::testing::GenerateTriangle;
 using osc::testing::GenerateVec2;
 using osc::testing::GenerateVec3;
 using osc::testing::GenerateVec4;
@@ -58,6 +60,7 @@ using osc::ToColor32;
 using osc::ToMat4;
 using osc::Transform;
 using osc::TransformPoint;
+using osc::Triangle;
 using osc::VertexAttribute;
 using osc::VertexAttributeFormat;
 using osc::VertexFormat;
@@ -787,6 +790,53 @@ TEST(Mesh, ForEachIndexedTriangleNotCalledIfMeshTopologyIsLines)
     size_t ncalls = 0;
     m.forEachIndexedTriangle([&ncalls](auto&&) { ++ncalls; });
     ASSERT_EQ(ncalls, 0);
+}
+
+TEST(Mesh, GetTriangleAtReturnsExpectedTriangleForNormalCase)
+{
+    Triangle const t = GenerateTriangle();
+
+    Mesh m;
+    m.setVerts(t);
+    m.setIndices(std::to_array<uint16_t>({0, 1, 2}));
+
+    ASSERT_EQ(m.getTriangleAt(0), t);
+}
+
+TEST(Mesh, GetTriangleAtReturnsTriangleIndexedByIndiciesAtProvidedOffset)
+{
+    Triangle const a = GenerateTriangle();
+    Triangle const b = GenerateTriangle();
+
+    Mesh m;
+    m.setVerts({{a[0], a[1], a[2], b[0], b[1], b[2]}});         // stored as  [a, b]
+    m.setIndices(std::to_array<uint16_t>({3, 4, 5, 0, 1, 2}));  // indexed as [b, a]
+
+    ASSERT_EQ(m.getTriangleAt(0), b) << "the provided arg is an offset into the _indices_";
+    ASSERT_EQ(m.getTriangleAt(3), a) << "the provided arg is an offset into the _indices_";
+}
+
+TEST(Mesh, GetTriangleAtThrowsIfCalledOnNonTriangularMesh)
+{
+    Mesh m;
+    m.setTopology(MeshTopology::Lines);
+    m.setVerts({{GenerateVec3(), GenerateVec3(), GenerateVec3(), GenerateVec3(), GenerateVec3(), GenerateVec3()}});
+    m.setIndices(std::to_array<uint16_t>({0, 1, 2, 3, 4, 5}));
+
+    ASSERT_ANY_THROW({ m.getTriangleAt(0); }) << "incorrect topology";
+}
+
+TEST(Mesh, GetTriangleAtThrowsIfGivenOutOfBoundsIndexOffset)
+{
+    Triangle const t = GenerateTriangle();
+
+    Mesh m;
+    m.setVerts(t);
+    m.setIndices(std::to_array<uint16_t>({0, 1, 2}));
+
+    ASSERT_ANY_THROW({ m.getTriangleAt(1); }) << "should throw: it's out-of-bounds";
+    ASSERT_ANY_THROW({ m.getTriangleAt(2); }) << "should throw: it's out-of-bounds";
+    ASSERT_ANY_THROW({ m.getTriangleAt(3); }) << "should throw: it's out-of-bounds";
 }
 
 TEST(Mesh, GetBoundsReturnsEmptyBoundsOnInitialization)

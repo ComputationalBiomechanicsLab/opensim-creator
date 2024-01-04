@@ -9,6 +9,7 @@ using osc::Color;
 using osc::Color32;
 using osc::Mat3;
 using osc::Mat4;
+using osc::Triangle;
 using osc::Vec2;
 using osc::Vec3;
 using osc::Vec4;
@@ -89,6 +90,11 @@ Mat3 osc::testing::GenerateMat3x3()
 Mat4 osc::testing::GenerateMat4x4()
 {
     return Mat4{GenerateVec4(), GenerateVec4(), GenerateVec4(), GenerateVec4()};
+}
+
+Triangle osc::testing::GenerateTriangle()
+{
+    return Triangle{GenerateVec3(), GenerateVec3(), GenerateVec3()};
 }
 
 std::vector<Vec3> osc::testing::GenerateTriangleVerts()

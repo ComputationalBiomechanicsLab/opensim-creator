@@ -5,6 +5,7 @@
 #include <oscar/Maths/Mat3.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/Triangle.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
@@ -32,6 +33,7 @@ namespace osc::testing
     Vec4 GenerateVec4();
     Mat3 GenerateMat3x3();
     Mat4 GenerateMat4x4();
+    Triangle GenerateTriangle();
     std::vector<Vec3> GenerateTriangleVerts();
     std::vector<Vec3> GenerateVertices(size_t);
     std::vector<Vec3> GenerateNormals(size_t);

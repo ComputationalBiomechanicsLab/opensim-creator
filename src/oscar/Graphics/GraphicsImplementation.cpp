@@ -4491,6 +4491,11 @@ namespace
                 }
                 return beg[i];
             }
+
+            value_type operator[](difference_type i) const
+            {
+                return begin()[i];
+            }
         private:
             std::span<Byte> m_Data{};
             size_t m_Stride = 1;  // care: divide by zero in an iterator is UB
@@ -4880,6 +4885,30 @@ public:
                 positions[indices[i+2]],
             });
         }
+    }
+
+    Triangle getTriangleAt(size_t firstIndexOffset) const
+    {
+        if (m_Topology != MeshTopology::Triangles)
+        {
+            throw std::runtime_error{"cannot call getTriangleAt on a non-triangular-topology mesh"};
+        }
+
+        auto const indices = getIndices();
+
+        if (firstIndexOffset+2 >= indices.size())
+        {
+            throw std::runtime_error{"provided first index offset is out-of-bounds"};
+        }
+
+        auto const verts = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
+
+        // can use unchecked access here: `indices` are range-checked on writing
+        return Triangle{
+            verts[indices[firstIndexOffset+0]],
+            verts[indices[firstIndexOffset+1]],
+            verts[indices[firstIndexOffset+2]],
+        };
     }
 
     AABB const& getBounds() const
@@ -5354,6 +5383,11 @@ void osc::Mesh::forEachIndexedVert(std::function<void(Vec3)> const& f) const
 void osc::Mesh::forEachIndexedTriangle(std::function<void(Triangle)> const& f) const
 {
     m_Impl->forEachIndexedTriangle(f);
+}
+
+osc::Triangle osc::Mesh::getTriangleAt(size_t firstIndexOffset) const
+{
+    return m_Impl->getTriangleAt(firstIndexOffset);
 }
 
 osc::AABB const& osc::Mesh::getBounds() const

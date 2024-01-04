@@ -52,7 +52,7 @@ namespace osc
 
         // calls the callback with each collision between the line and an AABB in
         // the BVH
-        void forEachRayCollision(Line const&, std::function<void(BVHCollision)> const&) const;
+        void forEachRayAABBCollision(Line const&, std::function<void(BVHCollision)> const&) const;
 
         // returns `true` if the BVH contains no nodes
         [[nodiscard]] bool empty() const;

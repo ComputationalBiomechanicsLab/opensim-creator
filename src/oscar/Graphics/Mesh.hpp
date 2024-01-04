@@ -85,6 +85,7 @@ namespace osc
         void setIndices(MeshIndicesView, MeshUpdateFlags = MeshUpdateFlags::Default);
         void forEachIndexedVert(std::function<void(Vec3)> const&) const;
         void forEachIndexedTriangle(std::function<void(Triangle)> const&) const;
+        Triangle getTriangleAt(size_t firstIndexOffset) const;
 
         // local-space bounds of the mesh
         //

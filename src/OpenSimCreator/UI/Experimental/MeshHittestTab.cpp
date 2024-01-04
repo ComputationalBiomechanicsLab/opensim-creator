@@ -57,50 +57,37 @@ public:
 
         // handle hittest
         auto raycastStart = std::chrono::high_resolution_clock::now();
+
+        Rect r = osc::GetMainViewportWorkspaceScreenRect();
+        Vec2 d = osc::Dimensions(r);
+        m_Ray = m_PolarCamera.unprojectTopLeftPosToWorldRay(Vec2{ImGui::GetMousePos()} - r.p1, d);
+
+        m_IsMousedOver = false;
+        if (m_UseBVH)
         {
-            Rect r = osc::GetMainViewportWorkspaceScreenRect();
-            Vec2 d = osc::Dimensions(r);
-            m_Ray = m_PolarCamera.unprojectTopLeftPosToWorldRay(Vec2{ImGui::GetMousePos()} - r.p1, d);
-
-            m_IsMousedOver = false;
-            auto const verts = m_Mesh.getVerts();
-            if (m_UseBVH)
+            m_MeshBVH.forEachRayAABBCollision(m_Ray, [this](BVHCollision const& aabbColl)
             {
-                MeshIndicesView const indices = m_Mesh.getIndices();
-                std::optional<BVHCollision> const maybeCollision = indices.isU16() ?
-                    m_MeshBVH.getClosestRayIndexedTriangleCollision(verts, indices.toU16Span(), m_Ray) :
-                    m_MeshBVH.getClosestRayIndexedTriangleCollision(verts, indices.toU32Span(), m_Ray);
-                if (maybeCollision)
+                Triangle const triangle = m_Mesh.getTriangleAt(aabbColl.id);
+                if (auto triangleColl = GetRayCollisionTriangle(m_Ray, triangle))
                 {
-                    uint32_t index = m_Mesh.getIndices()[maybeCollision->id];
                     m_IsMousedOver = true;
-                    m_Tris[0] = verts[index];
-                    m_Tris[1] = verts[index+1];
-                    m_Tris[2] = verts[index+2];
+                    m_Tris = triangle;
                 }
-            }
-            else
-            {
-                for (size_t i = 0; i < verts.size(); i += 3)
-                {
-                    std::optional<RayCollision> const res = GetRayCollisionTriangle(
-                        m_Ray,
-                        Triangle{verts[i], verts[i+1], verts[i+2]}
-                    );
-                    if (res)
-                    {
-                        m_HitPos = res->position;
-                        m_IsMousedOver = true;
-
-                        m_Tris[0] = verts[i];
-                        m_Tris[1] = verts[i + 1];
-                        m_Tris[2] = verts[i + 2];
-
-                        break;
-                    }
-                }
-            }
+            });
         }
+        else
+        {
+            m_Mesh.forEachIndexedTriangle([this](Triangle triangle)
+            {
+                if (auto const hit = GetRayCollisionTriangle(m_Ray, triangle))
+                {
+                    m_HitPos = hit->position;
+                    m_IsMousedOver = true;
+                    m_Tris = triangle;
+                }
+            });
+        }
+
         auto raycastEnd = std::chrono::high_resolution_clock::now();
         auto raycastDt = raycastEnd - raycastStart;
         m_RaycastDuration = std::chrono::duration_cast<std::chrono::microseconds>(raycastDt);
@@ -200,7 +187,7 @@ private:
     // other state
     BVH m_MeshBVH = CreateTriangleBVHFromMesh(m_Mesh);
     bool m_UseBVH = false;
-    std::array<Vec3, 3> m_Tris{};
+    Triangle m_Tris;
     std::chrono::microseconds m_RaycastDuration{0};
     PolarPerspectiveCamera m_PolarCamera;
     bool m_IsMousedOver = false;

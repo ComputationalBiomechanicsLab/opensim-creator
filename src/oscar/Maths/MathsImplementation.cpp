@@ -396,7 +396,7 @@ void osc::BVH::buildFromAABBs(std::span<AABB const> aabbs)
     }
 }
 
-void osc::BVH::forEachRayCollision(
+void osc::BVH::forEachRayAABBCollision(
     Line const& ray,
     std::function<void(BVHCollision)> const& callback) const
 {

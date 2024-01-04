@@ -8,6 +8,7 @@
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>
+#include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
@@ -227,7 +228,7 @@ std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(
     Line const& ray)
 {
     std::vector<SceneCollision> rv;
-    bvh.forEachRayCollision(ray, [&sceneCache, &decorations, &ray, &rv](BVHCollision sceneCollision)
+    bvh.forEachRayAABBCollision(ray, [&sceneCache, &decorations, &ray, &rv](BVHCollision sceneCollision)
     {
         // perform ray-triangle intersection tests on the scene collisions
         SceneDecoration const& decoration = At(decorations, sceneCollision.id);
@@ -267,15 +268,21 @@ std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
     // map the ray into the mesh's modelspace, so that we compute a ray-mesh collision
     Line const modelspaceRay = InverseTransformLine(worldspaceRay, transform);
 
-    // then find the closest (if any) ray-triangle collision
+    // then perform a ray-AABB (of triangles) collision
     std::optional<RayCollision> rv;
-    triangleBVH.forEachRayCollision(modelspaceRay, [&transform, &worldspaceRay, &rv](BVHCollision collision)
+    triangleBVH.forEachRayAABBCollision(modelspaceRay, [&mesh, &transform, &worldspaceRay, &modelspaceRay, &rv](BVHCollision bvhCollision)
     {
-        Vec3 const locationWorldspace = transform * collision.position;
-        float const distance = Length(locationWorldspace - worldspaceRay.origin);
-        if (!rv || rv->distance > distance)
+        // then perform a ray-triangle collision
+        if (auto triangleCollision = GetRayCollisionTriangle(modelspaceRay, mesh.getTriangleAt(bvhCollision.id)))
         {
-            rv = RayCollision{distance, locationWorldspace};
+            // map it back into worldspace and check if it's closer
+            Vec3 const locationWorldspace = transform * triangleCollision->position;
+            float const distance = Length(locationWorldspace - worldspaceRay.origin);
+            if (!rv || rv->distance > distance)
+            {
+                // if it's closer, update the return value
+                rv = RayCollision{distance, locationWorldspace};
+            }
         }
     });
     return rv;
