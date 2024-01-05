@@ -400,11 +400,6 @@ std::array<osc::Mat4, 6> osc::CalcCubemapViewProjMatrices(
     return rv;
 }
 
-void osc::ForEachIndexedVert(Mesh const& mesh, std::function<void(Vec3)> const& callback)
-{
-    mesh.forEachIndexedVert(callback);
-}
-
 std::vector<osc::Vec3> osc::GetAllIndexedVerts(Mesh const& mesh)
 {
     std::vector<Vec3> rv;

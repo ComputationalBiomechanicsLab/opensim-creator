@@ -68,13 +68,6 @@ namespace osc
         Vec3 cubeCenter
     );
 
-    // calls the provided callback with each indexed vertex as-if by calling
-    //
-    //   - callback(mesh.getVertices()[mesh.getIndices()[i]]);
-    //
-    // with range-checking on the indices (invalid indices are ignored)
-    void ForEachIndexedVert(Mesh const&, std::function<void(Vec3)> const&);
-
     // returns a list of vertices in mesh where each vertex was extracted as-if
     // by calling:
     //
