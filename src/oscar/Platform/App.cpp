@@ -1,11 +1,9 @@
 #include "App.hpp"
 
-#include <oscar/Bindings/SDL2Helpers.hpp>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Bindings/imgui_impl_oscargfx.hpp>
 #include <oscar/Graphics/GraphicsContext.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Vec2.hpp>
+#include <oscar/Platform/Detail/SDL2Helpers.hpp>
 #include <oscar/Platform/AppClock.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
@@ -13,6 +11,8 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/Screen.hpp>
 #include <oscar/Platform/Screenshot.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/imgui_impl_oscargfx.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>

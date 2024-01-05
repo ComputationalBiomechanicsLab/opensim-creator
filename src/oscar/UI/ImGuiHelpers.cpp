@@ -1,7 +1,5 @@
 #include "ImGuiHelpers.hpp"
 
-#include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Bindings/imgui_impl_oscargfx.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/RenderTexture.hpp>
@@ -15,6 +13,8 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/imgui_impl_oscargfx.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <IconsFontAwesome5.h>

@@ -17,10 +17,10 @@
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/Station.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <SimTKcommon/SmallMatrix.h>
 

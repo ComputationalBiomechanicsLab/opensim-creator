@@ -1,9 +1,9 @@
 #include "LogViewer.hpp"
 
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CircularBuffer.hpp>
 
 #include <imgui.h>

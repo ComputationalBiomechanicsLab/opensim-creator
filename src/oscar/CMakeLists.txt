@@ -17,14 +17,6 @@ find_package(tomlplusplus REQUIRED CONFIG)
 find_package(unordered_dense REQUIRED CONFIG)
 
 add_library(oscar STATIC
-    Bindings/ImGuiHelpers.cpp
-    Bindings/ImGuiHelpers.hpp
-    Bindings/ImGuizmoHelpers.cpp
-    Bindings/ImGuizmoHelpers.hpp
-    Bindings/imgui_impl_oscargfx.cpp
-    Bindings/imgui_impl_oscargfx.hpp
-    Bindings/SDL2Helpers.hpp
-
     Formats/CSV.hpp
     Formats/CSV.cpp
     Formats/DAE.hpp
@@ -44,10 +36,8 @@ add_library(oscar STATIC
     Graphics/Detail/VertexAttributeHelpers.hpp
     Graphics/Detail/VertexAttributeList.hpp
     Graphics/Detail/VertexAttributeTraits.hpp
-
     Graphics/OpenGL/Gl.cpp
     Graphics/OpenGL/Gl.hpp
-
     Graphics/AntiAliasingLevel.cpp
     Graphics/AntiAliasingLevel.hpp
     Graphics/BlitFlags.hpp
@@ -159,6 +149,7 @@ add_library(oscar STATIC
     Object/PropertyInfo.cpp
     Object/PropertyInfo.hpp
 
+    Platform/Detail/SDL2Helpers.hpp
     Platform/App.cpp
     Platform/App.hpp
     Platform/AppClock.hpp
@@ -257,6 +248,12 @@ add_library(oscar STATIC
     UI/Icon.hpp
     UI/IconCache.cpp
     UI/IconCache.hpp
+    UI/ImGuiHelpers.cpp
+    UI/ImGuiHelpers.hpp
+    UI/ImGuizmoHelpers.cpp
+    UI/ImGuizmoHelpers.hpp
+    UI/imgui_impl_oscargfx.cpp
+    UI/imgui_impl_oscargfx.hpp
 
     Utils/At.hpp
     Utils/Assertions.cpp

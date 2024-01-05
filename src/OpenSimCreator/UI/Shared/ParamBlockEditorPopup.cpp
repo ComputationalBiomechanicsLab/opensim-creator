@@ -5,8 +5,8 @@
 #include <OpenSimCreator/Utils/ParamValue.hpp>
 
 #include <imgui.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 
 #include <span>
 #include <string>

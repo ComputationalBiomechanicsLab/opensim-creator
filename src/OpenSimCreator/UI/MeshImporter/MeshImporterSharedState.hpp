@@ -19,7 +19,6 @@
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
@@ -47,6 +46,7 @@
 #include <oscar/Scene/SceneRendererParams.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/StdVariantHelpers.hpp>
 #include <oscar/Utils/UID.hpp>

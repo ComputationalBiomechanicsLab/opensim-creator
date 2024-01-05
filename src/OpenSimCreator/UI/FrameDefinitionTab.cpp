@@ -33,7 +33,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Formats/OBJ.hpp>
 #include <oscar/Formats/STL.hpp>
 #include <oscar/Graphics/Color.hpp>
@@ -62,6 +61,7 @@
 #include <oscar/UI/Widgets/PopupManager.hpp>
 #include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/UI/Widgets/WindowMenu.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>

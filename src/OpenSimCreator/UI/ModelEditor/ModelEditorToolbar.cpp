@@ -10,11 +10,11 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <IconsFontAwesome5.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/IconCache.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 
 #include <algorithm>

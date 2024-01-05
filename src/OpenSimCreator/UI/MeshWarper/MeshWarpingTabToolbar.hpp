@@ -8,9 +8,9 @@
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/UI/Widgets/RedoButton.hpp>
 #include <oscar/UI/Widgets/UndoButton.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 
 #include <memory>
 #include <string>

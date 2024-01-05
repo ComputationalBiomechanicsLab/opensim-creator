@@ -18,7 +18,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Formats/CSV.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
@@ -28,6 +27,7 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Shims/Cpp20/stop_token.hpp>
 #include <oscar/Shims/Cpp20/thread.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/StringHelpers.hpp>

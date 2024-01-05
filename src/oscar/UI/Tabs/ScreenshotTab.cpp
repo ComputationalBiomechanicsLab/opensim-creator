@@ -1,6 +1,5 @@
 #include "ScreenshotTab.hpp"
 
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
@@ -23,6 +22,7 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/Screenshot.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/SetHelpers.hpp>
 

@@ -40,9 +40,8 @@
 
 // other includes...
 
-#include <oscar/Bindings/Gl.hpp>
-#include <oscar/Bindings/SDL2Helpers.hpp>
 #include <oscar/Graphics/Detail/ShaderLocations.hpp>
+#include <oscar/Graphics/OpenGL/Gl.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/Color32.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
@@ -55,6 +54,7 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
+#include <oscar/Platform/Detail/SDL2Helpers.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/Assertions.hpp>

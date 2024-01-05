@@ -7,11 +7,11 @@
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.hpp>
 
 #include <imgui.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Maths/Circle.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 
 #include <memory>
 #include <string_view>

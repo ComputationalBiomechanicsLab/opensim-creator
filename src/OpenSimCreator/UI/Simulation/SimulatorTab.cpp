@@ -30,7 +30,6 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/os.hpp>
@@ -40,6 +39,7 @@
 #include <oscar/UI/Tabs/TabHost.hpp>
 #include <oscar/UI/Widgets/PopupManager.hpp>
 #include <oscar/UI/Widgets/WindowMenu.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <SimTKcommon/basics.h>
