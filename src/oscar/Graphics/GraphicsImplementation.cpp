@@ -5247,7 +5247,6 @@ private:
         buffers.dataVersion = *m_Version;
     }
 
-    DefaultConstructOnCopy<UID> m_UID;
     DefaultConstructOnCopy<UID> m_Version;
     MeshTopology m_Topology = MeshTopology::Triangles;
     VertexBuffer m_VertexBuffer;
@@ -5256,7 +5255,7 @@ private:
     size_t m_NumIndices = 0;
     std::vector<PackedIndex> m_IndicesData;
 
-    AABB m_AABB{};
+    AABB m_AABB = {};
 
     std::vector<SubMeshDescriptor> m_SubMeshDescriptors;
 
