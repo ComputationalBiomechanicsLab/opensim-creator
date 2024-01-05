@@ -17,8 +17,6 @@ find_package(tomlplusplus REQUIRED CONFIG)
 find_package(unordered_dense REQUIRED CONFIG)
 
 add_library(oscar STATIC
-    Bindings/Gl.cpp
-    Bindings/Gl.hpp
     Bindings/ImGuiHelpers.cpp
     Bindings/ImGuiHelpers.hpp
     Bindings/ImGuizmoHelpers.cpp
@@ -46,6 +44,10 @@ add_library(oscar STATIC
     Graphics/Detail/VertexAttributeHelpers.hpp
     Graphics/Detail/VertexAttributeList.hpp
     Graphics/Detail/VertexAttributeTraits.hpp
+
+    Graphics/OpenGL/Gl.cpp
+    Graphics/OpenGL/Gl.hpp
+
     Graphics/AntiAliasingLevel.cpp
     Graphics/AntiAliasingLevel.hpp
     Graphics/BlitFlags.hpp
