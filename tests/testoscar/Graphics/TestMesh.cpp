@@ -53,6 +53,7 @@ using osc::Identity;
 using osc::Mat4;
 using osc::Mesh;
 using osc::MeshTopology;
+using osc::MeshUpdateFlags;
 using osc::Quat;
 using osc::SubMeshDescriptor;
 using osc::ToColor;
@@ -708,6 +709,62 @@ TEST(Mesh, GetNumIndicesReturnsNumberOfAssignedIndices)
     m.setIndices(indices);
 
     ASSERT_EQ(m.getNumIndices(), 3);
+}
+
+TEST(Mesh, SetIndiciesWithNoFlagsWorksForNormalArgs)
+{
+    auto const indices = GenerateIndices(0, 3);
+
+    Mesh m;
+    m.setVerts(GenerateVertices(3));
+    m.setIndices(indices);
+
+    ASSERT_EQ(m.getNumIndices(), 3);
+}
+
+TEST(Mesh, SetIndicesAlsoWorksIfOnlyIndexesSomeOfTheVerts)
+{
+    auto const indices = GenerateIndices(3, 6);  // only indexes half the verts
+
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+    ASSERT_NO_THROW({ m.setIndices(indices); });
+}
+
+TEST(Mesh, SetIndicesThrowsIfOutOfBounds)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(3));
+    ASSERT_ANY_THROW({ m.setIndices(GenerateIndices(3, 6)); }) << "should throw: indices are out-of-bounds";
+}
+
+TEST(Mesh, SetIndiciesWithDontValidateIndicesAndDontRecalculateBounds)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(3));
+    ASSERT_NO_THROW({ m.setIndices(GenerateIndices(3, 6), MeshUpdateFlags::DontValidateIndices | MeshUpdateFlags::DontRecalculateBounds); }) << "shouldn't throw: we explicitly asked the engine to not check indices";
+}
+
+TEST(Mesh, SetIndicesRecalculatesBounds)
+{
+    Triangle const triangle = GenerateTriangle();
+
+    Mesh m;
+    m.setVerts(triangle);
+    ASSERT_EQ(m.getBounds(), AABB{});
+    m.setIndices(GenerateIndices(0, 3));
+    ASSERT_EQ(m.getBounds(), BoundingAABBOf(triangle));
+}
+
+TEST(Mesh, SetIndicesWithDontRecalculateBoundsDoesNotRecalculateBounds)
+{
+    Triangle const triangle = GenerateTriangle();
+
+    Mesh m;
+    m.setVerts(triangle);
+    ASSERT_EQ(m.getBounds(), AABB{});
+    m.setIndices(GenerateIndices(0, 3), MeshUpdateFlags::DontRecalculateBounds);
+    ASSERT_EQ(m.getBounds(), AABB{}) << "bounds shouldn't update: we explicitly asked for the engine to skip it";
 }
 
 TEST(Mesh, ForEachIndexedVertNotCalledWithEmptyMesh)
