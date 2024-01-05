@@ -68,14 +68,6 @@ namespace osc
         Vec3 cubeCenter
     );
 
-    // returns a list of vertices in mesh where each vertex was extracted as-if
-    // by calling:
-    //
-    //   - mesh.getVertices()[mesh.getIndices()[i]];
-    //
-    // with range-checking on the indices (invalid indices are ignored)
-    std::vector<Vec3> GetAllIndexedVerts(Mesh const&);
-
     // returns the bounding sphere of the given mesh
     Sphere BoundingSphereOf(Mesh const&);
 }

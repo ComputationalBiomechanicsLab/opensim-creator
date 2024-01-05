@@ -56,7 +56,7 @@ namespace osc::testing
         using std::begin;
         using std::end;
 
-        std::vector<decltype(op(std::declval<decltype(*begin(src))>()))> rv;
+        std::vector<std::remove_const_t<std::remove_reference_t<decltype(op(std::declval<decltype(*begin(src))>()))>>> rv;
         rv.reserve(std::distance(begin(src), end(src)));
         for (auto const& el : src)
         {

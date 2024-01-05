@@ -84,6 +84,7 @@ namespace osc
         void forEachIndexedVert(std::function<void(Vec3)> const&) const;
         void forEachIndexedTriangle(std::function<void(Triangle)> const&) const;
         Triangle getTriangleAt(size_t firstIndexOffset) const;
+        std::vector<Vec3> getIndexedVerts() const;
 
         // local-space bounds of the mesh
         //

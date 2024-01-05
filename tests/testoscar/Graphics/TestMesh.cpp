@@ -908,6 +908,34 @@ TEST(Mesh, GetTriangleAtThrowsIfGivenOutOfBoundsIndexOffset)
     ASSERT_ANY_THROW({ m.getTriangleAt(3); }) << "should throw: it's out-of-bounds";
 }
 
+TEST(Mesh, GetIndexedVertsReturnsEmptyArrayForBlankMesh)
+{
+    ASSERT_TRUE(Mesh{}.getIndexedVerts().empty());
+}
+
+TEST(Mesh, GetIndexedVertsReturnsEmptyArrayForMeshWithVertsButNoIndices)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(6));
+
+    ASSERT_TRUE(m.getIndexedVerts().empty());
+}
+
+TEST(Mesh, GetIndexedVertsReturnsOnlyTheIndexedVerts)
+{
+    auto const allVerts = GenerateVertices(12);
+    auto const subIndices = GenerateIndices(5, 8);
+
+    Mesh m;
+    m.setVerts(allVerts);
+    m.setIndices(subIndices);
+
+    auto const expected = MapToVector(std::span{allVerts}.subspan(5, 3), std::identity{});
+    auto const got = m.getIndexedVerts();
+
+    ASSERT_EQ(m.getIndexedVerts(), expected);
+}
+
 TEST(Mesh, GetBoundsReturnsEmptyBoundsOnInitialization)
 {
     Mesh m;

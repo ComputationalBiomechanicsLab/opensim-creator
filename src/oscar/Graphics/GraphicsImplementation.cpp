@@ -4916,6 +4916,14 @@ public:
         };
     }
 
+    std::vector<Vec3> getIndexedVerts() const
+    {
+        std::vector<Vec3> rv;
+        rv.reserve(getNumIndices());
+        forEachIndexedVert([&rv](Vec3 v) { rv.push_back(v); });
+        return rv;
+    }
+
     AABB const& getBounds() const
     {
         return m_AABB;
@@ -5398,6 +5406,11 @@ void osc::Mesh::forEachIndexedTriangle(std::function<void(Triangle)> const& f) c
 osc::Triangle osc::Mesh::getTriangleAt(size_t firstIndexOffset) const
 {
     return m_Impl->getTriangleAt(firstIndexOffset);
+}
+
+std::vector<Vec3> osc::Mesh::getIndexedVerts() const
+{
+    return m_Impl->getIndexedVerts();
 }
 
 osc::AABB const& osc::Mesh::getBounds() const

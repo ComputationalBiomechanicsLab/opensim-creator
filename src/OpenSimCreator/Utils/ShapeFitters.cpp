@@ -549,7 +549,7 @@ osc::Sphere osc::FitSphere(Mesh const& mesh)
     //     use least-squares to solve for `c`
 
     // get mesh data (care: `osc::Mesh`es are indexed)
-    std::vector<Vec3> const points = GetAllIndexedVerts(mesh);
+    std::vector<Vec3> const points = mesh.getIndexedVerts();
     if (points.empty())
     {
         return Sphere{{}, 1.0f};  // edge-case: no points in input mesh
@@ -645,7 +645,7 @@ osc::Plane osc::FitPlane(Mesh const& mesh)
     // point on the plane's surface: mathematically, they're all the same plane
 
     // extract point cloud from mesh (osc::Meshes are indexed)
-    std::vector<Vec3> const vertices = GetAllIndexedVerts(mesh);
+    std::vector<Vec3> const vertices = mesh.getIndexedVerts();
 
     if (vertices.empty())
     {
@@ -718,7 +718,7 @@ osc::Ellipsoid osc::FitEllipsoid(Mesh const& mesh)
     // but that doesn't mention using eigen analysis, which I imagine Yury is using
     // as a form of PCA?
 
-    std::vector<Vec3> const meshVertices = GetAllIndexedVerts(mesh);
+    std::vector<Vec3> const meshVertices = mesh.getIndexedVerts();
     auto const u = SolveEllipsoidAlgebraicForm(meshVertices);
     auto const v = SolveV(u);
     auto const A = CalcA(v);  // form the algebraic form of the ellipsoid

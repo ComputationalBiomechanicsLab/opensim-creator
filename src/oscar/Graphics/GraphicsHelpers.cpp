@@ -400,14 +400,6 @@ std::array<osc::Mat4, 6> osc::CalcCubemapViewProjMatrices(
     return rv;
 }
 
-std::vector<osc::Vec3> osc::GetAllIndexedVerts(Mesh const& mesh)
-{
-    std::vector<Vec3> rv;
-    rv.reserve(mesh.getNumIndices());
-    mesh.forEachIndexedVert([&rv](Vec3 v) { rv.push_back(v); });
-    return rv;
-}
-
 osc::Sphere osc::BoundingSphereOf(Mesh const& mesh)
 {
     return BoundingSphereOf(mesh.getVerts());
