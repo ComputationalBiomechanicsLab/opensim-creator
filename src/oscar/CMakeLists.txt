@@ -273,6 +273,8 @@ add_library(oscar STATIC
     Utils/FilesystemHelpers.hpp
     Utils/HashHelpers.hpp
     Utils/NonTypelist.hpp
+    Utils/NullOStream.hpp
+    Utils/NullStreambuf.hpp
     Utils/ObjectRepresentation.hpp
     Utils/ParalellizationHelpers.hpp
     Utils/ParentPtr.hpp

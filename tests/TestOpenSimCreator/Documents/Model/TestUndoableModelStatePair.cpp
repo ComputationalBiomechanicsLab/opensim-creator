@@ -12,10 +12,13 @@
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
+#include <oscar/Utils/NullOStream.hpp>
 
 #include <sstream>
 #include <filesystem>
 #include <functional>
+
+using osc::NullOStream;
 
 TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
 {
@@ -64,12 +67,12 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
             ASSERT_FALSE(decorations.empty());
 
             // and all decorations can be exported to a DAE format
-            std::stringstream daeData;
+            NullOStream stream;
             osc::DAEMetadata const metadata{TESTOPENSIMCREATOR_APPNAME_STRING, TESTOPENSIMCREATOR_APPNAME_STRING};
-            osc::WriteDecorationsAsDAE(daeData, decorations, metadata);
+            osc::WriteDecorationsAsDAE(stream, decorations, metadata);
 
             // and content is actually written to the DAE stream
-            ASSERT_FALSE(daeData.str().empty());
+            ASSERT_TRUE(stream.wasWrittenTo());
 
             ++nExamplesTested;
         }

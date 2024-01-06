@@ -153,17 +153,18 @@ namespace
         return {osc::ValuePtr(v), 4};
     }
 
-    template<typename T>
-    std::string ToDaeList(std::span<T const> vs)
+    std::ostream& operator<<(std::ostream& out, std::span<float const> vs)
     {
-        std::stringstream ss;
         std::string_view delim;
         for (float v : vs)
         {
-            ss << delim << v;
+            // note: to_string measures faster than directly streaming the value, because
+            //       there's overhead associated with the stream that we don't care about
+            //       for the DAE format (locale, etc.)
+            out << delim << std::to_string(v);
             delim = " ";
         }
-        return std::move(ss).str();
+        return out;
     }
 
     void WriteXMLHeader(std::ostream& o)
@@ -208,7 +209,7 @@ namespace
         o << "              <color sid=\"emission\">0 0 0 1</color>\n";
         o << "            </emission>\n";
         o << "            <diffuse>\n";
-        o << "              <color sid=\"diffuse\">" << ToDaeList(ToFloatSpan(material.color)) << "</color>\n";
+        o << "              <color sid=\"diffuse\">" << ToFloatSpan(material.color) << "</color>\n";
         o << "            </diffuse>\n";
         o << "            <reflectivity>\n";
         o << "              <float sid=\"specular\">0.0</float>\n";
@@ -253,7 +254,7 @@ namespace
         size_t const vertCount = vals.size();
 
         o << "        <source id=\"" << geom.geometryID << "-positions\">\n";
-        o << "          <float_array id=\"" << geom.geometryID << "-positions-array\" count=\"" << floatCount << "\">" << ToDaeList(ToFloatSpan(vals)) << "</float_array>\n";
+        o << "          <float_array id=\"" << geom.geometryID << "-positions-array\" count=\"" << floatCount << "\">" << ToFloatSpan(vals) << "</float_array>\n";
         o << "          <technique_common>\n";
         o << "            <accessor source=\"#" << geom.geometryID << "-positions-array\" count=\"" << vertCount << "\" stride=\"3\">\n";
         o << "              <param name=\"X\" type=\"float\"/>\n";
@@ -271,7 +272,7 @@ namespace
         size_t const normalCount = vals.size();
 
         o << "        <source id=\""  << geom.geometryID << "-normals\">\n";
-        o << "          <float_array id=\"" << geom.geometryID << "-normals-array\" count=\"" << floatCount << "\">" << ToDaeList(ToFloatSpan(vals)) << "</float_array>\n";
+        o << "          <float_array id=\"" << geom.geometryID << "-normals-array\" count=\"" << floatCount << "\">" << ToFloatSpan(vals) << "</float_array>\n";
         o << "          <technique_common>\n";
         o << "            <accessor source=\"#" << geom.geometryID << "-normals-array\" count=\"" << normalCount << "\" stride=\"3\">\n";
         o << "              <param name=\"X\" type=\"float\"/>\n";
@@ -289,7 +290,7 @@ namespace
         size_t const coordCount = vals.size();
 
         o << "        <source id=\"" << geom.geometryID << "-map-0\">\n";
-        o << "          <float_array id=\"" << geom.geometryID << "-map-0-array\" count=\"" << floatCount << "\">" << ToDaeList(ToFloatSpan(vals)) <<  "</float_array>\n";
+        o << "          <float_array id=\"" << geom.geometryID << "-map-0-array\" count=\"" << floatCount << "\">" << ToFloatSpan(vals) <<  "</float_array>\n";
         o << "          <technique_common>\n";
         o << "            <accessor source=\"#" << geom.geometryID << "-map-0-array\" count=\"" << coordCount << "\" stride=\"2\">\n";
         o << "              <param name=\"S\" type=\"float\"/>\n";

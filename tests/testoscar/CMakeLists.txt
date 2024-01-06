@@ -53,6 +53,8 @@ add_executable(testoscar
     Utils/TestFileChangePoller.cpp
     Utils/TestFilenameExtractor.cpp
     Utils/TestNonTypelist.cpp
+    Utils/TestNullOStream.cpp
+    Utils/TestNullStreambuf.cpp
     Utils/TestStringHelpers.cpp
     Utils/TestStringName.cpp
     Utils/TestTypelist.cpp
@@ -63,7 +65,7 @@ add_executable(testoscar
     TestingHelpers.cpp
     TestingHelpers.hpp
     testoscar.cpp  # entry point
- "Graphics/Detail/TestVertexAttributeHelpers.cpp")
+)
 
 
 configure_file(
