@@ -4,6 +4,9 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Internal: ImGui now renders its content via the oscar graphics API, rather
+  than via its own internal OpenGL backend
+
 ## [0.5.6] - 2023/12/22
 
 Happy holidays!
