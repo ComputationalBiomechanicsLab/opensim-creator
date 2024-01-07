@@ -5,6 +5,7 @@
 #include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Mat4.hpp>
+#include <oscar/Maths/Sphere.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
@@ -67,18 +68,6 @@ namespace osc
         Vec3 cubeCenter
     );
 
-    // calls the provided callback with each indexed vertex as-if by calling
-    //
-    //   - callback(mesh.getVertices()[mesh.getIndices()[i]]);
-    //
-    // with range-checking on the indices (invalid indices are ignored)
-    void ForEachIndexedVert(Mesh const&, std::function<void(Vec3)> const&);
-
-    // returns a list of vertices in mesh where each vertex was extracted as-if
-    // by calling:
-    //
-    //   - mesh.getVertices()[mesh.getIndices()[i]];
-    //
-    // with range-checking on the indices (invalid indices are ignored)
-    std::vector<Vec3> GetAllIndexedVerts(Mesh const&);
+    // returns the bounding sphere of the given mesh
+    Sphere BoundingSphereOf(Mesh const&);
 }

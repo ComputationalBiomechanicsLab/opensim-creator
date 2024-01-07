@@ -14,12 +14,12 @@
 #include <OpenSim/Simulation/Model/Point.h>
 #include <OpenSim/Simulation/Model/Station.h>
 #include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Formats/CSV.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>

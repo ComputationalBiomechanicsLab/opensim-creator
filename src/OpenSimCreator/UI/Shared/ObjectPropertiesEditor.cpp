@@ -17,7 +17,6 @@
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
@@ -26,6 +25,7 @@
 #include <oscar/Maths/Vec4.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <SimTKcommon/Constants.h>

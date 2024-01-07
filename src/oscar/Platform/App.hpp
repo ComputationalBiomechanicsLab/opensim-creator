@@ -232,7 +232,6 @@ namespace osc
 
         friend void ImGuiInit();
         friend void ImGuiNewFrame();
-        friend void ImGuiRender();
 
         class Impl;
         std::unique_ptr<Impl> m_Impl;

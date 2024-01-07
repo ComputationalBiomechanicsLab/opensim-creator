@@ -10,9 +10,9 @@
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 

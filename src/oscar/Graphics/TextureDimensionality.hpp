@@ -3,8 +3,9 @@
 namespace osc
 {
     enum class TextureDimensionality {
-        Tex2D = 0,
+        Tex2D,
         Cube,
+
         NUM_OPTIONS,
     };
 }

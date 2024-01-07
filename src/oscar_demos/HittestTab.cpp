@@ -1,10 +1,10 @@
 #include "HittestTab.hpp"
 
 #include <IconsFontAwesome5.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Graphics.hpp>
+#include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MaterialPropertyBlock.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
@@ -17,6 +17,7 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
@@ -234,7 +235,7 @@ private:
             {
                 Transform aabbTransform;
                 aabbTransform.position = sphere.pos;
-                aabbTransform.scale = 0.5f * Dimensions(m_SceneSphereAABB);
+                aabbTransform.scale = HalfWidths(m_SceneSphereAABB);
 
                 Graphics::DrawMesh(
                     m_WireframeCubeMesh,
@@ -250,17 +251,19 @@ private:
         {
             Line const ray = GetCameraRay(m_Camera);
 
-            Disc sceneDisc{};
-            sceneDisc.origin = {0.0f, 0.0f, 0.0f};
-            sceneDisc.normal = {0.0f, 1.0f, 0.0f};
-            sceneDisc.radius = {10.0f};
+            Disc const sceneDisc{
+                .origin = {0.0f, 0.0f, 0.0f},
+                .normal = {0.0f, 1.0f, 0.0f},
+                .radius = 10.0f,
+            };
 
-            std::optional<RayCollision> maybeCollision = GetRayCollisionDisc(ray, sceneDisc);
+            std::optional<RayCollision> const maybeCollision = GetRayCollisionDisc(ray, sceneDisc);
 
-            Disc meshDisc{};
-            meshDisc.origin = {0.0f, 0.0f, 0.0f};
-            meshDisc.normal = {0.0f, 0.0f, 1.0f};
-            meshDisc.radius = 1.0f;
+            Disc const meshDisc{
+                .origin = {0.0f, 0.0f, 0.0f},
+                .normal = {0.0f, 0.0f, 1.0f},
+                .radius = 1.0f,
+            };
 
             Graphics::DrawMesh(
                 m_CircleMesh,
@@ -325,9 +328,9 @@ private:
     // scene state
     std::vector<SceneSphere> m_SceneSpheres = GenerateSceneSpheres();
     AABB m_SceneSphereAABB = m_SphereMesh.getBounds();
-    Sphere m_SceneSphereBoundingSphere = BoundingSphereOf(m_SphereMesh.getVerts());
+    Sphere m_SceneSphereBoundingSphere = BoundingSphereOf(m_SphereMesh);
     bool m_IsMouseCaptured = false;
-    Vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+    Vec3 m_CameraEulers{};
     bool m_IsShowingAABBs = true;
 };
 

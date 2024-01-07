@@ -17,15 +17,6 @@ find_package(tomlplusplus REQUIRED CONFIG)
 find_package(unordered_dense REQUIRED CONFIG)
 
 add_library(oscar STATIC
-
-    Bindings/Gl.cpp
-    Bindings/Gl.hpp
-    Bindings/ImGuiHelpers.cpp
-    Bindings/ImGuiHelpers.hpp
-    Bindings/ImGuizmoHelpers.cpp
-    Bindings/ImGuizmoHelpers.hpp
-    Bindings/SDL2Helpers.hpp
-
     Formats/CSV.hpp
     Formats/CSV.cpp
     Formats/DAE.hpp
@@ -37,6 +28,16 @@ add_library(oscar STATIC
     Formats/SVG.hpp
     Formats/SVG.cpp
 
+    Graphics/Detail/ShaderLocations.hpp
+    Graphics/Detail/Unorm8.hpp
+    Graphics/Detail/VertexAttributeFormatHelpers.hpp
+    Graphics/Detail/VertexAttributeFormatList.hpp
+    Graphics/Detail/VertexAttributeFormatTraits.hpp
+    Graphics/Detail/VertexAttributeHelpers.hpp
+    Graphics/Detail/VertexAttributeList.hpp
+    Graphics/Detail/VertexAttributeTraits.hpp
+    Graphics/OpenGL/Gl.cpp
+    Graphics/OpenGL/Gl.hpp
     Graphics/AntiAliasingLevel.cpp
     Graphics/AntiAliasingLevel.hpp
     Graphics/BlitFlags.hpp
@@ -65,6 +66,7 @@ add_library(oscar STATIC
     Graphics/MeshIndicesView.hpp
     Graphics/Mesh.hpp
     Graphics/MeshTopology.hpp
+    Graphics/MeshUpdateFlags.hpp
     Graphics/RenderBuffer.hpp
     Graphics/RenderBufferLoadAction.hpp
     Graphics/RenderBufferStoreAction.hpp
@@ -83,10 +85,8 @@ add_library(oscar STATIC
     Graphics/Shader.hpp
     Graphics/ShaderCache.cpp
     Graphics/ShaderCache.hpp
-    Graphics/ShaderLocations.hpp
     Graphics/ShaderPropertyType.hpp
     Graphics/SubMeshDescriptor.hpp
-    Graphics/Texture2D.hpp
     Graphics/TextureChannelFormat.hpp
     Graphics/TextureDimensionality.hpp
     Graphics/TextureFilterMode.hpp
@@ -94,6 +94,13 @@ add_library(oscar STATIC
     Graphics/TextureGenerators.cpp
     Graphics/TextureGenerators.hpp
     Graphics/TextureWrapMode.hpp
+    Graphics/Texture2D.hpp
+    Graphics/VertexAttribute.hpp
+    Graphics/VertexAttributeDescriptor.cpp
+    Graphics/VertexAttributeDescriptor.hpp
+    Graphics/VertexAttributeFormat.hpp
+    Graphics/VertexFormat.cpp
+    Graphics/VertexFormat.hpp
 
     Maths/AABB.hpp
     Maths/BVH.hpp
@@ -142,6 +149,7 @@ add_library(oscar STATIC
     Object/PropertyInfo.cpp
     Object/PropertyInfo.hpp
 
+    Platform/Detail/SDL2Helpers.hpp
     Platform/App.cpp
     Platform/App.hpp
     Platform/AppClock.hpp
@@ -240,6 +248,12 @@ add_library(oscar STATIC
     UI/Icon.hpp
     UI/IconCache.cpp
     UI/IconCache.hpp
+    UI/ImGuiHelpers.cpp
+    UI/ImGuiHelpers.hpp
+    UI/ImGuizmoHelpers.cpp
+    UI/ImGuizmoHelpers.hpp
+    UI/imgui_impl_oscargfx.cpp
+    UI/imgui_impl_oscargfx.hpp
 
     Utils/At.hpp
     Utils/Assertions.cpp
@@ -258,6 +272,9 @@ add_library(oscar STATIC
     Utils/FilesystemHelpers.cpp
     Utils/FilesystemHelpers.hpp
     Utils/HashHelpers.hpp
+    Utils/NonTypelist.hpp
+    Utils/NullOStream.hpp
+    Utils/NullStreambuf.hpp
     Utils/ObjectRepresentation.hpp
     Utils/ParalellizationHelpers.hpp
     Utils/ParentPtr.hpp
@@ -276,6 +293,7 @@ add_library(oscar STATIC
     Utils/StdVariantHelpers.hpp
     Utils/SynchronizedValue.hpp
     Utils/SynchronizedValueGuard.hpp
+    Utils/Typelist.hpp
     Utils/UID.cpp
     Utils/UID.hpp
     Utils/UndoRedo.cpp

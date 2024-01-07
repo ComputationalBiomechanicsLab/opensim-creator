@@ -7,8 +7,9 @@ namespace osc
 {
     // which primitive geometry the mesh data represents
     enum class MeshTopology {
-        Triangles = 0,
+        Triangles,
         Lines,
+
         NUM_OPTIONS,
     };
 

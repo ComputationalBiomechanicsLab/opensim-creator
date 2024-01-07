@@ -11,11 +11,11 @@
 #include <implot.h>
 #include <IconsFontAwesome5.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <SimTKcommon.h>

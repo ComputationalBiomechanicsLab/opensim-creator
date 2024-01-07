@@ -7,7 +7,7 @@
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 

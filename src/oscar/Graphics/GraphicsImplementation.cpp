@@ -1,5 +1,10 @@
 // these are the things that this file "implements"
 
+#include <oscar/Graphics/Detail/Unorm8.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeFormatHelpers.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeFormatList.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeFormatTraits.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/CameraClearFlags.hpp>
 #include <oscar/Graphics/CameraProjection.hpp>
@@ -28,15 +33,18 @@
 #include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
+#include <oscar/Graphics/VertexAttribute.hpp>
+#include <oscar/Graphics/VertexAttributeDescriptor.hpp>
+#include <oscar/Graphics/VertexAttributeFormat.hpp>
+#include <oscar/Graphics/VertexFormat.hpp>
 
 // other includes...
 
-#include <oscar/Bindings/Gl.hpp>
-#include <oscar/Bindings/SDL2Helpers.hpp>
+#include <oscar/Graphics/Detail/ShaderLocations.hpp>
+#include <oscar/Graphics/OpenGL/Gl.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/Color32.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/ShaderLocations.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Mat3.hpp>
@@ -46,12 +54,14 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
+#include <oscar/Platform/Detail/SDL2Helpers.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/DefaultConstructOnCopy.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/NonTypelist.hpp>
 #include <oscar/Utils/ObjectRepresentation.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/StdVariantHelpers.hpp>
@@ -80,6 +90,12 @@
 #include <variant>
 #include <vector>
 
+using osc::detail::DefaultFormat;
+using osc::detail::NumComponents;
+using osc::detail::SizeOfComponent;
+using osc::detail::Unorm8;
+using osc::detail::VertexAttributeFormatList;
+using osc::detail::VertexAttributeFormatTraits;
 using osc::Color;
 using osc::Color32;
 using osc::ColorSpace;
@@ -87,6 +103,7 @@ using osc::CStringView;
 using osc::Cubemap;
 using osc::CubemapFace;
 using osc::CullMode;
+using osc::DefaultConstructOnCopy;
 using osc::DepthFunction;
 using osc::DepthStencilFormat;
 using osc::LogLevel;
@@ -96,6 +113,9 @@ using osc::Material;
 using osc::MaterialPropertyBlock;
 using osc::Mesh;
 using osc::MeshTopology;
+using osc::NonTypelist;
+using osc::NonTypelistSizeV;
+using osc::NumOptions;
 using osc::Overload;
 using osc::Quat;
 using osc::RenderBufferType;
@@ -103,6 +123,7 @@ using osc::RenderTexture;
 using osc::RenderTextureDescriptor;
 using osc::RenderTextureFormat;
 using osc::RenderTextureReadWrite;
+using osc::SameAs;
 using osc::ShaderPropertyType;
 using osc::Texture2D;
 using osc::TextureChannelFormat;
@@ -112,10 +133,14 @@ using osc::TextureFormat;
 using osc::TextureWrapMode;
 using osc::Transform;
 using osc::UID;
+using osc::VertexAttributeFormat;
+using osc::Vec;
 using osc::Vec2;
 using osc::Vec2i;
 using osc::Vec3;
 using osc::Vec4;
+using osc::VertexAttribute;
+using osc::VertexFormat;
 
 // shader source
 namespace
@@ -1811,13 +1836,6 @@ public:
         std::copy(pixelData.begin(), pixelData.end(), m_PixelData.begin());
     }
 
-    void* getTextureHandleHACK() const
-    {
-        // yes, this is a shitshow of casting, const-casting, etc. - it's purely here until and osc-specific
-        // ImGui backend is written
-        return reinterpret_cast<void*>(static_cast<uintptr_t>(const_cast<Impl&>(*this).updTexture().get()));
-    }
-
     // non PIMPL method
 
     gl::Texture2D& updTexture()
@@ -2047,11 +2065,6 @@ osc::TextureFilterMode osc::Texture2D::getFilterMode() const
 void osc::Texture2D::setFilterMode(TextureFilterMode twm)
 {
     m_Impl.upd()->setFilterMode(twm);
-}
-
-void* osc::Texture2D::getTextureHandleHACK() const
-{
-    return m_Impl->getTextureHandleHACK();
 }
 
 std::vector<osc::Color> osc::Texture2D::getPixels() const
@@ -2795,20 +2808,6 @@ public:
         return m_DepthBuffer->m_Impl->updRenderBufferData();
     }
 
-    void* getTextureHandleHACK() const
-    {
-        // yes, this is a shitshow of casting, const-casting, etc. - it's purely here until and osc-specific
-        // ImGui backend is written
-        void* rv = nullptr;
-        std::visit(Overload
-        {
-            [&rv](SingleSampledTexture& sst) { rv = reinterpret_cast<void*>(static_cast<uintptr_t>(sst.texture2D.get())); },
-            [&rv](MultisampledRBOAndResolvedTexture& mst) { rv = reinterpret_cast<void*>(static_cast<uintptr_t>(mst.singleSampledTexture.get())); },
-            [](SingleSampledCubemap&) {}
-        },  const_cast<Impl&>(*this).getColorRenderBufferData());
-        return rv;
-    }
-
     bool hasBeenRenderedTo() const
     {
         return m_ColorBuffer->m_Impl->hasBeenRenderedTo();
@@ -2919,11 +2918,6 @@ std::shared_ptr<osc::RenderBuffer> osc::RenderTexture::updColorBuffer()
 std::shared_ptr<osc::RenderBuffer> osc::RenderTexture::updDepthBuffer()
 {
     return m_Impl.upd()->updDepthBuffer();
-}
-
-void* osc::RenderTexture::getTextureHandleHACK() const
-{
-    return m_Impl->getTextureHandleHACK();
 }
 
 std::ostream& osc::operator<<(std::ostream& o, RenderTexture const&)
@@ -4033,6 +4027,674 @@ namespace
             return GL_TRIANGLES;
         }
     }
+
+    // types that can be read/written to/from a vertex buffer by higher
+    // levels of the API
+    template<class T>
+    concept UserFacingVertexData =
+        SameAs<T, Vec2> ||
+        SameAs<T, Vec3> ||
+        SameAs<T, Vec4> ||
+        SameAs<T, Vec<4, Unorm8>> ||  // HACK: not really user-facing, but used internally
+        SameAs<T, Color> ||
+        SameAs<T, Color32>;
+
+    // types that are encode-/decode-able into a vertex buffer
+    template<class T>
+    concept VertexBufferComponent =
+        SameAs<T, float> ||
+        SameAs<T, Unorm8>;
+
+    // low-level single-component Decode/Encode functions
+    template<VertexBufferComponent EncodedValue, class DecodedValue>
+    DecodedValue Decode(std::byte const*);
+
+    template<class DecodedValue, VertexBufferComponent EncodedValue>
+    void Encode(std::byte*, DecodedValue);
+
+    template<>
+    float Decode<float, float>(std::byte const* p)
+    {
+        return *std::launder(reinterpret_cast<float const*>(p));
+    }
+
+    template<>
+    void Encode<float, float>(std::byte* p, float v)
+    {
+        *std::launder(reinterpret_cast<float*>(p)) = v;
+    }
+
+    template<>
+    float Decode<Unorm8, float>(std::byte const* p)
+    {
+        return Unorm8{*p}.normalized();
+    }
+
+    template<>
+    void Encode<float, Unorm8>(std::byte* p, float v)
+    {
+        *p = Unorm8{v}.byte();
+    }
+
+    template<>
+    Unorm8 Decode<Unorm8, Unorm8>(std::byte const* p)
+    {
+        return Unorm8{*p};
+    }
+
+    template<>
+    void Encode<Unorm8, Unorm8>(std::byte* p, Unorm8 v)
+    {
+        *p = v.byte();
+    }
+
+    // mid-level multi-component Decode/Encode functions
+    template<UserFacingVertexData T, VertexAttributeFormat EncodingFormat>
+    void EncodeMany(std::byte* p, T const& v)
+    {
+        using ComponentType = typename VertexAttributeFormatTraits<EncodingFormat>::component_type;
+        constexpr auto numComponents = NumComponents(EncodingFormat);
+        constexpr auto sizeOfComponent = SizeOfComponent(EncodingFormat);
+        constexpr auto n = std::min(T::length(), static_cast<typename T::length_type>(numComponents));
+
+        for (typename T::length_type i = 0; i < n; ++i)
+        {
+            Encode<typename T::value_type, ComponentType>(p + i*sizeOfComponent, v[i]);
+        }
+    }
+
+    template<VertexAttributeFormat EncodingFormat, UserFacingVertexData T>
+    T DecodeMany(std::byte const* p)
+    {
+        using ComponentType = typename VertexAttributeFormatTraits<EncodingFormat>::component_type;
+        constexpr auto numComponents = NumComponents(EncodingFormat);
+        constexpr auto sizeOfComponent = SizeOfComponent(EncodingFormat);
+        constexpr auto n = std::min(T::length(), static_cast<typename T::length_type>(numComponents));
+
+        T rv{};
+        for (typename T::length_type i = 0; i < n; ++i)
+        {
+            rv[i] = Decode<ComponentType, typename T::value_type>(p + i*sizeOfComponent);
+        }
+        return rv;
+    }
+
+    // high-level, compile-time multi-component Decode + Encode definition
+    template<UserFacingVertexData T>
+    class MultiComponentEncoding final {
+    public:
+        explicit MultiComponentEncoding(VertexAttributeFormat f)
+        {
+            static_assert(NumOptions<VertexAttributeFormat>() == 4);
+
+            switch (f) {
+            case VertexAttributeFormat::Float32x2:
+                m_Encoder = EncodeMany<T, VertexAttributeFormat::Float32x2>;
+                m_Decoder = DecodeMany<VertexAttributeFormat::Float32x2, T>;
+                break;
+            case VertexAttributeFormat::Float32x3:
+                m_Encoder = EncodeMany<T, VertexAttributeFormat::Float32x3>;
+                m_Decoder = DecodeMany<VertexAttributeFormat::Float32x3, T>;
+                break;
+            default:
+            case VertexAttributeFormat::Float32x4:
+                m_Encoder = EncodeMany<T, VertexAttributeFormat::Float32x4>;
+                m_Decoder = DecodeMany<VertexAttributeFormat::Float32x4, T>;
+                break;
+            case VertexAttributeFormat::Unorm8x4:
+                m_Encoder = EncodeMany<T, VertexAttributeFormat::Unorm8x4>;
+                m_Decoder = DecodeMany<VertexAttributeFormat::Unorm8x4, T>;
+                break;
+            }
+        }
+
+        void encode(std::byte* b, T const& v) const
+        {
+            m_Encoder(b, v);
+        }
+
+        T decode(std::byte const* b) const
+        {
+            return m_Decoder(b);
+        }
+
+        friend bool operator==(MultiComponentEncoding const&, MultiComponentEncoding const&) = default;
+    private:
+        using Encoder = void(*)(std::byte*, T const&);
+        Encoder m_Encoder;
+
+        using Decoder = T(*)(std::byte const*);
+        Decoder m_Decoder;
+    };
+
+    // a single compile-time reencoding function
+    //
+    // decodes in-memory data in a source format, converts it to a desination format, and then
+    // writes it to the destination memory
+    template<VertexAttributeFormat SourceFormat, VertexAttributeFormat DestinationFormat>
+    void Reencode(std::span<std::byte const> src, std::span<std::byte> dest)
+    {
+        using SourceCPUFormat = typename VertexAttributeFormatTraits<SourceFormat>::type;
+        using DestCPUFormat = typename VertexAttributeFormatTraits<DestinationFormat>::type;
+        constexpr auto n = std::min(SourceCPUFormat::length(), DestCPUFormat::length());
+
+        auto const decoded = DecodeMany<SourceFormat, SourceCPUFormat>(src.data());
+        DestCPUFormat converted{};
+        for (int i = 0; i < n; ++i)
+        {
+            converted[i] = typename DestCPUFormat::value_type{decoded[i]};
+        }
+        EncodeMany<DestCPUFormat, DestinationFormat>(dest.data(), converted);
+    }
+
+    // type-erased (i.e. runtime) reencoder function
+    using ReencoderFunction = void(*)(std::span<std::byte const>, std::span<std::byte>);
+
+    // compile-time lookup table (LUT) for runtime reencoder functions
+    class ReencoderLut final {
+    private:
+        static constexpr size_t indexOf(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat)
+        {
+            return static_cast<size_t>(sourceFormat)*NumOptions<VertexAttributeFormat>() + static_cast<size_t>(destinationFormat);
+        }
+
+        template<VertexAttributeFormat... Formats>
+        static constexpr void WriteEntriesTopLevel(ReencoderLut& lut, NonTypelist<VertexAttributeFormat, Formats...>)
+        {
+            (WriteEntries<Formats, Formats...>(lut), ...);
+        }
+
+        template<VertexAttributeFormat SourceFormat, VertexAttributeFormat... DestinationFormats>
+        static constexpr void WriteEntries(ReencoderLut& lut)
+        {
+            (WriteEntry<SourceFormat, DestinationFormats>(lut), ...);
+        }
+
+        template<VertexAttributeFormat SourceFormat, VertexAttributeFormat DestinationFormat>
+        static constexpr void WriteEntry(ReencoderLut& lut)
+        {
+            lut.assign(SourceFormat, DestinationFormat, Reencode<SourceFormat, DestinationFormat>);
+        }
+    public:
+        constexpr ReencoderLut()
+        {
+            WriteEntriesTopLevel(*this, VertexAttributeFormatList{});
+
+            for (auto entry : m_Storage)
+            {
+                OSC_ASSERT_ALWAYS(entry != nullptr);
+            }
+        }
+
+        constexpr void assign(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat, ReencoderFunction f)
+        {
+            m_Storage.at(indexOf(sourceFormat, destinationFormat)) = f;
+        }
+
+        constexpr ReencoderFunction const& lookup(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat) const
+        {
+            return m_Storage.at(indexOf(sourceFormat, destinationFormat));
+        }
+
+    private:
+        std::array<ReencoderFunction, NumOptions<VertexAttributeFormat>()*NumOptions<VertexAttributeFormat>()> m_Storage{};
+    };
+
+    constexpr ReencoderLut c_ReencoderLUT;
+
+    struct VertexBufferAttributeReencoder final {
+        ReencoderFunction reencode;
+        size_t sourceOffset;
+        size_t sourceStride;
+        size_t destintionOffset;
+        size_t destinationStride;
+    };
+
+    std::vector<VertexBufferAttributeReencoder> GetReencoders(VertexFormat const& srcFormat, VertexFormat const& destFormat)
+    {
+        std::vector<VertexBufferAttributeReencoder> rv;
+        rv.reserve(destFormat.numAttributes());  // guess
+
+        for (auto const destLayout : destFormat.attributeLayouts())
+        {
+            if (auto const srcLayout = srcFormat.attributeLayout(destLayout.attribute()))
+            {
+                rv.push_back({
+                    c_ReencoderLUT.lookup(srcLayout->format(), destLayout.format()),
+                    srcLayout->offset(),
+                    srcLayout->stride(),
+                    destLayout.offset(),
+                    destLayout.stride(),
+                });
+            }
+        }
+        return rv;
+    }
+
+    void ReEncodeVertexBuffer(
+        std::span<std::byte const> src,
+        VertexFormat const& srcFormat,
+        std::span<std::byte> dest,
+        VertexFormat const& destFormat)
+    {
+        size_t const srcStride = srcFormat.stride();
+        size_t const destStride = destFormat.stride();
+
+        if (srcStride == 0 || destStride == 0)
+        {
+            return;  // no reencoding necessary
+        }
+        OSC_ASSERT(src.size() % srcStride == 0);
+        OSC_ASSERT(dest.size() % destStride == 0);
+
+        size_t const n = std::min(src.size() / srcStride, dest.size() / destStride);
+
+        auto const reencoders = GetReencoders(srcFormat, destFormat);
+        for (size_t i = 0; i < n; ++i)
+        {
+            auto const srcData = src.subspan(i*srcStride);
+            auto const destData = dest.subspan(i*destStride);
+
+            for (auto const& reencoder : reencoders)
+            {
+                auto const srcAttrData = srcData.subspan(reencoder.sourceOffset, reencoder.sourceStride);
+                auto const destAttrData = destData.subspan(reencoder.destintionOffset, reencoder.destinationStride);
+                reencoder.reencode(srcAttrData, destAttrData);
+            }
+        }
+    }
+
+    // reperesents vertex data on the CPU
+    class VertexBuffer final {
+    public:
+
+        // proxies (via encoders/decoders) access to a value in the vertex buffer's bytes
+        template<UserFacingVertexData T, bool IsConst>
+        class AttributeValueProxy final {
+        public:
+            using Byte = std::conditional_t<IsConst, std::byte const, std::byte>;
+
+            AttributeValueProxy(Byte* data_, MultiComponentEncoding<T> encoding_) :
+                m_Data{data_},
+                m_Encoding{encoding_}
+            {
+            }
+
+            AttributeValueProxy& operator=(T const& v) requires (!IsConst)
+            {
+                m_Encoding.encode(m_Data, v);
+                return *this;
+            }
+
+            operator T () const  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+            {
+                return m_Encoding.decode(m_Data);
+            }
+        private:
+            Byte* m_Data;
+            MultiComponentEncoding<T> m_Encoding;
+        };
+
+        // iterator for vertex buffer's contents (via encoders/decoders)
+        template<UserFacingVertexData T, bool IsConst>
+        class AttributeValueIterator final {
+        public:
+            using difference_type = ptrdiff_t;
+            using value_type = AttributeValueProxy<T, IsConst>;
+            using reference = value_type;
+            using iterator_category = std::random_access_iterator_tag;
+
+            using Byte = std::conditional_t<IsConst, std::byte const, std::byte>;
+
+            AttributeValueIterator(
+                Byte* data_,
+                size_t stride_,
+                MultiComponentEncoding<T> encoding_) :
+
+                m_Data{data_},
+                m_Stride{stride_},
+                m_Encoding{encoding_}
+            {
+            }
+
+            AttributeValueProxy<T, IsConst> operator*() const
+            {
+                return AttributeValueProxy<T, IsConst>{m_Data, m_Encoding};
+            }
+
+            AttributeValueIterator& operator++()
+            {
+                *this += 1;
+                return *this;
+            }
+
+            AttributeValueIterator operator++(int)
+            {
+                auto tmp = *this;
+                ++(*this);
+                return tmp;
+            }
+
+            AttributeValueIterator& operator--()
+            {
+                *this -= 1;
+                return *this;
+            }
+
+            AttributeValueIterator operator--(int)
+            {
+                auto tmp = *this;
+                --(*this);
+                return tmp;
+            }
+
+            AttributeValueIterator& operator+=(difference_type i)
+            {
+                m_Data += i*m_Stride;
+                return *this;
+            }
+
+            AttributeValueIterator operator+(difference_type i) const
+            {
+                auto copy = *this;
+                copy += i;
+                return copy;
+            }
+
+            AttributeValueIterator& operator-=(difference_type i)
+            {
+                m_Data -= i*m_Stride;
+            }
+
+            AttributeValueIterator operator-(difference_type i)
+            {
+                auto copy = *this;
+                copy -= i;
+                return copy;
+            }
+
+            difference_type operator-(AttributeValueIterator const& rhs) const
+            {
+                return (m_Data - rhs.m_Data) / m_Stride;
+            }
+
+            AttributeValueProxy<T, IsConst> operator[](difference_type n) const
+            {
+                return *(*this + n);
+            }
+
+            bool operator<(AttributeValueIterator const& rhs) const
+            {
+                return m_Data < rhs.m_Data;
+            }
+
+            bool operator>(AttributeValueIterator const& rhs) const
+            {
+                return m_Data > rhs.m_Data;
+            }
+
+            bool operator<=(AttributeValueIterator const& rhs) const
+            {
+                return m_Data <= rhs.m_Data;
+            }
+
+            bool operator>=(AttributeValueIterator const& rhs) const
+            {
+                return m_Data >= rhs.m_Data;
+            }
+
+            friend bool operator==(AttributeValueIterator const&, AttributeValueIterator const&) = default;
+        private:
+            Byte* m_Data;
+            size_t m_Stride;
+            MultiComponentEncoding<T> m_Encoding;
+        };
+
+        // range (C++20) for vertex buffer's contents
+        template<UserFacingVertexData T, bool IsConst>
+        class AttributeValueRange final {
+        public:
+            using Byte = std::conditional_t<IsConst, std::byte const, std::byte>;
+            using iterator = AttributeValueIterator<T, IsConst>;
+            using value_type = typename iterator::value_type;
+            using difference_type = typename iterator::difference_type;
+
+            AttributeValueRange() = default;
+
+            AttributeValueRange(
+                std::span<Byte> data_,
+                size_t stride_,
+                VertexAttributeFormat format_) :
+
+                m_Data{data_},
+                m_Stride{stride_},
+                m_Encoding{format_}
+            {
+            }
+
+            iterator begin() const
+            {
+                return {m_Data.data(), m_Stride, m_Encoding};
+            }
+
+            iterator end() const
+            {
+                return {m_Data.data() + m_Data.size(), m_Stride, m_Encoding};
+            }
+
+            value_type at(difference_type i) const
+            {
+                auto const beg = begin();
+                if (i >= std::distance(beg, end()))
+                {
+                    throw std::out_of_range{"an attribute value was out-of-range: this is usually because of out-of-range mesh indices"};
+                }
+                return beg[i];
+            }
+
+            value_type operator[](difference_type i) const
+            {
+                return begin()[i];
+            }
+        private:
+            std::span<Byte> m_Data{};
+            size_t m_Stride = 1;  // care: divide by zero in an iterator is UB
+            MultiComponentEncoding<T> m_Encoding{VertexAttributeFormat::Float32x3};  // dummy, for default ctor
+        };
+
+        // default ctor: make an empty buffer
+        VertexBuffer() = default;
+
+        // formatted ctor: make a buffer of the specified size+format
+        VertexBuffer(size_t numVerts, VertexFormat const& format) :
+            m_Data(numVerts * format.stride()),
+            m_VertexFormat{format}
+        {
+        }
+
+        void clear()
+        {
+            m_Data.clear();
+            m_VertexFormat.clear();
+        }
+
+        size_t numVerts() const
+        {
+            return !m_VertexFormat.empty() ? (m_Data.size() / m_VertexFormat.stride()) : 0;
+        }
+
+        size_t numAttributes() const
+        {
+            return m_VertexFormat.numAttributes();
+        }
+
+        size_t stride() const
+        {
+            return m_VertexFormat.stride();
+        }
+
+        [[nodiscard]] bool hasVerts() const
+        {
+            return numVerts() > 0;
+        }
+
+        std::span<std::byte const> bytes() const
+        {
+            return m_Data;
+        }
+
+        VertexFormat const& format() const
+        {
+            return m_VertexFormat;
+        }
+
+        auto attributeLayouts() const
+        {
+            return m_VertexFormat.attributeLayouts();
+        }
+
+        bool hasAttribute(VertexAttribute attr) const
+        {
+            return m_VertexFormat.contains(attr);
+        }
+
+        template<UserFacingVertexData T>
+        auto iter(VertexAttribute attr) const
+        {
+            if (auto const layout = m_VertexFormat.attributeLayout(attr))
+            {
+                std::span<std::byte const> offsetSpan{m_Data.data() + layout->offset(), m_Data.size()};
+                return AttributeValueRange<T, true>
+                {
+                    offsetSpan,
+                    m_VertexFormat.stride(),
+                    layout->format(),
+                };
+            }
+            else
+            {
+                return AttributeValueRange<T, true>{};
+            }
+        }
+
+        template<UserFacingVertexData T>
+        auto iter(VertexAttribute attr)
+        {
+            if (auto const layout = m_VertexFormat.attributeLayout(attr))
+            {
+                std::span<std::byte> offsetSpan{m_Data.data() + layout->offset(), m_Data.size()};
+                return AttributeValueRange<T, false>
+                {
+                    offsetSpan,
+                    m_VertexFormat.stride(),
+                    layout->format(),
+                };
+            }
+            else
+            {
+                return AttributeValueRange<T, false>{};
+            }
+        }
+
+        template<UserFacingVertexData T>
+        std::vector<T> read(VertexAttribute attr) const
+        {
+            auto range = iter<T>(attr);
+            return std::vector<T>(range.begin(), range.end());
+        }
+
+        template<UserFacingVertexData T>
+        void write(VertexAttribute attr, std::span<T const> els)
+        {
+            // edge-case: size == 0 should be treated as "wipe it"
+            if (els.empty() && m_VertexFormat.contains(attr))
+            {
+                VertexFormat newFormat{m_VertexFormat};
+                newFormat.erase(attr);
+                setParams(numVerts(), newFormat);
+                return;
+            }
+
+            if (attr != VertexAttribute::Position)
+            {
+                if (els.size() != numVerts())
+                {
+                    // non-`Position` attributes must be size-matched
+                    return;
+                }
+
+                if (!m_VertexFormat.contains(VertexAttribute::Position))
+                {
+                    // callers must've already assigned `Position` before this
+                    // function is able to assign additional attributes
+                    return;
+                }
+            }
+
+            if (!m_VertexFormat.contains(attr))
+            {
+                // reformat
+                VertexFormat newFormat{m_VertexFormat};
+                newFormat.insert({attr, DefaultFormat(attr)});
+                setParams(els.size(), newFormat);
+            }
+            else if (els.size() != numVerts())
+            {
+                // resize
+                setParams(els.size(), m_VertexFormat);
+            }
+
+            // write els to vertex buffer
+            std::copy(els.begin(), els.end(), iter<T>(attr).begin());
+        }
+
+        template<class T>
+        void transformAttribute(VertexAttribute attr, std::function<void(T&)> const& f)
+        {
+            for (auto&& proxy : iter<T>(attr))
+            {
+                T v{proxy};
+                f(v);
+                proxy = v;
+            }
+        }
+
+        void setParams(size_t newNumVerts, VertexFormat const& newFormat)
+        {
+            if (m_Data.empty())
+            {
+                // zero-initialize the buffer in the "new" format
+                m_Data.resize(newNumVerts * newFormat.stride());
+                m_VertexFormat = newFormat;
+            }
+            if (newFormat != m_VertexFormat)
+            {
+                // initialize a new buffer and re-encode the old one in the new format
+                std::vector<std::byte> newBuf(newNumVerts * newFormat.stride());
+                ReEncodeVertexBuffer(m_Data, m_VertexFormat, newBuf, newFormat);
+                m_Data = std::move(newBuf);
+                m_VertexFormat = newFormat;
+            }
+            else if (newNumVerts != numVerts())
+            {
+                // resize (zero-initialized, if growing) the buffer
+                m_Data.resize(newNumVerts * m_VertexFormat.stride());
+            }
+            else
+            {
+                // no change in format or size, do nothing
+            }
+        }
+
+        void setData(std::span<std::byte const> newData)
+        {
+            OSC_ASSERT(newData.size() == m_Data.size() && "provided data size does not match the size of the vertex buffer");
+            m_Data.assign(newData.begin(), newData.end());
+        }
+    private:
+        std::vector<std::byte> m_Data;
+        VertexFormat m_VertexFormat;
+    };
 }
 
 class osc::Mesh::Impl final {
@@ -4049,102 +4711,134 @@ public:
         m_Version->reset();
     }
 
-    std::span<Vec3 const> getVerts() const
+    size_t getNumVerts() const
     {
-        return m_Vertices;
+        return m_VertexBuffer.numVerts();
+    }
+
+    bool hasVerts() const
+    {
+        return m_VertexBuffer.hasVerts();
+    }
+
+    std::vector<Vec3> getVerts() const
+    {
+        return m_VertexBuffer.read<Vec3>(VertexAttribute::Position);
     }
 
     void setVerts(std::span<Vec3 const> verts)
     {
-        m_Vertices.assign(verts.begin(), verts.end());
+        m_VertexBuffer.write<Vec3>(VertexAttribute::Position, verts);
 
-        recalculateBounds();
+        rangeCheckIndicesAndRecalculateBounds();
         m_Version->reset();
     }
 
-    void transformVerts(std::function<void(std::span<Vec3>)> const& f)
+    void transformVerts(std::function<void(Vec3&)> const& f)
     {
-        f(m_Vertices);
+        m_VertexBuffer.transformAttribute(VertexAttribute::Position, f);
 
-        recalculateBounds();
+        rangeCheckIndicesAndRecalculateBounds();
         m_Version->reset();
     }
 
     void transformVerts(Transform const& t)
     {
-        for (Vec3& v : m_Vertices)
+        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Position, [&t](Vec3& v)
         {
             v = t * v;
-        }
+        });
+
+        rangeCheckIndicesAndRecalculateBounds();
+        m_Version->reset();
     }
 
     void transformVerts(Mat4 const& m)
     {
-        for (Vec3& v : m_Vertices)
+        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Position, [&m](Vec3& v)
         {
             v = Vec3{m * Vec4{v, 1.0f}};
-        }
+        });
+
+        rangeCheckIndicesAndRecalculateBounds();
+        m_Version->reset();
     }
 
-    std::span<Vec3 const> getNormals() const
+    bool hasNormals() const
     {
-        return m_Normals;
+        return m_VertexBuffer.hasAttribute(VertexAttribute::Normal);
+    }
+
+    std::vector<Vec3> getNormals() const
+    {
+        return m_VertexBuffer.read<Vec3>(VertexAttribute::Normal);
     }
 
     void setNormals(std::span<Vec3 const> normals)
     {
-        m_Normals.assign(normals.begin(), normals.end());
+        m_VertexBuffer.write<Vec3>(VertexAttribute::Normal, normals);
 
         m_Version->reset();
     }
 
-    void transformNormals(std::function<void(std::span<Vec3>)> const& f)
+    void transformNormals(std::function<void(Vec3&)> const& f)
     {
-        f(m_Normals);
+        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Normal, f);
+
         m_Version->reset();
     }
 
-    std::span<Vec2 const> getTexCoords() const
+    bool hasTexCoords() const
     {
-        return m_TexCoords;
+        return m_VertexBuffer.hasAttribute(VertexAttribute::TexCoord0);
+    }
+
+    std::vector<Vec2> getTexCoords() const
+    {
+        return m_VertexBuffer.read<Vec2>(VertexAttribute::TexCoord0);
     }
 
     void setTexCoords(std::span<Vec2 const> coords)
     {
-        m_TexCoords.assign(coords.begin(), coords.end());
+        m_VertexBuffer.write<Vec2>(VertexAttribute::TexCoord0, coords);
 
         m_Version->reset();
     }
 
-    void transformTexCoords(std::function<void(std::span<Vec2>)> const& f)
+    void transformTexCoords(std::function<void(Vec2&)> const& f)
     {
-        f(m_TexCoords);
+        m_VertexBuffer.transformAttribute(VertexAttribute::TexCoord0, f);
 
         m_Version->reset();
     }
 
-    std::span<Color const> getColors() const
+    std::vector<Color> getColors() const
     {
-        return m_Colors;
+        return m_VertexBuffer.read<Color>(VertexAttribute::Color);
     }
 
     void setColors(std::span<Color const> colors)
     {
-        m_Colors.assign(colors.begin(), colors.end());
+        m_VertexBuffer.write<Color>(VertexAttribute::Color, colors);
 
         m_Version.reset();
     }
 
-    std::span<Vec4 const> getTangents() const
+    std::vector<Vec4> getTangents() const
     {
-        return m_Tangents;
+        return m_VertexBuffer.read<Vec4>(VertexAttribute::Tangent);
     }
 
     void setTangents(std::span<Vec4 const> newTangents)
     {
-        m_Tangents.assign(newTangents.begin(), newTangents.end());
+        m_VertexBuffer.write<Vec4>(VertexAttribute::Tangent, newTangents);
 
         m_Version->reset();
+    }
+
+    size_t getNumIndices() const
+    {
+        return m_NumIndices;
     }
 
     MeshIndicesView getIndices() const
@@ -4163,49 +4857,71 @@ public:
         }
     }
 
-    void setIndices(MeshIndicesView indices)
+    void setIndices(MeshIndicesView indices, MeshUpdateFlags flags)
     {
-        indices.isU16() ? setIndices(indices.toU16Span()) : setIndices(indices.toU32Span());
+        indices.isU16() ? setIndices(indices.toU16Span(), flags) : setIndices(indices.toU32Span(), flags);
     }
 
-    void setIndices(std::span<uint16_t const> indices)
+    void forEachIndexedVert(std::function<void(Vec3)> const& f) const
     {
-        m_IndicesAre32Bit = false;
-        m_NumIndices = indices.size();
-        m_IndicesData.resize((indices.size()+1)/2);
-        std::copy(indices.begin(), indices.end(), &m_IndicesData.front().u16.a);
-
-        recalculateBounds();
-        m_Version->reset();
-    }
-
-    void setIndices(std::span<std::uint32_t const> vs)
-    {
-        auto const isGreaterThanU16Max = [](uint32_t v)
+        auto const positions = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position).begin();
+        for (auto idx : getIndices())
         {
-            return v > std::numeric_limits<uint16_t>::max();
+            f(positions[idx]);
+        }
+    }
+
+    void forEachIndexedTriangle(std::function<void(Triangle)> const& f) const
+    {
+        if (m_Topology != MeshTopology::Triangles)
+        {
+            return;
+        }
+
+        MeshIndicesView const indices = getIndices();
+        size_t const steps = (indices.size() / 3) * 3;
+
+        auto const positions = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position).begin();
+        for (size_t i = 0; i < steps; i += 3)
+        {
+            f(Triangle{
+                positions[indices[i]],
+                positions[indices[i+1]],
+                positions[indices[i+2]],
+            });
+        }
+    }
+
+    Triangle getTriangleAt(size_t firstIndexOffset) const
+    {
+        if (m_Topology != MeshTopology::Triangles)
+        {
+            throw std::runtime_error{"cannot call getTriangleAt on a non-triangular-topology mesh"};
+        }
+
+        auto const indices = getIndices();
+
+        if (firstIndexOffset+2 >= indices.size())
+        {
+            throw std::runtime_error{"provided first index offset is out-of-bounds"};
+        }
+
+        auto const verts = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
+
+        // can use unchecked access here: `indices` are range-checked on writing
+        return Triangle{
+            verts[indices[firstIndexOffset+0]],
+            verts[indices[firstIndexOffset+1]],
+            verts[indices[firstIndexOffset+2]],
         };
+    }
 
-        if (std::any_of(vs.begin(), vs.end(), isGreaterThanU16Max))
-        {
-            m_IndicesAre32Bit = true;
-            m_NumIndices = vs.size();
-            m_IndicesData.resize(vs.size());
-            std::copy(vs.begin(), vs.end(), &m_IndicesData.front().u32);
-        }
-        else
-        {
-            m_IndicesAre32Bit = false;
-            m_NumIndices = vs.size();
-            m_IndicesData.resize((vs.size()+1)/2);
-            for (size_t i = 0; i < vs.size(); ++i)
-            {
-                (&m_IndicesData.front().u16.a)[i] = static_cast<uint16_t>(vs[i]);
-            }
-        }
-
-        recalculateBounds();
-        m_Version->reset();
+    std::vector<Vec3> getIndexedVerts() const
+    {
+        std::vector<Vec3> rv;
+        rv.reserve(getNumIndices());
+        forEachIndexedVert([&rv](Vec3 v) { rv.push_back(v); });
+        return rv;
     }
 
     AABB const& getBounds() const
@@ -4217,11 +4933,7 @@ public:
     {
         m_Version->reset();
         m_Topology = MeshTopology::Triangles;
-        m_Vertices.clear();
-        m_Normals.clear();
-        m_TexCoords.clear();
-        m_Colors.clear();
-        m_Tangents.clear();
+        m_VertexBuffer.clear();
         m_IndicesAre32Bit = false;
         m_NumIndices = 0;
         m_IndicesData.clear();
@@ -4247,6 +4959,37 @@ public:
     void clearSubMeshDescriptors()
     {
         m_SubMeshDescriptors.clear();
+    }
+
+    size_t getVertexAttributeCount() const
+    {
+        return m_VertexBuffer.numAttributes();
+    }
+
+    VertexFormat const& getVertexAttributes() const
+    {
+        return m_VertexBuffer.format();
+    }
+
+    void setVertexBufferParams(size_t newNumVerts, VertexFormat const& newFormat)
+    {
+        m_VertexBuffer.setParams(newNumVerts, newFormat);
+
+        rangeCheckIndicesAndRecalculateBounds();
+        m_Version->reset();
+    }
+
+    size_t getVertexBufferStride() const
+    {
+        return m_VertexBuffer.stride();
+    }
+
+    void setVertexBufferData(std::span<uint8_t const> newData, MeshUpdateFlags flags)
+    {
+        m_VertexBuffer.setData({reinterpret_cast<std::byte const*>(newData.data()), newData.size()});
+
+        rangeCheckIndicesAndRecalculateBounds(flags);
+        m_Version->reset();
     }
 
     // non-PIMPL methods
@@ -4290,94 +5033,174 @@ public:
 
 private:
 
-    void recalculateBounds()
+    void setIndices(std::span<uint16_t const> indices, MeshUpdateFlags flags)
     {
-        OSC_PERF("mesh bounds computation");
+        m_IndicesAre32Bit = false;
+        m_NumIndices = indices.size();
+        m_IndicesData.resize((indices.size()+1)/2);
+        std::copy(indices.begin(), indices.end(), &m_IndicesData.front().u16.a);
 
-        if (m_NumIndices == 0)
+        rangeCheckIndicesAndRecalculateBounds(flags);
+        m_Version->reset();
+    }
+
+    void setIndices(std::span<std::uint32_t const> vs, MeshUpdateFlags flags)
+    {
+        auto const isGreaterThanU16Max = [](uint32_t v)
         {
-            m_AABB = {};
-        }
-        else if (m_IndicesAre32Bit)
+            return v > std::numeric_limits<uint16_t>::max();
+        };
+
+        if (std::any_of(vs.begin(), vs.end(), isGreaterThanU16Max))
         {
-            std::span<uint32_t const> const indices(&m_IndicesData.front().u32, m_NumIndices);
-            m_AABB = AABBFromIndexedVerts(m_Vertices, indices);
+            m_IndicesAre32Bit = true;
+            m_NumIndices = vs.size();
+            m_IndicesData.resize(vs.size());
+            std::copy(vs.begin(), vs.end(), &m_IndicesData.front().u32);
         }
         else
         {
-            std::span<uint16_t const> const indices(&m_IndicesData.front().u16.a, m_NumIndices);
-            m_AABB = AABBFromIndexedVerts(m_Vertices, indices);
+            m_IndicesAre32Bit = false;
+            m_NumIndices = vs.size();
+            m_IndicesData.resize((vs.size()+1)/2);
+            for (size_t i = 0; i < vs.size(); ++i)
+            {
+                (&m_IndicesData.front().u16.a)[i] = static_cast<uint16_t>(vs[i]);
+            }
         }
+
+        rangeCheckIndicesAndRecalculateBounds(flags);
+        m_Version->reset();
+    }
+
+    void rangeCheckIndicesAndRecalculateBounds(
+        MeshUpdateFlags flags = MeshUpdateFlags::Default)
+    {
+        // note: recalculating bounds will always validate indices anyway, because it's assumed
+        //       that the caller's intention is that all indices are valid when computing the
+        //       bounds
+        bool const checkIndices = !((flags & MeshUpdateFlags::DontValidateIndices) && (flags & MeshUpdateFlags::DontRecalculateBounds));
+
+        //       ... but it's perfectly reasonable for the caller to only want the indices to be
+        //       validated, leaving the bounds untouched
+        bool const recalculateBounds = !(flags & MeshUpdateFlags::DontRecalculateBounds);
+
+        if (checkIndices && recalculateBounds)
+        {
+            if (m_NumIndices == 0)
+            {
+                m_AABB = {};
+                return;
+            }
+
+            // recalculate bounds while also checking indices
+            m_AABB.min =
+            {
+                std::numeric_limits<float>::max(),
+                std::numeric_limits<float>::max(),
+                std::numeric_limits<float>::max(),
+            };
+
+            m_AABB.max =
+            {
+                std::numeric_limits<float>::lowest(),
+                std::numeric_limits<float>::lowest(),
+                std::numeric_limits<float>::lowest(),
+            };
+
+            auto range = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
+            for (auto idx : getIndices())
+            {
+                Vec3 pos = range.at(idx);  // bounds-check index
+                m_AABB.min = Min(m_AABB.min, pos);
+                m_AABB.max = Max(m_AABB.max, pos);
+            }
+        }
+        else if (checkIndices && !recalculateBounds)
+        {
+            for (auto meshIndex : getIndices())
+            {
+                OSC_ASSERT(meshIndex < m_VertexBuffer.numVerts() && "a mesh index is out of bounds");
+            }
+        }
+        else
+        {
+            return;  // do nothing
+        }
+    }
+
+    static GLuint GetVertexAttributeIndex(VertexAttribute attr)
+    {
+        static_assert(NumOptions<VertexAttribute>() == 5);
+
+        switch (attr) {
+        case VertexAttribute::Position:
+            return shader_locations::aPos;
+        case VertexAttribute::Normal:
+            return shader_locations::aNormal;
+        case VertexAttribute::Tangent:
+            return shader_locations::aTangent;
+        case VertexAttribute::Color:
+            return shader_locations::aColor;
+        case VertexAttribute::TexCoord0:
+            return shader_locations::aTexCoord;
+        default:
+            throw std::runtime_error{"nyi"};
+        }
+    }
+
+    static GLint GetVertexAttributeSize(VertexAttributeFormat const& format)
+    {
+        return static_cast<GLint>(NumComponents(format));
+    }
+
+    static GLenum GetVertexAttributeType(VertexAttributeFormat const& format)
+    {
+        static_assert(NumOptions<VertexAttributeFormat>() == 4);
+
+        switch (format) {
+        case VertexAttributeFormat::Float32x2:
+        case VertexAttributeFormat::Float32x3:
+        case VertexAttributeFormat::Float32x4:
+            return GL_FLOAT;
+        case VertexAttributeFormat::Unorm8x4:
+            return GL_UNSIGNED_BYTE;
+        default:
+            throw std::runtime_error{"nyi"};
+        }
+    }
+
+    static GLboolean GetVertexAttributeNormalized(VertexAttributeFormat const& format)
+    {
+        static_assert(NumOptions<VertexAttributeFormat>() == 4);
+
+        switch (format) {
+        case VertexAttributeFormat::Float32x2:
+        case VertexAttributeFormat::Float32x3:
+        case VertexAttributeFormat::Float32x4:
+            return GL_FALSE;
+        case VertexAttributeFormat::Unorm8x4:
+            return GL_TRUE;
+        default:
+            throw std::runtime_error{"nyi"};
+        }
+    }
+
+    static void OpenGLBindVertexAttribute(VertexFormat const& format, VertexFormat::VertexAttributeLayout const& layout)
+    {
+        glVertexAttribPointer(
+            GetVertexAttributeIndex(layout.attribute()),
+            GetVertexAttributeSize(layout.format()),
+            GetVertexAttributeType(layout.format()),
+            GetVertexAttributeNormalized(layout.format()),
+            static_cast<GLsizei>(format.stride()),
+            reinterpret_cast<void*>(static_cast<uintptr_t>(layout.offset()))
+        );
+        glEnableVertexAttribArray(GetVertexAttributeIndex(layout.attribute()));
     }
 
     void uploadToGPU()
     {
-        bool const hasNormals = !m_Normals.empty();
-        bool const hasTexCoords = !m_TexCoords.empty();
-        bool const hasColors = !m_Colors.empty();
-        bool const hasTangents = !m_Tangents.empty();
-
-        // `sizeof(decltype(T)::value_type)` is used in this function
-        //
-        // check at compile-time that the resulting type is as-expected
-        static_assert(sizeof(decltype(m_Vertices)::value_type) == 3*sizeof(float));
-        static_assert(sizeof(decltype(m_Normals)::value_type) == 3*sizeof(float));
-        static_assert(sizeof(decltype(m_TexCoords)::value_type) == 2*sizeof(float));
-        static_assert(sizeof(decltype(m_Colors)::value_type) == 4*sizeof(float));
-        static_assert(sizeof(decltype(m_Tangents)::value_type) == 4*sizeof(float));
-
-        // calculate the number of bytes between each entry in the packed VBO
-        size_t byteStride = sizeof(decltype(m_Vertices)::value_type);
-        if (hasNormals)
-        {
-            byteStride += sizeof(decltype(m_Normals)::value_type);
-        }
-        if (hasTexCoords)
-        {
-            byteStride += sizeof(decltype(m_TexCoords)::value_type);
-        }
-        if (hasColors)
-        {
-            byteStride += sizeof(decltype(m_Colors)::value_type);
-        }
-        if (hasTangents)
-        {
-            byteStride += sizeof(decltype(m_Tangents)::value_type);
-        }
-
-        // check that the data stored in this mesh object is valid before indexing into it
-        OSC_ASSERT_ALWAYS((!hasNormals || m_Normals.size() == m_Vertices.size()) && "number of normals != number of verts");
-        OSC_ASSERT_ALWAYS((!hasTexCoords || m_TexCoords.size() == m_Vertices.size()) && "number of uvs != number of verts");
-        OSC_ASSERT_ALWAYS((!hasColors || m_Colors.size() == m_Vertices.size()) && "number of colors != number of verts");
-        OSC_ASSERT_ALWAYS((!hasTangents || m_Tangents.size() == m_Vertices.size()) && "number of tangents != number of verts");
-
-        // allocate+pack mesh data into CPU-side vector
-        std::vector<uint8_t> data;
-        data.reserve(byteStride * m_Vertices.size());
-        for (size_t i = 0; i < m_Vertices.size(); ++i)
-        {
-            PushAsBytes(m_Vertices[i], data);
-            if (hasNormals)
-            {
-                PushAsBytes(m_Normals[i], data);
-            }
-            if (hasTexCoords)
-            {
-                PushAsBytes(m_TexCoords[i], data);
-            }
-            if (hasColors)
-            {
-                PushAsBytes(m_Colors[i], data);
-            }
-            if (hasTangents)
-            {
-                PushAsBytes(m_Tangents[i], data);
-            }
-        }
-
-        // check that the above packing procedure worked as expected
-        OSC_ASSERT(data.size() == byteStride*m_Vertices.size() && "error packing mesh data into a CPU buffer: unexpected final size");
-
         // allocate GPU-side buffers (or re-use the last ones)
         if (!(*m_MaybeGPUBuffers))
         {
@@ -4386,126 +5209,53 @@ private:
         MeshOpenGLData& buffers = **m_MaybeGPUBuffers;
 
         // upload CPU-side vector data into the GPU-side buffer
-        static_assert(alignof(float) == alignof(GLfloat), "OpenGL: glBufferData: clients must align data elements consistently with the requirements of the client platform");
-        gl::BindBuffer(GL_ARRAY_BUFFER, buffers.arrayBuffer);
-        gl::BufferData(GL_ARRAY_BUFFER, static_cast<GLsizei>(data.size()), data.data(), GL_STATIC_DRAW);
-
-        // check that the indices stored in this mesh object are all valid
-        //
-        // this is to ensure nothing bizzare happens in the GPU at runtime (e.g. indexing
-        // into invalid locations in the VBO - #460)
-        if (m_NumIndices > 0)
-        {
-            if (m_IndicesAre32Bit)
-            {
-                std::span<uint32_t const> const indices(&m_IndicesData.front().u32, m_NumIndices);
-                OSC_ASSERT_ALWAYS(std::all_of(indices.begin(), indices.end(), [nVerts = m_Vertices.size()](uint32_t i) { return i < nVerts; }));
-            }
-            else
-            {
-                std::span<uint16_t const> const indices(&m_IndicesData.front().u16.a, m_NumIndices);
-                OSC_ASSERT_ALWAYS(std::all_of(indices.begin(), indices.end(), [nVerts = m_Vertices.size()](uint16_t i) { return i < nVerts; }));
-            }
-        }
+        OSC_ASSERT(reinterpret_cast<uintptr_t>(m_VertexBuffer.bytes().data()) % alignof(float) == 0);
+        gl::BindBuffer(
+            GL_ARRAY_BUFFER,
+            buffers.arrayBuffer
+        );
+        gl::BufferData(
+            GL_ARRAY_BUFFER,
+            static_cast<GLsizei>(m_VertexBuffer.bytes().size()),
+            m_VertexBuffer.bytes().data(),
+            GL_STATIC_DRAW
+        );
 
         // upload CPU-side element data into the GPU-side buffer
         size_t const eboNumBytes = m_NumIndices * (m_IndicesAre32Bit ? sizeof(uint32_t) : sizeof(uint16_t));
-        gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.indicesBuffer);
-        gl::BufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizei>(eboNumBytes), m_IndicesData.data(), GL_STATIC_DRAW);
+        gl::BindBuffer(
+            GL_ELEMENT_ARRAY_BUFFER,
+            buffers.indicesBuffer
+        );
+        gl::BufferData(
+            GL_ELEMENT_ARRAY_BUFFER,
+            static_cast<GLsizei>(eboNumBytes),
+            m_IndicesData.data(),
+            GL_STATIC_DRAW
+        );
 
         // configure mesh-level VAO
         gl::BindVertexArray(buffers.vao);
         gl::BindBuffer(GL_ARRAY_BUFFER, buffers.arrayBuffer);
         gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.indicesBuffer);
-
-        // activate relevant attributes based on buffer layout
-        int64_t byteOffset = 0;
-
-
+        for (auto&& layout : m_VertexBuffer.attributeLayouts())
         {
-            // mesh always has vertices
-            glVertexAttribPointer(
-                shader_locations::aPos,
-                3,
-                GL_FLOAT,
-                GL_FALSE,
-                static_cast<GLsizei>(byteStride),
-                reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset))
-            );
-            glEnableVertexAttribArray(shader_locations::aPos);
-            byteOffset += sizeof(decltype(m_Vertices)::value_type);
+            OpenGLBindVertexAttribute(m_VertexBuffer.format(), layout);
         }
-        if (hasNormals)
-        {
-            glVertexAttribPointer(
-                shader_locations::aNormal,
-                3,
-                GL_FLOAT,
-                GL_FALSE,
-                static_cast<GLsizei>(byteStride),
-                reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset))
-            );
-            glEnableVertexAttribArray(shader_locations::aNormal);
-            byteOffset += sizeof(decltype(m_Normals)::value_type);
-        }
-        if (hasTexCoords)
-        {
-            glVertexAttribPointer(
-                shader_locations::aTexCoord,
-                2,
-                GL_FLOAT,
-                GL_FALSE,
-                static_cast<GLsizei>(byteStride),
-                reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset))
-            );
-            glEnableVertexAttribArray(shader_locations::aTexCoord);
-            byteOffset += sizeof(decltype(m_TexCoords)::value_type);
-        }
-        if (hasColors)
-        {
-            glVertexAttribPointer(
-                shader_locations::aColor,
-                4,
-                GL_FLOAT,
-                GL_TRUE,
-                static_cast<GLsizei>(byteStride),
-                reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset))
-            );
-            glEnableVertexAttribArray(shader_locations::aColor);
-            byteOffset += sizeof(decltype(m_Colors)::value_type);
-        }
-        if (hasTangents)
-        {
-            glVertexAttribPointer(
-                shader_locations::aTangent,
-                3,
-                GL_FLOAT,
-                GL_FALSE,
-                static_cast<GLsizei>(byteStride),
-                reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset))
-            );
-            glEnableVertexAttribArray(shader_locations::aTangent);
-            // unused: byteOffset += sizeof(decltype(m_Tangents)::value_type);
-        }
-        gl::BindVertexArray();  // VAO configuration complete
+        gl::BindVertexArray();
 
         buffers.dataVersion = *m_Version;
     }
 
-    DefaultConstructOnCopy<UID> m_UID;
     DefaultConstructOnCopy<UID> m_Version;
     MeshTopology m_Topology = MeshTopology::Triangles;
-    std::vector<Vec3> m_Vertices;
-    std::vector<Vec3> m_Normals;
-    std::vector<Vec2> m_TexCoords;
-    std::vector<Vec4> m_Tangents;
-    std::vector<Color> m_Colors;
+    VertexBuffer m_VertexBuffer;
 
     bool m_IndicesAre32Bit = false;
     size_t m_NumIndices = 0;
     std::vector<PackedIndex> m_IndicesData;
 
-    AABB m_AABB{};
+    AABB m_AABB = {};
 
     std::vector<SubMeshDescriptor> m_SubMeshDescriptors;
 
@@ -4532,7 +5282,17 @@ void osc::Mesh::setTopology(MeshTopology topology)
     m_Impl.upd()->setTopology(topology);
 }
 
-std::span<osc::Vec3 const> osc::Mesh::getVerts() const
+size_t osc::Mesh::getNumVerts() const
+{
+    return m_Impl->getNumVerts();
+}
+
+bool osc::Mesh::hasVerts() const
+{
+    return m_Impl->hasVerts();
+}
+
+std::vector<Vec3> osc::Mesh::getVerts() const
 {
     return m_Impl->getVerts();
 }
@@ -4542,7 +5302,7 @@ void osc::Mesh::setVerts(std::span<Vec3 const> verts)
     m_Impl.upd()->setVerts(verts);
 }
 
-void osc::Mesh::transformVerts(std::function<void(std::span<Vec3>)> const& f)
+void osc::Mesh::transformVerts(std::function<void(Vec3&)> const& f)
 {
     m_Impl.upd()->transformVerts(f);
 }
@@ -4557,7 +5317,12 @@ void osc::Mesh::transformVerts(Mat4 const& m)
     m_Impl.upd()->transformVerts(m);
 }
 
-std::span<osc::Vec3 const> osc::Mesh::getNormals() const
+bool osc::Mesh::hasNormals() const
+{
+    return m_Impl->hasNormals();
+}
+
+std::vector<Vec3> osc::Mesh::getNormals() const
 {
     return m_Impl->getNormals();
 }
@@ -4567,12 +5332,17 @@ void osc::Mesh::setNormals(std::span<Vec3 const> verts)
     m_Impl.upd()->setNormals(verts);
 }
 
-void osc::Mesh::transformNormals(std::function<void(std::span<Vec3>)> const& f)
+void osc::Mesh::transformNormals(std::function<void(Vec3&)> const& f)
 {
     m_Impl.upd()->transformNormals(f);
 }
 
-std::span<osc::Vec2 const> osc::Mesh::getTexCoords() const
+bool osc::Mesh::hasTexCoords() const
+{
+    return m_Impl->hasTexCoords();
+}
+
+std::vector<Vec2> osc::Mesh::getTexCoords() const
 {
     return m_Impl->getTexCoords();
 }
@@ -4582,12 +5352,12 @@ void osc::Mesh::setTexCoords(std::span<Vec2 const> coords)
     m_Impl.upd()->setTexCoords(coords);
 }
 
-void osc::Mesh::transformTexCoords(std::function<void(std::span<Vec2>)> const& f)
+void osc::Mesh::transformTexCoords(std::function<void(Vec2&)> const& f)
 {
     m_Impl.upd()->transformTexCoords(f);
 }
 
-std::span<osc::Color const> osc::Mesh::getColors() const
+std::vector<Color> osc::Mesh::getColors() const
 {
     return m_Impl->getColors();
 }
@@ -4597,7 +5367,7 @@ void osc::Mesh::setColors(std::span<osc::Color const> colors)
     m_Impl.upd()->setColors(colors);
 }
 
-std::span<osc::Vec4 const> osc::Mesh::getTangents() const
+std::vector<Vec4> osc::Mesh::getTangents() const
 {
     return m_Impl->getTangents();
 }
@@ -4607,24 +5377,39 @@ void osc::Mesh::setTangents(std::span<Vec4 const> newTangents)
     m_Impl.upd()->setTangents(newTangents);
 }
 
+size_t osc::Mesh::getNumIndices() const
+{
+    return m_Impl->getNumIndices();
+}
+
 osc::MeshIndicesView osc::Mesh::getIndices() const
 {
     return m_Impl->getIndices();
 }
 
-void osc::Mesh::setIndices(MeshIndicesView indices)
+void osc::Mesh::setIndices(MeshIndicesView indices, MeshUpdateFlags flags)
 {
-    m_Impl.upd()->setIndices(indices);
+    m_Impl.upd()->setIndices(indices, flags);
 }
 
-void osc::Mesh::setIndices(std::span<uint16_t const> indices)
+void osc::Mesh::forEachIndexedVert(std::function<void(Vec3)> const& f) const
 {
-    m_Impl.upd()->setIndices(indices);
+    m_Impl->forEachIndexedVert(f);
 }
 
-void osc::Mesh::setIndices(std::span<uint32_t const> indices)
+void osc::Mesh::forEachIndexedTriangle(std::function<void(Triangle)> const& f) const
 {
-    m_Impl.upd()->setIndices(indices);
+    m_Impl->forEachIndexedTriangle(f);
+}
+
+osc::Triangle osc::Mesh::getTriangleAt(size_t firstIndexOffset) const
+{
+    return m_Impl->getTriangleAt(firstIndexOffset);
+}
+
+std::vector<Vec3> osc::Mesh::getIndexedVerts() const
+{
+    return m_Impl->getIndexedVerts();
 }
 
 osc::AABB const& osc::Mesh::getBounds() const
@@ -4655,6 +5440,31 @@ osc::SubMeshDescriptor const& osc::Mesh::getSubMeshDescriptor(size_t i) const
 void osc::Mesh::clearSubMeshDescriptors()
 {
     m_Impl.upd()->clearSubMeshDescriptors();
+}
+
+size_t osc::Mesh::getVertexAttributeCount() const
+{
+    return m_Impl->getVertexAttributeCount();
+}
+
+VertexFormat const& osc::Mesh::getVertexAttributes() const
+{
+    return m_Impl->getVertexAttributes();
+}
+
+void osc::Mesh::setVertexBufferParams(size_t n, VertexFormat const& format)
+{
+    m_Impl.upd()->setVertexBufferParams(n, format);
+}
+
+size_t osc::Mesh::getVertexBufferStride() const
+{
+    return m_Impl->getVertexBufferStride();
+}
+
+void osc::Mesh::setVertexBufferData(std::span<uint8_t const> data, MeshUpdateFlags flags)
+{
+    m_Impl.upd()->setVertexBufferData(data, flags);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, Mesh const&)

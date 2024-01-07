@@ -15,11 +15,6 @@
 #include <span>
 #include <vector>
 
-namespace osc { class Texture2D; }
-namespace osc { struct Rect; }
-namespace osc { void DrawTextureAsImGuiImage(Texture2D const&, Vec2, Vec2, Vec2); }
-namespace osc { bool ImageButton(CStringView, Texture2D const&, Vec2, Rect const&); }
-
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
@@ -82,10 +77,6 @@ namespace osc
 
     private:
         friend std::ostream& operator<<(std::ostream&, Texture2D const&);
-        friend void DrawTextureAsImGuiImage(Texture2D const&, Vec2, Vec2, Vec2);
-        friend bool ImageButton(CStringView label, Texture2D const& t, Vec2, Rect const&);
-        void* getTextureHandleHACK() const;  // used by ImGui... for now
-
         friend class GraphicsBackend;
 
         class Impl;

@@ -4,9 +4,9 @@
 
 #include <imgui.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <SimTKcommon/SmallMatrix.h>
 

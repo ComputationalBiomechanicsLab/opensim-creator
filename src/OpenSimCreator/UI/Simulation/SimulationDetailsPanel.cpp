@@ -6,9 +6,9 @@
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
 
 #include <filesystem>

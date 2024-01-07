@@ -1,7 +1,7 @@
 #include "IconWithoutMenu.hpp"
 
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/UI/Icon.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <string>

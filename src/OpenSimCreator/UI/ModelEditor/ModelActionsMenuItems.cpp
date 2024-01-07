@@ -16,7 +16,7 @@
 #include <OpenSim/Simulation/Model/Probe.h>
 #include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>

@@ -2,7 +2,6 @@
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Graphics.hpp>
@@ -18,6 +17,7 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/StdVariantHelpers.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
@@ -298,15 +298,7 @@ namespace
     osc::Mesh ApplyThinPlateWarpToMesh(ThinPlateWarper2D const& t, osc::Mesh const& mesh)
     {
         osc::Mesh rv = mesh;
-
-        rv.transformVerts([&t](std::span<Vec3> vs)
-        {
-            for (Vec3& v : vs)
-            {
-                v = Vec3{t.transform(v), v.z};
-            }
-        });
-
+        rv.transformVerts([&t](Vec3& v) { v = Vec3{t.transform(v), v.z}; });
         return rv;
     }
 }
@@ -537,7 +529,7 @@ private:
     std::optional<RenderTexture> m_InputRender;
     std::optional<RenderTexture> m_OutputRender;
     ImU32 m_SrcSquareColor = ToImU32(Color::red());
-    ImU32 m_DestCircleColor = ToImU32(Color::blue());
+    ImU32 m_DestCircleColor = ToImU32(Color::green());
     ImU32 m_ConnectionLineColor = ToImU32(Color::white());
 
     // log panel (handy for debugging)

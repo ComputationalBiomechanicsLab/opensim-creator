@@ -25,10 +25,10 @@
 #include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
 
 #include <array>

@@ -6,7 +6,6 @@
 #include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
 
 #include <imgui.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Platform/App.hpp>
@@ -16,6 +15,7 @@
 #include <oscar/UI/Widgets/GuiRuler.hpp>
 #include <oscar/UI/Widgets/IconWithoutMenu.hpp>
 #include <oscar/UI/IconCache.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 
 #include <memory>
 #include <optional>

@@ -2,7 +2,6 @@
 
 #include <OpenSimCreator/Graphics/SimTKMeshLoader.hpp>
 
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Graphics.hpp>
@@ -13,6 +12,7 @@
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <SDL_events.h>
 
 #include <cstdint>

@@ -3,10 +3,10 @@
 namespace osc
 {
     enum class DepthFunction {
-        Less = 0,
+        Less,
         LessOrEqual,
-        NUM_OPTIONS,
 
+        NUM_OPTIONS,
         Default = Less,
     };
 }

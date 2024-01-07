@@ -12,7 +12,6 @@
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Formats/SVG.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
@@ -32,6 +31,7 @@
 #include <oscar/Scene/SceneRendererParams.hpp>
 #include <oscar/UI/Tabs/TabHost.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/StringHelpers.hpp>

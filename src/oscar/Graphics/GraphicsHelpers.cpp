@@ -27,6 +27,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -212,49 +213,36 @@ osc::Vec3 osc::MassCenter(Mesh const& m)
     // submits an invalid mesh, this calculation could potentially produce a
     // volume that's *way* off
 
-    if (m.getTopology() != MeshTopology::Triangles)
+    if (m.getTopology() != MeshTopology::Triangles || m.getNumVerts() < 3)
     {
         return {0.0f, 0.0f, 0.0f};
     }
 
-    std::span<Vec3 const> const verts = m.getVerts();
-    MeshIndicesView const indices = m.getIndices();
-    size_t const len = (indices.size() / 3) * 3;  // paranioa
-
     double totalVolume = 0.0f;
     Vec3d weightedCenterOfMass{};
-    for (size_t i = 0; i < len; i += 3)
+    m.forEachIndexedTriangle([&totalVolume, &weightedCenterOfMass](Triangle t)
     {
-        Tetrahedron tetrahedron
-        {
-            Vec3{},  // reference point
-            verts[indices[i]],
-            verts[indices[i+1]],
-            verts[indices[i+2]],
-        };
-
+        Vec3 const referencePoint{};
+        Tetrahedron const tetrahedron{referencePoint, t.p0, t.p1, t.p2};
         double const volume = Volume(tetrahedron);
         Vec3d const centerOfMass = Center(tetrahedron);
 
         totalVolume += volume;
         weightedCenterOfMass += volume * centerOfMass;
-    }
+    });
     return weightedCenterOfMass / totalVolume;
 }
 
 osc::Vec3 osc::AverageCenterpoint(Mesh const& m)
 {
-    MeshIndicesView const indices = m.getIndices();
-    std::span<Vec3 const> const verts = m.getVerts();
-
-    Vec3 acc = {0.0f, 0.0f, 0.0f};
-    for (uint32_t index : indices)
+    Vec3 accumulator{};
+    size_t i = 0;
+    m.forEachIndexedVert([&accumulator, &i](Vec3 v)
     {
-        acc += verts[index];
-    }
-    acc /= static_cast<float>(verts.size());
-
-    return acc;
+        accumulator += v;
+        ++i;
+    });
+    return accumulator / static_cast<float>(i);
 }
 
 std::vector<osc::Vec4> osc::CalcTangentVectors(
@@ -412,34 +400,7 @@ std::array<osc::Mat4, 6> osc::CalcCubemapViewProjMatrices(
     return rv;
 }
 
-void osc::ForEachIndexedVert(Mesh const& mesh, std::function<void(Vec3)> const& callback)
+osc::Sphere osc::BoundingSphereOf(Mesh const& mesh)
 {
-    auto const verts = mesh.getVerts();
-    auto const indices = mesh.getIndices();
-    for (size_t i = 0; i < indices.size(); ++i)
-    {
-        static_assert(std::is_unsigned_v<decltype(indices[i])>);
-        if (auto index = indices[i]; index < verts.size())
-        {
-            callback(verts[index]);
-        }
-    }
-}
-
-std::vector<osc::Vec3> osc::GetAllIndexedVerts(Mesh const& mesh)
-{
-    auto const verts = mesh.getVerts();
-    auto const indices = mesh.getIndices();
-
-    std::vector<Vec3> rv;
-    rv.reserve(indices.size());  // guess: it's likely that all indices are fine
-    for (size_t i = 0; i < indices.size(); ++i)
-    {
-        static_assert(std::is_unsigned_v<decltype(indices[i])>);
-        if (auto index = indices[i]; index < verts.size())
-        {
-            rv.push_back(verts[index]);
-        }
-    }
-    return rv;
+    return BoundingSphereOf(mesh.getVerts());
 }

@@ -3,9 +3,9 @@
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.hpp>
 
 #include <imgui.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/Vec3.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 
 #include <memory>
 #include <string>

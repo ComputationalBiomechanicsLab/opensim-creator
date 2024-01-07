@@ -28,11 +28,11 @@
 #include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/UI/Panels/PanelManager.hpp>
 #include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 

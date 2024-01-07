@@ -1,6 +1,5 @@
 #include "LOGLSSAOTab.hpp"
 
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
@@ -28,6 +27,7 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/ObjectRepresentation.hpp>
 #include <SDL_events.h>

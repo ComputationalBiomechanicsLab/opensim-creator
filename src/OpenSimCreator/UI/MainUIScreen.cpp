@@ -15,7 +15,6 @@
 #include <imgui_internal.h>
 #include <ImGuizmo.h>
 #include <implot.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
@@ -28,6 +27,7 @@
 #include <oscar/UI/Tabs/TabRegistry.hpp>
 #include <oscar/UI/Widgets/SaveChangesPopup.hpp>
 #include <oscar/UI/Widgets/SaveChangesPopupConfig.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/ParentPtr.hpp>

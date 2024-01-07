@@ -45,6 +45,7 @@ Checks: >
   -readability-convert-member-functions-to-static,
   -readability-qualified-auto,
   cert-*
+  -cert-dcl21-cpp
 
 CheckOptions:
   - key: readability-implicit-bool-conversion.AllowPointerConditions

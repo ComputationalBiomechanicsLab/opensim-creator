@@ -8,7 +8,7 @@
 namespace osc
 {
     template<ObjectRepresentationByte Byte = std::byte, BitCastable T>
-    std::span<Byte const> ViewObjectRepresentation(T const& v)
+    constexpr std::span<Byte const> ViewObjectRepresentation(T const& v)
     {
         // this is one of the few cases where `reinterpret_cast` is guaranteed to be safe
         // for _examination_ (i.e. reading)
@@ -25,7 +25,7 @@ namespace osc
     }
 
     template<ObjectRepresentationByte Byte = std::byte, ContiguousContainer Container>
-    std::span<Byte const> ViewObjectRepresentations(Container const& c)
+    constexpr std::span<Byte const> ViewObjectRepresentations(Container const& c)
         requires BitCastable<typename Container::value_type>
     {
         // this is one of the few cases where `reinterpret_cast` is guaranteed to be safe

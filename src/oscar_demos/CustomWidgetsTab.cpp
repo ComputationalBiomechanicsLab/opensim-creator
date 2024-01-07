@@ -2,10 +2,10 @@
 
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <array>

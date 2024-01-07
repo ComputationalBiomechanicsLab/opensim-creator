@@ -27,7 +27,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/Log.hpp>
@@ -39,6 +38,7 @@
 #include <oscar/UI/Tabs/TabHost.hpp>
 #include <oscar/UI/Widgets/Popup.hpp>
 #include <oscar/UI/Widgets/PopupManager.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/FileChangePoller.hpp>
 #include <oscar/Utils/ParentPtr.hpp>

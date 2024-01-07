@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -12,6 +13,8 @@ namespace osc
     // an ID that is guaranteed to be unique upon non-copy/move construction
     class UID final {
     public:
+        using element_type = int64_t;
+
         static constexpr UID invalid()
         {
             return UID{-1};
@@ -20,6 +23,11 @@ namespace osc
         static constexpr UID empty()
         {
             return UID{0};
+        }
+
+        static constexpr UID FromIntUnchecked(element_type i)
+        {
+            return UID{i};
         }
 
         UID() : m_Value{GetNextID()}
@@ -36,7 +44,7 @@ namespace osc
             m_Value = GetNextID();
         }
 
-        constexpr int64_t get() const
+        constexpr element_type get() const
         {
             return m_Value;
         }
@@ -49,13 +57,17 @@ namespace osc
         friend auto operator<=>(UID const&, UID const&) = default;
 
     private:
-        static int64_t GetNextID();
+        static constinit std::atomic<element_type> g_NextID;
+        static element_type GetNextID()
+        {
+            return g_NextID.fetch_add(1, std::memory_order_relaxed);
+        }
 
-        constexpr UID(int64_t value) : m_Value{value}
+        constexpr UID(element_type value) : m_Value{value}
         {
         }
 
-        int64_t m_Value;
+        element_type m_Value;
     };
 
     std::ostream& operator<<(std::ostream&, UID const&);

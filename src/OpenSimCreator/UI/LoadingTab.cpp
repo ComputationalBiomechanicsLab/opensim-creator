@@ -7,13 +7,13 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <imgui.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/UI/Tabs/TabHost.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 
 #include <chrono>

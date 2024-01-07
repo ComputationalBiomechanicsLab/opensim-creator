@@ -159,12 +159,12 @@ namespace
     // returns true if something hit (recursively)
     //
     // populates outparam with all AABB hits in depth-first order
-    bool BVH_GetRayAABBCollisionsRecursive(
+    bool BVH_ForEachRayAABBCollisionsRecursive(
         std::span<BVHNode const> nodes,
         std::span<BVHPrim const> prims,
         Line const& ray,
         ptrdiff_t nodeidx,
-        std::vector<BVHCollision>& out)
+        std::function<void(BVHCollision)> const& callback)
     {
         BVHNode const& node = nodes[nodeidx];
 
@@ -179,18 +179,17 @@ namespace
         if (node.isLeaf())
         {
             // it's a leaf node, so we've sucessfully found the AABB that intersected
-
-            out.emplace_back(
+            callback(BVHCollision{
                 res->distance,
                 res->position,
-                prims[node.getFirstPrimOffset()].getID()
-            );
+                prims[node.getFirstPrimOffset()].getID(),
+            });
             return true;
         }
 
         // else: we've "hit" an internal node and need to recurse to find the leaf
-        bool const lhs = BVH_GetRayAABBCollisionsRecursive(nodes, prims, ray, nodeidx+1, out);
-        bool const rhs = BVH_GetRayAABBCollisionsRecursive(nodes, prims, ray, nodeidx+node.getNumLhsNodes()+1, out);
+        bool const lhs = BVH_ForEachRayAABBCollisionsRecursive(nodes, prims, ray, nodeidx+1, callback);
+        bool const rhs = BVH_ForEachRayAABBCollisionsRecursive(nodes, prims, ray, nodeidx+node.getNumLhsNodes()+1, callback);
         return lhs || rhs;
     }
 
@@ -397,24 +396,22 @@ void osc::BVH::buildFromAABBs(std::span<AABB const> aabbs)
     }
 }
 
-std::vector<osc::BVHCollision> osc::BVH::getRayAABBCollisions(Line const& ray) const
+void osc::BVH::forEachRayAABBCollision(
+    Line const& ray,
+    std::function<void(BVHCollision)> const& callback) const
 {
-    std::vector<BVHCollision> rv;
-
     if (m_Nodes.empty() || m_Prims.empty())
     {
-        return rv;
+        return;
     }
 
-    BVH_GetRayAABBCollisionsRecursive(
+    BVH_ForEachRayAABBCollisionsRecursive(
         m_Nodes,
         m_Prims,
         ray,
         0,
-        rv
+        callback
     );
-
-    return rv;
 }
 
 bool osc::BVH::empty() const
@@ -2154,6 +2151,11 @@ osc::Vec3 osc::TransformPoint(Transform const& t, Vec3 const& p)
     rv = t.rotation * rv;
     rv += t.position;
     return rv;
+}
+
+osc::Vec3 osc::TransformPoint(Mat4 const& m, Vec3 const& p)
+{
+    return Vec3{m * Vec4{p, 1.0f}};
 }
 
 osc::Vec3 osc::InverseTransformPoint(Transform const& t, Vec3 const& p)

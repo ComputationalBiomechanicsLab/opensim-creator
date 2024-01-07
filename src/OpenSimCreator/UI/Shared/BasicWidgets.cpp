@@ -31,7 +31,6 @@
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Point.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Formats/DAE.hpp>
 #include <oscar/Formats/OBJ.hpp>
 #include <oscar/Formats/STL.hpp>
@@ -50,6 +49,7 @@
 #include <oscar/UI/Widgets/GuiRuler.hpp>
 #include <oscar/UI/Widgets/IconWithMenu.hpp>
 #include <oscar/UI/IconCache.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <SimTKcommon/basics.h>

@@ -1,6 +1,5 @@
 #include "MandelbrotTab.hpp"
 
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/Material.hpp>
@@ -13,6 +12,7 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <SDL_events.h>

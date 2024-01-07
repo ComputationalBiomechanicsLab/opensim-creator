@@ -7,6 +7,7 @@
 #include <Simbody.h>
 
 #include <iostream>
+#include <span>
 #include <vector>
 
 using osc::Vec3;
@@ -249,15 +250,16 @@ osc::Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, Mesh con
 
     Mesh rv = mesh;  // make a local copy of the input mesh
 
-    rv.transformVerts([&coefs](std::span<Vec3> verts)
+    // copy out the vertices
+
+    // parallelize function evaluation, because the mesh may contain *a lot* of
+    // verts and the TPS equation may contain *a lot* of coefficients
+    auto verts = rv.getVerts();
+    osc::ForEachParUnseq(8192, std::span<Vec3>(verts), [&coefs](Vec3& vert)
     {
-        // parallelize function evaluation, because the mesh may contain *a lot* of
-        // verts and the TPS equation may contain *a lot* of coefficients
-        osc::ForEachParUnseq(8192, verts, [&coefs](Vec3& vert)
-        {
-            vert = EvaluateTPSEquation(coefs, vert);
-        });
+        vert = EvaluateTPSEquation(coefs, vert);
     });
+    rv.setVerts(verts);
 
     return rv;
 }

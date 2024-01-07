@@ -12,7 +12,6 @@
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/RenderTexture.hpp>
@@ -34,6 +33,7 @@
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <functional>
@@ -477,13 +477,13 @@ namespace osc
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("# verts");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", m_State->getScratchMesh(m_DocumentIdentifier).getVerts().size());
+                ImGui::Text("%zu", m_State->getScratchMesh(m_DocumentIdentifier).getNumVerts());
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("# triangles");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", m_State->getScratchMesh(m_DocumentIdentifier).getIndices().size()/3);
+                ImGui::Text("%zu", m_State->getScratchMesh(m_DocumentIdentifier).getNumIndices()/3);
 
                 ImGui::EndTable();
             }

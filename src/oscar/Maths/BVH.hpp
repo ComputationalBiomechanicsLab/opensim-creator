@@ -50,12 +50,9 @@ namespace osc
         // prim.id will refer to the index of the AABB
         void buildFromAABBs(std::span<AABB const>);
 
-        // returns prim.id of the AABB (leaf) that the line intersects, or -1 if no intersection
-        //
-        // no assumptions about prim.id required here - it's using the BVH's AABBs
-        //
-        // returns true if at least one collision was found and appended to the output
-        std::vector<BVHCollision> getRayAABBCollisions(Line const&) const;
+        // calls the callback with each collision between the line and an AABB in
+        // the BVH
+        void forEachRayAABBCollision(Line const&, std::function<void(BVHCollision)> const&) const;
 
         // returns `true` if the BVH contains no nodes
         [[nodiscard]] bool empty() const;

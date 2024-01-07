@@ -32,8 +32,6 @@
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <ImGuizmo.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Bindings/ImGuizmoHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Formats/OBJ.hpp>
@@ -53,6 +51,8 @@
 #include <oscar/UI/Panels/UndoRedoPanel.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>
 #include <oscar/UI/Widgets/PopupManager.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/ImGuizmoHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>

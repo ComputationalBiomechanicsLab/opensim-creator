@@ -1,12 +1,12 @@
 #include "SceneViewer.hpp"
 
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 
 #include <imgui.h>
 

@@ -15,13 +15,13 @@
 #include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
@@ -398,7 +398,7 @@ void osc::MainMenuAboutTab::onDraw()
         ImGui::NextColumn();
         {
             bool appIsInDebugMode = App::get().isInDebugMode();
-            if (ImGui::Checkbox("##opengldebugmodecheckbox", &appIsInDebugMode))
+            if (ImGui::Checkbox("##debugmodecheckbox", &appIsInDebugMode))
             {
                 if (appIsInDebugMode)
                 {

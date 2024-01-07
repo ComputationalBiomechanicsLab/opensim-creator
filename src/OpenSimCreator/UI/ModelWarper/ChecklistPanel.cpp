@@ -10,8 +10,8 @@
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/CStringView.hpp>
 

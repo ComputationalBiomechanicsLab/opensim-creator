@@ -12,8 +12,6 @@
 #include <optional>
 
 namespace osc { class RenderBuffer; }
-namespace osc { class RenderTexture; }
-namespace osc { void DrawTextureAsImGuiImage(RenderTexture const&, Vec2); }
 
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
@@ -59,9 +57,6 @@ namespace osc
 
         friend std::ostream& operator<<(std::ostream&, RenderTexture const&);
     private:
-        friend void DrawTextureAsImGuiImage(RenderTexture const&, Vec2);
-        void* getTextureHandleHACK() const;  // used by ImGui... for now
-
         friend class GraphicsBackend;
 
         class Impl;

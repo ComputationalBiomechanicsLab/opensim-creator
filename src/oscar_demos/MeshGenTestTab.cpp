@@ -1,7 +1,6 @@
 #include "MeshGenTestTab.hpp"
 
 #include <imgui.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
@@ -15,6 +14,7 @@
 #include <oscar/Scene/SceneRendererParams.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
 #include <oscar/UI/Widgets/SceneViewer.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <map>

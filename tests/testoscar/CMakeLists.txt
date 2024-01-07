@@ -5,20 +5,35 @@ add_executable(testoscar
     Formats/TestCSV.cpp
     Formats/TestDAE.cpp
 
+    Graphics/Detail/TestUnorm8.cpp
+
+    Graphics/Detail/TestVertexAttributeFormatHelpers.cpp
+    Graphics/Detail/TestVertexAttributeHelpers.cpp
+    Graphics/Detail/TestVertexAttributeFormatList.cpp
+    Graphics/Detail/TestVertexAttributeList.cpp
     Graphics/TestAntiAliasingLevel.cpp
+    Graphics/TestCamera.cpp
+    Graphics/TestCameraProjection.cpp
     Graphics/TestColor.cpp
     Graphics/TestCubemap.cpp
     Graphics/TestCubemapFace.cpp
     Graphics/TestCullMode.cpp
     Graphics/TestGraphicsHelpers.cpp
     Graphics/TestSubMeshDescriptor.cpp
+    Graphics/TestMesh.cpp
+    Graphics/TestMeshUpdateFlags.cpp
     Graphics/TestRenderer.cpp
     Graphics/TestRenderTarget.cpp
     Graphics/TestRenderTargetColorAttachment.cpp
     Graphics/TestRenderTargetDepthAttachment.cpp
+    Graphics/TestRenderTexture.cpp
+    Graphics/TestRenderTextureDescriptor.cpp
     Graphics/TestRenderTextureFormat.cpp
     Graphics/TestTextureChannelFormat.cpp
     Graphics/TestTextureFormat.cpp
+    Graphics/TestTexture2D.cpp
+    Graphics/TestVertexAttribute.cpp
+    Graphics/TestVertexFormat.cpp
 
     Maths/TestBVH.cpp
 
@@ -37,12 +52,18 @@ add_executable(testoscar
     Utils/TestCStringView.cpp
     Utils/TestFileChangePoller.cpp
     Utils/TestFilenameExtractor.cpp
+    Utils/TestNonTypelist.cpp
+    Utils/TestNullOStream.cpp
+    Utils/TestNullStreambuf.cpp
     Utils/TestStringHelpers.cpp
     Utils/TestStringName.cpp
+    Utils/TestTypelist.cpp
 
     Variant/TestVariant.cpp
     Variant/TestVariantType.cpp
 
+    TestingHelpers.cpp
+    TestingHelpers.hpp
     testoscar.cpp  # entry point
 )
 
@@ -53,6 +74,9 @@ configure_file(
 )
 
 target_include_directories(testoscar PUBLIC
+
+    # so that the source code can `#include <testoscar/SomeModule.hpp>`
+    ${CMAKE_CURRENT_SOURCE_DIR}/..
 
     # so that source code can `#include <tesetoscar/testoscarconfig.hpp>`
     "${CMAKE_CURRENT_BINARY_DIR}/generated/"

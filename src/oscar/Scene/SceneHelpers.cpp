@@ -8,6 +8,7 @@
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>
+#include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
@@ -226,15 +227,11 @@ std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(
     std::span<SceneDecoration const> decorations,
     Line const& ray)
 {
-    // use scene BVH to intersect the ray with the scene
-    std::vector<BVHCollision> const sceneCollisions = bvh.getRayAABBCollisions(ray);
-
-    // perform ray-triangle intersections tests on the scene hits
     std::vector<SceneCollision> rv;
-    rv.reserve(sceneCollisions.size());  // upper bound
-    for (BVHCollision const& c : sceneCollisions)
+    bvh.forEachRayAABBCollision(ray, [&sceneCache, &decorations, &ray, &rv](BVHCollision sceneCollision)
     {
-        SceneDecoration const& decoration = At(decorations, c.id);
+        // perform ray-triangle intersection tests on the scene collisions
+        SceneDecoration const& decoration = At(decorations, sceneCollision.id);
         BVH const& decorationBVH = sceneCache.getBVH(decoration.mesh);
 
         std::optional<RayCollision> const maybeCollision = GetClosestWorldspaceRayCollision(
@@ -243,16 +240,17 @@ std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(
             decoration.transform,
             ray
         );
+
         if (maybeCollision)
         {
             rv.push_back({
                 .decorationID = decoration.id,
-                .decorationIndex = static_cast<size_t>(c.id),
+                .decorationIndex = static_cast<size_t>(sceneCollision.id),
                 .worldspaceLocation = maybeCollision->position,
                 .distanceFromRayOrigin = maybeCollision->distance,
             });
         }
-    }
+    });
     return rv;
 }
 
@@ -270,22 +268,24 @@ std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
     // map the ray into the mesh's modelspace, so that we compute a ray-mesh collision
     Line const modelspaceRay = InverseTransformLine(worldspaceRay, transform);
 
-    MeshIndicesView const indices = mesh.getIndices();
-    std::optional<BVHCollision> const maybeCollision = indices.isU16() ?
-        triangleBVH.getClosestRayIndexedTriangleCollision(mesh.getVerts(), indices.toU16Span(), modelspaceRay) :
-        triangleBVH.getClosestRayIndexedTriangleCollision(mesh.getVerts(), indices.toU32Span(), modelspaceRay);
-
-    if (maybeCollision)
+    // then perform a ray-AABB (of triangles) collision
+    std::optional<RayCollision> rv;
+    triangleBVH.forEachRayAABBCollision(modelspaceRay, [&mesh, &transform, &worldspaceRay, &modelspaceRay, &rv](BVHCollision bvhCollision)
     {
-        // map the ray back into worldspace
-        Vec3 const locationWorldspace = transform * maybeCollision->position;
-        float const distance = Length(locationWorldspace - worldspaceRay.origin);
-        return RayCollision{distance, locationWorldspace};
-    }
-    else
-    {
-        return std::nullopt;
-    }
+        // then perform a ray-triangle collision
+        if (auto triangleCollision = GetRayCollisionTriangle(modelspaceRay, mesh.getTriangleAt(bvhCollision.id)))
+        {
+            // map it back into worldspace and check if it's closer
+            Vec3 const locationWorldspace = transform * triangleCollision->position;
+            float const distance = Length(locationWorldspace - worldspaceRay.origin);
+            if (!rv || rv->distance > distance)
+            {
+                // if it's closer, update the return value
+                rv = RayCollision{distance, locationWorldspace};
+            }
+        }
+    });
+    return rv;
 }
 
 std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(

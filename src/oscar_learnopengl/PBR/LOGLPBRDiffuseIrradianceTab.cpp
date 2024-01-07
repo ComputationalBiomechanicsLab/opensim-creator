@@ -1,7 +1,6 @@
 #include "LOGLPBRDiffuseIrradianceTab.hpp"
 
 #include <IconsFontAwesome5.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Cubemap.hpp>
@@ -21,6 +20,7 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>

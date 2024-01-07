@@ -6,8 +6,6 @@ find_package(SDL2 REQUIRED)
 find_package(glm REQUIRED)
 
 add_library(imgui STATIC
-    backends/imgui_impl_opengl3.cpp
-    backends/imgui_impl_opengl3.h
     backends/imgui_impl_sdl2.cpp
     backends/imgui_impl_sdl2.h
     misc/cpp/imgui_stdlib.cpp

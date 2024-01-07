@@ -8,9 +8,9 @@
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterUILayer.hpp>
 
 #include <imgui.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <functional>

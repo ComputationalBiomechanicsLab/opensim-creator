@@ -14,9 +14,9 @@
 
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/UI/Widgets/WindowMenu.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 
 #include <memory>

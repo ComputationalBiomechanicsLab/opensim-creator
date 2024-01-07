@@ -2,7 +2,6 @@
 
 #include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
 
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
@@ -15,6 +14,7 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <SDL_events.h>

@@ -1,6 +1,5 @@
 #include "SubMeshTab.hpp"
 
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Graphics.hpp>
@@ -13,6 +12,7 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <IconsFontAwesome5.h>
@@ -20,7 +20,9 @@
 
 #include <array>
 #include <cstdint>
+#include <span>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -32,6 +34,13 @@ using osc::Vec3;
 namespace
 {
     constexpr CStringView c_TabStringID = "Demos/SubMeshes";
+
+    template<class T, class U>
+    void Append(T& out, U els)
+        requires std::is_same_v<typename T::value_type, typename U::value_type>
+    {
+        out.insert(out.end(), els.begin(), els.end());
+    }
 
     Mesh GenerateMeshWithSubMeshes()
     {
@@ -49,8 +58,8 @@ namespace
 
         for (auto const& mesh : meshes)
         {
-            allVerts.insert(allVerts.end(), mesh.getVerts().begin(), mesh.getVerts().end());
-            allNormals.insert(allNormals.end(), mesh.getNormals().begin(), mesh.getNormals().end());
+            Append(allVerts, mesh.getVerts());
+            Append(allNormals, mesh.getNormals());
 
             size_t firstIndex = allIndices.size();
             for (auto index : mesh.getIndices())

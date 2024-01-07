@@ -8,10 +8,10 @@
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec4.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 
 #include <memory>
 #include <string>
