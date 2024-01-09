@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/UI/Widgets/IPopup.hpp>
 
 #include <filesystem>
 #include <functional>
@@ -11,7 +11,7 @@ namespace OpenSim { class Geometry; }
 
 namespace osc
 {
-    class SelectGeometryPopup final : public Popup {
+    class SelectGeometryPopup final : public IPopup {
     public:
         SelectGeometryPopup(
             std::string_view popupName,

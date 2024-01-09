@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Tabs/Tab.hpp>
+#include <oscar/UI/Tabs/ITab.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/UID.hpp>
@@ -9,15 +9,15 @@
 #include <memory>
 
 namespace osc { template<typename T> class ParentPtr; }
-namespace osc { class TabHost; }
+namespace osc { class ITabHost; }
 
 namespace osc
 {
-    class LOGLHDRTab final : public Tab {
+    class LOGLHDRTab final : public ITab {
     public:
         static CStringView id();
 
-        explicit LOGLHDRTab(ParentPtr<TabHost> const&);
+        explicit LOGLHDRTab(ParentPtr<ITabHost> const&);
         LOGLHDRTab(LOGLHDRTab const&) = delete;
         LOGLHDRTab(LOGLHDRTab&&) noexcept;
         LOGLHDRTab& operator=(LOGLHDRTab const&) = delete;

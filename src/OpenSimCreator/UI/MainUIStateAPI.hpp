@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Tabs/TabHost.hpp>
+#include <oscar/UI/Tabs/ITabHost.hpp>
 
 namespace osc { class ParamBlock; }
 namespace osc { class OutputExtractor; }
@@ -10,7 +10,7 @@ namespace osc
     // API access to shared state between main UI tabs
     //
     // this is how individual UI tabs inter-communicate (e.g. by sharing data, closing other tabs, etc.)
-    class MainUIStateAPI : public TabHost {
+    class MainUIStateAPI : public ITabHost {
     protected:
         MainUIStateAPI() = default;
         MainUIStateAPI(MainUIStateAPI const&) = default;

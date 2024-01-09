@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Tabs/Tab.hpp>
+#include <oscar/UI/Tabs/ITab.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
@@ -12,7 +12,7 @@ namespace osc { template<typename T> class ParentPtr; }
 
 namespace osc
 {
-    class LoadingTab final : public Tab {
+    class LoadingTab final : public ITab {
     public:
         LoadingTab(ParentPtr<MainUIStateAPI> const&, std::filesystem::path);
         LoadingTab(LoadingTab const&) = delete;

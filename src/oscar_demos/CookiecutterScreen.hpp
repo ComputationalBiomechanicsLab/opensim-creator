@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/Platform/Screen.hpp>
+#include <oscar/Platform/IScreen.hpp>
 
 #include <SDL_events.h>
 
@@ -10,7 +10,7 @@ namespace osc
 {
     // META: this is a valid screen with `CookiecutterScreen` as a replaceable
     //       string that users can "Find+Replace" to make their own screen impl
-    class CookiecutterScreen final : public Screen {
+    class CookiecutterScreen final : public IScreen {
     public:
         CookiecutterScreen();
         CookiecutterScreen(CookiecutterScreen const&) = delete;

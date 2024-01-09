@@ -18,7 +18,7 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
-#include <oscar/UI/Tabs/TabHost.hpp>
+#include <oscar/UI/Tabs/ITabHost.hpp>
 #include <oscar/UI/Widgets/PopupManager.hpp>
 #include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
@@ -36,7 +36,7 @@ namespace osc
 
         MeshWarpingTabSharedState(
             UID tabID_,
-            ParentPtr<TabHost> parent_) :
+            ParentPtr<ITabHost> parent_) :
 
             tabID{tabID_},
             tabHost{std::move(parent_)}
@@ -146,7 +146,7 @@ namespace osc
             editedDocument->redo();
         }
 
-        template<DerivedFrom<Popup> TPopup, class... Args>
+        template<DerivedFrom<IPopup> TPopup, class... Args>
         void emplacePopup(Args&&... args)
         {
             auto p = std::make_shared<TPopup>(std::forward<Args>(args)...);
@@ -158,7 +158,7 @@ namespace osc
         UID tabID;
 
         // handle to the screen that owns the TPS3D tab
-        ParentPtr<TabHost> tabHost;
+        ParentPtr<ITabHost> tabHost;
 
         // cached TPS3D algorithm result (to prevent recomputing it each frame)
         TPSResultCache meshResultCache;

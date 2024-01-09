@@ -1,6 +1,6 @@
 #include "UndoRedoPanel.hpp"
 
-#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/Utils/UndoRedo.hpp>
 
 #include <imgui.h>
@@ -10,13 +10,13 @@
 #include <string_view>
 #include <utility>
 
-class osc::UndoRedoPanel::Impl final : public osc::StandardPanel {
+class osc::UndoRedoPanel::Impl final : public osc::StandardPanelImpl {
 public:
     Impl(
         std::string_view panelName,
         std::shared_ptr<UndoRedo> storage_) :
 
-        StandardPanel{panelName},
+        StandardPanelImpl{panelName},
         m_Storage{std::move(storage_)}
     {
     }

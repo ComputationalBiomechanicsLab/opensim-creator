@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/UI/Widgets/IPopup.hpp>
 
 #include <memory>
 #include <string_view>
@@ -10,7 +10,7 @@ namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
-    class AddBodyPopup final : public Popup {
+    class AddBodyPopup final : public IPopup {
     public:
         AddBodyPopup(
             std::string_view popupName,

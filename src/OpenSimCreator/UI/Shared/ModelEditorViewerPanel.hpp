@@ -1,7 +1,7 @@
 #pragma once
 
 #include <oscar/Maths/Vec3.hpp>
-#include <oscar/UI/Panels/Panel.hpp>
+#include <oscar/UI/Panels/IPanel.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <memory>
@@ -14,7 +14,7 @@ namespace osc { class ModelEditorViewerPanelParameters; }
 
 namespace osc
 {
-    class ModelEditorViewerPanel final : public Panel {
+    class ModelEditorViewerPanel final : public IPanel {
     public:
         ModelEditorViewerPanel(
             std::string_view panelName_,

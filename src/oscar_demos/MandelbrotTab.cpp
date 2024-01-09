@@ -11,7 +11,7 @@
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
@@ -38,9 +38,9 @@ namespace
     }
 }
 
-class osc::MandelbrotTab::Impl final : public osc::StandardTabBase {
+class osc::MandelbrotTab::Impl final : public osc::StandardTabImpl {
 public:
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
     }
 
@@ -130,7 +130,7 @@ osc::CStringView osc::MandelbrotTab::id()
     return c_TabStringID;
 }
 
-osc::MandelbrotTab::MandelbrotTab(ParentPtr<TabHost> const&) :
+osc::MandelbrotTab::MandelbrotTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

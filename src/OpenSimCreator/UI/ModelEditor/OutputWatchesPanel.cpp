@@ -8,7 +8,7 @@
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <Simbody.h>
@@ -45,14 +45,14 @@ namespace
     }
 }
 
-class osc::OutputWatchesPanel::Impl final : public osc::StandardPanel {
+class osc::OutputWatchesPanel::Impl final : public osc::StandardPanelImpl {
 public:
 
     Impl(std::string_view panelName_,
         std::shared_ptr<UndoableModelStatePair const> model_,
         ParentPtr<MainUIStateAPI> const& api_) :
 
-        StandardPanel{panelName_},
+        StandardPanelImpl{panelName_},
         m_API{api_},
         m_Model{std::move(model_)}
     {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/UI/Widgets/IPopup.hpp>
 
 #include <memory>
 
@@ -16,11 +16,11 @@ namespace osc
     public:
         virtual ~PopupAPI() noexcept = default;
 
-        void pushPopup(std::unique_ptr<Popup> p)
+        void pushPopup(std::unique_ptr<IPopup> p)
         {
             implPushPopup(std::move(p));
         }
     private:
-        virtual void implPushPopup(std::unique_ptr<Popup>) = 0;
+        virtual void implPushPopup(std::unique_ptr<IPopup>) = 0;
     };
 }

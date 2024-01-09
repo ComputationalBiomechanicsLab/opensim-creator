@@ -1,26 +1,26 @@
 #pragma once
 
-#include <oscar/UI/Tabs/Tab.hpp>
+#include <oscar/UI/Tabs/ITab.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <memory>
 
 namespace osc { template<typename T> class ParentPtr; }
-namespace osc { class TabHost; }
+namespace osc { class ITabHost; }
 
 namespace osc
 {
-    class LOGLHelloTriangleTab final : public Tab {
+    class LOGLHelloTriangleTab final : public ITab {
     public:
         static CStringView id();
 
-        explicit LOGLHelloTriangleTab(ParentPtr<TabHost> const&);
+        explicit LOGLHelloTriangleTab(ParentPtr<ITabHost> const&);
         LOGLHelloTriangleTab(LOGLHelloTriangleTab const&) = delete;
         LOGLHelloTriangleTab(LOGLHelloTriangleTab&&) noexcept;
         LOGLHelloTriangleTab& operator=(LOGLHelloTriangleTab const&) = delete;
         LOGLHelloTriangleTab& operator=(LOGLHelloTriangleTab&&) noexcept;
-        ~LOGLHelloTriangleTab() noexcept final;
+        ~LOGLHelloTriangleTab() noexcept override;
 
     private:
         UID implGetID() const final;

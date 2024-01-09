@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/UI/Widgets/IPopup.hpp>
 
 #include <memory>
 
@@ -8,7 +8,7 @@ namespace osc { struct SaveChangesPopupConfig; }
 
 namespace osc
 {
-    class SaveChangesPopup final : public Popup {
+    class SaveChangesPopup final : public IPopup {
     public:
         explicit SaveChangesPopup(SaveChangesPopupConfig const&);
         SaveChangesPopup(SaveChangesPopup const&) = delete;

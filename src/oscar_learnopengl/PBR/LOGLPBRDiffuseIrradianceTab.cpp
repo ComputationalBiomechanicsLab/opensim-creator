@@ -19,7 +19,7 @@
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
@@ -181,9 +181,9 @@ namespace
     }
 }
 
-class osc::LOGLPBRDiffuseIrradianceTab::Impl final : public osc::StandardTabBase {
+class osc::LOGLPBRDiffuseIrradianceTab::Impl final : public osc::StandardTabImpl {
 public:
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
     }
 
@@ -363,7 +363,7 @@ CStringView osc::LOGLPBRDiffuseIrradianceTab::id()
     return c_TabStringID;
 }
 
-osc::LOGLPBRDiffuseIrradianceTab::LOGLPBRDiffuseIrradianceTab(ParentPtr<TabHost> const&) :
+osc::LOGLPBRDiffuseIrradianceTab::LOGLPBRDiffuseIrradianceTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

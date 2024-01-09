@@ -16,7 +16,7 @@
 #include <oscar/Maths/Triangle.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
@@ -133,9 +133,9 @@ namespace
     }
 }
 
-class osc::HittestTab::Impl final : public osc::StandardTabBase {
+class osc::HittestTab::Impl final : public osc::StandardTabImpl {
 public:
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
         m_Camera.setBackgroundColor({1.0f, 1.0f, 1.0f, 0.0f});
     }
@@ -342,7 +342,7 @@ osc::CStringView osc::HittestTab::id()
     return c_TabStringID;
 }
 
-osc::HittestTab::HittestTab(ParentPtr<TabHost> const&) :
+osc::HittestTab::HittestTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

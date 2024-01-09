@@ -8,19 +8,19 @@
 
 namespace osc
 {
-    // top-level screen shown by the application
+    // virtual interface to a top-level screen shown by the application
     //
     // the application shows exactly one top-level `Screen` to the user at
     // any given time
-    class Screen {
+    class IScreen {
     protected:
-        Screen() = default;
-        Screen(Screen const&) = default;
-        Screen(Screen&&) noexcept = default;
-        Screen& operator=(Screen const&) = default;
-        Screen& operator=(Screen&&) noexcept = default;
+        IScreen() = default;
+        IScreen(IScreen const&) = default;
+        IScreen(IScreen&&) noexcept = default;
+        IScreen& operator=(IScreen const&) = default;
+        IScreen& operator=(IScreen&&) noexcept = default;
     public:
-        virtual ~Screen() noexcept = default;
+        virtual ~IScreen() noexcept = default;
 
         CStringView getName() const
         {
@@ -57,7 +57,7 @@ namespace osc
         // returns the name of the screen (handy for debugging/logging)
         virtual CStringView implGetName() const
         {
-            Screen const& s = *this;
+            IScreen const& s = *this;
             return typeid(s).name();
         }
 

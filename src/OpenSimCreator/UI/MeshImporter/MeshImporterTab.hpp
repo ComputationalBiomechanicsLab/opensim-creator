@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Tabs/Tab.hpp>
+#include <oscar/UI/Tabs/ITab.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <SDL_events.h>
@@ -14,7 +14,7 @@ namespace osc { template<typename T> class ParentPtr; }
 
 namespace osc::mi
 {
-    class MeshImporterTab final : public Tab {
+    class MeshImporterTab final : public ITab {
     public:
         explicit MeshImporterTab(ParentPtr<MainUIStateAPI> const&);
         MeshImporterTab(ParentPtr<MainUIStateAPI> const&, std::vector<std::filesystem::path>);

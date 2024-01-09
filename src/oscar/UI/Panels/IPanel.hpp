@@ -4,16 +4,16 @@
 
 namespace osc
 {
-    // a class that exposes a virtual interface to a user-visible panel
-    class Panel {
+    // a virtual interface to a single UI panel (in ImGui terms, a Window)
+    class IPanel {
     protected:
-        Panel() = default;
-        Panel(Panel const&) = default;
-        Panel(Panel&&) noexcept = default;
-        Panel& operator=(Panel const&) = default;
-        Panel& operator=(Panel&&) noexcept = default;
+        IPanel() = default;
+        IPanel(IPanel const&) = default;
+        IPanel(IPanel&&) noexcept = default;
+        IPanel& operator=(IPanel const&) = default;
+        IPanel& operator=(IPanel&&) noexcept = default;
     public:
-        virtual ~Panel() noexcept = default;
+        virtual ~IPanel() noexcept = default;
 
         CStringView getName() const
         {

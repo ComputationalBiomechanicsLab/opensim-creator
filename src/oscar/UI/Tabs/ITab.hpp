@@ -5,19 +5,20 @@
 
 #include <SDL_events.h>
 
-namespace osc { class TabHost; }
+namespace osc { class ITabHost; }
 
 namespace osc
 {
-    class Tab {
+    // a virtual interface to a single UI tab/workspace
+    class ITab {
     protected:
-        Tab() = default;
-        Tab(Tab const&) = default;
-        Tab(Tab&&) noexcept = default;
-        Tab& operator=(Tab const&) = default;
-        Tab& operator=(Tab&&) noexcept = default;
+        ITab() = default;
+        ITab(ITab const&) = default;
+        ITab(ITab&&) noexcept = default;
+        ITab& operator=(ITab const&) = default;
+        ITab& operator=(ITab&&) noexcept = default;
     public:
-        virtual ~Tab() noexcept = default;
+        virtual ~ITab() noexcept = default;
 
         UID getID() const { return implGetID(); }
         CStringView getName() const { return implGetName(); }

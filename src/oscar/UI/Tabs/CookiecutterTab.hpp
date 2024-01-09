@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Tabs/Tab.hpp>
+#include <oscar/UI/Tabs/ITab.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
@@ -9,15 +9,15 @@
 #include <memory>
 
 namespace osc { template<typename T> class ParentPtr; }
-namespace osc { class TabHost; }
+namespace osc { class ITabHost; }
 
 namespace osc
 {
-    class CookiecutterTab final : public Tab {
+    class CookiecutterTab final : public ITab {
     public:
         static CStringView id();
 
-        explicit CookiecutterTab(ParentPtr<TabHost> const&);
+        explicit CookiecutterTab(ParentPtr<ITabHost> const&);
         CookiecutterTab(CookiecutterTab const&) = delete;
         CookiecutterTab(CookiecutterTab&&) noexcept;
         CookiecutterTab& operator=(CookiecutterTab const&) = delete;

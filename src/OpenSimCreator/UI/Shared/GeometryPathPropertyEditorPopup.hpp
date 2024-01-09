@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/Model/ObjectPropertyEdit.hpp>
 
-#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/UI/Widgets/IPopup.hpp>
 
 #include <functional>
 #include <memory>
@@ -15,7 +15,7 @@ namespace osc { class UndoableModelStatePair; }
 namespace osc
 {
 
-    class GeometryPathPropertyEditorPopup final : public Popup {
+    class GeometryPathPropertyEditorPopup final : public IPopup {
     public:
         GeometryPathPropertyEditorPopup(
             std::string_view popupName_,

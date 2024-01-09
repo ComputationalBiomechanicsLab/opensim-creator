@@ -30,13 +30,13 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/Log.hpp>
+#include <oscar/UI/Panels/IPanel.hpp>
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Panels/Panel.hpp>
 #include <oscar/UI/Panels/PanelManager.hpp>
 #include <oscar/UI/Tabs/ErrorTab.hpp>
-#include <oscar/UI/Tabs/TabHost.hpp>
-#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/UI/Tabs/ITabHost.hpp>
+#include <oscar/UI/Widgets/IPopup.hpp>
 #include <oscar/UI/Widgets/PopupManager.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
@@ -393,7 +393,7 @@ private:
         pushPopup(std::move(popup));
     }
 
-    void implPushPopup(std::unique_ptr<Popup> popup) final
+    void implPushPopup(std::unique_ptr<IPopup> popup) final
     {
         popup->open();
         m_PopupManager.push_back(std::move(popup));

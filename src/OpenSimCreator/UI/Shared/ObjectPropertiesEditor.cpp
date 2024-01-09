@@ -1529,7 +1529,7 @@ namespace
             }
         }
 
-        std::unique_ptr<osc::Popup> createGeometryPathEditorPopup()
+        std::unique_ptr<osc::IPopup> createGeometryPathEditorPopup()
         {
             return std::make_unique<osc::GeometryPathPropertyEditorPopup>(
                 "Edit Geometry Path",

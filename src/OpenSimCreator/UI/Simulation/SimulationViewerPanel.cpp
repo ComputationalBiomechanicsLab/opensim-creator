@@ -9,7 +9,7 @@
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 
 #include <memory>
@@ -30,13 +30,13 @@ namespace
     }
 }
 
-class osc::SimulationViewerPanel::Impl final : public StandardPanel {
+class osc::SimulationViewerPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
         std::string_view panelName_,
         SimulationViewerPanelParameters params_) :
 
-        StandardPanel{panelName_},
+        StandardPanelImpl{panelName_},
         m_Params{std::move(params_)},
         m_Viewer{panelName_}
     {

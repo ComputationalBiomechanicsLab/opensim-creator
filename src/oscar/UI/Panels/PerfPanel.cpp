@@ -1,7 +1,7 @@
 #include "PerfPanel.hpp"
 
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/Utils/Perf.hpp>
 
 #include <imgui.h>
@@ -23,11 +23,11 @@ namespace
     }
 }
 
-class osc::PerfPanel::Impl final : public osc::StandardPanel {
+class osc::PerfPanel::Impl final : public osc::StandardPanelImpl {
 public:
 
     explicit Impl(std::string_view panelName) :
-        StandardPanel{panelName}
+        StandardPanelImpl{panelName}
     {
     }
 

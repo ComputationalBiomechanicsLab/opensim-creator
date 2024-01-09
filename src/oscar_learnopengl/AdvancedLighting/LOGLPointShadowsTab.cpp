@@ -21,7 +21,7 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
@@ -117,9 +117,9 @@ namespace
     }
 }
 
-class osc::LOGLPointShadowsTab::Impl final : public osc::StandardTabBase {
+class osc::LOGLPointShadowsTab::Impl final : public osc::StandardTabImpl {
 public:
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
     }
 
@@ -315,7 +315,7 @@ CStringView osc::LOGLPointShadowsTab::id()
     return c_TabStringID;
 }
 
-osc::LOGLPointShadowsTab::LOGLPointShadowsTab(ParentPtr<TabHost> const&) :
+osc::LOGLPointShadowsTab::LOGLPointShadowsTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

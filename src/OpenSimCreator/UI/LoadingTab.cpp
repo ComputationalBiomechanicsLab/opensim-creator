@@ -12,7 +12,7 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
-#include <oscar/UI/Tabs/TabHost.hpp>
+#include <oscar/UI/Tabs/ITabHost.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 

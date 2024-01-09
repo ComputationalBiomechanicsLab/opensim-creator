@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/UI/Widgets/IPopup.hpp>
 
 #include <memory>
 #include <string_view>
@@ -9,7 +9,7 @@ namespace osc { class VirtualConstModelStatePair; }
 
 namespace osc
 {
-    class ExportPointsPopup final : public Popup {
+    class ExportPointsPopup final : public IPopup {
     public:
         ExportPointsPopup(
             std::string_view popupName,

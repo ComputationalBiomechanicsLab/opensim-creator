@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Tabs/Tab.hpp>
+#include <oscar/UI/Tabs/ITab.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <SDL_events.h>
@@ -12,7 +12,7 @@ namespace osc { template<typename T> class ParentPtr; }
 
 namespace osc
 {
-    class SplashTab final : public Tab {
+    class SplashTab final : public ITab {
     public:
         explicit SplashTab(ParentPtr<MainUIStateAPI> const&);
         SplashTab(SplashTab const&) = delete;

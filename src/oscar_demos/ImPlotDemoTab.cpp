@@ -1,7 +1,7 @@
 #include "ImPlotDemoTab.hpp"
 
 #include <implot.h>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <memory>
@@ -13,9 +13,9 @@ namespace
     constexpr CStringView c_TabStringID = "Demos/ImPlot";
 }
 
-class osc::ImPlotDemoTab::Impl final : public osc::StandardTabBase {
+class osc::ImPlotDemoTab::Impl final : public osc::StandardTabImpl {
 public:
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
     }
 
@@ -44,7 +44,7 @@ osc::CStringView osc::ImPlotDemoTab::id()
     return c_TabStringID;
 }
 
-osc::ImPlotDemoTab::ImPlotDemoTab(ParentPtr<TabHost> const&) :
+osc::ImPlotDemoTab::ImPlotDemoTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

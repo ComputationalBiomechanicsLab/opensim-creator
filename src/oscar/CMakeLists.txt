@@ -162,6 +162,7 @@ add_library(oscar STATIC
     Platform/AppSettingValue.cpp
     Platform/AppSettingValue.hpp
     Platform/AppSettingValueType.hpp
+    Platform/IScreen.hpp
     Platform/Log.cpp
     Platform/Log.hpp
     Platform/Logger.hpp
@@ -172,7 +173,6 @@ add_library(oscar STATIC
     Platform/LogSink.hpp
     Platform/os.cpp
     Platform/os.hpp
-    Platform/Screen.hpp
     Platform/Screenshot.hpp
     Platform/ScreenshotAnnotation.hpp
 
@@ -195,15 +195,15 @@ add_library(oscar STATIC
     Shims/Cpp20/thread.hpp
     Shims/Cpp23/utility.hpp
 
+    UI/Panels/IPanel.hpp
     UI/Panels/LogViewerPanel.cpp
     UI/Panels/LogViewerPanel.hpp
-    UI/Panels/Panel.hpp
     UI/Panels/PanelManager.cpp
     UI/Panels/PanelManager.hpp
     UI/Panels/PerfPanel.cpp
     UI/Panels/PerfPanel.hpp
-    UI/Panels/StandardPanel.cpp
-    UI/Panels/StandardPanel.hpp
+    UI/Panels/StandardPanelImpl.cpp
+    UI/Panels/StandardPanelImpl.hpp
     UI/Panels/ToggleablePanelFlags.hpp
     UI/Panels/UndoRedoPanel.cpp
     UI/Panels/UndoRedoPanel.hpp
@@ -211,12 +211,11 @@ add_library(oscar STATIC
     UI/Tabs/CookiecutterTab.hpp
     UI/Tabs/ErrorTab.cpp
     UI/Tabs/ErrorTab.hpp
+    UI/Tabs/ITab.hpp
+    UI/Tabs/ITabHost.hpp
     UI/Tabs/ScreenshotTab.cpp
     UI/Tabs/ScreenshotTab.hpp
-    UI/Tabs/StandardTabBase.hpp
-    UI/Tabs/Tab.hpp
-    UI/Tabs/TabHost.cpp
-    UI/Tabs/TabHost.hpp
+    UI/Tabs/StandardTabImpl.hpp
     UI/Tabs/TabRegistry.cpp
     UI/Tabs/TabRegistry.hpp
     UI/Tabs/TabRegistryEntry.cpp
@@ -229,7 +228,7 @@ add_library(oscar STATIC
     UI/Widgets/IconWithoutMenu.hpp
     UI/Widgets/LogViewer.cpp
     UI/Widgets/LogViewer.hpp
-    UI/Widgets/Popup.hpp
+    UI/Widgets/IPopup.hpp
     UI/Widgets/PopupManager.cpp
     UI/Widgets/PopupManager.hpp
     UI/Widgets/RedoButton.cpp

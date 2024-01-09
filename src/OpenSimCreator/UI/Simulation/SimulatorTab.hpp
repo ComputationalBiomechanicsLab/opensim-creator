@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Tabs/Tab.hpp>
+#include <oscar/UI/Tabs/ITab.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
@@ -12,7 +12,7 @@ namespace osc { class Simulation; }
 
 namespace osc
 {
-    class SimulatorTab final : public Tab {
+    class SimulatorTab final : public ITab {
     public:
         SimulatorTab(
             ParentPtr<MainUIStateAPI> const&,

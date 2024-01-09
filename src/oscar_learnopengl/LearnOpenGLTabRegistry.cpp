@@ -31,7 +31,7 @@
 
 #include <memory>
 
-using osc::TabHost;
+using osc::ITabHost;
 using osc::TabRegistry;
 using osc::TabRegistryEntry;
 
@@ -43,7 +43,7 @@ namespace
         TabRegistryEntry entry
         {
             TabType::id(),
-            [](osc::ParentPtr<TabHost> const& h) { return std::make_unique<TabType>(h); },
+            [](osc::ParentPtr<ITabHost> const& h) { return std::make_unique<TabType>(h); },
         };
         registry.registerTab(entry);
     }

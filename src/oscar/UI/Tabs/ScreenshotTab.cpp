@@ -21,7 +21,7 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/Screenshot.hpp>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/SetHelpers.hpp>
@@ -82,10 +82,10 @@ namespace
     }
 }
 
-class osc::ScreenshotTab::Impl final : public osc::StandardTabBase {
+class osc::ScreenshotTab::Impl final : public osc::StandardTabImpl {
 public:
     explicit Impl(Screenshot&& screenshot) :
-        StandardTabBase{ICON_FA_COOKIE " ScreenshotTab"},
+        StandardTabImpl{ICON_FA_COOKIE " ScreenshotTab"},
         m_Screenshot{std::move(screenshot)}
     {
         m_ImageTexture.setFilterMode(TextureFilterMode::Mipmap);
@@ -319,7 +319,7 @@ private:
 
 // public API
 
-osc::ScreenshotTab::ScreenshotTab(ParentPtr<TabHost> const&, Screenshot&& screenshot) :
+osc::ScreenshotTab::ScreenshotTab(ParentPtr<ITabHost> const&, Screenshot&& screenshot) :
     m_Impl{std::make_unique<Impl>(std::move(screenshot))}
 {
 }

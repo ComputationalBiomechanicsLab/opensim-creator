@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Tabs/Tab.hpp>
+#include <oscar/UI/Tabs/ITab.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <SDL_events.h>
@@ -8,15 +8,15 @@
 #include <memory>
 
 namespace osc { template<typename T> class ParentPtr; }
-namespace osc { class TabHost; }
+namespace osc { class ITabHost; }
 
 namespace osc
 {
-    class LOGLFramebuffersTab final : public Tab {
+    class LOGLFramebuffersTab final : public ITab {
     public:
         static CStringView id();
 
-        explicit LOGLFramebuffersTab(ParentPtr<TabHost> const&);
+        explicit LOGLFramebuffersTab(ParentPtr<ITabHost> const&);
         LOGLFramebuffersTab(LOGLFramebuffersTab const&) = delete;
         LOGLFramebuffersTab(LOGLFramebuffersTab&&) noexcept;
         LOGLFramebuffersTab& operator=(LOGLFramebuffersTab const&) = delete;

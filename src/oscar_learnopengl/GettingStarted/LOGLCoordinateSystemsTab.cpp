@@ -15,7 +15,7 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
@@ -61,10 +61,10 @@ namespace
     }
 }
 
-class osc::LOGLCoordinateSystemsTab::Impl final : public osc::StandardTabBase {
+class osc::LOGLCoordinateSystemsTab::Impl final : public osc::StandardTabImpl {
 public:
 
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
         m_Material.setTexture(
             "uTexture1",
@@ -210,7 +210,7 @@ CStringView osc::LOGLCoordinateSystemsTab::id()
     return c_TabStringID;
 }
 
-osc::LOGLCoordinateSystemsTab::LOGLCoordinateSystemsTab(ParentPtr<TabHost> const&) :
+osc::LOGLCoordinateSystemsTab::LOGLCoordinateSystemsTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

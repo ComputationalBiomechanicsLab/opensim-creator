@@ -11,7 +11,7 @@
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
@@ -83,9 +83,9 @@ namespace
     }
 }
 
-class osc::SubMeshTab::Impl final : public osc::StandardTabBase {
+class osc::SubMeshTab::Impl final : public osc::StandardTabImpl {
 public:
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
         m_Camera.setBackgroundColor(Color::white());
         m_Camera.setNearClippingPlane(0.1f);
@@ -148,7 +148,7 @@ CStringView osc::SubMeshTab::id()
     return c_TabStringID;
 }
 
-osc::SubMeshTab::SubMeshTab(ParentPtr<TabHost> const&) :
+osc::SubMeshTab::SubMeshTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

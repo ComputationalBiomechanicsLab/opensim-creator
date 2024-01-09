@@ -205,7 +205,7 @@ osc::CStringView osc::MeshHittestTab::id()
     return "OpenSim/Experimental/MeshHittest";
 }
 
-osc::MeshHittestTab::MeshHittestTab(ParentPtr<TabHost> const&) :
+osc::MeshHittestTab::MeshHittestTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

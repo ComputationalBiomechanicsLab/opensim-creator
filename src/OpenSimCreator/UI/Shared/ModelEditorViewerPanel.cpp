@@ -19,7 +19,7 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
-#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/UI/Widgets/GuiRuler.hpp>
 #include <oscar/UI/Widgets/IconWithoutMenu.hpp>
 #include <oscar/UI/IconCache.hpp>
@@ -320,14 +320,14 @@ namespace
     };
 }
 
-class osc::ModelEditorViewerPanel::Impl final : public osc::StandardPanel {
+class osc::ModelEditorViewerPanel::Impl final : public osc::StandardPanelImpl {
 public:
 
     Impl(
         std::string_view panelName_,
         ModelEditorViewerPanelParameters parameters_) :
 
-        StandardPanel{panelName_},
+        StandardPanelImpl{panelName_},
         m_Parameters{std::move(parameters_)}
     {
         // update this panel's rendering/state parameters from the runtime

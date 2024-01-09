@@ -52,12 +52,12 @@
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/UI/Panels/IPanel.hpp>
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
-#include <oscar/UI/Panels/Panel.hpp>
 #include <oscar/UI/Panels/PanelManager.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Panels/StandardPanel.hpp>
-#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
+#include <oscar/UI/Widgets/IPopup.hpp>
 #include <oscar/UI/Widgets/PopupManager.hpp>
 #include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/UI/Widgets/WindowMenu.hpp>
@@ -1103,7 +1103,7 @@ namespace
     }
 
     void ActionExportFrameDefinitionSceneModelToEditorTab(
-        osc::ParentPtr<osc::TabHost> const& tabHost,
+        osc::ParentPtr<osc::ITabHost> const& tabHost,
         osc::UndoableModelStatePair const& model)
     {
         auto maybeMainUIStateAPI = osc::DynamicParentCast<osc::MainUIStateAPI>(tabHost);
@@ -2484,7 +2484,7 @@ namespace
     class FrameDefinitionTabMainMenu final {
     public:
         explicit FrameDefinitionTabMainMenu(
-            osc::ParentPtr<osc::TabHost> tabHost_,
+            osc::ParentPtr<osc::ITabHost> tabHost_,
             std::shared_ptr<osc::UndoableModelStatePair> model_,
             std::shared_ptr<osc::PanelManager> panelManager_) :
 
@@ -2519,7 +2519,7 @@ namespace
             }
         }
 
-        osc::ParentPtr<osc::TabHost> m_TabHost;
+        osc::ParentPtr<osc::ITabHost> m_TabHost;
         std::shared_ptr<osc::UndoableModelStatePair> m_Model;
         osc::WindowMenu m_WindowMenu;
         osc::MainMenuAboutTab m_AboutMenu;
@@ -2529,7 +2529,7 @@ namespace
     public:
         FrameDefinitionTabToolbar(
             std::string_view label_,
-            osc::ParentPtr<osc::TabHost> tabHost_,
+            osc::ParentPtr<osc::ITabHost> tabHost_,
             std::shared_ptr<osc::UndoableModelStatePair> model_) :
 
             m_Label{label_},
@@ -2595,7 +2595,7 @@ namespace
         }
 
         std::string m_Label;
-        osc::ParentPtr<osc::TabHost> m_TabHost;
+        osc::ParentPtr<osc::ITabHost> m_TabHost;
         std::shared_ptr<osc::UndoableModelStatePair> m_Model;
     };
 }
@@ -2603,7 +2603,7 @@ namespace
 class osc::FrameDefinitionTab::Impl final : public EditorAPI {
 public:
 
-    explicit Impl(ParentPtr<TabHost> const& parent_) :
+    explicit Impl(ParentPtr<ITabHost> const& parent_) :
         m_Parent{parent_}
     {
         m_PanelManager->registerToggleablePanel(
@@ -2767,7 +2767,7 @@ private:
         ));
     }
 
-    void implPushPopup(std::unique_ptr<Popup> popup) final
+    void implPushPopup(std::unique_ptr<IPopup> popup) final
     {
         popup->open();
         m_PopupManager.push_back(std::move(popup));
@@ -2784,7 +2784,7 @@ private:
     }
 
     UID m_TabID;
-    ParentPtr<TabHost> m_Parent;
+    ParentPtr<ITabHost> m_Parent;
 
     std::shared_ptr<UndoableModelStatePair> m_Model = MakeSharedUndoableFrameDefinitionModel();
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
@@ -2801,7 +2801,7 @@ osc::CStringView osc::FrameDefinitionTab::id()
     return c_TabStringID;
 }
 
-osc::FrameDefinitionTab::FrameDefinitionTab(ParentPtr<TabHost> const& parent_) :
+osc::FrameDefinitionTab::FrameDefinitionTab(ParentPtr<ITabHost> const& parent_) :
     m_Impl{std::make_unique<Impl>(parent_)}
 {
 }

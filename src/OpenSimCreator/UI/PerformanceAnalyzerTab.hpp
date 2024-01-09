@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.hpp>
 
-#include <oscar/UI/Tabs/Tab.hpp>
+#include <oscar/UI/Tabs/ITab.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
@@ -10,14 +10,14 @@
 
 namespace osc { class ParamBlock; }
 namespace osc { template<typename T> class ParentPtr; }
-namespace osc { class TabHost; }
+namespace osc { class ITabHost; }
 
 namespace osc
 {
-    class PerformanceAnalyzerTab final : public Tab {
+    class PerformanceAnalyzerTab final : public ITab {
     public:
         PerformanceAnalyzerTab(
-            ParentPtr<TabHost> const&,
+            ParentPtr<ITabHost> const&,
             BasicModelStatePair,
             ParamBlock const&
         );

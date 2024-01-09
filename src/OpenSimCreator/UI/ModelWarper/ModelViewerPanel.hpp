@@ -1,7 +1,7 @@
 #pragma once
 
+#include <oscar/UI/Panels/IPanel.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/UI/Panels/Panel.hpp>
 
 #include <memory>
 #include <string_view>
@@ -10,7 +10,7 @@ namespace osc::mow { class UIState; }
 
 namespace osc::mow
 {
-    class ModelViewerPanel final : public Panel {
+    class ModelViewerPanel final : public IPanel {
     public:
         ModelViewerPanel(
             std::string_view panelName_,

@@ -17,7 +17,7 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
@@ -150,9 +150,9 @@ namespace
     }
 }
 
-class osc::LOGLMultipleLightsTab::Impl final : public osc::StandardTabBase {
+class osc::LOGLMultipleLightsTab::Impl final : public osc::StandardTabImpl {
 public:
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
         m_LogViewer.open();
         m_PerfPanel.open();
@@ -268,7 +268,7 @@ CStringView osc::LOGLMultipleLightsTab::id()
     return c_TabStringID;
 }
 
-osc::LOGLMultipleLightsTab::LOGLMultipleLightsTab(ParentPtr<TabHost> const&) :
+osc::LOGLMultipleLightsTab::LOGLMultipleLightsTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

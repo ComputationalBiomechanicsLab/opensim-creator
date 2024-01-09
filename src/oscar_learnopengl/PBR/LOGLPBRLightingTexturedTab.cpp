@@ -15,7 +15,7 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
@@ -115,9 +115,9 @@ namespace
     }
 }
 
-class osc::LOGLPBRLightingTexturedTab::Impl final : public osc::StandardTabBase {
+class osc::LOGLPBRLightingTexturedTab::Impl final : public osc::StandardTabImpl {
 public:
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
     }
 
@@ -242,7 +242,7 @@ CStringView osc::LOGLPBRLightingTexturedTab::id()
     return c_TabStringID;
 }
 
-osc::LOGLPBRLightingTexturedTab::LOGLPBRLightingTexturedTab(ParentPtr<TabHost> const&) :
+osc::LOGLPBRLightingTexturedTab::LOGLPBRLightingTexturedTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

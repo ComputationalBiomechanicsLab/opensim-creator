@@ -12,7 +12,7 @@
 #include <oscar/Scene/SceneDecorationFlags.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/Widgets/SceneViewer.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
@@ -49,9 +49,9 @@ namespace
     }
 }
 
-class osc::MeshGenTestTab::Impl final : public osc::StandardTabBase {
+class osc::MeshGenTestTab::Impl final : public osc::StandardTabImpl {
 public:
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
         m_Camera.radius = 5.0f;
     }
@@ -117,7 +117,7 @@ osc::CStringView osc::MeshGenTestTab::id()
     return c_TabStringID;
 }
 
-osc::MeshGenTestTab::MeshGenTestTab(ParentPtr<TabHost> const&) :
+osc::MeshGenTestTab::MeshGenTestTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

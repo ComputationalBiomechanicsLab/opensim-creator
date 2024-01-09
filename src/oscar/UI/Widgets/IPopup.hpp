@@ -2,16 +2,16 @@
 
 namespace osc
 {
-    class Popup {
+    class IPopup {
     protected:
-        Popup() = default;
-        Popup(Popup const&) = default;
-        Popup(Popup&&) noexcept = default;
-        Popup& operator=(Popup const&) = default;
-        Popup& operator=(Popup&&) noexcept = default;
+        IPopup() = default;
+        IPopup(IPopup const&) = default;
+        IPopup(IPopup&&) noexcept = default;
+        IPopup& operator=(IPopup const&) = default;
+        IPopup& operator=(IPopup&&) noexcept = default;
 
     public:
-        virtual ~Popup() noexcept = default;
+        virtual ~IPopup() noexcept = default;
 
         bool isOpen()
         {

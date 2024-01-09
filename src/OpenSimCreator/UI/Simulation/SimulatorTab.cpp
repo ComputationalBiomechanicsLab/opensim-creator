@@ -36,7 +36,7 @@
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/UI/Panels/PanelManager.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Tabs/TabHost.hpp>
+#include <oscar/UI/Tabs/ITabHost.hpp>
 #include <oscar/UI/Widgets/PopupManager.hpp>
 #include <oscar/UI/Widgets/WindowMenu.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>

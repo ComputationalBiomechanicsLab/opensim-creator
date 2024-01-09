@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Panels/Panel.hpp>
+#include <oscar/UI/Panels/IPanel.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <functional>
@@ -13,7 +13,7 @@ namespace osc { class VirtualModelStatePair; }
 
 namespace osc
 {
-    class NavigatorPanel final : public Panel {
+    class NavigatorPanel final : public IPanel {
     public:
         NavigatorPanel(
             std::string_view panelName,

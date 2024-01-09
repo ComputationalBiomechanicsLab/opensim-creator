@@ -8,7 +8,7 @@
 
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/PanelManager.hpp>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
@@ -24,9 +24,9 @@ namespace
     constexpr CStringView c_TabStringID = "OpenSim/ModelWarper";
 }
 
-class osc::mow::ModelWarperTab::Impl final : public StandardTabBase {
+class osc::mow::ModelWarperTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
         m_PanelManager->registerToggleablePanel(
             "Checklist",
@@ -94,7 +94,7 @@ CStringView osc::mow::ModelWarperTab::id()
     return c_TabStringID;
 }
 
-osc::mow::ModelWarperTab::ModelWarperTab(ParentPtr<TabHost> const&) :
+osc::mow::ModelWarperTab::ModelWarperTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

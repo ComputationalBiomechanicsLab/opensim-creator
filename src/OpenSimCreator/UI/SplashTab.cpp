@@ -29,7 +29,7 @@
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
-#include <oscar/UI/Tabs/TabHost.hpp>
+#include <oscar/UI/Tabs/ITabHost.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>

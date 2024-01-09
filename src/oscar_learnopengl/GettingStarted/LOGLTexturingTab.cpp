@@ -13,8 +13,8 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
-#include <oscar/UI/Tabs/Tab.hpp>
+#include <oscar/UI/Tabs/ITab.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/Tabs/TabRegistry.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
@@ -100,9 +100,9 @@ namespace
     }
 }
 
-class osc::LOGLTexturingTab::Impl final : public StandardTabBase {
+class osc::LOGLTexturingTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
     }
 
@@ -128,7 +128,7 @@ CStringView osc::LOGLTexturingTab::id()
     return c_TabStringID;
 }
 
-osc::LOGLTexturingTab::LOGLTexturingTab(ParentPtr<TabHost> const&) :
+osc::LOGLTexturingTab::LOGLTexturingTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

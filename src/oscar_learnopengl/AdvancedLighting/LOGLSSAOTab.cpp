@@ -491,7 +491,7 @@ CStringView osc::LOGLSSAOTab::id()
     return c_TabStringID;
 }
 
-osc::LOGLSSAOTab::LOGLSSAOTab(ParentPtr<TabHost> const&) :
+osc::LOGLSSAOTab::LOGLSSAOTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

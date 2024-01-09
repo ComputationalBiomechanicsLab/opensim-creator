@@ -23,7 +23,7 @@
 namespace osc { struct Color; }
 namespace osc { class AppConfig; }
 namespace osc { class AppMetadata; }
-namespace osc { class Screen; }
+namespace osc { class IScreen; }
 
 namespace osc
 {
@@ -83,13 +83,13 @@ namespace osc
         std::filesystem::path const& getUserDataDirPath() const;
 
         // start showing the supplied screen, only returns once a screen requests to quit or an exception is thrown
-        void show(std::unique_ptr<Screen>);
+        void show(std::unique_ptr<IScreen>);
 
         // construct `TScreen` with `Args` and start showing it
         template<typename TScreen, typename... Args>
         void show(Args&&... args)
         {
-            static_assert(std::is_base_of_v<Screen, TScreen>);
+            static_assert(std::is_base_of_v<IScreen, TScreen>);
             show(std::make_unique<TScreen>(std::forward<Args>(args)...));
         }
 
@@ -105,7 +105,7 @@ namespace osc
         // - destroy the current screen
         // - mount the new screen
         // - make the new screen the current screen
-        void requestTransition(std::unique_ptr<Screen>);
+        void requestTransition(std::unique_ptr<IScreen>);
 
         // construct `TScreen` with `Args` then request the app transitions to it
         template<typename TScreen, typename... Args>

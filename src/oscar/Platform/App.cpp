@@ -7,9 +7,9 @@
 #include <oscar/Platform/AppClock.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
+#include <oscar/Platform/IScreen.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Platform/Screen.hpp>
 #include <oscar/Platform/Screenshot.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/imgui_impl_oscargfx.hpp>
@@ -239,7 +239,7 @@ public:
         return m_UserDataDirPath;
     }
 
-    void show(std::unique_ptr<Screen> s)
+    void show(std::unique_ptr<IScreen> s)
     {
         log::info("showing screen %s", s->getName().c_str());
 
@@ -263,7 +263,7 @@ public:
         mainLoopUnguarded();
     }
 
-    void requestTransition(std::unique_ptr<Screen> s)
+    void requestTransition(std::unique_ptr<IScreen> s)
     {
         m_NextScreen = std::move(s);
     }
@@ -532,7 +532,7 @@ private:
         return m_GraphicsContext.requestScreenshot();
     }
 
-    // perform a screen transntion between two top-level `osc::Screen`s
+    // perform a screen transntion between two top-level `osc::IScreen`s
     void transitionToNextScreen()
     {
         if (!m_NextScreen)
@@ -791,10 +791,10 @@ private:
     int32_t m_NumFramesToPoll = 0;
 
     // current screen being shown (if any)
-    std::unique_ptr<Screen> m_CurrentScreen;
+    std::unique_ptr<IScreen> m_CurrentScreen;
 
     // the *next* screen the application should show
-    std::unique_ptr<Screen> m_NextScreen;
+    std::unique_ptr<IScreen> m_NextScreen;
 
     // frame annotations made during this frame
     std::vector<ScreenshotAnnotation> m_FrameAnnotations;
@@ -864,12 +864,12 @@ std::filesystem::path const& osc::App::getUserDataDirPath() const
     return m_Impl->getUserDataDirPath();
 }
 
-void osc::App::show(std::unique_ptr<Screen> s)
+void osc::App::show(std::unique_ptr<IScreen> s)
 {
     m_Impl->show(std::move(s));
 }
 
-void osc::App::requestTransition(std::unique_ptr<Screen> s)
+void osc::App::requestTransition(std::unique_ptr<IScreen> s)
 {
     m_Impl->requestTransition(std::move(s));
 }

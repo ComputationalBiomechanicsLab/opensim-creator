@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Tabs/Tab.hpp>
+#include <oscar/UI/Tabs/ITab.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <SDL_events.h>
@@ -13,7 +13,7 @@ namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
-    class ModelEditorTab final : public Tab {
+    class ModelEditorTab final : public ITab {
     public:
         ModelEditorTab(
             ParentPtr<MainUIStateAPI> const&,

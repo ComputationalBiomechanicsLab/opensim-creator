@@ -1,6 +1,6 @@
 #include "TabRegistryEntry.hpp"
 
-#include <oscar/UI/Tabs/Tab.hpp>
+#include <oscar/UI/Tabs/ITab.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <functional>
@@ -13,7 +13,7 @@ public:
 
     Impl(
         CStringView name_,
-        std::function<std::unique_ptr<Tab>(ParentPtr<TabHost> const&)> constructor_) :
+        std::function<std::unique_ptr<ITab>(ParentPtr<ITabHost> const&)> constructor_) :
 
         m_Name{name_},
         m_Constructor{std::move(constructor_)}
@@ -25,19 +25,19 @@ public:
         return m_Name;
     }
 
-    std::unique_ptr<Tab> createTab(ParentPtr<TabHost> const& host) const
+    std::unique_ptr<ITab> createTab(ParentPtr<ITabHost> const& host) const
     {
         return m_Constructor(host);
     }
 
 private:
     std::string m_Name;
-    std::function<std::unique_ptr<Tab>(ParentPtr<TabHost> const&)> m_Constructor;
+    std::function<std::unique_ptr<ITab>(ParentPtr<ITabHost> const&)> m_Constructor;
 };
 
 osc::TabRegistryEntry::TabRegistryEntry(
     CStringView name_,
-    std::function<std::unique_ptr<Tab>(ParentPtr<TabHost> const&)> ctor_) :
+    std::function<std::unique_ptr<ITab>(ParentPtr<ITabHost> const&)> ctor_) :
 
     m_Impl{std::make_shared<Impl>(name_, std::move(ctor_))}
 {
@@ -54,7 +54,7 @@ osc::CStringView osc::TabRegistryEntry::getName() const
     return m_Impl->getName();
 }
 
-std::unique_ptr<osc::Tab> osc::TabRegistryEntry::createTab(ParentPtr<TabHost> const& host) const
+std::unique_ptr<osc::ITab> osc::TabRegistryEntry::createTab(ParentPtr<ITabHost> const& host) const
 {
     return m_Impl->createTab(host);
 }

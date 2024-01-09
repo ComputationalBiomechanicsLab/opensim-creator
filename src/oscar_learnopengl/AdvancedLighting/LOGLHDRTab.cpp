@@ -19,7 +19,7 @@
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
@@ -117,9 +117,9 @@ namespace
     }
 }
 
-class osc::LOGLHDRTab::Impl final : public osc::StandardTabBase {
+class osc::LOGLHDRTab::Impl final : public osc::StandardTabImpl {
 public:
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
     }
 
@@ -247,7 +247,7 @@ CStringView osc::LOGLHDRTab::id()
     return c_TabStringID;
 }
 
-osc::LOGLHDRTab::LOGLHDRTab(ParentPtr<TabHost> const&) :
+osc::LOGLHDRTab::LOGLHDRTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

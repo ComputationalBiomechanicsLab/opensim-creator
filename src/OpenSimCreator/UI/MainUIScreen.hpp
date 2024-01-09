@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/Platform/Screen.hpp>
+#include <oscar/Platform/IScreen.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <SDL_events.h>
@@ -8,12 +8,12 @@
 #include <filesystem>
 #include <memory>
 
-namespace osc { class Tab; }
-namespace osc { class TabHost; }
+namespace osc { class ITab; }
+namespace osc { class ITabHost; }
 
 namespace osc
 {
-    class MainUIScreen final : public Screen {
+    class MainUIScreen final : public IScreen {
     public:
         MainUIScreen();
         MainUIScreen(MainUIScreen const&) = delete;
@@ -22,7 +22,7 @@ namespace osc
         MainUIScreen& operator=(MainUIScreen&&) noexcept;
         ~MainUIScreen() noexcept override;
 
-        UID addTab(std::unique_ptr<Tab>);
+        UID addTab(std::unique_ptr<ITab>);
         void open(std::filesystem::path const&);
 
     private:

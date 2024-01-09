@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Panels/Panel.hpp>
+#include <oscar/UI/Panels/IPanel.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <memory>
@@ -10,7 +10,7 @@ namespace osc { class SimulatorUIAPI; }
 
 namespace osc
 {
-    class SelectionDetailsPanel final : public Panel {
+    class SelectionDetailsPanel final : public IPanel {
     public:
         SelectionDetailsPanel(
             std::string_view panelName,

@@ -9,7 +9,7 @@
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <oscar/Platform/os.hpp>
-#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 
 #include <string_view>
@@ -31,14 +31,14 @@ namespace
     }
 }
 
-class osc::OutputPlotsPanel::Impl final : public StandardPanel {
+class osc::OutputPlotsPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
         std::string_view panelName_,
         ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
         SimulatorUIAPI* simulatorUIAPI_) :
 
-        StandardPanel{panelName_},
+        StandardPanelImpl{panelName_},
         m_API{mainUIStateAPI_},
         m_SimulatorUIAPI{simulatorUIAPI_}
     {

@@ -4,7 +4,7 @@
 #include <imgui_internal.h>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/Vec2.hpp>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
@@ -105,9 +105,9 @@ namespace
     }
 }
 
-class osc::CustomWidgetsTab::Impl final : public osc::StandardTabBase {
+class osc::CustomWidgetsTab::Impl final : public osc::StandardTabImpl {
 public:
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
     }
 
@@ -134,7 +134,7 @@ osc::CStringView osc::CustomWidgetsTab::id()
     return c_TabStringID;
 }
 
-osc::CustomWidgetsTab::CustomWidgetsTab(ParentPtr<TabHost> const&) :
+osc::CustomWidgetsTab::CustomWidgetsTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

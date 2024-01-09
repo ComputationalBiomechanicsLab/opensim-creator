@@ -1,7 +1,7 @@
 #pragma once
 
 #include <oscar/Maths/Vec2.hpp>
-#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/UI/Widgets/IPopup.hpp>
 
 #include <imgui.h>
 
@@ -15,7 +15,7 @@ namespace osc
 {
     // base class for implementing a standard UI popup (that blocks the whole screen
     // apart from the popup content)
-    class StandardPopup : public Popup {
+    class StandardPopup : public IPopup {
     protected:
         StandardPopup(StandardPopup const&) = default;
         StandardPopup(StandardPopup&&) noexcept = default;

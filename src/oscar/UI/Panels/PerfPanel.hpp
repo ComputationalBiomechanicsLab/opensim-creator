@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Panels/Panel.hpp>
+#include <oscar/UI/Panels/IPanel.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <memory>
@@ -8,7 +8,7 @@
 
 namespace osc
 {
-    class PerfPanel final : public Panel {
+    class PerfPanel final : public IPanel {
     public:
         explicit PerfPanel(std::string_view panelName);
         PerfPanel(PerfPanel const&) = delete;

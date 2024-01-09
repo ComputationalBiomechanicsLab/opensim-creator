@@ -11,7 +11,7 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
@@ -22,7 +22,7 @@
 #include <utility>
 #include <vector>
 
-class osc::CoordinateEditorPanel::Impl final : public osc::StandardPanel {
+class osc::CoordinateEditorPanel::Impl final : public osc::StandardPanelImpl {
 public:
 
     Impl(
@@ -31,7 +31,7 @@ public:
         EditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> uum_) :
 
-        StandardPanel{panelName_},
+        StandardPanelImpl{panelName_},
         m_MainUIStateAPI{mainUIStateAPI_},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(uum_)}

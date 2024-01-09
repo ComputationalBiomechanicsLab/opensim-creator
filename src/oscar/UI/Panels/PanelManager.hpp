@@ -10,7 +10,7 @@
 #include <string_view>
 #include <memory>
 
-namespace osc { class Panel; }
+namespace osc { class IPanel; }
 
 namespace osc
 {
@@ -27,23 +27,23 @@ namespace osc
         // register a panel that can be toggled on/off
         void registerToggleablePanel(
             std::string_view baseName,
-            std::function<std::shared_ptr<Panel>(std::string_view)> constructorFunc_,
+            std::function<std::shared_ptr<IPanel>(std::string_view)> constructorFunc_,
             ToggleablePanelFlags flags_ = ToggleablePanelFlags::Default
         );
 
         // register a panel that can spawn N copies (e.g. visualizers)
         void registerSpawnablePanel(
             std::string_view baseName,
-            std::function<std::shared_ptr<Panel>(std::string_view)> constructorFunc_,
+            std::function<std::shared_ptr<IPanel>(std::string_view)> constructorFunc_,
             size_t numInitiallyOpenedPanels
         );
 
         // returns the panel with the given name, or `nullptr` if not found
-        Panel* tryUpdPanelByName(std::string_view);
+        IPanel* tryUpdPanelByName(std::string_view);
         template<typename TConcretePanel>
         TConcretePanel* tryUpdPanelByNameT(std::string_view name)
         {
-            Panel* p = tryUpdPanelByName(name);
+            IPanel* p = tryUpdPanelByName(name);
             return p ? dynamic_cast<TConcretePanel*>(p) : nullptr;
         }
 
@@ -64,7 +64,7 @@ namespace osc
         CStringView getSpawnablePanelBaseName(size_t) const;
         void createDynamicPanel(size_t);
         std::string computeSuggestedDynamicPanelName(std::string_view baseName);
-        void pushDynamicPanel(std::string_view baseName, std::shared_ptr<Panel>);
+        void pushDynamicPanel(std::string_view baseName, std::shared_ptr<IPanel>);
 
         void onMount();
         void onUnmount();

@@ -1,21 +1,21 @@
 #pragma once
 
-#include <oscar/UI/Tabs/Tab.hpp>
+#include <oscar/UI/Tabs/ITab.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <memory>
 
 namespace osc { template<typename T> class ParentPtr; }
-namespace osc { class TabHost; }
+namespace osc { class ITabHost; }
 
 namespace osc
 {
-    class ImGuiDemoTab final : public Tab {
+    class ImGuiDemoTab final : public ITab {
     public:
         static CStringView id();
 
-        explicit ImGuiDemoTab(ParentPtr<TabHost> const&);
+        explicit ImGuiDemoTab(ParentPtr<ITabHost> const&);
         ImGuiDemoTab(ImGuiDemoTab const&) = delete;
         ImGuiDemoTab(ImGuiDemoTab&&) noexcept;
         ImGuiDemoTab& operator=(ImGuiDemoTab const&) = delete;

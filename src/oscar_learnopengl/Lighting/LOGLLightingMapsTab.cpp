@@ -13,7 +13,7 @@
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
@@ -71,9 +71,9 @@ namespace
     }
 }
 
-class osc::LOGLLightingMapsTab::Impl final : public osc::StandardTabBase {
+class osc::LOGLLightingMapsTab::Impl final : public osc::StandardTabImpl {
 public:
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
         m_LightTransform.position = {0.4f, 0.4f, 2.0f};
         m_LightTransform.scale = {0.2f, 0.2f, 0.2f};
@@ -182,7 +182,7 @@ CStringView osc::LOGLLightingMapsTab::id()
     return c_TabStringID;
 }
 
-osc::LOGLLightingMapsTab::LOGLLightingMapsTab(ParentPtr<TabHost> const&) :
+osc::LOGLLightingMapsTab::LOGLLightingMapsTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

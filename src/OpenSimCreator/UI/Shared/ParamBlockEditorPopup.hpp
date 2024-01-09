@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/UI/Widgets/IPopup.hpp>
 
 #include <memory>
 #include <string_view>
@@ -10,7 +10,7 @@ namespace osc { class ParamBlock; }
 namespace osc
 {
     // popup that edits a parameter block in-place
-    class ParamBlockEditorPopup final : public Popup {
+    class ParamBlockEditorPopup final : public IPopup {
     public:
         ParamBlockEditorPopup(
             std::string_view popupName,

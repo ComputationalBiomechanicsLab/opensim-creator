@@ -12,7 +12,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
@@ -144,14 +144,14 @@ namespace
     }
 }
 
-class osc::NavigatorPanel::Impl final : public StandardPanel {
+class osc::NavigatorPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
         std::string_view panelName,
         std::shared_ptr<VirtualModelStatePair> model,
         std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
 
-        StandardPanel{panelName},
+        StandardPanelImpl{panelName},
         m_Model{std::move(model)},
         m_OnRightClick{std::move(onRightClick)}
     {
@@ -159,17 +159,17 @@ public:
 
     bool isOpen() const
     {
-        return static_cast<StandardPanel const&>(*this).isOpen();
+        return static_cast<StandardPanelImpl const&>(*this).isOpen();
     }
 
     void open()
     {
-        return static_cast<StandardPanel&>(*this).open();
+        return static_cast<StandardPanelImpl&>(*this).open();
     }
 
     void close()
     {
-        return static_cast<StandardPanel&>(*this).close();
+        return static_cast<StandardPanelImpl&>(*this).close();
     }
 
 private:

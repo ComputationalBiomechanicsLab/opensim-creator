@@ -233,7 +233,7 @@ private:
 // public API (PIMPL)
 
 osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(
-    ParentPtr<TabHost> const&,
+    ParentPtr<ITabHost> const&,
     BasicModelStatePair modelState,
     ParamBlock const& params) :
 

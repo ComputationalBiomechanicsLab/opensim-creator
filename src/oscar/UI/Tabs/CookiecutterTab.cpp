@@ -1,6 +1,6 @@
 #include "CookiecutterTab.hpp"
 
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <IconsFontAwesome5.h>
@@ -16,9 +16,9 @@ namespace
     constexpr CStringView c_TabStringID = "CookiecutterTab";
 }
 
-class osc::CookiecutterTab::Impl final : public StandardTabBase {
+class osc::CookiecutterTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
     }
 
@@ -57,7 +57,7 @@ osc::CStringView osc::CookiecutterTab::id()
     return c_TabStringID;
 }
 
-osc::CookiecutterTab::CookiecutterTab(ParentPtr<TabHost> const&) :
+osc::CookiecutterTab::CookiecutterTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

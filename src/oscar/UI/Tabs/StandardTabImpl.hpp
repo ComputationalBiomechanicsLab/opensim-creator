@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Tabs/Tab.hpp>
+#include <oscar/UI/Tabs/ITab.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
@@ -8,10 +8,9 @@
 
 namespace osc
 {
-    // provides the ID and name parts of a tab implementation
-    class StandardTabBase : public Tab {
+    class StandardTabImpl : public ITab {
     protected:
-        explicit StandardTabBase(CStringView tabName) :
+        explicit StandardTabImpl(CStringView tabName) :
             m_TabName{std::string{tabName}}
         {
         }

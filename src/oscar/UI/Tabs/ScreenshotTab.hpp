@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Tabs/Tab.hpp>
+#include <oscar/UI/Tabs/ITab.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
@@ -8,13 +8,13 @@
 
 namespace osc { template<typename T> class ParentPtr; }
 namespace osc { struct Screenshot; }
-namespace osc { class TabHost; }
+namespace osc { class ITabHost; }
 
 namespace osc
 {
-    class ScreenshotTab final : public Tab {
+    class ScreenshotTab final : public ITab {
     public:
-        ScreenshotTab(ParentPtr<TabHost> const&, Screenshot&&);
+        ScreenshotTab(ParentPtr<ITabHost> const&, Screenshot&&);
         ScreenshotTab(ScreenshotTab const&) = delete;
         ScreenshotTab(ScreenshotTab&&) noexcept;
         ScreenshotTab& operator=(ScreenshotTab const&) = delete;

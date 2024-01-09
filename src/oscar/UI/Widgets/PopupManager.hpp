@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 
-namespace osc { class Popup; }
+namespace osc { class IPopup; }
 
 namespace osc
 {
@@ -17,13 +17,13 @@ namespace osc
         PopupManager& operator=(PopupManager&&) noexcept;
         ~PopupManager() noexcept;
 
-        void push_back(std::shared_ptr<Popup>);
+        void push_back(std::shared_ptr<IPopup>);
         void onMount() { openAll(); }
         void openAll();
         void onDraw();
         [[nodiscard]] bool empty();
         void clear();
     private:
-        std::vector<std::shared_ptr<Popup>> m_Popups;
+        std::vector<std::shared_ptr<IPopup>> m_Popups;
     };
 }

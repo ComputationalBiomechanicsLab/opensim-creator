@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Panels/Panel.hpp>
+#include <oscar/UI/Panels/IPanel.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <string_view>
@@ -11,7 +11,7 @@ namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
-    class PropertiesPanel final : public Panel {
+    class PropertiesPanel final : public IPanel {
     public:
         PropertiesPanel(
             std::string_view panelName,

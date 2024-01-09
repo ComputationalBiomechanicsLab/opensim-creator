@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Panels/Panel.hpp>
+#include <oscar/UI/Panels/IPanel.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <memory>
@@ -13,7 +13,7 @@ namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
-    class ModelMusclePlotPanel final : public Panel {
+    class ModelMusclePlotPanel final : public IPanel {
     public:
         ModelMusclePlotPanel(
             EditorAPI*,

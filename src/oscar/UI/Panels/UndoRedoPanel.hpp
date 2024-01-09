@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Panels/Panel.hpp>
+#include <oscar/UI/Panels/IPanel.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <memory>
@@ -11,7 +11,7 @@ namespace osc { class UndoRedo; }
 namespace osc
 {
     // a user-visible panel that lists undo/redo history
-    class UndoRedoPanel final : public Panel {
+    class UndoRedoPanel final : public IPanel {
     public:
         static void DrawContent(UndoRedo&);
 

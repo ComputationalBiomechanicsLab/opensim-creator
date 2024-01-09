@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Panels/Panel.hpp>
+#include <oscar/UI/Panels/IPanel.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <memory>
@@ -13,7 +13,7 @@ namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
-    class CoordinateEditorPanel final : public Panel {
+    class CoordinateEditorPanel final : public IPanel {
     public:
         CoordinateEditorPanel(
             std::string_view panelName,

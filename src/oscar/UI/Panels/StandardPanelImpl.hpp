@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Panels/Panel.hpp>
+#include <oscar/UI/Panels/IPanel.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <imgui.h>
@@ -10,17 +10,17 @@
 
 namespace osc
 {
-    // a "standard" implementation for a Panel
-    class StandardPanel : public Panel {
+    // a "standard" implementation for an IPanel
+    class StandardPanelImpl : public IPanel {
     protected:
-        explicit StandardPanel(std::string_view panelName);
-        StandardPanel(std::string_view panelName, ImGuiWindowFlags);
-        StandardPanel(StandardPanel const&) = default;
-        StandardPanel(StandardPanel&&) noexcept = default;
-        StandardPanel& operator=(StandardPanel const&) = default;
-        StandardPanel& operator=(StandardPanel&&) noexcept = default;
+        explicit StandardPanelImpl(std::string_view panelName);
+        StandardPanelImpl(std::string_view panelName, ImGuiWindowFlags);
+        StandardPanelImpl(StandardPanelImpl const&) = default;
+        StandardPanelImpl(StandardPanelImpl&&) noexcept = default;
+        StandardPanelImpl& operator=(StandardPanelImpl const&) = default;
+        StandardPanelImpl& operator=(StandardPanelImpl&&) noexcept = default;
     public:
-        virtual ~StandardPanel() noexcept = default;
+        ~StandardPanelImpl() noexcept override = default;
 
     protected:
         void requestClose();

@@ -3,7 +3,7 @@
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Vec2.hpp>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 
@@ -13,10 +13,10 @@
 #include <string>
 #include <utility>
 
-class osc::ErrorTab::Impl final : public osc::StandardTabBase {
+class osc::ErrorTab::Impl final : public osc::StandardTabImpl {
 public:
     explicit Impl(std::exception const& ex) :
-        StandardTabBase{ICON_FA_SPIDER " Error"},
+        StandardTabImpl{ICON_FA_SPIDER " Error"},
         m_ErrorMessage{ex.what()}
     {
     }
@@ -68,7 +68,7 @@ private:
 
 // public API
 
-osc::ErrorTab::ErrorTab(ParentPtr<TabHost> const&, std::exception const& ex) :
+osc::ErrorTab::ErrorTab(ParentPtr<ITabHost> const&, std::exception const& ex) :
     m_Impl{std::make_unique<Impl>(ex)}
 {
 }

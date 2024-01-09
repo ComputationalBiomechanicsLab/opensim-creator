@@ -20,7 +20,7 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
@@ -154,9 +154,9 @@ namespace
     }
 }
 
-class osc::LOGLParallaxMappingTab::Impl final : public osc::StandardTabBase {
+class osc::LOGLParallaxMappingTab::Impl final : public osc::StandardTabImpl {
 public:
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
         m_LightTransform.position = {0.5f, 1.0f, 0.3f};
         m_LightTransform.scale *= 0.2f;
@@ -253,7 +253,7 @@ CStringView osc::LOGLParallaxMappingTab::id()
     return c_TabStringID;
 }
 
-osc::LOGLParallaxMappingTab::LOGLParallaxMappingTab(ParentPtr<TabHost> const&) :
+osc::LOGLParallaxMappingTab::LOGLParallaxMappingTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

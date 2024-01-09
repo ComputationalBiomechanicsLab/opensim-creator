@@ -1,6 +1,6 @@
 #include "LogViewerPanel.hpp"
 
-#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>
 
 #include <imgui.h>
@@ -8,11 +8,11 @@
 #include <string_view>
 #include <utility>
 
-class osc::LogViewerPanel::Impl final : public StandardPanel {
+class osc::LogViewerPanel::Impl final : public StandardPanelImpl {
 public:
 
     explicit Impl(std::string_view panelName) :
-        StandardPanel{panelName, ImGuiWindowFlags_MenuBar}
+        StandardPanelImpl{panelName, ImGuiWindowFlags_MenuBar}
     {
     }
 

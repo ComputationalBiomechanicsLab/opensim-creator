@@ -8,19 +8,19 @@
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
-#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 
 #include <memory>
 #include <string_view>
 #include <utility>
 
-class osc::SelectionDetailsPanel::Impl final : public StandardPanel {
+class osc::SelectionDetailsPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
         std::string_view panelName,
         SimulatorUIAPI* simulatorUIAPI) :
 
-        StandardPanel{panelName},
+        StandardPanelImpl{panelName},
         m_SimulatorUIAPI{simulatorUIAPI}
     {
     }

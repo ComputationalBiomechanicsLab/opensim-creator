@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/Landmarks/NamedLandmark.hpp>
 
-#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/UI/Widgets/IPopup.hpp>
 
 #include <functional>
 #include <memory>
@@ -13,7 +13,7 @@
 
 namespace osc
 {
-    class ImportStationsFromCSVPopup final : public Popup {
+    class ImportStationsFromCSVPopup final : public IPopup {
     public:
         struct ImportedData final {
             std::optional<std::string> maybeLabel;

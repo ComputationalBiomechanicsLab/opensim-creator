@@ -1,6 +1,6 @@
 #include "PopupManager.hpp"
 
-#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/UI/Widgets/IPopup.hpp>
 
 #include <cstddef>
 #include <memory>
@@ -11,14 +11,14 @@ osc::PopupManager::PopupManager(PopupManager&&) noexcept = default;
 osc::PopupManager& osc::PopupManager::operator=(PopupManager&&) noexcept = default;
 osc::PopupManager::~PopupManager() noexcept = default;
 
-void osc::PopupManager::push_back(std::shared_ptr<Popup> popup)
+void osc::PopupManager::push_back(std::shared_ptr<IPopup> popup)
 {
     m_Popups.push_back(std::move(popup));
 }
 
 void osc::PopupManager::openAll()
 {
-    for (std::shared_ptr<Popup>& popup : m_Popups)
+    for (std::shared_ptr<IPopup>& popup : m_Popups)
     {
         popup->open();
     }

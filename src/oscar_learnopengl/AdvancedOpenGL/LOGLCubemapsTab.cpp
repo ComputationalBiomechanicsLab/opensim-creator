@@ -20,7 +20,7 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
@@ -152,9 +152,9 @@ namespace
     }
 }
 
-class osc::LOGLCubemapsTab::Impl final : public osc::StandardTabBase {
+class osc::LOGLCubemapsTab::Impl final : public osc::StandardTabImpl {
 public:
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
         for (CubeMaterial& cubeMat : m_CubeMaterials)
         {
@@ -306,7 +306,7 @@ CStringView osc::LOGLCubemapsTab::id()
     return c_TabStringID;
 }
 
-osc::LOGLCubemapsTab::LOGLCubemapsTab(ParentPtr<TabHost> const&) :
+osc::LOGLCubemapsTab::LOGLCubemapsTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

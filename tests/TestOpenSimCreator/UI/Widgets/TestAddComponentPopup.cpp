@@ -10,14 +10,14 @@
 #include <gtest/gtest.h>
 #include <OpenSim/Common/Component.h>
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/UI/Widgets/IPopup.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
 
 #include <memory>
 
 using osc::AddComponentPopup;
 using osc::OpenSimCreatorApp;
-using osc::Popup;
+using osc::IPopup;
 using osc::PopupAPI;
 using osc::ScopeGuard;
 using osc::UndoableModelStatePair;
@@ -26,7 +26,7 @@ namespace
 {
     class NullPopupAPI : public PopupAPI {
     private:
-        void implPushPopup(std::unique_ptr<Popup>) final {}
+        void implPushPopup(std::unique_ptr<IPopup>) final {}
     };
 }
 

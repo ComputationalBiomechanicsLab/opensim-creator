@@ -14,7 +14,7 @@
 #include <oscar/UI/Panels/ToggleablePanelFlags.hpp>
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/UI/Panels/UndoRedoPanel.hpp>
-#include <oscar/UI/Tabs/TabHost.hpp>
+#include <oscar/UI/Tabs/ITabHost.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <SDL_events.h>
@@ -25,7 +25,7 @@
 class osc::MeshWarpingTab::Impl final {
 public:
 
-    explicit Impl(ParentPtr<TabHost> const& parent_) : m_Parent{parent_}
+    explicit Impl(ParentPtr<ITabHost> const& parent_) : m_Parent{parent_}
     {
         m_PanelManager->registerToggleablePanel(
             "Source Mesh",
@@ -203,7 +203,7 @@ private:
     }
 
     UID m_TabID;
-    ParentPtr<TabHost> m_Parent;
+    ParentPtr<ITabHost> m_Parent;
 
     // top-level state that all panels can potentially access
     std::shared_ptr<MeshWarpingTabSharedState> m_Shared = std::make_shared<MeshWarpingTabSharedState>(m_TabID, m_Parent);
@@ -225,7 +225,7 @@ osc::CStringView osc::MeshWarpingTab::id()
     return "OpenSim/Warping";
 }
 
-osc::MeshWarpingTab::MeshWarpingTab(ParentPtr<TabHost> const& parent_) :
+osc::MeshWarpingTab::MeshWarpingTab(ParentPtr<ITabHost> const& parent_) :
     m_Impl{std::make_unique<Impl>(parent_)}
 {
 }

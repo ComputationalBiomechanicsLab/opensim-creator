@@ -7,7 +7,7 @@
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <oscar/Platform/os.hpp>
-#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
 
@@ -16,14 +16,14 @@
 #include <string_view>
 #include <utility>
 
-class osc::SimulationDetailsPanel::Impl final : public StandardPanel {
+class osc::SimulationDetailsPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
         std::string_view panelName,
         SimulatorUIAPI* simulatorUIAPI,
         std::shared_ptr<Simulation const> simulation) :
 
-        StandardPanel{panelName},
+        StandardPanelImpl{panelName},
         m_SimulatorUIAPI{simulatorUIAPI},
         m_Simulation{std::move(simulation)}
     {

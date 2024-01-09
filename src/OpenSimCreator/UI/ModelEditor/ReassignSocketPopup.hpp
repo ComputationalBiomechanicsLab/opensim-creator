@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/UI/Widgets/IPopup.hpp>
 
 #include <memory>
 #include <string_view>
@@ -9,7 +9,7 @@ namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
-    class ReassignSocketPopup final : public Popup {
+    class ReassignSocketPopup final : public IPopup {
     public:
         ReassignSocketPopup(
             std::string_view popupName,

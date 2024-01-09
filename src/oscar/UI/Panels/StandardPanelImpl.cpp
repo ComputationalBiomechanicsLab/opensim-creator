@@ -1,4 +1,4 @@
-#include "StandardPanel.hpp"
+#include "StandardPanelImpl.hpp"
 
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
@@ -8,12 +8,12 @@
 #include <string_view>
 #include <utility>
 
-osc::StandardPanel::StandardPanel(std::string_view panelName) :
-    StandardPanel{panelName, ImGuiWindowFlags_None}
+osc::StandardPanelImpl::StandardPanelImpl(std::string_view panelName) :
+    StandardPanelImpl{panelName, ImGuiWindowFlags_None}
 {
 }
 
-osc::StandardPanel::StandardPanel(
+osc::StandardPanelImpl::StandardPanelImpl(
     std::string_view panelName,
     ImGuiWindowFlags imGuiWindowFlags) :
 
@@ -22,27 +22,27 @@ osc::StandardPanel::StandardPanel(
 {
 }
 
-osc::CStringView osc::StandardPanel::implGetName() const
+osc::CStringView osc::StandardPanelImpl::implGetName() const
 {
     return m_PanelName;
 }
 
-bool osc::StandardPanel::implIsOpen() const
+bool osc::StandardPanelImpl::implIsOpen() const
 {
     return App::get().getConfig().getIsPanelEnabled(m_PanelName);
 }
 
-void osc::StandardPanel::implOpen()
+void osc::StandardPanelImpl::implOpen()
 {
     App::upd().updConfig().setIsPanelEnabled(m_PanelName, true);
 }
 
-void osc::StandardPanel::implClose()
+void osc::StandardPanelImpl::implClose()
 {
     App::upd().updConfig().setIsPanelEnabled(m_PanelName, false);
 }
 
-void osc::StandardPanel::implOnDraw()
+void osc::StandardPanelImpl::implOnDraw()
 {
     if (isOpen())
     {
@@ -63,7 +63,7 @@ void osc::StandardPanel::implOnDraw()
     }
 }
 
-void osc::StandardPanel::requestClose()
+void osc::StandardPanelImpl::requestClose()
 {
     close();
 }

@@ -1,7 +1,7 @@
 #include "ImGuiDemoTab.hpp"
 
 #include <imgui.h>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <utility>
@@ -13,9 +13,9 @@ namespace
     constexpr CStringView c_TabStringID = "Demos/ImGui";
 }
 
-class osc::ImGuiDemoTab::Impl final : public osc::StandardTabBase {
+class osc::ImGuiDemoTab::Impl final : public osc::StandardTabImpl {
 public:
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
     }
 
@@ -34,7 +34,7 @@ osc::CStringView osc::ImGuiDemoTab::id()
     return c_TabStringID;
 }
 
-osc::ImGuiDemoTab::ImGuiDemoTab(ParentPtr<TabHost> const&) :
+osc::ImGuiDemoTab::ImGuiDemoTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

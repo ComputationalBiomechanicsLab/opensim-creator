@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Tabs/Tab.hpp>
+#include <oscar/UI/Tabs/ITab.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
@@ -8,13 +8,13 @@
 #include <memory>
 
 namespace osc { template<typename T> class ParentPtr; }
-namespace osc { class TabHost; }
+namespace osc { class ITabHost; }
 
 namespace osc
 {
-    class ErrorTab final : public Tab {
+    class ErrorTab final : public ITab {
     public:
-        ErrorTab(ParentPtr<TabHost> const&, std::exception const&);
+        ErrorTab(ParentPtr<ITabHost> const&, std::exception const&);
         ErrorTab(ErrorTab const&) = delete;
         ErrorTab(ErrorTab&&) noexcept;
         ErrorTab& operator=(ErrorTab const&) = delete;

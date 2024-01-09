@@ -10,7 +10,7 @@
 #include <oscar/Maths/Circle.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Vec2.hpp>
-#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 
 #include <memory>
@@ -19,13 +19,13 @@
 
 namespace osc
 {
-    class MeshWarpingTabNavigatorPanel final : public StandardPanel {
+    class MeshWarpingTabNavigatorPanel final : public StandardPanelImpl {
     public:
         MeshWarpingTabNavigatorPanel(
             std::string_view label_,
             std::shared_ptr<MeshWarpingTabSharedState> shared_) :
 
-            StandardPanel{label_},
+            StandardPanelImpl{label_},
             m_State{std::move(shared_)}
         {
         }

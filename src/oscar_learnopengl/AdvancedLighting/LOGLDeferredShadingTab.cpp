@@ -26,7 +26,7 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Tabs/StandardTabBase.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
@@ -210,9 +210,9 @@ namespace
     };
 }
 
-class osc::LOGLDeferredShadingTab::Impl final : public osc::StandardTabBase {
+class osc::LOGLDeferredShadingTab::Impl final : public osc::StandardTabImpl {
 public:
-    Impl() : StandardTabBase{c_TabStringID}
+    Impl() : StandardTabImpl{c_TabStringID}
     {
     }
 
@@ -425,7 +425,7 @@ CStringView osc::LOGLDeferredShadingTab::id()
     return c_TabStringID;
 }
 
-osc::LOGLDeferredShadingTab::LOGLDeferredShadingTab(ParentPtr<TabHost> const&) :
+osc::LOGLDeferredShadingTab::LOGLDeferredShadingTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

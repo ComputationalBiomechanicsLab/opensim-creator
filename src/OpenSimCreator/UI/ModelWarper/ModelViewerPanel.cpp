@@ -3,7 +3,7 @@
 #include <OpenSimCreator/UI/ModelWarper/UIState.hpp>
 
 #include <imgui.h>
-#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 
 #include <memory>
 #include <string_view>
@@ -11,12 +11,12 @@
 
 using osc::CStringView;
 
-class osc::mow::ModelViewerPanel::Impl final : public StandardPanel {
+class osc::mow::ModelViewerPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(std::string_view panelName_,
         std::shared_ptr<UIState> state_) :
 
-        StandardPanel{panelName_},
+        StandardPanelImpl{panelName_},
         m_State{std::move(state_)}
     {
     }

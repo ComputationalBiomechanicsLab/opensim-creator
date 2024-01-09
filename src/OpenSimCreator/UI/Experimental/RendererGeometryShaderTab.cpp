@@ -126,7 +126,7 @@ osc::CStringView osc::RendererGeometryShaderTab::id()
     return "OpenSim/Experimental/GeometryShader";
 }
 
-osc::RendererGeometryShaderTab::RendererGeometryShaderTab(ParentPtr<TabHost> const&) :
+osc::RendererGeometryShaderTab::RendererGeometryShaderTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

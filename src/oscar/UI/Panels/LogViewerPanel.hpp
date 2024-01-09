@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Panels/Panel.hpp>
+#include <oscar/UI/Panels/IPanel.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <memory>
@@ -8,7 +8,7 @@
 
 namespace osc
 {
-    class LogViewerPanel final : public Panel {
+    class LogViewerPanel final : public IPanel {
     public:
         explicit LogViewerPanel(std::string_view panelName);
         LogViewerPanel(LogViewerPanel const&) = delete;

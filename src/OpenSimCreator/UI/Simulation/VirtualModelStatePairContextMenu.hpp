@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Widgets/Popup.hpp>
+#include <oscar/UI/Widgets/IPopup.hpp>
 
 #include <memory>
 #include <optional>
@@ -13,7 +13,7 @@ namespace osc { class VirtualModelStatePair; }
 
 namespace osc
 {
-    class VirtualModelStatePairContextMenu final : public Popup {
+    class VirtualModelStatePairContextMenu final : public IPopup {
     public:
         VirtualModelStatePairContextMenu(
             std::string_view panelName,

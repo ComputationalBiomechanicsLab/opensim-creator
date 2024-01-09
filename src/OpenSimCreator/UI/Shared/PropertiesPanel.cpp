@@ -27,7 +27,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/UI/Panels/StandardPanel.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
 
@@ -117,14 +117,14 @@ namespace
     };
 }
 
-class osc::PropertiesPanel::Impl final : public osc::StandardPanel {
+class osc::PropertiesPanel::Impl final : public osc::StandardPanelImpl {
 public:
     Impl(
         std::string_view panelName,
         EditorAPI* editorAPI,
         std::shared_ptr<UndoableModelStatePair> model) :
 
-        StandardPanel{panelName},
+        StandardPanelImpl{panelName},
         m_EditorAPI{editorAPI},
         m_Model{std::move(model)},
         m_SelectionPropertiesEditor{editorAPI, m_Model, [model = m_Model](){ return model->getSelected(); }}

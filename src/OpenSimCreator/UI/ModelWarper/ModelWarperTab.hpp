@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Tabs/Tab.hpp>
+#include <oscar/UI/Tabs/ITab.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
@@ -9,15 +9,15 @@
 #include <memory>
 
 namespace osc { template<typename T> class ParentPtr; }
-namespace osc { class TabHost; }
+namespace osc { class ITabHost; }
 
 namespace osc::mow
 {
-    class ModelWarperTab final : public Tab {
+    class ModelWarperTab final : public ITab {
     public:
         static CStringView id();
 
-        explicit ModelWarperTab(ParentPtr<TabHost> const&);
+        explicit ModelWarperTab(ParentPtr<ITabHost> const&);
         ModelWarperTab(ModelWarperTab const&) = delete;
         ModelWarperTab(ModelWarperTab&&) noexcept;
         ModelWarperTab& operator=(ModelWarperTab const&) = delete;
