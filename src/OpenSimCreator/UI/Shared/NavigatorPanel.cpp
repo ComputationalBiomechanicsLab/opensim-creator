@@ -274,8 +274,7 @@ private:
 
                 bool shouldRender = true;
 
-                auto hc = typeid(c).hash_code();
-                if (!m_ShowFrames && hc == typeid(OpenSim::FrameGeometry).hash_code())
+                if (!m_ShowFrames && dynamic_cast<OpenSim::FrameGeometry const*>(&c))
                 {
                     shouldRender = false;
                 }
