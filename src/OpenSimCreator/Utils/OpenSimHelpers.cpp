@@ -747,11 +747,11 @@ std::optional<std::filesystem::path> osc::FindGeometryFileAbsPath(
 
 bool osc::ShouldShowInUI(OpenSim::Component const& c)
 {
-    if (typeid(c) == typeid(OpenSim::PathWrapPoint))
+    if (dynamic_cast<OpenSim::PathWrapPoint const*>(&c))
     {
         return false;
     }
-    else if (typeid(c) == typeid(OpenSim::Station) && OwnerIs<OpenSim::PathPoint>(c))
+    else if (dynamic_cast<OpenSim::Station const*>(&c) && OwnerIs<OpenSim::PathPoint>(c))
     {
         return false;
     }

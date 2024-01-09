@@ -117,11 +117,11 @@ namespace
         OpenSim::AbstractOutput const& ao,
         osc::OutputSubfield subfield)
     {
-        if (typeid(ao) == typeid(OpenSim::Output<double>))
+        if (dynamic_cast<OpenSim::Output<double> const*>(&ao))
         {
             return detail::extractTypeErased<OpenSim::Output<double>>;
         }
-        else if (typeid(ao) == typeid(OpenSim::Output<SimTK::Vec3>))
+        else if (dynamic_cast<OpenSim::Output<SimTK::Vec3> const*>(&ao))
         {
             switch (subfield) {
             case osc::OutputSubfield::X:
@@ -302,7 +302,7 @@ std::span<osc::OutputSubfield const> osc::GetAllSupportedOutputSubfields()
 
 osc::OutputSubfield osc::GetSupportedSubfields(OpenSim::AbstractOutput const& ao)
 {
-    if (typeid(ao) == typeid(OpenSim::Output<SimTK::Vec3>))
+    if (dynamic_cast<OpenSim::Output<SimTK::Vec3> const*>(&ao))
     {
         return
             OutputSubfield::X |

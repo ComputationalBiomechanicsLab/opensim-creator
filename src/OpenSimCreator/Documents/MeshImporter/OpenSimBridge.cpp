@@ -216,11 +216,11 @@ namespace
     // returns the indices of each degree of freedom that the joint supports
     JointDegreesOfFreedom GetDegreesOfFreedom(OpenSim::Joint const& joint)
     {
-        if (typeid(joint) == typeid(OpenSim::FreeJoint))
+        if (dynamic_cast<OpenSim::FreeJoint const*>(&joint))
         {
             return JointDegreesOfFreedom{{0, 1, 2}, {3, 4, 5}};
         }
-        else if (typeid(joint) == typeid(OpenSim::PinJoint))
+        else if (dynamic_cast<OpenSim::PinJoint const*>(&joint))
         {
             return JointDegreesOfFreedom{{-1, -1, 0}, {-1, -1, -1}};
         }
