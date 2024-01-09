@@ -5,14 +5,14 @@
 #include <utility>
 
 namespace osc { struct SimulationViewerRightClickEvent; }
-namespace osc { class VirtualModelStatePair; }
+namespace osc { class IModelStatePair; }
 
 namespace osc
 {
     class SimulationViewerPanelParameters final {
     public:
         SimulationViewerPanelParameters(
-            std::shared_ptr<VirtualModelStatePair> model_,
+            std::shared_ptr<IModelStatePair> model_,
             std::function<void(SimulationViewerRightClickEvent const&)> const& onRightClickedAComponent_) :
 
             m_Model{std::move(model_)},
@@ -20,11 +20,11 @@ namespace osc
         {
         }
 
-        VirtualModelStatePair& updModelState() { return *m_Model; }
+        IModelStatePair& updModelState() { return *m_Model; }
         void callOnRightClickHandler(SimulationViewerRightClickEvent const& e) const { m_OnRightClickedAComponent(e); }
 
     private:
-        std::shared_ptr<VirtualModelStatePair> m_Model;
+        std::shared_ptr<IModelStatePair> m_Model;
         std::function<void(SimulationViewerRightClickEvent const&)> m_OnRightClickedAComponent;
     };
 }

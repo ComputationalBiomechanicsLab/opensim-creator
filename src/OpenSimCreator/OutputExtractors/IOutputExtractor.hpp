@@ -22,15 +22,15 @@ namespace osc
     // assumed to be an immutable type (important, because output extractors
     // might be shared between simulations, threads, etc.) that merely extracts
     // data from simulation reports
-    class VirtualOutputExtractor {
+    class IOutputExtractor {
     protected:
-        VirtualOutputExtractor() = default;
-        VirtualOutputExtractor(VirtualOutputExtractor const&) = default;
-        VirtualOutputExtractor(VirtualOutputExtractor&&) noexcept = default;
-        VirtualOutputExtractor& operator=(VirtualOutputExtractor const&) = default;
-        VirtualOutputExtractor& operator=(VirtualOutputExtractor&&) noexcept = default;
+        IOutputExtractor() = default;
+        IOutputExtractor(IOutputExtractor const&) = default;
+        IOutputExtractor(IOutputExtractor&&) noexcept = default;
+        IOutputExtractor& operator=(IOutputExtractor const&) = default;
+        IOutputExtractor& operator=(IOutputExtractor&&) noexcept = default;
     public:
-        virtual ~VirtualOutputExtractor() noexcept = default;
+        virtual ~IOutputExtractor() noexcept = default;
 
         virtual CStringView getName() const = 0;
         virtual CStringView getDescription() const = 0;
@@ -54,9 +54,9 @@ namespace osc
         ) const = 0;
 
         virtual size_t getHash() const = 0;
-        virtual bool equals(VirtualOutputExtractor const&) const = 0;
+        virtual bool equals(IOutputExtractor const&) const = 0;
 
-        friend bool operator==(VirtualOutputExtractor const& lhs, VirtualOutputExtractor const& rhs)
+        friend bool operator==(IOutputExtractor const& lhs, IOutputExtractor const& rhs)
         {
             return lhs.equals(rhs);
         }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/Model/VirtualConstModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/IConstModelStatePair.hpp>
 
 namespace OpenSim { class Component; }
 
@@ -8,15 +8,15 @@ namespace osc
 {
     // virtual read+write accessor to an `OpenSim::Model` + `SimTK::State` pair, with
     // additional opt-in overrides to aid rendering/UX etc.
-    class VirtualModelStatePair : public VirtualConstModelStatePair {
+    class IModelStatePair : public IConstModelStatePair {
     protected:
-        VirtualModelStatePair() = default;
-        VirtualModelStatePair(VirtualModelStatePair const&) = default;
-        VirtualModelStatePair(VirtualModelStatePair&&) noexcept = default;
-        VirtualModelStatePair& operator=(VirtualModelStatePair const&) = default;
-        VirtualModelStatePair& operator=(VirtualModelStatePair&&) noexcept = default;
+        IModelStatePair() = default;
+        IModelStatePair(IModelStatePair const&) = default;
+        IModelStatePair(IModelStatePair&&) noexcept = default;
+        IModelStatePair& operator=(IModelStatePair const&) = default;
+        IModelStatePair& operator=(IModelStatePair&&) noexcept = default;
     public:
-        virtual ~VirtualModelStatePair() noexcept = default;
+        virtual ~IModelStatePair() noexcept = default;
 
         void setSelected(OpenSim::Component const* newSelection)
         {

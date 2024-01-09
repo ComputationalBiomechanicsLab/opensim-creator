@@ -1,8 +1,8 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/Simulation/ISimulation.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationStatus.hpp>
-#include <OpenSimCreator/Documents/Simulation/VirtualSimulation.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.hpp>
 
 #include <oscar/Utils/SynchronizedValueGuard.hpp>
@@ -19,7 +19,7 @@ namespace SimTK { class State; }
 
 namespace osc
 {
-    // a concrete value type wrapper for an `osc::VirtualSimulation`
+    // a concrete value type wrapper for an `osc::ISimulation`
     //
     // This is a value-type that can be compared, hashed, etc. for easier usage
     // by other parts of osc (e.g. aggregators, plotters)
@@ -51,10 +51,10 @@ namespace osc
         float getFixupScaleFactor() const { return m_Simulation->getFixupScaleFactor(); }
         void setFixupScaleFactor(float v) { m_Simulation->setFixupScaleFactor(v); }
 
-        operator VirtualSimulation& () { return *m_Simulation; }
-        operator VirtualSimulation const& () const { return *m_Simulation; }
+        operator ISimulation& () { return *m_Simulation; }
+        operator ISimulation const& () const { return *m_Simulation; }
 
     private:
-        std::unique_ptr<VirtualSimulation> m_Simulation;
+        std::unique_ptr<ISimulation> m_Simulation;
     };
 }

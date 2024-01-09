@@ -12,15 +12,15 @@ namespace osc
 {
     // virtual readonly accessor to a `OpenSim::Model` + `SimTK::State` pair, with
     // additional opt-in overrides to aid rendering/UX etc.
-    class VirtualConstModelStatePair {
+    class IConstModelStatePair {
     protected:
-        VirtualConstModelStatePair() = default;
-        VirtualConstModelStatePair(VirtualConstModelStatePair const&) = default;
-        VirtualConstModelStatePair(VirtualConstModelStatePair&&) noexcept = default;
-        VirtualConstModelStatePair& operator=(VirtualConstModelStatePair const&) = default;
-        VirtualConstModelStatePair& operator=(VirtualConstModelStatePair&&) noexcept = default;
+        IConstModelStatePair() = default;
+        IConstModelStatePair(IConstModelStatePair const&) = default;
+        IConstModelStatePair(IConstModelStatePair&&) noexcept = default;
+        IConstModelStatePair& operator=(IConstModelStatePair const&) = default;
+        IConstModelStatePair& operator=(IConstModelStatePair&&) noexcept = default;
     public:
-        virtual ~VirtualConstModelStatePair() noexcept = default;
+        virtual ~IConstModelStatePair() noexcept = default;
 
         OpenSim::Model const& getModel() const
         {

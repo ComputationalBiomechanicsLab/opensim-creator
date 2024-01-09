@@ -1,13 +1,13 @@
 #include "SimulatorTab.hpp"
 
+#include <OpenSimCreator/Documents/Simulation/ISimulation.hpp>
 #include <OpenSimCreator/Documents/Simulation/Simulation.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationModelStatePair.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.hpp>
-#include <OpenSimCreator/Documents/Simulation/VirtualSimulation.hpp>
 #include <OpenSimCreator/OutputExtractors/ComponentOutputExtractor.hpp>
+#include <OpenSimCreator/OutputExtractors/IOutputExtractor.hpp>
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.hpp>
-#include <OpenSimCreator/OutputExtractors/VirtualOutputExtractor.hpp>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.hpp>
 #include <OpenSimCreator/UI/Simulation/OutputPlotsPanel.hpp>
@@ -17,12 +17,12 @@
 #include <OpenSimCreator/UI/Simulation/SimulationViewerPanelParameters.hpp>
 #include <OpenSimCreator/UI/Simulation/SimulationViewerRightClickEvent.hpp>
 #include <OpenSimCreator/UI/Shared/MainMenu.hpp>
+#include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.hpp>
+#include <OpenSimCreator/UI/Simulation/ModelStatePairContextMenu.hpp>
 #include <OpenSimCreator/UI/Simulation/SimulationOutputPlot.hpp>
 #include <OpenSimCreator/UI/Simulation/SimulationScrubber.hpp>
 #include <OpenSimCreator/UI/Simulation/SimulationToolbar.hpp>
-#include <OpenSimCreator/UI/Simulation/SimulatorUIAPI.hpp>
-#include <OpenSimCreator/UI/Simulation/VirtualModelStatePairContextMenu.hpp>
-#include <OpenSimCreator/UI/MainUIStateAPI.hpp>
+#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <imgui.h>
@@ -69,11 +69,11 @@ namespace
     }
 }
 
-class osc::SimulatorTab::Impl final : public SimulatorUIAPI {
+class osc::SimulatorTab::Impl final : public ISimulatorUIAPI {
 public:
 
     Impl(
-        ParentPtr<MainUIStateAPI> const& parent_,
+        ParentPtr<IMainUIStateAPI> const& parent_,
         std::shared_ptr<Simulation> simulation_) :
 
         m_Parent{parent_},
@@ -97,7 +97,7 @@ public:
                     m_ShownModelState,
                     [this](OpenSim::ComponentPath const& p)
                     {
-                        auto popup = std::make_shared<VirtualModelStatePairContextMenu>(
+                        auto popup = std::make_shared<ModelStatePairContextMenu>(
                             "##componentcontextmenu",
                             m_ShownModelState,
                             m_Parent,
@@ -157,7 +157,7 @@ public:
                     m_ShownModelState,
                     [this, menuName = std::string{panelName} + "_contextmenu"](SimulationViewerRightClickEvent const& e)
                     {
-                        auto popup = std::make_shared<VirtualModelStatePairContextMenu>(
+                        auto popup = std::make_shared<ModelStatePairContextMenu>(
                             menuName,
                             m_ShownModelState,
                             m_Parent,
@@ -266,7 +266,7 @@ private:
         }
     }
 
-    VirtualSimulation& implUpdSimulation() final
+    ISimulation& implUpdSimulation() final
     {
         return *m_Simulation;
     }
@@ -434,7 +434,7 @@ private:
 
     // tab data
     UID m_ID;
-    ParentPtr<MainUIStateAPI> m_Parent;
+    ParentPtr<IMainUIStateAPI> m_Parent;
     std::string m_Name = ICON_FA_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber());
 
     // underlying simulation being shown
@@ -468,7 +468,7 @@ private:
 // public API (PIMPL)
 
 osc::SimulatorTab::SimulatorTab(
-    ParentPtr<MainUIStateAPI> const& parent_,
+    ParentPtr<IMainUIStateAPI> const& parent_,
     std::shared_ptr<Simulation> simulation_) :
 
     m_Impl{std::make_unique<Impl>(parent_, std::move(simulation_))}

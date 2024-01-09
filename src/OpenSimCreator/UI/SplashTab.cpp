@@ -7,8 +7,8 @@
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTab.hpp>
 #include <OpenSimCreator/UI/Shared/MainMenu.hpp>
 #include <OpenSimCreator/UI/FrameDefinitionTab.hpp>
+#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/LoadingTab.hpp>
-#include <OpenSimCreator/UI/MainUIStateAPI.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -71,7 +71,7 @@ namespace
     // helper: draws an ImGui::MenuItem for a given recent- or example-file-path
     void DrawRecentOrExampleFileMenuItem(
         std::filesystem::path const& path,
-        osc::ParentPtr<osc::MainUIStateAPI>& parent_,
+        osc::ParentPtr<osc::IMainUIStateAPI>& parent_,
         int& imguiID)
     {
         std::string const label = std::string{ICON_FA_FILE} + " " + path.filename().string();
@@ -96,7 +96,7 @@ namespace
 class osc::SplashTab::Impl final {
 public:
 
-    explicit Impl(ParentPtr<MainUIStateAPI> const& parent_) :
+    explicit Impl(ParentPtr<IMainUIStateAPI> const& parent_) :
         m_Parent{parent_}
     {
         m_MainAppLogo.setFilterMode(TextureFilterMode::Linear);
@@ -394,7 +394,7 @@ private:
 
     // tab data
     UID m_TabID;
-    ParentPtr<MainUIStateAPI> m_Parent;
+    ParentPtr<IMainUIStateAPI> m_Parent;
 
     // for rendering the 3D scene
     PolarPerspectiveCamera m_Camera = GetSplashScreenDefaultPolarCamera();
@@ -424,7 +424,7 @@ private:
 
 // public API (PIMPL)
 
-osc::SplashTab::SplashTab(ParentPtr<MainUIStateAPI> const& parent_) :
+osc::SplashTab::SplashTab(ParentPtr<IMainUIStateAPI> const& parent_) :
     m_Impl{std::make_unique<Impl>(parent_)}
 {
 }

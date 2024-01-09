@@ -1,9 +1,9 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/Simulation/ISimulation.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationStatus.hpp>
-#include <OpenSimCreator/Documents/Simulation/VirtualSimulation.hpp>
 
 #include <oscar/Utils/SynchronizedValueGuard.hpp>
 
@@ -19,9 +19,9 @@ namespace osc { class ParamBlock; }
 
 namespace osc
 {
-    // an `osc::VirtualSimulation` that is directly loaded from an `.sto` file (as
+    // an `osc::ISimulation` that is directly loaded from an `.sto` file (as
     // opposed to being an actual simulation ran within `osc`)
-    class StoFileSimulation final : public VirtualSimulation {
+    class StoFileSimulation final : public ISimulation {
     public:
         StoFileSimulation(
             std::unique_ptr<OpenSim::Model>,

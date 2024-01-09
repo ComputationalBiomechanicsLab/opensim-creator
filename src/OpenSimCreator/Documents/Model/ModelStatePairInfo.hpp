@@ -3,7 +3,7 @@
 #include <OpenSim/Common/ComponentPath.h>
 #include <oscar/Utils/UID.hpp>
 
-namespace osc { class VirtualConstModelStatePair; }
+namespace osc { class IConstModelStatePair; }
 
 namespace osc
 {
@@ -13,7 +13,7 @@ namespace osc
     class ModelStatePairInfo final {
     public:
         ModelStatePairInfo();
-        explicit ModelStatePairInfo(VirtualConstModelStatePair const&);
+        explicit ModelStatePairInfo(IConstModelStatePair const&);
 
         float getFixupScaleFactor() const { return m_FixupScaleFactor; }
 

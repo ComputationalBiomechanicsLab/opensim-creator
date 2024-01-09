@@ -7,7 +7,7 @@
 #include <OpenSimCreator/Platform/RecentFiles.hpp>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.hpp>
 #include <OpenSimCreator/UI/Simulation/SimulatorTab.hpp>
-#include <OpenSimCreator/UI/MainUIStateAPI.hpp>
+#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <imgui.h>
@@ -55,7 +55,7 @@ osc::MainMenuFileTab::MainMenuFileTab() :
 }
 
 void osc::MainMenuFileTab::onDraw(
-    ParentPtr<MainUIStateAPI> const& api,
+    ParentPtr<IMainUIStateAPI> const& api,
     UndoableModelStatePair* maybeModel)
 {
     // handle hotkeys enabled by just drawing the menu

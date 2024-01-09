@@ -1,10 +1,10 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Simulation/ISimulation.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationStatus.hpp>
-#include <OpenSimCreator/Documents/Simulation/VirtualSimulation.hpp>
 
 #include <oscar/Utils/SynchronizedValueGuard.hpp>
 
@@ -17,7 +17,7 @@ namespace OpenSim { class Model; }
 
 namespace osc
 {
-    class SingleStateSimulation final : public VirtualSimulation {
+    class SingleStateSimulation final : public ISimulation {
     public:
         explicit SingleStateSimulation(BasicModelStatePair);
         SingleStateSimulation(SingleStateSimulation const&) = delete;

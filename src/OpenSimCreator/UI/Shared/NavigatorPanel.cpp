@@ -1,6 +1,6 @@
 #include "NavigatorPanel.hpp"
 
-#include <OpenSimCreator/Documents/Model/VirtualModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.hpp>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
@@ -148,7 +148,7 @@ class osc::NavigatorPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
         std::string_view panelName,
-        std::shared_ptr<VirtualModelStatePair> model,
+        std::shared_ptr<IModelStatePair> model,
         std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
 
         StandardPanelImpl{panelName},
@@ -387,7 +387,7 @@ private:
         return rv;
     }
 
-    std::shared_ptr<VirtualModelStatePair> m_Model;
+    std::shared_ptr<IModelStatePair> m_Model;
     std::function<void(OpenSim::ComponentPath const&)> m_OnRightClick;
     std::string m_CurrentSearch;
     bool m_ShowFrames = false;
@@ -398,7 +398,7 @@ private:
 
 osc::NavigatorPanel::NavigatorPanel(
     std::string_view panelName,
-    std::shared_ptr<VirtualModelStatePair> model,
+    std::shared_ptr<IModelStatePair> model,
     std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
 
     m_Impl{std::make_unique<Impl>(panelName, std::move(model), std::move(onRightClick))}

@@ -1,6 +1,6 @@
 #include "ExportPointsPopup.hpp"
 
-#include <OpenSimCreator/Documents/Model/VirtualConstModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/IConstModelStatePair.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 
@@ -561,7 +561,7 @@ class osc::ExportPointsPopup::Impl final : public osc::StandardPopup {
 public:
     Impl(
         std::string_view popupName_,
-        std::shared_ptr<VirtualConstModelStatePair const> model_) :
+        std::shared_ptr<IConstModelStatePair const> model_) :
 
         StandardPopup{popupName_},
         m_Model{std::move(model_)}
@@ -617,7 +617,7 @@ private:
         }
     }
 
-    std::shared_ptr<VirtualConstModelStatePair const> m_Model;
+    std::shared_ptr<IConstModelStatePair const> m_Model;
     PointSelectorUiState m_PointSelectorState;
     FrameSelectorUiState m_FrameSelectorState;
     OutputFormatEditorUiState m_OutputFormatState;
@@ -628,7 +628,7 @@ private:
 
 osc::ExportPointsPopup::ExportPointsPopup(
     std::string_view popupName,
-    std::shared_ptr<VirtualConstModelStatePair const> model_) :
+    std::shared_ptr<IConstModelStatePair const> model_) :
 
     m_Impl{std::make_unique<Impl>(popupName, std::move(model_))}
 {

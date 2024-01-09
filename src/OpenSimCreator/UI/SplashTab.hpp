@@ -7,14 +7,14 @@
 
 #include <memory>
 
-namespace osc { class MainUIStateAPI; }
+namespace osc { class IMainUIStateAPI; }
 namespace osc { template<typename T> class ParentPtr; }
 
 namespace osc
 {
     class SplashTab final : public ITab {
     public:
-        explicit SplashTab(ParentPtr<MainUIStateAPI> const&);
+        explicit SplashTab(ParentPtr<IMainUIStateAPI> const&);
         SplashTab(SplashTab const&) = delete;
         SplashTab(SplashTab&&) noexcept;
         SplashTab& operator=(SplashTab const&) = delete;

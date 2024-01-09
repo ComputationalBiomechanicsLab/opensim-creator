@@ -9,15 +9,15 @@
 #include <memory>
 #include <vector>
 
-namespace osc { class MainUIStateAPI; }
+namespace osc { class IMainUIStateAPI; }
 namespace osc { template<typename T> class ParentPtr; }
 
 namespace osc::mi
 {
     class MeshImporterTab final : public ITab {
     public:
-        explicit MeshImporterTab(ParentPtr<MainUIStateAPI> const&);
-        MeshImporterTab(ParentPtr<MainUIStateAPI> const&, std::vector<std::filesystem::path>);
+        explicit MeshImporterTab(ParentPtr<IMainUIStateAPI> const&);
+        MeshImporterTab(ParentPtr<IMainUIStateAPI> const&, std::vector<std::filesystem::path>);
         MeshImporterTab(MeshImporterTab const&) = delete;
         MeshImporterTab(MeshImporterTab&&) noexcept;
         MeshImporterTab& operator=(MeshImporterTab const&) = delete;

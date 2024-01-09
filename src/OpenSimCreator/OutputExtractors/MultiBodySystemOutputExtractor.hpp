@@ -1,7 +1,7 @@
 #pragma once
 
+#include <OpenSimCreator/OutputExtractors/IOutputExtractor.hpp>
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.hpp>
-#include <OpenSimCreator/OutputExtractors/VirtualOutputExtractor.hpp>
 
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
@@ -21,7 +21,7 @@ namespace osc
     // a SimTK::MultiBodySystem
     //
     // handy for extracting simulation stats (e.g. num steps taken etc.)
-    class MultiBodySystemOutputExtractor final : public VirtualOutputExtractor {
+    class MultiBodySystemOutputExtractor final : public IOutputExtractor {
     public:
         using ExtractorFn = float (*)(SimTK::MultibodySystem const&);
 
@@ -56,7 +56,7 @@ namespace osc
         ExtractorFn getExtractorFunction() const;
 
         size_t getHash() const final;
-        bool equals(VirtualOutputExtractor const&) const final;
+        bool equals(IOutputExtractor const&) const final;
 
     private:
         UID m_AuxiliaryDataID;

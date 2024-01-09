@@ -3,7 +3,7 @@
 #include <OpenSimCreator/Documents/Model/ModelStateCommit.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
-#include <OpenSimCreator/UI/ModelEditor/EditorAPI.hpp>
+#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <IconsFontAwesome5.h>
@@ -1445,7 +1445,7 @@ namespace
     class SharedStateData final {
     public:
         SharedStateData(
-            osc::EditorAPI* editorAPI,
+            osc::IEditorAPI* editorAPI,
             std::shared_ptr<osc::UndoableModelStatePair> uim) :
 
             m_EditorAPI{editorAPI},
@@ -1455,7 +1455,7 @@ namespace
         }
 
         SharedStateData(
-            osc::EditorAPI* editorAPI,
+            osc::IEditorAPI* editorAPI,
             std::shared_ptr<osc::UndoableModelStatePair> uim,
             OpenSim::ComponentPath const& coordPath,
             OpenSim::ComponentPath const& musclePath) :
@@ -1487,13 +1487,13 @@ namespace
             return *m_Model;
         }
 
-        osc::EditorAPI& updEditorAPI()
+        osc::IEditorAPI& updEditorAPI()
         {
             return *m_EditorAPI;
         }
 
     private:
-        osc::EditorAPI* m_EditorAPI;
+        osc::IEditorAPI* m_EditorAPI;
         std::shared_ptr<osc::UndoableModelStatePair> m_Model;
         PlotParameters m_PlotParams{m_Model->getLatestCommit(), OpenSim::ComponentPath{}, OpenSim::ComponentPath{}, GetDefaultMuscleOutput(), 180};
     };
@@ -2237,7 +2237,7 @@ class osc::ModelMusclePlotPanel::Impl final {
 public:
 
     Impl(
-        EditorAPI* editorAPI,
+        IEditorAPI* editorAPI,
         std::shared_ptr<UndoableModelStatePair> uim,
         std::string_view panelName) :
 
@@ -2248,7 +2248,7 @@ public:
     }
 
     Impl(
-        EditorAPI* editorAPI,
+        IEditorAPI* editorAPI,
         std::shared_ptr<UndoableModelStatePair> uim,
         std::string_view panelName,
         OpenSim::ComponentPath const& coordPath,
@@ -2320,7 +2320,7 @@ private:
 // public API (PIMPL)
 
 osc::ModelMusclePlotPanel::ModelMusclePlotPanel(
-    EditorAPI* editorAPI,
+    IEditorAPI* editorAPI,
     std::shared_ptr<UndoableModelStatePair> uim,
     std::string_view panelName) :
 
@@ -2329,7 +2329,7 @@ osc::ModelMusclePlotPanel::ModelMusclePlotPanel(
 }
 
 osc::ModelMusclePlotPanel::ModelMusclePlotPanel(
-    EditorAPI* editorAPI,
+    IEditorAPI* editorAPI,
     std::shared_ptr<UndoableModelStatePair> uim,
     std::string_view panelName,
     OpenSim::ComponentPath const& coordPath,

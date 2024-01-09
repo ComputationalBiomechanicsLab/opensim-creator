@@ -1,6 +1,6 @@
 #include "OpenSimDecorationGenerator.hpp"
 
-#include <OpenSimCreator/Documents/Model/VirtualConstModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/IConstModelStatePair.hpp>
 #include <OpenSimCreator/Graphics/SimTKDecorationGenerator.hpp>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>

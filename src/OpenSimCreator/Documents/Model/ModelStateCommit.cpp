@@ -1,6 +1,6 @@
 #include "ModelStateCommit.hpp"
 
-#include <OpenSimCreator/Documents/Model/VirtualConstModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/IConstModelStatePair.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <OpenSim/Simulation/Model/Model.h>
@@ -17,12 +17,12 @@
 
 class osc::ModelStateCommit::Impl final {
 public:
-    Impl(VirtualConstModelStatePair const& msp, std::string_view message) :
+    Impl(IConstModelStatePair const& msp, std::string_view message) :
         Impl{msp, message, UID::empty()}
     {
     }
 
-    Impl(VirtualConstModelStatePair const& msp, std::string_view message, UID parent) :
+    Impl(IConstModelStatePair const& msp, std::string_view message, UID parent) :
         m_MaybeParentID{parent},
         m_CommitTime{std::chrono::system_clock::now()},
         m_Model{std::make_unique<OpenSim::Model>(msp.getModel())},
@@ -88,12 +88,12 @@ private:
 
 // public API (PIMPL)
 
-osc::ModelStateCommit::ModelStateCommit(VirtualConstModelStatePair const& p, std::string_view message) :
+osc::ModelStateCommit::ModelStateCommit(IConstModelStatePair const& p, std::string_view message) :
     m_Impl{std::make_shared<Impl>(p, message)}
 {
 }
 
-osc::ModelStateCommit::ModelStateCommit(VirtualConstModelStatePair const& p, std::string_view message, UID parent) :
+osc::ModelStateCommit::ModelStateCommit(IConstModelStatePair const& p, std::string_view message, UID parent) :
     m_Impl{std::make_shared<Impl>(p, message, parent)}
 {
 }

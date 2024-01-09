@@ -17,7 +17,7 @@ namespace osc { class OpenSimDecorationOptions; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct SceneDecoration; }
 namespace osc { class SceneCache; }
-namespace osc { class VirtualConstModelStatePair; }
+namespace osc { class IConstModelStatePair; }
 
 namespace osc
 {
@@ -30,7 +30,7 @@ namespace osc
 
     void GenerateDecorations(
         SceneCache&,
-        VirtualConstModelStatePair const&,
+        IConstModelStatePair const&,
         OpenSimDecorationOptions const&,
         std::function<void(OpenSim::Component const&, SceneDecoration&&)> const& out
     );

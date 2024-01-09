@@ -23,15 +23,15 @@ namespace osc
     //
     // the GUI code shouldn't care about the specifics - it's up to each concrete
     // implementation to ensure this API is obeyed w.r.t. multithreading etc.
-    class VirtualSimulation {
+    class ISimulation {
     protected:
-        VirtualSimulation() = default;
-        VirtualSimulation(VirtualSimulation const&) = default;
-        VirtualSimulation(VirtualSimulation&&) noexcept = default;
-        VirtualSimulation& operator=(VirtualSimulation const&) = default;
-        VirtualSimulation& operator=(VirtualSimulation&&) noexcept = default;
+        ISimulation() = default;
+        ISimulation(ISimulation const&) = default;
+        ISimulation(ISimulation&&) noexcept = default;
+        ISimulation& operator=(ISimulation const&) = default;
+        ISimulation& operator=(ISimulation&&) noexcept = default;
     public:
-        virtual ~VirtualSimulation() noexcept = default;
+        virtual ~ISimulation() noexcept = default;
 
         // the reason why the model is mutex-guarded is because OpenSim has a bunch of
         // `const-` interfaces that are only "logically const" in a single-threaded

@@ -7,7 +7,7 @@
 #include <string_view>
 
 namespace osc { class Simulation; }
-namespace osc { class SimulatorUIAPI; }
+namespace osc { class ISimulatorUIAPI; }
 
 namespace osc
 {
@@ -15,7 +15,7 @@ namespace osc
     public:
         SimulationDetailsPanel(
             std::string_view panelName,
-            SimulatorUIAPI*,
+            ISimulatorUIAPI*,
             std::shared_ptr<Simulation const>
         );
         SimulationDetailsPanel(SimulationDetailsPanel const&) = delete;

@@ -37,7 +37,7 @@ namespace
         return rv;
     }
 
-    class UiModelStatePair final : public osc::VirtualModelStatePair {
+    class UiModelStatePair final : public osc::IModelStatePair {
     public:
 
         UiModelStatePair() :

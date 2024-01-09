@@ -70,7 +70,7 @@ namespace osc::mi
     class ChooseElLayer final : public MeshImporterUILayer {
     public:
         ChooseElLayer(
-            MeshImporterUILayerHost& parent,
+            IMeshImporterUILayerHost& parent,
             std::shared_ptr<MeshImporterSharedState> shared,
             ChooseElLayerOptions options) :
 

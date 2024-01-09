@@ -3,7 +3,7 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.hpp>
-#include <OpenSimCreator/UI/ModelEditor/EditorAPI.hpp>
+#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <IconsFontAwesome5.h>
@@ -27,8 +27,8 @@ public:
 
     Impl(
         std::string_view panelName_,
-        ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
-        EditorAPI* editorAPI_,
+        ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
+        IEditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> uum_) :
 
         StandardPanelImpl{panelName_},
@@ -249,8 +249,8 @@ private:
         }
     }
 
-    ParentPtr<MainUIStateAPI> m_MainUIStateAPI;
-    EditorAPI* m_EditorAPI;
+    ParentPtr<IMainUIStateAPI> m_MainUIStateAPI;
+    IEditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Model;
 };
 
@@ -259,8 +259,8 @@ private:
 
 osc::CoordinateEditorPanel::CoordinateEditorPanel(
     std::string_view panelName_,
-    ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
-    EditorAPI* editorAPI_,
+    ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
+    IEditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> uum_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, mainUIStateAPI_, editorAPI_, std::move(uum_))}

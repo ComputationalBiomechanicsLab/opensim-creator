@@ -18,7 +18,7 @@ namespace osc { class RenderTexture; }
 namespace osc { struct SceneDecoration; }
 namespace osc { class SceneCache; }
 namespace osc { class ShaderCache; }
-namespace osc { class VirtualConstModelStatePair; }
+namespace osc { class IConstModelStatePair; }
 
 namespace osc
 {
@@ -36,13 +36,13 @@ namespace osc
         ~CachedModelRenderer() noexcept;
 
         void autoFocusCamera(
-            VirtualConstModelStatePair const&,
+            IConstModelStatePair const&,
             ModelRendererParams&,
             float aspectRatio
         );
 
         RenderTexture& onDraw(
-            VirtualConstModelStatePair const&,
+            IConstModelStatePair const&,
             ModelRendererParams const&,
             Vec2 dims,
             AntiAliasingLevel antiAliasingLevel

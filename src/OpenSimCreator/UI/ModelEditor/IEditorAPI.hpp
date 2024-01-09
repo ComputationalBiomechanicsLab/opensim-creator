@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/UI/PopupAPI.hpp>
+#include <OpenSimCreator/UI/IPopupAPI.hpp>
 
 #include <cstddef>
 #include <memory>
@@ -15,15 +15,15 @@ namespace osc { class PanelManager; }
 
 namespace osc
 {
-    class EditorAPI : public PopupAPI {
+    class IEditorAPI : public IPopupAPI {
     protected:
-        EditorAPI() = default;
-        EditorAPI(EditorAPI const&) = default;
-        EditorAPI(EditorAPI&&) noexcept = default;
-        EditorAPI& operator=(EditorAPI const&) = default;
-        EditorAPI& operator=(EditorAPI&&) noexcept = default;
+        IEditorAPI() = default;
+        IEditorAPI(IEditorAPI const&) = default;
+        IEditorAPI(IEditorAPI&&) noexcept = default;
+        IEditorAPI& operator=(IEditorAPI const&) = default;
+        IEditorAPI& operator=(IEditorAPI&&) noexcept = default;
     public:
-        virtual ~EditorAPI() noexcept = default;
+        virtual ~IEditorAPI() noexcept = default;
 
         void pushComponentContextMenuPopup(OpenSim::ComponentPath const& p)
         {

@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.hpp>
-#include <OpenSimCreator/UI/ModelEditor/EditorAPI.hpp>
+#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <imgui.h>
@@ -18,8 +18,8 @@
 class osc::EditorTabStatusBar::Impl final {
 public:
     Impl(
-        ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
-        EditorAPI* editorAPI_,
+        ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
+        IEditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> model_) :
 
         m_MainUIStateAPI{mainUIStateAPI_},
@@ -94,16 +94,16 @@ private:
         }
     }
 
-    ParentPtr<MainUIStateAPI> m_MainUIStateAPI;
-    EditorAPI* m_EditorAPI;
+    ParentPtr<IMainUIStateAPI> m_MainUIStateAPI;
+    IEditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Model;
 };
 
 // public API (PIMPL)
 
 osc::EditorTabStatusBar::EditorTabStatusBar(
-    ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
-    EditorAPI* editorAPI_,
+    ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
+    IEditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> model_) :
 
     m_Impl{std::make_unique<Impl>(mainUIStateAPI_, editorAPI_, std::move(model_))}

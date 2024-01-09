@@ -10,15 +10,15 @@ namespace osc
     // API access to shared state between main UI tabs
     //
     // this is how individual UI tabs inter-communicate (e.g. by sharing data, closing other tabs, etc.)
-    class MainUIStateAPI : public ITabHost {
+    class IMainUIStateAPI : public ITabHost {
     protected:
-        MainUIStateAPI() = default;
-        MainUIStateAPI(MainUIStateAPI const&) = default;
-        MainUIStateAPI(MainUIStateAPI&&) noexcept = default;
-        MainUIStateAPI& operator=(MainUIStateAPI const&) = default;
-        MainUIStateAPI& operator=(MainUIStateAPI&&) noexcept = default;
+        IMainUIStateAPI() = default;
+        IMainUIStateAPI(IMainUIStateAPI const&) = default;
+        IMainUIStateAPI(IMainUIStateAPI&&) noexcept = default;
+        IMainUIStateAPI& operator=(IMainUIStateAPI const&) = default;
+        IMainUIStateAPI& operator=(IMainUIStateAPI&&) noexcept = default;
     public:
-        virtual ~MainUIStateAPI() noexcept = default;
+        virtual ~IMainUIStateAPI() noexcept = default;
 
         ParamBlock const& getSimulationParams() const
         {

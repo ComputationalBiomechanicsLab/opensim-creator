@@ -18,7 +18,7 @@ public:
         InitializeState(*m_Model);
     }
 
-    explicit Impl(VirtualModelStatePair const& p) :
+    explicit Impl(IModelStatePair const& p) :
         Impl{p.getModel(), p.getState(), p.getFixupScaleFactor()}
     {
     }
@@ -89,7 +89,7 @@ osc::BasicModelStatePair::BasicModelStatePair() :
 {
 }
 
-osc::BasicModelStatePair::BasicModelStatePair(VirtualModelStatePair const& p) :
+osc::BasicModelStatePair::BasicModelStatePair(IModelStatePair const& p) :
     m_Impl{std::make_unique<Impl>(p)}
 {
 }

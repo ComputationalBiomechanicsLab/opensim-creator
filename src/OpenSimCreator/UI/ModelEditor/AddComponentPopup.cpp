@@ -68,7 +68,7 @@ class osc::AddComponentPopup::Impl final : public osc::StandardPopup {
 public:
     Impl(
         std::string_view popupName,
-        PopupAPI* api,
+        IPopupAPI* api,
         std::shared_ptr<UndoableModelStatePair> uum,
         std::unique_ptr<OpenSim::Component> prototype) :
 
@@ -546,7 +546,7 @@ private:
 
 osc::AddComponentPopup::AddComponentPopup(
     std::string_view popupName,
-    PopupAPI* api,
+    IPopupAPI* api,
     std::shared_ptr<UndoableModelStatePair> uum,
     std::unique_ptr<OpenSim::Component> prototype) :
 

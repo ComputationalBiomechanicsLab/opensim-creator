@@ -8,7 +8,7 @@
 #include <string_view>
 
 namespace osc { class Simulation; }
-namespace osc { class SimulatorUIAPI; }
+namespace osc { class ISimulatorUIAPI; }
 
 namespace osc
 {
@@ -16,7 +16,7 @@ namespace osc
     public:
         SimulationScrubber(
             std::string_view label,
-            SimulatorUIAPI*,
+            ISimulatorUIAPI*,
             std::shared_ptr<Simulation const>
         );
         SimulationScrubber(SimulationScrubber const&) = delete;

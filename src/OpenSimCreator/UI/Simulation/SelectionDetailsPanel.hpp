@@ -6,7 +6,7 @@
 #include <memory>
 #include <string_view>
 
-namespace osc { class SimulatorUIAPI; }
+namespace osc { class ISimulatorUIAPI; }
 
 namespace osc
 {
@@ -14,7 +14,7 @@ namespace osc
     public:
         SelectionDetailsPanel(
             std::string_view panelName,
-            SimulatorUIAPI*
+            ISimulatorUIAPI*
         );
         SelectionDetailsPanel(SelectionDetailsPanel const&) = delete;
         SelectionDetailsPanel(SelectionDetailsPanel&&) noexcept;

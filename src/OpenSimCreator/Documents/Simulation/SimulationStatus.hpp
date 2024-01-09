@@ -14,6 +14,7 @@ namespace osc
         Completed,
         Cancelled,
         Error,
+
         NUM_OPTIONS,
     };
 

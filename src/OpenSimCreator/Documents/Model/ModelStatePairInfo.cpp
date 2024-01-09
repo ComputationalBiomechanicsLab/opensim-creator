@@ -1,10 +1,10 @@
 #include "ModelStatePairInfo.hpp"
 
-#include <OpenSimCreator/Documents/Model/VirtualConstModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/IConstModelStatePair.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 osc::ModelStatePairInfo::ModelStatePairInfo() = default;
-osc::ModelStatePairInfo::ModelStatePairInfo(VirtualConstModelStatePair const& msp) :
+osc::ModelStatePairInfo::ModelStatePairInfo(IConstModelStatePair const& msp) :
     m_ModelVersion{msp.getModelVersion()},
     m_StateVersion{msp.getStateVersion()},
     m_Selection{GetAbsolutePathOrEmpty(msp.getSelected())},

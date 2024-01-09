@@ -6,7 +6,7 @@
 
 #include <memory>
 
-namespace osc { class MainUIStateAPI; }
+namespace osc { class IMainUIStateAPI; }
 namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class Simulation; }
 
@@ -15,7 +15,7 @@ namespace osc
     class SimulatorTab final : public ITab {
     public:
         SimulatorTab(
-            ParentPtr<MainUIStateAPI> const&,
+            ParentPtr<IMainUIStateAPI> const&,
             std::shared_ptr<Simulation>
         );
         SimulatorTab(SimulatorTab const&) = delete;

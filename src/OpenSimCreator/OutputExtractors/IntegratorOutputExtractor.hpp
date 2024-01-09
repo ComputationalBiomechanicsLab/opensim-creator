@@ -1,7 +1,7 @@
 #pragma once
 
+#include <OpenSimCreator/OutputExtractors/IOutputExtractor.hpp>
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.hpp>
-#include <OpenSimCreator/OutputExtractors/VirtualOutputExtractor.hpp>
 
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
@@ -18,7 +18,7 @@ namespace SimTK { class Integrator; }
 namespace osc
 {
     // an output extractor that extracts integrator metadata (e.g. predicted step size)
-    class IntegratorOutputExtractor final : public VirtualOutputExtractor {
+    class IntegratorOutputExtractor final : public IOutputExtractor {
     public:
         using ExtractorFn = float (*)(SimTK::Integrator const&);
 
@@ -50,7 +50,7 @@ namespace osc
         ) const final;
 
         size_t getHash() const final;
-        bool equals(VirtualOutputExtractor const&) const final;
+        bool equals(IOutputExtractor const&) const final;
 
         UID getAuxiliaryDataID() const;
         ExtractorFn getExtractorFunction() const;

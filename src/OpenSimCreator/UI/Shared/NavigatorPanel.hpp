@@ -9,7 +9,7 @@
 
 namespace OpenSim { class Component; }
 namespace OpenSim { class ComponentPath; }
-namespace osc { class VirtualModelStatePair; }
+namespace osc { class IModelStatePair; }
 
 namespace osc
 {
@@ -17,7 +17,7 @@ namespace osc
     public:
         NavigatorPanel(
             std::string_view panelName,
-            std::shared_ptr<VirtualModelStatePair>,
+            std::shared_ptr<IModelStatePair>,
             std::function<void(OpenSim::ComponentPath const&)> onRightClick = [](auto const&){}
         );
         NavigatorPanel(NavigatorPanel const&) = delete;

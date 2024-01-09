@@ -3,7 +3,7 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Platform/RecentFiles.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.hpp>
-#include <OpenSimCreator/UI/MainUIStateAPI.hpp>
+#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <imgui.h>
@@ -28,7 +28,7 @@ class osc::LoadingTab::Impl final {
 public:
 
     Impl(
-        ParentPtr<MainUIStateAPI> const& parent_,
+        ParentPtr<IMainUIStateAPI> const& parent_,
         std::filesystem::path path_) :
 
         m_Parent{parent_},
@@ -138,7 +138,7 @@ public:
 
 private:
     UID m_TabID;
-    ParentPtr<MainUIStateAPI> m_Parent;
+    ParentPtr<IMainUIStateAPI> m_Parent;
 
     // filesystem path to the osim being loaded
     std::filesystem::path m_OsimPath;
@@ -162,7 +162,7 @@ private:
 // public API (PIMPL)
 
 osc::LoadingTab::LoadingTab(
-    ParentPtr<MainUIStateAPI> const& parent_,
+    ParentPtr<IMainUIStateAPI> const& parent_,
     std::filesystem::path path_) :
 
     m_Impl{std::make_unique<Impl>(parent_, std::move(path_))}

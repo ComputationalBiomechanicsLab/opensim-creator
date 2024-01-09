@@ -1,8 +1,8 @@
 #include "BasicWidgets.hpp"
 
+#include <OpenSimCreator/Documents/Model/IModelStatePair.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/Documents/Model/VirtualModelStatePair.hpp>
 #include <OpenSimCreator/Documents/Simulation/IntegratorMethod.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationModelStatePair.hpp>
 #include <OpenSimCreator/Graphics/CustomRenderingOptions.hpp>
@@ -16,7 +16,7 @@
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.hpp>
 #include <OpenSimCreator/Platform/RecentFile.hpp>
 #include <OpenSimCreator/Platform/RecentFiles.hpp>
-#include <OpenSimCreator/UI/MainUIStateAPI.hpp>
+#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/ParamBlock.hpp>
 #include <OpenSimCreator/Utils/ParamValue.hpp>
@@ -109,7 +109,7 @@ namespace
         osc::DrawTooltip(o.getTypeName());
     }
 
-    bool DrawOutputWithSubfieldsMenu(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
+    bool DrawOutputWithSubfieldsMenu(osc::IMainUIStateAPI& api, OpenSim::AbstractOutput const& o)
     {
         bool outputAdded = false;
         osc::OutputSubfield supportedSubfields = osc::GetSupportedSubfields(o);
@@ -139,7 +139,7 @@ namespace
         return outputAdded;
     }
 
-    bool DrawOutputWithNoSubfieldsMenuItem(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
+    bool DrawOutputWithNoSubfieldsMenuItem(osc::IMainUIStateAPI& api, OpenSim::AbstractOutput const& o)
     {
         // can only plot top-level of output
 
@@ -159,7 +159,7 @@ namespace
         return outputAdded;
     }
 
-    bool DrawRequestOutputMenuOrMenuItem(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
+    bool DrawRequestOutputMenuOrMenuItem(osc::IMainUIStateAPI& api, OpenSim::AbstractOutput const& o)
     {
         if (osc::GetSupportedSubfields(o) == osc::OutputSubfield::None)
         {
@@ -330,7 +330,7 @@ void osc::DrawComponentHoverTooltip(OpenSim::Component const& hovered)
     osc::EndTooltip();
 }
 
-void osc::DrawSelectOwnerMenu(osc::VirtualModelStatePair& model, OpenSim::Component const& selected)
+void osc::DrawSelectOwnerMenu(osc::IModelStatePair& model, OpenSim::Component const& selected)
 {
     if (ImGui::BeginMenu("Select Owner"))
     {
@@ -362,7 +362,7 @@ void osc::DrawSelectOwnerMenu(osc::VirtualModelStatePair& model, OpenSim::Compon
     }
 }
 
-bool osc::DrawWatchOutputMenu(MainUIStateAPI& api, OpenSim::Component const& c)
+bool osc::DrawWatchOutputMenu(IMainUIStateAPI& api, OpenSim::Component const& c)
 {
     bool outputAdded = false;
 
@@ -454,7 +454,7 @@ void osc::DrawSearchBar(std::string& out)
 }
 
 void osc::DrawOutputNameColumn(
-    VirtualOutputExtractor const& output,
+    IOutputExtractor const& output,
     bool centered,
     SimulationModelStatePair* maybeActiveSate)
 {
@@ -1264,7 +1264,7 @@ bool osc::BeginToolbar(CStringView label, std::optional<Vec2> padding)
     return open;
 }
 
-void osc::DrawNewModelButton(ParentPtr<MainUIStateAPI> const& api)
+void osc::DrawNewModelButton(ParentPtr<IMainUIStateAPI> const& api)
 {
     if (ImGui::Button(ICON_FA_FILE))
     {
@@ -1308,7 +1308,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
     }
 }
 
-void osc::DrawOpenModelButtonWithRecentFilesDropdown(ParentPtr<MainUIStateAPI> const& api)
+void osc::DrawOpenModelButtonWithRecentFilesDropdown(ParentPtr<IMainUIStateAPI> const& api)
 {
     DrawOpenModelButtonWithRecentFilesDropdown([&api](auto maybeFile)
     {
@@ -1324,7 +1324,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(ParentPtr<MainUIStateAPI> c
 }
 
 void osc::DrawSaveModelButton(
-    ParentPtr<MainUIStateAPI> const& api,
+    ParentPtr<IMainUIStateAPI> const& api,
     UndoableModelStatePair& model)
 {
     if (ImGui::Button(ICON_FA_SAVE))

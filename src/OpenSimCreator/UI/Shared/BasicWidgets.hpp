@@ -18,7 +18,7 @@ namespace osc { class OpenSimDecorationOptions; }
 namespace osc { class OverlayDecorationOptions; }
 namespace osc { class CustomRenderingOptions; }
 namespace osc { class IconCache; }
-namespace osc { class MainUIStateAPI; }
+namespace osc { class IMainUIStateAPI; }
 namespace osc { struct ModelRendererParams; }
 namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class ParamBlock; }
@@ -26,8 +26,8 @@ namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct Rect; }
 namespace osc { struct SceneDecoration; }
 namespace osc { class UndoableModelStatePair; }
-namespace osc { class VirtualModelStatePair; }
-namespace osc { class VirtualOutputExtractor; }
+namespace osc { class IModelStatePair; }
+namespace osc { class IOutputExtractor; }
 namespace osc { class SimulationModelStatePair; }
 namespace OpenSim { class Component; }
 namespace OpenSim { class Frame; }
@@ -44,12 +44,12 @@ namespace osc
     void DrawContextMenuHeader(CStringView title, CStringView subtitle);
     void DrawRightClickedComponentContextMenuHeader(OpenSim::Component const&);
     void DrawContextMenuSeparator();
-    void DrawSelectOwnerMenu(VirtualModelStatePair&, OpenSim::Component const&);
-    bool DrawWatchOutputMenu(MainUIStateAPI&, OpenSim::Component const&);
+    void DrawSelectOwnerMenu(IModelStatePair&, OpenSim::Component const&);
+    bool DrawWatchOutputMenu(IMainUIStateAPI&, OpenSim::Component const&);
     void DrawSimulationParams(ParamBlock const&);
     void DrawSearchBar(std::string&);
     void DrawOutputNameColumn(
-        VirtualOutputExtractor const& output,
+        IOutputExtractor const& output,
         bool centered = true,
         SimulationModelStatePair* maybeActiveSate = nullptr
     );
@@ -187,12 +187,12 @@ namespace osc
 
     // toolbar stuff
     bool BeginToolbar(CStringView label, std::optional<Vec2> padding = {});  // behaves the same as ImGui::Begin (i.e. you must call ImGui::End)
-    void DrawNewModelButton(ParentPtr<MainUIStateAPI> const&);
+    void DrawNewModelButton(ParentPtr<IMainUIStateAPI> const&);
     void DrawOpenModelButtonWithRecentFilesDropdown(
         std::function<void(std::optional<std::filesystem::path>)> const& onUserClickedOpenOrSelectedFile
     );
-    void DrawOpenModelButtonWithRecentFilesDropdown(ParentPtr<MainUIStateAPI> const&);
-    void DrawSaveModelButton(ParentPtr<MainUIStateAPI> const&, UndoableModelStatePair&);
+    void DrawOpenModelButtonWithRecentFilesDropdown(ParentPtr<IMainUIStateAPI> const&);
+    void DrawSaveModelButton(ParentPtr<IMainUIStateAPI> const&, UndoableModelStatePair&);
     void DrawReloadModelButton(UndoableModelStatePair&);
     void DrawUndoButton(UndoableModelStatePair&);
     void DrawRedoButton(UndoableModelStatePair&);

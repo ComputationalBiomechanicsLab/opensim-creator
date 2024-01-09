@@ -27,7 +27,7 @@ namespace OpenSim { class PhysicalFrame; }
 namespace OpenSim { class PhysicalOffsetFrame; }
 namespace OpenSim { class Station; }
 namespace OpenSim { class WrapObject; }
-namespace osc { class MainUIStateAPI; }
+namespace osc { class IMainUIStateAPI; }
 namespace osc { class ObjectPropertyEdit; }
 namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class SceneCache; }
@@ -42,23 +42,23 @@ namespace osc
 
     // create a new model and show it in a new tab
     void ActionNewModel(
-        ParentPtr<MainUIStateAPI> const&
+        ParentPtr<IMainUIStateAPI> const&
     );
 
     // prompt a user to open a model file and open it in a new tab
     void ActionOpenModel(
-        ParentPtr<MainUIStateAPI> const&
+        ParentPtr<IMainUIStateAPI> const&
     );
 
     // open the specified model in a loading tab
     void ActionOpenModel(
-        ParentPtr<MainUIStateAPI> const&,
+        ParentPtr<IMainUIStateAPI> const&,
         std::filesystem::path const&
     );
 
     // try to save the given model file to disk
     bool ActionSaveModel(
-        MainUIStateAPI&,
+        IMainUIStateAPI&,
         UndoableModelStatePair&
     );
 
@@ -96,14 +96,14 @@ namespace osc
 
     // loads an STO file against the current model and opens it in a new tab
     bool ActionLoadSTOFileAgainstModel(
-        ParentPtr<MainUIStateAPI> const&,
+        ParentPtr<IMainUIStateAPI> const&,
         UndoableModelStatePair const&,
         std::filesystem::path const& stoPath
     );
 
     // start simulating the given model in a forward-dynamic simulator tab
     bool ActionStartSimulatingModel(
-        ParentPtr<MainUIStateAPI> const&,
+        ParentPtr<IMainUIStateAPI> const&,
         UndoableModelStatePair const&
     );
 
@@ -160,7 +160,7 @@ namespace osc
 
     // start performing a series of simulations against the model by opening a tab that tries all possible integrators
     bool ActionSimulateAgainstAllIntegrators(
-        ParentPtr<MainUIStateAPI> const&,
+        ParentPtr<IMainUIStateAPI> const&,
         UndoableModelStatePair const&
     );
 

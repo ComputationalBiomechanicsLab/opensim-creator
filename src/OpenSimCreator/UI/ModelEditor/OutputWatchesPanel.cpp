@@ -3,7 +3,7 @@
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.hpp>
-#include <OpenSimCreator/UI/MainUIStateAPI.hpp>
+#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -25,7 +25,7 @@ namespace
         osc::SimulationReport simulationReport;
     };
 
-    void UpdateCachedSimulationReportIfNecessary(osc::VirtualConstModelStatePair const& src, CachedSimulationReport& cache)
+    void UpdateCachedSimulationReportIfNecessary(osc::IConstModelStatePair const& src, CachedSimulationReport& cache)
     {
         osc::UID const modelVersion = src.getModelVersion();
         osc::UID const stateVersion = src.getStateVersion();
@@ -50,7 +50,7 @@ public:
 
     Impl(std::string_view panelName_,
         std::shared_ptr<UndoableModelStatePair const> model_,
-        ParentPtr<MainUIStateAPI> const& api_) :
+        ParentPtr<IMainUIStateAPI> const& api_) :
 
         StandardPanelImpl{panelName_},
         m_API{api_},
@@ -100,7 +100,7 @@ private:
         }
     }
 
-    ParentPtr<MainUIStateAPI> m_API;
+    ParentPtr<IMainUIStateAPI> m_API;
     std::shared_ptr<UndoableModelStatePair const> m_Model;
     CachedSimulationReport m_CachedReport;
 };
@@ -111,7 +111,7 @@ private:
 osc::OutputWatchesPanel::OutputWatchesPanel(
     std::string_view panelName_,
     std::shared_ptr<UndoableModelStatePair const> model_,
-    ParentPtr<MainUIStateAPI> const& api_) :
+    ParentPtr<IMainUIStateAPI> const& api_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), api_)}
 {

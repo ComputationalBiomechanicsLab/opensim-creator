@@ -7,24 +7,24 @@
 
 namespace osc { class OutputExtractor; }
 namespace osc { class SimulationModelStatePair; }
-namespace osc { class VirtualSimulation; }
+namespace osc { class ISimulation; }
 
 namespace osc
 {
-    // API access to a simulator UI (e.g. simulator tab)
+    // virtual API for the simulator UI (e.g. the simulator tab)
     //
     // this is how individual widgets within a simulator UI communicate with the simulator UI
-    class SimulatorUIAPI {
+    class ISimulatorUIAPI {
     protected:
-        SimulatorUIAPI() = default;
-        SimulatorUIAPI(SimulatorUIAPI const&) = default;
-        SimulatorUIAPI(SimulatorUIAPI&&) noexcept = default;
-        SimulatorUIAPI& operator=(SimulatorUIAPI const&) = default;
-        SimulatorUIAPI& operator=(SimulatorUIAPI&&) noexcept = default;
+        ISimulatorUIAPI() = default;
+        ISimulatorUIAPI(ISimulatorUIAPI const&) = default;
+        ISimulatorUIAPI(ISimulatorUIAPI&&) noexcept = default;
+        ISimulatorUIAPI& operator=(ISimulatorUIAPI const&) = default;
+        ISimulatorUIAPI& operator=(ISimulatorUIAPI&&) noexcept = default;
     public:
-        virtual ~SimulatorUIAPI() noexcept = default;
+        virtual ~ISimulatorUIAPI() noexcept = default;
 
-        VirtualSimulation& updSimulation()
+        ISimulation& updSimulation()
         {
             return implUpdSimulation();
         }
@@ -110,7 +110,7 @@ namespace osc
         }
 
     private:
-        virtual VirtualSimulation& implUpdSimulation() = 0;
+        virtual ISimulation& implUpdSimulation() = 0;
 
         virtual bool implGetSimulationPlaybackState() = 0;
         virtual void implSetSimulationPlaybackState(bool) = 0;

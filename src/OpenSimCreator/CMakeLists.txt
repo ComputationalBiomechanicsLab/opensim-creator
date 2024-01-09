@@ -78,6 +78,8 @@ add_library(OpenSimCreator STATIC
 
     Documents/Model/BasicModelStatePair.cpp
     Documents/Model/BasicModelStatePair.hpp
+    Documents/Model/IConstModelStatePair.hpp
+    Documents/Model/IModelStatePair.hpp
     Documents/Model/ModelStateCommit.cpp
     Documents/Model/ModelStateCommit.hpp
     Documents/Model/ModelStatePairInfo.cpp
@@ -88,8 +90,6 @@ add_library(OpenSimCreator STATIC
     Documents/Model/UndoableModelActions.hpp
     Documents/Model/UndoableModelStatePair.cpp
     Documents/Model/UndoableModelStatePair.hpp
-    Documents/Model/VirtualConstModelStatePair.hpp
-    Documents/Model/VirtualModelStatePair.hpp
 
     Documents/ModelWarper/Detail.hpp
     Documents/ModelWarper/Document.cpp
@@ -114,6 +114,7 @@ add_library(OpenSimCreator STATIC
     Documents/Simulation/ForwardDynamicSimulatorParams.hpp
     Documents/Simulation/IntegratorMethod.cpp
     Documents/Simulation/IntegratorMethod.hpp
+    Documents/Simulation/ISimulation.hpp
     Documents/Simulation/Simulation.hpp
     Documents/Simulation/SimulationClock.hpp
     Documents/Simulation/SimulationModelStatePair.cpp
@@ -126,11 +127,10 @@ add_library(OpenSimCreator STATIC
     Documents/Simulation/SingleStateSimulation.hpp
     Documents/Simulation/StoFileSimulation.hpp
     Documents/Simulation/StoFileSimulation.cpp
-    Documents/Simulation/VirtualSimulation.hpp
 
     Graphics/CachedModelRenderer.cpp
     Graphics/CachedModelRenderer.hpp
-    Graphics/ComponentAbsPathDeocrationTagger.cpp
+    Graphics/ComponentAbsPathDecorationTagger.cpp
     Graphics/ComponentAbsPathDecorationTagger.hpp
     Graphics/ComponentSceneDecorationFlagsTagger.cpp
     Graphics/ComponentSceneDecorationFlagsTagger.hpp
@@ -169,11 +169,11 @@ add_library(OpenSimCreator STATIC
     OutputExtractors/ComponentOutputExtractor.hpp
     OutputExtractors/IntegratorOutputExtractor.cpp
     OutputExtractors/IntegratorOutputExtractor.hpp
+    OutputExtractors/IOutputExtractor.hpp
     OutputExtractors/MultiBodySystemOutputExtractor.cpp
     OutputExtractors/MultiBodySystemOutputExtractor.hpp
     OutputExtractors/OutputExtractor.cpp
     OutputExtractors/OutputExtractor.hpp
-    OutputExtractors/VirtualOutputExtractor.hpp
 
     Platform/OpenSimCreatorApp.cpp
     Platform/OpenSimCreatorApp.hpp
@@ -190,12 +190,12 @@ add_library(OpenSimCreator STATIC
 
     UI/MeshImporter/ChooseElLayer.hpp
     UI/MeshImporter/DrawableThing.hpp
+    UI/MeshImporter/IMeshImporterUILayerHost.hpp
     UI/MeshImporter/MeshImporterHover.hpp
     UI/MeshImporter/MeshImporterSharedState.hpp
     UI/MeshImporter/MeshImporterTab.cpp
     UI/MeshImporter/MeshImporterTab.hpp
     UI/MeshImporter/MeshImporterUILayer.hpp
-    UI/MeshImporter/MeshImporterUILayerHost.hpp
     UI/MeshImporter/MeshLoader.cpp
     UI/MeshImporter/MeshLoader.hpp
     UI/MeshImporter/Select2MeshPointsLayer.hpp
@@ -226,11 +226,11 @@ add_library(OpenSimCreator STATIC
     UI/ModelEditor/ComponentContextMenu.hpp
     UI/ModelEditor/CoordinateEditorPanel.cpp
     UI/ModelEditor/CoordinateEditorPanel.hpp
-    UI/ModelEditor/EditorAPI.hpp
     UI/ModelEditor/EditorTabStatusBar.cpp
     UI/ModelEditor/EditorTabStatusBar.hpp
     UI/ModelEditor/ExportPointsPopup.cpp
     UI/ModelEditor/ExportPointsPopup.hpp
+    UI/ModelEditor/IEditorAPI.hpp
     UI/ModelEditor/ModelActionsMenuItems.cpp
     UI/ModelEditor/ModelActionsMenuItems.hpp
     UI/ModelEditor/ModelEditorTab.cpp
@@ -295,8 +295,13 @@ add_library(OpenSimCreator STATIC
 
     UI/Simulation/ComponentDetails.cpp
     UI/Simulation/ComponentDetails.hpp
+    UI/Simulation/ISimulatorUIAPI.hpp
+    UI/Simulation/ModelStatePairContextMenu.cpp
+    UI/Simulation/ModelStatePairContextMenu.hpp
     UI/Simulation/OutputPlotsPanel.cpp
     UI/Simulation/OutputPlotsPanel.hpp
+    UI/Simulation/Readonly3DModelViewer.cpp
+    UI/Simulation/Readonly3DModelViewer.hpp
     UI/Simulation/SelectionDetailsPanel.cpp
     UI/Simulation/SimulationDetailsPanel.cpp
     UI/Simulation/SimulationDetailsPanel.hpp
@@ -313,24 +318,19 @@ add_library(OpenSimCreator STATIC
     UI/Simulation/SimulationViewerRightClickEvent.hpp
     UI/Simulation/SimulatorTab.cpp
     UI/Simulation/SimulatorTab.hpp
-    UI/Simulation/SimulatorUIAPI.hpp
-    UI/Simulation/VirtualModelStatePairContextMenu.cpp
-    UI/Simulation/VirtualModelStatePairContextMenu.hpp
-    UI/Simulation/UiModelViewer.cpp
-    UI/Simulation/UiModelViewer.hpp
 
     UI/FrameDefinitionTab.cpp
     UI/FrameDefinitionTab.hpp
+    UI/IMainUIStateAPI.hpp
+    UI/IPopupAPI.hpp
     UI/LoadingTab.cpp
     UI/LoadingTab.hpp
-    UI/MainUIStateAPI.hpp
     UI/MainUIScreen.cpp
     UI/MainUIScreen.hpp
     UI/OpenSimCreatorTabRegistry.cpp
     UI/OpenSimCreatorTabRegistry.hpp
     UI/PerformanceAnalyzerTab.cpp
     UI/PerformanceAnalyzerTab.hpp
-    UI/PopupAPI.hpp
     UI/SplashTab.cpp
     UI/SplashTab.hpp
 

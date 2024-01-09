@@ -14,8 +14,8 @@
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.hpp>
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.hpp>
 #include <OpenSimCreator/UI/Simulation/SimulatorTab.hpp>
+#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/LoadingTab.hpp>
-#include <OpenSimCreator/UI/MainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/PerformanceAnalyzerTab.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/SimTKHelpers.hpp>
@@ -74,17 +74,17 @@
 using osc::App;
 using osc::BodyDetails;
 using osc::LoadingTab;
-using osc::MainUIStateAPI;
+using osc::IMainUIStateAPI;
 
 // helper functions
 namespace
 {
-    void OpenOsimInLoadingTab(osc::ParentPtr<MainUIStateAPI> const& api, std::filesystem::path p)
+    void OpenOsimInLoadingTab(osc::ParentPtr<IMainUIStateAPI> const& api, std::filesystem::path p)
     {
         api->addAndSelectTab<LoadingTab>(api, std::move(p));
     }
 
-    void DoOpenFileViaDialog(osc::ParentPtr<MainUIStateAPI> const& api)
+    void DoOpenFileViaDialog(osc::ParentPtr<IMainUIStateAPI> const& api)
     {
         std::optional<std::filesystem::path> const maybePath = osc::PromptUserForFile("osim");
 
@@ -272,23 +272,23 @@ void osc::ActionSaveCurrentModelAs(UndoableModelStatePair& uim)
     }
 }
 
-void osc::ActionNewModel(ParentPtr<MainUIStateAPI> const& api)
+void osc::ActionNewModel(ParentPtr<IMainUIStateAPI> const& api)
 {
     auto p = std::make_unique<UndoableModelStatePair>();
     api->addAndSelectTab<ModelEditorTab>(api, std::move(p));
 }
 
-void osc::ActionOpenModel(ParentPtr<MainUIStateAPI> const& api)
+void osc::ActionOpenModel(ParentPtr<IMainUIStateAPI> const& api)
 {
     DoOpenFileViaDialog(api);
 }
 
-void osc::ActionOpenModel(ParentPtr<MainUIStateAPI> const& api, std::filesystem::path const& path)
+void osc::ActionOpenModel(ParentPtr<IMainUIStateAPI> const& api, std::filesystem::path const& path)
 {
     OpenOsimInLoadingTab(api, path);
 }
 
-bool osc::ActionSaveModel(MainUIStateAPI&, UndoableModelStatePair& model)
+bool osc::ActionSaveModel(IMainUIStateAPI&, UndoableModelStatePair& model)
 {
     std::optional<std::string> const maybeUserSaveLoc = TryGetModelSaveLocation(model.getModel());
 
@@ -415,7 +415,7 @@ void osc::ActionClearSelectionFromEditedModel(UndoableModelStatePair& model)
 }
 
 bool osc::ActionLoadSTOFileAgainstModel(
-    ParentPtr<MainUIStateAPI> const& parent,
+    ParentPtr<IMainUIStateAPI> const& parent,
     UndoableModelStatePair const& uim,
     std::filesystem::path const& stoPath)
 {
@@ -439,7 +439,7 @@ bool osc::ActionLoadSTOFileAgainstModel(
 }
 
 bool osc::ActionStartSimulatingModel(
-    ParentPtr<MainUIStateAPI> const& parent,
+    ParentPtr<IMainUIStateAPI> const& parent,
     UndoableModelStatePair const& uim)
 {
     BasicModelStatePair modelState{uim};
@@ -667,7 +667,7 @@ bool osc::ActionReloadOsimFromDisk(UndoableModelStatePair& uim, SceneCache& mesh
 }
 
 bool osc::ActionSimulateAgainstAllIntegrators(
-    ParentPtr<MainUIStateAPI> const& parent,
+    ParentPtr<IMainUIStateAPI> const& parent,
     UndoableModelStatePair const& uim)
 {
     parent->addAndSelectTab<PerformanceAnalyzerTab>(

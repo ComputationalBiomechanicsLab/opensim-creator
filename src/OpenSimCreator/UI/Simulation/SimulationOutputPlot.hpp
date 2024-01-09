@@ -6,14 +6,14 @@
 #include <memory>
 #include <span>
 
-namespace osc { class SimulatorUIAPI; }
+namespace osc { class ISimulatorUIAPI; }
 
 namespace osc
 {
     class SimulationOutputPlot final {
     public:
         SimulationOutputPlot(
-            SimulatorUIAPI*,
+            ISimulatorUIAPI*,
             OutputExtractor,
             float height
         );
@@ -31,6 +31,6 @@ namespace osc
     };
 
     // returns empty path if not saved
-    std::filesystem::path TryPromptAndSaveOutputsAsCSV(SimulatorUIAPI&, std::span<OutputExtractor const>);
-    std::filesystem::path TryPromptAndSaveAllUserDesiredOutputsAsCSV(SimulatorUIAPI&);
+    std::filesystem::path TryPromptAndSaveOutputsAsCSV(ISimulatorUIAPI&, std::span<OutputExtractor const>);
+    std::filesystem::path TryPromptAndSaveAllUserDesiredOutputsAsCSV(ISimulatorUIAPI&);
 }

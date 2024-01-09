@@ -1,7 +1,7 @@
 #include "IntegratorOutputExtractor.hpp"
 
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.hpp>
-#include <OpenSimCreator/OutputExtractors/VirtualOutputExtractor.hpp>
+#include <OpenSimCreator/OutputExtractors/IOutputExtractor.hpp>
 
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
@@ -174,7 +174,7 @@ std::size_t osc::IntegratorOutputExtractor::getHash() const
     return osc::HashOf(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
 }
 
-bool osc::IntegratorOutputExtractor::equals(VirtualOutputExtractor const& other) const
+bool osc::IntegratorOutputExtractor::equals(IOutputExtractor const& other) const
 {
     if (this == &other)
     {

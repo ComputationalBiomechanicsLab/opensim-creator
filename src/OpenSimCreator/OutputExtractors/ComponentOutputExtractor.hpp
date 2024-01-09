@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/OutputExtractors/VirtualOutputExtractor.hpp>
+#include <OpenSimCreator/OutputExtractors/IOutputExtractor.hpp>
 
 #include <oscar/Shims/Cpp23/utility.hpp>
 #include <oscar/Utils/ClonePtr.hpp>
@@ -48,7 +48,7 @@ namespace osc
 
     // an output extractor that uses the `OpenSim::AbstractOutput` API to extract a value
     // from a component
-    class ComponentOutputExtractor final : public VirtualOutputExtractor {
+    class ComponentOutputExtractor final : public IOutputExtractor {
     public:
         ComponentOutputExtractor(
             OpenSim::AbstractOutput const&,
@@ -83,7 +83,7 @@ namespace osc
         ) const final;
 
         size_t getHash() const final;
-        bool equals(VirtualOutputExtractor const&) const final;
+        bool equals(IOutputExtractor const&) const final;
 
     private:
         class Impl;

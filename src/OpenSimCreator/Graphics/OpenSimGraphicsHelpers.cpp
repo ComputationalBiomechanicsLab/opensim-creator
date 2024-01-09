@@ -1,6 +1,6 @@
 #include "OpenSimGraphicsHelpers.hpp"
 
-#include <OpenSimCreator/Documents/Model/VirtualConstModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/IConstModelStatePair.hpp>
 #include <OpenSimCreator/Graphics/ModelRendererParams.hpp>
 #include <OpenSimCreator/Graphics/ComponentAbsPathDecorationTagger.hpp>
 #include <OpenSimCreator/Graphics/ComponentSceneDecorationFlagsTagger.hpp>
@@ -49,7 +49,7 @@ osc::SceneRendererParams osc::CalcSceneRendererParams(
 
 void osc::GenerateDecorations(
     SceneCache& meshCache,
-    VirtualConstModelStatePair const& msp,
+    IConstModelStatePair const& msp,
     OpenSimDecorationOptions const& options,
     std::function<void(OpenSim::Component const&, SceneDecoration&&)> const& out)
 {

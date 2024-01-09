@@ -5,7 +5,7 @@
 #include <memory>
 #include <string_view>
 
-namespace osc { class VirtualConstModelStatePair; }
+namespace osc { class IConstModelStatePair; }
 
 namespace osc
 {
@@ -13,7 +13,7 @@ namespace osc
     public:
         ExportPointsPopup(
             std::string_view popupName,
-            std::shared_ptr<VirtualConstModelStatePair const>
+            std::shared_ptr<IConstModelStatePair const>
         );
         ExportPointsPopup(ExportPointsPopup const&) = delete;
         ExportPointsPopup(ExportPointsPopup&&) noexcept;

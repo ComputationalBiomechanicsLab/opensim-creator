@@ -7,8 +7,8 @@
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationStatus.hpp>
 #include <OpenSimCreator/OutputExtractors/IntegratorOutputExtractor.hpp>
+#include <OpenSimCreator/OutputExtractors/IOutputExtractor.hpp>
 #include <OpenSimCreator/OutputExtractors/MultiBodySystemOutputExtractor.hpp>
-#include <OpenSimCreator/OutputExtractors/VirtualOutputExtractor.hpp>
 
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Common/Exception.h>
@@ -93,7 +93,7 @@ namespace
         std::atomic<int> m_Status = static_cast<int>(osc::SimulationStatus::Initializing);
     };
 
-    class AuxiliaryVariableOutputExtractor final : public osc::VirtualOutputExtractor {
+    class AuxiliaryVariableOutputExtractor final : public osc::IOutputExtractor {
     public:
         AuxiliaryVariableOutputExtractor(std::string name, std::string description, osc::UID uid) :
             m_Name{std::move(name)},
@@ -145,7 +145,7 @@ namespace
             return osc::HashOf(m_Name, m_Description, m_UID);
         }
 
-        bool equals(VirtualOutputExtractor const& other) const final
+        bool equals(IOutputExtractor const& other) const final
         {
             if (&other == this)
             {

@@ -113,7 +113,7 @@ std::size_t osc::MultiBodySystemOutputExtractor::getHash() const
     return osc::HashOf(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
 }
 
-bool osc::MultiBodySystemOutputExtractor::equals(VirtualOutputExtractor const& other) const
+bool osc::MultiBodySystemOutputExtractor::equals(IOutputExtractor const& other) const
 {
     if (&other == this)
     {

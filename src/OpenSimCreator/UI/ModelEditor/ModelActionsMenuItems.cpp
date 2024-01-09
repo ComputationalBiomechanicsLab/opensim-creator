@@ -4,7 +4,7 @@
 #include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.hpp>
 #include <OpenSimCreator/UI/ModelEditor/AddBodyPopup.hpp>
 #include <OpenSimCreator/UI/ModelEditor/AddComponentPopup.hpp>
-#include <OpenSimCreator/UI/ModelEditor/EditorAPI.hpp>
+#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <imgui.h>
@@ -30,7 +30,7 @@ class osc::ModelActionsMenuItems::Impl final {
 public:
 
     Impl(
-        EditorAPI* api,
+        IEditorAPI* api,
         std::shared_ptr<UndoableModelStatePair> uum_) :
 
         m_EditorAPI{api},
@@ -113,14 +113,14 @@ private:
         }
     }
 
-    EditorAPI* m_EditorAPI;
+    IEditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Model;
 };
 
 
 // public API (PIMPL)
 
-osc::ModelActionsMenuItems::ModelActionsMenuItems(EditorAPI* api, std::shared_ptr<UndoableModelStatePair> m) :
+osc::ModelActionsMenuItems::ModelActionsMenuItems(IEditorAPI* api, std::shared_ptr<UndoableModelStatePair> m) :
     m_Impl{std::make_unique<Impl>(api, std::move(m))}
 {
 }

@@ -2,8 +2,8 @@
 
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/UI/ModelEditor/EditorAPI.hpp>
-#include <OpenSimCreator/UI/MainUIStateAPI.hpp>
+#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
+#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
 #include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.hpp>
 
@@ -28,8 +28,8 @@ class osc::ModelEditorToolbar::Impl final {
 public:
     Impl(
         std::string_view label_,
-        ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
-        EditorAPI* editorAPI_,
+        ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
+        IEditorAPI* editorAPI_,
         std::shared_ptr<osc::UndoableModelStatePair> model_) :
 
         m_Label{label_},
@@ -101,8 +101,8 @@ private:
     }
 
     std::string m_Label;
-    ParentPtr<MainUIStateAPI> m_MainUIStateAPI;
-    EditorAPI* m_EditorAPI;
+    ParentPtr<IMainUIStateAPI> m_MainUIStateAPI;
+    IEditorAPI* m_EditorAPI;
     std::shared_ptr<osc::UndoableModelStatePair> m_Model;
 
     std::shared_ptr<IconCache> m_IconCache = App::singleton<osc::IconCache>(
@@ -116,8 +116,8 @@ private:
 
 osc::ModelEditorToolbar::ModelEditorToolbar(
     std::string_view label_,
-    ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
-    EditorAPI* editorAPI_,
+    ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
+    IEditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> model_) :
 
     m_Impl{std::make_unique<Impl>(label_, mainUIStateAPI_, editorAPI_, std::move(model_))}

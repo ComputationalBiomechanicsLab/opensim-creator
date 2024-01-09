@@ -5,7 +5,7 @@
 #include <memory>
 #include <string_view>
 
-namespace osc { class EditorAPI; }
+namespace osc { class IEditorAPI; }
 namespace osc { class UndoableModelStatePair; }
 
 namespace osc
@@ -14,7 +14,7 @@ namespace osc
     public:
         AddBodyPopup(
             std::string_view popupName,
-            EditorAPI*,
+            IEditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );
         AddBodyPopup(AddBodyPopup const&) = delete;

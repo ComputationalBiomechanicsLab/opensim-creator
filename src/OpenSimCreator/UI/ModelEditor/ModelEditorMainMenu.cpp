@@ -2,14 +2,14 @@
 
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/UI/ModelEditor/EditorAPI.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ExportPointsPopup.hpp>
+#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ModelActionsMenuItems.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ModelMusclePlotPanel.hpp>
 #include <OpenSimCreator/UI/Shared/ImportStationsFromCSVPopup.hpp>
 #include <OpenSimCreator/UI/Shared/MainMenu.hpp>
 #include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.hpp>
-#include <OpenSimCreator/UI/MainUIStateAPI.hpp>
+#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <imgui.h>
@@ -25,8 +25,8 @@
 class osc::ModelEditorMainMenu::Impl final {
 public:
     Impl(
-        ParentPtr<MainUIStateAPI> const& mainStateAPI_,
-        EditorAPI* editorAPI_,
+        ParentPtr<IMainUIStateAPI> const& mainStateAPI_,
+        IEditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> model_) :
 
         m_MainUIStateAPI{mainStateAPI_},
@@ -144,8 +144,8 @@ private:
         }
     }
 
-    ParentPtr<MainUIStateAPI> m_MainUIStateAPI;
-    EditorAPI* m_EditorAPI;
+    ParentPtr<IMainUIStateAPI> m_MainUIStateAPI;
+    IEditorAPI* m_EditorAPI;
     std::shared_ptr<osc::UndoableModelStatePair> m_Model;
     MainMenuFileTab m_MainMenuFileTab;
     ModelActionsMenuItems m_MainMenuAddTabMenuItems{m_EditorAPI, m_Model};
@@ -157,8 +157,8 @@ private:
 // public API (PIMPL)
 
 osc::ModelEditorMainMenu::ModelEditorMainMenu(
-    ParentPtr<MainUIStateAPI> const& mainStateAPI_,
-    EditorAPI* editorAPI_,
+    ParentPtr<IMainUIStateAPI> const& mainStateAPI_,
+    IEditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> model_) :
 
     m_Impl{std::make_unique<Impl>(mainStateAPI_, editorAPI_, std::move(model_))}

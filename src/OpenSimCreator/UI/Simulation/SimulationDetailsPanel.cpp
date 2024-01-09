@@ -20,7 +20,7 @@ class osc::SimulationDetailsPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
         std::string_view panelName,
-        SimulatorUIAPI* simulatorUIAPI,
+        ISimulatorUIAPI* simulatorUIAPI,
         std::shared_ptr<Simulation const> simulation) :
 
         StandardPanelImpl{panelName},
@@ -120,7 +120,7 @@ private:
         ImGui::Columns();
     }
 
-    SimulatorUIAPI* m_SimulatorUIAPI;
+    ISimulatorUIAPI* m_SimulatorUIAPI;
     std::shared_ptr<Simulation const> m_Simulation;
 };
 
@@ -129,7 +129,7 @@ private:
 
 osc::SimulationDetailsPanel::SimulationDetailsPanel(
     std::string_view panelName,
-    SimulatorUIAPI* simulatorUIAPI,
+    ISimulatorUIAPI* simulatorUIAPI,
     std::shared_ptr<Simulation const> simulation) :
 
     m_Impl{std::make_unique<Impl>(panelName, simulatorUIAPI, std::move(simulation))}

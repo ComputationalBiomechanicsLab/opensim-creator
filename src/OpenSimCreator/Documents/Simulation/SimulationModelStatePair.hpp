@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/Model/VirtualModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.hpp>
 
 #include <oscar/Utils/UID.hpp>
@@ -15,7 +15,7 @@ namespace SimTK { class State; }
 namespace osc
 {
     // a readonly model+state pair from a particular step from a simulator
-    class SimulationModelStatePair final : public VirtualModelStatePair {
+    class SimulationModelStatePair final : public IModelStatePair {
     public:
         SimulationModelStatePair();
         SimulationModelStatePair(std::shared_ptr<Simulation>, SimulationReport);

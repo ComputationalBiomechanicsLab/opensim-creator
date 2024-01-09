@@ -1,11 +1,11 @@
 #include "SimulationOutputPlot.hpp"
 
+#include <OpenSimCreator/Documents/Simulation/ISimulation.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.hpp>
-#include <OpenSimCreator/Documents/Simulation/VirtualSimulation.hpp>
+#include <OpenSimCreator/OutputExtractors/IOutputExtractor.hpp>
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.hpp>
-#include <OpenSimCreator/OutputExtractors/VirtualOutputExtractor.hpp>
-#include <OpenSimCreator/UI/Simulation/SimulatorUIAPI.hpp>
+#include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.hpp>
 
 #include <imgui.h>
 #include <implot.h>
@@ -35,7 +35,7 @@
 
 namespace
 {
-    std::vector<osc::OutputExtractor> GetAllUserDesiredOutputs(osc::SimulatorUIAPI& api)
+    std::vector<osc::OutputExtractor> GetAllUserDesiredOutputs(osc::ISimulatorUIAPI& api)
     {
         int nOutputs = api.getNumUserOutputExtractors();
 
@@ -93,7 +93,7 @@ namespace
     std::vector<float> PopulateFirstNNumericOutputValues(
         OpenSim::Model const& model,
         std::span<osc::SimulationReport const> reports,
-        osc::VirtualOutputExtractor const& output)
+        osc::IOutputExtractor const& output)
     {
         std::vector<float> rv;
         rv.resize(reports.size());
@@ -113,8 +113,8 @@ namespace
     }
 
     std::string TryExportNumericOutputToCSV(
-        osc::VirtualSimulation& sim,
-        osc::VirtualOutputExtractor const& output)
+        osc::ISimulation& sim,
+        osc::IOutputExtractor const& output)
     {
         OSC_ASSERT(output.getOutputType() == osc::OutputType::Float);
 
@@ -126,7 +126,7 @@ namespace
     }
 
     void DrawToggleWatchOutputMenuItem(
-        osc::SimulatorUIAPI& api,
+        osc::ISimulatorUIAPI& api,
         osc::OutputExtractor const& output)
     {
         bool isWatching = api.hasUserOutputExtractor(output);
@@ -146,8 +146,8 @@ namespace
     }
 
     void DrawGenericNumericOutputContextMenuItems(
-        osc::SimulatorUIAPI& api,
-        osc::VirtualSimulation& sim,
+        osc::ISimulatorUIAPI& api,
+        osc::ISimulation& sim,
         osc::OutputExtractor const& output)
     {
         OSC_ASSERT(output.getOutputType() == osc::OutputType::Float);
@@ -169,7 +169,7 @@ namespace
         DrawToggleWatchOutputMenuItem(api, output);
     }
 
-    std::filesystem::path TryExportOutputsToCSV(osc::VirtualSimulation& sim, std::span<osc::OutputExtractor const> outputs)
+    std::filesystem::path TryExportOutputsToCSV(osc::ISimulation& sim, std::span<osc::OutputExtractor const> outputs)
     {
         std::vector<osc::SimulationReport> reports = sim.getAllSimulationReports();
         std::vector<float> times = PopulateFirstNTimeValues(reports);
@@ -229,7 +229,7 @@ namespace
 class osc::SimulationOutputPlot::Impl final {
 public:
 
-    Impl(SimulatorUIAPI* api, OutputExtractor outputExtractor, float height) :
+    Impl(ISimulatorUIAPI* api, OutputExtractor outputExtractor, float height) :
         m_API{api},
         m_OutputExtractor{std::move(outputExtractor)},
         m_Height{height}
@@ -238,7 +238,7 @@ public:
 
     void onDraw()
     {
-        VirtualSimulation& sim = m_API->updSimulation();
+        ISimulation& sim = m_API->updSimulation();
 
         ptrdiff_t const nReports = sim.getNumReports();
         osc::OutputType outputType = m_OutputExtractor.getOutputType();
@@ -271,7 +271,7 @@ public:
     }
 
 private:
-    void drawFloatOutputPlot(VirtualSimulation& sim)
+    void drawFloatOutputPlot(ISimulation& sim)
     {
         OSC_ASSERT(m_OutputExtractor.getOutputType() == osc::OutputType::Float);
 
@@ -390,7 +390,7 @@ private:
         }
     }
 
-    SimulatorUIAPI* m_API;
+    ISimulatorUIAPI* m_API;
     OutputExtractor m_OutputExtractor;
     float m_Height;
 };
@@ -398,7 +398,7 @@ private:
 
 // public API
 
-osc::SimulationOutputPlot::SimulationOutputPlot(SimulatorUIAPI* api, OutputExtractor outputExtractor, float height) :
+osc::SimulationOutputPlot::SimulationOutputPlot(ISimulatorUIAPI* api, OutputExtractor outputExtractor, float height) :
     m_Impl{std::make_unique<Impl>(api, std::move(outputExtractor), height)}
 {
 }
@@ -412,12 +412,12 @@ void osc::SimulationOutputPlot::onDraw()
     m_Impl->onDraw();
 }
 
-std::filesystem::path osc::TryPromptAndSaveOutputsAsCSV(SimulatorUIAPI& api, std::span<OutputExtractor const> outputs)
+std::filesystem::path osc::TryPromptAndSaveOutputsAsCSV(ISimulatorUIAPI& api, std::span<OutputExtractor const> outputs)
 {
     return TryExportOutputsToCSV(api.updSimulation(), outputs);
 }
 
-std::filesystem::path osc::TryPromptAndSaveAllUserDesiredOutputsAsCSV(SimulatorUIAPI& api)
+std::filesystem::path osc::TryPromptAndSaveAllUserDesiredOutputsAsCSV(ISimulatorUIAPI& api)
 {
     auto outputs = GetAllUserDesiredOutputs(api);
     return TryExportOutputsToCSV(api.updSimulation(), outputs);

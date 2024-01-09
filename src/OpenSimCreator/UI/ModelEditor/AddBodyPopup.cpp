@@ -4,7 +4,7 @@
 #include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/UI/ModelEditor/EditorAPI.hpp>
+#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
 #include <OpenSimCreator/UI/ModelEditor/SelectGeometryPopup.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
@@ -31,7 +31,7 @@
 class osc::AddBodyPopup::Impl final : public osc::StandardPopup {
 public:
     Impl(std::string_view popupName,
-         EditorAPI* api,
+         IEditorAPI* api,
          std::shared_ptr<UndoableModelStatePair> uum) :
 
         StandardPopup{popupName},
@@ -226,7 +226,7 @@ private:
     }
 
     // ability to push popups to the main UI
-    EditorAPI* m_EditorAPI;
+    IEditorAPI* m_EditorAPI;
 
     // the model that the body will be added to
     std::shared_ptr<UndoableModelStatePair> m_Uum;
@@ -240,7 +240,7 @@ private:
 
 osc::AddBodyPopup::AddBodyPopup(
     std::string_view popupName,
-    EditorAPI* api,
+    IEditorAPI* api,
     std::shared_ptr<UndoableModelStatePair> uum) :
 
     m_Impl{std::make_unique<Impl>(popupName, api, std::move(uum))}

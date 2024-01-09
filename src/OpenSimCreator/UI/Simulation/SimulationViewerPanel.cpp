@@ -1,10 +1,10 @@
 #include "SimulationViewerPanel.hpp"
 
-#include <OpenSimCreator/Documents/Model/VirtualModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.hpp>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
 #include <OpenSimCreator/UI/Simulation/SimulationViewerPanelParameters.hpp>
 #include <OpenSimCreator/UI/Simulation/SimulationViewerRightClickEvent.hpp>
-#include <OpenSimCreator/UI/Simulation/UiModelViewer.hpp>
+#include <OpenSimCreator/UI/Simulation/Readonly3DModelViewer.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <OpenSim/Common/Component.h>
@@ -55,7 +55,7 @@ private:
 
     void implDrawContent() final
     {
-        VirtualModelStatePair& msp = m_Params.updModelState();
+        IModelStatePair& msp = m_Params.updModelState();
 
         std::optional<SceneCollision> const maybeCollision = m_Viewer.onDraw(msp);
 
@@ -88,7 +88,7 @@ private:
     }
 
     SimulationViewerPanelParameters m_Params;
-    UiModelViewer m_Viewer;
+    Readonly3DModelViewer m_Viewer;
 };
 
 

@@ -3,7 +3,7 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.hpp>
-#include <OpenSimCreator/UI/ModelEditor/EditorAPI.hpp>
+#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ReassignSocketPopup.hpp>
 #include <OpenSimCreator/UI/ModelEditor/SelectComponentPopup.hpp>
 #include <OpenSimCreator/UI/ModelEditor/SelectGeometryPopup.hpp>
@@ -42,7 +42,7 @@
 
 namespace
 {
-    void DrawActionsMenu(osc::EditorAPI* editorAPI, std::shared_ptr<osc::UndoableModelStatePair> const& model)
+    void DrawActionsMenu(osc::IEditorAPI* editorAPI, std::shared_ptr<osc::UndoableModelStatePair> const& model)
     {
         OpenSim::Component const* selection = model->getSelected();
         if (!selection)
@@ -121,7 +121,7 @@ class osc::PropertiesPanel::Impl final : public osc::StandardPanelImpl {
 public:
     Impl(
         std::string_view panelName,
-        EditorAPI* editorAPI,
+        IEditorAPI* editorAPI,
         std::shared_ptr<UndoableModelStatePair> model) :
 
         StandardPanelImpl{panelName},
@@ -165,7 +165,7 @@ private:
         }
     }
 
-    EditorAPI* m_EditorAPI;
+    IEditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Model;
     ObjectNameEditor m_NameEditor{m_Model};
     ObjectPropertiesEditor m_SelectionPropertiesEditor;
@@ -176,7 +176,7 @@ private:
 
 osc::PropertiesPanel::PropertiesPanel(
     std::string_view panelName,
-    EditorAPI* editorAPI,
+    IEditorAPI* editorAPI,
     std::shared_ptr<UndoableModelStatePair> model) :
     m_Impl{std::make_unique<Impl>(panelName, editorAPI, std::move(model))}
 {

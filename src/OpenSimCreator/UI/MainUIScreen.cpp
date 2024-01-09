@@ -5,8 +5,8 @@
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.hpp>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.hpp>
+#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/LoadingTab.hpp>
-#include <OpenSimCreator/UI/MainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/SplashTab.hpp>
 #include <OpenSimCreator/Utils/ParamBlock.hpp>
 
@@ -74,7 +74,7 @@ namespace
 }
 
 class osc::MainUIScreen::Impl final :
-    public osc::MainUIStateAPI,
+    public osc::IMainUIStateAPI,
     public std::enable_shared_from_this<Impl> {
 public:
 
@@ -355,9 +355,9 @@ public:
 
 private:
 
-    osc::ParentPtr<MainUIStateAPI> getTabHostAPI()
+    osc::ParentPtr<IMainUIStateAPI> getTabHostAPI()
     {
-        return osc::ParentPtr<MainUIStateAPI>{shared_from_this()};
+        return osc::ParentPtr<IMainUIStateAPI>{shared_from_this()};
     }
     void drawTabSpecificMenu()
     {
@@ -775,9 +775,9 @@ private:
         }
     }
 
-    ParentPtr<MainUIStateAPI> updThisAsParent()
+    ParentPtr<IMainUIStateAPI> updThisAsParent()
     {
-        return ParentPtr<MainUIStateAPI>{shared_from_this()};
+        return ParentPtr<IMainUIStateAPI>{shared_from_this()};
     }
 
     // set the first time `onMount` is called

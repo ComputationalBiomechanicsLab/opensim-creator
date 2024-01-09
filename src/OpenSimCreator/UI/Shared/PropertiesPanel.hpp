@@ -6,7 +6,7 @@
 #include <string_view>
 #include <memory>
 
-namespace osc { class EditorAPI; }
+namespace osc { class IEditorAPI; }
 namespace osc { class UndoableModelStatePair; }
 
 namespace osc
@@ -15,7 +15,7 @@ namespace osc
     public:
         PropertiesPanel(
             std::string_view panelName,
-            EditorAPI*,
+            IEditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );
         PropertiesPanel(PropertiesPanel const&) = delete;

@@ -8,6 +8,8 @@ All notable changes to this project will be documented here. The format is based
   than via its own internal OpenGL backend
 - Internal: oscar pure-virtual interface classes are now prefixed with `I` (e.g.
   `ITab`, `IPanel`, etc.)
+- Internal: OpenSimCreator pure-virtual interface classes are now prefixed with `I`
+  (e.g. `IOutputExtractor`, `ISimulation`, etc.)
 
 ## [0.5.6] - 2023/12/22
 

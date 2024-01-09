@@ -8,7 +8,7 @@
 #include <OpenSimCreator/Graphics/OverlayDecorationGenerator.hpp>
 #include <OpenSimCreator/Graphics/OpenSimGraphicsHelpers.hpp>
 #include <OpenSimCreator/Graphics/SimTKMeshLoader.hpp>
-#include <OpenSimCreator/UI/ModelEditor/EditorAPI.hpp>
+#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.hpp>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
 #include <OpenSimCreator/UI/Shared/MainMenu.hpp>
@@ -19,7 +19,7 @@
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelState.hpp>
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.hpp>
 #include <OpenSimCreator/UI/Shared/PropertiesPanel.hpp>
-#include <OpenSimCreator/UI/MainUIStateAPI.hpp>
+#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 
@@ -1106,7 +1106,7 @@ namespace
         osc::ParentPtr<osc::ITabHost> const& tabHost,
         osc::UndoableModelStatePair const& model)
     {
-        auto maybeMainUIStateAPI = osc::DynamicParentCast<osc::MainUIStateAPI>(tabHost);
+        auto maybeMainUIStateAPI = osc::DynamicParentCast<osc::IMainUIStateAPI>(tabHost);
         if (!maybeMainUIStateAPI)
         {
             osc::log::error("Tried to export frame definition scene to an OpenSim model but there is no MainUIStateAPI data");
@@ -1426,7 +1426,7 @@ namespace
     /////
 
     void PushCreateEdgeToOtherPointLayer(
-        osc::EditorAPI& editor,
+        osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
         OpenSim::Point const& point,
         osc::ModelEditorViewerPanelRightClickEvent const& sourceEvent)
@@ -1477,7 +1477,7 @@ namespace
     }
 
     void PushCreateMidpointToAnotherPointLayer(
-        osc::EditorAPI& editor,
+        osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
         OpenSim::Point const& point,
         osc::ModelEditorViewerPanelRightClickEvent const& sourceEvent)
@@ -1528,7 +1528,7 @@ namespace
     }
 
     void PushCreateCrossProductEdgeLayer(
-        osc::EditorAPI& editor,
+        osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
         FDVirtualEdge const& firstEdge,
         osc::ModelEditorViewerPanelRightClickEvent const& sourceEvent)
@@ -1685,7 +1685,7 @@ namespace
 namespace
 {
     void ActionPushCreateFrameLayer(
-        osc::EditorAPI& editor,
+        osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
         FDVirtualEdge const& firstEdge,
         MaybeNegatedAxis firstEdgeAxis,
@@ -2008,7 +2008,7 @@ namespace
     }
 
     void ActionCreateBodyFromFrame(
-        osc::EditorAPI& editor,
+        osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         OpenSim::Frame const& frame)
@@ -2096,7 +2096,7 @@ namespace
 namespace
 {
     void DrawFocusCameraMenu(
-        osc::EditorAPI& editor,
+        osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const&,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         OpenSim::Component const&)
@@ -2127,7 +2127,7 @@ namespace
     }
 
     void DrawEdgeAddContextMenuItems(
-        osc::EditorAPI& editor,
+        osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         FDVirtualEdge const& edge)
@@ -2224,7 +2224,7 @@ namespace
     }
 
     void DrawCreateBodyMenuItem(
-        osc::EditorAPI& editor,
+        osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         OpenSim::Frame const& frame)
@@ -2270,7 +2270,7 @@ namespace
     }
 
     void DrawPointAddContextMenuItems(
-        osc::EditorAPI& editor,
+        osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         OpenSim::Point const& point)
@@ -2302,7 +2302,7 @@ namespace
     }
 
     void DrawRightClickedMeshContextMenu(
-        osc::EditorAPI& editor,
+        osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         OpenSim::Mesh const& mesh)
@@ -2324,7 +2324,7 @@ namespace
     }
 
     void DrawRightClickedPointContextMenu(
-        osc::EditorAPI& editor,
+        osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         OpenSim::Point const& point)
@@ -2342,7 +2342,7 @@ namespace
     }
 
     void DrawRightClickedPointToPointEdgeContextMenu(
-        osc::EditorAPI& editor,
+        osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         FDPointToPointEdge const& edge)
@@ -2364,7 +2364,7 @@ namespace
     }
 
     void DrawRightClickedCrossProductEdgeContextMenu(
-        osc::EditorAPI& editor,
+        osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         FDCrossProductEdge const& edge)
@@ -2386,7 +2386,7 @@ namespace
     }
 
     void DrawRightClickedFrameContextMenu(
-        osc::EditorAPI& editor,
+        osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         OpenSim::Frame const& frame)
@@ -2404,7 +2404,7 @@ namespace
     }
 
     void DrawRightClickedUnknownComponentContextMenu(
-        osc::EditorAPI& editor,
+        osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         OpenSim::Component const& component)
@@ -2420,7 +2420,7 @@ namespace
     public:
         FrameDefinitionContextMenu(
             std::string_view popupName_,
-            osc::EditorAPI* editorAPI_,
+            osc::IEditorAPI* editorAPI_,
             std::shared_ptr<osc::UndoableModelStatePair> model_,
             OpenSim::ComponentPath componentPath_,
             std::optional<osc::ModelEditorViewerPanelRightClickEvent> maybeSourceVisualizerEvent_ = std::nullopt) :
@@ -2471,7 +2471,7 @@ namespace
             }
         }
 
-        osc::EditorAPI* m_EditorAPI;
+        osc::IEditorAPI* m_EditorAPI;
         std::shared_ptr<osc::UndoableModelStatePair> m_Model;
         OpenSim::ComponentPath m_ComponentPath;
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> m_MaybeSourceVisualizerEvent;
@@ -2600,7 +2600,7 @@ namespace
     };
 }
 
-class osc::FrameDefinitionTab::Impl final : public EditorAPI {
+class osc::FrameDefinitionTab::Impl final : public IEditorAPI {
 public:
 
     explicit Impl(ParentPtr<ITabHost> const& parent_) :

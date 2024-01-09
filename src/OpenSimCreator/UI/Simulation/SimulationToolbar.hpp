@@ -4,7 +4,7 @@
 #include <string_view>
 
 namespace osc { class Simulation; }
-namespace osc { class SimulatorUIAPI; }
+namespace osc { class ISimulatorUIAPI; }
 
 namespace osc
 {
@@ -12,7 +12,7 @@ namespace osc
     public:
         SimulationToolbar(
             std::string_view label,
-            SimulatorUIAPI*,
+            ISimulatorUIAPI*,
             std::shared_ptr<Simulation>
         );
         SimulationToolbar(SimulationToolbar const&) = delete;

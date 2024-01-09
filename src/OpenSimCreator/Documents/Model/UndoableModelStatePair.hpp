@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/Model/VirtualModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.hpp>
 
 #include <oscar/Utils/UID.hpp>
 
@@ -17,7 +17,7 @@ namespace osc
 {
     // a model + state pair that automatically reinitializes (i.e. like `AutoFinalizingModelStatePair`),
     // but it also has support for snapshotting with .commit()
-    class UndoableModelStatePair final : public VirtualModelStatePair {
+    class UndoableModelStatePair final : public IModelStatePair {
     public:
 
         // constructs a blank model

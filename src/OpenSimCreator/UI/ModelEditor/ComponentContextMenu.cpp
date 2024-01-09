@@ -4,7 +4,7 @@
 #include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/UI/ModelEditor/EditorAPI.hpp>
+#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ModelActionsMenuItems.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ReassignSocketPopup.hpp>
 #include <OpenSimCreator/UI/ModelEditor/SelectComponentPopup.hpp>
@@ -92,7 +92,7 @@ namespace
 
     // draw contextual actions (buttons, sliders) for a selected physical frame
     void DrawPhysicalFrameContextualActions(
-        osc::EditorAPI* editorAPI,
+        osc::IEditorAPI* editorAPI,
         std::shared_ptr<osc::UndoableModelStatePair> const& uim,
         OpenSim::ComponentPath const& pfPath)
     {
@@ -164,7 +164,7 @@ namespace
 
     // draw contextual actions (buttons, sliders) for a selected joint
     void DrawHCFContextualActions(
-        osc::EditorAPI* api,
+        osc::IEditorAPI* api,
         std::shared_ptr<osc::UndoableModelStatePair> const& uim,
         OpenSim::ComponentPath const& hcfPath)
     {
@@ -198,7 +198,7 @@ namespace
 
     // draw contextual actions (buttons, sliders) for a selected path actuator
     void DrawPathActuatorContextualParams(
-        osc::EditorAPI* api,
+        osc::IEditorAPI* api,
         std::shared_ptr<osc::UndoableModelStatePair> const& uim,
         OpenSim::ComponentPath const& paPath)
     {
@@ -286,8 +286,8 @@ class osc::ComponentContextMenu::Impl final : public osc::StandardPopup {
 public:
     Impl(
         std::string_view popupName_,
-        ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
-        EditorAPI* editorAPI_,
+        ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
+        IEditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> model_,
         OpenSim::ComponentPath path_) :
 
@@ -572,8 +572,8 @@ private:
         }
     }
 
-    ParentPtr<MainUIStateAPI> m_MainUIStateAPI;
-    EditorAPI* m_EditorAPI = nullptr;
+    ParentPtr<IMainUIStateAPI> m_MainUIStateAPI;
+    IEditorAPI* m_EditorAPI = nullptr;
     std::shared_ptr<UndoableModelStatePair> m_Model;
     OpenSim::ComponentPath m_Path;
     ModelActionsMenuItems m_ModelActionsMenuBar{m_EditorAPI, m_Model};
@@ -584,8 +584,8 @@ private:
 
 osc::ComponentContextMenu::ComponentContextMenu(
     std::string_view popupName_,
-    ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
-    EditorAPI* editorAPI_,
+    ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
+    IEditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> model_,
     OpenSim::ComponentPath const& path_) :
 

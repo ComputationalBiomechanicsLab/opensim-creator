@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/OutputExtractors/VirtualOutputExtractor.hpp>
+#include <OpenSimCreator/OutputExtractors/IOutputExtractor.hpp>
 
 #include <oscar/Utils/CStringView.hpp>
 
@@ -18,11 +18,11 @@ namespace osc { class SimulationReport; }
 
 namespace osc
 {
-    // concrete reference-counted value-type wrapper for an `osc::VirtualOutputExtractor`.
+    // concrete reference-counted value-type wrapper for an `osc::IOutputExtractor`.
     //
     // This is a value-type that can be compared, hashed, etc. for easier usage
     // by other parts of osc (e.g. aggregators, plotters)
-    class OutputExtractor final : public VirtualOutputExtractor {
+    class OutputExtractor final : public IOutputExtractor {
     public:
         template<typename SpecificOutput>
         explicit OutputExtractor(SpecificOutput&& output) :
@@ -68,12 +68,12 @@ namespace osc
             return m_Output->getHash();
         }
 
-        bool equals(VirtualOutputExtractor const& other) const final
+        bool equals(IOutputExtractor const& other) const final
         {
             return m_Output->equals(other);
         }
 
-        VirtualOutputExtractor const& getInner() const
+        IOutputExtractor const& getInner() const
         {
             return *m_Output;
         }
@@ -86,7 +86,7 @@ namespace osc
         friend std::string to_string(OutputExtractor const&);
         friend struct std::hash<OutputExtractor>;
 
-        std::shared_ptr<VirtualOutputExtractor> m_Output;
+        std::shared_ptr<IOutputExtractor> m_Output;
     };
 
     std::ostream& operator<<(std::ostream&, OutputExtractor const&);

@@ -2,8 +2,8 @@
 
 #include <memory>
 
-namespace osc { class EditorAPI; }
-namespace osc { class MainUIStateAPI; }
+namespace osc { class IEditorAPI; }
+namespace osc { class IMainUIStateAPI; }
 namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class UndoableModelStatePair; }
 
@@ -12,8 +12,8 @@ namespace osc
     class ModelEditorMainMenu final {
     public:
         ModelEditorMainMenu(
-            ParentPtr<MainUIStateAPI> const&,
-            EditorAPI*,
+            ParentPtr<IMainUIStateAPI> const&,
+            IEditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );
         ModelEditorMainMenu(ModelEditorMainMenu const&) = delete;

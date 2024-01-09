@@ -18,13 +18,13 @@
 #include <OpenSimCreator/Documents/MeshImporter/UndoableDocument.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/UI/MeshImporter/DrawableThing.hpp>
+#include <OpenSimCreator/UI/MeshImporter/IMeshImporterUILayerHost.hpp>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterHover.hpp>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterSharedState.hpp>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterUILayer.hpp>
-#include <OpenSimCreator/UI/MeshImporter/MeshImporterUILayerHost.hpp>
 #include <OpenSimCreator/UI/MeshImporter/Select2MeshPointsLayer.hpp>
 #include <OpenSimCreator/UI/Shared/ImportStationsFromCSVPopup.hpp>
-#include <OpenSimCreator/UI/MainUIStateAPI.hpp>
+#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.hpp>
 #include <OpenSimCreator/UI/MeshImporter/ChooseElLayer.hpp>
 #include <OpenSimCreator/UI/Shared/MainMenu.hpp>
@@ -73,16 +73,16 @@
 #include <vector>
 
 // mesh importer tab implementation
-class osc::mi::MeshImporterTab::Impl final : public MeshImporterUILayerHost {
+class osc::mi::MeshImporterTab::Impl final : public IMeshImporterUILayerHost {
 public:
-    explicit Impl(ParentPtr<MainUIStateAPI> const& parent_) :
+    explicit Impl(ParentPtr<IMainUIStateAPI> const& parent_) :
         m_Parent{parent_},
         m_Shared{std::make_shared<MeshImporterSharedState>()}
     {
     }
 
     Impl(
-        ParentPtr<MainUIStateAPI> const& parent_,
+        ParentPtr<IMainUIStateAPI> const& parent_,
         std::vector<std::filesystem::path> meshPaths_) :
 
         m_Parent{parent_},
@@ -2443,7 +2443,7 @@ private:
 
     // tab data
     UID m_TabID;
-    ParentPtr<MainUIStateAPI> m_Parent;
+    ParentPtr<IMainUIStateAPI> m_Parent;
     std::string m_Name = "MeshImporterTab";
 
     // data shared between states
@@ -2477,14 +2477,14 @@ private:
 // public API (PIMPL)
 
 osc::mi::MeshImporterTab::MeshImporterTab(
-    ParentPtr<MainUIStateAPI> const& parent_) :
+    ParentPtr<IMainUIStateAPI> const& parent_) :
 
     m_Impl{std::make_unique<Impl>(parent_)}
 {
 }
 
 osc::mi::MeshImporterTab::MeshImporterTab(
-    ParentPtr<MainUIStateAPI> const& parent_,
+    ParentPtr<IMainUIStateAPI> const& parent_,
     std::vector<std::filesystem::path> files_) :
 
     m_Impl{std::make_unique<Impl>(parent_, std::move(files_))}

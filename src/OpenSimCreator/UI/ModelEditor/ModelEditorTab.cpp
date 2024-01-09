@@ -4,8 +4,8 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.hpp>
 #include <OpenSimCreator/UI/ModelEditor/CoordinateEditorPanel.hpp>
-#include <OpenSimCreator/UI/ModelEditor/EditorAPI.hpp>
 #include <OpenSimCreator/UI/ModelEditor/EditorTabStatusBar.hpp>
+#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorMainMenu.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorToolbar.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ModelMusclePlotPanel.hpp>
@@ -17,8 +17,8 @@
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelParameters.hpp>
 #include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.hpp>
 #include <OpenSimCreator/UI/Shared/PropertiesPanel.hpp>
+#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/LoadingTab.hpp>
-#include <OpenSimCreator/UI/MainUIStateAPI.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <IconsFontAwesome5.h>
@@ -57,11 +57,11 @@
 #include <utility>
 #include <vector>
 
-class osc::ModelEditorTab::Impl final : public EditorAPI {
+class osc::ModelEditorTab::Impl final : public IEditorAPI {
 public:
 
     Impl(
-        ParentPtr<MainUIStateAPI> const& parent_,
+        ParentPtr<IMainUIStateAPI> const& parent_,
         std::unique_ptr<UndoableModelStatePair> model_) :
 
         m_Parent{parent_},
@@ -415,7 +415,7 @@ private:
 
     // tab top-level data
     UID m_TabID;
-    ParentPtr<MainUIStateAPI> m_Parent;
+    ParentPtr<IMainUIStateAPI> m_Parent;
     std::string m_TabName = "ModelEditorTab";
 
     // the model being edited
@@ -447,7 +447,7 @@ private:
 // public API (PIMPL)
 
 osc::ModelEditorTab::ModelEditorTab(
-    ParentPtr<MainUIStateAPI> const& parent_,
+    ParentPtr<IMainUIStateAPI> const& parent_,
     std::unique_ptr<UndoableModelStatePair> model_) :
 
     m_Impl{std::make_unique<Impl>(parent_, std::move(model_))}

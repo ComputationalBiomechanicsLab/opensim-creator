@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/Simulation/Simulation.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.hpp>
-#include <OpenSimCreator/UI/Simulation/SimulatorUIAPI.hpp>
+#include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.hpp>
 
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
@@ -18,7 +18,7 @@ public:
 
     Impl(
         std::string_view label,
-        SimulatorUIAPI* simulatorAPI,
+        ISimulatorUIAPI* simulatorAPI,
         std::shared_ptr<Simulation const> simulation) :
 
         m_Label{label},
@@ -175,7 +175,7 @@ private:
     }
 
     std::string m_Label;
-    SimulatorUIAPI* m_SimulatorAPI;
+    ISimulatorUIAPI* m_SimulatorAPI;
     std::shared_ptr<Simulation const> m_Simulation;
 };
 
@@ -184,7 +184,7 @@ private:
 
 osc::SimulationScrubber::SimulationScrubber(
     std::string_view label,
-    SimulatorUIAPI* simulatorAPI,
+    ISimulatorUIAPI* simulatorAPI,
     std::shared_ptr<Simulation const> simulation) :
 
     m_Impl{std::make_unique<Impl>(label, simulatorAPI, std::move(simulation))}

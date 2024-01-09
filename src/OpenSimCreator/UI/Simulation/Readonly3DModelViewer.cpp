@@ -1,6 +1,6 @@
-#include "UiModelViewer.hpp"
+#include "Readonly3DModelViewer.hpp"
 
-#include <OpenSimCreator/Documents/Model/VirtualConstModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/IConstModelStatePair.hpp>
 #include <OpenSimCreator/Graphics/CachedModelRenderer.hpp>
 #include <OpenSimCreator/Graphics/ModelRendererParams.hpp>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
@@ -34,7 +34,7 @@ namespace
     }
 }
 
-class osc::UiModelViewer::Impl final {
+class osc::Readonly3DModelViewer::Impl final {
 public:
     explicit Impl(std::string_view parentPanelName_) :
         m_ParentPanelName{parentPanelName_}
@@ -61,7 +61,7 @@ public:
         return m_MaybeLastHittest && m_MaybeLastHittest->isHovered;
     }
 
-    std::optional<SceneCollision> onDraw(VirtualConstModelStatePair const& rs)
+    std::optional<SceneCollision> onDraw(IConstModelStatePair const& rs)
     {
         // if this is the first frame being rendered, auto-focus the scene
         if (!m_MaybeLastHittest)
@@ -197,35 +197,35 @@ private:
 
 // public API (PIMPL)
 
-osc::UiModelViewer::UiModelViewer(std::string_view parentPanelName_) :
+osc::Readonly3DModelViewer::Readonly3DModelViewer(std::string_view parentPanelName_) :
     m_Impl{std::make_unique<Impl>(parentPanelName_)}
 {
 }
-osc::UiModelViewer::UiModelViewer(UiModelViewer&&) noexcept = default;
-osc::UiModelViewer& osc::UiModelViewer::operator=(UiModelViewer&&) noexcept = default;
-osc::UiModelViewer::~UiModelViewer() noexcept = default;
+osc::Readonly3DModelViewer::Readonly3DModelViewer(Readonly3DModelViewer&&) noexcept = default;
+osc::Readonly3DModelViewer& osc::Readonly3DModelViewer::operator=(Readonly3DModelViewer&&) noexcept = default;
+osc::Readonly3DModelViewer::~Readonly3DModelViewer() noexcept = default;
 
-bool osc::UiModelViewer::isLeftClicked() const
+bool osc::Readonly3DModelViewer::isLeftClicked() const
 {
     return m_Impl->isLeftClicked();
 }
 
-bool osc::UiModelViewer::isRightClicked() const
+bool osc::Readonly3DModelViewer::isRightClicked() const
 {
     return m_Impl->isRightClicked();
 }
 
-bool osc::UiModelViewer::isMousedOver() const
+bool osc::Readonly3DModelViewer::isMousedOver() const
 {
     return m_Impl->isMousedOver();
 }
 
-std::optional<osc::SceneCollision> osc::UiModelViewer::onDraw(VirtualConstModelStatePair const& rs)
+std::optional<osc::SceneCollision> osc::Readonly3DModelViewer::onDraw(IConstModelStatePair const& rs)
 {
     return m_Impl->onDraw(rs);
 }
 
-std::optional<osc::Rect> osc::UiModelViewer::getScreenRect() const
+std::optional<osc::Rect> osc::Readonly3DModelViewer::getScreenRect() const
 {
     return m_Impl->getScreenRect();
 }

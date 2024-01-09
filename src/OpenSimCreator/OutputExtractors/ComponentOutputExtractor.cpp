@@ -245,7 +245,7 @@ public:
         return osc::HashOf(m_ComponentAbsPath.toString(), m_OutputName, m_Label, m_OutputType, m_ExtractorFunc);
     }
 
-    bool equals(VirtualOutputExtractor const& other)
+    bool equals(IOutputExtractor const& other)
     {
         auto const* const otherT = dynamic_cast<ComponentOutputExtractor const*>(&other);
         if (!otherT)
@@ -371,7 +371,7 @@ std::size_t osc::ComponentOutputExtractor::getHash() const
     return m_Impl->getHash();
 }
 
-bool osc::ComponentOutputExtractor::equals(VirtualOutputExtractor const& other) const
+bool osc::ComponentOutputExtractor::equals(IOutputExtractor const& other) const
 {
     return m_Impl->equals(other);
 }

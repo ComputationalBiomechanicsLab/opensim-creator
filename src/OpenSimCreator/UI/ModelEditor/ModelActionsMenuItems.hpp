@@ -2,7 +2,7 @@
 
 #include <memory>
 
-namespace osc { class EditorAPI; }
+namespace osc { class IEditorAPI; }
 namespace osc { class UndoableModelStatePair; }
 
 namespace osc
@@ -10,7 +10,7 @@ namespace osc
     class ModelActionsMenuItems final {
     public:
         ModelActionsMenuItems(
-            EditorAPI*,
+            IEditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );
         ModelActionsMenuItems(ModelActionsMenuItems const&) = delete;

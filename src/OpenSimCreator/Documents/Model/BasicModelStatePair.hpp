@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/Model/VirtualModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.hpp>
 
 #include <oscar/Utils/ClonePtr.hpp>
 
@@ -17,10 +17,10 @@ namespace osc
     //
     // this is a *basic* class that only guarantees the model is *initialized* this way. It
     // does not guarantee that everything is up-to-date after a caller mutates the model.
-    class BasicModelStatePair final : public VirtualModelStatePair {
+    class BasicModelStatePair final : public IModelStatePair {
     public:
         BasicModelStatePair();
-        explicit BasicModelStatePair(VirtualModelStatePair const&);
+        explicit BasicModelStatePair(IModelStatePair const&);
         BasicModelStatePair(OpenSim::Model const&, SimTK::State const&);
         BasicModelStatePair(BasicModelStatePair const&);
         BasicModelStatePair(BasicModelStatePair&&) noexcept;

@@ -3,8 +3,8 @@
 #include <OpenSimCreator/Documents/Simulation/SimulationModelStatePair.hpp>
 #include <OpenSimCreator/OutputExtractors/ComponentOutputExtractor.hpp>
 #include <OpenSimCreator/UI/Simulation/ComponentDetails.hpp>
+#include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.hpp>
 #include <OpenSimCreator/UI/Simulation/SimulationOutputPlot.hpp>
-#include <OpenSimCreator/UI/Simulation/SimulatorUIAPI.hpp>
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
@@ -18,7 +18,7 @@ class osc::SelectionDetailsPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
         std::string_view panelName,
-        SimulatorUIAPI* simulatorUIAPI) :
+        ISimulatorUIAPI* simulatorUIAPI) :
 
         StandardPanelImpl{panelName},
         m_SimulatorUIAPI{simulatorUIAPI}
@@ -73,11 +73,11 @@ private:
         }
     }
 
-    SimulatorUIAPI* m_SimulatorUIAPI;
+    ISimulatorUIAPI* m_SimulatorUIAPI;
     ComponentDetails m_ComponentDetailsWidget;
 };
 
-osc::SelectionDetailsPanel::SelectionDetailsPanel(std::string_view panelName, SimulatorUIAPI* simulatorUIAPI) :
+osc::SelectionDetailsPanel::SelectionDetailsPanel(std::string_view panelName, ISimulatorUIAPI* simulatorUIAPI) :
     m_Impl{std::make_unique<Impl>(panelName, simulatorUIAPI)}
 {
 }

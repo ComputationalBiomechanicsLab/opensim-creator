@@ -5,7 +5,7 @@
 #include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.hpp>
-#include <OpenSimCreator/UI/PopupAPI.hpp>
+#include <OpenSimCreator/UI/IPopupAPI.hpp>
 
 #include <gtest/gtest.h>
 #include <OpenSim/Common/Component.h>
@@ -18,13 +18,13 @@
 using osc::AddComponentPopup;
 using osc::OpenSimCreatorApp;
 using osc::IPopup;
-using osc::PopupAPI;
+using osc::IPopupAPI;
 using osc::ScopeGuard;
 using osc::UndoableModelStatePair;
 
 namespace
 {
-    class NullPopupAPI : public PopupAPI {
+    class NullPopupAPI : public IPopupAPI {
     private:
         void implPushPopup(std::unique_ptr<IPopup>) final {}
     };

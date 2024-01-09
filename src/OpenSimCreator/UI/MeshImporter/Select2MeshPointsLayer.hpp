@@ -43,7 +43,7 @@ namespace osc::mi
     class Select2MeshPointsLayer final : public MeshImporterUILayer {
     public:
         Select2MeshPointsLayer(
-            MeshImporterUILayerHost& parent,
+            IMeshImporterUILayerHost& parent,
             std::shared_ptr<MeshImporterSharedState> shared,
             Select2MeshPointsOptions options) :
 
