@@ -39,6 +39,7 @@
 #include <oscar/UI/Widgets/IPopup.hpp>
 #include <oscar/UI/Widgets/PopupManager.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/FileChangePoller.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
@@ -395,6 +396,7 @@ private:
 
     void implPushPopup(std::unique_ptr<IPopup> popup) final
     {
+        OSC_ASSERT(popup != nullptr);
         popup->open();
         m_PopupManager.push_back(std::move(popup));
     }

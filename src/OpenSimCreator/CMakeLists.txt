@@ -268,8 +268,8 @@ add_library(OpenSimCreator STATIC
 
     UI/Shared/BasicWidgets.cpp
     UI/Shared/BasicWidgets.hpp
-    UI/Shared/GeometryPathPropertyEditorPopup.cpp
-    UI/Shared/GeometryPathPropertyEditorPopup.hpp
+    UI/Shared/GeometryPathEditorPopup.cpp
+    UI/Shared/GeometryPathEditorPopup.hpp
     UI/Shared/ImportStationsFromCSVPopup.cpp
     UI/Shared/ImportStationsFromCSVPopup.hpp
     UI/Shared/MainMenu.cpp

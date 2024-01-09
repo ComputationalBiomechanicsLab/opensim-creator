@@ -4,6 +4,8 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Fixed a bug where the property editor for a muscle's geometry path was not rendering
+  the customized muscle path point editor popup (#815)
 - Internal: ImGui now renders its content via the oscar graphics API, rather
   than via its own internal OpenGL backend
 - Internal: oscar pure-virtual interface classes are now prefixed with `I` (e.g.

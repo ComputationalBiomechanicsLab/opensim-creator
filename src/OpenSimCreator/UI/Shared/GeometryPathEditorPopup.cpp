@@ -1,4 +1,4 @@
-#include "GeometryPathPropertyEditorPopup.hpp"
+#include "GeometryPathEditorPopup.hpp"
 
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
@@ -25,20 +25,16 @@ namespace
     constexpr auto c_LocationInputIDs = std::to_array<osc::CStringView>({ "##xinput", "##yinput", "##zinput" });
     static_assert(c_LocationInputIDs.size() == 3);
 
-    OpenSim::GeometryPath InitGeometryPathFromPropOrDefault(std::function<OpenSim::ObjectProperty<OpenSim::GeometryPath> const* ()> const& accessor)
+    OpenSim::GeometryPath CopyOrDefaultGeometryPath(std::function<OpenSim::GeometryPath const*()> const& accessor)
     {
-        OpenSim::ObjectProperty<OpenSim::GeometryPath> const* maybeGeomPath = accessor();
-        if (!maybeGeomPath)
+        OpenSim::GeometryPath const* maybeGeomPath = accessor();
+        if (maybeGeomPath)
         {
-            return OpenSim::GeometryPath{};  // default it
-        }
-        else if (!maybeGeomPath->empty())
-        {
-            return maybeGeomPath->getValue(0);
+            return *maybeGeomPath;
         }
         else
         {
-            return OpenSim::GeometryPath{};  // ignore lists of geometry paths (too complicated)
+            return OpenSim::GeometryPath{};
         }
     }
 
@@ -132,34 +128,27 @@ namespace
             }
         };
     }
-
-    osc::ObjectPropertyEdit MakeObjectPropertyEdit(
-        OpenSim::ObjectProperty<OpenSim::GeometryPath> const& prop,
-        OpenSim::GeometryPath const& editedPath)
-    {
-        return {prop, MakeGeometryPathPropertyOverwriter(editedPath)};
-    }
 }
 
-class osc::GeometryPathPropertyEditorPopup::Impl final : public osc::StandardPopup {
+class osc::GeometryPathEditorPopup::Impl final : public osc::StandardPopup {
 public:
     Impl(
         std::string_view popupName_,
         std::shared_ptr<UndoableModelStatePair const> targetModel_,
-        std::function<OpenSim::ObjectProperty<OpenSim::GeometryPath> const*()> accessor_,
-        std::function<void(ObjectPropertyEdit)> onEditCallback_) :
+        std::function<OpenSim::GeometryPath const*()> geometryPathGetter_,
+        std::function<void(OpenSim::GeometryPath const&)> onLocalCopyEdited_) :
 
         StandardPopup{popupName_, {768.0f, 0.0f}, ImGuiWindowFlags_AlwaysAutoResize},
         m_TargetModel{std::move(targetModel_)},
-        m_Accessor{std::move(accessor_)},
-        m_OnEditCallback{std::move(onEditCallback_)},
-        m_EditedGeometryPath{InitGeometryPathFromPropOrDefault(m_Accessor)}
+        m_GeometryPathGetter{std::move(geometryPathGetter_)},
+        m_OnLocalCopyEdited{std::move(onLocalCopyEdited_)},
+        m_EditedGeometryPath{CopyOrDefaultGeometryPath(m_GeometryPathGetter)}
     {
     }
 private:
     void implDrawContent() final
     {
-        if (m_Accessor() == nullptr)
+        if (m_GeometryPathGetter() == nullptr)
         {
             // edge-case: the geometry path that this popup is editing no longer
             // exists (e.g. because a muscle was deleted or similar), so it should
@@ -354,15 +343,7 @@ private:
 
         if (ImGui::Button("save"))
         {
-            OpenSim::ObjectProperty<OpenSim::GeometryPath> const* maybeProp = m_Accessor();
-            if (maybeProp)
-            {
-                m_OnEditCallback(MakeObjectPropertyEdit(*maybeProp, m_EditedGeometryPath));
-            }
-            else
-            {
-                log::error("cannot update geometry path: it no longer exists");
-            }
+            m_OnLocalCopyEdited(m_EditedGeometryPath);
             requestClose();
         }
     }
@@ -391,12 +372,12 @@ private:
             break;  // (unhandled/do nothing)
         }
 
-        m_RequestedAction.reset();  // action handled: reset
+        m_RequestedAction.reset();  // action handled: resets
     }
 
     std::shared_ptr<UndoableModelStatePair const> m_TargetModel;
-    std::function<OpenSim::ObjectProperty<OpenSim::GeometryPath> const*()> m_Accessor;
-    std::function<void(ObjectPropertyEdit)> m_OnEditCallback;
+    std::function<OpenSim::GeometryPath const*()> m_GeometryPathGetter;
+    std::function<void(OpenSim::GeometryPath const&)> m_OnLocalCopyEdited;
 
     OpenSim::GeometryPath m_EditedGeometryPath;
     RequestedAction m_RequestedAction;
@@ -405,40 +386,40 @@ private:
 
 // public API (PIMPL)
 
-osc::GeometryPathPropertyEditorPopup::GeometryPathPropertyEditorPopup(
+osc::GeometryPathEditorPopup::GeometryPathEditorPopup(
     std::string_view popupName_,
     std::shared_ptr<UndoableModelStatePair const> targetModel_,
-    std::function<OpenSim::ObjectProperty<OpenSim::GeometryPath> const*()> accessor_,
-    std::function<void(ObjectPropertyEdit)> onEditCallback_) :
+    std::function<OpenSim::GeometryPath const*()> geometryPathGetter_,
+    std::function<void(OpenSim::GeometryPath const&)> onLocalCopyEdited_) :
 
-    m_Impl{std::make_unique<Impl>(popupName_, std::move(targetModel_), std::move(accessor_), std::move(onEditCallback_))}
+    m_Impl{std::make_unique<Impl>(popupName_, std::move(targetModel_), std::move(geometryPathGetter_), std::move(onLocalCopyEdited_))}
 {
 }
-osc::GeometryPathPropertyEditorPopup::GeometryPathPropertyEditorPopup(GeometryPathPropertyEditorPopup&&) noexcept = default;
-osc::GeometryPathPropertyEditorPopup& osc::GeometryPathPropertyEditorPopup::operator=(GeometryPathPropertyEditorPopup&&) noexcept = default;
-osc::GeometryPathPropertyEditorPopup::~GeometryPathPropertyEditorPopup() noexcept = default;
+osc::GeometryPathEditorPopup::GeometryPathEditorPopup(GeometryPathEditorPopup&&) noexcept = default;
+osc::GeometryPathEditorPopup& osc::GeometryPathEditorPopup::operator=(GeometryPathEditorPopup&&) noexcept = default;
+osc::GeometryPathEditorPopup::~GeometryPathEditorPopup() noexcept = default;
 
-bool osc::GeometryPathPropertyEditorPopup::implIsOpen() const
+bool osc::GeometryPathEditorPopup::implIsOpen() const
 {
     return m_Impl->isOpen();
 }
-void osc::GeometryPathPropertyEditorPopup::implOpen()
+void osc::GeometryPathEditorPopup::implOpen()
 {
     m_Impl->open();
 }
-void osc::GeometryPathPropertyEditorPopup::implClose()
+void osc::GeometryPathEditorPopup::implClose()
 {
     m_Impl->close();
 }
-bool osc::GeometryPathPropertyEditorPopup::implBeginPopup()
+bool osc::GeometryPathEditorPopup::implBeginPopup()
 {
     return m_Impl->beginPopup();
 }
-void osc::GeometryPathPropertyEditorPopup::implOnDraw()
+void osc::GeometryPathEditorPopup::implOnDraw()
 {
     m_Impl->onDraw();
 }
-void osc::GeometryPathPropertyEditorPopup::implEndPopup()
+void osc::GeometryPathEditorPopup::implEndPopup()
 {
     m_Impl->endPopup();
 }

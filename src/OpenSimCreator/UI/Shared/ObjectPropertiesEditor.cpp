@@ -1,7 +1,7 @@
 #include "ObjectPropertiesEditor.hpp"
 
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/UI/Shared/GeometryPathPropertyEditorPopup.hpp>
+#include <OpenSimCreator/UI/Shared/GeometryPathEditorPopup.hpp>
 #include <OpenSimCreator/UI/IPopupAPI.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/SimTKHelpers.hpp>
@@ -12,6 +12,7 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Property.h>
+#include <OpenSim/Simulation/Model/AbstractGeometryPath.h>
 #include <OpenSim/Simulation/Model/Appearance.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
@@ -27,6 +28,7 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/Typelist.hpp>
 #include <SimTKcommon/Constants.h>
@@ -44,8 +46,10 @@
 #include <unordered_map>
 #include <utility>
 
+using osc::DerivedFrom;
 using osc::Typelist;
 using osc::TypelistSizeV;
+using osc::SameAs;
 using osc::Vec2;
 using osc::Vec3;
 using osc::Vec4;
@@ -115,12 +119,12 @@ namespace
     }
 
     // returns an updater function that sets the value of a property
-    template<typename T>
-    std::function<void(OpenSim::AbstractProperty&)> MakePropValueSetter(int idx, T value)
+    template<typename TValue, typename TProperty = TValue>
+    std::function<void(OpenSim::AbstractProperty&)> MakePropValueSetter(int idx, TValue value)
     {
         return [idx, value](OpenSim::AbstractProperty& p)
         {
-            auto* const ps = dynamic_cast<OpenSim::Property<T>*>(&p);
+            auto* const ps = dynamic_cast<OpenSim::Property<TProperty>*>(&p);
             if (!ps)
             {
                 return;  // types don't match: caller probably mismatched properties
@@ -402,11 +406,24 @@ namespace
         std::function<OpenSim::AbstractProperty const*()> propertyAccessor;
     };
 
-    // partial implementation class for a specific property editor
     template<class ConcreteProperty>
+    struct PropertyEditorTraits {
+        static bool IsCompatibleWith(OpenSim::AbstractProperty const& prop)
+        {
+            return dynamic_cast<ConcreteProperty const*>(&prop) != nullptr;
+        }
+    };
+
+    // partial implementation class for a specific property editor
+    template<class ConcreteProperty, class Traits = PropertyEditorTraits<ConcreteProperty>>
     class PropertyEditor : public IPropertyEditor {
     public:
         using property_type = ConcreteProperty;
+
+        static bool IsCompatibleWith(OpenSim::AbstractProperty const& prop)
+        {
+            return Traits::IsCompatibleWith(prop);
+        }
 
         explicit PropertyEditor(PropertyEditorArgs args) :
             m_Args{std::move(args)}
@@ -454,13 +471,16 @@ namespace
 
         void pushPopup(std::unique_ptr<osc::IPopup> p)
         {
-            getPopupAPIPtr()->pushPopup(std::move(p));
+            if (auto api = getPopupAPIPtr())
+            {
+                api->pushPopup(std::move(p));
+            }
         }
 
     private:
         bool implIsCompatibleWith(OpenSim::AbstractProperty const& prop) const final
         {
-            return dynamic_cast<property_type const*>(&prop) != nullptr;
+            return Traits::IsCompatibleWith(prop);
         }
 
         PropertyEditorArgs m_Args;
@@ -1084,7 +1104,7 @@ namespace
     private:
         std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
         {
-            property_type const* maybeProp = m_Accessor();
+            property_type const* maybeProp = tryGetProperty();
             if (!maybeProp)
             {
                 return std::nullopt;
@@ -1168,7 +1188,6 @@ namespace
             return rv;
         }
 
-        std::function<property_type const*()> m_Accessor;
         property_type m_OriginalProperty{"blank", true};
         property_type m_EditedProperty{"blank", true};
     };
@@ -1424,7 +1443,8 @@ namespace
     };
 
     // concrete property editor for an OpenSim::GeometryPath
-    class GeometryPathPropertyEditor final : public PropertyEditor<OpenSim::ObjectProperty<OpenSim::GeometryPath>> {
+    class AbstractGeometryPathPropertyEditor final :
+        public PropertyEditor<OpenSim::ObjectProperty<OpenSim::AbstractGeometryPath>> {
     public:
         using PropertyEditor::PropertyEditor;
 
@@ -1462,11 +1482,25 @@ namespace
 
         std::unique_ptr<osc::IPopup> createGeometryPathEditorPopup()
         {
-            return std::make_unique<osc::GeometryPathPropertyEditorPopup>(
+            return std::make_unique<osc::GeometryPathEditorPopup>(
                 "Edit Geometry Path",
                 getModelPtr(),
-                getPropertyAccessor(),
-                [rvHolder = m_ReturnValueHolder](osc::ObjectPropertyEdit edit) { *rvHolder = std::move(edit); }
+                [accessor = getPropertyAccessor()]() -> OpenSim::GeometryPath const*
+                {
+                    property_type const* p = accessor();
+                    if (!p || p->isListProperty())
+                    {
+                        return nullptr;
+                    }
+                    return dynamic_cast<OpenSim::GeometryPath const*>(&p->getValueAsObject());
+                },
+                [shared = m_ReturnValueHolder, accessor = getPropertyAccessor()](OpenSim::GeometryPath const& gp) mutable
+                {
+                    if (property_type const* prop = accessor())
+                    {
+                        *shared = osc::ObjectPropertyEdit{*prop, MakePropValueSetter<OpenSim::GeometryPath, OpenSim::AbstractGeometryPath>(0, gp)};
+                    }
+                }
             );
         }
 
@@ -1489,7 +1523,7 @@ namespace
         IntPropertyEditor,
         AppearancePropertyEditor,
         ContactParameterSetEditor,
-        GeometryPathPropertyEditor
+        AbstractGeometryPathPropertyEditor
     >;
 
     // a type-erased entry in the runtime registry LUT
@@ -1502,20 +1536,13 @@ namespace
         // a function that can be used to construct a pointer to a virtual property editor
         using PropertyEditorCtor = std::unique_ptr<IPropertyEditor>(*)(PropertyEditorArgs);
 
-        // template function for a `PropertyEditorTester`
-        template<class PropertyEditor>
-        constexpr static bool TestPropertyEditor(OpenSim::AbstractProperty const& abstractProp)
-        {
-            return dynamic_cast<typename PropertyEditor::property_type const*>(&abstractProp);
-        }
-
         // create a type-erased entry from a known, concrete, editor
         template<class ConcretePropertyEditor>
         constexpr static PropertyEditorRegistryEntry make_entry()
         {
-            auto testerFn = TestPropertyEditor<ConcretePropertyEditor>;
-
-            auto typeErasedCtorFn = [](PropertyEditorArgs args) -> std::unique_ptr<IPropertyEditor> {
+            auto const testerFn = ConcretePropertyEditor::IsCompatibleWith;
+            auto const typeErasedCtorFn = [](PropertyEditorArgs args) -> std::unique_ptr<IPropertyEditor>
+            {
                 return std::make_unique<ConcretePropertyEditor>(std::move(args));
             };
 
@@ -1707,15 +1734,11 @@ private:
         {
             // need to create a new editor because either it hasn't been made yet or the existing
             // editor is for a different type
-
-            // wrap property accesses via the object accessor so that they can be runtime-checked
-            std::function<OpenSim::AbstractProperty const*()> propertyAccessor = MakePropertyAccessor(m_ObjectGetter, prop.getName());
-
-            it->second = c_Registry.tryCreateEditor(PropertyEditorArgs{
+            it->second = c_Registry.tryCreateEditor({
                 .api = m_API,
                 .model = m_TargetModel,
                 .objectAccessor = m_ObjectGetter,
-                .propertyAccessor = propertyAccessor,
+                .propertyAccessor = MakePropertyAccessor(m_ObjectGetter, prop.getName()),
             });
         }
 
