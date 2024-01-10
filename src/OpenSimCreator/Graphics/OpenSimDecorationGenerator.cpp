@@ -728,7 +728,13 @@ namespace
         std::vector<GeometryPathPoint> const points = osc::GetAllPathPoints(gp, rs.getState());
         Color const color = GetGeometryPathColor(gp, rs.getState());
 
-        EmitPointBasedLine(rs, hittestTarget, points, c_GeometryPathBaseRadius, color);
+        EmitPointBasedLine(
+            rs,
+            hittestTarget,
+            points,
+            rs.getFixupScaleFactor() * c_GeometryPathBaseRadius,
+            color
+        );
     }
 
     void DrawLineOfActionArrow(
