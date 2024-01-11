@@ -28,7 +28,7 @@ set(
 set(
     OSC_FORCE_UNDEFINE_NDEBUG OFF
     CACHE BOOL
-    "force disable NDEBUG, even if running in Release mode. This enables *a lot* of runtime assertions"
+    "force-disable NDEBUG, even if running in Release mode. This enables *a lot* of runtime assertions"
 )
 set(
     OSC_USE_ASAN OFF
@@ -48,7 +48,7 @@ set(
 set(
     OSC_BUILD_DOCS OFF
     CACHE BOOL
-    "whether to build the documentation or not (requires sphinx-build is available on the PATH)"
+    "whether to build the documentation or not (requires that sphinx-build is available on the PATH)"
 )
 set(
     OSC_ORGNAME "cbl"
