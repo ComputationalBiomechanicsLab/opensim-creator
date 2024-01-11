@@ -285,7 +285,7 @@ namespace
 
     void WriteMeshTextureCoordsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        std::span<Vec2 const> const vals = geom.mesh.getTexCoords();
+        auto const vals = geom.mesh.getTexCoords();
         size_t const floatCount = 2 * vals.size();
         size_t const coordCount = vals.size();
 
@@ -309,7 +309,7 @@ namespace
 
     void WriteMeshTriangles(std::ostream& o, DAEGeometry const& geom)
     {
-        MeshIndicesView const indices = geom.mesh.getIndices();
+        auto const indices = geom.mesh.getIndices();
         size_t const numTriangles = indices.size() / 3;
 
         o << "        <triangles count=\"" << numTriangles << "\">\n";
