@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(osc VERSION 0.5.7 LANGUAGES C CXX)
+project(osc VERSION 0.5.7 LANGUAGES CXX)
 
 
 # -------------- gather user-facing build cache vars ---------------- #
@@ -18,72 +18,72 @@ set(
 set(
     OSC_IWYU_PATH "include-what-you-use"
     CACHE STRING
-    "path to the `iwyu` executable (if not on the PATH)"
+    "filepath to the `iwyu` executable (if not on the PATH)"
 )
 set(
     OSC_FORCE_ASSERTS_ENABLED ON
     CACHE BOOL
-    "enable OSC's runtime assertions - even if building a release build"
+    "force-enable/-disable OSC's runtime assertions - even if building a release build"
 )
 set(
     OSC_FORCE_UNDEFINE_NDEBUG OFF
     CACHE BOOL
-    "force-disable NDEBUG, even if running in Release mode. This enables *a lot* of runtime assertions"
+    "force-enable/disable NDEBUG - even if building a release build. Note: unlike OSC_FORCE_ASSERTS_ENABLED, this also tends to enable runtime assertions from library headers"
 )
 set(
     OSC_USE_ASAN OFF
     CACHE BOOL
-    "enable address sanitizer (libASAN): useful for spotting memory access violations and leaks"
+    "enable/disable address sanitizer (libASAN): useful for spotting memory access violations and leaks"
 )
 set(
     OSC_DEFAULT_RESOURCE_DIR "../resources"
     CACHE STRING
-    "default location of installed runtime resources dir when not specified by user/config"
+    "the default filesystem location of installed runtime resources dir relative to the application executable when it is not specified in the user's configuration file"
 )
 set(
     OSC_REPO_URL "https://github.com/ComputationalBiomechanicsLab/opensim-creator"
     CACHE STRING
-    "the internet location of the software's repo. Used by in-app links etc."
+    "the internet location of the software's repo - used by in-app links, installers, etc."
 )
 set(
     OSC_BUILD_DOCS OFF
     CACHE BOOL
-    "whether to build the documentation or not (requires that sphinx-build is available on the PATH)"
+    "enable/disable building the documentation (requires that sphinx-build is available on the PATH)"
 )
 set(
     OSC_ORGNAME "cbl"
     CACHE STRING
-    "the organization that created the application (affects configuration location)"
+    "the name of the organization that created the application (affects configuration location)"
 )
 set(
     OSC_APPNAME "osc"
     CACHE STRING
-    "short name for the application (affects configuration location)"
+    "the short name for the application (affects configuration location)"
 )
 set(
     OSC_LONG_APPNAME "OpenSim Creator"
     CACHE STRING
-    "longer, user-friendly name of the application"
+    "a longer, user-friendly name of the application"
 )
 set(
     OSC_PACKAGE_NAME "OpenSimCreator"
     CACHE STRING
-    "prefix for the name of the package (e.g. OSC_PACKAGE_NAME-version.exe)"
+    "a prefix for the name of the built package (e.g. OSC_PACKAGE_NAME-version.exe)"
 )
 set(
     OSC_SOFTWARE_DESCRIPTION "A standalone GUI for building OpenSim models"
     CACHE STRING
-    "desription of what the software does (shows in package installers on Debian, for example)"
+    "a desription of what the software does (shows in package installers on Debian, for example)"
 )
 set(
     OSC_AUTHOR "Adam Kewley"
     CACHE STRING
-    "user-facing name of the author (appears in installer, etc.)"
+    "the user-facing name of the author (appears in installer, etc.)"
 )
 set(
     OSC_AUTHOR_EMAIL "contact@adamkewley.com"
     CACHE STRING
-    "user-facing email of the author (appears in 'email support', installer, etc.)"
+    "the user-facing email of the author (appears in 'email support', installer, etc.)"
 )
 set(
     OSC_BUILD_BENCHMARKS OFF
@@ -95,20 +95,26 @@ set(
 #
 # this is so that errors in the binary can potentially be linked to the source
 # that produced the binary later on (user errors, etc.)
-if(DEFINED ENV{GITHUB_RUN_ID})
-    # build is running inside GitHub Action CI - use that ID
-    set(OSC_DEFAULT_BUILD_ID "GITHUB_$ENV{GITHUB_RUN_ID}.$ENV{GITHUB_RUN_NUMBER}")
-else()
-    # build is probably running on a dev's machine - generate a random ID
-    string(RANDOM RANDOM_ID)
-    set(OSC_DEFAULT_BUILD_ID "CUSTOM_${RANDOM_ID}")
-    unset(RANDOM_ID)
+if(TRUE)
+
+    # compute OSC_DEFAULT_BUILD_ID
+    if(DEFINED ENV{GITHUB_RUN_ID})
+        # build is running inside GitHub Action CI - use that ID
+        set(OSC_DEFAULT_BUILD_ID "GITHUB_$ENV{GITHUB_RUN_ID}.$ENV{GITHUB_RUN_NUMBER}")
+    else()
+        # build is probably running on a dev's machine - generate a random ID
+        string(RANDOM RANDOM_ID)
+        set(OSC_DEFAULT_BUILD_ID "CUSTOM_${RANDOM_ID}")
+        unset(RANDOM_ID)
+    endif()
+
+    set(
+        OSC_BUILD_ID "${OSC_DEFAULT_BUILD_ID}"
+        CACHE STRING
+        "a unique identifier for this particular build configuration (handy for bug tracing)"
+    )
+    unset(OSC_DEFAULT_BUILD_ID)
 endif()
-set(
-    OSC_BUILD_ID "${OSC_DEFAULT_BUILD_ID}"
-    CACHE STRING
-    "unique identifier for this particular build configuration (handy for bug tracing)"
-)
 
 
 # -------------- set/mutate internal vars ---------------- #

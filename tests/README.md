@@ -1,6 +1,6 @@
 # `tests/`
 
-> Unit testsuite for OpenSimCreator and oscar
+> Test suite for `OpenSimCreator` and `oscar`
 
 Uses `googletest` to test various parts of the project.
 

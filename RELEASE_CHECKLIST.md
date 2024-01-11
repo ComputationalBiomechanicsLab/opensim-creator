@@ -11,15 +11,15 @@ test suite isn't available that covers the changes).
 - [ ] Copy this checklist into it
 - [ ] Bump OSC's version number in `CMakeLists.txt` (`project`)
 - [ ] Clean-build a debug version of OSC:
+
 ```bash
 git clone --recurse-submodules https://github.com/ComputationalBiomechanicsLab/opensim-creator
 cd opensim-creator
 ./scripts/build_linux_debugging.sh
 ```
+
 - [ ] Ensure test suite passes with debug+ASAN build
 - [ ] Manually spot-check new changes with debug+ASAN build
-- [ ] Go through manual QA process (list below)
-  - How comprehensively you do this is subjective
 - [ ] Fix all bugs/problems found during the above steps
 - [ ] Update `CHANGELOG.md` sections such that the current `unreleased`
       section becomes `XX.xx.pp` and then add a new `unreleased` section
