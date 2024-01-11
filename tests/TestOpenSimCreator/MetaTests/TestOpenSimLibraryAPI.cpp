@@ -219,14 +219,22 @@ TEST(OpenSimModel, LoadingAnOsimWithEmptyFieldsDoesNotSegfault)
 // component is re-finalized
 TEST(OpenSimModel, UpdatesInertiaCorrectly)
 {
+    auto const toVec6 = [](SimTK::Inertia const& inertia)
+    {
+        auto const moments = inertia.getMoments();
+        auto const products = inertia.getProducts();
+        return SimTK::Vec6{moments[0], moments[1], moments[2], products[0], products[1], products[2]};
+    };
+
     // this converter matches how OpenSim::Body does it
     auto const toInertia = [](SimTK::Vec6 const& v)
     {
-        return SimTK::Inertia{v.getSubVec<3>(0), v.getSubVec<3>(0)};
+        return SimTK::Inertia{v.getSubVec<3>(0), v.getSubVec<3>(3)};
     };
 
-    SimTK::Vec6 initialValue{1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-    SimTK::Vec6 updatedValue{2.0, 2.0, 2.0, 2.0, 2.0, 2.0};
+
+    SimTK::Vec6 initialValue = toVec6(SimTK::Inertia{0.1});
+    SimTK::Vec6 updatedValue = toVec6(SimTK::Inertia{0.2});
 
     OpenSim::Body b{};
     b.set_mass(1.0);  // just something nonzero

@@ -121,7 +121,7 @@ TEST(OpenSimActions, ActionFitSphereToMeshFitsASphereToAMeshInTheModelAndSelects
         std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "TestOpenSimCreator" / "arrow.vtp";
 
     osc::UndoableModelStatePair model;
-    auto& body = osc::AddBody(model.updModel(), std::make_unique<OpenSim::Body>("name", 1.0, SimTK::Vec3{}, SimTK::Inertia{{}, {}}));
+    auto& body = osc::AddBody(model.updModel(), std::make_unique<OpenSim::Body>("name", 1.0, SimTK::Vec3{}, SimTK::Inertia{1.0}));
     body.setMass(1.0);
     auto& mesh = dynamic_cast<OpenSim::Mesh&>(osc::AttachGeometry(body, std::make_unique<OpenSim::Mesh>(geomFile.string())));
     osc::FinalizeConnections(model.updModel());
@@ -140,7 +140,7 @@ TEST(OpenSimActions, ActionFitSphereToMeshAppliesMeshesScaleFactorsCorrectly)
         std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "TestOpenSimCreator" / "arrow.vtp";
 
     osc::UndoableModelStatePair model;
-    auto& body = osc::AddBody(model.updModel(), std::make_unique<OpenSim::Body>("name", 1.0, SimTK::Vec3{}, SimTK::Inertia{{}, {}}));
+    auto& body = osc::AddBody(model.updModel(), std::make_unique<OpenSim::Body>("name", 1.0, SimTK::Vec3{}, SimTK::Inertia{1.0}));
     body.setMass(1.0);
     auto& unscaledMesh = dynamic_cast<OpenSim::Mesh&>(osc::AttachGeometry(body, std::make_unique<OpenSim::Mesh>(geomFile.string())));
     auto& scaledMesh = dynamic_cast<OpenSim::Mesh&>(osc::AttachGeometry(body, std::make_unique<OpenSim::Mesh>(geomFile.string())));
