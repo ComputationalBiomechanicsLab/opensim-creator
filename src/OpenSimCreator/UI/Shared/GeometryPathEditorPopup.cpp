@@ -113,21 +113,6 @@ namespace
 
         osc::Append(pps, std::move(pp));
     }
-
-    std::function<void(OpenSim::AbstractProperty&)> MakeGeometryPathPropertyOverwriter(
-        OpenSim::GeometryPath const& editedPath)
-    {
-        return [editedPath](OpenSim::AbstractProperty& prop)
-        {
-            if (auto* gpProp = dynamic_cast<OpenSim::ObjectProperty<OpenSim::GeometryPath>*>(&prop))
-            {
-                if (!gpProp->empty())
-                {
-                    gpProp->updValue() = editedPath;  // just overwrite it
-                }
-            }
-        };
-    }
 }
 
 class osc::GeometryPathEditorPopup::Impl final : public osc::StandardPopup {
