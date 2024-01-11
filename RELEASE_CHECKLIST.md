@@ -33,6 +33,8 @@ cd opensim-creator
   - Write a user-friendly version of CHANGELOG that explains changes
 - [ ] Update Zenodo with the release (requires adamkewley's Zenodo login
       to publish the automatically generated draft)
-- [ ] Update `codemeta.json` with latest Zenodo release details
-- [ ] Update `CITATION.cff` with latest Zenodo release details
-- [ ] Update `README.md` with latest Zenodo release details (CITING)
+- [ ] Update content with Zenodo details:
+  - [ ] Use `bump_zenodo_details.py` to automatically do this
+  - [ ] Ensure `codemeta.json` is up-to-date
+  - [ ] Ensure `CITATION.cff` is up-to-date
+  - [ ] Ensure `README.md` is up-to-date
