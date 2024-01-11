@@ -1573,7 +1573,23 @@ namespace
 
     // runtime type-erased registry for all property editors
     class PropertyEditorRegistry final {
+    // clang/gcc oddity: `ConstructStorage` can't be used in a member initializer and
+    // must be used in a user-defined ctor, in order to work in `constexpr` contexts
+    private:
+        using storage_type = std::array<PropertyEditorRegistryEntry, TypelistSizeV<PropertyEditors>>;
+
+        template<class... ConcretePropertyEditors>
+        static constexpr storage_type ConstructStorage(Typelist<ConcretePropertyEditors...>)
+        {
+            return {PropertyEditorRegistryEntry::make_entry<ConcretePropertyEditors>()...};
+        }
+
     public:
+        constexpr PropertyEditorRegistry() :
+            m_Entries{ConstructStorage(PropertyEditors{})}
+        {
+        }
+
         std::unique_ptr<IPropertyEditor> tryCreateEditor(PropertyEditorArgs args) const
         {
             OpenSim::AbstractProperty const* prop = args.propertyAccessor();
@@ -1594,17 +1610,8 @@ namespace
 
             return it->construct(std::move(args));
         }
-
     private:
-        using storage_type = std::array<PropertyEditorRegistryEntry, TypelistSizeV<PropertyEditors>>;
-
-        template<typename... ConcretePropertyEditors>
-        static constexpr storage_type ConstructStorage(Typelist<ConcretePropertyEditors...>)
-        {
-            return {PropertyEditorRegistryEntry::make_entry<ConcretePropertyEditors>()...};
-        }
-
-        storage_type m_Entries = ConstructStorage(PropertyEditors{});
+        storage_type m_Entries;
     };
 
     constexpr PropertyEditorRegistry c_Registry;
