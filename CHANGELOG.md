@@ -13,6 +13,8 @@ paths.
 - Fixed `PathSpring` components ignoring the scene scale factor (#816)
 - Fixed a bug where the property editor for a muscle's geometry path was not rendering
   the customized muscle path point editor popup (#815)
+- Fixed `PathSpring` not using it's `GeometryPath`'s color correctly in OpenSim
+  (#818, upstream: opensim-core/#3668)
 - Internal: ImGui now renders its content via the oscar graphics API, rather
   than via its own internal OpenGL backend
 - Internal: oscar pure-virtual interface classes are now prefixed with `I` (e.g.
