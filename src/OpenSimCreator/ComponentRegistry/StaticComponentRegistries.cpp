@@ -37,6 +37,7 @@
 #include <oscar/Utils/SetHelpers.hpp>
 
 #include <algorithm>
+#include <concepts>
 #include <initializer_list>
 #include <iterator>
 #include <memory>
@@ -51,7 +52,7 @@
 namespace
 {
     // helper: construct a prototype joint and assign its coordinate names
-    template<typename TJoint>
+    template<std::derived_from<OpenSim::Joint> TJoint>
     std::shared_ptr<TJoint> JointWithCoords(std::initializer_list<osc::CStringView> names)
     {
         std::shared_ptr<TJoint> j = std::make_shared<TJoint>();
@@ -349,7 +350,7 @@ namespace
     }
 
     // helper: add elements that derive from type T
-    template<typename T>
+    template<std::derived_from<OpenSim::Object> T>
     void AddRegisteredElementsOfType(std::unordered_set<std::string>& out)
     {
         OpenSim::ArrayPtrs<T> ptrs;
@@ -550,7 +551,7 @@ namespace
         return s_Lut;
     }
 
-    template<typename T>
+    template<std::derived_from<OpenSim::Component> T>
     std::vector<std::shared_ptr<T const>> CreatePrototypeLutT()
     {
         OpenSim::ArrayPtrs<T> ptrs;
@@ -641,7 +642,7 @@ namespace
         return rv;
     }
 
-    template<typename T>
+    template<std::derived_from<OpenSim::Component> T>
     osc::ComponentRegistry<T> CreateRegistryFromLUT(
         std::string_view name,
         std::string_view description,
@@ -666,7 +667,7 @@ namespace
         return rv;
     }
 
-    template<typename T>
+    template<std::derived_from<OpenSim::Component> T>
     osc::ComponentRegistry<T> CreateRegistry(
         std::string_view name,
         std::string_view description)
