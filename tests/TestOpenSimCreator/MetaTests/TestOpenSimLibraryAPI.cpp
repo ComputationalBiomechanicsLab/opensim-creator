@@ -221,8 +221,8 @@ TEST(OpenSimModel, UpdatesInertiaCorrectly)
 {
     auto const toVec6 = [](SimTK::Inertia const& inertia)
     {
-        auto const moments = inertia.getMoments();
-        auto const products = inertia.getProducts();
+        auto const& moments = inertia.getMoments();
+        auto const& products = inertia.getProducts();
         return SimTK::Vec6{moments[0], moments[1], moments[2], products[0], products[1], products[2]};
     };
 

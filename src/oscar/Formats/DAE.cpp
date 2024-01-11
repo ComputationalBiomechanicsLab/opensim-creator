@@ -23,7 +23,6 @@ using osc::Color;
 using osc::DAEMetadata;
 using osc::Mat4;
 using osc::Mesh;
-using osc::MeshIndicesView;
 using osc::MeshTopology;
 using osc::SceneDecoration;
 using osc::Transform;

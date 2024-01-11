@@ -1482,10 +1482,11 @@ namespace
 
         std::unique_ptr<osc::IPopup> createGeometryPathEditorPopup()
         {
+            auto accessor = getPropertyAccessor();
             return std::make_unique<osc::GeometryPathEditorPopup>(
                 "Edit Geometry Path",
                 getModelPtr(),
-                [accessor = getPropertyAccessor()]() -> OpenSim::GeometryPath const*
+                [accessor]() -> OpenSim::GeometryPath const*
                 {
                     property_type const* p = accessor();
                     if (!p || p->isListProperty())
@@ -1494,7 +1495,7 @@ namespace
                     }
                     return dynamic_cast<OpenSim::GeometryPath const*>(&p->getValueAsObject());
                 },
-                [shared = m_ReturnValueHolder, accessor = getPropertyAccessor()](OpenSim::GeometryPath const& gp) mutable
+                [shared = m_ReturnValueHolder, accessor](OpenSim::GeometryPath const& gp) mutable
                 {
                     if (property_type const* prop = accessor())
                     {

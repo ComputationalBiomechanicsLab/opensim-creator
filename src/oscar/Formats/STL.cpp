@@ -24,7 +24,6 @@
 #include <string_view>
 
 using osc::Mesh;
-using osc::MeshIndicesView;
 using osc::StlMetadata;
 using osc::Triangle;
 using osc::Vec3;
