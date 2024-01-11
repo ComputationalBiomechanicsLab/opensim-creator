@@ -5,7 +5,7 @@
 
 set -xeuo pipefail
 
-CC=clang CXX=clang++ CCFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address cmake -S third_party/ -B osc-deps-build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${PWD}/osc-deps-install
+CC=clang CXX=clang++ CCFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address cmake -S third_party/ -B osc-deps-build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=${PWD}/osc-deps-install
 cmake --build osc-deps-build/ -v -j$(nproc)
 
 CC=clang CXX=clang++ CCFLAGS=-fsanitize=address,undefined CXXFLAGS=-fsanitize=address,undefined cmake -S . -B osc-build -DCMAKE_BUILD_TYPE=Debug -DOSC_FORCE_ASSERTS_ENABLED=ON -DOSC_FORCE_UNDEFINE_NDEBUG=ON -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install -DCMAKE_INSTALL_PREFIX=${PWD}/osc-install
@@ -15,4 +15,4 @@ cmake --build osc-build -j$(nproc) --target TestOpenSimCreator
 
 # run tests
 ./osc-build/tests/testoscar/testoscar
-ASAN_OPTIONS=detect_leaks=0 ./osc-build/tests/TestOpenSimCreator/TestOpenSimCreator --gtest_filter=-*CanAddAnyForceWithoutASegfault*
+ASAN_OPTIONS="detect_leaks=0" ./osc-build/tests/TestOpenSimCreator/TestOpenSimCreator
