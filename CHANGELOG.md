@@ -4,6 +4,12 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+## [0.5.7] - 2023/01/11
+
+0.5.7 is purely a bugfix release. The main fix is that the GeometryPath editor popup has
+now returned. It dissapeared because `opensim-core` now supports function-based muscle
+paths.
+
 - Fixed `PathSpring` components ignoring the scene scale factor (#816)
 - Fixed a bug where the property editor for a muscle's geometry path was not rendering
   the customized muscle path point editor popup (#815)
