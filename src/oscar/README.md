@@ -16,10 +16,13 @@ necessary when creating research tooling:
 
 | Component | Description |
 | - | - |
-| `Bindings/` | C++ bindings to internal libraries |
 | `Formats/` | Parsers/Writers for file formats |
 | `Graphics/` | Backend-independent, Unity-inspired graphics API |
 | `Maths/` | Common mathematical classes/algorithms for UI/scene rendering |
+| `Object/` | Standardized implementation of classes, properties, objects, and node hierarchies (WIP) |
 | `Platform/` | Configuration, window creation, logging, error handling, stacktrace dumping, etc. |
-| `UI/` | 2D UI creation and management |
+| `Scene/` | Mid-level classes for rendering a 3D scene |
+| `Shims/` | Shims for upcoming but not-yet-supported versions of C++ |
+| `UI/` | Anything related to rendering a 2D UI via ImGui |
 | `Utils/` | Commonly-used helper classes/functions that typically augment the standard C++ library. |
+| `Variant/` | A flexible runtime type (WIP: will be handy for scripting ,generic UIs, etc.) |
