@@ -216,7 +216,8 @@ namespace osc::mi
         }
 
         template<DerivedFrom<MIObject> T, typename... Args>
-        T& emplace(Args&&... args) requires ConstructibleFrom<T, Args&&...>
+        T& emplace(Args&&... args)
+            requires ConstructibleFrom<T, Args&&...>
         {
             return static_cast<T&>(insert(std::make_unique<T>(std::forward<Args>(args)...)));
         }

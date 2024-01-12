@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Utils/Concepts.hpp>
+
 #include <utility>
 #include <type_traits>
 
@@ -13,7 +15,10 @@ namespace osc
         DefaultConstructOnCopy() = default;
 
         template<typename... Args>
-        DefaultConstructOnCopy(Args&& ...args) : m_Value{std::forward<Args>(args)...}
+        DefaultConstructOnCopy(Args&& ...args)
+            requires ConstructibleFrom<T, Args&&...> :
+
+            m_Value{std::forward<Args>(args)...}
         {
         }
 

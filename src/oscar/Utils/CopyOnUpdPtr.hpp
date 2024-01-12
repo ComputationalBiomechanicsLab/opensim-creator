@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Utils/Concepts.hpp>
+
 #include <memory>
 #include <utility>
 
@@ -9,7 +11,7 @@ namespace osc
     class CopyOnUpdPtr final {
     private:
         template<typename U, typename... Args>
-        friend CopyOnUpdPtr<U> make_cow(Args&&... args);
+        friend CopyOnUpdPtr<U> make_cow(Args&&...);
 
         explicit CopyOnUpdPtr(std::shared_ptr<T> p) :
             m_Ptr{std::move(p)}

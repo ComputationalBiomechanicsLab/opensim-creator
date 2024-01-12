@@ -14,7 +14,7 @@ namespace osc
 
     template<class T, class... Args>
     concept ConstructibleFrom =
-        std::is_destructible_v<T> &&
+        std::is_nothrow_destructible_v<T> &&
         std::is_constructible_v<T, Args...>;
 
     template<class From, class To>
@@ -22,11 +22,8 @@ namespace osc
         std::is_convertible_v<From, To> &&
         requires { static_cast<To>(std::declval<From>()); };
 
-    template< class F, class... Args >
-    concept Invocable = requires(F&& f, Args&&... args)
-    {
-        std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
-    };
+    template<class F, class... Args>
+    concept Invocable = std::is_invocable_v<F, Args...>;
 
     template<class T, class U>
     concept SameAs = std::is_same_v<T, U>;
@@ -71,5 +68,10 @@ namespace osc
     concept DereferencesTo = requires(T ptr)
     {
         {*ptr} -> ConvertibleTo<DerefType>;
+    };
+
+    template<class T>
+    concept Hashable = requires(T v) {
+        { std::hash<T>{}(v) } -> ConvertibleTo<size_t>;
     };
 }

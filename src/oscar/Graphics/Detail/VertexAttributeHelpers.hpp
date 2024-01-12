@@ -11,15 +11,12 @@
 
 namespace osc::detail
 {
-    template<VertexAttribute... Attrs>
-    constexpr VertexAttributeFormat LookupDefaultFormat(NonTypelist<VertexAttribute, Attrs...>, VertexAttribute attr)
-    {
-        auto els = std::to_array({ VertexAttributeTraits<Attrs>::default_format... });
-        return els.at(osc::to_underlying(attr));
-    }
-
     constexpr VertexAttributeFormat DefaultFormat(VertexAttribute attr)
     {
-        return LookupDefaultFormat(VertexAttributeList{}, attr);
+        constexpr auto lut = []<VertexAttribute... Attrs>(NonTypelist<VertexAttribute, Attrs...>) {
+            return std::to_array({ VertexAttributeTraits<Attrs>::default_format... });
+        }(VertexAttributeList{});
+
+        return lut.at(osc::to_underlying(attr));
     }
 }

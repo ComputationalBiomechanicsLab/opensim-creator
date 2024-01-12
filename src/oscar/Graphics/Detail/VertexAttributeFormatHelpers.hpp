@@ -11,39 +11,30 @@
 
 namespace osc::detail
 {
-    template<VertexAttributeFormat... Formats>
-    constexpr size_t LookupStride(NonTypelist<VertexAttributeFormat, Formats...>, VertexAttributeFormat f)
-    {
-        auto const els = std::to_array({ VertexAttributeFormatTraits<Formats>::stride... });
-        return els.at(osc::to_underlying(f));
-    }
-
     constexpr size_t StrideOf(VertexAttributeFormat f)
     {
-        return LookupStride(VertexAttributeFormatList{}, f);
-    }
+        constexpr auto lut = []<VertexAttributeFormat... Formats>(NonTypelist<VertexAttributeFormat, Formats...>) {
+            return std::to_array({ VertexAttributeFormatTraits<Formats>::stride... });
+        }(VertexAttributeFormatList{});
 
-    template<VertexAttributeFormat... Formats>
-    constexpr size_t LookupNumComponents(NonTypelist<VertexAttributeFormat, Formats...>, VertexAttributeFormat f)
-    {
-        auto const els = std::to_array({ VertexAttributeFormatTraits<Formats>::num_components... });
-        return els.at(osc::to_underlying(f));
+        return lut.at(osc::to_underlying(f));
     }
 
     constexpr size_t NumComponents(VertexAttributeFormat f)
     {
-        return LookupNumComponents(VertexAttributeFormatList{}, f);
-    }
+        constexpr auto lut = []<VertexAttributeFormat... Formats>(NonTypelist<VertexAttributeFormat, Formats...>) {
+            return std::to_array({ VertexAttributeFormatTraits<Formats>::num_components... });
+        }(VertexAttributeFormatList{});
 
-    template<VertexAttributeFormat... Formats>
-    constexpr size_t LookupSizeOfComponent(NonTypelist<VertexAttributeFormat, Formats...>, VertexAttributeFormat f)
-    {
-        auto const els = std::to_array({ VertexAttributeFormatTraits<Formats>::component_size... });
-        return els.at(osc::to_underlying(f));
+        return lut.at(osc::to_underlying(f));
     }
 
     constexpr size_t SizeOfComponent(VertexAttributeFormat f)
     {
-        return LookupSizeOfComponent(VertexAttributeFormatList{}, f);
+        constexpr auto lut = []<VertexAttributeFormat... Formats>(NonTypelist<VertexAttributeFormat, Formats...>) {
+            return std::to_array({ VertexAttributeFormatTraits<Formats>::component_size... });
+        }(VertexAttributeFormatList{});
+
+        return lut.at(osc::to_underlying(f));
     }
 }

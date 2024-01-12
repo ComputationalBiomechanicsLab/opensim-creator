@@ -1,5 +1,6 @@
 #pragma once
 
+#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
@@ -53,10 +54,12 @@ namespace osc
     template<typename T>
     class UndoRedoEntryData final : public UndoRedoEntryMetadata {
     public:
-        template<typename... TCtorArgs>
-        UndoRedoEntryData(std::string_view message_, TCtorArgs&&... args) :
+        template<typename... Args>
+        UndoRedoEntryData(std::string_view message_, Args&&... args)
+            requires ConstructibleFrom<T, Args&&...> :
+
             UndoRedoEntryMetadata{std::move(message_)},
-            m_Data{std::forward<TCtorArgs>(args)...}
+            m_Data{std::forward<Args>(args)...}
         {
         }
 
@@ -104,9 +107,11 @@ namespace osc
     template<typename T>
     class UndoRedoEntryT final : public UndoRedoEntry {
     public:
-        template<typename... TCtorArgs>
-        UndoRedoEntryT(std::string_view message_, TCtorArgs&&... args) :
-            UndoRedoEntry{std::make_shared<UndoRedoEntryData<T>>(std::move(message_), std::forward<TCtorArgs>(args)...)}
+        template<typename... Args>
+        UndoRedoEntryT(std::string_view message_, Args&&... args)
+            requires ConstructibleFrom<T, Args&&...> :
+
+            UndoRedoEntry{std::make_shared<UndoRedoEntryData<T>>(std::move(message_), std::forward<Args>(args)...)}
         {
         }
 
@@ -167,9 +172,11 @@ namespace osc
     template<typename T>
     class UndoRedoT final : public UndoRedo {
     public:
-        template<typename... TCtorArgs>
-        UndoRedoT(TCtorArgs&&... args) :
-            UndoRedo(UndoRedoEntryT<T>{"created document", std::forward<TCtorArgs>(args)...}),
+        template<typename... Args>
+        UndoRedoT(Args&&... args)
+            requires ConstructibleFrom<T, Args&&...> :
+
+            UndoRedo(UndoRedoEntryT<T>{"created document", std::forward<Args>(args)...}),
             m_Scratch{static_cast<UndoRedoEntryT<T> const&>(getHead()).getData()}
         {
         }

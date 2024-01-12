@@ -1234,13 +1234,6 @@ namespace gl
         glTextureParameteri(texture.raw_handle(), pname, param);
     }
 
-    template<typename... T>
-    inline void DrawBuffers(T&&... vs)
-    {
-        GLenum attachments[sizeof...(vs)] = {static_cast<GLenum>(vs)...};
-        glDrawBuffers(sizeof...(vs), attachments);
-    }
-
     inline bool IsCurrentFboComplete()
     {
         return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;

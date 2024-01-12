@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Utils/Concepts.hpp>
+
 #include <array>
 #include <cstddef>
 #include <iterator>
@@ -345,6 +347,7 @@ namespace osc
 
         template<typename... Args>
         constexpr T& emplace_back(Args&&... args)
+            requires ConstructibleFrom<T, Args&&...>
         {
             ptrdiff_t new_end = (m_End + 1) % N;
 

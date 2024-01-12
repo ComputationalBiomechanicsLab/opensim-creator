@@ -30,7 +30,6 @@ namespace osc
         {
         }
 
-        template<typename... Args>
         void log(LogLevel msgLvl, CStringView fmt, ...)
         {
             if (msgLvl < level)

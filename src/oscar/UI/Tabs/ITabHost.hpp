@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/UI/Tabs/ITab.hpp>
+#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <memory>
@@ -19,8 +20,9 @@ namespace osc
     public:
         virtual ~ITabHost() noexcept = default;
 
-        template<typename T, typename... Args>
+        template<DerivedFrom<ITab> T, typename... Args>
         UID addTab(Args&&... args)
+            requires ConstructibleFrom<T, Args&&...>
         {
             return addTab(std::make_unique<T>(std::forward<Args>(args)...));
         }
@@ -45,8 +47,9 @@ namespace osc
             implResetImgui();
         }
 
-        template<typename T, typename... Args>
+        template<DerivedFrom<ITab> T, typename... Args>
         void addAndSelectTab(Args&&... args)
+            requires ConstructibleFrom<T, Args&&...>
         {
             UID const tabID = addTab<T>(std::forward<Args>(args)...);
             selectTab(tabID);

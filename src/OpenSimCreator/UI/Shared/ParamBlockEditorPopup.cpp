@@ -7,6 +7,7 @@
 #include <imgui.h>
 #include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/Utils/StdVariantHelpers.hpp>
 
 #include <span>
 #include <string>
@@ -15,10 +16,6 @@
 
 namespace
 {
-    template<typename... Ts>
-    struct Overloaded : Ts... { using Ts::operator()...; };
-    template<typename... Ts> Overloaded(Ts...) -> Overloaded<Ts...>;
-
     bool DrawEditor(osc::ParamBlock& b, int idx, double v)
     {
         // note: the input prevision has to be quite high here, because the
@@ -74,7 +71,7 @@ namespace
     {
         osc::ParamValue v = b.getValue(idx);
         bool rv = false;
-        auto handler = Overloaded
+        auto handler = osc::Overload
         {
             [&b, &rv, idx](double dv) { rv = DrawEditor(b, idx, dv); },
             [&b, &rv, idx](int iv) { rv = DrawEditor(b, idx, iv); },
