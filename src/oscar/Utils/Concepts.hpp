@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <type_traits>
 
+namespace std { template<class Key> struct hash; }
+
 namespace osc
 {
     template<typename T, typename... U>
