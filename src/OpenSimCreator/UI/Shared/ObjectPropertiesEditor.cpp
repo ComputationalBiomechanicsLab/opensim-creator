@@ -28,7 +28,6 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/Typelist.hpp>
 #include <SimTKcommon/Constants.h>
@@ -46,10 +45,8 @@
 #include <unordered_map>
 #include <utility>
 
-using osc::DerivedFrom;
 using osc::Typelist;
 using osc::TypelistSizeV;
-using osc::SameAs;
 using osc::Vec2;
 using osc::Vec3;
 using osc::Vec4;

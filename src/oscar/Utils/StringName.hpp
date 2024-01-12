@@ -1,10 +1,10 @@
 #pragma once
 
 #include <oscar/Shims/Cpp20/string_view.hpp>
-#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <atomic>
+#include <concepts>
 #include <cstddef>
 #include <iostream>
 #include <string>
@@ -194,13 +194,13 @@ namespace osc
 
         friend bool operator==(StringName const&, StringName const&) noexcept = default;
 
-        template<ConvertibleTo<std::string_view> StringLike>
+        template<std::convertible_to<std::string_view> StringLike>
         friend bool operator==(StringName const& lhs, StringLike const& rhs)
         {
             return std::string_view{lhs} == std::string_view{rhs};
         }
 
-        template<ConvertibleTo<std::string_view> StringLike>
+        template<std::convertible_to<std::string_view> StringLike>
         friend auto operator<=>(StringName const& lhs, StringLike const& rhs)
         {
             return ThreeWayComparison(std::string_view{lhs}, std::string_view{rhs});

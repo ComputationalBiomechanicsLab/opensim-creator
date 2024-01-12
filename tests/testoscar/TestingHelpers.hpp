@@ -42,7 +42,7 @@ namespace osc::testing
     std::vector<Vec4> GenerateTangents(size_t);
     std::vector<uint16_t> GenerateIndices(size_t start, size_t end);
 
-    template<ContiguousContainer T, ContiguousContainer U>
+    template<ContiguousRange T, ContiguousRange U>
     bool ContainersEqual(T const& a, U const& b)
     {
         using std::begin;

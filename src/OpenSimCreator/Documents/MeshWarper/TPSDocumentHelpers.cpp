@@ -8,11 +8,11 @@
 #include <OpenSimCreator/Utils/TPS3D.hpp>
 
 #include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/StringName.hpp>
 
 #include <algorithm>
+#include <concepts>
 #include <cstddef>
 #include <functional>
 #include <limits>
@@ -23,8 +23,7 @@
 #include <utility>
 #include <vector>
 
-using osc::ConvertibleTo;
-using osc::Iterable;
+using osc::Range;
 using osc::StringName;
 using osc::TPSDocument;
 using osc::TPSDocumentLandmarkPair;
@@ -36,13 +35,13 @@ namespace
     template<class T>
     concept UIDed = requires(T v)
     {
-        { v.uid } -> ConvertibleTo<UID>;
+        { v.uid } -> std::convertible_to<UID>;
     };
 
     template<class T>
     concept Named = requires(T v)
     {
-        { v.name } -> ConvertibleTo<std::string_view>;
+        { v.name } -> std::convertible_to<std::string_view>;
     };
 
     template<UIDed T>
@@ -58,7 +57,7 @@ namespace
     }
 
     // returns the next available unique ID with the given prefix
-    template<Iterable Container>
+    template<Range Container>
     StringName NextUniqueID(Container const& c, std::string_view prefix)
     {
         std::string name;
@@ -77,7 +76,7 @@ namespace
     }
 
     // equivalent of `std::find_if`, but returns a `nullptr` when nothing is found
-    template<Iterable Container, class UnaryPredicate>
+    template<Range Container, class UnaryPredicate>
     auto NullableFindIf(Container& c, UnaryPredicate p) -> decltype(c.data())
     {
         auto const it = std::find_if(c.begin(), c.end(), p);

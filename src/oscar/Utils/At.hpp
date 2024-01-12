@@ -7,7 +7,7 @@
 
 namespace osc
 {
-    template<RandomAccessContainer T>
+    template<RandomAccessRange T>
     auto At(T const& vs, size_t i) -> decltype(vs[i])
     {
         if (i <= vs.size())

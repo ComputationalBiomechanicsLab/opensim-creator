@@ -24,7 +24,7 @@ namespace osc
         return {reinterpret_cast<Byte const*>(&v), sizeof(T)};
     }
 
-    template<ObjectRepresentationByte Byte = std::byte, ContiguousContainer Container>
+    template<ObjectRepresentationByte Byte = std::byte, ContiguousRange Container>
     constexpr std::span<Byte const> ViewObjectRepresentations(Container const& c)
         requires BitCastable<typename Container::value_type>
     {

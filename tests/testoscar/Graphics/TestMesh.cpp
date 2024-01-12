@@ -47,7 +47,7 @@ using osc::AABBFromVerts;
 using osc::BoundingAABBOf;
 using osc::Color;
 using osc::Color32;
-using osc::ContiguousContainer;
+using osc::ContiguousRange;
 using osc::Deg2Rad;
 using osc::Identity;
 using osc::Mat4;

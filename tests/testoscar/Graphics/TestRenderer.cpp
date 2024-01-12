@@ -75,7 +75,7 @@ using osc::Color;
 using osc::ColorSpace;
 using osc::Contains;
 using osc::ContainsCaseInsensitive;
-using osc::ContiguousContainer;
+using osc::ContiguousRange;
 using osc::CStringView;
 using osc::Cubemap;
 using osc::CullMode;

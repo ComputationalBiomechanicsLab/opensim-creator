@@ -12,9 +12,9 @@
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
+#include <concepts>
 #include <cstddef>
 #include <functional>
 #include <sstream>
@@ -25,7 +25,6 @@
 using osc::BeginTooltip;
 using osc::Color;
 using osc::CStringView;
-using osc::DerivedFrom;
 using osc::DrawHelpMarker;
 using osc::GetAbsolutePathString;
 using osc::EndTooltip;
@@ -84,7 +83,7 @@ namespace
         TextUnformatted(component.getName());
     }
 
-    template<DerivedFrom<OpenSim::Component> T>
+    template<std::derived_from<OpenSim::Component> T>
     void DrawEntryIconAndText(UIState const& state, T const& component)
     {
         DrawEntryIconAndText(state, component, CalcStyle(state, component));
