@@ -9,6 +9,7 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <SimTKcommon/internal/Transform.h>
 
+#include <concepts>
 #include <cstddef>
 #include <filesystem>
 #include <memory>
@@ -57,8 +58,8 @@ namespace osc
     // iteration/indexing helpers
 
     template<
-        DerivedFrom<OpenSim::Object> T,
-        DerivedFrom<OpenSim::Object> C = OpenSim::Object
+        std::derived_from<OpenSim::Object> T,
+        std::derived_from<OpenSim::Object> C = OpenSim::Object
     >
     size_t size(OpenSim::Set<T, C> const& s)
     {
@@ -66,8 +67,8 @@ namespace osc
     }
 
     template<
-        DerivedFrom<OpenSim::Object> T,
-        DerivedFrom<OpenSim::Object> C = OpenSim::Object
+        std::derived_from<OpenSim::Object> T,
+        std::derived_from<OpenSim::Object> C = OpenSim::Object
     >
     ptrdiff_t ssize(OpenSim::Set<T, C> const& s)
     {
@@ -93,8 +94,8 @@ namespace osc
     }
 
     template<
-        DerivedFrom<OpenSim::Object> T,
-        DerivedFrom<OpenSim::Object> C = OpenSim::Object
+        std::derived_from<OpenSim::Object> T,
+        std::derived_from<OpenSim::Object> C = OpenSim::Object
     >
     [[nodiscard]] bool empty(OpenSim::Set<T, C> const& s)
     {
@@ -130,8 +131,8 @@ namespace osc
     }
 
     template<
-        DerivedFrom<OpenSim::Object> T,
-        DerivedFrom<OpenSim::Object> C = OpenSim::Object
+        std::derived_from<OpenSim::Object> T,
+        std::derived_from<OpenSim::Object> C = OpenSim::Object
     >
     T const& At(OpenSim::Set<T, C> const& s, size_t i)
     {
@@ -143,8 +144,8 @@ namespace osc
     }
 
     template<
-        DerivedFrom<OpenSim::Object> T,
-        DerivedFrom<OpenSim::Object> C = OpenSim::Object
+        std::derived_from<OpenSim::Object> T,
+        std::derived_from<OpenSim::Object> C = OpenSim::Object
     >
     T& At(OpenSim::Set<T, C>& s, size_t i)
     {
@@ -163,8 +164,8 @@ namespace osc
     }
 
     template<
-        DerivedFrom<OpenSim::Object> T,
-        DerivedFrom<OpenSim::Object> C = OpenSim::Object
+        std::derived_from<OpenSim::Object> T,
+        std::derived_from<OpenSim::Object> C = OpenSim::Object
     >
     bool EraseAt(OpenSim::Set<T, C>& s, size_t i)
     {
@@ -213,7 +214,7 @@ namespace osc
     // returns a mutable pointer to the owner (if it exists)
     OpenSim::Component* UpdOwner(OpenSim::Component& root, OpenSim::Component const&);
 
-    template<DerivedFrom<OpenSim::Component> T>
+    template<std::derived_from<OpenSim::Component> T>
     T* UpdOwner(OpenSim::Component& root, OpenSim::Component const& c)
     {
         return dynamic_cast<T*>(UpdOwner(root, c));
@@ -225,13 +226,13 @@ namespace osc
     OpenSim::Component const& GetOwnerOr(OpenSim::Component const&, OpenSim::Component const& fallback);
     OpenSim::Component const* GetOwner(OpenSim::Component const&);
 
-    template<DerivedFrom<OpenSim::Component> T>
+    template<std::derived_from<OpenSim::Component> T>
     T const* GetOwner(OpenSim::Component const& c)
     {
         return dynamic_cast<T const*>(GetOwner(c));
     }
 
-    template<DerivedFrom<OpenSim::Component> T>
+    template<std::derived_from<OpenSim::Component> T>
     bool OwnerIs(OpenSim::Component const& c)
     {
         return GetOwner<T>(c) != nullptr;
@@ -260,7 +261,7 @@ namespace osc
     // calls the given function with each subcomponent of the given component
     void ForEachComponent(OpenSim::Component const&, std::function<void(OpenSim::Component const&)> const&);
 
-    template<DerivedFrom<OpenSim::Component> T>
+    template<std::derived_from<OpenSim::Component> T>
     size_t GetNumChildren(OpenSim::Component const& c)
     {
         size_t i = 0;
@@ -298,7 +299,7 @@ namespace osc
     );
 
     // returns the first ancestor of `c` that has type `T`
-    template<DerivedFrom<OpenSim::Component> T>
+    template<std::derived_from<OpenSim::Component> T>
     T const* FindAncestorWithType(OpenSim::Component const* c)
     {
         OpenSim::Component const* rv = FindFirstAncestorInclusive(c, [](OpenSim::Component const* el)
@@ -309,14 +310,14 @@ namespace osc
         return dynamic_cast<T const*>(rv);
     }
 
-    template<DerivedFrom<OpenSim::Component> T>
+    template<std::derived_from<OpenSim::Component> T>
     T* FindAncestorWithTypeMut(OpenSim::Component* c)
     {
         return const_cast<T*>(FindAncestorWithType<T>(c));
     }
 
     // returns `true` if `c` is a child of a component that derives from `T`
-    template<DerivedFrom<OpenSim::Component> T>
+    template<std::derived_from<OpenSim::Component> T>
     bool IsChildOfA(OpenSim::Component const& c)
     {
         return FindAncestorWithType<T>(&c) != nullptr;
@@ -336,7 +337,7 @@ namespace osc
 
     // returns the first direct descendent of `component` that has type `T`, or
     // `nullptr` if no such descendent exists
-    template<DerivedFrom<OpenSim::Component> T>
+    template<std::derived_from<OpenSim::Component> T>
     T const* FindFirstDescendentOfType(OpenSim::Component const& c)
     {
         OpenSim::Component const* rv = FindFirstDescendent(c, [](OpenSim::Component const& el)
@@ -384,13 +385,13 @@ namespace osc
     );
 
     // return non-nullptr if the given path resolves a component of type T relative to root
-    template<DerivedFrom<OpenSim::Component> T>
+    template<std::derived_from<OpenSim::Component> T>
     T const* FindComponent(OpenSim::Component const& root, OpenSim::ComponentPath const& cp)
     {
         return dynamic_cast<T const*>(FindComponent(root, cp));
     }
 
-    template<DerivedFrom<OpenSim::Component> T>
+    template<std::derived_from<OpenSim::Component> T>
     T const* FindComponent(OpenSim::Component const& root, std::string const& cp)
     {
         return dynamic_cast<T const*>(FindComponent(root, cp));
@@ -403,7 +404,7 @@ namespace osc
     );
 
     // returns non-nullptr if the given path resolves a component of type T relative to root
-    template<DerivedFrom<OpenSim::Component> T>
+    template<std::derived_from<OpenSim::Component> T>
     T* FindComponentMut(
         OpenSim::Component& root,
         OpenSim::ComponentPath const& cp)
@@ -684,16 +685,16 @@ namespace osc
     OpenSim::ModelComponent& AddModelComponent(OpenSim::Model&, std::unique_ptr<OpenSim::ModelComponent>);
 
     // adds a specific (T) model component to the componentset of the model and returns a reference to the component
-    template<DerivedFrom<OpenSim::ModelComponent> T>
+    template<std::derived_from<OpenSim::ModelComponent> T>
     T& AddModelComponent(OpenSim::Model& model, std::unique_ptr<T> p)
     {
         return static_cast<T&>(AddModelComponent(model, static_cast<std::unique_ptr<OpenSim::ModelComponent>&&>(std::move(p))));
     }
 
     // constructs a specific (T) model component in the componentset of the model and returns a reference to the component
-    template<DerivedFrom<OpenSim::ModelComponent> T, class... Args>
+    template<std::derived_from<OpenSim::ModelComponent> T, class... Args>
     T& AddModelComponent(OpenSim::Model& model, Args&&... args)
-        requires ConstructibleFrom<T, Args&&...>
+        requires std::constructible_from<T, Args&&...>
     {
         return AddModelComponent(model, std::make_unique<T>(std::forward<Args>(args)...));
     }
@@ -701,7 +702,7 @@ namespace osc
     // adds a new component to the componentset of the component and returns a reference to the new component
     OpenSim::Component& AddComponent(OpenSim::Component&, std::unique_ptr<OpenSim::Component>);
 
-    template<DerivedFrom<OpenSim::Component> T>
+    template<std::derived_from<OpenSim::Component> T>
     T& AddComponent(OpenSim::Component& c, std::unique_ptr<T> p)
     {
         return static_cast<T&>(AddComponent(c, static_cast<std::unique_ptr<OpenSim::Component>&&>(std::move(p))));
@@ -713,7 +714,7 @@ namespace osc
 
     template<class... Args>
     OpenSim::Marker& AddMarker(OpenSim::Model& model, Args&&... args)
-        requires ConstructibleFrom<OpenSim::Marker, Args&&...>
+        requires std::constructible_from<OpenSim::Marker, Args&&...>
     {
         auto p = std::make_unique<OpenSim::Marker>(std::forward<Args>(args)...);
         return AddMarker(model, std::move(p));
@@ -721,9 +722,9 @@ namespace osc
 
     OpenSim::Geometry& AttachGeometry(OpenSim::Frame&, std::unique_ptr<OpenSim::Geometry>);
 
-    template<DerivedFrom<OpenSim::Geometry> T, class... Args>
+    template<std::derived_from<OpenSim::Geometry> T, class... Args>
     T& AttachGeometry(OpenSim::Frame& frame, Args&&... args)
-        requires ConstructibleFrom<T, Args&&...>
+        requires std::constructible_from<T, Args&&...>
     {
         auto p = std::make_unique<T>(std::forward<Args>(args)...);
         return static_cast<T&>(AttachGeometry(frame, std::move(p)));
@@ -733,21 +734,21 @@ namespace osc
 
     template<class T>
     std::unique_ptr<T> Clone(T const& component)
-        requires DerivedFrom<T, OpenSim::Component> || DerivedFrom<T, OpenSim::AbstractProperty>
+        requires std::derived_from<T, OpenSim::Component> || std::derived_from<T, OpenSim::AbstractProperty>
     {
         return std::unique_ptr<T>(component.clone());
     }
 
-    template<DerivedFrom<OpenSim::Component> T>
+    template<std::derived_from<OpenSim::Component> T>
     void Append(OpenSim::ObjectProperty<T>& prop, T const& c)
     {
         prop.adoptAndAppendValue(Clone(c).release());
     }
 
     template<
-        DerivedFrom<OpenSim::Object> T,
-        DerivedFrom<T> U,
-        DerivedFrom<OpenSim::Object> C = OpenSim::Object
+        std::derived_from<OpenSim::Object> T,
+        std::derived_from<T> U,
+        std::derived_from<OpenSim::Object> C = OpenSim::Object
     >
     void Append(OpenSim::Set<T, C>& set, std::unique_ptr<U> el)
     {
@@ -755,9 +756,9 @@ namespace osc
     }
 
     template<
-        DerivedFrom<OpenSim::Object> T,
-        DerivedFrom<T> U,
-        DerivedFrom<OpenSim::Object> C = OpenSim::Object
+        std::derived_from<OpenSim::Object> T,
+        std::derived_from<T> U,
+        std::derived_from<OpenSim::Object> C = OpenSim::Object
     >
     U& Assign(OpenSim::Set<T, C>& set, size_t index, std::unique_ptr<U> el)
     {
@@ -772,9 +773,9 @@ namespace osc
     }
 
     template<
-        DerivedFrom<OpenSim::Object> T,
-        DerivedFrom<T> U,
-        DerivedFrom<OpenSim::Object> C = OpenSim::Object
+        std::derived_from<OpenSim::Object> T,
+        std::derived_from<T> U,
+        std::derived_from<OpenSim::Object> C = OpenSim::Object
     >
     U& Assign(OpenSim::Set<T, C>& set, size_t index, U const& el)
     {

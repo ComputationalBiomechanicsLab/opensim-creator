@@ -6,10 +6,10 @@
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Scene/SceneDecorationFlags.hpp>
-#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
+#include <concepts>
 #include <string>
 #include <optional>
 #include <unordered_set>
@@ -66,12 +66,11 @@ namespace osc::mi
         UID id
     );
 
-    template<typename Consumer>
+    template<std::invocable<UID> Consumer>
     void ForEachIDInSelectionGroup(
         Document const& doc,
         UID parent,
         Consumer f)
-        requires Invocable<Consumer, UID>
     {
         for (MIObject const& obj : doc.iter())
         {

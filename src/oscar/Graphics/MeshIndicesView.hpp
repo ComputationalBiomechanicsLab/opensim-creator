@@ -82,11 +82,10 @@ namespace osc
         {
         }
 
-        template<ContiguousContainer Container>
+        template<ContiguousRange Container>
         MeshIndicesView(Container const& c)
-            requires
-                SameAs<typename Container::value_type, uint16_t> ||
-                SameAs<typename Container::value_type, uint32_t>
+            requires IsAnyOf<typename Container::value_type, uint16_t, uint32_t>
+
             : MeshIndicesView{c.data(), c.size()}
         {
         }

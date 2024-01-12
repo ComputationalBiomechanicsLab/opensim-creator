@@ -20,10 +20,10 @@
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/UI/Tabs/ITabHost.hpp>
 #include <oscar/UI/Widgets/PopupManager.hpp>
-#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/UID.hpp>
 
+#include <concepts>
 #include <memory>
 #include <optional>
 #include <span>
@@ -146,9 +146,9 @@ namespace osc
             editedDocument->redo();
         }
 
-        template<DerivedFrom<IPopup> TPopup, class... Args>
+        template<std::derived_from<IPopup> TPopup, class... Args>
         void emplacePopup(Args&&... args)
-            requires ConstructibleFrom<TPopup, Args&&...>
+            requires std::constructible_from<TPopup, Args&&...>
         {
             auto p = std::make_shared<TPopup>(std::forward<Args>(args)...);
             p->open();

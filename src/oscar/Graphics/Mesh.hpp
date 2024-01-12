@@ -117,11 +117,9 @@ namespace osc
         void setVertexBufferParams(size_t n, VertexFormat const&);
         size_t getVertexBufferStride() const;
         void setVertexBufferData(std::span<uint8_t const>, MeshUpdateFlags = MeshUpdateFlags::Default);
-        template<ContiguousContainer Container>
+        template<ContiguousRange Container>
         void setVertexBufferData(Container const& container, MeshUpdateFlags flags = MeshUpdateFlags::Default)
-            requires
-                std::is_trivially_copyable_v<typename Container::value_type> &&
-                std::is_trivially_destructible_v<typename Container::value_type>
+            requires BitCastable<typename Container::value_type>
         {
             std::span<typename Container::value_type const> const span{container};
             setVertexBufferData(ViewObjectRepresentations<uint8_t>(span), flags);

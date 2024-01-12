@@ -1,8 +1,8 @@
 #pragma once
 
-#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/SynchronizedValueGuard.hpp>
 
+#include <concepts>
 #include <mutex>
 #include <type_traits>
 #include <utility>
@@ -22,7 +22,7 @@ namespace osc
         // in-place constructor for T
         template<typename... Args>
         explicit SynchronizedValue(Args&&... args)
-            requires ConstructibleFrom<T, Args&&...> :
+            requires std::constructible_from<T, Args&&...> :
 
             m_Mutex{},
             m_Value{std::forward<Args>(args)...}

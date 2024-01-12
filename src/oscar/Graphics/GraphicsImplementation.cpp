@@ -106,6 +106,7 @@ using osc::CullMode;
 using osc::DefaultConstructOnCopy;
 using osc::DepthFunction;
 using osc::DepthStencilFormat;
+using osc::IsAnyOf;
 using osc::LogLevel;
 using osc::Mat3;
 using osc::Mat4;
@@ -123,7 +124,6 @@ using osc::RenderTexture;
 using osc::RenderTextureDescriptor;
 using osc::RenderTextureFormat;
 using osc::RenderTextureReadWrite;
-using osc::SameAs;
 using osc::ShaderPropertyType;
 using osc::Texture2D;
 using osc::TextureChannelFormat;
@@ -4031,19 +4031,11 @@ namespace
     // types that can be read/written to/from a vertex buffer by higher
     // levels of the API
     template<class T>
-    concept UserFacingVertexData =
-        SameAs<T, Vec2> ||
-        SameAs<T, Vec3> ||
-        SameAs<T, Vec4> ||
-        SameAs<T, Vec<4, Unorm8>> ||  // HACK: not really user-facing, but used internally
-        SameAs<T, Color> ||
-        SameAs<T, Color32>;
+    concept UserFacingVertexData = IsAnyOf<T, Vec2, Vec3, Vec4, Vec<4, Unorm8>, Color, Color32>;
 
     // types that are encode-/decode-able into a vertex buffer
     template<class T>
-    concept VertexBufferComponent =
-        SameAs<T, float> ||
-        SameAs<T, Unorm8>;
+    concept VertexBufferComponent = IsAnyOf<T, float, Unorm8>;
 
     // low-level single-component Decode/Encode functions
     template<VertexBufferComponent EncodedValue, class DecodedValue>

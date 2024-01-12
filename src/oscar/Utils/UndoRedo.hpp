@@ -1,10 +1,10 @@
 #pragma once
 
-#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <chrono>
+#include <concepts>
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -56,7 +56,7 @@ namespace osc
     public:
         template<typename... Args>
         UndoRedoEntryData(std::string_view message_, Args&&... args)
-            requires ConstructibleFrom<T, Args&&...> :
+            requires std::constructible_from<T, Args&&...> :
 
             UndoRedoEntryMetadata{std::move(message_)},
             m_Data{std::forward<Args>(args)...}
@@ -109,7 +109,7 @@ namespace osc
     public:
         template<typename... Args>
         UndoRedoEntryT(std::string_view message_, Args&&... args)
-            requires ConstructibleFrom<T, Args&&...> :
+            requires std::constructible_from<T, Args&&...> :
 
             UndoRedoEntry{std::make_shared<UndoRedoEntryData<T>>(std::move(message_), std::forward<Args>(args)...)}
         {
@@ -174,7 +174,7 @@ namespace osc
     public:
         template<typename... Args>
         UndoRedoT(Args&&... args)
-            requires ConstructibleFrom<T, Args&&...> :
+            requires std::constructible_from<T, Args&&...> :
 
             UndoRedo(UndoRedoEntryT<T>{"created document", std::forward<Args>(args)...}),
             m_Scratch{static_cast<UndoRedoEntryT<T> const&>(getHead()).getData()}

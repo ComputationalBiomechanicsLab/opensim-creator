@@ -1,22 +1,18 @@
 #pragma once
 
-#include <oscar/Utils/Concepts.hpp>
-
+#include <concepts>
 #include <utility>
-#include <type_traits>
 
 namespace osc
 {
-    template<typename T>
+    template<std::default_initializable T>
     class DefaultConstructOnCopy final {
     public:
-        static_assert(std::is_default_constructible_v<T>);
-
         DefaultConstructOnCopy() = default;
 
         template<typename... Args>
         DefaultConstructOnCopy(Args&& ...args)
-            requires ConstructibleFrom<T, Args&&...> :
+            requires std::constructible_from<T, Args&&...> :
 
             m_Value{std::forward<Args>(args)...}
         {

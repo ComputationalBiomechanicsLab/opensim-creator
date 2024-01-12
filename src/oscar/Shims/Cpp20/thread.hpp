@@ -1,8 +1,8 @@
 #pragma once
 
 #include <oscar/Shims/Cpp20/stop_token.hpp>
-#include <oscar/Utils/Concepts.hpp>
 
+#include <concepts>
 #include <thread>
 #include <utility>
 
@@ -18,7 +18,7 @@ namespace osc
         // The new thread of execution immediately starts executing
         template<typename Function, typename... Args>
         jthread(Function&& f, Args&&... args)
-            requires Invocable<Function, stop_token, Args...> :
+            requires std::invocable<Function, stop_token, Args&&...> :
 
             m_StopSource{},
             m_Thread{std::forward<Function>(f), m_StopSource.get_token(), std::forward<Args>(args)...}

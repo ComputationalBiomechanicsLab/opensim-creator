@@ -4,9 +4,9 @@
 #include <OpenSimCreator/Documents/MeshImporter/MIObject.hpp>
 
 #include <oscar/Utils/ClonePtr.hpp>
-#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/UID.hpp>
 
+#include <concepts>
 #include <cstddef>
 #include <iterator>
 #include <map>
@@ -38,7 +38,7 @@ namespace osc::mi
         using ObjectLookup = std::map<UID, ClonePtr<MIObject>>;
 
         // helper class for iterating over document objects
-        template<DerivedFrom<MIObject> T>
+        template<std::derived_from<MIObject> T>
         class Iterator final {
         public:
             using difference_type = ptrdiff_t;
@@ -113,7 +113,7 @@ namespace osc::mi
         };
 
         // helper class for an iterable object with a beginning + end
-        template<DerivedFrom<MIObject> T>
+        template<std::derived_from<MIObject> T>
         class Iterable final {
         public:
             using MapRef = std::conditional_t<std::is_const_v<T>, ObjectLookup const&, ObjectLookup&>;
@@ -136,25 +136,25 @@ namespace osc::mi
 
         Document();
 
-        template<DerivedFrom<MIObject> T = MIObject>
+        template<std::derived_from<MIObject> T = MIObject>
         T* tryUpdByID(UID id)
         {
             return findByID<T>(m_Objects, id);
         }
 
-        template<DerivedFrom<MIObject> T = MIObject>
+        template<std::derived_from<MIObject> T = MIObject>
         T const* tryGetByID(UID id) const
         {
             return findByID<T>(m_Objects, id);
         }
 
-        template<DerivedFrom<MIObject> T = MIObject>
+        template<std::derived_from<MIObject> T = MIObject>
         T& updByID(UID id)
         {
             return findByIDOrThrow<T>(m_Objects, id);
         }
 
-        template<DerivedFrom<MIObject> T = MIObject>
+        template<std::derived_from<MIObject> T = MIObject>
         T const& getByID(UID id) const
         {
             return findByIDOrThrow<T>(m_Objects, id);
@@ -175,25 +175,25 @@ namespace osc::mi
             return getByID(id).getPos(*this);
         }
 
-        template<DerivedFrom<MIObject> T = MIObject>
+        template<std::derived_from<MIObject> T = MIObject>
         bool contains(UID id) const
         {
             return tryGetByID<T>(id);
         }
 
-        template<DerivedFrom<MIObject> T = MIObject>
+        template<std::derived_from<MIObject> T = MIObject>
         bool contains(MIObject const& e) const
         {
             return contains<T>(e.getID());
         }
 
-        template<DerivedFrom<MIObject> T = MIObject>
+        template<std::derived_from<MIObject> T = MIObject>
         Iterable<T> iter()
         {
             return Iterable<T>{m_Objects};
         }
 
-        template<DerivedFrom<MIObject> T = MIObject>
+        template<std::derived_from<MIObject> T = MIObject>
         Iterable<T const> iter() const
         {
             return Iterable<T const>{m_Objects};
@@ -215,9 +215,8 @@ namespace osc::mi
             return *m_Objects.emplace(obj->getID(), std::move(obj)).first->second;
         }
 
-        template<DerivedFrom<MIObject> T, typename... Args>
-        T& emplace(Args&&... args)
-            requires ConstructibleFrom<T, Args&&...>
+        template<std::derived_from<MIObject> T, typename... Args>
+        T& emplace(Args&&... args) requires std::constructible_from<T, Args&&...>
         {
             return static_cast<T&>(insert(std::make_unique<T>(std::forward<Args>(args)...)));
         }
@@ -342,7 +341,7 @@ namespace osc::mi
             deSelectAll();
         }
     private:
-        template<DerivedFrom<MIObject> T = MIObject, typename Container>
+        template<std::derived_from<MIObject> T = MIObject, typename Container>
         static T* findByID(Container& container, UID id)
         {
             auto const it = container.find(id);
@@ -362,7 +361,7 @@ namespace osc::mi
             }
         }
 
-        template<DerivedFrom<MIObject> T = MIObject, typename Container>
+        template<std::derived_from<MIObject> T = MIObject, typename Container>
         static T& findByIDOrThrow(Container& container, UID id)
         {
             T* ptr = findByID<T>(container, id);

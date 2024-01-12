@@ -1,54 +1,30 @@
 #pragma once
 
+#include <concepts>
 #include <cstddef>
-#include <functional>
 #include <iterator>
 #include <type_traits>
 
 namespace osc
 {
-    template<class Derived, class Base>
-    concept DerivedFrom =
-        std::is_base_of_v<Base, Derived> &&
-        std::is_convertible_v<const Derived*, const Base*>;
-
-    template<class T, class... Args>
-    concept ConstructibleFrom =
-        std::is_nothrow_destructible_v<T> &&
-        std::is_constructible_v<T, Args...>;
-
-    template<class From, class To>
-    concept ConvertibleTo =
-        std::is_convertible_v<From, To> &&
-        requires { static_cast<To>(std::declval<From>()); };
-
-    template<class F, class... Args>
-    concept Invocable = std::is_invocable_v<F, Args...>;
-
-    template<class T, class U>
-    concept SameAs = std::is_same_v<T, U>;
-
-    template<class I>
-    concept RandomAccessIterator =
-        DerivedFrom<typename std::iterator_traits<I>::iterator_category, std::random_access_iterator_tag>;
-
-    template<class T>
-    concept RandomAccessContainer = RandomAccessIterator<typename T::iterator>;
-
-    template<class Container>
-    concept ContiguousContainer =
-        RandomAccessIterator<typename Container::iterator> &&
-        requires(Container& c)
-        {
-            { c.data() } -> SameAs<typename Container::pointer>;
-        };
+    template<typename T, typename... U>
+    concept IsAnyOf = (std::same_as<T, U> || ...);
 
     template<class Sequence>
-    concept Iterable = requires(Sequence s)
-    {
+    concept Range = requires(Sequence s) {
         std::begin(s);
         std::end(s);
     };
+
+    template<class T>
+    concept RandomAccessRange = std::random_access_iterator<typename T::iterator>;
+
+    template<class Container>
+    concept ContiguousRange =
+        RandomAccessRange<Container> &&
+        requires(Container& c) {
+            { std::data(c) } -> std::same_as<typename Container::pointer>;
+        };
 
     // see:
     //
@@ -61,17 +37,15 @@ namespace osc
 
     // see: https://en.cppreference.com/w/cpp/language/object#Object_representation_and_value_representation
     template<class T>
-    concept ObjectRepresentationByte =
-        (SameAs<T, unsigned char> || SameAs<T, std::byte>) && sizeof(T) == 1;
+    concept ObjectRepresentationByte = IsAnyOf<T, unsigned char, std::byte> && sizeof(T) == 1;
 
     template<class T, class DerefType>
-    concept DereferencesTo = requires(T ptr)
-    {
-        {*ptr} -> ConvertibleTo<DerefType>;
+    concept DereferencesTo = requires(T ptr) {
+        {*ptr} -> std::convertible_to<DerefType>;
     };
 
     template<class T>
     concept Hashable = requires(T v) {
-        { std::hash<T>{}(v) } -> ConvertibleTo<size_t>;
+        { std::hash<T>{}(v) } -> std::convertible_to<size_t>;
     };
 }
