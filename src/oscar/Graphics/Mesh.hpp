@@ -18,6 +18,7 @@
 #include <functional>
 #include <iosfwd>
 #include <optional>
+#include <ranges>
 #include <span>
 #include <type_traits>
 #include <vector>
@@ -117,7 +118,7 @@ namespace osc
         void setVertexBufferParams(size_t n, VertexFormat const&);
         size_t getVertexBufferStride() const;
         void setVertexBufferData(std::span<uint8_t const>, MeshUpdateFlags = MeshUpdateFlags::Default);
-        template<ContiguousRange Container>
+        template<std::ranges::contiguous_range Container>
         void setVertexBufferData(Container const& container, MeshUpdateFlags flags = MeshUpdateFlags::Default)
             requires BitCastable<typename Container::value_type>
         {

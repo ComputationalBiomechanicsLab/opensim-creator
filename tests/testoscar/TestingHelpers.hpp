@@ -9,13 +9,13 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
-#include <oscar/Utils/Concepts.hpp>
 
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <random>
+#include <ranges>
 #include <vector>
 
 namespace osc::testing
@@ -42,16 +42,18 @@ namespace osc::testing
     std::vector<Vec4> GenerateTangents(size_t);
     std::vector<uint16_t> GenerateIndices(size_t start, size_t end);
 
-    template<ContiguousRange T, ContiguousRange U>
+    template<std::ranges::range T, std::ranges::range U>
     bool ContainersEqual(T const& a, U const& b)
     {
         using std::begin;
         using std::end;
+
         return std::equal(begin(a), end(a), begin(b), end(b));
     }
 
-    template<class Container, class UnaryOperation>
+    template<std::ranges::range Container, class UnaryOperation>
     auto MapToVector(Container const& src, UnaryOperation op)
+        requires std::invocable<UnaryOperation, typename Container::value_type const&>
     {
         using std::begin;
         using std::end;

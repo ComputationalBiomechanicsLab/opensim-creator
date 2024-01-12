@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <cstddef>
 #include <iterator>
+#include <ranges>
 #include <span>
 
 namespace osc
@@ -82,7 +83,7 @@ namespace osc
         {
         }
 
-        template<ContiguousRange Container>
+        template<std::ranges::contiguous_range Container>
         MeshIndicesView(Container const& c)
             requires IsAnyOf<typename Container::value_type, uint16_t, uint32_t>
 

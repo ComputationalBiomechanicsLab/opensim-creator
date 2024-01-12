@@ -1,18 +1,17 @@
 #pragma once
 
-#include <oscar/Utils/Concepts.hpp>
-
 #include <cstddef>
+#include <ranges>
 #include <stdexcept>
 
 namespace osc
 {
-    template<RandomAccessRange T>
-    auto At(T const& vs, size_t i) -> decltype(vs[i])
+    template<std::ranges::random_access_range Range>
+    auto At(Range const& range, size_t i) -> decltype(range[i])
     {
-        if (i <= vs.size())
+        if (i <= std::size(range))
         {
-            return vs[i];
+            return range[i];
         }
         else
         {

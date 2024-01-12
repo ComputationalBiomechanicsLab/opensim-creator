@@ -17,13 +17,13 @@
 #include <functional>
 #include <limits>
 #include <optional>
+#include <ranges>
 #include <sstream>
 #include <stdexcept>
 #include <string_view>
 #include <utility>
 #include <vector>
 
-using osc::Range;
 using osc::StringName;
 using osc::TPSDocument;
 using osc::TPSDocumentLandmarkPair;
@@ -57,7 +57,7 @@ namespace
     }
 
     // returns the next available unique ID with the given prefix
-    template<Range Container>
+    template<std::ranges::range Container>
     StringName NextUniqueID(Container const& c, std::string_view prefix)
     {
         std::string name;
@@ -76,7 +76,7 @@ namespace
     }
 
     // equivalent of `std::find_if`, but returns a `nullptr` when nothing is found
-    template<Range Container, class UnaryPredicate>
+    template<std::ranges::range Container, class UnaryPredicate>
     auto NullableFindIf(Container& c, UnaryPredicate p) -> decltype(c.data())
     {
         auto const it = std::find_if(c.begin(), c.end(), p);

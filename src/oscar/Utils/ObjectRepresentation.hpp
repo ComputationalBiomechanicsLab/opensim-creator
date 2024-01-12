@@ -3,6 +3,7 @@
 #include <oscar/Utils/Concepts.hpp>
 
 #include <cstddef>
+#include <ranges>
 #include <span>
 
 namespace osc
@@ -24,7 +25,7 @@ namespace osc
         return {reinterpret_cast<Byte const*>(&v), sizeof(T)};
     }
 
-    template<ObjectRepresentationByte Byte = std::byte, ContiguousRange Container>
+    template<ObjectRepresentationByte Byte = std::byte, std::ranges::contiguous_range Container>
     constexpr std::span<Byte const> ViewObjectRepresentations(Container const& c)
         requires BitCastable<typename Container::value_type>
     {
@@ -39,6 +40,6 @@ namespace osc
         // >
         // > - AliasedType is std::byte,(since C++17) char, or unsigned char: this permits
         // >   examination of the object representation of any object as an array of bytes.
-        return {reinterpret_cast<Byte const*>(c.data()), sizeof(typename Container::value_type) * c.size()};
+        return {reinterpret_cast<Byte const*>(std::ranges::data(c)), sizeof(typename Container::value_type) * std::size(c)};
     }
 }
