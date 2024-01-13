@@ -9,7 +9,7 @@ namespace osc
     template<std::ranges::random_access_range Range>
     auto At(Range const& range, size_t i) -> decltype(range[i])
     {
-        if (i <= std::size(range))
+        if (i <= std::ranges::size(range))
         {
             return range[i];
         }

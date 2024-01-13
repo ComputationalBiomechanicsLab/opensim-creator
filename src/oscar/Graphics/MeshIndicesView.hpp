@@ -83,11 +83,11 @@ namespace osc
         {
         }
 
-        template<std::ranges::contiguous_range Container>
-        MeshIndicesView(Container const& c)
-            requires IsAnyOf<typename Container::value_type, uint16_t, uint32_t>
+        template<std::ranges::contiguous_range Range>
+        MeshIndicesView(Range const& range)
+            requires IsAnyOf<typename Range::value_type, uint16_t, uint32_t>
 
-            : MeshIndicesView{c.data(), c.size()}
+            : MeshIndicesView{std::ranges::data(range), std::ranges::size(range)}
         {
         }
 

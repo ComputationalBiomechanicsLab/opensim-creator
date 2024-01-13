@@ -451,12 +451,12 @@ namespace gl
     }
 
     // set a uniform array of vec3s from a userspace container type (e.g. vector<osc::Vec3>)
-    template<std::ranges::contiguous_range Container, size_t N>
-    inline void Uniform(UniformArray<glsl::vec3, N>& u, Container& container)
-        requires std::same_as<typename Container::value_type, osc::Vec3>
+    template<std::ranges::contiguous_range Range, size_t N>
+    inline void Uniform(UniformArray<glsl::vec3, N>& u, Range& range)
+        requires std::same_as<typename Range::value_type, osc::Vec3>
     {
-        OSC_ASSERT(container.size() == N);
-        glUniform3fv(u.geti(), static_cast<GLsizei>(container.size()), osc::ValuePtr(*container.data()));
+        OSC_ASSERT(std::ranges::size(range) == N);
+        glUniform3fv(u.geti(), static_cast<GLsizei>(std::ranges::size(range)), osc::ValuePtr(*std::ranges::data(range)));
     }
 
     inline void Uniform(UniformMat4& u, osc::Mat4 const& mat)
@@ -483,16 +483,23 @@ namespace gl
     inline void Uniform(UniformVec2& u, std::span<osc::Vec2 const> vs)
     {
         static_assert(sizeof(osc::Vec2) == 2 * sizeof(GLfloat));
-        glUniform2fv(u.geti(), static_cast<GLsizei>(vs.size()), osc::ValuePtr(vs.front()));
+
+        glUniform2fv(
+            u.geti(),
+            static_cast<GLsizei>(vs.size()),
+            osc::ValuePtr(vs.front())
+        );
     }
 
-    template<std::ranges::contiguous_range Container, size_t N>
-    void Uniform(UniformArray<glsl::vec2, N>& u, Container const& container)
-        requires std::same_as<typename Container::value_type, osc::Vec2>
+    template<std::ranges::contiguous_range Range, size_t N>
+    void Uniform(UniformArray<glsl::vec2, N>& u, Range const& range)
+        requires std::same_as<typename Range::value_type, osc::Vec2>
     {
-        glUniform2fv(u.geti(),
-            static_cast<GLsizei>(container.size()),
-            osc::ValuePtr(container.data()));
+        glUniform2fv(
+            u.geti(),
+            static_cast<GLsizei>(std::ranges::size(range)),
+            osc::ValuePtr(std::ranges::data(range))
+        );
     }
 
     // an attribute shader symbol (e.g. `attribute vec3 aPos`) at at particular
@@ -741,65 +748,12 @@ namespace gl
         using value_type = T;
         static constexpr GLenum BufferType = TBuffer;
 
-        Buffer() = default;
-
-        template<std::ranges::contiguous_range Collection>
-        Buffer(Collection const& c) :
-            Buffer{c.data(), c.size()}
-        {
-        }
-
-        Buffer(std::initializer_list<T> lst) :
-            Buffer{lst.begin(), lst.size()}
-        {
-        }
-
-        template<size_t N>
-        Buffer(T const (&arr)[N]) :
-            Buffer{arr, N}
-        {
-        }
-
-        [[nodiscard]] constexpr size_t size() const
-        {
-            return m_BufferSize;
-        }
-
-        void assign(std::span<T const> span)
+        template<std::ranges::contiguous_range Range>
+        void assign(Range const& range)
         {
             BindBuffer(*this);
-            BufferData(BufferType, sizeof(T) * span.size(), span.data(), Usage);
-            m_BufferSize = span.size();
+            BufferData(BufferType, sizeof(T) * std::ranges::size(range), std::ranges::data(range), Usage);
         }
-
-        template<std::ranges::contiguous_range Container>
-        void assign(Container const& c)
-        {
-            assign(std::span<T const>{c.data(), c.size()});
-        }
-
-        template<size_t N>
-        void assign(T const (&arr)[N])
-        {
-            assign(std::span<T const>{arr, N});
-        }
-
-        void resize(size_t n)
-        {
-            if (n > m_BufferSize)
-            {
-                BindBuffer(*this);
-                BufferData(BufferType, n * sizeof(T), nullptr, Usage);
-                m_BufferSize = n;
-            }
-            else
-            {
-                // already big enough
-            }
-        }
-
-    private:
-        size_t m_BufferSize = 0;
     };
 
     template<osc::BitCastable T, GLenum Usage = GL_STATIC_DRAW>

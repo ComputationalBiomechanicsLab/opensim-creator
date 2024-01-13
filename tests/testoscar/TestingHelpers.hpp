@@ -51,9 +51,9 @@ namespace osc::testing
         return std::equal(begin(a), end(a), begin(b), end(b));
     }
 
-    template<std::ranges::range Container, class UnaryOperation>
-    auto MapToVector(Container const& src, UnaryOperation op)
-        requires std::invocable<UnaryOperation, typename Container::value_type const&>
+    template<std::ranges::range Range, class UnaryOperation>
+    auto MapToVector(Range const& src, UnaryOperation op)
+        requires std::invocable<UnaryOperation, typename Range::value_type const&>
     {
         using std::begin;
         using std::end;
