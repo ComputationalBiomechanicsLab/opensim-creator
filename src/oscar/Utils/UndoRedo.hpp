@@ -19,6 +19,9 @@
 // stored in memory
 namespace osc
 {
+    template<class T>
+    concept Undoable = std::destructible<T> && std::copy_constructible<T>;
+
     // an abstract base class for storing undo/redo metadata
     class UndoRedoEntryMetadata {
     protected:
@@ -51,7 +54,7 @@ namespace osc
     };
 
     // concrete implementation of storage for a complete undo/redo entry (metadata + data)
-    template<typename T>
+    template<Undoable T>
     class UndoRedoEntryData final : public UndoRedoEntryMetadata {
     public:
         template<typename... Args>
@@ -104,7 +107,7 @@ namespace osc
     };
 
     // concrete, known-to-hold-type-T version of `UndoRedoEntry`
-    template<typename T>
+    template<Undoable T>
     class UndoRedoEntryT final : public UndoRedoEntry {
     public:
         template<typename... Args>
@@ -169,7 +172,7 @@ namespace osc
     // - there is a "scratch" space that other code can edit
     // - other code can "commit" the scratch space to storage via `commit(message)`
     // - there is always at least one commit (the "head") in storage, for rollback support
-    template<typename T>
+    template<Undoable T>
     class UndoRedoT final : public UndoRedo {
     public:
         template<typename... Args>

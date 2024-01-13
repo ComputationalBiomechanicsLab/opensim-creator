@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <concepts>
 #include <memory>
 #include <typeinfo>
 #include <span>
@@ -36,11 +37,11 @@ namespace
 namespace detail
 {
     // top-level output extractor declaration
-    template<typename ConcreteOutput>
+    template<std::derived_from<OpenSim::AbstractOutput> ConcreteOutput>
     double extract(ConcreteOutput const&, SimTK::State const&);
 
     // subfield output extractor declaration
-    template<osc::OutputSubfield, typename ConcreteOutput>
+    template<osc::OutputSubfield, std::derived_from<OpenSim::AbstractOutput> ConcreteOutput>
     double extract(ConcreteOutput const&, SimTK::State const&);
 
     // extract a `double` from an `OpenSim::Property<double>`
@@ -79,14 +80,17 @@ namespace detail
     }
 
     // type-erased version of one of the above
-    template<typename OutputType>
+    template<std::derived_from<OpenSim::AbstractOutput> OutputType>
     double extractTypeErased(OpenSim::AbstractOutput const& o, SimTK::State const& s)
     {
         return extract<>(dynamic_cast<OutputType const&>(o), s);
     }
 
     // type-erase a concrete *subfield* extractor function
-    template<osc::OutputSubfield sf, typename OutputType>
+    template<
+        osc::OutputSubfield sf,
+        std::derived_from<OpenSim::AbstractOutput> OutputType
+    >
     double extractTypeErased(OpenSim::AbstractOutput const& o, SimTK::State const& s)
     {
         return extract<sf>(dynamic_cast<OutputType const&>(o), s);

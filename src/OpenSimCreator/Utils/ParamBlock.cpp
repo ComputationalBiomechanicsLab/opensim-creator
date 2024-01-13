@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <memory>
+#include <ranges>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -112,14 +113,10 @@ private:
 
 
     // helper, to prevent writing a const-/non-const-version of a member method
-    template<
-        typename T,
-        typename Container,
-        typename std::enable_if_t<std::is_same_v<Param, std::decay_t<T>>, bool> = true
-    >
-    static T* find(Container& c, std::string const& name)
+    template<std::ranges::range Container>
+    static auto find(Container& c, std::string const& name) -> decltype(&(*c.begin()))
     {
-        auto it = std::find_if(c.begin(), c.end(), [&name](Param const& el)
+        auto const it = std::find_if(c.begin(), c.end(), [&name](Param const& el)
         {
             return el.name == name;
         });
@@ -128,12 +125,12 @@ private:
 
     Param* find(std::string const& name)
     {
-        return Impl::find<Param>(m_Params, name);
+        return Impl::find(m_Params, name);
     }
 
     Param const* find(std::string const& name) const
     {
-        return Impl::find<Param const>(m_Params, name);
+        return Impl::find(m_Params, name);
     }
 
     std::vector<Param> m_Params;

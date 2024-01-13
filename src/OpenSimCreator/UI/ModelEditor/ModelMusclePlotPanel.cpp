@@ -2142,7 +2142,7 @@ namespace
             MusclePlotState{shared_}
         {
             // this is what this state is populating
-            updSharedStateData().updPlotParams().setCoordinatePath(osc::GetEmptyComponentPath());
+            updSharedStateData().updPlotParams().setCoordinatePath(OpenSim::ComponentPath{});
         }
 
     private:
@@ -2185,7 +2185,7 @@ namespace
             MusclePlotState{shared_}
         {
             // this is what this state is populating
-            updSharedStateData().updPlotParams().setMusclePath(osc::GetEmptyComponentPath());
+            updSharedStateData().updPlotParams().setMusclePath(OpenSim::ComponentPath{});
         }
 
     private:

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <cstring>
 #include <limits>
 #include <type_traits>
@@ -9,10 +10,10 @@ namespace osc
     // C++20: popcount
     //
     // see: https://en.cppreference.com/w/cpp/numeric/popcount
-    template<typename T>
+    template<std::unsigned_integral T>
     constexpr int popcount(T x) noexcept
     {
-        static_assert(std::is_unsigned_v<T> && sizeof(T) <= sizeof(unsigned long long));
+        static_assert(sizeof(T) <= sizeof(unsigned long long));
 
         unsigned long long uv = x;
         int i = 0;
@@ -27,10 +28,10 @@ namespace osc
     // C++20: countr_zero: counts the number of consecutive 0 bits, starting from the least significant bit
     //
     // see: https://en.cppreference.com/w/cpp/numeric/countr_zero
-    template<typename T>
+    template<std::unsigned_integral T>
     constexpr int countr_zero(T x) noexcept
     {
-        static_assert(std::is_unsigned_v<T> && sizeof(T) <= sizeof(unsigned long long));
+        static_assert(sizeof(T) <= sizeof(unsigned long long));
 
         if (x == 0)
         {
@@ -47,10 +48,9 @@ namespace osc
         return rv;
     }
 
-    template<typename T>
+    template<std::unsigned_integral T>
     constexpr int bit_width(T x) noexcept
     {
-        static_assert(std::is_unsigned_v<T>);
         static_assert(!std::is_same_v<T, bool>);
 
         int rv = 0;

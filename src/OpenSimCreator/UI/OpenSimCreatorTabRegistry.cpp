@@ -10,11 +10,12 @@
 #include <oscar/UI/Tabs/TabRegistry.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 
+#include <concepts>
 #include <memory>
 
 namespace
 {
-    template<typename TabType>
+    template<std::derived_from<osc::ITab> TabType>
     void RegisterTab(osc::TabRegistry& registry)
     {
         osc::TabRegistryEntry entry

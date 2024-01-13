@@ -34,7 +34,7 @@ namespace osc
     // systems (windowing, event pumping, timers, graphics, logging, etc.)
     class App {
     public:
-        template<typename T, typename... Args>
+        template<std::destructible T, typename... Args>
         static std::shared_ptr<T> singleton(Args&&... args)
             requires std::constructible_from<T, Args&&...>
         {

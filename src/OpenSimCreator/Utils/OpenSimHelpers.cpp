@@ -270,17 +270,12 @@ namespace
         OpenSim::AbstractSocket& socket,
         OpenSim::Component const& c)
     {
-        if (!socket.canConnectTo(c))
-        {
-            return false;
-        }
-
-        try
+        if (socket.canConnectTo(c))
         {
             socket.connect(c);
             return true;
         }
-        catch (OpenSim::Exception const&)
+        else
         {
             return false;
         }
@@ -348,26 +343,19 @@ size_t osc::DistanceFromRoot(OpenSim::Component const& c)
     return dist;
 }
 
-OpenSim::ComponentPath const& osc::GetEmptyComponentPath()
+OpenSim::ComponentPath osc::GetRootComponentPath()
 {
-    static OpenSim::ComponentPath const s_EmptyComponentPath;
-    return s_EmptyComponentPath;
-}
-
-OpenSim::ComponentPath const& osc::GetRootComponentPath()
-{
-    static OpenSim::ComponentPath const s_RootComponentPath{"/"};
-    return s_RootComponentPath;
+    return OpenSim::ComponentPath{"/"};
 }
 
 bool osc::IsEmpty(OpenSim::ComponentPath const& cp)
 {
-    return cp == GetEmptyComponentPath();
+    return cp == OpenSim::ComponentPath{};
 }
 
 void osc::Clear(OpenSim::ComponentPath& cp)
 {
-    cp = GetEmptyComponentPath();
+    cp = OpenSim::ComponentPath{};
 }
 
 std::vector<OpenSim::Component const*> osc::GetPathElements(OpenSim::Component const& c)
@@ -1672,7 +1660,7 @@ bool osc::IsValidOpenSimComponentNameCharacter(char c)
 std::string osc::SanitizeToOpenSimComponentName(std::string_view sv)
 {
     std::string rv;
-    for (char c : sv)
+    for (auto c : sv)
     {
         if (IsValidOpenSimComponentNameCharacter(c))
         {

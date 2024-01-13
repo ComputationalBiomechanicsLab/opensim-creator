@@ -5,6 +5,7 @@
 #include <oscar/Utils/StringName.hpp>
 
 #include <algorithm>
+#include <concepts>
 #include <cstddef>
 #include <iterator>
 #include <memory>
@@ -35,13 +36,13 @@ namespace
         }
     }
 
-    template<typename T>
+    template<std::copy_constructible T>
     std::vector<T> ConcatIntoVector(std::span<T const> a, std::span<T const> b)
     {
         std::vector<T> rv;
         rv.reserve(a.size() + b.size());
-        std::copy(a.begin(), a.end(), std::back_inserter(rv));
-        std::copy(b.begin(), b.end(), std::back_inserter(rv));
+        rv.insert(rv.end(), a.begin(), a.end());
+        rv.insert(rv.end(), b.begin(), b.end());
         return rv;
     }
 

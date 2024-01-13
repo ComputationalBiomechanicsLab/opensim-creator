@@ -26,6 +26,7 @@
 #include <array>
 #include <cstddef>
 #include <numbers>
+#include <ranges>
 #include <span>
 #include <string>
 
@@ -37,8 +38,14 @@ namespace
 {
     inline constexpr float c_DefaultDragThreshold = 5.0f;
 
-    template<typename TCollection, typename UCollection>
+    template<
+        std::ranges::random_access_range TCollection,
+        std::ranges::random_access_range UCollection
+    >
     float diff(TCollection const& older, UCollection const& newer, size_t n)
+        requires
+            std::convertible_to<typename TCollection::value_type, float> &&
+            std::convertible_to<typename UCollection::value_type, float>
     {
         for (size_t i = 0; i < n; ++i)
         {

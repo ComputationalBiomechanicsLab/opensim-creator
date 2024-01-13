@@ -25,6 +25,7 @@
 #include <oscar/Shims/Cpp20/bit.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <oscar/Utils/StdVariantHelpers.hpp>
@@ -312,7 +313,7 @@ namespace
         mesh.clear();
     }
 
-    template<class Texture>
+    template<osc::IsAnyOf<Texture2D, RenderTexture> Texture>
     ImTextureID AllocateTextureID(Texture const& texture)
     {
         OscarImguiBackendData* bd = GetBackendData();

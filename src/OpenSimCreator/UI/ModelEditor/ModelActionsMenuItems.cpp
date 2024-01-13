@@ -19,6 +19,7 @@
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
+#include <concepts>
 #include <cstddef>
 #include <optional>
 #include <string>
@@ -74,7 +75,7 @@ public:
 
 private:
 
-    template<typename T>
+    template<std::derived_from<OpenSim::Component> T>
     void renderButton()
     {
         ComponentRegistry<T> const& registry = osc::GetComponentRegistry<T>();

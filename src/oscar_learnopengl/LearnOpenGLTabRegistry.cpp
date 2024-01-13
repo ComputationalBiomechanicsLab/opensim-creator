@@ -29,15 +29,17 @@
 #include <oscar/UI/Tabs/TabRegistryEntry.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 
+#include <concepts>
 #include <memory>
 
+using osc::ITab;
 using osc::ITabHost;
 using osc::TabRegistry;
 using osc::TabRegistryEntry;
 
 namespace
 {
-    template<typename TabType>
+    template<std::derived_from<ITab> TabType>
     void RegisterTab(TabRegistry& registry)
     {
         TabRegistryEntry entry

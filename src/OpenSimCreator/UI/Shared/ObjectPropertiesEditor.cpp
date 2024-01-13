@@ -35,6 +35,7 @@
 
 #include <algorithm>
 #include <array>
+#include <concepts>
 #include <cstddef>
 #include <memory>
 #include <numbers>
@@ -403,7 +404,7 @@ namespace
         std::function<OpenSim::AbstractProperty const*()> propertyAccessor;
     };
 
-    template<class ConcreteProperty>
+    template<std::derived_from<OpenSim::AbstractProperty> ConcreteProperty>
     struct PropertyEditorTraits {
         static bool IsCompatibleWith(OpenSim::AbstractProperty const& prop)
         {
@@ -412,7 +413,10 @@ namespace
     };
 
     // partial implementation class for a specific property editor
-    template<class ConcreteProperty, class Traits = PropertyEditorTraits<ConcreteProperty>>
+    template<
+        std::derived_from<OpenSim::AbstractProperty> ConcreteProperty,
+        class Traits = PropertyEditorTraits<ConcreteProperty>
+    >
     class PropertyEditor : public IPropertyEditor {
     public:
         using property_type = ConcreteProperty;
@@ -1535,7 +1539,7 @@ namespace
         using PropertyEditorCtor = std::unique_ptr<IPropertyEditor>(*)(PropertyEditorArgs);
 
         // create a type-erased entry from a known, concrete, editor
-        template<class ConcretePropertyEditor>
+        template<std::derived_from<IPropertyEditor> ConcretePropertyEditor>
         constexpr static PropertyEditorRegistryEntry make_entry()
         {
             auto const testerFn = ConcretePropertyEditor::IsCompatibleWith;

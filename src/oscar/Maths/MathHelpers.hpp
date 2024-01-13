@@ -229,7 +229,8 @@ namespace osc
     bool IsEqualWithinRelativeError(float, float, float relativeError);
 
     template<LengthType L, typename T, Qualifier Q>
-    bool IsEqualWithinRelativeError(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b, float relativeError)
+    bool IsEqualWithinRelativeError(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b, T relativeError)
+        requires std::is_floating_point_v<T>
     {
         for (LengthType i = 0; i < L; ++i)
         {
@@ -245,7 +246,8 @@ namespace osc
     bool IsEqualWithinAbsoluteError(float, float, float absError);
 
     template<LengthType L, typename T, Qualifier Q>
-    bool IsEqualWithinAbsoluteError(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b, float absError)
+    bool IsEqualWithinAbsoluteError(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b, T absError)
+        requires std::is_floating_point_v<T>
     {
         for (LengthType i = 0; i < L; ++i)
         {
@@ -262,6 +264,7 @@ namespace osc
     // returns true if the provided vectors are at the same location
     template<LengthType L, typename T, Qualifier Q>
     bool AreAtSameLocation(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b)
+        requires std::is_arithmetic_v<T>
     {
         constexpr T eps2 = std::numeric_limits<T>::epsilon() * std::numeric_limits<T>::epsilon();
         auto const b2a = a - b;
@@ -383,6 +386,7 @@ namespace osc
 
     template<typename T, Qualifier Q>
     constexpr T Area(Vec<2, T, Q> const& v)
+        requires std::is_arithmetic_v<T>
     {
         return v.x * v.y;
     }

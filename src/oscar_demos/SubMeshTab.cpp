@@ -20,6 +20,7 @@
 
 #include <array>
 #include <cstdint>
+#include <ranges>
 #include <span>
 #include <string>
 #include <type_traits>
@@ -35,9 +36,9 @@ namespace
 {
     constexpr CStringView c_TabStringID = "Demos/SubMeshes";
 
-    template<class T, class U>
+    template<std::ranges::range T, std::ranges::range U>
     void Append(T& out, U els)
-        requires std::is_same_v<typename T::value_type, typename U::value_type>
+        requires std::same_as<typename T::value_type, typename U::value_type>
     {
         out.insert(out.end(), els.begin(), els.end());
     }

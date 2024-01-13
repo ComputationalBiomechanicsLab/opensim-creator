@@ -58,6 +58,7 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/DefaultConstructOnCopy.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
@@ -79,6 +80,7 @@
 #include <iostream>
 #include <iterator>
 #include <numbers>
+#include <ranges>
 #include <span>
 #include <stdexcept>
 #include <sstream>
@@ -96,6 +98,7 @@ using osc::detail::SizeOfComponent;
 using osc::detail::Unorm8;
 using osc::detail::VertexAttributeFormatList;
 using osc::detail::VertexAttributeFormatTraits;
+using osc::BitCastable;
 using osc::Color;
 using osc::Color32;
 using osc::ColorSpace;
@@ -401,7 +404,7 @@ namespace
 // generic utility functions
 namespace
 {
-    template<typename T>
+    template<BitCastable T>
     void PushAsBytes(T const& v, std::vector<uint8_t>& out)
     {
         auto const bytes = osc::ViewObjectRepresentation<uint8_t>(v);
@@ -410,6 +413,7 @@ namespace
 
     template<typename VecOrMat>
     std::span<typename VecOrMat::value_type const> ToFloatSpan(VecOrMat const& v)
+        requires BitCastable<typename VecOrMat::value_type>
     {
         return {osc::ValuePtr(v), sizeof(VecOrMat)/sizeof(typename VecOrMat::value_type)};
     }
@@ -603,7 +607,12 @@ namespace
     };
 
     template<typename Value>
-    using FastStringHashtable = ankerl::unordered_dense::map<std::string, Value, transparent_string_hash, std::equal_to<>>;
+    using FastStringHashtable = ankerl::unordered_dense::map<
+        std::string,
+        Value,
+        transparent_string_hash,
+        std::equal_to<>
+    >;
 
     ShaderElement const* TryGetValue(FastStringHashtable<ShaderElement> const& m, std::string_view k)
     {
@@ -3456,6 +3465,7 @@ public:
 private:
     template<typename T, typename TConverted = T>
     std::optional<TConverted> getValue(std::string_view propertyName) const
+        requires std::convertible_to<T, TConverted>
     {
         auto const it = m_Values.find(propertyName);
 
@@ -4640,7 +4650,7 @@ namespace
             std::copy(els.begin(), els.end(), iter<T>(attr).begin());
         }
 
-        template<class T>
+        template<UserFacingVertexData T>
         void transformAttribute(VertexAttribute attr, std::function<void(T&)> const& f)
         {
             for (auto&& proxy : iter<T>(attr))

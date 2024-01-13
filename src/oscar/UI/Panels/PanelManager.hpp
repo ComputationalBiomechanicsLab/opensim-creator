@@ -4,6 +4,7 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
+#include <concepts>
 #include <cstddef>
 #include <functional>
 #include <span>
@@ -40,7 +41,7 @@ namespace osc
 
         // returns the panel with the given name, or `nullptr` if not found
         IPanel* tryUpdPanelByName(std::string_view);
-        template<typename TConcretePanel>
+        template<std::derived_from<IPanel> TConcretePanel>
         TConcretePanel* tryUpdPanelByNameT(std::string_view name)
         {
             IPanel* p = tryUpdPanelByName(name);

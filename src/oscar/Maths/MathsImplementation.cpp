@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <concepts>
 #include <cstddef>
 #include <functional>
 #include <iterator>
@@ -193,7 +194,7 @@ namespace
         return lhs || rhs;
     }
 
-    template<typename TIndex>
+    template<std::unsigned_integral TIndex>
     std::optional<BVHCollision> BVH_GetClosestRayIndexedTriangleCollisionRecursive(
         std::span<BVHNode const> nodes,
         std::span<BVHPrim const> prims,
@@ -264,7 +265,7 @@ namespace
         return rhs ? rhs : lhs;
     }
 
-    template<typename TIndex>
+    template<std::unsigned_integral TIndex>
     void BuildFromIndexedTriangles(
         std::vector<BVHNode>& nodes,
         std::vector<BVHPrim>& prims,
@@ -298,7 +299,7 @@ namespace
         }
     }
 
-    template<typename TIndex>
+    template<std::unsigned_integral TIndex>
     std::optional<osc::BVHCollision> GetClosestRayIndexedTriangleCollision(
         std::span<BVHNode const> nodes,
         std::span<BVHPrim const> prims,
@@ -1094,7 +1095,7 @@ namespace
         return RayCollision{t0, l.origin + t0*l.direction};
     }
 
-    template<typename TReal>
+    template<std::floating_point TReal>
     bool IsEqualWithinRelativeError(TReal a , TReal b, TReal relativeError)
     {
         // inspired from:

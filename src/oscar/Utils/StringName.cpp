@@ -5,6 +5,7 @@
 #include <ankerl/unordered_dense.h>
 
 #include <atomic>
+#include <concepts>
 #include <cstddef>
 #include <functional>
 #include <iostream>
@@ -78,6 +79,9 @@ namespace
 
     template<typename StringLike>
     StringNameData& PossiblyConstructThenGetData(StringLike&& input)
+        requires
+            std::constructible_from<std::string, StringLike&&> &&
+            std::convertible_to<StringLike&&, std::string_view>
     {
         auto [it, inserted] = GetGlobalStringNameLUT().lock()->emplace(std::forward<StringLike>(input));
         if (!inserted)

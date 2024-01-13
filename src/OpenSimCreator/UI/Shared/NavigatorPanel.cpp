@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <array>
+#include <concepts>
 #include <cstddef>
 #include <limits>
 #include <memory>

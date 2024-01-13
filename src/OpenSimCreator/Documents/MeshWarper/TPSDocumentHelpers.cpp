@@ -84,13 +84,13 @@ namespace
     }
 
     // this template exists because there's a const and non-const version of the function
-    template<class TDocument>
+    template<std::convertible_to<TPSDocument> TDocument>
     auto FindLandmarkPairImpl(TDocument& doc, UID id) -> decltype(doc.landmarkPairs.data())
     {
         return NullableFindIf(doc.landmarkPairs, std::bind_front(HasUID<TPSDocumentLandmarkPair>, id));
     }
 
-    template<class TDocument>
+    template<std::convertible_to<TPSDocument> TDocument>
     auto FindNonParticipatingLandmarkImpl(TDocument& doc, UID id) -> decltype(doc.nonParticipatingLandmarks.data())
     {
         return NullableFindIf(doc.nonParticipatingLandmarks, std::bind_front(HasUID<TPSDocumentNonParticipatingLandmark>, id));

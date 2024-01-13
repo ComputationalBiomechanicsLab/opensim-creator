@@ -5,13 +5,16 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
+#include <oscar/Utils/Concepts.hpp>
 
 #include <GL/glew.h>
 
+#include <concepts>
 #include <cstddef>
 #include <exception>
 #include <initializer_list>
 #include <limits>
+#include <ranges>
 #include <span>
 #include <string>
 #include <type_traits>
@@ -448,9 +451,9 @@ namespace gl
     }
 
     // set a uniform array of vec3s from a userspace container type (e.g. vector<osc::Vec3>)
-    template<typename Container, size_t N>
-    inline std::enable_if_t<std::is_same_v<osc::Vec3, typename Container::value_type>, void>
-        Uniform(UniformArray<glsl::vec3, N>& u, Container& container)
+    template<std::ranges::contiguous_range Container, size_t N>
+    inline void Uniform(UniformArray<glsl::vec3, N>& u, Container& container)
+        requires std::same_as<typename Container::value_type, osc::Vec3>
     {
         OSC_ASSERT(container.size() == N);
         glUniform3fv(u.geti(), static_cast<GLsizei>(container.size()), osc::ValuePtr(*container.data()));
@@ -483,9 +486,9 @@ namespace gl
         glUniform2fv(u.geti(), static_cast<GLsizei>(vs.size()), osc::ValuePtr(vs.front()));
     }
 
-    template<typename Container, size_t N>
-    inline std::enable_if_t<std::is_same_v<osc::Vec2, typename Container::value_type>, void>
-        Uniform(UniformArray<glsl::vec2, N>& u, Container const& container)
+    template<std::ranges::contiguous_range Container, size_t N>
+    void Uniform(UniformArray<glsl::vec2, N>& u, Container const& container)
+        requires std::same_as<typename Container::value_type, osc::Vec2>
     {
         glUniform2fv(u.geti(),
             static_cast<GLsizei>(container.size()),
@@ -732,18 +735,15 @@ namespace gl
     //
     // must be a trivially copyable type with a standard layout, because its
     // data transfers onto the GPU
-    template<typename T, GLenum TBuffer, GLenum Usage>
+    template<osc::BitCastable T, GLenum TBuffer, GLenum Usage>
     class Buffer : public TypedBufferHandle<TBuffer> {
     public:
-        static_assert(std::is_trivially_copyable<T>::value);
-        static_assert(std::is_standard_layout<T>::value);
-
         using value_type = T;
         static constexpr GLenum BufferType = TBuffer;
 
         Buffer() = default;
 
-        template<typename Collection>
+        template<std::ranges::contiguous_range Collection>
         Buffer(Collection const& c) :
             Buffer{c.data(), c.size()}
         {
@@ -772,7 +772,7 @@ namespace gl
             m_BufferSize = span.size();
         }
 
-        template<typename Container>
+        template<std::ranges::contiguous_range Container>
         void assign(Container const& c)
         {
             assign(std::span<T const>{c.data(), c.size()});
@@ -802,20 +802,20 @@ namespace gl
         size_t m_BufferSize = 0;
     };
 
-    template<typename T, GLenum Usage = GL_STATIC_DRAW>
+    template<osc::BitCastable T, GLenum Usage = GL_STATIC_DRAW>
     class ArrayBuffer : public Buffer<T, GL_ARRAY_BUFFER, Usage> {
         using Buffer<T, GL_ARRAY_BUFFER, Usage>::Buffer;
     };
 
-    template<typename T, GLenum Usage = GL_STATIC_DRAW>
-    class ElementArrayBuffer : public Buffer<T, GL_ELEMENT_ARRAY_BUFFER, Usage> {
-        static_assert(std::is_unsigned_v<T>, "element indicies should be unsigned integers");
-        static_assert(sizeof(T) <= 4);
+    template<class T>
+    concept ElementIndex = osc::IsAnyOf<uint16_t, uint32_t>;
 
+    template<ElementIndex T, GLenum Usage = GL_STATIC_DRAW>
+    class ElementArrayBuffer : public Buffer<T, GL_ELEMENT_ARRAY_BUFFER, Usage> {
         using Buffer<T, GL_ELEMENT_ARRAY_BUFFER, Usage>::Buffer;
     };
 
-    template<typename T, GLenum Usage = GL_STATIC_DRAW>
+    template<osc::BitCastable T, GLenum Usage = GL_STATIC_DRAW>
     class PixelPackBuffer : public Buffer<T, GL_PIXEL_PACK_BUFFER, Usage> {
         using Buffer<T, GL_PIXEL_PACK_BUFFER, Usage>::Buffer;
     };
@@ -829,25 +829,17 @@ namespace gl
     // returns an OpenGL enum that describes the provided (integral) type
     // argument, so that the index type to an element-based drawcall can
     // be computed at compile-time
-    template<typename T>
-    inline constexpr GLenum indexType()
-    {
-        static_assert(std::is_integral_v<T>, "element indices are integers");
-        static_assert(std::is_unsigned_v<T>, "element indices are unsigned data types (in the GL spec)");
-        static_assert(sizeof(T) <= 4);
+    template<std::unsigned_integral T>
+    inline constexpr GLenum indexType();
 
-        switch (sizeof(T))
-        {
-        case 1:
-            return GL_UNSIGNED_BYTE;
-        case 2:
-            return GL_UNSIGNED_SHORT;
-        case 4:
-            return GL_UNSIGNED_INT;
-        default:
-            return GL_UNSIGNED_INT;
-        }
-    }
+    template<>
+    inline constexpr GLenum indexType<uint8_t>() { return GL_UNSIGNED_BYTE; }
+
+    template<>
+    inline constexpr GLenum indexType<uint16_t>() { return GL_UNSIGNED_SHORT; }
+
+    template<>
+    inline constexpr GLenum indexType<uint32_t>() { return GL_UNSIGNED_INT; }
 
     // utility overload of index_type specifically for EBOs (the most common
     // use-case in downstream code)

@@ -7,6 +7,7 @@
 
 #include <oscar/Utils/SynchronizedValueGuard.hpp>
 
+#include <concepts>
 #include <cstddef>
 #include <memory>
 #include <span>
@@ -25,7 +26,7 @@ namespace osc
     // by other parts of osc (e.g. aggregators, plotters)
     class Simulation final {
     public:
-        template<typename TConcreteSimulation>
+        template<std::derived_from<ISimulation> TConcreteSimulation>
         Simulation(TConcreteSimulation&& simulation) :
             m_Simulation{std::make_unique<TConcreteSimulation>(std::forward<TConcreteSimulation>(simulation))}
         {

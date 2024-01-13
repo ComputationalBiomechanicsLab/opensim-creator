@@ -13,6 +13,7 @@
 #include <oscar/Platform/os.hpp>
 
 #include <algorithm>
+#include <concepts>
 #include <cstddef>
 #include <filesystem>
 #include <optional>
@@ -22,7 +23,7 @@ using osc::mow::ValidationCheck;
 
 namespace
 {
-    template<class T>
+    template<std::derived_from<OpenSim::Component> T>
     std::vector<T const*> SortedComponentPointers(OpenSim::Model const& model)
     {
         std::vector<T const*> rv;

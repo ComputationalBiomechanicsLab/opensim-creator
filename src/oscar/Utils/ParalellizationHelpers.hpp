@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <cstddef>
 #include <future>
 #include <span>
@@ -13,7 +14,7 @@ namespace osc
     //
     // this is a poor-man's `std::execution::par_unseq`, because C++17's <execution>
     // isn't fully integrated into MacOS/Linux
-    template<typename T, typename UnaryFunction>
+    template<typename T, std::invocable<T&> UnaryFunction>
     void ForEachParUnseq(
         size_t minChunkSize,
         std::span<T> vals,

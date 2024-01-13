@@ -1,10 +1,11 @@
 #pragma once
 
+#include <concepts>
 #include <utility>
 
 namespace osc
 {
-    template<typename Dtor>
+    template<std::invocable Dtor>
     class ScopeGuard final {
     public:
         explicit ScopeGuard(Dtor&& dtor_) :

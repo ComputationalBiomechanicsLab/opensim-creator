@@ -27,6 +27,7 @@
 #include <oscar/Utils/ScopeGuard.hpp>
 #include <Simbody.h>
 
+#include <concepts>
 #include <cstddef>
 #include <memory>
 #include <sstream>
@@ -105,7 +106,7 @@ namespace
     //
     // effectively, only stores the model+path to the thing being manipulated, and performs
     // runtime checks to ensure the component still exists in the model
-    template<typename TComponent>
+    template<std::derived_from<OpenSim::Component> TComponent>
     class StandardSelectionManipulatorImpl : public VirtualSelectionManipulator {
     protected:
         StandardSelectionManipulatorImpl(
