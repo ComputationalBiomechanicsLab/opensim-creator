@@ -8,7 +8,7 @@ In this tutorial, we will be using the mesh importer feature of OpenSim Creator 
 .. figure:: _static/tut3_result.png
     :width: 60%
 
-    The final model made in this tutorial, as-seen in the mesh importer. It is a double pendulum made from two bodies and two pin joints, with decorative meshes used for the heads + struts. (:download:`📥 download model <_static/tut3_final-model.osim>`)
+    The final model made in this tutorial, as-seen in the mesh importer. It is a double pendulum made from two bodies and two pin joints, with decorative meshes used for the heads + struts. (:download:`download model <_static/tut3_final-model.osim>`)
 
 The mesh importer is "looser" than the main ``osim`` editor. This can make placing and orienting bodies/joints easier. However, its disadvantage is that it doesn't directly edit an ``osim`` file. Rather, it edits a simplified "model" that can be exported to the (more complex) ``osim`` format. For this reason, the mesh importer is recommended as a *first-step* utility that helps set up the top-level ``osim`` model in preparation for the ``osim`` editor to tackle the things like adding/editing forces, contact surfaces, etc.
 
@@ -95,7 +95,7 @@ The above steps set up all the bodies + joints in the model. You should have som
 .. figure:: _static/tut3_afteraddingbodies.png
     :width: 60%
 
-    The pendulum model after its two bodies and two pin joints. (:download:`📥 download model <_static/tut3_after-adding-bodies-and-joints.osim>`)
+    The pendulum model after its two bodies and two pin joints. (:download:`download model <_static/tut3_after-adding-bodies-and-joints.osim>`)
 
 
 Convert the scene to an osim (for testing)
@@ -113,7 +113,7 @@ To convert the mesh importer scene into an ``osim`` (for testing), you will need
 .. figure:: _static/tut3_simulating-meshless-model.png
     :width: 60%
 
-    Although the model hasn't been decorated yet, it can still be simulated and measured. The pendulum body frames should swing around like a pendulum (:download:`📥 download model <_static/tut3_after-adding-bodies-and-joints.osim>`)
+    Although the model hasn't been decorated yet, it can still be simulated and measured. The pendulum body frames should swing around like a pendulum (:download:`download model <_static/tut3_after-adding-bodies-and-joints.osim>`)
 
 
 Add Decorative Geometry
@@ -143,7 +143,7 @@ Attach a cube mesh to ground (the ceiling)
 .. figure:: _static/tut3_after-adding-ceiling-mesh.png
     :width: 60%
 
-    Mesh importer scene after adding ``ceiling_decoration``. It is red-tinted because it is attached to ground, rather than to a body (:download:`📥 download model <_static/tut3_after-adding-ceiling-mesh.osim>`).
+    Mesh importer scene after adding ``ceiling_decoration``. It is red-tinted because it is attached to ground, rather than to a body (:download:`download model <_static/tut3_after-adding-ceiling-mesh.osim>`).
 
 
 Attach a cube mesh to the top pendulum
@@ -157,7 +157,7 @@ Attach a cube mesh to the top pendulum
 .. figure:: _static/tut3_after-adding-top-pendulum-mesh.png
     :width: 60%
 
-    Mesh importer scene after adding ``pendulum_head_decoration`` to ``pendulum_head`` (:download:`📥 download model <_static/tut3_after-adding-top-pendulum-mesh.osim>`).
+    Mesh importer scene after adding ``pendulum_head_decoration`` to ``pendulum_head`` (:download:`download model <_static/tut3_after-adding-top-pendulum-mesh.osim>`).
 
 
 Attach a cube mesh to the bottom pendulum
@@ -168,7 +168,7 @@ Attach a cube mesh to the bottom pendulum
 .. figure:: _static/tut3_after-adding-bottom-pendulum-mesh.png
     :width: 60%
 
-    Mesh importer scene after adding ``pendulum_head_2_decoration`` to ``pendulum_head_2`` (:download:`📥 download model <_static/tut3_after-adding-bottom-pendulum-mesh.osim>`).
+    Mesh importer scene after adding ``pendulum_head_2_decoration`` to ``pendulum_head_2`` (:download:`download model <_static/tut3_after-adding-bottom-pendulum-mesh.osim>`).
 
 
 Attach a cube mesh between the top pendulum and the ceiling (a strut)
@@ -193,7 +193,7 @@ Attach a cube mesh between the top pendulum and the ceiling (a strut)
 .. figure:: _static/tut3_after-adding-top-strut-mesh.png
     :width: 60%
 
-    Mesh importer scene after adding ``pendulum_head_strut_decoration`` between ``pendulum_head`` and ``pendulum_head_to_ground`` (:download:`📥 download model <_static/tut3_after-adding-top-strut-mesh.osim>`).
+    Mesh importer scene after adding ``pendulum_head_strut_decoration`` between ``pendulum_head`` and ``pendulum_head_to_ground`` (:download:`download model <_static/tut3_after-adding-top-strut-mesh.osim>`).
 
 
 Attach a cube mesh between the bottom and top pendulums
@@ -209,7 +209,7 @@ This should result in a fully-decorated pendulum model:
 .. figure:: _static/tut3_result.png
     :width: 60%
 
-    The model after decorating it with some cube meshes. Functionally, this model is the same as the undecorated one; however, it now looks *a lot* more like a pendulum 😎. (:download:`📥 download model <_static/tut3_final-model.osim>`)
+    The model after decorating it with some cube meshes. Functionally, this model is the same as the undecorated one; however, it now looks *a lot* more like a pendulum 😎. (:download:`download model <_static/tut3_final-model.osim>`)
 
 
 Export and Simulate
@@ -226,7 +226,7 @@ Now that we have created a fully modelled and decorated pendulum, we can export 
 .. figure:: _static/tut3_final-simulation.png
     :width: 60%
 
-    A basic forward-dynamic simulation of the model can be ran through the UI by tilting the pendulum slightly and running a simulation. Output plots can be used to get basic information out of the model. (:download:`📥 download model <_static/tut3_final-model.osim>`)
+    A basic forward-dynamic simulation of the model can be ran through the UI by tilting the pendulum slightly and running a simulation. Output plots can be used to get basic information out of the model. (:download:`download model <_static/tut3_final-model.osim>`)
 
 *Et voilà*, you have created a functioning OpenSim model by mostly using the free-form mesh importer and got some useful data out of it 🎉. You're getting good at this.
 

@@ -8,7 +8,7 @@ In this tutorial, we will be making a bouncing block using OpenSim Creator:
 .. figure:: _static/tut2_constraints-added.png
     :width: 60%
 
-    The model that's made in this tutorial. It is a three-body system with a spring attached between the head to the foot. Contact geometries are used to make the model bounce on the floor, and constraints are used to prevent it from rolling around (:download:`📥 download model <_static/tut2_constraints-added.osim>`).
+    The model that's made in this tutorial. It is a three-body system with a spring attached between the head to the foot. Contact geometries are used to make the model bounce on the floor, and constraints are used to prevent it from rolling around (:download:`download model <_static/tut2_constraints-added.osim>`).
 
 In :ref:`tut1`, we created a pendulum: one of the most basic physical systems that can be modelled. This tutorial reinforces concepts from that tutorial by building a slightly more complex model that contains **collisions**, **forces**, and **constraints**. This tutorial builds the model *incrementally* (i.e. from the ground up), so that we can explore each model-making decision one step at a time.
 
@@ -17,7 +17,7 @@ Prerequisites
 
 This tutorial assumes that you have already completed :ref:`tut1`. Because of that, the content here will skip over some steps.
 
-If you feel lost at any point, there should be partial solutions available along the way. Keep an eye out for the :download:`📥 download model <_static/tut2_constraints-added.osim>` links.
+If you feel lost at any point, there should be partial solutions available along the way. Keep an eye out for the :download:`download model <_static/tut2_constraints-added.osim>` links.
 
 
 Topics Covered by this Tutorial
@@ -61,7 +61,7 @@ This should produce a model with a red sphere (``foot``) that is raised above th
 .. figure:: _static/tut2_added-foot.png
     :width: 60%
 
-    The model after adding the ``foot`` body and changing ``ground_to_foot``'s ``ty`` to ``0.5`` (:download:`📥 download model <_static/tut2_added-foot.osim>`)
+    The model after adding the ``foot`` body and changing ``ground_to_foot``'s ``ty`` to ``0.5`` (:download:`download model <_static/tut2_added-foot.osim>`)
 
 .. note::
 
@@ -124,7 +124,7 @@ With the contact force added, simulating this model should show ``foot`` hit ``f
 .. figure:: _static/tut2_collision-forces-added.png
     :width: 60%
 
-    The model after adding ``floor_contact``, ``foot_contact`` and a ``HuntCrossleyForce``. Simulating (``Ctrl+R``) the model should show the ``foot`` sphere fall through the scene until it collides with the surface. It should then bounce a little and stop (:download:`📥 download model <_static/tut2_added-contact-stuff.osim>`).
+    The model after adding ``floor_contact``, ``foot_contact`` and a ``HuntCrossleyForce``. Simulating (``Ctrl+R``) the model should show the ``foot`` sphere fall through the scene until it collides with the surface. It should then bounce a little and stop (:download:`download model <_static/tut2_added-contact-stuff.osim>`).
 
 
 Attach the Knee & Head to the Foot
@@ -149,7 +149,7 @@ These steps should create all the necessary bodies in the system, but it will lo
 .. figure:: _static/tut2_bodies-added.png
     :width: 60%
 
-    The model after adding the ``knee`` and ``head`` bodies. The bodies are joined to each over with ``PinJoint`` s that pivot on the knee and head respectively. The model looks unusual because there are no visual "links" between the bodies and because the model isn't angled yet (:download:`📥 download model <_static/tut2_bodies-added.osim>`).
+    The model after adding the ``knee`` and ``head`` bodies. The bodies are joined to each over with ``PinJoint`` s that pivot on the knee and head respectively. The model looks unusual because there are no visual "links" between the bodies and because the model isn't angled yet (:download:`download model <_static/tut2_bodies-added.osim>`).
 
 
 Much like at the end of :ref:`tut1`, we can make the model look better by adding extra geometry between the bodies. This can be achieved by attaching decorative geometry to offset frames placed between the blocks.
@@ -168,7 +168,7 @@ To add a decorative link between the ``foot`` and ``knee``:
 .. figure:: _static/tut2_after-adding-first-decorative-link.png
     :width: 60%
 
-    The model after adding the first decorative link. (:download:`📥 download model <_static/tut2_after-adding-first-decorative-link.osim>`)
+    The model after adding the first decorative link. (:download:`download model <_static/tut2_after-adding-first-decorative-link.osim>`)
 
 
 To add a decorative link between the ``knee`` and ``head``:
@@ -188,7 +188,7 @@ These steps add *decorative* features to the model that make it easier to see wh
 .. figure:: _static/tut2_decorations-added.png
     :width: 60%
 
-    The model after adding decorative bricks between the ``foot`` and the ``knee`` and between the ``knee`` and the ``head`` (:download:`📥 download model <_static/tut2_decorations-added.osim>`).
+    The model after adding decorative bricks between the ``foot`` and the ``knee`` and between the ``knee`` and the ``head`` (:download:`download model <_static/tut2_decorations-added.osim>`).
 
 
 If you try simulating this model, you will find that it falls vertically and remains mostly motionless. The reason why that happens is because all of the bodies in the model (``foot``, ``knee``, and ``head``) are vertically aligned along Y.
@@ -203,7 +203,7 @@ These steps should put the model into a more interesting arrangement:
 .. figure:: _static/tut2_angles-added.png
     :width: 60%
 
-    The model after altering the ``ground_to_foot``'s and ``foot_to_knee``'s ``rz`` values. Altering those values puts the model into a more interesting arrangement (:download:`📥 download model <_static/tut2_angles-added.osim>`).
+    The model after altering the ``ground_to_foot``'s and ``foot_to_knee``'s ``rz`` values. Altering those values puts the model into a more interesting arrangement (:download:`download model <_static/tut2_angles-added.osim>`).
 
 
 Add a Spring between ``foot`` and ``head``
@@ -232,7 +232,7 @@ If you simulate the model after adding the spring, you should see that the model
 .. figure:: _static/tut2_spring-added.png
     :width: 60%
 
-    The model after adding a ``PointToPointSpring`` between the ``foot`` and the ``head``. The spring prevents the ``head`` from clipping through the ``foot`` and makes the simulation more interesting-looking. However, when simulating, the model bounces around a little bit and begins to roll around. This is because the model isn't constrained along the vertical axis (:download:`📥 download model <_static/tut2_spring-added.osim>`).
+    The model after adding a ``PointToPointSpring`` between the ``foot`` and the ``head``. The spring prevents the ``head`` from clipping through the ``foot`` and makes the simulation more interesting-looking. However, when simulating, the model bounces around a little bit and begins to roll around. This is because the model isn't constrained along the vertical axis (:download:`download model <_static/tut2_spring-added.osim>`).
 
 
 Constrain ``foot`` and ``head`` to stay along Y
@@ -281,7 +281,7 @@ With both of those constraints in place, the model now bounces up and down witho
 .. figure:: _static/tut2_constraints-added.png
     :width: 60%
 
-    The final model after adding ``PointOnLineConstraint`` s that make the ``head`` and ``foot`` bodies stay along the Y axis, rather than having the freedom to roll around (:download:`📥 download model <_static/tut2_constraints-added.osim>`).
+    The final model after adding ``PointOnLineConstraint`` s that make the ``head`` and ``foot`` bodies stay along the Y axis, rather than having the freedom to roll around (:download:`download model <_static/tut2_constraints-added.osim>`).
 
 .. note::
 

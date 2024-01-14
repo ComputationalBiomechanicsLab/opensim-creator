@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'OpenSim Creator'
-copyright = '2021, Adam Kewley'
+copyright = '2024, Adam Kewley'
 author = 'Adam Kewley'
 
 

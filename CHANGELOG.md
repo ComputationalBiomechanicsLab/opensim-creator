@@ -4,6 +4,9 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Updated Sphinx to version 7.2.6, and the associated sphinx-book-theme to 1.1.0, which makes the
+  documentation look a little nicer
+
 ## [0.5.7] - 2023/01/11
 
 0.5.7 is purely a bugfix release. The main fix is that the GeometryPath editor popup has

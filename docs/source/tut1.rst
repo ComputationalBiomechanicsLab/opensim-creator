@@ -8,7 +8,7 @@ In this first tutorial, we will be making a conventional pendulum using OpenSim 
 .. figure:: _static/tut1_appearanceformatted.png
     :width: 60%
 
-    The pendulum created by this tutorial. Although OpenSim is commonly associated with biomechanical simulations, it can also be used to simulate "conventional" rigid-body models (:download:`📥 download model <_static/tut1_final-model.osim>`).
+    The pendulum created by this tutorial. Although OpenSim is commonly associated with biomechanical simulations, it can also be used to simulate "conventional" rigid-body models (:download:`download model <_static/tut1_final-model.osim>`).
 
 OpenSim is based on `Simbody`_, a physics library for science- and engineering-quality simulations of articulated mechanisms. This means that OpenSim Creator can be used to simulate things like pendulums, robots, and biomechanical systems. This tutorial focuses on creating a pendulum--one of the simplest physical systems--because it introduces core concepts that are common to all kinds of models.
 
@@ -67,7 +67,7 @@ After adding ``pendulum_base``, you should now see a cube in the 3D viewer. The 
 .. figure:: _static/tut1_firstbodyadded.png
     :width: 60%
 
-    The scene after adding ``pendulum_base`` into the scene with a ``Brick`` as its attached geometry. Although OpenSim models bodies as points, many OpenSim models also attach 3D geometry to the bodies to make the model to make it easier to visualize (:download:`📥 download model <_static/tut1_firstbodyadded.osim>`).
+    The scene after adding ``pendulum_base`` into the scene with a ``Brick`` as its attached geometry. Although OpenSim models bodies as points, many OpenSim models also attach 3D geometry to the bodies to make the model to make it easier to visualize (:download:`download model <_static/tut1_firstbodyadded.osim>`).
 
 When we made ``pendulum_base``, we ticked the ``add offset frames`` checkbox. Adding a body like this added **four** components into the model:
 
@@ -120,7 +120,7 @@ This will move the ``ground_offset`` frame +1 in Y (in ``ground``'s reference fr
 .. figure:: _static/tut1_firstbodymoved.png
     :width: 60%
 
-    Edit ``ground_offset``'s ``translation`` Y value to move the ``pendulum_base`` away from ground in the scene. Changing it also changed where ``pendulum_base`` is in the scene because of the topographical relationship between ``pendulum_base`` and ``ground_offset`` (:download:`📥 download model <_static/tut1_firstbodymoved.osim>`).
+    Edit ``ground_offset``'s ``translation`` Y value to move the ``pendulum_base`` away from ground in the scene. Changing it also changed where ``pendulum_base`` is in the scene because of the topographical relationship between ``pendulum_base`` and ``ground_offset`` (:download:`download model <_static/tut1_firstbodymoved.osim>`).
 
 .. note::
 
@@ -165,7 +165,7 @@ After setting ``pendulum_head_offset``'s ``translation`` to ``(0.0, 0.5, 0.0)``,
 .. figure:: _static/tut1_secondbodymoved.png
     :width: 60%
 
-    How the scene should look after adding ``pendulum_head`` (a ``Body``) and setting ``pendulum_head_offset``'s ``translation`` property to ``(0.0, 0.5, 0.0)``. The sphere is the decoration for ``pendulum_head`` and the cube is the decoration for ``pendulum_base`` (:download:`📥 download model <_static/tut1_secondbodymoved.osim>`).
+    How the scene should look after adding ``pendulum_head`` (a ``Body``) and setting ``pendulum_head_offset``'s ``translation`` property to ``(0.0, 0.5, 0.0)``. The sphere is the decoration for ``pendulum_head`` and the cube is the decoration for ``pendulum_base`` (:download:`download model <_static/tut1_secondbodymoved.osim>`).
 
 .. note::
 
@@ -197,7 +197,7 @@ After changing ``rz``, the pendulum head should be rotated slightly:
 .. figure:: _static/tut1_pendulumheadjointrxchanged.png
     :width: 60%
 
-    The pendulum after modifying the ``PinJoint``'s ``rz`` ``default_value``. By modifying the coordinate value, we are changing the angle between ``pendulum_base_offset`` and ``pendulum_head_offset`` (the parent + child of the ``PinJoint``). Because ``pendulum_head`` is attached to ``pendulum_head_offset``, this has the overall effect of moving the ``pendulum_head`` (:download:`📥 download model <_static/tut1_pendulumheadjointrxchanged.osim>`).
+    The pendulum after modifying the ``PinJoint``'s ``rz`` ``default_value``. By modifying the coordinate value, we are changing the angle between ``pendulum_base_offset`` and ``pendulum_head_offset`` (the parent + child of the ``PinJoint``). Because ``pendulum_head`` is attached to ``pendulum_head_offset``, this has the overall effect of moving the ``pendulum_head`` (:download:`download model <_static/tut1_pendulumheadjointrxchanged.osim>`).
 
 
 Simulate the Model
@@ -263,7 +263,7 @@ Once you've done that, you should end up with a more convincing-looking pendulum
 .. figure:: _static/tut1_appearanceformatted.png
     :width: 60%
 
-    Final pendulum model after updating the appearance (:download:`📥 download model <_static/tut1_final-model.osim>`).
+    Final pendulum model after updating the appearance (:download:`download model <_static/tut1_final-model.osim>`).
 
 
 (Optional) Extra Exercises
