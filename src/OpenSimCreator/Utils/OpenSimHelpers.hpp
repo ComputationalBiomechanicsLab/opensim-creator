@@ -56,7 +56,7 @@ namespace SimTK { class State; }
 namespace osc
 {
     template<class T>
-    concept ClonesToRawPtr = requires(T v) {
+    concept ClonesToRawPtr = requires(T const& v) {
         { v.clone() } -> std::same_as<T*>;
     };
 
