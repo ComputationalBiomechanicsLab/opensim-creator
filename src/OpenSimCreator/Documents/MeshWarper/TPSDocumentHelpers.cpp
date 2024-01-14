@@ -67,7 +67,7 @@ namespace
             name += prefix;
             name += std::to_string(i);
 
-            if (ranges::none_of(range, std::bind_front(HasName<typename Range::value_type>, name)))
+            if (std::none_of(ranges::begin(range), ranges::end(range), std::bind_front(HasName<typename Range::value_type>, name)))
             {
                 return StringName{std::move(name)};
             }
@@ -81,10 +81,10 @@ namespace
         ranges::range Range,
         std::predicate<typename Range::value_type const&> UnaryPredicate
     >
-    auto NullableFindIf(Range& c, UnaryPredicate p) -> decltype(ranges::data(c))
+    auto NullableFindIf(Range& range, UnaryPredicate p) -> decltype(ranges::data(range))
     {
-        auto const it = ranges::find_if(c, p);
-        return it != c.end() ? &(*it) : nullptr;
+        auto const it = std::find_if(ranges::begin(range), ranges::end(range), p);
+        return it != range.end() ? &(*it) : nullptr;
     }
 
     // this template exists because there's a const and non-const version of the function
