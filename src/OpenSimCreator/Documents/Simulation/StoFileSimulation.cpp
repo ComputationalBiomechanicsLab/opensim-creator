@@ -24,6 +24,7 @@
 #include <SimTKcommon/Scalar.h>
 
 #include <algorithm>
+#include <concepts>
 #include <cstddef>
 #include <filesystem>
 #include <memory>
@@ -60,10 +61,11 @@ namespace
         }
     }
 
-    template<typename T>
+    template<std::copyable T>
     std::unordered_set<T> ToSet(OpenSim::Array<T> const& v)
     {
         std::unordered_set<T> rv;
+        rv.reserve(v.size());
         for (int i = 0; i < v.size(); ++i)
         {
             rv.insert(v[i]);
@@ -71,13 +73,13 @@ namespace
         return rv;
     }
 
-    template<typename T>
+    template<std::copyable T>
     int NumUniqueEntriesIn(OpenSim::Array<T> const& v)
     {
         return static_cast<int>(ToSet(v).size());
     }
 
-    template<typename T>
+    template<std::copyable T>
     bool AllElementsUnique(OpenSim::Array<T> const& v)
     {
         return NumUniqueEntriesIn(v) == v.size();

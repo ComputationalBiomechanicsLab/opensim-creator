@@ -341,8 +341,11 @@ namespace osc::mi
             deSelectAll();
         }
     private:
-        template<std::derived_from<MIObject> T = MIObject, typename Container>
-        static T* findByID(Container& container, UID id)
+        template<
+            std::derived_from<MIObject> T = MIObject,
+            typename AssociativeContainer
+        >
+        static T* findByID(AssociativeContainer& container, UID id)
         {
             auto const it = container.find(id);
 
@@ -361,8 +364,11 @@ namespace osc::mi
             }
         }
 
-        template<std::derived_from<MIObject> T = MIObject, typename Container>
-        static T& findByIDOrThrow(Container& container, UID id)
+        template<
+            std::derived_from<MIObject> T = MIObject,
+            typename AssociativeContainer
+        >
+        static T& findByIDOrThrow(AssociativeContainer& container, UID id)
         {
             T* ptr = findByID<T>(container, id);
             if (!ptr)

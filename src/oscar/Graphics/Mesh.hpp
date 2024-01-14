@@ -118,12 +118,13 @@ namespace osc
         void setVertexBufferParams(size_t n, VertexFormat const&);
         size_t getVertexBufferStride() const;
         void setVertexBufferData(std::span<uint8_t const>, MeshUpdateFlags = MeshUpdateFlags::Default);
-        template<std::ranges::contiguous_range Container>
-        void setVertexBufferData(Container const& container, MeshUpdateFlags flags = MeshUpdateFlags::Default)
-            requires BitCastable<typename Container::value_type>
+
+        template<std::ranges::contiguous_range Range>
+        void setVertexBufferData(Range const& range, MeshUpdateFlags flags = MeshUpdateFlags::Default)
+            requires BitCastable<typename Range::value_type>
         {
-            std::span<typename Container::value_type const> const span{container};
-            setVertexBufferData(ViewObjectRepresentations<uint8_t>(span), flags);
+            std::span<uint8_t const> bytes = ViewObjectRepresentations<uint8_t>(range);
+            setVertexBufferData(bytes, flags);
         }
 
         friend void swap(Mesh& a, Mesh& b) noexcept

@@ -24,6 +24,7 @@
 #include <utility>
 #include <vector>
 
+namespace ranges = std::ranges;
 using osc::StringName;
 using osc::TPSDocument;
 using osc::TPSDocumentLandmarkPair;
@@ -57,8 +58,8 @@ namespace
     }
 
     // returns the next available unique ID with the given prefix
-    template<std::ranges::range Container>
-    StringName NextUniqueID(Container const& c, std::string_view prefix)
+    template<ranges::range Range>
+    StringName NextUniqueID(Range const& range, std::string_view prefix)
     {
         std::string name;
         for (size_t i = 0; i < std::numeric_limits<decltype(i)>::max()-1; ++i)
@@ -66,7 +67,7 @@ namespace
             name += prefix;
             name += std::to_string(i);
 
-            if (std::none_of(c.begin(), c.end(), std::bind_front(HasName<typename Container::value_type>, name)))
+            if (std::none_of(ranges::begin(range), ranges::end(range), std::bind_front(HasName<typename Range::value_type>, name)))
             {
                 return StringName{std::move(name)};
             }
@@ -76,11 +77,14 @@ namespace
     }
 
     // equivalent of `std::find_if`, but returns a `nullptr` when nothing is found
-    template<std::ranges::range Container, class UnaryPredicate>
-    auto NullableFindIf(Container& c, UnaryPredicate p) -> decltype(c.data())
+    template<
+        ranges::range Range,
+        std::predicate<typename Range::value_type const&> UnaryPredicate
+    >
+    auto NullableFindIf(Range& range, UnaryPredicate p) -> decltype(ranges::data(range))
     {
-        auto const it = std::find_if(c.begin(), c.end(), p);
-        return it != c.end() ? &(*it) : nullptr;
+        auto const it = std::find_if(ranges::begin(range), ranges::end(range), p);
+        return it != range.end() ? &(*it) : nullptr;
     }
 
     // this template exists because there's a const and non-const version of the function

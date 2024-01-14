@@ -11,6 +11,7 @@
 #include <vector>
 #include <variant>
 
+namespace ranges = std::ranges;
 using osc::ParamValue;
 
 namespace
@@ -113,14 +114,12 @@ private:
 
 
     // helper, to prevent writing a const-/non-const-version of a member method
-    template<std::ranges::range Container>
-    static auto find(Container& c, std::string const& name) -> decltype(&(*c.begin()))
+    template<ranges::range Range>
+    static auto find(Range& range, std::string const& name) -> decltype(ranges::data(range))
     {
-        auto const it = std::find_if(c.begin(), c.end(), [&name](Param const& el)
-        {
-            return el.name == name;
-        });
-        return it != c.end() ? &(*it) : nullptr;
+        auto const hasName = [&name](Param const& el) { return el.name == name; };
+        auto const it = std::find_if(ranges::begin(range), ranges::end(range), hasName);
+        return it != range.end() ? &(*it) : nullptr;
     }
 
     Param* find(std::string const& name)

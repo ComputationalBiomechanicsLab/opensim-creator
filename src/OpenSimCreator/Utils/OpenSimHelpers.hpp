@@ -55,6 +55,11 @@ namespace SimTK { class State; }
 // OpenSimHelpers: a collection of various helper functions that are used by `osc`
 namespace osc
 {
+    template<class T>
+    concept ClonesToRawPtr = requires(T const& v) {
+        { v.clone() } -> std::same_as<T*>;
+    };
+
     // iteration/indexing helpers
 
     template<
@@ -729,11 +734,10 @@ namespace osc
 
     OpenSim::PhysicalOffsetFrame& AddFrame(OpenSim::Joint&, std::unique_ptr<OpenSim::PhysicalOffsetFrame>);
 
-    template<class T>
-    std::unique_ptr<T> Clone(T const& component)
-        requires std::derived_from<T, OpenSim::Component> || std::derived_from<T, OpenSim::AbstractProperty>
+    template<ClonesToRawPtr T>
+    std::unique_ptr<T> Clone(T const& obj)
     {
-        return std::unique_ptr<T>(component.clone());
+        return std::unique_ptr<T>(obj.clone());
     }
 
     template<std::derived_from<OpenSim::Component> T>
