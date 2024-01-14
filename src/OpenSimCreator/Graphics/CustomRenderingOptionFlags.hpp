@@ -16,7 +16,7 @@ namespace osc
         MeshNormals       = 1<<1,
         Shadows           = 1<<2,
         DrawSelectionRims = 1<<3,
-        NUM_OPTIONS = 4,
+        NUM_FLAGS         =    4,
 
         Default = DrawFloor | Shadows | DrawSelectionRims,
     };
@@ -40,7 +40,7 @@ namespace osc
 
     constexpr CustomRenderingOptionFlags CustomRenderingIthOption(size_t i)
     {
-        i = i < NumOptions<CustomRenderingOptionFlags>() ? i : 0;
+        i = i < NumFlags<CustomRenderingOptionFlags>() ? i : 0;
         return static_cast<CustomRenderingOptionFlags>(1<<i);
     }
 

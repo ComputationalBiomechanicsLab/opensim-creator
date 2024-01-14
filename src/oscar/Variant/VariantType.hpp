@@ -5,7 +5,7 @@
 namespace osc
 {
     enum class VariantType {
-        Nil = 0,
+        Nil,
         Bool,
         Color,
         Float,
@@ -13,7 +13,6 @@ namespace osc
         String,
         StringName,
         Vec3,
-
         NUM_OPTIONS
     };
 

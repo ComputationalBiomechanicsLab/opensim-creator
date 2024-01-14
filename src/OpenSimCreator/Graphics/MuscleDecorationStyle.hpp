@@ -8,7 +8,7 @@
 namespace osc
 {
     enum class MuscleDecorationStyle {
-        OpenSim = 0,
+        OpenSim,
         FibersAndTendons,
         Hidden,
         NUM_OPTIONS,

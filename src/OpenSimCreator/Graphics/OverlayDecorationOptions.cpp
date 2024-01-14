@@ -10,7 +10,7 @@
 
 size_t osc::OverlayDecorationOptions::getNumOptions() const
 {
-    return NumOptions<OverlayDecorationOptionFlags>();
+    return NumFlags<OverlayDecorationOptionFlags>();
 }
 
 bool osc::OverlayDecorationOptions::getOptionValue(ptrdiff_t i) const
@@ -103,7 +103,7 @@ void osc::OverlayDecorationOptions::forEachOptionAsAppSettingValue(std::function
 
 void osc::OverlayDecorationOptions::tryUpdFromValues(std::string_view keyPrefix, std::unordered_map<std::string, AppSettingValue> const& lut)
 {
-    for (size_t i = 0; i < NumOptions<OverlayDecorationOptionFlags>(); ++i)
+    for (size_t i = 0; i < NumFlags<OverlayDecorationOptionFlags>(); ++i)
     {
         auto const& metadata = At(GetAllOverlayDecorationOptionFlagsMetadata(), i);
         if (auto const it = lut.find(std::string{keyPrefix}+metadata.id); it != lut.end() && it->second.type() == osc::AppSettingValueType::Bool)

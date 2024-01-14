@@ -14,7 +14,6 @@ namespace osc
         Tangent,
         Color,
         TexCoord0,
-
         NUM_OPTIONS,
     };
 }

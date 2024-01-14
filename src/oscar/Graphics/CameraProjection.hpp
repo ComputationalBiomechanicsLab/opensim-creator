@@ -9,7 +9,6 @@ namespace osc
     enum class CameraProjection {
         Perspective,
         Orthographic,
-
         NUM_OPTIONS,
     };
 

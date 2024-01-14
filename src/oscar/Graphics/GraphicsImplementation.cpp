@@ -1182,7 +1182,7 @@ namespace
     // used by the texture implementation to keep track of what kind of
     // data it is storing
     enum class CPUDataType {
-        UnsignedByte = 0,
+        UnsignedByte,
         Float,
         UnsignedInt24_8,
         HalfFloat,
@@ -1230,7 +1230,7 @@ namespace
     //  used by the texture implementation to keep track of what kind of
     // data it is storing
     enum class CPUImageFormat {
-        R8 = 0,
+        R8,
         RGB,
         RGBA,
         DepthStencil,

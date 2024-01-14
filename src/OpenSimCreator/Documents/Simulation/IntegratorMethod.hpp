@@ -11,9 +11,8 @@ namespace SimTK { class System; }
 namespace osc
 {
     // integration methods that are supported by the OpenSim backend
-    enum class IntegratorMethod
-    {
-        OpenSimManagerDefault = 0,
+    enum class IntegratorMethod {
+        OpenSimManagerDefault,
         ExplicitEuler,
         RungeKutta2,
         RungeKutta3,

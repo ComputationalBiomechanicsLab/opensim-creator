@@ -11,4 +11,11 @@ namespace osc
         static_assert(std::is_enum_v<TEnum>);
         return static_cast<size_t>(TEnum::NUM_OPTIONS);
     }
+
+    template<typename TEnum>
+    [[nodiscard]] constexpr size_t NumFlags()
+        requires std::is_enum_v<TEnum>
+    {
+        return static_cast<size_t>(TEnum::NUM_FLAGS);
+    }
 }

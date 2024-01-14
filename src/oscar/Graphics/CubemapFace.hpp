@@ -13,7 +13,6 @@ namespace osc
         NegativeY,
         PositiveZ,
         NegativeZ,
-
         NUM_OPTIONS,
     };
 

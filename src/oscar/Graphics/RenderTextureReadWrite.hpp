@@ -10,7 +10,6 @@ namespace osc
         // render texture contains linear data, don't perform any conversions when
         // loading textels in a shader
         Linear,
-
         NUM_OPTIONS,
 
         Default = sRGB,

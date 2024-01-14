@@ -50,6 +50,7 @@ add_executable(testoscar
     Shims/Cpp20/TestBit.cpp
 
     Utils/TestCStringView.cpp
+    Utils/TestEnumHelpers.cpp
     Utils/TestFileChangePoller.cpp
     Utils/TestFilenameExtractor.cpp
     Utils/TestNonTypelist.cpp

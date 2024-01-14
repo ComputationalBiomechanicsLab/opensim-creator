@@ -510,7 +510,7 @@ namespace
 
     // enumeration of the possible axes a user may define
     enum class AxisIndex {
-        X = 0,
+        X,
         Y,
         Z,
         NUM_OPTIONS,

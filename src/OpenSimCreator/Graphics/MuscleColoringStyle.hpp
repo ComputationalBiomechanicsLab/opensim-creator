@@ -8,7 +8,7 @@
 namespace osc
 {
     enum class MuscleColoringStyle {
-        OpenSimAppearanceProperty = 0,
+        OpenSimAppearanceProperty,
         OpenSim,
         Activation,
         Excitation,

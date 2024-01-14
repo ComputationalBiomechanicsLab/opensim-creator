@@ -12,14 +12,14 @@
 namespace osc
 {
     enum class OverlayDecorationOptionFlags : uint32_t {
-        None = 0,
-        DrawXZGrid = 1<<0,
-        DrawXYGrid = 1<<1,
-        DrawYZGrid = 1<<2,
+        None          = 0,
+        DrawXZGrid    = 1<<0,
+        DrawXYGrid    = 1<<1,
+        DrawYZGrid    = 1<<2,
         DrawAxisLines = 1<<3,
-        DrawAABBs = 1<<4,
-        DrawBVH = 1<<5,
-        NUM_OPTIONS = 6,
+        DrawAABBs     = 1<<4,
+        DrawBVH       = 1<<5,
+        NUM_FLAGS        = 6,
 
         Default = None,
     };
@@ -43,12 +43,12 @@ namespace osc
 
     constexpr OverlayDecorationOptionFlags IthOption(size_t i)
     {
-        i = i < NumOptions<OverlayDecorationOptionFlags>() ? i : 0;
+        i = i < NumFlags<OverlayDecorationOptionFlags>() ? i : 0;
         return static_cast<OverlayDecorationOptionFlags>(1<<i);
     }
 
     enum class OverlayDecorationOptionGroup {
-        Alignment = 0,
+        Alignment,
         Development,
         NUM_OPTIONS,
     };

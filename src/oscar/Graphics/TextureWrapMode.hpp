@@ -10,7 +10,6 @@ namespace osc
         Repeat,
         Clamp,
         Mirror,
-
         NUM_OPTIONS,
     };
 

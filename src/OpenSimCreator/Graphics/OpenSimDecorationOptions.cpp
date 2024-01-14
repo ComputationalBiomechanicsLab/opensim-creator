@@ -47,7 +47,7 @@ void osc::OpenSimDecorationOptions::setMuscleSizingStyle(MuscleSizingStyle s)
 
 size_t osc::OpenSimDecorationOptions::getNumOptions() const
 {
-    return NumOptions<OpenSimDecorationOptionFlags>();
+    return NumFlags<OpenSimDecorationOptionFlags>();
 }
 
 bool osc::OpenSimDecorationOptions::getOptionValue(ptrdiff_t i) const
@@ -150,7 +150,7 @@ void osc::OpenSimDecorationOptions::forEachOptionAsAppSettingValue(std::function
     callback("muscle_decoration_style", AppSettingValue{GetMuscleDecorationStyleMetadata(m_MuscleDecorationStyle).id});
     callback("muscle_coloring_style", AppSettingValue{GetMuscleColoringStyleMetadata(m_MuscleColoringStyle).id});
     callback("muscle_sizing_style", AppSettingValue{GetMuscleSizingStyleMetadata(m_MuscleSizingStyle).id});
-    for (size_t i = 0; i < NumOptions<OpenSimDecorationOptionFlags>(); ++i)
+    for (size_t i = 0; i < NumFlags<OpenSimDecorationOptionFlags>(); ++i)
     {
         auto const& meta = GetIthOptionMetadata(i);
         bool const v = m_Flags & GetIthOption(i);
@@ -213,7 +213,7 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
         }
     }
 
-    for (size_t i = 0; i < NumOptions<OpenSimDecorationOptionFlags>(); ++i)
+    for (size_t i = 0; i < NumFlags<OpenSimDecorationOptionFlags>(); ++i)
     {
         auto const& metadata = GetIthOptionMetadata(i);
         if (auto* appVal = lookup(metadata.id); appVal->type() == AppSettingValueType::Bool)

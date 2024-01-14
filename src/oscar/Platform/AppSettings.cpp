@@ -54,11 +54,10 @@ R"(# configuration options
         // (e.g. the user clicked a checkbox or similar)
         //
         // user settings override system-wide settings
-        User = 0,
+        User,
 
         // set by a readonly system-level configuration file
         System,
-
         NUM_OPTIONS,
     };
 

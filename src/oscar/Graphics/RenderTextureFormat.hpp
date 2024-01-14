@@ -11,8 +11,8 @@ namespace osc
         ARGBFloat16,
         Red8,
         Depth,  // implementation-defined: pretend it's a high-res red texture
-
         NUM_OPTIONS,
+
         Default = ARGB32,
         DefaultHDR = ARGBFloat16,
     };

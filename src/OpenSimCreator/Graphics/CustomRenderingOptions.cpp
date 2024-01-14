@@ -12,7 +12,7 @@
 
 size_t osc::CustomRenderingOptions::getNumOptions() const
 {
-    return osc::NumOptions<CustomRenderingOptionFlags>();
+    return NumFlags<CustomRenderingOptionFlags>();
 }
 
 bool osc::CustomRenderingOptions::getOptionValue(ptrdiff_t i) const

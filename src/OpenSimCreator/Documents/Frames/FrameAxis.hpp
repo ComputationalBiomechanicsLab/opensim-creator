@@ -7,7 +7,7 @@
 namespace osc::frames
 {
     enum class FrameAxis {
-        PlusX = 0,
+        PlusX,
         PlusY,
         PlusZ,
         MinusX,

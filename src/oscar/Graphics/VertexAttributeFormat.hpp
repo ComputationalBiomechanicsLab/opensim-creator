@@ -16,7 +16,6 @@ namespace osc
 
         // four unsigned bytes, [0, 255], converted to float [0.0, 1.0] when loaded into a shader
         Unorm8x4,
-
         NUM_OPTIONS,
     };
 }

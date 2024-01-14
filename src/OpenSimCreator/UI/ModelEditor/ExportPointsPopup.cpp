@@ -381,7 +381,7 @@ namespace
     }
 
     enum class ExportStepReturn {
-        UserCancelled = 0,
+        UserCancelled,
         IoError,
         Done,
         NUM_OPTIONS,

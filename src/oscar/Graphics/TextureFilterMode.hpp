@@ -10,7 +10,6 @@ namespace osc
         Nearest,
         Linear,
         Mipmap,
-
         NUM_OPTIONS,
     };
 

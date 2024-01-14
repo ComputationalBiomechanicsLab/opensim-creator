@@ -18,7 +18,6 @@ namespace osc
         Sampler2D,
         SamplerCube,
         Unknown,
-
         NUM_OPTIONS,
     };
 

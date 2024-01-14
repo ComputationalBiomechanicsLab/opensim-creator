@@ -9,7 +9,6 @@ namespace osc
     enum class MeshTopology {
         Triangles,
         Lines,
-
         NUM_OPTIONS,
     };
 

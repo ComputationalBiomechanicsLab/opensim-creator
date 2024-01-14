@@ -6,8 +6,8 @@ namespace osc
         Off,
         Front,
         Back,
-
         NUM_OPTIONS,
+
         Default = Off,
     };
 }
