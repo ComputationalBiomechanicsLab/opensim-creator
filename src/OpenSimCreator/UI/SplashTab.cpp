@@ -3,10 +3,10 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
 #include <OpenSimCreator/Platform/RecentFile.hpp>
 #include <OpenSimCreator/Platform/RecentFiles.hpp>
+#include <OpenSimCreator/UI/FrameDefinition/FrameDefinitionTab.hpp>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTab.hpp>
 #include <OpenSimCreator/UI/Shared/MainMenu.hpp>
-#include <OpenSimCreator/UI/FrameDefinitionTab.hpp>
 #include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/LoadingTab.hpp>
 

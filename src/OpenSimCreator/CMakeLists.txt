@@ -201,6 +201,9 @@ add_library(OpenSimCreator STATIC
     UI/Experimental/TPS2DTab.cpp
     UI/Experimental/TPS2DTab.hpp
 
+    UI/FrameDefinition/FrameDefinitionTab.cpp
+    UI/FrameDefinition/FrameDefinitionTab.hpp
+
     UI/MeshImporter/ChooseElLayer.hpp
     UI/MeshImporter/DrawableThing.hpp
     UI/MeshImporter/IMeshImporterUILayerHost.hpp
@@ -332,8 +335,6 @@ add_library(OpenSimCreator STATIC
     UI/Simulation/SimulatorTab.cpp
     UI/Simulation/SimulatorTab.hpp
 
-    UI/FrameDefinitionTab.cpp
-    UI/FrameDefinitionTab.hpp
     UI/IMainUIStateAPI.hpp
     UI/IPopupAPI.hpp
     UI/LoadingTab.cpp
@@ -360,7 +361,7 @@ add_library(OpenSimCreator STATIC
     Utils/SimTKHelpers.hpp
     Utils/TPS3D.cpp
     Utils/TPS3D.hpp
-)
+ )
 
 # OpenSimCreatorConfig.hpp
 #
