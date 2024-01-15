@@ -48,7 +48,7 @@ namespace osc
                 return *this;
             }
 
-            constexpr typename reference operator*() const
+            constexpr reference operator*() const
             {
                 return data[pos];
             }
