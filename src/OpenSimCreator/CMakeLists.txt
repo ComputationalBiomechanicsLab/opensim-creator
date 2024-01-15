@@ -18,6 +18,8 @@ add_library(OpenSimCreator STATIC
     Documents/FrameDefinition/FDPointToPointEdge.cpp
     Documents/FrameDefinition/FDPointToPointEdge.hpp
     Documents/FrameDefinition/FDVirtualEdge.hpp
+    Documents/FrameDefinition/FrameDefinitionActions.cpp
+    Documents/FrameDefinition/FrameDefinitionActions.hpp
     Documents/FrameDefinition/FrameDefinitionHelpers.cpp
     Documents/FrameDefinition/FrameDefinitionHelpers.hpp
     Documents/FrameDefinition/LandmarkDefinedFrame.cpp
@@ -207,6 +209,10 @@ add_library(OpenSimCreator STATIC
 
     UI/FrameDefinition/FrameDefinitionTab.cpp
     UI/FrameDefinition/FrameDefinitionTab.hpp
+    UI/FrameDefinition/FrameDefinitionTabToolbar.cpp
+    UI/FrameDefinition/FrameDefinitionTabToolbar.hpp
+    UI/FrameDefinition/FrameDefinitionUIHelpers.cpp
+    UI/FrameDefinition/FrameDefinitionUIHelpers.hpp
 
     UI/MeshImporter/ChooseElLayer.hpp
     UI/MeshImporter/DrawableThing.hpp
@@ -288,6 +294,9 @@ add_library(OpenSimCreator STATIC
 
     UI/Shared/BasicWidgets.cpp
     UI/Shared/BasicWidgets.hpp
+    UI/Shared/ChooseComponentsEditorLayer.cpp
+    UI/Shared/ChooseComponentsEditorLayer.hpp
+    UI/Shared/ChooseComponentsEditorLayerParameters.hpp
     UI/Shared/GeometryPathEditorPopup.cpp
     UI/Shared/GeometryPathEditorPopup.hpp
     UI/Shared/ImportStationsFromCSVPopup.cpp
