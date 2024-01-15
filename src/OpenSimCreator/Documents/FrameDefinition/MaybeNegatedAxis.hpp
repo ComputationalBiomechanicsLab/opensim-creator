@@ -66,7 +66,7 @@ namespace osc::fd
     }
 
     // returns a string representation of the given (possibly negated) axis
-    constexpr std::string ToString(MaybeNegatedAxis const& ax)
+    inline std::string ToString(MaybeNegatedAxis const& ax)
     {
         std::string rv;
         rv.reserve(2);
