@@ -14,7 +14,7 @@ def resize_png_files(directory, scale_factor=0.5):
                     # Calculate new dimensions based on the scale factor
                     new_width = int(img.width * scale_factor)
                     new_height = int(img.height * scale_factor)
-                    
+
                     print(f'resizing {file_path}: ({img.width}, {img.height}) --> ({new_width}, {new_height})')
 
                     # Resize the image
