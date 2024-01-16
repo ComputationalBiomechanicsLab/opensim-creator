@@ -9,6 +9,7 @@
 #include <oscar/Shims/Cpp20/bit.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/At.hpp>
+#include <oscar/Utils/ObjectRepresentation.hpp>
 
 #include <algorithm>
 #include <array>
@@ -23,6 +24,7 @@
 #include <string>
 #include <string_view>
 
+using osc::ViewObjectRepresentation;
 using osc::Mesh;
 using osc::StlMetadata;
 using osc::Triangle;
@@ -71,10 +73,10 @@ namespace
 
     void WriteFloatIEEE(std::ostream& o, float v)
     {
-        static_assert(std::numeric_limits<float>::is_iec559);
-        for (uint8_t byte : osc::bit_cast<std::array<uint8_t, sizeof(decltype(v))>>(v))
+        static_assert(std::numeric_limits<float>::is_iec559, "STL files use IEE754 floats");
+        for (std::byte byte : ViewObjectRepresentation(v))
         {
-            o << byte;
+            o << static_cast<uint8_t>(byte);
         }
     }
 

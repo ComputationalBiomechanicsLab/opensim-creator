@@ -191,7 +191,7 @@ namespace
     {
         static_assert(sizeof(GLubyte) == sizeof(CStringView::value_type));
         static_assert(alignof(GLubyte) == alignof(CStringView::value_type));
-        return stringPtr ? CStringView{reinterpret_cast<char const*>(stringPtr)} : CStringView{};
+        return stringPtr ? CStringView{reinterpret_cast<CStringView::value_type const*>(stringPtr)} : CStringView{};
     }
 
     CStringView GLGetCStringView(GLenum name)
@@ -5990,7 +5990,7 @@ namespace
 {
     struct RequiredOpenGLCapability final {
         GLenum id;
-        char const* label;
+        CStringView label;
     };
     constexpr auto c_RequiredOpenGLCapabilities = std::to_array<RequiredOpenGLCapability>(
     {
@@ -6058,7 +6058,7 @@ namespace
             glEnable(capability.id);
             if (!glIsEnabled(capability.id))
             {
-                osc::log::warn("failed to enable %s: this may cause rendering issues", capability.label);
+                osc::log::warn("failed to enable %s: this may cause rendering issues", capability.label.c_str());
             }
         }
 

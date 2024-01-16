@@ -75,8 +75,6 @@ osc::Variant::Variant(float v) : m_Data{v} {}
 osc::Variant::Variant(int v) : m_Data{v} {}
 osc::Variant::Variant(std::string v) : m_Data{std::move(v)} {}
 osc::Variant::Variant(std::string_view v) : m_Data{std::string{v}} {}
-osc::Variant::Variant(char const* v) : m_Data{std::string{v}} {}
-osc::Variant::Variant(CStringView v) : m_Data{std::string{v}} {}
 osc::Variant::Variant(StringName const& v) : m_Data{v} {}
 osc::Variant::Variant(Vec3 v) : m_Data{v} {}
 

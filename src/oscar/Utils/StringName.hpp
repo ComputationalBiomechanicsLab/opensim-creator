@@ -69,7 +69,7 @@ namespace osc
         explicit StringName();
         explicit StringName(std::string&&);
         explicit StringName(std::string_view);
-        explicit StringName(char const*);
+        explicit StringName(char const* ptr) : StringName{std::string_view{ptr}} {}
         explicit StringName(std::nullptr_t) = delete;
 
         StringName(StringName const& other) noexcept :

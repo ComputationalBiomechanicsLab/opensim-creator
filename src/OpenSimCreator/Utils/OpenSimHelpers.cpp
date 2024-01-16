@@ -280,6 +280,34 @@ namespace
             return false;
         }
     }
+
+    OpenSim::Component& GetOrUpdComponent(OpenSim::Component& c, OpenSim::ComponentPath const& cp)
+    {
+        return c.updComponent(cp);
+    }
+
+    OpenSim::Component const& GetOrUpdComponent(OpenSim::Component const& c, OpenSim::ComponentPath const& cp)
+    {
+        return c.getComponent(cp);
+    }
+
+    template<typename Component>
+    Component* FindComponentGeneric(Component& c, OpenSim::ComponentPath const& cp)
+    {
+        if (cp == OpenSim::ComponentPath{})
+        {
+            return nullptr;
+        }
+
+        try
+        {
+            return &GetOrUpdComponent(c, cp);
+        }
+        catch (OpenSim::Exception const&)
+        {
+            return nullptr;
+        }
+    }
 }
 
 
@@ -557,19 +585,7 @@ OpenSim::Component const* osc::FindComponent(
     OpenSim::Component const& root,
     OpenSim::ComponentPath const& cp)
 {
-    if (IsEmpty(cp))
-    {
-        return nullptr;
-    }
-
-    try
-    {
-        return &root.getComponent(cp);
-    }
-    catch (OpenSim::Exception const&)
-    {
-        return nullptr;
-    }
+    return FindComponentGeneric(root, cp);
 }
 
 OpenSim::Component const* osc::FindComponent(
@@ -583,7 +599,7 @@ OpenSim::Component* osc::FindComponentMut(
     OpenSim::Component& root,
     OpenSim::ComponentPath const& cp)
 {
-    return const_cast<OpenSim::Component*>(FindComponent(root, cp));
+    return FindComponentGeneric(root, cp);
 }
 
 bool osc::ContainsComponent(
@@ -856,7 +872,7 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
     {
         // delete an OpenSim::Geometry from its owning OpenSim::Frame
 
-        if (auto* frame = FindAncestorWithTypeMut<OpenSim::Frame>(geom))
+        if (auto* frame = dynamic_cast<OpenSim::Frame*>(owner))
         {
             // its owner is a frame, which holds the geometry in a list property
 

@@ -7,8 +7,8 @@
 
 namespace
 {
-    constexpr std::string_view newInvalidChars{"\\*+ \t\n"};
-    constexpr std::string::value_type nul = {};
+    constexpr std::string_view c_NewInvalidChars{"\\*+ \t\n"};
+    constexpr std::string::value_type c_NUL = {};
 
     // Returns a normalized form of `path`. A normalized path string is
     // guaranteed to:
@@ -32,6 +32,10 @@ namespace
     // string manipulation techniques.
     std::string normalize(std::string path)
     {
+        using Iter = typename std::string::iterator;
+        using ConstIter = typename std::string::const_iterator;
+        using Value = typename std::string::value_type;
+
         // note: this implementation is fairly low-level and involves mutating
         //       `path` quite a bit. The test suite is heavily relied on for
         //       developing this kind of tricky code.
@@ -48,18 +52,18 @@ namespace
         //       increase L1 misses.
 
         // assert that `path` contains no invalid chars
-        if (path.find_first_of(newInvalidChars) != std::string::npos)
+        if (path.find_first_of(c_NewInvalidChars) != std::string::npos)
         {
             throw std::runtime_error{path + ": The supplied path contains invalid characters."};
         }
 
         // pathEnd is guaranteed to be a NUL terminator since C++11
-        char* pathBegin = path.data();
-        char* pathEnd = path.data() + path.size();
+        Iter const pathBegin = path.begin();
+        Iter pathEnd = path.end();
 
         // helper: shift n chars starting at newStart+n such that, after,
         // newStart..end is equal to what newStart+n..end was before.
-        auto shift = [&](char* newStart, size_t n)
+        auto const shift = [&pathEnd](Iter newStart, size_t n)
         {
             std::copy(newStart + n, pathEnd, newStart);
             pathEnd -= n;
@@ -71,29 +75,29 @@ namespace
         // - The maximum lookahead is 3 characters because the parsing
         //   code below needs to be able to detect the upcoming input
         //   pattern "..[/\0]"
-        struct Lookahead { char a, b, c; };
-        auto getLookahead = [](char const* start, char const* end)
+        struct Lookahead { Value a, b, c; };
+        auto getLookahead = [](ConstIter start, ConstIter end)
         {
             return Lookahead
             {
-                start < end - 0 ? start[0] : nul,
-                start < end - 1 ? start[1] : nul,
-                start < end - 2 ? start[2] : nul,
+                start < end - 0 ? start[0] : c_NUL,
+                start < end - 1 ? start[1] : c_NUL,
+                start < end - 2 ? start[2] : c_NUL,
             };
         };
 
         // remove duplicate adjacent separators
-        for (char* c = pathBegin; c != pathEnd; ++c)
+        for (Iter it = pathBegin; it != pathEnd; ++it)
         {
-            Lookahead l = getLookahead(c, pathEnd);
+            Lookahead l = getLookahead(it, pathEnd);
             if (l.a == osc::NodePath::separator && l.b == osc::NodePath::separator)
             {
-                shift(c--, 1);
+                shift(it--, 1);
             }
         }
 
         bool isAbsolute = *pathBegin == osc::NodePath::separator;
-        char* cursor = isAbsolute ? pathBegin + 1 : pathBegin;
+        Iter cursor = isAbsolute ? pathBegin + 1 : pathBegin;
 
         // skip/dereference relative elements *at the start of a path*
         {
@@ -103,11 +107,11 @@ namespace
                 case osc::NodePath::separator:
                     shift(cursor, 2);
                     break;
-                case nul:
+                case c_NUL:
                     shift(cursor, 1);
                     break;
                 case '.': {
-                    if (l.c == osc::NodePath::separator|| l.c == nul) {
+                    if (l.c == osc::NodePath::separator|| l.c == c_NUL) {
                         // starts with '..' element: only allowed if the path
                         // is relative
                         if (isAbsolute)
@@ -139,7 +143,7 @@ namespace
             }
         }
 
-        char* contentStart = cursor;
+        Iter contentStart = cursor;
 
         // invariants:
         //
@@ -155,12 +159,12 @@ namespace
         while (cursor < pathEnd) {
             Lookahead l = getLookahead(cursor, pathEnd);
 
-            if (l.a == '.' && (l.b == nul || l.b == osc::NodePath::separator)) {
+            if (l.a == '.' && (l.b == c_NUL || l.b == osc::NodePath::separator)) {
                 // handle '.' (if found)
                 size_t charsInCurEl = l.b == osc::NodePath::separator ? 2 : 1;
                 shift(cursor, charsInCurEl);
 
-            } else if (l.a == '.' && l.b == '.' && (l.c == nul || l.c == osc::NodePath::separator)) {
+            } else if (l.a == '.' && l.b == '.' && (l.c == c_NUL || l.c == osc::NodePath::separator)) {
                 // handle '..' (if found)
 
                 if (cursor == contentStart)
@@ -169,13 +173,13 @@ namespace
                 }
 
                 // search backwards for previous separator
-                char* prevSeparator = cursor - 2;
+                Iter prevSeparator = cursor - 2;
                 while (prevSeparator > contentStart && *prevSeparator != osc::NodePath::separator)
                 {
                     --prevSeparator;
                 }
 
-                char* prevStart = prevSeparator <= contentStart ? contentStart : prevSeparator + 1;
+                Iter prevStart = prevSeparator <= contentStart ? contentStart : prevSeparator + 1;
                 size_t charsInCurEl = (l.c == osc::NodePath::separator) ? 3 : 2;
                 size_t charsInPrevEl = cursor - prevStart;
 
@@ -193,7 +197,7 @@ namespace
         //   string is only a slash. However, the input path wasnt initially an
         //   absolute path, so the output should be "", not "/"
         {
-            char* beg = isAbsolute ? pathBegin + 1 : pathBegin;
+            Iter beg = isAbsolute ? pathBegin + 1 : pathBegin;
             if (pathEnd - beg > 0 && pathEnd[-1] == osc::NodePath::separator)
             {
                 --pathEnd;

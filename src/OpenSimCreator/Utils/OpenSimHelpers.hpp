@@ -312,12 +312,6 @@ namespace osc
         return dynamic_cast<T const*>(rv);
     }
 
-    template<std::derived_from<OpenSim::Component> T>
-    T* FindAncestorWithTypeMut(OpenSim::Component* c)
-    {
-        return const_cast<T*>(FindAncestorWithType<T>(c));
-    }
-
     // returns `true` if `c` is a child of a component that derives from `T`
     template<std::derived_from<OpenSim::Component> T>
     bool IsChildOfA(OpenSim::Component const& c)

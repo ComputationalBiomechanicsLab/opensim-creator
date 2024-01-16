@@ -13,10 +13,12 @@ namespace osc
     class CStringView final {
     public:
         using value_type = std::string_view::value_type;
+        using iterator = value_type*;
+        using const_iterator = value_type const*;
 
         constexpr CStringView() = default;
 
-        constexpr CStringView(char const* s) :
+        constexpr CStringView(value_type const* s) :
             m_Data{s ? s : ""}
         {
         }
@@ -52,7 +54,7 @@ namespace osc
             return m_Size == 0;
         }
 
-        constexpr char const* c_str() const
+        constexpr value_type const* c_str() const
         {
             return m_Data;
         }
@@ -62,12 +64,12 @@ namespace osc
             return std::string_view{m_Data, m_Size};
         }
 
-        constexpr char const* begin() const
+        constexpr const_iterator begin() const
         {
             return m_Data;
         }
 
-        constexpr char const* end() const
+        constexpr const_iterator end() const
         {
             return m_Data + m_Size;
         }
@@ -81,7 +83,7 @@ namespace osc
             return ThreeWayComparison(std::string_view{lhs}, std::string_view{rhs});
         }
     private:
-        char const* m_Data = "";
+        value_type const* m_Data = "";
         size_t m_Size = std::string_view{m_Data}.size();
     };
 

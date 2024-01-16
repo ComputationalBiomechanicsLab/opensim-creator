@@ -24,9 +24,9 @@ namespace osc
         Variant(int);
         Variant(std::string);
         Variant(std::string_view);
-        Variant(char const*);
+        Variant(char const* ptr) : Variant{std::string_view{ptr}} {}
         Variant(std::nullopt_t) = delete;
-        Variant(CStringView);
+        Variant(CStringView csv) : Variant{std::string_view{csv}} {}
         Variant(StringName const&);
         Variant(Vec3);
 

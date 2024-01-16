@@ -109,7 +109,6 @@ namespace
 
 osc::StringName::StringName() : StringName{GetCachedBlankStringData()} {}
 osc::StringName::StringName(std::string&& tmp) : m_Data{&PossiblyConstructThenGetData(std::move(tmp))} {}
-osc::StringName::StringName(char const* c) : StringName{std::string_view{c}} {}
 osc::StringName::StringName(std::string_view sv) : m_Data{&PossiblyConstructThenGetData(sv)} {}
 osc::StringName::~StringName() noexcept { DecrementThenPossiblyDestroyData(*m_Data); }
 
