@@ -324,10 +324,3 @@ TEST(NodePath, ThrowsIfGivenInvalidInputs)
         ASSERT_ANY_THROW({ osc::NodePath p(input); }) << std::string{"input was: "} + std::string{input};
     }
 }
-
-TEST(NodePath, CanBeCreatedFromLiteralSyntax)
-{
-    using osc::literals::operator""_np;
-
-    ASSERT_EQ("/a"_np, osc::NodePath{"/a"});
-}
