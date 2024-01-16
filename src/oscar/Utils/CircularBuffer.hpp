@@ -141,6 +141,9 @@ namespace osc
             ptrdiff_t pos = 0;
         };
 
+        Iterator(T*, ptrdiff_t) -> Iterator<false>;
+        Iterator(T const*, ptrdiff_t) -> Iterator<true>;
+
     public:
         using value_type = T;
         using size_type = size_t;
@@ -173,21 +176,19 @@ namespace osc
         }
 
         constexpr reference operator[](size_type pos) {
-            size_type idx = (static_cast<size_type>(m_Begin) + pos) % N;
-            return *std::launder(reinterpret_cast<T*>(m_RawStorage.data() + idx));
+            return at(*this, pos);
         }
 
         constexpr const_reference operator[](size_type pos) const {
-            size_type idx = (static_cast<size_type>(m_Begin) + pos) % N;
-            return *std::launder(reinterpret_cast<T const*>(m_RawStorage.data() + idx));
+            return at(*this, pos);
         }
 
         constexpr reference front() {
-            return *std::launder(reinterpret_cast<T*>(m_RawStorage.data() + static_cast<size_type>(m_Begin)));
+            return at(*this, 0);
         }
 
         constexpr const_reference front() const {
-            *std::launder(reinterpret_cast<T*>(m_RawStorage.data() + static_cast<size_type>(m_Begin)));
+            return at(*this, 0);
         }
 
         constexpr reference back() {
@@ -201,14 +202,11 @@ namespace osc
         // iterators
 
         constexpr const_iterator begin() const {
-            // the iterator is designed to handle const-ness
-            T const* const_ptr = std::launder(reinterpret_cast<T const*>(m_RawStorage.data()));
-            return const_iterator{const_ptr, m_Begin};
+            return iterator_at(*this, m_Begin);
         }
 
         constexpr iterator begin() {
-            T* ptr = std::launder(reinterpret_cast<T*>(m_RawStorage.data()));
-            return iterator{ptr, m_Begin};
+            return iterator_at(*this, m_Begin);
         }
 
         constexpr const_iterator cbegin() const {
@@ -216,14 +214,11 @@ namespace osc
         }
 
         constexpr const_iterator end() const {
-            // the iterator is designed to handle const-ness
-            T const* const_ptr = std::launder(reinterpret_cast<T const*>(m_RawStorage.data()));
-            return const_iterator{const_ptr, m_End};
+            return iterator_at(*this, m_End);
         }
 
         constexpr iterator end() {
-            T* ptr = std::launder(reinterpret_cast<T*>(m_RawStorage.data()));
-            return iterator{ptr, m_End};
+            return iterator_at(*this, m_End);
         }
 
         constexpr const_iterator cend() const {
@@ -360,12 +355,23 @@ namespace osc
         }
 
     private:
-        template<class CircularBuf>
-        static constexpr auto at(CircularBuf& buf, size_type pos) {
-            if (buf.pos > buf.size()) {
+        template<typename CircularBuf>
+        static constexpr auto at(CircularBuf& buf, size_type pos) -> decltype(*buf.begin()) {
+            if (pos >= buf.size()) {
                 throw std::out_of_range{"tried to access a circular buffer element outside of its range"};
             }
-            return buf[pos];
+            return buf.begin()[pos];
+        }
+
+        template<typename CircularBuf>
+        static constexpr auto iterator_at(CircularBuf& buf, ptrdiff_t pos) {
+            using Value = std::conditional_t<std::is_const_v<CircularBuf>, T const, T>;
+
+            static_assert(alignof(Value) == alignof(typename decltype(buf.m_RawStorage)::value_type));
+            static_assert(sizeof(Value) == sizeof(typename decltype(buf.m_RawStorage)::value_type));
+            Value* ptr = std::launder(reinterpret_cast<Value*>(buf.m_RawStorage.data()));
+
+            return Iterator{ptr, pos};
         }
 
         // raw (byte) storage for elements

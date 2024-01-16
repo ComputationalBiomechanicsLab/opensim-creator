@@ -35,6 +35,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <new>
 #include <unordered_map>
 #include <variant>
 #include <vector>
@@ -202,7 +203,7 @@ namespace
     {
         if (ImGui::GetCurrentContext())
         {
-            return reinterpret_cast<OscarImguiBackendData*>(ImGui::GetIO().BackendRendererUserData);
+            return std::launder(reinterpret_cast<OscarImguiBackendData*>(ImGui::GetIO().BackendRendererUserData));
         }
         else
         {

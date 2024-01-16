@@ -191,7 +191,7 @@ namespace
     {
         static_assert(sizeof(GLubyte) == sizeof(CStringView::value_type));
         static_assert(alignof(GLubyte) == alignof(CStringView::value_type));
-        return stringPtr ? CStringView{reinterpret_cast<CStringView::value_type const*>(stringPtr)} : CStringView{};
+        return stringPtr ? CStringView{std::launder(reinterpret_cast<CStringView::value_type const*>(stringPtr))} : CStringView{};
     }
 
     CStringView GLGetCStringView(GLenum name)
@@ -206,7 +206,7 @@ namespace
 
     bool IsAlignedAtLeast(void const* ptr, GLint requiredAlignment)
     {
-        return reinterpret_cast<intptr_t>(ptr) % requiredAlignment == 0;
+        return osc::bit_cast<intptr_t>(ptr) % requiredAlignment == 0;
     }
 
     // returns the `Name String`s of all extensions that OSC's OpenGL backend might use
@@ -4988,7 +4988,7 @@ public:
 
     void setVertexBufferData(std::span<uint8_t const> newData, MeshUpdateFlags flags)
     {
-        m_VertexBuffer.setData({reinterpret_cast<std::byte const*>(newData.data()), newData.size()});
+        m_VertexBuffer.setData(std::as_bytes(newData));
 
         rangeCheckIndicesAndRecalculateBounds(flags);
         m_Version->reset();
@@ -5020,7 +5020,7 @@ public:
 
         size_t const bytesPerIndex = m_IndicesAre32Bit ? sizeof(GLint) : sizeof(GLshort);
         size_t const firstIndexByteOffset = descriptor.getIndexStart() * bytesPerIndex;
-        void const* indices = reinterpret_cast<void*>(static_cast<intptr_t>(firstIndexByteOffset));
+        void const* indices = osc::bit_cast<void*>(firstIndexByteOffset);
 
         auto const instanceCount = static_cast<GLsizei>(n);
 
@@ -5196,7 +5196,7 @@ private:
             GetVertexAttributeType(layout.format()),
             GetVertexAttributeNormalized(layout.format()),
             static_cast<GLsizei>(format.stride()),
-            reinterpret_cast<void*>(static_cast<uintptr_t>(layout.offset()))
+            osc::bit_cast<void*>(layout.offset())
         );
         glEnableVertexAttribArray(GetVertexAttributeIndex(layout.attribute()));
     }
@@ -5211,7 +5211,7 @@ private:
         MeshOpenGLData& buffers = **m_MaybeGPUBuffers;
 
         // upload CPU-side vector data into the GPU-side buffer
-        OSC_ASSERT(reinterpret_cast<uintptr_t>(m_VertexBuffer.bytes().data()) % alignof(float) == 0);
+        OSC_ASSERT(osc::bit_cast<uintptr_t>(m_VertexBuffer.bytes().data()) % alignof(float) == 0);
         gl::BindBuffer(
             GL_ARRAY_BUFFER,
             buffers.arrayBuffer

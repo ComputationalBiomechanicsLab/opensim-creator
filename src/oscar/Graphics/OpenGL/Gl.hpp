@@ -5,6 +5,7 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
+#include <oscar/Shims/Cpp20/bit.hpp>
 #include <oscar/Utils/Concepts.hpp>
 
 #include <GL/glew.h>
@@ -567,7 +568,7 @@ namespace gl
                 SourceType,
                 normgl,
                 stridegl,
-                reinterpret_cast<void*>(offset)
+                osc::bit_cast<void*>(offset)
             );
         }
         else if constexpr (SourceType == GL_FLOAT)
@@ -580,7 +581,7 @@ namespace gl
                     SourceType,
                     normgl,
                     stridegl,
-                    reinterpret_cast<void*>(offset + (i * TGlsl::elementsPerLocation * sizeof(float)))
+                    osc::bit_cast<void*>(offset + (i * TGlsl::elementsPerLocation * sizeof(float)))
                 );
             }
         }

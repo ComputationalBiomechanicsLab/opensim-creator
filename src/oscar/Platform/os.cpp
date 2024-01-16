@@ -2,6 +2,7 @@
 
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/LogLevel.hpp>
+#include <oscar/Shims/Cpp20/bit.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 
