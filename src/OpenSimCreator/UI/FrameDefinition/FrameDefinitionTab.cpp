@@ -1,15 +1,15 @@
 #include "FrameDefinitionTab.hpp"
 
 #include <OpenSimCreator/Documents/FrameDefinition/AxisIndex.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/CrossProductDefinedFrame.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/CrossProductEdge.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/Edge.hpp>
 #include <OpenSimCreator/Documents/FrameDefinition/EdgePoints.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/FDCrossProductEdge.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/FDPointToPointEdge.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/FDVirtualEdge.hpp>
 #include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionActions.hpp>
 #include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/LandmarkDefinedFrame.hpp>
 #include <OpenSimCreator/Documents/FrameDefinition/MaybeNegatedAxis.hpp>
 #include <OpenSimCreator/Documents/FrameDefinition/MidpointLandmark.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/PointToPointEdge.hpp>
 #include <OpenSimCreator/Documents/FrameDefinition/SphereLandmark.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
@@ -221,7 +221,7 @@ namespace
     void PushCreateCrossProductEdgeLayer(
         osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
-        FDVirtualEdge const& firstEdge,
+        Edge const& firstEdge,
         osc::ModelEditorViewerPanelRightClickEvent const& sourceEvent)
     {
         auto* const visualizer = editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
@@ -248,14 +248,14 @@ namespace
             }
             std::string const& edgeBPath = *choices.begin();
 
-            auto const* edgeA = osc::FindComponent<FDVirtualEdge>(model->getModel(), edgeAPath);
+            auto const* edgeA = osc::FindComponent<Edge>(model->getModel(), edgeAPath);
             if (!edgeA)
             {
                 osc::log::error("edge A's component path (%s) does not exist in the model", edgeAPath.c_str());
                 return false;
             }
 
-            auto const* edgeB = osc::FindComponent<FDVirtualEdge>(model->getModel(), edgeBPath);
+            auto const* edgeB = osc::FindComponent<Edge>(model->getModel(), edgeBPath);
             if (!edgeB)
             {
                 osc::log::error("point B's component path (%s) does not exist in the model", edgeBPath.c_str());
@@ -298,14 +298,14 @@ namespace
             }
             std::string const& originPath = *choices.begin();
 
-            auto const* firstEdge = osc::FindComponent<FDVirtualEdge>(model->getModel(), firstEdgeAbsPath);
+            auto const* firstEdge = osc::FindComponent<Edge>(model->getModel(), firstEdgeAbsPath);
             if (!firstEdge)
             {
                 osc::log::error("the first edge's component path (%s) does not exist in the model", firstEdgeAbsPath.c_str());
                 return false;
             }
 
-            auto const* otherEdge = osc::FindComponent<FDVirtualEdge>(model->getModel(), secondEdgeAbsPath);
+            auto const* otherEdge = osc::FindComponent<Edge>(model->getModel(), secondEdgeAbsPath);
             if (!otherEdge)
             {
                 osc::log::error("the second edge's component path (%s) does not exist in the model", secondEdgeAbsPath.c_str());
@@ -335,7 +335,7 @@ namespace
     void PushPickOtherEdgeStateForFrameDefinitionLayer(
         osc::ModelEditorViewerPanel& visualizer,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
-        FDVirtualEdge const& firstEdge,
+        Edge const& firstEdge,
         MaybeNegatedAxis firstEdgeAxis)
     {
         ChooseComponentsEditorLayerParameters options;
@@ -378,7 +378,7 @@ namespace
     void ActionPushCreateFrameLayer(
         osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
-        FDVirtualEdge const& firstEdge,
+        Edge const& firstEdge,
         MaybeNegatedAxis firstEdgeAxis,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent)
     {
@@ -572,7 +572,7 @@ namespace
     void DrawCalculateMenu(
         OpenSim::Component const& root,
         SimTK::State const& state,
-        FDVirtualEdge const& edge)
+        Edge const& edge)
     {
         if (ImGui::BeginMenu(ICON_FA_CALCULATOR " Calculate"))
         {
@@ -583,7 +583,7 @@ namespace
                     osc::DrawPointTranslationInformationWithRespectTo(
                         frame,
                         state,
-                        osc::ToVec3(edge.getEdgePointsInGround(state).start)
+                        osc::ToVec3(edge.getStartLocationInGround(state))
                     );
                 };
                 osc::DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
@@ -597,7 +597,7 @@ namespace
                     osc::DrawPointTranslationInformationWithRespectTo(
                         frame,
                         state,
-                        osc::ToVec3(edge.getEdgePointsInGround(state).end)
+                        osc::ToVec3(edge.getEndLocationInGround(state))
                     );
                 };
 
@@ -612,7 +612,7 @@ namespace
                     osc::DrawDirectionInformationWithRepsectTo(
                         frame,
                         state,
-                        osc::ToVec3(CalcDirection(edge.getEdgePointsInGround(state)))
+                        osc::ToVec3(CalcDirection(edge.getLocationsInGround(state)))
                     );
                 };
 
@@ -659,7 +659,7 @@ namespace
         osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        FDVirtualEdge const& edge)
+        Edge const& edge)
     {
         if (maybeSourceEvent && ImGui::MenuItem(ICON_FA_TIMES " Cross Product Edge"))
         {
@@ -874,7 +874,7 @@ namespace
         osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        FDPointToPointEdge const& edge)
+        PointToPointEdge const& edge)
     {
         osc::DrawRightClickedComponentContextMenuHeader(edge);
         osc::DrawContextMenuSeparator();
@@ -896,7 +896,7 @@ namespace
         osc::IEditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> const& model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        FDCrossProductEdge const& edge)
+        CrossProductEdge const& edge)
     {
         osc::DrawRightClickedComponentContextMenuHeader(edge);
         osc::DrawContextMenuSeparator();
@@ -986,11 +986,11 @@ namespace
             {
                 DrawRightClickedFrameContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeFrame);
             }
-            else if (auto const* maybeP2PEdge = dynamic_cast<FDPointToPointEdge const*>(maybeComponent))
+            else if (auto const* maybeP2PEdge = dynamic_cast<PointToPointEdge const*>(maybeComponent))
             {
                 DrawRightClickedPointToPointEdgeContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeP2PEdge);
             }
-            else if (auto const* maybeCPEdge = dynamic_cast<FDCrossProductEdge const*>(maybeComponent))
+            else if (auto const* maybeCPEdge = dynamic_cast<CrossProductEdge const*>(maybeComponent))
             {
                 DrawRightClickedCrossProductEdgeContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeCPEdge);
             }

@@ -325,7 +325,7 @@ namespace
             Vec3 const direction = osc::Normalize(end - start);
 
             Vec3 const neckStart = start;
-            Vec3 const neckEnd = end - (static_cast<float>(d.getTipLength()) * direction);
+            Vec3 const neckEnd = end - (m_FixupScaleFactor * static_cast<float>(d.getTipLength()) * direction);
             Vec3 const headStart = neckEnd;
             Vec3 const headEnd = end;
 

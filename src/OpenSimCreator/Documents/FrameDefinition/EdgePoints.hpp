@@ -4,9 +4,11 @@
 
 namespace osc::fd
 {
-    // the start and end locations of an edge in 3D space
+    /**
+     * A convenience wrapper for the start and end points of an `Edge`
+     */
     struct EdgePoints final {
-        SimTK::Vec3 start;
-        SimTK::Vec3 end;
+        SimTK::Vec3 start{SimTK::NaN};
+        SimTK::Vec3 end{SimTK::NaN};
     };
 }

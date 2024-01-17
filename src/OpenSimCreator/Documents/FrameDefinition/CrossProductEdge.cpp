@@ -1,4 +1,4 @@
-#include "FDCrossProductEdge.hpp"
+#include "CrossProductEdge.hpp"
 
 #include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.hpp>
 
@@ -7,20 +7,22 @@
 
 using osc::fd::EdgePoints;
 
-osc::fd::FDCrossProductEdge::FDCrossProductEdge()
+osc::fd::CrossProductEdge::CrossProductEdge()
 {
-    constructProperty_showPlane(false);
+    constructProperty_show_plane(false);
+    constructProperty_arrow_display_length(1.0);
     constructProperty_Appearance(OpenSim::Appearance{});
+
     SetColorAndOpacity(upd_Appearance(), c_CrossProductEdgeDefaultColor);
 }
 
-void osc::fd::FDCrossProductEdge::generateDecorations(
+void osc::fd::CrossProductEdge::generateDecorations(
     bool,
     const OpenSim::ModelDisplayHints&,
     const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendOut) const
 {
-    EdgePoints const coords = getEdgePointsInGround(state);
+    EdgePoints const coords = getLocationsInGround(state);
 
     // draw edge
     appendOut.push_back(CreateDecorativeArrow(
@@ -30,7 +32,7 @@ void osc::fd::FDCrossProductEdge::generateDecorations(
     ));
 
     // if requested, draw a parallelogram from the two edges
-    if (get_showPlane())
+    if (get_show_plane())
     {
         auto const [aPoints, bPoints] = getBothEdgePoints(state);
         appendOut.push_back(CreateParallelogramMesh(
@@ -42,17 +44,16 @@ void osc::fd::FDCrossProductEdge::generateDecorations(
     }
 }
 
-std::pair<EdgePoints, EdgePoints> osc::fd::FDCrossProductEdge::getBothEdgePoints(SimTK::State const& state) const
+EdgePoints osc::fd::CrossProductEdge::calcLocationsInGround(SimTK::State const& state) const
 {
-    return
-    {
-        getConnectee<FDVirtualEdge>("edgeA").getEdgePointsInGround(state),
-        getConnectee<FDVirtualEdge>("edgeB").getEdgePointsInGround(state),
-    };
+    auto const& [first, second] = getBothEdgePoints(state);
+    return CrossProduct(first, second);  // TODO: sort out magnitude etc.
 }
 
-EdgePoints osc::fd::FDCrossProductEdge::implGetEdgePointsInGround(SimTK::State const& state) const
+std::pair<EdgePoints, EdgePoints> osc::fd::CrossProductEdge::getBothEdgePoints(SimTK::State const& state) const
 {
-    std::pair<EdgePoints, EdgePoints> const edgePoints = getBothEdgePoints(state);
-    return  CrossProduct(edgePoints.first, edgePoints.second);
+    return {
+        getConnectee<Edge>("first_edge").getLocationsInGround(state),
+        getConnectee<Edge>("second_edge").getLocationsInGround(state),
+    };
 }

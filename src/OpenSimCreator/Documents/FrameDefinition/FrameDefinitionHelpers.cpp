@@ -1,6 +1,6 @@
 #include "FrameDefinitionHelpers.hpp"
 
-#include <OpenSimCreator/Documents/FrameDefinition/FDVirtualEdge.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/Edge.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Graphics/ModelRendererParams.hpp>
 #include <OpenSimCreator/Utils/SimTKHelpers.hpp>
@@ -175,7 +175,7 @@ bool osc::fd::IsPhysicalFrame(OpenSim::Component const& component)
 
 bool osc::fd::IsEdge(OpenSim::Component const& component)
 {
-    return dynamic_cast<FDVirtualEdge const*>(&component) != nullptr;
+    return dynamic_cast<Edge const*>(&component) != nullptr;
 }
 
 SimTK::UnitVec3 osc::fd::CalcDirection(EdgePoints const& a)

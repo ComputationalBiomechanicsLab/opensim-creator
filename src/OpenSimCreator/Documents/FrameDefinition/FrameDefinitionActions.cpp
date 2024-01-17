@@ -1,10 +1,10 @@
 #include "FrameDefinitionActions.hpp"
 
-#include <OpenSimCreator/Documents/FrameDefinition/FDCrossProductEdge.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/FDPointToPointEdge.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/CrossProductDefinedFrame.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/CrossProductEdge.hpp>
 #include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/LandmarkDefinedFrame.hpp>
 #include <OpenSimCreator/Documents/FrameDefinition/MidpointLandmark.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/PointToPointEdge.hpp>
 #include <OpenSimCreator/Documents/FrameDefinition/SphereLandmark.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
@@ -104,15 +104,15 @@ void osc::fd::ActionAddPointToPointEdge(
     std::string const commitMessage = GenerateAddedSomethingCommitMessage(edgeName);
 
     // create edge
-    auto edge = std::make_unique<FDPointToPointEdge>();
-    edge->connectSocket_pointA(pointA);
-    edge->connectSocket_pointB(pointB);
+    auto edge = std::make_unique<PointToPointEdge>();
+    edge->connectSocket_first_point(pointA);
+    edge->connectSocket_second_point(pointB);
 
     // perform model mutation
     {
         OpenSim::Model& mutableModel = model.updModel();
 
-        FDPointToPointEdge const& edgeRef = AddModelComponent(mutableModel, std::move(edge));
+        PointToPointEdge const& edgeRef = AddModelComponent(mutableModel, std::move(edge));
         FinalizeConnections(mutableModel);
         InitializeModel(mutableModel);
         InitializeState(mutableModel);
@@ -131,8 +131,8 @@ void osc::fd::ActionAddMidpoint(
 
     // create midpoint component
     auto midpoint = std::make_unique<MidpointLandmark>();
-    midpoint->connectSocket_pointA(pointA);
-    midpoint->connectSocket_pointB(pointB);
+    midpoint->connectSocket_first_point(pointA);
+    midpoint->connectSocket_second_point(pointB);
 
     // perform model mutation
     {
@@ -149,22 +149,22 @@ void osc::fd::ActionAddMidpoint(
 
 void osc::fd::ActionAddCrossProductEdge(
     UndoableModelStatePair& model,
-    FDVirtualEdge const& edgeA,
-    FDVirtualEdge const& edgeB)
+    Edge const& edgeA,
+    Edge const& edgeB)
 {
     std::string const edgeName = GenerateSceneElementName("crossproduct_");
     std::string const commitMessage = GenerateAddedSomethingCommitMessage(edgeName);
 
     // create cross product edge component
-    auto edge = std::make_unique<FDCrossProductEdge>();
-    edge->connectSocket_edgeA(edgeA);
-    edge->connectSocket_edgeB(edgeB);
+    auto edge = std::make_unique<CrossProductEdge>();
+    edge->connectSocket_first_edge(edgeA);
+    edge->connectSocket_second_edge(edgeB);
 
     // perform model mutation
     {
         OpenSim::Model& mutableModel = model.updModel();
 
-        FDCrossProductEdge const& edgeRef = AddModelComponent(mutableModel, std::move(edge));
+        CrossProductEdge const& edgeRef = AddModelComponent(mutableModel, std::move(edge));
         FinalizeConnections(mutableModel);
         InitializeModel(mutableModel);
         InitializeState(mutableModel);
@@ -223,41 +223,41 @@ void osc::fd::ActionSwapSocketAssignments(
 
 void osc::fd::ActionSwapPointToPointEdgeEnds(
     UndoableModelStatePair& model,
-    FDPointToPointEdge const& edge)
+    PointToPointEdge const& edge)
 {
-    ActionSwapSocketAssignments(model, edge.getAbsolutePath(), "pointA", "pointB");
+    ActionSwapSocketAssignments(model, edge.getAbsolutePath(), "first_point", "second_point");
 }
 
 void osc::fd::ActionSwapCrossProductEdgeOperands(
     UndoableModelStatePair& model,
-    FDCrossProductEdge const& edge)
+    CrossProductEdge const& edge)
 {
-    ActionSwapSocketAssignments(model, edge.getAbsolutePath(), "edgeA", "edgeB");
+    ActionSwapSocketAssignments(model, edge.getAbsolutePath(), "first_edge", "second_edge");
 }
 
 void osc::fd::ActionAddFrame(
     std::shared_ptr<UndoableModelStatePair> const& model,
-    FDVirtualEdge const& firstEdge,
+    Edge const& firstEdge,
     MaybeNegatedAxis firstEdgeAxis,
-    FDVirtualEdge const& otherEdge,
+    Edge const& otherEdge,
     OpenSim::Point const& origin)
 {
     std::string const frameName = GenerateSceneElementName("frame_");
     std::string const commitMessage = GenerateAddedSomethingCommitMessage(frameName);
 
     // create the frame
-    auto frame = std::make_unique<LandmarkDefinedFrame>();
-    frame->set_axisEdgeDimension(ToString(firstEdgeAxis));
-    frame->set_secondAxisDimension(ToString(Next(firstEdgeAxis)));
-    frame->connectSocket_axisEdge(firstEdge);
-    frame->connectSocket_otherEdge(otherEdge);
+    auto frame = std::make_unique<CrossProductDefinedFrame>();
+    frame->set_axis_edge_axis(ToString(firstEdgeAxis));
+    frame->set_first_cross_product_axis(ToString(Next(firstEdgeAxis)));
+    frame->connectSocket_axis_edge(firstEdge);
+    frame->connectSocket_other_edge(otherEdge);
     frame->connectSocket_origin(origin);
 
     // perform model mutation
     {
         OpenSim::Model& mutModel = model->updModel();
 
-        LandmarkDefinedFrame const& frameRef = AddModelComponent(mutModel, std::move(frame));
+        CrossProductDefinedFrame const& frameRef = AddModelComponent(mutModel, std::move(frame));
         FinalizeConnections(mutModel);
         InitializeModel(mutModel);
         InitializeState(mutModel);

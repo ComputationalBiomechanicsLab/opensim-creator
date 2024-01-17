@@ -12,21 +12,22 @@ add_library(OpenSimCreator STATIC
     ComponentRegistry/StaticComponentRegistries.hpp
 
     Documents/FrameDefinition/AxisIndex.hpp
+    Documents/FrameDefinition/CrossProductDefinedFrame.cpp
+    Documents/FrameDefinition/CrossProductDefinedFrame.hpp
+    Documents/FrameDefinition/CrossProductEdge.cpp
+    Documents/FrameDefinition/CrossProductEdge.hpp
+    Documents/FrameDefinition/Edge.cpp
+    Documents/FrameDefinition/Edge.hpp
     Documents/FrameDefinition/EdgePoints.hpp
-    Documents/FrameDefinition/FDCrossProductEdge.cpp
-    Documents/FrameDefinition/FDCrossProductEdge.hpp
-    Documents/FrameDefinition/FDPointToPointEdge.cpp
-    Documents/FrameDefinition/FDPointToPointEdge.hpp
-    Documents/FrameDefinition/FDVirtualEdge.hpp
     Documents/FrameDefinition/FrameDefinitionActions.cpp
     Documents/FrameDefinition/FrameDefinitionActions.hpp
     Documents/FrameDefinition/FrameDefinitionHelpers.cpp
     Documents/FrameDefinition/FrameDefinitionHelpers.hpp
-    Documents/FrameDefinition/LandmarkDefinedFrame.cpp
-    Documents/FrameDefinition/LandmarkDefinedFrame.hpp
     Documents/FrameDefinition/MaybeNegatedAxis.hpp
     Documents/FrameDefinition/MidpointLandmark.cpp
     Documents/FrameDefinition/MidpointLandmark.hpp
+    Documents/FrameDefinition/PointToPointEdge.cpp
+    Documents/FrameDefinition/PointToPointEdge.hpp
     Documents/FrameDefinition/SphereLandmark.cpp
     Documents/FrameDefinition/SphereLandmark.hpp
 

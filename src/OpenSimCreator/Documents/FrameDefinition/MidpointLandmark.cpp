@@ -29,21 +29,26 @@ void osc::fd::MidpointLandmark::generateDecorations(
 
 SimTK::Vec3 osc::fd::MidpointLandmark::calcLocationInGround(const SimTK::State& state) const
 {
-    SimTK::Vec3 const pointALocation = getConnectee<OpenSim::Point>("pointA").getLocationInGround(state);
-    SimTK::Vec3 const pointBLocation = getConnectee<OpenSim::Point>("pointB").getLocationInGround(state);
-    return 0.5*(pointALocation + pointBLocation);
+    auto const& [first, second] = lookupPoints();
+    return 0.5*(first.getLocationInGround(state) + second.getLocationInGround(state));
 }
 
 SimTK::Vec3 osc::fd::MidpointLandmark::calcVelocityInGround(const SimTK::State& state) const
 {
-    SimTK::Vec3 const pointAVelocity = getConnectee<OpenSim::Point>("pointA").getVelocityInGround(state);
-    SimTK::Vec3 const pointBVelocity = getConnectee<OpenSim::Point>("pointB").getVelocityInGround(state);
-    return 0.5*(pointAVelocity + pointBVelocity);
+    auto const& [first, second] = lookupPoints();
+    return 0.5*(first.getVelocityInGround(state) + second.getVelocityInGround(state));
 }
 
 SimTK::Vec3 osc::fd::MidpointLandmark::calcAccelerationInGround(const SimTK::State& state) const
 {
-    SimTK::Vec3 const pointAAcceleration = getConnectee<OpenSim::Point>("pointA").getAccelerationInGround(state);
-    SimTK::Vec3 const pointBAcceleration = getConnectee<OpenSim::Point>("pointB").getAccelerationInGround(state);
-    return 0.5*(pointAAcceleration + pointBAcceleration);
+    auto const& [first, second] = lookupPoints();
+    return 0.5*(first.getAccelerationInGround(state), second.getAccelerationInGround(state));
+}
+
+std::pair<OpenSim::Point const&, OpenSim::Point const&> osc::fd::MidpointLandmark::lookupPoints() const
+{
+    return {
+        getConnectee<OpenSim::Point>("first_point"),
+        getConnectee<OpenSim::Point>("second_point"),
+    };
 }

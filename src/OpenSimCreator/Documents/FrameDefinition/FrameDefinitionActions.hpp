@@ -12,9 +12,9 @@
 
 namespace OpenSim { class Mesh; }
 namespace OpenSim { class Point; }
-namespace osc::fd { class FDCrossProductEdge; }
-namespace osc::fd { class FDPointToPointEdge; }
-namespace osc::fd { class FDVirtualEdge; }
+namespace osc::fd { class CrossProductEdge; }
+namespace osc::fd { class PointToPointEdge; }
+namespace osc::fd { class Edge; }
 namespace osc { class ITabHost; }
 namespace osc { class UndoableModelStatePair; }
 
@@ -46,8 +46,8 @@ namespace osc::fd
 
     void ActionAddCrossProductEdge(
         UndoableModelStatePair&,
-        FDVirtualEdge const&,
-        FDVirtualEdge const&
+        Edge const&,
+        Edge const&
     );
 
     void ActionSwapSocketAssignments(
@@ -59,19 +59,19 @@ namespace osc::fd
 
     void ActionSwapPointToPointEdgeEnds(
         UndoableModelStatePair&,
-        FDPointToPointEdge const&
+        PointToPointEdge const&
     );
 
     void ActionSwapCrossProductEdgeOperands(
         UndoableModelStatePair&,
-        FDCrossProductEdge const&
+        CrossProductEdge const&
     );
 
     void ActionAddFrame(
         std::shared_ptr<UndoableModelStatePair> const&,
-        FDVirtualEdge const& firstEdge,
+        Edge const& firstEdge,
         MaybeNegatedAxis firstEdgeAxis,
-        FDVirtualEdge const& otherEdge,
+        Edge const& otherEdge,
         OpenSim::Point const& origin
     );
 
