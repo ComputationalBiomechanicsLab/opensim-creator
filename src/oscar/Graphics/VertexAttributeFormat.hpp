@@ -1,10 +1,8 @@
 #pragma once
 
-#include <cstdint>
-
 namespace osc
 {
-    enum class VertexAttributeFormat : int8_t {
+    enum class VertexAttributeFormat {
         // two single-precision floats
         Float32x2,
 
