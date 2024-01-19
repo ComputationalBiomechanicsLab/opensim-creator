@@ -5,6 +5,7 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 
+#include <algorithm>
 #include <array>
 #include <iostream>
 #include <type_traits>
@@ -180,6 +181,22 @@ TEST(Color, InequalityReturnsFalseForEquivalentColors)
     Color const b = {0.0f, 0.0f, 1.0f, 0.5f};
 
     ASSERT_FALSE(a != b);
+}
+
+TEST(Color, ConstIteratorsWorkAsExpected)
+{
+    Color const c = {1.0f, 0.25f, 0.1f, 0.3f};
+    auto const expected = std::to_array({c.r, c.g, c.b, c.a});
+
+    ASSERT_TRUE(std::equal(c.begin(), c.end(), expected.begin(), expected.end()));
+}
+
+TEST(Color, NonConstIteratorsWorkAsExpected)
+{
+    Color const c = {1.0f, 0.25f, 0.1f, 0.3f};
+    auto expected = std::to_array({c.r, c.g, c.b, c.a});
+
+    ASSERT_TRUE(std::equal(c.begin(), c.end(), expected.begin(), expected.end()));
 }
 
 TEST(Color, CanMultiplyColors)

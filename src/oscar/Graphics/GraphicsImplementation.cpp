@@ -1,6 +1,5 @@
 // these are the things that this file "implements"
 
-#include <oscar/Graphics/Detail/Unorm8.hpp>
 #include <oscar/Graphics/Detail/VertexAttributeFormatHelpers.hpp>
 #include <oscar/Graphics/Detail/VertexAttributeFormatList.hpp>
 #include <oscar/Graphics/Detail/VertexAttributeFormatTraits.hpp>
@@ -29,10 +28,11 @@
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/ShaderPropertyType.hpp>
 #include <oscar/Graphics/SubMeshDescriptor.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
+#include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Graphics/Unorm8.hpp>
 #include <oscar/Graphics/VertexAttribute.hpp>
 #include <oscar/Graphics/VertexAttributeDescriptor.hpp>
 #include <oscar/Graphics/VertexAttributeFormat.hpp>
@@ -95,7 +95,6 @@
 using osc::detail::DefaultFormat;
 using osc::detail::NumComponents;
 using osc::detail::SizeOfComponent;
-using osc::detail::Unorm8;
 using osc::detail::VertexAttributeFormatList;
 using osc::detail::VertexAttributeFormatTraits;
 using osc::BitCastable;
@@ -136,6 +135,7 @@ using osc::TextureFormat;
 using osc::TextureWrapMode;
 using osc::Transform;
 using osc::UID;
+using osc::Unorm8;
 using osc::VertexAttributeFormat;
 using osc::Vec;
 using osc::Vec2;
@@ -1538,7 +1538,7 @@ namespace
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
                     size_t const channelStart = pixelStart + channel;
-                    color[channel] = osc::ToFloatingPointColorChannel(pixelData[channelStart]);
+                    color[channel] = Unorm8{pixelData[channelStart]}.normalized_value();
                 }
                 rv.push_back(color);
             }
@@ -1623,7 +1623,7 @@ namespace
                     std::copy(src.begin(), src.end(), dest.begin());
                     auto const channelFloat = osc::bit_cast<float>(dest);
 
-                    color[channel] = osc::ToClamped8BitColorChannel(channelFloat);
+                    color[channel] = Unorm8{channelFloat};
                 }
                 rv.push_back(color);
             }
@@ -1657,7 +1657,7 @@ namespace
             {
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
-                    pixelData.push_back(osc::ToClamped8BitColorChannel(pixel[channel]));
+                    pixelData.push_back(Unorm8{pixel[channel]}.raw_value());
                 }
             }
         }
@@ -1699,7 +1699,7 @@ namespace
             {
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
-                    pixelData.push_back(pixel[channel]);
+                    pixelData.push_back(pixel[channel].raw_value());
                 }
             }
         }
@@ -1710,7 +1710,7 @@ namespace
             {
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
-                    float const pixelFloatVal = osc::ToFloatingPointColorChannel(pixel[channel]);
+                    float const pixelFloatVal = Unorm8{pixel[channel]}.normalized_value();
                     PushAsBytes(pixelFloatVal, pixelData);
                 }
             }
@@ -4069,7 +4069,7 @@ namespace
     template<>
     float Decode<Unorm8, float>(std::byte const* p)
     {
-        return Unorm8{*p}.normalized();
+        return Unorm8{*p}.normalized_value();
     }
 
     template<>

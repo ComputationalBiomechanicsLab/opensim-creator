@@ -5,8 +5,6 @@ add_executable(testoscar
     Formats/TestCSV.cpp
     Formats/TestDAE.cpp
 
-    Graphics/Detail/TestUnorm8.cpp
-
     Graphics/Detail/TestVertexAttributeFormatHelpers.cpp
     Graphics/Detail/TestVertexAttributeHelpers.cpp
     Graphics/Detail/TestVertexAttributeFormatList.cpp
@@ -32,6 +30,7 @@ add_executable(testoscar
     Graphics/TestTextureChannelFormat.cpp
     Graphics/TestTextureFormat.cpp
     Graphics/TestTexture2D.cpp
+    Graphics/TestUnorm8.cpp
     Graphics/TestVertexAttribute.cpp
     Graphics/TestVertexFormat.cpp
 
