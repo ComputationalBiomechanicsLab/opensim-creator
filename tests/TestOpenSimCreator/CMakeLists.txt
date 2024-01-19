@@ -4,6 +4,7 @@ find_package(GTest REQUIRED CONFIG)
 add_executable(TestOpenSimCreator
 
     ComponentRegistry/TestStaticComponentRegistries.cpp
+    Documents/FrameDefinition/TestStationDefinedFrame.cpp
     Documents/Frames/TestFrameAxis.cpp
     Documents/Frames/TestFramesHelpers.cpp
     Documents/Landmarks/TestLandmarkHelpers.cpp
