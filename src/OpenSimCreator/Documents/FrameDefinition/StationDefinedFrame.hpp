@@ -5,6 +5,7 @@
 #include <OpenSim/Simulation/Model/Station.h>
 #include <Simbody.h>
 
+#include <array>
 #include <string>
 
 namespace OpenSim { class Model; }
@@ -77,14 +78,19 @@ namespace osc::fd
         OpenSim_DECLARE_PROPERTY(ab_axis, std::string, "The frame axis that points in the direction of `point_b - point_a`. Can be `-x`, `+x`, `-y`, `+y`, `-z`, or `+z`. Must be orthogonal to `ab_x_ac_axis`.");
         OpenSim_DECLARE_PROPERTY(ab_x_ac_axis, std::string, "The frame axis that points in the direction of `(point_b - point_a) x (point_c - point_a)`. Can be `-x`, `+x`, `-y`, `+y`, `-z`, or `+z`. Must be orthogonal to `ab_axis`.");
 
-        OpenSim_DECLARE_SOCKET(point_a, OpenSim::Station, "Point `a` of a triangle that defines the frame. Must form a triangle with `point_b` and `point_c`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.");
-        OpenSim_DECLARE_SOCKET(point_b, OpenSim::Station, "Point `b` of a triangle that defines the frame. Must form a triangle with `point_a` and `point_c`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.");
-        OpenSim_DECLARE_SOCKET(point_c, OpenSim::Station, "Point `c` of a triangle that defines the frame. Must form a triangle with `point_a` and `point_b`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.");
-        OpenSim_DECLARE_SOCKET(frame_origin, OpenSim::Station, "Point that defines the frame's origin. Can be one of the triangle points. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.");
+        OpenSim_DECLARE_SOCKET(point_a, OpenSim::Station, "Point `a` of a triangle that defines the frame's orientation. Must form a triangle with `point_b` and `point_c`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.");
+        OpenSim_DECLARE_SOCKET(point_b, OpenSim::Station, "Point `b` of a triangle that defines the frame's orientation. Must form a triangle with `point_a` and `point_c`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.");
+        OpenSim_DECLARE_SOCKET(point_c, OpenSim::Station, "Point `c` of a triangle that defines the frame's orientation. Must form a triangle with `point_a` and `point_b`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.");
+        OpenSim_DECLARE_SOCKET(origin_point, OpenSim::Station, "Point that defines the frame's origin point. Can be one of the triangle points. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.");
 
         StationDefinedFrame();
 
     private:
+        const OpenSim::Station& getPointA() const;
+        const OpenSim::Station& getPointB() const;
+        const OpenSim::Station& getPointC() const;
+        const OpenSim::Station& getOriginPoint() const;
+
         const OpenSim::Frame& extendFindBaseFrame() const final;
         SimTK::Transform extendFindTransformInBaseFrame() const final;
         void extendFinalizeFromProperties() final;
@@ -93,5 +99,12 @@ namespace osc::fd
         SimTK::Transform calcTransformInGround(const SimTK::State&) const final;
         SimTK::SpatialVec calcVelocityInGround(const SimTK::State&) const final;
         SimTK::SpatialVec calcAccelerationInGround(const SimTK::State&) const;
+
+        // determines how each orthonormal basis vector (`ab`, `ab x ac`, `ab x (ab x ac)`)
+        // maps onto a frame axis index (x, 0; y, 1; z, 2)
+        //
+        // updated during `extendFinalizeProperties` (the mapping is dictated by the `ab_axis`
+        // and `ab_x_ac_axis` properties)
+        std::array<int, 3> _vectorToAxisIndexMappings = {0, 1, 2};
     };
 }
