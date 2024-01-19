@@ -23,6 +23,7 @@ namespace osc::fd
      * - Computing `ab_x_ac_axis` as the unit vector `normalize((point_b - point_a) x (point_c - point_a))`
      * - Computing the remaining axis as the unit vector `normalize((point_b - point_a) x ((point_b - point_a) x (point_c - point_a)))`
      * - Computing the resulting `Frame`'s `orientation` from the three resulting vectors, and its `position` from `frame_origin`
+     * - The base frame of the resulting frame is equal to the base frame of all provided points, which must be equal
      *
      * `StationDefinedFrame` is intended to be used as a higher-level alternative to
      * `OffsetFrame` when a model designer is able to explicitly establish coordinate systems
