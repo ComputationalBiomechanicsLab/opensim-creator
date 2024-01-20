@@ -45,7 +45,7 @@ namespace
 {
     constexpr CStringView c_TabStringID = "LearnOpenGL/Texturing";
 
-    Mesh GenerateTexturedQuadMesh()
+    Mesh GenTexturedQuadMesh()
     {
         Mesh quad = GenerateTexturedQuadMesh();
 
@@ -103,8 +103,7 @@ namespace
 class osc::LOGLTexturingTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
-    {
-    }
+    {}
 
 private:
     void implOnDraw() final
@@ -116,7 +115,7 @@ private:
     }
 
     Material m_Material = LoadTexturedMaterial();
-    Mesh m_Mesh = GenerateTexturedQuadMesh();
+    Mesh m_Mesh = GenTexturedQuadMesh();
     Camera m_Camera = CreateIdentityCamera();
 };
 
