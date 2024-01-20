@@ -33,9 +33,12 @@
 #include <string>
 #include <utility>
 
+using osc::AngleAxis;
 using osc::Camera;
 using osc::Color;
 using osc::CStringView;
+using osc::Deg2Rad;
+using osc::Normalize;
 using osc::RenderTexture;
 using osc::RenderTextureDescriptor;
 using osc::RenderTextureFormat;
@@ -50,34 +53,24 @@ namespace
     constexpr Vec2i c_ShadowmapDims = {1024, 1024};
     constexpr CStringView c_TabStringID = "LearnOpenGL/PointShadows";
 
-    constexpr Transform MakeTransform(float scale, Vec3 position)
-    {
-        Transform rv;
-        rv.scale = Vec3(scale);
-        rv.position = position;
-        return rv;
-    }
-
     Transform MakeRotatedTransform()
     {
-        Transform rv;
-        rv.scale = Vec3(0.75f);
-        rv.rotation = osc::AngleAxis(osc::Deg2Rad(60.0f), osc::Normalize(Vec3{1.0f, 0.0f, 1.0f}));
-        rv.position = {-1.5f, 2.0f, -3.0f};
-        return rv;
+        return {
+            .scale = Vec3(0.75f),
+            .rotation = AngleAxis(Deg2Rad(60.0f), Normalize(Vec3{1.0f, 0.0f, 1.0f})),
+            .position = {-1.5f, 2.0f, -3.0f},
+        };
     }
 
     struct SceneCube final {
-        explicit SceneCube(Transform transform_) :
+        SceneCube(Transform transform_) :
             transform{transform_}
-        {
-        }
+        {}
 
         SceneCube(Transform transform_, bool invertNormals_) :
             transform{transform_},
             invertNormals{invertNormals_}
-        {
-        }
+        {}
 
         Transform transform;
         bool invertNormals = false;
@@ -85,14 +78,13 @@ namespace
 
     auto MakeSceneCubes()
     {
-        return std::to_array<SceneCube>(
-        {
-            SceneCube{MakeTransform(5.0f, {}), true},
-            SceneCube{MakeTransform(0.5f, {4.0f, -3.5f, 0.0f})},
-            SceneCube{MakeTransform(0.75f, {2.0f, 3.0f, 1.0f})},
-            SceneCube{MakeTransform(0.5f, {-3.0f, -1.0f, 0.0f})},
-            SceneCube{MakeTransform(0.5f, {-1.5f, 1.0f, 1.5f})},
-            SceneCube{MakeRotatedTransform()},
+        return std::to_array<SceneCube>({
+            {{.scale = Vec3{5.0f}}, true},
+            {{.scale = Vec3{0.50f}, .position = {4.0f, -3.5f, 0.0f}}},
+            {{.scale = Vec3{0.75f}, .position = {2.0f, 3.0f, 1.0f}}},
+            {{.scale = Vec3{0.50f}, .position = {-3.0f, -1.0f, 0.0f}}},
+            {{.scale = Vec3{0.50f}, .position = {-1.5f, 1.0f, 1.5f}}},
+            {MakeRotatedTransform()},
         });
     }
 
@@ -109,7 +101,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
-        rv.setCameraFOV(osc::Deg2Rad(45.0f));
+        rv.setCameraFOV(Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor(Color::clear());
@@ -117,11 +109,10 @@ namespace
     }
 }
 
-class osc::LOGLPointShadowsTab::Impl final : public osc::StandardTabImpl {
+class osc::LOGLPointShadowsTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
-    {
-    }
+    {}
 
 private:
     void implOnMount() final
@@ -139,13 +130,11 @@ private:
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-        {
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
             m_IsMouseCaptured = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && osc::IsMouseInMainViewportWorkspaceScreenRect())
-        {
+        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
             m_IsMouseCaptured = true;
             return true;
         }
@@ -168,14 +157,12 @@ private:
 
     void handleMouseCapture()
     {
-        if (m_IsMouseCaptured)
-        {
+        if (m_IsMouseCaptured) {
             UpdateEulerCameraFromImGuiUserInput(m_SceneCamera, m_CameraEulers);
             ImGui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
-        else
-        {
+        else {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
@@ -203,7 +190,7 @@ private:
 
         // have the cone point toward all 6 faces of the cube
         auto const shadowMatrices =
-            osc::CalcCubemapViewProjMatrices(projectionMatrix, m_LightPos);
+            CalcCubemapViewProjMatrices(projectionMatrix, m_LightPos);
 
         // pass data to material
         m_ShadowMappingMaterial.setMat4Array("uShadowMatrices", shadowMatrices);
@@ -212,9 +199,8 @@ private:
 
         // render (shadowmapping does not use the camera's view/projection matrices)
         Camera camera;
-        for (SceneCube const& sceneCube : m_SceneCubes)
-        {
-            Graphics::DrawMesh(m_CubeMesh, sceneCube.transform, m_ShadowMappingMaterial, camera);
+        for (SceneCube const& cube : m_SceneCubes) {
+            Graphics::DrawMesh(m_CubeMesh, cube.transform, m_ShadowMappingMaterial, camera);
         }
         camera.renderTo(m_DepthTexture);
     }
@@ -230,8 +216,7 @@ private:
         material.setFloat("uFarPlane", 25.0f);
         material.setBool("uShadows", m_ShowShadows);
 
-        for (SceneCube const& cube : m_SceneCubes)
-        {
+        for (SceneCube const& cube : m_SceneCubes) {
             MaterialPropertyBlock mpb;
             mpb.setBool("uReverseNormals", cube.invertNormals);
             material.setRenderTexture("uDepthMap", m_DepthTexture);
@@ -240,13 +225,8 @@ private:
         }
 
         // also, draw the light as a little cube
-        {
-            material.setBool("uShadows", m_ShowShadows);  // always render shadows
-            Transform t;
-            t.scale *= 0.1f;
-            t.position = m_LightPos;
-            Graphics::DrawMesh(m_CubeMesh, t, material, m_SceneCamera);
-        }
+        material.setBool("uShadows", m_ShowShadows);
+        Graphics::DrawMesh(m_CubeMesh, {.scale = Vec3{0.1f}, .position = m_LightPos}, material, m_SceneCamera);
 
         m_SceneCamera.setPixelRect(viewportRect);
         m_SceneCamera.renderToScreen();
@@ -263,32 +243,21 @@ private:
         m_PerfPanel.onDraw();
     }
 
-    Material m_ShadowMappingMaterial
-    {
-        Shader
-        {
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.geom"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.frag"),
-        },
-    };
-    Material m_SceneMaterial
-    {
-        Shader
-        {
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.frag"),
-        },
-    };
+    Material m_ShadowMappingMaterial{Shader{
+        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.vert"),
+        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.geom"),
+        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.frag"),
+    }};
 
-    Material m_SoftSceneMaterial
-    {
-        Shader
-        {
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/SoftScene.frag"),
-        }
-    };
+    Material m_SceneMaterial{Shader{
+        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
+        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.frag"),
+    }};
+
+    Material m_SoftSceneMaterial{Shader{
+        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
+        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/SoftScene.frag"),
+    }};
 
     Camera m_SceneCamera = CreateCamera();
     Vec3 m_CameraEulers = {};
@@ -296,7 +265,7 @@ private:
         App::resource("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
-    Mesh m_CubeMesh = GenCube();
+    Mesh m_CubeMesh = GenerateCubeMesh();
     std::array<SceneCube, 6> m_SceneCubes = MakeSceneCubes();
     RenderTexture m_DepthTexture = CreateDepthTexture();
     Vec3 m_LightPos = {};

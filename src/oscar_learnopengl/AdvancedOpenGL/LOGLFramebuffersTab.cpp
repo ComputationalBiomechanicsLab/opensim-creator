@@ -29,6 +29,8 @@
 
 using osc::Camera;
 using osc::CStringView;
+using osc::Deg2Rad;
+using osc::Identity;
 using osc::Mat4;
 using osc::Mesh;
 using osc::Vec2;
@@ -36,8 +38,7 @@ using osc::Vec3;
 
 namespace
 {
-    constexpr auto c_PlaneVertices = std::to_array<Vec3>(
-    {
+    constexpr auto c_PlaneVertices = std::to_array<Vec3>({
         { 5.0f, -0.5f,  5.0f},
         {-5.0f, -0.5f,  5.0f},
         {-5.0f, -0.5f, -5.0f},
@@ -46,8 +47,8 @@ namespace
         {-5.0f, -0.5f, -5.0f},
         { 5.0f, -0.5f, -5.0f},
     });
-    constexpr auto c_PlaneTexCoords = std::to_array<Vec2>(
-    {
+
+    constexpr auto c_PlaneTexCoords = std::to_array<Vec2>({
         {2.0f, 0.0f},
         {0.0f, 0.0f},
         {0.0f, 2.0f},
@@ -56,8 +57,8 @@ namespace
         {0.0f, 2.0f},
         {2.0f, 2.0f},
     });
-    constexpr auto c_PlaneIndices = std::to_array<uint16_t>(
-    {
+
+    constexpr auto c_PlaneIndices = std::to_array<uint16_t>({
         0, 2, 1,
         3, 5, 4,
     });
@@ -77,7 +78,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(osc::Deg2Rad(45.0f));
+        rv.setCameraFOV(Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         return rv;
@@ -86,18 +87,17 @@ namespace
     Camera CreateScreenCamera()
     {
         Camera rv;
-        rv.setViewMatrixOverride(osc::Identity<Mat4>());
-        rv.setProjectionMatrixOverride(osc::Identity<Mat4>());
+        rv.setViewMatrixOverride(Identity<Mat4>());
+        rv.setProjectionMatrixOverride(Identity<Mat4>());
         return rv;
     }
 }
 
-class osc::LOGLFramebuffersTab::Impl final : public osc::StandardTabImpl {
+class osc::LOGLFramebuffersTab::Impl final : public StandardTabImpl {
 public:
 
     Impl() : StandardTabImpl{c_TabStringID}
-    {
-    }
+    {}
 
 private:
     void implOnMount() final
@@ -115,13 +115,11 @@ private:
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-        {
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
             m_IsMouseCaptured = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && osc::IsMouseInMainViewportWorkspaceScreenRect())
-        {
+        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
             m_IsMouseCaptured = true;
             return true;
         }
@@ -131,21 +129,19 @@ private:
     void implOnDraw() final
     {
         // handle mouse capturing
-        if (m_IsMouseCaptured)
-        {
+        if (m_IsMouseCaptured) {
             UpdateEulerCameraFromImGuiUserInput(m_SceneCamera, m_CameraEulers);
             ImGui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
-        else
-        {
+        else {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
 
         // setup render texture
-        Rect viewportRect = osc::GetMainViewportWorkspaceScreenRect();
-        Vec2 viewportRectDims = osc::Dimensions(viewportRect);
+        Rect viewportRect = GetMainViewportWorkspaceScreenRect();
+        Vec2 viewportRectDims = Dimensions(viewportRect);
         m_RenderTexture.setDimensions(viewportRectDims);
         m_RenderTexture.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
 
@@ -153,15 +149,12 @@ private:
         {
             // cubes
             m_SceneRenderMaterial.setTexture("uTexture1", m_ContainerTexture);
-            Transform t;
-            t.position = { -1.0f, 0.0f, -1.0f };
-            Graphics::DrawMesh(m_CubeMesh, t, m_SceneRenderMaterial, m_SceneCamera);
-            t.position = { 1.0f, 0.0f, -1.0f };
-            Graphics::DrawMesh(m_CubeMesh, t, m_SceneRenderMaterial, m_SceneCamera);
+            Graphics::DrawMesh(m_CubeMesh, {.position = {-1.0f, 0.0f, -1.0f}}, m_SceneRenderMaterial, m_SceneCamera);
+            Graphics::DrawMesh(m_CubeMesh, {.position = { 1.0f, 0.0f, -1.0f }}, m_SceneRenderMaterial, m_SceneCamera);
 
             // floor
             m_SceneRenderMaterial.setTexture("uTexture1", m_MetalTexture);
-            Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_SceneRenderMaterial, m_SceneCamera);
+            Graphics::DrawMesh(m_PlaneMesh, Identity<Transform>(), m_SceneRenderMaterial, m_SceneCamera);
         }
         m_SceneCamera.renderTo(m_RenderTexture);
 
@@ -173,14 +166,10 @@ private:
         m_PerfPanel.onDraw();
     }
 
-    Material m_SceneRenderMaterial
-    {
-        Shader
-        {
-            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.frag"),
-        }
-    };
+    Material m_SceneRenderMaterial{Shader{
+        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.vert"),
+        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.frag"),
+    }};
 
     Camera m_SceneCamera = CreateSceneCamera();
     bool m_IsMouseCaptured = false;
@@ -197,18 +186,14 @@ private:
 
     Mesh m_CubeMesh = GenLearnOpenGLCube();
     Mesh m_PlaneMesh = GeneratePlane();
-    Mesh m_QuadMesh = GenTexturedQuad();
+    Mesh m_QuadMesh = GenerateTexturedQuadMesh();
 
     RenderTexture m_RenderTexture;
     Camera m_ScreenCamera = CreateScreenCamera();
-    Material m_ScreenMaterial
-    {
-        Shader
-        {
-            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.frag"),
-        }
-    };
+    Material m_ScreenMaterial{Shader{
+        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.vert"),
+        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.frag"),
+    }};
 
     LogViewerPanel m_LogViewer{"log"};
     PerfPanel m_PerfPanel{"perf"};

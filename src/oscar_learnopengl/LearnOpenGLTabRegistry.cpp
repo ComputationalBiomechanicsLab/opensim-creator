@@ -34,6 +34,7 @@
 
 using osc::ITab;
 using osc::ITabHost;
+using osc::ParentPtr;
 using osc::TabRegistry;
 using osc::TabRegistryEntry;
 
@@ -42,12 +43,10 @@ namespace
     template<std::derived_from<ITab> TabType>
     void RegisterTab(TabRegistry& registry)
     {
-        TabRegistryEntry entry
-        {
+        registry.registerTab(TabRegistryEntry{
             TabType::id(),
-            [](osc::ParentPtr<ITabHost> const& h) { return std::make_unique<TabType>(h); },
-        };
-        registry.registerTab(entry);
+            [](ParentPtr<ITabHost> const& h) { return std::make_unique<TabType>(h); },
+        });
     }
 }
 

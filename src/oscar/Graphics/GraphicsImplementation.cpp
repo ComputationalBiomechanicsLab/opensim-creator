@@ -6476,7 +6476,7 @@ private:
     };
 
     // a generic quad mesh: two triangles covering NDC @ Z=0
-    Mesh m_QuadMesh = GenTexturedQuad();
+    Mesh m_QuadMesh = GenerateTexturedQuadMesh();
 
     // storage for instance data
     std::vector<float> m_InstanceCPUBuffer;

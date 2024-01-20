@@ -22,6 +22,7 @@ using osc::App;
 using osc::Camera;
 using osc::Color;
 using osc::CStringView;
+using osc::Identity;
 using osc::Mat4;
 using osc::Material;
 using osc::Mesh;
@@ -34,8 +35,7 @@ namespace
 
     Mesh GenerateTriangleMesh()
     {
-        constexpr auto points = std::to_array<Vec3>(
-        {
+        constexpr auto points = std::to_array<Vec3>({
             {-1.0f, -1.0f, 0.0f},  // bottom-left
             { 1.0f, -1.0f, 0.0f},  // bottom-right
             { 0.0f,  1.0f, 0.0f},  // top-middle
@@ -43,8 +43,7 @@ namespace
 
         // care: we're using colors that are equivalent in sRGB and linear
         //       color spaces here
-        constexpr auto colors = std::to_array<Color>(
-        {
+        constexpr auto colors = std::to_array<Color>({
             Color::red(),
             Color::green(),
             Color::blue(),
@@ -62,21 +61,17 @@ namespace
     Camera CreateSceneCamera()
     {
         Camera rv;
-        rv.setViewMatrixOverride(osc::Identity<Mat4>());
-        rv.setProjectionMatrixOverride(osc::Identity<Mat4>());
+        rv.setViewMatrixOverride(Identity<Mat4>());
+        rv.setProjectionMatrixOverride(Identity<Mat4>());
         return rv;
     }
 
     Material CreateTriangleMaterial()
     {
-        return Material
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/GettingStarted/HelloTriangle.vert"),
-                App::slurp("oscar_learnopengl/shaders/GettingStarted/HelloTriangle.frag"),
-            },
-        };
+        return Material{Shader{
+            App::slurp("oscar_learnopengl/shaders/GettingStarted/HelloTriangle.vert"),
+            App::slurp("oscar_learnopengl/shaders/GettingStarted/HelloTriangle.frag"),
+        }};
     }
 }
 
@@ -84,15 +79,14 @@ class osc::LOGLHelloTriangleTab::Impl final : public osc::StandardTabImpl {
 public:
 
     Impl() : StandardTabImpl{c_TabStringID}
-    {
-    }
+    {}
 
 private:
     void implOnDraw() final
     {
-        Graphics::DrawMesh(m_TriangleMesh, Transform{}, m_Material, m_Camera);
+        Graphics::DrawMesh(m_TriangleMesh, Identity<Transform>(), m_Material, m_Camera);
 
-        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
+        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
         m_Camera.renderToScreen();
     }
 

@@ -27,6 +27,7 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/ObjectRepresentation.hpp>
@@ -46,7 +47,10 @@ using osc::Camera;
 using osc::Color;
 using osc::ColorSpace;
 using osc::CStringView;
+using osc::Deg2Rad;
 using osc::Material;
+using osc::Mix;
+using osc::Normalize;
 using osc::Texture2D;
 using osc::TextureFilterMode;
 using osc::TextureFormat;
@@ -56,6 +60,7 @@ using osc::RenderTextureFormat;
 using osc::Shader;
 using osc::Vec2i;
 using osc::Vec3;
+using osc::ViewObjectRepresentations;
 
 namespace
 {
@@ -65,7 +70,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
-        rv.setCameraFOV(osc::Deg2Rad(45.0f));
+        rv.setCameraFOV(Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(50.0f);
         rv.setBackgroundColor(Color::black());
@@ -80,15 +85,14 @@ namespace
 
         std::vector<Vec3> rv;
         rv.reserve(numSamples);
-        for (size_t i = 0; i < numSamples; ++i)
-        {
+        for (size_t i = 0; i < numSamples; ++i) {
             // scale antiAliasingLevel such that they are more aligned to
             // the center of the kernel
             float scale = static_cast<float>(i)/static_cast<float>(numSamples);
-            scale = osc::Mix(0.1f, 1.0f, scale*scale);
+            scale = Mix(0.1f, 1.0f, scale*scale);
 
             Vec3 sample = {minusOneToOne(rng), minusOneToOne(rng), minusOneToOne(rng)};
-            sample = osc::Normalize(sample);
+            sample = Normalize(sample);
             sample *= zeroToOne(rng);
             sample *= scale;
 
@@ -98,15 +102,13 @@ namespace
         return rv;
     }
 
-    std::vector<Color> GenerateNoiseTexturePixels(size_t numPixels)
-    {
+    std::vector<Color> GenerateNoiseTexturePixels(size_t numPixels) {
         std::default_random_engine rng{std::random_device{}()};
         std::uniform_real_distribution<float> minusOneToOne{-1.0f, 1.0f};
 
         std::vector<Color> rv;
         rv.reserve(numPixels);
-        for (size_t i = 0; i < numPixels; ++i)
-        {
+        for (size_t i = 0; i < numPixels; ++i) {
             rv.emplace_back(
                 minusOneToOne(rng),
                 minusOneToOne(rng),
@@ -122,28 +124,23 @@ namespace
         std::vector<Color> const pixels =
             GenerateNoiseTexturePixels(static_cast<size_t>(dimensions.x) * static_cast<size_t>(dimensions.y));
 
-        Texture2D rv
-        {
+        Texture2D rv{
             dimensions,
             TextureFormat::RGBAFloat,
             ColorSpace::Linear,
             TextureWrapMode::Repeat,
             TextureFilterMode::Linear,
         };
-        rv.setPixelData(osc::ViewObjectRepresentations<uint8_t>(pixels));
+        rv.setPixelData(ViewObjectRepresentations<uint8_t>(pixels));
         return rv;
     }
 
     Material LoadGBufferMaterial()
     {
-        return Material
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.vert"),
-                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.frag"),
-            },
-        };
+        return Material{Shader{
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.frag"),
+        }};
     }
 
     RenderTexture RenderTextureWithColorFormat(RenderTextureFormat f)
@@ -155,94 +152,71 @@ namespace
 
     Material LoadSSAOMaterial()
     {
-        return Material
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.vert"),
-                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.frag"),
-            },
-        };
+        return Material{Shader{
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.frag"),
+        }};
     }
 
     Material LoadBlurMaterial()
     {
-        return Material
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.vert"),
-                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.frag"),
-            },
-        };
+        return Material{Shader{
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.frag"),
+        }};
     }
 
     Material LoadLightingMaterial()
     {
-        return Material
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.vert"),
-                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.frag"),
-            },
-        };
+        return Material{Shader{
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.frag"),
+        }};
     }
 }
 
-class osc::LOGLSSAOTab::Impl final {
+class osc::LOGLSSAOTab::Impl final : public StandardTabImpl {
 public:
+    Impl() : StandardTabImpl{c_TabStringID}
+    {}
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onMount()
+private:
+    void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
         m_IsMouseCaptured = true;
     }
 
-    void onUnmount()
+    void implOnUnmount() final
     {
         App::upd().setShowCursor(true);
         App::upd().makeMainEventLoopWaiting();
         m_IsMouseCaptured = false;
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool implOnEvent(SDL_Event const& e) final
     {
         // handle mouse input
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-        {
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
             m_IsMouseCaptured = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect())
-        {
+        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
             m_IsMouseCaptured = true;
             return true;
         }
         return false;
     }
 
-    void onDraw()
+    void implOnDraw() final
     {
         // handle mouse capturing
-        if (m_IsMouseCaptured)
-        {
+        if (m_IsMouseCaptured) {
             UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
             ImGui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
-        else
-        {
+        else {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
@@ -251,7 +225,7 @@ public:
 
         m_PerfPanel.onDraw();
     }
-private:
+
     void draw3DScene()
     {
         Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
@@ -278,15 +252,10 @@ private:
     {
         // render cube
         {
-            Transform cubeTransform;
-            cubeTransform.position = Vec3{0.0f, 7.0f, 0.0f};
-            cubeTransform.scale = Vec3{7.5f};
-
             m_GBuffer.material.setBool("uInvertedNormals", true);
-
             Graphics::DrawMesh(
                 m_CubeMesh,
-                cubeTransform,
+                {.scale = Vec3{7.5f}, .position = {0.0f, 7.0f, 0.0f}},
                 m_GBuffer.material,
                 m_Camera
             );
@@ -294,14 +263,10 @@ private:
 
         // render sphere
         {
-            Transform modelTransform;
-            modelTransform.position = Vec3{0.0f, 0.5f, 0.0f};
-
             m_GBuffer.material.setBool("uInvertedNormals", false);
-
             Graphics::DrawMesh(
                 m_SphereMesh,
-                modelTransform,
+                {.position = {0.0f, 0.5f, 0.0f}},
                 m_GBuffer.material,
                 m_Camera
             );
@@ -321,7 +286,7 @@ private:
         m_SSAO.material.setFloat("uRadius", 0.5f);
         m_SSAO.material.setFloat("uBias", 0.125f);
 
-        Graphics::DrawMesh(m_QuadMesh, Transform{}, m_SSAO.material, m_Camera);
+        Graphics::DrawMesh(m_QuadMesh, Identity<Transform>(), m_SSAO.material, m_Camera);
         m_Camera.renderTo(m_SSAO.outputTexture);
 
         m_SSAO.material.clearRenderTexture("uPositionTex");
@@ -332,7 +297,7 @@ private:
     {
         m_Blur.material.setRenderTexture("uSSAOTex", m_SSAO.outputTexture);
 
-        Graphics::DrawMesh(m_QuadMesh, Transform{}, m_Blur.material, m_Camera);
+        Graphics::DrawMesh(m_QuadMesh, Identity<Transform>(), m_Blur.material, m_Camera);
         m_Camera.renderTo(m_Blur.outputTexture);
 
         m_Blur.material.clearRenderTexture("uSSAOTex");
@@ -349,7 +314,7 @@ private:
         m_Lighting.material.setFloat("uLightLinear", 0.09f);
         m_Lighting.material.setFloat("uLightQuadratic", 0.032f);
 
-        Graphics::DrawMesh(m_QuadMesh, Transform{}, m_Lighting.material, m_Camera);
+        Graphics::DrawMesh(m_QuadMesh, Identity<Transform>(), m_Lighting.material, m_Camera);
         m_Camera.renderTo(m_Lighting.outputTexture);
 
         m_Lighting.material.clearRenderTexture("uPositionTex");
@@ -362,8 +327,7 @@ private:
     {
         float const w = 200.0f;
 
-        auto const textures = std::to_array<RenderTexture const*>(
-        {
+        auto const textures = std::to_array<RenderTexture const*>({
             &m_GBuffer.albedo,
             &m_GBuffer.normal,
             &m_GBuffer.position,
@@ -371,16 +335,13 @@ private:
             &m_Blur.outputTexture,
         });
 
-        for (size_t i = 0; i < textures.size(); ++i)
-        {
+        for (size_t i = 0; i < textures.size(); ++i) {
             Vec2 const offset = {static_cast<float>(i)*w, 0.0f};
             Rect const overlayRect{viewportRect.p1 + offset, viewportRect.p1 + offset + w};
 
             Graphics::BlitToScreen(*textures[i], overlayRect);
         }
     }
-
-    UID m_TabID;
 
     std::vector<Vec3> m_SampleKernel = GenerateSampleKernel(64);
     Texture2D m_NoiseTexture = GenerateNoiseTexture({4, 4});
@@ -391,9 +352,9 @@ private:
     bool m_IsMouseCaptured = true;
     Vec3 m_CameraEulers = {};
 
-    Mesh m_SphereMesh = GenSphere(32, 32);
-    Mesh m_CubeMesh = GenCube();
-    Mesh m_QuadMesh = GenTexturedQuad();
+    Mesh m_SphereMesh = GenerateUVSphereMesh(32, 32);
+    Mesh m_CubeMesh = GenerateCubeMesh();
+    Mesh m_QuadMesh = GenerateTexturedQuadMesh();
 
     // rendering state
     struct GBufferRenderingState final {
@@ -401,33 +362,28 @@ private:
         RenderTexture albedo = RenderTextureWithColorFormat(RenderTextureFormat::ARGB32);
         RenderTexture normal = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
         RenderTexture position = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
-        RenderTarget renderTarget
-        {
+        RenderTarget renderTarget{
             {
-                RenderTargetColorAttachment
-                {
+                RenderTargetColorAttachment{
                     albedo.updColorBuffer(),
                     RenderBufferLoadAction::Load,
                     RenderBufferStoreAction::Resolve,
                     Color::black(),
                 },
-                RenderTargetColorAttachment
-                {
+                RenderTargetColorAttachment{
                     normal.updColorBuffer(),
                     RenderBufferLoadAction::Load,
                     RenderBufferStoreAction::Resolve,
                     Color::black(),
                 },
-                RenderTargetColorAttachment
-                {
+                RenderTargetColorAttachment{
                     position.updColorBuffer(),
                     RenderBufferLoadAction::Load,
                     RenderBufferStoreAction::Resolve,
                     Color::black(),
                 },
             },
-            RenderTargetDepthAttachment
-            {
+            RenderTargetDepthAttachment{
                 albedo.updDepthBuffer(),
                 RenderBufferLoadAction::Clear,
                 RenderBufferStoreAction::DontCare,
@@ -439,8 +395,7 @@ private:
             RenderTextureDescriptor desc{dims};
             desc.setAntialiasingLevel(antiAliasingLevel);
 
-            for (RenderTexture* tex : {&albedo, &normal, &position})
-            {
+            for (RenderTexture* tex : {&albedo, &normal, &position}) {
                 desc.setColorFormat(tex->getColorFormat());
                 tex->reformat(desc);
             }

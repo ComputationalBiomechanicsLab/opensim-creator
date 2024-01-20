@@ -25,10 +25,14 @@ using osc::App;
 using osc::Camera;
 using osc::ColorSpace;
 using osc::CStringView;
+using osc::Deg2Rad;
+using osc::GenerateCubeMesh;
+using osc::LoadTexture2DFromImage;
 using osc::Material;
 using osc::Mesh;
 using osc::Shader;
 using osc::Transform;
+using osc::Vec3;
 
 namespace
 {
@@ -36,23 +40,19 @@ namespace
 
     Mesh GenerateCubeSimilarlyToLOGL()
     {
-        Mesh m = osc::GenCube();
-        m.transformVerts(Transform{}.withScale(0.5f));
+        Mesh m = GenerateCubeMesh();
+        m.transformVerts({.scale = Vec3{0.5f}});
         return m;
     }
 
     Material GenerateUVTestingTextureMappedMaterial()
     {
-        Material rv
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.vert"),
-                App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
-            },
-        };
+        Material rv{Shader{
+            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
+        }};
 
-        rv.setTexture("uTexture", osc::LoadTexture2DFromImage(
+        rv.setTexture("uTexture", LoadTexture2DFromImage(
             App::resource("oscar_learnopengl/textures/uv_checker.jpg"),
             ColorSpace::sRGB
         ));
@@ -64,7 +64,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(osc::Deg2Rad(45.0f));
+        rv.setCameraFOV(Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -72,11 +72,10 @@ namespace
     }
 }
 
-class osc::LOGLFaceCullingTab::Impl final : public osc::StandardTabImpl {
+class osc::LOGLFaceCullingTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
-    {
-    }
+    {}
 
 private:
     void implOnMount() final
@@ -94,13 +93,11 @@ private:
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-        {
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
             m_IsMouseCaptured = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && osc::IsMouseInMainViewportWorkspaceScreenRect())
-        {
+        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
             m_IsMouseCaptured = true;
             return true;
         }
@@ -116,14 +113,12 @@ private:
 
     void handleMouseInputs()
     {
-        if (m_IsMouseCaptured)
-        {
+        if (m_IsMouseCaptured) {
             UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
             ImGui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
-        else
-        {
+        else {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
@@ -132,23 +127,20 @@ private:
     void drawScene()
     {
         m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
-        Graphics::DrawMesh(m_Cube, Transform{}, m_Material, m_Camera);
+        Graphics::DrawMesh(m_Cube, Identity<Transform>(), m_Material, m_Camera);
         m_Camera.renderToScreen();
     }
 
     void draw2DUI()
     {
         ImGui::Begin("controls");
-        if (ImGui::Button("off"))
-        {
+        if (ImGui::Button("off")) {
             m_Material.setCullMode(CullMode::Off);
         }
-        if (ImGui::Button("back"))
-        {
+        if (ImGui::Button("back")) {
             m_Material.setCullMode(CullMode::Back);
         }
-        if (ImGui::Button("front"))
-        {
+        if (ImGui::Button("front")) {
             m_Material.setCullMode(CullMode::Front);
         }
         ImGui::End();

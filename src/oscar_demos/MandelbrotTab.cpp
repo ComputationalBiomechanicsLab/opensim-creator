@@ -110,7 +110,7 @@ private:
     int m_NumIterations = 16;
     Rect m_NormalizedMandelbrotViewport = {{}, {1.0f, 1.0f}};
     Rect m_MainViewportWorkspaceScreenRect = {};
-    Mesh m_QuadMesh = GenTexturedQuad();
+    Mesh m_QuadMesh = GenerateTexturedQuadMesh();
     Material m_Material
     {
         Shader

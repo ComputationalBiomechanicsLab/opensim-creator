@@ -4,6 +4,9 @@
 
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
+#include <oscar/Graphics/VertexAttribute.hpp>
+#include <oscar/Graphics/VertexAttributeFormat.hpp>
+#include <oscar/Graphics/VertexFormat.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Triangle.hpp>
 #include <oscar/Maths/Vec3.hpp>
@@ -37,24 +40,24 @@ osc::Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
 
     size_t const numVerts = mesh.getNumVertices();
 
-    std::vector<Vec3> verts;
+    struct Vertex final {
+        Vec3 position;
+        Vec3 normal;
+    };
+    std::vector<Vertex> verts;
     verts.reserve(numVerts);
-
-    std::vector<Vec3> normals;
-    normals.reserve(numVerts);
 
     std::vector<uint32_t> indices;
     indices.reserve(numVerts);
 
     uint32_t index = 0;
-    auto const pushTriangle = [&verts, &normals, &indices, &index](osc::Triangle const& tri)
+    auto const pushTriangle = [&verts, &indices, &index](Triangle const& tri)
     {
         Vec3 const normal = osc::TriangleNormal(tri);
 
         for (size_t i = 0; i < 3; ++i)
         {
-            verts.push_back(tri[i]);
-            normals.push_back(normal);
+            verts.push_back({.position = tri[i], .normal = normal });
             indices.push_back(index++);
         }
     };
@@ -132,8 +135,11 @@ osc::Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
 
     Mesh rv;
     rv.setTopology(MeshTopology::Triangles);
-    rv.setVerts(verts);
-    rv.setNormals(normals);
+    rv.setVertexBufferParams(verts.size(), {
+        {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
+        {VertexAttribute::Normal, VertexAttributeFormat::Float32x3},
+    });
+    rv.setVertexBufferData(verts);
     rv.setIndices(indices);
     return rv;
 }

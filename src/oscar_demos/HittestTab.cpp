@@ -316,9 +316,9 @@ private:
             App::slurp("oscar_demos/shaders/SolidColor.frag"),
         },
     };
-    Mesh m_SphereMesh = GenSphere(12, 12);
-    Mesh m_WireframeCubeMesh = GenCubeLines();
-    Mesh m_CircleMesh = GenCircle(36);
+    Mesh m_SphereMesh = GenerateUVSphereMesh(12, 12);
+    Mesh m_WireframeCubeMesh = GenerateCubeLinesMesh();
+    Mesh m_CircleMesh = GenerateCircleMesh(36);
     Mesh m_CrosshairMesh = GenerateCrosshairMesh();
     Mesh m_TriangleMesh = GenerateTriangleMesh();
     MaterialPropertyBlock m_BlackColorMaterialProps = GeneratePropertyBlock({0.0f, 0.0f, 0.0f, 1.0f});

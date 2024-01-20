@@ -28,11 +28,15 @@ using osc::App;
 using osc::Camera;
 using osc::ColorSpace;
 using osc::CStringView;
+using osc::GenerateTexturedQuadMesh;
+using osc::Identity;
 using osc::ImageLoadingFlags;
+using osc::LoadTexture2DFromImage;
 using osc::Mat4;
 using osc::Material;
 using osc::Mesh;
 using osc::Shader;
+using osc::TextureWrapMode;
 using osc::Texture2D;
 using osc::Vec2;
 using osc::Vec3;
@@ -43,7 +47,7 @@ namespace
 
     Mesh GenerateTexturedQuadMesh()
     {
-        Mesh quad = osc::GenTexturedQuad();
+        Mesh quad = GenerateTexturedQuadMesh();
 
         // transform default quad verts to match LearnOpenGL
         quad.transformVerts([](Vec3& v) { v *= 0.5f; });
@@ -56,30 +60,26 @@ namespace
 
     Material LoadTexturedMaterial()
     {
-        Material rv
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.vert"),
-                App::slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.frag"),
-            },
-        };
+        Material rv{Shader{
+            App::slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.vert"),
+            App::slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.frag"),
+        }};
 
         // set uTexture1
         {
-            Texture2D container = osc::LoadTexture2DFromImage(
+            Texture2D container = LoadTexture2DFromImage(
                 App::resource("oscar_learnopengl/textures/container.jpg"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
             );
-            container.setWrapMode(osc::TextureWrapMode::Clamp);
+            container.setWrapMode(TextureWrapMode::Clamp);
 
             rv.setTexture("uTexture1", std::move(container));
         }
 
         // set uTexture2
         {
-            Texture2D face = osc::LoadTexture2DFromImage(
+            Texture2D const face = LoadTexture2DFromImage(
                 App::resource("oscar_learnopengl/textures/awesomeface.png"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
@@ -94,8 +94,8 @@ namespace
     Camera CreateIdentityCamera()
     {
         Camera rv;
-        rv.setViewMatrixOverride(osc::Identity<Mat4>());
-        rv.setProjectionMatrixOverride(osc::Identity<Mat4>());
+        rv.setViewMatrixOverride(Identity<Mat4>());
+        rv.setProjectionMatrixOverride(Identity<Mat4>());
         return rv;
     }
 }
@@ -111,7 +111,7 @@ private:
     {
         m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
 
-        Graphics::DrawMesh(m_Mesh, Transform{}, m_Material, m_Camera);
+        Graphics::DrawMesh(m_Mesh, Identity<Transform>(), m_Material, m_Camera);
         m_Camera.renderToScreen();
     }
 

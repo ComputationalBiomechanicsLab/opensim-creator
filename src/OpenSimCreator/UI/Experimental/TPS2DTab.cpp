@@ -515,7 +515,7 @@ private:
         App::resource("textures/container.jpg"),
         ColorSpace::sRGB
     );
-    Mesh m_InputGrid = GenNxMTriangleQuad2DGrid({50, 50});
+    Mesh m_InputGrid = GenerateNxMTriangleQuadGridMesh({50, 50});
     Mesh m_OutputGrid = m_InputGrid;
     Material m_Material = Material
     {

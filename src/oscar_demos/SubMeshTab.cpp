@@ -47,9 +47,9 @@ namespace
     {
         auto const meshes = std::to_array(
         {
-            osc::GenCube(),
-            osc::GenSphere(16, 16),
-            osc::GenCircle(32),
+            osc::GenerateCubeMesh(),
+            osc::GenerateUVSphereMesh(16, 16),
+            osc::GenerateCircleMesh(32),
         });
 
         std::vector<Vec3> allVerts;

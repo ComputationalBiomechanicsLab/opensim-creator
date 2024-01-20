@@ -31,14 +31,21 @@
 #include <utility>
 
 using osc::App;
+using osc::CalcCubemapViewProjMatrices;
 using osc::Camera;
 using osc::ColorSpace;
 using osc::CStringView;
 using osc::Cubemap;
+using osc::Deg2Rad;
+using osc::GenerateCubeMesh;
+using osc::GenerateTexturedQuadMesh;
+using osc::Identity;
 using osc::ImageLoadingFlags;
+using osc::LoadTexture2DFromImage;
 using osc::Mat4;
 using osc::Mesh;
 using osc::Material;
+using osc::Perspective;
 using osc::RenderTexture;
 using osc::RenderTextureFormat;
 using osc::Shader;
@@ -54,16 +61,14 @@ namespace
 {
     constexpr CStringView c_TabStringID = "LearnOpenGL/PBR/SpecularIrradiance";
 
-    constexpr auto c_LightPositions = std::to_array<Vec3>(
-    {
+    constexpr auto c_LightPositions = std::to_array<Vec3>({
         {-10.0f,  10.0f, 10.0f},
         { 10.0f,  10.0f, 10.0f},
         {-10.0f, -10.0f, 10.0f},
         { 10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<Vec3, c_LightPositions.size()> c_LightRadiances = std::to_array<Vec3>(
-    {
+    constexpr std::array<Vec3, c_LightPositions.size()> c_LightRadiances = std::to_array<Vec3>({
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
@@ -78,7 +83,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(osc::Deg2Rad(45.0f));
+        rv.setCameraFOV(Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -87,9 +92,7 @@ namespace
 
     RenderTexture LoadEquirectangularHDRTextureIntoCubemap()
     {
-        int constexpr renderWidth = 512;
-
-        Texture2D hdrTexture = osc::LoadTexture2DFromImage(
+        Texture2D hdrTexture = LoadTexture2DFromImage(
             App::resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
             ColorSpace::Linear,
             ImageLoadingFlags::FlipVertically
@@ -97,36 +100,32 @@ namespace
         hdrTexture.setWrapMode(TextureWrapMode::Clamp);
         hdrTexture.setFilterMode(TextureFilterMode::Linear);
 
-        RenderTexture cubemapRenderTarget{{renderWidth, renderWidth}};
+        RenderTexture cubemapRenderTarget{{512, 512}};
         cubemapRenderTarget.setDimensionality(TextureDimensionality::Cube);
         cubemapRenderTarget.setColorFormat(RenderTextureFormat::ARGBFloat16);
 
         // create a 90 degree cube cone projection matrix
-        Mat4 const projectionMatrix = osc::Perspective(
-            osc::Deg2Rad(90.0f),
+        Mat4 const projectionMatrix = Perspective(
+            Deg2Rad(90.0f),
             1.0f,
             0.1f,
             10.0f
         );
 
         // create material that projects all 6 faces onto the output cubemap
-        Material material
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.vert"),
-                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.geom"),
-                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.frag"),
-            }
-        };
+        Material material{Shader{
+            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.vert"),
+            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.geom"),
+            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.frag"),
+        }};
         material.setTexture("uEquirectangularMap", hdrTexture);
         material.setMat4Array(
             "uShadowMatrices",
-            osc::CalcCubemapViewProjMatrices(projectionMatrix, Vec3{})
+            CalcCubemapViewProjMatrices(projectionMatrix, Vec3{})
         );
 
         Camera camera;
-        osc::Graphics::DrawMesh(osc::GenCube(), Transform{}, material, camera);
+        osc::Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
         camera.renderTo(cubemapRenderTarget);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -139,33 +138,26 @@ namespace
         irradianceCubemap.setDimensionality(TextureDimensionality::Cube);
         irradianceCubemap.setColorFormat(RenderTextureFormat::ARGBFloat16);
 
-        Mat4 const captureProjection = osc::Perspective(
-            osc::Deg2Rad(90.0f),
+        Mat4 const captureProjection = Perspective(
+            Deg2Rad(90.0f),
             1.0f,
             0.1f,
             10.0f
         );
 
-        Material material
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.vert"),
-                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.geom"),
-                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.frag"),
-            },
-        };
-        material.setRenderTexture(
-            "uEnvironmentMap",
-            skybox
-        );
+        Material material{Shader{
+            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.vert"),
+            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.geom"),
+            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.frag"),
+        }};
+        material.setRenderTexture("uEnvironmentMap", skybox);
         material.setMat4Array(
             "uShadowMatrices",
-            osc::CalcCubemapViewProjMatrices(captureProjection, Vec3{})
+            CalcCubemapViewProjMatrices(captureProjection, Vec3{})
         );
 
         Camera camera;
-        osc::Graphics::DrawMesh(osc::GenCube(), Transform{}, material, camera);
+        osc::Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
         camera.renderTo(irradianceCubemap);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -182,24 +174,20 @@ namespace
         captureRT.setDimensionality(TextureDimensionality::Cube);
         captureRT.setColorFormat(RenderTextureFormat::ARGBFloat16);
 
-        Mat4 const captureProjection = osc::Perspective(
-            osc::Deg2Rad(90.0f),
+        Mat4 const captureProjection = Perspective(
+            Deg2Rad(90.0f),
             1.0f,
             0.1f,
             10.0f
         );
 
-        Material material
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.vert"),
-                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.geom"),
-                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.frag"),
-            },
-        };
+        Material material{Shader{
+            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.vert"),
+            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.geom"),
+            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.frag"),
+        }};
         material.setRenderTexture("uEnvironmentMap", environmentMap);
-        material.setMat4Array("uShadowMatrices", osc::CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
+        material.setMat4Array("uShadowMatrices", CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
 
         Camera camera;
 
@@ -217,15 +205,14 @@ namespace
 
         // render prefilter map such that each supported level of roughness maps into one
         // LOD of the cubemap's mipmaps
-        for (size_t mip = 0; mip <= maxMipmapLevel; ++mip)
-        {
+        for (size_t mip = 0; mip <= maxMipmapLevel; ++mip) {
             size_t const mipWidth = levelZeroWidth >> mip;
             captureRT.setDimensions({static_cast<int>(mipWidth), static_cast<int>(mipWidth)});
 
             float const roughness = static_cast<float>(mip)/static_cast<float>(maxMipmapLevel);
             material.setFloat("uRoughness", roughness);
 
-            osc::Graphics::DrawMesh(osc::GenCube(), Transform{}, material, camera);
+            osc::Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
             camera.renderTo(captureRT);
             osc::Graphics::CopyTexture(captureRT, rv, mip);
         }
@@ -235,33 +222,25 @@ namespace
 
     Texture2D Create2DBRDFLookup()
     {
-        RenderTexture renderTex
-        {
-            {512, 512}
-        };
+        RenderTexture renderTex{{512, 512}};
         renderTex.setColorFormat(RenderTextureFormat::ARGBFloat16);  // TODO RG16F in LearnOpenGL
 
-        Material material
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/BRDF.vert"),
-                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/BRDF.frag"),
-            },
-        };
+        Material material{Shader{
+            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/BRDF.vert"),
+            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/BRDF.frag"),
+        }};
 
-        Mesh quad = osc::GenTexturedQuad();
+        Mesh quad = GenerateTexturedQuadMesh();
 
         // TODO: Graphics::Blit with material
         Camera camera;
-        camera.setProjectionMatrixOverride(osc::Identity<Mat4>());
-        camera.setViewMatrixOverride(osc::Identity<Mat4>());
+        camera.setProjectionMatrixOverride(Identity<Mat4>());
+        camera.setViewMatrixOverride(Identity<Mat4>());
 
-        osc::Graphics::DrawMesh(quad, Transform{}, material, camera);
+        osc::Graphics::DrawMesh(quad, Identity<Transform>(), material, camera);
         camera.renderTo(renderTex);
 
-        Texture2D rv
-        {
+        Texture2D rv{
             {512, 512},
             TextureFormat::RGBFloat,  // TODO: RG16F in LearnOpenGL
             ColorSpace::Linear,
@@ -274,24 +253,19 @@ namespace
 
     Material CreateMaterial()
     {
-        Material rv
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/PBR.vert"),
-                App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/PBR.frag"),
-            },
-        };
+        Material rv{Shader{
+            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/PBR.vert"),
+            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/PBR.frag"),
+        }};
         rv.setFloat("uAO", 1.0f);
         return rv;
     }
 }
 
-class osc::LOGLPBRSpecularIrradianceTab::Impl final : public osc::StandardTabImpl {
+class osc::LOGLPBRSpecularIrradianceTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
-    {
-    }
+    {}
 
 private:
     void implOnMount() final
@@ -310,25 +284,15 @@ private:
     bool implOnEvent(SDL_Event const& e) final
     {
         // handle mouse input
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-        {
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
             m_IsMouseCaptured = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect())
-        {
+        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
             m_IsMouseCaptured = true;
             return true;
         }
         return false;
-    }
-
-    void implOnTick() final
-    {
-    }
-
-    void implOnDrawMainMenu() final
-    {
     }
 
     void implOnDraw() final
@@ -348,14 +312,12 @@ private:
     void updateCameraFromInputs()
     {
         // handle mouse capturing
-        if (m_IsMouseCaptured)
-        {
+        if (m_IsMouseCaptured) {
             UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
             ImGui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
-        else
-        {
+        else {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
@@ -381,24 +343,17 @@ private:
     {
         m_PBRMaterial.setVec3("uAlbedoColor", {0.5f, 0.0f, 0.0f});
 
-        for (int row = 0; row < c_NumRows; ++row)
-        {
+        for (int row = 0; row < c_NumRows; ++row) {
             m_PBRMaterial.setFloat("uMetallicity", static_cast<float>(row) / static_cast<float>(c_NumRows));
 
-            for (int col = 0; col < c_NumCols; ++col)
-            {
+            for (int col = 0; col < c_NumCols; ++col) {
                 float const normalizedCol = static_cast<float>(col) / static_cast<float>(c_NumCols);
-                m_PBRMaterial.setFloat("uRoughness", osc::Clamp(normalizedCol, 0.005f, 1.0f));
+                m_PBRMaterial.setFloat("uRoughness", Clamp(normalizedCol, 0.005f, 1.0f));
 
-                Transform t;
-                t.position =
-                {
-                    (static_cast<float>(col) - static_cast<float>(c_NumCols)/2.0f) * c_CellSpacing,
-                    (static_cast<float>(row) - static_cast<float>(c_NumRows)/2.0f) * c_CellSpacing,
-                    0.0f
-                };
+                float const x = (static_cast<float>(col) - static_cast<float>(c_NumCols)/2.0f) * c_CellSpacing;
+                float const y = (static_cast<float>(row) - static_cast<float>(c_NumRows)/2.0f) * c_CellSpacing;
 
-                Graphics::DrawMesh(m_SphereMesh, t, m_PBRMaterial, m_Camera);
+                Graphics::DrawMesh(m_SphereMesh, {.position = {x, y, 0.0f}}, m_PBRMaterial, m_Camera);
             }
         }
     }
@@ -407,13 +362,13 @@ private:
     {
         m_PBRMaterial.setVec3("uAlbedoColor", {1.0f, 1.0f, 1.0f});
 
-        for (Vec3 const& pos : c_LightPositions)
-        {
-            Transform t;
-            t.position = pos;
-            t.scale = Vec3{0.5f};
-
-            Graphics::DrawMesh(m_SphereMesh, t, m_PBRMaterial, m_Camera);
+        for (Vec3 const& pos : c_LightPositions) {
+            Graphics::DrawMesh(
+                m_SphereMesh,
+                {.scale = Vec3{0.5f}, .position = pos},
+                m_PBRMaterial,
+                m_Camera
+            );
         }
     }
 
@@ -421,7 +376,7 @@ private:
     {
         m_BackgroundMaterial.setRenderTexture("uEnvironmentMap", m_ProjectedMap);
         m_BackgroundMaterial.setDepthFunction(DepthFunction::LessOrEqual);  // for skybox depth trick
-        Graphics::DrawMesh(m_CubeMesh, Transform{}, m_BackgroundMaterial, m_Camera);
+        Graphics::DrawMesh(m_CubeMesh, Identity<Transform>(), m_BackgroundMaterial, m_Camera);
         m_Camera.setClearFlags(CameraClearFlags::Nothing);
         m_Camera.renderTo(m_OutputRender);
         m_Camera.setClearFlags(CameraClearFlags::Default);
@@ -429,18 +384,16 @@ private:
 
     void draw2DUI()
     {
-        if (ImGui::Begin("Controls"))
-        {
+        if (ImGui::Begin("Controls")) {
             float ao = m_PBRMaterial.getFloat("uAO").value_or(1.0f);
-            if (ImGui::SliderFloat("ao", &ao, 0.0f, 1.0f))
-            {
+            if (ImGui::SliderFloat("ao", &ao, 0.0f, 1.0f)) {
                 m_PBRMaterial.setFloat("uAO", ao);
             }
         }
         ImGui::End();
     }
 
-    Texture2D m_Texture = osc::LoadTexture2DFromImage(
+    Texture2D m_Texture = LoadTexture2DFromImage(
         App::resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
         ColorSpace::Linear,
         ImageLoadingFlags::FlipVertically
@@ -452,18 +405,14 @@ private:
     Texture2D m_BRDFLookup = Create2DBRDFLookup();
     RenderTexture m_OutputRender{{1, 1}};
 
-    Material m_BackgroundMaterial
-    {
-        Shader
-        {
-            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Skybox.vert"),
-            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Skybox.frag"),
-        },
-    };
+    Material m_BackgroundMaterial{Shader{
+        App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Skybox.vert"),
+        App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Skybox.frag"),
+    }};
 
-    Mesh m_CubeMesh = GenCube();
+    Mesh m_CubeMesh = GenerateCubeMesh();
     Material m_PBRMaterial = CreateMaterial();
-    Mesh m_SphereMesh = GenSphere(64, 64);
+    Mesh m_SphereMesh = GenerateUVSphereMesh(64, 64);
 
     Camera m_Camera = CreateCamera();
     Vec3 m_CameraEulers = {};
@@ -512,16 +461,6 @@ void osc::LOGLPBRSpecularIrradianceTab::implOnUnmount()
 bool osc::LOGLPBRSpecularIrradianceTab::implOnEvent(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
-}
-
-void osc::LOGLPBRSpecularIrradianceTab::implOnTick()
-{
-    m_Impl->onTick();
-}
-
-void osc::LOGLPBRSpecularIrradianceTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::LOGLPBRSpecularIrradianceTab::implOnDraw()

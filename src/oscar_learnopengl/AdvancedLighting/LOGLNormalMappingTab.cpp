@@ -36,8 +36,11 @@
 
 using osc::App;
 using osc::Camera;
+using osc::CalcTangentVectors;
 using osc::ColorSpace;
 using osc::CStringView;
+using osc::Deg2Rad;
+using osc::LoadTexture2DFromImage;
 using osc::Material;
 using osc::Mesh;
 using osc::MeshIndicesView;
@@ -55,41 +58,35 @@ namespace
     // matches the quad used in LearnOpenGL's normal mapping tutorial
     Mesh GenerateQuad()
     {
-        auto const verts = std::to_array<Vec3>(
-        {
+        auto const verts = std::to_array<Vec3>({
             {-1.0f,  1.0f, 0.0f},
             {-1.0f, -1.0f, 0.0f},
             { 1.0f, -1.0f, 0.0f},
             { 1.0f,  1.0f, 0.0f},
         });
-        auto const normals = std::to_array<Vec3>(
-        {
+        auto const normals = std::to_array<Vec3>({
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
         });
-        auto const texCoords = std::to_array<Vec2>(
-        {
+        auto const texCoords = std::to_array<Vec2>({
             {0.0f, 1.0f},
             {0.0f, 0.0f},
             {1.0f, 0.0f},
             {1.0f, 1.0f},
         });
-        auto const indices = std::to_array<uint16_t>(
-        {
+        auto const indices = std::to_array<uint16_t>({
             0, 1, 2,
             0, 2, 3,
         });
-
-        std::vector<Vec4> const tangents = osc::CalcTangentVectors(
+        auto const tangents = CalcTangentVectors(
             MeshTopology::Triangles,
             verts,
             normals,
             texCoords,
-            MeshIndicesView{indices}
+            indices
         );
-        OSC_ASSERT_ALWAYS(tangents.size() == verts.size());
 
         Mesh rv;
         rv.setVerts(verts);
@@ -104,7 +101,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(osc::Deg2Rad(45.0f));
+        rv.setCameraFOV(Deg2Rad(45.0f));
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         return rv;
@@ -112,23 +109,19 @@ namespace
 
     Material CreateNormalMappingMaterial()
     {
-        Texture2D diffuseMap = osc::LoadTexture2DFromImage(
+        Texture2D diffuseMap = LoadTexture2DFromImage(
             App::resource("oscar_learnopengl/textures/brickwall.jpg"),
             ColorSpace::sRGB
         );
-        Texture2D normalMap = osc::LoadTexture2DFromImage(
+        Texture2D normalMap = LoadTexture2DFromImage(
             App::resource("oscar_learnopengl/textures/brickwall_normal.jpg"),
             ColorSpace::Linear
         );
 
-        Material rv
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.vert"),
-                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.frag"),
-            },
-        };
+        Material rv{Shader{
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.frag"),
+        }};
         rv.setTexture("uDiffuseMap", diffuseMap);
         rv.setTexture("uNormalMap", normalMap);
 
@@ -137,24 +130,17 @@ namespace
 
     Material CreateLightCubeMaterial()
     {
-        return Material
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
-                App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
-            },
-        };
+        return Material{Shader{
+            App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
+            App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
+        }};
     }
 }
 
-class osc::LOGLNormalMappingTab::Impl final : public osc::StandardTabImpl {
+class osc::LOGLNormalMappingTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
-    {
-        m_LightTransform.position = {0.5f, 1.0f, 0.3f};
-        m_LightTransform.scale *= 0.2f;
-    }
+    {}
 
 private:
     void implOnMount() final
@@ -171,13 +157,11 @@ private:
     bool implOnEvent(SDL_Event const& e) final
     {
         // handle mouse capturing
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-        {
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
             m_IsMouseCaptured = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && osc::IsMouseInMainViewportWorkspaceScreenRect())
-        {
+        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
             m_IsMouseCaptured = true;
             return true;
         }
@@ -196,14 +180,12 @@ private:
     void implOnDraw() final
     {
         // handle mouse capturing and update camera
-        if (m_IsMouseCaptured)
-        {
+        if (m_IsMouseCaptured) {
             UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
             ImGui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
-        else
-        {
+        else {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
@@ -225,7 +207,7 @@ private:
             Graphics::DrawMesh(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
         }
 
-        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
+        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
         m_Camera.renderToScreen();
 
         ImGui::Begin("controls");
@@ -243,7 +225,10 @@ private:
     Camera m_Camera = CreateCamera();
     Vec3 m_CameraEulers = {};
     Transform m_QuadTransform;
-    Transform m_LightTransform;
+    Transform m_LightTransform = {
+        .scale = Vec3{0.2f},
+        .position = {0.5f, 1.0f, 0.3f},
+    };
     bool m_IsNormalMappingEnabled = true;
     bool m_IsMouseCaptured = false;
 };
