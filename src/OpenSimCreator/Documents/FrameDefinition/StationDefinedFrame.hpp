@@ -102,7 +102,7 @@ namespace osc::fd
         SimTK::Transform calcTransformInBaseFrame() const;
         SimTK::Transform calcTransformInGround(const SimTK::State&) const final;
         SimTK::SpatialVec calcVelocityInGround(const SimTK::State&) const final;
-        SimTK::SpatialVec calcAccelerationInGround(const SimTK::State&) const;
+        SimTK::SpatialVec calcAccelerationInGround(const SimTK::State&) const final;
 
         // determines how each calculated orthonormal basis vector (`ab`, `ab x ac`,
         // and `ab x (ab x ac)`) maps onto each `Frame` (coordinate) axis
