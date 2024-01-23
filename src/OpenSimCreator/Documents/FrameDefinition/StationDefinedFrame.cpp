@@ -1,15 +1,101 @@
 #include "StationDefinedFrame.hpp"
 
+#include <OpenSim/Common/Assertion.h>
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/Exception.h>
+#include <OpenSim/Common/Property.h>
+#include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Simulation/Model/Station.h>
+#include <Simbody.h>
+
+#include <optional>
+#include <sstream>
+#include <string_view>
+#include <utility>
+
 
 namespace {
+    // helper: returns the base frame that `station` is defined in
     OpenSim::Frame const& FindBaseFrame(OpenSim::Station const& station)
     {
         return station.getParentFrame().findBaseFrame();
     }
 
+    // helper: returns the location of the `Station` w.r.t. its base frame
     SimTK::Vec3 GetLocationInBaseFrame(OpenSim::Station const& station)
     {
         return station.getParentFrame().findTransformInBaseFrame() * station.get_location();
+    }
+
+    // helper: tries to parse a given character as a designator for an axis of a 3D coordinate
+    //
+    // returns std::nullopt if the character cannot be parsed as an axis
+    std::optional<SimTK::CoordinateAxis> TryParseAsCoordinateAxis(std::string_view::value_type c)
+    {
+        switch (c) {
+        case 'x':
+        case 'X':
+            return SimTK::CoordinateAxis::XCoordinateAxis{};
+        case 'y':
+        case 'Y':
+            return SimTK::CoordinateAxis::YCoordinateAxis{};
+        case 'z':
+        case 'Z':
+            return SimTK::CoordinateAxis::ZCoordinateAxis{};
+        default:
+            return std::nullopt;
+        }
+    }
+
+    // helper: tries to parse the given string as a potentially-signed representation of a
+    // 3D coordinate dimension (e.g. "-x" --> SimTK::CoordinateDirection::NegXDirection()`)
+    //
+    // returns std::nullopt if the string does not have the required syntax
+    std::optional<SimTK::CoordinateDirection> TryParseAsCoordinateDirection(std::string_view s)
+    {
+        if (s.empty())
+        {
+            return std::nullopt;  // cannot parse: input is empty
+        }
+
+        // handle and consume sign (direction) prefix (e.g. '+' / '-')
+        const bool isNegated = s.front() == '-';
+        if (isNegated || s.front() == '+')
+        {
+            s = s.substr(1);
+        }
+
+        if (s.empty())
+        {
+            return std::nullopt;  // cannot parse: the input was just a prefix with no axis (e.g. "+")
+        }
+
+        // handle axis suffix
+        std::optional<SimTK::CoordinateAxis> const maybeAxis = TryParseAsCoordinateAxis(s.front());
+        if (!maybeAxis)
+        {
+            return std::nullopt;
+        }
+
+        return SimTK::CoordinateDirection{*maybeAxis, isNegated ? -1 : 1};
+    }
+
+    // helper: tries to parse the string value held within `prop` as a coordinate direction, throwing
+    // if the parse isn't possible
+    SimTK::CoordinateDirection ParseAsCoordinateDirectionOrThrow(
+        OpenSim::Component const& owner,
+        OpenSim::Property<std::string> const& prop)
+    {
+        if (auto axis = TryParseAsCoordinateDirection(prop.getValue()))
+        {
+            return *axis;
+        }
+        else
+        {
+            std::stringstream ss;
+            ss << prop.getName() << ": has an invalid value ('" << prop.getValue() << "'): permitted values are -x, +x, -y, +y, -z, or +z";
+            OPENSIM_THROW(OpenSim::Exception, owner, std::move(ss).str());
+        }
     }
 }
 
@@ -47,8 +133,63 @@ const OpenSim::Frame& osc::fd::StationDefinedFrame::extendFindBaseFrame() const
 
 SimTK::Transform osc::fd::StationDefinedFrame::extendFindTransformInBaseFrame() const
 {
-    // TODO: this should be hidden behind a model-stage cache variable
+    return _transformInBaseFrame;
+}
 
+void osc::fd::StationDefinedFrame::extendFinalizeFromProperties()
+{
+    Super::extendFinalizeFromProperties();
+
+    // parse `ab_axis`
+    const SimTK::CoordinateDirection abDirection = ParseAsCoordinateDirectionOrThrow(*this, getProperty_ab_axis());
+
+    // parse `ab_x_ac_axis`
+    const SimTK::CoordinateDirection abXacDirection = ParseAsCoordinateDirectionOrThrow(*this, getProperty_ab_x_ac_axis());
+
+    // ensure `ab_axis` is orthogonal to `ab_x_ac_axis`
+    if (abDirection.hasSameAxis(abXacDirection)) {
+        std::stringstream ss;
+        ss << getProperty_ab_axis().getName() << " (" << getProperty_ab_axis().getValue() << ") and " << getProperty_ab_x_ac_axis().getName() << " (" << getProperty_ab_x_ac_axis().getValue() << ") are not orthogonal";
+        OPENSIM_THROW_FRMOBJ(OpenSim::Exception, std::move(ss).str());
+    }
+
+    // update vector-to-axis mappings so that `extendConnectToModel` knows how
+    // computed vectors (e.g. `ab_x_ac_axis`) relate to the frame transform (e.g. +Y)
+    _basisVectorToFrameMappings = {
+        abDirection,
+        abXacDirection,
+        abDirection.crossProductAxis(abXacDirection),
+    };
+}
+
+void osc::fd::StationDefinedFrame::extendConnectToModel(OpenSim::Model& model)
+{
+    Super::extendConnectToModel(model);
+
+    // ensure all of the `Station`'s have the same base frame
+    //
+    // this is a hard requirement, because we need to know _for certain_ that
+    // the relative transform of this frame doesn't change w.r.t. the base
+    // frame during integration
+    //
+    // (e.g. it would cause mayhem if a Joint was defined using a
+    // `StationDefinedFrame` that, itself, changes in response to a change in that
+    // Joint's coordinates)
+    OpenSim::Frame const& pointABaseFrame = FindBaseFrame(getPointA());
+    OpenSim::Frame const& pointBBaseFrame = FindBaseFrame(getPointB());
+    OpenSim::Frame const& pointCBaseFrame = FindBaseFrame(getPointC());
+    OpenSim::Frame const& originPointFrame = FindBaseFrame(getOriginPoint());
+    OPENSIM_ASSERT_FRMOBJ(&pointABaseFrame == &pointBBaseFrame && "`point_b` is defined in a different base frame from `point_a`. All `Station`s (`point_a`, `point_b`, `point_c`, and `origin_point` of a `StationDefinedFrame` must be defined in the same base frame.");
+    OPENSIM_ASSERT_FRMOBJ(&pointABaseFrame == &pointCBaseFrame && "`point_c` is defined in a different base frame from `point_a`. All `Station`s (`point_a`, `point_b`, `point_c`, and `origin_point` of a `StationDefinedFrame` must be defined in the same base frame.");
+    OPENSIM_ASSERT_FRMOBJ(&pointABaseFrame == &originPointFrame && "`origin_point` is defined in a different base frame from `point_a`. All `Station`s (`point_a`, `point_b`, `point_c`, and `origin_point` of a `StationDefinedFrame` must be defined in the same base frame.");
+
+    // once we know _for certain_ that all of the points can be calculated w.r.t.
+    // the same base frame, we can precompute the transform
+    _transformInBaseFrame = calcTransformInBaseFrame();
+}
+
+SimTK::Transform osc::fd::StationDefinedFrame::calcTransformInBaseFrame() const
+{
     // get raw input data
     const SimTK::Vec3 posA = GetLocationInBaseFrame(getPointA());
     const SimTK::Vec3 posB = GetLocationInBaseFrame(getPointB());
@@ -63,34 +204,17 @@ SimTK::Transform osc::fd::StationDefinedFrame::extendFindTransformInBaseFrame() 
 
     // remap them into a 3x3 "change of basis" matrix for each frame axis
     SimTK::Mat33 orientation{};
-    orientation.col(_vectorToAxisIndexMappings[0]) = SimTK::Vec3(ab);
-    orientation.col(_vectorToAxisIndexMappings[1]) = SimTK::Vec3(ab_x_ac);
-    orientation.col(_vectorToAxisIndexMappings[2]) = SimTK::Vec3(ab_x_ab_x_ac);
+    orientation.col(_basisVectorToFrameMappings[0].getAxis()) = _basisVectorToFrameMappings[0].getDirection() * SimTK::Vec3(ab);
+    orientation.col(_basisVectorToFrameMappings[1].getAxis()) = _basisVectorToFrameMappings[1].getDirection() * SimTK::Vec3(ab_x_ac);
+    orientation.col(_basisVectorToFrameMappings[2].getAxis()) = _basisVectorToFrameMappings[2].getDirection() * SimTK::Vec3(ab_x_ab_x_ac);
 
     // combine with the origin point to create the complete transform in the base frame
     return SimTK::Transform{SimTK::Rotation{orientation}, originPoint};
 }
 
-void osc::fd::StationDefinedFrame::extendFinalizeFromProperties()
+SimTK::Transform osc::fd::StationDefinedFrame::calcTransformInGround(const SimTK::State& state) const
 {
-    // TODO:
-    //
-    // - validate that `ab_axis` and `ab_x_ac_axis` can be parsed as an axis
-    // - validate that `ab_axis` and `ab_x_ac_axis` are orthogonal
-    // - compute `_vectorToAxisIndexMappings`
-}
-
-void osc::fd::StationDefinedFrame::extendConnectToModel(OpenSim::Model&)
-{
-    // TODO:
-    //
-    // - validate that all referred-to `Station`s have the same base frame
-}
-
-SimTK::Transform osc::fd::StationDefinedFrame::calcTransformInGround(const SimTK::State&) const
-{
-    // TODO: get base frame's transform in ground and compose it with `getTransformInBaseFrame`
-    return {};
+    return extendFindBaseFrame().getTransformInGround(state) * _transformInBaseFrame;
 }
 
 SimTK::SpatialVec osc::fd::StationDefinedFrame::calcVelocityInGround(const SimTK::State&) const

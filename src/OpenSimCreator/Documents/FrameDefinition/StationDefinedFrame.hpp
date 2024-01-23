@@ -19,19 +19,20 @@ namespace osc::fd
      *
      * Specifically, it is a `Frame` that is defined by:
      *
-     * - Creating a triangle from `point_a`, `point_b`, and `point_c`
-     * - Computing `ab_axis` as the unit vector `normalize(point_b - point_a)`
-     * - Computing `ab_x_ac_axis` as the unit vector `normalize((point_b - point_a) x (point_c - point_a))`
-     * - Computing the remaining axis as the unit vector `normalize((point_b - point_a) x ((point_b - point_a) x (point_c - point_a)))`
-     * - Computing the resulting `Frame`'s `orientation` from the three resulting vectors, and its `position` from `frame_origin`
-     * - The base frame of the resulting frame is equal to the base frame of all provided points, which must be equal
+     * - Taking the three points of a triangle: `point_a`, `point_b`, and `point_c`
+     * - Calculating `ab_axis = normalize(point_b - point_a)`
+     * - Calculating `ab_x_ac_axis = normalize((point_b - point_a) x (point_c - point_a))`
+     * - Calculating `third_axis = normalize((point_b - point_a) x ((point_b - point_a) x (point_c - point_a)))`
+     * - Calculating a 3x3 `orientation` matrix from the resulting three orthogonal unit vectors
+     * - Using `position` from the `frame_origin` property as the `position` of the resulting frame
+     * - These steps yield an `orientation` + `position`: the basis for an OpenSim frame
      *
-     * `StationDefinedFrame` is intended to be used as a higher-level alternative to
-     * `OffsetFrame` when a model designer is able to explicitly establish coordinate systems
-     * from relationships between `Station`s in the model. This can be useful for
-     * "landmark-driven" frame definition, and is in contrast to defining frames
-     * implicitly (e.g. with external software, by eye) followed by baking that
-     * implicit knowledge into an `OffsetFrame` as an `orientation` and `position`.
+     * `StationDefinedFrame` is intended to be used as an alternative to `OffsetFrame`
+     * that explicitly establishes coordinate systems (`Frame`s) from relationships
+     * between `Station`s in the model. This can be useful for "landmark-driven" frame
+     * definition, and is in contrast to defining frames implicitly (e.g. with external
+     * software, or by eye) followed by "baking" that implicit knowledge into the
+     * `orientation` and `position` properties of an `OffsetFrame`.
      *
      * Advantages
      * ==========
@@ -66,11 +67,13 @@ namespace osc::fd
      * Error Cases
      * ===========
      *
-     * - The four points (three triangle points, one origin point) must be rigidly positioned in
-     *   the same base frame. This is so that a state-independent rigid Frame can be defined from them.
+     * - The four points (the three triangle points: `point_a`, `point_b`, and `point_c`; and the
+     *   `origin_point`) must be rigidly positioned in the same base frame. This is so that a
+     *   state-independent rigid Frame can be defined from them.
      *
-     * - The three triangle points must actually form a Triangle. Co-located, or parallel, points are
-     *   an error.
+     * - The three triangle points must actually form a Triangle. Therefore, it is an error if any
+     *   pair of those points are co-located, or if two edge vectors between any combination of those
+     *   points are parallel.
      */
     class StationDefinedFrame final : public OpenSim::PhysicalFrame {
         OpenSim_DECLARE_CONCRETE_OBJECT(StationDefinedFrame, OpenSim::PhysicalFrame);
@@ -96,15 +99,24 @@ namespace osc::fd
         void extendFinalizeFromProperties() final;
         void extendConnectToModel(OpenSim::Model&) final;
 
+        SimTK::Transform calcTransformInBaseFrame() const;
         SimTK::Transform calcTransformInGround(const SimTK::State&) const final;
         SimTK::SpatialVec calcVelocityInGround(const SimTK::State&) const final;
         SimTK::SpatialVec calcAccelerationInGround(const SimTK::State&) const;
 
-        // determines how each orthonormal basis vector (`ab`, `ab x ac`, `ab x (ab x ac)`)
-        // maps onto a frame axis index (x, 0; y, 1; z, 2)
+        // determines how each calculated orthonormal basis vector (`ab`, `ab x ac`,
+        // and `ab x (ab x ac)`) maps onto each `Frame` (coordinate) axis
         //
-        // updated during `extendFinalizeProperties` (the mapping is dictated by the `ab_axis`
-        // and `ab_x_ac_axis` properties)
-        std::array<int, 3> _vectorToAxisIndexMappings = {0, 1, 2};
+        // updated during `extendFinalizeProperties` (this mapping is dictated by the
+        // `ab_axis` and `ab_x_ac_axis` properties)
+        std::array<SimTK::CoordinateDirection, 3> _basisVectorToFrameMappings = {
+            SimTK::CoordinateAxis::XCoordinateAxis{},
+            SimTK::CoordinateAxis::YCoordinateAxis{},
+            SimTK::CoordinateAxis::ZCoordinateAxis{},
+        };
+
+        // this frame's transform with respect to its base frame. Assumed to only update once
+        // during `extendConnectToModel`
+        SimTK::Transform _transformInBaseFrame{};
     };
 }
