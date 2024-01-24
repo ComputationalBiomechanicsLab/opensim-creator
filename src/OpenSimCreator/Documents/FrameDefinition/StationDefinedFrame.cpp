@@ -192,14 +192,19 @@ void osc::fd::StationDefinedFrame::extendConnectToModel(OpenSim::Model& model)
 SimTK::Transform osc::fd::StationDefinedFrame::calcTransformInBaseFrame() const
 {
     // get raw input data
-    const SimTK::Vec3 posA = GetLocationInBaseFrame(getPointA());
-    const SimTK::Vec3 posB = GetLocationInBaseFrame(getPointB());
-    const SimTK::Vec3 posC = GetLocationInBaseFrame(getPointC());
+    const SimTK::Vec3 pointA = GetLocationInBaseFrame(getPointA());
+    const SimTK::Vec3 pointB = GetLocationInBaseFrame(getPointB());
+    const SimTK::Vec3 pointC = GetLocationInBaseFrame(getPointC());
     const SimTK::Vec3 originPoint = GetLocationInBaseFrame(getOriginPoint());
 
+    // validate raw input data
+    OPENSIM_ASSERT_FRMOBJ_ALWAYS(pointB != pointA && "`point_b` must be at a different location from `point_a` (the three points of a `StationDefinedFrame` must form a triangle)");
+    OPENSIM_ASSERT_FRMOBJ_ALWAYS(pointC != pointA && "`point_c` must be at a different location from `point_a` (the three points of a `StationDefinedFrame` must form a triangle)");
+    OPENSIM_ASSERT_FRMOBJ_ALWAYS(pointC != pointB && "`point_c` must be at a different location from `point_b` (the three points of a `StationDefinedFrame` must form a triangle)");
+
     // compute orthonormal basis vectors
-    const SimTK::UnitVec3 ac(posC - posA);
-    const SimTK::UnitVec3 ab(posB - posA);
+    const SimTK::UnitVec3 ac(pointC - pointA);
+    const SimTK::UnitVec3 ab(pointB - pointA);
     const SimTK::UnitVec3 ab_x_ac(cross(ab, ac));
     const SimTK::UnitVec3 ab_x_ab_x_ac(cross(ab, ab_x_ac));
 

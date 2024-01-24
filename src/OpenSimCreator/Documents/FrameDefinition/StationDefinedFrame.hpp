@@ -1,5 +1,7 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/Model/ICustomComponent.hpp>
+
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Simulation/Model/Frame.h>
@@ -77,7 +79,7 @@ namespace osc::fd
      *   pair of those points are co-located, or if two edge vectors between any combination of those
      *   points are parallel.
      */
-    class StationDefinedFrame final : public OpenSim::PhysicalFrame {
+    class StationDefinedFrame final : public OpenSim::PhysicalFrame, ICustomComponent {
         OpenSim_DECLARE_CONCRETE_OBJECT(StationDefinedFrame, OpenSim::PhysicalFrame);
     public:
         OpenSim_DECLARE_PROPERTY(ab_axis, std::string, "The frame axis that points in the direction of `point_b - point_a`. Can be `-x`, `+x`, `-y`, `+y`, `-z`, or `+z`. Must be orthogonal to `ab_x_ac_axis`.");

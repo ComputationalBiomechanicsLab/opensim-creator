@@ -1,6 +1,8 @@
 #include "StaticComponentRegistries.hpp"
 
 #include <OpenSimCreator/ComponentRegistry/ComponentRegistry.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/StationDefinedFrame.hpp>
+#include <OpenSimCreator/Documents/Model/ICustomComponent.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <OpenSim/Common/ArrayPtrs.h>
@@ -47,6 +49,9 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
+using osc::ICustomComponent;
+using osc::fd::StationDefinedFrame;
 
 // generic helpers
 namespace
@@ -642,6 +647,11 @@ namespace
         return rv;
     }
 
+    std::vector<std::shared_ptr<OpenSim::Component const>> CreateCustomComponentLut()
+    {
+        return {std::make_shared<StationDefinedFrame>()};
+    }
+
     template<std::derived_from<OpenSim::Component> T>
     osc::ComponentRegistry<T> CreateRegistryFromLUT(
         std::string_view name,
@@ -680,6 +690,13 @@ namespace
         std::string_view description)
     {
         return CreateRegistryFromLUT<OpenSim::Component>(name, description, CreateOtherComponentLut());
+    }
+
+    osc::ComponentRegistry<OpenSim::Component> CreateCustomComponentRegistry(
+        std::string_view name,
+        std::string_view description)
+    {
+        return CreateRegistryFromLUT<OpenSim::Component>(name, description, CreateCustomComponentLut());
     }
 }
 
@@ -749,6 +766,15 @@ osc::ComponentRegistry<OpenSim::Component> const& osc::GetComponentRegistry()
     static auto const s_StaticReg = CreateOtherComponentRegistry(
         "Component",
         "These are all the components that OpenSim Creator knows about, but can't put into an existing category (e.g. Force)"
+    );
+    return s_StaticReg;
+}
+
+osc::ComponentRegistry<OpenSim::Component> const& osc::GetCustomComponentRegistry()
+{
+    static auto const s_StaticReg = CreateCustomComponentRegistry(
+        "OSC-Specific Components",
+        "You shouldn't use these if you want a standard osim file. They are custom components that only work in OpenSim Creator, but might be handy for very specific use-cases"
     );
     return s_StaticReg;
 }
