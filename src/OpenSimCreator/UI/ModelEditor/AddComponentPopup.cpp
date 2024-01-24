@@ -240,25 +240,30 @@ private:
             ImGui::PushID(static_cast<int>(i));
             ImGui::BeginChild("##pfselector", {ImGui::GetContentRegionAvail().x, 128.0f});
 
-            // iterate through PFs in model and print them out
+            // iterate through potential connectees in model and print connect-able options
             int innerID = 0;
-            for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>())
+            for (OpenSim::Component const& c : model.getComponentList())
             {
-                OpenSim::ComponentPath const pfPath = osc::GetAbsolutePath(pf);
-                bool selected = pfPath == connectee;
+                if (!IsAbleToConnectTo(socket, c))
+                {
+                    continue;
+                }
+
+                OpenSim::ComponentPath const absPath = osc::GetAbsolutePath(c);
+                bool selected = absPath == connectee;
 
                 ImGui::PushID(innerID++);
-                if (ImGui::Selectable(pf.getName().c_str(), selected))
+                if (ImGui::Selectable(c.getName().c_str(), selected))
                 {
-                    connectee = pfPath;
+                    connectee = absPath;
                 }
                 Rect const selectableRect = osc::GetItemRect();
-                osc::DrawTooltipIfItemHovered(pfPath.toString());
+                osc::DrawTooltipIfItemHovered(c.toString());
                 ImGui::PopID();
 
                 if (selected)
                 {
-                    App::upd().addFrameAnnotation(pfPath.toString(), selectableRect);
+                    App::upd().addFrameAnnotation(c.toString(), selectableRect);
                 }
             }
 

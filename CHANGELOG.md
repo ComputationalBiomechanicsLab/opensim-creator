@@ -4,6 +4,8 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- The available socket options when adding a new component to the model should now show all valid
+  options, rather than just showing frames in the model (#820)
 - Updated Sphinx to version 7.2.6, and the associated sphinx-book-theme to 1.1.0, which makes the
   documentation look a little nicer
 
