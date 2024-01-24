@@ -10,6 +10,7 @@
 
 #include <optional>
 #include <sstream>
+#include <string>
 #include <string_view>
 #include <utility>
 
@@ -217,18 +218,57 @@ SimTK::Transform osc::fd::StationDefinedFrame::calcTransformInGround(const SimTK
     return extendFindBaseFrame().getTransformInGround(state) * _transformInBaseFrame;
 }
 
-SimTK::SpatialVec osc::fd::StationDefinedFrame::calcVelocityInGround(const SimTK::State&) const
+SimTK::SpatialVec osc::fd::StationDefinedFrame::calcVelocityInGround(const SimTK::State& state) const
 {
-    // TODO: get base frame's velocity in ground and compose it with `getTransformInBaseFrame`
-    //
-    // see: `OpenSim::OffsetFrame<T>::calcVelocityInGround` for calculation
-    return {};
+    // note: this calculation is inspired from the one found in `OpenSim/Simulation/Model/OffsetFrame.h`
+
+    const OpenSim::Frame& baseFrame = findBaseFrame();
+
+    // get the (angular + linear) velocity of the base frame w.r.t. ground
+    const SimTK::SpatialVec vbf = baseFrame.getVelocityInGround(state);
+
+    // calculate the rigid _offset_ (not position) of this frame w.r.t. ground
+    const SimTK::Vec3 offset = baseFrame.getTransformInGround(state).R() * findTransformInBaseFrame().p();
+
+    return SimTK::SpatialVec{
+        // the angular velocity of this frame is the same as its base frame (it's a rigid attachment)
+        vbf(0),
+
+        // the linear velocity of this frame is the linear velocity of its base frame, _plus_ the
+        // rejection of this frame's offset from the base frame's angular velocity
+        //
+        // this is to account for the fact that rotation around the base frame will affect the linear
+        // velocity of frames that are at an offset away from the rotation axis
+        vbf(1) + (vbf(0) % offset),
+    };
 }
 
-SimTK::SpatialVec osc::fd::StationDefinedFrame::calcAccelerationInGround(const SimTK::State&) const
+SimTK::SpatialVec osc::fd::StationDefinedFrame::calcAccelerationInGround(const SimTK::State& state) const
 {
-    // TODO: get base frame's acceleration in ground and compose it with `getTransformInBaseFrame`
-    //
-    // see: `OpenSim::OffsetFrame<T>::calcAccelerationInGround` for calculation
-    return {};
+    // note: this calculation is inspired from the one found in `OpenSim/Simulation/Model/OffsetFrame.h`
+
+    const OpenSim::Frame& baseFrame = findBaseFrame();
+
+    // get the (angular + linear) velocity and acceleration of the base frame w.r.t. ground
+    const SimTK::SpatialVec vbf = baseFrame.getVelocityInGround(state);
+    const SimTK::SpatialVec abf = baseFrame.getAccelerationInGround(state);
+
+    // calculate the rigid _offset_ (not position) of this frame w.r.t. ground
+    const SimTK::Vec3 offset = baseFrame.getTransformInGround(state).R() * findTransformInBaseFrame().p();
+
+    return SimTK::SpatialVec{
+        // the angular acceleration of this frame is the same as its base frame (it's a rigid attachment)
+        abf(0),
+
+        // the linear acceleration of this frame is:
+        //
+        // - the linear acceleration of its base frame
+        //
+        // - plus the rejection of this frame's offset from from the base frame's angular velocity (to
+        //   account for the fact that rotational acceleration in the base frame becomes linear acceleration
+        //   for any frames attached at an offset that isn't along the rotation axis)
+        //
+        // - plus the rejection of TODO
+        abf(1) + (abf(0) % offset) + (vbf(0) % (vbf(0) % offset)),
+    };
 }
