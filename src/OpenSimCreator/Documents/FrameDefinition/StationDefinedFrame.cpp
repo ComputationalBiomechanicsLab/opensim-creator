@@ -183,10 +183,17 @@ void osc::fd::StationDefinedFrame::extendConnectToModel(OpenSim::Model& model)
     OPENSIM_ASSERT_FRMOBJ_ALWAYS(&pointABaseFrame == &pointBBaseFrame && "`point_b` is defined in a different base frame from `point_a`. All `Station`s (`point_a`, `point_b`, `point_c`, and `origin_point` of a `StationDefinedFrame` must be defined in the same base frame.");
     OPENSIM_ASSERT_FRMOBJ_ALWAYS(&pointABaseFrame == &pointCBaseFrame && "`point_c` is defined in a different base frame from `point_a`. All `Station`s (`point_a`, `point_b`, `point_c`, and `origin_point` of a `StationDefinedFrame` must be defined in the same base frame.");
     OPENSIM_ASSERT_FRMOBJ_ALWAYS(&pointABaseFrame == &originPointFrame && "`origin_point` is defined in a different base frame from `point_a`. All `Station`s (`point_a`, `point_b`, `point_c`, and `origin_point` of a `StationDefinedFrame` must be defined in the same base frame.");
+    OPENSIM_ASSERT_FRMOBJ_ALWAYS(dynamic_cast<OpenSim::PhysicalFrame const*>(&pointABaseFrame) && "the base frame of the stations must be a physical frame (e.g. an `OpenSim::Body`, an `OpenSim::PhysicalOffsetFrame`, etc.)");
 
     // once we know _for certain_ that all of the points can be calculated w.r.t.
     // the same base frame, we can precompute the transform
     _transformInBaseFrame = calcTransformInBaseFrame();
+}
+
+void osc::fd::StationDefinedFrame::extendAddToSystem(SimTK::MultibodySystem& system) const
+{
+    Super::extendAddToSystem(system);
+    setMobilizedBodyIndex(dynamic_cast<OpenSim::PhysicalFrame const&>(findBaseFrame()).getMobilizedBodyIndex());
 }
 
 SimTK::Transform osc::fd::StationDefinedFrame::calcTransformInBaseFrame() const

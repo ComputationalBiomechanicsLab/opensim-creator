@@ -102,6 +102,7 @@ namespace osc::fd
         SimTK::Transform extendFindTransformInBaseFrame() const final;
         void extendFinalizeFromProperties() final;
         void extendConnectToModel(OpenSim::Model&) final;
+        void extendAddToSystem(SimTK::MultibodySystem&) const final;
 
         SimTK::Transform calcTransformInBaseFrame() const;
         SimTK::Transform calcTransformInGround(const SimTK::State&) const final;
