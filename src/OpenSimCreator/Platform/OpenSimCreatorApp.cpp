@@ -1,5 +1,6 @@
 #include "OpenSimCreatorApp.hpp"
 
+#include <OpenSimCreator/Documents/FrameDefinition/StationDefinedFrame.hpp>
 #include <OpenSimCreator/UI/OpenSimCreatorTabRegistry.hpp>
 #include <OpenSimCreator/OpenSimCreatorConfig.hpp>
 
@@ -28,6 +29,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+
+using osc::fd::StationDefinedFrame;
 
 namespace
 {
@@ -126,6 +129,7 @@ namespace
         RegisterTypes_osimAnalyses();
         RegisterTypes_osimTools();
         RegisterTypes_osimExampleComponents();
+        OpenSim::Object::registerType(StationDefinedFrame{});
     }
 
     void GloballySetOpenSimsGeometrySearchPath(osc::AppConfig const& config)

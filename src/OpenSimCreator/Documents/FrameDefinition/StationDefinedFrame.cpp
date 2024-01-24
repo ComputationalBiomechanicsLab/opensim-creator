@@ -159,7 +159,7 @@ void osc::fd::StationDefinedFrame::extendFinalizeFromProperties()
     _basisVectorToFrameMappings = {
         abDirection,
         abXacDirection,
-        abDirection.crossProductAxis(abXacDirection),
+        SimTK::CoordinateDirection{abDirection.crossProductAxis(abXacDirection), abDirection.crossProductSign(abXacDirection)},
     };
 }
 
@@ -203,10 +203,10 @@ SimTK::Transform osc::fd::StationDefinedFrame::calcTransformInBaseFrame() const
     OPENSIM_ASSERT_FRMOBJ_ALWAYS(pointC != pointB && "`point_c` must be at a different location from `point_b` (the three points of a `StationDefinedFrame` must form a triangle)");
 
     // compute orthonormal basis vectors
-    const SimTK::UnitVec3 ac(pointC - pointA);
     const SimTK::UnitVec3 ab(pointB - pointA);
-    const SimTK::UnitVec3 ab_x_ac(cross(ab, ac));
-    const SimTK::UnitVec3 ab_x_ab_x_ac(cross(ab, ab_x_ac));
+    const SimTK::UnitVec3 ac(pointC - pointA);
+    const SimTK::UnitVec3 ab_x_ac{cross(ab, ac)};
+    const SimTK::UnitVec3 ab_x_ab_x_ac{cross(ab, ab_x_ac)};
 
     // remap them into a 3x3 "change of basis" matrix for each frame axis
     SimTK::Mat33 orientation{};

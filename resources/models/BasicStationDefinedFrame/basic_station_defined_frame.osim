@@ -3,30 +3,47 @@
 	<Model name="model">
 		<!--List of components that this component owns and serializes.-->
 		<components>
-			<Station name="Station">
+			<Station name="a">
 				<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
 				<socket_parent_frame>/bodyset/new_body</socket_parent_frame>
 				<!--The fixed location of the station expressed in its parent frame.-->
 				<location>0.10000000149011612 0.10000000149011612 0.10000000149011612</location>
 			</Station>
-			<Station name="Station_0">
+			<Station name="b">
 				<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
 				<socket_parent_frame>/bodyset/new_body</socket_parent_frame>
 				<!--The fixed location of the station expressed in its parent frame.-->
 				<location>0.10000000149011612 -0.10000000149011612 0.10000000149011612</location>
 			</Station>
-			<Station name="Station_1">
+			<Station name="c">
 				<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
 				<socket_parent_frame>/bodyset/new_body</socket_parent_frame>
 				<!--The fixed location of the station expressed in its parent frame.-->
 				<location>0.10000000149011612 0 -0.10000000149011612</location>
 			</Station>
-			<Station name="Station_2">
+			<Station name="origin">
 				<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
 				<socket_parent_frame>/bodyset/new_body</socket_parent_frame>
 				<!--The fixed location of the station expressed in its parent frame.-->
 				<location>0.10000000149011612 0 0</location>
 			</Station>
+			<StationDefinedFrame name="StationDefinedFrame">
+				<!--The geometry used to display the axes of this Frame.-->
+				<FrameGeometry name="frame_geometry">
+					<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+					<socket_frame>..</socket_frame>
+					<!--Scale factors in X, Y, Z directions respectively.-->
+					<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+				</FrameGeometry>
+				<!--Path to a Component that satisfies the Socket 'point_a' of type OpenSim::Station (description: Point `a` of a triangle that defines the frame's orientation. Must form a triangle with `point_b` and `point_c`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
+				<socket_point_a>/a</socket_point_a>
+				<!--Path to a Component that satisfies the Socket 'point_b' of type OpenSim::Station (description: Point `b` of a triangle that defines the frame's orientation. Must form a triangle with `point_a` and `point_c`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
+				<socket_point_b>/b</socket_point_b>
+				<!--Path to a Component that satisfies the Socket 'point_c' of type OpenSim::Station (description: Point `c` of a triangle that defines the frame's orientation. Must form a triangle with `point_a` and `point_b`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
+				<socket_point_c>/c</socket_point_c>
+				<!--Path to a Component that satisfies the Socket 'origin_point' of type OpenSim::Station (description: Point that defines the frame's origin point. Can be one of the triangle points. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
+				<socket_origin_point>/origin</socket_origin_point>
+			</StationDefinedFrame>
 		</components>
 		<!--The model's ground reference frame.-->
 		<Ground name="ground">
