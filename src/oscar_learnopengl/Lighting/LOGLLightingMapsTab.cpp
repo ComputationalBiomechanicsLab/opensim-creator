@@ -150,7 +150,7 @@ private:
         App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
         App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
     }};
-    Mesh m_Mesh = GenLearnOpenGLCube();
+    Mesh m_Mesh = GenerateLearnOpenGLCubeMesh();
     Camera m_Camera = CreateCamera();
     Vec3 m_CameraEulers = {};
     bool m_IsMouseCaptured = false;

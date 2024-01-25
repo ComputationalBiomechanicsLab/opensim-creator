@@ -126,7 +126,7 @@ private:
         App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
     }};
 
-    Mesh m_CubeMesh = GenLearnOpenGLCube();
+    Mesh m_CubeMesh = GenerateLearnOpenGLCubeMesh();
 
     Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     Vec3 m_CameraEulers = {};

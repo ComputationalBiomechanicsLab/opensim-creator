@@ -182,7 +182,7 @@ private:
         App::slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.vert"),
         App::slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.frag"),
     }};
-    Mesh m_Mesh = GenLearnOpenGLCube();
+    Mesh m_Mesh = GenerateLearnOpenGLCubeMesh();
     Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     bool m_IsMouseCaptured = false;
     Vec3 m_CameraEulers = {};

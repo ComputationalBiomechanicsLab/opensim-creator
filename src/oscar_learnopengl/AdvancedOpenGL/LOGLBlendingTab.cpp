@@ -202,7 +202,7 @@ private:
         App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.frag"),
     }};
     Material m_BlendingMaterial = m_OpaqueMaterial;
-    Mesh m_CubeMesh = GenLearnOpenGLCube();
+    Mesh m_CubeMesh = GenerateLearnOpenGLCubeMesh();
     Mesh m_PlaneMesh = GeneratePlane();
     Mesh m_TransparentMesh = GenerateTransparent();
     Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();

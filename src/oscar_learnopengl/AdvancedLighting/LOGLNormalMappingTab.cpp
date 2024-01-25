@@ -218,7 +218,7 @@ private:
     // rendering state
     Material m_NormalMappingMaterial = CreateNormalMappingMaterial();
     Material m_LightCubeMaterial = CreateLightCubeMaterial();
-    Mesh m_CubeMesh = GenLearnOpenGLCube();
+    Mesh m_CubeMesh = GenerateLearnOpenGLCubeMesh();
     Mesh m_QuadMesh = GenerateQuad();
 
     // scene state

@@ -212,7 +212,7 @@ private:
     // rendering state
     Material m_ParallaxMappingMaterial = CreateParallaxMappingMaterial();
     Material m_LightCubeMaterial = CreateLightCubeMaterial();
-    Mesh m_CubeMesh = GenLearnOpenGLCube();
+    Mesh m_CubeMesh = GenerateLearnOpenGLCubeMesh();
     Mesh m_QuadMesh = GenerateQuad();
 
     // scene state

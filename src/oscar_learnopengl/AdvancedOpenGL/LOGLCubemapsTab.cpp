@@ -257,7 +257,7 @@ private:
     std::array<CubeMaterial, 3> m_CubeMaterials = CreateCubeMaterials();
     size_t m_CubeMaterialIndex = 0;
     MaterialPropertyBlock m_CubeProperties;
-    Mesh m_Cube = GenLearnOpenGLCube();
+    Mesh m_Cube = GenerateLearnOpenGLCubeMesh();
     Texture2D m_ContainerTexture = LoadTexture2DFromImage(
         App::resource("oscar_learnopengl/textures/container.jpg"),
         ColorSpace::sRGB

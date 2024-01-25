@@ -232,7 +232,7 @@ private:
 
     Material m_MultipleLightsMaterial = CreateMultipleLightsMaterial();
     Material m_LightCubeMaterial = CreateLightCubeMaterial();
-    Mesh m_Mesh = GenLearnOpenGLCube();
+    Mesh m_Mesh = GenerateLearnOpenGLCubeMesh();
 
     Camera m_Camera = CreateCamera();
     Vec3 m_CameraEulers = {};

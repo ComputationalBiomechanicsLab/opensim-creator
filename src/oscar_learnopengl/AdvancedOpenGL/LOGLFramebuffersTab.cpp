@@ -184,7 +184,7 @@ private:
         ColorSpace::sRGB
     );
 
-    Mesh m_CubeMesh = GenLearnOpenGLCube();
+    Mesh m_CubeMesh = GenerateLearnOpenGLCubeMesh();
     Mesh m_PlaneMesh = GeneratePlane();
     Mesh m_QuadMesh = GenerateTexturedQuadMesh();
 
