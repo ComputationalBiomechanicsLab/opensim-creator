@@ -4783,7 +4783,7 @@ public:
 
     void transformNormals(std::function<Vec3(Vec3)> const& f)
     {
-        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Normal, f);
+        m_VertexBuffer.transformAttribute(VertexAttribute::Normal, f);
 
         m_Version->reset();
     }

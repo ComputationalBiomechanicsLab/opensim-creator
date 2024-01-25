@@ -513,7 +513,7 @@ TEST(Mesh, TransformNormalsTransormsTheNormals)
     auto const transform = [](Vec3 n) { return -n; };
     auto const original = GenerateNormals(16);
     auto expected = original;
-    std::for_each(expected.begin(), expected.end(), transform);
+    std::transform(expected.begin(), expected.end(), expected.begin(), transform);
 
     Mesh m;
     m.setVerts(GenerateVertices(16));
@@ -608,7 +608,7 @@ TEST(Mesh, TransformTexCoordsAppliesTransformToTexCoords)
     auto const transform = [](Vec2 uv) { return 0.287f * uv; };
     auto const original = GenerateTexCoords(3);
     auto expected = original;
-    std::for_each(expected.begin(), expected.end(), transform);
+    std::transform(expected.begin(), expected.end(), expected.begin(), transform);
 
     Mesh m;
     m.setVerts(GenerateVertices(3));
