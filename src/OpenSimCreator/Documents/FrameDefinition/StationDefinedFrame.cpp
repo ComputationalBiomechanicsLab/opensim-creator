@@ -5,9 +5,11 @@
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Station.h>
 #include <Simbody.h>
 
+#include <array>
 #include <optional>
 #include <sstream>
 #include <string>
@@ -98,6 +100,15 @@ namespace {
             OPENSIM_THROW(OpenSim::Exception, owner, std::move(ss).str());
         }
     }
+
+    // helper: returns the (parseable) string equivalent of the given direction
+    std::string to_string(SimTK::CoordinateDirection const& dir)
+    {
+        std::string rv;
+        rv += dir.getDirection() > 0 ? '+' : '-';
+        rv += std::array<char, 3>{'x', 'y', 'z'}.at(dir.getAxis());
+        return rv;
+    }
 }
 
 
@@ -105,6 +116,22 @@ osc::fd::StationDefinedFrame::StationDefinedFrame()
 {
     constructProperty_ab_axis("+x");
     constructProperty_ab_x_ac_axis("+y");
+}
+
+osc::fd::StationDefinedFrame::StationDefinedFrame(
+    SimTK::CoordinateDirection abAxis,
+    SimTK::CoordinateDirection abXacAxis,
+    OpenSim::Station const& pointA,
+    OpenSim::Station const& pointB,
+    OpenSim::Station const& pointC,
+    OpenSim::Station const& originPoint)
+{
+    constructProperty_ab_axis(to_string(abAxis));
+    constructProperty_ab_x_ac_axis(to_string(abXacAxis));
+    connectSocket_point_a(pointA);
+    connectSocket_point_b(pointB);
+    connectSocket_point_c(pointC);
+    connectSocket_origin_point(originPoint);
 }
 
 const OpenSim::Station& osc::fd::StationDefinedFrame::getPointA() const

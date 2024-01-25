@@ -92,6 +92,15 @@ namespace osc::fd
 
         StationDefinedFrame();
 
+        StationDefinedFrame(
+            SimTK::CoordinateDirection abAxis,
+            SimTK::CoordinateDirection abXacAxis,
+            OpenSim::Station const& pointA,
+            OpenSim::Station const& pointB,
+            OpenSim::Station const& pointC,
+            OpenSim::Station const& originPoint
+        );
+
     private:
         const OpenSim::Station& getPointA() const;
         const OpenSim::Station& getPointB() const;
