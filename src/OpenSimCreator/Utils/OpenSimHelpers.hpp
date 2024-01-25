@@ -705,7 +705,25 @@ namespace osc
     }
 
     OpenSim::Body& AddBody(OpenSim::Model&, std::unique_ptr<OpenSim::Body>);
+
+    template<typename... Args>
+    OpenSim::Body& AddBody(OpenSim::Model& model, Args&&... args)
+        requires std::constructible_from<OpenSim::Body, Args&&...>
+    {
+        auto p = std::make_unique<OpenSim::Body>(std::forward<Args>(args)...);
+        return AddBody(model, std::move(p));
+    }
+
     OpenSim::Joint& AddJoint(OpenSim::Model&, std::unique_ptr<OpenSim::Joint>);
+
+    template<std::derived_from<OpenSim::Joint> T, typename... Args>
+    T& AddJoint(OpenSim::Model& model, Args&&... args)
+        requires std::constructible_from<T, Args&&...>
+    {
+        auto p = std::make_unique<T>(std::forward<Args>(args)...);
+        return static_cast<T&>(AddJoint(model, std::move(p)));
+    }
+
     OpenSim::Marker& AddMarker(OpenSim::Model&, std::unique_ptr<OpenSim::Marker>);
 
     template<class... Args>
