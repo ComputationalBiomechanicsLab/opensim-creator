@@ -309,13 +309,17 @@ TEST(Mesh, TransformVertsMakesGetCallReturnVerts)
 
     // the verts passed to `transformVerts` should match those returned by getVerts
     std::vector<Vec3> vertsPassedToTransformVerts;
-    m.transformVerts([&vertsPassedToTransformVerts](Vec3& v) { vertsPassedToTransformVerts.push_back(v); });
+    m.transformVerts([&vertsPassedToTransformVerts](Vec3 v)
+    {
+        vertsPassedToTransformVerts.push_back(v);
+        return v;
+    });
     ASSERT_EQ(vertsPassedToTransformVerts, originalVerts);
 
     // applying the transformation should return the transformed verts
-    m.transformVerts([&newVerts, i = 0](Vec3& v) mutable
+    m.transformVerts([&newVerts, i = 0](Vec3) mutable
     {
-        v = newVerts.at(i++);
+        return newVerts.at(i++);
     });
     ASSERT_EQ(m.getVerts(), newVerts);
 }
@@ -327,7 +331,7 @@ TEST(Mesh, TransformVertsCausesTransformedMeshToNotBeEqualToInitialMesh)
 
     ASSERT_EQ(m, copy);
 
-    copy.transformVerts([](Vec3&) {});  // noop transform also triggers this (meshes aren't value-comparable)
+    copy.transformVerts([](Vec3 v) { return v; });  // noop transform also triggers this (meshes aren't value-comparable)
 
     ASSERT_NE(m, copy);
 }
@@ -506,7 +510,7 @@ TEST(Mesh, SuccessfullyAsssigningNormalsChangesMeshEquality)
 
 TEST(Mesh, TransformNormalsTransormsTheNormals)
 {
-    auto const transform = [](Vec3& n) { n = -n; };
+    auto const transform = [](Vec3 n) { return -n; };
     auto const original = GenerateNormals(16);
     auto expected = original;
     std::for_each(expected.begin(), expected.end(), transform);
@@ -601,7 +605,7 @@ TEST(Mesh, SuccessfulSetCoordsCausesCopiedMeshToBeNotEqualToOriginalMesh)
 
 TEST(Mesh, TransformTexCoordsAppliesTransformToTexCoords)
 {
-    auto const transform = [](Vec2& uv) { uv *= 0.287f; };
+    auto const transform = [](Vec2 uv) { return 0.287f * uv; };
     auto const original = GenerateTexCoords(3);
     auto expected = original;
     std::for_each(expected.begin(), expected.end(), transform);

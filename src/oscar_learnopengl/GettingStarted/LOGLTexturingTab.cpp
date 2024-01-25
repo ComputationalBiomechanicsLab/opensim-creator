@@ -50,10 +50,10 @@ namespace
         Mesh quad = GenerateTexturedQuadMesh();
 
         // transform default quad verts to match LearnOpenGL
-        quad.transformVerts([](Vec3& v) { v *= 0.5f; });
+        quad.transformVerts([](Vec3 v) { return 0.5f * v; });
 
         // transform default quad texture coordinates to exercise wrap modes
-        quad.transformTexCoords([](Vec2& coord) { coord *= 2.0f; });
+        quad.transformTexCoords([](Vec2 coord) { return 2.0f * coord; });
 
         return quad;
     }

@@ -4651,13 +4651,11 @@ namespace
         }
 
         template<UserFacingVertexData T>
-        void transformAttribute(VertexAttribute attr, std::function<void(T&)> const& f)
+        void transformAttribute(VertexAttribute attr, std::function<T(T)> const& f)
         {
             for (auto&& proxy : iter<T>(attr))
             {
-                T v{proxy};
-                f(v);
-                proxy = v;
+                proxy = f(proxy);
             }
         }
 
@@ -4736,7 +4734,7 @@ public:
         m_Version->reset();
     }
 
-    void transformVerts(std::function<void(Vec3&)> const& f)
+    void transformVerts(std::function<Vec3(Vec3)> const& f)
     {
         m_VertexBuffer.transformAttribute(VertexAttribute::Position, f);
 
@@ -4746,9 +4744,9 @@ public:
 
     void transformVerts(Transform const& t)
     {
-        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Position, [&t](Vec3& v)
+        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Position, [&t](Vec3 v)
         {
-            v = t * v;
+            return t * v;
         });
 
         rangeCheckIndicesAndRecalculateBounds();
@@ -4757,9 +4755,9 @@ public:
 
     void transformVerts(Mat4 const& m)
     {
-        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Position, [&m](Vec3& v)
+        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Position, [&m](Vec3 v)
         {
-            v = Vec3{m * Vec4{v, 1.0f}};
+            return Vec3{m * Vec4{v, 1.0f}};
         });
 
         rangeCheckIndicesAndRecalculateBounds();
@@ -4783,7 +4781,7 @@ public:
         m_Version->reset();
     }
 
-    void transformNormals(std::function<void(Vec3&)> const& f)
+    void transformNormals(std::function<Vec3(Vec3)> const& f)
     {
         m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Normal, f);
 
@@ -4807,7 +4805,7 @@ public:
         m_Version->reset();
     }
 
-    void transformTexCoords(std::function<void(Vec2&)> const& f)
+    void transformTexCoords(std::function<Vec2(Vec2)> const& f)
     {
         m_VertexBuffer.transformAttribute(VertexAttribute::TexCoord0, f);
 
@@ -5304,7 +5302,7 @@ void osc::Mesh::setVerts(std::span<Vec3 const> verts)
     m_Impl.upd()->setVerts(verts);
 }
 
-void osc::Mesh::transformVerts(std::function<void(Vec3&)> const& f)
+void osc::Mesh::transformVerts(std::function<Vec3(Vec3)> const& f)
 {
     m_Impl.upd()->transformVerts(f);
 }
@@ -5334,7 +5332,7 @@ void osc::Mesh::setNormals(std::span<Vec3 const> verts)
     m_Impl.upd()->setNormals(verts);
 }
 
-void osc::Mesh::transformNormals(std::function<void(Vec3&)> const& f)
+void osc::Mesh::transformNormals(std::function<Vec3(Vec3)> const& f)
 {
     m_Impl.upd()->transformNormals(f);
 }
@@ -5354,7 +5352,7 @@ void osc::Mesh::setTexCoords(std::span<Vec2 const> coords)
     m_Impl.upd()->setTexCoords(coords);
 }
 
-void osc::Mesh::transformTexCoords(std::function<void(Vec2&)> const& f)
+void osc::Mesh::transformTexCoords(std::function<Vec2(Vec2)> const& f)
 {
     m_Impl.upd()->transformTexCoords(f);
 }

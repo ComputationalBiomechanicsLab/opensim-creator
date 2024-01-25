@@ -6,6 +6,6 @@
 osc::Mesh osc::GenerateLearnOpenGLCubeMesh()
 {
     Mesh cube = GenerateCubeMesh();
-    cube.transformVerts([](Vec3& v) { v *= 0.5f; });
+    cube.transformVerts([](Vec3 v) { return 0.5f * v; });
     return cube;
 }
