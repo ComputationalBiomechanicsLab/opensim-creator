@@ -13,6 +13,7 @@
 #include <oscar/Graphics/RenderTextureDescriptor.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
@@ -29,12 +30,12 @@
 #include <string>
 #include <utility>
 
+using namespace osc::literals;
 using osc::App;
 using osc::Camera;
 using osc::Color;
 using osc::ColorSpace;
 using osc::CStringView;
-using osc::Deg2Rad;
 using osc::LoadTexture2DFromImage;
 using osc::Material;
 using osc::Texture2D;
@@ -73,7 +74,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
-        rv.setCameraFOV(Deg2Rad(45.0f));
+        rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -218,7 +219,7 @@ private:
     RenderTexture m_SceneHDRTexture;
     float m_Exposure = 1.0f;
 
-    Vec3 m_CameraEulers = {0.0f, std::numbers::pi_v<float>, 0.0f};
+    Eulers m_CameraEulers = {0_deg, 180_deg, 0_deg};
     bool m_IsMouseCaptured = true;
     bool m_Use16BitFormat = true;
     bool m_UseTonemap = true;

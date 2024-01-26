@@ -108,11 +108,11 @@ namespace osc::mi
         UID id
     );
 
-    void RotateAxisXRadians(
+    void RotateAxis(
         UndoableDocument&,
         MIObject& el,
         int axis,
-        float radians
+        Radians radians
     );
 
     bool TryCopyOrientation(

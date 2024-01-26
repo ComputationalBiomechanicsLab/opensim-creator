@@ -10,6 +10,7 @@
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
@@ -28,12 +29,12 @@
 #include <cstdint>
 #include <memory>
 
+using namespace osc::literals;
 using osc::App;
 using osc::Camera;
 using osc::Color;
 using osc::ColorSpace;
 using osc::CStringView;
-using osc::Deg2Rad;
 using osc::ImageLoadingFlags;
 using osc::LoadTexture2DFromImage;
 using osc::Material;
@@ -77,7 +78,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(Deg2Rad(45.0f));
+        rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -117,8 +118,8 @@ namespace
         rv.setFloat("uSpotLightConstant", 1.0f);
         rv.setFloat("uSpotLightLinear", 0.09f);
         rv.setFloat("uSpotLightQuadratic", 0.032f);
-        rv.setFloat("uSpotLightCutoff", std::cos(Deg2Rad(12.5f)));
-        rv.setFloat("uSpotLightOuterCutoff", std::cos(Deg2Rad(15.0f)));
+        rv.setFloat("uSpotLightCutoff", cos(45_deg));
+        rv.setFloat("uSpotLightOuterCutoff", cos(15_deg));
 
         rv.setVec3Array("uPointLightPos", c_PointLightPositions);
         rv.setFloatArray("uPointLightConstant", c_PointLightConstants);
@@ -202,7 +203,7 @@ private:
         Vec3 const axis = Normalize(Vec3{1.0f, 0.3f, 0.5f});
         for (size_t i = 0; i < c_CubePositions.size(); ++i) {
             Vec3 const& pos = c_CubePositions[i];
-            float const angle = Deg2Rad(static_cast<float>(i++) * 20.0f);
+            auto const angle = Degrees{i++ * 20.0f};
 
             Graphics::DrawMesh(
                 m_Mesh,
@@ -235,7 +236,7 @@ private:
     Mesh m_Mesh = GenerateLearnOpenGLCubeMesh();
 
     Camera m_Camera = CreateCamera();
-    Vec3 m_CameraEulers = {};
+    Eulers m_CameraEulers = {};
     bool m_IsMouseCaptured = false;
 
     float m_MaterialShininess = 64.0f;

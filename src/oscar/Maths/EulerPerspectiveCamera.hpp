@@ -1,5 +1,6 @@
 #pragma once
 
+#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Vec3.hpp>
 
@@ -17,9 +18,9 @@ namespace osc
         Mat4 getProjMtx(float aspectRatio) const;
 
         Vec3 origin;
-        float pitch;
-        float yaw;
-        float fov;
+        Radians pitch;
+        Radians yaw;
+        Radians verticalFOV;
         float znear;
         float zfar;
     };

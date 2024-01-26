@@ -14,6 +14,8 @@
 #include <oscar/Graphics/RenderTexture.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
@@ -30,10 +32,10 @@
 #include <utility>
 #include <vector>
 
+using namespace osc::literals;
 using osc::Camera;
 using osc::Color;
 using osc::CStringView;
-using osc::Deg2Rad;
 using osc::Identity;
 using osc::Mat4;
 using osc::Normalize;
@@ -88,14 +90,14 @@ namespace
         {
             Mat4 m = Identity<Mat4>();
             m = Translate(m, Vec3(-1.0f, -1.0f, 2.0));
-            m = Rotate(m, Deg2Rad(60.0f), Normalize(Vec3(1.0, 0.0, 1.0)));
+            m = Rotate(m, 60_deg, Normalize(Vec3(1.0, 0.0, 1.0)));
             rv.push_back(m);
         }
 
         {
             Mat4 m = Identity<Mat4>();
             m = Translate(m, Vec3(0.0f, 2.7f, 4.0));
-            m = Rotate(m, Deg2Rad(23.0f), Normalize(Vec3(1.0, 0.0, 1.0)));
+            m = Rotate(m, 23_deg, Normalize(Vec3(1.0, 0.0, 1.0)));
             m = Scale(m, Vec3(1.25));
             rv.push_back(m);
         }
@@ -103,7 +105,7 @@ namespace
         {
             Mat4 m = Identity<Mat4>();
             m = Translate(m, Vec3(-2.0f, 1.0f, -3.0));
-            m = Rotate(m, Deg2Rad(124.0f), Normalize(Vec3(1.0, 0.0, 1.0)));
+            m = Rotate(m, 124_deg, Normalize(Vec3(1.0, 0.0, 1.0)));
             rv.push_back(m);
         }
 
@@ -393,7 +395,7 @@ private:
 
     Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     bool m_IsMouseCaptured = true;
-    Vec3 m_CameraEulers = {};
+    Eulers m_CameraEulers = {};
 };
 
 

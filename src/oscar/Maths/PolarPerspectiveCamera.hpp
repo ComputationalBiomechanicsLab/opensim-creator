@@ -1,5 +1,6 @@
 #pragma once
 
+#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -53,10 +54,10 @@ namespace osc
         friend bool operator==(PolarPerspectiveCamera const&, PolarPerspectiveCamera const&) = default;
 
         float radius;
-        float theta;
-        float phi;
+        Radians theta;
+        Radians phi;
         Vec3 focusPoint;
-        float fov;
+        Radians verticalFOV;
         float znear;
         float zfar;
     };

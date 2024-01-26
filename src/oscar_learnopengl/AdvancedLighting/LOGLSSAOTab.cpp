@@ -20,6 +20,8 @@
 #include <oscar/Graphics/TextureFormat.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Graphics/TextureWrapMode.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Transform.hpp>
@@ -42,12 +44,12 @@
 #include <utility>
 #include <vector>
 
+using namespace osc::literals;
 using osc::App;
 using osc::Camera;
 using osc::Color;
 using osc::ColorSpace;
 using osc::CStringView;
-using osc::Deg2Rad;
 using osc::Material;
 using osc::Mix;
 using osc::Normalize;
@@ -70,7 +72,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
-        rv.setCameraFOV(Deg2Rad(45.0f));
+        rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(50.0f);
         rv.setBackgroundColor(Color::black());
@@ -350,7 +352,7 @@ private:
 
     Camera m_Camera = CreateCameraWithSameParamsAsLearnOpenGL();
     bool m_IsMouseCaptured = true;
-    Vec3 m_CameraEulers = {};
+    Eulers m_CameraEulers = {};
 
     Mesh m_SphereMesh = GenerateUVSphereMesh(32, 32);
     Mesh m_CubeMesh = GenerateCubeMesh();

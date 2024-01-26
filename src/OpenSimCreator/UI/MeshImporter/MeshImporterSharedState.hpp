@@ -23,6 +23,7 @@
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
+#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Line.hpp>
@@ -69,6 +70,8 @@
 #include <vector>
 
 namespace OpenSim { class Model; }
+
+using namespace osc::literals;
 
 namespace osc::mi
 {
@@ -1167,10 +1170,10 @@ namespace osc::mi
 
         Transform getFloorTransform() const
         {
-            Transform t;
-            t.rotation = AngleAxis(std::numbers::pi_v<float>/2.0f, Vec3{-1.0f, 0.0f, 0.0f});
-            t.scale = {m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f};
-            return t;
+            return {
+                .scale = {m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f},
+                .rotation = AngleAxis(90_deg, Vec3{-1.0f, 0.0f, 0.0f}),
+            };
         }
 
         float getSphereRadius() const
@@ -1197,7 +1200,7 @@ namespace osc::mi
             float const legThickness = 0.5f * coreRadius;
 
             // this is how much the cylinder has to be "pulled in" to the core to hide the edges
-            float const cylinderPullback = coreRadius * std::sin((std::numbers::pi_v<float> * legThickness) / coreRadius);
+            float const cylinderPullback = coreRadius * sin((180_deg * legThickness) / coreRadius);
 
             // emit origin sphere
             {
@@ -1420,8 +1423,8 @@ namespace osc::mi
         PolarPerspectiveCamera CreateDefaultCamera() const
         {
             PolarPerspectiveCamera rv;
-            rv.phi = std::numbers::pi_v<float>/4.0f;
-            rv.theta = std::numbers::pi_v<float>/4.0f;
+            rv.phi = 45_deg;
+            rv.theta = 45_deg;
             rv.radius = 2.5f;
             return rv;
         }

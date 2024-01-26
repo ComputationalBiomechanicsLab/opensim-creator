@@ -1,5 +1,6 @@
 #pragma once
 
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/Mat3.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Mat4x3.hpp>
@@ -18,6 +19,8 @@ namespace osc
 {
     // converters: from osc types to SimTK,
     SimTK::Vec3 ToSimTKVec3(Vec3 const&);
+    inline SimTK::Vec3 ToSimTKVec3(Vec4 const& v) { return ToSimTKVec3(Vec3{v}); }
+    SimTK::Vec3 ToSimTKVec3(Eulers const&);
     SimTK::Mat33 ToSimTKMat3(Mat3 const&);
     SimTK::Inertia ToSimTKInertia(Vec3 const&);
     SimTK::Transform ToSimTKTransform(Mat4x3 const&);

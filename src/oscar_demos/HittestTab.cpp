@@ -8,12 +8,15 @@
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MaterialPropertyBlock.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
+#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Disc.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Sphere.hpp>
 #include <oscar/Maths/Triangle.hpp>
+#include <oscar/Maths/Vec.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Tabs/StandardTabImpl.hpp>
@@ -330,7 +333,7 @@ private:
     AABB m_SceneSphereAABB = m_SphereMesh.getBounds();
     Sphere m_SceneSphereBoundingSphere = BoundingSphereOf(m_SphereMesh);
     bool m_IsMouseCaptured = false;
-    Vec3 m_CameraEulers{};
+    Eulers m_CameraEulers{};
     bool m_IsShowingAABBs = true;
 };
 

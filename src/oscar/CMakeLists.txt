@@ -103,6 +103,7 @@ add_library(oscar STATIC
     Graphics/VertexFormat.hpp
 
     Maths/AABB.hpp
+    Maths/Angle.hpp
     Maths/BVH.hpp
     Maths/BVHCollision.hpp
     Maths/BVHNode.hpp
@@ -113,6 +114,7 @@ add_library(oscar STATIC
     Maths/EasingFunctions.hpp
     Maths/Ellipsoid.hpp
     Maths/EulerPerspectiveCamera.hpp
+    Maths/Eulers.hpp
     Maths/LengthType.hpp
     Maths/Line.hpp
     Maths/Mat.hpp

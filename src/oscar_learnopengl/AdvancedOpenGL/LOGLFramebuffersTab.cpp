@@ -9,6 +9,8 @@
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MaterialPropertyBlock.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
@@ -27,9 +29,9 @@
 #include <cstdint>
 #include <memory>
 
+using namespace osc::literals;
 using osc::Camera;
 using osc::CStringView;
-using osc::Deg2Rad;
 using osc::Identity;
 using osc::Mat4;
 using osc::Mesh;
@@ -78,7 +80,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(Deg2Rad(45.0f));
+        rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         return rv;
@@ -173,7 +175,7 @@ private:
 
     Camera m_SceneCamera = CreateSceneCamera();
     bool m_IsMouseCaptured = false;
-    Vec3 m_CameraEulers = {};
+    Eulers m_CameraEulers = {};
 
     Texture2D m_ContainerTexture = LoadTexture2DFromImage(
         App::resource("oscar_learnopengl/textures/container.jpg"),

@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 #include <ImGuizmo.h>
+#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
@@ -13,6 +14,7 @@
 
 #include <memory>
 
+using namespace osc::literals;
 using osc::CStringView;
 
 namespace
@@ -60,8 +62,8 @@ private:
     {
         PolarPerspectiveCamera rv;
         rv.focusPoint = {0.0f, 0.0f, 0.0f};
-        rv.phi = 1.0f;
-        rv.theta = 0.0f;
+        rv.phi = 1_rad;
+        rv.theta = 0_rad;
         rv.radius = 5.0f;
         return rv;
     }();

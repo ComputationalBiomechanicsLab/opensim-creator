@@ -14,6 +14,8 @@
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
@@ -30,13 +32,13 @@
 #include <string>
 #include <utility>
 
+using namespace osc::literals;
 using osc::App;
 using osc::CalcCubemapViewProjMatrices;
 using osc::Camera;
 using osc::ColorSpace;
 using osc::CStringView;
 using osc::Cubemap;
-using osc::Deg2Rad;
 using osc::GenerateCubeMesh;
 using osc::GenerateTexturedQuadMesh;
 using osc::Identity;
@@ -83,7 +85,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(Deg2Rad(45.0f));
+        rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -105,12 +107,7 @@ namespace
         cubemapRenderTarget.setColorFormat(RenderTextureFormat::ARGBFloat16);
 
         // create a 90 degree cube cone projection matrix
-        Mat4 const projectionMatrix = Perspective(
-            Deg2Rad(90.0f),
-            1.0f,
-            0.1f,
-            10.0f
-        );
+        Mat4 const projectionMatrix = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
         // create material that projects all 6 faces onto the output cubemap
         Material material{Shader{
@@ -138,12 +135,7 @@ namespace
         irradianceCubemap.setDimensionality(TextureDimensionality::Cube);
         irradianceCubemap.setColorFormat(RenderTextureFormat::ARGBFloat16);
 
-        Mat4 const captureProjection = Perspective(
-            Deg2Rad(90.0f),
-            1.0f,
-            0.1f,
-            10.0f
-        );
+        Mat4 const captureProjection = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
         Material material{Shader{
             App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.vert"),
@@ -174,12 +166,7 @@ namespace
         captureRT.setDimensionality(TextureDimensionality::Cube);
         captureRT.setColorFormat(RenderTextureFormat::ARGBFloat16);
 
-        Mat4 const captureProjection = Perspective(
-            Deg2Rad(90.0f),
-            1.0f,
-            0.1f,
-            10.0f
-        );
+        Mat4 const captureProjection = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
         Material material{Shader{
             App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.vert"),
@@ -415,7 +402,7 @@ private:
     Mesh m_SphereMesh = GenerateUVSphereMesh(64, 64);
 
     Camera m_Camera = CreateCamera();
-    Vec3 m_CameraEulers = {};
+    Eulers m_CameraEulers = {};
     bool m_IsMouseCaptured = true;
 
     PerfPanel m_PerfPanel{"Perf"};

@@ -20,6 +20,8 @@
 #include <oscar/Graphics/RenderTextureFormat.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Transform.hpp>
@@ -41,12 +43,12 @@
 #include <utility>
 #include <vector>
 
+using namespace osc::literals;
 using osc::AntiAliasingLevel;
 using osc::App;
 using osc::Camera;
 using osc::Color;
 using osc::CStringView;
-using osc::Deg2Rad;
 using osc::Material;
 using osc::RenderBufferLoadAction;
 using osc::RenderBufferStoreAction;
@@ -137,7 +139,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
-        rv.setCameraFOV(Deg2Rad(45.0f));
+        rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor(Color::black());
@@ -355,7 +357,7 @@ private:
     std::vector<Vec3> m_LightColors = GenerateNSceneLightColors(c_NumLights);
     Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     bool m_IsMouseCaptured = true;
-    Vec3 m_CameraEulers = {};
+    Eulers m_CameraEulers = {};
     Mesh m_CubeMesh = GenerateCubeMesh();
     Mesh m_QuadMesh = GenerateTexturedQuadMesh();
     Texture2D m_DiffuseMap = LoadTexture2DFromImage(

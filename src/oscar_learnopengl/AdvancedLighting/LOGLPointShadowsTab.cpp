@@ -14,6 +14,8 @@
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureDimensionality.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
@@ -33,11 +35,11 @@
 #include <string>
 #include <utility>
 
+using namespace osc::literals;
 using osc::AngleAxis;
 using osc::Camera;
 using osc::Color;
 using osc::CStringView;
-using osc::Deg2Rad;
 using osc::Normalize;
 using osc::RenderTexture;
 using osc::RenderTextureDescriptor;
@@ -57,7 +59,7 @@ namespace
     {
         return {
             .scale = Vec3(0.75f),
-            .rotation = AngleAxis(Deg2Rad(60.0f), Normalize(Vec3{1.0f, 0.0f, 1.0f})),
+            .rotation = AngleAxis(60_deg, Normalize(Vec3{1.0f, 0.0f, 1.0f})),
             .position = {-1.5f, 2.0f, -3.0f},
         };
     }
@@ -101,7 +103,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
-        rv.setCameraFOV(Deg2Rad(45.0f));
+        rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor(Color::clear());
@@ -143,9 +145,11 @@ private:
 
     void implOnTick() final
     {
+        using std::sin;
+
         // move light position over time
         double const seconds = App::get().getFrameDeltaSinceAppStartup().count();
-        m_LightPos.x = static_cast<float>(3.0 * std::sin(0.5 * seconds));
+        m_LightPos.x = static_cast<float>(3.0 * sin(0.5 * seconds));
     }
 
     void implOnDraw() final
@@ -182,7 +186,7 @@ private:
         float const nearPlane = 0.1f;
         float const farPlane = 25.0f;
         Mat4 const projectionMatrix = Perspective(
-            Deg2Rad(90.0f),
+            90_deg,
             AspectRatio(c_ShadowmapDims),
             nearPlane,
             farPlane
@@ -260,7 +264,7 @@ private:
     }};
 
     Camera m_SceneCamera = CreateCamera();
-    Vec3 m_CameraEulers = {};
+    Eulers m_CameraEulers = {};
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
         App::resource("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB

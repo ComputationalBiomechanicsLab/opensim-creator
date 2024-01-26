@@ -12,6 +12,8 @@
 #include <oscar/Graphics/RenderTextureDescriptor.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
@@ -29,6 +31,7 @@
 #include <utility>
 #include <vector>
 
+using namespace osc::literals;
 using osc::Camera;
 using osc::CStringView;
 using osc::Mesh;
@@ -194,7 +197,7 @@ private:
             m_CubeMesh,
             Transform{
                 .scale = Vec3{0.25f},
-                .rotation = AngleAxis(Deg2Rad(60.0f), Normalize(Vec3{1.0f, 0.0f, 1.0f})),
+                .rotation = AngleAxis(60_deg, Normalize(Vec3{1.0f, 0.0f, 1.0f})),
                 .position = {-1.0f, 0.0f, 2.0f},
             },
             material,
@@ -220,7 +223,7 @@ private:
     }
 
     Camera m_Camera = CreateCamera();
-    Vec3 m_CameraEulers = {};
+    Eulers m_CameraEulers = {};
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
         App::resource("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB

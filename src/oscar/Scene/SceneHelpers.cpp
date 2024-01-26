@@ -6,6 +6,7 @@
 #include <oscar/Graphics/MeshIndicesView.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
+#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
@@ -31,6 +32,7 @@
 #include <optional>
 #include <vector>
 
+using namespace osc::literals;
 using osc::Quat;
 using osc::SceneCache;
 using osc::SceneDecoration;
@@ -122,7 +124,7 @@ void osc::DrawXZFloorLines(
         .mesh = yLine,
         .transform = {
             .scale = Vec3{scale},
-            .rotation = AngleAxis(Deg2Rad(90.0f), Vec3{0.0f, 0.0f, 1.0f}),
+            .rotation = AngleAxis(90_deg, Vec3{0.0f, 0.0f, 1.0f}),
         },
         .color = Color::red(),
     });
@@ -132,7 +134,7 @@ void osc::DrawXZFloorLines(
         .mesh = yLine,
         .transform = {
             .scale = Vec3{scale},
-            .rotation = AngleAxis(Deg2Rad(90.0f), Vec3{1.0f, 0.0f, 0.0f}),
+            .rotation = AngleAxis(90_deg, Vec3{1.0f, 0.0f, 0.0f}),
         },
         .color = Color::blue(),
     });
@@ -142,7 +144,7 @@ void osc::DrawXZGrid(
     SceneCache& cache,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    Quat const rotation = AngleAxis(Deg2Rad(90.0f), Vec3{1.0f, 0.0f, 0.0f});
+    Quat const rotation = AngleAxis(90_deg, Vec3{1.0f, 0.0f, 0.0f});
     DrawGrid(cache, rotation, out);
 }
 
@@ -157,7 +159,7 @@ void osc::DrawYZGrid(
     SceneCache& cache,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    Quat const rotation = AngleAxis(Deg2Rad(90.0f), Vec3{0.0f, 1.0f, 0.0f});
+    Quat const rotation = AngleAxis(90_deg, Vec3{0.0f, 1.0f, 0.0f});
     DrawGrid(cache, rotation, out);
 }
 

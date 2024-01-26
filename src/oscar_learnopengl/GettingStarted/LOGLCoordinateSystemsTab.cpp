@@ -10,6 +10,8 @@
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
@@ -26,9 +28,9 @@
 #include <memory>
 #include <numbers>
 
+using namespace osc::literals;
 using osc::Camera;
 using osc::CStringView;
-using osc::Deg2Rad;
 using osc::Vec3;
 
 namespace
@@ -53,7 +55,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(Deg2Rad(45.0f));
+        rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.2f, 0.3f, 0.3f, 1.0f});
@@ -113,9 +115,8 @@ private:
 
     void implOnTick() final
     {
-        constexpr float rotationSpeed = Deg2Rad(50.0f);
         double const dt = App::get().getFrameDeltaSinceAppStartup().count();
-        auto const angle = static_cast<float>(rotationSpeed * dt);
+        auto const angle = 50_deg * dt;
         Vec3 const axis = Normalize(Vec3{0.5f, 1.0f, 0.0f});
 
         m_Step1.rotation = AngleAxis(angle, axis);
@@ -146,11 +147,10 @@ private:
             for (size_t i = 0; i < c_CubePositions.size(); ++i)
             {
                 Vec3 const& pos = c_CubePositions[i];
-                float const angle = Deg2Rad(static_cast<float>(i++) * 20.0f);
 
                 Graphics::DrawMesh(
                     m_Mesh,
-                    {.rotation = AngleAxis(angle, axis), .position = pos},
+                    {.rotation = AngleAxis(i++ * 20_deg, axis), .position = pos},
                     m_Material,
                     m_Camera
                 );
@@ -170,7 +170,7 @@ private:
 
             Vec3 const cameraPos = m_Camera.getPosition();
             ImGui::Text("camera pos = (%f, %f, %f)", cameraPos.x, cameraPos.y, cameraPos.z);
-            Vec3 const cameraEulers = Rad2Deg(m_CameraEulers);
+            Vec<3, Degrees> const cameraEulers = m_CameraEulers;
             ImGui::Text("camera eulers = (%f, %f, %f)", cameraEulers.x, cameraEulers.y, cameraEulers.z);
             ImGui::End();
 
@@ -185,7 +185,7 @@ private:
     Mesh m_Mesh = GenerateLearnOpenGLCubeMesh();
     Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     bool m_IsMouseCaptured = false;
-    Vec3 m_CameraEulers = {};
+    Eulers m_CameraEulers = {};
 
     bool m_ShowStep1 = false;
     Transform m_Step1;

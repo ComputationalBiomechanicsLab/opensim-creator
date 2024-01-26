@@ -34,6 +34,7 @@ add_executable(testoscar
     Graphics/TestVertexAttribute.cpp
     Graphics/TestVertexFormat.cpp
 
+    Maths/TestAngle.cpp
     Maths/TestBVH.cpp
 
     Object/TestClass.cpp

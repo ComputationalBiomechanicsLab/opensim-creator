@@ -13,6 +13,7 @@
 #include <OpenSimCreator/Documents/MeshImporter/Station.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
+#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
@@ -357,11 +358,11 @@ bool osc::mi::DeleteObject(UndoableDocument& udoc, UID id)
     return true;
 }
 
-void osc::mi::RotateAxisXRadians(
+void osc::mi::RotateAxis(
     UndoableDocument& udoc,
     MIObject& el,
     int axis,
-    float radians)
+    Radians radians)
 {
     Document& doc = udoc.updScratch();
     el.setXform(doc, RotateAlongAxis(el.getXForm(doc), axis, radians));

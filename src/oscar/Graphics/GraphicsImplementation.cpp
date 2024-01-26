@@ -46,6 +46,7 @@
 #include <oscar/Graphics/Color32.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Maths/AABB.hpp>
+#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Mat3.hpp>
 #include <oscar/Maths/Mat4.hpp>
@@ -92,6 +93,7 @@
 #include <variant>
 #include <vector>
 
+using namespace osc::literals;
 using osc::detail::DefaultFormat;
 using osc::detail::NumComponents;
 using osc::detail::SizeOfComponent;
@@ -121,6 +123,7 @@ using osc::NonTypelistSizeV;
 using osc::NumOptions;
 using osc::Overload;
 using osc::Quat;
+using osc::Radians;
 using osc::RenderBufferType;
 using osc::RenderTexture;
 using osc::RenderTextureDescriptor;
@@ -5530,12 +5533,12 @@ public:
         m_OrthographicSize = size;
     }
 
-    float getCameraFOV() const
+    Radians getCameraFOV() const
     {
         return m_PerspectiveFov;
     }
 
-    void setCameraFOV(float size)
+    void setCameraFOV(Radians size)
     {
         m_PerspectiveFov = size;
     }
@@ -5757,7 +5760,7 @@ private:
     Color m_BackgroundColor = Color::clear();
     CameraProjection m_CameraProjection = CameraProjection::Perspective;
     float m_OrthographicSize = 2.0f;
-    float m_PerspectiveFov = std::numbers::pi_v<float>/2.0f;
+    Radians m_PerspectiveFov = 90_deg;
     float m_NearClippingPlane = 1.0f;
     float m_FarClippingPlane = -1.0f;
     CameraClearFlags m_ClearFlags = CameraClearFlags::Default;
@@ -5817,14 +5820,14 @@ void osc::Camera::setOrthographicSize(float sz)
     m_Impl.upd()->setOrthographicSize(sz);
 }
 
-float osc::Camera::getCameraFOV() const
+Radians osc::Camera::getCameraFOV() const
 {
     return m_Impl->getCameraFOV();
 }
 
-void osc::Camera::setCameraFOV(float fov)
+void osc::Camera::setCameraFOV(Radians verticalFOV)
 {
-    m_Impl.upd()->setCameraFOV(fov);
+    m_Impl.upd()->setCameraFOV(verticalFOV);
 }
 
 float osc::Camera::getNearClippingPlane() const

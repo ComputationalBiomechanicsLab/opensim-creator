@@ -8,6 +8,8 @@
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
@@ -23,10 +25,10 @@
 #include <string>
 #include <utility>
 
+using namespace osc::literals;
 using osc::App;
 using osc::Camera;
 using osc::CStringView;
-using osc::Deg2Rad;
 using osc::Material;
 using osc::Shader;
 using osc::Vec3;
@@ -57,7 +59,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(Deg2Rad(45.0f));
+        rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -178,7 +180,7 @@ private:
     Camera m_Camera = CreateCamera();
     Mesh m_SphereMesh = GenerateUVSphereMesh(64, 64);
     Material m_PBRMaterial = CreateMaterial();
-    Vec3 m_CameraEulers = {};
+    Eulers m_CameraEulers = {};
     bool m_IsMouseCaptured = true;
 
     PerfPanel m_PerfPanel{"Perf"};

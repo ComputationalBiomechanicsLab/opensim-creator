@@ -14,6 +14,7 @@
 #include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -32,12 +33,12 @@
 #include <utility>
 #include <vector>
 
+using namespace osc::literals;
 using osc::App;
 using osc::CalcTangentVectors;
 using osc::Camera;
 using osc::ColorSpace;
 using osc::CStringView;
-using osc::Deg2Rad;
 using osc::LoadTexture2DFromImage;
 using osc::Material;
 using osc::Mesh;
@@ -99,7 +100,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(Deg2Rad(45.0f));
+        rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         return rv;
@@ -217,7 +218,7 @@ private:
 
     // scene state
     Camera m_Camera = CreateCamera();
-    Vec3 m_CameraEulers = {};
+    Eulers m_CameraEulers = {};
     Transform m_QuadTransform;
     Transform m_LightTransform = {
         .scale = Vec3{0.2f},
