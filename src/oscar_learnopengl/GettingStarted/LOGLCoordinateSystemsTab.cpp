@@ -171,7 +171,7 @@ private:
             Vec3 const cameraPos = m_Camera.getPosition();
             ImGui::Text("camera pos = (%f, %f, %f)", cameraPos.x, cameraPos.y, cameraPos.z);
             Vec<3, Degrees> const cameraEulers = m_CameraEulers;
-            ImGui::Text("camera eulers = (%f, %f, %f)", cameraEulers.x, cameraEulers.y, cameraEulers.z);
+            ImGui::Text("camera eulers = (%f, %f, %f)", cameraEulers.x.count(), cameraEulers.y.count(), cameraEulers.z.count());
             ImGui::End();
 
             m_PerfPanel.onDraw();

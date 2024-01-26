@@ -203,7 +203,7 @@ private:
         Vec3 const axis = Normalize(Vec3{1.0f, 0.3f, 0.5f});
         for (size_t i = 0; i < c_CubePositions.size(); ++i) {
             Vec3 const& pos = c_CubePositions[i];
-            auto const angle = Degrees{i++ * 20.0f};
+            auto const angle = i++ * 20_deg;
 
             Graphics::DrawMesh(
                 m_Mesh,
