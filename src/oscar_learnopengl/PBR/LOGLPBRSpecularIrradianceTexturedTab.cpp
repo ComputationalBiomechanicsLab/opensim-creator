@@ -46,7 +46,6 @@ using osc::ImageLoadingFlags;
 using osc::LoadTexture2DFromImage;
 using osc::Mat4;
 using osc::Material;
-using osc::Mesh;
 using osc::Perspective;
 using osc::RenderTexture;
 using osc::RenderTextureFormat;

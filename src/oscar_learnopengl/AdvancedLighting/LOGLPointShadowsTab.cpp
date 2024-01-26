@@ -65,7 +65,7 @@ namespace
     }
 
     struct SceneCube final {
-        SceneCube(Transform transform_) :
+        explicit SceneCube(Transform transform_) :
             transform{transform_}
         {}
 
@@ -81,12 +81,12 @@ namespace
     auto MakeSceneCubes()
     {
         return std::to_array<SceneCube>({
-            {{.scale = Vec3{5.0f}}, true},
-            {{.scale = Vec3{0.50f}, .position = {4.0f, -3.5f, 0.0f}}},
-            {{.scale = Vec3{0.75f}, .position = {2.0f, 3.0f, 1.0f}}},
-            {{.scale = Vec3{0.50f}, .position = {-3.0f, -1.0f, 0.0f}}},
-            {{.scale = Vec3{0.50f}, .position = {-1.5f, 1.0f, 1.5f}}},
-            {MakeRotatedTransform()},
+            SceneCube{{.scale = Vec3{5.0f}}, true},
+            SceneCube{{.scale = Vec3{0.50f}, .position = {4.0f, -3.5f, 0.0f}}},
+            SceneCube{{.scale = Vec3{0.75f}, .position = {2.0f, 3.0f, 1.0f}}},
+            SceneCube{{.scale = Vec3{0.50f}, .position = {-3.0f, -1.0f, 0.0f}}},
+            SceneCube{{.scale = Vec3{0.50f}, .position = {-1.5f, 1.0f, 1.5f}}},
+            SceneCube{MakeRotatedTransform()},
         });
     }
 

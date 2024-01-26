@@ -42,7 +42,6 @@ using osc::CStringView;
 using osc::LoadTexture2DFromImage;
 using osc::Material;
 using osc::Mesh;
-using osc::MeshIndicesView;
 using osc::MeshTopology;
 using osc::Shader;
 using osc::Texture2D;

@@ -7,7 +7,6 @@
 
 using namespace osc::literals;
 
-using osc::Angle;
 using osc::Degrees;
 using osc::Radians;
 
