@@ -246,7 +246,7 @@ osc::Mesh osc::GenerateUVSphereMesh(size_t sectors, size_t stacks)
 
     for (size_t stack = 0; stack <= stacks; ++stack)
     {
-        Radians const phi = 360_deg - stack*phiStep;
+        Radians const phi = 90_deg - stack*phiStep;
         float const y = sin(phi);
 
         for (size_t sector = 0; sector <= sectors; ++sector)

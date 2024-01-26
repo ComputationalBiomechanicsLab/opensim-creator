@@ -8,12 +8,14 @@
 
 namespace osc
 {
+    template<typename T>
+    concept AngularUnitTraits = true;  // TODO: ensure `radians_per_rep` is defined
+
     /**
-     * Represents a count of ticks of type `Rep` and a tick period, which is a
-     * compile-time fraction of a radian (e.g. a degree would have a tick period
-     * of `pi/180`, and a radian would have a tick period of `1`)
+     * Represents a floating point of type `Rep`, which is expressed in the given
+     * `Units`
      */
-    template<std::floating_point Rep, double Period = 1.0>
+    template<std::floating_point Rep, AngularUnitTraits Units>
     class Angle final {
     public:
         constexpr Angle() = default;
@@ -26,9 +28,9 @@ namespace osc
 
 
         // converting constructor
-        template<std::convertible_to<Rep> Rep2, double Period2>
-        constexpr Angle(Angle<Rep2, Period2> const& other) :
-            m_Value{static_cast<Rep>(other.count() * (Period2/Period))}
+        template<std::convertible_to<Rep> Rep2, AngularUnitTraits Units2>
+        constexpr Angle(Angle<Rep2, Units2> const& other) :
+            m_Value{static_cast<Rep>(other.count() * (Units2::radians_per_rep/Units::radians_per_rep))}
         {}
 
         constexpr Rep count() const
@@ -83,31 +85,42 @@ namespace osc
 
     template<
         std::floating_point Rep1,
-        double Period1,
+        AngularUnitTraits Units1,
         std::floating_point Rep2,
-        double Period2
+        AngularUnitTraits Units2
     >
-    constexpr typename std::common_type_t<Angle<Rep1, Period1>, Angle<Rep2, Period2>> operator+(
-        Angle<Rep1, Period1> const& lhs,
-        Angle<Rep2, Period2> const& rhs)
+    constexpr typename std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>> operator+(
+        Angle<Rep1, Units1> const& lhs,
+        Angle<Rep2, Units2> const& rhs)
     {
-        using CA = std::common_type_t<Angle<Rep1, Period1>, Angle<Rep2, Period2>>;
+        using CA = std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>>;
         return CA{CA{lhs}.count() + CA{rhs}.count()};
     }
 
-    template<typename Rep1, double Period1, typename Rep2, double Period2>
-    constexpr typename std::common_type_t<Angle<Rep1, Period1>, Angle<Rep2, Period2>> operator-(
-        Angle<Rep1, Period1> const& lhs,
-        Angle<Rep2, Period2> const& rhs)
+    template<
+        std::floating_point Rep1,
+        AngularUnitTraits Units1,
+        std::floating_point Rep2,
+        AngularUnitTraits Units2
+    >
+    constexpr typename std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>> operator-(
+        Angle<Rep1, Units1> const& lhs,
+        Angle<Rep2, Units2> const& rhs)
     {
-        using CA = std::common_type_t<Angle<Rep1, Period1>, Angle<Rep2, Period2>>;
+        using CA = std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>>;
         return CA{CA{lhs}.count() - CA{rhs}.count()};
     }
 
-    using Radians = Angle<float>;
-    using Radiansd = Angle<double>;
-    using Degrees = Angle<float, std::numbers::pi_v<double>/180.0>;
-    using Degreesd = Angle<double, std::numbers::pi_v<double>/180.0>;
+    // radians support
+
+    struct RadianAngularUnitTraits final {
+        static inline constexpr double radians_per_rep = 1.0;
+    };
+
+    template<typename T>
+    using RadiansT = Angle<T, RadianAngularUnitTraits>;
+    using Radians = RadiansT<float>;
+    using Radiansd = RadiansT<double>;
 
     namespace literals
     {
@@ -120,7 +133,21 @@ namespace osc
         {
             return Radians{radians};
         }
+    }
 
+    // degrees support
+
+    struct DegreesAngularUnitTraits final {
+        static inline constexpr double radians_per_rep = std::numbers::pi_v<double>/180.0;
+    };
+
+    template<typename T>
+    using DegreesT = Angle<T, DegreesAngularUnitTraits>;
+    using Degrees = DegreesT<float>;
+    using Degreesd = DegreesT<double>;
+
+    namespace literals
+    {
         constexpr Degrees operator""_deg(long double degrees)
         {
             return Degrees{degrees};
@@ -133,9 +160,13 @@ namespace osc
     }
 }
 
-template<typename Rep1, double Period1, typename Rep2, double Period2>
-struct std::common_type<osc::Angle<Rep1, Period1>, osc::Angle<Rep2, Period2>> {
-    // the "common period" is the largest of the two
-    static inline constexpr double period = Period1 > Period2 ? Period1 : Period2;
-    using type = osc::Angle<std::common_type_t<Rep1, Rep2>, period>;
+template<
+    std::floating_point Rep1,
+    osc::AngularUnitTraits Units1,
+    std::floating_point Rep2,
+    osc::AngularUnitTraits Units2
+>
+struct std::common_type<osc::Angle<Rep1, Units1>, osc::Angle<Rep2, Units2>> {
+    using units = typename std::conditional_t<(Units1::radians_per_rep > Units2::radians_per_rep), Units1, Units2>;
+    using type = osc::Angle<std::common_type_t<Rep1, Rep2>, units>;
 };

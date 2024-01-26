@@ -766,7 +766,7 @@ bool osc::InputKilogramFloat(CStringView label, float& v, float step, float step
     return InputMetersFloat(label, v, step, step_fast, flags);
 }
 
-bool osc::InputRadiansAsDegrees(CStringView label, Radians& v)
+bool osc::InputAngle(CStringView label, Radians& v)
 {
     float dv = Degrees{v}.count();
     if (ImGui::InputFloat(label.c_str(), &dv))
@@ -791,7 +791,7 @@ bool osc::InputAngle3(
     return false;
 }
 
-bool osc::SliderRadiansInDegrees(CStringView label, Radians& v, Radians min, Radians max)
+bool osc::SliderAngle(CStringView label, Radians& v, Radians min, Radians max)
 {
     float dv = Degrees{v}.count();
     Degrees const dmin{min};

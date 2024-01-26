@@ -37,57 +37,57 @@ namespace osc { struct Segment; }
 //               osc struct
 namespace osc
 {
-    template<std::floating_point Rep, double Period>
-    Rep sin(Angle<Rep, Period> v)
+    template<std::floating_point Rep, AngularUnitTraits Units>
+    Rep sin(Angle<Rep, Units> v)
     {
-        return std::sin(Angle<Rep>{v}.count());
+        return std::sin(RadiansT<Rep>{v}.count());
     }
 
-    template<std::floating_point Rep, double Period>
-    Rep cos(Angle<Rep, Period> v)
+    template<std::floating_point Rep, AngularUnitTraits Units>
+    Rep cos(Angle<Rep, Units> v)
     {
-        return std::cos(Angle<Rep>{v}.count());
+        return std::cos(RadiansT<Rep>{v}.count());
     }
 
-    template<std::floating_point Rep, double Period>
-    Rep tan(Angle<Rep, Period> v)
+    template<std::floating_point Rep, AngularUnitTraits Units>
+    Rep tan(Angle<Rep, Units> v)
     {
-        return std::tan(Angle<Rep>{v}.count());
-    }
-
-    template<std::floating_point Rep>
-    Angle<Rep> atan(Rep v)
-    {
-        return Angle<Rep>{std::atan(v)};
+        return std::tan(RadiansT<Rep>{v}.count());
     }
 
     template<std::floating_point Rep>
-    Angle<Rep> acos(Rep num)
+    RadiansT<Rep> atan(Rep v)
     {
-        return Angle<Rep>{std::acos(num)};
+        return RadiansT<Rep>{std::atan(v)};
     }
 
     template<std::floating_point Rep>
-    Angle<Rep> asin(Rep num)
+    RadiansT<Rep> acos(Rep num)
     {
-        return Angle<Rep>{std::asin(num)};
+        return RadiansT<Rep>{std::acos(num)};
     }
 
     template<std::floating_point Rep>
-    Angle<Rep> atan2(Rep x, Rep y)
+    RadiansT<Rep> asin(Rep num)
     {
-        return Angle<Rep>{std::atan2(x, y)};
+        return RadiansT<Rep>{std::asin(num)};
+    }
+
+    template<std::floating_point Rep>
+    RadiansT<Rep> atan2(Rep x, Rep y)
+    {
+        return RadiansT<Rep>{std::atan2(x, y)};
     }
 
     template<
         std::floating_point Rep1,
-        double Period1,
+        AngularUnitTraits Units1,
         std::floating_point Rep2,
-        double Period2
+        AngularUnitTraits Units2
     >
-    typename std::common_type_t<Angle<Rep1, Period1>, Angle<Rep2, Period2>> fmod(Angle<Rep1, Period1> x, Angle<Rep2, Period2> y)
+    typename std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>> fmod(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y)
     {
-        using CA = std::common_type_t<Angle<Rep1, Period1>, Angle<Rep2, Period2>>;
+        using CA = std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>>;
         return CA{std::fmod(CA{x}.count(), CA{y}.count())};
     }
 
@@ -139,10 +139,10 @@ namespace osc
         return glm::clamp(v, low, high);
     }
 
-    template<std::floating_point Rep, double Period>
-    constexpr Angle<Rep, Period> Clamp(Angle<Rep, Period> const& v, Angle<Rep, Period> const& min, Angle<Rep, Period> const& max)
+    template<std::floating_point Rep, AngularUnitTraits Units>
+    constexpr Angle<Rep, Units> Clamp(Angle<Rep, Units> const& v, Angle<Rep, Units> const& min, Angle<Rep, Units> const& max)
     {
-        return Angle<Rep, Period>{Clamp(v.count(), min.count(), max.count())};
+        return Angle<Rep, Units>{Clamp(v.count(), min.count(), max.count())};
     }
 
     // clamps each element in `x` between the corresponding elements in `minVal` and `maxVal`
