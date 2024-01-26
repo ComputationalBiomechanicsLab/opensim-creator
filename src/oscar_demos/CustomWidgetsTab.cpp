@@ -43,8 +43,7 @@ namespace
             ImGui::GetColorU32(enabled ? ImGuiCol_FrameBgActive : ImGuiCol_FrameBgHovered) :
             ImGui::GetColorU32(enabled ? ImGuiCol_CheckMark : ImGuiCol_FrameBg);
 
-        Vec2 const pmid
-        {
+        Vec2 const pmid{
             pos.x + radius + (enabled ? 1.0f : 0.0f) * (size.x - radius * 2),
             pos.y + size.y / 2.0f,
         };
@@ -53,12 +52,10 @@ namespace
 
         draw_list.AddRectFilled(smin, smax, bgColor, rounding);
 
-        if (circular_grab)
-        {
+        if (circular_grab) {
             draw_list.AddCircleFilled(pmid, radius * 0.8f, ImGui::GetColorU32(ImGuiCol_SliderGrab));
         }
-        else
-        {
+        else {
             Vec2 const offs = {radius*0.8f, radius*0.8f};
             draw_list.AddRectFilled(pmid - offs, pmid + offs, ImGui::GetColorU32(ImGuiCol_SliderGrab), rounding);
         }
@@ -78,8 +75,7 @@ namespace
         ImGui::PushID(label.c_str());
         bool const status = ImGui::Button("###toggle_button", bb);
 
-        if (status)
-        {
+        if (status) {
             *v = !*v;
         }
 
@@ -92,8 +88,7 @@ namespace
 
         float const toggleHeight = titleHeight * 0.9f;
         ImVec2 const toggleSize = {toggleHeight * 1.75f, toggleHeight};
-        ImVec2 const togglePos
-        {
+        ImVec2 const togglePos{
             pMax.x - toggleSize.x - style.FramePadding.x,
             pMin.y + (titleHeight - toggleSize.y)/2.0f + style.FramePadding.y,
         };
@@ -105,11 +100,10 @@ namespace
     }
 }
 
-class osc::CustomWidgetsTab::Impl final : public osc::StandardTabImpl {
+class osc::CustomWidgetsTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
-    {
-    }
+    {}
 
 private:
     void implOnDraw() final
@@ -136,8 +130,7 @@ osc::CStringView osc::CustomWidgetsTab::id()
 
 osc::CustomWidgetsTab::CustomWidgetsTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
-{
-}
+{}
 
 osc::CustomWidgetsTab::CustomWidgetsTab(CustomWidgetsTab&&) noexcept = default;
 osc::CustomWidgetsTab& osc::CustomWidgetsTab::operator=(CustomWidgetsTab&&) noexcept = default;

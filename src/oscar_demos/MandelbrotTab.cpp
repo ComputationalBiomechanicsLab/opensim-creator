@@ -23,6 +23,7 @@
 
 using osc::Camera;
 using osc::CStringView;
+using osc::Identity;
 using osc::Mat4;
 
 namespace
@@ -32,57 +33,40 @@ namespace
     Camera CreateIdentityCamera()
     {
         Camera camera;
-        camera.setViewMatrixOverride(osc::Identity<Mat4>());
-        camera.setProjectionMatrixOverride(osc::Identity<Mat4>());
+        camera.setViewMatrixOverride(Identity<Mat4>());
+        camera.setProjectionMatrixOverride(Identity<Mat4>());
         return camera;
     }
 }
 
-class osc::MandelbrotTab::Impl final : public osc::StandardTabImpl {
+class osc::MandelbrotTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
-    {
-    }
+    {}
 
 private:
-    void implOnMount() final
-    {
-    }
-
-    void implOnUnmount() final
-    {
-    }
-
     bool implOnEvent(SDL_Event const& e) final
     {
-        if (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_PAGEUP && m_NumIterations < std::numeric_limits<decltype(m_NumIterations)>::max())
-        {
+        if (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_PAGEUP && m_NumIterations < std::numeric_limits<decltype(m_NumIterations)>::max()) {
             m_NumIterations *= 2;
             return true;
         }
-        if (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_PAGEDOWN && m_NumIterations > 1)
-        {
+        if (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_PAGEDOWN && m_NumIterations > 1) {
             m_NumIterations /= 2;
             return true;
         }
-        if (e.type == SDL_MOUSEWHEEL)
-        {
+        if (e.type == SDL_MOUSEWHEEL) {
             float const factor = e.wheel.y > 0 ? 0.9f : 1.11111111f;
 
             applyZoom(ImGui::GetIO().MousePos, factor);
             return true;
         }
-        if (e.type == SDL_MOUSEMOTION && (e.motion.state & SDL_BUTTON_LMASK) != 0)
-        {
+        if (e.type == SDL_MOUSEMOTION && (e.motion.state & SDL_BUTTON_LMASK) != 0) {
             Vec2 const screenSpacePanAmount = {static_cast<float>(e.motion.xrel), static_cast<float>(e.motion.yrel)};
             applyPan(screenSpacePanAmount);
             return true;
         }
         return false;
-    }
-
-    void implOnTick() final
-    {
     }
 
     void implOnDraw() final
@@ -92,7 +76,7 @@ private:
         m_Material.setVec2("uRescale", {1.0f, 1.0f});
         m_Material.setVec2("uOffset", {});
         m_Material.setInt("uNumIterations", m_NumIterations);
-        Graphics::DrawMesh(m_QuadMesh, Transform{}, m_Material, m_Camera);
+        Graphics::DrawMesh(m_QuadMesh, Identity<Transform>(), m_Material, m_Camera);
         m_Camera.setPixelRect(m_MainViewportWorkspaceScreenRect);
         m_Camera.renderToScreen();
     }
@@ -111,14 +95,10 @@ private:
     Rect m_NormalizedMandelbrotViewport = {{}, {1.0f, 1.0f}};
     Rect m_MainViewportWorkspaceScreenRect = {};
     Mesh m_QuadMesh = GenerateTexturedQuadMesh();
-    Material m_Material
-    {
-        Shader
-        {
-            App::slurp("oscar_demos/shaders/Mandelbrot.vert"),
-            App::slurp("oscar_demos/shaders/Mandelbrot.frag"),
-        },
-    };
+    Material m_Material{Shader{
+        App::slurp("oscar_demos/shaders/Mandelbrot.vert"),
+        App::slurp("oscar_demos/shaders/Mandelbrot.frag"),
+    }};
     Camera m_Camera = CreateIdentityCamera();
 };
 
@@ -132,8 +112,7 @@ osc::CStringView osc::MandelbrotTab::id()
 
 osc::MandelbrotTab::MandelbrotTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
-{
-}
+{}
 
 osc::MandelbrotTab::MandelbrotTab(MandelbrotTab&&) noexcept = default;
 osc::MandelbrotTab& osc::MandelbrotTab::operator=(MandelbrotTab&&) noexcept = default;
@@ -149,24 +128,9 @@ osc::CStringView osc::MandelbrotTab::implGetName() const
     return m_Impl->getName();
 }
 
-void osc::MandelbrotTab::implOnMount()
-{
-    m_Impl->onMount();
-}
-
-void osc::MandelbrotTab::implOnUnmount()
-{
-    m_Impl->onUnmount();
-}
-
 bool osc::MandelbrotTab::implOnEvent(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
-}
-
-void osc::MandelbrotTab::implOnTick()
-{
-    m_Impl->onTick();
 }
 
 void osc::MandelbrotTab::implOnDraw()

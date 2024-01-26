@@ -22,11 +22,10 @@ namespace
     constexpr CStringView c_TabStringID = "Demos/ImGuizmo";
 }
 
-class osc::ImGuizmoDemoTab::Impl final : public osc::StandardTabImpl {
+class osc::ImGuizmoDemoTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
-    {
-    }
+    {}
 
 private:
     void implOnDraw() final
@@ -82,8 +81,7 @@ osc::CStringView osc::ImGuizmoDemoTab::id()
 
 osc::ImGuizmoDemoTab::ImGuizmoDemoTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
-{
-}
+{}
 
 osc::ImGuizmoDemoTab::ImGuizmoDemoTab(ImGuizmoDemoTab&&) noexcept = default;
 osc::ImGuizmoDemoTab& osc::ImGuizmoDemoTab::operator=(ImGuizmoDemoTab&&) noexcept = default;

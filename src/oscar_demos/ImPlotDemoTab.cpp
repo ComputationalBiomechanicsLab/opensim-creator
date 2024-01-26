@@ -13,23 +13,14 @@ namespace
     constexpr CStringView c_TabStringID = "Demos/ImPlot";
 }
 
-class osc::ImPlotDemoTab::Impl final : public osc::StandardTabImpl {
+class osc::ImPlotDemoTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
     {
+        // ImPlot::CreateContext();  // presumed to already done by the screen
     }
 
 private:
-    void implOnMount() final
-    {
-        // ImPlot::CreateContext();  this is already done by MainUIScreen
-    }
-
-    void implOnUnmount() final
-    {
-        // ImPlot::DestroyContext();  this is already done by MainUIScreen
-    }
-
     void implOnDraw() final
     {
         ImPlot::ShowDemoWindow();
@@ -46,8 +37,7 @@ osc::CStringView osc::ImPlotDemoTab::id()
 
 osc::ImPlotDemoTab::ImPlotDemoTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
-{
-}
+{}
 
 osc::ImPlotDemoTab::ImPlotDemoTab(ImPlotDemoTab&&) noexcept = default;
 osc::ImPlotDemoTab& osc::ImPlotDemoTab::operator=(ImPlotDemoTab&&) noexcept = default;
@@ -61,16 +51,6 @@ osc::UID osc::ImPlotDemoTab::implGetID() const
 osc::CStringView osc::ImPlotDemoTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-void osc::ImPlotDemoTab::implOnMount()
-{
-    m_Impl->onMount();
-}
-
-void osc::ImPlotDemoTab::implOnUnmount()
-{
-    m_Impl->onUnmount();
 }
 
 void osc::ImPlotDemoTab::implOnDraw()

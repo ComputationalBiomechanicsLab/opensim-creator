@@ -28,6 +28,9 @@
 #include <vector>
 
 using osc::CStringView;
+using osc::GenerateCircleMesh;
+using osc::GenerateCubeMesh;
+using osc::GenerateUVSphereMesh;
 using osc::Mesh;
 using osc::SubMeshDescriptor;
 using osc::Vec3;
@@ -45,11 +48,10 @@ namespace
 
     Mesh GenerateMeshWithSubMeshes()
     {
-        auto const meshes = std::to_array(
-        {
-            osc::GenerateCubeMesh(),
-            osc::GenerateUVSphereMesh(16, 16),
-            osc::GenerateCircleMesh(32),
+        auto const meshes = std::to_array({
+            GenerateCubeMesh(),
+            GenerateUVSphereMesh(16, 16),
+            GenerateCircleMesh(32),
         });
 
         std::vector<Vec3> allVerts;
@@ -57,14 +59,12 @@ namespace
         std::vector<uint32_t> allIndices;
         std::vector<SubMeshDescriptor> allDescriptors;
 
-        for (auto const& mesh : meshes)
-        {
+        for (auto const& mesh : meshes) {
             Append(allVerts, mesh.getVerts());
             Append(allNormals, mesh.getNormals());
 
             size_t firstIndex = allIndices.size();
-            for (auto index : mesh.getIndices())
-            {
+            for (auto index : mesh.getIndices()) {
                 allIndices.push_back(static_cast<uint32_t>(firstIndex + index));
             }
             size_t nIndices = allIndices.size() - firstIndex;
@@ -76,15 +76,14 @@ namespace
         rv.setVerts(allVerts);
         rv.setNormals(allNormals);
         rv.setIndices(allIndices);
-        for (auto const& desc : allDescriptors)
-        {
+        for (auto const& desc : allDescriptors) {
             rv.pushSubMeshDescriptor(desc);
         }
         return rv;
     }
 }
 
-class osc::SubMeshTab::Impl final : public osc::StandardTabImpl {
+class osc::SubMeshTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
     {
@@ -99,23 +98,9 @@ public:
     }
 
 private:
-    void implOnMount() final {}
-    void implOnUnmount() final {}
-
-    bool implOnEvent(SDL_Event const&) final
-    {
-        return false;
-    }
-
-    void implOnTick() final {}
-
-    void implOnDrawMainMenu() final {}
-
     void implOnDraw() final
     {
-        for (size_t subMeshIndex = 0; subMeshIndex < m_MeshWithSubmeshes.getSubMeshCount(); ++subMeshIndex)
-        {
-
+        for (size_t subMeshIndex = 0; subMeshIndex < m_MeshWithSubmeshes.getSubMeshCount(); ++subMeshIndex) {
             Graphics::DrawMesh(
                 m_MeshWithSubmeshes,
                 Identity<Transform>(),
@@ -130,14 +115,10 @@ private:
     }
 
     Camera m_Camera;
-    Material m_Material
-    {
-        Shader
-        {
-            App::slurp("oscar_demos/shaders/SolidColor.vert"),
-            App::slurp("oscar_demos/shaders/SolidColor.frag"),
-        },
-    };
+    Material m_Material{Shader{
+        App::slurp("oscar_demos/shaders/SolidColor.vert"),
+        App::slurp("oscar_demos/shaders/SolidColor.frag"),
+    }};
     Mesh m_MeshWithSubmeshes = GenerateMeshWithSubMeshes();
 };
 
@@ -151,8 +132,7 @@ CStringView osc::SubMeshTab::id()
 
 osc::SubMeshTab::SubMeshTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
-{
-}
+{}
 
 osc::SubMeshTab::SubMeshTab(SubMeshTab&&) noexcept = default;
 osc::SubMeshTab& osc::SubMeshTab::operator=(SubMeshTab&&) noexcept = default;
@@ -166,31 +146,6 @@ osc::UID osc::SubMeshTab::implGetID() const
 CStringView osc::SubMeshTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-void osc::SubMeshTab::implOnMount()
-{
-    m_Impl->onMount();
-}
-
-void osc::SubMeshTab::implOnUnmount()
-{
-    m_Impl->onUnmount();
-}
-
-bool osc::SubMeshTab::implOnEvent(SDL_Event const& e)
-{
-    return m_Impl->onEvent(e);
-}
-
-void osc::SubMeshTab::implOnTick()
-{
-    m_Impl->onTick();
-}
-
-void osc::SubMeshTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::SubMeshTab::implOnDraw()
