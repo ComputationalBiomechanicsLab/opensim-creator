@@ -206,7 +206,7 @@ private:
         ImGui::Checkbox("use 16-bit colors", &m_Use16BitFormat);
         ImGui::InputFloat("exposure", &m_Exposure);
         ImGui::Text("pos = %f,%f,%f", m_Camera.getPosition().x, m_Camera.getPosition().y, m_Camera.getPosition().z);
-        ImGui::Text("eulers = %f,%f,%f", m_CameraEulers.x, m_CameraEulers.y, m_CameraEulers.z);
+        ImGui::Text("eulers = %f,%f,%f", m_CameraEulers.x.count(), m_CameraEulers.y.count(), m_CameraEulers.z.count());
         ImGui::End();
     }
 
