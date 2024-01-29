@@ -187,7 +187,7 @@ namespace
             float const roughness = static_cast<float>(mip)/static_cast<float>(maxMipmapLevel);
             material.setFloat("uRoughness", roughness);
 
-            osc::Graphics::DrawMesh(GenerateCubeMesh(), Transform{}, material, camera);
+            osc::Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
             camera.renderTo(captureRT);
             osc::Graphics::CopyTexture(captureRT, rv, mip);
         }
@@ -354,7 +354,12 @@ private:
     void drawLights()
     {
         for (Vec3 const& pos : c_LightPositions) {
-            Graphics::DrawMesh(m_SphereMesh, {.scale = Vec3{0.5f}, .position = pos}, m_PBRMaterial, m_Camera);
+            Graphics::DrawMesh(
+                m_SphereMesh,
+                {.scale = Vec3{0.5f}, .position = pos},
+                m_PBRMaterial,
+                m_Camera
+            );
         }
     }
 

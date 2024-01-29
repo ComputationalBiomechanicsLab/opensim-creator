@@ -35,26 +35,18 @@ namespace
 
     Mesh GenerateTriangleMesh()
     {
-        constexpr auto points = std::to_array<Vec3>({
+        Mesh m;
+        m.setVerts({{
             {-1.0f, -1.0f, 0.0f},  // bottom-left
             { 1.0f, -1.0f, 0.0f},  // bottom-right
             { 0.0f,  1.0f, 0.0f},  // top-middle
-        });
-
-        // care: we're using colors that are equivalent in sRGB and linear
-        //       color spaces here
-        constexpr auto colors = std::to_array<Color>({
+        }});
+        m.setColors({{
             Color::red(),
             Color::green(),
             Color::blue(),
-        });
-
-        constexpr auto indices = std::to_array<uint16_t>({0, 1, 2});
-
-        Mesh m;
-        m.setVerts(points);
-        m.setColors(colors);
-        m.setIndices(indices);
+        }});
+        m.setIndices(std::to_array<uint16_t>({0, 1, 2}));
         return m;
     }
 
@@ -75,7 +67,7 @@ namespace
     }
 }
 
-class osc::LOGLHelloTriangleTab::Impl final : public osc::StandardTabImpl {
+class osc::LOGLHelloTriangleTab::Impl final : public StandardTabImpl {
 public:
 
     Impl() : StandardTabImpl{c_TabStringID}

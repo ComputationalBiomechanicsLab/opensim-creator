@@ -152,7 +152,7 @@ private:
             // cubes
             m_SceneRenderMaterial.setTexture("uTexture1", m_ContainerTexture);
             Graphics::DrawMesh(m_CubeMesh, {.position = {-1.0f, 0.0f, -1.0f}}, m_SceneRenderMaterial, m_SceneCamera);
-            Graphics::DrawMesh(m_CubeMesh, {.position = { 1.0f, 0.0f, -1.0f }}, m_SceneRenderMaterial, m_SceneCamera);
+            Graphics::DrawMesh(m_CubeMesh, {.position = { 1.0f, 0.0f, -1.0f}}, m_SceneRenderMaterial, m_SceneCamera);
 
             // floor
             m_SceneRenderMaterial.setTexture("uTexture1", m_MetalTexture);

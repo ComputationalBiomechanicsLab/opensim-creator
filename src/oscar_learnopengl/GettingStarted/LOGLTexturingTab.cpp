@@ -108,9 +108,9 @@ public:
 private:
     void implOnDraw() final
     {
-        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
-
         Graphics::DrawMesh(m_Mesh, Identity<Transform>(), m_Material, m_Camera);
+
+        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
         m_Camera.renderToScreen();
     }
 

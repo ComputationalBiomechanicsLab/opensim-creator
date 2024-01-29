@@ -3,7 +3,9 @@
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Maths/Vec3.hpp>
 
-osc::Mesh osc::GenerateLearnOpenGLCubeMesh()
+using osc::Mesh;
+
+Mesh osc::GenerateLearnOpenGLCubeMesh()
 {
     Mesh cube = GenerateCubeMesh();
     cube.transformVerts([](Vec3 v) { return 0.5f * v; });
