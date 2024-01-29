@@ -17,7 +17,7 @@ namespace osc
     // - https://en.cppreference.com/w/cpp/language/object#Object_representation_and_value_representation
     //   > "For TriviallyCopyable types, value representation is a part of the object representation"
     template<class T>
-    concept BitCastable = std::copyable<T> && std::is_trivially_destructible_v<T>;
+    concept BitCastable = std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>;
 
     // see: https://en.cppreference.com/w/cpp/language/object#Object_representation_and_value_representation
     template<class T>

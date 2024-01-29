@@ -8,6 +8,8 @@
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -22,11 +24,13 @@
 #include <string>
 #include <utility>
 
+using namespace osc::literals;
 using osc::App;
 using osc::Camera;
 using osc::Color;
 using osc::ColorSpace;
 using osc::CStringView;
+using osc::LoadTexture2DFromImage;
 using osc::Material;
 using osc::Mesh;
 using osc::Shader;
@@ -36,8 +40,7 @@ using osc::Vec3;
 
 namespace
 {
-    constexpr auto c_PlaneVertices = std::to_array<Vec3>(
-    {
+    constexpr auto c_PlaneVertices = std::to_array<Vec3>({
         { 10.0f, -0.5f,  10.0f},
         {-10.0f, -0.5f,  10.0f},
         {-10.0f, -0.5f, -10.0f},
@@ -46,8 +49,7 @@ namespace
         {-10.0f, -0.5f, -10.0f},
         { 10.0f, -0.5f, -10.0f},
     });
-    constexpr auto c_PlaneTexCoords = std::to_array<Vec2>(
-    {
+    constexpr auto c_PlaneTexCoords = std::to_array<Vec2>({
         {10.0f, 0.0f},
         {0.0f,  0.0f},
         {0.0f,  10.0f},
@@ -56,8 +58,7 @@ namespace
         {0.0f,  10.0f},
         {10.0f, 10.0f},
     });
-    constexpr auto c_PlaneNormals = std::to_array<Vec3>(
-    {
+    constexpr auto c_PlaneNormals = std::to_array<Vec3>({
         {0.0f, 1.0f, 0.0f},
         {0.0f, 1.0f, 0.0f},
         {0.0f, 1.0f, 0.0f},
@@ -68,16 +69,14 @@ namespace
     });
     constexpr auto c_PlaneIndices = std::to_array<uint16_t>({0, 2, 1, 3, 5, 4});
 
-    constexpr auto c_LightPositions = std::to_array<Vec3>(
-    {
+    constexpr auto c_LightPositions = std::to_array<Vec3>({
         {-3.0f, 0.0f, 0.0f},
         {-1.0f, 0.0f, 0.0f},
         { 1.0f, 0.0f, 0.0f},
         { 3.0f, 0.0f, 0.0f},
     });
 
-    constexpr auto c_LightColors = std::to_array<Color>(
-    {
+    constexpr auto c_LightColors = std::to_array<Color>({
         {0.25f, 0.25f, 0.25f, 1.0f},
         {0.50f, 0.50f, 0.50f, 1.0f},
         {0.75f, 0.75f, 0.75f, 1.0f},
@@ -100,7 +99,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(osc::Deg2Rad(45.0f));
+        rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -109,19 +108,15 @@ namespace
 
     Material CreateFloorMaterial()
     {
-        Texture2D woodTexture = osc::LoadTexture2DFromImage(
+        Texture2D woodTexture = LoadTexture2DFromImage(
             App::resource("oscar_learnopengl/textures/wood.png"),
             ColorSpace::sRGB
         );
 
-        Material rv
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.vert"),
-                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.frag"),
-            },
-        };
+        Material rv{Shader{
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.frag"),
+        }};
         rv.setTexture("uFloorTexture", woodTexture);
         rv.setVec3Array("uLightPositions", c_LightPositions);
         rv.setColorArray("uLightColors", c_LightColors);
@@ -129,11 +124,10 @@ namespace
     }
 }
 
-class osc::LOGLGammaTab::Impl final : public osc::StandardTabImpl {
+class osc::LOGLGammaTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
-    {
-    }
+    {}
 
 private:
     void implOnMount() final
@@ -151,13 +145,11 @@ private:
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-        {
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
             m_IsMouseCaptured = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && osc::IsMouseInMainViewportWorkspaceScreenRect())
-        {
+        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
             m_IsMouseCaptured = true;
             return true;
         }
@@ -167,14 +159,12 @@ private:
     void implOnDraw() final
     {
         // handle mouse capturing
-        if (m_IsMouseCaptured)
-        {
+        if (m_IsMouseCaptured) {
             UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
             ImGui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
-        else
-        {
+        else {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
@@ -186,11 +176,11 @@ private:
     void draw3DScene()
     {
         // clear screen and ensure camera has correct pixel rect
-        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
+        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
 
         // render scene
         m_Material.setVec3("uViewPos", m_Camera.getPosition());
-        Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_Material, m_Camera);
+        Graphics::DrawMesh(m_PlaneMesh, Identity<Transform>(), m_Material, m_Camera);
         m_Camera.renderToScreen();
     }
 
@@ -205,7 +195,7 @@ private:
     Mesh m_PlaneMesh = GeneratePlane();
     Camera m_Camera = CreateSceneCamera();
     bool m_IsMouseCaptured = true;
-    Vec3 m_CameraEulers = {};
+    Eulers m_CameraEulers = {};
 };
 
 

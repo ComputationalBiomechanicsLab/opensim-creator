@@ -104,7 +104,6 @@
 
 using osc::ChooseComponentsEditorLayer;
 using osc::ChooseComponentsEditorLayerParameters;
-using osc::FrameDefinitionTabToolbar;
 using osc::Vec2;
 using osc::Vec3;
 using namespace osc::fd;

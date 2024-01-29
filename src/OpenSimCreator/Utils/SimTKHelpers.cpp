@@ -26,6 +26,16 @@ SimTK::Vec3 osc::ToSimTKVec3(Vec3 const& v)
     };
 }
 
+SimTK::Vec3 osc::ToSimTKVec3(Eulers const& v)
+{
+    return
+    {
+        static_cast<double>(v.x.count()),
+        static_cast<double>(v.y.count()),
+        static_cast<double>(v.z.count()),
+    };
+}
+
 SimTK::Mat33 osc::ToSimTKMat3(Mat3 const& m)
 {
     return SimTK::Mat33

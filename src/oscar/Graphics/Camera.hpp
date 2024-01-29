@@ -3,6 +3,7 @@
 #include <oscar/Graphics/CameraClearFlags.hpp>
 #include <oscar/Graphics/CameraProjection.hpp>
 #include <oscar/Graphics/Color.hpp>
+#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Quat.hpp>
 #include <oscar/Maths/Rect.hpp>
@@ -41,8 +42,8 @@ namespace osc
         void setOrthographicSize(float);
 
         // only used if CameraProjection == Perspective
-        float getCameraFOV() const;
-        void setCameraFOV(float);
+        Radians getCameraFOV() const;
+        void setCameraFOV(Radians);
 
         float getNearClippingPlane() const;
         void setNearClippingPlane(float);

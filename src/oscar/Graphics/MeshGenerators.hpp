@@ -11,38 +11,38 @@ namespace osc
     //
     // - positions: Z == 0, X == [-1, 1], and Y == [-1, 1]
     // - texcoords: (0, 0) to (1, 1)
-    Mesh GenTexturedQuad();
+    Mesh GenerateTexturedQuadMesh();
 
     // generates UV sphere centered at (0,0,0) with radius = 1
-    Mesh GenSphere(size_t sectors, size_t stacks);
+    Mesh GenerateUVSphereMesh(size_t sectors, size_t stacks);
 
     // generates an untextured cylinder, where the bottom/top are -1.0f/+1.0f in Y
-    Mesh GenUntexturedYToYCylinder(size_t nsides);
+    Mesh GenerateUntexturedYToYCylinderMesh(size_t nsides);
 
     // generates an untextured cone, where the bottom/top are -1.0f/+1.0f in Y
-    Mesh GenUntexturedYToYCone(size_t nsides);
+    Mesh GenerateUntexturedYToYConeMesh(size_t nsides);
 
     // generates 2D grid lines at Z == 0, X/Y == [-1,+1]
-    Mesh GenNbyNGrid(size_t nticks);
+    Mesh GenerateNbyNGridLinesMesh(size_t nticks);
 
     // generates a single two-point line from (0,-1,0) to (0,+1,0)
-    Mesh GenYLine();
+    Mesh GenerateYToYLineMesh();
 
     // generates a cube with [-1,+1] in each dimension
-    Mesh GenCube();
+    Mesh GenerateCubeMesh();
 
     // generates the *lines* of a cube with [-1,+1] in each dimension
-    Mesh GenCubeLines();
+    Mesh GenerateCubeLinesMesh();
 
     // generates a circle at Z == 0, X/Y == [-1, +1] (r = 1)
-    Mesh GenCircle(size_t nsides);
+    Mesh GenerateCircleMesh(size_t nsides);
 
     // generates a torus with the given number of slices/stacks of triangulated quads
     //
     // x size: [-(torusCenterToTubeCenterRadius + tubeRadius), +(torusCenterToTubeCenterRadius + tubeRadius)]
     // y size: [-(torusCenterToTubeCenterRadius + tubeRadius), +(torusCenterToTubeCenterRadius + tubeRadius)]
     // z size: [-tubeRadius, +tubeRadius]
-    Mesh GenTorus(
+    Mesh GenerateTorusMesh(
         size_t slices,
         size_t stacks,
         float torusCenterToTubeCenterRadius,
@@ -54,7 +54,7 @@ namespace osc
     // lowest X/Y values are min.x/min.y and the highest X/Y values are max.x/max.y
     //
     // i.e. the "lowest" grid point is `min`, the next one is `min + (max-min)/steps`
-    Mesh GenNxMPoint2DGridWithConnectingLines(
+    Mesh GenerateNxMGridLinesMesh(
         Vec2 min,
         Vec2 max,
         Vec2i steps
@@ -66,5 +66,5 @@ namespace osc
     // - the grid spans from (-1.0f, -1.0f) to (+1.0f, +1.0f) (i.e. NDC) with Z = 0.0f
     // - texture coordinates are assigned to each vertex, and span from (0.0f, 0.0f) to (1.0f, 1.0f)
     // - the utility of this is that the grid can be warped to (effectively) warp the texture in 2D space
-    Mesh GenNxMTriangleQuad2DGrid(Vec2i steps);
+    Mesh GenerateNxMTriangleQuadGridMesh(Vec2i steps);
 }

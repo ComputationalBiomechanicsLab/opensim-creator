@@ -22,7 +22,7 @@ namespace osc
         ChooseComponentsEditorLayer(ChooseComponentsEditorLayer const&) = delete;
         ChooseComponentsEditorLayer(ChooseComponentsEditorLayer&&) noexcept;
         ChooseComponentsEditorLayer& operator=(ChooseComponentsEditorLayer const&) = delete;
-        ChooseComponentsEditorLayer& operator=(ChooseComponentsEditorLayer&&);
+        ChooseComponentsEditorLayer& operator=(ChooseComponentsEditorLayer&&) noexcept;
         ~ChooseComponentsEditorLayer() noexcept;
 
     private:

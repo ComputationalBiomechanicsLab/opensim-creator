@@ -18,7 +18,6 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Scene/SceneCache.hpp>
-#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneDecorationFlags.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
@@ -45,10 +44,8 @@ using osc::GenerateOverlayDecorations;
 using osc::SceneCache;
 using osc::SceneDecoration;
 using osc::SceneDecorationFlags;
-using osc::SceneRenderer;
 using osc::ShaderCache;
 using osc::UndoableModelStatePair;
-using osc::UpdatePolarCameraFromImGuiKeyboardInputs;
 using osc::UpdateSceneBVH;
 
 namespace
@@ -160,7 +157,7 @@ public:
 
     bool handleKeyboardInputs(
         ModelEditorViewerPanelParameters& params,
-        ModelEditorViewerPanelState& state)
+        ModelEditorViewerPanelState& state) const
     {
         return UpdatePolarCameraFromImGuiKeyboardInputs(
             params.updRenderParams().camera,
@@ -336,7 +333,7 @@ osc::ChooseComponentsEditorLayer::ChooseComponentsEditorLayer(
 {
 }
 osc::ChooseComponentsEditorLayer::ChooseComponentsEditorLayer(ChooseComponentsEditorLayer&&) noexcept = default;
-osc::ChooseComponentsEditorLayer& osc::ChooseComponentsEditorLayer::operator=(ChooseComponentsEditorLayer&&) = default;
+osc::ChooseComponentsEditorLayer& osc::ChooseComponentsEditorLayer::operator=(ChooseComponentsEditorLayer&&) noexcept = default;
 osc::ChooseComponentsEditorLayer::~ChooseComponentsEditorLayer() noexcept = default;
 
 bool osc::ChooseComponentsEditorLayer::implHandleKeyboardInputs(

@@ -1,8 +1,11 @@
 #pragma once
 
 #include <oscar/Maths/AABB.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/Vec.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/CStringView.hpp>
@@ -48,7 +51,7 @@ namespace osc
 
     void UpdateEulerCameraFromImGuiUserInput(
         Camera&,
-        Vec3& eulers
+        Eulers&
     );
 
     // returns the ImGui content region available in screenspace as a `Rect`
@@ -223,6 +226,27 @@ namespace osc
         float step = 0.0f,
         float step_fast = 0.0f,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
+    );
+
+    // draw an ImGui::InputFloat that edits the given angular value in degrees
+    bool InputAngle(
+        CStringView label,
+        Radians& v
+    );
+
+    // draw an ImGui::InputFloat3 that edits the given angular value in degrees
+    bool InputAngle3(
+        CStringView label,
+        Vec<3, Radians>&,
+        CStringView format = "%.3f"
+    );
+
+    // draw an ImGui::SliderFloat that edits the given angular value as degrees
+    bool SliderAngle(
+        CStringView label,
+        Radians& v,
+        Radians min,
+        Radians max
     );
 
     // push things as-if by calling `ImGui::PushID(int);`

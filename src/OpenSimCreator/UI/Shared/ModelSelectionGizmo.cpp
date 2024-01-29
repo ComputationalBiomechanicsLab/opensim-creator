@@ -14,11 +14,14 @@
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Maths/Quat.hpp>
 #include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/Vec.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 #include <oscar/Shims/Cpp23/utility.hpp>
@@ -34,8 +37,11 @@
 #include <type_traits>
 #include <utility>
 
+using osc::Degrees;
+using osc::Eulers;
 using osc::Mat4;
 using osc::Quat;
+using osc::Vec;
 using osc::Vec3;
 using osc::Vec4;
 
@@ -85,7 +91,7 @@ namespace
             implOnApplyTranslation(deltaTranslationInGround);
         }
 
-        void onApplyRotation(Vec3 const& deltaEulerRadiansInGround)
+        void onApplyRotation(Eulers const& deltaEulerRadiansInGround)
         {
             implOnApplyRotation(deltaEulerRadiansInGround);
         }
@@ -98,7 +104,7 @@ namespace
         virtual SupportedManipulationOpFlags implGetSupportedManipulationOps() const = 0;
         virtual Mat4 implGetCurrentModelMatrix() const = 0;
         virtual void implOnApplyTranslation(Vec3 const&) {}  // default to noop
-        virtual void implOnApplyRotation(Vec3 const&) {}  // default to noop
+        virtual void implOnApplyRotation(Eulers const&) {}  // default to noop
         virtual void implOnSave() = 0;
     };
 
@@ -164,7 +170,7 @@ namespace
         }
 
         // perform runtime lookup for `TComponent` and forward into concrete implementation
-        void implOnApplyRotation(Vec3 const& deltaEulerRadiansInGround) final
+        void implOnApplyRotation(Eulers const& deltaEulerRadiansInGround) final
         {
             TComponent const* maybeSelected = findSelection();
             if (!maybeSelected)
@@ -187,7 +193,7 @@ namespace
         // inheritors must implement concrete manipulation methods
         virtual Mat4 implGetCurrentModelMatrix(TComponent const&) const = 0;
         virtual void implOnApplyTranslation(TComponent const&, Vec3 const& deltaTranslationInGround) = 0;
-        virtual void implOnApplyRotation(TComponent const&, Vec3 const&) {}  // default to noop
+        virtual void implOnApplyRotation(TComponent const&, Eulers const&) {}  // default to noop
         virtual void implOnSave(TComponent const&) = 0;
 
         std::shared_ptr<osc::UndoableModelStatePair> m_Model;
@@ -323,12 +329,12 @@ namespace
 
         void implOnApplyRotation(
             OpenSim::PhysicalOffsetFrame const& pof,
-            Vec3 const& deltaEulerRadiansInGround) final
+            Eulers const& deltaEulerRadiansInGround) final
         {
             OpenSim::Frame const& parent = pof.getParentFrame();
             SimTK::State const& state = getState();
 
-            Quat const deltaRotationInGround{deltaEulerRadiansInGround};
+            Quat const deltaRotationInGround = WorldspaceRotation(deltaEulerRadiansInGround);
             Quat const oldRotationInGround{osc::ToQuat(pof.getRotationInGround(state))};
             Quat const parentRotationInGround = osc::ToQuat(parent.getRotationInGround(state));
             Quat const newRotationInGround = osc::Normalize(deltaRotationInGround * oldRotationInGround);
@@ -393,12 +399,12 @@ namespace
 
         void implOnApplyRotation(
             OpenSim::WrapObject const& wrapObj,
-            Vec3 const& deltaEulerRadiansInGround) final
+            Eulers const& deltaEulerRadiansInGround) final
         {
             OpenSim::Frame const& parent = wrapObj.getFrame();
             SimTK::State const& state = getState();
 
-            Quat const deltaRotationInGround{deltaEulerRadiansInGround};
+            Quat const deltaRotationInGround = WorldspaceRotation(deltaEulerRadiansInGround);
             Quat const oldRotationInGround{osc::ToQuat(parent.getTransformInGround(state).R() * wrapObj.getTransform().R())};
             Quat const parentRotationInGround = osc::ToQuat(parent.getRotationInGround(state));
             Quat const newRotationInGround = osc::Normalize(deltaRotationInGround * oldRotationInGround);
@@ -464,12 +470,12 @@ namespace
 
         void implOnApplyRotation(
             OpenSim::ContactGeometry const& contactGeom,
-            Vec3 const& deltaEulerRadiansInGround) final
+            Eulers const& deltaEulerRadiansInGround) final
         {
             OpenSim::Frame const& parent = contactGeom.getFrame();
             SimTK::State const& state = getState();
 
-            Quat const deltaRotationInGround{deltaEulerRadiansInGround};
+            Quat const deltaRotationInGround = WorldspaceRotation(deltaEulerRadiansInGround);
             Quat const oldRotationInGround{osc::ToQuat(parent.getTransformInGround(state).R() * contactGeom.getTransform().R())};
             Quat const parentRotationInGround = osc::ToQuat(parent.getRotationInGround(state));
             Quat const newRotationInGround = osc::Normalize(deltaRotationInGround * oldRotationInGround);
@@ -568,15 +574,15 @@ namespace
 
         // decompose the overall transformation into component parts
         Vec3 translationInGround{};
-        Vec3 rotationInGround{};
+        Vec3 rotationInGroundDegrees{};
         Vec3 scaleInGround{};
         ImGuizmo::DecomposeMatrixToComponents(
             osc::ValuePtr(deltaInGround),
             osc::ValuePtr(translationInGround),
-            osc::ValuePtr(rotationInGround),
+            osc::ValuePtr(rotationInGroundDegrees),
             osc::ValuePtr(scaleInGround)
         );
-        rotationInGround = osc::Deg2Rad(rotationInGround);
+        Eulers rotationInGround = Vec<3, Degrees>(rotationInGroundDegrees);
 
         if (operation == ImGuizmo::TRANSLATE)
         {

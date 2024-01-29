@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/Graphics/Detail/Unorm8.hpp>
+#include <oscar/Graphics/Unorm8.hpp>
 #include <oscar/Graphics/VertexAttributeFormat.hpp>
 #include <oscar/Maths/Vec.hpp>
 #include <oscar/Maths/Vec2.hpp>

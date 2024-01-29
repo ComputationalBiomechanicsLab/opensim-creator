@@ -26,59 +26,44 @@
 #include <oscar_learnopengl/PBR/LOGLPBRSpecularIrradianceTexturedTab.hpp>
 
 #include <oscar/UI/Tabs/TabRegistry.hpp>
-#include <oscar/UI/Tabs/TabRegistryEntry.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
-
-#include <concepts>
-#include <memory>
-
-using osc::ITab;
-using osc::ITabHost;
-using osc::TabRegistry;
-using osc::TabRegistryEntry;
-
-namespace
-{
-    template<std::derived_from<ITab> TabType>
-    void RegisterTab(TabRegistry& registry)
-    {
-        TabRegistryEntry entry
-        {
-            TabType::id(),
-            [](osc::ParentPtr<ITabHost> const& h) { return std::make_unique<TabType>(h); },
-        };
-        registry.registerTab(entry);
-    }
-}
+#include <oscar/Utils/Typelist.hpp>
 
 void osc::RegisterLearnOpenGLTabs(TabRegistry& registry)
 {
-    RegisterTab<LOGLBloomTab>(registry);
-    RegisterTab<LOGLDeferredShadingTab>(registry);
-    RegisterTab<LOGLGammaTab>(registry);
-    RegisterTab<LOGLHDRTab>(registry);
-    RegisterTab<LOGLNormalMappingTab>(registry);
-    RegisterTab<LOGLParallaxMappingTab>(registry);
-    RegisterTab<LOGLPointShadowsTab>(registry);
-    RegisterTab<LOGLShadowMappingTab>(registry);
-    RegisterTab<LOGLSSAOTab>(registry);
+    using LearnOpenGLTabs = Typelist<
+        LOGLBloomTab,
+        LOGLDeferredShadingTab,
+        LOGLGammaTab,
+        LOGLHDRTab,
+        LOGLNormalMappingTab,
+        LOGLParallaxMappingTab,
+        LOGLPointShadowsTab,
+        LOGLShadowMappingTab,
+        LOGLSSAOTab,
 
-    RegisterTab<LOGLBlendingTab>(registry);
-    RegisterTab<LOGLCubemapsTab>(registry);
-    RegisterTab<LOGLFaceCullingTab>(registry);
-    RegisterTab<LOGLFramebuffersTab>(registry);
+        LOGLBlendingTab,
+        LOGLCubemapsTab,
+        LOGLFaceCullingTab,
+        LOGLFramebuffersTab,
 
-    RegisterTab<LOGLCoordinateSystemsTab>(registry);
-    RegisterTab<LOGLHelloTriangleTab>(registry);
-    RegisterTab<LOGLTexturingTab>(registry);
+        LOGLCoordinateSystemsTab,
+        LOGLHelloTriangleTab,
+        LOGLTexturingTab,
 
-    RegisterTab<LOGLBasicLightingTab>(registry);
-    RegisterTab<LOGLLightingMapsTab>(registry);
-    RegisterTab<LOGLMultipleLightsTab>(registry);
+        LOGLBasicLightingTab,
+        LOGLLightingMapsTab,
+        LOGLMultipleLightsTab,
 
-    RegisterTab<LOGLPBRDiffuseIrradianceTab>(registry);
-    RegisterTab<LOGLPBRLightingTab>(registry);
-    RegisterTab<LOGLPBRLightingTexturedTab>(registry);
-    RegisterTab<LOGLPBRSpecularIrradianceTab>(registry);
-    RegisterTab<LOGLPBRSpecularIrradianceTexturedTab>(registry);
+        LOGLPBRDiffuseIrradianceTab,
+        LOGLPBRLightingTab,
+        LOGLPBRLightingTexturedTab,
+        LOGLPBRSpecularIrradianceTab,
+        LOGLPBRSpecularIrradianceTexturedTab
+    >;
+
+    // register each concrete tab with the registry
+    [&registry]<typename... Tabs>(Typelist<Tabs...>)
+    {
+        (registry.registerTab<Tabs>(), ...);
+    }(LearnOpenGLTabs{});
 }

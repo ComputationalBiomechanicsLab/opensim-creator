@@ -30,6 +30,7 @@ Checks: >
   google-*,
   -google-readability-namespace-comments,
   -google-readability-todo,
+  -google-build-using-namespace,
   hicpp-*,
   -hicpp-uppercase-literal-suffix,
   -hicpp-signed-bitwise,

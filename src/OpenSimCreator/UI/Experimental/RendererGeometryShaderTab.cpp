@@ -8,6 +8,8 @@
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/Shader.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
@@ -18,13 +20,15 @@
 #include <cstdint>
 #include <utility>
 
+using namespace osc::literals;
+
 class osc::RendererGeometryShaderTab::Impl final {
 public:
 
     Impl()
     {
         m_SceneCamera.setPosition({0.0f, 0.0f, 3.0f});
-        m_SceneCamera.setCameraFOV(Deg2Rad(45.0f));
+        m_SceneCamera.setCameraFOV(45_deg);
         m_SceneCamera.setNearClippingPlane(0.1f);
         m_SceneCamera.setFarClippingPlane(100.0f);
     }
@@ -114,7 +118,7 @@ private:
     Mesh m_Mesh = LoadMeshViaSimTK(App::resource("geometry/hat_ribs_scap.vtp"));
     Camera m_SceneCamera;
     bool m_IsMouseCaptured = false;
-    Vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+    Eulers m_CameraEulers = {};
     Color m_MeshColor = Color::white();
 };
 

@@ -28,11 +28,15 @@ using osc::App;
 using osc::Camera;
 using osc::ColorSpace;
 using osc::CStringView;
+using osc::GenerateTexturedQuadMesh;
+using osc::Identity;
 using osc::ImageLoadingFlags;
+using osc::LoadTexture2DFromImage;
 using osc::Mat4;
 using osc::Material;
 using osc::Mesh;
 using osc::Shader;
+using osc::TextureWrapMode;
 using osc::Texture2D;
 using osc::Vec2;
 using osc::Vec3;
@@ -41,45 +45,41 @@ namespace
 {
     constexpr CStringView c_TabStringID = "LearnOpenGL/Texturing";
 
-    Mesh GenerateTexturedQuadMesh()
+    Mesh GenTexturedQuadMesh()
     {
-        Mesh quad = osc::GenTexturedQuad();
+        Mesh quad = GenerateTexturedQuadMesh();
 
         // transform default quad verts to match LearnOpenGL
-        quad.transformVerts([](Vec3& v) { v *= 0.5f; });
+        quad.transformVerts([](Vec3 v) { return 0.5f * v; });
 
         // transform default quad texture coordinates to exercise wrap modes
-        quad.transformTexCoords([](Vec2& coord) { coord *= 2.0f; });
+        quad.transformTexCoords([](Vec2 coord) { return 2.0f * coord; });
 
         return quad;
     }
 
     Material LoadTexturedMaterial()
     {
-        Material rv
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.vert"),
-                App::slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.frag"),
-            },
-        };
+        Material rv{Shader{
+            App::slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.vert"),
+            App::slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.frag"),
+        }};
 
         // set uTexture1
         {
-            Texture2D container = osc::LoadTexture2DFromImage(
+            Texture2D container = LoadTexture2DFromImage(
                 App::resource("oscar_learnopengl/textures/container.jpg"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
             );
-            container.setWrapMode(osc::TextureWrapMode::Clamp);
+            container.setWrapMode(TextureWrapMode::Clamp);
 
             rv.setTexture("uTexture1", std::move(container));
         }
 
         // set uTexture2
         {
-            Texture2D face = osc::LoadTexture2DFromImage(
+            Texture2D const face = LoadTexture2DFromImage(
                 App::resource("oscar_learnopengl/textures/awesomeface.png"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
@@ -94,8 +94,8 @@ namespace
     Camera CreateIdentityCamera()
     {
         Camera rv;
-        rv.setViewMatrixOverride(osc::Identity<Mat4>());
-        rv.setProjectionMatrixOverride(osc::Identity<Mat4>());
+        rv.setViewMatrixOverride(Identity<Mat4>());
+        rv.setProjectionMatrixOverride(Identity<Mat4>());
         return rv;
     }
 }
@@ -103,20 +103,19 @@ namespace
 class osc::LOGLTexturingTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
-    {
-    }
+    {}
 
 private:
     void implOnDraw() final
     {
-        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
+        Graphics::DrawMesh(m_Mesh, Identity<Transform>(), m_Material, m_Camera);
 
-        Graphics::DrawMesh(m_Mesh, Transform{}, m_Material, m_Camera);
+        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
         m_Camera.renderToScreen();
     }
 
     Material m_Material = LoadTexturedMaterial();
-    Mesh m_Mesh = GenerateTexturedQuadMesh();
+    Mesh m_Mesh = GenTexturedQuadMesh();
     Camera m_Camera = CreateIdentityCamera();
 };
 

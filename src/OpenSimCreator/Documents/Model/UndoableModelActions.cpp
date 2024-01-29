@@ -1831,7 +1831,7 @@ bool osc::ActionTransformPof(
     UndoableModelStatePair& model,
     OpenSim::PhysicalOffsetFrame const& pof,
     Vec3 const& deltaTranslationInParentFrame,
-    Vec3 const& newPofEulers)
+    Eulers const& newPofEulers)
 {
     OpenSim::ComponentPath const pofPath = GetAbsolutePath(pof);
     UID const oldVersion = model.getModelVersion();
@@ -1870,7 +1870,7 @@ bool osc::ActionTransformWrapObject(
     UndoableModelStatePair& model,
     OpenSim::WrapObject const& wo,
     Vec3 const& deltaPosition,
-    Vec3 const& newEulers)
+    Eulers const& newEulers)
 {
     OpenSim::ComponentPath const pofPath = GetAbsolutePath(wo);
     UID const oldVersion = model.getModelVersion();
@@ -1909,7 +1909,7 @@ bool osc::ActionTransformContactGeometry(
     UndoableModelStatePair& model,
     OpenSim::ContactGeometry const& contactGeom,
     Vec3 const& deltaPosition,
-    Vec3 const& newEulers)
+    Eulers const& newEulers)
 {
     OpenSim::ComponentPath const pofPath = GetAbsolutePath(contactGeom);
     UID const oldVersion = model.getModelVersion();

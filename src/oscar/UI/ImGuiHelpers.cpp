@@ -5,6 +5,7 @@
 #include <oscar/Graphics/RenderTexture.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Rect.hpp>
@@ -30,6 +31,7 @@
 #include <span>
 #include <string>
 
+using namespace osc::literals;
 using osc::Color;
 using osc::Vec2;
 using osc::Vec4;
@@ -282,17 +284,15 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
         if (ctrlOrSuperDown)
         {
             // pan
-            camera.pan(osc::AspectRatio(viewportRect), {0.0f, -0.1f});
+            camera.pan(AspectRatio(viewportRect), {0.0f, -0.1f});
         }
         else if (shiftDown)
         {
-            // rotate in 90-deg increments
-            camera.phi -= Deg2Rad(90.0f);
+            camera.phi -= 90_deg;  // rotate in 90-deg increments
         }
         else
         {
-            // rotate in 10-deg increments
-            camera.phi -= Deg2Rad(10.0f);
+            camera.phi -= 10_deg;  // rotate in 10-deg increments
         }
         return true;
     }
@@ -306,12 +306,12 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
         else if (shiftDown)
         {
             // rotate in 90-deg increments
-            camera.phi += Deg2Rad(90.0f);
+            camera.phi += 90_deg;
         }
         else
         {
             // rotate in 10-deg increments
-            camera.phi += Deg2Rad(10.0f);
+            camera.phi += 10_deg;
         }
         return true;
     }
@@ -325,12 +325,12 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
         else if (shiftDown)
         {
             // rotate in 90-deg increments
-            camera.theta += Deg2Rad(90.0f);
+            camera.theta += 90_deg;
         }
         else
         {
             // rotate in 10-deg increments
-            camera.theta += Deg2Rad(10.0f);
+            camera.theta += 10_deg;
         }
         return true;
     }
@@ -343,13 +343,11 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
         }
         else if (shiftDown)
         {
-            // rotate in 90-deg increments
-            camera.theta -= Deg2Rad(90.0f);
+            camera.theta -= 90_deg;  // rotate in 90-deg increments
         }
         else
         {
-            // rotate in 10-deg increments
-            camera.theta -= Deg2Rad(10.0f);
+            camera.theta -= 10_deg;  // rotate in 10-deg increments
         }
         return true;
     }
@@ -385,7 +383,7 @@ bool osc::UpdatePolarCameraFromImGuiInputs(
     return mouseHandled || keyboardHandled;
 }
 
-void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, Vec3& eulers)
+void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, Eulers& eulers)
 {
     Vec3 const front = camera.getDirection();
     Vec3 const up = camera.getUpwardsDirection();
@@ -394,7 +392,7 @@ void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, Vec3& eulers)
 
     float const speed = 10.0f;
     float const displacement = speed * ImGui::GetIO().DeltaTime;
-    float const sensitivity = 0.005f;
+    Radians const sensitivity{0.005f};
 
     // keyboard: changes camera position
     Vec3 pos = camera.getPosition();
@@ -425,11 +423,11 @@ void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, Vec3& eulers)
     camera.setPosition(pos);
 
     eulers.x += sensitivity * -mouseDelta.y;
-    eulers.x = std::clamp(eulers.x, -std::numbers::pi_v<float>/2.0f + 0.1f, std::numbers::pi_v<float>/2.0f - 0.1f);
+    eulers.x = Clamp(eulers.x, -90_deg + 0.1_rad, 90_deg - 0.1_rad);
     eulers.y += sensitivity * -mouseDelta.x;
-    eulers.y = std::fmod(eulers.y, 2.0f * std::numbers::pi_v<float>);
+    eulers.y = fmod(eulers.y, 360_deg);
 
-    camera.setRotation(Normalize(Quat{eulers}));
+    camera.setRotation(WorldspaceRotation(eulers));
 }
 
 osc::Rect osc::ContentRegionAvailScreenRect()
@@ -766,6 +764,44 @@ bool osc::SliderMetersFloat(CStringView label, float& v, float v_min, float v_ma
 bool osc::InputKilogramFloat(CStringView label, float& v, float step, float step_fast, ImGuiInputTextFlags flags)
 {
     return InputMetersFloat(label, v, step, step_fast, flags);
+}
+
+bool osc::InputAngle(CStringView label, Radians& v)
+{
+    float dv = Degrees{v}.count();
+    if (ImGui::InputFloat(label.c_str(), &dv))
+    {
+        v = Degrees{dv};
+        return true;
+    }
+    return false;
+}
+
+bool osc::InputAngle3(
+    CStringView label,
+    Vec<3, Radians>& vs,
+    CStringView format)
+{
+    Vec3 dvs = {Degrees{vs.x}.count(), Degrees{vs.y}.count(), Degrees{vs.z}.count()};
+    if (ImGui::InputFloat3(label.c_str(), ValuePtr(dvs), format.c_str()))
+    {
+        vs = Vec<3, Degrees>{dvs};
+        return true;
+    }
+    return false;
+}
+
+bool osc::SliderAngle(CStringView label, Radians& v, Radians min, Radians max)
+{
+    float dv = Degrees{v}.count();
+    Degrees const dmin{min};
+    Degrees const dmax{max};
+    if (ImGui::SliderFloat(label.c_str(), &dv, dmin.count(), dmax.count()))
+    {
+        v = Degrees{dv};
+        return true;
+    }
+    return false;
 }
 
 void osc::PushID(UID id)

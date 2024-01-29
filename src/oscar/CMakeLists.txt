@@ -29,7 +29,6 @@ add_library(oscar STATIC
     Formats/SVG.cpp
 
     Graphics/Detail/ShaderLocations.hpp
-    Graphics/Detail/Unorm8.hpp
     Graphics/Detail/VertexAttributeFormatHelpers.hpp
     Graphics/Detail/VertexAttributeFormatList.hpp
     Graphics/Detail/VertexAttributeFormatTraits.hpp
@@ -95,6 +94,7 @@ add_library(oscar STATIC
     Graphics/TextureGenerators.hpp
     Graphics/TextureWrapMode.hpp
     Graphics/Texture2D.hpp
+    Graphics/Unorm8.hpp
     Graphics/VertexAttribute.hpp
     Graphics/VertexAttributeDescriptor.cpp
     Graphics/VertexAttributeDescriptor.hpp
@@ -103,6 +103,7 @@ add_library(oscar STATIC
     Graphics/VertexFormat.hpp
 
     Maths/AABB.hpp
+    Maths/Angle.hpp
     Maths/BVH.hpp
     Maths/BVHCollision.hpp
     Maths/BVHNode.hpp
@@ -113,6 +114,7 @@ add_library(oscar STATIC
     Maths/EasingFunctions.hpp
     Maths/Ellipsoid.hpp
     Maths/EulerPerspectiveCamera.hpp
+    Maths/Eulers.hpp
     Maths/LengthType.hpp
     Maths/Line.hpp
     Maths/Mat.hpp

@@ -16,7 +16,7 @@ public:
         // called when app receives the screen, but before it starts pumping events
         // into it, ticking it, drawing it, etc.
 
-        osc::ImGuiInit();  // boot up ImGui support
+        ImGuiInit();  // boot up ImGui support
     }
 
     void onUnmount()
@@ -24,20 +24,18 @@ public:
         // called when the app is going to stop pumping events/ticks/draws into this
         // screen (e.g. because the app is quitting, or transitioning to some other screen)
 
-        osc::ImGuiShutdown();  // shutdown ImGui support
+        ImGuiShutdown();  // shutdown ImGui support
     }
 
     void onEvent(SDL_Event const& e)
     {
         // called when the app receives an event from the operating system
 
-        if (e.type == SDL_QUIT)
-        {
+        if (e.type == SDL_QUIT) {
             App::upd().requestQuit();
             return;
         }
-        else if (osc::ImGuiOnEvent(e))
-        {
+        else if (ImGuiOnEvent(e)) {
             return;  // ImGui handled this particular event
         }
     }
@@ -58,7 +56,7 @@ public:
         // screen buffer between frames (it's assumed that your code does this when it needs
         // to)
 
-        osc::ImGuiNewFrame();  // tell ImGui you're about to start drawing a new frame
+        ImGuiNewFrame();  // tell ImGui you're about to start drawing a new frame
 
         App::upd().clearScreen(Color::clear());  // set app window bg color
 
@@ -67,7 +65,7 @@ public:
         ImGui::Checkbox("checkbox_state", &m_CheckboxState);
         ImGui::End();
 
-        osc::ImGuiRender();  // tell ImGui to render any ImGui widgets since calling ImGuiNewFrame();
+        ImGuiRender();  // tell ImGui to render any ImGui widgets since calling ImGuiNewFrame();
     }
 
 private:

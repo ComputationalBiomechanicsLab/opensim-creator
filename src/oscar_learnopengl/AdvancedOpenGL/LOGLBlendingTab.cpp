@@ -9,6 +9,8 @@
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -25,6 +27,7 @@
 #include <cstdint>
 #include <memory>
 
+using namespace osc::literals;
 using osc::Camera;
 using osc::CStringView;
 using osc::Mesh;
@@ -33,8 +36,7 @@ using osc::Vec3;
 
 namespace
 {
-    constexpr auto c_PlaneVertices = std::to_array<Vec3>(
-    {
+    constexpr auto c_PlaneVertices = std::to_array<Vec3>({
         { 5.0f, -0.5f,  5.0f},
         {-5.0f, -0.5f,  5.0f},
         {-5.0f, -0.5f, -5.0f},
@@ -43,8 +45,8 @@ namespace
         {-5.0f, -0.5f, -5.0f},
         { 5.0f, -0.5f, -5.0f},
     });
-    constexpr auto c_PlaneTexCoords = std::to_array<Vec2>(
-    {
+
+    constexpr auto c_PlaneTexCoords = std::to_array<Vec2>({
         {2.0f, 0.0f},
         {0.0f, 0.0f},
         {0.0f, 2.0f},
@@ -55,8 +57,7 @@ namespace
     });
     constexpr auto c_PlaneIndices = std::to_array<uint16_t>({0, 2, 1, 3, 5, 4});
 
-    constexpr auto c_TransparentVerts = std::to_array<Vec3>(
-    {
+    constexpr auto c_TransparentVerts = std::to_array<Vec3>({
         {0.0f,  0.5f, 0.0f},
         {0.0f, -0.5f, 0.0f},
         {1.0f, -0.5f, 0.0f},
@@ -65,8 +66,8 @@ namespace
         {1.0f, -0.5f, 0.0f},
         {1.0f,  0.5f, 0.0f},
     });
-    constexpr auto c_TransparentTexCoords = std::to_array<Vec2>(
-    {
+
+    constexpr auto c_TransparentTexCoords = std::to_array<Vec2>({
         {0.0f, 0.0f},
         {0.0f, 1.0f},
         {1.0f, 1.0f},
@@ -75,10 +76,10 @@ namespace
         {1.0f, 1.0f},
         {1.0f, 0.0f},
     });
+
     constexpr auto c_TransparentIndices = std::to_array<uint16_t>({0, 1, 2, 3, 4, 5});
 
-    constexpr auto c_WindowLocations = std::to_array<Vec3>(
-    {
+    constexpr auto c_WindowLocations = std::to_array<Vec3>({
         {-1.5f, 0.0f, -0.48f},
         { 1.5f, 0.0f,  0.51f},
         { 0.0f, 0.0f,  0.7f},
@@ -110,7 +111,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(osc::Deg2Rad(45.0f));
+        rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -118,7 +119,7 @@ namespace
     }
 }
 
-class osc::LOGLBlendingTab::Impl final : public osc::StandardTabImpl {
+class osc::LOGLBlendingTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
     {
@@ -143,13 +144,11 @@ private:
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-        {
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
             m_IsMouseCaptured = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && osc::IsMouseInMainViewportWorkspaceScreenRect())
-        {
+        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
             m_IsMouseCaptured = true;
             return true;
         }
@@ -159,49 +158,37 @@ private:
     void implOnDraw() final
     {
         // handle mouse capturing
-        if (m_IsMouseCaptured)
-        {
+        if (m_IsMouseCaptured) {
             UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
             ImGui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
-        else
-        {
+        else {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
 
         // clear screen and ensure camera has correct pixel rect
-        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
+        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
 
         // cubes
         {
-            Transform t;
-            t.position = {-1.0f, 0.0f, -1.0f};
-
             m_OpaqueMaterial.setTexture("uTexture", m_MarbleTexture);
-
-            Graphics::DrawMesh(m_CubeMesh, t, m_OpaqueMaterial, m_Camera);
-
-            t.position += Vec3{2.0f, 0.0f, 0.0f};
-
-            Graphics::DrawMesh(m_CubeMesh, t, m_OpaqueMaterial, m_Camera);
+            Graphics::DrawMesh(m_CubeMesh, {.position = {-1.0f, 0.0f, -1.0f}}, m_OpaqueMaterial, m_Camera);
+            Graphics::DrawMesh(m_CubeMesh, {.position = { 1.0f, 0.0f, -1.0f}}, m_OpaqueMaterial, m_Camera);
         }
 
         // floor
         {
             m_OpaqueMaterial.setTexture("uTexture", m_MetalTexture);
-            Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_OpaqueMaterial, m_Camera);
+            Graphics::DrawMesh(m_PlaneMesh, Identity<Transform>(), m_OpaqueMaterial, m_Camera);
         }
 
         // windows
         {
             m_BlendingMaterial.setTexture("uTexture", m_WindowTexture);
-            for (Vec3 const& loc : c_WindowLocations)
-            {
-                Transform t;
-                t.position = loc;
-                Graphics::DrawMesh(m_TransparentMesh, t, m_BlendingMaterial, m_Camera);
+            for (Vec3 const& windowLocation : c_WindowLocations) {
+                Graphics::DrawMesh(m_TransparentMesh, {.position = windowLocation}, m_BlendingMaterial, m_Camera);
             }
         }
 
@@ -212,16 +199,12 @@ private:
         m_PerfPanel.onDraw();
     }
 
-    Material m_OpaqueMaterial
-    {
-        Shader
-        {
-            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.frag"),
-        },
-    };
+    Material m_OpaqueMaterial{Shader{
+        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.vert"),
+        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.frag"),
+    }};
     Material m_BlendingMaterial = m_OpaqueMaterial;
-    Mesh m_CubeMesh = GenLearnOpenGLCube();
+    Mesh m_CubeMesh = GenerateLearnOpenGLCubeMesh();
     Mesh m_PlaneMesh = GeneratePlane();
     Mesh m_TransparentMesh = GenerateTransparent();
     Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
@@ -238,7 +221,7 @@ private:
         ColorSpace::sRGB
     );
     bool m_IsMouseCaptured = false;
-    Vec3 m_CameraEulers = {};
+    Eulers m_CameraEulers = {};
     LogViewerPanel m_LogViewer{"log"};
     PerfPanel m_PerfPanel{"perf"};
 };

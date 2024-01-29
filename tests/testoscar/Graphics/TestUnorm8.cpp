@@ -1,4 +1,4 @@
-#include <oscar/Graphics/Detail/Unorm8.hpp>
+#include <oscar/Graphics/Unorm8.hpp>
 
 #include <gtest/gtest.h>
 #include <oscar/Maths/Vec.hpp>
@@ -6,7 +6,7 @@
 
 #include <limits>
 
-using osc::detail::Unorm8;
+using osc::Unorm8;
 using osc::Vec;
 using osc::Vec3;
 
@@ -37,7 +37,7 @@ TEST(Unorm8, CanCreateUsualVec3FromVec3OfUNorms)
 {
     Vec<3, Unorm8> const v{Unorm8{0.1f}, Unorm8{0.2f}, Unorm8{0.3f}};
     Vec3 const converted{v};
-    Vec3 const expected{Unorm8{0.1f}.normalized(), Unorm8{0.2f}.normalized(), Unorm8{0.3f}.normalized()};
+    Vec3 const expected{Unorm8{0.1f}.normalized_value(), Unorm8{0.2f}.normalized_value(), Unorm8{0.3f}.normalized_value()};
     ASSERT_EQ(converted, expected);
 }
 

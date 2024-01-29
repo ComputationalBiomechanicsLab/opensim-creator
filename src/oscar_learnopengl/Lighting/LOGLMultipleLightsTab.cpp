@@ -10,6 +10,7 @@
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
@@ -28,12 +29,14 @@
 #include <cstdint>
 #include <memory>
 
+using namespace osc::literals;
 using osc::App;
 using osc::Camera;
 using osc::Color;
 using osc::ColorSpace;
 using osc::CStringView;
 using osc::ImageLoadingFlags;
+using osc::LoadTexture2DFromImage;
 using osc::Material;
 using osc::Shader;
 using osc::Texture2D;
@@ -44,8 +47,7 @@ namespace
     constexpr CStringView c_TabStringID = "LearnOpenGL/MultipleLights";
 
     // positions of cubes within the scene
-    constexpr auto c_CubePositions = std::to_array<Vec3>(
-    {
+    constexpr auto c_CubePositions = std::to_array<Vec3>({
         { 0.0f,  0.0f,  0.0f },
         { 2.0f,  5.0f, -15.0f},
         {-1.5f, -2.2f, -2.5f },
@@ -59,8 +61,7 @@ namespace
     });
 
     // positions of point lights within the scene (the camera also has a spotlight)
-    constexpr auto c_PointLightPositions = std::to_array<Vec3>(
-    {
+    constexpr auto c_PointLightPositions = std::to_array<Vec3>({
         { 0.7f,  0.2f,  2.0f },
         { 2.3f, -3.3f, -4.0f },
         {-4.0f,  2.0f, -12.0f},
@@ -77,7 +78,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(osc::Deg2Rad(45.0f));
+        rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -86,26 +87,22 @@ namespace
 
     Material CreateMultipleLightsMaterial()
     {
-        Texture2D diffuseMap = osc::LoadTexture2DFromImage(
+        Texture2D diffuseMap = LoadTexture2DFromImage(
             App::resource("oscar_learnopengl/textures/container2.png"),
             ColorSpace::sRGB,
             ImageLoadingFlags::FlipVertically
         );
 
-        Texture2D specularMap = osc::LoadTexture2DFromImage(
+        Texture2D specularMap = LoadTexture2DFromImage(
             App::resource("oscar_learnopengl/textures/container2_specular.png"),
             ColorSpace::sRGB,
             ImageLoadingFlags::FlipVertically
         );
 
-        Material rv
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.vert"),
-                App::slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.frag"),
-            },
-        };
+        Material rv{Shader{
+            App::slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.vert"),
+            App::slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.frag"),
+        }};
 
         rv.setTexture("uMaterialDiffuse", diffuseMap);
         rv.setTexture("uMaterialSpecular", specularMap);
@@ -121,8 +118,8 @@ namespace
         rv.setFloat("uSpotLightConstant", 1.0f);
         rv.setFloat("uSpotLightLinear", 0.09f);
         rv.setFloat("uSpotLightQuadratic", 0.032f);
-        rv.setFloat("uSpotLightCutoff", std::cos(osc::Deg2Rad(12.5f)));
-        rv.setFloat("uSpotLightOuterCutoff", std::cos(osc::Deg2Rad(15.0f)));
+        rv.setFloat("uSpotLightCutoff", cos(45_deg));
+        rv.setFloat("uSpotLightOuterCutoff", cos(15_deg));
 
         rv.setVec3Array("uPointLightPos", c_PointLightPositions);
         rv.setFloatArray("uPointLightConstant", c_PointLightConstants);
@@ -137,20 +134,16 @@ namespace
 
     Material CreateLightCubeMaterial()
     {
-        Material rv
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
-                App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
-            },
-        };
+        Material rv{Shader{
+            App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
+            App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
+        }};
         rv.setColor("uLightColor", Color::white());
         return rv;
     }
 }
 
-class osc::LOGLMultipleLightsTab::Impl final : public osc::StandardTabImpl {
+class osc::LOGLMultipleLightsTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
     {
@@ -174,13 +167,11 @@ private:
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-        {
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
             m_IsMouseCaptured = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && osc::IsMouseInMainViewportWorkspaceScreenRect())
-        {
+        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
             m_IsMouseCaptured = true;
             return true;
         }
@@ -190,14 +181,12 @@ private:
     void implOnDraw() final
     {
         // handle mouse capturing
-        if (m_IsMouseCaptured)
-        {
+        if (m_IsMouseCaptured) {
             UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
             ImGui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
-        else
-        {
+        else {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
@@ -211,30 +200,26 @@ private:
         m_MultipleLightsMaterial.setVec3("uSpotLightDirection", m_Camera.getDirection());
 
         // render containers
-        Vec3 const axis = osc::Normalize(Vec3{1.0f, 0.3f, 0.5f});
-        for (size_t i = 0; i < c_CubePositions.size(); ++i)
-        {
+        Vec3 const axis = Normalize(Vec3{1.0f, 0.3f, 0.5f});
+        for (size_t i = 0; i < c_CubePositions.size(); ++i) {
             Vec3 const& pos = c_CubePositions[i];
-            float const angle = osc::Deg2Rad(static_cast<float>(i++) * 20.0f);
+            auto const angle = i++ * 20_deg;
 
-            Transform t;
-            t.rotation = osc::AngleAxis(angle, axis);
-            t.position = pos;
-
-            Graphics::DrawMesh(m_Mesh, t, m_MultipleLightsMaterial, m_Camera);
+            Graphics::DrawMesh(
+                m_Mesh,
+                {.rotation = AngleAxis(angle, axis), .position = pos},
+                m_MultipleLightsMaterial,
+                m_Camera
+            );
         }
 
         // render lamps
-        Transform lampXform;
-        lampXform.scale = {0.2f, 0.2f, 0.2f};
-        for (Vec3 const& pos : c_PointLightPositions)
-        {
-            lampXform.position = pos;
-            Graphics::DrawMesh(m_Mesh, lampXform, m_LightCubeMaterial, m_Camera);
+        for (Vec3 const& pos : c_PointLightPositions) {
+            Graphics::DrawMesh(m_Mesh, {.scale = Vec3{0.2f}, .position = pos}, m_LightCubeMaterial, m_Camera);
         }
 
         // render to output (window)
-        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
+        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
         m_Camera.renderToScreen();
 
         // render auxiliary UI
@@ -248,10 +233,10 @@ private:
 
     Material m_MultipleLightsMaterial = CreateMultipleLightsMaterial();
     Material m_LightCubeMaterial = CreateLightCubeMaterial();
-    Mesh m_Mesh = GenLearnOpenGLCube();
+    Mesh m_Mesh = GenerateLearnOpenGLCubeMesh();
 
     Camera m_Camera = CreateCamera();
-    Vec3 m_CameraEulers = {};
+    Eulers m_CameraEulers = {};
     bool m_IsMouseCaptured = false;
 
     float m_MaterialShininess = 64.0f;

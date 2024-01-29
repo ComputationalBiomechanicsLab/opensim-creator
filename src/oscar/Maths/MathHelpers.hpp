@@ -1,6 +1,8 @@
 #pragma once
 
 #include <oscar/Maths/AABB.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/LengthType.hpp>
 #include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/Mat3.hpp>
@@ -11,6 +13,7 @@
 #include <oscar/Maths/Sphere.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Triangle.hpp>
+#include <oscar/Maths/Vec.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
@@ -34,36 +37,58 @@ namespace osc { struct Segment; }
 //               osc struct
 namespace osc
 {
-    // converts degrees to radians
-    template<typename GenType>
-    constexpr GenType Deg2Rad(GenType degrees)
-        requires std::is_arithmetic_v<GenType>
+    template<std::floating_point Rep, AngularUnitTraits Units>
+    Rep sin(Angle<Rep, Units> v)
     {
-        return glm::radians(degrees);
+        return std::sin(RadiansT<Rep>{v}.count());
     }
 
-    // converts degrees to radians for each element in the vector
-    template<LengthType L, typename T, Qualifier Q>
-    constexpr Vec<L, T, Q> Deg2Rad(Vec<L, T, Q> const& v)
-        requires std::is_arithmetic_v<T>
+    template<std::floating_point Rep, AngularUnitTraits Units>
+    Rep cos(Angle<Rep, Units> v)
     {
-        return glm::radians(v);
+        return std::cos(RadiansT<Rep>{v}.count());
     }
 
-    // converts radians to degrees
-    template<typename GenType>
-    constexpr GenType Rad2Deg(GenType radians)
-        requires std::is_arithmetic_v<GenType>
+    template<std::floating_point Rep, AngularUnitTraits Units>
+    Rep tan(Angle<Rep, Units> v)
     {
-        return glm::degrees(radians);
+        return std::tan(RadiansT<Rep>{v}.count());
     }
 
-    // converts degrees to radians for each element in the vector
-    template<LengthType L, typename T, Qualifier Q>
-    constexpr Vec<L, T, Q> Rad2Deg(Vec<L, T, Q> const& v)
-        requires std::is_arithmetic_v<T>
+    template<std::floating_point Rep>
+    RadiansT<Rep> atan(Rep v)
     {
-        return glm::degrees(v);
+        return RadiansT<Rep>{std::atan(v)};
+    }
+
+    template<std::floating_point Rep>
+    RadiansT<Rep> acos(Rep num)
+    {
+        return RadiansT<Rep>{std::acos(num)};
+    }
+
+    template<std::floating_point Rep>
+    RadiansT<Rep> asin(Rep num)
+    {
+        return RadiansT<Rep>{std::asin(num)};
+    }
+
+    template<std::floating_point Rep>
+    RadiansT<Rep> atan2(Rep x, Rep y)
+    {
+        return RadiansT<Rep>{std::atan2(x, y)};
+    }
+
+    template<
+        std::floating_point Rep1,
+        AngularUnitTraits Units1,
+        std::floating_point Rep2,
+        AngularUnitTraits Units2
+    >
+    typename std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>> fmod(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y)
+    {
+        using CA = std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>>;
+        return CA{std::fmod(CA{x}.count(), CA{y}.count())};
     }
 
     // returns the dot product of the provided two vectors
@@ -112,6 +137,12 @@ namespace osc
         requires std::is_arithmetic_v<GenType>
     {
         return glm::clamp(v, low, high);
+    }
+
+    template<std::floating_point Rep, AngularUnitTraits Units>
+    constexpr Angle<Rep, Units> Clamp(Angle<Rep, Units> const& v, Angle<Rep, Units> const& min, Angle<Rep, Units> const& max)
+    {
+        return Angle<Rep, Units>{Clamp(v.count(), min.count(), max.count())};
     }
 
     // clamps each element in `x` between the corresponding elements in `minVal` and `maxVal`
@@ -189,13 +220,16 @@ namespace osc
     Quat Rotation(Vec3 const& src, Vec3 const& dest);
 
     // computes a rotation from an angle+axis
-    Quat AngleAxis(float angle, Vec3 const& axis);
+    Quat AngleAxis(Radians angle, Vec3 const& axis);
 
     // computes a view matrix for the given params
     Mat4 LookAt(Vec3 const& eye, Vec3 const& center, Vec3 const& up);
 
+    // computes horizontal FoV for a given vertical FoV + aspect ratio
+    Radians VerticalToHorizontalFOV(Radians verticalFOV, float aspectRatio);
+
     // computes a perspective projection matrix
-    Mat4 Perspective(float verticalFOV, float aspectRatio, float zNear, float zFar);
+    Mat4 Perspective(Radians verticalFOV, float aspectRatio, float zNear, float zFar);
 
     // computes an orthogonal projection matrix
     Mat4 Ortho(float left, float right, float bottom, float top, float zNear, float zFar);
@@ -206,13 +240,13 @@ namespace osc
 
     // right-hand multiply
     Mat4 Scale(Mat4 const&, Vec3 const&);
-    Mat4 Rotate(Mat4 const&, float, Vec3 const&);
+    Mat4 Rotate(Mat4 const&, Radians angle, Vec3 const& axis);
     Mat4 Translate(Mat4 const&, Vec3 const&);
 
     Quat QuatCast(Mat3 const&);
     Mat3 ToMat3(Quat const&);
 
-    Vec3 EulerAngles(Quat const&);
+    Eulers EulerAngles(Quat const&);
 
     // returns `true` if the two arguments are effectively equal (i.e. within machine precision)
     //
@@ -333,10 +367,10 @@ namespace osc
     Mat4 Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2);
 
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
-    Vec3 ExtractEulerAngleXYZ(Quat const&);
+    Eulers ExtractEulerAngleXYZ(Quat const&);
 
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
-    Vec3 ExtractEulerAngleXYZ(Mat4 const&);
+    Eulers ExtractEulerAngleXYZ(Mat4 const&);
 
     // returns an XY NDC point converted from a screen/viewport point
     //
@@ -586,10 +620,13 @@ namespace osc
     // returns a vector that is the equivalent of the provided vector after applying the inverse of the transform
     Vec3 InverseTransformPoint(Transform const&, Vec3 const&);
 
+    // returns the a quaternion equivalent to the given euler angles
+    Quat WorldspaceRotation(Eulers const&);
+
     // applies a world-space rotation to the transform
     void ApplyWorldspaceRotation(
         Transform& applicationTarget,
-        Vec3 const& eulerAngles,
+        Eulers const& eulerAngles,
         Vec3 const& rotationCenter
     );
 
@@ -607,7 +644,7 @@ namespace osc
     // rotation rotates around y', and the third rotation rotates around z''
     //
     // see: https://en.wikipedia.org/wiki/Euler_angles#Conventions_by_intrinsic_rotations
-    Vec3 ExtractEulerAngleXYZ(Transform const&);
+    Eulers ExtractEulerAngleXYZ(Transform const&);
 
     // returns XYZ (pitch, yaw, roll) Euler angles for an extrinsic rotation
     //
@@ -616,7 +653,7 @@ namespace osc
     // to a moving body (the thing being rotated)
     //
     // see: https://en.wikipedia.org/wiki/Euler_angles#Conventions_by_extrinsic_rotations
-    Vec3 ExtractExtrinsicEulerAnglesXYZ(Transform const&);
+    Eulers ExtractExtrinsicEulerAnglesXYZ(Transform const&);
 
     // returns the provided transform, but rotated such that the given axis, as expressed
     // in the original transform, will instead point along the new direction
@@ -631,5 +668,5 @@ namespace osc
 
     // returns the provided transform, but intrinsically rotated along the given axis by
     // the given number of radians
-    Transform RotateAlongAxis(Transform const&, int axisIndex, float angRadians);
+    Transform RotateAlongAxis(Transform const&, int axisIndex, Radians);
 }

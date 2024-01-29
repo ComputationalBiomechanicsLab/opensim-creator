@@ -29,8 +29,6 @@ namespace osc
         void implOnMount() final;
         void implOnUnmount() final;
         bool implOnEvent(SDL_Event const&) final;
-        void implOnTick() final;
-        void implOnDrawMainMenu() final;
         void implOnDraw() final;
 
         class Impl;

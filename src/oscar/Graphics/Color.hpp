@@ -13,11 +13,15 @@
 
 namespace osc
 {
-    // representation of RGBA, usually in sRGB color space, with a range of 0 to 1
     struct Color final {
 
         using value_type = float;
+        using reference = float&;
+        using const_reference = float const&;
         using length_type = size_t;
+        using size_type = size_t;
+        using iterator = value_type*;
+        using const_iterator = value_type const*;
 
         static constexpr length_type length()
         {
@@ -106,54 +110,74 @@ namespace osc
 
         Color() = default;
 
-        explicit constexpr Color(float v) :
-            r{v}, g{v}, b{v}, a{1.0f}
+        explicit constexpr Color(value_type v) :
+            r{v}, g{v}, b{v}, a(1.0f)
         {
         }
 
-        constexpr Color(float v, float alpha) :
+        constexpr Color(value_type v, value_type alpha) :
             r{v}, g{v}, b{v}, a{alpha}
         {
         }
 
-        explicit constexpr Color(Vec3 const& v) :
-            r{v.x}, g{v.y}, b{v.z}, a{1.0f}
+        explicit constexpr Color(Vec<3, value_type> const& v) :
+            r{v.x}, g{v.y}, b{v.z}, a(1.0f)
         {
         }
 
-        constexpr Color(Vec3 const& v, float alpha) :
+        constexpr Color(Vec<3, value_type> const& v, value_type alpha) :
             r{v.x}, g{v.y}, b{v.z}, a{alpha}
         {
         }
 
-        explicit constexpr Color(Vec4 const& v) :
+        explicit constexpr Color(Vec<4, value_type> const& v) :
             r{v.x}, g{v.y}, b{v.z}, a{v.w}
         {
         }
 
-        constexpr Color(float r_, float g_, float b_, float a_) :
+        constexpr Color(value_type r_, value_type g_, value_type b_, value_type a_) :
             r{r_}, g{g_}, b{b_}, a{a_}
         {
         }
 
-        constexpr Color(float r_, float g_, float b_) :
-            r{r_}, g{g_}, b{b_}, a{1.0f}
+        constexpr Color(value_type r_, value_type g_, value_type b_) :
+            r{r_}, g{g_}, b{b_}, a(1.0f)
         {
         }
 
-        constexpr float& operator[](length_type i)
+        constexpr reference operator[](size_type i)
         {
-            static_assert(sizeof(Color) == 4*sizeof(float));
+            static_assert(sizeof(Color) == 4*sizeof(value_type));
             return (&r)[i];
         }
 
-        constexpr float const& operator[](length_type i) const
+        constexpr const_reference operator[](size_type i) const
         {
-            static_assert(sizeof(Color) == 4*sizeof(float));
+            static_assert(sizeof(Color) == 4*sizeof(value_type));
             return (&r)[i];
         }
 
-        constexpr operator Vec4 () const
+        constexpr iterator begin()
+        {
+            return &r;
+        }
+
+        constexpr iterator end()
+        {
+            return &r + length();
+        }
+
+        constexpr const_iterator begin() const
+        {
+            return &r;
+        }
+
+        constexpr const_iterator end() const
+        {
+            return &r + length();
+        }
+
+        constexpr operator Vec<4, value_type> () const
         {
             return Vec4{r, g, b, a};
         }
@@ -172,19 +196,14 @@ namespace osc
 
         constexpr friend Color operator*(Color const& lhs, Color const& rhs)
         {
-            return Color
-            {
-                lhs.r * rhs.r,
-                lhs.g * rhs.g,
-                lhs.b * rhs.b,
-                lhs.a * rhs.a,
-            };
+            Color copy{lhs};
+            copy *= rhs;
+            return copy;
         }
 
-        constexpr friend Color operator*(float lhs, Color const& rhs)
+        constexpr friend Color operator*(value_type lhs, Color const& rhs)
         {
-            return Color
-            {
+            return Color {
                 lhs * rhs.r,
                 lhs * rhs.g,
                 lhs * rhs.b,
@@ -192,36 +211,18 @@ namespace osc
             };
         }
 
-        constexpr Color withAlpha(float a_) const
+        constexpr Color withAlpha(value_type a_) const
         {
             return Color{r, g, b, a_};
         }
 
-        float r = 0.0f;
-        float g = 0.0f;
-        float b = 0.0f;
-        float a = 0.0f;
+        value_type r{};
+        value_type g{};
+        value_type b{};
+        value_type a{};
     };
 
     std::ostream& operator<<(std::ostream&, Color const&);
-
-    // returns the normalized (0.0 - 1.0) floating-point equivalent of the
-    // given 8-bit (0 - 255) color channel value
-    constexpr float ToFloatingPointColorChannel(uint8_t channelValue)
-    {
-        return (1.0f/255.0f) * static_cast<float>(channelValue);
-    }
-
-    // returns the 8-bit (0 - 255) equivalent of the given normalized (0.0 - 1.0)
-    // floating-point color channel value
-    //
-    // input values that fall outside of the 0.0 - 1.0 range are clamped to that range
-    constexpr uint8_t ToClamped8BitColorChannel(float channelValue)
-    {
-        channelValue = channelValue >= 0.0f ? channelValue : 0.0f;
-        channelValue = channelValue <= 1.0f ? channelValue : 1.0f;
-        return static_cast<uint8_t>(255.0f * channelValue);
-    }
 
     // returns the linear version of one (presumed to be) sRGB color channel value
     float ToLinear(float colorChannelValue);

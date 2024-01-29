@@ -33,8 +33,8 @@ namespace
     std::map<std::string, Mesh> GenerateMeshLookup()
     {
         SceneCache& cache = *App::singleton<SceneCache>();
-        return
-        {
+
+        return {
             {"sphere", cache.getSphereMesh()},
             {"cylinder", cache.getCylinderMesh()},
             {"brick", cache.getBrickMesh()},
@@ -49,7 +49,7 @@ namespace
     }
 }
 
-class osc::MeshGenTestTab::Impl final : public osc::StandardTabImpl {
+class osc::MeshGenTestTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
     {
@@ -61,17 +61,13 @@ private:
     {
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
-        if (m_Viewer.isHovered())
-        {
-            osc::UpdatePolarCameraFromImGuiMouseInputs(m_Camera, App::get().dims());
+        if (m_Viewer.isHovered()) {
+            UpdatePolarCameraFromImGuiMouseInputs(m_Camera, App::get().dims());
         }
 
-        if (ImGui::Begin("viewer"))
-        {
-            for (auto const& [name, _] : m_AllMeshes)
-            {
-                if (ImGui::Button(name.c_str()))
-                {
+        if (ImGui::Begin("viewer")) {
+            for (auto const& [name, _] : m_AllMeshes) {
+                if (ImGui::Button(name.c_str())) {
                     m_CurrentMesh = name;
                 }
                 ImGui::SameLine();
@@ -79,11 +75,11 @@ private:
             ImGui::NewLine();
 
             Vec2 contentRegion = ImGui::GetContentRegionAvail();
-            m_RenderParams.dimensions = osc::Max(contentRegion, {0.0f, 0.0f});
+            m_RenderParams.dimensions = Max(contentRegion, {0.0f, 0.0f});
             m_RenderParams.antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
 
             {
-                m_RenderParams.lightDirection = osc::RecommendedLightDirection(m_Camera);
+                m_RenderParams.lightDirection = RecommendedLightDirection(m_Camera);
                 m_RenderParams.projectionMatrix = m_Camera.getProjMtx(AspectRatio(m_RenderParams.dimensions));
                 m_RenderParams.viewMatrix = m_Camera.getViewMtx();
                 m_RenderParams.viewPos = m_Camera.getPos();
@@ -92,8 +88,7 @@ private:
                 m_RenderParams.drawFloor = false;
                 m_RenderParams.drawMeshNormals = true;
 
-                m_Viewer.onDraw({{SceneDecoration
-                {
+                m_Viewer.onDraw({{SceneDecoration{
                     .mesh = m_AllMeshes[m_CurrentMesh],
                     .color = Color::white(),
                 }}}, m_RenderParams);
@@ -119,8 +114,7 @@ osc::CStringView osc::MeshGenTestTab::id()
 
 osc::MeshGenTestTab::MeshGenTestTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
-{
-}
+{}
 
 osc::MeshGenTestTab::MeshGenTestTab(MeshGenTestTab&&) noexcept = default;
 osc::MeshGenTestTab& osc::MeshGenTestTab::operator=(MeshGenTestTab&&) noexcept = default;

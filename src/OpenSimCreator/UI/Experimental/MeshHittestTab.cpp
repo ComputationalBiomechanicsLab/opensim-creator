@@ -181,8 +181,8 @@ private:
         },
     };
     Mesh m_Mesh = LoadMeshViaSimTK(App::resource("geometry/hat_ribs.vtp"));
-    Mesh m_SphereMesh = GenSphere(12, 12);
-    Mesh m_CubeLinesMesh = GenCubeLines();
+    Mesh m_SphereMesh = GenerateUVSphereMesh(12, 12);
+    Mesh m_CubeLinesMesh = GenerateCubeLinesMesh();
 
     // other state
     BVH m_MeshBVH = CreateTriangleBVHFromMesh(m_Mesh);

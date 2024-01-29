@@ -20,6 +20,8 @@
 #include <numeric>
 #include <vector>
 
+using namespace osc::literals;
+
 using osc::Vec3;
 
 TEST(FitSphere, ReturnsUnitSphereWhenGivenAnEmptyMesh)
@@ -35,7 +37,7 @@ TEST(FitSphere, ReturnsUnitSphereWhenGivenAnEmptyMesh)
 TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenAUnitSphereMesh)
 {
     // generate a UV unit sphere
-    osc::Mesh const sphereMesh = osc::GenSphere(16, 16);
+    osc::Mesh const sphereMesh = osc::GenerateUVSphereMesh(16, 16);
     osc::Sphere const sphereFit = osc::FitSphere(sphereMesh);
 
     ASSERT_TRUE(osc::IsEqualWithinAbsoluteError(sphereFit.origin, Vec3{}, 0.000001f));
@@ -47,9 +49,9 @@ TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphere)
     osc::Transform t;
     t.position = {7.0f, 3.0f, 1.5f};
     t.scale = {3.25f, 3.25f, 3.25f};  // keep it spherical
-    t.rotation = osc::AngleAxis(osc::Deg2Rad(45.0f), osc::Normalize(Vec3{1.0f, 1.0f, 0.0f}));
+    t.rotation = osc::AngleAxis(45_deg, osc::Normalize(Vec3{1.0f, 1.0f, 0.0f}));
 
-    osc::Mesh sphereMesh = osc::GenSphere(16, 16);
+    osc::Mesh sphereMesh = osc::GenerateUVSphereMesh(16, 16);
     sphereMesh.transformVerts(t);
 
     osc::Sphere const sphereFit = osc::FitSphere(sphereMesh);

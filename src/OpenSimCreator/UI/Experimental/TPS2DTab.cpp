@@ -298,7 +298,7 @@ namespace
     osc::Mesh ApplyThinPlateWarpToMesh(ThinPlateWarper2D const& t, osc::Mesh const& mesh)
     {
         osc::Mesh rv = mesh;
-        rv.transformVerts([&t](Vec3& v) { v = Vec3{t.transform(v), v.z}; });
+        rv.transformVerts([&t](Vec3 v) { return Vec3{t.transform(v), v.z}; });
         return rv;
     }
 }
@@ -515,7 +515,7 @@ private:
         App::resource("textures/container.jpg"),
         ColorSpace::sRGB
     );
-    Mesh m_InputGrid = GenNxMTriangleQuad2DGrid({50, 50});
+    Mesh m_InputGrid = GenerateNxMTriangleQuadGridMesh({50, 50});
     Mesh m_OutputGrid = m_InputGrid;
     Material m_Material = Material
     {

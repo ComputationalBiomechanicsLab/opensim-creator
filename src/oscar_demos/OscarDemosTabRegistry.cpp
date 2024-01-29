@@ -10,34 +10,27 @@
 #include <oscar_demos/SubMeshTab.hpp>
 
 #include <oscar/UI/Tabs/TabRegistry.hpp>
-#include <oscar/UI/Tabs/TabRegistryEntry.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
+#include <oscar/Utils/Typelist.hpp>
 
 #include <concepts>
 #include <memory>
 
-namespace
-{
-    template<std::derived_from<osc::ITab> TabType>
-    void RegisterTab(osc::TabRegistry& registry)
-    {
-        osc::TabRegistryEntry entry
-        {
-            TabType::id(),
-            [](osc::ParentPtr<osc::ITabHost> const& h) { return std::make_unique<TabType>(h); },
-        };
-        registry.registerTab(entry);
-    }
-}
-
 void osc::RegisterDemoTabs(TabRegistry& registry)
 {
-    RegisterTab<CustomWidgetsTab>(registry);
-    RegisterTab<HittestTab>(registry);
-    RegisterTab<ImGuiDemoTab>(registry);
-    RegisterTab<ImPlotDemoTab>(registry);
-    RegisterTab<ImGuizmoDemoTab>(registry);
-    RegisterTab<MandelbrotTab>(registry);
-    RegisterTab<MeshGenTestTab>(registry);
-    RegisterTab<SubMeshTab>(registry);
+    using DemoTabs = Typelist<
+        CustomWidgetsTab,
+        HittestTab,
+        ImGuiDemoTab,
+        ImPlotDemoTab,
+        ImGuizmoDemoTab,
+        MandelbrotTab,
+        MeshGenTestTab,
+        SubMeshTab
+    >;
+
+    // register each concrete tab with the registry
+    [&registry]<typename... Tabs>(Typelist<Tabs...>)
+    {
+        (registry.registerTab<Tabs>(), ...);
+    }(DemoTabs{});
 }

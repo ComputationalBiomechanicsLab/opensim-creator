@@ -1,4 +1,5 @@
 #include <oscar/Maths/AABB.hpp>
+#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Disc.hpp>
@@ -22,6 +23,7 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
+#include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/At.hpp>
 
@@ -48,11 +50,13 @@
 #include <stdexcept>
 #include <utility>
 
+using namespace osc::literals;
 using osc::AABB;
 using osc::BVHCollision;
 using osc::BVHNode;
 using osc::BVHPrim;
 using osc::Line;
+using osc::Radians;
 using osc::RayCollision;
 using osc::Sphere;
 using osc::Triangle;
@@ -494,10 +498,10 @@ std::ostream& osc::operator<<(std::ostream& o, Disc const& d)
 // osc::EulerPerspectiveCamera implementation
 
 osc::EulerPerspectiveCamera::EulerPerspectiveCamera() :
-    origin{0.0f, 0.0f, 0.0f},
-    pitch{0.0f},
-    yaw{-std::numbers::pi_v<float>/2.0f},
-    fov{std::numbers::pi_v<float> * 70.0f/180.0f},
+    origin{},
+    pitch{},
+    yaw{-180_deg},
+    verticalFOV{35_deg},
     znear{0.1f},
     zfar{1000.0f}
 {
@@ -505,11 +509,11 @@ osc::EulerPerspectiveCamera::EulerPerspectiveCamera() :
 
 osc::Vec3 osc::EulerPerspectiveCamera::getFront() const
 {
-    return glm::normalize(Vec3
+    return Normalize(Vec3
     {
-        std::cos(yaw) * std::cos(pitch),
-        std::sin(pitch),
-        std::sin(yaw) * std::cos(pitch),
+        cos(yaw) * cos(pitch),
+        sin(pitch),
+        sin(yaw) * cos(pitch),
     });
 }
 
@@ -530,7 +534,7 @@ osc::Mat4 osc::EulerPerspectiveCamera::getViewMtx() const
 
 osc::Mat4 osc::EulerPerspectiveCamera::getProjMtx(float aspectRatio) const
 {
-    return glm::perspective(fov, aspectRatio, znear, zfar);
+    return Perspective(verticalFOV, aspectRatio, znear, zfar);
 }
 
 
@@ -554,11 +558,11 @@ std::ostream& osc::operator<<(std::ostream& o, Plane const& p)
 
 namespace
 {
-    Vec3 PolarToCartesian(Vec3 focus, float radius, float theta, float phi)
+    Vec3 PolarToCartesian(Vec3 focus, float radius, Radians theta, Radians phi)
     {
-        float x = radius * std::sin(theta) * std::cos(phi);
-        float y = radius * std::sin(phi);
-        float z = radius * std::cos(theta) * std::cos(phi);
+        float x = radius * sin(theta) * cos(phi);
+        float y = radius * sin(phi);
+        float z = radius * cos(theta) * cos(phi);
 
         return -focus + Vec3{x, y, z};
     }
@@ -566,10 +570,10 @@ namespace
 
 osc::PolarPerspectiveCamera::PolarPerspectiveCamera() :
     radius{1.0f},
-    theta{std::numbers::pi_v<float>/4.0f},
-    phi{std::numbers::pi_v<float>/4.0f},
+    theta{45_deg},
+    phi{45_deg},
     focusPoint{0.0f, 0.0f, 0.0f},
-    fov{120.0f},
+    verticalFOV{35_deg},
     znear{0.1f},
     zfar{100.0f}
 {
@@ -582,29 +586,29 @@ void osc::PolarPerspectiveCamera::reset()
 
 void osc::PolarPerspectiveCamera::pan(float aspectRatio, Vec2 delta)
 {
+    auto horizontalFOV = VerticalToHorizontalFOV(verticalFOV, aspectRatio);
+
     // how much panning is done depends on how far the camera is from the
     // origin (easy, with polar coordinates) *and* the FoV of the camera.
-    float xAmt = delta.x * aspectRatio * (2.0f * std::tan(fov / 2.0f) * radius);
-    float yAmt = -delta.y * (1.0f / aspectRatio) * (2.0f * std::tan(fov / 2.0f) * radius);
+    float xAmt = delta.x * (2.0f * tan(horizontalFOV / 2.0f) * radius);
+    float yAmt = -delta.y * (2.0f * tan(verticalFOV / 2.0f) * radius);
 
     // this assumes the scene is not rotated, so we need to rotate these
     // axes to match the scene's rotation
     Vec4 defaultPanningAx = {xAmt, yAmt, 0.0f, 1.0f};
-    auto rotTheta = glm::rotate(glm::identity<Mat4>(), theta, Vec3{0.0f, 1.0f, 0.0f});
-    auto thetaVec = glm::normalize(Vec3{std::sin(theta), 0.0f, std::cos(theta)});
-    auto phiAxis = glm::cross(thetaVec, Vec3{0.0, 1.0f, 0.0f});
-    auto rotPhi = glm::rotate(glm::identity<Mat4>(), phi, phiAxis);
+    auto rotTheta = Rotate(Identity<Mat4>(), theta, Vec3{0.0f, 1.0f, 0.0f});
+    auto thetaVec = Normalize(Vec3{sin(theta), 0.0f, cos(theta)});
+    auto phiAxis = Cross(thetaVec, Vec3{0.0, 1.0f, 0.0f});
+    auto rotPhi = Rotate(Identity<Mat4>(), phi, phiAxis);
 
     Vec4 panningAxes = rotPhi * rotTheta * defaultPanningAx;
-    focusPoint.x += panningAxes.x;
-    focusPoint.y += panningAxes.y;
-    focusPoint.z += panningAxes.z;
+    focusPoint += Vec3{panningAxes};
 }
 
 void osc::PolarPerspectiveCamera::drag(Vec2 delta)
 {
-    theta += 2.0f * std::numbers::pi_v<float> * -delta.x;
-    phi += 2.0f * std::numbers::pi_v<float> * delta.y;
+    theta += 360_deg * -delta.x;
+    phi += 360_deg * delta.y;
 }
 
 void osc::PolarPerspectiveCamera::rescaleZNearAndZFarBasedOnRadius()
@@ -626,11 +630,11 @@ osc::Mat4 osc::PolarPerspectiveCamera::getViewMtx() const
     // this maths is a complete shitshow and I apologize. It just happens to work for now. It's a polar coordinate
     // system that shifts the world based on the camera pan
 
-    auto rotTheta = glm::rotate(glm::identity<Mat4>(), -theta, Vec3{0.0f, 1.0f, 0.0f});
-    auto thetaVec = glm::normalize(Vec3{std::sin(theta), 0.0f, std::cos(theta)});
-    auto phiAxis = glm::cross(thetaVec, Vec3{0.0, 1.0f, 0.0f});
-    auto rotPhi = glm::rotate(glm::identity<Mat4>(), -phi, phiAxis);
-    auto panTranslate = glm::translate(glm::identity<Mat4>(), focusPoint);
+    auto rotTheta = Rotate(Identity<Mat4>(), -theta, Vec3{0.0f, 1.0f, 0.0f});
+    auto thetaVec = Normalize(Vec3{sin(theta), 0.0f, cos(theta)});
+    auto phiAxis = Cross(thetaVec, Vec3{0.0, 1.0f, 0.0f});
+    auto rotPhi = Rotate(Identity<Mat4>(), -phi, phiAxis);
+    auto panTranslate = Translate(Identity<Mat4>(), focusPoint);
     return glm::lookAt(
         Vec3(0.0f, 0.0f, radius),
         Vec3(0.0f, 0.0f, 0.0f),
@@ -639,7 +643,7 @@ osc::Mat4 osc::PolarPerspectiveCamera::getViewMtx() const
 
 osc::Mat4 osc::PolarPerspectiveCamera::getProjMtx(float aspectRatio) const
 {
-    return glm::perspective(fov, aspectRatio, znear, zfar);
+    return Perspective(verticalFOV, aspectRatio, znear, zfar);
 }
 
 osc::Vec3 osc::PolarPerspectiveCamera::getPos() const
@@ -704,11 +708,11 @@ osc::Vec3 osc::RecommendedLightDirection(osc::PolarPerspectiveCamera const& c)
     // (#318, #168) and, if the camera is too angled relative to the PoV, it's
     // possible to see angled parts of the scene be illuminated from the back (which
     // should be impossible)
-    float const theta = c.theta + std::numbers::pi_v<float>/8.0f;
+    Radians const theta = c.theta + 22.5_deg;
 
     // #549: phi shouldn't track with the camera, because changing the "height"/"slope"
     // of the camera with shadow rendering (#10) looks bizzare
-    float const phi = std::numbers::pi_v<float>/4.0f;
+    Radians const phi = 45_deg;
 
     Vec3 const p = PolarToCartesian(c.focusPoint, c.radius, theta, phi);
 
@@ -717,38 +721,38 @@ osc::Vec3 osc::RecommendedLightDirection(osc::PolarPerspectiveCamera const& c)
 
 void osc::FocusAlongX(osc::PolarPerspectiveCamera& camera)
 {
-    camera.theta = std::numbers::pi_v<float>/2.0f;
-    camera.phi = 0.0f;
+    camera.theta = 90_deg;
+    camera.phi = 0_deg;
 }
 
 void osc::FocusAlongMinusX(osc::PolarPerspectiveCamera& camera)
 {
-    camera.theta = -std::numbers::pi_v<float>/2.0f;
-    camera.phi = 0.0f;
+    camera.theta = -90_deg;
+    camera.phi = 0_deg;
 }
 
 void osc::FocusAlongY(osc::PolarPerspectiveCamera& camera)
 {
-    camera.theta = 0.0f;
-    camera.phi = std::numbers::pi_v<float>/2.0f;
+    camera.theta = 0_deg;
+    camera.phi = 90_deg;
 }
 
 void osc::FocusAlongMinusY(osc::PolarPerspectiveCamera& camera)
 {
-    camera.theta = 0.0f;
-    camera.phi = -std::numbers::pi_v<float>/2.0f;
+    camera.theta = 0_deg;
+    camera.phi = -90_deg;
 }
 
 void osc::FocusAlongZ(osc::PolarPerspectiveCamera& camera)
 {
-    camera.theta = 0.0f;
-    camera.phi = 0.0f;
+    camera.theta = 0_deg;
+    camera.phi = 0_deg;
 }
 
 void osc::FocusAlongMinusZ(osc::PolarPerspectiveCamera& camera)
 {
-    camera.theta = std::numbers::pi_v<float>;
-    camera.phi = 0.0f;
+    camera.theta = 180_deg;
+    camera.phi = 0_deg;
 }
 
 void osc::ZoomIn(osc::PolarPerspectiveCamera& camera)
@@ -764,13 +768,14 @@ void osc::ZoomOut(osc::PolarPerspectiveCamera& camera)
 void osc::Reset(osc::PolarPerspectiveCamera& camera)
 {
     camera = {};
-    camera.theta = std::numbers::pi_v<float>/4.0f;
-    camera.phi = std::numbers::pi_v<float>/4.0f;
+    camera.theta = 45_deg;
+    camera.phi = 45_deg;
 }
 
-void osc::AutoFocus(PolarPerspectiveCamera& camera, AABB const& elementAABB, float)
+void osc::AutoFocus(PolarPerspectiveCamera& camera, AABB const& elementAABB, float aspectRatio)
 {
     Sphere const s = ToSphere(elementAABB);
+    Radians const smallestFOV = aspectRatio > 1.0f ? camera.verticalFOV : VerticalToHorizontalFOV(camera.verticalFOV, aspectRatio);
 
     // auto-focus the camera with a minimum radius of 1m
     //
@@ -778,7 +783,7 @@ void osc::AutoFocus(PolarPerspectiveCamera& camera, AABB const& elementAABB, flo
     // handles the edge-case of autofocusing an empty model (#552), which is a
     // more common use-case (e.g. for new users and users making human-sized models)
     camera.focusPoint = -s.origin;
-    camera.radius = std::max(s.radius / std::tan(0.5f * camera.fov), 1.0f);
+    camera.radius = std::max(s.radius / tan(smallestFOV/2.0), 1.0f);
     camera.rescaleZNearAndZFarBasedOnRadius();
 }
 
@@ -1120,9 +1125,9 @@ osc::Quat osc::Rotation(Vec3 const& src, Vec3 const& dest)
     return glm::rotation(src, dest);
 }
 
-osc::Quat osc::AngleAxis(float angle, Vec3 const& axis)
+osc::Quat osc::AngleAxis(Radians angle, Vec3 const& axis)
 {
-    return glm::angleAxis(angle, axis);
+    return glm::angleAxis(angle.count(), axis);
 }
 
 osc::Mat4 osc::LookAt(Vec3 const& eye, Vec3 const& center, Vec3 const& up)
@@ -1130,9 +1135,16 @@ osc::Mat4 osc::LookAt(Vec3 const& eye, Vec3 const& center, Vec3 const& up)
     return glm::lookAt(eye, center, up);
 }
 
-osc::Mat4 osc::Perspective(float verticalFOV, float aspectRatio, float zNear, float zFar)
+osc::Radians osc::VerticalToHorizontalFOV(Radians verticalFOV, float aspectRatio)
 {
-    return glm::perspective(verticalFOV, aspectRatio, zNear, zFar);
+    // https://en.wikipedia.org/wiki/Field_of_view_in_video_games#Field_of_view_calculations
+
+    return 2.0f * atan(tan(verticalFOV / 2.0f) * aspectRatio);
+}
+
+osc::Mat4 osc::Perspective(Radians verticalFOV, float aspectRatio, float zNear, float zFar)
+{
+    return glm::perspective(verticalFOV.count(), aspectRatio, zNear, zFar);
 }
 
 osc::Mat4 osc::Ortho(float left, float right, float bottom, float top, float zNear, float zFar)
@@ -1155,9 +1167,9 @@ osc::Mat4 osc::Scale(Mat4 const& m, Vec3 const& v)
     return glm::scale(m, v);
 }
 
-osc::Mat4 osc::Rotate(Mat4 const& m, float angle, Vec3 const& axis)
+osc::Mat4 osc::Rotate(Mat4 const& m, Radians angle, Vec3 const& axis)
 {
-    return glm::rotate(m, angle, axis);
+    return glm::rotate(m, angle.count(), axis);
 }
 
 osc::Mat4 osc::Translate(Mat4 const& m, Vec3 const& v)
@@ -1175,9 +1187,9 @@ osc::Mat3 osc::ToMat3(Quat const& q)
     return glm::toMat3(q);
 }
 
-osc::Vec3 osc::EulerAngles(Quat const& q)
+osc::Eulers osc::EulerAngles(Quat const& q)
 {
-    return glm::eulerAngles(q);
+    return glm::eulerAngles(Normalize(q));
 }
 
 // returns `true` if the values of `a` and `b` are effectively equal
@@ -1417,7 +1429,7 @@ osc::Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
         return Identity<Mat4>();
     }
 
-    float theta{};
+    Radians theta{};
     Vec3 rotationAxis{};
     if(cosTheta < static_cast<float>(-1.0f) + std::numeric_limits<float>::epsilon())
     {
@@ -1433,26 +1445,26 @@ osc::Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
             rotationAxis = glm::cross(Vec3{1.0f, 0.0f, 0.0f}, dir1);
         }
 
-        theta = std::numbers::pi_v<float>;
+        theta = 180_deg;
         rotationAxis = glm::normalize(rotationAxis);
     }
     else
     {
-        theta = glm::acos(cosTheta);
+        theta = acos(cosTheta);
         rotationAxis = glm::normalize(glm::cross(dir1, dir2));
     }
 
-    return glm::rotate(Identity<Mat4>(), theta, rotationAxis);
+    return Rotate(Identity<Mat4>(), theta, rotationAxis);
 }
 
-osc::Vec3 osc::ExtractEulerAngleXYZ(Quat const& q)
+osc::Eulers osc::ExtractEulerAngleXYZ(Quat const& q)
 {
     Vec3 rv;
     glm::extractEulerAngleXYZ(glm::toMat4(q), rv.x, rv.y, rv.z);
     return rv;
 }
 
-osc::Vec3 osc::ExtractEulerAngleXYZ(Mat4 const& m)
+osc::Eulers osc::ExtractEulerAngleXYZ(Mat4 const& m)
 {
     Vec3 v;
     glm::extractEulerAngleXYZ(m, v.x, v.y, v.z);
@@ -1606,29 +1618,21 @@ osc::Rect osc::NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const&
 
 osc::Sphere osc::BoundingSphereOf(std::span<Vec3 const> points)
 {
-    AABB const aabb = AABBFromVerts(points);
-
-    Sphere rv{};
-    rv.origin = Midpoint(aabb);
-    rv.radius = 0.0f;
-
     // edge-case: no points provided
     if (points.empty())
     {
-        return rv;
+        return Sphere{.radius = 0.0f};
     }
 
-    float biggestR2 = 0.0f;
+    Vec3 const origin = Midpoint(AABBFromVerts(points));
+
+    float r2 = 0.0f;
     for (Vec3 const& pos : points)
     {
-        Vec3 pos2rv = pos - rv.origin;
-        float r2 = glm::dot(pos2rv, pos2rv);
-        biggestR2 = std::max(biggestR2, r2);
+        r2 = std::max(r2, Length2(pos - origin));
     }
 
-    rv.radius = glm::sqrt(biggestR2);
-
-    return rv;
+    return {.origin = origin, .radius = std::sqrt(r2)};
 }
 
 osc::Sphere osc::ToSphere(AABB const& aabb)
@@ -1709,9 +1713,9 @@ osc::Mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b)
     }
     else
     {
-        float theta = glm::acos(cosTheta);
+        Radians theta = acos(cosTheta);
         Vec3 axis = glm::cross(a.normal, b.normal);
-        rotator = glm::rotate(Identity<Mat4>(), theta, axis);
+        rotator = Rotate(Identity<Mat4>(), theta, axis);
     }
 
     Mat4 translator = glm::translate(Identity<Mat4>(), b.origin-a.origin);
@@ -2168,23 +2172,30 @@ osc::Vec3 osc::InverseTransformPoint(Transform const& t, Vec3 const& p)
     return rv;
 }
 
-void osc::ApplyWorldspaceRotation(Transform& t,
-    Vec3 const& eulerAngles,
+osc::Quat osc::WorldspaceRotation(Eulers const& eulers)
+{
+    static_assert(std::is_same_v<Eulers::value_type, Radians>);
+    return Normalize(Quat{Vec3{eulers.x.count(), eulers.y.count(), eulers.z.count()}});
+}
+
+void osc::ApplyWorldspaceRotation(
+    Transform& t,
+    Eulers const& eulerAngles,
     Vec3 const& rotationCenter)
 {
-    Quat q{eulerAngles};
+    Quat q = WorldspaceRotation(eulerAngles);
     t.position = q*(t.position - rotationCenter) + rotationCenter;
     t.rotation = glm::normalize(q*t.rotation);
 }
 
-osc::Vec3 osc::ExtractEulerAngleXYZ(Transform const& t)
+osc::Eulers osc::ExtractEulerAngleXYZ(Transform const& t)
 {
     Vec3 rv;
     glm::extractEulerAngleXYZ(glm::toMat4(t.rotation), rv.x, rv.y, rv.z);
     return rv;
 }
 
-osc::Vec3 osc::ExtractExtrinsicEulerAnglesXYZ(Transform const& t)
+osc::Eulers osc::ExtractExtrinsicEulerAnglesXYZ(Transform const& t)
 {
     return glm::eulerAngles(t.rotation);
 }
@@ -2206,15 +2217,15 @@ osc::Transform osc::PointAxisTowards(Transform const& t, int axisIndex, Vec3 con
     return PointAxisAlong(t, axisIndex, osc::Normalize(location - t.position));
 }
 
-osc::Transform osc::RotateAlongAxis(Transform const& t, int axisIndex, float angRadians)
+osc::Transform osc::RotateAlongAxis(Transform const& t, int axisIndex, Radians angle)
 {
     Vec3 ax{};
     ax[axisIndex] = 1.0f;
     ax = t.rotation * ax;
 
-    Quat const q = osc::AngleAxis(angRadians, ax);
+    Quat const q = AngleAxis(angle, ax);
 
-    return t.withRotation(osc::Normalize(q * t.rotation));
+    return t.withRotation(Normalize(q * t.rotation));
 }
 
 bool osc::IsPointInRect(Rect const& r, Vec2 const& p)
@@ -2415,8 +2426,11 @@ float osc::EaseOutElastic(float x)
 {
     // adopted from: https://easings.net/#easeOutElastic
 
-    constexpr float c4 = 2.0f*std::numbers::pi_v<float> / 3.0f;
-    float const normalized = osc::Clamp(x, 0.0f, 1.0f);
+    using std::sin;
+    using std::pow;
 
-    return std::pow(2.0f, -5.0f*normalized) * std::sin((normalized*10.0f - 0.75f) * c4) + 1.0f;
+    constexpr float c4 = 2.0f*std::numbers::pi_v<float> / 3.0f;
+    float const normalized = Clamp(x, 0.0f, 1.0f);
+
+    return pow(2.0f, -5.0f*normalized) * sin((normalized*10.0f - 0.75f) * c4) + 1.0f;
 }

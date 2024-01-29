@@ -11,6 +11,7 @@
 #include <oscar/Graphics/RenderTexture.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Graphics/TextureGenerators.hpp>
+#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
@@ -34,11 +35,14 @@
 #include <utility>
 #include <vector>
 
+using namespace osc::literals;
 using osc::AABB;
+using osc::AngleAxis;
 using osc::Mat4;
 using osc::Material;
 using osc::Mesh;
 using osc::PolarPerspectiveCamera;
+using osc::Radians;
 using osc::RenderTexture;
 using osc::SceneDecoration;
 using osc::Sphere;
@@ -51,11 +55,11 @@ namespace
 {
     Transform GetFloorTransform(Vec3 floorLocation, float fixupScaleFactor)
     {
-        Transform rv;
-        rv.rotation = osc::AngleAxis(-std::numbers::pi_v<float>/2.0f, Vec3{1.0f, 0.0f, 0.0f});
-        rv.scale = {100.0f * fixupScaleFactor, 100.0f * fixupScaleFactor, 1.0f};
-        rv.position = floorLocation;
-        return rv;
+        return {
+            .scale = {100.0f * fixupScaleFactor, 100.0f * fixupScaleFactor, 1.0f},
+            .rotation = AngleAxis(-90_deg, Vec3{1.0f, 0.0f, 0.0f}),
+            .position = floorLocation,
+        };
     }
 
     AABB WorldpaceAABB(SceneDecoration const& d)
@@ -86,8 +90,8 @@ namespace
     };
 
     struct PolarAngles final {
-        float theta;
-        float phi;
+        Radians theta;
+        Radians phi;
     };
 
     PolarAngles CalcPolarAngles(Vec3 const& directionFromOrigin)
@@ -104,9 +108,10 @@ namespace
         // |  pi/2 |      0 |  1 |  0 |  0 |
         // |     0 |   pi/2 |  0 |  1 |  0 |
 
-        float const theta = std::atan2(directionFromOrigin.x, directionFromOrigin.z);
-        float const phi = std::asin(directionFromOrigin.y);
-        return PolarAngles{theta, phi};
+        return {
+            .theta = osc::atan2(directionFromOrigin.x, directionFromOrigin.z),
+            .phi = osc::asin(directionFromOrigin.y),
+        };
     }
 
     struct ShadowCameraMatrices final {

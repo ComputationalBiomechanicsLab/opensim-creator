@@ -47,7 +47,7 @@ namespace osc
         size_t getNumVerts() const;
         std::vector<Vec3> getVerts() const;
         void setVerts(std::span<Vec3 const>);
-        void transformVerts(std::function<void(Vec3&)> const&);
+        void transformVerts(std::function<Vec3(Vec3)> const&);
         void transformVerts(Transform const&);
         void transformVerts(Mat4 const&);
 
@@ -56,14 +56,14 @@ namespace osc
         bool hasNormals() const;
         std::vector<Vec3> getNormals() const;
         void setNormals(std::span<Vec3 const>);
-        void transformNormals(std::function<void(Vec3&)> const&);
+        void transformNormals(std::function<Vec3(Vec3)> const&);
 
         // attribute: you can only set an equal amount of texture coordinates to
         //            the number of vertices (or zero, which means "clear them")
         bool hasTexCoords() const;
         std::vector<Vec2> getTexCoords() const;
         void setTexCoords(std::span<Vec2 const>);
-        void transformTexCoords(std::function<void(Vec2&)> const&);
+        void transformTexCoords(std::function<Vec2(Vec2)> const&);
 
         // attribute: you can only set an equal amount of colors to the number of
         //            vertices (or zero, which means "clear them")

@@ -90,6 +90,7 @@ std::ostream& osc::operator<<(std::ostream& o, Color const& c)
 // and this implementation is effectively copied from:
 //
 // - https://stackoverflow.com/questions/61138110/what-is-the-correct-gamma-correction-function
+// - https://registry.khronos.org/OpenGL/extensions/ARB/ARB_framebuffer_sRGB.txt
 //
 // (because I am a lazy bastard)
 float osc::ToLinear(float colorChannelValue)
@@ -155,24 +156,12 @@ osc::Color32 osc::ToColor32(Color const& color)
 
 osc::Color32 osc::ToColor32(Vec4 const& v)
 {
-    return Color32
-    {
-        ToClamped8BitColorChannel(v.r),
-        ToClamped8BitColorChannel(v.g),
-        ToClamped8BitColorChannel(v.b),
-        ToClamped8BitColorChannel(v.a),
-    };
+    return Color32{v.r, v.g, v.b, v.a};
 }
 
 osc::Color32 osc::ToColor32(float r, float g, float b, float a)
 {
-    return Color32
-    {
-        ToClamped8BitColorChannel(r),
-        ToClamped8BitColorChannel(g),
-        ToClamped8BitColorChannel(b),
-        ToClamped8BitColorChannel(a),
-    };
+    return Color32{r, g, b, a};
 }
 
 osc::Color32 osc::ToColor32(uint32_t v)
@@ -188,14 +177,7 @@ osc::Color32 osc::ToColor32(uint32_t v)
 
 osc::Color osc::ToColor(Color32 c)
 {
-    constexpr float scale = 1.0f/255.0f;
-    return
-    {
-        scale * static_cast<float>(c.r),
-        scale * static_cast<float>(c.g),
-        scale * static_cast<float>(c.b),
-        scale * static_cast<float>(c.a),
-    };
+    return Color{c.r.normalized_value(), c.g.normalized_value(), c.b.normalized_value(), c.a.normalized_value()};
 }
 
 osc::Color osc::ClampToLDR(Color const& c)
@@ -263,9 +245,9 @@ std::string osc::ToHtmlStringRGBA(Color const& c)
     std::string rv;
     rv.reserve(9);
     rv.push_back('#');
-    for (uint8_t v : ToColor32(c))
+    for (auto v : ToColor32(c))
     {
-        auto [nib1, nib2] = ToHexChars(v);
+        auto [nib1, nib2] = ToHexChars(static_cast<uint8_t>(v));
         rv.push_back(nib1);
         rv.push_back(nib2);
     }
@@ -292,7 +274,7 @@ std::optional<osc::Color> osc::TryParseHtmlString(std::string_view v)
         {
             if (auto b = TryParseHexCharsAsByte(content[2*i], content[2*i + 1]))
             {
-                rv[i] = ToFloatingPointColorChannel(*b);
+                rv[i] = Unorm8{*b}.normalized_value();
             }
             else
             {
@@ -309,7 +291,7 @@ std::optional<osc::Color> osc::TryParseHtmlString(std::string_view v)
         {
             if (auto b = TryParseHexCharsAsByte(content[2*i], content[2*i + 1]))
             {
-                rv[i] = ToFloatingPointColorChannel(*b);
+                rv[i] = Unorm8{*b}.normalized_value();
             }
             else
             {

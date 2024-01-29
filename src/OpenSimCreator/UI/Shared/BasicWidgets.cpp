@@ -70,6 +70,8 @@
 #include <variant>
 #include <vector>
 
+using namespace osc::literals;
+
 // export utils
 namespace
 {
@@ -965,9 +967,9 @@ bool osc::DrawAdvancedParamsEditor(
     ImGui::Text("advanced camera properties:");
     ImGui::Separator();
     edited = osc::SliderMetersFloat("radius", params.camera.radius, 0.0f, 10.0f) || edited;
-    edited = ImGui::SliderFloat("theta", &params.camera.theta, 0.0f, 2.0f * std::numbers::pi_v<float>) || edited;
-    edited = ImGui::SliderFloat("phi", &params.camera.phi, 0.0f, 2.0f * std::numbers::pi_v<float>) || edited;
-    edited = ImGui::InputFloat("fov", &params.camera.fov) || edited;
+    edited = SliderAngle("theta", params.camera.theta, 0_deg, 360_deg) || edited;
+    edited = SliderAngle("phi", params.camera.phi, 0_deg, 360_deg) || edited;
+    edited = SliderAngle("fov", params.camera.verticalFOV, 0_deg, 360_deg) || edited;
     edited = osc::InputMetersFloat("znear", params.camera.znear) || edited;
     edited = osc::InputMetersFloat("zfar", params.camera.zfar) || edited;
     ImGui::NewLine();

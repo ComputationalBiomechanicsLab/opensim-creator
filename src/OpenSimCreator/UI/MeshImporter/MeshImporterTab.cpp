@@ -909,11 +909,11 @@ private:
         // rotation editor
         if (e.canChangeRotation())
         {
-            Vec3 eulerDegs = Rad2Deg(EulerAngles(e.getRotation(m_Shared->getModelGraph())));
+            Eulers eulers = EulerAngles(e.getRotation(m_Shared->getModelGraph()));
 
-            if (ImGui::InputFloat3("Rotation (deg)", ValuePtr(eulerDegs), "%.6f"))
+            if (InputAngle3("Rotation", eulers, "%.6f"))
             {
-                Quat quatRads = Quat{Deg2Rad(eulerDegs)};
+                Quat quatRads = osc::WorldspaceRotation(eulers);
                 mg.updByID(e.getID()).setRotation(mg, quatRads);
             }
             if (ImGui::IsItemDeactivatedAfterEdit())
@@ -1248,12 +1248,12 @@ private:
 
                 if (ImGui::MenuItem("90 degress"))
                 {
-                    RotateAxisXRadians(m_Shared->updCommittableModelGraph(), el, axis, std::numbers::pi_v<float>/2.0f);
+                    RotateAxis(m_Shared->updCommittableModelGraph(), el, axis, 90_deg);
                 }
 
                 if (ImGui::MenuItem("180 degrees"))
                 {
-                    RotateAxisXRadians(m_Shared->updCommittableModelGraph(), el, axis, std::numbers::pi_v<float>);
+                    RotateAxis(m_Shared->updCommittableModelGraph(), el, axis, 180_deg);
                 }
 
                 if (ImGui::MenuItem("Along two mesh points"))
@@ -1920,13 +1920,13 @@ private:
 
         if (ImGui::Button("X"))
         {
-            m_Shared->updCamera().theta = std::numbers::pi_v<float>/2.0f;
-            m_Shared->updCamera().phi = 0.0f;
+            m_Shared->updCamera().theta = 90_deg;
+            m_Shared->updCamera().phi = 0_deg;
         }
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {
-            m_Shared->updCamera().theta = -std::numbers::pi_v<float>/2.0f;
-            m_Shared->updCamera().phi = 0.0f;
+            m_Shared->updCamera().theta = -90_deg;
+            m_Shared->updCamera().phi = 0_deg;
         }
         DrawTooltipIfItemHovered("Face camera facing along X", "Right-clicking faces it along X, but in the opposite direction");
 
@@ -1934,13 +1934,13 @@ private:
 
         if (ImGui::Button("Y"))
         {
-            m_Shared->updCamera().theta = 0.0f;
-            m_Shared->updCamera().phi = std::numbers::pi_v<float>/2.0f;
+            m_Shared->updCamera().theta = 0_deg;
+            m_Shared->updCamera().phi = 90_deg;
         }
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {
-            m_Shared->updCamera().theta = 0.0f;
-            m_Shared->updCamera().phi = -std::numbers::pi_v<float>/2.0f;
+            m_Shared->updCamera().theta = 0_deg;
+            m_Shared->updCamera().phi = -90_deg;
         }
         DrawTooltipIfItemHovered("Face camera facing along Y", "Right-clicking faces it along Y, but in the opposite direction");
 
@@ -1948,13 +1948,13 @@ private:
 
         if (ImGui::Button("Z"))
         {
-            m_Shared->updCamera().theta = 0.0f;
-            m_Shared->updCamera().phi = 0.0f;
+            m_Shared->updCamera().theta = 0_deg;
+            m_Shared->updCamera().phi = 0_deg;
         }
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {
-            m_Shared->updCamera().theta = std::numbers::pi_v<float>;
-            m_Shared->updCamera().phi = 0.0f;
+            m_Shared->updCamera().theta = 180_deg;
+            m_Shared->updCamera().phi = 0_deg;
         }
         DrawTooltipIfItemHovered("Face camera facing along Z", "Right-clicking faces it along Z, but in the opposite direction");
 
@@ -2143,15 +2143,15 @@ private:
         }
 
         Vec3 translation;
-        Vec3 rotation;
+        Vec3 rotationDegrees;
         Vec3 scale;
         ImGuizmo::DecomposeMatrixToComponents(
             ValuePtr(delta),
             ValuePtr(translation),
-            ValuePtr(rotation),
+            ValuePtr(rotationDegrees),
             ValuePtr(scale)
         );
-        rotation = Deg2Rad(rotation);
+        Eulers rotation = Vec<3, Degrees>{rotationDegrees};
 
         for (UID id : m_Shared->getCurrentSelection())
         {

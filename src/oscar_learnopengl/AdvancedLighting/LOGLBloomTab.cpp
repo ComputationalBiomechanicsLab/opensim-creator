@@ -14,6 +14,8 @@
 #include <oscar/Graphics/RenderTexture.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
@@ -30,10 +32,17 @@
 #include <utility>
 #include <vector>
 
+using namespace osc::literals;
 using osc::Camera;
 using osc::Color;
 using osc::CStringView;
+using osc::Identity;
 using osc::Mat4;
+using osc::Normalize;
+using osc::Rotate;
+using osc::Scale;
+using osc::ToSRGB;
+using osc::Translate;
 using osc::Vec2;
 using osc::Vec3;
 
@@ -41,8 +50,7 @@ namespace
 {
     constexpr CStringView c_TabStringID = "LearnOpenGL/Bloom";
 
-    constexpr auto c_SceneLightPositions = std::to_array<Vec3>(
-    {
+    constexpr auto c_SceneLightPositions = std::to_array<Vec3>({
         { 0.0f, 0.5f,  1.5f},
         {-4.0f, 0.5f, -3.0f},
         { 3.0f, 0.5f,  1.0f},
@@ -51,12 +59,11 @@ namespace
 
     std::array<Color, c_SceneLightPositions.size()> const& GetSceneLightColors()
     {
-        static auto const s_SceneLightColors = std::to_array<Color>(
-        {
-            osc::ToSRGB({ 5.0f, 5.0f,  5.0f}),
-            osc::ToSRGB({10.0f, 0.0f,  0.0f}),
-            osc::ToSRGB({ 0.0f, 0.0f, 15.0f}),
-            osc::ToSRGB({ 0.0f, 5.0f,  0.0f}),
+        static auto const s_SceneLightColors = std::to_array<Color>({
+            ToSRGB({ 5.0f, 5.0f,  5.0f}),
+            ToSRGB({10.0f, 0.0f,  0.0f}),
+            ToSRGB({ 0.0f, 0.0f, 15.0f}),
+            ToSRGB({ 0.0f, 5.0f,  0.0f}),
         });
         return s_SceneLightColors;
     }
@@ -67,45 +74,45 @@ namespace
         rv.reserve(6);
 
         {
-            Mat4 m = osc::Identity<Mat4>();
-            m = osc::Translate(m, Vec3(0.0f, 1.5f, 0.0));
-            m = osc::Scale(m, Vec3(0.5f));
+            Mat4 m = Identity<Mat4>();
+            m = Translate(m, Vec3(0.0f, 1.5f, 0.0));
+            m = Scale(m, Vec3(0.5f));
             rv.push_back(m);
         }
 
         {
-            Mat4 m = osc::Identity<Mat4>();
-            m = osc::Translate(m, Vec3(2.0f, 0.0f, 1.0));
-            m = osc::Scale(m, Vec3(0.5f));
+            Mat4 m = Identity<Mat4>();
+            m = Translate(m, Vec3(2.0f, 0.0f, 1.0));
+            m = Scale(m, Vec3(0.5f));
             rv.push_back(m);
         }
 
         {
-            Mat4 m = osc::Identity<Mat4>();
-            m = osc::Translate(m, Vec3(-1.0f, -1.0f, 2.0));
-            m = osc::Rotate(m, osc::Deg2Rad(60.0f), osc::Normalize(Vec3(1.0, 0.0, 1.0)));
+            Mat4 m = Identity<Mat4>();
+            m = Translate(m, Vec3(-1.0f, -1.0f, 2.0));
+            m = Rotate(m, 60_deg, Normalize(Vec3(1.0, 0.0, 1.0)));
             rv.push_back(m);
         }
 
         {
-            Mat4 m = osc::Identity<Mat4>();
-            m = osc::Translate(m, Vec3(0.0f, 2.7f, 4.0));
-            m = osc::Rotate(m, osc::Deg2Rad(23.0f), osc::Normalize(Vec3(1.0, 0.0, 1.0)));
-            m = osc::Scale(m, Vec3(1.25));
+            Mat4 m = Identity<Mat4>();
+            m = Translate(m, Vec3(0.0f, 2.7f, 4.0));
+            m = Rotate(m, 23_deg, Normalize(Vec3(1.0, 0.0, 1.0)));
+            m = Scale(m, Vec3(1.25));
             rv.push_back(m);
         }
 
         {
-            Mat4 m = osc::Identity<Mat4>();
-            m = osc::Translate(m, Vec3(-2.0f, 1.0f, -3.0));
-            m = osc::Rotate(m, osc::Deg2Rad(124.0f), osc::Normalize(Vec3(1.0, 0.0, 1.0)));
+            Mat4 m = Identity<Mat4>();
+            m = Translate(m, Vec3(-2.0f, 1.0f, -3.0));
+            m = Rotate(m, 124_deg, Normalize(Vec3(1.0, 0.0, 1.0)));
             rv.push_back(m);
         }
 
         {
-            Mat4 m = osc::Identity<Mat4>();
-            m = osc::Translate(m, Vec3(-3.0f, 0.0f, 0.0));
-            m = osc::Scale(m, Vec3(0.5f));
+            Mat4 m = Identity<Mat4>();
+            m = Translate(m, Vec3(-3.0f, 0.0f, 0.0));
+            m = Scale(m, Vec3(0.5f));
             rv.push_back(m);
         }
 
@@ -123,7 +130,7 @@ namespace
     }
 }
 
-class osc::LOGLBloomTab::Impl final : public osc::StandardTabImpl {
+class osc::LOGLBloomTab::Impl final : public StandardTabImpl {
 public:
 
     Impl() : StandardTabImpl{c_TabStringID}
@@ -149,13 +156,11 @@ private:
     bool implOnEvent(SDL_Event const& e) final
     {
         // handle mouse input
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-        {
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
             m_IsMouseCaptured = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect())
-        {
+        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
             m_IsMouseCaptured = true;
             return true;
         }
@@ -165,14 +170,12 @@ private:
     void implOnDraw() final
     {
         // handle mouse capturing
-        if (m_IsMouseCaptured)
-        {
+        if (m_IsMouseCaptured) {
             UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
             ImGui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
-        else
-        {
+        else {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
@@ -206,8 +209,7 @@ private:
 
         // intermediate buffers are single-sampled HDR textures
         textureDescription.setAntialiasingLevel(AntiAliasingLevel::none());
-        for (RenderTexture& pingPongBuffer : m_PingPongBlurOutputBuffers)
-        {
+        for (RenderTexture& pingPongBuffer : m_PingPongBlurOutputBuffers) {
             pingPongBuffer.reformat(textureDescription);
         }
     }
@@ -243,8 +245,7 @@ private:
 
         MaterialPropertyBlock cubeProps;
         cubeProps.setTexture("uDiffuseTexture", m_ContainerTexture);
-        for (auto const& cubeTransform : CreateCubeTransforms())
-        {
+        for (auto const& cubeTransform : CreateCubeTransforms()) {
             Graphics::DrawMesh(
                 m_CubeMesh,
                 cubeTransform,
@@ -259,8 +260,7 @@ private:
     {
         std::array<Color, c_SceneLightPositions.size()> const& sceneLightColors = GetSceneLightColors();
 
-        for (size_t i = 0; i < c_SceneLightPositions.size(); ++i)
-        {
+        for (size_t i = 0; i < c_SceneLightPositions.size(); ++i) {
             Mat4 lightTransform = Identity<Mat4>();
             lightTransform = Translate(lightTransform, Vec3(c_SceneLightPositions[i]));
             lightTransform = Scale(lightTransform, Vec3(0.25f));
@@ -280,26 +280,22 @@ private:
 
     void flushCameraRenderQueueToMRT()
     {
-        RenderTarget mrt
-        {
+        RenderTarget mrt{
             {
-                RenderTargetColorAttachment
-                {
+                RenderTargetColorAttachment{
                     m_SceneHDRColorOutput.updColorBuffer(),
                     RenderBufferLoadAction::Clear,
                     RenderBufferStoreAction::Resolve,
                     Color::clear(),
                 },
-                RenderTargetColorAttachment
-                {
+                RenderTargetColorAttachment{
                     m_SceneHDRThresholdedOutput.updColorBuffer(),
                     RenderBufferLoadAction::Clear,
                     RenderBufferStoreAction::Resolve,
                     Color::clear(),
                 },
             },
-            RenderTargetDepthAttachment
-            {
+            RenderTargetDepthAttachment{
                 m_SceneHDRThresholdedOutput.updDepthBuffer(),
                 RenderBufferLoadAction::Clear,
                 RenderBufferStoreAction::DontCare,
@@ -313,11 +309,10 @@ private:
         m_BlurMaterial.setRenderTexture("uInputImage", m_SceneHDRThresholdedOutput);
 
         bool horizontal = false;
-        for (RenderTexture& pingPongBuffer : m_PingPongBlurOutputBuffers)
-        {
+        for (RenderTexture& pingPongBuffer : m_PingPongBlurOutputBuffers) {
             m_BlurMaterial.setBool("uHorizontal", horizontal);
             Camera camera;
-            Graphics::DrawMesh(m_QuadMesh, Transform{}, m_BlurMaterial, camera);
+            Graphics::DrawMesh(m_QuadMesh, Identity<Transform>(), m_BlurMaterial, camera);
             camera.renderTo(pingPongBuffer);
             m_BlurMaterial.clearRenderTexture("uInputImage");
 
@@ -333,7 +328,7 @@ private:
         m_FinalCompositingMaterial.setFloat("uExposure", 1.0f);
 
         Camera camera;
-        Graphics::DrawMesh(m_QuadMesh, Transform{}, m_FinalCompositingMaterial, camera);
+        Graphics::DrawMesh(m_QuadMesh, Identity<Transform>(), m_FinalCompositingMaterial, camera);
         camera.setPixelRect(viewportRect);
         camera.renderToScreen();
 
@@ -345,73 +340,54 @@ private:
     {
         constexpr float w = 200.0f;
 
-        auto const textures = std::to_array<RenderTexture const*>(
-        {
+        auto const textures = std::to_array<RenderTexture const*>({
             &m_SceneHDRColorOutput,
             &m_SceneHDRThresholdedOutput,
             m_PingPongBlurOutputBuffers.data(),
             m_PingPongBlurOutputBuffers.data() + 1,
         });
 
-        for (size_t i = 0; i < textures.size(); ++i)
-        {
+        for (size_t i = 0; i < textures.size(); ++i) {
             Vec2 const offset = {static_cast<float>(i)*w, 0.0f};
-            Rect const overlayRect
-            {
+            Rect const overlayRect{
                 viewportRect.p1 + offset,
-                viewportRect.p1 + offset + w
+                viewportRect.p1 + offset + w,
             };
 
             Graphics::BlitToScreen(*textures[i], overlayRect);
         }
     }
 
-    Material m_SceneMaterial
-    {
-        Shader
-        {
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Bloom.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Bloom.frag"),
-        },
-    };
+    Material m_SceneMaterial{Shader{
+        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Bloom.vert"),
+        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Bloom.frag"),
+    }};
 
-    Material m_LightboxMaterial
-    {
-        Shader
-        {
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/LightBox.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/LightBox.frag"),
-        },
-    };
+    Material m_LightboxMaterial{Shader{
+        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/LightBox.vert"),
+        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/LightBox.frag"),
+    }};
 
-    Material m_BlurMaterial
-    {
-        Shader
-        {
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Blur.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Blur.frag"),
-        },
-    };
+    Material m_BlurMaterial{Shader{
+        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Blur.vert"),
+        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Blur.frag"),
+    }};
 
-    Material m_FinalCompositingMaterial
-    {
-        Shader
-        {
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Final.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Final.frag"),
-        },
-    };
+    Material m_FinalCompositingMaterial{Shader{
+        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Final.vert"),
+        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Final.frag"),
+    }};
 
-    Texture2D m_WoodTexture = osc::LoadTexture2DFromImage(
+    Texture2D m_WoodTexture = LoadTexture2DFromImage(
         App::resource("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
-    Texture2D m_ContainerTexture = osc::LoadTexture2DFromImage(
+    Texture2D m_ContainerTexture = LoadTexture2DFromImage(
         App::resource("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB
     );
-    Mesh m_CubeMesh = GenCube();
-    Mesh m_QuadMesh = GenTexturedQuad();
+    Mesh m_CubeMesh = GenerateCubeMesh();
+    Mesh m_QuadMesh = GenerateTexturedQuadMesh();
 
     RenderTexture m_SceneHDRColorOutput;
     RenderTexture m_SceneHDRThresholdedOutput;
@@ -419,7 +395,7 @@ private:
 
     Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     bool m_IsMouseCaptured = true;
-    Vec3 m_CameraEulers = {};
+    Eulers m_CameraEulers = {};
 };
 
 

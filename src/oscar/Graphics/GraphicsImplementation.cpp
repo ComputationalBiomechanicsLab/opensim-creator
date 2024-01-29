@@ -1,6 +1,5 @@
 // these are the things that this file "implements"
 
-#include <oscar/Graphics/Detail/Unorm8.hpp>
 #include <oscar/Graphics/Detail/VertexAttributeFormatHelpers.hpp>
 #include <oscar/Graphics/Detail/VertexAttributeFormatList.hpp>
 #include <oscar/Graphics/Detail/VertexAttributeFormatTraits.hpp>
@@ -29,10 +28,11 @@
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/ShaderPropertyType.hpp>
 #include <oscar/Graphics/SubMeshDescriptor.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
+#include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Graphics/Unorm8.hpp>
 #include <oscar/Graphics/VertexAttribute.hpp>
 #include <oscar/Graphics/VertexAttributeDescriptor.hpp>
 #include <oscar/Graphics/VertexAttributeFormat.hpp>
@@ -46,6 +46,7 @@
 #include <oscar/Graphics/Color32.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Maths/AABB.hpp>
+#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Mat3.hpp>
 #include <oscar/Maths/Mat4.hpp>
@@ -92,10 +93,10 @@
 #include <variant>
 #include <vector>
 
+using namespace osc::literals;
 using osc::detail::DefaultFormat;
 using osc::detail::NumComponents;
 using osc::detail::SizeOfComponent;
-using osc::detail::Unorm8;
 using osc::detail::VertexAttributeFormatList;
 using osc::detail::VertexAttributeFormatTraits;
 using osc::BitCastable;
@@ -122,6 +123,7 @@ using osc::NonTypelistSizeV;
 using osc::NumOptions;
 using osc::Overload;
 using osc::Quat;
+using osc::Radians;
 using osc::RenderBufferType;
 using osc::RenderTexture;
 using osc::RenderTextureDescriptor;
@@ -136,6 +138,7 @@ using osc::TextureFormat;
 using osc::TextureWrapMode;
 using osc::Transform;
 using osc::UID;
+using osc::Unorm8;
 using osc::VertexAttributeFormat;
 using osc::Vec;
 using osc::Vec2;
@@ -1538,7 +1541,7 @@ namespace
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
                     size_t const channelStart = pixelStart + channel;
-                    color[channel] = osc::ToFloatingPointColorChannel(pixelData[channelStart]);
+                    color[channel] = Unorm8{pixelData[channelStart]}.normalized_value();
                 }
                 rv.push_back(color);
             }
@@ -1623,7 +1626,7 @@ namespace
                     std::copy(src.begin(), src.end(), dest.begin());
                     auto const channelFloat = osc::bit_cast<float>(dest);
 
-                    color[channel] = osc::ToClamped8BitColorChannel(channelFloat);
+                    color[channel] = Unorm8{channelFloat};
                 }
                 rv.push_back(color);
             }
@@ -1657,7 +1660,7 @@ namespace
             {
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
-                    pixelData.push_back(osc::ToClamped8BitColorChannel(pixel[channel]));
+                    pixelData.push_back(Unorm8{pixel[channel]}.raw_value());
                 }
             }
         }
@@ -1699,7 +1702,7 @@ namespace
             {
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
-                    pixelData.push_back(pixel[channel]);
+                    pixelData.push_back(pixel[channel].raw_value());
                 }
             }
         }
@@ -1710,7 +1713,7 @@ namespace
             {
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
-                    float const pixelFloatVal = osc::ToFloatingPointColorChannel(pixel[channel]);
+                    float const pixelFloatVal = Unorm8{pixel[channel]}.normalized_value();
                     PushAsBytes(pixelFloatVal, pixelData);
                 }
             }
@@ -4069,7 +4072,7 @@ namespace
     template<>
     float Decode<Unorm8, float>(std::byte const* p)
     {
-        return Unorm8{*p}.normalized();
+        return Unorm8{*p}.normalized_value();
     }
 
     template<>
@@ -4651,13 +4654,11 @@ namespace
         }
 
         template<UserFacingVertexData T>
-        void transformAttribute(VertexAttribute attr, std::function<void(T&)> const& f)
+        void transformAttribute(VertexAttribute attr, std::function<T(T)> const& f)
         {
             for (auto&& proxy : iter<T>(attr))
             {
-                T v{proxy};
-                f(v);
-                proxy = v;
+                proxy = f(proxy);
             }
         }
 
@@ -4736,7 +4737,7 @@ public:
         m_Version->reset();
     }
 
-    void transformVerts(std::function<void(Vec3&)> const& f)
+    void transformVerts(std::function<Vec3(Vec3)> const& f)
     {
         m_VertexBuffer.transformAttribute(VertexAttribute::Position, f);
 
@@ -4746,9 +4747,9 @@ public:
 
     void transformVerts(Transform const& t)
     {
-        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Position, [&t](Vec3& v)
+        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Position, [&t](Vec3 v)
         {
-            v = t * v;
+            return t * v;
         });
 
         rangeCheckIndicesAndRecalculateBounds();
@@ -4757,9 +4758,9 @@ public:
 
     void transformVerts(Mat4 const& m)
     {
-        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Position, [&m](Vec3& v)
+        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Position, [&m](Vec3 v)
         {
-            v = Vec3{m * Vec4{v, 1.0f}};
+            return Vec3{m * Vec4{v, 1.0f}};
         });
 
         rangeCheckIndicesAndRecalculateBounds();
@@ -4783,9 +4784,9 @@ public:
         m_Version->reset();
     }
 
-    void transformNormals(std::function<void(Vec3&)> const& f)
+    void transformNormals(std::function<Vec3(Vec3)> const& f)
     {
-        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Normal, f);
+        m_VertexBuffer.transformAttribute(VertexAttribute::Normal, f);
 
         m_Version->reset();
     }
@@ -4807,7 +4808,7 @@ public:
         m_Version->reset();
     }
 
-    void transformTexCoords(std::function<void(Vec2&)> const& f)
+    void transformTexCoords(std::function<Vec2(Vec2)> const& f)
     {
         m_VertexBuffer.transformAttribute(VertexAttribute::TexCoord0, f);
 
@@ -5304,7 +5305,7 @@ void osc::Mesh::setVerts(std::span<Vec3 const> verts)
     m_Impl.upd()->setVerts(verts);
 }
 
-void osc::Mesh::transformVerts(std::function<void(Vec3&)> const& f)
+void osc::Mesh::transformVerts(std::function<Vec3(Vec3)> const& f)
 {
     m_Impl.upd()->transformVerts(f);
 }
@@ -5334,7 +5335,7 @@ void osc::Mesh::setNormals(std::span<Vec3 const> verts)
     m_Impl.upd()->setNormals(verts);
 }
 
-void osc::Mesh::transformNormals(std::function<void(Vec3&)> const& f)
+void osc::Mesh::transformNormals(std::function<Vec3(Vec3)> const& f)
 {
     m_Impl.upd()->transformNormals(f);
 }
@@ -5354,7 +5355,7 @@ void osc::Mesh::setTexCoords(std::span<Vec2 const> coords)
     m_Impl.upd()->setTexCoords(coords);
 }
 
-void osc::Mesh::transformTexCoords(std::function<void(Vec2&)> const& f)
+void osc::Mesh::transformTexCoords(std::function<Vec2(Vec2)> const& f)
 {
     m_Impl.upd()->transformTexCoords(f);
 }
@@ -5532,12 +5533,12 @@ public:
         m_OrthographicSize = size;
     }
 
-    float getCameraFOV() const
+    Radians getCameraFOV() const
     {
         return m_PerspectiveFov;
     }
 
-    void setCameraFOV(float size)
+    void setCameraFOV(Radians size)
     {
         m_PerspectiveFov = size;
     }
@@ -5759,7 +5760,7 @@ private:
     Color m_BackgroundColor = Color::clear();
     CameraProjection m_CameraProjection = CameraProjection::Perspective;
     float m_OrthographicSize = 2.0f;
-    float m_PerspectiveFov = std::numbers::pi_v<float>/2.0f;
+    Radians m_PerspectiveFov = 90_deg;
     float m_NearClippingPlane = 1.0f;
     float m_FarClippingPlane = -1.0f;
     CameraClearFlags m_ClearFlags = CameraClearFlags::Default;
@@ -5819,14 +5820,14 @@ void osc::Camera::setOrthographicSize(float sz)
     m_Impl.upd()->setOrthographicSize(sz);
 }
 
-float osc::Camera::getCameraFOV() const
+Radians osc::Camera::getCameraFOV() const
 {
     return m_Impl->getCameraFOV();
 }
 
-void osc::Camera::setCameraFOV(float fov)
+void osc::Camera::setCameraFOV(Radians verticalFOV)
 {
-    m_Impl.upd()->setCameraFOV(fov);
+    m_Impl.upd()->setCameraFOV(verticalFOV);
 }
 
 float osc::Camera::getNearClippingPlane() const
@@ -6476,7 +6477,7 @@ private:
     };
 
     // a generic quad mesh: two triangles covering NDC @ Z=0
-    Mesh m_QuadMesh = GenTexturedQuad();
+    Mesh m_QuadMesh = GenerateTexturedQuadMesh();
 
     // storage for instance data
     std::vector<float> m_InstanceCPUBuffer;

@@ -43,14 +43,17 @@
 #include <string>
 #include <utility>
 
+using namespace osc::literals;
+using osc::Radians;
+
 namespace
 {
     osc::PolarPerspectiveCamera GetSplashScreenDefaultPolarCamera()
     {
         osc::PolarPerspectiveCamera rv;
-        rv.phi = std::numbers::pi_v<float>/6.0f;
+        rv.phi = 30_deg;
         rv.radius = 10.0f;
-        rv.theta = std::numbers::pi_v<float>/4.0f;
+        rv.theta = 45_deg;
         return rv;
     }
 

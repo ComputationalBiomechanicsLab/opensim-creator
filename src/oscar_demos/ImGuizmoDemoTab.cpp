@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 #include <ImGuizmo.h>
+#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
@@ -13,6 +14,7 @@
 
 #include <memory>
 
+using namespace osc::literals;
 using osc::CStringView;
 
 namespace
@@ -20,11 +22,10 @@ namespace
     constexpr CStringView c_TabStringID = "Demos/ImGuizmo";
 }
 
-class osc::ImGuizmoDemoTab::Impl final : public osc::StandardTabImpl {
+class osc::ImGuizmoDemoTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
-    {
-    }
+    {}
 
 private:
     void implOnDraw() final
@@ -60,8 +61,8 @@ private:
     {
         PolarPerspectiveCamera rv;
         rv.focusPoint = {0.0f, 0.0f, 0.0f};
-        rv.phi = 1.0f;
-        rv.theta = 0.0f;
+        rv.phi = 1_rad;
+        rv.theta = 0_rad;
         rv.radius = 5.0f;
         return rv;
     }();
@@ -80,8 +81,7 @@ osc::CStringView osc::ImGuizmoDemoTab::id()
 
 osc::ImGuizmoDemoTab::ImGuizmoDemoTab(ParentPtr<ITabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
-{
-}
+{}
 
 osc::ImGuizmoDemoTab::ImGuizmoDemoTab(ImGuizmoDemoTab&&) noexcept = default;
 osc::ImGuizmoDemoTab& osc::ImGuizmoDemoTab::operator=(ImGuizmoDemoTab&&) noexcept = default;

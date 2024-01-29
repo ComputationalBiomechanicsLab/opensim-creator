@@ -10,6 +10,8 @@
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
@@ -26,6 +28,7 @@
 #include <memory>
 #include <numbers>
 
+using namespace osc::literals;
 using osc::Camera;
 using osc::CStringView;
 using osc::Vec3;
@@ -33,8 +36,7 @@ using osc::Vec3;
 namespace
 {
     // worldspace positions of each cube (step 2)
-    constexpr auto c_CubePositions = std::to_array<Vec3>(
-    {
+    constexpr auto c_CubePositions = std::to_array<Vec3>({
         { 0.0f,  0.0f,  0.0f },
         { 2.0f,  5.0f, -15.0f},
         {-1.5f, -2.2f, -2.5f },
@@ -53,7 +55,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(osc::Deg2Rad(45.0f));
+        rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.2f, 0.3f, 0.3f, 1.0f});
@@ -61,7 +63,7 @@ namespace
     }
 }
 
-class osc::LOGLCoordinateSystemsTab::Impl final : public osc::StandardTabImpl {
+class osc::LOGLCoordinateSystemsTab::Impl final : public StandardTabImpl {
 public:
 
     Impl() : StandardTabImpl{c_TabStringID}
@@ -100,13 +102,11 @@ private:
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-        {
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
             m_IsMouseCaptured = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && osc::IsMouseInMainViewportWorkspaceScreenRect())
-        {
+        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
             m_IsMouseCaptured = true;
             return true;
         }
@@ -115,9 +115,8 @@ private:
 
     void implOnTick() final
     {
-        float const rotationSpeed = Deg2Rad(50.0f);
         double const dt = App::get().getFrameDeltaSinceAppStartup().count();
-        auto const angle = static_cast<float>(rotationSpeed * dt);
+        auto const angle = 50_deg * dt;
         Vec3 const axis = Normalize(Vec3{0.5f, 1.0f, 0.0f});
 
         m_Step1.rotation = AngleAxis(angle, axis);
@@ -126,75 +125,72 @@ private:
     void implOnDraw() final
     {
         // handle mouse capturing
-        if (m_IsMouseCaptured)
-        {
+        if (m_IsMouseCaptured) {
             UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
             ImGui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
-        else
-        {
+        else {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
 
+        draw3DScene();
+        draw2DUI();
+    }
+
+    void draw3DScene()
+    {
         // clear screen and ensure camera has correct pixel rect
-        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
+        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
 
         // draw 3D scene
-        if (m_ShowStep1)
-        {
+        if (m_ShowStep1) {
             Graphics::DrawMesh(m_Mesh, m_Step1, m_Material, m_Camera);
         }
-        else
-        {
+        else {
             Vec3 const axis = Normalize(Vec3{1.0f, 0.3f, 0.5f});
             for (size_t i = 0; i < c_CubePositions.size(); ++i)
             {
                 Vec3 const& pos = c_CubePositions[i];
-                float const angle = Deg2Rad(static_cast<float>(i++) * 20.0f);
 
-                Transform t;
-                t.rotation = AngleAxis(angle, axis);
-                t.position = pos;
-
-                Graphics::DrawMesh(m_Mesh, t, m_Material, m_Camera);
+                Graphics::DrawMesh(
+                    m_Mesh,
+                    {.rotation = AngleAxis(i++ * 20_deg, axis), .position = pos},
+                    m_Material,
+                    m_Camera
+                );
             }
         }
 
         m_Camera.renderToScreen();
-
-        // draw UI extras
-        {
-            ImGui::Begin("Tutorial Step");
-            ImGui::Checkbox("step1", &m_ShowStep1);
-            if (m_IsMouseCaptured)
-            {
-                ImGui::Text("mouse captured (esc to uncapture)");
-            }
-
-            Vec3 cameraPos = m_Camera.getPosition();
-            ImGui::Text("camera pos = (%f, %f, %f)", cameraPos.x, cameraPos.y, cameraPos.z);
-            Vec3 cameraEulers = osc::Rad2Deg(m_CameraEulers);
-            ImGui::Text("camera eulers = (%f, %f, %f)", cameraEulers.x, cameraEulers.y, cameraEulers.z);
-            ImGui::End();
-
-            m_PerfPanel.onDraw();
-        }
     }
 
-    Material m_Material
+    void draw2DUI()
     {
-        Shader
-        {
-            App::slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.vert"),
-            App::slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.frag"),
-        },
-    };
-    Mesh m_Mesh = GenLearnOpenGLCube();
+        ImGui::Begin("Tutorial Step");
+        ImGui::Checkbox("step1", &m_ShowStep1);
+        if (m_IsMouseCaptured) {
+            ImGui::Text("mouse captured (esc to uncapture)");
+        }
+
+        Vec3 const cameraPos = m_Camera.getPosition();
+        ImGui::Text("camera pos = (%f, %f, %f)", cameraPos.x, cameraPos.y, cameraPos.z);
+        Vec<3, Degrees> const cameraEulers = m_CameraEulers;
+        ImGui::Text("camera eulers = (%f, %f, %f)", cameraEulers.x.count(), cameraEulers.y.count(), cameraEulers.z.count());
+        ImGui::End();
+
+        m_PerfPanel.onDraw();
+    }
+
+    Material m_Material{Shader{
+        App::slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.vert"),
+        App::slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.frag"),
+    }};
+    Mesh m_Mesh = GenerateLearnOpenGLCubeMesh();
     Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     bool m_IsMouseCaptured = false;
-    Vec3 m_CameraEulers = {};
+    Eulers m_CameraEulers = {};
 
     bool m_ShowStep1 = false;
     Transform m_Step1;

@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/Documents/Landmarks/NamedLandmark.hpp>
 
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Shims/Cpp23/utility.hpp>
 
@@ -388,21 +389,21 @@ namespace osc
         UndoableModelStatePair&,
         OpenSim::PhysicalOffsetFrame const&,
         Vec3 const& deltaTranslationInParentFrame,
-        Vec3 const& newPofEulers
+        Eulers const& newPofEulers
     );
 
     bool ActionTransformWrapObject(
         UndoableModelStatePair&,
         OpenSim::WrapObject const&,
         Vec3 const& deltaPosition,
-        Vec3 const& newEulers
+        Eulers const& newEulers
     );
 
     bool ActionTransformContactGeometry(
         UndoableModelStatePair&,
         OpenSim::ContactGeometry const&,
         Vec3 const& deltaPosition,
-        Vec3 const& newEulers
+        Eulers const& newEulers
     );
 
     bool ActionFitSphereToMesh(

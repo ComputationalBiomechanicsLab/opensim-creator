@@ -10,6 +10,7 @@
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/SubMeshDescriptor.hpp>
+#include <oscar/Graphics/Unorm8.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
@@ -58,6 +59,7 @@ using osc::Texture2D;
 using osc::TextureFilterMode;
 using osc::TextureFormat;
 using osc::UID;
+using osc::Unorm8;
 using osc::Vec2;
 using osc::Vec2i;
 using osc::Vec3;
@@ -141,11 +143,10 @@ namespace
         std::array<uint8_t, 256> rv{};
         for (size_t i = 0; i < 256; ++i)
         {
-            auto const ldrColor = static_cast<uint8_t>(i);
-            float const hdrColor = osc::ToFloatingPointColorChannel(ldrColor);
+            auto const ldrColor = Unorm8{static_cast<uint8_t>(i)};
+            float const hdrColor = ldrColor.normalized_value();
             float const linearHdrColor = osc::ToLinear(hdrColor);
-            uint8_t const linearLdrColor = osc::ToClamped8BitColorChannel(linearHdrColor);
-            rv[i] = linearLdrColor;
+            rv[i] = Unorm8{linearHdrColor}.raw_value();
         }
         return rv;
     }

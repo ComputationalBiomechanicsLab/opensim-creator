@@ -49,16 +49,16 @@ struct std::hash<TorusParameters> final {
 
 class osc::SceneCache::Impl final {
 public:
-    Mesh sphere = GenSphere(16, 16);
-    Mesh circle = GenCircle(16);
-    Mesh cylinder = GenUntexturedYToYCylinder(16);
-    Mesh cube = GenCube();
-    Mesh cone = GenUntexturedYToYCone(16);
-    Mesh floor = GenTexturedQuad();
-    Mesh grid100x100 = GenNbyNGrid(1000);
-    Mesh cubeWire = GenCubeLines();
-    Mesh yLine = GenYLine();
-    Mesh texturedQuad = GenTexturedQuad();
+    Mesh sphere = GenerateUVSphereMesh(16, 16);
+    Mesh circle = GenerateCircleMesh(16);
+    Mesh cylinder = GenerateUntexturedYToYCylinderMesh(16);
+    Mesh cube = GenerateCubeMesh();
+    Mesh cone = GenerateUntexturedYToYConeMesh(16);
+    Mesh floor = GenerateTexturedQuadMesh();
+    Mesh grid100x100 = GenerateNbyNGridLinesMesh(1000);
+    Mesh cubeWire = GenerateCubeLinesMesh();
+    Mesh yLine = GenerateYToYLineMesh();
+    Mesh texturedQuad = GenerateTexturedQuadMesh();
 
     SynchronizedValue<std::unordered_map<TorusParameters, Mesh>> torusCache;
     SynchronizedValue<std::unordered_map<std::string, Mesh>> fileCache;
@@ -163,7 +163,7 @@ osc::Mesh osc::SceneCache::getTorusMesh(float torusCenterToTubeCenterRadius, flo
 
     if (inserted)
     {
-        it->second = Mesh{GenTorus(12, 12, key.torusCenterToTubeCenterRadius, key.tubeRadius)};
+        it->second = Mesh{GenerateTorusMesh(12, 12, key.torusCenterToTubeCenterRadius, key.tubeRadius)};
     }
 
     return it->second;

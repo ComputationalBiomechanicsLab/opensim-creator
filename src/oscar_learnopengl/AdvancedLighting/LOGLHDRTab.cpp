@@ -13,6 +13,7 @@
 #include <oscar/Graphics/RenderTextureDescriptor.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
@@ -29,21 +30,23 @@
 #include <string>
 #include <utility>
 
+using namespace osc::literals;
 using osc::App;
 using osc::Camera;
 using osc::Color;
 using osc::ColorSpace;
 using osc::CStringView;
+using osc::LoadTexture2DFromImage;
 using osc::Material;
 using osc::Texture2D;
+using osc::ToSRGB;
 using osc::Shader;
 using osc::Transform;
 using osc::Vec3;
 
 namespace
 {
-    constexpr auto c_LightPositions = std::to_array<Vec3>(
-    {
+    constexpr auto c_LightPositions = std::to_array<Vec3>({
         { 0.0f,  0.0f, 49.5f},
         {-1.4f, -1.9f, 9.0f},
         { 0.0f, -1.8f, 4.0f},
@@ -54,28 +57,24 @@ namespace
 
     std::array<Color, c_LightPositions.size()> GetLightColors()
     {
-        return std::to_array<Color>(
-        {
-            osc::ToSRGB({200.0f, 200.0f, 200.0f, 1.0f}),
-            osc::ToSRGB({0.1f, 0.0f, 0.0f, 1.0f}),
-            osc::ToSRGB({0.0f, 0.0f, 0.2f, 1.0f}),
-            osc::ToSRGB({0.0f, 0.1f, 0.0f, 1.0f}),
+        return std::to_array<Color>({
+            ToSRGB({200.0f, 200.0f, 200.0f, 1.0f}),
+            ToSRGB({0.1f, 0.0f, 0.0f, 1.0f}),
+            ToSRGB({0.0f, 0.0f, 0.2f, 1.0f}),
+            ToSRGB({0.0f, 0.1f, 0.0f, 1.0f}),
         });
     }
 
     Transform CalcCorridoorTransform()
     {
-        Transform rv;
-        rv.position = {0.0f, 0.0f, 25.0f};
-        rv.scale = {2.5f, 2.5f, 27.5f};
-        return rv;
+        return {.scale = {2.5f, 2.5f, 27.5f}, .position = {0.0f, 0.0f, 25.0f}};
     }
 
     Camera CreateSceneCamera()
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
-        rv.setCameraFOV(osc::Deg2Rad(45.0f));
+        rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -84,19 +83,15 @@ namespace
 
     Material CreateSceneMaterial()
     {
-        Texture2D woodTexture = osc::LoadTexture2DFromImage(
+        Texture2D woodTexture = LoadTexture2DFromImage(
             App::resource("oscar_learnopengl/textures/wood.png"),
             ColorSpace::sRGB
         );
 
-        Material rv
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.vert"),
-                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.frag"),
-            },
-        };
+        Material rv{Shader{
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.frag"),
+        }};
         rv.setVec3Array("uSceneLightPositions", c_LightPositions);
         rv.setColorArray("uSceneLightColors", GetLightColors());
         rv.setTexture("uDiffuseTexture", woodTexture);
@@ -106,22 +101,17 @@ namespace
 
     Material CreateTonemapMaterial()
     {
-        return Material
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Tonemap.vert"),
-                App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Tonemap.frag"),
-            },
-        };
+        return Material{Shader{
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Tonemap.vert"),
+            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Tonemap.frag"),
+        }};
     }
 }
 
-class osc::LOGLHDRTab::Impl final : public osc::StandardTabImpl {
+class osc::LOGLHDRTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
-    {
-    }
+    {}
 
 private:
     void implOnMount() final
@@ -139,13 +129,11 @@ private:
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-        {
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
             m_IsMouseCaptured = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && osc::IsMouseInMainViewportWorkspaceScreenRect())
-        {
+        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
             m_IsMouseCaptured = true;
             return true;
         }
@@ -163,14 +151,12 @@ private:
     void handleMouseCapturing()
     {
         // handle mouse capturing
-        if (m_IsMouseCaptured)
-        {
+        if (m_IsMouseCaptured) {
             UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
             ImGui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
-        else
-        {
+        else {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
@@ -180,7 +166,7 @@ private:
     {
         // reformat intermediate HDR texture to match tab dimensions etc.
         {
-            Rect const viewportRect = osc::GetMainViewportWorkspaceScreenRect();
+            Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
             RenderTextureDescriptor descriptor{Dimensions(viewportRect)};
             descriptor.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
             if (m_Use16BitFormat)
@@ -207,7 +193,7 @@ private:
         m_TonemapMaterial.setBool("uUseTonemap", m_UseTonemap);
         m_TonemapMaterial.setFloat("uExposure", m_Exposure);
 
-        Graphics::DrawMesh(m_QuadMesh, Transform{}, m_TonemapMaterial, orthoCamera);
+        Graphics::DrawMesh(m_QuadMesh, Identity<Transform>(), m_TonemapMaterial, orthoCamera);
         orthoCamera.renderToScreen();
 
         m_TonemapMaterial.clearRenderTexture("uTexture");
@@ -220,20 +206,20 @@ private:
         ImGui::Checkbox("use 16-bit colors", &m_Use16BitFormat);
         ImGui::InputFloat("exposure", &m_Exposure);
         ImGui::Text("pos = %f,%f,%f", m_Camera.getPosition().x, m_Camera.getPosition().y, m_Camera.getPosition().z);
-        ImGui::Text("eulers = %f,%f,%f", m_CameraEulers.x, m_CameraEulers.y, m_CameraEulers.z);
+        ImGui::Text("eulers = %f,%f,%f", m_CameraEulers.x.count(), m_CameraEulers.y.count(), m_CameraEulers.z.count());
         ImGui::End();
     }
 
     Material m_SceneMaterial = CreateSceneMaterial();
     Material m_TonemapMaterial = CreateTonemapMaterial();
     Camera m_Camera = CreateSceneCamera();
-    Mesh m_CubeMesh = GenCube();
-    Mesh m_QuadMesh = GenTexturedQuad();
+    Mesh m_CubeMesh = GenerateCubeMesh();
+    Mesh m_QuadMesh = GenerateTexturedQuadMesh();
     Transform m_CorridoorTransform = CalcCorridoorTransform();
     RenderTexture m_SceneHDRTexture;
     float m_Exposure = 1.0f;
 
-    Vec3 m_CameraEulers = {0.0f, std::numbers::pi_v<float>, 0.0f};
+    Eulers m_CameraEulers = {0_deg, 180_deg, 0_deg};
     bool m_IsMouseCaptured = true;
     bool m_Use16BitFormat = true;
     bool m_UseTonemap = true;

@@ -20,6 +20,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <oscar/Formats/CSV.hpp>
 #include <oscar/Graphics/Color.hpp>
+#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Vec4.hpp>
 #include <oscar/Platform/App.hpp>
@@ -49,6 +50,9 @@
 #include <vector>
 
 namespace SimTK { class State; }
+
+using osc::Degreesd;
+using osc::Radiansd;
 
 // muscle outputs
 //
@@ -114,7 +118,7 @@ namespace
 
     double GetPennationAngle(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
     {
-        return osc::Rad2Deg(muscle.getPennationAngle(st));
+        return Degreesd{Radiansd{muscle.getPennationAngle(st)}}.count();
     }
 
     double GetNormalizedFiberLength(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)

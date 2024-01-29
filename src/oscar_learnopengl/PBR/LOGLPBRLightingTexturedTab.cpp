@@ -10,6 +10,8 @@
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
@@ -29,10 +31,12 @@
 #include <utility>
 #include <vector>
 
+using namespace osc::literals;
 using osc::App;
 using osc::Camera;
 using osc::ColorSpace;
 using osc::CStringView;
+using osc::LoadTexture2DFromImage;
 using osc::Material;
 using osc::Shader;
 using osc::Texture2D;
@@ -42,16 +46,14 @@ namespace
 {
     constexpr CStringView c_TabStringID = "LearnOpenGL/PBR/LightingTextured";
 
-    constexpr auto c_LightPositions = std::to_array<Vec3>(
-    {
+    constexpr auto c_LightPositions = std::to_array<Vec3>({
         {-10.0f,  10.0f, 10.0f},
         { 10.0f,  10.0f, 10.0f},
         {-10.0f, -10.0f, 10.0f},
         { 10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<Vec3, c_LightPositions.size()> c_LightRadiances = std::to_array<Vec3>(
-    {
+    constexpr std::array<Vec3, c_LightPositions.size()> c_LightRadiances = std::to_array<Vec3>({
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
@@ -66,7 +68,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(osc::Deg2Rad(45.0f));
+        rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -75,35 +77,31 @@ namespace
 
     Material CreateMaterial()
     {
-        Texture2D albedo = osc::LoadTexture2DFromImage(
+        Texture2D albedo = LoadTexture2DFromImage(
             App::resource("oscar_learnopengl/textures/pbr/rusted_iron/albedo.png"),
             ColorSpace::sRGB
         );
-        Texture2D normal = osc::LoadTexture2DFromImage(
+        Texture2D normal = LoadTexture2DFromImage(
             App::resource("oscar_learnopengl/textures/pbr/rusted_iron/normal.png"),
             ColorSpace::Linear
         );
-        Texture2D metallic = osc::LoadTexture2DFromImage(
+        Texture2D metallic = LoadTexture2DFromImage(
             App::resource("oscar_learnopengl/textures/pbr/rusted_iron/metallic.png"),
             ColorSpace::Linear
         );
-        Texture2D roughness = osc::LoadTexture2DFromImage(
+        Texture2D roughness = LoadTexture2DFromImage(
             App::resource("oscar_learnopengl/textures/pbr/rusted_iron/roughness.png"),
             ColorSpace::Linear
         );
-        Texture2D ao = osc::LoadTexture2DFromImage(
+        Texture2D ao = LoadTexture2DFromImage(
             App::resource("oscar_learnopengl/textures/pbr/rusted_iron/ao.png"),
             ColorSpace::Linear
         );
 
-        Material rv
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.vert"),
-                App::slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.frag"),
-            },
-        };
+        Material rv{Shader{
+            App::slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.vert"),
+            App::slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.frag"),
+        }};
         rv.setTexture("uAlbedoMap", albedo);
         rv.setTexture("uNormalMap", normal);
         rv.setTexture("uMetallicMap", metallic);
@@ -115,11 +113,10 @@ namespace
     }
 }
 
-class osc::LOGLPBRLightingTexturedTab::Impl final : public osc::StandardTabImpl {
+class osc::LOGLPBRLightingTexturedTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
-    {
-    }
+    {}
 
 private:
     void implOnMount() final
@@ -138,25 +135,15 @@ private:
     bool implOnEvent(SDL_Event const& e) final
     {
         // handle mouse input
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-        {
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
             m_IsMouseCaptured = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect())
-        {
+        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
             m_IsMouseCaptured = true;
             return true;
         }
         return false;
-    }
-
-    void implOnTick() final
-    {
-    }
-
-    void implOnDrawMainMenu() final
-    {
     }
 
     void implOnDraw() final
@@ -169,14 +156,12 @@ private:
     void updateCameraFromInputs()
     {
         // handle mouse capturing
-        if (m_IsMouseCaptured)
-        {
+        if (m_IsMouseCaptured) {
             UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
             ImGui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
-        else
-        {
+        else {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
@@ -196,39 +181,26 @@ private:
 
     void drawSpheres()
     {
-        for (int row = 0; row < c_NumRows; ++row)
-        {
-            for (int col = 0; col < c_NumCols; ++col)
-            {
-                Transform t;
-                t.position =
-                {
-                    (static_cast<float>(col) - static_cast<float>(c_NumCols)/2.0f) * c_CellSpacing,
-                    (static_cast<float>(row) - static_cast<float>(c_NumRows)/2.0f) * c_CellSpacing,
-                    0.0f,
-                };
-
-                Graphics::DrawMesh(m_SphereMesh, t, m_PBRMaterial, m_Camera);
+        for (int row = 0; row < c_NumRows; ++row) {
+            for (int col = 0; col < c_NumCols; ++col) {
+                float const x = (static_cast<float>(col) - static_cast<float>(c_NumCols)/2.0f) * c_CellSpacing;
+                float const y = (static_cast<float>(row) - static_cast<float>(c_NumRows)/2.0f) * c_CellSpacing;
+                Graphics::DrawMesh(m_SphereMesh, {.position = {x, y, 0.0f}}, m_PBRMaterial, m_Camera);
             }
         }
     }
 
     void drawLights()
     {
-        for (Vec3 const& pos : c_LightPositions)
-        {
-            Transform t;
-            t.position = pos;
-            t.scale = Vec3{0.5f};
-
-            Graphics::DrawMesh(m_SphereMesh, t, m_PBRMaterial, m_Camera);
+        for (Vec3 const& pos : c_LightPositions) {
+            Graphics::DrawMesh(m_SphereMesh, {.scale = Vec3{0.5f}, .position = pos}, m_PBRMaterial, m_Camera);
         }
     }
 
     Camera m_Camera = CreateCamera();
-    Mesh m_SphereMesh = GenSphere(64, 64);
+    Mesh m_SphereMesh = GenerateUVSphereMesh(64, 64);
     Material m_PBRMaterial = CreateMaterial();
-    Vec3 m_CameraEulers = {};
+    Eulers m_CameraEulers = {};
     bool m_IsMouseCaptured = true;
 
     PerfPanel m_PerfPanel{"Perf"};
@@ -274,16 +246,6 @@ void osc::LOGLPBRLightingTexturedTab::implOnUnmount()
 bool osc::LOGLPBRLightingTexturedTab::implOnEvent(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
-}
-
-void osc::LOGLPBRLightingTexturedTab::implOnTick()
-{
-    m_Impl->onTick();
-}
-
-void osc::LOGLPBRLightingTexturedTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::LOGLPBRLightingTexturedTab::implOnDraw()

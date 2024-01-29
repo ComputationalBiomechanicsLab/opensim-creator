@@ -6,6 +6,7 @@
 #include <OpenSimCreator/Documents/MeshImporter/MIVariant.hpp>
 
 #include <oscar/Maths/AABB.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Quat.hpp>
 #include <oscar/Maths/Vec3.hpp>
@@ -148,7 +149,7 @@ namespace osc::mi
 
         void applyRotation(
             IObjectFinder const& lookup,
-            Vec3 const& eulerAngles,
+            Eulers const& eulerAngles,
             Vec3 const& rotationCenter
         );
 

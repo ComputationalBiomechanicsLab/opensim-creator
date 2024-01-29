@@ -9,6 +9,8 @@
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
@@ -21,11 +23,13 @@
 
 #include <memory>
 
+using namespace osc::literals;
 using osc::App;
 using osc::Camera;
 using osc::ColorSpace;
 using osc::CStringView;
 using osc::ImageLoadingFlags;
+using osc::LoadTexture2DFromImage;
 using osc::Material;
 using osc::Shader;
 using osc::Texture2D;
@@ -38,7 +42,7 @@ namespace
     {
         Camera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(osc::Deg2Rad(45.0f));
+        rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         return rv;
@@ -46,38 +50,32 @@ namespace
 
     Material CreateLightMappingMaterial()
     {
-        Texture2D diffuseMap = osc::LoadTexture2DFromImage(
+        Texture2D diffuseMap = LoadTexture2DFromImage(
             App::resource("oscar_learnopengl/textures/container2.png"),
             ColorSpace::sRGB,
             ImageLoadingFlags::FlipVertically
         );
-        Texture2D specularMap = osc::LoadTexture2DFromImage(
+
+        Texture2D specularMap = LoadTexture2DFromImage(
             App::resource("oscar_learnopengl/textures/container2_specular.png"),
             ColorSpace::sRGB,
             ImageLoadingFlags::FlipVertically
         );
 
-        Material rv
-        {
-            Shader
-            {
-                App::slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.vert"),
-                App::slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.frag"),
-            },
-        };
+        Material rv{Shader{
+            App::slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.vert"),
+            App::slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.frag"),
+        }};
         rv.setTexture("uMaterialDiffuse", diffuseMap);
         rv.setTexture("uMaterialSpecular", specularMap);
         return rv;
     }
 }
 
-class osc::LOGLLightingMapsTab::Impl final : public osc::StandardTabImpl {
+class osc::LOGLLightingMapsTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
-    {
-        m_LightTransform.position = {0.4f, 0.4f, 2.0f};
-        m_LightTransform.scale = {0.2f, 0.2f, 0.2f};
-    }
+    {}
 
 private:
     void implOnMount() final
@@ -95,13 +93,11 @@ private:
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-        {
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
             m_IsMouseCaptured = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && osc::IsMouseInMainViewportWorkspaceScreenRect())
-        {
+        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
             m_IsMouseCaptured = true;
             return true;
         }
@@ -111,14 +107,12 @@ private:
     void implOnDraw() final
     {
         // handle mouse capturing
-        if (m_IsMouseCaptured)
-        {
+        if (m_IsMouseCaptured) {
             UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
             ImGui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
-        else
-        {
+        else {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
@@ -133,19 +127,19 @@ private:
         m_LightingMapsMaterial.setFloat("uLightDiffuse", m_LightDiffuse);
         m_LightingMapsMaterial.setFloat("uLightSpecular", m_LightSpecular);
         m_LightingMapsMaterial.setFloat("uMaterialShininess", m_MaterialShininess);
-        Graphics::DrawMesh(m_Mesh, Transform{}, m_LightingMapsMaterial, m_Camera);
+        Graphics::DrawMesh(m_Mesh, Identity<Transform>(), m_LightingMapsMaterial, m_Camera);
 
         // draw lamp
         m_LightCubeMaterial.setColor("uLightColor", Color::white());
         Graphics::DrawMesh(m_Mesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
 
         // render 3D scene
-        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
+        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
         m_Camera.renderToScreen();
 
         // render 2D UI
         ImGui::Begin("controls");
-        ImGui::InputFloat3("uLightPos", osc::ValuePtr(m_LightTransform.position));
+        ImGui::InputFloat3("uLightPos", ValuePtr(m_LightTransform.position));
         ImGui::InputFloat("uLightAmbient", &m_LightAmbient);
         ImGui::InputFloat("uLightDiffuse", &m_LightDiffuse);
         ImGui::InputFloat("uLightSpecular", &m_LightSpecular);
@@ -154,20 +148,19 @@ private:
     }
 
     Material m_LightingMapsMaterial = CreateLightMappingMaterial();
-    Material m_LightCubeMaterial
-    {
-        Shader
-        {
-            App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
-            App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
-        },
-    };
-    Mesh m_Mesh = GenLearnOpenGLCube();
+    Material m_LightCubeMaterial{Shader{
+        App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
+        App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
+    }};
+    Mesh m_Mesh = GenerateLearnOpenGLCubeMesh();
     Camera m_Camera = CreateCamera();
-    Vec3 m_CameraEulers = {};
+    Eulers m_CameraEulers = {};
     bool m_IsMouseCaptured = false;
 
-    Transform m_LightTransform;
+    Transform m_LightTransform = {
+        .scale = Vec3{0.2f},
+        .position = {0.4f, 0.4f, 2.0f},
+    };
     float m_LightAmbient = 0.02f;
     float m_LightDiffuse = 0.4f;
     float m_LightSpecular = 1.0f;

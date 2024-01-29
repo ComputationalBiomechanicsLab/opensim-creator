@@ -6,6 +6,7 @@
 #include <oscar/Graphics/CameraClearFlags.hpp>
 #include <oscar/Graphics/CameraProjection.hpp>
 #include <oscar/Graphics/Color.hpp>
+#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
@@ -15,6 +16,7 @@
 #include <sstream>
 #include <utility>
 
+using namespace osc::literals;
 using osc::testing::GenerateColor;
 using osc::Camera;
 using osc::CameraClearFlags;
@@ -84,11 +86,11 @@ TEST(Camera, UsesValueComparison)
 
     ASSERT_EQ(c1, c2);
 
-    c1.setCameraFOV(1337.0f);
+    c1.setCameraFOV(1337_deg);
 
     ASSERT_NE(c1, c2);
 
-    c2.setCameraFOV(1337.0f);
+    c2.setCameraFOV(1337_deg);
 
     ASSERT_EQ(c1, c2);
 }

@@ -6,7 +6,7 @@
 
 void osc::mi::MIObject::applyRotation(
     IObjectFinder const& lookup,
-    Vec3 const& eulerAngles,
+    Eulers const& eulerAngles,
     Vec3 const& rotationCenter)
 {
     Transform t = getXForm(lookup);

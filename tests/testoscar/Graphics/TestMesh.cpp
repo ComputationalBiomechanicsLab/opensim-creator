@@ -8,6 +8,8 @@
 #include <oscar/Graphics/SubMeshDescriptor.hpp>
 #include <oscar/Graphics/VertexFormat.hpp>
 #include <oscar/Maths/AABB.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Quat.hpp>
@@ -29,6 +31,8 @@
 #include <utility>
 #include <vector>
 
+using namespace osc::literals;
+
 using osc::testing::GenerateColors;
 using osc::testing::GenerateColor32;
 using osc::testing::GenerateIndices;
@@ -47,13 +51,14 @@ using osc::AABBFromVerts;
 using osc::BoundingAABBOf;
 using osc::Color;
 using osc::Color32;
-using osc::Deg2Rad;
+using osc::Eulers;
 using osc::Identity;
 using osc::Mat4;
 using osc::Mesh;
 using osc::MeshTopology;
 using osc::MeshUpdateFlags;
 using osc::Quat;
+using osc::Radians;
 using osc::SubMeshDescriptor;
 using osc::ToColor;
 using osc::ToColor32;
@@ -67,6 +72,7 @@ using osc::VertexFormat;
 using osc::Vec2;
 using osc::Vec3;
 using osc::Vec4;
+using osc::WorldspaceRotation;
 
 TEST(Mesh, CanBeDefaultConstructed)
 {
@@ -309,13 +315,17 @@ TEST(Mesh, TransformVertsMakesGetCallReturnVerts)
 
     // the verts passed to `transformVerts` should match those returned by getVerts
     std::vector<Vec3> vertsPassedToTransformVerts;
-    m.transformVerts([&vertsPassedToTransformVerts](Vec3& v) { vertsPassedToTransformVerts.push_back(v); });
+    m.transformVerts([&vertsPassedToTransformVerts](Vec3 v)
+    {
+        vertsPassedToTransformVerts.push_back(v);
+        return v;
+    });
     ASSERT_EQ(vertsPassedToTransformVerts, originalVerts);
 
     // applying the transformation should return the transformed verts
-    m.transformVerts([&newVerts, i = 0](Vec3& v) mutable
+    m.transformVerts([&newVerts, i = 0](Vec3) mutable
     {
-        v = newVerts.at(i++);
+        return newVerts.at(i++);
     });
     ASSERT_EQ(m.getVerts(), newVerts);
 }
@@ -327,7 +337,7 @@ TEST(Mesh, TransformVertsCausesTransformedMeshToNotBeEqualToInitialMesh)
 
     ASSERT_EQ(m, copy);
 
-    copy.transformVerts([](Vec3&) {});  // noop transform also triggers this (meshes aren't value-comparable)
+    copy.transformVerts([](Vec3 v) { return v; });  // noop transform also triggers this (meshes aren't value-comparable)
 
     ASSERT_NE(m, copy);
 }
@@ -337,7 +347,7 @@ TEST(Mesh, TransformVertsWithTransformAppliesTransformToVerts)
     // create appropriate transform
     Transform const transform = {
         .scale = Vec3{0.25f},
-        .rotation = Quat{Vec3{Deg2Rad(90.0f), 0.0f, 0.0f}},
+        .rotation = WorldspaceRotation(Eulers{90_deg, 0_deg, 0_deg}),
         .position = {1.0f, 0.25f, 0.125f},
     };
 
@@ -374,7 +384,7 @@ TEST(Mesh, TransformVertsWithMat4AppliesTransformToVerts)
 {
     Mat4 const mat = ToMat4(Transform{
         .scale = Vec3{0.25f},
-        .rotation = Quat{Vec3{Deg2Rad(90.0f), 0.0f, 0.0f}},
+        .rotation = WorldspaceRotation(Eulers{90_deg, 0_deg, 0_deg}),
         .position = {1.0f, 0.25f, 0.125f},
     });
 
@@ -506,10 +516,10 @@ TEST(Mesh, SuccessfullyAsssigningNormalsChangesMeshEquality)
 
 TEST(Mesh, TransformNormalsTransormsTheNormals)
 {
-    auto const transform = [](Vec3& n) { n = -n; };
+    auto const transform = [](Vec3 n) { return -n; };
     auto const original = GenerateNormals(16);
     auto expected = original;
-    std::for_each(expected.begin(), expected.end(), transform);
+    std::transform(expected.begin(), expected.end(), expected.begin(), transform);
 
     Mesh m;
     m.setVerts(GenerateVertices(16));
@@ -601,10 +611,10 @@ TEST(Mesh, SuccessfulSetCoordsCausesCopiedMeshToBeNotEqualToOriginalMesh)
 
 TEST(Mesh, TransformTexCoordsAppliesTransformToTexCoords)
 {
-    auto const transform = [](Vec2& uv) { uv *= 0.287f; };
+    auto const transform = [](Vec2 uv) { return 0.287f * uv; };
     auto const original = GenerateTexCoords(3);
     auto expected = original;
-    std::for_each(expected.begin(), expected.end(), transform);
+    std::transform(expected.begin(), expected.end(), expected.begin(), transform);
 
     Mesh m;
     m.setVerts(GenerateVertices(3));

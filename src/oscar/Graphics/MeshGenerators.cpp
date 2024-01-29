@@ -1,6 +1,7 @@
 #include "MeshGenerators.hpp"
 
 #include <oscar/Graphics/Mesh.hpp>
+#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Triangle.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -14,6 +15,7 @@
 #include <numbers>
 #include <vector>
 
+using namespace osc::literals;
 using osc::Mesh;
 using osc::MeshTopology;
 using osc::Vec2;
@@ -199,7 +201,7 @@ namespace
     }
 }
 
-osc::Mesh osc::GenTexturedQuad()
+osc::Mesh osc::GenerateTexturedQuadMesh()
 {
     NewMeshData data;
     data.reserve(c_ShadedTexturedQuadVerts.size());
@@ -219,7 +221,7 @@ osc::Mesh osc::GenTexturedQuad()
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenSphere(size_t sectors, size_t stacks)
+osc::Mesh osc::GenerateUVSphereMesh(size_t sectors, size_t stacks)
 {
     NewMeshData data;
     data.reserve(2LL*3LL*stacks*sectors);
@@ -239,19 +241,19 @@ osc::Mesh osc::GenSphere(size_t sectors, size_t stacks)
     // phi = PI/2. The coordinate [1, 0, 0] is theta = PI/2, phi = 0
     std::vector<TexturedVert> points;
 
-    float const thetaStep = 2.0f*std::numbers::pi_v<float> / static_cast<float>(sectors);
-    float const phiStep = std::numbers::pi_v<float> / static_cast<float>(stacks);
+    Radians const thetaStep = 360_deg / sectors;
+    Radians const phiStep = 180_deg / stacks;
 
     for (size_t stack = 0; stack <= stacks; ++stack)
     {
-        float const phi = std::numbers::pi_v<float>/2.0f - static_cast<float>(stack) * phiStep;
-        float const y = std::sin(phi);
+        Radians const phi = 90_deg - stack*phiStep;
+        float const y = sin(phi);
 
         for (size_t sector = 0; sector <= sectors; ++sector)
         {
-            float const theta = static_cast<float>(sector) * thetaStep;
-            float const x = std::sin(theta) * std::cos(phi);
-            float const z = -std::cos(theta) * std::cos(phi);
+            Radians const theta = sector * thetaStep;
+            float const x = sin(theta) * cos(phi);
+            float const z = -cos(theta) * cos(phi);
             Vec3 const pos = {x, y, z};
             Vec3 const normal = pos;
             Vec2 const uv =
@@ -312,7 +314,7 @@ osc::Mesh osc::GenSphere(size_t sectors, size_t stacks)
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
+osc::Mesh osc::GenerateUntexturedYToYCylinderMesh(size_t nsides)
 {
     constexpr float c_TopY = +1.0f;
     constexpr float c_BottomY = -1.0f;
@@ -322,7 +324,7 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
 
     OSC_ASSERT(3 <= nsides && nsides < 1000000 && "the backend only supports 32-bit indices, you should double-check that this code would work (change this assertion if it does)");
 
-    float const stepAngle = 2.0f*std::numbers::pi_v<float> / static_cast<float>(nsides);
+    Radians const stepAngle = 360_deg / nsides;
 
     NewMeshData data;
 
@@ -359,8 +361,8 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
         uint32_t p1Index = loopStartIndex;
         for (size_t side = 1; side < nsides; ++side)
         {
-            float const theta = static_cast<float>(side) * stepAngle;
-            Vec3 const p2 = {c_Radius*std::cos(theta), c_TopY, c_Radius*std::sin(theta)};
+            Radians const theta = side * stepAngle;
+            Vec3 const p2 = {c_Radius*cos(theta), c_TopY, c_Radius*sin(theta)};
             uint32_t const p2Index = pushData(p2, topNormal);
 
             // care: the outer-facing direction must wind counter-clockwise (#626)
@@ -388,8 +390,8 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
         uint32_t p1Index = loopStartIndex;
         for (size_t side = 1; side < nsides; ++side)
         {
-            float const theta = static_cast<float>(side) * stepAngle;
-            Vec3 const p2 = {c_Radius*std::cos(theta), c_BottomY, c_Radius*std::sin(theta)};
+            Radians const theta = side * stepAngle;
+            Vec3 const p2 = {c_Radius*cos(theta), c_BottomY, c_Radius*sin(theta)};
             uint32_t const p2Index = pushData(p2, bottomNormal);
 
             // care: the outer-facing direction must wind counter-clockwise (#626)
@@ -415,9 +417,9 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
         uint32_t e1BottomIdx = firstEdgeBottom;
         for (size_t i = 1; i < nsides; ++i)
         {
-            float const theta = static_cast<float>(i) * stepAngle;
-            float const xDir = std::cos(theta);
-            float const zDir = std::sin(theta);
+            Radians const theta = i * stepAngle;
+            float const xDir = cos(theta);
+            float const zDir = sin(theta);
             float const x = c_Radius * xDir;
             float const z = c_Radius * zDir;
 
@@ -440,14 +442,14 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenUntexturedYToYCone(size_t nsides)
+osc::Mesh osc::GenerateUntexturedYToYConeMesh(size_t nsides)
 {
     NewMeshData data;
     data.reserve(static_cast<size_t>(2*3)*nsides);
 
     constexpr float topY = +1.0f;
     constexpr float bottomY = -1.0f;
-    const float stepAngle = 2.0f*std::numbers::pi_v<float> / static_cast<float>(nsides);
+    Radians const stepAngle = 360_deg / nsides;
 
     uint16_t index = 0;
     auto const push = [&data, &index](Vec3 const& pos, Vec3 const& norm)
@@ -464,11 +466,11 @@ osc::Mesh osc::GenUntexturedYToYCone(size_t nsides)
 
         for (size_t i = 0; i < nsides; ++i)
         {
-            float const thetaStart = static_cast<float>(i) * stepAngle;
-            float const thetaEnd = static_cast<float>(i + 1) * stepAngle;
+            Radians const thetaStart = i * stepAngle;
+            Radians const thetaEnd = (i + 1) * stepAngle;
 
-            Vec3 const p1 = {std::cos(thetaStart), bottomY, std::sin(thetaStart)};
-            Vec3 const p2 = {std::cos(thetaEnd), bottomY, std::sin(thetaEnd)};
+            Vec3 const p1 = {cos(thetaStart), bottomY, sin(thetaStart)};
+            Vec3 const p2 = {cos(thetaEnd), bottomY, sin(thetaEnd)};
 
             push(middle, normal);
             push(p1, normal);
@@ -480,14 +482,14 @@ osc::Mesh osc::GenUntexturedYToYCone(size_t nsides)
     {
         for (size_t i = 0; i < nsides; ++i)
         {
-            float const thetaStart = static_cast<float>(i) * stepAngle;
-            float const thetaEnd = static_cast<float>(i + 1) * stepAngle;
+            Radians const thetaStart = i * stepAngle;
+            Radians const thetaEnd = (i + 1) * stepAngle;
 
             Triangle const triangle =
             {
                 {0.0f, topY, 0.0f},
-                {std::cos(thetaEnd), bottomY, std::sin(thetaEnd)},
-                {std::cos(thetaStart), bottomY, std::sin(thetaStart)},
+                {cos(thetaEnd), bottomY, sin(thetaEnd)},
+                {cos(thetaStart), bottomY, sin(thetaStart)},
             };
 
             Vec3 const normal = TriangleNormal(triangle);
@@ -504,7 +506,7 @@ osc::Mesh osc::GenUntexturedYToYCone(size_t nsides)
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenNbyNGrid(size_t n)
+osc::Mesh osc::GenerateNbyNGridLinesMesh(size_t n)
 {
     constexpr float z = 0.0f;
     constexpr float min = -1.0f;
@@ -551,7 +553,7 @@ osc::Mesh osc::GenNbyNGrid(size_t n)
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenYLine()
+osc::Mesh osc::GenerateYToYLineMesh()
 {
     NewMeshData data;
     data.verts = {{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
@@ -566,7 +568,7 @@ osc::Mesh osc::GenYLine()
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenCube()
+osc::Mesh osc::GenerateCubeMesh()
 {
     NewMeshData data;
     data.reserve(c_ShadedTexturedCubeVerts.size());
@@ -586,7 +588,7 @@ osc::Mesh osc::GenCube()
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenCubeLines()
+osc::Mesh osc::GenerateCubeLinesMesh()
 {
     NewMeshData data;
     data.verts.reserve(c_CubeEdgeLines.size());
@@ -607,7 +609,7 @@ osc::Mesh osc::GenCubeLines()
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenCircle(size_t nsides)
+osc::Mesh osc::GenerateCircleMesh(size_t nsides)
 {
     NewMeshData data;
     data.verts.reserve(3*nsides);
@@ -621,21 +623,21 @@ osc::Mesh osc::GenCircle(size_t nsides)
         data.normals.emplace_back(0.0f, 0.0f, 1.0f);
     };
 
-    float const step = 2.0f*std::numbers::pi_v<float> / static_cast<float>(nsides);
+    Radians const step = 360_deg / nsides;
     for (size_t i = 0; i < nsides; ++i)
     {
-        float const theta1 = static_cast<float>(i) * step;
-        float const theta2 = static_cast<float>(i + 1) * step;
+        Radians const theta1 = static_cast<float>(i) * step;
+        Radians const theta2 = static_cast<float>(i + 1) * step;
 
         push(0.0f, 0.0f, 0.0f);
-        push(std::sin(theta1), std::cos(theta1), 0.0f);
-        push(std::sin(theta2), std::cos(theta2), 0.0f);
+        push(sin(theta1), cos(theta1), 0.0f);
+        push(sin(theta2), cos(theta2), 0.0f);
     }
 
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenTorus(size_t slices, size_t stacks, float torusCenterToTubeCenterRadius, float tubeRadius)
+osc::Mesh osc::GenerateTorusMesh(size_t slices, size_t stacks, float torusCenterToTubeCenterRadius, float tubeRadius)
 {
     // adapted from GitHub:prideout/par (used by raylib internally)
 
@@ -646,15 +648,15 @@ osc::Mesh osc::GenTorus(size_t slices, size_t stacks, float torusCenterToTubeCen
 
     auto const torusFn = [torusCenterToTubeCenterRadius, tubeRadius](Vec2 const uv)
     {
-        float const theta = 2.0f * std::numbers::pi_v<float> * uv.x;
-        float const phi = 2.0f * std::numbers::pi_v<float> * uv.y;
-        float const beta = torusCenterToTubeCenterRadius + tubeRadius*std::cos(phi);
+        Radians const theta = 360_deg * uv.x;
+        Radians const phi = 360_deg * uv.y;
+        float const beta = torusCenterToTubeCenterRadius + tubeRadius*cos(phi);
 
         return Vec3
         {
-            std::cos(theta) * beta,
-            std::sin(theta) * beta,
-            std::sin(phi) * tubeRadius,
+            cos(theta) * beta,
+            sin(theta) * beta,
+            sin(phi) * tubeRadius,
         };
     };
 
@@ -739,7 +741,7 @@ osc::Mesh osc::GenTorus(size_t slices, size_t stacks, float torusCenterToTubeCen
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(Vec2 min, Vec2 max, Vec2i steps)
+osc::Mesh osc::GenerateNxMGridLinesMesh(Vec2 min, Vec2 max, Vec2i steps)
 {
     // all Z values in the returned mesh shall be 0
     constexpr float zValue = 0.0f;
@@ -822,7 +824,7 @@ osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(Vec2 min, Vec2 max, Vec2i st
     return rv;
 }
 
-osc::Mesh osc::GenNxMTriangleQuad2DGrid(Vec2i steps)
+osc::Mesh osc::GenerateNxMTriangleQuadGridMesh(Vec2i steps)
 {
     // all Z values in the returned mesh shall be 0
     constexpr float zValue = 0.0f;

@@ -12,6 +12,8 @@
 #include <oscar/Graphics/RenderTextureDescriptor.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Maths/Angle.hpp>
+#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
@@ -29,6 +31,7 @@
 #include <utility>
 #include <vector>
 
+using namespace osc::literals;
 using osc::Camera;
 using osc::CStringView;
 using osc::Mesh;
@@ -47,8 +50,7 @@ namespace
     Mesh GeneratePlaneMesh()
     {
         Mesh rv;
-        rv.setVerts(
-        {{
+        rv.setVerts({{
             { 25.0f, -0.5f,  25.0f},
             {-25.0f, -0.5f,  25.0f},
             {-25.0f, -0.5f, -25.0f},
@@ -57,8 +59,7 @@ namespace
             {-25.0f, -0.5f, -25.0f},
             { 25.0f, -0.5f, -25.0f},
         }});
-        rv.setNormals(
-        {{
+        rv.setNormals({{
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
@@ -67,8 +68,7 @@ namespace
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
         }});
-        rv.setTexCoords(
-        {{
+        rv.setTexCoords({{
             {25.0f,  0.0f},
             {0.0f,  0.0f},
             {0.0f, 25.0f},
@@ -77,8 +77,7 @@ namespace
             {0.0f, 25.0f},
             {25.0f, 25.0f},
         }});
-        rv.setIndices(std::to_array<uint16_t>(
-        {
+        rv.setIndices(std::to_array<uint16_t>({
             0, 1, 2, 3, 4, 5
         }));
         return rv;
@@ -102,11 +101,10 @@ namespace
     }
 }
 
-class osc::LOGLShadowMappingTab::Impl final : public osc::StandardTabImpl {
+class osc::LOGLShadowMappingTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
-    {
-    }
+    {}
 
 private:
     void implOnMount() final
@@ -124,13 +122,11 @@ private:
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-        {
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
             m_IsMouseCaptured = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && osc::IsMouseInMainViewportWorkspaceScreenRect())
-        {
+        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
             m_IsMouseCaptured = true;
             return true;
         }
@@ -145,14 +141,12 @@ private:
 
     void handleMouseCapture()
     {
-        if (m_IsMouseCaptured)
-        {
+        if (m_IsMouseCaptured) {
             UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
             ImGui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
-        else
-        {
+        else {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
@@ -160,7 +154,7 @@ private:
 
     void draw3DScene()
     {
-        Rect const viewportRect = osc::GetMainViewportWorkspaceScreenRect();
+        Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
 
         renderShadowsToDepthTexture();
 
@@ -184,28 +178,31 @@ private:
     void drawMeshesWithMaterial(Material const& material)
     {
         // floor
-        Graphics::DrawMesh(m_PlaneMesh, Transform{}, material, m_Camera);
+        Graphics::DrawMesh(m_PlaneMesh, Identity<Transform>(), material, m_Camera);
 
         // cubes
-        {
-            Transform t;
-            t.position = {0.0f, 1.0f, 0.0f};
-            t.scale = Vec3{0.5f};
-            Graphics::DrawMesh(m_CubeMesh, t, material, m_Camera);
-        }
-        {
-            Transform t;
-            t.position = {2.0f, 0.0f, 1.0f};
-            t.scale = Vec3{0.5f};
-            Graphics::DrawMesh(m_CubeMesh, t, material, m_Camera);
-        }
-        {
-            Transform t;
-            t.position = {-1.0f, 0.0f, 2.0f};
-            t.rotation = AngleAxis(Deg2Rad(60.0f), Normalize(Vec3{1.0f, 0.0f, 1.0f}));
-            t.scale = Vec3{0.25f};
-            Graphics::DrawMesh(m_CubeMesh, t, material, m_Camera);
-        }
+        Graphics::DrawMesh(
+            m_CubeMesh,
+            {.scale = Vec3{0.5f}, .position = {0.0f, 1.0f, 0.0f}},
+            material,
+            m_Camera
+        );
+        Graphics::DrawMesh(
+            m_CubeMesh,
+            {.scale = Vec3{0.5f}, .position = {2.0f, 0.0f, 1.0f}},
+            material,
+            m_Camera
+        );
+        Graphics::DrawMesh(
+            m_CubeMesh,
+            Transform{
+                .scale = Vec3{0.25f},
+                .rotation = AngleAxis(60_deg, Normalize(Vec3{1.0f, 0.0f, 1.0f})),
+                .position = {-1.0f, 0.0f, 2.0f},
+            },
+            material,
+            m_Camera
+        );
     }
 
     void renderShadowsToDepthTexture()
@@ -226,29 +223,21 @@ private:
     }
 
     Camera m_Camera = CreateCamera();
-    Vec3 m_CameraEulers = {};
+    Eulers m_CameraEulers = {};
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
         App::resource("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
-    Mesh m_CubeMesh = GenCube();
+    Mesh m_CubeMesh = GenerateCubeMesh();
     Mesh m_PlaneMesh = GeneratePlaneMesh();
-    Material m_SceneMaterial
-    {
-        Shader
-        {
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.frag"),
-        },
-    };
-    Material m_DepthMaterial
-    {
-        Shader
-        {
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.frag"),
-        },
-    };
+    Material m_SceneMaterial{Shader{
+        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.vert"),
+        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.frag"),
+    }};
+    Material m_DepthMaterial{Shader{
+        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.vert"),
+        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.frag"),
+    }};
     RenderTexture m_DepthTexture = CreateDepthTexture();
     Mat4 m_LatestLightSpaceMatrix = Identity<Mat4>();
     Vec3 m_LightPos = {-2.0f, 4.0f, -1.0f};

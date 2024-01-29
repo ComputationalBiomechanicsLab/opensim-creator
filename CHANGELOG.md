@@ -6,8 +6,13 @@ All notable changes to this project will be documented here. The format is based
 
 - The available socket options when adding a new component to the model should now show all valid
   options, rather than just showing frames in the model (#820)
+- The camera's location/fov is now editable in degrees
+- The camera's panning behavior is better when viewing a 3D scene via a viewport with a very skewed
+  aspect ratio (e.g. when the model visualizer is tall and narrow, or short and wide)
 - Updated Sphinx to version 7.2.6, and the associated sphinx-book-theme to 1.1.0, which makes the
   documentation look a little nicer
+- Internal: the engine now uses strongly-typed angles (`osc::Radians` and `osc::Degrees`) to reduce
+  unit mismatches in the source code
 
 ## [0.5.7] - 2023/01/11
 
