@@ -79,3 +79,32 @@ TEST(StationDefinedFrame, CanCreateAModelContainingAStationDefinedFrameAsAChild)
     InitializeModel(model);
     InitializeState(model);
 }
+
+TEST(StationDefinedFrame, CanCreateModelContainingStationDefinedFrameAsParentOfOffsetFrame)
+{
+    OpenSim::Model model;
+
+    // add stations to the model
+    auto& p1 = AddModelComponent<OpenSim::Station>(model, model.getGround(), SimTK::Vec3{-1.0, -1.0, 0.0});
+    auto& p2 = AddModelComponent<OpenSim::Station>(model, model.getGround(), SimTK::Vec3{-1.0,  1.0, 0.0});
+    auto& p3 = AddModelComponent<OpenSim::Station>(model, model.getGround(), SimTK::Vec3{ 1.0,  0.0, 0.0});
+    auto& origin = p1;
+
+    // add a `StationDefinedFrame` that uses the stations to the model
+    auto& sdf = AddModelComponent<StationDefinedFrame>(
+        model,
+        SimTK::CoordinateAxis::XCoordinateAxis(),
+        SimTK::CoordinateAxis::YCoordinateAxis(),
+        p1,
+        p2,
+        p3,
+        origin
+    );
+
+    AddModelComponent<OpenSim::PhysicalOffsetFrame>(model, sdf, SimTK::Transform{});
+
+    // the model should initialize etc. fine
+    FinalizeConnections(model);
+    InitializeModel(model);  // TODO: broken by OpenSim/Simulation/Model/Model.cpp:958: only considers PoFs for finalization order
+    InitializeState(model);
+}

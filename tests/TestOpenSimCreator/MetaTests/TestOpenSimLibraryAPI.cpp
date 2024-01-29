@@ -9,6 +9,7 @@
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
@@ -21,6 +22,11 @@
 #include <array>
 #include <filesystem>
 #include <memory>
+
+using osc::AddModelComponent;
+using osc::FinalizeConnections;
+using osc::InitializeModel;
+using osc::InitializeState;
 
 
 // this is a repro for
@@ -555,4 +561,32 @@ TEST(OpenSimModel, MeshGetComponentListDoesNotIterate)
         ++n;
     }
     ASSERT_EQ(n, 0);
+}
+
+// repro for (what I think would be) potentially bad API behavior
+//
+// OpenSim has an `extendAddToSystem` method, and it must call components in
+// SimTK-multibody-graph order. If it's done in the wrong order, then you'll
+// end up with "invalid multibody index" errors, because PoFs further down
+// the chain are temporally dependent on PoFs further up the chain correctly
+// assigning their associated mobilized body
+//
+// OpenSim already knows this, and has a specific carve-out in `OpenSim::Model::extendConnectToModel`,
+// where it specifically trawls over the PoFs and follows their parent chain, followed
+// by internally calling `setNextSubcomponentInSystem` to enforce the correct ordering
+//
+// However, if you (e.g.) planned on creating custom components (e.g. StationDefinedFrame) and
+// placing them in chains with PoFs etc, you will be dissapointed, because OpenSim's carve-out
+// won't include ensuring that your custom component is finalized, etc. before the PoF.
+TEST(OpenSimModel, ChainsOfPOFsWorkAsExpected)
+{
+    OpenSim::Model m;
+    auto& pof1 = AddModelComponent<OpenSim::PhysicalOffsetFrame>(m, "z", m.getGround(), SimTK::Transform{});
+    auto& pof2 = AddModelComponent<OpenSim::PhysicalOffsetFrame>(m, "a", pof1, SimTK::Transform{});
+    auto& pof3 = AddModelComponent<OpenSim::PhysicalOffsetFrame>(m, "b", pof2, SimTK::Transform{});
+    AddModelComponent<OpenSim::PhysicalOffsetFrame>(m, "w", pof3, SimTK::Transform{});
+
+    FinalizeConnections(m);
+    InitializeModel(m);  // OpenSim's carve-out should ensure this works
+    InitializeState(m);
 }
