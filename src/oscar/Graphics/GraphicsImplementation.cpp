@@ -1307,6 +1307,54 @@ namespace
             return GL_REPEAT;
         }
     }
+
+    constexpr auto c_TextureWrapModeStrings = std::to_array<CStringView>(
+    {
+        "Repeat",
+        "Clamp",
+        "Mirror",
+    });
+    static_assert(c_TextureWrapModeStrings.size() == osc::NumOptions<TextureWrapMode>());
+
+    constexpr auto c_TextureFilterModeStrings = std::to_array<CStringView>(
+    {
+        "Nearest",
+        "Linear",
+        "Mipmap",
+    });
+    static_assert(c_TextureFilterModeStrings.size() == osc::NumOptions<TextureFilterMode>());
+
+    GLint ToGLTextureMinFilterParam(TextureFilterMode m)
+    {
+        static_assert(osc::NumOptions<TextureFilterMode>() == 3);
+
+        switch (m)
+        {
+        case TextureFilterMode::Nearest:
+            return GL_NEAREST;
+        case TextureFilterMode::Linear:
+            return GL_LINEAR;
+        case TextureFilterMode::Mipmap:
+            return GL_LINEAR_MIPMAP_LINEAR;
+        default:
+            return GL_LINEAR;
+        }
+    }
+
+    GLint ToGLTextureMagFilterParam(TextureFilterMode m)
+    {
+        static_assert(osc::NumOptions<TextureFilterMode>() == 3);
+
+        switch (m)
+        {
+        case TextureFilterMode::Nearest:
+            return GL_NEAREST;
+        case TextureFilterMode::Linear:
+        case TextureFilterMode::Mipmap:
+        default:
+            return GL_LINEAR;
+        }
+    }
 }
 
 //////////////////////////////////
@@ -1355,6 +1403,7 @@ public:
         m_WrapModeU = wm;
         m_WrapModeV = wm;
         m_WrapModeW = wm;
+        // TODO: update parameter block that tells OpenGL to reformat the params if necessary
     }
 
     TextureWrapMode getWrapModeU() const
@@ -1365,6 +1414,7 @@ public:
     void setWrapModeU(TextureWrapMode wm)
     {
         m_WrapModeU = wm;
+        // TODO: update parameter block that tells OpenGL to reformat the params if necessary
     }
 
     TextureWrapMode getWrapModeV() const
@@ -1375,6 +1425,7 @@ public:
     void setWrapModeV(TextureWrapMode wm)
     {
         m_WrapModeV = wm;
+        // TODO: update parameter block that tells OpenGL to reformat the params if necessary
     }
 
     TextureWrapMode getWrapModeW() const
@@ -1385,6 +1436,18 @@ public:
     void setWrapModeW(TextureWrapMode wm)
     {
         m_WrapModeW = wm;
+        // TODO: update parameter block that tells OpenGL to reformat the params if necessary
+    }
+
+    TextureFilterMode getFilterMode() const
+    {
+        return m_FilterMode;
+    }
+
+    void setFilterMode(TextureFilterMode fm)
+    {
+        m_FilterMode = fm;
+        // TODO: update parameter block that tells OpenGL to reformat the params if necessary
     }
 
     void setPixelData(CubemapFace face, std::span<uint8_t const> data)
@@ -1400,6 +1463,7 @@ public:
         OSC_ASSERT(destinationDataEnd <= m_Data.size() && "out of range assignment detected: this should be handled in the constructor");
 
         std::copy(data.begin(), data.end(), m_Data.begin() + destinationDataStart);
+        // TODO: ensure OpenGL is reset etc.
     }
 
     gl::TextureCubemap& updCubemap()
@@ -1461,8 +1525,8 @@ private:
         glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
         // set texture parameters
-        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);  // TODO: cubemap should have user-customizable filtering opts
+        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, ToGLTextureMagFilterParam(m_FilterMode));
+        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, ToGLTextureMinFilterParam(m_FilterMode));
         gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, ToGLTextureTextureWrapParam(m_WrapModeU));
         gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, ToGLTextureTextureWrapParam(m_WrapModeV));
         gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, ToGLTextureTextureWrapParam(m_WrapModeW));
@@ -1476,6 +1540,7 @@ private:
     TextureWrapMode m_WrapModeU = TextureWrapMode::Repeat;
     TextureWrapMode m_WrapModeV = TextureWrapMode::Repeat;
     TextureWrapMode m_WrapModeW = TextureWrapMode::Repeat;
+    TextureFilterMode m_FilterMode = TextureFilterMode::Mipmap;
     std::vector<uint8_t> m_Data;
 
     DefaultConstructOnCopy<std::optional<CubemapOpenGLData>> m_MaybeGPUTexture;
@@ -1531,6 +1596,16 @@ void osc::Cubemap::setWrapModeW(TextureWrapMode wm)
     m_Impl.upd()->setWrapModeW(wm);
 }
 
+TextureFilterMode osc::Cubemap::getFilterMode() const
+{
+    return m_Impl->getFilterMode();
+}
+
+void osc::Cubemap::setFilterMode(TextureFilterMode fm)
+{
+    m_Impl.upd()->setFilterMode(fm);
+}
+
 osc::TextureFormat osc::Cubemap::getTextureFormat() const
 {
     return m_Impl->getTextureFormat();
@@ -1550,54 +1625,6 @@ void osc::Cubemap::setPixelData(CubemapFace face, std::span<uint8_t const> chann
 
 namespace
 {
-    constexpr auto c_TextureWrapModeStrings = std::to_array<CStringView>(
-    {
-        "Repeat",
-        "Clamp",
-        "Mirror",
-    });
-    static_assert(c_TextureWrapModeStrings.size() == osc::NumOptions<TextureWrapMode>());
-
-    constexpr auto c_TextureFilterModeStrings = std::to_array<CStringView>(
-    {
-        "Nearest",
-        "Linear",
-        "Mipmap",
-    });
-    static_assert(c_TextureFilterModeStrings.size() == osc::NumOptions<TextureFilterMode>());
-
-    GLint ToGLTextureMinFilterParam(TextureFilterMode m)
-    {
-        static_assert(osc::NumOptions<TextureFilterMode>() == 3);
-
-        switch (m)
-        {
-        case TextureFilterMode::Nearest:
-            return GL_NEAREST;
-        case TextureFilterMode::Linear:
-            return GL_LINEAR;
-        case TextureFilterMode::Mipmap:
-            return GL_LINEAR_MIPMAP_LINEAR;
-        default:
-            return GL_LINEAR;
-        }
-    }
-
-    GLint ToGLTextureMagFilterParam(TextureFilterMode m)
-    {
-        static_assert(osc::NumOptions<TextureFilterMode>() == 3);
-
-        switch (m)
-        {
-        case TextureFilterMode::Nearest:
-            return GL_NEAREST;
-        case TextureFilterMode::Linear:
-        case TextureFilterMode::Mipmap:
-        default:
-            return GL_LINEAR;
-        }
-    }
-
     std::vector<Color> ReadPixelDataAsColor(
         std::span<uint8_t const> pixelData,
         TextureFormat pixelDataFormat)

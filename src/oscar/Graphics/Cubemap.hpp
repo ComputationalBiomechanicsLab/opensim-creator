@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Graphics/CubemapFace.hpp>
+#include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
 #include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Utils/CopyOnUpdPtr.hpp>
@@ -25,6 +26,9 @@ namespace osc
         void setWrapModeV(TextureWrapMode);
         TextureWrapMode getWrapModeW() const;
         void setWrapModeW(TextureWrapMode);
+
+        TextureFilterMode getFilterMode() const;
+        void setFilterMode(TextureFilterMode);
 
         // `data` must match the channel layout, bytes per channel, and
         // width*height of the cubemap, or an exception will be thrown

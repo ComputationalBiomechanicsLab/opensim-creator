@@ -10,6 +10,7 @@
 
 using osc::Cubemap;
 using osc::CubemapFace;
+using osc::TextureFilterMode;
 using osc::TextureFormat;
 using osc::TextureWrapMode;
 
@@ -264,4 +265,17 @@ TEST(Cubemap, SetWrapModeWOnlySetsWAxis)
     ASSERT_EQ(cm.getWrapModeU(), TextureWrapMode::Repeat);
     ASSERT_EQ(cm.getWrapModeV(), TextureWrapMode::Repeat);
     ASSERT_EQ(cm.getWrapModeW(), TextureWrapMode::Clamp);
+}
+
+TEST(Cubemap, GetFilterModeInitiallyReturnsMipmap)
+{
+    ASSERT_EQ(Cubemap(1, TextureFormat::RGBA32).getFilterMode(), TextureFilterMode::Mipmap);
+}
+
+TEST(Cubemap, SetFilterModeUpdatesFilterMode)
+{
+    Cubemap cm{1, TextureFormat::RGBA32};
+    ASSERT_EQ(cm.getFilterMode(), TextureFilterMode::Mipmap);
+    cm.setFilterMode(TextureFilterMode::Nearest);
+    ASSERT_EQ(cm.getFilterMode(), TextureFilterMode::Nearest);
 }

@@ -172,8 +172,7 @@ namespace
 
         Cubemap rv{levelZeroWidth, TextureFormat::RGBAFloat};
         rv.setWrapMode(TextureWrapMode::Clamp);
-        // TODO: ensure GL_TEXTURE_MIN_FILTER is GL_LINEAR_MIPMAP_LINEAR
-        // TODO: ensure GL_TEXTURE_MAG_FILTER is GL_LINEAR
+        rv.setFilterMode(TextureFilterMode::Mipmap);
 
         size_t const maxMipmapLevel = static_cast<size_t>(std::max(
             0,

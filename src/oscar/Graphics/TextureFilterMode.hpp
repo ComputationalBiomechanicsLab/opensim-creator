@@ -9,7 +9,7 @@ namespace osc
     enum class TextureFilterMode {
         Nearest,
         Linear,
-        Mipmap,
+        Mipmap,  // linear when magnifying, though
         NUM_OPTIONS,
     };
 
