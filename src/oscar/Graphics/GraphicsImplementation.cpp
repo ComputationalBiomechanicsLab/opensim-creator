@@ -1290,6 +1290,23 @@ namespace
 
         return GL_TEXTURE_CUBE_MAP_POSITIVE_X + static_cast<GLenum>(f);
     }
+
+    GLint ToGLTextureTextureWrapParam(TextureWrapMode m)
+    {
+        static_assert(osc::NumOptions<TextureWrapMode>() == 3);
+
+        switch (m)
+        {
+        case TextureWrapMode::Repeat:
+            return GL_REPEAT;
+        case TextureWrapMode::Clamp:
+            return GL_CLAMP_TO_EDGE;
+        case TextureWrapMode::Mirror:
+            return GL_MIRRORED_REPEAT;
+        default:
+            return GL_REPEAT;
+        }
+    }
 }
 
 //////////////////////////////////
@@ -1326,6 +1343,48 @@ public:
     TextureFormat getTextureFormat() const
     {
         return m_Format;
+    }
+
+    TextureWrapMode getWrapMode() const
+    {
+        return m_WrapModeU;
+    }
+
+    void setWrapMode(TextureWrapMode wm)
+    {
+        m_WrapModeU = wm;
+        m_WrapModeV = wm;
+        m_WrapModeW = wm;
+    }
+
+    TextureWrapMode getWrapModeU() const
+    {
+        return m_WrapModeU;
+    }
+
+    void setWrapModeU(TextureWrapMode wm)
+    {
+        m_WrapModeU = wm;
+    }
+
+    TextureWrapMode getWrapModeV() const
+    {
+        return m_WrapModeV;
+    }
+
+    void setWrapModeV(TextureWrapMode wm)
+    {
+        m_WrapModeV = wm;
+    }
+
+    TextureWrapMode getWrapModeW() const
+    {
+        return m_WrapModeW;
+    }
+
+    void setWrapModeW(TextureWrapMode wm)
+    {
+        m_WrapModeW = wm;
     }
 
     void setPixelData(CubemapFace face, std::span<uint8_t const> data)
@@ -1404,9 +1463,9 @@ private:
         // set texture parameters
         gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);  // TODO: cubemap should have user-customizable filtering opts
-        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, ToGLTextureTextureWrapParam(m_WrapModeU));
+        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, ToGLTextureTextureWrapParam(m_WrapModeV));
+        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, ToGLTextureTextureWrapParam(m_WrapModeW));
 
         // cleanup OpenGL binding state
         gl::BindTexture();
@@ -1414,6 +1473,9 @@ private:
 
     int32_t m_Width;
     TextureFormat m_Format;
+    TextureWrapMode m_WrapModeU = TextureWrapMode::Repeat;
+    TextureWrapMode m_WrapModeV = TextureWrapMode::Repeat;
+    TextureWrapMode m_WrapModeW = TextureWrapMode::Repeat;
     std::vector<uint8_t> m_Data;
 
     DefaultConstructOnCopy<std::optional<CubemapOpenGLData>> m_MaybeGPUTexture;
@@ -1427,6 +1489,46 @@ osc::Cubemap::Cubemap(int32_t width, TextureFormat format) :
 int32_t osc::Cubemap::getWidth() const
 {
     return m_Impl->getWidth();
+}
+
+TextureWrapMode osc::Cubemap::getWrapMode() const
+{
+    return m_Impl->getWrapMode();
+}
+
+void osc::Cubemap::setWrapMode(TextureWrapMode wm)
+{
+    m_Impl.upd()->setWrapMode(wm);
+}
+
+TextureWrapMode osc::Cubemap::getWrapModeU() const
+{
+    return m_Impl->getWrapModeU();
+}
+
+void osc::Cubemap::setWrapModeU(TextureWrapMode wm)
+{
+    m_Impl.upd()->setWrapModeU(wm);
+}
+
+TextureWrapMode osc::Cubemap::getWrapModeV() const
+{
+    return m_Impl->getWrapModeV();
+}
+
+void osc::Cubemap::setWrapModeV(TextureWrapMode wm)
+{
+    m_Impl.upd()->setWrapModeV(wm);
+}
+
+TextureWrapMode osc::Cubemap::getWrapModeW() const
+{
+    return m_Impl->getWrapModeW();
+}
+
+void osc::Cubemap::setWrapModeW(TextureWrapMode wm)
+{
+    m_Impl.upd()->setWrapModeW(wm);
 }
 
 osc::TextureFormat osc::Cubemap::getTextureFormat() const
@@ -1493,23 +1595,6 @@ namespace
         case TextureFilterMode::Mipmap:
         default:
             return GL_LINEAR;
-        }
-    }
-
-    GLint ToGLTextureTextureWrapParam(TextureWrapMode m)
-    {
-        static_assert(osc::NumOptions<TextureWrapMode>() == 3);
-
-        switch (m)
-        {
-        case TextureWrapMode::Repeat:
-            return GL_REPEAT;
-        case TextureWrapMode::Clamp:
-            return GL_CLAMP_TO_EDGE;
-        case TextureWrapMode::Mirror:
-            return GL_MIRRORED_REPEAT;
-        default:
-            return GL_REPEAT;
         }
     }
 

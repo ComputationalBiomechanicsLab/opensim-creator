@@ -2,6 +2,7 @@
 
 #include <oscar/Graphics/CubemapFace.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
+#include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Utils/CopyOnUpdPtr.hpp>
 
 #include <cstddef>
@@ -15,6 +16,15 @@ namespace osc
 
         int32_t getWidth() const;
         TextureFormat getTextureFormat() const;
+
+        TextureWrapMode getWrapMode() const;  // same as getWrapModeU
+        void setWrapMode(TextureWrapMode);  // sets all axes
+        TextureWrapMode getWrapModeU() const;
+        void setWrapModeU(TextureWrapMode);
+        TextureWrapMode getWrapModeV() const;
+        void setWrapModeV(TextureWrapMode);
+        TextureWrapMode getWrapModeW() const;
+        void setWrapModeW(TextureWrapMode);
 
         // `data` must match the channel layout, bytes per channel, and
         // width*height of the cubemap, or an exception will be thrown

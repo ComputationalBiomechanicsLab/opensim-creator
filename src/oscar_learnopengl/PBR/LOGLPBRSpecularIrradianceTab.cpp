@@ -182,7 +182,7 @@ namespace
         Camera camera;
 
         Cubemap rv{levelZeroWidth, TextureFormat::RGBAFloat};
-        // TODO: wrap-s/t/r == GL_CLAMP_TO_EDGE
+        rv.setWrapMode(TextureWrapMode::Clamp);
         // TODO: ensure GL_TEXTURE_MIN_FILTER is GL_LINEAR_MIPMAP_LINEAR
         // TODO: ensure GL_TEXTURE_MAG_FILTER is GL_LINEAR
 
