@@ -36,6 +36,7 @@ add_executable(testoscar
 
     Maths/TestAngle.cpp
     Maths/TestBVH.cpp
+    Maths/TestUnitVec.cpp
 
     Object/TestClass.cpp
     Object/TestNode.cpp

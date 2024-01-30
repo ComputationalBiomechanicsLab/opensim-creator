@@ -1,5 +1,7 @@
 #include "LOGLHDRTab.hpp"
 
+#include <oscar_learnopengl/MouseCapturingCamera.hpp>
+
 #include <imgui.h>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
@@ -38,6 +40,7 @@ using osc::ColorSpace;
 using osc::CStringView;
 using osc::LoadTexture2DFromImage;
 using osc::Material;
+using osc::MouseCapturingCamera;
 using osc::Texture2D;
 using osc::ToSRGB;
 using osc::Shader;
@@ -70,14 +73,15 @@ namespace
         return {.scale = {2.5f, 2.5f, 27.5f}, .position = {0.0f, 0.0f, 25.0f}};
     }
 
-    Camera CreateSceneCamera()
+    MouseCapturingCamera CreateSceneCamera()
     {
-        Camera rv;
+        MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
         rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
+        rv.eulers() = {0_deg, 180_deg, 0_deg};
         return rv;
     }
 
@@ -117,49 +121,26 @@ private:
     void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
-        m_IsMouseCaptured = true;
+        m_Camera.onMount();
     }
 
     void implOnUnmount() final
     {
-        m_IsMouseCaptured = false;
-        App::upd().setShowCursor(true);
+        m_Camera.onUnmount();
         App::upd().makeMainEventLoopWaiting();
     }
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-            m_IsMouseCaptured = false;
-            return true;
-        }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
-            m_IsMouseCaptured = true;
-            return true;
-        }
-        return false;
+        return m_Camera.onEvent(e);
     }
 
     void implOnDraw() final
     {
-        handleMouseCapturing();
+        m_Camera.onDraw();
         draw3DSceneToHDRTexture();
         drawHDRTextureViaTonemapperToScreen();
         draw2DUI();
-    }
-
-    void handleMouseCapturing()
-    {
-        // handle mouse capturing
-        if (m_IsMouseCaptured) {
-            UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
-            ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-            App::upd().setShowCursor(false);
-        }
-        else {
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
-            App::upd().setShowCursor(true);
-        }
     }
 
     void draw3DSceneToHDRTexture()
@@ -206,21 +187,18 @@ private:
         ImGui::Checkbox("use 16-bit colors", &m_Use16BitFormat);
         ImGui::InputFloat("exposure", &m_Exposure);
         ImGui::Text("pos = %f,%f,%f", m_Camera.getPosition().x, m_Camera.getPosition().y, m_Camera.getPosition().z);
-        ImGui::Text("eulers = %f,%f,%f", m_CameraEulers.x.count(), m_CameraEulers.y.count(), m_CameraEulers.z.count());
+        ImGui::Text("eulers = %f,%f,%f", m_Camera.eulers().x.count(), m_Camera.eulers().y.count(), m_Camera.eulers().z.count());
         ImGui::End();
     }
 
     Material m_SceneMaterial = CreateSceneMaterial();
     Material m_TonemapMaterial = CreateTonemapMaterial();
-    Camera m_Camera = CreateSceneCamera();
+    MouseCapturingCamera m_Camera = CreateSceneCamera();
     Mesh m_CubeMesh = GenerateCubeMesh();
     Mesh m_QuadMesh = GenerateTexturedQuadMesh();
     Transform m_CorridoorTransform = CalcCorridoorTransform();
     RenderTexture m_SceneHDRTexture;
     float m_Exposure = 1.0f;
-
-    Eulers m_CameraEulers = {0_deg, 180_deg, 0_deg};
-    bool m_IsMouseCaptured = true;
     bool m_Use16BitFormat = true;
     bool m_UseTonemap = true;
 };

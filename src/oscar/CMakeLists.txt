@@ -136,6 +136,8 @@ add_library(oscar STATIC
     Maths/Tetrahedron.hpp
     Maths/Transform.hpp
     Maths/Triangle.hpp
+    Maths/UnitVec.hpp
+    Maths/UnitVec3.hpp
     Maths/Vec.hpp
     Maths/Vec2.hpp
     Maths/Vec3.hpp

@@ -1,5 +1,7 @@
 #include "LOGLBloomTab.hpp"
 
+#include <oscar_learnopengl/MouseCapturingCamera.hpp>
+
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <oscar/Graphics/Camera.hpp>
@@ -19,6 +21,7 @@
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/UnitVec3.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
@@ -38,11 +41,12 @@ using osc::Color;
 using osc::CStringView;
 using osc::Identity;
 using osc::Mat4;
-using osc::Normalize;
+using osc::MouseCapturingCamera;
 using osc::Rotate;
 using osc::Scale;
 using osc::ToSRGB;
 using osc::Translate;
+using osc::UnitVec3;
 using osc::Vec2;
 using osc::Vec3;
 
@@ -90,14 +94,14 @@ namespace
         {
             Mat4 m = Identity<Mat4>();
             m = Translate(m, Vec3(-1.0f, -1.0f, 2.0));
-            m = Rotate(m, 60_deg, Normalize(Vec3(1.0, 0.0, 1.0)));
+            m = Rotate(m, 60_deg, UnitVec3{1.0, 0.0, 1.0});
             rv.push_back(m);
         }
 
         {
             Mat4 m = Identity<Mat4>();
             m = Translate(m, Vec3(0.0f, 2.7f, 4.0));
-            m = Rotate(m, 23_deg, Normalize(Vec3(1.0, 0.0, 1.0)));
+            m = Rotate(m, 23_deg, UnitVec3{1.0, 0.0, 1.0});
             m = Scale(m, Vec3(1.25));
             rv.push_back(m);
         }
@@ -105,7 +109,7 @@ namespace
         {
             Mat4 m = Identity<Mat4>();
             m = Translate(m, Vec3(-2.0f, 1.0f, -3.0));
-            m = Rotate(m, 124_deg, Normalize(Vec3(1.0, 0.0, 1.0)));
+            m = Rotate(m, 124_deg, UnitVec3{1.0, 0.0, 1.0});
             rv.push_back(m);
         }
 
@@ -119,9 +123,9 @@ namespace
         return rv;
     }
 
-    Camera CreateCameraThatMatchesLearnOpenGL()
+    MouseCapturingCamera CreateCameraThatMatchesLearnOpenGL()
     {
-        Camera rv;
+        MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
@@ -143,43 +147,23 @@ private:
     void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
-        m_IsMouseCaptured = true;
+        m_Camera.onMount();
     }
 
     void implOnUnmount() final
     {
-        App::upd().setShowCursor(true);
+        m_Camera.onUnmount();
         App::upd().makeMainEventLoopWaiting();
-        m_IsMouseCaptured = false;
     }
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        // handle mouse input
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-            m_IsMouseCaptured = false;
-            return true;
-        }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
-            m_IsMouseCaptured = true;
-            return true;
-        }
-        return false;
+        return m_Camera.onEvent(e);
     }
 
     void implOnDraw() final
     {
-        // handle mouse capturing
-        if (m_IsMouseCaptured) {
-            UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
-            ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-            App::upd().setShowCursor(false);
-        }
-        else {
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
-            App::upd().setShowCursor(true);
-        }
-
+        m_Camera.onDraw();
         draw3DScene();
     }
 
@@ -393,9 +377,7 @@ private:
     RenderTexture m_SceneHDRThresholdedOutput;
     std::array<RenderTexture, 2> m_PingPongBlurOutputBuffers;
 
-    Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
-    bool m_IsMouseCaptured = true;
-    Eulers m_CameraEulers = {};
+    MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
 };
 
 

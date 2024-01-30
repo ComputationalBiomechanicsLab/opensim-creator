@@ -1,6 +1,7 @@
 #include "LOGLFramebuffersTab.hpp"
 
 #include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
+#include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
@@ -35,6 +36,7 @@ using osc::CStringView;
 using osc::Identity;
 using osc::Mat4;
 using osc::Mesh;
+using osc::MouseCapturingCamera;
 using osc::Vec2;
 using osc::Vec3;
 
@@ -76,9 +78,9 @@ namespace
         return rv;
     }
 
-    Camera CreateSceneCamera()
+    MouseCapturingCamera CreateSceneCamera()
     {
-        Camera rv;
+        MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
@@ -105,41 +107,23 @@ private:
     void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
-        m_IsMouseCaptured = true;
+        m_SceneCamera.onMount();
     }
 
     void implOnUnmount() final
     {
-        m_IsMouseCaptured = false;
-        App::upd().setShowCursor(true);
+        m_SceneCamera.onUnmount();
         App::upd().makeMainEventLoopWaiting();
     }
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-            m_IsMouseCaptured = false;
-            return true;
-        }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
-            m_IsMouseCaptured = true;
-            return true;
-        }
-        return false;
+        return m_SceneCamera.onEvent(e);
     }
 
     void implOnDraw() final
     {
-        // handle mouse capturing
-        if (m_IsMouseCaptured) {
-            UpdateEulerCameraFromImGuiUserInput(m_SceneCamera, m_CameraEulers);
-            ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-            App::upd().setShowCursor(false);
-        }
-        else {
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
-            App::upd().setShowCursor(true);
-        }
+        m_SceneCamera.onDraw();
 
         // setup render texture
         Rect viewportRect = GetMainViewportWorkspaceScreenRect();
@@ -173,9 +157,7 @@ private:
         App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.frag"),
     }};
 
-    Camera m_SceneCamera = CreateSceneCamera();
-    bool m_IsMouseCaptured = false;
-    Eulers m_CameraEulers = {};
+    MouseCapturingCamera m_SceneCamera = CreateSceneCamera();
 
     Texture2D m_ContainerTexture = LoadTexture2DFromImage(
         App::resource("oscar_learnopengl/textures/container.jpg"),

@@ -1,9 +1,9 @@
 #include "LOGLCubemapsTab.hpp"
 
 #include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
+#include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
 #include <imgui.h>
-#include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Cubemap.hpp>
 #include <oscar/Graphics/Graphics.hpp>
@@ -37,7 +37,6 @@
 
 using namespace osc::literals;
 using osc::App;
-using osc::Camera;
 using osc::ColorSpace;
 using osc::CStringView;
 using osc::Cubemap;
@@ -48,6 +47,7 @@ using osc::LoadTexture2DFromImage;
 using osc::Mat3;
 using osc::Mat4;
 using osc::Material;
+using osc::MouseCapturingCamera;
 using osc::Next;
 using osc::NumOptions;
 using osc::Shader;
@@ -100,9 +100,9 @@ namespace
         return cubemap;
     }
 
-    Camera CreateCameraThatMatchesLearnOpenGL()
+    MouseCapturingCamera CreateCameraThatMatchesLearnOpenGL()
     {
-        Camera rv;
+        MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
@@ -167,41 +167,23 @@ private:
     void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
-        m_IsMouseCaptured = true;
+        m_Camera.onMount();
     }
 
     void implOnUnmount() final
     {
-        m_IsMouseCaptured = false;
-        App::upd().setShowCursor(true);
+        m_Camera.onUnmount();
         App::upd().makeMainEventLoopWaiting();
     }
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-            m_IsMouseCaptured = false;
-            return true;
-        }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
-            m_IsMouseCaptured = true;
-            return true;
-        }
-        return false;
+        return m_Camera.onEvent(e);
     }
 
     void implOnDraw() final
     {
-        // handle mouse capturing
-        if (m_IsMouseCaptured) {
-            UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
-            ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-            App::upd().setShowCursor(false);
-        }
-        else {
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
-            App::upd().setShowCursor(true);
-        }
+        m_Camera.onDraw();
 
         // clear screen and ensure camera has correct pixel rect
         m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
@@ -273,9 +255,7 @@ private:
     Mesh m_Skybox = GenerateCubeMesh();
     Cubemap m_Cubemap = LoadCubemap(App::get().getConfig().getResourceDir());
 
-    Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
-    bool m_IsMouseCaptured = true;
-    Eulers m_CameraEulers = {};
+    MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
 };
 
 

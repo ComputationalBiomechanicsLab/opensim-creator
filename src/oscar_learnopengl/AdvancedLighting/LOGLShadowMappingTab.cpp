@@ -1,7 +1,8 @@
 #include "LOGLShadowMappingTab.hpp"
 
+#include <oscar_learnopengl/MouseCapturingCamera.hpp>
+
 #include <IconsFontAwesome5.h>
-#include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
@@ -17,6 +18,7 @@
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/UnitVec3.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
@@ -32,9 +34,9 @@
 #include <vector>
 
 using namespace osc::literals;
-using osc::Camera;
 using osc::CStringView;
 using osc::Mesh;
+using osc::MouseCapturingCamera;
 using osc::RenderTexture;
 using osc::RenderTextureDescriptor;
 using osc::RenderTextureReadWrite;
@@ -83,12 +85,12 @@ namespace
         return rv;
     }
 
-    Camera CreateCamera()
+    MouseCapturingCamera CreateCamera()
     {
-        Camera rv;
-        rv.setNearClippingPlane(0.1f);
-        rv.setFarClippingPlane(100.0f);
-        return rv;
+        MouseCapturingCamera cam;
+        cam.setNearClippingPlane(0.1f);
+        cam.setFarClippingPlane(100.0f);
+        return cam;
     }
 
     RenderTexture CreateDepthTexture()
@@ -110,46 +112,24 @@ private:
     void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
-        m_IsMouseCaptured = true;
+        m_Camera.onMount();
     }
 
     void implOnUnmount() final
     {
-        m_IsMouseCaptured = false;
+        m_Camera.onUnmount();
         App::upd().makeMainEventLoopWaiting();
-        App::upd().setShowCursor(true);
     }
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-            m_IsMouseCaptured = false;
-            return true;
-        }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
-            m_IsMouseCaptured = true;
-            return true;
-        }
-        return false;
+        return m_Camera.onEvent(e);
     }
 
     void implOnDraw() final
     {
-        handleMouseCapture();
+        m_Camera.onDraw();
         draw3DScene();
-    }
-
-    void handleMouseCapture()
-    {
-        if (m_IsMouseCaptured) {
-            UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
-            ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-            App::upd().setShowCursor(false);
-        }
-        else {
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
-            App::upd().setShowCursor(true);
-        }
     }
 
     void draw3DScene()
@@ -197,7 +177,7 @@ private:
             m_CubeMesh,
             Transform{
                 .scale = Vec3{0.25f},
-                .rotation = AngleAxis(60_deg, Normalize(Vec3{1.0f, 0.0f, 1.0f})),
+                .rotation = AngleAxis(60_deg, UnitVec3{1.0f, 0.0f, 1.0f}),
                 .position = {-1.0f, 0.0f, 2.0f},
             },
             material,
@@ -222,8 +202,7 @@ private:
         m_Camera.setProjectionMatrixOverride(std::nullopt);
     }
 
-    Camera m_Camera = CreateCamera();
-    Eulers m_CameraEulers = {};
+    MouseCapturingCamera m_Camera = CreateCamera();
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
         App::resource("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
@@ -241,7 +220,6 @@ private:
     RenderTexture m_DepthTexture = CreateDepthTexture();
     Mat4 m_LatestLightSpaceMatrix = Identity<Mat4>();
     Vec3 m_LightPos = {-2.0f, 4.0f, -1.0f};
-    bool m_IsMouseCaptured = false;
 };
 
 

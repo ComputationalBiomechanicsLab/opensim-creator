@@ -1,8 +1,9 @@
 #include "LOGLPBRLightingTab.hpp"
 
+#include <oscar_learnopengl/MouseCapturingCamera.hpp>
+
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
@@ -27,9 +28,9 @@
 
 using namespace osc::literals;
 using osc::App;
-using osc::Camera;
 using osc::CStringView;
 using osc::Material;
+using osc::MouseCapturingCamera;
 using osc::Shader;
 using osc::Vec3;
 
@@ -55,9 +56,9 @@ namespace
     constexpr int c_NumCols = 7;
     constexpr float c_CellSpacing = 2.5f;
 
-    Camera CreateCamera()
+    MouseCapturingCamera CreateCamera()
     {
-        Camera rv;
+        MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
@@ -86,49 +87,25 @@ private:
     void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
-        m_IsMouseCaptured = true;
+        m_Camera.onMount();
     }
 
     void implOnUnmount() final
     {
-        App::upd().setShowCursor(true);
+        m_Camera.onUnmount();
         App::upd().makeMainEventLoopWaiting();
-        m_IsMouseCaptured = false;
     }
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        // handle mouse input
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-            m_IsMouseCaptured = false;
-            return true;
-        }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
-            m_IsMouseCaptured = true;
-            return true;
-        }
-        return false;
+        return m_Camera.onEvent(e);
     }
 
     void implOnDraw() final
     {
-        updateCameraFromInputs();
+        m_Camera.onDraw();
         draw3DRender();
         draw2DUI();
-    }
-
-    void updateCameraFromInputs()
-    {
-        // handle mouse capturing
-        if (m_IsMouseCaptured) {
-            UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
-            ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-            App::upd().setShowCursor(false);
-        }
-        else {
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
-            App::upd().setShowCursor(true);
-        }
     }
 
     void draw3DRender()
@@ -177,11 +154,9 @@ private:
         m_PerfPanel.onDraw();
     }
 
-    Camera m_Camera = CreateCamera();
+    MouseCapturingCamera m_Camera = CreateCamera();
     Mesh m_SphereMesh = GenerateUVSphereMesh(64, 64);
     Material m_PBRMaterial = CreateMaterial();
-    Eulers m_CameraEulers = {};
-    bool m_IsMouseCaptured = true;
 
     PerfPanel m_PerfPanel{"Perf"};
 };

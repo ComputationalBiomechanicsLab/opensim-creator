@@ -24,7 +24,7 @@ namespace osc
     //
     // encapsulates a camera viewport that can be drawn to, with the intention of producing
     // a 2D rendered image of the drawn elements
-    class Camera final {
+    class Camera {
     public:
         Camera();
 
