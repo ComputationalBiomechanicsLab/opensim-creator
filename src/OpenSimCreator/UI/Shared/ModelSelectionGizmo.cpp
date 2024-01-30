@@ -306,13 +306,29 @@ namespace
         }
     };
 
+    bool IsDirectChildOfAnyJoint(OpenSim::Model const& model, OpenSim::Frame const& frame)
+    {
+        for (OpenSim::Joint const& joint : model.getComponentList<OpenSim::Joint>()) {
+            if (&joint.getChildFrame() == &frame) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    SimTK::Rotation NegateRotation(SimTK::Rotation const& r)
+    {
+        return SimTK::Rotation{-SimTK::Mat33{r}, true};
+    }
+
     // manipulator for `OpenSim::PhysicalOffsetFrame`
     class PhysicalOffsetFrameManipulator final : public SelectionManipulator<OpenSim::PhysicalOffsetFrame> {
     public:
         PhysicalOffsetFrameManipulator(
             std::shared_ptr<UndoableModelStatePair> model_,
             OpenSim::PhysicalOffsetFrame const& pof) :
-            SelectionManipulator{std::move(model_), pof}
+            SelectionManipulator{std::move(model_), pof},
+            m_IsChildFrameOfJoint{IsDirectChildOfAnyJoint(getModel(), pof)}
         {}
 
     private:
@@ -324,14 +340,28 @@ namespace
         Mat4 implGetCurrentModelMatrix(
             OpenSim::PhysicalOffsetFrame const& pof) const final
         {
-            return ToMat4x4(pof.getTransformInGround(getState()));
+            if (m_IsChildFrameOfJoint) {
+                // if the POF that's being edited is the child frame of a joint then
+                // its offset/orientation is constrained to be in the same location/orientation
+                // as the joint's parent frame (plus coordinate transforms)
+                auto t = pof.getTransformInGround(getState());
+                t.updR() = NegateRotation(t.R());
+                //t.updP() = pof.getParentFrame().getPositionInGround(getState());
+                return ToMat4x4(t);
+            }
+            else {
+                return ToMat4x4(pof.getTransformInGround(getState()));
+            }
         }
 
         void implOnApplyTranslation(
             OpenSim::PhysicalOffsetFrame const& pof,
             Vec3 const& deltaTranslationInGround) final
         {
-            SimTK::Rotation const parentToGroundRotation = pof.getParentFrame().getRotationInGround(getState());
+            SimTK::Rotation parentToGroundRotation = pof.getParentFrame().getRotationInGround(getState());
+            if (m_IsChildFrameOfJoint) {
+                parentToGroundRotation = NegateRotation(parentToGroundRotation);
+            }
             SimTK::InverseRotation const& groundToParentRotation = parentToGroundRotation.invert();
             SimTK::Vec3 const deltaTranslationInParent = groundToParentRotation * ToSimTKVec3(deltaTranslationInGround);
             SimTK::Vec3 const& eulersInPofFrame = pof.get_orientation();
@@ -351,7 +381,7 @@ namespace
             OpenSim::Frame const& parent = pof.getParentFrame();
             SimTK::State const& state = getState();
 
-            Quat const deltaRotationInGround = WorldspaceRotation(deltaEulerRadiansInGround);
+            Quat const deltaRotationInGround = WorldspaceRotation(m_IsChildFrameOfJoint ? -deltaEulerRadiansInGround : deltaEulerRadiansInGround);
             Quat const oldRotationInGround = ToQuat(pof.getRotationInGround(state));
             Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
             Quat const newRotationInGround = Normalize(deltaRotationInGround * oldRotationInGround);
@@ -371,6 +401,9 @@ namespace
             ss << "transformed " << pof.getName();
             getUndoableModel().commit(std::move(ss).str());
         }
+
+    private:
+        bool m_IsChildFrameOfJoint = false;
     };
 
     // manipulator for `OpenSim::WrapObject`
