@@ -29,6 +29,7 @@ add_library(oscar STATIC
     Formats/SVG.cpp
 
     Graphics/Detail/ShaderLocations.hpp
+    Graphics/Detail/TextureFormatList.hpp
     Graphics/Detail/VertexAttributeFormatHelpers.hpp
     Graphics/Detail/VertexAttributeFormatList.hpp
     Graphics/Detail/VertexAttributeFormatTraits.hpp
@@ -37,6 +38,7 @@ add_library(oscar STATIC
     Graphics/Detail/VertexAttributeTraits.hpp
     Graphics/OpenGL/Gl.cpp
     Graphics/OpenGL/Gl.hpp
+    Graphics/OpenGL/TextureFormatOpenGLTraits.hpp
     Graphics/AntiAliasingLevel.cpp
     Graphics/AntiAliasingLevel.hpp
     Graphics/BlitFlags.hpp

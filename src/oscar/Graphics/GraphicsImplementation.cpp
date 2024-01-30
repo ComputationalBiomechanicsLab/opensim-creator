@@ -1,9 +1,11 @@
 // these are the things that this file "implements"
 
+#include <oscar/Graphics/Detail/TextureFormatList.hpp>
 #include <oscar/Graphics/Detail/VertexAttributeFormatHelpers.hpp>
 #include <oscar/Graphics/Detail/VertexAttributeFormatList.hpp>
 #include <oscar/Graphics/Detail/VertexAttributeFormatTraits.hpp>
 #include <oscar/Graphics/Detail/VertexAttributeHelpers.hpp>
+#include <oscar/Graphics/OpenGL/TextureFormatOpenGLTraits.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/CameraClearFlags.hpp>
 #include <oscar/Graphics/CameraProjection.hpp>
@@ -97,6 +99,8 @@ using namespace osc::literals;
 using osc::detail::DefaultFormat;
 using osc::detail::NumComponents;
 using osc::detail::SizeOfComponent;
+using osc::detail::TextureFormatList;
+using osc::detail::TextureFormatOpenGLTraits;
 using osc::detail::VertexAttributeFormatList;
 using osc::detail::VertexAttributeFormatTraits;
 using osc::BitCastable;
@@ -1137,23 +1141,12 @@ namespace
     // CPU (packed) to the GPU (unpacked)
     constexpr GLint ToOpenGLUnpackAlignment(TextureFormat format)
     {
-        static_assert(osc::NumOptions<TextureFormat>() == 5);
-
-        switch (format)
+        constexpr auto lut = []<TextureFormat... Formats>(NonTypelist<TextureFormat, Formats...>)
         {
-        case TextureFormat::R8:
-            return 1;
-        case TextureFormat::RGB24:
-            return 1;
-        case TextureFormat::RGBA32:
-            return 4;
-        case TextureFormat::RGBFloat:
-            return 4;
-        case TextureFormat::RGBAFloat:
-            return 4;
-        default:
-            return 1;
-        }
+            return std::to_array({ TextureFormatOpenGLTraits<Formats>::unpack_alignment... });
+        }(TextureFormatList{});
+
+        return lut.at(osc::to_underlying(format));
     }
 
     // returns the format OpenGL will use internally (i.e. on the GPU) to
@@ -1162,23 +1155,22 @@ namespace
         TextureFormat format,
         ColorSpace colorSpace)
     {
-        static_assert(osc::NumOptions<TextureFormat>() == 5);
-        static_assert(osc::NumOptions<ColorSpace>() == 2);
-
-        switch (format)
+        constexpr auto srgbLUT = []<TextureFormat... Formats>(NonTypelist<TextureFormat, Formats...>)
         {
-        case TextureFormat::R8:
-            return GL_R8;
-        case TextureFormat::RGB24:
-            return colorSpace == ColorSpace::sRGB ? GL_SRGB8 : GL_RGB8;
-        case TextureFormat::RGBA32:
-            return colorSpace == ColorSpace::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
-        case TextureFormat::RGBFloat:
-            return GL_RGB32F;
-        case TextureFormat::RGBAFloat:
-            return GL_RGBA32F;
-        default:
-            return GL_RGBA8;
+            return std::to_array({ TextureFormatOpenGLTraits<Formats>::internal_format_srgb... });
+        }(TextureFormatList{});
+
+        constexpr auto linearLUT = []<TextureFormat... Formats>(NonTypelist<TextureFormat, Formats...>)
+        {
+            return std::to_array({ TextureFormatOpenGLTraits<Formats>::internal_format_linear... });
+        }(TextureFormatList{});
+
+        static_assert(NumOptions<ColorSpace>() == 2);
+        if (colorSpace == ColorSpace::sRGB) {
+            return srgbLUT.at(osc::to_underlying(format));
+        }
+        else {
+            return linearLUT.at(osc::to_underlying(format));
         }
     }
 
