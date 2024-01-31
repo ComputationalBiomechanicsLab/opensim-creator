@@ -4,7 +4,7 @@
 
 namespace osc
 {
-    // inspired by the same ideas behind `osc::Typelist`, but for
+    // inspired by the same ideas behind `Typelist`, but for
     // non-type template parameters
 
     // NonTypelist: definition

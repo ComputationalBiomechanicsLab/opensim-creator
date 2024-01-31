@@ -56,7 +56,7 @@ namespace osc
         }
 
     private:
-        friend struct std::hash<osc::Variant>;
+        friend struct std::hash<Variant>;
 
         std::variant<
             std::monostate,

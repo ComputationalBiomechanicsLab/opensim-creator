@@ -12,6 +12,10 @@
 #include <utility>
 #include <vector>
 
+using osc::HashOf;
+using osc::PerfMeasurement;
+using osc::SynchronizedValue;
+
 namespace
 {
     int64_t GenerateID(
@@ -19,12 +23,12 @@ namespace
         std::string_view filename,
         unsigned int line)
     {
-        return static_cast<int64_t>(osc::HashOf(label, filename, line));
+        return static_cast<int64_t>(HashOf(label, filename, line));
     }
 
-    osc::SynchronizedValue<std::unordered_map<int64_t, osc::PerfMeasurement>>& GetMeasurementStorage()
+    SynchronizedValue<std::unordered_map<int64_t, PerfMeasurement>>& GetMeasurementStorage()
     {
-        static osc::SynchronizedValue<std::unordered_map<int64_t, osc::PerfMeasurement>> s_Measurements;
+        static SynchronizedValue<std::unordered_map<int64_t, PerfMeasurement>> s_Measurements;
         return s_Measurements;
     }
 }
@@ -63,7 +67,7 @@ void osc::ClearAllPerfMeasurements()
     }
 }
 
-std::vector<osc::PerfMeasurement> osc::GetAllPerfMeasurements()
+std::vector<PerfMeasurement> osc::GetAllPerfMeasurements()
 {
     auto guard = GetMeasurementStorage().lock();
 

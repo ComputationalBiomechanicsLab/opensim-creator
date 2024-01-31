@@ -11,8 +11,7 @@
 osc::UndoRedoEntryMetadata::UndoRedoEntryMetadata(std::string_view message_) :
     m_Time{std::chrono::system_clock::now()},
     m_Message{message_}
-{
-}
+{}
 
 osc::UndoRedoEntryMetadata::UndoRedoEntryMetadata(UndoRedoEntryMetadata const&) = default;
 osc::UndoRedoEntryMetadata::UndoRedoEntryMetadata(UndoRedoEntryMetadata&&) noexcept = default;

@@ -308,6 +308,8 @@ add_library(oscar STATIC
     Variant/Variant.hpp
     Variant/VariantType.cpp
     Variant/VariantType.hpp
+    Variant/VariantTypeList.hpp
+    Variant/VariantTypeTraits.hpp
 )
 
 target_include_directories(oscar PUBLIC
