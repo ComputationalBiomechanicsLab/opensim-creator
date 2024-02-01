@@ -1,10 +1,19 @@
 // these are the things that this file "implements"
 
+#include <oscar/Graphics/Detail/CPUDataType.hpp>
+#include <oscar/Graphics/Detail/CPUImageFormat.hpp>
+#include <oscar/Graphics/Detail/ShaderPropertyTypeList.hpp>
+#include <oscar/Graphics/Detail/ShaderPropertyTypeTraits.hpp>
 #include <oscar/Graphics/Detail/TextureFormatList.hpp>
+#include <oscar/Graphics/Detail/TextureFormatTraits.hpp>
 #include <oscar/Graphics/Detail/VertexAttributeFormatHelpers.hpp>
 #include <oscar/Graphics/Detail/VertexAttributeFormatList.hpp>
 #include <oscar/Graphics/Detail/VertexAttributeFormatTraits.hpp>
 #include <oscar/Graphics/Detail/VertexAttributeHelpers.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeList.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeHelpers.hpp>
+#include <oscar/Graphics/OpenGL/CPUDataTypeOpenGLTraits.hpp>
+#include <oscar/Graphics/OpenGL/CPUImageFormatOpenGLTraits.hpp>
 #include <oscar/Graphics/OpenGL/TextureFormatOpenGLTraits.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/CameraClearFlags.hpp>
@@ -99,13 +108,24 @@ using namespace osc::literals;
 namespace cpp20 = osc::cpp20;
 namespace cpp23 = osc::cpp23;
 namespace gl = osc::gl;
+using osc::detail::CPUDataType;
+using osc::detail::CPUDataTypeOpenGLTraits;
+using osc::detail::CPUDataTypeList;
+using osc::detail::CPUImageFormat;
+using osc::detail::CPUImageFormatList;
+using osc::detail::CPUImageFormatOpenGLTraits;
 using osc::detail::DefaultFormat;
 using osc::detail::NumComponents;
+using osc::detail::ShaderPropertyTypeList;
+using osc::detail::ShaderPropertyTypeTraits;
 using osc::detail::SizeOfComponent;
 using osc::detail::TextureFormatList;
 using osc::detail::TextureFormatOpenGLTraits;
+using osc::detail::TextureFormatTraits;
 using osc::detail::VertexAttributeFormatList;
 using osc::detail::VertexAttributeFormatTraits;
+using osc::detail::VertexAttributeList;
+using osc::detail::VertexAttributeTraits;
 using osc::AABB;
 using osc::AntiAliasingLevel;
 using osc::BitCastable;
@@ -247,8 +267,7 @@ namespace
         // wants, so that, at runtime, the graphics backend can emit user-facing warning
         // messages so that it's a little bit easier to spot production bugs
 
-        return
-        {
+        return {
             // framebuffer objects, blitting, multisampled renderbuffer objects, and
             // packed depth+stencil image formats
             //
@@ -365,8 +384,7 @@ namespace
 
         std::vector<CStringView> rv;
         rv.reserve(numExtensions);
-        for (size_t i = 0; i < numExtensions; ++i)
-        {
+        for (size_t i = 0; i < numExtensions; ++i) {
             rv.emplace_back(GLGetCStringViewi(GL_EXTENSIONS, static_cast<GLuint>(i)));
         }
         return rv;
@@ -386,8 +404,7 @@ namespace
         //
         // see "Required Formats" in: https://www.khronos.org/opengl/wiki/Image_Format
 
-        if (logLevel < osc::log::level())
-        {
+        if (logLevel < osc::log::level()) {
             return;
         }
 
@@ -407,8 +424,7 @@ namespace
             std::back_inserter(missingExtensions)
         );
 
-        if (!missingExtensions.empty())
-        {
+        if (!missingExtensions.empty()) {
             osc::log::log(logLevel, "OpenGL: the following OpenGL extensions may be missing from the graphics backend: ");
             for (auto const& missingExtension : missingExtensions)
             {
@@ -419,8 +435,7 @@ namespace
         }
 
         osc::log::log(logLevel, "OpenGL: here is a list of all of the extensions supported by the graphics backend:");
-        for (auto const& ext : extensionSupportedByBackend)
-        {
+        for (auto const& ext : extensionSupportedByBackend) {
             osc::log::log(logLevel, "OpenGL:  - %s", ext.c_str());
         }
     }
@@ -472,8 +487,7 @@ namespace
 
     ShaderPropertyType GetShaderType(MaterialValue const& v)
     {
-        switch (v.index())
-        {
+        switch (v.index()) {
         case VariantIndex<MaterialValue, Color>():
         case VariantIndex<MaterialValue, std::vector<Color>>():
             return ShaderPropertyType::Vec4;
@@ -498,8 +512,8 @@ namespace
             return ShaderPropertyType::Bool;
         case VariantIndex<MaterialValue, Texture2D>():
             return ShaderPropertyType::Sampler2D;
-        case VariantIndex<MaterialValue, RenderTexture>():
-        {
+        case VariantIndex<MaterialValue, RenderTexture>(): {
+
             static_assert(NumOptions<TextureDimensionality>() == 2);
             return std::get<RenderTexture>(v).getDimensionality() == TextureDimensionality::Tex2D ?
                 ShaderPropertyType::Sampler2D :
@@ -516,28 +530,12 @@ namespace
 // shader (backend stuff)
 namespace
 {
-    // LUT for human-readable form of the above
-    constexpr auto c_ShaderTypeInternalStrings = std::to_array<CStringView>(
-    {
-        "Float",
-        "Vec2",
-        "Vec3",
-        "Vec4",
-        "Mat3",
-        "Mat4",
-        "Int",
-        "Bool",
-        "Sampler2D",
-        "SamplerCube",
-        "Unknown",
-    });
-    static_assert(c_ShaderTypeInternalStrings.size() == osc::NumOptions<ShaderPropertyType>());
-
     // convert a GL shader type to an internal shader type
     ShaderPropertyType GLShaderTypeToShaderTypeInternal(GLenum e)
     {
-        switch (e)
-        {
+        static_assert(NumOptions<ShaderPropertyType>() == 11);
+
+        switch (e) {
         case GL_FLOAT:
             return ShaderPropertyType::Float;
         case GL_FLOAT_VEC2:
@@ -590,8 +588,7 @@ namespace
     {
         std::string s{openGLName};
         auto loc = s.find('[');
-        if (loc != std::string::npos)
-        {
+        if (loc != std::string::npos) {
             s.erase(loc);
         }
         return s;
@@ -659,8 +656,7 @@ namespace
 
     Mat4 ToMat4(Mat4OrTransform const& matrixOrTransform)
     {
-        return std::visit(Overload
-        {
+        return std::visit(Overload{
             [](Mat4 const& matrix) { return matrix; },
             [](Transform const& transform) { return ToMat4(transform); }
         }, matrixOrTransform);
@@ -668,8 +664,7 @@ namespace
 
     Mat4 ToNormalMat4(Mat4OrTransform const& matrixOrTransform)
     {
-        return std::visit(Overload
-        {
+        return std::visit(Overload{
             [](Mat4 const& matrix) { return ToNormalMatrix4(matrix); },
             [](Transform const& transform) { return ToNormalMatrix4(transform); }
         }, matrixOrTransform);
@@ -677,8 +672,7 @@ namespace
 
     Mat4 ToNormalMat3(Mat4OrTransform const& matrixOrTransform)
     {
-        return std::visit(Overload
-        {
+        return std::visit(Overload{
             [](Mat4 const& matrix) { return ToNormalMatrix(matrix); },
             [](Transform const& transform) { return ToNormalMatrix(transform); }
         }, matrixOrTransform);
@@ -846,8 +840,7 @@ namespace
     public:
         explicit RenderObjectHasSubMeshIndex(std::optional<size_t> maybeSubMeshIndex_) :
             m_MaybeSubMeshIndex{maybeSubMeshIndex_}
-        {
-        }
+        {}
 
         bool operator()(RenderObject const& ro) const
         {
@@ -870,8 +863,8 @@ namespace
         //
         // first, batch opaqueObjects into `RenderObject`s that have the same `Material`
         auto materialBatchStart = renderQueueBegin;
-        while (materialBatchStart != opaqueObjectsEnd)
-        {
+        while (materialBatchStart != opaqueObjectsEnd) {
+
             auto const materialBatchEnd = std::partition(
                 materialBatchStart,
                 opaqueObjectsEnd,
@@ -881,8 +874,8 @@ namespace
             // second, batch `RenderObject`s with the same `Material` into sub-batches
             // with the same `MaterialPropertyBlock`
             auto materialPropBlockBatchStart = materialBatchStart;
-            while (materialPropBlockBatchStart != materialBatchEnd)
-            {
+            while (materialPropBlockBatchStart != materialBatchEnd) {
+
                 auto const materialPropBlockBatchEnd = std::partition(
                     materialPropBlockBatchStart,
                     materialBatchEnd,
@@ -892,8 +885,8 @@ namespace
                 // third, batch `RenderObject`s with the same `Material` and `MaterialPropertyBlock`s
                 // into sub-batches with the same `Mesh`
                 auto meshBatchStart = materialPropBlockBatchStart;
-                while (meshBatchStart != materialPropBlockBatchEnd)
-                {
+                while (meshBatchStart != materialPropBlockBatchEnd) {
+
                     auto const meshBatchEnd = std::partition(
                         meshBatchStart,
                         materialPropBlockBatchEnd,
@@ -903,8 +896,8 @@ namespace
                     // fourth, batch `RenderObject`s with the same `Material`, `MaterialPropertyBlock`,
                     // and `Mesh` into sub-batches with the same sub-mesh index
                     auto subMeshBatchStart = meshBatchStart;
-                    while (subMeshBatchStart != meshBatchEnd)
-                    {
+                    while (subMeshBatchStart != meshBatchEnd) {
+
                         auto const subMeshBatchEnd = std::partition(
                             subMeshBatchStart,
                             meshBatchEnd,
@@ -984,8 +977,7 @@ namespace
 
             buf{buf_},
             stride{stride_}
-        {
-        }
+        {}
 
         gl::ArrayBuffer<float, GL_STREAM_DRAW>& buf;
         size_t stride = 0;
@@ -1191,112 +1183,44 @@ namespace
         }
     }
 
-    // used by the texture implementation to keep track of what kind of
-    // data it is storing
-    enum class CPUDataType {
-        UnsignedByte,
-        Float,
-        UnsignedInt24_8,
-        HalfFloat,
-        NUM_OPTIONS,
-    };
-
     constexpr GLenum ToOpenGLDataType(CPUDataType t)
     {
-        static_assert(NumOptions<CPUDataType>() == 4);
-
-        switch (t)
+        constexpr auto lut = []<CPUDataType... DataTypes>(NonTypelist<CPUDataType, DataTypes...>)
         {
-        case CPUDataType::UnsignedByte:
-            return GL_UNSIGNED_BYTE;
-        case CPUDataType::Float:
-            return GL_FLOAT;
-        case CPUDataType::UnsignedInt24_8:
-            return GL_UNSIGNED_INT_24_8;
-        case CPUDataType::HalfFloat:
-            return GL_HALF_FLOAT;
-        default:
-            return GL_UNSIGNED_BYTE;
-        }
+            return std::to_array({ CPUDataTypeOpenGLTraits<DataTypes>::opengl_data_type... });
+        }(CPUDataTypeList{});
+
+        return lut.at(cpp23::to_underlying(t));
     }
 
     constexpr CPUDataType ToEquivalentCPUDataType(TextureFormat format)
     {
-        static_assert(NumOptions<TextureFormat>() == 7);
-        static_assert(NumOptions<CPUDataType>() == 4);
-
-        switch (format)
+        constexpr auto lut = []<TextureFormat... Formats>(NonTypelist<TextureFormat, Formats...>)
         {
-        case TextureFormat::R8:
-        case TextureFormat::RG16:
-        case TextureFormat::RGB24:
-        case TextureFormat::RGBA32:
-            return CPUDataType::UnsignedByte;
-        case TextureFormat::RGFloat:
-        case TextureFormat::RGBFloat:
-        case TextureFormat::RGBAFloat:
-            return CPUDataType::Float;
-        default:
-            return CPUDataType::UnsignedByte;  // static_assert means this isn't actually hit
-        }
-    }
+            return std::to_array({ TextureFormatTraits<Formats>::equivalent_cpu_datatype... });
+        }(TextureFormatList{});
 
-    //  used by the texture implementation to keep track of what kind of
-    // data it is storing
-    enum class CPUImageFormat {
-        R8,
-        RG,
-        RGB,
-        RGBA,
-        DepthStencil,
-        NUM_OPTIONS,
-    };
+        return lut.at(cpp23::to_underlying(format));
+    }
 
     constexpr CPUImageFormat ToEquivalentCPUImageFormat(TextureFormat format)
     {
-        static_assert(NumOptions<TextureFormat>() == 7);
-        static_assert(NumOptions<CPUImageFormat>() == 5);
-
-        switch (format)
+        constexpr auto lut = []<TextureFormat... Formats>(NonTypelist<TextureFormat, Formats...>)
         {
-        case TextureFormat::R8:
-            return CPUImageFormat::R8;
-        case TextureFormat::RG16:
-            return CPUImageFormat::RG;
-        case TextureFormat::RGB24:
-            return CPUImageFormat::RGB;
-        case TextureFormat::RGBA32:
-            return CPUImageFormat::RGBA;
-        case TextureFormat::RGFloat:
-            return CPUImageFormat::RG;
-        case TextureFormat::RGBFloat:
-            return CPUImageFormat::RGB;
-        case TextureFormat::RGBAFloat:
-            return CPUImageFormat::RGBA;
-        default:
-            return CPUImageFormat::RGBA;  // static_assert means this isn't actually hit
-        }
+            return std::to_array({ TextureFormatTraits<Formats>::equivalent_cpu_image_format... });
+        }(TextureFormatList{});
+
+        return lut.at(cpp23::to_underlying(format));
     }
 
     constexpr GLenum ToOpenGLFormat(CPUImageFormat t)
     {
-        static_assert(NumOptions<CPUImageFormat>() == 5);
-
-        switch (t)
+        constexpr auto lut = []<CPUImageFormat... Formats>(NonTypelist<CPUImageFormat, Formats...>)
         {
-        case CPUImageFormat::R8:
-            return GL_RED;
-        case CPUImageFormat::RG:
-            return GL_RG;
-        case CPUImageFormat::RGB:
-            return GL_RGB;
-        case CPUImageFormat::RGBA:
-            return GL_RGBA;
-        case CPUImageFormat::DepthStencil:
-            return GL_DEPTH_STENCIL;
-        default:
-            return GL_RGBA;
-        }
+            return std::to_array({ CPUImageFormatOpenGLTraits<Formats>::opengl_format... });
+        }(CPUImageFormatList{});
+
+        return lut.at(cpp23::to_underlying(t));
     }
 
     constexpr GLenum ToOpenGLTextureEnum(CubemapFace f)
@@ -2069,39 +1993,22 @@ std::ostream& osc::operator<<(std::ostream& o, TextureFilterMode twm)
 
 size_t osc::NumChannels(TextureFormat format)
 {
-    static_assert(NumOptions<TextureFormat>() == 7);
-
-    switch (format)
+    constexpr auto lut = []<TextureFormat... Formats>(NonTypelist<TextureFormat, Formats...>)
     {
-    case TextureFormat::R8: return 1;
-    case TextureFormat::RG16: return 2;
-    case TextureFormat::RGB24: return 3;
-    case TextureFormat::RGBA32: return 4;
-    case TextureFormat::RGFloat: return 2;
-    case TextureFormat::RGBFloat: return 3;
-    case TextureFormat::RGBAFloat: return 4;
-    default: return 4;  // static_assert ensure this shouldn't be hit
-    }
+        return std::to_array({ TextureFormatTraits<Formats>::num_channels... });
+    }(TextureFormatList{});
+
+    return lut.at(cpp23::to_underlying(format));
 }
 
 TextureChannelFormat osc::ChannelFormat(TextureFormat f)
 {
-    static_assert(NumOptions<TextureFormat>() == 7);
-
-    switch (f)
+    constexpr auto lut = []<TextureFormat... Formats>(NonTypelist<TextureFormat, Formats...>)
     {
-    case TextureFormat::R8:
-    case TextureFormat::RG16:
-    case TextureFormat::RGB24:
-    case TextureFormat::RGBA32:
-        return TextureChannelFormat::Uint8;
-    case TextureFormat::RGFloat:
-    case TextureFormat::RGBFloat:
-    case TextureFormat::RGBAFloat:
-        return TextureChannelFormat::Float32;
-    default:
-        return TextureChannelFormat::Uint8;
-    }
+        return std::to_array({ TextureFormatTraits<Formats>::channel_format... });
+    }(TextureFormatList{});
+
+    return lut.at(cpp23::to_underlying(f));
 }
 
 size_t osc::NumBytesPerPixel(TextureFormat format)
@@ -2115,8 +2022,7 @@ std::optional<TextureFormat> osc::ToTextureFormat(size_t numChannels, TextureCha
     bool const isByteOriented = channelFormat == TextureChannelFormat::Uint8;
 
     static_assert(NumOptions<TextureFormat>() == 7);
-    switch (numChannels)
-    {
+    switch (numChannels) {
     case 1:
         return isByteOriented ? TextureFormat::R8 : std::optional<TextureFormat>{};
     case 2:
@@ -2379,48 +2285,22 @@ namespace
 
     constexpr GLenum ToImageColorFormat(TextureFormat f)
     {
-        static_assert(NumOptions<TextureFormat>() == 7);
+        constexpr auto lut = []<TextureFormat... Formats>(NonTypelist<TextureFormat, Formats...>)
+        {
+            return std::to_array({ TextureFormatOpenGLTraits<Formats>::image_color_format... });
+        }(TextureFormatList{});
 
-        switch (f) {
-        case TextureFormat::R8:
-            return GL_RED;
-        case TextureFormat::RG16:
-            return GL_RG;
-        case TextureFormat::RGB24:
-            return GL_RGB;
-        case TextureFormat::RGBA32:
-            return GL_RGBA;
-        case TextureFormat::RGFloat:
-            return GL_RG;
-        case TextureFormat::RGBFloat:
-            return GL_RGB;
-        case TextureFormat::RGBAFloat:
-            return GL_RGBA;
-        default:
-            return GL_RGBA;
-        }
+        return lut.at(cpp23::to_underlying(f));
     }
 
     constexpr GLint ToImagePixelPackAlignment(TextureFormat f)
     {
-        switch (f) {
-        case TextureFormat::R8:
-            return 1;
-        case TextureFormat::RG16:
-            return 1;
-        case TextureFormat::RGB24:
-            return 1;
-        case TextureFormat::RGBA32:
-            return 4;
-        case TextureFormat::RGFloat:
-            return 4;
-        case TextureFormat::RGBFloat:
-            return 4;
-        case TextureFormat::RGBAFloat:
-            return 4;
-        default:
-            return 1;
-        }
+        constexpr auto lut = []<TextureFormat... Formats>(NonTypelist<TextureFormat, Formats...>)
+        {
+            return std::to_array({ TextureFormatOpenGLTraits<Formats>::pixel_pack_alignment... });
+        }(TextureFormatList{});
+
+        return lut.at(cpp23::to_underlying(f));
     }
 
     constexpr GLenum ToImageDataType(TextureFormat)
@@ -3271,7 +3151,12 @@ private:
 
 std::ostream& osc::operator<<(std::ostream& o, ShaderPropertyType shaderType)
 {
-    return o << c_ShaderTypeInternalStrings.at(static_cast<size_t>(shaderType));
+    constexpr auto lut = []<ShaderPropertyType... Types>(NonTypelist<ShaderPropertyType, Types...>)
+    {
+        return std::to_array({ ShaderPropertyTypeTraits<Types>::name... });
+    }(ShaderPropertyTypeList{});
+
+    return o << lut.at(cpp23::to_underlying(shaderType));
 }
 
 osc::Shader::Shader(CStringView vertexShader, CStringView fragmentShader) :
@@ -3351,8 +3236,7 @@ namespace
     {
         static_assert(NumOptions<DepthFunction>() == 2);
 
-        switch (f)
-        {
+        switch (f) {
         case DepthFunction::LessOrEqual:
             return GL_LEQUAL;
         case DepthFunction::Less:
@@ -3365,8 +3249,7 @@ namespace
     {
         static_assert(NumOptions<CullMode>() == 3);
 
-        switch (cullMode)
-        {
+        switch (cullMode) {
         case CullMode::Front:
             return GL_FRONT;
         case CullMode::Back:
@@ -5282,22 +5165,12 @@ private:
 
     static GLuint GetVertexAttributeIndex(VertexAttribute attr)
     {
-        static_assert(NumOptions<VertexAttribute>() == 5);
+        auto constexpr lut = []<VertexAttribute... Attrs>(NonTypelist<VertexAttribute, Attrs...>)
+        {
+            return std::to_array({ VertexAttributeTraits<Attrs>::shader_location... });
+        }(VertexAttributeList{});
 
-        switch (attr) {
-        case VertexAttribute::Position:
-            return shader_locations::aPos;
-        case VertexAttribute::Normal:
-            return shader_locations::aNormal;
-        case VertexAttribute::Tangent:
-            return shader_locations::aTangent;
-        case VertexAttribute::Color:
-            return shader_locations::aColor;
-        case VertexAttribute::TexCoord0:
-            return shader_locations::aTexCoord;
-        default:
-            throw std::runtime_error{"nyi"};
-        }
+        return lut.at(cpp23::to_underlying(attr));
     }
 
     static GLint GetVertexAttributeSize(VertexAttributeFormat const& format)
@@ -6235,8 +6108,7 @@ namespace
     // maps an OpenGL debug message severity level to a log level
     constexpr LogLevel OpenGLDebugSevToLogLvl(GLenum sev)
     {
-        switch (sev)
-        {
+        switch (sev) {
         case GL_DEBUG_SEVERITY_HIGH:
             return LogLevel::err;
         case GL_DEBUG_SEVERITY_MEDIUM:
@@ -6253,8 +6125,7 @@ namespace
     // returns a string representation of an OpenGL debug message severity level
     constexpr CStringView OpenGLDebugSevToStrView(GLenum sev)
     {
-        switch (sev)
-        {
+        switch (sev) {
         case GL_DEBUG_SEVERITY_HIGH:
             return "GL_DEBUG_SEVERITY_HIGH";
         case GL_DEBUG_SEVERITY_MEDIUM:
@@ -6271,8 +6142,7 @@ namespace
     // returns a string representation of an OpenGL debug message source
     constexpr CStringView OpenGLDebugSrcToStrView(GLenum src)
     {
-        switch (src)
-        {
+        switch (src) {
         case GL_DEBUG_SOURCE_API:
             return "GL_DEBUG_SOURCE_API";
         case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
@@ -6293,8 +6163,7 @@ namespace
     // returns a string representation of an OpenGL debug message type
     constexpr CStringView OpenGLDebugTypeToStrView(GLenum type)
     {
-        switch (type)
-        {
+        switch (type) {
         case GL_DEBUG_TYPE_ERROR:
             return "GL_DEBUG_TYPE_ERROR";
         case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:

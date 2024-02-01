@@ -28,14 +28,21 @@ add_library(oscar STATIC
     Formats/SVG.hpp
     Formats/SVG.cpp
 
+    Graphics/Detail/CPUDataType.hpp
+    Graphics/Detail/CPUImageFormat.hpp
     Graphics/Detail/ShaderLocations.hpp
+    Graphics/Detail/ShaderPropertyTypeList.hpp
+    Graphics/Detail/ShaderPropertyTypeTraits.hpp
     Graphics/Detail/TextureFormatList.hpp
+    Graphics/Detail/TextureFormatTraits.hpp
     Graphics/Detail/VertexAttributeFormatHelpers.hpp
     Graphics/Detail/VertexAttributeFormatList.hpp
     Graphics/Detail/VertexAttributeFormatTraits.hpp
     Graphics/Detail/VertexAttributeHelpers.hpp
     Graphics/Detail/VertexAttributeList.hpp
     Graphics/Detail/VertexAttributeTraits.hpp
+    Graphics/OpenGL/CPUDataTypeOpenGLTraits.hpp
+    Graphics/OpenGL/CPUImageFormatOpenGLTraits.hpp
     Graphics/OpenGL/Gl.cpp
     Graphics/OpenGL/Gl.hpp
     Graphics/OpenGL/TextureFormatOpenGLTraits.hpp
