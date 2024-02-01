@@ -103,7 +103,7 @@ namespace
 
         RenderTexture cubemapRenderTarget{{512, 512}};
         cubemapRenderTarget.setDimensionality(TextureDimensionality::Cube);
-        cubemapRenderTarget.setColorFormat(RenderTextureFormat::ARGBFloat16);
+        cubemapRenderTarget.setColorFormat(RenderTextureFormat::RGBFloat16);
 
         // create a 90 degree cube cone projection matrix
         Mat4 const projectionMatrix = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
@@ -129,7 +129,7 @@ namespace
     {
         RenderTexture irradianceCubemap{{32, 32}};
         irradianceCubemap.setDimensionality(TextureDimensionality::Cube);
-        irradianceCubemap.setColorFormat(RenderTextureFormat::ARGBFloat16);
+        irradianceCubemap.setColorFormat(RenderTextureFormat::RGBFloat16);
 
         Mat4 const captureProjection = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
 

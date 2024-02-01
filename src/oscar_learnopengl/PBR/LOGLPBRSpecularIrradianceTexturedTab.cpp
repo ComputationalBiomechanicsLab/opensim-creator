@@ -104,7 +104,7 @@ namespace
 
         RenderTexture cubemapRenderTarget{{512, 512}};
         cubemapRenderTarget.setDimensionality(TextureDimensionality::Cube);
-        cubemapRenderTarget.setColorFormat(RenderTextureFormat::ARGBFloat16);
+        cubemapRenderTarget.setColorFormat(RenderTextureFormat::RGBFloat16);
 
         // create a 90 degree cube cone projection matrix
         Mat4 const projectionMatrix = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
@@ -130,7 +130,7 @@ namespace
     {
         RenderTexture irradianceCubemap{{32, 32}};
         irradianceCubemap.setDimensionality(TextureDimensionality::Cube);
-        irradianceCubemap.setColorFormat(RenderTextureFormat::ARGBFloat16);
+        irradianceCubemap.setColorFormat(RenderTextureFormat::RGBFloat16);
 
         Mat4 const captureProjection = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
@@ -158,7 +158,7 @@ namespace
 
         RenderTexture captureRT{{levelZeroWidth, levelZeroWidth}};
         captureRT.setDimensionality(TextureDimensionality::Cube);
-        captureRT.setColorFormat(RenderTextureFormat::ARGBFloat16);
+        captureRT.setColorFormat(RenderTextureFormat::RGBFloat16);
 
         Mat4 const captureProjection = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
@@ -217,12 +217,12 @@ namespace
         );
 
         RenderTexture renderTex{{512, 512}};
-        renderTex.setColorFormat(RenderTextureFormat::ARGBFloat16);  // TODO RG16F in LearnOpenGL
+        renderTex.setColorFormat(RenderTextureFormat::RGFloat16);
         camera.renderTo(renderTex);
 
         Texture2D rv{
             {512, 512},
-            TextureFormat::RGBFloat,  // TODO: RG16F in LearnOpenGL
+            TextureFormat::RGFloat,  // TODO: add support for TextureFormat:::RGFloat16
             ColorSpace::Linear,
             TextureWrapMode::Clamp,
             TextureFilterMode::Linear,

@@ -1222,15 +1222,17 @@ namespace
 
     constexpr CPUDataType ToEquivalentCPUDataType(TextureFormat format)
     {
-        static_assert(NumOptions<TextureFormat>() == 5);
+        static_assert(NumOptions<TextureFormat>() == 7);
         static_assert(NumOptions<CPUDataType>() == 4);
 
         switch (format)
         {
         case TextureFormat::R8:
+        case TextureFormat::RG16:
         case TextureFormat::RGB24:
         case TextureFormat::RGBA32:
             return CPUDataType::UnsignedByte;
+        case TextureFormat::RGFloat:
         case TextureFormat::RGBFloat:
         case TextureFormat::RGBAFloat:
             return CPUDataType::Float;
@@ -1243,6 +1245,7 @@ namespace
     // data it is storing
     enum class CPUImageFormat {
         R8,
+        RG,
         RGB,
         RGBA,
         DepthStencil,
@@ -1251,17 +1254,21 @@ namespace
 
     constexpr CPUImageFormat ToEquivalentCPUImageFormat(TextureFormat format)
     {
-        static_assert(NumOptions<TextureFormat>() == 5);
-        static_assert(NumOptions<CPUImageFormat>() == 4);
+        static_assert(NumOptions<TextureFormat>() == 7);
+        static_assert(NumOptions<CPUImageFormat>() == 5);
 
         switch (format)
         {
         case TextureFormat::R8:
             return CPUImageFormat::R8;
+        case TextureFormat::RG16:
+            return CPUImageFormat::RG;
         case TextureFormat::RGB24:
             return CPUImageFormat::RGB;
         case TextureFormat::RGBA32:
             return CPUImageFormat::RGBA;
+        case TextureFormat::RGFloat:
+            return CPUImageFormat::RG;
         case TextureFormat::RGBFloat:
             return CPUImageFormat::RGB;
         case TextureFormat::RGBAFloat:
@@ -1273,12 +1280,14 @@ namespace
 
     constexpr GLenum ToOpenGLFormat(CPUImageFormat t)
     {
-        static_assert(NumOptions<CPUImageFormat>() == 4);
+        static_assert(NumOptions<CPUImageFormat>() == 5);
 
         switch (t)
         {
         case CPUImageFormat::R8:
             return GL_RED;
+        case CPUImageFormat::RG:
+            return GL_RG;
         case CPUImageFormat::RGB:
             return GL_RGB;
         case CPUImageFormat::RGBA:
@@ -1507,7 +1516,7 @@ private:
         OSC_ASSERT(numBytesPerRow % unpackAlignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
         OSC_ASSERT(IsAlignedAtLeast(m_Data.data(), unpackAlignment) && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
         OSC_ASSERT(numBytesInCubemap <= m_Data.size() && "the number of bytes in the cubemap (CPU-side) is less than expected: this is a developer bug");
-        static_assert(NumOptions<TextureFormat>() == 5, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
+        static_assert(NumOptions<TextureFormat>() == 7, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
 
         // upload cubemap to GPU
         static_assert(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z - GL_TEXTURE_CUBE_MAP_POSITIVE_X == 5);
@@ -2000,7 +2009,7 @@ private:
         CPUDataType const cpuDataType = ToEquivalentCPUDataType(m_Format);  // TextureFormat's datatype == CPU format's datatype for cubemaps
         CPUImageFormat const cpuChannelLayout = ToEquivalentCPUImageFormat(m_Format);  // TextureFormat's layout == CPU formats's layout for cubemaps
 
-        static_assert(NumOptions<TextureFormat>() == 5, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
+        static_assert(NumOptions<TextureFormat>() == 7, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
         OSC_ASSERT(numBytesPerRow % unpackAlignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
         OSC_ASSERT(IsAlignedAtLeast(m_PixelData.data(), unpackAlignment) && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
 
@@ -2060,13 +2069,15 @@ std::ostream& osc::operator<<(std::ostream& o, TextureFilterMode twm)
 
 size_t osc::NumChannels(TextureFormat format)
 {
-    static_assert(NumOptions<TextureFormat>() == 5);
+    static_assert(NumOptions<TextureFormat>() == 7);
 
     switch (format)
     {
     case TextureFormat::R8: return 1;
-    case TextureFormat::RGBA32: return 4;
+    case TextureFormat::RG16: return 2;
     case TextureFormat::RGB24: return 3;
+    case TextureFormat::RGBA32: return 4;
+    case TextureFormat::RGFloat: return 2;
     case TextureFormat::RGBFloat: return 3;
     case TextureFormat::RGBAFloat: return 4;
     default: return 4;  // static_assert ensure this shouldn't be hit
@@ -2075,16 +2086,21 @@ size_t osc::NumChannels(TextureFormat format)
 
 TextureChannelFormat osc::ChannelFormat(TextureFormat f)
 {
-    static_assert(NumOptions<TextureFormat>() == 5);
+    static_assert(NumOptions<TextureFormat>() == 7);
 
     switch (f)
     {
-    case TextureFormat::R8: return TextureChannelFormat::Uint8;
-    case TextureFormat::RGBA32: return TextureChannelFormat::Uint8;
-    case TextureFormat::RGB24: return TextureChannelFormat::Uint8;
-    case TextureFormat::RGBFloat: return TextureChannelFormat::Float32;
-    case TextureFormat::RGBAFloat: return TextureChannelFormat::Float32;
-    default: return TextureChannelFormat::Uint8;
+    case TextureFormat::R8:
+    case TextureFormat::RG16:
+    case TextureFormat::RGB24:
+    case TextureFormat::RGBA32:
+        return TextureChannelFormat::Uint8;
+    case TextureFormat::RGFloat:
+    case TextureFormat::RGBFloat:
+    case TextureFormat::RGBAFloat:
+        return TextureChannelFormat::Float32;
+    default:
+        return TextureChannelFormat::Uint8;
     }
 }
 
@@ -2098,11 +2114,13 @@ std::optional<TextureFormat> osc::ToTextureFormat(size_t numChannels, TextureCha
     static_assert(NumOptions<TextureChannelFormat>() == 2);
     bool const isByteOriented = channelFormat == TextureChannelFormat::Uint8;
 
-    static_assert(NumOptions<TextureFormat>() == 5);
+    static_assert(NumOptions<TextureFormat>() == 7);
     switch (numChannels)
     {
     case 1:
         return isByteOriented ? TextureFormat::R8 : std::optional<TextureFormat>{};
+    case 2:
+        return isByteOriented ? TextureFormat::RG16 : TextureFormat::RGFloat;
     case 3:
         return isByteOriented ? TextureFormat::RGB24 : TextureFormat::RGBFloat;
     case 4:
@@ -2244,17 +2262,19 @@ std::ostream& osc::operator<<(std::ostream& o, Texture2D const&)
 
 namespace
 {
-    constexpr auto c_RenderTextureFormatStrings = std::to_array<CStringView>(
-    {
-        "ARGB32",
-        "ARGBFloat16",
+    constexpr auto c_RenderTextureFormatStrings = std::to_array<CStringView>({
         "Red8",
+        "ARGB32",
+
+        "RGFloat16",
+        "RGBFloat16",
+        "ARGBFloat16",
+
         "Depth",
     });
     static_assert(c_RenderTextureFormatStrings.size() == NumOptions<RenderTextureFormat>());
 
-    constexpr auto c_DepthStencilFormatStrings = std::to_array<CStringView>(
-    {
+    constexpr auto c_DepthStencilFormatStrings = std::to_array<CStringView>({
         "D24_UNorm_S8_UInt",
     });
     static_assert(c_DepthStencilFormatStrings.size() == NumOptions<DepthStencilFormat>());
@@ -2270,18 +2290,21 @@ namespace
         }
         else
         {
-            static_assert(NumOptions<RenderTextureFormat>() == 4);
+            static_assert(NumOptions<RenderTextureFormat>() == 6);
             static_assert(NumOptions<RenderTextureReadWrite>() == 2);
 
-            switch (desc.getColorFormat())
-            {
+            switch (desc.getColorFormat()) {
+            case RenderTextureFormat::Red8:
+                return GL_RED;
             default:
             case RenderTextureFormat::ARGB32:
                 return desc.getReadWrite() == RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+            case RenderTextureFormat::RGFloat16:
+                return GL_RG16F;
+            case RenderTextureFormat::RGBFloat16:
+                return GL_RGB16F;
             case RenderTextureFormat::ARGBFloat16:
                 return GL_RGBA16F;
-            case RenderTextureFormat::Red8:
-                return GL_RED;
             case RenderTextureFormat::Depth:
                 return GL_R32F;
             }
@@ -2294,8 +2317,8 @@ namespace
     {
         static_assert(NumOptions<RenderBufferType>() == 2);
         static_assert(NumOptions<DepthStencilFormat>() == 1);
-        static_assert(NumOptions<RenderTextureFormat>() == 4);
-        static_assert(NumOptions<CPUImageFormat>() == 4);
+        static_assert(NumOptions<RenderTextureFormat>() == 6);
+        static_assert(NumOptions<CPUImageFormat>() == 5);
 
         if (type == RenderBufferType::Depth)
         {
@@ -2303,15 +2326,18 @@ namespace
         }
         else
         {
-            switch (desc.getColorFormat())
-            {
+            switch (desc.getColorFormat()) {
+            case RenderTextureFormat::Red8:
+                return CPUImageFormat::R8;
             default:
             case RenderTextureFormat::ARGB32:
                 return CPUImageFormat::RGBA;
+            case RenderTextureFormat::RGFloat16:
+                return CPUImageFormat::RG;
+            case RenderTextureFormat::RGBFloat16:
+                return CPUImageFormat::RGB;
             case RenderTextureFormat::ARGBFloat16:
                 return CPUImageFormat::RGBA;
-            case RenderTextureFormat::Red8:
-                return CPUImageFormat::R8;
             case RenderTextureFormat::Depth:
                 return CPUImageFormat::R8;
             }
@@ -2324,7 +2350,7 @@ namespace
     {
         static_assert(NumOptions<RenderBufferType>() == 2);
         static_assert(NumOptions<DepthStencilFormat>() == 1);
-        static_assert(NumOptions<RenderTextureFormat>() == 4);
+        static_assert(NumOptions<RenderTextureFormat>() == 6);
         static_assert(NumOptions<CPUDataType>() == 4);
 
         if (type == RenderBufferType::Depth)
@@ -2333,15 +2359,18 @@ namespace
         }
         else
         {
-            switch (desc.getColorFormat())
-            {
+            switch (desc.getColorFormat()) {
+            case RenderTextureFormat::Red8:
+                return CPUDataType::UnsignedByte;
             default:
             case RenderTextureFormat::ARGB32:
                 return CPUDataType::UnsignedByte;
+            case RenderTextureFormat::RGFloat16:
+                return CPUDataType::HalfFloat;
+            case RenderTextureFormat::RGBFloat16:
+                return CPUDataType::HalfFloat;
             case RenderTextureFormat::ARGBFloat16:
                 return CPUDataType::HalfFloat;
-            case RenderTextureFormat::Red8:
-                return CPUDataType::UnsignedByte;
             case RenderTextureFormat::Depth:
                 return CPUDataType::Float;
             }
@@ -2350,16 +2379,19 @@ namespace
 
     constexpr GLenum ToImageColorFormat(TextureFormat f)
     {
-        static_assert(NumOptions<TextureFormat>() == 5);
+        static_assert(NumOptions<TextureFormat>() == 7);
 
-        switch (f)
-        {
-        case TextureFormat::RGBA32:
-            return GL_RGBA;
-        case TextureFormat::RGB24:
-            return GL_RGB;
+        switch (f) {
         case TextureFormat::R8:
             return GL_RED;
+        case TextureFormat::RG16:
+            return GL_RG;
+        case TextureFormat::RGB24:
+            return GL_RGB;
+        case TextureFormat::RGBA32:
+            return GL_RGBA;
+        case TextureFormat::RGFloat:
+            return GL_RG;
         case TextureFormat::RGBFloat:
             return GL_RGB;
         case TextureFormat::RGBAFloat:
@@ -2371,16 +2403,17 @@ namespace
 
     constexpr GLint ToImagePixelPackAlignment(TextureFormat f)
     {
-        static_assert(NumOptions<TextureFormat>() == 5);
-
-        switch (f)
-        {
-        case TextureFormat::RGBA32:
-            return 4;
-        case TextureFormat::RGB24:
-            return 1;
+        switch (f) {
         case TextureFormat::R8:
             return 1;
+        case TextureFormat::RG16:
+            return 1;
+        case TextureFormat::RGB24:
+            return 1;
+        case TextureFormat::RGBA32:
+            return 4;
+        case TextureFormat::RGFloat:
+            return 4;
         case TextureFormat::RGBFloat:
             return 4;
         case TextureFormat::RGBAFloat:
@@ -2392,7 +2425,7 @@ namespace
 
     constexpr GLenum ToImageDataType(TextureFormat)
     {
-        static_assert(NumOptions<TextureFormat>() == 5);
+        static_assert(NumOptions<TextureFormat>() == 7);
         return GL_UNSIGNED_BYTE;
     }
 }
@@ -2649,8 +2682,6 @@ public:
         Vec2i const dimensions = m_Descriptor.getDimensions();
 
         // setup resolved texture
-        static_assert(NumOptions<RenderTextureFormat>() == 4, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
-        static_assert(NumOptions<RenderBufferType>() == 2, "review code below, which treats RenderBufferType as a bool");
         gl::BindTexture(t.texture2D);
         gl::TexImage2D(
             GL_TEXTURE_2D,
@@ -2707,8 +2738,6 @@ public:
         gl::BindRenderBuffer();
 
         // setup resolved texture
-        static_assert(NumOptions<RenderTextureFormat>() == 4, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
-        static_assert(NumOptions<RenderBufferType>() == 2, "review code below, which treats RenderBufferType as a bool");
         gl::BindTexture(data.singleSampledTexture);
         gl::TexImage2D(
             GL_TEXTURE_2D,
@@ -2754,9 +2783,6 @@ public:
         Vec2i const dimensions = m_Descriptor.getDimensions();
 
         // setup resolved texture
-        static_assert(NumOptions<RenderTextureFormat>() == 4, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
-        static_assert(NumOptions<RenderBufferType>() == 2, "review code below, which treats RenderBufferType as a bool");
-
         gl::BindTexture(t.textureCubemap);
         for (int i = 0; i < 6; ++i)
         {

@@ -16,6 +16,13 @@ namespace osc::detail
     };
 
     template<>
+    struct TextureFormatOpenGLTraits<TextureFormat::RG16> {
+        static inline constexpr GLint unpack_alignment = 1;
+        static inline constexpr GLenum internal_format_srgb = GL_RG;
+        static inline constexpr GLenum internal_format_linear = GL_RG;
+    };
+
+    template<>
     struct TextureFormatOpenGLTraits<TextureFormat::RGB24> {
         static inline constexpr GLint unpack_alignment = 1;
         static inline constexpr GLenum internal_format_srgb = GL_SRGB8;
@@ -27,6 +34,13 @@ namespace osc::detail
         static inline constexpr GLint unpack_alignment = 4;
         static inline constexpr GLenum internal_format_srgb = GL_SRGB8_ALPHA8;
         static inline constexpr GLenum internal_format_linear = GL_RGBA8;
+    };
+
+    template<>
+    struct TextureFormatOpenGLTraits<TextureFormat::RGFloat> {
+        static inline constexpr GLint unpack_alignment = 4;
+        static inline constexpr GLenum internal_format_srgb = GL_RG32F;
+        static inline constexpr GLenum internal_format_linear = GL_RG32F;
     };
 
     template<>

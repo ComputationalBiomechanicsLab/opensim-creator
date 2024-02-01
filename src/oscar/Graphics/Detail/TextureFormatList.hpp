@@ -7,9 +7,11 @@
 namespace osc::detail
 {
     using TextureFormatList = NonTypelist<TextureFormat,
-        TextureFormat::RGBA32,
-        TextureFormat::RGB24,
         TextureFormat::R8,
+        TextureFormat::RG16,
+        TextureFormat::RGB24,
+        TextureFormat::RGBA32,
+        TextureFormat::RGFloat,
         TextureFormat::RGBFloat,
         TextureFormat::RGBAFloat
     >;

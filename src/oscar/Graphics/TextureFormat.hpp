@@ -8,11 +8,15 @@
 namespace osc
 {
     enum class TextureFormat {
-        RGBA32,
-        RGB24,
         R8,
+        RG16,
+        RGB24,
+        RGBA32,
+
+        RGFloat,
         RGBFloat,
         RGBAFloat,
+
         NUM_OPTIONS,
     };
 
