@@ -4164,18 +4164,18 @@ namespace
 
     // types that can be read/written to/from a vertex buffer by higher
     // levels of the API
-    template<class T>
+    template<typename T>
     concept UserFacingVertexData = IsAnyOf<T, Vec2, Vec3, Vec4, Vec<4, Unorm8>, Color, Color32>;
 
     // types that are encode-/decode-able into a vertex buffer
-    template<class T>
+    template<typename T>
     concept VertexBufferComponent = IsAnyOf<T, float, Unorm8>;
 
     // low-level single-component Decode/Encode functions
-    template<VertexBufferComponent EncodedValue, class DecodedValue>
+    template<VertexBufferComponent EncodedValue, typename DecodedValue>
     DecodedValue Decode(std::byte const*);
 
-    template<class DecodedValue, VertexBufferComponent EncodedValue>
+    template<typename DecodedValue, VertexBufferComponent EncodedValue>
     void Encode(std::byte*, DecodedValue);
 
     template<>
@@ -4774,8 +4774,9 @@ namespace
             std::copy(els.begin(), els.end(), iter<T>(attr).begin());
         }
 
-        template<UserFacingVertexData T>
-        void transformAttribute(VertexAttribute attr, std::function<T(T)> const& f)
+        template<UserFacingVertexData T, typename UnaryOperation>
+        void transformAttribute(VertexAttribute attr, UnaryOperation f)
+            requires std::invocable<UnaryOperation, T>
         {
             for (auto&& proxy : iter<T>(attr))
             {
@@ -4860,7 +4861,7 @@ public:
 
     void transformVerts(std::function<Vec3(Vec3)> const& f)
     {
-        m_VertexBuffer.transformAttribute(VertexAttribute::Position, f);
+        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Position, f);
 
         rangeCheckIndicesAndRecalculateBounds();
         m_Version->reset();
@@ -4907,7 +4908,7 @@ public:
 
     void transformNormals(std::function<Vec3(Vec3)> const& f)
     {
-        m_VertexBuffer.transformAttribute(VertexAttribute::Normal, f);
+        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Normal, f);
 
         m_Version->reset();
     }
@@ -4931,7 +4932,7 @@ public:
 
     void transformTexCoords(std::function<Vec2(Vec2)> const& f)
     {
-        m_VertexBuffer.transformAttribute(VertexAttribute::TexCoord0, f);
+        m_VertexBuffer.transformAttribute<Vec2>(VertexAttribute::TexCoord0, f);
 
         m_Version->reset();
     }

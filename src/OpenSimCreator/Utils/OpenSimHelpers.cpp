@@ -291,7 +291,7 @@ namespace
         return c.getComponent(cp);
     }
 
-    template<typename Component>
+    template<std::derived_from<OpenSim::Component> Component>
     Component* FindComponentGeneric(Component& c, OpenSim::ComponentPath const& cp)
     {
         if (cp == OpenSim::ComponentPath{})

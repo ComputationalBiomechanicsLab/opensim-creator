@@ -33,13 +33,13 @@ using osc::UID;
 
 namespace
 {
-    template<class T>
+    template<typename T>
     concept UIDed = requires(T v)
     {
         { v.uid } -> std::convertible_to<UID>;
     };
 
-    template<class T>
+    template<typename T>
     concept Named = requires(T v)
     {
         { v.name } -> std::convertible_to<std::string_view>;

@@ -13,7 +13,7 @@ namespace osc::mi
     //
     // automatically defines parts of the MIObject API using CRTP, so that
     // downstream classes don't have to repeat themselves
-    template<class T>
+    template<typename T>
     class MIObjectCRTP : public MIObject {
     public:
         static MIClass const& Class()

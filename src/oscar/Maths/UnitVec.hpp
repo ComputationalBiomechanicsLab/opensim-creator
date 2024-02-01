@@ -21,7 +21,11 @@ namespace osc
      *
      * Inspired by Simbody's `SimTK::UnitVec` class
      */
-    template<LengthType L, typename T, Qualifier Q = glm::defaultp>
+    template<
+        LengthType L,
+        typename T,
+        Qualifier Q = glm::defaultp
+    >
     class UnitVec final {
     public:
         using type = UnitVec<L, T, Q>;

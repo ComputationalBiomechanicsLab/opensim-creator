@@ -117,17 +117,20 @@ namespace
     }
 
     // returns an updater function that sets the value of a property
-    template<typename TValue, typename TProperty = TValue>
-    std::function<void(OpenSim::AbstractProperty&)> MakePropValueSetter(int idx, TValue value)
+    template<
+        typename TValue,
+        typename TProperty = std::remove_cvref_t<TValue>
+    >
+    std::function<void(OpenSim::AbstractProperty&)> MakePropValueSetter(int idx, TValue&& value)
     {
-        return [idx, value](OpenSim::AbstractProperty& p)
+        return [idx, val = std::forward<TValue>(value)](OpenSim::AbstractProperty& p)
         {
             auto* const ps = dynamic_cast<OpenSim::Property<TProperty>*>(&p);
             if (!ps)
             {
                 return;  // types don't match: caller probably mismatched properties
             }
-            ps->setValue(idx, value);
+            ps->setValue(idx, val);
         };
     }
 
@@ -569,7 +572,7 @@ namespace
 
             if (osc::ItemValueShouldBeSaved())
             {
-                rv = MakePropValueSetter<std::string>(idx, m_EditedProperty.getValue(idx));
+                rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
             }
 
             return rv;
@@ -660,7 +663,7 @@ namespace
             }
             if (drawRV.shouldSave)
             {
-                rv = MakePropValueSetter<double>(idx, m_EditedProperty.getValue(idx));
+                rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
             }
 
             return rv;
@@ -750,7 +753,7 @@ namespace
 
             if (edited || osc::ItemValueShouldBeSaved())
             {
-                rv = MakePropValueSetter<bool>(idx, m_EditedProperty.getValue(idx));
+                rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
             }
 
             return rv;
@@ -1025,7 +1028,7 @@ namespace
             // if any component editor indicated that it should be saved then propagate that upwards
             if (shouldSave)
             {
-                rv = MakePropValueSetter<SimTK::Vec3>(idx, m_EditedProperty.getValue(idx));
+                rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
             }
 
             return rv;
@@ -1183,7 +1186,7 @@ namespace
 
             if (shouldSave)
             {
-                rv = MakePropValueSetter<SimTK::Vec6>(idx, m_EditedProperty.getValue(idx));
+                rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
             }
 
             return rv;
@@ -1271,7 +1274,7 @@ namespace
 
             if (edited || osc::ItemValueShouldBeSaved())
             {
-                rv = MakePropValueSetter<int>(idx, m_EditedProperty.getValue(idx));
+                rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
             }
 
             return rv;
@@ -1371,7 +1374,7 @@ namespace
 
             if (shouldSave)
             {
-                rv = MakePropValueSetter<OpenSim::Appearance>(idx, m_EditedProperty.getValue(idx));
+                rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
             }
 
             return rv;
@@ -1500,7 +1503,7 @@ namespace
                 {
                     if (property_type const* prop = accessor())
                     {
-                        *shared = osc::ObjectPropertyEdit{*prop, MakePropValueSetter<OpenSim::GeometryPath, OpenSim::AbstractGeometryPath>(0, gp)};
+                        *shared = osc::ObjectPropertyEdit{*prop, MakePropValueSetter<OpenSim::GeometryPath const&, OpenSim::AbstractGeometryPath>(0, gp)};
                     }
                 }
             );

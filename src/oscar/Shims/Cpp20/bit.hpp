@@ -62,7 +62,7 @@ namespace osc::cpp20
         return rv;
     }
 
-    template<class To, class From>
+    template<typename To, typename From>
     To bit_cast(From const& src) noexcept
     {
         static_assert(

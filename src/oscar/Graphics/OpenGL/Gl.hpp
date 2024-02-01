@@ -762,7 +762,7 @@ namespace osc::gl
         using Buffer<T, GL_ARRAY_BUFFER, Usage>::Buffer;
     };
 
-    template<class T>
+    template<typename T>
     concept ElementIndex = IsAnyOf<uint16_t, uint32_t>;
 
     template<ElementIndex T, GLenum Usage = GL_STATIC_DRAW>
