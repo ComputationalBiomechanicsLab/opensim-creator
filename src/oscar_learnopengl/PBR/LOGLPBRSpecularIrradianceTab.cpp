@@ -35,6 +35,8 @@
 #include <utility>
 
 using namespace osc::literals;
+namespace Graphics = osc::Graphics;
+namespace cpp20 = osc::cpp20;
 using osc::App;
 using osc::CalcCubemapViewProjMatrices;
 using osc::Camera;
@@ -125,7 +127,7 @@ namespace
         );
 
         Camera camera;
-        osc::Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
+        Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
         camera.renderTo(cubemapRenderTarget);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -152,7 +154,7 @@ namespace
         );
 
         Camera camera;
-        osc::Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
+        Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
         camera.renderTo(irradianceCubemap);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -163,7 +165,7 @@ namespace
         RenderTexture const& environmentMap)
     {
         int constexpr levelZeroWidth = 128;
-        static_assert(osc::popcount(static_cast<unsigned>(levelZeroWidth)) == 1);
+        static_assert(cpp20::popcount(static_cast<unsigned>(levelZeroWidth)) == 1);
 
         RenderTexture captureRT{{levelZeroWidth, levelZeroWidth}};
         captureRT.setDimensionality(TextureDimensionality::Cube);
@@ -187,7 +189,7 @@ namespace
 
         size_t const maxMipmapLevel = static_cast<size_t>(std::max(
             0,
-            osc::bit_width(static_cast<size_t>(levelZeroWidth)) - 1
+            cpp20::bit_width(static_cast<size_t>(levelZeroWidth)) - 1
         ));
         static_assert(maxMipmapLevel == 7);
 
@@ -200,9 +202,9 @@ namespace
             float const roughness = static_cast<float>(mip)/static_cast<float>(maxMipmapLevel);
             material.setFloat("uRoughness", roughness);
 
-            osc::Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
+            Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
             camera.renderTo(captureRT);
-            osc::Graphics::CopyTexture(captureRT, rv, mip);
+            Graphics::CopyTexture(captureRT, rv, mip);
         }
 
         return rv;
@@ -225,7 +227,7 @@ namespace
         camera.setProjectionMatrixOverride(Identity<Mat4>());
         camera.setViewMatrixOverride(Identity<Mat4>());
 
-        osc::Graphics::DrawMesh(quad, Identity<Transform>(), material, camera);
+        Graphics::DrawMesh(quad, Identity<Transform>(), material, camera);
         camera.renderTo(renderTex);
 
         Texture2D rv{
@@ -235,7 +237,7 @@ namespace
             TextureWrapMode::Clamp,
             TextureFilterMode::Linear,
         };
-        osc::Graphics::CopyTexture(renderTex, rv);
+        Graphics::CopyTexture(renderTex, rv);
         return rv;
     }
 
@@ -294,7 +296,7 @@ private:
         m_PBRMaterial.setVec3Array("uLightColors", c_LightRadiances);
         m_PBRMaterial.setRenderTexture("uIrradianceMap", m_IrradianceMap);
         m_PBRMaterial.setCubemap("uPrefilterMap", m_PrefilterMap);
-        m_PBRMaterial.setFloat("uMaxReflectionLOD", static_cast<float>(osc::bit_width(static_cast<size_t>(m_PrefilterMap.getWidth()) - 1)));
+        m_PBRMaterial.setFloat("uMaxReflectionLOD", static_cast<float>(cpp20::bit_width(static_cast<size_t>(m_PrefilterMap.getWidth()) - 1)));
         m_PBRMaterial.setTexture("uBRDFLut", m_BRDFLookup);
 
         drawSpheres();

@@ -11,6 +11,7 @@
 #include <string_view>
 #include <unordered_map>
 
+using osc::Icon;
 
 class osc::IconCache::Impl final {
 public:
@@ -63,7 +64,7 @@ osc::IconCache::IconCache(IconCache&&) noexcept = default;
 osc::IconCache& osc::IconCache::operator=(IconCache&&) noexcept = default;
 osc::IconCache::~IconCache() noexcept = default;
 
-osc::Icon const& osc::IconCache::getIcon(std::string_view iconName) const
+Icon const& osc::IconCache::getIcon(std::string_view iconName) const
 {
     return m_Impl->getIcon(iconName);
 }

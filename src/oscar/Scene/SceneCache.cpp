@@ -17,6 +17,7 @@
 #include <vector>
 
 using osc::BVH;
+using osc::HashOf;
 using osc::Mesh;
 
 namespace
@@ -43,7 +44,7 @@ template<>
 struct std::hash<TorusParameters> final {
     size_t operator()(TorusParameters const& p) const
     {
-        return osc::HashOf(p.torusCenterToTubeCenterRadius, p.tubeRadius);
+        return HashOf(p.torusCenterToTubeCenterRadius, p.tubeRadius);
     }
 };
 

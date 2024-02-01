@@ -35,8 +35,12 @@
 #include <utility>
 #include <unordered_set>
 
+using osc::AspectRatio;
 using osc::Color;
+using osc::CStringView;
+using osc::Dimensions;
 using osc::Rect;
+using osc::UID;
 using osc::Vec2;
 
 namespace
@@ -50,9 +54,9 @@ namespace
     // the returned rectangle is in the same space as the target rectangle
     Rect ShrinkToFit(Rect targetRect, float aspectRatio)
     {
-        float const targetAspectRatio = osc::AspectRatio(targetRect);
+        float const targetAspectRatio = AspectRatio(targetRect);
         float const ratio = targetAspectRatio / aspectRatio;
-        Vec2 const targetDims = osc::Dimensions(targetRect);
+        Vec2 const targetDims = Dimensions(targetRect);
 
         if (ratio >= 1.0f)
         {
@@ -72,7 +76,7 @@ namespace
 
     Rect MapRect(Rect const& sourceRect, Rect const& targetRect, Rect const& rect)
     {
-        Vec2 const scale = osc::Dimensions(targetRect) / osc::Dimensions(sourceRect);
+        Vec2 const scale = Dimensions(targetRect) / Dimensions(sourceRect);
 
         return Rect
         {
@@ -82,7 +86,7 @@ namespace
     }
 }
 
-class osc::ScreenshotTab::Impl final : public osc::StandardTabImpl {
+class osc::ScreenshotTab::Impl final : public StandardTabImpl {
 public:
     explicit Impl(Screenshot&& screenshot) :
         StandardTabImpl{ICON_FA_COOKIE " ScreenshotTab"},
@@ -139,9 +143,9 @@ private:
     {
         Vec2 const screenTopLeft = ImGui::GetCursorScreenPos();
         Rect const windowRect = {screenTopLeft, screenTopLeft + Vec2{ImGui::GetContentRegionAvail()}};
-        Rect const imageRect = ShrinkToFit(windowRect, osc::AspectRatio(m_Screenshot.image.getDimensions()));
+        Rect const imageRect = ShrinkToFit(windowRect, AspectRatio(m_Screenshot.image.getDimensions()));
         ImGui::SetCursorScreenPos(imageRect.p1);
-        DrawTextureAsImGuiImage(m_ImageTexture, osc::Dimensions(imageRect));
+        DrawTextureAsImGuiImage(m_ImageTexture, Dimensions(imageRect));
         return imageRect;
     }
 
@@ -159,7 +163,7 @@ private:
         {
             Rect const annotationRectScreenSpace = MapRect(imageSourceRect, imageRect, annotation.rect);
             bool const selected =  Contains(m_SelectedAnnotations, annotation.label);
-            bool const hovered = osc::IsPointInRect(annotationRectScreenSpace, mousePos);
+            bool const hovered = IsPointInRect(annotationRectScreenSpace, mousePos);
 
             Vec4 color = selected ? selectedColor : unselectedColor;
             if (hovered)
@@ -192,12 +196,12 @@ private:
 
     void actionSaveOutputImage()
     {
-        std::optional<std::filesystem::path> const maybeImagePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("png");
+        std::optional<std::filesystem::path> const maybeImagePath = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("png");
         if (maybeImagePath)
         {
             Texture2D outputImage = renderOutputImage();
-            osc::WriteToPNG(outputImage, *maybeImagePath);
-            osc::OpenPathInOSDefaultApplication(*maybeImagePath);
+            WriteToPNG(outputImage, *maybeImagePath);
+            OpenPathInOSDefaultApplication(*maybeImagePath);
         }
     }
 
@@ -328,12 +332,12 @@ osc::ScreenshotTab::ScreenshotTab(ScreenshotTab&&) noexcept = default;
 osc::ScreenshotTab& osc::ScreenshotTab::operator=(ScreenshotTab&&) noexcept = default;
 osc::ScreenshotTab::~ScreenshotTab() noexcept = default;
 
-osc::UID osc::ScreenshotTab::implGetID() const
+UID osc::ScreenshotTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::ScreenshotTab::implGetName() const
+CStringView osc::ScreenshotTab::implGetName() const
 {
     return m_Impl->getName();
 }

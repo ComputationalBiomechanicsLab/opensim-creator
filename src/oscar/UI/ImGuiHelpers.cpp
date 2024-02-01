@@ -32,7 +32,11 @@
 #include <string>
 
 using namespace osc::literals;
+using osc::ClampToLDR;
 using osc::Color;
+using osc::ImGuiItemHittestResult;
+using osc::Rect;
+using osc::ToColor;
 using osc::Vec2;
 using osc::Vec4;
 
@@ -77,10 +81,10 @@ namespace
 
     ImU32 Brighten(ImU32 color, float factor)
     {
-        const Color srgb = osc::ToColor(color);
+        const Color srgb = ToColor(color);
         const Color brightened = factor * srgb;
-        const Color clamped = osc::ClampToLDR(brightened);
-        return osc::ToImU32(clamped);
+        const Color clamped = ClampToLDR(brightened);
+        return ToImU32(clamped);
     }
 }
 
@@ -223,8 +227,8 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
     Rect const& viewportRect,
     std::optional<AABB> maybeSceneAABB)
 {
-    bool const shiftDown = osc::IsShiftDown();
-    bool const ctrlOrSuperDown = osc::IsCtrlOrSuperDown();
+    bool const shiftDown = IsShiftDown();
+    bool const ctrlOrSuperDown = IsCtrlOrSuperDown();
 
     if (ImGui::IsKeyReleased(ImGuiKey_X))
     {
@@ -253,10 +257,10 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
         {
             if (maybeSceneAABB)
             {
-                osc::AutoFocus(
+                AutoFocus(
                     camera,
                     *maybeSceneAABB,
-                    osc::AspectRatio(viewportRect)
+                    AspectRatio(viewportRect)
                 );
                 return true;
             }
@@ -271,10 +275,10 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
     {
         if (maybeSceneAABB)
         {
-            osc::AutoFocus(
+            AutoFocus(
                 camera,
                 *maybeSceneAABB,
-                osc::AspectRatio(viewportRect)
+                AspectRatio(viewportRect)
             );
             return true;
         }
@@ -301,7 +305,7 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
         if (ctrlOrSuperDown)
         {
             // pan
-            camera.pan(osc::AspectRatio(viewportRect), {0.0f, +0.1f});
+            camera.pan(AspectRatio(viewportRect), {0.0f, +0.1f});
         }
         else if (shiftDown)
         {
@@ -320,7 +324,7 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
         if (ctrlOrSuperDown)
         {
             // pan
-            camera.pan(osc::AspectRatio(viewportRect), {-0.1f, 0.0f});
+            camera.pan(AspectRatio(viewportRect), {-0.1f, 0.0f});
         }
         else if (shiftDown)
         {
@@ -339,7 +343,7 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
         if (ctrlOrSuperDown)
         {
             // pan
-            camera.pan(osc::AspectRatio(viewportRect), {+0.1f, 0.0f});
+            camera.pan(AspectRatio(viewportRect), {+0.1f, 0.0f});
         }
         else if (shiftDown)
         {
@@ -375,7 +379,7 @@ bool osc::UpdatePolarCameraFromImGuiInputs(
     // we don't check `io.WantCaptureMouse` because clicking/dragging on an ImGui::Image
     // is classed as a mouse interaction
     bool const mouseHandled =
-        UpdatePolarCameraFromImGuiMouseInputs(camera, osc::Dimensions(viewportRect));
+        UpdatePolarCameraFromImGuiMouseInputs(camera, Dimensions(viewportRect));
     bool const keyboardHandled = !io.WantCaptureKeyboard ?
         UpdatePolarCameraFromImGuiKeyboardInputs(camera, viewportRect, maybeSceneAABB) :
         false;
@@ -430,7 +434,7 @@ void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, Eulers& eulers)
     camera.setRotation(WorldspaceRotation(eulers));
 }
 
-osc::Rect osc::ContentRegionAvailScreenRect()
+Rect osc::ContentRegionAvailScreenRect()
 {
     Vec2 const topLeft = ImGui::GetCursorScreenPos();
     Vec2 const dims = ImGui::GetContentRegionAvail();
@@ -474,7 +478,7 @@ void osc::DrawTextureAsImGuiImage(RenderTexture const& t, Vec2 dims)
     ImGui::Image(handle, dims, uv0, uv1);
 }
 
-osc::Vec2 osc::CalcButtonSize(CStringView content)
+Vec2 osc::CalcButtonSize(CStringView content)
 {
     Vec2 const padding = ImGui::GetStyle().FramePadding;
     Vec2 const contentDims = ImGui::CalcTextSize(content.c_str());
@@ -488,11 +492,11 @@ float osc::CalcButtonWidth(CStringView content)
 
 bool osc::ButtonNoBg(CStringView label, Vec2 size)
 {
-    osc::PushStyleColor(ImGuiCol_Button, Color::clear());
-    osc::PushStyleColor(ImGuiCol_ButtonHovered, Color::clear());
+    PushStyleColor(ImGuiCol_Button, Color::clear());
+    PushStyleColor(ImGuiCol_ButtonHovered, Color::clear());
     bool const rv = ImGui::Button(label.c_str(), size);
-    osc::PopStyleColor();
-    osc::PopStyleColor();
+    PopStyleColor();
+    PopStyleColor();
 
     return rv;
 }
@@ -512,24 +516,24 @@ bool osc::ImageButton(CStringView label, Texture2D const& t, Vec2 dims)
     return ImageButton(label, t, dims, Rect{{0.0f, 1.0f}, {1.0f, 0.0f}});
 }
 
-osc::Rect osc::GetItemRect()
+Rect osc::GetItemRect()
 {
     return {ImGui::GetItemRectMin(), ImGui::GetItemRectMax()};
 }
 
-osc::ImGuiItemHittestResult osc::HittestLastImguiItem()
+ImGuiItemHittestResult osc::HittestLastImguiItem()
 {
-    return osc::HittestLastImguiItem(c_DefaultDragThreshold);
+    return HittestLastImguiItem(c_DefaultDragThreshold);
 }
 
-osc::ImGuiItemHittestResult osc::HittestLastImguiItem(float dragThreshold)
+ImGuiItemHittestResult osc::HittestLastImguiItem(float dragThreshold)
 {
     ImGuiItemHittestResult rv;
     rv.rect.p1 = ImGui::GetItemRectMin();
     rv.rect.p2 = ImGui::GetItemRectMax();
     rv.isHovered = ImGui::IsItemHovered();
-    rv.isLeftClickReleasedWithoutDragging = rv.isHovered && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left, dragThreshold);
-    rv.isRightClickReleasedWithoutDragging = rv.isHovered && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right, dragThreshold);
+    rv.isLeftClickReleasedWithoutDragging = rv.isHovered && IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left, dragThreshold);
+    rv.isRightClickReleasedWithoutDragging = rv.isHovered && IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right, dragThreshold);
     return rv;
 }
 
@@ -574,7 +578,7 @@ bool osc::IsAltDown()
 
 bool osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn)
 {
-    return osc::IsMouseReleasedWithoutDragging(btn, c_DefaultDragThreshold);
+    return IsMouseReleasedWithoutDragging(btn, c_DefaultDragThreshold);
 }
 
 bool osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn, float threshold)
@@ -664,7 +668,7 @@ void osc::DrawTooltipIfItemHovered(
     }
 }
 
-osc::Vec2 osc::CalcAlignmentAxesDimensions()
+Vec2 osc::CalcAlignmentAxesDimensions()
 {
     float const fontSize = ImGui::GetFontSize();
     float const linelen = 2.0f * fontSize;
@@ -673,7 +677,7 @@ osc::Vec2 osc::CalcAlignmentAxesDimensions()
     return {edgeLen, edgeLen};
 }
 
-osc::Rect osc::DrawAlignmentAxes(Mat4 const& viewMtx)
+Rect osc::DrawAlignmentAxes(Mat4 const& viewMtx)
 {
     float const fontSize = ImGui::GetFontSize();
     float const linelen = 2.0f * fontSize;
@@ -824,7 +828,7 @@ ImU32 osc::ToImU32(Color const& color)
     return ImGui::ColorConvertFloat4ToU32(Vec4{color});
 }
 
-osc::Color osc::ToColor(ImU32 u32color)
+Color osc::ToColor(ImU32 u32color)
 {
     return Color{Vec4{ImGui::ColorConvertU32ToFloat4(u32color)}};
 }
@@ -855,7 +859,7 @@ ImGuiWindowFlags osc::GetMinimalWindowFlags()
         ImGuiWindowFlags_NoTitleBar;
 }
 
-osc::Rect osc::GetMainViewportWorkspaceScreenRect()
+Rect osc::GetMainViewportWorkspaceScreenRect()
 {
     ImGuiViewport const& viewport = *ImGui::GetMainViewport();
 
@@ -869,9 +873,9 @@ osc::Rect osc::GetMainViewportWorkspaceScreenRect()
 bool osc::IsMouseInMainViewportWorkspaceScreenRect()
 {
     Vec2 const mousepos = ImGui::GetMousePos();
-    Rect const hitRect = osc::GetMainViewportWorkspaceScreenRect();
+    Rect const hitRect = GetMainViewportWorkspaceScreenRect();
 
-    return osc::IsPointInRect(hitRect, mousepos);
+    return IsPointInRect(hitRect, mousepos);
 }
 
 bool osc::BeginMainViewportTopBar(CStringView label, float height, ImGuiWindowFlags flags)
@@ -950,7 +954,7 @@ bool osc::ItemValueShouldBeSaved()
         return true;  // ImGui detected that the item was deactivated after an edit
     }
 
-    if (ImGui::IsItemEdited() && osc::IsAnyKeyPressed({ImGuiKey_Enter, ImGuiKey_Tab}))
+    if (ImGui::IsItemEdited() && IsAnyKeyPressed({ImGuiKey_Enter, ImGuiKey_Tab}))
     {
         return true;  // user pressed enter/tab after editing
     }

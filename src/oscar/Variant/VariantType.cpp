@@ -15,7 +15,7 @@ std::string osc::to_string(VariantType v)
         return std::to_array({ VariantTypeTraits<Types>::name... });
     }(VariantTypeList{});
 
-    auto const idx = osc::to_underlying(v);
+    auto const idx = cpp23::to_underlying(v);
     if (0 <= idx && idx < std::ssize(lut)) {
         return std::string{lut[idx]};
     }

@@ -33,9 +33,15 @@
 #include <vector>
 
 using namespace osc::literals;
+using osc::AABB;
+using osc::BVH;
+using osc::Material;
 using osc::Quat;
+using osc::RayCollision;
 using osc::SceneCache;
+using osc::SceneCollision;
 using osc::SceneDecoration;
+using osc::SceneRendererParams;
 using osc::Vec3;
 
 namespace
@@ -206,7 +212,7 @@ void osc::DrawLineSegment(
     });
 }
 
-osc::AABB osc::GetWorldspaceAABB(SceneDecoration const& cd)
+AABB osc::GetWorldspaceAABB(SceneDecoration const& cd)
 {
     return TransformAABB(cd.mesh.getBounds(), cd.transform);
 }
@@ -223,7 +229,7 @@ void osc::UpdateSceneBVH(std::span<SceneDecoration const> sceneEls, BVH& bvh)
     bvh.buildFromAABBs(aabbs);
 }
 
-std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(
+std::vector<SceneCollision> osc::GetAllSceneCollisions(
     BVH const& bvh,
     SceneCache& sceneCache,
     std::span<SceneDecoration const> decorations,
@@ -256,7 +262,7 @@ std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(
     return rv;
 }
 
-std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
+std::optional<RayCollision> osc::GetClosestWorldspaceRayCollision(
     Mesh const& mesh,
     BVH const& triangleBVH,
     Transform const& transform,
@@ -290,7 +296,7 @@ std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
     return rv;
 }
 
-std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
+std::optional<RayCollision> osc::GetClosestWorldspaceRayCollision(
     PolarPerspectiveCamera const& camera,
     Mesh const& mesh,
     BVH const& triangleBVH,
@@ -302,7 +308,7 @@ std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
         Dimensions(renderScreenRect)
     );
 
-    return osc::GetClosestWorldspaceRayCollision(
+    return GetClosestWorldspaceRayCollision(
         mesh,
         triangleBVH,
         Identity<Transform>(),
@@ -310,7 +316,7 @@ std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
     );
 }
 
-osc::SceneRendererParams osc::CalcStandardDarkSceneRenderParams(
+SceneRendererParams osc::CalcStandardDarkSceneRenderParams(
     PolarPerspectiveCamera const& camera,
     AntiAliasingLevel antiAliasingLevel,
     Vec2 renderDims)
@@ -328,7 +334,7 @@ osc::SceneRendererParams osc::CalcStandardDarkSceneRenderParams(
     return rv;
 }
 
-osc::Material osc::CreateWireframeOverlayMaterial(
+Material osc::CreateWireframeOverlayMaterial(
     AppConfig const& config,
     ShaderCache& cache)
 {
@@ -341,7 +347,7 @@ osc::Material osc::CreateWireframeOverlayMaterial(
     return material;
 }
 
-osc::BVH osc::CreateTriangleBVHFromMesh(Mesh const& mesh)
+BVH osc::CreateTriangleBVHFromMesh(Mesh const& mesh)
 {
     BVH rv;
 

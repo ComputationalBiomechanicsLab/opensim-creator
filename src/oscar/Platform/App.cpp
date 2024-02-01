@@ -43,13 +43,18 @@
 #include <stdexcept>
 #include <unordered_map>
 
+using osc::AntiAliasingLevel;
 using osc::App;
 using osc::AppClock;
 using osc::AppConfig;
+using osc::AppMetadata;
 using osc::CStringView;
+using osc::CurrentExeDir;
+using osc::InstallBacktraceHandler;
 using osc::Screenshot;
 using osc::ScreenshotAnnotation;
 using osc::Texture2D;
+using osc::Vec2;
 
 namespace
 {
@@ -79,7 +84,7 @@ namespace
     bool EnsureBacktraceHandlerEnabled(std::filesystem::path const& crashDumpDir)
     {
         osc::log::info("enabling backtrace handler");
-        osc::InstallBacktraceHandler(crashDumpDir);
+        InstallBacktraceHandler(crashDumpDir);
         return true;
     }
 
@@ -126,19 +131,19 @@ namespace
     {
         auto const dticks = static_cast<double>(ticks);
         auto const dfrequency = static_cast<double>(frequency);
-        auto const duration = static_cast<osc::AppClock::rep>(dticks/dfrequency);
+        auto const duration = static_cast<AppClock::rep>(dticks/dfrequency);
 
-        return osc::AppClock::duration{duration};
+        return AppClock::duration{duration};
     }
 
     AppClock::time_point ConvertPerfCounterToFClock(Uint64 ticks, Uint64 frequency)
     {
-        return osc::AppClock::time_point{ConvertPerfTicksToFClockDuration(ticks, frequency)};
+        return AppClock::time_point{ConvertPerfTicksToFClockDuration(ticks, frequency)};
     }
 
     std::filesystem::path GetCurrentExeDirAndLogIt()
     {
-        auto rv = osc::CurrentExeDir();
+        auto rv = CurrentExeDir();
         osc::log::info("executable directory: %s", rv.string().c_str());
         return rv;
     }
@@ -148,7 +153,7 @@ namespace
         CStringView organizationName,
         CStringView applicationName)
     {
-        auto rv = osc::GetUserDataDir(organizationName, applicationName);
+        auto rv = GetUserDataDir(organizationName, applicationName);
         osc::log::info("user data directory: %s", rv.string().c_str());
         return rv;
     }
@@ -461,8 +466,8 @@ public:
         *lock = sv;
 
         std::string const newTitle = sv.empty() ?
-            std::string{osc::GetBestHumanReadableApplicationName(m_Metadata)} :
-            (std::string{sv} + " - " + osc::GetBestHumanReadableApplicationName(m_Metadata));
+            std::string{GetBestHumanReadableApplicationName(m_Metadata)} :
+            (std::string{sv} + " - " + GetBestHumanReadableApplicationName(m_Metadata));
 
         SDL_SetWindowTitle(m_MainWindow.get(), newTitle.c_str());
     }
@@ -532,7 +537,7 @@ private:
         return m_GraphicsContext.requestScreenshot();
     }
 
-    // perform a screen transntion between two top-level `osc::IScreen`s
+    // perform a screen transntion between two top-level `IScreen`s
     void transitionToNextScreen()
     {
         if (!m_NextScreen)
@@ -805,19 +810,19 @@ private:
 
 // public API
 
-osc::App& osc::App::upd()
+App& osc::App::upd()
 {
     OSC_ASSERT(g_ApplicationGlobal && "App is not initialized: have you constructed a (singleton) instance of App?");
     return *g_ApplicationGlobal;
 }
 
-osc::App const& osc::App::get()
+App const& osc::App::get()
 {
     OSC_ASSERT(g_ApplicationGlobal && "App is not initialized: have you constructed a (singleton) instance of App?");
     return *g_ApplicationGlobal;
 }
 
-osc::AppConfig const& osc::App::config()
+AppConfig const& osc::App::config()
 {
     return get().getConfig();
 }
@@ -842,14 +847,14 @@ osc::App::App(AppMetadata const& metadata)
 
 osc::App::App(App&&) noexcept = default;
 
-osc::App& osc::App::operator=(App&&) noexcept = default;
+App& osc::App::operator=(App&&) noexcept = default;
 
 osc::App::~App() noexcept
 {
     g_ApplicationGlobal = nullptr;
 }
 
-osc::AppMetadata const& osc::App::getMetadata() const
+AppMetadata const& osc::App::getMetadata() const
 {
     return m_Impl->getMetadata();
 }
@@ -879,7 +884,7 @@ void osc::App::requestQuit()
     m_Impl->requestQuit();
 }
 
-osc::Vec2 osc::App::dims() const
+Vec2 osc::App::dims() const
 {
     return m_Impl->dims();
 }
@@ -904,17 +909,17 @@ void osc::App::makeWindowed()
     m_Impl->makeWindowed();
 }
 
-osc::AntiAliasingLevel osc::App::getCurrentAntiAliasingLevel() const
+AntiAliasingLevel osc::App::getCurrentAntiAliasingLevel() const
 {
     return m_Impl->getCurrentAntiAliasingLevel();
 }
 
-void osc::App::setCurrentAntiAliasingLevel(osc::AntiAliasingLevel s)
+void osc::App::setCurrentAntiAliasingLevel(AntiAliasingLevel s)
 {
     m_Impl->setCurrentAntiAliasingLevel(s);
 }
 
-osc::AntiAliasingLevel osc::App::getMaxAntiAliasingLevel() const
+AntiAliasingLevel osc::App::getMaxAntiAliasingLevel() const
 {
     return m_Impl->getMaxAntiAliasingLevel();
 }
@@ -959,7 +964,7 @@ void osc::App::addFrameAnnotation(std::string_view label, Rect screenRect)
     m_Impl->addFrameAnnotation(label, screenRect);
 }
 
-std::future<osc::Screenshot> osc::App::requestScreenshot()
+std::future<Screenshot> osc::App::requestScreenshot()
 {
     return m_Impl->requestScreenshot();
 }
@@ -989,22 +994,22 @@ uint64_t osc::App::getFrameCount() const
     return m_Impl->getFrameCount();
 }
 
-osc::AppClock::time_point osc::App::getAppStartupTime() const
+AppClock::time_point osc::App::getAppStartupTime() const
 {
     return m_Impl->getAppStartupTime();
 }
 
-osc::AppClock::duration osc::App::getFrameDeltaSinceAppStartup() const
+AppClock::duration osc::App::getFrameDeltaSinceAppStartup() const
 {
     return m_Impl->getFrameDeltaSinceAppStartup();
 }
 
-osc::AppClock::time_point osc::App::getFrameStartTime() const
+AppClock::time_point osc::App::getFrameStartTime() const
 {
     return m_Impl->getFrameStartTime();
 }
 
-osc::AppClock::duration osc::App::getFrameDeltaSinceLastFrame() const
+AppClock::duration osc::App::getFrameDeltaSinceLastFrame() const
 {
     return m_Impl->getFrameDeltaSinceLastFrame();
 }
@@ -1049,12 +1054,12 @@ void osc::App::unsetMainWindowSubTitle()
     m_Impl->unsetMainWindowSubTitle();
 }
 
-osc::AppConfig const& osc::App::getConfig() const
+AppConfig const& osc::App::getConfig() const
 {
     return m_Impl->getConfig();
 }
 
-osc::AppConfig& osc::App::updConfig()
+AppConfig& osc::App::updConfig()
 {
     return m_Impl->updConfig();
 }

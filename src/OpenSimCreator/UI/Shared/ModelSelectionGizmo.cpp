@@ -38,6 +38,7 @@
 #include <type_traits>
 #include <utility>
 
+namespace cpp23 = osc::cpp23;
 using osc::Degrees;
 using osc::Eulers;
 using osc::ExtractEulerAngleXYZ;
@@ -74,12 +75,12 @@ namespace
 
     constexpr SupportedManipulationOpFlags operator|(SupportedManipulationOpFlags lhs, SupportedManipulationOpFlags rhs)
     {
-        return static_cast<SupportedManipulationOpFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
+        return static_cast<SupportedManipulationOpFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
     }
 
     constexpr bool operator&(SupportedManipulationOpFlags lhs, SupportedManipulationOpFlags rhs)
     {
-        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0u;
+        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0u;
     }
 
     // type-erased virtual base class that each concrete manipulator inherits from

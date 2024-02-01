@@ -15,7 +15,9 @@
 #include <stdexcept>
 #include <sstream>
 
-osc::Texture2D osc::ReadSVGIntoTexture(
+using osc::Texture2D;
+
+Texture2D osc::ReadSVGIntoTexture(
     std::istream& inputStream,
     float scale)
 {
@@ -58,7 +60,7 @@ osc::Texture2D osc::ReadSVGIntoTexture(
     return rv;
 }
 
-osc::Texture2D osc::LoadTextureFromSVGFile(
+Texture2D osc::LoadTextureFromSVGFile(
     std::filesystem::path const& path,
     float scale)
 {

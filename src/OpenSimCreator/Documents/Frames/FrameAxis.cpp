@@ -63,10 +63,10 @@ std::optional<FrameAxis> osc::frames::TryParseAsFrameAxis(std::string_view s)
 
 bool osc::frames::AreOrthogonal(FrameAxis a, FrameAxis b)
 {
-    static_assert(osc::to_underlying(FrameAxis::PlusX) == 0);
-    static_assert(osc::to_underlying(FrameAxis::MinusX) == 3);
+    static_assert(cpp23::to_underlying(FrameAxis::PlusX) == 0);
+    static_assert(cpp23::to_underlying(FrameAxis::MinusX) == 3);
     static_assert(NumOptions<FrameAxis>() == 6);
-    return osc::to_underlying(a) % 3 != osc::to_underlying(b) % 3;
+    return cpp23::to_underlying(a) % 3 != cpp23::to_underlying(b) % 3;
 }
 
 std::ostream& osc::frames::operator<<(std::ostream& o, FrameAxis f)

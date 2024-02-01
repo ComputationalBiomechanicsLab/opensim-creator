@@ -12,11 +12,11 @@ namespace osc
 
     constexpr MeshUpdateFlags operator|(MeshUpdateFlags lhs, MeshUpdateFlags rhs)
     {
-        return static_cast<MeshUpdateFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
+        return static_cast<MeshUpdateFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
     }
 
     constexpr bool operator&(MeshUpdateFlags lhs, MeshUpdateFlags rhs)
     {
-        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
+        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
     }
 }

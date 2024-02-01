@@ -5,7 +5,7 @@
 #include <limits>
 #include <type_traits>
 
-namespace osc
+namespace osc::cpp20
 {
     // C++20: popcount
     //

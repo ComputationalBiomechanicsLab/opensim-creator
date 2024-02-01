@@ -39,6 +39,7 @@
 
 namespace OpenSim { class Component; }
 
+namespace cpp20 = osc::cpp20;
 
 namespace
 {
@@ -276,7 +277,7 @@ namespace
 
     // this is the main function that the simulator thread works through (unguarded against exceptions)
     osc::SimulationStatus FdSimulationMainUnguarded(
-        osc::stop_token stopToken,
+        cpp20::stop_token stopToken,
         SimulatorThreadInput& input,
         SharedState& shared)
     {
@@ -367,7 +368,7 @@ namespace
     //
     // guarded against exceptions (which are handled as simulation failures)
     int FdSimulationMain(
-        osc::stop_token stopToken,
+        cpp20::stop_token stopToken,
         std::unique_ptr<SimulatorThreadInput> input,
         std::shared_ptr<SharedState> shared)  // NOLINT(performance-unnecessary-value-param)
     {
@@ -439,7 +440,7 @@ public:
 private:
     ForwardDynamicSimulatorParams m_SimulationParams;
     std::shared_ptr<SharedState> m_Shared;
-    jthread m_SimulatorThread;
+    cpp20::jthread m_SimulatorThread;
 };
 
 

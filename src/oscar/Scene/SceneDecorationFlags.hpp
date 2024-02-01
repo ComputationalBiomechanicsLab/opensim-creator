@@ -17,7 +17,7 @@ namespace osc
 
     constexpr SceneDecorationFlags operator|(SceneDecorationFlags lhs, SceneDecorationFlags rhs)
     {
-        return static_cast<SceneDecorationFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
+        return static_cast<SceneDecorationFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
     }
 
     constexpr SceneDecorationFlags& operator|=(SceneDecorationFlags& lhs, SceneDecorationFlags rhs)
@@ -27,6 +27,6 @@ namespace osc
 
     constexpr bool operator&(SceneDecorationFlags lhs, SceneDecorationFlags rhs)
     {
-        return osc::to_underlying(lhs) & osc::to_underlying(rhs);
+        return cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs);
     }
 }

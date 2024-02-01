@@ -9,7 +9,9 @@
 namespace osc
 {
     template<typename T>
-    concept AngularUnitTraits = true;  // TODO: ensure `radians_per_rep` is defined
+    concept AngularUnitTraits = requires(T) {
+        { T::radians_per_rep } -> std::convertible_to<double>;
+    };
 
     /**
      * Represents a floating point of type `Rep`, which is expressed in the given

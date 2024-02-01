@@ -21,6 +21,6 @@ namespace osc
 
     constexpr bool operator&(ImageLoadingFlags lhs, ImageLoadingFlags rhs)
     {
-        return osc::to_underlying(lhs) & osc::to_underlying(rhs);
+        return cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs);
     }
 }

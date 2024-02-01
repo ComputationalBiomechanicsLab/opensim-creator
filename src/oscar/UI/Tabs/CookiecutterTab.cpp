@@ -10,6 +10,7 @@
 #include <utility>
 
 using osc::CStringView;
+using osc::UID;
 
 namespace
 {
@@ -66,12 +67,12 @@ osc::CookiecutterTab::CookiecutterTab(CookiecutterTab&&) noexcept = default;
 osc::CookiecutterTab& osc::CookiecutterTab::operator=(CookiecutterTab&&) noexcept = default;
 osc::CookiecutterTab::~CookiecutterTab() noexcept = default;
 
-osc::UID osc::CookiecutterTab::implGetID() const
+UID osc::CookiecutterTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::CookiecutterTab::implGetName() const
+CStringView osc::CookiecutterTab::implGetName() const
 {
     return m_Impl->getName();
 }

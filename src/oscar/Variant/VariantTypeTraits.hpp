@@ -30,7 +30,7 @@ namespace osc
 
     template<>
     struct VariantTypeTraits<VariantType::Int> {
-        static inline constexpr CStringView name = "Float";
+        static inline constexpr CStringView name = "Int";
     };
 
     template<>

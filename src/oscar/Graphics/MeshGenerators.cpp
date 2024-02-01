@@ -201,7 +201,7 @@ namespace
     }
 }
 
-osc::Mesh osc::GenerateTexturedQuadMesh()
+Mesh osc::GenerateTexturedQuadMesh()
 {
     NewMeshData data;
     data.reserve(c_ShadedTexturedQuadVerts.size());
@@ -221,7 +221,7 @@ osc::Mesh osc::GenerateTexturedQuadMesh()
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenerateUVSphereMesh(size_t sectors, size_t stacks)
+Mesh osc::GenerateUVSphereMesh(size_t sectors, size_t stacks)
 {
     NewMeshData data;
     data.reserve(2LL*3LL*stacks*sectors);
@@ -314,7 +314,7 @@ osc::Mesh osc::GenerateUVSphereMesh(size_t sectors, size_t stacks)
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenerateUntexturedYToYCylinderMesh(size_t nsides)
+Mesh osc::GenerateUntexturedYToYCylinderMesh(size_t nsides)
 {
     constexpr float c_TopY = +1.0f;
     constexpr float c_BottomY = -1.0f;
@@ -442,7 +442,7 @@ osc::Mesh osc::GenerateUntexturedYToYCylinderMesh(size_t nsides)
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenerateUntexturedYToYConeMesh(size_t nsides)
+Mesh osc::GenerateUntexturedYToYConeMesh(size_t nsides)
 {
     NewMeshData data;
     data.reserve(static_cast<size_t>(2*3)*nsides);
@@ -506,7 +506,7 @@ osc::Mesh osc::GenerateUntexturedYToYConeMesh(size_t nsides)
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenerateNbyNGridLinesMesh(size_t n)
+Mesh osc::GenerateNbyNGridLinesMesh(size_t n)
 {
     constexpr float z = 0.0f;
     constexpr float min = -1.0f;
@@ -553,7 +553,7 @@ osc::Mesh osc::GenerateNbyNGridLinesMesh(size_t n)
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenerateYToYLineMesh()
+Mesh osc::GenerateYToYLineMesh()
 {
     NewMeshData data;
     data.verts = {{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
@@ -568,7 +568,7 @@ osc::Mesh osc::GenerateYToYLineMesh()
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenerateCubeMesh()
+Mesh osc::GenerateCubeMesh()
 {
     NewMeshData data;
     data.reserve(c_ShadedTexturedCubeVerts.size());
@@ -588,7 +588,7 @@ osc::Mesh osc::GenerateCubeMesh()
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenerateCubeLinesMesh()
+Mesh osc::GenerateCubeLinesMesh()
 {
     NewMeshData data;
     data.verts.reserve(c_CubeEdgeLines.size());
@@ -609,7 +609,7 @@ osc::Mesh osc::GenerateCubeLinesMesh()
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenerateCircleMesh(size_t nsides)
+Mesh osc::GenerateCircleMesh(size_t nsides)
 {
     NewMeshData data;
     data.verts.reserve(3*nsides);
@@ -637,7 +637,7 @@ osc::Mesh osc::GenerateCircleMesh(size_t nsides)
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenerateTorusMesh(size_t slices, size_t stacks, float torusCenterToTubeCenterRadius, float tubeRadius)
+Mesh osc::GenerateTorusMesh(size_t slices, size_t stacks, float torusCenterToTubeCenterRadius, float tubeRadius)
 {
     // adapted from GitHub:prideout/par (used by raylib internally)
 
@@ -741,7 +741,7 @@ osc::Mesh osc::GenerateTorusMesh(size_t slices, size_t stacks, float torusCenter
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenerateNxMGridLinesMesh(Vec2 min, Vec2 max, Vec2i steps)
+Mesh osc::GenerateNxMGridLinesMesh(Vec2 min, Vec2 max, Vec2i steps)
 {
     // all Z values in the returned mesh shall be 0
     constexpr float zValue = 0.0f;
@@ -824,7 +824,7 @@ osc::Mesh osc::GenerateNxMGridLinesMesh(Vec2 min, Vec2 max, Vec2i steps)
     return rv;
 }
 
-osc::Mesh osc::GenerateNxMTriangleQuadGridMesh(Vec2i steps)
+Mesh osc::GenerateNxMTriangleQuadGridMesh(Vec2i steps)
 {
     // all Z values in the returned mesh shall be 0
     constexpr float zValue = 0.0f;

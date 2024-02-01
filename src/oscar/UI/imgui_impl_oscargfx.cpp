@@ -41,16 +41,21 @@
 #include <variant>
 #include <vector>
 
+namespace Graphics = osc::Graphics;
+namespace cpp20 = osc::cpp20;
 using osc::Camera;
 using osc::CameraClearFlags;
 using osc::ColorSpace;
 using osc::CullMode;
 using osc::CStringView;
+using osc::Identity;
+using osc::IsAnyOf;
 using osc::Mat4;
 using osc::Material;
 using osc::Mesh;
 using osc::MeshTopology;
 using osc::MeshUpdateFlags;
+using osc::Overload;
 using osc::Rect;
 using osc::RenderTexture;
 using osc::Shader;
@@ -58,6 +63,7 @@ using osc::SubMeshDescriptor;
 using osc::Texture2D;
 using osc::TextureFilterMode;
 using osc::TextureFormat;
+using osc::ToLinear;
 using osc::UID;
 using osc::Unorm8;
 using osc::Vec2;
@@ -107,12 +113,12 @@ namespace
 
     ImTextureID ToImGuiTextureID(UID id)
     {
-        return osc::bit_cast<ImTextureID>(id);
+        return cpp20::bit_cast<ImTextureID>(id);
     }
 
     UID ToUID(ImTextureID id)
     {
-        return UID::FromIntUnchecked(osc::bit_cast<int64_t>(id));
+        return UID::FromIntUnchecked(cpp20::bit_cast<int64_t>(id));
     }
 
     Texture2D CreateFontsTexture(UID textureID)
@@ -145,7 +151,7 @@ namespace
         {
             auto const ldrColor = Unorm8{static_cast<uint8_t>(i)};
             float const hdrColor = ldrColor.normalized_value();
-            float const linearHdrColor = osc::ToLinear(hdrColor);
+            float const linearHdrColor = ToLinear(hdrColor);
             rv[i] = Unorm8{linearHdrColor}.raw_value();
         }
         return rv;
@@ -264,11 +270,11 @@ namespace
 
         if (auto it = bd.texturesSubmittedThisFrame.find(ToUID(drawCommand.GetTexID())); it != bd.texturesSubmittedThisFrame.end())
         {
-            std::visit(osc::Overload{
+            std::visit(Overload{
                 [&bd](Texture2D const& t) { bd.material.setTexture("uTexture", t); },
                 [&bd](RenderTexture const& t) { bd.material.setRenderTexture("uTexture", t); },
             }, it->second);
-            osc::Graphics::DrawMesh(mesh, osc::Identity<Mat4>(), bd.material, bd.camera, std::nullopt, idx);
+            Graphics::DrawMesh(mesh, Identity<Mat4>(), bd.material, bd.camera, std::nullopt, idx);
             bd.camera.renderToScreen();
         }
     }
@@ -315,7 +321,7 @@ namespace
         mesh.clear();
     }
 
-    template<osc::IsAnyOf<Texture2D, RenderTexture> Texture>
+    template<IsAnyOf<Texture2D, RenderTexture> Texture>
     ImTextureID AllocateTextureID(Texture const& texture)
     {
         OscarImguiBackendData* bd = GetBackendData();
@@ -379,7 +385,7 @@ ImTextureID ImGui_ImplOscarGfx_AllocateTextureID(Texture2D const& texture)
     return AllocateTextureID(texture);
 }
 
-ImTextureID ImGui_ImplOscarGfx_AllocateTextureID(osc::RenderTexture const& texture)
+ImTextureID ImGui_ImplOscarGfx_AllocateTextureID(RenderTexture const& texture)
 {
     return AllocateTextureID(texture);
 }

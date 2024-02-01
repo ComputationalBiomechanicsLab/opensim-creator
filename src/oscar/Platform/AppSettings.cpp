@@ -32,6 +32,10 @@ using osc::AppSettings;
 using osc::AppSettingValue;
 using osc::AppSettingValueType;
 using osc::CStringView;
+using osc::CurrentExeDir;
+using osc::GetUserDataDir;
+using osc::HashOf;
+using osc::NumOptions;
 using osc::SynchronizedValue;
 
 namespace
@@ -168,10 +172,10 @@ R"(# configuration options
     std::optional<std::filesystem::path>  TryGetSystemConfigPath(
         std::string_view applicationConfigFileName_)
     {
-        // copied from the legacy `osc::AppConfig` implementation for backwards
+        // copied from the legacy `AppConfig` implementation for backwards
         // compatability with existing config files
 
-        std::filesystem::path p = osc::CurrentExeDir();
+        std::filesystem::path p = CurrentExeDir();
         bool exists = false;
 
         while (p.has_filename())
@@ -208,7 +212,7 @@ R"(# configuration options
         std::string_view applicationName_,
         std::string_view applicationConfigFileName_)
     {
-        auto userDir = osc::GetUserDataDir(std::string{organizationName_}, std::string{applicationName_});
+        auto userDir = GetUserDataDir(std::string{organizationName_}, std::string{applicationName_});
         auto fullPath = userDir / applicationConfigFileName_;
 
         if (std::filesystem::exists(fullPath))
@@ -394,7 +398,7 @@ R"(# configuration options
         std::string_view key,
         AppSettingValue const& value)
     {
-        static_assert(osc::NumOptions<AppSettingValueType>() == 3);
+        static_assert(NumOptions<AppSettingValueType>() == 3);
 
         switch (value.type())
         {
@@ -468,7 +472,7 @@ R"(# configuration options
                 return std::nullopt;
             }
 
-            static_assert(osc::NumOptions<AppSettingScope>() == 2);
+            static_assert(NumOptions<AppSettingScope>() == 2);
             switch (*scope)
             {
             case AppSettingScope::System:
@@ -596,7 +600,7 @@ namespace
         struct KeyHasher final {
             size_t operator()(Key const& k) const
             {
-                return osc::HashOf(std::get<0>(k), std::get<1>(k), std::get<2>(k));
+                return HashOf(std::get<0>(k), std::get<1>(k), std::get<2>(k));
             }
         };
 
@@ -635,7 +639,7 @@ std::optional<std::filesystem::path> osc::AppSettings::getSystemConfigurationFil
     return m_Impl->getSystemConfigurationFileLocation();
 }
 
-std::optional<osc::AppSettingValue> osc::AppSettings::getValue(
+std::optional<AppSettingValue> osc::AppSettings::getValue(
     std::string_view key) const
 {
     return m_Impl->getValue(key);

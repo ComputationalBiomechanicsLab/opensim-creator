@@ -8,7 +8,10 @@
 #include <string>
 #include <variant>
 
-osc::AppSettingValueType osc::AppSettingValue::type() const
+using osc::AppSettingValueType;
+using osc::Color;
+
+AppSettingValueType osc::AppSettingValue::type() const
 {
     static_assert(std::variant_size_v<decltype(m_Value)> == NumOptions<AppSettingValueType>());
 
@@ -64,7 +67,7 @@ std::string osc::AppSettingValue::toString() const
     return rv;
 }
 
-osc::Color osc::AppSettingValue::toColor() const
+Color osc::AppSettingValue::toColor() const
 {
     Color rv = Color::white();
     std::visit(Overload

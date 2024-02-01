@@ -12,11 +12,11 @@ namespace osc::lm
 
     constexpr LandmarkCSVFlags operator|(LandmarkCSVFlags lhs, LandmarkCSVFlags rhs)
     {
-        return static_cast<LandmarkCSVFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
+        return static_cast<LandmarkCSVFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
     }
 
     constexpr bool operator&(LandmarkCSVFlags lhs, LandmarkCSVFlags rhs)
     {
-        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
+        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
     }
 }

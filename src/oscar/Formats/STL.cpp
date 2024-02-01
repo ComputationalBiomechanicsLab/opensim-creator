@@ -26,6 +26,7 @@
 
 using osc::ViewObjectRepresentation;
 using osc::Mesh;
+using osc::Normalize;
 using osc::StlMetadata;
 using osc::Triangle;
 using osc::Vec3;
@@ -95,7 +96,7 @@ namespace
 
     void WriteTriangle(std::ostream& o, Triangle const& triangle)
     {
-        WriteVec3IEEE(o, osc::Normalize(osc::TriangleNormal(triangle)));
+        WriteVec3IEEE(o, Normalize(TriangleNormal(triangle)));
         WriteVec3IEEE(o, triangle.p0);
         WriteVec3IEEE(o, triangle.p1);
         WriteVec3IEEE(o, triangle.p2);

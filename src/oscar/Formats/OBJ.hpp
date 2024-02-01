@@ -22,7 +22,7 @@ namespace osc
 
     constexpr bool operator&(ObjWriterFlags lhs, ObjWriterFlags rhs)
     {
-        return osc::to_underlying(lhs) & osc::to_underlying(rhs);
+        return cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs);
     }
 
     struct ObjMetadata final {

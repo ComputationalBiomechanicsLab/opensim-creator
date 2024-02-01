@@ -12,16 +12,16 @@ namespace osc::mi
 
     constexpr bool operator&(ModelCreationFlags const& lhs, ModelCreationFlags const& rhs)
     {
-        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
+        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
     }
 
     constexpr ModelCreationFlags operator+(ModelCreationFlags const& lhs, ModelCreationFlags const& rhs)
     {
-        return static_cast<ModelCreationFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
+        return static_cast<ModelCreationFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
     }
 
     constexpr ModelCreationFlags operator-(ModelCreationFlags const& lhs, ModelCreationFlags const& rhs)
     {
-        return static_cast<ModelCreationFlags>(osc::to_underlying(lhs) & ~osc::to_underlying(rhs));
+        return static_cast<ModelCreationFlags>(cpp23::to_underlying(lhs) & ~cpp23::to_underlying(rhs));
     }
 }

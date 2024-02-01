@@ -12,6 +12,9 @@
 #include <unordered_map>
 #include <utility>
 
+using osc::HashOf;
+using osc::Shader;
+
 namespace
 {
     // parameters for a shader, to be used as a key into the shader cache
@@ -42,7 +45,7 @@ namespace
         std::filesystem::path vertexShaderPath;
         std::filesystem::path geometryShaderPath;
         std::filesystem::path fragmentShaderPath;
-        size_t hash = osc::HashOf(
+        size_t hash = HashOf(
             std::filesystem::hash_value(vertexShaderPath),
             std::filesystem::hash_value(geometryShaderPath),
             std::filesystem::hash_value(fragmentShaderPath)
@@ -117,14 +120,14 @@ osc::ShaderCache::ShaderCache(ShaderCache&&) noexcept = default;
 osc::ShaderCache& osc::ShaderCache::operator=(ShaderCache&&) noexcept = default;
 osc::ShaderCache::~ShaderCache() noexcept = default;
 
-osc::Shader const& osc::ShaderCache::load(
+Shader const& osc::ShaderCache::load(
     std::filesystem::path const& vertexShader,
     std::filesystem::path const& fragmentShader)
 {
     return m_Impl->load(vertexShader, fragmentShader);
 }
 
-osc::Shader const& osc::ShaderCache::load(
+Shader const& osc::ShaderCache::load(
     std::filesystem::path const& vertexShader,
     std::filesystem::path const& geometryShader,
     std::filesystem::path const& fragmentShader)

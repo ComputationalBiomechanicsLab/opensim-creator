@@ -25,9 +25,14 @@
 #include <string>
 #include <utility>
 
+using osc::CStringView;
+using osc::LogMessage;
+using osc::LogMessageView;
+using osc::LogSink;
+
 namespace
 {
-    std::filesystem::path convertSDLPathToStdpath(osc::CStringView methodname, char* p)
+    std::filesystem::path convertSDLPathToStdpath(CStringView methodname, char* p)
     {
         // nullptr disallowed
         if (p == nullptr)
@@ -61,7 +66,7 @@ std::tm osc::GetSystemCalendarTime()
 {
     std::chrono::system_clock::time_point const tp = std::chrono::system_clock::now();
     std::time_t const t = std::chrono::system_clock::to_time_t(tp);
-    return osc::GMTimeThreadsafe(t);
+    return GMTimeThreadsafe(t);
 }
 
 std::filesystem::path osc::CurrentExeDir()
@@ -251,7 +256,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
     auto* maybeErr = strerror_r(errnum, buf.data(), buf.size());
     if (std::is_same_v<int, decltype(maybeErr)> && !maybeErr)
     {
-        osc::log::warn("a call to strerror_r failed with error code %i", maybeErr);
+        log::warn("a call to strerror_r failed with error code %i", maybeErr);
         return {};
     }
     else
@@ -262,7 +267,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
     std::string rv{buf.data()};
     if (rv.size() == buf.size())
     {
-        osc::log::warn("a call to strerror_r returned an error string that was as big as the buffer: an OS error message may have been truncated!");
+        log::warn("a call to strerror_r returned an error string that was as big as the buffer: an OS error message may have been truncated!");
     }
     return rv;
 }
@@ -280,7 +285,7 @@ void osc::WriteTracebackToLog(LogLevel lvl)
 
     for (int i = 0; i < size; ++i)
     {
-        osc::log::log(lvl, "%s", messages.get()[i]);
+        log::log(lvl, "%s", messages.get()[i]);
     }
 }
 
@@ -350,13 +355,13 @@ void osc::InstallBacktraceHandler(std::filesystem::path const&)
     // install segfault handler
     if (sigaction(SIGSEGV, &sigact, nullptr) != 0)
     {
-        osc::log::error("could not set signal handler for SIGSEGV: error reporting may not work as intended");
+        log::error("could not set signal handler for SIGSEGV: error reporting may not work as intended");
     }
 
     // install abort handler: this triggers whenever a non-throwing `assert` causes a termination
     if (sigaction(SIGABRT, &sigact, nullptr) != 0)
     {
-        osc::log::error("could not set signal handler for SIGABRT: error reporting may not work as intended");
+        log::error("could not set signal handler for SIGABRT: error reporting may not work as intended");
     }
 }
 
@@ -435,7 +440,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
     std::array<char, 512> buf{};
     if (strerror_r(errnum, buf.data(), buf.size()) == ERANGE)
     {
-        osc::log::warn("a call to strerror_r returned ERANGE: an OS error message may have been truncated!");
+        log::warn("a call to strerror_r returned ERANGE: an OS error message may have been truncated!");
     }
     return std::string{buf.data()};
 }
@@ -454,7 +459,7 @@ void osc::WriteTracebackToLog(LogLevel lvl)
 
     for (int i = 0; i < size; ++i)
     {
-        osc::log::log(lvl, "%s", messages.get()[i]);
+        log::log(lvl, "%s", messages.get()[i]);
     }
 }
 
@@ -518,7 +523,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
     std::array<char, 512> buf{};
     if (errno_t rv = strerror_s(buf.data(), buf.size(), errnum); rv != 0)
     {
-        osc::log::warn("a call to strerror_s returned an error (%i): an OS error message may be missing!", rv);
+        log::warn("a call to strerror_s returned an error (%i): an OS error message may be missing!", rv);
     }
     return std::string{buf.data()};
 }
@@ -573,18 +578,18 @@ void osc::WriteTracebackToLog(LogLevel lvl)
 namespace
 {
     // temporarily attach a crash logger to the log
-    class CrashFileSink final : public osc::LogSink {
+    class CrashFileSink final : public LogSink {
     public:
         explicit CrashFileSink(std::ostream& out_) : m_Out{out_}
         {
         }
 
     private:
-        void implLog(osc::LogMessageView const& msg) final
+        void implLog(LogMessageView const& msg) final
         {
             if (m_Out)
             {
-                m_Out << '[' << msg.loggerName << "] [" << osc::ToCStringView(msg.level) << "] " << msg.payload << std::endl;
+                m_Out << '[' << msg.loggerName << "] [" << ToCStringView(msg.level) << "] " << msg.payload << std::endl;
             }
         }
 
@@ -634,9 +639,9 @@ namespace
         {
             *maybeCrashReportFile << "----- log -----\n";
             auto guard = osc::log::getTracebackLog().lock();
-            for (osc::LogMessage const& msg : *guard)
+            for (LogMessage const& msg : *guard)
             {
-                *maybeCrashReportFile << '[' << msg.loggerName << "] [" << osc::ToCStringView(msg.level) << "] " << msg.payload << '\n';
+                *maybeCrashReportFile << '[' << msg.loggerName << "] [" << ToCStringView(msg.level) << "] " << msg.payload << '\n';
             }
             *maybeCrashReportFile << "----- /log -----\n";
         }
@@ -650,7 +655,7 @@ namespace
             std::shared_ptr<osc::LogSink> sink = std::make_shared<CrashFileSink>(*maybeCrashReportFile);
 
             osc::log::defaultLogger()->sinks().push_back(sink);
-            osc::WriteTracebackToLog(osc::LogLevel::err);
+            WriteTracebackToLog(osc::LogLevel::err);
             osc::log::defaultLogger()->sinks().erase(osc::log::defaultLogger()->sinks().end() - 1);
 
             *maybeCrashReportFile << "----- /traceback -----\n";
@@ -660,7 +665,7 @@ namespace
             // (no crash dump file, but still write it to stdout etc.)
 
             *maybeCrashReportFile << "----- traceback -----\n";
-            osc::WriteTracebackToLog(osc::LogLevel::err);
+            WriteTracebackToLog(osc::LogLevel::err);
             *maybeCrashReportFile << "----- /traceback -----\n";
         }
 
@@ -670,7 +675,7 @@ namespace
     void signal_handler(int)
     {
         osc::log::error("signal caught by application: printing backtrace");
-        osc::WriteTracebackToLog(osc::LogLevel::err);
+        WriteTracebackToLog(osc::LogLevel::err);
     }
 }
 

@@ -80,7 +80,7 @@ namespace osc
         }
         constexpr friend auto operator<=>(CStringView const& lhs, CStringView const& rhs)
         {
-            return ThreeWayComparison(std::string_view{lhs}, std::string_view{rhs});
+            return cpp20::ThreeWayComparison(std::string_view{lhs}, std::string_view{rhs});
         }
     private:
         value_type const* m_Data = "";

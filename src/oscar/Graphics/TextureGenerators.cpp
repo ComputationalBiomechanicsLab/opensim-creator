@@ -12,7 +12,9 @@
 #include <optional>
 #include <vector>
 
-osc::Texture2D osc::GenChequeredFloorTexture()
+using osc::Texture2D;
+
+Texture2D osc::GenerateChequeredFloorTexture()
 {
     constexpr Vec2i chequerDims = {32, 32};
     constexpr Vec2i textureDims = 2 * chequerDims;

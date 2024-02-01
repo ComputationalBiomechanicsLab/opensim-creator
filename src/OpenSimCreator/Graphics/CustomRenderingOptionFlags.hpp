@@ -23,18 +23,18 @@ namespace osc
 
     constexpr bool operator&(CustomRenderingOptionFlags lhs, CustomRenderingOptionFlags rhs)
     {
-        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
+        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
     }
 
     constexpr void SetOption(CustomRenderingOptionFlags& flags, CustomRenderingOptionFlags flag, bool v)
     {
         if (v)
         {
-            flags = static_cast<CustomRenderingOptionFlags>(osc::to_underlying(flags) | osc::to_underlying(flag));
+            flags = static_cast<CustomRenderingOptionFlags>(cpp23::to_underlying(flags) | cpp23::to_underlying(flag));
         }
         else
         {
-            flags = static_cast<CustomRenderingOptionFlags>(osc::to_underlying(flags) & ~osc::to_underlying(flag));
+            flags = static_cast<CustomRenderingOptionFlags>(cpp23::to_underlying(flags) & ~cpp23::to_underlying(flag));
         }
     }
 

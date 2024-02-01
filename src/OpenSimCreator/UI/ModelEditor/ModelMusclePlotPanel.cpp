@@ -51,6 +51,7 @@
 
 namespace SimTK { class State; }
 
+namespace cpp20 = osc::cpp20;
 using osc::Degreesd;
 using osc::Radiansd;
 
@@ -432,7 +433,7 @@ namespace
     // inner (exception unsafe) plot function
     //
     // this is the function that actually does the "work" of computing plot points
-    PlottingTaskStatus ComputePlotPointsUnguarded(osc::stop_token const& stopToken, PlottingTaskInputs& inputs)
+    PlottingTaskStatus ComputePlotPointsUnguarded(cpp20::stop_token const& stopToken, PlottingTaskInputs& inputs)
     {
         PlottingTaskThreadsafeSharedData& shared = *inputs.shared;
         PlotParameters const& params = inputs.plotParameters;
@@ -549,7 +550,7 @@ namespace
     // top-level "main" function that the Plotting task worker thread executes
     //
     // catches exceptions and propagates them to the task
-    int ComputePlotPointsMain(osc::stop_token const& stopToken, PlottingTaskInputs inputs)
+    int ComputePlotPointsMain(cpp20::stop_token const& stopToken, PlottingTaskInputs inputs)
     {
         try
         {
@@ -593,7 +594,7 @@ namespace
 
     private:
         std::shared_ptr<PlottingTaskThreadsafeSharedData> m_Shared = std::make_shared<PlottingTaskThreadsafeSharedData>();
-        osc::jthread m_WorkerThread;
+        cpp20::jthread m_WorkerThread;
     };
 
     // a data plot (line), potentially computed from a background thread, or loaded via a

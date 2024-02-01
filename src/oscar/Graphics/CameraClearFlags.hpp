@@ -17,11 +17,11 @@ namespace osc
 
     constexpr CameraClearFlags operator|(CameraClearFlags lhs, CameraClearFlags rhs)
     {
-        return static_cast<CameraClearFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
+        return static_cast<CameraClearFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
     }
 
     constexpr bool operator&(CameraClearFlags lhs, CameraClearFlags rhs)
     {
-        return osc::to_underlying(lhs) & osc::to_underlying(rhs);
+        return cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs);
     }
 }

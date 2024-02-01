@@ -83,10 +83,10 @@ void osc::SetOption(OpenSimDecorationOptionFlags& flags, OpenSimDecorationOption
 {
     if (v)
     {
-        flags = static_cast<OpenSimDecorationOptionFlags>(osc::to_underlying(flags) | osc::to_underlying(flag));
+        flags = static_cast<OpenSimDecorationOptionFlags>(cpp23::to_underlying(flags) | cpp23::to_underlying(flag));
     }
     else
     {
-        flags = static_cast<OpenSimDecorationOptionFlags>(osc::to_underlying(flags) & ~osc::to_underlying(flag));
+        flags = static_cast<OpenSimDecorationOptionFlags>(cpp23::to_underlying(flags) & ~cpp23::to_underlying(flag));
     }
 }

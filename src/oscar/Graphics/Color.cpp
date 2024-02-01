@@ -15,6 +15,10 @@
 #include <string_view>
 #include <utility>
 
+using osc::Color;
+using osc::ColorHSLA;
+using osc::Color32;
+
 namespace
 {
     float CalcNormalizedHLSAHue(
@@ -117,7 +121,7 @@ float osc::ToSRGB(float colorChannelValue)
     }
 }
 
-osc::Color osc::ToLinear(Color const& c)
+Color osc::ToLinear(Color const& c)
 {
     return
     {
@@ -128,7 +132,7 @@ osc::Color osc::ToLinear(Color const& c)
     };
 }
 
-osc::Color osc::ToSRGB(Color const& c)
+Color osc::ToSRGB(Color const& c)
 {
     return
     {
@@ -139,7 +143,7 @@ osc::Color osc::ToSRGB(Color const& c)
     };
 }
 
-osc::Color osc::Lerp(Color const& a, Color const& b, float t)
+Color osc::Lerp(Color const& a, Color const& b, float t)
 {
     return Color{Mix(Vec4{a}, Vec4{b}, Clamp(t, 0.0f, 1.0f))};
 }
@@ -149,22 +153,22 @@ size_t std::hash<osc::Color>::operator()(osc::Color const& color) const
     return osc::HashOf(color.r, color.g, color.b, color.a);
 }
 
-osc::Color32 osc::ToColor32(Color const& color)
+Color32 osc::ToColor32(Color const& color)
 {
     return ToColor32(static_cast<Vec4>(color));
 }
 
-osc::Color32 osc::ToColor32(Vec4 const& v)
+Color32 osc::ToColor32(Vec4 const& v)
 {
     return Color32{v.r, v.g, v.b, v.a};
 }
 
-osc::Color32 osc::ToColor32(float r, float g, float b, float a)
+Color32 osc::ToColor32(float r, float g, float b, float a)
 {
     return Color32{r, g, b, a};
 }
 
-osc::Color32 osc::ToColor32(uint32_t v)
+Color32 osc::ToColor32(uint32_t v)
 {
     return Color32
     {
@@ -175,17 +179,17 @@ osc::Color32 osc::ToColor32(uint32_t v)
     };
 }
 
-osc::Color osc::ToColor(Color32 c)
+Color osc::ToColor(Color32 c)
 {
     return Color{c.r.normalized_value(), c.g.normalized_value(), c.b.normalized_value(), c.a.normalized_value()};
 }
 
-osc::Color osc::ClampToLDR(Color const& c)
+Color osc::ClampToLDR(Color const& c)
 {
     return Color{Clamp(Vec4{c}, 0.0f, 1.0f)};
 }
 
-osc::ColorHSLA osc::ToHSLA(Color const& c)
+ColorHSLA osc::ToHSLA(Color const& c)
 {
     // sources:
     //
@@ -203,7 +207,7 @@ osc::ColorHSLA osc::ToHSLA(Color const& c)
     return {hue, saturation, lightness, a};
 }
 
-osc::Color osc::ToColor(ColorHSLA const& c)
+Color osc::ToColor(ColorHSLA const& c)
 {
     // see: https://web.cs.uni-paderborn.de/cgvb/colormaster/web/color-systems/hsl.html
 
@@ -254,7 +258,7 @@ std::string osc::ToHtmlStringRGBA(Color const& c)
     return rv;
 }
 
-std::optional<osc::Color> osc::TryParseHtmlString(std::string_view v)
+std::optional<Color> osc::TryParseHtmlString(std::string_view v)
 {
     if (v.empty())
     {
@@ -307,7 +311,7 @@ std::optional<osc::Color> osc::TryParseHtmlString(std::string_view v)
     }
 }
 
-osc::Color osc::MultiplyLuminance(Color const& c, float factor)
+Color osc::MultiplyLuminance(Color const& c, float factor)
 {
     auto hsla = ToHSLA(c);
     hsla.l *= factor;

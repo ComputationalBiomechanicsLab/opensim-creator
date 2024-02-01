@@ -38,9 +38,11 @@
 using namespace osc::literals;
 using osc::AABB;
 using osc::AngleAxis;
+using osc::AntiAliasingLevel;
 using osc::Mat4;
 using osc::Material;
 using osc::Mesh;
+using osc::Ortho;
 using osc::PolarPerspectiveCamera;
 using osc::Radians;
 using osc::RenderTexture;
@@ -64,7 +66,7 @@ namespace
 
     AABB WorldpaceAABB(SceneDecoration const& d)
     {
-        return osc::TransformAABB(d.mesh.getBounds(), d.transform);
+        return TransformAABB(d.mesh.getBounds(), d.transform);
     }
 
     struct RimHighlights final {
@@ -123,7 +125,7 @@ namespace
         AABB const& casterAABBs,
         Vec3 const& lightDirection)
     {
-        Sphere const casterSphere = osc::ToSphere(casterAABBs);
+        Sphere const casterSphere = ToSphere(casterAABBs);
         PolarAngles const cameraPolarAngles = CalcPolarAngles(-lightDirection);
 
         // pump sphere+polar information into a polar camera in order to
@@ -137,7 +139,7 @@ namespace
         polarCamera.zfar = 2.0f * casterSphere.radius;
 
         Mat4 const viewMat = polarCamera.getViewMtx();
-        Mat4 const projMat = osc::Ortho(
+        Mat4 const projMat = Ortho(
             -casterSphere.radius,
             casterSphere.radius,
             -casterSphere.radius,
@@ -366,12 +368,12 @@ private:
         Vec2 const rimThicknessNDC = 2.0f*params.rimThicknessInPixels / Vec2{params.dimensions};
 
         // expand by the rim thickness, so that the output has space for the rims
-        rimRectNDC = osc::Expand(rimRectNDC, rimThicknessNDC);
+        rimRectNDC = Expand(rimRectNDC, rimThicknessNDC);
 
         // constrain the result of the above to within clip space
-        rimRectNDC = osc::Clamp(rimRectNDC, {-1.0f, -1.0f}, {1.0f, 1.0f});
+        rimRectNDC = Clamp(rimRectNDC, {-1.0f, -1.0f}, {1.0f, 1.0f});
 
-        if (osc::Area(rimRectNDC) <= 0.0f)
+        if (Area(rimRectNDC) <= 0.0f)
         {
             // the scene contains rim-highlighted geometry, but it isn't on-screen
             return std::nullopt;
@@ -382,8 +384,8 @@ private:
 
         // compute where the quad needs to eventually be drawn in the scene
         Transform quadMeshToRimsQuad;
-        quadMeshToRimsQuad.position = {osc::Midpoint(rimRectNDC), 0.0f};
-        quadMeshToRimsQuad.scale = {0.5f * osc::Dimensions(rimRectNDC), 1.0f};
+        quadMeshToRimsQuad.position = {Midpoint(rimRectNDC), 0.0f};
+        quadMeshToRimsQuad.scale = {0.5f * Dimensions(rimRectNDC), 1.0f};
 
         // rendering:
 
@@ -426,13 +428,13 @@ private:
         m_EdgeDetectorMaterial.setColor("uRimRgba", params.rimColor);
         m_EdgeDetectorMaterial.setVec2("uRimThickness", 0.5f*rimThicknessNDC);
         m_EdgeDetectorMaterial.setVec2("uTextureOffset", rimRectUV.p1);
-        m_EdgeDetectorMaterial.setVec2("uTextureScale", osc::Dimensions(rimRectUV));
+        m_EdgeDetectorMaterial.setVec2("uTextureScale", Dimensions(rimRectUV));
 
         // return necessary information for rendering the rims
         return RimHighlights
         {
             m_QuadMesh,
-            osc::Inverse(params.projectionMatrix * params.viewMatrix) * ToMat4(quadMeshToRimsQuad),
+            Inverse(params.projectionMatrix * params.viewMatrix) * ToMat4(quadMeshToRimsQuad),
             m_EdgeDetectorMaterial,
         };
     }
@@ -492,7 +494,7 @@ private:
     MaterialPropertyBlock m_RimsSelectedColor;
     MaterialPropertyBlock m_RimsHoveredColor;
     Mesh m_QuadMesh;
-    Texture2D m_ChequerTexture = GenChequeredFloorTexture();
+    Texture2D m_ChequerTexture = GenerateChequeredFloorTexture();
     Camera m_Camera;
     RenderTexture m_RimsTexture;
     RenderTexture m_ShadowMapTexture;
@@ -516,12 +518,12 @@ osc::SceneRenderer::SceneRenderer(SceneRenderer&&) noexcept = default;
 osc::SceneRenderer& osc::SceneRenderer::operator=(SceneRenderer&&) noexcept = default;
 osc::SceneRenderer::~SceneRenderer() noexcept = default;
 
-osc::Vec2i osc::SceneRenderer::getDimensions() const
+Vec2i osc::SceneRenderer::getDimensions() const
 {
     return m_Impl->getDimensions();
 }
 
-osc::AntiAliasingLevel osc::SceneRenderer::getAntiAliasingLevel() const
+AntiAliasingLevel osc::SceneRenderer::getAntiAliasingLevel() const
 {
     return m_Impl->getAntiAliasingLevel();
 }
@@ -533,7 +535,7 @@ void osc::SceneRenderer::render(
     m_Impl->render(decs, params);
 }
 
-osc::RenderTexture& osc::SceneRenderer::updRenderTexture()
+RenderTexture& osc::SceneRenderer::updRenderTexture()
 {
     return m_Impl->updRenderTexture();
 }

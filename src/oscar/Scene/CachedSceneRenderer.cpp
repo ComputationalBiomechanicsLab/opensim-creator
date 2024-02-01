@@ -8,6 +8,8 @@
 #include <utility>
 #include <vector>
 
+using osc::RenderTexture;
+
 class osc::CachedSceneRenderer::Impl final {
 public:
     Impl(
@@ -56,7 +58,7 @@ osc::CachedSceneRenderer::CachedSceneRenderer(CachedSceneRenderer&&) noexcept = 
 osc::CachedSceneRenderer& osc::CachedSceneRenderer::operator=(CachedSceneRenderer&&) noexcept = default;
 osc::CachedSceneRenderer::~CachedSceneRenderer() noexcept = default;
 
-osc::RenderTexture& osc::CachedSceneRenderer::render(
+RenderTexture& osc::CachedSceneRenderer::render(
     std::span<SceneDecoration const> decorations,
     SceneRendererParams const& params)
 {

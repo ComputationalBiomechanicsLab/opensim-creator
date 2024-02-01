@@ -18,11 +18,11 @@ namespace osc::mi
 
     constexpr bool operator&(MIObjectFlags lhs, MIObjectFlags rhs)
     {
-        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
+        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
     }
 
     constexpr MIObjectFlags operator|(MIObjectFlags lhs, MIObjectFlags rhs)
     {
-        return static_cast<MIObjectFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
+        return static_cast<MIObjectFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
     }
 }
