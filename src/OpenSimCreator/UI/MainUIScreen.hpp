@@ -1,9 +1,8 @@
 #pragma once
 
-#include <oscar/Platform/IScreen.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
-#include <oscar/Utils/UID.hpp>
 #include <SDL_events.h>
+#include <oscar/Platform/IScreen.hpp>
+#include <oscar/Utils/UID.hpp>
 
 #include <filesystem>
 #include <memory>

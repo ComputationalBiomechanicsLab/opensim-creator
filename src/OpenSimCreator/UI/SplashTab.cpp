@@ -3,24 +3,24 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
 #include <OpenSimCreator/Platform/RecentFile.hpp>
 #include <OpenSimCreator/Platform/RecentFiles.hpp>
+#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
+#include <OpenSimCreator/UI/LoadingTab.hpp>
 #include <OpenSimCreator/UI/FrameDefinition/FrameDefinitionTab.hpp>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTab.hpp>
 #include <OpenSimCreator/UI/Shared/MainMenu.hpp>
-#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
-#include <OpenSimCreator/UI/LoadingTab.hpp>
 
 #include <IconsFontAwesome5.h>
+#include <SDL_events.h>
 #include <imgui.h>
 #include <oscar/Formats/SVG.hpp>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
+#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
+#include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
@@ -29,16 +29,13 @@
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Tabs/ITabHost.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
-#include <SDL_events.h>
 
 #include <filesystem>
-#include <numbers>
 #include <span>
 #include <string>
 #include <utility>

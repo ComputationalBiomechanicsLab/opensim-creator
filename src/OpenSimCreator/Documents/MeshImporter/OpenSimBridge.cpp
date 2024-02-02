@@ -6,18 +6,17 @@
 #include <OpenSimCreator/Documents/MeshImporter/Document.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/DocumentHelpers.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/Joint.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Mesh.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/MIIDs.hpp>
+#include <OpenSimCreator/Documents/MeshImporter/Mesh.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/OpenSimExportFlags.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/Station.hpp>
 #include <OpenSimCreator/Graphics/SimTKMeshLoader.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 
+#include <SimTKcommon.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
-#include <OpenSim/Common/ComponentSocket.h>
-#include <OpenSim/Common/Property.h>
 #include <OpenSim/Simulation/Model/AbstractPathPoint.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
@@ -29,10 +28,11 @@
 #include <OpenSim/Simulation/Model/Station.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
+#include <SimTKcommon/SmallMatrix.h>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
@@ -40,9 +40,6 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <SimTKcommon.h>
-#include <SimTKcommon/Mechanics.h>
-#include <SimTKcommon/SmallMatrix.h>
 
 #include <array>
 #include <memory>

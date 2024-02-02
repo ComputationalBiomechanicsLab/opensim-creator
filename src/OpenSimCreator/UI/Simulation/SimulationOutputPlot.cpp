@@ -7,9 +7,9 @@
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.hpp>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.hpp>
 
+#include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <implot.h>
-#include <IconsFontAwesome5.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -18,15 +18,13 @@
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Perf.hpp>
-#include <SimTKcommon.h>
 
 #include <algorithm>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
-#include <chrono>
 #include <optional>
 #include <ostream>
-#include <ratio>
 #include <span>
 #include <string>
 #include <string_view>

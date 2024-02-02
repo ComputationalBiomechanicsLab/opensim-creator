@@ -8,19 +8,19 @@
 namespace
 {
     constexpr std::string_view c_ModelNoBackingFileSenteniel = "Unassigned";
-}
 
-std::filesystem::file_time_type GetLastModificationTime(std::string const& path)
-{
-    if (path.empty() ||
-        path == c_ModelNoBackingFileSenteniel ||
-        !std::filesystem::exists(path))
+    std::filesystem::file_time_type GetLastModificationTime(std::string const& path)
     {
-        return std::filesystem::file_time_type{};
-    }
-    else
-    {
-        return std::filesystem::last_write_time(path);
+        if (path.empty() ||
+            path == c_ModelNoBackingFileSenteniel ||
+            !std::filesystem::exists(path))
+        {
+            return std::filesystem::file_time_type{};
+        }
+        else
+        {
+            return std::filesystem::last_write_time(path);
+        }
     }
 }
 

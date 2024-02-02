@@ -7,6 +7,8 @@
 #include <string>
 #include <utility>
 
+using osc::CStringView;
+
 std::string osc::CalcFullApplicationNameWithVersionAndBuild(AppMetadata const& metadata)
 {
     std::stringstream ss;
@@ -22,7 +24,7 @@ std::string osc::CalcFullApplicationNameWithVersionAndBuild(AppMetadata const& m
     return std::move(ss).str();
 }
 
-osc::CStringView osc::GetBestHumanReadableApplicationName(AppMetadata const& metadata)
+CStringView osc::GetBestHumanReadableApplicationName(AppMetadata const& metadata)
 {
     return metadata.tryGetLongApplicationName().value_or(metadata.getApplicationName());
 }

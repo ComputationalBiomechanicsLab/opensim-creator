@@ -6,8 +6,8 @@
 #include <OpenSimCreator/Documents/MeshImporter/DocumentHelpers.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/Ground.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/Joint.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Mesh.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/MIObject.hpp>
+#include <OpenSimCreator/Documents/MeshImporter/Mesh.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/OpenSimBridge.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/Station.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/UndoableDocument.hpp>
@@ -17,6 +17,7 @@
 #include <OpenSimCreator/UI/MeshImporter/MeshLoader.hpp>
 
 #include <IconsFontAwesome5.h>
+#include <SDL_events.h>
 #include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Color.hpp>
@@ -25,17 +26,15 @@
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Line.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Maths/RayCollision.hpp>
 #include <oscar/Maths/Rect.hpp>
-#include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/Sphere.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
-#include <oscar/Maths/Vec4.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
@@ -45,23 +44,21 @@
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/StdVariantHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <SDL_events.h>
 
 #include <array>
 #include <cstddef>
+#include <exception>
 #include <filesystem>
 #include <memory>
-#include <numbers>
 #include <optional>
 #include <span>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <unordered_set>

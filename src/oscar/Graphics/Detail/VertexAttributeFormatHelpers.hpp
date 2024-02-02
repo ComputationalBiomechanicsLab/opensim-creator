@@ -17,7 +17,7 @@ namespace osc::detail
             return std::to_array({ VertexAttributeFormatTraits<Formats>::stride... });
         }(VertexAttributeFormatList{});
 
-        return lut.at(osc::to_underlying(f));
+        return lut.at(cpp23::to_underlying(f));
     }
 
     constexpr size_t NumComponents(VertexAttributeFormat f)
@@ -26,7 +26,7 @@ namespace osc::detail
             return std::to_array({ VertexAttributeFormatTraits<Formats>::num_components... });
         }(VertexAttributeFormatList{});
 
-        return lut.at(osc::to_underlying(f));
+        return lut.at(cpp23::to_underlying(f));
     }
 
     constexpr size_t SizeOfComponent(VertexAttributeFormat f)
@@ -35,6 +35,6 @@ namespace osc::detail
             return std::to_array({ VertexAttributeFormatTraits<Formats>::component_size... });
         }(VertexAttributeFormatList{});
 
-        return lut.at(osc::to_underlying(f));
+        return lut.at(cpp23::to_underlying(f));
     }
 }

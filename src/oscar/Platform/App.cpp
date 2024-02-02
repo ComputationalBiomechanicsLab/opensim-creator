@@ -3,25 +3,23 @@
 #include <oscar/Graphics/GraphicsContext.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Vec2.hpp>
-#include <oscar/Platform/Detail/SDL2Helpers.hpp>
 #include <oscar/Platform/AppClock.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/IScreen.hpp>
 #include <oscar/Platform/Log.hpp>
-#include <oscar/Platform/os.hpp>
 #include <oscar/Platform/Screenshot.hpp>
+#include <oscar/Platform/os.hpp>
+#include <oscar/Platform/Detail/SDL2Helpers.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/imgui_impl_oscargfx.hpp>
+#include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
-#include <imgui/backends/imgui_impl_sdl2.h>
 #include <SDL.h>
 #include <SDL_error.h>
 #include <SDL_keyboard.h>
@@ -29,27 +27,34 @@
 #include <SDL_stdinc.h>
 #include <SDL_timer.h>
 #include <SDL_video.h>
+#include <imgui.h>
+#include <imgui/backends/imgui_impl_sdl2.h>
 
+#include <cmath>
 #include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>
-#include <cmath>
 #include <ctime>
 #include <exception>
 #include <fstream>
-#include <mutex>
 #include <sstream>
 #include <stdexcept>
 #include <unordered_map>
 
+namespace sdl = osc::sdl;
+using osc::AntiAliasingLevel;
 using osc::App;
 using osc::AppClock;
 using osc::AppConfig;
+using osc::AppMetadata;
 using osc::CStringView;
+using osc::CurrentExeDir;
+using osc::InstallBacktraceHandler;
 using osc::Screenshot;
 using osc::ScreenshotAnnotation;
 using osc::Texture2D;
+using osc::Vec2;
 
 namespace
 {
@@ -79,7 +84,7 @@ namespace
     bool EnsureBacktraceHandlerEnabled(std::filesystem::path const& crashDumpDir)
     {
         osc::log::info("enabling backtrace handler");
-        osc::InstallBacktraceHandler(crashDumpDir);
+        InstallBacktraceHandler(crashDumpDir);
         return true;
     }
 
@@ -126,19 +131,19 @@ namespace
     {
         auto const dticks = static_cast<double>(ticks);
         auto const dfrequency = static_cast<double>(frequency);
-        auto const duration = static_cast<osc::AppClock::rep>(dticks/dfrequency);
+        auto const duration = static_cast<AppClock::rep>(dticks/dfrequency);
 
-        return osc::AppClock::duration{duration};
+        return AppClock::duration{duration};
     }
 
     AppClock::time_point ConvertPerfCounterToFClock(Uint64 ticks, Uint64 frequency)
     {
-        return osc::AppClock::time_point{ConvertPerfTicksToFClockDuration(ticks, frequency)};
+        return AppClock::time_point{ConvertPerfTicksToFClockDuration(ticks, frequency)};
     }
 
     std::filesystem::path GetCurrentExeDirAndLogIt()
     {
-        auto rv = osc::CurrentExeDir();
+        auto rv = CurrentExeDir();
         osc::log::info("executable directory: %s", rv.string().c_str());
         return rv;
     }
@@ -148,7 +153,7 @@ namespace
         CStringView organizationName,
         CStringView applicationName)
     {
-        auto rv = osc::GetUserDataDir(organizationName, applicationName);
+        auto rv = GetUserDataDir(organizationName, applicationName);
         osc::log::info("user data directory: %s", rv.string().c_str());
         return rv;
     }
@@ -461,8 +466,8 @@ public:
         *lock = sv;
 
         std::string const newTitle = sv.empty() ?
-            std::string{osc::GetBestHumanReadableApplicationName(m_Metadata)} :
-            (std::string{sv} + " - " + osc::GetBestHumanReadableApplicationName(m_Metadata));
+            std::string{GetBestHumanReadableApplicationName(m_Metadata)} :
+            (std::string{sv} + " - " + GetBestHumanReadableApplicationName(m_Metadata));
 
         SDL_SetWindowTitle(m_MainWindow.get(), newTitle.c_str());
     }
@@ -532,7 +537,7 @@ private:
         return m_GraphicsContext.requestScreenshot();
     }
 
-    // perform a screen transntion between two top-level `osc::IScreen`s
+    // perform a screen transntion between two top-level `IScreen`s
     void transitionToNextScreen()
     {
         if (!m_NextScreen)
@@ -805,19 +810,19 @@ private:
 
 // public API
 
-osc::App& osc::App::upd()
+App& osc::App::upd()
 {
     OSC_ASSERT(g_ApplicationGlobal && "App is not initialized: have you constructed a (singleton) instance of App?");
     return *g_ApplicationGlobal;
 }
 
-osc::App const& osc::App::get()
+App const& osc::App::get()
 {
     OSC_ASSERT(g_ApplicationGlobal && "App is not initialized: have you constructed a (singleton) instance of App?");
     return *g_ApplicationGlobal;
 }
 
-osc::AppConfig const& osc::App::config()
+AppConfig const& osc::App::config()
 {
     return get().getConfig();
 }
@@ -842,14 +847,14 @@ osc::App::App(AppMetadata const& metadata)
 
 osc::App::App(App&&) noexcept = default;
 
-osc::App& osc::App::operator=(App&&) noexcept = default;
+App& osc::App::operator=(App&&) noexcept = default;
 
 osc::App::~App() noexcept
 {
     g_ApplicationGlobal = nullptr;
 }
 
-osc::AppMetadata const& osc::App::getMetadata() const
+AppMetadata const& osc::App::getMetadata() const
 {
     return m_Impl->getMetadata();
 }
@@ -879,7 +884,7 @@ void osc::App::requestQuit()
     m_Impl->requestQuit();
 }
 
-osc::Vec2 osc::App::dims() const
+Vec2 osc::App::dims() const
 {
     return m_Impl->dims();
 }
@@ -904,17 +909,17 @@ void osc::App::makeWindowed()
     m_Impl->makeWindowed();
 }
 
-osc::AntiAliasingLevel osc::App::getCurrentAntiAliasingLevel() const
+AntiAliasingLevel osc::App::getCurrentAntiAliasingLevel() const
 {
     return m_Impl->getCurrentAntiAliasingLevel();
 }
 
-void osc::App::setCurrentAntiAliasingLevel(osc::AntiAliasingLevel s)
+void osc::App::setCurrentAntiAliasingLevel(AntiAliasingLevel s)
 {
     m_Impl->setCurrentAntiAliasingLevel(s);
 }
 
-osc::AntiAliasingLevel osc::App::getMaxAntiAliasingLevel() const
+AntiAliasingLevel osc::App::getMaxAntiAliasingLevel() const
 {
     return m_Impl->getMaxAntiAliasingLevel();
 }
@@ -959,7 +964,7 @@ void osc::App::addFrameAnnotation(std::string_view label, Rect screenRect)
     m_Impl->addFrameAnnotation(label, screenRect);
 }
 
-std::future<osc::Screenshot> osc::App::requestScreenshot()
+std::future<Screenshot> osc::App::requestScreenshot()
 {
     return m_Impl->requestScreenshot();
 }
@@ -989,22 +994,22 @@ uint64_t osc::App::getFrameCount() const
     return m_Impl->getFrameCount();
 }
 
-osc::AppClock::time_point osc::App::getAppStartupTime() const
+AppClock::time_point osc::App::getAppStartupTime() const
 {
     return m_Impl->getAppStartupTime();
 }
 
-osc::AppClock::duration osc::App::getFrameDeltaSinceAppStartup() const
+AppClock::duration osc::App::getFrameDeltaSinceAppStartup() const
 {
     return m_Impl->getFrameDeltaSinceAppStartup();
 }
 
-osc::AppClock::time_point osc::App::getFrameStartTime() const
+AppClock::time_point osc::App::getFrameStartTime() const
 {
     return m_Impl->getFrameStartTime();
 }
 
-osc::AppClock::duration osc::App::getFrameDeltaSinceLastFrame() const
+AppClock::duration osc::App::getFrameDeltaSinceLastFrame() const
 {
     return m_Impl->getFrameDeltaSinceLastFrame();
 }
@@ -1049,12 +1054,12 @@ void osc::App::unsetMainWindowSubTitle()
     m_Impl->unsetMainWindowSubTitle();
 }
 
-osc::AppConfig const& osc::App::getConfig() const
+AppConfig const& osc::App::getConfig() const
 {
     return m_Impl->getConfig();
 }
 
-osc::AppConfig& osc::App::updConfig()
+AppConfig& osc::App::updConfig()
 {
     return m_Impl->updConfig();
 }
@@ -1128,14 +1133,14 @@ void osc::ImGuiInit()
     ImGui_ImplSDL2_InitForOpenGL(impl.updWindow().get(), impl.updRawGLContextHandleHACK());
 
     // init ImGui for OpenGL
-    ImGui_ImplOscarGfx_Init();
+    ui::gfx::Init();
 
     ImGuiApplyDarkTheme();
 }
 
 void osc::ImGuiShutdown()
 {
-    ImGui_ImplOscarGfx_Shutdown();
+    ui::gfx::Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 }
@@ -1163,7 +1168,7 @@ bool osc::ImGuiOnEvent(SDL_Event const& e)
 
 void osc::ImGuiNewFrame()
 {
-    ImGui_ImplOscarGfx_NewFrame();
+    ui::gfx::NewFrame();
     ImGui_ImplSDL2_NewFrame(App::upd().m_Impl->updWindow().get());
     ImGui::NewFrame();
 }
@@ -1177,6 +1182,6 @@ void osc::ImGuiRender()
 
     {
         OSC_PERF("ImGuiRender/ImGui_ImplOscarGfx_RenderDrawData");
-        ImGui_ImplOscarGfx_RenderDrawData(ImGui::GetDrawData());
+        ui::gfx::RenderDrawData(ImGui::GetDrawData());
     }
 }

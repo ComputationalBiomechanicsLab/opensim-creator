@@ -11,7 +11,6 @@
 #include <span>
 #include <string>
 #include <string_view>
-#include <variant>
 #include <vector>
 
 namespace osc::lm

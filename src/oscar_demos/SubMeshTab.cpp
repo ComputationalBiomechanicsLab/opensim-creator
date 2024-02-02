@@ -11,20 +11,16 @@
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/Utils/CStringView.hpp>
-
-#include <IconsFontAwesome5.h>
 #include <SDL_events.h>
 
 #include <array>
 #include <cstdint>
+#include <optional>
 #include <ranges>
 #include <span>
-#include <string>
-#include <type_traits>
-#include <utility>
 #include <vector>
 
 using osc::CStringView;

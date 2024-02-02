@@ -5,6 +5,7 @@
 #include <oscar/Graphics/MaterialPropertyBlock.hpp>
 #include <oscar/Maths/Mat4.hpp>
 
+#include <cstddef>
 #include <optional>
 
 namespace osc { class Camera; }

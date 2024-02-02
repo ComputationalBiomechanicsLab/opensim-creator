@@ -2,24 +2,28 @@
 
 #include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 
+#include <Simbody.h>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Sphere.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <Simbody.h>
 
+#include <cmath>
 #include <algorithm>
 #include <array>
-#include <cmath>
 #include <complex>
 #include <numeric>
 #include <span>
 #include <vector>
 
+using osc::Dot;
+using osc::Ellipsoid;
+using osc::Plane;
+using osc::Sphere;
 using osc::Vec2;
 using osc::Vec3;
 using osc::Vec3d;
@@ -309,7 +313,7 @@ namespace
         Vec3 const& basis1,
         Vec3 const& basis2)
     {
-        return {osc::Dot(v, basis1), osc::Dot(v, basis2)};
+        return {Dot(v, basis1), Dot(v, basis2)};
     }
 
     // returns `surfacePoint` un-projected from the 2D surface of a plane, where
@@ -490,7 +494,7 @@ namespace
     }
 }
 
-osc::Sphere osc::FitSphere(Mesh const& mesh)
+Sphere osc::FitSphere(Mesh const& mesh)
 {
     // # Background Reading:
     //
@@ -586,7 +590,7 @@ osc::Sphere osc::FitSphere(Mesh const& mesh)
     return Sphere{origin, radius};
 }
 
-osc::Plane osc::FitPlane(Mesh const& mesh)
+Plane osc::FitPlane(Mesh const& mesh)
 {
     // # Background Reading:
     //
@@ -692,7 +696,7 @@ osc::Plane osc::FitPlane(Mesh const& mesh)
     return Plane{boundsMidPointInMeshSpace, ToVec3(normal)};
 }
 
-osc::Ellipsoid osc::FitEllipsoid(Mesh const& mesh)
+Ellipsoid osc::FitEllipsoid(Mesh const& mesh)
 {
     // # Background Reading:
     //

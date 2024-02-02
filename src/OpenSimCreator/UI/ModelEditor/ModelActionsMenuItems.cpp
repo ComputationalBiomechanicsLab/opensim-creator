@@ -10,8 +10,8 @@
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Control/Controller.h>
-#include <OpenSim/Simulation/Model/Actuator.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
+#include <OpenSim/Simulation/Model/Actuator.h>
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/Probe.h>
 #include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
@@ -20,10 +20,6 @@
 #include <oscar/Utils/CStringView.hpp>
 
 #include <concepts>
-#include <cstddef>
-#include <optional>
-#include <string>
-#include <string_view>
 #include <sstream>
 #include <utility>
 

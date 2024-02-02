@@ -8,7 +8,6 @@
 #include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Utils/CopyOnUpdPtr.hpp>
-#include <oscar/Utils/CStringView.hpp>
 
 #include <cstdint>
 #include <iosfwd>

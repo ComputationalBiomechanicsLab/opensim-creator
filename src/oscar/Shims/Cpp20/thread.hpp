@@ -6,7 +6,7 @@
 #include <thread>
 #include <utility>
 
-namespace osc
+namespace osc::cpp20
 {
     // C++20: std::jthread
     class jthread final {

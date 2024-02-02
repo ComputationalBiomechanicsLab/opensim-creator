@@ -1,6 +1,7 @@
 #include <oscar/Utils/NullStreambuf.hpp>
 
 #include <gtest/gtest.h>
+
 #include <iosfwd>
 
 using osc::NullStreambuf;

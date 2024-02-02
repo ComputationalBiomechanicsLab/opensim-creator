@@ -3,8 +3,8 @@
 #include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Graphics/SimTKMeshLoader.hpp>
-#include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.hpp>
 #include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
+#include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <OpenSim/Simulation/Model/Model.h>

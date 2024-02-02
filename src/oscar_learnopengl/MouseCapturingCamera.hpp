@@ -1,16 +1,11 @@
 #pragma once
 
+#include <SDL_events.h>
+#include <imgui.h>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Maths/Eulers.hpp>
-#include <oscar/Maths/Rect.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
-
-#include <imgui.h>
-#include <SDL_events.h>
-
-#include <optional>
-#include <utility>
 
 namespace osc
 {
@@ -34,10 +29,11 @@ namespace osc
                 m_IsMouseCaptured = false;
                 return true;
             }
-            else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
+            if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
                 m_IsMouseCaptured = true;
                 return true;
             }
+
             return false;
         }
 

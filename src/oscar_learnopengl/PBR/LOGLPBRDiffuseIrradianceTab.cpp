@@ -2,9 +2,9 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
-#include <IconsFontAwesome5.h>
-#include <oscar/Graphics/ColorSpace.hpp>
+#include <SDL_events.h>
 #include <oscar/Graphics/Camera.hpp>
+#include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Cubemap.hpp>
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
@@ -14,26 +14,22 @@
 #include <oscar/Graphics/RenderTextureFormat.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
+#include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/Utils/Assertions.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <SDL_events.h>
 
 #include <array>
-#include <string>
-#include <utility>
+#include <memory>
 
 using namespace osc::literals;
+namespace Graphics = osc::Graphics;
 using osc::App;
 using osc::CalcCubemapViewProjMatrices;
 using osc::Camera;
@@ -102,7 +98,7 @@ namespace
 
         RenderTexture cubemapRenderTarget{{512, 512}};
         cubemapRenderTarget.setDimensionality(TextureDimensionality::Cube);
-        cubemapRenderTarget.setColorFormat(RenderTextureFormat::ARGBFloat16);
+        cubemapRenderTarget.setColorFormat(RenderTextureFormat::RGBFloat16);
 
         // create a 90 degree cube cone projection matrix
         Mat4 const projectionMatrix = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
@@ -117,7 +113,7 @@ namespace
         material.setMat4Array("uShadowMatrices", CalcCubemapViewProjMatrices(projectionMatrix, Vec3{}));
 
         Camera camera;
-        osc::Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
+        Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
         camera.renderTo(cubemapRenderTarget);
 
         // TODO: some way of copying it into an `osc::Cubemap` would make sense
@@ -128,7 +124,7 @@ namespace
     {
         RenderTexture irradianceCubemap{{32, 32}};
         irradianceCubemap.setDimensionality(TextureDimensionality::Cube);
-        irradianceCubemap.setColorFormat(RenderTextureFormat::ARGBFloat16);
+        irradianceCubemap.setColorFormat(RenderTextureFormat::RGBFloat16);
 
         Mat4 const captureProjection = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
@@ -141,7 +137,7 @@ namespace
         material.setMat4Array("uShadowMatrices", CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
 
         Camera camera;
-        osc::Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
+        Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
         camera.renderTo(irradianceCubemap);
 
         // TODO: some way of copying it into an `osc::Cubemap` would make sense

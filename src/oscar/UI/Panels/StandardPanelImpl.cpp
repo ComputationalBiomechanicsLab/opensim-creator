@@ -6,7 +6,8 @@
 #include <imgui.h>
 
 #include <string_view>
-#include <utility>
+
+using osc::CStringView;
 
 osc::StandardPanelImpl::StandardPanelImpl(std::string_view panelName) :
     StandardPanelImpl{panelName, ImGuiWindowFlags_None}
@@ -22,7 +23,7 @@ osc::StandardPanelImpl::StandardPanelImpl(
 {
 }
 
-osc::CStringView osc::StandardPanelImpl::implGetName() const
+CStringView osc::StandardPanelImpl::implGetName() const
 {
     return m_PanelName;
 }

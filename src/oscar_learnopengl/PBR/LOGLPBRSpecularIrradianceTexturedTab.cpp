@@ -2,9 +2,9 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
-#include <IconsFontAwesome5.h>
-#include <oscar/Graphics/ColorSpace.hpp>
+#include <SDL_events.h>
 #include <oscar/Graphics/Camera.hpp>
+#include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Cubemap.hpp>
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
@@ -14,27 +14,25 @@
 #include <oscar/Graphics/RenderTextureFormat.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
+#include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <SDL_events.h>
 
 #include <array>
-#include <string>
 #include <utility>
 
 using namespace osc::literals;
+namespace Graphics = osc::Graphics;
+namespace cpp20 = osc::cpp20;
 using osc::App;
 using osc::CalcCubemapViewProjMatrices;
 using osc::Camera;
@@ -102,7 +100,7 @@ namespace
 
         RenderTexture cubemapRenderTarget{{512, 512}};
         cubemapRenderTarget.setDimensionality(TextureDimensionality::Cube);
-        cubemapRenderTarget.setColorFormat(RenderTextureFormat::ARGBFloat16);
+        cubemapRenderTarget.setColorFormat(RenderTextureFormat::RGBFloat16);
 
         // create a 90 degree cube cone projection matrix
         Mat4 const projectionMatrix = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
@@ -117,7 +115,7 @@ namespace
         material.setMat4Array("uShadowMatrices", CalcCubemapViewProjMatrices(projectionMatrix, Vec3{}));
 
         Camera camera;
-        osc::Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
+        Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
         camera.renderTo(cubemapRenderTarget);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -128,7 +126,7 @@ namespace
     {
         RenderTexture irradianceCubemap{{32, 32}};
         irradianceCubemap.setDimensionality(TextureDimensionality::Cube);
-        irradianceCubemap.setColorFormat(RenderTextureFormat::ARGBFloat16);
+        irradianceCubemap.setColorFormat(RenderTextureFormat::RGBFloat16);
 
         Mat4 const captureProjection = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
@@ -141,7 +139,7 @@ namespace
         material.setMat4Array("uShadowMatrices", CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
 
         Camera camera;
-        osc::Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
+        Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
         camera.renderTo(irradianceCubemap);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -152,11 +150,11 @@ namespace
         RenderTexture const& environmentMap)
     {
         int constexpr levelZeroWidth = 128;
-        static_assert(osc::popcount(static_cast<unsigned>(levelZeroWidth)) == 1);
+        static_assert(cpp20::popcount(static_cast<unsigned>(levelZeroWidth)) == 1);
 
         RenderTexture captureRT{{levelZeroWidth, levelZeroWidth}};
         captureRT.setDimensionality(TextureDimensionality::Cube);
-        captureRT.setColorFormat(RenderTextureFormat::ARGBFloat16);
+        captureRT.setColorFormat(RenderTextureFormat::RGBFloat16);
 
         Mat4 const captureProjection = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
@@ -171,13 +169,12 @@ namespace
         Camera camera;
 
         Cubemap rv{levelZeroWidth, TextureFormat::RGBAFloat};
-        // TODO: wrap-s/t/r == GL_CLAMP_TO_EDGE
-        // TODO: ensure GL_TEXTURE_MIN_FILTER is GL_LINEAR_MIPMAP_LINEAR
-        // TODO: ensure GL_TEXTURE_MAG_FILTER is GL_LINEAR
+        rv.setWrapMode(TextureWrapMode::Clamp);
+        rv.setFilterMode(TextureFilterMode::Mipmap);
 
-        size_t const maxMipmapLevel = static_cast<size_t>(std::max(
+        constexpr size_t maxMipmapLevel = static_cast<size_t>(std::max(
             0,
-            osc::bit_width(static_cast<size_t>(levelZeroWidth)) - 1
+            cpp20::bit_width(static_cast<size_t>(levelZeroWidth)) - 1
         ));
         static_assert(maxMipmapLevel == 7);
 
@@ -190,9 +187,9 @@ namespace
             float const roughness = static_cast<float>(mip)/static_cast<float>(maxMipmapLevel);
             material.setFloat("uRoughness", roughness);
 
-            osc::Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
+            Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
             camera.renderTo(captureRT);
-            osc::Graphics::CopyTexture(captureRT, rv, mip);
+            Graphics::CopyTexture(captureRT, rv, mip);
         }
 
         return rv;
@@ -205,7 +202,7 @@ namespace
         camera.setProjectionMatrixOverride(Identity<Mat4>());
         camera.setViewMatrixOverride(Identity<Mat4>());
 
-        osc::Graphics::DrawMesh(
+        Graphics::DrawMesh(
             GenerateTexturedQuadMesh(),
             Identity<Transform>(),
             Material{Shader{
@@ -216,17 +213,17 @@ namespace
         );
 
         RenderTexture renderTex{{512, 512}};
-        renderTex.setColorFormat(RenderTextureFormat::ARGBFloat16);  // TODO RG16F in LearnOpenGL
+        renderTex.setColorFormat(RenderTextureFormat::RGFloat16);
         camera.renderTo(renderTex);
 
         Texture2D rv{
             {512, 512},
-            TextureFormat::RGBFloat,  // TODO: RG16F in LearnOpenGL
+            TextureFormat::RGFloat,  // TODO: add support for TextureFormat:::RGFloat16
             ColorSpace::Linear,
             TextureWrapMode::Clamp,
             TextureFilterMode::Linear,
         };
-        osc::Graphics::CopyTexture(renderTex, rv);
+        Graphics::CopyTexture(renderTex, rv);
         return rv;
     }
 
@@ -307,7 +304,7 @@ private:
         m_PBRMaterial.setVec3Array("uLightColors", c_LightRadiances);
         m_PBRMaterial.setRenderTexture("uIrradianceMap", m_IrradianceMap);
         m_PBRMaterial.setCubemap("uPrefilterMap", m_PrefilterMap);
-        m_PBRMaterial.setFloat("uMaxReflectionLOD", static_cast<float>(osc::bit_width(static_cast<size_t>(m_PrefilterMap.getWidth()) - 1)));
+        m_PBRMaterial.setFloat("uMaxReflectionLOD", static_cast<float>(cpp20::bit_width(static_cast<size_t>(m_PrefilterMap.getWidth()) - 1)));
         m_PBRMaterial.setTexture("uBRDFLut", m_BRDFLookup);
     }
 

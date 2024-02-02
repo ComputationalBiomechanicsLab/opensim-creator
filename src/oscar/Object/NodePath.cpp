@@ -5,6 +5,8 @@
 #include <string>
 #include <string_view>
 
+using osc::NodePath;
+
 namespace
 {
     constexpr std::string_view c_NewInvalidChars{"\\*+ \t\n"};
@@ -90,13 +92,13 @@ namespace
         for (Iter it = pathBegin; it != pathEnd; ++it)
         {
             Lookahead l = getLookahead(it, pathEnd);
-            if (l.a == osc::NodePath::separator && l.b == osc::NodePath::separator)
+            if (l.a == NodePath::separator && l.b == NodePath::separator)
             {
                 shift(it--, 1);
             }
         }
 
-        bool isAbsolute = *pathBegin == osc::NodePath::separator;
+        bool isAbsolute = *pathBegin == NodePath::separator;
         Iter cursor = isAbsolute ? pathBegin + 1 : pathBegin;
 
         // skip/dereference relative elements *at the start of a path*
@@ -104,14 +106,14 @@ namespace
             Lookahead l = getLookahead(cursor, pathEnd);
             while (l.a == '.') {
                 switch (l.b) {
-                case osc::NodePath::separator:
+                case NodePath::separator:
                     shift(cursor, 2);
                     break;
                 case c_NUL:
                     shift(cursor, 1);
                     break;
                 case '.': {
-                    if (l.c == osc::NodePath::separator|| l.c == c_NUL) {
+                    if (l.c == NodePath::separator|| l.c == c_NUL) {
                         // starts with '..' element: only allowed if the path
                         // is relative
                         if (isAbsolute)
@@ -122,7 +124,7 @@ namespace
                         // if not absolute, then make sure `contentStart` skips
                         // past these elements because the alg can't reduce
                         // them down
-                        if (l.c == osc::NodePath::separator) {
+                        if (l.c == NodePath::separator) {
                             cursor += 3;
                         } else {
                             cursor += 2;
@@ -159,12 +161,12 @@ namespace
         while (cursor < pathEnd) {
             Lookahead l = getLookahead(cursor, pathEnd);
 
-            if (l.a == '.' && (l.b == c_NUL || l.b == osc::NodePath::separator)) {
+            if (l.a == '.' && (l.b == c_NUL || l.b == NodePath::separator)) {
                 // handle '.' (if found)
-                size_t charsInCurEl = l.b == osc::NodePath::separator ? 2 : 1;
+                size_t charsInCurEl = l.b == NodePath::separator ? 2 : 1;
                 shift(cursor, charsInCurEl);
 
-            } else if (l.a == '.' && l.b == '.' && (l.c == c_NUL || l.c == osc::NodePath::separator)) {
+            } else if (l.a == '.' && l.b == '.' && (l.c == c_NUL || l.c == NodePath::separator)) {
                 // handle '..' (if found)
 
                 if (cursor == contentStart)
@@ -174,13 +176,13 @@ namespace
 
                 // search backwards for previous separator
                 Iter prevSeparator = cursor - 2;
-                while (prevSeparator > contentStart && *prevSeparator != osc::NodePath::separator)
+                while (prevSeparator > contentStart && *prevSeparator != NodePath::separator)
                 {
                     --prevSeparator;
                 }
 
                 Iter prevStart = prevSeparator <= contentStart ? contentStart : prevSeparator + 1;
-                size_t charsInCurEl = (l.c == osc::NodePath::separator) ? 3 : 2;
+                size_t charsInCurEl = (l.c == NodePath::separator) ? 3 : 2;
                 size_t charsInPrevEl = cursor - prevStart;
 
                 cursor = prevStart;
@@ -188,7 +190,7 @@ namespace
 
             } else {
                 // non-relative element: skip past the next separator or end
-                cursor = std::find(cursor, pathEnd, osc::NodePath::separator) + 1;
+                cursor = std::find(cursor, pathEnd, NodePath::separator) + 1;
             }
         }
 
@@ -198,7 +200,7 @@ namespace
         //   absolute path, so the output should be "", not "/"
         {
             Iter beg = isAbsolute ? pathBegin + 1 : pathBegin;
-            if (pathEnd - beg > 0 && pathEnd[-1] == osc::NodePath::separator)
+            if (pathEnd - beg > 0 && pathEnd[-1] == NodePath::separator)
             {
                 --pathEnd;
             }

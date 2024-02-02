@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-namespace osc
+namespace osc::cpp20
 {
     // shim, because MacOS's stdlib doesn't support <=> for std::string_view at
     // time of writing

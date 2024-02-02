@@ -1,19 +1,18 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/MeshWarper/TPSDocument.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElement.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentHelpers.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.hpp>
+#include <OpenSimCreator/Documents/MeshWarper/UndoableTPSDocumentActions.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.hpp>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 
 #include <memory>

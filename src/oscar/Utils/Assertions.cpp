@@ -2,7 +2,6 @@
 
 #include <oscar/Platform/Log.hpp>
 
-#include <exception>
 #include <sstream>
 #include <stdexcept>
 #include <string_view>

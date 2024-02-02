@@ -5,6 +5,7 @@
 #include <oscar/Variant/VariantType.hpp>
 
 #include <string_view>
+#include <utility>
 
 namespace osc
 {

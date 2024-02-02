@@ -8,11 +8,13 @@
 #include <utility>
 #include <vector>
 
+using osc::UID;
+using osc::UndoRedoEntry;
+
 osc::UndoRedoEntryMetadata::UndoRedoEntryMetadata(std::string_view message_) :
     m_Time{std::chrono::system_clock::now()},
     m_Message{message_}
-{
-}
+{}
 
 osc::UndoRedoEntryMetadata::UndoRedoEntryMetadata(UndoRedoEntryMetadata const&) = default;
 osc::UndoRedoEntryMetadata::UndoRedoEntryMetadata(UndoRedoEntryMetadata&&) noexcept = default;
@@ -36,12 +38,12 @@ void osc::UndoRedo::commitScratch(std::string_view commitMsg)
     m_Redo.clear();
 }
 
-osc::UndoRedoEntry const& osc::UndoRedo::getHead() const
+UndoRedoEntry const& osc::UndoRedo::getHead() const
 {
     return m_Head;
 }
 
-osc::UID osc::UndoRedo::getHeadID() const
+UID osc::UndoRedo::getHeadID() const
 {
     return m_Head.getID();
 }
@@ -104,7 +106,7 @@ ptrdiff_t osc::UndoRedo::getNumRedoEntriesi() const
     return static_cast<ptrdiff_t>(getNumRedoEntries());
 }
 
-osc::UndoRedoEntry const& osc::UndoRedo::getRedoEntry(ptrdiff_t i) const
+UndoRedoEntry const& osc::UndoRedo::getRedoEntry(ptrdiff_t i) const
 {
     OSC_ASSERT(i < std::ssize(m_Redo));
     return m_Redo.rbegin()[i];

@@ -4,8 +4,8 @@
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocument.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElement.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.hpp>
-#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.hpp>
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.hpp>
 #include <OpenSimCreator/Utils/LandmarkPair3D.hpp>
 
 #include <oscar/Graphics/Mesh.hpp>

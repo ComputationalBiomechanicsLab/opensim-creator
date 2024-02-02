@@ -4,8 +4,8 @@
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/UndoableTPSDocumentActions.hpp>
-#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabDecorationGenerators.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabContextMenu.hpp>
+#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabDecorationGenerators.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabHover.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabPanel.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.hpp>

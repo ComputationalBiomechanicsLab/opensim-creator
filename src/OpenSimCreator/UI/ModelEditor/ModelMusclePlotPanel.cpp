@@ -1,8 +1,8 @@
 #include "ModelMusclePlotPanel.hpp"
 
 #include <OpenSimCreator/Documents/Model/ModelStateCommit.hpp>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
@@ -12,8 +12,6 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>
-#include <OpenSim/Common/PropertyObjArray.h>
-#include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
@@ -42,15 +40,16 @@
 #include <future>
 #include <memory>
 #include <span>
+#include <sstream>
 #include <string>
 #include <string_view>
-#include <sstream>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
 namespace SimTK { class State; }
 
+namespace cpp20 = osc::cpp20;
 using osc::Degreesd;
 using osc::Radiansd;
 
@@ -432,7 +431,7 @@ namespace
     // inner (exception unsafe) plot function
     //
     // this is the function that actually does the "work" of computing plot points
-    PlottingTaskStatus ComputePlotPointsUnguarded(osc::stop_token const& stopToken, PlottingTaskInputs& inputs)
+    PlottingTaskStatus ComputePlotPointsUnguarded(cpp20::stop_token const& stopToken, PlottingTaskInputs& inputs)
     {
         PlottingTaskThreadsafeSharedData& shared = *inputs.shared;
         PlotParameters const& params = inputs.plotParameters;
@@ -549,7 +548,7 @@ namespace
     // top-level "main" function that the Plotting task worker thread executes
     //
     // catches exceptions and propagates them to the task
-    int ComputePlotPointsMain(osc::stop_token const& stopToken, PlottingTaskInputs inputs)
+    int ComputePlotPointsMain(cpp20::stop_token const& stopToken, PlottingTaskInputs inputs)
     {
         try
         {
@@ -593,7 +592,7 @@ namespace
 
     private:
         std::shared_ptr<PlottingTaskThreadsafeSharedData> m_Shared = std::make_shared<PlottingTaskThreadsafeSharedData>();
-        osc::jthread m_WorkerThread;
+        cpp20::jthread m_WorkerThread;
     };
 
     // a data plot (line), potentially computed from a background thread, or loaded via a

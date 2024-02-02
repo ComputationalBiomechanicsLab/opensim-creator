@@ -1,6 +1,5 @@
 #include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.hpp>
 
-#include <gtest/gtest.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
@@ -19,6 +18,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 #include <OpenSimCreator/ComponentRegistry/ComponentRegistry.hpp>
+#include <gtest/gtest.h>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>

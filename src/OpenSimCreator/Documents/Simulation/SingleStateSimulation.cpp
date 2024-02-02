@@ -6,8 +6,6 @@
 #include <oscar/Utils/SynchronizedValue.hpp>
 #include <oscar/Utils/SynchronizedValueGuard.hpp>
 
-#include <Simbody.h>
-
 class osc::SingleStateSimulation::Impl final {
 public:
     explicit Impl(BasicModelStatePair modelState) :

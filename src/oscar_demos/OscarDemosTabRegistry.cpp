@@ -12,9 +12,6 @@
 #include <oscar/UI/Tabs/TabRegistry.hpp>
 #include <oscar/Utils/Typelist.hpp>
 
-#include <concepts>
-#include <memory>
-
 void osc::RegisterDemoTabs(TabRegistry& registry)
 {
     using DemoTabs = Typelist<

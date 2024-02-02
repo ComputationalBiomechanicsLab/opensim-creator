@@ -6,13 +6,14 @@
 
 #include <imgui.h>
 
-#include <cinttypes>
+#include <algorithm>
 #include <chrono>
-#include <string>
+#include <cinttypes>
 #include <memory>
-#include <utility>
+#include <string_view>
 #include <vector>
 
+using osc::CStringView;
 using osc::PerfMeasurement;
 
 namespace
@@ -23,7 +24,7 @@ namespace
     }
 }
 
-class osc::PerfPanel::Impl final : public osc::StandardPanelImpl {
+class osc::PerfPanel::Impl final : public StandardPanelImpl {
 public:
 
     explicit Impl(std::string_view panelName) :
@@ -57,7 +58,7 @@ private:
         }
         if (ImGui::Button("clear measurements"))
         {
-            osc::ClearAllPerfMeasurements();
+            ClearAllPerfMeasurements();
         }
         ImGui::Checkbox("pause", &m_IsPaused);
 
@@ -124,7 +125,7 @@ osc::PerfPanel::PerfPanel(PerfPanel&&) noexcept = default;
 osc::PerfPanel& osc::PerfPanel::operator=(PerfPanel&&) noexcept = default;
 osc::PerfPanel::~PerfPanel() noexcept = default;
 
-osc::CStringView osc::PerfPanel::implGetName() const
+CStringView osc::PerfPanel::implGetName() const
 {
     return m_Impl->getName();
 }

@@ -1,35 +1,24 @@
 #include "VariantType.hpp"
 
-#include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Shims/Cpp23/utility.hpp>
+#include <oscar/Variant/VariantTypeList.hpp>
+#include <oscar/Variant/VariantTypeTraits.hpp>
 
 #include <array>
 #include <string>
-#include <string_view>
-#include <type_traits>
-#include <tuple>
 
 std::string osc::to_string(VariantType v)
 {
-    static auto const s_Lut = std::to_array<std::string_view>(
+    auto constexpr lut = []<VariantType... Types>(NonTypelist<VariantType, Types...>)
     {
-        "Nil",
-        "Bool",
-        "Color",
-        "Float",
-        "Int",
-        "String",
-        "StringName",
-        "Vec3",
-    });
-    static_assert(std::tuple_size_v<decltype(s_Lut)> == NumOptions<VariantType>());
+        return std::to_array({ VariantTypeTraits<Types>::name... });
+    }(VariantTypeList{});
 
-    auto const idx = static_cast<std::underlying_type_t<VariantType>>(v);
-    if (0 <= idx && idx < std::ssize(s_Lut))
-    {
-        return std::string{s_Lut[idx]};
+    auto const idx = cpp23::to_underlying(v);
+    if (0 <= idx && idx < std::ssize(lut)) {
+        return std::string{lut[idx]};
     }
-    else
-    {
+    else {
         return "Unknown";
     }
 }

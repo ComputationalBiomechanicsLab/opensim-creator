@@ -2,6 +2,7 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
+#include <SDL_events.h>
 #include <imgui.h>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
@@ -22,28 +23,24 @@
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <SDL_events.h>
 
 #include <array>
-#include <numbers>
-#include <string>
-#include <utility>
+#include <memory>
 
 using namespace osc::literals;
 using osc::App;
-using osc::Camera;
 using osc::Color;
 using osc::ColorSpace;
 using osc::CStringView;
 using osc::LoadTexture2DFromImage;
 using osc::Material;
 using osc::MouseCapturingCamera;
+using osc::Shader;
 using osc::Texture2D;
 using osc::ToSRGB;
-using osc::Shader;
 using osc::Transform;
 using osc::Vec3;
 

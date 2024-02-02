@@ -3,17 +3,13 @@
 #include <OpenSimCreator/Documents/Landmarks/Landmark.hpp>
 #include <OpenSimCreator/Documents/Landmarks/LandmarkHelpers.hpp>
 #include <OpenSimCreator/Documents/Landmarks/NamedLandmark.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Station.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/UndoableActions.hpp>
 
 #include <IconsFontAwesome5.h>
-#include <oscar/Formats/CSV.hpp>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
 
 #include <filesystem>
 #include <fstream>

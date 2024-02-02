@@ -2,6 +2,8 @@
 
 #include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 
+#include <SimTKcommon/internal/DecorativeGeometry.h>
+#include <SimTKcommon/internal/PolygonalMesh.h>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Graphics/VertexAttribute.hpp>
@@ -10,8 +12,6 @@
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Triangle.hpp>
 #include <oscar/Maths/Vec3.hpp>
-#include <SimTKcommon/internal/DecorativeGeometry.h>
-#include <SimTKcommon/internal/PolygonalMesh.h>
 
 #include <array>
 #include <cstddef>

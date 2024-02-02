@@ -1,8 +1,8 @@
 #include "AppConfig.hpp"
 
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
-#include <oscar/Platform/AppSettings.hpp>
 #include <oscar/Platform/AppSettingValueType.hpp>
+#include <oscar/Platform/AppSettings.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/LogLevel.hpp>
 #include <oscar/Platform/os.hpp>
@@ -20,7 +20,9 @@ using osc::AppSettings;
 using osc::AppSettingValue;
 using osc::AppSettingValueType;
 using osc::CStringView;
+using osc::CurrentExeDir;
 using osc::LogLevel;
+using osc::TryParseAsLogLevel;
 
 namespace
 {
@@ -41,7 +43,7 @@ namespace
             }
         }
 
-        auto resourcesRelToExe = osc::CurrentExeDir().parent_path() / "resources";
+        auto resourcesRelToExe = CurrentExeDir().parent_path() / "resources";
         if (std::filesystem::exists(resourcesRelToExe))
         {
             return resourcesRelToExe;
@@ -84,7 +86,7 @@ namespace
         }
         else
         {
-            configFileDir = osc::CurrentExeDir().parent_path();  // assume the `bin/` dir is one-up from the config
+            configFileDir = CurrentExeDir().parent_path();  // assume the `bin/` dir is one-up from the config
         }
         std::filesystem::path const configuredResourceDir{resourceDirSettingValue->toString()};
         auto resourceDir = std::filesystem::weakly_canonical(configFileDir / configuredResourceDir);
@@ -165,7 +167,7 @@ namespace
     {
         if (auto const v = settings.getValue("log_level"))
         {
-            return osc::TryParseAsLogLevel(v->toString()).value_or(LogLevel::DEFAULT);
+            return TryParseAsLogLevel(v->toString()).value_or(LogLevel::DEFAULT);
         }
         else
         {
@@ -224,7 +226,7 @@ bool osc::AppConfig::isMultiViewportEnabled() const
     return m_Impl->useMultiViewport;
 }
 
-osc::AntiAliasingLevel osc::AppConfig::getNumMSXAASamples() const
+AntiAliasingLevel osc::AppConfig::getNumMSXAASamples() const
 {
     return c_NumMSXAASamples;
 }
@@ -244,12 +246,12 @@ std::optional<std::string> osc::AppConfig::getInitialTabOverride() const
     return m_Impl->m_MaybeInitialTab;
 }
 
-osc::LogLevel osc::AppConfig::getRequestedLogLevel() const
+LogLevel osc::AppConfig::getRequestedLogLevel() const
 {
     return m_Impl->m_LogLevel;
 }
 
-std::optional<osc::AppSettingValue> osc::AppConfig::getValue(
+std::optional<AppSettingValue> osc::AppConfig::getValue(
     std::string_view key) const
 {
     return m_Impl->m_Settings.getValue(key);

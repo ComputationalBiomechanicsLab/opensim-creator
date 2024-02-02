@@ -1,18 +1,23 @@
 #include "SimTKHelpers.hpp"
 
+#include <SimTKcommon/SmallMatrix.h>
+#include <SimTKcommon/internal/MassProperties.h>
+#include <SimTKcommon/internal/Rotation.h>
+#include <SimTKcommon/internal/Transform.h>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Mat3.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Mat4x3.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
-#include <SimTKcommon/internal/MassProperties.h>
-#include <SimTKcommon/internal/Rotation.h>
-#include <SimTKcommon/internal/Transform.h>
-#include <SimTKcommon/SmallMatrix.h>
 
+using osc::Mat4;
+using osc::Mat4x3;
+using osc::Quat;
+using osc::Vec3;
+using osc::Vec4;
 
 // public API
 
@@ -86,7 +91,7 @@ SimTK::Vec3 osc::ToSimTKRGBVec3(Color const& color)
     return {color.r, color.g, color.b};
 }
 
-osc::Vec3 osc::ToVec3(SimTK::Vec3 const& v)
+Vec3 osc::ToVec3(SimTK::Vec3 const& v)
 {
     return Vec3
     {
@@ -96,7 +101,7 @@ osc::Vec3 osc::ToVec3(SimTK::Vec3 const& v)
     };
 }
 
-osc::Vec4 osc::ToVec4(SimTK::Vec3 const& v, float w)
+Vec4 osc::ToVec4(SimTK::Vec3 const& v, float w)
 {
     return Vec4
     {
@@ -107,7 +112,7 @@ osc::Vec4 osc::ToVec4(SimTK::Vec3 const& v, float w)
     };
 }
 
-osc::Mat4x3 osc::ToMat4x3(SimTK::Transform const& t)
+Mat4x3 osc::ToMat4x3(SimTK::Transform const& t)
 {
     // - Mat4x3 is column major
     //
@@ -146,18 +151,18 @@ osc::Mat4x3 osc::ToMat4x3(SimTK::Transform const& t)
     return m;
 }
 
-osc::Mat4 osc::ToMat4x4(SimTK::Transform const& t)
+Mat4 osc::ToMat4x4(SimTK::Transform const& t)
 {
     return Mat4{ToMat4x3(t)};
 }
 
-osc::Mat4 osc::ToMat4(SimTK::Rotation const& r)
+Mat4 osc::ToMat4(SimTK::Rotation const& r)
 {
     SimTK::Transform const t{r};
     return ToMat4x4(t);
 }
 
-osc::Quat osc::ToQuat(SimTK::Rotation const& r)
+Quat osc::ToQuat(SimTK::Rotation const& r)
 {
     SimTK::Quaternion const q = r.convertRotationToQuaternion();
 

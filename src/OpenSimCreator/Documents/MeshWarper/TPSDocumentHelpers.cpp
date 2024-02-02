@@ -5,7 +5,6 @@
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementType.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.hpp>
-#include <OpenSimCreator/Utils/TPS3D.hpp>
 
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
@@ -33,13 +32,13 @@ using osc::UID;
 
 namespace
 {
-    template<class T>
+    template<typename T>
     concept UIDed = requires(T v)
     {
         { v.uid } -> std::convertible_to<UID>;
     };
 
-    template<class T>
+    template<typename T>
     concept Named = requires(T v)
     {
         { v.name } -> std::convertible_to<std::string_view>;

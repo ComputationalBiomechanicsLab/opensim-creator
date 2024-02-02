@@ -4,15 +4,14 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/AppClock.hpp>
 #include <oscar/Platform/Screenshot.hpp>
-#include <oscar/Utils/Assertions.hpp>
 
 #include <SDL_events.h>
 
 #include <concepts>
 #include <cstdint>
 #include <filesystem>
-#include <future>
 #include <functional>
+#include <future>
 #include <memory>
 #include <string>
 #include <string_view>

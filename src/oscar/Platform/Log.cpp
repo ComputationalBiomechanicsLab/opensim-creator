@@ -1,14 +1,13 @@
 #include "Log.hpp"
 
-#include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
-#include <cstddef>
 #include <iostream>
 #include <mutex>
 
 using osc::CircularBuffer;
 using osc::Logger;
+using osc::LogLevel;
 using osc::LogMessage;
 using osc::LogMessageView;
 using osc::LogSink;
@@ -23,7 +22,7 @@ namespace
             static std::mutex s_StdoutMutex;
 
             std::lock_guard g{s_StdoutMutex};
-            std::cerr << '[' << msg.loggerName << "] [" << osc::ToCStringView(msg.level) << "] " << msg.payload << std::endl;
+            std::cerr << '[' << msg.loggerName << "] [" << ToCStringView(msg.level) << "] " << msg.payload << std::endl;
         }
     };
 
@@ -64,17 +63,17 @@ namespace
 
 // public API
 
-std::shared_ptr<osc::Logger> osc::log::defaultLogger()
+std::shared_ptr<Logger> osc::log::defaultLogger()
 {
     return GetGlobalSinks().defaultLogSink;
 }
 
-osc::Logger* osc::log::defaultLoggerRaw()
+Logger* osc::log::defaultLoggerRaw()
 {
     return GetGlobalSinks().defaultLogSink.get();
 }
 
-osc::LogLevel osc::log::getTracebackLevel()
+LogLevel osc::log::getTracebackLevel()
 {
     return GetGlobalSinks().tracebackSink->getLevel();
 }
@@ -84,7 +83,7 @@ void osc::log::setTracebackLevel(LogLevel lvl)
     GetGlobalSinks().tracebackSink->setLevel(lvl);
 }
 
-osc::SynchronizedValue<osc::CircularBuffer<osc::LogMessage, osc::log::c_MaxLogTracebackMessages>>& osc::log::getTracebackLog()
+SynchronizedValue<CircularBuffer<LogMessage, osc::log::c_MaxLogTracebackMessages>>& osc::log::getTracebackLog()
 {
     return GetGlobalSinks().tracebackSink->updMessages();
 }

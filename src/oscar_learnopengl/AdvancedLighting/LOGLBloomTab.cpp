@@ -2,7 +2,7 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
-#include <IconsFontAwesome5.h>
+#include <SDL_events.h>
 #include <imgui.h>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
@@ -12,31 +12,27 @@
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/RenderTarget.hpp>
-#include <oscar/Graphics/RenderTextureDescriptor.hpp>
 #include <oscar/Graphics/RenderTexture.hpp>
+#include <oscar/Graphics/RenderTextureDescriptor.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Eulers.hpp>
-#include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/UnitVec3.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <SDL_events.h>
 
 #include <array>
-#include <string>
-#include <utility>
+#include <memory>
 #include <vector>
 
 using namespace osc::literals;
-using osc::Camera;
 using osc::Color;
 using osc::CStringView;
 using osc::Identity;

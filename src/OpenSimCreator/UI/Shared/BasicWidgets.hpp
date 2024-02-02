@@ -8,11 +8,9 @@
 
 #include <filesystem>
 #include <functional>
-#include <memory>
 #include <optional>
 #include <span>
 #include <string>
-#include <type_traits>
 
 namespace osc { class OpenSimDecorationOptions; }
 namespace osc { class OverlayDecorationOptions; }
@@ -97,7 +95,7 @@ namespace osc
     };
     constexpr bool operator&(CalculateMenuFlags lhs, CalculateMenuFlags rhs)
     {
-        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
+        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
     }
     bool BeginCalculateMenu(
         CalculateMenuFlags = CalculateMenuFlags::None

@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <concepts>
 #include <cstddef>
-#include <iterator>
 #include <memory>
 #include <optional>
 #include <span>
@@ -17,14 +16,16 @@
 #include <utility>
 #include <vector>
 
+using osc::Class;
+using osc::IsValidIdentifier;
+using osc::PropertyInfo;
+using osc::StringName;
+
 namespace
 {
-    using osc::PropertyInfo;
-    using osc::StringName;
-
     StringName const& ValidateAsClassName(StringName const& s)
     {
-        if (osc::IsValidIdentifier(s))
+        if (IsValidIdentifier(s))
         {
             return s;
         }
@@ -131,17 +132,17 @@ osc::Class::Class(
 {
 }
 
-osc::StringName const& osc::Class::getName() const
+StringName const& osc::Class::getName() const
 {
     return m_Impl->getName();
 }
 
-std::optional<osc::Class> osc::Class::getParentClass() const
+std::optional<Class> osc::Class::getParentClass() const
 {
     return m_Impl->getParentClass();
 }
 
-std::span<osc::PropertyInfo const> osc::Class::getPropertyList() const
+std::span<PropertyInfo const> osc::Class::getPropertyList() const
 {
     return m_Impl->getPropertyList();
 }

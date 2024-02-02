@@ -9,13 +9,13 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
+#include <Simbody.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <oscar/Platform/Log.hpp>
-#include <Simbody.h>
 
 #include <memory>
 #include <optional>

@@ -1,9 +1,10 @@
 #include <OpenSimCreator/Documents/ModelWarper/Document.hpp>
 
-#include <gtest/gtest.h>
+#include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
+
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.hpp>
-#include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
+#include <gtest/gtest.h>
 
 #include <cctype>
 #include <filesystem>

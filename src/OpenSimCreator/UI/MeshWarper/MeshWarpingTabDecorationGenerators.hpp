@@ -4,13 +4,10 @@
 
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
 
 #include <functional>
-#include <utility>
 
 namespace osc
 {

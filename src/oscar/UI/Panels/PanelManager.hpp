@@ -2,14 +2,12 @@
 
 #include <oscar/UI/Panels/ToggleablePanelFlags.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/UID.hpp>
 
 #include <concepts>
 #include <cstddef>
 #include <functional>
-#include <span>
-#include <string_view>
 #include <memory>
+#include <string_view>
 
 namespace osc { class IPanel; }
 

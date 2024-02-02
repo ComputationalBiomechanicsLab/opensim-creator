@@ -5,13 +5,12 @@
 #include <OpenSimCreator/Documents/Landmarks/LandmarkHelpers.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocument.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.hpp>
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentHelpers.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.hpp>
-#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentHelpers.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSWarpResultCache.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/UndoableTPSDocument.hpp>
 #include <OpenSimCreator/Graphics/SimTKMeshLoader.hpp>
-#include <OpenSimCreator/Utils/TPS3D.hpp>
 
 #include <oscar/Formats/CSV.hpp>
 #include <oscar/Formats/OBJ.hpp>
@@ -22,7 +21,6 @@
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/At.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
 
 #include <algorithm>
 #include <array>

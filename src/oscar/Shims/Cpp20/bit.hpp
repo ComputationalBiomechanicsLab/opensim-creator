@@ -5,7 +5,7 @@
 #include <limits>
 #include <type_traits>
 
-namespace osc
+namespace osc::cpp20
 {
     // C++20: popcount
     //
@@ -62,7 +62,7 @@ namespace osc
         return rv;
     }
 
-    template<class To, class From>
+    template<typename To, typename From>
     To bit_cast(From const& src) noexcept
     {
         static_assert(

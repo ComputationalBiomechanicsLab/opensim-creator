@@ -13,7 +13,6 @@
 #include <concepts>
 #include <cstddef>
 #include <exception>
-#include <initializer_list>
 #include <limits>
 #include <ranges>
 #include <span>
@@ -22,7 +21,7 @@
 #include <utility>
 
 // gl: convenience C++ bindings to OpenGL
-namespace gl
+namespace osc::gl
 {
     // an exception that specifically means something has gone wrong in
     // the OpenGL API
@@ -430,76 +429,76 @@ namespace gl
         }
     };
 
-    inline void Uniform(UniformMat3& u, osc::Mat3 const& mat)
+    inline void Uniform(UniformMat3& u, Mat3 const& mat)
     {
-        glUniformMatrix3fv(u.geti(), 1, false, osc::ValuePtr(mat));
+        glUniformMatrix3fv(u.geti(), 1, false, ValuePtr(mat));
     }
 
-    inline void Uniform(UniformVec4& u, osc::Vec4 const& v)
+    inline void Uniform(UniformVec4& u, Vec4 const& v)
     {
-        glUniform4fv(u.geti(), 1, osc::ValuePtr(v));
+        glUniform4fv(u.geti(), 1, ValuePtr(v));
     }
 
-    inline void Uniform(UniformVec3& u, osc::Vec3 const& v)
+    inline void Uniform(UniformVec3& u, Vec3 const& v)
     {
-        glUniform3fv(u.geti(), 1, osc::ValuePtr(v));
+        glUniform3fv(u.geti(), 1, ValuePtr(v));
     }
 
-    inline void Uniform(UniformVec3& u, std::span<osc::Vec3 const> vs)
+    inline void Uniform(UniformVec3& u, std::span<Vec3 const> vs)
     {
-        static_assert(sizeof(osc::Vec3) == 3 * sizeof(GLfloat));
-        glUniform3fv(u.geti(), static_cast<GLsizei>(vs.size()), osc::ValuePtr(vs.front()));
+        static_assert(sizeof(Vec3) == 3 * sizeof(GLfloat));
+        glUniform3fv(u.geti(), static_cast<GLsizei>(vs.size()), ValuePtr(vs.front()));
     }
 
-    // set a uniform array of vec3s from a userspace container type (e.g. vector<osc::Vec3>)
+    // set a uniform array of vec3s from a userspace container type (e.g. vector<Vec3>)
     template<std::ranges::contiguous_range Range, size_t N>
     inline void Uniform(UniformArray<glsl::vec3, N>& u, Range& range)
-        requires std::same_as<typename Range::value_type, osc::Vec3>
+        requires std::same_as<typename Range::value_type, Vec3>
     {
         OSC_ASSERT(std::ranges::size(range) == N);
-        glUniform3fv(u.geti(), static_cast<GLsizei>(std::ranges::size(range)), osc::ValuePtr(*std::ranges::data(range)));
+        glUniform3fv(u.geti(), static_cast<GLsizei>(std::ranges::size(range)), ValuePtr(*std::ranges::data(range)));
     }
 
-    inline void Uniform(UniformMat4& u, osc::Mat4 const& mat)
+    inline void Uniform(UniformMat4& u, Mat4 const& mat)
     {
-        glUniformMatrix4fv(u.geti(), 1, false, osc::ValuePtr(mat));
+        glUniformMatrix4fv(u.geti(), 1, false, ValuePtr(mat));
     }
 
-    inline void Uniform(UniformMat4& u, std::span<osc::Mat4 const> ms)
+    inline void Uniform(UniformMat4& u, std::span<Mat4 const> ms)
     {
-        static_assert(sizeof(osc::Mat4) == 16 * sizeof(GLfloat));
-        glUniformMatrix4fv(u.geti(), static_cast<GLsizei>(ms.size()), false, osc::ValuePtr(ms.front()));
+        static_assert(sizeof(Mat4) == 16 * sizeof(GLfloat));
+        glUniformMatrix4fv(u.geti(), static_cast<GLsizei>(ms.size()), false, ValuePtr(ms.front()));
     }
 
     inline void Uniform(UniformMat4& u, UniformIdentityValueTag)
     {
-        Uniform(u, osc::Identity<osc::Mat4>());
+        Uniform(u, Identity<Mat4>());
     }
 
-    inline void Uniform(UniformVec2& u, osc::Vec2 const& v)
+    inline void Uniform(UniformVec2& u, Vec2 const& v)
     {
-        glUniform2fv(u.geti(), 1, osc::ValuePtr(v));
+        glUniform2fv(u.geti(), 1, ValuePtr(v));
     }
 
-    inline void Uniform(UniformVec2& u, std::span<osc::Vec2 const> vs)
+    inline void Uniform(UniformVec2& u, std::span<Vec2 const> vs)
     {
-        static_assert(sizeof(osc::Vec2) == 2 * sizeof(GLfloat));
+        static_assert(sizeof(Vec2) == 2 * sizeof(GLfloat));
 
         glUniform2fv(
             u.geti(),
             static_cast<GLsizei>(vs.size()),
-            osc::ValuePtr(vs.front())
+            ValuePtr(vs.front())
         );
     }
 
     template<std::ranges::contiguous_range Range, size_t N>
     void Uniform(UniformArray<glsl::vec2, N>& u, Range const& range)
-        requires std::same_as<typename Range::value_type, osc::Vec2>
+        requires std::same_as<typename Range::value_type, Vec2>
     {
         glUniform2fv(
             u.geti(),
             static_cast<GLsizei>(std::ranges::size(range)),
-            osc::ValuePtr(std::ranges::data(range))
+            ValuePtr(std::ranges::data(range))
         );
     }
 
@@ -568,7 +567,7 @@ namespace gl
                 SourceType,
                 normgl,
                 stridegl,
-                osc::bit_cast<void*>(offset)
+                cpp20::bit_cast<void*>(offset)
             );
         }
         else if constexpr (SourceType == GL_FLOAT)
@@ -581,7 +580,7 @@ namespace gl
                     SourceType,
                     normgl,
                     stridegl,
-                    osc::bit_cast<void*>(offset + (i * TGlsl::elementsPerLocation * sizeof(float)))
+                    cpp20::bit_cast<void*>(offset + (i * TGlsl::elementsPerLocation * sizeof(float)))
                 );
             }
         }
@@ -743,7 +742,7 @@ namespace gl
     //
     // must be a trivially copyable type with a standard layout, because its
     // data transfers onto the GPU
-    template<osc::BitCastable T, GLenum TBuffer, GLenum Usage>
+    template<BitCastable T, GLenum TBuffer, GLenum Usage>
     class Buffer : public TypedBufferHandle<TBuffer> {
     public:
         using value_type = T;
@@ -757,20 +756,20 @@ namespace gl
         }
     };
 
-    template<osc::BitCastable T, GLenum Usage = GL_STATIC_DRAW>
+    template<BitCastable T, GLenum Usage = GL_STATIC_DRAW>
     class ArrayBuffer : public Buffer<T, GL_ARRAY_BUFFER, Usage> {
         using Buffer<T, GL_ARRAY_BUFFER, Usage>::Buffer;
     };
 
-    template<class T>
-    concept ElementIndex = osc::IsAnyOf<uint16_t, uint32_t>;
+    template<typename T>
+    concept ElementIndex = IsAnyOf<uint16_t, uint32_t>;
 
     template<ElementIndex T, GLenum Usage = GL_STATIC_DRAW>
     class ElementArrayBuffer : public Buffer<T, GL_ELEMENT_ARRAY_BUFFER, Usage> {
         using Buffer<T, GL_ELEMENT_ARRAY_BUFFER, Usage>::Buffer;
     };
 
-    template<osc::BitCastable T, GLenum Usage = GL_STATIC_DRAW>
+    template<BitCastable T, GLenum Usage = GL_STATIC_DRAW>
     class PixelPackBuffer : public Buffer<T, GL_PIXEL_PACK_BUFFER, Usage> {
         using Buffer<T, GL_PIXEL_PACK_BUFFER, Usage>::Buffer;
     };
@@ -1134,7 +1133,7 @@ namespace gl
         glClearColor(red, green, blue, alpha);
     }
 
-    inline void ClearColor(osc::Vec4 const& v)
+    inline void ClearColor(Vec4 const& v)
     {
         ClearColor(v[0], v[1], v[2], v[3]);
     }

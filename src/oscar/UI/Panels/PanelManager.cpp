@@ -9,7 +9,6 @@
 #include <functional>
 #include <memory>
 #include <optional>
-#include <span>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -470,7 +469,7 @@ osc::PanelManager::~PanelManager() noexcept = default;
 
 void osc::PanelManager::registerToggleablePanel(
     std::string_view baseName,
-    std::function<std::shared_ptr<osc::IPanel>(std::string_view)> constructorFunc_,
+    std::function<std::shared_ptr<IPanel>(std::string_view)> constructorFunc_,
     ToggleablePanelFlags flags_)
 {
     m_Impl->registerToggleablePanel(baseName, std::move(constructorFunc_), flags_);
@@ -478,13 +477,13 @@ void osc::PanelManager::registerToggleablePanel(
 
 void osc::PanelManager::registerSpawnablePanel(
     std::string_view baseName,
-    std::function<std::shared_ptr<osc::IPanel>(std::string_view)> constructorFunc_,
+    std::function<std::shared_ptr<IPanel>(std::string_view)> constructorFunc_,
     size_t numInitiallyOpenedPanels)
 {
     m_Impl->registerSpawnablePanel(baseName, std::move(constructorFunc_), numInitiallyOpenedPanels);
 }
 
-osc::IPanel* osc::PanelManager::tryUpdPanelByName(std::string_view name)
+IPanel* osc::PanelManager::tryUpdPanelByName(std::string_view name)
 {
     return m_Impl->tryUpdPanelByName(name);
 }
@@ -494,7 +493,7 @@ size_t osc::PanelManager::getNumToggleablePanels() const
     return m_Impl->getNumToggleablePanels();
 }
 
-osc::CStringView osc::PanelManager::getToggleablePanelName(size_t i) const
+CStringView osc::PanelManager::getToggleablePanelName(size_t i) const
 {
     return m_Impl->getToggleablePanelName(i);
 }
@@ -539,7 +538,7 @@ size_t osc::PanelManager::getNumDynamicPanels() const
     return m_Impl->getNumDynamicPanels();
 }
 
-osc::CStringView osc::PanelManager::getDynamicPanelName(size_t i) const
+CStringView osc::PanelManager::getDynamicPanelName(size_t i) const
 {
     return m_Impl->getDynamicPanelName(i);
 }
@@ -554,7 +553,7 @@ size_t osc::PanelManager::getNumSpawnablePanels() const
     return m_Impl->getNumSpawnablePanels();
 }
 
-osc::CStringView osc::PanelManager::getSpawnablePanelBaseName(size_t i) const
+CStringView osc::PanelManager::getSpawnablePanelBaseName(size_t i) const
 {
     return m_Impl->getSpawnablePanelBaseName(i);
 }

@@ -5,32 +5,27 @@
 #include <OpenSimCreator/Documents/Simulation/Simulation.hpp>
 #include <OpenSimCreator/Documents/Simulation/StoFileSimulation.hpp>
 #include <OpenSimCreator/Platform/RecentFiles.hpp>
+#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.hpp>
 #include <OpenSimCreator/UI/Simulation/SimulatorTab.hpp>
-#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include <imgui.h>
 #include <IconsFontAwesome5.h>
-#include <OpenSim/Common/PropertyObjArray.h>
-#include <OpenSim/Common/Set.h>
+#include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Scene/SceneCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
-#include <oscar/Utils/UID.hpp>
 
 #include <algorithm>
 #include <array>
-#include <cstddef>
 #include <exception>
 #include <filesystem>
 #include <memory>

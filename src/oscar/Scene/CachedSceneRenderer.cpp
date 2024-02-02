@@ -1,12 +1,15 @@
 #include "CachedSceneRenderer.hpp"
 
-#include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 
-#include <utility>
+#include <algorithm>
+#include <memory>
+#include <span>
 #include <vector>
+
+using osc::RenderTexture;
 
 class osc::CachedSceneRenderer::Impl final {
 public:
@@ -56,7 +59,7 @@ osc::CachedSceneRenderer::CachedSceneRenderer(CachedSceneRenderer&&) noexcept = 
 osc::CachedSceneRenderer& osc::CachedSceneRenderer::operator=(CachedSceneRenderer&&) noexcept = default;
 osc::CachedSceneRenderer::~CachedSceneRenderer() noexcept = default;
 
-osc::RenderTexture& osc::CachedSceneRenderer::render(
+RenderTexture& osc::CachedSceneRenderer::render(
     std::span<SceneDecoration const> decorations,
     SceneRendererParams const& params)
 {

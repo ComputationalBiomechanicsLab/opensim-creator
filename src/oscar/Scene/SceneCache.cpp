@@ -2,7 +2,6 @@
 
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
@@ -17,6 +16,7 @@
 #include <vector>
 
 using osc::BVH;
+using osc::HashOf;
 using osc::Mesh;
 
 namespace
@@ -43,7 +43,7 @@ template<>
 struct std::hash<TorusParameters> final {
     size_t operator()(TorusParameters const& p) const
     {
-        return osc::HashOf(p.torusCenterToTubeCenterRadius, p.tubeRadius);
+        return HashOf(p.torusCenterToTubeCenterRadius, p.tubeRadius);
     }
 };
 

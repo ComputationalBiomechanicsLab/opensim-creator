@@ -11,8 +11,8 @@
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Common/ComponentSocket.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 
 #include <algorithm>

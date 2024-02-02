@@ -5,13 +5,12 @@
 #include <OpenSimCreator/Utils/ParamValue.hpp>
 
 #include <imgui.h>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/Utils/StdVariantHelpers.hpp>
 
 #include <span>
 #include <string>
-#include <utility>
 #include <variant>
 
 namespace

@@ -1,5 +1,7 @@
 #include <oscar/Object/Object.hpp>
 
+/*
+
 #include <oscar/Object/PropertyInfo.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Utils/StringName.hpp>
@@ -14,8 +16,6 @@
 #include <span>
 #include <string>
 #include <string_view>
-
-/*
 
 using osc::Color;
 using osc::Object;

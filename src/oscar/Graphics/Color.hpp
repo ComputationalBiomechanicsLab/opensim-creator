@@ -1,7 +1,7 @@
 #pragma once
 
-#include <oscar/Graphics/ColorHSLA.hpp>
 #include <oscar/Graphics/Color32.hpp>
+#include <oscar/Graphics/ColorHSLA.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 

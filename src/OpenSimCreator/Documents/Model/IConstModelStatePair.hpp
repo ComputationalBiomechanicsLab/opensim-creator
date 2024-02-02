@@ -2,8 +2,6 @@
 
 #include <oscar/Utils/UID.hpp>
 
-#include <optional>
-
 namespace OpenSim { class Component; }
 namespace OpenSim { class Model; }
 namespace SimTK { class State; }

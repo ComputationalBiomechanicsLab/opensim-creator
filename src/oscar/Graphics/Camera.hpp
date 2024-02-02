@@ -10,7 +10,6 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/CopyOnUpdPtr.hpp>
 
-#include <cstdint>
 #include <iosfwd>
 #include <optional>
 

@@ -4,7 +4,6 @@
 #include <oscar/Scene/SceneCollision.hpp>
 
 #include <optional>
-#include <string>
 
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct Rect; }

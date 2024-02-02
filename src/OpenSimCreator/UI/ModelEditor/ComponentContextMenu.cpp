@@ -7,19 +7,17 @@
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ModelActionsMenuItems.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ReassignSocketPopup.hpp>
-#include <OpenSimCreator/UI/ModelEditor/SelectComponentPopup.hpp>
 #include <OpenSimCreator/UI/ModelEditor/Select1PFPopup.hpp>
+#include <OpenSimCreator/UI/ModelEditor/SelectComponentPopup.hpp>
 #include <OpenSimCreator/UI/ModelEditor/SelectGeometryPopup.hpp>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentSocket.h>
 #include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
@@ -30,15 +28,15 @@
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Panels/PanelManager.hpp>
 #include <oscar/UI/Widgets/StandardPopup.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 
+#include <memory>
 #include <sstream>
 #include <string>
-#include <memory>
 #include <utility>
 
 // helpers

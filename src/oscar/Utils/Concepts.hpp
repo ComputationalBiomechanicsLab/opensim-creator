@@ -16,19 +16,19 @@ namespace osc
     // - std::bit_cast (similar constraints)
     // - https://en.cppreference.com/w/cpp/language/object#Object_representation_and_value_representation
     //   > "For TriviallyCopyable types, value representation is a part of the object representation"
-    template<class T>
+    template<typename T>
     concept BitCastable = std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>;
 
     // see: https://en.cppreference.com/w/cpp/language/object#Object_representation_and_value_representation
-    template<class T>
+    template<typename T>
     concept ObjectRepresentationByte = IsAnyOf<T, unsigned char, std::byte>;
 
-    template<class T, class DerefType>
+    template<typename T, typename DerefType>
     concept DereferencesTo = requires(T ptr) {
         {*ptr} -> std::convertible_to<DerefType>;
     };
 
-    template<class T>
+    template<typename T>
     concept Hashable = requires(T v) {
         { std::hash<T>{}(v) } -> std::convertible_to<size_t>;
     };

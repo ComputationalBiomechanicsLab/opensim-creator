@@ -1,15 +1,18 @@
 #include "TPS3D.hpp"
 
+#include <Simbody.h>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/ParalellizationHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
-#include <Simbody.h>
 
 #include <iostream>
 #include <span>
 #include <vector>
 
+using osc::Length;
+using osc::Mesh;
+using osc::TPSCoefficients3D;
 using osc::Vec3;
 
 namespace
@@ -28,7 +31,7 @@ namespace
         // (e.g. the above book) uses U(v) = |v|. The primary author (Gunz) claims that the original
         // basis function is not as good as just using the magnitude?
 
-        return osc::Length(controlPoint - p);
+        return Length(controlPoint - p);
     }
 }
 
@@ -64,7 +67,7 @@ std::ostream& osc::operator<<(std::ostream& o, TPSCoefficients3D const& coefs)
 }
 
 // computes all coefficients of the 3D TPS equation (a1, a2, a3, a4, and all the w's)
-osc::TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const& inputs)
+TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const& inputs)
 {
     // this is based on the Bookstein Thin Plate Sline (TPS) warping algorithm
     //
@@ -225,7 +228,7 @@ osc::TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const&
 }
 
 // evaluates the TPS equation with the given coefficients and input point
-osc::Vec3 osc::EvaluateTPSEquation(TPSCoefficients3D const& coefs, Vec3 p)
+Vec3 osc::EvaluateTPSEquation(TPSCoefficients3D const& coefs, Vec3 p)
 {
     // this implementation effectively evaluates `fx(x, y, z)`, `fy(x, y, z)`, and
     // `fz(x, y, z)` the same time, because `TPSCoefficients3D` stores the X, Y, and Z
@@ -244,7 +247,7 @@ osc::Vec3 osc::EvaluateTPSEquation(TPSCoefficients3D const& coefs, Vec3 p)
 }
 
 // returns a mesh that is the equivalent of applying the 3D TPS warp to each vertex of the mesh
-osc::Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, Mesh const& mesh)
+Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, Mesh const& mesh)
 {
     OSC_PERF("ApplyThinPlateWarpToMesh");
 
@@ -255,7 +258,7 @@ osc::Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, Mesh con
     // parallelize function evaluation, because the mesh may contain *a lot* of
     // verts and the TPS equation may contain *a lot* of coefficients
     auto verts = rv.getVerts();
-    osc::ForEachParUnseq(8192, std::span<Vec3>(verts), [&coefs](Vec3& vert)
+    ForEachParUnseq(8192, std::span<Vec3>(verts), [&coefs](Vec3& vert)
     {
         vert = EvaluateTPSEquation(coefs, vert);
     });
@@ -264,7 +267,7 @@ osc::Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, Mesh con
     return rv;
 }
 
-std::vector<osc::Vec3> osc::ApplyThinPlateWarpToPoints(
+std::vector<Vec3> osc::ApplyThinPlateWarpToPoints(
     TPSCoefficients3D const& coefs,
     std::span<Vec3 const> points)
 {

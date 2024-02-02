@@ -6,6 +6,7 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/ParamBlock.hpp>
 
+#include <SimTKcommon.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -16,12 +17,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <oscar/Platform/Log.hpp>
-#include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
-#include <SimTKcommon.h>
-#include <SimTKcommon/Orientation.h>
-#include <SimTKcommon/Scalar.h>
 
 #include <algorithm>
 #include <concepts>
@@ -30,9 +27,9 @@
 #include <memory>
 #include <mutex>
 #include <span>
+#include <sstream>
 #include <string>
 #include <string_view>
-#include <sstream>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>

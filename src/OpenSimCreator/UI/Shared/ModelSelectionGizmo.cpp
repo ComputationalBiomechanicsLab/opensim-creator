@@ -8,11 +8,10 @@
 #include <imgui.h>
 #include <ImGuizmo.h>  // care: must be included after imgui
 #include <OpenSim/Common/ComponentPath.h>
-#include <OpenSim/Simulation/Model/Marker.h>
+#include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 #include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/Eulers.hpp>
@@ -29,7 +28,6 @@
 #include <oscar/UI/ImGuizmoHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
-#include <Simbody.h>
 
 #include <concepts>
 #include <cstddef>
@@ -38,6 +36,7 @@
 #include <type_traits>
 #include <utility>
 
+namespace cpp23 = osc::cpp23;
 using osc::Degrees;
 using osc::Eulers;
 using osc::ExtractEulerAngleXYZ;
@@ -74,12 +73,12 @@ namespace
 
     constexpr SupportedManipulationOpFlags operator|(SupportedManipulationOpFlags lhs, SupportedManipulationOpFlags rhs)
     {
-        return static_cast<SupportedManipulationOpFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
+        return static_cast<SupportedManipulationOpFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
     }
 
     constexpr bool operator&(SupportedManipulationOpFlags lhs, SupportedManipulationOpFlags rhs)
     {
-        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0u;
+        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0u;
     }
 
     // type-erased virtual base class that each concrete manipulator inherits from

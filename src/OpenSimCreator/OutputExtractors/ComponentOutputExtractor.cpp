@@ -6,19 +6,19 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Common/ComponentPath.h>
+#include <SimTKcommon/SmallMatrix.h>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
-#include <SimTKcommon/SmallMatrix.h>
 
+#include <cmath>
 #include <algorithm>
 #include <array>
-#include <cmath>
 #include <concepts>
 #include <memory>
-#include <typeinfo>
 #include <span>
 #include <sstream>
+#include <typeinfo>
 #include <utility>
 
 // constants
@@ -34,7 +34,7 @@ namespace
 }
 
 // named namespace is due to an MSVC internal linkage compiler bug
-namespace detail
+namespace
 {
     // top-level output extractor declaration
     template<std::derived_from<OpenSim::AbstractOutput> ConcreteOutput>
@@ -123,19 +123,19 @@ namespace
     {
         if (dynamic_cast<OpenSim::Output<double> const*>(&ao))
         {
-            return detail::extractTypeErased<OpenSim::Output<double>>;
+            return extractTypeErased<OpenSim::Output<double>>;
         }
         else if (dynamic_cast<OpenSim::Output<SimTK::Vec3> const*>(&ao))
         {
             switch (subfield) {
             case osc::OutputSubfield::X:
-                return detail::extractTypeErased<osc::OutputSubfield::X, OpenSim::Output<SimTK::Vec3>>;
+                return extractTypeErased<osc::OutputSubfield::X, OpenSim::Output<SimTK::Vec3>>;
             case osc::OutputSubfield::Y:
-                return detail::extractTypeErased<osc::OutputSubfield::Y, OpenSim::Output<SimTK::Vec3>>;
+                return extractTypeErased<osc::OutputSubfield::Y, OpenSim::Output<SimTK::Vec3>>;
             case osc::OutputSubfield::Z:
-                return detail::extractTypeErased<osc::OutputSubfield::Z, OpenSim::Output<SimTK::Vec3>>;
+                return extractTypeErased<osc::OutputSubfield::Z, OpenSim::Output<SimTK::Vec3>>;
             case osc::OutputSubfield::Magnitude:
-                return detail::extractTypeErased<osc::OutputSubfield::Magnitude, OpenSim::Output<SimTK::Vec3>>;
+                return extractTypeErased<osc::OutputSubfield::Magnitude, OpenSim::Output<SimTK::Vec3>>;
             default:
                 return nullptr;
             }

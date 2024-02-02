@@ -7,7 +7,6 @@
 
 #include <glm/detail/qualifier.hpp>
 
-#include <compare>
 #include <concepts>
 #include <limits>
 
@@ -21,12 +20,16 @@ namespace osc
      *
      * Inspired by Simbody's `SimTK::UnitVec` class
      */
-    template<LengthType L, typename T, Qualifier Q = glm::defaultp>
+    template<
+        LengthType L,
+        typename T,
+        Qualifier Q = glm::defaultp
+    >
     class UnitVec final {
     public:
         using type = UnitVec<L, T, Q>;
-        using value_type = Vec<L, T, Q>::value_type;
-        using length_type = Vec<L, T, Q>::length_type;
+        using value_type = typename Vec<L, T, Q>::value_type;
+        using length_type = typename Vec<L, T, Q>::length_type;
         static inline constexpr T nan_type = std::numeric_limits<T>::has_signaling_NaN ? std::numeric_limits<T>::signaling_NaN() : std::numeric_limits<T>::quiet_NaN();
 
         static constexpr length_type length()

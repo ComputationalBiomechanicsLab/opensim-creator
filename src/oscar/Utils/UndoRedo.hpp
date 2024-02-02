@@ -19,7 +19,7 @@
 // stored in memory
 namespace osc
 {
-    template<class T>
+    template<typename T>
     concept Undoable = std::destructible<T> && std::copy_constructible<T>;
 
     // an abstract base class for storing undo/redo metadata

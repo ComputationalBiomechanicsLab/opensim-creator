@@ -1,6 +1,7 @@
 #include "TPS2DTab.hpp"
 
 #include <IconsFontAwesome5.h>
+#include <Simbody.h>
 #include <imgui.h>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
@@ -15,20 +16,13 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/StdVariantHelpers.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
-#include <Simbody.h>
 
-#include <algorithm>
 #include <cmath>
-#include <cstdint>
-#include <string>
-#include <sstream>
-#include <iostream>
+#include <algorithm>
 #include <limits>
 #include <optional>
 #include <span>

@@ -4,8 +4,8 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/RenderBufferLoadAction.hpp>
 #include <oscar/Graphics/RenderBufferStoreAction.hpp>
-#include <oscar/Graphics/RenderTexture.hpp>
 #include <oscar/Graphics/RenderTargetColorAttachment.hpp>
+#include <oscar/Graphics/RenderTexture.hpp>
 
 #include <vector>
 

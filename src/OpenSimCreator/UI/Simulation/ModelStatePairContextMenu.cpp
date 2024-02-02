@@ -1,8 +1,8 @@
 #include "ModelStatePairContextMenu.hpp"
 
 #include <OpenSimCreator/Documents/Model/IModelStatePair.hpp>
-#include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
 #include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
+#include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <imgui.h>

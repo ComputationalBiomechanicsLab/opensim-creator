@@ -2,6 +2,7 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
+#include <SDL_events.h>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
@@ -18,31 +19,27 @@
 #include <oscar/Graphics/RenderTextureDescriptor.hpp>
 #include <oscar/Graphics/RenderTextureFormat.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Graphics/TextureFormat.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
+#include <oscar/Graphics/TextureFormat.hpp>
 #include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/ObjectRepresentation.hpp>
-#include <SDL_events.h>
 
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <random>
 #include <span>
-#include <string>
-#include <utility>
 #include <vector>
 
 using namespace osc::literals;
@@ -54,13 +51,13 @@ using osc::Material;
 using osc::Mix;
 using osc::MouseCapturingCamera;
 using osc::Normalize;
+using osc::RenderTexture;
+using osc::RenderTextureFormat;
+using osc::Shader;
 using osc::Texture2D;
 using osc::TextureFilterMode;
 using osc::TextureFormat;
 using osc::TextureWrapMode;
-using osc::RenderTexture;
-using osc::RenderTextureFormat;
-using osc::Shader;
 using osc::Vec2i;
 using osc::Vec3;
 using osc::ViewObjectRepresentations;

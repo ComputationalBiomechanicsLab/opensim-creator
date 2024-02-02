@@ -4,7 +4,7 @@
 #include <memory>
 #include <utility>
 
-namespace osc
+namespace osc::cpp20
 {
     // C++20: std::stop_token
     class stop_token final {

@@ -10,10 +10,10 @@
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/SubMeshDescriptor.hpp>
-#include <oscar/Graphics/Unorm8.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
+#include <oscar/Graphics/Unorm8.hpp>
 #include <oscar/Graphics/VertexAttribute.hpp>
 #include <oscar/Graphics/VertexAttributeFormat.hpp>
 #include <oscar/Graphics/VertexFormat.hpp>
@@ -26,10 +26,10 @@
 #include <oscar/Shims/Cpp20/bit.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/StdVariantHelpers.hpp>
+#include <oscar/Utils/UID.hpp>
 
 #include <imgui.h>
 
@@ -39,18 +39,22 @@
 #include <new>
 #include <unordered_map>
 #include <variant>
-#include <vector>
 
+namespace Graphics = osc::Graphics;
+namespace cpp20 = osc::cpp20;
 using osc::Camera;
 using osc::CameraClearFlags;
 using osc::ColorSpace;
 using osc::CullMode;
 using osc::CStringView;
+using osc::Identity;
+using osc::IsAnyOf;
 using osc::Mat4;
 using osc::Material;
 using osc::Mesh;
 using osc::MeshTopology;
 using osc::MeshUpdateFlags;
+using osc::Overload;
 using osc::Rect;
 using osc::RenderTexture;
 using osc::Shader;
@@ -58,6 +62,7 @@ using osc::SubMeshDescriptor;
 using osc::Texture2D;
 using osc::TextureFilterMode;
 using osc::TextureFormat;
+using osc::ToLinear;
 using osc::UID;
 using osc::Unorm8;
 using osc::Vec2;
@@ -107,12 +112,12 @@ namespace
 
     ImTextureID ToImGuiTextureID(UID id)
     {
-        return osc::bit_cast<ImTextureID>(id);
+        return cpp20::bit_cast<ImTextureID>(id);
     }
 
     UID ToUID(ImTextureID id)
     {
-        return UID::FromIntUnchecked(osc::bit_cast<int64_t>(id));
+        return UID::FromIntUnchecked(cpp20::bit_cast<int64_t>(id));
     }
 
     Texture2D CreateFontsTexture(UID textureID)
@@ -145,7 +150,7 @@ namespace
         {
             auto const ldrColor = Unorm8{static_cast<uint8_t>(i)};
             float const hdrColor = ldrColor.normalized_value();
-            float const linearHdrColor = osc::ToLinear(hdrColor);
+            float const linearHdrColor = ToLinear(hdrColor);
             rv[i] = Unorm8{linearHdrColor}.raw_value();
         }
         return rv;
@@ -264,11 +269,11 @@ namespace
 
         if (auto it = bd.texturesSubmittedThisFrame.find(ToUID(drawCommand.GetTexID())); it != bd.texturesSubmittedThisFrame.end())
         {
-            std::visit(osc::Overload{
+            std::visit(Overload{
                 [&bd](Texture2D const& t) { bd.material.setTexture("uTexture", t); },
                 [&bd](RenderTexture const& t) { bd.material.setRenderTexture("uTexture", t); },
             }, it->second);
-            osc::Graphics::DrawMesh(mesh, osc::Identity<Mat4>(), bd.material, bd.camera, std::nullopt, idx);
+            Graphics::DrawMesh(mesh, Identity<Mat4>(), bd.material, bd.camera, std::nullopt, idx);
             bd.camera.renderToScreen();
         }
     }
@@ -315,7 +320,7 @@ namespace
         mesh.clear();
     }
 
-    template<osc::IsAnyOf<Texture2D, RenderTexture> Texture>
+    template<IsAnyOf<Texture2D, RenderTexture> Texture>
     ImTextureID AllocateTextureID(Texture const& texture)
     {
         OscarImguiBackendData* bd = GetBackendData();
@@ -325,7 +330,7 @@ namespace
     }
 }
 
-bool ImGui_ImplOscarGfx_Init()
+bool osc::ui::gfx::Init()
 {
     ImGuiIO& io = ImGui::GetIO();
     OSC_ASSERT(io.BackendRendererUserData == nullptr && "an oscar ImGui renderer backend is already initialized - this is a developer error (double-initialization)");
@@ -337,7 +342,7 @@ bool ImGui_ImplOscarGfx_Init()
     return true;
 }
 
-void ImGui_ImplOscarGfx_Shutdown()
+void osc::ui::gfx::Shutdown()
 {
     OscarImguiBackendData* bd = GetBackendData();
     OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error (double-free)");
@@ -352,7 +357,7 @@ void ImGui_ImplOscarGfx_Shutdown()
     delete bd;  // NOLINT(cppcoreguidelines-owning-memory)
 }
 
-void ImGui_ImplOscarGfx_NewFrame()
+void osc::ui::gfx::NewFrame()
 {
     // `ImGui_ImplOpenGL3_CreateDeviceObjects` is now part of constructing `OscarImguiBackendData`
 
@@ -362,7 +367,7 @@ void ImGui_ImplOscarGfx_NewFrame()
     bd->texturesSubmittedThisFrame.try_emplace(bd->fontTextureID, bd->fontTexture);  // (so that all lookups can hit the same LUT)
 }
 
-void ImGui_ImplOscarGfx_RenderDrawData(ImDrawData* drawData)
+void osc::ui::gfx::RenderDrawData(ImDrawData* drawData)
 {
     OscarImguiBackendData* bd = GetBackendData();
     OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error");
@@ -374,12 +379,12 @@ void ImGui_ImplOscarGfx_RenderDrawData(ImDrawData* drawData)
     }
 }
 
-ImTextureID ImGui_ImplOscarGfx_AllocateTextureID(Texture2D const& texture)
+ImTextureID osc::ui::gfx::AllocateTextureID(Texture2D const& texture)
 {
-    return AllocateTextureID(texture);
+    return ::AllocateTextureID(texture);
 }
 
-ImTextureID ImGui_ImplOscarGfx_AllocateTextureID(osc::RenderTexture const& texture)
+ImTextureID osc::ui::gfx::AllocateTextureID(RenderTexture const& texture)
 {
-    return AllocateTextureID(texture);
+    return ::AllocateTextureID(texture);
 }

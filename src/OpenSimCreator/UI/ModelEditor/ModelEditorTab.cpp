@@ -2,6 +2,8 @@
 
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
+#include <OpenSimCreator/UI/LoadingTab.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.hpp>
 #include <OpenSimCreator/UI/ModelEditor/CoordinateEditorPanel.hpp>
 #include <OpenSimCreator/UI/ModelEditor/EditorTabStatusBar.hpp>
@@ -11,52 +13,45 @@
 #include <OpenSimCreator/UI/ModelEditor/ModelMusclePlotPanel.hpp>
 #include <OpenSimCreator/UI/ModelEditor/OutputWatchesPanel.hpp>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
-#include <OpenSimCreator/UI/Shared/NavigatorPanel.hpp>
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanel.hpp>
-#include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelRightClickEvent.hpp>
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelParameters.hpp>
-#include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.hpp>
+#include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelRightClickEvent.hpp>
+#include <OpenSimCreator/UI/Shared/NavigatorPanel.hpp>
 #include <OpenSimCreator/UI/Shared/PropertiesPanel.hpp>
-#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
-#include <OpenSimCreator/UI/LoadingTab.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <IconsFontAwesome5.h>
+#include <SDL_events.h>
+#include <SDL_keyboard.h>
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <oscar/Platform/App.hpp>
-#include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/Log.hpp>
-#include <oscar/UI/Panels/IPanel.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
-#include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Panels/PanelManager.hpp>
+#include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/ErrorTab.hpp>
 #include <oscar/UI/Tabs/ITabHost.hpp>
 #include <oscar/UI/Widgets/IPopup.hpp>
 #include <oscar/UI/Widgets/PopupManager.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/FileChangePoller.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/Perf.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <SDL_events.h>
-#include <SDL_keyboard.h>
 
 #include <chrono>
-#include <cstdio>
+#include <exception>
 #include <memory>
-#include <stdexcept>
-#include <string>
 #include <sstream>
+#include <string>
+#include <string_view>
 #include <utility>
-#include <vector>
 
 class osc::ModelEditorTab::Impl final : public IEditorAPI {
 public:

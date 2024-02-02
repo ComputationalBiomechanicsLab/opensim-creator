@@ -1,9 +1,9 @@
 #pragma once
 
+#include <SDL_events.h>
 #include <oscar/UI/Tabs/ITab.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <SDL_events.h>
 
 #include <memory>
 

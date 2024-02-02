@@ -2,12 +2,10 @@
 
 #include <oscar/Shims/Cpp23/utility.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/EnumHelpers.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <optional>
-#include <type_traits>
 
 namespace osc
 {
@@ -28,7 +26,7 @@ namespace osc
 
     constexpr bool operator&(OpenSimDecorationOptionFlags lhs, OpenSimDecorationOptionFlags rhs)
     {
-        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
+        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
     }
 
     struct OpenSimDecorationOptionMetadata final {

@@ -9,7 +9,6 @@
 #include <filesystem>
 #include <memory>
 #include <optional>
-#include <vector>
 
 namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }

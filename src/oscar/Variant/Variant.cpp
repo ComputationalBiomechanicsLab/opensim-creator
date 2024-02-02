@@ -10,12 +10,17 @@
 
 #include <charconv>
 #include <cstddef>
-#include <stdexcept>
-#include <string>
+#include <exception>
 #include <string_view>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <variant>
+
+using osc::IsEqualCaseInsensitive;
+using osc::Overload;
+using osc::Variant;
+using osc::VariantType;
 
 namespace
 {
@@ -25,11 +30,11 @@ namespace
         {
             return false;
         }
-        else if (osc::IsEqualCaseInsensitive(s, "false"))
+        else if (IsEqualCaseInsensitive(s, "false"))
         {
             return false;
         }
-        else if (osc::IsEqualCaseInsensitive(s, "0"))
+        else if (IsEqualCaseInsensitive(s, "0"))
         {
             return false;
         }
@@ -78,7 +83,7 @@ osc::Variant::Variant(std::string_view v) : m_Data{std::string{v}} {}
 osc::Variant::Variant(StringName const& v) : m_Data{v} {}
 osc::Variant::Variant(Vec3 v) : m_Data{v} {}
 
-osc::VariantType osc::Variant::getType() const
+VariantType osc::Variant::getType() const
 {
     return std::visit(Overload
     {
@@ -222,7 +227,7 @@ std::ostream& osc::operator<<(std::ostream& o, Variant const& v)
     return o << to_string(v);
 }
 
-size_t std::hash<osc::Variant>::operator()(osc::Variant const& v) const
+size_t std::hash<osc::Variant>::operator()(Variant const& v) const
 {
     // note: you might be wondering why this isn't `std::hash<std::variant>{}(v.m_Data)`
     //
@@ -237,7 +242,7 @@ size_t std::hash<osc::Variant>::operator()(osc::Variant const& v) const
     //
     //     HashOf(Variant) == HashOf(std::string) == HashOf(std::string_view) == HashOf(StringName)...
 
-    return std::visit(osc::Overload
+    return std::visit(Overload
     {
         [](auto const& inner)
         {

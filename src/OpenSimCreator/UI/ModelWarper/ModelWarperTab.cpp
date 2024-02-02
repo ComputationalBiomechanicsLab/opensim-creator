@@ -6,15 +6,14 @@
 #include <OpenSimCreator/UI/ModelWarper/Toolbar.hpp>
 #include <OpenSimCreator/UI/ModelWarper/UIState.hpp>
 
+#include <SDL_events.h>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Panels/PanelManager.hpp>
 #include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <SDL_events.h>
 
 #include <functional>
-#include <string>
-#include <utility>
+#include <string_view>
 
 using osc::CStringView;
 using osc::UID;

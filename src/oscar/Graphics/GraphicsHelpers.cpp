@@ -32,21 +32,25 @@
 #include <mutex>
 #include <optional>
 #include <span>
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
 
 using osc::ColorSpace;
 using osc::ImageLoadingFlags;
+using osc::LookAt;
 using osc::Mat4;
+using osc::Sphere;
 using osc::Texture2D;
 using osc::TextureChannelFormat;
 using osc::TextureFormat;
 using osc::Vec2;
 using osc::Vec2i;
 using osc::Vec3;
+using osc::Vec4;
+using osc::ViewObjectRepresentations;
 
 namespace
 {
@@ -92,7 +96,7 @@ namespace
             throw std::runtime_error{std::move(ss).str()};
         }
 
-        std::optional<TextureFormat> const format = osc::ToTextureFormat(
+        std::optional<TextureFormat> const format = ToTextureFormat(
             static_cast<size_t>(numChannels),
             TextureChannelFormat::Float32
         );
@@ -116,7 +120,7 @@ namespace
             *format,
             colorSpace,
         };
-        rv.setPixelData(osc::ViewObjectRepresentations<uint8_t>(pixelSpan));
+        rv.setPixelData(ViewObjectRepresentations<uint8_t>(pixelSpan));
 
         return rv;
     }
@@ -153,7 +157,7 @@ namespace
             throw std::runtime_error{std::move(ss).str()};
         }
 
-        std::optional<TextureFormat> const format = osc::ToTextureFormat(
+        std::optional<TextureFormat> const format = ToTextureFormat(
             static_cast<size_t>(numChannels),
             TextureChannelFormat::Uint8
         );
@@ -193,11 +197,11 @@ namespace
 
     Mat4 CalcCubemapViewMatrix(CubemapFaceDetails const& faceDetails, Vec3 const& cubeCenter)
     {
-        return osc::LookAt(cubeCenter, cubeCenter + faceDetails.direction, faceDetails.up);
+        return LookAt(cubeCenter, cubeCenter + faceDetails.direction, faceDetails.up);
     }
 }
 
-osc::Vec3 osc::MassCenter(Mesh const& m)
+Vec3 osc::MassCenter(Mesh const& m)
 {
     // hastily implemented from: http://forums.cgsociety.org/t/how-to-calculate-center-of-mass-for-triangular-mesh/1309966
     //
@@ -233,7 +237,7 @@ osc::Vec3 osc::MassCenter(Mesh const& m)
     return weightedCenterOfMass / totalVolume;
 }
 
-osc::Vec3 osc::AverageCenterpoint(Mesh const& m)
+Vec3 osc::AverageCenterpoint(Mesh const& m)
 {
     Vec3 accumulator{};
     size_t i = 0;
@@ -245,7 +249,7 @@ osc::Vec3 osc::AverageCenterpoint(Mesh const& m)
     return accumulator / static_cast<float>(i);
 }
 
-std::vector<osc::Vec4> osc::CalcTangentVectors(
+std::vector<Vec4> osc::CalcTangentVectors(
     MeshTopology const& topology,
     std::span<Vec3 const> verts,
     std::span<Vec3 const> normals,
@@ -353,7 +357,7 @@ std::vector<osc::Vec4> osc::CalcTangentVectors(
     return rv;
 }
 
-osc::Texture2D osc::LoadTexture2DFromImage(
+Texture2D osc::LoadTexture2DFromImage(
     std::filesystem::path const& path,
     ColorSpace colorSpace,
     ImageLoadingFlags flags)
@@ -386,7 +390,7 @@ void osc::WriteToPNG(
     OSC_ASSERT(rv != 0);
 }
 
-std::array<osc::Mat4, 6> osc::CalcCubemapViewProjMatrices(
+std::array<Mat4, 6> osc::CalcCubemapViewProjMatrices(
     Mat4 const& projectionMatrix,
     Vec3 cubeCenter)
 {
@@ -400,7 +404,7 @@ std::array<osc::Mat4, 6> osc::CalcCubemapViewProjMatrices(
     return rv;
 }
 
-osc::Sphere osc::BoundingSphereOf(Mesh const& mesh)
+Sphere osc::BoundingSphereOf(Mesh const& mesh)
 {
     return BoundingSphereOf(mesh.getVerts());
 }

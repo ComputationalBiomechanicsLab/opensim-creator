@@ -8,13 +8,10 @@
 #include <oscar/Utils/UID.hpp>
 #include <simmath/Integrator.h>
 
-#include <algorithm>
 #include <cmath>
-#include <memory>
 #include <optional>
 #include <span>
 #include <string_view>
-#include <utility>
 #include <vector>
 
 namespace

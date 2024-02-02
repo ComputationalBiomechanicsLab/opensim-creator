@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <vector>
 
-void gl::CompileFromSource(ShaderHandle const& s, GLchar const* src)
+void osc::gl::CompileFromSource(ShaderHandle const& s, GLchar const* src)
 {
     glShaderSource(s.get(), 1, &src, nullptr);
     glCompileShader(s.get());
@@ -33,7 +33,7 @@ void gl::CompileFromSource(ShaderHandle const& s, GLchar const* src)
     throw std::runtime_error{std::move(ss).str()};
 }
 
-void gl::LinkProgram(gl::Program& prog)
+void osc::gl::LinkProgram(gl::Program& prog)
 {
     glLinkProgram(prog.get());
 
