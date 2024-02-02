@@ -508,6 +508,11 @@ void osc::OpenURLInDefaultBrowser(std::string_view url)
 #include <cinttypes>  // PRIXPTR
 #include <signal.h>   // signal()
 
+using osc::LogSink;
+using osc::LogMessage;
+using osc::LogMessageView;
+using osc::ToCStringView;
+
 std::tm osc::GMTimeThreadsafe(std::time_t t)
 {
     std::tm rv;
