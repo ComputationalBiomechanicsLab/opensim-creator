@@ -1,6 +1,5 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/MeshWarper/UndoableTPSDocumentActions.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.hpp>
 
 #include <imgui.h>

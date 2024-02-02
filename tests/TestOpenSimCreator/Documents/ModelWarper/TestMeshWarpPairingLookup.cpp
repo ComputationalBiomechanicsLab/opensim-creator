@@ -2,9 +2,9 @@
 
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
 
-#include <gtest/gtest.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.hpp>
+#include <gtest/gtest.h>
 
 #include <filesystem>
 #include <string>

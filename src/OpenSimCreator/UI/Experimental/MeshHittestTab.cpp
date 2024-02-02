@@ -13,9 +13,9 @@
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
+#include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
-#include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Triangle.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -24,14 +24,12 @@
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
-#include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <array>
 #include <chrono>
-#include <string>
-#include <utility>
 
 class osc::MeshHittestTab::Impl final {
 public:

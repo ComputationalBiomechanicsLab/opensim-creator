@@ -6,7 +6,6 @@
 #include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Utils/CopyOnUpdPtr.hpp>
 
-#include <cstddef>
 #include <span>
 
 namespace osc

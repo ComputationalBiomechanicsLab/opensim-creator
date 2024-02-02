@@ -4,23 +4,23 @@
 
 #include <imgui.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
-#include <oscar/Platform/os.hpp>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/Utils/FilesystemHelpers.hpp>
 #include <SimTKcommon/SmallMatrix.h>
+#include <oscar/Platform/os.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <oscar/Utils/FilesystemHelpers.hpp>
 
 #include <algorithm>
 #include <array>
+#include <cstddef>
 #include <filesystem>
 #include <functional>
-#include <cstddef>
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
-#include <optional>
-#include <vector>
 #include <utility>
+#include <vector>
 
 namespace
 {

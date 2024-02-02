@@ -3,13 +3,9 @@
 #include <OpenSimCreator/Documents/Frames/FrameDefinition.hpp>
 #include <OpenSimCreator/Documents/Frames/FramesFile.hpp>
 
-#include <oscar/Utils/ClonePtr.hpp>
-
 #include <filesystem>
-#include <memory>
 #include <optional>
 #include <string>
-#include <unordered_map>
 #include <variant>
 
 namespace OpenSim { class Model; }

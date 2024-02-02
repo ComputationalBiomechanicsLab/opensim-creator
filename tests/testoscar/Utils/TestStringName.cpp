@@ -16,10 +16,13 @@
 using osc::CStringView;
 using osc::StringName;
 
-constexpr auto c_LongStringToAvoidSSOData = std::to_array("somequitelongstringthatprobablyneedstobeheapallocatedsothatmemoryanalyzershaveabetterchance");
-constexpr char const* const c_LongStringToAvoidSSO = c_LongStringToAvoidSSOData.data();
-constexpr auto c_AnotherStringToAvoidSSOData = std::to_array("somedifferencequitelongstringthatprobablyneedstobeheapallocatedbutwhoknows");
-constexpr char const* const c_AnotherStringToAvoidSSO = c_AnotherStringToAvoidSSOData.data();
+namespace
+{
+    constexpr auto c_LongStringToAvoidSSOData = std::to_array("somequitelongstringthatprobablyneedstobeheapallocatedsothatmemoryanalyzershaveabetterchance");
+    constexpr char const* const c_LongStringToAvoidSSO = c_LongStringToAvoidSSOData.data();
+    constexpr auto c_AnotherStringToAvoidSSOData = std::to_array("somedifferencequitelongstringthatprobablyneedstobeheapallocatedbutwhoknows");
+    constexpr char const* const c_AnotherStringToAvoidSSO = c_AnotherStringToAvoidSSOData.data();
+}
 
 TEST(StringName, CanBeDefaultConstructed)
 {

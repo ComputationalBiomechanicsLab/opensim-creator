@@ -3,13 +3,12 @@
 #include <oscar/Platform/AppSettingValue.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>
 
-#include <toml++/toml.h>
 #include <ankerl/unordered_dense.h>
+#include <toml++/toml.h>
 
 #include <algorithm>
 #include <array>
@@ -17,11 +16,8 @@
 #include <exception>
 #include <filesystem>
 #include <fstream>
-#include <iterator>
 #include <memory>
 #include <optional>
-#include <sstream>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <unordered_map>

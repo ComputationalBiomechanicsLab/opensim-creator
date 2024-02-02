@@ -1,6 +1,5 @@
 #include "STL.hpp"
 
-#include <oscar/Graphics/CullMode.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Triangle.hpp>
@@ -8,19 +7,16 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Shims/Cpp20/bit.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/At.hpp>
 #include <oscar/Utils/ObjectRepresentation.hpp>
 
 #include <algorithm>
-#include <array>
 #include <cstddef>
 #include <cstdint>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <limits>
 #include <span>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 

@@ -2,8 +2,8 @@
 
 #include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.hpp>
 
-#include <OpenSim/Simulation/Model/Appearance.h>
 #include <Simbody.h>
+#include <OpenSim/Simulation/Model/Appearance.h>
 
 using osc::fd::EdgePoints;
 

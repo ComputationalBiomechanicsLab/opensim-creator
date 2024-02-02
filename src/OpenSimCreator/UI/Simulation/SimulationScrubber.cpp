@@ -4,8 +4,8 @@
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.hpp>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.hpp>
 
-#include <imgui.h>
 #include <IconsFontAwesome5.h>
+#include <imgui.h>
 #include <oscar/UI/ImGuiHelpers.hpp>
 
 #include <memory>

@@ -1,5 +1,9 @@
 #pragma once
 
+#include <SimTKcommon/SmallMatrix.h>
+#include <SimTKcommon/internal/MassProperties.h>
+#include <SimTKcommon/internal/Rotation.h>
+#include <SimTKcommon/internal/Transform.h>
 #include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/Mat3.hpp>
 #include <oscar/Maths/Mat4.hpp>
@@ -7,10 +11,6 @@
 #include <oscar/Maths/Quat.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
-#include <SimTKcommon/SmallMatrix.h>
-#include <SimTKcommon/internal/MassProperties.h>
-#include <SimTKcommon/internal/Transform.h>
-#include <SimTKcommon/internal/Rotation.h>
 
 namespace osc { struct Color; }
 namespace osc { struct Transform; }

@@ -4,7 +4,6 @@
 #include <oscar/Utils/EnumHelpers.hpp>
 
 #include <array>
-#include <cstddef>
 #include <span>
 
 namespace

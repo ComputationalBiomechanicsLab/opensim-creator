@@ -5,7 +5,6 @@
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementType.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.hpp>
-#include <OpenSimCreator/Utils/TPS3D.hpp>
 
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>

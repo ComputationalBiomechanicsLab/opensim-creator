@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <limits>
 #include <string>
-#include <utility>
 
 namespace osc
 {

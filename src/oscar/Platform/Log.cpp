@@ -1,9 +1,7 @@
 #include "Log.hpp"
 
-#include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
-#include <cstddef>
 #include <iostream>
 #include <mutex>
 

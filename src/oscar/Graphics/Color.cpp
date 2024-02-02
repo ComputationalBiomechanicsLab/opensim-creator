@@ -6,8 +6,8 @@
 #include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 
-#include <algorithm>
 #include <cmath>
+#include <algorithm>
 #include <cstdint>
 #include <iostream>
 #include <optional>

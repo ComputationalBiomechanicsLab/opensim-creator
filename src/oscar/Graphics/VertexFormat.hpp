@@ -2,7 +2,6 @@
 
 #include <oscar/Graphics/VertexAttribute.hpp>
 #include <oscar/Graphics/VertexAttributeDescriptor.hpp>
-#include <oscar/Graphics/VertexAttributeFormat.hpp>
 
 #include <cstddef>
 #include <initializer_list>

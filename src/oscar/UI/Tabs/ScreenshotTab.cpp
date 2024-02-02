@@ -6,10 +6,9 @@
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
+#include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/RenderTexture.hpp>
 #include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
-#include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
@@ -19,10 +18,10 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/Platform/os.hpp>
 #include <oscar/Platform/Screenshot.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
+#include <oscar/Platform/os.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/SetHelpers.hpp>
 
@@ -30,10 +29,12 @@
 #include <imgui.h>
 
 #include <filesystem>
-#include <future>
+#include <memory>
+#include <optional>
 #include <string>
-#include <utility>
 #include <unordered_set>
+#include <utility>
+#include <vector>
 
 using osc::AspectRatio;
 using osc::Color;

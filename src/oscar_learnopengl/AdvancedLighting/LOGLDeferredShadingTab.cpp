@@ -22,15 +22,14 @@
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <SDL_events.h>
 
@@ -40,8 +39,6 @@
 #include <iterator>
 #include <memory>
 #include <random>
-#include <string>
-#include <utility>
 #include <vector>
 
 using namespace osc::literals;
@@ -54,8 +51,8 @@ using osc::MouseCapturingCamera;
 using osc::RenderBufferLoadAction;
 using osc::RenderBufferStoreAction;
 using osc::RenderTarget;
-using osc::RenderTargetDepthAttachment;
 using osc::RenderTargetColorAttachment;
+using osc::RenderTargetDepthAttachment;
 using osc::RenderTexture;
 using osc::RenderTextureDescriptor;
 using osc::RenderTextureFormat;

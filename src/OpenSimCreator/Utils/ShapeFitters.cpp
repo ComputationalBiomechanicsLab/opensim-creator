@@ -2,19 +2,19 @@
 
 #include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 
+#include <Simbody.h>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Sphere.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <Simbody.h>
 
+#include <cmath>
 #include <algorithm>
 #include <array>
-#include <cmath>
 #include <complex>
 #include <numeric>
 #include <span>

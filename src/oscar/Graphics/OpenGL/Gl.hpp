@@ -13,7 +13,6 @@
 #include <concepts>
 #include <cstddef>
 #include <exception>
-#include <initializer_list>
 #include <limits>
 #include <ranges>
 #include <span>

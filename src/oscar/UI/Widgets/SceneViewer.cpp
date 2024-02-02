@@ -5,14 +5,12 @@
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
-#include <oscar/Scene/SceneRendererParams.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 
 #include <imgui.h>
 
 #include <memory>
 #include <span>
-#include <utility>
 
 class osc::SceneViewer::Impl final {
 public:

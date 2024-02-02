@@ -1,16 +1,12 @@
 #include "LOGLCoordinateSystemsTab.hpp"
 
-#include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
-#include <oscar_learnopengl/MouseCapturingCamera.hpp>
-
+#include <SDL_events.h>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
@@ -18,17 +14,16 @@
 #include <oscar/Maths/UnitVec3.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <SDL_events.h>
+#include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
+#include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
 #include <array>
-#include <cstdint>
 #include <memory>
-#include <numbers>
 
 using namespace osc::literals;
 using osc::App;

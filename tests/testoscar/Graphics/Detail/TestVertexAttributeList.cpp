@@ -1,8 +1,8 @@
 #include <oscar/Graphics/Detail/VertexAttributeList.hpp>
 
 #include <gtest/gtest.h>
-#include <oscar/Graphics/Detail/VertexAttributeTraits.hpp>
 #include <oscar/Graphics/VertexAttribute.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeTraits.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/NonTypelist.hpp>
 

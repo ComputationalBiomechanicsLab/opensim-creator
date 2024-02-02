@@ -12,7 +12,6 @@
 
 #include <array>
 #include <filesystem>
-#include <functional>
 #include <span>
 #include <vector>
 

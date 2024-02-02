@@ -4,14 +4,13 @@
 #include <imgui_internal.h>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/Vec2.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
-#include <array>
 #include <cmath>
-#include <string>
-#include <utility>
+#include <array>
+#include <memory>
 
 using osc::CStringView;
 using osc::Vec2;

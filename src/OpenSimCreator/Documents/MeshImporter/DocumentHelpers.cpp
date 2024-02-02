@@ -3,9 +3,9 @@
 #include <OpenSimCreator/Documents/MeshImporter/Body.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/Document.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/Joint.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Mesh.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/MIIDs.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/MIObject.hpp>
+#include <OpenSimCreator/Documents/MeshImporter/Mesh.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/Station.hpp>
 
 #include <oscar/Maths/MathHelpers.hpp>

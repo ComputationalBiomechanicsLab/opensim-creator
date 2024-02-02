@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ExportPointsPopup.hpp>
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ModelActionsMenuItems.hpp>
@@ -9,14 +10,12 @@
 #include <OpenSimCreator/UI/Shared/ImportStationsFromCSVPopup.hpp>
 #include <OpenSimCreator/UI/Shared/MainMenu.hpp>
 #include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.hpp>
-#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include <imgui.h>
 #include <IconsFontAwesome5.h>
-#include <oscar/Platform/AppConfig.hpp>
-#include <oscar/UI/Widgets/WindowMenu.hpp>
+#include <imgui.h>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Widgets/WindowMenu.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 
 #include <memory>

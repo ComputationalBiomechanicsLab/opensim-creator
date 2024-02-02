@@ -2,15 +2,13 @@
 
 #include <OpenSimCreator/Documents/Model/IModelStatePair.hpp>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
+#include <OpenSimCreator/UI/Simulation/Readonly3DModelViewer.hpp>
 #include <OpenSimCreator/UI/Simulation/SimulationViewerPanelParameters.hpp>
 #include <OpenSimCreator/UI/Simulation/SimulationViewerRightClickEvent.hpp>
-#include <OpenSimCreator/UI/Simulation/Readonly3DModelViewer.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <OpenSim/Common/Component.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/UI/Panels/StandardPanelImpl.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
 
 #include <memory>
 #include <string>

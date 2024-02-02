@@ -7,9 +7,8 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <utility>
-#include <vector>
 #include <variant>
+#include <vector>
 
 namespace ranges = std::ranges;
 using osc::ParamValue;

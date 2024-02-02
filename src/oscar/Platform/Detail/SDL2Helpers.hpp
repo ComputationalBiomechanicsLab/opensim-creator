@@ -1,10 +1,10 @@
 #pragma once
 
-#include <SDL.h>
-#undef main
-
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Utils/CStringView.hpp>
+
+#include <SDL.h>
+#undef main
 
 #include <stdexcept>
 #include <string>
@@ -23,7 +23,7 @@
 // Emphasis is on simplicity, not "abstraction correctness". It is preferred
 // to have an API that is simple, rather than robustly encapsulated etc.
 
-namespace sdl
+namespace osc::sdl
 {
     // RAII wrapper for SDL_Init and SDL_Quit
     //     https://wiki.libsdl.org/SDL_Quit

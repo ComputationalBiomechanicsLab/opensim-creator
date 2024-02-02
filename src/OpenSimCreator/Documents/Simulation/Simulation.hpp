@@ -2,8 +2,8 @@
 
 #include <OpenSimCreator/Documents/Simulation/ISimulation.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.hpp>
-#include <OpenSimCreator/Documents/Simulation/SimulationStatus.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.hpp>
+#include <OpenSimCreator/Documents/Simulation/SimulationStatus.hpp>
 
 #include <oscar/Utils/SynchronizedValueGuard.hpp>
 

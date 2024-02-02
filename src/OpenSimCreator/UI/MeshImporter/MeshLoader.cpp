@@ -5,8 +5,8 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 
-#include <filesystem>
 #include <exception>
+#include <filesystem>
 #include <utility>
 #include <vector>
 

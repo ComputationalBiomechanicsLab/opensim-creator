@@ -1,8 +1,8 @@
 #include "ObjectPropertiesEditor.hpp"
 
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/UI/Shared/GeometryPathEditorPopup.hpp>
 #include <OpenSimCreator/UI/IPopupAPI.hpp>
+#include <OpenSimCreator/UI/Shared/GeometryPathEditorPopup.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 
@@ -18,20 +18,18 @@
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <SimTKcommon/Constants.h>
+#include <SimTKcommon/SmallMatrix.h>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/Typelist.hpp>
-#include <SimTKcommon/Constants.h>
-#include <SimTKcommon/SmallMatrix.h>
 
 #include <algorithm>
 #include <array>
@@ -39,7 +37,6 @@
 #include <cstddef>
 #include <memory>
 #include <numbers>
-#include <span>
 #include <string>
 #include <type_traits>
 #include <typeinfo>

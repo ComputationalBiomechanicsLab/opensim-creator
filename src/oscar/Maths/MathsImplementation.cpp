@@ -4,16 +4,16 @@
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Disc.hpp>
 #include <oscar/Maths/EasingFunctions.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/EulerPerspectiveCamera.hpp>
+#include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/Mat3.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Mat4x3.hpp>
-#include <oscar/Maths/RayCollision.hpp>
-#include <oscar/Maths/EulerPerspectiveCamera.hpp>
-#include <oscar/Maths/Line.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Plane.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Maths/Quat.hpp>
+#include <oscar/Maths/RayCollision.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/Sphere.hpp>
@@ -32,14 +32,14 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
+#include <cmath>
 #include <algorithm>
 #include <array>
-#include <cmath>
 #include <concepts>
 #include <cstddef>
 #include <functional>
-#include <iterator>
 #include <iostream>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <numbers>

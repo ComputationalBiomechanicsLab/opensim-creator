@@ -3,7 +3,7 @@
 #include <oscar/Utils/NullStreambuf.hpp>
 
 #include <cstddef>
-#include <iostream>
+#include <ostream>
 
 namespace osc
 {

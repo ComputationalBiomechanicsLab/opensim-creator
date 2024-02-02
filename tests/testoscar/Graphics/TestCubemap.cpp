@@ -1,7 +1,6 @@
 #include <oscar/Graphics/Cubemap.hpp>
 
 #include <gtest/gtest.h>
-#include <oscar/Utils/EnumHelpers.hpp>
 
 #include <array>
 #include <cstdint>

@@ -4,18 +4,14 @@
 #include <OpenSimCreator/Documents/Frames/FrameDefinition.hpp>
 #include <OpenSimCreator/Documents/Frames/FramesFile.hpp>
 
-#include <oscar/Utils/Assertions.hpp>
 #include <toml++/toml.h>
 
 #include <algorithm>
-#include <array>
 #include <functional>
-#include <iostream>
 #include <optional>
 #include <stdexcept>
 #include <sstream>
 #include <string>
-#include <tuple>
 #include <utility>
 
 using osc::frames::AreOrthogonal;

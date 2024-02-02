@@ -10,10 +10,10 @@
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/SubMeshDescriptor.hpp>
-#include <oscar/Graphics/Unorm8.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
+#include <oscar/Graphics/Unorm8.hpp>
 #include <oscar/Graphics/VertexAttribute.hpp>
 #include <oscar/Graphics/VertexAttributeFormat.hpp>
 #include <oscar/Graphics/VertexFormat.hpp>
@@ -26,10 +26,10 @@
 #include <oscar/Shims/Cpp20/bit.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/StdVariantHelpers.hpp>
+#include <oscar/Utils/UID.hpp>
 
 #include <imgui.h>
 
@@ -39,7 +39,6 @@
 #include <new>
 #include <unordered_map>
 #include <variant>
-#include <vector>
 
 namespace Graphics = osc::Graphics;
 namespace cpp20 = osc::cpp20;
@@ -331,7 +330,7 @@ namespace
     }
 }
 
-bool ImGui_ImplOscarGfx_Init()
+bool osc::ui::gfx::Init()
 {
     ImGuiIO& io = ImGui::GetIO();
     OSC_ASSERT(io.BackendRendererUserData == nullptr && "an oscar ImGui renderer backend is already initialized - this is a developer error (double-initialization)");
@@ -343,7 +342,7 @@ bool ImGui_ImplOscarGfx_Init()
     return true;
 }
 
-void ImGui_ImplOscarGfx_Shutdown()
+void osc::ui::gfx::Shutdown()
 {
     OscarImguiBackendData* bd = GetBackendData();
     OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error (double-free)");
@@ -358,7 +357,7 @@ void ImGui_ImplOscarGfx_Shutdown()
     delete bd;  // NOLINT(cppcoreguidelines-owning-memory)
 }
 
-void ImGui_ImplOscarGfx_NewFrame()
+void osc::ui::gfx::NewFrame()
 {
     // `ImGui_ImplOpenGL3_CreateDeviceObjects` is now part of constructing `OscarImguiBackendData`
 
@@ -368,7 +367,7 @@ void ImGui_ImplOscarGfx_NewFrame()
     bd->texturesSubmittedThisFrame.try_emplace(bd->fontTextureID, bd->fontTexture);  // (so that all lookups can hit the same LUT)
 }
 
-void ImGui_ImplOscarGfx_RenderDrawData(ImDrawData* drawData)
+void osc::ui::gfx::RenderDrawData(ImDrawData* drawData)
 {
     OscarImguiBackendData* bd = GetBackendData();
     OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error");
@@ -380,12 +379,12 @@ void ImGui_ImplOscarGfx_RenderDrawData(ImDrawData* drawData)
     }
 }
 
-ImTextureID ImGui_ImplOscarGfx_AllocateTextureID(Texture2D const& texture)
+ImTextureID osc::ui::gfx::AllocateTextureID(Texture2D const& texture)
 {
-    return AllocateTextureID(texture);
+    return ::AllocateTextureID(texture);
 }
 
-ImTextureID ImGui_ImplOscarGfx_AllocateTextureID(RenderTexture const& texture)
+ImTextureID osc::ui::gfx::AllocateTextureID(RenderTexture const& texture)
 {
-    return AllocateTextureID(texture);
+    return ::AllocateTextureID(texture);
 }

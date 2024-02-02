@@ -9,10 +9,8 @@
 #include <oscar/Utils/Assertions.hpp>
 
 #include <array>
-#include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <numbers>
 #include <vector>
 
 using namespace osc::literals;

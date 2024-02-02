@@ -2,8 +2,8 @@
 
 #include <OpenSimCreator/Documents/Landmarks/LandmarkCSVFlags.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/UndoableTPSDocumentActions.hpp>
-#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabPanel.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabDecorationGenerators.hpp>
+#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabPanel.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.hpp>
 
 #include <IconsFontAwesome5.h>

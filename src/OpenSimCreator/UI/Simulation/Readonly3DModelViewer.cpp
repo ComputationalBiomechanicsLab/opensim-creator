@@ -1,6 +1,5 @@
 #include "Readonly3DModelViewer.hpp"
 
-#include <OpenSimCreator/Documents/Model/IConstModelStatePair.hpp>
 #include <OpenSimCreator/Graphics/CachedModelRenderer.hpp>
 #include <OpenSimCreator/Graphics/ModelRendererParams.hpp>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
@@ -9,13 +8,12 @@
 #include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/Platform/Log.hpp>
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneCollision.hpp>
-#include <oscar/UI/Widgets/GuiRuler.hpp>
-#include <oscar/UI/Widgets/IconWithoutMenu.hpp>
 #include <oscar/UI/IconCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Widgets/GuiRuler.hpp>
+#include <oscar/UI/Widgets/IconWithoutMenu.hpp>
 
 #include <memory>
 #include <optional>

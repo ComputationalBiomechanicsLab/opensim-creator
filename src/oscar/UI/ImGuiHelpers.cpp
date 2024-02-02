@@ -6,19 +6,17 @@
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Eulers.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Mat4.hpp>
-#include <oscar/Maths/Rect.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Maths/Quat.hpp>
+#include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/imgui_impl_oscargfx.hpp>
 #include <oscar/Utils/UID.hpp>
 
-#include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
@@ -26,7 +24,6 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
-#include <numbers>
 #include <ranges>
 #include <span>
 #include <string>
@@ -461,7 +458,7 @@ void osc::DrawTextureAsImGuiImage(
     Vec2 topLeftCoord,
     Vec2 bottomRightCoord)
 {
-    auto const handle = ImGui_ImplOscarGfx_AllocateTextureID(t);
+    auto const handle = ui::gfx::AllocateTextureID(t);
     ImGui::Image(handle, dims, topLeftCoord, bottomRightCoord);
 }
 
@@ -474,7 +471,7 @@ void osc::DrawTextureAsImGuiImage(RenderTexture const& t, Vec2 dims)
 {
     Vec2 const uv0 = {0.0f, 1.0f};
     Vec2 const uv1 = {1.0f, 0.0f};
-    auto const handle = ImGui_ImplOscarGfx_AllocateTextureID(t);
+    auto const handle = ui::gfx::AllocateTextureID(t);
     ImGui::Image(handle, dims, uv0, uv1);
 }
 
@@ -507,7 +504,7 @@ bool osc::ImageButton(
     Vec2 dims,
     Rect const& textureCoords)
 {
-    auto const handle = ImGui_ImplOscarGfx_AllocateTextureID(t);
+    auto const handle = ui::gfx::AllocateTextureID(t);
     return ImGui::ImageButton(label.c_str(), handle, dims, textureCoords.p1, textureCoords.p2);
 }
 

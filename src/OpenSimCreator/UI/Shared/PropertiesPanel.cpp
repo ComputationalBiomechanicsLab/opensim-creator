@@ -1,44 +1,25 @@
 #include "PropertiesPanel.hpp"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
-#include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
-#include <OpenSimCreator/UI/ModelEditor/ReassignSocketPopup.hpp>
 #include <OpenSimCreator/UI/ModelEditor/SelectComponentPopup.hpp>
-#include <OpenSimCreator/UI/ModelEditor/SelectGeometryPopup.hpp>
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
-#include <OpenSim/Common/ComponentList.h>
-#include <OpenSim/Common/ComponentSocket.h>
 #include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/Property.h>
-#include <OpenSim/Common/Set.h>
-#include <OpenSim/Simulation/Model/ContactGeometry.h>
-#include <OpenSim/Simulation/Model/Geometry.h>
-#include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/PathActuator.h>
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
-#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Platform/os.hpp>
-#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
 
-#include <array>
-#include <cstddef>
 #include <optional>
-#include <span>
 #include <string>
 #include <string_view>
 #include <utility>
-#include <vector>
 
 namespace
 {

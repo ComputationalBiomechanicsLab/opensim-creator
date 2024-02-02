@@ -2,9 +2,9 @@
 
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
 
-#include <gtest/gtest.h>
 #include <OpenSimCreator/Documents/Frames/FrameAxis.hpp>
 #include <OpenSimCreator/Documents/Frames/FrameDefinition.hpp>
+#include <gtest/gtest.h>
 
 #include <filesystem>
 #include <fstream>

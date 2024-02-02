@@ -2,12 +2,10 @@
 
 #include <oscar/Shims/Cpp23/utility.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/EnumHelpers.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <optional>
-#include <type_traits>
 
 namespace osc
 {

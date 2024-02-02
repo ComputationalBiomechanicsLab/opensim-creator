@@ -24,16 +24,12 @@
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneDecorationFlags.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
-#include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Perf.hpp>
 
 #include <algorithm>
-#include <cstddef>
 #include <memory>
-#include <numbers>
 #include <span>
 #include <utility>
-#include <vector>
 
 using namespace osc::literals;
 using osc::AABB;

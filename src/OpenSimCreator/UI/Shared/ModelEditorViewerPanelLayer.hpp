@@ -2,8 +2,6 @@
 
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelLayerFlags.hpp>
 
-#include <oscar/Graphics/Color.hpp>
-
 namespace osc { class ModelEditorViewerPanelParameters; }
 namespace osc { class ModelEditorViewerPanelState; }
 

@@ -8,11 +8,10 @@
 #include <imgui.h>
 #include <ImGuizmo.h>  // care: must be included after imgui
 #include <OpenSim/Common/ComponentPath.h>
-#include <OpenSim/Simulation/Model/Marker.h>
+#include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 #include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/Eulers.hpp>
@@ -29,7 +28,6 @@
 #include <oscar/UI/ImGuizmoHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
-#include <Simbody.h>
 
 #include <concepts>
 #include <cstddef>

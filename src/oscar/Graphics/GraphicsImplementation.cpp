@@ -1,31 +1,18 @@
 // these are the things that this file "implements"
 
-#include <oscar/Graphics/Detail/CPUDataType.hpp>
-#include <oscar/Graphics/Detail/CPUImageFormat.hpp>
-#include <oscar/Graphics/Detail/ShaderPropertyTypeList.hpp>
-#include <oscar/Graphics/Detail/ShaderPropertyTypeTraits.hpp>
-#include <oscar/Graphics/Detail/TextureFormatList.hpp>
-#include <oscar/Graphics/Detail/TextureFormatTraits.hpp>
-#include <oscar/Graphics/Detail/VertexAttributeFormatHelpers.hpp>
-#include <oscar/Graphics/Detail/VertexAttributeFormatList.hpp>
-#include <oscar/Graphics/Detail/VertexAttributeFormatTraits.hpp>
-#include <oscar/Graphics/Detail/VertexAttributeHelpers.hpp>
-#include <oscar/Graphics/Detail/VertexAttributeList.hpp>
-#include <oscar/Graphics/Detail/VertexAttributeHelpers.hpp>
-#include <oscar/Graphics/OpenGL/CPUDataTypeOpenGLTraits.hpp>
-#include <oscar/Graphics/OpenGL/CPUImageFormatOpenGLTraits.hpp>
-#include <oscar/Graphics/OpenGL/TextureFormatOpenGLTraits.hpp>
+#include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/CameraClearFlags.hpp>
 #include <oscar/Graphics/CameraProjection.hpp>
+#include <oscar/Graphics/Color32.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Cubemap.hpp>
 #include <oscar/Graphics/DepthStencilFormat.hpp>
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/GraphicsContext.hpp>
 #include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/MaterialPropertyBlock.hpp>
 #include <oscar/Graphics/Mesh.hpp>
+#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Graphics/RenderBuffer.hpp>
 #include <oscar/Graphics/RenderBufferLoadAction.hpp>
@@ -39,39 +26,46 @@
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/ShaderPropertyType.hpp>
 #include <oscar/Graphics/SubMeshDescriptor.hpp>
-#include <oscar/Graphics/TextureWrapMode.hpp>
+#include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Graphics/Unorm8.hpp>
 #include <oscar/Graphics/VertexAttribute.hpp>
 #include <oscar/Graphics/VertexAttributeDescriptor.hpp>
 #include <oscar/Graphics/VertexAttributeFormat.hpp>
 #include <oscar/Graphics/VertexFormat.hpp>
-
-// other includes...
-
-#include <oscar/Graphics/Detail/ShaderLocations.hpp>
+#include <oscar/Graphics/Detail/CPUDataType.hpp>
+#include <oscar/Graphics/Detail/CPUImageFormat.hpp>
+#include <oscar/Graphics/Detail/ShaderPropertyTypeList.hpp>
+#include <oscar/Graphics/Detail/ShaderPropertyTypeTraits.hpp>
+#include <oscar/Graphics/Detail/TextureFormatList.hpp>
+#include <oscar/Graphics/Detail/TextureFormatTraits.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeFormatHelpers.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeFormatList.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeFormatTraits.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeHelpers.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeList.hpp>
+#include <oscar/Graphics/OpenGL/CPUDataTypeOpenGLTraits.hpp>
+#include <oscar/Graphics/OpenGL/CPUImageFormatOpenGLTraits.hpp>
 #include <oscar/Graphics/OpenGL/Gl.hpp>
-#include <oscar/Graphics/AntiAliasingLevel.hpp>
-#include <oscar/Graphics/Color32.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
+#include <oscar/Graphics/OpenGL/TextureFormatOpenGLTraits.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Mat3.hpp>
 #include <oscar/Maths/Mat4.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Quat.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
-#include <oscar/Platform/Detail/SDL2Helpers.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/Detail/SDL2Helpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/DefaultConstructOnCopy.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/NonTypelist.hpp>
@@ -80,8 +74,8 @@
 #include <oscar/Utils/StdVariantHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 
-#include <ankerl/unordered_dense.h>
 #include <GL/glew.h>
+#include <ankerl/unordered_dense.h>
 
 #include <algorithm>
 #include <array>
@@ -91,15 +85,14 @@
 #include <functional>
 #include <iostream>
 #include <iterator>
-#include <numbers>
 #include <ranges>
 #include <span>
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
-#include <type_traits>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -108,6 +101,7 @@ using namespace osc::literals;
 namespace cpp20 = osc::cpp20;
 namespace cpp23 = osc::cpp23;
 namespace gl = osc::gl;
+namespace sdl = osc::sdl;
 using osc::detail::CPUDataType;
 using osc::detail::CPUDataTypeOpenGLTraits;
 using osc::detail::CPUDataTypeList;

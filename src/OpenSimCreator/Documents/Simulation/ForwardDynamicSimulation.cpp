@@ -12,7 +12,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Utils/SynchronizedValue.hpp>
 #include <oscar/Utils/SynchronizedValueGuard.hpp>
-#include <SimTKcommon.h>
 
 #include <algorithm>
 #include <chrono>

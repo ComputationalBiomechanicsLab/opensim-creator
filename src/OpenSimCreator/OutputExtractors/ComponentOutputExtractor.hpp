@@ -3,8 +3,8 @@
 #include <OpenSimCreator/OutputExtractors/IOutputExtractor.hpp>
 
 #include <oscar/Shims/Cpp23/utility.hpp>
-#include <oscar/Utils/ClonePtr.hpp>
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/ClonePtr.hpp>
 
 #include <cstddef>
 #include <cstdint>

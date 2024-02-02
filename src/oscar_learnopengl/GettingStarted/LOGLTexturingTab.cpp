@@ -13,15 +13,14 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Tabs/ITab.hpp>
 #include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/Tabs/TabRegistry.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
-#include <cstdint>
-#include <span>
+#include <memory>
 #include <utility>
 
 using osc::App;
@@ -36,8 +35,8 @@ using osc::Mat4;
 using osc::Material;
 using osc::Mesh;
 using osc::Shader;
-using osc::TextureWrapMode;
 using osc::Texture2D;
+using osc::TextureWrapMode;
 using osc::Vec2;
 using osc::Vec3;
 

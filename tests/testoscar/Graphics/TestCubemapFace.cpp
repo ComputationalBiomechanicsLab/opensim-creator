@@ -3,9 +3,6 @@
 #include <oscar/Shims/Cpp23/utility.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 
-#include <cstdint>
-#include <type_traits>
-
 namespace cpp23 = osc::cpp23;
 using osc::CubemapFace;
 using osc::NumOptions;

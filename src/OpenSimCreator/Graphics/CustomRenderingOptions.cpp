@@ -8,7 +8,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <type_traits>
 
 size_t osc::CustomRenderingOptions::getNumOptions() const
 {

@@ -10,8 +10,9 @@
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
 
+#include <exception>
+#include <memory>
 #include <string>
-#include <utility>
 
 using osc::CStringView;
 using osc::UID;

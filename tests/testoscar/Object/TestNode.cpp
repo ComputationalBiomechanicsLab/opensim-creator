@@ -1,5 +1,7 @@
 #include <oscar/Object/Node.hpp>
 
+/*
+
 #include <oscar/Object/NodePath.hpp>
 #include <oscar/Variant/Variant.hpp>
 
@@ -9,8 +11,6 @@
 #include <random>
 #include <string_view>
 #include <utility>
-
-/*
 
 using osc::literals::operator""_np;
 using namespace std::literals::string_view_literals;

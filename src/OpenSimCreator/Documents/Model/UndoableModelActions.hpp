@@ -13,7 +13,6 @@
 #include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace OpenSim { class Component; }
 namespace OpenSim { class ComponentPath; }

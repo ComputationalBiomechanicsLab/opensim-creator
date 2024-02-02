@@ -7,7 +7,6 @@
 
 #include <glm/detail/qualifier.hpp>
 
-#include <compare>
 #include <concepts>
 #include <limits>
 

@@ -1,11 +1,12 @@
 #include "CachedSceneRenderer.hpp"
 
-#include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 
-#include <utility>
+#include <algorithm>
+#include <memory>
+#include <span>
 #include <vector>
 
 using osc::RenderTexture;

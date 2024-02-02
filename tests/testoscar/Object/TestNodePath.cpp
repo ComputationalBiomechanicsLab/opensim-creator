@@ -3,7 +3,6 @@
 #include <gtest/gtest.h>
 
 #include <array>
-#include <iostream>
 #include <iterator>
 #include <string>
 #include <string_view>
@@ -16,11 +15,11 @@ namespace
     {
         return {np.begin(), np.end()};
     }
-}
 
-void PrintTo(const osc::NodePath& np, std::ostream* os)
-{
-    *os << static_cast<std::string_view>(np);
+    void PrintTo(const osc::NodePath& np, std::ostream* os)
+    {
+        *os << static_cast<std::string_view>(np);
+    }
 }
 
 TEST(NodePath, CanBeDefaultConstructed)

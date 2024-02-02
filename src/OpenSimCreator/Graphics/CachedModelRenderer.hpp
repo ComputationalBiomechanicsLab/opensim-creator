@@ -1,14 +1,13 @@
 #pragma once
 
+#include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/Vec2.hpp>
-#include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Scene/SceneCollision.hpp>
 
 #include <memory>
 #include <optional>
 #include <span>
-#include <vector>
 
 namespace osc { class AppConfig; }
 namespace osc { struct Line; }

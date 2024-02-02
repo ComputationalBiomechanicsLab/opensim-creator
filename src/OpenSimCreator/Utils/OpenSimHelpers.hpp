@@ -1,13 +1,12 @@
 #pragma once
 
 #include <OpenSim/Common/ComponentPath.h>
+#include <SimTKcommon/internal/Transform.h>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/Plane.hpp>
 #include <oscar/Maths/PointDirection.hpp>
 #include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <SimTKcommon/internal/Transform.h>
+#include <oscar/Utils/Concepts.hpp>
 
 #include <concepts>
 #include <cstddef>
@@ -15,9 +14,9 @@
 #include <memory>
 #include <optional>
 #include <span>
+#include <stdexcept>
 #include <string>
 #include <string_view>
-#include <stdexcept>
 #include <type_traits>
 #include <utility>
 #include <vector>

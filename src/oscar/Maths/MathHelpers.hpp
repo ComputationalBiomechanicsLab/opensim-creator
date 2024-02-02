@@ -23,7 +23,6 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
-#include <cstddef>
 #include <optional>
 #include <span>
 #include <type_traits>

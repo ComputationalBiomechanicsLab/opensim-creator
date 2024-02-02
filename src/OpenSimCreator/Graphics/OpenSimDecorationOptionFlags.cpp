@@ -1,6 +1,7 @@
 #include "OpenSimDecorationOptionFlags.hpp"
 
 #include <oscar/Shims/Cpp23/utility.hpp>
+#include <oscar/Utils/EnumHelpers.hpp>
 
 #include <algorithm>
 #include <array>

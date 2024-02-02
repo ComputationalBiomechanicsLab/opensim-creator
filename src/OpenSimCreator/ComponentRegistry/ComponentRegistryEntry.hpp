@@ -2,8 +2,8 @@
 
 #include <OpenSimCreator/ComponentRegistry/ComponentRegistryEntryBase.hpp>
 
-#include <string_view>
 #include <memory>
+#include <string_view>
 #include <utility>
 
 namespace osc

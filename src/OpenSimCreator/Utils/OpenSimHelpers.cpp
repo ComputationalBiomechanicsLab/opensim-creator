@@ -1,9 +1,9 @@
 #include "OpenSimHelpers.hpp"
 
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 
+#include <SimTKcommon.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -49,6 +49,7 @@
 #include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+#include <SimTKcommon/SmallMatrix.h>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Plane.hpp>
 #include <oscar/Maths/Transform.hpp>
@@ -59,18 +60,16 @@
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/Perf.hpp>
-#include <SimTKcommon.h>
-#include <SimTKcommon/SmallMatrix.h>
 
-#include <algorithm>
 #include <cmath>
+#include <algorithm>
 #include <cstddef>
 #include <cstdlib>
 #include <iterator>
 #include <memory>
 #include <ostream>
-#include <sstream>
 #include <span>
+#include <sstream>
 #include <utility>
 #include <vector>
 

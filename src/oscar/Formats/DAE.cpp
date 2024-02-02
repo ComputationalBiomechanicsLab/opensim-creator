@@ -2,8 +2,8 @@
 
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Mat4.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/os.hpp>

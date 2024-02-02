@@ -8,11 +8,9 @@
 
 #include <filesystem>
 #include <functional>
-#include <memory>
 #include <optional>
 #include <span>
 #include <string>
-#include <type_traits>
 
 namespace osc { class OpenSimDecorationOptions; }
 namespace osc { class OverlayDecorationOptions; }

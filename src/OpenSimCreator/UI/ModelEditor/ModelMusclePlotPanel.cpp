@@ -1,8 +1,8 @@
 #include "ModelMusclePlotPanel.hpp"
 
 #include <OpenSimCreator/Documents/Model/ModelStateCommit.hpp>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
@@ -12,8 +12,6 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>
-#include <OpenSim/Common/PropertyObjArray.h>
-#include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
@@ -42,9 +40,9 @@
 #include <future>
 #include <memory>
 #include <span>
+#include <sstream>
 #include <string>
 #include <string_view>
-#include <sstream>
 #include <type_traits>
 #include <utility>
 #include <vector>

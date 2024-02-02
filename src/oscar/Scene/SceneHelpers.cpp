@@ -6,8 +6,8 @@
 #include <oscar/Graphics/MeshIndicesView.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Graphics/ShaderCache.hpp>
-#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/AABB.hpp>
+#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Line.hpp>
@@ -28,7 +28,6 @@
 
 #include <filesystem>
 #include <functional>
-#include <numbers>
 #include <optional>
 #include <vector>
 

@@ -14,7 +14,6 @@
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/Mat3.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
@@ -22,8 +21,8 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
@@ -32,8 +31,8 @@
 #include <array>
 #include <filesystem>
 #include <memory>
-#include <string>
-#include <utility>
+#include <optional>
+#include <string_view>
 
 using namespace osc::literals;
 using osc::App;

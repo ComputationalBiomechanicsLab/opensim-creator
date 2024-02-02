@@ -5,27 +5,22 @@
 #include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 
 #include <IconsFontAwesome5.h>
+#include <Simbody.h>
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
-#include <OpenSim/Simulation/Model/AbstractPathPoint.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/PathPoint.h>
-#include <OpenSim/Simulation/Model/Point.h>
-#include <OpenSim/Simulation/Model/Station.h>
-#include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 #include <oscar/Formats/CSV.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/SetHelpers.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
-#include <Simbody.h>
 
 #include <algorithm>
 #include <array>

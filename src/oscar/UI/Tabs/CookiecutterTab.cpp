@@ -3,11 +3,9 @@
 #include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
-#include <IconsFontAwesome5.h>
 #include <SDL_events.h>
 
-#include <string>
-#include <utility>
+#include <memory>
 
 using osc::CStringView;
 using osc::UID;

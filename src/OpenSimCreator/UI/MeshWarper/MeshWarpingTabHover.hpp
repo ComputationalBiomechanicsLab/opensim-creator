@@ -1,7 +1,7 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.hpp>
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.hpp>
 
 #include <oscar/Maths/Vec3.hpp>
 

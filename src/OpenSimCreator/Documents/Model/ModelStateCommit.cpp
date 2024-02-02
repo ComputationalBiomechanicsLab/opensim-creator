@@ -13,7 +13,6 @@
 #include <mutex>
 #include <string>
 #include <string_view>
-#include <utility>
 
 class osc::ModelStateCommit::Impl final {
 public:

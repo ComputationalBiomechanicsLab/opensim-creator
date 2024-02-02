@@ -2,8 +2,8 @@
 
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Platform/RecentFiles.hpp>
-#include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.hpp>
 #include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
+#include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <imgui.h>
@@ -12,8 +12,8 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
-#include <oscar/UI/Tabs/ITabHost.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Tabs/ITabHost.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 
 #include <chrono>

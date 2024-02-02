@@ -2,11 +2,11 @@
 
 #include <OpenSimCreator/Documents/FrameDefinition/EdgePoints.hpp>
 
+#include <SimTKcommon/internal/DecorativeGeometry.h>
+#include <SimTKcommon/internal/Transform.h>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <SimTKcommon/internal/DecorativeGeometry.h>
-#include <SimTKcommon/internal/Transform.h>
 
 #include <cstdint>
 #include <memory>

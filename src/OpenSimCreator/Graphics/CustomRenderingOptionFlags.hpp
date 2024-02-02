@@ -6,7 +6,6 @@
 
 #include <cstdint>
 #include <span>
-#include <type_traits>
 
 namespace osc
 {

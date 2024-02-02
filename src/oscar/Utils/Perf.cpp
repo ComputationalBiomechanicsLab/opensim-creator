@@ -3,8 +3,6 @@
 #include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>
 
-#include <algorithm>
-#include <cstddef>
 #include <unordered_map>
 #include <string>
 #include <string_view>

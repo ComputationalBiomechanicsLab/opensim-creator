@@ -3,10 +3,8 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
 #include <memory>
-#include <utility>
 
 class osc::BasicModelStatePair::Impl final {
 public:

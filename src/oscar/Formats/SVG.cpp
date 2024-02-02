@@ -12,8 +12,8 @@
 #include <iterator>
 #include <memory>
 #include <span>
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 
 using osc::Texture2D;
 

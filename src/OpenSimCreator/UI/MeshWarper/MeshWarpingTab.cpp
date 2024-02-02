@@ -9,15 +9,15 @@
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabStatusBar.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabToolbar.hpp>
 
+#include <SDL_events.h>
+#include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/UI/Panels/PanelManager.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Panels/ToggleablePanelFlags.hpp>
-#include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/UI/Panels/UndoRedoPanel.hpp>
 #include <oscar/UI/Tabs/ITabHost.hpp>
-#include <oscar/Utils/UID.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
-#include <SDL_events.h>
+#include <oscar/Utils/UID.hpp>
 
 #include <memory>
 #include <string_view>

@@ -8,8 +8,6 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Utils/ObjectRepresentation.hpp>
 
-#include <cstddef>
-#include <optional>
 #include <vector>
 
 using osc::Texture2D;

@@ -1,8 +1,17 @@
 #include "OpenSimCreatorApp.hpp"
 
-#include <OpenSimCreator/UI/OpenSimCreatorTabRegistry.hpp>
 #include <OpenSimCreator/OpenSimCreatorConfig.hpp>
+#include <OpenSimCreator/UI/OpenSimCreatorTabRegistry.hpp>
 
+#include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
+#include <OpenSim/Analyses/RegisterTypes_osimAnalyses.h>
+#include <OpenSim/Common/LogSink.h>
+#include <OpenSim/Common/Logger.h>
+#include <OpenSim/Common/RegisterTypes_osimCommon.h>
+#include <OpenSim/ExampleComponents/RegisterTypes_osimExampleComponents.h>
+#include <OpenSim/Simulation/RegisterTypes_osimSimulation.h>
+#include <OpenSim/Simulation/Model/ModelVisualizer.h>
+#include <OpenSim/Tools/RegisterTypes_osimTools.h>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
@@ -12,22 +21,12 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar_demos/OscarDemosTabRegistry.hpp>
 #include <oscar_learnopengl/LearnOpenGLTabRegistry.hpp>
-#include <OpenSim/Common/Logger.h>
-#include <OpenSim/Common/LogSink.h>
-#include <OpenSim/Common/RegisterTypes_osimCommon.h>
-#include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
-#include <OpenSim/Analyses/RegisterTypes_osimAnalyses.h>
-#include <OpenSim/ExampleComponents/RegisterTypes_osimExampleComponents.h>
-#include <OpenSim/Simulation/Model/ModelVisualizer.h>
-#include <OpenSim/Simulation/RegisterTypes_osimSimulation.h>
-#include <OpenSim/Tools/RegisterTypes_osimTools.h>
 
 #include <clocale>
-#include <locale>
 #include <filesystem>
+#include <locale>
 #include <memory>
 #include <string>
-#include <vector>
 
 namespace
 {

@@ -10,28 +10,26 @@
 #include <OpenSimCreator/UI/Shared/ModelSelectionGizmo.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include <imgui.h>
 #include <ImGuizmo.h>
+#include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
-#include <oscar/UI/Panels/StandardPanelImpl.hpp>
-#include <oscar/UI/Widgets/GuiRuler.hpp>
-#include <oscar/UI/Widgets/IconWithoutMenu.hpp>
 #include <oscar/UI/IconCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/ImGuizmoHelpers.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
+#include <oscar/UI/Widgets/GuiRuler.hpp>
+#include <oscar/UI/Widgets/IconWithoutMenu.hpp>
 
-#include <cstdint>
 #include <memory>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <string_view>
-#include <sstream>
 #include <utility>
 #include <vector>
 

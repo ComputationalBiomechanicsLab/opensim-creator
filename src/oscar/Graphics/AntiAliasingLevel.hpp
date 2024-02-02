@@ -2,7 +2,6 @@
 
 #include <oscar/Shims/Cpp20/bit.hpp>
 
-#include <cstddef>
 #include <iosfwd>
 #include <string>
 

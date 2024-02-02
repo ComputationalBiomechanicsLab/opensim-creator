@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cmath>
 #include <concepts>
 #include <compare>
 #include <numbers>

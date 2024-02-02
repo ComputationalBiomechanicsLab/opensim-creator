@@ -1,12 +1,11 @@
 #include "CookiecutterScreen.hpp"
 
+#include <imgui.h>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Platform/App.hpp>
-
-#include <imgui.h>
 #include <SDL_events.h>
 
-#include <utility>
+#include <memory>
 
 class osc::CookiecutterScreen::Impl final {
 public:

@@ -2,7 +2,6 @@
 
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>

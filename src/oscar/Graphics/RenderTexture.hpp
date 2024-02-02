@@ -9,7 +9,6 @@
 
 #include <iosfwd>
 #include <memory>
-#include <optional>
 
 namespace osc { class RenderBuffer; }
 

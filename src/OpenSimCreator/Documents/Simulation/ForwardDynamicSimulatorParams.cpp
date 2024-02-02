@@ -5,7 +5,6 @@
 #include <oscar/Utils/CStringView.hpp>
 
 #include <chrono>
-#include <memory>
 #include <optional>
 #include <variant>
 

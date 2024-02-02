@@ -3,25 +3,23 @@
 #include <oscar/Graphics/GraphicsContext.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Vec2.hpp>
-#include <oscar/Platform/Detail/SDL2Helpers.hpp>
 #include <oscar/Platform/AppClock.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
 #include <oscar/Platform/IScreen.hpp>
 #include <oscar/Platform/Log.hpp>
-#include <oscar/Platform/os.hpp>
 #include <oscar/Platform/Screenshot.hpp>
+#include <oscar/Platform/os.hpp>
+#include <oscar/Platform/Detail/SDL2Helpers.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/imgui_impl_oscargfx.hpp>
+#include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
-#include <imgui/backends/imgui_impl_sdl2.h>
 #include <SDL.h>
 #include <SDL_error.h>
 #include <SDL_keyboard.h>
@@ -29,20 +27,22 @@
 #include <SDL_stdinc.h>
 #include <SDL_timer.h>
 #include <SDL_video.h>
+#include <imgui.h>
+#include <imgui/backends/imgui_impl_sdl2.h>
 
+#include <cmath>
 #include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>
-#include <cmath>
 #include <ctime>
 #include <exception>
 #include <fstream>
-#include <mutex>
 #include <sstream>
 #include <stdexcept>
 #include <unordered_map>
 
+namespace sdl = osc::sdl;
 using osc::AntiAliasingLevel;
 using osc::App;
 using osc::AppClock;
@@ -1133,14 +1133,14 @@ void osc::ImGuiInit()
     ImGui_ImplSDL2_InitForOpenGL(impl.updWindow().get(), impl.updRawGLContextHandleHACK());
 
     // init ImGui for OpenGL
-    ImGui_ImplOscarGfx_Init();
+    ui::gfx::Init();
 
     ImGuiApplyDarkTheme();
 }
 
 void osc::ImGuiShutdown()
 {
-    ImGui_ImplOscarGfx_Shutdown();
+    ui::gfx::Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 }
@@ -1168,7 +1168,7 @@ bool osc::ImGuiOnEvent(SDL_Event const& e)
 
 void osc::ImGuiNewFrame()
 {
-    ImGui_ImplOscarGfx_NewFrame();
+    ui::gfx::NewFrame();
     ImGui_ImplSDL2_NewFrame(App::upd().m_Impl->updWindow().get());
     ImGui::NewFrame();
 }
@@ -1182,6 +1182,6 @@ void osc::ImGuiRender()
 
     {
         OSC_PERF("ImGuiRender/ImGui_ImplOscarGfx_RenderDrawData");
-        ImGui_ImplOscarGfx_RenderDrawData(ImGui::GetDrawData());
+        ui::gfx::RenderDrawData(ImGui::GetDrawData());
     }
 }

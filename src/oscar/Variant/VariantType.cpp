@@ -1,7 +1,6 @@
 #include "VariantType.hpp"
 
 #include <oscar/Shims/Cpp23/utility.hpp>
-#include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Variant/VariantTypeList.hpp>
 #include <oscar/Variant/VariantTypeTraits.hpp>
 

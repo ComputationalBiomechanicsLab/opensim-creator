@@ -1,8 +1,7 @@
 #pragma once
 
-#include <oscar/Platform/IScreen.hpp>
-
 #include <SDL_events.h>
+#include <oscar/Platform/IScreen.hpp>
 
 #include <memory>
 

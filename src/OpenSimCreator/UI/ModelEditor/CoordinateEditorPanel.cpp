@@ -1,7 +1,7 @@
 #include "CoordinateEditorPanel.hpp"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.hpp>
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
@@ -11,14 +11,13 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 
-#include <string>
-#include <string_view>
 #include <sstream>
+#include <string_view>
 #include <utility>
 #include <vector>
 

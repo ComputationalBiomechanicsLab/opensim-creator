@@ -1,8 +1,8 @@
 #include "AppConfig.hpp"
 
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
-#include <oscar/Platform/AppSettings.hpp>
 #include <oscar/Platform/AppSettingValueType.hpp>
+#include <oscar/Platform/AppSettings.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/LogLevel.hpp>
 #include <oscar/Platform/os.hpp>
