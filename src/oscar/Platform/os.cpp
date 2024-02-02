@@ -26,9 +26,6 @@
 #include <utility>
 
 using osc::CStringView;
-using osc::LogMessage;
-using osc::LogMessageView;
-using osc::LogSink;
 
 namespace
 {

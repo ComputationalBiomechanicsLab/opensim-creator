@@ -15,11 +15,6 @@ namespace
     {
         return {np.begin(), np.end()};
     }
-
-    void PrintTo(const osc::NodePath& np, std::ostream* os)
-    {
-        *os << static_cast<std::string_view>(np);
-    }
 }
 
 TEST(NodePath, CanBeDefaultConstructed)

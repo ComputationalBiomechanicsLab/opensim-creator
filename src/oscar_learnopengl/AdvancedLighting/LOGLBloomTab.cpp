@@ -33,7 +33,6 @@
 #include <vector>
 
 using namespace osc::literals;
-using osc::Camera;
 using osc::Color;
 using osc::CStringView;
 using osc::Identity;

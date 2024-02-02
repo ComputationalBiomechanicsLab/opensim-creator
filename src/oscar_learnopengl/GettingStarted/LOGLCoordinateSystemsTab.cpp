@@ -27,7 +27,6 @@
 
 using namespace osc::literals;
 using osc::App;
-using osc::Camera;
 using osc::ColorSpace;
 using osc::CStringView;
 using osc::ImageLoadingFlags;

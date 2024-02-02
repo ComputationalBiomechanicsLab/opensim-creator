@@ -37,7 +37,6 @@
 
 using namespace osc::literals;
 using osc::AngleAxis;
-using osc::Camera;
 using osc::Color;
 using osc::CStringView;
 using osc::MouseCapturingCamera;
