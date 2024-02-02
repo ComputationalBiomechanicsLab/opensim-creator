@@ -159,12 +159,12 @@ std::string const& osc::ParamBlock::getDescription(int idx) const
     return m_Impl->getDescription(idx);
 }
 
-osc::ParamValue const& osc::ParamBlock::getValue(int idx) const
+ParamValue const& osc::ParamBlock::getValue(int idx) const
 {
     return m_Impl->getValue(idx);
 }
 
-std::optional<osc::ParamValue> osc::ParamBlock::findValue(std::string_view name) const
+std::optional<ParamValue> osc::ParamBlock::findValue(std::string_view name) const
 {
     return m_Impl->findValue(name);
 }

@@ -73,10 +73,30 @@
 #include <utility>
 #include <vector>
 
+using osc::At;
+using osc::Color;
+using osc::ComponentSpatialRepresentation;
+using osc::Cross;
+using osc::CStringView;
+using osc::Dot;
+using osc::empty;
+using osc::EraseAt;
+using osc::FindComponent;
+using osc::ForcePoint;
+using osc::GeometryPathPoint;
+using osc::IsInclusiveChildOf;
+using osc::Length2;
 using osc::LinesOfAction;
+using osc::Normalize;
 using osc::Plane;
 using osc::PointDirection;
+using osc::PointInfo;
+using osc::size;
+using osc::ToTransform;
+using osc::ToVec3;
 using osc::Transform;
+using osc::TransformPoint;
+using osc::UndoableModelStatePair;
 using osc::Vec3;
 
 namespace
@@ -93,11 +113,11 @@ namespace
     template<typename T, typename TSetBase = OpenSim::Object>
     bool TryDeleteItemFromSet(OpenSim::Set<T, TSetBase>& set, T const* item)
     {
-        for (size_t i = 0; i < osc::size(set); ++i)
+        for (size_t i = 0; i < size(set); ++i)
         {
-            if (&osc::At(set, i) == item)
+            if (&At(set, i) == item)
             {
-                return osc::EraseAt(set, i);
+                return EraseAt(set, i);
             }
         }
         return false;
@@ -146,7 +166,7 @@ namespace
         std::erase_if(allConnectees, [&root, &component](OpenSim::Component const* connectee)
         {
             return
-                osc::IsInclusiveChildOf(&component, connectee) &&
+                IsInclusiveChildOf(&component, connectee) &&
                 GetAnyComponentsConnectedViaSocketTo(root, *connectee).empty();  // care: the child may, itself, have things connected to it
         });
         return allConnectees;
@@ -161,10 +181,10 @@ namespace
         path.getPointForceDirections(st, &pfds);
 
         std::vector<std::unique_ptr<OpenSim::PointForceDirection>> rv;
-        rv.reserve(osc::size(pfds));
-        for (size_t i = 0; i < osc::size(pfds); ++i)
+        rv.reserve(size(pfds));
+        for (size_t i = 0; i < size(pfds); ++i)
         {
-            rv.emplace_back(osc::At(pfds, i));
+            rv.emplace_back(At(pfds, i));
         }
         return rv;
     }
@@ -218,7 +238,7 @@ namespace
     Vec3 GetLocationInGround(OpenSim::PointForceDirection& pf, SimTK::State const& st)
     {
         SimTK::Vec3 const location = pf.frame().findStationLocationInGround(st, pf.point());
-        return osc::ToVec3(location);
+        return ToVec3(location);
     }
 
     struct LinesOfActionConfig final {
@@ -252,11 +272,11 @@ namespace
 
         Vec3 const originPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first), st);
         Vec3 const pointAfterOriginPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first + 1), st);
-        Vec3 const originDir = osc::Normalize(pointAfterOriginPos - originPos);
+        Vec3 const originDir = Normalize(pointAfterOriginPos - originPos);
 
         Vec3 const insertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second), st);
         Vec3 const pointAfterInsertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second - 1), st);
-        Vec3 const insertionDir = osc::Normalize(pointAfterInsertionPos - insertionPos);
+        Vec3 const insertionDir = Normalize(pointAfterInsertionPos - insertionPos);
 
         return LinesOfAction
         {
@@ -538,7 +558,7 @@ double osc::ConvertCoordDisplayValueToStorageValue(OpenSim::Coordinate const& c,
     return rv;
 }
 
-osc::CStringView osc::GetCoordDisplayValueUnitsString(OpenSim::Coordinate const& c)
+CStringView osc::GetCoordDisplayValueUnitsString(OpenSim::Coordinate const& c)
 {
     switch (c.getMotionType()) {
     case OpenSim::Coordinate::MotionType::Translational:
@@ -657,7 +677,7 @@ void osc::RecursivelyReassignAllSockets(
 {
     for (OpenSim::Component& c : root.updComponentList())
     {
-        for (OpenSim::AbstractSocket* socket : osc::UpdAllSockets(c))
+        for (OpenSim::AbstractSocket* socket : UpdAllSockets(c))
         {
             if (IsConnectedTo(*socket, from))
             {
@@ -954,7 +974,7 @@ bool osc::ActivateAllWrapObjectsIn(OpenSim::Model& m)
     return rv;
 }
 
-std::unique_ptr<osc::UndoableModelStatePair> osc::LoadOsimIntoUndoableModel(std::filesystem::path const& p)
+std::unique_ptr<UndoableModelStatePair> osc::LoadOsimIntoUndoableModel(std::filesystem::path const& p)
 {
     return std::make_unique<UndoableModelStatePair>(p);
 }
@@ -1033,7 +1053,7 @@ std::string osc::GetDisplayName(OpenSim::Geometry const& g)
     }
 }
 
-osc::CStringView osc::GetMotionTypeDisplayName(OpenSim::Coordinate const& c)
+CStringView osc::GetMotionTypeDisplayName(OpenSim::Coordinate const& c)
 {
     switch (c.getMotionType()) {
     case OpenSim::Coordinate::MotionType::Rotational:
@@ -1086,7 +1106,7 @@ bool osc::TrySetAppearancePropertyIsVisibleTo(OpenSim::Component& c, bool v)
     }
 }
 
-osc::Color osc::GetSuggestedBoneColor()
+Color osc::GetSuggestedBoneColor()
 {
     Color usualDefault = {232.0f / 255.0f, 216.0f / 255.0f, 200.0f/255.0f, 1.0f};
     float brightenAmount = 0.1f;
@@ -1218,7 +1238,7 @@ OpenSim::ComponentPath osc::GetAbsolutePathOrEmpty(OpenSim::Component const* c)
     }
 }
 
-std::optional<osc::LinesOfAction> osc::GetEffectiveLinesOfActionInGround(
+std::optional<LinesOfAction> osc::GetEffectiveLinesOfActionInGround(
     OpenSim::Muscle const& muscle,
     SimTK::State const& state)
 {
@@ -1227,7 +1247,7 @@ std::optional<osc::LinesOfAction> osc::GetEffectiveLinesOfActionInGround(
     return TryGetLinesOfAction(muscle, state, config);
 }
 
-std::optional<osc::LinesOfAction> osc::GetAnatomicalLinesOfActionInGround(
+std::optional<LinesOfAction> osc::GetAnatomicalLinesOfActionInGround(
     OpenSim::Muscle const& muscle,
     SimTK::State const& state)
 {
@@ -1236,7 +1256,7 @@ std::optional<osc::LinesOfAction> osc::GetAnatomicalLinesOfActionInGround(
     return TryGetLinesOfAction(muscle, state, config);
 }
 
-std::vector<osc::GeometryPathPoint> osc::GetAllPathPoints(OpenSim::GeometryPath const& gp, SimTK::State const& st)
+std::vector<GeometryPathPoint> osc::GetAllPathPoints(OpenSim::GeometryPath const& gp, SimTK::State const& st)
 {
     OpenSim::Array<OpenSim::AbstractPathPoint*> const& pps = gp.getCurrentPath(st);
 
@@ -1282,26 +1302,26 @@ namespace
     {
         // get contact parameters (i.e. where the contact geometry is stored)
         OpenSim::HuntCrossleyForce::ContactParametersSet const& paramSet = hcf.get_contact_parameters();
-        if (osc::empty(paramSet))
+        if (empty(paramSet))
         {
             return nullptr;  // edge-case: the force has no parameters
         }
 
         // linearly search for a ContactHalfSpace
-        for (size_t i = 0; i < osc::size(paramSet); ++i)
+        for (size_t i = 0; i < size(paramSet); ++i)
         {
-            OpenSim::HuntCrossleyForce::ContactParameters const& param = osc::At(paramSet, i);
+            OpenSim::HuntCrossleyForce::ContactParameters const& param = At(paramSet, i);
             OpenSim::Property<std::string> const& geomProperty = param.getProperty_geometry();
 
-            for (size_t j = 0; osc::size(geomProperty); ++j)
+            for (size_t j = 0; size(geomProperty); ++j)
             {
-                std::string const& geomNameOrPath = osc::At(geomProperty, j);
-                if (auto const* foundViaAbsPath = osc::FindComponent<OpenSim::ContactHalfSpace>(model, geomNameOrPath))
+                std::string const& geomNameOrPath = At(geomProperty, j);
+                if (auto const* foundViaAbsPath = FindComponent<OpenSim::ContactHalfSpace>(model, geomNameOrPath))
                 {
                     // found it as an abspath within the model
                     return foundViaAbsPath;
                 }
-                else if (auto const* foundViaRelativePath = osc::FindComponent<OpenSim::ContactHalfSpace>(model.getContactGeometrySet(), geomNameOrPath))
+                else if (auto const* foundViaRelativePath = FindComponent<OpenSim::ContactHalfSpace>(model.getContactGeometrySet(), geomNameOrPath))
                 {
                     // found it as a relative path/name within the contactgeometryset
                     return foundViaRelativePath;
@@ -1333,7 +1353,7 @@ namespace
             static_cast<float>(-forces[2]),
         };
 
-        if (osc::Length2(force) < std::numeric_limits<float>::epsilon())
+        if (Length2(force) < std::numeric_limits<float>::epsilon())
         {
             return std::nullopt;  // edge-case: no force is actually being exherted
         }
@@ -1359,11 +1379,11 @@ namespace
         //
         // - if there's a plane, then the plane's location+normal are needed in order
         //   to figure out where the force is exherted
-        Transform const body2ground = osc::ToTransform(halfSpace.getFrame().getTransformInGround(state));
-        Transform const geom2body = osc::ToTransform(halfSpace.getTransform());
+        Transform const body2ground = ToTransform(halfSpace.getFrame().getTransformInGround(state));
+        Transform const geom2body = ToTransform(halfSpace.getTransform());
 
-        Vec3 const originInGround = body2ground * osc::ToVec3(halfSpace.get_location());
-        Vec3 const normalInGround = osc::Normalize(body2ground.rotation * geom2body.rotation) * c_ContactHalfSpaceUpwardsNormal;
+        Vec3 const originInGround = body2ground * ToVec3(halfSpace.get_location());
+        Vec3 const normalInGround = Normalize(body2ground.rotation * geom2body.rotation) * c_ContactHalfSpaceUpwardsNormal;
 
         return Plane{originInGround, normalInGround};
     }
@@ -1375,7 +1395,7 @@ namespace
         ForceTorque const& forceTorque,
         float minimumForce = std::numeric_limits<float>::epsilon())
     {
-        float const forceScaler = osc::Dot(plane.normal, forceTorque.force);
+        float const forceScaler = Dot(plane.normal, forceTorque.force);
 
         if (std::abs(forceScaler) < minimumForce)
         {
@@ -1383,7 +1403,7 @@ namespace
             return std::nullopt;
         }
 
-        if (std::abs(osc::Dot(plane.normal, osc::Normalize(forceTorque.torque))) >= 1.0f - std::numeric_limits<float>::epsilon())
+        if (std::abs(Dot(plane.normal, Normalize(forceTorque.torque))) >= 1.0f - std::numeric_limits<float>::epsilon())
         {
             // pedantic: the resulting torque is aligned with the plane normal, making
             // the cross product undefined later
@@ -1392,16 +1412,16 @@ namespace
 
         // this maths seems sketchy, it's inspired by SCONE/model_tools.cpp:GetPlaneCop but
         // it feels a bit like `p1` is always going to be zero
-        Vec3 const pos = osc::Cross(plane.normal, forceTorque.torque) / forceScaler;
+        Vec3 const pos = Cross(plane.normal, forceTorque.torque) / forceScaler;
         Vec3 const posRelativeToPlaneOrigin = pos - plane.origin;
-        float const p1 = osc::Dot(posRelativeToPlaneOrigin, plane.normal);
+        float const p1 = Dot(posRelativeToPlaneOrigin, plane.normal);
         float const p2 = forceScaler;
 
         return pos - (p1/p2)*forceTorque.force;
     }
 }
 
-std::optional<osc::ForcePoint> osc::TryGetContactForceInGround(
+std::optional<ForcePoint> osc::TryGetContactForceInGround(
     OpenSim::Model const& model,
     SimTK::State const& state,
     OpenSim::HuntCrossleyForce const& hcf)
@@ -1428,7 +1448,7 @@ std::optional<osc::ForcePoint> osc::TryGetContactForceInGround(
         return std::nullopt;  // the resulting force is too small
     }
 
-    return osc::ForcePoint{forceTorque.force, *maybePosition};
+    return ForcePoint{forceTorque.force, *maybePosition};
 }
 
 bool osc::CanExtractPointInfoFrom(OpenSim::Component const& c, SimTK::State const& st)
@@ -1436,7 +1456,7 @@ bool osc::CanExtractPointInfoFrom(OpenSim::Component const& c, SimTK::State cons
     return TryExtractPointInfo(c, st) != std::nullopt;
 }
 
-std::optional<osc::PointInfo> osc::TryExtractPointInfo(
+std::optional<PointInfo> osc::TryExtractPointInfo(
     OpenSim::Component const& c,
     SimTK::State const& st)
 {
@@ -1645,7 +1665,7 @@ std::optional<std::string> osc::TryGetOrientationalPropertyName(
     }
 }
 
-std::optional<osc::ComponentSpatialRepresentation> osc::TryGetSpatialRepresentation(
+std::optional<ComponentSpatialRepresentation> osc::TryGetSpatialRepresentation(
     OpenSim::Component const& component,
     SimTK::State const& state)
 {
