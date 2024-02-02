@@ -17,17 +17,23 @@
 #include <functional>
 #include <sstream>
 
+using osc::DAEMetadata;
+using osc::GlobalInitOpenSim;
 using osc::NullOStream;
+using osc::OpenSimDecorationOptions;
+using osc::SceneCache;
+using osc::SceneDecoration;
+using osc::UndoableModelStatePair;
 
 TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
 {
-    osc::GlobalInitOpenSim();
+    GlobalInitOpenSim();
 
-    osc::SceneCache meshCache;
+    SceneCache meshCache;
 
     // turn as many decoration options on as possible, so that the code gets tested
     // against them (#661)
-    osc::OpenSimDecorationOptions decorationOpts;
+    OpenSimDecorationOptions decorationOpts;
     decorationOpts.setShouldShowAnatomicalMuscleLineOfActionForInsertion(true);
     decorationOpts.setShouldShowAnatomicalMuscleLineOfActionForOrigin(true);
     decorationOpts.setShouldShowEffectiveMuscleLineOfActionForInsertion(true);
@@ -45,17 +51,17 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
         if (e.is_regular_file() && e.path().extension() == ".osim")
         {
             // all files are loadable
-            osc::UndoableModelStatePair p{e.path()};
+            UndoableModelStatePair p{e.path()};
 
             // and all can be used to generate 3D scenes
-            std::vector<osc::SceneDecoration> decorations;
-            osc::GenerateModelDecorations(
+            std::vector<SceneDecoration> decorations;
+            GenerateModelDecorations(
                 meshCache,
                 p.getModel(),
                 p.getState(),
                 decorationOpts,
                 1.0f,  // 1:1 scaling
-                [&decorations](OpenSim::Component const& component, osc::SceneDecoration&& dec)
+                [&decorations](OpenSim::Component const& component, SceneDecoration&& dec)
                 {
                     dec.id = osc::GetAbsolutePathString(component);
                     decorations.push_back(std::move(dec));
@@ -67,8 +73,8 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
 
             // and all decorations can be exported to a DAE format
             NullOStream stream;
-            osc::DAEMetadata const metadata{TESTOPENSIMCREATOR_APPNAME_STRING, TESTOPENSIMCREATOR_APPNAME_STRING};
-            osc::WriteDecorationsAsDAE(stream, decorations, metadata);
+            DAEMetadata const metadata{TESTOPENSIMCREATOR_APPNAME_STRING, TESTOPENSIMCREATOR_APPNAME_STRING};
+            WriteDecorationsAsDAE(stream, decorations, metadata);
 
             // and content is actually written to the DAE stream
             ASSERT_TRUE(stream.wasWrittenTo());

@@ -16,9 +16,14 @@
 #include <memory>
 
 using osc::AddComponentPopup;
-using osc::OpenSimCreatorApp;
+using osc::GetAllRegisteredComponents;
+using osc::ImGuiInit;
+using osc::ImGuiNewFrame;
+using osc::ImGuiRender;
+using osc::ImGuiShutdown;
 using osc::IPopup;
 using osc::IPopupAPI;
+using osc::OpenSimCreatorApp;
 using osc::ScopeGuard;
 using osc::UndoableModelStatePair;
 
@@ -34,13 +39,13 @@ TEST(AddComponentPopup, CanOpenAndDrawAllRegisteredComponentsInTheAddComponentPo
 {
     OpenSimCreatorApp app;
 
-    for (auto const& entry : osc::GetAllRegisteredComponents())
+    for (auto const& entry : GetAllRegisteredComponents())
     {
         try
         {
-            osc::ImGuiInit();
-            ScopeGuard g{[]() { osc::ImGuiShutdown(); }};
-            osc::ImGuiNewFrame();
+            ImGuiInit();
+            ScopeGuard g{[]() { ImGuiShutdown(); }};
+            ImGuiNewFrame();
             NullPopupAPI api;
             auto model = std::make_shared<UndoableModelStatePair>();
             AddComponentPopup popup{"popupname", &api, model, entry.instantiate()};
@@ -48,7 +53,7 @@ TEST(AddComponentPopup, CanOpenAndDrawAllRegisteredComponentsInTheAddComponentPo
             popup.beginPopup();
             popup.onDraw();
             popup.endPopup();
-            osc::ImGuiRender();
+            ImGuiRender();
         }
         catch (std::exception const& ex)
         {

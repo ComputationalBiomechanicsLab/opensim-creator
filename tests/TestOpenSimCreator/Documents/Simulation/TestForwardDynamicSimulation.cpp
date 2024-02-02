@@ -5,14 +5,20 @@
 #include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.hpp>
 #include <gtest/gtest.h>
 
+using osc::BasicModelStatePair;
+using osc::ForwardDynamicSimulation;
+using osc::ForwardDynamicSimulatorParams;
+using osc::FromParamBlock;
+using osc::SimulationClock;
+
 TEST(ForwardDynamicSimulation, CanInitFromBasicModel)
 {
-    osc::BasicModelStatePair modelState;
+    BasicModelStatePair modelState;
 
-    osc::ForwardDynamicSimulatorParams params;
-    params.finalTime = osc::SimulationClock::start();  // don't run a full sim
+    ForwardDynamicSimulatorParams params;
+    params.finalTime = SimulationClock::start();  // don't run a full sim
 
-    osc::ForwardDynamicSimulation sim{modelState, params};
+    ForwardDynamicSimulation sim{modelState, params};
 
     // just ensure calling these doesn't throw: actually testing these would
     // require running the simulation to completion because launching a simulation
@@ -24,10 +30,10 @@ TEST(ForwardDynamicSimulation, CanInitFromBasicModel)
     sim.getAllSimulationReports();
     sim.getStatus();
     sim.getCurTime();
-    ASSERT_EQ(sim.getStartTime(), osc::SimulationClock::start());
+    ASSERT_EQ(sim.getStartTime(), SimulationClock::start());
     ASSERT_EQ(sim.getEndTime(), params.finalTime);
     sim.getProgress();
-    ASSERT_EQ(osc::FromParamBlock(sim.getParams()), params);
+    ASSERT_EQ(FromParamBlock(sim.getParams()), params);
     ASSERT_FALSE(sim.getOutputExtractors().empty());
     sim.requestStop();
     sim.stop();

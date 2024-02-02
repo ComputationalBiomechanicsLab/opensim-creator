@@ -20,15 +20,23 @@
 #include <filesystem>
 #include <memory>
 
+using osc::AddComponent;
+using osc::AttachGeometry;
+using osc::FinalizeConnections;
+using osc::InitializeModel;
+using osc::InitializeState;
+using osc::LoadOpenSimCreatorConfig;
+using osc::TryDeleteComponentFromModel;
+
 
 // this is a repro for
 //
 // https://github.com/opensim-org/opensim-core/issues/3211
 TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 {
-    auto const config = osc::LoadOpenSimCreatorConfig();
+    auto const config = LoadOpenSimCreatorConfig();
 
-    //osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
+    //GlobalInitOpenSim(*config);  // ensure muscles are available etc.
 
     // data sources
     std::filesystem::path modelPath{config.getResourceDir() / "models" / "Arm26" / "arm26.osim"};
@@ -84,9 +92,9 @@ TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 // breaks this test, and prompts removing fixups from OSC
 TEST(OpenSimModel, EditingACoordinateLockMutatesModel)
 {
-    auto const config = osc::LoadOpenSimCreatorConfig();
+    auto const config = LoadOpenSimCreatorConfig();
 
-    //osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
+    //GlobalInitOpenSim(*config);  // ensure muscles are available etc.
 
     std::filesystem::path modelPath{config.getResourceDir() / "models" / "Arm26" / "arm26.osim"};
     OpenSim::ComponentPath coordinatePath{"/jointset/r_shoulder/r_shoulder_elev"};
@@ -247,7 +255,7 @@ TEST(OpenSimModel, UpdatesInertiaCorrectly)
     ASSERT_EQ(b.getInertia(), toInertia(updatedValue));  // broke in OpenSim <= 4.4 (see #597)
 }
 
-// tests for a behavior that is relied upon in osc::ActionAssignContactGeometryToHCF
+// tests for a behavior that is relied upon in ActionAssignContactGeometryToHCF
 //
 // a newly-constructed HCF may have no contact parameters, but OSC editors usually need
 // one. However, explicitly adding it with `cloneAndAppend` triggers memory leak warnings
@@ -454,12 +462,12 @@ TEST(OpenSimModel, OriginalReproFrom3299ThrowsInsteadOfSegfaulting)
 TEST(OpenSimModel, DISABLED_DeleteComponentFromModelFollowedByFinalizeConnectionsShouldNotSegfault)
 {
     OpenSim::Model model;
-    auto& sphere = osc::AttachGeometry<OpenSim::Sphere>(model.updGround());
+    auto& sphere = AttachGeometry<OpenSim::Sphere>(model.updGround());
 
-    osc::InitializeModel(model);
-    osc::InitializeState(model);
-    osc::TryDeleteComponentFromModel(model, sphere);
-    osc::FinalizeConnections(model);
+    InitializeModel(model);
+    InitializeState(model);
+    TryDeleteComponentFromModel(model, sphere);
+    FinalizeConnections(model);
 }
 
 // repro for (#752)
@@ -468,18 +476,18 @@ TEST(OpenSimModel, DISABLED_DeleteComponentFromModelFollowedByFinalizeConnection
 TEST(OpenSimModel, DeleteComponentFromModelFollowedByReinitializingAndThenFinalizingDefinitelyShouldntSegfault)
 {
     OpenSim::Model model;
-    auto& sphere = osc::AttachGeometry<OpenSim::Sphere>(model.updGround());
+    auto& sphere = AttachGeometry<OpenSim::Sphere>(model.updGround());
 
-    osc::InitializeModel(model);
-    osc::InitializeState(model);
-    osc::TryDeleteComponentFromModel(model, sphere);
+    InitializeModel(model);
+    InitializeState(model);
+    TryDeleteComponentFromModel(model, sphere);
 
     // these put the model back into a safe state
-    osc::InitializeModel(model);
-    osc::InitializeState(model);
+    InitializeModel(model);
+    InitializeState(model);
 
     // and then finalizing the connections should be fine (#752)
-    osc::FinalizeConnections(model);
+    FinalizeConnections(model);
 }
 
 // repro for (#773)
@@ -540,10 +548,10 @@ TEST(OpenSimModel, DISABLED_ReFinalizingAnEvenSimplerModelWithUnusualJointTopolo
 TEST(OpenSimModel, MeshGetComponentListDoesNotIterate)
 {
     OpenSim::Model model;
-    auto& mesh = osc::AddComponent(model, std::make_unique<OpenSim::Mesh>());
+    auto& mesh = AddComponent(model, std::make_unique<OpenSim::Mesh>());
     mesh.setFrame(model.getGround());
-    osc::InitializeModel(model);
-    osc::InitializeState(model);
+    InitializeModel(model);
+    InitializeState(model);
 
     ASSERT_EQ(mesh.countNumComponents(), 0);
 
