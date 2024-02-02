@@ -1,40 +1,31 @@
 // multiple associated headers: this should be broken up into
 // smaller pieces
 
-#include <testoscar/testoscarconfig.hpp>
 #include <testoscar/TestingHelpers.hpp>
+#include <testoscar/testoscarconfig.hpp>
 
 #include <gtest/gtest.h>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/Camera.hpp>
-#include <oscar/Graphics/CameraClearFlags.hpp>
-#include <oscar/Graphics/CameraProjection.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Cubemap.hpp>
 #include <oscar/Graphics/CullMode.hpp>
 #include <oscar/Graphics/DepthStencilFormat.hpp>
 #include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsContext.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MaterialPropertyBlock.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Graphics/RenderTexture.hpp>
 #include <oscar/Graphics/RenderTextureDescriptor.hpp>
 #include <oscar/Graphics/RenderTextureFormat.hpp>
-#include <oscar/Graphics/RenderTextureReadWrite.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/ShaderPropertyType.hpp>
 #include <oscar/Graphics/SubMeshDescriptor.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
-#include <oscar/Graphics/TextureWrapMode.hpp>
-#include <oscar/Graphics/TextureFilterMode.hpp>
-#include <oscar/Maths/AABB.hpp>
-#include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/Mat3.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
@@ -44,10 +35,8 @@
 #include <oscar/Maths/Vec4.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
-#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
-#include <oscar/Utils/ObjectRepresentation.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 
 #include <algorithm>

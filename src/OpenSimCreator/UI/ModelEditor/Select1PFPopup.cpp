@@ -11,7 +11,6 @@
 #include <oscar/UI/Widgets/StandardPopup.hpp>
 
 #include <algorithm>
-#include <span>
 #include <string>
 
 class osc::Select1PFPopup::Impl final : public StandardPopup {

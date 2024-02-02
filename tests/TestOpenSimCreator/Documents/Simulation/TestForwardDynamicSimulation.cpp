@@ -1,9 +1,9 @@
 #include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulation.hpp>
 
-#include <gtest/gtest.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.hpp>
 #include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.hpp>
+#include <gtest/gtest.h>
 
 TEST(ForwardDynamicSimulation, CanInitFromBasicModel)
 {

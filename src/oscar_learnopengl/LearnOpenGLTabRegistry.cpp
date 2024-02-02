@@ -7,8 +7,8 @@
 #include <oscar_learnopengl/AdvancedLighting/LOGLNormalMappingTab.hpp>
 #include <oscar_learnopengl/AdvancedLighting/LOGLParallaxMappingTab.hpp>
 #include <oscar_learnopengl/AdvancedLighting/LOGLPointShadowsTab.hpp>
-#include <oscar_learnopengl/AdvancedLighting/LOGLShadowMappingTab.hpp>
 #include <oscar_learnopengl/AdvancedLighting/LOGLSSAOTab.hpp>
+#include <oscar_learnopengl/AdvancedLighting/LOGLShadowMappingTab.hpp>
 #include <oscar_learnopengl/AdvancedOpenGL/LOGLBlendingTab.hpp>
 #include <oscar_learnopengl/AdvancedOpenGL/LOGLCubemapsTab.hpp>
 #include <oscar_learnopengl/AdvancedOpenGL/LOGLFaceCullingTab.hpp>

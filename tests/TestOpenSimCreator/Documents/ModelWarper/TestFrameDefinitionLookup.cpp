@@ -1,8 +1,8 @@
 #include <OpenSimCreator/Documents/ModelWarper/FrameDefinitionLookup.hpp>
 
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
-#include <OpenSim/Simulation/Model/Model.h>
 
+#include <OpenSim/Simulation/Model/Model.h>
 #include <gtest/gtest.h>
 
 #include <filesystem>

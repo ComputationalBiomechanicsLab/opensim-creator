@@ -5,10 +5,8 @@
 #include <oscar/Platform/os.hpp>
 
 #include <cstddef>
-#include <ctime>
 #include <iomanip>
 #include <iostream>
-#include <string>
 #include <string_view>
 
 using osc::ObjMetadata;

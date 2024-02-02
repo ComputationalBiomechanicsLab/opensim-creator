@@ -1,13 +1,12 @@
 #pragma once
 
 #include <OpenSim/Common/ComponentPath.h>
+#include <SimTKcommon/internal/Transform.h>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/Plane.hpp>
 #include <oscar/Maths/PointDirection.hpp>
 #include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/Concepts.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <SimTKcommon/internal/Transform.h>
+#include <oscar/Utils/Concepts.hpp>
 
 #include <concepts>
 #include <cstddef>
@@ -15,9 +14,9 @@
 #include <memory>
 #include <optional>
 #include <span>
+#include <stdexcept>
 #include <string>
 #include <string_view>
-#include <stdexcept>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -47,7 +46,7 @@ namespace OpenSim { class Object; }
 namespace OpenSim { template<typename> class Property; }
 namespace OpenSim { template<typename> class ObjectProperty; }
 namespace OpenSim { class PhysicalOffsetFrame; }
-namespace OpenSim { template<class, class> class Set; }
+namespace OpenSim { template<typename, typename> class Set; }
 namespace OpenSim { template<typename> class SimpleProperty; }
 namespace osc { class UndoableModelStatePair; }
 namespace SimTK { class State; }
@@ -55,7 +54,7 @@ namespace SimTK { class State; }
 // OpenSimHelpers: a collection of various helper functions that are used by `osc`
 namespace osc
 {
-    template<class T>
+    template<typename T>
     concept ClonesToRawPtr = requires(T const& v) {
         { v.clone() } -> std::same_as<T*>;
     };
@@ -80,19 +79,19 @@ namespace osc
         return static_cast<ptrdiff_t>(s.getSize());
     }
 
-    template<class T>
+    template<typename T>
     size_t size(OpenSim::ArrayPtrs<T> const& ary)
     {
         return static_cast<size_t>(ary.getSize());
     }
 
-    template<class T>
+    template<typename T>
     size_t size(OpenSim::Array<T> const& ary)
     {
         return static_cast<size_t>(ary.getSize());
     }
 
-    template<class T>
+    template<typename T>
     size_t size(OpenSim::Property<T> const& p)
     {
         return static_cast<size_t>(p.size());
@@ -107,7 +106,7 @@ namespace osc
         return size(s) <= 0;
     }
 
-    template<class T>
+    template<typename T>
     T& At(OpenSim::ArrayPtrs<T>& ary, size_t i)
     {
         if (i >= size(ary))
@@ -125,7 +124,7 @@ namespace osc
         }
     }
 
-    template<class T>
+    template<typename T>
     T const& At(OpenSim::Array<T> const& ary, size_t i)
     {
         if (i >= size(ary))
@@ -162,7 +161,7 @@ namespace osc
         return s[static_cast<int>(i)];
     }
 
-    template<class T>
+    template<typename T>
     T const& At(OpenSim::Property<T> const& p, size_t i)
     {
         return p[static_cast<int>(i)];
@@ -455,7 +454,7 @@ namespace osc
     );
 
     // returns a pointer to the property if the component has a simple property with the given name and type
-    template<class T>
+    template<typename T>
     OpenSim::SimpleProperty<T>* FindSimplePropertyMut(
         OpenSim::Component& c,
         std::string const& name)
@@ -688,7 +687,7 @@ namespace osc
     }
 
     // constructs a specific (T) model component in the componentset of the model and returns a reference to the component
-    template<std::derived_from<OpenSim::ModelComponent> T, class... Args>
+    template<std::derived_from<OpenSim::ModelComponent> T, typename... Args>
     T& AddModelComponent(OpenSim::Model& model, Args&&... args)
         requires std::constructible_from<T, Args&&...>
     {
@@ -726,7 +725,7 @@ namespace osc
 
     OpenSim::Marker& AddMarker(OpenSim::Model&, std::unique_ptr<OpenSim::Marker>);
 
-    template<class... Args>
+    template<typename... Args>
     OpenSim::Marker& AddMarker(OpenSim::Model& model, Args&&... args)
         requires std::constructible_from<OpenSim::Marker, Args&&...>
     {
@@ -736,7 +735,7 @@ namespace osc
 
     OpenSim::Geometry& AttachGeometry(OpenSim::Frame&, std::unique_ptr<OpenSim::Geometry>);
 
-    template<std::derived_from<OpenSim::Geometry> T, class... Args>
+    template<std::derived_from<OpenSim::Geometry> T, typename... Args>
     T& AttachGeometry(OpenSim::Frame& frame, Args&&... args)
         requires std::constructible_from<T, Args&&...>
     {

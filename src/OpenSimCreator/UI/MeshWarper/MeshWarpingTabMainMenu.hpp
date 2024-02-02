@@ -2,8 +2,8 @@
 
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabActionsMenu.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabEditMenu.hpp>
-#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.hpp>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabFileMenu.hpp>
+#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.hpp>
 #include <OpenSimCreator/UI/Shared/MainMenu.hpp>
 
 #include <oscar/UI/Panels/PanelManager.hpp>

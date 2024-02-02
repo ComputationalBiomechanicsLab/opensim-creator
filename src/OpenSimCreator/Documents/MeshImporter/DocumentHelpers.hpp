@@ -3,15 +3,12 @@
 #include <OpenSimCreator/Documents/MeshImporter/Document.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/MIObject.hpp>
 
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec3.hpp>
 #include <oscar/Scene/SceneDecorationFlags.hpp>
-#include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <concepts>
-#include <string>
 #include <optional>
+#include <string>
 #include <unordered_set>
 #include <vector>
 

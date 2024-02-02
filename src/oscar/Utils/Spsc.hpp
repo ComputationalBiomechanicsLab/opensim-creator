@@ -187,7 +187,7 @@ namespace osc::spsc
     class Worker {
 
         // worker (background thread)
-        jthread m_WorkerThread;
+        cpp20::jthread m_WorkerThread;
 
         // sending end of the channel: sends inputs to background thread
         spsc::Sender<Input> m_Tx;
@@ -197,7 +197,7 @@ namespace osc::spsc
 
         // MAIN function for an SPSC worker thread
         static int main(
-            stop_token,
+            cpp20::stop_token,
             spsc::Receiver<Input> rx,
             spsc::Sender<Output> tx,
             Func input2output)
@@ -219,7 +219,7 @@ namespace osc::spsc
             return 0;  // receiver hung up
         }
 
-        Worker(jthread&& worker, spsc::Sender<Input>&& tx, spsc::Receiver<Output>&& rx) :
+        Worker(cpp20::jthread&& worker, spsc::Sender<Input>&& tx, spsc::Receiver<Output>&& rx) :
             m_WorkerThread{std::move(worker)},
             m_Tx{std::move(tx)},
             m_Rx{std::move(rx)}
@@ -233,7 +233,7 @@ namespace osc::spsc
         {
             auto [reqTransmit, reqReceive] = spsc::channel<Input>();
             auto [respTransmit, respReceive] = spsc::channel<Output>();
-            jthread worker{Worker::main, std::move(reqReceive), std::move(respTransmit), std::move(f)};
+            cpp20::jthread worker{Worker::main, std::move(reqReceive), std::move(respTransmit), std::move(f)};
             return Worker{std::move(worker), std::move(reqTransmit), std::move(respReceive)};
         }
 

@@ -1,6 +1,8 @@
 #include "LOGLPointShadowsTab.hpp"
 
-#include <IconsFontAwesome5.h>
+#include <oscar_learnopengl/MouseCapturingCamera.hpp>
+
+#include <SDL_events.h>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Graphics.hpp>
@@ -15,38 +17,36 @@
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureDimensionality.hpp>
 #include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Eulers.hpp>
-#include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/UnitVec3.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <SDL_events.h>
 
+#include <cmath>
 #include <array>
 #include <chrono>
-#include <cmath>
-#include <string>
 #include <utility>
 
 using namespace osc::literals;
 using osc::AngleAxis;
-using osc::Camera;
 using osc::Color;
 using osc::CStringView;
-using osc::Normalize;
+using osc::MouseCapturingCamera;
 using osc::RenderTexture;
 using osc::RenderTextureDescriptor;
 using osc::RenderTextureFormat;
 using osc::RenderTextureReadWrite;
 using osc::TextureDimensionality;
 using osc::Transform;
+using osc::UnitVec3;
 using osc::Vec2i;
 using osc::Vec3;
 
@@ -59,7 +59,7 @@ namespace
     {
         return {
             .scale = Vec3(0.75f),
-            .rotation = AngleAxis(60_deg, Normalize(Vec3{1.0f, 0.0f, 1.0f})),
+            .rotation = AngleAxis(60_deg, UnitVec3{1.0f, 0.0f, 1.0f}),
             .position = {-1.5f, 2.0f, -3.0f},
         };
     }
@@ -99,9 +99,9 @@ namespace
         return RenderTexture{desc};
     }
 
-    Camera CreateCamera()
+    MouseCapturingCamera CreateCamera()
     {
-        Camera rv;
+        MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
         rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
@@ -120,27 +120,18 @@ private:
     void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
-        m_IsMouseCaptured = true;
+        m_SceneCamera.onMount();
     }
 
     void implOnUnmount() final
     {
-        m_IsMouseCaptured = false;
+        m_SceneCamera.onUnmount();
         App::upd().makeMainEventLoopWaiting();
-        App::upd().setShowCursor(true);
     }
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-            m_IsMouseCaptured = false;
-            return true;
-        }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
-            m_IsMouseCaptured = true;
-            return true;
-        }
-        return false;
+        return m_SceneCamera.onEvent(e);
     }
 
     void implOnTick() final
@@ -154,22 +145,9 @@ private:
 
     void implOnDraw() final
     {
-        handleMouseCapture();
+        m_SceneCamera.onDraw();
         draw3DScene();
         draw2DUI();
-    }
-
-    void handleMouseCapture()
-    {
-        if (m_IsMouseCaptured) {
-            UpdateEulerCameraFromImGuiUserInput(m_SceneCamera, m_CameraEulers);
-            ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-            App::upd().setShowCursor(false);
-        }
-        else {
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
-            App::upd().setShowCursor(true);
-        }
     }
 
     void draw3DScene()
@@ -263,8 +241,7 @@ private:
         App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/SoftScene.frag"),
     }};
 
-    Camera m_SceneCamera = CreateCamera();
-    Eulers m_CameraEulers = {};
+    MouseCapturingCamera m_SceneCamera = CreateCamera();
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
         App::resource("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
@@ -273,7 +250,6 @@ private:
     std::array<SceneCube, 6> m_SceneCubes = MakeSceneCubes();
     RenderTexture m_DepthTexture = CreateDepthTexture();
     Vec3 m_LightPos = {};
-    bool m_IsMouseCaptured = false;
     bool m_ShowShadows = true;
     bool m_UseSoftShadows = false;
 

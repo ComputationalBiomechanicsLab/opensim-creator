@@ -1,6 +1,5 @@
 #pragma once
 
-#include <utility>
 #include <variant>
 
 namespace osc::mi

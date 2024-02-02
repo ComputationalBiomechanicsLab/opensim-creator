@@ -9,7 +9,6 @@
 #include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/EnumHelpers.hpp>
 
 #include <array>
 #include <cstddef>

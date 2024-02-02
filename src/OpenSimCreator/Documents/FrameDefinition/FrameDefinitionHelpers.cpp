@@ -5,12 +5,12 @@
 #include <OpenSimCreator/Graphics/ModelRendererParams.hpp>
 #include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 
+#include <Simbody.h>
 #include <OpenSim/Simulation/Model/Appearance.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/Vec3.hpp>
-#include <Simbody.h>
 
 #include <array>
 #include <atomic>

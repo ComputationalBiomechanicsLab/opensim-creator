@@ -4,7 +4,7 @@
 #include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
-#include <utility>
+#include <memory>
 
 using osc::CStringView;
 

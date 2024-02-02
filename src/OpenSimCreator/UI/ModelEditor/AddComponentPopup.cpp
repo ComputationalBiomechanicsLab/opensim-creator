@@ -5,8 +5,8 @@
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include <imgui.h>
 #include <IconsFontAwesome5.h>
+#include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -17,21 +17,21 @@
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/Station.h>
+#include <SimTKcommon/SmallMatrix.h>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
-#include <SimTKcommon/SmallMatrix.h>
 
 #include <algorithm>
 #include <cstddef>
 #include <memory>
 #include <optional>
-#include <vector>
 #include <sstream>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace OpenSim
 {

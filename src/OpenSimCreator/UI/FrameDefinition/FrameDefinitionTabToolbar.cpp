@@ -9,8 +9,8 @@
 #include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Maths/Vec2.hpp>
-#include <oscar/UI/Tabs/ITabHost.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Tabs/ITabHost.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 
 #include <cstddef>

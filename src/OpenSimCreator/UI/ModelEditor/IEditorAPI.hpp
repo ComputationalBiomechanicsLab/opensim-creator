@@ -2,10 +2,7 @@
 
 #include <OpenSimCreator/UI/IPopupAPI.hpp>
 
-#include <cstddef>
 #include <memory>
-#include <string>
-#include <utility>
 
 namespace OpenSim { class ComponentPath; }
 namespace OpenSim { class Coordinate; }

@@ -8,18 +8,18 @@
 #include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.hpp>
 #include <OpenSimCreator/Documents/Simulation/Simulation.hpp>
 #include <OpenSimCreator/Documents/Simulation/StoFileSimulation.hpp>
-#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
 #include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp>
+#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
 #include <OpenSimCreator/Platform/RecentFiles.hpp>
-#include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.hpp>
-#include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.hpp>
-#include <OpenSimCreator/UI/Simulation/SimulatorTab.hpp>
 #include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/LoadingTab.hpp>
 #include <OpenSimCreator/UI/PerformanceAnalyzerTab.hpp>
+#include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.hpp>
+#include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.hpp>
+#include <OpenSimCreator/UI/Simulation/SimulatorTab.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
-#include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 #include <OpenSimCreator/Utils/ShapeFitters.hpp>
+#include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -28,18 +28,16 @@
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/Property.h>
-#include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
-#include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
+#include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
+#include <OpenSim/Simulation/Model/JointSet.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/OffsetFrame.h>
 #include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Simulation/Model/PathPointSet.h>
-#include <OpenSim/Simulation/Model/JointSet.h>
-#include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
@@ -51,7 +49,6 @@
 #include <oscar/Maths/Plane.hpp>
 #include <oscar/Maths/Quat.hpp>
 #include <oscar/Maths/Sphere.hpp>
-#include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
@@ -67,9 +64,10 @@
 #include <memory>
 #include <optional>
 #include <sstream>
+#include <string>
+#include <string_view>
 #include <typeinfo>
 #include <utility>
-#include <vector>
 
 using osc::App;
 using osc::BodyDetails;

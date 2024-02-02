@@ -1,11 +1,12 @@
 #include "OpenSimDecorationGenerator.hpp"
 
 #include <OpenSimCreator/Documents/Model/IConstModelStatePair.hpp>
-#include <OpenSimCreator/Graphics/SimTKDecorationGenerator.hpp>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
+#include <OpenSimCreator/Graphics/SimTKDecorationGenerator.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 
+#include <SimTKcommon.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
@@ -30,19 +31,17 @@
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
-#include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Perf.hpp>
-#include <SimTKcommon.h>
 
-#include <algorithm>
 #include <cmath>
+#include <algorithm>
 #include <cstddef>
 #include <iterator>
 #include <memory>
 #include <numbers>
 #include <optional>
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>

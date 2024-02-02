@@ -5,14 +5,12 @@
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
-#include <oscar/Scene/SceneRendererParams.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 
 #include <imgui.h>
 
 #include <memory>
 #include <span>
-#include <utility>
 
 class osc::SceneViewer::Impl final {
 public:
@@ -24,10 +22,10 @@ public:
         m_Renderer.render(els, params);
 
         // emit the texture to ImGui
-        osc::DrawTextureAsImGuiImage(m_Renderer.updRenderTexture(), m_Renderer.getDimensions());
+        DrawTextureAsImGuiImage(m_Renderer.updRenderTexture(), m_Renderer.getDimensions());
         m_IsHovered = ImGui::IsItemHovered();
-        m_IsLeftClicked = ImGui::IsItemHovered() && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
-        m_IsRightClicked = ImGui::IsItemHovered() && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
+        m_IsLeftClicked = ImGui::IsItemHovered() && IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
+        m_IsRightClicked = ImGui::IsItemHovered() && IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
     }
 
     bool isHovered() const

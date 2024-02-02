@@ -15,6 +15,7 @@
 
 using osc::LogLevel;
 using osc::LogMessage;
+using osc::SetClipboardText;
 
 namespace
 {
@@ -54,7 +55,7 @@ namespace
 
         std::string full_log_content = std::move(ss).str();
 
-        osc::SetClipboardText(full_log_content.c_str());
+        SetClipboardText(full_log_content.c_str());
     }
 }
 
@@ -97,7 +98,7 @@ public:
             {
                 log::getTracebackLog().lock()->clear();
             }
-            App::upd().addFrameAnnotation("LogClearButton", osc::GetItemRect());
+            App::upd().addFrameAnnotation("LogClearButton", GetItemRect());
 
             ImGui::SameLine();
             if (ImGui::Button("turn off"))

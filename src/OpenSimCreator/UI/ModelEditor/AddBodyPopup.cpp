@@ -8,19 +8,18 @@
 #include <OpenSimCreator/UI/ModelEditor/SelectGeometryPopup.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include <imgui.h>
 #include <IconsFontAwesome5.h>
+#include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
-#include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Ground.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Widgets/StandardPopup.hpp>
 
 #include <memory>
 #include <span>

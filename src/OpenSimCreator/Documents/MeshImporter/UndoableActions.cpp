@@ -6,19 +6,19 @@
 #include <OpenSimCreator/Documents/MeshImporter/Document.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/DocumentHelpers.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/Joint.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Mesh.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/MIIDs.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/MIObject.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/MIObjectHelpers.hpp>
+#include <OpenSimCreator/Documents/MeshImporter/Mesh.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/Station.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
+#include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 
 #include <cstddef>
 #include <sstream>

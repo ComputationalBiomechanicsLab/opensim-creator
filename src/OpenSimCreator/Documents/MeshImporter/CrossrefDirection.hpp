@@ -19,6 +19,6 @@ namespace osc::mi
 
     constexpr bool operator&(CrossrefDirection lhs, CrossrefDirection rhs)
     {
-        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
+        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
     }
 }

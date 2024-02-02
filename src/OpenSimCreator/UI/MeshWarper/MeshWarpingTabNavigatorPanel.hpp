@@ -10,8 +10,8 @@
 #include <oscar/Maths/Circle.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Vec2.hpp>
-#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 
 #include <memory>
 #include <string_view>

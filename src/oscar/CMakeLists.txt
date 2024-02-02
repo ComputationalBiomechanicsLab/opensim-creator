@@ -28,15 +28,24 @@ add_library(oscar STATIC
     Formats/SVG.hpp
     Formats/SVG.cpp
 
+    Graphics/Detail/CPUDataType.hpp
+    Graphics/Detail/CPUImageFormat.hpp
     Graphics/Detail/ShaderLocations.hpp
+    Graphics/Detail/ShaderPropertyTypeList.hpp
+    Graphics/Detail/ShaderPropertyTypeTraits.hpp
+    Graphics/Detail/TextureFormatList.hpp
+    Graphics/Detail/TextureFormatTraits.hpp
     Graphics/Detail/VertexAttributeFormatHelpers.hpp
     Graphics/Detail/VertexAttributeFormatList.hpp
     Graphics/Detail/VertexAttributeFormatTraits.hpp
     Graphics/Detail/VertexAttributeHelpers.hpp
     Graphics/Detail/VertexAttributeList.hpp
     Graphics/Detail/VertexAttributeTraits.hpp
+    Graphics/OpenGL/CPUDataTypeOpenGLTraits.hpp
+    Graphics/OpenGL/CPUImageFormatOpenGLTraits.hpp
     Graphics/OpenGL/Gl.cpp
     Graphics/OpenGL/Gl.hpp
+    Graphics/OpenGL/TextureFormatOpenGLTraits.hpp
     Graphics/AntiAliasingLevel.cpp
     Graphics/AntiAliasingLevel.hpp
     Graphics/BlitFlags.hpp
@@ -136,6 +145,8 @@ add_library(oscar STATIC
     Maths/Tetrahedron.hpp
     Maths/Transform.hpp
     Maths/Triangle.hpp
+    Maths/UnitVec.hpp
+    Maths/UnitVec3.hpp
     Maths/Vec.hpp
     Maths/Vec2.hpp
     Maths/Vec3.hpp
@@ -304,6 +315,8 @@ add_library(oscar STATIC
     Variant/Variant.hpp
     Variant/VariantType.cpp
     Variant/VariantType.hpp
+    Variant/VariantTypeList.hpp
+    Variant/VariantTypeTraits.hpp
 )
 
 target_include_directories(oscar PUBLIC

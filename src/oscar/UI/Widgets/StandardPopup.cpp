@@ -6,8 +6,8 @@
 
 #include <imgui.h>
 
+#include <optional>
 #include <string_view>
-#include <utility>
 
 osc::StandardPopup::StandardPopup(std::string_view popupName) :
     StandardPopup{popupName, {512.0f, 0.0f}, ImGuiWindowFlags_AlwaysAutoResize}
@@ -189,7 +189,7 @@ void osc::StandardPopup::setModal(bool v)
 void osc::StandardPopup::setRect(Rect const& rect)
 {
     m_MaybePosition = rect.p1;
-    m_Dimensions = osc::Dimensions(rect);
+    m_Dimensions = Dimensions(rect);
 }
 
 void osc::StandardPopup::setDimensions(Vec2 d)

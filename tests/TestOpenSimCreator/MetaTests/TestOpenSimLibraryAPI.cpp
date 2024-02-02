@@ -3,7 +3,7 @@
 
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
 
-#include <gtest/gtest.h>
+#include <Simbody.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
@@ -11,13 +11,11 @@
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
-#include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <gtest/gtest.h>
 #include <oscar/Platform/AppConfig.hpp>
-#include <Simbody.h>
 
 #include <array>
 #include <filesystem>

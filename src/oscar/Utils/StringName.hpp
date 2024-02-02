@@ -203,7 +203,7 @@ namespace osc
         template<std::convertible_to<std::string_view> StringLike>
         friend auto operator<=>(StringName const& lhs, StringLike const& rhs)
         {
-            return ThreeWayComparison(std::string_view{lhs}, std::string_view{rhs});
+            return cpp20::ThreeWayComparison(std::string_view{lhs}, std::string_view{rhs});
         }
 
     private:

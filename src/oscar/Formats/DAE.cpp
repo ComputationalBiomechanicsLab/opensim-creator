@@ -2,8 +2,8 @@
 
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Mat4.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/os.hpp>
@@ -26,6 +26,7 @@ using osc::Mesh;
 using osc::MeshTopology;
 using osc::SceneDecoration;
 using osc::Transform;
+using osc::ValuePtr;
 using osc::Vec2;
 using osc::Vec3;
 
@@ -139,17 +140,17 @@ namespace
 {
     std::span<float const> ToFloatSpan(std::span<Vec2 const> s)
     {
-        return {osc::ValuePtr(s[0]), 2 * s.size()};
+        return {ValuePtr(s[0]), 2 * s.size()};
     }
 
     std::span<float const> ToFloatSpan(std::span<Vec3 const> s)
     {
-        return {osc::ValuePtr(s[0]), 3 * s.size()};
+        return {ValuePtr(s[0]), 3 * s.size()};
     }
 
     std::span<float const> ToFloatSpan(Color const& v)
     {
-        return {osc::ValuePtr(v), 4};
+        return {ValuePtr(v), 4};
     }
 
     std::ostream& operator<<(std::ostream& out, std::span<float const> vs)
@@ -373,7 +374,7 @@ namespace
 
     void WriteTransformMatrix(std::ostream& o, Transform const& t)
     {
-        Mat4 const m = osc::ToMat4(t);
+        Mat4 const m = ToMat4(t);
 
         // row-major
         o << R"(        <matrix sid="transform">)";

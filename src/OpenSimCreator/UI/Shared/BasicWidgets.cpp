@@ -6,12 +6,11 @@
 #include <OpenSimCreator/Documents/Simulation/IntegratorMethod.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationModelStatePair.hpp>
 #include <OpenSimCreator/Graphics/CustomRenderingOptions.hpp>
-#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
-#include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp>
 #include <OpenSimCreator/Graphics/ModelRendererParams.hpp>
 #include <OpenSimCreator/Graphics/MuscleDecorationStyle.hpp>
 #include <OpenSimCreator/Graphics/MuscleSizingStyle.hpp>
-#include <OpenSimCreator/Graphics/SimTKMeshLoader.hpp>
+#include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp>
+#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
 #include <OpenSimCreator/OutputExtractors/ComponentOutputExtractor.hpp>
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.hpp>
 #include <OpenSimCreator/Platform/RecentFile.hpp>
@@ -22,15 +21,16 @@
 #include <OpenSimCreator/Utils/ParamValue.hpp>
 #include <OpenSimCreator/Utils/SimTKHelpers.hpp>
 
+#include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <IconsFontAwesome5.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Point.h>
+#include <SimTKcommon/basics.h>
 #include <oscar/Formats/DAE.hpp>
 #include <oscar/Formats/OBJ.hpp>
 #include <oscar/Formats/STL.hpp>
@@ -40,35 +40,29 @@
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Platform/os.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
+#include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/os.hpp>
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
-#include <oscar/UI/Widgets/GuiRuler.hpp>
-#include <oscar/UI/Widgets/IconWithMenu.hpp>
 #include <oscar/UI/IconCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Widgets/IconWithMenu.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
-#include <SimTKcommon/basics.h>
 
-#include <array>
 #include <algorithm>
-#include <cstdio>
+#include <array>
 #include <cstddef>
 #include <filesystem>
 #include <fstream>
-#include <map>
-#include <numbers>
 #include <optional>
 #include <span>
 #include <sstream>
 #include <string>
 #include <utility>
 #include <variant>
-#include <vector>
 
 using namespace osc::literals;
 

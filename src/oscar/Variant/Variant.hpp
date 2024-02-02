@@ -8,8 +8,8 @@
 
 #include <cstddef>
 #include <iosfwd>
-#include <string>
 #include <string_view>
+#include <string>
 #include <utility>
 #include <variant>
 
@@ -56,7 +56,7 @@ namespace osc
         }
 
     private:
-        friend struct std::hash<osc::Variant>;
+        friend struct std::hash<Variant>;
 
         std::variant<
             std::monostate,

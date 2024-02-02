@@ -1,15 +1,13 @@
 #include "ChecklistPanel.hpp"
 
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
-#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.hpp>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.hpp>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <OpenSim/Simulation/Model/Frame.h>
-#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
@@ -17,10 +15,8 @@
 #include <concepts>
 #include <cstddef>
 #include <functional>
-#include <sstream>
 #include <string>
 #include <string_view>
-#include <utility>
 
 using osc::BeginTooltip;
 using osc::Color;

@@ -1,8 +1,10 @@
 #include "LOGLPBRSpecularIrradianceTab.hpp"
 
-#include <IconsFontAwesome5.h>
-#include <oscar/Graphics/ColorSpace.hpp>
+#include <oscar_learnopengl/MouseCapturingCamera.hpp>
+
+#include <SDL_events.h>
 #include <oscar/Graphics/Camera.hpp>
+#include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Cubemap.hpp>
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
@@ -12,27 +14,25 @@
 #include <oscar/Graphics/RenderTextureFormat.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
+#include <oscar/Graphics/TextureWrapMode.hpp>
 #include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <SDL_events.h>
 
 #include <array>
-#include <string>
 #include <utility>
 
 using namespace osc::literals;
+namespace Graphics = osc::Graphics;
+namespace cpp20 = osc::cpp20;
 using osc::App;
 using osc::CalcCubemapViewProjMatrices;
 using osc::Camera;
@@ -45,8 +45,9 @@ using osc::Identity;
 using osc::ImageLoadingFlags;
 using osc::LoadTexture2DFromImage;
 using osc::Mat4;
-using osc::Mesh;
 using osc::Material;
+using osc::Mesh;
+using osc::MouseCapturingCamera;
 using osc::Perspective;
 using osc::RenderTexture;
 using osc::RenderTextureFormat;
@@ -81,9 +82,9 @@ namespace
     constexpr int c_NumCols = 7;
     constexpr float c_CellSpacing = 2.5f;
 
-    Camera CreateCamera()
+    MouseCapturingCamera CreateCamera()
     {
-        Camera rv;
+        MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
@@ -104,7 +105,7 @@ namespace
 
         RenderTexture cubemapRenderTarget{{512, 512}};
         cubemapRenderTarget.setDimensionality(TextureDimensionality::Cube);
-        cubemapRenderTarget.setColorFormat(RenderTextureFormat::ARGBFloat16);
+        cubemapRenderTarget.setColorFormat(RenderTextureFormat::RGBFloat16);
 
         // create a 90 degree cube cone projection matrix
         Mat4 const projectionMatrix = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
@@ -122,7 +123,7 @@ namespace
         );
 
         Camera camera;
-        osc::Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
+        Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
         camera.renderTo(cubemapRenderTarget);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -133,7 +134,7 @@ namespace
     {
         RenderTexture irradianceCubemap{{32, 32}};
         irradianceCubemap.setDimensionality(TextureDimensionality::Cube);
-        irradianceCubemap.setColorFormat(RenderTextureFormat::ARGBFloat16);
+        irradianceCubemap.setColorFormat(RenderTextureFormat::RGBFloat16);
 
         Mat4 const captureProjection = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
@@ -149,7 +150,7 @@ namespace
         );
 
         Camera camera;
-        osc::Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
+        Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
         camera.renderTo(irradianceCubemap);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -160,11 +161,11 @@ namespace
         RenderTexture const& environmentMap)
     {
         int constexpr levelZeroWidth = 128;
-        static_assert(osc::popcount(static_cast<unsigned>(levelZeroWidth)) == 1);
+        static_assert(cpp20::popcount(static_cast<unsigned>(levelZeroWidth)) == 1);
 
         RenderTexture captureRT{{levelZeroWidth, levelZeroWidth}};
         captureRT.setDimensionality(TextureDimensionality::Cube);
-        captureRT.setColorFormat(RenderTextureFormat::ARGBFloat16);
+        captureRT.setColorFormat(RenderTextureFormat::RGBFloat16);
 
         Mat4 const captureProjection = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
@@ -178,14 +179,13 @@ namespace
 
         Camera camera;
 
-        Cubemap rv{levelZeroWidth, TextureFormat::RGBAFloat};
-        // TODO: wrap-s/t/r == GL_CLAMP_TO_EDGE
-        // TODO: ensure GL_TEXTURE_MIN_FILTER is GL_LINEAR_MIPMAP_LINEAR
-        // TODO: ensure GL_TEXTURE_MAG_FILTER is GL_LINEAR
+        Cubemap rv{levelZeroWidth, TextureFormat::RGBFloat};  // TODO: add support for TextureFormat:::RGFloat16
+        rv.setWrapMode(TextureWrapMode::Clamp);
+        rv.setFilterMode(TextureFilterMode::Mipmap);
 
         size_t const maxMipmapLevel = static_cast<size_t>(std::max(
             0,
-            osc::bit_width(static_cast<size_t>(levelZeroWidth)) - 1
+            cpp20::bit_width(static_cast<size_t>(levelZeroWidth)) - 1
         ));
         static_assert(maxMipmapLevel == 7);
 
@@ -198,9 +198,9 @@ namespace
             float const roughness = static_cast<float>(mip)/static_cast<float>(maxMipmapLevel);
             material.setFloat("uRoughness", roughness);
 
-            osc::Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
+            Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
             camera.renderTo(captureRT);
-            osc::Graphics::CopyTexture(captureRT, rv, mip);
+            Graphics::CopyTexture(captureRT, rv, mip);
         }
 
         return rv;
@@ -209,7 +209,7 @@ namespace
     Texture2D Create2DBRDFLookup()
     {
         RenderTexture renderTex{{512, 512}};
-        renderTex.setColorFormat(RenderTextureFormat::ARGBFloat16);  // TODO RG16F in LearnOpenGL
+        renderTex.setColorFormat(RenderTextureFormat::RGFloat16);
 
         Material material{Shader{
             App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/BRDF.vert"),
@@ -223,17 +223,17 @@ namespace
         camera.setProjectionMatrixOverride(Identity<Mat4>());
         camera.setViewMatrixOverride(Identity<Mat4>());
 
-        osc::Graphics::DrawMesh(quad, Identity<Transform>(), material, camera);
+        Graphics::DrawMesh(quad, Identity<Transform>(), material, camera);
         camera.renderTo(renderTex);
 
         Texture2D rv{
             {512, 512},
-            TextureFormat::RGBFloat,  // TODO: RG16F in LearnOpenGL
+            TextureFormat::RGFloat,  // TODO: add support for TextureFormat:::RGFloat16
             ColorSpace::Linear,
             TextureWrapMode::Clamp,
             TextureFilterMode::Linear,
         };
-        osc::Graphics::CopyTexture(renderTex, rv);
+        Graphics::CopyTexture(renderTex, rv);
         return rv;
     }
 
@@ -257,28 +257,18 @@ private:
     void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
-        m_IsMouseCaptured = true;
+        m_Camera.onMount();
     }
 
     void implOnUnmount() final
     {
-        App::upd().setShowCursor(true);
+        m_Camera.onUnmount();
         App::upd().makeMainEventLoopWaiting();
-        m_IsMouseCaptured = false;
     }
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        // handle mouse input
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-            m_IsMouseCaptured = false;
-            return true;
-        }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
-            m_IsMouseCaptured = true;
-            return true;
-        }
-        return false;
+        return m_Camera.onEvent(e);
     }
 
     void implOnDraw() final
@@ -287,26 +277,12 @@ private:
         m_OutputRender.setDimensions(Dimensions(outputRect));
         m_OutputRender.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
 
-        updateCameraFromInputs();
+        m_Camera.onDraw();
         draw3DRender();
         drawBackground();
         Graphics::BlitToScreen(m_OutputRender, outputRect);
         draw2DUI();
         m_PerfPanel.onDraw();
-    }
-
-    void updateCameraFromInputs()
-    {
-        // handle mouse capturing
-        if (m_IsMouseCaptured) {
-            UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
-            ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-            App::upd().setShowCursor(false);
-        }
-        else {
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
-            App::upd().setShowCursor(true);
-        }
     }
 
     void draw3DRender()
@@ -316,7 +292,7 @@ private:
         m_PBRMaterial.setVec3Array("uLightColors", c_LightRadiances);
         m_PBRMaterial.setRenderTexture("uIrradianceMap", m_IrradianceMap);
         m_PBRMaterial.setCubemap("uPrefilterMap", m_PrefilterMap);
-        m_PBRMaterial.setFloat("uMaxReflectionLOD", static_cast<float>(osc::bit_width(static_cast<size_t>(m_PrefilterMap.getWidth()) - 1)));
+        m_PBRMaterial.setFloat("uMaxReflectionLOD", static_cast<float>(cpp20::bit_width(static_cast<size_t>(m_PrefilterMap.getWidth()) - 1)));
         m_PBRMaterial.setTexture("uBRDFLut", m_BRDFLookup);
 
         drawSpheres();
@@ -400,9 +376,7 @@ private:
     Material m_PBRMaterial = CreateMaterial();
     Mesh m_SphereMesh = GenerateUVSphereMesh(64, 64);
 
-    Camera m_Camera = CreateCamera();
-    Eulers m_CameraEulers = {};
-    bool m_IsMouseCaptured = true;
+    MouseCapturingCamera m_Camera = CreateCamera();
 
     PerfPanel m_PerfPanel{"Perf"};
 };

@@ -1,48 +1,44 @@
 #include "LOGLParallaxMappingTab.hpp"
 
 #include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
+#include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
-#include <oscar/Graphics/Camera.hpp>
+#include <SDL_events.h>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/MeshIndicesView.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Graphics/Shader.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <SDL_events.h>
 
 #include <array>
 #include <cstdint>
 #include <memory>
-#include <string>
-#include <utility>
 #include <vector>
 
 using namespace osc::literals;
 using osc::App;
 using osc::CalcTangentVectors;
-using osc::Camera;
 using osc::ColorSpace;
 using osc::CStringView;
 using osc::LoadTexture2DFromImage;
 using osc::Material;
 using osc::Mesh;
 using osc::MeshTopology;
+using osc::MouseCapturingCamera;
 using osc::Shader;
 using osc::Texture2D;
 using osc::Vec2;
@@ -95,9 +91,9 @@ namespace
         return rv;
     }
 
-    Camera CreateCamera()
+    MouseCapturingCamera CreateCamera()
     {
-        Camera rv;
+        MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
@@ -148,41 +144,22 @@ public:
 private:
     void implOnMount() final
     {
-        m_IsMouseCaptured = true;
+        m_Camera.onMount();
     }
 
     void implOnUnmount() final
     {
-        m_IsMouseCaptured = false;
-        App::upd().setShowCursor(true);
+        m_Camera.onUnmount();
     }
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        // handle mouse capturing
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-            m_IsMouseCaptured = false;
-            return true;
-        }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
-            m_IsMouseCaptured = true;
-            return true;
-        }
-        return false;
+        return m_Camera.onEvent(e);
     }
 
     void implOnDraw() final
     {
-        // handle mouse capturing and update camera
-        if (m_IsMouseCaptured) {
-            UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
-            ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-            App::upd().setShowCursor(false);
-        }
-        else {
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
-            App::upd().setShowCursor(true);
-        }
+        m_Camera.onDraw();
 
         // clear screen and ensure camera has correct pixel rect
         App::upd().clearScreen({0.1f, 0.1f, 0.1f, 1.0f});
@@ -216,15 +193,13 @@ private:
     Mesh m_QuadMesh = GenerateQuad();
 
     // scene state
-    Camera m_Camera = CreateCamera();
-    Eulers m_CameraEulers = {};
+    MouseCapturingCamera m_Camera = CreateCamera();
     Transform m_QuadTransform;
     Transform m_LightTransform = {
         .scale = Vec3{0.2f},
         .position = {0.5f, 1.0f, 0.3f},
     };
     bool m_IsMappingEnabled = true;
-    bool m_IsMouseCaptured = false;
 };
 
 

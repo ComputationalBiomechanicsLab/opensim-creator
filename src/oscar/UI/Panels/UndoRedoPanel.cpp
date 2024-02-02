@@ -10,7 +10,9 @@
 #include <string_view>
 #include <utility>
 
-class osc::UndoRedoPanel::Impl final : public osc::StandardPanelImpl {
+using osc::CStringView;
+
+class osc::UndoRedoPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
         std::string_view panelName,
@@ -85,7 +87,7 @@ osc::UndoRedoPanel::UndoRedoPanel(UndoRedoPanel&&) noexcept = default;
 osc::UndoRedoPanel& osc::UndoRedoPanel::operator=(UndoRedoPanel&&) noexcept = default;
 osc::UndoRedoPanel::~UndoRedoPanel() noexcept = default;
 
-osc::CStringView osc::UndoRedoPanel::implGetName() const
+CStringView osc::UndoRedoPanel::implGetName() const
 {
     return m_Impl->getName();
 }

@@ -2,18 +2,17 @@
 
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
 
-#include <gtest/gtest.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
-#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
-#include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSimCreator/ComponentRegistry/ComponentRegistry.hpp>
 #include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.hpp>
+#include <gtest/gtest.h>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/Log.hpp>
 

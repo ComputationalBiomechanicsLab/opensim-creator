@@ -3,7 +3,6 @@
 #include <oscar/UI/Widgets/SaveChangesPopup.hpp>
 
 #include <filesystem>
-#include <memory>
 #include <vector>
 #include <optional>
 

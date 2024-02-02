@@ -6,7 +6,6 @@
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/PropertyObjArray.h>
-#include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/Assertions.hpp>

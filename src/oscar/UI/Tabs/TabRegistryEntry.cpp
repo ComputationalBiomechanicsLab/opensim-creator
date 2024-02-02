@@ -8,6 +8,9 @@
 #include <string>
 #include <utility>
 
+using osc::CStringView;
+using osc::ITab;
+
 class osc::TabRegistryEntry::Impl final {
 public:
 
@@ -49,12 +52,12 @@ osc::TabRegistryEntry& osc::TabRegistryEntry::operator=(TabRegistryEntry const&)
 osc::TabRegistryEntry& osc::TabRegistryEntry::operator=(TabRegistryEntry&&) noexcept = default;
 osc::TabRegistryEntry::~TabRegistryEntry() noexcept = default;
 
-osc::CStringView osc::TabRegistryEntry::getName() const
+CStringView osc::TabRegistryEntry::getName() const
 {
     return m_Impl->getName();
 }
 
-std::unique_ptr<osc::ITab> osc::TabRegistryEntry::createTab(ParentPtr<ITabHost> const& host) const
+std::unique_ptr<ITab> osc::TabRegistryEntry::createTab(ParentPtr<ITabHost> const& host) const
 {
     return m_Impl->createTab(host);
 }

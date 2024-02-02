@@ -7,8 +7,8 @@
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.hpp>
 #include <OpenSimCreator/UI/IPopupAPI.hpp>
 
-#include <gtest/gtest.h>
 #include <OpenSim/Common/Component.h>
+#include <gtest/gtest.h>
 #include <oscar/Platform/App.hpp>
 #include <oscar/UI/Widgets/IPopup.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>

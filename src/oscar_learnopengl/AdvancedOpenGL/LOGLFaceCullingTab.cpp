@@ -1,37 +1,34 @@
 #include "LOGLFaceCullingTab.hpp"
 
-#include <IconsFontAwesome5.h>
+#include <oscar_learnopengl/MouseCapturingCamera.hpp>
+
+#include <SDL_events.h>
 #include <imgui.h>
-#include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Graphics.hpp>
+#include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <SDL_events.h>
 
-#include <string>
-#include <utility>
+#include <memory>
 
 using namespace osc::literals;
 using osc::App;
-using osc::Camera;
 using osc::ColorSpace;
 using osc::CStringView;
 using osc::GenerateCubeMesh;
 using osc::LoadTexture2DFromImage;
 using osc::Material;
 using osc::Mesh;
+using osc::MouseCapturingCamera;
 using osc::Shader;
 using osc::Transform;
 using osc::Vec3;
@@ -62,9 +59,9 @@ namespace
         return rv;
     }
 
-    Camera CreateCameraThatMatchesLearnOpenGL()
+    MouseCapturingCamera CreateCameraThatMatchesLearnOpenGL()
     {
-        Camera rv;
+        MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
@@ -83,47 +80,25 @@ private:
     void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
-        m_IsMouseCaptured = true;
+        m_Camera.onMount();
     }
 
     void implOnUnmount() final
     {
-        m_IsMouseCaptured = false;
-        App::upd().setShowCursor(true);
+        m_Camera.onUnmount();
         App::upd().makeMainEventLoopWaiting();
     }
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-            m_IsMouseCaptured = false;
-            return true;
-        }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
-            m_IsMouseCaptured = true;
-            return true;
-        }
-        return false;
+        return m_Camera.onEvent(e);
     }
 
     void implOnDraw() final
     {
-        handleMouseInputs();
+        m_Camera.onDraw();
         drawScene();
         draw2DUI();
-    }
-
-    void handleMouseInputs()
-    {
-        if (m_IsMouseCaptured) {
-            UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
-            ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-            App::upd().setShowCursor(false);
-        }
-        else {
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
-            App::upd().setShowCursor(true);
-        }
     }
 
     void drawScene()
@@ -150,9 +125,7 @@ private:
 
     Material m_Material = GenerateUVTestingTextureMappedMaterial();
     Mesh m_Cube = GenerateCubeSimilarlyToLOGL();
-    Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
-    bool m_IsMouseCaptured = false;
-    Eulers m_CameraEulers = {};
+    MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
 };
 
 

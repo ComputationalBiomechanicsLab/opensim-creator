@@ -2,13 +2,13 @@
 
 #include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.hpp>
 
+#include <Simbody.h>
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/Point.h>
-#include <Simbody.h>
 
 #include <array>
 #include <optional>

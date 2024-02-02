@@ -5,8 +5,10 @@
 
 #include <imgui.h>
 
+#include <memory>
 #include <string_view>
-#include <utility>
+
+using osc::CStringView;
 
 class osc::LogViewerPanel::Impl final : public StandardPanelImpl {
 public:
@@ -33,7 +35,7 @@ osc::LogViewerPanel::LogViewerPanel(LogViewerPanel&&) noexcept = default;
 osc::LogViewerPanel& osc::LogViewerPanel::operator=(LogViewerPanel&&) noexcept = default;
 osc::LogViewerPanel::~LogViewerPanel() noexcept = default;
 
-osc::CStringView osc::LogViewerPanel::implGetName() const
+CStringView osc::LogViewerPanel::implGetName() const
 {
     return m_Impl->getName();
 }

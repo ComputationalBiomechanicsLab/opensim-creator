@@ -1,8 +1,8 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElement.hpp>
-#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementType.hpp>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.hpp>
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementType.hpp>
 
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/StringName.hpp>

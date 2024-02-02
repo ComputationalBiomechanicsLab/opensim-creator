@@ -1,36 +1,40 @@
 #include "LOGLCoordinateSystemsTab.hpp"
 
-#include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
-
+#include <SDL_events.h>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
 #include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/Eulers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Transform.hpp>
+#include <oscar/Maths/UnitVec3.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <SDL_events.h>
+#include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
+#include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
 #include <array>
-#include <cstdint>
 #include <memory>
-#include <numbers>
 
 using namespace osc::literals;
-using osc::Camera;
+using osc::App;
+using osc::ColorSpace;
 using osc::CStringView;
+using osc::ImageLoadingFlags;
+using osc::LoadTexture2DFromImage;
+using osc::Material;
+using osc::MouseCapturingCamera;
+using osc::Shader;
+using osc::UnitVec3;
 using osc::Vec3;
 
 namespace
@@ -51,14 +55,42 @@ namespace
 
     constexpr CStringView c_TabStringID = "LearnOpenGL/CoordinateSystems";
 
-    Camera CreateCameraThatMatchesLearnOpenGL()
+    MouseCapturingCamera CreateCameraThatMatchesLearnOpenGL()
     {
-        Camera rv;
+        MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setCameraFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.2f, 0.3f, 0.3f, 1.0f});
+        return rv;
+    }
+
+    Material MakeBoxMaterial()
+    {
+        Material rv{Shader{
+            App::slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.vert"),
+            App::slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.frag"),
+        }};
+
+        rv.setTexture(
+            "uTexture1",
+            LoadTexture2DFromImage(
+                App::resource("oscar_learnopengl/textures/container.jpg"),
+                ColorSpace::sRGB,
+                ImageLoadingFlags::FlipVertically
+            )
+        );
+
+        rv.setTexture(
+            "uTexture2",
+            LoadTexture2DFromImage(
+                App::resource("oscar_learnopengl/textures/awesomeface.png"),
+                ColorSpace::sRGB,
+                ImageLoadingFlags::FlipVertically
+            )
+        );
+
         return rv;
     }
 }
@@ -67,74 +99,35 @@ class osc::LOGLCoordinateSystemsTab::Impl final : public StandardTabImpl {
 public:
 
     Impl() : StandardTabImpl{c_TabStringID}
-    {
-        m_Material.setTexture(
-            "uTexture1",
-            LoadTexture2DFromImage(
-                App::resource("oscar_learnopengl/textures/container.jpg"),
-                ColorSpace::sRGB,
-                ImageLoadingFlags::FlipVertically
-            )
-        );
-        m_Material.setTexture(
-            "uTexture2",
-            LoadTexture2DFromImage(
-                App::resource("oscar_learnopengl/textures/awesomeface.png"),
-                ColorSpace::sRGB,
-                ImageLoadingFlags::FlipVertically
-            )
-        );
-    }
+    {}
 
 private:
     void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
-        m_IsMouseCaptured = true;
+        m_Camera.onMount();
     }
 
     void implOnUnmount() final
     {
-        m_IsMouseCaptured = false;
-        App::upd().setShowCursor(true);
+        m_Camera.onUnmount();
         App::upd().makeMainEventLoopWaiting();
     }
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-            m_IsMouseCaptured = false;
-            return true;
-        }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
-            m_IsMouseCaptured = true;
-            return true;
-        }
-        return false;
+        return m_Camera.onEvent(e);
     }
 
     void implOnTick() final
     {
         double const dt = App::get().getFrameDeltaSinceAppStartup().count();
-        auto const angle = 50_deg * dt;
-        Vec3 const axis = Normalize(Vec3{0.5f, 1.0f, 0.0f});
-
-        m_Step1.rotation = AngleAxis(angle, axis);
+        m_Step1Transform.rotation = AngleAxis(50_deg * dt, UnitVec3{0.5f, 1.0f, 0.0f});
     }
 
     void implOnDraw() final
     {
-        // handle mouse capturing
-        if (m_IsMouseCaptured) {
-            UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
-            ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-            App::upd().setShowCursor(false);
-        }
-        else {
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
-            App::upd().setShowCursor(true);
-        }
-
+        m_Camera.onDraw();
         draw3DScene();
         draw2DUI();
     }
@@ -146,17 +139,18 @@ private:
 
         // draw 3D scene
         if (m_ShowStep1) {
-            Graphics::DrawMesh(m_Mesh, m_Step1, m_Material, m_Camera);
+            Graphics::DrawMesh(m_Mesh, m_Step1Transform, m_Material, m_Camera);
         }
         else {
-            Vec3 const axis = Normalize(Vec3{1.0f, 0.3f, 0.5f});
-            for (size_t i = 0; i < c_CubePositions.size(); ++i)
-            {
-                Vec3 const& pos = c_CubePositions[i];
+            UnitVec3 const axis{1.0f, 0.3f, 0.5f};
 
+            for (size_t i = 0; i < c_CubePositions.size(); ++i) {
                 Graphics::DrawMesh(
                     m_Mesh,
-                    {.rotation = AngleAxis(i++ * 20_deg, axis), .position = pos},
+                    Transform{
+                        .rotation = AngleAxis(i * 20_deg, axis),
+                        .position = c_CubePositions[i],
+                    },
                     m_Material,
                     m_Camera
                 );
@@ -170,30 +164,25 @@ private:
     {
         ImGui::Begin("Tutorial Step");
         ImGui::Checkbox("step1", &m_ShowStep1);
-        if (m_IsMouseCaptured) {
+        if (m_Camera.isCapturingMouse()) {
             ImGui::Text("mouse captured (esc to uncapture)");
         }
 
         Vec3 const cameraPos = m_Camera.getPosition();
         ImGui::Text("camera pos = (%f, %f, %f)", cameraPos.x, cameraPos.y, cameraPos.z);
-        Vec<3, Degrees> const cameraEulers = m_CameraEulers;
+        Vec<3, Degrees> const cameraEulers = m_Camera.eulers();
         ImGui::Text("camera eulers = (%f, %f, %f)", cameraEulers.x.count(), cameraEulers.y.count(), cameraEulers.z.count());
         ImGui::End();
 
         m_PerfPanel.onDraw();
     }
 
-    Material m_Material{Shader{
-        App::slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.vert"),
-        App::slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.frag"),
-    }};
+    Material m_Material = MakeBoxMaterial();
     Mesh m_Mesh = GenerateLearnOpenGLCubeMesh();
-    Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
-    bool m_IsMouseCaptured = false;
-    Eulers m_CameraEulers = {};
+    MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
 
     bool m_ShowStep1 = false;
-    Transform m_Step1;
+    Transform m_Step1Transform;
 
     PerfPanel m_PerfPanel{"perf"};
 };

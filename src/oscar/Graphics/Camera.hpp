@@ -10,7 +10,6 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Utils/CopyOnUpdPtr.hpp>
 
-#include <cstdint>
 #include <iosfwd>
 #include <optional>
 
@@ -24,7 +23,7 @@ namespace osc
     //
     // encapsulates a camera viewport that can be drawn to, with the intention of producing
     // a 2D rendered image of the drawn elements
-    class Camera final {
+    class Camera {
     public:
         Camera();
 

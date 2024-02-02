@@ -4,27 +4,26 @@
 #include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
-#include <imgui.h>
 #include <IconsFontAwesome5.h>
+#include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 
 #include <algorithm>
 #include <array>
-#include <concepts>
 #include <cstddef>
 #include <limits>
 #include <memory>
-#include <string>
 #include <stdexcept>
+#include <string>
 #include <typeinfo>
 #include <utility>
 

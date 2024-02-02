@@ -1,10 +1,8 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.hpp>
-#include <OpenSimCreator/Documents/Simulation/SimulationReport.hpp>
 
 #include <memory>
-#include <optional>
 #include <string_view>
 
 namespace osc { class Simulation; }

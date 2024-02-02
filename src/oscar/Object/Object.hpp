@@ -1,13 +1,14 @@
 #pragma once
 
 #include <oscar/Object/Class.hpp>
-#include <oscar/Utils/StringName.hpp>
 #include <oscar/Variant/Variant.hpp>
 
 #include <cstddef>
 #include <memory>
 #include <optional>
 #include <string>
+
+namespace osc { class StringName; }
 
 namespace osc
 {

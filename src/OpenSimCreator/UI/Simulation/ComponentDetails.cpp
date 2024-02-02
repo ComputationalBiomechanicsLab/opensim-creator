@@ -6,14 +6,14 @@
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Component.h>
-#include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Common/ComponentSocket.h>
 
 #include <string>
 #include <vector>
 
-osc::ComponentDetails::Response osc::ComponentDetails::onDraw(SimTK::State const& state,
-                                                            OpenSim::Component const* comp)
+osc::ComponentDetails::Response osc::ComponentDetails::onDraw(
+    SimTK::State const& state,
+    OpenSim::Component const* comp)
 {
     Response rv;
 

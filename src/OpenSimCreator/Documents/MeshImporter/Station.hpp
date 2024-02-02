@@ -1,7 +1,6 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/MeshImporter/CrossrefDescriptor.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/CrossrefDirection.hpp>
 #include <OpenSimCreator/Documents/MeshImporter/MIObjectCRTP.hpp>
 
 #include <oscar/Maths/AABB.hpp>

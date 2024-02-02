@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+using osc::TabRegistryEntry;
+
 class osc::TabRegistry::Impl final {
 public:
     void registerTab(TabRegistryEntry const& newEntry)
@@ -58,12 +60,12 @@ size_t osc::TabRegistry::size() const
     return m_Impl->size();
 }
 
-osc::TabRegistryEntry osc::TabRegistry::operator[](size_t i) const
+TabRegistryEntry osc::TabRegistry::operator[](size_t i) const
 {
     return (*m_Impl)[i];
 }
 
-std::optional<osc::TabRegistryEntry> osc::TabRegistry::getByName(std::string_view name) const
+std::optional<TabRegistryEntry> osc::TabRegistry::getByName(std::string_view name) const
 {
     return m_Impl->getByName(name);
 }

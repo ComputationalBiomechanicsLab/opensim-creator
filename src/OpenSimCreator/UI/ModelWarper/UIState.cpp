@@ -7,7 +7,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <OpenSim/Common/Component.h>
-#include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Platform/os.hpp>

@@ -6,11 +6,11 @@
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.hpp>
 #include <OpenSimCreator/Documents/Simulation/SimulationStatus.hpp>
-#include <OpenSimCreator/OutputExtractors/IntegratorOutputExtractor.hpp>
 #include <OpenSimCreator/OutputExtractors/IOutputExtractor.hpp>
+#include <OpenSimCreator/OutputExtractors/IntegratorOutputExtractor.hpp>
 #include <OpenSimCreator/OutputExtractors/MultiBodySystemOutputExtractor.hpp>
 
-#include <OpenSim/Common/ComponentOutput.h>
+#include <SimTKsimbody.h>
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Platform/Log.hpp>
@@ -18,7 +18,6 @@
 #include <oscar/Shims/Cpp20/thread.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <SimTKsimbody.h>
 #include <simmath/Integrator.h>
 #include <simmath/TimeStepper.h>
 
@@ -30,7 +29,6 @@
 #include <functional>
 #include <memory>
 #include <optional>
-#include <ratio>
 #include <span>
 #include <string>
 #include <unordered_map>
@@ -39,6 +37,7 @@
 
 namespace OpenSim { class Component; }
 
+namespace cpp20 = osc::cpp20;
 
 namespace
 {
@@ -276,7 +275,7 @@ namespace
 
     // this is the main function that the simulator thread works through (unguarded against exceptions)
     osc::SimulationStatus FdSimulationMainUnguarded(
-        osc::stop_token stopToken,
+        cpp20::stop_token stopToken,
         SimulatorThreadInput& input,
         SharedState& shared)
     {
@@ -367,7 +366,7 @@ namespace
     //
     // guarded against exceptions (which are handled as simulation failures)
     int FdSimulationMain(
-        osc::stop_token stopToken,
+        cpp20::stop_token stopToken,
         std::unique_ptr<SimulatorThreadInput> input,
         std::shared_ptr<SharedState> shared)  // NOLINT(performance-unnecessary-value-param)
     {
@@ -439,7 +438,7 @@ public:
 private:
     ForwardDynamicSimulatorParams m_SimulationParams;
     std::shared_ptr<SharedState> m_Shared;
-    jthread m_SimulatorThread;
+    cpp20::jthread m_SimulatorThread;
 };
 
 

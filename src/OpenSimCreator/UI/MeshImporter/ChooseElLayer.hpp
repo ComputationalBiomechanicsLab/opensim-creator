@@ -8,6 +8,7 @@
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterSharedState.hpp>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterUILayer.hpp>
 
+#include <SDL_events.h>
 #include <imgui.h>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/EasingFunctions.hpp>
@@ -18,7 +19,6 @@
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <SDL_events.h>
 
 #include <algorithm>
 #include <cstddef>

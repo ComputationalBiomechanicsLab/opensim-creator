@@ -6,10 +6,8 @@
 #include <OpenSimCreator/Documents/MeshWarper/UndoableTPSDocument.hpp>
 
 #include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/StringName.hpp>
 #include <oscar/Utils/UID.hpp>
 
-#include <span>
 #include <string_view>
 #include <unordered_set>
 

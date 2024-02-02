@@ -3,8 +3,8 @@
 #include <OpenSimCreator/OutputExtractors/IOutputExtractor.hpp>
 
 #include <oscar/Shims/Cpp23/utility.hpp>
-#include <oscar/Utils/ClonePtr.hpp>
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/ClonePtr.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -32,12 +32,12 @@ namespace osc
 
     constexpr OutputSubfield operator|(OutputSubfield lhs, OutputSubfield rhs)
     {
-        return static_cast<OutputSubfield>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
+        return static_cast<OutputSubfield>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
     }
 
     constexpr bool operator&(OutputSubfield lhs, OutputSubfield rhs)
     {
-        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0;
+        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
     }
 
     std::optional<CStringView> GetOutputSubfieldLabel(OutputSubfield);

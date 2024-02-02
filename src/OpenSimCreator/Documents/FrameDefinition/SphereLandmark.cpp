@@ -2,7 +2,6 @@
 
 #include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.hpp>
 
-#include <OpenSim/Common/ModelDisplayHints.h>
 #include <Simbody.h>  // TODO: OpenSim's Appearance header doesn't include simbody properly
 #include <OpenSim/Simulation/Model/Appearance.h>
 

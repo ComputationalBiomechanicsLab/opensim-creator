@@ -6,9 +6,9 @@
 
 #include <oscar/Utils/StdVariantHelpers.hpp>
 
+#include <exception>
 #include <filesystem>
 #include <fstream>
-#include <stdexcept>
 #include <string>
 #include <variant>
 

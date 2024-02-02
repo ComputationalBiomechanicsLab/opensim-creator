@@ -7,9 +7,13 @@ namespace osc
 {
     // format of the "color" (albedo) part of a render
     enum class RenderTextureFormat {
-        ARGB32,
-        ARGBFloat16,
         Red8,
+        ARGB32,
+
+        RGFloat16,
+        RGBFloat16,
+        ARGBFloat16,
+
         Depth,  // implementation-defined: pretend it's a high-res red texture
         NUM_OPTIONS,
 

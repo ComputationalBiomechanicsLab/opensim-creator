@@ -1,10 +1,10 @@
 #include "OutputPlotsPanel.hpp"
 
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.hpp>
+#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.hpp>
 #include <OpenSimCreator/UI/Simulation/SimulationOutputPlot.hpp>
-#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -12,9 +12,8 @@
 #include <oscar/UI/Panels/StandardPanelImpl.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 
-#include <string_view>
 #include <memory>
-#include <utility>
+#include <string_view>
 
 namespace
 {

@@ -3,8 +3,6 @@
 #include <oscar/Platform/Logger.hpp>
 #include <oscar/Platform/LogLevel.hpp>
 #include <oscar/Platform/LogMessage.hpp>
-#include <oscar/Platform/LogMessageView.hpp>
-#include <oscar/Platform/LogSink.hpp>
 #include <oscar/Utils/CircularBuffer.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>

@@ -10,10 +10,14 @@
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
 
+#include <exception>
+#include <memory>
 #include <string>
-#include <utility>
 
-class osc::ErrorTab::Impl final : public osc::StandardTabImpl {
+using osc::CStringView;
+using osc::UID;
+
+class osc::ErrorTab::Impl final : public StandardTabImpl {
 public:
     explicit Impl(std::exception const& ex) :
         StandardTabImpl{ICON_FA_SPIDER " Error"},
@@ -77,12 +81,12 @@ osc::ErrorTab::ErrorTab(ErrorTab&&) noexcept = default;
 osc::ErrorTab& osc::ErrorTab::operator=(ErrorTab&&) noexcept = default;
 osc::ErrorTab::~ErrorTab() noexcept = default;
 
-osc::UID osc::ErrorTab::implGetID() const
+UID osc::ErrorTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::ErrorTab::implGetName() const
+CStringView osc::ErrorTab::implGetName() const
 {
     return m_Impl->getName();
 }

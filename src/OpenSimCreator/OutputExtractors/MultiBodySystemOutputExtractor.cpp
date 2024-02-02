@@ -6,12 +6,9 @@
 #include <oscar/Utils/HashHelpers.hpp>
 #include <simbody/internal/MultibodySystem.h>
 
-#include <algorithm>
 #include <cmath>
-#include <memory>
 #include <optional>
 #include <span>
-#include <utility>
 #include <vector>
 
 namespace

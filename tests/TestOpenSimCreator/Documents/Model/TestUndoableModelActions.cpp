@@ -2,7 +2,6 @@
 
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
 
-#include <gtest/gtest.h>
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
@@ -11,6 +10,7 @@
 #include <OpenSimCreator/Documents/Model/ObjectPropertyEdit.hpp>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <gtest/gtest.h>
 #include <oscar/Maths/MathHelpers.hpp>
 
 #include <functional>

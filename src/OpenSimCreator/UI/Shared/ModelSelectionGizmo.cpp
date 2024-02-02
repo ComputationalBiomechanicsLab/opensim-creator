@@ -8,11 +8,10 @@
 #include <imgui.h>
 #include <ImGuizmo.h>  // care: must be included after imgui
 #include <OpenSim/Common/ComponentPath.h>
-#include <OpenSim/Simulation/Model/Marker.h>
+#include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 #include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/Eulers.hpp>
@@ -24,11 +23,11 @@
 #include <oscar/Maths/Vec.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
+#include <oscar/Platform/Log.hpp>
 #include <oscar/Shims/Cpp23/utility.hpp>
 #include <oscar/UI/ImGuizmoHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
-#include <Simbody.h>
 
 #include <concepts>
 #include <cstddef>
@@ -37,10 +36,27 @@
 #include <type_traits>
 #include <utility>
 
+namespace cpp23 = osc::cpp23;
 using osc::Degrees;
 using osc::Eulers;
+using osc::ExtractEulerAngleXYZ;
+using osc::FindComponent;
+using osc::Identity;
+using osc::Inverse;
 using osc::Mat4;
+using osc::Normalize;
+using osc::PolarPerspectiveCamera;
 using osc::Quat;
+using osc::Rect;
+using osc::ScopeGuard;
+using osc::SetImguizmoStyleToOSCStandard;
+using osc::ToMat4;
+using osc::ToMat4x4;
+using osc::ToQuat;
+using osc::ToSimTKVec3;
+using osc::ToVec3;
+using osc::UndoableModelStatePair;
+using osc::ValuePtr;
 using osc::Vec;
 using osc::Vec3;
 using osc::Vec4;
@@ -57,24 +73,24 @@ namespace
 
     constexpr SupportedManipulationOpFlags operator|(SupportedManipulationOpFlags lhs, SupportedManipulationOpFlags rhs)
     {
-        return static_cast<SupportedManipulationOpFlags>(osc::to_underlying(lhs) | osc::to_underlying(rhs));
+        return static_cast<SupportedManipulationOpFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
     }
 
     constexpr bool operator&(SupportedManipulationOpFlags lhs, SupportedManipulationOpFlags rhs)
     {
-        return (osc::to_underlying(lhs) & osc::to_underlying(rhs)) != 0u;
+        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0u;
     }
 
     // type-erased virtual base class that each concrete manipulator inherits from
-    class VirtualSelectionManipulator {
+    class ISelectionManipulator {
     protected:
-        VirtualSelectionManipulator() = default;
-        VirtualSelectionManipulator(VirtualSelectionManipulator const&) = default;
-        VirtualSelectionManipulator(VirtualSelectionManipulator&&) noexcept = default;
-        VirtualSelectionManipulator& operator=(VirtualSelectionManipulator const&) = default;
-        VirtualSelectionManipulator& operator=(VirtualSelectionManipulator&&) noexcept = default;
+        ISelectionManipulator() = default;
+        ISelectionManipulator(ISelectionManipulator const&) = default;
+        ISelectionManipulator(ISelectionManipulator&&) noexcept = default;
+        ISelectionManipulator& operator=(ISelectionManipulator const&) = default;
+        ISelectionManipulator& operator=(ISelectionManipulator&&) noexcept = default;
     public:
-        virtual ~VirtualSelectionManipulator() noexcept = default;
+        virtual ~ISelectionManipulator() noexcept = default;
 
         SupportedManipulationOpFlags getSupportedManipulationOps() const
         {
@@ -113,22 +129,22 @@ namespace
     // effectively, only stores the model+path to the thing being manipulated, and performs
     // runtime checks to ensure the component still exists in the model
     template<std::derived_from<OpenSim::Component> TComponent>
-    class StandardSelectionManipulatorImpl : public VirtualSelectionManipulator {
+    class SelectionManipulator : public ISelectionManipulator {
     protected:
-        StandardSelectionManipulatorImpl(
-            std::shared_ptr<osc::UndoableModelStatePair> model_,
+        SelectionManipulator(
+            std::shared_ptr<UndoableModelStatePair> model_,
             TComponent const& component) :
 
             m_Model{std::move(model_)},
             m_ComponentAbsPath{component.getAbsolutePath()}
         {
             OSC_ASSERT(m_Model != nullptr);
-            OSC_ASSERT(osc::FindComponent<TComponent>(m_Model->getModel(), m_ComponentAbsPath));
+            OSC_ASSERT(FindComponent<TComponent>(m_Model->getModel(), m_ComponentAbsPath));
         }
 
         TComponent const* findSelection() const
         {
-            return osc::FindComponent<TComponent>(m_Model->getModel(), m_ComponentAbsPath);
+            return FindComponent<TComponent>(m_Model->getModel(), m_ComponentAbsPath);
         }
 
         OpenSim::Model const& getModel() const
@@ -141,7 +157,7 @@ namespace
             return m_Model->getState();
         }
 
-        osc::UndoableModelStatePair& getUndoableModel()
+        UndoableModelStatePair& getUndoableModel()
         {
             return *m_Model;
         }
@@ -153,7 +169,7 @@ namespace
             TComponent const* maybeSelected = findSelection();
             if (!maybeSelected)
             {
-                return osc::Identity<Mat4>();  // selection of that type does not exist in the model
+                return Identity<Mat4>();  // selection of that type does not exist in the model
             }
             return implGetCurrentModelMatrix(*maybeSelected);
         }
@@ -196,7 +212,7 @@ namespace
         virtual void implOnApplyRotation(TComponent const&, Eulers const&) {}  // default to noop
         virtual void implOnSave(TComponent const&) = 0;
 
-        std::shared_ptr<osc::UndoableModelStatePair> m_Model;
+        std::shared_ptr<UndoableModelStatePair> m_Model;
         OpenSim::ComponentPath m_ComponentAbsPath;
     };
 }
@@ -205,14 +221,14 @@ namespace
 namespace
 {
     // manipulator for `OpenSim::Station`
-    class StationManipulator final : public StandardSelectionManipulatorImpl<OpenSim::Station> {
+    class StationManipulator final : public SelectionManipulator<OpenSim::Station> {
     public:
         StationManipulator(
-            std::shared_ptr<osc::UndoableModelStatePair> model_,
+            std::shared_ptr<UndoableModelStatePair> model_,
             OpenSim::Station const& station) :
-            StandardSelectionManipulatorImpl{std::move(model_), station}
-        {
-        }
+            SelectionManipulator{std::move(model_), station}
+        {}
+
     private:
 
         SupportedManipulationOpFlags implGetSupportedManipulationOps() const final
@@ -224,8 +240,8 @@ namespace
             OpenSim::Station const& station) const final
         {
             SimTK::State const& state = getState();
-            Mat4 currentXformInGround = osc::ToMat4(station.getParentFrame().getRotationInGround(state));
-            currentXformInGround[3] = Vec4{osc::ToVec3(station.getLocationInGround(state)), 1.0f};
+            Mat4 currentXformInGround = ToMat4(station.getParentFrame().getRotationInGround(state));
+            currentXformInGround[3] = Vec4{ToVec3(station.getLocationInGround(state)), 1.0f};
 
             return currentXformInGround;
         }
@@ -236,7 +252,7 @@ namespace
         {
             SimTK::Rotation const parentToGroundRotation = station.getParentFrame().getRotationInGround(getState());
             SimTK::InverseRotation const& groundToParentRotation = parentToGroundRotation.invert();
-            Vec3 const translationInParent = osc::ToVec3(groundToParentRotation * osc::ToSimTKVec3(deltaTranslationInGround));
+            Vec3 const translationInParent = ToVec3(groundToParentRotation * ToSimTKVec3(deltaTranslationInGround));
 
             ActionTranslateStation(getUndoableModel(), station, translationInParent);
         }
@@ -248,14 +264,14 @@ namespace
     };
 
     // manipulator for `OpenSim::PathPoint`
-    class PathPointManipulator : public StandardSelectionManipulatorImpl<OpenSim::PathPoint> {
+    class PathPointManipulator : public SelectionManipulator<OpenSim::PathPoint> {
     public:
         PathPointManipulator(
-            std::shared_ptr<osc::UndoableModelStatePair> model_,
+            std::shared_ptr<UndoableModelStatePair> model_,
             OpenSim::PathPoint const& pathPoint) :
-            StandardSelectionManipulatorImpl{std::move(model_), pathPoint}
-        {
-        }
+            SelectionManipulator{std::move(model_), pathPoint}
+        {}
+
     private:
         SupportedManipulationOpFlags implGetSupportedManipulationOps() const final
         {
@@ -266,8 +282,8 @@ namespace
             OpenSim::PathPoint const& pathPoint) const final
         {
             SimTK::State const& state = getState();
-            Mat4 currentXformInGround = osc::ToMat4(pathPoint.getParentFrame().getRotationInGround(state));
-            currentXformInGround[3] = Vec4{osc::ToVec3(pathPoint.getLocationInGround(state)), 1.0f};
+            Mat4 currentXformInGround = ToMat4(pathPoint.getParentFrame().getRotationInGround(state));
+            currentXformInGround[3] = Vec4{ToVec3(pathPoint.getLocationInGround(state)), 1.0f};
 
             return currentXformInGround;
         }
@@ -278,7 +294,7 @@ namespace
         {
             SimTK::Rotation const parentToGroundRotation = pathPoint.getParentFrame().getRotationInGround(getState());
             SimTK::InverseRotation const& groundToParentRotation = parentToGroundRotation.invert();
-            Vec3 const translationInParent = osc::ToVec3(groundToParentRotation * osc::ToSimTKVec3(deltaTranslationInGround));
+            Vec3 const translationInParent = ToVec3(groundToParentRotation * ToSimTKVec3(deltaTranslationInGround));
 
             ActionTranslatePathPoint(getUndoableModel(), pathPoint, translationInParent);
         }
@@ -290,14 +306,14 @@ namespace
     };
 
     // manipulator for `OpenSim::PhysicalOffsetFrame`
-    class PhysicalOffsetFrameManipulator final : public StandardSelectionManipulatorImpl<OpenSim::PhysicalOffsetFrame> {
+    class PhysicalOffsetFrameManipulator final : public SelectionManipulator<OpenSim::PhysicalOffsetFrame> {
     public:
         PhysicalOffsetFrameManipulator(
-            std::shared_ptr<osc::UndoableModelStatePair> model_,
+            std::shared_ptr<UndoableModelStatePair> model_,
             OpenSim::PhysicalOffsetFrame const& pof) :
-            StandardSelectionManipulatorImpl{std::move(model_), pof}
-        {
-        }
+            SelectionManipulator{std::move(model_), pof}
+        {}
+
     private:
         SupportedManipulationOpFlags implGetSupportedManipulationOps() const final
         {
@@ -307,7 +323,7 @@ namespace
         Mat4 implGetCurrentModelMatrix(
             OpenSim::PhysicalOffsetFrame const& pof) const final
         {
-            return osc::ToMat4x4(pof.getTransformInGround(getState()));
+            return ToMat4x4(pof.getTransformInGround(getState()));
         }
 
         void implOnApplyTranslation(
@@ -316,14 +332,14 @@ namespace
         {
             SimTK::Rotation const parentToGroundRotation = pof.getParentFrame().getRotationInGround(getState());
             SimTK::InverseRotation const& groundToParentRotation = parentToGroundRotation.invert();
-            SimTK::Vec3 const deltaTranslationInParent = groundToParentRotation * osc::ToSimTKVec3(deltaTranslationInGround);
+            SimTK::Vec3 const deltaTranslationInParent = groundToParentRotation * ToSimTKVec3(deltaTranslationInGround);
             SimTK::Vec3 const& eulersInPofFrame = pof.get_orientation();
 
             ActionTransformPof(
                 getUndoableModel(),
                 pof,
-                osc::ToVec3(deltaTranslationInParent),
-                osc::ToVec3(eulersInPofFrame)
+                ToVec3(deltaTranslationInParent),
+                ToVec3(eulersInPofFrame)
             );
         }
 
@@ -335,16 +351,16 @@ namespace
             SimTK::State const& state = getState();
 
             Quat const deltaRotationInGround = WorldspaceRotation(deltaEulerRadiansInGround);
-            Quat const oldRotationInGround{osc::ToQuat(pof.getRotationInGround(state))};
-            Quat const parentRotationInGround = osc::ToQuat(parent.getRotationInGround(state));
-            Quat const newRotationInGround = osc::Normalize(deltaRotationInGround * oldRotationInGround);
-            Quat const newRotationInParent = osc::Inverse(parentRotationInGround) * newRotationInGround;
+            Quat const oldRotationInGround = ToQuat(pof.getRotationInGround(state));
+            Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
+            Quat const newRotationInGround = Normalize(deltaRotationInGround * oldRotationInGround);
+            Quat const newRotationInParent = Inverse(parentRotationInGround) * newRotationInGround;
 
             ActionTransformPof(
                 getUndoableModel(),
                 pof,
                 Vec3{},  // no translation delta
-                osc::ExtractEulerAngleXYZ(newRotationInParent)
+                ExtractEulerAngleXYZ(newRotationInParent)
             );
         }
 
@@ -357,14 +373,14 @@ namespace
     };
 
     // manipulator for `OpenSim::WrapObject`
-    class WrapObjectManipulator final : public StandardSelectionManipulatorImpl<OpenSim::WrapObject> {
+    class WrapObjectManipulator final : public SelectionManipulator<OpenSim::WrapObject> {
     public:
         WrapObjectManipulator(
-            std::shared_ptr<osc::UndoableModelStatePair> model_,
+            std::shared_ptr<UndoableModelStatePair> model_,
             OpenSim::WrapObject const& wo) :
-            StandardSelectionManipulatorImpl{std::move(model_), wo}
-        {
-        }
+            SelectionManipulator{std::move(model_), wo}
+        {}
+
     private:
         SupportedManipulationOpFlags implGetSupportedManipulationOps() const final
         {
@@ -378,7 +394,7 @@ namespace
             SimTK::Transform const frameToGround = wrapObj.getFrame().getTransformInGround(getState());
             SimTK::Transform const wrapToGround = frameToGround * wrapToFrame;
 
-            return osc::ToMat4x4(wrapToGround);
+            return ToMat4x4(wrapToGround);
         }
 
         void implOnApplyTranslation(
@@ -387,13 +403,13 @@ namespace
         {
             SimTK::Rotation const frameToGroundRotation = wrapObj.getFrame().getTransformInGround(getState()).R();
             SimTK::InverseRotation const& groundToFrameRotation = frameToGroundRotation.invert();
-            Vec3 const translationInPofFrame = osc::ToVec3(groundToFrameRotation * osc::ToSimTKVec3(deltaTranslationInGround));
+            Vec3 const translationInPofFrame = ToVec3(groundToFrameRotation * ToSimTKVec3(deltaTranslationInGround));
 
             ActionTransformWrapObject(
                 getUndoableModel(),
                 wrapObj,
                 translationInPofFrame,
-                osc::ToVec3(wrapObj.get_xyz_body_rotation())
+                ToVec3(wrapObj.get_xyz_body_rotation())
             );
         }
 
@@ -405,16 +421,16 @@ namespace
             SimTK::State const& state = getState();
 
             Quat const deltaRotationInGround = WorldspaceRotation(deltaEulerRadiansInGround);
-            Quat const oldRotationInGround{osc::ToQuat(parent.getTransformInGround(state).R() * wrapObj.getTransform().R())};
-            Quat const parentRotationInGround = osc::ToQuat(parent.getRotationInGround(state));
-            Quat const newRotationInGround = osc::Normalize(deltaRotationInGround * oldRotationInGround);
-            Quat const newRotationInParent = osc::Inverse(parentRotationInGround) * newRotationInGround;
+            Quat const oldRotationInGround = ToQuat(parent.getTransformInGround(state).R() * wrapObj.getTransform().R());
+            Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
+            Quat const newRotationInGround = Normalize(deltaRotationInGround * oldRotationInGround);
+            Quat const newRotationInParent = Inverse(parentRotationInGround) * newRotationInGround;
 
             ActionTransformWrapObject(
                 getUndoableModel(),
                 wrapObj,
                 Vec3{},  // no translation
-                osc::ExtractEulerAngleXYZ(newRotationInParent)
+                ExtractEulerAngleXYZ(newRotationInParent)
             );
         }
 
@@ -428,14 +444,14 @@ namespace
     };
 
     // manipulator for `OpenSim::ContactGeometry`
-    class ContactGeometryManipulator final : public StandardSelectionManipulatorImpl<OpenSim::ContactGeometry> {
+    class ContactGeometryManipulator final : public SelectionManipulator<OpenSim::ContactGeometry> {
     public:
         ContactGeometryManipulator(
-            std::shared_ptr<osc::UndoableModelStatePair> model_,
+            std::shared_ptr<UndoableModelStatePair> model_,
             OpenSim::ContactGeometry const& contactGeom) :
-            StandardSelectionManipulatorImpl{std::move(model_), contactGeom}
-        {
-        }
+            SelectionManipulator{std::move(model_), contactGeom}
+        {}
+
     private:
         SupportedManipulationOpFlags implGetSupportedManipulationOps() const final
         {
@@ -449,7 +465,7 @@ namespace
             SimTK::Transform const frameToGround = contactGeom.getFrame().getTransformInGround(getState());
             SimTK::Transform const wrapToGround = frameToGround * wrapToFrame;
 
-            return osc::ToMat4x4(wrapToGround);
+            return ToMat4x4(wrapToGround);
         }
 
         void implOnApplyTranslation(
@@ -458,13 +474,13 @@ namespace
         {
             SimTK::Rotation const frameToGroundRotation = contactGeom.getFrame().getTransformInGround(getState()).R();
             SimTK::InverseRotation const& groundToFrameRotation = frameToGroundRotation.invert();
-            Vec3 const translationInPofFrame = osc::ToVec3(groundToFrameRotation * osc::ToSimTKVec3(deltaTranslationInGround));
+            Vec3 const translationInPofFrame = ToVec3(groundToFrameRotation * ToSimTKVec3(deltaTranslationInGround));
 
-            osc::ActionTransformContactGeometry(
+            ActionTransformContactGeometry(
                 getUndoableModel(),
                 contactGeom,
                 translationInPofFrame,
-                osc::ToVec3(contactGeom.get_orientation())
+                ToVec3(contactGeom.get_orientation())
             );
         }
 
@@ -476,16 +492,16 @@ namespace
             SimTK::State const& state = getState();
 
             Quat const deltaRotationInGround = WorldspaceRotation(deltaEulerRadiansInGround);
-            Quat const oldRotationInGround{osc::ToQuat(parent.getTransformInGround(state).R() * contactGeom.getTransform().R())};
-            Quat const parentRotationInGround = osc::ToQuat(parent.getRotationInGround(state));
-            Quat const newRotationInGround = osc::Normalize(deltaRotationInGround * oldRotationInGround);
-            Quat const newRotationInParent = osc::Inverse(parentRotationInGround) * newRotationInGround;
+            Quat const oldRotationInGround = ToQuat(parent.getTransformInGround(state).R() * contactGeom.getTransform().R());
+            Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
+            Quat const newRotationInGround = Normalize(deltaRotationInGround * oldRotationInGround);
+            Quat const newRotationInParent = Inverse(parentRotationInGround) * newRotationInGround;
 
-            osc::ActionTransformContactGeometry(
+            ActionTransformContactGeometry(
                 getUndoableModel(),
                 contactGeom,
                 Vec3{},  // no translation
-                osc::ExtractEulerAngleXYZ(newRotationInParent)
+                ExtractEulerAngleXYZ(newRotationInParent)
             );
         }
 
@@ -504,11 +520,11 @@ namespace
 {
     void DrawGizmoOverlayInner(
         void* gizmoID,
-        osc::PolarPerspectiveCamera const& camera,
-        osc::Rect const& viewportRect,
+        PolarPerspectiveCamera const& camera,
+        Rect const& viewportRect,
         ImGuizmo::OPERATION operation,
         ImGuizmo::MODE mode,
-        VirtualSelectionManipulator& manipulator,
+        ISelectionManipulator& manipulator,
         bool& wasUsingLastFrameStorage)
     {
         // figure out whether the gizmo should even be drawn
@@ -528,7 +544,7 @@ namespace
         // important: necessary for multi-viewport gizmos
         // also important: don't use ImGui::GetID(), because it uses an ID stack and we might want to know if "isover" etc. is true outside of a window
         ImGuizmo::SetID(static_cast<int>(std::hash<void*>{}(gizmoID)));
-        osc::ScopeGuard const g{[]() { ImGuizmo::SetID(-1); }};
+        ScopeGuard const g{[]() { ImGuizmo::SetID(-1); }};
 
         ImGuizmo::SetRect(
             viewportRect.p1.x,
@@ -543,14 +559,14 @@ namespace
         Mat4 currentXformInGround = manipulator.getCurrentModelMatrix();
         Mat4 deltaInGround;
 
-        osc::SetImguizmoStyleToOSCStandard();
+        SetImguizmoStyleToOSCStandard();
         bool const gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
-            osc::ValuePtr(camera.getViewMtx()),
-            osc::ValuePtr(camera.getProjMtx(AspectRatio(viewportRect))),
+            ValuePtr(camera.getViewMtx()),
+            ValuePtr(camera.getProjMtx(AspectRatio(viewportRect))),
             operation,
             mode,
-            osc::ValuePtr(currentXformInGround),
-            osc::ValuePtr(deltaInGround),
+            ValuePtr(currentXformInGround),
+            ValuePtr(deltaInGround),
             nullptr,
             nullptr,
             nullptr
@@ -577,10 +593,10 @@ namespace
         Vec3 rotationInGroundDegrees{};
         Vec3 scaleInGround{};
         ImGuizmo::DecomposeMatrixToComponents(
-            osc::ValuePtr(deltaInGround),
-            osc::ValuePtr(translationInGround),
-            osc::ValuePtr(rotationInGroundDegrees),
-            osc::ValuePtr(scaleInGround)
+            ValuePtr(deltaInGround),
+            ValuePtr(translationInGround),
+            ValuePtr(rotationInGroundDegrees),
+            ValuePtr(scaleInGround)
         );
         Eulers rotationInGround = Vec<3, Degrees>(rotationInGroundDegrees);
 
@@ -596,11 +612,11 @@ namespace
 
     void DrawGizmoOverlay(
         void* gizmoID,
-        osc::PolarPerspectiveCamera const& camera,
-        osc::Rect const& viewportRect,
+        PolarPerspectiveCamera const& camera,
+        Rect const& viewportRect,
         ImGuizmo::OPERATION operation,
         ImGuizmo::MODE mode,
-        std::shared_ptr<osc::UndoableModelStatePair> const& model,
+        std::shared_ptr<UndoableModelStatePair> const& model,
         OpenSim::Component const& selected,
         bool& wasUsingLastFrameStorage)
     {

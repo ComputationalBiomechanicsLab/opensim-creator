@@ -2,8 +2,8 @@
 
 #include <OpenSimCreator/Documents/FrameDefinition/EdgePoints.hpp>
 
-#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <Simbody.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
 
 #include <utility>
 

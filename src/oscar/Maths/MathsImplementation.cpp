@@ -4,16 +4,16 @@
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Disc.hpp>
 #include <oscar/Maths/EasingFunctions.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/EulerPerspectiveCamera.hpp>
+#include <oscar/Maths/Line.hpp>
 #include <oscar/Maths/Mat3.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Mat4x3.hpp>
-#include <oscar/Maths/RayCollision.hpp>
-#include <oscar/Maths/EulerPerspectiveCamera.hpp>
-#include <oscar/Maths/Line.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Plane.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Maths/Quat.hpp>
+#include <oscar/Maths/RayCollision.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/Sphere.hpp>
@@ -32,14 +32,14 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
+#include <cmath>
 #include <algorithm>
 #include <array>
-#include <cmath>
 #include <concepts>
 #include <cstddef>
 #include <functional>
-#include <iterator>
 #include <iostream>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <numbers>
@@ -52,17 +52,28 @@
 
 using namespace osc::literals;
 using osc::AABB;
+using osc::At;
 using osc::BVHCollision;
 using osc::BVHNode;
 using osc::BVHPrim;
+using osc::Eulers;
 using osc::Line;
+using osc::Mat3;
+using osc::Mat4;
+using osc::PolarPerspectiveCamera;
+using osc::Quat;
 using osc::Radians;
 using osc::RayCollision;
+using osc::Rect;
 using osc::Sphere;
+using osc::Transform;
 using osc::Triangle;
+using osc::Vec2;
+using osc::Vec2i;
 using osc::Vec3;
+using osc::Vec4;
 
-// osc::AABB implementation
+// `AABB` implementation
 
 std::ostream& osc::operator<<(std::ostream& o, AABB const& aabb)
 {
@@ -174,7 +185,7 @@ namespace
         BVHNode const& node = nodes[nodeidx];
 
         // check ray-AABB intersection with the BVH node
-        std::optional<RayCollision> res = osc::GetRayCollisionAABB(ray, node.getBounds());
+        std::optional<RayCollision> res = GetRayCollisionAABB(ray, node.getBounds());
 
         if (!res)
         {
@@ -209,7 +220,7 @@ namespace
         ptrdiff_t nodeidx)
     {
         BVHNode const& node = nodes[nodeidx];
-        std::optional<RayCollision> const res = osc::GetRayCollisionAABB(ray, node.getBounds());
+        std::optional<RayCollision> const res = GetRayCollisionAABB(ray, node.getBounds());
 
         if (!res)
         {
@@ -225,16 +236,16 @@ namespace
         {
             // leaf node: check ray-triangle intersection
 
-            BVHPrim const& p = osc::At(prims, node.getFirstPrimOffset());
+            BVHPrim const& p = At(prims, node.getFirstPrimOffset());
 
             Triangle const triangle =
             {
-                osc::At(verts, osc::At(indices, p.getID())),
-                osc::At(verts, osc::At(indices, p.getID()+1)),
-                osc::At(verts, osc::At(indices, p.getID()+2)),
+                At(verts, At(indices, p.getID())),
+                At(verts, At(indices, p.getID()+1)),
+                At(verts, At(indices, p.getID()+2)),
             };
 
-            std::optional<RayCollision> const rayTriangleColl = osc::GetRayCollisionTriangle(ray, triangle);
+            std::optional<RayCollision> const rayTriangleColl = GetRayCollisionTriangle(ray, triangle);
 
             if (rayTriangleColl && rayTriangleColl->distance < closest)
             {
@@ -286,14 +297,14 @@ namespace
         {
             Triangle const t
             {
-                osc::At(verts, indices[i]),
-                osc::At(verts, indices[i+1]),
-                osc::At(verts, indices[i+2]),
+                At(verts, indices[i]),
+                At(verts, indices[i+1]),
+                At(verts, indices[i+2]),
             };
 
             if (HasAVolume(t))
             {
-                prims.emplace_back(static_cast<ptrdiff_t>(i), osc::AABBFromTriangle(t));
+                prims.emplace_back(static_cast<ptrdiff_t>(i), AABBFromTriangle(t));
             }
         }
 
@@ -304,12 +315,12 @@ namespace
     }
 
     template<std::unsigned_integral TIndex>
-    std::optional<osc::BVHCollision> GetClosestRayIndexedTriangleCollision(
+    std::optional<BVHCollision> GetClosestRayIndexedTriangleCollision(
         std::span<BVHNode const> nodes,
         std::span<BVHPrim const> prims,
         std::span<Vec3 const> verts,
         std::span<TIndex const> indices,
-        osc::Line const& ray)
+        Line const& ray)
     {
         if (nodes.empty() || prims.empty() || indices.empty())
         {
@@ -347,7 +358,7 @@ void osc::BVH::buildFromIndexedTriangles(std::span<Vec3 const> verts, std::span<
     );
 }
 
-std::optional<osc::BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision(
+std::optional<BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision(
     std::span<Vec3 const> verts,
     std::span<uint16_t const> indices,
     Line const& line) const
@@ -361,7 +372,7 @@ std::optional<osc::BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision
     );
 }
 
-std::optional<osc::BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision(
+std::optional<BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision(
     std::span<Vec3 const> verts,
     std::span<uint32_t const> indices,
     Line const& line) const
@@ -463,7 +474,7 @@ size_t osc::BVH::getMaxDepth() const
     return maxdepth;
 }
 
-std::optional<osc::AABB> osc::BVH::getRootAABB() const
+std::optional<AABB> osc::BVH::getRootAABB() const
 {
     return !m_Nodes.empty() ? m_Nodes.front().getBounds() : std::optional<AABB>{};
 }
@@ -507,7 +518,7 @@ osc::EulerPerspectiveCamera::EulerPerspectiveCamera() :
 {
 }
 
-osc::Vec3 osc::EulerPerspectiveCamera::getFront() const
+Vec3 osc::EulerPerspectiveCamera::getFront() const
 {
     return Normalize(Vec3
     {
@@ -517,22 +528,22 @@ osc::Vec3 osc::EulerPerspectiveCamera::getFront() const
     });
 }
 
-osc::Vec3 osc::EulerPerspectiveCamera::getUp() const
+Vec3 osc::EulerPerspectiveCamera::getUp() const
 {
     return Vec3{0.0f, 1.0f, 0.0f};
 }
 
-osc::Vec3 osc::EulerPerspectiveCamera::getRight() const
+Vec3 osc::EulerPerspectiveCamera::getRight() const
 {
     return glm::normalize(glm::cross(getFront(), getUp()));
 }
 
-osc::Mat4 osc::EulerPerspectiveCamera::getViewMtx() const
+Mat4 osc::EulerPerspectiveCamera::getViewMtx() const
 {
     return glm::lookAt(origin, origin + getFront(), getUp());
 }
 
-osc::Mat4 osc::EulerPerspectiveCamera::getProjMtx(float aspectRatio) const
+Mat4 osc::EulerPerspectiveCamera::getProjMtx(float aspectRatio) const
 {
     return Perspective(verticalFOV, aspectRatio, znear, zfar);
 }
@@ -620,7 +631,7 @@ void osc::PolarPerspectiveCamera::rescaleZNearAndZFarBasedOnRadius()
     zfar = 20.0f * radius;
 }
 
-osc::Mat4 osc::PolarPerspectiveCamera::getViewMtx() const
+Mat4 osc::PolarPerspectiveCamera::getViewMtx() const
 {
     // camera: at a fixed position pointing at a fixed origin. The "camera"
     // works by translating + rotating all objects around that origin. Rotation
@@ -641,17 +652,17 @@ osc::Mat4 osc::PolarPerspectiveCamera::getViewMtx() const
         Vec3{0.0f, 1.0f, 0.0f}) * rotTheta * rotPhi * panTranslate;
 }
 
-osc::Mat4 osc::PolarPerspectiveCamera::getProjMtx(float aspectRatio) const
+Mat4 osc::PolarPerspectiveCamera::getProjMtx(float aspectRatio) const
 {
     return Perspective(verticalFOV, aspectRatio, znear, zfar);
 }
 
-osc::Vec3 osc::PolarPerspectiveCamera::getPos() const
+Vec3 osc::PolarPerspectiveCamera::getPos() const
 {
     return PolarToCartesian(focusPoint, radius, theta, phi);
 }
 
-osc::Vec2 osc::PolarPerspectiveCamera::projectOntoScreenRect(Vec3 const& worldspaceLoc, Rect const& screenRect) const
+Vec2 osc::PolarPerspectiveCamera::projectOntoScreenRect(Vec3 const& worldspaceLoc, Rect const& screenRect) const
 {
     Vec2 dims = Dimensions(screenRect);
     Mat4 MV = getProjMtx(dims.x/dims.y) * getViewMtx();
@@ -669,7 +680,7 @@ osc::Vec2 osc::PolarPerspectiveCamera::projectOntoScreenRect(Vec3 const& worldsp
     return ndc2D;
 }
 
-osc::Line osc::PolarPerspectiveCamera::unprojectTopLeftPosToWorldRay(Vec2 pos, Vec2 dims) const
+Line osc::PolarPerspectiveCamera::unprojectTopLeftPosToWorldRay(Vec2 pos, Vec2 dims) const
 {
     Mat4 const viewMatrix = getViewMtx();
     Mat4 const projectionMatrix = getProjMtx(dims.x/dims.y);
@@ -682,21 +693,21 @@ osc::Line osc::PolarPerspectiveCamera::unprojectTopLeftPosToWorldRay(Vec2 pos, V
     );
 }
 
-osc::PolarPerspectiveCamera osc::CreateCameraWithRadius(float r)
+PolarPerspectiveCamera osc::CreateCameraWithRadius(float r)
 {
     PolarPerspectiveCamera rv;
     rv.radius = r;
     return rv;
 }
 
-osc::PolarPerspectiveCamera osc::CreateCameraFocusedOn(AABB const& aabb)
+PolarPerspectiveCamera osc::CreateCameraFocusedOn(AABB const& aabb)
 {
     PolarPerspectiveCamera rv;
     AutoFocus(rv, aabb);
     return rv;
 }
 
-osc::Vec3 osc::RecommendedLightDirection(osc::PolarPerspectiveCamera const& c)
+Vec3 osc::RecommendedLightDirection(PolarPerspectiveCamera const& c)
 {
     // theta should track with the camera, so that the scene is always
     // illuminated from the viewer's perspective (#275)
@@ -719,53 +730,53 @@ osc::Vec3 osc::RecommendedLightDirection(osc::PolarPerspectiveCamera const& c)
     return glm::normalize(-c.focusPoint - p);
 }
 
-void osc::FocusAlongX(osc::PolarPerspectiveCamera& camera)
+void osc::FocusAlongX(PolarPerspectiveCamera& camera)
 {
     camera.theta = 90_deg;
     camera.phi = 0_deg;
 }
 
-void osc::FocusAlongMinusX(osc::PolarPerspectiveCamera& camera)
+void osc::FocusAlongMinusX(PolarPerspectiveCamera& camera)
 {
     camera.theta = -90_deg;
     camera.phi = 0_deg;
 }
 
-void osc::FocusAlongY(osc::PolarPerspectiveCamera& camera)
+void osc::FocusAlongY(PolarPerspectiveCamera& camera)
 {
     camera.theta = 0_deg;
     camera.phi = 90_deg;
 }
 
-void osc::FocusAlongMinusY(osc::PolarPerspectiveCamera& camera)
+void osc::FocusAlongMinusY(PolarPerspectiveCamera& camera)
 {
     camera.theta = 0_deg;
     camera.phi = -90_deg;
 }
 
-void osc::FocusAlongZ(osc::PolarPerspectiveCamera& camera)
+void osc::FocusAlongZ(PolarPerspectiveCamera& camera)
 {
     camera.theta = 0_deg;
     camera.phi = 0_deg;
 }
 
-void osc::FocusAlongMinusZ(osc::PolarPerspectiveCamera& camera)
+void osc::FocusAlongMinusZ(PolarPerspectiveCamera& camera)
 {
     camera.theta = 180_deg;
     camera.phi = 0_deg;
 }
 
-void osc::ZoomIn(osc::PolarPerspectiveCamera& camera)
+void osc::ZoomIn(PolarPerspectiveCamera& camera)
 {
     camera.radius *= 0.8f;
 }
 
-void osc::ZoomOut(osc::PolarPerspectiveCamera& camera)
+void osc::ZoomOut(PolarPerspectiveCamera& camera)
 {
     camera.radius *= 1.2f;
 }
 
-void osc::Reset(osc::PolarPerspectiveCamera& camera)
+void osc::Reset(PolarPerspectiveCamera& camera)
 {
     camera = {};
     camera.theta = 45_deg;
@@ -834,7 +845,7 @@ float osc::Volume(Tetrahedron const& t)
 }
 
 // returns spatial centerpoint of a given tetrahedron
-osc::Vec3 osc::Center(Tetrahedron const& t)
+Vec3 osc::Center(Tetrahedron const& t)
 {
     // arithmetic mean of tetrahedron vertices
     return std::reduce(t.begin(), t.end()) / static_cast<float>(t.size());
@@ -848,12 +859,12 @@ std::ostream& osc::operator<<(std::ostream& o, Transform const& t)
     return o << "Transform(position = " << t.position << ", rotation = " << t.rotation << ", scale = " << t.scale << ')';
 }
 
-osc::Vec3 osc::operator*(Transform const& lhs, Vec3 const& rhs)
+Vec3 osc::operator*(Transform const& lhs, Vec3 const& rhs)
 {
     return TransformPoint(lhs, rhs);
 }
 
-osc::Transform& osc::operator+=(Transform& lhs, Transform const& rhs)
+Transform& osc::operator+=(Transform& lhs, Transform const& rhs)
 {
     lhs.position += rhs.position;
     lhs.rotation += rhs.rotation;
@@ -861,7 +872,7 @@ osc::Transform& osc::operator+=(Transform& lhs, Transform const& rhs)
     return lhs;
 }
 
-osc::Transform& osc::operator/=(Transform& lhs, float rhs)
+Transform& osc::operator/=(Transform& lhs, float rhs)
 {
     lhs.position /= rhs;
     lhs.rotation /= rhs;
@@ -1120,74 +1131,74 @@ namespace
 
 // MathHelpers
 
-osc::Quat osc::Rotation(Vec3 const& src, Vec3 const& dest)
+Quat osc::Rotation(Vec3 const& src, Vec3 const& dest)
 {
     return glm::rotation(src, dest);
 }
 
-osc::Quat osc::AngleAxis(Radians angle, Vec3 const& axis)
+Quat osc::AngleAxis(Radians angle, Vec3 const& axis)
 {
     return glm::angleAxis(angle.count(), axis);
 }
 
-osc::Mat4 osc::LookAt(Vec3 const& eye, Vec3 const& center, Vec3 const& up)
+Mat4 osc::LookAt(Vec3 const& eye, Vec3 const& center, Vec3 const& up)
 {
     return glm::lookAt(eye, center, up);
 }
 
-osc::Radians osc::VerticalToHorizontalFOV(Radians verticalFOV, float aspectRatio)
+Radians osc::VerticalToHorizontalFOV(Radians verticalFOV, float aspectRatio)
 {
     // https://en.wikipedia.org/wiki/Field_of_view_in_video_games#Field_of_view_calculations
 
     return 2.0f * atan(tan(verticalFOV / 2.0f) * aspectRatio);
 }
 
-osc::Mat4 osc::Perspective(Radians verticalFOV, float aspectRatio, float zNear, float zFar)
+Mat4 osc::Perspective(Radians verticalFOV, float aspectRatio, float zNear, float zFar)
 {
     return glm::perspective(verticalFOV.count(), aspectRatio, zNear, zFar);
 }
 
-osc::Mat4 osc::Ortho(float left, float right, float bottom, float top, float zNear, float zFar)
+Mat4 osc::Ortho(float left, float right, float bottom, float top, float zNear, float zFar)
 {
     return glm::ortho(left, right, bottom, top, zNear, zFar);
 }
 
-osc::Mat4 osc::Inverse(Mat4 const& mat)
+Mat4 osc::Inverse(Mat4 const& mat)
 {
     return glm::inverse(mat);
 }
 
-osc::Quat osc::Inverse(Quat const& q)
+Quat osc::Inverse(Quat const& q)
 {
     return glm::inverse(q);
 }
 
-osc::Mat4 osc::Scale(Mat4 const& m, Vec3 const& v)
+Mat4 osc::Scale(Mat4 const& m, Vec3 const& v)
 {
     return glm::scale(m, v);
 }
 
-osc::Mat4 osc::Rotate(Mat4 const& m, Radians angle, Vec3 const& axis)
+Mat4 osc::Rotate(Mat4 const& m, Radians angle, Vec3 const& axis)
 {
     return glm::rotate(m, angle.count(), axis);
 }
 
-osc::Mat4 osc::Translate(Mat4 const& m, Vec3 const& v)
+Mat4 osc::Translate(Mat4 const& m, Vec3 const& v)
 {
     return glm::translate(m, v);
 }
 
-osc::Quat osc::QuatCast(Mat3 const& m)
+Quat osc::QuatCast(Mat3 const& m)
 {
     return glm::quat_cast(Mat3{m});
 }
 
-osc::Mat3 osc::ToMat3(Quat const& q)
+Mat3 osc::ToMat3(Quat const& q)
 {
     return glm::toMat3(q);
 }
 
-osc::Eulers osc::EulerAngles(Quat const& q)
+Eulers osc::EulerAngles(Quat const& q)
 {
     return glm::eulerAngles(Normalize(q));
 }
@@ -1238,7 +1249,7 @@ bool osc::IsEqualWithinAbsoluteError(float a, float b, float absError)
     return difference <= absError;
 }
 
-osc::Vec3::length_type osc::LongestDimIndex(Vec3 const& v)
+Vec3::length_type osc::LongestDimIndex(Vec3 const& v)
 {
     if (v.x > v.y && v.x > v.z)
     {
@@ -1254,7 +1265,7 @@ osc::Vec3::length_type osc::LongestDimIndex(Vec3 const& v)
     }
 }
 
-osc::Vec2::length_type osc::LongestDimIndex(Vec2 v)
+Vec2::length_type osc::LongestDimIndex(Vec2 v)
 {
     if (v.x > v.y)
     {
@@ -1266,7 +1277,7 @@ osc::Vec2::length_type osc::LongestDimIndex(Vec2 v)
     }
 }
 
-osc::Vec2i::length_type osc::LongestDimIndex(Vec2i v)
+Vec2i::length_type osc::LongestDimIndex(Vec2i v)
 {
     if (v.x > v.y)
     {
@@ -1288,7 +1299,7 @@ float osc::LongestDim(Vec2 v)
     return v[LongestDimIndex(v)];
 }
 
-osc::Vec2i::value_type osc::LongestDim(Vec2i v)
+Vec2i::value_type osc::LongestDim(Vec2i v)
 {
     return v[LongestDimIndex(v)];
 }
@@ -1303,17 +1314,17 @@ float osc::AspectRatio(Vec2 v)
     return v.x/v.y;
 }
 
-osc::Vec2 osc::Midpoint(Vec2 a, Vec2 b)
+Vec2 osc::Midpoint(Vec2 a, Vec2 b)
 {
     return 0.5f*(a+b);
 }
 
-osc::Vec3 osc::Midpoint(Vec3 const& a, Vec3 const& b)
+Vec3 osc::Midpoint(Vec3 const& a, Vec3 const& b)
 {
     return 0.5f*(a+b);
 }
 
-osc::Vec3 osc::Midpoint(std::span<Vec3 const> vs)
+Vec3 osc::Midpoint(std::span<Vec3 const> vs)
 {
     return std::reduce(vs.begin(), vs.end()) / static_cast<float>(vs.size());
 }
@@ -1321,7 +1332,7 @@ osc::Vec3 osc::Midpoint(std::span<Vec3 const> vs)
 
 // Geometry
 
-osc::Vec3 osc::KahanSum(std::span<Vec3 const> vs)
+Vec3 osc::KahanSum(std::span<Vec3 const> vs)
 {
     Vec3 sum{};  // accumulator
     Vec3 c{};    // running compensation of low-order bits
@@ -1338,13 +1349,13 @@ osc::Vec3 osc::KahanSum(std::span<Vec3 const> vs)
     return sum;
 }
 
-osc::Vec3 osc::NumericallyStableAverage(std::span<Vec3 const> vs)
+Vec3 osc::NumericallyStableAverage(std::span<Vec3 const> vs)
 {
     Vec3 const sum = KahanSum(vs);
     return sum / static_cast<float>(vs.size());
 }
 
-osc::Vec3 osc::TriangleNormal(Triangle const& tri)
+Vec3 osc::TriangleNormal(Triangle const& tri)
 {
     Vec3 const ab = tri.p1 - tri.p0;
     Vec3 const ac = tri.p2 - tri.p0;
@@ -1352,7 +1363,7 @@ osc::Vec3 osc::TriangleNormal(Triangle const& tri)
     return glm::normalize(perpendiular);
 }
 
-osc::Mat3 osc::ToAdjugateMatrix(Mat3 const& m)
+Mat3 osc::ToAdjugateMatrix(Mat3 const& m)
 {
     // google: "Adjugate Matrix": it's related to the cofactor matrix and is
     // related to the inverse of a matrix through:
@@ -1372,7 +1383,7 @@ osc::Mat3 osc::ToAdjugateMatrix(Mat3 const& m)
     return rv;
 }
 
-osc::Mat3 osc::ToNormalMatrix(Mat4 const& m)
+Mat3 osc::ToNormalMatrix(Mat4 const& m)
 {
     // "On the Transformation of Surface Normals" by Andrew Glassner (1987)
     //
@@ -1392,7 +1403,7 @@ osc::Mat3 osc::ToNormalMatrix(Mat4 const& m)
     return ToAdjugateMatrix(glm::transpose(topLeft));
 }
 
-osc::Mat3 osc::ToNormalMatrix(Mat4x3 const& m)
+Mat3 osc::ToNormalMatrix(Mat4x3 const& m)
 {
     // "On the Transformation of Surface Normals" by Andrew Glassner (1987)
     //
@@ -1412,12 +1423,12 @@ osc::Mat3 osc::ToNormalMatrix(Mat4x3 const& m)
     return ToAdjugateMatrix(glm::transpose(topLeft));
 }
 
-osc::Mat4 osc::ToNormalMatrix4(Mat4 const& m)
+Mat4 osc::ToNormalMatrix4(Mat4 const& m)
 {
     return ToNormalMatrix(m);
 }
 
-osc::Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
+Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
 {
     // this is effectively a rewrite of glm::rotation(vec3 const&, vec3 const& dest);
 
@@ -1457,39 +1468,39 @@ osc::Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
     return Rotate(Identity<Mat4>(), theta, rotationAxis);
 }
 
-osc::Eulers osc::ExtractEulerAngleXYZ(Quat const& q)
+Eulers osc::ExtractEulerAngleXYZ(Quat const& q)
 {
     Vec3 rv;
     glm::extractEulerAngleXYZ(glm::toMat4(q), rv.x, rv.y, rv.z);
     return rv;
 }
 
-osc::Eulers osc::ExtractEulerAngleXYZ(Mat4 const& m)
+Eulers osc::ExtractEulerAngleXYZ(Mat4 const& m)
 {
     Vec3 v;
     glm::extractEulerAngleXYZ(m, v.x, v.y, v.z);
     return v;
 }
 
-osc::Vec2 osc::TopleftRelPosToNDCPoint(Vec2 relpos)
+Vec2 osc::TopleftRelPosToNDCPoint(Vec2 relpos)
 {
     relpos.y = 1.0f - relpos.y;
     return 2.0f*relpos - 1.0f;
 }
 
-osc::Vec2 osc::NDCPointToTopLeftRelPos(Vec2 ndcPos)
+Vec2 osc::NDCPointToTopLeftRelPos(Vec2 ndcPos)
 {
     ndcPos = (ndcPos + 1.0f) * 0.5f;
     ndcPos.y = 1.0f - ndcPos.y;
     return ndcPos;
 }
 
-osc::Vec4 osc::TopleftRelPosToNDCCube(Vec2 relpos)
+Vec4 osc::TopleftRelPosToNDCCube(Vec2 relpos)
 {
     return {TopleftRelPosToNDCPoint(relpos), -1.0f, 1.0f};
 }
 
-osc::Line osc::PerspectiveUnprojectTopLeftScreenPosToWorldRay(
+Line osc::PerspectiveUnprojectTopLeftScreenPosToWorldRay(
     Vec2 relpos,
     Vec3 cameraWorldspaceOrigin,
     Mat4 const& viewMatrix,
@@ -1513,7 +1524,7 @@ osc::Line osc::PerspectiveUnprojectTopLeftScreenPosToWorldRay(
     return rv;
 }
 
-osc::Vec2 osc::MinValuePerDimension(Rect const& r)
+Vec2 osc::MinValuePerDimension(Rect const& r)
 {
     return Min(r.p1, r.p2);
 }
@@ -1524,12 +1535,12 @@ float osc::Area(Rect const& r)
     return d.x * d.y;
 }
 
-osc::Vec2 osc::Dimensions(Rect const& r)
+Vec2 osc::Dimensions(Rect const& r)
 {
     return glm::abs(r.p2 - r.p1);
 }
 
-osc::Vec2 osc::BottomLeft(Rect const& r)
+Vec2 osc::BottomLeft(Rect const& r)
 {
     return Vec2{glm::min(r.p1.x, r.p2.x), glm::max(r.p1.y, r.p2.y)};
 }
@@ -1540,28 +1551,28 @@ float osc::AspectRatio(Rect const& r)
     return dims.x/dims.y;
 }
 
-osc::Vec2 osc::Midpoint(Rect const& r)
+Vec2 osc::Midpoint(Rect const& r)
 {
     return 0.5f * (r.p1 + r.p2);
 }
 
-osc::Rect osc::BoundingRectOf(std::span<Vec2 const> vs)
+Rect osc::BoundingRectOf(std::span<Vec2 const> vs)
 {
     if (vs.empty())
     {
-        return osc::Rect{};  // edge-case
+        return Rect{};  // edge-case
     }
 
-    osc::Rect rv{vs.front(), vs.front()};
+    Rect rv{vs.front(), vs.front()};
     for (auto it = vs.begin()+1; it != vs.end(); ++it)
     {
-        rv.p1 = osc::Min(rv.p1, *it);
-        rv.p2 = osc::Max(rv.p2, *it);
+        rv.p1 = Min(rv.p1, *it);
+        rv.p2 = Max(rv.p2, *it);
     }
     return rv;
 }
 
-osc::Rect osc::Expand(Rect const& rect, float amt)
+Rect osc::Expand(Rect const& rect, float amt)
 {
     Rect rv
     {
@@ -1575,7 +1586,7 @@ osc::Rect osc::Expand(Rect const& rect, float amt)
     return rv;
 }
 
-osc::Rect osc::Expand(Rect const& rect, Vec2 amt)
+Rect osc::Expand(Rect const& rect, Vec2 amt)
 {
     Rect rv
     {
@@ -1589,7 +1600,7 @@ osc::Rect osc::Expand(Rect const& rect, Vec2 amt)
     return rv;
 }
 
-osc::Rect osc::Clamp(Rect const& r, Vec2 const& min, Vec2 const& max)
+Rect osc::Clamp(Rect const& r, Vec2 const& min, Vec2 const& max)
 {
     return
     {
@@ -1598,7 +1609,7 @@ osc::Rect osc::Clamp(Rect const& r, Vec2 const& min, Vec2 const& max)
     };
 }
 
-osc::Rect osc::NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const& viewport)
+Rect osc::NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const& viewport)
 {
     Vec2 const viewportDims = Dimensions(viewport);
 
@@ -1616,7 +1627,7 @@ osc::Rect osc::NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const&
     return rv;
 }
 
-osc::Sphere osc::BoundingSphereOf(std::span<Vec3 const> points)
+Sphere osc::BoundingSphereOf(std::span<Vec3 const> points)
 {
     // edge-case: no points provided
     if (points.empty())
@@ -1635,17 +1646,17 @@ osc::Sphere osc::BoundingSphereOf(std::span<Vec3 const> points)
     return {.origin = origin, .radius = std::sqrt(r2)};
 }
 
-osc::Sphere osc::ToSphere(AABB const& aabb)
+Sphere osc::ToSphere(AABB const& aabb)
 {
     return BoundingSphereOf(ToCubeVerts(aabb));
 }
 
-osc::Mat4 osc::FromUnitSphereMat4(Sphere const& s)
+Mat4 osc::FromUnitSphereMat4(Sphere const& s)
 {
     return glm::translate(Identity<Mat4>(), s.origin) * glm::scale(Identity<Mat4>(), {s.radius, s.radius, s.radius});
 }
 
-osc::Mat4 osc::SphereToSphereMat4(Sphere const& a, Sphere const& b)
+Mat4 osc::SphereToSphereMat4(Sphere const& a, Sphere const& b)
 {
     float scale = b.radius/a.radius;
     Mat4 scaler = glm::scale(Identity<Mat4>(), Vec3{scale});
@@ -1653,7 +1664,7 @@ osc::Mat4 osc::SphereToSphereMat4(Sphere const& a, Sphere const& b)
     return mover * scaler;
 }
 
-osc::Transform osc::SphereToSphereTransform(Sphere const& a, Sphere const& b)
+Transform osc::SphereToSphereTransform(Sphere const& a, Sphere const& b)
 {
     Transform t;
     t.scale *= (b.radius / a.radius);
@@ -1661,7 +1672,7 @@ osc::Transform osc::SphereToSphereTransform(Sphere const& a, Sphere const& b)
     return t;
 }
 
-osc::AABB osc::ToAABB(Sphere const& s)
+AABB osc::ToAABB(Sphere const& s)
 {
     AABB rv{};
     rv.min = s.origin - s.radius;
@@ -1669,7 +1680,7 @@ osc::AABB osc::ToAABB(Sphere const& s)
     return rv;
 }
 
-osc::Line osc::TransformLine(Line const& l, Mat4 const& m)
+Line osc::TransformLine(Line const& l, Mat4 const& m)
 {
     Line rv{};
     rv.direction = m * Vec4{l.direction, 0.0f};
@@ -1677,7 +1688,7 @@ osc::Line osc::TransformLine(Line const& l, Mat4 const& m)
     return rv;
 }
 
-osc::Line osc::InverseTransformLine(Line const& l, Transform const& t)
+Line osc::InverseTransformLine(Line const& l, Transform const& t)
 {
     return Line
     {
@@ -1686,7 +1697,7 @@ osc::Line osc::InverseTransformLine(Line const& l, Transform const& t)
     };
 }
 
-osc::Mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b)
+Mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b)
 {
     // this is essentially LERPing [0,1] onto [1, l] to rescale only
     // along the line's original direction
@@ -1723,7 +1734,7 @@ osc::Mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b)
     return translator * rotator * scaler;
 }
 
-osc::AABB osc::InvertedAABB()
+AABB osc::InvertedAABB()
 {
     AABB rv{};
     rv.min = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
@@ -1731,17 +1742,17 @@ osc::AABB osc::InvertedAABB()
     return rv;
 }
 
-osc::Vec3 osc::Midpoint(AABB const& a)
+Vec3 osc::Midpoint(AABB const& a)
 {
     return 0.5f * (a.min + a.max);
 }
 
-osc::Vec3 osc::Dimensions(AABB const& a)
+Vec3 osc::Dimensions(AABB const& a)
 {
     return a.max - a.min;
 }
 
-osc::Vec3 osc::HalfWidths(AABB const& a)
+Vec3 osc::HalfWidths(AABB const& a)
 {
     return 0.5f*Dimensions(a);
 }
@@ -1752,7 +1763,7 @@ float osc::Volume(AABB const& a)
     return d.x * d.y * d.z;
 }
 
-osc::AABB osc::Union(AABB const& a, AABB const& b)
+AABB osc::Union(AABB const& a, AABB const& b)
 {
     return AABB
     {
@@ -1779,7 +1790,7 @@ bool osc::IsZeroVolume(AABB const& a)
     return false;
 }
 
-osc::Vec3::length_type osc::LongestDimIndex(AABB const& a)
+Vec3::length_type osc::LongestDimIndex(AABB const& a)
 {
     return LongestDimIndex(Dimensions(a));
 }
@@ -1810,7 +1821,7 @@ std::array<Vec3, 8> osc::ToCubeVerts(AABB const& aabb)
     return rv;
 }
 
-osc::AABB osc::TransformAABB(AABB const& aabb, Mat4 const& m)
+AABB osc::TransformAABB(AABB const& aabb, Mat4 const& m)
 {
     auto verts = ToCubeVerts(aabb);
 
@@ -1823,7 +1834,7 @@ osc::AABB osc::TransformAABB(AABB const& aabb, Mat4 const& m)
     return AABBFromVerts(verts);
 }
 
-osc::AABB osc::TransformAABB(AABB const& aabb, Transform const& t)
+AABB osc::TransformAABB(AABB const& aabb, Transform const& t)
 {
     // from real-time collision detection (the book)
     //
@@ -1855,7 +1866,7 @@ osc::AABB osc::TransformAABB(AABB const& aabb, Transform const& t)
     return rv;
 }
 
-osc::AABB osc::AABBFromTriangle(Triangle const& t)
+AABB osc::AABBFromTriangle(Triangle const& t)
 {
     AABB rv{t.p0, t.p0};
     rv.min = Min(rv.min, t.p1);
@@ -1865,7 +1876,7 @@ osc::AABB osc::AABBFromTriangle(Triangle const& t)
     return rv;
 }
 
-osc::AABB osc::AABBFromVerts(std::span<Vec3 const> vs)
+AABB osc::AABBFromVerts(std::span<Vec3 const> vs)
 {
     // edge-case: no points provided
     if (vs.empty())
@@ -1885,7 +1896,7 @@ osc::AABB osc::AABBFromVerts(std::span<Vec3 const> vs)
     return rv;
 }
 
-osc::AABB osc::AABBFromIndexedVerts(
+AABB osc::AABBFromIndexedVerts(
     std::span<Vec3 const> verts,
     std::span<uint32_t const> indices)
 {
@@ -1924,7 +1935,7 @@ osc::AABB osc::AABBFromIndexedVerts(
     return rv;
 }
 
-osc::AABB osc::AABBFromIndexedVerts(
+AABB osc::AABBFromIndexedVerts(
     std::span<Vec3 const> verts,
     std::span<uint16_t const> indices)
 {
@@ -1963,7 +1974,7 @@ osc::AABB osc::AABBFromIndexedVerts(
     return rv;
 }
 
-std::optional<osc::Rect> osc::AABBToScreenNDCRect(
+std::optional<Rect> osc::AABBToScreenNDCRect(
     AABB const& aabb,
     Mat4 const& viewMat,
     Mat4 const& projMat,
@@ -2003,7 +2014,7 @@ std::optional<osc::Rect> osc::AABBToScreenNDCRect(
     return rv;
 }
 
-osc::Mat4 osc::SegmentToSegmentMat4(Segment const& a, Segment const& b)
+Mat4 osc::SegmentToSegmentMat4(Segment const& a, Segment const& b)
 {
     Vec3 a1ToA2 = a.p2 - a.p1;
     Vec3 b1ToB2 = b.p2 - b.p1;
@@ -2029,7 +2040,7 @@ osc::Mat4 osc::SegmentToSegmentMat4(Segment const& a, Segment const& b)
     return move * rotate * scale;
 }
 
-osc::Transform osc::SegmentToSegmentTransform(Segment const& a, Segment const& b)
+Transform osc::SegmentToSegmentTransform(Segment const& a, Segment const& b)
 {
     Vec3 aLine = a.p2 - a.p1;
     Vec3 bLine = b.p2 - b.p1;
@@ -2052,7 +2063,7 @@ osc::Transform osc::SegmentToSegmentTransform(Segment const& a, Segment const& b
     return t;
 }
 
-osc::Transform osc::YToYCylinderToSegmentTransform(Segment const& s, float radius)
+Transform osc::YToYCylinderToSegmentTransform(Segment const& s, float radius)
 {
     Segment cylinderLine{{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
     Transform t = SegmentToSegmentTransform(cylinderLine, s);
@@ -2061,12 +2072,12 @@ osc::Transform osc::YToYCylinderToSegmentTransform(Segment const& s, float radiu
     return t;
 }
 
-osc::Transform osc::YToYConeToSegmentTransform(Segment const& s, float radius)
+Transform osc::YToYConeToSegmentTransform(Segment const& s, float radius)
 {
     return YToYCylinderToSegmentTransform(s, radius);
 }
 
-osc::Mat3 osc::ToMat3(Transform const& t)
+Mat3 osc::ToMat3(Transform const& t)
 {
     Mat3 rv = glm::toMat3(t.rotation);
 
@@ -2085,7 +2096,7 @@ osc::Mat3 osc::ToMat3(Transform const& t)
     return rv;
 }
 
-osc::Mat4 osc::ToMat4(Transform const& t)
+Mat4 osc::ToMat4(Transform const& t)
 {
     Mat4 rv = glm::toMat4(t.rotation);
 
@@ -2108,7 +2119,7 @@ osc::Mat4 osc::ToMat4(Transform const& t)
     return rv;
 }
 
-osc::Mat4 osc::ToInverseMat4(Transform const& t)
+Mat4 osc::ToInverseMat4(Transform const& t)
 {
     Mat4 translater = glm::translate(Identity<Mat4>(), -t.position);
     Mat4 rotater = glm::toMat4(glm::conjugate(t.rotation));
@@ -2117,17 +2128,17 @@ osc::Mat4 osc::ToInverseMat4(Transform const& t)
     return scaler * rotater * translater;
 }
 
-osc::Mat3 osc::ToNormalMatrix(Transform const& t)
+Mat3 osc::ToNormalMatrix(Transform const& t)
 {
     return ToAdjugateMatrix(glm::transpose(ToMat3(t)));
 }
 
-osc::Mat4 osc::ToNormalMatrix4(Transform const& t)
+Mat4 osc::ToNormalMatrix4(Transform const& t)
 {
     return ToAdjugateMatrix(glm::transpose(ToMat3(t)));
 }
 
-osc::Transform osc::ToTransform(Mat4 const& mtx)
+Transform osc::ToTransform(Mat4 const& mtx)
 {
     Transform rv;
     Vec3 skew;
@@ -2139,17 +2150,17 @@ osc::Transform osc::ToTransform(Mat4 const& mtx)
     return rv;
 }
 
-osc::Vec3 osc::TransformDirection(Transform const& t, Vec3 const& localDir)
+Vec3 osc::TransformDirection(Transform const& t, Vec3 const& localDir)
 {
     return glm::normalize(t.rotation * (t.scale * localDir));
 }
 
-osc::Vec3 osc::InverseTransformDirection(Transform const& t, Vec3 const& direction)
+Vec3 osc::InverseTransformDirection(Transform const& t, Vec3 const& direction)
 {
     return glm::normalize((glm::conjugate(t.rotation) * direction) / t.scale);
 }
 
-osc::Vec3 osc::TransformPoint(Transform const& t, Vec3 const& p)
+Vec3 osc::TransformPoint(Transform const& t, Vec3 const& p)
 {
     Vec3 rv = p;
     rv *= t.scale;
@@ -2158,12 +2169,12 @@ osc::Vec3 osc::TransformPoint(Transform const& t, Vec3 const& p)
     return rv;
 }
 
-osc::Vec3 osc::TransformPoint(Mat4 const& m, Vec3 const& p)
+Vec3 osc::TransformPoint(Mat4 const& m, Vec3 const& p)
 {
     return Vec3{m * Vec4{p, 1.0f}};
 }
 
-osc::Vec3 osc::InverseTransformPoint(Transform const& t, Vec3 const& p)
+Vec3 osc::InverseTransformPoint(Transform const& t, Vec3 const& p)
 {
     Vec3 rv = p;
     rv -= t.position;
@@ -2172,7 +2183,7 @@ osc::Vec3 osc::InverseTransformPoint(Transform const& t, Vec3 const& p)
     return rv;
 }
 
-osc::Quat osc::WorldspaceRotation(Eulers const& eulers)
+Quat osc::WorldspaceRotation(Eulers const& eulers)
 {
     static_assert(std::is_same_v<Eulers::value_type, Radians>);
     return Normalize(Quat{Vec3{eulers.x.count(), eulers.y.count(), eulers.z.count()}});
@@ -2188,36 +2199,36 @@ void osc::ApplyWorldspaceRotation(
     t.rotation = glm::normalize(q*t.rotation);
 }
 
-osc::Eulers osc::ExtractEulerAngleXYZ(Transform const& t)
+Eulers osc::ExtractEulerAngleXYZ(Transform const& t)
 {
     Vec3 rv;
     glm::extractEulerAngleXYZ(glm::toMat4(t.rotation), rv.x, rv.y, rv.z);
     return rv;
 }
 
-osc::Eulers osc::ExtractExtrinsicEulerAnglesXYZ(Transform const& t)
+Eulers osc::ExtractExtrinsicEulerAnglesXYZ(Transform const& t)
 {
     return glm::eulerAngles(t.rotation);
 }
 
-osc::Transform osc::PointAxisAlong(Transform const& t, int axisIndex, Vec3 const& newDirection)
+Transform osc::PointAxisAlong(Transform const& t, int axisIndex, Vec3 const& newDirection)
 {
     Vec3 beforeDir{};
     beforeDir[axisIndex] = 1.0f;
     beforeDir = t.rotation * beforeDir;
 
-    Quat const rotBeforeToAfter = osc::Rotation(beforeDir, newDirection);
-    Quat const newRotation = osc::Normalize(rotBeforeToAfter * t.rotation);
+    Quat const rotBeforeToAfter = Rotation(beforeDir, newDirection);
+    Quat const newRotation = Normalize(rotBeforeToAfter * t.rotation);
 
     return t.withRotation(newRotation);
 }
 
-osc::Transform osc::PointAxisTowards(Transform const& t, int axisIndex, Vec3 const& location)
+Transform osc::PointAxisTowards(Transform const& t, int axisIndex, Vec3 const& location)
 {
-    return PointAxisAlong(t, axisIndex, osc::Normalize(location - t.position));
+    return PointAxisAlong(t, axisIndex, Normalize(location - t.position));
 }
 
-osc::Transform osc::RotateAlongAxis(Transform const& t, int axisIndex, Radians angle)
+Transform osc::RotateAlongAxis(Transform const& t, int axisIndex, Radians angle)
 {
     Vec3 ax{};
     ax[axisIndex] = 1.0f;
@@ -2235,12 +2246,12 @@ bool osc::IsPointInRect(Rect const& r, Vec2 const& p)
     return (0.0f <= relPos.x && relPos.x <= dims.x) && (0.0f <= relPos.y && relPos.y <= dims.y);
 }
 
-std::optional<osc::RayCollision> osc::GetRayCollisionSphere(Line const& l, Sphere const& s)
+std::optional<RayCollision> osc::GetRayCollisionSphere(Line const& l, Sphere const& s)
 {
     return GetRayCollisionSphereAnalytic(s, l);
 }
 
-std::optional<osc::RayCollision> osc::GetRayCollisionAABB(Line const& l, AABB const& bb)
+std::optional<RayCollision> osc::GetRayCollisionAABB(Line const& l, AABB const& bb)
 {
     // intersect the ray with each axis-aligned slab for each dimension
     //
@@ -2271,7 +2282,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionAABB(Line const& l, AABB co
     return RayCollision{t0, l.origin + t0*l.direction};
 }
 
-std::optional<osc::RayCollision> osc::GetRayCollisionPlane(Line const& l, Plane const& p)
+std::optional<RayCollision> osc::GetRayCollisionPlane(Line const& l, Plane const& p)
 {
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection
     //
@@ -2312,7 +2323,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionPlane(Line const& l, Plane 
     }
 }
 
-std::optional<osc::RayCollision> osc::GetRayCollisionDisc(Line const& l, Disc const& d)
+std::optional<RayCollision> osc::GetRayCollisionDisc(Line const& l, Disc const& d)
 {
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection
 
@@ -2343,7 +2354,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionDisc(Line const& l, Disc co
     return maybePlaneCollision;
 }
 
-std::optional<osc::RayCollision> osc::GetRayCollisionTriangle(Line const& l, Triangle const& tri)
+std::optional<RayCollision> osc::GetRayCollisionTriangle(Line const& l, Triangle const& tri)
 {
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution
 

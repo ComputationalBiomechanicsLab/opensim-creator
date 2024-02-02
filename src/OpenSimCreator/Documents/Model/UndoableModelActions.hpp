@@ -13,7 +13,6 @@
 #include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace OpenSim { class Component; }
 namespace OpenSim { class ComponentPath; }
@@ -243,7 +242,7 @@ namespace osc
     };
     constexpr bool operator&(SocketReassignmentFlags lhs, SocketReassignmentFlags rhs)
     {
-        return osc::to_underlying(lhs) & osc::to_underlying(rhs);
+        return cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs);
     }
 
     // attempts to reassign a component's socket connection (returns false and writes to `error` on failure)

@@ -7,8 +7,8 @@
 #include <array>
 #include <string_view>
 
+namespace cpp20 = osc::cpp20;
 using osc::CStringView;
-using osc::ThreeWayComparison;
 TEST(CStringView, WhenPassedNullCstringYieldsEmptyCStringView)
 {
     char const* p = nullptr;
@@ -50,7 +50,7 @@ TEST(CStringView, ThreeWayComparisonBehavesIdenticallyToStringViewComparision)
         CStringView csv{elCStr};
         for (char const* otherCStr : svs)
         {
-            ASSERT_EQ(ThreeWayComparison(sv, std::string_view{otherCStr}), csv <=> CStringView{otherCStr});
+            ASSERT_EQ(cpp20::ThreeWayComparison(sv, std::string_view{otherCStr}), csv <=> CStringView{otherCStr});
         }
     };
     std::for_each(svs.begin(), svs.end(), sameThreeWayResultWithAllOtherElements);

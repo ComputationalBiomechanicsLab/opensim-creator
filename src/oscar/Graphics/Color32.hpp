@@ -64,7 +64,7 @@ namespace osc
     template<std::integral T>
     T to_integer(Color32 const& color32)
     {
-        return bit_cast<T>(color32);
+        return cpp20::bit_cast<T>(color32);
     }
 }
 

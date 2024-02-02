@@ -18,7 +18,6 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
-#include <oscar/Utils/Concepts.hpp>
 
 #include <algorithm>
 #include <array>

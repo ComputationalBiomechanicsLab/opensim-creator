@@ -1,8 +1,8 @@
 #pragma once
 
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
-#include <oscar/Platform/LogLevel.hpp>
 #include <oscar/Platform/AppSettingValue.hpp>
+#include <oscar/Platform/LogLevel.hpp>
 
 #include <filesystem>
 #include <memory>

@@ -8,9 +8,12 @@
 #include <cstddef>
 #include <iterator>
 
+using osc::CStringView;
+using osc::LogLevel;
+
 namespace
 {
-    constexpr auto c_LogLevelStrings = std::to_array<osc::CStringView>(
+    constexpr auto c_LogLevelStrings = std::to_array<CStringView>(
     {
         "trace",
         "debug",
@@ -20,15 +23,15 @@ namespace
         "critical",
         "off",
     });
-    static_assert(c_LogLevelStrings.size() == static_cast<size_t>(osc::LogLevel::NUM_LEVELS));
+    static_assert(c_LogLevelStrings.size() == static_cast<size_t>(LogLevel::NUM_LEVELS));
 }
 
-osc::CStringView osc::ToCStringView(LogLevel level)
+CStringView osc::ToCStringView(LogLevel level)
 {
     return c_LogLevelStrings.at(static_cast<ptrdiff_t>(level));
 }
 
-std::optional<osc::LogLevel> osc::FromIndex(size_t i)
+std::optional<LogLevel> osc::FromIndex(size_t i)
 {
     if (ToIndex(FirstLogLevel()) <= i && i <= ToIndex(LastLogLevel()))
     {
@@ -40,7 +43,7 @@ std::optional<osc::LogLevel> osc::FromIndex(size_t i)
     }
 }
 
-std::optional<osc::LogLevel> osc::TryParseAsLogLevel(std::string_view v)
+std::optional<LogLevel> osc::TryParseAsLogLevel(std::string_view v)
 {
     auto const pred = [v](std::string_view el)
     {

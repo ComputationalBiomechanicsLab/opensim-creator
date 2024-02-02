@@ -1,6 +1,6 @@
 #include "HittestTab.hpp"
 
-#include <IconsFontAwesome5.h>
+#include <SDL_events.h>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Graphics.hpp>
@@ -8,7 +8,6 @@
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MaterialPropertyBlock.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Disc.hpp>
 #include <oscar/Maths/Eulers.hpp>
@@ -16,13 +15,11 @@
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Sphere.hpp>
 #include <oscar/Maths/Triangle.hpp>
-#include <oscar/Maths/Vec.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/Tabs/StandardTabImpl.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <SDL_events.h>
 
 #include <array>
 #include <cstdint>

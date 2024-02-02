@@ -1,6 +1,5 @@
 #include "STL.hpp"
 
-#include <oscar/Graphics/CullMode.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Triangle.hpp>
@@ -8,24 +7,22 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Shims/Cpp20/bit.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/At.hpp>
 #include <oscar/Utils/ObjectRepresentation.hpp>
 
 #include <algorithm>
-#include <array>
 #include <cstddef>
 #include <cstdint>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <limits>
 #include <span>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 
 using osc::ViewObjectRepresentation;
 using osc::Mesh;
+using osc::Normalize;
 using osc::StlMetadata;
 using osc::Triangle;
 using osc::Vec3;
@@ -95,7 +92,7 @@ namespace
 
     void WriteTriangle(std::ostream& o, Triangle const& triangle)
     {
-        WriteVec3IEEE(o, osc::Normalize(osc::TriangleNormal(triangle)));
+        WriteVec3IEEE(o, Normalize(TriangleNormal(triangle)));
         WriteVec3IEEE(o, triangle.p0);
         WriteVec3IEEE(o, triangle.p1);
         WriteVec3IEEE(o, triangle.p2);

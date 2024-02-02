@@ -3,8 +3,8 @@
 #include <gtest/gtest.h>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/DepthStencilFormat.hpp>
-#include <oscar/Graphics/RenderTextureFormat.hpp>
 #include <oscar/Graphics/RenderTextureDescriptor.hpp>
+#include <oscar/Graphics/RenderTextureFormat.hpp>
 #include <oscar/Graphics/RenderTextureReadWrite.hpp>
 #include <oscar/Graphics/TextureDimensionality.hpp>
 #include <oscar/Maths/Vec2.hpp>

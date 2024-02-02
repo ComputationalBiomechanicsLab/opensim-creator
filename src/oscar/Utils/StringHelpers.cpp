@@ -1,7 +1,5 @@
 #include "StringHelpers.hpp"
 
-#include <oscar/Utils/CStringView.hpp>
-
 #include <algorithm>
 #include <array>
 #include <cstddef>
