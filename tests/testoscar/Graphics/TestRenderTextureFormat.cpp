@@ -7,11 +7,14 @@
 #include <string>
 #include <utility>
 
+using osc::NumOptions;
+using osc::RenderTextureFormat;
+
 TEST(RenderTextureFormat, AnyValueCanBePrintedToStream)
 {
-    for (size_t i = 0; i < osc::NumOptions<osc::RenderTextureFormat>(); ++i)
+    for (size_t i = 0; i < NumOptions<RenderTextureFormat>(); ++i)
     {
-        auto const format = static_cast<osc::RenderTextureFormat>(i);
+        auto const format = static_cast<RenderTextureFormat>(i);
         std::stringstream ss;
         ss << format;
 
@@ -21,10 +24,10 @@ TEST(RenderTextureFormat, AnyValueCanBePrintedToStream)
 
 TEST(RenderTextureFormat, DefaultsToRGBA32)
 {
-    static_assert(osc::RenderTextureFormat::Default == osc::RenderTextureFormat::ARGB32);
+    static_assert(RenderTextureFormat::Default == RenderTextureFormat::ARGB32);
 }
 
 TEST(RenderTextureFormat, DefaultHDRFormatIsARGBHalf)
 {
-    static_assert(osc::RenderTextureFormat::DefaultHDR == osc::RenderTextureFormat::ARGBFloat16);
+    static_assert(RenderTextureFormat::DefaultHDR == RenderTextureFormat::ARGBFloat16);
 }

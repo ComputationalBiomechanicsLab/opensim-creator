@@ -8,94 +8,99 @@
 #include <array>
 #include <string>
 
+using osc::AppSettingValue;
+using osc::Color;
+using osc::CStringView;
+using osc::TryParseHtmlString;
+
 TEST(AppSettingValue, CanExplicitlyConstructFromStringRValue)
 {
-    osc::AppSettingValue v{std::string{"stringrval"}};
+    AppSettingValue v{std::string{"stringrval"}};
 
     ASSERT_EQ(v.toString(), "stringrval");
 }
 
 TEST(AppSettingValue, CanExplicitlyConstructFromStringLiteral)
 {
-    osc::AppSettingValue v{"cstringliteral"};
+    AppSettingValue v{"cstringliteral"};
     ASSERT_EQ(v.toString(), "cstringliteral");
 }
 
 TEST(AppSettingValue, CanExplicitlyConstructFromCStringView)
 {
-    osc::AppSettingValue v{osc::CStringView{"cstringview"}};
+    AppSettingValue v{CStringView{"cstringview"}};
     ASSERT_EQ(v.toString(), "cstringview");
 }
 
 TEST(AppSettingValue, CanExplicitlyContructFromBool)
 {
-    osc::AppSettingValue vfalse{false};
+    AppSettingValue vfalse{false};
     ASSERT_EQ(vfalse.toBool(), false);
-    osc::AppSettingValue vtrue{true};
+    AppSettingValue vtrue{true};
     ASSERT_EQ(vtrue.toBool(), true);
 }
 
 TEST(AppSettingValue, CanExplicitlyConstructFromColor)
 {
-    osc::AppSettingValue v{osc::Color::red()};
-    ASSERT_EQ(v.toColor(), osc::Color::red());
+    AppSettingValue v{Color::red()};
+    ASSERT_EQ(v.toColor(), Color::red());
 }
 
 TEST(AppSettingValue, BoolValueToStringReturnsExpectedStrings)
 {
-    osc::AppSettingValue vfalse{false};
+    AppSettingValue vfalse{false};
     ASSERT_EQ(vfalse.toString(), "false");
-    osc::AppSettingValue vtrue{true};
+    AppSettingValue vtrue{true};
     ASSERT_EQ(vtrue.toString(), "true");
 }
 
 TEST(AppSettingValue, StringValueToBoolReturnsExpectedBoolValues)
 {
-    ASSERT_EQ(osc::AppSettingValue{"false"}.toBool(), false);
-    ASSERT_EQ(osc::AppSettingValue{"FALSE"}.toBool(), false);
-    ASSERT_EQ(osc::AppSettingValue{"False"}.toBool(), false);
-    ASSERT_EQ(osc::AppSettingValue{"FaLsE"}.toBool(), false);
-    ASSERT_EQ(osc::AppSettingValue{"0"}.toBool(), false);
-    ASSERT_EQ(osc::AppSettingValue{""}.toBool(), false);
+    ASSERT_EQ(AppSettingValue{"false"}.toBool(), false);
+    ASSERT_EQ(AppSettingValue{"FALSE"}.toBool(), false);
+    ASSERT_EQ(AppSettingValue{"False"}.toBool(), false);
+    ASSERT_EQ(AppSettingValue{"FaLsE"}.toBool(), false);
+    ASSERT_EQ(AppSettingValue{"0"}.toBool(), false);
+    ASSERT_EQ(AppSettingValue{""}.toBool(), false);
 
     // all other strings are effectively `true`
-    ASSERT_EQ(osc::AppSettingValue{"true"}.toBool(), true);
-    ASSERT_EQ(osc::AppSettingValue{"non-empty string"}.toBool(), true);
-    ASSERT_EQ(osc::AppSettingValue{" "}.toBool(), true);
+    ASSERT_EQ(AppSettingValue{"true"}.toBool(), true);
+    ASSERT_EQ(AppSettingValue{"non-empty string"}.toBool(), true);
+    ASSERT_EQ(AppSettingValue{" "}.toBool(), true);
 }
 
 TEST(AppSettingValue, ColorValueToStringReturnsSameAsToHtmlStringRGBA)
 {
     auto const colors = std::to_array(
     {
-        osc::Color::red(),
-        osc::Color::magenta(),
+        Color::red(),
+        Color::magenta(),
     });
 
     for (auto const& color : colors)
     {
-        ASSERT_EQ(osc::AppSettingValue{color}.toString(), osc::ToHtmlStringRGBA(color));
+        ASSERT_EQ(AppSettingValue{color}.toString(), ToHtmlStringRGBA(color));
     }
 }
 
 TEST(AppSettingValue, ColorValueToStringReturnsExpectedManualExamples)
 {
-    ASSERT_EQ(osc::AppSettingValue{osc::Color::yellow()}.toString(), "#ffff00ff");
-    ASSERT_EQ(osc::AppSettingValue{osc::Color::magenta()}.toString(), "#ff00ffff");
+    ASSERT_EQ(AppSettingValue{Color::yellow()}.toString(), "#ffff00ff");
+    ASSERT_EQ(AppSettingValue{Color::magenta()}.toString(), "#ff00ffff");
 }
 
 TEST(AppSettingValue, StringValueToColorWorksIfStringIsAValidHTMLColorString)
 {
-    ASSERT_EQ(osc::AppSettingValue{"#ff0000ff"}.toColor(), osc::Color::red());
-    ASSERT_EQ(osc::AppSettingValue{"#00ff00ff"}.toColor(), osc::Color::green());
-    ASSERT_EQ(osc::AppSettingValue{"#ffffffff"}.toColor(), osc::Color::white());
-    ASSERT_EQ(osc::AppSettingValue{"#00000000"}.toColor(), osc::Color::clear());
-    ASSERT_EQ(osc::AppSettingValue{"#000000ff"}.toColor(), osc::Color::black());
-    ASSERT_EQ(osc::AppSettingValue{"#000000FF"}.toColor(), osc::Color::black());
-    ASSERT_EQ(osc::AppSettingValue{"#123456ae"}.toColor(), *osc::TryParseHtmlString("#123456ae"));
+    ASSERT_EQ(AppSettingValue{"#ff0000ff"}.toColor(), Color::red());
+    ASSERT_EQ(AppSettingValue{"#00ff00ff"}.toColor(), Color::green());
+    ASSERT_EQ(AppSettingValue{"#ffffffff"}.toColor(), Color::white());
+    ASSERT_EQ(AppSettingValue{"#00000000"}.toColor(), Color::clear());
+    ASSERT_EQ(AppSettingValue{"#000000ff"}.toColor(), Color::black());
+    ASSERT_EQ(AppSettingValue{"#000000FF"}.toColor(), Color::black());
+    ASSERT_EQ(AppSettingValue{"#123456ae"}.toColor(), *TryParseHtmlString("#123456ae"));
 }
 
 TEST(AppSettingValue, StringValueColorReturnsWhiteIfStringIsInvalidHTMLColorString)
 {
-    ASSERT_EQ(osc::AppSettingValue{"not a color"}.toColor(), osc::Color::white());
+    ASSERT_EQ(AppSettingValue{"not a color"}.toColor(), Color::white());
 }

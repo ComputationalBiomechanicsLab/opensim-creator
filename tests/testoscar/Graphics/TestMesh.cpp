@@ -31,7 +31,6 @@
 #include <vector>
 
 using namespace osc::literals;
-
 using osc::testing::GenerateColors;
 using osc::testing::GenerateColor32;
 using osc::testing::GenerateIndices;

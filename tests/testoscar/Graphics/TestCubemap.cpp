@@ -9,6 +9,8 @@
 
 using osc::Cubemap;
 using osc::CubemapFace;
+using osc::FirstCubemapFace;
+using osc::LastCubemapFace;
 using osc::TextureFilterMode;
 using osc::TextureFormat;
 using osc::TextureWrapMode;
@@ -140,7 +142,7 @@ TEST(Cubemap, SetDataWorksForAnyFaceIfGivenCorrectNumberOfBytes)
     std::array<uint8_t, nPixels> const data = {};
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face = osc::FirstCubemapFace(); face <= osc::LastCubemapFace(); face = osc::Next(face))
+    for (CubemapFace face = FirstCubemapFace(); face <= LastCubemapFace(); face = Next(face))
     {
         cubemap.setPixelData(face, data);
     }
@@ -155,7 +157,7 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGBA32)
     std::array<uint8_t, nPixels> const data = {};
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face = osc::FirstCubemapFace(); face <= osc::LastCubemapFace(); face = osc::Next(face))
+    for (CubemapFace face = FirstCubemapFace(); face <= LastCubemapFace(); face = Next(face))
     {
         ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
     }
@@ -170,7 +172,7 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGB24)
     std::array<uint8_t, nPixels> const data = {};
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face = osc::FirstCubemapFace(); face <= osc::LastCubemapFace(); face = osc::Next(face))
+    for (CubemapFace face = FirstCubemapFace(); face <= LastCubemapFace(); face = Next(face))
     {
         ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
     }
@@ -186,7 +188,7 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForWidth)
     std::array<uint8_t, incorrectNPixels> const data = {};
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face = osc::FirstCubemapFace(); face <= osc::LastCubemapFace(); face = osc::Next(face))
+    for (CubemapFace face = FirstCubemapFace(); face <= LastCubemapFace(); face = Next(face))
     {
         ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
     }

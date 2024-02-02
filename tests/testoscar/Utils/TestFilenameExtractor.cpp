@@ -2,23 +2,25 @@
 
 #include <gtest/gtest.h>
 
+using osc::ExtractFilename;
+
 TEST(ExtractFilename, ReturnsBlankForBlankString)
 {
-    static_assert(osc::ExtractFilename("").empty());
+    static_assert(ExtractFilename("").empty());
 }
 
 TEST(FilenameExtractor, WorksAsIntendedForUnixPaths)
 {
-    static_assert(osc::ExtractFilename("/home/user/file.cpp") == "file.cpp");
+    static_assert(ExtractFilename("/home/user/file.cpp") == "file.cpp");
 }
 
 TEST(FilenameExtractor, WorksAsIntendedForWindowsPaths)
 {
-    static_assert(osc::ExtractFilename(R"(C:\Users\user\file.cpp)") == "file.cpp");
+    static_assert(ExtractFilename(R"(C:\Users\user\file.cpp)") == "file.cpp");
 }
 
 TEST(FilenameExtractor, WorksForMixedPath)
 {
     // https://stackoverflow.com/a/8488201 (comments section)
-    static_assert(osc::ExtractFilename("C:\\Users\\user/file.cpp") == "file.cpp");
+    static_assert(ExtractFilename("C:\\Users\\user/file.cpp") == "file.cpp");
 }
