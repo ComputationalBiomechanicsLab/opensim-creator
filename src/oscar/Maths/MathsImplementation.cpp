@@ -498,7 +498,7 @@ void osc::BVH::forEachLeafOrInnerNodeUnordered(std::function<void(BVHNode const&
     }
 }
 
-// osc::Disc implementation
+// `Disc` implementation
 
 std::ostream& osc::operator<<(std::ostream& o, Disc const& d)
 {
@@ -506,7 +506,7 @@ std::ostream& osc::operator<<(std::ostream& o, Disc const& d)
 }
 
 
-// osc::EulerPerspectiveCamera implementation
+// `EulerPerspectiveCamera` implementation
 
 osc::EulerPerspectiveCamera::EulerPerspectiveCamera() :
     origin{},
@@ -549,7 +549,7 @@ Mat4 osc::EulerPerspectiveCamera::getProjMtx(float aspectRatio) const
 }
 
 
-// osc::Line implementation
+// `Line` implementation
 
 std::ostream& osc::operator<<(std::ostream& o, Line const& l)
 {
@@ -557,7 +557,7 @@ std::ostream& osc::operator<<(std::ostream& o, Line const& l)
 }
 
 
-// osc::Plane implementation
+// `Plane` implementation
 
 std::ostream& osc::operator<<(std::ostream& o, Plane const& p)
 {
@@ -565,7 +565,7 @@ std::ostream& osc::operator<<(std::ostream& o, Plane const& p)
 }
 
 
-// osc::PolarPerspectiveCamera implementation
+// `PolarPerspectiveCamera` implementation
 
 namespace
 {
@@ -799,7 +799,7 @@ void osc::AutoFocus(PolarPerspectiveCamera& camera, AABB const& elementAABB, flo
 }
 
 
-// osc::Rect implementation
+// `Rect` implementation
 
 std::ostream& osc::operator<<(std::ostream& o, Rect const& r)
 {
@@ -807,7 +807,7 @@ std::ostream& osc::operator<<(std::ostream& o, Rect const& r)
 }
 
 
-// osc::Segment implementation
+// `Segment` implementation
 
 std::ostream& osc::operator<<(std::ostream& o, Segment const& d)
 {
@@ -815,7 +815,7 @@ std::ostream& osc::operator<<(std::ostream& o, Segment const& d)
 }
 
 
-// osc::Sphere implementation
+// `Sphere` implementation
 
 std::ostream& osc::operator<<(std::ostream& o, Sphere const& s)
 {
@@ -823,7 +823,7 @@ std::ostream& osc::operator<<(std::ostream& o, Sphere const& s)
 }
 
 
-// osc::Tetrahedron implementatioon
+// `Tetrahedron` implementatioon
 
 // returns the volume of a given tetrahedron, defined as 4 points in space
 float osc::Volume(Tetrahedron const& t)
@@ -852,7 +852,7 @@ Vec3 osc::Center(Tetrahedron const& t)
 }
 
 
-// osc::Transform implementation
+// `Transform` implementation
 
 std::ostream& osc::operator<<(std::ostream& o, Transform const& t)
 {

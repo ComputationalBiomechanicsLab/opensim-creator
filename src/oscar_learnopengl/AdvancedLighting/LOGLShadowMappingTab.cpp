@@ -36,6 +36,7 @@ using osc::MouseCapturingCamera;
 using osc::RenderTexture;
 using osc::RenderTextureDescriptor;
 using osc::RenderTextureReadWrite;
+using osc::UID;
 using osc::Vec2;
 using osc::Vec2i;
 using osc::Vec3;
@@ -235,7 +236,7 @@ osc::LOGLShadowMappingTab::LOGLShadowMappingTab(LOGLShadowMappingTab&&) noexcept
 osc::LOGLShadowMappingTab& osc::LOGLShadowMappingTab::operator=(LOGLShadowMappingTab&&) noexcept = default;
 osc::LOGLShadowMappingTab::~LOGLShadowMappingTab() noexcept = default;
 
-osc::UID osc::LOGLShadowMappingTab::implGetID() const
+UID osc::LOGLShadowMappingTab::implGetID() const
 {
     return m_Impl->getID();
 }

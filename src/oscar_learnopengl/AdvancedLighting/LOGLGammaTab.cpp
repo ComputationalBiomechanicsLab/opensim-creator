@@ -34,6 +34,7 @@ using osc::Mesh;
 using osc::MouseCapturingCamera;
 using osc::Shader;
 using osc::Texture2D;
+using osc::UID;
 using osc::Vec2;
 using osc::Vec3;
 
@@ -193,7 +194,7 @@ osc::LOGLGammaTab::LOGLGammaTab(LOGLGammaTab&&) noexcept = default;
 osc::LOGLGammaTab& osc::LOGLGammaTab::operator=(LOGLGammaTab&&) noexcept = default;
 osc::LOGLGammaTab::~LOGLGammaTab() noexcept = default;
 
-osc::UID osc::LOGLGammaTab::implGetID() const
+UID osc::LOGLGammaTab::implGetID() const
 {
     return m_Impl->getID();
 }

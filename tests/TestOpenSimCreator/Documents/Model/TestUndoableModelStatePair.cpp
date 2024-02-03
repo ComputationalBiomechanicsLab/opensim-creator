@@ -18,6 +18,7 @@
 #include <sstream>
 
 using osc::DAEMetadata;
+using osc::GetAbsolutePathString;
 using osc::GlobalInitOpenSim;
 using osc::NullOStream;
 using osc::OpenSimDecorationOptions;
@@ -63,7 +64,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
                 1.0f,  // 1:1 scaling
                 [&decorations](OpenSim::Component const& component, SceneDecoration&& dec)
                 {
-                    dec.id = osc::GetAbsolutePathString(component);
+                    dec.id = GetAbsolutePathString(component);
                     decorations.push_back(std::move(dec));
                 }
             );

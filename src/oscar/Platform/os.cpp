@@ -239,6 +239,10 @@ std::string osc::CurrentErrnoAsString()
 #include <sys/types.h>
 #include <sys/wait.h>
 
+using osc::log_error;
+using osc::log_info;
+using osc::log_message;
+using osc::log_warn;
 
 std::tm osc::GMTimeThreadsafe(std::time_t t)
 {
@@ -254,7 +258,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
     auto* maybeErr = strerror_r(errnum, buf.data(), buf.size());
     if (std::is_same_v<int, decltype(maybeErr)> && !maybeErr)
     {
-        log_message::log_warn("a call to strerror_r failed with error code %i", maybeErr);
+        log_warn("a call to strerror_r failed with error code %i", maybeErr);
         return {};
     }
     else
@@ -265,7 +269,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
     std::string rv{buf.data()};
     if (rv.size() == buf.size())
     {
-        log_message::log_warn("a call to strerror_r returned an error string that was as big as the buffer: an OS error message may have been truncated!");
+        log_warn("a call to strerror_r returned an error string that was as big as the buffer: an OS error message may have been truncated!");
     }
     return rv;
 }
@@ -283,7 +287,7 @@ void osc::WriteTracebackToLog(LogLevel lvl)
 
     for (int i = 0; i < size; ++i)
     {
-        log_message::log_message(lvl, "%s", messages.get()[i]);
+        log_message(lvl, "%s", messages.get()[i]);
     }
 }
 
@@ -303,13 +307,13 @@ namespace
         // reset abort signal handler
         if (signal(SIGABRT, SIG_DFL) == SIG_ERR)
         {
-            osc::log_message::log_error("failed to reset SIGABRT handler - the program may not be able to crash correctly");
+            log_error("failed to reset SIGABRT handler - the program may not be able to crash correctly");
         }
 
         // reset segfault signal handler
         if (signal(SIGSEGV, SIG_DFL) == SIG_ERR)
         {
-            osc::log_message::log_error("failed to reset SIGSEGV handler - the program may not be able to crash correctly");
+            log_error("failed to reset SIGSEGV handler - the program may not be able to crash correctly");
         }
 
         auto* uc = static_cast<osc_sig_ucontext*>(ucontext);
@@ -353,13 +357,13 @@ void osc::InstallBacktraceHandler(std::filesystem::path const&)
     // install segfault handler
     if (sigaction(SIGSEGV, &sigact, nullptr) != 0)
     {
-        log_message::log_error("could not set signal handler for SIGSEGV: error reporting may not work as intended");
+        log_error("could not set signal handler for SIGSEGV: error reporting may not work as intended");
     }
 
     // install abort handler: this triggers whenever a non-throwing `assert` causes a termination
     if (sigaction(SIGABRT, &sigact, nullptr) != 0)
     {
-        log_message::log_error("could not set signal handler for SIGABRT: error reporting may not work as intended");
+        log_error("could not set signal handler for SIGABRT: error reporting may not work as intended");
     }
 }
 
@@ -371,7 +375,7 @@ void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& fp)
     if (pid == -1)
     {
         // failed to fork a process
-        log_message::log_error("failed to fork() a new subprocess: this usually only happens if you have unusual OS settings: see 'man fork' ERRORS for details");
+        log_error("failed to fork() a new subprocess: this usually only happens if you have unusual OS settings: see 'man fork' ERRORS for details");
         return;
     }
     else if (pid != 0)
@@ -380,14 +384,14 @@ void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& fp)
         //
         // have the parent thread `wait` for the child thread to finish
         // what it's doing (xdg-open, itself, forks + detaches)
-        log_message::log_info("fork()ed a subprocess for 'xdg-open %s'", fp.c_str());
+        log_info("fork()ed a subprocess for 'xdg-open %s'", fp.c_str());
 
         int rv = 0;
         waitpid(pid, &rv, 0);
 
         if (rv)
         {
-            log_message::log_error("fork()ed subprocess returned an error code of %i", rv);
+            log_error("fork()ed subprocess returned an error code of %i", rv);
         }
 
         return;
@@ -426,6 +430,10 @@ void osc::OpenURLInDefaultBrowser(std::string_view vw)
 #include <string.h>  // strerror_r()
 #include <time.h>  // gmtime_r()
 
+using osc::log_error;
+using osc::log_message;
+using osc::log_warn;
+
 std::tm osc::GMTimeThreadsafe(std::time_t t)
 {
     std::tm rv;
@@ -438,7 +446,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
     std::array<char, 512> buf{};
     if (strerror_r(errnum, buf.data(), buf.size()) == ERANGE)
     {
-        log_message::log_warn("a call to strerror_r returned ERANGE: an OS error message may have been truncated!");
+        log_warn("a call to strerror_r returned ERANGE: an OS error message may have been truncated!");
     }
     return std::string{buf.data()};
 }
@@ -457,7 +465,7 @@ void osc::WriteTracebackToLog(LogLevel lvl)
 
     for (int i = 0; i < size; ++i)
     {
-        log_message::log_message(lvl, "%s", messages.get()[i]);
+        log_message(lvl, "%s", messages.get()[i]);
     }
 }
 
@@ -465,8 +473,8 @@ namespace
 {
     [[noreturn]] void OSC_critical_error_handler(int sig_num, siginfo_t*, void*)
     {
-        osc::log_message::log_error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
-        osc::log_message::log_error("backtrace:");
+        log_error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
+        log_error("backtrace:");
         osc::WriteTracebackToLog(osc::LogLevel::err);
         exit(EXIT_FAILURE);
     }
@@ -481,13 +489,13 @@ void osc::InstallBacktraceHandler(std::filesystem::path const&)
     // enable SIGSEGV (segmentation fault) handler
     if (sigaction(SIGSEGV, &sigact, nullptr) != 0)
     {
-        log_message::log_warn("could not set a signal handler for SIGSEGV: crash error reporting may not work as intended");
+        log_warn("could not set a signal handler for SIGSEGV: crash error reporting may not work as intended");
     }
 
     // enable SIGABRT (abort) handler - usually triggers when `assert` fails or std::terminate is called
     if (sigaction(SIGABRT, &sigact, nullptr) != 0)
     {
-        log_message::log_warn("could not set a signal handler for SIGABRT: crash error reporting may not work as intended");
+        log_warn("could not set a signal handler for SIGABRT: crash error reporting may not work as intended");
     }
 }
 

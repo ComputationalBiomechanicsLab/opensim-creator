@@ -24,6 +24,7 @@
 using namespace osc::literals;
 using osc::CStringView;
 using osc::MouseCapturingCamera;
+using osc::UID;
 
 namespace
 {
@@ -141,7 +142,7 @@ osc::LOGLBasicLightingTab::LOGLBasicLightingTab(LOGLBasicLightingTab&&) noexcept
 osc::LOGLBasicLightingTab& osc::LOGLBasicLightingTab::operator=(LOGLBasicLightingTab&&) noexcept = default;
 osc::LOGLBasicLightingTab::~LOGLBasicLightingTab() noexcept = default;
 
-osc::UID osc::LOGLBasicLightingTab::implGetID() const
+UID osc::LOGLBasicLightingTab::implGetID() const
 {
     return m_Impl->getID();
 }

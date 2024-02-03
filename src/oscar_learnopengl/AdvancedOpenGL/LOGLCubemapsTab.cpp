@@ -52,6 +52,7 @@ using osc::NumOptions;
 using osc::Shader;
 using osc::Texture2D;
 using osc::ToIndex;
+using osc::UID;
 using osc::Vec2i;
 
 namespace
@@ -274,7 +275,7 @@ osc::LOGLCubemapsTab::LOGLCubemapsTab(LOGLCubemapsTab&&) noexcept = default;
 osc::LOGLCubemapsTab& osc::LOGLCubemapsTab::operator=(LOGLCubemapsTab&&) noexcept = default;
 osc::LOGLCubemapsTab::~LOGLCubemapsTab() noexcept = default;
 
-osc::UID osc::LOGLCubemapsTab::implGetID() const
+UID osc::LOGLCubemapsTab::implGetID() const
 {
     return m_Impl->getID();
 }

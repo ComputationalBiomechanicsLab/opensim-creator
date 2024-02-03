@@ -83,7 +83,7 @@ namespace osc::sdl
         }
 
     private:
-        friend Window CreateWindoww(osc::CStringView title, int x, int y, int w, int h, Uint32 flags);
+        friend Window CreateWindoww(CStringView title, int x, int y, int w, int h, Uint32 flags);
         Window(SDL_Window * _ptr) : m_WindowHandle{_ptr}
         {
         }
@@ -96,7 +96,7 @@ namespace osc::sdl
     //
     // CreateWindoww is a typo because `CreateWindow` is defined in the
     // preprocessor
-    inline Window CreateWindoww(osc::CStringView title, int x, int y, int w, int h, Uint32 flags)
+    inline Window CreateWindoww(CStringView title, int x, int y, int w, int h, Uint32 flags)
     {
         SDL_Window* const win = SDL_CreateWindow(title.c_str(), x, y, w, h, flags);
 
@@ -155,9 +155,9 @@ namespace osc::sdl
     }
 
     // https://wiki.libsdl.org/SDL_GetWindowSize
-    inline osc::Vec2i GetWindowSize(SDL_Window* window)
+    inline Vec2i GetWindowSize(SDL_Window* window)
     {
-        osc::Vec2i d;
+        Vec2i d;
         SDL_GetWindowSize(window, &d.x, &d.y);
         return d;
     }

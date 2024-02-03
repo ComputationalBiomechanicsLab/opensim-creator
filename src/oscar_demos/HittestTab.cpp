@@ -35,6 +35,7 @@ using osc::Line;
 using osc::MaterialPropertyBlock;
 using osc::Mesh;
 using osc::MeshTopology;
+using osc::UID;
 using osc::Vec3;
 
 namespace
@@ -310,7 +311,7 @@ private:
 
 // public API
 
-osc::CStringView osc::HittestTab::id()
+CStringView osc::HittestTab::id()
 {
     return c_TabStringID;
 }
@@ -323,12 +324,12 @@ osc::HittestTab::HittestTab(HittestTab&&) noexcept = default;
 osc::HittestTab& osc::HittestTab::operator=(HittestTab&&) noexcept = default;
 osc::HittestTab::~HittestTab() noexcept = default;
 
-osc::UID osc::HittestTab::implGetID() const
+UID osc::HittestTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::HittestTab::implGetName() const
+CStringView osc::HittestTab::implGetName() const
 {
     return m_Impl->getName();
 }

@@ -46,6 +46,7 @@ using osc::RenderTextureFormat;
 using osc::RenderTextureReadWrite;
 using osc::TextureDimensionality;
 using osc::Transform;
+using osc::UID;
 using osc::UnitVec3;
 using osc::Vec2i;
 using osc::Vec3;
@@ -273,7 +274,7 @@ osc::LOGLPointShadowsTab::LOGLPointShadowsTab(LOGLPointShadowsTab&&) noexcept = 
 osc::LOGLPointShadowsTab& osc::LOGLPointShadowsTab::operator=(LOGLPointShadowsTab&&) noexcept = default;
 osc::LOGLPointShadowsTab::~LOGLPointShadowsTab() noexcept = default;
 
-osc::UID osc::LOGLPointShadowsTab::implGetID() const
+UID osc::LOGLPointShadowsTab::implGetID() const
 {
     return m_Impl->getID();
 }

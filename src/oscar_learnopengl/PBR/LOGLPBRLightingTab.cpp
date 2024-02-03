@@ -28,6 +28,7 @@ using osc::CStringView;
 using osc::Material;
 using osc::MouseCapturingCamera;
 using osc::Shader;
+using osc::UID;
 using osc::Vec3;
 
 namespace
@@ -174,7 +175,7 @@ osc::LOGLPBRLightingTab::LOGLPBRLightingTab(LOGLPBRLightingTab&&) noexcept = def
 osc::LOGLPBRLightingTab& osc::LOGLPBRLightingTab::operator=(LOGLPBRLightingTab&&) noexcept = default;
 osc::LOGLPBRLightingTab::~LOGLPBRLightingTab() noexcept = default;
 
-osc::UID osc::LOGLPBRLightingTab::implGetID() const
+UID osc::LOGLPBRLightingTab::implGetID() const
 {
     return m_Impl->getID();
 }

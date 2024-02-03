@@ -58,6 +58,7 @@ using osc::RenderTextureDescriptor;
 using osc::RenderTextureFormat;
 using osc::Shader;
 using osc::ToLinear;
+using osc::UID;
 using osc::Vec2;
 using osc::Vec3;
 
@@ -374,7 +375,7 @@ osc::LOGLDeferredShadingTab::LOGLDeferredShadingTab(LOGLDeferredShadingTab&&) no
 osc::LOGLDeferredShadingTab& osc::LOGLDeferredShadingTab::operator=(LOGLDeferredShadingTab&&) noexcept = default;
 osc::LOGLDeferredShadingTab::~LOGLDeferredShadingTab() noexcept = default;
 
-osc::UID osc::LOGLDeferredShadingTab::implGetID() const
+UID osc::LOGLDeferredShadingTab::implGetID() const
 {
     return m_Impl->getID();
 }

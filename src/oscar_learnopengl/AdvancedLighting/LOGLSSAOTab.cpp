@@ -58,6 +58,7 @@ using osc::Texture2D;
 using osc::TextureFilterMode;
 using osc::TextureFormat;
 using osc::TextureWrapMode;
+using osc::UID;
 using osc::Vec2i;
 using osc::Vec3;
 using osc::ViewObjectRepresentations;
@@ -432,7 +433,7 @@ osc::LOGLSSAOTab::LOGLSSAOTab(LOGLSSAOTab&&) noexcept = default;
 osc::LOGLSSAOTab& osc::LOGLSSAOTab::operator=(LOGLSSAOTab&&) noexcept = default;
 osc::LOGLSSAOTab::~LOGLSSAOTab() noexcept = default;
 
-osc::UID osc::LOGLSSAOTab::implGetID() const
+UID osc::LOGLSSAOTab::implGetID() const
 {
     return m_Impl->getID();
 }

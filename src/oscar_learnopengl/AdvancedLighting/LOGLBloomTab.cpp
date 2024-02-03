@@ -42,6 +42,7 @@ using osc::Rotate;
 using osc::Scale;
 using osc::ToSRGB;
 using osc::Translate;
+using osc::UID;
 using osc::UnitVec3;
 using osc::Vec2;
 using osc::Vec3;
@@ -393,7 +394,7 @@ osc::LOGLBloomTab::LOGLBloomTab(LOGLBloomTab&&) noexcept = default;
 osc::LOGLBloomTab& osc::LOGLBloomTab::operator=(LOGLBloomTab&&) noexcept = default;
 osc::LOGLBloomTab::~LOGLBloomTab() noexcept = default;
 
-osc::UID osc::LOGLBloomTab::implGetID() const
+UID osc::LOGLBloomTab::implGetID() const
 {
     return m_Impl->getID();
 }

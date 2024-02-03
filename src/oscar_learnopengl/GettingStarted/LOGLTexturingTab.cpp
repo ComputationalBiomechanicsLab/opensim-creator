@@ -37,6 +37,7 @@ using osc::Mesh;
 using osc::Shader;
 using osc::Texture2D;
 using osc::TextureWrapMode;
+using osc::UID;
 using osc::Vec2;
 using osc::Vec3;
 
@@ -135,7 +136,7 @@ osc::LOGLTexturingTab::LOGLTexturingTab(LOGLTexturingTab&&) noexcept = default;
 osc::LOGLTexturingTab& osc::LOGLTexturingTab::operator=(LOGLTexturingTab&&) noexcept = default;
 osc::LOGLTexturingTab::~LOGLTexturingTab() noexcept = default;
 
-osc::UID osc::LOGLTexturingTab::implGetID() const
+UID osc::LOGLTexturingTab::implGetID() const
 {
     return m_Impl->getID();
 }

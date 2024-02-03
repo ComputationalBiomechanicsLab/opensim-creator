@@ -32,6 +32,7 @@ using osc::Material;
 using osc::MouseCapturingCamera;
 using osc::Shader;
 using osc::Texture2D;
+using osc::UID;
 
 namespace
 {
@@ -163,7 +164,7 @@ osc::LOGLLightingMapsTab::LOGLLightingMapsTab(LOGLLightingMapsTab&&) noexcept = 
 osc::LOGLLightingMapsTab& osc::LOGLLightingMapsTab::operator=(LOGLLightingMapsTab&&) noexcept = default;
 osc::LOGLLightingMapsTab::~LOGLLightingMapsTab() noexcept = default;
 
-osc::UID osc::LOGLLightingMapsTab::implGetID() const
+UID osc::LOGLLightingMapsTab::implGetID() const
 {
     return m_Impl->getID();
 }

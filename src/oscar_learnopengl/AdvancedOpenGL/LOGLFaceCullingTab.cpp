@@ -31,6 +31,7 @@ using osc::Mesh;
 using osc::MouseCapturingCamera;
 using osc::Shader;
 using osc::Transform;
+using osc::UID;
 using osc::Vec3;
 
 namespace
@@ -145,7 +146,7 @@ osc::LOGLFaceCullingTab::LOGLFaceCullingTab(LOGLFaceCullingTab&&) noexcept = def
 osc::LOGLFaceCullingTab& osc::LOGLFaceCullingTab::operator=(LOGLFaceCullingTab&&) noexcept = default;
 osc::LOGLFaceCullingTab::~LOGLFaceCullingTab() noexcept = default;
 
-osc::UID osc::LOGLFaceCullingTab::implGetID() const
+UID osc::LOGLFaceCullingTab::implGetID() const
 {
     return m_Impl->getID();
 }

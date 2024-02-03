@@ -37,6 +37,7 @@ using osc::Material;
 using osc::MouseCapturingCamera;
 using osc::Shader;
 using osc::Texture2D;
+using osc::UID;
 using osc::Vec3;
 
 namespace
@@ -239,7 +240,7 @@ osc::LOGLMultipleLightsTab::LOGLMultipleLightsTab(LOGLMultipleLightsTab&&) noexc
 osc::LOGLMultipleLightsTab& osc::LOGLMultipleLightsTab::operator=(LOGLMultipleLightsTab&&) noexcept = default;
 osc::LOGLMultipleLightsTab::~LOGLMultipleLightsTab() noexcept = default;
 
-osc::UID osc::LOGLMultipleLightsTab::implGetID() const
+UID osc::LOGLMultipleLightsTab::implGetID() const
 {
     return m_Impl->getID();
 }

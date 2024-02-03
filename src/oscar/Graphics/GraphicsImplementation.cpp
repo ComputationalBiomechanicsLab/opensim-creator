@@ -647,7 +647,7 @@ namespace
     // transform storage: either as a matrix or a transform
     //
     // calling code is allowed to submit transforms as either Transform (preferred) or
-    // osc::Mat4 (can be handier)
+    // `Mat4` (can be handier)
     //
     // these need to be stored as-is, because that's the smallest possible representation and
     // the drawing algorithm needs to traverse + sort the render objects at runtime (so size
@@ -1548,7 +1548,7 @@ void osc::Cubemap::setFilterMode(TextureFilterMode fm)
     m_Impl.upd()->setFilterMode(fm);
 }
 
-osc::TextureFormat osc::Cubemap::getTextureFormat() const
+TextureFormat osc::Cubemap::getTextureFormat() const
 {
     return m_Impl->getTextureFormat();
 }

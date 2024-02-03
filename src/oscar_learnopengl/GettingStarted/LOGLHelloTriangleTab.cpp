@@ -27,6 +27,7 @@ using osc::Mat4;
 using osc::Material;
 using osc::Mesh;
 using osc::Shader;
+using osc::UID;
 using osc::Vec3;
 
 namespace
@@ -104,7 +105,7 @@ osc::LOGLHelloTriangleTab::LOGLHelloTriangleTab(LOGLHelloTriangleTab&&) noexcept
 osc::LOGLHelloTriangleTab& osc::LOGLHelloTriangleTab::operator=(LOGLHelloTriangleTab&&) noexcept = default;
 osc::LOGLHelloTriangleTab::~LOGLHelloTriangleTab() noexcept = default;
 
-osc::UID osc::LOGLHelloTriangleTab::implGetID() const
+UID osc::LOGLHelloTriangleTab::implGetID() const
 {
     return m_Impl->getID();
 }

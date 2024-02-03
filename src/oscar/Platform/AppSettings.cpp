@@ -624,8 +624,8 @@ osc::AppSettings::AppSettings(
 }
 osc::AppSettings::AppSettings(AppSettings const&) = default;
 osc::AppSettings::AppSettings(AppSettings&&) noexcept = default;
-osc::AppSettings& osc::AppSettings::operator=(AppSettings const&) = default;
-osc::AppSettings& osc::AppSettings::operator=(AppSettings&&) noexcept = default;
+AppSettings& osc::AppSettings::operator=(AppSettings const&) = default;
+AppSettings& osc::AppSettings::operator=(AppSettings&&) noexcept = default;
 osc::AppSettings::~AppSettings() noexcept
 {
     m_Impl->sync();

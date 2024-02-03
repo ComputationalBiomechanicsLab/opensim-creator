@@ -58,6 +58,7 @@ using osc::TextureFilterMode;
 using osc::TextureFormat;
 using osc::TextureWrapMode;
 using osc::Transform;
+using osc::UID;
 using osc::Vec3;
 
 namespace
@@ -398,7 +399,7 @@ osc::LOGLPBRSpecularIrradianceTab::LOGLPBRSpecularIrradianceTab(LOGLPBRSpecularI
 osc::LOGLPBRSpecularIrradianceTab& osc::LOGLPBRSpecularIrradianceTab::operator=(LOGLPBRSpecularIrradianceTab&&) noexcept = default;
 osc::LOGLPBRSpecularIrradianceTab::~LOGLPBRSpecularIrradianceTab() noexcept = default;
 
-osc::UID osc::LOGLPBRSpecularIrradianceTab::implGetID() const
+UID osc::LOGLPBRSpecularIrradianceTab::implGetID() const
 {
     return m_Impl->getID();
 }

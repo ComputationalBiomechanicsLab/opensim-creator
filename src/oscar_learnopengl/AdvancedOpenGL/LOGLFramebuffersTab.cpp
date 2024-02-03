@@ -34,6 +34,7 @@ using osc::Identity;
 using osc::Mat4;
 using osc::Mesh;
 using osc::MouseCapturingCamera;
+using osc::UID;
 using osc::Vec2;
 using osc::Vec3;
 
@@ -197,7 +198,7 @@ osc::LOGLFramebuffersTab::LOGLFramebuffersTab(LOGLFramebuffersTab&&) noexcept = 
 osc::LOGLFramebuffersTab& osc::LOGLFramebuffersTab::operator=(LOGLFramebuffersTab&&) noexcept = default;
 osc::LOGLFramebuffersTab::~LOGLFramebuffersTab() noexcept = default;
 
-osc::UID osc::LOGLFramebuffersTab::implGetID() const
+UID osc::LOGLFramebuffersTab::implGetID() const
 {
     return m_Impl->getID();
 }

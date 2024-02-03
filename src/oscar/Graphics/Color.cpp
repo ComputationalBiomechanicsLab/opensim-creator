@@ -18,6 +18,7 @@
 using osc::Color;
 using osc::ColorHSLA;
 using osc::Color32;
+using osc::HashOf;
 
 namespace
 {
@@ -150,7 +151,7 @@ Color osc::Lerp(Color const& a, Color const& b, float t)
 
 size_t std::hash<osc::Color>::operator()(osc::Color const& color) const
 {
-    return osc::HashOf(color.r, color.g, color.b, color.a);
+    return HashOf(color.r, color.g, color.b, color.a);
 }
 
 Color32 osc::ToColor32(Color const& color)

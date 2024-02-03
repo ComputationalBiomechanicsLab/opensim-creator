@@ -42,6 +42,7 @@ using osc::Shader;
 using osc::Texture2D;
 using osc::ToSRGB;
 using osc::Transform;
+using osc::UID;
 using osc::Vec3;
 
 namespace
@@ -217,7 +218,7 @@ osc::LOGLHDRTab::LOGLHDRTab(LOGLHDRTab&&) noexcept = default;
 osc::LOGLHDRTab& osc::LOGLHDRTab::operator=(LOGLHDRTab&&) noexcept = default;
 osc::LOGLHDRTab::~LOGLHDRTab() noexcept = default;
 
-osc::UID osc::LOGLHDRTab::implGetID() const
+UID osc::LOGLHDRTab::implGetID() const
 {
     return m_Impl->getID();
 }

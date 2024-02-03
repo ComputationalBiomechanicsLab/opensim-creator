@@ -841,7 +841,7 @@ std::string osc::App::slurp(std::string_view s)
 
 osc::App::App(AppMetadata const& metadata)
 {
-    OSC_ASSERT(!g_ApplicationGlobal && "cannot instantiate multiple osc::App instances at the same time");
+    OSC_ASSERT(!g_ApplicationGlobal && "cannot instantiate multiple `App` instances at the same time");
 
     m_Impl = std::make_unique<Impl>(metadata);
     g_ApplicationGlobal = this;

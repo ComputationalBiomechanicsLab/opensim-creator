@@ -42,6 +42,7 @@ using osc::MeshTopology;
 using osc::MouseCapturingCamera;
 using osc::Shader;
 using osc::Texture2D;
+using osc::UID;
 using osc::Vec2;
 using osc::Vec3;
 using osc::Vec4;
@@ -224,7 +225,7 @@ osc::LOGLNormalMappingTab::LOGLNormalMappingTab(LOGLNormalMappingTab&&) noexcept
 osc::LOGLNormalMappingTab& osc::LOGLNormalMappingTab::operator=(LOGLNormalMappingTab&&) noexcept = default;
 osc::LOGLNormalMappingTab::~LOGLNormalMappingTab() noexcept = default;
 
-osc::UID osc::LOGLNormalMappingTab::implGetID() const
+UID osc::LOGLNormalMappingTab::implGetID() const
 {
     return m_Impl->getID();
 }

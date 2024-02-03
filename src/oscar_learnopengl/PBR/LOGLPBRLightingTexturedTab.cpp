@@ -33,6 +33,7 @@ using osc::Material;
 using osc::MouseCapturingCamera;
 using osc::Shader;
 using osc::Texture2D;
+using osc::UID;
 using osc::Vec3;
 
 namespace
@@ -189,7 +190,7 @@ osc::LOGLPBRLightingTexturedTab::LOGLPBRLightingTexturedTab(LOGLPBRLightingTextu
 osc::LOGLPBRLightingTexturedTab& osc::LOGLPBRLightingTexturedTab::operator=(LOGLPBRLightingTexturedTab&&) noexcept = default;
 osc::LOGLPBRLightingTexturedTab::~LOGLPBRLightingTexturedTab() noexcept = default;
 
-osc::UID osc::LOGLPBRLightingTexturedTab::implGetID() const
+UID osc::LOGLPBRLightingTexturedTab::implGetID() const
 {
     return m_Impl->getID();
 }

@@ -34,6 +34,7 @@ using osc::LoadTexture2DFromImage;
 using osc::Material;
 using osc::MouseCapturingCamera;
 using osc::Shader;
+using osc::UID;
 using osc::UnitVec3;
 using osc::Vec3;
 
@@ -204,7 +205,7 @@ osc::LOGLCoordinateSystemsTab::LOGLCoordinateSystemsTab(LOGLCoordinateSystemsTab
 osc::LOGLCoordinateSystemsTab& osc::LOGLCoordinateSystemsTab::operator=(LOGLCoordinateSystemsTab&&) noexcept = default;
 osc::LOGLCoordinateSystemsTab::~LOGLCoordinateSystemsTab() noexcept = default;
 
-osc::UID osc::LOGLCoordinateSystemsTab::implGetID() const
+UID osc::LOGLCoordinateSystemsTab::implGetID() const
 {
     return m_Impl->getID();
 }
