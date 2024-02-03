@@ -123,7 +123,7 @@ namespace
     MouseCapturingCamera CreateCameraThatMatchesLearnOpenGL()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.0f, 5.0f});
+        rv.setPosition({0.0f, 0.5f, 5.0f});
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.0f, 0.0f, 0.0f, 1.0f});

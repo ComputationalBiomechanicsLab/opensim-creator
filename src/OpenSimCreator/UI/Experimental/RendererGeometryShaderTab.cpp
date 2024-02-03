@@ -27,7 +27,7 @@ public:
     Impl()
     {
         m_SceneCamera.setPosition({0.0f, 0.0f, 3.0f});
-        m_SceneCamera.setCameraFOV(45_deg);
+        m_SceneCamera.setVerticalFOV(45_deg);
         m_SceneCamera.setNearClippingPlane(0.1f);
         m_SceneCamera.setFarClippingPlane(100.0f);
     }

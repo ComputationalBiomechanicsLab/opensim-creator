@@ -85,6 +85,7 @@ namespace
     MouseCapturingCamera CreateCamera()
     {
         MouseCapturingCamera cam;
+        cam.setPosition({-2.0f, 1.0f, 0.0f});
         cam.setNearClippingPlane(0.1f);
         cam.setFarClippingPlane(100.0f);
         return cam;

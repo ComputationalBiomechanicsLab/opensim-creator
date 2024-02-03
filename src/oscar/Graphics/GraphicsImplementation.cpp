@@ -5554,12 +5554,12 @@ public:
         m_OrthographicSize = size;
     }
 
-    Radians getCameraFOV() const
+    Radians getVerticalFOV() const
     {
         return m_PerspectiveFov;
     }
 
-    void setCameraFOV(Radians size)
+    void setVerticalFOV(Radians size)
     {
         m_PerspectiveFov = size;
     }
@@ -5841,14 +5841,14 @@ void osc::Camera::setOrthographicSize(float sz)
     m_Impl.upd()->setOrthographicSize(sz);
 }
 
-Radians osc::Camera::getCameraFOV() const
+Radians osc::Camera::getVerticalFOV() const
 {
-    return m_Impl->getCameraFOV();
+    return m_Impl->getVerticalFOV();
 }
 
-void osc::Camera::setCameraFOV(Radians verticalFOV)
+void osc::Camera::setVerticalFOV(Radians verticalFOV)
 {
-    m_Impl.upd()->setCameraFOV(verticalFOV);
+    m_Impl.upd()->setVerticalFOV(verticalFOV);
 }
 
 float osc::Camera::getNearClippingPlane() const

@@ -86,11 +86,11 @@ TEST(Camera, UsesValueComparison)
 
     ASSERT_EQ(c1, c2);
 
-    c1.setCameraFOV(1337_deg);
+    c1.setVerticalFOV(1337_deg);
 
     ASSERT_NE(c1, c2);
 
-    c2.setCameraFOV(1337_deg);
+    c2.setVerticalFOV(1337_deg);
 
     ASSERT_EQ(c1, c2);
 }
