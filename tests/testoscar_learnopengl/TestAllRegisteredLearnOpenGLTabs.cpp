@@ -111,8 +111,8 @@ namespace {
         void implOnMount() override { m_Impl->onMount(); }
         void implOnUnmount() override { m_Impl->onUnmount(); }
         void implOnEvent(SDL_Event const& e) { m_Impl->onEvent(e); }
-        void implOnTick() { m_Impl->onTick(); }
-        void implOnDraw() { m_Impl->onDraw(); }
+        void implOnTick() override { m_Impl->onTick(); }
+        void implOnDraw() override { m_Impl->onDraw(); }
 
         std::shared_ptr<TestRunnerScreen> m_Impl = std::make_shared<TestRunnerScreen>();
     };
