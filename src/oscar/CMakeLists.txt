@@ -266,6 +266,9 @@ add_library(oscar STATIC
     UI/ImGuizmoHelpers.hpp
     UI/imgui_impl_oscargfx.cpp
     UI/imgui_impl_oscargfx.hpp
+    UI/Panels.hpp
+    UI/Tabs.hpp
+    UI/Widgets.hpp
 
     Utils/At.hpp
     Utils/Assertions.cpp
@@ -317,6 +320,18 @@ add_library(oscar STATIC
     Variant/VariantType.hpp
     Variant/VariantTypeList.hpp
     Variant/VariantTypeTraits.hpp
+
+    Formats.hpp
+    Graphics.hpp
+    Maths.hpp
+    oscar.hpp
+    Object.hpp
+    Platform.hpp
+    Scene.hpp
+    Shims.hpp
+    UI.hpp
+    Utils.hpp
+    Variant.hpp
 )
 
 target_include_directories(oscar PUBLIC
