@@ -19,6 +19,6 @@ void osc::OnAssertionFailure(
         return std::move(ss).str();
     }();
 
-    log::error("%s", msg.c_str());
+    log_error("%s", msg.c_str());
     throw std::runtime_error{msg};
 }

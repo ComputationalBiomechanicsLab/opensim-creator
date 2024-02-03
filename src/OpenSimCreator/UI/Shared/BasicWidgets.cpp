@@ -65,6 +65,8 @@
 #include <variant>
 
 using namespace osc::literals;
+using osc::log_error;
+using osc::log_info;
 
 // export utils
 namespace
@@ -85,7 +87,7 @@ namespace
 
         if (!outfile)
         {
-            osc::log::error("cannot save to %s: IO error", daePath.string().c_str());
+            log_error("cannot save to %s: IO error", daePath.string().c_str());
             return;
         }
 
@@ -97,7 +99,7 @@ namespace
         };
 
         osc::WriteDecorationsAsDAE(outfile, scene, daeMetadata);
-        osc::log::info("wrote scene as a DAE file to %s", daePath.string().c_str());
+        log_info("wrote scene as a DAE file to %s", daePath.string().c_str());
     }
 
     void DrawOutputTooltip(OpenSim::AbstractOutput const& o)
@@ -227,7 +229,7 @@ namespace
         if (!outputFileStream)
         {
             std::string const error = osc::CurrentErrnoAsString();
-            osc::log::error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
+            log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
             return;
         }
 
@@ -275,7 +277,7 @@ namespace
         if (!outputFileStream)
         {
             std::string const error = osc::CurrentErrnoAsString();
-            osc::log::error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
+            log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
             return;
         }
 

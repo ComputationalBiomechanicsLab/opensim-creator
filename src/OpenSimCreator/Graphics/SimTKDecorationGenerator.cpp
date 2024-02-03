@@ -26,6 +26,7 @@ using osc::SceneDecoration;
 using osc::ToVec3;
 using osc::Transform;
 using osc::Vec3;
+using osc::log_warn;
 
 // helper functions
 namespace
@@ -135,7 +136,7 @@ namespace
         {
             [[maybe_unused]] static bool const s_ShownWarningOnce = []()
             {
-                osc::log::warn("this model uses implementPointGeometry, which is not yet implemented in OSC");
+                log_warn("this model uses implementPointGeometry, which is not yet implemented in OSC");
                 return true;
             }();
         }
@@ -270,7 +271,7 @@ namespace
         {
             [[maybe_unused]] static bool const s_ShownWarningOnce = []()
             {
-                osc::log::warn("this model uses implementTextGeometry, which is not yet implemented in OSC");
+                log_warn("this model uses implementTextGeometry, which is not yet implemented in OSC");
                 return true;
             }();
         }

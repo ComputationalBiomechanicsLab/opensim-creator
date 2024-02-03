@@ -31,6 +31,10 @@
 #include <utility>
 #include <vector>
 
+using osc::log_error;
+using osc::log_info;
+using osc::log_warn;
+
 namespace
 {
     std::vector<osc::OutputExtractor> GetAllUserDesiredOutputs(osc::ISimulatorUIAPI& api)
@@ -67,7 +71,7 @@ namespace
 
         if (!fout)
         {
-            osc::log::error("%s: error opening file for writing", csvPath.string().c_str());
+            log_error("%s: error opening file for writing", csvPath.string().c_str());
             return {};  // error opening output file for writing
         }
 
@@ -79,11 +83,11 @@ namespace
 
         if (!fout)
         {
-            osc::log::error("%s: error encountered while writing CSV data to file", csvPath.string().c_str());
+            log_error("%s: error encountered while writing CSV data to file", csvPath.string().c_str());
             return {};  // error writing
         }
 
-        osc::log::info("%: successfully wrote CSV data to output file", csvPath.string().c_str());
+        log_info("%: successfully wrote CSV data to output file", csvPath.string().c_str());
 
         return csvPath.string();
     }
@@ -187,7 +191,7 @@ namespace
 
         if (!fout)
         {
-            osc::log::error("%s: error opening file for writing", csvPath.string().c_str());
+            log_error("%s: error opening file for writing", csvPath.string().c_str());
             return {};  // error opening output file for writing
         }
 
@@ -217,7 +221,7 @@ namespace
 
         if (!fout)
         {
-            osc::log::warn("%s: encountered error while writing output data: some of the data may have been written, but maybe not all of it", csvPath.string().c_str());
+            log_warn("%s: encountered error while writing output data: some of the data may have been written, but maybe not all of it", csvPath.string().c_str());
         }
 
         return csvPath;

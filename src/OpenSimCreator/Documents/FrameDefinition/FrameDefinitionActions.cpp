@@ -192,21 +192,21 @@ void osc::fd::ActionSwapSocketAssignments(
     OpenSim::Component* const component = FindComponentMut(mutModel, componentAbsPath);
     if (!component)
     {
-        log::error("failed to find %s in model, skipping action", componentAbsPath.toString().c_str());
+        log_error("failed to find %s in model, skipping action", componentAbsPath.toString().c_str());
         return;
     }
 
     OpenSim::AbstractSocket* const firstSocket = FindSocketMut(*component, firstSocketName);
     if (!firstSocket)
     {
-        log::error("failed to find socket %s in %s, skipping action", firstSocketName.c_str(), component->getName().c_str());
+        log_error("failed to find socket %s in %s, skipping action", firstSocketName.c_str(), component->getName().c_str());
         return;
     }
 
     OpenSim::AbstractSocket* const secondSocket = FindSocketMut(*component, secondSocketName);
     if (!secondSocket)
     {
-        log::error("failed to find socket %s in %s, skipping action", secondSocketName.c_str(), component->getName().c_str());
+        log_error("failed to find socket %s in %s, skipping action", secondSocketName.c_str(), component->getName().c_str());
         return;
     }
 
@@ -275,37 +275,37 @@ void osc::fd::ActionCreateBodyFromFrame(
 {
     // validate external inputs
 
-    log::debug("validate external inputs");
+    log_debug("validate external inputs");
     auto const* const meshFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), frameAbsPath);
     if (!meshFrame)
     {
-        log::error("%s: cannot find frame: skipping body creation", frameAbsPath.toString().c_str());
+        log_error("%s: cannot find frame: skipping body creation", frameAbsPath.toString().c_str());
         return;
     }
 
     auto const* const mesh = FindComponent<OpenSim::Mesh>(model->getModel(), meshAbsPath);
     if (!mesh)
     {
-        log::error("%s: cannot find mesh: skipping body creation", meshAbsPath.toString().c_str());
+        log_error("%s: cannot find mesh: skipping body creation", meshAbsPath.toString().c_str());
         return;
     }
 
     auto const* const jointFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), jointFrameAbsPath);
     if (!jointFrame)
     {
-        log::error("%s: cannot find joint frame: skipping body creation", jointFrameAbsPath.toString().c_str());
+        log_error("%s: cannot find joint frame: skipping body creation", jointFrameAbsPath.toString().c_str());
         return;
     }
 
     auto const* const parentFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), parentFrameAbsPath);
     if (!parentFrame)
     {
-        log::error("%s: cannot find parent frame: skipping body creation", parentFrameAbsPath.toString().c_str());
+        log_error("%s: cannot find parent frame: skipping body creation", parentFrameAbsPath.toString().c_str());
         return;
     }
 
     // create body
-    log::debug("create body");
+    log_debug("create body");
     std::string const bodyName = meshFrame->getName() + "_body";
     double const bodyMass = 1.0;
     SimTK::Vec3 const bodyCenterOfMass = {0.0, 0.0, 0.0};
@@ -318,7 +318,7 @@ void osc::fd::ActionCreateBodyFromFrame(
     );
 
     // create joint (centered using offset frames)
-    log::debug("create joint");
+    log_debug("create joint");
     auto joint = std::make_unique<OpenSim::FreeJoint>();
     joint->setName(meshFrame->getName() + "_joint");
     {
@@ -343,7 +343,7 @@ void osc::fd::ActionCreateBodyFromFrame(
     }
 
     // create PoF for the mesh
-    log::debug("create pof");
+    log_debug("create pof");
     auto meshPof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
     meshPof->setParentFrame(*body);
     meshPof->setName(mesh->getFrame().getName());
@@ -358,7 +358,7 @@ void osc::fd::ActionCreateBodyFromFrame(
     }();
 
     // start mutating the model
-    log::debug("start model mutation");
+    log_debug("start model mutation");
     try
     {
         // CARE: store mesh path before mutatingthe model, because the mesh reference
@@ -388,13 +388,13 @@ void osc::fd::ActionCreateBodyFromFrame(
         if (auto const* pof = GetOwner<OpenSim::PhysicalOffsetFrame>(*mesh);
             pof && osc::GetNumChildren(*pof) == 3)  // mesh+frame geom+wrap object set
         {
-            log::debug("reassign sockets");
+            log_debug("reassign sockets");
             osc::RecursivelyReassignAllSockets(mutModel, *pof, meshPofRef);
             osc::FinalizeConnections(mutModel);
 
             if (auto* mutPof = osc::FindComponentMut<OpenSim::PhysicalOffsetFrame>(mutModel, osc::GetAbsolutePathOrEmpty(pof)))
             {
-                log::debug("delete old pof");
+                log_debug("delete old pof");
                 TryDeleteComponentFromModel(mutModel, *mutPof);
                 InitializeModel(mutModel);
                 InitializeState(mutModel);
@@ -406,7 +406,7 @@ void osc::fd::ActionCreateBodyFromFrame(
         // delete old mesh
         if (auto* mutMesh = FindComponentMut<OpenSim::Mesh>(mutModel, meshAbsPath))
         {
-            log::debug("delete old mesh");
+            log_debug("delete old mesh");
             TryDeleteComponentFromModel(mutModel, *mutMesh);
             InitializeModel(mutModel);
             InitializeState(mutModel);
@@ -419,7 +419,7 @@ void osc::fd::ActionCreateBodyFromFrame(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to add a body to the model: %s", ex.what());
+        log_error("error detected while trying to add a body to the model: %s", ex.what());
         model->rollback();
     }
 }

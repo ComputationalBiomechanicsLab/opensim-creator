@@ -50,7 +50,9 @@ using osc::AppConfig;
 using osc::AppMetadata;
 using osc::CStringView;
 using osc::CurrentExeDir;
+using osc::defaultLogger;
 using osc::InstallBacktraceHandler;
+using osc::log_info;
 using osc::Screenshot;
 using osc::ScreenshotAnnotation;
 using osc::Texture2D;
@@ -83,14 +85,14 @@ namespace
     // information than "yeah, it's broke"
     bool EnsureBacktraceHandlerEnabled(std::filesystem::path const& crashDumpDir)
     {
-        osc::log::info("enabling backtrace handler");
+        log_info("enabling backtrace handler");
         InstallBacktraceHandler(crashDumpDir);
         return true;
     }
 
     bool ConfigureApplicationLog(AppConfig const& config)
     {
-        if (auto logger = osc::log::defaultLogger())
+        if (auto logger = defaultLogger())
         {
             logger->set_level(config.getRequestedLogLevel());
         }
@@ -106,7 +108,7 @@ namespace
     // initialize the main application window
     sdl::Window CreateMainAppWindow(CStringView applicationName)
     {
-        osc::log::info("initializing main application window");
+        log_info("initializing main application window");
 
         Sdl_GL_SetAttributeOrThrow(SDL_GL_CONTEXT_PROFILE_MASK, "SDL_GL_CONTEXT_PROFILE_MASK", SDL_GL_CONTEXT_PROFILE_CORE, "SDL_GL_CONTEXT_PROFILE_CORE");
         Sdl_GL_SetAttributeOrThrow(SDL_GL_CONTEXT_MAJOR_VERSION, "SDL_GL_CONTEXT_MAJOR_VERSION", 3, "3");
@@ -144,7 +146,7 @@ namespace
     std::filesystem::path GetCurrentExeDirAndLogIt()
     {
         auto rv = CurrentExeDir();
-        osc::log::info("executable directory: %s", rv.string().c_str());
+        log_info("executable directory: %s", rv.string().c_str());
         return rv;
     }
 
@@ -154,7 +156,7 @@ namespace
         CStringView applicationName)
     {
         auto rv = GetUserDataDir(organizationName, applicationName);
-        osc::log::info("user data directory: %s", rv.string().c_str());
+        log_info("user data directory: %s", rv.string().c_str());
         return rv;
     }
 }
@@ -246,7 +248,7 @@ public:
 
     void show(std::unique_ptr<IScreen> s)
     {
-        log::info("showing screen %s", s->getName().c_str());
+        log_info("showing screen %s", s->getName().c_str());
 
         if (m_CurrentScreen)
         {
@@ -545,7 +547,7 @@ private:
             return;
         }
 
-        log::info("unmounting screen %s", m_CurrentScreen->getName().c_str());
+        log_info("unmounting screen %s", m_CurrentScreen->getName().c_str());
 
         try
         {
@@ -553,7 +555,7 @@ private:
         }
         catch (std::exception const& ex)
         {
-            log::error("error unmounting screen %s: %s", m_CurrentScreen->getName().c_str(), ex.what());
+            log_error("error unmounting screen %s: %s", m_CurrentScreen->getName().c_str(), ex.what());
             m_CurrentScreen.reset();
             throw;
         }
@@ -565,9 +567,9 @@ private:
         // to "warm up" (e.g. because it's using ImGui)
         m_NumFramesToPoll = 2;
 
-        log::info("mounting screen %s", m_CurrentScreen->getName().c_str());
+        log_info("mounting screen %s", m_CurrentScreen->getName().c_str());
         m_CurrentScreen->onMount();
-        log::info("transitioned main screen to %s", m_CurrentScreen->getName().c_str());
+        log_info("transitioned main screen to %s", m_CurrentScreen->getName().c_str());
     }
 
     // the main application loop

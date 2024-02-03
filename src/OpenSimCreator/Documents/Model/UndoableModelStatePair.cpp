@@ -282,9 +282,9 @@ public:
         }
         catch (std::exception const& ex)
         {
-            log::error("exception occurred after applying changes to a model:");
-            log::error("    %s", ex.what());
-            log::error("attempting to rollback to an earlier version of the model");
+            log_error("exception occurred after applying changes to a model:");
+            log_error("    %s", ex.what());
+            log_error("attempting to rollback to an earlier version of the model");
             rollback();
         }
     }

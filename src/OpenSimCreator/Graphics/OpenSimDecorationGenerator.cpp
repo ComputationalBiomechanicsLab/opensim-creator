@@ -1058,7 +1058,7 @@ osc::Mesh osc::ToOscMesh(
     if (decs.size() > 1)
     {
         auto path = mesh.getAbsolutePathString();
-        log::warn("%s: this OpenSim::Mesh component generated more than one decoration: OSC defaulted to using the first one, but that may not be correct: if you are seeing unusual behavior, then it's because OpenSim is doing something whacky when generating decorations for a mesh", path.c_str());
+        log_warn("%s: this OpenSim::Mesh component generated more than one decoration: OSC defaulted to using the first one, but that may not be correct: if you are seeing unusual behavior, then it's because OpenSim is doing something whacky when generating decorations for a mesh", path.c_str());
     }
     return std::move(decs[0].mesh);
 }

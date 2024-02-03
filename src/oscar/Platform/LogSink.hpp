@@ -16,7 +16,7 @@ namespace osc
     public:
         virtual ~LogSink() noexcept = default;
 
-        void log(LogMessageView const& view)
+        void log_message(LogMessageView const& view)
         {
             implLog(view);
         }

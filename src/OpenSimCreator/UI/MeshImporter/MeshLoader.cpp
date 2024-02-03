@@ -30,7 +30,7 @@ osc::mi::MeshLoadResponse osc::mi::respondToMeshloadRequest(MeshLoadRequest msg)
             // times when a user will drag in a bunch of files and expect all the valid
             // ones to load (#303)
 
-            log::error("%s: error loading mesh file: %s", path.string().c_str(), ex.what());
+            log_error("%s: error loading mesh file: %s", path.string().c_str(), ex.what());
         }
     }
 

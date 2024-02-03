@@ -28,6 +28,9 @@
 #include <memory>
 #include <string>
 
+using osc::log_error;
+using osc::log_info;
+
 namespace
 {
     // minor alias for setlocale so that any linter complaints about MT unsafety
@@ -40,7 +43,7 @@ namespace
         // init time
         if (std::setlocale(category, locale.c_str()) == nullptr)  // NOLINT(concurrency-mt-unsafe)
         {
-            osc::log::error("error setting locale category %i to %s", category, locale);
+            log_error("error setting locale category %i to %s", category, locale);
         }
     }
 
@@ -48,7 +51,7 @@ namespace
     class OpenSimLogSink final : public OpenSim::LogSink {
         void sinkImpl(std::string const& msg) final
         {
-            osc::log::info("%s", msg.c_str());
+            log_info("%s", msg.c_str());
         }
     };
 
@@ -62,7 +65,7 @@ namespace
         //
         // but it *reads* OSIM files with the assumption that numbers will be in the format 'x.y'
 
-        osc::log::info("setting locale to US (so that numbers are always in the format '0.x'");
+        log_info("setting locale to US (so that numbers are always in the format '0.x'");
         osc::CStringView const locale = "C";
         osc::SetEnv("LANG", locale, true);
         osc::SetEnv("LC_CTYPE", locale, true);
@@ -105,20 +108,20 @@ namespace
         // instances of the UI on filesystems that use locking (e.g. Windows) and
         // because it's incredibly obnoxious to have `opensim.log` appear in every
         // working directory from which osc is ran
-        osc::log::info("removing OpenSim's default log (opensim.log)");
+        log_info("removing OpenSim's default log (opensim.log)");
         OpenSim::Logger::removeFileSink();
 
         // add OSC in-memory logger
         //
         // this logger collects the logs into a global mutex-protected in-memory structure
         // that the UI can can trivially render (w/o reading files etc.)
-        osc::log::info("attaching OpenSim to this log");
+        log_info("attaching OpenSim to this log");
         OpenSim::Logger::addSink(std::make_shared<OpenSimLogSink>());
     }
 
     void RegisterOpenSimTypes()
     {
-        osc::log::info("registering OpenSim types");
+        log_info("registering OpenSim types");
         RegisterTypes_osimCommon();
         RegisterTypes_osimSimulation();
         RegisterTypes_osimActuators();
@@ -134,9 +137,9 @@ namespace
         // when an osim file contains relative geometry path (e.g. "sphere.vtp"), the
         // OpenSim implementation will look in these directories for that file
         std::filesystem::path geometryDir = config.getResourceDir() / "geometry";
-        osc::log::info("registering OpenSim geometry search path to use osc resources");
+        log_info("registering OpenSim geometry search path to use osc resources");
         OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(geometryDir.string());
-        osc::log::info("added geometry search path entry: %s", geometryDir.string().c_str());
+        log_info("added geometry search path entry: %s", geometryDir.string().c_str());
     }
 
     bool InitializeOpenSim(osc::AppConfig const& config)

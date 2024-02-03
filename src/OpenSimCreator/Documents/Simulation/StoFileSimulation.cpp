@@ -35,6 +35,8 @@
 #include <utility>
 #include <vector>
 
+using osc::log_warn;
+
 namespace
 {
     std::vector<OpenSim::Coordinate*> GetLockedCoordinates(OpenSim::Model& m)
@@ -90,7 +92,7 @@ namespace
 
         if (storage.getColumnLabels().size() <= 1)
         {
-            osc::log::warn("the provided STO file does not contain any state variable data");
+            log_warn("the provided STO file does not contain any state variable data");
             return rv;
         }
 
@@ -143,9 +145,9 @@ namespace
                 ss << delim << el;
                 delim = ", ";
             }
-            osc::log::warn("%s", std::move(ss).str().c_str());
-            osc::log::warn("The STO file was loaded successfully, but beware: the missing state variables have been defaulted in order for this to work");
-            osc::log::warn("Therefore, do not treat the motion you are seeing as a 'true' representation of something: some state data was 'made up' to make the motion viewable");
+            log_warn("%s", std::move(ss).str().c_str());
+            log_warn("The STO file was loaded successfully, but beware: the missing state variables have been defaulted in order for this to work");
+            log_warn("Therefore, do not treat the motion you are seeing as a 'true' representation of something: some state data was 'made up' to make the motion viewable");
         }
 
         // else: all model state variables are accounted for

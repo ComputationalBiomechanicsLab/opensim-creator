@@ -12,6 +12,7 @@
 
 using osc::mow::MeshWarpPairing;
 using osc::FindGeometryFileAbsPath;
+using osc::log_error;
 
 namespace
 {
@@ -37,7 +38,7 @@ namespace
             {
                 std::stringstream ss;
                 ss << mesh.getGeometryFilename() << ": could not find this mesh file: skipping";
-                osc::log::error(std::move(ss).str());
+                log_error(std::move(ss).str());
             }
         }
 

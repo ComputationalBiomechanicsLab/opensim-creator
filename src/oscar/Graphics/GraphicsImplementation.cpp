@@ -137,6 +137,12 @@ using osc::DepthFunction;
 using osc::DepthStencilFormat;
 using osc::Dot;
 using osc::IsAnyOf;
+using osc::log_debug;
+using osc::log_error;
+using osc::log_info;
+using osc::log_level;
+using osc::log_message;
+using osc::log_warn;
 using osc::LogLevel;
 using osc::Mat3;
 using osc::Mat4;
@@ -175,13 +181,13 @@ using osc::UID;
 using osc::Unorm8;
 using osc::ValuePtr;
 using osc::VariantIndex;
-using osc::VertexAttributeFormat;
 using osc::Vec;
 using osc::Vec2;
 using osc::Vec2i;
 using osc::Vec3;
 using osc::Vec4;
 using osc::VertexAttribute;
+using osc::VertexAttributeFormat;
 using osc::VertexFormat;
 using osc::ViewObjectRepresentation;
 
@@ -398,7 +404,7 @@ namespace
         //
         // see "Required Formats" in: https://www.khronos.org/opengl/wiki/Image_Format
 
-        if (logLevel < osc::log::level()) {
+        if (logLevel < log_level()) {
             return;
         }
 
@@ -419,18 +425,18 @@ namespace
         );
 
         if (!missingExtensions.empty()) {
-            osc::log::log(logLevel, "OpenGL: the following OpenGL extensions may be missing from the graphics backend: ");
+            log_message(logLevel, "OpenGL: the following OpenGL extensions may be missing from the graphics backend: ");
             for (auto const& missingExtension : missingExtensions)
             {
-                osc::log::log(logLevel, "OpenGL:  - %s", missingExtension.c_str());
+                log_message(logLevel, "OpenGL:  - %s", missingExtension.c_str());
             }
-            osc::log::log(logLevel, "OpenGL: because extensions may be missing, rendering may behave abnormally");
-            osc::log::log(logLevel, "OpenGL: note: some graphics engines can mis-report an extension as missing");
+            log_message(logLevel, "OpenGL: because extensions may be missing, rendering may behave abnormally");
+            log_message(logLevel, "OpenGL: note: some graphics engines can mis-report an extension as missing");
         }
 
-        osc::log::log(logLevel, "OpenGL: here is a list of all of the extensions supported by the graphics backend:");
+        log_message(logLevel, "OpenGL: here is a list of all of the extensions supported by the graphics backend:");
         for (auto const& ext : extensionSupportedByBackend) {
-            osc::log::log(logLevel, "OpenGL:  - %s", ext.c_str());
+            log_message(logLevel, "OpenGL:  - %s", ext.c_str());
         }
     }
 }
@@ -6032,7 +6038,7 @@ namespace
     // create an OpenGL context for an application window
     sdl::GLContext CreateOpenGLContext(SDL_Window& window)
     {
-        osc::log::debug("initializing OpenGL context");
+        log_debug("initializing OpenGL context");
 
         // create an OpenGL context for the application
         sdl::GLContext ctx = sdl::GL_CreateContext(&window);
@@ -6074,13 +6080,13 @@ namespace
             glEnable(capability.id);
             if (!glIsEnabled(capability.id))
             {
-                osc::log::warn("failed to enable %s: this may cause rendering issues", capability.label.c_str());
+                log_warn("failed to enable %s: this may cause rendering issues", capability.label.c_str());
             }
         }
 
         // print OpenGL information to console (handy for debugging user's rendering
         // issues)
-        osc::log::info(
+        log_info(
             "OpenGL initialized: info: %s, %s, (%s), GLSL %s",
             glGetString(GL_VENDOR),
             glGetString(GL_RENDERER),
@@ -6231,7 +6237,7 @@ namespace
         CStringView const typeCStr = OpenGLDebugTypeToStrView(type);
         CStringView const severityCStr = OpenGLDebugSevToStrView(severity);
 
-        osc::log::log(lvl,
+        log_message(lvl,
             R"(OpenGL Debug message:
 id = %u
 message = %s
@@ -6246,7 +6252,7 @@ severity = %s
     {
         if (IsOpenGLInDebugMode())
         {
-            osc::log::info("OpenGL debug mode appears to already be enabled: skipping enabling it");
+            log_info("OpenGL debug mode appears to already be enabled: skipping enabling it");
             return;
         }
 
@@ -6258,11 +6264,11 @@ severity = %s
             glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
             glDebugMessageCallback(OpenGLDebugMessageHandler, nullptr);
             glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-            osc::log::info("enabled OpenGL debug mode");
+            log_info("enabled OpenGL debug mode");
         }
         else
         {
-            osc::log::error("cannot enable OpenGL debug mode: the context does not have GL_CONTEXT_FLAG_DEBUG_BIT set");
+            log_error("cannot enable OpenGL debug mode: the context does not have GL_CONTEXT_FLAG_DEBUG_BIT set");
         }
     }
 
@@ -6271,7 +6277,7 @@ severity = %s
     {
         if (!IsOpenGLInDebugMode())
         {
-            osc::log::info("OpenGL debug mode appears to already be disabled: skipping disabling it");
+            log_info("OpenGL debug mode appears to already be disabled: skipping disabling it");
             return;
         }
 
@@ -6280,11 +6286,11 @@ severity = %s
         if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
         {
             glDisable(GL_DEBUG_OUTPUT);
-            osc::log::info("disabled OpenGL debug mode");
+            log_info("disabled OpenGL debug mode");
         }
         else
         {
-            osc::log::error("cannot disable OpenGL debug mode: the context does not have a GL_CONTEXT_FLAG_DEBUG_BIT set");
+            log_error("cannot disable OpenGL debug mode: the context does not have a GL_CONTEXT_FLAG_DEBUG_BIT set");
         }
     }
 }
@@ -6339,7 +6345,7 @@ public:
             return;  // already in debug mode
         }
 
-        log::info("enabling debug mode");
+        log_info("enabling debug mode");
         EnableOpenGLDebugMessages();
         m_DebugModeEnabled = IsOpenGLInDebugMode();
     }
@@ -6350,7 +6356,7 @@ public:
             return;  // already not in debug mode
         }
 
-        log::info("disabling debug mode");
+        log_info("disabling debug mode");
         DisableOpenGLDebugMessages();
         m_DebugModeEnabled = IsOpenGLInDebugMode();
     }

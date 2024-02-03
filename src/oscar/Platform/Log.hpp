@@ -14,62 +14,65 @@
 //
 // this implementation takes heavy inspiration from `spdlog`
 
-namespace osc::log
+namespace osc
 {
     // global logging API
     std::shared_ptr<Logger> defaultLogger();
     Logger* defaultLoggerRaw();
 
-    inline LogLevel level()
+    inline LogLevel log_level()
     {
         return defaultLoggerRaw()->get_level();
     }
 
     template<typename... Args>
-    inline void log(LogLevel level, CStringView fmt, Args const&... args)
+    inline void log_message(LogLevel level, CStringView fmt, Args const&... args)
     {
-        defaultLoggerRaw()->log(level, fmt, args...);
+        defaultLoggerRaw()->log_message(level, fmt, args...);
     }
 
     template<typename... Args>
-    inline void trace(CStringView fmt, Args const&... args)
+    inline void log_trace(CStringView fmt, Args const&... args)
     {
-        defaultLoggerRaw()->trace(fmt, args...);
+        defaultLoggerRaw()->log_trace(fmt, args...);
     }
 
     template<typename... Args>
-    inline void debug(CStringView fmt, Args const&... args)
+    inline void log_debug(CStringView fmt, Args const&... args)
     {
-        defaultLoggerRaw()->debug(fmt, args...);
+        defaultLoggerRaw()->log_debug(fmt, args...);
     }
 
     template<typename... Args>
-    void info(CStringView fmt, Args const&... args)
+    void log_info(CStringView fmt, Args const&... args)
     {
-        defaultLoggerRaw()->info(fmt, args...);
+        defaultLoggerRaw()->log_info(fmt, args...);
     }
 
     template<typename... Args>
-    void warn(CStringView fmt, Args const&... args)
+    void log_warn(CStringView fmt, Args const&... args)
     {
-        defaultLoggerRaw()->warn(fmt, args...);
+        defaultLoggerRaw()->log_warn(fmt, args...);
     }
 
     template<typename... Args>
-    void error(CStringView fmt, Args const&... args)
+    void log_error(CStringView fmt, Args const&... args)
     {
-        defaultLoggerRaw()->error(fmt, args...);
+        defaultLoggerRaw()->log_error(fmt, args...);
     }
 
     template<typename... Args>
-    void critical(CStringView fmt, Args const&... args)
+    void log_critical(CStringView fmt, Args const&... args)
     {
-        defaultLoggerRaw()->critical(fmt, args...);
+        defaultLoggerRaw()->log_critical(fmt, args...);
     }
 
-    constexpr static size_t c_MaxLogTracebackMessages = 1024;
+    namespace detail
+    {
+        constexpr static size_t c_MaxLogTracebackMessages = 1024;
+    }
 
     [[nodiscard]] LogLevel getTracebackLevel();
     void setTracebackLevel(LogLevel);
-    [[nodiscard]] SynchronizedValue<CircularBuffer<LogMessage, c_MaxLogTracebackMessages>>& getTracebackLog();
+    [[nodiscard]] SynchronizedValue<CircularBuffer<LogMessage, detail::c_MaxLogTracebackMessages>>& getTracebackLog();
 }

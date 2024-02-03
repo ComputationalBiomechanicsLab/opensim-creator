@@ -51,6 +51,7 @@ namespace SimTK { class State; }
 
 namespace cpp20 = osc::cpp20;
 using osc::Degreesd;
+using osc::log_error;
 using osc::Radiansd;
 
 // muscle outputs
@@ -559,7 +560,7 @@ namespace
         }
         catch (std::exception const& ex)
         {
-            osc::log::error("ComputePlotPointsMain: exception thrown while computing a plot: %s", ex.what());
+            log_error("ComputePlotPointsMain: exception thrown while computing a plot: %s", ex.what());
             inputs.shared->setErrorMessage(ex.what());
             inputs.shared->setStatus(PlottingTaskStatus::Error);
             return -1;

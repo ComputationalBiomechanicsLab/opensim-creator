@@ -153,7 +153,7 @@ void osc::MainMenuFileTab::onDraw(
             }
             catch (std::exception const& ex)
             {
-                log::error("encountered error while trying to load an STO file against the model: %s", ex.what());
+                log_error("encountered error while trying to load an STO file against the model: %s", ex.what());
             }
         }
     }

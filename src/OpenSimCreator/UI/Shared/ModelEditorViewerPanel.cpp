@@ -33,6 +33,8 @@
 #include <utility>
 #include <vector>
 
+using osc::log_debug;
+
 namespace
 {
     std::string GetSettingsKeyPrefixForPanel(std::string_view panelName)
@@ -143,7 +145,7 @@ namespace
 
             if (edited)
             {
-                osc::log::debug("%s edited", m_PanelName.c_str());
+                log_debug("%s edited", m_PanelName.c_str());
 
                 auto const& renderParamsAfter = params.getRenderParams();
 

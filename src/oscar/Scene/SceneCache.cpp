@@ -97,7 +97,7 @@ osc::Mesh osc::SceneCache::get(
         }
         catch (std::exception const& ex)
         {
-            log::error("%s: error getting a mesh via a getter: it will be replaced with a dummy cube: %s", key.c_str(), ex.what());
+            log_error("%s: error getting a mesh via a getter: it will be replaced with a dummy cube: %s", key.c_str(), ex.what());
         }
     }
 

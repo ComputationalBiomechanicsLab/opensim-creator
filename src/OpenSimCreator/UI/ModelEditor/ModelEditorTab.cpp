@@ -234,9 +234,9 @@ public:
 
     void tryRecoveringFromException(std::exception const& ex)
     {
-        log::error("an std::exception was thrown while drawing the model editor");
-        log::error("    message = %s", ex.what());
-        log::error("exceptions typically happen when the model is damaged or made invalid by an edit (e.g. setting a property to an invalid value)");
+        log_error("an std::exception was thrown while drawing the model editor");
+        log_error("    message = %s", ex.what());
+        log_error("exceptions typically happen when the model is damaged or made invalid by an edit (e.g. setting a property to an invalid value)");
 
         if (m_ExceptionThrownLastFrame)
         {
@@ -245,7 +245,7 @@ public:
                 // exception was thrown last frame, indicating the model in the undo/redo buffer is also
                 // damaged, so try undoing
 
-                log::error("an exception was also thrown last frame, indicating model damage: attempting to undo to an earlier version of the model to try and fix the model");
+                log_error("an exception was also thrown last frame, indicating model damage: attempting to undo to an earlier version of the model to try and fix the model");
 
                 try
                 {
@@ -253,20 +253,20 @@ public:
                 }
                 catch (std::exception const& ex2)
                 {
-                    log::error("undoing the model also failed with error: %s", ex2.what());
-                    log::error("because the model isn't recoverable, closing the editor tab");
+                    log_error("undoing the model also failed with error: %s", ex2.what());
+                    log_error("because the model isn't recoverable, closing the editor tab");
                     m_Parent->addAndSelectTab<ErrorTab>(m_Parent, ex);
                     m_Parent->closeTab(m_TabID);  // TODO: should be forcibly closed with no "save" prompt
                 }
 
-                log::error("sucessfully undone model");
+                log_error("sucessfully undone model");
                 m_ExceptionThrownLastFrame = false;  // reset flag
             }
             else if (!m_PopupManager.empty())
             {
                 // exception was thrown last frame, but we can't undo the model, so try to assume that a popup was
                 // causing the problem last frame and clear all popups instead of fully exploding the whole tab
-                log::error("trying to close all currently-open popups, in case that prevents crashes");
+                log_error("trying to close all currently-open popups, in case that prevents crashes");
                 m_PopupManager.clear();
             }
             else
@@ -274,7 +274,7 @@ public:
                 // exception thrown last frame, indicating the model in the undo/redo buffer is also damaged,
                 // but cannot undo, so quit
 
-                log::error("because the model isn't recoverable, closing the editor tab");
+                log_error("because the model isn't recoverable, closing the editor tab");
                 m_Parent->addAndSelectTab<ErrorTab>(m_Parent, ex);
                 m_Parent->closeTab(m_TabID);  // TODO: should be forcibly closed
             }
@@ -286,15 +286,15 @@ public:
 
             try
             {
-                log::error("attempting to rollback the model edit to a clean state");
+                log_error("attempting to rollback the model edit to a clean state");
                 m_Model->rollback();
-                log::error("model rollback succeeded");
+                log_error("model rollback succeeded");
                 m_ExceptionThrownLastFrame = true;
             }
             catch (std::exception const& ex2)
             {
-                log::error("model rollback thrown an exception: %s", ex2.what());
-                log::error("because the model cannot be rolled back, closing the editor tab");
+                log_error("model rollback thrown an exception: %s", ex2.what());
+                log_error("because the model cannot be rolled back, closing the editor tab");
                 m_Parent->addAndSelectTab<ErrorTab>(m_Parent, ex2);
                 m_Parent->closeTab(m_TabID);
             }

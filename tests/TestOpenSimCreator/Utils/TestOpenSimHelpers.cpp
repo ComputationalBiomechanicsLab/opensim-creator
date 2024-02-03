@@ -34,6 +34,7 @@ using osc::GetNumChildren;
 using osc::InitializeModel;
 using osc::InitializeState;
 using osc::LoadOpenSimCreatorConfig;
+using osc::log_info;
 using osc::TryDeleteComponentFromModel;
 using osc::UndoableModelStatePair;
 
@@ -130,7 +131,7 @@ TEST(OpenSimHelpers, DISABLED_CanSwapACustomJointForAFreeJoint)
         model.updModel();  // dirty it
         model.commit(msg);
 
-        osc::log::info("%s", msg.c_str());
+        log_info("%s", msg.c_str());
     }
 }
 
@@ -217,7 +218,7 @@ TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFault
         {
             if (TryDeleteComponentFromModel(modifiedModel, *lookup))
             {
-                osc::log::info("deleted %s (%s)", c.getName().c_str(), c.getConcreteClassName().c_str());
+                log_info("deleted %s (%s)", c.getName().c_str(), c.getConcreteClassName().c_str());
                 InitializeModel(modifiedModel);
                 InitializeState(modifiedModel);
             }

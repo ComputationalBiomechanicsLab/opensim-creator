@@ -67,11 +67,13 @@
 #include <unordered_set>
 #include <utility>
 
+using namespace osc::fd;
 using osc::ChooseComponentsEditorLayer;
 using osc::ChooseComponentsEditorLayerParameters;
+using osc::log_error;
+using osc::log_warn;
 using osc::Vec2;
 using osc::Vec3;
-using namespace osc::fd;
 
 // choose `n` components UI flow
 namespace
@@ -101,26 +103,26 @@ namespace
         {
             if (choices.empty())
             {
-                osc::log::error("user selections from the 'choose components' layer was empty: this bug should be reported");
+                log_error("user selections from the 'choose components' layer was empty: this bug should be reported");
                 return false;
             }
             if (choices.size() > 1)
             {
-                osc::log::warn("number of user selections from 'choose components' layer was greater than expected: this bug should be reported");
+                log_warn("number of user selections from 'choose components' layer was greater than expected: this bug should be reported");
             }
             std::string const& pointBPath = *choices.begin();
 
             auto const* pointA = osc::FindComponent<OpenSim::Point>(model->getModel(), pointAPath);
             if (!pointA)
             {
-                osc::log::error("point A's component path (%s) does not exist in the model", pointAPath.c_str());
+                log_error("point A's component path (%s) does not exist in the model", pointAPath.c_str());
                 return false;
             }
 
             auto const* pointB = osc::FindComponent<OpenSim::Point>(model->getModel(), pointBPath);
             if (!pointB)
             {
-                osc::log::error("point B's component path (%s) does not exist in the model", pointBPath.c_str());
+                log_error("point B's component path (%s) does not exist in the model", pointBPath.c_str());
                 return false;
             }
 
@@ -152,26 +154,26 @@ namespace
         {
             if (choices.empty())
             {
-                osc::log::error("user selections from the 'choose components' layer was empty: this bug should be reported");
+                log_error("user selections from the 'choose components' layer was empty: this bug should be reported");
                 return false;
             }
             if (choices.size() > 1)
             {
-                osc::log::warn("number of user selections from 'choose components' layer was greater than expected: this bug should be reported");
+                log_warn("number of user selections from 'choose components' layer was greater than expected: this bug should be reported");
             }
             std::string const& pointBPath = *choices.begin();
 
             auto const* pointA = osc::FindComponent<OpenSim::Point>(model->getModel(), pointAPath);
             if (!pointA)
             {
-                osc::log::error("point A's component path (%s) does not exist in the model", pointAPath.c_str());
+                log_error("point A's component path (%s) does not exist in the model", pointAPath.c_str());
                 return false;
             }
 
             auto const* pointB = osc::FindComponent<OpenSim::Point>(model->getModel(), pointBPath);
             if (!pointB)
             {
-                osc::log::error("point B's component path (%s) does not exist in the model", pointBPath.c_str());
+                log_error("point B's component path (%s) does not exist in the model", pointBPath.c_str());
                 return false;
             }
 
@@ -203,26 +205,26 @@ namespace
         {
             if (choices.empty())
             {
-                osc::log::error("user selections from the 'choose components' layer was empty: this bug should be reported");
+                log_error("user selections from the 'choose components' layer was empty: this bug should be reported");
                 return false;
             }
             if (choices.size() > 1)
             {
-                osc::log::warn("number of user selections from 'choose components' layer was greater than expected: this bug should be reported");
+                log_warn("number of user selections from 'choose components' layer was greater than expected: this bug should be reported");
             }
             std::string const& edgeBPath = *choices.begin();
 
             auto const* edgeA = osc::FindComponent<Edge>(model->getModel(), edgeAPath);
             if (!edgeA)
             {
-                osc::log::error("edge A's component path (%s) does not exist in the model", edgeAPath.c_str());
+                log_error("edge A's component path (%s) does not exist in the model", edgeAPath.c_str());
                 return false;
             }
 
             auto const* edgeB = osc::FindComponent<Edge>(model->getModel(), edgeBPath);
             if (!edgeB)
             {
-                osc::log::error("point B's component path (%s) does not exist in the model", edgeBPath.c_str());
+                log_error("point B's component path (%s) does not exist in the model", edgeBPath.c_str());
                 return false;
             }
 
@@ -253,33 +255,33 @@ namespace
         {
             if (choices.empty())
             {
-                osc::log::error("user selections from the 'choose components' layer was empty: this bug should be reported");
+                log_error("user selections from the 'choose components' layer was empty: this bug should be reported");
                 return false;
             }
             if (choices.size() > 1)
             {
-                osc::log::warn("number of user selections from 'choose components' layer was greater than expected: this bug should be reported");
+                log_warn("number of user selections from 'choose components' layer was greater than expected: this bug should be reported");
             }
             std::string const& originPath = *choices.begin();
 
             auto const* firstEdge = osc::FindComponent<Edge>(model->getModel(), firstEdgeAbsPath);
             if (!firstEdge)
             {
-                osc::log::error("the first edge's component path (%s) does not exist in the model", firstEdgeAbsPath.c_str());
+                log_error("the first edge's component path (%s) does not exist in the model", firstEdgeAbsPath.c_str());
                 return false;
             }
 
             auto const* otherEdge = osc::FindComponent<Edge>(model->getModel(), secondEdgeAbsPath);
             if (!otherEdge)
             {
-                osc::log::error("the second edge's component path (%s) does not exist in the model", secondEdgeAbsPath.c_str());
+                log_error("the second edge's component path (%s) does not exist in the model", secondEdgeAbsPath.c_str());
                 return false;
             }
 
             auto const* originPoint = osc::FindComponent<OpenSim::Point>(model->getModel(), originPath);
             if (!originPoint)
             {
-                osc::log::error("the origin's component path (%s) does not exist in the model", originPath.c_str());
+                log_error("the origin's component path (%s) does not exist in the model", originPath.c_str());
                 return false;
             }
 
@@ -318,7 +320,7 @@ namespace
 
             if (choices.empty())
             {
-                osc::log::error("user selections from the 'choose components' layer was empty: this bug should be reported");
+                log_error("user selections from the 'choose components' layer was empty: this bug should be reported");
                 return false;
             }
             std::string const& otherEdgePath = *choices.begin();
@@ -395,14 +397,14 @@ namespace
         {
             if (choices.empty())
             {
-                osc::log::error("user selections from the 'choose components' layer was empty: this bug should be reported");
+                log_error("user selections from the 'choose components' layer was empty: this bug should be reported");
                 return false;
             }
 
             auto const* const parentFrame = osc::FindComponent<OpenSim::PhysicalFrame>(model->getModel(), *choices.begin());
             if (!parentFrame)
             {
-                osc::log::error("user selection from 'choose components' layer did not select a frame: this shouldn't happen?");
+                log_error("user selection from 'choose components' layer did not select a frame: this shouldn't happen?");
                 return false;
             }
 
@@ -439,14 +441,14 @@ namespace
         {
             if (choices.empty())
             {
-                osc::log::error("user selections from the 'choose components' layer was empty: this bug should be reported");
+                log_error("user selections from the 'choose components' layer was empty: this bug should be reported");
                 return false;
             }
 
             auto const* const jointFrame = osc::FindComponent<OpenSim::Frame>(model->getModel(), *choices.begin());
             if (!jointFrame)
             {
-                osc::log::error("user selection from 'choose components' layer did not select a frame: this shouldn't happen?");
+                log_error("user selection from 'choose components' layer did not select a frame: this shouldn't happen?");
                 return false;
             }
 
@@ -481,14 +483,14 @@ namespace
         {
             if (choices.empty())
             {
-                osc::log::error("user selections from the 'choose components' layer was empty: this bug should be reported");
+                log_error("user selections from the 'choose components' layer was empty: this bug should be reported");
                 return false;
             }
 
             auto const* const mesh = osc::FindComponent<OpenSim::Mesh>(model->getModel(), *choices.begin());
             if (!mesh)
             {
-                osc::log::error("user selection from 'choose components' layer did not select a mesh: this shouldn't happen?");
+                log_error("user selection from 'choose components' layer did not select a mesh: this shouldn't happen?");
                 return false;
             }
 

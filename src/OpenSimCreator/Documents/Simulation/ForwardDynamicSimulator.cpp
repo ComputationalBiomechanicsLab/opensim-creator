@@ -38,6 +38,7 @@
 namespace OpenSim { class Component; }
 
 namespace cpp20 = osc::cpp20;
+using osc::log_error;
 
 namespace
 {
@@ -325,7 +326,7 @@ namespace
                 integ->getTerminationReason() != SimTK::Integrator::ReachedFinalTime)
             {
                 // simulation ended because of an error: report the error and exit
-                osc::log::error("%s", integ->getTerminationReasonString(integ->getTerminationReason()).c_str());
+                log_error("%s", integ->getTerminationReasonString(integ->getTerminationReason()).c_str());
                 return osc::SimulationStatus::Error;
             }
             else if (timestepRv == SimTK::Integrator::ReachedReportTime)
@@ -378,15 +379,15 @@ namespace
         }
         catch (OpenSim::Exception const& ex)
         {
-            osc::log::error("OpenSim::Exception occurred when running a simulation: %s", ex.what());
+            log_error("OpenSim::Exception occurred when running a simulation: %s", ex.what());
         }
         catch (std::exception const& ex)
         {
-            osc::log::error("std::exception occurred when running a simulation: %s", ex.what());
+            log_error("std::exception occurred when running a simulation: %s", ex.what());
         }
         catch (...)
         {
-            osc::log::error("an exception with unknown type occurred when running a simulation (no error message available)");
+            log_error("an exception with unknown type occurred when running a simulation (no error message available)");
         }
 
         shared->setStatus(status);
