@@ -6,6 +6,10 @@
 #include <oscar/Utils/ParentPtr.hpp>
 
 #include <SDL_events.h>
+#include <imgui.h>
+#include <ImGuizmo.h>  // care: must come after imgui.h
+#include <imgui_internal.h>
+#include <implot.h>
 
 #include <cstddef>
 #include <memory>
@@ -28,6 +32,7 @@ private:
     {
         m_CurrentTab = m_RegistryEntry.createTab(ParentPtr<Impl>{shared_from_this()});
         ImGuiInit();
+        ImPlot::CreateContext();
         m_CurrentTab->onMount();
         App::upd().makeMainEventLoopPolling();
     }
@@ -36,6 +41,7 @@ private:
     {
         App::upd().makeMainEventLoopWaiting();
         m_CurrentTab->onUnmount();
+        ImPlot::DestroyContext();
         ImGuiShutdown();
     }
 
@@ -58,6 +64,7 @@ private:
     {
         App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
         ImGuiNewFrame();
+        ImGuizmo::BeginFrame();
         m_CurrentTab->onDraw();
         ImGuiRender();
 

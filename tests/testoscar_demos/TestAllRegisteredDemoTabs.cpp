@@ -1,4 +1,4 @@
-#include <oscar_learnopengl/LearnOpenGLTabRegistry.hpp>
+#include <oscar_demos/OscarDemosTabRegistry.hpp>
 
 #include <oscar/oscar.hpp>
 
@@ -16,7 +16,7 @@ namespace {
     TabRegistry c_DemoTabs = []()
     {
         TabRegistry r;
-        RegisterLearnOpenGLTabs(r);
+        RegisterDemoTabs(r);
         return r;
     }();
 
@@ -31,11 +31,11 @@ namespace {
     }();
 
     std::unique_ptr<App> g_App;
-    class RegisteredLearnOpenGLTabsFixture : public testing::TestWithParam<std::string> {
+    class RegisteredDemoTabsFixture : public testing::TestWithParam<std::string> {
     protected:
         static void SetUpTestSuite()
         {
-            g_App = std::make_unique<App>(AppMetadata{"someorg", "testoscar_learnopengl"});
+            g_App = std::make_unique<App>(AppMetadata{"someorg", "testoscar_demos"});
         }
 
         static void TearDownTestSuite()
@@ -46,12 +46,12 @@ namespace {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    RegisteredLearnOpenGLTabsTest,
-    RegisteredLearnOpenGLTabsFixture,
+    RegisteredDemoTabsTest,
+    RegisteredDemoTabsFixture,
     testing::ValuesIn(c_TabNames)
 );
 
-TEST_P(RegisteredLearnOpenGLTabsFixture, Check)
+TEST_P(RegisteredDemoTabsFixture, Check)
 {
     std::string s = GetParam();
     if (auto entry = c_DemoTabs.getByName(s)) {
