@@ -220,6 +220,8 @@ add_library(oscar STATIC
     UI/Panels/ToggleablePanelFlags.hpp
     UI/Panels/UndoRedoPanel.cpp
     UI/Panels/UndoRedoPanel.hpp
+    UI/Screens/TabTestingScreen.cpp
+    UI/Screens/TabTestingScreen.hpp
     UI/Tabs/CookiecutterTab.cpp
     UI/Tabs/CookiecutterTab.hpp
     UI/Tabs/ErrorTab.cpp
@@ -267,6 +269,7 @@ add_library(oscar STATIC
     UI/imgui_impl_oscargfx.cpp
     UI/imgui_impl_oscargfx.hpp
     UI/Panels.hpp
+    UI/Screens.hpp
     UI/Tabs.hpp
     UI/Widgets.hpp
 

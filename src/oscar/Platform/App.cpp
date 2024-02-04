@@ -580,8 +580,15 @@ private:
         // perform initial screen mount
         m_CurrentScreen->onMount();
 
-        // ensure current screen is unmounted when exiting the main loop
-        ScopeGuard const g{[this]() { if (m_CurrentScreen) { m_CurrentScreen->onUnmount(); }}};
+        // ensure current screen is unmounted and the quitting flag is reset when
+        // exiting the main loop
+        ScopeGuard const onQuitGuard{[this]()
+        {
+            if (m_CurrentScreen) {
+                m_CurrentScreen->onUnmount();
+            }
+            m_QuitRequested = false;
+        }};
 
         // reset counters
         m_AppCounter = SDL_GetPerformanceCounter();

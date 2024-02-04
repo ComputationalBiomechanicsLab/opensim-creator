@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/UI/Panels.hpp>
+#include <oscar/UI/Screens.hpp>
 #include <oscar/UI/Tabs.hpp>
 #include <oscar/UI/Widgets.hpp>
 
