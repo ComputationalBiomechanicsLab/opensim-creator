@@ -110,7 +110,7 @@ namespace {
     private:
         void implOnMount() override { m_Impl->onMount(); }
         void implOnUnmount() override { m_Impl->onUnmount(); }
-        void implOnEvent(SDL_Event const& e) { m_Impl->onEvent(e); }
+        void implOnEvent(SDL_Event const& e) override { m_Impl->onEvent(e); }
         void implOnTick() override { m_Impl->onTick(); }
         void implOnDraw() override { m_Impl->onDraw(); }
 
