@@ -27,7 +27,7 @@
 #include <utility>
 
 
-class osc::AddBodyPopup::Impl final : public osc::StandardPopup {
+class osc::AddBodyPopup::Impl final : public StandardPopup {
 public:
     Impl(std::string_view popupName,
          IEditorAPI* api,
@@ -44,12 +44,12 @@ private:
     {
         OpenSim::Model const& model = m_Uum->getModel();
 
-        auto const* selectedPf = osc::FindComponent<OpenSim::PhysicalFrame>(model, m_BodyDetails.parentFrameAbsPath);
+        auto const* selectedPf = FindComponent<OpenSim::PhysicalFrame>(model, m_BodyDetails.parentFrameAbsPath);
         if (!selectedPf)
         {
             // if nothing selected (or not found), coerce the initial selection to ground
             selectedPf = &model.getGround();
-            m_BodyDetails.parentFrameAbsPath = osc::GetAbsolutePathString(*selectedPf);
+            m_BodyDetails.parentFrameAbsPath = GetAbsolutePathString(*selectedPf);
         }
 
         ImGui::Columns(2);
@@ -66,8 +66,8 @@ private:
             DrawHelpMarker("The name used to identify the OpenSim::Body in the model. OpenSim typically uses the name to identify connections between components in a model, so the name should be unique.");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            osc::InputString("##bodyname", m_BodyDetails.bodyName);
-            App::upd().addFrameAnnotation("AddBodyPopup::BodyNameInput", osc::GetItemRect());
+            InputString("##bodyname", m_BodyDetails.bodyName);
+            App::upd().addFrameAnnotation("AddBodyPopup::BodyNameInput", GetItemRect());
             ImGui::NextColumn();
         }
 
@@ -89,7 +89,7 @@ private:
             DrawHelpMarker("The location of the mass center in the body frame.");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            osc::InputMetersFloat3("##comeditor", m_BodyDetails.centerOfMass);
+            InputMetersFloat3("##comeditor", m_BodyDetails.centerOfMass);
             ImGui::NextColumn();
         }
 
@@ -100,7 +100,7 @@ private:
             DrawHelpMarker("The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz]. These are measured about the center of mass, *not* the center of the body frame.");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            osc::InputMetersFloat3("##inertiaeditor", m_BodyDetails.inertia);
+            InputMetersFloat3("##inertiaeditor", m_BodyDetails.inertia);
             ImGui::NextColumn();
         }
 
@@ -117,11 +117,11 @@ private:
                 if (ImGui::Selectable(pf.getName().c_str(), &pf == selectedPf))
                 {
                     selectedPf = &pf;
-                    m_BodyDetails.parentFrameAbsPath = osc::GetAbsolutePathString(*selectedPf);
+                    m_BodyDetails.parentFrameAbsPath = GetAbsolutePathString(*selectedPf);
                 }
                 if (&pf == selectedPf)
                 {
-                    App::upd().addFrameAnnotation(pf.getName(), osc::GetItemRect());
+                    App::upd().addFrameAnnotation(pf.getName(), GetItemRect());
                 }
             }
             ImGui::EndChild();
@@ -135,14 +135,14 @@ private:
             DrawHelpMarker("The type of OpenSim::Joint that will connect the new OpenSim::Body to the selection above");
             ImGui::NextColumn();
             {
-                auto const& registry = osc::GetComponentRegistry<OpenSim::Joint>();
-                osc::Combo(
+                auto const& registry = GetComponentRegistry<OpenSim::Joint>();
+                Combo(
                     "##jointtype",
                     &m_BodyDetails.jointTypeIndex,
                     registry.size(),
                     [&registry](size_t i) { return registry[i].name(); }
                 );
-                App::upd().addFrameAnnotation("AddBodyPopup::JointTypeInput", osc::GetItemRect());
+                App::upd().addFrameAnnotation("AddBodyPopup::JointTypeInput", GetItemRect());
             }
             ImGui::NextColumn();
         }
@@ -154,8 +154,8 @@ private:
             DrawHelpMarker("The name of the OpenSim::Joint that will join the new body to the existing frame specified above");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            osc::InputString("##jointnameinput", m_BodyDetails.jointName);
-            App::upd().addFrameAnnotation("AddBodyPopup::JointNameInput", osc::GetItemRect());
+            InputString("##jointnameinput", m_BodyDetails.jointName);
+            App::upd().addFrameAnnotation("AddBodyPopup::JointNameInput", GetItemRect());
             ImGui::NextColumn();
         }
 
@@ -166,7 +166,7 @@ private:
             DrawHelpMarker("Whether osc should automatically add intermediate offset frames to the OpenSim::Joint. A joint can attach to the two bodies (this added one, plus the selected one) directly. However, many OpenSim model designs instead make the joint attach to offset frames which, themselves, attach to the bodies. The utility of doing this is that the offset frames can be manually adjusted later, rather than *having* to attach the center of the joint to the center of the body");
             ImGui::NextColumn();
             ImGui::Checkbox("##addoffsetframescheckbox", &m_BodyDetails.addOffsetFrames);
-            App::upd().addFrameAnnotation("AddBodyPopup::AddOffsetFramesInput", osc::GetItemRect());
+            App::upd().addFrameAnnotation("AddBodyPopup::AddOffsetFramesInput", GetItemRect());
             ImGui::NextColumn();
         }
 
@@ -189,7 +189,7 @@ private:
                     popup->open();
                     m_EditorAPI->pushPopup(std::move(popup));
                 }
-                App::upd().addFrameAnnotation("AddBodyPopup::GeometryButton", osc::GetItemRect());
+                App::upd().addFrameAnnotation("AddBodyPopup::GeometryButton", GetItemRect());
             }
             ImGui::NextColumn();
         }

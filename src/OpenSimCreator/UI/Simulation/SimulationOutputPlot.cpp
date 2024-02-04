@@ -31,17 +31,15 @@
 #include <utility>
 #include <vector>
 
-using osc::log_error;
-using osc::log_info;
-using osc::log_warn;
+using namespace osc;
 
 namespace
 {
-    std::vector<osc::OutputExtractor> GetAllUserDesiredOutputs(osc::ISimulatorUIAPI& api)
+    std::vector<OutputExtractor> GetAllUserDesiredOutputs(ISimulatorUIAPI& api)
     {
         int nOutputs = api.getNumUserOutputExtractors();
 
-        std::vector<osc::OutputExtractor> rv;
+        std::vector<OutputExtractor> rv;
         rv.reserve(nOutputs);
         for (int i = 0; i < nOutputs; ++i)
         {
@@ -58,7 +56,7 @@ namespace
     {
         // try prompt user for save location
         std::optional<std::filesystem::path> const maybeCSVPath =
-            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+            PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
         if (!maybeCSVPath)
         {
@@ -94,8 +92,8 @@ namespace
 
     std::vector<float> PopulateFirstNNumericOutputValues(
         OpenSim::Model const& model,
-        std::span<osc::SimulationReport const> reports,
-        osc::IOutputExtractor const& output)
+        std::span<SimulationReport const> reports,
+        IOutputExtractor const& output)
     {
         std::vector<float> rv;
         rv.resize(reports.size());
@@ -103,11 +101,11 @@ namespace
         return rv;
     }
 
-    std::vector<float> PopulateFirstNTimeValues(std::span<osc::SimulationReport const> reports)
+    std::vector<float> PopulateFirstNTimeValues(std::span<SimulationReport const> reports)
     {
         std::vector<float> times;
         times.reserve(reports.size());
-        for (osc::SimulationReport const& r : reports)
+        for (SimulationReport const& r : reports)
         {
             times.push_back(static_cast<float>(r.getState().getTime()));
         }
@@ -115,12 +113,12 @@ namespace
     }
 
     std::string TryExportNumericOutputToCSV(
-        osc::ISimulation& sim,
-        osc::IOutputExtractor const& output)
+        ISimulation& sim,
+        IOutputExtractor const& output)
     {
-        OSC_ASSERT(output.getOutputType() == osc::OutputType::Float);
+        OSC_ASSERT(output.getOutputType() == OutputType::Float);
 
-        std::vector<osc::SimulationReport> reports = sim.getAllSimulationReports();
+        std::vector<SimulationReport> reports = sim.getAllSimulationReports();
         std::vector<float> values = PopulateFirstNNumericOutputValues(*sim.getModel(), reports, output);
         std::vector<float> times = PopulateFirstNTimeValues(reports);
 
@@ -128,8 +126,8 @@ namespace
     }
 
     void DrawToggleWatchOutputMenuItem(
-        osc::ISimulatorUIAPI& api,
-        osc::OutputExtractor const& output)
+        ISimulatorUIAPI& api,
+        OutputExtractor const& output)
     {
         bool isWatching = api.hasUserOutputExtractor(output);
 
@@ -144,15 +142,15 @@ namespace
                 api.removeUserOutputExtractor(output);
             }
         }
-        osc::DrawTooltipIfItemHovered("Watch Output", "Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
+        DrawTooltipIfItemHovered("Watch Output", "Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
     }
 
     void DrawGenericNumericOutputContextMenuItems(
-        osc::ISimulatorUIAPI& api,
-        osc::ISimulation& sim,
-        osc::OutputExtractor const& output)
+        ISimulatorUIAPI& api,
+        ISimulation& sim,
+        OutputExtractor const& output)
     {
-        OSC_ASSERT(output.getOutputType() == osc::OutputType::Float);
+        OSC_ASSERT(output.getOutputType() == OutputType::Float);
 
         if (ImGui::MenuItem(ICON_FA_SAVE "Save as CSV"))
         {
@@ -164,21 +162,21 @@ namespace
             std::string p = TryExportNumericOutputToCSV(sim, output);
             if (!p.empty())
             {
-                osc::OpenPathInOSDefaultApplication(p);
+                OpenPathInOSDefaultApplication(p);
             }
         }
 
         DrawToggleWatchOutputMenuItem(api, output);
     }
 
-    std::filesystem::path TryExportOutputsToCSV(osc::ISimulation& sim, std::span<osc::OutputExtractor const> outputs)
+    std::filesystem::path TryExportOutputsToCSV(ISimulation& sim, std::span<OutputExtractor const> outputs)
     {
-        std::vector<osc::SimulationReport> reports = sim.getAllSimulationReports();
+        std::vector<SimulationReport> reports = sim.getAllSimulationReports();
         std::vector<float> times = PopulateFirstNTimeValues(reports);
 
         // try prompt user for save location
         std::optional<std::filesystem::path> const maybeCSVPath =
-            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+            PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
         if (!maybeCSVPath)
         {
@@ -197,7 +195,7 @@ namespace
 
         // header line
         fout << "time";
-        for (osc::OutputExtractor const& o : outputs)
+        for (OutputExtractor const& o : outputs)
         {
             fout << ',' << o.getName();
         }
@@ -210,8 +208,8 @@ namespace
         {
             fout << times.at(i);  // time column
 
-            osc::SimulationReport r = reports[i];
-            for (osc::OutputExtractor const& o : outputs)
+            SimulationReport r = reports[i];
+            for (OutputExtractor const& o : outputs)
             {
                 fout << ',' << o.getValueFloat(*guard, r);
             }
@@ -243,20 +241,20 @@ public:
         ISimulation& sim = m_API->updSimulation();
 
         ptrdiff_t const nReports = sim.getNumReports();
-        osc::OutputType outputType = m_OutputExtractor.getOutputType();
+        OutputType outputType = m_OutputExtractor.getOutputType();
 
         if (nReports <= 0)
         {
             ImGui::Text("no data (yet)");
         }
-        else if (outputType == osc::OutputType::Float)
+        else if (outputType == OutputType::Float)
         {
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             drawFloatOutputPlot(sim);
         }
-        else if (outputType == osc::OutputType::String)
+        else if (outputType == OutputType::String)
         {
-            osc::SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
+            SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
             ImGui::TextUnformatted(m_OutputExtractor.getValueString(*sim.getModel(), r).c_str());
 
             // draw context menu (if user right clicks)
@@ -275,7 +273,7 @@ public:
 private:
     void drawFloatOutputPlot(ISimulation& sim)
     {
-        OSC_ASSERT(m_OutputExtractor.getOutputType() == osc::OutputType::Float);
+        OSC_ASSERT(m_OutputExtractor.getOutputType() == OutputType::Float);
 
         ImU32 const currentTimeLineColor = ToImU32(Color::yellow().withAlpha(0.6f));
         ImU32 const hoverTimeLineColor = ToImU32(Color::yellow().withAlpha(0.3f));
@@ -291,7 +289,7 @@ private:
         std::vector<float> buf;
         {
             OSC_PERF("collect output data");
-            std::vector<osc::SimulationReport> reports = sim.getAllSimulationReports();
+            std::vector<SimulationReport> reports = sim.getAllSimulationReports();
             buf.resize(reports.size());
             m_OutputExtractor.getValuesFloat(*sim.getModel(), reports, buf);
         }
@@ -342,10 +340,10 @@ private:
 
         // figure out mapping between screen space and plot space
 
-        osc::SimulationClock::time_point simStartTime = sim.getSimulationReport(0).getTime();
-        osc::SimulationClock::time_point simEndTime = sim.getSimulationReport(nReports-1).getTime();
-        osc::SimulationClock::duration simTimeStep = (simEndTime-simStartTime)/nReports;
-        osc::SimulationClock::time_point simScrubTime = m_API->getSimulationScrubTime();
+        SimulationClock::time_point simStartTime = sim.getSimulationReport(0).getTime();
+        SimulationClock::time_point simEndTime = sim.getSimulationReport(nReports-1).getTime();
+        SimulationClock::duration simTimeStep = (simEndTime-simStartTime)/nReports;
+        SimulationClock::time_point simScrubTime = m_API->getSimulationScrubTime();
 
         float simScrubPct = static_cast<float>(static_cast<double>((simScrubTime - simStartTime)/(simEndTime - simStartTime)));
 
@@ -364,7 +362,7 @@ private:
             Vec2 mp = ImGui::GetMousePos();
             Vec2 plotLoc = mp - plotTopLeft;
             float relLoc = plotLoc.x / (plotBottomRight.x - plotTopLeft.x);
-            osc::SimulationClock::time_point timeLoc = simStartTime + relLoc*(simEndTime - simStartTime);
+            SimulationClock::time_point timeLoc = simStartTime + relLoc*(simEndTime - simStartTime);
 
             // draw vertical line to show current X of their hover
             {

@@ -14,6 +14,8 @@
 #include <memory>
 #include <utility>
 
+using namespace osc;
+
 class osc::SimulationModelStatePair::Impl final {
 public:
     Impl() :
@@ -54,7 +56,7 @@ public:
 
     void setSelected(OpenSim::Component const* c)
     {
-        m_Selected = osc::GetAbsolutePathOrEmpty(c);
+        m_Selected = GetAbsolutePathOrEmpty(c);
     }
 
     OpenSim::Component const* getHovered() const
@@ -64,7 +66,7 @@ public:
 
     void setHovered(OpenSim::Component const* c)
     {
-        m_Hovered = osc::GetAbsolutePathOrEmpty(c);
+        m_Hovered = GetAbsolutePathOrEmpty(c);
     }
 
     float getFixupScaleFactor() const
@@ -131,7 +133,7 @@ osc::SimulationModelStatePair::SimulationModelStatePair(SimulationModelStatePair
 osc::SimulationModelStatePair& osc::SimulationModelStatePair::operator=(SimulationModelStatePair&&) noexcept = default;
 osc::SimulationModelStatePair::~SimulationModelStatePair() noexcept = default;
 
-std::shared_ptr<osc::Simulation> osc::SimulationModelStatePair::updSimulation()
+std::shared_ptr<Simulation> osc::SimulationModelStatePair::updSimulation()
 {
     return m_Impl->updSimulation();
 }
@@ -141,7 +143,7 @@ void osc::SimulationModelStatePair::setSimulation(std::shared_ptr<Simulation> si
     m_Impl->setSimulation(std::move(sim));
 }
 
-osc::SimulationReport osc::SimulationModelStatePair::getSimulationReport() const
+SimulationReport osc::SimulationModelStatePair::getSimulationReport() const
 {
     return m_Impl->getSimulationReport();
 }
@@ -156,7 +158,7 @@ OpenSim::Model const& osc::SimulationModelStatePair::implGetModel() const
     return m_Impl->getModel();
 }
 
-osc::UID osc::SimulationModelStatePair::implGetModelVersion() const
+UID osc::SimulationModelStatePair::implGetModelVersion() const
 {
     return m_Impl->getModelVersion();
 }
@@ -166,7 +168,7 @@ SimTK::State const& osc::SimulationModelStatePair::implGetState() const
     return m_Impl->getState();
 }
 
-osc::UID osc::SimulationModelStatePair::implGetStateVersion() const
+UID osc::SimulationModelStatePair::implGetStateVersion() const
 {
     return m_Impl->getStateVersion();
 }

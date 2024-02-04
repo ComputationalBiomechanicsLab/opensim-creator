@@ -35,7 +35,7 @@ namespace osc
 
         void onDraw()
         {
-            if (osc::BeginToolbar(m_Label))
+            if (BeginToolbar(m_Label))
             {
                 drawContent();
             }

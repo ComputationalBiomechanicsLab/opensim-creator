@@ -28,7 +28,7 @@ namespace osc
 
         void onDraw()
         {
-            if (osc::BeginMainViewportBottomBar(m_Label))
+            if (BeginMainViewportBottomBar(m_Label))
             {
                 drawContent();
             }
@@ -76,10 +76,10 @@ namespace osc
                 Color color = {0.5f, 0.5f, 0.5f, 1.0f};
                 color[i] = 1.0f;
 
-                osc::PushStyleColor(ImGuiCol_Text, color);
+                PushStyleColor(ImGuiCol_Text, color);
                 ImGui::Text("%f", pos[i]);
                 ImGui::SameLine();
-                osc::PopStyleColor();
+                PopStyleColor();
             }
             ImGui::TextUnformatted(")");
         }

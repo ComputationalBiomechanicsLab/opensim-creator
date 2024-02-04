@@ -17,7 +17,7 @@
 #include <utility>
 #include <vector>
 
-using osc::log_error;
+using namespace osc;
 
 namespace
 {
@@ -29,18 +29,18 @@ namespace
         return std::chrono::seconds(std::time(nullptr));
     }
 
-    bool LastOpenedGreaterThan(osc::RecentFile const& a, osc::RecentFile const& b)
+    bool LastOpenedGreaterThan(RecentFile const& a, RecentFile const& b)
     {
         return a.lastOpenedUnixTimestamp > b.lastOpenedUnixTimestamp;
     }
 
-    void SortNewestToOldest(std::vector<osc::RecentFile>& files)
+    void SortNewestToOldest(std::vector<RecentFile>& files)
     {
         std::sort(files.begin(), files.end(), LastOpenedGreaterThan);
     }
 
     // load the "recent files" file that the application persists to disk
-    std::vector<osc::RecentFile> LoadRecentFilesFile(std::filesystem::path const& p)
+    std::vector<RecentFile> LoadRecentFilesFile(std::filesystem::path const& p)
     {
         if (!std::filesystem::exists(p))
         {
@@ -59,7 +59,7 @@ namespace
             return {};
         }
 
-        std::vector<osc::RecentFile> rv;
+        std::vector<RecentFile> rv;
         std::string line;
 
         while (std::getline(fd, line))
@@ -76,7 +76,7 @@ namespace
             bool exists = std::filesystem::exists(path);
             std::chrono::seconds timestampSecs{timestamp};
 
-            rv.push_back(osc::RecentFile{exists, timestampSecs, std::move(path)});
+            rv.push_back(RecentFile{exists, timestampSecs, std::move(path)});
         }
 
         SortNewestToOldest(rv);

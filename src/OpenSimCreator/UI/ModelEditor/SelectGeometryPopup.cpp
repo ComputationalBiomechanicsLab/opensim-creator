@@ -22,6 +22,8 @@
 #include <utility>
 #include <vector>
 
+using namespace osc;
+
 namespace
 {
     using Geom_ctor_fn = std::unique_ptr<OpenSim::Geometry>();
@@ -79,7 +81,7 @@ namespace
 
     std::optional<std::filesystem::path> PromptUserForGeometryFile()
     {
-        return osc::PromptUserForFile(osc::GetCommaDelimitedListOfSupportedSimTKMeshFormats());
+        return PromptUserForFile(GetCommaDelimitedListOfSupportedSimTKMeshFormats());
     }
 
     std::unique_ptr<OpenSim::Mesh> LoadGeometryFile(std::filesystem::path const& p)
@@ -88,7 +90,7 @@ namespace
     }
 }
 
-class osc::SelectGeometryPopup::Impl final : public osc::StandardPopup {
+class osc::SelectGeometryPopup::Impl final : public StandardPopup {
 public:
     Impl(std::string_view popupName,
          std::filesystem::path const& geometryDir,
@@ -134,7 +136,7 @@ private:
         ImGui::Dummy({0.0f, 2.0f});
 
         // let the user search through mesh files in pre-established Geometry/ dirs
-        osc::InputString("search", m_Search);
+        InputString("search", m_Search);
         ImGui::Dummy({0.0f, 1.0f});
 
         ImGui::BeginChild(
@@ -179,7 +181,7 @@ private:
                 m_Result = onMeshFileChosen(std::move(maybeMeshFile).value());
             }
         }
-        osc::DrawTooltipIfItemHovered("Open Mesh File", "Open a mesh file on the filesystem");
+        DrawTooltipIfItemHovered("Open Mesh File", "Open a mesh file on the filesystem");
 
         ImGui::Dummy({0.0f, 5.0f});
 

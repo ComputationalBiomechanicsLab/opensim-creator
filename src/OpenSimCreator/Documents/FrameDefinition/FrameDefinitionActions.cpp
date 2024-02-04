@@ -367,7 +367,7 @@ void osc::fd::ActionCreateBodyFromFrame(
 
         OpenSim::Model& mutModel = model->updModel();
 
-        OpenSim::PhysicalOffsetFrame& meshPofRef = osc::AddComponent(*body, std::move(meshPof));
+        OpenSim::PhysicalOffsetFrame& meshPofRef = AddComponent(*body, std::move(meshPof));
         AddJoint(mutModel, std::move(joint));
         OpenSim::Body& bodyRef = AddBody(mutModel, std::move(body));
 
@@ -386,13 +386,13 @@ void osc::fd::ActionCreateBodyFromFrame(
         // if the mesh's PoF was only used by the mesh then reassign
         // everything to the new PoF and delete the old one
         if (auto const* pof = GetOwner<OpenSim::PhysicalOffsetFrame>(*mesh);
-            pof && osc::GetNumChildren(*pof) == 3)  // mesh+frame geom+wrap object set
+            pof && GetNumChildren(*pof) == 3)  // mesh+frame geom+wrap object set
         {
             log_debug("reassign sockets");
-            osc::RecursivelyReassignAllSockets(mutModel, *pof, meshPofRef);
-            osc::FinalizeConnections(mutModel);
+            RecursivelyReassignAllSockets(mutModel, *pof, meshPofRef);
+            FinalizeConnections(mutModel);
 
-            if (auto* mutPof = osc::FindComponentMut<OpenSim::PhysicalOffsetFrame>(mutModel, osc::GetAbsolutePathOrEmpty(pof)))
+            if (auto* mutPof = FindComponentMut<OpenSim::PhysicalOffsetFrame>(mutModel, GetAbsolutePathOrEmpty(pof)))
             {
                 log_debug("delete old pof");
                 TryDeleteComponentFromModel(mutModel, *mutPof);

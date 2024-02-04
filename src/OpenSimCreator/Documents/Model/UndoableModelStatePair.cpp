@@ -21,6 +21,8 @@
 #include <utility>
 #include <vector>
 
+using namespace osc;
+
 namespace
 {
     // maximum distance between the current commit and the "root" commit (i.e. a commit with no parent)
@@ -36,7 +38,7 @@ namespace
         return rv;
     }
 
-    class UiModelStatePair final : public osc::IModelStatePair {
+    class UiModelStatePair final : public IModelStatePair {
     public:
 
         UiModelStatePair() :
@@ -53,8 +55,8 @@ namespace
             m_Model{std::move(_model)},
             m_FixupScaleFactor{1.0f}
         {
-            osc::InitializeModel(*m_Model);
-            osc::InitializeState(*m_Model);
+            InitializeModel(*m_Model);
+            InitializeState(*m_Model);
         }
 
         UiModelStatePair(UiModelStatePair const& other) :
@@ -63,8 +65,8 @@ namespace
             m_MaybeSelected{other.m_MaybeSelected},
             m_MaybeHovered{other.m_MaybeHovered}
         {
-            osc::InitializeModel(*m_Model);
-            osc::InitializeState(*m_Model);
+            InitializeModel(*m_Model);
+            InitializeState(*m_Model);
         }
 
         UiModelStatePair(UiModelStatePair&&) noexcept = default;
@@ -79,16 +81,16 @@ namespace
 
         OpenSim::Model& updModel()
         {
-            m_ModelVersion = osc::UID{};
+            m_ModelVersion = UID{};
             return *m_Model;
         }
 
-        osc::UID implGetModelVersion() const final
+        UID implGetModelVersion() const final
         {
             return m_ModelVersion;
         }
 
-        void setModelVersion(osc::UID version)
+        void setModelVersion(UID version)
         {
             m_ModelVersion = version;
         }
@@ -98,7 +100,7 @@ namespace
             return m_Model->getWorkingState();
         }
 
-        osc::UID implGetStateVersion() const final
+        UID implGetStateVersion() const final
         {
             return m_ModelVersion;
         }
@@ -125,12 +127,12 @@ namespace
 
         OpenSim::Component const* implGetSelected() const final
         {
-            return osc::FindComponent(*m_Model, m_MaybeSelected);
+            return FindComponent(*m_Model, m_MaybeSelected);
         }
 
         void implSetSelected(OpenSim::Component const* c) final
         {
-            m_MaybeSelected = osc::GetAbsolutePathOrEmpty(c);
+            m_MaybeSelected = GetAbsolutePathOrEmpty(c);
         }
 
         OpenSim::ComponentPath const& getHoveredPath() const
@@ -145,18 +147,18 @@ namespace
 
         OpenSim::Component const* implGetHovered() const final
         {
-            return osc::FindComponent(*m_Model, m_MaybeHovered);
+            return FindComponent(*m_Model, m_MaybeHovered);
         }
 
         void implSetHovered(OpenSim::Component const* c) final
         {
-            m_MaybeHovered = osc::GetAbsolutePathOrEmpty(c);
+            m_MaybeHovered = GetAbsolutePathOrEmpty(c);
         }
 
     private:
         // the model, finalized from its properties
         std::unique_ptr<OpenSim::Model> m_Model;
-        osc::UID m_ModelVersion;
+        UID m_ModelVersion;
 
         // fixup scale factor of the model
         //
@@ -697,7 +699,7 @@ osc::UndoableModelStatePair::UndoableModelStatePair(UndoableModelStatePair const
 
 osc::UndoableModelStatePair::UndoableModelStatePair(UndoableModelStatePair&&) noexcept = default;
 
-osc::UndoableModelStatePair& osc::UndoableModelStatePair::operator=(UndoableModelStatePair const& src)
+UndoableModelStatePair& osc::UndoableModelStatePair::operator=(UndoableModelStatePair const& src)
 {
     if (&src != this)
     {
@@ -708,7 +710,7 @@ osc::UndoableModelStatePair& osc::UndoableModelStatePair::operator=(UndoableMode
     return *this;
 }
 
-osc::UndoableModelStatePair& osc::UndoableModelStatePair::operator=(UndoableModelStatePair&&) noexcept = default;
+UndoableModelStatePair& osc::UndoableModelStatePair::operator=(UndoableModelStatePair&&) noexcept = default;
 osc::UndoableModelStatePair::~UndoableModelStatePair() noexcept = default;
 
 bool osc::UndoableModelStatePair::hasFilesystemLocation() const
@@ -742,7 +744,7 @@ std::filesystem::file_time_type osc::UndoableModelStatePair::getLastFilesystemWr
 }
 
 
-osc::ModelStateCommit const& osc::UndoableModelStatePair::getLatestCommit() const
+ModelStateCommit const& osc::UndoableModelStatePair::getLatestCommit() const
 {
     return m_Impl->getLatestCommit();
 }
@@ -802,7 +804,7 @@ OpenSim::Model const& osc::UndoableModelStatePair::implGetModel() const
     return m_Impl->getModel();
 }
 
-osc::UID osc::UndoableModelStatePair::implGetModelVersion() const
+UID osc::UndoableModelStatePair::implGetModelVersion() const
 {
     return m_Impl->getModelVersion();
 }
@@ -812,7 +814,7 @@ SimTK::State const& osc::UndoableModelStatePair::implGetState() const
     return m_Impl->getState();
 }
 
-osc::UID osc::UndoableModelStatePair::implGetStateVersion() const
+UID osc::UndoableModelStatePair::implGetStateVersion() const
 {
     return m_Impl->getStateVersion();
 }

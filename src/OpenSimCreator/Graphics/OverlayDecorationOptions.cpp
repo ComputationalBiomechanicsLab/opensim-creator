@@ -8,6 +8,8 @@
 
 #include <cstddef>
 
+using namespace osc;
+
 size_t osc::OverlayDecorationOptions::getNumOptions() const
 {
     return NumFlags<OverlayDecorationOptionFlags>();
@@ -23,12 +25,12 @@ void osc::OverlayDecorationOptions::setOptionValue(ptrdiff_t i, bool v)
     SetOption(m_Flags, IthOption(i), v);
 }
 
-osc::CStringView osc::OverlayDecorationOptions::getOptionLabel(ptrdiff_t i) const
+CStringView osc::OverlayDecorationOptions::getOptionLabel(ptrdiff_t i) const
 {
     return At(GetAllOverlayDecorationOptionFlagsMetadata(), i).label;
 }
 
-osc::CStringView osc::OverlayDecorationOptions::getOptionGroupLabel(ptrdiff_t i) const
+CStringView osc::OverlayDecorationOptions::getOptionGroupLabel(ptrdiff_t i) const
 {
     return getLabel(At(GetAllOverlayDecorationOptionFlagsMetadata(), i).group);
 }

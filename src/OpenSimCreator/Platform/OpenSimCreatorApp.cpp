@@ -28,8 +28,7 @@
 #include <memory>
 #include <string>
 
-using osc::log_error;
-using osc::log_info;
+using namespace osc;
 
 namespace
 {
@@ -37,7 +36,7 @@ namespace
     // are all deduped to this one source location
     //
     // it's UNSAFE because `setlocale` is a global mutation
-    void setLocaleUNSAFE(int category, osc::CStringView locale)
+    void setLocaleUNSAFE(int category, CStringView locale)
     {
         // disable lint because this function is only called once at application
         // init time
@@ -66,15 +65,15 @@ namespace
         // but it *reads* OSIM files with the assumption that numbers will be in the format 'x.y'
 
         log_info("setting locale to US (so that numbers are always in the format '0.x'");
-        osc::CStringView const locale = "C";
-        osc::SetEnv("LANG", locale, true);
-        osc::SetEnv("LC_CTYPE", locale, true);
-        osc::SetEnv("LC_NUMERIC", locale, true);
-        osc::SetEnv("LC_TIME", locale, true);
-        osc::SetEnv("LC_COLLATE", locale, true);
-        osc::SetEnv("LC_MONETARY", locale, true);
-        osc::SetEnv("LC_MESSAGES", locale, true);
-        osc::SetEnv("LC_ALL", locale, true);
+        CStringView const locale = "C";
+        SetEnv("LANG", locale, true);
+        SetEnv("LC_CTYPE", locale, true);
+        SetEnv("LC_NUMERIC", locale, true);
+        SetEnv("LC_TIME", locale, true);
+        SetEnv("LC_COLLATE", locale, true);
+        SetEnv("LC_MONETARY", locale, true);
+        SetEnv("LC_MESSAGES", locale, true);
+        SetEnv("LC_ALL", locale, true);
 #ifdef LC_CTYPE
         setLocaleUNSAFE(LC_CTYPE, locale);
 #endif
@@ -130,7 +129,7 @@ namespace
         RegisterTypes_osimExampleComponents();
     }
 
-    void GloballySetOpenSimsGeometrySearchPath(osc::AppConfig const& config)
+    void GloballySetOpenSimsGeometrySearchPath(AppConfig const& config)
     {
         // globally set OpenSim's geometry search path
         //
@@ -142,7 +141,7 @@ namespace
         log_info("added geometry search path entry: %s", geometryDir.string().c_str());
     }
 
-    bool InitializeOpenSim(osc::AppConfig const& config)
+    bool InitializeOpenSim(AppConfig const& config)
     {
         // make this process (OSC) globally use the same locale that OpenSim uses
         //
@@ -178,18 +177,18 @@ namespace
     }
 
     // registers user-accessible tabs
-    void InitializeTabRegistry(osc::TabRegistry& registry)
+    void InitializeTabRegistry(TabRegistry& registry)
     {
-        osc::RegisterLearnOpenGLTabs(registry);
-        osc::RegisterDemoTabs(registry);
-        osc::RegisterOpenSimCreatorTabs(registry);
+        RegisterLearnOpenGLTabs(registry);
+        RegisterDemoTabs(registry);
+        RegisterOpenSimCreatorTabs(registry);
     }
 }
 
 
 // public API
 
-osc::AppMetadata osc::GetOpenSimCreatorAppMetadata()
+AppMetadata osc::GetOpenSimCreatorAppMetadata()
 {
     return AppMetadata
     {
@@ -202,10 +201,10 @@ osc::AppMetadata osc::GetOpenSimCreatorAppMetadata()
     };
 }
 
-osc::AppConfig osc::LoadOpenSimCreatorConfig()
+AppConfig osc::LoadOpenSimCreatorConfig()
 {
     auto metadata = GetOpenSimCreatorAppMetadata();
-    return osc::AppConfig{metadata.getOrganizationName(), metadata.getApplicationName()};
+    return AppConfig{metadata.getOrganizationName(), metadata.getApplicationName()};
 }
 
 bool osc::GlobalInitOpenSim()
@@ -223,5 +222,5 @@ osc::OpenSimCreatorApp::OpenSimCreatorApp() :
     App{GetOpenSimCreatorAppMetadata()}
 {
     GlobalInitOpenSim(getConfig());
-    InitializeTabRegistry(*singleton<osc::TabRegistry>());
+    InitializeTabRegistry(*singleton<TabRegistry>());
 }

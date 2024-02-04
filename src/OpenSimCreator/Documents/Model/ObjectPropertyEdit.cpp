@@ -10,6 +10,8 @@
 #include <string>
 #include <utility>
 
+using namespace osc;
+
 namespace
 {
     // returns the absolute path to the object if it's a components; otherwise, returns
@@ -18,7 +20,7 @@ namespace
     {
         if (auto const* c = dynamic_cast<OpenSim::Component const*>(&obj))
         {
-            return osc::GetAbsolutePathString(*c);
+            return GetAbsolutePathString(*c);
         }
         else
         {

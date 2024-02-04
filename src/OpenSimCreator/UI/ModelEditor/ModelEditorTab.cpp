@@ -53,6 +53,8 @@
 #include <string_view>
 #include <utility>
 
+using namespace osc;
+
 class osc::ModelEditorTab::Impl final : public IEditorAPI {
 public:
 
@@ -198,7 +200,7 @@ public:
     {
         if (m_FileChangePoller.changeWasDetected(m_Model->getModel().getInputFileName()))
         {
-            osc::ActionUpdateModelFromBackingFile(*m_Model);
+            ActionUpdateModelFromBackingFile(*m_Model);
         }
 
         m_TabName = computeTabName();
@@ -324,7 +326,7 @@ private:
 
         if (filename.ends_with(".sto"))
         {
-            return osc::ActionLoadSTOFileAgainstModel(m_Parent, *m_Model, e.file);
+            return ActionLoadSTOFileAgainstModel(m_Parent, *m_Model, e.file);
         }
         else if (filename.ends_with(".osim"))
         {
@@ -338,13 +340,13 @@ private:
 
     bool onKeydownEvent(SDL_KeyboardEvent const& e)
     {
-        if (osc::IsCtrlOrSuperDown())
+        if (IsCtrlOrSuperDown())
         {
             if (e.keysym.mod & KMOD_SHIFT)
             {
                 switch (e.keysym.sym) {
                 case SDLK_z:  // Ctrl+Shift+Z : undo focused model
-                    osc::ActionRedoCurrentlyEditedModel(*m_Model);
+                    ActionRedoCurrentlyEditedModel(*m_Model);
                     return true;
                 }
                 return false;
@@ -352,15 +354,15 @@ private:
 
             switch (e.keysym.sym) {
             case SDLK_z:  // Ctrl+Z: undo focused model
-                osc::ActionUndoCurrentlyEditedModel(*m_Model);
+                ActionUndoCurrentlyEditedModel(*m_Model);
                 return true;
             case SDLK_r:
             {
                 // Ctrl+R: start a new simulation from focused model
-                return osc::ActionStartSimulatingModel(m_Parent, *m_Model);
+                return ActionStartSimulatingModel(m_Parent, *m_Model);
             }
             case SDLK_a:  // Ctrl+A: clear selection
-                osc::ActionClearSelectionFromEditedModel(*m_Model);
+                ActionClearSelectionFromEditedModel(*m_Model);
                 return true;
             }
 
@@ -370,7 +372,7 @@ private:
         switch (e.keysym.sym) {
         case SDLK_BACKSPACE:
         case SDLK_DELETE:  // BACKSPACE/DELETE: delete selection
-            osc::ActionTryDeleteSelectionFromEditedModel(*m_Model);
+            ActionTryDeleteSelectionFromEditedModel(*m_Model);
             return true;
         }
 
@@ -401,7 +403,7 @@ private:
         std::string const name = m_PanelManager->computeSuggestedDynamicPanelName("muscleplot");
         m_PanelManager->pushDynamicPanel(
             "muscleplot",
-            std::make_shared<ModelMusclePlotPanel>(this, m_Model, name, osc::GetAbsolutePath(coord), osc::GetAbsolutePath(muscle))
+            std::make_shared<ModelMusclePlotPanel>(this, m_Model, name, GetAbsolutePath(coord), GetAbsolutePath(muscle))
         );
     }
 
@@ -455,12 +457,12 @@ osc::ModelEditorTab::ModelEditorTab(ModelEditorTab&&) noexcept = default;
 osc::ModelEditorTab& osc::ModelEditorTab::operator=(ModelEditorTab&&) noexcept = default;
 osc::ModelEditorTab::~ModelEditorTab() noexcept = default;
 
-osc::UID osc::ModelEditorTab::implGetID() const
+UID osc::ModelEditorTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::ModelEditorTab::implGetName() const
+CStringView osc::ModelEditorTab::implGetName() const
 {
     return m_Impl->getName();
 }

@@ -65,17 +65,16 @@
 #include <variant>
 
 using namespace osc::literals;
-using osc::log_error;
-using osc::log_info;
+using namespace osc;
 
 // export utils
 namespace
 {
     // prompts the user for a save location and then exports a DAE file containing the 3D scene
-    void TryPromptUserToSaveAsDAE(std::span<osc::SceneDecoration const> scene)
+    void TryPromptUserToSaveAsDAE(std::span<SceneDecoration const> scene)
     {
         std::optional<std::filesystem::path> maybeDAEPath =
-            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("dae");
+            PromptUserForFileSaveLocationAndAddExtensionIfNecessary("dae");
 
         if (!maybeDAEPath)
         {
@@ -91,37 +90,37 @@ namespace
             return;
         }
 
-        osc::AppMetadata const& appMetadata = osc::App::get().getMetadata();
-        osc::DAEMetadata daeMetadata
+        AppMetadata const& appMetadata = App::get().getMetadata();
+        DAEMetadata daeMetadata
         {
-            osc::GetBestHumanReadableApplicationName(appMetadata),
-            osc::CalcFullApplicationNameWithVersionAndBuild(appMetadata),
+            GetBestHumanReadableApplicationName(appMetadata),
+            CalcFullApplicationNameWithVersionAndBuild(appMetadata),
         };
 
-        osc::WriteDecorationsAsDAE(outfile, scene, daeMetadata);
+        WriteDecorationsAsDAE(outfile, scene, daeMetadata);
         log_info("wrote scene as a DAE file to %s", daePath.string().c_str());
     }
 
     void DrawOutputTooltip(OpenSim::AbstractOutput const& o)
     {
-        osc::DrawTooltip(o.getTypeName());
+        DrawTooltip(o.getTypeName());
     }
 
-    bool DrawOutputWithSubfieldsMenu(osc::IMainUIStateAPI& api, OpenSim::AbstractOutput const& o)
+    bool DrawOutputWithSubfieldsMenu(IMainUIStateAPI& api, OpenSim::AbstractOutput const& o)
     {
         bool outputAdded = false;
-        osc::OutputSubfield supportedSubfields = osc::GetSupportedSubfields(o);
+        OutputSubfield supportedSubfields = GetSupportedSubfields(o);
 
         // can plot suboutputs
         if (ImGui::BeginMenu(("  " + o.getName()).c_str()))
         {
-            for (osc::OutputSubfield f : osc::GetAllSupportedOutputSubfields())
+            for (OutputSubfield f : GetAllSupportedOutputSubfields())
             {
                 if (f & supportedSubfields)
                 {
                     if (auto label = GetOutputSubfieldLabel(f); label && ImGui::MenuItem(label->c_str()))
                     {
-                        api.addUserOutputExtractor(osc::OutputExtractor{osc::ComponentOutputExtractor{o, f}});
+                        api.addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{o, f}});
                         outputAdded = true;
                     }
                 }
@@ -137,7 +136,7 @@ namespace
         return outputAdded;
     }
 
-    bool DrawOutputWithNoSubfieldsMenuItem(osc::IMainUIStateAPI& api, OpenSim::AbstractOutput const& o)
+    bool DrawOutputWithNoSubfieldsMenuItem(IMainUIStateAPI& api, OpenSim::AbstractOutput const& o)
     {
         // can only plot top-level of output
 
@@ -145,7 +144,7 @@ namespace
 
         if (ImGui::MenuItem(("  " + o.getName()).c_str()))
         {
-            api.addUserOutputExtractor(osc::OutputExtractor{osc::ComponentOutputExtractor{o}});
+            api.addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{o}});
             outputAdded = true;
         }
 
@@ -157,9 +156,9 @@ namespace
         return outputAdded;
     }
 
-    bool DrawRequestOutputMenuOrMenuItem(osc::IMainUIStateAPI& api, OpenSim::AbstractOutput const& o)
+    bool DrawRequestOutputMenuOrMenuItem(IMainUIStateAPI& api, OpenSim::AbstractOutput const& o)
     {
-        if (osc::GetSupportedSubfields(o) == osc::OutputSubfield::None)
+        if (GetSupportedSubfields(o) == OutputSubfield::None)
         {
             return DrawOutputWithNoSubfieldsMenuItem(api, o);
         }
@@ -169,15 +168,15 @@ namespace
         }
     }
 
-    void DrawSimulationParamValue(osc::ParamValue const& v)
+    void DrawSimulationParamValue(ParamValue const& v)
     {
         if (std::holds_alternative<double>(v))
         {
             ImGui::Text("%f", static_cast<float>(std::get<double>(v)));
         }
-        else if (std::holds_alternative<osc::IntegratorMethod>(v))
+        else if (std::holds_alternative<IntegratorMethod>(v))
         {
-            ImGui::Text("%s", osc::GetIntegratorMethodString(std::get<osc::IntegratorMethod>(v)).c_str());
+            ImGui::Text("%s", GetIntegratorMethodString(std::get<IntegratorMethod>(v)).c_str());
         }
         else if (std::holds_alternative<int>(v))
         {
@@ -189,13 +188,13 @@ namespace
         }
     }
 
-    osc::Transform CalcTransformWithRespectTo(
+    Transform CalcTransformWithRespectTo(
         OpenSim::Mesh const& mesh,
         OpenSim::Frame const& frame,
         SimTK::State const& state)
     {
-        osc::Transform rv = osc::ToTransform(mesh.getFrame().findTransformBetween(state, frame));
-        rv.scale = osc::ToVec3(mesh.get_scale_factors());
+        Transform rv = ToTransform(mesh.getFrame().findTransformBetween(state, frame));
+        rv.scale = ToVec3(mesh.get_scale_factors());
         return rv;
     }
 
@@ -207,7 +206,7 @@ namespace
     {
         // prompt user for a save location
         std::optional<std::filesystem::path> const maybeUserSaveLocation =
-            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
+            PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
         if (!maybeUserSaveLocation)
         {
             return;  // user didn't select a save location
@@ -215,7 +214,7 @@ namespace
         std::filesystem::path const& userSaveLocation = *maybeUserSaveLocation;
 
         // load raw mesh data into an osc mesh for processing
-        osc::Mesh oscMesh = osc::ToOscMesh(model, state, openSimMesh);
+        Mesh oscMesh = ToOscMesh(model, state, openSimMesh);
 
         // bake transform into mesh data
         oscMesh.transformVerts(CalcTransformWithRespectTo(openSimMesh, frame, state));
@@ -228,22 +227,22 @@ namespace
         };
         if (!outputFileStream)
         {
-            std::string const error = osc::CurrentErrnoAsString();
+            std::string const error = CurrentErrnoAsString();
             log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
             return;
         }
 
-        osc::AppMetadata const& appMetadata = osc::App::get().getMetadata();
-        osc::ObjMetadata const objMetadata
+        AppMetadata const& appMetadata = App::get().getMetadata();
+        ObjMetadata const objMetadata
         {
-            osc::CalcFullApplicationNameWithVersionAndBuild(appMetadata),
+            CalcFullApplicationNameWithVersionAndBuild(appMetadata),
         };
 
-        osc::WriteMeshAsObj(
+        WriteMeshAsObj(
             outputFileStream,
             oscMesh,
             objMetadata,
-            osc::ObjWriterFlags::NoWriteNormals
+            ObjWriterFlags::NoWriteNormals
         );
     }
 
@@ -255,7 +254,7 @@ namespace
     {
         // prompt user for a save location
         std::optional<std::filesystem::path> const maybeUserSaveLocation =
-            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
+            PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
         if (!maybeUserSaveLocation)
         {
             return;  // user didn't select a save location
@@ -263,7 +262,7 @@ namespace
         std::filesystem::path const& userSaveLocation = *maybeUserSaveLocation;
 
         // load raw mesh data into an osc mesh for processing
-        osc::Mesh oscMesh = osc::ToOscMesh(model, state, openSimMesh);
+        Mesh oscMesh = ToOscMesh(model, state, openSimMesh);
 
         // bake transform into mesh data
         oscMesh.transformVerts(CalcTransformWithRespectTo(openSimMesh, frame, state));
@@ -276,18 +275,18 @@ namespace
         };
         if (!outputFileStream)
         {
-            std::string const error = osc::CurrentErrnoAsString();
+            std::string const error = CurrentErrnoAsString();
             log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
             return;
         }
 
-        osc::AppMetadata const& appMetadata = osc::App::get().getMetadata();
-        osc::StlMetadata const stlMetadata
+        AppMetadata const& appMetadata = App::get().getMetadata();
+        StlMetadata const stlMetadata
         {
-            osc::CalcFullApplicationNameWithVersionAndBuild(appMetadata),
+            CalcFullApplicationNameWithVersionAndBuild(appMetadata),
         };
 
-        osc::WriteMeshAsStl(outputFileStream, oscMesh, stlMetadata);
+        WriteMeshAsStl(outputFileStream, oscMesh, stlMetadata);
     }
 }
 
@@ -319,25 +318,25 @@ void osc::DrawContextMenuSeparator()
 
 void osc::DrawComponentHoverTooltip(OpenSim::Component const& hovered)
 {
-    osc::BeginTooltip();
+    BeginTooltip();
 
     ImGui::TextUnformatted(hovered.getName().c_str());
     ImGui::SameLine();
     ImGui::TextDisabled("%s", hovered.getConcreteClassName().c_str());
 
-    osc::EndTooltip();
+    EndTooltip();
 }
 
-void osc::DrawSelectOwnerMenu(osc::IModelStatePair& model, OpenSim::Component const& selected)
+void osc::DrawSelectOwnerMenu(IModelStatePair& model, OpenSim::Component const& selected)
 {
     if (ImGui::BeginMenu("Select Owner"))
     {
         model.setHovered(nullptr);
 
         for (
-            OpenSim::Component const* owner = osc::GetOwner(selected);
+            OpenSim::Component const* owner = GetOwner(selected);
             owner != nullptr;
-            owner = osc::GetOwner(*owner))
+            owner = GetOwner(*owner))
         {
             std::string const menuLabel = [&owner]()
             {
@@ -366,11 +365,11 @@ bool osc::DrawWatchOutputMenu(IMainUIStateAPI& api, OpenSim::Component const& c)
 
     if (ImGui::BeginMenu("Watch Output"))
     {
-        osc::DrawHelpMarker("Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
+        DrawHelpMarker("Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
 
         // iterate from the selected component upwards to the root
         int imguiId = 0;
-        for (OpenSim::Component const* p = &c; p; p = osc::GetOwner(*p))
+        for (OpenSim::Component const* p = &c; p; p = GetOwner(*p))
         {
             ImGui::PushID(imguiId++);
 
@@ -402,12 +401,12 @@ bool osc::DrawWatchOutputMenu(IMainUIStateAPI& api, OpenSim::Component const& c)
     return outputAdded;
 }
 
-void osc::DrawSimulationParams(osc::ParamBlock const& params)
+void osc::DrawSimulationParams(ParamBlock const& params)
 {
     ImGui::Dummy({0.0f, 1.0f});
     ImGui::TextUnformatted("parameters:");
     ImGui::SameLine();
-    osc::DrawHelpMarker("The parameters used when this simulation was launched. These must be set *before* running the simulation");
+    DrawHelpMarker("The parameters used when this simulation was launched. These must be set *before* running the simulation");
     ImGui::Separator();
     ImGui::Dummy({0.0f, 2.0f});
 
@@ -416,11 +415,11 @@ void osc::DrawSimulationParams(osc::ParamBlock const& params)
     {
         std::string const& name = params.getName(i);
         std::string const& description = params.getDescription(i);
-        osc::ParamValue const& value = params.getValue(i);
+        ParamValue const& value = params.getValue(i);
 
         ImGui::TextUnformatted(name.c_str());
         ImGui::SameLine();
-        osc::DrawHelpMarker(name, description);
+        DrawHelpMarker(name, description);
         ImGui::NextColumn();
 
         DrawSimulationParamValue(value);
@@ -437,7 +436,7 @@ void osc::DrawSearchBar(std::string& out)
         {
             out.clear();
         }
-        osc::DrawTooltipBodyOnlyIfItemHovered("Clear the search string");
+        DrawTooltipBodyOnlyIfItemHovered("Clear the search string");
     }
     else
     {
@@ -448,7 +447,7 @@ void osc::DrawSearchBar(std::string& out)
 
     ImGui::SameLine();
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-    osc::InputString("##hirarchtsearchbar", out);
+    InputString("##hirarchtsearchbar", out);
 }
 
 void osc::DrawOutputNameColumn(
@@ -458,7 +457,7 @@ void osc::DrawOutputNameColumn(
 {
     if (centered)
     {
-        osc::TextCentered(output.getName());
+        TextCentered(output.getName());
     }
     else
     {
@@ -471,23 +470,23 @@ void osc::DrawOutputNameColumn(
     // (e.g. if the user mouses over the name of a component output it should make
     // the associated component the current hover to provide immediate feedback to
     // the user)
-    if (auto const* co = dynamic_cast<osc::ComponentOutputExtractor const*>(&output); co && maybeActiveSate)
+    if (auto const* co = dynamic_cast<ComponentOutputExtractor const*>(&output); co && maybeActiveSate)
     {
         if (ImGui::IsItemHovered())
         {
-            maybeActiveSate->setHovered(osc::FindComponent(maybeActiveSate->getModel(), co->getComponentAbsPath()));
+            maybeActiveSate->setHovered(FindComponent(maybeActiveSate->getModel(), co->getComponentAbsPath()));
         }
 
         if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
         {
-            maybeActiveSate->setSelected(osc::FindComponent(maybeActiveSate->getModel(), co->getComponentAbsPath()));
+            maybeActiveSate->setSelected(FindComponent(maybeActiveSate->getModel(), co->getComponentAbsPath()));
         }
     }
 
     if (!output.getDescription().empty())
     {
         ImGui::SameLine();
-        osc::DrawHelpMarker(output.getName(), output.getDescription());
+        DrawHelpMarker(output.getName(), output.getDescription());
     }
 }
 
@@ -536,11 +535,11 @@ void osc::DrawPointTranslationInformationWithRespectTo(
     Vec3 locationInGround)
 {
     SimTK::Transform const groundToFrame = frame.getTransformInGround(state).invert();
-    Vec3 position = osc::ToVec3(groundToFrame * osc::ToSimTKVec3(locationInGround));
+    Vec3 position = ToVec3(groundToFrame * ToSimTKVec3(locationInGround));
 
     ImGui::Text("translation");
     ImGui::SameLine();
-    osc::DrawHelpMarker("translation", "Translational offset (in meters) of the point expressed in the chosen frame");
+    DrawHelpMarker("translation", "Translational offset (in meters) of the point expressed in the chosen frame");
     ImGui::SameLine();
     ImGui::InputFloat3("##translation", ValuePtr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
@@ -551,11 +550,11 @@ void osc::DrawDirectionInformationWithRepsectTo(
     Vec3 directionInGround)
 {
     SimTK::Transform const groundToFrame = frame.getTransformInGround(state).invert();
-    Vec3 direction = osc::ToVec3(groundToFrame.xformBaseVecToFrame(osc::ToSimTKVec3(directionInGround)));
+    Vec3 direction = ToVec3(groundToFrame.xformBaseVecToFrame(ToSimTKVec3(directionInGround)));
 
     ImGui::Text("direction");
     ImGui::SameLine();
-    osc::DrawHelpMarker("direction", "a unit vector expressed in the given frame");
+    DrawHelpMarker("direction", "a unit vector expressed in the given frame");
     ImGui::SameLine();
     ImGui::InputFloat3("##direction", ValuePtr(direction), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
@@ -566,25 +565,25 @@ void osc::DrawFrameInformationExpressedIn(
     OpenSim::Frame const& otherFrame)
 {
     SimTK::Transform const xform = parent.findTransformBetween(state, otherFrame);
-    Vec3 position = osc::ToVec3(xform.p());
-    Vec3 rotationEulers = osc::ToVec3(xform.R().convertRotationToBodyFixedXYZ());
+    Vec3 position = ToVec3(xform.p());
+    Vec3 rotationEulers = ToVec3(xform.R().convertRotationToBodyFixedXYZ());
 
     ImGui::Text("translation");
     ImGui::SameLine();
-    osc::DrawHelpMarker("translation", "Translational offset (in meters) of the frame's origin expressed in the chosen frame");
+    DrawHelpMarker("translation", "Translational offset (in meters) of the frame's origin expressed in the chosen frame");
     ImGui::SameLine();
     ImGui::InputFloat3("##translation", ValuePtr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
 
     ImGui::Text("orientation");
     ImGui::SameLine();
-    osc::DrawHelpMarker("orientation", "Orientation offset (in radians) of the frame, expressed in the chosen frame as a frame-fixed x-y-z rotation sequence");
+    DrawHelpMarker("orientation", "Orientation offset (in radians) of the frame, expressed in the chosen frame as a frame-fixed x-y-z rotation sequence");
     ImGui::SameLine();
     ImGui::InputFloat3("##orientation", ValuePtr(rotationEulers), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
 bool osc::BeginCalculateMenu(CalculateMenuFlags flags)
 {
-    osc::CStringView const label = flags & CalculateMenuFlags::NoCalculatorIcon ?
+    CStringView const label = flags & CalculateMenuFlags::NoCalculatorIcon ?
         "Calculate" :
         ICON_FA_CALCULATOR " Calculate";
     return ImGui::BeginMenu(label.c_str());
@@ -604,14 +603,14 @@ void osc::DrawCalculatePositionMenu(
     {
         auto const onFrameMenuOpened = [&state, &point](OpenSim::Frame const& frame)
         {
-            osc::DrawPointTranslationInformationWithRespectTo(
+            DrawPointTranslationInformationWithRespectTo(
                 frame,
                 state,
-                osc::ToVec3(point.getLocationInGround(state))
+                ToVec3(point.getLocationInGround(state))
             );
         };
 
-        osc::DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
         ImGui::EndMenu();
     }
 }
@@ -638,9 +637,9 @@ void osc::DrawCalculateTransformMenu(
     {
         auto const onFrameMenuOpened = [&state, &frame](OpenSim::Frame const& otherFrame)
         {
-            osc::DrawFrameInformationExpressedIn(frame, state, otherFrame);
+            DrawFrameInformationExpressedIn(frame, state, otherFrame);
         };
-        osc::DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
         ImGui::EndMenu();
     }
 }
@@ -872,7 +871,7 @@ bool osc::DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions& opts)
         if (std::optional<CStringView> description = opts.getOptionDescription(i))
         {
             ImGui::SameLine();
-            osc::DrawHelpMarker(*description);
+            DrawHelpMarker(*description);
         }
 
         ImGui::PopID();
@@ -891,95 +890,95 @@ bool osc::DrawAdvancedParamsEditor(
 
     if (ImGui::Button("+X"))
     {
-        osc::FocusAlongX(params.camera);
+        FocusAlongX(params.camera);
         edited = true;
     }
-    osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along +X, pointing towards the center (Hotkey: X).");
+    DrawTooltipBodyOnlyIfItemHovered("Position camera along +X, pointing towards the center (Hotkey: X).");
     ImGui::SameLine();
     if (ImGui::Button("-X"))
     {
-        osc::FocusAlongMinusX(params.camera);
+        FocusAlongMinusX(params.camera);
         edited = true;
     }
-    osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along -X, pointing towards the center (Hotkey: Ctrl+X).");
+    DrawTooltipBodyOnlyIfItemHovered("Position camera along -X, pointing towards the center (Hotkey: Ctrl+X).");
 
     ImGui::SameLine();
     if (ImGui::Button("+Y"))
     {
-        osc::FocusAlongY(params.camera);
+        FocusAlongY(params.camera);
         edited = true;
     }
-    osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along +Y, pointing towards the center (Hotkey: Y).");
+    DrawTooltipBodyOnlyIfItemHovered("Position camera along +Y, pointing towards the center (Hotkey: Y).");
     ImGui::SameLine();
     if (ImGui::Button("-Y"))
     {
-        osc::FocusAlongMinusY(params.camera);
+        FocusAlongMinusY(params.camera);
         edited = true;
     }
-    osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along -Y, pointing towards the center.");
+    DrawTooltipBodyOnlyIfItemHovered("Position camera along -Y, pointing towards the center.");
 
     ImGui::SameLine();
     if (ImGui::Button("+Z"))
     {
-        osc::FocusAlongZ(params.camera);
+        FocusAlongZ(params.camera);
         edited = true;
     }
-    osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along +Z, pointing towards the center.");
+    DrawTooltipBodyOnlyIfItemHovered("Position camera along +Z, pointing towards the center.");
     ImGui::SameLine();
     if (ImGui::Button("-Z"))
     {
-        osc::FocusAlongMinusZ(params.camera);
+        FocusAlongMinusZ(params.camera);
         edited = true;
     }
-    osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along -Z, pointing towards the center.");
+    DrawTooltipBodyOnlyIfItemHovered("Position camera along -Z, pointing towards the center.");
 
     if (ImGui::Button("Zoom In (Hotkey: =)"))
     {
-        osc::ZoomIn(params.camera);
+        ZoomIn(params.camera);
         edited = true;
     }
 
     ImGui::SameLine();
     if (ImGui::Button("Zoom Out (Hotkey: -)"))
     {
-        osc::ZoomOut(params.camera);
+        ZoomOut(params.camera);
         edited = true;
     }
 
     if (ImGui::Button("Reset Camera"))
     {
-        osc::Reset(params.camera);
+        Reset(params.camera);
         edited = true;
     }
-    osc::DrawTooltipBodyOnlyIfItemHovered("Reset the camera to its initial (default) location. Hotkey: F");
+    DrawTooltipBodyOnlyIfItemHovered("Reset the camera to its initial (default) location. Hotkey: F");
 
     if (ImGui::Button("Export to .dae"))
     {
         TryPromptUserToSaveAsDAE(drawlist);
     }
-    osc::DrawTooltipBodyOnlyIfItemHovered("Try to export the 3D scene to a portable DAE file, so that it can be viewed in 3rd-party modelling software, such as Blender");
+    DrawTooltipBodyOnlyIfItemHovered("Try to export the 3D scene to a portable DAE file, so that it can be viewed in 3rd-party modelling software, such as Blender");
 
     ImGui::Dummy({0.0f, 10.0f});
     ImGui::Text("advanced camera properties:");
     ImGui::Separator();
-    edited = osc::SliderMetersFloat("radius", params.camera.radius, 0.0f, 10.0f) || edited;
+    edited = SliderMetersFloat("radius", params.camera.radius, 0.0f, 10.0f) || edited;
     edited = SliderAngle("theta", params.camera.theta, 0_deg, 360_deg) || edited;
     edited = SliderAngle("phi", params.camera.phi, 0_deg, 360_deg) || edited;
     edited = SliderAngle("fov", params.camera.verticalFOV, 0_deg, 360_deg) || edited;
-    edited = osc::InputMetersFloat("znear", params.camera.znear) || edited;
-    edited = osc::InputMetersFloat("zfar", params.camera.zfar) || edited;
+    edited = InputMetersFloat("znear", params.camera.znear) || edited;
+    edited = InputMetersFloat("zfar", params.camera.zfar) || edited;
     ImGui::NewLine();
-    edited = osc::SliderMetersFloat("pan_x", params.camera.focusPoint.x, -100.0f, 100.0f) || edited;
-    edited = osc::SliderMetersFloat("pan_y", params.camera.focusPoint.y, -100.0f, 100.0f) || edited;
-    edited = osc::SliderMetersFloat("pan_z", params.camera.focusPoint.z, -100.0f, 100.0f) || edited;
+    edited = SliderMetersFloat("pan_x", params.camera.focusPoint.x, -100.0f, 100.0f) || edited;
+    edited = SliderMetersFloat("pan_y", params.camera.focusPoint.y, -100.0f, 100.0f) || edited;
+    edited = SliderMetersFloat("pan_z", params.camera.focusPoint.z, -100.0f, 100.0f) || edited;
 
     ImGui::Dummy({0.0f, 10.0f});
     ImGui::Text("advanced scene properties:");
     ImGui::Separator();
     edited = ImGui::ColorEdit3("light_color", ValuePtr(params.lightColor)) || edited;
     edited = ImGui::ColorEdit3("background color", ValuePtr(params.backgroundColor)) || edited;
-    edited = osc::InputMetersFloat3("floor location", params.floorLocation) || edited;
-    osc::DrawTooltipBodyOnlyIfItemHovered("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
+    edited = InputMetersFloat3("floor location", params.floorLocation) || edited;
+    DrawTooltipBodyOnlyIfItemHovered("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
 
     return edited;
 }
@@ -1004,7 +1003,7 @@ bool osc::DrawVisualAidsContextMenuContent(ModelRendererParams& params)
 
 bool osc::DrawViewerTopButtonRow(
     ModelRendererParams& params,
-    std::span<osc::SceneDecoration const> drawlist,
+    std::span<SceneDecoration const> drawlist,
     IconCache& iconCache,
     std::function<bool()> const& drawExtraElements)
 {
@@ -1056,8 +1055,8 @@ bool osc::DrawCameraControlButtons(
     float const buttonHeight = 2.0f*style.FramePadding.y + ImGui::GetTextLineHeight();
     float const rowSpacing = ImGui::GetStyle().FramePadding.y;
     float const twoRowHeight = 2.0f*buttonHeight + rowSpacing;
-    float const xFirstRow = viewerScreenRect.p1.x + style.WindowPadding.x + osc::CalcAlignmentAxesDimensions().x + style.ItemSpacing.x;
-    float const yFirstRow = (viewerScreenRect.p2.y - style.WindowPadding.y - 0.5f*osc::CalcAlignmentAxesDimensions().y) - 0.5f*twoRowHeight;
+    float const xFirstRow = viewerScreenRect.p1.x + style.WindowPadding.x + CalcAlignmentAxesDimensions().x + style.ItemSpacing.x;
+    float const yFirstRow = (viewerScreenRect.p2.y - style.WindowPadding.y - 0.5f*CalcAlignmentAxesDimensions().y) - 0.5f*twoRowHeight;
 
     Vec2 const firstRowTopLeft = {xFirstRow, yFirstRow};
     float const midRowY = yFirstRow + 0.5f*(buttonHeight + rowSpacing);
@@ -1199,7 +1198,7 @@ bool osc::DrawCameraControlButtons(
         };
         if (autoFocusButton.onDraw() && maybeSceneAABB)
         {
-            osc::AutoFocus(camera, *maybeSceneAABB, osc::AspectRatio(viewerScreenRect));
+            AutoFocus(camera, *maybeSceneAABB, AspectRatio(viewerScreenRect));
             edited = true;
         }
     }
@@ -1223,7 +1222,7 @@ bool osc::DrawViewerImGuiOverlays(
 
     // compute bottom overlay positions
     ImGuiStyle const& style = ImGui::GetStyle();
-    Vec2 const alignmentAxesDims = osc::CalcAlignmentAxesDimensions();
+    Vec2 const alignmentAxesDims = CalcAlignmentAxesDimensions();
     Vec2 const axesTopLeft =
     {
         renderRect.p1.x + style.WindowPadding.x,
@@ -1254,7 +1253,7 @@ bool osc::BeginToolbar(CStringView label, std::optional<Vec2> padding)
 
     float const height = ImGui::GetFrameHeight() + 2.0f*ImGui::GetStyle().WindowPadding.y;
     ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
-    bool open = osc::BeginMainViewportTopBar(label, height, flags);
+    bool open = BeginMainViewportTopBar(label, height, flags);
     if (padding)
     {
         ImGui::PopStyleVar();
@@ -1268,7 +1267,7 @@ void osc::DrawNewModelButton(ParentPtr<IMainUIStateAPI> const& api)
     {
         ActionNewModel(api);
     }
-    osc::DrawTooltipIfItemHovered("New Model", "Creates a new OpenSim model in a new tab");
+    DrawTooltipIfItemHovered("New Model", "Creates a new OpenSim model in a new tab");
 }
 
 void osc::DrawOpenModelButtonWithRecentFilesDropdown(
@@ -1279,11 +1278,11 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
     {
         onUserClickedOpenOrSelectedFile(std::nullopt);
     }
-    osc::DrawTooltipIfItemHovered("Open Model", "Opens an existing osim file in a new tab");
+    DrawTooltipIfItemHovered("Open Model", "Opens an existing osim file in a new tab");
     ImGui::SameLine();
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {1.0f, ImGui::GetStyle().FramePadding.y});
     ImGui::Button(ICON_FA_CARET_DOWN);
-    osc::DrawTooltipIfItemHovered("Open Recent File", "Opens a recently-opened osim file in a new tab");
+    DrawTooltipIfItemHovered("Open Recent File", "Opens a recently-opened osim file in a new tab");
     ImGui::PopStyleVar();
     ImGui::PopStyleVar();
 
@@ -1329,7 +1328,7 @@ void osc::DrawSaveModelButton(
     {
         ActionSaveModel(*api, model);
     }
-    osc::DrawTooltipIfItemHovered("Save Model", "Saves the model to an osim file");
+    DrawTooltipIfItemHovered("Save Model", "Saves the model to an osim file");
 }
 
 void osc::DrawReloadModelButton(UndoableModelStatePair& model)
@@ -1351,7 +1350,7 @@ void osc::DrawReloadModelButton(UndoableModelStatePair& model)
         ImGui::PopStyleVar();
     }
 
-    osc::DrawTooltipIfItemHovered("Reload Model", "Reloads the model from its source osim file");
+    DrawTooltipIfItemHovered("Reload Model", "Reloads the model from its source osim file");
 }
 
 void osc::DrawUndoButton(UndoableModelStatePair& model)
@@ -1371,10 +1370,10 @@ void osc::DrawUndoButton(UndoableModelStatePair& model)
         ActionUndoCurrentlyEditedModel(model);
     }
 
-    osc::PopItemFlags(itemFlagsPushed);
+    PopItemFlags(itemFlagsPushed);
     ImGui::PopStyleVar(styleVarsPushed);
 
-    osc::DrawTooltipIfItemHovered("Undo", "Undo the model to an earlier version");
+    DrawTooltipIfItemHovered("Undo", "Undo the model to an earlier version");
 }
 
 void osc::DrawRedoButton(UndoableModelStatePair& model)
@@ -1394,10 +1393,10 @@ void osc::DrawRedoButton(UndoableModelStatePair& model)
         ActionRedoCurrentlyEditedModel(model);
     }
 
-    osc::PopItemFlags(itemFlagsPushed);
+    PopItemFlags(itemFlagsPushed);
     ImGui::PopStyleVar(styleVarsPushed);
 
-    osc::DrawTooltipIfItemHovered("Redo", "Redo the model to an undone version");
+    DrawTooltipIfItemHovered("Redo", "Redo the model to an undone version");
 }
 
 void osc::DrawUndoAndRedoButtons(UndoableModelStatePair& model)
@@ -1410,41 +1409,41 @@ void osc::DrawUndoAndRedoButtons(UndoableModelStatePair& model)
 void osc::DrawToggleFramesButton(UndoableModelStatePair& model, IconCache& icons)
 {
     Icon const& icon = icons.getIcon(IsShowingFrames(model.getModel()) ? "frame_colored" : "frame_bw");
-    if (osc::ImageButton("##toggleframes", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
+    if (ImageButton("##toggleframes", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
     {
         ActionToggleFrames(model);
     }
-    osc::DrawTooltipIfItemHovered("Toggle Rendering Frames", "Toggles whether frames (coordinate systems) within the model should be rendered in the 3D scene.");
+    DrawTooltipIfItemHovered("Toggle Rendering Frames", "Toggles whether frames (coordinate systems) within the model should be rendered in the 3D scene.");
 }
 
 void osc::DrawToggleMarkersButton(UndoableModelStatePair& model, IconCache& icons)
 {
     Icon const& icon = icons.getIcon(IsShowingMarkers(model.getModel()) ? "marker_colored" : "marker");
-    if (osc::ImageButton("##togglemarkers", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
+    if (ImageButton("##togglemarkers", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
     {
         ActionToggleMarkers(model);
     }
-    osc::DrawTooltipIfItemHovered("Toggle Rendering Markers", "Toggles whether markers should be rendered in the 3D scene");
+    DrawTooltipIfItemHovered("Toggle Rendering Markers", "Toggles whether markers should be rendered in the 3D scene");
 }
 
 void osc::DrawToggleWrapGeometryButton(UndoableModelStatePair& model, IconCache& icons)
 {
     Icon const& icon = icons.getIcon(IsShowingWrapGeometry(model.getModel()) ? "wrap_colored" : "wrap");
-    if (osc::ImageButton("##togglewrapgeom", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
+    if (ImageButton("##togglewrapgeom", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
     {
         ActionToggleWrapGeometry(model);
     }
-    osc::DrawTooltipIfItemHovered("Toggle Rendering Wrap Geometry", "Toggles whether wrap geometry should be rendered in the 3D scene.\n\nNOTE: This is a model-level property. Individual wrap geometries *within* the model may have their visibility set to 'false', which will cause them to be hidden from the visualizer, even if this is enabled.");
+    DrawTooltipIfItemHovered("Toggle Rendering Wrap Geometry", "Toggles whether wrap geometry should be rendered in the 3D scene.\n\nNOTE: This is a model-level property. Individual wrap geometries *within* the model may have their visibility set to 'false', which will cause them to be hidden from the visualizer, even if this is enabled.");
 }
 
 void osc::DrawToggleContactGeometryButton(UndoableModelStatePair& model, IconCache& icons)
 {
     Icon const& icon = icons.getIcon(IsShowingContactGeometry(model.getModel()) ? "contact_colored" : "contact");
-    if (osc::ImageButton("##togglecontactgeom", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
+    if (ImageButton("##togglecontactgeom", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
     {
         ActionToggleContactGeometry(model);
     }
-    osc::DrawTooltipIfItemHovered("Toggle Rendering Contact Geometry", "Toggles whether contact geometry should be rendered in the 3D scene");
+    DrawTooltipIfItemHovered("Toggle Rendering Contact Geometry", "Toggles whether contact geometry should be rendered in the 3D scene");
 }
 
 void osc::DrawAllDecorationToggleButtons(UndoableModelStatePair& model, IconCache& icons)
@@ -1462,7 +1461,7 @@ void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
 {
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
     ImGui::TextUnformatted(ICON_FA_EXPAND_ALT);
-    osc::DrawTooltipIfItemHovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
+    DrawTooltipIfItemHovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
     ImGui::SameLine();
 
     {
@@ -1470,7 +1469,7 @@ void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
         ImGui::SetNextItemWidth(ImGui::CalcTextSize("0.00000").x);
         if (ImGui::InputFloat("##scaleinput", &scaleFactor))
         {
-            osc::ActionSetModelSceneScaleFactorTo(model, scaleFactor);
+            ActionSetModelSceneScaleFactorTo(model, scaleFactor);
         }
     }
     ImGui::PopStyleVar();
@@ -1479,10 +1478,10 @@ void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
     ImGui::SameLine();
     if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
     {
-        osc::ActionAutoscaleSceneScaleFactor(model);
+        ActionAutoscaleSceneScaleFactor(model);
     }
     ImGui::PopStyleVar();
-    osc::DrawTooltipIfItemHovered("Autoscale Scale Factor", "Try to autoscale the model's scale factor based on the current dimensions of the model");
+    DrawTooltipIfItemHovered("Autoscale Scale Factor", "Try to autoscale the model's scale factor based on the current dimensions of the model");
 }
 
 void osc::DrawMeshExportContextMenuContent(
@@ -1504,7 +1503,7 @@ void osc::DrawMeshExportContextMenuContent(
             );
         };
 
-        osc::DrawWithRespectToMenuContainingMenuItemPerFrame(model.getModel(), onFrameMenuItemClicked);
+        DrawWithRespectToMenuContainingMenuItemPerFrame(model.getModel(), onFrameMenuItemClicked);
         ImGui::EndMenu();
     }
 
@@ -1520,7 +1519,7 @@ void osc::DrawMeshExportContextMenuContent(
             );
         };
 
-        osc::DrawWithRespectToMenuContainingMenuItemPerFrame(model.getModel(), onFrameMenuItemClicked);
+        DrawWithRespectToMenuContainingMenuItemPerFrame(model.getModel(), onFrameMenuItemClicked);
         ImGui::EndMenu();
     }
 }

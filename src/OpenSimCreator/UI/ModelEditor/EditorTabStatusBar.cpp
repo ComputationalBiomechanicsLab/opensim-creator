@@ -30,7 +30,7 @@ public:
 
     void onDraw()
     {
-        osc::BeginMainViewportBottomBar("bottom");
+        BeginMainViewportBottomBar("bottom");
         drawSelectionBreadcrumbs();
         ImGui::End();
     }
@@ -42,11 +42,11 @@ private:
 
         if (c)
         {
-            std::vector<OpenSim::Component const*> const els = osc::GetPathElements(*c);
+            std::vector<OpenSim::Component const*> const els = GetPathElements(*c);
             for (ptrdiff_t i = 0; i < std::ssize(els)-1; ++i)
             {
-                osc::PushID(i);
-                std::string const label = osc::Ellipsis(els[i]->getName(), 15);
+                PushID(i);
+                std::string const label = Ellipsis(els[i]->getName(), 15);
                 if (ImGui::SmallButton(label.c_str()))
                 {
                     m_Model->setSelected(els[i]);
@@ -55,11 +55,11 @@ private:
                 ImGui::SameLine();
                 ImGui::TextDisabled("/");
                 ImGui::SameLine();
-                osc::PopID();
+                PopID();
             }
             if (!els.empty())
             {
-                std::string const label = osc::Ellipsis(els.back()->getName(), 15);
+                std::string const label = Ellipsis(els.back()->getName(), 15);
                 ImGui::TextUnformatted(label.c_str());
                 drawMouseInteractionStuff(*els.back());
             }
@@ -76,9 +76,9 @@ private:
         {
             m_Model->setHovered(&c);
 
-            osc::BeginTooltip();
+            BeginTooltip();
             ImGui::TextDisabled("%s", c.getConcreteClassName().c_str());
-            osc::EndTooltip();
+            EndTooltip();
         }
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {
@@ -87,7 +87,7 @@ private:
                 m_MainUIStateAPI,
                 m_EditorAPI,
                 m_Model,
-                osc::GetAbsolutePath(c)
+                GetAbsolutePath(c)
             );
             menu->open();
             m_EditorAPI->pushPopup(std::move(menu));

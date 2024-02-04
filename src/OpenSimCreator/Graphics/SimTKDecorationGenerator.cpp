@@ -21,12 +21,7 @@
 #include <cstddef>
 #include <filesystem>
 
-using osc::Color;
-using osc::SceneDecoration;
-using osc::ToVec3;
-using osc::Transform;
-using osc::Vec3;
-using osc::log_warn;
+using namespace osc;
 
 // helper functions
 namespace
@@ -69,7 +64,7 @@ namespace
         SimTK::Transform const& body2ground = mobod.getBodyTransform(state);
         SimTK::Transform const& decoration2body = g.getTransform();
 
-        Transform rv = osc::ToTransform(body2ground * decoration2body);
+        Transform rv = ToTransform(body2ground * decoration2body);
         rv.scale = GetScaleFactors(g);
 
         return rv;
@@ -89,7 +84,7 @@ namespace
         hash = osc::HashCombine(hash, osc::HashOf(numVerts));
         for (int vert = 0; vert < numVerts; ++vert)
         {
-            hash = osc::HashCombine(hash, HashOf(mesh.getVertexPosition(vert)));
+            hash = HashCombine(hash, HashOf(mesh.getVertexPosition(vert)));
         }
 
         // combine face indices into mesh
@@ -112,7 +107,7 @@ namespace
     class GeometryImpl final : public SimTK::DecorativeGeometryImplementation {
     public:
         GeometryImpl(
-            osc::SceneCache& meshCache,
+            SceneCache& meshCache,
             SimTK::SimbodyMatterSubsystem const& matter,
             SimTK::State const& st,
             float fixupScaleFactor,
@@ -149,7 +144,7 @@ namespace
 
             float const thickness = c_LineThickness * m_FixupScaleFactor;
 
-            Transform cylinderXform = osc::YToYCylinderToSegmentTransform({p1, p2}, thickness);
+            Transform cylinderXform = YToYCylinderToSegmentTransform({p1, p2}, thickness);
             cylinderXform.scale *= t.scale;
 
             m_Consumer({
@@ -249,7 +244,7 @@ namespace
                 Vec3 direction = {0.0f, 0.0f, 0.0f};
                 direction[axis] = 1.0f;
 
-                osc::Segment const line =
+                Segment const line =
                 {
                     t.position,
                     t.position + (legLen * axisLengths[axis] * TransformDirection(t, direction))
@@ -287,7 +282,7 @@ namespace
             // (and, yes, hash isn't equality, but it's closer than relying on memory
             //  addresses)
             std::string const id = std::to_string(HashOf(d.getMesh()));
-            auto const meshLoaderFunc = [&d]() { return osc::ToOscMesh(d.getMesh()); };
+            auto const meshLoaderFunc = [&d]() { return ToOscMesh(d.getMesh()); };
 
             m_Consumer({
                 .mesh = m_MeshCache.get(id, meshLoaderFunc),
@@ -299,7 +294,7 @@ namespace
         void implementMeshFileGeometry(SimTK::DecorativeMeshFile const& d) final
         {
             std::string const& path = d.getMeshFile();
-            auto const meshLoader = [&d](){ return osc::ToOscMesh(d.getMesh()); };
+            auto const meshLoader = [&d](){ return ToOscMesh(d.getMesh()); };
 
             m_Consumer({
                 .mesh = m_MeshCache.get(path, meshLoader),
@@ -318,7 +313,7 @@ namespace
             Vec3 const start = TransformPoint(t, startBase);
             Vec3 const end = TransformPoint(t, endBase);
 
-            Vec3 const direction = osc::Normalize(end - start);
+            Vec3 const direction = Normalize(end - start);
 
             Vec3 const neckStart = start;
             Vec3 const neckEnd = end - (m_FixupScaleFactor * static_cast<float>(d.getTipLength()) * direction);
@@ -333,14 +328,14 @@ namespace
             // emit neck cylinder
             m_Consumer({
                 .mesh = m_MeshCache.getCylinderMesh(),
-                .transform = osc::YToYCylinderToSegmentTransform({neckStart, neckEnd}, neckThickness),
+                .transform = YToYCylinderToSegmentTransform({neckStart, neckEnd}, neckThickness),
                 .color = color,
             });
 
             // emit head cone
             m_Consumer({
                 .mesh = m_MeshCache.getConeMesh(),
-                .transform = osc::YToYCylinderToSegmentTransform({headStart, headEnd}, headThickness),
+                .transform = YToYCylinderToSegmentTransform({headStart, headEnd}, headThickness),
                 .color = color,
             });
         }
@@ -370,7 +365,7 @@ namespace
             auto const radius = static_cast<float>(d.getBaseRadius());
             auto const height = static_cast<float>(d.getHeight());
 
-            Transform coneXform = osc::YToYCylinderToSegmentTransform({pos, pos + height*direction}, radius);
+            Transform coneXform = YToYCylinderToSegmentTransform({pos, pos + height*direction}, radius);
             coneXform.scale *= t.scale;
 
             m_Consumer({
@@ -380,7 +375,7 @@ namespace
             });
         }
 
-        osc::SceneCache& m_MeshCache;
+        SceneCache& m_MeshCache;
         SimTK::SimbodyMatterSubsystem const& m_Matter;
         SimTK::State const& m_State;
         float m_FixupScaleFactor;

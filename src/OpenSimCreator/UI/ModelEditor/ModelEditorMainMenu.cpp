@@ -52,12 +52,12 @@ private:
         {
             if (ImGui::MenuItem(ICON_FA_UNDO " Undo", "Ctrl+Z", false, m_Model->canUndo()))
             {
-                osc::ActionUndoCurrentlyEditedModel(*m_Model);
+                ActionUndoCurrentlyEditedModel(*m_Model);
             }
 
             if (ImGui::MenuItem(ICON_FA_REDO " Redo", "Ctrl+Shift+Z", false, m_Model->canRedo()))
             {
-                osc::ActionRedoCurrentlyEditedModel(*m_Model);
+                ActionRedoCurrentlyEditedModel(*m_Model);
             }
 
             ImGui::Separator();
@@ -86,12 +86,12 @@ private:
         {
             if (ImGui::MenuItem(ICON_FA_PLAY " Simulate", "Ctrl+R"))
             {
-                osc::ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);
+                ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);
             }
 
             if (ImGui::MenuItem(ICON_FA_EDIT " Edit simulation settings"))
             {
-                m_EditorAPI->pushPopup(std::make_unique<osc::ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
+                m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
             }
 
             if (ImGui::MenuItem("         Import Points"))
@@ -114,10 +114,10 @@ private:
             {
                 if (ImGui::MenuItem("Simulate Against All Integrators (advanced)"))
                 {
-                    osc::ActionSimulateAgainstAllIntegrators(m_MainUIStateAPI, *m_Model);
+                    ActionSimulateAgainstAllIntegrators(m_MainUIStateAPI, *m_Model);
                 }
 
-                osc::DrawTooltipIfItemHovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
+                DrawTooltipIfItemHovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
                 ImGui::EndMenu();
             }
 
@@ -131,12 +131,12 @@ private:
         {
             if (ImGui::MenuItem("Disable all wrapping surfaces"))
             {
-                osc::ActionDisableAllWrappingSurfaces(*m_Model);
+                ActionDisableAllWrappingSurfaces(*m_Model);
             }
 
             if (ImGui::MenuItem("Enable all wrapping surfaces"))
             {
-                osc::ActionEnableAllWrappingSurfaces(*m_Model);
+                ActionEnableAllWrappingSurfaces(*m_Model);
             }
 
             ImGui::EndMenu();
@@ -145,7 +145,7 @@ private:
 
     ParentPtr<IMainUIStateAPI> m_MainUIStateAPI;
     IEditorAPI* m_EditorAPI;
-    std::shared_ptr<osc::UndoableModelStatePair> m_Model;
+    std::shared_ptr<UndoableModelStatePair> m_Model;
     MainMenuFileTab m_MainMenuFileTab;
     ModelActionsMenuItems m_MainMenuAddTabMenuItems{m_EditorAPI, m_Model};
     WindowMenu m_WindowMenu{m_EditorAPI->getPanelManager()};

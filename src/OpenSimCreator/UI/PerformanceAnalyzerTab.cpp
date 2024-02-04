@@ -25,13 +25,15 @@
 #include <utility>
 #include <vector>
 
+using namespace osc;
+
 namespace
 {
-    osc::OutputExtractor GetSimulatorOutputExtractor(std::string_view name)
+    OutputExtractor GetSimulatorOutputExtractor(std::string_view name)
     {
-        for (int i = 0, len = osc::GetNumFdSimulatorOutputExtractors(); i < len; ++i)
+        for (int i = 0, len = GetNumFdSimulatorOutputExtractors(); i < len; ++i)
         {
-            osc::OutputExtractor o = osc::GetFdSimulatorOutputExtractor(i);
+            OutputExtractor o = GetFdSimulatorOutputExtractor(i);
             if (o.getName() == name)
             {
                 return o;
@@ -46,7 +48,7 @@ public:
 
     Impl(
         BasicModelStatePair baseModel,
-        osc::ParamBlock params) :
+        ParamBlock params) :
 
         m_BaseModel{std::move(baseModel)},
         m_BaseParams{std::move(params)}
@@ -100,7 +102,7 @@ public:
             ImGui::TableSetupColumn("NumStepsTaken");
             ImGui::TableHeadersRow();
 
-            for (osc::ForwardDynamicSimulation const& sim : m_Sims)
+            for (ForwardDynamicSimulation const& sim : m_Sims)
             {
                 auto reports = sim.getAllSimulationReports();
                 if (reports.empty())
@@ -147,7 +149,7 @@ private:
     {
         // try prompt user for save location
         std::optional<std::filesystem::path> const maybeCSVPath =
-            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+            PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
         if (!maybeCSVPath)
         {
@@ -163,7 +165,7 @@ private:
 
         fout << "Integrator,Wall Time (sec),NumStepsTaken\n";
 
-        for (osc::ForwardDynamicSimulation const& sim : m_Sims)
+        for (ForwardDynamicSimulation const& sim : m_Sims)
         {
             auto reports = sim.getAllSimulationReports();
             if (reports.empty())
@@ -186,10 +188,10 @@ private:
         m_Params.clear();
         m_Sims.clear();
 
-        osc::ForwardDynamicSimulatorParams params = osc::FromParamBlock(m_BaseParams);
+        ForwardDynamicSimulatorParams params = FromParamBlock(m_BaseParams);
 
         // for now, just permute through integration methods
-        for (osc::IntegratorMethod m : osc::GetAllIntegratorMethods())
+        for (IntegratorMethod m : GetAllIntegratorMethods())
         {
             params.integratorMethodUsed = m;
             m_Params.push_back(params);
@@ -244,12 +246,12 @@ osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(PerformanceAnalyzerTab&&) no
 osc::PerformanceAnalyzerTab& osc::PerformanceAnalyzerTab::operator=(PerformanceAnalyzerTab&&) noexcept = default;
 osc::PerformanceAnalyzerTab::~PerformanceAnalyzerTab() noexcept = default;
 
-osc::UID osc::PerformanceAnalyzerTab::implGetID() const
+UID osc::PerformanceAnalyzerTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::PerformanceAnalyzerTab::implGetName() const
+CStringView osc::PerformanceAnalyzerTab::implGetName() const
 {
     return m_Impl->getName();
 }

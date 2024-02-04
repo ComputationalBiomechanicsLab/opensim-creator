@@ -46,11 +46,7 @@
 #include <utility>
 #include <vector>
 
-using osc::Color;
-using osc::GeometryPathPoint;
-using osc::SceneDecoration;
-using osc::Transform;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {
@@ -61,23 +57,23 @@ namespace
     // helper: convert a physical frame's transform to ground into an Transform
     Transform TransformInGround(OpenSim::Frame const& frame, SimTK::State const& state)
     {
-        return osc::ToTransform(frame.getTransformInGround(state));
+        return ToTransform(frame.getTransformInGround(state));
     }
 
     // returns value between [0.0f, 1.0f]
     float GetMuscleColorFactor(
         OpenSim::Muscle const& musc,
         SimTK::State const& st,
-        osc::MuscleColoringStyle s)
+        MuscleColoringStyle s)
     {
         switch (s) {
-        case osc::MuscleColoringStyle::Activation:
+        case MuscleColoringStyle::Activation:
             return static_cast<float>(musc.getActivation(st));
-        case osc::MuscleColoringStyle::Excitation:
+        case MuscleColoringStyle::Excitation:
             return static_cast<float>(musc.getExcitation(st));
-        case osc::MuscleColoringStyle::Force:
+        case MuscleColoringStyle::Force:
             return static_cast<float>(musc.getActuation(st)) / static_cast<float>(musc.getMaxIsometricForce());
-        case osc::MuscleColoringStyle::FiberLength:
+        case MuscleColoringStyle::FiberLength:
         {
             auto const nfl = static_cast<float>(musc.getNormalizedFiberLength(st));  // 1.0f == ideal length
             float fl = nfl - 1.0f;
@@ -93,7 +89,7 @@ namespace
     Color GetGeometryPathDefaultColor(OpenSim::GeometryPath const& gp)
     {
         SimTK::Vec3 const& c = gp.getDefaultColor();
-        return Color{osc::ToVec3(c)};
+        return Color{ToVec3(c)};
     }
 
     Color GetGeometryPathColor(OpenSim::GeometryPath const& gp, SimTK::State const& st)
@@ -101,18 +97,18 @@ namespace
         // returns the same color that OpenSim emits (which is usually just activation-based,
         // but might change in future versions of OpenSim)
         SimTK::Vec3 const c = gp.getColor(st);
-        return Color{osc::ToVec3(c)};
+        return Color{ToVec3(c)};
     }
 
     Color CalcOSCMuscleColor(
         OpenSim::Muscle const& musc,
         SimTK::State const& st,
-        osc::MuscleColoringStyle s)
+        MuscleColoringStyle s)
     {
         Color const zeroColor = {50.0f / 255.0f, 50.0f / 255.0f, 166.0f / 255.0f, 1.0f};
         Color const fullColor = {255.0f / 255.0f, 25.0f / 255.0f, 25.0f / 255.0f, 1.0f};
         float const factor = GetMuscleColorFactor(musc, st, s);
-        return osc::Lerp(zeroColor, fullColor, factor);
+        return Lerp(zeroColor, fullColor, factor);
     }
 
     // helper: returns the color a muscle should have, based on a variety of options (style, user-defined stuff in OpenSim, etc.)
@@ -121,13 +117,13 @@ namespace
     Color GetMuscleColor(
         OpenSim::Muscle const& musc,
         SimTK::State const& st,
-        osc::MuscleColoringStyle s)
+        MuscleColoringStyle s)
     {
         switch (s)
         {
-        case osc::MuscleColoringStyle::OpenSimAppearanceProperty:
+        case MuscleColoringStyle::OpenSimAppearanceProperty:
             return GetGeometryPathDefaultColor(musc.getGeometryPath());
-        case osc::MuscleColoringStyle::OpenSim:
+        case MuscleColoringStyle::OpenSim:
             return GetGeometryPathColor(musc.getGeometryPath(), st);
         default:
             return CalcOSCMuscleColor(musc, st, s);
@@ -150,12 +146,12 @@ namespace
     float GetMuscleSize(
         OpenSim::Muscle const& musc,
         float fixupScaleFactor,
-        osc::MuscleSizingStyle s)
+        MuscleSizingStyle s)
     {
         switch (s) {
-        case osc::MuscleSizingStyle::PcsaDerived:
+        case MuscleSizingStyle::PcsaDerived:
             return GetSconeStyleAutomaticMuscleRadiusCalc(musc) * fixupScaleFactor;
-        case osc::MuscleSizingStyle::OpenSim:
+        case MuscleSizingStyle::OpenSim:
         default:
             return c_GeometryPathBaseRadius * fixupScaleFactor;
         }
@@ -172,10 +168,10 @@ namespace
     class RendererState final {
     public:
         RendererState(
-            osc::SceneCache& meshCache,
+            SceneCache& meshCache,
             OpenSim::Model const& model,
             SimTK::State const& state,
-            osc::OpenSimDecorationOptions const& opts,
+            OpenSimDecorationOptions const& opts,
             float fixupScaleFactor,
             std::function<void(OpenSim::Component const&, SceneDecoration&&)> const& out) :
 
@@ -188,17 +184,17 @@ namespace
         {
         }
 
-        osc::SceneCache& updMeshCache()
+        SceneCache& updMeshCache()
         {
             return m_MeshCache;
         }
 
-        osc::Mesh const& getSphereMesh() const
+        Mesh const& getSphereMesh() const
         {
             return m_SphereMesh;
         }
 
-        osc::Mesh const& getCylinderMesh() const
+        Mesh const& getCylinderMesh() const
         {
             return m_CylinderMesh;
         }
@@ -223,7 +219,7 @@ namespace
             return m_State;
         }
 
-        osc::OpenSimDecorationOptions const& getOptions() const
+        OpenSimDecorationOptions const& getOptions() const
         {
             return m_Opts;
         }
@@ -249,7 +245,7 @@ namespace
             OpenSim::Component const& componentToLinkTo,
             float fixupScaleFactor)
         {
-            std::function<void(osc::SceneDecoration&&)> const callback = [this, &componentToLinkTo](osc::SceneDecoration&& dec)
+            std::function<void(SceneDecoration&&)> const callback = [this, &componentToLinkTo](SceneDecoration&& dec)
             {
                 consume(componentToLinkTo, std::move(dec));
             };
@@ -263,7 +259,7 @@ namespace
             );
             for (SimTK::DecorativeGeometry const& geom : m_GeomList)
             {
-                osc::GenerateDecorations(
+                GenerateDecorations(
                     updMeshCache(),
                     getMatterSubsystem(),
                     getState(),
@@ -282,7 +278,7 @@ namespace
             );
             for (SimTK::DecorativeGeometry const& geom : m_GeomList)
             {
-                osc::GenerateDecorations(
+                GenerateDecorations(
                     updMeshCache(),
                     getMatterSubsystem(),
                     getState(),
@@ -302,15 +298,15 @@ namespace
         }
 
     private:
-        osc::SceneCache& m_MeshCache;
-        osc::Mesh m_SphereMesh = m_MeshCache.getSphereMesh();
-        osc::Mesh m_CylinderMesh = m_MeshCache.getCylinderMesh();
+        SceneCache& m_MeshCache;
+        Mesh m_SphereMesh = m_MeshCache.getSphereMesh();
+        Mesh m_CylinderMesh = m_MeshCache.getCylinderMesh();
         OpenSim::Model const& m_Model;
         OpenSim::ModelDisplayHints const& m_ModelDisplayHints = m_Model.getDisplayHints();
         bool m_ShowPathPoints = m_ModelDisplayHints.get_show_path_points();
         SimTK::SimbodyMatterSubsystem const& m_MatterSubsystem = m_Model.getSystem().getMatterSubsystem();
         SimTK::State const& m_State;
-        osc::OpenSimDecorationOptions const& m_Opts;
+        OpenSimDecorationOptions const& m_Opts;
         float m_FixupScaleFactor;
         std::function<void(OpenSim::Component const&, SceneDecoration&&)> const& m_Out;
         SimTK::Array_<SimTK::DecorativeGeometry> m_GeomList;
@@ -326,11 +322,11 @@ namespace
             return;
         }
 
-        Vec3 const p1 = TransformInGround(p2p.getBody1(), rs.getState()) * osc::ToVec3(p2p.getPoint1());
-        Vec3 const p2 = TransformInGround(p2p.getBody2(), rs.getState()) * osc::ToVec3(p2p.getPoint2());
+        Vec3 const p1 = TransformInGround(p2p.getBody1(), rs.getState()) * ToVec3(p2p.getPoint1());
+        Vec3 const p2 = TransformInGround(p2p.getBody2(), rs.getState()) * ToVec3(p2p.getPoint2());
 
         float const radius = c_GeometryPathBaseRadius * rs.getFixupScaleFactor();
-        Transform const cylinderXform = osc::YToYCylinderToSegmentTransform({p1, p2}, radius);
+        Transform const cylinderXform = YToYCylinderToSegmentTransform({p1, p2}, radius);
 
         rs.consume(p2p, SceneDecoration
         {
@@ -348,7 +344,7 @@ namespace
         float radius = rs.getFixupScaleFactor() * 0.0045f;  // care: must be smaller than muscle caps (Tutorial 4)
 
         Transform xform;
-        xform.position = osc::ToVec3(s.getLocationInGround(rs.getState()));
+        xform.position = ToVec3(s.getLocationInGround(rs.getState()));
         xform.scale = {radius, radius, radius};
 
         rs.consume(s, SceneDecoration
@@ -365,7 +361,7 @@ namespace
         OpenSim::ScapulothoracicJoint const& scapuloJoint)
     {
         Transform t = TransformInGround(scapuloJoint.getParentFrame(), rs.getState());
-        t.scale = osc::ToVec3(scapuloJoint.get_thoracic_ellipsoid_radii_x_y_z());
+        t.scale = ToVec3(scapuloJoint.get_thoracic_ellipsoid_radii_x_y_z());
 
         rs.consume(scapuloJoint, SceneDecoration
         {
@@ -384,7 +380,7 @@ namespace
         {
             float const radius = rs.getFixupScaleFactor() * 0.005f;
             Transform t = TransformInGround(b, rs.getState());
-            t.position = TransformPoint(t, osc::ToVec3(b.getMassCenter()));
+            t.position = TransformPoint(t, ToVec3(b.getMassCenter()));
             t.scale = {radius, radius, radius};
 
             rs.consume(b, SceneDecoration
@@ -410,7 +406,7 @@ namespace
         RendererState& rs,
         OpenSim::Muscle const& muscle)
     {
-        std::vector<GeometryPathPoint> const pps = osc::GetAllPathPoints(muscle.getGeometryPath(), rs.getState());
+        std::vector<GeometryPathPoint> const pps = GetAllPathPoints(muscle.getGeometryPath(), rs.getState());
         if (pps.empty())
         {
             return;  // edge-case: there are no points in the muscle path
@@ -466,7 +462,7 @@ namespace
         };
         auto const emitTendonCylinder = [&](Vec3 const& p1, Vec3 const& p2)
         {
-            Transform const xform = osc::YToYCylinderToSegmentTransform({p1, p2}, tendonUiRadius);
+            Transform const xform = YToYCylinderToSegmentTransform({p1, p2}, tendonUiRadius);
             rs.consume(muscle, tendonCylinderPrototype.withTransform(xform));
         };
         auto emitFiberSphere = [&](GeometryPathPoint const& p)
@@ -480,7 +476,7 @@ namespace
         };
         auto emitFiberCylinder = [&](Vec3 const& p1, Vec3 const& p2)
         {
-            Transform const xform = osc::YToYCylinderToSegmentTransform({p1, p2}, fiberUiRadius);
+            Transform const xform = YToYCylinderToSegmentTransform({p1, p2}, fiberUiRadius);
             rs.consume(muscle, fiberCylinderPrototype.withTransform(xform));
         };
 
@@ -513,7 +509,7 @@ namespace
 
             GeometryPathPoint const& point = pps[i];
             Vec3 const prevToPos = point.locationInGround - prevPoint.locationInGround;
-            float prevToPosLen = osc::Length(prevToPos);
+            float prevToPosLen = Length(prevToPos);
             float traversalPos = prevTraversalPos + prevToPosLen;
             float excess = traversalPos - tendonLen;
 
@@ -551,7 +547,7 @@ namespace
 
             GeometryPathPoint const& point = pps[i];
             Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
-            float prevToPosLen = osc::Length(prevToPos);
+            float prevToPosLen = Length(prevToPos);
             float traversalPos = prevTraversalPos + prevToPosLen;
             float excess = traversalPos - fiberEnd;
 
@@ -590,7 +586,7 @@ namespace
 
             GeometryPathPoint const& point = pps[i];
             Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
-            float prevToPosLen = osc::Length(prevToPos);
+            float prevToPosLen = Length(prevToPos);
             float traversalPos = prevTraversalPos + prevToPosLen;
 
             emitTendonCylinder(prevPoint.locationInGround, point.locationInGround);
@@ -635,7 +631,7 @@ namespace
                     // ensure the sphere directionally tries to line up with the cylinders, to make
                     // the "join" between the sphere and cylinders nicer (#593)
                     .scale = Vec3{radius},
-                    .rotation = osc::Normalize(osc::Rotation(Vec3{0.0f, 1.0f, 0.0f}, upDirection)),
+                    .rotation = Normalize(Rotation(Vec3{0.0f, 1.0f, 0.0f}, upDirection)),
                     .position = pp.locationInGround
                 },
                 .color = color,
@@ -650,7 +646,7 @@ namespace
             rs.consume(hittestTarget, SceneDecoration
             {
                 .mesh = rs.getCylinderMesh(),
-                .transform = osc::YToYCylinderToSegmentTransform({p1, p2}, radius),
+                .transform = YToYCylinderToSegmentTransform({p1, p2}, radius),
                 .color  = color,
             });
         };
@@ -662,7 +658,7 @@ namespace
             Vec3 const& ppPos = firstPoint.locationInGround;
             Vec3 const direction = points.size() == 1 ?
                 Vec3{0.0f, 1.0f, 0.0f} :
-                osc::Normalize(points[1].locationInGround - ppPos);
+                Normalize(points[1].locationInGround - ppPos);
 
             emitSphere(firstPoint, direction);
         }
@@ -680,7 +676,7 @@ namespace
             // if required, draw path points
             if (rs.getShowPathPoints())
             {
-                Vec3 const direction = osc::Normalize(curPos - prevPos);
+                Vec3 const direction = Normalize(curPos - prevPos);
                 emitSphere(point, direction);
             }
         }
@@ -695,7 +691,7 @@ namespace
         OpenSim::Muscle const& musc)
     {
         std::vector<GeometryPathPoint> const points =
-            osc::GetAllPathPoints(musc.getGeometryPath(), rs.getState());
+            GetAllPathPoints(musc.getGeometryPath(), rs.getState());
 
         float const radius = GetMuscleSize(
             musc,
@@ -724,7 +720,7 @@ namespace
         // selection hits to enable users to click on individual path points within
         // a path (#647)
 
-        std::vector<GeometryPathPoint> const points = osc::GetAllPathPoints(gp, rs.getState());
+        std::vector<GeometryPathPoint> const points = GetAllPathPoints(gp, rs.getState());
         Color const color = GetGeometryPathColor(gp, rs.getState());
 
         EmitPointBasedLine(
@@ -739,12 +735,12 @@ namespace
     void DrawLineOfActionArrow(
         RendererState& rs,
         OpenSim::Muscle const& muscle,
-        osc::PointDirection const& loaPointDirection,
+        PointDirection const& loaPointDirection,
         Color const& color)
     {
         float const fixupScaleFactor = rs.getFixupScaleFactor();
 
-        osc::ArrowProperties p;
+        ArrowProperties p;
         p.worldspaceStart = loaPointDirection.point;
         p.worldspaceEnd = loaPointDirection.point + (fixupScaleFactor*0.1f)*loaPointDirection.direction;
         p.tipLength = (fixupScaleFactor*0.015f);
@@ -752,7 +748,7 @@ namespace
         p.neckThickness = (fixupScaleFactor*0.006f);
         p.color = color;
 
-        osc::DrawArrow(rs.updMeshCache(), p, [&muscle, &rs](SceneDecoration&& d)
+        DrawArrow(rs.updMeshCache(), p, [&muscle, &rs](SceneDecoration&& d)
         {
             rs.consume(muscle, std::move(d));
         });
@@ -766,7 +762,7 @@ namespace
         if (rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForOrigin() ||
             rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForInsertion())
         {
-            if (std::optional<osc::LinesOfAction> const loas = osc::GetEffectiveLinesOfActionInGround(musc, rs.getState()))
+            if (std::optional<LinesOfAction> const loas = GetEffectiveLinesOfActionInGround(musc, rs.getState()))
             {
                 if (rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForOrigin())
                 {
@@ -784,7 +780,7 @@ namespace
         if (rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForOrigin() ||
             rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForInsertion())
         {
-            if (std::optional<osc::LinesOfAction> const loas = osc::GetAnatomicalLinesOfActionInGround(musc, rs.getState()))
+            if (std::optional<LinesOfAction> const loas = GetAnatomicalLinesOfActionInGround(musc, rs.getState()))
             {
                 if (rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForOrigin())
                 {
@@ -819,7 +815,7 @@ namespace
         }
 
         // the `GeometryPath` has a owner, which might be a muscle or path actuator
-        if (auto const* const musc = osc::GetOwner<OpenSim::Muscle>(gp))
+        if (auto const* const musc = GetOwner<OpenSim::Muscle>(gp))
         {
             // owner is a muscle, coerce selection "hit" to the muscle
 
@@ -827,24 +823,24 @@ namespace
 
             switch (rs.getOptions().getMuscleDecorationStyle())
             {
-            case osc::MuscleDecorationStyle::FibersAndTendons:
+            case MuscleDecorationStyle::FibersAndTendons:
                 HandleMuscleFibersAndTendons(rs, *musc);
                 return;
-            case osc::MuscleDecorationStyle::Hidden:
+            case MuscleDecorationStyle::Hidden:
                 return;  // just don't generate them
-            case osc::MuscleDecorationStyle::OpenSim:
+            case MuscleDecorationStyle::OpenSim:
             default:
                 HandleMuscleOpenSimStyle(rs, *musc);
                 return;
             }
         }
-        else if (auto const* const pa = osc::GetOwner<OpenSim::PathActuator>(gp))
+        else if (auto const* const pa = GetOwner<OpenSim::PathActuator>(gp))
         {
             // owner is a path actuator, coerce selection "hit" to the path actuator (#519)
             HandleGenericGeometryPath(rs, gp, *pa);
             return;
         }
-        else if (auto const* const pathSpring = osc::GetOwner<OpenSim::PathSpring>(gp))
+        else if (auto const* const pathSpring = GetOwner<OpenSim::PathSpring>(gp))
         {
             // owner is a path spring, coerce selection "hit" to the path spring (#650)
             HandleGenericGeometryPath(rs, gp, *pathSpring);
@@ -866,7 +862,7 @@ namespace
         // a user is probably more interested in the thing the frame geometry
         // represents (e.g. an offset frame) than the geometry itself (#506)
         OpenSim::Component const& componentToLinkTo =
-            osc::GetOwnerOr(frameGeometry, frameGeometry);
+            GetOwnerOr(frameGeometry, frameGeometry);
 
         rs.emitGenericDecorations(frameGeometry, componentToLinkTo);
     }
@@ -892,7 +888,7 @@ namespace
         }
 
         // else: try and compute a geometry-to-plane contact force and show it in-UI
-        std::optional<osc::ForcePoint> const maybeContact = osc::TryGetContactForceInGround(
+        std::optional<ForcePoint> const maybeContact = TryGetContactForceInGround(
             rs.getModel(),
             rs.getState(),
             hcf
@@ -906,9 +902,9 @@ namespace
         float const fixupScaleFactor = rs.getFixupScaleFactor();
         float const lenScale = 0.0025f;
         float const baseRadius = 0.025f;
-        float const tipLength = 0.1f*osc::Length((fixupScaleFactor*lenScale)*maybeContact->force);
+        float const tipLength = 0.1f*Length((fixupScaleFactor*lenScale)*maybeContact->force);
 
-        osc::ArrowProperties p;
+        ArrowProperties p;
         p.worldspaceStart = maybeContact->point;
         p.worldspaceEnd = maybeContact->point + (fixupScaleFactor*lenScale)*maybeContact->force;
         p.tipLength = tipLength;
@@ -916,7 +912,7 @@ namespace
         p.neckThickness = fixupScaleFactor*baseRadius*0.6f;
         p.color = Color::yellow();
 
-        osc::DrawArrow(rs.updMeshCache(), p, [&hcf, &rs](SceneDecoration&& d)
+        DrawArrow(rs.updMeshCache(), p, [&hcf, &rs](SceneDecoration&& d)
         {
             rs.consume(hcf, std::move(d));
         });
@@ -969,7 +965,7 @@ void osc::GenerateSubcomponentDecorations(
     {
         // handle OSC-specific decoration specializations, or fallback to generic
         // component decoration handling
-        if (!osc::ShouldShowInUI(c))
+        if (!ShouldShowInUI(c))
         {
             return;
         }
@@ -1026,7 +1022,7 @@ void osc::GenerateSubcomponentDecorations(
     }
 }
 
-osc::Mesh osc::ToOscMesh(
+Mesh osc::ToOscMesh(
     SceneCache& meshCache,
     OpenSim::Model const& model,
     SimTK::State const& state,
@@ -1063,7 +1059,7 @@ osc::Mesh osc::ToOscMesh(
     return std::move(decs[0].mesh);
 }
 
-osc::Mesh osc::ToOscMesh(
+Mesh osc::ToOscMesh(
     OpenSim::Model const& model,
     SimTK::State const& state,
     OpenSim::Mesh const& mesh)
@@ -1073,7 +1069,7 @@ osc::Mesh osc::ToOscMesh(
     return ToOscMesh(cache, model, state, mesh, opts, 1.0f);
 }
 
-osc::Mesh osc::ToOscMeshBakeScaleFactors(
+Mesh osc::ToOscMeshBakeScaleFactors(
     OpenSim::Model const& model,
     SimTK::State const& state,
     OpenSim::Mesh const& mesh)

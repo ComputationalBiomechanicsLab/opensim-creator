@@ -15,13 +15,15 @@
 #include <memory>
 #include <string_view>
 
+using namespace osc;
+
 namespace
 {
-    bool IsAnyOutputExportableToCSV(osc::IMainUIStateAPI& api)
+    bool IsAnyOutputExportableToCSV(IMainUIStateAPI& api)
     {
         for (int i = 0; i < api.getNumUserOutputExtractors(); ++i)
         {
-            if (api.getUserOutputExtractor(i).getOutputType() == osc::OutputType::Float)
+            if (api.getUserOutputExtractor(i).getOutputType() == OutputType::Float)
             {
                 return true;
             }
@@ -58,15 +60,15 @@ private:
             {
                 if (ImGui::MenuItem("as CSV"))
                 {
-                    osc::TryPromptAndSaveAllUserDesiredOutputsAsCSV(*m_SimulatorUIAPI);
+                    TryPromptAndSaveAllUserDesiredOutputsAsCSV(*m_SimulatorUIAPI);
                 }
 
                 if (ImGui::MenuItem("as CSV (and open)"))
                 {
-                    auto p = osc::TryPromptAndSaveAllUserDesiredOutputsAsCSV(*m_SimulatorUIAPI);
+                    auto p = TryPromptAndSaveAllUserDesiredOutputsAsCSV(*m_SimulatorUIAPI);
                     if (!p.empty())
                     {
-                        osc::OpenPathInOSDefaultApplication(p);
+                        OpenPathInOSDefaultApplication(p);
                     }
                 }
 
@@ -79,7 +81,7 @@ private:
 
         for (int i = 0; i < m_API->getNumUserOutputExtractors(); ++i)
         {
-            osc::OutputExtractor output = m_API->getUserOutputExtractor(i);
+            OutputExtractor output = m_API->getUserOutputExtractor(i);
 
             ImGui::PushID(i);
             SimulationOutputPlot plot{m_SimulatorUIAPI, output, 64.0f};
@@ -106,7 +108,7 @@ osc::OutputPlotsPanel::OutputPlotsPanel(OutputPlotsPanel&&) noexcept = default;
 osc::OutputPlotsPanel& osc::OutputPlotsPanel::operator=(OutputPlotsPanel&&) noexcept = default;
 osc::OutputPlotsPanel::~OutputPlotsPanel() noexcept = default;
 
-osc::CStringView osc::OutputPlotsPanel::implGetName() const
+CStringView osc::OutputPlotsPanel::implGetName() const
 {
     return m_Impl->getName();
 }

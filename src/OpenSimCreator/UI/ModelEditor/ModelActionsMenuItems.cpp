@@ -74,7 +74,7 @@ private:
     template<std::derived_from<OpenSim::Component> T>
     void renderButton()
     {
-        ComponentRegistry<T> const& registry = osc::GetComponentRegistry<T>();
+        ComponentRegistry<T> const& registry = GetComponentRegistry<T>();
 
         if (ImGui::BeginMenu(registry.name().c_str()))
         {

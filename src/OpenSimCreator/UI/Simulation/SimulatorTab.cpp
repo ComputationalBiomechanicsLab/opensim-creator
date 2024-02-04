@@ -51,6 +51,8 @@
 #include <utility>
 #include <vector>
 
+using namespace osc;
+
 namespace
 {
     int GetNextSimulationNumber()
@@ -398,7 +400,7 @@ private:
         m_Toolbar.onDraw();
 
         // only draw content if a simulation report is available
-        std::optional<osc::SimulationReport> maybeReport = trySelectReportBasedOnScrubbing();
+        std::optional<SimulationReport> maybeReport = trySelectReportBasedOnScrubbing();
         if (maybeReport)
         {
             m_ShownModelState->setSimulation(m_Simulation);
@@ -434,7 +436,7 @@ private:
     // the modelstate that's being shown in the UI, based on scrubbing etc.
     //
     // if possible (i.e. there's a simulation report available), will be set each frame
-    std::shared_ptr<SimulationModelStatePair> m_ShownModelState = std::make_shared<osc::SimulationModelStatePair>();
+    std::shared_ptr<SimulationModelStatePair> m_ShownModelState = std::make_shared<SimulationModelStatePair>();
 
     // scrubbing state
     bool m_IsPlayingBack = true;
@@ -470,12 +472,12 @@ osc::SimulatorTab::SimulatorTab(SimulatorTab&&) noexcept = default;
 osc::SimulatorTab& osc::SimulatorTab::operator=(SimulatorTab&&) noexcept = default;
 osc::SimulatorTab::~SimulatorTab() noexcept = default;
 
-osc::UID osc::SimulatorTab::implGetID() const
+UID osc::SimulatorTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::SimulatorTab::implGetName() const
+CStringView osc::SimulatorTab::implGetName() const
 {
     return m_Impl->getName();
 }

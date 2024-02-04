@@ -21,15 +21,17 @@
 #include <typeinfo>
 #include <utility>
 
+using namespace osc;
+
 // constants
 namespace
 {
     constexpr auto c_OutputSubfieldsLut = std::to_array(
     {
-        osc::OutputSubfield::X,
-        osc::OutputSubfield::Y,
-        osc::OutputSubfield::Z,
-        osc::OutputSubfield::Magnitude,
+        OutputSubfield::X,
+        OutputSubfield::Y,
+        OutputSubfield::Z,
+        OutputSubfield::Magnitude,
     });
 }
 
@@ -41,7 +43,7 @@ namespace
     double extract(ConcreteOutput const&, SimTK::State const&);
 
     // subfield output extractor declaration
-    template<osc::OutputSubfield, std::derived_from<OpenSim::AbstractOutput> ConcreteOutput>
+    template<OutputSubfield, std::derived_from<OpenSim::AbstractOutput> ConcreteOutput>
     double extract(ConcreteOutput const&, SimTK::State const&);
 
     // extract a `double` from an `OpenSim::Property<double>`
@@ -53,28 +55,28 @@ namespace
 
     // extract X from `SimTK::Vec3`
     template<>
-    double extract<osc::OutputSubfield::X>(OpenSim::Output<SimTK::Vec3> const& o, SimTK::State const& s)
+    double extract<OutputSubfield::X>(OpenSim::Output<SimTK::Vec3> const& o, SimTK::State const& s)
     {
         return o.getValue(s).get(0);
     }
 
     // extract Y from `SimTK::Vec3`
     template<>
-    double extract<osc::OutputSubfield::Y>(OpenSim::Output<SimTK::Vec3> const& o, SimTK::State const& s)
+    double extract<OutputSubfield::Y>(OpenSim::Output<SimTK::Vec3> const& o, SimTK::State const& s)
     {
         return o.getValue(s).get(1);
     }
 
     // extract Z from `SimTK::Vec3`
     template<>
-    double extract<osc::OutputSubfield::Z>(OpenSim::Output<SimTK::Vec3> const& o, SimTK::State const& s)
+    double extract<OutputSubfield::Z>(OpenSim::Output<SimTK::Vec3> const& o, SimTK::State const& s)
     {
         return o.getValue(s).get(2);
     }
 
     // extract magnitude from `SimTK::Vec3`
     template<>
-    double extract<osc::OutputSubfield::Magnitude>(OpenSim::Output<SimTK::Vec3> const& o, SimTK::State const& s)
+    double extract<OutputSubfield::Magnitude>(OpenSim::Output<SimTK::Vec3> const& o, SimTK::State const& s)
     {
         return o.getValue(s).norm();
     }
@@ -88,7 +90,7 @@ namespace
 
     // type-erase a concrete *subfield* extractor function
     template<
-        osc::OutputSubfield sf,
+        OutputSubfield sf,
         std::derived_from<OpenSim::AbstractOutput> OutputType
     >
     double extractTypeErased(OpenSim::AbstractOutput const& o, SimTK::State const& s)
@@ -105,11 +107,11 @@ namespace
     std::string GenerateLabel(
         OpenSim::ComponentPath const& cp,
         std::string const& outputName,
-        osc::OutputSubfield subfield)
+        OutputSubfield subfield)
     {
         std::stringstream ss;
         ss << cp.toString() << '[' << outputName;
-        if (auto label = osc::GetOutputSubfieldLabel(subfield))
+        if (auto label = GetOutputSubfieldLabel(subfield))
         {
             ss << '.' << *label;
         }
@@ -119,7 +121,7 @@ namespace
 
     ExtractorFunc GetExtractorFuncOrNull(
         OpenSim::AbstractOutput const& ao,
-        osc::OutputSubfield subfield)
+        OutputSubfield subfield)
     {
         if (dynamic_cast<OpenSim::Output<double> const*>(&ao))
         {
@@ -128,14 +130,14 @@ namespace
         else if (dynamic_cast<OpenSim::Output<SimTK::Vec3> const*>(&ao))
         {
             switch (subfield) {
-            case osc::OutputSubfield::X:
-                return extractTypeErased<osc::OutputSubfield::X, OpenSim::Output<SimTK::Vec3>>;
-            case osc::OutputSubfield::Y:
-                return extractTypeErased<osc::OutputSubfield::Y, OpenSim::Output<SimTK::Vec3>>;
-            case osc::OutputSubfield::Z:
-                return extractTypeErased<osc::OutputSubfield::Z, OpenSim::Output<SimTK::Vec3>>;
-            case osc::OutputSubfield::Magnitude:
-                return extractTypeErased<osc::OutputSubfield::Magnitude, OpenSim::Output<SimTK::Vec3>>;
+            case OutputSubfield::X:
+                return extractTypeErased<OutputSubfield::X, OpenSim::Output<SimTK::Vec3>>;
+            case OutputSubfield::Y:
+                return extractTypeErased<OutputSubfield::Y, OpenSim::Output<SimTK::Vec3>>;
+            case OutputSubfield::Z:
+                return extractTypeErased<OutputSubfield::Z, OpenSim::Output<SimTK::Vec3>>;
+            case OutputSubfield::Magnitude:
+                return extractTypeErased<OutputSubfield::Magnitude, OpenSim::Output<SimTK::Vec3>>;
             default:
                 return nullptr;
             }
@@ -170,14 +172,14 @@ public:
         return m_ComponentAbsPath;
     }
 
-    osc::CStringView getName() const
+    CStringView getName() const
     {
         return m_Label;
     }
 
-    osc::CStringView getDescription() const
+    CStringView getDescription() const
     {
-        return osc::CStringView{};
+        return CStringView{};
     }
 
     bool producesNumericValues() const
@@ -202,7 +204,7 @@ public:
                         std::span<SimulationReport const> reports,
                         std::span<float> out) const
     {
-        OSC_PERF("osc::ComponentOutputExtractor::getValuesFloat");
+        OSC_PERF("ComponentOutputExtractor::getValuesFloat");
         OSC_ASSERT_ALWAYS(reports.size() == out.size());
 
         OpenSim::AbstractOutput const* const ao = FindOutput(c, m_ComponentAbsPath, m_OutputName);
@@ -216,7 +218,7 @@ public:
             return;
         }
 
-        OSC_PERF("osc::ComponentOutputExtractor::getValuesFloat");
+        OSC_PERF("ComponentOutputExtractor::getValuesFloat");
 
         for (size_t i = 0; i < reports.size(); ++i)
         {
@@ -246,7 +248,7 @@ public:
 
     std::size_t getHash() const
     {
-        return osc::HashOf(m_ComponentAbsPath.toString(), m_OutputName, m_Label, m_OutputType, m_ExtractorFunc);
+        return HashOf(m_ComponentAbsPath.toString(), m_OutputName, m_Label, m_OutputType, m_ExtractorFunc);
     }
 
     bool equals(IOutputExtractor const& other)
@@ -282,29 +284,29 @@ private:
 
 // public API
 
-std::optional<osc::CStringView> osc::GetOutputSubfieldLabel(OutputSubfield subfield)
+std::optional<CStringView> osc::GetOutputSubfieldLabel(OutputSubfield subfield)
 {
     switch (subfield) {
-    case osc::OutputSubfield::X:
+    case OutputSubfield::X:
         return "X";
-    case osc::OutputSubfield::Y:
+    case OutputSubfield::Y:
         return "Y";
-    case osc::OutputSubfield::Z:
+    case OutputSubfield::Z:
         return "Z";
-    case osc::OutputSubfield::Magnitude:
-    case osc::OutputSubfield::Default:
+    case OutputSubfield::Magnitude:
+    case OutputSubfield::Default:
         return "Magnitude";
     default:
         return std::nullopt;
     }
 }
 
-std::span<osc::OutputSubfield const> osc::GetAllSupportedOutputSubfields()
+std::span<OutputSubfield const> osc::GetAllSupportedOutputSubfields()
 {
     return c_OutputSubfieldsLut;
 }
 
-osc::OutputSubfield osc::GetSupportedSubfields(OpenSim::AbstractOutput const& ao)
+OutputSubfield osc::GetSupportedSubfields(OpenSim::AbstractOutput const& ao)
 {
     if (dynamic_cast<OpenSim::Output<SimTK::Vec3> const*>(&ao))
     {
@@ -336,17 +338,17 @@ OpenSim::ComponentPath const& osc::ComponentOutputExtractor::getComponentAbsPath
     return m_Impl->getComponentAbsPath();
 }
 
-osc::CStringView osc::ComponentOutputExtractor::getName() const
+CStringView osc::ComponentOutputExtractor::getName() const
 {
     return m_Impl->getName();
 }
 
-osc::CStringView osc::ComponentOutputExtractor::getDescription() const
+CStringView osc::ComponentOutputExtractor::getDescription() const
 {
     return m_Impl->getDescription();
 }
 
-osc::OutputType osc::ComponentOutputExtractor::getOutputType() const
+OutputType osc::ComponentOutputExtractor::getOutputType() const
 {
     return m_Impl->getOutputType();
 }
@@ -358,7 +360,7 @@ float osc::ComponentOutputExtractor::getValueFloat(OpenSim::Component const& c,
 }
 
 void osc::ComponentOutputExtractor::getValuesFloat(OpenSim::Component const& c,
-                                                   std::span<osc::SimulationReport const> reports,
+                                                   std::span<SimulationReport const> reports,
                                                    std::span<float> out) const
 {
     m_Impl->getValuesFloat(c, reports, out);

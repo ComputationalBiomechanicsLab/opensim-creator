@@ -50,9 +50,7 @@
 namespace SimTK { class State; }
 
 namespace cpp20 = osc::cpp20;
-using osc::Degreesd;
-using osc::log_error;
-using osc::Radiansd;
+using namespace osc;
 
 // muscle outputs
 //
@@ -64,8 +62,8 @@ namespace
     class MuscleOutput final {
     public:
         MuscleOutput(
-            osc::CStringView name,
-            osc::CStringView units,
+            CStringView name,
+            CStringView units,
             double(*getter)(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const& c)) :
 
             m_Name{name},
@@ -74,12 +72,12 @@ namespace
         {
         }
 
-        osc::CStringView getName() const
+        CStringView getName() const
         {
             return m_Name;
         }
 
-        osc::CStringView getUnits() const
+        CStringView getUnits() const
         {
             return m_Units;
         }
@@ -96,8 +94,8 @@ namespace
 
         friend bool operator==(MuscleOutput const&, MuscleOutput const&) = default;
     private:
-        osc::CStringView m_Name;
-        osc::CStringView m_Units;
+        CStringView m_Name;
+        CStringView m_Units;
         double(*m_Getter)(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const& c);
     };
 
@@ -255,7 +253,7 @@ namespace
     class PlotParameters final {
     public:
         PlotParameters(
-            osc::ModelStateCommit commit,
+            ModelStateCommit commit,
             OpenSim::ComponentPath coordinatePath,
             OpenSim::ComponentPath musclePath,
             MuscleOutput output,
@@ -269,12 +267,12 @@ namespace
         {
         }
 
-        osc::ModelStateCommit const& getCommit() const
+        ModelStateCommit const& getCommit() const
         {
             return m_Commit;
         }
 
-        void setCommit(osc::ModelStateCommit const& commit)
+        void setCommit(ModelStateCommit const& commit)
         {
             m_Commit = commit;
         }
@@ -321,7 +319,7 @@ namespace
 
         friend bool operator==(PlotParameters const&, PlotParameters const&) = default;
     private:
-        osc::ModelStateCommit m_Commit;
+        ModelStateCommit m_Commit;
         OpenSim::ComponentPath m_CoordinatePath;
         OpenSim::ComponentPath m_MusclePath;
         MuscleOutput m_Output;
@@ -407,7 +405,7 @@ namespace
 
     private:
         std::atomic<PlottingTaskStatus> m_Status = PlottingTaskStatus::Running;
-        osc::SynchronizedValue<std::string> m_ErrorMessage;
+        SynchronizedValue<std::string> m_ErrorMessage;
     };
 
     // all inputs to the plotting function
@@ -453,21 +451,21 @@ namespace
 
         // init the model + state
 
-        osc::InitializeModel(*model);
+        InitializeModel(*model);
 
         if (stopToken.stop_requested())
         {
             return PlottingTaskStatus::Cancelled;
         }
 
-        SimTK::State& state = osc::InitializeState(*model);
+        SimTK::State& state = InitializeState(*model);
 
         if (stopToken.stop_requested())
         {
             return PlottingTaskStatus::Cancelled;
         }
 
-        auto const* maybeMuscle = osc::FindComponent<OpenSim::Muscle>(*model, params.getMusclePath());
+        auto const* maybeMuscle = FindComponent<OpenSim::Muscle>(*model, params.getMusclePath());
         if (!maybeMuscle)
         {
             shared.setErrorMessage(params.getMusclePath().toString() + ": cannot find a muscle with this name");
@@ -475,7 +473,7 @@ namespace
         }
         OpenSim::Muscle const& muscle = *maybeMuscle;
 
-        OpenSim::Coordinate const* maybeCoord = osc::FindComponentMut<OpenSim::Coordinate>(*model, params.getCoordinatePath());
+        OpenSim::Coordinate const* maybeCoord = FindComponentMut<OpenSim::Coordinate>(*model, params.getCoordinatePath());
         if (!maybeCoord)
         {
             shared.setErrorMessage(params.getCoordinatePath().toString() + ": cannot find a coordinate with this name");
@@ -537,7 +535,7 @@ namespace
                 return PlottingTaskStatus::Cancelled;
             }
 
-            float const xDisplayVal = osc::ConvertCoordValueToDisplayValue(coord, xVal);
+            float const xDisplayVal = ConvertCoordValueToDisplayValue(coord, xVal);
             auto const yVal = static_cast<float>(params.getMuscleOutput()(state, muscle, coord));
 
             callback(PlotDataPoint{xDisplayVal, yVal});
@@ -617,7 +615,7 @@ namespace
         {
         }
 
-        osc::CStringView getName() const
+        CStringView getName() const
         {
             return m_Name;
         }
@@ -633,12 +631,12 @@ namespace
             return *lock;
         }
 
-        osc::SynchronizedValueGuard<std::vector<PlotDataPoint> const> lockDataPoints() const
+        SynchronizedValueGuard<std::vector<PlotDataPoint> const> lockDataPoints() const
         {
             return m_DataPoints.lock();
         }
 
-        osc::SynchronizedValueGuard<std::vector<PlotDataPoint>> lockDataPoints()
+        SynchronizedValueGuard<std::vector<PlotDataPoint>> lockDataPoints()
         {
             return m_DataPoints.lock();
         }
@@ -651,7 +649,7 @@ namespace
             }
 
             // something happened on a background thread, the UI thread should probably redraw
-            osc::App::upd().requestRedraw();
+            App::upd().requestRedraw();
         }
 
         bool getIsLocked() const
@@ -664,7 +662,7 @@ namespace
             m_IsLocked = v;
         }
 
-        void setCommit(osc::ModelStateCommit const& commit)
+        void setCommit(ModelStateCommit const& commit)
         {
             if (m_Parameters)
             {
@@ -677,7 +675,7 @@ namespace
         std::optional<PlotParameters> m_Parameters;
         std::string m_Name;
         bool m_IsLocked = false;
-        osc::SynchronizedValue<std::vector<PlotDataPoint>> m_DataPoints;
+        SynchronizedValue<std::vector<PlotDataPoint>> m_DataPoints;
     };
 
     bool IsExternallyProvided(Plot const& plot)
@@ -792,7 +790,7 @@ namespace
         return points.front().x <= x && x <= points.back().x;
     }
 
-    void PlotLine(osc::CStringView lineName, Plot const& p)
+    void PlotLine(CStringView lineName, Plot const& p)
     {
         auto lock = p.lockDataPoints();
         std::span<PlotDataPoint const> points = *lock;
@@ -861,7 +859,7 @@ namespace
     {
         std::stringstream ss;
         WriteXAxisName(params, ss);
-        ss << " value [" << osc::GetCoordDisplayValueUnitsString(coord) << ']';
+        ss << " value [" << GetCoordDisplayValueUnitsString(coord) << ']';
         return std::move(ss).str();
     }
 
@@ -877,21 +875,21 @@ namespace
 
         // try to read header row
         std::vector<std::string> headers;
-        if (!osc::ReadCSVRowIntoVector(inputFileStream, headers))
+        if (!ReadCSVRowIntoVector(inputFileStream, headers))
         {
             return {};  // no CSV data (headers) in top row
         }
 
         // map each CSV row from [$independent, ...$dependent] -> [($independent, $dependent[i])]
         std::vector<std::vector<PlotDataPoint>> columnsAsPlots;
-        for (std::vector<std::string> row; osc::ReadCSVRowIntoVector(inputFileStream, row);)
+        for (std::vector<std::string> row; ReadCSVRowIntoVector(inputFileStream, row);)
         {
             if (row.size() < 2)
             {
                 continue;  // skip: row does not contain enough columns
             }
 
-            std::optional<float> const independentVar = osc::FromCharsStripWhitespace(row.front());
+            std::optional<float> const independentVar = FromCharsStripWhitespace(row.front());
             if (!independentVar)
             {
                 continue;  // skip: row does not contain a valid independent variable
@@ -901,7 +899,7 @@ namespace
             for (size_t dependentCol = 1; dependentCol < row.size(); ++dependentCol)
             {
                 std::string const& dependentVarStr = row[dependentCol];
-                std::optional<float> const dependentVar = osc::FromCharsStripWhitespace(dependentVarStr);
+                std::optional<float> const dependentVar = FromCharsStripWhitespace(dependentVarStr);
                 if (!dependentVar)
                 {
                     continue;  // skip: column cannot be parsed as a number
@@ -963,7 +961,7 @@ namespace
         }
 
         // write header
-        osc::WriteCSVRow(
+        WriteCSVRow(
             fileOutputStream,
             std::to_array({ ComputePlotXAxisTitle(params, coord), ComputePlotYAxisTitle(params) })
         );
@@ -972,7 +970,7 @@ namespace
         auto lock = plot.lockDataPoints();
         for (PlotDataPoint const& p : *lock)
         {
-            osc::WriteCSVRow(
+            WriteCSVRow(
                 fileOutputStream,
                 std::to_array({ std::to_string(p.x), std::to_string(p.y) })
             );
@@ -982,7 +980,7 @@ namespace
     void ActionPromptUserToSavePlotToCSV(OpenSim::Coordinate const& coord, PlotParameters const& params, Plot const& plot)
     {
         std::optional<std::filesystem::path> const maybeCSVPath =
-            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+            PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
         if (maybeCSVPath)
         {
@@ -999,7 +997,7 @@ namespace
         {
         }
 
-        void onBeforeDrawing(osc::UndoableModelStatePair const&, PlotParameters const& desiredParams)
+        void onBeforeDrawing(UndoableModelStatePair const&, PlotParameters const& desiredParams)
         {
             // perform any datastructure invariant checks etc.
 
@@ -1067,7 +1065,7 @@ namespace
             m_MaxHistoryEntries = i;
         }
 
-        void setActivePlotCommit(osc::ModelStateCommit const& commit)
+        void setActivePlotCommit(ModelStateCommit const& commit)
         {
             m_ActivePlot->setCommit(commit);
         }
@@ -1079,7 +1077,7 @@ namespace
             ensurePreviousCurvesDoesNotExceedMax();
         }
 
-        void revertToPreviousPlot(osc::UndoableModelStatePair& model, size_t i)
+        void revertToPreviousPlot(UndoableModelStatePair& model, size_t i)
         {
             // fetch the to-be-reverted-to curve
             std::shared_ptr<Plot> ptr = m_PreviousPlots.at(i);
@@ -1358,7 +1356,7 @@ namespace
         }
 
         // write header
-        osc::WriteCSVRow(outputFileStream, GetAllCSVHeaders(coord, params, lines));
+        WriteCSVRow(outputFileStream, GetAllCSVHeaders(coord, params, lines));
 
         // get incrementable cursors to all curves in the plot
         std::vector<LineCursor> cursors = GetCursorsToAllPlotLines(lines);
@@ -1382,7 +1380,7 @@ namespace
             {
                 std::optional<PlotDataPoint> data = cursor.peek();
 
-                if (data && osc::IsLessThanOrEffectivelyEqual(data->x, *maybeX))
+                if (data && IsLessThanOrEffectivelyEqual(data->x, *maybeX))
                 {
                     cols.push_back(std::to_string(data->y));
                     ++cursor;
@@ -1400,7 +1398,7 @@ namespace
                 }
             }
 
-            osc::WriteCSVRow(outputFileStream, cols);
+            WriteCSVRow(outputFileStream, cols);
 
             maybeX = maybeNextX;
             maybeNextX = std::nullopt;
@@ -1412,7 +1410,7 @@ namespace
     void ActionPromptUserForCSVOverlayFile(PlotLines& lines)
     {
         std::optional<std::filesystem::path> const maybeCSVPath =
-            osc::PromptUserForFile("csv");
+            PromptUserForFile("csv");
 
         if (maybeCSVPath)
         {
@@ -1430,7 +1428,7 @@ namespace
     void ActionPromptUserToSavePlotLinesToCSV(OpenSim::Coordinate const& coord, PlotParameters const& params, PlotLines const& lines)
     {
         std::optional<std::filesystem::path> const maybeCSVPath =
-            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+            PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
         if (maybeCSVPath)
         {
@@ -1449,8 +1447,8 @@ namespace
     class SharedStateData final {
     public:
         SharedStateData(
-            osc::IEditorAPI* editorAPI,
-            std::shared_ptr<osc::UndoableModelStatePair> uim) :
+            IEditorAPI* editorAPI,
+            std::shared_ptr<UndoableModelStatePair> uim) :
 
             m_EditorAPI{editorAPI},
             m_Model{std::move(uim)}
@@ -1459,8 +1457,8 @@ namespace
         }
 
         SharedStateData(
-            osc::IEditorAPI* editorAPI,
-            std::shared_ptr<osc::UndoableModelStatePair> uim,
+            IEditorAPI* editorAPI,
+            std::shared_ptr<UndoableModelStatePair> uim,
             OpenSim::ComponentPath const& coordPath,
             OpenSim::ComponentPath const& musclePath) :
 
@@ -1481,24 +1479,24 @@ namespace
             return m_PlotParams;
         }
 
-        osc::UndoableModelStatePair const& getModel() const
+        UndoableModelStatePair const& getModel() const
         {
             return *m_Model;
         }
 
-        osc::UndoableModelStatePair& updModel()
+        UndoableModelStatePair& updModel()
         {
             return *m_Model;
         }
 
-        osc::IEditorAPI& updEditorAPI()
+        IEditorAPI& updEditorAPI()
         {
             return *m_EditorAPI;
         }
 
     private:
-        osc::IEditorAPI* m_EditorAPI;
-        std::shared_ptr<osc::UndoableModelStatePair> m_Model;
+        IEditorAPI* m_EditorAPI;
+        std::shared_ptr<UndoableModelStatePair> m_Model;
         PlotParameters m_PlotParams{m_Model->getLatestCommit(), OpenSim::ComponentPath{}, OpenSim::ComponentPath{}, GetDefaultMuscleOutput(), 180};
     };
 
@@ -1570,7 +1568,7 @@ namespace
             PlotParameters const& latestParams = getSharedStateData().getPlotParams();
             auto modelGuard = latestParams.getCommit().getModel();
 
-            auto const* maybeCoord = osc::FindComponent<OpenSim::Coordinate>(*modelGuard, latestParams.getCoordinatePath());
+            auto const* maybeCoord = FindComponent<OpenSim::Coordinate>(*modelGuard, latestParams.getCoordinatePath());
             if (!maybeCoord)
             {
                 ImGui::Text("(no coordinate named %s in model)", latestParams.getCoordinatePath().toString().c_str());
@@ -1598,8 +1596,8 @@ namespace
                 );
                 ImPlot::SetupAxisLimits(
                     ImAxis_X1,
-                    osc::ConvertCoordValueToDisplayValue(coord, GetFirstXValue(plotParams, coord)),
-                    osc::ConvertCoordValueToDisplayValue(coord, GetLastXValue(plotParams, coord))
+                    ConvertCoordValueToDisplayValue(coord, GetFirstXValue(plotParams, coord)),
+                    ConvertCoordValueToDisplayValue(coord, GetLastXValue(plotParams, coord))
                 );
                 ImPlot::SetupFinish();
 
@@ -1639,11 +1637,11 @@ namespace
             // the plot title should contain combo boxes that users can use to change plot
             // parameters visually (#397)
 
-            std::string muscleName = osc::Ellipsis(getSharedStateData().getPlotParams().getMusclePath().getComponentName(), 15);
+            std::string muscleName = Ellipsis(getSharedStateData().getPlotParams().getMusclePath().getComponentName(), 15);
             float muscleNameWidth = ImGui::CalcTextSize(muscleName.c_str()).x + 2.0f*ImGui::GetStyle().FramePadding.x;
-            std::string outputName = osc::Ellipsis(getSharedStateData().getPlotParams().getMuscleOutput().getName(), 15);
+            std::string outputName = Ellipsis(getSharedStateData().getPlotParams().getMuscleOutput().getName(), 15);
             float outputNameWidth = ImGui::CalcTextSize(outputName.c_str()).x + 2.0f*ImGui::GetStyle().FramePadding.x;
-            std::string coordName = osc::Ellipsis(getSharedStateData().getPlotParams().getCoordinatePath().getComponentName(), 15);
+            std::string coordName = Ellipsis(getSharedStateData().getPlotParams().getCoordinatePath().getComponentName(), 15);
             float coordNameWidth = ImGui::CalcTextSize(coordName.c_str()).x + 2.0f*ImGui::GetStyle().FramePadding.x;
 
             float totalWidth =
@@ -1666,7 +1664,7 @@ namespace
             ImGui::SetNextItemWidth(muscleNameWidth);
             if (ImGui::BeginCombo("##musclename", muscleName.c_str(), ImGuiComboFlags_NoArrowButton))
             {
-                auto const* current = osc::FindComponent<OpenSim::Muscle>(getSharedStateData().getModel().getModel(), getSharedStateData().getPlotParams().getMusclePath());
+                auto const* current = FindComponent<OpenSim::Muscle>(getSharedStateData().getModel().getModel(), getSharedStateData().getPlotParams().getMusclePath());
                 for (OpenSim::Muscle const& musc : getSharedStateData().getModel().getModel().getComponentList<OpenSim::Muscle>())
                 {
                     bool selected = &musc == current;
@@ -1702,13 +1700,13 @@ namespace
             ImGui::SetNextItemWidth(coordNameWidth);
             if (ImGui::BeginCombo("##coordname", coordName.c_str(), ImGuiComboFlags_NoArrowButton))
             {
-                auto const* current = osc::FindComponent<OpenSim::Coordinate>(getSharedStateData().getModel().getModel(), getSharedStateData().getPlotParams().getCoordinatePath());
+                auto const* current = FindComponent<OpenSim::Coordinate>(getSharedStateData().getModel().getModel(), getSharedStateData().getPlotParams().getCoordinatePath());
                 for (OpenSim::Coordinate const& c : getSharedStateData().getModel().getModel().getComponentList<OpenSim::Coordinate>())
                 {
                     bool selected = &c == current;
                     if (ImGui::Selectable(c.getName().c_str(), &selected))
                     {
-                        updSharedStateData().updPlotParams().setCoordinatePath(osc::GetAbsolutePath(c));
+                        updSharedStateData().updPlotParams().setCoordinatePath(GetAbsolutePath(c));
                     }
                 }
                 ImGui::EndCombo();
@@ -1734,7 +1732,7 @@ namespace
             {
                 Plot const& plot = m_Lines.getOtherPlot(i);
 
-                osc::Color color = m_ComputedPlotLineBaseColor;
+                Color color = m_ComputedPlotLineBaseColor;
 
                 if (IsExternallyProvided(plot))
                 {
@@ -1761,7 +1759,7 @@ namespace
 
                 std::string const lineName = IthPlotLineName(plot, i + 1);
 
-                ImPlot::PushStyleColor(ImPlotCol_Line, osc::Vec4{color});
+                ImPlot::PushStyleColor(ImPlotCol_Line, Vec4{color});
                 PlotLine(lineName, plot);
                 ImPlot::PopStyleColor(ImPlotCol_Line);
 
@@ -1799,7 +1797,7 @@ namespace
                 std::string const lineName = IthPlotLineName(plot, m_Lines.getNumOtherPlots() + 1);
 
                 // locked curves should have a blue tint
-                osc::Color color = m_ComputedPlotLineBaseColor;
+                Color color = m_ComputedPlotLineBaseColor;
 
                 if (IsExternallyProvided(plot))
                 {
@@ -1817,7 +1815,7 @@ namespace
                     ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
                 }
 
-                ImPlot::PushStyleColor(ImPlotCol_Line, osc::Vec4{color});
+                ImPlot::PushStyleColor(ImPlotCol_Line, Vec4{color});
                 PlotLine(lineName, plot);
                 ImPlot::PopStyleColor(ImPlotCol_Line);
 
@@ -1845,7 +1843,7 @@ namespace
         // draw overlays over the plot lines
         void drawOverlays(OpenSim::Coordinate const& coord, std::optional<float> maybeMouseX)
         {
-            double coordinateXInDegrees = osc::ConvertCoordValueToDisplayValue(coord, coord.getValue(getSharedStateData().getModel().getState()));
+            double coordinateXInDegrees = ConvertCoordValueToDisplayValue(coord, coord.getValue(getSharedStateData().getModel().getState()));
 
             // draw vertical drop line where the coordinate's value currently is
             {
@@ -1931,12 +1929,12 @@ namespace
             {
                 if (coord.getDefaultLocked())
                 {
-                    osc::DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
+                    DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
                 }
                 else
                 {
-                    double storedValue = osc::ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
-                    osc::ActionSetCoordinateValue(updSharedStateData().updModel(), coord, storedValue);
+                    double storedValue = ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
+                    ActionSetCoordinateValue(updSharedStateData().updModel(), coord, storedValue);
                 }
             }
 
@@ -1946,16 +1944,16 @@ namespace
             {
                 if (coord.getDefaultLocked())
                 {
-                    osc::DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
+                    DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
                 }
                 else
                 {
-                    double storedValue = osc::ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
-                    osc::ActionSetCoordinateValueAndSave(updSharedStateData().updModel(), coord, storedValue);
+                    double storedValue = ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
+                    ActionSetCoordinateValueAndSave(updSharedStateData().updModel(), coord, storedValue);
 
                     // trick: we "know" that the last edit to the model was a coordinate edit in this plot's
                     //        independent variable, so we can skip recomputing it
-                    osc::ModelStateCommit const& commitAfter = getSharedStateData().getModel().getLatestCommit();
+                    ModelStateCommit const& commitAfter = getSharedStateData().getModel().getLatestCommit();
                     m_Lines.setActivePlotCommit(commitAfter);
                 }
             }
@@ -2009,7 +2007,7 @@ namespace
 
                 if (ImGui::MenuItem("duplicate plot"))
                 {
-                    auto const* musc = osc::FindComponent<OpenSim::Muscle>(getSharedStateData().getModel().getModel(), getSharedStateData().getPlotParams().getMusclePath());
+                    auto const* musc = FindComponent<OpenSim::Muscle>(getSharedStateData().getModel().getModel(), getSharedStateData().getPlotParams().getMusclePath());
                     if (musc)
                     {
                         updSharedStateData().updEditorAPI().addMusclePlot(coord, *musc);
@@ -2020,7 +2018,7 @@ namespace
                 {
                     ActionPromptUserForCSVOverlayFile(m_Lines);
                 }
-                osc::DrawTooltipIfItemHovered("import CSV overlay(s)", "Imports the specified CSV file as an overlay over the current plot. This is handy fitting muscle curves against externally-supplied data.\n\nThe provided CSV file must contain a header row and at least two columns of numeric data on each data row. The values in the columns must match this plot's axes.");
+                DrawTooltipIfItemHovered("import CSV overlay(s)", "Imports the specified CSV file as an overlay over the current plot. This is handy fitting muscle curves against externally-supplied data.\n\nThe provided CSV file must contain a header row and at least two columns of numeric data on each data row. The values in the columns must match this plot's axes.");
 
                 if (ImGui::BeginMenu("export CSV"))
                 {
@@ -2051,7 +2049,7 @@ namespace
                     {
                         ActionPromptUserToSavePlotLinesToCSV(coord, getSharedStateData().getPlotParams(), m_Lines);
                     }
-                    osc::DrawTooltipIfItemHovered("Export All Curves to CSV", "Exports all curves in the plot to a CSV file.\n\nThe implementation will try to group things together by X value, but the CSV file *may* contain sparse rows if (e.g.) some curves have a different number of plot points, or some curves were loaded from another CSV, etc.");
+                    DrawTooltipIfItemHovered("Export All Curves to CSV", "Exports all curves in the plot to a CSV file.\n\nThe implementation will try to group things together by X value, but the CSV file *may* contain sparse rows if (e.g.) some curves have a different number of plot points, or some curves were loaded from another CSV, etc.");
                     ImGui::PopID();
 
                     ImGui::EndMenu();
@@ -2063,7 +2061,7 @@ namespace
 
         void drawPlotDataTypeSelector()
         {
-            std::vector<osc::CStringView> names;
+            std::vector<CStringView> names;
             names.reserve(m_AvailableMuscleOutputs.size());
 
             size_t active = 0;
@@ -2077,7 +2075,7 @@ namespace
                 }
             }
 
-            if (osc::Combo("data type", &active, names))
+            if (Combo("data type", &active, names))
             {
                 updSharedStateData().updPlotParams().setMuscleOutput(m_AvailableMuscleOutputs[active]);
             }
@@ -2123,7 +2121,7 @@ namespace
 
         // UI/drawing/widget state
         std::vector<MuscleOutput> m_AvailableMuscleOutputs = GenerateMuscleOutputs();
-        osc::Color m_ComputedPlotLineBaseColor = osc::Color::white();
+        Color m_ComputedPlotLineBaseColor = Color::white();
         bool m_LegendPopupIsOpen = false;
         bool m_ShowMarkersOnActivePlot = true;
         bool m_ShowMarkersOnOtherPlots = false;
@@ -2131,8 +2129,8 @@ namespace
         ImPlotFlags m_PlotFlags = ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame | ImPlotFlags_NoTitle;
         ImPlotLocation m_LegendLocation = ImPlotLocation_NorthWest;
         ImPlotLegendFlags m_LegendFlags = ImPlotLegendFlags_None;
-        osc::Color m_LockedCurveTint = {0.5f, 0.5f, 1.0f, 1.1f};
-        osc::Color m_LoadedCurveTint = {0.5f, 1.0f, 0.5f, 1.0f};
+        Color m_LockedCurveTint = {0.5f, 0.5f, 1.0f, 1.1f};
+        Color m_LoadedCurveTint = {0.5f, 1.0f, 0.5f, 1.0f};
     };
 }
 
@@ -2162,7 +2160,7 @@ namespace
             std::sort(
                 coordinates.begin(),
                 coordinates.end(),
-                osc::IsNameLexographicallyLowerThan<OpenSim::Component const*>
+                IsNameLexographicallyLowerThan<OpenSim::Component const*>
             );
 
             ImGui::Text("select coordinate:");
@@ -2172,7 +2170,7 @@ namespace
             {
                 if (ImGui::Selectable(coord->getName().c_str()))
                 {
-                    updSharedStateData().updPlotParams().setCoordinatePath(osc::GetAbsolutePath(*coord));
+                    updSharedStateData().updPlotParams().setCoordinatePath(GetAbsolutePath(*coord));
                     rv = std::make_unique<ShowingPlotState>(updSharedStateData());
                 }
             }
@@ -2205,7 +2203,7 @@ namespace
             std::sort(
                 muscles.begin(),
                 muscles.end(),
-                osc::IsNameLexographicallyLowerThan<OpenSim::Component const*>
+                IsNameLexographicallyLowerThan<OpenSim::Component const*>
             );
 
             ImGui::Text("select muscle:");
@@ -2221,7 +2219,7 @@ namespace
                 {
                     if (ImGui::Selectable(musc->getName().c_str()))
                     {
-                        updSharedStateData().updPlotParams().setMusclePath(osc::GetAbsolutePath(*musc));
+                        updSharedStateData().updPlotParams().setMusclePath(GetAbsolutePath(*musc));
                         rv = std::make_unique<PickCoordinateState>(updSharedStateData());
                     }
                 }
@@ -2347,7 +2345,7 @@ osc::ModelMusclePlotPanel::ModelMusclePlotPanel(ModelMusclePlotPanel&&) noexcept
 osc::ModelMusclePlotPanel& osc::ModelMusclePlotPanel::operator=(ModelMusclePlotPanel&&) noexcept = default;
 osc::ModelMusclePlotPanel::~ModelMusclePlotPanel() noexcept = default;
 
-osc::CStringView osc::ModelMusclePlotPanel::implGetName() const
+CStringView osc::ModelMusclePlotPanel::implGetName() const
 {
     return m_Impl->getName();
 }

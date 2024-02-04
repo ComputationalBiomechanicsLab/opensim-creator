@@ -46,18 +46,18 @@
 #include <utility>
 #include <vector>
 
-using osc::log_warn;
+using namespace osc;
 
 namespace
 {
-    std::unique_ptr<osc::ITab> LoadConfigurationDefinedTabIfNecessary(
-        osc::AppConfig const& config,
-        osc::TabRegistry const& tabRegistry,
-        osc::ParentPtr<osc::ITabHost> const& api)
+    std::unique_ptr<ITab> LoadConfigurationDefinedTabIfNecessary(
+        AppConfig const& config,
+        TabRegistry const& tabRegistry,
+        ParentPtr<ITabHost> const& api)
     {
         if (std::optional<std::string> maybeRequestedTab = config.getInitialTabOverride())
         {
-            if (std::optional<osc::TabRegistryEntry> maybeEntry = tabRegistry.getByName(*maybeRequestedTab))
+            if (std::optional<TabRegistryEntry> maybeEntry = tabRegistry.getByName(*maybeRequestedTab))
             {
                 return maybeEntry->createTab(api);
             }
@@ -75,7 +75,7 @@ namespace
 }
 
 class osc::MainUIScreen::Impl final :
-    public osc::IMainUIStateAPI,
+    public IMainUIStateAPI,
     public std::enable_shared_from_this<Impl> {
 public:
 
@@ -98,7 +98,7 @@ public:
 
             // if the application configuration has requested that a specific tab should be opened,
             // then try looking it up and open it
-            if (auto tab = LoadConfigurationDefinedTabIfNecessary(App::get().getConfig(), *App::singleton<osc::TabRegistry>(), getTabHostAPI()))
+            if (auto tab = LoadConfigurationDefinedTabIfNecessary(App::get().getConfig(), *App::singleton<TabRegistry>(), getTabHostAPI()))
             {
                 addTab(std::move(tab));
             }
@@ -110,7 +110,7 @@ public:
             }
         }
 
-        osc::ImGuiInit();
+        ImGuiInit();
         ImPlot::CreateContext();
     }
 
@@ -136,7 +136,7 @@ public:
         }
 
         ImPlot::DestroyContext();
-        osc::ImGuiShutdown();
+        ImGuiShutdown();
     }
 
     void onEvent(SDL_Event const& e)
@@ -146,9 +146,9 @@ public:
             e.key.keysym.scancode == SDL_SCANCODE_P)
         {
             // Ctrl+/Super+P operates as a "take a screenshot" request
-            m_MaybeScreenshotRequest = osc::App::upd().requestScreenshot();
+            m_MaybeScreenshotRequest = App::upd().requestScreenshot();
         }
-        else if (osc::ImGuiOnEvent(e))
+        else if (ImGuiOnEvent(e))
         {
             // event was pumped into ImGui - it shouldn't be pumped into the active tab
             m_ShouldRequestRedraw = true;
@@ -276,7 +276,7 @@ public:
             App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
         }
 
-        osc::ImGuiNewFrame();
+        ImGuiNewFrame();
         ImGuizmo::BeginFrame();
 
         {
@@ -292,9 +292,9 @@ public:
             }
             m_ActiveTabID = UID::empty();
 
-            osc::ImGuiShutdown();
-            osc::ImGuiInit();
-            osc::App::upd().requestRedraw();
+            ImGuiShutdown();
+            ImGuiInit();
+            App::upd().requestRedraw();
             m_ImguiWasAggressivelyReset = false;
 
             return;
@@ -302,12 +302,12 @@ public:
 
         {
             OSC_PERF("MainUIScreen/ImGuiRender");
-            osc::ImGuiRender();
+            ImGuiRender();
         }
 
         if (m_ShouldRequestRedraw)
         {
-            osc::App::upd().requestRedraw();
+            App::upd().requestRedraw();
             m_ShouldRequestRedraw = false;
         }
     }
@@ -335,7 +335,7 @@ public:
     void implAddUserOutputExtractor(OutputExtractor const& output) final
     {
         m_UserOutputExtractors.push_back(output);
-        osc::App::upd().updConfig().setIsPanelEnabled("Output Watches", true);
+        App::upd().updConfig().setIsPanelEnabled("Output Watches", true);
     }
 
     void implRemoveUserOutputExtractor(int idx) final
@@ -356,15 +356,15 @@ public:
 
 private:
 
-    osc::ParentPtr<IMainUIStateAPI> getTabHostAPI()
+    ParentPtr<IMainUIStateAPI> getTabHostAPI()
     {
-        return osc::ParentPtr<IMainUIStateAPI>{shared_from_this()};
+        return ParentPtr<IMainUIStateAPI>{shared_from_this()};
     }
     void drawTabSpecificMenu()
     {
         OSC_PERF("MainUIScreen/drawTabSpecificMenu");
 
-        if (osc::BeginMainViewportTopBar("##TabSpecificMenuBar"))
+        if (BeginMainViewportTopBar("##TabSpecificMenuBar"))
         {
             if (ImGui::BeginMenuBar())
             {
@@ -406,7 +406,7 @@ private:
         ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2{ 5.0f, 0.0f });
         ImGui::PushStyleVar(ImGuiStyleVar_TabRounding, 10.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
-        if (osc::BeginMainViewportTopBar("##TabBarViewport"))
+        if (BeginMainViewportTopBar("##TabBarViewport"))
         {
             if (ImGui::BeginMenuBar())
             {
@@ -559,7 +559,7 @@ private:
             selectTab(addTab(std::make_unique<mi::MeshImporterTab>(getTabHostAPI())));
         }
 
-        std::shared_ptr<TabRegistry const> const tabs = osc::App::singleton<TabRegistry>();
+        std::shared_ptr<TabRegistry const> const tabs = App::singleton<TabRegistry>();
         if (tabs->size() > 0)
         {
             if (ImGui::BeginMenu("Experimental Tabs"))
@@ -569,7 +569,7 @@ private:
                     TabRegistryEntry e = (*tabs)[i];
                     if (ImGui::MenuItem(e.getName().c_str()))
                     {
-                        selectTab(addTab(e.createTab(osc::ParentPtr<osc::ITabHost>{getTabHostAPI()})));
+                        selectTab(addTab(e.createTab(ParentPtr<ITabHost>{getTabHostAPI()})));
                     }
                 }
                 ImGui::EndMenu();
@@ -629,7 +629,7 @@ private:
             nukeDeletedTabs();
             if (m_QuitRequested)
             {
-                osc::App::upd().requestQuit();
+                App::upd().requestQuit();
             }
             return true;
         }
@@ -645,7 +645,7 @@ private:
         nukeDeletedTabs();
         if (m_QuitRequested)
         {
-            osc::App::upd().requestQuit();
+            App::upd().requestQuit();
         }
         return true;
     }
@@ -739,7 +739,7 @@ private:
             ss << "\n\n";
 
             // open the popup
-            osc::SaveChangesPopupConfig cfg
+            SaveChangesPopupConfig cfg
             {
                 "Save Changes?",
                 [this]() { return onUserSelectedSaveChangesInSavePrompt(); },
@@ -836,7 +836,7 @@ osc::MainUIScreen::MainUIScreen(MainUIScreen&&) noexcept = default;
 osc::MainUIScreen& osc::MainUIScreen::operator=(MainUIScreen&&) noexcept = default;
 osc::MainUIScreen::~MainUIScreen() noexcept = default;
 
-osc::UID osc::MainUIScreen::addTab(std::unique_ptr<ITab> tab)
+UID osc::MainUIScreen::addTab(std::unique_ptr<ITab> tab)
 {
     return m_Impl->addTab(std::move(tab));
 }

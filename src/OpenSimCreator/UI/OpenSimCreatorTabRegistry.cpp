@@ -13,15 +13,17 @@
 #include <concepts>
 #include <memory>
 
+using namespace osc;
+
 namespace
 {
-    template<std::derived_from<osc::ITab> TabType>
-    void RegisterTab(osc::TabRegistry& registry)
+    template<std::derived_from<ITab> TabType>
+    void RegisterTab(TabRegistry& registry)
     {
-        osc::TabRegistryEntry entry
+        TabRegistryEntry entry
         {
             TabType::id(),
-            [](osc::ParentPtr<osc::ITabHost> const& h) { return std::make_unique<TabType>(h); },
+            [](ParentPtr<ITabHost> const& h) { return std::make_unique<TabType>(h); },
         };
         registry.registerTab(entry);
     }

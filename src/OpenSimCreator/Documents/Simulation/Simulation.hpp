@@ -20,7 +20,7 @@ namespace SimTK { class State; }
 
 namespace osc
 {
-    // a concrete value type wrapper for an `osc::ISimulation`
+    // a concrete value type wrapper for an `ISimulation`
     //
     // This is a value-type that can be compared, hashed, etc. for easier usage
     // by other parts of osc (e.g. aggregators, plotters)

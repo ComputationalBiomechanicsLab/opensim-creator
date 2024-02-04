@@ -69,24 +69,19 @@
 #include <typeinfo>
 #include <utility>
 
-using osc::App;
-using osc::BodyDetails;
-using osc::LoadingTab;
-using osc::log_error;
-using osc::log_info;
-using osc::IMainUIStateAPI;
+using namespace osc;
 
 // helper functions
 namespace
 {
-    void OpenOsimInLoadingTab(osc::ParentPtr<IMainUIStateAPI> const& api, std::filesystem::path p)
+    void OpenOsimInLoadingTab(ParentPtr<IMainUIStateAPI> const& api, std::filesystem::path p)
     {
         api->addAndSelectTab<LoadingTab>(api, std::move(p));
     }
 
-    void DoOpenFileViaDialog(osc::ParentPtr<IMainUIStateAPI> const& api)
+    void DoOpenFileViaDialog(ParentPtr<IMainUIStateAPI> const& api)
     {
-        std::optional<std::filesystem::path> const maybePath = osc::PromptUserForFile("osim");
+        std::optional<std::filesystem::path> const maybePath = PromptUserForFile("osim");
 
         if (maybePath)
         {
@@ -96,12 +91,12 @@ namespace
 
     std::optional<std::filesystem::path> PromptSaveOneFile()
     {
-        return osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
+        return PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
     }
 
     bool IsAnExampleFile(std::filesystem::path const& path)
     {
-        return osc::IsSubpath(App::resource("models"), path);
+        return IsSubpath(App::resource("models"), path);
     }
 
     std::optional<std::string> TryGetModelSaveLocation(OpenSim::Model const& m)
@@ -153,7 +148,7 @@ namespace
         OpenSim::Joint const& jointPrototype,
         OpenSim::PhysicalFrame const& selectedPf)
     {
-        std::unique_ptr<OpenSim::Joint> copy = osc::Clone(jointPrototype);
+        std::unique_ptr<OpenSim::Joint> copy = Clone(jointPrototype);
         copy->setName(details.jointName);
 
         if (!details.addOffsetFrames)
@@ -170,7 +165,7 @@ namespace
                 pof1->setName(selectedPf.getName() + "_offset");
 
                 // care: ownership change happens here (#642)
-                OpenSim::PhysicalOffsetFrame& ref = osc::AddFrame(*copy, std::move(pof1));
+                OpenSim::PhysicalOffsetFrame& ref = AddFrame(*copy, std::move(pof1));
                 copy->connectSocket_parent_frame(ref);
             }
 
@@ -181,7 +176,7 @@ namespace
                 pof2->setName(b.getName() + "_offset");
 
                 // care: ownership change happens here (#642)
-                OpenSim::PhysicalOffsetFrame& ref = osc::AddFrame(*copy, std::move(pof2));
+                OpenSim::PhysicalOffsetFrame& ref = AddFrame(*copy, std::move(pof2));
                 copy->connectSocket_child_frame(ref);
             }
         }
@@ -200,7 +195,7 @@ namespace
             return false;  // new connectee isn't a frame
         }
 
-        auto const spatialRep = osc::TryGetSpatialRepresentation(component, state);
+        auto const spatialRep = TryGetSpatialRepresentation(component, state);
         if (!spatialRep)
         {
             return false;  // cannot represent the component spatially
@@ -210,7 +205,7 @@ namespace
         SimTK::Transform const groundToNewConnectee = newFrame->getTransformInGround(state).invert();
         SimTK::Transform const currentParentToNewConnectee = groundToNewConnectee * currentParentToGround;
 
-        if (auto* positionalProp = osc::FindSimplePropertyMut<SimTK::Vec3>(component, spatialRep->locationVec3PropertyName))
+        if (auto* positionalProp = FindSimplePropertyMut<SimTK::Vec3>(component, spatialRep->locationVec3PropertyName))
         {
             SimTK::Vec3 const oldPosition = positionalProp->getValue();
             SimTK::Vec3 const newPosition = currentParentToNewConnectee * oldPosition;
@@ -220,7 +215,7 @@ namespace
 
         if (spatialRep->maybeOrientationVec3EulersPropertyName)
         {
-            if (auto* orientationalProp = osc::FindSimplePropertyMut<SimTK::Vec3>(component, *spatialRep->maybeOrientationVec3EulersPropertyName))
+            if (auto* orientationalProp = FindSimplePropertyMut<SimTK::Vec3>(component, *spatialRep->maybeOrientationVec3EulersPropertyName))
             {
                 SimTK::Rotation const currentRotationInGround = spatialRep->parentToGround.R();
                 SimTK::Rotation const groundToNewConnecteeRotation = newFrame->getRotationInGround(state).invert();
@@ -519,7 +514,7 @@ bool osc::ActionCopyModelPathToClipboard(UndoableModelStatePair const& uim)
 
 bool osc::ActionAutoscaleSceneScaleFactor(UndoableModelStatePair& uim)
 {
-    float const sf = osc::GetRecommendedScaleFactor(
+    float const sf = GetRecommendedScaleFactor(
         *App::singleton<SceneCache>(),
         uim.getModel(),
         uim.getState(),
@@ -988,7 +983,7 @@ bool osc::ActionChangeJointTypeTo(UndoableModelStatePair& uim, OpenSim::Componen
             return false;
         }
 
-        OpenSim::Joint const& jointRef = osc::Assign(*mutParent, idx, std::move(newType));
+        OpenSim::Joint const& jointRef = Assign(*mutParent, idx, std::move(newType));
         InitializeModel(mutModel);
         InitializeState(mutModel);
         uim.setSelected(&jointRef);
@@ -1080,7 +1075,7 @@ bool osc::ActionAssignContactGeometryToHCF(
         // calling this ensures at least one `OpenSim::HuntCrossleyForce::ContactParameters`
         // is present in the HCF
         mutHCF->getStaticFriction();
-        OSC_ASSERT(!osc::empty(mutHCF->updContactParametersSet()));
+        OSC_ASSERT(!empty(mutHCF->updContactParametersSet()));
 
         mutHCF->updContactParametersSet()[0].updGeometry().appendValue(geom->getName());
         FinalizeConnections(mutModel);
@@ -1159,7 +1154,7 @@ bool osc::ActionAddPathPointToPathActuator(
         return false;
     }
 
-    size_t const n = osc::size(pa->getGeometryPath().getPathPointSet());
+    size_t const n = size(pa->getGeometryPath().getPathPointSet());
     std::string const name = pa->getName() + "-P" + std::to_string(n + 1);
     SimTK::Vec3 const pos = {0.0f, 0.0f, 0.0f};
 

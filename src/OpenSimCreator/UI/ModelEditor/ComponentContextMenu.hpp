@@ -5,7 +5,6 @@
 #include <memory>
 #include <string_view>
 
-
 namespace OpenSim { class ComponentPath; }
 namespace osc { class IEditorAPI; }
 namespace osc { class IMainUIStateAPI; }

@@ -14,15 +14,17 @@
 #include <string_view>
 #include <unordered_map>
 
+using namespace osc;
+
 namespace
 {
-    std::unordered_map<std::string, osc::AppSettingValue> ToValues(
+    std::unordered_map<std::string, AppSettingValue> ToValues(
         std::string_view prefix,
-        osc::ModelRendererParams const& params)
+        ModelRendererParams const& params)
     {
-        std::unordered_map<std::string, osc::AppSettingValue> rv;
+        std::unordered_map<std::string, AppSettingValue> rv;
         std::string subPrefix;
-        auto const callback = [&subPrefix, &rv](std::string_view subkey, osc::AppSettingValue value)
+        auto const callback = [&subPrefix, &rv](std::string_view subkey, AppSettingValue value)
         {
             rv.insert_or_assign(subPrefix + std::string{subkey}, std::move(value));
         };
@@ -33,8 +35,8 @@ namespace
         params.overlayOptions.forEachOptionAsAppSettingValue(callback);
         subPrefix = std::string{prefix} + std::string{"graphics/"};
         params.renderingOptions.forEachOptionAsAppSettingValue(callback);
-        rv.insert_or_assign(std::string{prefix} + "light_color", osc::AppSettingValue{params.lightColor});
-        rv.insert_or_assign(std::string{prefix} + "background_color", osc::AppSettingValue{params.backgroundColor});
+        rv.insert_or_assign(std::string{prefix} + "light_color", AppSettingValue{params.lightColor});
+        rv.insert_or_assign(std::string{prefix} + "background_color", AppSettingValue{params.backgroundColor});
         // TODO: floorLocation
 
         return rv;
@@ -42,8 +44,8 @@ namespace
 
     void UpdFromValues(
         std::string_view prefix,
-        std::unordered_map<std::string, osc::AppSettingValue> const& values,
-        osc::ModelRendererParams& params)
+        std::unordered_map<std::string, AppSettingValue> const& values,
+        ModelRendererParams& params)
     {
         params.decorationOptions.tryUpdFromValues(std::string{prefix} + "decorations/", values);
         params.overlayOptions.tryUpdFromValues(std::string{prefix} + "overlays/", values);
