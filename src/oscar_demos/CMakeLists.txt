@@ -18,6 +18,7 @@ add_library(oscar_demos STATIC
     MeshGenTestTab.hpp
     OscarDemosTabRegistry.cpp
     OscarDemosTabRegistry.hpp
+    OscarDemoTabs.hpp
     SubMeshTab.cpp
     SubMeshTab.hpp
 )

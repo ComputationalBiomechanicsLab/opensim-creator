@@ -2,33 +2,9 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
+#include <imgui.h>
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
-#include <oscar/Graphics/Camera.hpp>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/RenderTexture.hpp>
-#include <oscar/Graphics/RenderTextureDescriptor.hpp>
-#include <oscar/Graphics/RenderTextureReadWrite.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Graphics/TextureDimensionality.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Mat4.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/UnitVec3.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/UID.hpp>
 
 #include <cmath>
 #include <array>
@@ -36,20 +12,7 @@
 #include <utility>
 
 using namespace osc::literals;
-using osc::AngleAxis;
-using osc::Color;
-using osc::CStringView;
-using osc::MouseCapturingCamera;
-using osc::RenderTexture;
-using osc::RenderTextureDescriptor;
-using osc::RenderTextureFormat;
-using osc::RenderTextureReadWrite;
-using osc::TextureDimensionality;
-using osc::Transform;
-using osc::UID;
-using osc::UnitVec3;
-using osc::Vec2i;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {

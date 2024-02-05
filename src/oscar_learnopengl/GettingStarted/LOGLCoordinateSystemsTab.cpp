@@ -1,42 +1,17 @@
 #include "LOGLCoordinateSystemsTab.hpp"
 
-#include <SDL_events.h>
-#include <oscar/Graphics/Camera.hpp>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Eulers.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/UnitVec3.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/UID.hpp>
 #include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
+
+#include <imgui.h>
+#include <oscar/oscar.hpp>
+#include <SDL_events.h>
 
 #include <array>
 #include <memory>
 
 using namespace osc::literals;
-using osc::App;
-using osc::ColorSpace;
-using osc::CStringView;
-using osc::ImageLoadingFlags;
-using osc::LoadTexture2DFromImage;
-using osc::Material;
-using osc::MouseCapturingCamera;
-using osc::Shader;
-using osc::UID;
-using osc::UnitVec3;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {

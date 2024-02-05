@@ -1,8 +1,7 @@
 #include "CookiecutterScreen.hpp"
 
 #include <imgui.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Platform/App.hpp>
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
 
 #include <memory>

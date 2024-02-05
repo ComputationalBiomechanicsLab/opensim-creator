@@ -4,28 +4,7 @@
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
 #include <imgui.h>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/Cubemap.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Mat3.hpp>
-#include <oscar/Maths/Mat4.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/Platform/AppConfig.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
 
 #include <array>
@@ -35,25 +14,7 @@
 #include <string_view>
 
 using namespace osc::literals;
-using osc::App;
-using osc::ColorSpace;
-using osc::CStringView;
-using osc::Cubemap;
-using osc::CubemapFace;
-using osc::FirstCubemapFace;
-using osc::LastCubemapFace;
-using osc::LoadTexture2DFromImage;
-using osc::Mat3;
-using osc::Mat4;
-using osc::Material;
-using osc::MouseCapturingCamera;
-using osc::Next;
-using osc::NumOptions;
-using osc::Shader;
-using osc::Texture2D;
-using osc::ToIndex;
-using osc::UID;
-using osc::Vec2i;
+using namespace osc;
 
 namespace
 {

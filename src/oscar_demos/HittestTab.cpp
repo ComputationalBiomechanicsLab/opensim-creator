@@ -1,25 +1,8 @@
 #include "HittestTab.hpp"
 
+#include <imgui.h>
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
-#include <oscar/Graphics/Camera.hpp>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/MaterialPropertyBlock.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Maths/CollisionTests.hpp>
-#include <oscar/Maths/Disc.hpp>
-#include <oscar/Maths/Eulers.hpp>
-#include <oscar/Maths/Line.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Sphere.hpp>
-#include <oscar/Maths/Triangle.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
 
 #include <array>
 #include <cstdint>
@@ -28,15 +11,7 @@
 #include <optional>
 #include <vector>
 
-using osc::Camera;
-using osc::Color;
-using osc::CStringView;
-using osc::Line;
-using osc::MaterialPropertyBlock;
-using osc::Mesh;
-using osc::MeshTopology;
-using osc::UID;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {

@@ -2,57 +2,16 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
+#include <imgui.h>
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
-#include <oscar/Graphics/Camera.hpp>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/Cubemap.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/ImageLoadingFlags.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/RenderTextureFormat.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Graphics/TextureFilterMode.hpp>
-#include <oscar/Graphics/TextureWrapMode.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Mat4.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
 
 #include <array>
 #include <memory>
 
-using namespace osc::literals;
 namespace Graphics = osc::Graphics;
-using osc::App;
-using osc::CalcCubemapViewProjMatrices;
-using osc::Camera;
-using osc::ColorSpace;
-using osc::CStringView;
-using osc::GenerateCubeMesh;
-using osc::Identity;
-using osc::ImageLoadingFlags;
-using osc::LoadTexture2DFromImage;
-using osc::Mat4;
-using osc::Material;
-using osc::MouseCapturingCamera;
-using osc::Perspective;
-using osc::RenderTexture;
-using osc::RenderTextureFormat;
-using osc::Shader;
-using osc::Texture2D;
-using osc::TextureDimensionality;
-using osc::TextureFilterMode;
-using osc::TextureWrapMode;
-using osc::Transform;
-using osc::UID;
-using osc::Vec3;
+using namespace osc::literals;
+using namespace osc;
 
 namespace
 {

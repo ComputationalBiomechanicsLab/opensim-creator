@@ -2,39 +2,14 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
-#include <imgui.h>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
 
 #include <array>
 #include <memory>
 
 using namespace osc::literals;
-using osc::App;
-using osc::ColorSpace;
-using osc::CStringView;
-using osc::LoadTexture2DFromImage;
-using osc::Material;
-using osc::MouseCapturingCamera;
-using osc::Shader;
-using osc::Texture2D;
-using osc::UID;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {

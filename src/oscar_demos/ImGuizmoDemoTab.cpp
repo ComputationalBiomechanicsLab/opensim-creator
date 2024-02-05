@@ -2,21 +2,12 @@
 
 #include <imgui.h>
 #include <ImGuizmo.h>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Mat4.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/PolarPerspectiveCamera.hpp>
-#include <oscar/Maths/Rect.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/oscar.hpp>
 
 #include <memory>
 
 using namespace osc::literals;
-using osc::CStringView;
-using osc::UID;
+using namespace osc;
 
 namespace
 {
