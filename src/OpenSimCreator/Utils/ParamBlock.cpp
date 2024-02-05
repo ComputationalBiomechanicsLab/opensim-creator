@@ -10,8 +10,8 @@
 #include <variant>
 #include <vector>
 
+using namespace osc;
 namespace ranges = std::ranges;
-using osc::ParamValue;
 
 namespace
 {

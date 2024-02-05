@@ -22,7 +22,7 @@
 #include <utility>
 #include <vector>
 
-using osc::UndoableModelStatePair;
+using namespace osc;
 
 void osc::fd::ActionPromptUserToAddMeshFiles(UndoableModelStatePair& model)
 {

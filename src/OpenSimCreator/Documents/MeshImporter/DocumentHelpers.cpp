@@ -24,9 +24,7 @@
 #include <unordered_set>
 #include <variant>
 
-using osc::SceneDecorationFlags;
-using osc::UID;
-using osc::Vec3;
+using namespace osc;
 
 bool osc::mi::IsAChildAttachmentInAnyJoint(Document const& doc, MIObject const& obj)
 {

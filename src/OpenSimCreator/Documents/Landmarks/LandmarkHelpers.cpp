@@ -17,9 +17,7 @@
 using osc::lm::CSVParseWarning;
 using osc::lm::Landmark;
 using osc::lm::NamedLandmark;
-using osc::FromCharsStripWhitespace;
-using osc::TrimLeadingAndTrailingWhitespace;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {

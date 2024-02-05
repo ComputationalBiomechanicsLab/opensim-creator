@@ -33,20 +33,7 @@
 #include <utility>
 #include <vector>
 
-using osc::App;
-using osc::BVH;
-using osc::ChooseComponentsEditorLayerParameters;
-using osc::Contains;
-using osc::GenerateModelDecorations;
-using osc::GetAbsolutePathString;
-using osc::ModelRendererParams;
-using osc::GenerateOverlayDecorations;
-using osc::SceneCache;
-using osc::SceneDecoration;
-using osc::SceneDecorationFlags;
-using osc::ShaderCache;
-using osc::UndoableModelStatePair;
-using osc::UpdateSceneBVH;
+using namespace osc;
 
 namespace
 {

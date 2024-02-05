@@ -73,31 +73,7 @@
 #include <utility>
 #include <vector>
 
-using osc::At;
-using osc::Color;
-using osc::ComponentSpatialRepresentation;
-using osc::Cross;
-using osc::CStringView;
-using osc::Dot;
-using osc::empty;
-using osc::EraseAt;
-using osc::FindComponent;
-using osc::ForcePoint;
-using osc::GeometryPathPoint;
-using osc::IsInclusiveChildOf;
-using osc::Length2;
-using osc::LinesOfAction;
-using osc::Normalize;
-using osc::Plane;
-using osc::PointDirection;
-using osc::PointInfo;
-using osc::size;
-using osc::ToTransform;
-using osc::ToVec3;
-using osc::Transform;
-using osc::TransformPoint;
-using osc::UndoableModelStatePair;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {

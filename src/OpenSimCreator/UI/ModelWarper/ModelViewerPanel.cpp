@@ -9,7 +9,7 @@
 #include <string_view>
 #include <utility>
 
-using osc::CStringView;
+using namespace osc;
 
 class osc::mow::ModelViewerPanel::Impl final : public StandardPanelImpl {
 public:
