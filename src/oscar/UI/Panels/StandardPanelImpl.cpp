@@ -7,7 +7,7 @@
 
 #include <string_view>
 
-using osc::CStringView;
+using namespace osc;
 
 osc::StandardPanelImpl::StandardPanelImpl(std::string_view panelName) :
     StandardPanelImpl{panelName, ImGuiWindowFlags_None}

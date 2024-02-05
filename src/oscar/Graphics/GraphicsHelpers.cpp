@@ -38,19 +38,7 @@
 #include <utility>
 #include <vector>
 
-using osc::ColorSpace;
-using osc::ImageLoadingFlags;
-using osc::LookAt;
-using osc::Mat4;
-using osc::Sphere;
-using osc::Texture2D;
-using osc::TextureChannelFormat;
-using osc::TextureFormat;
-using osc::Vec2;
-using osc::Vec2i;
-using osc::Vec3;
-using osc::Vec4;
-using osc::ViewObjectRepresentations;
+using namespace osc;
 
 namespace
 {

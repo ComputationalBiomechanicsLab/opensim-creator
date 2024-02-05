@@ -29,13 +29,7 @@
 #include <string>
 
 using namespace osc::literals;
-using osc::ClampToLDR;
-using osc::Color;
-using osc::ImGuiItemHittestResult;
-using osc::Rect;
-using osc::ToColor;
-using osc::Vec2;
-using osc::Vec4;
+using namespace osc;
 
 namespace
 {

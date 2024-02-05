@@ -3,7 +3,7 @@
 #include <atomic>
 #include <ostream>
 
-using osc::UID;
+using namespace osc;
 
 constinit std::atomic<UID::element_type> osc::UID::g_NextID = 1;
 

@@ -51,27 +51,7 @@
 #include <utility>
 
 using namespace osc::literals;
-using osc::AABB;
-using osc::At;
-using osc::BVHCollision;
-using osc::BVHNode;
-using osc::BVHPrim;
-using osc::Eulers;
-using osc::Line;
-using osc::Mat3;
-using osc::Mat4;
-using osc::PolarPerspectiveCamera;
-using osc::Quat;
-using osc::Radians;
-using osc::RayCollision;
-using osc::Rect;
-using osc::Sphere;
-using osc::Transform;
-using osc::Triangle;
-using osc::Vec2;
-using osc::Vec2i;
-using osc::Vec3;
-using osc::Vec4;
+using namespace osc;
 
 // `AABB` implementation
 

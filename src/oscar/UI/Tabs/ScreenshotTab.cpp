@@ -36,13 +36,7 @@
 #include <utility>
 #include <vector>
 
-using osc::AspectRatio;
-using osc::Color;
-using osc::CStringView;
-using osc::Dimensions;
-using osc::Rect;
-using osc::UID;
-using osc::Vec2;
+using namespace osc;
 
 namespace
 {

@@ -9,7 +9,7 @@
 #include <span>
 #include <vector>
 
-using osc::RenderTexture;
+using namespace osc;
 
 class osc::CachedSceneRenderer::Impl final {
 public:

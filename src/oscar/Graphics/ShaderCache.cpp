@@ -12,8 +12,7 @@
 #include <unordered_map>
 #include <utility>
 
-using osc::HashOf;
-using osc::Shader;
+using namespace osc;
 
 namespace
 {

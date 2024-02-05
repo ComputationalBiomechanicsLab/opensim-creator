@@ -24,16 +24,7 @@
 #include <utility>
 #include <vector>
 
-using osc::AppSettings;
-using osc::AppSettingValue;
-using osc::AppSettingValueType;
-using osc::CStringView;
-using osc::CurrentExeDir;
-using osc::GetUserDataDir;
-using osc::HashOf;
-using osc::log_warn;
-using osc::NumOptions;
-using osc::SynchronizedValue;
+using namespace osc;
 
 namespace
 {

@@ -15,7 +15,7 @@
 #include <sstream>
 #include <stdexcept>
 
-using osc::Texture2D;
+using namespace osc;
 
 Texture2D osc::ReadSVGIntoTexture(
     std::istream& inputStream,

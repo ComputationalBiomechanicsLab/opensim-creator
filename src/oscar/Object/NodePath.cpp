@@ -5,7 +5,7 @@
 #include <string>
 #include <string_view>
 
-using osc::NodePath;
+using namespace osc;
 
 namespace
 {

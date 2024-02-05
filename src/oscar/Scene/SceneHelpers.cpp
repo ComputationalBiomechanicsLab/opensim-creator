@@ -32,16 +32,7 @@
 #include <vector>
 
 using namespace osc::literals;
-using osc::AABB;
-using osc::BVH;
-using osc::Material;
-using osc::Quat;
-using osc::RayCollision;
-using osc::SceneCache;
-using osc::SceneCollision;
-using osc::SceneDecoration;
-using osc::SceneRendererParams;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {

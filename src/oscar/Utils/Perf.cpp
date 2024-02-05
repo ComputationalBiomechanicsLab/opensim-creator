@@ -10,9 +10,7 @@
 #include <utility>
 #include <vector>
 
-using osc::HashOf;
-using osc::PerfMeasurement;
-using osc::SynchronizedValue;
+using namespace osc;
 
 namespace
 {

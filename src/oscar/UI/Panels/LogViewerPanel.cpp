@@ -8,7 +8,7 @@
 #include <memory>
 #include <string_view>
 
-using osc::CStringView;
+using namespace osc;
 
 class osc::LogViewerPanel::Impl final : public StandardPanelImpl {
 public:

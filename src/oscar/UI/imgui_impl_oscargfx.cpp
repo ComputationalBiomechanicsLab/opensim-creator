@@ -42,35 +42,7 @@
 
 namespace Graphics = osc::Graphics;
 namespace cpp20 = osc::cpp20;
-using osc::Camera;
-using osc::CameraClearFlags;
-using osc::ColorSpace;
-using osc::CullMode;
-using osc::CStringView;
-using osc::Identity;
-using osc::IsAnyOf;
-using osc::Mat4;
-using osc::Material;
-using osc::Mesh;
-using osc::MeshTopology;
-using osc::MeshUpdateFlags;
-using osc::Overload;
-using osc::Rect;
-using osc::RenderTexture;
-using osc::Shader;
-using osc::SubMeshDescriptor;
-using osc::Texture2D;
-using osc::TextureFilterMode;
-using osc::TextureFormat;
-using osc::ToLinear;
-using osc::UID;
-using osc::Unorm8;
-using osc::Vec2;
-using osc::Vec2i;
-using osc::Vec3;
-using osc::Vec4;
-using osc::VertexAttribute;
-using osc::VertexAttributeFormat;
+using namespace osc;
 
 namespace
 {

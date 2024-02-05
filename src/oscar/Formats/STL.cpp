@@ -20,12 +20,7 @@
 #include <string>
 #include <string_view>
 
-using osc::ViewObjectRepresentation;
-using osc::Mesh;
-using osc::Normalize;
-using osc::StlMetadata;
-using osc::Triangle;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {

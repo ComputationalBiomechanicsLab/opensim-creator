@@ -15,16 +15,7 @@
 #include <unordered_map>
 #include <utility>
 
-using osc::AntiAliasingLevel;
-using osc::AppSettings;
-using osc::AppSettingValue;
-using osc::AppSettingValueType;
-using osc::CStringView;
-using osc::CurrentExeDir;
-using osc::log_error;
-using osc::log_warn;
-using osc::LogLevel;
-using osc::TryParseAsLogLevel;
+using namespace osc;
 
 namespace
 {

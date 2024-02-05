@@ -32,22 +32,7 @@
 #include <utility>
 
 using namespace osc::literals;
-using osc::AABB;
-using osc::AngleAxis;
-using osc::AntiAliasingLevel;
-using osc::Mat4;
-using osc::Material;
-using osc::Mesh;
-using osc::Ortho;
-using osc::PolarPerspectiveCamera;
-using osc::Radians;
-using osc::RenderTexture;
-using osc::SceneDecoration;
-using osc::Sphere;
-using osc::Transform;
-using osc::Vec2;
-using osc::Vec2i;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {

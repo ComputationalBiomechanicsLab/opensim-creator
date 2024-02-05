@@ -43,20 +43,7 @@
 #include <unordered_map>
 
 namespace sdl = osc::sdl;
-using osc::AntiAliasingLevel;
-using osc::App;
-using osc::AppClock;
-using osc::AppConfig;
-using osc::AppMetadata;
-using osc::CStringView;
-using osc::CurrentExeDir;
-using osc::defaultLogger;
-using osc::InstallBacktraceHandler;
-using osc::log_info;
-using osc::Screenshot;
-using osc::ScreenshotAnnotation;
-using osc::Texture2D;
-using osc::Vec2;
+using namespace osc;
 
 namespace
 {

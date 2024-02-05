@@ -6,13 +6,7 @@
 #include <mutex>
 
 namespace detail = osc::detail;
-using osc::CircularBuffer;
-using osc::Logger;
-using osc::LogLevel;
-using osc::LogMessage;
-using osc::LogMessageView;
-using osc::LogSink;
-using osc::SynchronizedValue;
+using namespace osc;
 
 namespace
 {

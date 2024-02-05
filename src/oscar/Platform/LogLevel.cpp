@@ -8,8 +8,7 @@
 #include <cstddef>
 #include <iterator>
 
-using osc::CStringView;
-using osc::LogLevel;
+using namespace osc;
 
 namespace
 {
