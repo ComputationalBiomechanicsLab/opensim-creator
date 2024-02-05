@@ -16,6 +16,7 @@
 
 using osc::lm::Landmark;
 using osc::lm::ReadLandmarksFromCSV;
+using osc::log_info;
 using osc::mow::LandmarkPairing;
 using osc::mow::ValidationCheck;
 
@@ -46,7 +47,7 @@ namespace
         std::ifstream in{path};
         if (!in)
         {
-            osc::log::info("%s: cannot open landmark file", path.string().c_str());
+            log_info("%s: cannot open landmark file", path.string().c_str());
             return rv;
         }
 

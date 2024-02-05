@@ -11,7 +11,9 @@
 #include <string>
 #include <vector>
 
-osc::ComponentDetails::Response osc::ComponentDetails::onDraw(
+using namespace osc;
+
+ComponentDetails::Response osc::ComponentDetails::onDraw(
     SimTK::State const& state,
     OpenSim::Component const* comp)
 {
@@ -45,12 +47,12 @@ osc::ComponentDetails::Response osc::ComponentDetails::onDraw(
 
         ImGui::Text("getOwner().getName()");
         ImGui::NextColumn();
-        ImGui::Text("%s", osc::TryGetOwnerName(c).value_or("N/A (no owner)").c_str());
+        ImGui::Text("%s", TryGetOwnerName(c).value_or("N/A (no owner)").c_str());
         ImGui::NextColumn();
 
         ImGui::Text("getAbsolutePath()");
         ImGui::NextColumn();
-        ImGui::Text("%s", osc::GetAbsolutePathString(c).c_str());
+        ImGui::Text("%s", GetAbsolutePathString(c).c_str());
         ImGui::NextColumn();
 
         ImGui::Text("getConcreteClassName()");
@@ -136,7 +138,7 @@ osc::ComponentDetails::Response osc::ComponentDetails::onDraw(
     // sockets
     if (ImGui::CollapsingHeader("sockets"))
     {
-        std::vector<std::string> socknames = osc::GetSocketNames(c);
+        std::vector<std::string> socknames = GetSocketNames(c);
         ImGui::Columns(2);
         for (std::string const& sn : socknames)
         {

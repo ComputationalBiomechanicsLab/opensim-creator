@@ -15,16 +15,18 @@
 #include <string_view>
 #include <utility>
 
+using namespace osc;
+
 namespace
 {
-    osc::SimulationViewerRightClickEvent MakeRightClickEvent(
+    SimulationViewerRightClickEvent MakeRightClickEvent(
         OpenSim::Component const* maybeHover)
     {
         std::optional<std::string> maybeAbsPath = maybeHover ?
-            std::optional<std::string>{osc::GetAbsolutePathString(*maybeHover)} :
+            std::optional<std::string>{GetAbsolutePathString(*maybeHover)} :
             std::optional<std::string>{};
 
-        return osc::SimulationViewerRightClickEvent{std::move(maybeAbsPath)};
+        return SimulationViewerRightClickEvent{std::move(maybeAbsPath)};
     }
 }
 
@@ -58,7 +60,7 @@ private:
         std::optional<SceneCollision> const maybeCollision = m_Viewer.onDraw(msp);
 
         OpenSim::Component const* maybeHover = maybeCollision ?
-            osc::FindComponent(msp.getModel(), maybeCollision->decorationID) :
+            FindComponent(msp.getModel(), maybeCollision->decorationID) :
             nullptr;
 
         // care: this code must check whether the hover != current hover (even if
@@ -103,7 +105,7 @@ osc::SimulationViewerPanel::SimulationViewerPanel(SimulationViewerPanel&&) noexc
 osc::SimulationViewerPanel& osc::SimulationViewerPanel::operator=(SimulationViewerPanel&&) noexcept = default;
 osc::SimulationViewerPanel::~SimulationViewerPanel() noexcept = default;
 
-osc::CStringView osc::SimulationViewerPanel::implGetName() const
+CStringView osc::SimulationViewerPanel::implGetName() const
 {
     return m_Impl->getName();
 }

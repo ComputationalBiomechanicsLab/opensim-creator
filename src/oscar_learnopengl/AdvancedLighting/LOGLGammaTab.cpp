@@ -34,6 +34,7 @@ using osc::Mesh;
 using osc::MouseCapturingCamera;
 using osc::Shader;
 using osc::Texture2D;
+using osc::UID;
 using osc::Vec2;
 using osc::Vec3;
 
@@ -98,7 +99,7 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -193,7 +194,7 @@ osc::LOGLGammaTab::LOGLGammaTab(LOGLGammaTab&&) noexcept = default;
 osc::LOGLGammaTab& osc::LOGLGammaTab::operator=(LOGLGammaTab&&) noexcept = default;
 osc::LOGLGammaTab::~LOGLGammaTab() noexcept = default;
 
-osc::UID osc::LOGLGammaTab::implGetID() const
+UID osc::LOGLGammaTab::implGetID() const
 {
     return m_Impl->getID();
 }

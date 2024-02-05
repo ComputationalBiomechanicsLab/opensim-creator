@@ -2,7 +2,9 @@
 
 #include <gtest/gtest.h>
 
+using osc::CullMode;
+
 TEST(CullMode, DefaultsToOff)
 {
-    static_assert(osc::CullMode::Default == osc::CullMode::Off);
+    static_assert(CullMode::Default == CullMode::Off);
 }

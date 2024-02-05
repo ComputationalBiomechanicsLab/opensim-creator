@@ -46,25 +46,27 @@
 #include <utility>
 #include <vector>
 
+using namespace osc;
+
 namespace
 {
-    std::unique_ptr<osc::ITab> LoadConfigurationDefinedTabIfNecessary(
-        osc::AppConfig const& config,
-        osc::TabRegistry const& tabRegistry,
-        osc::ParentPtr<osc::ITabHost> const& api)
+    std::unique_ptr<ITab> LoadConfigurationDefinedTabIfNecessary(
+        AppConfig const& config,
+        TabRegistry const& tabRegistry,
+        ParentPtr<ITabHost> const& api)
     {
         if (std::optional<std::string> maybeRequestedTab = config.getInitialTabOverride())
         {
-            if (std::optional<osc::TabRegistryEntry> maybeEntry = tabRegistry.getByName(*maybeRequestedTab))
+            if (std::optional<TabRegistryEntry> maybeEntry = tabRegistry.getByName(*maybeRequestedTab))
             {
                 return maybeEntry->createTab(api);
             }
 
-            osc::log::warn("%s: cannot find a tab with this name in the tab registry: ignoring", maybeRequestedTab->c_str());
-            osc::log::warn("available tabs are:");
+            log_warn("%s: cannot find a tab with this name in the tab registry: ignoring", maybeRequestedTab->c_str());
+            log_warn("available tabs are:");
             for (size_t i = 0; i < tabRegistry.size(); ++i)
             {
-                osc::log::warn("    %s", tabRegistry[i].getName().c_str());
+                log_warn("    %s", tabRegistry[i].getName().c_str());
             }
         }
 
@@ -73,7 +75,7 @@ namespace
 }
 
 class osc::MainUIScreen::Impl final :
-    public osc::IMainUIStateAPI,
+    public IMainUIStateAPI,
     public std::enable_shared_from_this<Impl> {
 public:
 
@@ -96,7 +98,7 @@ public:
 
             // if the application configuration has requested that a specific tab should be opened,
             // then try looking it up and open it
-            if (auto tab = LoadConfigurationDefinedTabIfNecessary(App::get().getConfig(), *App::singleton<osc::TabRegistry>(), getTabHostAPI()))
+            if (auto tab = LoadConfigurationDefinedTabIfNecessary(App::get().getConfig(), *App::singleton<TabRegistry>(), getTabHostAPI()))
             {
                 addTab(std::move(tab));
             }
@@ -108,7 +110,7 @@ public:
             }
         }
 
-        osc::ImGuiInit();
+        ImGuiInit();
         ImPlot::CreateContext();
     }
 
@@ -127,14 +129,14 @@ public:
                 // - soak up the exception to prevent the whole application from terminating
                 // - and emit the error to the log, because we have to assume that this
                 //   screen is about to die (it's being unmounted)
-                log::error("MainUIScreen::onUnmount: unmounting active tab threw an exception: %s", ex.what());
+                log_error("MainUIScreen::onUnmount: unmounting active tab threw an exception: %s", ex.what());
             }
 
             m_ActiveTabID = UID::empty();
         }
 
         ImPlot::DestroyContext();
-        osc::ImGuiShutdown();
+        ImGuiShutdown();
     }
 
     void onEvent(SDL_Event const& e)
@@ -144,9 +146,9 @@ public:
             e.key.keysym.scancode == SDL_SCANCODE_P)
         {
             // Ctrl+/Super+P operates as a "take a screenshot" request
-            m_MaybeScreenshotRequest = osc::App::upd().requestScreenshot();
+            m_MaybeScreenshotRequest = App::upd().requestScreenshot();
         }
-        else if (osc::ImGuiOnEvent(e))
+        else if (ImGuiOnEvent(e))
         {
             // event was pumped into ImGui - it shouldn't be pumped into the active tab
             m_ShouldRequestRedraw = true;
@@ -167,7 +169,7 @@ public:
                 }
                 catch (std::exception const& ex)
                 {
-                    log::error("MainUIScreen::onEvent: exception thrown by tab: %s", ex.what());
+                    log_error("MainUIScreen::onEvent: exception thrown by tab: %s", ex.what());
 
                     // - the tab is faulty in some way
                     // - soak up the exception to prevent the whole application from terminating
@@ -213,7 +215,7 @@ public:
             }
             catch (std::exception const& ex)
             {
-                log::error("MainUIScreen::onEvent: exception thrown by tab: %s", ex.what());
+                log_error("MainUIScreen::onEvent: exception thrown by tab: %s", ex.what());
 
                 // - the tab is faulty in some way
                 // - soak up the exception to prevent the whole application from terminating
@@ -247,7 +249,7 @@ public:
             catch (std::exception const& ex)
             {
 
-                log::error("MainUIScreen::onTick: tab thrown an exception: %s", ex.what());
+                log_error("MainUIScreen::onTick: tab thrown an exception: %s", ex.what());
 
                 // - the tab is faulty in some way
                 // - soak up the exception to prevent the whole application from terminating
@@ -274,7 +276,7 @@ public:
             App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
         }
 
-        osc::ImGuiNewFrame();
+        ImGuiNewFrame();
         ImGuizmo::BeginFrame();
 
         {
@@ -290,9 +292,9 @@ public:
             }
             m_ActiveTabID = UID::empty();
 
-            osc::ImGuiShutdown();
-            osc::ImGuiInit();
-            osc::App::upd().requestRedraw();
+            ImGuiShutdown();
+            ImGuiInit();
+            App::upd().requestRedraw();
             m_ImguiWasAggressivelyReset = false;
 
             return;
@@ -300,12 +302,12 @@ public:
 
         {
             OSC_PERF("MainUIScreen/ImGuiRender");
-            osc::ImGuiRender();
+            ImGuiRender();
         }
 
         if (m_ShouldRequestRedraw)
         {
-            osc::App::upd().requestRedraw();
+            App::upd().requestRedraw();
             m_ShouldRequestRedraw = false;
         }
     }
@@ -333,7 +335,7 @@ public:
     void implAddUserOutputExtractor(OutputExtractor const& output) final
     {
         m_UserOutputExtractors.push_back(output);
-        osc::App::upd().updConfig().setIsPanelEnabled("Output Watches", true);
+        App::upd().updConfig().setIsPanelEnabled("Output Watches", true);
     }
 
     void implRemoveUserOutputExtractor(int idx) final
@@ -354,15 +356,15 @@ public:
 
 private:
 
-    osc::ParentPtr<IMainUIStateAPI> getTabHostAPI()
+    ParentPtr<IMainUIStateAPI> getTabHostAPI()
     {
-        return osc::ParentPtr<IMainUIStateAPI>{shared_from_this()};
+        return ParentPtr<IMainUIStateAPI>{shared_from_this()};
     }
     void drawTabSpecificMenu()
     {
         OSC_PERF("MainUIScreen/drawTabSpecificMenu");
 
-        if (osc::BeginMainViewportTopBar("##TabSpecificMenuBar"))
+        if (BeginMainViewportTopBar("##TabSpecificMenuBar"))
         {
             if (ImGui::BeginMenuBar())
             {
@@ -374,7 +376,7 @@ private:
                     }
                     catch (std::exception const& ex)
                     {
-                        log::error("MainUIScreen::drawTabSpecificMenu: tab thrown an exception: %s", ex.what());
+                        log_error("MainUIScreen::drawTabSpecificMenu: tab thrown an exception: %s", ex.what());
 
                         // - the tab is faulty in some way
                         // - soak up the exception to prevent the whole application from terminating
@@ -404,7 +406,7 @@ private:
         ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2{ 5.0f, 0.0f });
         ImGui::PushStyleVar(ImGuiStyleVar_TabRounding, 10.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
-        if (osc::BeginMainViewportTopBar("##TabBarViewport"))
+        if (BeginMainViewportTopBar("##TabBarViewport"))
         {
             if (ImGui::BeginMenuBar())
             {
@@ -518,7 +520,7 @@ private:
             }
             catch (std::exception const& ex)
             {
-                log::error("MainUIScreen::drawUIConent: tab thrown an exception: %s", ex.what());
+                log_error("MainUIScreen::drawUIConent: tab thrown an exception: %s", ex.what());
 
                 // - the tab is faulty in some way
                 // - soak up the exception to prevent the whole application from terminating
@@ -557,7 +559,7 @@ private:
             selectTab(addTab(std::make_unique<mi::MeshImporterTab>(getTabHostAPI())));
         }
 
-        std::shared_ptr<TabRegistry const> const tabs = osc::App::singleton<TabRegistry>();
+        std::shared_ptr<TabRegistry const> const tabs = App::singleton<TabRegistry>();
         if (tabs->size() > 0)
         {
             if (ImGui::BeginMenu("Experimental Tabs"))
@@ -567,7 +569,7 @@ private:
                     TabRegistryEntry e = (*tabs)[i];
                     if (ImGui::MenuItem(e.getName().c_str()))
                     {
-                        selectTab(addTab(e.createTab(osc::ParentPtr<osc::ITabHost>{getTabHostAPI()})));
+                        selectTab(addTab(e.createTab(ParentPtr<ITabHost>{getTabHostAPI()})));
                     }
                 }
                 ImGui::EndMenu();
@@ -627,7 +629,7 @@ private:
             nukeDeletedTabs();
             if (m_QuitRequested)
             {
-                osc::App::upd().requestQuit();
+                App::upd().requestQuit();
             }
             return true;
         }
@@ -643,7 +645,7 @@ private:
         nukeDeletedTabs();
         if (m_QuitRequested)
         {
-            osc::App::upd().requestQuit();
+            App::upd().requestQuit();
         }
         return true;
     }
@@ -737,7 +739,7 @@ private:
             ss << "\n\n";
 
             // open the popup
-            osc::SaveChangesPopupConfig cfg
+            SaveChangesPopupConfig cfg
             {
                 "Save Changes?",
                 [this]() { return onUserSelectedSaveChangesInSavePrompt(); },
@@ -834,7 +836,7 @@ osc::MainUIScreen::MainUIScreen(MainUIScreen&&) noexcept = default;
 osc::MainUIScreen& osc::MainUIScreen::operator=(MainUIScreen&&) noexcept = default;
 osc::MainUIScreen::~MainUIScreen() noexcept = default;
 
-osc::UID osc::MainUIScreen::addTab(std::unique_ptr<ITab> tab)
+UID osc::MainUIScreen::addTab(std::unique_ptr<ITab> tab)
 {
     return m_Impl->addTab(std::move(tab));
 }

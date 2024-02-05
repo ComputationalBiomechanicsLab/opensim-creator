@@ -31,6 +31,7 @@ using osc::Mesh;
 using osc::MouseCapturingCamera;
 using osc::Shader;
 using osc::Transform;
+using osc::UID;
 using osc::Vec3;
 
 namespace
@@ -63,7 +64,7 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -145,7 +146,7 @@ osc::LOGLFaceCullingTab::LOGLFaceCullingTab(LOGLFaceCullingTab&&) noexcept = def
 osc::LOGLFaceCullingTab& osc::LOGLFaceCullingTab::operator=(LOGLFaceCullingTab&&) noexcept = default;
 osc::LOGLFaceCullingTab::~LOGLFaceCullingTab() noexcept = default;
 
-osc::UID osc::LOGLFaceCullingTab::implGetID() const
+UID osc::LOGLFaceCullingTab::implGetID() const
 {
     return m_Impl->getID();
 }

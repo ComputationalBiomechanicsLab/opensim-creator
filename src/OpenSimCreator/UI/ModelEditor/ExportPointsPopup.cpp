@@ -33,12 +33,12 @@
 #include <unordered_set>
 #include <utility>
 
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {
-    constexpr osc::CStringView c_ExplanationText = "Exports the chosen points within the model, potentially with respect to a chosen frame, as a standard data file (CSV)";
-    constexpr osc::CStringView c_OriginalFrameLabel = "(original frame)";
+    constexpr CStringView c_ExplanationText = "Exports the chosen points within the model, potentially with respect to a chosen frame, as a standard data file (CSV)";
+    constexpr CStringView c_OriginalFrameLabel = "(original frame)";
 
     struct PointSelectorUiState final {
         std::string searchString;
@@ -65,17 +65,17 @@ namespace
         SimTK::State const& state)
     {
         return
-            osc::CanExtractPointInfoFrom(component, state) &&
-            osc::ContainsCaseInsensitive(component.getName(), uiState.searchString);
+            CanExtractPointInfoFrom(component, state) &&
+            ContainsCaseInsensitive(component.getName(), uiState.searchString);
     }
 
     void DrawExportPointsPopupDescriptionSection()
     {
         ImGui::Text("Description");
         ImGui::Separator();
-        osc::BeginDisabled();
+        BeginDisabled();
         ImGui::TextWrapped("%s", c_ExplanationText.c_str());
-        osc::EndDisabled();
+        EndDisabled();
         ImGui::PopStyleColor();
     }
 
@@ -83,17 +83,17 @@ namespace
         OpenSim::Component const& component,
         SimTK::State const& state)
     {
-        osc::BeginTooltip();
+        BeginTooltip();
         ImGui::TextUnformatted(component.getName().c_str());
         ImGui::SameLine();
         ImGui::TextDisabled("%s", component.getConcreteClassName().c_str());
 
-        if (std::optional<osc::PointInfo> const pointInfo = osc::TryExtractPointInfo(component, state))
+        if (std::optional<PointInfo> const pointInfo = TryExtractPointInfo(component, state))
         {
             ImGui::TextDisabled("Expressed In: %s", pointInfo->frameAbsPath.toString().c_str());
         }
 
-        osc::EndTooltip();
+        EndTooltip();
     }
 
     void DrawPointListElement(
@@ -101,11 +101,11 @@ namespace
         OpenSim::Component const& component,
         SimTK::State const& state)
     {
-        OSC_ASSERT(osc::CanExtractPointInfoFrom(component, state));
+        OSC_ASSERT(CanExtractPointInfoFrom(component, state));
 
-        std::string const absPath = osc::GetAbsolutePathString(component);
+        std::string const absPath = GetAbsolutePathString(component);
 
-        bool selected = osc::Contains(uiState.selectedPointAbsPaths, absPath);
+        bool selected = Contains(uiState.selectedPointAbsPaths, absPath);
         if (ImGui::Checkbox(component.getName().c_str(), &selected))
         {
             if (selected)
@@ -167,17 +167,17 @@ namespace
     {
         for (OpenSim::Component const& component : model.getComponentList())
         {
-            if (osc::CanExtractPointInfoFrom(component, state) && predicate(component))
+            if (CanExtractPointInfoFrom(component, state) && predicate(component))
             {
-                static_assert(osc::NumOptions<SelectionState>() == 2u);
+                static_assert(NumOptions<SelectionState>() == 2u);
                 switch (selectionState)
                 {
                 case SelectionState::Selected:
-                    uiState.selectedPointAbsPaths.insert(osc::GetAbsolutePathString(component));
+                    uiState.selectedPointAbsPaths.insert(GetAbsolutePathString(component));
                     break;
                 case SelectionState::NotSelected:
                 default:
-                    uiState.selectedPointAbsPaths.erase(osc::GetAbsolutePathString(component));
+                    uiState.selectedPointAbsPaths.erase(GetAbsolutePathString(component));
                     break;
                 }
             }
@@ -194,9 +194,9 @@ namespace
         {
             if (ImGui::MenuItem(f.getName().c_str()))
             {
-                auto const isAttachedToFrame = [path = osc::GetAbsolutePath(f), &state](OpenSim::Component const& c)
+                auto const isAttachedToFrame = [path = GetAbsolutePath(f), &state](OpenSim::Component const& c)
                 {
-                    if (auto const pointInfo = osc::TryExtractPointInfo(c, state))
+                    if (auto const pointInfo = TryExtractPointInfo(c, state))
                     {
                         return pointInfo->frameAbsPath == path;
                     }
@@ -301,7 +301,7 @@ namespace
     {
         ImGui::Text("Points");
         ImGui::Separator();
-        osc::InputString("search", uiState.searchString);
+        InputString("search", uiState.searchString);
         DrawPointSelectionList(uiState, model, state);
         DrawSelectionManipulatorButtons(uiState, model, state);
     }
@@ -311,7 +311,7 @@ namespace
         OpenSim::Model const& model)
     {
         return uiState.maybeSelectedFrameAbsPath ?
-            osc::FindComponent(model, *uiState.maybeSelectedFrameAbsPath) :
+            FindComponent(model, *uiState.maybeSelectedFrameAbsPath) :
             nullptr;
     }
 
@@ -336,7 +336,7 @@ namespace
         FrameSelectorUiState& uiState,
         OpenSim::Frame const& frame)
     {
-        std::string const absPath = osc::GetAbsolutePathString(frame);
+        std::string const absPath = GetAbsolutePathString(frame);
         bool const selected = uiState.maybeSelectedFrameAbsPath == absPath;
 
         if (ImGui::Selectable(frame.getName().c_str(), selected))
@@ -372,7 +372,7 @@ namespace
     void DrawOutputFormatEditor(OutputFormatEditorUiState& uiState)
     {
         ImGui::Checkbox("Export Point Names as Absolute Paths", &uiState.exportPointNamesAsAbsPaths);
-        osc::DrawTooltipBodyOnlyIfItemHovered("If selected, the exported point name will be the full path to the point (e.g. `/forceset/somemuscle/geometrypath/pointname`), rather than just the name of the point (e.g. `pointname`)");
+        DrawTooltipBodyOnlyIfItemHovered("If selected, the exported point name will be the full path to the point (e.g. `/forceset/somemuscle/geometrypath/pointname`), rather than just the name of the point (e.g. `pointname`)");
     }
 
     enum class ExportStepReturn {
@@ -392,7 +392,7 @@ namespace
             return std::nullopt;  // caller doesn't want re-expression
         }
 
-        auto const* const frame = osc::FindComponent<OpenSim::Frame>(model, *maybeAbsPathOfFrameToReexpressPointsIn);
+        auto const* const frame = FindComponent<OpenSim::Frame>(model, *maybeAbsPathOfFrameToReexpressPointsIn);
         if (!frame)
         {
             return std::nullopt;  // the selected frame doesn't exist in the model (bug?)
@@ -414,7 +414,7 @@ namespace
         {
             auto const isComponentNameLexographicallyLess = [](std::string const& a, std::string const& b)
             {
-                return osc::SubstringAfterLast(a, '/') < osc::SubstringAfterLast(b, '/');
+                return SubstringAfterLast(a, '/') < SubstringAfterLast(b, '/');
             };
             std::sort(rv.begin(), rv.end(), isComponentNameLexographicallyLess);
         }
@@ -424,16 +424,16 @@ namespace
     Vec3 CalcReexpressedFrame(
         OpenSim::Model const& model,
         SimTK::State const& state,
-        osc::PointInfo const& pointInfo,
+        PointInfo const& pointInfo,
         SimTK::Transform const& ground2otherFrame)
     {
-        auto const* const frame = osc::FindComponent<OpenSim::Frame>(model, pointInfo.frameAbsPath);
+        auto const* const frame = FindComponent<OpenSim::Frame>(model, pointInfo.frameAbsPath);
         if (!frame)
         {
             return pointInfo.location;  // cannot find frame (bug?)
         }
 
-        return osc::ToVec3(ground2otherFrame * frame->getTransformInGround(state) * osc::ToSimTKVec3(pointInfo.location));
+        return ToVec3(ground2otherFrame * frame->getTransformInGround(state) * ToSimTKVec3(pointInfo.location));
     }
 
     void TryWriteOneCSVDataRow(
@@ -444,13 +444,13 @@ namespace
         std::string const& pointAbsPath,
         std::ostream& out)
     {
-        OpenSim::Component const* const c = osc::FindComponent(model, pointAbsPath);
+        OpenSim::Component const* const c = FindComponent(model, pointAbsPath);
         if (!c)
         {
             return;  // skip writing: point no longer exists in model
         }
 
-        std::optional<osc::PointInfo> const pi = osc::TryExtractPointInfo(*c, state);
+        std::optional<PointInfo> const pi = TryExtractPointInfo(*c, state);
         if (!pi)
         {
             return;  // skip writing: cannot extract point info for the component
@@ -463,7 +463,7 @@ namespace
             pi->location;
 
         std::string const name = shouldExportPointsWithAbsPathNames ?
-            osc::GetAbsolutePathString(*c) :
+            GetAbsolutePathString(*c) :
             c->getName();
 
         auto const columns = std::to_array<std::string>(
@@ -474,7 +474,7 @@ namespace
             std::to_string(position[2]),
         });
 
-        osc::WriteCSVRow(out, columns);
+        WriteCSVRow(out, columns);
     }
 
     void WritePointsAsCSVTo(
@@ -497,7 +497,7 @@ namespace
         );
 
         // write header row
-        osc::WriteCSVRow(
+        WriteCSVRow(
             out,
             std::to_array<std::string>({ "Name", "X", "Y", "Z" })
         );
@@ -524,7 +524,7 @@ namespace
         bool shouldExportPointsWithAbsPathNames)
     {
         // prompt user to select a save location
-        std::optional<std::filesystem::path> const saveLoc = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+        std::optional<std::filesystem::path> const saveLoc = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
         if (!saveLoc)
         {
             return ExportStepReturn::UserCancelled;
@@ -552,7 +552,7 @@ namespace
     }
 }
 
-class osc::ExportPointsPopup::Impl final : public osc::StandardPopup {
+class osc::ExportPointsPopup::Impl final : public StandardPopup {
 public:
     Impl(
         std::string_view popupName_,
@@ -597,7 +597,7 @@ private:
 
         if (ImGui::Button(ICON_FA_UPLOAD " Export to CSV"))
         {
-            static_assert(osc::NumOptions<ExportStepReturn>() == 3, "review error handling");
+            static_assert(NumOptions<ExportStepReturn>() == 3, "review error handling");
             ExportStepReturn const rv = ActionPromptUserForSaveLocationAndExportPoints(
                 m_Model->getModel(),
                 m_Model->getState(),

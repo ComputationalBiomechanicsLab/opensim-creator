@@ -6,65 +6,70 @@
 #include <oscar/Graphics/RenderBufferStoreAction.hpp>
 #include <oscar/Graphics/RenderTexture.hpp>
 
+using osc::RenderBufferLoadAction;
+using osc::RenderBufferStoreAction;
+using osc::RenderTargetDepthAttachment;
+using osc::RenderTexture;
+
 TEST(RenderTargetDepthAttachment, CanConstructFromPartsOfRenderTexture)
 {
-    osc::RenderTexture renderTex{{1, 1}};
+    RenderTexture renderTex{{1, 1}};
 
-    osc::RenderTargetDepthAttachment attachment
+    RenderTargetDepthAttachment attachment
     {
         renderTex.updDepthBuffer(),
-        osc::RenderBufferLoadAction::Clear,
-        osc::RenderBufferStoreAction::Resolve,
+        RenderBufferLoadAction::Clear,
+        RenderBufferStoreAction::Resolve,
     };
 
     ASSERT_EQ(attachment.buffer, renderTex.updDepthBuffer());
-    ASSERT_EQ(attachment.loadAction, osc::RenderBufferLoadAction::Clear);
-    ASSERT_EQ(attachment.storeAction, osc::RenderBufferStoreAction::Resolve);
+    ASSERT_EQ(attachment.loadAction, RenderBufferLoadAction::Clear);
+    ASSERT_EQ(attachment.storeAction, RenderBufferStoreAction::Resolve);
 }
 
 TEST(RenderTargetDepthAttachment, ConstructingWithNullptrThrowsException)
 {
     ASSERT_ANY_THROW(
     {
-        osc::RenderTargetDepthAttachment
+        RenderTargetDepthAttachment
         (
             nullptr,
-            osc::RenderBufferLoadAction::Clear,
-            osc::RenderBufferStoreAction::Resolve
+            RenderBufferLoadAction::Clear,
+            RenderBufferStoreAction::Resolve
         );
     });
 }
 
 TEST(RenderTargetDepthAttachment, EqualityReturnsTrueForCopies)
 {
-    osc::RenderTexture renderTex;
-    osc::RenderTargetDepthAttachment attachment
+    RenderTexture renderTex;
+    RenderTargetDepthAttachment attachment
     {
         renderTex.updColorBuffer(),
-        osc::RenderBufferLoadAction::Clear,
-        osc::RenderBufferStoreAction::Resolve,
+        RenderBufferLoadAction::Clear,
+        RenderBufferStoreAction::Resolve,
     };
-    osc::RenderTargetDepthAttachment const copy = attachment;  // NOLINT(performance-unnecessary-copy-initialization)
+    RenderTargetDepthAttachment const copy = attachment;  // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(copy, attachment);
 }
 
 TEST(RenderTargetDepthAttachment, EqualityReturnsTrueForSeperatelyConstructedButLogicallyEqualValues)
 {
-    osc::RenderTexture renderTex;
+    RenderTexture renderTex;
 
-    osc::RenderTargetDepthAttachment a
+    RenderTargetDepthAttachment a
     {
         renderTex.updColorBuffer(),
-        osc::RenderBufferLoadAction::Clear,
-        osc::RenderBufferStoreAction::Resolve,
+        RenderBufferLoadAction::Clear,
+        RenderBufferStoreAction::Resolve,
     };
 
-    osc::RenderTargetDepthAttachment b
+    RenderTargetDepthAttachment b
     {
         renderTex.updColorBuffer(),
-        osc::RenderBufferLoadAction::Clear,
-        osc::RenderBufferStoreAction::Resolve,
+        RenderBufferLoadAction::Clear,
+        RenderBufferStoreAction::Resolve,
     };
 
     ASSERT_EQ(a, b);
@@ -72,18 +77,18 @@ TEST(RenderTargetDepthAttachment, EqualityReturnsTrueForSeperatelyConstructedBut
 
 TEST(RenderTargetDepthAttachment, EqualityReturnsFalseIfSomethingIsModified)
 {
-    osc::RenderTexture firstRenderTex;
-    osc::RenderTexture secondRenderTex;
-    osc::RenderTargetDepthAttachment attachment
+    RenderTexture firstRenderTex;
+    RenderTexture secondRenderTex;
+    RenderTargetDepthAttachment attachment
     {
         firstRenderTex.updColorBuffer(),
-        osc::RenderBufferLoadAction::Clear,
-        osc::RenderBufferStoreAction::Resolve,
+        RenderBufferLoadAction::Clear,
+        RenderBufferStoreAction::Resolve,
     };
 
     // modify buffer
     {
-        osc::RenderTargetDepthAttachment copy = attachment;
+        RenderTargetDepthAttachment copy = attachment;
         ASSERT_EQ(copy, attachment);
         copy.buffer = secondRenderTex.updColorBuffer();
         ASSERT_NE(copy, attachment);
@@ -91,17 +96,17 @@ TEST(RenderTargetDepthAttachment, EqualityReturnsFalseIfSomethingIsModified)
 
     // modify load action
     {
-        osc::RenderTargetDepthAttachment copy = attachment;
+        RenderTargetDepthAttachment copy = attachment;
         ASSERT_EQ(copy, attachment);
-        copy.loadAction = osc::RenderBufferLoadAction::Load;
+        copy.loadAction = RenderBufferLoadAction::Load;
         ASSERT_NE(copy, attachment);
     }
 
     // modify store action
     {
-        osc::RenderTargetDepthAttachment copy = attachment;
+        RenderTargetDepthAttachment copy = attachment;
         ASSERT_EQ(copy, attachment);
-        copy.storeAction = osc::RenderBufferStoreAction::DontCare;
+        copy.storeAction = RenderBufferStoreAction::DontCare;
         ASSERT_NE(copy, attachment);
     }
 }

@@ -13,6 +13,7 @@
 #include <type_traits>
 #include <utility>
 
+using osc::getTracebackLog;
 using osc::LogLevel;
 using osc::LogMessage;
 using osc::SetClipboardText;
@@ -44,7 +45,7 @@ namespace
     {
         std::stringstream ss;
 
-        auto& guarded_content = osc::log::getTracebackLog();
+        auto& guarded_content = getTracebackLog();
         {
             auto const& content = guarded_content.lock();
             for (LogMessage const& msg : *content)
@@ -63,7 +64,7 @@ class osc::LogViewer::Impl final {
 public:
     void onDraw()
     {
-        auto logger = log::defaultLogger();
+        auto logger = defaultLogger();
         if (!logger)
         {
             return;
@@ -96,7 +97,7 @@ public:
             ImGui::SameLine();
             if (ImGui::Button("clear"))
             {
-                log::getTracebackLog().lock()->clear();
+                getTracebackLog().lock()->clear();
             }
             App::upd().addFrameAnnotation("LogClearButton", GetItemRect());
 
@@ -118,7 +119,7 @@ public:
         }
 
         // draw log content lines
-        auto& guardedContent = log::getTracebackLog();
+        auto& guardedContent = getTracebackLog();
         auto const& contentGuard = guardedContent.lock();
         for (LogMessage const& msg : *contentGuard)
         {

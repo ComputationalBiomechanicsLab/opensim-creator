@@ -7,6 +7,8 @@
 
 #include <optional>
 
+using namespace osc;
+
 osc::OpenSimDecorationOptions::OpenSimDecorationOptions() :
     m_MuscleDecorationStyle{MuscleDecorationStyle::Default},
     m_MuscleColoringStyle{MuscleColoringStyle::Default},
@@ -15,7 +17,7 @@ osc::OpenSimDecorationOptions::OpenSimDecorationOptions() :
 {
 }
 
-osc::MuscleDecorationStyle osc::OpenSimDecorationOptions::getMuscleDecorationStyle() const
+MuscleDecorationStyle osc::OpenSimDecorationOptions::getMuscleDecorationStyle() const
 {
     return m_MuscleDecorationStyle;
 }
@@ -25,7 +27,7 @@ void osc::OpenSimDecorationOptions::setMuscleDecorationStyle(MuscleDecorationSty
     m_MuscleDecorationStyle = s;
 }
 
-osc::MuscleColoringStyle osc::OpenSimDecorationOptions::getMuscleColoringStyle() const
+MuscleColoringStyle osc::OpenSimDecorationOptions::getMuscleColoringStyle() const
 {
     return m_MuscleColoringStyle;
 }
@@ -35,7 +37,7 @@ void osc::OpenSimDecorationOptions::setMuscleColoringStyle(MuscleColoringStyle s
     m_MuscleColoringStyle = s;
 }
 
-osc::MuscleSizingStyle osc::OpenSimDecorationOptions::getMuscleSizingStyle() const
+MuscleSizingStyle osc::OpenSimDecorationOptions::getMuscleSizingStyle() const
 {
     return m_MuscleSizingStyle;
 }
@@ -60,12 +62,12 @@ void osc::OpenSimDecorationOptions::setOptionValue(ptrdiff_t i, bool v)
     SetIthOption(m_Flags, i, v);
 }
 
-osc::CStringView osc::OpenSimDecorationOptions::getOptionLabel(ptrdiff_t i) const
+CStringView osc::OpenSimDecorationOptions::getOptionLabel(ptrdiff_t i) const
 {
     return GetIthOptionMetadata(i).label;
 }
 
-std::optional<osc::CStringView> osc::OpenSimDecorationOptions::getOptionDescription(ptrdiff_t i) const
+std::optional<CStringView> osc::OpenSimDecorationOptions::getOptionDescription(ptrdiff_t i) const
 {
     return GetIthOptionMetadata(i).maybeDescription;
 }
@@ -160,7 +162,7 @@ void osc::OpenSimDecorationOptions::forEachOptionAsAppSettingValue(std::function
 
 void osc::OpenSimDecorationOptions::tryUpdFromValues(
     std::string_view prefix,
-    std::unordered_map<std::string, osc::AppSettingValue> const& lut)
+    std::unordered_map<std::string, AppSettingValue> const& lut)
 {
     // looks up a single element in the lut
     auto lookup = [

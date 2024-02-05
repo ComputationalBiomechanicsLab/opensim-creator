@@ -23,6 +23,7 @@ using osc::App;
 using osc::CStringView;
 using osc::Mesh;
 using osc::SceneCache;
+using osc::UID;
 
 namespace
 {
@@ -105,7 +106,7 @@ private:
 
 // public API
 
-osc::CStringView osc::MeshGenTestTab::id()
+CStringView osc::MeshGenTestTab::id()
 {
     return c_TabStringID;
 }
@@ -118,12 +119,12 @@ osc::MeshGenTestTab::MeshGenTestTab(MeshGenTestTab&&) noexcept = default;
 osc::MeshGenTestTab& osc::MeshGenTestTab::operator=(MeshGenTestTab&&) noexcept = default;
 osc::MeshGenTestTab::~MeshGenTestTab() noexcept = default;
 
-osc::UID osc::MeshGenTestTab::implGetID() const
+UID osc::MeshGenTestTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::MeshGenTestTab::implGetName() const
+CStringView osc::MeshGenTestTab::implGetName() const
 {
     return m_Impl->getName();
 }

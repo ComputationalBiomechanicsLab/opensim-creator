@@ -58,6 +58,7 @@ using osc::RenderTextureDescriptor;
 using osc::RenderTextureFormat;
 using osc::Shader;
 using osc::ToLinear;
+using osc::UID;
 using osc::Vec2;
 using osc::Vec3;
 
@@ -136,8 +137,8 @@ namespace
     MouseCapturingCamera CreateCameraThatMatchesLearnOpenGL()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.0f, 5.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setPosition({0.0f, 0.5f, 5.0f});
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor(Color::black());
@@ -374,7 +375,7 @@ osc::LOGLDeferredShadingTab::LOGLDeferredShadingTab(LOGLDeferredShadingTab&&) no
 osc::LOGLDeferredShadingTab& osc::LOGLDeferredShadingTab::operator=(LOGLDeferredShadingTab&&) noexcept = default;
 osc::LOGLDeferredShadingTab::~LOGLDeferredShadingTab() noexcept = default;
 
-osc::UID osc::LOGLDeferredShadingTab::implGetID() const
+UID osc::LOGLDeferredShadingTab::implGetID() const
 {
     return m_Impl->getID();
 }

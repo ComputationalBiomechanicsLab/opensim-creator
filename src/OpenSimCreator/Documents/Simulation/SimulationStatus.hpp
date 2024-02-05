@@ -6,7 +6,7 @@
 
 namespace osc
 {
-    // current status of an `osc::VirutalSimulation`
+    // current status of an `VirutalSimulation`
     enum class SimulationStatus {
         Initializing,
         Running,

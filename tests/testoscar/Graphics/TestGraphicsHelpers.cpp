@@ -10,20 +10,23 @@
 #include <array>
 #include <filesystem>
 
+using osc::ColorSpace;
+using osc::Texture2D;
+
 TEST(GraphicsHelpers, LoadTexture2DFromImageRespectsSRGBColorSpace)
 {
     auto const path = std::filesystem::path{OSC_BUILD_RESOURCES_DIR} / "testoscar" / "awesomeface.png";
 
-    osc::Texture2D const rv = osc::LoadTexture2DFromImage(path, osc::ColorSpace::sRGB);
+    Texture2D const rv = LoadTexture2DFromImage(path, ColorSpace::sRGB);
 
-    ASSERT_EQ(rv.getColorSpace(), osc::ColorSpace::sRGB);
+    ASSERT_EQ(rv.getColorSpace(), ColorSpace::sRGB);
 }
 
 TEST(GraphicsHelpers, LoadTexture2DFromImageRespectsLinearColorSpace)
 {
     auto const path = std::filesystem::path{OSC_BUILD_RESOURCES_DIR} / "testoscar" / "awesomeface.png";
 
-    osc::Texture2D const rv = osc::LoadTexture2DFromImage(path, osc::ColorSpace::Linear);
+    Texture2D const rv = LoadTexture2DFromImage(path, ColorSpace::Linear);
 
-    ASSERT_EQ(rv.getColorSpace(), osc::ColorSpace::Linear);
+    ASSERT_EQ(rv.getColorSpace(), ColorSpace::Linear);
 }

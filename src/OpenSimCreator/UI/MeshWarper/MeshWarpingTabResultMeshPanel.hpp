@@ -53,8 +53,8 @@ namespace osc
 
             // render it via ImGui and hittest it
             RenderTexture& renderTexture = renderScene(dims);
-            osc::DrawTextureAsImGuiImage(renderTexture);
-            m_LastTextureHittestResult = osc::HittestLastImguiItem();
+            DrawTextureAsImGuiImage(renderTexture);
+            m_LastTextureHittestResult = HittestLastImguiItem();
 
             drawOverlays(m_LastTextureHittestResult.rect);
         }
@@ -106,15 +106,15 @@ namespace osc
         // draws a information icon that shows basic mesh info when hovered
         void drawInformationIcon()
         {
-            osc::ButtonNoBg(ICON_FA_INFO_CIRCLE);
+            ButtonNoBg(ICON_FA_INFO_CIRCLE);
             if (ImGui::IsItemHovered())
             {
-                osc::BeginTooltip();
+                BeginTooltip();
 
                 ImGui::TextDisabled("Result Information:");
                 drawInformationTable();
 
-                osc::EndTooltip();
+                EndTooltip();
             }
         }
 

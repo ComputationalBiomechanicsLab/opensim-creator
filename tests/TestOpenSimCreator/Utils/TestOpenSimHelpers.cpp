@@ -21,6 +21,23 @@
 #include <string>
 #include <vector>
 
+using osc::AddModelComponent;
+using osc::CopyCommonJointProperties;
+using osc::FinalizeConnections;
+using osc::FindComponentMut;
+using osc::ForEachComponent;
+using osc::GetAbsolutePath;
+using osc::GetAbsolutePathOrEmpty;
+using osc::GetAbsolutePathString;
+using osc::GetComponentRegistry;
+using osc::GetNumChildren;
+using osc::InitializeModel;
+using osc::InitializeState;
+using osc::LoadOpenSimCreatorConfig;
+using osc::log_info;
+using osc::TryDeleteComponentFromModel;
+using osc::UndoableModelStatePair;
+
 namespace
 {
     class InnerParent : public OpenSim::Component {
@@ -56,18 +73,18 @@ namespace
 // the joint) but it shouldn't hard crash (it is)
 TEST(OpenSimHelpers, DISABLED_CanSwapACustomJointForAFreeJoint)
 {
-    auto const config = osc::LoadOpenSimCreatorConfig();
-    osc::GlobalInitOpenSim(config);  // ensure muscles are available etc.
+    auto const config = LoadOpenSimCreatorConfig();
+    GlobalInitOpenSim(config);  // ensure muscles are available etc.
 
     std::filesystem::path modelPath = config.getResourceDir() / "models" / "Leg39" / "leg39.osim";
 
-    osc::UndoableModelStatePair model{std::make_unique<OpenSim::Model>(modelPath.string())};
+    UndoableModelStatePair model{std::make_unique<OpenSim::Model>(modelPath.string())};
 
     model.updModel();  // should be fine, before any edits
     model.getState();  // also should be fine
 
-    auto const& registry = osc::GetComponentRegistry<OpenSim::Joint>();
-    auto maybeIdx = osc::IndexOf<OpenSim::FreeJoint>(registry);
+    auto const& registry = GetComponentRegistry<OpenSim::Joint>();
+    auto maybeIdx = IndexOf<OpenSim::FreeJoint>(registry);
     ASSERT_TRUE(maybeIdx) << "can't find FreeJoint in type registry?";
     auto idx = *maybeIdx;
 
@@ -107,21 +124,21 @@ TEST(OpenSimHelpers, DISABLED_CanSwapACustomJointForAFreeJoint)
 
         auto replacement = registry[jointIdx].instantiate();
 
-        osc::CopyCommonJointProperties(joint, *replacement);
+        CopyCommonJointProperties(joint, *replacement);
 
         // update model
         const_cast<OpenSim::JointSet&>(*jointSet).set(static_cast<int>(idx), replacement.release());
         model.updModel();  // dirty it
         model.commit(msg);
 
-        osc::log::info("%s", msg.c_str());
+        log_info("%s", msg.c_str());
     }
 }
 
 TEST(OpenSimHelpers, GetAbsolutePathStringWorksForModel)
 {
     OpenSim::Model m;
-    std::string const s = osc::GetAbsolutePathString(m);
+    std::string const s = GetAbsolutePathString(m);
     ASSERT_EQ(s, "/");
 }
 
@@ -129,13 +146,13 @@ TEST(OpenSimHelpers, GetAbsolutePathStringWithOutparamWorksForModel)
 {
     OpenSim::Model m;
     std::string outparam = "somejunk";
-    osc::GetAbsolutePathString(m, outparam);
+    GetAbsolutePathString(m, outparam);
     ASSERT_EQ(outparam, "/");
 }
 
 TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    auto const config = osc::LoadOpenSimCreatorConfig();
+    auto const config = LoadOpenSimCreatorConfig();
     std::filesystem::path modelPath = config.getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
@@ -143,38 +160,38 @@ TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForCo
     for (OpenSim::Component const& c : m.getComponentList())
     {
         // test both the "pure" and "assigning" versions at the same time
-        osc::GetAbsolutePathString(c, outparam);
-        ASSERT_EQ(c.getAbsolutePathString(), osc::GetAbsolutePathString(c));
+        GetAbsolutePathString(c, outparam);
+        ASSERT_EQ(c.getAbsolutePathString(), GetAbsolutePathString(c));
         ASSERT_EQ(c.getAbsolutePathString(), outparam);
     }
 }
 
 TEST(OpenSimHelpers, GetAbsolutePathReturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    auto const config = osc::LoadOpenSimCreatorConfig();
+    auto const config = LoadOpenSimCreatorConfig();
     std::filesystem::path modelPath = config.getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
     for (OpenSim::Component const& c : m.getComponentList())
     {
-        ASSERT_EQ(c.getAbsolutePath(), osc::GetAbsolutePath(c));
+        ASSERT_EQ(c.getAbsolutePath(), GetAbsolutePath(c));
     }
 }
 
 TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsEmptyIfPassedANullptr)
 {
-    ASSERT_EQ(OpenSim::ComponentPath{}, osc::GetAbsolutePathOrEmpty(nullptr));
+    ASSERT_EQ(OpenSim::ComponentPath{}, GetAbsolutePathOrEmpty(nullptr));
 }
 
 TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    auto const config = osc::LoadOpenSimCreatorConfig();
+    auto const config = LoadOpenSimCreatorConfig();
     std::filesystem::path modelPath = config.getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
     for (OpenSim::Component const& c : m.getComponentList())
     {
-        ASSERT_EQ(c.getAbsolutePath(), osc::GetAbsolutePathOrEmpty(&c));
+        ASSERT_EQ(c.getAbsolutePath(), GetAbsolutePathOrEmpty(&c));
     }
 }
 
@@ -182,13 +199,13 @@ TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionFor
 // model without anything exploding (deletion failure is ok, though)
 TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFaultsOrExceptions)
 {
-    auto const config = osc::LoadOpenSimCreatorConfig();
+    auto const config = LoadOpenSimCreatorConfig();
     std::filesystem::path modelPath = config.getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model const originalModel{modelPath.string()};
     OpenSim::Model modifiedModel{originalModel};
-    osc::InitializeModel(modifiedModel);
-    osc::InitializeModel(modifiedModel);
+    InitializeModel(modifiedModel);
+    InitializeModel(modifiedModel);
 
     // iterate over the original (const) model, so that iterator
     // invalidation can't happen
@@ -196,14 +213,14 @@ TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFault
     {
         // if the component still exists in the to-be-deleted-from model
         // (it may have been indirectly deleted), then try to delete it
-        OpenSim::Component* lookup = osc::FindComponentMut(modifiedModel, c.getAbsolutePath());
+        OpenSim::Component* lookup = FindComponentMut(modifiedModel, c.getAbsolutePath());
         if (lookup)
         {
-            if (osc::TryDeleteComponentFromModel(modifiedModel, *lookup))
+            if (TryDeleteComponentFromModel(modifiedModel, *lookup))
             {
-                osc::log::info("deleted %s (%s)", c.getName().c_str(), c.getConcreteClassName().c_str());
-                osc::InitializeModel(modifiedModel);
-                osc::InitializeState(modifiedModel);
+                log_info("deleted %s (%s)", c.getName().c_str(), c.getConcreteClassName().c_str());
+                InitializeModel(modifiedModel);
+                InitializeState(modifiedModel);
             }
         }
     }
@@ -214,14 +231,14 @@ TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFault
 TEST(OpenSimHelpers, CanDeleteAnOffsetFrameFromAModelsComponentSet)
 {
     OpenSim::Model model;
-    auto& pof = osc::AddModelComponent(model, std::make_unique<OpenSim::PhysicalOffsetFrame>());
+    auto& pof = AddModelComponent(model, std::make_unique<OpenSim::PhysicalOffsetFrame>());
     pof.setParentFrame(model.getGround());
-    osc::FinalizeConnections(model);
-    osc::InitializeModel(model);
-    osc::InitializeState(model);
+    FinalizeConnections(model);
+    InitializeModel(model);
+    InitializeState(model);
 
     ASSERT_EQ(model.get_ComponentSet().getSize(), 1);
-    ASSERT_TRUE(osc::TryDeleteComponentFromModel(model, pof));
+    ASSERT_TRUE(TryDeleteComponentFromModel(model, pof));
     ASSERT_EQ(model.get_ComponentSet().getSize(), 0);
 }
 
@@ -233,7 +250,7 @@ TEST(OpenSimHelpers, AddModelComponentReturnsProvidedPointer)
     p->setParentFrame(m.getGround());
 
     OpenSim::PhysicalOffsetFrame* expected = p.get();
-    ASSERT_EQ(&osc::AddModelComponent(m, std::move(p)), expected);
+    ASSERT_EQ(&AddModelComponent(m, std::move(p)), expected);
 }
 
 TEST(OpenSimHelpers, AddModelComponentAddsComponentToModelComponentSet)
@@ -243,8 +260,8 @@ TEST(OpenSimHelpers, AddModelComponentAddsComponentToModelComponentSet)
     auto p = std::make_unique<OpenSim::PhysicalOffsetFrame>();
     p->setParentFrame(m.getGround());
 
-    OpenSim::PhysicalOffsetFrame& s = osc::AddModelComponent(m, std::move(p));
-    osc::FinalizeConnections(m);
+    OpenSim::PhysicalOffsetFrame& s = AddModelComponent(m, std::move(p));
+    FinalizeConnections(m);
 
     ASSERT_EQ(m.get_ComponentSet().getSize(), 1);
     ASSERT_EQ(dynamic_cast<OpenSim::Component const*>(&m.get_ComponentSet()[0]), dynamic_cast<OpenSim::Component const*>(&s));
@@ -254,7 +271,7 @@ TEST(OpenSimHelpers, AddModelComponentAddsComponentToModelComponentSet)
 //
 // the bug is fundamentally because `Component::finalizeConnections` messes
 // around with stale pointers to deleted slave components. This mid-level
-// test is here in case OSC is doing some kind of magic in `osc::FinalizeConnections`
+// test is here in case OSC is doing some kind of magic in `FinalizeConnections`
 // that `OpenSim` doesn't do
 TEST(OpenSimHelpers, DISABLED_FinalizeConnectionsWithUnusualJointTopologyDoesNotSegfault)
 {
@@ -265,7 +282,7 @@ TEST(OpenSimHelpers, DISABLED_FinalizeConnectionsWithUnusualJointTopologyDoesNot
 
     for (size_t i = 0; i < 10; ++i)
     {
-        osc::FinalizeConnections(model);  // the HACK should make this work fine
+        FinalizeConnections(model);  // the HACK should make this work fine
     }
 }
 
@@ -274,7 +291,7 @@ TEST(OpenSimHelpers, ForEachIsNotCalledOnRootComponent)
     Root root;
     root.finalizeFromProperties();
     size_t n = 0;
-    osc::ForEachComponent(root, [&n](OpenSim::Component const&){ ++n; });
+    ForEachComponent(root, [&n](OpenSim::Component const&){ ++n; });
     ASSERT_EQ(n, 2);
 }
 
@@ -282,14 +299,14 @@ TEST(OpenSimHelpers, GetNumChildrenReturnsExpectedNumber)
 {
     Root root;
     root.finalizeFromProperties();
-    ASSERT_EQ(osc::GetNumChildren(root), 2);
+    ASSERT_EQ(GetNumChildren(root), 2);
 }
 
 TEST(OpenSimHelpers, TypedGetNumChildrenOnlyCountsChildrenWithGivenType)
 {
     Root root;
     root.finalizeFromProperties();
-    ASSERT_EQ(osc::GetNumChildren<Child1>(root), 1);
-    ASSERT_EQ(osc::GetNumChildren<Child2>(root), 1);
-    ASSERT_EQ(osc::GetNumChildren<InnerParent>(root), 2);
+    ASSERT_EQ(GetNumChildren<Child1>(root), 1);
+    ASSERT_EQ(GetNumChildren<Child2>(root), 1);
+    ASSERT_EQ(GetNumChildren<InnerParent>(root), 2);
 }

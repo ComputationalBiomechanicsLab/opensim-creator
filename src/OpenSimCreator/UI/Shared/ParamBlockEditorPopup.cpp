@@ -13,9 +13,11 @@
 #include <string>
 #include <variant>
 
+using namespace osc;
+
 namespace
 {
-    bool DrawEditor(osc::ParamBlock& b, int idx, double v)
+    bool DrawEditor(ParamBlock& b, int idx, double v)
     {
         // note: the input prevision has to be quite high here, because the
         //       ParamBlockEditorPopup has to edit simulation parameters, and
@@ -36,7 +38,7 @@ namespace
         }
     }
 
-    bool DrawEditor(osc::ParamBlock& b, int idx, int v)
+    bool DrawEditor(ParamBlock& b, int idx, int v)
     {
         if (ImGui::InputInt("##", &v))
         {
@@ -49,15 +51,15 @@ namespace
         }
     }
 
-    bool DrawEditor(osc::ParamBlock& b, int idx, osc::IntegratorMethod im)
+    bool DrawEditor(ParamBlock& b, int idx, IntegratorMethod im)
     {
-        std::span<osc::CStringView const> const methodStrings =
-            osc::GetAllIntegratorMethodStrings();
+        std::span<CStringView const> const methodStrings =
+            GetAllIntegratorMethodStrings();
         auto method = static_cast<size_t>(im);
 
-        if (osc::Combo("##", &method, methodStrings))
+        if (Combo("##", &method, methodStrings))
         {
-            b.setValue(idx, static_cast<osc::IntegratorMethod>(method));
+            b.setValue(idx, static_cast<IntegratorMethod>(method));
             return true;
         }
         else
@@ -66,15 +68,15 @@ namespace
         }
     }
 
-    bool DrawEditor(osc::ParamBlock& b, int idx)
+    bool DrawEditor(ParamBlock& b, int idx)
     {
-        osc::ParamValue v = b.getValue(idx);
+        ParamValue v = b.getValue(idx);
         bool rv = false;
-        auto handler = osc::Overload
+        auto handler = Overload
         {
             [&b, &rv, idx](double dv) { rv = DrawEditor(b, idx, dv); },
             [&b, &rv, idx](int iv) { rv = DrawEditor(b, idx, iv); },
-            [&b, &rv, idx](osc::IntegratorMethod imv) { rv = DrawEditor(b, idx, imv); },
+            [&b, &rv, idx](IntegratorMethod imv) { rv = DrawEditor(b, idx, imv); },
         };
         std::visit(handler, v);
         return rv;

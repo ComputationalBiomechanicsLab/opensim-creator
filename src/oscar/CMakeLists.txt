@@ -220,6 +220,8 @@ add_library(oscar STATIC
     UI/Panels/ToggleablePanelFlags.hpp
     UI/Panels/UndoRedoPanel.cpp
     UI/Panels/UndoRedoPanel.hpp
+    UI/Screens/TabTestingScreen.cpp
+    UI/Screens/TabTestingScreen.hpp
     UI/Tabs/CookiecutterTab.cpp
     UI/Tabs/CookiecutterTab.hpp
     UI/Tabs/ErrorTab.cpp
@@ -266,6 +268,10 @@ add_library(oscar STATIC
     UI/ImGuizmoHelpers.hpp
     UI/imgui_impl_oscargfx.cpp
     UI/imgui_impl_oscargfx.hpp
+    UI/Panels.hpp
+    UI/Screens.hpp
+    UI/Tabs.hpp
+    UI/Widgets.hpp
 
     Utils/At.hpp
     Utils/Assertions.cpp
@@ -317,6 +323,18 @@ add_library(oscar STATIC
     Variant/VariantType.hpp
     Variant/VariantTypeList.hpp
     Variant/VariantTypeTraits.hpp
+
+    Formats.hpp
+    Graphics.hpp
+    Maths.hpp
+    oscar.hpp
+    Object.hpp
+    Platform.hpp
+    Scene.hpp
+    Shims.hpp
+    UI.hpp
+    Utils.hpp
+    Variant.hpp
 )
 
 target_include_directories(oscar PUBLIC

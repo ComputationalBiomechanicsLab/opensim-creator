@@ -24,6 +24,7 @@
 using namespace osc::literals;
 using osc::CStringView;
 using osc::MouseCapturingCamera;
+using osc::UID;
 
 namespace
 {
@@ -33,7 +34,7 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -141,7 +142,7 @@ osc::LOGLBasicLightingTab::LOGLBasicLightingTab(LOGLBasicLightingTab&&) noexcept
 osc::LOGLBasicLightingTab& osc::LOGLBasicLightingTab::operator=(LOGLBasicLightingTab&&) noexcept = default;
 osc::LOGLBasicLightingTab::~LOGLBasicLightingTab() noexcept = default;
 
-osc::UID osc::LOGLBasicLightingTab::implGetID() const
+UID osc::LOGLBasicLightingTab::implGetID() const
 {
     return m_Impl->getID();
 }

@@ -16,7 +16,10 @@
 #include <utility>
 
 using osc::Color;
+using osc::CStringView;
 using osc::StringName;
+using osc::to_string;
+using osc::TryParseHtmlString;
 using osc::Variant;
 using osc::VariantType;
 using osc::Vec3;
@@ -131,14 +134,14 @@ TEST(Variant, CanImplicitlyConstructFromStringLiteral)
 
 TEST(Variant, CanExplicitlyConstructFromCStringView)
 {
-    Variant v{osc::CStringView{"cstringview"}};
+    Variant v{CStringView{"cstringview"}};
     ASSERT_EQ(v.to<std::string>(), "cstringview");
     ASSERT_EQ(v.getType(), VariantType::String);
 }
 
 TEST(Variant, CanImplicitlyConstructFromCStringView)
 {
-    static_assert(std::is_convertible_v<osc::CStringView, Variant>);
+    static_assert(std::is_convertible_v<CStringView, Variant>);
 }
 
 TEST(Variant, CanExplicitlyConstructFromVec3)
@@ -278,7 +281,7 @@ TEST(Variant, ColorValueToStringReturnsSameAsToHtmlStringRGBA)
 
     for (auto const& color : colors)
     {
-        ASSERT_EQ(Variant(color).to<std::string>(), osc::ToHtmlStringRGBA(color));
+        ASSERT_EQ(Variant(color).to<std::string>(), ToHtmlStringRGBA(color));
     }
 }
 
@@ -436,7 +439,7 @@ TEST(Variant, StringValueToColorWorksIfStringIsAValidHTMLColorString)
     ASSERT_EQ(Variant{"#00000000"}.to<Color>(), Color::clear());
     ASSERT_EQ(Variant{"#000000ff"}.to<Color>(), Color::black());
     ASSERT_EQ(Variant{"#000000FF"}.to<Color>(), Color::black());
-    ASSERT_EQ(Variant{"#123456ae"}.to<Color>(), *osc::TryParseHtmlString("#123456ae"));
+    ASSERT_EQ(Variant{"#123456ae"}.to<Color>(), *TryParseHtmlString("#123456ae"));
 }
 
 TEST(Variant, StringValueColorReturnsBlackIfStringIsInvalidHTMLColorString)
@@ -644,7 +647,7 @@ TEST(Variant, Vec3ValueToStringReturnsSameAsDirectlyConvertingVectorToString)
 
     for (auto const& testCase : testCases)
     {
-        ASSERT_EQ(Variant{testCase}.to<std::string>(), osc::to_string(testCase));
+        ASSERT_EQ(Variant{testCase}.to<std::string>(), to_string(testCase));
     }
 }
 
@@ -697,7 +700,7 @@ TEST(Variant, IsAlwaysEqualToACopyOfItself)
         Variant{"0"},
         Variant{"1"},
         Variant{"a string"},
-        Variant{osc::StringName{"a string name"}},
+        Variant{StringName{"a string name"}},
         Variant{Vec3{}},
         Variant{Vec3{1.0f}},
         Variant{Vec3{-1.0f}},
@@ -749,7 +752,7 @@ TEST(Variant, IsNotEqualToOtherValuesEvenIfConversionIsPossible)
         Variant{"0"},
         Variant{"1"},
         Variant{"a string"},
-        Variant{osc::StringName{"a stringname can be compared to a string, though"}},
+        Variant{StringName{"a stringname can be compared to a string, though"}},
         Variant{Vec3{}},
         Variant{Vec3{1.0f}},
         Variant{Vec3{-1.0f}},
@@ -798,7 +801,7 @@ TEST(Variant, CanHashAVarietyOfTypes)
         Variant{"0"},
         Variant{"1"},
         Variant{"a string"},
-        Variant{osc::StringName{"a string name"}},
+        Variant{StringName{"a string name"}},
         Variant{Vec3{}},
         Variant{Vec3{1.0f}},
         Variant{Vec3{-1.0f}},
@@ -840,7 +843,7 @@ TEST(Variant, FreeFunctionToStringOnVarietyOfTypesReturnsSameAsCallingToStringMe
         Variant{"0"},
         Variant{"1"},
         Variant{"a string"},
-        Variant{osc::StringName{"a string name"}},
+        Variant{StringName{"a string name"}},
         Variant{Vec3{}},
         Variant{Vec3{1.0f}},
         Variant{Vec3{-1.0f}},
@@ -882,7 +885,7 @@ TEST(Variant, StreamingToOutputStreamProducesSameOutputAsToString)
         Variant{"0"},
         Variant{"1"},
         Variant{"a string"},
-        Variant{osc::StringName{"a string name"}},
+        Variant{StringName{"a string name"}},
         Variant{Vec3{}},
         Variant{Vec3{1.0f}},
         Variant{Vec3{-1.0f}},
@@ -916,54 +919,54 @@ TEST(Variant, HashesForStringValuesMatchStdStringEtc)
 
         ASSERT_EQ(hash, std::hash<std::string>{}(std::string{s}));
         ASSERT_EQ(hash, std::hash<std::string_view>{}(s));
-        ASSERT_EQ(hash, std::hash<osc::CStringView>{}(std::string{s}));
+        ASSERT_EQ(hash, std::hash<CStringView>{}(std::string{s}));
     }
 }
 
 TEST(Variant, ConstructingFromstringNameMakesGetTypeReturnStringNameType)
 {
-    ASSERT_EQ(Variant(osc::StringName{"s"}).getType(), VariantType::StringName);
+    ASSERT_EQ(Variant(StringName{"s"}).getType(), VariantType::StringName);
 }
 
 TEST(Variant, ConstructedFromSameStringNameComparesEquivalent)
 {
-    ASSERT_EQ(Variant{osc::StringName{"string"}}, Variant{osc::StringName{"string"}});
+    ASSERT_EQ(Variant{StringName{"string"}}, Variant{StringName{"string"}});
 }
 
 TEST(Variant, ConstructedFromStringNameComparesInequivalentToVariantConstructedFromDifferentString)
 {
-    ASSERT_NE(Variant{osc::StringName{"a"}}, Variant{std::string{"b"}});
+    ASSERT_NE(Variant{StringName{"a"}}, Variant{std::string{"b"}});
 }
 
 TEST(Variant, StringNameValueToBoolReturnsExpectedBoolValues)
 {
-    ASSERT_EQ(Variant(osc::StringName{"false"}).to<bool>(), false);
-    ASSERT_EQ(Variant(osc::StringName{"FALSE"}).to<bool>(), false);
-    ASSERT_EQ(Variant(osc::StringName{"False"}).to<bool>(), false);
-    ASSERT_EQ(Variant(osc::StringName{"FaLsE"}).to<bool>(), false);
-    ASSERT_EQ(Variant(osc::StringName{"0"}).to<bool>(), false);
-    ASSERT_EQ(Variant(osc::StringName{""}).to<bool>(), false);
+    ASSERT_EQ(Variant(StringName{"false"}).to<bool>(), false);
+    ASSERT_EQ(Variant(StringName{"FALSE"}).to<bool>(), false);
+    ASSERT_EQ(Variant(StringName{"False"}).to<bool>(), false);
+    ASSERT_EQ(Variant(StringName{"FaLsE"}).to<bool>(), false);
+    ASSERT_EQ(Variant(StringName{"0"}).to<bool>(), false);
+    ASSERT_EQ(Variant(StringName{""}).to<bool>(), false);
 
     // all other strings are effectively `true`
-    ASSERT_EQ(Variant(osc::StringName{"true"}).to<bool>(), true);
-    ASSERT_EQ(Variant(osc::StringName{"non-empty string"}).to<bool>(), true);
-    ASSERT_EQ(Variant(osc::StringName{" "}).to<bool>(), true);
+    ASSERT_EQ(Variant(StringName{"true"}).to<bool>(), true);
+    ASSERT_EQ(Variant(StringName{"non-empty string"}).to<bool>(), true);
+    ASSERT_EQ(Variant(StringName{" "}).to<bool>(), true);
 }
 
 TEST(Variant, StringNameValueToColorWorksIfStringIsAValidHTMLColorString)
 {
-    ASSERT_EQ(Variant{osc::StringName{"#ff0000ff"}}.to<Color>(), Color::red());
-    ASSERT_EQ(Variant{osc::StringName{"#00ff00ff"}}.to<Color>(), Color::green());
-    ASSERT_EQ(Variant{osc::StringName{"#ffffffff"}}.to<Color>(), Color::white());
-    ASSERT_EQ(Variant{osc::StringName{"#00000000"}}.to<Color>(), Color::clear());
-    ASSERT_EQ(Variant{osc::StringName{"#000000ff"}}.to<Color>(), Color::black());
-    ASSERT_EQ(Variant{osc::StringName{"#000000FF"}}.to<Color>(), Color::black());
-    ASSERT_EQ(Variant{osc::StringName{"#123456ae"}}.to<Color>(), *osc::TryParseHtmlString("#123456ae"));
+    ASSERT_EQ(Variant{StringName{"#ff0000ff"}}.to<Color>(), Color::red());
+    ASSERT_EQ(Variant{StringName{"#00ff00ff"}}.to<Color>(), Color::green());
+    ASSERT_EQ(Variant{StringName{"#ffffffff"}}.to<Color>(), Color::white());
+    ASSERT_EQ(Variant{StringName{"#00000000"}}.to<Color>(), Color::clear());
+    ASSERT_EQ(Variant{StringName{"#000000ff"}}.to<Color>(), Color::black());
+    ASSERT_EQ(Variant{StringName{"#000000FF"}}.to<Color>(), Color::black());
+    ASSERT_EQ(Variant{StringName{"#123456ae"}}.to<Color>(), *TryParseHtmlString("#123456ae"));
 }
 
 TEST(Variant, StringNameValueToColorReturnsBlackIfStringIsInvalidHTMLColorString)
 {
-    ASSERT_EQ(Variant{osc::StringName{"not a color"}}.to<Color>(), Color::black());
+    ASSERT_EQ(Variant{StringName{"not a color"}}.to<Color>(), Color::black());
 }
 
 TEST(Variant, StringNameValueToFloatTriesToParseStringAsFloatAndReturnsZeroOnFailure)
@@ -983,7 +986,7 @@ TEST(Variant, StringNameValueToFloatTriesToParseStringAsFloatAndReturnsZeroOnFai
     for (auto const& input : inputs)
     {
         float const expectedOutput = ToFloatOrZero(input);
-        ASSERT_EQ(Variant{osc::StringName{input}}.to<float>(), expectedOutput);
+        ASSERT_EQ(Variant{StringName{input}}.to<float>(), expectedOutput);
     }
 }
 
@@ -1004,7 +1007,7 @@ TEST(Variant, StringNameValueToIntTriesToParseStringAsBase10Int)
     for (auto const& input : inputs)
     {
         int const expectedOutput = ToIntOrZero(input);
-        ASSERT_EQ(Variant{osc::StringName{input}}.to<int>(), expectedOutput);
+        ASSERT_EQ(Variant{StringName{input}}.to<int>(), expectedOutput);
     }
 }
 
@@ -1026,7 +1029,7 @@ TEST(Variant, StringNameValueToStringReturnsSuppliedString)
 
     for (auto const& input : inputs)
     {
-        ASSERT_EQ(Variant{osc::StringName{input}}.to<std::string>(), input);
+        ASSERT_EQ(Variant{StringName{input}}.to<std::string>(), input);
     }
 }
 
@@ -1070,7 +1073,7 @@ TEST(Variant, StringNameToVec3AlwaysReturnsZeroedVec)
 
     for (auto const& input : inputs)
     {
-        ASSERT_EQ(Variant{osc::StringName{input}}.to<Vec3>(), Vec3{});
+        ASSERT_EQ(Variant{StringName{input}}.to<Vec3>(), Vec3{});
     }
 }
 
@@ -1092,7 +1095,7 @@ TEST(Variant, HashOfStringNameVariantIsSameAsHashOfStringVariant)
 
     for (auto const& input : inputs)
     {
-        auto snv = Variant{osc::StringName{input}};
+        auto snv = Variant{StringName{input}};
         auto sv = Variant{std::string{input}};
 
         ASSERT_EQ(std::hash<Variant>{}(snv), std::hash<Variant>{}(sv));

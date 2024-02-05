@@ -50,7 +50,7 @@ public:
 
     void onDraw()
     {
-        // called once per frame. Code in here should use drawing primitives, osc::Graphics,
+        // called once per frame. Code in here should use drawing primitives, `Graphics`,
         // ImGui, etc. to draw things into the screen. The application does not clear the
         // screen buffer between frames (it's assumed that your code does this when it needs
         // to)

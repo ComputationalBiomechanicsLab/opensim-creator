@@ -7,6 +7,7 @@
 #include <memory>
 
 using osc::CStringView;
+using osc::UID;
 
 namespace
 {
@@ -28,7 +29,7 @@ private:
 
 // public API
 
-osc::CStringView osc::ImGuiDemoTab::id()
+CStringView osc::ImGuiDemoTab::id()
 {
     return c_TabStringID;
 }
@@ -41,12 +42,12 @@ osc::ImGuiDemoTab::ImGuiDemoTab(ImGuiDemoTab&&) noexcept = default;
 osc::ImGuiDemoTab& osc::ImGuiDemoTab::operator=(ImGuiDemoTab&&) noexcept = default;
 osc::ImGuiDemoTab::~ImGuiDemoTab() noexcept = default;
 
-osc::UID osc::ImGuiDemoTab::implGetID() const
+UID osc::ImGuiDemoTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::ImGuiDemoTab::implGetName() const
+CStringView osc::ImGuiDemoTab::implGetName() const
 {
     return m_Impl->getName();
 }

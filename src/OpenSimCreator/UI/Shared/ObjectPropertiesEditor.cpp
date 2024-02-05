@@ -43,11 +43,7 @@
 #include <unordered_map>
 #include <utility>
 
-using osc::Typelist;
-using osc::TypelistSizeV;
-using osc::Vec2;
-using osc::Vec3;
-using osc::Vec4;
+using namespace osc;
 
 // constants
 namespace
@@ -72,8 +68,8 @@ namespace
         };
     }
 
-    // returns an `osc::Color` extracted from the given `OpenSim::Appearance`
-    osc::Color ToColor(OpenSim::Appearance const& appearance)
+    // returns an `Color` extracted from the given `OpenSim::Appearance`
+    Color ToColor(OpenSim::Appearance const& appearance)
     {
         SimTK::Vec3 const& rgb = appearance.get_color();
         double const a = appearance.get_opacity();
@@ -139,7 +135,7 @@ namespace
         if (!prop.getComment().empty())
         {
             ImGui::SameLine();
-            osc::DrawHelpMarker(prop.getComment());
+            DrawHelpMarker(prop.getComment());
         }
     }
 
@@ -167,22 +163,22 @@ namespace
     }
 
     // returns a suitable color for the given dimension index (e.g. x == 0)
-    osc::Color IthDimensionColor(Vec3::length_type i)
+    Color IthDimensionColor(Vec3::length_type i)
     {
-        osc::Color color = {0.0f, 0.0f, 0.0f, 0.6f};
+        Color color = {0.0f, 0.0f, 0.0f, 0.6f};
         color[i] = 1.0f;
         return color;
     }
 
     // draws a little vertical line, which is usually used to visually indicate
     // x/y/z to the user
-    void DrawColoredDimensionHintVerticalLine(osc::Color const& color)
+    void DrawColoredDimensionHintVerticalLine(Color const& color)
     {
         ImDrawList* const l = ImGui::GetWindowDrawList();
         Vec2 const p = ImGui::GetCursorScreenPos();
         float const h = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y + 2.0f*ImGui::GetStyle().FrameBorderSize;
         Vec2 const dims = Vec2{4.0f, h};
-        l->AddRectFilled(p, p + dims, osc::ToImU32(color));
+        l->AddRectFilled(p, p + dims, ToImU32(color));
         ImGui::SetCursorScreenPos({p.x + 4.0f, p.y});
     }
 
@@ -193,7 +189,7 @@ namespace
         {
             ImGui::Text("Set Step Size");
             ImGui::SameLine();
-            osc::DrawHelpMarker("Sets the decrement/increment of the + and - buttons. Can be handy for tweaking property values");
+            DrawHelpMarker("Sets the decrement/increment of the + and - buttons. Can be handy for tweaking property values");
             ImGui::Dummy({0.0f, 0.1f*ImGui::GetTextLineHeight()});
             ImGui::Separator();
             ImGui::Dummy({0.0f, 0.2f*ImGui::GetTextLineHeight()});
@@ -333,7 +329,7 @@ namespace
     };
 
     ScalarInputRv DrawCustomScalarInput(
-        osc::CStringView label,
+        CStringView label,
         float& value,
         float& stepSize,
         std::string_view frameAnnotationLabel)
@@ -346,9 +342,9 @@ namespace
             rv.wasEdited = true;
         }
         ImGui::PopStyleVar();
-        rv.shouldSave = osc::ItemValueShouldBeSaved();
-        osc::App::upd().addFrameAnnotation(frameAnnotationLabel, osc::GetItemRect());
-        osc::DrawTooltipIfItemHovered("Step Size", "You can right-click to adjust the step size of the buttons");
+        rv.shouldSave = ItemValueShouldBeSaved();
+        App::upd().addFrameAnnotation(frameAnnotationLabel, GetItemRect());
+        DrawTooltipIfItemHovered("Step Size", "You can right-click to adjust the step size of the buttons");
         DrawStepSizeEditor(stepSize);
 
         return rv;
@@ -398,8 +394,8 @@ namespace
 
     // construction-time arguments for the property editor
     struct PropertyEditorArgs final {
-        osc::IPopupAPI* api;
-        std::shared_ptr<osc::UndoableModelStatePair const> model;
+        IPopupAPI* api;
+        std::shared_ptr<UndoableModelStatePair const> model;
         std::function<OpenSim::Object const*()> objectAccessor;
         std::function<OpenSim::AbstractProperty const*()> propertyAccessor;
     };
@@ -450,7 +446,7 @@ namespace
             return m_Args.model->getModel();
         }
 
-        std::shared_ptr<osc::UndoableModelStatePair const> getModelPtr() const
+        std::shared_ptr<UndoableModelStatePair const> getModelPtr() const
         {
             return m_Args.model;
         }
@@ -465,12 +461,12 @@ namespace
             return m_Args.objectAccessor();
         }
 
-        osc::IPopupAPI* getPopupAPIPtr() const
+        IPopupAPI* getPopupAPIPtr() const
         {
             return m_Args.api;
         }
 
-        void pushPopup(std::unique_ptr<osc::IPopup> p)
+        void pushPopup(std::unique_ptr<IPopup> p)
         {
             if (auto api = getPopupAPIPtr())
             {
@@ -558,16 +554,16 @@ namespace
             std::string value = idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : std::string{};
 
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            if (osc::InputString("##stringeditor", value))
+            if (InputString("##stringeditor", value))
             {
                 // update the edited property - don't rely on ImGui to remember edits
                 m_EditedProperty.setValue(idx, value);
             }
 
             // globally annotate the editor rect, for downstream screenshot automation
-            osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::StringEditor/" + m_EditedProperty.getName(), osc::GetItemRect());
+            App::upd().addFrameAnnotation("ObjectPropertiesEditor::StringEditor/" + m_EditedProperty.getName(), GetItemRect());
 
-            if (osc::ItemValueShouldBeSaved())
+            if (ItemValueShouldBeSaved())
             {
                 rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
             }
@@ -643,7 +639,7 @@ namespace
 
             // draw an invisible vertical line, so that `double` properties are properly
             // aligned with `Vec3` properties (that have a non-invisible R/G/B line)
-            DrawColoredDimensionHintVerticalLine(osc::Color::clear());
+            DrawColoredDimensionHintVerticalLine(Color::clear());
 
             // read stored value from edited property
             //
@@ -746,9 +742,9 @@ namespace
             }
 
             // globally annotate the editor rect, for downstream screenshot automation
-            osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::BoolEditor/" + m_EditedProperty.getName(), osc::GetItemRect());
+            App::upd().addFrameAnnotation("ObjectPropertiesEditor::BoolEditor/" + m_EditedProperty.getName(), GetItemRect());
 
-            if (edited || osc::ItemValueShouldBeSaved())
+            if (edited || ItemValueShouldBeSaved())
             {
                 rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
             }
@@ -782,12 +778,12 @@ namespace
 
             Vec3 modelValueToEditedValue(Vec3 const& modelValue) const
             {
-                return osc::ToVec3(static_cast<double>(m_ModelToEditedValueScaler) * (m_ModelToEditedTransform * osc::ToSimTKVec3(modelValue)));
+                return ToVec3(static_cast<double>(m_ModelToEditedValueScaler) * (m_ModelToEditedTransform * ToSimTKVec3(modelValue)));
             }
 
             Vec3 editedValueToModelValue(Vec3 const& editedValue) const
             {
-                return osc::ToVec3(m_ModelToEditedTransform.invert() * osc::ToSimTKVec3(editedValue/m_ModelToEditedValueScaler));
+                return ToVec3(m_ModelToEditedTransform.invert() * ToSimTKVec3(editedValue/m_ModelToEditedValueScaler));
             }
         private:
             float m_ModelToEditedValueScaler;
@@ -803,7 +799,7 @@ namespace
         // returns `true` if the Vec3 property is edited in radians
         bool isPropertyEditedInRadians() const
         {
-            return osc::IsEqualCaseInsensitive(m_EditedProperty.getName(), "orientation");
+            return IsEqualCaseInsensitive(m_EditedProperty.getName(), "orientation");
         }
 
         // if the Vec3 property has a parent frame, returns a transform that maps the Vec3
@@ -827,7 +823,7 @@ namespace
                 return std::nullopt;  // the object is not within the tree of the model (#800)
             }
 
-            auto const positionPropName = osc::TryGetPositionalPropertyName(*component);
+            auto const positionPropName = TryGetPositionalPropertyName(*component);
             if (!positionPropName)
             {
                 return std::nullopt;  // the component doesn't have a logical positional property that can be edited with the transform
@@ -844,7 +840,7 @@ namespace
                 return std::nullopt;  // the property this editor is editing isn't a logically positional one
             }
 
-            std::optional<SimTK::Transform> transform = osc::TryGetParentToGroundTransform(*component, getState());
+            std::optional<SimTK::Transform> transform = TryGetParentToGroundTransform(*component, getState());
             if (!transform)
             {
                 return std::nullopt;  // the component doesn't have a logical position-to-ground transform
@@ -864,7 +860,7 @@ namespace
             }
 
             OpenSim::Model const& model = getModel();
-            auto const* frame = osc::FindComponent<OpenSim::Frame>(model, *m_MaybeUserSelectedFrameAbsPath);
+            auto const* frame = FindComponent<OpenSim::Frame>(model, *m_MaybeUserSelectedFrameAbsPath);
             return frame->getTransformInGround(getState()).invert();
         }
 
@@ -945,7 +941,7 @@ namespace
                 return;
             }
 
-            osc::CStringView const defaultedLabel = "(parent frame)";
+            CStringView const defaultedLabel = "(parent frame)";
             std::string const preview = m_MaybeUserSelectedFrameAbsPath ?
                 m_MaybeUserSelectedFrameAbsPath->getComponentName() :
                 std::string{defaultedLabel};
@@ -955,7 +951,7 @@ namespace
             {
                 ImGui::TextDisabled("Frame (editing)");
                 ImGui::SameLine();
-                osc::DrawHelpMarker("Note: this only affects the values that the quantities are edited in. It does not change the frame that the component is attached to. You can change the frame attachment by using the component's context menu: Socket > $FRAME > (edit button) > (select new frame)");
+                DrawHelpMarker("Note: this only affects the values that the quantities are edited in. It does not change the frame that the component is attached to. You can change the frame attachment by using the component's context menu: Socket > $FRAME > (edit button) > (select new frame)");
                 ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
 
                 int imguiID = 0;
@@ -976,7 +972,7 @@ namespace
                 // draw selectable for each frame in the model
                 for (OpenSim::Frame const& frame : getModel().getComponentList<OpenSim::Frame>())
                 {
-                    OpenSim::ComponentPath const frameAbsPath = osc::GetAbsolutePath(frame);
+                    OpenSim::ComponentPath const frameAbsPath = GetAbsolutePath(frame);
 
                     ImGui::PushID(imguiID++);
                     bool selected = frameAbsPath == m_MaybeUserSelectedFrameAbsPath;
@@ -1011,7 +1007,7 @@ namespace
             // read stored value from edited property
             //
             // care: optional properties have size==0, so perform a range check
-            Vec3 const rawValue = osc::ToVec3(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : SimTK::Vec3{});
+            Vec3 const rawValue = ToVec3(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : SimTK::Vec3{});
             Vec3 const editedValue = valueConverter.modelValueToEditedValue(rawValue);
 
             // draw an editor for each component of the Vec3
@@ -1054,7 +1050,7 @@ namespace
             {
                 // un-convert the value on save
                 Vec3 const savedValue = valueConverter.editedValueToModelValue(editedValue);
-                m_EditedProperty.setValue(idx, osc::ToSimTKVec3(savedValue));
+                m_EditedProperty.setValue(idx, ToSimTKVec3(savedValue));
             }
 
             ImGui::PopID();
@@ -1076,8 +1072,8 @@ namespace
                 {
                     m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                 }
-                osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), osc::GetItemRect());
-                osc::DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in radians (click to switch to degrees)");
+                App::upd().addFrameAnnotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), GetItemRect());
+                DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in radians (click to switch to degrees)");
             }
             else
             {
@@ -1085,8 +1081,8 @@ namespace
                 {
                     m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                 }
-                osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), osc::GetItemRect());
-                osc::DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in degrees (click to switch to radians)");
+                App::upd().addFrameAnnotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), GetItemRect());
+                DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in degrees (click to switch to radians)");
             }
         }
 
@@ -1175,8 +1171,8 @@ namespace
                     m_EditedProperty.updValue(idx)[3*i + 1] = static_cast<double>(rawValue[3*i + 1]);
                     m_EditedProperty.updValue(idx)[3*i + 2] = static_cast<double>(rawValue[3*i + 2]);
                 }
-                shouldSave = shouldSave || osc::ItemValueShouldBeSaved();
-                osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::Vec6Editor/" + m_EditedProperty.getName(), osc::GetItemRect());
+                shouldSave = shouldSave || ItemValueShouldBeSaved();
+                App::upd().addFrameAnnotation("ObjectPropertiesEditor::Vec6Editor/" + m_EditedProperty.getName(), osc::GetItemRect());
 
                 ImGui::PopID();
             }
@@ -1267,9 +1263,9 @@ namespace
             }
 
             // globally annotate the editor rect, for downstream screenshot automation
-            osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::IntEditor/" + m_EditedProperty.getName(), osc::GetItemRect());
+            App::upd().addFrameAnnotation("ObjectPropertiesEditor::IntEditor/" + m_EditedProperty.getName(), GetItemRect());
 
-            if (edited || osc::ItemValueShouldBeSaved())
+            if (edited || ItemValueShouldBeSaved())
             {
                 rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
             }
@@ -1347,10 +1343,10 @@ namespace
 
             bool shouldSave = false;
 
-            osc::Color color = ToColor(m_EditedProperty.getValue());
+            Color color = ToColor(m_EditedProperty.getValue());
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
-            if (ImGui::ColorEdit4("##coloreditor", osc::ValuePtr(color)))
+            if (ImGui::ColorEdit4("##coloreditor", ValuePtr(color)))
             {
                 SimTK::Vec3 newColor;
                 newColor[0] = static_cast<double>(color[0]);
@@ -1360,14 +1356,14 @@ namespace
                 m_EditedProperty.updValue().set_color(newColor);
                 m_EditedProperty.updValue().set_opacity(static_cast<double>(color[3]));
             }
-            shouldSave = shouldSave || osc::ItemValueShouldBeSaved();
+            shouldSave = shouldSave || ItemValueShouldBeSaved();
 
             bool isVisible = m_EditedProperty.getValue().get_visible();
             if (ImGui::Checkbox("is visible", &isVisible))
             {
                 m_EditedProperty.updValue().set_visible(isVisible);
             }
-            shouldSave = shouldSave || osc::ItemValueShouldBeSaved();
+            shouldSave = shouldSave || ItemValueShouldBeSaved();
 
             if (shouldSave)
             {
@@ -1398,7 +1394,7 @@ namespace
             }
             property_type const& prop = *maybeProp;
 
-            if (osc::empty(prop.getValue()))
+            if (empty(prop.getValue()))
             {
                 return std::nullopt;  // no editable contact set on the property
             }
@@ -1410,7 +1406,7 @@ namespace
             {
                 m_MaybeNestedEditor.emplace(getPopupAPIPtr(), getModelPtr(), [&params]() { return &params; });
             }
-            osc::ObjectPropertiesEditor& nestedEditor = *m_MaybeNestedEditor;
+            ObjectPropertiesEditor& nestedEditor = *m_MaybeNestedEditor;
 
             ImGui::Columns();
             auto resp = nestedEditor.onDraw();
@@ -1425,9 +1421,9 @@ namespace
                 rv = [=](OpenSim::AbstractProperty& p) mutable
                 {
                     auto* downcasted = dynamic_cast<OpenSim::Property<OpenSim::HuntCrossleyForce::ContactParametersSet>*>(&p);
-                    if (downcasted && !osc::empty(downcasted->getValue()))
+                    if (downcasted && !empty(downcasted->getValue()))
                     {
-                        OpenSim::HuntCrossleyForce::ContactParameters& contactParams = osc::At(downcasted->updValue(), 0);
+                        OpenSim::HuntCrossleyForce::ContactParameters& contactParams = At(downcasted->updValue(), 0);
                         if (params.hasProperty(resp->getPropertyName()))
                         {
                             OpenSim::AbstractProperty& childP = contactParams.updPropertyByName(resp->getPropertyName());
@@ -1440,7 +1436,7 @@ namespace
             return rv;
         }
 
-        std::optional<osc::ObjectPropertiesEditor> m_MaybeNestedEditor;
+        std::optional<ObjectPropertiesEditor> m_MaybeNestedEditor;
     };
 
     // concrete property editor for an OpenSim::GeometryPath
@@ -1471,7 +1467,7 @@ namespace
 
             if (*m_ReturnValueHolder)
             {
-                std::optional<osc::ObjectPropertyEdit> edit;
+                std::optional<ObjectPropertyEdit> edit;
                 std::swap(*m_ReturnValueHolder, edit);
                 return edit->getUpdater();
             }
@@ -1481,10 +1477,10 @@ namespace
             }
         }
 
-        std::unique_ptr<osc::IPopup> createGeometryPathEditorPopup()
+        std::unique_ptr<IPopup> createGeometryPathEditorPopup()
         {
             auto accessor = getPropertyAccessor();
-            return std::make_unique<osc::GeometryPathEditorPopup>(
+            return std::make_unique<GeometryPathEditorPopup>(
                 "Edit Geometry Path",
                 getModelPtr(),
                 [accessor]() -> OpenSim::GeometryPath const*
@@ -1500,14 +1496,14 @@ namespace
                 {
                     if (property_type const* prop = accessor())
                     {
-                        *shared = osc::ObjectPropertyEdit{*prop, MakePropValueSetter<OpenSim::GeometryPath const&, OpenSim::AbstractGeometryPath>(0, gp)};
+                        *shared = ObjectPropertyEdit{*prop, MakePropValueSetter<OpenSim::GeometryPath const&, OpenSim::AbstractGeometryPath>(0, gp)};
                     }
                 }
             );
         }
 
         // shared between this property editor and a popup it may have spawned
-        std::shared_ptr<std::optional<osc::ObjectPropertyEdit>> m_ReturnValueHolder = std::make_shared<std::optional<osc::ObjectPropertyEdit>>();
+        std::shared_ptr<std::optional<ObjectPropertyEdit>> m_ReturnValueHolder = std::make_shared<std::optional<ObjectPropertyEdit>>();
     };
 }
 
@@ -1612,7 +1608,7 @@ class osc::ObjectPropertiesEditor::Impl final {
 public:
     Impl(
         IPopupAPI* api_,
-        std::shared_ptr<osc::UndoableModelStatePair const> targetModel_,
+        std::shared_ptr<UndoableModelStatePair const> targetModel_,
         std::function<OpenSim::Object const*()> objectGetter_) :
 
         m_API{api_},
@@ -1743,7 +1739,7 @@ private:
     }
 
     IPopupAPI* m_API;
-    std::shared_ptr<osc::UndoableModelStatePair const> m_TargetModel;
+    std::shared_ptr<UndoableModelStatePair const> m_TargetModel;
     std::function<OpenSim::Object const*()> m_ObjectGetter;
     OpenSim::Object const* m_PreviousObject = nullptr;
     std::unordered_map<std::string, std::unique_ptr<IPropertyEditor>> m_PropertyEditorsByName;
@@ -1754,7 +1750,7 @@ private:
 
 osc::ObjectPropertiesEditor::ObjectPropertiesEditor(
     IPopupAPI* api_,
-    std::shared_ptr<osc::UndoableModelStatePair const> targetModel_,
+    std::shared_ptr<UndoableModelStatePair const> targetModel_,
     std::function<OpenSim::Object const*()> objectGetter_) :
 
     m_Impl{std::make_unique<Impl>(api_, std::move(targetModel_), std::move(objectGetter_))}
@@ -1765,7 +1761,7 @@ osc::ObjectPropertiesEditor::ObjectPropertiesEditor(ObjectPropertiesEditor&&) no
 osc::ObjectPropertiesEditor& osc::ObjectPropertiesEditor::operator=(ObjectPropertiesEditor&&) noexcept = default;
 osc::ObjectPropertiesEditor::~ObjectPropertiesEditor() noexcept = default;
 
-std::optional<osc::ObjectPropertyEdit> osc::ObjectPropertiesEditor::onDraw()
+std::optional<ObjectPropertyEdit> osc::ObjectPropertiesEditor::onDraw()
 {
     return m_Impl->onDraw();
 }

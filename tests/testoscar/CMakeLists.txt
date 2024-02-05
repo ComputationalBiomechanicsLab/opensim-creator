@@ -38,6 +38,18 @@ add_executable(testoscar
     Maths/TestBVH.cpp
     Maths/TestUnitVec.cpp
 
+    MetaTests/TestFormatsHeader.cpp
+    MetaTests/TestGraphicsHeader.cpp
+    MetaTests/TestMathsHeader.cpp
+    MetaTests/TestObjectHeader.cpp
+    MetaTests/TestOscarHeader.cpp
+    MetaTests/TestPlatformHeader.cpp
+    MetaTests/TestSceneHeader.cpp
+    MetaTests/TestShimsHeader.cpp
+    MetaTests/TestUIHeader.cpp
+    MetaTests/TestUtilsHeader.cpp
+    MetaTests/TestVariantHeader.cpp
+
     Object/TestClass.cpp
     Object/TestNode.cpp
     Object/TestNodePath.cpp

@@ -37,6 +37,7 @@ using osc::Material;
 using osc::MouseCapturingCamera;
 using osc::Shader;
 using osc::Texture2D;
+using osc::UID;
 using osc::Vec3;
 
 namespace
@@ -75,7 +76,7 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -239,7 +240,7 @@ osc::LOGLMultipleLightsTab::LOGLMultipleLightsTab(LOGLMultipleLightsTab&&) noexc
 osc::LOGLMultipleLightsTab& osc::LOGLMultipleLightsTab::operator=(LOGLMultipleLightsTab&&) noexcept = default;
 osc::LOGLMultipleLightsTab::~LOGLMultipleLightsTab() noexcept = default;
 
-osc::UID osc::LOGLMultipleLightsTab::implGetID() const
+UID osc::LOGLMultipleLightsTab::implGetID() const
 {
     return m_Impl->getID();
 }

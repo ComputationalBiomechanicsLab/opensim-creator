@@ -18,7 +18,7 @@
 #include <cstdint>
 #include <vector>
 
-using osc::Vec3;
+using namespace osc;
 
 // helper functions
 namespace
@@ -29,11 +29,11 @@ namespace
         int const vertidx = mesh.getFaceVertex(face, vert);
         SimTK::Vec3 const& pos = mesh.getVertexPosition(vertidx);
 
-        return osc::ToVec3(pos);
+        return ToVec3(pos);
     }
 }
 
-osc::Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
+Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
 {
     // see: simbody VisualizerProtocol.cpp:drawPolygonalMesh(...) for what this is
     // roughly based on
@@ -53,7 +53,7 @@ osc::Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
     uint32_t index = 0;
     auto const pushTriangle = [&verts, &indices, &index](Triangle const& tri)
     {
-        Vec3 const normal = osc::TriangleNormal(tri);
+        Vec3 const normal = TriangleNormal(tri);
 
         for (size_t i = 0; i < 3; ++i)
         {
@@ -149,7 +149,7 @@ std::string osc::GetCommaDelimitedListOfSupportedSimTKMeshFormats()
     return "obj,vtp,stl";
 }
 
-osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
+Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
 {
     SimTK::DecorativeMeshFile const dmf{p.string()};
     SimTK::PolygonalMesh const& mesh = dmf.getMesh();

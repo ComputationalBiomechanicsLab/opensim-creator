@@ -35,6 +35,8 @@
 #include <utility>
 #include <vector>
 
+using namespace osc;
+
 namespace
 {
     std::vector<OpenSim::Coordinate*> GetLockedCoordinates(OpenSim::Model& m)
@@ -90,11 +92,11 @@ namespace
 
         if (storage.getColumnLabels().size() <= 1)
         {
-            osc::log::warn("the provided STO file does not contain any state variable data");
+            log_warn("the provided STO file does not contain any state variable data");
             return rv;
         }
 
-        if (!osc::IsEqualCaseInsensitive(storage.getColumnLabels()[0], "time"))
+        if (!IsEqualCaseInsensitive(storage.getColumnLabels()[0], "time"))
         {
             throw std::runtime_error{"the provided STO file does not contain a 'time' column as its first column: it cannot be processed"};
         }
@@ -143,9 +145,9 @@ namespace
                 ss << delim << el;
                 delim = ", ";
             }
-            osc::log::warn("%s", std::move(ss).str().c_str());
-            osc::log::warn("The STO file was loaded successfully, but beware: the missing state variables have been defaulted in order for this to work");
-            osc::log::warn("Therefore, do not treat the motion you are seeing as a 'true' representation of something: some state data was 'made up' to make the motion viewable");
+            log_warn("%s", std::move(ss).str().c_str());
+            log_warn("The STO file was loaded successfully, but beware: the missing state variables have been defaulted in order for this to work");
+            log_warn("Therefore, do not treat the motion you are seeing as a 'true' representation of something: some state data was 'made up' to make the motion viewable");
         }
 
         // else: all model state variables are accounted for
@@ -153,7 +155,7 @@ namespace
         return rv;
     }
 
-    std::vector<osc::SimulationReport> ExtractReports(
+    std::vector<SimulationReport> ExtractReports(
         OpenSim::Model& model,
         std::filesystem::path const& stoFilePath)
     {
@@ -172,12 +174,12 @@ namespace
         // temporarily unlock coords
         std::vector<OpenSim::Coordinate*> lockedCoords = GetLockedCoordinates(model);
         SetCoordsDefaultLocked(lockedCoords, false);
-        osc::ScopeGuard const g{[&lockedCoords]() { SetCoordsDefaultLocked(lockedCoords, true); }};
+        ScopeGuard const g{[&lockedCoords]() { SetCoordsDefaultLocked(lockedCoords, true); }};
 
-        osc::InitializeModel(model);
-        osc::InitializeState(model);
+        InitializeModel(model);
+        InitializeState(model);
 
-        std::vector<osc::SimulationReport> rv;
+        std::vector<SimulationReport> rv;
         rv.reserve(storage.getSize());
 
         for (int row = 0; row < storage.getSize(); ++row)
@@ -198,7 +200,7 @@ namespace
                 }
             }
 
-            osc::SimulationReport& report = rv.emplace_back(SimTK::State{model.getWorkingState()});
+            SimulationReport& report = rv.emplace_back(SimTK::State{model.getWorkingState()});
             SimTK::State& st = report.updStateHACK();
             st.setTime(sv->getTime());
             model.setStateVariableValues(st, stateValsBuf);
@@ -316,7 +318,7 @@ osc::StoFileSimulation::StoFileSimulation(StoFileSimulation&&) noexcept = defaul
 osc::StoFileSimulation& osc::StoFileSimulation::operator=(StoFileSimulation&&) noexcept = default;
 osc::StoFileSimulation::~StoFileSimulation() noexcept = default;
 
-osc::SynchronizedValueGuard<OpenSim::Model const> osc::StoFileSimulation::implGetModel() const
+SynchronizedValueGuard<OpenSim::Model const> osc::StoFileSimulation::implGetModel() const
 {
     return m_Impl->getModel();
 }
@@ -326,32 +328,32 @@ ptrdiff_t osc::StoFileSimulation::implGetNumReports() const
     return m_Impl->getNumReports();
 }
 
-osc::SimulationReport osc::StoFileSimulation::implGetSimulationReport(ptrdiff_t reportIndex) const
+SimulationReport osc::StoFileSimulation::implGetSimulationReport(ptrdiff_t reportIndex) const
 {
     return m_Impl->getSimulationReport(reportIndex);
 }
 
-std::vector<osc::SimulationReport> osc::StoFileSimulation::implGetAllSimulationReports() const
+std::vector<SimulationReport> osc::StoFileSimulation::implGetAllSimulationReports() const
 {
     return m_Impl->getAllSimulationReports();
 }
 
-osc::SimulationStatus osc::StoFileSimulation::implGetStatus() const
+SimulationStatus osc::StoFileSimulation::implGetStatus() const
 {
     return m_Impl->getStatus();
 }
 
-osc::SimulationClock::time_point osc::StoFileSimulation::implGetCurTime() const
+SimulationClock::time_point osc::StoFileSimulation::implGetCurTime() const
 {
     return m_Impl->getCurTime();
 }
 
-osc::SimulationClock::time_point osc::StoFileSimulation::implGetStartTime() const
+SimulationClock::time_point osc::StoFileSimulation::implGetStartTime() const
 {
     return m_Impl->getStartTime();
 }
 
-osc::SimulationClock::time_point osc::StoFileSimulation::implGetEndTime() const
+SimulationClock::time_point osc::StoFileSimulation::implGetEndTime() const
 {
     return m_Impl->getEndTime();
 }
@@ -361,12 +363,12 @@ float osc::StoFileSimulation::implGetProgress() const
     return m_Impl->getProgress();
 }
 
-osc::ParamBlock const& osc::StoFileSimulation::implGetParams() const
+ParamBlock const& osc::StoFileSimulation::implGetParams() const
 {
     return m_Impl->getParams();
 }
 
-std::span<osc::OutputExtractor const> osc::StoFileSimulation::implGetOutputExtractors() const
+std::span<OutputExtractor const> osc::StoFileSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
 }

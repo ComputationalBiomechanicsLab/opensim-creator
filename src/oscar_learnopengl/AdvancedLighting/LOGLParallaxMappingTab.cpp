@@ -41,6 +41,7 @@ using osc::MeshTopology;
 using osc::MouseCapturingCamera;
 using osc::Shader;
 using osc::Texture2D;
+using osc::UID;
 using osc::Vec2;
 using osc::Vec3;
 using osc::Vec4;
@@ -95,7 +96,7 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         return rv;
@@ -219,7 +220,7 @@ osc::LOGLParallaxMappingTab::LOGLParallaxMappingTab(LOGLParallaxMappingTab&&) no
 osc::LOGLParallaxMappingTab& osc::LOGLParallaxMappingTab::operator=(LOGLParallaxMappingTab&&) noexcept = default;
 osc::LOGLParallaxMappingTab::~LOGLParallaxMappingTab() noexcept = default;
 
-osc::UID osc::LOGLParallaxMappingTab::implGetID() const
+UID osc::LOGLParallaxMappingTab::implGetID() const
 {
     return m_Impl->getID();
 }

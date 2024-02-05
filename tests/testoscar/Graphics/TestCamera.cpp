@@ -23,6 +23,7 @@ using osc::CameraProjection;
 using osc::Color;
 using osc::Dot;
 using osc::Identity;
+using osc::Inverse;
 using osc::Mat4;
 using osc::Normalize;
 using osc::Vec3;
@@ -85,11 +86,11 @@ TEST(Camera, UsesValueComparison)
 
     ASSERT_EQ(c1, c2);
 
-    c1.setCameraFOV(1337_deg);
+    c1.setVerticalFOV(1337_deg);
 
     ASSERT_NE(c1, c2);
 
-    c2.setCameraFOV(1337_deg);
+    c2.setVerticalFOV(1337_deg);
 
     ASSERT_EQ(c1, c2);
 }
@@ -373,7 +374,7 @@ TEST(Camera, GetInverseViewProjectionMatrixReturnsExpectedAnswerWhenUsingOverrid
     Mat4 projectionMatrix = Identity<Mat4>();
     projectionMatrix[0][1] = 9.0f;  // change some part of it
 
-    Mat4 expected = osc::Inverse(projectionMatrix * viewMatrix);
+    Mat4 expected = Inverse(projectionMatrix * viewMatrix);
 
     camera.setViewMatrixOverride(viewMatrix);
     camera.setProjectionMatrixOverride(projectionMatrix);

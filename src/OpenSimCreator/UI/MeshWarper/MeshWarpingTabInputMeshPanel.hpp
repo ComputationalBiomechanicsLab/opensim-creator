@@ -447,15 +447,15 @@ namespace osc
         // draws a information icon that shows basic mesh info when hovered
         void drawInformationIcon()
         {
-            osc::ButtonNoBg(ICON_FA_INFO_CIRCLE);
+            ButtonNoBg(ICON_FA_INFO_CIRCLE);
             if (ImGui::IsItemHovered())
             {
-                osc::BeginTooltip();
+                BeginTooltip();
 
                 ImGui::TextDisabled("Input Information:");
                 drawInputInformationTable();
 
-                osc::EndTooltip();
+                EndTooltip();
             }
         }
 

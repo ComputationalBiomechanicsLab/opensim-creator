@@ -2,9 +2,11 @@
 
 #include <gtest/gtest.h>
 
+using osc::BVH;
+
 TEST(BVH, GetMaxDepthReturns0OnDefaultConstruction)
 {
-    osc::BVH bvh;
+    BVH bvh;
 
     ASSERT_EQ(bvh.getMaxDepth(), 0);
 }

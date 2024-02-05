@@ -29,6 +29,7 @@ using osc::GenerateCubeMesh;
 using osc::GenerateUVSphereMesh;
 using osc::Mesh;
 using osc::SubMeshDescriptor;
+using osc::UID;
 using osc::Vec3;
 
 namespace
@@ -134,7 +135,7 @@ osc::SubMeshTab::SubMeshTab(SubMeshTab&&) noexcept = default;
 osc::SubMeshTab& osc::SubMeshTab::operator=(SubMeshTab&&) noexcept = default;
 osc::SubMeshTab::~SubMeshTab() noexcept = default;
 
-osc::UID osc::SubMeshTab::implGetID() const
+UID osc::SubMeshTab::implGetID() const
 {
     return m_Impl->getID();
 }

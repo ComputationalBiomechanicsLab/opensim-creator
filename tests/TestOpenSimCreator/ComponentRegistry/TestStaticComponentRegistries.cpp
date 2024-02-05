@@ -26,13 +26,17 @@
 #include <utility>
 #include <vector>
 
+using osc::CStringView;
+using osc::IndexOf;
+using osc::GetComponentRegistry;
+
 namespace
 {
     // a single instance of a joint to test
     struct TestCase {
         std::string name;
         std::optional<size_t> maybeIndex;
-        std::vector<osc::CStringView> expectedNames;
+        std::vector<CStringView> expectedNames;
 
         template<typename T, typename... Names>
         static TestCase create(Names... names)
@@ -41,7 +45,7 @@ namespace
             return TestCase
             {
                 typeid(T).name(),
-                osc::IndexOf<T>(osc::GetComponentRegistry<OpenSim::Joint>()),
+                IndexOf<T>(GetComponentRegistry<OpenSim::Joint>()),
                 {std::forward<Names>(names)...},
             };
         }
@@ -76,7 +80,7 @@ TEST(ComponentRegistry, CoordsHaveExpectedNames)
     {
         ASSERT_TRUE(tc.maybeIndex) << tc.name << " does not exist in the registry(it should)";
 
-        auto const& proto = osc::GetComponentRegistry<OpenSim::Joint>()[*tc.maybeIndex].prototype();
+        auto const& proto = GetComponentRegistry<OpenSim::Joint>()[*tc.maybeIndex].prototype();
         auto const& coordProp = proto.getProperty_coordinates();
 
         ASSERT_EQ(coordProp.size(), tc.expectedNames.size()) << tc.name <<  " has different number of coords from expected";
@@ -92,7 +96,7 @@ TEST(ComponentRegistry, CoordsHaveExpectedNames)
 //       that all joint types can be added without an exception/segfault
 TEST(JointRegistry, CanAddAnyJointWithoutAnExceptionOrSegfault)
 {
-    for (auto const& entry : osc::GetComponentRegistry<OpenSim::Joint>())
+    for (auto const& entry : GetComponentRegistry<OpenSim::Joint>())
     {
         // create a blank model
         OpenSim::Model model;
@@ -123,7 +127,7 @@ TEST(JointRegistry, CanAddAnyJointWithoutAnExceptionOrSegfault)
 //       to ensure that all contact geometries can be added without an exception/segfault
 TEST(ContactGeometryRegistry, CanAddAnyContactGeometryWithoutAnExceptionOrSegfault)
 {
-    for (auto const& entry : osc::GetComponentRegistry<OpenSim::ContactGeometry>())
+    for (auto const& entry : GetComponentRegistry<OpenSim::ContactGeometry>())
     {
         // create a blank model
         OpenSim::Model model;
@@ -150,7 +154,7 @@ TEST(ContactGeometryRegistry, CanAddAnyContactGeometryWithoutAnExceptionOrSegfau
 //  other stuff, e.g. coordinates, existing in the model)
 TEST(ConstraintRegistry, CanAddAnyConstraintWithoutASegfault)
 {
-    for (auto const& entry : osc::GetComponentRegistry<OpenSim::Constraint>())
+    for (auto const& entry : GetComponentRegistry<OpenSim::Constraint>())
     {
         // create a blank model
         OpenSim::Model model;
@@ -183,7 +187,7 @@ TEST(ConstraintRegistry, CanAddAnyConstraintWithoutASegfault)
 //  other stuff, e.g. coordinates, existing in the model)
 TEST(ForceRegistry, CanAddAnyForceWithoutASegfault)
 {
-    for (auto const& entry : osc::GetComponentRegistry<OpenSim::Force>())
+    for (auto const& entry : GetComponentRegistry<OpenSim::Force>())
     {
         // create a blank model
         OpenSim::Model model;
@@ -211,7 +215,7 @@ TEST(ForceRegistry, CanAddAnyForceWithoutASegfault)
 //       to ensure that all of them can be added without a segfault
 TEST(ControllerRegistry, CanAddAnyControllerWithoutASegfault)
 {
-    for (auto const& entry : osc::GetComponentRegistry<OpenSim::Controller>())
+    for (auto const& entry : GetComponentRegistry<OpenSim::Controller>())
     {
         // create a blank model
         OpenSim::Model model;
@@ -241,7 +245,7 @@ TEST(ControllerRegistry, CanAddAnyControllerWithoutASegfault)
 //       to ensure that all of them can be added without a segfault
 TEST(ProbeRegistry, CanAddAnyProbeWithoutASegfault)
 {
-    for (auto const& entry : osc::GetComponentRegistry<OpenSim::Probe>())
+    for (auto const& entry : GetComponentRegistry<OpenSim::Probe>())
     {
         // create a blank model
         OpenSim::Model model;
@@ -266,7 +270,7 @@ TEST(ProbeRegistry, CanAddAnyProbeWithoutASegfault)
 //       segfault
 TEST(UngroupedRegistry, CanAddAnyUngroupedComponentWithoutASegfault)
 {
-    for (auto const& entry : osc::GetComponentRegistry<OpenSim::Component>())
+    for (auto const& entry : GetComponentRegistry<OpenSim::Component>())
     {
         // create a blank model
         OpenSim::Model model;

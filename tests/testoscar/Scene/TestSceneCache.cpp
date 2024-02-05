@@ -11,6 +11,7 @@
 #include <cstdint>
 
 using osc::AABB;
+using osc::AABBFromVerts;
 using osc::BVH;
 using osc::Mesh;
 using osc::SceneCache;
@@ -38,7 +39,7 @@ TEST(SceneMesh, GetBVHOnNonEmptyMeshReturnsExpectedRootNode)
     m.setVerts(pyramid);
     m.setIndices(pyramidIndices);
 
-    AABB const expectedRoot = osc::AABBFromVerts(pyramid);
+    AABB const expectedRoot = AABBFromVerts(pyramid);
 
     SceneCache c;
 

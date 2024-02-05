@@ -30,6 +30,7 @@ using namespace osc::literals;
 using osc::CStringView;
 using osc::Mesh;
 using osc::MouseCapturingCamera;
+using osc::UID;
 using osc::Vec2;
 using osc::Vec3;
 
@@ -110,7 +111,7 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -222,7 +223,7 @@ osc::LOGLBlendingTab::LOGLBlendingTab(LOGLBlendingTab&&) noexcept = default;
 osc::LOGLBlendingTab& osc::LOGLBlendingTab::operator=(LOGLBlendingTab&&) noexcept = default;
 osc::LOGLBlendingTab::~LOGLBlendingTab() noexcept = default;
 
-osc::UID osc::LOGLBlendingTab::implGetID() const
+UID osc::LOGLBlendingTab::implGetID() const
 {
     return m_Impl->getID();
 }

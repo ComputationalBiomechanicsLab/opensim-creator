@@ -21,16 +21,14 @@ namespace osc
         Logger(std::string _name) :
             m_Name{std::move(_name)},
             m_Sinks()
-        {
-        }
+        {}
 
         Logger(std::string _name, std::shared_ptr<LogSink> _sink) :
             m_Name{std::move(_name)},
             m_Sinks{_sink}
-        {
-        }
+        {}
 
-        void log(LogLevel msgLvl, CStringView fmt, ...)
+        void log_message(LogLevel msgLvl, CStringView fmt, ...)
         {
             if (msgLvl < level)
             {
@@ -61,45 +59,45 @@ namespace osc
             {
                 if (sink->shouldLog(view.level))
                 {
-                    sink->log(view);
+                    sink->log_message(view);
                 }
             }
         }
 
         template<typename... Args>
-        void trace(CStringView fmt, Args const&... args)
+        void log_trace(CStringView fmt, Args const&... args)
         {
-            log(LogLevel::trace, fmt, args...);
+            log_message(LogLevel::trace, fmt, args...);
         }
 
         template<typename... Args>
-        void debug(CStringView fmt, Args const&... args)
+        void log_debug(CStringView fmt, Args const&... args)
         {
-            log(LogLevel::debug, fmt, args...);
+            log_message(LogLevel::debug, fmt, args...);
         }
 
         template<typename... Args>
-        void info(CStringView fmt, Args const&... args)
+        void log_info(CStringView fmt, Args const&... args)
         {
-            log(LogLevel::info, fmt, args...);
+            log_message(LogLevel::info, fmt, args...);
         }
 
         template<typename... Args>
-        void warn(CStringView fmt, Args const&... args)
+        void log_warn(CStringView fmt, Args const&... args)
         {
-            log(LogLevel::warn, fmt, args...);
+            log_message(LogLevel::warn, fmt, args...);
         }
 
         template<typename... Args>
-        void error(CStringView fmt, Args const&... args)
+        void log_error(CStringView fmt, Args const&... args)
         {
-            log(LogLevel::err, fmt, args...);
+            log_message(LogLevel::err, fmt, args...);
         }
 
         template<typename... Args>
-        void critical(CStringView fmt, Args const&... args)
+        void log_critical(CStringView fmt, Args const&... args)
         {
-            log(LogLevel::critical, fmt, args...);
+            log_message(LogLevel::critical, fmt, args...);
         }
 
         [[nodiscard]] std::vector<std::shared_ptr<LogSink>> const& sinks() const

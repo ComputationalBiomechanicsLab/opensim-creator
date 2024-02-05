@@ -7,33 +7,35 @@
 #include <cstddef>
 #include <span>
 
+using namespace osc;
+
 namespace
 {
-    constexpr auto c_Metadata = std::to_array<osc::MuscleDecorationStyleMetadata>(
+    constexpr auto c_Metadata = std::to_array<MuscleDecorationStyleMetadata>(
     {
-        osc::MuscleDecorationStyleMetadata
+        MuscleDecorationStyleMetadata
         {
             "opensim",
             "OpenSim",
-            osc::MuscleDecorationStyle::OpenSim,
+            MuscleDecorationStyle::OpenSim,
         },
-        osc::MuscleDecorationStyleMetadata
+        MuscleDecorationStyleMetadata
         {
             "fibers_and_tendons",
             "Fibers & Tendons",
-            osc::MuscleDecorationStyle::FibersAndTendons,
+            MuscleDecorationStyle::FibersAndTendons,
         },
-        osc::MuscleDecorationStyleMetadata
+        MuscleDecorationStyleMetadata
         {
             "hidden",
             "Hidden",
-            osc::MuscleDecorationStyle::Hidden,
+            MuscleDecorationStyle::Hidden,
         },
     });
-    static_assert(c_Metadata.size() == osc::NumOptions<osc::MuscleDecorationStyle>());
+    static_assert(c_Metadata.size() == NumOptions<MuscleDecorationStyle>());
 }
 
-std::span<osc::MuscleDecorationStyleMetadata const> osc::GetAllMuscleDecorationStyleMetadata()
+std::span<MuscleDecorationStyleMetadata const> osc::GetAllMuscleDecorationStyleMetadata()
 {
     return c_Metadata;
 }
@@ -43,7 +45,7 @@ ptrdiff_t osc::GetIndexOf(MuscleDecorationStyle s)
     return static_cast<ptrdiff_t>(s);
 }
 
-osc::MuscleDecorationStyleMetadata const& osc::GetMuscleDecorationStyleMetadata(MuscleDecorationStyle s)
+MuscleDecorationStyleMetadata const& osc::GetMuscleDecorationStyleMetadata(MuscleDecorationStyle s)
 {
     return GetAllMuscleDecorationStyleMetadata()[GetIndexOf(s)];
 }

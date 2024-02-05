@@ -81,7 +81,7 @@ void osc::SceneCache::clear()
     m_Impl->torusCache.lock()->clear();
 }
 
-osc::Mesh osc::SceneCache::get(
+Mesh osc::SceneCache::get(
     std::string const& key,
     std::function<Mesh()> const& getter)
 {
@@ -97,64 +97,64 @@ osc::Mesh osc::SceneCache::get(
         }
         catch (std::exception const& ex)
         {
-            log::error("%s: error getting a mesh via a getter: it will be replaced with a dummy cube: %s", key.c_str(), ex.what());
+            log_error("%s: error getting a mesh via a getter: it will be replaced with a dummy cube: %s", key.c_str(), ex.what());
         }
     }
 
     return it->second;
 }
 
-osc::Mesh osc::SceneCache::getSphereMesh()
+Mesh osc::SceneCache::getSphereMesh()
 {
     return m_Impl->sphere;
 }
 
-osc::Mesh osc::SceneCache::getCircleMesh()
+Mesh osc::SceneCache::getCircleMesh()
 {
     return m_Impl->circle;
 }
 
-osc::Mesh osc::SceneCache::getCylinderMesh()
+Mesh osc::SceneCache::getCylinderMesh()
 {
     return m_Impl->cylinder;
 }
 
-osc::Mesh osc::SceneCache::getBrickMesh()
+Mesh osc::SceneCache::getBrickMesh()
 {
     return m_Impl->cube;
 }
 
-osc::Mesh osc::SceneCache::getConeMesh()
+Mesh osc::SceneCache::getConeMesh()
 {
     return m_Impl->cone;
 }
 
-osc::Mesh osc::SceneCache::getFloorMesh()
+Mesh osc::SceneCache::getFloorMesh()
 {
     return m_Impl->floor;
 }
 
-osc::Mesh osc::SceneCache::get100x100GridMesh()
+Mesh osc::SceneCache::get100x100GridMesh()
 {
     return m_Impl->grid100x100;
 }
 
-osc::Mesh osc::SceneCache::getCubeWireMesh()
+Mesh osc::SceneCache::getCubeWireMesh()
 {
     return m_Impl->cubeWire;
 }
 
-osc::Mesh osc::SceneCache::getYLineMesh()
+Mesh osc::SceneCache::getYLineMesh()
 {
     return m_Impl->yLine;
 }
 
-osc::Mesh osc::SceneCache::getTexturedQuadMesh()
+Mesh osc::SceneCache::getTexturedQuadMesh()
 {
     return m_Impl->texturedQuad;
 }
 
-osc::Mesh osc::SceneCache::getTorusMesh(float torusCenterToTubeCenterRadius, float tubeRadius)
+Mesh osc::SceneCache::getTorusMesh(float torusCenterToTubeCenterRadius, float tubeRadius)
 {
     TorusParameters const key{torusCenterToTubeCenterRadius, tubeRadius};
 
@@ -169,7 +169,7 @@ osc::Mesh osc::SceneCache::getTorusMesh(float torusCenterToTubeCenterRadius, flo
     return it->second;
 }
 
-osc::BVH const& osc::SceneCache::getBVH(Mesh const& mesh)
+BVH const& osc::SceneCache::getBVH(Mesh const& mesh)
 {
     auto guard = m_Impl->bvhCache.lock();
     auto [it, inserted] = guard->try_emplace(mesh, nullptr);

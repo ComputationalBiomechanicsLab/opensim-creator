@@ -31,6 +31,8 @@
 #include <array>
 #include <chrono>
 
+using namespace osc;
+
 class osc::MeshHittestTab::Impl final {
 public:
 
@@ -56,8 +58,8 @@ public:
         // handle hittest
         auto raycastStart = std::chrono::high_resolution_clock::now();
 
-        Rect r = osc::GetMainViewportWorkspaceScreenRect();
-        Vec2 d = osc::Dimensions(r);
+        Rect r = GetMainViewportWorkspaceScreenRect();
+        Vec2 d = Dimensions(r);
         m_Ray = m_PolarCamera.unprojectTopLeftPosToWorldRay(Vec2{ImGui::GetMousePos()} - r.p1, d);
 
         m_IsMousedOver = false;
@@ -95,8 +97,8 @@ public:
     {
         // setup scene
         {
-            Rect const viewportRect = osc::GetMainViewportWorkspaceScreenRect();
-            Vec2 const viewportRectDims = osc::Dimensions(viewportRect);
+            Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
+            Vec2 const viewportRectDims = Dimensions(viewportRect);
             m_Camera.setPixelRect(viewportRect);
 
             // update real scene camera from constrained polar camera
@@ -129,12 +131,12 @@ public:
             // draw BVH AABBs
             m_Material.setColor("uColor", Color::black());
             m_Material.setDepthTested(true);
-            osc::DrawBVH(
+            DrawBVH(
                 *App::singleton<SceneCache>(),
                 m_MeshBVH,
-                [this](osc::SceneDecoration&& dec)
+                [this](SceneDecoration&& dec)
                 {
-                    osc::Graphics::DrawMesh(m_CubeLinesMesh, dec.transform, m_Material, m_Camera);
+                    Graphics::DrawMesh(m_CubeLinesMesh, dec.transform, m_Material, m_Camera);
                 }
             );
         }
@@ -198,7 +200,7 @@ private:
 
 // public API (PIMPL)
 
-osc::CStringView osc::MeshHittestTab::id()
+CStringView osc::MeshHittestTab::id()
 {
     return "OpenSim/Experimental/MeshHittest";
 }
@@ -212,12 +214,12 @@ osc::MeshHittestTab::MeshHittestTab(MeshHittestTab&&) noexcept = default;
 osc::MeshHittestTab& osc::MeshHittestTab::operator=(MeshHittestTab&&) noexcept = default;
 osc::MeshHittestTab::~MeshHittestTab() noexcept = default;
 
-osc::UID osc::MeshHittestTab::implGetID() const
+UID osc::MeshHittestTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::MeshHittestTab::implGetName() const
+CStringView osc::MeshHittestTab::implGetName() const
 {
     return m_Impl->getName();
 }

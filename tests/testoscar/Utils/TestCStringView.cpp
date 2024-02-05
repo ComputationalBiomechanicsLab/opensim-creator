@@ -9,6 +9,7 @@
 
 namespace cpp20 = osc::cpp20;
 using osc::CStringView;
+
 TEST(CStringView, WhenPassedNullCstringYieldsEmptyCStringView)
 {
     char const* p = nullptr;

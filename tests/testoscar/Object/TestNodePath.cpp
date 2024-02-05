@@ -8,10 +8,12 @@
 #include <string_view>
 #include <vector>
 
+using osc::NodePath;
+
 
 namespace
 {
-    std::vector<std::string> Slurp(osc::NodePath const& np)
+    std::vector<std::string> Slurp(NodePath const& np)
     {
         return {np.begin(), np.end()};
     }
@@ -19,73 +21,73 @@ namespace
 
 TEST(NodePath, CanBeDefaultConstructed)
 {
-    [[maybe_unused]] osc::NodePath const np;
+    [[maybe_unused]] NodePath const np;
 }
 
 TEST(NodePath, WhenDefaultCoonstructedIsEmpty)
 {
-    ASSERT_TRUE(osc::NodePath().empty());
+    ASSERT_TRUE(NodePath().empty());
 }
 
 TEST(NodePath, WhenDefaultConstructedBeginEqualsEnd)
 {
-    osc::NodePath const np;
+    NodePath const np;
     ASSERT_EQ(np.begin(), np.end());
 }
 
 TEST(NodePath, WhenDefaultConstructedIsNonAbsolute)
 {
-    ASSERT_FALSE(osc::NodePath().isAbsolute());
+    ASSERT_FALSE(NodePath().isAbsolute());
 }
 
 TEST(NodePath, WhenDefaultConstructedComparesEqualToEmptyStringView)
 {
-    ASSERT_EQ(osc::NodePath(), std::string_view());
+    ASSERT_EQ(NodePath(), std::string_view());
 }
 
 TEST(NodePath, WhenDefaultConstructedComparesNotEqualToNonEmptyStringView)
 {
-    ASSERT_NE(osc::NodePath(), std::string_view("hi"));
+    ASSERT_NE(NodePath(), std::string_view("hi"));
 }
 
 TEST(NodePath, WhenDefaultConstructedHasSameHashAsStringView)
 {
-    auto const npHash = std::hash<osc::NodePath>{}(osc::NodePath{});
+    auto const npHash = std::hash<NodePath>{}(NodePath{});
     auto const svHash = std::hash<std::string_view>{}(std::string_view{});
     ASSERT_EQ(npHash, svHash);
 }
 
 TEST(NodePath, CanBeConvertedIntoAStringView)
 {
-    auto sv = static_cast<std::string_view>(osc::NodePath{});
+    auto sv = static_cast<std::string_view>(NodePath{});
     ASSERT_EQ(sv, std::string_view());
 }
 
 TEST(NodePath, WhenConstructedFromSingleElementReturnsNonEmpty)
 {
-    ASSERT_FALSE(osc::NodePath("el").empty());
+    ASSERT_FALSE(NodePath("el").empty());
 }
 
 TEST(NodePath, WhenConstructedFromSingleElementReturnsNotAbsolute)
 {
-    ASSERT_FALSE(osc::NodePath("el").isAbsolute());
+    ASSERT_FALSE(NodePath("el").isAbsolute());
 }
 
 TEST(NodePath, WhenConstructedFromSingleElementBeginNotEqualToEnd)
 {
-    osc::NodePath const np{"el"};
+    NodePath const np{"el"};
     ASSERT_NE(np.begin(), np.end());
 }
 
 TEST(NodePath, WhenConstructedFromSingleElementIteratorsHaveDistanceOfOne)
 {
-    osc::NodePath const np{"el"};
+    NodePath const np{"el"};
     ASSERT_EQ(std::distance(np.begin(), np.end()), 1);
 }
 
 TEST(NodePath, WhenConstructedFromSingleElementSlurpsIntoExpectedResult)
 {
-    osc::NodePath const np{"el"};
+    NodePath const np{"el"};
     std::vector<std::string> const expected = {"el"};
 
     ASSERT_EQ(Slurp(np), expected);
@@ -93,75 +95,75 @@ TEST(NodePath, WhenConstructedFromSingleElementSlurpsIntoExpectedResult)
 
 TEST(NodePath, WhenConstructedFromSingleElementComparesEqualToEquivStringView)
 {
-    ASSERT_EQ(osc::NodePath("el"), std::string_view("el"));
+    ASSERT_EQ(NodePath("el"), std::string_view("el"));
 }
 
 TEST(NodePath, WhenConstructedFromSingleElementComparesNotEqualToEmptyStringView)
 {
-    ASSERT_NE(osc::NodePath("el"), std::string_view());
+    ASSERT_NE(NodePath("el"), std::string_view());
 }
 
 TEST(NodePath, WhenConstructedFromSingleElementComparesNotEqualToSomeOtherString)
 {
-    ASSERT_NE(osc::NodePath("el"), std::string_view("else"));
+    ASSERT_NE(NodePath("el"), std::string_view("else"));
 }
 
 TEST(NodePath, WhenConstructedFromSingleElementHasSameHashAsEquivalentStringView)
 {
-    auto const npHash = std::hash<osc::NodePath>{}(osc::NodePath{"el"});
+    auto const npHash = std::hash<NodePath>{}(NodePath{"el"});
     auto const svHash = std::hash<std::string_view>{}(std::string_view{"el"});
     ASSERT_EQ(npHash, svHash);
 }
 
 TEST(NodePath, WhenConstructedFromSingleElementWhenLeadingSlashReturnsNonEmpty)
 {
-    ASSERT_FALSE(osc::NodePath("/el").empty());
+    ASSERT_FALSE(NodePath("/el").empty());
 }
 
 TEST(NodePath, WhenConstructedFromSingleElementWithLeadingSlashReturnsIsAbsolute)
 {
-    ASSERT_TRUE(osc::NodePath("/el").isAbsolute());
+    ASSERT_TRUE(NodePath("/el").isAbsolute());
 }
 
 TEST(NodePath, WhenConstructedFromSingleElementWithLeadingSlashComparesEqualToEquivalentStringView)
 {
-    ASSERT_EQ(osc::NodePath("/el"), std::string_view("/el"));
+    ASSERT_EQ(NodePath("/el"), std::string_view("/el"));
 }
 
 TEST(NodePath, WhenConstructedFromSingleElementWithLeadingSlashHasAnIteratorDistanceOfOne)
 {
-    osc::NodePath const np{"/el"};
+    NodePath const np{"/el"};
     ASSERT_EQ(std::distance(np.begin(), np.end()), 1);
 }
 
 TEST(NodePath, WhenConstructedFromSingleElementWithLeadingSlashSlurpsIntoExpectedVector)
 {
-    osc::NodePath const np{"/el"};
+    NodePath const np{"/el"};
     std::vector<std::string> const expected = {"el"};
     ASSERT_EQ(Slurp(np), expected);
 }
 
 TEST(NodePath, WhenConstructedFromSingleElementWithLeadingSlashHashesToEquivalentStringView)
 {
-    auto const npHash = std::hash<osc::NodePath>{}(osc::NodePath{"/el"});
+    auto const npHash = std::hash<NodePath>{}(NodePath{"/el"});
     auto const svHash = std::hash<std::string_view>{}(std::string_view{"/el"});
     ASSERT_EQ(npHash, svHash);
 }
 
 TEST(NodePath, WhenConstructedFromTwoElementsWithNoLeadingSlashIsNotAbsolute)
 {
-    ASSERT_FALSE(osc::NodePath("a/b").isAbsolute());
+    ASSERT_FALSE(NodePath("a/b").isAbsolute());
 }
 
 TEST(NodePath, WhenConstructedFromTwoElementsWithNoLeadingSlashHasIteratorDistanceOfTwo)
 {
-    osc::NodePath const np{"a/b"};
+    NodePath const np{"a/b"};
     ASSERT_EQ(std::distance(np.begin(), np.end()), 2);
 }
 
 TEST(NodePath, WhenConstructedFromTwoElementsWithNoLeadingSlashSlurpsIntoExpectedVector)
 {
-    osc::NodePath const np{"a/b"};
+    NodePath const np{"a/b"};
     std::vector<std::string> const expected = {"a", "b"};
     auto slurped = Slurp(np);
     ASSERT_EQ(Slurp(np), expected);
@@ -169,30 +171,30 @@ TEST(NodePath, WhenConstructedFromTwoElementsWithNoLeadingSlashSlurpsIntoExpecte
 
 TEST(NodePath, WhenConstructedFromTwoElementsWithNoLeadingSlashComparesEqualToEquivalentStringView)
 {
-    ASSERT_EQ(osc::NodePath("a/b"), std::string_view("a/b"));
+    ASSERT_EQ(NodePath("a/b"), std::string_view("a/b"));
 }
 
 TEST(NodePath, WhenConstructedFromTwoElementsWithNoLeadingSlashHashesToSameAsStringView)
 {
-    auto const npHash = std::hash<osc::NodePath>{}(osc::NodePath{"a/b"});
+    auto const npHash = std::hash<NodePath>{}(NodePath{"a/b"});
     auto const svHash = std::hash<std::string_view>{}(std::string_view{"a/b"});
     ASSERT_EQ(npHash, svHash);
 }
 
 TEST(NodePath, WhenConstructedFromTwoElementsWithLeadingSlashIsAbsolute)
 {
-    ASSERT_TRUE(osc::NodePath("/a/b").isAbsolute());
+    ASSERT_TRUE(NodePath("/a/b").isAbsolute());
 }
 
 TEST(NodePath, WhenConstructedFromTwoElementsWithLeadingSlashHasIteratorDistanceOfTwo)
 {
-    osc::NodePath const np{"/a/b"};
+    NodePath const np{"/a/b"};
     ASSERT_EQ(std::distance(np.begin(), np.end()), 2);
 }
 
 TEST(NodePath, WhenConstructedFromTwoElementsWithLeadingSlashSlurpsToExpectedVector)
 {
-    osc::NodePath const np{"/a/b"};
+    NodePath const np{"/a/b"};
     std::vector<std::string> const expected = {"a", "b"};
     ASSERT_EQ(Slurp(np), expected);
 }
@@ -201,7 +203,7 @@ TEST(NodePath, HasExpectedNumberOfElementsForTestInputs)
 {
     struct TestCase final {
         std::string_view input;
-        osc::NodePath::iterator::difference_type expectedOutput;
+        NodePath::iterator::difference_type expectedOutput;
     };
 
     auto const tcs = std::to_array<TestCase>(
@@ -222,7 +224,7 @@ TEST(NodePath, HasExpectedNumberOfElementsForTestInputs)
 
     for (TestCase const& tc : tcs)
     {
-        osc::NodePath np{tc.input};
+        NodePath np{tc.input};
         auto const len = std::distance(np.begin(), np.end());
         ASSERT_EQ(len, tc.expectedOutput);
     }
@@ -277,7 +279,7 @@ TEST(NodePath, NormalizesInputsAsExpected)
 
     for (TestCase const& tc : tcs)
     {
-        ASSERT_EQ(osc::NodePath(tc.input), tc.expectedOutput) << std::string_view{tc.input};
+        ASSERT_EQ(NodePath(tc.input), tc.expectedOutput) << std::string_view{tc.input};
     }
 }
 
@@ -315,6 +317,6 @@ TEST(NodePath, ThrowsIfGivenInvalidInputs)
 
     for (auto const& input : inputs)
     {
-        ASSERT_ANY_THROW({ osc::NodePath p(input); }) << std::string{"input was: "} + std::string{input};
+        ASSERT_ANY_THROW({ NodePath p(input); }) << std::string{"input was: "} + std::string{input};
     }
 }

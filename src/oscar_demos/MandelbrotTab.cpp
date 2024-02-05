@@ -23,6 +23,7 @@ using osc::Camera;
 using osc::CStringView;
 using osc::Identity;
 using osc::Mat4;
+using osc::UID;
 
 namespace
 {
@@ -103,7 +104,7 @@ private:
 
 // public API
 
-osc::CStringView osc::MandelbrotTab::id()
+CStringView osc::MandelbrotTab::id()
 {
     return c_TabStringID;
 }
@@ -116,12 +117,12 @@ osc::MandelbrotTab::MandelbrotTab(MandelbrotTab&&) noexcept = default;
 osc::MandelbrotTab& osc::MandelbrotTab::operator=(MandelbrotTab&&) noexcept = default;
 osc::MandelbrotTab::~MandelbrotTab() noexcept = default;
 
-osc::UID osc::MandelbrotTab::implGetID() const
+UID osc::MandelbrotTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::MandelbrotTab::implGetName() const
+CStringView osc::MandelbrotTab::implGetName() const
 {
     return m_Impl->getName();
 }

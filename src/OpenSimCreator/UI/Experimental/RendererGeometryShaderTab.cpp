@@ -20,6 +20,7 @@
 #include <memory>
 
 using namespace osc::literals;
+using namespace osc;
 
 class osc::RendererGeometryShaderTab::Impl final {
 public:
@@ -27,7 +28,7 @@ public:
     Impl()
     {
         m_SceneCamera.setPosition({0.0f, 0.0f, 3.0f});
-        m_SceneCamera.setCameraFOV(45_deg);
+        m_SceneCamera.setVerticalFOV(45_deg);
         m_SceneCamera.setNearClippingPlane(0.1f);
         m_SceneCamera.setFarClippingPlane(100.0f);
     }
@@ -62,7 +63,7 @@ public:
             m_IsMouseCaptured = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && osc::IsMouseInMainViewportWorkspaceScreenRect())
+        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect())
         {
             m_IsMouseCaptured = true;
             return true;
@@ -84,11 +85,11 @@ public:
             ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
-        m_SceneCamera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
+        m_SceneCamera.setPixelRect(GetMainViewportWorkspaceScreenRect());
 
         m_SceneMaterial.setColor("uDiffuseColor", m_MeshColor);
-        Graphics::DrawMesh(m_Mesh, osc::Transform{}, m_SceneMaterial, m_SceneCamera);
-        Graphics::DrawMesh(m_Mesh, osc::Transform{}, m_NormalsMaterial, m_SceneCamera);
+        Graphics::DrawMesh(m_Mesh, Transform{}, m_SceneMaterial, m_SceneCamera);
+        Graphics::DrawMesh(m_Mesh, Transform{}, m_NormalsMaterial, m_SceneCamera);
         m_SceneCamera.renderToScreen();
     }
 
@@ -124,7 +125,7 @@ private:
 
 // public API (PIMPL)
 
-osc::CStringView osc::RendererGeometryShaderTab::id()
+CStringView osc::RendererGeometryShaderTab::id()
 {
     return "OpenSim/Experimental/GeometryShader";
 }
@@ -138,12 +139,12 @@ osc::RendererGeometryShaderTab::RendererGeometryShaderTab(RendererGeometryShader
 osc::RendererGeometryShaderTab& osc::RendererGeometryShaderTab::operator=(RendererGeometryShaderTab&&) noexcept = default;
 osc::RendererGeometryShaderTab::~RendererGeometryShaderTab() noexcept = default;
 
-osc::UID osc::RendererGeometryShaderTab::implGetID() const
+UID osc::RendererGeometryShaderTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::RendererGeometryShaderTab::implGetName() const
+CStringView osc::RendererGeometryShaderTab::implGetName() const
 {
     return m_Impl->getName();
 }

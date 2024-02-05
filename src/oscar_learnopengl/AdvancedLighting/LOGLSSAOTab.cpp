@@ -58,6 +58,7 @@ using osc::Texture2D;
 using osc::TextureFilterMode;
 using osc::TextureFormat;
 using osc::TextureWrapMode;
+using osc::UID;
 using osc::Vec2i;
 using osc::Vec3;
 using osc::ViewObjectRepresentations;
@@ -70,7 +71,7 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(50.0f);
         rv.setBackgroundColor(Color::black());
@@ -432,7 +433,7 @@ osc::LOGLSSAOTab::LOGLSSAOTab(LOGLSSAOTab&&) noexcept = default;
 osc::LOGLSSAOTab& osc::LOGLSSAOTab::operator=(LOGLSSAOTab&&) noexcept = default;
 osc::LOGLSSAOTab::~LOGLSSAOTab() noexcept = default;
 
-osc::UID osc::LOGLSSAOTab::implGetID() const
+UID osc::LOGLSSAOTab::implGetID() const
 {
     return m_Impl->getID();
 }

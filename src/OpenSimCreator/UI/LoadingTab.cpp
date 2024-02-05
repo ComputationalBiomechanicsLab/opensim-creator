@@ -24,6 +24,8 @@
 #include <string>
 #include <utility>
 
+using namespace osc;
+
 class osc::LoadingTab::Impl final {
 public:
 
@@ -33,7 +35,7 @@ public:
 
         m_Parent{parent_},
         m_OsimPath{std::move(path_)},
-        m_LoadingResult{std::async(std::launch::async, osc::LoadOsimIntoUndoableModel, m_OsimPath)}
+        m_LoadingResult{std::async(std::launch::async, LoadOsimIntoUndoableModel, m_OsimPath)}
     {
     }
 
@@ -49,7 +51,7 @@ public:
 
     void onTick()
     {
-        auto const dt = static_cast<float>(osc::App::get().getFrameDeltaSinceLastFrame().count());
+        auto const dt = static_cast<float>(App::get().getFrameDeltaSinceLastFrame().count());
 
         // tick the progress bar up a little bit
         m_LoadingProgress += (dt * (1.0f - m_LoadingProgress))/2.0f;
@@ -74,7 +76,7 @@ public:
         }
         catch (std::exception const& ex)
         {
-            log::info("LoadingScreen::onTick: exception thrown while loading model: %s", ex.what());
+            log_info("LoadingScreen::onTick: exception thrown while loading model: %s", ex.what());
             m_LoadingErrorMsg = ex.what();
             return;
         }
@@ -97,8 +99,8 @@ public:
     {
         constexpr Vec2 menuDims = {512.0f, 512.0f};
 
-        Rect const tabRect = osc::GetMainViewportWorkspaceScreenRect();
-        Vec2 const windowDims = osc::Dimensions(tabRect);
+        Rect const tabRect = GetMainViewportWorkspaceScreenRect();
+        Vec2 const windowDims = Dimensions(tabRect);
 
         // center the menu
         {
@@ -145,7 +147,7 @@ private:
 
     // future that lets the UI thread poll the loading thread for
     // the loaded model
-    std::future<std::unique_ptr<osc::UndoableModelStatePair>> m_LoadingResult;
+    std::future<std::unique_ptr<UndoableModelStatePair>> m_LoadingResult;
 
     // if not empty, any error encountered by the loading thread
     std::string m_LoadingErrorMsg;
@@ -173,12 +175,12 @@ osc::LoadingTab::LoadingTab(LoadingTab&&) noexcept = default;
 osc::LoadingTab& osc::LoadingTab::operator=(LoadingTab&&) noexcept = default;
 osc::LoadingTab::~LoadingTab() noexcept = default;
 
-osc::UID osc::LoadingTab::implGetID() const
+UID osc::LoadingTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::LoadingTab::implGetName() const
+CStringView osc::LoadingTab::implGetName() const
 {
     return m_Impl->getName();
 }

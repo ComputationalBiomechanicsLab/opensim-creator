@@ -4,6 +4,8 @@
 
 #include <oscar/Scene/SceneDecoration.hpp>
 
+using namespace osc;
+
 osc::ComponentSceneDecorationFlagsTagger::ComponentSceneDecorationFlagsTagger(
     OpenSim::Component const* selected_,
     OpenSim::Component const* hovered_) :
@@ -25,7 +27,7 @@ void osc::ComponentSceneDecorationFlagsTagger::operator()(
     decoration.flags = m_Flags;
 }
 
-osc::SceneDecorationFlags osc::ComponentSceneDecorationFlagsTagger::computeFlags(
+SceneDecorationFlags osc::ComponentSceneDecorationFlagsTagger::computeFlags(
     OpenSim::Component const& component) const
 {
     SceneDecorationFlags rv = SceneDecorationFlags::CastsShadows;

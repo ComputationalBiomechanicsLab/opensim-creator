@@ -16,22 +16,24 @@
 #include <memory>
 #include <span>
 
+using namespace osc;
+
 namespace
 {
-    constexpr auto c_IntegratorMethods = std::to_array<osc::IntegratorMethod>(
+    constexpr auto c_IntegratorMethods = std::to_array<IntegratorMethod>(
     {
-        osc::IntegratorMethod::OpenSimManagerDefault,
-        osc::IntegratorMethod::ExplicitEuler,
-        osc::IntegratorMethod::RungeKutta2,
-        osc::IntegratorMethod::RungeKutta3,
-        osc::IntegratorMethod::RungeKuttaFeldberg,
-        osc::IntegratorMethod::RungeKuttaMerson,
-        osc::IntegratorMethod::SemiExplicitEuler2,
-        osc::IntegratorMethod::Verlet,
+        IntegratorMethod::OpenSimManagerDefault,
+        IntegratorMethod::ExplicitEuler,
+        IntegratorMethod::RungeKutta2,
+        IntegratorMethod::RungeKutta3,
+        IntegratorMethod::RungeKuttaFeldberg,
+        IntegratorMethod::RungeKuttaMerson,
+        IntegratorMethod::SemiExplicitEuler2,
+        IntegratorMethod::Verlet,
     });
-    static_assert(c_IntegratorMethods.size() == osc::NumOptions<osc::IntegratorMethod>());
+    static_assert(c_IntegratorMethods.size() == NumOptions<IntegratorMethod>());
 
-    constexpr auto c_IntegratorMethodStrings = std::to_array<osc::CStringView>(
+    constexpr auto c_IntegratorMethodStrings = std::to_array<CStringView>(
     {
         "OpenSim::Manager Default",
         "Explicit Euler",
@@ -42,42 +44,42 @@ namespace
         "Semi Explicit Euler 2",
         "Verlet",
     });
-    static_assert(c_IntegratorMethodStrings.size() == osc::NumOptions<osc::IntegratorMethod>());
+    static_assert(c_IntegratorMethodStrings.size() == NumOptions<IntegratorMethod>());
 }
 
-std::span<osc::IntegratorMethod const> osc::GetAllIntegratorMethods()
+std::span<IntegratorMethod const> osc::GetAllIntegratorMethods()
 {
     return c_IntegratorMethods;
 }
 
-std::span<osc::CStringView const> osc::GetAllIntegratorMethodStrings()
+std::span<CStringView const> osc::GetAllIntegratorMethodStrings()
 {
     return c_IntegratorMethodStrings;
 }
 
-osc::CStringView osc::GetIntegratorMethodString(IntegratorMethod im)
+CStringView osc::GetIntegratorMethodString(IntegratorMethod im)
 {
     return GetAllIntegratorMethodStrings()[static_cast<size_t>(im)];
 }
 
-std::unique_ptr<SimTK::Integrator> osc::CreateIntegrator(SimTK::System const& system, osc::IntegratorMethod method)
+std::unique_ptr<SimTK::Integrator> osc::CreateIntegrator(SimTK::System const& system, IntegratorMethod method)
 {
     switch (method) {
-    case osc::IntegratorMethod::OpenSimManagerDefault:
+    case IntegratorMethod::OpenSimManagerDefault:
         return std::make_unique<SimTK::RungeKuttaMersonIntegrator>(system);
-    case osc::IntegratorMethod::ExplicitEuler:
+    case IntegratorMethod::ExplicitEuler:
         return std::make_unique<SimTK::ExplicitEulerIntegrator>(system);
-    case osc::IntegratorMethod::RungeKutta2:
+    case IntegratorMethod::RungeKutta2:
         return std::make_unique<SimTK::RungeKutta2Integrator>(system);
-    case osc::IntegratorMethod::RungeKutta3:
+    case IntegratorMethod::RungeKutta3:
         return std::make_unique<SimTK::RungeKutta3Integrator>(system);
-    case osc::IntegratorMethod::RungeKuttaFeldberg:
+    case IntegratorMethod::RungeKuttaFeldberg:
         return std::make_unique<SimTK::RungeKuttaFeldbergIntegrator>(system);
-    case osc::IntegratorMethod::RungeKuttaMerson:
+    case IntegratorMethod::RungeKuttaMerson:
         return std::make_unique<SimTK::RungeKuttaMersonIntegrator>(system);
-    case osc::IntegratorMethod::SemiExplicitEuler2:
+    case IntegratorMethod::SemiExplicitEuler2:
         return std::make_unique<SimTK::SemiExplicitEuler2Integrator>(system);
-    case osc::IntegratorMethod::Verlet:
+    case IntegratorMethod::Verlet:
         return std::make_unique<SimTK::VerletIntegrator>(system);
     default:
         return std::make_unique<SimTK::RungeKuttaMersonIntegrator>(system);

@@ -11,29 +11,31 @@
 #include <span>
 #include <vector>
 
+using namespace osc;
+
 namespace
 {
-    std::vector<osc::OutputExtractor> ConstructMultiBodySystemOutputExtractors()
+    std::vector<OutputExtractor> ConstructMultiBodySystemOutputExtractors()
     {
-        std::vector<osc::OutputExtractor> rv;
+        std::vector<OutputExtractor> rv;
 
         // SimTK::System (base class)
-        rv.emplace_back(osc::MultiBodySystemOutputExtractor{
+        rv.emplace_back(MultiBodySystemOutputExtractor{
             "NumPrescribeQcalls",
             "Get the number of prescribe Q calls made against the system",
             [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumPrescribeQCalls()); }
         });
-        rv.emplace_back(osc::MultiBodySystemOutputExtractor{
+        rv.emplace_back(MultiBodySystemOutputExtractor{
             "NumHandleEventCalls",
             "The total number of calls to handleEvents() regardless of the outcome",
             [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumHandleEventCalls()); }
         });
-        rv.emplace_back(osc::MultiBodySystemOutputExtractor{
+        rv.emplace_back(MultiBodySystemOutputExtractor{
             "NumReportEventCalls",
             "The total number of calls to reportEvents() regardless of the outcome",
             [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumReportEventCalls()); }
         });
-        rv.emplace_back(osc::MultiBodySystemOutputExtractor{
+        rv.emplace_back(MultiBodySystemOutputExtractor{
             "NumRealizeCalls",
             "The total number of calls to realizeTopology(), realizeModel(), or realize(), regardless of whether these routines actually did anything when called",
             [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumRealizeCalls()); }
@@ -41,9 +43,9 @@ namespace
         return rv;
     }
 
-    std::vector<osc::OutputExtractor> const& GetAllMultiBodySystemOutputExtractors()
+    std::vector<OutputExtractor> const& GetAllMultiBodySystemOutputExtractors()
     {
-        static std::vector<osc::OutputExtractor> const s_Outputs = ConstructMultiBodySystemOutputExtractors();
+        static std::vector<OutputExtractor> const s_Outputs = ConstructMultiBodySystemOutputExtractors();
         return s_Outputs;
     }
 }
@@ -57,17 +59,17 @@ osc::MultiBodySystemOutputExtractor::MultiBodySystemOutputExtractor(std::string_
 {
 }
 
-osc::CStringView osc::MultiBodySystemOutputExtractor::getName() const
+CStringView osc::MultiBodySystemOutputExtractor::getName() const
 {
     return m_Name;
 }
 
-osc::CStringView osc::MultiBodySystemOutputExtractor::getDescription() const
+CStringView osc::MultiBodySystemOutputExtractor::getDescription() const
 {
     return m_Description;
 }
 
-osc::OutputType osc::MultiBodySystemOutputExtractor::getOutputType() const
+OutputType osc::MultiBodySystemOutputExtractor::getOutputType() const
 {
     return OutputType::Float;
 }
@@ -95,7 +97,7 @@ std::string osc::MultiBodySystemOutputExtractor::getValueString(OpenSim::Compone
     return std::to_string(getValueFloat(c, report));
 }
 
-osc::UID osc::MultiBodySystemOutputExtractor::getAuxiliaryDataID() const
+UID osc::MultiBodySystemOutputExtractor::getAuxiliaryDataID() const
 {
     return m_AuxiliaryDataID;
 }
@@ -107,7 +109,7 @@ osc::MultiBodySystemOutputExtractor::ExtractorFn osc::MultiBodySystemOutputExtra
 
 std::size_t osc::MultiBodySystemOutputExtractor::getHash() const
 {
-    return osc::HashOf(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
+    return HashOf(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
 }
 
 bool osc::MultiBodySystemOutputExtractor::equals(IOutputExtractor const& other) const
@@ -135,12 +137,12 @@ int osc::GetNumMultiBodySystemOutputExtractors()
     return static_cast<int>(GetAllMultiBodySystemOutputExtractors().size());
 }
 
-osc::MultiBodySystemOutputExtractor const& osc::GetMultiBodySystemOutputExtractor(int idx)
+MultiBodySystemOutputExtractor const& osc::GetMultiBodySystemOutputExtractor(int idx)
 {
     return dynamic_cast<MultiBodySystemOutputExtractor const&>(GetAllMultiBodySystemOutputExtractors().at(static_cast<size_t>(idx)).getInner());
 }
 
-osc::OutputExtractor osc::GetMultiBodySystemOutputExtractorDynamic(int idx)
+OutputExtractor osc::GetMultiBodySystemOutputExtractorDynamic(int idx)
 {
     return GetAllMultiBodySystemOutputExtractors().at(static_cast<size_t>(idx));
 }

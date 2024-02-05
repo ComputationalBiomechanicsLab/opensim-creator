@@ -45,7 +45,7 @@ namespace osc
         }
 
     private:
-        std::shared_ptr<osc::UndoableModelStatePair> m_Model;
+        std::shared_ptr<UndoableModelStatePair> m_Model;
         ImGuizmo::OPERATION m_GizmoOperation = ImGuizmo::TRANSLATE;
         ImGuizmo::MODE m_GizmoMode = ImGuizmo::WORLD;
         bool m_WasUsingGizmoLastFrame = false;

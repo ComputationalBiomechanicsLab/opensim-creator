@@ -16,6 +16,7 @@
 
 using namespace osc::literals;
 using osc::CStringView;
+using osc::UID;
 
 namespace
 {
@@ -74,7 +75,7 @@ private:
 
 // public API
 
-osc::CStringView osc::ImGuizmoDemoTab::id()
+CStringView osc::ImGuizmoDemoTab::id()
 {
     return "Demos/ImGuizmo";
 }
@@ -87,12 +88,12 @@ osc::ImGuizmoDemoTab::ImGuizmoDemoTab(ImGuizmoDemoTab&&) noexcept = default;
 osc::ImGuizmoDemoTab& osc::ImGuizmoDemoTab::operator=(ImGuizmoDemoTab&&) noexcept = default;
 osc::ImGuizmoDemoTab::~ImGuizmoDemoTab() noexcept = default;
 
-osc::UID osc::ImGuizmoDemoTab::implGetID() const
+UID osc::ImGuizmoDemoTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::ImGuizmoDemoTab::implGetName() const
+CStringView osc::ImGuizmoDemoTab::implGetName() const
 {
     return m_Impl->getName();
 }

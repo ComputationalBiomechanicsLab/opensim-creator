@@ -64,7 +64,7 @@ namespace
     };
 }
 
-class osc::AddComponentPopup::Impl final : public osc::StandardPopup {
+class osc::AddComponentPopup::Impl final : public StandardPopup {
 public:
     Impl(
         std::string_view popupName,
@@ -96,7 +96,7 @@ private:
         }
 
         // clone prototype
-        std::unique_ptr<OpenSim::Component> rv = osc::Clone(*m_Proto);
+        std::unique_ptr<OpenSim::Component> rv = Clone(*m_Proto);
 
         // set name
         rv->setName(m_Name);
@@ -179,8 +179,8 @@ private:
         DrawHelpMarker("Name the newly-added component will have after being added into the model. Note: this is used to derive the name of subcomponents (e.g. path points)");
         ImGui::NextColumn();
 
-        osc::InputString("##componentname", m_Name);
-        App::upd().addFrameAnnotation("AddComponentPopup::ComponentNameInput", osc::GetItemRect());
+        InputString("##componentname", m_Name);
+        App::upd().addFrameAnnotation("AddComponentPopup::ComponentNameInput", GetItemRect());
 
         ImGui::NextColumn();
 
@@ -199,7 +199,7 @@ private:
         auto maybeUpdater = m_PrototypePropertiesEditor.onDraw();
         if (maybeUpdater)
         {
-            OpenSim::AbstractProperty* prop = osc::FindPropertyMut(*m_Proto, maybeUpdater->getPropertyName());
+            OpenSim::AbstractProperty* prop = FindPropertyMut(*m_Proto, maybeUpdater->getPropertyName());
             if (prop)
             {
                 maybeUpdater->apply(*prop);
@@ -249,7 +249,7 @@ private:
                     continue;
                 }
 
-                OpenSim::ComponentPath const absPath = osc::GetAbsolutePath(c);
+                OpenSim::ComponentPath const absPath = GetAbsolutePath(c);
                 bool selected = absPath == connectee;
 
                 ImGui::PushID(innerID++);
@@ -257,8 +257,10 @@ private:
                 {
                     connectee = absPath;
                 }
-                Rect const selectableRect = osc::GetItemRect();
-                osc::DrawTooltipIfItemHovered(c.toString());
+
+                Rect const selectableRect = GetItemRect();
+                DrawTooltipIfItemHovered(absPath.toString());
+
                 ImGui::PopID();
 
                 if (selected)
@@ -287,7 +289,7 @@ private:
         {
             auto const isSameUserChoiceAsComponent = [&c](PathPoint const& p)
             {
-                return p.userChoice == osc::GetAbsolutePath(c);
+                return p.userChoice == GetAbsolutePath(c);
             };
             if (std::any_of(m_PathPoints.begin(), m_PathPoints.end(), isSameUserChoiceAsComponent))
             {
@@ -344,12 +346,12 @@ private:
             if (ImGui::Selectable(c.getName().c_str()))
             {
                 m_PathPoints.emplace_back(
-                    osc::GetAbsolutePath(*userChoice),
-                    osc::GetAbsolutePath(*actualFrame),
+                    GetAbsolutePath(*userChoice),
+                    GetAbsolutePath(*actualFrame),
                     locationInFrame
                 );
             }
-            DrawTooltipIfItemHovered(c.getName(), (osc::GetAbsolutePathString(c) + " " + c.getConcreteClassName()));
+            DrawTooltipIfItemHovered(c.getName(), (GetAbsolutePathString(c) + " " + c.getConcreteClassName()));
         }
 
         ImGui::EndChild();
@@ -411,7 +413,7 @@ private:
             {
                 if (OpenSim::Component const* c = FindComponent(model, m_PathPoints[i].userChoice))
                 {
-                    DrawTooltip(c->getName(), osc::GetAbsolutePathString(*c));
+                    DrawTooltip(c->getName(), GetAbsolutePathString(*c));
                 }
             }
 
@@ -440,7 +442,7 @@ private:
         DrawHelpMarker("The Component being added is (effectively) a line that connects physical frames (e.g. bodies) in the model. For example, an OpenSim::Muscle can be described as an actuator that connects bodies in the model together. You **must** specify at least two physical frames on the line in order to add a PathActuator component.\n\nDetails: in OpenSim, some `Components` are `PathActuator`s. All `Muscle`s are defined as `PathActuator`s. A `PathActuator` is an `Actuator` that actuates along a path. Therefore, a `Model` containing a `PathActuator` with zero or one points would be invalid. This is why it is required that you specify at least two points");
         ImGui::Separator();
 
-        osc::InputString(ICON_FA_SEARCH " search", m_PathSearchString);
+        InputString(ICON_FA_SEARCH " search", m_PathSearchString);
 
         ImGui::Columns(2);
         int imguiID = 0;
@@ -489,11 +491,11 @@ private:
     {
         if (!m_CurrentErrors.empty())
         {
-            osc::PushStyleColor(ImGuiCol_Text, Color::red());
+            PushStyleColor(ImGuiCol_Text, Color::red());
             ImGui::Dummy({0.0f, 2.0f});
             ImGui::TextWrapped("Error adding component to model: %s", m_CurrentErrors.c_str());
             ImGui::Dummy({0.0f, 2.0f});
-            osc::PopStyleColor();
+            PopStyleColor();
         }
     }
 

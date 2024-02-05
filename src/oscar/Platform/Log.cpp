@@ -5,6 +5,7 @@
 #include <iostream>
 #include <mutex>
 
+namespace detail = osc::detail;
 using osc::CircularBuffer;
 using osc::Logger;
 using osc::LogLevel;
@@ -28,7 +29,7 @@ namespace
 
     class CircularLogSink final : public LogSink {
     public:
-        SynchronizedValue<CircularBuffer<LogMessage, osc::log::c_MaxLogTracebackMessages>>& updMessages()
+        SynchronizedValue<CircularBuffer<LogMessage, detail::c_MaxLogTracebackMessages>>& updMessages()
         {
             return m_Messages;
         }
@@ -39,7 +40,7 @@ namespace
             l->emplace_back(msg);
         }
 
-        SynchronizedValue<CircularBuffer<LogMessage, osc::log::c_MaxLogTracebackMessages>> m_Messages;
+        SynchronizedValue<CircularBuffer<LogMessage, detail::c_MaxLogTracebackMessages>> m_Messages;
     };
 
     struct GlobalSinks final {
@@ -63,27 +64,27 @@ namespace
 
 // public API
 
-std::shared_ptr<Logger> osc::log::defaultLogger()
+std::shared_ptr<Logger> osc::defaultLogger()
 {
     return GetGlobalSinks().defaultLogSink;
 }
 
-Logger* osc::log::defaultLoggerRaw()
+Logger* osc::defaultLoggerRaw()
 {
     return GetGlobalSinks().defaultLogSink.get();
 }
 
-LogLevel osc::log::getTracebackLevel()
+LogLevel osc::getTracebackLevel()
 {
     return GetGlobalSinks().tracebackSink->getLevel();
 }
 
-void osc::log::setTracebackLevel(LogLevel lvl)
+void osc::setTracebackLevel(LogLevel lvl)
 {
     GetGlobalSinks().tracebackSink->setLevel(lvl);
 }
 
-SynchronizedValue<CircularBuffer<LogMessage, osc::log::c_MaxLogTracebackMessages>>& osc::log::getTracebackLog()
+SynchronizedValue<CircularBuffer<LogMessage, detail::c_MaxLogTracebackMessages>>& osc::getTracebackLog()
 {
     return GetGlobalSinks().tracebackSink->updMessages();
 }

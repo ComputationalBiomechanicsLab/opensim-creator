@@ -36,6 +36,7 @@ using osc::MouseCapturingCamera;
 using osc::RenderTexture;
 using osc::RenderTextureDescriptor;
 using osc::RenderTextureReadWrite;
+using osc::UID;
 using osc::Vec2;
 using osc::Vec2i;
 using osc::Vec3;
@@ -84,6 +85,7 @@ namespace
     MouseCapturingCamera CreateCamera()
     {
         MouseCapturingCamera cam;
+        cam.setPosition({-2.0f, 1.0f, 0.0f});
         cam.setNearClippingPlane(0.1f);
         cam.setFarClippingPlane(100.0f);
         return cam;
@@ -235,7 +237,7 @@ osc::LOGLShadowMappingTab::LOGLShadowMappingTab(LOGLShadowMappingTab&&) noexcept
 osc::LOGLShadowMappingTab& osc::LOGLShadowMappingTab::operator=(LOGLShadowMappingTab&&) noexcept = default;
 osc::LOGLShadowMappingTab::~LOGLShadowMappingTab() noexcept = default;
 
-osc::UID osc::LOGLShadowMappingTab::implGetID() const
+UID osc::LOGLShadowMappingTab::implGetID() const
 {
     return m_Impl->getID();
 }

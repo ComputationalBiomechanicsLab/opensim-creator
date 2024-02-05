@@ -52,6 +52,7 @@ using osc::NumOptions;
 using osc::Shader;
 using osc::Texture2D;
 using osc::ToIndex;
+using osc::UID;
 using osc::Vec2i;
 
 namespace
@@ -103,7 +104,7 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -274,7 +275,7 @@ osc::LOGLCubemapsTab::LOGLCubemapsTab(LOGLCubemapsTab&&) noexcept = default;
 osc::LOGLCubemapsTab& osc::LOGLCubemapsTab::operator=(LOGLCubemapsTab&&) noexcept = default;
 osc::LOGLCubemapsTab::~LOGLCubemapsTab() noexcept = default;
 
-osc::UID osc::LOGLCubemapsTab::implGetID() const
+UID osc::LOGLCubemapsTab::implGetID() const
 {
     return m_Impl->getID();
 }

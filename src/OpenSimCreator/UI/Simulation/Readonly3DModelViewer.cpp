@@ -22,6 +22,8 @@
 #include <string_view>
 #include <utility>
 
+using namespace osc;
+
 namespace
 {
     std::string GetSettingsKeyPrefixForPanel(std::string_view panelName)
@@ -96,7 +98,7 @@ public:
         );
 
         // update current+retained hittest
-        ImGuiItemHittestResult const hittest = osc::HittestLastImguiItem();
+        ImGuiItemHittestResult const hittest = HittestLastImguiItem();
         m_MaybeLastHittest = hittest;
 
         // if allowed, hittest the scene
@@ -123,7 +125,7 @@ public:
         if (edited)
         {
             auto const& renderParamsAfter = m_Params;
-            osc::SaveModelRendererParamsDifference(
+            SaveModelRendererParamsDifference(
                 renderParamsBefore,
                 renderParamsAfter,
                 GetSettingsKeyPrefixForPanel(m_ParentPanelName),
@@ -143,10 +145,10 @@ public:
         }
     }
 
-    std::optional<osc::Rect> getScreenRect() const
+    std::optional<Rect> getScreenRect() const
     {
         return m_MaybeLastHittest ?
-            std::optional<osc::Rect>{m_MaybeLastHittest->rect} :
+            std::optional<Rect>{m_MaybeLastHittest->rect} :
             std::nullopt;
     }
 
@@ -185,7 +187,7 @@ private:
     std::optional<ImGuiItemHittestResult> m_MaybeLastHittest;
 
     // overlay-related data
-    std::shared_ptr<IconCache> m_IconCache = App::singleton<osc::IconCache>(
+    std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
         App::resource("icons/"),
         ImGui::GetTextLineHeight()/128.0f
     );
@@ -218,12 +220,12 @@ bool osc::Readonly3DModelViewer::isMousedOver() const
     return m_Impl->isMousedOver();
 }
 
-std::optional<osc::SceneCollision> osc::Readonly3DModelViewer::onDraw(IConstModelStatePair const& rs)
+std::optional<SceneCollision> osc::Readonly3DModelViewer::onDraw(IConstModelStatePair const& rs)
 {
     return m_Impl->onDraw(rs);
 }
 
-std::optional<osc::Rect> osc::Readonly3DModelViewer::getScreenRect() const
+std::optional<Rect> osc::Readonly3DModelViewer::getScreenRect() const
 {
     return m_Impl->getScreenRect();
 }

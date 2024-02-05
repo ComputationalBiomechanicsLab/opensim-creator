@@ -18,7 +18,8 @@
 #include <optional>
 #include <vector>
 
-using osc::mow::ValidationCheck;
+using namespace osc;
+using namespace osc::mow;
 
 namespace
 {
@@ -30,7 +31,7 @@ namespace
         {
             rv.push_back(&v);
         }
-        std::sort(rv.begin(), rv.end(), osc::IsNameLexographicallyLowerThan<T const*>);
+        std::sort(rv.begin(), rv.end(), IsNameLexographicallyLowerThan<T const*>);
         return rv;
     }
 }

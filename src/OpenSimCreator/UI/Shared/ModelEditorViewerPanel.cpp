@@ -33,6 +33,8 @@
 #include <utility>
 #include <vector>
 
+using namespace osc;
+
 namespace
 {
     std::string GetSettingsKeyPrefixForPanel(std::string_view panelName)
@@ -42,7 +44,7 @@ namespace
         return std::move(ss).str();
     }
 
-    class RulerLayer final : public osc::ModelEditorViewerPanelLayer {
+    class RulerLayer final : public ModelEditorViewerPanelLayer {
     public:
         RulerLayer()
         {
@@ -50,21 +52,21 @@ namespace
         }
 
     private:
-        osc::ModelEditorViewerPanelLayerFlags implGetFlags() const final
+        ModelEditorViewerPanelLayerFlags implGetFlags() const final
         {
-            return osc::ModelEditorViewerPanelLayerFlags::CapturesMouseInputs;
+            return ModelEditorViewerPanelLayerFlags::CapturesMouseInputs;
         }
 
         bool implHandleMouseInputs(
-            osc::ModelEditorViewerPanelParameters&,
-            osc::ModelEditorViewerPanelState&) final
+            ModelEditorViewerPanelParameters&,
+            ModelEditorViewerPanelState&) final
         {
             return true;  // always handles the mouse
         }
 
         void implOnDraw(
-            osc::ModelEditorViewerPanelParameters& params,
-            osc::ModelEditorViewerPanelState& state) final
+            ModelEditorViewerPanelParameters& params,
+            ModelEditorViewerPanelState& state) final
         {
             m_Ruler.onDraw(
                 params.getRenderParams().camera,
@@ -78,28 +80,28 @@ namespace
             return !m_Ruler.isMeasuring();
         }
 
-        osc::GuiRuler m_Ruler;
+        GuiRuler m_Ruler;
     };
 
     // model viewer layer that adds buttons for controling visualization
     // options and 3D manipulator gizmos
-    class ButtonAndGizmoControlsLayer final : public osc::ModelEditorViewerPanelLayer {
+    class ButtonAndGizmoControlsLayer final : public ModelEditorViewerPanelLayer {
     public:
         ButtonAndGizmoControlsLayer(
             std::string_view panelName_,
-            std::shared_ptr<osc::UndoableModelStatePair> model_) :
+            std::shared_ptr<UndoableModelStatePair> model_) :
 
             m_PanelName{panelName_},
             m_Gizmo{std::move(model_)}
         {
         }
     private:
-        osc::ModelEditorViewerPanelLayerFlags implGetFlags() const final
+        ModelEditorViewerPanelLayerFlags implGetFlags() const final
         {
-            osc::ModelEditorViewerPanelLayerFlags flags = osc::ModelEditorViewerPanelLayerFlags::None;
+            ModelEditorViewerPanelLayerFlags flags = ModelEditorViewerPanelLayerFlags::None;
             if (m_Gizmo.isUsing())
             {
-                flags |= osc::ModelEditorViewerPanelLayerFlags::CapturesMouseInputs;
+                flags |= ModelEditorViewerPanelLayerFlags::CapturesMouseInputs;
             }
             return flags;
         }
@@ -110,8 +112,8 @@ namespace
         }
 
         bool implHandleMouseInputs(
-            osc::ModelEditorViewerPanelParameters&,
-            osc::ModelEditorViewerPanelState&) final
+            ModelEditorViewerPanelParameters&,
+            ModelEditorViewerPanelState&) final
         {
             // care: ImGuizmo::isOver can return `true` even if it
             // isn't being drawn this frame
@@ -119,15 +121,15 @@ namespace
         }
 
         bool implHandleKeyboardInputs(
-            osc::ModelEditorViewerPanelParameters&,
-            osc::ModelEditorViewerPanelState&) final
+            ModelEditorViewerPanelParameters&,
+            ModelEditorViewerPanelState&) final
         {
             return m_Gizmo.handleKeyboardInputs();
         }
 
         void implOnDraw(
-            osc::ModelEditorViewerPanelParameters& params,
-            osc::ModelEditorViewerPanelState& state) final
+            ModelEditorViewerPanelParameters& params,
+            ModelEditorViewerPanelState& state) final
         {
             // draw generic overlays (i.e. the buttons for toggling things)
             auto renderParamsBefore = params.getRenderParams();
@@ -143,15 +145,15 @@ namespace
 
             if (edited)
             {
-                osc::log::debug("%s edited", m_PanelName.c_str());
+                log_debug("%s edited", m_PanelName.c_str());
 
                 auto const& renderParamsAfter = params.getRenderParams();
 
-                osc::SaveModelRendererParamsDifference(
+                SaveModelRendererParamsDifference(
                     renderParamsBefore,
                     renderParamsAfter,
                     GetSettingsKeyPrefixForPanel(m_PanelName),
-                    osc::App::upd().updConfig()
+                    App::upd().updConfig()
                 );
             }
 
@@ -166,11 +168,11 @@ namespace
 
         // draws extra top overlay buttons
         bool drawExtraTopButtons(
-            osc::ModelEditorViewerPanelState& state)
+            ModelEditorViewerPanelState& state)
         {
             bool edited = false;
 
-            osc::IconWithoutMenu rulerButton
+            IconWithoutMenu rulerButton
             {
                 m_IconCache->getIcon("ruler"),
                 "Ruler",
@@ -186,7 +188,7 @@ namespace
             // draw translate/rotate/scale selector
             {
                 ImGuizmo::OPERATION op = m_Gizmo.getOperation();
-                if (osc::DrawGizmoOpSelector(op, true, true, false))
+                if (DrawGizmoOpSelector(op, true, true, false))
                 {
                     m_Gizmo.setOperation(op);
                     edited = true;
@@ -200,7 +202,7 @@ namespace
             // draw global/world selector
             {
                 ImGuizmo::MODE mode = m_Gizmo.getMode();
-                if (osc::DrawGizmoModeSelector(mode))
+                if (DrawGizmoModeSelector(mode))
                 {
                     m_Gizmo.setMode(mode);
                     edited = true;
@@ -210,17 +212,17 @@ namespace
             return edited;
         }
 
-        std::shared_ptr<osc::IconCache> m_IconCache = osc::App::singleton<osc::IconCache>(
-            osc::App::resource("icons/"),
+        std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
+            App::resource("icons/"),
             ImGui::GetTextLineHeight()/128.0f
         );
         std::string m_PanelName;
-        osc::ModelSelectionGizmo m_Gizmo;
+        ModelSelectionGizmo m_Gizmo;
     };
 
     // the "base" model viewer layer, which is the last layer to handle any input
     // etc. if no upper layer decides to handle it
-    class BaseInteractionLayer final : public osc::ModelEditorViewerPanelLayer {
+    class BaseInteractionLayer final : public ModelEditorViewerPanelLayer {
     private:
         void implOnNewFrame() final
         {
@@ -229,10 +231,10 @@ namespace
         }
 
         bool implHandleKeyboardInputs(
-            osc::ModelEditorViewerPanelParameters& params,
-            osc::ModelEditorViewerPanelState& state) final
+            ModelEditorViewerPanelParameters& params,
+            ModelEditorViewerPanelState& state) final
         {
-            return osc::UpdatePolarCameraFromImGuiKeyboardInputs(
+            return UpdatePolarCameraFromImGuiKeyboardInputs(
                 params.updRenderParams().camera,
                 state.viewportRect,
                 state.maybeSceneAABB
@@ -240,28 +242,28 @@ namespace
         }
 
         bool implHandleMouseInputs(
-            osc::ModelEditorViewerPanelParameters& params,
-            osc::ModelEditorViewerPanelState& state) final
+            ModelEditorViewerPanelParameters& params,
+            ModelEditorViewerPanelState& state) final
         {
             m_IsHandlingMouseInputs = true;
 
             // try updating the camera (mouse panning, etc.)
-            bool rv = osc::UpdatePolarCameraFromImGuiMouseInputs(
+            bool rv = UpdatePolarCameraFromImGuiMouseInputs(
                 params.updRenderParams().camera,
-                osc::Dimensions(state.viewportRect)
+                Dimensions(state.viewportRect)
             );
 
-            if (osc::IsDraggingWithAnyMouseButtonDown())
+            if (IsDraggingWithAnyMouseButtonDown())
             {
                 params.getModelSharedPtr()->setHovered(nullptr);
             }
-            else if (state.maybeHoveredComponentAbsPath != osc::GetAbsolutePathOrEmpty(params.getModelSharedPtr()->getHovered()))
+            else if (state.maybeHoveredComponentAbsPath != GetAbsolutePathOrEmpty(params.getModelSharedPtr()->getHovered()))
             {
                 // care: this code must check whether the hover != current hover
                 // (even if null), because there might be multiple viewports open
                 // (#582)
                 params.getModelSharedPtr()->setHovered(
-                    osc::FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath)
+                    FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath)
                 );
                 rv = true;
             }
@@ -270,7 +272,7 @@ namespace
             if (state.isLeftClickReleasedWithoutDragging)
             {
                 params.getModelSharedPtr()->setSelected(
-                    osc::FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath)
+                    FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath)
                 );
                 rv = true;
             }
@@ -279,17 +281,17 @@ namespace
         }
 
         void implOnDraw(
-            osc::ModelEditorViewerPanelParameters& params,
-            osc::ModelEditorViewerPanelState& state) final
+            ModelEditorViewerPanelParameters& params,
+            ModelEditorViewerPanelState& state) final
         {
             // hover, but not panning: show tooltip
             if (!state.maybeHoveredComponentAbsPath.toString().empty() &&
                 m_IsHandlingMouseInputs &&
-                !osc::IsDraggingWithAnyMouseButtonDown())
+                !IsDraggingWithAnyMouseButtonDown())
             {
-                if (OpenSim::Component const* c = osc::FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath))
+                if (OpenSim::Component const* c = FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath))
                 {
-                    osc::DrawComponentHoverTooltip(*c);
+                    DrawComponentHoverTooltip(*c);
                 }
             }
 
@@ -298,12 +300,12 @@ namespace
                 state.isRightClickReleasedWithoutDragging)
             {
                 // right-click: pump a right-click event
-                osc::ModelEditorViewerPanelRightClickEvent const e
+                ModelEditorViewerPanelRightClickEvent const e
                 {
                     std::string{state.getPanelName()},
                     state.viewportRect,
                     state.maybeHoveredComponentAbsPath.toString(),
-                    state.maybeBaseLayerHittest ? std::optional<osc::Vec3>{state.maybeBaseLayerHittest->worldspaceLocation} : std::nullopt,
+                    state.maybeBaseLayerHittest ? std::optional<Vec3>{state.maybeBaseLayerHittest->worldspaceLocation} : std::nullopt,
                 };
                 params.callOnRightClickHandler(e);
             }
@@ -318,7 +320,7 @@ namespace
     };
 }
 
-class osc::ModelEditorViewerPanel::Impl final : public osc::StandardPanelImpl {
+class osc::ModelEditorViewerPanel::Impl final : public StandardPanelImpl {
 public:
 
     Impl(
@@ -401,7 +403,7 @@ private:
 
         // render the 3D scene to a texture and present it via an ImGui::Image
         {
-            osc::RenderTexture& sceneTexture = m_State.updRenderer().onDraw(
+            RenderTexture& sceneTexture = m_State.updRenderer().onDraw(
                 *m_Parameters.getModelSharedPtr(),
                 m_Parameters.getRenderParams(),
                 Dimensions(m_State.viewportRect),
@@ -502,7 +504,7 @@ private:
         {
             ModelEditorViewerPanelLayer& layer = **it;
 
-            ImGuiWindowFlags windowFlags = osc::GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs;
+            ImGuiWindowFlags windowFlags = GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs;
 
             // if any layer above this one captures mouse inputs then disable this layer's inputs
             if (std::find_if(it+1, m_Layers.end(), [](auto const& layerPtr) -> bool { return layerPtr->getFlags() & ModelEditorViewerPanelLayerFlags::CapturesMouseInputs; }) != m_Layers.end())
@@ -562,7 +564,7 @@ osc::ModelEditorViewerPanel::ModelEditorViewerPanel(ModelEditorViewerPanel&&) no
 osc::ModelEditorViewerPanel& osc::ModelEditorViewerPanel::operator=(ModelEditorViewerPanel&&) noexcept = default;
 osc::ModelEditorViewerPanel::~ModelEditorViewerPanel() noexcept = default;
 
-osc::ModelEditorViewerPanelLayer& osc::ModelEditorViewerPanel::pushLayer(std::unique_ptr<ModelEditorViewerPanelLayer> layer)
+ModelEditorViewerPanelLayer& osc::ModelEditorViewerPanel::pushLayer(std::unique_ptr<ModelEditorViewerPanelLayer> layer)
 {
     return m_Impl->pushLayer(std::move(layer));
 }
@@ -572,7 +574,7 @@ void osc::ModelEditorViewerPanel::focusOn(Vec3 const& pos)
     m_Impl->focusOn(pos);
 }
 
-osc::CStringView osc::ModelEditorViewerPanel::implGetName() const
+CStringView osc::ModelEditorViewerPanel::implGetName() const
 {
     return m_Impl->getName();
 }

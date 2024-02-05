@@ -16,19 +16,29 @@
 #include <functional>
 #include <memory>
 
+using osc::AddBody;
+using osc::AttachGeometry;
+using osc::BodyDetails;
+using osc::FinalizeConnections;
+using osc::InitializeModel;
+using osc::InitializeState;
+using osc::IsEqualWithinRelativeError;
+using osc::ObjectPropertyEdit;
+using osc::UndoableModelStatePair;
+
 // repro for #642
 //
 // @AdrianHendrik reported that trying to add a body with an invalid name entirely crashes
 // OSC, which implies that the operation causes a segfault
 TEST(OpenSimActions, ActionAddBodyToModelThrowsIfBodyNameIsInvalid)
 {
-    osc::UndoableModelStatePair model;
+    UndoableModelStatePair model;
 
-    osc::BodyDetails details;
+    BodyDetails details;
     details.bodyName = "test 1";
     details.parentFrameAbsPath = "/ground";  // this is what the dialog defaults to
 
-    ASSERT_ANY_THROW({ osc::ActionAddBodyToModel(model, details); });
+    ASSERT_ANY_THROW({ ActionAddBodyToModel(model, details); });
 }
 
 // repro for #495
@@ -39,16 +49,16 @@ TEST(OpenSimActions, ActionAddBodyToModelThrowsIfBodyNameIsInvalid)
 // that something not-quite-right has happened
 TEST(OpenSimActions, ActionUpdateModelFromBackingFileReturnsFalseIfFileDoesNotExist)
 {
-    osc::UndoableModelStatePair model;
+    UndoableModelStatePair model;
 
     // it just returns `false` if there's no backing file
-    ASSERT_FALSE(osc::ActionUpdateModelFromBackingFile(model));
+    ASSERT_FALSE(ActionUpdateModelFromBackingFile(model));
 
     // ... but if you say it has an invalid backing file path...
     model.setFilesystemPath("doesnt-exist");
 
     // then it should just return `false`, rather than (e.g.) exploding
-    ASSERT_FALSE(osc::ActionUpdateModelFromBackingFile(model));
+    ASSERT_FALSE(ActionUpdateModelFromBackingFile(model));
 }
 
 // repro for #654
@@ -70,10 +80,10 @@ TEST(OpenSimActions, ActionApplyRangeDeletionPropertyEditReturnsFalseToIndicateF
         model.addJoint(joint.release());
         model.addBody(body.release());
         model.finalizeConnections();
-        return osc::UndoableModelStatePair{std::make_unique<OpenSim::Model>(std::move(model))};
+        return UndoableModelStatePair{std::make_unique<OpenSim::Model>(std::move(model))};
     }();
 
-    osc::ObjectPropertyEdit edit
+    ObjectPropertyEdit edit
     {
         undoableModel.updModel().updComponent<OpenSim::Coordinate>("/jointset/joint/rotation").updProperty_range(),
         [&](OpenSim::AbstractProperty& p)
@@ -82,11 +92,11 @@ TEST(OpenSimActions, ActionApplyRangeDeletionPropertyEditReturnsFalseToIndicateF
         },
     };
 
-    ASSERT_EQ(osc::ActionApplyPropertyEdit(undoableModel, edit), false);
+    ASSERT_EQ(ActionApplyPropertyEdit(undoableModel, edit), false);
 
     // hacky extra test: you can remove this, it's just reminder code
     undoableModel.updModel().updComponent<OpenSim::Coordinate>("/jointset/joint/rotation").updProperty_range().clear();
-    ASSERT_ANY_THROW({ osc::InitializeModel(undoableModel.updModel()); });
+    ASSERT_ANY_THROW({ InitializeModel(undoableModel.updModel()); });
 }
 
 // high-level repro for (#773)
@@ -99,15 +109,15 @@ TEST(OpenSimActions, DISABLED_ActionSetComponentNameOnModelWithUnusualJointTopol
     std::filesystem::path const brokenFilePath =
         std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "TestOpenSimCreator" / "opensim-creator_773-2_repro.osim";
 
-    osc::UndoableModelStatePair const loadedModel{brokenFilePath};
+    UndoableModelStatePair const loadedModel{brokenFilePath};
 
     // loop `n` times because the segfault is stochastic
     //
     // ... which is a cute way of saying "really fucking random" :(
     for (size_t i = 0; i < 25; ++i)
     {
-        osc::UndoableModelStatePair model = loadedModel;
-        osc::ActionSetComponentName(
+        UndoableModelStatePair model = loadedModel;
+        ActionSetComponentName(
             model,
             std::string{"/bodyset/humerus_b"},
             "newName"
@@ -120,15 +130,15 @@ TEST(OpenSimActions, ActionFitSphereToMeshFitsASphereToAMeshInTheModelAndSelects
     std::filesystem::path const geomFile =
         std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "TestOpenSimCreator" / "arrow.vtp";
 
-    osc::UndoableModelStatePair model;
-    auto& body = osc::AddBody(model.updModel(), std::make_unique<OpenSim::Body>("name", 1.0, SimTK::Vec3{}, SimTK::Inertia{1.0}));
+    UndoableModelStatePair model;
+    auto& body = AddBody(model.updModel(), std::make_unique<OpenSim::Body>("name", 1.0, SimTK::Vec3{}, SimTK::Inertia{1.0}));
     body.setMass(1.0);
-    auto& mesh = dynamic_cast<OpenSim::Mesh&>(osc::AttachGeometry(body, std::make_unique<OpenSim::Mesh>(geomFile.string())));
-    osc::FinalizeConnections(model.updModel());
-    osc::InitializeModel(model.updModel());
-    osc::InitializeState(model.updModel());
+    auto& mesh = dynamic_cast<OpenSim::Mesh&>(AttachGeometry(body, std::make_unique<OpenSim::Mesh>(geomFile.string())));
+    FinalizeConnections(model.updModel());
+    InitializeModel(model.updModel());
+    InitializeState(model.updModel());
 
-    osc::ActionFitSphereToMesh(model, mesh);
+    ActionFitSphereToMesh(model, mesh);
     ASSERT_TRUE(model.getSelected());
     ASSERT_TRUE(dynamic_cast<OpenSim::Sphere const*>(model.getSelected()));
     ASSERT_EQ(&dynamic_cast<OpenSim::Sphere const*>(model.getSelected())->getFrame().findBaseFrame(), &body.findBaseFrame());
@@ -139,24 +149,24 @@ TEST(OpenSimActions, ActionFitSphereToMeshAppliesMeshesScaleFactorsCorrectly)
     std::filesystem::path const geomFile =
         std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "TestOpenSimCreator" / "arrow.vtp";
 
-    osc::UndoableModelStatePair model;
-    auto& body = osc::AddBody(model.updModel(), std::make_unique<OpenSim::Body>("name", 1.0, SimTK::Vec3{}, SimTK::Inertia{1.0}));
+    UndoableModelStatePair model;
+    auto& body = AddBody(model.updModel(), std::make_unique<OpenSim::Body>("name", 1.0, SimTK::Vec3{}, SimTK::Inertia{1.0}));
     body.setMass(1.0);
-    auto& unscaledMesh = dynamic_cast<OpenSim::Mesh&>(osc::AttachGeometry(body, std::make_unique<OpenSim::Mesh>(geomFile.string())));
-    auto& scaledMesh = dynamic_cast<OpenSim::Mesh&>(osc::AttachGeometry(body, std::make_unique<OpenSim::Mesh>(geomFile.string())));
+    auto& unscaledMesh = dynamic_cast<OpenSim::Mesh&>(AttachGeometry(body, std::make_unique<OpenSim::Mesh>(geomFile.string())));
+    auto& scaledMesh = dynamic_cast<OpenSim::Mesh&>(AttachGeometry(body, std::make_unique<OpenSim::Mesh>(geomFile.string())));
     double const scalar = 0.1;
     scaledMesh.set_scale_factors({scalar, scalar, scalar});
 
-    osc::FinalizeConnections(model.updModel());
-    osc::InitializeModel(model.updModel());
-    osc::InitializeState(model.updModel());
+    FinalizeConnections(model.updModel());
+    InitializeModel(model.updModel());
+    InitializeState(model.updModel());
 
-    osc::ActionFitSphereToMesh(model, unscaledMesh);
+    ActionFitSphereToMesh(model, unscaledMesh);
     ASSERT_TRUE(dynamic_cast<OpenSim::Sphere const*>(model.getSelected()));
     double const unscaledRadius = dynamic_cast<OpenSim::Sphere const&>(*model.getSelected()).get_radius();
-    osc::ActionFitSphereToMesh(model, scaledMesh);
+    ActionFitSphereToMesh(model, scaledMesh);
     ASSERT_TRUE(dynamic_cast<OpenSim::Sphere const*>(model.getSelected()));
     double const scaledRadius = dynamic_cast<OpenSim::Sphere const&>(*model.getSelected()).get_radius();
 
-    ASSERT_TRUE(osc::IsEqualWithinRelativeError(scaledRadius, scalar*unscaledRadius, 0.0001));
+    ASSERT_TRUE(IsEqualWithinRelativeError(scaledRadius, scalar*unscaledRadius, 0.0001));
 }

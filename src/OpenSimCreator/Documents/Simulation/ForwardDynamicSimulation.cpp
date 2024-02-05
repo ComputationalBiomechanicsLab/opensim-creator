@@ -24,31 +24,33 @@
 #include <utility>
 #include <vector>
 
+using namespace osc;
+
 // helpers
 namespace
 {
     // creates a simulator that's hooked up to the reports vector
-    osc::ForwardDynamicSimulator MakeSimulation(
-        osc::BasicModelStatePair p,
-        osc::ForwardDynamicSimulatorParams const& params,
-        osc::SynchronizedValue<std::vector<osc::SimulationReport>>& reportQueue)
+    ForwardDynamicSimulator MakeSimulation(
+        BasicModelStatePair p,
+        ForwardDynamicSimulatorParams const& params,
+        SynchronizedValue<std::vector<SimulationReport>>& reportQueue)
     {
-        auto callback = [&](osc::SimulationReport r)
+        auto callback = [&](SimulationReport r)
         {
             auto reportsGuard = reportQueue.lock();
             reportsGuard->push_back(std::move(r));
         };
-        return osc::ForwardDynamicSimulator{std::move(p), params, std::move(callback)};
+        return ForwardDynamicSimulator{std::move(p), params, std::move(callback)};
     }
 
-    std::vector<osc::OutputExtractor> GetFdSimulatorOutputExtractorsAsVector()
+    std::vector<OutputExtractor> GetFdSimulatorOutputExtractorsAsVector()
     {
-        std::vector<osc::OutputExtractor> rv;
-        int const nOutputExtractors = osc::GetNumFdSimulatorOutputExtractors();
+        std::vector<OutputExtractor> rv;
+        int const nOutputExtractors = GetNumFdSimulatorOutputExtractors();
         rv.reserve(nOutputExtractors);
         for (int i = 0; i < nOutputExtractors; ++i)
         {
-            rv.push_back(osc::GetFdSimulatorOutputExtractor(i));
+            rv.push_back(GetFdSimulatorOutputExtractor(i));
         }
         return rv;
     }
@@ -216,7 +218,7 @@ osc::ForwardDynamicSimulation::ForwardDynamicSimulation(ForwardDynamicSimulation
 osc::ForwardDynamicSimulation& osc::ForwardDynamicSimulation::operator=(ForwardDynamicSimulation&&) noexcept = default;
 osc::ForwardDynamicSimulation::~ForwardDynamicSimulation() noexcept = default;
 
-osc::SynchronizedValueGuard<OpenSim::Model const> osc::ForwardDynamicSimulation::implGetModel() const
+SynchronizedValueGuard<OpenSim::Model const> osc::ForwardDynamicSimulation::implGetModel() const
 {
     return m_Impl->getModel();
 }
@@ -226,32 +228,32 @@ ptrdiff_t osc::ForwardDynamicSimulation::implGetNumReports() const
     return m_Impl->getNumReports();
 }
 
-osc::SimulationReport osc::ForwardDynamicSimulation::implGetSimulationReport(ptrdiff_t reportIndex) const
+SimulationReport osc::ForwardDynamicSimulation::implGetSimulationReport(ptrdiff_t reportIndex) const
 {
     return m_Impl->getSimulationReport(reportIndex);
 }
 
-std::vector<osc::SimulationReport> osc::ForwardDynamicSimulation::implGetAllSimulationReports() const
+std::vector<SimulationReport> osc::ForwardDynamicSimulation::implGetAllSimulationReports() const
 {
     return m_Impl->getAllSimulationReports();
 }
 
-osc::SimulationStatus osc::ForwardDynamicSimulation::implGetStatus() const
+SimulationStatus osc::ForwardDynamicSimulation::implGetStatus() const
 {
     return m_Impl->getStatus();
 }
 
-osc::SimulationClock::time_point osc::ForwardDynamicSimulation::implGetCurTime() const
+SimulationClock::time_point osc::ForwardDynamicSimulation::implGetCurTime() const
 {
     return m_Impl->getCurTime();
 }
 
-osc::SimulationClock::time_point osc::ForwardDynamicSimulation::implGetStartTime() const
+SimulationClock::time_point osc::ForwardDynamicSimulation::implGetStartTime() const
 {
     return m_Impl->getStartTime();
 }
 
-osc::SimulationClock::time_point osc::ForwardDynamicSimulation::implGetEndTime() const
+SimulationClock::time_point osc::ForwardDynamicSimulation::implGetEndTime() const
 {
     return m_Impl->getEndTime();
 }
@@ -261,12 +263,12 @@ float osc::ForwardDynamicSimulation::implGetProgress() const
     return m_Impl->getProgress();
 }
 
-osc::ParamBlock const& osc::ForwardDynamicSimulation::implGetParams() const
+ParamBlock const& osc::ForwardDynamicSimulation::implGetParams() const
 {
     return m_Impl->getParams();
 }
 
-std::span<osc::OutputExtractor const> osc::ForwardDynamicSimulation::implGetOutputExtractors() const
+std::span<OutputExtractor const> osc::ForwardDynamicSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
 }

@@ -37,7 +37,7 @@ namespace osc
         std::optional<SceneCollision> maybeBaseLayerHittest;
         OpenSim::ComponentPath maybeHoveredComponentAbsPath;
 
-        std::span<osc::SceneDecoration const> getDrawlist() const
+        std::span<SceneDecoration const> getDrawlist() const
         {
             return m_CachedModelRenderer.getDrawlist();
         }

@@ -7,10 +7,11 @@
 #include <limits>
 #include <type_traits>
 
+using osc::NumOptions;
+using osc::VariantType;
+
 TEST(VariantType, ToStringReturnsExpectedResults)
 {
-    using osc::VariantType;
-
     struct TestCase final {
         VariantType input;
         std::string_view expectedOutput;
@@ -26,7 +27,7 @@ TEST(VariantType, ToStringReturnsExpectedResults)
         {VariantType::StringName, "StringName"},
         {VariantType::Vec3, "Vec3"},
     });
-    static_assert(osc::NumOptions<osc::VariantType>() == std::tuple_size<decltype(testCases)>());
+    static_assert(NumOptions<VariantType>() == std::tuple_size<decltype(testCases)>());
 
     for (auto const& tc : testCases)
     {
@@ -36,6 +37,6 @@ TEST(VariantType, ToStringReturnsExpectedResults)
 
 TEST(VariantType, PassingBsValueIntoItReturnsUnknown)
 {
-    auto const bs = static_cast<osc::VariantType>(std::numeric_limits<std::underlying_type_t<osc::VariantType>>::max()-1);
+    auto const bs = static_cast<VariantType>(std::numeric_limits<std::underlying_type_t<VariantType>>::max()-1);
     ASSERT_EQ(to_string(bs), "Unknown");
 }

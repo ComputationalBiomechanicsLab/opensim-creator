@@ -42,6 +42,7 @@ using osc::Rotate;
 using osc::Scale;
 using osc::ToSRGB;
 using osc::Translate;
+using osc::UID;
 using osc::UnitVec3;
 using osc::Vec2;
 using osc::Vec3;
@@ -122,7 +123,7 @@ namespace
     MouseCapturingCamera CreateCameraThatMatchesLearnOpenGL()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.0f, 5.0f});
+        rv.setPosition({0.0f, 0.5f, 5.0f});
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.0f, 0.0f, 0.0f, 1.0f});
@@ -393,7 +394,7 @@ osc::LOGLBloomTab::LOGLBloomTab(LOGLBloomTab&&) noexcept = default;
 osc::LOGLBloomTab& osc::LOGLBloomTab::operator=(LOGLBloomTab&&) noexcept = default;
 osc::LOGLBloomTab::~LOGLBloomTab() noexcept = default;
 
-osc::UID osc::LOGLBloomTab::implGetID() const
+UID osc::LOGLBloomTab::implGetID() const
 {
     return m_Impl->getID();
 }

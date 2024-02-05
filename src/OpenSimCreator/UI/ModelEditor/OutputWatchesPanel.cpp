@@ -17,18 +17,20 @@
 #include <string_view>
 #include <utility>
 
+using namespace osc;
+
 namespace
 {
     struct CachedSimulationReport final {
-        osc::UID sourceModelVersion;
-        osc::UID sourceStateVersion;
-        osc::SimulationReport simulationReport;
+        UID sourceModelVersion;
+        UID sourceStateVersion;
+        SimulationReport simulationReport;
     };
 
-    void UpdateCachedSimulationReportIfNecessary(osc::IConstModelStatePair const& src, CachedSimulationReport& cache)
+    void UpdateCachedSimulationReportIfNecessary(IConstModelStatePair const& src, CachedSimulationReport& cache)
     {
-        osc::UID const modelVersion = src.getModelVersion();
-        osc::UID const stateVersion = src.getStateVersion();
+        UID const modelVersion = src.getModelVersion();
+        UID const stateVersion = src.getStateVersion();
 
         if (cache.sourceModelVersion == modelVersion &&
             cache.sourceStateVersion == stateVersion)
@@ -39,13 +41,13 @@ namespace
         SimTK::State s = src.getState();
         src.getModel().realizeReport(s);
 
-        cache.simulationReport = osc::SimulationReport{std::move(s)};
+        cache.simulationReport = SimulationReport{std::move(s)};
         cache.sourceModelVersion = modelVersion;
         cache.sourceStateVersion = stateVersion;
     }
 }
 
-class osc::OutputWatchesPanel::Impl final : public osc::StandardPanelImpl {
+class osc::OutputWatchesPanel::Impl final : public StandardPanelImpl {
 public:
 
     Impl(std::string_view panelName_,
@@ -121,7 +123,7 @@ osc::OutputWatchesPanel::OutputWatchesPanel(OutputWatchesPanel&&) noexcept = def
 osc::OutputWatchesPanel& osc::OutputWatchesPanel::operator=(OutputWatchesPanel&&) noexcept = default;
 osc::OutputWatchesPanel::~OutputWatchesPanel() noexcept = default;
 
-osc::CStringView osc::OutputWatchesPanel::implGetName() const
+CStringView osc::OutputWatchesPanel::implGetName() const
 {
     return m_Impl->getName();
 }

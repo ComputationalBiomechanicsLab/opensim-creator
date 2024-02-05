@@ -7,6 +7,8 @@
 #include <unordered_map>
 #include <utility>
 
+using namespace osc;
+
 class osc::SimulationReport::Impl final {
 public:
     Impl() = default;
@@ -75,7 +77,7 @@ osc::SimulationReport& osc::SimulationReport::operator=(SimulationReport const&)
 osc::SimulationReport& osc::SimulationReport::operator=(SimulationReport&&) noexcept = default;
 osc::SimulationReport::~SimulationReport() noexcept = default;
 
-osc::SimulationClock::time_point osc::SimulationReport::getTime() const
+SimulationClock::time_point osc::SimulationReport::getTime() const
 {
     return m_Impl->getTime();
 }

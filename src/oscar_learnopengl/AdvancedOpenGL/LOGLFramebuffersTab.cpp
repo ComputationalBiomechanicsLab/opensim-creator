@@ -34,6 +34,7 @@ using osc::Identity;
 using osc::Mat4;
 using osc::Mesh;
 using osc::MouseCapturingCamera;
+using osc::UID;
 using osc::Vec2;
 using osc::Vec3;
 
@@ -79,7 +80,7 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         return rv;
@@ -197,7 +198,7 @@ osc::LOGLFramebuffersTab::LOGLFramebuffersTab(LOGLFramebuffersTab&&) noexcept = 
 osc::LOGLFramebuffersTab& osc::LOGLFramebuffersTab::operator=(LOGLFramebuffersTab&&) noexcept = default;
 osc::LOGLFramebuffersTab::~LOGLFramebuffersTab() noexcept = default;
 
-osc::UID osc::LOGLFramebuffersTab::implGetID() const
+UID osc::LOGLFramebuffersTab::implGetID() const
 {
     return m_Impl->getID();
 }

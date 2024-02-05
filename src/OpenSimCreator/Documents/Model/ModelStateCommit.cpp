@@ -14,6 +14,8 @@
 #include <string>
 #include <string_view>
 
+using namespace osc;
+
 class osc::ModelStateCommit::Impl final {
 public:
     Impl(IConstModelStatePair const& msp, std::string_view message) :
@@ -29,8 +31,8 @@ public:
         m_FixupScaleFactor{msp.getFixupScaleFactor()},
         m_CommitMessage{message}
     {
-        osc::InitializeModel(*m_Model);
-        osc::InitializeState(*m_Model);
+        InitializeModel(*m_Model);
+        InitializeState(*m_Model);
     }
 
     UID getID() const
@@ -103,7 +105,7 @@ osc::ModelStateCommit& osc::ModelStateCommit::operator=(ModelStateCommit const&)
 osc::ModelStateCommit& osc::ModelStateCommit::operator=(ModelStateCommit&&) noexcept = default;
 osc::ModelStateCommit::~ModelStateCommit() noexcept = default;
 
-osc::UID osc::ModelStateCommit::getID() const
+UID osc::ModelStateCommit::getID() const
 {
     return m_Impl->getID();
 }
@@ -113,7 +115,7 @@ bool osc::ModelStateCommit::hasParent() const
     return m_Impl->hasParent();
 }
 
-osc::UID osc::ModelStateCommit::getParentID() const
+UID osc::ModelStateCommit::getParentID() const
 {
     return m_Impl->getParentID();
 }
@@ -123,17 +125,17 @@ std::chrono::system_clock::time_point osc::ModelStateCommit::getCommitTime() con
     return m_Impl->getCommitTime();
 }
 
-osc::CStringView osc::ModelStateCommit::getCommitMessage() const
+CStringView osc::ModelStateCommit::getCommitMessage() const
 {
     return m_Impl->getCommitMessage();
 }
 
-osc::SynchronizedValueGuard<OpenSim::Model const> osc::ModelStateCommit::getModel() const
+SynchronizedValueGuard<OpenSim::Model const> osc::ModelStateCommit::getModel() const
 {
     return m_Impl->getModel();
 }
 
-osc::UID osc::ModelStateCommit::getModelVersion() const
+UID osc::ModelStateCommit::getModelVersion() const
 {
     return m_Impl->getModelVersion();
 }
