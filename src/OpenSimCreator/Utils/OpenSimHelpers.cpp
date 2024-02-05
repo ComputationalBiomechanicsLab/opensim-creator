@@ -552,7 +552,7 @@ double osc::ConvertCoordDisplayValueToStorageValue(OpenSim::Coordinate const& c,
 
     if (c.getMotionType() == OpenSim::Coordinate::MotionType::Rotational)
     {
-        rv = Degrees{Radians{rv}}.count();
+        rv = Radians{Degrees{rv}}.count();
     }
 
     return rv;
