@@ -30,8 +30,6 @@ add_library(OpenSimCreator STATIC
     Documents/FrameDefinition/PointToPointEdge.hpp
     Documents/FrameDefinition/SphereLandmark.cpp
     Documents/FrameDefinition/SphereLandmark.hpp
-    Documents/FrameDefinition/StationDefinedFrame.cpp
-    Documents/FrameDefinition/StationDefinedFrame.hpp
 
     Documents/Frames/FrameAxis.cpp
     Documents/Frames/FrameAxis.hpp

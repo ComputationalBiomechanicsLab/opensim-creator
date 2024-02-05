@@ -1,7 +1,10 @@
 #include "OpenSimCreatorApp.hpp"
 
 #include <OpenSimCreator/OpenSimCreatorConfig.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/StationDefinedFrame.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/CrossProductEdge.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/MidpointLandmark.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/PointToPointEdge.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/SphereLandmark.hpp>
 #include <OpenSimCreator/UI/OpenSimCreatorTabRegistry.hpp>
 
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
@@ -29,7 +32,7 @@
 #include <memory>
 #include <string>
 
-using osc::fd::StationDefinedFrame;
+using namespace osc::fd;
 
 namespace
 {
@@ -128,7 +131,12 @@ namespace
         RegisterTypes_osimAnalyses();
         RegisterTypes_osimTools();
         RegisterTypes_osimExampleComponents();
-        OpenSim::Object::registerType(StationDefinedFrame{});
+
+        // custom components
+        OpenSim::Object::registerType(CrossProductEdge{});
+        OpenSim::Object::registerType(MidpointLandmark{});
+        OpenSim::Object::registerType(PointToPointEdge{});
+        OpenSim::Object::registerType(SphereLandmark{});
     }
 
     void GloballySetOpenSimsGeometrySearchPath(osc::AppConfig const& config)

@@ -1,8 +1,18 @@
 # ChangeLog
 
-All notable changes to this project will be documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+All notable changes to this project will be documented here. The format is based
+on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+
+- OSC-specific experimental OpenSim components are now exposed to the user via the model editor. So, as
+  a user, you can now (e.g.) manually add a `PointToPointEdge` to your model in order to measure the
+  distance between two points (previously: `PointToPointEdge` was only available through the
+  `Frame Definition` UI)
+
+> **Beware**: OSC's custom/experimental components are incompatible with OpenSim. The intention
+>             of this feature is to provide users with a way to test rapidly-developed OSC components
+>             that may, with enough interest, be upstreamed to `opensim-core`.
 
 - The available socket options when adding a new component to the model should now show all valid
   options, rather than just showing frames in the model (#820)

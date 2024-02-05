@@ -1,8 +1,10 @@
 #include "StaticComponentRegistries.hpp"
 
 #include <OpenSimCreator/ComponentRegistry/ComponentRegistry.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/StationDefinedFrame.hpp>
-#include <OpenSimCreator/Documents/Model/ICustomComponent.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/CrossProductEdge.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/MidpointLandmark.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/PointToPointEdge.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/SphereLandmark.hpp>
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <OpenSim/Actuators/ActivationCoordinateActuator.h>
@@ -48,8 +50,7 @@
 #include <utility>
 #include <vector>
 
-using osc::ICustomComponent;
-using osc::fd::StationDefinedFrame;
+using namespace osc::fd;
 
 // generic helpers
 namespace
@@ -647,7 +648,12 @@ namespace
 
     std::vector<std::shared_ptr<OpenSim::Component const>> CreateCustomComponentLut()
     {
-        return {std::make_shared<StationDefinedFrame>()};
+        return {
+            std::make_shared<CrossProductEdge>(),
+            std::make_shared<MidpointLandmark>(),
+            std::make_shared<PointToPointEdge>(),
+            std::make_shared<SphereLandmark>(),
+        };
     }
 
     template<std::derived_from<OpenSim::Component> T>
@@ -771,8 +777,8 @@ osc::ComponentRegistry<OpenSim::Component> const& osc::GetComponentRegistry()
 osc::ComponentRegistry<OpenSim::Component> const& osc::GetCustomComponentRegistry()
 {
     static auto const s_StaticReg = CreateCustomComponentRegistry(
-        "OSC-Specific Components",
-        "You shouldn't use these if you want a standard osim file. They are custom components that only work in OpenSim Creator, but might be handy for very specific use-cases"
+        "OSC-Specific Experimental Components",
+        "You shouldn't use these if you want a standard osim file because they are custom components that only work in OpenSim Creator. However, they might be handy for very specific use-cases"
     );
     return s_StaticReg;
 }
