@@ -249,6 +249,11 @@ private:
                     continue;
                 }
 
+                if (dynamic_cast<OpenSim::Station const*>(&c) && IsChildOfA<OpenSim::Muscle>(c))
+                {
+                    continue;  // don't present muscle points etc.
+                }
+
                 OpenSim::ComponentPath const absPath = GetAbsolutePath(c);
                 bool selected = absPath == connectee;
 
