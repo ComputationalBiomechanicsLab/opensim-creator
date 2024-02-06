@@ -3,10 +3,10 @@
 #include <IconsFontAwesome5.h>
 #include <Simbody.h>
 #include <imgui.h>
+#include <oscar/Formats/Image.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>

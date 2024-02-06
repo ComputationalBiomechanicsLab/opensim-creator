@@ -4,6 +4,7 @@ find_package(GTest REQUIRED CONFIG)
 add_executable(testoscar
     Formats/TestCSV.cpp
     Formats/TestDAE.cpp
+    Formats/TestImage.cpp
 
     Graphics/Detail/TestVertexAttributeFormatHelpers.cpp
     Graphics/Detail/TestVertexAttributeHelpers.cpp
@@ -16,7 +17,6 @@ add_executable(testoscar
     Graphics/TestCubemap.cpp
     Graphics/TestCubemapFace.cpp
     Graphics/TestCullMode.cpp
-    Graphics/TestGraphicsHelpers.cpp
     Graphics/TestSubMeshDescriptor.cpp
     Graphics/TestMesh.cpp
     Graphics/TestMeshUpdateFlags.cpp

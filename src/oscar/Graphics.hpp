@@ -17,7 +17,6 @@
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/GraphicsContext.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/ImageLoadingFlags.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MaterialPropertyBlock.hpp>
 #include <oscar/Graphics/Mesh.hpp>

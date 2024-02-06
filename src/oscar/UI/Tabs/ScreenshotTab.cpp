@@ -1,10 +1,10 @@
 #include "ScreenshotTab.hpp"
 
+#include <oscar/Formats/Image.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/RenderTexture.hpp>
@@ -29,8 +29,10 @@
 #include <imgui.h>
 
 #include <filesystem>
+#include <fstream>
 #include <memory>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -194,8 +196,12 @@ private:
         std::optional<std::filesystem::path> const maybeImagePath = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("png");
         if (maybeImagePath)
         {
+            std::ofstream fout{*maybeImagePath, std::ios_base::binary};
+            if (!fout) {
+                std::runtime_error{maybeImagePath->string() + ": cannot open for writing"};
+            }
             Texture2D outputImage = renderOutputImage();
-            WriteToPNG(outputImage, *maybeImagePath);
+            WriteToPNG(outputImage, fout);
             OpenPathInOSDefaultApplication(*maybeImagePath);
         }
     }

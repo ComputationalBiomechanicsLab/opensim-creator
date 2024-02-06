@@ -21,6 +21,9 @@ add_library(oscar STATIC
     Formats/CSV.cpp
     Formats/DAE.hpp
     Formats/DAE.cpp
+    Formats/Image.cpp
+    Formats/Image.hpp
+    Formats/ImageLoadingFlags.hpp
     Formats/OBJ.cpp
     Formats/OBJ.hpp
     Formats/STL.cpp
@@ -66,7 +69,6 @@ add_library(oscar STATIC
     Graphics/GraphicsHelpers.cpp
     Graphics/GraphicsHelpers.hpp
     Graphics/GraphicsImplementation.cpp
-    Graphics/ImageLoadingFlags.hpp
     Graphics/Material.hpp
     Graphics/MaterialPropertyBlock.hpp
     Graphics/MeshGenerators.cpp

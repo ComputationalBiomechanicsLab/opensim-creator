@@ -1,172 +1,29 @@
 #include "GraphicsHelpers.hpp"
 
-#include <oscar/Graphics/Color32.hpp>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/ImageLoadingFlags.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshIndicesView.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Graphics/TextureFormat.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Sphere.hpp>
 #include <oscar/Maths/Tetrahedron.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/ObjectRepresentation.hpp>
-
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <stb_image_write.h>
 
 #include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>
-#include <filesystem>
 #include <functional>
-#include <memory>
-#include <mutex>
-#include <optional>
 #include <span>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <utility>
 #include <vector>
 
 using namespace osc;
 
 namespace
 {
-    inline constexpr int c_StbTrue = 1;
-    inline constexpr int c_StbFalse = 0;
-
-    // this mutex is required because stbi has global mutable state (e.g. stbi_set_flip_vertically_on_load)
-    auto LockStbiAPI()
-    {
-        static std::mutex s_StbiMutex;
-        return std::lock_guard{s_StbiMutex};
-    }
-
-    Texture2D Load32BitTexture(
-        std::filesystem::path const& p,
-        ColorSpace colorSpace,
-        ImageLoadingFlags flags)
-    {
-        auto const guard = LockStbiAPI();
-
-        if (flags & ImageLoadingFlags::FlipVertically)
-        {
-            stbi_set_flip_vertically_on_load(c_StbTrue);
-        }
-
-        Vec2i dims{};
-        int numChannels = 0;
-        std::unique_ptr<float, decltype(&stbi_image_free)> const pixels =
-        {
-            stbi_loadf(p.string().c_str(), &dims.x, &dims.y, &numChannels, 0),
-            stbi_image_free,
-        };
-
-        if (flags & ImageLoadingFlags::FlipVertically)
-        {
-            stbi_set_flip_vertically_on_load(c_StbFalse);
-        }
-
-        if (!pixels)
-        {
-            std::stringstream ss;
-            ss << p << ": error loading image path: " << stbi_failure_reason();
-            throw std::runtime_error{std::move(ss).str()};
-        }
-
-        std::optional<TextureFormat> const format = ToTextureFormat(
-            static_cast<size_t>(numChannels),
-            TextureChannelFormat::Float32
-        );
-
-        if (!format)
-        {
-            std::stringstream ss;
-            ss << p << ": error loading image: no TextureFormat exists for " << numChannels << " floating-point channel images";
-            throw std::runtime_error{std::move(ss).str()};
-        }
-
-        std::span<float const> const pixelSpan
-        {
-            pixels.get(),
-            static_cast<size_t>(dims.x*dims.y*numChannels)
-        };
-
-        Texture2D rv
-        {
-            dims,
-            *format,
-            colorSpace,
-        };
-        rv.setPixelData(ViewObjectRepresentations<uint8_t>(pixelSpan));
-
-        return rv;
-    }
-
-    Texture2D Load8BitTexture(
-        std::filesystem::path const& p,
-        ColorSpace colorSpace,
-        ImageLoadingFlags flags)
-    {
-        auto const guard = LockStbiAPI();
-
-        if (flags & ImageLoadingFlags::FlipVertically)
-        {
-            stbi_set_flip_vertically_on_load(c_StbTrue);
-        }
-
-        Vec2i dims{};
-        int numChannels = 0;
-        std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> const pixels =
-        {
-            stbi_load(p.string().c_str(), &dims.x, &dims.y, &numChannels, 0),
-            stbi_image_free,
-        };
-
-        if (flags & ImageLoadingFlags::FlipVertically)
-        {
-            stbi_set_flip_vertically_on_load(c_StbFalse);
-        }
-
-        if (!pixels)
-        {
-            std::stringstream ss;
-            ss << p << ": error loading image path: " << stbi_failure_reason();
-            throw std::runtime_error{std::move(ss).str()};
-        }
-
-        std::optional<TextureFormat> const format = ToTextureFormat(
-            static_cast<size_t>(numChannels),
-            TextureChannelFormat::Uint8
-        );
-
-        if (!format)
-        {
-            std::stringstream ss;
-            ss << p << ": error loading image: no TextureFormat exists for " << numChannels << " 8-bit channel images";
-            throw std::runtime_error{std::move(ss).str()};
-        }
-
-        Texture2D rv
-        {
-            dims,
-            *format,
-            colorSpace,
-        };
-        rv.setPixelData({pixels.get(), static_cast<size_t>(dims.x*dims.y*numChannels)});
-        return rv;
-    }
-
     // describes the direction of each cube face and which direction is "up"
     // from the perspective of looking at that face from the center of the cube
     struct CubemapFaceDetails final {
@@ -343,39 +200,6 @@ std::vector<Vec4> osc::CalcTangentVectors(
         }
     }
     return rv;
-}
-
-Texture2D osc::LoadTexture2DFromImage(
-    std::filesystem::path const& path,
-    ColorSpace colorSpace,
-    ImageLoadingFlags flags)
-{
-    return stbi_is_hdr(path.string().c_str()) ?
-        Load32BitTexture(path, colorSpace, flags) :
-        Load8BitTexture(path, colorSpace, flags);
-}
-
-void osc::WriteToPNG(
-    Texture2D const& tex,
-    std::filesystem::path const& outpath)
-{
-    Vec2i const dims = tex.getDimensions();
-    int const stride = 4 * dims.x;
-    std::vector<Color32> const pixels = tex.getPixels32();
-
-    auto const guard = LockStbiAPI();
-    stbi_flip_vertically_on_write(c_StbTrue);
-    int const rv = stbi_write_png(
-        outpath.string().c_str(),
-        dims.x,
-        dims.y,
-        4,
-        pixels.data(),
-        stride
-    );
-    stbi_flip_vertically_on_write(c_StbFalse);
-
-    OSC_ASSERT(rv != 0);
 }
 
 std::array<Mat4, 6> osc::CalcCubemapViewProjMatrices(
