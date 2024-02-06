@@ -1134,14 +1134,14 @@ void osc::ImGuiInit()
     ImGui_ImplSDL2_InitForOpenGL(impl.updWindow().get(), impl.updRawGLContextHandleHACK());
 
     // init ImGui for OpenGL
-    ui::gfx::Init();
+    ui::graphics_backend::Init();
 
     ImGuiApplyDarkTheme();
 }
 
 void osc::ImGuiShutdown()
 {
-    ui::gfx::Shutdown();
+    ui::graphics_backend::Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 }
@@ -1169,7 +1169,7 @@ bool osc::ImGuiOnEvent(SDL_Event const& e)
 
 void osc::ImGuiNewFrame()
 {
-    ui::gfx::NewFrame();
+    ui::graphics_backend::NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 }
@@ -1183,6 +1183,6 @@ void osc::ImGuiRender()
 
     {
         OSC_PERF("ImGuiRender/ImGui_ImplOscarGfx_RenderDrawData");
-        ui::gfx::RenderDrawData(ImGui::GetDrawData());
+        ui::graphics_backend::RenderDrawData(ImGui::GetDrawData());
     }
 }

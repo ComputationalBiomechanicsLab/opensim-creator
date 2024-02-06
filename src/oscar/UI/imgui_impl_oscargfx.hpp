@@ -8,7 +8,7 @@ namespace osc { class Texture2D; }
 // ImGui graphics backend that uses osc's graphics API
 struct ImDrawData;
 
-namespace osc::ui::gfx
+namespace osc::ui::graphics_backend
 {
     bool Init();
     void Shutdown();

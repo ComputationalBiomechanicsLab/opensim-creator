@@ -302,7 +302,7 @@ namespace
     }
 }
 
-bool osc::ui::gfx::Init()
+bool osc::ui::graphics_backend::Init()
 {
     ImGuiIO& io = ImGui::GetIO();
     OSC_ASSERT(io.BackendRendererUserData == nullptr && "an oscar ImGui renderer backend is already initialized - this is a developer error (double-initialization)");
@@ -314,7 +314,7 @@ bool osc::ui::gfx::Init()
     return true;
 }
 
-void osc::ui::gfx::Shutdown()
+void osc::ui::graphics_backend::Shutdown()
 {
     OscarImguiBackendData* bd = GetBackendData();
     OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error (double-free)");
@@ -329,7 +329,7 @@ void osc::ui::gfx::Shutdown()
     delete bd;  // NOLINT(cppcoreguidelines-owning-memory)
 }
 
-void osc::ui::gfx::NewFrame()
+void osc::ui::graphics_backend::NewFrame()
 {
     // `ImGui_ImplOpenGL3_CreateDeviceObjects` is now part of constructing `OscarImguiBackendData`
 
@@ -339,7 +339,7 @@ void osc::ui::gfx::NewFrame()
     bd->texturesSubmittedThisFrame.try_emplace(bd->fontTextureID, bd->fontTexture);  // (so that all lookups can hit the same LUT)
 }
 
-void osc::ui::gfx::RenderDrawData(ImDrawData* drawData)
+void osc::ui::graphics_backend::RenderDrawData(ImDrawData* drawData)
 {
     OscarImguiBackendData* bd = GetBackendData();
     OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error");
@@ -351,12 +351,12 @@ void osc::ui::gfx::RenderDrawData(ImDrawData* drawData)
     }
 }
 
-ImTextureID osc::ui::gfx::AllocateTextureID(Texture2D const& texture)
+ImTextureID osc::ui::graphics_backend::AllocateTextureID(Texture2D const& texture)
 {
     return ::AllocateTextureID(texture);
 }
 
-ImTextureID osc::ui::gfx::AllocateTextureID(RenderTexture const& texture)
+ImTextureID osc::ui::graphics_backend::AllocateTextureID(RenderTexture const& texture)
 {
     return ::AllocateTextureID(texture);
 }

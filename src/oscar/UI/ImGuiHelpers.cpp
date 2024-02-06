@@ -452,7 +452,7 @@ void osc::DrawTextureAsImGuiImage(
     Vec2 topLeftCoord,
     Vec2 bottomRightCoord)
 {
-    auto const handle = ui::gfx::AllocateTextureID(t);
+    auto const handle = ui::graphics_backend::AllocateTextureID(t);
     ImGui::Image(handle, dims, topLeftCoord, bottomRightCoord);
 }
 
@@ -465,7 +465,7 @@ void osc::DrawTextureAsImGuiImage(RenderTexture const& t, Vec2 dims)
 {
     Vec2 const uv0 = {0.0f, 1.0f};
     Vec2 const uv1 = {1.0f, 0.0f};
-    auto const handle = ui::gfx::AllocateTextureID(t);
+    auto const handle = ui::graphics_backend::AllocateTextureID(t);
     ImGui::Image(handle, dims, uv0, uv1);
 }
 
@@ -498,7 +498,7 @@ bool osc::ImageButton(
     Vec2 dims,
     Rect const& textureCoords)
 {
-    auto const handle = ui::gfx::AllocateTextureID(t);
+    auto const handle = ui::graphics_backend::AllocateTextureID(t);
     return ImGui::ImageButton(label.c_str(), handle, dims, textureCoords.p1, textureCoords.p2);
 }
 
