@@ -15,5 +15,6 @@
 #include <oscar/Platform/LogMessageView.hpp>
 #include <oscar/Platform/LogSink.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Platform/ResourceStream.hpp>
 #include <oscar/Platform/Screenshot.hpp>
 #include <oscar/Platform/ScreenshotAnnotation.hpp>

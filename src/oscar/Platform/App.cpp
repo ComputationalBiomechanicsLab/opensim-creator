@@ -480,6 +480,11 @@ public:
         return SlurpFileIntoString(path);
     }
 
+    ResourceStream loadResource(std::string_view p) const
+    {
+        return ResourceStream{getResource(p)};
+    }
+
     std::shared_ptr<void> updSingleton(std::type_info const& typeinfo, std::function<std::shared_ptr<void>()> const& ctor)
     {
         auto lock = m_Singletons.lock();
@@ -813,14 +818,19 @@ AppConfig const& osc::App::config()
     return get().getConfig();
 }
 
-std::filesystem::path osc::App::resource(std::string_view s)
+std::filesystem::path osc::App::resource(std::string_view path)
 {
-    return get().getResource(s);
+    return get().getResource(path);
 }
 
-std::string osc::App::slurp(std::string_view s)
+std::string osc::App::slurp(std::string_view path)
 {
-    return get().slurpResource(s);
+    return get().slurpResource(path);
+}
+
+ResourceStream osc::App::load_resource(std::string_view path)
+{
+    return get().loadResource(path);
 }
 
 osc::App::App() :
@@ -1063,6 +1073,11 @@ std::filesystem::path osc::App::getResource(std::string_view p) const
 std::string osc::App::slurpResource(std::string_view p) const
 {
     return m_Impl->slurpResource(p);
+}
+
+ResourceStream osc::App::loadResource(std::string_view p) const
+{
+    return m_Impl->loadResource(p);
 }
 
 std::shared_ptr<void> osc::App::updSingleton(std::type_info const& typeInfo, std::function<std::shared_ptr<void>()> const& ctor)

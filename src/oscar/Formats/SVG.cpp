@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <fstream>
 #include <iterator>
 #include <memory>
 #include <span>
@@ -58,18 +57,4 @@ Texture2D osc::ReadSVGIntoTexture(
     };
     rv.setPixelData({bitmap.data(), static_cast<size_t>(bitmap.width()*bitmap.height()*4)});
     return rv;
-}
-
-Texture2D osc::LoadTextureFromSVGFile(
-    std::filesystem::path const& path,
-    float scale)
-{
-    std::ifstream f{path};
-    if (!f)
-    {
-        std::stringstream ss;
-        ss << path << ": failed to load input file";
-        throw std::runtime_error{std::move(ss).str()};
-    }
-    return ReadSVGIntoTexture(f, scale);
 }

@@ -3,6 +3,7 @@
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/AppClock.hpp>
+#include <oscar/Platform/ResourceStream.hpp>
 #include <oscar/Platform/Screenshot.hpp>
 
 #include <SDL_events.h>
@@ -62,8 +63,8 @@ namespace osc
         // returns the contents of a runtime resource in the `resources/` dir as a string
         static std::string slurp(std::string_view);
 
-        // returns the contents of a runtime resource in the `resources/` dir as a binary blob
-        static std::vector<uint8_t> slurpBinary(std::string_view);
+        // returns an opened stream to the given application resource
+        static ResourceStream load_resource(std::string_view);
 
         // constructs an `App` from a default-constructed `AppMetadata`
         App();
@@ -232,6 +233,9 @@ namespace osc
 
         // returns the contents of a runtime resource in the `resources/` dir as a string
         std::string slurpResource(std::string_view) const;
+
+        // returns an opened stream to the given resource
+        ResourceStream loadResource(std::string_view) const;
 
     private:
         // try and retrieve a virtual singleton that has the same lifetime as the app

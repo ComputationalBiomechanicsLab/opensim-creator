@@ -186,6 +186,8 @@ add_library(oscar STATIC
     Platform/LogSink.hpp
     Platform/os.cpp
     Platform/os.hpp
+    Platform/ResourceStream.cpp
+    Platform/ResourceStream.hpp
     Platform/Screenshot.hpp
     Platform/ScreenshotAnnotation.hpp
 

@@ -4,6 +4,7 @@
 #include <oscar/UI/Icon.hpp>
 
 #include <filesystem>
+#include <fstream>
 #include <memory>
 #include <stdexcept>
 #include <sstream>
@@ -23,7 +24,14 @@ public:
         {
             if (p.extension() == ".svg")
             {
-                Texture2D texture = LoadTextureFromSVGFile(p, verticalScale);
+                std::ifstream f{p};
+                if (!f)
+                {
+                    std::stringstream ss;
+                    ss << p << ": failed to load icon file";
+                    throw std::runtime_error{std::move(ss).str()};
+                }
+                Texture2D texture = ReadSVGIntoTexture(f, verticalScale);
                 texture.setFilterMode(TextureFilterMode::Nearest);
                 m_Icons.try_emplace(
                     p.stem().string(),
