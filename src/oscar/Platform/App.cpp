@@ -1170,7 +1170,7 @@ bool osc::ImGuiOnEvent(SDL_Event const& e)
 void osc::ImGuiNewFrame()
 {
     ui::gfx::NewFrame();
-    ImGui_ImplSDL2_NewFrame(App::upd().m_Impl->updWindow().get());
+    ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 }
 
