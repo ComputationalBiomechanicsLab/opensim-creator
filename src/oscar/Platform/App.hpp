@@ -63,6 +63,9 @@ namespace osc
         // returns the contents of a runtime resource in the `resources/` dir as a binary blob
         static std::vector<uint8_t> slurpBinary(std::string_view);
 
+        // constructs an `App` from a default-constructed `AppMetadata`
+        App();
+
         // constructs an app by initializing it from a config at the default app config location
         //
         // this also sets the `cur` application global

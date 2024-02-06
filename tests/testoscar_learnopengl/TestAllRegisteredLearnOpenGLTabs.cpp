@@ -13,14 +13,14 @@
 using namespace osc;
 
 namespace {
-    TabRegistry c_DemoTabs = []()
+    TabRegistry const c_DemoTabs = []()
     {
         TabRegistry r;
         RegisterLearnOpenGLTabs(r);
         return r;
     }();
 
-    std::vector<std::string> c_TabNames = []()
+    std::vector<std::string> const c_TabNames = []()
     {
         std::vector<std::string> rv;
         rv.reserve(c_DemoTabs.size());
@@ -35,7 +35,7 @@ namespace {
     protected:
         static void SetUpTestSuite()
         {
-            g_App = std::make_unique<App>(AppMetadata{"someorg", "testoscar_learnopengl"});
+            g_App = std::make_unique<App>();
         }
 
         static void TearDownTestSuite()

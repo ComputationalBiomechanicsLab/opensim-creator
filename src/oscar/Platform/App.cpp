@@ -833,6 +833,11 @@ std::string osc::App::slurp(std::string_view s)
     return get().slurpResource(s);
 }
 
+osc::App::App() :
+    App{AppMetadata{}}
+{
+}
+
 osc::App::App(AppMetadata const& metadata)
 {
     OSC_ASSERT(!g_ApplicationGlobal && "cannot instantiate multiple `App` instances at the same time");
