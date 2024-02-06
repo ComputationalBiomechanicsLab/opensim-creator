@@ -326,11 +326,11 @@ private:
     }};
 
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/wood.png"),
+        App::load_resource("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
     Texture2D m_ContainerTexture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/container2.png"),
+        App::load_resource("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB
     );
     Mesh m_CubeMesh = GenerateCubeMesh();

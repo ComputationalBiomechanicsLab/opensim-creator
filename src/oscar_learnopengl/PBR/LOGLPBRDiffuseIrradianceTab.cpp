@@ -49,7 +49,7 @@ namespace
     RenderTexture LoadEquirectangularHDRTextureIntoCubemap()
     {
         Texture2D hdrTexture = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
+            App::load_resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
             ColorSpace::Linear,
             ImageLoadingFlags::FlipVertically
         );
@@ -212,7 +212,7 @@ private:
     }
 
     Texture2D m_Texture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
+        App::load_resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
         ColorSpace::Linear,
         ImageLoadingFlags::FlipVertically
     );

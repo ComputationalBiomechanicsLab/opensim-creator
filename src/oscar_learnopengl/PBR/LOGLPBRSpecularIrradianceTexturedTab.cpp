@@ -6,6 +6,7 @@
 #include <oscar/oscar.hpp>
 
 #include <array>
+#include <filesystem>
 #include <utility>
 
 namespace Graphics = osc::Graphics;
@@ -45,7 +46,7 @@ namespace
     RenderTexture LoadEquirectangularHDRTextureIntoCubemap()
     {
         Texture2D hdrTexture = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
+            App::load_resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
             ColorSpace::Linear,
             ImageLoadingFlags::FlipVertically
         );
@@ -198,11 +199,11 @@ namespace
 
         std::filesystem::path dir;
 
-        Texture2D albedoMap = LoadTexture2DFromImage(dir / "albedo.png", ColorSpace::sRGB);
-        Texture2D normalMap = LoadTexture2DFromImage(dir / "normal.png", ColorSpace::Linear);
-        Texture2D metallicMap = LoadTexture2DFromImage(dir / "metallic.png", ColorSpace::Linear);
-        Texture2D roughnessMap = LoadTexture2DFromImage(dir / "roughness.png", ColorSpace::Linear);
-        Texture2D aoMap = LoadTexture2DFromImage(dir / "ao.png", ColorSpace::Linear);
+        Texture2D albedoMap = LoadTexture2DFromImage(App::load_resource((dir / "albedo.png").string()), ColorSpace::sRGB);
+        Texture2D normalMap = LoadTexture2DFromImage(App::load_resource((dir / "normal.png").string()), ColorSpace::Linear);
+        Texture2D metallicMap = LoadTexture2DFromImage(App::load_resource((dir / "metallic.png").string()), ColorSpace::Linear);
+        Texture2D roughnessMap = LoadTexture2DFromImage(App::load_resource((dir / "roughness.png").string()), ColorSpace::Linear);
+        Texture2D aoMap = LoadTexture2DFromImage(App::load_resource((dir / "ao.png").string()), ColorSpace::Linear);
     };
 }
 
@@ -306,7 +307,7 @@ private:
     }
 
     Texture2D m_Texture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
+        App::load_resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
         ColorSpace::Linear,
         ImageLoadingFlags::FlipVertically
     );

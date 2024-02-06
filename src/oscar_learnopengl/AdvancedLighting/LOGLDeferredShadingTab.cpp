@@ -290,12 +290,12 @@ private:
     Mesh m_CubeMesh = GenerateCubeMesh();
     Mesh m_QuadMesh = GenerateTexturedQuadMesh();
     Texture2D m_DiffuseMap = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/container2.png"),
+        App::load_resource("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB,
         ImageLoadingFlags::FlipVertically
     );
     Texture2D m_SpecularMap = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/container2_specular.png"),
+        App::load_resource("oscar_learnopengl/textures/container2_specular.png"),
         ColorSpace::sRGB,
         ImageLoadingFlags::FlipVertically
     );

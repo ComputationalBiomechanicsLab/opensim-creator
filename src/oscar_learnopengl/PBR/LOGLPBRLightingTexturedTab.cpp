@@ -47,23 +47,23 @@ namespace
     Material CreateMaterial()
     {
         Texture2D albedo = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/pbr/rusted_iron/albedo.png"),
+            App::load_resource("oscar_learnopengl/textures/pbr/rusted_iron/albedo.png"),
             ColorSpace::sRGB
         );
         Texture2D normal = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/pbr/rusted_iron/normal.png"),
+            App::load_resource("oscar_learnopengl/textures/pbr/rusted_iron/normal.png"),
             ColorSpace::Linear
         );
         Texture2D metallic = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/pbr/rusted_iron/metallic.png"),
+            App::load_resource("oscar_learnopengl/textures/pbr/rusted_iron/metallic.png"),
             ColorSpace::Linear
         );
         Texture2D roughness = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/pbr/rusted_iron/roughness.png"),
+            App::load_resource("oscar_learnopengl/textures/pbr/rusted_iron/roughness.png"),
             ColorSpace::Linear
         );
         Texture2D ao = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/pbr/rusted_iron/ao.png"),
+            App::load_resource("oscar_learnopengl/textures/pbr/rusted_iron/ao.png"),
             ColorSpace::Linear
         );
 

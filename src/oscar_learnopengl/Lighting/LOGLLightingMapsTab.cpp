@@ -29,13 +29,13 @@ namespace
     Material CreateLightMappingMaterial()
     {
         Texture2D diffuseMap = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/container2.png"),
+            App::load_resource("oscar_learnopengl/textures/container2.png"),
             ColorSpace::sRGB,
             ImageLoadingFlags::FlipVertically
         );
 
         Texture2D specularMap = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/container2_specular.png"),
+            App::load_resource("oscar_learnopengl/textures/container2_specular.png"),
             ColorSpace::sRGB,
             ImageLoadingFlags::FlipVertically
         );

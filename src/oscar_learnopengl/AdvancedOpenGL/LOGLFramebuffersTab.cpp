@@ -133,11 +133,11 @@ private:
     MouseCapturingCamera m_SceneCamera = CreateSceneCamera();
 
     Texture2D m_ContainerTexture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/container.jpg"),
+        App::load_resource("oscar_learnopengl/textures/container.jpg"),
         ColorSpace::sRGB
     );
     Texture2D m_MetalTexture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/metal.png"),
+        App::load_resource("oscar_learnopengl/textures/metal.png"),
         ColorSpace::sRGB
     );
 

@@ -75,11 +75,11 @@ namespace
     Material CreateNormalMappingMaterial()
     {
         Texture2D diffuseMap = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/brickwall.jpg"),
+            App::load_resource("oscar_learnopengl/textures/brickwall.jpg"),
             ColorSpace::sRGB
         );
         Texture2D normalMap = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/brickwall_normal.jpg"),
+            App::load_resource("oscar_learnopengl/textures/brickwall_normal.jpg"),
             ColorSpace::Linear
         );
 

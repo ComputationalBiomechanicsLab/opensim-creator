@@ -15,7 +15,7 @@ namespace
         if (!(*rv))
         {
             std::stringstream ss;
-            ss << path << ": failed to load icon file";
+            ss << path << ": failed to load ResourceStream";
             throw std::runtime_error{std::move(ss).str()};
         }
         return rv;
@@ -23,5 +23,6 @@ namespace
 }
 
 osc::ResourceStream::ResourceStream(std::filesystem::path const& path_) :
+    m_Name{path_.filename().string()},
     m_Handle{OpenFileStreamOrThrow(path_)}
 {}

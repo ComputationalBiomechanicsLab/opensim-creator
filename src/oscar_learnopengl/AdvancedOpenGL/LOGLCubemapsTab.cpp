@@ -34,7 +34,7 @@ namespace
     {
         // load the first face, so we know the width
         Texture2D t = LoadTexture2DFromImage(
-            resourcesDir / "oscar_learnopengl" / "textures" / std::string_view{c_SkyboxTextureFilenames.front()},
+            App::load_resource((resourcesDir / "oscar_learnopengl" / "textures" / std::string_view{c_SkyboxTextureFilenames.front()}).string()),
             ColorSpace::sRGB
         );
 
@@ -49,7 +49,7 @@ namespace
         for (CubemapFace f = Next(FirstCubemapFace()); f <= LastCubemapFace(); f = Next(f))
         {
             t = LoadTexture2DFromImage(
-                resourcesDir / "oscar_learnopengl" / "textures" / std::string_view{c_SkyboxTextureFilenames[ToIndex(f)]},
+                App::load_resource((resourcesDir / "oscar_learnopengl" / "textures" / std::string_view{c_SkyboxTextureFilenames[ToIndex(f)]}).string()),
                 ColorSpace::sRGB
             );
             OSC_ASSERT(t.getDimensions().x == dims.x);
@@ -204,7 +204,7 @@ private:
     MaterialPropertyBlock m_CubeProperties;
     Mesh m_Cube = GenerateLearnOpenGLCubeMesh();
     Texture2D m_ContainerTexture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/container.jpg"),
+        App::load_resource("oscar_learnopengl/textures/container.jpg"),
         ColorSpace::sRGB
     );
     float m_IOR = 1.52f;

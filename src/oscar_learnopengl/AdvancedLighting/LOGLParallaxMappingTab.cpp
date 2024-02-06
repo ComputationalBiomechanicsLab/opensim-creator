@@ -74,15 +74,15 @@ namespace
     Material CreateParallaxMappingMaterial()
     {
         Texture2D diffuseMap = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/bricks2.jpg"),
+            App::load_resource("oscar_learnopengl/textures/bricks2.jpg"),
             ColorSpace::sRGB
         );
         Texture2D normalMap = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/bricks2_normal.jpg"),
+            App::load_resource("oscar_learnopengl/textures/bricks2_normal.jpg"),
             ColorSpace::Linear
         );
         Texture2D displacementMap = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/bricks2_disp.jpg"),
+            App::load_resource("oscar_learnopengl/textures/bricks2_disp.jpg"),
             ColorSpace::Linear
         );
 

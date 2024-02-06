@@ -30,7 +30,7 @@ namespace
         }};
 
         rv.setTexture("uTexture", LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/uv_checker.jpg"),
+            App::load_resource("oscar_learnopengl/textures/uv_checker.jpg"),
             ColorSpace::sRGB
         ));
 

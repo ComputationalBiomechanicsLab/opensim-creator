@@ -1499,7 +1499,7 @@ TEST_F(Renderer, MeshTopologyAllCanBeWrittenToStream)
 TEST_F(Renderer, LoadTexture2DFromImageResourceCanLoadImageFile)
 {
     Texture2D const t = LoadTexture2DFromImage(
-        App::resource((std::filesystem::path{OSC_BUILD_RESOURCES_DIR} / "testoscar/awesomeface.png").string()),
+        App::load_resource((std::filesystem::path{OSC_BUILD_RESOURCES_DIR} / "testoscar/awesomeface.png").string()),
         ColorSpace::sRGB
     );
     ASSERT_EQ(t.getDimensions(), Vec2i(512, 512));
@@ -1510,7 +1510,7 @@ TEST_F(Renderer, LoadTexture2DFromImageResourceThrowsIfResourceNotFound)
     ASSERT_ANY_THROW(
     {
         LoadTexture2DFromImage(
-            App::resource("textures/doesnt_exist.png"),
+            App::load_resource("textures/doesnt_exist.png"),
             ColorSpace::sRGB
         );
     });

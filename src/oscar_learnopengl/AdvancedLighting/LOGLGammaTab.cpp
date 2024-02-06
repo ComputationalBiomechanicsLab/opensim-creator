@@ -83,7 +83,7 @@ namespace
     Material CreateFloorMaterial()
     {
         Texture2D woodTexture = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/wood.png"),
+            App::load_resource("oscar_learnopengl/textures/wood.png"),
             ColorSpace::sRGB
         );
 

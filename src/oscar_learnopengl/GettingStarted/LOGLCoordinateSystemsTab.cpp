@@ -52,7 +52,7 @@ namespace
         rv.setTexture(
             "uTexture1",
             LoadTexture2DFromImage(
-                App::resource("oscar_learnopengl/textures/container.jpg"),
+                App::load_resource("oscar_learnopengl/textures/container.jpg"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
             )
@@ -61,7 +61,7 @@ namespace
         rv.setTexture(
             "uTexture2",
             LoadTexture2DFromImage(
-                App::resource("oscar_learnopengl/textures/awesomeface.png"),
+                App::load_resource("oscar_learnopengl/textures/awesomeface.png"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
             )

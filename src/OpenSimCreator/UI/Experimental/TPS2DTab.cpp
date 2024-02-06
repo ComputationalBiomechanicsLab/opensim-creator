@@ -503,7 +503,7 @@ private:
 
     // GUI state (rendering, colors, etc.)
     Texture2D m_BoxTexture = LoadTexture2DFromImage(
-        App::resource("textures/container.jpg"),
+        App::load_resource("textures/container.jpg"),
         ColorSpace::sRGB
     );
     Mesh m_InputGrid = GenerateNxMTriangleQuadGridMesh({50, 50});

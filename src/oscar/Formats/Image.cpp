@@ -4,7 +4,7 @@
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
-#include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/ResourceStream.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/ObjectRepresentation.hpp>
 
@@ -13,8 +13,6 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 
-#include <filesystem>
-#include <fstream>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -44,9 +42,8 @@ namespace
             // stbi: fill 'data' with 'size' bytes.  return number of bytes actually read
 
             std::istream& in = *reinterpret_cast<std::istream*>(user);
-            auto pos = in.tellg();
             in.read(data, size);
-            return static_cast<int>(in.tellg() - pos);
+            return static_cast<int>(in.gcount());
         },
 
         .skip = [](void* user, int n) -> void
@@ -54,7 +51,7 @@ namespace
             // stbi: skip the next 'n' bytes, or 'unget' the last -n bytes if negative
 
             std::istream& in = *reinterpret_cast<std::istream*>(user);
-            in.seekg(n, std::ios_base::cur);
+            in.seekg(n, std::ios::cur);
         },
 
         .eof = [](void* user) -> int
@@ -67,8 +64,7 @@ namespace
     };
 
     Texture2D Load32BitTexture(
-        std::istream& in,
-        std::string_view nameForErrorMessagesExtensionChecksEtc,
+        ResourceStream& rs,
         ColorSpace colorSpace,
         ImageLoadingFlags flags)
     {
@@ -83,7 +79,7 @@ namespace
         int numChannels = 0;
         std::unique_ptr<float, decltype(&stbi_image_free)> const pixels =
         {
-            stbi_loadf_from_callbacks(&c_StbiIStreamCallbacks, &in, &dims.x, &dims.y, &numChannels, 0),
+            stbi_loadf_from_callbacks(&c_StbiIStreamCallbacks, &rs.stream(), &dims.x, &dims.y, &numChannels, 0),
             stbi_image_free,
         };
 
@@ -95,7 +91,7 @@ namespace
         if (!pixels)
         {
             std::stringstream ss;
-            ss << nameForErrorMessagesExtensionChecksEtc << ": error loading image: " << stbi_failure_reason();
+            ss << rs.name() << ": error loading HDR image: " << stbi_failure_reason();
             throw std::runtime_error{std::move(ss).str()};
         }
 
@@ -107,7 +103,7 @@ namespace
         if (!format)
         {
             std::stringstream ss;
-            ss << nameForErrorMessagesExtensionChecksEtc << ": error loading image: no TextureFormat exists for " << numChannels << " floating-point channel images";
+            ss << rs.name() << ": error loading HDR image: no TextureFormat exists for " << numChannels << " floating-point channel images";
             throw std::runtime_error{std::move(ss).str()};
         }
 
@@ -129,8 +125,7 @@ namespace
     }
 
     Texture2D Load8BitTexture(
-        std::istream& in,
-        std::string_view nameForErrorMessagesExtensionChecksEtc,
+        ResourceStream& rs,
         ColorSpace colorSpace,
         ImageLoadingFlags flags)
     {
@@ -145,7 +140,7 @@ namespace
         int numChannels = 0;
         std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> const pixels =
         {
-            stbi_load_from_callbacks(&c_StbiIStreamCallbacks, &in, &dims.x, &dims.y, &numChannels, 0),
+            stbi_load_from_callbacks(&c_StbiIStreamCallbacks, &rs.stream(), &dims.x, &dims.y, &numChannels, 0),
             stbi_image_free,
         };
 
@@ -157,7 +152,7 @@ namespace
         if (!pixels)
         {
             std::stringstream ss;
-            ss << nameForErrorMessagesExtensionChecksEtc << ": error loading image: " << stbi_failure_reason();
+            ss << rs.name()  << ": error loading non-HDR image: " << stbi_failure_reason();
             throw std::runtime_error{std::move(ss).str()};
         }
 
@@ -169,7 +164,7 @@ namespace
         if (!format)
         {
             std::stringstream ss;
-            ss << nameForErrorMessagesExtensionChecksEtc << ": error loading image: no TextureFormat exists for " << numChannels << " 8-bit channel images";
+            ss << rs.name() << ": error loading non-HDR image: no TextureFormat exists for " << numChannels << " 8-bit channel images";
             throw std::runtime_error{std::move(ss).str()};
         }
 
@@ -185,7 +180,6 @@ namespace
 
     void StbiWriteToOStream(void* context, void* data, int size)
     {
-        log_info("write %i", size);
         std::ostream& out = *reinterpret_cast<std::ostream*>(context);
         if (size > 0) {
             out.write(reinterpret_cast<char const*>(data), static_cast<std::streamsize>(size));
@@ -194,33 +188,20 @@ namespace
 }
 
 Texture2D osc::LoadTexture2DFromImage(
-    std::istream& in,
-    std::string_view nameForErrorMessagesExtensionChecksEtc,
+    ResourceStream&& rs,
     ColorSpace colorSpace,
     ImageLoadingFlags flags)
 {
     // test whether file content is HDR or not
-    auto const originalPos = in.tellg();
-    bool const isHDR = stbi_is_hdr_from_callbacks(&c_StbiIStreamCallbacks, &in);
-    in.seekg(originalPos);  // rewind, before reading content
+    auto const originalPos = rs.stream().tellg();
+    bool const isHDR = stbi_is_hdr_from_callbacks(&c_StbiIStreamCallbacks, &rs.stream());
+    rs.stream().seekg(originalPos);  // rewind, before reading content
+
+    OSC_ASSERT(rs.stream().tellg() == originalPos);
 
     return isHDR ?
-        Load32BitTexture(in, nameForErrorMessagesExtensionChecksEtc, colorSpace, flags) :
-        Load8BitTexture(in, nameForErrorMessagesExtensionChecksEtc, colorSpace, flags);
-}
-
-Texture2D osc::LoadTexture2DFromImage(
-    std::filesystem::path const& p,
-    ColorSpace colorSpace,
-    ImageLoadingFlags flags)
-{
-    std::ifstream f{p, std::ios_base::binary};
-    if (!f) {
-        std::stringstream ss;
-        ss << p << ": cannot open for reading as an image file";
-        throw std::runtime_error{std::move(ss).str()};
-    }
-    return LoadTexture2DFromImage(f, p.string(), colorSpace, flags);
+        Load32BitTexture(rs, colorSpace, flags) :
+        Load8BitTexture(rs, colorSpace, flags);
 }
 
 void osc::WriteToPNG(

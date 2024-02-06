@@ -170,15 +170,15 @@ private:
     Mesh m_TransparentMesh = GenerateTransparent();
     MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     Texture2D m_MarbleTexture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/marble.jpg"),
+        App::load_resource("oscar_learnopengl/textures/marble.jpg"),
         ColorSpace::sRGB
     );
     Texture2D m_MetalTexture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/metal.png"),
+        App::load_resource("oscar_learnopengl/textures/metal.png"),
         ColorSpace::sRGB
     );
     Texture2D m_WindowTexture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/window.png"),
+        App::load_resource("oscar_learnopengl/textures/window.png"),
         ColorSpace::sRGB
     );
     LogViewerPanel m_LogViewer{"log"};

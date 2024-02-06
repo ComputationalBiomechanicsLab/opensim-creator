@@ -173,7 +173,7 @@ private:
 
     MouseCapturingCamera m_Camera = CreateCamera();
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/wood.png"),
+        App::load_resource("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
     Mesh m_CubeMesh = GenerateCubeMesh();
