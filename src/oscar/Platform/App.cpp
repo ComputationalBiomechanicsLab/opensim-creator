@@ -11,15 +11,12 @@
 #include <oscar/Platform/Screenshot.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/Detail/SDL2Helpers.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/imgui_impl_oscargfx.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>
 
-#include <IconsFontAwesome5.h>
 #include <SDL.h>
 #include <SDL_error.h>
 #include <SDL_keyboard.h>
@@ -27,8 +24,6 @@
 #include <SDL_stdinc.h>
 #include <SDL_timer.h>
 #include <SDL_video.h>
-#include <imgui.h>
-#include <imgui/backends/imgui_impl_sdl2.h>
 
 #include <cmath>
 #include <algorithm>
@@ -48,8 +43,6 @@ using namespace osc;
 namespace
 {
     App* g_ApplicationGlobal = nullptr;
-
-    constexpr auto c_IconRanges = std::to_array<ImWchar>({ ICON_MIN_FA, ICON_MAX_FA, 0 });
 
     void Sdl_GL_SetAttributeOrThrow(
         SDL_GLattr attr,
@@ -431,7 +424,7 @@ public:
     {
         SDL_Event e{};
         e.type = SDL_USEREVENT;
-        m_NumFramesToPoll += 2;  // some parts of ImGui require rendering 2 frames before it shows something
+        m_NumFramesToPoll += 2;  // immediate rendering can require rendering 2 frames before it shows something
         SDL_PushEvent(&e);
     }
 
@@ -498,8 +491,6 @@ public:
         return it->second;
     }
 
-    // used by ImGui backends
-
     sdl::Window& updWindow()
     {
         return m_MainWindow;
@@ -551,7 +542,7 @@ private:
         m_CurrentScreen = std::move(m_NextScreen);
 
         // the next screen might need to draw a couple of frames
-        // to "warm up" (e.g. because it's using ImGui)
+        // to "warm up" (e.g. because it's using an immediate ui)
         m_NumFramesToPoll = 2;
 
         log_info("mounting screen %s", m_CurrentScreen->getName().c_str());
@@ -599,8 +590,7 @@ private:
                     if (e.type == SDL_WINDOWEVENT)
                     {
                         // window was resized and should be drawn a couple of times quickly
-                        // to ensure any datastructures in the screens (namely: imgui) are
-                        // updated
+                        // to ensure any immediate UIs in screens are updated
                         m_NumFramesToPoll = 2;
                     }
 
@@ -1080,109 +1070,12 @@ std::shared_ptr<void> osc::App::updSingleton(std::type_info const& typeInfo, std
     return m_Impl->updSingleton(typeInfo, ctor);
 }
 
-void osc::ImGuiInit()
+SDL_Window* osc::App::updUndleryingWindow()
 {
-    // init ImGui top-level context
-    ImGui::CreateContext();
-
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
-    // make it so that windows can only ever be moved from the title bar
-    ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
-
-    // load application-level ImGui config, then the user one,
-    // so that the user config takes precedence
-    {
-        std::string defaultIni = App::resource("imgui_base_config.ini").string();
-        ImGui::LoadIniSettingsFromDisk(defaultIni.c_str());
-
-        // CARE: the reason this filepath is `static` is because ImGui requires that
-        // the string outlives the ImGui context
-        static std::string const s_UserImguiIniFilePath = (App::get().getUserDataDirPath() / "imgui.ini").string();
-
-        ImGui::LoadIniSettingsFromDisk(s_UserImguiIniFilePath.c_str());
-        io.IniFilename = s_UserImguiIniFilePath.c_str();
-    }
-
-    ImFontConfig baseConfig;
-    baseConfig.SizePixels = 15.0f;
-    baseConfig.PixelSnapH = true;
-    baseConfig.OversampleH = 2;
-    baseConfig.OversampleV = 2;
-    std::string baseFontFile = App::resource("oscar/fonts/Ruda-Bold.ttf").string();
-    io.Fonts->AddFontFromFileTTF(baseFontFile.c_str(), baseConfig.SizePixels, &baseConfig);
-
-    // add FontAwesome icon support
-    {
-        ImFontConfig config = baseConfig;
-        config.MergeMode = true;
-        config.GlyphMinAdvanceX = std::floor(1.5f * config.SizePixels);
-        config.GlyphMaxAdvanceX = std::floor(1.5f * config.SizePixels);
-
-        std::string const fontFile = App::resource("oscar/fonts/fa-solid-900.ttf").string();
-        io.Fonts->AddFontFromFileTTF(
-            fontFile.c_str(),
-            config.SizePixels,
-            &config,
-            c_IconRanges.data()
-        );
-    }
-
-    // init ImGui for SDL2 /w OpenGL
-    App::Impl& impl = *App::upd().m_Impl;
-    ImGui_ImplSDL2_InitForOpenGL(impl.updWindow().get(), impl.updRawGLContextHandleHACK());
-
-    // init ImGui for OpenGL
-    ui::graphics_backend::Init();
-
-    ImGuiApplyDarkTheme();
+    return m_Impl->updWindow().get();
 }
 
-void osc::ImGuiShutdown()
+void* osc::App::updUnderlyingOpenGLContext()
 {
-    ui::graphics_backend::Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    ImGui::DestroyContext();
-}
-
-bool osc::ImGuiOnEvent(SDL_Event const& e)
-{
-    ImGui_ImplSDL2_ProcessEvent(&e);
-
-    ImGuiIO const& io  = ImGui::GetIO();
-
-    bool handledByImgui = false;
-
-    if (io.WantCaptureKeyboard && (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP))
-    {
-        handledByImgui = true;
-    }
-
-    if (io.WantCaptureMouse && (e.type == SDL_MOUSEWHEEL || e.type == SDL_MOUSEMOTION || e.type == SDL_MOUSEBUTTONUP || e.type == SDL_MOUSEBUTTONDOWN))
-    {
-        handledByImgui = true;
-    }
-
-    return handledByImgui;
-}
-
-void osc::ImGuiNewFrame()
-{
-    ui::graphics_backend::NewFrame();
-    ImGui_ImplSDL2_NewFrame();
-    ImGui::NewFrame();
-}
-
-void osc::ImGuiRender()
-{
-    {
-        OSC_PERF("ImGuiRender/Render");
-        ImGui::Render();
-    }
-
-    {
-        OSC_PERF("ImGuiRender/ImGui_ImplOscarGfx_RenderDrawData");
-        ui::graphics_backend::RenderDrawData(ImGui::GetDrawData());
-    }
+    return m_Impl->updGraphicsContext().updRawGLContextHandleHACK();
 }

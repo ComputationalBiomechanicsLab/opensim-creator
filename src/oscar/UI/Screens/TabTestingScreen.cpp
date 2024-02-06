@@ -6,10 +6,7 @@
 #include <oscar/Utils/ParentPtr.hpp>
 
 #include <SDL_events.h>
-#include <imgui.h>
-#include <ImGuizmo.h>  // care: must come after imgui.h
-#include <imgui_internal.h>
-#include <implot.h>
+#include <oscar/UI/ui_context.hpp>
 
 #include <cstddef>
 #include <memory>
@@ -31,8 +28,7 @@ private:
     void implOnMount() override
     {
         m_CurrentTab = m_RegistryEntry.createTab(ParentPtr<Impl>{shared_from_this()});
-        ImGuiInit();
-        ImPlot::CreateContext();
+        ui::context::Init();
         m_CurrentTab->onMount();
         App::upd().makeMainEventLoopPolling();
     }
@@ -41,13 +37,12 @@ private:
     {
         App::upd().makeMainEventLoopWaiting();
         m_CurrentTab->onUnmount();
-        ImPlot::DestroyContext();
-        ImGuiShutdown();
+        ui::context::Shutdown();
     }
 
     void implOnEvent(SDL_Event const& e) override
     {
-        ImGuiOnEvent(e);
+        ui::context::OnEvent(e);
         m_CurrentTab->onEvent(e);
 
         if (e.type == SDL_QUIT) {
@@ -63,10 +58,9 @@ private:
     void implOnDraw() override
     {
         App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
-        ImGuiNewFrame();
-        ImGuizmo::BeginFrame();
+        ui::context::NewFrame();
         m_CurrentTab->onDraw();
-        ImGuiRender();
+        ui::context::Render();
 
         ++m_FramesShown;
         if (m_FramesShown >= m_MinFramesShown &&

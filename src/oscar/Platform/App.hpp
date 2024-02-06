@@ -20,10 +20,12 @@
 #include <utility>
 #include <vector>
 
+struct SDL_Window;
 namespace osc { struct Color; }
 namespace osc { class AppConfig; }
 namespace osc { class AppMetadata; }
 namespace osc { class IScreen; }
+namespace osc::ui::context { void Init(); }
 
 namespace osc
 {
@@ -235,33 +237,12 @@ namespace osc
         // try and retrieve a virtual singleton that has the same lifetime as the app
         std::shared_ptr<void> updSingleton(std::type_info const&, std::function<std::shared_ptr<void>()> const&);
 
-        friend void ImGuiInit();
-        friend void ImGuiNewFrame();
+        // HACK: the 2D ui currently needs access to these
+        SDL_Window* updUndleryingWindow();
+        void* updUnderlyingOpenGLContext();
+        friend void ui::context::Init();
 
         class Impl;
         std::unique_ptr<Impl> m_Impl;
     };
-
-    // ImGui support
-    //
-    // these methods are specialized for OSC (config, fonts, themeing, etc.)
-    //
-    // these methods should be called by each `Screen` implementation. The reason they aren't
-    // automatically integrated into App/Screen is because some screens might want very tight
-    // control over ImGui (e.g. recycling contexts, aggro-resetting contexts)
-
-    // init ImGui context (/w osc settings)
-    void ImGuiInit();
-
-    // shutdown ImGui context
-    void ImGuiShutdown();
-
-    // returns true if ImGui has handled the event
-    bool ImGuiOnEvent(SDL_Event const&);
-
-    // should be called at the start of a screen's `onDraw()`
-    void ImGuiNewFrame();
-
-    // should be called at the end of a screen's `onDraw()`
-    void ImGuiRender();
 }

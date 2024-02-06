@@ -266,11 +266,13 @@ add_library(oscar STATIC
     UI/ImGuiHelpers.hpp
     UI/ImGuizmoHelpers.cpp
     UI/ImGuizmoHelpers.hpp
-    UI/imgui_impl_oscargfx.cpp
-    UI/imgui_impl_oscargfx.hpp
     UI/Panels.hpp
     UI/Screens.hpp
     UI/Tabs.hpp
+    UI/ui_context.cpp
+    UI/ui_context.hpp
+    UI/ui_graphics_backend.cpp
+    UI/ui_graphics_backend.hpp
     UI/Widgets.hpp
 
     Utils/At.hpp

@@ -14,7 +14,7 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
-#include <oscar/UI/imgui_impl_oscargfx.hpp>
+#include <oscar/UI/ui_graphics_backend.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <imgui.h>
