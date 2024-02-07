@@ -5,7 +5,6 @@
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshIndicesView.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/BVH.hpp>
@@ -24,6 +23,7 @@
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/Utils/At.hpp>
 
 #include <filesystem>

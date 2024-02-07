@@ -37,7 +37,6 @@
 #include <oscar/Graphics/RenderTextureFormat.hpp>
 #include <oscar/Graphics/RenderTextureReadWrite.hpp>
 #include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Graphics/ShaderPropertyType.hpp>
 #include <oscar/Graphics/SubMeshDescriptor.hpp>
 #include <oscar/Graphics/TextureChannelFormat.hpp>

@@ -93,8 +93,6 @@ add_library(oscar STATIC
     Graphics/RenderTextureFormat.hpp
     Graphics/RenderTextureReadWrite.hpp
     Graphics/Shader.hpp
-    Graphics/ShaderCache.cpp
-    Graphics/ShaderCache.hpp
     Graphics/ShaderPropertyType.hpp
     Graphics/SubMeshDescriptor.hpp
     Graphics/TextureChannelFormat.hpp
@@ -206,6 +204,8 @@ add_library(oscar STATIC
     Scene/SceneRenderer.hpp
     Scene/SceneRendererParams.cpp
     Scene/SceneRendererParams.hpp
+    Scene/ShaderCache.cpp
+    Scene/ShaderCache.hpp
 
     Shims/Cpp20/bit.hpp
     Shims/Cpp20/stop_token.hpp

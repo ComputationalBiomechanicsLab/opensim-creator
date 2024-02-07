@@ -23,7 +23,6 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Line.hpp>
@@ -44,6 +43,7 @@
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>

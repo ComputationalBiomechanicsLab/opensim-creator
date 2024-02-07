@@ -10,12 +10,12 @@
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/Utils/Assertions.hpp>

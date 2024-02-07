@@ -9,7 +9,6 @@
 #include <oscar/Graphics/MaterialPropertyBlock.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/RenderTexture.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Graphics/TextureGenerators.hpp>
 #include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/Mat4.hpp>
@@ -24,6 +23,7 @@
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneDecorationFlags.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/Utils/Perf.hpp>
 
 #include <algorithm>

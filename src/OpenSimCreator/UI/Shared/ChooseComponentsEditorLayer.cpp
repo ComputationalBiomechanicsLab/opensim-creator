@@ -12,7 +12,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <IconsFontAwesome5.h>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -22,6 +21,7 @@
 #include <oscar/Scene/SceneDecorationFlags.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/SetHelpers.hpp>

@@ -15,7 +15,6 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/RenderTexture.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Line.hpp>
@@ -33,6 +32,7 @@
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 

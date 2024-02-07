@@ -15,7 +15,6 @@
 #include <imgui.h>
 #include <oscar/Formats/SVG.hpp>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
@@ -29,6 +28,7 @@
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Tabs/ITabHost.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>
