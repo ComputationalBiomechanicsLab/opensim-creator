@@ -508,8 +508,8 @@ namespace osc::mi
             Material material
             {
                 App::singleton<ShaderCache>()->load(
-                    App::resource("shaders/SolidColor.vert"),
-                    App::resource("shaders/SolidColor.frag")
+                    App::resourceFilepath("shaders/SolidColor.vert"),
+                    App::resourceFilepath("shaders/SolidColor.frag")
                 )
             };
             material.setColor("uColor", m_Colors.gridLines);

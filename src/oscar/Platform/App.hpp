@@ -59,13 +59,16 @@ namespace osc
         static AppConfig const& config();
 
         // returns a full filesystem path to a (runtime- and configuration-dependent) application resource
-        static std::filesystem::path resource(std::string_view);
+        static std::filesystem::path resourceFilepath(ResourcePath const&);
 
         // returns the contents of a runtime resource in the `resources/` dir as a string
-        static std::string slurp(std::string_view);
+        static std::string slurp(ResourcePath const&);
 
         // returns an opened stream to the given application resource
-        static ResourceStream load_resource(std::string_view);
+        static ResourceStream load_resource(ResourcePath const&);
+
+        // returns the top- (application-)level resource loader
+        static ResourceLoader const& resource_loader();
 
         // constructs an `App` from a default-constructed `AppMetadata`
         App();
@@ -229,19 +232,19 @@ namespace osc
         AppConfig const& getConfig() const;
         AppConfig& updConfig();
 
-        // returns top- (application-)level resource loader
-        ResourceLoader getResourceLoader() const;
-
-        // returns a full filesystem path to runtime resource in `resources/` dir
-        std::filesystem::path getResource(std::string_view) const;
+        // returns the top- (application-)level resource loader
+        ResourceLoader const& getResourceLoader() const;
 
         // returns the contents of a runtime resource in the `resources/` dir as a string
-        std::string slurpResource(std::string_view) const;
+        std::string slurpResource(ResourcePath const&);
 
         // returns an opened stream to the given resource
-        ResourceStream loadResource(std::string_view) const;
+        ResourceStream loadResource(ResourcePath const&);
 
     private:
+        // returns a full filesystem path to runtime resource in `resources/` dir
+        std::filesystem::path getResourceFilepath(ResourcePath const&) const;
+
         // try and retrieve a virtual singleton that has the same lifetime as the app
         std::shared_ptr<void> updSingleton(std::type_info const&, std::function<std::shared_ptr<void>()> const&);
 

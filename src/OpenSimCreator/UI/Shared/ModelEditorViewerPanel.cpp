@@ -213,7 +213,7 @@ namespace
         }
 
         std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
-            App::resource("icons/"),
+            App::resourceFilepath("icons/"),
             ImGui::GetTextLineHeight()/128.0f
         );
         std::string m_PanelName;

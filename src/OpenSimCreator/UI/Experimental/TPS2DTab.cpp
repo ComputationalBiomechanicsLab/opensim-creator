@@ -510,11 +510,11 @@ private:
     Mesh m_OutputGrid = m_InputGrid;
     Material m_Material = Material
     {
-        App::singleton<ShaderCache>()->load(App::resource("shaders/TPS2D/Textured.vert"), App::resource("shaders/TPS2D/Textured.frag"))
+        App::singleton<ShaderCache>()->load(App::resourceFilepath("shaders/TPS2D/Textured.vert"), App::resourceFilepath("shaders/TPS2D/Textured.frag"))
     };
     Material m_WireframeMaterial = Material
     {
-        App::singleton<ShaderCache>()->load(App::resource("shaders/SolidColor.vert"), App::resource("shaders/SolidColor.frag"))
+        App::singleton<ShaderCache>()->load(App::resourceFilepath("shaders/SolidColor.vert"), App::resourceFilepath("shaders/SolidColor.frag"))
     };
     Camera m_Camera;
     std::optional<RenderTexture> m_InputRender;

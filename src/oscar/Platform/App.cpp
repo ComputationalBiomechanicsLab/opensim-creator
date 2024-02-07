@@ -36,7 +36,6 @@
 #include <cstdint>
 #include <ctime>
 #include <exception>
-#include <fstream>
 #include <sstream>
 #include <stdexcept>
 #include <unordered_map>
@@ -81,12 +80,6 @@ namespace
             logger->set_level(config.getRequestedLogLevel());
         }
         return true;
-    }
-
-    // returns a resource from the config-provided `resources/` dir
-    std::filesystem::path GetResource(AppConfig const& c, std::string_view p)
-    {
-        return std::filesystem::weakly_canonical(c.getResourceDir() / p);
     }
 
     // initialize the main application window
@@ -156,8 +149,8 @@ namespace
                 log_debug("opening %s", p.string().c_str());
             }
 
-            // TODO: this shouldn't be a thing once virtual resource loading is supported
-            return ResourceStream{::GetResource(*m_Config, p.string())};
+            auto fsPath = std::filesystem::weakly_canonical(m_Config->getResourceDir() / p.string());
+            return ResourceStream{fsPath};
         }
     private:
         std::shared_ptr<AppConfig> m_Config;
@@ -492,29 +485,29 @@ public:
         return *m_ApplicationConfig;
     }
 
-    ResourceLoader getResourceLoader() const
+    ResourceLoader const& getResourceLoader() const
     {
         return m_AppResourceLoader;
     }
 
-    std::filesystem::path getResource(std::string_view p) const
+    std::filesystem::path getResourceFilepath(ResourcePath const& rp) const
     {
-        // TODO: this shouldn't be a thing once virtual resource loading is supported
-        return ::GetResource(*m_ApplicationConfig, p);
+        return std::filesystem::weakly_canonical(m_ApplicationConfig->getResourceDir() / rp.string());
     }
 
-    std::string slurpResource(std::string_view p) const
+    std::string slurpResource(ResourcePath const& rp)
     {
-        std::filesystem::path path = getResource(p);
-        return SlurpFileIntoString(path);
+        return m_AppResourceLoader.slurp(rp);
     }
 
-    ResourceStream loadResource(std::string_view p) const
+    ResourceStream loadResource(ResourcePath const& rp)
     {
-        return ResourceStream{getResource(p)};
+        return m_AppResourceLoader.open(rp);
     }
 
-    std::shared_ptr<void> updSingleton(std::type_info const& typeinfo, std::function<std::shared_ptr<void>()> const& ctor)
+    std::shared_ptr<void> updSingleton(
+        std::type_info const& typeinfo,
+        std::function<std::shared_ptr<void>()> const& ctor)
     {
         auto lock = m_Singletons.lock();
         auto const [it, inserted] = lock->try_emplace(TypeInfoReference{typeinfo}, nullptr);
@@ -849,19 +842,24 @@ AppConfig const& osc::App::config()
     return get().getConfig();
 }
 
-std::filesystem::path osc::App::resource(std::string_view path)
+std::filesystem::path osc::App::resourceFilepath(ResourcePath const& rp)
 {
-    return get().getResource(path);
+    return get().getResourceFilepath(rp);
 }
 
-std::string osc::App::slurp(std::string_view path)
+std::string osc::App::slurp(ResourcePath const& rp)
 {
-    return get().slurpResource(path);
+    return upd().slurpResource(rp);
 }
 
-ResourceStream osc::App::load_resource(std::string_view path)
+ResourceStream osc::App::load_resource(ResourcePath const& rp)
 {
-    return get().loadResource(path);
+    return upd().loadResource(rp);
+}
+
+ResourceLoader const& osc::App::resource_loader()
+{
+    return upd().getResourceLoader();
 }
 
 osc::App::App() :
@@ -1096,24 +1094,24 @@ AppConfig& osc::App::updConfig()
     return m_Impl->updConfig();
 }
 
-ResourceLoader osc::App::getResourceLoader() const
+ResourceLoader const& osc::App::getResourceLoader() const
 {
     return m_Impl->getResourceLoader();
 }
 
-std::filesystem::path osc::App::getResource(std::string_view p) const
+std::filesystem::path osc::App::getResourceFilepath(ResourcePath const& rp) const
 {
-    return m_Impl->getResource(p);
+    return m_Impl->getResourceFilepath(rp);
 }
 
-std::string osc::App::slurpResource(std::string_view p) const
+std::string osc::App::slurpResource(ResourcePath const& rp)
 {
-    return m_Impl->slurpResource(p);
+    return m_Impl->slurpResource(rp);
 }
 
-ResourceStream osc::App::loadResource(std::string_view p) const
+ResourceStream osc::App::loadResource(ResourcePath const& rp)
 {
-    return m_Impl->loadResource(p);
+    return m_Impl->loadResource(rp);
 }
 
 std::shared_ptr<void> osc::App::updSingleton(std::type_info const& typeInfo, std::function<std::shared_ptr<void>()> const& ctor)

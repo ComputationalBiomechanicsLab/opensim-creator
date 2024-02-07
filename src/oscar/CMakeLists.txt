@@ -187,6 +187,7 @@ add_library(oscar STATIC
     Platform/LogSink.hpp
     Platform/os.cpp
     Platform/os.hpp
+    Platform/ResourceLoader.cpp
     Platform/ResourceLoader.hpp
     Platform/ResourcePath.hpp
     Platform/ResourceStream.cpp
@@ -344,7 +345,7 @@ add_library(oscar STATIC
     UI.hpp
     Utils.hpp
     Variant.hpp
-)
+ "Platform/ResourceLoader.cpp")
 
 target_include_directories(oscar PUBLIC
 

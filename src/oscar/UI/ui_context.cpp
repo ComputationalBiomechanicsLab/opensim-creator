@@ -6,18 +6,52 @@
 #include <ImGuizmo.h>  // care: must come after imgui.h
 #include <implot.h>
 #include <oscar/Platform/App.hpp>
+#include <oscar/Platform/ResourceLoader.hpp>
+#include <oscar/Platform/ResourcePath.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/ui_graphics_backend.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <SDL_events.h>
 
+#include <algorithm>
 #include <array>
-#include <filesystem>
+#include <iterator>
+#include <ranges>
 #include <string>
+
+using namespace osc;
+namespace ranges = std::ranges;
 
 namespace
 {
     constexpr auto c_IconRanges = std::to_array<ImWchar>({ ICON_MIN_FA, ICON_MAX_FA, 0 });
+
+    template<ranges::contiguous_range Container>
+    std::unique_ptr<typename Container::value_type[]> ToOwned(Container const& c)
+    {
+        using value_type = typename Container::value_type;
+        using std::size;
+        using std::begin;
+        using std::end;
+
+        auto rv = std::make_unique<value_type[]>(size(c));
+        std::copy(begin(c), end(c), rv.get());
+        return rv;
+    }
+
+    void AddResourceAsFont(
+        ImFontConfig const& config,
+        ImFontAtlas& atlas,
+        ResourcePath const& path)
+    {
+        std::string baseFontData = App::slurp(path);
+        atlas.AddFontFromMemoryTTF(
+            ToOwned(baseFontData).release(),  // ImGui takes ownership
+            static_cast<int>(baseFontData.size()) + 1,  // +1 for NUL
+            config.SizePixels,
+            &config
+        );
+    }
 }
 
 void osc::ui::context::Init()
@@ -34,8 +68,8 @@ void osc::ui::context::Init()
     // load application-level ImGui config, then the user one,
     // so that the user config takes precedence
     {
-        std::string defaultIni = App::resource("imgui_base_config.ini").string();
-        ImGui::LoadIniSettingsFromDisk(defaultIni.c_str());
+        std::string const defaultINIData = App::slurp("imgui_base_config.ini");
+        ImGui::LoadIniSettingsFromMemory(defaultINIData.data(), defaultINIData.size());
 
         // CARE: the reason this filepath is `static` is because ImGui requires that
         // the string outlives the ImGui context
@@ -50,8 +84,7 @@ void osc::ui::context::Init()
     baseConfig.PixelSnapH = true;
     baseConfig.OversampleH = 2;
     baseConfig.OversampleV = 2;
-    std::string baseFontFile = App::resource("oscar/fonts/Ruda-Bold.ttf").string();
-    io.Fonts->AddFontFromFileTTF(baseFontFile.c_str(), baseConfig.SizePixels, &baseConfig);
+    AddResourceAsFont(baseConfig, *io.Fonts, "oscar/fonts/Ruda-Bold.ttf");
 
     // add FontAwesome icon support
     {
@@ -59,14 +92,7 @@ void osc::ui::context::Init()
         config.MergeMode = true;
         config.GlyphMinAdvanceX = std::floor(1.5f * config.SizePixels);
         config.GlyphMaxAdvanceX = std::floor(1.5f * config.SizePixels);
-
-        std::string const fontFile = App::resource("oscar/fonts/fa-solid-900.ttf").string();
-        io.Fonts->AddFontFromFileTTF(
-            fontFile.c_str(),
-            config.SizePixels,
-            &config,
-            c_IconRanges.data()
-        );
+        AddResourceAsFont(config, *io.Fonts, "oscar/fonts/fa-solid-900.ttf");
     }
 
     // init ImGui for SDL2 /w OpenGL

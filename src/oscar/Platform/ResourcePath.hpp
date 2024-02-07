@@ -21,6 +21,14 @@ namespace osc
         }
 
         friend bool operator==(ResourcePath const&, ResourcePath const&) = default;
+        friend ResourcePath operator/(ResourcePath const& lhs, ResourcePath const& rhs)
+        {
+            return ResourcePath{lhs.m_Path / rhs.m_Path};
+        }
+        friend ResourcePath operator/(ResourcePath const& lhs, std::string_view rhs)
+        {
+            return ResourcePath{lhs.m_Path / rhs};
+        }
     private:
         std::filesystem::path m_Path;
     };

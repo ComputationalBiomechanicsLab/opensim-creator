@@ -96,7 +96,7 @@ namespace
 
     bool IsAnExampleFile(std::filesystem::path const& path)
     {
-        return IsSubpath(App::resource("models"), path);
+        return IsSubpath(App::resourceFilepath("models"), path);
     }
 
     std::optional<std::string> TryGetModelSaveLocation(OpenSim::Model const& m)
