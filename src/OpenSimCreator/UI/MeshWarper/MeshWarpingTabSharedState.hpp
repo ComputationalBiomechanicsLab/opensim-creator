@@ -178,8 +178,7 @@ namespace osc
 
         // wireframe material, used to draw scene elements in a wireframe style
         Material wireframeMaterial = CreateWireframeOverlayMaterial(
-            App::config(),
-            *App::singleton<ShaderCache>()
+            *App::singleton<ShaderCache>(App::resource_loader())
         );
 
         // shared sphere mesh (used by rendering code)

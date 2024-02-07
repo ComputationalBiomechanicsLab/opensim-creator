@@ -42,14 +42,16 @@ namespace
     void AddResourceAsFont(
         ImFontConfig const& config,
         ImFontAtlas& atlas,
-        ResourcePath const& path)
+        ResourcePath const& path,
+        ImWchar const* glyphRanges = nullptr)
     {
         std::string baseFontData = App::slurp(path);
         atlas.AddFontFromMemoryTTF(
             ToOwned(baseFontData).release(),  // ImGui takes ownership
             static_cast<int>(baseFontData.size()) + 1,  // +1 for NUL
             config.SizePixels,
-            &config
+            &config,
+            glyphRanges
         );
     }
 }
@@ -92,7 +94,7 @@ void osc::ui::context::Init()
         config.MergeMode = true;
         config.GlyphMinAdvanceX = std::floor(1.5f * config.SizePixels);
         config.GlyphMaxAdvanceX = std::floor(1.5f * config.SizePixels);
-        AddResourceAsFont(config, *io.Fonts, "oscar/fonts/fa-solid-900.ttf");
+        AddResourceAsFont(config, *io.Fonts, "oscar/fonts/fa-solid-900.ttf", c_IconRanges.data());
     }
 
     // init ImGui for SDL2 /w OpenGL

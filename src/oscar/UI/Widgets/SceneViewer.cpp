@@ -46,9 +46,8 @@ public:
 private:
     SceneRenderer m_Renderer
     {
-        App::config(),
         *App::singleton<SceneCache>(),
-        *App::singleton<ShaderCache>(),
+        *App::singleton<ShaderCache>(App::resource_loader()),
     };
     bool m_IsHovered = false;
     bool m_IsLeftClicked = false;

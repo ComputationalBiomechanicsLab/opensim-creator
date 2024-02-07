@@ -279,9 +279,8 @@ namespace osc
         PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(m_State->getResultMesh().getBounds());
         CachedSceneRenderer m_CachedRenderer
         {
-            App::config(),
             *App::singleton<SceneCache>(),
-            *App::singleton<ShaderCache>(),
+            *App::singleton<ShaderCache>(App::resource_loader()),
         };
         ImGuiItemHittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;

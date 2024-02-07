@@ -18,7 +18,6 @@
 #include <span>
 
 namespace osc { struct AABB; }
-namespace osc { class AppConfig; }
 namespace osc { class BVH; }
 namespace osc { class Mesh; }
 namespace osc { struct PolarPerspectiveCamera; }
@@ -140,7 +139,6 @@ namespace osc
 
     // returns a material that can draw a mesh's triangles in wireframe-style
     Material CreateWireframeOverlayMaterial(
-        AppConfig const&,
         ShaderCache&
     );
 

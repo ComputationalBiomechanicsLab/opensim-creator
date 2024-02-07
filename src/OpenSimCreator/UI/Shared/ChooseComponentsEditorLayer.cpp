@@ -138,9 +138,8 @@ public:
         ChooseComponentsEditorLayerParameters parameters_) :
 
         m_State{std::move(model_), std::move(parameters_)},
-        m_Renderer{App::config(), *App::singleton<SceneCache>(), *App::singleton<ShaderCache>()}
-    {
-    }
+        m_Renderer{*App::singleton<SceneCache>(), *App::singleton<ShaderCache>(App::resource_loader())}
+    {}
 
     bool handleKeyboardInputs(
         ModelEditorViewerPanelParameters& params,

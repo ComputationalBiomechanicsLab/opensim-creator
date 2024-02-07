@@ -30,6 +30,15 @@ namespace osc
             return ResourcePath{lhs.m_Path / rhs};
         }
     private:
+        friend struct std::hash<osc::ResourcePath>;
         std::filesystem::path m_Path;
     };
 }
+
+template<>
+struct std::hash<osc::ResourcePath> final {
+    size_t operator()(osc::ResourcePath const& p) const
+    {
+        return std::filesystem::hash_value(p.m_Path);
+    }
+};

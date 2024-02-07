@@ -9,7 +9,6 @@
 #include <optional>
 #include <span>
 
-namespace osc { class AppConfig; }
 namespace osc { struct Line; }
 namespace osc { struct ModelRendererParams; }
 namespace osc { struct Rect; }
@@ -24,7 +23,6 @@ namespace osc
     class CachedModelRenderer final {
     public:
         CachedModelRenderer(
-            AppConfig const&,
             std::shared_ptr<SceneCache> const&,
             ShaderCache&
         );

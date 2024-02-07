@@ -345,7 +345,7 @@ add_library(oscar STATIC
     UI.hpp
     Utils.hpp
     Variant.hpp
- "Platform/ResourceLoader.cpp")
+)
 
 target_include_directories(oscar PUBLIC
 

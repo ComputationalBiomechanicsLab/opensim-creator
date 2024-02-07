@@ -18,7 +18,7 @@
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/AppConfig.hpp>
+#include <oscar/Platform/ResourcePath.hpp>
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneDecorationFlags.hpp>
@@ -136,17 +136,14 @@ namespace
 
 class osc::SceneRenderer::Impl final {
 public:
-    Impl(
-        AppConfig const& config,
-        SceneCache& meshCache,
-        ShaderCache& shaderCache) :
+    Impl(SceneCache& meshCache, ShaderCache& shaderCache) :
 
-        m_SceneColoredElementsMaterial{shaderCache.load(config.getResourcePath("oscar/shaders/SceneRenderer/DrawColoredObjects.vert"), config.getResourcePath("oscar/shaders/SceneRenderer/DrawColoredObjects.frag"))},
-        m_SceneTexturedElementsMaterial{shaderCache.load(config.getResourcePath("oscar/shaders/SceneRenderer/DrawTexturedObjects.vert"), config.getResourcePath("oscar/shaders/SceneRenderer/DrawTexturedObjects.frag"))},
-        m_SolidColorMaterial{shaderCache.load(config.getResourcePath("oscar/shaders/SceneRenderer/SolidColor.vert"), config.getResourcePath("oscar/shaders/SceneRenderer/SolidColor.frag"))},
-        m_EdgeDetectorMaterial{shaderCache.load(config.getResourcePath("oscar/shaders/SceneRenderer/EdgeDetector.vert"), config.getResourcePath("oscar/shaders/SceneRenderer/EdgeDetector.frag"))},
-        m_NormalsMaterial{shaderCache.load(config.getResourcePath("oscar/shaders/SceneRenderer/NormalsVisualizer.vert"), config.getResourcePath("oscar/shaders/SceneRenderer/NormalsVisualizer.geom"), config.getResourcePath("oscar/shaders/SceneRenderer/NormalsVisualizer.frag"))},
-        m_DepthWritingMaterial{shaderCache.load(config.getResourcePath("oscar/shaders/SceneRenderer/DepthMap.vert"), config.getResourcePath("oscar/shaders/SceneRenderer/DepthMap.frag"))},
+        m_SceneColoredElementsMaterial{shaderCache.load("oscar/shaders/SceneRenderer/DrawColoredObjects.vert", "oscar/shaders/SceneRenderer/DrawColoredObjects.frag")},
+        m_SceneTexturedElementsMaterial{shaderCache.load("oscar/shaders/SceneRenderer/DrawTexturedObjects.vert", "oscar/shaders/SceneRenderer/DrawTexturedObjects.frag")},
+        m_SolidColorMaterial{shaderCache.load("oscar/shaders/SceneRenderer/SolidColor.vert", "oscar/shaders/SceneRenderer/SolidColor.frag")},
+        m_EdgeDetectorMaterial{shaderCache.load("oscar/shaders/SceneRenderer/EdgeDetector.vert", "oscar/shaders/SceneRenderer/EdgeDetector.frag")},
+        m_NormalsMaterial{shaderCache.load("oscar/shaders/SceneRenderer/NormalsVisualizer.vert", "oscar/shaders/SceneRenderer/NormalsVisualizer.geom", "oscar/shaders/SceneRenderer/NormalsVisualizer.frag")},
+        m_DepthWritingMaterial{shaderCache.load("oscar/shaders/SceneRenderer/DepthMap.vert", "oscar/shaders/SceneRenderer/DepthMap.frag")},
         m_QuadMesh{meshCache.getTexturedQuadMesh()}
     {
         m_SceneTexturedElementsMaterial.setTexture("uDiffuseTexture", m_ChequerTexture);
@@ -485,8 +482,8 @@ private:
 
 // public API (PIMPL)
 
-osc::SceneRenderer::SceneRenderer(AppConfig const& config, SceneCache& meshCache, ShaderCache& shaderCache) :
-    m_Impl{std::make_unique<Impl>(config, meshCache, shaderCache)}
+osc::SceneRenderer::SceneRenderer(SceneCache& meshCache, ShaderCache& shaderCache) :
+    m_Impl{std::make_unique<Impl>(meshCache, shaderCache)}
 {
 }
 

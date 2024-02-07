@@ -6,7 +6,6 @@
 #include <oscar/oscar.hpp>
 
 #include <array>
-#include <filesystem>
 #include <utility>
 
 namespace Graphics = osc::Graphics;

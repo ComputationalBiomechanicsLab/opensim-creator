@@ -10,9 +10,8 @@ osc::ModelEditorViewerPanelState::ModelEditorViewerPanelState(
     m_PanelName{panelName_},
     m_CachedModelRenderer
     {
-        App::get().getConfig(),
         App::singleton<SceneCache>(),
-        *App::singleton<ShaderCache>(),
+        *App::singleton<ShaderCache>(App::resource_loader()),
     }
 {
 }

@@ -43,3 +43,16 @@ TEST(ResourceLoader, InplaceConstructorWorksAsIntended)
 
     ASSERT_EQ(state->lastOpenCallArg, p);
 }
+
+TEST(ResourceLoader, WithPrefixCausesIResourceLoaderToBeCalledWithPrefixedPath)
+{
+    auto state = std::make_shared<MockState>();
+
+    ResourceLoader rl = make_resource_loader<MockResourceLoader>(state);
+    ResourceLoader prefixedLoader = rl.withPrefix("prefix");
+
+    rl.open(ResourcePath{"path"});
+    ASSERT_EQ(state->lastOpenCallArg, ResourcePath{"path"}) << "withPrefix doesn't affect original ResourceLoader";
+    prefixedLoader.open(ResourcePath{"path"});
+    ASSERT_EQ(state->lastOpenCallArg, ResourcePath{"prefix/path"}) << "withPrefix should return a loader the prefixes each open call";
+}

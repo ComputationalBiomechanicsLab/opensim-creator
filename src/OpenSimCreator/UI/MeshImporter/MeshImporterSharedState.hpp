@@ -507,9 +507,9 @@ namespace osc::mi
 
             Material material
             {
-                App::singleton<ShaderCache>()->load(
-                    App::resourceFilepath("shaders/SolidColor.vert"),
-                    App::resourceFilepath("shaders/SolidColor.frag")
+                App::singleton<ShaderCache>(App::resource_loader())->load(
+                    "shaders/SolidColor.vert",
+                    "shaders/SolidColor.frag"
                 )
             };
             material.setColor("uColor", m_Colors.gridLines);
@@ -1458,9 +1458,8 @@ namespace osc::mi
 
         // renderer that draws the scene
         SceneRenderer m_SceneRenderer{
-            App::config(),
             *App::singleton<SceneCache>(),
-            *App::singleton<ShaderCache>()
+            *App::singleton<ShaderCache>(App::resource_loader())
         };
 
         // COLORS

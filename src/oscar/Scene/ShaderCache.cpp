@@ -1,12 +1,11 @@
 #include "ShaderCache.hpp"
 
 #include <oscar/Graphics/Shader.hpp>
-#include <oscar/Utils/FilesystemHelpers.hpp>
+#include <oscar/Platform/ResourceLoader.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>
 
 #include <cstddef>
-#include <filesystem>
 #include <memory>
 #include <mutex>
 #include <unordered_map>
@@ -20,35 +19,30 @@ namespace
     struct ShaderInputs final {
 
         ShaderInputs(
-            std::filesystem::path vertexShaderPath_,
-            std::filesystem::path fragmentShaderPath_) :
+            ResourcePath const& vertexShaderPath_,
+            ResourcePath const& fragmentShaderPath_) :
 
-            vertexShaderPath{std::move(vertexShaderPath_)},
-            fragmentShaderPath{std::move(fragmentShaderPath_)}
-        {
-        }
+            vertexShaderPath{vertexShaderPath_},
+            fragmentShaderPath{fragmentShaderPath_}
+        {}
 
         ShaderInputs(
-            std::filesystem::path vertexShaderPath_,
-            std::filesystem::path geometryShaderPath_,
-            std::filesystem::path fragmentShaderPath_) :
+            ResourcePath const& vertexShaderPath_,
+            ResourcePath const& geometryShaderPath_,
+            ResourcePath const& fragmentShaderPath_) :
 
-            vertexShaderPath{std::move(vertexShaderPath_)},
-            geometryShaderPath{std::move(geometryShaderPath_)},
-            fragmentShaderPath{std::move(fragmentShaderPath_)}
-        {
-        }
+            vertexShaderPath{vertexShaderPath_},
+            geometryShaderPath{geometryShaderPath_},
+            fragmentShaderPath{fragmentShaderPath_}
+        {}
 
         friend bool operator==(ShaderInputs const&, ShaderInputs const&) = default;
 
-        std::filesystem::path vertexShaderPath;
-        std::filesystem::path geometryShaderPath;
-        std::filesystem::path fragmentShaderPath;
-        size_t hash = HashOf(
-            std::filesystem::hash_value(vertexShaderPath),
-            std::filesystem::hash_value(geometryShaderPath),
-            std::filesystem::hash_value(fragmentShaderPath)
-        );
+        ResourcePath vertexShaderPath;
+        ResourcePath geometryShaderPath;
+        ResourcePath fragmentShaderPath;
+
+        size_t hash = HashOf(vertexShaderPath, geometryShaderPath, fragmentShaderPath);
     };
 }
 
@@ -63,9 +57,13 @@ struct std::hash<ShaderInputs> final {
 
 class osc::ShaderCache::Impl final {
 public:
+    explicit Impl(ResourceLoader const& resourceLoader_) :
+        m_Loader{resourceLoader_}
+    {}
+
     Shader const& load(
-        std::filesystem::path const& vertexShader,
-        std::filesystem::path const& fragmentShader)
+        ResourcePath const& vertexShader,
+        ResourcePath const& fragmentShader)
     {
         ShaderInputs const key{vertexShader, fragmentShader};
 
@@ -77,15 +75,15 @@ public:
         }
         else
         {
-            std::string const vertexShaderSrc = SlurpFileIntoString(key.vertexShaderPath);
-            std::string const fragmentShaderSrc = SlurpFileIntoString(key.fragmentShaderPath);
+            std::string const vertexShaderSrc = m_Loader.slurp(key.vertexShaderPath);
+            std::string const fragmentShaderSrc = m_Loader.slurp(key.fragmentShaderPath);
             return guard->emplace_hint(it, key, Shader{vertexShaderSrc, fragmentShaderSrc})->second;
         }
     }
     Shader const& load(
-        std::filesystem::path const& vertexShader,
-        std::filesystem::path const& geometryShader,
-        std::filesystem::path const& fragmentShader)
+        ResourcePath const& vertexShader,
+        ResourcePath const& geometryShader,
+        ResourcePath const& fragmentShader)
     {
         ShaderInputs const key{vertexShader, geometryShader, fragmentShader};
 
@@ -97,21 +95,22 @@ public:
         }
         else
         {
-            std::string const vertexShaderSrc = SlurpFileIntoString(key.vertexShaderPath);
-            std::string const geometryShaderSrc = SlurpFileIntoString(key.geometryShaderPath);
-            std::string const fragmentShaderSrc = SlurpFileIntoString(key.fragmentShaderPath);
+            std::string const vertexShaderSrc = m_Loader.slurp(key.vertexShaderPath);
+            std::string const geometryShaderSrc = m_Loader.slurp(key.geometryShaderPath);
+            std::string const fragmentShaderSrc = m_Loader.slurp(key.fragmentShaderPath);
             return guard->emplace_hint(it, key, Shader{vertexShaderSrc, geometryShaderSrc, fragmentShaderSrc})->second;
         }
     }
 private:
+    ResourceLoader m_Loader;
     SynchronizedValue<std::unordered_map<ShaderInputs, Shader>> m_Cache;
 };
 
 
 // public API (PIMPL)
 
-osc::ShaderCache::ShaderCache() :
-    m_Impl{std::make_unique<Impl>()}
+osc::ShaderCache::ShaderCache(ResourceLoader const& resourceLoader_) :
+    m_Impl{std::make_unique<Impl>(resourceLoader_)}
 {
 }
 
@@ -120,16 +119,16 @@ osc::ShaderCache& osc::ShaderCache::operator=(ShaderCache&&) noexcept = default;
 osc::ShaderCache::~ShaderCache() noexcept = default;
 
 Shader const& osc::ShaderCache::load(
-    std::filesystem::path const& vertexShader,
-    std::filesystem::path const& fragmentShader)
+    ResourcePath const& vertexShader,
+    ResourcePath const& fragmentShader)
 {
     return m_Impl->load(vertexShader, fragmentShader);
 }
 
 Shader const& osc::ShaderCache::load(
-    std::filesystem::path const& vertexShader,
-    std::filesystem::path const& geometryShader,
-    std::filesystem::path const& fragmentShader)
+    ResourcePath const& vertexShader,
+    ResourcePath const& geometryShader,
+    ResourcePath const& fragmentShader)
 {
     return m_Impl->load(vertexShader, geometryShader, fragmentShader);
 }

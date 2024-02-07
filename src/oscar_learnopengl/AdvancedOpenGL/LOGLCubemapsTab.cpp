@@ -8,7 +8,6 @@
 #include <SDL_events.h>
 
 #include <array>
-#include <filesystem>
 #include <memory>
 #include <optional>
 #include <string_view>
@@ -30,11 +29,11 @@ namespace
     static_assert(c_SkyboxTextureFilenames.size() == NumOptions<CubemapFace>());
     static_assert(c_SkyboxTextureFilenames.size() > 1);
 
-    Cubemap LoadCubemap(std::filesystem::path const& resourcesDir)
+    Cubemap LoadCubemap(ResourceLoader& rl)
     {
         // load the first face, so we know the width
         Texture2D t = LoadTexture2DFromImage(
-            App::load_resource((resourcesDir / "oscar_learnopengl" / "textures" / std::string_view{c_SkyboxTextureFilenames.front()}).string()),
+            rl.open(ResourcePath{"oscar_learnopengl/textures"} / std::string_view{c_SkyboxTextureFilenames.front()}),
             ColorSpace::sRGB
         );
 
@@ -49,7 +48,7 @@ namespace
         for (CubemapFace f = Next(FirstCubemapFace()); f <= LastCubemapFace(); f = Next(f))
         {
             t = LoadTexture2DFromImage(
-                App::load_resource((resourcesDir / "oscar_learnopengl" / "textures" / std::string_view{c_SkyboxTextureFilenames[ToIndex(f)]}).string()),
+                rl.open(ResourcePath{"oscar_learnopengl/textures"} / std::string_view{c_SkyboxTextureFilenames[ToIndex(f)]}),
                 ColorSpace::sRGB
             );
             OSC_ASSERT(t.getDimensions().x == dims.x);
@@ -77,28 +76,28 @@ namespace
         Material material;
     };
 
-    std::array<CubeMaterial, 3> CreateCubeMaterials()
+    std::array<CubeMaterial, 3> CreateCubeMaterials(ResourceLoader& rl)
     {
         return std::to_array({
             CubeMaterial{
                 "Basic",
                 Material{Shader{
-                    App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Basic.vert"),
-                    App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Basic.frag"),
+                    rl.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Basic.vert"),
+                    rl.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Basic.frag"),
                 }},
             },
             CubeMaterial{
                 "Reflection",
                 Material{Shader{
-                    App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Reflection.vert"),
-                    App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Reflection.frag"),
+                    rl.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Reflection.vert"),
+                    rl.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Reflection.frag"),
                 }},
             },
             CubeMaterial{
                 "Refraction",
                 Material{Shader{
-                    App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Refraction.vert"),
-                    App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Refraction.frag"),
+                    rl.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Refraction.vert"),
+                    rl.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Refraction.frag"),
                 }},
             },
         });
@@ -199,22 +198,24 @@ private:
         ImGui::End();
     }
 
-    std::array<CubeMaterial, 3> m_CubeMaterials = CreateCubeMaterials();
+    ResourceLoader m_Loader = App::resource_loader();
+
+    std::array<CubeMaterial, 3> m_CubeMaterials = CreateCubeMaterials(m_Loader);
     size_t m_CubeMaterialIndex = 0;
     MaterialPropertyBlock m_CubeProperties;
     Mesh m_Cube = GenerateLearnOpenGLCubeMesh();
     Texture2D m_ContainerTexture = LoadTexture2DFromImage(
-        App::load_resource("oscar_learnopengl/textures/container.jpg"),
+        m_Loader.open("oscar_learnopengl/textures/container.jpg"),
         ColorSpace::sRGB
     );
     float m_IOR = 1.52f;
 
     Material m_SkyboxMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Skybox.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Skybox.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Skybox.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Skybox.frag"),
     }};
     Mesh m_Skybox = GenerateCubeMesh();
-    Cubemap m_Cubemap = LoadCubemap(App::get().getConfig().getResourceDir());
+    Cubemap m_Cubemap = LoadCubemap(m_Loader);
 
     MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
 };

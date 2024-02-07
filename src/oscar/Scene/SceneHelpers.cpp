@@ -19,14 +19,12 @@
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
 #include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/Utils/At.hpp>
 
-#include <filesystem>
 #include <functional>
 #include <optional>
 #include <vector>
@@ -325,12 +323,9 @@ SceneRendererParams osc::CalcStandardDarkSceneRenderParams(
 }
 
 Material osc::CreateWireframeOverlayMaterial(
-    AppConfig const& config,
     ShaderCache& cache)
 {
-    std::filesystem::path const vertShader = config.getResourcePath("oscar/shaders/SceneRenderer/SolidColor.vert");
-    std::filesystem::path const fragShader = config.getResourcePath("oscar/shaders/SceneRenderer/SolidColor.frag");
-    Material material{cache.load(vertShader, fragShader)};
+    Material material{cache.load("oscar/shaders/SceneRenderer/SolidColor.vert", "oscar/shaders/SceneRenderer/SolidColor.frag")};
     material.setColor("uDiffuseColor", {0.0f, 0.6f});
     material.setWireframeMode(true);
     material.setTransparent(true);

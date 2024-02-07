@@ -178,9 +178,8 @@ private:
     ModelRendererParams m_Params;
     CachedModelRenderer m_CachedModelRenderer
     {
-        App::get().getConfig(),
         App::singleton<SceneCache>(),
-        *App::singleton<ShaderCache>(),
+        *App::singleton<ShaderCache>(App::resource_loader()),
     };
 
     // only available after rendering the first frame

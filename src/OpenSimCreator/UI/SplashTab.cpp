@@ -400,9 +400,8 @@ private:
     PolarPerspectiveCamera m_Camera = GetSplashScreenDefaultPolarCamera();
     SceneRenderer m_SceneRenderer
     {
-        App::config(),
         *App::singleton<SceneCache>(),
-        *App::singleton<ShaderCache>(),
+        *App::singleton<ShaderCache>(App::resource_loader()),
     };
     SceneRendererParams m_LastSceneRendererParams = GetSplashScreenDefaultRenderParams(m_Camera);
 

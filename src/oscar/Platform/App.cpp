@@ -145,7 +145,7 @@ namespace
 
         ResourceStream implOpen(ResourcePath const& p)
         {
-            if (log_level() < LogLevel::debug) {
+            if (log_level() <= LogLevel::debug) {
                 log_debug("opening %s", p.string().c_str());
             }
 

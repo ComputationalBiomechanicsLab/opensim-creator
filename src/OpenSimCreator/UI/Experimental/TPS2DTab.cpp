@@ -495,6 +495,8 @@ private:
 
     // tab data
     UID m_TabID;
+    ResourceLoader m_Loader = App::resource_loader();
+    std::shared_ptr<ShaderCache> m_ShaderCache = App::singleton<ShaderCache>(m_Loader);
 
     // TPS algorithm state
     GUIMouseState m_MouseState = GUIInitialMouseState{};
@@ -503,19 +505,14 @@ private:
 
     // GUI state (rendering, colors, etc.)
     Texture2D m_BoxTexture = LoadTexture2DFromImage(
-        App::load_resource("textures/container.jpg"),
+        m_Loader.open("textures/container.jpg"),
         ColorSpace::sRGB
     );
     Mesh m_InputGrid = GenerateNxMTriangleQuadGridMesh({50, 50});
     Mesh m_OutputGrid = m_InputGrid;
-    Material m_Material = Material
-    {
-        App::singleton<ShaderCache>()->load(App::resourceFilepath("shaders/TPS2D/Textured.vert"), App::resourceFilepath("shaders/TPS2D/Textured.frag"))
-    };
-    Material m_WireframeMaterial = Material
-    {
-        App::singleton<ShaderCache>()->load(App::resourceFilepath("shaders/SolidColor.vert"), App::resourceFilepath("shaders/SolidColor.frag"))
-    };
+    Material m_Material{m_ShaderCache->load("shaders/TPS2D/Textured.vert", "shaders/TPS2D/Textured.frag")};
+    Material m_WireframeMaterial{m_ShaderCache->load("shaders/SolidColor.vert", "shaders/SolidColor.frag")};
+
     Camera m_Camera;
     std::optional<RenderTexture> m_InputRender;
     std::optional<RenderTexture> m_OutputRender;
