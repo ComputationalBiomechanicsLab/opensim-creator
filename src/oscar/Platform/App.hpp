@@ -3,6 +3,7 @@
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/AppClock.hpp>
+#include <oscar/Platform/ResourceLoader.hpp>
 #include <oscar/Platform/ResourceStream.hpp>
 #include <oscar/Platform/Screenshot.hpp>
 
@@ -227,6 +228,9 @@ namespace osc
         // returns the current application configuration
         AppConfig const& getConfig() const;
         AppConfig& updConfig();
+
+        // returns top- (application-)level resource loader
+        ResourceLoader getResourceLoader() const;
 
         // returns a full filesystem path to runtime resource in `resources/` dir
         std::filesystem::path getResource(std::string_view) const;

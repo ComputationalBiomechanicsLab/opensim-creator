@@ -10,6 +10,7 @@ namespace osc
 {
     class ResourceStream final {
     public:
+        ResourceStream();
         explicit ResourceStream(std::filesystem::path const&);
 
         std::string_view name() const { return m_Name; }

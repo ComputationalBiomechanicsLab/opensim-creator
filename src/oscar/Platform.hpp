@@ -7,6 +7,7 @@
 #include <oscar/Platform/AppSettings.hpp>
 #include <oscar/Platform/AppSettingValue.hpp>
 #include <oscar/Platform/AppSettingValueType.hpp>
+#include <oscar/Platform/IResourceLoader.hpp>
 #include <oscar/Platform/IScreen.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/Logger.hpp>
@@ -15,6 +16,8 @@
 #include <oscar/Platform/LogMessageView.hpp>
 #include <oscar/Platform/LogSink.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Platform/ResourceLoader.hpp>
+#include <oscar/Platform/ResourcePath.hpp>
 #include <oscar/Platform/ResourceStream.hpp>
 #include <oscar/Platform/Screenshot.hpp>
 #include <oscar/Platform/ScreenshotAnnotation.hpp>

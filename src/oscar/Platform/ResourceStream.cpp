@@ -22,6 +22,11 @@ namespace
     }
 }
 
+osc::ResourceStream::ResourceStream() :
+    m_Name{"nullstream"},
+    m_Handle{std::make_unique<std::ifstream>()}
+{}
+
 osc::ResourceStream::ResourceStream(std::filesystem::path const& path_) :
     m_Name{path_.filename().string()},
     m_Handle{OpenFileStreamOrThrow(path_)}

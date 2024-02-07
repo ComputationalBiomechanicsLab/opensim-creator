@@ -175,6 +175,7 @@ add_library(oscar STATIC
     Platform/AppSettingValue.cpp
     Platform/AppSettingValue.hpp
     Platform/AppSettingValueType.hpp
+    Platform/IResourceLoader.hpp
     Platform/IScreen.hpp
     Platform/Log.cpp
     Platform/Log.hpp
@@ -186,6 +187,8 @@ add_library(oscar STATIC
     Platform/LogSink.hpp
     Platform/os.cpp
     Platform/os.hpp
+    Platform/ResourceLoader.hpp
+    Platform/ResourcePath.hpp
     Platform/ResourceStream.cpp
     Platform/ResourceStream.hpp
     Platform/Screenshot.hpp

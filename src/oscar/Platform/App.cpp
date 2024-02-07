@@ -6,8 +6,12 @@
 #include <oscar/Platform/AppClock.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
+#include <oscar/Platform/IResourceLoader.hpp>
 #include <oscar/Platform/IScreen.hpp>
 #include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/ResourceLoader.hpp>
+#include <oscar/Platform/ResourcePath.hpp>
+#include <oscar/Platform/ResourceStream.hpp>
 #include <oscar/Platform/Screenshot.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/Detail/SDL2Helpers.hpp>
@@ -139,6 +143,25 @@ namespace
         log_info("user data directory: %s", rv.string().c_str());
         return rv;
     }
+
+    class AppResourceLoader final : public IResourceLoader {
+    public:
+        AppResourceLoader(std::shared_ptr<AppConfig> config_) :
+            m_Config{std::move(config_)}
+        {}
+
+        ResourceStream implOpen(ResourcePath const& p)
+        {
+            if (log_level() < LogLevel::debug) {
+                log_debug("opening %s", p.string().c_str());
+            }
+
+            // TODO: this shouldn't be a thing once virtual resource loading is supported
+            return ResourceStream{::GetResource(*m_Config, p.string())};
+        }
+    private:
+        std::shared_ptr<AppConfig> m_Config;
+    };
 }
 
 namespace
@@ -461,17 +484,23 @@ public:
 
     AppConfig const& getConfig() const
     {
-        return m_ApplicationConfig;
+        return *m_ApplicationConfig;
     }
 
     AppConfig& updConfig()
     {
-        return m_ApplicationConfig;
+        return *m_ApplicationConfig;
+    }
+
+    ResourceLoader getResourceLoader() const
+    {
+        return m_AppResourceLoader;
     }
 
     std::filesystem::path getResource(std::string_view p) const
     {
-        return ::GetResource(m_ApplicationConfig, p);
+        // TODO: this shouldn't be a thing once virtual resource loading is supported
+        return ::GetResource(*m_ApplicationConfig, p);
     }
 
     std::string slurpResource(std::string_view p) const
@@ -717,30 +746,32 @@ private:
         }
     }
 
-    // provided via the constructor
+    // immutable application metadata (can be provided at runtime via ctor)
     AppMetadata m_Metadata;
 
-    // path to the directory that the executable is contained within
+    // path to the directory that the application's executable is contained within
     std::filesystem::path m_ExecutableDirPath = GetCurrentExeDirAndLogIt();
 
-    // compute where a write-able user data dir is
+    // path to the write-able user data directory
     std::filesystem::path m_UserDataDirPath = GetUserDataDirAndLogIt(
         m_Metadata.getOrganizationName(),
         m_Metadata.getApplicationName()
     );
 
-    // init/load the application config first
-    AppConfig m_ApplicationConfig
-    {
+    // top-level application configuration
+    std::shared_ptr<AppConfig> m_ApplicationConfig = std::make_shared<AppConfig>(
         m_Metadata.getOrganizationName(),
-        m_Metadata.getApplicationName(),
-    };
+        m_Metadata.getApplicationName()
+    );
 
     // ensure the application log is configured according to the given configuration file
-    bool m_ApplicationLogIsConfigured = ConfigureApplicationLog(m_ApplicationConfig);
+    bool m_ApplicationLogIsConfigured = ConfigureApplicationLog(*m_ApplicationConfig);
 
-    // install the backtrace handler (if necessary - once per process)
+    // enable the stack backtrace handler (if necessary - once per process)
     bool m_IsBacktraceHandlerInstalled = EnsureBacktraceHandlerEnabled(m_UserDataDirPath);
+
+    // top-level runtime resource loader
+    ResourceLoader m_AppResourceLoader = make_resource_loader<AppResourceLoader>(m_ApplicationConfig);
 
     // init SDL context (windowing, etc.)
     sdl::Context m_SDLContext{SDL_INIT_VIDEO};
@@ -773,7 +804,7 @@ private:
     SynchronizedValue<std::unordered_map<TypeInfoReference, std::shared_ptr<void>>> m_Singletons;
 
     // how many antiAliasingLevel the implementation should actually use
-    AntiAliasingLevel m_CurrentMSXAASamples = std::min(m_GraphicsContext.getMaxAntialiasingLevel(), m_ApplicationConfig.getNumMSXAASamples());
+    AntiAliasingLevel m_CurrentMSXAASamples = std::min(m_GraphicsContext.getMaxAntialiasingLevel(), m_ApplicationConfig->getNumMSXAASamples());
 
     // set to true if the application should quit
     bool m_QuitRequested = false;
@@ -1063,6 +1094,11 @@ AppConfig const& osc::App::getConfig() const
 AppConfig& osc::App::updConfig()
 {
     return m_Impl->updConfig();
+}
+
+ResourceLoader osc::App::getResourceLoader() const
+{
+    return m_Impl->getResourceLoader();
 }
 
 std::filesystem::path osc::App::getResource(std::string_view p) const
