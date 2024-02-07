@@ -4,7 +4,6 @@
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFormat.hpp>
-#include <oscar/Platform/ResourceStream.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/ObjectRepresentation.hpp>
 
@@ -13,11 +12,13 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 
+#include <istream>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <stdexcept>
 #include <utility>
 
@@ -64,7 +65,8 @@ namespace
     };
 
     Texture2D Load32BitTexture(
-        ResourceStream& rs,
+        std::istream& in,
+        std::string_view name,
         ColorSpace colorSpace,
         ImageLoadingFlags flags)
     {
@@ -79,7 +81,7 @@ namespace
         int numChannels = 0;
         std::unique_ptr<float, decltype(&stbi_image_free)> const pixels =
         {
-            stbi_loadf_from_callbacks(&c_StbiIStreamCallbacks, &rs.stream(), &dims.x, &dims.y, &numChannels, 0),
+            stbi_loadf_from_callbacks(&c_StbiIStreamCallbacks, &in, &dims.x, &dims.y, &numChannels, 0),
             stbi_image_free,
         };
 
@@ -91,7 +93,7 @@ namespace
         if (!pixels)
         {
             std::stringstream ss;
-            ss << rs.name() << ": error loading HDR image: " << stbi_failure_reason();
+            ss << name << ": error loading HDR image: " << stbi_failure_reason();
             throw std::runtime_error{std::move(ss).str()};
         }
 
@@ -103,7 +105,7 @@ namespace
         if (!format)
         {
             std::stringstream ss;
-            ss << rs.name() << ": error loading HDR image: no TextureFormat exists for " << numChannels << " floating-point channel images";
+            ss << name << ": error loading HDR image: no TextureFormat exists for " << numChannels << " floating-point channel images";
             throw std::runtime_error{std::move(ss).str()};
         }
 
@@ -125,7 +127,8 @@ namespace
     }
 
     Texture2D Load8BitTexture(
-        ResourceStream& rs,
+        std::istream& in,
+        std::string_view name,
         ColorSpace colorSpace,
         ImageLoadingFlags flags)
     {
@@ -140,7 +143,7 @@ namespace
         int numChannels = 0;
         std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> const pixels =
         {
-            stbi_load_from_callbacks(&c_StbiIStreamCallbacks, &rs.stream(), &dims.x, &dims.y, &numChannels, 0),
+            stbi_load_from_callbacks(&c_StbiIStreamCallbacks, &in, &dims.x, &dims.y, &numChannels, 0),
             stbi_image_free,
         };
 
@@ -152,7 +155,7 @@ namespace
         if (!pixels)
         {
             std::stringstream ss;
-            ss << rs.name()  << ": error loading non-HDR image: " << stbi_failure_reason();
+            ss << name  << ": error loading non-HDR image: " << stbi_failure_reason();
             throw std::runtime_error{std::move(ss).str()};
         }
 
@@ -164,7 +167,7 @@ namespace
         if (!format)
         {
             std::stringstream ss;
-            ss << rs.name() << ": error loading non-HDR image: no TextureFormat exists for " << numChannels << " 8-bit channel images";
+            ss << name << ": error loading non-HDR image: no TextureFormat exists for " << numChannels << " 8-bit channel images";
             throw std::runtime_error{std::move(ss).str()};
         }
 
@@ -188,20 +191,21 @@ namespace
 }
 
 Texture2D osc::LoadTexture2DFromImage(
-    ResourceStream&& rs,
+    std::istream& in,
+    std::string_view name,
     ColorSpace colorSpace,
     ImageLoadingFlags flags)
 {
     // test whether file content is HDR or not
-    auto const originalPos = rs.stream().tellg();
-    bool const isHDR = stbi_is_hdr_from_callbacks(&c_StbiIStreamCallbacks, &rs.stream());
-    rs.stream().seekg(originalPos);  // rewind, before reading content
+    auto const originalPos = in.tellg();
+    bool const isHDR = stbi_is_hdr_from_callbacks(&c_StbiIStreamCallbacks, &in);
+    in.seekg(originalPos);  // rewind, before reading content
 
-    OSC_ASSERT(rs.stream().tellg() == originalPos);
+    OSC_ASSERT(in.tellg() == originalPos);
 
     return isHDR ?
-        Load32BitTexture(rs, colorSpace, flags) :
-        Load8BitTexture(rs, colorSpace, flags);
+        Load32BitTexture(in, name, colorSpace, flags) :
+        Load8BitTexture(in, name, colorSpace, flags);
 }
 
 void osc::WriteToPNG(

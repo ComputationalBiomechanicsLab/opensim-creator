@@ -198,7 +198,7 @@ private:
         {
             std::ofstream fout{*maybeImagePath, std::ios_base::binary};
             if (!fout) {
-                std::runtime_error{maybeImagePath->string() + ": cannot open for writing"};
+                throw std::runtime_error{maybeImagePath->string() + ": cannot open for writing"};
             }
             Texture2D outputImage = renderOutputImage();
             WriteToPNG(outputImage, fout);
