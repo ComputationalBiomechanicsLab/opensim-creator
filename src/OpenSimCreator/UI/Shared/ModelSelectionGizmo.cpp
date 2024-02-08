@@ -323,7 +323,7 @@ namespace
                 // as the joint's parent frame (plus coordinate transforms)
                 auto t = pof.getTransformInGround(getState());
                 t.updR() = NegateRotation(t.R());
-                //t.updP() = pof.getParentFrame().getPositionInGround(getState());
+                t.updP() = pof.getParentFrame().getPositionInGround(getState());
                 return ToMat4x4(t);
             }
             else {

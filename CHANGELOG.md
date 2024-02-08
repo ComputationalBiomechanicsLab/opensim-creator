@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+- Editing the position of a `PhysicalOffsetFrame` that's a child of a Joint now behaves more intuitively
+  (rotation still sucks, though)
 - OSC-specific experimental OpenSim components are now exposed to the user via the model editor. So, as
   a user, you can now (e.g.) manually add a `PointToPointEdge` to your model in order to measure the
   distance between two points (previously: `PointToPointEdge` was only available through the
