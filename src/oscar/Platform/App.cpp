@@ -6,6 +6,7 @@
 #include <oscar/Platform/AppClock.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
+#include <oscar/Platform/FilesystemResourceLoader.hpp>
 #include <oscar/Platform/IResourceLoader.hpp>
 #include <oscar/Platform/IScreen.hpp>
 #include <oscar/Platform/Log.hpp>
@@ -136,49 +137,6 @@ namespace
         log_info("user data directory: %s", rv.string().c_str());
         return rv;
     }
-
-    class AppResourceLoader final : public IResourceLoader {
-    public:
-        AppResourceLoader(std::shared_ptr<AppConfig> config_) :
-            m_Config{std::move(config_)}
-        {}
-
-    private:
-        std::filesystem::path filesystemPath(ResourcePath const& p) const
-        {
-            return std::filesystem::weakly_canonical(m_Config->getResourceDir() / p.string());
-        }
-
-        ResourceStream implOpen(ResourcePath const& p)
-        {
-            if (log_level() <= LogLevel::debug) {
-                log_debug("opening %s", p.string().c_str());
-            }
-            return ResourceStream{filesystemPath(p)};
-        }
-
-        std::function<std::optional<ResourceDirectoryEntry>()> implIterateDirectory(ResourcePath const& p)
-        {
-            using std::begin;
-            using std::end;
-
-            std::filesystem::path dirRoot = filesystemPath(p);
-            std::filesystem::directory_iterator iterable{filesystemPath(p)};
-            return [p, dirRoot, beg = begin(iterable), en = end(iterable)]() mutable -> std::optional<ResourceDirectoryEntry>
-            {
-                if (beg != en) {
-                    auto relpath = std::filesystem::relative(beg->path(), dirRoot);
-                    ResourceDirectoryEntry rv{relpath.string(), beg->is_directory()};
-                    ++beg;
-                    return rv;
-                } else {
-                    return std::nullopt;
-                }
-            };
-        }
-
-        std::shared_ptr<AppConfig> m_Config;
-    };
 }
 
 namespace
@@ -501,12 +459,12 @@ public:
 
     AppConfig const& getConfig() const
     {
-        return *m_ApplicationConfig;
+        return m_ApplicationConfig;
     }
 
     AppConfig& updConfig()
     {
-        return *m_ApplicationConfig;
+        return m_ApplicationConfig;
     }
 
     ResourceLoader const& getResourceLoader() const
@@ -516,7 +474,7 @@ public:
 
     std::filesystem::path getResourceFilepath(ResourcePath const& rp) const
     {
-        return std::filesystem::weakly_canonical(m_ApplicationConfig->getResourceDir() / rp.string());
+        return std::filesystem::weakly_canonical(m_ApplicationConfig.getResourceDir() / rp.string());
     }
 
     std::string slurpResource(ResourcePath const& rp)
@@ -776,19 +734,19 @@ private:
     );
 
     // top-level application configuration
-    std::shared_ptr<AppConfig> m_ApplicationConfig = std::make_shared<AppConfig>(
+    AppConfig m_ApplicationConfig{
         m_Metadata.getOrganizationName(),
         m_Metadata.getApplicationName()
-    );
+    };
 
     // ensure the application log is configured according to the given configuration file
-    bool m_ApplicationLogIsConfigured = ConfigureApplicationLog(*m_ApplicationConfig);
+    bool m_ApplicationLogIsConfigured = ConfigureApplicationLog(m_ApplicationConfig);
 
     // enable the stack backtrace handler (if necessary - once per process)
     bool m_IsBacktraceHandlerInstalled = EnsureBacktraceHandlerEnabled(m_UserDataDirPath);
 
     // top-level runtime resource loader
-    ResourceLoader m_AppResourceLoader = make_resource_loader<AppResourceLoader>(m_ApplicationConfig);
+    ResourceLoader m_AppResourceLoader = make_resource_loader<FilesystemResourceLoader>(m_ApplicationConfig.getResourceDir());
 
     // init SDL context (windowing, etc.)
     sdl::Context m_SDLContext{SDL_INIT_VIDEO};
@@ -821,7 +779,7 @@ private:
     SynchronizedValue<std::unordered_map<TypeInfoReference, std::shared_ptr<void>>> m_Singletons;
 
     // how many antiAliasingLevel the implementation should actually use
-    AntiAliasingLevel m_CurrentMSXAASamples = std::min(m_GraphicsContext.getMaxAntialiasingLevel(), m_ApplicationConfig->getNumMSXAASamples());
+    AntiAliasingLevel m_CurrentMSXAASamples = std::min(m_GraphicsContext.getMaxAntialiasingLevel(), m_ApplicationConfig.getNumMSXAASamples());
 
     // set to true if the application should quit
     bool m_QuitRequested = false;

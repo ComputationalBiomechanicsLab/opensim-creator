@@ -175,6 +175,8 @@ add_library(oscar STATIC
     Platform/AppSettingValue.cpp
     Platform/AppSettingValue.hpp
     Platform/AppSettingValueType.hpp
+    Platform/FilesystemResourceLoader.cpp
+    Platform/FilesystemResourceLoader.hpp
     Platform/IResourceLoader.cpp
     Platform/IResourceLoader.hpp
     Platform/IScreen.hpp

@@ -7,6 +7,7 @@
 #include <oscar/Platform/AppSettings.hpp>
 #include <oscar/Platform/AppSettingValue.hpp>
 #include <oscar/Platform/AppSettingValueType.hpp>
+#include <oscar/Platform/FilesystemResourceLoader.hpp>
 #include <oscar/Platform/IResourceLoader.hpp>
 #include <oscar/Platform/IScreen.hpp>
 #include <oscar/Platform/Log.hpp>
