@@ -72,20 +72,20 @@ namespace
         return rv;
     }
 
-    Material CreateNormalMappingMaterial()
+    Material CreateNormalMappingMaterial(IResourceLoader& rl)
     {
         Texture2D diffuseMap = LoadTexture2DFromImage(
-            App::load_resource("oscar_learnopengl/textures/brickwall.jpg"),
+            rl.open("oscar_learnopengl/textures/brickwall.jpg"),
             ColorSpace::sRGB
         );
         Texture2D normalMap = LoadTexture2DFromImage(
-            App::load_resource("oscar_learnopengl/textures/brickwall_normal.jpg"),
+            rl.open("oscar_learnopengl/textures/brickwall_normal.jpg"),
             ColorSpace::Linear
         );
 
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.frag"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.vert"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.frag"),
         }};
         rv.setTexture("uDiffuseMap", diffuseMap);
         rv.setTexture("uNormalMap", normalMap);
@@ -93,11 +93,11 @@ namespace
         return rv;
     }
 
-    Material CreateLightCubeMaterial()
+    Material CreateLightCubeMaterial(IResourceLoader& rl)
     {
         return Material{Shader{
-            App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
-            App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
+            rl.slurp("oscar_learnopengl/shaders/LightCube.vert"),
+            rl.slurp("oscar_learnopengl/shaders/LightCube.frag"),
         }};
     }
 }
@@ -161,9 +161,11 @@ private:
         ImGui::End();
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
+
     // rendering state
-    Material m_NormalMappingMaterial = CreateNormalMappingMaterial();
-    Material m_LightCubeMaterial = CreateLightCubeMaterial();
+    Material m_NormalMappingMaterial = CreateNormalMappingMaterial(m_Loader);
+    Material m_LightCubeMaterial = CreateLightCubeMaterial(m_Loader);
     Mesh m_CubeMesh = GenerateLearnOpenGLCubeMesh();
     Mesh m_QuadMesh = GenerateQuad();
 

@@ -125,19 +125,21 @@ private:
         m_PerfPanel.onDraw();
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
+
     Material m_SceneRenderMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.frag"),
     }};
 
     MouseCapturingCamera m_SceneCamera = CreateSceneCamera();
 
     Texture2D m_ContainerTexture = LoadTexture2DFromImage(
-        App::load_resource("oscar_learnopengl/textures/container.jpg"),
+        m_Loader.open("oscar_learnopengl/textures/container.jpg"),
         ColorSpace::sRGB
     );
     Texture2D m_MetalTexture = LoadTexture2DFromImage(
-        App::load_resource("oscar_learnopengl/textures/metal.png"),
+        m_Loader.open("oscar_learnopengl/textures/metal.png"),
         ColorSpace::sRGB
     );
 
@@ -148,8 +150,8 @@ private:
     RenderTexture m_RenderTexture;
     Camera m_ScreenCamera = CreateScreenCamera();
     Material m_ScreenMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.frag"),
     }};
 
     LogViewerPanel m_LogViewer{"log"};

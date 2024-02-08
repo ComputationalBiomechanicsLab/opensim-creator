@@ -42,17 +42,17 @@ namespace
         return rv;
     }
 
-    Material MakeBoxMaterial()
+    Material MakeBoxMaterial(IResourceLoader& rl)
     {
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.vert"),
-            App::slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.frag"),
+            rl.slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.vert"),
+            rl.slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.frag"),
         }};
 
         rv.setTexture(
             "uTexture1",
             LoadTexture2DFromImage(
-                App::load_resource("oscar_learnopengl/textures/container.jpg"),
+                rl.open("oscar_learnopengl/textures/container.jpg"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
             )
@@ -61,7 +61,7 @@ namespace
         rv.setTexture(
             "uTexture2",
             LoadTexture2DFromImage(
-                App::load_resource("oscar_learnopengl/textures/awesomeface.png"),
+                rl.open("oscar_learnopengl/textures/awesomeface.png"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
             )
@@ -153,13 +153,12 @@ private:
         m_PerfPanel.onDraw();
     }
 
-    Material m_Material = MakeBoxMaterial();
+    ResourceLoader m_Loader = App::resource_loader();
+    Material m_Material = MakeBoxMaterial(m_Loader);
     Mesh m_Mesh = GenerateLearnOpenGLCubeMesh();
     MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
-
     bool m_ShowStep1 = false;
     Transform m_Step1Transform;
-
     PerfPanel m_PerfPanel{"perf"};
 };
 

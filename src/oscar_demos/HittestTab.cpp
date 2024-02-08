@@ -260,10 +260,11 @@ private:
         m_Camera.renderToScreen();
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
     Camera m_Camera;
     Material m_Material{Shader{
-        App::slurp("oscar_demos/shaders/SolidColor.vert"),
-        App::slurp("oscar_demos/shaders/SolidColor.frag"),
+        m_Loader.slurp("oscar_demos/shaders/SolidColor.vert"),
+        m_Loader.slurp("oscar_demos/shaders/SolidColor.frag"),
     }};
     Mesh m_SphereMesh = GenerateUVSphereMesh(12, 12);
     Mesh m_WireframeCubeMesh = GenerateCubeLinesMesh();

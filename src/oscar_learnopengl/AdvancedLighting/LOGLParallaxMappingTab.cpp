@@ -71,24 +71,24 @@ namespace
         return rv;
     }
 
-    Material CreateParallaxMappingMaterial()
+    Material CreateParallaxMappingMaterial(IResourceLoader& rl)
     {
         Texture2D diffuseMap = LoadTexture2DFromImage(
-            App::load_resource("oscar_learnopengl/textures/bricks2.jpg"),
+            rl.open("oscar_learnopengl/textures/bricks2.jpg"),
             ColorSpace::sRGB
         );
         Texture2D normalMap = LoadTexture2DFromImage(
-            App::load_resource("oscar_learnopengl/textures/bricks2_normal.jpg"),
+            rl.open("oscar_learnopengl/textures/bricks2_normal.jpg"),
             ColorSpace::Linear
         );
         Texture2D displacementMap = LoadTexture2DFromImage(
-            App::load_resource("oscar_learnopengl/textures/bricks2_disp.jpg"),
+            rl.open("oscar_learnopengl/textures/bricks2_disp.jpg"),
             ColorSpace::Linear
         );
 
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.frag"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.vert"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.frag"),
         }};
         rv.setTexture("uDiffuseMap", diffuseMap);
         rv.setTexture("uNormalMap", normalMap);
@@ -97,11 +97,11 @@ namespace
         return rv;
     }
 
-    Material CreateLightCubeMaterial()
+    Material CreateLightCubeMaterial(IResourceLoader& rl)
     {
         return Material{Shader{
-            App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
-            App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
+            rl.slurp("oscar_learnopengl/shaders/LightCube.vert"),
+            rl.slurp("oscar_learnopengl/shaders/LightCube.frag"),
         }};
     }
 }
@@ -156,9 +156,11 @@ private:
         ImGui::End();
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
+
     // rendering state
-    Material m_ParallaxMappingMaterial = CreateParallaxMappingMaterial();
-    Material m_LightCubeMaterial = CreateLightCubeMaterial();
+    Material m_ParallaxMappingMaterial = CreateParallaxMappingMaterial(m_Loader);
+    Material m_LightCubeMaterial = CreateLightCubeMaterial(m_Loader);
     Mesh m_CubeMesh = GenerateLearnOpenGLCubeMesh();
     Mesh m_QuadMesh = GenerateQuad();
 

@@ -467,7 +467,7 @@ public:
         return m_ApplicationConfig;
     }
 
-    ResourceLoader const& getResourceLoader() const
+    ResourceLoader& updResourceLoader()
     {
         return m_AppResourceLoader;
     }
@@ -839,9 +839,9 @@ ResourceStream osc::App::load_resource(ResourcePath const& rp)
     return upd().loadResource(rp);
 }
 
-ResourceLoader const& osc::App::resource_loader()
+ResourceLoader& osc::App::resource_loader()
 {
-    return upd().getResourceLoader();
+    return upd().updResourceLoader();
 }
 
 osc::App::App() :
@@ -1076,9 +1076,9 @@ AppConfig& osc::App::updConfig()
     return m_Impl->updConfig();
 }
 
-ResourceLoader const& osc::App::getResourceLoader() const
+ResourceLoader& osc::App::updResourceLoader()
 {
-    return m_Impl->getResourceLoader();
+    return m_Impl->updResourceLoader();
 }
 
 std::filesystem::path osc::App::getResourceFilepath(ResourcePath const& rp) const

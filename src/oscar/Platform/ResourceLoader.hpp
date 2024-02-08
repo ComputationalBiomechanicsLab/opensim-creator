@@ -16,6 +16,8 @@ namespace osc
 {
     class ResourceLoader {
     public:
+        operator IResourceLoader& () { return *m_Impl; }
+        operator IResourceLoader const& () { return *m_Impl; }
         ResourceStream open(ResourcePath const& p) { return m_Impl->open(m_Prefix / p); }
         std::string slurp(ResourcePath const& p) { return m_Impl->slurp(m_Prefix / p); }
         ResourceLoader withPrefix(ResourcePath const& prefix) const { return ResourceLoader{m_Impl, m_Prefix / prefix}; }

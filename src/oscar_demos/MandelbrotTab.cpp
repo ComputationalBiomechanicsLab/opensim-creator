@@ -74,13 +74,14 @@ private:
         // TODO: pan the mandelbrot viewport by the given screen-space offset vector
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
     int m_NumIterations = 16;
     Rect m_NormalizedMandelbrotViewport = {{}, {1.0f, 1.0f}};
     Rect m_MainViewportWorkspaceScreenRect = {};
     Mesh m_QuadMesh = GenerateTexturedQuadMesh();
     Material m_Material{Shader{
-        App::slurp("oscar_demos/shaders/Mandelbrot.vert"),
-        App::slurp("oscar_demos/shaders/Mandelbrot.frag"),
+        m_Loader.slurp("oscar_demos/shaders/Mandelbrot.vert"),
+        m_Loader.slurp("oscar_demos/shaders/Mandelbrot.frag"),
     }};
     Camera m_Camera = CreateIdentityCamera();
 };

@@ -44,32 +44,32 @@ namespace
         return rv;
     }
 
-    Material CreateMaterial()
+    Material CreateMaterial(IResourceLoader& rl)
     {
         Texture2D albedo = LoadTexture2DFromImage(
-            App::load_resource("oscar_learnopengl/textures/pbr/rusted_iron/albedo.png"),
+            rl.open("oscar_learnopengl/textures/pbr/rusted_iron/albedo.png"),
             ColorSpace::sRGB
         );
         Texture2D normal = LoadTexture2DFromImage(
-            App::load_resource("oscar_learnopengl/textures/pbr/rusted_iron/normal.png"),
+            rl.open("oscar_learnopengl/textures/pbr/rusted_iron/normal.png"),
             ColorSpace::Linear
         );
         Texture2D metallic = LoadTexture2DFromImage(
-            App::load_resource("oscar_learnopengl/textures/pbr/rusted_iron/metallic.png"),
+            rl.open("oscar_learnopengl/textures/pbr/rusted_iron/metallic.png"),
             ColorSpace::Linear
         );
         Texture2D roughness = LoadTexture2DFromImage(
-            App::load_resource("oscar_learnopengl/textures/pbr/rusted_iron/roughness.png"),
+            rl.open("oscar_learnopengl/textures/pbr/rusted_iron/roughness.png"),
             ColorSpace::Linear
         );
         Texture2D ao = LoadTexture2DFromImage(
-            App::load_resource("oscar_learnopengl/textures/pbr/rusted_iron/ao.png"),
+            rl.open("oscar_learnopengl/textures/pbr/rusted_iron/ao.png"),
             ColorSpace::Linear
         );
 
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.vert"),
-            App::slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.frag"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.vert"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.frag"),
         }};
         rv.setTexture("uAlbedoMap", albedo);
         rv.setTexture("uNormalMap", normal);
@@ -142,9 +142,10 @@ private:
         }
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
     MouseCapturingCamera m_Camera = CreateCamera();
     Mesh m_SphereMesh = GenerateUVSphereMesh(64, 64);
-    Material m_PBRMaterial = CreateMaterial();
+    Material m_PBRMaterial = CreateMaterial(m_Loader);
     PerfPanel m_PerfPanel{"Perf"};
 };
 

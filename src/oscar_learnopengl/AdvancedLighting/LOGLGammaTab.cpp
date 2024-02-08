@@ -80,16 +80,16 @@ namespace
         return rv;
     }
 
-    Material CreateFloorMaterial()
+    Material CreateFloorMaterial(IResourceLoader& rl)
     {
         Texture2D woodTexture = LoadTexture2DFromImage(
-            App::load_resource("oscar_learnopengl/textures/wood.png"),
+            rl.open("oscar_learnopengl/textures/wood.png"),
             ColorSpace::sRGB
         );
 
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.frag"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.vert"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.frag"),
         }};
         rv.setTexture("uFloorTexture", woodTexture);
         rv.setVec3Array("uLightPositions", c_LightPositions);
@@ -146,7 +146,7 @@ private:
         ImGui::End();
     }
 
-    Material m_Material = CreateFloorMaterial();
+    Material m_Material = CreateFloorMaterial(App::resource_loader());
     Mesh m_PlaneMesh = GeneratePlane();
     MouseCapturingCamera m_Camera = CreateSceneCamera();
 };

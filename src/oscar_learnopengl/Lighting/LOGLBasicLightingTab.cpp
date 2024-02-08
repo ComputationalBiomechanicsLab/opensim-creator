@@ -86,14 +86,16 @@ private:
         ImGui::End();
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
+
     Material m_LightingMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/Lighting/BasicLighting.vert"),
-        App::slurp("oscar_learnopengl/shaders/Lighting/BasicLighting.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/Lighting/BasicLighting.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/Lighting/BasicLighting.frag"),
     }};
 
     Material m_LightCubeMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
-        App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/LightCube.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/LightCube.frag"),
     }};
 
     Mesh m_CubeMesh = GenerateLearnOpenGLCubeMesh();

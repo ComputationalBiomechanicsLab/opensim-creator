@@ -26,23 +26,23 @@ namespace
         return rv;
     }
 
-    Material CreateLightMappingMaterial()
+    Material CreateLightMappingMaterial(IResourceLoader& rl)
     {
         Texture2D diffuseMap = LoadTexture2DFromImage(
-            App::load_resource("oscar_learnopengl/textures/container2.png"),
+            rl.open("oscar_learnopengl/textures/container2.png"),
             ColorSpace::sRGB,
             ImageLoadingFlags::FlipVertically
         );
 
         Texture2D specularMap = LoadTexture2DFromImage(
-            App::load_resource("oscar_learnopengl/textures/container2_specular.png"),
+            rl.open("oscar_learnopengl/textures/container2_specular.png"),
             ColorSpace::sRGB,
             ImageLoadingFlags::FlipVertically
         );
 
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.vert"),
-            App::slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.frag"),
+            rl.slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.vert"),
+            rl.slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.frag"),
         }};
         rv.setTexture("uMaterialDiffuse", diffuseMap);
         rv.setTexture("uMaterialSpecular", specularMap);
@@ -107,10 +107,11 @@ private:
         ImGui::End();
     }
 
-    Material m_LightingMapsMaterial = CreateLightMappingMaterial();
+    ResourceLoader m_Loader = App::resource_loader();
+    Material m_LightingMapsMaterial = CreateLightMappingMaterial(m_Loader);
     Material m_LightCubeMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
-        App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/LightCube.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/LightCube.frag"),
     }};
     Mesh m_Mesh = GenerateLearnOpenGLCubeMesh();
     MouseCapturingCamera m_Camera = CreateCamera();

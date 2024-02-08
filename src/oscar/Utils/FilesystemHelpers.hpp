@@ -35,9 +35,6 @@ namespace osc
         std::filesystem::path const& root
     );
 
-    // slurp a file's contents into a string
-    std::string SlurpFileIntoString(std::filesystem::path const&);
-
     // returns true if `b` is lexographically greater than `a`, ignoring case
     //
     // e.g. "b" > "a", "B" > "a" (this isn't true if case-sensitive)

@@ -68,7 +68,7 @@ namespace osc
         static ResourceStream load_resource(ResourcePath const&);
 
         // returns the top- (application-)level resource loader
-        static ResourceLoader const& resource_loader();
+        static ResourceLoader& resource_loader();
 
         // constructs an `App` from a default-constructed `AppMetadata`
         App();
@@ -233,7 +233,7 @@ namespace osc
         AppConfig& updConfig();
 
         // returns the top- (application-)level resource loader
-        ResourceLoader const& getResourceLoader() const;
+        ResourceLoader& updResourceLoader();
 
         // returns the contents of a runtime resource in the `resources/` dir as a string
         std::string slurpResource(ResourcePath const&);

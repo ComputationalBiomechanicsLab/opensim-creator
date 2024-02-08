@@ -305,32 +305,34 @@ private:
         }
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
+
     Material m_SceneMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Bloom.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Bloom.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Bloom.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Bloom.frag"),
     }};
 
     Material m_LightboxMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/LightBox.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/LightBox.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/LightBox.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/LightBox.frag"),
     }};
 
     Material m_BlurMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Blur.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Blur.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Blur.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Blur.frag"),
     }};
 
     Material m_FinalCompositingMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Final.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Final.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Final.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Final.frag"),
     }};
 
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
-        App::load_resource("oscar_learnopengl/textures/wood.png"),
+        m_Loader.open("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
     Texture2D m_ContainerTexture = LoadTexture2DFromImage(
-        App::load_resource("oscar_learnopengl/textures/container2.png"),
+        m_Loader.open("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB
     );
     Mesh m_CubeMesh = GenerateCubeMesh();

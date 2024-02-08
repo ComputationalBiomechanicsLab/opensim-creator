@@ -37,11 +37,11 @@ namespace
         return rv;
     }
 
-    Material CreateTriangleMaterial()
+    Material CreateTriangleMaterial(IResourceLoader& rl)
     {
         return Material{Shader{
-            App::slurp("oscar_learnopengl/shaders/GettingStarted/HelloTriangle.vert"),
-            App::slurp("oscar_learnopengl/shaders/GettingStarted/HelloTriangle.frag"),
+            rl.slurp("oscar_learnopengl/shaders/GettingStarted/HelloTriangle.vert"),
+            rl.slurp("oscar_learnopengl/shaders/GettingStarted/HelloTriangle.frag"),
         }};
     }
 }
@@ -61,7 +61,8 @@ private:
         m_Camera.renderToScreen();
     }
 
-    Material m_Material = CreateTriangleMaterial();
+    ResourceLoader m_Loader = App::resource_loader();
+    Material m_Material = CreateTriangleMaterial(m_Loader);
     Mesh m_TriangleMesh = GenerateTriangleMesh();
     Camera m_Camera = CreateSceneCamera();
 };

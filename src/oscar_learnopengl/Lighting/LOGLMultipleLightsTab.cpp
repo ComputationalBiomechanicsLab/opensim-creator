@@ -56,23 +56,24 @@ namespace
         return rv;
     }
 
-    Material CreateMultipleLightsMaterial()
+    Material CreateMultipleLightsMaterial(
+        IResourceLoader& rl)
     {
         Texture2D diffuseMap = LoadTexture2DFromImage(
-            App::load_resource("oscar_learnopengl/textures/container2.png"),
+            rl.open("oscar_learnopengl/textures/container2.png"),
             ColorSpace::sRGB,
             ImageLoadingFlags::FlipVertically
         );
 
         Texture2D specularMap = LoadTexture2DFromImage(
-            App::load_resource("oscar_learnopengl/textures/container2_specular.png"),
+            rl.open("oscar_learnopengl/textures/container2_specular.png"),
             ColorSpace::sRGB,
             ImageLoadingFlags::FlipVertically
         );
 
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.vert"),
-            App::slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.frag"),
+            rl.slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.vert"),
+            rl.slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.frag"),
         }};
 
         rv.setTexture("uMaterialDiffuse", diffuseMap);
@@ -103,11 +104,11 @@ namespace
         return rv;
     }
 
-    Material CreateLightCubeMaterial()
+    Material CreateLightCubeMaterial(IResourceLoader& rl)
     {
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
-            App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
+            rl.slurp("oscar_learnopengl/shaders/LightCube.vert"),
+            rl.slurp("oscar_learnopengl/shaders/LightCube.frag"),
         }};
         rv.setColor("uLightColor", Color::white());
         return rv;
@@ -184,8 +185,10 @@ private:
         m_PerfPanel.onDraw();
     }
 
-    Material m_MultipleLightsMaterial = CreateMultipleLightsMaterial();
-    Material m_LightCubeMaterial = CreateLightCubeMaterial();
+    ResourceLoader m_Loader = App::resource_loader();
+
+    Material m_MultipleLightsMaterial = CreateMultipleLightsMaterial(m_Loader);
+    Material m_LightCubeMaterial = CreateLightCubeMaterial(m_Loader);
     Mesh m_Mesh = GenerateLearnOpenGLCubeMesh();
 
     MouseCapturingCamera m_Camera = CreateCamera();

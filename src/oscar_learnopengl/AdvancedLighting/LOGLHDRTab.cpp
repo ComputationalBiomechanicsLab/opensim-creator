@@ -50,16 +50,16 @@ namespace
         return rv;
     }
 
-    Material CreateSceneMaterial()
+    Material CreateSceneMaterial(IResourceLoader& rl)
     {
         Texture2D woodTexture = LoadTexture2DFromImage(
-            App::load_resource("oscar_learnopengl/textures/wood.png"),
+            rl.open("oscar_learnopengl/textures/wood.png"),
             ColorSpace::sRGB
         );
 
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.frag"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.vert"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.frag"),
         }};
         rv.setVec3Array("uSceneLightPositions", c_LightPositions);
         rv.setColorArray("uSceneLightColors", GetLightColors());
@@ -68,11 +68,11 @@ namespace
         return rv;
     }
 
-    Material CreateTonemapMaterial()
+    Material CreateTonemapMaterial(IResourceLoader& rl)
     {
         return Material{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Tonemap.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Tonemap.frag"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Tonemap.vert"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Tonemap.frag"),
         }};
     }
 }
@@ -156,8 +156,9 @@ private:
         ImGui::End();
     }
 
-    Material m_SceneMaterial = CreateSceneMaterial();
-    Material m_TonemapMaterial = CreateTonemapMaterial();
+    ResourceLoader m_Loader = App::resource_loader();
+    Material m_SceneMaterial = CreateSceneMaterial(m_Loader);
+    Material m_TonemapMaterial = CreateTonemapMaterial(m_Loader);
     MouseCapturingCamera m_Camera = CreateSceneCamera();
     Mesh m_CubeMesh = GenerateCubeMesh();
     Mesh m_QuadMesh = GenerateTexturedQuadMesh();

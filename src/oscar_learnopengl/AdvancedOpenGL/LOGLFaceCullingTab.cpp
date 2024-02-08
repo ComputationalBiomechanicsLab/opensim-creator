@@ -22,15 +22,15 @@ namespace
         return m;
     }
 
-    Material GenerateUVTestingTextureMappedMaterial()
+    Material GenerateUVTestingTextureMappedMaterial(IResourceLoader& rl)
     {
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.vert"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
         }};
 
         rv.setTexture("uTexture", LoadTexture2DFromImage(
-            App::load_resource("oscar_learnopengl/textures/uv_checker.jpg"),
+            rl.open("oscar_learnopengl/textures/uv_checker.jpg"),
             ColorSpace::sRGB
         ));
 
@@ -101,7 +101,8 @@ private:
         ImGui::End();
     }
 
-    Material m_Material = GenerateUVTestingTextureMappedMaterial();
+    ResourceLoader m_Loader = App::resource_loader();
+    Material m_Material = GenerateUVTestingTextureMappedMaterial(m_Loader);
     Mesh m_Cube = GenerateCubeSimilarlyToLOGL();
     MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
 };

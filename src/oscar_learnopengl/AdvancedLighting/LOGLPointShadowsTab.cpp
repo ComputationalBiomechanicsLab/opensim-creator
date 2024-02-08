@@ -189,25 +189,27 @@ private:
         m_PerfPanel.onDraw();
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
+
     Material m_ShadowMappingMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.geom"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.geom"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.frag"),
     }};
 
     Material m_SceneMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.frag"),
     }};
 
     Material m_SoftSceneMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/SoftScene.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/SoftScene.frag"),
     }};
 
     MouseCapturingCamera m_SceneCamera = CreateCamera();
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
-        App::load_resource("oscar_learnopengl/textures/wood.png"),
+        m_Loader.open("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
     Mesh m_CubeMesh = GenerateCubeMesh();

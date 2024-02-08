@@ -24,17 +24,17 @@ namespace
         return quad;
     }
 
-    Material LoadTexturedMaterial()
+    Material LoadTexturedMaterial(IResourceLoader& rl)
     {
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.vert"),
-            App::slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.frag"),
+            rl.slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.vert"),
+            rl.slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.frag"),
         }};
 
         // set uTexture1
         {
             Texture2D container = LoadTexture2DFromImage(
-                App::load_resource("oscar_learnopengl/textures/container.jpg"),
+                rl.open("oscar_learnopengl/textures/container.jpg"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
             );
@@ -46,7 +46,7 @@ namespace
         // set uTexture2
         {
             Texture2D const face = LoadTexture2DFromImage(
-                App::load_resource("oscar_learnopengl/textures/awesomeface.png"),
+                rl.open("oscar_learnopengl/textures/awesomeface.png"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
             );
@@ -80,7 +80,8 @@ private:
         m_Camera.renderToScreen();
     }
 
-    Material m_Material = LoadTexturedMaterial();
+    ResourceLoader m_Loader = App::resource_loader();
+    Material m_Material = LoadTexturedMaterial(m_Loader);
     Mesh m_Mesh = GenTexturedQuadMesh();
     Camera m_Camera = CreateIdentityCamera();
 };

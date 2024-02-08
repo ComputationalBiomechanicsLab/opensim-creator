@@ -15,7 +15,7 @@ namespace
 
     std::map<std::string, Mesh> GenerateMeshLookup()
     {
-        SceneCache& cache = *App::singleton<SceneCache>();
+        SceneCache cache;
 
         return {
             {"sphere", cache.getSphereMesh()},

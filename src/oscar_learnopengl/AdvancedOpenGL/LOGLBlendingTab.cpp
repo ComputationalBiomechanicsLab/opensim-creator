@@ -160,9 +160,10 @@ private:
         m_PerfPanel.onDraw();
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
     Material m_OpaqueMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.frag"),
     }};
     Material m_BlendingMaterial = m_OpaqueMaterial;
     Mesh m_CubeMesh = GenerateLearnOpenGLCubeMesh();
@@ -170,15 +171,15 @@ private:
     Mesh m_TransparentMesh = GenerateTransparent();
     MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     Texture2D m_MarbleTexture = LoadTexture2DFromImage(
-        App::load_resource("oscar_learnopengl/textures/marble.jpg"),
+        m_Loader.open("oscar_learnopengl/textures/marble.jpg"),
         ColorSpace::sRGB
     );
     Texture2D m_MetalTexture = LoadTexture2DFromImage(
-        App::load_resource("oscar_learnopengl/textures/metal.png"),
+        m_Loader.open("oscar_learnopengl/textures/metal.png"),
         ColorSpace::sRGB
     );
     Texture2D m_WindowTexture = LoadTexture2DFromImage(
-        App::load_resource("oscar_learnopengl/textures/window.png"),
+        m_Loader.open("oscar_learnopengl/textures/window.png"),
         ColorSpace::sRGB
     );
     LogViewerPanel m_LogViewer{"log"};

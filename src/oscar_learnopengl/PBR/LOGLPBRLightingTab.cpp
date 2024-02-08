@@ -44,11 +44,11 @@ namespace
         return rv;
     }
 
-    Material CreateMaterial()
+    Material CreateMaterial(IResourceLoader& rl)
     {
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.vert"),
-            App::slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.frag"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.vert"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.frag"),
         }};
         rv.setFloat("uAO", 1.0f);
         return rv;
@@ -131,10 +131,10 @@ private:
         m_PerfPanel.onDraw();
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
     MouseCapturingCamera m_Camera = CreateCamera();
     Mesh m_SphereMesh = GenerateUVSphereMesh(64, 64);
-    Material m_PBRMaterial = CreateMaterial();
-
+    Material m_PBRMaterial = CreateMaterial(m_Loader);
     PerfPanel m_PerfPanel{"Perf"};
 };
 

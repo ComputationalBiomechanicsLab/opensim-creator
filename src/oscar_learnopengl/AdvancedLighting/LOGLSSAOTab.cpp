@@ -88,11 +88,11 @@ namespace
         return rv;
     }
 
-    Material LoadGBufferMaterial()
+    Material LoadGBufferMaterial(IResourceLoader& rl)
     {
         return Material{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.frag"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.vert"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.frag"),
         }};
     }
 
@@ -103,27 +103,27 @@ namespace
         return rv;
     }
 
-    Material LoadSSAOMaterial()
+    Material LoadSSAOMaterial(IResourceLoader& rl)
     {
         return Material{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.frag"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.vert"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.frag"),
         }};
     }
 
-    Material LoadBlurMaterial()
+    Material LoadBlurMaterial(IResourceLoader& rl)
     {
         return Material{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.frag"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.vert"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.frag"),
         }};
     }
 
-    Material LoadLightingMaterial()
+    Material LoadLightingMaterial(IResourceLoader& rl)
     {
         return Material{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.frag"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.vert"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.frag"),
         }};
     }
 }
@@ -288,7 +288,7 @@ private:
 
     // rendering state
     struct GBufferRenderingState final {
-        Material material = LoadGBufferMaterial();
+        Material material = LoadGBufferMaterial(App::resource_loader());
         RenderTexture albedo = RenderTextureWithColorFormat(RenderTextureFormat::ARGB32);
         RenderTexture normal = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
         RenderTexture position = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
@@ -333,7 +333,7 @@ private:
     } m_GBuffer;
 
     struct SSAORenderingState final {
-        Material material = LoadSSAOMaterial();
+        Material material = LoadSSAOMaterial(App::resource_loader());
         RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::Red8);
 
         void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)
@@ -344,7 +344,7 @@ private:
     } m_SSAO;
 
     struct BlurRenderingState final {
-        Material material = LoadBlurMaterial();
+        Material material = LoadBlurMaterial(App::resource_loader());
         RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::Red8);
 
         void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)
@@ -355,7 +355,7 @@ private:
     } m_Blur;
 
     struct LightingRenderingState final {
-        Material material = LoadLightingMaterial();
+        Material material = LoadLightingMaterial(App::resource_loader());
         RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::ARGB32);
 
         void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)

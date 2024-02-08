@@ -171,20 +171,21 @@ private:
         m_Camera.setProjectionMatrixOverride(std::nullopt);
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
     MouseCapturingCamera m_Camera = CreateCamera();
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
-        App::load_resource("oscar_learnopengl/textures/wood.png"),
+        m_Loader.open("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
     Mesh m_CubeMesh = GenerateCubeMesh();
     Mesh m_PlaneMesh = GeneratePlaneMesh();
     Material m_SceneMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.frag"),
     }};
     Material m_DepthMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.frag"),
     }};
     RenderTexture m_DepthTexture = CreateDepthTexture();
     Mat4 m_LatestLightSpaceMatrix = Identity<Mat4>();

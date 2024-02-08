@@ -73,11 +73,11 @@ namespace
         return rv;
     }
 
-    Material LoadGBufferMaterial()
+    Material LoadGBufferMaterial(IResourceLoader& rl)
     {
         return Material{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.frag"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.vert"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.frag"),
         }};
     }
 
@@ -100,7 +100,12 @@ namespace
     }
 
     struct GBufferRenderingState final {
-        Material material = LoadGBufferMaterial();
+
+        GBufferRenderingState(IResourceLoader& rl) :
+            material{LoadGBufferMaterial(rl)}
+        {}
+
+        Material material;
         RenderTexture albedo = RenderTextureWithColorFormat(RenderTextureFormat::ARGB32);
         RenderTexture normal = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
         RenderTexture position = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
@@ -146,10 +151,15 @@ namespace
     };
 
     struct LightPassState final {
-        Material material{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.frag"),
-        }};
+
+        LightPassState(IResourceLoader& rl) :
+            material{Shader{
+                rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.vert"),
+                rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.frag"),
+            }}
+        {}
+
+        Material material;
     };
 }
 
@@ -283,6 +293,8 @@ private:
         m_Camera.renderTo(t);
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
+
     // scene state
     std::vector<Vec3> m_LightPositions = GenerateNSceneLightPositions(c_NumLights);
     std::vector<Vec3> m_LightColors = GenerateNSceneLightColors(c_NumLights);
@@ -290,23 +302,23 @@ private:
     Mesh m_CubeMesh = GenerateCubeMesh();
     Mesh m_QuadMesh = GenerateTexturedQuadMesh();
     Texture2D m_DiffuseMap = LoadTexture2DFromImage(
-        App::load_resource("oscar_learnopengl/textures/container2.png"),
+        m_Loader.open("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB,
         ImageLoadingFlags::FlipVertically
     );
     Texture2D m_SpecularMap = LoadTexture2DFromImage(
-        App::load_resource("oscar_learnopengl/textures/container2_specular.png"),
+        m_Loader.open("oscar_learnopengl/textures/container2_specular.png"),
         ColorSpace::sRGB,
         ImageLoadingFlags::FlipVertically
     );
 
     // rendering state
-    GBufferRenderingState m_GBuffer;
-    LightPassState m_LightPass;
+    GBufferRenderingState m_GBuffer{m_Loader};
+    LightPassState m_LightPass{m_Loader};
 
     Material m_LightBoxMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightBox.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightBox.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightBox.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightBox.frag"),
     }};
 
     RenderTexture m_OutputTexture;
