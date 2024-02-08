@@ -23,6 +23,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   documentation look a little nicer
 - Internal: the engine now uses strongly-typed angles (`osc::Radians` and `osc::Degrees`) to reduce
   unit mismatches in the source code
+- Internal: the test suite now automatically exercises all available UI tabs (mesh warper, model
+  editor, etc.) tabs to ensure they are always working
 
 ## [0.5.7] - 2023/01/11
 

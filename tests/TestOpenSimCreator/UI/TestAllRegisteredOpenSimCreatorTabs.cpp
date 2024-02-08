@@ -1,4 +1,4 @@
-#include <oscar_demos/OscarDemosTabRegistry.hpp>
+#include <OpenSimCreator/UI/OpenSimCreatorTabRegistry.hpp>
 
 #include <oscar/oscar.hpp>
 
@@ -16,7 +16,7 @@ namespace {
     TabRegistry const c_Tabs = []()
     {
         TabRegistry r;
-        RegisterDemoTabs(r);
+        RegisterOpenSimCreatorTabs(r);
         return r;
     }();
 
@@ -31,7 +31,7 @@ namespace {
     }();
 
     std::unique_ptr<App> g_App;
-    class RegisteredDemoTabsFixture : public testing::TestWithParam<std::string> {
+    class RegisteredOpenSimCreatorTabsFixture : public testing::TestWithParam<std::string> {
     protected:
         static void SetUpTestSuite()
         {
@@ -46,12 +46,12 @@ namespace {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    RegisteredDemoTabsTest,
-    RegisteredDemoTabsFixture,
+    RegisteredOpenSimCreatorTabsTest,
+    RegisteredOpenSimCreatorTabsFixture,
     testing::ValuesIn(c_TabNames)
 );
 
-TEST_P(RegisteredDemoTabsFixture, Check)
+TEST_P(RegisteredOpenSimCreatorTabsFixture, Check)
 {
     std::string s = GetParam();
     if (auto entry = c_Tabs.getByName(s)) {
