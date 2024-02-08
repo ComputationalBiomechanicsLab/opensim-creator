@@ -40,6 +40,10 @@ namespace osc
         {
             return ResourcePath{lhs.m_Path / rhs};
         }
+        friend std::ostream& operator<<(std::ostream& os, ResourcePath const& p)
+        {
+            return os << p.m_Path;
+        }
     private:
         friend struct std::hash<osc::ResourcePath>;
         std::filesystem::path m_Path;
