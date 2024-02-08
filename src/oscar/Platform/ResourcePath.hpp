@@ -3,6 +3,7 @@
 #include <concepts>
 #include <filesystem>
 #include <string>
+#include <string_view>
 #include <utility>
 
 namespace osc
@@ -18,6 +19,16 @@ namespace osc
         std::string string() const
         {
             return m_Path.string();
+        }
+
+        bool hasExtension(std::string_view ext) const
+        {
+            return m_Path.extension() == ext;
+        }
+
+        std::string stem() const
+        {
+            return m_Path.stem().string();
         }
 
         friend bool operator==(ResourcePath const&, ResourcePath const&) = default;

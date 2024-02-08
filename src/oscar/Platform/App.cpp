@@ -143,16 +143,40 @@ namespace
             m_Config{std::move(config_)}
         {}
 
+    private:
+        std::filesystem::path filesystemPath(ResourcePath const& p) const
+        {
+            return std::filesystem::weakly_canonical(m_Config->getResourceDir() / p.string());
+        }
+
         ResourceStream implOpen(ResourcePath const& p)
         {
             if (log_level() <= LogLevel::debug) {
                 log_debug("opening %s", p.string().c_str());
             }
-
-            auto fsPath = std::filesystem::weakly_canonical(m_Config->getResourceDir() / p.string());
-            return ResourceStream{fsPath};
+            return ResourceStream{filesystemPath(p)};
         }
-    private:
+
+        std::function<std::optional<ResourceDirectoryEntry>()> implIterateDirectory(ResourcePath const& p)
+        {
+            using std::begin;
+            using std::end;
+
+            std::filesystem::path dirRoot = filesystemPath(p);
+            std::filesystem::directory_iterator iterable{filesystemPath(p)};
+            return [p, dirRoot, beg = begin(iterable), en = end(iterable)]() mutable -> std::optional<ResourceDirectoryEntry>
+            {
+                if (beg != en) {
+                    auto relpath = std::filesystem::relative(beg->path(), dirRoot);
+                    ResourceDirectoryEntry rv{relpath.string(), beg->is_directory()};
+                    ++beg;
+                    return rv;
+                } else {
+                    return std::nullopt;
+                }
+            };
+        }
+
         std::shared_ptr<AppConfig> m_Config;
     };
 }

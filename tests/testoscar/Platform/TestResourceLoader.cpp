@@ -2,9 +2,11 @@
 
 #include <gtest/gtest.h>
 #include <oscar/Platform/IResourceLoader.hpp>
+#include <oscar/Platform/ResourceDirectoryEntry.hpp>
 #include <oscar/Platform/ResourcePath.hpp>
 #include <oscar/Platform/ResourceStream.hpp>
 
+#include <functional>
 #include <memory>
 #include <optional>
 #include <utility>
@@ -27,6 +29,11 @@ namespace
         {
             m_State->lastOpenCallArg = p;
             return ResourceStream{};
+        }
+
+        std::function<std::optional<ResourceDirectoryEntry>()> implIterateDirectory(ResourcePath const&) override
+        {
+            return []() { return std::nullopt; };
         }
 
         std::shared_ptr<MockState> m_State;

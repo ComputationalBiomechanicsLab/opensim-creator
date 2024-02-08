@@ -16,6 +16,7 @@
 #include <oscar/Platform/LogMessageView.hpp>
 #include <oscar/Platform/LogSink.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Platform/ResourceDirectoryEntry.hpp>
 #include <oscar/Platform/ResourceLoader.hpp>
 #include <oscar/Platform/ResourcePath.hpp>
 #include <oscar/Platform/ResourceStream.hpp>

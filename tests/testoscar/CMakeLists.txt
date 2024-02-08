@@ -57,6 +57,7 @@ add_executable(testoscar
     Object/TestPropertyInfo.cpp
 
     Platform/TestAppSettingValueType.cpp
+    Platform/TestResourceDirectoryEntry.cpp
     Platform/TestResourceLoader.cpp
     Platform/TestResourcePath.cpp
     Platform/TestResourceStream.cpp

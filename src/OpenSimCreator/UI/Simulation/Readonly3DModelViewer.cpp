@@ -187,7 +187,7 @@ private:
 
     // overlay-related data
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
-        App::resourceFilepath("icons/"),
+        App::resource_loader().withPrefix("icons/"),
         ImGui::GetTextLineHeight()/128.0f
     );
     GuiRuler m_Ruler;

@@ -1,13 +1,12 @@
-#include "ResourceLoader.hpp"
+#include "IResourceLoader.hpp"
 
+#include <istream>
 #include <iterator>
 #include <string>
 
-using namespace osc;
-
-std::string osc::ResourceLoader::slurp(ResourcePath const& rp)
+std::string osc::IResourceLoader::slurp(ResourcePath const& rp)
 {
-    auto fd = open(m_Prefix / rp);
+    auto fd = open(rp);
 
     // https://stackoverflow.com/questions/2602013/read-whole-ascii-file-into-c-stdstring
 
@@ -20,7 +19,7 @@ std::string osc::ResourceLoader::slurp(ResourcePath const& rp)
 
     rv.assign(
         (std::istreambuf_iterator<char>{fd}),
-        std::istreambuf_iterator<char>{}
+         std::istreambuf_iterator<char>{}
     );
 
     return rv;
