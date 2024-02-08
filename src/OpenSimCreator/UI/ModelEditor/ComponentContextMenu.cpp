@@ -39,27 +39,29 @@
 #include <string>
 #include <utility>
 
+using namespace osc;
+
 // helpers
 namespace
 {
     // draw UI element that lets user change a model joint's type
     void DrawSelectionJointTypeSwitcher(
-        osc::UndoableModelStatePair& uim,
+        UndoableModelStatePair& uim,
         OpenSim::ComponentPath const& jointPath)
     {
-        auto const* joint = osc::FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
+        auto const* joint = FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
         if (!joint)
         {
             return;
         }
 
-        auto const& registry = osc::GetComponentRegistry<OpenSim::Joint>();
+        auto const& registry = GetComponentRegistry<OpenSim::Joint>();
 
         std::optional<ptrdiff_t> selectedIdx;
         if (ImGui::BeginMenu("Change Joint Type"))
         {
             // look the Joint up in the type registry so we know where it should be in the ImGui::Combo
-            std::optional<size_t> maybeTypeIndex = osc::IndexOf(registry, *joint);
+            std::optional<size_t> maybeTypeIndex = IndexOf(registry, *joint);
 
             for (ptrdiff_t i = 0; i < std::ssize(registry); ++i)
             {
@@ -80,7 +82,7 @@ namespace
         if (selectedIdx && *selectedIdx < std::ssize(registry))
         {
             // copy + fixup  a prototype of the user's selection
-            osc::ActionChangeJointTypeTo(
+            ActionChangeJointTypeTo(
                 uim,
                 jointPath,
                 registry[*selectedIdx].instantiate()
@@ -90,17 +92,17 @@ namespace
 
     // draw contextual actions (buttons, sliders) for a selected physical frame
     void DrawPhysicalFrameContextualActions(
-        osc::IEditorAPI* editorAPI,
-        std::shared_ptr<osc::UndoableModelStatePair> const& uim,
+        IEditorAPI* editorAPI,
+        std::shared_ptr<UndoableModelStatePair> const& uim,
         OpenSim::ComponentPath const& pfPath)
     {
-        if (auto const* pf = osc::FindComponent<OpenSim::PhysicalFrame>(uim->getModel(), pfPath))
+        if (auto const* pf = FindComponent<OpenSim::PhysicalFrame>(uim->getModel(), pfPath))
         {
-            osc::DrawCalculateMenu(
+            DrawCalculateMenu(
                 uim->getModel(),
                 uim->getState(),
                 *pf,
-                osc::CalculateMenuFlags::NoCalculatorIcon
+                CalculateMenuFlags::NoCalculatorIcon
             );
         }
 
@@ -108,29 +110,29 @@ namespace
         {
             std::function<void(std::unique_ptr<OpenSim::Geometry>)> const callback = [uim, pfPath](auto geom)
             {
-                osc::ActionAttachGeometryToPhysicalFrame(*uim, pfPath, std::move(geom));
+                ActionAttachGeometryToPhysicalFrame(*uim, pfPath, std::move(geom));
             };
-            auto p = std::make_unique<osc::SelectGeometryPopup>(
+            auto p = std::make_unique<SelectGeometryPopup>(
                 "select geometry to attach",
-                osc::App::resource("geometry"),
+                App::resourceFilepath("geometry"),
                 callback
             );
             p->open();
             editorAPI->pushPopup(std::move(p));
         }
-        osc::DrawTooltipIfItemHovered("Add Geometry", "Add geometry to this component. Geometry can be removed by selecting it in the navigator and pressing DELETE");
+        DrawTooltipIfItemHovered("Add Geometry", "Add geometry to this component. Geometry can be removed by selecting it in the navigator and pressing DELETE");
 
         if (ImGui::MenuItem("Add Offset Frame"))
         {
-            osc::ActionAddOffsetFrameToPhysicalFrame(*uim, pfPath);
+            ActionAddOffsetFrameToPhysicalFrame(*uim, pfPath);
         }
-        osc::DrawTooltipIfItemHovered("Add Offset Frame", "Add an OpenSim::OffsetFrame as a child of this Component. Other components in the model can then connect to this OffsetFrame, rather than the base Component, so that it can connect at some offset that is relative to the parent Component");
+        DrawTooltipIfItemHovered("Add Offset Frame", "Add an OpenSim::OffsetFrame as a child of this Component. Other components in the model can then connect to this OffsetFrame, rather than the base Component, so that it can connect at some offset that is relative to the parent Component");
     }
 
 
     // draw contextual actions (buttons, sliders) for a selected joint
     void DrawJointContextualActions(
-        osc::UndoableModelStatePair& uim,
+        UndoableModelStatePair& uim,
         OpenSim::ComponentPath const& jointPath)
     {
         DrawSelectionJointTypeSwitcher(uim, jointPath);
@@ -139,40 +141,40 @@ namespace
         {
             if (ImGui::MenuItem("Rezero Joint"))
             {
-                osc::ActionRezeroJoint(uim, jointPath);
+                ActionRezeroJoint(uim, jointPath);
             }
-            osc::DrawTooltipIfItemHovered("Re-zero the joint", "Given the joint's current geometry due to joint defaults, coordinate defaults, and any coordinate edits made in the coordinates panel, this will reorient the joint's parent (if it's an offset frame) to match the child's transformation. Afterwards, it will then resets all of the joints coordinates to zero. This effectively sets the 'zero point' of the joint (i.e. the geometry when all coordinates are zero) to match whatever the current geometry is.");
+            DrawTooltipIfItemHovered("Re-zero the joint", "Given the joint's current geometry due to joint defaults, coordinate defaults, and any coordinate edits made in the coordinates panel, this will reorient the joint's parent (if it's an offset frame) to match the child's transformation. Afterwards, it will then resets all of the joints coordinates to zero. This effectively sets the 'zero point' of the joint (i.e. the geometry when all coordinates are zero) to match whatever the current geometry is.");
         }
 
         if (ImGui::MenuItem("Add Parent Offset Frame"))
         {
-            osc::ActionAddParentOffsetFrameToJoint(uim, jointPath);
+            ActionAddParentOffsetFrameToJoint(uim, jointPath);
         }
 
         if (ImGui::MenuItem("Add Child Offset Frame"))
         {
-            osc::ActionAddChildOffsetFrameToJoint(uim, jointPath);
+            ActionAddChildOffsetFrameToJoint(uim, jointPath);
         }
 
         if (ImGui::MenuItem("Toggle Frame Visibility"))
         {
-            osc::ActionToggleFrames(uim);
+            ActionToggleFrames(uim);
         }
     }
 
     // draw contextual actions (buttons, sliders) for a selected joint
     void DrawHCFContextualActions(
-        osc::IEditorAPI* api,
-        std::shared_ptr<osc::UndoableModelStatePair> const& uim,
+        IEditorAPI* api,
+        std::shared_ptr<UndoableModelStatePair> const& uim,
         OpenSim::ComponentPath const& hcfPath)
     {
-        auto const* const hcf = osc::FindComponent<OpenSim::HuntCrossleyForce>(uim->getModel(), hcfPath);
+        auto const* const hcf = FindComponent<OpenSim::HuntCrossleyForce>(uim->getModel(), hcfPath);
         if (!hcf)
         {
             return;
         }
 
-        if (osc::size(hcf->get_contact_parameters()) > 1)
+        if (size(hcf->get_contact_parameters()) > 1)
         {
             return;  // cannot edit: has more than one HuntCrossleyForce::Parameter
         }
@@ -181,71 +183,71 @@ namespace
         {
             auto onSelection = [uim, hcfPath](OpenSim::ComponentPath const& geomPath)
             {
-                osc::ActionAssignContactGeometryToHCF(*uim, hcfPath, geomPath);
+                ActionAssignContactGeometryToHCF(*uim, hcfPath, geomPath);
             };
             auto filter = [](OpenSim::Component const& c) -> bool
             {
                 return dynamic_cast<OpenSim::ContactGeometry const*>(&c) != nullptr;
             };
-            auto popup = std::make_unique<osc::SelectComponentPopup>("Select Contact Geometry", uim, onSelection, filter);
+            auto popup = std::make_unique<SelectComponentPopup>("Select Contact Geometry", uim, onSelection, filter);
             popup->open();
             api->pushPopup(std::move(popup));
         }
-        osc::DrawTooltipIfItemHovered("Add Contact Geometry", "Add OpenSim::ContactGeometry to this OpenSim::HuntCrossleyForce.\n\nCollisions are evaluated for all OpenSim::ContactGeometry attached to the OpenSim::HuntCrossleyForce. E.g. if you want an OpenSim::ContactSphere component to collide with an OpenSim::ContactHalfSpace component during a simulation then you should add both of those components to this force");
+        DrawTooltipIfItemHovered("Add Contact Geometry", "Add OpenSim::ContactGeometry to this OpenSim::HuntCrossleyForce.\n\nCollisions are evaluated for all OpenSim::ContactGeometry attached to the OpenSim::HuntCrossleyForce. E.g. if you want an OpenSim::ContactSphere component to collide with an OpenSim::ContactHalfSpace component during a simulation then you should add both of those components to this force");
     }
 
     // draw contextual actions (buttons, sliders) for a selected path actuator
     void DrawPathActuatorContextualParams(
-        osc::IEditorAPI* api,
-        std::shared_ptr<osc::UndoableModelStatePair> const& uim,
+        IEditorAPI* api,
+        std::shared_ptr<UndoableModelStatePair> const& uim,
         OpenSim::ComponentPath const& paPath)
     {
         if (ImGui::MenuItem("Add Path Point"))
         {
-            auto onSelection = [uim, paPath](OpenSim::ComponentPath const& pfPath) { osc::ActionAddPathPointToPathActuator(*uim, paPath, pfPath); };
-            auto popup = std::make_unique<osc::Select1PFPopup>("Select Physical Frame", uim, onSelection);
+            auto onSelection = [uim, paPath](OpenSim::ComponentPath const& pfPath) { ActionAddPathPointToPathActuator(*uim, paPath, pfPath); };
+            auto popup = std::make_unique<Select1PFPopup>("Select Physical Frame", uim, onSelection);
             popup->open();
             api->pushPopup(std::move(popup));
         }
-        osc::DrawTooltipIfItemHovered("Add Path Point", "Add a new path point, attached to an OpenSim::PhysicalFrame in the model, to the end of the sequence of path points in this OpenSim::PathActuator");
+        DrawTooltipIfItemHovered("Add Path Point", "Add a new path point, attached to an OpenSim::PhysicalFrame in the model, to the end of the sequence of path points in this OpenSim::PathActuator");
     }
 
-    void DrawModelContextualActions(osc::UndoableModelStatePair& uim)
+    void DrawModelContextualActions(UndoableModelStatePair& uim)
     {
         if (ImGui::MenuItem("Toggle Frames"))
         {
-            osc::ActionToggleFrames(uim);
+            ActionToggleFrames(uim);
         }
     }
 
     void DrawPointContextualActions(
-        osc::UndoableModelStatePair& uim,
+        UndoableModelStatePair& uim,
         OpenSim::Point const& point)
     {
-        osc::DrawCalculateMenu(uim.getModel(), uim.getState(), point, osc::CalculateMenuFlags::NoCalculatorIcon);
+        DrawCalculateMenu(uim.getModel(), uim.getState(), point, CalculateMenuFlags::NoCalculatorIcon);
     }
 
     void DrawMeshContextualActions(
-        osc::UndoableModelStatePair& uim,
+        UndoableModelStatePair& uim,
         OpenSim::Mesh const& mesh)
     {
         if (ImGui::BeginMenu("Fit Analytic Geometry to This"))
         {
-            osc::DrawHelpMarker("Uses shape-fitting algorithms to fit analytic geometry to the points in the given mesh.\n\nThe 'htbad'-suffixed algorithms were adapted (potentially, with bugs - report them) from the MATLAB code in:\n\n        Bishop P., How to build a dinosaur..., doi:10.1017/pab.2020.46");
+            DrawHelpMarker("Uses shape-fitting algorithms to fit analytic geometry to the points in the given mesh.\n\nThe 'htbad'-suffixed algorithms were adapted (potentially, with bugs - report them) from the MATLAB code in:\n\n        Bishop P., How to build a dinosaur..., doi:10.1017/pab.2020.46");
 
             if (ImGui::MenuItem("Sphere (htbad)"))
             {
-                osc::ActionFitSphereToMesh(uim, mesh);
+                ActionFitSphereToMesh(uim, mesh);
             }
 
             if (ImGui::MenuItem("Ellipsoid (htbad)"))
             {
-                osc::ActionFitEllipsoidToMesh(uim, mesh);
+                ActionFitEllipsoidToMesh(uim, mesh);
             }
 
             if (ImGui::MenuItem("Plane (htbad)"))
             {
-                osc::ActionFitPlaneToMesh(uim, mesh);
+                ActionFitPlaneToMesh(uim, mesh);
             }
 
             ImGui::EndMenu();
@@ -253,34 +255,34 @@ namespace
 
         if (ImGui::BeginMenu("Export"))
         {
-            osc::DrawMeshExportContextMenuContent(uim, mesh);
+            DrawMeshExportContextMenuContent(uim, mesh);
             ImGui::EndMenu();
         }
     }
 
     void DrawGeometryContextualActions(
-        osc::UndoableModelStatePair& uim,
+        UndoableModelStatePair& uim,
         OpenSim::Geometry const& geometry)
     {
-        osc::DrawCalculateMenu(
+        DrawCalculateMenu(
             uim.getModel(),
             uim.getState(),
             geometry,
-            osc::CalculateMenuFlags::NoCalculatorIcon
+            CalculateMenuFlags::NoCalculatorIcon
         );
     }
 
     bool AnyDescendentInclusiveHasAppearanceProperty(OpenSim::Component const& component)
     {
-        OpenSim::Component const* const c = osc::FindFirstDescendentInclusive(
+        OpenSim::Component const* const c = FindFirstDescendentInclusive(
             component,
-            [](OpenSim::Component const& desc) -> bool { return osc::TryGetAppearance(desc) != nullptr; }
+            [](OpenSim::Component const& desc) -> bool { return TryGetAppearance(desc) != nullptr; }
         );
         return c != nullptr;
     }
 }
 
-class osc::ComponentContextMenu::Impl final : public osc::StandardPopup {
+class osc::ComponentContextMenu::Impl final : public StandardPopup {
 public:
     Impl(
         std::string_view popupName_,
@@ -302,7 +304,7 @@ public:
 private:
     void implDrawContent() final
     {
-        OpenSim::Component const* c = osc::FindComponent(m_Model->getModel(), m_Path);
+        OpenSim::Component const* c = FindComponent(m_Model->getModel(), m_Path);
         if (!c)
         {
             // draw context menu content that's shown when nothing was right-clicked
@@ -324,9 +326,9 @@ private:
             {
                 if (ImGui::MenuItem("Show All"))
                 {
-                    osc::ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, osc::GetRootComponentPath(), true);
+                    ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetRootComponentPath(), true);
                 }
-                osc::DrawTooltipIfItemHovered("Show All", "Sets the visiblity of all components within the model to 'visible', handy for undoing selective hiding etc.");
+                DrawTooltipIfItemHovered("Show All", "Sets the visiblity of all components within the model to 'visible', handy for undoing selective hiding etc.");
                 ImGui::EndMenu();
             }
             return;
@@ -354,7 +356,7 @@ private:
                 }
                 if (ImGui::MenuItem("Show"))
                 {
-                    osc::ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, osc::GetAbsolutePath(*c), true);
+                    ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetAbsolutePath(*c), true);
                 }
                 if (shouldDisable)
                 {
@@ -369,7 +371,7 @@ private:
                 }
                 if (ImGui::MenuItem("Show Only This"))
                 {
-                    osc::ActionShowOnlyComponentAndAllChildren(*m_Model, osc::GetAbsolutePath(*c));
+                    ActionShowOnlyComponentAndAllChildren(*m_Model, GetAbsolutePath(*c));
                 }
                 if (shouldDisable)
                 {
@@ -384,7 +386,7 @@ private:
                 }
                 if (ImGui::MenuItem("Hide"))
                 {
-                    osc::ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, osc::GetAbsolutePath(*c), false);
+                    ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetAbsolutePath(*c), false);
                 }
                 if (shouldDisable)
                 {
@@ -401,7 +403,7 @@ private:
             // model
             if (ImGui::MenuItem("Show All"))
             {
-                osc::ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, osc::GetRootComponentPath(), true);
+                ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetRootComponentPath(), true);
             }
 
             {
@@ -412,7 +414,7 @@ private:
                 {
                     ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
                         *m_Model,
-                        osc::GetAbsolutePath(m_Model->getModel()),
+                        GetAbsolutePath(m_Model->getModel()),
                         c->getConcreteClassName(),
                         true
                     );
@@ -427,7 +429,7 @@ private:
                 {
                     ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
                         *m_Model,
-                        osc::GetAbsolutePath(m_Model->getModel()),
+                        GetAbsolutePath(m_Model->getModel()),
                         c->getConcreteClassName(),
                         false
                     );
@@ -438,10 +440,10 @@ private:
 
         if (ImGui::MenuItem("Copy Absolute Path to Clipboard"))
         {
-            std::string const path = osc::GetAbsolutePathString(*c);
-            osc::SetClipboardText(path.c_str());
+            std::string const path = GetAbsolutePathString(*c);
+            SetClipboardText(path.c_str());
         }
-        osc::DrawTooltipIfItemHovered("Copy Component Absolute Path", "Copy the absolute path to this component to your clipboard.\n\n(This is handy if you are separately using absolute component paths to (e.g.) manipulate the model in a script or something)");
+        DrawTooltipIfItemHovered("Copy Component Absolute Path", "Copy the absolute path to this component to your clipboard.\n\n(This is handy if you are separately using absolute component paths to (e.g.) manipulate the model in a script or something)");
 
         drawSocketMenu(*c);
 
@@ -488,7 +490,7 @@ private:
     {
         if (ImGui::BeginMenu("Sockets"))
         {
-            std::vector<std::string> socketNames = osc::GetSocketNames(c);
+            std::vector<std::string> socketNames = GetSocketNames(c);
 
             if (!socketNames.empty())
             {
@@ -531,7 +533,7 @@ private:
                             auto popup = std::make_unique<ReassignSocketPopup>(
                                 "Reassign " + socket.getName(),
                                 m_Model,
-                                osc::GetAbsolutePathString(c),
+                                GetAbsolutePathString(c),
                                 socketName
                             );
                             popup->open();

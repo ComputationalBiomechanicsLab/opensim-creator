@@ -41,7 +41,7 @@ osc::MainMenuFileTab::MainMenuFileTab() :
     exampleOsimFiles
     {
         FindFilesWithExtensionsRecursive(
-            App::resource("models"),
+            App::resourceFilepath("models"),
             std::to_array({std::string_view{".osim"}})
         )
     }
@@ -57,7 +57,7 @@ void osc::MainMenuFileTab::onDraw(
     {
         auto const& io = ImGui::GetIO();
 
-        bool mod = osc::IsCtrlOrSuperDown();
+        bool mod = IsCtrlOrSuperDown();
 
         if (mod && ImGui::IsKeyPressed(ImGuiKey_N))
         {
@@ -140,20 +140,20 @@ void osc::MainMenuFileTab::onDraw(
 
     if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Load Motion", nullptr, false, maybeModel != nullptr))
     {
-        std::optional<std::filesystem::path> maybePath = osc::PromptUserForFile("sto,mot");
+        std::optional<std::filesystem::path> maybePath = PromptUserForFile("sto,mot");
         if (maybePath && maybeModel)
         {
             try
             {
                 std::unique_ptr<OpenSim::Model> cpy = std::make_unique<OpenSim::Model>(maybeModel->getModel());
-                osc::InitializeModel(*cpy);
-                osc::InitializeState(*cpy);
+                InitializeModel(*cpy);
+                InitializeState(*cpy);
 
-                api->addAndSelectTab<SimulatorTab>(api, std::make_shared<Simulation>(osc::StoFileSimulation{std::move(cpy), *maybePath, maybeModel->getFixupScaleFactor()}));
+                api->addAndSelectTab<SimulatorTab>(api, std::make_shared<Simulation>(StoFileSimulation{std::move(cpy), *maybePath, maybeModel->getFixupScaleFactor()}));
             }
             catch (std::exception const& ex)
             {
-                log::error("encountered error while trying to load an STO file against the model: %s", ex.what());
+                log_error("encountered error while trying to load an STO file against the model: %s", ex.what());
             }
         }
     }
@@ -179,30 +179,30 @@ void osc::MainMenuFileTab::onDraw(
     ImGui::Separator();
 
     {
-        bool const modelHasBackingFile = maybeModel != nullptr && osc::HasInputFileName(maybeModel->getModel());
+        bool const modelHasBackingFile = maybeModel != nullptr && HasInputFileName(maybeModel->getModel());
 
         if (ImGui::MenuItem(ICON_FA_RECYCLE " Reload", "F5", false, modelHasBackingFile) && maybeModel)
         {
-            osc::ActionReloadOsimFromDisk(*maybeModel, *App::singleton<SceneCache>());
+            ActionReloadOsimFromDisk(*maybeModel, *App::singleton<SceneCache>());
         }
-        osc::DrawTooltipIfItemHovered("Reload", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
+        DrawTooltipIfItemHovered("Reload", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
 
         if (ImGui::MenuItem(ICON_FA_CLIPBOARD " Copy .osim path to clipboard", nullptr, false, modelHasBackingFile) && maybeModel)
         {
-            osc::ActionCopyModelPathToClipboard(*maybeModel);
+            ActionCopyModelPathToClipboard(*maybeModel);
         }
-        osc::DrawTooltipIfItemHovered("Copy .osim path to clipboard", "Copies the absolute path to the model's .osim file into your clipboard.\n\nThis is handy if you want to (e.g.) load the osim via a script, open it from the command line in another app, etc.");
+        DrawTooltipIfItemHovered("Copy .osim path to clipboard", "Copies the absolute path to the model's .osim file into your clipboard.\n\nThis is handy if you want to (e.g.) load the osim via a script, open it from the command line in another app, etc.");
 
         if (ImGui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", nullptr, false, modelHasBackingFile) && maybeModel)
         {
-            osc::ActionOpenOsimParentDirectory(*maybeModel);
+            ActionOpenOsimParentDirectory(*maybeModel);
         }
 
         if (ImGui::MenuItem(ICON_FA_LINK " Open .osim in external editor", nullptr, false, modelHasBackingFile) && maybeModel)
         {
-            osc::ActionOpenOsimInExternalEditor(*maybeModel);
+            ActionOpenOsimInExternalEditor(*maybeModel);
         }
-        osc::DrawTooltipIfItemHovered("Open .osim in external editor", "Open the .osim file currently being edited in an external text editor. The editor that's used depends on your operating system's default for opening .osim files.");
+        DrawTooltipIfItemHovered("Open .osim in external editor", "Open the .osim file currently being edited in an external text editor. The editor that's used depends on your operating system's default for opening .osim files.");
     }
 
     // reload
@@ -216,7 +216,7 @@ void osc::MainMenuFileTab::onDraw(
     {
         api->addAndSelectTab<mi::MeshImporterTab>(api);
     }
-    App::upd().addFrameAnnotation("MainMenu/ImportMeshesMenuItem", osc::GetItemRect());
+    App::upd().addFrameAnnotation("MainMenu/ImportMeshesMenuItem", GetItemRect());
 
 
 
@@ -425,7 +425,7 @@ void osc::MainMenuAboutTab::onDraw()
         {
             OpenPathInOSDefaultApplication(App::get().getConfig().getHTMLDocsDir() / "index.html");
         }
-        osc::DrawTooltipBodyOnlyIfItemHovered("this will open the (locally installed) documentation in a separate browser window");
+        DrawTooltipBodyOnlyIfItemHovered("this will open the (locally installed) documentation in a separate browser window");
         ImGui::PopID();
         ImGui::NextColumn();
 
@@ -438,7 +438,7 @@ void osc::MainMenuAboutTab::onDraw()
             {
                 OpenPathInOSDefaultApplication(std::filesystem::path{std::string_view{*repoURL}});
             }
-            osc::DrawTooltipBodyOnlyIfItemHovered("this will open the repository homepage in a separate browser window");
+            DrawTooltipBodyOnlyIfItemHovered("this will open the repository homepage in a separate browser window");
             ImGui::PopID();
             ImGui::NextColumn();
         }
@@ -450,7 +450,7 @@ void osc::MainMenuAboutTab::onDraw()
         {
             OpenPathInOSDefaultApplication("https://simtk-confluence.stanford.edu/display/OpenSim/Documentation");
         }
-        osc::DrawTooltipBodyOnlyIfItemHovered("this will open the documentation in a separate browser window");
+        DrawTooltipBodyOnlyIfItemHovered("this will open the documentation in a separate browser window");
         ImGui::PopID();
         ImGui::NextColumn();
 

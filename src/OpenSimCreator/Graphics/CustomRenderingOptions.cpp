@@ -9,6 +9,8 @@
 #include <cstddef>
 #include <cstdint>
 
+using namespace osc;
+
 size_t osc::CustomRenderingOptions::getNumOptions() const
 {
     return NumFlags<CustomRenderingOptionFlags>();
@@ -24,7 +26,7 @@ void osc::CustomRenderingOptions::setOptionValue(ptrdiff_t i, bool v)
     SetOption(m_Flags, CustomRenderingIthOption(i), v);
 }
 
-osc::CStringView osc::CustomRenderingOptions::getOptionLabel(ptrdiff_t i) const
+CStringView osc::CustomRenderingOptions::getOptionLabel(ptrdiff_t i) const
 {
     return At(GetAllCustomRenderingOptionFlagsMetadata(), i).label;
 }

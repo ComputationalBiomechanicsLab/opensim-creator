@@ -85,34 +85,6 @@ std::vector<std::filesystem::path> osc::FindFilesRecursive(
     return rv;
 }
 
-std::string osc::SlurpFileIntoString(std::filesystem::path const& p)
-{
-    std::ifstream f{p, std::ios::binary | std::ios::in};
-
-    if (!f)
-    {
-        std::stringstream msg;
-        msg << p << ": error opening file: " << CurrentErrnoAsString();
-        throw std::runtime_error{std::move(msg).str()};
-    }
-
-    f.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
-    std::stringstream ss;
-    try
-    {
-        ss << f.rdbuf();
-    }
-    catch (std::exception const& ex)
-    {
-        std::stringstream msg;
-        msg << p << ": error reading file: " << ex.what() << "(strerror = " << CurrentErrnoAsString() << ')';
-        throw std::runtime_error{std::move(msg).str()};
-    }
-
-    return std::move(ss).str();
-}
-
 bool osc::IsFilenameLexographicallyGreaterThan(std::filesystem::path const& p1, std::filesystem::path const& p2)
 {
     return IsStringCaseInsensitiveGreaterThan(p1.filename().string(), p2.filename().string());

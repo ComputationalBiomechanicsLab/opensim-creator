@@ -6,32 +6,34 @@
 #include <cstddef>
 #include <span>
 
+using namespace osc;
+
 namespace
 {
-    constexpr auto c_Metadata = std::to_array<osc::MuscleSizingStyleMetadata>(
+    constexpr auto c_Metadata = std::to_array<MuscleSizingStyleMetadata>(
     {
-        osc::MuscleSizingStyleMetadata
+        MuscleSizingStyleMetadata
         {
             "opensim",
             "OpenSim",
-            osc::MuscleSizingStyle::OpenSim,
+            MuscleSizingStyle::OpenSim,
         },
-        osc::MuscleSizingStyleMetadata
+        MuscleSizingStyleMetadata
         {
             "pcsa_derived",
             "PCSA-derived",
-            osc::MuscleSizingStyle::PcsaDerived,
+            MuscleSizingStyle::PcsaDerived,
         },
     });
-    static_assert(c_Metadata.size() == osc::NumOptions<osc::MuscleSizingStyle>());
+    static_assert(c_Metadata.size() == NumOptions<MuscleSizingStyle>());
 }
 
-std::span<osc::MuscleSizingStyleMetadata const> osc::GetAllMuscleSizingStyleMetadata()
+std::span<MuscleSizingStyleMetadata const> osc::GetAllMuscleSizingStyleMetadata()
 {
     return c_Metadata;
 }
 
-osc::MuscleSizingStyleMetadata const& osc::GetMuscleSizingStyleMetadata(MuscleSizingStyle s)
+MuscleSizingStyleMetadata const& osc::GetMuscleSizingStyleMetadata(MuscleSizingStyle s)
 {
     return GetAllMuscleSizingStyleMetadata()[GetIndexOf(s)];
 }

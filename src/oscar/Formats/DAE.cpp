@@ -19,16 +19,7 @@
 #include <string_view>
 #include <unordered_map>
 
-using osc::Color;
-using osc::DAEMetadata;
-using osc::Mat4;
-using osc::Mesh;
-using osc::MeshTopology;
-using osc::SceneDecoration;
-using osc::Transform;
-using osc::ValuePtr;
-using osc::Vec2;
-using osc::Vec3;
+using namespace osc;
 
 // scene-to-graph conversion stuff
 namespace

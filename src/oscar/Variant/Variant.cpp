@@ -17,10 +17,7 @@
 #include <utility>
 #include <variant>
 
-using osc::IsEqualCaseInsensitive;
-using osc::Overload;
-using osc::Variant;
-using osc::VariantType;
+using namespace osc;
 
 namespace
 {

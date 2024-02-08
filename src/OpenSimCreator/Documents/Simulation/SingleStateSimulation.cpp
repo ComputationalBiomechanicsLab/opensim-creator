@@ -6,6 +6,8 @@
 #include <oscar/Utils/SynchronizedValue.hpp>
 #include <oscar/Utils/SynchronizedValueGuard.hpp>
 
+using namespace osc;
+
 class osc::SingleStateSimulation::Impl final {
 public:
     explicit Impl(BasicModelStatePair modelState) :
@@ -102,7 +104,7 @@ osc::SingleStateSimulation::SingleStateSimulation(SingleStateSimulation&&) noexc
 osc::SingleStateSimulation& osc::SingleStateSimulation::operator=(SingleStateSimulation&&) noexcept = default;
 osc::SingleStateSimulation::~SingleStateSimulation() noexcept = default;
 
-osc::SynchronizedValueGuard<OpenSim::Model const> osc::SingleStateSimulation::implGetModel() const
+SynchronizedValueGuard<OpenSim::Model const> osc::SingleStateSimulation::implGetModel() const
 {
     return m_Impl->getModel();
 }
@@ -112,32 +114,32 @@ ptrdiff_t osc::SingleStateSimulation::implGetNumReports() const
     return m_Impl->getNumReports();
 }
 
-osc::SimulationReport osc::SingleStateSimulation::implGetSimulationReport(ptrdiff_t reportIndex) const
+SimulationReport osc::SingleStateSimulation::implGetSimulationReport(ptrdiff_t reportIndex) const
 {
     return m_Impl->getSimulationReport(reportIndex);
 }
 
-std::vector<osc::SimulationReport> osc::SingleStateSimulation::implGetAllSimulationReports() const
+std::vector<SimulationReport> osc::SingleStateSimulation::implGetAllSimulationReports() const
 {
     return m_Impl->getAllSimulationReports();
 }
 
-osc::SimulationStatus osc::SingleStateSimulation::implGetStatus() const
+SimulationStatus osc::SingleStateSimulation::implGetStatus() const
 {
     return m_Impl->getStatus();
 }
 
-osc::SimulationClock::time_point osc::SingleStateSimulation::implGetCurTime() const
+SimulationClock::time_point osc::SingleStateSimulation::implGetCurTime() const
 {
     return m_Impl->getCurTime();
 }
 
-osc::SimulationClock::time_point osc::SingleStateSimulation::implGetStartTime() const
+SimulationClock::time_point osc::SingleStateSimulation::implGetStartTime() const
 {
     return m_Impl->getStartTime();
 }
 
-osc::SimulationClock::time_point osc::SingleStateSimulation::implGetEndTime() const
+SimulationClock::time_point osc::SingleStateSimulation::implGetEndTime() const
 {
     return m_Impl->getEndTime();
 }
@@ -147,12 +149,12 @@ float osc::SingleStateSimulation::implGetProgress() const
     return m_Impl->getProgress();
 }
 
-osc::ParamBlock const& osc::SingleStateSimulation::implGetParams() const
+ParamBlock const& osc::SingleStateSimulation::implGetParams() const
 {
     return m_Impl->getParams();
 }
 
-std::span<osc::OutputExtractor const> osc::SingleStateSimulation::implGetOutputExtractors() const
+std::span<OutputExtractor const> osc::SingleStateSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
 }

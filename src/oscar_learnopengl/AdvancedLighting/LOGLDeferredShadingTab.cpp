@@ -2,35 +2,7 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
-#include <imgui.h>
-#include <oscar/Graphics/AntiAliasingLevel.hpp>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/ImageLoadingFlags.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/RenderBufferLoadAction.hpp>
-#include <oscar/Graphics/RenderBufferStoreAction.hpp>
-#include <oscar/Graphics/RenderTarget.hpp>
-#include <oscar/Graphics/RenderTargetColorAttachment.hpp>
-#include <oscar/Graphics/RenderTargetDepthAttachment.hpp>
-#include <oscar/Graphics/RenderTexture.hpp>
-#include <oscar/Graphics/RenderTextureFormat.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Rect.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
 
 #include <algorithm>
@@ -42,24 +14,7 @@
 #include <vector>
 
 using namespace osc::literals;
-using osc::AntiAliasingLevel;
-using osc::App;
-using osc::Color;
-using osc::CStringView;
-using osc::Material;
-using osc::MouseCapturingCamera;
-using osc::RenderBufferLoadAction;
-using osc::RenderBufferStoreAction;
-using osc::RenderTarget;
-using osc::RenderTargetColorAttachment;
-using osc::RenderTargetDepthAttachment;
-using osc::RenderTexture;
-using osc::RenderTextureDescriptor;
-using osc::RenderTextureFormat;
-using osc::Shader;
-using osc::ToLinear;
-using osc::Vec2;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {
@@ -118,11 +73,11 @@ namespace
         return rv;
     }
 
-    Material LoadGBufferMaterial()
+    Material LoadGBufferMaterial(IResourceLoader& rl)
     {
         return Material{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.frag"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.vert"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.frag"),
         }};
     }
 
@@ -136,8 +91,8 @@ namespace
     MouseCapturingCamera CreateCameraThatMatchesLearnOpenGL()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.0f, 5.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setPosition({0.0f, 0.5f, 5.0f});
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor(Color::black());
@@ -145,7 +100,12 @@ namespace
     }
 
     struct GBufferRenderingState final {
-        Material material = LoadGBufferMaterial();
+
+        GBufferRenderingState(IResourceLoader& rl) :
+            material{LoadGBufferMaterial(rl)}
+        {}
+
+        Material material;
         RenderTexture albedo = RenderTextureWithColorFormat(RenderTextureFormat::ARGB32);
         RenderTexture normal = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
         RenderTexture position = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
@@ -191,10 +151,15 @@ namespace
     };
 
     struct LightPassState final {
-        Material material{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.frag"),
-        }};
+
+        LightPassState(IResourceLoader& rl) :
+            material{Shader{
+                rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.vert"),
+                rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.frag"),
+            }}
+        {}
+
+        Material material;
     };
 }
 
@@ -328,6 +293,8 @@ private:
         m_Camera.renderTo(t);
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
+
     // scene state
     std::vector<Vec3> m_LightPositions = GenerateNSceneLightPositions(c_NumLights);
     std::vector<Vec3> m_LightColors = GenerateNSceneLightColors(c_NumLights);
@@ -335,23 +302,23 @@ private:
     Mesh m_CubeMesh = GenerateCubeMesh();
     Mesh m_QuadMesh = GenerateTexturedQuadMesh();
     Texture2D m_DiffuseMap = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/container2.png"),
+        m_Loader.open("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB,
         ImageLoadingFlags::FlipVertically
     );
     Texture2D m_SpecularMap = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/container2_specular.png"),
+        m_Loader.open("oscar_learnopengl/textures/container2_specular.png"),
         ColorSpace::sRGB,
         ImageLoadingFlags::FlipVertically
     );
 
     // rendering state
-    GBufferRenderingState m_GBuffer;
-    LightPassState m_LightPass;
+    GBufferRenderingState m_GBuffer{m_Loader};
+    LightPassState m_LightPass{m_Loader};
 
     Material m_LightBoxMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightBox.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightBox.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightBox.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightBox.frag"),
     }};
 
     RenderTexture m_OutputTexture;
@@ -374,7 +341,7 @@ osc::LOGLDeferredShadingTab::LOGLDeferredShadingTab(LOGLDeferredShadingTab&&) no
 osc::LOGLDeferredShadingTab& osc::LOGLDeferredShadingTab::operator=(LOGLDeferredShadingTab&&) noexcept = default;
 osc::LOGLDeferredShadingTab::~LOGLDeferredShadingTab() noexcept = default;
 
-osc::UID osc::LOGLDeferredShadingTab::implGetID() const
+UID osc::LOGLDeferredShadingTab::implGetID() const
 {
     return m_Impl->getID();
 }

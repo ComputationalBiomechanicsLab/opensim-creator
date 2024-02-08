@@ -2,38 +2,14 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
-#include <imgui.h>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
 
 #include <array>
 #include <memory>
 
 using namespace osc::literals;
-using osc::App;
-using osc::ColorSpace;
-using osc::CStringView;
-using osc::LoadTexture2DFromImage;
-using osc::Material;
-using osc::MouseCapturingCamera;
-using osc::Shader;
-using osc::Texture2D;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {
@@ -60,40 +36,40 @@ namespace
     MouseCapturingCamera CreateCamera()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setPosition({0.0f, 0.0f, 20.0f});
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
 
-    Material CreateMaterial()
+    Material CreateMaterial(IResourceLoader& rl)
     {
         Texture2D albedo = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/pbr/rusted_iron/albedo.png"),
+            rl.open("oscar_learnopengl/textures/pbr/rusted_iron/albedo.png"),
             ColorSpace::sRGB
         );
         Texture2D normal = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/pbr/rusted_iron/normal.png"),
+            rl.open("oscar_learnopengl/textures/pbr/rusted_iron/normal.png"),
             ColorSpace::Linear
         );
         Texture2D metallic = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/pbr/rusted_iron/metallic.png"),
+            rl.open("oscar_learnopengl/textures/pbr/rusted_iron/metallic.png"),
             ColorSpace::Linear
         );
         Texture2D roughness = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/pbr/rusted_iron/roughness.png"),
+            rl.open("oscar_learnopengl/textures/pbr/rusted_iron/roughness.png"),
             ColorSpace::Linear
         );
         Texture2D ao = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/pbr/rusted_iron/ao.png"),
+            rl.open("oscar_learnopengl/textures/pbr/rusted_iron/ao.png"),
             ColorSpace::Linear
         );
 
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.vert"),
-            App::slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.frag"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.vert"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.frag"),
         }};
         rv.setTexture("uAlbedoMap", albedo);
         rv.setTexture("uNormalMap", normal);
@@ -166,9 +142,10 @@ private:
         }
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
     MouseCapturingCamera m_Camera = CreateCamera();
     Mesh m_SphereMesh = GenerateUVSphereMesh(64, 64);
-    Material m_PBRMaterial = CreateMaterial();
+    Material m_PBRMaterial = CreateMaterial(m_Loader);
     PerfPanel m_PerfPanel{"Perf"};
 };
 
@@ -189,7 +166,7 @@ osc::LOGLPBRLightingTexturedTab::LOGLPBRLightingTexturedTab(LOGLPBRLightingTextu
 osc::LOGLPBRLightingTexturedTab& osc::LOGLPBRLightingTexturedTab::operator=(LOGLPBRLightingTexturedTab&&) noexcept = default;
 osc::LOGLPBRLightingTexturedTab::~LOGLPBRLightingTexturedTab() noexcept = default;
 
-osc::UID osc::LOGLPBRLightingTexturedTab::implGetID() const
+UID osc::LOGLPBRLightingTexturedTab::implGetID() const
 {
     return m_Impl->getID();
 }

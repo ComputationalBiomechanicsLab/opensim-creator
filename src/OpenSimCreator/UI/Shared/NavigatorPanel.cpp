@@ -27,6 +27,8 @@
 #include <typeinfo>
 #include <utility>
 
+using namespace osc;
+
 namespace
 {
     // poor-man's abstraction for a constant-sized array
@@ -104,7 +106,7 @@ namespace
         out.clear();
 
         // populate child --> parent
-        for (; child != nullptr; child = osc::GetOwner(*child))
+        for (; child != nullptr; child = GetOwner(*child))
         {
             out.push_back(child);
 
@@ -139,7 +141,7 @@ namespace
     {
         return std::any_of(cp.begin(), cp.end(), [&searchStr](OpenSim::Component const* c)
         {
-            return osc::ContainsCaseInsensitive(c->getName(), searchStr);
+            return ContainsCaseInsensitive(c->getName(), searchStr);
         });
     }
 }
@@ -208,7 +210,7 @@ private:
             ImGui::EndPopup();
         }
         ImGui::SameLine();
-        osc::DrawSearchBar(m_CurrentSearch);
+        DrawSearchBar(m_CurrentSearch);
 
         ImGui::Dummy({0.0f, 3.0f});
         ImGui::Separator();
@@ -280,7 +282,7 @@ private:
                 }
                 else if (auto const* wos = dynamic_cast<OpenSim::WrapObjectSet const*>(&c))
                 {
-                    shouldRender = !osc::empty(*wos);
+                    shouldRender = !empty(*wos);
                 }
                 else if (!ShouldShowInUI(c))
                 {
@@ -321,12 +323,12 @@ private:
             int styles = 0;
             if (cur == selection)
             {
-                osc::PushStyleColor(ImGuiCol_Text, Color::yellow());
+                PushStyleColor(ImGuiCol_Text, Color::yellow());
                 ++styles;
             }
             else if (cur == hover)
             {
-                osc::PushStyleColor(ImGuiCol_Text, Color::yellow());
+                PushStyleColor(ImGuiCol_Text, Color::yellow());
                 ++styles;
             }
             else if (!hasSearch || searchHit)
@@ -335,7 +337,7 @@ private:
             }
             else
             {
-                osc::PushStyleColor(ImGuiCol_Text, Color::halfGrey());
+                PushStyleColor(ImGuiCol_Text, Color::halfGrey());
                 ++styles;
             }
 
@@ -359,7 +361,7 @@ private:
                 rv.type = ResponseType::HoverChanged;
                 rv.ptr = cur;
 
-                osc::DrawTooltip(cur->getConcreteClassName());
+                DrawTooltip(cur->getConcreteClassName());
             }
 
             if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
@@ -370,7 +372,7 @@ private:
 
             if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
             {
-                m_OnRightClick(osc::GetAbsolutePath(*cur));
+                m_OnRightClick(GetAbsolutePath(*cur));
             }
         }
 
@@ -408,7 +410,7 @@ osc::NavigatorPanel::NavigatorPanel(NavigatorPanel&&) noexcept = default;
 osc::NavigatorPanel& osc::NavigatorPanel::operator=(NavigatorPanel&&) noexcept = default;
 osc::NavigatorPanel::~NavigatorPanel() noexcept = default;
 
-osc::CStringView osc::NavigatorPanel::implGetName() const
+CStringView osc::NavigatorPanel::implGetName() const
 {
     return m_Impl->getName();
 }

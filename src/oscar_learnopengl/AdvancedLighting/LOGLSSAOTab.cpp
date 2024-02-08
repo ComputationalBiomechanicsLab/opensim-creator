@@ -2,38 +2,8 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
-#include <oscar/Graphics/AntiAliasingLevel.hpp>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/RenderBufferLoadAction.hpp>
-#include <oscar/Graphics/RenderBufferStoreAction.hpp>
-#include <oscar/Graphics/RenderTarget.hpp>
-#include <oscar/Graphics/RenderTargetColorAttachment.hpp>
-#include <oscar/Graphics/RenderTargetDepthAttachment.hpp>
-#include <oscar/Graphics/RenderTexture.hpp>
-#include <oscar/Graphics/RenderTextureDescriptor.hpp>
-#include <oscar/Graphics/RenderTextureFormat.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Graphics/TextureFilterMode.hpp>
-#include <oscar/Graphics/TextureFormat.hpp>
-#include <oscar/Graphics/TextureWrapMode.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Rect.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/ObjectRepresentation.hpp>
 
 #include <array>
 #include <cstddef>
@@ -43,24 +13,7 @@
 #include <vector>
 
 using namespace osc::literals;
-using osc::App;
-using osc::Color;
-using osc::ColorSpace;
-using osc::CStringView;
-using osc::Material;
-using osc::Mix;
-using osc::MouseCapturingCamera;
-using osc::Normalize;
-using osc::RenderTexture;
-using osc::RenderTextureFormat;
-using osc::Shader;
-using osc::Texture2D;
-using osc::TextureFilterMode;
-using osc::TextureFormat;
-using osc::TextureWrapMode;
-using osc::Vec2i;
-using osc::Vec3;
-using osc::ViewObjectRepresentations;
+using namespace osc;
 
 namespace
 {
@@ -70,7 +23,7 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(50.0f);
         rv.setBackgroundColor(Color::black());
@@ -135,11 +88,11 @@ namespace
         return rv;
     }
 
-    Material LoadGBufferMaterial()
+    Material LoadGBufferMaterial(IResourceLoader& rl)
     {
         return Material{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.frag"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.vert"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.frag"),
         }};
     }
 
@@ -150,27 +103,27 @@ namespace
         return rv;
     }
 
-    Material LoadSSAOMaterial()
+    Material LoadSSAOMaterial(IResourceLoader& rl)
     {
         return Material{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.frag"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.vert"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.frag"),
         }};
     }
 
-    Material LoadBlurMaterial()
+    Material LoadBlurMaterial(IResourceLoader& rl)
     {
         return Material{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.frag"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.vert"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.frag"),
         }};
     }
 
-    Material LoadLightingMaterial()
+    Material LoadLightingMaterial(IResourceLoader& rl)
     {
         return Material{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.frag"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.vert"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.frag"),
         }};
     }
 }
@@ -335,7 +288,7 @@ private:
 
     // rendering state
     struct GBufferRenderingState final {
-        Material material = LoadGBufferMaterial();
+        Material material = LoadGBufferMaterial(App::resource_loader());
         RenderTexture albedo = RenderTextureWithColorFormat(RenderTextureFormat::ARGB32);
         RenderTexture normal = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
         RenderTexture position = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
@@ -380,7 +333,7 @@ private:
     } m_GBuffer;
 
     struct SSAORenderingState final {
-        Material material = LoadSSAOMaterial();
+        Material material = LoadSSAOMaterial(App::resource_loader());
         RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::Red8);
 
         void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)
@@ -391,7 +344,7 @@ private:
     } m_SSAO;
 
     struct BlurRenderingState final {
-        Material material = LoadBlurMaterial();
+        Material material = LoadBlurMaterial(App::resource_loader());
         RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::Red8);
 
         void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)
@@ -402,7 +355,7 @@ private:
     } m_Blur;
 
     struct LightingRenderingState final {
-        Material material = LoadLightingMaterial();
+        Material material = LoadLightingMaterial(App::resource_loader());
         RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::ARGB32);
 
         void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)
@@ -432,7 +385,7 @@ osc::LOGLSSAOTab::LOGLSSAOTab(LOGLSSAOTab&&) noexcept = default;
 osc::LOGLSSAOTab& osc::LOGLSSAOTab::operator=(LOGLSSAOTab&&) noexcept = default;
 osc::LOGLSSAOTab::~LOGLSSAOTab() noexcept = default;
 
-osc::UID osc::LOGLSSAOTab::implGetID() const
+UID osc::LOGLSSAOTab::implGetID() const
 {
     return m_Impl->getID();
 }

@@ -16,6 +16,8 @@
 #include <string_view>
 #include <utility>
 
+using namespace osc;
+
 class osc::SimulationDetailsPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
@@ -36,7 +38,7 @@ private:
             ImGui::Dummy({0.0f, 1.0f});
             ImGui::TextUnformatted("info:");
             ImGui::SameLine();
-            osc::DrawHelpMarker("Top-level info about the simulation");
+            DrawHelpMarker("Top-level info about the simulation");
             ImGui::Separator();
             ImGui::Dummy({0.0f, 2.0f});
 
@@ -61,7 +63,7 @@ private:
         }
     }
 
-    void drawSimulationStatPlots(osc::Simulation const& sim)
+    void drawSimulationStatPlots(Simulation const& sim)
     {
         auto outputs = sim.getOutputs();
 
@@ -75,24 +77,24 @@ private:
         ImGui::Columns(2);
         ImGui::TextUnformatted("plots:");
         ImGui::SameLine();
-        osc::DrawHelpMarker("Various statistics collected when the simulation was ran");
+        DrawHelpMarker("Various statistics collected when the simulation was ran");
         ImGui::NextColumn();
-        if (std::any_of(outputs.begin(), outputs.end(), [](osc::OutputExtractor const& o) { return o.getOutputType() == osc::OutputType::Float; }))
+        if (std::any_of(outputs.begin(), outputs.end(), [](OutputExtractor const& o) { return o.getOutputType() == OutputType::Float; }))
         {
             ImGui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
             if (ImGui::BeginPopupContextItem("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))
             {
                 if (ImGui::MenuItem("as CSV"))
                 {
-                    osc::TryPromptAndSaveOutputsAsCSV(*m_SimulatorUIAPI, outputs);
+                    TryPromptAndSaveOutputsAsCSV(*m_SimulatorUIAPI, outputs);
                 }
 
                 if (ImGui::MenuItem("as CSV (and open)"))
                 {
-                    std::filesystem::path p = osc::TryPromptAndSaveOutputsAsCSV(*m_SimulatorUIAPI, outputs);
+                    std::filesystem::path p = TryPromptAndSaveOutputsAsCSV(*m_SimulatorUIAPI, outputs);
                     if (!p.empty())
                     {
-                        osc::OpenPathInOSDefaultApplication(p);
+                        OpenPathInOSDefaultApplication(p);
                     }
                 }
 
@@ -107,7 +109,7 @@ private:
 
         int imguiID = 0;
         ImGui::Columns(2);
-        for (osc::OutputExtractor const& output : sim.getOutputs())
+        for (OutputExtractor const& output : sim.getOutputs())
         {
             ImGui::PushID(imguiID++);
             DrawOutputNameColumn(output, false);
@@ -140,7 +142,7 @@ osc::SimulationDetailsPanel::SimulationDetailsPanel(SimulationDetailsPanel&&) no
 osc::SimulationDetailsPanel& osc::SimulationDetailsPanel::operator=(SimulationDetailsPanel&&) noexcept = default;
 osc::SimulationDetailsPanel::~SimulationDetailsPanel() noexcept = default;
 
-osc::CStringView osc::SimulationDetailsPanel::implGetName() const
+CStringView osc::SimulationDetailsPanel::implGetName() const
 {
     return m_Impl->getName();
 }

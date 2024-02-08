@@ -1,41 +1,17 @@
 #include "LOGLCoordinateSystemsTab.hpp"
 
-#include <SDL_events.h>
-#include <oscar/Graphics/Camera.hpp>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Eulers.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/UnitVec3.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/UID.hpp>
 #include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
+
+#include <imgui.h>
+#include <oscar/oscar.hpp>
+#include <SDL_events.h>
 
 #include <array>
 #include <memory>
 
 using namespace osc::literals;
-using osc::App;
-using osc::ColorSpace;
-using osc::CStringView;
-using osc::ImageLoadingFlags;
-using osc::LoadTexture2DFromImage;
-using osc::Material;
-using osc::MouseCapturingCamera;
-using osc::Shader;
-using osc::UnitVec3;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {
@@ -59,24 +35,24 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.2f, 0.3f, 0.3f, 1.0f});
         return rv;
     }
 
-    Material MakeBoxMaterial()
+    Material MakeBoxMaterial(IResourceLoader& rl)
     {
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.vert"),
-            App::slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.frag"),
+            rl.slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.vert"),
+            rl.slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.frag"),
         }};
 
         rv.setTexture(
             "uTexture1",
             LoadTexture2DFromImage(
-                App::resource("oscar_learnopengl/textures/container.jpg"),
+                rl.open("oscar_learnopengl/textures/container.jpg"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
             )
@@ -85,7 +61,7 @@ namespace
         rv.setTexture(
             "uTexture2",
             LoadTexture2DFromImage(
-                App::resource("oscar_learnopengl/textures/awesomeface.png"),
+                rl.open("oscar_learnopengl/textures/awesomeface.png"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
             )
@@ -177,13 +153,12 @@ private:
         m_PerfPanel.onDraw();
     }
 
-    Material m_Material = MakeBoxMaterial();
+    ResourceLoader m_Loader = App::resource_loader();
+    Material m_Material = MakeBoxMaterial(m_Loader);
     Mesh m_Mesh = GenerateLearnOpenGLCubeMesh();
     MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
-
     bool m_ShowStep1 = false;
     Transform m_Step1Transform;
-
     PerfPanel m_PerfPanel{"perf"};
 };
 
@@ -204,7 +179,7 @@ osc::LOGLCoordinateSystemsTab::LOGLCoordinateSystemsTab(LOGLCoordinateSystemsTab
 osc::LOGLCoordinateSystemsTab& osc::LOGLCoordinateSystemsTab::operator=(LOGLCoordinateSystemsTab&&) noexcept = default;
 osc::LOGLCoordinateSystemsTab::~LOGLCoordinateSystemsTab() noexcept = default;
 
-osc::UID osc::LOGLCoordinateSystemsTab::implGetID() const
+UID osc::LOGLCoordinateSystemsTab::implGetID() const
 {
     return m_Impl->getID();
 }

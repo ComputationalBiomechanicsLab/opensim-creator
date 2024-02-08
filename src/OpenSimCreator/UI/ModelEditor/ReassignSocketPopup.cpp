@@ -24,13 +24,15 @@
 #include <tuple>
 #include <utility>
 
+using namespace osc;
+
 namespace
 {
     // parameters that affect which sockets are displayed
     struct PopupParams final {
 
         PopupParams(
-            osc::UID modelVersion_,
+            UID modelVersion_,
             OpenSim::ComponentPath path_,
             std::string socketName_) :
 
@@ -42,7 +44,7 @@ namespace
 
         friend bool operator==(PopupParams const&, PopupParams const&) = default;
 
-        osc::UID modelVersion;
+        UID modelVersion;
         OpenSim::ComponentPath componentPath;
         std::string socketName;
         std::string search;
@@ -52,7 +54,7 @@ namespace
     struct ConnecteeOption final {
 
         explicit ConnecteeOption(OpenSim::Component const& c) :
-            absPath{osc::GetAbsolutePath(c)},
+            absPath{GetAbsolutePath(c)},
             name{c.getName()}
         {
         }
@@ -73,13 +75,13 @@ namespace
     {
         std::vector<ConnecteeOption> rv;
 
-        OpenSim::Component const* component = osc::FindComponent(model, params.componentPath);
+        OpenSim::Component const* component = FindComponent(model, params.componentPath);
         if (!component)
         {
             return rv;   // component isn't in model?
         }
 
-        OpenSim::AbstractSocket const* socket = osc::FindSocket(*component, params.socketName);
+        OpenSim::AbstractSocket const* socket = FindSocket(*component, params.socketName);
         if (!socket)
         {
             return rv;  // socket isn't in model?
@@ -92,12 +94,12 @@ namespace
                 continue;  // hide redundant reconnnections
             }
 
-            if (!osc::Contains(other.getName(), params.search))
+            if (!Contains(other.getName(), params.search))
             {
                 continue;  // filtered out by search string
             }
 
-            if (!osc::IsAbleToConnectTo(*socket, other))
+            if (!IsAbleToConnectTo(*socket, other))
             {
                 continue;  // connection would be rejected anyway
             }
@@ -111,7 +113,7 @@ namespace
     }
 }
 
-class osc::ReassignSocketPopup::Impl final : public osc::StandardPopup {
+class osc::ReassignSocketPopup::Impl final : public StandardPopup {
 public:
     Impl(std::string_view popupName,
          std::shared_ptr<UndoableModelStatePair> model,
@@ -139,7 +141,7 @@ private:
         }
 
         // check: ensure the "from" side of the socket still exists
-        OpenSim::Component const* component = osc::FindComponent(m_Model->getModel(), m_Params.componentPath);
+        OpenSim::Component const* component = FindComponent(m_Model->getModel(), m_Params.componentPath);
         if (!component)
         {
             requestClose();
@@ -147,7 +149,7 @@ private:
         }
 
         // check: ensure the socket still exists
-        OpenSim::AbstractSocket const* socket = osc::FindSocket(*component, m_Params.socketName);
+        OpenSim::AbstractSocket const* socket = FindSocket(*component, m_Params.socketName);
         if (!socket)
         {
             requestClose();
@@ -162,7 +164,7 @@ private:
         ImGui::Separator();
         ImGui::Dummy({0.0f, 0.25f * ImGui::GetTextLineHeight()});
 
-        osc::DrawSearchBar(m_EditedParams.search);
+        DrawSearchBar(m_EditedParams.search);
 
         std::optional<OpenSim::ComponentPath> userSelection;
         ImGui::BeginChild("##componentlist", ImVec2(512, 256), true, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar);
@@ -175,7 +177,7 @@ private:
             {
                 userSelection = option.absPath;
             }
-            osc::DrawTooltipIfItemHovered(option.absPath.toString());
+            DrawTooltipIfItemHovered(option.absPath.toString());
             ImGui::PopID();
         }
         ImGui::EndChild();
@@ -202,9 +204,9 @@ private:
                 SocketReassignmentFlags::TryReexpressComponentInNewConnectee :
                 SocketReassignmentFlags::None;
 
-            OpenSim::Component const* selected = osc::FindComponent(m_Model->getModel(), *userSelection);
+            OpenSim::Component const* selected = FindComponent(m_Model->getModel(), *userSelection);
 
-            if (selected && osc::ActionReassignComponentSocket(*m_Model, m_Params.componentPath, m_Params.socketName, *selected, flags, m_Error))
+            if (selected && ActionReassignComponentSocket(*m_Model, m_Params.componentPath, m_Params.socketName, *selected, flags, m_Error))
             {
                 requestClose();
                 return;
@@ -240,7 +242,7 @@ private:
         }
 
         auto const componentSpatialRepresentation =
-            osc::TryGetSpatialRepresentation(component, m_Model->getState());
+            TryGetSpatialRepresentation(component, m_Model->getState());
         if (!componentSpatialRepresentation)
         {
             bool v = false;

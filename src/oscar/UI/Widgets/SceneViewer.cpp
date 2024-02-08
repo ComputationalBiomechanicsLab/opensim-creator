@@ -1,10 +1,10 @@
 #include "SceneViewer.hpp"
 
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 
 #include <imgui.h>
@@ -46,9 +46,8 @@ public:
 private:
     SceneRenderer m_Renderer
     {
-        App::config(),
         *App::singleton<SceneCache>(),
-        *App::singleton<ShaderCache>(),
+        *App::singleton<ShaderCache>(App::resource_loader()),
     };
     bool m_IsHovered = false;
     bool m_IsLeftClicked = false;

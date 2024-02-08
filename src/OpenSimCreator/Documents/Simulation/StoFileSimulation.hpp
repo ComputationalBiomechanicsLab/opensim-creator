@@ -19,7 +19,7 @@ namespace osc { class ParamBlock; }
 
 namespace osc
 {
-    // an `osc::ISimulation` that is directly loaded from an `.sto` file (as
+    // an `ISimulation` that is directly loaded from an `.sto` file (as
     // opposed to being an actual simulation ran within `osc`)
     class StoFileSimulation final : public ISimulation {
     public:

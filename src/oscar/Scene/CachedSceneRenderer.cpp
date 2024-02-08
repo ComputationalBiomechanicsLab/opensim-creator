@@ -9,16 +9,15 @@
 #include <span>
 #include <vector>
 
-using osc::RenderTexture;
+using namespace osc;
 
 class osc::CachedSceneRenderer::Impl final {
 public:
     Impl(
-        AppConfig const& config,
         SceneCache& meshCache,
         ShaderCache& shaderCache) :
 
-        m_SceneRenderer{config, meshCache, shaderCache}
+        m_SceneRenderer{meshCache, shaderCache}
     {
     }
 
@@ -48,10 +47,9 @@ private:
 // public API (PIMPL)
 
 osc::CachedSceneRenderer::CachedSceneRenderer(
-    AppConfig const& config,
     SceneCache& meshCache,
     ShaderCache& shaderCache) :
-    m_Impl{std::make_unique<Impl>(config, meshCache, shaderCache)}
+    m_Impl{std::make_unique<Impl>(meshCache, shaderCache)}
 {
 }
 

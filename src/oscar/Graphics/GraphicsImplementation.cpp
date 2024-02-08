@@ -97,93 +97,13 @@
 #include <variant>
 #include <vector>
 
+using namespace osc::detail;
 using namespace osc::literals;
+using namespace osc;
 namespace cpp20 = osc::cpp20;
 namespace cpp23 = osc::cpp23;
 namespace gl = osc::gl;
 namespace sdl = osc::sdl;
-using osc::detail::CPUDataType;
-using osc::detail::CPUDataTypeOpenGLTraits;
-using osc::detail::CPUDataTypeList;
-using osc::detail::CPUImageFormat;
-using osc::detail::CPUImageFormatList;
-using osc::detail::CPUImageFormatOpenGLTraits;
-using osc::detail::DefaultFormat;
-using osc::detail::NumComponents;
-using osc::detail::ShaderPropertyTypeList;
-using osc::detail::ShaderPropertyTypeTraits;
-using osc::detail::SizeOfComponent;
-using osc::detail::TextureFormatList;
-using osc::detail::TextureFormatOpenGLTraits;
-using osc::detail::TextureFormatTraits;
-using osc::detail::VertexAttributeFormatList;
-using osc::detail::VertexAttributeFormatTraits;
-using osc::detail::VertexAttributeList;
-using osc::detail::VertexAttributeTraits;
-using osc::AABB;
-using osc::AntiAliasingLevel;
-using osc::BitCastable;
-using osc::CameraClearFlags;
-using osc::CameraProjection;
-using osc::Color;
-using osc::Color32;
-using osc::ColorSpace;
-using osc::CStringView;
-using osc::Cubemap;
-using osc::CubemapFace;
-using osc::CullMode;
-using osc::DefaultConstructOnCopy;
-using osc::DepthFunction;
-using osc::DepthStencilFormat;
-using osc::Dot;
-using osc::IsAnyOf;
-using osc::LogLevel;
-using osc::Mat3;
-using osc::Mat4;
-using osc::Material;
-using osc::MaterialPropertyBlock;
-using osc::Mesh;
-using osc::MeshIndicesView;
-using osc::MeshTopology;
-using osc::NonTypelist;
-using osc::NonTypelistSizeV;
-using osc::NumOptions;
-using osc::Overload;
-using osc::Quat;
-using osc::Radians;
-using osc::Rect;
-using osc::RenderBuffer;
-using osc::RenderBufferType;
-using osc::RenderTexture;
-using osc::RenderTextureDescriptor;
-using osc::RenderTextureFormat;
-using osc::RenderTextureReadWrite;
-using osc::Shader;
-using osc::ShaderPropertyType;
-using osc::SubMeshDescriptor;
-using osc::Texture2D;
-using osc::TextureChannelFormat;
-using osc::TextureDimensionality;
-using osc::TextureFilterMode;
-using osc::TextureFormat;
-using osc::TextureWrapMode;
-using osc::ToNormalMatrix;
-using osc::ToNormalMatrix4;
-using osc::Transform;
-using osc::Triangle;
-using osc::UID;
-using osc::Unorm8;
-using osc::ValuePtr;
-using osc::VariantIndex;
-using osc::VertexAttributeFormat;
-using osc::Vec;
-using osc::Vec2;
-using osc::Vec2i;
-using osc::Vec3;
-using osc::Vec4;
-using osc::VertexAttribute;
-using osc::VertexFormat;
-using osc::ViewObjectRepresentation;
 
 // shader source
 namespace
@@ -398,7 +318,7 @@ namespace
         //
         // see "Required Formats" in: https://www.khronos.org/opengl/wiki/Image_Format
 
-        if (logLevel < osc::log::level()) {
+        if (logLevel < log_level()) {
             return;
         }
 
@@ -419,18 +339,18 @@ namespace
         );
 
         if (!missingExtensions.empty()) {
-            osc::log::log(logLevel, "OpenGL: the following OpenGL extensions may be missing from the graphics backend: ");
+            log_message(logLevel, "OpenGL: the following OpenGL extensions may be missing from the graphics backend: ");
             for (auto const& missingExtension : missingExtensions)
             {
-                osc::log::log(logLevel, "OpenGL:  - %s", missingExtension.c_str());
+                log_message(logLevel, "OpenGL:  - %s", missingExtension.c_str());
             }
-            osc::log::log(logLevel, "OpenGL: because extensions may be missing, rendering may behave abnormally");
-            osc::log::log(logLevel, "OpenGL: note: some graphics engines can mis-report an extension as missing");
+            log_message(logLevel, "OpenGL: because extensions may be missing, rendering may behave abnormally");
+            log_message(logLevel, "OpenGL: note: some graphics engines can mis-report an extension as missing");
         }
 
-        osc::log::log(logLevel, "OpenGL: here is a list of all of the extensions supported by the graphics backend:");
+        log_message(logLevel, "OpenGL: here is a list of all of the extensions supported by the graphics backend:");
         for (auto const& ext : extensionSupportedByBackend) {
-            osc::log::log(logLevel, "OpenGL:  - %s", ext.c_str());
+            log_message(logLevel, "OpenGL:  - %s", ext.c_str());
         }
     }
 }
@@ -641,7 +561,7 @@ namespace
     // transform storage: either as a matrix or a transform
     //
     // calling code is allowed to submit transforms as either Transform (preferred) or
-    // osc::Mat4 (can be handier)
+    // `Mat4` (can be handier)
     //
     // these need to be stored as-is, because that's the smallest possible representation and
     // the drawing algorithm needs to traverse + sort the render objects at runtime (so size
@@ -1542,7 +1462,7 @@ void osc::Cubemap::setFilterMode(TextureFilterMode fm)
     m_Impl.upd()->setFilterMode(fm);
 }
 
-osc::TextureFormat osc::Cubemap::getTextureFormat() const
+TextureFormat osc::Cubemap::getTextureFormat() const
 {
     return m_Impl->getTextureFormat();
 }
@@ -5548,12 +5468,12 @@ public:
         m_OrthographicSize = size;
     }
 
-    Radians getCameraFOV() const
+    Radians getVerticalFOV() const
     {
         return m_PerspectiveFov;
     }
 
-    void setCameraFOV(Radians size)
+    void setVerticalFOV(Radians size)
     {
         m_PerspectiveFov = size;
     }
@@ -5835,14 +5755,14 @@ void osc::Camera::setOrthographicSize(float sz)
     m_Impl.upd()->setOrthographicSize(sz);
 }
 
-Radians osc::Camera::getCameraFOV() const
+Radians osc::Camera::getVerticalFOV() const
 {
-    return m_Impl->getCameraFOV();
+    return m_Impl->getVerticalFOV();
 }
 
-void osc::Camera::setCameraFOV(Radians verticalFOV)
+void osc::Camera::setVerticalFOV(Radians verticalFOV)
 {
-    m_Impl.upd()->setCameraFOV(verticalFOV);
+    m_Impl.upd()->setVerticalFOV(verticalFOV);
 }
 
 float osc::Camera::getNearClippingPlane() const
@@ -6032,7 +5952,7 @@ namespace
     // create an OpenGL context for an application window
     sdl::GLContext CreateOpenGLContext(SDL_Window& window)
     {
-        osc::log::debug("initializing OpenGL context");
+        log_debug("initializing OpenGL context");
 
         // create an OpenGL context for the application
         sdl::GLContext ctx = sdl::GL_CreateContext(&window);
@@ -6074,13 +5994,13 @@ namespace
             glEnable(capability.id);
             if (!glIsEnabled(capability.id))
             {
-                osc::log::warn("failed to enable %s: this may cause rendering issues", capability.label.c_str());
+                log_warn("failed to enable %s: this may cause rendering issues", capability.label.c_str());
             }
         }
 
         // print OpenGL information to console (handy for debugging user's rendering
         // issues)
-        osc::log::info(
+        log_info(
             "OpenGL initialized: info: %s, %s, (%s), GLSL %s",
             glGetString(GL_VENDOR),
             glGetString(GL_RENDERER),
@@ -6231,7 +6151,7 @@ namespace
         CStringView const typeCStr = OpenGLDebugTypeToStrView(type);
         CStringView const severityCStr = OpenGLDebugSevToStrView(severity);
 
-        osc::log::log(lvl,
+        log_message(lvl,
             R"(OpenGL Debug message:
 id = %u
 message = %s
@@ -6246,7 +6166,7 @@ severity = %s
     {
         if (IsOpenGLInDebugMode())
         {
-            osc::log::info("OpenGL debug mode appears to already be enabled: skipping enabling it");
+            log_info("OpenGL debug mode appears to already be enabled: skipping enabling it");
             return;
         }
 
@@ -6258,11 +6178,11 @@ severity = %s
             glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
             glDebugMessageCallback(OpenGLDebugMessageHandler, nullptr);
             glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-            osc::log::info("enabled OpenGL debug mode");
+            log_info("enabled OpenGL debug mode");
         }
         else
         {
-            osc::log::error("cannot enable OpenGL debug mode: the context does not have GL_CONTEXT_FLAG_DEBUG_BIT set");
+            log_error("cannot enable OpenGL debug mode: the context does not have GL_CONTEXT_FLAG_DEBUG_BIT set");
         }
     }
 
@@ -6271,7 +6191,7 @@ severity = %s
     {
         if (!IsOpenGLInDebugMode())
         {
-            osc::log::info("OpenGL debug mode appears to already be disabled: skipping disabling it");
+            log_info("OpenGL debug mode appears to already be disabled: skipping disabling it");
             return;
         }
 
@@ -6280,11 +6200,11 @@ severity = %s
         if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
         {
             glDisable(GL_DEBUG_OUTPUT);
-            osc::log::info("disabled OpenGL debug mode");
+            log_info("disabled OpenGL debug mode");
         }
         else
         {
-            osc::log::error("cannot disable OpenGL debug mode: the context does not have a GL_CONTEXT_FLAG_DEBUG_BIT set");
+            log_error("cannot disable OpenGL debug mode: the context does not have a GL_CONTEXT_FLAG_DEBUG_BIT set");
         }
     }
 }
@@ -6339,7 +6259,7 @@ public:
             return;  // already in debug mode
         }
 
-        log::info("enabling debug mode");
+        log_info("enabling debug mode");
         EnableOpenGLDebugMessages();
         m_DebugModeEnabled = IsOpenGLInDebugMode();
     }
@@ -6350,7 +6270,7 @@ public:
             return;  // already not in debug mode
         }
 
-        log::info("disabling debug mode");
+        log_info("disabling debug mode");
         DisableOpenGLDebugMessages();
         m_DebugModeEnabled = IsOpenGLInDebugMode();
     }

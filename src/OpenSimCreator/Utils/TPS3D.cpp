@@ -10,10 +10,7 @@
 #include <span>
 #include <vector>
 
-using osc::Length;
-using osc::Mesh;
-using osc::TPSCoefficients3D;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {
@@ -50,13 +47,11 @@ std::ostream& osc::operator<<(std::ostream& o, TPSCoefficientSolverInputs3D cons
 
 std::ostream& osc::operator<<(std::ostream& o, TPSNonAffineTerm3D const& wt)
 {
-    using osc::operator<<;
     return o << "TPSNonAffineTerm3D{Weight = " << wt.weight << ", ControlPoint = " << wt.controlPoint << '}';
 }
 
 std::ostream& osc::operator<<(std::ostream& o, TPSCoefficients3D const& coefs)
 {
-    using osc::operator<<;
     o << "TPSCoefficients3D{a1 = " << coefs.a1 << ", a2 = " << coefs.a2 << ", a3 = " << coefs.a3 << ", a4 = " << coefs.a4;
     for (size_t i = 0; i < coefs.nonAffineTerms.size(); ++i)
     {

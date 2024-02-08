@@ -20,7 +20,7 @@ namespace osc { class OutputExtractor; }
 
 namespace osc
 {
-    // an `osc::ISimulation` that represents a live forward-dynamic simulation
+    // an `ISimulation` that represents a live forward-dynamic simulation
     // that `osc` is running
     class ForwardDynamicSimulation final : public ISimulation {
     public:

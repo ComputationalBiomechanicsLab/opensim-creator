@@ -1,9 +1,6 @@
 #pragma once
 
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/ImageLoadingFlags.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/Sphere.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -11,7 +8,6 @@
 #include <oscar/Maths/Vec4.hpp>
 
 #include <array>
-#include <filesystem>
 #include <span>
 #include <vector>
 
@@ -42,21 +38,6 @@ namespace osc
         std::span<Vec3 const> normals,
         std::span<Vec2 const> texCoords,
         MeshIndicesView const&
-    );
-
-    // returns a texture loaded from disk via Image
-    //
-    // throws if the image data isn't representable as a GPU texture (e.g. because it has
-    // an incorrect number of color channels)
-    Texture2D LoadTexture2DFromImage(
-        std::filesystem::path const&,
-        ColorSpace,
-        ImageLoadingFlags = ImageLoadingFlags::None
-    );
-
-    void WriteToPNG(
-        Texture2D const&,
-        std::filesystem::path const&
     );
 
     // returns arrays that transforms cube faces from worldspace to projection

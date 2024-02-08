@@ -6,19 +6,21 @@
 #include <array>
 #include <span>
 
+using namespace osc;
+
 namespace
 {
-    constexpr auto c_SimulatorStatuses = std::to_array<osc::SimulationStatus>(
+    constexpr auto c_SimulatorStatuses = std::to_array<SimulationStatus>(
     {
-        osc::SimulationStatus::Initializing,
-        osc::SimulationStatus::Running,
-        osc::SimulationStatus::Completed,
-        osc::SimulationStatus::Cancelled,
-        osc::SimulationStatus::Error,
+        SimulationStatus::Initializing,
+        SimulationStatus::Running,
+        SimulationStatus::Completed,
+        SimulationStatus::Cancelled,
+        SimulationStatus::Error,
     });
-    static_assert(c_SimulatorStatuses.size() == osc::NumOptions<osc::SimulationStatus>());
+    static_assert(c_SimulatorStatuses.size() == NumOptions<SimulationStatus>());
 
-    constexpr auto c_SimulatorStatusStrings = std::to_array<osc::CStringView>(
+    constexpr auto c_SimulatorStatusStrings = std::to_array<CStringView>(
     {
         "Initializing",
         "Running",
@@ -26,18 +28,18 @@ namespace
         "Cancelled",
         "Error",
     });
-    static_assert(c_SimulatorStatusStrings.size() == osc::NumOptions<osc::SimulationStatus>());
+    static_assert(c_SimulatorStatusStrings.size() == NumOptions<SimulationStatus>());
 }
 
 
 // public API
 
-std::span<osc::SimulationStatus const> osc::GetAllSimulationStatuses()
+std::span<SimulationStatus const> osc::GetAllSimulationStatuses()
 {
     return c_SimulatorStatuses;
 }
 
-std::span<osc::CStringView const> osc::GetAllSimulationStatusStrings()
+std::span<CStringView const> osc::GetAllSimulationStatusStrings()
 {
     return c_SimulatorStatusStrings;
 }

@@ -21,9 +21,11 @@
 #include <string_view>
 #include <utility>
 
+using namespace osc;
+
 namespace
 {
-    void DrawActionsMenu(osc::IEditorAPI* editorAPI, std::shared_ptr<osc::UndoableModelStatePair> const& model)
+    void DrawActionsMenu(IEditorAPI* editorAPI, std::shared_ptr<UndoableModelStatePair> const& model)
     {
         OpenSim::Component const* selection = model->getSelected();
         if (!selection)
@@ -34,21 +36,21 @@ namespace
         ImGui::Columns(2);
         ImGui::TextUnformatted("actions");
         ImGui::SameLine();
-        osc::DrawHelpMarker("Shows a menu containing extra actions that can be performed on this component.\n\nYou can also access the same menu by right-clicking the component in the 3D viewer, bottom status bar, or navigator panel.");
+        DrawHelpMarker("Shows a menu containing extra actions that can be performed on this component.\n\nYou can also access the same menu by right-clicking the component in the 3D viewer, bottom status bar, or navigator panel.");
         ImGui::NextColumn();
-        osc::PushStyleColor(ImGuiCol_Text, osc::Color::yellow());
+        PushStyleColor(ImGuiCol_Text, Color::yellow());
         if (ImGui::Button(ICON_FA_BOLT) || ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {
-            editorAPI->pushComponentContextMenuPopup(osc::GetAbsolutePath(*selection));
+            editorAPI->pushComponentContextMenuPopup(GetAbsolutePath(*selection));
         }
-        osc::PopStyleColor();
+        PopStyleColor();
         ImGui::NextColumn();
         ImGui::Columns();
     }
 
     class ObjectNameEditor final {
     public:
-        explicit ObjectNameEditor(std::shared_ptr<osc::UndoableModelStatePair> model_) :
+        explicit ObjectNameEditor(std::shared_ptr<UndoableModelStatePair> model_) :
             m_Model{std::move(model_)}
         {
         }
@@ -75,15 +77,15 @@ namespace
             ImGui::Separator();
             ImGui::TextUnformatted("name");
             ImGui::SameLine();
-            osc::DrawHelpMarker("The name of the component", "The component's name can be important. It can be used when components want to refer to eachover. E.g. a joint will name the two frames it attaches to.");
+            DrawHelpMarker("The name of the component", "The component's name can be important. It can be used when components want to refer to eachover. E.g. a joint will name the two frames it attaches to.");
 
             ImGui::NextColumn();
 
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            osc::InputString("##nameeditor", m_EditedName);
-            if (osc::ItemValueShouldBeSaved())
+            InputString("##nameeditor", m_EditedName);
+            if (ItemValueShouldBeSaved())
             {
-                osc::ActionSetComponentName(*m_Model, osc::GetAbsolutePath(*selected), m_EditedName);
+                ActionSetComponentName(*m_Model, GetAbsolutePath(*selected), m_EditedName);
             }
 
             ImGui::NextColumn();
@@ -91,14 +93,14 @@ namespace
             ImGui::Columns();
         }
     private:
-        std::shared_ptr<osc::UndoableModelStatePair> m_Model;
-        osc::UID m_LastModelVersion;
+        std::shared_ptr<UndoableModelStatePair> m_Model;
+        UID m_LastModelVersion;
         OpenSim::Component const* m_LastSelected = nullptr;
         std::string m_EditedName;
     };
 }
 
-class osc::PropertiesPanel::Impl final : public osc::StandardPanelImpl {
+class osc::PropertiesPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
         std::string_view panelName,
@@ -141,7 +143,7 @@ private:
             auto maybeUpdater = m_SelectionPropertiesEditor.onDraw();
             if (maybeUpdater)
             {
-                osc::ActionApplyPropertyEdit(*m_Model, *maybeUpdater);
+                ActionApplyPropertyEdit(*m_Model, *maybeUpdater);
             }
         }
     }
@@ -167,7 +169,7 @@ osc::PropertiesPanel::PropertiesPanel(PropertiesPanel&&) noexcept = default;
 osc::PropertiesPanel& osc::PropertiesPanel::operator=(PropertiesPanel&&) noexcept = default;
 osc::PropertiesPanel::~PropertiesPanel() noexcept = default;
 
-osc::CStringView osc::PropertiesPanel::implGetName() const
+CStringView osc::PropertiesPanel::implGetName() const
 {
     return m_Impl->getName();
 }

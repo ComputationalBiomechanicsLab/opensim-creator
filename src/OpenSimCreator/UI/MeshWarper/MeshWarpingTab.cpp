@@ -22,6 +22,8 @@
 #include <memory>
 #include <string_view>
 
+using namespace osc;
+
 class osc::MeshWarpingTab::Impl final {
 public:
 
@@ -152,7 +154,7 @@ public:
 private:
     bool onKeydownEvent(SDL_KeyboardEvent const& e)
     {
-        bool const ctrlOrSuperDown = osc::IsCtrlOrSuperDown();
+        bool const ctrlOrSuperDown = IsCtrlOrSuperDown();
 
         if (ctrlOrSuperDown && e.keysym.mod & KMOD_SHIFT && e.keysym.sym == SDLK_z)
         {
@@ -220,7 +222,7 @@ private:
 
 // public API (PIMPL)
 
-osc::CStringView osc::MeshWarpingTab::id()
+CStringView osc::MeshWarpingTab::id()
 {
     return "OpenSim/Warping";
 }
@@ -234,12 +236,12 @@ osc::MeshWarpingTab::MeshWarpingTab(MeshWarpingTab&&) noexcept = default;
 osc::MeshWarpingTab& osc::MeshWarpingTab::operator=(MeshWarpingTab&&) noexcept = default;
 osc::MeshWarpingTab::~MeshWarpingTab() noexcept = default;
 
-osc::UID osc::MeshWarpingTab::implGetID() const
+UID osc::MeshWarpingTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::MeshWarpingTab::implGetName() const
+CStringView osc::MeshWarpingTab::implGetName() const
 {
     return m_Impl->getName();
 }

@@ -14,6 +14,8 @@
 #include <string_view>
 #include <utility>
 
+using namespace osc;
+
 class osc::SelectionDetailsPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
@@ -36,7 +38,7 @@ private:
             return;
         }
 
-        osc::SimulationModelStatePair& ms = *maybeShownState;
+        SimulationModelStatePair& ms = *maybeShownState;
 
         OpenSim::Component const* selected = ms.getSelected();
 
@@ -61,7 +63,7 @@ private:
                 SimulationOutputPlot plot
                 {
                     m_SimulatorUIAPI,
-                    OutputExtractor{osc::ComponentOutputExtractor{*aoPtr}},
+                    OutputExtractor{ComponentOutputExtractor{*aoPtr}},
                     ImGui::GetTextLineHeight(),
                 };
                 plot.onDraw();
@@ -86,7 +88,7 @@ osc::SelectionDetailsPanel::SelectionDetailsPanel(SelectionDetailsPanel&&) noexc
 osc::SelectionDetailsPanel& osc::SelectionDetailsPanel::operator=(SelectionDetailsPanel&&) noexcept = default;
 osc::SelectionDetailsPanel::~SelectionDetailsPanel() noexcept = default;
 
-osc::CStringView osc::SelectionDetailsPanel::implGetName() const
+CStringView osc::SelectionDetailsPanel::implGetName() const
 {
     return m_Impl->getName();
 }

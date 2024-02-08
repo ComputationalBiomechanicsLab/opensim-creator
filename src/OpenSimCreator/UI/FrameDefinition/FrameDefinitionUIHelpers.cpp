@@ -22,7 +22,7 @@
 #include <utility>
 #include <vector>
 
-using osc::UndoableModelStatePair;
+using namespace osc;
 
 void osc::fd::ActionPromptUserToAddMeshFiles(UndoableModelStatePair& model)
 {
@@ -93,7 +93,7 @@ void osc::fd::ActionExportFrameDefinitionSceneModelToEditorTab(
     auto maybeMainUIStateAPI = DynamicParentCast<IMainUIStateAPI>(tabHost);
     if (!maybeMainUIStateAPI)
     {
-        log::error("Tried to export frame definition scene to an OpenSim model but there is no MainUIStateAPI data");
+        log_error("Tried to export frame definition scene to an OpenSim model but there is no MainUIStateAPI data");
         return;
     }
 

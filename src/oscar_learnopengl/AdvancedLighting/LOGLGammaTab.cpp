@@ -2,40 +2,15 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
+#include <imgui.h>
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
 
 #include <array>
 #include <memory>
 
 using namespace osc::literals;
-using osc::App;
-using osc::Color;
-using osc::ColorSpace;
-using osc::CStringView;
-using osc::LoadTexture2DFromImage;
-using osc::Material;
-using osc::Mesh;
-using osc::MouseCapturingCamera;
-using osc::Shader;
-using osc::Texture2D;
-using osc::Vec2;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {
@@ -98,23 +73,23 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
 
-    Material CreateFloorMaterial()
+    Material CreateFloorMaterial(IResourceLoader& rl)
     {
         Texture2D woodTexture = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/wood.png"),
+            rl.open("oscar_learnopengl/textures/wood.png"),
             ColorSpace::sRGB
         );
 
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.frag"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.vert"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.frag"),
         }};
         rv.setTexture("uFloorTexture", woodTexture);
         rv.setVec3Array("uLightPositions", c_LightPositions);
@@ -171,7 +146,7 @@ private:
         ImGui::End();
     }
 
-    Material m_Material = CreateFloorMaterial();
+    Material m_Material = CreateFloorMaterial(App::resource_loader());
     Mesh m_PlaneMesh = GeneratePlane();
     MouseCapturingCamera m_Camera = CreateSceneCamera();
 };
@@ -193,7 +168,7 @@ osc::LOGLGammaTab::LOGLGammaTab(LOGLGammaTab&&) noexcept = default;
 osc::LOGLGammaTab& osc::LOGLGammaTab::operator=(LOGLGammaTab&&) noexcept = default;
 osc::LOGLGammaTab::~LOGLGammaTab() noexcept = default;
 
-osc::UID osc::LOGLGammaTab::implGetID() const
+UID osc::LOGLGammaTab::implGetID() const
 {
     return m_Impl->getID();
 }

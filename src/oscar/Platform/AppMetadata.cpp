@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-using osc::CStringView;
+using namespace osc;
 
 std::string osc::CalcFullApplicationNameWithVersionAndBuild(AppMetadata const& metadata)
 {

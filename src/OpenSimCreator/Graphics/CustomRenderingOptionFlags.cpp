@@ -3,38 +3,40 @@
 #include <array>
 #include <span>
 
+using namespace osc;
+
 namespace
 {
-    constexpr auto c_Metadata = std::to_array<osc::CustomRenderingOptionFlagsMetadata>(
+    constexpr auto c_Metadata = std::to_array<CustomRenderingOptionFlagsMetadata>(
     {
-        osc::CustomRenderingOptionFlagsMetadata
+        CustomRenderingOptionFlagsMetadata
         {
             "show_floor",
             "Floor",
-            osc::CustomRenderingOptionFlags::DrawFloor,
+            CustomRenderingOptionFlags::DrawFloor,
         },
-        osc::CustomRenderingOptionFlagsMetadata
+        CustomRenderingOptionFlagsMetadata
         {
             "show_mesh_normals",
             "Mesh Normals",
-            osc::CustomRenderingOptionFlags::MeshNormals,
+            CustomRenderingOptionFlags::MeshNormals,
         },
-        osc::CustomRenderingOptionFlagsMetadata
+        CustomRenderingOptionFlagsMetadata
         {
             "show_shadows",
             "Shadows",
-            osc::CustomRenderingOptionFlags::Shadows,
+            CustomRenderingOptionFlags::Shadows,
         },
-        osc::CustomRenderingOptionFlagsMetadata
+        CustomRenderingOptionFlagsMetadata
         {
             "show_selection_rims",
             "Selection Rims",
-            osc::CustomRenderingOptionFlags::DrawSelectionRims,
+            CustomRenderingOptionFlags::DrawSelectionRims,
         },
     });
 }
 
-std::span<osc::CustomRenderingOptionFlagsMetadata const> osc::GetAllCustomRenderingOptionFlagsMetadata()
+std::span<CustomRenderingOptionFlagsMetadata const> osc::GetAllCustomRenderingOptionFlagsMetadata()
 {
     return c_Metadata;
 }

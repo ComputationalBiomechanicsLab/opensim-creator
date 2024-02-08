@@ -3,19 +3,19 @@
 #include <IconsFontAwesome5.h>
 #include <Simbody.h>
 #include <imgui.h>
+#include <oscar/Formats/Image.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/Utils/Assertions.hpp>
@@ -30,10 +30,7 @@
 #include <variant>
 #include <vector>
 
-using osc::Mat4;
-using osc::Vec2;
-using osc::Vec2i;
-using osc::Vec3;
+using namespace osc;
 
 // 2D TPS algorithm stuff
 //
@@ -59,7 +56,7 @@ namespace
     float RadialBasisFunction2D(Vec2 controlPoint, Vec2 p)
     {
         Vec2 const diff = controlPoint - p;
-        float const r2 = osc::Dot(diff, diff);
+        float const r2 = Dot(diff, diff);
 
         if (r2 == 0.0f)
         {
@@ -289,9 +286,9 @@ namespace
 
     // returns a mesh that is the equivalent of applying the 2D TPS warp to all
     // vertices of the input mesh
-    osc::Mesh ApplyThinPlateWarpToMesh(ThinPlateWarper2D const& t, osc::Mesh const& mesh)
+    Mesh ApplyThinPlateWarpToMesh(ThinPlateWarper2D const& t, Mesh const& mesh)
     {
-        osc::Mesh rv = mesh;
+        Mesh rv = mesh;
         rv.transformVerts([&t](Vec3 v) { return Vec3{t.transform(v), v.z}; });
         return rv;
     }
@@ -347,8 +344,8 @@ public:
             renderMesh(m_InputGrid, texDims, m_InputRender);
 
             // draw rendered texture via ImGui
-            osc::DrawTextureAsImGuiImage(*m_InputRender, texDims);
-            ImGuiItemHittestResult const ht = osc::HittestLastImguiItem();
+            DrawTextureAsImGuiImage(*m_InputRender, texDims);
+            ImGuiItemHittestResult const ht = HittestLastImguiItem();
 
             // draw any 2D overlays etc.
             renderOverlayElements(ht);
@@ -375,7 +372,7 @@ public:
                 std::vector<LandmarkPair2D> pairs = m_LandmarkPairs;
                 for (LandmarkPair2D& p : pairs)
                 {
-                    p.dest = osc::Mix(p.src, p.dest, m_BlendingFactor);
+                    p.dest = Mix(p.src, p.dest, m_BlendingFactor);
                 }
                 ThinPlateWarper2D warper{pairs};
                 m_OutputGrid = ApplyThinPlateWarpToMesh(warper, m_InputGrid);
@@ -384,7 +381,7 @@ public:
             renderMesh(m_OutputGrid, texDims, m_OutputRender);
 
             // draw rendered texture via ImGui
-            osc::DrawTextureAsImGuiImage(*m_OutputRender, texDims);
+            DrawTextureAsImGuiImage(*m_OutputRender, texDims);
         }
         ImGui::End();
 
@@ -395,7 +392,7 @@ public:
             float panelHeight = 50.0f;
             ImGui::SetNextWindowPos({ outputWindowPos.x + leftPadding, outputWindowPos.y + outputWindowDims.y - panelHeight - bottomPadding });
             ImGui::SetNextWindowSize({ outputWindowDims.x - leftPadding, panelHeight });
-            ImGui::Begin("##scrubber", nullptr, osc::GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs);
+            ImGui::Begin("##scrubber", nullptr, GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs);
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             ImGui::SliderFloat("##blend", &m_BlendingFactor, 0.0f, 1.0f);
             ImGui::End();
@@ -414,8 +411,8 @@ private:
         RenderTextureDescriptor desc{dims};
         desc.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
         out.emplace(desc);
-        osc::Graphics::DrawMesh(mesh, osc::Transform{}, m_Material, m_Camera);
-        osc::Graphics::DrawMesh(mesh, osc::Transform{}, m_WireframeMaterial, m_Camera);
+        Graphics::DrawMesh(mesh, Transform{}, m_Material, m_Camera);
+        Graphics::DrawMesh(mesh, Transform{}, m_WireframeMaterial, m_Camera);
 
         OSC_ASSERT(out.has_value());
         m_Camera.renderTo(*out);
@@ -456,7 +453,7 @@ private:
     // render any mouse-related overlays
     void renderMouseUIElements(ImGuiItemHittestResult const& ht)
     {
-        std::visit(osc::Overload
+        std::visit(Overload
         {
             [this, &ht](GUIInitialMouseState const& st) { renderMouseUIElements(ht, st); },
             [this, &ht](GUIFirstClickMouseState const& st) { renderMouseUIElements(ht, st); },
@@ -471,7 +468,7 @@ private:
         Vec2 const mouseImageRelPos = mouseImagePos / Dimensions(ht.rect);
         Vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
 
-        osc::DrawTooltipBodyOnly(to_string(mouseImageNDCPos));
+        DrawTooltipBodyOnly(to_string(mouseImageNDCPos));
 
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
         {
@@ -487,7 +484,7 @@ private:
         Vec2 const mouseImageRelPos = mouseImagePos / Dimensions(ht.rect);
         Vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
 
-        osc::DrawTooltipBodyOnly(to_string(mouseImageNDCPos) + "*");
+        DrawTooltipBodyOnly(to_string(mouseImageNDCPos) + "*");
 
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
         {
@@ -498,6 +495,8 @@ private:
 
     // tab data
     UID m_TabID;
+    ResourceLoader m_Loader = App::resource_loader();
+    std::shared_ptr<ShaderCache> m_ShaderCache = App::singleton<ShaderCache>(m_Loader);
 
     // TPS algorithm state
     GUIMouseState m_MouseState = GUIInitialMouseState{};
@@ -506,19 +505,14 @@ private:
 
     // GUI state (rendering, colors, etc.)
     Texture2D m_BoxTexture = LoadTexture2DFromImage(
-        App::resource("textures/container.jpg"),
+        m_Loader.open("textures/container.jpg"),
         ColorSpace::sRGB
     );
     Mesh m_InputGrid = GenerateNxMTriangleQuadGridMesh({50, 50});
     Mesh m_OutputGrid = m_InputGrid;
-    Material m_Material = Material
-    {
-        App::singleton<ShaderCache>()->load(App::resource("shaders/TPS2D/Textured.vert"), App::resource("shaders/TPS2D/Textured.frag"))
-    };
-    Material m_WireframeMaterial = Material
-    {
-        App::singleton<ShaderCache>()->load(App::resource("shaders/SolidColor.vert"), App::resource("shaders/SolidColor.frag"))
-    };
+    Material m_Material{m_ShaderCache->load("shaders/TPS2D/Textured.vert", "shaders/TPS2D/Textured.frag")};
+    Material m_WireframeMaterial{m_ShaderCache->load("shaders/SolidColor.vert", "shaders/SolidColor.frag")};
+
     Camera m_Camera;
     std::optional<RenderTexture> m_InputRender;
     std::optional<RenderTexture> m_OutputRender;
@@ -533,7 +527,7 @@ private:
 
 // public API (PIMPL)
 
-osc::CStringView osc::TPS2DTab::id()
+CStringView osc::TPS2DTab::id()
 {
     return "OpenSim/Experimental/TPS2D";
 }
@@ -547,12 +541,12 @@ osc::TPS2DTab::TPS2DTab(TPS2DTab&&) noexcept = default;
 osc::TPS2DTab& osc::TPS2DTab::operator=(TPS2DTab&&) noexcept = default;
 osc::TPS2DTab::~TPS2DTab() noexcept = default;
 
-osc::UID osc::TPS2DTab::implGetID() const
+UID osc::TPS2DTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::TPS2DTab::implGetName() const
+CStringView osc::TPS2DTab::implGetName() const
 {
     return m_Impl->getName();
 }

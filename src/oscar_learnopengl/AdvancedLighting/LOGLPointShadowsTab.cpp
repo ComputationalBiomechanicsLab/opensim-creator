@@ -2,33 +2,9 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
+#include <imgui.h>
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
-#include <oscar/Graphics/Camera.hpp>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/RenderTexture.hpp>
-#include <oscar/Graphics/RenderTextureDescriptor.hpp>
-#include <oscar/Graphics/RenderTextureReadWrite.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Graphics/TextureDimensionality.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Mat4.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/UnitVec3.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/UID.hpp>
 
 #include <cmath>
 #include <array>
@@ -36,19 +12,7 @@
 #include <utility>
 
 using namespace osc::literals;
-using osc::AngleAxis;
-using osc::Color;
-using osc::CStringView;
-using osc::MouseCapturingCamera;
-using osc::RenderTexture;
-using osc::RenderTextureDescriptor;
-using osc::RenderTextureFormat;
-using osc::RenderTextureReadWrite;
-using osc::TextureDimensionality;
-using osc::Transform;
-using osc::UnitVec3;
-using osc::Vec2i;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {
@@ -103,7 +67,7 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 5.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor(Color::clear());
@@ -225,25 +189,27 @@ private:
         m_PerfPanel.onDraw();
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
+
     Material m_ShadowMappingMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.geom"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.geom"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.frag"),
     }};
 
     Material m_SceneMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.frag"),
     }};
 
     Material m_SoftSceneMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/SoftScene.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/SoftScene.frag"),
     }};
 
     MouseCapturingCamera m_SceneCamera = CreateCamera();
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/wood.png"),
+        m_Loader.open("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
     Mesh m_CubeMesh = GenerateCubeMesh();
@@ -273,7 +239,7 @@ osc::LOGLPointShadowsTab::LOGLPointShadowsTab(LOGLPointShadowsTab&&) noexcept = 
 osc::LOGLPointShadowsTab& osc::LOGLPointShadowsTab::operator=(LOGLPointShadowsTab&&) noexcept = default;
 osc::LOGLPointShadowsTab::~LOGLPointShadowsTab() noexcept = default;
 
-osc::UID osc::LOGLPointShadowsTab::implGetID() const
+UID osc::LOGLPointShadowsTab::implGetID() const
 {
     return m_Impl->getID();
 }

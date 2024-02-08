@@ -1,9 +1,21 @@
 # ChangeLog
 
-All notable changes to this project will be documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+All notable changes to this project will be documented here. The format is based
+on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+- OSC-specific experimental OpenSim components are now exposed to the user via the model editor. So, as
+  a user, you can now (e.g.) manually add a `PointToPointEdge` to your model in order to measure the
+  distance between two points (previously: `PointToPointEdge` was only available through the
+  `Frame Definition` UI)
+
+> **Beware**: OSC's custom/experimental components are incompatible with OpenSim. The intention
+>             of this feature is to provide users with a way to test rapidly-developed OSC components
+>             that may, with enough interest, be upstreamed to `opensim-core`.
+
+- The available socket options when adding a new component to the model should now show all valid
+  options, rather than just showing frames in the model (#820)
 - The camera's location/fov is now editable in degrees
 - The camera's panning behavior is better when viewing a 3D scene via a viewport with a very skewed
   aspect ratio (e.g. when the model visualizer is tall and narrow, or short and wide)
@@ -11,6 +23,8 @@ All notable changes to this project will be documented here. The format is based
   documentation look a little nicer
 - Internal: the engine now uses strongly-typed angles (`osc::Radians` and `osc::Degrees`) to reduce
   unit mismatches in the source code
+- Internal: the test suite now automatically exercises all available UI tabs (mesh warper, model
+  editor, etc.) tabs to ensure they are always working
 
 ## [0.5.7] - 2023/01/11
 

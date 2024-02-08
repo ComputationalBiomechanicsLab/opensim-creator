@@ -58,27 +58,25 @@ public:
             }
         }
 
-        renderButton<OpenSim::Joint>();
-        renderButton<OpenSim::ContactGeometry>();
-        renderButton<OpenSim::Constraint>();
-        renderButton<OpenSim::Force>();
-        renderButton<OpenSim::Controller>();
-        renderButton<OpenSim::Probe>();
-        renderButton<OpenSim::Component>();
+        renderButton(GetComponentRegistry<OpenSim::Joint>());
+        renderButton(GetComponentRegistry<OpenSim::ContactGeometry>());
+        renderButton(GetComponentRegistry<OpenSim::Constraint>());
+        renderButton(GetComponentRegistry<OpenSim::Force>());
+        renderButton(GetComponentRegistry<OpenSim::Controller>());
+        renderButton(GetComponentRegistry<OpenSim::Probe>());
+        renderButton(GetComponentRegistry<OpenSim::Component>());
+        renderButton(GetCustomComponentRegistry());
 
         ImGui::PopID();
     }
 
 private:
 
-    template<std::derived_from<OpenSim::Component> T>
-    void renderButton()
+    void renderButton(ComponentRegistryBase const& registry)
     {
-        ComponentRegistry<T> const& registry = osc::GetComponentRegistry<T>();
-
         if (ImGui::BeginMenu(registry.name().c_str()))
         {
-            for (ComponentRegistryEntry<T> const& entry : registry)
+            for (auto const& entry : registry)
             {
                 if (ImGui::MenuItem(entry.name().c_str()))
                 {

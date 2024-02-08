@@ -1,28 +1,13 @@
 #include "MeshGenTestTab.hpp"
 
 #include <imgui.h>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/PolarPerspectiveCamera.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/Scene/SceneCache.hpp>
-#include <oscar/Scene/SceneDecoration.hpp>
-#include <oscar/Scene/SceneRenderer.hpp>
-#include <oscar/Scene/SceneRendererParams.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/UI/Widgets/SceneViewer.hpp>
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/oscar.hpp>
 
 #include <map>
 #include <memory>
 #include <string>
 
-using osc::App;
-using osc::CStringView;
-using osc::Mesh;
-using osc::SceneCache;
+using namespace osc;
 
 namespace
 {
@@ -30,7 +15,7 @@ namespace
 
     std::map<std::string, Mesh> GenerateMeshLookup()
     {
-        SceneCache& cache = *App::singleton<SceneCache>();
+        SceneCache cache;
 
         return {
             {"sphere", cache.getSphereMesh()},
@@ -105,7 +90,7 @@ private:
 
 // public API
 
-osc::CStringView osc::MeshGenTestTab::id()
+CStringView osc::MeshGenTestTab::id()
 {
     return c_TabStringID;
 }
@@ -118,12 +103,12 @@ osc::MeshGenTestTab::MeshGenTestTab(MeshGenTestTab&&) noexcept = default;
 osc::MeshGenTestTab& osc::MeshGenTestTab::operator=(MeshGenTestTab&&) noexcept = default;
 osc::MeshGenTestTab::~MeshGenTestTab() noexcept = default;
 
-osc::UID osc::MeshGenTestTab::implGetID() const
+UID osc::MeshGenTestTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::MeshGenTestTab::implGetName() const
+CStringView osc::MeshGenTestTab::implGetName() const
 {
     return m_Impl->getName();
 }

@@ -57,6 +57,7 @@ add_library(oscar_learnopengl STATIC
     LearnOpenGLHelpers.hpp
     LearnOpenGLTabRegistry.cpp
     LearnOpenGLTabRegistry.hpp
+    LearnOpenGLTabs.hpp
     MouseCapturingCamera.hpp
 )
 

@@ -21,7 +21,9 @@
 #include <utility>
 #include <vector>
 
-class osc::CoordinateEditorPanel::Impl final : public osc::StandardPanelImpl {
+using namespace osc;
+
+class osc::CoordinateEditorPanel::Impl final : public StandardPanelImpl {
 public:
 
     Impl(
@@ -84,14 +86,14 @@ private:
                         std::sort(
                             coordPtrs.begin(),
                             coordPtrs.end(),
-                            osc::IsNameLexographicallyLowerThan<OpenSim::Component const*>
+                            IsNameLexographicallyLowerThan<OpenSim::Component const*>
                         );
                         break;
                     case ImGuiSortDirection_Descending:
                         std::sort(
                             coordPtrs.begin(),
                             coordPtrs.end(),
-                            osc::IsNameLexographicallyGreaterThan<OpenSim::Component const*>
+                            IsNameLexographicallyGreaterThan<OpenSim::Component const*>
                         );
                         break;
                     case ImGuiSortDirection_None:
@@ -131,12 +133,12 @@ private:
         int stylesPushed = 0;
         if (&c == m_Model->getHovered())
         {
-            osc::PushStyleColor(ImGuiCol_Text, osc::Color::yellow());
+            PushStyleColor(ImGuiCol_Text, Color::yellow());
             ++stylesPushed;
         }
         if (&c == m_Model->getSelected())
         {
-            osc::PushStyleColor(ImGuiCol_Text, osc::Color::yellow());
+            PushStyleColor(ImGuiCol_Text, Color::yellow());
             ++stylesPushed;
         }
 
@@ -148,10 +150,10 @@ private:
             m_Model->setHovered(&c);
 
             std::stringstream ss;
-            ss << "    motion type = " << osc::GetMotionTypeDisplayName(c) << '\n';
-            ss << "    owner = " << osc::TryGetOwnerName(c).value_or("(no owner)");
+            ss << "    motion type = " << GetMotionTypeDisplayName(c) << '\n';
+            ss << "    owner = " << TryGetOwnerName(c).value_or("(no owner)");
 
-            osc::DrawTooltip(c.getName(), ss.str());
+            DrawTooltip(c.getName(), ss.str());
         }
 
         if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
@@ -165,7 +167,7 @@ private:
                 m_MainUIStateAPI,
                 m_EditorAPI,
                 m_Model,
-                osc::GetAbsolutePath(c)
+                GetAbsolutePath(c)
             );
             popup->open();
             m_EditorAPI->pushPopup(std::move(popup));
@@ -194,7 +196,7 @@ private:
         ImGui::PopStyleColor();
         ImGui::PopStyleColor();
         ImGui::PopStyleColor();
-        osc::DrawTooltipIfItemHovered("Toggle Coordinate Lock", "Lock/unlock the coordinate's value.\n\nLocking a coordinate indicates whether the coordinate's value should be constrained to this value during the simulation.");
+        DrawTooltipIfItemHovered("Toggle Coordinate Lock", "Lock/unlock the coordinate's value.\n\nLocking a coordinate indicates whether the coordinate's value should be constrained to this value during the simulation.");
     }
 
     void drawDataCellCoordinateSlider(OpenSim::Coordinate const& c)
@@ -227,7 +229,7 @@ private:
             double storedValue = ConvertCoordDisplayValueToStorageValue(c, displayedValue);
             ActionSetCoordinateValueAndSave(*m_Model, c, storedValue);
         }
-        osc::DrawTooltipBodyOnlyIfItemHovered("Ctrl-click the slider to edit");
+        DrawTooltipBodyOnlyIfItemHovered("Ctrl-click the slider to edit");
     }
 
     void drawSpeedCell(OpenSim::Coordinate const& c)
@@ -238,13 +240,13 @@ private:
         if (InputMetersFloat("##coordinatespeededitor", displayedSpeed))
         {
             double storedSpeed = ConvertCoordDisplayValueToStorageValue(c, displayedSpeed);
-            osc::ActionSetCoordinateSpeed(*m_Model, c, storedSpeed);
+            ActionSetCoordinateSpeed(*m_Model, c, storedSpeed);
         }
 
         if (ImGui::IsItemDeactivatedAfterEdit())
         {
             double storedSpeed = ConvertCoordDisplayValueToStorageValue(c, displayedSpeed);
-            osc::ActionSetCoordinateSpeedAndSave(*m_Model, c, storedSpeed);
+            ActionSetCoordinateSpeedAndSave(*m_Model, c, storedSpeed);
         }
     }
 
@@ -270,7 +272,7 @@ osc::CoordinateEditorPanel::CoordinateEditorPanel(CoordinateEditorPanel&&) noexc
 osc::CoordinateEditorPanel& osc::CoordinateEditorPanel::operator=(CoordinateEditorPanel&&) noexcept = default;
 osc::CoordinateEditorPanel::~CoordinateEditorPanel() noexcept = default;
 
-osc::CStringView osc::CoordinateEditorPanel::implGetName() const
+CStringView osc::CoordinateEditorPanel::implGetName() const
 {
     return m_Impl->getName();
 }

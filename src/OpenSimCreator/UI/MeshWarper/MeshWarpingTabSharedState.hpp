@@ -10,7 +10,6 @@
 
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -18,6 +17,7 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/UI/Tabs/ITabHost.hpp>
 #include <oscar/UI/Widgets/PopupManager.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
@@ -178,8 +178,7 @@ namespace osc
 
         // wireframe material, used to draw scene elements in a wireframe style
         Material wireframeMaterial = CreateWireframeOverlayMaterial(
-            App::config(),
-            *App::singleton<ShaderCache>()
+            *App::singleton<ShaderCache>(App::resource_loader())
         );
 
         // shared sphere mesh (used by rendering code)

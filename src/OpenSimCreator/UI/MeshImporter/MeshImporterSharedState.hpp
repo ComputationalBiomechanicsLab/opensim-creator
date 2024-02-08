@@ -23,7 +23,6 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Line.hpp>
@@ -44,6 +43,7 @@
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>
@@ -106,7 +106,7 @@ namespace osc::mi
             }
             catch (std::exception const& ex)
             {
-                log::error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
+                log_error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
             }
         }
 
@@ -507,9 +507,9 @@ namespace osc::mi
 
             Material material
             {
-                App::singleton<ShaderCache>()->load(
-                    App::resource("shaders/SolidColor.vert"),
-                    App::resource("shaders/SolidColor.frag")
+                App::singleton<ShaderCache>(App::resource_loader())->load(
+                    "shaders/SolidColor.vert",
+                    "shaders/SolidColor.frag"
                 )
             };
             material.setColor("uColor", m_Colors.gridLines);
@@ -821,7 +821,7 @@ namespace osc::mi
             }
             catch (std::exception const& ex)
             {
-                log::error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
+                log_error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
             }
 
             if (m)
@@ -835,7 +835,7 @@ namespace osc::mi
             {
                 for (std::string const& issue : issues)
                 {
-                    log::error("%s", issue.c_str());
+                    log_error("%s", issue.c_str());
                 }
                 return false;
             }
@@ -916,7 +916,7 @@ namespace osc::mi
         // called when the mesh loader responds with a mesh loading error
         void popMeshLoaderHandleErrorResponse(MeshLoadErrorResponse& err)
         {
-            log::error("%s: error loading mesh file: %s", err.path.string().c_str(), err.error.c_str());
+            log_error("%s: error loading mesh file: %s", err.path.string().c_str(), err.error.c_str());
         }
 
         void popMeshLoader()
@@ -1458,9 +1458,8 @@ namespace osc::mi
 
         // renderer that draws the scene
         SceneRenderer m_SceneRenderer{
-            App::config(),
             *App::singleton<SceneCache>(),
-            *App::singleton<ShaderCache>()
+            *App::singleton<ShaderCache>(App::resource_loader())
         };
 
         // COLORS

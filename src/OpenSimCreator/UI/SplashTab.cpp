@@ -15,7 +15,6 @@
 #include <imgui.h>
 #include <oscar/Formats/SVG.hpp>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
@@ -29,6 +28,7 @@
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Tabs/ITabHost.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>
@@ -41,22 +41,22 @@
 #include <utility>
 
 using namespace osc::literals;
-using osc::Radians;
+using namespace osc;
 
 namespace
 {
-    osc::PolarPerspectiveCamera GetSplashScreenDefaultPolarCamera()
+    PolarPerspectiveCamera GetSplashScreenDefaultPolarCamera()
     {
-        osc::PolarPerspectiveCamera rv;
+        PolarPerspectiveCamera rv;
         rv.phi = 30_deg;
         rv.radius = 10.0f;
         rv.theta = 45_deg;
         return rv;
     }
 
-    osc::SceneRendererParams GetSplashScreenDefaultRenderParams(osc::PolarPerspectiveCamera const& camera)
+    SceneRendererParams GetSplashScreenDefaultRenderParams(PolarPerspectiveCamera const& camera)
     {
-        osc::SceneRendererParams rv;
+        SceneRendererParams rv;
         rv.drawRims = false;
         rv.viewMatrix = camera.getViewMtx();
         rv.nearClippingPlane = camera.znear;
@@ -71,7 +71,7 @@ namespace
     // helper: draws an ImGui::MenuItem for a given recent- or example-file-path
     void DrawRecentOrExampleFileMenuItem(
         std::filesystem::path const& path,
-        osc::ParentPtr<osc::IMainUIStateAPI>& parent_,
+        ParentPtr<IMainUIStateAPI>& parent_,
         int& imguiID)
     {
         std::string const label = std::string{ICON_FA_FILE} + " " + path.filename().string();
@@ -79,7 +79,7 @@ namespace
         ImGui::PushID(++imguiID);
         if (ImGui::MenuItem(label.c_str()))
         {
-            parent_->addAndSelectTab<osc::LoadingTab>(parent_, path);
+            parent_->addAndSelectTab<LoadingTab>(parent_, path);
         }
         // show the full path as a tooltip when the item is hovered (some people have
         // long file names (#784)
@@ -148,7 +148,7 @@ public:
 
     void onDraw()
     {
-        if (Area(osc::GetMainViewportWorkspaceScreenRect()) <= 0.0f)
+        if (Area(GetMainViewportWorkspaceScreenRect()) <= 0.0f)
         {
             // edge-case: splash screen is the first rendered frame and ImGui
             //            is being unusual about it
@@ -165,11 +165,11 @@ public:
 private:
     Rect calcMainMenuRect() const
     {
-        Rect tabRect = osc::GetMainViewportWorkspaceScreenRect();
+        Rect tabRect = GetMainViewportWorkspaceScreenRect();
         // pretend the attributation bar isn't there (avoid it)
         tabRect.p2.y -= static_cast<float>(std::max(m_TudLogo.getDimensions().y, m_CziLogo.getDimensions().y)) - 2.0f*ImGui::GetStyle().WindowPadding.y;
 
-        Vec2 const menuAndTopLogoDims = osc::Min(osc::Dimensions(tabRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
+        Vec2 const menuAndTopLogoDims = Min(Dimensions(tabRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
         Vec2 const menuAndTopLogoTopLeft = tabRect.p1 + 0.5f*(Dimensions(tabRect) - menuAndTopLogoDims);
         Vec2 const menuDims = {menuAndTopLogoDims.x, menuAndTopLogoDims.y - m_MainAppLogoDims.y - m_TopLogoPadding.y};
         Vec2 const menuTopLeft = Vec2{menuAndTopLogoTopLeft.x, menuAndTopLogoTopLeft.y + m_MainAppLogoDims.y + m_TopLogoPadding.y};
@@ -308,12 +308,12 @@ private:
         }
         else
         {
-            osc::PushStyleColor(ImGuiCol_Text, osc::Color::halfGrey());
+            PushStyleColor(ImGuiCol_Text, Color::halfGrey());
             ImGui::TextWrapped("No files opened recently. Try:");
             ImGui::BulletText("Creating a new model (Ctrl+N)");
             ImGui::BulletText("Opening an existing model (Ctrl+O)");
             ImGui::BulletText("Opening an example (right-side)");
-            osc::PopStyleColor();
+            PopStyleColor();
         }
     }
 
@@ -400,15 +400,14 @@ private:
     PolarPerspectiveCamera m_Camera = GetSplashScreenDefaultPolarCamera();
     SceneRenderer m_SceneRenderer
     {
-        App::config(),
         *App::singleton<SceneCache>(),
-        *App::singleton<ShaderCache>(),
+        *App::singleton<ShaderCache>(App::resource_loader()),
     };
     SceneRendererParams m_LastSceneRendererParams = GetSplashScreenDefaultRenderParams(m_Camera);
 
-    Texture2D m_MainAppLogo = LoadTextureFromSVGFile(App::resource("textures/banner.svg"));
-    Texture2D m_CziLogo = LoadTextureFromSVGFile(App::resource("textures/chanzuckerberg_logo.svg"), 0.5f);
-    Texture2D m_TudLogo = LoadTextureFromSVGFile(App::resource("textures/tudelft_logo.svg"), 0.5f);
+    Texture2D m_MainAppLogo = ReadSVGIntoTexture(App::load_resource("textures/banner.svg"));
+    Texture2D m_CziLogo = ReadSVGIntoTexture(App::load_resource("textures/chanzuckerberg_logo.svg"), 0.5f);
+    Texture2D m_TudLogo = ReadSVGIntoTexture(App::load_resource("textures/tudelft_logo.svg"), 0.5f);
 
     // dimensions of stuff
     Vec2 m_SplashMenuMaxDims = {640.0f, 512.0f};
@@ -433,12 +432,12 @@ osc::SplashTab::SplashTab(SplashTab&&) noexcept = default;
 osc::SplashTab& osc::SplashTab::operator=(SplashTab&&) noexcept = default;
 osc::SplashTab::~SplashTab() noexcept = default;
 
-osc::UID osc::SplashTab::implGetID() const
+UID osc::SplashTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::SplashTab::implGetName() const
+CStringView osc::SplashTab::implGetName() const
 {
     return m_Impl->getName();
 }

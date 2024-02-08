@@ -14,8 +14,7 @@
 #include <memory>
 #include <string>
 
-using osc::CStringView;
-using osc::UID;
+using namespace osc;
 
 class osc::ErrorTab::Impl final : public StandardTabImpl {
 public:

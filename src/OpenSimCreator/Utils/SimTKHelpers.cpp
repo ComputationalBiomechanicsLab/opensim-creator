@@ -13,11 +13,7 @@
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
 
-using osc::Mat4;
-using osc::Mat4x3;
-using osc::Quat;
-using osc::Vec3;
-using osc::Vec4;
+using namespace osc;
 
 // public API
 
@@ -175,7 +171,7 @@ Quat osc::ToQuat(SimTK::Rotation const& r)
     };
 }
 
-osc::Transform osc::ToTransform(SimTK::Transform const& t)
+Transform osc::ToTransform(SimTK::Transform const& t)
 {
     return Transform{.rotation = ToQuat(t.R()), .position = ToVec3(t.p())};
 }

@@ -26,23 +26,25 @@
 #include <utility>
 #include <vector>
 
+using namespace osc;
+
 namespace
 {
     // cache for decorations generated from a model+state+params
     class CachedDecorationState final {
     public:
-        explicit CachedDecorationState(std::shared_ptr<osc::SceneCache> meshCache_) :
+        explicit CachedDecorationState(std::shared_ptr<SceneCache> meshCache_) :
             m_MeshCache{std::move(meshCache_)}
         {
         }
 
         bool update(
-            osc::IConstModelStatePair const& modelState,
-            osc::ModelRendererParams const& params)
+            IConstModelStatePair const& modelState,
+            ModelRendererParams const& params)
         {
             OSC_PERF("CachedModelRenderer/generateDecorationsCached");
 
-            osc::ModelStatePairInfo const info{modelState};
+            ModelStatePairInfo const info{modelState};
             if (info != m_PrevModelStateInfo ||
                 params.decorationOptions != m_PrevDecorationOptions ||
                 params.overlayOptions != m_PrevOverlayOptions)
@@ -51,7 +53,7 @@ namespace
                 m_BVH.clear();
 
                 // regenerate
-                auto const onComponentDecoration = [this](OpenSim::Component const&, osc::SceneDecoration&& dec)
+                auto const onComponentDecoration = [this](OpenSim::Component const&, SceneDecoration&& dec)
                 {
                     m_Drawlist.push_back(std::move(dec));
                 };
@@ -63,7 +65,7 @@ namespace
                 );
                 UpdateSceneBVH(m_Drawlist, m_BVH);
 
-                auto const onOverlayDecoration = [this](osc::SceneDecoration&& dec)
+                auto const onOverlayDecoration = [this](SceneDecoration&& dec)
                 {
                     m_Drawlist.push_back(std::move(dec));
                 };
@@ -85,36 +87,34 @@ namespace
             }
         }
 
-        std::span<osc::SceneDecoration const> getDrawlist() const { return m_Drawlist; }
-        osc::BVH const& getBVH() const { return m_BVH; }
-        std::optional<osc::AABB> getAABB() const { return m_BVH.getRootAABB(); }
-        osc::SceneCache& updSceneCache() const
+        std::span<SceneDecoration const> getDrawlist() const { return m_Drawlist; }
+        BVH const& getBVH() const { return m_BVH; }
+        std::optional<AABB> getAABB() const { return m_BVH.getRootAABB(); }
+        SceneCache& updSceneCache() const
         {
             // TODO: technically (imo) this breaks `const`
             return *m_MeshCache;
         }
 
     private:
-        std::shared_ptr<osc::SceneCache> m_MeshCache;
-        osc::ModelStatePairInfo m_PrevModelStateInfo;
-        osc::OpenSimDecorationOptions m_PrevDecorationOptions;
-        osc::OverlayDecorationOptions m_PrevOverlayOptions;
-        std::vector<osc::SceneDecoration> m_Drawlist;
-        osc::BVH m_BVH;
+        std::shared_ptr<SceneCache> m_MeshCache;
+        ModelStatePairInfo m_PrevModelStateInfo;
+        OpenSimDecorationOptions m_PrevDecorationOptions;
+        OverlayDecorationOptions m_PrevOverlayOptions;
+        std::vector<SceneDecoration> m_Drawlist;
+        BVH m_BVH;
     };
 }
 
 class osc::CachedModelRenderer::Impl final {
 public:
     Impl(
-        AppConfig const& config,
         std::shared_ptr<SceneCache> const& meshCache,
         ShaderCache& shaderCache) :
 
         m_DecorationCache{meshCache},
-        m_Renderer{config, *meshCache, shaderCache}
-    {
-    }
+        m_Renderer{*meshCache, shaderCache}
+    {}
 
     void autoFocusCamera(
         IConstModelStatePair const& modelState,
@@ -196,18 +196,17 @@ private:
 // public API (PIMPL)
 
 osc::CachedModelRenderer::CachedModelRenderer(
-    AppConfig const& config,
     std::shared_ptr<SceneCache> const& meshCache,
     ShaderCache& shaderCache) :
 
-    m_Impl{std::make_unique<Impl>(config, meshCache, shaderCache)}
+    m_Impl{std::make_unique<Impl>(meshCache, shaderCache)}
 {
 }
 osc::CachedModelRenderer::CachedModelRenderer(CachedModelRenderer&&) noexcept = default;
 osc::CachedModelRenderer& osc::CachedModelRenderer::operator=(CachedModelRenderer&&) noexcept = default;
 osc::CachedModelRenderer::~CachedModelRenderer() noexcept = default;
 
-osc::RenderTexture& osc::CachedModelRenderer::onDraw(
+RenderTexture& osc::CachedModelRenderer::onDraw(
     IConstModelStatePair const& modelState,
     ModelRendererParams const& renderParams,
     Vec2 dims,
@@ -229,22 +228,22 @@ void osc::CachedModelRenderer::autoFocusCamera(
     m_Impl->autoFocusCamera(modelState, renderParams, aspectRatio);
 }
 
-osc::RenderTexture& osc::CachedModelRenderer::updRenderTexture()
+RenderTexture& osc::CachedModelRenderer::updRenderTexture()
 {
     return m_Impl->updRenderTexture();
 }
 
-std::span<osc::SceneDecoration const> osc::CachedModelRenderer::getDrawlist() const
+std::span<SceneDecoration const> osc::CachedModelRenderer::getDrawlist() const
 {
     return m_Impl->getDrawlist();
 }
 
-std::optional<osc::AABB> osc::CachedModelRenderer::getRootAABB() const
+std::optional<AABB> osc::CachedModelRenderer::getRootAABB() const
 {
     return m_Impl->getRootAABB();
 }
 
-std::optional<osc::SceneCollision> osc::CachedModelRenderer::getClosestCollision(
+std::optional<SceneCollision> osc::CachedModelRenderer::getClosestCollision(
     ModelRendererParams const& params,
     Vec2 mouseScreenPos,
     Rect const& viewportScreenRect) const

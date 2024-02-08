@@ -9,7 +9,6 @@
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <oscar/Graphics/RenderTexture.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -19,6 +18,7 @@
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
@@ -53,8 +53,8 @@ namespace osc
 
             // render it via ImGui and hittest it
             RenderTexture& renderTexture = renderScene(dims);
-            osc::DrawTextureAsImGuiImage(renderTexture);
-            m_LastTextureHittestResult = osc::HittestLastImguiItem();
+            DrawTextureAsImGuiImage(renderTexture);
+            m_LastTextureHittestResult = HittestLastImguiItem();
 
             drawOverlays(m_LastTextureHittestResult.rect);
         }
@@ -106,15 +106,15 @@ namespace osc
         // draws a information icon that shows basic mesh info when hovered
         void drawInformationIcon()
         {
-            osc::ButtonNoBg(ICON_FA_INFO_CIRCLE);
+            ButtonNoBg(ICON_FA_INFO_CIRCLE);
             if (ImGui::IsItemHovered())
             {
-                osc::BeginTooltip();
+                BeginTooltip();
 
                 ImGui::TextDisabled("Result Information:");
                 drawInformationTable();
 
-                osc::EndTooltip();
+                EndTooltip();
             }
         }
 
@@ -279,9 +279,8 @@ namespace osc
         PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(m_State->getResultMesh().getBounds());
         CachedSceneRenderer m_CachedRenderer
         {
-            App::config(),
             *App::singleton<SceneCache>(),
-            *App::singleton<ShaderCache>(),
+            *App::singleton<ShaderCache>(App::resource_loader()),
         };
         ImGuiItemHittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;

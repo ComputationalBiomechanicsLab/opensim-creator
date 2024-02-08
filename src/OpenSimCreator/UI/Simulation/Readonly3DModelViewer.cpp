@@ -5,11 +5,11 @@
 #include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
 
 #include <imgui.h>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneCollision.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/UI/IconCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Widgets/GuiRuler.hpp>
@@ -21,6 +21,8 @@
 #include <string>
 #include <string_view>
 #include <utility>
+
+using namespace osc;
 
 namespace
 {
@@ -96,7 +98,7 @@ public:
         );
 
         // update current+retained hittest
-        ImGuiItemHittestResult const hittest = osc::HittestLastImguiItem();
+        ImGuiItemHittestResult const hittest = HittestLastImguiItem();
         m_MaybeLastHittest = hittest;
 
         // if allowed, hittest the scene
@@ -123,7 +125,7 @@ public:
         if (edited)
         {
             auto const& renderParamsAfter = m_Params;
-            osc::SaveModelRendererParamsDifference(
+            SaveModelRendererParamsDifference(
                 renderParamsBefore,
                 renderParamsAfter,
                 GetSettingsKeyPrefixForPanel(m_ParentPanelName),
@@ -143,10 +145,10 @@ public:
         }
     }
 
-    std::optional<osc::Rect> getScreenRect() const
+    std::optional<Rect> getScreenRect() const
     {
         return m_MaybeLastHittest ?
-            std::optional<osc::Rect>{m_MaybeLastHittest->rect} :
+            std::optional<Rect>{m_MaybeLastHittest->rect} :
             std::nullopt;
     }
 
@@ -176,17 +178,16 @@ private:
     ModelRendererParams m_Params;
     CachedModelRenderer m_CachedModelRenderer
     {
-        App::get().getConfig(),
         App::singleton<SceneCache>(),
-        *App::singleton<ShaderCache>(),
+        *App::singleton<ShaderCache>(App::resource_loader()),
     };
 
     // only available after rendering the first frame
     std::optional<ImGuiItemHittestResult> m_MaybeLastHittest;
 
     // overlay-related data
-    std::shared_ptr<IconCache> m_IconCache = App::singleton<osc::IconCache>(
-        App::resource("icons/"),
+    std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
+        App::resource_loader().withPrefix("icons/"),
         ImGui::GetTextLineHeight()/128.0f
     );
     GuiRuler m_Ruler;
@@ -218,12 +219,12 @@ bool osc::Readonly3DModelViewer::isMousedOver() const
     return m_Impl->isMousedOver();
 }
 
-std::optional<osc::SceneCollision> osc::Readonly3DModelViewer::onDraw(IConstModelStatePair const& rs)
+std::optional<SceneCollision> osc::Readonly3DModelViewer::onDraw(IConstModelStatePair const& rs)
 {
     return m_Impl->onDraw(rs);
 }
 
-std::optional<osc::Rect> osc::Readonly3DModelViewer::getScreenRect() const
+std::optional<Rect> osc::Readonly3DModelViewer::getScreenRect() const
 {
     return m_Impl->getScreenRect();
 }

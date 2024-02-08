@@ -25,7 +25,7 @@
 #include <string>
 #include <utility>
 
-using osc::CStringView;
+using namespace osc;
 
 namespace
 {
@@ -157,7 +157,7 @@ std::vector<std::filesystem::path> osc::PromptUserForFiles(
     }
     else
     {
-        log::error("NFD_OpenDialogMultiple error: %s", NFD_GetError());
+        log_error("NFD_OpenDialogMultiple error: %s", NFD_GetError());
     }
 
     return rv;
@@ -238,6 +238,10 @@ std::string osc::CurrentErrnoAsString()
 #include <sys/types.h>
 #include <sys/wait.h>
 
+using osc::log_error;
+using osc::log_info;
+using osc::log_message;
+using osc::log_warn;
 
 std::tm osc::GMTimeThreadsafe(std::time_t t)
 {
@@ -253,7 +257,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
     auto* maybeErr = strerror_r(errnum, buf.data(), buf.size());
     if (std::is_same_v<int, decltype(maybeErr)> && !maybeErr)
     {
-        log::warn("a call to strerror_r failed with error code %i", maybeErr);
+        log_warn("a call to strerror_r failed with error code %i", maybeErr);
         return {};
     }
     else
@@ -264,7 +268,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
     std::string rv{buf.data()};
     if (rv.size() == buf.size())
     {
-        log::warn("a call to strerror_r returned an error string that was as big as the buffer: an OS error message may have been truncated!");
+        log_warn("a call to strerror_r returned an error string that was as big as the buffer: an OS error message may have been truncated!");
     }
     return rv;
 }
@@ -282,7 +286,7 @@ void osc::WriteTracebackToLog(LogLevel lvl)
 
     for (int i = 0; i < size; ++i)
     {
-        log::log(lvl, "%s", messages.get()[i]);
+        log_message(lvl, "%s", messages.get()[i]);
     }
 }
 
@@ -302,13 +306,13 @@ namespace
         // reset abort signal handler
         if (signal(SIGABRT, SIG_DFL) == SIG_ERR)
         {
-            osc::log::error("failed to reset SIGABRT handler - the program may not be able to crash correctly");
+            log_error("failed to reset SIGABRT handler - the program may not be able to crash correctly");
         }
 
         // reset segfault signal handler
         if (signal(SIGSEGV, SIG_DFL) == SIG_ERR)
         {
-            osc::log::error("failed to reset SIGSEGV handler - the program may not be able to crash correctly");
+            log_error("failed to reset SIGSEGV handler - the program may not be able to crash correctly");
         }
 
         auto* uc = static_cast<osc_sig_ucontext*>(ucontext);
@@ -352,13 +356,13 @@ void osc::InstallBacktraceHandler(std::filesystem::path const&)
     // install segfault handler
     if (sigaction(SIGSEGV, &sigact, nullptr) != 0)
     {
-        log::error("could not set signal handler for SIGSEGV: error reporting may not work as intended");
+        log_error("could not set signal handler for SIGSEGV: error reporting may not work as intended");
     }
 
     // install abort handler: this triggers whenever a non-throwing `assert` causes a termination
     if (sigaction(SIGABRT, &sigact, nullptr) != 0)
     {
-        log::error("could not set signal handler for SIGABRT: error reporting may not work as intended");
+        log_error("could not set signal handler for SIGABRT: error reporting may not work as intended");
     }
 }
 
@@ -370,7 +374,7 @@ void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& fp)
     if (pid == -1)
     {
         // failed to fork a process
-        log::error("failed to fork() a new subprocess: this usually only happens if you have unusual OS settings: see 'man fork' ERRORS for details");
+        log_error("failed to fork() a new subprocess: this usually only happens if you have unusual OS settings: see 'man fork' ERRORS for details");
         return;
     }
     else if (pid != 0)
@@ -379,14 +383,14 @@ void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& fp)
         //
         // have the parent thread `wait` for the child thread to finish
         // what it's doing (xdg-open, itself, forks + detaches)
-        log::info("fork()ed a subprocess for 'xdg-open %s'", fp.c_str());
+        log_info("fork()ed a subprocess for 'xdg-open %s'", fp.c_str());
 
         int rv = 0;
         waitpid(pid, &rv, 0);
 
         if (rv)
         {
-            log::error("fork()ed subprocess returned an error code of %i", rv);
+            log_error("fork()ed subprocess returned an error code of %i", rv);
         }
 
         return;
@@ -425,6 +429,10 @@ void osc::OpenURLInDefaultBrowser(std::string_view vw)
 #include <string.h>  // strerror_r()
 #include <time.h>  // gmtime_r()
 
+using osc::log_error;
+using osc::log_message;
+using osc::log_warn;
+
 std::tm osc::GMTimeThreadsafe(std::time_t t)
 {
     std::tm rv;
@@ -437,7 +445,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
     std::array<char, 512> buf{};
     if (strerror_r(errnum, buf.data(), buf.size()) == ERANGE)
     {
-        log::warn("a call to strerror_r returned ERANGE: an OS error message may have been truncated!");
+        log_warn("a call to strerror_r returned ERANGE: an OS error message may have been truncated!");
     }
     return std::string{buf.data()};
 }
@@ -456,7 +464,7 @@ void osc::WriteTracebackToLog(LogLevel lvl)
 
     for (int i = 0; i < size; ++i)
     {
-        log::log(lvl, "%s", messages.get()[i]);
+        log_message(lvl, "%s", messages.get()[i]);
     }
 }
 
@@ -464,8 +472,8 @@ namespace
 {
     [[noreturn]] void OSC_critical_error_handler(int sig_num, siginfo_t*, void*)
     {
-        osc::log::error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
-        osc::log::error("backtrace:");
+        log_error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
+        log_error("backtrace:");
         osc::WriteTracebackToLog(osc::LogLevel::err);
         exit(EXIT_FAILURE);
     }
@@ -480,13 +488,13 @@ void osc::InstallBacktraceHandler(std::filesystem::path const&)
     // enable SIGSEGV (segmentation fault) handler
     if (sigaction(SIGSEGV, &sigact, nullptr) != 0)
     {
-        log::warn("could not set a signal handler for SIGSEGV: crash error reporting may not work as intended");
+        log_warn("could not set a signal handler for SIGSEGV: crash error reporting may not work as intended");
     }
 
     // enable SIGABRT (abort) handler - usually triggers when `assert` fails or std::terminate is called
     if (sigaction(SIGABRT, &sigact, nullptr) != 0)
     {
-        log::warn("could not set a signal handler for SIGABRT: crash error reporting may not work as intended");
+        log_warn("could not set a signal handler for SIGABRT: crash error reporting may not work as intended");
     }
 }
 
@@ -508,9 +516,11 @@ void osc::OpenURLInDefaultBrowser(std::string_view url)
 #include <cinttypes>  // PRIXPTR
 #include <signal.h>   // signal()
 
-using osc::LogSink;
+using osc::defaultLogger;
+using osc::getTracebackLog;
 using osc::LogMessage;
 using osc::LogMessageView;
+using osc::LogSink;
 using osc::ToCStringView;
 
 std::tm osc::GMTimeThreadsafe(std::time_t t)
@@ -525,7 +535,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
     std::array<char, 512> buf{};
     if (errno_t rv = strerror_s(buf.data(), buf.size(), errnum); rv != 0)
     {
-        log::warn("a call to strerror_s returned an error (%i): an OS error message may be missing!", rv);
+        log_warn("a call to strerror_s returned an error (%i): an OS error message may be missing!", rv);
     }
     return std::string{buf.data()};
 }
@@ -540,7 +550,7 @@ void osc::WriteTracebackToLog(LogLevel lvl)
     // popupate [0, n) with return addresses (see MSDN)
     USHORT n = RtlCaptureStackBackTrace(skipped_frames, num_frames, return_addrs, nullptr);
 
-    log::log(lvl, "backtrace:");
+    log_message(lvl, "backtrace:");
     for (size_t i = 0; i < n; ++i)
     {
         // figure out where the address is relative to the start of the page range the address
@@ -568,10 +578,10 @@ void osc::WriteTracebackToLog(LogLevel lvl)
 
         PVOID relative_addr = reinterpret_cast<PVOID>(reinterpret_cast<DWORD64>(return_addrs[i]) - base_addr);
 
-        log::log(lvl, "    #%zu %s+0x%" PRIXPTR " [0x%" PRIXPTR "]", i, filename_start, (uintptr_t)relative_addr, (uintptr_t)return_addrs[i]);
+        log_message(lvl, "    #%zu %s+0x%" PRIXPTR " [0x%" PRIXPTR "]", i, filename_start, (uintptr_t)relative_addr, (uintptr_t)return_addrs[i]);
     }
-    log::log(lvl, "note: backtrace addresses are return addresses, not call addresses (see: https://devblogs.microsoft.com/oldnewthing/20170505-00/?p=96116)");
-    log::log(lvl, "to analyze the backtrace in WinDbg: `ln application.exe+ADDR`");
+    log_message(lvl, "note: backtrace addresses are return addresses, not call addresses (see: https://devblogs.microsoft.com/oldnewthing/20170505-00/?p=96116)");
+    log_message(lvl, "to analyze the backtrace in WinDbg: `ln application.exe+ADDR`");
 
     // in windbg: ln osc.exe+ADDR
     // viewing it: https://stackoverflow.com/questions/54022914/c-is-there-any-command-likes-addr2line-on-windows
@@ -627,7 +637,7 @@ namespace
 
     LONG crash_handler(EXCEPTION_POINTERS*)
     {
-        osc::log::error("exception propagated to root of the application: might be a segfault?");
+        log_error("exception propagated to root of the application: might be a segfault?");
 
         std::optional<std::filesystem::path> const maybeCrashReportPath =
             GetCrashReportPath();
@@ -640,7 +650,7 @@ namespace
         if (maybeCrashReportFile && *maybeCrashReportFile)
         {
             *maybeCrashReportFile << "----- log -----\n";
-            auto guard = osc::log::getTracebackLog().lock();
+            auto guard = getTracebackLog().lock();
             for (LogMessage const& msg : *guard)
             {
                 *maybeCrashReportFile << '[' << msg.loggerName << "] [" << ToCStringView(msg.level) << "] " << msg.payload << '\n';
@@ -656,9 +666,9 @@ namespace
 
             std::shared_ptr<osc::LogSink> sink = std::make_shared<CrashFileSink>(*maybeCrashReportFile);
 
-            osc::log::defaultLogger()->sinks().push_back(sink);
+            defaultLogger()->sinks().push_back(sink);
             WriteTracebackToLog(osc::LogLevel::err);
-            osc::log::defaultLogger()->sinks().erase(osc::log::defaultLogger()->sinks().end() - 1);
+            defaultLogger()->sinks().erase(defaultLogger()->sinks().end() - 1);
 
             *maybeCrashReportFile << "----- /traceback -----\n";
         }
@@ -676,7 +686,7 @@ namespace
 
     void signal_handler(int)
     {
-        osc::log::error("signal caught by application: printing backtrace");
+        log_error("signal caught by application: printing backtrace");
         WriteTracebackToLog(osc::LogLevel::err);
     }
 }
@@ -704,7 +714,7 @@ void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& p)
 
 void osc::OpenURLInDefaultBrowser(std::string_view)
 {
-    log::error("unsupported action: cannot open external URLs in Windows (yet!)");
+    log_error("unsupported action: cannot open external URLs in Windows (yet!)");
 }
 #else
 #error "Unsupported platform?"

@@ -4,6 +4,7 @@ find_package(GTest REQUIRED CONFIG)
 add_executable(testoscar
     Formats/TestCSV.cpp
     Formats/TestDAE.cpp
+    Formats/TestImage.cpp
 
     Graphics/Detail/TestVertexAttributeFormatHelpers.cpp
     Graphics/Detail/TestVertexAttributeHelpers.cpp
@@ -16,7 +17,6 @@ add_executable(testoscar
     Graphics/TestCubemap.cpp
     Graphics/TestCubemapFace.cpp
     Graphics/TestCullMode.cpp
-    Graphics/TestGraphicsHelpers.cpp
     Graphics/TestSubMeshDescriptor.cpp
     Graphics/TestMesh.cpp
     Graphics/TestMeshUpdateFlags.cpp
@@ -38,6 +38,18 @@ add_executable(testoscar
     Maths/TestBVH.cpp
     Maths/TestUnitVec.cpp
 
+    MetaTests/TestFormatsHeader.cpp
+    MetaTests/TestGraphicsHeader.cpp
+    MetaTests/TestMathsHeader.cpp
+    MetaTests/TestObjectHeader.cpp
+    MetaTests/TestOscarHeader.cpp
+    MetaTests/TestPlatformHeader.cpp
+    MetaTests/TestSceneHeader.cpp
+    MetaTests/TestShimsHeader.cpp
+    MetaTests/TestUIHeader.cpp
+    MetaTests/TestUtilsHeader.cpp
+    MetaTests/TestVariantHeader.cpp
+
     Object/TestClass.cpp
     Object/TestNode.cpp
     Object/TestNodePath.cpp
@@ -45,6 +57,10 @@ add_executable(testoscar
     Object/TestPropertyInfo.cpp
 
     Platform/TestAppSettingValueType.cpp
+    Platform/TestResourceDirectoryEntry.cpp
+    Platform/TestResourceLoader.cpp
+    Platform/TestResourcePath.cpp
+    Platform/TestResourceStream.cpp
 
     Scene/TestSceneCache.cpp
 

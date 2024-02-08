@@ -2,36 +2,14 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
-#include <SDL_events.h>
 #include <imgui.h>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/oscar.hpp>
+#include <SDL_events.h>
 
 #include <memory>
 
 using namespace osc::literals;
-using osc::App;
-using osc::ColorSpace;
-using osc::CStringView;
-using osc::GenerateCubeMesh;
-using osc::LoadTexture2DFromImage;
-using osc::Material;
-using osc::Mesh;
-using osc::MouseCapturingCamera;
-using osc::Shader;
-using osc::Transform;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {
@@ -44,15 +22,15 @@ namespace
         return m;
     }
 
-    Material GenerateUVTestingTextureMappedMaterial()
+    Material GenerateUVTestingTextureMappedMaterial(IResourceLoader& rl)
     {
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.vert"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
         }};
 
         rv.setTexture("uTexture", LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/uv_checker.jpg"),
+            rl.open("oscar_learnopengl/textures/uv_checker.jpg"),
             ColorSpace::sRGB
         ));
 
@@ -63,7 +41,7 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -123,7 +101,8 @@ private:
         ImGui::End();
     }
 
-    Material m_Material = GenerateUVTestingTextureMappedMaterial();
+    ResourceLoader m_Loader = App::resource_loader();
+    Material m_Material = GenerateUVTestingTextureMappedMaterial(m_Loader);
     Mesh m_Cube = GenerateCubeSimilarlyToLOGL();
     MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
 };
@@ -145,7 +124,7 @@ osc::LOGLFaceCullingTab::LOGLFaceCullingTab(LOGLFaceCullingTab&&) noexcept = def
 osc::LOGLFaceCullingTab& osc::LOGLFaceCullingTab::operator=(LOGLFaceCullingTab&&) noexcept = default;
 osc::LOGLFaceCullingTab::~LOGLFaceCullingTab() noexcept = default;
 
-osc::UID osc::LOGLFaceCullingTab::implGetID() const
+UID osc::LOGLFaceCullingTab::implGetID() const
 {
     return m_Impl->getID();
 }

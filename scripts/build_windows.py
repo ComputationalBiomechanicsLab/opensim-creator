@@ -115,7 +115,7 @@ def build_osc(conf: BuildConfiguration):
 
         # build+run OpenSimCreator test suite
         _run(f'cmake --build {conf.get_osc_build_dir()} --target TestOpenSimCreator {other_build_args}')
-        _run(f'{test_osc_path} --gtest_filter="-Renderer*" --gtest_filter="-AddComponentPopup*"')
+        _run(f'{test_osc_path} --gtest_filter="-Renderer*" --gtest_filter="-AddComponentPopup*" --gtest_filter="RegisteredOpenSimCreatorTabs*"')
 
         # build final output target (usually, the installer)
         _run(f'cmake --build {conf.get_osc_build_dir()} --target {conf.build_target} {other_build_args}')

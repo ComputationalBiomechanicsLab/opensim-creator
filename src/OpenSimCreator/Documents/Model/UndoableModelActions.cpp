@@ -69,22 +69,19 @@
 #include <typeinfo>
 #include <utility>
 
-using osc::App;
-using osc::BodyDetails;
-using osc::LoadingTab;
-using osc::IMainUIStateAPI;
+using namespace osc;
 
 // helper functions
 namespace
 {
-    void OpenOsimInLoadingTab(osc::ParentPtr<IMainUIStateAPI> const& api, std::filesystem::path p)
+    void OpenOsimInLoadingTab(ParentPtr<IMainUIStateAPI> const& api, std::filesystem::path p)
     {
         api->addAndSelectTab<LoadingTab>(api, std::move(p));
     }
 
-    void DoOpenFileViaDialog(osc::ParentPtr<IMainUIStateAPI> const& api)
+    void DoOpenFileViaDialog(ParentPtr<IMainUIStateAPI> const& api)
     {
-        std::optional<std::filesystem::path> const maybePath = osc::PromptUserForFile("osim");
+        std::optional<std::filesystem::path> const maybePath = PromptUserForFile("osim");
 
         if (maybePath)
         {
@@ -94,12 +91,12 @@ namespace
 
     std::optional<std::filesystem::path> PromptSaveOneFile()
     {
-        return osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
+        return PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
     }
 
     bool IsAnExampleFile(std::filesystem::path const& path)
     {
-        return osc::IsSubpath(App::resource("models"), path);
+        return IsSubpath(App::resourceFilepath("models"), path);
     }
 
     std::optional<std::string> TryGetModelSaveLocation(OpenSim::Model const& m)
@@ -134,12 +131,12 @@ namespace
         try
         {
             model.print(save_loc);
-            osc::log::info("saved model to %s", save_loc.c_str());
+            log_info("saved model to %s", save_loc.c_str());
             return true;
         }
         catch (OpenSim::Exception const& ex)
         {
-            osc::log::error("error saving model: %s", ex.what());
+            log_error("error saving model: %s", ex.what());
             return false;
         }
     }
@@ -151,7 +148,7 @@ namespace
         OpenSim::Joint const& jointPrototype,
         OpenSim::PhysicalFrame const& selectedPf)
     {
-        std::unique_ptr<OpenSim::Joint> copy = osc::Clone(jointPrototype);
+        std::unique_ptr<OpenSim::Joint> copy = Clone(jointPrototype);
         copy->setName(details.jointName);
 
         if (!details.addOffsetFrames)
@@ -168,7 +165,7 @@ namespace
                 pof1->setName(selectedPf.getName() + "_offset");
 
                 // care: ownership change happens here (#642)
-                OpenSim::PhysicalOffsetFrame& ref = osc::AddFrame(*copy, std::move(pof1));
+                OpenSim::PhysicalOffsetFrame& ref = AddFrame(*copy, std::move(pof1));
                 copy->connectSocket_parent_frame(ref);
             }
 
@@ -179,7 +176,7 @@ namespace
                 pof2->setName(b.getName() + "_offset");
 
                 // care: ownership change happens here (#642)
-                OpenSim::PhysicalOffsetFrame& ref = osc::AddFrame(*copy, std::move(pof2));
+                OpenSim::PhysicalOffsetFrame& ref = AddFrame(*copy, std::move(pof2));
                 copy->connectSocket_child_frame(ref);
             }
         }
@@ -198,7 +195,7 @@ namespace
             return false;  // new connectee isn't a frame
         }
 
-        auto const spatialRep = osc::TryGetSpatialRepresentation(component, state);
+        auto const spatialRep = TryGetSpatialRepresentation(component, state);
         if (!spatialRep)
         {
             return false;  // cannot represent the component spatially
@@ -208,7 +205,7 @@ namespace
         SimTK::Transform const groundToNewConnectee = newFrame->getTransformInGround(state).invert();
         SimTK::Transform const currentParentToNewConnectee = groundToNewConnectee * currentParentToGround;
 
-        if (auto* positionalProp = osc::FindSimplePropertyMut<SimTK::Vec3>(component, spatialRep->locationVec3PropertyName))
+        if (auto* positionalProp = FindSimplePropertyMut<SimTK::Vec3>(component, spatialRep->locationVec3PropertyName))
         {
             SimTK::Vec3 const oldPosition = positionalProp->getValue();
             SimTK::Vec3 const newPosition = currentParentToNewConnectee * oldPosition;
@@ -218,7 +215,7 @@ namespace
 
         if (spatialRep->maybeOrientationVec3EulersPropertyName)
         {
-            if (auto* orientationalProp = osc::FindSimplePropertyMut<SimTK::Vec3>(component, *spatialRep->maybeOrientationVec3EulersPropertyName))
+            if (auto* orientationalProp = FindSimplePropertyMut<SimTK::Vec3>(component, *spatialRep->maybeOrientationVec3EulersPropertyName))
             {
                 SimTK::Rotation const currentRotationInGround = spatialRep->parentToGround.R();
                 SimTK::Rotation const groundToNewConnecteeRotation = newFrame->getRotationInGround(state).invert();
@@ -347,7 +344,7 @@ void osc::ActionTryDeleteSelectionFromEditedModel(UndoableModelStatePair& uim)
         }
         catch (std::exception const& ex)
         {
-            log::error("error detected while deleting a component: %s", ex.what());
+            log_error("error detected while deleting a component: %s", ex.what());
             uim.rollback();
         }
     }
@@ -385,7 +382,7 @@ void osc::ActionDisableAllWrappingSurfaces(UndoableModelStatePair& model)
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while disabling wrapping surfaces: %s", ex.what());
+        log_error("error detected while disabling wrapping surfaces: %s", ex.what());
         model.rollback();
     }
 }
@@ -402,7 +399,7 @@ void osc::ActionEnableAllWrappingSurfaces(UndoableModelStatePair& model)
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while enabling wrapping surfaces: %s", ex.what());
+        log_error("error detected while enabling wrapping surfaces: %s", ex.what());
         model.rollback();
     }
 }
@@ -431,7 +428,7 @@ bool osc::ActionLoadSTOFileAgainstModel(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to load an STO file against the model: %s", ex.what());
+        log_error("error detected while trying to load an STO file against the model: %s", ex.what());
         return false;
     }
 }
@@ -480,11 +477,11 @@ bool osc::ActionUpdateModelFromBackingFile(UndoableModelStatePair& uim)
     // else: there is a backing file and it's newer than what's in-memory, so reload
     try
     {
-        log::info("file change detected: loading updated file");
+        log_info("file change detected: loading updated file");
 
         auto loadedModel = std::make_unique<OpenSim::Model>(uim.getModel().getInputFileName());
 
-        log::info("loaded updated file");
+        log_info("loaded updated file");
 
         uim.setModel(std::move(loadedModel));
         uim.commit("reloaded osim");
@@ -494,7 +491,7 @@ bool osc::ActionUpdateModelFromBackingFile(UndoableModelStatePair& uim)
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to automatically load a model file: %s", ex.what());
+        log_error("error detected while trying to automatically load a model file: %s", ex.what());
         uim.rollback();
         return false;
     }
@@ -517,7 +514,7 @@ bool osc::ActionCopyModelPathToClipboard(UndoableModelStatePair const& uim)
 
 bool osc::ActionAutoscaleSceneScaleFactor(UndoableModelStatePair& uim)
 {
-    float const sf = osc::GetRecommendedScaleFactor(
+    float const sf = GetRecommendedScaleFactor(
         *App::singleton<SceneCache>(),
         uim.getModel(),
         uim.getState(),
@@ -541,7 +538,7 @@ bool osc::ActionToggleFrames(UndoableModelStatePair& uim)
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to toggle frames: %s", ex.what());
+        log_error("error detected while trying to toggle frames: %s", ex.what());
         uim.rollback();
         return false;
     }
@@ -561,7 +558,7 @@ bool osc::ActionToggleMarkers(UndoableModelStatePair& uim)
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to toggle markers: %s", ex.what());
+        log_error("error detected while trying to toggle markers: %s", ex.what());
         uim.rollback();
         return false;
     }
@@ -581,7 +578,7 @@ bool osc::ActionToggleContactGeometry(UndoableModelStatePair& uim)
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to toggle contact geometry: %s", ex.what());
+        log_error("error detected while trying to toggle contact geometry: %s", ex.what());
         uim.rollback();
         return false;
     }
@@ -601,7 +598,7 @@ bool osc::ActionToggleWrapGeometry(UndoableModelStatePair& uim)
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to toggle wrap geometry: %s", ex.what());
+        log_error("error detected while trying to toggle wrap geometry: %s", ex.what());
         uim.rollback();
         return false;
     }
@@ -634,15 +631,15 @@ bool osc::ActionReloadOsimFromDisk(UndoableModelStatePair& uim, SceneCache& mesh
 {
     if (!HasInputFileName(uim.getModel()))
     {
-        log::error("cannot reload the osim file: the model doesn't appear to have a backing file (is it saved?)");
+        log_error("cannot reload the osim file: the model doesn't appear to have a backing file (is it saved?)");
         return false;
     }
 
     try
     {
-        log::info("manual osim file reload requested: attempting to reload the file");
+        log_info("manual osim file reload requested: attempting to reload the file");
         auto p = std::make_unique<OpenSim::Model>(uim.getModel().getInputFileName());
-        log::info("loaded updated file");
+        log_info("loaded updated file");
 
         uim.setModel(std::move(p));
         uim.commit("reloaded from filesystem");
@@ -658,7 +655,7 @@ bool osc::ActionReloadOsimFromDisk(UndoableModelStatePair& uim, SceneCache& mesh
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to reload a model file: %s", ex.what());
+        log_error("error detected while trying to reload a model file: %s", ex.what());
         uim.rollback();
         return false;
     }
@@ -713,7 +710,7 @@ bool osc::ActionAddOffsetFrameToPhysicalFrame(UndoableModelStatePair& uim, OpenS
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to add a frame to %s: %s", path.toString().c_str(), ex.what());
+        log_error("error detected while trying to add a frame to %s: %s", path.toString().c_str(), ex.what());
         uim.rollback();
         return false;
     }
@@ -800,7 +797,7 @@ bool osc::ActionRezeroJoint(UndoableModelStatePair& uim, OpenSim::ComponentPath 
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to rezero a joint: %s", ex.what());
+        log_error("error detected while trying to rezero a joint: %s", ex.what());
         uim.rollback();
         return false;
     }
@@ -841,7 +838,7 @@ bool osc::ActionAddParentOffsetFrameToJoint(UndoableModelStatePair& uim, OpenSim
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to add a parent offset frame: %s", ex.what());
+        log_error("error detected while trying to add a parent offset frame: %s", ex.what());
         uim.rollback();
         return false;
     }
@@ -882,7 +879,7 @@ bool osc::ActionAddChildOffsetFrameToJoint(UndoableModelStatePair& uim, OpenSim:
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to add a child offset frame: %s", ex.what());
+        log_error("error detected while trying to add a child offset frame: %s", ex.what());
         uim.rollback();
         return false;
     }
@@ -928,7 +925,7 @@ bool osc::ActionSetComponentName(UndoableModelStatePair& uim, OpenSim::Component
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to set a component's name: %s", ex.what());
+        log_error("error detected while trying to set a component's name: %s", ex.what());
         uim.rollback();
         return false;
     }
@@ -938,7 +935,7 @@ bool osc::ActionChangeJointTypeTo(UndoableModelStatePair& uim, OpenSim::Componen
 {
     if (!newType)
     {
-        log::error("new joint type provided to ChangeJointType function is nullptr: cannot continue: this is a developer error and should be reported");
+        log_error("new joint type provided to ChangeJointType function is nullptr: cannot continue: this is a developer error and should be reported");
         return false;
     }
 
@@ -986,7 +983,7 @@ bool osc::ActionChangeJointTypeTo(UndoableModelStatePair& uim, OpenSim::Componen
             return false;
         }
 
-        OpenSim::Joint const& jointRef = osc::Assign(*mutParent, idx, std::move(newType));
+        OpenSim::Joint const& jointRef = Assign(*mutParent, idx, std::move(newType));
         InitializeModel(mutModel);
         InitializeState(mutModel);
         uim.setSelected(&jointRef);
@@ -999,7 +996,7 @@ bool osc::ActionChangeJointTypeTo(UndoableModelStatePair& uim, OpenSim::Componen
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to change a joint's type: %s", ex.what());
+        log_error("error detected while trying to change a joint's type: %s", ex.what());
         uim.rollback();
         return false;
     }
@@ -1040,7 +1037,7 @@ bool osc::ActionAttachGeometryToPhysicalFrame(UndoableModelStatePair& uim, OpenS
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to attach geometry to the a physical frame: %s", ex.what());
+        log_error("error detected while trying to attach geometry to the a physical frame: %s", ex.what());
         uim.rollback();
         return false;
     }
@@ -1078,7 +1075,7 @@ bool osc::ActionAssignContactGeometryToHCF(
         // calling this ensures at least one `OpenSim::HuntCrossleyForce::ContactParameters`
         // is present in the HCF
         mutHCF->getStaticFriction();
-        OSC_ASSERT(!osc::empty(mutHCF->updContactParametersSet()));
+        OSC_ASSERT(!empty(mutHCF->updContactParametersSet()));
 
         mutHCF->updContactParametersSet()[0].updGeometry().appendValue(geom->getName());
         FinalizeConnections(mutModel);
@@ -1090,7 +1087,7 @@ bool osc::ActionAssignContactGeometryToHCF(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to assign contact geometry to a HCF: %s", ex.what());
+        log_error("error detected while trying to assign contact geometry to a HCF: %s", ex.what());
         uim.rollback();
         return false;
     }
@@ -1134,7 +1131,7 @@ bool osc::ActionApplyPropertyEdit(UndoableModelStatePair& uim, ObjectPropertyEdi
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to apply a property edit: %s", ex.what());
+        log_error("error detected while trying to apply a property edit: %s", ex.what());
         uim.rollback();
         return false;
     }
@@ -1157,7 +1154,7 @@ bool osc::ActionAddPathPointToPathActuator(
         return false;
     }
 
-    size_t const n = osc::size(pa->getGeometryPath().getPathPointSet());
+    size_t const n = size(pa->getGeometryPath().getPathPointSet());
     std::string const name = pa->getName() + "-P" + std::to_string(n + 1);
     SimTK::Vec3 const pos = {0.0f, 0.0f, 0.0f};
 
@@ -1199,7 +1196,7 @@ bool osc::ActionAddPathPointToPathActuator(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to add a path point to a path actuator: %s", ex.what());
+        log_error("error detected while trying to add a path point to a path actuator: %s", ex.what());
         uim.rollback();
         return false;
     }
@@ -1269,7 +1266,7 @@ bool osc::ActionReassignComponentSocket(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to reassign a socket: %s", ex.what());
+        log_error("error detected while trying to reassign a socket: %s", ex.what());
         error = ex.what();
         uim.rollback();
         return false;
@@ -1338,7 +1335,7 @@ bool osc::ActionAddBodyToModel(UndoableModelStatePair& uim, BodyDetails const& d
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to add a body to the model: %s", ex.what());
+        log_error("error detected while trying to add a body to the model: %s", ex.what());
         uim.rollback();
         return false;
     }
@@ -1370,7 +1367,7 @@ bool osc::ActionAddComponentToModel(UndoableModelStatePair& model, std::unique_p
     catch (std::exception const& ex)
     {
         errorOut = ex.what();
-        log::error("error detected while trying to add a component to the model: %s", ex.what());
+        log_error("error detected while trying to add a component to the model: %s", ex.what());
         model.rollback();
         return false;
     }
@@ -1406,7 +1403,7 @@ bool osc::ActionSetCoordinateSpeed(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to set a coordinate's speed: %s", ex.what());
+        log_error("error detected while trying to set a coordinate's speed: %s", ex.what());
         model.rollback();
         return false;
     }
@@ -1465,7 +1462,7 @@ bool osc::ActionSetCoordinateLockedAndSave(UndoableModelStatePair& model, OpenSi
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to lock a coordinate: %s", ex.what());
+        log_error("error detected while trying to lock a coordinate: %s", ex.what());
         model.rollback();
         return false;
     }
@@ -1511,7 +1508,7 @@ bool osc::ActionSetCoordinateValue(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to set a coordinate's value: %s", ex.what());
+        log_error("error detected while trying to set a coordinate's value: %s", ex.what());
         model.rollback();
         return false;
     }
@@ -1590,7 +1587,7 @@ bool osc::ActionSetComponentAndAllChildrensIsVisibleTo(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to hide a component: %s", ex.what());
+        log_error("error detected while trying to hide a component: %s", ex.what());
         model.rollback();
         return false;
     }
@@ -1638,7 +1635,7 @@ bool osc::ActionShowOnlyComponentAndAllChildren(UndoableModelStatePair& model, O
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to hide a component: %s", ex.what());
+        log_error("error detected while trying to hide a component: %s", ex.what());
         model.rollback();
         return false;
     }
@@ -1698,7 +1695,7 @@ bool osc::ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to show/hide components of a given type: %s", ex.what());
+        log_error("error detected while trying to show/hide components of a given type: %s", ex.what());
         model.rollback();
         return false;
     }
@@ -1738,7 +1735,7 @@ bool osc::ActionTranslateStation(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to move a station: %s", ex.what());
+        log_error("error detected while trying to move a station: %s", ex.what());
         model.rollback();
         return false;
     }
@@ -1796,7 +1793,7 @@ bool osc::ActionTranslatePathPoint(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to move a station: %s", ex.what());
+        log_error("error detected while trying to move a station: %s", ex.what());
         model.rollback();
         return false;
     }
@@ -1857,7 +1854,7 @@ bool osc::ActionTransformPof(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to transform a POF: %s", ex.what());
+        log_error("error detected while trying to transform a POF: %s", ex.what());
         model.rollback();
         return false;
     }
@@ -1896,7 +1893,7 @@ bool osc::ActionTransformWrapObject(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to transform a POF: %s", ex.what());
+        log_error("error detected while trying to transform a POF: %s", ex.what());
         model.rollback();
         return false;
     }
@@ -1935,7 +1932,7 @@ bool osc::ActionTransformContactGeometry(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to transform a POF: %s", ex.what());
+        log_error("error detected while trying to transform a POF: %s", ex.what());
         model.rollback();
         return false;
     }
@@ -1955,7 +1952,7 @@ bool osc::ActionFitSphereToMesh(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to fit a sphere to a mesh: %s", ex.what());
+        log_error("error detected while trying to fit a sphere to a mesh: %s", ex.what());
         return false;
     }
 
@@ -2001,7 +1998,7 @@ bool osc::ActionFitSphereToMesh(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to add a sphere fit to the OpenSim model: %s", ex.what());
+        log_error("error detected while trying to add a sphere fit to the OpenSim model: %s", ex.what());
         return false;
     }
 
@@ -2021,7 +2018,7 @@ bool osc::ActionFitEllipsoidToMesh(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to fit an ellipsoid to a mesh: %s", ex.what());
+        log_error("error detected while trying to fit an ellipsoid to a mesh: %s", ex.what());
         return false;
     }
 
@@ -2078,7 +2075,7 @@ bool osc::ActionFitEllipsoidToMesh(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to add a sphere fit to the OpenSim model: %s", ex.what());
+        log_error("error detected while trying to add a sphere fit to the OpenSim model: %s", ex.what());
         return false;
     }
 
@@ -2098,7 +2095,7 @@ bool osc::ActionFitPlaneToMesh(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to fit a plane to a mesh: %s", ex.what());
+        log_error("error detected while trying to fit a plane to a mesh: %s", ex.what());
         return false;
     }
 
@@ -2150,7 +2147,7 @@ bool osc::ActionFitPlaneToMesh(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to add a sphere fit to the OpenSim model: %s", ex.what());
+        log_error("error detected while trying to add a sphere fit to the OpenSim model: %s", ex.what());
         return false;
     }
 
@@ -2179,7 +2176,7 @@ bool osc::ActionImportLandmarks(
     }
     catch (std::exception const& ex)
     {
-        log::error("error detected while trying to import landmarks to the model: %s", ex.what());
+        log_error("error detected while trying to import landmarks to the model: %s", ex.what());
         return false;
     }
     return true;

@@ -10,6 +10,11 @@
 #include <string_view>
 #include <vector>
 
+using osc::TryParseHexCharsAsByte;
+using osc::TrimLeadingAndTrailingWhitespace;
+using osc::ToHexChars;
+using osc::IsValidIdentifier;
+
 TEST(Algorithms, TrimLeadingAndTrailingWhitespaceWorksAsExpected)
 {
     struct TestCase final {
@@ -57,7 +62,7 @@ TEST(Algorithms, TrimLeadingAndTrailingWhitespaceWorksAsExpected)
 
     for (TestCase const& tc : testCases)
     {
-        std::string_view const rv = osc::TrimLeadingAndTrailingWhitespace(tc.input);
+        std::string_view const rv = TrimLeadingAndTrailingWhitespace(tc.input);
         ASSERT_EQ(rv, tc.expectedOutput);
     }
 }
@@ -189,7 +194,7 @@ TEST(ToHexChars, ReturnsExpectedResultsWhenComparedToAlternateImplementation)
         char const msc = static_cast<char>(msn <= 9 ? '0' + msn : 'a' + (msn-10));
         char const lsc = static_cast<char>(lsn <= 9 ? '0' + lsn : 'a' + (lsn-10));
 
-        auto [a, b] = osc::ToHexChars(v);
+        auto [a, b] = ToHexChars(v);
 
         ASSERT_EQ(a, msc);
         ASSERT_EQ(b, lsc);
@@ -217,37 +222,37 @@ TEST(ToHexChars, ReturnsExpectedResults)
 
     for (TestCase const& tc : testCases)
     {
-        ASSERT_EQ(osc::ToHexChars(tc.input), tc.expectedOutput);
+        ASSERT_EQ(ToHexChars(tc.input), tc.expectedOutput);
     }
 }
 
 TEST(TryParseHexCharsAsByte, ReturnsExpectedResults)
 {
     // parseable cases
-    ASSERT_EQ(osc::TryParseHexCharsAsByte('0', '0'), 0x00);
-    ASSERT_EQ(osc::TryParseHexCharsAsByte('0', '1'), 0x01);
-    ASSERT_EQ(osc::TryParseHexCharsAsByte('1', '0'), 0x10);
-    ASSERT_EQ(osc::TryParseHexCharsAsByte('1', '1'), 0x11);
-    ASSERT_EQ(osc::TryParseHexCharsAsByte('f', 'a'), 0xfa);
-    ASSERT_EQ(osc::TryParseHexCharsAsByte('b', 'e'), 0xbe);
+    ASSERT_EQ(TryParseHexCharsAsByte('0', '0'), 0x00);
+    ASSERT_EQ(TryParseHexCharsAsByte('0', '1'), 0x01);
+    ASSERT_EQ(TryParseHexCharsAsByte('1', '0'), 0x10);
+    ASSERT_EQ(TryParseHexCharsAsByte('1', '1'), 0x11);
+    ASSERT_EQ(TryParseHexCharsAsByte('f', 'a'), 0xfa);
+    ASSERT_EQ(TryParseHexCharsAsByte('b', 'e'), 0xbe);
 
     // case insensitivity
-    ASSERT_EQ(osc::TryParseHexCharsAsByte('B', 'e'), 0xbe);
-    ASSERT_EQ(osc::TryParseHexCharsAsByte('b', 'E'), 0xbe);
-    ASSERT_EQ(osc::TryParseHexCharsAsByte('B', 'C'), 0xbc);
-    ASSERT_EQ(osc::TryParseHexCharsAsByte('F', 'A'), 0xfa);
+    ASSERT_EQ(TryParseHexCharsAsByte('B', 'e'), 0xbe);
+    ASSERT_EQ(TryParseHexCharsAsByte('b', 'E'), 0xbe);
+    ASSERT_EQ(TryParseHexCharsAsByte('B', 'C'), 0xbc);
+    ASSERT_EQ(TryParseHexCharsAsByte('F', 'A'), 0xfa);
 
     // interesting edge-case from std::strol that we shouldn't allow
-    ASSERT_EQ(osc::TryParseHexCharsAsByte('0', 'x'), std::nullopt);
-    ASSERT_EQ(osc::TryParseHexCharsAsByte('0', 'X'), std::nullopt);
-    ASSERT_EQ(osc::TryParseHexCharsAsByte('0', '8'), 0x08);
-    ASSERT_EQ(osc::TryParseHexCharsAsByte('-', '1'), std::nullopt);
+    ASSERT_EQ(TryParseHexCharsAsByte('0', 'x'), std::nullopt);
+    ASSERT_EQ(TryParseHexCharsAsByte('0', 'X'), std::nullopt);
+    ASSERT_EQ(TryParseHexCharsAsByte('0', '8'), 0x08);
+    ASSERT_EQ(TryParseHexCharsAsByte('-', '1'), std::nullopt);
 
     // invalid input
-    ASSERT_EQ(osc::TryParseHexCharsAsByte(' ', 'a'), std::nullopt);
-    ASSERT_EQ(osc::TryParseHexCharsAsByte('x', 'a'), std::nullopt);
-    ASSERT_EQ(osc::TryParseHexCharsAsByte('a', '?'), std::nullopt);
-    ASSERT_EQ(osc::TryParseHexCharsAsByte('\\', '5'), std::nullopt);
+    ASSERT_EQ(TryParseHexCharsAsByte(' ', 'a'), std::nullopt);
+    ASSERT_EQ(TryParseHexCharsAsByte('x', 'a'), std::nullopt);
+    ASSERT_EQ(TryParseHexCharsAsByte('a', '?'), std::nullopt);
+    ASSERT_EQ(TryParseHexCharsAsByte('\\', '5'), std::nullopt);
 }
 
 TEST(StringHelpers, IsValidIdentifierReturnsTrueForTypicalIdentifiers)
@@ -269,7 +274,7 @@ TEST(StringHelpers, IsValidIdentifierReturnsTrueForTypicalIdentifiers)
 
     for (auto const& testCase : testCases)
     {
-        ASSERT_TRUE(osc::IsValidIdentifier(testCase)) << testCase;
+        ASSERT_TRUE(IsValidIdentifier(testCase)) << testCase;
     }
 }
 
@@ -289,13 +294,13 @@ TEST(StringHelpers, IsValidIdentifierReturnsFalseWhenGivenAnIdentifierWithLeadin
 
     for (auto const& testCase : testCases)
     {
-        ASSERT_FALSE(osc::IsValidIdentifier(testCase)) << testCase;
+        ASSERT_FALSE(IsValidIdentifier(testCase)) << testCase;
     }
 }
 
 TEST(StringHelpers, IsValidIdentifierReturnsFalseIfGivenAnEmptyString)
 {
-    ASSERT_FALSE(osc::IsValidIdentifier(std::string_view{}));
+    ASSERT_FALSE(IsValidIdentifier(std::string_view{}));
 }
 
 TEST(StringHelpers, IsValidIdentifierReturnsFalseWhenGivenIdentifiersWithInvalidASCIICharacters)
@@ -304,15 +309,15 @@ TEST(StringHelpers, IsValidIdentifierReturnsFalseWhenGivenIdentifiersWithInvalid
     {
         {
             std::string const leading = c + std::string{"leading"};
-            ASSERT_FALSE(osc::IsValidIdentifier(leading)) << leading;
+            ASSERT_FALSE(IsValidIdentifier(leading)) << leading;
         }
         {
             std::string const trailing = std::string{"trailing"} + c;
-            ASSERT_FALSE(osc::IsValidIdentifier(trailing)) << trailing;
+            ASSERT_FALSE(IsValidIdentifier(trailing)) << trailing;
         }
         {
             std::string const inner = std::string{"inner"} + c + std::string{"usage"};
-            ASSERT_FALSE(osc::IsValidIdentifier(inner)) << inner;
+            ASSERT_FALSE(IsValidIdentifier(inner)) << inner;
         }
     };
 

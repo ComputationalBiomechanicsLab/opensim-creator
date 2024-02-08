@@ -17,7 +17,7 @@ namespace osc { class SimulationReport; }
 
 namespace osc
 {
-    // concrete reference-counted value-type wrapper for an `osc::IOutputExtractor`.
+    // concrete reference-counted value-type wrapper for an `IOutputExtractor`.
     //
     // This is a value-type that can be compared, hashed, etc. for easier usage
     // by other parts of osc (e.g. aggregators, plotters)

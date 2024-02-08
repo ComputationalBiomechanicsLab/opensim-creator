@@ -2,6 +2,8 @@
 
 #include <gtest/gtest.h>
 
+using osc::FileChangePoller;
+
 // repro for #495
 //
 // @JuliaVanBeesel reported that, when editing an OpenSim model via the editor UI, if
@@ -13,7 +15,7 @@ TEST(FileChangePoller, CtorDoesNotThrowExceptionIfGivenInvalidPath)
     std::string const path = "doesnt-exist";
 
     // constructing with an invalid path shouldn't throw
-    ASSERT_NO_THROW({ osc::FileChangePoller(std::chrono::milliseconds{0}, path); });
+    ASSERT_NO_THROW({ FileChangePoller(std::chrono::milliseconds{0}, path); });
 }
 
 // repro for #495
@@ -27,7 +29,7 @@ TEST(FileChangePoller, ChangeWasDetectedDoesNotThrowExceptionIfGivenInvalidPath)
     std::string const path = "doesnt-exist";
 
     // construct it with an invalid path
-    osc::FileChangePoller p{std::chrono::milliseconds{0}, path};
+    FileChangePoller p{std::chrono::milliseconds{0}, path};
 
     // changeWasDetected should return `false` (as in, no change detected) if the file
     // does not exist (e.g. because it was deleted by a user)

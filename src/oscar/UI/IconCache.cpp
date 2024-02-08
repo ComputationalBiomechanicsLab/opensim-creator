@@ -1,9 +1,9 @@
 #include "IconCache.hpp"
 
 #include <oscar/Formats/SVG.hpp>
+#include <oscar/Platform/ResourceLoader.hpp>
 #include <oscar/UI/Icon.hpp>
 
-#include <filesystem>
 #include <memory>
 #include <stdexcept>
 #include <sstream>
@@ -15,18 +15,23 @@ using osc::Icon;
 
 class osc::IconCache::Impl final {
 public:
-    Impl(std::filesystem::path const& iconsDir, float verticalScale)
+    Impl(ResourceLoader loaderPrefixedAtDirContainingSVGs, float verticalScale)
     {
-        // iterate through the icons dir and load each SVG file as an icon
-        std::filesystem::directory_iterator directoryIterator{iconsDir};
-        for (std::filesystem::path const& p : directoryIterator)
-        {
-            if (p.extension() == ".svg")
+        auto it = loaderPrefixedAtDirContainingSVGs.iterateDirectory(".");
+
+        for (auto el = it(); el; el = it()) {
+            ResourcePath const& p = *el;
+
+            if (p.hasExtension(".svg"))
             {
-                Texture2D texture = LoadTextureFromSVGFile(p, verticalScale);
+                Texture2D texture = ReadSVGIntoTexture(
+                    loaderPrefixedAtDirContainingSVGs.open(p),
+                    verticalScale
+                );
                 texture.setFilterMode(TextureFilterMode::Nearest);
+
                 m_Icons.try_emplace(
-                    p.stem().string(),
+                    p.stem(),
                     std::move(texture),
                     Rect{{0.0f, 1.0f}, {1.0f, 0.0f}}
                 );
@@ -56,8 +61,8 @@ private:
 
 // public API (PIMPL)
 
-osc::IconCache::IconCache(std::filesystem::path const& iconsDir, float verticalScale) :
-    m_Impl{std::make_unique<Impl>(iconsDir, verticalScale)}
+osc::IconCache::IconCache(ResourceLoader loaderPrefixedAtDirContainingSVGs, float verticalScale) :
+    m_Impl{std::make_unique<Impl>(loaderPrefixedAtDirContainingSVGs, verticalScale)}
 {
 }
 osc::IconCache::IconCache(IconCache&&) noexcept = default;

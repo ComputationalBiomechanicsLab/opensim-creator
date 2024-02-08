@@ -2,18 +2,13 @@
 
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/oscar.hpp>
 
 #include <cmath>
 #include <array>
 #include <memory>
 
-using osc::CStringView;
-using osc::Vec2;
+using namespace osc;
 
 namespace
 {
@@ -122,7 +117,7 @@ private:
 
 // public API
 
-osc::CStringView osc::CustomWidgetsTab::id()
+CStringView osc::CustomWidgetsTab::id()
 {
     return c_TabStringID;
 }
@@ -135,12 +130,12 @@ osc::CustomWidgetsTab::CustomWidgetsTab(CustomWidgetsTab&&) noexcept = default;
 osc::CustomWidgetsTab& osc::CustomWidgetsTab::operator=(CustomWidgetsTab&&) noexcept = default;
 osc::CustomWidgetsTab::~CustomWidgetsTab() noexcept = default;
 
-osc::UID osc::CustomWidgetsTab::implGetID() const
+UID osc::CustomWidgetsTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::CustomWidgetsTab::implGetName() const
+CStringView osc::CustomWidgetsTab::implGetName() const
 {
     return m_Impl->getName();
 }

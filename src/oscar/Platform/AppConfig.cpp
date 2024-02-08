@@ -15,14 +15,7 @@
 #include <unordered_map>
 #include <utility>
 
-using osc::AntiAliasingLevel;
-using osc::AppSettings;
-using osc::AppSettingValue;
-using osc::AppSettingValueType;
-using osc::CStringView;
-using osc::CurrentExeDir;
-using osc::LogLevel;
-using osc::TryParseAsLogLevel;
+using namespace osc;
 
 namespace
 {
@@ -39,7 +32,7 @@ namespace
             }
             else
             {
-                osc::log::warn("resources path fallback: tried %s, but it doesn't exist", maybeResourcesPath.string().c_str());
+                log_warn("resources path fallback: tried %s, but it doesn't exist", maybeResourcesPath.string().c_str());
             }
         }
 
@@ -50,7 +43,7 @@ namespace
         }
         else
         {
-            osc::log::warn("resources path fallback: using %s as a filler entry, but it doesn't actaully exist: the application's configuration file has an incorrect/missing 'resources' key", resourcesRelToExe.string().c_str());
+            log_warn("resources path fallback: using %s as a filler entry, but it doesn't actaully exist: the application's configuration file has an incorrect/missing 'resources' key", resourcesRelToExe.string().c_str());
         }
 
         return resourcesRelToExe;
@@ -74,7 +67,7 @@ namespace
 
         if (resourceDirSettingValue->type() != AppSettingValueType::String)
         {
-            osc::log::error("application setting for '%s' is not a string: falling back", resourcesKey.c_str());
+            log_error("application setting for '%s' is not a string: falling back", resourcesKey.c_str());
             return GetResourcesDirFallbackPath(settings);
         }
 
@@ -93,7 +86,7 @@ namespace
 
         if (!std::filesystem::exists(resourceDir))
         {
-            osc::log::error("'resources', in the application configuration, points to a location that does not exist (%s), so the application may fail to load resources (which is usually a fatal error). Note: the 'resources' path is relative to the configuration file in which you define it (or can be absolute). Attemtping to fallback to a default resources location (which may or may not work).", resourceDir.string().c_str());
+            log_error("'resources', in the application configuration, points to a location that does not exist (%s), so the application may fail to load resources (which is usually a fatal error). Note: the 'resources' path is relative to the configuration file in which you define it (or can be absolute). Attemtping to fallback to a default resources location (which may or may not work).", resourceDir.string().c_str());
             return GetResourcesDirFallbackPath(settings);
         }
 

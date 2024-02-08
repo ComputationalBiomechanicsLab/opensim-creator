@@ -51,7 +51,7 @@ private:
 
         if (selected)
         {
-            m_OnSelection(osc::GetAbsolutePath(*selected));
+            m_OnSelection(GetAbsolutePath(*selected));
             requestClose();
         }
     }

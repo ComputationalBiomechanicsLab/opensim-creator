@@ -7,7 +7,7 @@
 namespace osc
 {
     enum class ImageLoadingFlags : uint32_t {
-        None = 0u,
+        None = 0,
 
         // BEWARE: this flips pixels vertically (in Y) but leaves the pixel's
         // contents untouched. This is fine if the pixels represent colors,
@@ -16,7 +16,7 @@ namespace osc
         // therefore, if you are flipping (e.g.) normal maps, you may *also* need
         // to flip the pixel content appropriately (e.g. if RGB represents XYZ then
         // you'll need to negate each G)
-        FlipVertically = 1u<<0u,
+        FlipVertically = 1<<0,
     };
 
     constexpr bool operator&(ImageLoadingFlags lhs, ImageLoadingFlags rhs)

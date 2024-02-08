@@ -21,6 +21,7 @@
 #include <utility>
 
 using osc::fd::EdgePoints;
+using namespace osc;
 
 // returns the ground-based location re-expressed w.r.t. the given frame
 SimTK::Vec3 osc::fd::CalcLocationInFrame(
@@ -119,7 +120,7 @@ SimTK::DecorativeMesh osc::fd::CreateParallelogramMesh(
     return rv;
 }
 
-std::shared_ptr<osc::UndoableModelStatePair> osc::fd::MakeSharedUndoableFrameDefinitionModel()
+std::shared_ptr<UndoableModelStatePair> osc::fd::MakeSharedUndoableFrameDefinitionModel()
 {
     auto model = std::make_unique<OpenSim::Model>();
     model->updDisplayHints().set_show_frames(true);
@@ -151,7 +152,7 @@ std::string osc::fd::GenerateAddedSomethingCommitMessage(std::string_view someth
     return rv;
 }
 
-void osc::fd::SetupDefault3DViewportRenderingParams(osc::ModelRendererParams& renderParams)
+void osc::fd::SetupDefault3DViewportRenderingParams(ModelRendererParams& renderParams)
 {
     renderParams.renderingOptions.setDrawFloor(false);
     renderParams.overlayOptions.setDrawXZGrid(true);

@@ -3,41 +3,15 @@
 #include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
+#include <imgui.h>
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/UnitVec3.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Panels/LogViewerPanel.hpp>
-#include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/UID.hpp>
 
 #include <array>
 #include <memory>
 
 using namespace osc::literals;
-using osc::App;
-using osc::Color;
-using osc::ColorSpace;
-using osc::CStringView;
-using osc::ImageLoadingFlags;
-using osc::LoadTexture2DFromImage;
-using osc::Material;
-using osc::MouseCapturingCamera;
-using osc::Shader;
-using osc::Texture2D;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {
@@ -75,30 +49,31 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
 
-    Material CreateMultipleLightsMaterial()
+    Material CreateMultipleLightsMaterial(
+        IResourceLoader& rl)
     {
         Texture2D diffuseMap = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/container2.png"),
+            rl.open("oscar_learnopengl/textures/container2.png"),
             ColorSpace::sRGB,
             ImageLoadingFlags::FlipVertically
         );
 
         Texture2D specularMap = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/container2_specular.png"),
+            rl.open("oscar_learnopengl/textures/container2_specular.png"),
             ColorSpace::sRGB,
             ImageLoadingFlags::FlipVertically
         );
 
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.vert"),
-            App::slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.frag"),
+            rl.slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.vert"),
+            rl.slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.frag"),
         }};
 
         rv.setTexture("uMaterialDiffuse", diffuseMap);
@@ -129,11 +104,11 @@ namespace
         return rv;
     }
 
-    Material CreateLightCubeMaterial()
+    Material CreateLightCubeMaterial(IResourceLoader& rl)
     {
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
-            App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
+            rl.slurp("oscar_learnopengl/shaders/LightCube.vert"),
+            rl.slurp("oscar_learnopengl/shaders/LightCube.frag"),
         }};
         rv.setColor("uLightColor", Color::white());
         return rv;
@@ -210,8 +185,10 @@ private:
         m_PerfPanel.onDraw();
     }
 
-    Material m_MultipleLightsMaterial = CreateMultipleLightsMaterial();
-    Material m_LightCubeMaterial = CreateLightCubeMaterial();
+    ResourceLoader m_Loader = App::resource_loader();
+
+    Material m_MultipleLightsMaterial = CreateMultipleLightsMaterial(m_Loader);
+    Material m_LightCubeMaterial = CreateLightCubeMaterial(m_Loader);
     Mesh m_Mesh = GenerateLearnOpenGLCubeMesh();
 
     MouseCapturingCamera m_Camera = CreateCamera();
@@ -239,7 +216,7 @@ osc::LOGLMultipleLightsTab::LOGLMultipleLightsTab(LOGLMultipleLightsTab&&) noexc
 osc::LOGLMultipleLightsTab& osc::LOGLMultipleLightsTab::operator=(LOGLMultipleLightsTab&&) noexcept = default;
 osc::LOGLMultipleLightsTab::~LOGLMultipleLightsTab() noexcept = default;
 
-osc::UID osc::LOGLMultipleLightsTab::implGetID() const
+UID osc::LOGLMultipleLightsTab::implGetID() const
 {
     return m_Impl->getID();
 }

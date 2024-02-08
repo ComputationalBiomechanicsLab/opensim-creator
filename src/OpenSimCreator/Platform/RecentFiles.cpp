@@ -17,6 +17,8 @@
 #include <utility>
 #include <vector>
 
+using namespace osc;
+
 namespace
 {
     constexpr size_t c_MaxRecentFileEntries = 10;
@@ -27,18 +29,18 @@ namespace
         return std::chrono::seconds(std::time(nullptr));
     }
 
-    bool LastOpenedGreaterThan(osc::RecentFile const& a, osc::RecentFile const& b)
+    bool LastOpenedGreaterThan(RecentFile const& a, RecentFile const& b)
     {
         return a.lastOpenedUnixTimestamp > b.lastOpenedUnixTimestamp;
     }
 
-    void SortNewestToOldest(std::vector<osc::RecentFile>& files)
+    void SortNewestToOldest(std::vector<RecentFile>& files)
     {
         std::sort(files.begin(), files.end(), LastOpenedGreaterThan);
     }
 
     // load the "recent files" file that the application persists to disk
-    std::vector<osc::RecentFile> LoadRecentFilesFile(std::filesystem::path const& p)
+    std::vector<RecentFile> LoadRecentFilesFile(std::filesystem::path const& p)
     {
         if (!std::filesystem::exists(p))
         {
@@ -53,11 +55,11 @@ namespace
         {
             // do not throw, because it probably shouldn't crash the application if this
             // is an issue
-            osc::log::error("%s: could not be opened for reading: cannot load recent files list", p.string().c_str());
+            log_error("%s: could not be opened for reading: cannot load recent files list", p.string().c_str());
             return {};
         }
 
-        std::vector<osc::RecentFile> rv;
+        std::vector<RecentFile> rv;
         std::string line;
 
         while (std::getline(fd, line))
@@ -74,7 +76,7 @@ namespace
             bool exists = std::filesystem::exists(path);
             std::chrono::seconds timestampSecs{timestamp};
 
-            rv.push_back(osc::RecentFile{exists, timestampSecs, std::move(path)});
+            rv.push_back(RecentFile{exists, timestampSecs, std::move(path)});
         }
 
         SortNewestToOldest(rv);
@@ -125,7 +127,7 @@ void osc::RecentFiles::sync()
     std::ofstream fd{m_DiskLocation, std::ios::trunc};
     if (!fd)
     {
-        osc::log::error("%s: could not be opened for writing: cannot update recent files list", m_DiskLocation.string().c_str());
+        log_error("%s: could not be opened for writing: cannot update recent files list", m_DiskLocation.string().c_str());
         return;
     }
 

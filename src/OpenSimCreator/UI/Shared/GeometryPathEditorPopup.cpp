@@ -19,9 +19,11 @@
 #include <string_view>
 #include <utility>
 
+using namespace osc;
+
 namespace
 {
-    constexpr auto c_LocationInputIDs = std::to_array<osc::CStringView>({ "##xinput", "##yinput", "##zinput" });
+    constexpr auto c_LocationInputIDs = std::to_array<CStringView>({ "##xinput", "##yinput", "##zinput" });
     static_assert(c_LocationInputIDs.size() == 3);
 
     OpenSim::GeometryPath CopyOrDefaultGeometryPath(std::function<OpenSim::GeometryPath const*()> const& accessor)
@@ -67,29 +69,29 @@ namespace
 
     void ActionMovePathPointUp(OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
-        if (1 <= i && i < osc::ssize(pps))
+        if (1 <= i && i < ssize(pps))
         {
-            auto tmp = osc::Clone(osc::At(pps, i));
-            osc::Assign(pps, i, osc::At(pps, i-1));
-            osc::Assign(pps, i-1, std::move(tmp));
+            auto tmp = Clone(At(pps, i));
+            Assign(pps, i, At(pps, i-1));
+            Assign(pps, i-1, std::move(tmp));
         }
     }
 
     void ActionMovePathPointDown(OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
-        if (0 <= i && i < osc::ssize(pps)-1)
+        if (0 <= i && i < ssize(pps)-1)
         {
-            auto tmp = osc::Clone(osc::At(pps, i));
-            osc::Assign(pps, i, osc::At(pps, i+1));
-            osc::Assign(pps, i+1, std::move(tmp));
+            auto tmp = Clone(At(pps, i));
+            Assign(pps, i, At(pps, i+1));
+            Assign(pps, i+1, std::move(tmp));
         }
     }
 
     void ActionDeletePathPoint(OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
-        if (0 <= i && i < osc::ssize(pps))
+        if (0 <= i && i < ssize(pps))
         {
-            osc::EraseAt(pps, i);
+            EraseAt(pps, i);
         }
     }
 
@@ -98,23 +100,23 @@ namespace
         ptrdiff_t i,
         std::string const& frameAbsPath)
     {
-        osc::At(pps, i).updSocket("parent_frame").setConnecteePath(frameAbsPath);
+        At(pps, i).updSocket("parent_frame").setConnecteePath(frameAbsPath);
     }
 
     void ActionAddNewPathPoint(OpenSim::PathPointSet& pps)
     {
-        std::string const frame = osc::empty(pps) ?
+        std::string const frame = empty(pps) ?
             "/ground" :
-            osc::At(pps, osc::size(pps)-1).getSocket("parent_frame").getConnecteePath();
+            At(pps, size(pps)-1).getSocket("parent_frame").getConnecteePath();
 
         auto pp = std::make_unique<OpenSim::PathPoint>();
         pp->updSocket("parent_frame").setConnecteePath(frame);
 
-        osc::Append(pps, std::move(pp));
+        Append(pps, std::move(pp));
     }
 }
 
-class osc::GeometryPathEditorPopup::Impl final : public osc::StandardPopup {
+class osc::GeometryPathEditorPopup::Impl final : public StandardPopup {
 public:
     Impl(
         std::string_view popupName_,
@@ -169,11 +171,11 @@ private:
             ImGui::TableSetupScrollFreeze(0, 1);
             ImGui::TableHeadersRow();
 
-            for (ptrdiff_t i = 0; i < osc::ssize(pps); ++i)
+            for (ptrdiff_t i = 0; i < ssize(pps); ++i)
             {
-                osc::PushID(i);
+                PushID(i);
                 drawIthPathPointTableRow(pps, i);
-                osc::PopID();
+                PopID();
             }
 
             ImGui::EndTable();
@@ -230,7 +232,7 @@ private:
 
         ImGui::SameLine();
 
-        if (i+1 >= osc::ssize(pps))
+        if (i+1 >= ssize(pps))
         {
             ImGui::BeginDisabled();
         }
@@ -238,7 +240,7 @@ private:
         {
             m_RequestedAction = RequestedAction{RequestedAction::Type::MoveDown, i};
         }
-        if (i+1 >= osc::ssize(pps))
+        if (i+1 >= ssize(pps))
         {
             ImGui::EndDisabled();
         }
@@ -334,7 +336,7 @@ private:
 
     void tryExecuteRequestedAction(OpenSim::PathPointSet& pps)
     {
-        if (!(0 <= m_RequestedAction.pathPointIndex && m_RequestedAction.pathPointIndex < osc::ssize(pps)))
+        if (!(0 <= m_RequestedAction.pathPointIndex && m_RequestedAction.pathPointIndex < ssize(pps)))
         {
             // edge-case: if the index is out of range, ignore the action
             m_RequestedAction.reset();

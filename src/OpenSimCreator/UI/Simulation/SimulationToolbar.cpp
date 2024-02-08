@@ -18,22 +18,24 @@
 #include <string_view>
 #include <utility>
 
+using namespace osc;
+
 namespace
 {
-    osc::Color CalcStatusColor(osc::SimulationStatus status)
+    Color CalcStatusColor(SimulationStatus status)
     {
         switch (status)
         {
-        case osc::SimulationStatus::Initializing:
-        case osc::SimulationStatus::Running:
-            return osc::Color::mutedBlue();
-        case osc::SimulationStatus::Completed:
-            return osc::Color::darkGreen();
-        case osc::SimulationStatus::Cancelled:
-        case osc::SimulationStatus::Error:
-            return osc::Color::red();
+        case SimulationStatus::Initializing:
+        case SimulationStatus::Running:
+            return Color::mutedBlue();
+        case SimulationStatus::Completed:
+            return Color::darkGreen();
+        case SimulationStatus::Cancelled:
+        case SimulationStatus::Error:
+            return Color::red();
         default:
-            return osc::Color{osc::Vec4{ImGui::GetStyle().Colors[ImGuiCol_Text]}};
+            return Color{Vec4{ImGui::GetStyle().Colors[ImGuiCol_Text]}};
         }
     }
 }
@@ -83,7 +85,7 @@ private:
     {
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
         ImGui::TextUnformatted(ICON_FA_EXPAND_ALT);
-        osc::DrawTooltipIfItemHovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
+        DrawTooltipIfItemHovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
         ImGui::SameLine();
 
         {
@@ -102,9 +104,9 @@ private:
         SimulationStatus const status = m_Simulation->getStatus();
         ImGui::TextDisabled("simulator status:");
         ImGui::SameLine();
-        osc::PushStyleColor(ImGuiCol_Text, CalcStatusColor(status));
+        PushStyleColor(ImGuiCol_Text, CalcStatusColor(status));
         ImGui::TextUnformatted(GetAllSimulationStatusStrings()[static_cast<size_t>(status)].c_str());
-        osc::PopStyleColor();
+        PopStyleColor();
     }
 
     std::string m_Label;

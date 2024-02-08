@@ -73,31 +73,7 @@
 #include <utility>
 #include <vector>
 
-using osc::At;
-using osc::Color;
-using osc::ComponentSpatialRepresentation;
-using osc::Cross;
-using osc::CStringView;
-using osc::Dot;
-using osc::empty;
-using osc::EraseAt;
-using osc::FindComponent;
-using osc::ForcePoint;
-using osc::GeometryPathPoint;
-using osc::IsInclusiveChildOf;
-using osc::Length2;
-using osc::LinesOfAction;
-using osc::Normalize;
-using osc::Plane;
-using osc::PointDirection;
-using osc::PointInfo;
-using osc::size;
-using osc::ToTransform;
-using osc::ToVec3;
-using osc::Transform;
-using osc::TransformPoint;
-using osc::UndoableModelStatePair;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {
@@ -552,7 +528,7 @@ double osc::ConvertCoordDisplayValueToStorageValue(OpenSim::Coordinate const& c,
 
     if (c.getMotionType() == OpenSim::Coordinate::MotionType::Rotational)
     {
-        rv = Degrees{Radians{rv}}.count();
+        rv = Radians{Degrees{rv}}.count();
     }
 
     return rv;
@@ -790,13 +766,13 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
 
     if (!owner)
     {
-        log::error("cannot delete %s: it has no owner", c.getName().c_str());
+        log_error("cannot delete %s: it has no owner", c.getName().c_str());
         return false;
     }
 
     if (&c.getRoot() != &m)
     {
-        log::error("cannot delete %s: it is not owned by the provided model", c.getName().c_str());
+        log_error("cannot delete %s: it is not owned by the provided model", c.getName().c_str());
         return false;
     }
 
@@ -811,7 +787,7 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
             ss << delim << connectee->getName();
             delim = ", ";
         }
-        log::error("cannot delete %s: the following components connect to it via sockets: %s", c.getName().c_str(), std::move(ss).str().c_str());
+        log_error("cannot delete %s: the following components connect to it via sockets: %s", c.getName().c_str(), std::move(ss).str().c_str());
         return false;
     }
 
@@ -823,7 +799,7 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
     {
         if (pw.getWrapObject() == &c)
         {
-            log::error("cannot delete %s: it is used in a path wrap (%s)", c.getName().c_str(), GetAbsolutePathString(pw).c_str());
+            log_error("cannot delete %s: it is used in a path wrap (%s)", c.getName().c_str(), GetAbsolutePathString(pw).c_str());
             return false;
         }
     }
@@ -922,7 +898,7 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
 
     if (!rv)
     {
-        log::error("cannot delete %s: OpenSim Creator doesn't know how to delete a %s from its parent (maybe it can't?)", c.getName().c_str(), c.getConcreteClassName().c_str());
+        log_error("cannot delete %s: OpenSim Creator doesn't know how to delete a %s from its parent (maybe it can't?)", c.getName().c_str(), c.getConcreteClassName().c_str());
     }
 
     return rv;

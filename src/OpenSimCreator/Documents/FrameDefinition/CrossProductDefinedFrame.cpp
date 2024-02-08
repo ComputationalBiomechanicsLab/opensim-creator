@@ -94,7 +94,7 @@ SimTK::Transform osc::fd::CrossProductDefinedFrame::calcTransformInGround(SimTK:
     // this is what the algorithm must ultimately compute in order to
     // calculate a change-of-basis (rotation) matrix
     std::array<SimTK::UnitVec3, 3> axes{};
-    static_assert(axes.size() == osc::NumOptions<AxisIndex>());
+    static_assert(axes.size() == NumOptions<AxisIndex>());
 
     // assign first axis
     SimTK::UnitVec3& firstAxisDir = axes.at(ToIndex(axisEdge.axisIndex));

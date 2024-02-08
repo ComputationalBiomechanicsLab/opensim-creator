@@ -3,6 +3,8 @@
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Platform/AppClock.hpp>
+#include <oscar/Platform/ResourceLoader.hpp>
+#include <oscar/Platform/ResourceStream.hpp>
 #include <oscar/Platform/Screenshot.hpp>
 
 #include <SDL_events.h>
@@ -20,10 +22,12 @@
 #include <utility>
 #include <vector>
 
+struct SDL_Window;
 namespace osc { struct Color; }
 namespace osc { class AppConfig; }
 namespace osc { class AppMetadata; }
 namespace osc { class IScreen; }
+namespace osc::ui::context { void Init(); }
 
 namespace osc
 {
@@ -55,13 +59,19 @@ namespace osc
         static AppConfig const& config();
 
         // returns a full filesystem path to a (runtime- and configuration-dependent) application resource
-        static std::filesystem::path resource(std::string_view);
+        static std::filesystem::path resourceFilepath(ResourcePath const&);
 
         // returns the contents of a runtime resource in the `resources/` dir as a string
-        static std::string slurp(std::string_view);
+        static std::string slurp(ResourcePath const&);
 
-        // returns the contents of a runtime resource in the `resources/` dir as a binary blob
-        static std::vector<uint8_t> slurpBinary(std::string_view);
+        // returns an opened stream to the given application resource
+        static ResourceStream load_resource(ResourcePath const&);
+
+        // returns the top- (application-)level resource loader
+        static ResourceLoader& resource_loader();
+
+        // constructs an `App` from a default-constructed `AppMetadata`
+        App();
 
         // constructs an app by initializing it from a config at the default app config location
         //
@@ -222,43 +232,28 @@ namespace osc
         AppConfig const& getConfig() const;
         AppConfig& updConfig();
 
-        // returns a full filesystem path to runtime resource in `resources/` dir
-        std::filesystem::path getResource(std::string_view) const;
+        // returns the top- (application-)level resource loader
+        ResourceLoader& updResourceLoader();
 
         // returns the contents of a runtime resource in the `resources/` dir as a string
-        std::string slurpResource(std::string_view) const;
+        std::string slurpResource(ResourcePath const&);
+
+        // returns an opened stream to the given resource
+        ResourceStream loadResource(ResourcePath const&);
 
     private:
+        // returns a full filesystem path to runtime resource in `resources/` dir
+        std::filesystem::path getResourceFilepath(ResourcePath const&) const;
+
         // try and retrieve a virtual singleton that has the same lifetime as the app
         std::shared_ptr<void> updSingleton(std::type_info const&, std::function<std::shared_ptr<void>()> const&);
 
-        friend void ImGuiInit();
-        friend void ImGuiNewFrame();
+        // HACK: the 2D ui currently needs access to these
+        SDL_Window* updUndleryingWindow();
+        void* updUnderlyingOpenGLContext();
+        friend void ui::context::Init();
 
         class Impl;
         std::unique_ptr<Impl> m_Impl;
     };
-
-    // ImGui support
-    //
-    // these methods are specialized for OSC (config, fonts, themeing, etc.)
-    //
-    // these methods should be called by each `Screen` implementation. The reason they aren't
-    // automatically integrated into App/Screen is because some screens might want very tight
-    // control over ImGui (e.g. recycling contexts, aggro-resetting contexts)
-
-    // init ImGui context (/w osc settings)
-    void ImGuiInit();
-
-    // shutdown ImGui context
-    void ImGuiShutdown();
-
-    // returns true if ImGui has handled the event
-    bool ImGuiOnEvent(SDL_Event const&);
-
-    // should be called at the start of a screen's `onDraw()`
-    void ImGuiNewFrame();
-
-    // should be called at the end of a screen's `onDraw()`
-    void ImGuiRender();
 }

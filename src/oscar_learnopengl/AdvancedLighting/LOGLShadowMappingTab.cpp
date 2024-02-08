@@ -2,43 +2,15 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/RenderTexture.hpp>
-#include <oscar/Graphics/RenderTextureDescriptor.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Mat4.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/UnitVec3.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
 
 #include <cstdint>
 #include <memory>
 #include <optional>
 
 using namespace osc::literals;
-using osc::CStringView;
-using osc::Mesh;
-using osc::MouseCapturingCamera;
-using osc::RenderTexture;
-using osc::RenderTextureDescriptor;
-using osc::RenderTextureReadWrite;
-using osc::Vec2;
-using osc::Vec2i;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {
@@ -84,6 +56,7 @@ namespace
     MouseCapturingCamera CreateCamera()
     {
         MouseCapturingCamera cam;
+        cam.setPosition({-2.0f, 1.0f, 0.0f});
         cam.setNearClippingPlane(0.1f);
         cam.setFarClippingPlane(100.0f);
         return cam;
@@ -198,20 +171,21 @@ private:
         m_Camera.setProjectionMatrixOverride(std::nullopt);
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
     MouseCapturingCamera m_Camera = CreateCamera();
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/wood.png"),
+        m_Loader.open("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
     Mesh m_CubeMesh = GenerateCubeMesh();
     Mesh m_PlaneMesh = GeneratePlaneMesh();
     Material m_SceneMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.frag"),
     }};
     Material m_DepthMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.frag"),
     }};
     RenderTexture m_DepthTexture = CreateDepthTexture();
     Mat4 m_LatestLightSpaceMatrix = Identity<Mat4>();
@@ -235,7 +209,7 @@ osc::LOGLShadowMappingTab::LOGLShadowMappingTab(LOGLShadowMappingTab&&) noexcept
 osc::LOGLShadowMappingTab& osc::LOGLShadowMappingTab::operator=(LOGLShadowMappingTab&&) noexcept = default;
 osc::LOGLShadowMappingTab::~LOGLShadowMappingTab() noexcept = default;
 
-osc::UID osc::LOGLShadowMappingTab::implGetID() const
+UID osc::LOGLShadowMappingTab::implGetID() const
 {
     return m_Impl->getID();
 }

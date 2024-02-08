@@ -18,7 +18,9 @@
 #include <optional>
 #include <vector>
 
-osc::SceneRendererParams osc::CalcSceneRendererParams(
+using namespace osc;
+
+SceneRendererParams osc::CalcSceneRendererParams(
     ModelRendererParams const& renderParams,
     Vec2 viewportDims,
     AntiAliasingLevel antiAliasingLevel,
@@ -33,7 +35,7 @@ osc::SceneRendererParams osc::CalcSceneRendererParams(
     params.lightDirection = RecommendedLightDirection(renderParams.camera);
     params.drawFloor = renderParams.renderingOptions.getDrawFloor();
     params.viewMatrix = renderParams.camera.getViewMtx();
-    params.projectionMatrix = renderParams.camera.getProjMtx(osc::AspectRatio(viewportDims));
+    params.projectionMatrix = renderParams.camera.getProjMtx(AspectRatio(viewportDims));
     params.nearClippingPlane = renderParams.camera.znear;
     params.farClippingPlane = renderParams.camera.zfar;
     params.viewPos = renderParams.camera.getPos();
@@ -73,7 +75,7 @@ void osc::GenerateDecorations(
     );
 }
 
-std::optional<osc::SceneCollision> osc::GetClosestCollision(
+std::optional<SceneCollision> osc::GetClosestCollision(
     BVH const& sceneBVH,
     SceneCache& sceneCache,
     std::span<SceneDecoration const> taggedDrawlist,

@@ -37,29 +37,7 @@
 #include <utility>
 
 namespace cpp23 = osc::cpp23;
-using osc::Degrees;
-using osc::Eulers;
-using osc::ExtractEulerAngleXYZ;
-using osc::FindComponent;
-using osc::Identity;
-using osc::Inverse;
-using osc::Mat4;
-using osc::Normalize;
-using osc::PolarPerspectiveCamera;
-using osc::Quat;
-using osc::Rect;
-using osc::ScopeGuard;
-using osc::SetImguizmoStyleToOSCStandard;
-using osc::ToMat4;
-using osc::ToMat4x4;
-using osc::ToQuat;
-using osc::ToSimTKVec3;
-using osc::ToVec3;
-using osc::UndoableModelStatePair;
-using osc::ValuePtr;
-using osc::Vec;
-using osc::Vec3;
-using osc::Vec4;
+using namespace osc;
 
 // common/virtual manipulator data/APIs
 namespace

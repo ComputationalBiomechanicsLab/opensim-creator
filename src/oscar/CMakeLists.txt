@@ -21,6 +21,9 @@ add_library(oscar STATIC
     Formats/CSV.cpp
     Formats/DAE.hpp
     Formats/DAE.cpp
+    Formats/Image.cpp
+    Formats/Image.hpp
+    Formats/ImageLoadingFlags.hpp
     Formats/OBJ.cpp
     Formats/OBJ.hpp
     Formats/STL.cpp
@@ -66,7 +69,6 @@ add_library(oscar STATIC
     Graphics/GraphicsHelpers.cpp
     Graphics/GraphicsHelpers.hpp
     Graphics/GraphicsImplementation.cpp
-    Graphics/ImageLoadingFlags.hpp
     Graphics/Material.hpp
     Graphics/MaterialPropertyBlock.hpp
     Graphics/MeshGenerators.cpp
@@ -91,8 +93,6 @@ add_library(oscar STATIC
     Graphics/RenderTextureFormat.hpp
     Graphics/RenderTextureReadWrite.hpp
     Graphics/Shader.hpp
-    Graphics/ShaderCache.cpp
-    Graphics/ShaderCache.hpp
     Graphics/ShaderPropertyType.hpp
     Graphics/SubMeshDescriptor.hpp
     Graphics/TextureChannelFormat.hpp
@@ -175,6 +175,10 @@ add_library(oscar STATIC
     Platform/AppSettingValue.cpp
     Platform/AppSettingValue.hpp
     Platform/AppSettingValueType.hpp
+    Platform/FilesystemResourceLoader.cpp
+    Platform/FilesystemResourceLoader.hpp
+    Platform/IResourceLoader.cpp
+    Platform/IResourceLoader.hpp
     Platform/IScreen.hpp
     Platform/Log.cpp
     Platform/Log.hpp
@@ -186,6 +190,10 @@ add_library(oscar STATIC
     Platform/LogSink.hpp
     Platform/os.cpp
     Platform/os.hpp
+    Platform/ResourceLoader.hpp
+    Platform/ResourcePath.hpp
+    Platform/ResourceStream.cpp
+    Platform/ResourceStream.hpp
     Platform/Screenshot.hpp
     Platform/ScreenshotAnnotation.hpp
 
@@ -202,6 +210,8 @@ add_library(oscar STATIC
     Scene/SceneRenderer.hpp
     Scene/SceneRendererParams.cpp
     Scene/SceneRendererParams.hpp
+    Scene/ShaderCache.cpp
+    Scene/ShaderCache.hpp
 
     Shims/Cpp20/bit.hpp
     Shims/Cpp20/stop_token.hpp
@@ -220,6 +230,8 @@ add_library(oscar STATIC
     UI/Panels/ToggleablePanelFlags.hpp
     UI/Panels/UndoRedoPanel.cpp
     UI/Panels/UndoRedoPanel.hpp
+    UI/Screens/TabTestingScreen.cpp
+    UI/Screens/TabTestingScreen.hpp
     UI/Tabs/CookiecutterTab.cpp
     UI/Tabs/CookiecutterTab.hpp
     UI/Tabs/ErrorTab.cpp
@@ -264,8 +276,14 @@ add_library(oscar STATIC
     UI/ImGuiHelpers.hpp
     UI/ImGuizmoHelpers.cpp
     UI/ImGuizmoHelpers.hpp
-    UI/imgui_impl_oscargfx.cpp
-    UI/imgui_impl_oscargfx.hpp
+    UI/Panels.hpp
+    UI/Screens.hpp
+    UI/Tabs.hpp
+    UI/ui_context.cpp
+    UI/ui_context.hpp
+    UI/ui_graphics_backend.cpp
+    UI/ui_graphics_backend.hpp
+    UI/Widgets.hpp
 
     Utils/At.hpp
     Utils/Assertions.cpp
@@ -317,6 +335,18 @@ add_library(oscar STATIC
     Variant/VariantType.hpp
     Variant/VariantTypeList.hpp
     Variant/VariantTypeTraits.hpp
+
+    Formats.hpp
+    Graphics.hpp
+    Maths.hpp
+    oscar.hpp
+    Object.hpp
+    Platform.hpp
+    Scene.hpp
+    Shims.hpp
+    UI.hpp
+    Utils.hpp
+    Variant.hpp
 )
 
 target_include_directories(oscar PUBLIC

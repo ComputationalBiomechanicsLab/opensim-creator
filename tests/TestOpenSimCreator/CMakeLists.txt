@@ -17,6 +17,7 @@ add_executable(TestOpenSimCreator
     MetaTests/TestOpenSimLibraryAPI.cpp
     Platform/TestRecentFiles.cpp
     UI/Widgets/TestAddComponentPopup.cpp
+    UI/TestAllRegisteredOpenSimCreatorTabs.cpp
     Utils/TestOpenSimHelpers.cpp
     Utils/TestShapeFitters.cpp
 

@@ -38,27 +38,28 @@
 namespace OpenSim { class Component; }
 
 namespace cpp20 = osc::cpp20;
+using namespace osc;
 
 namespace
 {
-    osc::UID GetWalltimeUID()
+    UID GetWalltimeUID()
     {
-        static osc::UID const s_WalltimeUID;
+        static UID const s_WalltimeUID;
         return s_WalltimeUID;
     }
 
-    osc::UID GetStepDurationUID()
+    UID GetStepDurationUID()
     {
-        static osc::UID const s_StepDurationUID;
+        static UID const s_StepDurationUID;
         return s_StepDurationUID;
     }
 
     // exclusively owned input data
     class SimulatorThreadInput final {
     public:
-        SimulatorThreadInput(osc::BasicModelStatePair modelState,
-                             osc::ForwardDynamicSimulatorParams const& params,
-                             std::function<void(osc::SimulationReport)> onReportFromBgThread) :
+        SimulatorThreadInput(BasicModelStatePair modelState,
+                             ForwardDynamicSimulatorParams const& params,
+                             std::function<void(SimulationReport)> onReportFromBgThread) :
             m_ModelState{std::move(modelState)},
             m_Params{params},
             m_ReportCallback{std::move(onReportFromBgThread)}
@@ -67,65 +68,65 @@ namespace
 
         SimTK::MultibodySystem const& getMultiBodySystem() const { return m_ModelState.getModel().getMultibodySystem(); }
         SimTK::State const& getState() const { return m_ModelState.getState(); }
-        osc::ForwardDynamicSimulatorParams const& getParams() const { return m_Params; }
-        void emitReport(osc::SimulationReport report) { m_ReportCallback(std::move(report)); }
+        ForwardDynamicSimulatorParams const& getParams() const { return m_Params; }
+        void emitReport(SimulationReport report) { m_ReportCallback(std::move(report)); }
 
     private:
-        osc::BasicModelStatePair m_ModelState;
-        osc::ForwardDynamicSimulatorParams m_Params;
-        std::function<void(osc::SimulationReport)> m_ReportCallback;
+        BasicModelStatePair m_ModelState;
+        ForwardDynamicSimulatorParams m_Params;
+        std::function<void(SimulationReport)> m_ReportCallback;
     };
 
     // data that's shared with the UI thread
     class SharedState final {
     public:
-        osc::SimulationStatus getStatus() const
+        SimulationStatus getStatus() const
         {
-            return static_cast<osc::SimulationStatus>(m_Status.load());
+            return static_cast<SimulationStatus>(m_Status.load());
         }
 
-        void setStatus(osc::SimulationStatus s)
+        void setStatus(SimulationStatus s)
         {
             m_Status = static_cast<int>(s);
         }
     private:
-        std::atomic<int> m_Status = static_cast<int>(osc::SimulationStatus::Initializing);
+        std::atomic<int> m_Status = static_cast<int>(SimulationStatus::Initializing);
     };
 
-    class AuxiliaryVariableOutputExtractor final : public osc::IOutputExtractor {
+    class AuxiliaryVariableOutputExtractor final : public IOutputExtractor {
     public:
-        AuxiliaryVariableOutputExtractor(std::string name, std::string description, osc::UID uid) :
+        AuxiliaryVariableOutputExtractor(std::string name, std::string description, UID uid) :
             m_Name{std::move(name)},
             m_Description{std::move(description)},
             m_UID{uid}
         {
         }
 
-        osc::CStringView getName() const final
+        CStringView getName() const final
         {
             return m_Name;
         }
 
-        osc::CStringView getDescription() const final
+        CStringView getDescription() const final
         {
             return m_Description;
         }
 
-        osc::OutputType getOutputType() const final
+        OutputType getOutputType() const final
         {
-            return osc::OutputType::Float;
+            return OutputType::Float;
         }
 
-        float getValueFloat(OpenSim::Component const& c, osc::SimulationReport const& report) const final
+        float getValueFloat(OpenSim::Component const& c, SimulationReport const& report) const final
         {
-            std::span<osc::SimulationReport const> reports(&report, 1);
+            std::span<SimulationReport const> reports(&report, 1);
             std::array<float, 1> out{};
             getValuesFloat(c, reports, out);
             return out.front();
         }
 
         void getValuesFloat(OpenSim::Component const&,
-                            std::span<osc::SimulationReport const> reports,
+                            std::span<SimulationReport const> reports,
                             std::span<float> overwriteOut) const final
         {
             for (size_t i = 0; i < reports.size(); ++i)
@@ -134,14 +135,14 @@ namespace
             }
         }
 
-        std::string getValueString(OpenSim::Component const& c, osc::SimulationReport const& report) const final
+        std::string getValueString(OpenSim::Component const& c, SimulationReport const& report) const final
         {
             return std::to_string(getValueFloat(c, report));
         }
 
         std::size_t getHash() const final
         {
-            return osc::HashOf(m_Name, m_Description, m_UID);
+            return HashOf(m_Name, m_Description, m_UID);
         }
 
         bool equals(IOutputExtractor const& other) const final
@@ -166,23 +167,23 @@ namespace
     private:
         std::string m_Name;
         std::string m_Description;
-        osc::UID m_UID;
+        UID m_UID;
     };
 
-    std::vector<osc::OutputExtractor> CreateSimulatorOutputExtractors()
+    std::vector<OutputExtractor> CreateSimulatorOutputExtractors()
     {
-        std::vector<osc::OutputExtractor> rv;
-        rv.reserve(static_cast<size_t>(2) + osc::GetNumIntegratorOutputExtractors() + osc::GetNumMultiBodySystemOutputExtractors());
+        std::vector<OutputExtractor> rv;
+        rv.reserve(static_cast<size_t>(2) + GetNumIntegratorOutputExtractors() + GetNumMultiBodySystemOutputExtractors());
 
         {
-            osc::OutputExtractor out{AuxiliaryVariableOutputExtractor{
+            OutputExtractor out{AuxiliaryVariableOutputExtractor{
                 "Wall time",
                 "Total cumulative time spent computing the simulation",
                 GetWalltimeUID(),
             }};
             rv.push_back(out);
 
-            osc::OutputExtractor out2{AuxiliaryVariableOutputExtractor{
+            OutputExtractor out2{AuxiliaryVariableOutputExtractor{
                 "Step Wall Time",
                 "How long it took, in wall time, to compute the last integration step",
                 GetStepDurationUID(),
@@ -190,28 +191,28 @@ namespace
             rv.push_back(out2);
         }
 
-        for (int i = 0, len = osc::GetNumIntegratorOutputExtractors(); i < len; ++i)
+        for (int i = 0, len = GetNumIntegratorOutputExtractors(); i < len; ++i)
         {
-            rv.push_back(osc::GetIntegratorOutputExtractorDynamic(i));
+            rv.push_back(GetIntegratorOutputExtractorDynamic(i));
         }
 
-        for (int i = 0, len = osc::GetNumMultiBodySystemOutputExtractors(); i < len; ++i)
+        for (int i = 0, len = GetNumMultiBodySystemOutputExtractors(); i < len; ++i)
         {
-            rv.push_back(osc::GetMultiBodySystemOutputExtractorDynamic(i));
+            rv.push_back(GetMultiBodySystemOutputExtractorDynamic(i));
         }
 
         return rv;
     }
 
-    std::vector<osc::OutputExtractor> const& GetSimulatorOutputExtractors()
+    std::vector<OutputExtractor> const& GetSimulatorOutputExtractors()
     {
-        static std::vector<osc::OutputExtractor> const s_Outputs = CreateSimulatorOutputExtractors();
+        static std::vector<OutputExtractor> const s_Outputs = CreateSimulatorOutputExtractors();
         return s_Outputs;
     }
 
     std::unique_ptr<SimTK::Integrator> CreateInitializedIntegrator(SimulatorThreadInput const& input)
     {
-        osc::ForwardDynamicSimulatorParams const& params = input.getParams();
+        ForwardDynamicSimulatorParams const& params = input.getParams();
 
         // create + init an integrator
         auto integ = CreateIntegrator(input.getMultiBodySystem(), params.integratorMethodUsed);
@@ -225,19 +226,19 @@ namespace
         return integ;
     }
 
-    osc::SimulationClock::time_point GetSimulationTime(SimTK::Integrator const& integ)
+    SimulationClock::time_point GetSimulationTime(SimTK::Integrator const& integ)
     {
-        return osc::SimulationClock::time_point(osc::SimulationClock::duration(integ.getTime()));
+        return SimulationClock::time_point(SimulationClock::duration(integ.getTime()));
     }
 
-    osc::SimulationReport CreateSimulationReport(
+    SimulationReport CreateSimulationReport(
         std::chrono::duration<float> wallTime,
         std::chrono::duration<float> stepDuration,
         SimTK::MultibodySystem const& sys,
         SimTK::Integrator const& integrator)
     {
         SimTK::State st = integrator.getState();
-        std::unordered_map<osc::UID, float> auxValues;
+        std::unordered_map<UID, float> auxValues;
 
         // care: state needs to be realized on the simulator thread
         st.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
@@ -250,38 +251,38 @@ namespace
 
         // populate integrator outputs
         {
-            int numOutputs = osc::GetNumIntegratorOutputExtractors();
+            int numOutputs = GetNumIntegratorOutputExtractors();
             auxValues.reserve(auxValues.size() + numOutputs);
             for (int i = 0; i < numOutputs; ++i)
             {
-                osc::IntegratorOutputExtractor const& o = osc::GetIntegratorOutputExtractor(i);
+                IntegratorOutputExtractor const& o = GetIntegratorOutputExtractor(i);
                 auxValues.emplace(o.getAuxiliaryDataID(), o.getExtractorFunction()(integrator));
             }
         }
 
         // populate mbs outputs
         {
-            int numOutputs = osc::GetNumMultiBodySystemOutputExtractors();
+            int numOutputs = GetNumMultiBodySystemOutputExtractors();
             auxValues.reserve(auxValues.size() + numOutputs);
             for (int i = 0; i < numOutputs; ++i)
             {
-                osc::MultiBodySystemOutputExtractor const& o = osc::GetMultiBodySystemOutputExtractor(i);
+                MultiBodySystemOutputExtractor const& o = GetMultiBodySystemOutputExtractor(i);
                 auxValues.emplace(o.getAuxiliaryDataID(), o.getExtractorFunction()(sys));
             }
         }
 
-        return osc::SimulationReport{std::move(st), std::move(auxValues)};
+        return SimulationReport{std::move(st), std::move(auxValues)};
     }
 
     // this is the main function that the simulator thread works through (unguarded against exceptions)
-    osc::SimulationStatus FdSimulationMainUnguarded(
+    SimulationStatus FdSimulationMainUnguarded(
         cpp20::stop_token stopToken,
         SimulatorThreadInput& input,
         SharedState& shared)
     {
         std::chrono::high_resolution_clock::time_point const tSimStart = std::chrono::high_resolution_clock::now();
 
-        osc::ForwardDynamicSimulatorParams const& params = input.getParams();
+        ForwardDynamicSimulatorParams const& params = input.getParams();
 
         // create + init an integrator
         std::unique_ptr<SimTK::Integrator> integ = CreateInitializedIntegrator(input);
@@ -292,7 +293,7 @@ namespace
         ts.setReportAllSignificantStates(true);  // so that cancellations/interrupts work
 
         // inform observers that everything has been initialized and the sim is now running
-        shared.setStatus(osc::SimulationStatus::Running);
+        shared.setStatus(SimulationStatus::Running);
 
         // immediately report t = start
         {
@@ -301,19 +302,19 @@ namespace
         }
 
         // integrate (t0..tfinal]
-        osc::SimulationClock::time_point tStart = GetSimulationTime(*integ);
-        osc::SimulationClock::time_point tLastReport = tStart;
+        SimulationClock::time_point tStart = GetSimulationTime(*integ);
+        SimulationClock::time_point tLastReport = tStart;
         int step = 1;
         while (!integ->isSimulationOver())
         {
             // check for cancellation requests
             if (stopToken.stop_requested())
             {
-                return osc::SimulationStatus::Cancelled;
+                return SimulationStatus::Cancelled;
             }
 
             // calculate next reporting time
-            osc::SimulationClock::time_point tNext = tStart + step*params.reportingInterval;
+            SimulationClock::time_point tNext = tStart + step*params.reportingInterval;
 
             // perform an integration step
             std::chrono::high_resolution_clock::time_point tStepStart = std::chrono::high_resolution_clock::now();
@@ -325,8 +326,8 @@ namespace
                 integ->getTerminationReason() != SimTK::Integrator::ReachedFinalTime)
             {
                 // simulation ended because of an error: report the error and exit
-                osc::log::error("%s", integ->getTerminationReasonString(integ->getTerminationReason()).c_str());
-                return osc::SimulationStatus::Error;
+                log_error("%s", integ->getTerminationReasonString(integ->getTerminationReason()).c_str());
+                return SimulationStatus::Error;
             }
             else if (timestepRv == SimTK::Integrator::ReachedReportTime)
             {
@@ -343,7 +344,7 @@ namespace
                 // if the simulation endpoint is sufficiently ahead of the last report time
                 // (1 % of step size), then *also* report the simulation end time. Otherwise,
                 // assume that there's an adjacent-enough report
-                osc::SimulationClock::time_point t = GetSimulationTime(*integ);
+                SimulationClock::time_point t = GetSimulationTime(*integ);
                 if ((tLastReport + 0.01*params.reportingInterval) < t)
                 {
                     std::chrono::duration<float> wallDur = tStepEnd - tSimStart;
@@ -359,7 +360,7 @@ namespace
             }
         }
 
-        return osc::SimulationStatus::Completed;
+        return SimulationStatus::Completed;
     }
 
     // MAIN function for the simulator thread
@@ -370,7 +371,7 @@ namespace
         std::unique_ptr<SimulatorThreadInput> input,
         std::shared_ptr<SharedState> shared)  // NOLINT(performance-unnecessary-value-param)
     {
-        osc::SimulationStatus status = osc::SimulationStatus::Error;
+        SimulationStatus status = SimulationStatus::Error;
 
         try
         {
@@ -378,15 +379,15 @@ namespace
         }
         catch (OpenSim::Exception const& ex)
         {
-            osc::log::error("OpenSim::Exception occurred when running a simulation: %s", ex.what());
+            log_error("OpenSim::Exception occurred when running a simulation: %s", ex.what());
         }
         catch (std::exception const& ex)
         {
-            osc::log::error("std::exception occurred when running a simulation: %s", ex.what());
+            log_error("std::exception occurred when running a simulation: %s", ex.what());
         }
         catch (...)
         {
-            osc::log::error("an exception with unknown type occurred when running a simulation (no error message available)");
+            log_error("an exception with unknown type occurred when running a simulation (no error message available)");
         }
 
         shared->setStatus(status);
@@ -449,7 +450,7 @@ int osc::GetNumFdSimulatorOutputExtractors()
     return static_cast<int>(GetSimulatorOutputExtractors().size());
 }
 
-osc::OutputExtractor osc::GetFdSimulatorOutputExtractor(int idx)
+OutputExtractor osc::GetFdSimulatorOutputExtractor(int idx)
 {
     return GetSimulatorOutputExtractors().at(static_cast<size_t>(idx));
 }
@@ -467,7 +468,7 @@ osc::ForwardDynamicSimulator::ForwardDynamicSimulator(ForwardDynamicSimulator&&)
 osc::ForwardDynamicSimulator& osc::ForwardDynamicSimulator::operator=(ForwardDynamicSimulator&&) noexcept = default;
 osc::ForwardDynamicSimulator::~ForwardDynamicSimulator() noexcept = default;
 
-osc::SimulationStatus osc::ForwardDynamicSimulator::getStatus() const
+SimulationStatus osc::ForwardDynamicSimulator::getStatus() const
 {
     return m_Impl->getStatus();
 }
@@ -482,7 +483,7 @@ void osc::ForwardDynamicSimulator::stop()
     return m_Impl->stop();
 }
 
-osc::ForwardDynamicSimulatorParams const& osc::ForwardDynamicSimulator::params() const
+ForwardDynamicSimulatorParams const& osc::ForwardDynamicSimulator::params() const
 {
     return m_Impl->params();
 }

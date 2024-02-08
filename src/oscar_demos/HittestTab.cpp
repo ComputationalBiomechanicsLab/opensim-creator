@@ -1,25 +1,8 @@
 #include "HittestTab.hpp"
 
+#include <imgui.h>
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
-#include <oscar/Graphics/Camera.hpp>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/MaterialPropertyBlock.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Maths/CollisionTests.hpp>
-#include <oscar/Maths/Disc.hpp>
-#include <oscar/Maths/Eulers.hpp>
-#include <oscar/Maths/Line.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Sphere.hpp>
-#include <oscar/Maths/Triangle.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
 
 #include <array>
 #include <cstdint>
@@ -28,14 +11,7 @@
 #include <optional>
 #include <vector>
 
-using osc::Camera;
-using osc::Color;
-using osc::CStringView;
-using osc::Line;
-using osc::MaterialPropertyBlock;
-using osc::Mesh;
-using osc::MeshTopology;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {
@@ -284,10 +260,11 @@ private:
         m_Camera.renderToScreen();
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
     Camera m_Camera;
     Material m_Material{Shader{
-        App::slurp("oscar_demos/shaders/SolidColor.vert"),
-        App::slurp("oscar_demos/shaders/SolidColor.frag"),
+        m_Loader.slurp("oscar_demos/shaders/SolidColor.vert"),
+        m_Loader.slurp("oscar_demos/shaders/SolidColor.frag"),
     }};
     Mesh m_SphereMesh = GenerateUVSphereMesh(12, 12);
     Mesh m_WireframeCubeMesh = GenerateCubeLinesMesh();
@@ -310,7 +287,7 @@ private:
 
 // public API
 
-osc::CStringView osc::HittestTab::id()
+CStringView osc::HittestTab::id()
 {
     return c_TabStringID;
 }
@@ -323,12 +300,12 @@ osc::HittestTab::HittestTab(HittestTab&&) noexcept = default;
 osc::HittestTab& osc::HittestTab::operator=(HittestTab&&) noexcept = default;
 osc::HittestTab::~HittestTab() noexcept = default;
 
-osc::UID osc::HittestTab::implGetID() const
+UID osc::HittestTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::HittestTab::implGetName() const
+CStringView osc::HittestTab::implGetName() const
 {
     return m_Impl->getName();
 }

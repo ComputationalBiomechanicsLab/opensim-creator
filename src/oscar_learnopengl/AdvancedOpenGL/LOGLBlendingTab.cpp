@@ -3,35 +3,15 @@
 #include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Panels/LogViewerPanel.hpp>
-#include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
 
 #include <array>
 #include <cstdint>
 #include <memory>
 
 using namespace osc::literals;
-using osc::CStringView;
-using osc::Mesh;
-using osc::MouseCapturingCamera;
-using osc::Vec2;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {
@@ -110,7 +90,7 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
@@ -180,9 +160,10 @@ private:
         m_PerfPanel.onDraw();
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
     Material m_OpaqueMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.frag"),
     }};
     Material m_BlendingMaterial = m_OpaqueMaterial;
     Mesh m_CubeMesh = GenerateLearnOpenGLCubeMesh();
@@ -190,15 +171,15 @@ private:
     Mesh m_TransparentMesh = GenerateTransparent();
     MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     Texture2D m_MarbleTexture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/marble.jpg"),
+        m_Loader.open("oscar_learnopengl/textures/marble.jpg"),
         ColorSpace::sRGB
     );
     Texture2D m_MetalTexture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/metal.png"),
+        m_Loader.open("oscar_learnopengl/textures/metal.png"),
         ColorSpace::sRGB
     );
     Texture2D m_WindowTexture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/window.png"),
+        m_Loader.open("oscar_learnopengl/textures/window.png"),
         ColorSpace::sRGB
     );
     LogViewerPanel m_LogViewer{"log"};
@@ -222,7 +203,7 @@ osc::LOGLBlendingTab::LOGLBlendingTab(LOGLBlendingTab&&) noexcept = default;
 osc::LOGLBlendingTab& osc::LOGLBlendingTab::operator=(LOGLBlendingTab&&) noexcept = default;
 osc::LOGLBlendingTab::~LOGLBlendingTab() noexcept = default;
 
-osc::UID osc::LOGLBlendingTab::implGetID() const
+UID osc::LOGLBlendingTab::implGetID() const
 {
     return m_Impl->getID();
 }

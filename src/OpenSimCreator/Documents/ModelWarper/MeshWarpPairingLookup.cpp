@@ -11,7 +11,7 @@
 #include <utility>
 
 using osc::mow::MeshWarpPairing;
-using osc::FindGeometryFileAbsPath;
+using namespace osc;
 
 namespace
 {
@@ -20,7 +20,7 @@ namespace
         OpenSim::Model const& model)
     {
         std::unordered_map<std::string, MeshWarpPairing> rv;
-        rv.reserve(osc::GetNumChildren<OpenSim::Mesh>(model));
+        rv.reserve(GetNumChildren<OpenSim::Mesh>(model));
 
         // go through each mesh in the `OpenSim::Model` and attempt to load its landmark pairings
         for (auto const& mesh : model.getComponentList<OpenSim::Mesh>())
@@ -37,7 +37,7 @@ namespace
             {
                 std::stringstream ss;
                 ss << mesh.getGeometryFilename() << ": could not find this mesh file: skipping";
-                osc::log::error(std::move(ss).str());
+                log_error(std::move(ss).str());
             }
         }
 

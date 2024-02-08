@@ -2,33 +2,14 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
-#include <imgui.h>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
 
 #include <array>
 #include <memory>
 
 using namespace osc::literals;
-using osc::App;
-using osc::CStringView;
-using osc::Material;
-using osc::MouseCapturingCamera;
-using osc::Shader;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {
@@ -55,19 +36,19 @@ namespace
     MouseCapturingCamera CreateCamera()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setCameraFOV(45_deg);
+        rv.setPosition({0.0f, 0.0f, 20.0f});
+        rv.setVerticalFOV(45_deg);
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
 
-    Material CreateMaterial()
+    Material CreateMaterial(IResourceLoader& rl)
     {
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.vert"),
-            App::slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.frag"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.vert"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.frag"),
         }};
         rv.setFloat("uAO", 1.0f);
         return rv;
@@ -150,10 +131,10 @@ private:
         m_PerfPanel.onDraw();
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
     MouseCapturingCamera m_Camera = CreateCamera();
     Mesh m_SphereMesh = GenerateUVSphereMesh(64, 64);
-    Material m_PBRMaterial = CreateMaterial();
-
+    Material m_PBRMaterial = CreateMaterial(m_Loader);
     PerfPanel m_PerfPanel{"Perf"};
 };
 
@@ -174,7 +155,7 @@ osc::LOGLPBRLightingTab::LOGLPBRLightingTab(LOGLPBRLightingTab&&) noexcept = def
 osc::LOGLPBRLightingTab& osc::LOGLPBRLightingTab::operator=(LOGLPBRLightingTab&&) noexcept = default;
 osc::LOGLPBRLightingTab::~LOGLPBRLightingTab() noexcept = default;
 
-osc::UID osc::LOGLPBRLightingTab::implGetID() const
+UID osc::LOGLPBRLightingTab::implGetID() const
 {
     return m_Impl->getID();
 }

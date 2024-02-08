@@ -3,7 +3,9 @@
 #include <concepts>
 #include <cstddef>
 #include <functional>
+#include <iosfwd>
 #include <memory>
+#include <string_view>
 #include <type_traits>
 
 namespace osc
@@ -31,5 +33,11 @@ namespace osc
     template<typename T>
     concept Hashable = requires(T v) {
         { std::hash<T>{}(v) } -> std::convertible_to<size_t>;
+    };
+
+    template<typename T>
+    concept NamedInputStream = requires(T v) {
+        { v } -> std::convertible_to<std::istream&>;
+        { v.name() } -> std::convertible_to<std::string_view>;
     };
 }

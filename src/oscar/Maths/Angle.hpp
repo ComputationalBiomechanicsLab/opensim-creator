@@ -161,6 +161,7 @@ namespace osc
     }
 }
 
+// define a specialization for `std::common_type` (similarly to how it's done for std::chrono::duration)
 template<
     std::floating_point Rep1,
     osc::AngularUnitTraits Units1,

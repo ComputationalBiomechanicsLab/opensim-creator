@@ -41,8 +41,8 @@ namespace osc
         void setOrthographicSize(float);
 
         // only used if CameraProjection == Perspective
-        Radians getCameraFOV() const;
-        void setCameraFOV(Radians);
+        Radians getVerticalFOV() const;
+        void setVerticalFOV(Radians);
 
         float getNearClippingPlane() const;
         void setNearClippingPlane(float);

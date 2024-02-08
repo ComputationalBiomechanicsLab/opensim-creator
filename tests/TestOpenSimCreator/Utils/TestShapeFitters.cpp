@@ -22,12 +22,21 @@
 
 using namespace osc::literals;
 
+using osc::Ellipsoid;
+using osc::GenerateUVSphereMesh;
+using osc::IsEqualWithinAbsoluteError;
+using osc::LoadMeshViaSimTK;
+using osc::Mesh;
+using osc::Normalize;
+using osc::Plane;
+using osc::Sphere;
+using osc::Transform;
 using osc::Vec3;
 
 TEST(FitSphere, ReturnsUnitSphereWhenGivenAnEmptyMesh)
 {
-    osc::Mesh const emptyMesh;
-    osc::Sphere const sphereFit = osc::FitSphere(emptyMesh);
+    Mesh const emptyMesh;
+    Sphere const sphereFit = FitSphere(emptyMesh);
 
     ASSERT_FALSE(emptyMesh.hasVerts());
     ASSERT_EQ(sphereFit.origin, Vec3(0.0f, 0.0f, 0.0f));
@@ -37,27 +46,27 @@ TEST(FitSphere, ReturnsUnitSphereWhenGivenAnEmptyMesh)
 TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenAUnitSphereMesh)
 {
     // generate a UV unit sphere
-    osc::Mesh const sphereMesh = osc::GenerateUVSphereMesh(16, 16);
-    osc::Sphere const sphereFit = osc::FitSphere(sphereMesh);
+    Mesh const sphereMesh = GenerateUVSphereMesh(16, 16);
+    Sphere const sphereFit = FitSphere(sphereMesh);
 
-    ASSERT_TRUE(osc::IsEqualWithinAbsoluteError(sphereFit.origin, Vec3{}, 0.000001f));
-    ASSERT_TRUE(osc::IsEqualWithinAbsoluteError(sphereFit.radius, 1.0f, 0.000001f));
+    ASSERT_TRUE(IsEqualWithinAbsoluteError(sphereFit.origin, Vec3{}, 0.000001f));
+    ASSERT_TRUE(IsEqualWithinAbsoluteError(sphereFit.radius, 1.0f, 0.000001f));
 }
 
 TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphere)
 {
-    osc::Transform t;
+    Transform t;
     t.position = {7.0f, 3.0f, 1.5f};
     t.scale = {3.25f, 3.25f, 3.25f};  // keep it spherical
-    t.rotation = osc::AngleAxis(45_deg, osc::Normalize(Vec3{1.0f, 1.0f, 0.0f}));
+    t.rotation = AngleAxis(45_deg, Normalize(Vec3{1.0f, 1.0f, 0.0f}));
 
-    osc::Mesh sphereMesh = osc::GenerateUVSphereMesh(16, 16);
+    Mesh sphereMesh = GenerateUVSphereMesh(16, 16);
     sphereMesh.transformVerts(t);
 
-    osc::Sphere const sphereFit = osc::FitSphere(sphereMesh);
+    Sphere const sphereFit = FitSphere(sphereMesh);
 
-    ASSERT_TRUE(osc::IsEqualWithinAbsoluteError(sphereFit.origin, t.position, 0.000001f));
-    ASSERT_TRUE(osc::IsEqualWithinAbsoluteError(sphereFit.radius, t.scale.x, 0.000001f));
+    ASSERT_TRUE(IsEqualWithinAbsoluteError(sphereFit.origin, t.position, 0.000001f));
+    ASSERT_TRUE(IsEqualWithinAbsoluteError(sphereFit.radius, t.scale.x, 0.000001f));
 }
 
 // reproduction: ensure the C++ rewrite produces similar results to:
@@ -81,22 +90,22 @@ TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphere)
 TEST(FitSphere, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgorithm)
 {
     // this hard-coded result comes from running the provided `Femoral_head.obj` through the shape fitter script
-    constexpr osc::Sphere c_ExpectedSphere{{5.0133f, -27.43f, 164.2998f}, 7.8291f};
+    constexpr Sphere c_ExpectedSphere{{5.0133f, -27.43f, 164.2998f}, 7.8291f};
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
     auto const objPath =
         std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources/TestOpenSimCreator/Utils/ShapeFitting/Femoral_head.obj";
-    osc::Mesh const mesh = osc::LoadMeshViaSimTK(objPath);
-    osc::Sphere const sphereFit = osc::FitSphere(mesh);
+    Mesh const mesh = LoadMeshViaSimTK(objPath);
+    Sphere const sphereFit = FitSphere(mesh);
 
-    ASSERT_TRUE(osc::IsEqualWithinAbsoluteError(sphereFit.origin, c_ExpectedSphere.origin, 0.0001f));
-    ASSERT_TRUE(osc::IsEqualWithinAbsoluteError(sphereFit.radius, c_ExpectedSphere.radius, 0.0001f));
+    ASSERT_TRUE(IsEqualWithinAbsoluteError(sphereFit.origin, c_ExpectedSphere.origin, 0.0001f));
+    ASSERT_TRUE(IsEqualWithinAbsoluteError(sphereFit.radius, c_ExpectedSphere.radius, 0.0001f));
 }
 
 TEST(FitPlane, ReturnsUnitPlanePointingUpInYIfGivenAnEmptyMesh)
 {
-    osc::Mesh const emptyMesh;
-    osc::Plane const planeFit = osc::FitPlane(emptyMesh);
+    Mesh const emptyMesh;
+    Plane const planeFit = FitPlane(emptyMesh);
 
     ASSERT_FALSE(emptyMesh.hasVerts());
     ASSERT_EQ(planeFit.origin, Vec3(0.0f, 0.0f, 0.0f));
@@ -124,7 +133,7 @@ TEST(FitPlane, ReturnsUnitPlanePointingUpInYIfGivenAnEmptyMesh)
 TEST(FitPlane, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgorithm)
 {
     // this hard-coded result comes from running the provided `Femoral_head.obj` through the shape fitter script
-    constexpr osc::Plane c_ExpectedPlane =
+    constexpr Plane c_ExpectedPlane =
     {
         {4.6138f, -24.0131f, 163.1295f},
         {0.2131f, 0.94495f, -0.24833f},
@@ -133,11 +142,11 @@ TEST(FitPlane, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgor
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
     auto const objPath =
         std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources/TestOpenSimCreator/Utils/ShapeFitting/Femoral_head.obj";
-    osc::Mesh const mesh = osc::LoadMeshViaSimTK(objPath);
-    osc::Plane const planeFit = osc::FitPlane(mesh);
+    Mesh const mesh = LoadMeshViaSimTK(objPath);
+    Plane const planeFit = FitPlane(mesh);
 
-    ASSERT_TRUE(osc::IsEqualWithinAbsoluteError(planeFit.origin, c_ExpectedPlane.origin, 0.0001f));
-    ASSERT_TRUE(osc::IsEqualWithinAbsoluteError(planeFit.normal, c_ExpectedPlane.normal, 0.0001f));
+    ASSERT_TRUE(IsEqualWithinAbsoluteError(planeFit.origin, c_ExpectedPlane.origin, 0.0001f));
+    ASSERT_TRUE(IsEqualWithinAbsoluteError(planeFit.normal, c_ExpectedPlane.normal, 0.0001f));
 }
 
 // reproduction: ensure the C++ rewrite produces similar results to:
@@ -161,7 +170,7 @@ TEST(FitPlane, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgor
 TEST(FitEllipsoid, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgorithm)
 {
     // this hard-coded result comes from running the provided `Femoral_head.obj` through the shape fitter script
-    constexpr osc::Ellipsoid c_ExpectedFit =
+    constexpr Ellipsoid c_ExpectedFit =
     {
         {4.41627617443540f, -28.2484366502307f, 165.041246898544f},
         {9.39508101198322f,   8.71324627349633f,  6.71387132216324f},
@@ -180,14 +189,14 @@ TEST(FitEllipsoid, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedA
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
     auto const objPath =
         std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources/TestOpenSimCreator/Utils/ShapeFitting/Femoral_head.obj";
-    osc::Mesh const mesh = osc::LoadMeshViaSimTK(objPath);
-    osc::Ellipsoid const fit = osc::FitEllipsoid(mesh);
+    Mesh const mesh = LoadMeshViaSimTK(objPath);
+    Ellipsoid const fit = FitEllipsoid(mesh);
 
-    ASSERT_TRUE(osc::IsEqualWithinAbsoluteError(fit.origin, c_ExpectedFit.origin, c_MaximumAbsoluteError));
-    ASSERT_TRUE(osc::IsEqualWithinAbsoluteError(fit.radii, c_ExpectedFit.radii, c_MaximumAbsoluteError));
-    ASSERT_TRUE(osc::IsEqualWithinAbsoluteError(fit.radiiDirections[0], c_ExpectedFit.radiiDirections[0], c_MaximumAbsoluteError));
-    ASSERT_TRUE(osc::IsEqualWithinAbsoluteError(fit.radiiDirections[1], c_ExpectedFit.radiiDirections[1], c_MaximumAbsoluteError));
-    ASSERT_TRUE(osc::IsEqualWithinAbsoluteError(fit.radiiDirections[2], c_ExpectedFit.radiiDirections[2], c_MaximumAbsoluteError));
+    ASSERT_TRUE(IsEqualWithinAbsoluteError(fit.origin, c_ExpectedFit.origin, c_MaximumAbsoluteError));
+    ASSERT_TRUE(IsEqualWithinAbsoluteError(fit.radii, c_ExpectedFit.radii, c_MaximumAbsoluteError));
+    ASSERT_TRUE(IsEqualWithinAbsoluteError(fit.radiiDirections[0], c_ExpectedFit.radiiDirections[0], c_MaximumAbsoluteError));
+    ASSERT_TRUE(IsEqualWithinAbsoluteError(fit.radiiDirections[1], c_ExpectedFit.radiiDirections[1], c_MaximumAbsoluteError));
+    ASSERT_TRUE(IsEqualWithinAbsoluteError(fit.radiiDirections[2], c_ExpectedFit.radiiDirections[2], c_MaximumAbsoluteError));
 }
 
 TEST(FitEllipsoid, DISABLED_ThrowsErrorIfGivenLessThan9Points)
@@ -198,7 +207,7 @@ TEST(FitEllipsoid, DISABLED_ThrowsErrorIfGivenLessThan9Points)
         std::vector<uint16_t> indices(n);
         std::iota(indices.begin(), indices.end(), static_cast<uint16_t>(0));
 
-        osc::Mesh m;
+        Mesh m;
         m.setVerts(verts);
         m.setIndices(indices);
         return m;

@@ -6,70 +6,76 @@
 #include <oscar/Graphics/RenderBufferStoreAction.hpp>
 #include <oscar/Graphics/RenderTexture.hpp>
 
+using osc::RenderTexture;
+using osc::RenderTargetColorAttachment;
+using osc::RenderBufferLoadAction;
+using osc::RenderBufferStoreAction;
+using osc::Color;
+
 TEST(RenderTargetColorAttachment, CanConstructFromPartsOfRenderTexture)
 {
-    osc::RenderTexture renderTex;
-    osc::RenderTargetColorAttachment attachment
+    RenderTexture renderTex;
+    RenderTargetColorAttachment attachment
     {
         renderTex.updColorBuffer(),
-        osc::RenderBufferLoadAction::Clear,
-        osc::RenderBufferStoreAction::Resolve,
-        osc::Color::red(),
+        RenderBufferLoadAction::Clear,
+        RenderBufferStoreAction::Resolve,
+        Color::red(),
     };
 
     ASSERT_EQ(attachment.buffer, renderTex.updColorBuffer());
-    ASSERT_EQ(attachment.loadAction, osc::RenderBufferLoadAction::Clear);
-    ASSERT_EQ(attachment.storeAction, osc::RenderBufferStoreAction::Resolve);
-    ASSERT_EQ(attachment.clearColor, osc::Color::red());
+    ASSERT_EQ(attachment.loadAction, RenderBufferLoadAction::Clear);
+    ASSERT_EQ(attachment.storeAction, RenderBufferStoreAction::Resolve);
+    ASSERT_EQ(attachment.clearColor, Color::red());
 }
 
 TEST(RenderTargetColorAttachment, ConstructingWithNullptrThrowsException)
 {
     ASSERT_ANY_THROW(
     {
-        osc::RenderTargetColorAttachment
+        RenderTargetColorAttachment
         (
             nullptr,
-            osc::RenderBufferLoadAction::Clear,
-            osc::RenderBufferStoreAction::Resolve,
-            osc::Color::red()
+            RenderBufferLoadAction::Clear,
+            RenderBufferStoreAction::Resolve,
+            Color::red()
         );
     });
 }
 
 TEST(RenderTargetColorAttachment, EqualityReturnsTrueForCopies)
 {
-    osc::RenderTexture renderTex;
-    osc::RenderTargetColorAttachment attachment
+    RenderTexture renderTex;
+    RenderTargetColorAttachment attachment
     {
         renderTex.updColorBuffer(),
-        osc::RenderBufferLoadAction::Clear,
-        osc::RenderBufferStoreAction::Resolve,
-        osc::Color::red(),
+        RenderBufferLoadAction::Clear,
+        RenderBufferStoreAction::Resolve,
+        Color::red(),
     };
-    osc::RenderTargetColorAttachment copy = attachment;  // NOLINT(performance-unnecessary-copy-initialization)
+    RenderTargetColorAttachment copy = attachment;  // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(copy, attachment);
 }
 
 TEST(RenderTargetColorAttachment, EqualityReturnsTrueForSeperatelyConstructedButLogicallyEqualValues)
 {
-    osc::RenderTexture renderTex;
+    RenderTexture renderTex;
 
-    osc::RenderTargetColorAttachment a
+    RenderTargetColorAttachment a
     {
         renderTex.updColorBuffer(),
-        osc::RenderBufferLoadAction::Clear,
-        osc::RenderBufferStoreAction::Resolve,
-        osc::Color::red(),
+        RenderBufferLoadAction::Clear,
+        RenderBufferStoreAction::Resolve,
+        Color::red(),
     };
 
-    osc::RenderTargetColorAttachment b
+    RenderTargetColorAttachment b
     {
         renderTex.updColorBuffer(),
-        osc::RenderBufferLoadAction::Clear,
-        osc::RenderBufferStoreAction::Resolve,
-        osc::Color::red(),
+        RenderBufferLoadAction::Clear,
+        RenderBufferStoreAction::Resolve,
+        Color::red(),
     };
 
     ASSERT_EQ(a, b);
@@ -77,19 +83,19 @@ TEST(RenderTargetColorAttachment, EqualityReturnsTrueForSeperatelyConstructedBut
 
 TEST(RenderTargetColorAttachment, EqualityReturnsFalseIfSomethingIsModified)
 {
-    osc::RenderTexture firstRenderTex;
-    osc::RenderTexture secondRenderTex;
-    osc::RenderTargetColorAttachment attachment
+    RenderTexture firstRenderTex;
+    RenderTexture secondRenderTex;
+    RenderTargetColorAttachment attachment
     {
         firstRenderTex.updColorBuffer(),
-        osc::RenderBufferLoadAction::Clear,
-        osc::RenderBufferStoreAction::Resolve,
-        osc::Color::red(),
+        RenderBufferLoadAction::Clear,
+        RenderBufferStoreAction::Resolve,
+        Color::red(),
     };
 
     // modify buffer
     {
-        osc::RenderTargetColorAttachment copy = attachment;
+        RenderTargetColorAttachment copy = attachment;
         ASSERT_EQ(copy, attachment);
         copy.buffer = secondRenderTex.updColorBuffer();
         ASSERT_NE(copy, attachment);
@@ -97,25 +103,25 @@ TEST(RenderTargetColorAttachment, EqualityReturnsFalseIfSomethingIsModified)
 
     // modify load action
     {
-        osc::RenderTargetColorAttachment copy = attachment;
+        RenderTargetColorAttachment copy = attachment;
         ASSERT_EQ(copy, attachment);
-        copy.loadAction = osc::RenderBufferLoadAction::Load;
+        copy.loadAction = RenderBufferLoadAction::Load;
         ASSERT_NE(copy, attachment);
     }
 
     // modify store action
     {
-        osc::RenderTargetColorAttachment copy = attachment;
+        RenderTargetColorAttachment copy = attachment;
         ASSERT_EQ(copy, attachment);
-        copy.storeAction = osc::RenderBufferStoreAction::DontCare;
+        copy.storeAction = RenderBufferStoreAction::DontCare;
         ASSERT_NE(copy, attachment);
     }
 
     // modify color
     {
-        osc::RenderTargetColorAttachment copy = attachment;
+        RenderTargetColorAttachment copy = attachment;
         ASSERT_EQ(copy, attachment);
-        copy.clearColor = osc::Color::green();
+        copy.clearColor = Color::green();
         ASSERT_NE(copy, attachment);
     }
 }

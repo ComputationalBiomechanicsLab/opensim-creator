@@ -9,6 +9,12 @@ namespace osc
 {
     class AppMetadata final {
     public:
+        AppMetadata() :
+            m_OrganizationName{"oscarorg"},
+            m_ApplicationName{"oscar"}
+        {
+        }
+
         AppMetadata(
             CStringView organizationName_,
             CStringView applicationName_) :

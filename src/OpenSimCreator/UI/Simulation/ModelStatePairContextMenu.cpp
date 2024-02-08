@@ -38,7 +38,7 @@ public:
         {
             drawRightClickedNothingContextMenu();
         }
-        else if (OpenSim::Component const* c = osc::FindComponent(m_Model->getModel(), *m_MaybeComponentAbsPath))
+        else if (OpenSim::Component const* c = FindComponent(m_Model->getModel(), *m_MaybeComponentAbsPath))
         {
             drawRightClickedSomethingContextMenu(*c);
         }

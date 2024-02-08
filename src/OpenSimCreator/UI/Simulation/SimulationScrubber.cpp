@@ -161,10 +161,10 @@ private:
 
         if (ImGui::IsItemHovered())
         {
-            osc::BeginTooltip();
+            BeginTooltip();
             ImGui::TextUnformatted("Left-Click: Change simulation time being shown");
             ImGui::TextUnformatted("Ctrl-Click: Type in the simulation time being shown");
-            osc::EndTooltip();
+            EndTooltip();
         }
     }
 

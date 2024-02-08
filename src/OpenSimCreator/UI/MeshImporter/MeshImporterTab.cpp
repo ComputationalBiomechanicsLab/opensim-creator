@@ -1377,7 +1377,7 @@ private:
         if (!outputFileStream)
         {
             std::string const error = CurrentErrnoAsString();
-            log::error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
+            log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
             return;
         }
 
@@ -1416,7 +1416,7 @@ private:
         if (!outputFileStream)
         {
             std::string const error = CurrentErrnoAsString();
-            log::error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
+            log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
             return;
         }
 

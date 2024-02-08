@@ -24,15 +24,7 @@
 #include <utility>
 #include <vector>
 
-using osc::AppSettings;
-using osc::AppSettingValue;
-using osc::AppSettingValueType;
-using osc::CStringView;
-using osc::CurrentExeDir;
-using osc::GetUserDataDir;
-using osc::HashOf;
-using osc::NumOptions;
-using osc::SynchronizedValue;
+using namespace osc;
 
 namespace
 {
@@ -234,8 +226,8 @@ R"(# configuration options
         }
         catch (std::exception const& ex)
         {
-            osc::log::warn("error parsing %s: %s", p.string().c_str(), ex.what());
-            osc::log::warn("the application will skip loading this configuration file, but you might want to fix it");
+            log_warn("error parsing %s: %s", p.string().c_str(), ex.what());
+            log_warn("the application will skip loading this configuration file, but you might want to fix it");
             return toml::table{};
         }
     }
@@ -491,8 +483,8 @@ R"(# configuration options
             {
                 if (!std::exchange(m_WarningAboutMissingUserConfigIssued, true))
                 {
-                    osc::log::warn("application settings could not be synchronized: could not find a user configuration file path");
-                    osc::log::warn("this can happen if (e.g.) your user data directory has incorrect permissions");
+                    log_warn("application settings could not be synchronized: could not find a user configuration file path");
+                    log_warn("this can happen if (e.g.) your user data directory has incorrect permissions");
                 }
                 return;
             }
@@ -502,7 +494,7 @@ R"(# configuration options
             {
                 if (!std::exchange(m_WarningAboutCannotOpenUserConfigFileIssued, true))
                 {
-                    osc::log::warn("%s: could not open for writing: user settings will not be saved", m_UserConfigPath->string().c_str());
+                    log_warn("%s: could not open for writing: user settings will not be saved", m_UserConfigPath->string().c_str());
                 }
                 return;
             }
@@ -623,8 +615,8 @@ osc::AppSettings::AppSettings(
 }
 osc::AppSettings::AppSettings(AppSettings const&) = default;
 osc::AppSettings::AppSettings(AppSettings&&) noexcept = default;
-osc::AppSettings& osc::AppSettings::operator=(AppSettings const&) = default;
-osc::AppSettings& osc::AppSettings::operator=(AppSettings&&) noexcept = default;
+AppSettings& osc::AppSettings::operator=(AppSettings const&) = default;
+AppSettings& osc::AppSettings::operator=(AppSettings&&) noexcept = default;
 osc::AppSettings::~AppSettings() noexcept
 {
     m_Impl->sync();

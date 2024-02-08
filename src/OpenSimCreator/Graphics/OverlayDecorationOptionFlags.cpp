@@ -3,56 +3,58 @@
 #include <array>
 #include <span>
 
+using namespace osc;
+
 namespace
 {
-    constexpr auto c_Metadata = std::to_array<osc::OverlayDecorationOptionFlagsMetadata>(
+    constexpr auto c_Metadata = std::to_array<OverlayDecorationOptionFlagsMetadata>(
     {
-        osc::OverlayDecorationOptionFlagsMetadata
+        OverlayDecorationOptionFlagsMetadata
         {
             "show_xz_grid",
             "XZ Grid",
-            osc::OverlayDecorationOptionGroup::Alignment,
-            osc::OverlayDecorationOptionFlags::DrawXZGrid,
+            OverlayDecorationOptionGroup::Alignment,
+            OverlayDecorationOptionFlags::DrawXZGrid,
         },
-        osc::OverlayDecorationOptionFlagsMetadata
+        OverlayDecorationOptionFlagsMetadata
         {
             "show_xy_grid",
             "XY Grid",
-            osc::OverlayDecorationOptionGroup::Alignment,
-            osc::OverlayDecorationOptionFlags::DrawXYGrid,
+            OverlayDecorationOptionGroup::Alignment,
+            OverlayDecorationOptionFlags::DrawXYGrid,
         },
-        osc::OverlayDecorationOptionFlagsMetadata
+        OverlayDecorationOptionFlagsMetadata
         {
             "show_yz_grid",
             "YZ Grid",
-            osc::OverlayDecorationOptionGroup::Alignment,
-            osc::OverlayDecorationOptionFlags::DrawYZGrid,
+            OverlayDecorationOptionGroup::Alignment,
+            OverlayDecorationOptionFlags::DrawYZGrid,
         },
-        osc::OverlayDecorationOptionFlagsMetadata
+        OverlayDecorationOptionFlagsMetadata
         {
             "show_axis_lines",
             "Axis Lines",
-            osc::OverlayDecorationOptionGroup::Alignment,
-            osc::OverlayDecorationOptionFlags::DrawAxisLines,
+            OverlayDecorationOptionGroup::Alignment,
+            OverlayDecorationOptionFlags::DrawAxisLines,
         },
-        osc::OverlayDecorationOptionFlagsMetadata
+        OverlayDecorationOptionFlagsMetadata
         {
             "show_aabbs",
             "AABBs",
-            osc::OverlayDecorationOptionGroup::Development,
-            osc::OverlayDecorationOptionFlags::DrawAABBs,
+            OverlayDecorationOptionGroup::Development,
+            OverlayDecorationOptionFlags::DrawAABBs,
         },
-        osc::OverlayDecorationOptionFlagsMetadata
+        OverlayDecorationOptionFlagsMetadata
         {
             "show_bvh",
             "BVH",
-            osc::OverlayDecorationOptionGroup::Development,
-            osc::OverlayDecorationOptionFlags::DrawBVH,
+            OverlayDecorationOptionGroup::Development,
+            OverlayDecorationOptionFlags::DrawBVH,
         },
     });
 }
 
-osc::CStringView osc::getLabel(OverlayDecorationOptionGroup g)
+CStringView osc::getLabel(OverlayDecorationOptionGroup g)
 {
     switch (g)
     {
@@ -64,7 +66,7 @@ osc::CStringView osc::getLabel(OverlayDecorationOptionGroup g)
     }
 }
 
-std::span<osc::OverlayDecorationOptionFlagsMetadata const> osc::GetAllOverlayDecorationOptionFlagsMetadata()
+std::span<OverlayDecorationOptionFlagsMetadata const> osc::GetAllOverlayDecorationOptionFlagsMetadata()
 {
     return c_Metadata;
 }

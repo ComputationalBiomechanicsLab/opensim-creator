@@ -28,7 +28,7 @@ public:
         std::string_view label_,
         ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
         IEditorAPI* editorAPI_,
-        std::shared_ptr<osc::UndoableModelStatePair> model_) :
+        std::shared_ptr<UndoableModelStatePair> model_) :
 
         m_Label{label_},
         m_MainUIStateAPI{mainUIStateAPI_},
@@ -61,14 +61,14 @@ private:
     {
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
 
-        osc::PushStyleColor(ImGuiCol_Text, Color::darkGreen());
+        PushStyleColor(ImGuiCol_Text, Color::darkGreen());
         if (ImGui::Button(ICON_FA_PLAY))
         {
-            osc::ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);
+            ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);
         }
-        osc::PopStyleColor();
-        App::upd().addFrameAnnotation("Simulate Button", osc::GetItemRect());
-        osc::DrawTooltipIfItemHovered("Simulate Model", "Run a forward-dynamic simulation of the model");
+        PopStyleColor();
+        App::upd().addFrameAnnotation("Simulate Button", GetItemRect());
+        DrawTooltipIfItemHovered("Simulate Model", "Run a forward-dynamic simulation of the model");
 
         ImGui::SameLine();
 
@@ -76,7 +76,7 @@ private:
         {
             m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
         }
-        osc::DrawTooltipIfItemHovered("Edit Simulation Settings", "Change the parameters used when simulating the model");
+        DrawTooltipIfItemHovered("Edit Simulation Settings", "Change the parameters used when simulating the model");
 
         ImGui::PopStyleVar();
     }
@@ -101,10 +101,10 @@ private:
     std::string m_Label;
     ParentPtr<IMainUIStateAPI> m_MainUIStateAPI;
     IEditorAPI* m_EditorAPI;
-    std::shared_ptr<osc::UndoableModelStatePair> m_Model;
+    std::shared_ptr<UndoableModelStatePair> m_Model;
 
-    std::shared_ptr<IconCache> m_IconCache = App::singleton<osc::IconCache>(
-        App::resource("icons/"),
+    std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
+        App::resource_loader().withPrefix("icons/"),
         ImGui::GetTextLineHeight()/128.0f
     );
 };
