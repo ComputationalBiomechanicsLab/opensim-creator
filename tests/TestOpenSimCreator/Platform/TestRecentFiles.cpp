@@ -1,6 +1,6 @@
-#include <OpenSimCreator/Platform/RecentFiles.hpp>
+#include <OpenSimCreator/Platform/RecentFiles.h>
 
-#include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
+#include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
 #include <gtest/gtest.h>
 

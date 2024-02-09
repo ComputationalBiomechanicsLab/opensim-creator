@@ -1,4 +1,4 @@
-#include <oscar/Shims/Cpp20/bit.hpp>
+#include <oscar/Shims/Cpp20/bit.h>
 
 #include <gtest/gtest.h>
 

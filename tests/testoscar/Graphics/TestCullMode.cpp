@@ -1,4 +1,4 @@
-#include <oscar/Graphics/CullMode.hpp>
+#include <oscar/Graphics/CullMode.h>
 
 #include <gtest/gtest.h>
 

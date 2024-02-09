@@ -1,4 +1,4 @@
-#include <oscar/Formats/CSV.hpp>
+#include <oscar/Formats/CSV.h>
 
 #include <gtest/gtest.h>
 

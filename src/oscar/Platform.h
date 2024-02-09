@@ -1,0 +1,25 @@
+#pragma once
+
+#include <oscar/Platform/App.h>
+#include <oscar/Platform/AppClock.h>
+#include <oscar/Platform/AppConfig.h>
+#include <oscar/Platform/AppMetadata.h>
+#include <oscar/Platform/AppSettings.h>
+#include <oscar/Platform/AppSettingValue.h>
+#include <oscar/Platform/AppSettingValueType.h>
+#include <oscar/Platform/FilesystemResourceLoader.h>
+#include <oscar/Platform/IResourceLoader.h>
+#include <oscar/Platform/IScreen.h>
+#include <oscar/Platform/Log.h>
+#include <oscar/Platform/Logger.h>
+#include <oscar/Platform/LogLevel.h>
+#include <oscar/Platform/LogMessage.h>
+#include <oscar/Platform/LogMessageView.h>
+#include <oscar/Platform/LogSink.h>
+#include <oscar/Platform/os.h>
+#include <oscar/Platform/ResourceDirectoryEntry.h>
+#include <oscar/Platform/ResourceLoader.h>
+#include <oscar/Platform/ResourcePath.h>
+#include <oscar/Platform/ResourceStream.h>
+#include <oscar/Platform/Screenshot.h>
+#include <oscar/Platform/ScreenshotAnnotation.h>

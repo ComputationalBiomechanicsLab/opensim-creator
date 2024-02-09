@@ -1,23 +1,23 @@
-#include <oscar/Graphics/Mesh.hpp>
+#include <oscar/Graphics/Mesh.h>
 
-#include <testoscar/TestingHelpers.hpp>
+#include <testoscar/TestingHelpers.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/MeshTopology.hpp>
-#include <oscar/Graphics/SubMeshDescriptor.hpp>
-#include <oscar/Graphics/VertexFormat.hpp>
-#include <oscar/Maths/AABB.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Eulers.hpp>
-#include <oscar/Maths/Mat4.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Quat.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Triangle.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Maths/Vec4.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Graphics/MeshTopology.h>
+#include <oscar/Graphics/SubMeshDescriptor.h>
+#include <oscar/Graphics/VertexFormat.h>
+#include <oscar/Maths/AABB.h>
+#include <oscar/Maths/Angle.h>
+#include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/Mat4.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Quat.h>
+#include <oscar/Maths/Transform.h>
+#include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Maths/Vec4.h>
 
 #include <algorithm>
 #include <array>

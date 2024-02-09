@@ -1,8 +1,8 @@
-#include "ComponentSceneDecorationFlagsTagger.hpp"
+#include "ComponentSceneDecorationFlagsTagger.h"
 
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <oscar/Scene/SceneDecoration.hpp>
+#include <oscar/Scene/SceneDecoration.h>
 
 using namespace osc;
 

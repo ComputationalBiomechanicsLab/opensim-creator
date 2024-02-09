@@ -1,11 +1,11 @@
-#include "ErrorTab.hpp"
+#include "ErrorTab.h"
 
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Rect.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/UI/Widgets/LogViewer.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Rect.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/UI/Tabs/StandardTabImpl.h>
+#include <oscar/UI/Widgets/LogViewer.h>
+#include <oscar/UI/ImGuiHelpers.h>
 
 #include <imgui.h>
 #include <IconsFontAwesome5.h>

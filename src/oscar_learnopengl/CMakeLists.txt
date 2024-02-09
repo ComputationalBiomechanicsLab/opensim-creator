@@ -1,69 +1,69 @@
 add_library(oscar_learnopengl STATIC
 
     AdvancedLighting/LOGLBloomTab.cpp
-    AdvancedLighting/LOGLBloomTab.hpp
+    AdvancedLighting/LOGLBloomTab.h
     AdvancedLighting/LOGLDeferredShadingTab.cpp
-    AdvancedLighting/LOGLDeferredShadingTab.hpp
+    AdvancedLighting/LOGLDeferredShadingTab.h
     AdvancedLighting/LOGLGammaTab.cpp
-    AdvancedLighting/LOGLGammaTab.hpp
+    AdvancedLighting/LOGLGammaTab.h
     AdvancedLighting/LOGLHDRTab.cpp
-    AdvancedLighting/LOGLHDRTab.hpp
+    AdvancedLighting/LOGLHDRTab.h
     AdvancedLighting/LOGLNormalMappingTab.cpp
-    AdvancedLighting/LOGLNormalMappingTab.hpp
+    AdvancedLighting/LOGLNormalMappingTab.h
     AdvancedLighting/LOGLParallaxMappingTab.cpp
-    AdvancedLighting/LOGLParallaxMappingTab.hpp
+    AdvancedLighting/LOGLParallaxMappingTab.h
     AdvancedLighting/LOGLPointShadowsTab.cpp
-    AdvancedLighting/LOGLPointShadowsTab.hpp
+    AdvancedLighting/LOGLPointShadowsTab.h
     AdvancedLighting/LOGLShadowMappingTab.cpp
-    AdvancedLighting/LOGLShadowMappingTab.hpp
+    AdvancedLighting/LOGLShadowMappingTab.h
     AdvancedLighting/LOGLSSAOTab.cpp
-    AdvancedLighting/LOGLSSAOTab.hpp
+    AdvancedLighting/LOGLSSAOTab.h
 
     AdvancedOpenGL/LOGLBlendingTab.cpp
-    AdvancedOpenGL/LOGLBlendingTab.hpp
+    AdvancedOpenGL/LOGLBlendingTab.h
     AdvancedOpenGL/LOGLCubemapsTab.cpp
-    AdvancedOpenGL/LOGLCubemapsTab.hpp
+    AdvancedOpenGL/LOGLCubemapsTab.h
     AdvancedOpenGL/LOGLFaceCullingTab.cpp
-    AdvancedOpenGL/LOGLFaceCullingTab.hpp
+    AdvancedOpenGL/LOGLFaceCullingTab.h
     AdvancedOpenGL/LOGLFramebuffersTab.cpp
-    AdvancedOpenGL/LOGLFramebuffersTab.hpp
+    AdvancedOpenGL/LOGLFramebuffersTab.h
 
     GettingStarted/LOGLCoordinateSystemsTab.cpp
-    GettingStarted/LOGLCoordinateSystemsTab.hpp
+    GettingStarted/LOGLCoordinateSystemsTab.h
     GettingStarted/LOGLHelloTriangleTab.cpp
-    GettingStarted/LOGLHelloTriangleTab.hpp
+    GettingStarted/LOGLHelloTriangleTab.h
     GettingStarted/LOGLTexturingTab.cpp
-    GettingStarted/LOGLTexturingTab.hpp
+    GettingStarted/LOGLTexturingTab.h
 
     Lighting/LOGLBasicLightingTab.cpp
-    Lighting/LOGLBasicLightingTab.hpp
+    Lighting/LOGLBasicLightingTab.h
     Lighting/LOGLLightingMapsTab.cpp
-    Lighting/LOGLLightingMapsTab.hpp
+    Lighting/LOGLLightingMapsTab.h
     Lighting/LOGLMultipleLightsTab.cpp
-    Lighting/LOGLMultipleLightsTab.hpp
+    Lighting/LOGLMultipleLightsTab.h
 
     PBR/LOGLPBRDiffuseIrradianceTab.cpp
-    PBR/LOGLPBRDiffuseIrradianceTab.hpp
+    PBR/LOGLPBRDiffuseIrradianceTab.h
     PBR/LOGLPBRLightingTab.cpp
-    PBR/LOGLPBRLightingTab.hpp
+    PBR/LOGLPBRLightingTab.h
     PBR/LOGLPBRLightingTexturedTab.cpp
-    PBR/LOGLPBRLightingTexturedTab.hpp
+    PBR/LOGLPBRLightingTexturedTab.h
     PBR/LOGLPBRSpecularIrradianceTab.cpp
-    PBR/LOGLPBRSpecularIrradianceTab.hpp
+    PBR/LOGLPBRSpecularIrradianceTab.h
     PBR/LOGLPBRSpecularIrradianceTexturedTab.cpp
-    PBR/LOGLPBRSpecularIrradianceTexturedTab.hpp
+    PBR/LOGLPBRSpecularIrradianceTexturedTab.h
 
     LearnOpenGLHelpers.cpp
-    LearnOpenGLHelpers.hpp
+    LearnOpenGLHelpers.h
     LearnOpenGLTabRegistry.cpp
-    LearnOpenGLTabRegistry.hpp
-    LearnOpenGLTabs.hpp
-    MouseCapturingCamera.hpp
+    LearnOpenGLTabRegistry.h
+    LearnOpenGLTabs.h
+    MouseCapturingCamera.h
 )
 
 target_include_directories(oscar_learnopengl PUBLIC
 
-    # so that `#include "oscar_learnopengl/HEADER.hpp"` works
+    # so that `#include "oscar_learnopengl/HEADER.h"` works
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 

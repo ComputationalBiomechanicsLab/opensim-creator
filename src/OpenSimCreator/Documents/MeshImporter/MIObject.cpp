@@ -1,6 +1,6 @@
-#include "MIObject.hpp"
+#include "MIObject.h"
 
-#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/MathHelpers.h>
 
 #include <algorithm>
 

@@ -1,7 +1,7 @@
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/CStringView.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Shims/Cpp20/string_view.hpp>
+#include <oscar/Shims/Cpp20/string_view.h>
 
 #include <algorithm>
 #include <array>

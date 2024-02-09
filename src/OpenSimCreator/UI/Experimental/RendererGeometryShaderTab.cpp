@@ -1,21 +1,21 @@
-#include "RendererGeometryShaderTab.hpp"
+#include "RendererGeometryShaderTab.h"
 
-#include <OpenSimCreator/Graphics/SimTKMeshLoader.hpp>
+#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
 
 #include <SDL_events.h>
-#include <oscar/Graphics/Camera.hpp>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Eulers.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/Graphics/Camera.h>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Graphics/Graphics.h>
+#include <oscar/Graphics/Material.h>
+#include <oscar/Graphics/Mesh.h>
+#include <oscar/Graphics/Shader.h>
+#include <oscar/Maths/Angle.h>
+#include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Transform.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Platform/App.h>
+#include <oscar/UI/ImGuiHelpers.h>
 
 #include <memory>
 

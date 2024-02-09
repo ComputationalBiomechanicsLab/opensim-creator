@@ -1,7 +1,7 @@
-#include "HittestTab.hpp"
+#include "HittestTab.h"
 
 #include <imgui.h>
-#include <oscar/oscar.hpp>
+#include <oscar/oscar.h>
 #include <SDL_events.h>
 
 #include <array>

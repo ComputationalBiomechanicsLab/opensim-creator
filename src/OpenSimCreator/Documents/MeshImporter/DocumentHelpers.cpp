@@ -1,21 +1,21 @@
-#include "DocumentHelpers.hpp"
+#include "DocumentHelpers.h"
 
-#include <OpenSimCreator/Documents/MeshImporter/Body.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Document.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Joint.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/MIIDs.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/MIObject.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Mesh.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Station.hpp>
+#include <OpenSimCreator/Documents/MeshImporter/Body.h>
+#include <OpenSimCreator/Documents/MeshImporter/Document.h>
+#include <OpenSimCreator/Documents/MeshImporter/Joint.h>
+#include <OpenSimCreator/Documents/MeshImporter/MIIDs.h>
+#include <OpenSimCreator/Documents/MeshImporter/MIObject.h>
+#include <OpenSimCreator/Documents/MeshImporter/Mesh.h>
+#include <OpenSimCreator/Documents/MeshImporter/Station.h>
 
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Scene/SceneDecorationFlags.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/StdVariantHelpers.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Transform.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Scene/SceneDecorationFlags.h>
+#include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/StdVariantHelpers.h>
+#include <oscar/Utils/UID.h>
 
 #include <algorithm>
 #include <sstream>

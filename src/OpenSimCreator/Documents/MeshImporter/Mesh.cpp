@@ -1,15 +1,15 @@
-#include "Mesh.hpp"
+#include "Mesh.h"
 
-#include <OpenSimCreator/Documents/MeshImporter/CrossrefDescriptor.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/CrossrefDirection.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/MIClass.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/MIStrings.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/MeshImporter/CrossrefDescriptor.h>
+#include <OpenSimCreator/Documents/MeshImporter/CrossrefDirection.h>
+#include <OpenSimCreator/Documents/MeshImporter/MIClass.h>
+#include <OpenSimCreator/Documents/MeshImporter/MIStrings.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
-#include <oscar/Maths/AABB.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <oscar/Maths/AABB.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Utils/UID.h>
 
 #include <filesystem>
 #include <iostream>

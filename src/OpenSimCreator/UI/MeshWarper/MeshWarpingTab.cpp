@@ -1,23 +1,23 @@
-#include "MeshWarpingTab.hpp"
+#include "MeshWarpingTab.h"
 
-#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.hpp>
-#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabInputMeshPanel.hpp>
-#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabMainMenu.hpp>
-#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabNavigatorPanel.hpp>
-#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabResultMeshPanel.hpp>
-#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.hpp>
-#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabStatusBar.hpp>
-#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabToolbar.hpp>
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
+#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabInputMeshPanel.h>
+#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabMainMenu.h>
+#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabNavigatorPanel.h>
+#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabResultMeshPanel.h>
+#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
+#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabStatusBar.h>
+#include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabToolbar.h>
 
 #include <SDL_events.h>
-#include <oscar/UI/Panels/LogViewerPanel.hpp>
-#include <oscar/UI/Panels/PanelManager.hpp>
-#include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Panels/ToggleablePanelFlags.hpp>
-#include <oscar/UI/Panels/UndoRedoPanel.hpp>
-#include <oscar/UI/Tabs/ITabHost.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <oscar/UI/Panels/LogViewerPanel.h>
+#include <oscar/UI/Panels/PanelManager.h>
+#include <oscar/UI/Panels/PerfPanel.h>
+#include <oscar/UI/Panels/ToggleablePanelFlags.h>
+#include <oscar/UI/Panels/UndoRedoPanel.h>
+#include <oscar/UI/Tabs/ITabHost.h>
+#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/UID.h>
 
 #include <memory>
 #include <string_view>

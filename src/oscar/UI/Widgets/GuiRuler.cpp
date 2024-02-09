@@ -1,13 +1,13 @@
-#include "GuiRuler.hpp"
+#include "GuiRuler.h"
 
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/PolarPerspectiveCamera.hpp>
-#include <oscar/Maths/Rect.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Scene/SceneCollision.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/PolarPerspectiveCamera.h>
+#include <oscar/Maths/Rect.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Scene/SceneCollision.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/Utils/CStringView.h>
 
 #include <imgui.h>
 

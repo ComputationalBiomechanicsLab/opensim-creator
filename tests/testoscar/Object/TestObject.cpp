@@ -1,12 +1,12 @@
-#include <oscar/Object/Object.hpp>
+#include <oscar/Object/Object.h>
 
 /*
 
-#include <oscar/Object/PropertyInfo.hpp>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Utils/StringName.hpp>
-#include <oscar/Variant/Variant.hpp>
-#include <oscar/Variant/VariantType.hpp>
+#include <oscar/Object/PropertyInfo.h>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Utils/StringName.h>
+#include <oscar/Variant/Variant.h>
+#include <oscar/Variant/VariantType.h>
 
 #include <gtest/gtest.h>
 

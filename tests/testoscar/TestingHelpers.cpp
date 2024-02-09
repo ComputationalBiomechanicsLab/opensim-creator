@@ -1,6 +1,6 @@
-#include "TestingHelpers.hpp"
+#include "TestingHelpers.h"
 
-#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/MathHelpers.h>
 
 #include <numeric>
 #include <random>

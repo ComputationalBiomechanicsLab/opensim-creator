@@ -1,9 +1,9 @@
-#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairingLookup.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairingLookup.h>
 
-#include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
+#include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.h>
 #include <gtest/gtest.h>
 
 #include <filesystem>

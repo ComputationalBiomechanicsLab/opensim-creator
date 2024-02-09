@@ -1,9 +1,9 @@
-#include "OpenSimDecorationOptions.hpp"
+#include "OpenSimDecorationOptions.h"
 
-#include <oscar/Platform/AppSettingValue.hpp>
-#include <oscar/Platform/AppSettingValueType.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Platform/AppSettingValue.h>
+#include <oscar/Platform/AppSettingValueType.h>
+#include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <optional>
 

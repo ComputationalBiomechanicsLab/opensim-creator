@@ -1,17 +1,17 @@
-#include "ComponentContextMenu.hpp"
+#include "ComponentContextMenu.h"
 
-#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.hpp>
-#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.hpp>
-#include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
-#include <OpenSimCreator/UI/ModelEditor/ModelActionsMenuItems.hpp>
-#include <OpenSimCreator/UI/ModelEditor/ReassignSocketPopup.hpp>
-#include <OpenSimCreator/UI/ModelEditor/Select1PFPopup.hpp>
-#include <OpenSimCreator/UI/ModelEditor/SelectComponentPopup.hpp>
-#include <OpenSimCreator/UI/ModelEditor/SelectGeometryPopup.hpp>
-#include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.h>
+#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
+#include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
+#include <OpenSimCreator/UI/ModelEditor/ModelActionsMenuItems.h>
+#include <OpenSimCreator/UI/ModelEditor/ReassignSocketPopup.h>
+#include <OpenSimCreator/UI/ModelEditor/Select1PFPopup.h>
+#include <OpenSimCreator/UI/ModelEditor/SelectComponentPopup.h>
+#include <OpenSimCreator/UI/ModelEditor/SelectGeometryPopup.h>
+#include <OpenSimCreator/UI/Shared/BasicWidgets.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
@@ -26,13 +26,13 @@
 #include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
-#include <oscar/Platform/App.hpp>
-#include <oscar/Platform/os.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Panels/PanelManager.hpp>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
+#include <oscar/Platform/App.h>
+#include <oscar/Platform/os.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/Panels/PanelManager.h>
+#include <oscar/UI/Widgets/StandardPopup.h>
+#include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/ParentPtr.h>
 
 #include <memory>
 #include <sstream>

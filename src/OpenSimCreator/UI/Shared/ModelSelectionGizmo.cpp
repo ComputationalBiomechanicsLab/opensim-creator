@@ -1,9 +1,9 @@
-#include "ModelSelectionGizmo.hpp"
+#include "ModelSelectionGizmo.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
-#include <OpenSimCreator/Utils/SimTKHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <OpenSimCreator/Utils/SimTKHelpers.h>
 
 #include <imgui.h>
 #include <ImGuizmo.h>  // care: must be included after imgui
@@ -13,21 +13,21 @@
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Eulers.hpp>
-#include <oscar/Maths/Mat4.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/PolarPerspectiveCamera.hpp>
-#include <oscar/Maths/Quat.hpp>
-#include <oscar/Maths/Rect.hpp>
-#include <oscar/Maths/Vec.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Maths/Vec4.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Shims/Cpp23/utility.hpp>
-#include <oscar/UI/ImGuizmoHelpers.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/ScopeGuard.hpp>
+#include <oscar/Maths/Angle.h>
+#include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/Mat4.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/PolarPerspectiveCamera.h>
+#include <oscar/Maths/Quat.h>
+#include <oscar/Maths/Rect.h>
+#include <oscar/Maths/Vec.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Maths/Vec4.h>
+#include <oscar/Platform/Log.h>
+#include <oscar/Shims/Cpp23/utility.h>
+#include <oscar/UI/ImGuizmoHelpers.h>
+#include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/ScopeGuard.h>
 
 #include <concepts>
 #include <cstddef>

@@ -1,8 +1,8 @@
-#include "Class.hpp"
+#include "Class.h"
 
-#include <oscar/Object/PropertyInfo.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
-#include <oscar/Utils/StringName.hpp>
+#include <oscar/Object/PropertyInfo.h>
+#include <oscar/Utils/StringHelpers.h>
+#include <oscar/Utils/StringName.h>
 
 #include <algorithm>
 #include <concepts>

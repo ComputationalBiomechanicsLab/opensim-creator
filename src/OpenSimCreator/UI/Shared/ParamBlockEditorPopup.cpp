@@ -1,13 +1,13 @@
-#include "ParamBlockEditorPopup.hpp"
+#include "ParamBlockEditorPopup.h"
 
-#include <OpenSimCreator/Documents/Simulation/IntegratorMethod.hpp>
-#include <OpenSimCreator/Utils/ParamBlock.hpp>
-#include <OpenSimCreator/Utils/ParamValue.hpp>
+#include <OpenSimCreator/Documents/Simulation/IntegratorMethod.h>
+#include <OpenSimCreator/Utils/ParamBlock.h>
+#include <OpenSimCreator/Utils/ParamValue.h>
 
 #include <imgui.h>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
-#include <oscar/Utils/StdVariantHelpers.hpp>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/Widgets/StandardPopup.h>
+#include <oscar/Utils/StdVariantHelpers.h>
 
 #include <span>
 #include <string>

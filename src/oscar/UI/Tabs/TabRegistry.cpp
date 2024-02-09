@@ -1,4 +1,4 @@
-#include "TabRegistry.hpp"
+#include "TabRegistry.h"
 
 #include <algorithm>
 #include <memory>

@@ -1,7 +1,7 @@
-#include <oscar/Graphics/SubMeshDescriptor.hpp>
+#include <oscar/Graphics/SubMeshDescriptor.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Graphics/MeshTopology.hpp>
+#include <oscar/Graphics/MeshTopology.h>
 
 #include <cstddef>
 

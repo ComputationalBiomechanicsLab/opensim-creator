@@ -1,10 +1,10 @@
-#include <oscar/Platform/ResourceLoader.hpp>
+#include <oscar/Platform/ResourceLoader.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Platform/IResourceLoader.hpp>
-#include <oscar/Platform/ResourceDirectoryEntry.hpp>
-#include <oscar/Platform/ResourcePath.hpp>
-#include <oscar/Platform/ResourceStream.hpp>
+#include <oscar/Platform/IResourceLoader.h>
+#include <oscar/Platform/ResourceDirectoryEntry.h>
+#include <oscar/Platform/ResourcePath.h>
+#include <oscar/Platform/ResourceStream.h>
 
 #include <functional>
 #include <memory>

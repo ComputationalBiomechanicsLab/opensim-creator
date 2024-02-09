@@ -1,4 +1,4 @@
-#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.hpp>
+#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
 
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Control/Controller.h>
@@ -17,9 +17,9 @@
 #include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
-#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.hpp>
+#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.h>
 #include <gtest/gtest.h>
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/CStringView.h>
 
 #include <cstddef>
 #include <optional>

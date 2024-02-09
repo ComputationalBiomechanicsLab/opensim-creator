@@ -1,9 +1,9 @@
-#include <oscar/Object/Node.hpp>
+#include <oscar/Object/Node.h>
 
 /*
 
-#include <oscar/Object/NodePath.hpp>
-#include <oscar/Variant/Variant.hpp>
+#include <oscar/Object/NodePath.h>
+#include <oscar/Variant/Variant.h>
 
 #include <gtest/gtest.h>
 

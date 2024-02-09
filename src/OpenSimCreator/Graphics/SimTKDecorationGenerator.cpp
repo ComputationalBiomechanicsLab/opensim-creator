@@ -1,19 +1,19 @@
-#include "SimTKDecorationGenerator.hpp"
+#include "SimTKDecorationGenerator.h"
 
-#include <OpenSimCreator/Graphics/SimTKMeshLoader.hpp>
-#include <OpenSimCreator/Utils/SimTKHelpers.hpp>
+#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
+#include <OpenSimCreator/Utils/SimTKHelpers.h>
 
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 #include <SimTKcommon/internal/PolygonalMesh.h>
 #include <SimTKcommon/internal/State.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Segment.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Scene/SceneCache.hpp>
-#include <oscar/Scene/SceneDecoration.hpp>
-#include <oscar/Utils/HashHelpers.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Segment.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Platform/Log.h>
+#include <oscar/Scene/SceneCache.h>
+#include <oscar/Scene/SceneDecoration.h>
+#include <oscar/Utils/HashHelpers.h>
 #include <simbody/internal/MobilizedBody.h>
 #include <simbody/internal/SimbodyMatterSubsystem.h>
 #include <simbody/internal/common.h>

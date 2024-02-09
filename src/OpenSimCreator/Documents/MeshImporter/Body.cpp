@@ -1,12 +1,12 @@
-#include "Body.hpp"
+#include "Body.h"
 
-#include <OpenSimCreator/Documents/MeshImporter/MIClass.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/MIStrings.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/MeshImporter/MIClass.h>
+#include <OpenSimCreator/Documents/MeshImporter/MIStrings.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <oscar/Maths/Transform.h>
+#include <oscar/Utils/UID.h>
 
 #include <iostream>
 #include <string>

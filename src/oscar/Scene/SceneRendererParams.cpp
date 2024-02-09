@@ -1,4 +1,4 @@
-#include "SceneRendererParams.hpp"
+#include "SceneRendererParams.h"
 
 osc::SceneRendererParams::SceneRendererParams() :
     dimensions{1, 1},

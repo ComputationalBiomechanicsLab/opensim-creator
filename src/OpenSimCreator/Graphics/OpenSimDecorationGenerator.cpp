@@ -1,10 +1,10 @@
-#include "OpenSimDecorationGenerator.hpp"
+#include "OpenSimDecorationGenerator.h"
 
-#include <OpenSimCreator/Documents/Model/IConstModelStatePair.hpp>
-#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
-#include <OpenSimCreator/Graphics/SimTKDecorationGenerator.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
-#include <OpenSimCreator/Utils/SimTKHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/IConstModelStatePair.h>
+#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
+#include <OpenSimCreator/Graphics/SimTKDecorationGenerator.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <OpenSimCreator/Utils/SimTKHelpers.h>
 
 #include <SimTKcommon.h>
 #include <OpenSim/Common/Component.h>
@@ -20,18 +20,18 @@
 #include <OpenSim/Simulation/Model/Station.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Maths/AABB.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Segment.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Scene/SceneCache.hpp>
-#include <oscar/Scene/SceneDecoration.hpp>
-#include <oscar/Scene/SceneHelpers.hpp>
-#include <oscar/Utils/Perf.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Graphics/Mesh.h>
+#include <oscar/Maths/AABB.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Segment.h>
+#include <oscar/Maths/Transform.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Platform/Log.h>
+#include <oscar/Scene/SceneCache.h>
+#include <oscar/Scene/SceneDecoration.h>
+#include <oscar/Scene/SceneHelpers.h>
+#include <oscar/Utils/Perf.h>
 
 #include <cmath>
 #include <algorithm>

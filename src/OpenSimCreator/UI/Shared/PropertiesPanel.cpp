@@ -1,20 +1,20 @@
-#include "PropertiesPanel.hpp"
+#include "PropertiesPanel.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
-#include <OpenSimCreator/UI/ModelEditor/SelectComponentPopup.hpp>
-#include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
+#include <OpenSimCreator/UI/ModelEditor/SelectComponentPopup.h>
+#include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Object.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Panels/StandardPanelImpl.hpp>
-#include <oscar/Utils/ScopeGuard.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/Panels/StandardPanelImpl.h>
+#include <oscar/Utils/ScopeGuard.h>
 
 #include <optional>
 #include <string>

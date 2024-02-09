@@ -1,4 +1,4 @@
-#include <oscar/Utils/Typelist.hpp>
+#include <oscar/Utils/Typelist.h>
 
 #include <gtest/gtest.h>
 

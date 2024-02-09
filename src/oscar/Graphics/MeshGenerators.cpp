@@ -1,12 +1,12 @@
-#include "MeshGenerators.hpp"
+#include "MeshGenerators.h"
 
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Triangle.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/Assertions.hpp>
+#include <oscar/Graphics/Mesh.h>
+#include <oscar/Maths/Angle.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/Assertions.h>
 
 #include <array>
 #include <cstddef>

@@ -1,6 +1,6 @@
-#include "LOGLHelloTriangleTab.hpp"
+#include "LOGLHelloTriangleTab.h"
 
-#include <oscar/oscar.hpp>
+#include <oscar/oscar.h>
 
 #include <array>
 #include <cstdint>

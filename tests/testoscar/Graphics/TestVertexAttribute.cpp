@@ -1,7 +1,7 @@
-#include <oscar/Graphics/VertexAttribute.hpp>
+#include <oscar/Graphics/VertexAttribute.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <algorithm>
 #include <array>

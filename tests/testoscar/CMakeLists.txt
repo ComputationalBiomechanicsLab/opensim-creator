@@ -81,22 +81,22 @@ add_executable(testoscar
     Variant/TestVariantType.cpp
 
     TestingHelpers.cpp
-    TestingHelpers.hpp
+    TestingHelpers.h
     testoscar.cpp  # entry point
 )
 
 
 configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/testoscarconfig.hpp.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/testoscar/testoscarconfig.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/testoscarconfig.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/testoscar/testoscarconfig.h"
 )
 
 target_include_directories(testoscar PUBLIC
 
-    # so that the source code can `#include <testoscar/SomeModule.hpp>`
+    # so that the source code can `#include <testoscar/SomeModule.h>`
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 
-    # so that source code can `#include <tesetoscar/testoscarconfig.hpp>`
+    # so that source code can `#include <tesetoscar/testoscarconfig.h>`
     "${CMAKE_CURRENT_BINARY_DIR}/generated/"
 )
 

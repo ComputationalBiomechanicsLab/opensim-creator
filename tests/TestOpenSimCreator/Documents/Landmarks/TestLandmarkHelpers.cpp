@@ -1,9 +1,9 @@
-#include <OpenSimCreator/Documents/Landmarks/LandmarkHelpers.hpp>
+#include <OpenSimCreator/Documents/Landmarks/LandmarkHelpers.h>
 
-#include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
+#include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/Vec3.h>
 
 #include <algorithm>
 #include <cstddef>

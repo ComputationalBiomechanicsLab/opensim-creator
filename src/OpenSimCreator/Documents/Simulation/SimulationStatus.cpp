@@ -1,7 +1,7 @@
-#include "SimulationStatus.hpp"
+#include "SimulationStatus.h"
 
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <array>
 #include <span>

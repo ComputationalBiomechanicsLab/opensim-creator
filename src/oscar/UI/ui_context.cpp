@@ -1,16 +1,16 @@
-#include "ui_context.hpp"
+#include "ui_context.h"
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui/backends/imgui_impl_sdl2.h>
 #include <ImGuizmo.h>  // care: must come after imgui.h
 #include <implot.h>
-#include <oscar/Platform/App.hpp>
-#include <oscar/Platform/ResourceLoader.hpp>
-#include <oscar/Platform/ResourcePath.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/ui_graphics_backend.hpp>
-#include <oscar/Utils/Perf.hpp>
+#include <oscar/Platform/App.h>
+#include <oscar/Platform/ResourceLoader.h>
+#include <oscar/Platform/ResourcePath.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/ui_graphics_backend.h>
+#include <oscar/Utils/Perf.h>
 #include <SDL_events.h>
 
 #include <algorithm>

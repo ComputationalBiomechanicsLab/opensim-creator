@@ -1,13 +1,13 @@
-#include "SelectComponentPopup.hpp"
+#include "SelectComponentPopup.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <oscar/UI/Widgets/StandardPopup.h>
 
 #include <functional>
 #include <memory>

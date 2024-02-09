@@ -1,9 +1,9 @@
-#include "LOGLFramebuffersTab.hpp"
+#include "LOGLFramebuffersTab.h"
 
-#include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
-#include <oscar_learnopengl/MouseCapturingCamera.hpp>
+#include <oscar_learnopengl/LearnOpenGLHelpers.h>
+#include <oscar_learnopengl/MouseCapturingCamera.h>
 
-#include <oscar/oscar.hpp>
+#include <oscar/oscar.h>
 #include <SDL_events.h>
 
 #include <array>

@@ -1,7 +1,7 @@
-#include <oscar/Graphics/CameraProjection.hpp>
+#include <oscar/Graphics/CameraProjection.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <cstddef>
 #include <sstream>

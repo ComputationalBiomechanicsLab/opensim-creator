@@ -1,16 +1,16 @@
-﻿#include "ShapeFitters.hpp"
+﻿#include "ShapeFitters.h"
 
-#include <OpenSimCreator/Utils/SimTKHelpers.hpp>
+#include <OpenSimCreator/Utils/SimTKHelpers.h>
 
 #include <Simbody.h>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Rect.hpp>
-#include <oscar/Maths/Sphere.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/Assertions.hpp>
+#include <oscar/Graphics/GraphicsHelpers.h>
+#include <oscar/Graphics/Mesh.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Rect.h>
+#include <oscar/Maths/Sphere.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/Assertions.h>
 
 #include <cmath>
 #include <algorithm>

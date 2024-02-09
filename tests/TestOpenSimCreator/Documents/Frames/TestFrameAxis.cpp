@@ -1,4 +1,4 @@
-#include <OpenSimCreator/Documents/Frames/FrameAxis.hpp>
+#include <OpenSimCreator/Documents/Frames/FrameAxis.h>
 
 #include <gtest/gtest.h>
 

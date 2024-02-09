@@ -1,4 +1,4 @@
-#include "NodePath.hpp"
+#include "NodePath.h"
 
 #include <algorithm>
 #include <stdexcept>

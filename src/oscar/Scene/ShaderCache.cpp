@@ -1,9 +1,9 @@
-#include "ShaderCache.hpp"
+#include "ShaderCache.h"
 
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Platform/ResourceLoader.hpp>
-#include <oscar/Utils/HashHelpers.hpp>
-#include <oscar/Utils/SynchronizedValue.hpp>
+#include <oscar/Graphics/Shader.h>
+#include <oscar/Platform/ResourceLoader.h>
+#include <oscar/Utils/HashHelpers.h>
+#include <oscar/Utils/SynchronizedValue.h>
 
 #include <cstddef>
 #include <memory>

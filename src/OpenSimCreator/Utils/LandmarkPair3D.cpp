@@ -1,4 +1,4 @@
-#include "LandmarkPair3D.hpp"
+#include "LandmarkPair3D.h"
 
 #include <iostream>
 

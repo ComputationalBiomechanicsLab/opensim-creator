@@ -1,15 +1,15 @@
-#include "UIState.hpp"
+#include "UIState.h"
 
-#include <OpenSimCreator/Documents/ModelWarper/Detail.hpp>
-#include <OpenSimCreator/Documents/ModelWarper/Document.hpp>
-#include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.hpp>
-#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/Detail.h>
+#include <OpenSimCreator/Documents/ModelWarper/Document.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/Platform/os.hpp>
+#include <oscar/Platform/os.h>
 
 #include <algorithm>
 #include <concepts>

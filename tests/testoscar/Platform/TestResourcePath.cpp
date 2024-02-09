@@ -1,4 +1,4 @@
-#include <oscar/Platform/ResourcePath.hpp>
+#include <oscar/Platform/ResourcePath.h>
 
 #include <gtest/gtest.h>
 

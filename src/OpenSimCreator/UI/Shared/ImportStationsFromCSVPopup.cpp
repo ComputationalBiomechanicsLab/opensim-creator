@@ -1,15 +1,15 @@
-#include "ImportStationsFromCSVPopup.hpp"
+#include "ImportStationsFromCSVPopup.h"
 
-#include <OpenSimCreator/Documents/Landmarks/Landmark.hpp>
-#include <OpenSimCreator/Documents/Landmarks/LandmarkHelpers.hpp>
-#include <OpenSimCreator/Documents/Landmarks/NamedLandmark.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/UndoableActions.hpp>
+#include <OpenSimCreator/Documents/Landmarks/Landmark.h>
+#include <OpenSimCreator/Documents/Landmarks/LandmarkHelpers.h>
+#include <OpenSimCreator/Documents/Landmarks/NamedLandmark.h>
+#include <OpenSimCreator/Documents/MeshImporter/UndoableActions.h>
 
 #include <IconsFontAwesome5.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Platform/os.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Platform/os.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/Widgets/StandardPopup.h>
 
 #include <filesystem>
 #include <fstream>

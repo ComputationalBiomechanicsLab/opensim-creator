@@ -1,4 +1,4 @@
-#include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <gtest/gtest.h>
 

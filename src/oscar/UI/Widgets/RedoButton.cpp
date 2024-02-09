@@ -1,6 +1,6 @@
-#include "RedoButton.hpp"
+#include "RedoButton.h"
 
-#include <oscar/Utils/UndoRedo.hpp>
+#include <oscar/Utils/UndoRedo.h>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>

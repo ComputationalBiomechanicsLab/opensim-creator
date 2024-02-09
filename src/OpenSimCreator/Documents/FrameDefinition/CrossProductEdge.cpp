@@ -1,6 +1,6 @@
-#include "CrossProductEdge.hpp"
+#include "CrossProductEdge.h"
 
-#include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
 
 #include <Simbody.h>
 #include <OpenSim/Simulation/Model/Appearance.h>

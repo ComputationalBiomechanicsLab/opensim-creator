@@ -1,7 +1,7 @@
-#include "IntegratorMethod.hpp"
+#include "IntegratorMethod.h"
 
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <simmath/ExplicitEulerIntegrator.h>
 #include <simmath/RungeKutta2Integrator.h>

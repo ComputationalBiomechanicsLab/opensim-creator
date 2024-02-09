@@ -1,6 +1,6 @@
-#include <oscar/Platform/ResourceStream.hpp>
+#include <oscar/Platform/ResourceStream.h>
 
-#include <testoscar/testoscarconfig.hpp>
+#include <testoscar/testoscarconfig.h>
 
 #include <gtest/gtest.h>
 

@@ -1,4 +1,4 @@
-#include <oscar/Object/NodePath.hpp>
+#include <oscar/Object/NodePath.h>
 
 #include <gtest/gtest.h>
 

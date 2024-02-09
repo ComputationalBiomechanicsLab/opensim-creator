@@ -1,7 +1,7 @@
-#include "ComponentRegistryEntryBase.hpp"
+#include "ComponentRegistryEntryBase.h"
 
 #include <OpenSim/Common/Component.h>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <memory>
 #include <string>

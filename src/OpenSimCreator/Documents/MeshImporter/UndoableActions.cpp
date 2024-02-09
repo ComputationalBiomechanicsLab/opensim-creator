@@ -1,24 +1,24 @@
-#include "UndoableActions.hpp"
+#include "UndoableActions.h"
 
-#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.hpp>
-#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Body.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Document.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/DocumentHelpers.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Joint.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/MIIDs.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/MIObject.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/MIObjectHelpers.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Mesh.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Station.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.h>
+#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
+#include <OpenSimCreator/Documents/MeshImporter/Body.h>
+#include <OpenSimCreator/Documents/MeshImporter/Document.h>
+#include <OpenSimCreator/Documents/MeshImporter/DocumentHelpers.h>
+#include <OpenSimCreator/Documents/MeshImporter/Joint.h>
+#include <OpenSimCreator/Documents/MeshImporter/MIIDs.h>
+#include <OpenSimCreator/Documents/MeshImporter/MIObject.h>
+#include <OpenSimCreator/Documents/MeshImporter/MIObjectHelpers.h>
+#include <OpenSimCreator/Documents/MeshImporter/Mesh.h>
+#include <OpenSimCreator/Documents/MeshImporter/Station.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <oscar/Maths/Angle.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Transform.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/UID.h>
 
 #include <cstddef>
 #include <sstream>

@@ -1,4 +1,4 @@
-#include "ComponentRegistryBase.hpp"
+#include "ComponentRegistryBase.h"
 
 #include <OpenSim/Common/Component.h>
 

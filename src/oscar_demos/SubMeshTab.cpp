@@ -1,6 +1,6 @@
-#include "SubMeshTab.hpp"
+#include "SubMeshTab.h"
 
-#include <oscar/oscar.hpp>
+#include <oscar/oscar.h>
 #include <SDL_events.h>
 
 #include <array>

@@ -1,8 +1,8 @@
-#include "FramesHelpers.hpp"
+#include "FramesHelpers.h"
 
-#include <OpenSimCreator/Documents/Frames/FrameAxis.hpp>
-#include <OpenSimCreator/Documents/Frames/FrameDefinition.hpp>
-#include <OpenSimCreator/Documents/Frames/FramesFile.hpp>
+#include <OpenSimCreator/Documents/Frames/FrameAxis.h>
+#include <OpenSimCreator/Documents/Frames/FrameDefinition.h>
+#include <OpenSimCreator/Documents/Frames/FramesFile.h>
 
 #include <toml++/toml.h>
 

@@ -1,17 +1,17 @@
-#include "SimulationToolbar.hpp"
+#include "SimulationToolbar.h"
 
-#include <OpenSimCreator/Documents/Simulation/Simulation.hpp>
-#include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
-#include <OpenSimCreator/UI/Simulation/SimulationScrubber.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/Simulation/Simulation.h>
+#include <OpenSimCreator/UI/Shared/BasicWidgets.h>
+#include <OpenSimCreator/UI/Simulation/SimulationScrubber.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec4.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Maths/Vec4.h>
+#include <oscar/UI/ImGuiHelpers.h>
 
 #include <memory>
 #include <string>

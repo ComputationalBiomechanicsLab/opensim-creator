@@ -1,23 +1,23 @@
-#include "CachedModelRenderer.hpp"
+#include "CachedModelRenderer.h"
 
-#include <OpenSimCreator/Documents/Model/IConstModelStatePair.hpp>
-#include <OpenSimCreator/Documents/Model/ModelStatePairInfo.hpp>
-#include <OpenSimCreator/Graphics/ModelRendererParams.hpp>
-#include <OpenSimCreator/Graphics/OpenSimGraphicsHelpers.hpp>
-#include <OpenSimCreator/Graphics/OverlayDecorationGenerator.hpp>
+#include <OpenSimCreator/Documents/Model/IConstModelStatePair.h>
+#include <OpenSimCreator/Documents/Model/ModelStatePairInfo.h>
+#include <OpenSimCreator/Graphics/ModelRendererParams.h>
+#include <OpenSimCreator/Graphics/OpenSimGraphicsHelpers.h>
+#include <OpenSimCreator/Graphics/OverlayDecorationGenerator.h>
 
-#include <oscar/Graphics/AntiAliasingLevel.hpp>
-#include <oscar/Maths/AABB.hpp>
-#include <oscar/Maths/BVH.hpp>
-#include <oscar/Maths/PolarPerspectiveCamera.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Scene/SceneCache.hpp>
-#include <oscar/Scene/SceneCollision.hpp>
-#include <oscar/Scene/SceneDecoration.hpp>
-#include <oscar/Scene/SceneHelpers.hpp>
-#include <oscar/Scene/SceneRenderer.hpp>
-#include <oscar/Scene/SceneRendererParams.hpp>
-#include <oscar/Utils/Perf.hpp>
+#include <oscar/Graphics/AntiAliasingLevel.h>
+#include <oscar/Maths/AABB.h>
+#include <oscar/Maths/BVH.h>
+#include <oscar/Maths/PolarPerspectiveCamera.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Scene/SceneCache.h>
+#include <oscar/Scene/SceneCollision.h>
+#include <oscar/Scene/SceneDecoration.h>
+#include <oscar/Scene/SceneHelpers.h>
+#include <oscar/Scene/SceneRenderer.h>
+#include <oscar/Scene/SceneRendererParams.h>
+#include <oscar/Utils/Perf.h>
 
 #include <cstdint>
 #include <memory>

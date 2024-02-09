@@ -1,17 +1,17 @@
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 
-#include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
+#include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
 #include <OpenSim/Common/Component.h>
-#include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp>
-#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
-#include <OpenSimCreator/Platform/OpenSimCreatorApp.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
+#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <gtest/gtest.h>
-#include <oscar/Formats/DAE.hpp>
-#include <oscar/Scene/SceneCache.hpp>
-#include <oscar/Scene/SceneDecoration.hpp>
-#include <oscar/Utils/NullOStream.hpp>
+#include <oscar/Formats/DAE.h>
+#include <oscar/Scene/SceneCache.h>
+#include <oscar/Scene/SceneDecoration.h>
+#include <oscar/Utils/NullOStream.h>
 
 #include <filesystem>
 #include <functional>

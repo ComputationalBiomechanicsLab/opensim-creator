@@ -1,6 +1,6 @@
-#include "TPSDocument.hpp"
+#include "TPSDocument.h"
 
-#include <oscar/Graphics/MeshGenerators.hpp>
+#include <oscar/Graphics/MeshGenerators.h>
 
 osc::TPSDocument::TPSDocument() :
     sourceMesh{GenerateUVSphereMesh(16, 16)},

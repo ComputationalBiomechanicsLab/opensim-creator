@@ -1,9 +1,9 @@
-#include <oscar/Scene/SceneCache.hpp>
+#include <oscar/Scene/SceneCache.h>
 
-#include <oscar/Maths/AABB.hpp>
-#include <oscar/Maths/BVH.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/AABB.h>
+#include <oscar/Maths/BVH.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Vec3.h>
 
 #include <gtest/gtest.h>
 

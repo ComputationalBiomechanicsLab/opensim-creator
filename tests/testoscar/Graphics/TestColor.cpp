@@ -1,9 +1,9 @@
-#include <oscar/Graphics/Color.hpp>
+#include <oscar/Graphics/Color.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Maths/Vec4.hpp>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Maths/Vec4.h>
 
 #include <algorithm>
 #include <array>

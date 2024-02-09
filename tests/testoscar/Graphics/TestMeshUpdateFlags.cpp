@@ -1,4 +1,4 @@
-#include <oscar/Graphics/MeshUpdateFlags.hpp>
+#include <oscar/Graphics/MeshUpdateFlags.h>
 
 #include <gtest/gtest.h>
 

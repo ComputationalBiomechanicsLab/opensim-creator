@@ -1,5 +1,5 @@
-#include <oscar/Maths/UnitVec.hpp>
-#include <oscar/Maths/UnitVec3.hpp>
+#include <oscar/Maths/UnitVec.h>
+#include <oscar/Maths/UnitVec3.h>
 
 #include <gtest/gtest.h>
 

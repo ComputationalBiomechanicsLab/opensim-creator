@@ -1,11 +1,11 @@
-#include "Image.hpp"
+#include "Image.h"
 
-#include <oscar/Graphics/Color32.hpp>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Graphics/TextureFormat.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/ObjectRepresentation.hpp>
+#include <oscar/Graphics/Color32.h>
+#include <oscar/Graphics/ColorSpace.h>
+#include <oscar/Graphics/Texture2D.h>
+#include <oscar/Graphics/TextureFormat.h>
+#include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/ObjectRepresentation.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>

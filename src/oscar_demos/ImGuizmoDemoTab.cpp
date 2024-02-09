@@ -1,8 +1,8 @@
-#include "ImGuizmoDemoTab.hpp"
+#include "ImGuizmoDemoTab.h"
 
 #include <imgui.h>
 #include <ImGuizmo.h>
-#include <oscar/oscar.hpp>
+#include <oscar/oscar.h>
 
 #include <memory>
 

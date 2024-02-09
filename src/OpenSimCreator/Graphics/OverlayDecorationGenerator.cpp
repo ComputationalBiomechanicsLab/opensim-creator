@@ -1,8 +1,8 @@
-#include "OverlayDecorationGenerator.hpp"
+#include "OverlayDecorationGenerator.h"
 
-#include <OpenSimCreator/Graphics/OverlayDecorationOptions.hpp>
+#include <OpenSimCreator/Graphics/OverlayDecorationOptions.h>
 
-#include <oscar/Scene/SceneHelpers.hpp>
+#include <oscar/Scene/SceneHelpers.h>
 
 #include <functional>
 

@@ -1,7 +1,7 @@
-#include "PointToPointEdge.hpp"
+#include "PointToPointEdge.h"
 
-#include <OpenSimCreator/Documents/FrameDefinition/EdgePoints.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/EdgePoints.h>
+#include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
 
 using osc::fd::EdgePoints;
 

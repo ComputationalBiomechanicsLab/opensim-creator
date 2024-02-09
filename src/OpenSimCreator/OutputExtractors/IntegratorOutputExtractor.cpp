@@ -1,11 +1,11 @@
-#include "IntegratorOutputExtractor.hpp"
+#include "IntegratorOutputExtractor.h"
 
-#include <OpenSimCreator/Documents/Simulation/SimulationReport.hpp>
-#include <OpenSimCreator/OutputExtractors/IOutputExtractor.hpp>
+#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
 
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/HashHelpers.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/HashHelpers.h>
+#include <oscar/Utils/UID.h>
 #include <simmath/Integrator.h>
 
 #include <cmath>

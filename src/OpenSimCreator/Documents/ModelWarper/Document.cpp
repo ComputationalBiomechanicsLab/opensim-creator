@@ -1,6 +1,6 @@
-#include "Document.hpp"
+#include "Document.h"
 
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
 

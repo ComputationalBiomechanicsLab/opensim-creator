@@ -1,7 +1,7 @@
-#include "MuscleColoringStyle.hpp"
+#include "MuscleColoringStyle.h"
 
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <array>
 #include <cstddef>

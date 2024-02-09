@@ -1,7 +1,7 @@
-#include <oscar/Graphics/TextureChannelFormat.hpp>
+#include <oscar/Graphics/TextureChannelFormat.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/EnumHelpers.h>
 
 using osc::TextureChannelFormat;
 using osc::NumOptions;

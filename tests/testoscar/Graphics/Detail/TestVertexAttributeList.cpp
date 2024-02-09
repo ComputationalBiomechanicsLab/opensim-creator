@@ -1,10 +1,10 @@
-#include <oscar/Graphics/Detail/VertexAttributeList.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeList.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Graphics/VertexAttribute.hpp>
-#include <oscar/Graphics/Detail/VertexAttributeTraits.hpp>
-#include <oscar/Utils/EnumHelpers.hpp>
-#include <oscar/Utils/NonTypelist.hpp>
+#include <oscar/Graphics/VertexAttribute.h>
+#include <oscar/Graphics/Detail/VertexAttributeTraits.h>
+#include <oscar/Utils/EnumHelpers.h>
+#include <oscar/Utils/NonTypelist.h>
 
 #include <array>
 

@@ -1,7 +1,7 @@
-#include "FilesystemHelpers.hpp"
+#include "FilesystemHelpers.h"
 
-#include <oscar/Platform/os.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
+#include <oscar/Platform/os.h>
+#include <oscar/Utils/StringHelpers.h>
 
 #include <string>
 #include <filesystem>

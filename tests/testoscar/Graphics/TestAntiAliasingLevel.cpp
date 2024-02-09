@@ -1,4 +1,4 @@
-#include <oscar/Graphics/AntiAliasingLevel.hpp>
+#include <oscar/Graphics/AntiAliasingLevel.h>
 
 #include <gtest/gtest.h>
 

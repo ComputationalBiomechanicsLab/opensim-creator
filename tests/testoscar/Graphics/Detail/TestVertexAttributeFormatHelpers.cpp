@@ -1,7 +1,7 @@
-#include <oscar/Graphics/Detail/VertexAttributeFormatHelpers.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeFormatHelpers.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Graphics/VertexAttributeFormat.hpp>
+#include <oscar/Graphics/VertexAttributeFormat.h>
 
 using osc::detail::SizeOfComponent;
 using osc::detail::NumComponents;

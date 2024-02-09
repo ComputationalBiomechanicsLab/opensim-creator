@@ -1,9 +1,9 @@
-#include <oscar/Object/Class.hpp>
+#include <oscar/Object/Class.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Object/PropertyInfo.hpp>
-#include <oscar/Utils/StringName.hpp>
-#include <oscar/Variant/Variant.hpp>
+#include <oscar/Object/PropertyInfo.h>
+#include <oscar/Utils/StringName.h>
+#include <oscar/Variant/Variant.h>
 
 #include <algorithm>
 #include <array>

@@ -1,4 +1,4 @@
-#include <oscar/Utils/NullOStream.hpp>
+#include <oscar/Utils/NullOStream.h>
 
 #include <gtest/gtest.h>
 

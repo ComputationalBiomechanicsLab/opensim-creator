@@ -1,31 +1,31 @@
 add_library(oscar_demos STATIC
 
     CookiecutterScreen.cpp
-    CookiecutterScreen.hpp
+    CookiecutterScreen.h
     CustomWidgetsTab.cpp
-    CustomWidgetsTab.hpp
+    CustomWidgetsTab.h
     HittestTab.cpp
-    HittestTab.hpp
+    HittestTab.h
     ImGuiDemoTab.cpp
-    ImGuiDemoTab.hpp
+    ImGuiDemoTab.h
     ImGuizmoDemoTab.cpp
-    ImGuizmoDemoTab.hpp
+    ImGuizmoDemoTab.h
     ImPlotDemoTab.cpp
-    ImPlotDemoTab.hpp
+    ImPlotDemoTab.h
     MandelbrotTab.cpp
-    MandelbrotTab.hpp
+    MandelbrotTab.h
     MeshGenTestTab.cpp
-    MeshGenTestTab.hpp
+    MeshGenTestTab.h
     OscarDemosTabRegistry.cpp
-    OscarDemosTabRegistry.hpp
-    OscarDemoTabs.hpp
+    OscarDemosTabRegistry.h
+    OscarDemoTabs.h
     SubMeshTab.cpp
-    SubMeshTab.hpp
+    SubMeshTab.h
 )
 
 target_include_directories(oscar_demos PUBLIC
 
-    # so that `#include "oscar_demos/HEADER.hpp"` works
+    # so that `#include "oscar_demos/HEADER.h"` works
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 

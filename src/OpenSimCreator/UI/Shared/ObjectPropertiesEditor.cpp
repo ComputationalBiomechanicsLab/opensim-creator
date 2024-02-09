@@ -1,10 +1,10 @@
-#include "ObjectPropertiesEditor.hpp"
+#include "ObjectPropertiesEditor.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/UI/IPopupAPI.hpp>
-#include <OpenSimCreator/UI/Shared/GeometryPathEditorPopup.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
-#include <OpenSimCreator/Utils/SimTKHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/UI/IPopupAPI.h>
+#include <OpenSimCreator/UI/Shared/GeometryPathEditorPopup.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <OpenSimCreator/Utils/SimTKHelpers.h>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -20,16 +20,16 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <SimTKcommon/Constants.h>
 #include <SimTKcommon/SmallMatrix.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Maths/Vec4.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
-#include <oscar/Utils/Typelist.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Maths/Vec4.h>
+#include <oscar/Platform/App.h>
+#include <oscar/Platform/Log.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/Utils/StringHelpers.h>
+#include <oscar/Utils/Typelist.h>
 
 #include <algorithm>
 #include <array>

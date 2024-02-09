@@ -1,4 +1,4 @@
-#include <oscar/Utils/FilenameExtractor.hpp>
+#include <oscar/Utils/FilenameExtractor.h>
 
 #include <gtest/gtest.h>
 

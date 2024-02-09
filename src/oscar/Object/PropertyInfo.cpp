@@ -1,8 +1,8 @@
-#include "PropertyInfo.hpp"
+#include "PropertyInfo.h"
 
-#include <oscar/Utils/StringHelpers.hpp>
-#include <oscar/Utils/StringName.hpp>
-#include <oscar/Variant/Variant.hpp>
+#include <oscar/Utils/StringHelpers.h>
+#include <oscar/Utils/StringName.h>
+#include <oscar/Variant/Variant.h>
 
 #include <sstream>
 #include <stdexcept>

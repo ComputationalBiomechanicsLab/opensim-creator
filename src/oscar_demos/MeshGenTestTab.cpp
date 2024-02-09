@@ -1,7 +1,7 @@
-#include "MeshGenTestTab.hpp"
+#include "MeshGenTestTab.h"
 
 #include <imgui.h>
-#include <oscar/oscar.hpp>
+#include <oscar/oscar.h>
 
 #include <map>
 #include <memory>

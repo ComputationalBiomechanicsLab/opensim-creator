@@ -1,10 +1,10 @@
-#include <oscar/Variant/Variant.hpp>
+#include <oscar/Variant/Variant.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/StringName.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/StringName.h>
 
 #include <array>
 #include <charconv>

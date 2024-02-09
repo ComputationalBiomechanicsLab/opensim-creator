@@ -1,9 +1,9 @@
-#include <OpenSimCreator/Documents/Frames/FramesHelpers.hpp>
+#include <OpenSimCreator/Documents/Frames/FramesHelpers.h>
 
-#include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
+#include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
-#include <OpenSimCreator/Documents/Frames/FrameAxis.hpp>
-#include <OpenSimCreator/Documents/Frames/FrameDefinition.hpp>
+#include <OpenSimCreator/Documents/Frames/FrameAxis.h>
+#include <OpenSimCreator/Documents/Frames/FrameDefinition.h>
 #include <gtest/gtest.h>
 
 #include <filesystem>

@@ -1,7 +1,7 @@
-#include <oscar/Platform/AppSettingValue.hpp>
+#include <oscar/Platform/AppSettingValue.h>
 
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Utils/CStringView.h>
 
 #include <gtest/gtest.h>
 

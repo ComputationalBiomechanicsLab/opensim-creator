@@ -1,14 +1,14 @@
-#include <oscar/Graphics/Camera.hpp>
+#include <oscar/Graphics/Camera.h>
 
-#include <testoscar/TestingHelpers.hpp>
+#include <testoscar/TestingHelpers.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Graphics/CameraClearFlags.hpp>
-#include <oscar/Graphics/CameraProjection.hpp>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Graphics/CameraClearFlags.h>
+#include <oscar/Graphics/CameraProjection.h>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Maths/Angle.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Vec3.h>
 
 #include <array>
 #include <cstddef>

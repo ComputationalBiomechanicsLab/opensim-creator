@@ -1,12 +1,12 @@
-#include "SceneCache.hpp"
+#include "SceneCache.h"
 
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Maths/BVH.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Scene/SceneHelpers.hpp>
-#include <oscar/Utils/HashHelpers.hpp>
-#include <oscar/Utils/SynchronizedValue.hpp>
+#include <oscar/Graphics/Mesh.h>
+#include <oscar/Graphics/MeshGenerators.h>
+#include <oscar/Maths/BVH.h>
+#include <oscar/Platform/Log.h>
+#include <oscar/Scene/SceneHelpers.h>
+#include <oscar/Utils/HashHelpers.h>
+#include <oscar/Utils/SynchronizedValue.h>
 
 #include <functional>
 #include <memory>

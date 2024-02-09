@@ -1,9 +1,9 @@
-#include "LandmarkHelpers.hpp"
+#include "LandmarkHelpers.h"
 
-#include <oscar/Formats/CSV.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/StdVariantHelpers.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
+#include <oscar/Formats/CSV.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/StdVariantHelpers.h>
+#include <oscar/Utils/StringHelpers.h>
 
 #include <optional>
 #include <span>

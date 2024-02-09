@@ -1,16 +1,16 @@
-#include "ModelWarperTab.hpp"
+#include "ModelWarperTab.h"
 
-#include <OpenSimCreator/UI/ModelWarper/ChecklistPanel.hpp>
-#include <OpenSimCreator/UI/ModelWarper/MainMenu.hpp>
-#include <OpenSimCreator/UI/ModelWarper/ModelViewerPanel.hpp>
-#include <OpenSimCreator/UI/ModelWarper/Toolbar.hpp>
-#include <OpenSimCreator/UI/ModelWarper/UIState.hpp>
+#include <OpenSimCreator/UI/ModelWarper/ChecklistPanel.h>
+#include <OpenSimCreator/UI/ModelWarper/MainMenu.h>
+#include <OpenSimCreator/UI/ModelWarper/ModelViewerPanel.h>
+#include <OpenSimCreator/UI/ModelWarper/Toolbar.h>
+#include <OpenSimCreator/UI/ModelWarper/UIState.h>
 
 #include <SDL_events.h>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/Panels/PanelManager.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Platform/App.h>
+#include <oscar/UI/Panels/PanelManager.h>
+#include <oscar/UI/Tabs/StandardTabImpl.h>
+#include <oscar/Utils/CStringView.h>
 
 #include <functional>
 #include <string_view>

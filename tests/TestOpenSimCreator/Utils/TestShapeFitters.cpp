@@ -1,17 +1,17 @@
-#include <OpenSimCreator/Utils/ShapeFitters.hpp>
+#include <OpenSimCreator/Utils/ShapeFitters.h>
 
-#include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
+#include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
-#include <OpenSimCreator/Graphics/SimTKMeshLoader.hpp>
+#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
 #include <gtest/gtest.h>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Maths/Ellipsoid.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Plane.hpp>
-#include <oscar/Maths/Sphere.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Graphics/Mesh.h>
+#include <oscar/Graphics/MeshGenerators.h>
+#include <oscar/Maths/Ellipsoid.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Plane.h>
+#include <oscar/Maths/Sphere.h>
+#include <oscar/Maths/Transform.h>
+#include <oscar/Maths/Vec3.h>
 
 #include <array>
 #include <cstddef>

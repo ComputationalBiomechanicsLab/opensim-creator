@@ -2,397 +2,397 @@ find_package(OpenSim REQUIRED CONFIG)
 
 add_library(OpenSimCreator STATIC
 
-    ComponentRegistry/ComponentRegistry.hpp
+    ComponentRegistry/ComponentRegistry.h
     ComponentRegistry/ComponentRegistryBase.cpp
-    ComponentRegistry/ComponentRegistryBase.hpp
-    ComponentRegistry/ComponentRegistryEntry.hpp
+    ComponentRegistry/ComponentRegistryBase.h
+    ComponentRegistry/ComponentRegistryEntry.h
     ComponentRegistry/ComponentRegistryEntryBase.cpp
-    ComponentRegistry/ComponentRegistryEntryBase.hpp
+    ComponentRegistry/ComponentRegistryEntryBase.h
     ComponentRegistry/StaticComponentRegistries.cpp
-    ComponentRegistry/StaticComponentRegistries.hpp
+    ComponentRegistry/StaticComponentRegistries.h
 
-    Documents/FrameDefinition/AxisIndex.hpp
+    Documents/FrameDefinition/AxisIndex.h
     Documents/FrameDefinition/CrossProductDefinedFrame.cpp
-    Documents/FrameDefinition/CrossProductDefinedFrame.hpp
+    Documents/FrameDefinition/CrossProductDefinedFrame.h
     Documents/FrameDefinition/CrossProductEdge.cpp
-    Documents/FrameDefinition/CrossProductEdge.hpp
+    Documents/FrameDefinition/CrossProductEdge.h
     Documents/FrameDefinition/Edge.cpp
-    Documents/FrameDefinition/Edge.hpp
-    Documents/FrameDefinition/EdgePoints.hpp
+    Documents/FrameDefinition/Edge.h
+    Documents/FrameDefinition/EdgePoints.h
     Documents/FrameDefinition/FrameDefinitionActions.cpp
-    Documents/FrameDefinition/FrameDefinitionActions.hpp
+    Documents/FrameDefinition/FrameDefinitionActions.h
     Documents/FrameDefinition/FrameDefinitionHelpers.cpp
-    Documents/FrameDefinition/FrameDefinitionHelpers.hpp
-    Documents/FrameDefinition/MaybeNegatedAxis.hpp
+    Documents/FrameDefinition/FrameDefinitionHelpers.h
+    Documents/FrameDefinition/MaybeNegatedAxis.h
     Documents/FrameDefinition/MidpointLandmark.cpp
-    Documents/FrameDefinition/MidpointLandmark.hpp
+    Documents/FrameDefinition/MidpointLandmark.h
     Documents/FrameDefinition/PointToPointEdge.cpp
-    Documents/FrameDefinition/PointToPointEdge.hpp
+    Documents/FrameDefinition/PointToPointEdge.h
     Documents/FrameDefinition/SphereLandmark.cpp
-    Documents/FrameDefinition/SphereLandmark.hpp
+    Documents/FrameDefinition/SphereLandmark.h
 
     Documents/Frames/FrameAxis.cpp
-    Documents/Frames/FrameAxis.hpp
-    Documents/Frames/FrameDefinition.hpp
+    Documents/Frames/FrameAxis.h
+    Documents/Frames/FrameDefinition.h
     Documents/Frames/FramesFile.cpp
-    Documents/Frames/FramesFile.hpp
+    Documents/Frames/FramesFile.h
     Documents/Frames/FramesHelpers.cpp
-    Documents/Frames/FramesHelpers.hpp
+    Documents/Frames/FramesHelpers.h
 
-    Documents/Landmarks/Landmark.hpp
-    Documents/Landmarks/LandmarkCSVFlags.hpp
+    Documents/Landmarks/Landmark.h
+    Documents/Landmarks/LandmarkCSVFlags.h
     Documents/Landmarks/LandmarkHelpers.cpp
-    Documents/Landmarks/LandmarkHelpers.hpp
-    Documents/Landmarks/NamedLandmark.hpp
+    Documents/Landmarks/LandmarkHelpers.h
+    Documents/Landmarks/NamedLandmark.h
 
     Documents/MeshImporter/Body.cpp
-    Documents/MeshImporter/Body.hpp
-    Documents/MeshImporter/CrossrefDescriptor.hpp
-    Documents/MeshImporter/CrossrefDirection.hpp
+    Documents/MeshImporter/Body.h
+    Documents/MeshImporter/CrossrefDescriptor.h
+    Documents/MeshImporter/CrossrefDirection.h
     Documents/MeshImporter/Document.cpp
-    Documents/MeshImporter/Document.hpp
+    Documents/MeshImporter/Document.h
     Documents/MeshImporter/DocumentHelpers.cpp
-    Documents/MeshImporter/DocumentHelpers.hpp
+    Documents/MeshImporter/DocumentHelpers.h
     Documents/MeshImporter/Ground.cpp
-    Documents/MeshImporter/Ground.hpp
-    Documents/MeshImporter/IObjectFinder.hpp
+    Documents/MeshImporter/Ground.h
+    Documents/MeshImporter/IObjectFinder.h
     Documents/MeshImporter/Joint.cpp
-    Documents/MeshImporter/Joint.hpp
+    Documents/MeshImporter/Joint.h
     Documents/MeshImporter/Mesh.cpp
-    Documents/MeshImporter/Mesh.hpp
-    Documents/MeshImporter/MIClass.hpp
+    Documents/MeshImporter/Mesh.h
+    Documents/MeshImporter/MIClass.h
     Documents/MeshImporter/MIIDs.cpp
     Documents/MeshImporter/MIObject.cpp
-    Documents/MeshImporter/MIObject.hpp
-    Documents/MeshImporter/MIObjectCRTP.hpp
-    Documents/MeshImporter/MIObjectFlags.hpp
+    Documents/MeshImporter/MIObject.h
+    Documents/MeshImporter/MIObjectCRTP.h
+    Documents/MeshImporter/MIObjectFlags.h
     Documents/MeshImporter/MIObjectHelpers.cpp
-    Documents/MeshImporter/MIObjectHelpers.hpp
-    Documents/MeshImporter/MIIDs.hpp
-    Documents/MeshImporter/MIStrings.hpp
-    Documents/MeshImporter/MIVariant.hpp
+    Documents/MeshImporter/MIObjectHelpers.h
+    Documents/MeshImporter/MIIDs.h
+    Documents/MeshImporter/MIStrings.h
+    Documents/MeshImporter/MIVariant.h
     Documents/MeshImporter/OpenSimBridge.cpp
-    Documents/MeshImporter/OpenSimBridge.hpp
-    Documents/MeshImporter/OpenSimExportFlags.hpp
+    Documents/MeshImporter/OpenSimBridge.h
+    Documents/MeshImporter/OpenSimExportFlags.h
     Documents/MeshImporter/Station.cpp
-    Documents/MeshImporter/Station.hpp
+    Documents/MeshImporter/Station.h
     Documents/MeshImporter/UndoableActions.cpp
-    Documents/MeshImporter/UndoableActions.hpp
-    Documents/MeshImporter/UndoableDocument.hpp
+    Documents/MeshImporter/UndoableActions.h
+    Documents/MeshImporter/UndoableDocument.h
 
-    Documents/MeshWarper/NamedLandmarkPair3D.hpp
+    Documents/MeshWarper/NamedLandmarkPair3D.h
     Documents/MeshWarper/TPSDocument.cpp
-    Documents/MeshWarper/TPSDocument.hpp
-    Documents/MeshWarper/TPSDocumentElement.hpp
-    Documents/MeshWarper/TPSDocumentElementID.hpp
-    Documents/MeshWarper/TPSDocumentElementType.hpp
+    Documents/MeshWarper/TPSDocument.h
+    Documents/MeshWarper/TPSDocumentElement.h
+    Documents/MeshWarper/TPSDocumentElementID.h
+    Documents/MeshWarper/TPSDocumentElementType.h
     Documents/MeshWarper/TPSDocumentHelpers.cpp
-    Documents/MeshWarper/TPSDocumentHelpers.hpp
-    Documents/MeshWarper/TPSDocumentInputIdentifier.hpp
-    Documents/MeshWarper/TPSDocumentLandmarkPair.hpp
-    Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.hpp
-    Documents/MeshWarper/TPSWarpResultCache.hpp
-    Documents/MeshWarper/UndoableTPSDocument.hpp
+    Documents/MeshWarper/TPSDocumentHelpers.h
+    Documents/MeshWarper/TPSDocumentInputIdentifier.h
+    Documents/MeshWarper/TPSDocumentLandmarkPair.h
+    Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h
+    Documents/MeshWarper/TPSWarpResultCache.h
+    Documents/MeshWarper/UndoableTPSDocument.h
     Documents/MeshWarper/UndoableTPSDocumentActions.cpp
-    Documents/MeshWarper/UndoableTPSDocumentActions.hpp
+    Documents/MeshWarper/UndoableTPSDocumentActions.h
 
     Documents/Model/BasicModelStatePair.cpp
-    Documents/Model/BasicModelStatePair.hpp
-    Documents/Model/IConstModelStatePair.hpp
-    Documents/Model/IModelStatePair.hpp
+    Documents/Model/BasicModelStatePair.h
+    Documents/Model/IConstModelStatePair.h
+    Documents/Model/IModelStatePair.h
     Documents/Model/ModelStateCommit.cpp
-    Documents/Model/ModelStateCommit.hpp
+    Documents/Model/ModelStateCommit.h
     Documents/Model/ModelStatePairInfo.cpp
-    Documents/Model/ModelStatePairInfo.hpp
+    Documents/Model/ModelStatePairInfo.h
     Documents/Model/ObjectPropertyEdit.cpp
-    Documents/Model/ObjectPropertyEdit.hpp
+    Documents/Model/ObjectPropertyEdit.h
     Documents/Model/UndoableModelActions.cpp
-    Documents/Model/UndoableModelActions.hpp
+    Documents/Model/UndoableModelActions.h
     Documents/Model/UndoableModelStatePair.cpp
-    Documents/Model/UndoableModelStatePair.hpp
+    Documents/Model/UndoableModelStatePair.h
 
-    Documents/ModelWarper/Detail.hpp
+    Documents/ModelWarper/Detail.h
     Documents/ModelWarper/Document.cpp
-    Documents/ModelWarper/Document.hpp
+    Documents/ModelWarper/Document.h
     Documents/ModelWarper/FrameDefinitionLookup.cpp
-    Documents/ModelWarper/FrameDefinitionLookup.hpp
-    Documents/ModelWarper/LandmarkPairing.hpp
+    Documents/ModelWarper/FrameDefinitionLookup.h
+    Documents/ModelWarper/LandmarkPairing.h
     Documents/ModelWarper/MeshWarpPairing.cpp
-    Documents/ModelWarper/MeshWarpPairing.hpp
+    Documents/ModelWarper/MeshWarpPairing.h
     Documents/ModelWarper/MeshWarpPairingLookup.cpp
-    Documents/ModelWarper/MeshWarpPairingLookup.hpp
+    Documents/ModelWarper/MeshWarpPairingLookup.h
     Documents/ModelWarper/ModelWarpConfiguration.cpp
-    Documents/ModelWarper/ModelWarpConfiguration.hpp
-    Documents/ModelWarper/ValidationCheck.hpp
-    Documents/ModelWarper/ValidationCheckConsumerResponse.hpp
+    Documents/ModelWarper/ModelWarpConfiguration.h
+    Documents/ModelWarper/ValidationCheck.h
+    Documents/ModelWarper/ValidationCheckConsumerResponse.h
 
     Documents/Simulation/ForwardDynamicSimulation.cpp
-    Documents/Simulation/ForwardDynamicSimulation.hpp
+    Documents/Simulation/ForwardDynamicSimulation.h
     Documents/Simulation/ForwardDynamicSimulator.cpp
-    Documents/Simulation/ForwardDynamicSimulator.hpp
+    Documents/Simulation/ForwardDynamicSimulator.h
     Documents/Simulation/ForwardDynamicSimulatorParams.cpp
-    Documents/Simulation/ForwardDynamicSimulatorParams.hpp
+    Documents/Simulation/ForwardDynamicSimulatorParams.h
     Documents/Simulation/IntegratorMethod.cpp
-    Documents/Simulation/IntegratorMethod.hpp
-    Documents/Simulation/ISimulation.hpp
-    Documents/Simulation/Simulation.hpp
-    Documents/Simulation/SimulationClock.hpp
+    Documents/Simulation/IntegratorMethod.h
+    Documents/Simulation/ISimulation.h
+    Documents/Simulation/Simulation.h
+    Documents/Simulation/SimulationClock.h
     Documents/Simulation/SimulationModelStatePair.cpp
-    Documents/Simulation/SimulationModelStatePair.hpp
+    Documents/Simulation/SimulationModelStatePair.h
     Documents/Simulation/SimulationReport.cpp
-    Documents/Simulation/SimulationReport.hpp
+    Documents/Simulation/SimulationReport.h
     Documents/Simulation/SimulationStatus.cpp
-    Documents/Simulation/SimulationStatus.hpp
+    Documents/Simulation/SimulationStatus.h
     Documents/Simulation/SingleStateSimulation.cpp
-    Documents/Simulation/SingleStateSimulation.hpp
-    Documents/Simulation/StoFileSimulation.hpp
+    Documents/Simulation/SingleStateSimulation.h
+    Documents/Simulation/StoFileSimulation.h
     Documents/Simulation/StoFileSimulation.cpp
 
     Graphics/CachedModelRenderer.cpp
-    Graphics/CachedModelRenderer.hpp
+    Graphics/CachedModelRenderer.h
     Graphics/ComponentAbsPathDecorationTagger.cpp
-    Graphics/ComponentAbsPathDecorationTagger.hpp
+    Graphics/ComponentAbsPathDecorationTagger.h
     Graphics/ComponentSceneDecorationFlagsTagger.cpp
-    Graphics/ComponentSceneDecorationFlagsTagger.hpp
+    Graphics/ComponentSceneDecorationFlagsTagger.h
     Graphics/CustomRenderingOptionFlags.cpp
-    Graphics/CustomRenderingOptionFlags.hpp
+    Graphics/CustomRenderingOptionFlags.h
     Graphics/CustomRenderingOptions.cpp
-    Graphics/CustomRenderingOptions.hpp
+    Graphics/CustomRenderingOptions.h
     Graphics/OpenSimDecorationOptions.cpp
-    Graphics/OpenSimDecorationOptions.hpp
+    Graphics/OpenSimDecorationOptions.h
     Graphics/ModelRendererParams.cpp
-    Graphics/ModelRendererParams.hpp
+    Graphics/ModelRendererParams.h
     Graphics/MuscleColoringStyle.cpp
-    Graphics/MuscleColoringStyle.hpp
+    Graphics/MuscleColoringStyle.h
     Graphics/MuscleDecorationStyle.cpp
-    Graphics/MuscleDecorationStyle.hpp
+    Graphics/MuscleDecorationStyle.h
     Graphics/MuscleSizingStyle.cpp
-    Graphics/MuscleSizingStyle.hpp
+    Graphics/MuscleSizingStyle.h
     Graphics/OpenSimDecorationGenerator.cpp
-    Graphics/OpenSimDecorationGenerator.hpp
+    Graphics/OpenSimDecorationGenerator.h
     Graphics/OpenSimDecorationOptionFlags.cpp
-    Graphics/OpenSimDecorationOptionFlags.hpp
+    Graphics/OpenSimDecorationOptionFlags.h
     Graphics/OpenSimGraphicsHelpers.cpp
-    Graphics/OpenSimGraphicsHelpers.hpp
+    Graphics/OpenSimGraphicsHelpers.h
     Graphics/OverlayDecorationGenerator.cpp
-    Graphics/OverlayDecorationGenerator.hpp
+    Graphics/OverlayDecorationGenerator.h
     Graphics/OverlayDecorationOptionFlags.cpp
-    Graphics/OverlayDecorationOptionFlags.hpp
+    Graphics/OverlayDecorationOptionFlags.h
     Graphics/OverlayDecorationOptions.cpp
-    Graphics/OverlayDecorationOptions.hpp
+    Graphics/OverlayDecorationOptions.h
     Graphics/SimTKDecorationGenerator.cpp
-    Graphics/SimTKDecorationGenerator.hpp
+    Graphics/SimTKDecorationGenerator.h
     Graphics/SimTKMeshLoader.cpp
-    Graphics/SimTKMeshLoader.hpp
+    Graphics/SimTKMeshLoader.h
 
     OutputExtractors/ComponentOutputExtractor.cpp
-    OutputExtractors/ComponentOutputExtractor.hpp
+    OutputExtractors/ComponentOutputExtractor.h
     OutputExtractors/IntegratorOutputExtractor.cpp
-    OutputExtractors/IntegratorOutputExtractor.hpp
-    OutputExtractors/IOutputExtractor.hpp
+    OutputExtractors/IntegratorOutputExtractor.h
+    OutputExtractors/IOutputExtractor.h
     OutputExtractors/MultiBodySystemOutputExtractor.cpp
-    OutputExtractors/MultiBodySystemOutputExtractor.hpp
+    OutputExtractors/MultiBodySystemOutputExtractor.h
     OutputExtractors/OutputExtractor.cpp
-    OutputExtractors/OutputExtractor.hpp
+    OutputExtractors/OutputExtractor.h
 
     Platform/OpenSimCreatorApp.cpp
-    Platform/OpenSimCreatorApp.hpp
-    Platform/RecentFile.hpp
+    Platform/OpenSimCreatorApp.h
+    Platform/RecentFile.h
     Platform/RecentFiles.cpp
-    Platform/RecentFiles.hpp
+    Platform/RecentFiles.h
 
     UI/Experimental/MeshHittestTab.cpp
-    UI/Experimental/MeshHittestTab.hpp
+    UI/Experimental/MeshHittestTab.h
     UI/Experimental/RendererGeometryShaderTab.cpp
-    UI/Experimental/RendererGeometryShaderTab.hpp
+    UI/Experimental/RendererGeometryShaderTab.h
     UI/Experimental/TPS2DTab.cpp
-    UI/Experimental/TPS2DTab.hpp
+    UI/Experimental/TPS2DTab.h
 
     UI/FrameDefinition/FrameDefinitionTab.cpp
-    UI/FrameDefinition/FrameDefinitionTab.hpp
+    UI/FrameDefinition/FrameDefinitionTab.h
     UI/FrameDefinition/FrameDefinitionTabToolbar.cpp
-    UI/FrameDefinition/FrameDefinitionTabToolbar.hpp
+    UI/FrameDefinition/FrameDefinitionTabToolbar.h
     UI/FrameDefinition/FrameDefinitionUIHelpers.cpp
-    UI/FrameDefinition/FrameDefinitionUIHelpers.hpp
+    UI/FrameDefinition/FrameDefinitionUIHelpers.h
 
-    UI/MeshImporter/ChooseElLayer.hpp
-    UI/MeshImporter/DrawableThing.hpp
-    UI/MeshImporter/IMeshImporterUILayerHost.hpp
-    UI/MeshImporter/MeshImporterHover.hpp
-    UI/MeshImporter/MeshImporterSharedState.hpp
+    UI/MeshImporter/ChooseElLayer.h
+    UI/MeshImporter/DrawableThing.h
+    UI/MeshImporter/IMeshImporterUILayerHost.h
+    UI/MeshImporter/MeshImporterHover.h
+    UI/MeshImporter/MeshImporterSharedState.h
     UI/MeshImporter/MeshImporterTab.cpp
-    UI/MeshImporter/MeshImporterTab.hpp
-    UI/MeshImporter/MeshImporterUILayer.hpp
+    UI/MeshImporter/MeshImporterTab.h
+    UI/MeshImporter/MeshImporterUILayer.h
     UI/MeshImporter/MeshLoader.cpp
-    UI/MeshImporter/MeshLoader.hpp
-    UI/MeshImporter/Select2MeshPointsLayer.hpp
+    UI/MeshImporter/MeshLoader.h
+    UI/MeshImporter/Select2MeshPointsLayer.h
 
     UI/MeshWarper/MeshWarpingTab.cpp
-    UI/MeshWarper/MeshWarpingTab.hpp
-    UI/MeshWarper/MeshWarpingTabActionsMenu.hpp
-    UI/MeshWarper/MeshWarpingTabContextMenu.hpp
-    UI/MeshWarper/MeshWarpingTabDecorationGenerators.hpp
-    UI/MeshWarper/MeshWarpingTabEditMenu.hpp
-    UI/MeshWarper/MeshWarpingTabFileMenu.hpp
-    UI/MeshWarper/MeshWarpingTabHover.hpp
-    UI/MeshWarper/MeshWarpingTabInputMeshPanel.hpp
-    UI/MeshWarper/MeshWarpingTabMainMenu.hpp
-    UI/MeshWarper/MeshWarpingTabNavigatorPanel.hpp
-    UI/MeshWarper/MeshWarpingTabPanel.hpp
-    UI/MeshWarper/MeshWarpingTabResultMeshPanel.hpp
-    UI/MeshWarper/MeshWarpingTabSharedState.hpp
-    UI/MeshWarper/MeshWarpingTabStatusBar.hpp
-    UI/MeshWarper/MeshWarpingTabToolbar.hpp
-    UI/MeshWarper/MeshWarpingTabUserSelection.hpp
+    UI/MeshWarper/MeshWarpingTab.h
+    UI/MeshWarper/MeshWarpingTabActionsMenu.h
+    UI/MeshWarper/MeshWarpingTabContextMenu.h
+    UI/MeshWarper/MeshWarpingTabDecorationGenerators.h
+    UI/MeshWarper/MeshWarpingTabEditMenu.h
+    UI/MeshWarper/MeshWarpingTabFileMenu.h
+    UI/MeshWarper/MeshWarpingTabHover.h
+    UI/MeshWarper/MeshWarpingTabInputMeshPanel.h
+    UI/MeshWarper/MeshWarpingTabMainMenu.h
+    UI/MeshWarper/MeshWarpingTabNavigatorPanel.h
+    UI/MeshWarper/MeshWarpingTabPanel.h
+    UI/MeshWarper/MeshWarpingTabResultMeshPanel.h
+    UI/MeshWarper/MeshWarpingTabSharedState.h
+    UI/MeshWarper/MeshWarpingTabStatusBar.h
+    UI/MeshWarper/MeshWarpingTabToolbar.h
+    UI/MeshWarper/MeshWarpingTabUserSelection.h
 
     UI/ModelEditor/AddBodyPopup.cpp
-    UI/ModelEditor/AddBodyPopup.hpp
+    UI/ModelEditor/AddBodyPopup.h
     UI/ModelEditor/AddComponentPopup.cpp
-    UI/ModelEditor/AddComponentPopup.hpp
+    UI/ModelEditor/AddComponentPopup.h
     UI/ModelEditor/ComponentContextMenu.cpp
-    UI/ModelEditor/ComponentContextMenu.hpp
+    UI/ModelEditor/ComponentContextMenu.h
     UI/ModelEditor/CoordinateEditorPanel.cpp
-    UI/ModelEditor/CoordinateEditorPanel.hpp
+    UI/ModelEditor/CoordinateEditorPanel.h
     UI/ModelEditor/EditorTabStatusBar.cpp
-    UI/ModelEditor/EditorTabStatusBar.hpp
+    UI/ModelEditor/EditorTabStatusBar.h
     UI/ModelEditor/ExportPointsPopup.cpp
-    UI/ModelEditor/ExportPointsPopup.hpp
-    UI/ModelEditor/IEditorAPI.hpp
+    UI/ModelEditor/ExportPointsPopup.h
+    UI/ModelEditor/IEditorAPI.h
     UI/ModelEditor/ModelActionsMenuItems.cpp
-    UI/ModelEditor/ModelActionsMenuItems.hpp
+    UI/ModelEditor/ModelActionsMenuItems.h
     UI/ModelEditor/ModelEditorTab.cpp
-    UI/ModelEditor/ModelEditorTab.hpp
+    UI/ModelEditor/ModelEditorTab.h
     UI/ModelEditor/ModelEditorMainMenu.cpp
-    UI/ModelEditor/ModelEditorMainMenu.hpp
+    UI/ModelEditor/ModelEditorMainMenu.h
     UI/ModelEditor/ModelEditorToolbar.cpp
-    UI/ModelEditor/ModelEditorToolbar.hpp
+    UI/ModelEditor/ModelEditorToolbar.h
     UI/ModelEditor/ModelMusclePlotPanel.cpp
-    UI/ModelEditor/ModelMusclePlotPanel.hpp
+    UI/ModelEditor/ModelMusclePlotPanel.h
     UI/ModelEditor/OutputWatchesPanel.cpp
-    UI/ModelEditor/OutputWatchesPanel.hpp
+    UI/ModelEditor/OutputWatchesPanel.h
     UI/ModelEditor/ReassignSocketPopup.cpp
-    UI/ModelEditor/ReassignSocketPopup.hpp
+    UI/ModelEditor/ReassignSocketPopup.h
     UI/ModelEditor/SelectComponentPopup.cpp
-    UI/ModelEditor/SelectComponentPopup.hpp
+    UI/ModelEditor/SelectComponentPopup.h
     UI/ModelEditor/SelectGeometryPopup.cpp
-    UI/ModelEditor/SelectGeometryPopup.hpp
+    UI/ModelEditor/SelectGeometryPopup.h
     UI/ModelEditor/Select1PFPopup.cpp
-    UI/ModelEditor/Select1PFPopup.hpp
+    UI/ModelEditor/Select1PFPopup.h
 
     UI/ModelWarper/ChecklistPanel.cpp
-    UI/ModelWarper/ChecklistPanel.hpp
+    UI/ModelWarper/ChecklistPanel.h
     UI/ModelWarper/FileMenu.cpp
-    UI/ModelWarper/FileMenu.hpp
-    UI/ModelWarper/MainMenu.hpp
+    UI/ModelWarper/FileMenu.h
+    UI/ModelWarper/MainMenu.h
     UI/ModelWarper/ModelViewerPanel.cpp
-    UI/ModelWarper/ModelViewerPanel.hpp
+    UI/ModelWarper/ModelViewerPanel.h
     UI/ModelWarper/ModelWarperTab.cpp
-    UI/ModelWarper/ModelWarperTab.hpp
+    UI/ModelWarper/ModelWarperTab.h
     UI/ModelWarper/Toolbar.cpp
-    UI/ModelWarper/Toolbar.hpp
+    UI/ModelWarper/Toolbar.h
     UI/ModelWarper/UIState.cpp
-    UI/ModelWarper/UIState.hpp
+    UI/ModelWarper/UIState.h
 
     UI/Shared/BasicWidgets.cpp
-    UI/Shared/BasicWidgets.hpp
+    UI/Shared/BasicWidgets.h
     UI/Shared/ChooseComponentsEditorLayer.cpp
-    UI/Shared/ChooseComponentsEditorLayer.hpp
-    UI/Shared/ChooseComponentsEditorLayerParameters.hpp
+    UI/Shared/ChooseComponentsEditorLayer.h
+    UI/Shared/ChooseComponentsEditorLayerParameters.h
     UI/Shared/GeometryPathEditorPopup.cpp
-    UI/Shared/GeometryPathEditorPopup.hpp
+    UI/Shared/GeometryPathEditorPopup.h
     UI/Shared/ImportStationsFromCSVPopup.cpp
-    UI/Shared/ImportStationsFromCSVPopup.hpp
+    UI/Shared/ImportStationsFromCSVPopup.h
     UI/Shared/MainMenu.cpp
-    UI/Shared/MainMenu.hpp
+    UI/Shared/MainMenu.h
     UI/Shared/ModelEditorViewerPanel.cpp
-    UI/Shared/ModelEditorViewerPanel.hpp
-    UI/Shared/ModelEditorViewerPanelLayer.hpp
-    UI/Shared/ModelEditorViewerPanelLayerFlags.hpp
-    UI/Shared/ModelEditorViewerPanelParameters.hpp
-    UI/Shared/ModelEditorViewerPanelRightClickEvent.hpp
+    UI/Shared/ModelEditorViewerPanel.h
+    UI/Shared/ModelEditorViewerPanelLayer.h
+    UI/Shared/ModelEditorViewerPanelLayerFlags.h
+    UI/Shared/ModelEditorViewerPanelParameters.h
+    UI/Shared/ModelEditorViewerPanelRightClickEvent.h
     UI/Shared/ModelEditorViewerPanelState.cpp
-    UI/Shared/ModelEditorViewerPanelState.hpp
+    UI/Shared/ModelEditorViewerPanelState.h
     UI/Shared/ModelSelectionGizmo.cpp
-    UI/Shared/ModelSelectionGizmo.hpp
+    UI/Shared/ModelSelectionGizmo.h
     UI/Shared/NavigatorPanel.cpp
-    UI/Shared/NavigatorPanel.hpp
+    UI/Shared/NavigatorPanel.h
     UI/Shared/ObjectPropertiesEditor.cpp
-    UI/Shared/ObjectPropertiesEditor.hpp
+    UI/Shared/ObjectPropertiesEditor.h
     UI/Shared/ParamBlockEditorPopup.cpp
-    UI/Shared/ParamBlockEditorPopup.hpp
+    UI/Shared/ParamBlockEditorPopup.h
     UI/Shared/PropertiesPanel.cpp
-    UI/Shared/PropertiesPanel.hpp
+    UI/Shared/PropertiesPanel.h
 
     UI/Simulation/ComponentDetails.cpp
-    UI/Simulation/ComponentDetails.hpp
-    UI/Simulation/ISimulatorUIAPI.hpp
+    UI/Simulation/ComponentDetails.h
+    UI/Simulation/ISimulatorUIAPI.h
     UI/Simulation/ModelStatePairContextMenu.cpp
-    UI/Simulation/ModelStatePairContextMenu.hpp
+    UI/Simulation/ModelStatePairContextMenu.h
     UI/Simulation/OutputPlotsPanel.cpp
-    UI/Simulation/OutputPlotsPanel.hpp
+    UI/Simulation/OutputPlotsPanel.h
     UI/Simulation/Readonly3DModelViewer.cpp
-    UI/Simulation/Readonly3DModelViewer.hpp
+    UI/Simulation/Readonly3DModelViewer.h
     UI/Simulation/SelectionDetailsPanel.cpp
     UI/Simulation/SimulationDetailsPanel.cpp
-    UI/Simulation/SimulationDetailsPanel.hpp
+    UI/Simulation/SimulationDetailsPanel.h
     UI/Simulation/SimulationOutputPlot.cpp
-    UI/Simulation/SimulationOutputPlot.hpp
+    UI/Simulation/SimulationOutputPlot.h
     UI/Simulation/SimulationScrubber.cpp
-    UI/Simulation/SimulationScrubber.hpp
+    UI/Simulation/SimulationScrubber.h
     UI/Simulation/SimulationToolbar.cpp
-    UI/Simulation/SimulationToolbar.hpp
-    UI/Simulation/SelectionDetailsPanel.hpp
+    UI/Simulation/SimulationToolbar.h
+    UI/Simulation/SelectionDetailsPanel.h
     UI/Simulation/SimulationViewerPanel.cpp
-    UI/Simulation/SimulationViewerPanel.hpp
-    UI/Simulation/SimulationViewerPanelParameters.hpp
-    UI/Simulation/SimulationViewerRightClickEvent.hpp
+    UI/Simulation/SimulationViewerPanel.h
+    UI/Simulation/SimulationViewerPanelParameters.h
+    UI/Simulation/SimulationViewerRightClickEvent.h
     UI/Simulation/SimulatorTab.cpp
-    UI/Simulation/SimulatorTab.hpp
+    UI/Simulation/SimulatorTab.h
 
-    UI/IMainUIStateAPI.hpp
-    UI/IPopupAPI.hpp
+    UI/IMainUIStateAPI.h
+    UI/IPopupAPI.h
     UI/LoadingTab.cpp
-    UI/LoadingTab.hpp
+    UI/LoadingTab.h
     UI/MainUIScreen.cpp
-    UI/MainUIScreen.hpp
+    UI/MainUIScreen.h
     UI/OpenSimCreatorTabRegistry.cpp
-    UI/OpenSimCreatorTabRegistry.hpp
-    UI/OpenSimCreatorTabs.hpp
+    UI/OpenSimCreatorTabRegistry.h
+    UI/OpenSimCreatorTabs.h
     UI/PerformanceAnalyzerTab.cpp
-    UI/PerformanceAnalyzerTab.hpp
+    UI/PerformanceAnalyzerTab.h
     UI/SplashTab.cpp
-    UI/SplashTab.hpp
+    UI/SplashTab.h
 
     Utils/LandmarkPair3D.cpp
-    Utils/LandmarkPair3D.hpp
+    Utils/LandmarkPair3D.h
     Utils/OpenSimHelpers.cpp
-    Utils/OpenSimHelpers.hpp
-    Utils/ParamBlock.hpp
+    Utils/OpenSimHelpers.h
+    Utils/ParamBlock.h
     Utils/ParamBlock.cpp
-    Utils/ParamValue.hpp
+    Utils/ParamValue.h
     Utils/ShapeFitters.cpp
-    Utils/ShapeFitters.hpp
+    Utils/ShapeFitters.h
     Utils/SimTKHelpers.cpp
-    Utils/SimTKHelpers.hpp
+    Utils/SimTKHelpers.h
     Utils/TPS3D.cpp
-    Utils/TPS3D.hpp
+    Utils/TPS3D.h
 )
 
-# OpenSimCreatorConfig.hpp
+# OpenSimCreatorConfig.h
 #
 # a configured header file that contains values that are accessible in the source
 # code at compile-time
 configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/OpenSimCreatorConfig.hpp.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/OpenSimCreator/OpenSimCreatorConfig.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/OpenSimCreatorConfig.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/OpenSimCreator/OpenSimCreatorConfig.h"
 )
 
 target_include_directories(OpenSimCreator PUBLIC
 
-    # so that the source code can `#include <OpenSimCreator/SomeModule.hpp>`
+    # so that the source code can `#include <OpenSimCreator/SomeModule.h>`
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 
-    # so that source code can `#include <OpenSimCreator/OpenSimCreatorConfig.hpp>`
+    # so that source code can `#include <OpenSimCreator/OpenSimCreatorConfig.h>`
     "${CMAKE_CURRENT_BINARY_DIR}/generated/"
 )
 

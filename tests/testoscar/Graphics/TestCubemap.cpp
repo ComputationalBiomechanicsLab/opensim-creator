@@ -1,4 +1,4 @@
-#include <oscar/Graphics/Cubemap.hpp>
+#include <oscar/Graphics/Cubemap.h>
 
 #include <gtest/gtest.h>
 
