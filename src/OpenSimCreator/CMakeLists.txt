@@ -357,6 +357,7 @@ add_library(OpenSimCreator STATIC
     UI/MainUIScreen.hpp
     UI/OpenSimCreatorTabRegistry.cpp
     UI/OpenSimCreatorTabRegistry.hpp
+    UI/OpenSimCreatorTabs.hpp
     UI/PerformanceAnalyzerTab.cpp
     UI/PerformanceAnalyzerTab.hpp
     UI/SplashTab.cpp

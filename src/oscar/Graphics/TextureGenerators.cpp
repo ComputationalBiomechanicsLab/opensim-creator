@@ -10,7 +10,7 @@
 
 #include <vector>
 
-using osc::Texture2D;
+using namespace osc;
 
 Texture2D osc::GenerateChequeredFloorTexture()
 {

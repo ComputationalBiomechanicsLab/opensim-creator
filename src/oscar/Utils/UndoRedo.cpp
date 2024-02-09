@@ -8,8 +8,7 @@
 #include <utility>
 #include <vector>
 
-using osc::UID;
-using osc::UndoRedoEntry;
+using namespace osc;
 
 osc::UndoRedoEntryMetadata::UndoRedoEntryMetadata(std::string_view message_) :
     m_Time{std::chrono::system_clock::now()},

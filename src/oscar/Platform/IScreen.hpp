@@ -22,35 +22,12 @@ namespace osc
     public:
         virtual ~IScreen() noexcept = default;
 
-        CStringView getName() const
-        {
-            return implGetName();
-        }
-
-        void onMount()
-        {
-            implOnMount();
-        }
-
-        void onUnmount()
-        {
-            implOnUnmount();
-        }
-
-        void onEvent(SDL_Event const& e)
-        {
-            implOnEvent(e);
-        }
-
-        void onTick()
-        {
-            implOnTick();
-        }
-
-        void onDraw()
-        {
-            implOnDraw();
-        }
+        CStringView getName() const { return implGetName(); }
+        void onMount() { implOnMount(); }
+        void onUnmount() { implOnUnmount(); }
+        void onEvent(SDL_Event const& e) { implOnEvent(e); }
+        void onTick() { implOnTick(); }
+        void onDraw() { implOnDraw(); }
 
     private:
 

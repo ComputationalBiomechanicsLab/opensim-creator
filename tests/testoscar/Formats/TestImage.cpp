@@ -1,4 +1,4 @@
-#include <oscar/Graphics/GraphicsHelpers.hpp>
+#include <oscar/Formats/Image.hpp>
 
 #include <testoscar/testoscarconfig.hpp>
 
@@ -6,27 +6,27 @@
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Platform/AppConfig.hpp>
+#include <oscar/Platform/ResourceStream.hpp>
 
 #include <array>
 #include <filesystem>
 
-using osc::ColorSpace;
-using osc::Texture2D;
+using namespace osc;
 
-TEST(GraphicsHelpers, LoadTexture2DFromImageRespectsSRGBColorSpace)
+TEST(Image, LoadTexture2DFromImageRespectsSRGBColorSpace)
 {
     auto const path = std::filesystem::path{OSC_BUILD_RESOURCES_DIR} / "testoscar" / "awesomeface.png";
 
-    Texture2D const rv = LoadTexture2DFromImage(path, ColorSpace::sRGB);
+    Texture2D const rv = LoadTexture2DFromImage(ResourceStream{path}, ColorSpace::sRGB);
 
     ASSERT_EQ(rv.getColorSpace(), ColorSpace::sRGB);
 }
 
-TEST(GraphicsHelpers, LoadTexture2DFromImageRespectsLinearColorSpace)
+TEST(Image, LoadTexture2DFromImageRespectsLinearColorSpace)
 {
     auto const path = std::filesystem::path{OSC_BUILD_RESOURCES_DIR} / "testoscar" / "awesomeface.png";
 
-    Texture2D const rv = LoadTexture2DFromImage(path, ColorSpace::Linear);
+    Texture2D const rv = LoadTexture2DFromImage(ResourceStream{path}, ColorSpace::Linear);
 
     ASSERT_EQ(rv.getColorSpace(), ColorSpace::Linear);
 }

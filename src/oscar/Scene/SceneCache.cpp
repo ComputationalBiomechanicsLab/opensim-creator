@@ -15,9 +15,7 @@
 #include <utility>
 #include <vector>
 
-using osc::BVH;
-using osc::HashOf;
-using osc::Mesh;
+using namespace osc;
 
 namespace
 {

@@ -15,10 +15,7 @@
 #include <string_view>
 #include <utility>
 
-using osc::Color;
-using osc::ColorHSLA;
-using osc::Color32;
-using osc::HashOf;
+using namespace osc;
 
 namespace
 {

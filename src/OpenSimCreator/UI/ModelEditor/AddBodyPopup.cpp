@@ -184,7 +184,7 @@ private:
                     // open geometry selection popup
                     auto popup = std::make_unique<SelectGeometryPopup>(
                         "addbody_attachgeometry",
-                        App::resource("geometry"),
+                        App::resourceFilepath("geometry"),
                         [this](auto ptr) { onGeometrySelection(std::move(ptr)); });
                     popup->open();
                     m_EditorAPI->pushPopup(std::move(popup));

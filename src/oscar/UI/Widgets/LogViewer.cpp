@@ -13,10 +13,7 @@
 #include <type_traits>
 #include <utility>
 
-using osc::getTracebackLog;
-using osc::LogLevel;
-using osc::LogMessage;
-using osc::SetClipboardText;
+using namespace osc;
 
 namespace
 {

@@ -10,7 +10,7 @@
 #include <string_view>
 #include <utility>
 
-using osc::CStringView;
+using namespace osc;
 
 class osc::UndoRedoPanel::Impl final : public StandardPanelImpl {
 public:

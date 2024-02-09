@@ -9,11 +9,7 @@
 #include <iostream>
 #include <string_view>
 
-using osc::ObjMetadata;
-using osc::ObjWriterFlags;
-using osc::Mesh;
-using osc::MeshTopology;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {

@@ -20,13 +20,7 @@
 #include <span>
 #include <vector>
 
-using osc::Dot;
-using osc::Ellipsoid;
-using osc::Plane;
-using osc::Sphere;
-using osc::Vec2;
-using osc::Vec3;
-using osc::Vec3d;
+using namespace osc;
 
 // generic helpers
 namespace

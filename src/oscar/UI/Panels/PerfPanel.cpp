@@ -13,8 +13,7 @@
 #include <string_view>
 #include <vector>
 
-using osc::CStringView;
-using osc::PerfMeasurement;
+using namespace osc;
 
 namespace
 {

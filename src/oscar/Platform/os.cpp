@@ -25,8 +25,7 @@
 #include <string>
 #include <utility>
 
-using osc::CStringView;
-using osc::log_error;
+using namespace osc;
 
 namespace
 {

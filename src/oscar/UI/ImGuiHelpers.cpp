@@ -14,7 +14,7 @@
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Maths/Vec4.hpp>
-#include <oscar/UI/imgui_impl_oscargfx.hpp>
+#include <oscar/UI/ui_graphics_backend.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <imgui.h>
@@ -29,13 +29,7 @@
 #include <string>
 
 using namespace osc::literals;
-using osc::ClampToLDR;
-using osc::Color;
-using osc::ImGuiItemHittestResult;
-using osc::Rect;
-using osc::ToColor;
-using osc::Vec2;
-using osc::Vec4;
+using namespace osc;
 
 namespace
 {
@@ -458,7 +452,7 @@ void osc::DrawTextureAsImGuiImage(
     Vec2 topLeftCoord,
     Vec2 bottomRightCoord)
 {
-    auto const handle = ui::gfx::AllocateTextureID(t);
+    auto const handle = ui::graphics_backend::AllocateTextureID(t);
     ImGui::Image(handle, dims, topLeftCoord, bottomRightCoord);
 }
 
@@ -471,7 +465,7 @@ void osc::DrawTextureAsImGuiImage(RenderTexture const& t, Vec2 dims)
 {
     Vec2 const uv0 = {0.0f, 1.0f};
     Vec2 const uv1 = {1.0f, 0.0f};
-    auto const handle = ui::gfx::AllocateTextureID(t);
+    auto const handle = ui::graphics_backend::AllocateTextureID(t);
     ImGui::Image(handle, dims, uv0, uv1);
 }
 
@@ -504,7 +498,7 @@ bool osc::ImageButton(
     Vec2 dims,
     Rect const& textureCoords)
 {
-    auto const handle = ui::gfx::AllocateTextureID(t);
+    auto const handle = ui::graphics_backend::AllocateTextureID(t);
     return ImGui::ImageButton(label.c_str(), handle, dims, textureCoords.p1, textureCoords.p2);
 }
 

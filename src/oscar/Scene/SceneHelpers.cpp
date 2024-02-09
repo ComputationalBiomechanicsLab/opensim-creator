@@ -5,7 +5,6 @@
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshIndicesView.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/BVH.hpp>
@@ -20,28 +19,18 @@
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/Utils/At.hpp>
 
-#include <filesystem>
 #include <functional>
 #include <optional>
 #include <vector>
 
 using namespace osc::literals;
-using osc::AABB;
-using osc::BVH;
-using osc::Material;
-using osc::Quat;
-using osc::RayCollision;
-using osc::SceneCache;
-using osc::SceneCollision;
-using osc::SceneDecoration;
-using osc::SceneRendererParams;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {
@@ -334,12 +323,9 @@ SceneRendererParams osc::CalcStandardDarkSceneRenderParams(
 }
 
 Material osc::CreateWireframeOverlayMaterial(
-    AppConfig const& config,
     ShaderCache& cache)
 {
-    std::filesystem::path const vertShader = config.getResourcePath("oscar/shaders/SceneRenderer/SolidColor.vert");
-    std::filesystem::path const fragShader = config.getResourcePath("oscar/shaders/SceneRenderer/SolidColor.frag");
-    Material material{cache.load(vertShader, fragShader)};
+    Material material{cache.load("oscar/shaders/SceneRenderer/SolidColor.vert", "oscar/shaders/SceneRenderer/SolidColor.frag")};
     material.setColor("uDiffuseColor", {0.0f, 0.6f});
     material.setWireframeMode(true);
     material.setTransparent(true);

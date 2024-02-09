@@ -15,7 +15,6 @@
 #include <imgui.h>
 #include <oscar/Formats/SVG.hpp>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
 #include <oscar/Graphics/TextureFilterMode.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
@@ -29,6 +28,7 @@
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Tabs/ITabHost.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>
@@ -400,15 +400,14 @@ private:
     PolarPerspectiveCamera m_Camera = GetSplashScreenDefaultPolarCamera();
     SceneRenderer m_SceneRenderer
     {
-        App::config(),
         *App::singleton<SceneCache>(),
-        *App::singleton<ShaderCache>(),
+        *App::singleton<ShaderCache>(App::resource_loader()),
     };
     SceneRendererParams m_LastSceneRendererParams = GetSplashScreenDefaultRenderParams(m_Camera);
 
-    Texture2D m_MainAppLogo = LoadTextureFromSVGFile(App::resource("textures/banner.svg"));
-    Texture2D m_CziLogo = LoadTextureFromSVGFile(App::resource("textures/chanzuckerberg_logo.svg"), 0.5f);
-    Texture2D m_TudLogo = LoadTextureFromSVGFile(App::resource("textures/tudelft_logo.svg"), 0.5f);
+    Texture2D m_MainAppLogo = ReadSVGIntoTexture(App::load_resource("textures/banner.svg"));
+    Texture2D m_CziLogo = ReadSVGIntoTexture(App::load_resource("textures/chanzuckerberg_logo.svg"), 0.5f);
+    Texture2D m_TudLogo = ReadSVGIntoTexture(App::load_resource("textures/tudelft_logo.svg"), 0.5f);
 
     // dimensions of stuff
     Vec2 m_SplashMenuMaxDims = {640.0f, 512.0f};

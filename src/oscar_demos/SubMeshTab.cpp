@@ -1,19 +1,6 @@
 #include "SubMeshTab.hpp"
 
-#include <oscar/Graphics/Camera.hpp>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/SubMeshDescriptor.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
 
 #include <array>
@@ -23,14 +10,7 @@
 #include <span>
 #include <vector>
 
-using osc::CStringView;
-using osc::GenerateCircleMesh;
-using osc::GenerateCubeMesh;
-using osc::GenerateUVSphereMesh;
-using osc::Mesh;
-using osc::SubMeshDescriptor;
-using osc::UID;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {
@@ -111,10 +91,11 @@ private:
         m_Camera.renderToScreen();
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
     Camera m_Camera;
     Material m_Material{Shader{
-        App::slurp("oscar_demos/shaders/SolidColor.vert"),
-        App::slurp("oscar_demos/shaders/SolidColor.frag"),
+        m_Loader.slurp("oscar_demos/shaders/SolidColor.vert"),
+        m_Loader.slurp("oscar_demos/shaders/SolidColor.frag"),
     }};
     Mesh m_MeshWithSubmeshes = GenerateMeshWithSubMeshes();
 };

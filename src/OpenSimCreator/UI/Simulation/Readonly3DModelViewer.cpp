@@ -5,11 +5,11 @@
 #include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
 
 #include <imgui.h>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Scene/SceneCache.hpp>
 #include <oscar/Scene/SceneCollision.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/UI/IconCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Widgets/GuiRuler.hpp>
@@ -178,9 +178,8 @@ private:
     ModelRendererParams m_Params;
     CachedModelRenderer m_CachedModelRenderer
     {
-        App::get().getConfig(),
         App::singleton<SceneCache>(),
-        *App::singleton<ShaderCache>(),
+        *App::singleton<ShaderCache>(App::resource_loader()),
     };
 
     // only available after rendering the first frame
@@ -188,7 +187,7 @@ private:
 
     // overlay-related data
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
-        App::resource("icons/"),
+        App::resource_loader().withPrefix("icons/"),
         ImGui::GetTextLineHeight()/128.0f
     );
     GuiRuler m_Ruler;

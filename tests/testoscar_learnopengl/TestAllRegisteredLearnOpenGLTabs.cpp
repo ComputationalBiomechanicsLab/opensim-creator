@@ -13,19 +13,19 @@
 using namespace osc;
 
 namespace {
-    TabRegistry c_DemoTabs = []()
+    TabRegistry const c_Tabs = []()
     {
         TabRegistry r;
         RegisterLearnOpenGLTabs(r);
         return r;
     }();
 
-    std::vector<std::string> c_TabNames = []()
+    std::vector<std::string> const c_TabNames = []()
     {
         std::vector<std::string> rv;
-        rv.reserve(c_DemoTabs.size());
-        for (size_t i = 0; i < c_DemoTabs.size(); ++i) {
-            rv.emplace_back(c_DemoTabs[i].getName());
+        rv.reserve(c_Tabs.size());
+        for (size_t i = 0; i < c_Tabs.size(); ++i) {
+            rv.emplace_back(c_Tabs[i].getName());
         }
         return rv;
     }();
@@ -35,7 +35,7 @@ namespace {
     protected:
         static void SetUpTestSuite()
         {
-            g_App = std::make_unique<App>(AppMetadata{"someorg", "testoscar_learnopengl"});
+            g_App = std::make_unique<App>();
         }
 
         static void TearDownTestSuite()
@@ -54,7 +54,7 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_P(RegisteredLearnOpenGLTabsFixture, Check)
 {
     std::string s = GetParam();
-    if (auto entry = c_DemoTabs.getByName(s)) {
+    if (auto entry = c_Tabs.getByName(s)) {
         g_App->show<TabTestingScreen>(*entry);
     }
     else {

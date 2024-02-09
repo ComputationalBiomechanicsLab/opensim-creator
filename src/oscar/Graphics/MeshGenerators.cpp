@@ -14,10 +14,7 @@
 #include <vector>
 
 using namespace osc::literals;
-using osc::Mesh;
-using osc::MeshTopology;
-using osc::Vec2;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {

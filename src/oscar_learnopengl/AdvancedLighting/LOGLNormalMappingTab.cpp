@@ -3,26 +3,9 @@
 #include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
+#include <imgui.h>
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshTopology.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Quat.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/UnitVec3.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Maths/Vec4.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
 
 #include <array>
 #include <cstdint>
@@ -31,21 +14,7 @@
 #include <vector>
 
 using namespace osc::literals;
-using osc::App;
-using osc::CalcTangentVectors;
-using osc::ColorSpace;
-using osc::CStringView;
-using osc::LoadTexture2DFromImage;
-using osc::Material;
-using osc::Mesh;
-using osc::MeshTopology;
-using osc::MouseCapturingCamera;
-using osc::Shader;
-using osc::Texture2D;
-using osc::UID;
-using osc::Vec2;
-using osc::Vec3;
-using osc::Vec4;
+using namespace osc;
 
 namespace
 {
@@ -54,25 +23,25 @@ namespace
     // matches the quad used in LearnOpenGL's normal mapping tutorial
     Mesh GenerateQuad()
     {
-        auto const verts = std::to_array<Vec3>({
+        constexpr auto verts = std::to_array<Vec3>({
             {-1.0f,  1.0f, 0.0f},
             {-1.0f, -1.0f, 0.0f},
             { 1.0f, -1.0f, 0.0f},
             { 1.0f,  1.0f, 0.0f},
         });
-        auto const normals = std::to_array<Vec3>({
+        constexpr auto normals = std::to_array<Vec3>({
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
         });
-        auto const texCoords = std::to_array<Vec2>({
+        constexpr auto texCoords = std::to_array<Vec2>({
             {0.0f, 1.0f},
             {0.0f, 0.0f},
             {1.0f, 0.0f},
             {1.0f, 1.0f},
         });
-        auto const indices = std::to_array<uint16_t>({
+        constexpr auto indices = std::to_array<uint16_t>({
             0, 1, 2,
             0, 2, 3,
         });
@@ -103,20 +72,20 @@ namespace
         return rv;
     }
 
-    Material CreateNormalMappingMaterial()
+    Material CreateNormalMappingMaterial(IResourceLoader& rl)
     {
         Texture2D diffuseMap = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/brickwall.jpg"),
+            rl.open("oscar_learnopengl/textures/brickwall.jpg"),
             ColorSpace::sRGB
         );
         Texture2D normalMap = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/brickwall_normal.jpg"),
+            rl.open("oscar_learnopengl/textures/brickwall_normal.jpg"),
             ColorSpace::Linear
         );
 
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.vert"),
-            App::slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.frag"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.vert"),
+            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.frag"),
         }};
         rv.setTexture("uDiffuseMap", diffuseMap);
         rv.setTexture("uNormalMap", normalMap);
@@ -124,11 +93,11 @@ namespace
         return rv;
     }
 
-    Material CreateLightCubeMaterial()
+    Material CreateLightCubeMaterial(IResourceLoader& rl)
     {
         return Material{Shader{
-            App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
-            App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
+            rl.slurp("oscar_learnopengl/shaders/LightCube.vert"),
+            rl.slurp("oscar_learnopengl/shaders/LightCube.frag"),
         }};
     }
 }
@@ -192,9 +161,11 @@ private:
         ImGui::End();
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
+
     // rendering state
-    Material m_NormalMappingMaterial = CreateNormalMappingMaterial();
-    Material m_LightCubeMaterial = CreateLightCubeMaterial();
+    Material m_NormalMappingMaterial = CreateNormalMappingMaterial(m_Loader);
+    Material m_LightCubeMaterial = CreateLightCubeMaterial(m_Loader);
     Mesh m_CubeMesh = GenerateLearnOpenGLCubeMesh();
     Mesh m_QuadMesh = GenerateQuad();
 

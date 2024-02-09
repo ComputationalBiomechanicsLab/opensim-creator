@@ -2,50 +2,16 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
-#include <SDL_events.h>
 #include <imgui.h>
-#include <oscar/Graphics/Camera.hpp>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/RenderTarget.hpp>
-#include <oscar/Graphics/RenderTexture.hpp>
-#include <oscar/Graphics/RenderTextureDescriptor.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Mat4.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/UnitVec3.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/oscar.hpp>
+#include <SDL_events.h>
 
 #include <array>
 #include <memory>
 #include <vector>
 
 using namespace osc::literals;
-using osc::Color;
-using osc::CStringView;
-using osc::Identity;
-using osc::Mat4;
-using osc::MouseCapturingCamera;
-using osc::Rotate;
-using osc::Scale;
-using osc::ToSRGB;
-using osc::Translate;
-using osc::UID;
-using osc::UnitVec3;
-using osc::Vec2;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {
@@ -339,32 +305,34 @@ private:
         }
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
+
     Material m_SceneMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Bloom.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Bloom.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Bloom.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Bloom.frag"),
     }};
 
     Material m_LightboxMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/LightBox.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/LightBox.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/LightBox.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/LightBox.frag"),
     }};
 
     Material m_BlurMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Blur.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Blur.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Blur.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Blur.frag"),
     }};
 
     Material m_FinalCompositingMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Final.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Final.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Final.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Final.frag"),
     }};
 
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/wood.png"),
+        m_Loader.open("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
     Texture2D m_ContainerTexture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/container2.png"),
+        m_Loader.open("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB
     );
     Mesh m_CubeMesh = GenerateCubeMesh();

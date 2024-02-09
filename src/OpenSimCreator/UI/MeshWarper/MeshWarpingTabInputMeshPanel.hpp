@@ -15,7 +15,6 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/RenderTexture.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Line.hpp>
@@ -33,6 +32,7 @@
 #include <oscar/Scene/SceneDecoration.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
@@ -574,9 +574,8 @@ namespace osc
         PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(m_State->getScratchMesh(m_DocumentIdentifier).getBounds());
         CachedSceneRenderer m_CachedRenderer
         {
-            App::config(),
             *App::singleton<SceneCache>(),
-            *App::singleton<ShaderCache>(),
+            *App::singleton<ShaderCache>(App::resource_loader()),
         };
         ImGuiItemHittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;

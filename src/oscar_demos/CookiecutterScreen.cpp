@@ -1,8 +1,7 @@
 #include "CookiecutterScreen.hpp"
 
 #include <imgui.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Platform/App.hpp>
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
 
 #include <memory>
@@ -15,7 +14,7 @@ public:
         // called when app receives the screen, but before it starts pumping events
         // into it, ticking it, drawing it, etc.
 
-        ImGuiInit();  // boot up ImGui support
+        ui::context::Init();  // boot up 2D ui support (ImGui, plotting, etc.)
     }
 
     void onUnmount()
@@ -23,7 +22,7 @@ public:
         // called when the app is going to stop pumping events/ticks/draws into this
         // screen (e.g. because the app is quitting, or transitioning to some other screen)
 
-        ImGuiShutdown();  // shutdown ImGui support
+        ui::context::Shutdown();  // shutdown 2D UI support
     }
 
     void onEvent(SDL_Event const& e)
@@ -34,8 +33,8 @@ public:
             App::upd().requestQuit();
             return;
         }
-        else if (ImGuiOnEvent(e)) {
-            return;  // ImGui handled this particular event
+        else if (ui::context::OnEvent(e)) {
+            return;  // an element in the 2D UI handled this event
         }
     }
 
@@ -55,7 +54,7 @@ public:
         // screen buffer between frames (it's assumed that your code does this when it needs
         // to)
 
-        ImGuiNewFrame();  // tell ImGui you're about to start drawing a new frame
+        ui::context::NewFrame();  // prepare the 2D UI for drawing a new frame
 
         App::upd().clearScreen(Color::clear());  // set app window bg color
 
@@ -64,7 +63,7 @@ public:
         ImGui::Checkbox("checkbox_state", &m_CheckboxState);
         ImGui::End();
 
-        ImGuiRender();  // tell ImGui to render any ImGui widgets since calling ImGuiNewFrame();
+        ui::context::Render();  // render the 2D UI's drawing to the screen
     }
 
 private:

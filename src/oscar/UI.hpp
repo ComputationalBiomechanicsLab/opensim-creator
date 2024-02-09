@@ -9,4 +9,5 @@
 #include <oscar/UI/IconCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/ImGuizmoHelpers.hpp>
-#include <oscar/UI/imgui_impl_oscargfx.hpp>
+#include <oscar/UI/ui_context.hpp>
+#include <oscar/UI/ui_graphics_backend.hpp>

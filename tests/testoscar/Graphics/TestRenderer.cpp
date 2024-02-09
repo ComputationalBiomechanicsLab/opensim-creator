@@ -5,6 +5,7 @@
 #include <testoscar/testoscarconfig.hpp>
 
 #include <gtest/gtest.h>
+#include <oscar/Formats/Image.hpp>
 #include <oscar/Graphics/AntiAliasingLevel.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/Color.hpp>
@@ -13,7 +14,6 @@
 #include <oscar/Graphics/CullMode.hpp>
 #include <oscar/Graphics/DepthStencilFormat.hpp>
 #include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MaterialPropertyBlock.hpp>
 #include <oscar/Graphics/Mesh.hpp>
@@ -50,47 +50,8 @@
 #include <unordered_set>
 
 namespace Graphics = osc::Graphics;
-using osc::testing::GenerateBool;
-using osc::testing::GenerateFloat;
-using osc::testing::GenerateInt;
-using osc::testing::GenerateMat3x3;
-using osc::testing::GenerateMat4x4;
-using osc::testing::GenerateVec2;
-using osc::testing::GenerateVec3;
-using osc::testing::GenerateVec4;
-using osc::App;
-using osc::AppMetadata;
-using osc::Camera;
-using osc::Color;
-using osc::ColorSpace;
-using osc::Contains;
-using osc::ContainsCaseInsensitive;
-using osc::CStringView;
-using osc::Cubemap;
-using osc::CullMode;
-using osc::DepthFunction;
-using osc::DepthStencilFormat;
-using osc::Identity;
-using osc::Material;
-using osc::MaterialPropertyBlock;
-using osc::Mat3;
-using osc::Mat4;
-using osc::Mesh;
-using osc::MeshTopology;
-using osc::NumOptions;
-using osc::Quat;
-using osc::RenderTexture;
-using osc::RenderTextureDescriptor;
-using osc::RenderTextureFormat;
-using osc::Shader;
-using osc::ShaderPropertyType;
-using osc::TextureFormat;
-using osc::Texture2D;
-using osc::Transform;
-using osc::Vec2;
-using osc::Vec2i;
-using osc::Vec3;
-using osc::Vec4;
+using namespace osc::testing;
+using namespace osc;
 
 namespace
 {
@@ -1538,7 +1499,7 @@ TEST_F(Renderer, MeshTopologyAllCanBeWrittenToStream)
 TEST_F(Renderer, LoadTexture2DFromImageResourceCanLoadImageFile)
 {
     Texture2D const t = LoadTexture2DFromImage(
-        App::resource((std::filesystem::path{OSC_BUILD_RESOURCES_DIR} / "testoscar/awesomeface.png").string()),
+        App::load_resource((std::filesystem::path{OSC_BUILD_RESOURCES_DIR} / "testoscar/awesomeface.png").string()),
         ColorSpace::sRGB
     );
     ASSERT_EQ(t.getDimensions(), Vec2i(512, 512));
@@ -1549,7 +1510,7 @@ TEST_F(Renderer, LoadTexture2DFromImageResourceThrowsIfResourceNotFound)
     ASSERT_ANY_THROW(
     {
         LoadTexture2DFromImage(
-            App::resource("textures/doesnt_exist.png"),
+            App::load_resource("textures/doesnt_exist.png"),
             ColorSpace::sRGB
         );
     });

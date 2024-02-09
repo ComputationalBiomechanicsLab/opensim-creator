@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-using osc::TabRegistryEntry;
+using namespace osc;
 
 class osc::TabRegistry::Impl final {
 public:

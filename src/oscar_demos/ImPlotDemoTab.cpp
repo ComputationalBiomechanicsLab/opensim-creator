@@ -6,8 +6,7 @@
 
 #include <memory>
 
-using osc::CStringView;
-using osc::UID;
+using namespace osc;
 
 namespace
 {

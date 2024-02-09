@@ -9,23 +9,14 @@
 
 #include <OpenSim/Common/Component.h>
 #include <gtest/gtest.h>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/Widgets/IPopup.hpp>
+#include <oscar/UI/ui_context.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
 
+#include <exception>
 #include <memory>
 
-using osc::AddComponentPopup;
-using osc::GetAllRegisteredComponents;
-using osc::ImGuiInit;
-using osc::ImGuiNewFrame;
-using osc::ImGuiRender;
-using osc::ImGuiShutdown;
-using osc::IPopup;
-using osc::IPopupAPI;
-using osc::OpenSimCreatorApp;
-using osc::ScopeGuard;
-using osc::UndoableModelStatePair;
+using namespace osc;
+namespace ui = osc::ui;
 
 namespace
 {
@@ -43,9 +34,9 @@ TEST(AddComponentPopup, CanOpenAndDrawAllRegisteredComponentsInTheAddComponentPo
     {
         try
         {
-            ImGuiInit();
-            ScopeGuard g{[]() { ImGuiShutdown(); }};
-            ImGuiNewFrame();
+            ui::context::Init();
+            ScopeGuard g{[]() { ui::context::Shutdown(); }};
+            ui::context::NewFrame();
             NullPopupAPI api;
             auto model = std::make_shared<UndoableModelStatePair>();
             AddComponentPopup popup{"popupname", &api, model, entry.instantiate()};
@@ -53,7 +44,7 @@ TEST(AddComponentPopup, CanOpenAndDrawAllRegisteredComponentsInTheAddComponentPo
             popup.beginPopup();
             popup.onDraw();
             popup.endPopup();
-            ImGuiRender();
+            ui::context::Render();
         }
         catch (std::exception const& ex)
         {

@@ -1,13 +1,11 @@
 #include "ImGuiDemoTab.hpp"
 
 #include <imgui.h>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/oscar.hpp>
 
 #include <memory>
 
-using osc::CStringView;
-using osc::UID;
+using namespace osc;
 
 namespace
 {

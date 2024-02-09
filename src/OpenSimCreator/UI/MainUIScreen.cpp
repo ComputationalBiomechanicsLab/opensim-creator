@@ -13,9 +13,7 @@
 #include <IconsFontAwesome5.h>
 #include <SDL_events.h>
 #include <imgui.h>
-#include <ImGuizmo.h>  // care: must come after imgui.h
 #include <imgui_internal.h>
-#include <implot.h>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/Log.hpp>
@@ -28,6 +26,7 @@
 #include <oscar/UI/Tabs/TabRegistry.hpp>
 #include <oscar/UI/Widgets/SaveChangesPopup.hpp>
 #include <oscar/UI/Widgets/SaveChangesPopupConfig.hpp>
+#include <oscar/UI/ui_context.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
@@ -47,6 +46,7 @@
 #include <vector>
 
 using namespace osc;
+namespace ui = osc::ui;
 
 namespace
 {
@@ -110,8 +110,7 @@ public:
             }
         }
 
-        ImGuiInit();
-        ImPlot::CreateContext();
+        ui::context::Init();
     }
 
     void onUnmount()
@@ -135,8 +134,7 @@ public:
             m_ActiveTabID = UID::empty();
         }
 
-        ImPlot::DestroyContext();
-        ImGuiShutdown();
+        ui::context::Shutdown();
     }
 
     void onEvent(SDL_Event const& e)
@@ -148,7 +146,7 @@ public:
             // Ctrl+/Super+P operates as a "take a screenshot" request
             m_MaybeScreenshotRequest = App::upd().requestScreenshot();
         }
-        else if (ImGuiOnEvent(e))
+        else if (ui::context::OnEvent(e))
         {
             // event was pumped into ImGui - it shouldn't be pumped into the active tab
             m_ShouldRequestRedraw = true;
@@ -276,8 +274,7 @@ public:
             App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
         }
 
-        ImGuiNewFrame();
-        ImGuizmo::BeginFrame();
+        ui::context::NewFrame();
 
         {
             OSC_PERF("MainUIScreen/drawUIContent");
@@ -292,8 +289,8 @@ public:
             }
             m_ActiveTabID = UID::empty();
 
-            ImGuiShutdown();
-            ImGuiInit();
+            ui::context::Shutdown();
+            ui::context::Init();
             App::upd().requestRedraw();
             m_ImguiWasAggressivelyReset = false;
 
@@ -301,8 +298,8 @@ public:
         }
 
         {
-            OSC_PERF("MainUIScreen/ImGuiRender");
-            ImGuiRender();
+            OSC_PERF("MainUIScreen/ui::context::Render()");
+            ui::context::Render();
         }
 
         if (m_ShouldRequestRedraw)

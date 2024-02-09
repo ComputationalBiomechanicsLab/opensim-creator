@@ -3,40 +3,15 @@
 #include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
-#include <oscar/Graphics/Camera.hpp>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Mat4.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Panels/LogViewerPanel.hpp>
-#include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
 
 #include <array>
 #include <cstdint>
 #include <memory>
 
 using namespace osc::literals;
-using osc::Camera;
-using osc::CStringView;
-using osc::Identity;
-using osc::Mat4;
-using osc::Mesh;
-using osc::MouseCapturingCamera;
-using osc::UID;
-using osc::Vec2;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {
@@ -150,19 +125,21 @@ private:
         m_PerfPanel.onDraw();
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
+
     Material m_SceneRenderMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.frag"),
     }};
 
     MouseCapturingCamera m_SceneCamera = CreateSceneCamera();
 
     Texture2D m_ContainerTexture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/container.jpg"),
+        m_Loader.open("oscar_learnopengl/textures/container.jpg"),
         ColorSpace::sRGB
     );
     Texture2D m_MetalTexture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/metal.png"),
+        m_Loader.open("oscar_learnopengl/textures/metal.png"),
         ColorSpace::sRGB
     );
 
@@ -173,8 +150,8 @@ private:
     RenderTexture m_RenderTexture;
     Camera m_ScreenCamera = CreateScreenCamera();
     Material m_ScreenMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.vert"),
-        App::slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.frag"),
     }};
 
     LogViewerPanel m_LogViewer{"log"};

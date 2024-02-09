@@ -8,8 +8,7 @@
 #include <string>
 #include <variant>
 
-using osc::AppSettingValueType;
-using osc::Color;
+using namespace osc;
 
 AppSettingValueType osc::AppSettingValue::type() const
 {

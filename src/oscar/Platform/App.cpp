@@ -6,20 +6,22 @@
 #include <oscar/Platform/AppClock.hpp>
 #include <oscar/Platform/AppConfig.hpp>
 #include <oscar/Platform/AppMetadata.hpp>
+#include <oscar/Platform/FilesystemResourceLoader.hpp>
+#include <oscar/Platform/IResourceLoader.hpp>
 #include <oscar/Platform/IScreen.hpp>
 #include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/ResourceLoader.hpp>
+#include <oscar/Platform/ResourcePath.hpp>
+#include <oscar/Platform/ResourceStream.hpp>
 #include <oscar/Platform/Screenshot.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/Detail/SDL2Helpers.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/imgui_impl_oscargfx.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>
 
-#include <IconsFontAwesome5.h>
 #include <SDL.h>
 #include <SDL_error.h>
 #include <SDL_keyboard.h>
@@ -27,8 +29,6 @@
 #include <SDL_stdinc.h>
 #include <SDL_timer.h>
 #include <SDL_video.h>
-#include <imgui.h>
-#include <imgui/backends/imgui_impl_sdl2.h>
 
 #include <cmath>
 #include <algorithm>
@@ -37,32 +37,16 @@
 #include <cstdint>
 #include <ctime>
 #include <exception>
-#include <fstream>
 #include <sstream>
 #include <stdexcept>
 #include <unordered_map>
 
 namespace sdl = osc::sdl;
-using osc::AntiAliasingLevel;
-using osc::App;
-using osc::AppClock;
-using osc::AppConfig;
-using osc::AppMetadata;
-using osc::CStringView;
-using osc::CurrentExeDir;
-using osc::defaultLogger;
-using osc::InstallBacktraceHandler;
-using osc::log_info;
-using osc::Screenshot;
-using osc::ScreenshotAnnotation;
-using osc::Texture2D;
-using osc::Vec2;
+using namespace osc;
 
 namespace
 {
     App* g_ApplicationGlobal = nullptr;
-
-    constexpr auto c_IconRanges = std::to_array<ImWchar>({ ICON_MIN_FA, ICON_MAX_FA, 0 });
 
     void Sdl_GL_SetAttributeOrThrow(
         SDL_GLattr attr,
@@ -97,12 +81,6 @@ namespace
             logger->set_level(config.getRequestedLogLevel());
         }
         return true;
-    }
-
-    // returns a resource from the config-provided `resources/` dir
-    std::filesystem::path GetResource(AppConfig const& c, std::string_view p)
-    {
-        return std::filesystem::weakly_canonical(c.getResourceDir() / p);
     }
 
     // initialize the main application window
@@ -444,7 +422,7 @@ public:
     {
         SDL_Event e{};
         e.type = SDL_USEREVENT;
-        m_NumFramesToPoll += 2;  // some parts of ImGui require rendering 2 frames before it shows something
+        m_NumFramesToPoll += 2;  // immediate rendering can require rendering 2 frames before it shows something
         SDL_PushEvent(&e);
     }
 
@@ -489,18 +467,29 @@ public:
         return m_ApplicationConfig;
     }
 
-    std::filesystem::path getResource(std::string_view p) const
+    ResourceLoader& updResourceLoader()
     {
-        return ::GetResource(m_ApplicationConfig, p);
+        return m_AppResourceLoader;
     }
 
-    std::string slurpResource(std::string_view p) const
+    std::filesystem::path getResourceFilepath(ResourcePath const& rp) const
     {
-        std::filesystem::path path = getResource(p);
-        return SlurpFileIntoString(path);
+        return std::filesystem::weakly_canonical(m_ApplicationConfig.getResourceDir() / rp.string());
     }
 
-    std::shared_ptr<void> updSingleton(std::type_info const& typeinfo, std::function<std::shared_ptr<void>()> const& ctor)
+    std::string slurpResource(ResourcePath const& rp)
+    {
+        return m_AppResourceLoader.slurp(rp);
+    }
+
+    ResourceStream loadResource(ResourcePath const& rp)
+    {
+        return m_AppResourceLoader.open(rp);
+    }
+
+    std::shared_ptr<void> updSingleton(
+        std::type_info const& typeinfo,
+        std::function<std::shared_ptr<void>()> const& ctor)
     {
         auto lock = m_Singletons.lock();
         auto const [it, inserted] = lock->try_emplace(TypeInfoReference{typeinfo}, nullptr);
@@ -510,8 +499,6 @@ public:
         }
         return it->second;
     }
-
-    // used by ImGui backends
 
     sdl::Window& updWindow()
     {
@@ -564,7 +551,7 @@ private:
         m_CurrentScreen = std::move(m_NextScreen);
 
         // the next screen might need to draw a couple of frames
-        // to "warm up" (e.g. because it's using ImGui)
+        // to "warm up" (e.g. because it's using an immediate ui)
         m_NumFramesToPoll = 2;
 
         log_info("mounting screen %s", m_CurrentScreen->getName().c_str());
@@ -612,8 +599,7 @@ private:
                     if (e.type == SDL_WINDOWEVENT)
                     {
                         // window was resized and should be drawn a couple of times quickly
-                        // to ensure any datastructures in the screens (namely: imgui) are
-                        // updated
+                        // to ensure any immediate UIs in screens are updated
                         m_NumFramesToPoll = 2;
                     }
 
@@ -735,30 +721,32 @@ private:
         }
     }
 
-    // provided via the constructor
+    // immutable application metadata (can be provided at runtime via ctor)
     AppMetadata m_Metadata;
 
-    // path to the directory that the executable is contained within
+    // path to the directory that the application's executable is contained within
     std::filesystem::path m_ExecutableDirPath = GetCurrentExeDirAndLogIt();
 
-    // compute where a write-able user data dir is
+    // path to the write-able user data directory
     std::filesystem::path m_UserDataDirPath = GetUserDataDirAndLogIt(
         m_Metadata.getOrganizationName(),
         m_Metadata.getApplicationName()
     );
 
-    // init/load the application config first
-    AppConfig m_ApplicationConfig
-    {
+    // top-level application configuration
+    AppConfig m_ApplicationConfig{
         m_Metadata.getOrganizationName(),
-        m_Metadata.getApplicationName(),
+        m_Metadata.getApplicationName()
     };
 
     // ensure the application log is configured according to the given configuration file
     bool m_ApplicationLogIsConfigured = ConfigureApplicationLog(m_ApplicationConfig);
 
-    // install the backtrace handler (if necessary - once per process)
+    // enable the stack backtrace handler (if necessary - once per process)
     bool m_IsBacktraceHandlerInstalled = EnsureBacktraceHandlerEnabled(m_UserDataDirPath);
+
+    // top-level runtime resource loader
+    ResourceLoader m_AppResourceLoader = make_resource_loader<FilesystemResourceLoader>(m_ApplicationConfig.getResourceDir());
 
     // init SDL context (windowing, etc.)
     sdl::Context m_SDLContext{SDL_INIT_VIDEO};
@@ -836,14 +824,29 @@ AppConfig const& osc::App::config()
     return get().getConfig();
 }
 
-std::filesystem::path osc::App::resource(std::string_view s)
+std::filesystem::path osc::App::resourceFilepath(ResourcePath const& rp)
 {
-    return get().getResource(s);
+    return get().getResourceFilepath(rp);
 }
 
-std::string osc::App::slurp(std::string_view s)
+std::string osc::App::slurp(ResourcePath const& rp)
 {
-    return get().slurpResource(s);
+    return upd().slurpResource(rp);
+}
+
+ResourceStream osc::App::load_resource(ResourcePath const& rp)
+{
+    return upd().loadResource(rp);
+}
+
+ResourceLoader& osc::App::resource_loader()
+{
+    return upd().updResourceLoader();
+}
+
+osc::App::App() :
+    App{AppMetadata{}}
+{
 }
 
 osc::App::App(AppMetadata const& metadata)
@@ -1073,14 +1076,24 @@ AppConfig& osc::App::updConfig()
     return m_Impl->updConfig();
 }
 
-std::filesystem::path osc::App::getResource(std::string_view p) const
+ResourceLoader& osc::App::updResourceLoader()
 {
-    return m_Impl->getResource(p);
+    return m_Impl->updResourceLoader();
 }
 
-std::string osc::App::slurpResource(std::string_view p) const
+std::filesystem::path osc::App::getResourceFilepath(ResourcePath const& rp) const
 {
-    return m_Impl->slurpResource(p);
+    return m_Impl->getResourceFilepath(rp);
+}
+
+std::string osc::App::slurpResource(ResourcePath const& rp)
+{
+    return m_Impl->slurpResource(rp);
+}
+
+ResourceStream osc::App::loadResource(ResourcePath const& rp)
+{
+    return m_Impl->loadResource(rp);
 }
 
 std::shared_ptr<void> osc::App::updSingleton(std::type_info const& typeInfo, std::function<std::shared_ptr<void>()> const& ctor)
@@ -1088,109 +1101,12 @@ std::shared_ptr<void> osc::App::updSingleton(std::type_info const& typeInfo, std
     return m_Impl->updSingleton(typeInfo, ctor);
 }
 
-void osc::ImGuiInit()
+SDL_Window* osc::App::updUndleryingWindow()
 {
-    // init ImGui top-level context
-    ImGui::CreateContext();
-
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
-    // make it so that windows can only ever be moved from the title bar
-    ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
-
-    // load application-level ImGui config, then the user one,
-    // so that the user config takes precedence
-    {
-        std::string defaultIni = App::resource("imgui_base_config.ini").string();
-        ImGui::LoadIniSettingsFromDisk(defaultIni.c_str());
-
-        // CARE: the reason this filepath is `static` is because ImGui requires that
-        // the string outlives the ImGui context
-        static std::string const s_UserImguiIniFilePath = (App::get().getUserDataDirPath() / "imgui.ini").string();
-
-        ImGui::LoadIniSettingsFromDisk(s_UserImguiIniFilePath.c_str());
-        io.IniFilename = s_UserImguiIniFilePath.c_str();
-    }
-
-    ImFontConfig baseConfig;
-    baseConfig.SizePixels = 15.0f;
-    baseConfig.PixelSnapH = true;
-    baseConfig.OversampleH = 2;
-    baseConfig.OversampleV = 2;
-    std::string baseFontFile = App::resource("oscar/fonts/Ruda-Bold.ttf").string();
-    io.Fonts->AddFontFromFileTTF(baseFontFile.c_str(), baseConfig.SizePixels, &baseConfig);
-
-    // add FontAwesome icon support
-    {
-        ImFontConfig config = baseConfig;
-        config.MergeMode = true;
-        config.GlyphMinAdvanceX = std::floor(1.5f * config.SizePixels);
-        config.GlyphMaxAdvanceX = std::floor(1.5f * config.SizePixels);
-
-        std::string const fontFile = App::resource("oscar/fonts/fa-solid-900.ttf").string();
-        io.Fonts->AddFontFromFileTTF(
-            fontFile.c_str(),
-            config.SizePixels,
-            &config,
-            c_IconRanges.data()
-        );
-    }
-
-    // init ImGui for SDL2 /w OpenGL
-    App::Impl& impl = *App::upd().m_Impl;
-    ImGui_ImplSDL2_InitForOpenGL(impl.updWindow().get(), impl.updRawGLContextHandleHACK());
-
-    // init ImGui for OpenGL
-    ui::gfx::Init();
-
-    ImGuiApplyDarkTheme();
+    return m_Impl->updWindow().get();
 }
 
-void osc::ImGuiShutdown()
+void* osc::App::updUnderlyingOpenGLContext()
 {
-    ui::gfx::Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    ImGui::DestroyContext();
-}
-
-bool osc::ImGuiOnEvent(SDL_Event const& e)
-{
-    ImGui_ImplSDL2_ProcessEvent(&e);
-
-    ImGuiIO const& io  = ImGui::GetIO();
-
-    bool handledByImgui = false;
-
-    if (io.WantCaptureKeyboard && (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP))
-    {
-        handledByImgui = true;
-    }
-
-    if (io.WantCaptureMouse && (e.type == SDL_MOUSEWHEEL || e.type == SDL_MOUSEMOTION || e.type == SDL_MOUSEBUTTONUP || e.type == SDL_MOUSEBUTTONDOWN))
-    {
-        handledByImgui = true;
-    }
-
-    return handledByImgui;
-}
-
-void osc::ImGuiNewFrame()
-{
-    ui::gfx::NewFrame();
-    ImGui_ImplSDL2_NewFrame(App::upd().m_Impl->updWindow().get());
-    ImGui::NewFrame();
-}
-
-void osc::ImGuiRender()
-{
-    {
-        OSC_PERF("ImGuiRender/Render");
-        ImGui::Render();
-    }
-
-    {
-        OSC_PERF("ImGuiRender/ImGui_ImplOscarGfx_RenderDrawData");
-        ui::gfx::RenderDrawData(ImGui::GetDrawData());
-    }
+    return m_Impl->updGraphicsContext().updRawGLContextHandleHACK();
 }

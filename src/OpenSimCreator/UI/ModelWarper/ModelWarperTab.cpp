@@ -15,8 +15,7 @@
 #include <functional>
 #include <string_view>
 
-using osc::CStringView;
-using osc::UID;
+using namespace osc;
 
 namespace
 {

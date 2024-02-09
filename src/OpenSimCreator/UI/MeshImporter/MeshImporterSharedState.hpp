@@ -23,7 +23,6 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/Angle.hpp>
 #include <oscar/Maths/CollisionTests.hpp>
 #include <oscar/Maths/Line.hpp>
@@ -44,6 +43,7 @@
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
 #include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Panels/PerfPanel.hpp>
 #include <oscar/UI/Widgets/LogViewer.hpp>
@@ -507,9 +507,9 @@ namespace osc::mi
 
             Material material
             {
-                App::singleton<ShaderCache>()->load(
-                    App::resource("shaders/SolidColor.vert"),
-                    App::resource("shaders/SolidColor.frag")
+                App::singleton<ShaderCache>(App::resource_loader())->load(
+                    "shaders/SolidColor.vert",
+                    "shaders/SolidColor.frag"
                 )
             };
             material.setColor("uColor", m_Colors.gridLines);
@@ -1458,9 +1458,8 @@ namespace osc::mi
 
         // renderer that draws the scene
         SceneRenderer m_SceneRenderer{
-            App::config(),
             *App::singleton<SceneCache>(),
-            *App::singleton<ShaderCache>()
+            *App::singleton<ShaderCache>(App::resource_loader())
         };
 
         // COLORS

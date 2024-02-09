@@ -15,9 +15,7 @@
 #include <utility>
 #include <vector>
 
-using osc::CStringView;
-using osc::IPanel;
-using osc::ToggleablePanelFlags;
+using namespace osc;
 
 namespace
 {

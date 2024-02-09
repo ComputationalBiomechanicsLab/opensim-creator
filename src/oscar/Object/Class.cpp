@@ -16,10 +16,7 @@
 #include <utility>
 #include <vector>
 
-using osc::Class;
-using osc::IsValidIdentifier;
-using osc::PropertyInfo;
-using osc::StringName;
+using namespace osc;
 
 namespace
 {

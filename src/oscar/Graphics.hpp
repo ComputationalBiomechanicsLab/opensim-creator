@@ -17,7 +17,6 @@
 #include <oscar/Graphics/Graphics.hpp>
 #include <oscar/Graphics/GraphicsContext.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/ImageLoadingFlags.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/MaterialPropertyBlock.hpp>
 #include <oscar/Graphics/Mesh.hpp>
@@ -38,7 +37,6 @@
 #include <oscar/Graphics/RenderTextureFormat.hpp>
 #include <oscar/Graphics/RenderTextureReadWrite.hpp>
 #include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Graphics/ShaderPropertyType.hpp>
 #include <oscar/Graphics/SubMeshDescriptor.hpp>
 #include <oscar/Graphics/TextureChannelFormat.hpp>

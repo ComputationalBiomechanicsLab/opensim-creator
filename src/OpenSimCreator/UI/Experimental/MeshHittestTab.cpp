@@ -180,7 +180,7 @@ private:
             App::slurp("shaders/SolidColor.frag"),
         },
     };
-    Mesh m_Mesh = LoadMeshViaSimTK(App::resource("geometry/hat_ribs.vtp"));
+    Mesh m_Mesh = LoadMeshViaSimTK(App::resourceFilepath("geometry/hat_ribs.vtp"));
     Mesh m_SphereMesh = GenerateUVSphereMesh(12, 12);
     Mesh m_CubeLinesMesh = GenerateCubeLinesMesh();
 

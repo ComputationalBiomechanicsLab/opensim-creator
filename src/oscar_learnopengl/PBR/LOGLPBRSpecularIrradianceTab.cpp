@@ -2,64 +2,17 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
+#include <imgui.h>
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
-#include <oscar/Graphics/Camera.hpp>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/Cubemap.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/ImageLoadingFlags.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/RenderTextureFormat.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Graphics/TextureFilterMode.hpp>
-#include <oscar/Graphics/TextureWrapMode.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/Mat4.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Rect.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
 
 #include <array>
 #include <utility>
 
-using namespace osc::literals;
 namespace Graphics = osc::Graphics;
 namespace cpp20 = osc::cpp20;
-using osc::App;
-using osc::CalcCubemapViewProjMatrices;
-using osc::Camera;
-using osc::ColorSpace;
-using osc::CStringView;
-using osc::Cubemap;
-using osc::GenerateCubeMesh;
-using osc::GenerateTexturedQuadMesh;
-using osc::Identity;
-using osc::ImageLoadingFlags;
-using osc::LoadTexture2DFromImage;
-using osc::Mat4;
-using osc::Material;
-using osc::Mesh;
-using osc::MouseCapturingCamera;
-using osc::Perspective;
-using osc::RenderTexture;
-using osc::RenderTextureFormat;
-using osc::Shader;
-using osc::Texture2D;
-using osc::TextureDimensionality;
-using osc::TextureFilterMode;
-using osc::TextureFormat;
-using osc::TextureWrapMode;
-using osc::Transform;
-using osc::UID;
-using osc::Vec3;
+using namespace osc::literals;
+using namespace osc;
 
 namespace
 {
@@ -94,10 +47,11 @@ namespace
         return rv;
     }
 
-    RenderTexture LoadEquirectangularHDRTextureIntoCubemap()
+    RenderTexture LoadEquirectangularHDRTextureIntoCubemap(
+        IResourceLoader& rl)
     {
         Texture2D hdrTexture = LoadTexture2DFromImage(
-            App::resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
+            rl.open("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
             ColorSpace::Linear,
             ImageLoadingFlags::FlipVertically
         );
@@ -113,9 +67,9 @@ namespace
 
         // create material that projects all 6 faces onto the output cubemap
         Material material{Shader{
-            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.vert"),
-            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.geom"),
-            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.frag"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.vert"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.geom"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.frag"),
         }};
         material.setTexture("uEquirectangularMap", hdrTexture);
         material.setMat4Array(
@@ -131,7 +85,9 @@ namespace
         return cubemapRenderTarget;
     }
 
-    RenderTexture CreateIrradianceCubemap(RenderTexture const& skybox)
+    RenderTexture CreateIrradianceCubemap(
+        IResourceLoader& rl,
+        RenderTexture const& skybox)
     {
         RenderTexture irradianceCubemap{{32, 32}};
         irradianceCubemap.setDimensionality(TextureDimensionality::Cube);
@@ -140,9 +96,9 @@ namespace
         Mat4 const captureProjection = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
         Material material{Shader{
-            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.vert"),
-            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.geom"),
-            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.frag"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.vert"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.geom"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.frag"),
         }};
         material.setRenderTexture("uEnvironmentMap", skybox);
         material.setMat4Array(
@@ -159,6 +115,7 @@ namespace
     }
 
     Cubemap CreatePreFilteredEnvironmentMap(
+        IResourceLoader& rl,
         RenderTexture const& environmentMap)
     {
         int constexpr levelZeroWidth = 128;
@@ -171,9 +128,9 @@ namespace
         Mat4 const captureProjection = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
         Material material{Shader{
-            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.vert"),
-            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.geom"),
-            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.frag"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.vert"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.geom"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.frag"),
         }};
         material.setRenderTexture("uEnvironmentMap", environmentMap);
         material.setMat4Array("uShadowMatrices", CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
@@ -207,14 +164,15 @@ namespace
         return rv;
     }
 
-    Texture2D Create2DBRDFLookup()
+    Texture2D Create2DBRDFLookup(
+        IResourceLoader& rl)
     {
         RenderTexture renderTex{{512, 512}};
         renderTex.setColorFormat(RenderTextureFormat::RGFloat16);
 
         Material material{Shader{
-            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/BRDF.vert"),
-            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/BRDF.frag"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/BRDF.vert"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/BRDF.frag"),
         }};
 
         Mesh quad = GenerateTexturedQuadMesh();
@@ -238,11 +196,12 @@ namespace
         return rv;
     }
 
-    Material CreateMaterial()
+    Material CreateMaterial(
+        IResourceLoader& rl)
     {
         Material rv{Shader{
-            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/PBR.vert"),
-            App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/PBR.frag"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/PBR.vert"),
+            rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/PBR.frag"),
         }};
         rv.setFloat("uAO", 1.0f);
         return rv;
@@ -356,25 +315,27 @@ private:
         ImGui::End();
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
+
     Texture2D m_Texture = LoadTexture2DFromImage(
-        App::resource("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
+        m_Loader.open("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
         ColorSpace::Linear,
         ImageLoadingFlags::FlipVertically
     );
 
-    RenderTexture m_ProjectedMap = LoadEquirectangularHDRTextureIntoCubemap();
-    RenderTexture m_IrradianceMap = CreateIrradianceCubemap(m_ProjectedMap);
-    Cubemap m_PrefilterMap = CreatePreFilteredEnvironmentMap(m_ProjectedMap);
-    Texture2D m_BRDFLookup = Create2DBRDFLookup();
+    RenderTexture m_ProjectedMap = LoadEquirectangularHDRTextureIntoCubemap(m_Loader);
+    RenderTexture m_IrradianceMap = CreateIrradianceCubemap(m_Loader, m_ProjectedMap);
+    Cubemap m_PrefilterMap = CreatePreFilteredEnvironmentMap(m_Loader, m_ProjectedMap);
+    Texture2D m_BRDFLookup = Create2DBRDFLookup(m_Loader);
     RenderTexture m_OutputRender{{1, 1}};
 
     Material m_BackgroundMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Skybox.vert"),
-        App::slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Skybox.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Skybox.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Skybox.frag"),
     }};
 
     Mesh m_CubeMesh = GenerateCubeMesh();
-    Material m_PBRMaterial = CreateMaterial();
+    Material m_PBRMaterial = CreateMaterial(m_Loader);
     Mesh m_SphereMesh = GenerateUVSphereMesh(64, 64);
 
     MouseCapturingCamera m_Camera = CreateCamera();

@@ -3,19 +3,19 @@
 #include <IconsFontAwesome5.h>
 #include <Simbody.h>
 #include <imgui.h>
+#include <oscar/Formats/Image.hpp>
 #include <oscar/Graphics/Camera.hpp>
 #include <oscar/Graphics/ColorSpace.hpp>
 #include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/Material.hpp>
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/Mat4.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Vec2.hpp>
 #include <oscar/Maths/Vec3.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/UI/Panels/LogViewerPanel.hpp>
 #include <oscar/Utils/Assertions.hpp>
@@ -495,6 +495,8 @@ private:
 
     // tab data
     UID m_TabID;
+    ResourceLoader m_Loader = App::resource_loader();
+    std::shared_ptr<ShaderCache> m_ShaderCache = App::singleton<ShaderCache>(m_Loader);
 
     // TPS algorithm state
     GUIMouseState m_MouseState = GUIInitialMouseState{};
@@ -503,19 +505,14 @@ private:
 
     // GUI state (rendering, colors, etc.)
     Texture2D m_BoxTexture = LoadTexture2DFromImage(
-        App::resource("textures/container.jpg"),
+        m_Loader.open("textures/container.jpg"),
         ColorSpace::sRGB
     );
     Mesh m_InputGrid = GenerateNxMTriangleQuadGridMesh({50, 50});
     Mesh m_OutputGrid = m_InputGrid;
-    Material m_Material = Material
-    {
-        App::singleton<ShaderCache>()->load(App::resource("shaders/TPS2D/Textured.vert"), App::resource("shaders/TPS2D/Textured.frag"))
-    };
-    Material m_WireframeMaterial = Material
-    {
-        App::singleton<ShaderCache>()->load(App::resource("shaders/SolidColor.vert"), App::resource("shaders/SolidColor.frag"))
-    };
+    Material m_Material{m_ShaderCache->load("shaders/TPS2D/Textured.vert", "shaders/TPS2D/Textured.frag")};
+    Material m_WireframeMaterial{m_ShaderCache->load("shaders/SolidColor.vert", "shaders/SolidColor.frag")};
+
     Camera m_Camera;
     std::optional<RenderTexture> m_InputRender;
     std::optional<RenderTexture> m_OutputRender;

@@ -21,7 +21,7 @@
 #include <utility>
 #include <vector>
 
-using osc::CStringView;
+using namespace osc;
 
 class osc::CoordinateEditorPanel::Impl final : public StandardPanelImpl {
 public:

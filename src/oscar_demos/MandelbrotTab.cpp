@@ -1,29 +1,13 @@
 #include "MandelbrotTab.hpp"
 
+#include <imgui.h>
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
-#include <oscar/Graphics/Camera.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Maths/Mat4.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Rect.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
 
 #include <limits>
 #include <memory>
 
-using osc::Camera;
-using osc::CStringView;
-using osc::Identity;
-using osc::Mat4;
-using osc::UID;
+using namespace osc;
 
 namespace
 {
@@ -90,13 +74,14 @@ private:
         // TODO: pan the mandelbrot viewport by the given screen-space offset vector
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
     int m_NumIterations = 16;
     Rect m_NormalizedMandelbrotViewport = {{}, {1.0f, 1.0f}};
     Rect m_MainViewportWorkspaceScreenRect = {};
     Mesh m_QuadMesh = GenerateTexturedQuadMesh();
     Material m_Material{Shader{
-        App::slurp("oscar_demos/shaders/Mandelbrot.vert"),
-        App::slurp("oscar_demos/shaders/Mandelbrot.frag"),
+        m_Loader.slurp("oscar_demos/shaders/Mandelbrot.vert"),
+        m_Loader.slurp("oscar_demos/shaders/Mandelbrot.frag"),
     }};
     Camera m_Camera = CreateIdentityCamera();
 };

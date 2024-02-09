@@ -18,17 +18,8 @@
 #include <string>
 #include <string_view>
 
-using osc::BeginTooltip;
-using osc::Color;
-using osc::CStringView;
-using osc::DrawHelpMarker;
-using osc::GetAbsolutePathString;
-using osc::EndTooltip;
-using osc::PopStyleColor;
-using osc::TextUnformatted;
-using osc::mow::UIState;
-using osc::mow::ValidationCheck;
-using osc::mow::ValidationCheckConsumerResponse;
+using namespace osc;
+using namespace osc::mow;
 
 // UI (generic)
 namespace

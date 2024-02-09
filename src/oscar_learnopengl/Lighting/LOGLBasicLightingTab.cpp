@@ -3,28 +3,14 @@
 #include <oscar_learnopengl/LearnOpenGLHelpers.hpp>
 #include <oscar_learnopengl/MouseCapturingCamera.hpp>
 
+#include <imgui.h>
+#include <oscar/oscar.hpp>
 #include <SDL_events.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Tabs/StandardTabImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/UID.hpp>
 
 #include <memory>
 
 using namespace osc::literals;
-using osc::CStringView;
-using osc::MouseCapturingCamera;
-using osc::UID;
+using namespace osc;
 
 namespace
 {
@@ -100,14 +86,16 @@ private:
         ImGui::End();
     }
 
+    ResourceLoader m_Loader = App::resource_loader();
+
     Material m_LightingMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/Lighting/BasicLighting.vert"),
-        App::slurp("oscar_learnopengl/shaders/Lighting/BasicLighting.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/Lighting/BasicLighting.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/Lighting/BasicLighting.frag"),
     }};
 
     Material m_LightCubeMaterial{Shader{
-        App::slurp("oscar_learnopengl/shaders/LightCube.vert"),
-        App::slurp("oscar_learnopengl/shaders/LightCube.frag"),
+        m_Loader.slurp("oscar_learnopengl/shaders/LightCube.vert"),
+        m_Loader.slurp("oscar_learnopengl/shaders/LightCube.frag"),
     }};
 
     Mesh m_CubeMesh = GenerateLearnOpenGLCubeMesh();

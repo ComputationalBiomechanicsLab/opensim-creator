@@ -33,10 +33,7 @@
 #include <utility>
 #include <vector>
 
-namespace OpenSim
-{
-    class AbstractProperty;
-}
+namespace OpenSim { class AbstractProperty; }
 
 namespace
 {

@@ -10,11 +10,7 @@
 #include <span>
 #include <vector>
 
-using osc::Length;
-using osc::Mesh;
-using osc::operator<<;
-using osc::TPSCoefficients3D;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {

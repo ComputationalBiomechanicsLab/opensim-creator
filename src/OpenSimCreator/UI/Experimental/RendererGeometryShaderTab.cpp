@@ -115,7 +115,7 @@ private:
         },
     };
 
-    Mesh m_Mesh = LoadMeshViaSimTK(App::resource("geometry/hat_ribs_scap.vtp"));
+    Mesh m_Mesh = LoadMeshViaSimTK(App::resourceFilepath("geometry/hat_ribs_scap.vtp"));
     Camera m_SceneCamera;
     bool m_IsMouseCaptured = false;
     Eulers m_CameraEulers = {};

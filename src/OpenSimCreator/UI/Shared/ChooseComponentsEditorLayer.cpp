@@ -12,7 +12,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 
 #include <IconsFontAwesome5.h>
-#include <oscar/Graphics/ShaderCache.hpp>
 #include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Vec2.hpp>
@@ -22,6 +21,7 @@
 #include <oscar/Scene/SceneDecorationFlags.hpp>
 #include <oscar/Scene/SceneHelpers.hpp>
 #include <oscar/Scene/SceneRenderer.hpp>
+#include <oscar/Scene/ShaderCache.hpp>
 #include <oscar/UI/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/SetHelpers.hpp>
@@ -33,20 +33,7 @@
 #include <utility>
 #include <vector>
 
-using osc::App;
-using osc::BVH;
-using osc::ChooseComponentsEditorLayerParameters;
-using osc::Contains;
-using osc::GenerateModelDecorations;
-using osc::GetAbsolutePathString;
-using osc::ModelRendererParams;
-using osc::GenerateOverlayDecorations;
-using osc::SceneCache;
-using osc::SceneDecoration;
-using osc::SceneDecorationFlags;
-using osc::ShaderCache;
-using osc::UndoableModelStatePair;
-using osc::UpdateSceneBVH;
+using namespace osc;
 
 namespace
 {
@@ -151,9 +138,8 @@ public:
         ChooseComponentsEditorLayerParameters parameters_) :
 
         m_State{std::move(model_), std::move(parameters_)},
-        m_Renderer{App::config(), *App::singleton<SceneCache>(), *App::singleton<ShaderCache>()}
-    {
-    }
+        m_Renderer{*App::singleton<SceneCache>(), *App::singleton<ShaderCache>(App::resource_loader())}
+    {}
 
     bool handleKeyboardInputs(
         ModelEditorViewerPanelParameters& params,

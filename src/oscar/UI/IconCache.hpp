@@ -1,6 +1,7 @@
 #pragma once
 
-#include <filesystem>
+#include <oscar/Platform/ResourceLoader.hpp>
+
 #include <memory>
 #include <string_view>
 
@@ -10,7 +11,10 @@ namespace osc
 {
     class IconCache final {
     public:
-        IconCache(std::filesystem::path const& iconsDir, float verticalScale);
+        IconCache(
+            ResourceLoader loaderPrefixedAtDirContainingSVGs,
+            float verticalScale
+        );
         IconCache(IconCache const&) = delete;
         IconCache(IconCache&&) noexcept;
         IconCache& operator=(IconCache const&) = delete;

@@ -8,8 +8,7 @@
 #include <string>
 #include <utility>
 
-using osc::CStringView;
-using osc::ITab;
+using namespace osc;
 
 class osc::TabRegistryEntry::Impl final {
 public:
