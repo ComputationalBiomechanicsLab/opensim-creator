@@ -59,9 +59,9 @@ using namespace osc;
 namespace
 {
     // describes a single output from an OpenSim::Muscle
-    class MuscleOutput final {
+    class PlottableOutput final {
     public:
-        MuscleOutput(
+        PlottableOutput(
             CStringView name,
             CStringView units,
             double(*getter)(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const& c)) :
@@ -82,17 +82,20 @@ namespace
             return m_Units;
         }
 
-        double operator()(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const& c) const
+        double operator()(
+            SimTK::State const& st,
+            OpenSim::Muscle const& muscle,
+            OpenSim::Coordinate const& c) const
         {
             return m_Getter(st, muscle, c);
         }
 
-        friend bool operator<(MuscleOutput const& lhs, MuscleOutput const& rhs)
+        friend bool operator<(PlottableOutput const& lhs, PlottableOutput const& rhs)
         {
             return lhs.m_Name < rhs.m_Name;
         }
 
-        friend bool operator==(MuscleOutput const&, MuscleOutput const&) = default;
+        friend bool operator==(PlottableOutput const&, PlottableOutput const&) = default;
     private:
         CStringView m_Name;
         CStringView m_Units;
@@ -204,14 +207,14 @@ namespace
         return muscle.getTendonPower(st);
     }
 
-    MuscleOutput GetDefaultMuscleOutput()
+    PlottableOutput GetDefaultMuscleOutput()
     {
-        return MuscleOutput{"Moment Arm", "Unitless", GetMomentArm};
+        return PlottableOutput{"Moment Arm", "Unitless", GetMomentArm};
     }
 
-    std::vector<MuscleOutput> GenerateMuscleOutputs()
+    std::vector<PlottableOutput> GenerateMuscleOutputs()
     {
-        std::vector<MuscleOutput> rv =
+        std::vector<PlottableOutput> rv =
         {{
             GetDefaultMuscleOutput(),
             {"Tendon Length", "m", GetTendonLength},
@@ -256,7 +259,7 @@ namespace
             ModelStateCommit commit,
             OpenSim::ComponentPath coordinatePath,
             OpenSim::ComponentPath musclePath,
-            MuscleOutput output,
+            PlottableOutput output,
             int requestedNumDataPoints) :
 
             m_Commit{std::move(commit)},
@@ -297,12 +300,12 @@ namespace
             m_MusclePath = cp;
         }
 
-        MuscleOutput const& getMuscleOutput() const
+        PlottableOutput const& getPlottedOutput() const
         {
             return m_Output;
         }
 
-        void setMuscleOutput(MuscleOutput const& output)
+        void setPlottedOutput(PlottableOutput const& output)
         {
             m_Output = output;
         }
@@ -322,7 +325,7 @@ namespace
         ModelStateCommit m_Commit;
         OpenSim::ComponentPath m_CoordinatePath;
         OpenSim::ComponentPath m_MusclePath;
-        MuscleOutput m_Output;
+        PlottableOutput m_Output;
         int m_RequestedNumDataPoints;
     };
 
@@ -536,7 +539,7 @@ namespace
             }
 
             float const xDisplayVal = ConvertCoordValueToDisplayValue(coord, xVal);
-            auto const yVal = static_cast<float>(params.getMuscleOutput()(state, muscle, coord));
+            auto const yVal = static_cast<float>(params.getPlottedOutput()(state, muscle, coord));
 
             callback(PlotDataPoint{xDisplayVal, yVal});
         }
@@ -671,22 +674,22 @@ namespace
             }
         }
 
+        bool isExternallyProvided() const
+        {
+            return !m_Parameters.has_value();
+        }
+
+        bool isLocked() const
+        {
+            return m_IsLocked;
+        }
+
     private:
         std::optional<PlotParameters> m_Parameters;
         std::string m_Name;
         bool m_IsLocked = false;
         SynchronizedValue<std::vector<PlotDataPoint>> m_DataPoints;
     };
-
-    bool IsExternallyProvided(Plot const& plot)
-    {
-        return plot.tryGetParameters() == nullptr;
-    }
-
-    bool IsLocked(Plot const& plot)
-    {
-        return plot.getIsLocked();
-    }
 }
 
 // helpers
@@ -829,7 +832,7 @@ namespace
 
     std::ostream& WriteYAxisName(PlotParameters const& params, std::ostream& o)
     {
-        return o << params.getMuscleOutput().getName();
+        return o << params.getPlottedOutput().getName();
     }
 
     std::ostream& WriteXAxisName(PlotParameters const& params, std::ostream& o)
@@ -851,7 +854,7 @@ namespace
     {
         std::stringstream ss;
         WriteYAxisName(params, ss);
-        ss << " [" << params.getMuscleOutput().getUnits() << ']';
+        ss << " [" << params.getPlottedOutput().getUnits() << ']';
         return std::move(ss).str();
     }
 
@@ -1125,7 +1128,7 @@ namespace
                 // then previous plots should be cleared
                 bool const clearPrevious =
                     maybeParams != nullptr &&
-                    (maybeParams->getMuscleOutput() != desiredParams.getMuscleOutput() ||
+                    (maybeParams->getPlottedOutput() != desiredParams.getPlottedOutput() ||
                      maybeParams->getCoordinatePath() != desiredParams.getCoordinatePath() ||
                      maybeParams->getMusclePath() != desiredParams.getMusclePath());
 
@@ -1213,11 +1216,11 @@ namespace
         {
             Plot const& p = lines.getOtherPlot(i);
 
-            if (IsExternallyProvided(p))
+            if (p.isExternallyProvided())
             {
                 ++rv.external;
             }
-            else if (IsLocked(p))
+            else if (p.isLocked())
             {
                 ++rv.locked;
             }
@@ -1452,9 +1455,7 @@ namespace
 
             m_EditorAPI{editorAPI},
             m_Model{std::move(uim)}
-        {
-            OSC_ASSERT(m_Model != nullptr);
-        }
+        {}
 
         SharedStateData(
             IEditorAPI* editorAPI,
@@ -1465,39 +1466,35 @@ namespace
             m_EditorAPI{editorAPI},
             m_Model{std::move(uim)},
             m_PlotParams{m_Model->getLatestCommit(), coordPath, musclePath, GetDefaultMuscleOutput(), c_DefaultNumPlotPoints}
-        {
-            OSC_ASSERT(m_Model != nullptr);
-        }
+        {}
 
-        PlotParameters const& getPlotParams() const
-        {
-            return m_PlotParams;
-        }
+        PlotParameters const& getPlotParams() const { return m_PlotParams; }
+        PlotParameters& updPlotParams() { return m_PlotParams; }
 
-        PlotParameters& updPlotParams()
-        {
-            return m_PlotParams;
-        }
+        UndoableModelStatePair const& getModel() const { return *m_Model; }
+        UndoableModelStatePair& updModel() { return *m_Model; }
 
-        UndoableModelStatePair const& getModel() const
-        {
-            return *m_Model;
-        }
+        IEditorAPI& updEditorAPI() { return *m_EditorAPI; }
 
-        UndoableModelStatePair& updModel()
-        {
-            return *m_Model;
-        }
+        std::span<PlottableOutput const> availableOutputs() const { return m_AvailableMuscleOutputs; }
 
-        IEditorAPI& updEditorAPI()
-        {
-            return *m_EditorAPI;
-        }
+        PlottableOutput const& getPlottedOutput() const { return getPlotParams().getPlottedOutput(); }
+        void setPlottedOutput(PlottableOutput const& newOutput) { updPlotParams().setPlottedOutput(newOutput); }
+
+        int getNumRequestedDatapoints() const { return getPlotParams().getNumRequestedDataPoints(); }
+        void setNumRequestedDataPoints(int v) { updPlotParams().setNumRequestedDataPoints(v); }
 
     private:
         IEditorAPI* m_EditorAPI;
         std::shared_ptr<UndoableModelStatePair> m_Model;
-        PlotParameters m_PlotParams{m_Model->getLatestCommit(), OpenSim::ComponentPath{}, OpenSim::ComponentPath{}, GetDefaultMuscleOutput(), 180};
+        PlotParameters m_PlotParams{
+            m_Model->getLatestCommit(),
+            OpenSim::ComponentPath{},
+            OpenSim::ComponentPath{},
+            GetDefaultMuscleOutput(),
+            180
+        };
+        std::vector<PlottableOutput> m_AvailableMuscleOutputs = GenerateMuscleOutputs();
     };
 
     // base class for a single widget state
@@ -1517,15 +1514,8 @@ namespace
         }
 
     protected:
-        SharedStateData const& getSharedStateData() const
-        {
-            return *m_Shared;
-        }
-
-        SharedStateData& updSharedStateData()
-        {
-            return *m_Shared;
-        }
+        SharedStateData const& getShared() const { return *m_Shared; }
+        SharedStateData& updShared() { return *m_Shared; }
 
     private:
         virtual std::unique_ptr<MusclePlotState> implOnDraw() = 0;
@@ -1548,29 +1538,25 @@ namespace
         explicit ShowingPlotState(SharedStateData& shared_) :
             MusclePlotState{shared_},
             m_Lines{shared_.getPlotParams()}
-        {
-        }
+        {}
 
     private:
         std::unique_ptr<MusclePlotState> implOnDraw() final
         {
             onBeforeDrawing();  // perform pre-draw cleanups/updates etc.
 
-            if (m_Lines.getPlottingTaskStatus() == PlottingTaskStatus::Error)
-            {
-                if (auto maybeErrorString = m_Lines.tryGetPlottingTaskErrorMessage())
-                {
+            if (m_Lines.getPlottingTaskStatus() == PlottingTaskStatus::Error) {
+                if (auto maybeErrorString = m_Lines.tryGetPlottingTaskErrorMessage()) {
                     ImGui::Text("error: cannot show plot: %s", maybeErrorString->c_str());
                 }
                 return nullptr;
             }
 
-            PlotParameters const& latestParams = getSharedStateData().getPlotParams();
+            PlotParameters const& latestParams = getShared().getPlotParams();
             auto modelGuard = latestParams.getCommit().getModel();
 
             auto const* maybeCoord = FindComponent<OpenSim::Coordinate>(*modelGuard, latestParams.getCoordinatePath());
-            if (!maybeCoord)
-            {
+            if (!maybeCoord) {
                 ImGui::Text("(no coordinate named %s in model)", latestParams.getCoordinatePath().toString().c_str());
                 return nullptr;
             }
@@ -1580,9 +1566,8 @@ namespace
 
             drawPlotTitle(coord, plotTitle);  // draw a custom title bar
             ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.025f, 0.05f});
-            if (ImPlot::BeginPlot(plotTitle.c_str(), ImGui::GetContentRegionAvail(), m_PlotFlags))
-            {
-                PlotParameters const& plotParams = getSharedStateData().getPlotParams();
+            if (ImPlot::BeginPlot(plotTitle.c_str(), ImGui::GetContentRegionAvail(), m_PlotFlags)) {
+                PlotParameters const& plotParams = getShared().getPlotParams();
 
                 ImPlot::SetupLegend(
                     m_LegendLocation,
@@ -1626,22 +1611,24 @@ namespace
             m_LegendPopupIsOpen = false;
 
             // ensure latest requested params reflects the latest version of the model
-            updSharedStateData().updPlotParams().setCommit(getSharedStateData().getModel().getLatestCommit());
+            updShared().updPlotParams().setCommit(getShared().getModel().getLatestCommit());
 
             // ensure plot lines are valid, given the current model + desired params
-            m_Lines.onBeforeDrawing(getSharedStateData().getModel(), getSharedStateData().getPlotParams());
+            m_Lines.onBeforeDrawing(getShared().getModel(), getShared().getPlotParams());
         }
 
-        void drawPlotTitle(OpenSim::Coordinate const& coord, std::string const& plotTitle)
+        void drawPlotTitle(
+            OpenSim::Coordinate const& coord,
+            std::string const& plotTitle)
         {
             // the plot title should contain combo boxes that users can use to change plot
             // parameters visually (#397)
 
-            std::string muscleName = Ellipsis(getSharedStateData().getPlotParams().getMusclePath().getComponentName(), 15);
+            std::string muscleName = Ellipsis(getShared().getPlotParams().getMusclePath().getComponentName(), 15);
             float muscleNameWidth = ImGui::CalcTextSize(muscleName.c_str()).x + 2.0f*ImGui::GetStyle().FramePadding.x;
-            std::string outputName = Ellipsis(getSharedStateData().getPlotParams().getMuscleOutput().getName(), 15);
+            std::string outputName = Ellipsis(getShared().getPlotParams().getPlottedOutput().getName(), 15);
             float outputNameWidth = ImGui::CalcTextSize(outputName.c_str()).x + 2.0f*ImGui::GetStyle().FramePadding.x;
-            std::string coordName = Ellipsis(getSharedStateData().getPlotParams().getCoordinatePath().getComponentName(), 15);
+            std::string coordName = Ellipsis(getShared().getPlotParams().getCoordinatePath().getComponentName(), 15);
             float coordNameWidth = ImGui::CalcTextSize(coordName.c_str()).x + 2.0f*ImGui::GetStyle().FramePadding.x;
 
             float totalWidth =
@@ -1664,13 +1651,13 @@ namespace
             ImGui::SetNextItemWidth(muscleNameWidth);
             if (ImGui::BeginCombo("##musclename", muscleName.c_str(), ImGuiComboFlags_NoArrowButton))
             {
-                auto const* current = FindComponent<OpenSim::Muscle>(getSharedStateData().getModel().getModel(), getSharedStateData().getPlotParams().getMusclePath());
-                for (OpenSim::Muscle const& musc : getSharedStateData().getModel().getModel().getComponentList<OpenSim::Muscle>())
+                auto const* current = FindComponent<OpenSim::Muscle>(getShared().getModel().getModel(), getShared().getPlotParams().getMusclePath());
+                for (OpenSim::Muscle const& musc : getShared().getModel().getModel().getComponentList<OpenSim::Muscle>())
                 {
                     bool selected = &musc == current;
                     if (ImGui::Selectable(musc.getName().c_str(), &selected))
                     {
-                        updSharedStateData().updPlotParams().setMusclePath(musc.getAbsolutePath());
+                        updShared().updPlotParams().setMusclePath(musc.getAbsolutePath());
                     }
                 }
                 ImGui::EndCombo();
@@ -1683,13 +1670,13 @@ namespace
             ImGui::SetNextItemWidth(outputNameWidth);
             if (ImGui::BeginCombo("##outputname", outputName.c_str(), ImGuiComboFlags_NoArrowButton))
             {
-                MuscleOutput current = getSharedStateData().getPlotParams().getMuscleOutput();
-                for (MuscleOutput const& output : m_AvailableMuscleOutputs)
+                PlottableOutput current = getShared().getPlotParams().getPlottedOutput();
+                for (PlottableOutput const& output : getShared().availableOutputs())
                 {
                     bool selected = output == current;
                     if (ImGui::Selectable(output.getName().c_str(), &selected))
                     {
-                        updSharedStateData().updPlotParams().setMuscleOutput(output);
+                        updShared().updPlotParams().setPlottedOutput(output);
                     }
                 }
                 ImGui::EndCombo();
@@ -1700,13 +1687,13 @@ namespace
             ImGui::SetNextItemWidth(coordNameWidth);
             if (ImGui::BeginCombo("##coordname", coordName.c_str(), ImGuiComboFlags_NoArrowButton))
             {
-                auto const* current = FindComponent<OpenSim::Coordinate>(getSharedStateData().getModel().getModel(), getSharedStateData().getPlotParams().getCoordinatePath());
-                for (OpenSim::Coordinate const& c : getSharedStateData().getModel().getModel().getComponentList<OpenSim::Coordinate>())
+                auto const* current = FindComponent<OpenSim::Coordinate>(getShared().getModel().getModel(), getShared().getPlotParams().getCoordinatePath());
+                for (OpenSim::Coordinate const& c : getShared().getModel().getModel().getComponentList<OpenSim::Coordinate>())
                 {
                     bool selected = &c == current;
                     if (ImGui::Selectable(c.getName().c_str(), &selected))
                     {
-                        updSharedStateData().updPlotParams().setCoordinatePath(GetAbsolutePath(c));
+                        updShared().updPlotParams().setCoordinatePath(GetAbsolutePath(c));
                     }
                 }
                 ImGui::EndCombo();
@@ -1734,13 +1721,13 @@ namespace
 
                 Color color = m_ComputedPlotLineBaseColor;
 
-                if (IsExternallyProvided(plot))
+                if (plot.isExternallyProvided())
                 {
                     // externally-provided curves should be tinted
                     color *= m_LoadedCurveTint;
                     color.a *= static_cast<float>(++externalCounter) / static_cast<float>(counts.external);
                 }
-                else if (IsLocked(plot))
+                else if (plot.isLocked())
                 {
                     // locked curves should be tinted as such
                     color *= m_LockedCurveTint;
@@ -1781,11 +1768,11 @@ namespace
                     }
                     if (plot.tryGetParameters() && ImGui::MenuItem(ICON_FA_UNDO " revert to this"))
                     {
-                        m_Lines.revertToPreviousPlot(updSharedStateData().updModel(), i);
+                        m_Lines.revertToPreviousPlot(updShared().updModel(), i);
                     }
                     if (ImGui::MenuItem(ICON_FA_FILE_EXPORT " export to CSV"))
                     {
-                        ActionPromptUserToSavePlotToCSV(coord, getSharedStateData().getPlotParams(), plot);
+                        ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), plot);
                     }
                     ImPlot::EndLegendPopup();
                 }
@@ -1799,12 +1786,12 @@ namespace
                 // locked curves should have a blue tint
                 Color color = m_ComputedPlotLineBaseColor;
 
-                if (IsExternallyProvided(plot))
+                if (plot.isExternallyProvided())
                 {
                     // externally-provided curves should be tinted
                     color *= m_LoadedCurveTint;
                 }
-                else if (IsLocked(plot))
+                else if (plot.isLocked())
                 {
                     // locked curves should be tinted as such
                     color *= m_LockedCurveTint;
@@ -1833,7 +1820,7 @@ namespace
                     }
                     if (ImGui::MenuItem(ICON_FA_FILE_EXPORT " export to CSV"))
                     {
-                        ActionPromptUserToSavePlotToCSV(coord, getSharedStateData().getPlotParams(), plot);
+                        ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), plot);
                     }
                     ImPlot::EndLegendPopup();
                 }
@@ -1841,9 +1828,11 @@ namespace
         }
 
         // draw overlays over the plot lines
-        void drawOverlays(OpenSim::Coordinate const& coord, std::optional<float> maybeMouseX)
+        void drawOverlays(
+            OpenSim::Coordinate const& coord,
+            std::optional<float> maybeMouseX)
         {
-            double coordinateXInDegrees = ConvertCoordValueToDisplayValue(coord, coord.getValue(getSharedStateData().getModel().getState()));
+            double coordinateXInDegrees = ConvertCoordValueToDisplayValue(coord, coord.getValue(getShared().getModel().getState()));
 
             // draw vertical drop line where the coordinate's value currently is
             {
@@ -1887,8 +1876,7 @@ namespace
                 {
                     std::optional<float> maybeCoordinateY = ComputeLERPedY(m_Lines.getActivePlot(), static_cast<float>(coordinateXInDegrees));
 
-                    if (maybeCoordinateY)
-                    {
+                    if (maybeCoordinateY) {
                         double v = *maybeCoordinateY;
 
                         // CARE: this drag line shouldn't cause ImPlot to re-fit because it will
@@ -1901,11 +1889,9 @@ namespace
                 }
 
                 // (try to) draw the hovered coordinate value as a faded dropline
-                if (maybeMouseX)
-                {
+                if (maybeMouseX) {
                     std::optional<float> const maybeHoverY = ComputeLERPedY(m_Lines.getActivePlot(), *maybeMouseX);
-                    if (maybeHoverY)
-                    {
+                    if (maybeHoverY) {
                         double v = *maybeHoverY;
 
                         // CARE: this drag line shouldn't cause ImPlot to re-fit because it will
@@ -1919,208 +1905,215 @@ namespace
             }
         }
 
-        void handleMouseEvents(OpenSim::Coordinate const& coord, std::optional<float> maybeMouseX)
+        void handleMouseEvents(
+            OpenSim::Coordinate const& coord,
+            std::optional<float> maybeMouseX)
         {
             // if the plot is hovered and the user is holding their left-mouse button down,
-            // then "scrub" through the coordinate in the model
+            // then "scrub" through the output in the model
             //
-            // this is handy for users to visually see how a coordinate affects the model
-            if (maybeMouseX && ImGui::IsMouseDown(ImGuiMouseButton_Left))
-            {
-                if (coord.getDefaultLocked())
-                {
+            // this is handy for users to visually see how the independent variable affects the model
+            if (maybeMouseX && ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+                if (coord.getDefaultLocked()) {
                     DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
                 }
-                else
-                {
+                else {
                     double storedValue = ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
-                    ActionSetCoordinateValue(updSharedStateData().updModel(), coord, storedValue);
+                    ActionSetCoordinateValue(updShared().updModel(), coord, storedValue);
                 }
             }
 
             // when the user stops dragging their left-mouse around, commit the scrubbed-to
             // coordinate to model storage
-            if (maybeMouseX && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-            {
-                if (coord.getDefaultLocked())
-                {
+            if (maybeMouseX && ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
+                if (coord.getDefaultLocked()) {
                     DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
                 }
-                else
-                {
+                else {
                     double storedValue = ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
-                    ActionSetCoordinateValueAndSave(updSharedStateData().updModel(), coord, storedValue);
+                    ActionSetCoordinateValueAndSave(updShared().updModel(), coord, storedValue);
 
                     // trick: we "know" that the last edit to the model was a coordinate edit in this plot's
                     //        independent variable, so we can skip recomputing it
-                    ModelStateCommit const& commitAfter = getSharedStateData().getModel().getLatestCommit();
+                    ModelStateCommit const& commitAfter = getShared().getModel().getLatestCommit();
                     m_Lines.setActivePlotCommit(commitAfter);
                 }
             }
         }
 
-        void tryDrawGeneralPlotPopup(OpenSim::Coordinate const& coord, std::string const& plotTitle, ImGuiPopupFlags flags = ImGuiPopupFlags_MouseButtonRight)
+        // try to draw a context menu with helpful options (set num data points, export, etc.)
+        void tryDrawGeneralPlotPopup(
+            OpenSim::Coordinate const& coord,
+            std::string const& plotTitle,
+            ImGuiPopupFlags flags = ImGuiPopupFlags_MouseButtonRight)
         {
-            // draw a context menu with helpful options (set num data points, export, etc.)
-            if (ImGui::BeginPopupContextItem((plotTitle + "_contextmenu").c_str(), flags))
-            {
-                drawPlotDataTypeSelector();
-
-                // editor: max data points
-                {
-                    int currentDataPoints = getSharedStateData().getPlotParams().getNumRequestedDataPoints();
-                    if (ImGui::InputInt("num data points", &currentDataPoints, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue))
-                    {
-                        if (currentDataPoints >= 0)
-                        {
-                            updSharedStateData().updPlotParams().setNumRequestedDataPoints(currentDataPoints);
-                        }
-                    }
-                }
-
-                // editor: max history entries
-                {
-                    int maxHistoryEntries = m_Lines.getMaxHistoryEntries();
-                    if (ImGui::InputInt("max history size", &maxHistoryEntries, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue))
-                    {
-                        if (maxHistoryEntries >= 0)
-                        {
-                            m_Lines.setMaxHistoryEntries(maxHistoryEntries);
-                        }
-                    }
-                }
-
-                if (ImGui::MenuItem("clear unlocked plots"))
-                {
-                    m_Lines.clearUnlockedPlots();
-                }
-
-                if (ImGui::BeginMenu("legend"))
-                {
-                    drawLegendContextMenuContent();
-                    ImGui::EndMenu();
-                }
-
-                ImGui::MenuItem("show markers on active plot", nullptr, &m_ShowMarkersOnActivePlot);
-                ImGui::MenuItem("show markers on other plots", nullptr, &m_ShowMarkersOnOtherPlots);
-                ImGui::MenuItem("snap cursor to datapoints", nullptr, &m_SnapCursor);
-
-                if (ImGui::MenuItem("duplicate plot"))
-                {
-                    auto const* musc = FindComponent<OpenSim::Muscle>(getSharedStateData().getModel().getModel(), getSharedStateData().getPlotParams().getMusclePath());
-                    if (musc)
-                    {
-                        updSharedStateData().updEditorAPI().addMusclePlot(coord, *musc);
-                    }
-                }
-
-                if (ImGui::MenuItem("import CSV overlay(s)"))
-                {
-                    ActionPromptUserForCSVOverlayFile(m_Lines);
-                }
-                DrawTooltipIfItemHovered("import CSV overlay(s)", "Imports the specified CSV file as an overlay over the current plot. This is handy fitting muscle curves against externally-supplied data.\n\nThe provided CSV file must contain a header row and at least two columns of numeric data on each data row. The values in the columns must match this plot's axes.");
-
-                if (ImGui::BeginMenu("export CSV"))
-                {
-                    int id = 0;
-
-                    for (size_t i = 0; i < m_Lines.getNumOtherPlots(); ++i)
-                    {
-                        ImGui::PushID(id++);
-                        if (ImGui::MenuItem(m_Lines.getOtherPlot(i).getName().c_str()))
-                        {
-                            ActionPromptUserToSavePlotToCSV(coord, getSharedStateData().getPlotParams(), m_Lines.getOtherPlot(i));
-                        }
-                        ImGui::PopID();
-                    }
-
-                    ImGui::PushID(id++);
-                    if (ImGui::MenuItem(m_Lines.getActivePlot().getName().c_str()))
-                    {
-                        ActionPromptUserToSavePlotToCSV(coord, getSharedStateData().getPlotParams(), m_Lines.getActivePlot());
-                    }
-
-                    ImGui::PopID();
-
-                    ImGui::Separator();
-
-                    ImGui::PushID(id++);
-                    if (ImGui::MenuItem("Export All Curves"))
-                    {
-                        ActionPromptUserToSavePlotLinesToCSV(coord, getSharedStateData().getPlotParams(), m_Lines);
-                    }
-                    DrawTooltipIfItemHovered("Export All Curves to CSV", "Exports all curves in the plot to a CSV file.\n\nThe implementation will try to group things together by X value, but the CSV file *may* contain sparse rows if (e.g.) some curves have a different number of plot points, or some curves were loaded from another CSV, etc.");
-                    ImGui::PopID();
-
-                    ImGui::EndMenu();
-                }
-
+            if (ImGui::BeginPopupContextItem((plotTitle + "_contextmenu").c_str(), flags)) {
+                drawGeneralPlotPopupContent(coord);
                 ImGui::EndPopup();
             }
         }
 
-        void drawPlotDataTypeSelector()
+        // draw the content of the general context menu (assume it's already open)
+        void drawGeneralPlotPopupContent(OpenSim::Coordinate const& coord)
         {
+            drawPlotOutputSelectorCombo();
+            drawMaxDatapointsIntInput();
+            drawMaxHistoryEntriesIntInput();
+
+            if (ImGui::MenuItem("clear unlocked plots")) {
+                m_Lines.clearUnlockedPlots();
+            }
+
+            if (ImGui::BeginMenu("legend")) {
+                drawLegendContextMenuContent();
+                ImGui::EndMenu();
+            }
+
+            ImGui::MenuItem("show markers on active plot", nullptr, &m_ShowMarkersOnActivePlot);
+            ImGui::MenuItem("show markers on other plots", nullptr, &m_ShowMarkersOnOtherPlots);
+            ImGui::MenuItem("snap cursor to datapoints", nullptr, &m_SnapCursor);
+
+            if (ImGui::MenuItem("duplicate plot")) {
+                actionDuplicateCurrentPlotIntoNewPanel(coord);
+            }
+
+            if (ImGui::MenuItem("import CSV overlay(s)")) {
+                ActionPromptUserForCSVOverlayFile(m_Lines);
+            }
+            DrawTooltipIfItemHovered("import CSV overlay(s)", "Imports the specified CSV file as an overlay over the current plot. This is handy fitting muscle curves against externally-supplied data.\n\nThe provided CSV file must contain a header row and at least two columns of numeric data on each data row. The values in the columns must match this plot's axes.");
+
+            if (ImGui::BeginMenu("export CSV")) {
+                drawExportCSVMenuContent(coord);
+                ImGui::EndMenu();
+            }
+        }
+
+        // draws an input for manipulating the number of datapoints that should be plotted
+        void drawMaxDatapointsIntInput()
+        {
+            int currentDataPoints = getShared().getNumRequestedDatapoints();
+            if (ImGui::InputInt("num data points", &currentDataPoints, 1, 1024, ImGuiInputTextFlags_EnterReturnsTrue)) {
+                if (currentDataPoints >= 0) {
+                    updShared().setNumRequestedDataPoints(currentDataPoints);
+                }
+            }
+        }
+
+        // draws an input for manipulating the number of history entries this plot panel holds
+        void drawMaxHistoryEntriesIntInput()
+        {
+            int maxHistoryEntries = m_Lines.getMaxHistoryEntries();
+            if (ImGui::InputInt("max history size", &maxHistoryEntries, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
+                if (maxHistoryEntries >= 0) {
+                    m_Lines.setMaxHistoryEntries(maxHistoryEntries);
+                }
+            }
+        }
+
+        // draws a combo that lets the user change which output of the
+        // current component is plotted
+        void drawPlotOutputSelectorCombo()
+        {
+            auto const& availableOutputs = getShared().availableOutputs();
+
             std::vector<CStringView> names;
-            names.reserve(m_AvailableMuscleOutputs.size());
+            names.reserve(availableOutputs.size());
 
             size_t active = 0;
-            for (size_t i = 0; i < m_AvailableMuscleOutputs.size(); ++i)
-            {
-                MuscleOutput const& o = m_AvailableMuscleOutputs[i];
+            PlottableOutput currentOutput = getShared().getPlottedOutput();
+
+            for (size_t i = 0; i < availableOutputs.size(); ++i) {
+                PlottableOutput const& o = availableOutputs[i];
                 names.push_back(o.getName());
-                if (o == getSharedStateData().getPlotParams().getMuscleOutput())
-                {
+                if (o == currentOutput) {
                     active = i;
                 }
             }
 
-            if (Combo("data type", &active, names))
-            {
-                updSharedStateData().updPlotParams().setMuscleOutput(m_AvailableMuscleOutputs[active]);
+            if (Combo("output", &active, names)) {
+                updShared().setPlottedOutput(availableOutputs[active]);
             }
         }
 
+        // draws the content of a menu for manipulating the plot's legend
         void drawLegendContextMenuContent()
         {
+            // draw hide legend button
             {
                 static_assert(std::is_same_v<decltype(m_PlotFlags), int>);
-
                 auto f = static_cast<unsigned int>(m_PlotFlags);
-                if (ImGui::CheckboxFlags("Hide", &f, ImPlotFlags_NoLegend))
-                {
+                if (ImGui::CheckboxFlags("Hide", &f, ImPlotFlags_NoLegend)) {
                     m_PlotFlags = static_cast<int>(f);
                 }
             }
+
+            // draw outside/inside legend button
             {
                 static_assert(std::is_same_v<decltype(m_LegendFlags), int>);
-
                 auto f = static_cast<unsigned int>(m_LegendFlags);
-                if (ImGui::CheckboxFlags("Outside", &f, ImPlotLegendFlags_Outside))
-                {
+                if (ImGui::CheckboxFlags("Outside", &f, ImPlotLegendFlags_Outside)) {
                     m_LegendFlags = static_cast<int>(f);
                 }
             }
 
             const float s = ImGui::GetFrameHeight();
+            ImVec2 const dims{1.5f * s, s};
+
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2, 2));
-            if (ImGui::Button("NW", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_NorthWest; } ImGui::SameLine();
-            if (ImGui::Button("N", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_North; } ImGui::SameLine();
-            if (ImGui::Button("NE", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_NorthEast; }
-            if (ImGui::Button("W", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_West; } ImGui::SameLine();
-            if (ImGui::InvisibleButton("C", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_Center; } ImGui::SameLine();
-            if (ImGui::Button("E", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_East; }
-            if (ImGui::Button("SW", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_SouthWest; } ImGui::SameLine();
-            if (ImGui::Button("S", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_South; } ImGui::SameLine();
-            if (ImGui::Button("SE", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_SouthEast; }
+            if (ImGui::Button("NW", dims))         { m_LegendLocation = ImPlotLocation_NorthWest; } ImGui::SameLine();
+            if (ImGui::Button("N", dims))          { m_LegendLocation = ImPlotLocation_North; }     ImGui::SameLine();
+            if (ImGui::Button("NE", dims))         { m_LegendLocation = ImPlotLocation_NorthEast; }
+            if (ImGui::Button("W", dims))          { m_LegendLocation = ImPlotLocation_West; }      ImGui::SameLine();
+            if (ImGui::InvisibleButton("C", dims)) { m_LegendLocation = ImPlotLocation_Center; }    ImGui::SameLine();
+            if (ImGui::Button("E", dims))          { m_LegendLocation = ImPlotLocation_East; }
+            if (ImGui::Button("SW", dims))         { m_LegendLocation = ImPlotLocation_SouthWest; } ImGui::SameLine();
+            if (ImGui::Button("S", dims))          { m_LegendLocation = ImPlotLocation_South; }     ImGui::SameLine();
+            if (ImGui::Button("SE", dims))         { m_LegendLocation = ImPlotLocation_SouthEast; }
             ImGui::PopStyleVar();
+        }
+
+        // draws the content of a menu for exporting plot data to a CSV
+        void drawExportCSVMenuContent(OpenSim::Coordinate const& coord)
+        {
+            int id = 0;
+
+            for (size_t i = 0; i < m_Lines.getNumOtherPlots(); ++i) {
+                ImGui::PushID(id++);
+                if (ImGui::MenuItem(m_Lines.getOtherPlot(i).getName().c_str())) {
+                    ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), m_Lines.getOtherPlot(i));
+                }
+                ImGui::PopID();
+            }
+
+            ImGui::PushID(id++);
+            if (ImGui::MenuItem(m_Lines.getActivePlot().getName().c_str())) {
+                ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), m_Lines.getActivePlot());
+            }
+            ImGui::PopID();
+
+            ImGui::Separator();
+
+            ImGui::PushID(id++);
+            if (ImGui::MenuItem("Export All Curves")) {
+                ActionPromptUserToSavePlotLinesToCSV(coord, getShared().getPlotParams(), m_Lines);
+            }
+            DrawTooltipIfItemHovered("Export All Curves to CSV", "Exports all curves in the plot to a CSV file.\n\nThe implementation will try to group things together by X value, but the CSV file *may* contain sparse rows if (e.g.) some curves have a different number of plot points, or some curves were loaded from another CSV, etc.");
+            ImGui::PopID();
+        }
+
+        // tries to duplicate the current plot (settings etc.) into a new plot panel
+        void actionDuplicateCurrentPlotIntoNewPanel(OpenSim::Coordinate const& coord)
+        {
+            auto const* musc = FindComponent<OpenSim::Muscle>(getShared().getModel().getModel(), getShared().getPlotParams().getMusclePath());
+            if (musc) {
+                updShared().updEditorAPI().addMusclePlot(coord, *musc);
+            }
         }
 
         // plot data state
         PlotLines m_Lines;
 
         // UI/drawing/widget state
-        std::vector<MuscleOutput> m_AvailableMuscleOutputs = GenerateMuscleOutputs();
         Color m_ComputedPlotLineBaseColor = Color::white();
         bool m_LegendPopupIsOpen = false;
         bool m_ShowMarkersOnActivePlot = true;
@@ -2144,7 +2137,7 @@ namespace
             MusclePlotState{shared_}
         {
             // this is what this state is populating
-            updSharedStateData().updPlotParams().setCoordinatePath(OpenSim::ComponentPath{});
+            updShared().updPlotParams().setCoordinatePath(OpenSim::ComponentPath{});
         }
 
     private:
@@ -2153,8 +2146,7 @@ namespace
             std::unique_ptr<MusclePlotState> rv;
 
             std::vector<OpenSim::Coordinate const*> coordinates;
-            for (OpenSim::Coordinate const& coord : getSharedStateData().getModel().getModel().getComponentList<OpenSim::Coordinate>())
-            {
+            for (OpenSim::Coordinate const& coord : getShared().getModel().getModel().getComponentList<OpenSim::Coordinate>()) {
                 coordinates.push_back(&coord);
             }
             std::sort(
@@ -2166,12 +2158,10 @@ namespace
             ImGui::Text("select coordinate:");
 
             ImGui::BeginChild("MomentArmPlotCoordinateSelection");
-            for (OpenSim::Coordinate const* coord : coordinates)
-            {
-                if (ImGui::Selectable(coord->getName().c_str()))
-                {
-                    updSharedStateData().updPlotParams().setCoordinatePath(GetAbsolutePath(*coord));
-                    rv = std::make_unique<ShowingPlotState>(updSharedStateData());
+            for (OpenSim::Coordinate const* coord : coordinates) {
+                if (ImGui::Selectable(coord->getName().c_str())) {
+                    updShared().updPlotParams().setCoordinatePath(GetAbsolutePath(*coord));
+                    rv = std::make_unique<ShowingPlotState>(updShared());
                 }
             }
             ImGui::EndChild();
@@ -2187,7 +2177,7 @@ namespace
             MusclePlotState{shared_}
         {
             // this is what this state is populating
-            updSharedStateData().updPlotParams().setMusclePath(OpenSim::ComponentPath{});
+            updShared().updPlotParams().setMusclePath(OpenSim::ComponentPath{});
         }
 
     private:
@@ -2196,8 +2186,7 @@ namespace
             std::unique_ptr<MusclePlotState> rv;
 
             std::vector<OpenSim::Muscle const*> muscles;
-            for (OpenSim::Muscle const& musc : getSharedStateData().getModel().getModel().getComponentList<OpenSim::Muscle>())
-            {
+            for (OpenSim::Muscle const& musc : getShared().getModel().getModel().getComponentList<OpenSim::Muscle>()) {
                 muscles.push_back(&musc);
             }
             std::sort(
@@ -2208,19 +2197,15 @@ namespace
 
             ImGui::Text("select muscle:");
 
-            if (muscles.empty())
-            {
+            if (muscles.empty()) {
                 ImGui::TextDisabled("(the model contains no muscles?)");
             }
-            else
-            {
+            else {
                 ImGui::BeginChild("MomentArmPlotMuscleSelection");
-                for (OpenSim::Muscle const* musc : muscles)
-                {
-                    if (ImGui::Selectable(musc->getName().c_str()))
-                    {
-                        updSharedStateData().updPlotParams().setMusclePath(GetAbsolutePath(*musc));
-                        rv = std::make_unique<PickCoordinateState>(updSharedStateData());
+                for (OpenSim::Muscle const* musc : muscles) {
+                    if (ImGui::Selectable(musc->getName().c_str())) {
+                        updShared().updPlotParams().setMusclePath(GetAbsolutePath(*musc));
+                        rv = std::make_unique<PickCoordinateState>(updShared());
                     }
                 }
                 ImGui::EndChild();
@@ -2246,8 +2231,7 @@ public:
         m_SharedData{editorAPI, std::move(uim)},
         m_ActiveState{std::make_unique<PickMuscleState>(m_SharedData)},
         m_PanelName{panelName}
-    {
-    }
+    {}
 
     Impl(
         IEditorAPI* editorAPI,
@@ -2259,46 +2243,27 @@ public:
         m_SharedData{editorAPI, std::move(uim), coordPath, musclePath},
         m_ActiveState{std::make_unique<ShowingPlotState>(m_SharedData)},
         m_PanelName{panelName}
-    {
-    }
+    {}
 
-    std::string const& getName() const
-    {
-        return m_PanelName;
-    }
-
-    bool isOpen() const
-    {
-        return m_IsOpen;
-    }
-
-    void open()
-    {
-        m_IsOpen = true;
-    }
-
-    void close()
-    {
-        m_IsOpen = false;
-    }
+    std::string const& getName() const { return m_PanelName; }
+    bool isOpen() const { return m_IsOpen; }
+    void open() { m_IsOpen = true; }
+    void close() { m_IsOpen = false; }
 
     void onDraw()
     {
-        if (m_IsOpen)
-        {
+        if (m_IsOpen) {
             bool isOpen = m_IsOpen;
-            if (ImGui::Begin(m_PanelName.c_str(), &isOpen))
-            {
-                if (auto maybeNextState = m_ActiveState->onDraw())
-                {
+
+            if (ImGui::Begin(m_PanelName.c_str(), &isOpen)) {
+                if (auto maybeNextState = m_ActiveState->onDraw()) {
                     m_ActiveState = std::move(maybeNextState);
                 }
                 m_IsOpen = isOpen;
             }
             ImGui::End();
 
-            if (isOpen != m_IsOpen)
-            {
+            if (isOpen != m_IsOpen) {
                 m_IsOpen = isOpen;
             }
         }
@@ -2327,8 +2292,7 @@ osc::ModelMusclePlotPanel::ModelMusclePlotPanel(
     std::string_view panelName) :
 
     m_Impl{std::make_unique<Impl>(editorAPI, std::move(uim), panelName)}
-{
-}
+{}
 
 osc::ModelMusclePlotPanel::ModelMusclePlotPanel(
     IEditorAPI* editorAPI,
@@ -2338,34 +2302,14 @@ osc::ModelMusclePlotPanel::ModelMusclePlotPanel(
     OpenSim::ComponentPath const& musclePath) :
 
     m_Impl{std::make_unique<Impl>(editorAPI, std::move(uim), panelName, coordPath, musclePath)}
-{
-}
+{}
 
 osc::ModelMusclePlotPanel::ModelMusclePlotPanel(ModelMusclePlotPanel&&) noexcept = default;
 osc::ModelMusclePlotPanel& osc::ModelMusclePlotPanel::operator=(ModelMusclePlotPanel&&) noexcept = default;
 osc::ModelMusclePlotPanel::~ModelMusclePlotPanel() noexcept = default;
 
-CStringView osc::ModelMusclePlotPanel::implGetName() const
-{
-    return m_Impl->getName();
-}
-
-bool osc::ModelMusclePlotPanel::implIsOpen() const
-{
-    return m_Impl->isOpen();
-}
-
-void osc::ModelMusclePlotPanel::implOpen()
-{
-    m_Impl->open();
-}
-
-void osc::ModelMusclePlotPanel::implClose()
-{
-    m_Impl->close();
-}
-
-void osc::ModelMusclePlotPanel::implOnDraw()
-{
-    m_Impl->onDraw();
-}
+CStringView osc::ModelMusclePlotPanel::implGetName() const { return m_Impl->getName(); }
+bool osc::ModelMusclePlotPanel::implIsOpen() const { return m_Impl->isOpen(); }
+void osc::ModelMusclePlotPanel::implOpen() { m_Impl->open(); }
+void osc::ModelMusclePlotPanel::implClose() { m_Impl->close(); }
+void osc::ModelMusclePlotPanel::implOnDraw() { m_Impl->onDraw(); }
