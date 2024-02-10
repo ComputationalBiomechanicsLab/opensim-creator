@@ -10,7 +10,7 @@ OSC_BUILD_CONCURRENCY=$(nproc)
 cat << EOF > osc-build/dlclose.c
 #include <stdio.h>
 int dlclose(void *handle) {
-	;
+    ;
 }
 EOF
 gcc -shared -o osc-build/libdlclose.so -fPIC osc-build/dlclose.c
