@@ -67,4 +67,17 @@ namespace osc
     // - texture coordinates are assigned to each vertex, and span from (0.0f, 0.0f) to (1.0f, 1.0f)
     // - the utility of this is that the grid can be warped to (effectively) warp the texture in 2D space
     Mesh GenerateNxMTriangleQuadGridMesh(Vec2i steps);
+
+    // generates a torus knot, the particular shape of which is defined by a pair of coprime integers
+    // `p` and `q`. If `p` and `q` are not coprime, the result will be a torus link
+    //
+    // inspired by three.js's `TorusKnotGeometry`
+    Mesh GenerateTorusKnotMesh(
+        float torusRadius = 1.0f,
+        float tubeRadius = 0.4f,
+        size_t numTubularSegments = 64,
+        size_t numRadialSegments = 8,
+        size_t p = 2,
+        size_t q = 3
+    );
 }

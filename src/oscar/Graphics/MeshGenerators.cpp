@@ -905,3 +905,132 @@ Mesh osc::GenerateNxMTriangleQuadGridMesh(Vec2i steps)
     rv.setIndices(indices);
     return rv;
 }
+
+Mesh osc::GenerateTorusKnotMesh(
+    float torusRadius,
+    float tubeRadius,
+    size_t numTubularSegments,
+    size_t numRadialSegments,
+    size_t p,
+    size_t q)
+{
+    // the implementation/API of this was initially translated from `three.js`'s
+    // `TorusKnotGeometry`, which has excellent documentation and source code, and
+    // was then subsequently mutated to suit C++ etc.
+    //
+    // https://threejs.org/docs/#api/en/geometries/TorusKnotGeometry
+
+    using std::cos;
+
+    auto const fNumTubularSegments = static_cast<float>(numTubularSegments);
+    auto const fNumRadialSegments = static_cast<float>(numRadialSegments);
+    auto const fp = static_cast<float>(p);
+    auto const fq = static_cast<float>(q);
+
+    // helper: calculates the current position on the torus curve
+    auto const calculatePositionOnCurve = [fp, fq, torusRadius](Radians u, Vec3& pos)
+    {
+        float const cu = cos(u);
+        float const su = sin(u);
+        Radians const quOverP = fq/fp * u;
+        float const cs = cos(quOverP);
+
+        pos.x = torusRadius * (2.0f + cs) * 0.5f * cu;
+        pos.y = torusRadius * (2.0f + cs) * 0.5f * su;
+        pos.z = torusRadius * sin(quOverP) * 0.5f;
+    };
+
+    size_t const numVerts = (numTubularSegments+1)*(numRadialSegments+1);
+    size_t const numIndices = 6*numTubularSegments*numRadialSegments;
+
+    std::vector<uint32_t> indices;
+    indices.reserve(numIndices);
+    std::vector<Vec3> vertices;
+    vertices.reserve(numVerts);
+    std::vector<Vec3> normals;
+    normals.reserve(numVerts);
+    std::vector<Vec2> uvs;
+    uvs.reserve(numVerts);
+
+    Vec3 vertex{};
+    Vec3 normal{};
+    Vec3 P1{};
+    Vec3 P2{};
+    Vec3 B{};
+    Vec3 T{};
+    Vec3 N{};
+
+    // generate vertices, normals, and uvs
+    for (size_t i = 0; i <= numTubularSegments; ++i) {
+        auto const fi = static_cast<float>(i);
+
+        // `u` is used to calculate the position on the torus curve of the current tubular segment
+        Radians const u = fi/fNumTubularSegments * fp * 360_deg;
+
+        // now we calculate two points. P1 is our current position on the curve, P2 is a little farther ahead.
+        // these points are used to create a special "coordinate space", which is necessary to calculate the
+        // correct vertex positions
+        calculatePositionOnCurve(u, P1);
+        calculatePositionOnCurve(u + 0.01_rad, P2);
+
+        // calculate orthonormal basis
+        T = P2 - P1;
+        N = P2 + P1;
+        B = Cross(T, N);
+        N = Cross(B, T);
+
+        // normalize B, N. T can be ignored, we don't use it
+        B = Normalize(B);
+        N = Normalize(N);
+
+        for (size_t j = 0; j <= numRadialSegments; ++j) {
+            auto const fj = static_cast<float>(j);
+
+            // now calculate the vertices. they are nothing more than an extrusion of the torus curve.
+            // because we extrude a shape in the xy-plane, there is no need to calculate a z-value.
+
+            Radians const v = fj/fNumRadialSegments * 360_deg;
+            float const cx = -tubeRadius * cos(v);
+            float const cy =  tubeRadius * sin(v);
+
+            // now calculate the final vertex position.
+            // first we orient the extrusion with our basis vectors, then we add it to the current position on the curve
+            vertex.x = P1.x + (cx * N.x + cy * B.x);
+            vertex.y = P1.y + (cx * N.y + cy * B.y);
+            vertex.z = P1.z + (cx * N.z + cy * B.z);
+            vertices.push_back(vertex);
+
+            // normal (P1 is always the center/origin of the extrusion, thus we can use it to calculate the normal)
+            normal = Normalize(vertex - P1);
+            normals.push_back(normal);
+
+            uvs.emplace_back(fi / fNumTubularSegments, fj / fNumRadialSegments);
+        }
+    }
+
+    // generate indices
+    for (size_t j = 1; j <= numTubularSegments; ++j) {
+        for (size_t i = 1; i <= numRadialSegments; ++i) {
+            auto const a = static_cast<uint32_t>((numRadialSegments + 1) * (j - 1) + (i - 1));
+            auto const b = static_cast<uint32_t>((numRadialSegments + 1) *  j      + (i - 1));
+            auto const c = static_cast<uint32_t>((numRadialSegments + 1) *  j      +  i);
+            auto const d = static_cast<uint32_t>((numRadialSegments + 1) * (j - 1) +  i);
+
+            indices.push_back(a);
+            indices.push_back(b);
+            indices.push_back(d);
+
+            indices.push_back(b);
+            indices.push_back(c);
+            indices.push_back(d);
+        }
+    }
+
+    // build geometry
+    Mesh rv;
+    rv.setVerts(vertices);
+    rv.setNormals(normals);
+    rv.setTexCoords(uvs);
+    rv.setIndices(indices);
+    return rv;
+}

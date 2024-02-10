@@ -28,6 +28,7 @@ namespace
             {"yline", cache.getYLineMesh()},
             {"quad", cache.getTexturedQuadMesh()},
             {"torus", cache.getTorusMesh(0.9f, 0.1f)},
+            {"torusknot", GenerateTorusKnotMesh()},
         };
     }
 }
