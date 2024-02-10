@@ -928,16 +928,16 @@ Mesh osc::GenerateTorusKnotMesh(
     auto const fq = static_cast<float>(q);
 
     // helper: calculates the current position on the torus curve
-    auto const calculatePositionOnCurve = [fp, fq, torusRadius](Radians u, Vec3& pos)
+    auto const calculatePositionOnCurve = [fp, fq, torusRadius](Radians u)
     {
-        float const cu = cos(u);
-        float const su = sin(u);
         Radians const quOverP = fq/fp * u;
         float const cs = cos(quOverP);
 
-        pos.x = torusRadius * (2.0f + cs) * 0.5f * cu;
-        pos.y = torusRadius * (2.0f + cs) * 0.5f * su;
-        pos.z = torusRadius * sin(quOverP) * 0.5f;
+        return Vec3{
+            torusRadius * (2.0f + cs) * 0.5f * cos(u),
+            torusRadius * (2.0f + cs) * 0.5f * sin(u),
+            torusRadius * sin(quOverP) * 0.5f,
+        };
     };
 
     size_t const numVerts = (numTubularSegments+1)*(numRadialSegments+1);
@@ -952,14 +952,6 @@ Mesh osc::GenerateTorusKnotMesh(
     std::vector<Vec2> uvs;
     uvs.reserve(numVerts);
 
-    Vec3 vertex{};
-    Vec3 normal{};
-    Vec3 P1{};
-    Vec3 P2{};
-    Vec3 B{};
-    Vec3 T{};
-    Vec3 N{};
-
     // generate vertices, normals, and uvs
     for (size_t i = 0; i <= numTubularSegments; ++i) {
         auto const fi = static_cast<float>(i);
@@ -970,13 +962,13 @@ Mesh osc::GenerateTorusKnotMesh(
         // now we calculate two points. P1 is our current position on the curve, P2 is a little farther ahead.
         // these points are used to create a special "coordinate space", which is necessary to calculate the
         // correct vertex positions
-        calculatePositionOnCurve(u, P1);
-        calculatePositionOnCurve(u + 0.01_rad, P2);
+        Vec3 const P1 = calculatePositionOnCurve(u);
+        Vec3 const P2 = calculatePositionOnCurve(u + 0.01_rad);
 
         // calculate orthonormal basis
-        T = P2 - P1;
-        N = P2 + P1;
-        B = Cross(T, N);
+        Vec3 const T = P2 - P1;
+        Vec3 N = P2 + P1;
+        Vec3 B = Cross(T, N);
         N = Cross(B, T);
 
         // normalize B, N. T can be ignored, we don't use it
@@ -995,14 +987,15 @@ Mesh osc::GenerateTorusKnotMesh(
 
             // now calculate the final vertex position.
             // first we orient the extrusion with our basis vectors, then we add it to the current position on the curve
-            vertex.x = P1.x + (cx * N.x + cy * B.x);
-            vertex.y = P1.y + (cx * N.y + cy * B.y);
-            vertex.z = P1.z + (cx * N.z + cy * B.z);
+            Vec3 const vertex = {
+                P1.x + (cx * N.x + cy * B.x),
+                P1.y + (cx * N.y + cy * B.y),
+                P1.z + (cx * N.z + cy * B.z),
+            };
             vertices.push_back(vertex);
 
             // normal (P1 is always the center/origin of the extrusion, thus we can use it to calculate the normal)
-            normal = Normalize(vertex - P1);
-            normals.push_back(normal);
+            normals.push_back(Normalize(vertex - P1));
 
             uvs.emplace_back(fi / fNumTubularSegments, fj / fNumRadialSegments);
         }
@@ -1016,13 +1009,8 @@ Mesh osc::GenerateTorusKnotMesh(
             auto const c = static_cast<uint32_t>((numRadialSegments + 1) *  j      +  i);
             auto const d = static_cast<uint32_t>((numRadialSegments + 1) * (j - 1) +  i);
 
-            indices.push_back(a);
-            indices.push_back(b);
-            indices.push_back(d);
-
-            indices.push_back(b);
-            indices.push_back(c);
-            indices.push_back(d);
+            indices.insert(indices.end(), {a, b, d});
+            indices.insert(indices.end(), {b, c, d});
         }
     }
 
