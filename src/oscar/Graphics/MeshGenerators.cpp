@@ -1,6 +1,7 @@
 #include "MeshGenerators.h"
 
 #include <oscar/Graphics/Mesh.h>
+#include <oscar/Graphics/SubMeshDescriptor.h>
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Triangle.h>
@@ -915,8 +916,8 @@ Mesh osc::GenerateTorusKnotMesh(
     size_t q)
 {
     // the implementation/API of this was initially translated from `three.js`'s
-    // `TorusKnotGeometry`, which has excellent documentation and source code, and
-    // was then subsequently mutated to suit C++ etc.
+    // `TorusKnotGeometry`, which has excellent documentation and source code. The
+    // code was then subsequently mutated to suit OSC, C++ etc.
     //
     // https://threejs.org/docs/#api/en/geometries/TorusKnotGeometry
 
@@ -1020,5 +1021,123 @@ Mesh osc::GenerateTorusKnotMesh(
     rv.setNormals(normals);
     rv.setTexCoords(uvs);
     rv.setIndices(indices);
+    return rv;
+}
+
+Mesh osc::GenerateBoxMesh(
+    float width,
+    float height,
+    float depth,
+    size_t widthSegments,
+    size_t heightSegments,
+    size_t depthSegments)
+{
+    // the implementation/API of this was initially translated from `three.js`'s
+    // `BoxGeometry`, which has excellent documentation and source code. The
+    // code was then subsequently mutated to suit OSC, C++ etc.
+    //
+    // https://threejs.org/docs/#api/en/geometries/BoxGeometry
+
+    std::vector<uint32_t> indices;
+    std::vector<Vec3> vertices;
+    std::vector<Vec3> normals;
+    std::vector<Vec2> uvs;
+    std::vector<SubMeshDescriptor> submeshes;  // for multi-material support
+
+    // helper variables
+    size_t numberOfVertices = 0;
+    size_t groupStart = 0;
+
+    // helper function
+    auto const buildPlane = [&indices, &vertices, &normals, &uvs, &submeshes, &numberOfVertices, &groupStart](
+        Vec3::length_type u,
+        Vec3::length_type v,
+        Vec3::length_type w,
+        float udir,
+        float vdir,
+        float width,
+        float height,
+        float depth,
+        size_t gridX,
+        size_t gridY)
+    {
+        float const segmentWidth = width / gridX;
+        float const segmentHeight = height / gridY;
+
+        float const widthHalf = 0.5f * width;
+        float const heightHalf = 0.5f * height;
+        float const depthHalf = 0.5f * depth;
+
+        size_t const gridX1 = gridX + 1;
+        size_t const gridY1 = gridY + 1;
+
+        size_t vertexCount = 0;
+        size_t groupCount = 0;
+
+        // generate vertices, normals, and UVs
+        for (size_t iy = 0; iy < gridY1; ++iy) {
+            float const y = iy*segmentHeight - heightHalf;
+            for (size_t ix = 0; ix < gridX1; ++ix) {
+                float const x = ix*segmentWidth - widthHalf;
+
+                Vec3 vertex{};
+                vertex[u] = x*udir;
+                vertex[v] = y*vdir;
+                vertex[w] = depthHalf;
+                vertices.push_back(vertex);
+
+                Vec3 normal{};
+                normal[u] = 0.0f;
+                normal[v] = 0.0f;
+                normal[w] = depth > 0.0f ? 1.0f : -1.0f;
+                normals.push_back(normal);
+
+                uvs.emplace_back(ix/gridX, 1 - (iy/gridY));
+
+                ++vertexCount;
+            }
+        }
+
+        // indices (two triangles, or 6 indices, per segment)
+        for (size_t iy = 0; iy < gridY; ++iy) {
+            for (size_t ix = 0; ix < gridX; ++ix) {
+                uint32_t const a = static_cast<uint32_t>(numberOfVertices +  ix      + (gridX1 *  iy     ));
+                uint32_t const b = static_cast<uint32_t>(numberOfVertices +  ix      + (gridX1 * (iy + 1)));
+                uint32_t const c = static_cast<uint32_t>(numberOfVertices + (ix + 1) + (gridX1 * (iy + 1)));
+                uint32_t const d = static_cast<uint32_t>(numberOfVertices + (ix + 1) + (gridX1 *  iy     ));
+
+                indices.insert(indices.end(), {a, b, d});
+                indices.insert(indices.end(), {b, c, d});
+
+                groupCount += 6;
+            }
+        }
+
+        // add submesh description
+        submeshes.emplace_back(groupStart, groupCount, MeshTopology::Triangles);
+        groupStart += groupCount;
+        numberOfVertices += vertexCount;
+    };
+
+    // build each side of the box
+    buildPlane(2, 1, 0, -1.0f, -1.0f, depth, height,  width,  depthSegments, heightSegments);  // px
+    buildPlane(2, 1, 0,  1.0f, -1.0f, depth, height, -width,  depthSegments, heightSegments);  // nx
+    buildPlane(0, 2, 1,  1.0f,  1.0f, width, depth,   height, widthSegments, depthSegments);   // py
+    buildPlane(0, 2, 1,  1.0f, -1.0f, width, depth,  -height, widthSegments, depthSegments);   // ny
+    buildPlane(0, 1, 2,  1.0f, -1.0f, width, height,  depth,  widthSegments, heightSegments);  // pz
+    buildPlane(0, 1, 2, -1.0f, -1.0f, width, height, -depth,  widthSegments, heightSegments);  // nz
+
+    // the first submesh is "the entire cube"
+    submeshes.insert(submeshes.begin(), SubMeshDescriptor{0, groupStart, MeshTopology::Triangles});
+
+    // build geometry
+    Mesh rv;
+    rv.setVerts(vertices);
+    rv.setNormals(normals);
+    rv.setTexCoords(uvs);
+    rv.setIndices(indices);
+    for (auto const& submesh : submeshes) {
+        rv.pushSubMeshDescriptor(submesh);
+    }
     return rv;
 }

@@ -1,7 +1,9 @@
 #pragma once
 
 #include <oscar/Graphics/Mesh.h>
+#include <oscar/Maths/Vec.h>
 #include <oscar/Maths/Vec2.h>
+#include <oscar/Maths/Vec3.h>
 
 #include <cstddef>
 
@@ -79,5 +81,18 @@ namespace osc
         size_t numRadialSegments = 8,
         size_t p = 2,
         size_t q = 3
+    );
+
+    // generates a rectangular cuboid with the given dimensions centered on the origin, with each
+    // edge parallel to each axis
+    //
+    // `segments` affects how many 2-triangle quads may be generated along each dimension
+    Mesh GenerateBoxMesh(
+        float width = 1.0f,
+        float height = 1.0f,
+        float depth = 1.0f,
+        size_t widthSegments = 1,
+        size_t heightSegments = 1,
+        size_t depthSegments = 1
     );
 }
