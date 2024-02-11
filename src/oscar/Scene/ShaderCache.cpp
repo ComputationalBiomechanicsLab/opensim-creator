@@ -2,6 +2,7 @@
 
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Platform/ResourceLoader.h>
+#include <oscar/Platform/ResourcePath.h>
 #include <oscar/Utils/HashHelpers.h>
 #include <oscar/Utils/SynchronizedValue.h>
 
