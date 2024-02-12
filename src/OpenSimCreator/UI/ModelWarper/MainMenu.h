@@ -19,8 +19,7 @@ namespace osc::mow
 
             m_FileMenu{state_},
             m_WindowMenu{panelManager_}
-        {
-        }
+        {}
 
         void onDraw()
         {

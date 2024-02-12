@@ -1,5 +1,8 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/ModelWarper/IFrameWarp.h>
+
+#include <concepts>
 #include <filesystem>
 
 namespace OpenSim { class Model; }
@@ -15,5 +18,17 @@ namespace osc::mow
             OpenSim::Model const&,
             ModelWarpConfiguration const&
         );
+
+        template<std::derived_from<IFrameWarp> TMeshWarp = IFrameWarp>
+        TMeshWarp const* find(std::string const& meshComponentAbsPath) const
+        {
+            return dynamic_cast<TMeshWarp const*>(find<IFrameWarp>(meshComponentAbsPath));
+        }
+
+        template<>
+        IFrameWarp const* find<IFrameWarp>(std::string const&) const
+        {
+            return nullptr;  // TODO
+        }
     };
 }

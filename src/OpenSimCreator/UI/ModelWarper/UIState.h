@@ -37,7 +37,9 @@ namespace osc::mow
         ) const;
 
         size_t getNumWarpableFramesInModel() const;
-        void forEachWarpableFrameInModel(std::function<void(OpenSim::PhysicalOffsetFrame const&)> const&) const;
+        void forEachWarpableFrameInModel(
+            std::function<void(OpenSim::PhysicalOffsetFrame const&)> const&
+        ) const;
         void forEachFrameDefinitionCheck(
             OpenSim::PhysicalOffsetFrame const&,
             std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&

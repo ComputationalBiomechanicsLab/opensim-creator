@@ -31,8 +31,7 @@ namespace
 
     EntryStyling ToStyle(ValidationCheck::State s)
     {
-        switch (s)
-        {
+        switch (s) {
         case ValidationCheck::State::Ok:
             return {.icon = ICON_FA_CHECK, .color = Color::green()};
         case ValidationCheck::State::Warning:
@@ -91,8 +90,8 @@ namespace
 {
     void DrawDetailsTable(UIState const& state, OpenSim::Mesh const& mesh)
     {
-        if (ImGui::BeginTable("##Details", 2))
-        {
+        if (ImGui::BeginTable("##Details", 2)) {
+
             ImGui::TableSetupColumn("Label");
             ImGui::TableSetupColumn("Value");
             ImGui::TableHeadersRow();
@@ -144,8 +143,7 @@ namespace
     void DrawMeshEntry(UIState const& state, OpenSim::Mesh const& mesh)
     {
         DrawEntryIconAndText(state, mesh);
-        if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip))
-        {
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)) {
             ImGui::BeginTooltip();
             DrawTooltipContent(state, mesh);
             ImGui::EndTooltip();
@@ -208,8 +206,7 @@ namespace
         OpenSim::PhysicalOffsetFrame const& frame)
     {
         DrawEntryIconAndText(state, frame);
-        if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip))
-        {
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)) {
             BeginTooltip();
             DrawTooltipContent(state, frame);
             EndTooltip();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/ModelWarper/Detail.h>
+#include <OpenSimCreator/Documents/ModelWarper/IMeshWarp.h>
 #include <OpenSimCreator/Documents/ModelWarper/LandmarkPairing.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.h>
@@ -14,7 +15,7 @@
 
 namespace osc::mow
 {
-    class MeshWarpPairing final {
+    class MeshWarpPairing final : public IMeshWarp {
     public:
         MeshWarpPairing(
             std::filesystem::path const& osimFileLocation,
@@ -47,12 +48,12 @@ namespace osc::mow
         bool hasLandmarkNamed(std::string_view) const;
         LandmarkPairing const* tryGetLandmarkPairingByName(std::string_view) const;
 
-        void forEachDetail(std::function<void(Detail)> const&) const;
-        void forEachCheck(std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const;
-
-        ValidationCheck::State state() const;
-
     private:
+        std::unique_ptr<IMeshWarp> implClone() const override;
+        void implForEachDetail(std::function<void(Detail)> const&) const override;
+        void implForEachCheck(std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const override;
+        ValidationCheck::State implState() const override;
+
         std::filesystem::path m_SourceMeshAbsoluteFilepath;
 
         std::filesystem::path m_ExpectedSourceLandmarksAbsoluteFilepath;

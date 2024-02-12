@@ -5,6 +5,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <cstddef>
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <sstream>
@@ -50,7 +51,7 @@ void osc::mow::Document::forEachMeshWarpDetail(
 {
     callback({ "OpenSim::Mesh path in the OpenSim::Model", GetAbsolutePathString(mesh) });
 
-    if (MeshWarpPairing const* p = m_MeshWarpLookup.findPairing(GetAbsolutePathString(mesh)))
+    if (IMeshWarp const* p = m_MeshWarpLookup.find(GetAbsolutePathString(mesh)))
     {
         p->forEachDetail(callback);
     }
@@ -60,7 +61,7 @@ void osc::mow::Document::forEachMeshWarpCheck(
     OpenSim::Mesh const& mesh,
     std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
 {
-    if (MeshWarpPairing const* p = m_MeshWarpLookup.findPairing(GetAbsolutePathString(mesh)))
+    if (IMeshWarp const* p = m_MeshWarpLookup.find(GetAbsolutePathString(mesh)))
     {
         p->forEachCheck(callback);
     }
@@ -72,7 +73,7 @@ void osc::mow::Document::forEachMeshWarpCheck(
 
 ValidationCheck::State osc::mow::Document::getMeshWarpState(OpenSim::Mesh const& mesh) const
 {
-    MeshWarpPairing const* p = m_MeshWarpLookup.findPairing(GetAbsolutePathString(mesh));
+    IMeshWarp const* p = m_MeshWarpLookup.find(GetAbsolutePathString(mesh));
     return p ? p->state() : ValidationCheck::State::Error;
 }
 

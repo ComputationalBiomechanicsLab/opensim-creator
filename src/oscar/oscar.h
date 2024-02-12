@@ -7,6 +7,7 @@
 #include <oscar/DOM.h>
 #include <oscar/Formats.h>
 #include <oscar/Graphics.h>
+#include <oscar/Interfaces.h>
 #include <oscar/Maths.h>
 #include <oscar/Platform.h>
 #include <oscar/Shims.h>

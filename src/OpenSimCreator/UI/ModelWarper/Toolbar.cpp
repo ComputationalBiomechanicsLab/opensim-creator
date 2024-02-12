@@ -8,8 +8,7 @@
 
 void osc::mow::Toolbar::onDraw()
 {
-    if (BeginToolbar(m_Label))
-    {
+    if (BeginToolbar(m_Label)) {
         drawContent();
     }
     ImGui::End();

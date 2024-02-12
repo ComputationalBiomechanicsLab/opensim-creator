@@ -1,7 +1,10 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.h>
+#include <OpenSimCreator/Documents/ModelWarper/IMeshWarp.h>
 
+#include <oscar/Utils/ClonePtr.h>
+
+#include <concepts>
 #include <filesystem>
 #include <string>
 #include <unordered_map>
@@ -20,18 +23,25 @@ namespace osc::mow
             ModelWarpConfiguration const&
         );
 
-        MeshWarpPairing const* findPairing(std::string const& meshComponentAbsPath) const
+        template<std::derived_from<IMeshWarp> TMeshWarp = IMeshWarp>
+        TMeshWarp const* find(std::string const& meshComponentAbsPath) const
+        {
+            return dynamic_cast<TMeshWarp const*>(find<IMeshWarp>(meshComponentAbsPath));
+        }
+
+        template<>
+        IMeshWarp const* find<IMeshWarp>(std::string const& meshComponentAbsPath) const
         {
             if (auto const it = m_ComponentAbsPathToMeshPairing.find(meshComponentAbsPath);
                 it != m_ComponentAbsPathToMeshPairing.end()) {
 
-                return &it->second;
+                return it->second.get();
             }
             else {
                 return nullptr;
             }
         }
     private:
-        std::unordered_map<std::string, MeshWarpPairing> m_ComponentAbsPathToMeshPairing;
+        std::unordered_map<std::string, ClonePtr<IMeshWarp>> m_ComponentAbsPathToMeshPairing;
     };
 }

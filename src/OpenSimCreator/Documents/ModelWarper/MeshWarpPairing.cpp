@@ -14,11 +14,9 @@
 #include <utility>
 #include <vector>
 
-using osc::lm::Landmark;
-using osc::lm::ReadLandmarksFromCSV;
-using osc::log_info;
-using osc::mow::LandmarkPairing;
-using osc::mow::ValidationCheck;
+using namespace osc;
+using namespace osc::lm;
+using namespace osc::mow;
 
 namespace
 {
@@ -274,7 +272,13 @@ LandmarkPairing const* osc::mow::MeshWarpPairing::tryGetLandmarkPairingByName(st
     return it != m_Landmarks.end() ? &(*it) : nullptr;
 }
 
-void osc::mow::MeshWarpPairing::forEachDetail(std::function<void(Detail)> const& callback) const
+std::unique_ptr<IMeshWarp> osc::mow::MeshWarpPairing::implClone() const
+{
+    return std::make_unique<MeshWarpPairing>(*this);
+}
+
+void osc::mow::MeshWarpPairing::implForEachDetail(
+    std::function<void(Detail)> const& callback) const
 {
     callback({ "source mesh filepath", getSourceMeshAbsoluteFilepath().string() });
     callback({ "source landmarks expected filepath", recommendedSourceLandmarksFilepath().string() });
@@ -289,7 +293,8 @@ void osc::mow::MeshWarpPairing::forEachDetail(std::function<void(Detail)> const&
     callback({ "number of unpaired landmarks", std::to_string(getNumUnpairedLandmarks()) });
 }
 
-void osc::mow::MeshWarpPairing::forEachCheck(std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
+void osc::mow::MeshWarpPairing::implForEachCheck(
+    std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
 {
     // has a source landmarks file
     {
@@ -354,7 +359,7 @@ void osc::mow::MeshWarpPairing::forEachCheck(std::function<ValidationCheckConsum
     }
 }
 
-ValidationCheck::State osc::mow::MeshWarpPairing::state() const
+ValidationCheck::State osc::mow::MeshWarpPairing::implState() const
 {
     ValidationCheck::State worst = ValidationCheck::State::Ok;
     forEachCheck([&worst](ValidationCheck const& c)

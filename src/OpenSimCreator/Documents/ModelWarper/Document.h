@@ -3,7 +3,6 @@
 #include <OpenSimCreator/Documents/ModelWarper/Detail.h>
 #include <OpenSimCreator/Documents/ModelWarper/FrameWarpLookup.h>
 #include <OpenSimCreator/Documents/ModelWarper/MeshWarpLookup.h>
-#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.h>
 #include <OpenSimCreator/Documents/ModelWarper/ModelWarpConfiguration.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.h>
@@ -11,6 +10,7 @@
 #include <oscar/Utils/ClonePtr.h>
 
 #include <filesystem>
+#include <functional>
 
 namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
