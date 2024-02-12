@@ -2,7 +2,6 @@
 
 #include <OpenSimCreator/Documents/ModelWarper/Detail.h>
 #include <OpenSimCreator/Documents/ModelWarper/Document.h>
-#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.h>
 

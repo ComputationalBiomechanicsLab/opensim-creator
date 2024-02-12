@@ -15,9 +15,9 @@
 
 namespace osc::mow
 {
-    class MeshWarpPairing final : public IMeshWarp {
+    class ThinPlateSplineMeshWarp final : public IMeshWarp {
     public:
-        MeshWarpPairing(
+        ThinPlateSplineMeshWarp(
             std::filesystem::path const& osimFileLocation,
             std::filesystem::path const& sourceMeshFilepath
         );

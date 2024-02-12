@@ -3,7 +3,6 @@
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.h>
 #include <gtest/gtest.h>
 
 #include <cctype>

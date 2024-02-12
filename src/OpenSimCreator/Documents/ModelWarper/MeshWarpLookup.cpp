@@ -1,7 +1,7 @@
 #include "MeshWarpLookup.h"
 
 #include <OpenSimCreator/Documents/ModelWarper/IMeshWarp.h>
-#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.h>
+#include <OpenSimCreator/Documents/ModelWarper/ThinPlateSplineMeshWarp.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Simulation/Model/Geometry.h>
@@ -31,7 +31,7 @@ namespace
             {
                 rv.try_emplace(
                     mesh.getAbsolutePathString(),
-                    std::make_unique<MeshWarpPairing>(modelFileLocation, std::move(meshPath).value())
+                    std::make_unique<ThinPlateSplineMeshWarp>(modelFileLocation, std::move(meshPath).value())
                 );
             }
             else
