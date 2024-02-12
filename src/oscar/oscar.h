@@ -4,10 +4,10 @@
 //         prototyping or initial development, but is likely to make
 //         your compile times explode ;)
 
+#include <oscar/DOM.h>
 #include <oscar/Formats.h>
 #include <oscar/Graphics.h>
 #include <oscar/Maths.h>
-#include <oscar/Object.h>
 #include <oscar/Platform.h>
 #include <oscar/Shims.h>
 #include <oscar/UI.h>

@@ -17,6 +17,15 @@ find_package(tomlplusplus REQUIRED CONFIG)
 find_package(unordered_dense REQUIRED CONFIG)
 
 add_library(oscar STATIC
+    DOM/Class.cpp
+    DOM/Class.h
+    DOM/Node.h
+    DOM/NodePath.cpp
+    DOM/NodePath.h
+    DOM/Object.cpp
+    DOM/PropertyInfo.cpp
+    DOM/PropertyInfo.h
+
     Formats/CSV.h
     Formats/CSV.cpp
     Formats/DAE.h
@@ -170,16 +179,6 @@ add_library(oscar STATIC
     Maths/Vec2.h
     Maths/Vec3.h
     Maths/Vec4.h
-
-    Object/Class.cpp
-    Object/Class.h
-    Object/Node.h
-    Object/NodePath.cpp
-    Object/NodePath.h
-    Object/Object.cpp
-    Object/Object.h
-    Object/PropertyInfo.cpp
-    Object/PropertyInfo.h
 
     Platform/Detail/SDL2Helpers.h
     Platform/App.cpp
@@ -339,11 +338,11 @@ add_library(oscar STATIC
     Variant/VariantTypeList.h
     Variant/VariantTypeTraits.h
 
+    DOM.h
     Formats.h
     Graphics.h
     Maths.h
     oscar.h
-    Object.h
     Platform.h
     Shims.h
     UI.h

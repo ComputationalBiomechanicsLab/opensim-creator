@@ -1,4 +1,4 @@
-#include <oscar/Object/PropertyInfo.h>
+#include <oscar/DOM/PropertyInfo.h>
 
 #include <oscar/Variant/Variant.h>
 #include <oscar/Variant/VariantType.h>

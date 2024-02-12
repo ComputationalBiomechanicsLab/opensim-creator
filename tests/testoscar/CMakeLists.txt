@@ -2,6 +2,12 @@ include(GoogleTest)
 find_package(GTest REQUIRED CONFIG)
 
 add_executable(testoscar
+    DOM/TestClass.cpp
+    DOM/TestNode.cpp
+    DOM/TestNodePath.cpp
+    DOM/TestObject.cpp
+    DOM/TestPropertyInfo.cpp
+
     Formats/TestCSV.cpp
     Formats/TestDAE.cpp
     Formats/TestImage.cpp
@@ -50,12 +56,6 @@ add_executable(testoscar
     MetaTests/TestUIHeader.cpp
     MetaTests/TestUtilsHeader.cpp
     MetaTests/TestVariantHeader.cpp
-
-    Object/TestClass.cpp
-    Object/TestNode.cpp
-    Object/TestNodePath.cpp
-    Object/TestObject.cpp
-    Object/TestPropertyInfo.cpp
 
     Platform/TestAppSettingValueType.cpp
     Platform/TestResourceDirectoryEntry.cpp

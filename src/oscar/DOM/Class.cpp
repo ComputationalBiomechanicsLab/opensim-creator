@@ -1,6 +1,6 @@
 #include "Class.h"
 
-#include <oscar/Object/PropertyInfo.h>
+#include <oscar/DOM/PropertyInfo.h>
 #include <oscar/Utils/StringHelpers.h>
 #include <oscar/Utils/StringName.h>
 

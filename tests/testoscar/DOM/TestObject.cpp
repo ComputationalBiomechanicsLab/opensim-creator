@@ -1,4 +1,4 @@
-#include <oscar/Object/Object.h>
+#include <oscar/DOM/Object.h>
 
 /*
 

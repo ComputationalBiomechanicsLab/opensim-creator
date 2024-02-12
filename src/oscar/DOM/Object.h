@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/Object/Class.h>
+#include <oscar/DOM/Class.h>
 #include <oscar/Variant/Variant.h>
 
 #include <cstddef>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <oscar/Object/NodePath.h>
-#include <oscar/Object/Object.h>
+#include <oscar/DOM/NodePath.h>
+#include <oscar/DOM/Object.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <concepts>

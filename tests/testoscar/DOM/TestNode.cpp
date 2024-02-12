@@ -1,4 +1,4 @@
-#include <oscar/Object/Node.h>
+#include <oscar/DOM/Node.h>
 
 /*
 

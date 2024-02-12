@@ -1,7 +1,7 @@
-#include <oscar/Object/Class.h>
+#include <oscar/DOM/Class.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Object/PropertyInfo.h>
+#include <oscar/DOM/PropertyInfo.h>
 #include <oscar/Utils/StringName.h>
 #include <oscar/Variant/Variant.h>
 
