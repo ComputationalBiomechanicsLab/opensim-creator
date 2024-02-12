@@ -8,10 +8,7 @@
 #include <array>
 #include <string>
 
-using osc::AppSettingValue;
-using osc::Color;
-using osc::CStringView;
-using osc::TryParseHtmlString;
+using namespace osc;
 
 TEST(AppSettingValue, CanExplicitlyConstructFromStringRValue)
 {

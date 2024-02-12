@@ -9,14 +9,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Utils/StringHelpers.h>
 
-using osc::AntiAliasingLevel;
-using osc::ContainsCaseInsensitive;
-using osc::DepthStencilFormat;
-using osc::RenderTextureDescriptor;
-using osc::RenderTextureFormat;
-using osc::RenderTextureReadWrite;
-using osc::TextureDimensionality;
-using osc::Vec2i;
+using namespace osc;
 
 TEST(RenderTextureDescriptor, CanBeConstructedFromWithAndHeight)
 {

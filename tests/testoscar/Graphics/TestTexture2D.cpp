@@ -19,18 +19,8 @@
 #include <utility>
 #include <vector>
 
-using osc::testing::ContainersEqual;
-using osc::testing::GenerateVec4;
-using osc::Color;
-using osc::ColorSpace;
-using osc::Color32;
-using osc::TextureFilterMode;
-using osc::TextureFormat;
-using osc::TextureWrapMode;
-using osc::Texture2D;
-using osc::Vec2i;
-using osc::Vec4;
-using osc::ViewObjectRepresentations;
+using namespace osc::testing;
+using namespace osc;
 
 namespace
 {

@@ -8,7 +8,7 @@
 #include <string_view>
 #include <vector>
 
-using osc::NodePath;
+using namespace osc;
 
 
 namespace

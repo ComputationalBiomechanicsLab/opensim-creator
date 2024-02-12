@@ -4,9 +4,8 @@
 #include <oscar/Graphics/VertexAttribute.h>
 #include <oscar/Graphics/VertexAttributeFormat.h>
 
-using osc::detail::DefaultFormat;
-using osc::VertexAttribute;
-using osc::VertexAttributeFormat;
+using namespace osc;
+using namespace osc::detail;
 
 TEST(VertexAttributeHelpers, DefaultFormatWorks)
 {

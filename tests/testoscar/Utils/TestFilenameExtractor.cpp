@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-using osc::ExtractFilename;
+using namespace osc;
 
 TEST(ExtractFilename, ReturnsBlankForBlankString)
 {

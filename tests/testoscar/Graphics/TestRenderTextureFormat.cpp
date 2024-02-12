@@ -7,8 +7,7 @@
 #include <string>
 #include <utility>
 
-using osc::NumOptions;
-using osc::RenderTextureFormat;
+using namespace osc;
 
 TEST(RenderTextureFormat, AnyValueCanBePrintedToStream)
 {

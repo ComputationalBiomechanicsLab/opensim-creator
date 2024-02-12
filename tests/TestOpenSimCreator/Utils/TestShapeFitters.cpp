@@ -20,18 +20,8 @@
 #include <numeric>
 #include <vector>
 
+using namespace osc;
 using namespace osc::literals;
-
-using osc::Ellipsoid;
-using osc::GenerateUVSphereMesh;
-using osc::IsEqualWithinAbsoluteError;
-using osc::LoadMeshViaSimTK;
-using osc::Mesh;
-using osc::Normalize;
-using osc::Plane;
-using osc::Sphere;
-using osc::Transform;
-using osc::Vec3;
 
 TEST(FitSphere, ReturnsUnitSphereWhenGivenAnEmptyMesh)
 {

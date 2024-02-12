@@ -9,8 +9,7 @@
 #include <filesystem>
 #include <string>
 
-using osc::mow::MeshWarpPairing;
-using osc::mow::MeshWarpPairingLookup;
+using namespace osc::mow;
 
 namespace
 {

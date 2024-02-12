@@ -7,8 +7,7 @@
 #include <sstream>
 #include <string>
 
-using osc::CameraProjection;
-using osc::NumOptions;
+using namespace osc;
 
 TEST(CameraProjection, CanBeStreamed)
 {

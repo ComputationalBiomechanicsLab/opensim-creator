@@ -4,8 +4,7 @@
 
 #include <sstream>
 
-using osc::ReadCSVRow;
-using osc::WriteCSVRow;
+using namespace osc;
 
 TEST(ReadCSVRow, CallingReadCSVRowOnEmptyStringReturnsEmptyString)
 {

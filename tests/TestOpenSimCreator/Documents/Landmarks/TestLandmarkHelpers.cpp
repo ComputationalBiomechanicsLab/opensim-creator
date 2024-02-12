@@ -15,13 +15,8 @@
 #include <utility>
 #include <vector>
 
-using osc::lm::GenerateNames;
-using osc::lm::Landmark;
-using osc::lm::LandmarkCSVFlags;
-using osc::lm::NamedLandmark;
-using osc::lm::ReadLandmarksFromCSV;
-using osc::lm::WriteLandmarksToCSV;
-using osc::Vec3;
+using namespace osc;
+using namespace osc::lm;
 
 namespace
 {

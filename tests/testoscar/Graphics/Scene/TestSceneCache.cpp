@@ -10,12 +10,7 @@
 #include <array>
 #include <cstdint>
 
-using osc::AABB;
-using osc::AABBFromVerts;
-using osc::BVH;
-using osc::Mesh;
-using osc::SceneCache;
-using osc::Vec3;
+using namespace osc;
 
 TEST(SceneMesh, GetBVHOnEmptyMeshReturnsEmptyBVH)
 {

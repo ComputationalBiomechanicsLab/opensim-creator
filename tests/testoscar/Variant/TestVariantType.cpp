@@ -7,8 +7,7 @@
 #include <limits>
 #include <type_traits>
 
-using osc::NumOptions;
-using osc::VariantType;
+using namespace osc;
 
 TEST(VariantType, ToStringReturnsExpectedResults)
 {

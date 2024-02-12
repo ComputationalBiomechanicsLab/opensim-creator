@@ -8,10 +8,7 @@
 #include <array>
 #include <initializer_list>
 
-using osc::VertexAttribute;
-using osc::VertexAttributeDescriptor;
-using osc::VertexAttributeFormat;
-using osc::VertexFormat;
+using namespace osc;
 
 TEST(VertexFormat, IsDefaultConstructible)
 {

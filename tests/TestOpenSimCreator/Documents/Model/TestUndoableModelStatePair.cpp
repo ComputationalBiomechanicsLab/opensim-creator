@@ -17,14 +17,7 @@
 #include <functional>
 #include <sstream>
 
-using osc::DAEMetadata;
-using osc::GetAbsolutePathString;
-using osc::GlobalInitOpenSim;
-using osc::NullOStream;
-using osc::OpenSimDecorationOptions;
-using osc::SceneCache;
-using osc::SceneDecoration;
-using osc::UndoableModelStatePair;
+using namespace osc;
 
 TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
 {

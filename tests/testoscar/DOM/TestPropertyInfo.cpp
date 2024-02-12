@@ -5,9 +5,7 @@
 
 #include <gtest/gtest.h>
 
-using osc::PropertyInfo;
-using osc::Variant;
-using osc::VariantType;
+using namespace osc;
 
 TEST(PropertyInfo, DefaultConstructedPropertyInfoHasNoNameAndNilDefaultValue)
 {

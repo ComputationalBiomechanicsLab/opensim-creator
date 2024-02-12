@@ -8,12 +8,8 @@
 
 #include <array>
 
-using osc::detail::VertexAttributeFormatList;
-using osc::detail::VertexAttributeFormatTraits;
-using osc::NonTypelist;
-using osc::NonTypelistSizeV;
-using osc::NumOptions;
-using osc::VertexAttributeFormat;
+using namespace osc;
+using namespace osc::detail;
 
 namespace
 {

@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-using osc::MeshUpdateFlags;
+using namespace osc;
 
 TEST(MeshUpdateFlags, ORingCombinesFlags)
 {

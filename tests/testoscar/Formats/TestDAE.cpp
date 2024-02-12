@@ -10,10 +10,7 @@
 
 #include <sstream>
 
-using osc::Contains;
-using osc::DAEMetadata;
-using osc::GenerateCubeMesh;
-using osc::SceneDecoration;
+using namespace osc;
 
 TEST(DAE, WriteDecorationsAsDAEWorksForEmptyScene)
 {

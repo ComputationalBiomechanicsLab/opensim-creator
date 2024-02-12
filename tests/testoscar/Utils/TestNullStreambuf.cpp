@@ -4,7 +4,7 @@
 
 #include <iosfwd>
 
-using osc::NullStreambuf;
+using namespace osc;
 
 TEST(NullStreambuf, CanBeConstructed)
 {

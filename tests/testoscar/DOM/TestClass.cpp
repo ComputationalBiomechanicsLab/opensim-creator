@@ -11,10 +11,7 @@
 #include <span>
 #include <vector>
 
-using osc::Class;
-using osc::PropertyInfo;
-using osc::StringName;
-using osc::Variant;
+using namespace osc;
 
 namespace
 {

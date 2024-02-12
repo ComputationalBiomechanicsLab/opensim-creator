@@ -5,10 +5,8 @@
 
 #include <numbers>
 
+using namespace osc;
 using namespace osc::literals;
-
-using osc::Degrees;
-using osc::Radians;
 
 TEST(Angle, RadiansCanValueConstructToZero)
 {

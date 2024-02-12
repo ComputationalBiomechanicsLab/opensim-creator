@@ -13,10 +13,7 @@
 #include <string>
 #include <string_view>
 
-using osc::frames::FrameAxis;
-using osc::frames::FrameDefinition;
-using osc::frames::FramesFile;
-using osc::frames::ReadFramesFromTOML;
+using namespace osc::frames;
 
 namespace
 {

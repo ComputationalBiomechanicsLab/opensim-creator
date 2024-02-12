@@ -5,8 +5,7 @@
 
 #include <cstddef>
 
-using osc::MeshTopology;
-using osc::SubMeshDescriptor;
+using namespace osc;
 
 TEST(SubMeshDescriptor, CanConstructFromOffsetCountAndTopology)
 {

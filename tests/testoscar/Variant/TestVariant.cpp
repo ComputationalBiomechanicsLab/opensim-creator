@@ -15,14 +15,7 @@
 #include <type_traits>
 #include <utility>
 
-using osc::Color;
-using osc::CStringView;
-using osc::StringName;
-using osc::to_string;
-using osc::TryParseHtmlString;
-using osc::Variant;
-using osc::VariantType;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {

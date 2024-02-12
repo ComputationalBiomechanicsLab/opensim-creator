@@ -2,9 +2,7 @@
 
 #include <gtest/gtest.h>
 
-using osc::NonTypelist;
-using osc::NonTypelistSizeV;
-using osc::NonTypeAt;
+using namespace osc;
 
 namespace
 {

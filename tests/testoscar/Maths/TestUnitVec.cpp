@@ -5,8 +5,7 @@
 
 #include <cmath>
 
-using osc::UnitVec3;
-using osc::Vec3;
+using namespace osc;
 
 TEST(UnitVec, DefaultConstructorFillsWithNaNs)
 {
