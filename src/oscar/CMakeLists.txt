@@ -139,8 +139,6 @@ add_library(oscar STATIC
     Graphics/VertexFormat.cpp
     Graphics/VertexFormat.h
 
-    Interfaces/ICloneable.h
-
     Maths/AABB.h
     Maths/Angle.h
     Maths/BVH.h
@@ -307,6 +305,7 @@ add_library(oscar STATIC
     Utils/FilesystemHelpers.cpp
     Utils/FilesystemHelpers.h
     Utils/HashHelpers.h
+    Utils/ICloneable.h
     Utils/NonTypelist.h
     Utils/NullOStream.h
     Utils/NullStreambuf.h
@@ -344,7 +343,6 @@ add_library(oscar STATIC
     DOM.h
     Formats.h
     Graphics.h
-    Interfaces.h
     Maths.h
     oscar.h
     Platform.h

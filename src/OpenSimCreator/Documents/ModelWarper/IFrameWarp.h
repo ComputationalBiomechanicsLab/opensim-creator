@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/Interfaces/ICloneable.h>
+#include <oscar/Utils/ICloneable.h>
 
 namespace osc::mow
 {

@@ -13,6 +13,7 @@
 #include <oscar/Utils/FilenameExtractor.h>
 #include <oscar/Utils/FilesystemHelpers.h>
 #include <oscar/Utils/HashHelpers.h>
+#include <oscar/Utils/ICloneable.h>
 #include <oscar/Utils/NonTypelist.h>
 #include <oscar/Utils/NullOStream.h>
 #include <oscar/Utils/NullStreambuf.h>

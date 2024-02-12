@@ -4,7 +4,7 @@
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.h>
 
-#include <oscar/Interfaces/ICloneable.h>
+#include <oscar/Utils/ICloneable.h>
 
 #include <functional>
 #include <memory>
