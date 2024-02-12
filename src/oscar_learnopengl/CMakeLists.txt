@@ -53,12 +53,17 @@ add_library(oscar_learnopengl STATIC
     PBR/LOGLPBRSpecularIrradianceTexturedTab.cpp
     PBR/LOGLPBRSpecularIrradianceTexturedTab.h
 
+    AdvancedLighting.h
+    AdvancedOpenGL.h
+    GettingStarted.h
     LearnOpenGLHelpers.cpp
     LearnOpenGLHelpers.h
     LearnOpenGLTabRegistry.cpp
     LearnOpenGLTabRegistry.h
     LearnOpenGLTabs.h
+    Lighting.h
     MouseCapturingCamera.h
+    PBR.h
 )
 
 target_include_directories(oscar_learnopengl PUBLIC
