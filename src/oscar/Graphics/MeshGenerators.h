@@ -6,6 +6,9 @@
 #include <oscar/Maths/Vec3.h>
 
 #include <cstddef>
+#include <cstdint>
+#include <span>
+#include <vector>
 
 namespace osc
 {
@@ -94,5 +97,20 @@ namespace osc
         size_t widthSegments = 1,
         size_t heightSegments = 1,
         size_t depthSegments = 1
+    );
+
+    // generates a 3D solid with flat faces by projecting triangle faces (`indicies`
+    // indexes into `vertices` for each triangle) onto a sphere, followed by dividing
+    // them up to the desired level of detail
+    Mesh GeneratePolyhedronMesh(
+        std::span<Vec3 const> vertices,
+        std::span<uint32_t const> indices,
+        float radius,
+        size_t detail
+    );
+
+    Mesh GenerateIcosahedronMesh(
+        float radius = 1.0f,
+        size_t detail = 0
     );
 }
