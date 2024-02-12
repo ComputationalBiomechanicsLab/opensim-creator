@@ -5,6 +5,7 @@
 #include <oscar/Maths/Disc.h>
 #include <oscar/Maths/EasingFunctions.h>
 #include <oscar/Maths/EulerPerspectiveCamera.h>
+#include <oscar/Maths/FrameAxis.h>
 #include <oscar/Maths/Line.h>
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
@@ -26,6 +27,7 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/At.h>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -44,8 +46,11 @@
 #include <memory>
 #include <numbers>
 #include <numeric>
+#include <optional>
 #include <span>
 #include <sstream>
+#include <string>
+#include <string_view>
 #include <stack>
 #include <stdexcept>
 #include <utility>
@@ -2430,4 +2435,69 @@ float osc::EaseOutElastic(float x)
     float const normalized = Clamp(x, 0.0f, 1.0f);
 
     return pow(2.0f, -5.0f*normalized) * sin((normalized*10.0f - 0.75f) * c4) + 1.0f;
+}
+
+// FrameAxis
+namespace
+{
+    std::string_view ToStringView(FrameAxis fa)
+    {
+        static_assert(NumOptions<FrameAxis>() == 6);
+
+        switch (fa)
+        {
+        case FrameAxis::PlusX: return "x";
+        case FrameAxis::PlusY: return "y";
+        case FrameAxis::PlusZ: return "z";
+        case FrameAxis::MinusX: return "-x";
+        case FrameAxis::MinusY: return "-y";
+        case FrameAxis::MinusZ: return "-z";
+        default:
+            return "unknown";
+        }
+    }
+}
+
+std::optional<FrameAxis> osc::TryParseAsFrameAxis(std::string_view s)
+{
+    if (s.empty() || s.size() > 2)
+    {
+        return std::nullopt;
+    }
+    bool const negated = s.front() == '-';
+    if (negated || s.front() == '+')
+    {
+        s = s.substr(1);
+    }
+    if (s.empty())
+    {
+        return std::nullopt;
+    }
+    switch (s.front())
+    {
+    case 'x':
+    case 'X':
+        return negated ? FrameAxis::MinusX : FrameAxis::PlusX;
+    case 'y':
+    case 'Y':
+        return negated ? FrameAxis::MinusY : FrameAxis::PlusY;
+    case 'z':
+    case 'Z':
+        return negated ? FrameAxis::MinusZ : FrameAxis::PlusZ;
+    default:
+        return std::nullopt;  // invalid input
+    }
+}
+
+bool osc::AreOrthogonal(FrameAxis a, FrameAxis b)
+{
+    static_assert(cpp23::to_underlying(FrameAxis::PlusX) == 0);
+    static_assert(cpp23::to_underlying(FrameAxis::MinusX) == 3);
+    static_assert(NumOptions<FrameAxis>() == 6);
+    return cpp23::to_underlying(a) % 3 != cpp23::to_underlying(b) % 3;
+}
+
+std::ostream& osc::operator<<(std::ostream& o, FrameAxis f)
+{
+    return o << ToStringView(f);
 }

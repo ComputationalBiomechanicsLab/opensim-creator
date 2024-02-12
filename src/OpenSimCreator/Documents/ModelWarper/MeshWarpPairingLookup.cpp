@@ -46,9 +46,10 @@ namespace
 }
 
 osc::mow::MeshWarpPairingLookup::MeshWarpPairingLookup(
-    std::filesystem::path const& modelFileLocation,
-    OpenSim::Model const& model) :
+    std::filesystem::path const& osimFileLocation,
+    OpenSim::Model const& model,
+    ModelWarpConfiguration const&) :
 
-    m_ComponentAbsPathToMeshPairing{CreateLut(modelFileLocation, model)}
+    m_ComponentAbsPathToMeshPairing{CreateLut(osimFileLocation, model)}
 {
 }

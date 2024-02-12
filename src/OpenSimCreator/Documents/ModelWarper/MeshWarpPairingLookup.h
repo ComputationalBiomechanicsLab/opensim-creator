@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 namespace OpenSim { class Model; }
+namespace osc::mow { class ModelWarpConfiguration; }
 
 namespace osc::mow
 {
@@ -14,18 +15,19 @@ namespace osc::mow
     public:
         MeshWarpPairingLookup() = default;
         MeshWarpPairingLookup(
-            std::filesystem::path const& modelFileLocation,
-            OpenSim::Model const&
+            std::filesystem::path const& osimFileLocation,
+            OpenSim::Model const&,
+            ModelWarpConfiguration const&
         );
 
         MeshWarpPairing const* lookup(std::string const& meshComponentAbsPath) const
         {
-            if (auto const it = m_ComponentAbsPathToMeshPairing.find(meshComponentAbsPath); it != m_ComponentAbsPathToMeshPairing.end())
-            {
+            if (auto const it = m_ComponentAbsPathToMeshPairing.find(meshComponentAbsPath);
+                it != m_ComponentAbsPathToMeshPairing.end()) {
+
                 return &it->second;
             }
-            else
-            {
+            else {
                 return nullptr;
             }
         }

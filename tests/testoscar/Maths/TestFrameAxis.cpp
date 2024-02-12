@@ -1,4 +1,4 @@
-#include <OpenSimCreator/Documents/Frames/FrameAxis.h>
+#include <oscar/Maths/FrameAxis.h>
 
 #include <gtest/gtest.h>
 
@@ -6,7 +6,7 @@
 #include <string>
 #include <utility>
 
-using namespace osc::frames;
+using namespace osc;
 
 namespace
 {

@@ -22,32 +22,12 @@ namespace osc::mow
     class Document final {
     public:
         Document();
-        explicit Document(std::filesystem::path const& osimPath);
+        explicit Document(std::filesystem::path const& osimFileLocation);
         Document(Document const&);
         Document(Document&&) noexcept;
         Document& operator=(Document const&);
         Document& operator=(Document&&) noexcept;
         ~Document() noexcept;
-
-        bool hasFrameDefinitionFile() const
-        {
-            return m_FrameDefinitionLookup.hasFrameDefinitionFile();
-        }
-
-        std::filesystem::path recommendedFrameDefinitionFilepath() const
-        {
-            return m_FrameDefinitionLookup.recommendedFrameDefinitionFilepath();
-        }
-
-        bool hasFramesFileLoadError() const
-        {
-            return m_FrameDefinitionLookup.hasFramesFileLoadError();
-        }
-
-        std::optional<std::string> getFramesFileLoadError() const
-        {
-            return m_FrameDefinitionLookup.getFramesFileLoadError();
-        }
 
         OpenSim::Model const& getModel() const
         {

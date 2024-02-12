@@ -4,7 +4,7 @@
 #include <optional>
 #include <string_view>
 
-namespace osc::frames
+namespace osc
 {
     enum class FrameAxis {
         PlusX,

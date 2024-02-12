@@ -152,6 +152,7 @@ add_library(oscar STATIC
     Maths/Ellipsoid.h
     Maths/EulerPerspectiveCamera.h
     Maths/Eulers.h
+    Maths/FrameAxis.h
     Maths/LengthType.h
     Maths/Line.h
     Maths/Mat.h

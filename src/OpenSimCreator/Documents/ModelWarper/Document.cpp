@@ -17,13 +17,12 @@ osc::mow::Document::Document() :
 {
 }
 
-osc::mow::Document::Document(std::filesystem::path const& osimPath) :
-    m_Model{std::make_unique<OpenSim::Model>(osimPath.string())},
-    m_TopLevelWarpConfig{osimPath},
-    m_MeshWarpPairingLookup{osimPath, *m_Model},
-    m_FrameDefinitionLookup{osimPath, *m_Model}
-{
-}
+osc::mow::Document::Document(std::filesystem::path const& osimFileLocation) :
+    m_Model{std::make_unique<OpenSim::Model>(osimFileLocation.string())},
+    m_TopLevelWarpConfig{osimFileLocation, *m_Model},
+    m_MeshWarpPairingLookup{osimFileLocation, *m_Model, m_TopLevelWarpConfig},
+    m_FrameDefinitionLookup{osimFileLocation, *m_Model, m_TopLevelWarpConfig}
+{}
 
 osc::mow::Document::Document(Document const&) = default;
 osc::mow::Document::Document(Document&&) noexcept = default;
@@ -93,43 +92,8 @@ void osc::mow::Document::forEachWarpableFrameInModel(
 
 void osc::mow::Document::forEachFrameDefinitionCheck(
     OpenSim::PhysicalOffsetFrame const&,
-    std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
+    std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&) const
 {
-    // check for frames file
-    {
-        std::stringstream ss;
-        ss << "has a frame definition file at " << recommendedFrameDefinitionFilepath().string();
-        if (callback({std::move(ss).str(), hasFrameDefinitionFile()}) == ValidationCheckConsumerResponse::Stop)
-        {
-            return;
-        }
-    }
-
-    // check for top-level parse errors in frames file
-    {
-        std::stringstream ss;
-        ValidationCheck::State state = ValidationCheck::State::Ok;
-        if (!hasFrameDefinitionFile())
-        {
-            ss << "frame definition file error: the file does not exist";
-            state = ValidationCheck::State::Error;
-        }
-        else if (auto err = getFramesFileLoadError())
-        {
-            ss << "frame definition file error: " << *err;
-            state = ValidationCheck::State::Error;
-        }
-        else
-        {
-            ss << "frame definition file contains no errors";
-        }
-
-        if (callback({std::move(ss).str(), state}) == ValidationCheckConsumerResponse::Stop)
-        {
-            return;
-        }
-    }
-
     // TODO
     // - check associated mesh is found
     // - check origin location landmark

@@ -6,6 +6,7 @@
 namespace osc::mow
 {
     struct ValidationCheck final {
+
         enum class State { Ok, Warning, Error };
 
         ValidationCheck(
@@ -14,8 +15,7 @@ namespace osc::mow
 
             description{std::move(description_)},
             state{passOrFail_ ? State::Ok : State::Error}
-        {
-        }
+        {}
 
         ValidationCheck(
             std::string description_,
@@ -23,8 +23,7 @@ namespace osc::mow
 
             description{std::move(description_)},
             state{state_}
-        {
-        }
+        {}
 
         std::string description;
         State state;

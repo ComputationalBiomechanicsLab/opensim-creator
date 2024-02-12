@@ -31,14 +31,6 @@ add_library(OpenSimCreator STATIC
     Documents/FrameDefinition/SphereLandmark.cpp
     Documents/FrameDefinition/SphereLandmark.h
 
-    Documents/Frames/FrameAxis.cpp
-    Documents/Frames/FrameAxis.h
-    Documents/Frames/FrameDefinition.h
-    Documents/Frames/FramesFile.cpp
-    Documents/Frames/FramesFile.h
-    Documents/Frames/FramesHelpers.cpp
-    Documents/Frames/FramesHelpers.h
-
     Documents/Landmarks/Landmark.h
     Documents/Landmarks/LandmarkCSVFlags.h
     Documents/Landmarks/LandmarkHelpers.cpp

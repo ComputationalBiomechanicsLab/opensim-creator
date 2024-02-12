@@ -17,7 +17,7 @@ namespace osc::mow
     class MeshWarpPairing final {
     public:
         MeshWarpPairing(
-            std::filesystem::path const& osimFilepath,
+            std::filesystem::path const& osimFileLocation,
             std::filesystem::path const& sourceMeshFilepath
         );
 
