@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshGenerators.h>
-#include <oscar/Scene/SceneDecoration.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Utils/StringHelpers.h>
 
 #include <sstream>

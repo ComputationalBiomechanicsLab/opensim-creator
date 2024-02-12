@@ -12,16 +12,16 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Graphics/Scene/SceneDecorationFlags.h>
+#include <oscar/Graphics/Scene/SceneHelpers.h>
+#include <oscar/Graphics/Scene/SceneRenderer.h>
+#include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Maths/BVH.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/App.h>
-#include <oscar/Scene/SceneCache.h>
-#include <oscar/Scene/SceneDecoration.h>
-#include <oscar/Scene/SceneDecorationFlags.h>
-#include <oscar/Scene/SceneHelpers.h>
-#include <oscar/Scene/SceneRenderer.h>
-#include <oscar/Scene/ShaderCache.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/SetHelpers.h>

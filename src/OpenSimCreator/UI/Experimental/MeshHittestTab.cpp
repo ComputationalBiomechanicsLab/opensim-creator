@@ -10,6 +10,9 @@
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshGenerators.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Graphics/Scene/SceneHelpers.h>
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Maths/BVH.h>
 #include <oscar/Maths/CollisionTests.h>
@@ -21,9 +24,6 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
-#include <oscar/Scene/SceneCache.h>
-#include <oscar/Scene/SceneDecoration.h>
-#include <oscar/Scene/SceneHelpers.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/Utils/UID.h>

@@ -1,4 +1,4 @@
-#include <oscar/Scene.h>
+#include <oscar/Graphics/Scene.h>
 
 #include <gtest/gtest.h>
 

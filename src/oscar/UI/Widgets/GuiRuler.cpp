@@ -1,11 +1,11 @@
 #include "GuiRuler.h"
 
 #include <oscar/Graphics/Color.h>
+#include <oscar/Graphics/Scene/SceneCollision.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Vec2.h>
-#include <oscar/Scene/SceneCollision.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/Utils/CStringView.h>
 

@@ -9,7 +9,6 @@
 #include <oscar/Maths.h>
 #include <oscar/Object.h>
 #include <oscar/Platform.h>
-#include <oscar/Scene.h>
 #include <oscar/Shims.h>
 #include <oscar/UI.h>
 #include <oscar/Utils.h>

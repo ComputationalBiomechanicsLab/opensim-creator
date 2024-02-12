@@ -5,11 +5,11 @@
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 
 #include <imgui.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneCollision.h>
+#include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Platform/App.h>
-#include <oscar/Scene/SceneCache.h>
-#include <oscar/Scene/SceneCollision.h>
-#include <oscar/Scene/ShaderCache.h>
 #include <oscar/UI/IconCache.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/Widgets/GuiRuler.h>

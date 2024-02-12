@@ -1,8 +1,8 @@
 #include "CachedSceneRenderer.h"
 
-#include <oscar/Scene/SceneDecoration.h>
-#include <oscar/Scene/SceneRenderer.h>
-#include <oscar/Scene/SceneRendererParams.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Graphics/Scene/SceneRenderer.h>
+#include <oscar/Graphics/Scene/SceneRendererParams.h>
 
 #include <algorithm>
 #include <memory>

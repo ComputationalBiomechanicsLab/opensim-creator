@@ -13,12 +13,12 @@
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppConfig.h>
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
-#include <oscar/Scene/SceneCache.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/FilesystemHelpers.h>

@@ -5,10 +5,10 @@
 #include <OpenSimCreator/Graphics/OverlayDecorationOptions.h>
 
 #include <oscar/Graphics/Color.h>
+#include <oscar/Graphics/Scene/SceneRendererParams.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Platform/AppConfig.h>
 #include <oscar/Platform/AppSettingValue.h>
-#include <oscar/Scene/SceneRendererParams.h>
 
 #include <string>
 #include <string_view>

@@ -2,12 +2,12 @@
 
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Mesh.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/os.h>
-#include <oscar/Scene/SceneDecoration.h>
 
 #include <cstddef>
 #include <cstdint>

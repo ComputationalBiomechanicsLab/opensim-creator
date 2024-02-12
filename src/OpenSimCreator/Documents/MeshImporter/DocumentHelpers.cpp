@@ -8,10 +8,10 @@
 #include <OpenSimCreator/Documents/MeshImporter/Mesh.h>
 #include <OpenSimCreator/Documents/MeshImporter/Station.h>
 
+#include <oscar/Graphics/Scene/SceneDecorationFlags.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
-#include <oscar/Scene/SceneDecorationFlags.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/StdVariantHelpers.h>

@@ -1,8 +1,8 @@
 #include "ModelEditorViewerPanelState.h"
 
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Platform/App.h>
-#include <oscar/Scene/SceneCache.h>
-#include <oscar/Scene/ShaderCache.h>
 
 osc::ModelEditorViewerPanelState::ModelEditorViewerPanelState(
     std::string_view panelName_) :

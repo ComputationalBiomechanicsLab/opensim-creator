@@ -10,8 +10,8 @@
 #include <gtest/gtest.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Platform/Log.h>
-#include <oscar/Scene/SceneCache.h>
-#include <oscar/Scene/SceneDecoration.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Utils/StringHelpers.h>
 
 #include <filesystem>

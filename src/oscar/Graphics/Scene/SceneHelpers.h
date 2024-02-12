@@ -3,15 +3,15 @@
 #include <oscar/Graphics/AntiAliasingLevel.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Material.h>
+#include <oscar/Graphics/Scene/SceneCollision.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Graphics/Scene/SceneRendererParams.h>
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/BVH.h>
 #include <oscar/Maths/Line.h>
 #include <oscar/Maths/RayCollision.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
-#include <oscar/Scene/SceneCollision.h>
-#include <oscar/Scene/SceneDecoration.h>
-#include <oscar/Scene/SceneRendererParams.h>
 
 #include <functional>
 #include <optional>

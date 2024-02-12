@@ -6,10 +6,10 @@
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/MaterialPropertyBlock.h>
 #include <oscar/Graphics/Mesh.h>
+#include <oscar/Graphics/Scene/SceneDecorationFlags.h>
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Transform.h>
-#include <oscar/Scene/SceneDecorationFlags.h>
 #include <oscar/Utils/UID.h>
 
 #include <optional>

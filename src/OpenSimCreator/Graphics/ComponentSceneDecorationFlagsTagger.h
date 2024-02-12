@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/Scene/SceneDecorationFlags.h>
+#include <oscar/Graphics/Scene/SceneDecorationFlags.h>
 
 namespace OpenSim { class Component; }
 namespace osc { struct SceneDecoration; }

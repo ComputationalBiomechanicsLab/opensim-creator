@@ -10,14 +10,14 @@
 
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Material.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneHelpers.h>
+#include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Maths/BVH.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
-#include <oscar/Scene/SceneCache.h>
-#include <oscar/Scene/SceneHelpers.h>
-#include <oscar/Scene/ShaderCache.h>
 #include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/Utils/ParentPtr.h>

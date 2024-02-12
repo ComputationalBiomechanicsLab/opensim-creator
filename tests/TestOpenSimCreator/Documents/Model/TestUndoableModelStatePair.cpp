@@ -2,15 +2,15 @@
 
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
+#include <gtest/gtest.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
-#include <gtest/gtest.h>
 #include <oscar/Formats/DAE.h>
-#include <oscar/Scene/SceneCache.h>
-#include <oscar/Scene/SceneDecoration.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Utils/NullOStream.h>
 
 #include <filesystem>

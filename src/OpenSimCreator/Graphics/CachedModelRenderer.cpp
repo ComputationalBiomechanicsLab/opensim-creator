@@ -7,16 +7,16 @@
 #include <OpenSimCreator/Graphics/OverlayDecorationGenerator.h>
 
 #include <oscar/Graphics/AntiAliasingLevel.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneCollision.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Graphics/Scene/SceneHelpers.h>
+#include <oscar/Graphics/Scene/SceneRenderer.h>
+#include <oscar/Graphics/Scene/SceneRendererParams.h>
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/BVH.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/Vec2.h>
-#include <oscar/Scene/SceneCache.h>
-#include <oscar/Scene/SceneCollision.h>
-#include <oscar/Scene/SceneDecoration.h>
-#include <oscar/Scene/SceneHelpers.h>
-#include <oscar/Scene/SceneRenderer.h>
-#include <oscar/Scene/SceneRendererParams.h>
 #include <oscar/Utils/Perf.h>
 
 #include <cstdint>

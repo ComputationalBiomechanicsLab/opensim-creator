@@ -7,12 +7,12 @@
 #include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
 
 #include <oscar/Graphics/AntiAliasingLevel.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Graphics/Scene/SceneHelpers.h>
 #include <oscar/Maths/Line.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/Vec2.h>
-#include <oscar/Scene/SceneDecoration.h>
-#include <oscar/Scene/SceneHelpers.h>
 #include <oscar/Utils/Perf.h>
 
 #include <optional>

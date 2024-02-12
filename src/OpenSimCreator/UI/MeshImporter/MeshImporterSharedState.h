@@ -17,12 +17,18 @@
 #include <OpenSimCreator/UI/MeshImporter/MeshLoader.h>
 
 #include <IconsFontAwesome5.h>
-#include <SDL_events.h>
 #include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/MeshGenerators.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Graphics/Scene/SceneDecorationFlags.h>
+#include <oscar/Graphics/Scene/SceneHelpers.h>
+#include <oscar/Graphics/Scene/SceneRenderer.h>
+#include <oscar/Graphics/Scene/SceneRendererParams.h>
+#include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/CollisionTests.h>
 #include <oscar/Maths/Line.h>
@@ -37,19 +43,13 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
-#include <oscar/Scene/SceneCache.h>
-#include <oscar/Scene/SceneDecoration.h>
-#include <oscar/Scene/SceneDecorationFlags.h>
-#include <oscar/Scene/SceneHelpers.h>
-#include <oscar/Scene/SceneRenderer.h>
-#include <oscar/Scene/SceneRendererParams.h>
-#include <oscar/Scene/ShaderCache.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Widgets/LogViewer.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/StdVariantHelpers.h>
 #include <oscar/Utils/UID.h>
+#include <SDL_events.h>
 
 #include <array>
 #include <cstddef>

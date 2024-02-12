@@ -44,11 +44,29 @@ add_library(oscar STATIC
     Graphics/Detail/VertexAttributeHelpers.h
     Graphics/Detail/VertexAttributeList.h
     Graphics/Detail/VertexAttributeTraits.h
+
     Graphics/OpenGL/CPUDataTypeOpenGLTraits.h
     Graphics/OpenGL/CPUImageFormatOpenGLTraits.h
     Graphics/OpenGL/Gl.cpp
     Graphics/OpenGL/Gl.h
     Graphics/OpenGL/TextureFormatOpenGLTraits.h
+
+    Graphics/Scene/CachedSceneRenderer.cpp
+    Graphics/Scene/CachedSceneRenderer.h
+    Graphics/Scene/SceneCache.cpp
+    Graphics/Scene/SceneCache.h
+    Graphics/Scene/SceneCollision.h
+    Graphics/Scene/SceneDecoration.h
+    Graphics/Scene/SceneDecorationFlags.h
+    Graphics/Scene/SceneHelpers.cpp
+    Graphics/Scene/SceneHelpers.h
+    Graphics/Scene/SceneRenderer.cpp
+    Graphics/Scene/SceneRenderer.h
+    Graphics/Scene/SceneRendererParams.cpp
+    Graphics/Scene/SceneRendererParams.h
+    Graphics/Scene/ShaderCache.cpp
+    Graphics/Scene/ShaderCache.h
+
     Graphics/AntiAliasingLevel.cpp
     Graphics/AntiAliasingLevel.h
     Graphics/BlitFlags.h
@@ -92,6 +110,7 @@ add_library(oscar STATIC
     Graphics/RenderTextureDescriptor.h
     Graphics/RenderTextureFormat.h
     Graphics/RenderTextureReadWrite.h
+    Graphics/Scene.h
     Graphics/Shader.h
     Graphics/ShaderPropertyType.h
     Graphics/SubMeshDescriptor.h
@@ -196,22 +215,6 @@ add_library(oscar STATIC
     Platform/ResourceStream.h
     Platform/Screenshot.h
     Platform/ScreenshotAnnotation.h
-
-    Scene/CachedSceneRenderer.cpp
-    Scene/CachedSceneRenderer.h
-    Scene/SceneCache.cpp
-    Scene/SceneCache.h
-    Scene/SceneCollision.h
-    Scene/SceneDecoration.h
-    Scene/SceneDecorationFlags.h
-    Scene/SceneHelpers.cpp
-    Scene/SceneHelpers.h
-    Scene/SceneRenderer.cpp
-    Scene/SceneRenderer.h
-    Scene/SceneRendererParams.cpp
-    Scene/SceneRendererParams.h
-    Scene/ShaderCache.cpp
-    Scene/ShaderCache.h
 
     Shims/Cpp20/bit.h
     Shims/Cpp20/stop_token.h
@@ -342,7 +345,6 @@ add_library(oscar STATIC
     oscar.h
     Object.h
     Platform.h
-    Scene.h
     Shims.h
     UI.h
     Utils.h

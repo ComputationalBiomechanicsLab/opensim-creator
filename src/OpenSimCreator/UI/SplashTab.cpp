@@ -11,10 +11,13 @@
 #include <OpenSimCreator/UI/Shared/MainMenu.h>
 
 #include <IconsFontAwesome5.h>
-#include <SDL_events.h>
 #include <imgui.h>
 #include <oscar/Formats/SVG.h>
 #include <oscar/Graphics/Color.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneRenderer.h>
+#include <oscar/Graphics/Scene/SceneRendererParams.h>
+#include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Graphics/Texture2D.h>
 #include <oscar/Graphics/TextureFilterMode.h>
 #include <oscar/Maths/MathHelpers.h>
@@ -25,15 +28,12 @@
 #include <oscar/Platform/AppConfig.h>
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/os.h>
-#include <oscar/Scene/SceneCache.h>
-#include <oscar/Scene/SceneRenderer.h>
-#include <oscar/Scene/SceneRendererParams.h>
-#include <oscar/Scene/ShaderCache.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/UI/Widgets/LogViewer.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/ParentPtr.h>
+#include <SDL_events.h>
 
 #include <filesystem>
 #include <span>

@@ -4,8 +4,8 @@
 
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Mesh.h>
-#include <oscar/Scene/SceneDecoration.h>
-#include <oscar/Scene/SceneHelpers.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Graphics/Scene/SceneHelpers.h>
 
 #include <functional>
 

@@ -10,6 +10,7 @@ add_executable(testoscar
     Graphics/Detail/TestVertexAttributeHelpers.cpp
     Graphics/Detail/TestVertexAttributeFormatList.cpp
     Graphics/Detail/TestVertexAttributeList.cpp
+    Graphics/Scene/TestSceneCache.cpp
     Graphics/TestAntiAliasingLevel.cpp
     Graphics/TestCamera.cpp
     Graphics/TestCameraProjection.cpp
@@ -61,8 +62,6 @@ add_executable(testoscar
     Platform/TestResourceLoader.cpp
     Platform/TestResourcePath.cpp
     Platform/TestResourceStream.cpp
-
-    Scene/TestSceneCache.cpp
 
     Shims/Cpp20/TestBit.cpp
 

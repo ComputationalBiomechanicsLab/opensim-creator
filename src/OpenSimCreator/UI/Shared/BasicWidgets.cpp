@@ -30,12 +30,13 @@
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Point.h>
-#include <SimTKcommon/basics.h>
 #include <oscar/Formats/DAE.h>
 #include <oscar/Formats/OBJ.h>
 #include <oscar/Formats/STL.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Mesh.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Vec2.h>
@@ -44,13 +45,12 @@
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
-#include <oscar/Scene/SceneCache.h>
-#include <oscar/Scene/SceneDecoration.h>
 #include <oscar/UI/IconCache.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/Widgets/IconWithMenu.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/StringHelpers.h>
+#include <SimTKcommon/basics.h>
 
 #include <algorithm>
 #include <array>

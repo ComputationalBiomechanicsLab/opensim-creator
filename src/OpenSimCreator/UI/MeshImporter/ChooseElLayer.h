@@ -8,17 +8,17 @@
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterSharedState.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterUILayer.h>
 
-#include <SDL_events.h>
 #include <imgui.h>
 #include <oscar/Graphics/Color.h>
+#include <oscar/Graphics/Scene/SceneDecorationFlags.h>
 #include <oscar/Maths/EasingFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
-#include <oscar/Scene/SceneDecorationFlags.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/UID.h>
+#include <SDL_events.h>
 
 #include <algorithm>
 #include <cstddef>

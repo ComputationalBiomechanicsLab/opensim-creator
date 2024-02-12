@@ -9,6 +9,11 @@
 #include <oscar/Graphics/MaterialPropertyBlock.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/RenderTexture.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Graphics/Scene/SceneDecorationFlags.h>
+#include <oscar/Graphics/Scene/SceneRendererParams.h>
+#include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Graphics/TextureGenerators.h>
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/Mat4.h>
@@ -19,11 +24,6 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/ResourcePath.h>
-#include <oscar/Scene/SceneCache.h>
-#include <oscar/Scene/SceneDecoration.h>
-#include <oscar/Scene/SceneDecorationFlags.h>
-#include <oscar/Scene/SceneRendererParams.h>
-#include <oscar/Scene/ShaderCache.h>
 #include <oscar/Utils/Perf.h>
 
 #include <algorithm>

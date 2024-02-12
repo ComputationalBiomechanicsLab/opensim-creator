@@ -1,4 +1,4 @@
-#include <oscar/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
 
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/BVH.h>

@@ -2,9 +2,9 @@
 
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshGenerators.h>
+#include <oscar/Graphics/Scene/SceneHelpers.h>
 #include <oscar/Maths/BVH.h>
 #include <oscar/Platform/Log.h>
-#include <oscar/Scene/SceneHelpers.h>
 #include <oscar/Utils/HashHelpers.h>
 #include <oscar/Utils/SynchronizedValue.h>
 
