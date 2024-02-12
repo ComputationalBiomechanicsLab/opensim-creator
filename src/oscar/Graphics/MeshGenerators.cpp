@@ -1134,8 +1134,6 @@ Mesh osc::GenerateBoxMesh(
     rv.setNormals(normals);
     rv.setTexCoords(uvs);
     rv.setIndices(indices);
-    for (auto const& submesh : submeshes) {
-        rv.pushSubMeshDescriptor(submesh);
-    }
+    rv.setSubmeshDescriptors(submeshes);
     return rv;
 }

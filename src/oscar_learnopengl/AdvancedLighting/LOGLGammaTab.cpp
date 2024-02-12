@@ -14,35 +14,6 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_PlaneVertices = std::to_array<Vec3>({
-        { 10.0f, -0.5f,  10.0f},
-        {-10.0f, -0.5f,  10.0f},
-        {-10.0f, -0.5f, -10.0f},
-
-        { 10.0f, -0.5f,  10.0f},
-        {-10.0f, -0.5f, -10.0f},
-        { 10.0f, -0.5f, -10.0f},
-    });
-    constexpr auto c_PlaneTexCoords = std::to_array<Vec2>({
-        {10.0f, 0.0f},
-        {0.0f,  0.0f},
-        {0.0f,  10.0f},
-
-        {10.0f, 0.0f},
-        {0.0f,  10.0f},
-        {10.0f, 10.0f},
-    });
-    constexpr auto c_PlaneNormals = std::to_array<Vec3>({
-        {0.0f, 1.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f},
-
-        {0.0f, 1.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f},
-    });
-    constexpr auto c_PlaneIndices = std::to_array<uint16_t>({0, 2, 1, 3, 5, 4});
-
     constexpr auto c_LightPositions = std::to_array<Vec3>({
         {-3.0f, 0.0f, 0.0f},
         {-1.0f, 0.0f, 0.0f},
@@ -62,10 +33,34 @@ namespace
     Mesh GeneratePlane()
     {
         Mesh rv;
-        rv.setVerts(c_PlaneVertices);
-        rv.setTexCoords(c_PlaneTexCoords);
-        rv.setNormals(c_PlaneNormals);
-        rv.setIndices(c_PlaneIndices);
+        rv.setVerts({
+            { 10.0f, -0.5f,  10.0f},
+            {-10.0f, -0.5f,  10.0f},
+            {-10.0f, -0.5f, -10.0f},
+
+            { 10.0f, -0.5f,  10.0f},
+            {-10.0f, -0.5f, -10.0f},
+            { 10.0f, -0.5f, -10.0f},
+        });
+        rv.setTexCoords({
+            {10.0f, 0.0f},
+            {0.0f,  0.0f},
+            {0.0f,  10.0f},
+
+            {10.0f, 0.0f},
+            {0.0f,  10.0f},
+            {10.0f, 10.0f},
+        });
+        rv.setNormals({
+            {0.0f, 1.0f, 0.0f},
+            {0.0f, 1.0f, 0.0f},
+            {0.0f, 1.0f, 0.0f},
+
+            {0.0f, 1.0f, 0.0f},
+            {0.0f, 1.0f, 0.0f},
+            {0.0f, 1.0f, 0.0f},
+        });
+        rv.setIndices({0, 2, 1, 3, 5, 4});
         return rv;
     }
 

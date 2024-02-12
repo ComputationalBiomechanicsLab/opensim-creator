@@ -15,39 +15,30 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_PlaneVertices = std::to_array<Vec3>({
-        { 5.0f, -0.5f,  5.0f},
-        {-5.0f, -0.5f,  5.0f},
-        {-5.0f, -0.5f, -5.0f},
-
-        { 5.0f, -0.5f,  5.0f},
-        {-5.0f, -0.5f, -5.0f},
-        { 5.0f, -0.5f, -5.0f},
-    });
-
-    constexpr auto c_PlaneTexCoords = std::to_array<Vec2>({
-        {2.0f, 0.0f},
-        {0.0f, 0.0f},
-        {0.0f, 2.0f},
-
-        {2.0f, 0.0f},
-        {0.0f, 2.0f},
-        {2.0f, 2.0f},
-    });
-
-    constexpr auto c_PlaneIndices = std::to_array<uint16_t>({
-        0, 2, 1,
-        3, 5, 4,
-    });
-
     constexpr CStringView c_TabStringID = "LearnOpenGL/Framebuffers";
 
     Mesh GeneratePlane()
     {
         Mesh rv;
-        rv.setVerts(c_PlaneVertices);
-        rv.setTexCoords(c_PlaneTexCoords);
-        rv.setIndices(c_PlaneIndices);
+        rv.setVerts({
+            { 5.0f, -0.5f,  5.0f},
+            {-5.0f, -0.5f,  5.0f},
+            {-5.0f, -0.5f, -5.0f},
+
+            { 5.0f, -0.5f,  5.0f},
+            {-5.0f, -0.5f, -5.0f},
+            { 5.0f, -0.5f, -5.0f},
+        });
+        rv.setTexCoords({
+            {2.0f, 0.0f},
+            {0.0f, 0.0f},
+            {0.0f, 2.0f},
+
+            {2.0f, 0.0f},
+            {0.0f, 2.0f},
+            {2.0f, 2.0f},
+        });
+        rv.setIndices({0, 2, 1,    3, 5, 4});
         return rv;
     }
 

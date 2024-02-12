@@ -1,5 +1,6 @@
 #pragma once
 
+#include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/MeshIndicesView.h>
 #include <oscar/Graphics/MeshTopology.h>
 #include <oscar/Graphics/MeshUpdateFlags.h>
@@ -16,6 +17,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <initializer_list>
 #include <iosfwd>
 #include <optional>
 #include <ranges>
@@ -47,6 +49,10 @@ namespace osc
         size_t getNumVerts() const;
         std::vector<Vec3> getVerts() const;
         void setVerts(std::span<Vec3 const>);
+        void setVerts(std::initializer_list<Vec3> il)
+        {
+            setVerts(std::span<Vec3 const>{il});
+        }
         void transformVerts(std::function<Vec3(Vec3)> const&);
         void transformVerts(Transform const&);
         void transformVerts(Mat4 const&);
@@ -56,6 +62,10 @@ namespace osc
         bool hasNormals() const;
         std::vector<Vec3> getNormals() const;
         void setNormals(std::span<Vec3 const>);
+        void setNormals(std::initializer_list<Vec3> il)
+        {
+            setNormals(std::span<Vec3 const>{il});
+        }
         void transformNormals(std::function<Vec3(Vec3)> const&);
 
         // attribute: you can only set an equal amount of texture coordinates to
@@ -63,17 +73,29 @@ namespace osc
         bool hasTexCoords() const;
         std::vector<Vec2> getTexCoords() const;
         void setTexCoords(std::span<Vec2 const>);
+        void setTexCoords(std::initializer_list<Vec2> il)
+        {
+            setTexCoords(std::span<Vec2 const>{il});
+        }
         void transformTexCoords(std::function<Vec2(Vec2)> const&);
 
         // attribute: you can only set an equal amount of colors to the number of
         //            vertices (or zero, which means "clear them")
         std::vector<Color> getColors() const;
         void setColors(std::span<Color const>);
+        void setColors(std::initializer_list<Color> il)
+        {
+            setColors(std::span<Color const>{il});
+        }
 
         // attribute: you can only set an equal amount of tangents to the number of
         //            vertices (or zero, which means "clear them")
         std::vector<Vec4> getTangents() const;
         void setTangents(std::span<Vec4 const>);
+        void setTangents(std::initializer_list<Vec4> il)
+        {
+            setTangents(std::span<Vec4 const>{il});
+        }
 
         // indices into the vertex data: tells the backend which primatives
         // to draw in which order from the underlying vertex buffer
@@ -82,6 +104,10 @@ namespace osc
         size_t getNumIndices() const;
         MeshIndicesView getIndices() const;
         void setIndices(MeshIndicesView, MeshUpdateFlags = MeshUpdateFlags::Default);
+        void setIndices(std::initializer_list<uint32_t> il)
+        {
+            setIndices(MeshIndicesView{il});
+        }
         void forEachIndexedVert(std::function<void(Vec3)> const&) const;
         void forEachIndexedTriangle(std::function<void(Triangle)> const&) const;
         Triangle getTriangleAt(size_t firstIndexOffset) const;
@@ -106,6 +132,14 @@ namespace osc
         size_t getSubMeshCount() const;
         void pushSubMeshDescriptor(SubMeshDescriptor const&);
         SubMeshDescriptor const& getSubMeshDescriptor(size_t) const;
+        template<std::ranges::input_range Range>
+        void setSubmeshDescriptors(Range const& range)
+        {
+            clearSubMeshDescriptors();
+            for (auto const& desc : range) {
+                pushSubMeshDescriptor(desc);
+            }
+        }
         void clearSubMeshDescriptors();
 
         // advanced api: vertex attribute querying/layout/reformatting
@@ -118,7 +152,6 @@ namespace osc
         void setVertexBufferParams(size_t n, VertexFormat const&);
         size_t getVertexBufferStride() const;
         void setVertexBufferData(std::span<uint8_t const>, MeshUpdateFlags = MeshUpdateFlags::Default);
-
         template<std::ranges::contiguous_range Range>
         void setVertexBufferData(Range const& range, MeshUpdateFlags flags = MeshUpdateFlags::Default)
             requires BitCastable<typename Range::value_type>

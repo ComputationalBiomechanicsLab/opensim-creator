@@ -119,7 +119,7 @@ public:
         {
             Mesh m;
             m.setVerts(m_Tris);
-            m.setIndices(std::to_array<uint16_t>({0, 1, 2}));
+            m.setIndices({0, 1, 2});
 
             m_Material.setColor("uColor", Color::black());
             m_Material.setDepthTested(false);
