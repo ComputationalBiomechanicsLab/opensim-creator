@@ -1,9 +1,9 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/ModelWarper/Detail.h>
-#include <OpenSimCreator/Documents/ModelWarper/FrameDefinitionLookup.h>
+#include <OpenSimCreator/Documents/ModelWarper/FrameWarpLookup.h>
+#include <OpenSimCreator/Documents/ModelWarper/MeshWarpLookup.h>
 #include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.h>
-#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairingLookup.h>
 #include <OpenSimCreator/Documents/ModelWarper/ModelWarpConfiguration.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.h>
@@ -59,8 +59,8 @@ namespace osc::mow
 
     private:
         ClonePtr<OpenSim::Model const> m_Model;
-        ModelWarpConfiguration m_TopLevelWarpConfig;
-        MeshWarpPairingLookup m_MeshWarpPairingLookup;
-        FrameDefinitionLookup m_FrameDefinitionLookup;
+        ModelWarpConfiguration m_ModelWarpConfig;
+        MeshWarpLookup m_MeshWarpLookup;
+        FrameWarpLookup m_FrameWarpLookup;
     };
 }

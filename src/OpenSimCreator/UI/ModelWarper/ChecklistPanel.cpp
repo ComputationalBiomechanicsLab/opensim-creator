@@ -116,10 +116,10 @@ namespace
         state.forEachMeshWarpCheck(mesh, [&id](auto check)
         {
             ImGui::PushID(id);
-            auto style = ToStyle(check.state);
+            auto style = ToStyle(check.state());
             DrawIcon(style);
             ImGui::SameLine();
-            TextUnformatted(check.description);
+            TextUnformatted(check.description());
             ImGui::PopID();
             return ValidationCheckConsumerResponse::Continue;
         });
@@ -182,10 +182,10 @@ namespace
         state.forEachFrameDefinitionCheck(frame, [&id](auto check)
         {
             ImGui::PushID(id);
-            auto style = ToStyle(check.state);
+            auto style = ToStyle(check.state());
             DrawIcon(style);
             ImGui::SameLine();
-            TextUnformatted(check.description);
+            TextUnformatted(check.description());
             ImGui::PopID();
             return ValidationCheckConsumerResponse::Continue;
         });

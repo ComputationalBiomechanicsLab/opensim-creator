@@ -11,16 +11,16 @@ namespace osc::mow { class ModelWarpConfiguration; }
 
 namespace osc::mow
 {
-    class MeshWarpPairingLookup final {
+    class MeshWarpLookup final {
     public:
-        MeshWarpPairingLookup() = default;
-        MeshWarpPairingLookup(
+        MeshWarpLookup() = default;
+        MeshWarpLookup(
             std::filesystem::path const& osimFileLocation,
             OpenSim::Model const&,
             ModelWarpConfiguration const&
         );
 
-        MeshWarpPairing const* lookup(std::string const& meshComponentAbsPath) const
+        MeshWarpPairing const* findPairing(std::string const& meshComponentAbsPath) const
         {
             if (auto const it = m_ComponentAbsPathToMeshPairing.find(meshComponentAbsPath);
                 it != m_ComponentAbsPathToMeshPairing.end()) {

@@ -1,4 +1,4 @@
-#include "MeshWarpPairingLookup.h"
+#include "MeshWarpLookup.h"
 
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
@@ -45,7 +45,7 @@ namespace
     }
 }
 
-osc::mow::MeshWarpPairingLookup::MeshWarpPairingLookup(
+osc::mow::MeshWarpLookup::MeshWarpLookup(
     std::filesystem::path const& osimFileLocation,
     OpenSim::Model const& model,
     ModelWarpConfiguration const&) :

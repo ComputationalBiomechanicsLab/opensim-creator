@@ -1,6 +1,6 @@
-#include "FrameDefinitionLookup.h"
+#include "FrameWarpLookup.h"
 
-osc::mow::FrameDefinitionLookup::FrameDefinitionLookup(
+osc::mow::FrameWarpLookup::FrameWarpLookup(
     std::filesystem::path const&,
     OpenSim::Model const&,
     ModelWarpConfiguration const&)

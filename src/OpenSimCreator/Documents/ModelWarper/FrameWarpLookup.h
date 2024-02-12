@@ -7,10 +7,10 @@ namespace osc::mow { class ModelWarpConfiguration; }
 
 namespace osc::mow
 {
-    class FrameDefinitionLookup final {
+    class FrameWarpLookup final {
     public:
-        FrameDefinitionLookup() = default;
-        FrameDefinitionLookup(
+        FrameWarpLookup() = default;
+        FrameWarpLookup(
             std::filesystem::path const& osimFileLocation,
             OpenSim::Model const&,
             ModelWarpConfiguration const&

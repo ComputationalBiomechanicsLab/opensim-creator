@@ -1,4 +1,4 @@
-#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairingLookup.h>
+#include <OpenSimCreator/Documents/ModelWarper/MeshWarpLookup.h>
 
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
@@ -22,7 +22,7 @@ namespace
     }
 }
 
-TEST(MeshWarpPairingLookup, CorrectlyLoadsSimpleCase)
+TEST(MeshWarpLookup, CorrectlyLoadsSimpleCase)
 {
     struct Paths final {
         // model
@@ -36,9 +36,9 @@ TEST(MeshWarpPairingLookup, CorrectlyLoadsSimpleCase)
     } paths;
 
     OpenSim::Model const model{paths.osim.string()};
-    MeshWarpPairingLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
+    MeshWarpLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
     std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    MeshWarpPairing const* pairing = lut.lookup(meshAbsPath);
+    MeshWarpPairing const* pairing = lut.findPairing(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -97,9 +97,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsPairedCase)
     } paths;
 
     OpenSim::Model const model{paths.osim.string()};
-    MeshWarpPairingLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
+    MeshWarpLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
     std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    MeshWarpPairing const* pairing = lut.lookup(meshAbsPath);
+    MeshWarpPairing const* pairing = lut.findPairing(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -161,9 +161,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingDestinationLMsCase)
     } paths;
 
     OpenSim::Model const model{paths.osim.string()};
-    MeshWarpPairingLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
+    MeshWarpLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
     std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    MeshWarpPairing const* pairing = lut.lookup(meshAbsPath);
+    MeshWarpPairing const* pairing = lut.findPairing(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -227,9 +227,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingSourceLMsCase)
     } paths;
 
     OpenSim::Model const model{paths.osim.string()};
-    MeshWarpPairingLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
+    MeshWarpLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
     std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    MeshWarpPairing const* pairing = lut.lookup(meshAbsPath);
+    MeshWarpPairing const* pairing = lut.findPairing(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -290,9 +290,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSimpleUnnamedCase)
     } paths;
 
     OpenSim::Model const model{paths.osim.string()};
-    MeshWarpPairingLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
+    MeshWarpLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
     std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    MeshWarpPairing const* pairing = lut.lookup(meshAbsPath);
+    MeshWarpPairing const* pairing = lut.findPairing(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -347,9 +347,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSparselyNamedPairedCase)
     } paths;
 
     OpenSim::Model const model{paths.osim.string()};
-    MeshWarpPairingLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
+    MeshWarpLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
     std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    MeshWarpPairing const* pairing = lut.lookup(meshAbsPath);
+    MeshWarpPairing const* pairing = lut.findPairing(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);

@@ -19,9 +19,9 @@ osc::mow::Document::Document() :
 
 osc::mow::Document::Document(std::filesystem::path const& osimFileLocation) :
     m_Model{std::make_unique<OpenSim::Model>(osimFileLocation.string())},
-    m_TopLevelWarpConfig{osimFileLocation, *m_Model},
-    m_MeshWarpPairingLookup{osimFileLocation, *m_Model, m_TopLevelWarpConfig},
-    m_FrameDefinitionLookup{osimFileLocation, *m_Model, m_TopLevelWarpConfig}
+    m_ModelWarpConfig{osimFileLocation, *m_Model},
+    m_MeshWarpLookup{osimFileLocation, *m_Model, m_ModelWarpConfig},
+    m_FrameWarpLookup{osimFileLocation, *m_Model, m_ModelWarpConfig}
 {}
 
 osc::mow::Document::Document(Document const&) = default;
@@ -50,7 +50,7 @@ void osc::mow::Document::forEachMeshWarpDetail(
 {
     callback({ "OpenSim::Mesh path in the OpenSim::Model", GetAbsolutePathString(mesh) });
 
-    if (MeshWarpPairing const* p = m_MeshWarpPairingLookup.lookup(GetAbsolutePathString(mesh)))
+    if (MeshWarpPairing const* p = m_MeshWarpLookup.findPairing(GetAbsolutePathString(mesh)))
     {
         p->forEachDetail(callback);
     }
@@ -60,7 +60,7 @@ void osc::mow::Document::forEachMeshWarpCheck(
     OpenSim::Mesh const& mesh,
     std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
 {
-    if (MeshWarpPairing const* p = m_MeshWarpPairingLookup.lookup(GetAbsolutePathString(mesh)))
+    if (MeshWarpPairing const* p = m_MeshWarpLookup.findPairing(GetAbsolutePathString(mesh)))
     {
         p->forEachCheck(callback);
     }
@@ -72,7 +72,7 @@ void osc::mow::Document::forEachMeshWarpCheck(
 
 ValidationCheck::State osc::mow::Document::getMeshWarpState(OpenSim::Mesh const& mesh) const
 {
-    MeshWarpPairing const* p = m_MeshWarpPairingLookup.lookup(GetAbsolutePathString(mesh));
+    MeshWarpPairing const* p = m_MeshWarpLookup.findPairing(GetAbsolutePathString(mesh));
     return p ? p->state() : ValidationCheck::State::Error;
 }
 

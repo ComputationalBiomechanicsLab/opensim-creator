@@ -359,12 +359,12 @@ ValidationCheck::State osc::mow::MeshWarpPairing::state() const
     ValidationCheck::State worst = ValidationCheck::State::Ok;
     forEachCheck([&worst](ValidationCheck const& c)
     {
-        if (c.state == ValidationCheck::State::Error)
+        if (c.state() == ValidationCheck::State::Error)
         {
             worst = ValidationCheck::State::Error;
             return ValidationCheckConsumerResponse::Stop;
         }
-        else if (c.state == ValidationCheck::State::Warning)
+        else if (c.state() == ValidationCheck::State::Warning)
         {
             worst = ValidationCheck::State::Warning;
             return ValidationCheckConsumerResponse::Continue;
