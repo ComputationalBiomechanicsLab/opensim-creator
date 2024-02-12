@@ -6,6 +6,8 @@
 set -xeuo pipefail
 OSC_BUILD_CONCURRENCY=$(nproc)
 
+mkdir -p osc-build
+
 # create stub that hides graphics driver memory leaks (out of my control)
 cat << EOF > osc-build/dlclose.c
 #include <stdio.h>
@@ -25,7 +27,7 @@ EOF
 CC=clang CXX=clang++ CCFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address cmake -S third_party/ -B osc-deps-build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=${PWD}/osc-deps-install
 cmake --build osc-deps-build/ -v -j${OSC_BUILD_CONCURRENCY}
 
-CC=clang CXX=clang++ CCFLAGS=-fsanitize=address,undefined CXXFLAGS=-fsanitize=address,undefined cmake -S . -B osc-build -DCMAKE_BUILD_TYPE=Debug -DOSC_FORCE_ASSERTS_ENABLED=ON -DOSC_FORCE_UNDEFINE_NDEBUG=ON -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install -DCMAKE_INSTALL_PREFIX=${PWD}/osc-install -DOSC_USE_CLANG_TIDY=OFF
+CC=clang CXX=clang++ CCFLAGS=-fsanitize=address,undefined CXXFLAGS=-fsanitize=address,undefined cmake -S . -B osc-build -DCMAKE_BUILD_TYPE=Debug -DOSC_FORCE_ASSERTS_ENABLED=ON -DOSC_FORCE_UNDEFINE_NDEBUG=ON -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install -DCMAKE_INSTALL_PREFIX=${PWD}/osc-install -DOSC_BUILD_BENCHMARKS=ON -DOSC_USE_CLANG_TIDY=OFF
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY}
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar_learnopengl
