@@ -1,7 +1,7 @@
-#include "TabRegistryEntry.hpp"
+#include "TabRegistryEntry.h"
 
-#include <oscar/UI/Tabs/ITab.hpp>
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/UI/Tabs/ITab.h>
+#include <oscar/Utils/CStringView.h>
 
 #include <functional>
 #include <memory>

@@ -1,8 +1,8 @@
-#include "MeshWarpPairing.hpp"
+#include "MeshWarpPairing.h"
 
-#include <OpenSimCreator/Documents/Landmarks/LandmarkHelpers.hpp>
+#include <OpenSimCreator/Documents/Landmarks/LandmarkHelpers.h>
 
-#include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/Log.h>
 
 #include <algorithm>
 #include <filesystem>

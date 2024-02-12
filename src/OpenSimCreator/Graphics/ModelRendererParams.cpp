@@ -1,14 +1,14 @@
-#include "ModelRendererParams.hpp"
+#include "ModelRendererParams.h"
 
-#include <OpenSimCreator/Graphics/CustomRenderingOptions.hpp>
-#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
-#include <OpenSimCreator/Graphics/OverlayDecorationOptions.hpp>
+#include <OpenSimCreator/Graphics/CustomRenderingOptions.h>
+#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
+#include <OpenSimCreator/Graphics/OverlayDecorationOptions.h>
 
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/PolarPerspectiveCamera.hpp>
-#include <oscar/Platform/AppConfig.hpp>
-#include <oscar/Platform/AppSettingValue.hpp>
-#include <oscar/Scene/SceneRendererParams.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Graphics/Scene/SceneRendererParams.h>
+#include <oscar/Maths/PolarPerspectiveCamera.h>
+#include <oscar/Platform/AppConfig.h>
+#include <oscar/Platform/AppSettingValue.h>
 
 #include <string>
 #include <string_view>

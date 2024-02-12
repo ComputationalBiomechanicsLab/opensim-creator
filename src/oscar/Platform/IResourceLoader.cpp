@@ -1,4 +1,4 @@
-#include "IResourceLoader.hpp"
+#include "IResourceLoader.h"
 
 #include <istream>
 #include <iterator>

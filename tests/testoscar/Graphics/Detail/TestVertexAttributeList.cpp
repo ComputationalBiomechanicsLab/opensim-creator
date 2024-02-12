@@ -1,19 +1,15 @@
-#include <oscar/Graphics/Detail/VertexAttributeList.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeList.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Graphics/VertexAttribute.hpp>
-#include <oscar/Graphics/Detail/VertexAttributeTraits.hpp>
-#include <oscar/Utils/EnumHelpers.hpp>
-#include <oscar/Utils/NonTypelist.hpp>
+#include <oscar/Graphics/VertexAttribute.h>
+#include <oscar/Graphics/Detail/VertexAttributeTraits.h>
+#include <oscar/Utils/EnumHelpers.h>
+#include <oscar/Utils/NonTypelist.h>
 
 #include <array>
 
-using osc::detail::VertexAttributeList;
-using osc::detail::VertexAttributeTraits;
-using osc::NonTypelist;
-using osc::NonTypelistSizeV;
-using osc::NumOptions;
-using osc::VertexAttribute;
+using namespace osc;
+using namespace osc::detail;
 
 namespace
 {

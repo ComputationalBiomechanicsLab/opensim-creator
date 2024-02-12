@@ -1,12 +1,12 @@
-#include "Ground.hpp"
+#include "Ground.h"
 
-#include <OpenSimCreator/Documents/MeshImporter/MIClass.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/MIIDs.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/MIStrings.hpp>
+#include <OpenSimCreator/Documents/MeshImporter/MIClass.h>
+#include <OpenSimCreator/Documents/MeshImporter/MIIDs.h>
+#include <OpenSimCreator/Documents/MeshImporter/MIStrings.h>
 
 #include <IconsFontAwesome5.h>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/UID.h>
 
 #include <iostream>
 

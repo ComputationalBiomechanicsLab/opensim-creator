@@ -1,8 +1,8 @@
-#include "StringName.hpp"
+#include "StringName.h"
 
 #include <ankerl/unordered_dense.h>
 
-#include <oscar/Utils/SynchronizedValue.hpp>
+#include <oscar/Utils/SynchronizedValue.h>
 
 #include <concepts>
 #include <functional>

@@ -1,8 +1,8 @@
-#include "IconWithoutMenu.hpp"
+#include "IconWithoutMenu.h"
 
-#include <oscar/UI/Icon.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/UI/Icon.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/Utils/CStringView.h>
 
 #include <string>
 #include <utility>

@@ -1,6 +1,6 @@
-#include "AppMetadata.hpp"
+#include "AppMetadata.h"
 
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/CStringView.h>
 
 #include <optional>
 #include <sstream>

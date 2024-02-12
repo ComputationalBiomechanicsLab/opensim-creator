@@ -1,7 +1,7 @@
-#include "MeshGenTestTab.hpp"
+#include "MeshGenTestTab.h"
 
 #include <imgui.h>
-#include <oscar/oscar.hpp>
+#include <oscar/oscar.h>
 
 #include <map>
 #include <memory>
@@ -28,6 +28,8 @@ namespace
             {"yline", cache.getYLineMesh()},
             {"quad", cache.getTexturedQuadMesh()},
             {"torus", cache.getTorusMesh(0.9f, 0.1f)},
+            {"torusknot", GenerateTorusKnotMesh()},
+            {"box", GenerateBoxMesh(2.0f, 2.0f, 2.0f, 1, 1, 1)},
         };
     }
 }

@@ -1,6 +1,6 @@
-#include "VertexAttributeDescriptor.hpp"
+#include "VertexAttributeDescriptor.h"
 
-#include <oscar/Graphics/Detail/VertexAttributeFormatHelpers.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeFormatHelpers.h>
 
 #include <cstddef>
 

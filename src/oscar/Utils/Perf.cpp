@@ -1,7 +1,7 @@
-#include "Perf.hpp"
+#include "Perf.h"
 
-#include <oscar/Utils/HashHelpers.hpp>
-#include <oscar/Utils/SynchronizedValue.hpp>
+#include <oscar/Utils/HashHelpers.h>
+#include <oscar/Utils/SynchronizedValue.h>
 
 #include <unordered_map>
 #include <string>

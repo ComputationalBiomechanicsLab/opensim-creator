@@ -1,6 +1,6 @@
-#include "SubMeshTab.hpp"
+#include "SubMeshTab.h"
 
-#include <oscar/oscar.hpp>
+#include <oscar/oscar.h>
 #include <SDL_events.h>
 
 #include <array>
@@ -53,9 +53,7 @@ namespace
         rv.setVerts(allVerts);
         rv.setNormals(allNormals);
         rv.setIndices(allIndices);
-        for (auto const& desc : allDescriptors) {
-            rv.pushSubMeshDescriptor(desc);
-        }
+        rv.setSubmeshDescriptors(allDescriptors);
         return rv;
     }
 }

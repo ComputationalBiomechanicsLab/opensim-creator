@@ -1,9 +1,9 @@
-#include "RecentFiles.hpp"
+#include "RecentFiles.h"
 
-#include <OpenSimCreator/Platform/RecentFile.hpp>
+#include <OpenSimCreator/Platform/RecentFile.h>
 
-#include <oscar/Platform/App.hpp>
-#include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/App.h>
+#include <oscar/Platform/Log.h>
 
 #include <algorithm>
 #include <chrono>

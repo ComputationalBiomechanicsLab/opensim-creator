@@ -1,4 +1,4 @@
-#include "CustomRenderingOptionFlags.hpp"
+#include "CustomRenderingOptionFlags.h"
 
 #include <array>
 #include <span>

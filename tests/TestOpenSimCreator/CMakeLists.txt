@@ -25,11 +25,11 @@ add_executable(TestOpenSimCreator
 )
 
 configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/TestOpenSimCreatorConfig.hpp.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/TestOpenSimCreator/TestOpenSimCreatorConfig.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/TestOpenSimCreatorConfig.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/TestOpenSimCreator/TestOpenSimCreatorConfig.h"
 )
 target_include_directories(TestOpenSimCreator PUBLIC
-    # so that source code can `#include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>`
+    # so that source code can `#include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>`
     "${CMAKE_CURRENT_BINARY_DIR}/generated/"
 )
 

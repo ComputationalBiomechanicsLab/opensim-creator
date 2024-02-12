@@ -1,13 +1,13 @@
-#include "Station.hpp"
+#include "Station.h"
 
-#include <OpenSimCreator/Documents/MeshImporter/CrossrefDescriptor.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/CrossrefDirection.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/MIStrings.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/MeshImporter/CrossrefDescriptor.h>
+#include <OpenSimCreator/Documents/MeshImporter/CrossrefDirection.h>
+#include <OpenSimCreator/Documents/MeshImporter/MIStrings.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/UID.h>
 
 #include <iostream>
 #include <string>

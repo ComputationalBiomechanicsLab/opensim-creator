@@ -1,10 +1,10 @@
-#include <oscar/Utils/NullStreambuf.hpp>
+#include <oscar/Utils/NullStreambuf.h>
 
 #include <gtest/gtest.h>
 
 #include <iosfwd>
 
-using osc::NullStreambuf;
+using namespace osc;
 
 TEST(NullStreambuf, CanBeConstructed)
 {

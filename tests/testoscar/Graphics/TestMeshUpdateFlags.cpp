@@ -1,8 +1,8 @@
-#include <oscar/Graphics/MeshUpdateFlags.hpp>
+#include <oscar/Graphics/MeshUpdateFlags.h>
 
 #include <gtest/gtest.h>
 
-using osc::MeshUpdateFlags;
+using namespace osc;
 
 TEST(MeshUpdateFlags, ORingCombinesFlags)
 {

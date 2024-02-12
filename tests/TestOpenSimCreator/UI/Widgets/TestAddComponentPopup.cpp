@@ -1,16 +1,16 @@
-#include <OpenSimCreator/UI/ModelEditor/AddComponentPopup.hpp>
+#include <OpenSimCreator/UI/ModelEditor/AddComponentPopup.h>
 
-#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.hpp>
-#include <OpenSimCreator/ComponentRegistry/ComponentRegistryEntry.hpp>
-#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.hpp>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/Platform/OpenSimCreatorApp.hpp>
-#include <OpenSimCreator/UI/IPopupAPI.hpp>
+#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.h>
+#include <OpenSimCreator/ComponentRegistry/ComponentRegistryEntry.h>
+#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
+#include <OpenSimCreator/UI/IPopupAPI.h>
 
 #include <OpenSim/Common/Component.h>
 #include <gtest/gtest.h>
-#include <oscar/UI/ui_context.hpp>
-#include <oscar/Utils/ScopeGuard.hpp>
+#include <oscar/UI/ui_context.h>
+#include <oscar/Utils/ScopeGuard.h>
 
 #include <exception>
 #include <memory>

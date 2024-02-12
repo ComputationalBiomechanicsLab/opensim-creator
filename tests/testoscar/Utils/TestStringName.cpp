@@ -1,6 +1,6 @@
-#include <oscar/Utils/StringName.hpp>
+#include <oscar/Utils/StringName.h>
 
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/CStringView.h>
 
 #include <gtest/gtest.h>
 
@@ -13,8 +13,7 @@
 #include <type_traits>
 #include <utility>
 
-using osc::CStringView;
-using osc::StringName;
+using namespace osc;
 
 namespace
 {

@@ -1,7 +1,7 @@
-#include "ImGuiDemoTab.hpp"
+#include "ImGuiDemoTab.h"
 
 #include <imgui.h>
-#include <oscar/oscar.hpp>
+#include <oscar/oscar.h>
 
 #include <memory>
 

@@ -8,7 +8,7 @@ add_executable(testoscar_demos
 
 target_include_directories(testoscar_demos PUBLIC
 
-    # so that the source code can `#include <testoscar_demos/SomeModule.hpp>`
+    # so that the source code can `#include <testoscar_demos/SomeModule.h>`
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 

@@ -1,6 +1,6 @@
-#include <OpenSimCreator/Documents/ModelWarper/FrameDefinitionLookup.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/FrameDefinitionLookup.h>
 
-#include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
+#include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <gtest/gtest.h>

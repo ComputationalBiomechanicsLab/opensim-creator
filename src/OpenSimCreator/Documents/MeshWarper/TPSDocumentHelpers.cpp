@@ -1,14 +1,14 @@
-#include "TPSDocumentHelpers.hpp"
+#include "TPSDocumentHelpers.h"
 
-#include <OpenSimCreator/Documents/MeshWarper/TPSDocument.hpp>
-#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.hpp>
-#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementType.hpp>
-#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.hpp>
-#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.hpp>
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocument.h>
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.h>
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementType.h>
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
+#include <OpenSimCreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
 
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/EnumHelpers.hpp>
-#include <oscar/Utils/StringName.hpp>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/EnumHelpers.h>
+#include <oscar/Utils/StringName.h>
 
 #include <algorithm>
 #include <concepts>

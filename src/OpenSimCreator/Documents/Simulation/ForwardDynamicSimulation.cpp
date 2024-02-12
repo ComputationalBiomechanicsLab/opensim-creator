@@ -1,17 +1,17 @@
-#include "ForwardDynamicSimulation.hpp"
+#include "ForwardDynamicSimulation.h"
 
-#include <OpenSimCreator/Documents/Model/BasicModelStatePair.hpp>
-#include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulator.hpp>
-#include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.hpp>
-#include <OpenSimCreator/Documents/Simulation/SimulationClock.hpp>
-#include <OpenSimCreator/Documents/Simulation/SimulationReport.hpp>
-#include <OpenSimCreator/Documents/Simulation/SimulationStatus.hpp>
-#include <OpenSimCreator/OutputExtractors/OutputExtractor.hpp>
-#include <OpenSimCreator/Utils/ParamBlock.hpp>
+#include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
+#include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulator.h>
+#include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationStatus.h>
+#include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
+#include <OpenSimCreator/Utils/ParamBlock.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/Utils/SynchronizedValue.hpp>
-#include <oscar/Utils/SynchronizedValueGuard.hpp>
+#include <oscar/Utils/SynchronizedValue.h>
+#include <oscar/Utils/SynchronizedValueGuard.h>
 
 #include <algorithm>
 #include <chrono>

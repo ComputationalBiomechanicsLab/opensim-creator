@@ -1,12 +1,12 @@
-#include "AppConfig.hpp"
+#include "AppConfig.h"
 
-#include <oscar/Graphics/AntiAliasingLevel.hpp>
-#include <oscar/Platform/AppSettingValueType.hpp>
-#include <oscar/Platform/AppSettings.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Platform/LogLevel.hpp>
-#include <oscar/Platform/os.hpp>
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Graphics/AntiAliasingLevel.h>
+#include <oscar/Platform/AppSettingValueType.h>
+#include <oscar/Platform/AppSettings.h>
+#include <oscar/Platform/Log.h>
+#include <oscar/Platform/LogLevel.h>
+#include <oscar/Platform/os.h>
+#include <oscar/Utils/CStringView.h>
 
 #include <filesystem>
 #include <memory>

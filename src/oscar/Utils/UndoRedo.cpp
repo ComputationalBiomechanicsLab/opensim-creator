@@ -1,6 +1,6 @@
-#include "UndoRedo.hpp"
+#include "UndoRedo.h"
 
-#include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/Assertions.h>
 
 #include <algorithm>
 #include <chrono>

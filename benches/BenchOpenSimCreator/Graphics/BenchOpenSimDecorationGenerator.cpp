@@ -1,14 +1,14 @@
-#include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp>
+#include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
 
 #include <benchmark/benchmark.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
-#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
-#include <OpenSimCreator/Platform/OpenSimCreatorApp.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
-#include <oscar/Platform/AppConfig.hpp>
-#include <oscar/Scene/SceneCache.hpp>
-#include <oscar/Scene/SceneDecoration.hpp>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Platform/AppConfig.h>
 #include <Simbody.h>
 
 #include <filesystem>

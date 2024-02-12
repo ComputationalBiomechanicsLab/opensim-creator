@@ -1,20 +1,20 @@
-#include "CoordinateEditorPanel.hpp"
+#include "CoordinateEditorPanel.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.hpp>
-#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.h>
+#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Panels/StandardPanelImpl.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/Panels/StandardPanelImpl.h>
+#include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/ParentPtr.h>
 
 #include <sstream>
 #include <string_view>

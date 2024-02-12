@@ -1,11 +1,10 @@
-#include <oscar/Formats/CSV.hpp>
+#include <oscar/Formats/CSV.h>
 
 #include <gtest/gtest.h>
 
 #include <sstream>
 
-using osc::ReadCSVRow;
-using osc::WriteCSVRow;
+using namespace osc;
 
 TEST(ReadCSVRow, CallingReadCSVRowOnEmptyStringReturnsEmptyString)
 {

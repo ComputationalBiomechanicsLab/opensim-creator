@@ -1,22 +1,15 @@
-#include <oscar/Graphics/RenderTexture.hpp>
+#include <oscar/Graphics/RenderTexture.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Graphics/AntiAliasingLevel.hpp>
-#include <oscar/Graphics/DepthStencilFormat.hpp>
-#include <oscar/Graphics/RenderTextureDescriptor.hpp>
-#include <oscar/Graphics/RenderTextureFormat.hpp>
-#include <oscar/Graphics/RenderTextureReadWrite.hpp>
-#include <oscar/Graphics/TextureDimensionality.hpp>
-#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Graphics/AntiAliasingLevel.h>
+#include <oscar/Graphics/DepthStencilFormat.h>
+#include <oscar/Graphics/RenderTextureDescriptor.h>
+#include <oscar/Graphics/RenderTextureFormat.h>
+#include <oscar/Graphics/RenderTextureReadWrite.h>
+#include <oscar/Graphics/TextureDimensionality.h>
+#include <oscar/Maths/Vec2.h>
 
-using osc::AntiAliasingLevel;
-using osc::DepthStencilFormat;
-using osc::RenderTexture;
-using osc::RenderTextureDescriptor;
-using osc::RenderTextureFormat;
-using osc::RenderTextureReadWrite;
-using osc::TextureDimensionality;
-using osc::Vec2i;
+using namespace osc;
 
 TEST(RenderTexture, DefaultConstructorCreates1x1RgbaRenderTexture)
 {

@@ -1,4 +1,4 @@
-#include "OverlayDecorationOptionFlags.hpp"
+#include "OverlayDecorationOptionFlags.h"
 
 #include <array>
 #include <span>

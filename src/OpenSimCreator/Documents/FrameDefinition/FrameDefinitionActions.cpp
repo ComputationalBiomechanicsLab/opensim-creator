@@ -1,13 +1,13 @@
-#include "FrameDefinitionActions.hpp"
+#include "FrameDefinitionActions.h"
 
-#include <OpenSimCreator/Documents/FrameDefinition/CrossProductDefinedFrame.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/CrossProductEdge.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/MidpointLandmark.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/PointToPointEdge.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/SphereLandmark.hpp>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/CrossProductDefinedFrame.h>
+#include <OpenSimCreator/Documents/FrameDefinition/CrossProductEdge.h>
+#include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
+#include <OpenSimCreator/Documents/FrameDefinition/MidpointLandmark.h>
+#include <OpenSimCreator/Documents/FrameDefinition/PointToPointEdge.h>
+#include <OpenSimCreator/Documents/FrameDefinition/SphereLandmark.h>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <Simbody.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -15,7 +15,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
-#include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/Log.h>
 
 #include <memory>
 #include <optional>

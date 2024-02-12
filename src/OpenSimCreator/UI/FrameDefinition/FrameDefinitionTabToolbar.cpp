@@ -1,17 +1,17 @@
-#include "FrameDefinitionTabToolbar.hpp"
+#include "FrameDefinitionTabToolbar.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/UI/FrameDefinition/FrameDefinitionUIHelpers.hpp>
-#include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/UI/FrameDefinition/FrameDefinitionUIHelpers.h>
+#include <OpenSimCreator/UI/Shared/BasicWidgets.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Tabs/ITabHost.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/Tabs/ITabHost.h>
+#include <oscar/Utils/ParentPtr.h>
 
 #include <cstddef>
 #include <memory>

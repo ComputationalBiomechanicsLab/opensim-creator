@@ -1,12 +1,12 @@
-#include "Variant.hpp"
+#include "Variant.h"
 
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/EnumHelpers.hpp>
-#include <oscar/Utils/StdVariantHelpers.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
-#include <oscar/Variant/VariantType.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/EnumHelpers.h>
+#include <oscar/Utils/StdVariantHelpers.h>
+#include <oscar/Utils/StringHelpers.h>
+#include <oscar/Variant/VariantType.h>
 
 #include <charconv>
 #include <cstddef>

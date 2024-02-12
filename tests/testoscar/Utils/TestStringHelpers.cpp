@@ -1,4 +1,4 @@
-#include <oscar/Utils/StringHelpers.hpp>
+#include <oscar/Utils/StringHelpers.h>
 
 #include <gtest/gtest.h>
 

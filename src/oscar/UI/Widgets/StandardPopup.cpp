@@ -1,8 +1,8 @@
-#include "StandardPopup.hpp"
+#include "StandardPopup.h"
 
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Rect.hpp>
-#include <oscar/Maths/Vec2.hpp>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Rect.h>
+#include <oscar/Maths/Vec2.h>
 
 #include <imgui.h>
 

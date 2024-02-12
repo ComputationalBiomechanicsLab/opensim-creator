@@ -17,341 +17,342 @@ find_package(tomlplusplus REQUIRED CONFIG)
 find_package(unordered_dense REQUIRED CONFIG)
 
 add_library(oscar STATIC
-    Formats/CSV.hpp
+    DOM/Class.cpp
+    DOM/Class.h
+    DOM/Node.h
+    DOM/NodePath.cpp
+    DOM/NodePath.h
+    DOM/Object.cpp
+    DOM/PropertyInfo.cpp
+    DOM/PropertyInfo.h
+
+    Formats/CSV.h
     Formats/CSV.cpp
-    Formats/DAE.hpp
+    Formats/DAE.h
     Formats/DAE.cpp
     Formats/Image.cpp
-    Formats/Image.hpp
-    Formats/ImageLoadingFlags.hpp
+    Formats/Image.h
+    Formats/ImageLoadingFlags.h
     Formats/OBJ.cpp
-    Formats/OBJ.hpp
+    Formats/OBJ.h
     Formats/STL.cpp
-    Formats/STL.hpp
-    Formats/SVG.hpp
+    Formats/STL.h
+    Formats/SVG.h
     Formats/SVG.cpp
 
-    Graphics/Detail/CPUDataType.hpp
-    Graphics/Detail/CPUImageFormat.hpp
-    Graphics/Detail/ShaderLocations.hpp
-    Graphics/Detail/ShaderPropertyTypeList.hpp
-    Graphics/Detail/ShaderPropertyTypeTraits.hpp
-    Graphics/Detail/TextureFormatList.hpp
-    Graphics/Detail/TextureFormatTraits.hpp
-    Graphics/Detail/VertexAttributeFormatHelpers.hpp
-    Graphics/Detail/VertexAttributeFormatList.hpp
-    Graphics/Detail/VertexAttributeFormatTraits.hpp
-    Graphics/Detail/VertexAttributeHelpers.hpp
-    Graphics/Detail/VertexAttributeList.hpp
-    Graphics/Detail/VertexAttributeTraits.hpp
-    Graphics/OpenGL/CPUDataTypeOpenGLTraits.hpp
-    Graphics/OpenGL/CPUImageFormatOpenGLTraits.hpp
+    Graphics/Detail/CPUDataType.h
+    Graphics/Detail/CPUImageFormat.h
+    Graphics/Detail/ShaderLocations.h
+    Graphics/Detail/ShaderPropertyTypeList.h
+    Graphics/Detail/ShaderPropertyTypeTraits.h
+    Graphics/Detail/TextureFormatList.h
+    Graphics/Detail/TextureFormatTraits.h
+    Graphics/Detail/VertexAttributeFormatHelpers.h
+    Graphics/Detail/VertexAttributeFormatList.h
+    Graphics/Detail/VertexAttributeFormatTraits.h
+    Graphics/Detail/VertexAttributeHelpers.h
+    Graphics/Detail/VertexAttributeList.h
+    Graphics/Detail/VertexAttributeTraits.h
+
+    Graphics/OpenGL/CPUDataTypeOpenGLTraits.h
+    Graphics/OpenGL/CPUImageFormatOpenGLTraits.h
     Graphics/OpenGL/Gl.cpp
-    Graphics/OpenGL/Gl.hpp
-    Graphics/OpenGL/TextureFormatOpenGLTraits.hpp
+    Graphics/OpenGL/Gl.h
+    Graphics/OpenGL/TextureFormatOpenGLTraits.h
+
+    Graphics/Scene/CachedSceneRenderer.cpp
+    Graphics/Scene/CachedSceneRenderer.h
+    Graphics/Scene/SceneCache.cpp
+    Graphics/Scene/SceneCache.h
+    Graphics/Scene/SceneCollision.h
+    Graphics/Scene/SceneDecoration.h
+    Graphics/Scene/SceneDecorationFlags.h
+    Graphics/Scene/SceneHelpers.cpp
+    Graphics/Scene/SceneHelpers.h
+    Graphics/Scene/SceneRenderer.cpp
+    Graphics/Scene/SceneRenderer.h
+    Graphics/Scene/SceneRendererParams.cpp
+    Graphics/Scene/SceneRendererParams.h
+    Graphics/Scene/ShaderCache.cpp
+    Graphics/Scene/ShaderCache.h
+
     Graphics/AntiAliasingLevel.cpp
-    Graphics/AntiAliasingLevel.hpp
-    Graphics/BlitFlags.hpp
-    Graphics/Camera.hpp
-    Graphics/CameraClearFlags.hpp
-    Graphics/CameraProjection.hpp
+    Graphics/AntiAliasingLevel.h
+    Graphics/BlitFlags.h
+    Graphics/Camera.h
+    Graphics/CameraClearFlags.h
+    Graphics/CameraProjection.h
     Graphics/Color.cpp
-    Graphics/Color.hpp
-    Graphics/ColorHSLA.hpp
+    Graphics/Color.h
+    Graphics/ColorHSLA.h
     Graphics/ColorHSLA.cpp
-    Graphics/ColorSpace.hpp
-    Graphics/Color32.hpp
-    Graphics/Cubemap.hpp
-    Graphics/CubemapFace.hpp
-    Graphics/DepthStencilFormat.hpp
-    Graphics/Graphics.hpp
-    Graphics/GraphicsContext.hpp
+    Graphics/ColorSpace.h
+    Graphics/Color32.h
+    Graphics/Cubemap.h
+    Graphics/CubemapFace.h
+    Graphics/DepthStencilFormat.h
+    Graphics/Graphics.h
+    Graphics/GraphicsContext.h
     Graphics/GraphicsHelpers.cpp
-    Graphics/GraphicsHelpers.hpp
+    Graphics/GraphicsHelpers.h
     Graphics/GraphicsImplementation.cpp
-    Graphics/Material.hpp
-    Graphics/MaterialPropertyBlock.hpp
+    Graphics/Material.h
+    Graphics/MaterialPropertyBlock.h
     Graphics/MeshGenerators.cpp
-    Graphics/MeshGenerators.hpp
-    Graphics/MeshIndicesView.hpp
-    Graphics/Mesh.hpp
-    Graphics/MeshTopology.hpp
-    Graphics/MeshUpdateFlags.hpp
-    Graphics/RenderBuffer.hpp
-    Graphics/RenderBufferLoadAction.hpp
-    Graphics/RenderBufferStoreAction.hpp
-    Graphics/RenderBufferType.hpp
+    Graphics/MeshGenerators.h
+    Graphics/MeshIndicesView.h
+    Graphics/Mesh.h
+    Graphics/MeshTopology.h
+    Graphics/MeshUpdateFlags.h
+    Graphics/RenderBuffer.h
+    Graphics/RenderBufferLoadAction.h
+    Graphics/RenderBufferStoreAction.h
+    Graphics/RenderBufferType.h
     Graphics/RenderTarget.cpp
-    Graphics/RenderTarget.hpp
+    Graphics/RenderTarget.h
     Graphics/RenderTargetAttachment.cpp
-    Graphics/RenderTargetAttachment.hpp
+    Graphics/RenderTargetAttachment.h
     Graphics/RenderTargetColorAttachment.cpp
-    Graphics/RenderTargetColorAttachment.hpp
-    Graphics/RenderTargetDepthAttachment.hpp
-    Graphics/RenderTexture.hpp
-    Graphics/RenderTextureDescriptor.hpp
-    Graphics/RenderTextureFormat.hpp
-    Graphics/RenderTextureReadWrite.hpp
-    Graphics/Shader.hpp
-    Graphics/ShaderPropertyType.hpp
-    Graphics/SubMeshDescriptor.hpp
-    Graphics/TextureChannelFormat.hpp
-    Graphics/TextureDimensionality.hpp
-    Graphics/TextureFilterMode.hpp
-    Graphics/TextureFormat.hpp
+    Graphics/RenderTargetColorAttachment.h
+    Graphics/RenderTargetDepthAttachment.h
+    Graphics/RenderTexture.h
+    Graphics/RenderTextureDescriptor.h
+    Graphics/RenderTextureFormat.h
+    Graphics/RenderTextureReadWrite.h
+    Graphics/Scene.h
+    Graphics/Shader.h
+    Graphics/ShaderPropertyType.h
+    Graphics/SubMeshDescriptor.h
+    Graphics/TextureChannelFormat.h
+    Graphics/TextureDimensionality.h
+    Graphics/TextureFilterMode.h
+    Graphics/TextureFormat.h
     Graphics/TextureGenerators.cpp
-    Graphics/TextureGenerators.hpp
-    Graphics/TextureWrapMode.hpp
-    Graphics/Texture2D.hpp
-    Graphics/Unorm8.hpp
-    Graphics/VertexAttribute.hpp
+    Graphics/TextureGenerators.h
+    Graphics/TextureWrapMode.h
+    Graphics/Texture2D.h
+    Graphics/Unorm8.h
+    Graphics/VertexAttribute.h
     Graphics/VertexAttributeDescriptor.cpp
-    Graphics/VertexAttributeDescriptor.hpp
-    Graphics/VertexAttributeFormat.hpp
+    Graphics/VertexAttributeDescriptor.h
+    Graphics/VertexAttributeFormat.h
     Graphics/VertexFormat.cpp
-    Graphics/VertexFormat.hpp
+    Graphics/VertexFormat.h
 
-    Maths/AABB.hpp
-    Maths/Angle.hpp
-    Maths/BVH.hpp
-    Maths/BVHCollision.hpp
-    Maths/BVHNode.hpp
-    Maths/BVHPrim.hpp
-    Maths/Circle.hpp
-    Maths/CollisionTests.hpp
-    Maths/Disc.hpp
-    Maths/EasingFunctions.hpp
-    Maths/Ellipsoid.hpp
-    Maths/EulerPerspectiveCamera.hpp
-    Maths/Eulers.hpp
-    Maths/LengthType.hpp
-    Maths/Line.hpp
-    Maths/Mat.hpp
-    Maths/MathHelpers.hpp
+    Maths/AABB.h
+    Maths/Angle.h
+    Maths/BVH.h
+    Maths/BVHCollision.h
+    Maths/BVHNode.h
+    Maths/BVHPrim.h
+    Maths/Circle.h
+    Maths/CollisionTests.h
+    Maths/Disc.h
+    Maths/EasingFunctions.h
+    Maths/Ellipsoid.h
+    Maths/EulerPerspectiveCamera.h
+    Maths/Eulers.h
+    Maths/LengthType.h
+    Maths/Line.h
+    Maths/Mat.h
+    Maths/MathHelpers.h
     Maths/MathsImplementation.cpp
-    Maths/Mat3.hpp
-    Maths/Mat4.hpp
-    Maths/Mat4x3.hpp
-    Maths/Plane.hpp
-    Maths/PointDirection.hpp
-    Maths/PolarPerspectiveCamera.hpp
-    Maths/Qua.hpp
-    Maths/Qualifier.hpp
-    Maths/Quat.hpp
-    Maths/RayCollision.hpp
-    Maths/Rect.hpp
-    Maths/Segment.hpp
-    Maths/Sphere.hpp
-    Maths/Tetrahedron.hpp
-    Maths/Transform.hpp
-    Maths/Triangle.hpp
-    Maths/UnitVec.hpp
-    Maths/UnitVec3.hpp
-    Maths/Vec.hpp
-    Maths/Vec2.hpp
-    Maths/Vec3.hpp
-    Maths/Vec4.hpp
+    Maths/Mat3.h
+    Maths/Mat4.h
+    Maths/Mat4x3.h
+    Maths/Plane.h
+    Maths/PointDirection.h
+    Maths/PolarPerspectiveCamera.h
+    Maths/Qua.h
+    Maths/Qualifier.h
+    Maths/Quat.h
+    Maths/RayCollision.h
+    Maths/Rect.h
+    Maths/Segment.h
+    Maths/Sphere.h
+    Maths/Tetrahedron.h
+    Maths/Transform.h
+    Maths/Triangle.h
+    Maths/UnitVec.h
+    Maths/UnitVec3.h
+    Maths/Vec.h
+    Maths/Vec2.h
+    Maths/Vec3.h
+    Maths/Vec4.h
 
-    Object/Class.cpp
-    Object/Class.hpp
-    Object/Node.hpp
-    Object/NodePath.cpp
-    Object/NodePath.hpp
-    Object/Object.cpp
-    Object/Object.hpp
-    Object/PropertyInfo.cpp
-    Object/PropertyInfo.hpp
-
-    Platform/Detail/SDL2Helpers.hpp
+    Platform/Detail/SDL2Helpers.h
     Platform/App.cpp
-    Platform/App.hpp
-    Platform/AppClock.hpp
+    Platform/App.h
+    Platform/AppClock.h
     Platform/AppConfig.cpp
-    Platform/AppConfig.hpp
+    Platform/AppConfig.h
     Platform/AppMetadata.cpp
-    Platform/AppMetadata.hpp
+    Platform/AppMetadata.h
     Platform/AppSettings.cpp
-    Platform/AppSettings.hpp
+    Platform/AppSettings.h
     Platform/AppSettingValue.cpp
-    Platform/AppSettingValue.hpp
-    Platform/AppSettingValueType.hpp
+    Platform/AppSettingValue.h
+    Platform/AppSettingValueType.h
     Platform/FilesystemResourceLoader.cpp
-    Platform/FilesystemResourceLoader.hpp
+    Platform/FilesystemResourceLoader.h
     Platform/IResourceLoader.cpp
-    Platform/IResourceLoader.hpp
-    Platform/IScreen.hpp
+    Platform/IResourceLoader.h
+    Platform/IScreen.h
     Platform/Log.cpp
-    Platform/Log.hpp
-    Platform/Logger.hpp
+    Platform/Log.h
+    Platform/Logger.h
     Platform/LogLevel.cpp
-    Platform/LogLevel.hpp
-    Platform/LogMessage.hpp
-    Platform/LogMessageView.hpp
-    Platform/LogSink.hpp
+    Platform/LogLevel.h
+    Platform/LogMessage.h
+    Platform/LogMessageView.h
+    Platform/LogSink.h
     Platform/os.cpp
-    Platform/os.hpp
-    Platform/ResourceLoader.hpp
-    Platform/ResourcePath.hpp
+    Platform/os.h
+    Platform/ResourceLoader.h
+    Platform/ResourcePath.h
     Platform/ResourceStream.cpp
-    Platform/ResourceStream.hpp
-    Platform/Screenshot.hpp
-    Platform/ScreenshotAnnotation.hpp
+    Platform/ResourceStream.h
+    Platform/Screenshot.h
+    Platform/ScreenshotAnnotation.h
 
-    Scene/CachedSceneRenderer.cpp
-    Scene/CachedSceneRenderer.hpp
-    Scene/SceneCache.cpp
-    Scene/SceneCache.hpp
-    Scene/SceneCollision.hpp
-    Scene/SceneDecoration.hpp
-    Scene/SceneDecorationFlags.hpp
-    Scene/SceneHelpers.cpp
-    Scene/SceneHelpers.hpp
-    Scene/SceneRenderer.cpp
-    Scene/SceneRenderer.hpp
-    Scene/SceneRendererParams.cpp
-    Scene/SceneRendererParams.hpp
-    Scene/ShaderCache.cpp
-    Scene/ShaderCache.hpp
+    Shims/Cpp20/bit.h
+    Shims/Cpp20/stop_token.h
+    Shims/Cpp20/thread.h
+    Shims/Cpp23/utility.h
 
-    Shims/Cpp20/bit.hpp
-    Shims/Cpp20/stop_token.hpp
-    Shims/Cpp20/thread.hpp
-    Shims/Cpp23/utility.hpp
-
-    UI/Panels/IPanel.hpp
+    UI/Panels/IPanel.h
     UI/Panels/LogViewerPanel.cpp
-    UI/Panels/LogViewerPanel.hpp
+    UI/Panels/LogViewerPanel.h
     UI/Panels/PanelManager.cpp
-    UI/Panels/PanelManager.hpp
+    UI/Panels/PanelManager.h
     UI/Panels/PerfPanel.cpp
-    UI/Panels/PerfPanel.hpp
+    UI/Panels/PerfPanel.h
     UI/Panels/StandardPanelImpl.cpp
-    UI/Panels/StandardPanelImpl.hpp
-    UI/Panels/ToggleablePanelFlags.hpp
+    UI/Panels/StandardPanelImpl.h
+    UI/Panels/ToggleablePanelFlags.h
     UI/Panels/UndoRedoPanel.cpp
-    UI/Panels/UndoRedoPanel.hpp
+    UI/Panels/UndoRedoPanel.h
     UI/Screens/TabTestingScreen.cpp
-    UI/Screens/TabTestingScreen.hpp
+    UI/Screens/TabTestingScreen.h
     UI/Tabs/CookiecutterTab.cpp
-    UI/Tabs/CookiecutterTab.hpp
+    UI/Tabs/CookiecutterTab.h
     UI/Tabs/ErrorTab.cpp
-    UI/Tabs/ErrorTab.hpp
-    UI/Tabs/ITab.hpp
-    UI/Tabs/ITabHost.hpp
+    UI/Tabs/ErrorTab.h
+    UI/Tabs/ITab.h
+    UI/Tabs/ITabHost.h
     UI/Tabs/ScreenshotTab.cpp
-    UI/Tabs/ScreenshotTab.hpp
-    UI/Tabs/StandardTabImpl.hpp
+    UI/Tabs/ScreenshotTab.h
+    UI/Tabs/StandardTabImpl.h
     UI/Tabs/TabRegistry.cpp
-    UI/Tabs/TabRegistry.hpp
+    UI/Tabs/TabRegistry.h
     UI/Tabs/TabRegistryEntry.cpp
-    UI/Tabs/TabRegistryEntry.hpp
+    UI/Tabs/TabRegistryEntry.h
     UI/Widgets/GuiRuler.cpp
-    UI/Widgets/GuiRuler.hpp
+    UI/Widgets/GuiRuler.h
     UI/Widgets/IconWithMenu.cpp
-    UI/Widgets/IconWithMenu.hpp
+    UI/Widgets/IconWithMenu.h
     UI/Widgets/IconWithoutMenu.cpp
-    UI/Widgets/IconWithoutMenu.hpp
+    UI/Widgets/IconWithoutMenu.h
     UI/Widgets/LogViewer.cpp
-    UI/Widgets/LogViewer.hpp
-    UI/Widgets/IPopup.hpp
+    UI/Widgets/LogViewer.h
+    UI/Widgets/IPopup.h
     UI/Widgets/PopupManager.cpp
-    UI/Widgets/PopupManager.hpp
+    UI/Widgets/PopupManager.h
     UI/Widgets/RedoButton.cpp
-    UI/Widgets/RedoButton.hpp
-    UI/Widgets/SaveChangesPopupConfig.hpp
+    UI/Widgets/RedoButton.h
+    UI/Widgets/SaveChangesPopupConfig.h
     UI/Widgets/SaveChangesPopup.cpp
-    UI/Widgets/SaveChangesPopup.hpp
+    UI/Widgets/SaveChangesPopup.h
     UI/Widgets/SceneViewer.cpp
-    UI/Widgets/SceneViewer.hpp
+    UI/Widgets/SceneViewer.h
     UI/Widgets/StandardPopup.cpp
-    UI/Widgets/StandardPopup.hpp
+    UI/Widgets/StandardPopup.h
     UI/Widgets/UndoButton.cpp
-    UI/Widgets/UndoButton.hpp
+    UI/Widgets/UndoButton.h
     UI/Widgets/WindowMenu.cpp
-    UI/Widgets/WindowMenu.hpp
-    UI/Icon.hpp
+    UI/Widgets/WindowMenu.h
+    UI/Icon.h
     UI/IconCache.cpp
-    UI/IconCache.hpp
+    UI/IconCache.h
     UI/ImGuiHelpers.cpp
-    UI/ImGuiHelpers.hpp
+    UI/ImGuiHelpers.h
     UI/ImGuizmoHelpers.cpp
-    UI/ImGuizmoHelpers.hpp
-    UI/Panels.hpp
-    UI/Screens.hpp
-    UI/Tabs.hpp
+    UI/ImGuizmoHelpers.h
+    UI/Panels.h
+    UI/Screens.h
+    UI/Tabs.h
     UI/ui_context.cpp
-    UI/ui_context.hpp
+    UI/ui_context.h
     UI/ui_graphics_backend.cpp
-    UI/ui_graphics_backend.hpp
-    UI/Widgets.hpp
+    UI/ui_graphics_backend.h
+    UI/Widgets.h
 
-    Utils/At.hpp
+    Utils/At.h
     Utils/Assertions.cpp
-    Utils/Assertions.hpp
-    Utils/CircularBuffer.hpp
-    Utils/ClonePtr.hpp
-    Utils/Concepts.hpp
-    Utils/CopyOnUpdPtr.hpp
+    Utils/Assertions.h
+    Utils/CircularBuffer.h
+    Utils/ClonePtr.h
+    Utils/Concepts.h
+    Utils/CopyOnUpdPtr.h
     Utils/CStringView.cpp
-    Utils/CStringView.hpp
-    Utils/DefaultConstructOnCopy.hpp
-    Utils/EnumHelpers.hpp
+    Utils/CStringView.h
+    Utils/DefaultConstructOnCopy.h
+    Utils/EnumHelpers.h
     Utils/FileChangePoller.cpp
-    Utils/FileChangePoller.hpp
-    Utils/FilenameExtractor.hpp
+    Utils/FileChangePoller.h
+    Utils/FilenameExtractor.h
     Utils/FilesystemHelpers.cpp
-    Utils/FilesystemHelpers.hpp
-    Utils/HashHelpers.hpp
-    Utils/NonTypelist.hpp
-    Utils/NullOStream.hpp
-    Utils/NullStreambuf.hpp
-    Utils/ObjectRepresentation.hpp
-    Utils/ParalellizationHelpers.hpp
-    Utils/ParentPtr.hpp
+    Utils/FilesystemHelpers.h
+    Utils/HashHelpers.h
+    Utils/NonTypelist.h
+    Utils/NullOStream.h
+    Utils/NullStreambuf.h
+    Utils/ObjectRepresentation.h
+    Utils/ParalellizationHelpers.h
+    Utils/ParentPtr.h
     Utils/Perf.cpp
-    Utils/Perf.hpp
-    Utils/PerfClock.hpp
-    Utils/PerfMeasurement.hpp
-    Utils/PerfMeasurementMetadata.hpp
-    Utils/ScopeGuard.hpp
-    Utils/SetHelpers.hpp
-    Utils/Spsc.hpp
+    Utils/Perf.h
+    Utils/PerfClock.h
+    Utils/PerfMeasurement.h
+    Utils/PerfMeasurementMetadata.h
+    Utils/ScopeGuard.h
+    Utils/SetHelpers.h
+    Utils/Spsc.h
     Utils/StringHelpers.cpp
-    Utils/StringHelpers.hpp
+    Utils/StringHelpers.h
     Utils/StringName.cpp
-    Utils/StringName.hpp
-    Utils/StdVariantHelpers.hpp
-    Utils/SynchronizedValue.hpp
-    Utils/SynchronizedValueGuard.hpp
-    Utils/Typelist.hpp
+    Utils/StringName.h
+    Utils/StdVariantHelpers.h
+    Utils/SynchronizedValue.h
+    Utils/SynchronizedValueGuard.h
+    Utils/Typelist.h
     Utils/UID.cpp
-    Utils/UID.hpp
+    Utils/UID.h
     Utils/UndoRedo.cpp
-    Utils/UndoRedo.hpp
+    Utils/UndoRedo.h
 
     Variant/Variant.cpp
-    Variant/Variant.hpp
+    Variant/Variant.h
     Variant/VariantType.cpp
-    Variant/VariantType.hpp
-    Variant/VariantTypeList.hpp
-    Variant/VariantTypeTraits.hpp
+    Variant/VariantType.h
+    Variant/VariantTypeList.h
+    Variant/VariantTypeTraits.h
 
-    Formats.hpp
-    Graphics.hpp
-    Maths.hpp
-    oscar.hpp
-    Object.hpp
-    Platform.hpp
-    Scene.hpp
-    Shims.hpp
-    UI.hpp
-    Utils.hpp
-    Variant.hpp
+    DOM.h
+    Formats.h
+    Graphics.h
+    Maths.h
+    oscar.h
+    Platform.h
+    Shims.h
+    UI.h
+    Utils.h
+    Variant.h
 )
 
 target_include_directories(oscar PUBLIC
 
-    # so that `#include <oscar/HEADER.hpp>` works
+    # so that `#include <oscar/HEADER.h>` works
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 

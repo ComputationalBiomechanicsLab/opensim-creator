@@ -1,14 +1,13 @@
-#include <oscar/Variant/VariantType.hpp>
+#include <oscar/Variant/VariantType.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <array>
 #include <limits>
 #include <type_traits>
 
-using osc::NumOptions;
-using osc::VariantType;
+using namespace osc;
 
 TEST(VariantType, ToStringReturnsExpectedResults)
 {

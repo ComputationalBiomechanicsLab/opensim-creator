@@ -1,14 +1,14 @@
-#include "SimulationViewerPanel.hpp"
+#include "SimulationViewerPanel.h"
 
-#include <OpenSimCreator/Documents/Model/IModelStatePair.hpp>
-#include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
-#include <OpenSimCreator/UI/Simulation/Readonly3DModelViewer.hpp>
-#include <OpenSimCreator/UI/Simulation/SimulationViewerPanelParameters.hpp>
-#include <OpenSimCreator/UI/Simulation/SimulationViewerRightClickEvent.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
+#include <OpenSimCreator/UI/Shared/BasicWidgets.h>
+#include <OpenSimCreator/UI/Simulation/Readonly3DModelViewer.h>
+#include <OpenSimCreator/UI/Simulation/SimulationViewerPanelParameters.h>
+#include <OpenSimCreator/UI/Simulation/SimulationViewerRightClickEvent.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>
-#include <oscar/UI/Panels/StandardPanelImpl.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.h>
 
 #include <memory>
 #include <string>

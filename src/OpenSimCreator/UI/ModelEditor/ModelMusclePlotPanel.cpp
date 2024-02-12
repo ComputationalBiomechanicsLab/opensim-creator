@@ -1,10 +1,10 @@
-#include "ModelMusclePlotPanel.hpp"
+#include "ModelMusclePlotPanel.h"
 
-#include <OpenSimCreator/Documents/Model/ModelStateCommit.hpp>
-#include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/ModelStateCommit.h>
+#include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -16,22 +16,22 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-#include <oscar/Formats/CSV.hpp>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Vec4.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Platform/os.hpp>
-#include <oscar/Shims/Cpp20/stop_token.hpp>
-#include <oscar/Shims/Cpp20/thread.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
-#include <oscar/Utils/SynchronizedValue.hpp>
-#include <oscar/Utils/SynchronizedValueGuard.hpp>
+#include <oscar/Formats/CSV.h>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Maths/Angle.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Vec4.h>
+#include <oscar/Platform/App.h>
+#include <oscar/Platform/Log.h>
+#include <oscar/Platform/os.h>
+#include <oscar/Shims/Cpp20/stop_token.h>
+#include <oscar/Shims/Cpp20/thread.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/StringHelpers.h>
+#include <oscar/Utils/SynchronizedValue.h>
+#include <oscar/Utils/SynchronizedValueGuard.h>
 
 #include <algorithm>
 #include <array>

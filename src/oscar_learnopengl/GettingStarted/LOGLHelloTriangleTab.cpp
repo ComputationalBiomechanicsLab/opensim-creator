@@ -1,6 +1,6 @@
-#include "LOGLHelloTriangleTab.hpp"
+#include "LOGLHelloTriangleTab.h"
 
-#include <oscar/oscar.hpp>
+#include <oscar/oscar.h>
 
 #include <array>
 #include <cstdint>
@@ -15,17 +15,13 @@ namespace
     Mesh GenerateTriangleMesh()
     {
         Mesh m;
-        m.setVerts({{
+        m.setVerts({
             {-1.0f, -1.0f, 0.0f},  // bottom-left
             { 1.0f, -1.0f, 0.0f},  // bottom-right
             { 0.0f,  1.0f, 0.0f},  // top-middle
-        }});
-        m.setColors({{
-            Color::red(),
-            Color::green(),
-            Color::blue(),
-        }});
-        m.setIndices(std::to_array<uint16_t>({0, 1, 2}));
+        });
+        m.setColors({Color::red(), Color::green(), Color::blue()});
+        m.setIndices({0, 1, 2});
         return m;
     }
 

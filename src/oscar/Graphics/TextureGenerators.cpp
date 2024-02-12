@@ -1,12 +1,12 @@
-#include "TextureGenerators.hpp"
+#include "TextureGenerators.h"
 
-#include <oscar/Graphics/Color32.hpp>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/TextureFormat.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Utils/ObjectRepresentation.hpp>
+#include <oscar/Graphics/Color32.h>
+#include <oscar/Graphics/ColorSpace.h>
+#include <oscar/Graphics/GraphicsHelpers.h>
+#include <oscar/Graphics/TextureFormat.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Utils/ObjectRepresentation.h>
 
 #include <vector>
 

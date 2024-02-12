@@ -1,10 +1,10 @@
-#include "LogViewer.hpp"
+#include "LogViewer.h"
 
-#include <oscar/Platform/App.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Platform/os.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/Utils/CircularBuffer.hpp>
+#include <oscar/Platform/App.h>
+#include <oscar/Platform/Log.h>
+#include <oscar/Platform/os.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/Utils/CircularBuffer.h>
 
 #include <imgui.h>
 

@@ -1,10 +1,10 @@
-#include "FrameDefinitionLookup.hpp"
+#include "FrameDefinitionLookup.h"
 
-#include <OpenSimCreator/Documents/Frames/FrameDefinition.hpp>
-#include <OpenSimCreator/Documents/Frames/FramesFile.hpp>
-#include <OpenSimCreator/Documents/Frames/FramesHelpers.hpp>
+#include <OpenSimCreator/Documents/Frames/FrameDefinition.h>
+#include <OpenSimCreator/Documents/Frames/FramesFile.h>
+#include <OpenSimCreator/Documents/Frames/FramesHelpers.h>
 
-#include <oscar/Utils/StdVariantHelpers.hpp>
+#include <oscar/Utils/StdVariantHelpers.h>
 
 #include <exception>
 #include <filesystem>

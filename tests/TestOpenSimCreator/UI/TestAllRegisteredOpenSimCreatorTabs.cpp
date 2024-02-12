@@ -1,6 +1,6 @@
-#include <OpenSimCreator/UI/OpenSimCreatorTabRegistry.hpp>
+#include <OpenSimCreator/UI/OpenSimCreatorTabRegistry.h>
 
-#include <oscar/oscar.hpp>
+#include <oscar/oscar.h>
 
 #include <gtest/gtest.h>
 

@@ -1,14 +1,14 @@
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/CStringView.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Shims/Cpp20/string_view.hpp>
+#include <oscar/Shims/Cpp20/string_view.h>
 
 #include <algorithm>
 #include <array>
 #include <string_view>
 
 namespace cpp20 = osc::cpp20;
-using osc::CStringView;
+using namespace osc;
 
 TEST(CStringView, WhenPassedNullCstringYieldsEmptyCStringView)
 {

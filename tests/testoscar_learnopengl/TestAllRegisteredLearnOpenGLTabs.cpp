@@ -1,6 +1,6 @@
-#include <oscar_learnopengl/LearnOpenGLTabRegistry.hpp>
+#include <oscar_learnopengl/LearnOpenGLTabRegistry.h>
 
-#include <oscar/oscar.hpp>
+#include <oscar/oscar.h>
 
 #include <gtest/gtest.h>
 

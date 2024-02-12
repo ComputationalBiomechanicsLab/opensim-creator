@@ -1,33 +1,24 @@
-#include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp>
+#include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
 
-#include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
+#include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSimCreator/Graphics/MuscleColoringStyle.hpp>
-#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Graphics/MuscleColoringStyle.h>
+#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <gtest/gtest.h>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Scene/SceneCache.hpp>
-#include <oscar/Scene/SceneDecoration.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Platform/Log.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Utils/StringHelpers.h>
 
 #include <filesystem>
 #include <utility>
 #include <vector>
 
-using osc::AddComponent;
-using osc::ContainsCaseInsensitive;
-using osc::InitializeModel;
-using osc::InitializeState;
-using osc::IsEqualWithinRelativeError;
-using osc::MuscleColoringStyle;
-using osc::OpenSimDecorationOptions;
-using osc::SceneCache;
-using osc::SceneDecoration;
-using osc::ToOscMesh;
+using namespace osc;
 
 // test that telling OSC to generate OpenSim-colored muscles
 // results in red muscle lines (as opposed to muscle lines that

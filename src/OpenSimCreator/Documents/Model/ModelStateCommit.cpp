@@ -1,12 +1,12 @@
-#include "ModelStateCommit.hpp"
+#include "ModelStateCommit.h"
 
-#include <OpenSimCreator/Documents/Model/IConstModelStatePair.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/IConstModelStatePair.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/SynchronizedValueGuard.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/SynchronizedValueGuard.h>
+#include <oscar/Utils/UID.h>
 
 #include <chrono>
 #include <memory>

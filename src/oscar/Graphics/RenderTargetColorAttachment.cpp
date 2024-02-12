@@ -1,9 +1,9 @@
-#include "RenderTargetColorAttachment.hpp"
+#include "RenderTargetColorAttachment.h"
 
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/RenderBuffer.hpp>
-#include <oscar/Graphics/RenderBufferLoadAction.hpp>
-#include <oscar/Graphics/RenderBufferStoreAction.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Graphics/RenderBuffer.h>
+#include <oscar/Graphics/RenderBufferLoadAction.h>
+#include <oscar/Graphics/RenderBufferStoreAction.h>
 
 #include <memory>
 #include <utility>

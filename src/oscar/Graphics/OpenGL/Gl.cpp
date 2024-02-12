@@ -1,4 +1,4 @@
-#include "Gl.hpp"
+#include "Gl.h"
 
 #include <GL/glew.h>
 

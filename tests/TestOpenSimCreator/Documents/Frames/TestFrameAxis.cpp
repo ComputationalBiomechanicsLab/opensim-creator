@@ -1,4 +1,4 @@
-#include <OpenSimCreator/Documents/Frames/FrameAxis.hpp>
+#include <OpenSimCreator/Documents/Frames/FrameAxis.h>
 
 #include <gtest/gtest.h>
 
@@ -6,9 +6,7 @@
 #include <string>
 #include <utility>
 
-using osc::frames::AreOrthogonal;
-using osc::frames::FrameAxis;
-using osc::frames::TryParseAsFrameAxis;
+using namespace osc::frames;
 
 namespace
 {

@@ -8,7 +8,7 @@ add_executable(testoscar_learnopengl
 
 target_include_directories(testoscar_learnopengl PUBLIC
 
-    # so that the source code can `#include <testoscar_learnopengl/SomeModule.hpp>`
+    # so that the source code can `#include <testoscar_learnopengl/SomeModule.h>`
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 

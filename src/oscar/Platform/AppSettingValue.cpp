@@ -1,9 +1,9 @@
-#include "AppSettingValue.hpp"
+#include "AppSettingValue.h"
 
-#include <oscar/Platform/AppSettingValueType.hpp>
-#include <oscar/Utils/EnumHelpers.hpp>
-#include <oscar/Utils/StdVariantHelpers.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
+#include <oscar/Platform/AppSettingValueType.h>
+#include <oscar/Utils/EnumHelpers.h>
+#include <oscar/Utils/StdVariantHelpers.h>
+#include <oscar/Utils/StringHelpers.h>
 
 #include <string>
 #include <variant>

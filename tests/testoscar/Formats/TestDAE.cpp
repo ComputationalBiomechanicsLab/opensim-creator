@@ -1,19 +1,16 @@
-#include <oscar/Formats/DAE.hpp>
+#include <oscar/Formats/DAE.h>
 
-#include <testoscar/testoscarconfig.hpp>
+#include <testoscar/testoscarconfig.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Scene/SceneDecoration.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
+#include <oscar/Graphics/Mesh.h>
+#include <oscar/Graphics/MeshGenerators.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Utils/StringHelpers.h>
 
 #include <sstream>
 
-using osc::Contains;
-using osc::DAEMetadata;
-using osc::GenerateCubeMesh;
-using osc::SceneDecoration;
+using namespace osc;
 
 TEST(DAE, WriteDecorationsAsDAEWorksForEmptyScene)
 {

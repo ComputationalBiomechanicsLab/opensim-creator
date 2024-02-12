@@ -1,19 +1,19 @@
-#include "FrameDefinitionUIHelpers.hpp"
+#include "FrameDefinitionUIHelpers.h"
 
-#include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.hpp>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/Graphics/SimTKMeshLoader.hpp>
-#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
-#include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Platform/os.hpp>
-#include <oscar/UI/Tabs/ITabHost.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
+#include <oscar/Platform/Log.h>
+#include <oscar/Platform/os.h>
+#include <oscar/UI/Tabs/ITabHost.h>
+#include <oscar/Utils/ParentPtr.h>
 
 #include <filesystem>
 #include <memory>

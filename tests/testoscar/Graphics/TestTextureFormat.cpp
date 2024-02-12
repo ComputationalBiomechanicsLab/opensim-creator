@@ -1,17 +1,14 @@
-#include <oscar/Graphics/TextureFormat.hpp>
+#include <oscar/Graphics/TextureFormat.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Graphics/TextureChannelFormat.hpp>
-#include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Graphics/TextureChannelFormat.h>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <cstdint>
 #include <optional>
 #include <type_traits>
 
-using osc::NumChannels;
-using osc::NumOptions;
-using osc::TextureChannelFormat;
-using osc::TextureFormat;
+using namespace osc;
 
 static_assert(std::is_same_v<std::underlying_type_t<TextureFormat>, int32_t>);
 

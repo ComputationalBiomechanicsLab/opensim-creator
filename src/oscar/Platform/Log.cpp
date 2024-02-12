@@ -1,6 +1,6 @@
-#include "Log.hpp"
+#include "Log.h"
 
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/CStringView.h>
 
 #include <iostream>
 #include <mutex>

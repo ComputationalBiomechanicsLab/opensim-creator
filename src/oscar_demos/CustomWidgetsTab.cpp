@@ -1,8 +1,8 @@
-#include "CustomWidgetsTab.hpp"
+#include "CustomWidgetsTab.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <oscar/oscar.hpp>
+#include <oscar/oscar.h>
 
 #include <cmath>
 #include <array>

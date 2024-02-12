@@ -1,8 +1,8 @@
-#include "LearnOpenGLTabRegistry.hpp"
+#include "LearnOpenGLTabRegistry.h"
 
-#include <oscar_learnopengl/LearnOpenGLTabs.hpp>
+#include <oscar_learnopengl/LearnOpenGLTabs.h>
 
-#include <oscar/UI/Tabs/TabRegistry.hpp>
+#include <oscar/UI/Tabs/TabRegistry.h>
 
 void osc::RegisterLearnOpenGLTabs(TabRegistry& registry)
 {

@@ -1,9 +1,8 @@
-#include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <gtest/gtest.h>
 
-using osc::NumFlags;
-using osc::NumOptions;
+using namespace osc;
 
 TEST(NumOptions, ReturnsValueOfNUMOPTIONSEnumMember)
 {

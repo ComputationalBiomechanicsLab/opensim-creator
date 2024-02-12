@@ -1,13 +1,13 @@
-#include "STL.hpp"
+#include "STL.h"
 
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Triangle.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/os.hpp>
-#include <oscar/Shims/Cpp20/bit.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/ObjectRepresentation.hpp>
+#include <oscar/Graphics/Mesh.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Platform/os.h>
+#include <oscar/Shims/Cpp20/bit.h>
+#include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/ObjectRepresentation.h>
 
 #include <algorithm>
 #include <cstddef>

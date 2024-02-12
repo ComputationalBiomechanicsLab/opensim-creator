@@ -1,4 +1,4 @@
-#include "ParamBlock.hpp"
+#include "ParamBlock.h"
 
 #include <algorithm>
 #include <cstddef>

@@ -1,12 +1,12 @@
-#include "TabTestingScreen.hpp"
+#include "TabTestingScreen.h"
 
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/Tabs/TabRegistryEntry.hpp>
-#include <oscar/UI/Tabs/ITabHost.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
+#include <oscar/Platform/App.h>
+#include <oscar/UI/Tabs/TabRegistryEntry.h>
+#include <oscar/UI/Tabs/ITabHost.h>
+#include <oscar/Utils/ParentPtr.h>
 
 #include <SDL_events.h>
-#include <oscar/UI/ui_context.hpp>
+#include <oscar/UI/ui_context.h>
 
 #include <cstddef>
 #include <memory>
@@ -20,8 +20,8 @@ class osc::TabTestingScreen::Impl final :
     public IScreen,
     public ITabHost {
 public:
-    Impl(TabRegistryEntry const& registryEntry) :
-        m_RegistryEntry{registryEntry}
+    explicit Impl(TabRegistryEntry registryEntry) :
+        m_RegistryEntry{std::move(registryEntry)}
     {}
 
 private:

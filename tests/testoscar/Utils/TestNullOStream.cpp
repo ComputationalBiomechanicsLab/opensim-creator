@@ -1,8 +1,8 @@
-#include <oscar/Utils/NullOStream.hpp>
+#include <oscar/Utils/NullOStream.h>
 
 #include <gtest/gtest.h>
 
-using osc::NullOStream;
+using namespace osc;
 
 TEST(NullOStream, CanConstruct)
 {

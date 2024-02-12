@@ -1,8 +1,8 @@
-#include "ComponentAbsPathDecorationTagger.hpp"
+#include "ComponentAbsPathDecorationTagger.h"
 
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <oscar/Scene/SceneDecoration.hpp>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
 
 void osc::ComponentAbsPathDecorationTagger::operator()(
     OpenSim::Component const& component,

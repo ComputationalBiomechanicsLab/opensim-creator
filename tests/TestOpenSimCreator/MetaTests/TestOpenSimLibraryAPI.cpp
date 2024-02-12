@@ -1,7 +1,7 @@
 // no associated header: these tests are just checking how the
 // OpenSim API behaves
 
-#include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
+#include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
 #include <Simbody.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -11,11 +11,11 @@
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
-#include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
-#include <OpenSimCreator/Platform/OpenSimCreatorApp.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <gtest/gtest.h>
-#include <oscar/Platform/AppConfig.hpp>
+#include <oscar/Platform/AppConfig.h>
 
 #include <array>
 #include <filesystem>
