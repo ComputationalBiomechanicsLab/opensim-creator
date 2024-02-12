@@ -1,22 +1,22 @@
-#include "ModelEditorMainMenu.hpp"
+#include "ModelEditorMainMenu.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
-#include <OpenSimCreator/UI/ModelEditor/ExportPointsPopup.hpp>
-#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
-#include <OpenSimCreator/UI/ModelEditor/ModelActionsMenuItems.hpp>
-#include <OpenSimCreator/UI/ModelEditor/ModelMusclePlotPanel.hpp>
-#include <OpenSimCreator/UI/Shared/ImportStationsFromCSVPopup.hpp>
-#include <OpenSimCreator/UI/Shared/MainMenu.hpp>
-#include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/ModelEditor/ExportPointsPopup.h>
+#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
+#include <OpenSimCreator/UI/ModelEditor/ModelActionsMenuItems.h>
+#include <OpenSimCreator/UI/ModelEditor/ModelMusclePlotPanel.h>
+#include <OpenSimCreator/UI/Shared/ImportStationsFromCSVPopup.h>
+#include <OpenSimCreator/UI/Shared/MainMenu.h>
+#include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Widgets/WindowMenu.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/Widgets/WindowMenu.h>
+#include <oscar/Utils/ParentPtr.h>
 
 #include <memory>
 #include <utility>

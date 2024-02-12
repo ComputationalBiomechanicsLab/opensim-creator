@@ -1,7 +1,7 @@
-#include "UndoRedoPanel.hpp"
+#include "UndoRedoPanel.h"
 
-#include <oscar/UI/Panels/StandardPanelImpl.hpp>
-#include <oscar/Utils/UndoRedo.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.h>
+#include <oscar/Utils/UndoRedo.h>
 
 #include <imgui.h>
 

@@ -1,9 +1,9 @@
-#include "LOGLPBRSpecularIrradianceTexturedTab.hpp"
+#include "LOGLPBRSpecularIrradianceTexturedTab.h"
 
-#include <oscar_learnopengl/MouseCapturingCamera.hpp>
+#include <oscar_learnopengl/MouseCapturingCamera.h>
 
 #include <SDL_events.h>
-#include <oscar/oscar.hpp>
+#include <oscar/oscar.h>
 
 #include <array>
 #include <utility>

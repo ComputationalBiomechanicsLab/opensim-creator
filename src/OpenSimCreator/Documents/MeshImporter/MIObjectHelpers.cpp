@@ -1,16 +1,16 @@
-#include "MIObjectHelpers.hpp"
+#include "MIObjectHelpers.h"
 
-#include <OpenSimCreator/Documents/MeshImporter/Body.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Ground.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Joint.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/MIClass.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/MIObject.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Mesh.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Station.hpp>
+#include <OpenSimCreator/Documents/MeshImporter/Body.h>
+#include <OpenSimCreator/Documents/MeshImporter/Ground.h>
+#include <OpenSimCreator/Documents/MeshImporter/Joint.h>
+#include <OpenSimCreator/Documents/MeshImporter/MIClass.h>
+#include <OpenSimCreator/Documents/MeshImporter/MIObject.h>
+#include <OpenSimCreator/Documents/MeshImporter/Mesh.h>
+#include <OpenSimCreator/Documents/MeshImporter/Station.h>
 
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/StdVariantHelpers.hpp>
+#include <oscar/Graphics/GraphicsHelpers.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/StdVariantHelpers.h>
 
 #include <array>
 #include <variant>

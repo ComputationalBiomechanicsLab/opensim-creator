@@ -1,10 +1,10 @@
-#include "SingleStateSimulation.hpp"
+#include "SingleStateSimulation.h"
 
-#include <OpenSimCreator/Documents/Model/BasicModelStatePair.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
-#include <OpenSimCreator/Utils/ParamBlock.hpp>
-#include <oscar/Utils/SynchronizedValue.hpp>
-#include <oscar/Utils/SynchronizedValueGuard.hpp>
+#include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <OpenSimCreator/Utils/ParamBlock.h>
+#include <oscar/Utils/SynchronizedValue.h>
+#include <oscar/Utils/SynchronizedValueGuard.h>
 
 using namespace osc;
 

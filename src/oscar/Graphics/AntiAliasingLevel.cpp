@@ -1,4 +1,4 @@
-#include "AntiAliasingLevel.hpp"
+#include "AntiAliasingLevel.h"
 
 #include <iostream>
 #include <sstream>

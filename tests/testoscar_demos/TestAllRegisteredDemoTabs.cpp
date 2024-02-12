@@ -1,6 +1,6 @@
-#include <oscar_demos/OscarDemosTabRegistry.hpp>
+#include <oscar_demos/OscarDemosTabRegistry.h>
 
-#include <oscar/oscar.hpp>
+#include <oscar/oscar.h>
 
 #include <gtest/gtest.h>
 

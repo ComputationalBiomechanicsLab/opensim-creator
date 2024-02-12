@@ -1,14 +1,14 @@
-#include "Select1PFPopup.hpp"
+#include "Select1PFPopup.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
+#include <oscar/UI/Widgets/StandardPopup.h>
 
 #include <algorithm>
 #include <string>

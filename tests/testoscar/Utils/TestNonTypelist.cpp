@@ -1,10 +1,8 @@
-#include <oscar/Utils/NonTypelist.hpp>
+#include <oscar/Utils/NonTypelist.h>
 
 #include <gtest/gtest.h>
 
-using osc::NonTypelist;
-using osc::NonTypelistSizeV;
-using osc::NonTypeAt;
+using namespace osc;
 
 namespace
 {

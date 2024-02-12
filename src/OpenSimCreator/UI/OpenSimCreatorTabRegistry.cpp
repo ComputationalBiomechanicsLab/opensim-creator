@@ -1,8 +1,8 @@
-#include "OpenSimCreatorTabRegistry.hpp"
+#include "OpenSimCreatorTabRegistry.h"
 
-#include <OpenSimCreator/UI/OpenSimCreatorTabs.hpp>
+#include <OpenSimCreator/UI/OpenSimCreatorTabs.h>
 
-#include <oscar/UI/Tabs/TabRegistry.hpp>
+#include <oscar/UI/Tabs/TabRegistry.h>
 
 void osc::RegisterOpenSimCreatorTabs(TabRegistry& registry)
 {

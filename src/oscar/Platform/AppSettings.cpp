@@ -1,11 +1,11 @@
-#include "AppSettings.hpp"
+#include "AppSettings.h"
 
-#include <oscar/Platform/AppSettingValue.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Platform/os.hpp>
-#include <oscar/Utils/EnumHelpers.hpp>
-#include <oscar/Utils/HashHelpers.hpp>
-#include <oscar/Utils/SynchronizedValue.hpp>
+#include <oscar/Platform/AppSettingValue.h>
+#include <oscar/Platform/Log.h>
+#include <oscar/Platform/os.h>
+#include <oscar/Utils/EnumHelpers.h>
+#include <oscar/Utils/HashHelpers.h>
+#include <oscar/Utils/SynchronizedValue.h>
 
 #include <ankerl/unordered_dense.h>
 #include <toml++/toml.h>

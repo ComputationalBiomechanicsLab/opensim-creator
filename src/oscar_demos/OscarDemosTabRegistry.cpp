@@ -1,8 +1,8 @@
-#include "OscarDemosTabRegistry.hpp"
+#include "OscarDemosTabRegistry.h"
 
-#include <oscar_demos/OscarDemoTabs.hpp>
+#include <oscar_demos/OscarDemoTabs.h>
 
-#include <oscar/UI/Tabs/TabRegistry.hpp>
+#include <oscar/UI/Tabs/TabRegistry.h>
 
 void osc::RegisterDemoTabs(TabRegistry& registry)
 {

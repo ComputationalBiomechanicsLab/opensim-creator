@@ -1,12 +1,13 @@
-#include "MeshGenerators.hpp"
+#include "MeshGenerators.h"
 
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Triangle.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/Assertions.hpp>
+#include <oscar/Graphics/Mesh.h>
+#include <oscar/Graphics/SubMeshDescriptor.h>
+#include <oscar/Maths/Angle.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/Assertions.h>
 
 #include <array>
 #include <cstddef>
@@ -903,5 +904,236 @@ Mesh osc::GenerateNxMTriangleQuadGridMesh(Vec2i steps)
     rv.setVerts(verts);
     rv.setTexCoords(coords);
     rv.setIndices(indices);
+    return rv;
+}
+
+Mesh osc::GenerateTorusKnotMesh(
+    float torusRadius,
+    float tubeRadius,
+    size_t numTubularSegments,
+    size_t numRadialSegments,
+    size_t p,
+    size_t q)
+{
+    // the implementation/API of this was initially translated from `three.js`'s
+    // `TorusKnotGeometry`, which has excellent documentation and source code. The
+    // code was then subsequently mutated to suit OSC, C++ etc.
+    //
+    // https://threejs.org/docs/#api/en/geometries/TorusKnotGeometry
+
+    using std::cos;
+
+    auto const fNumTubularSegments = static_cast<float>(numTubularSegments);
+    auto const fNumRadialSegments = static_cast<float>(numRadialSegments);
+    auto const fp = static_cast<float>(p);
+    auto const fq = static_cast<float>(q);
+
+    // helper: calculates the current position on the torus curve
+    auto const calculatePositionOnCurve = [fp, fq, torusRadius](Radians u)
+    {
+        Radians const quOverP = fq/fp * u;
+        float const cs = cos(quOverP);
+
+        return Vec3{
+            torusRadius * (2.0f + cs) * 0.5f * cos(u),
+            torusRadius * (2.0f + cs) * 0.5f * sin(u),
+            torusRadius * sin(quOverP) * 0.5f,
+        };
+    };
+
+    size_t const numVerts = (numTubularSegments+1)*(numRadialSegments+1);
+    size_t const numIndices = 6*numTubularSegments*numRadialSegments;
+
+    std::vector<uint32_t> indices;
+    indices.reserve(numIndices);
+    std::vector<Vec3> vertices;
+    vertices.reserve(numVerts);
+    std::vector<Vec3> normals;
+    normals.reserve(numVerts);
+    std::vector<Vec2> uvs;
+    uvs.reserve(numVerts);
+
+    // generate vertices, normals, and uvs
+    for (size_t i = 0; i <= numTubularSegments; ++i) {
+        auto const fi = static_cast<float>(i);
+
+        // `u` is used to calculate the position on the torus curve of the current tubular segment
+        Radians const u = fi/fNumTubularSegments * fp * 360_deg;
+
+        // now we calculate two points. P1 is our current position on the curve, P2 is a little farther ahead.
+        // these points are used to create a special "coordinate space", which is necessary to calculate the
+        // correct vertex positions
+        Vec3 const P1 = calculatePositionOnCurve(u);
+        Vec3 const P2 = calculatePositionOnCurve(u + 0.01_rad);
+
+        // calculate orthonormal basis
+        Vec3 const T = P2 - P1;
+        Vec3 N = P2 + P1;
+        Vec3 B = Cross(T, N);
+        N = Cross(B, T);
+
+        // normalize B, N. T can be ignored, we don't use it
+        B = Normalize(B);
+        N = Normalize(N);
+
+        for (size_t j = 0; j <= numRadialSegments; ++j) {
+            auto const fj = static_cast<float>(j);
+
+            // now calculate the vertices. they are nothing more than an extrusion of the torus curve.
+            // because we extrude a shape in the xy-plane, there is no need to calculate a z-value.
+
+            Radians const v = fj/fNumRadialSegments * 360_deg;
+            float const cx = -tubeRadius * cos(v);
+            float const cy =  tubeRadius * sin(v);
+
+            // now calculate the final vertex position.
+            // first we orient the extrusion with our basis vectors, then we add it to the current position on the curve
+            Vec3 const vertex = {
+                P1.x + (cx * N.x + cy * B.x),
+                P1.y + (cx * N.y + cy * B.y),
+                P1.z + (cx * N.z + cy * B.z),
+            };
+            vertices.push_back(vertex);
+
+            // normal (P1 is always the center/origin of the extrusion, thus we can use it to calculate the normal)
+            normals.push_back(Normalize(vertex - P1));
+
+            uvs.emplace_back(fi / fNumTubularSegments, fj / fNumRadialSegments);
+        }
+    }
+
+    // generate indices
+    for (size_t j = 1; j <= numTubularSegments; ++j) {
+        for (size_t i = 1; i <= numRadialSegments; ++i) {
+            auto const a = static_cast<uint32_t>((numRadialSegments + 1) * (j - 1) + (i - 1));
+            auto const b = static_cast<uint32_t>((numRadialSegments + 1) *  j      + (i - 1));
+            auto const c = static_cast<uint32_t>((numRadialSegments + 1) *  j      +  i);
+            auto const d = static_cast<uint32_t>((numRadialSegments + 1) * (j - 1) +  i);
+
+            indices.insert(indices.end(), {a, b, d});
+            indices.insert(indices.end(), {b, c, d});
+        }
+    }
+
+    // build geometry
+    Mesh rv;
+    rv.setVerts(vertices);
+    rv.setNormals(normals);
+    rv.setTexCoords(uvs);
+    rv.setIndices(indices);
+    return rv;
+}
+
+Mesh osc::GenerateBoxMesh(
+    float width,
+    float height,
+    float depth,
+    size_t widthSegments,
+    size_t heightSegments,
+    size_t depthSegments)
+{
+    // the implementation/API of this was initially translated from `three.js`'s
+    // `BoxGeometry`, which has excellent documentation and source code. The
+    // code was then subsequently mutated to suit OSC, C++ etc.
+    //
+    // https://threejs.org/docs/#api/en/geometries/BoxGeometry
+
+    std::vector<uint32_t> indices;
+    std::vector<Vec3> vertices;
+    std::vector<Vec3> normals;
+    std::vector<Vec2> uvs;
+    std::vector<SubMeshDescriptor> submeshes;  // for multi-material support
+
+    // helper variables
+    size_t numberOfVertices = 0;
+    size_t groupStart = 0;
+
+    // helper function
+    auto const buildPlane = [&indices, &vertices, &normals, &uvs, &submeshes, &numberOfVertices, &groupStart](
+        Vec3::length_type u,
+        Vec3::length_type v,
+        Vec3::length_type w,
+        float udir,
+        float vdir,
+        Vec3 dims,
+        size_t gridX,
+        size_t gridY)
+    {
+        float const segmentWidth = dims.x / static_cast<float>(gridX);
+        float const segmentHeight = dims.y / static_cast<float>(gridY);
+
+        float const widthHalf = 0.5f * dims.x;
+        float const heightHalf = 0.5f * dims.y;
+        float const depthHalf = 0.5f * dims.z;
+
+        size_t const gridX1 = gridX + 1;
+        size_t const gridY1 = gridY + 1;
+
+        size_t vertexCount = 0;
+        size_t groupCount = 0;
+
+        // generate vertices, normals, and UVs
+        for (size_t iy = 0; iy < gridY1; ++iy) {
+            float const y = static_cast<float>(iy)*segmentHeight - heightHalf;
+            for (size_t ix = 0; ix < gridX1; ++ix) {
+                float const x = static_cast<float>(ix)*segmentWidth - widthHalf;
+
+                Vec3 vertex{};
+                vertex[u] = x*udir;
+                vertex[v] = y*vdir;
+                vertex[w] = depthHalf;
+                vertices.push_back(vertex);
+
+                Vec3 normal{};
+                normal[u] = 0.0f;
+                normal[v] = 0.0f;
+                normal[w] = dims.z > 0.0f ? 1.0f : -1.0f;
+                normals.push_back(normal);
+
+                uvs.emplace_back(ix/gridX, 1 - (iy/gridY));
+
+                ++vertexCount;
+            }
+        }
+
+        // indices (two triangles, or 6 indices, per segment)
+        for (size_t iy = 0; iy < gridY; ++iy) {
+            for (size_t ix = 0; ix < gridX; ++ix) {
+                auto const a = static_cast<uint32_t>(numberOfVertices +  ix      + (gridX1 *  iy     ));
+                auto const b = static_cast<uint32_t>(numberOfVertices +  ix      + (gridX1 * (iy + 1)));
+                auto const c = static_cast<uint32_t>(numberOfVertices + (ix + 1) + (gridX1 * (iy + 1)));
+                auto const d = static_cast<uint32_t>(numberOfVertices + (ix + 1) + (gridX1 *  iy     ));
+
+                indices.insert(indices.end(), {a, b, d});
+                indices.insert(indices.end(), {b, c, d});
+
+                groupCount += 6;
+            }
+        }
+
+        // add submesh description
+        submeshes.emplace_back(groupStart, groupCount, MeshTopology::Triangles);
+        groupStart += groupCount;
+        numberOfVertices += vertexCount;
+    };
+
+    // build each side of the box
+    buildPlane(2, 1, 0, -1.0f, -1.0f, {depth, height,  width},  depthSegments, heightSegments);  // px
+    buildPlane(2, 1, 0,  1.0f, -1.0f, {depth, height, -width},  depthSegments, heightSegments);  // nx
+    buildPlane(0, 2, 1,  1.0f,  1.0f, {width, depth,   height}, widthSegments, depthSegments);   // py
+    buildPlane(0, 2, 1,  1.0f, -1.0f, {width, depth,  -height}, widthSegments, depthSegments);   // ny
+    buildPlane(0, 1, 2,  1.0f, -1.0f, {width, height,  depth},  widthSegments, heightSegments);  // pz
+    buildPlane(0, 1, 2, -1.0f, -1.0f, {width, height, -depth},  widthSegments, heightSegments);  // nz
+
+    // the first submesh is "the entire cube"
+    submeshes.insert(submeshes.begin(), SubMeshDescriptor{0, groupStart, MeshTopology::Triangles});
+
+    // build geometry
+    Mesh rv;
+    rv.setVerts(vertices);
+    rv.setNormals(normals);
+    rv.setTexCoords(uvs);
+    rv.setIndices(indices);
+    rv.setSubmeshDescriptors(submeshes);
     return rv;
 }

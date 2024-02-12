@@ -1,14 +1,12 @@
-#include "oscar/Maths/Angle.hpp"
+#include "oscar/Maths/Angle.h"
 
 #include <gtest/gtest.h>
-#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/MathHelpers.h>
 
 #include <numbers>
 
+using namespace osc;
 using namespace osc::literals;
-
-using osc::Degrees;
-using osc::Radians;
 
 TEST(Angle, RadiansCanValueConstructToZero)
 {

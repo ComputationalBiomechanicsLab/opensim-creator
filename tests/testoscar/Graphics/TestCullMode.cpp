@@ -1,8 +1,8 @@
-#include <oscar/Graphics/CullMode.hpp>
+#include <oscar/Graphics/CullMode.h>
 
 #include <gtest/gtest.h>
 
-using osc::CullMode;
+using namespace osc;
 
 TEST(CullMode, DefaultsToOff)
 {

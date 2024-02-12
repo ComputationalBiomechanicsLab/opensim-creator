@@ -1,8 +1,8 @@
-#include "LOGLDeferredShadingTab.hpp"
+#include "LOGLDeferredShadingTab.h"
 
-#include <oscar_learnopengl/MouseCapturingCamera.hpp>
+#include <oscar_learnopengl/MouseCapturingCamera.h>
 
-#include <oscar/oscar.hpp>
+#include <oscar/oscar.h>
 #include <SDL_events.h>
 
 #include <algorithm>
@@ -101,7 +101,7 @@ namespace
 
     struct GBufferRenderingState final {
 
-        GBufferRenderingState(IResourceLoader& rl) :
+        explicit GBufferRenderingState(IResourceLoader& rl) :
             material{LoadGBufferMaterial(rl)}
         {}
 
@@ -152,7 +152,7 @@ namespace
 
     struct LightPassState final {
 
-        LightPassState(IResourceLoader& rl) :
+        explicit LightPassState(IResourceLoader& rl) :
             material{Shader{
                 rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.vert"),
                 rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.frag"),

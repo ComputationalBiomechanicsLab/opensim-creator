@@ -1,16 +1,16 @@
-#include "ui_context.hpp"
+#include "ui_context.h"
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui/backends/imgui_impl_sdl2.h>
 #include <ImGuizmo.h>  // care: must come after imgui.h
 #include <implot.h>
-#include <oscar/Platform/App.hpp>
-#include <oscar/Platform/ResourceLoader.hpp>
-#include <oscar/Platform/ResourcePath.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/ui_graphics_backend.hpp>
-#include <oscar/Utils/Perf.hpp>
+#include <oscar/Platform/App.h>
+#include <oscar/Platform/ResourceLoader.h>
+#include <oscar/Platform/ResourcePath.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/ui_graphics_backend.h>
+#include <oscar/Utils/Perf.h>
 #include <SDL_events.h>
 
 #include <algorithm>
@@ -26,17 +26,20 @@ namespace
 {
     constexpr auto c_IconRanges = std::to_array<ImWchar>({ ICON_MIN_FA, ICON_MAX_FA, 0 });
 
+    // this is necessary because ImGui will take ownership, but will free the
+    // font atlas with `free`, rather than `delete`, which memory sanitizers
+    // like libASAN dislike (`malloc`/`free`, or `new`/`delete` - no mixes)
     template<ranges::contiguous_range Container>
-    std::unique_ptr<typename Container::value_type[]> ToOwned(Container const& c)
+    typename Container::value_type* ToMalloced(Container const& c)
     {
         using value_type = typename Container::value_type;
         using std::size;
         using std::begin;
         using std::end;
 
-        auto rv = std::make_unique<value_type[]>(size(c));
-        std::copy(begin(c), end(c), rv.get());
-        return rv;
+        auto* ptr = reinterpret_cast<value_type*>(malloc(size(c) * sizeof(value_type)));  // NOLINT(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
+        std::copy(begin(c), end(c), ptr);
+        return ptr;
     }
 
     void AddResourceAsFont(
@@ -47,7 +50,7 @@ namespace
     {
         std::string baseFontData = App::slurp(path);
         atlas.AddFontFromMemoryTTF(
-            ToOwned(baseFontData).release(),  // ImGui takes ownership
+            ToMalloced(baseFontData),  // ImGui takes ownership
             static_cast<int>(baseFontData.size()) + 1,  // +1 for NUL
             config.SizePixels,
             &config,
@@ -86,6 +89,7 @@ void osc::ui::context::Init()
     baseConfig.PixelSnapH = true;
     baseConfig.OversampleH = 2;
     baseConfig.OversampleV = 2;
+    baseConfig.FontDataOwnedByAtlas = true;
     AddResourceAsFont(baseConfig, *io.Fonts, "oscar/fonts/Ruda-Bold.ttf");
 
     // add FontAwesome icon support

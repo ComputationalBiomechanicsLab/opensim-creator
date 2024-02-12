@@ -1,9 +1,9 @@
-#include "LOGLFaceCullingTab.hpp"
+#include "LOGLFaceCullingTab.h"
 
-#include <oscar_learnopengl/MouseCapturingCamera.hpp>
+#include <oscar_learnopengl/MouseCapturingCamera.h>
 
 #include <imgui.h>
-#include <oscar/oscar.hpp>
+#include <oscar/oscar.h>
 #include <SDL_events.h>
 
 #include <memory>

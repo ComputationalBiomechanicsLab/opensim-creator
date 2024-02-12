@@ -1,10 +1,10 @@
-#include "TPS3D.hpp"
+#include "TPS3D.h"
 
 #include <Simbody.h>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/ParalellizationHelpers.hpp>
-#include <oscar/Utils/Perf.hpp>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/ParalellizationHelpers.h>
+#include <oscar/Utils/Perf.h>
 
 #include <iostream>
 #include <span>

@@ -1,11 +1,11 @@
-#include "OpenSimCreatorApp.hpp"
+#include "OpenSimCreatorApp.h"
 
-#include <OpenSimCreator/OpenSimCreatorConfig.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/CrossProductEdge.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/MidpointLandmark.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/PointToPointEdge.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/SphereLandmark.hpp>
-#include <OpenSimCreator/UI/OpenSimCreatorTabRegistry.hpp>
+#include <OpenSimCreator/OpenSimCreatorConfig.h>
+#include <OpenSimCreator/Documents/FrameDefinition/CrossProductEdge.h>
+#include <OpenSimCreator/Documents/FrameDefinition/MidpointLandmark.h>
+#include <OpenSimCreator/Documents/FrameDefinition/PointToPointEdge.h>
+#include <OpenSimCreator/Documents/FrameDefinition/SphereLandmark.h>
+#include <OpenSimCreator/UI/OpenSimCreatorTabRegistry.h>
 
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
 #include <OpenSim/Analyses/RegisterTypes_osimAnalyses.h>
@@ -16,15 +16,15 @@
 #include <OpenSim/Simulation/RegisterTypes_osimSimulation.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Tools/RegisterTypes_osimTools.h>
-#include <oscar/Platform/App.hpp>
-#include <oscar/Platform/AppConfig.hpp>
-#include <oscar/Platform/AppMetadata.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Platform/os.hpp>
-#include <oscar/UI/Tabs/TabRegistry.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar_demos/OscarDemosTabRegistry.hpp>
-#include <oscar_learnopengl/LearnOpenGLTabRegistry.hpp>
+#include <oscar/Platform/App.h>
+#include <oscar/Platform/AppConfig.h>
+#include <oscar/Platform/AppMetadata.h>
+#include <oscar/Platform/Log.h>
+#include <oscar/Platform/os.h>
+#include <oscar/UI/Tabs/TabRegistry.h>
+#include <oscar/Utils/CStringView.h>
+#include <oscar_demos/OscarDemosTabRegistry.h>
+#include <oscar_learnopengl/LearnOpenGLTabRegistry.h>
 
 #include <clocale>
 #include <filesystem>

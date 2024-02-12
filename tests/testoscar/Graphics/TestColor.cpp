@@ -1,30 +1,16 @@
-#include <oscar/Graphics/Color.hpp>
+#include <oscar/Graphics/Color.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Maths/Vec4.hpp>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Maths/Vec4.h>
 
 #include <algorithm>
 #include <array>
 #include <type_traits>
 #include <utility>
 
-using osc::Color;
-using osc::ColorHSLA;
-using osc::Color32;
-using osc::Lerp;
-using osc::ToColor;
-using osc::ToColor32;
-using osc::ToHtmlStringRGBA;
-using osc::ToHSLA;
-using osc::ToLinear;
-using osc::ToSRGB;
-using osc::ToVec4;
-using osc::TryParseHtmlString;
-using osc::ValuePtr;
-using osc::Vec3;
-using osc::Vec4;
+using namespace osc;
 
 namespace
 {

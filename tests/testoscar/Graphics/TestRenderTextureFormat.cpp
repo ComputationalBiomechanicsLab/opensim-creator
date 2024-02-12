@@ -1,14 +1,13 @@
-#include <oscar/Graphics/RenderTextureFormat.hpp>
+#include <oscar/Graphics/RenderTextureFormat.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <sstream>
 #include <string>
 #include <utility>
 
-using osc::NumOptions;
-using osc::RenderTextureFormat;
+using namespace osc;
 
 TEST(RenderTextureFormat, AnyValueCanBePrintedToStream)
 {

@@ -1,9 +1,9 @@
-#include "ModelViewerPanel.hpp"
+#include "ModelViewerPanel.h"
 
-#include <OpenSimCreator/UI/ModelWarper/UIState.hpp>
+#include <OpenSimCreator/UI/ModelWarper/UIState.h>
 
 #include <imgui.h>
-#include <oscar/UI/Panels/StandardPanelImpl.hpp>
+#include <oscar/UI/Panels/StandardPanelImpl.h>
 
 #include <memory>
 #include <string_view>

@@ -1,6 +1,6 @@
-#include "CrossProductDefinedFrame.hpp"
+#include "CrossProductDefinedFrame.h"
 
-#include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
 
 #include <Simbody.h>
 #include <OpenSim/Common/Exception.h>

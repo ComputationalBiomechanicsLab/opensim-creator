@@ -1,17 +1,17 @@
-#include "SimTKHelpers.hpp"
+#include "SimTKHelpers.h"
 
 #include <SimTKcommon/SmallMatrix.h>
 #include <SimTKcommon/internal/MassProperties.h>
 #include <SimTKcommon/internal/Rotation.h>
 #include <SimTKcommon/internal/Transform.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/Mat3.hpp>
-#include <oscar/Maths/Mat4.hpp>
-#include <oscar/Maths/Mat4x3.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Maths/Vec4.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Maths/Mat3.h>
+#include <oscar/Maths/Mat4.h>
+#include <oscar/Maths/Mat4x3.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Transform.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Maths/Vec4.h>
 
 using namespace osc;
 

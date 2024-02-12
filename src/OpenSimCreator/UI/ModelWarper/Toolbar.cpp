@@ -1,6 +1,6 @@
-#include "Toolbar.hpp"
+#include "Toolbar.h"
 
-#include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
+#include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 
 #include <imgui.h>
 

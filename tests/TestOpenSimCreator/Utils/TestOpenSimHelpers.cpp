@@ -1,6 +1,6 @@
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
+#include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -8,35 +8,20 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
-#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.hpp>
-#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.hpp>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/Platform/OpenSimCreatorApp.hpp>
+#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.h>
+#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <gtest/gtest.h>
-#include <oscar/Platform/AppConfig.hpp>
-#include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/AppConfig.h>
+#include <oscar/Platform/Log.h>
 
 #include <filesystem>
 #include <memory>
 #include <string>
 #include <vector>
 
-using osc::AddModelComponent;
-using osc::CopyCommonJointProperties;
-using osc::FinalizeConnections;
-using osc::FindComponentMut;
-using osc::ForEachComponent;
-using osc::GetAbsolutePath;
-using osc::GetAbsolutePathOrEmpty;
-using osc::GetAbsolutePathString;
-using osc::GetComponentRegistry;
-using osc::GetNumChildren;
-using osc::InitializeModel;
-using osc::InitializeState;
-using osc::LoadOpenSimCreatorConfig;
-using osc::log_info;
-using osc::TryDeleteComponentFromModel;
-using osc::UndoableModelStatePair;
+using namespace osc;
 
 namespace
 {

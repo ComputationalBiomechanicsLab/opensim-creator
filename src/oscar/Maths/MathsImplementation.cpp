@@ -1,31 +1,31 @@
-#include <oscar/Maths/AABB.hpp>
-#include <oscar/Maths/Angle.hpp>
-#include <oscar/Maths/BVH.hpp>
-#include <oscar/Maths/CollisionTests.hpp>
-#include <oscar/Maths/Disc.hpp>
-#include <oscar/Maths/EasingFunctions.hpp>
-#include <oscar/Maths/EulerPerspectiveCamera.hpp>
-#include <oscar/Maths/Line.hpp>
-#include <oscar/Maths/Mat3.hpp>
-#include <oscar/Maths/Mat4.hpp>
-#include <oscar/Maths/Mat4x3.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Plane.hpp>
-#include <oscar/Maths/PolarPerspectiveCamera.hpp>
-#include <oscar/Maths/Quat.hpp>
-#include <oscar/Maths/RayCollision.hpp>
-#include <oscar/Maths/Rect.hpp>
-#include <oscar/Maths/Segment.hpp>
-#include <oscar/Maths/Sphere.hpp>
-#include <oscar/Maths/Tetrahedron.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Triangle.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Maths/Vec4.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/At.hpp>
+#include <oscar/Maths/AABB.h>
+#include <oscar/Maths/Angle.h>
+#include <oscar/Maths/BVH.h>
+#include <oscar/Maths/CollisionTests.h>
+#include <oscar/Maths/Disc.h>
+#include <oscar/Maths/EasingFunctions.h>
+#include <oscar/Maths/EulerPerspectiveCamera.h>
+#include <oscar/Maths/Line.h>
+#include <oscar/Maths/Mat3.h>
+#include <oscar/Maths/Mat4.h>
+#include <oscar/Maths/Mat4x3.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Plane.h>
+#include <oscar/Maths/PolarPerspectiveCamera.h>
+#include <oscar/Maths/Quat.h>
+#include <oscar/Maths/RayCollision.h>
+#include <oscar/Maths/Rect.h>
+#include <oscar/Maths/Segment.h>
+#include <oscar/Maths/Sphere.h>
+#include <oscar/Maths/Tetrahedron.h>
+#include <oscar/Maths/Transform.h>
+#include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Maths/Vec4.h>
+#include <oscar/Platform/Log.h>
+#include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/At.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -1135,7 +1135,13 @@ Radians osc::VerticalToHorizontalFOV(Radians verticalFOV, float aspectRatio)
 
 Mat4 osc::Perspective(Radians verticalFOV, float aspectRatio, float zNear, float zFar)
 {
-    return glm::perspective(verticalFOV.count(), aspectRatio, zNear, zFar);
+    if (std::fabs(aspectRatio - std::numeric_limits<float>::epsilon()) > 0.0f) {
+        return glm::perspective(verticalFOV.count(), aspectRatio, zNear, zFar);
+    }
+    // edge-case: some UIs ask for a perspective matrix on first frame before
+    // aspect ratio is known or the aspect ratio is NaN because of a division
+    // by zero
+    return Mat4{1.0f};
 }
 
 Mat4 osc::Ortho(float left, float right, float bottom, float top, float zNear, float zFar)

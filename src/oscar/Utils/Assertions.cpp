@@ -1,6 +1,6 @@
-#include "Assertions.hpp"
+#include "Assertions.h"
 
-#include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/Log.h>
 
 #include <sstream>
 #include <stdexcept>

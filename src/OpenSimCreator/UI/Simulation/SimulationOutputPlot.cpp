@@ -1,23 +1,23 @@
-#include "SimulationOutputPlot.hpp"
+#include "SimulationOutputPlot.h"
 
-#include <OpenSimCreator/Documents/Simulation/ISimulation.hpp>
-#include <OpenSimCreator/Documents/Simulation/SimulationClock.hpp>
-#include <OpenSimCreator/Documents/Simulation/SimulationReport.hpp>
-#include <OpenSimCreator/OutputExtractors/IOutputExtractor.hpp>
-#include <OpenSimCreator/OutputExtractors/OutputExtractor.hpp>
-#include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.hpp>
+#include <OpenSimCreator/Documents/Simulation/ISimulation.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
+#include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
+#include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <implot.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Platform/os.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Perf.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Platform/Log.h>
+#include <oscar/Platform/os.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/Perf.h>
 
 #include <algorithm>
 #include <chrono>

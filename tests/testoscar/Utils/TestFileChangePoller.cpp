@@ -1,8 +1,8 @@
-#include <oscar/Utils/FileChangePoller.hpp>
+#include <oscar/Utils/FileChangePoller.h>
 
 #include <gtest/gtest.h>
 
-using osc::FileChangePoller;
+using namespace osc;
 
 // repro for #495
 //

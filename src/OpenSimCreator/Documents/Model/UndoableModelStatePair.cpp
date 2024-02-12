@@ -1,16 +1,16 @@
-#include "UndoableModelStatePair.hpp"
+#include "UndoableModelStatePair.h"
 
-#include <OpenSimCreator/Documents/Model/ModelStateCommit.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/ModelStateCommit.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Perf.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <oscar/Platform/Log.h>
+#include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/Perf.h>
+#include <oscar/Utils/UID.h>
 
 #include <exception>
 #include <filesystem>

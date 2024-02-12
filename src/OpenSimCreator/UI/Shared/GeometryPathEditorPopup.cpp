@@ -1,7 +1,7 @@
-#include "GeometryPathEditorPopup.hpp"
+#include "GeometryPathEditorPopup.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -9,9 +9,9 @@
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/Widgets/StandardPopup.h>
+#include <oscar/Utils/CStringView.h>
 
 #include <array>
 #include <functional>

@@ -1,16 +1,16 @@
-#include "GraphicsHelpers.hpp"
+#include "GraphicsHelpers.h"
 
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshIndicesView.hpp>
-#include <oscar/Graphics/MeshTopology.hpp>
-#include <oscar/Maths/Mat4.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Sphere.hpp>
-#include <oscar/Maths/Tetrahedron.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Maths/Vec4.hpp>
-#include <oscar/Utils/Assertions.hpp>
+#include <oscar/Graphics/Mesh.h>
+#include <oscar/Graphics/MeshIndicesView.h>
+#include <oscar/Graphics/MeshTopology.h>
+#include <oscar/Maths/Mat4.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Sphere.h>
+#include <oscar/Maths/Tetrahedron.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Maths/Vec4.h>
+#include <oscar/Utils/Assertions.h>
 
 #include <algorithm>
 #include <array>

@@ -1,19 +1,19 @@
-#include "Readonly3DModelViewer.hpp"
+#include "Readonly3DModelViewer.h"
 
-#include <OpenSimCreator/Graphics/CachedModelRenderer.hpp>
-#include <OpenSimCreator/Graphics/ModelRendererParams.hpp>
-#include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
+#include <OpenSimCreator/Graphics/CachedModelRenderer.h>
+#include <OpenSimCreator/Graphics/ModelRendererParams.h>
+#include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 
 #include <imgui.h>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/Scene/SceneCache.hpp>
-#include <oscar/Scene/SceneCollision.hpp>
-#include <oscar/Scene/ShaderCache.hpp>
-#include <oscar/UI/IconCache.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Widgets/GuiRuler.hpp>
-#include <oscar/UI/Widgets/IconWithoutMenu.hpp>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneCollision.h>
+#include <oscar/Graphics/Scene/ShaderCache.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Platform/App.h>
+#include <oscar/UI/IconCache.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/Widgets/GuiRuler.h>
+#include <oscar/UI/Widgets/IconWithoutMenu.h>
 
 #include <memory>
 #include <optional>

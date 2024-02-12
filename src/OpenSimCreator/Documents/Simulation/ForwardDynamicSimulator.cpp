@@ -1,23 +1,23 @@
-#include "ForwardDynamicSimulator.hpp"
+#include "ForwardDynamicSimulator.h"
 
-#include <OpenSimCreator/Documents/Model/BasicModelStatePair.hpp>
-#include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.hpp>
-#include <OpenSimCreator/Documents/Simulation/IntegratorMethod.hpp>
-#include <OpenSimCreator/Documents/Simulation/SimulationClock.hpp>
-#include <OpenSimCreator/Documents/Simulation/SimulationReport.hpp>
-#include <OpenSimCreator/Documents/Simulation/SimulationStatus.hpp>
-#include <OpenSimCreator/OutputExtractors/IOutputExtractor.hpp>
-#include <OpenSimCreator/OutputExtractors/IntegratorOutputExtractor.hpp>
-#include <OpenSimCreator/OutputExtractors/MultiBodySystemOutputExtractor.hpp>
+#include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
+#include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
+#include <OpenSimCreator/Documents/Simulation/IntegratorMethod.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationStatus.h>
+#include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
+#include <OpenSimCreator/OutputExtractors/IntegratorOutputExtractor.h>
+#include <OpenSimCreator/OutputExtractors/MultiBodySystemOutputExtractor.h>
 
 #include <SimTKsimbody.h>
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Shims/Cpp20/stop_token.hpp>
-#include <oscar/Shims/Cpp20/thread.hpp>
-#include <oscar/Utils/HashHelpers.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <oscar/Platform/Log.h>
+#include <oscar/Shims/Cpp20/stop_token.h>
+#include <oscar/Shims/Cpp20/thread.h>
+#include <oscar/Utils/HashHelpers.h>
+#include <oscar/Utils/UID.h>
 #include <simmath/Integrator.h>
 #include <simmath/TimeStepper.h>
 

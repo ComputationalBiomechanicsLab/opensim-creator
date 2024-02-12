@@ -1,8 +1,8 @@
-#include "OBJ.hpp"
+#include "OBJ.h"
 
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/os.hpp>
+#include <oscar/Graphics/Mesh.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Platform/os.h>
 
 #include <cstddef>
 #include <iomanip>

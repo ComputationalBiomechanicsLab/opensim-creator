@@ -1,13 +1,13 @@
-#include "DAE.hpp"
+#include "DAE.h"
 
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Maths/Mat4.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/os.hpp>
-#include <oscar/Scene/SceneDecoration.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Graphics/Mesh.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Maths/Mat4.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Platform/os.h>
 
 #include <cstddef>
 #include <cstdint>

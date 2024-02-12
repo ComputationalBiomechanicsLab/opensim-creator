@@ -1,8 +1,8 @@
-#include "IconCache.hpp"
+#include "IconCache.h"
 
-#include <oscar/Formats/SVG.hpp>
-#include <oscar/Platform/ResourceLoader.hpp>
-#include <oscar/UI/Icon.hpp>
+#include <oscar/Formats/SVG.h>
+#include <oscar/Platform/ResourceLoader.h>
+#include <oscar/UI/Icon.h>
 
 #include <memory>
 #include <stdexcept>
@@ -15,7 +15,7 @@ using osc::Icon;
 
 class osc::IconCache::Impl final {
 public:
-    Impl(ResourceLoader loaderPrefixedAtDirContainingSVGs, float verticalScale)
+    Impl(ResourceLoader& loaderPrefixedAtDirContainingSVGs, float verticalScale)
     {
         auto it = loaderPrefixedAtDirContainingSVGs.iterateDirectory(".");
 

@@ -1,12 +1,12 @@
-#include <oscar/Formats/Image.hpp>
+#include <oscar/Formats/Image.h>
 
-#include <testoscar/testoscarconfig.hpp>
+#include <testoscar/testoscarconfig.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Platform/AppConfig.hpp>
-#include <oscar/Platform/ResourceStream.hpp>
+#include <oscar/Graphics/ColorSpace.h>
+#include <oscar/Graphics/Texture2D.h>
+#include <oscar/Platform/AppConfig.h>
+#include <oscar/Platform/ResourceStream.h>
 
 #include <array>
 #include <filesystem>

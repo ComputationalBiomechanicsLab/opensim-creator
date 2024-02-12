@@ -1,9 +1,9 @@
-#include <oscar/Shims.hpp>
+#include <oscar/Shims.h>
 
 #include <gtest/gtest.h>
 
 TEST(ShimsHeader, CanBeCompiled)
 {
-    // quite meta, but this is just a way to ensure that `#include <oscar/Shims.hpp>`
+    // quite meta, but this is just a way to ensure that `#include <oscar/Shims.h>`
     // compiles, and is handy for benchmarking how quickly it compiles
 }

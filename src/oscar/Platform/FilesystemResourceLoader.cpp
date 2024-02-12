@@ -1,8 +1,8 @@
-#include "FilesystemResourceLoader.hpp"
+#include "FilesystemResourceLoader.h"
 
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Platform/ResourcePath.hpp>
-#include <oscar/Platform/ResourceStream.hpp>
+#include <oscar/Platform/Log.h>
+#include <oscar/Platform/ResourcePath.h>
+#include <oscar/Platform/ResourceStream.h>
 
 #include <filesystem>
 #include <functional>

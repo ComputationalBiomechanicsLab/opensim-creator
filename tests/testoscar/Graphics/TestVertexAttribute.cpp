@@ -1,14 +1,13 @@
-#include <oscar/Graphics/VertexAttribute.hpp>
+#include <oscar/Graphics/VertexAttribute.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <algorithm>
 #include <array>
 #include <tuple>
 
-using osc::NumOptions;
-using osc::VertexAttribute;
+using namespace osc;
 
 // double-check that the `VertexAttribute` enum is in the same order as data
 // will be in the vertex buffer, so that (e.g.) implementations can perform

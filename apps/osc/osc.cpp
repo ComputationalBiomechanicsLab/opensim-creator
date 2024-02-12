@@ -1,5 +1,5 @@
-#include <OpenSimCreator/Platform/OpenSimCreatorApp.hpp>
-#include <OpenSimCreator/UI/MainUIScreen.hpp>
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <cstdlib>
 #include <iostream>

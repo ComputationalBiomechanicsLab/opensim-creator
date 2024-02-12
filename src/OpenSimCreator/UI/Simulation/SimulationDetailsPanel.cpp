@@ -1,15 +1,15 @@
-#include "SimulationDetailsPanel.hpp"
+#include "SimulationDetailsPanel.h"
 
-#include <OpenSimCreator/Documents/Simulation/Simulation.hpp>
-#include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
-#include <OpenSimCreator/UI/Simulation/SimulationOutputPlot.hpp>
+#include <OpenSimCreator/Documents/Simulation/Simulation.h>
+#include <OpenSimCreator/UI/Shared/BasicWidgets.h>
+#include <OpenSimCreator/UI/Simulation/SimulationOutputPlot.h>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <oscar/Platform/os.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Panels/StandardPanelImpl.hpp>
-#include <oscar/Utils/Perf.hpp>
+#include <oscar/Platform/os.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/Panels/StandardPanelImpl.h>
+#include <oscar/Utils/Perf.h>
 
 #include <filesystem>
 #include <memory>

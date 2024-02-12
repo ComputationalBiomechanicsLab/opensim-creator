@@ -1,32 +1,32 @@
-#include "MeshHittestTab.hpp"
+#include "MeshHittestTab.h"
 
-#include <OpenSimCreator/Graphics/SimTKMeshLoader.hpp>
+#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <oscar/Graphics/Camera.hpp>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/Graphics.hpp>
-#include <oscar/Graphics/Material.hpp>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Graphics/Shader.hpp>
-#include <oscar/Maths/BVH.hpp>
-#include <oscar/Maths/CollisionTests.hpp>
-#include <oscar/Maths/Line.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/PolarPerspectiveCamera.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Triangle.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/Scene/SceneCache.hpp>
-#include <oscar/Scene/SceneDecoration.hpp>
-#include <oscar/Scene/SceneHelpers.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Panels/PerfPanel.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <oscar/Graphics/Camera.h>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Graphics/Graphics.h>
+#include <oscar/Graphics/Material.h>
+#include <oscar/Graphics/Mesh.h>
+#include <oscar/Graphics/MeshGenerators.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Graphics/Scene/SceneHelpers.h>
+#include <oscar/Graphics/Shader.h>
+#include <oscar/Maths/BVH.h>
+#include <oscar/Maths/CollisionTests.h>
+#include <oscar/Maths/Line.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/PolarPerspectiveCamera.h>
+#include <oscar/Maths/Transform.h>
+#include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Platform/App.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/Panels/PerfPanel.h>
+#include <oscar/Utils/UID.h>
 
 #include <array>
 #include <chrono>
@@ -119,7 +119,7 @@ public:
         {
             Mesh m;
             m.setVerts(m_Tris);
-            m.setIndices(std::to_array<uint16_t>({0, 1, 2}));
+            m.setIndices({0, 1, 2});
 
             m_Material.setColor("uColor", Color::black());
             m_Material.setDepthTested(false);

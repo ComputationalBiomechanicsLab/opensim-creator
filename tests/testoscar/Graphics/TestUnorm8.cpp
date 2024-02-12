@@ -1,14 +1,12 @@
-#include <oscar/Graphics/Unorm8.hpp>
+#include <oscar/Graphics/Unorm8.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Maths/Vec.hpp>
-#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Maths/Vec.h>
+#include <oscar/Maths/Vec3.h>
 
 #include <limits>
 
-using osc::Unorm8;
-using osc::Vec;
-using osc::Vec3;
+using namespace osc;
 
 TEST(Unorm8, ComparisonBetweenBytesWorksAsExpected)
 {

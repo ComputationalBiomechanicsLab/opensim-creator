@@ -1,13 +1,11 @@
-#include <oscar/Utils/Typelist.hpp>
+#include <oscar/Utils/Typelist.h>
 
 #include <gtest/gtest.h>
 
 #include <cstdint>
 #include <type_traits>
 
-using osc::TypeAtT;
-using osc::Typelist;
-using osc::TypelistSizeV;
+using namespace osc;
 
 TEST(Typelist, EmptyTypelistIsOk)
 {

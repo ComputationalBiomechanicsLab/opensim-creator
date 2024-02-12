@@ -1,16 +1,16 @@
-#include "FrameDefinitionHelpers.hpp"
+#include "FrameDefinitionHelpers.h"
 
-#include <OpenSimCreator/Documents/FrameDefinition/Edge.hpp>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/Graphics/ModelRendererParams.hpp>
-#include <OpenSimCreator/Utils/SimTKHelpers.hpp>
+#include <OpenSimCreator/Documents/FrameDefinition/Edge.h>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Graphics/ModelRendererParams.h>
+#include <OpenSimCreator/Utils/SimTKHelpers.h>
 
 #include <Simbody.h>
 #include <OpenSim/Simulation/Model/Appearance.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Maths/Vec3.h>
 
 #include <array>
 #include <atomic>

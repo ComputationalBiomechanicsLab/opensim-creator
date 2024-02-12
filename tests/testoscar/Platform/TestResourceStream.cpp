@@ -1,6 +1,6 @@
-#include <oscar/Platform/ResourceStream.hpp>
+#include <oscar/Platform/ResourceStream.h>
 
-#include <testoscar/testoscarconfig.hpp>
+#include <testoscar/testoscarconfig.h>
 
 #include <gtest/gtest.h>
 
@@ -16,7 +16,8 @@ namespace
 {
     std::string slurp(std::istream& is)
     {
-        std::istreambuf_iterator<char> beg{is}, end;
+        std::istreambuf_iterator<char> beg{is};
+        std::istreambuf_iterator<char> end;
         return std::string{beg, end};
     }
 

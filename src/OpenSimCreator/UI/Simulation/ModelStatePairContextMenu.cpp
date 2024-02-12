@@ -1,15 +1,15 @@
-#include "ModelStatePairContextMenu.hpp"
+#include "ModelStatePairContextMenu.h"
 
-#include <OpenSimCreator/Documents/Model/IModelStatePair.hpp>
-#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
-#include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/Shared/BasicWidgets.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
+#include <oscar/UI/Widgets/StandardPopup.h>
+#include <oscar/Utils/ParentPtr.h>
 
 #include <memory>
 #include <string_view>

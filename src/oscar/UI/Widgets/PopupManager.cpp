@@ -1,6 +1,6 @@
-#include "PopupManager.hpp"
+#include "PopupManager.h"
 
-#include <oscar/UI/Widgets/IPopup.hpp>
+#include <oscar/UI/Widgets/IPopup.h>
 
 #include <cstddef>
 #include <memory>

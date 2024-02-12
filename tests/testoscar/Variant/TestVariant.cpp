@@ -1,10 +1,10 @@
-#include <oscar/Variant/Variant.hpp>
+#include <oscar/Variant/Variant.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/StringName.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/StringName.h>
 
 #include <array>
 #include <charconv>
@@ -15,14 +15,7 @@
 #include <type_traits>
 #include <utility>
 
-using osc::Color;
-using osc::CStringView;
-using osc::StringName;
-using osc::to_string;
-using osc::TryParseHtmlString;
-using osc::Variant;
-using osc::VariantType;
-using osc::Vec3;
+using namespace osc;
 
 namespace
 {

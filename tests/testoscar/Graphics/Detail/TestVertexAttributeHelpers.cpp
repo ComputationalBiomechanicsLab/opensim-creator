@@ -1,12 +1,11 @@
-#include <oscar/Graphics/Detail/VertexAttributeHelpers.hpp>
+#include <oscar/Graphics/Detail/VertexAttributeHelpers.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Graphics/VertexAttribute.hpp>
-#include <oscar/Graphics/VertexAttributeFormat.hpp>
+#include <oscar/Graphics/VertexAttribute.h>
+#include <oscar/Graphics/VertexAttributeFormat.h>
 
-using osc::detail::DefaultFormat;
-using osc::VertexAttribute;
-using osc::VertexAttributeFormat;
+using namespace osc;
+using namespace osc::detail;
 
 TEST(VertexAttributeHelpers, DefaultFormatWorks)
 {

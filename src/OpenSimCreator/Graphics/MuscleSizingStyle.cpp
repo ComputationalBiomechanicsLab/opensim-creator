@@ -1,6 +1,6 @@
-#include "MuscleSizingStyle.hpp"
+#include "MuscleSizingStyle.h"
 
-#include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <array>
 #include <cstddef>

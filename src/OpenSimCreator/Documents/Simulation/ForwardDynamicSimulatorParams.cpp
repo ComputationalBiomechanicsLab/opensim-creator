@@ -1,8 +1,8 @@
-#include "ForwardDynamicSimulatorParams.hpp"
+#include "ForwardDynamicSimulatorParams.h"
 
-#include <OpenSimCreator/Documents/Simulation/SimulationClock.hpp>
+#include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
 
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/CStringView.h>
 
 #include <chrono>
 #include <optional>

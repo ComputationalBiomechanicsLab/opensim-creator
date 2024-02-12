@@ -1,11 +1,11 @@
-#include "StaticComponentRegistries.hpp"
+#include "StaticComponentRegistries.h"
 
-#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/CrossProductEdge.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/MidpointLandmark.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/PointToPointEdge.hpp>
-#include <OpenSimCreator/Documents/FrameDefinition/SphereLandmark.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.h>
+#include <OpenSimCreator/Documents/FrameDefinition/CrossProductEdge.h>
+#include <OpenSimCreator/Documents/FrameDefinition/MidpointLandmark.h>
+#include <OpenSimCreator/Documents/FrameDefinition/PointToPointEdge.h>
+#include <OpenSimCreator/Documents/FrameDefinition/SphereLandmark.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Actuators/ActivationCoordinateActuator.h>
 #include <OpenSim/Actuators/PointToPointActuator.h>
@@ -36,8 +36,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/SetHelpers.hpp>
+#include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/SetHelpers.h>
 
 #include <algorithm>
 #include <concepts>

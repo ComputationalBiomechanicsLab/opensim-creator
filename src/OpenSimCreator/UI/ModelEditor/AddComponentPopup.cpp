@@ -1,9 +1,9 @@
-#include "AddComponentPopup.hpp"
+#include "AddComponentPopup.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -18,11 +18,11 @@
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/Station.h>
 #include <SimTKcommon/SmallMatrix.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Widgets/StandardPopup.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Platform/App.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/Widgets/StandardPopup.h>
+#include <oscar/Utils/StringHelpers.h>
 
 #include <algorithm>
 #include <cstddef>

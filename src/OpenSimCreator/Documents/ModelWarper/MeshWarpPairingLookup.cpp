@@ -1,10 +1,10 @@
-#include "MeshWarpPairingLookup.hpp"
+#include "MeshWarpPairingLookup.h"
 
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/Log.h>
 
 #include <filesystem>
 #include <sstream>

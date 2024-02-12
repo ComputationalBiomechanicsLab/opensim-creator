@@ -1,17 +1,17 @@
-#include "SimTKMeshLoader.hpp"
+#include "SimTKMeshLoader.h"
 
-#include <OpenSimCreator/Utils/SimTKHelpers.hpp>
+#include <OpenSimCreator/Utils/SimTKHelpers.h>
 
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 #include <SimTKcommon/internal/PolygonalMesh.h>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Graphics/MeshTopology.hpp>
-#include <oscar/Graphics/VertexAttribute.hpp>
-#include <oscar/Graphics/VertexAttributeFormat.hpp>
-#include <oscar/Graphics/VertexFormat.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Triangle.hpp>
-#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Graphics/Mesh.h>
+#include <oscar/Graphics/MeshTopology.h>
+#include <oscar/Graphics/VertexAttribute.h>
+#include <oscar/Graphics/VertexAttributeFormat.h>
+#include <oscar/Graphics/VertexFormat.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/Vec3.h>
 
 #include <array>
 #include <cstddef>

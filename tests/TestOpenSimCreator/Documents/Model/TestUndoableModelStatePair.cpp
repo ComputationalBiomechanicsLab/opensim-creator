@@ -1,30 +1,23 @@
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 
-#include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
+#include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
-#include <OpenSim/Common/Component.h>
-#include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp>
-#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp>
-#include <OpenSimCreator/Platform/OpenSimCreatorApp.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
 #include <gtest/gtest.h>
-#include <oscar/Formats/DAE.hpp>
-#include <oscar/Scene/SceneCache.hpp>
-#include <oscar/Scene/SceneDecoration.hpp>
-#include <oscar/Utils/NullOStream.hpp>
+#include <OpenSim/Common/Component.h>
+#include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
+#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <oscar/Formats/DAE.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Utils/NullOStream.h>
 
 #include <filesystem>
 #include <functional>
 #include <sstream>
 
-using osc::DAEMetadata;
-using osc::GetAbsolutePathString;
-using osc::GlobalInitOpenSim;
-using osc::NullOStream;
-using osc::OpenSimDecorationOptions;
-using osc::SceneCache;
-using osc::SceneDecoration;
-using osc::UndoableModelStatePair;
+using namespace osc;
 
 TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
 {

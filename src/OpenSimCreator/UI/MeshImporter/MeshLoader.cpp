@@ -1,9 +1,9 @@
-#include "MeshLoader.hpp"
+#include "MeshLoader.h"
 
-#include <OpenSimCreator/Graphics/SimTKMeshLoader.hpp>
+#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
 
-#include <oscar/Platform/App.hpp>
-#include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/App.h>
+#include <oscar/Platform/Log.h>
 
 #include <exception>
 #include <filesystem>

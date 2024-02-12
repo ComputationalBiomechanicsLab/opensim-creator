@@ -1,16 +1,16 @@
-#include "Joint.hpp"
+#include "Joint.h"
 
-#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.hpp>
-#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/CrossrefDescriptor.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/CrossrefDirection.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/MIStrings.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.h>
+#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
+#include <OpenSimCreator/Documents/MeshImporter/CrossrefDescriptor.h>
+#include <OpenSimCreator/Documents/MeshImporter/CrossrefDirection.h>
+#include <OpenSimCreator/Documents/MeshImporter/MIStrings.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <oscar/Maths/Transform.h>
+#include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/UID.h>
 
 #include <cstddef>
 #include <iostream>

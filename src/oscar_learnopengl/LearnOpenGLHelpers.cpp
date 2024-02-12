@@ -1,7 +1,7 @@
-#include "LearnOpenGLHelpers.hpp"
+#include "LearnOpenGLHelpers.h"
 
-#include <oscar/Graphics/MeshGenerators.hpp>
-#include <oscar/Maths/Vec3.hpp>
+#include <oscar/Graphics/MeshGenerators.h>
+#include <oscar/Maths/Vec3.h>
 
 using namespace osc;
 

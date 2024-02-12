@@ -1,19 +1,19 @@
-#include "OpenSimGraphicsHelpers.hpp"
+#include "OpenSimGraphicsHelpers.h"
 
-#include <OpenSimCreator/Documents/Model/IConstModelStatePair.hpp>
-#include <OpenSimCreator/Graphics/ComponentAbsPathDecorationTagger.hpp>
-#include <OpenSimCreator/Graphics/ComponentSceneDecorationFlagsTagger.hpp>
-#include <OpenSimCreator/Graphics/ModelRendererParams.hpp>
-#include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp>
+#include <OpenSimCreator/Documents/Model/IConstModelStatePair.h>
+#include <OpenSimCreator/Graphics/ComponentAbsPathDecorationTagger.h>
+#include <OpenSimCreator/Graphics/ComponentSceneDecorationFlagsTagger.h>
+#include <OpenSimCreator/Graphics/ModelRendererParams.h>
+#include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
 
-#include <oscar/Graphics/AntiAliasingLevel.hpp>
-#include <oscar/Maths/Line.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/PolarPerspectiveCamera.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Scene/SceneDecoration.hpp>
-#include <oscar/Scene/SceneHelpers.hpp>
-#include <oscar/Utils/Perf.hpp>
+#include <oscar/Graphics/AntiAliasingLevel.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Graphics/Scene/SceneHelpers.h>
+#include <oscar/Maths/Line.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/PolarPerspectiveCamera.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Utils/Perf.h>
 
 #include <optional>
 #include <vector>

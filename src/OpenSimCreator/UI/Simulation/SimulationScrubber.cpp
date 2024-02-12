@@ -1,12 +1,12 @@
-#include "SimulationScrubber.hpp"
+#include "SimulationScrubber.h"
 
-#include <OpenSimCreator/Documents/Simulation/Simulation.hpp>
-#include <OpenSimCreator/Documents/Simulation/SimulationClock.hpp>
-#include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.hpp>
+#include <OpenSimCreator/Documents/Simulation/Simulation.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
+#include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <oscar/UI/ImGuiHelpers.hpp>
+#include <oscar/UI/ImGuiHelpers.h>
 
 #include <memory>
 #include <string>

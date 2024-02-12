@@ -1,6 +1,6 @@
-#include "LOGLTexturingTab.hpp"
+#include "LOGLTexturingTab.h"
 
-#include <oscar/oscar.hpp>
+#include <oscar/oscar.h>
 
 #include <memory>
 #include <utility>

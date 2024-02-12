@@ -1,4 +1,4 @@
-#include <oscar/Graphics/Cubemap.hpp>
+#include <oscar/Graphics/Cubemap.h>
 
 #include <gtest/gtest.h>
 
@@ -7,13 +7,7 @@
 #include <type_traits>
 #include <utility>
 
-using osc::Cubemap;
-using osc::CubemapFace;
-using osc::FirstCubemapFace;
-using osc::LastCubemapFace;
-using osc::TextureFilterMode;
-using osc::TextureFormat;
-using osc::TextureWrapMode;
+using namespace osc;
 
 TEST(Cubemap, CanConstruct1x1RGBA32Cubemap)
 {

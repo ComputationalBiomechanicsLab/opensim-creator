@@ -1,7 +1,7 @@
-#include "LogLevel.hpp"
+#include "LogLevel.h"
 
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
+#include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/StringHelpers.h>
 
 #include <algorithm>
 #include <array>

@@ -1,11 +1,10 @@
-#include <oscar/Graphics/CubemapFace.hpp>
+#include <oscar/Graphics/CubemapFace.h>
 
-#include <oscar/Shims/Cpp23/utility.hpp>
-#include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Shims/Cpp23/utility.h>
+#include <oscar/Utils/EnumHelpers.h>
 
 namespace cpp23 = osc::cpp23;
-using osc::CubemapFace;
-using osc::NumOptions;
+using namespace osc;
 
 static_assert(NumOptions<CubemapFace>() == 6);
 

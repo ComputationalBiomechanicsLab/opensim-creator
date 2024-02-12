@@ -1,16 +1,16 @@
-#include "ChecklistPanel.hpp"
+#include "ChecklistPanel.h"
 
-#include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.hpp>
-#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/Utils/CStringView.h>
 
 #include <concepts>
 #include <cstddef>

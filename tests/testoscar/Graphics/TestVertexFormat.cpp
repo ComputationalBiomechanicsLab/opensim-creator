@@ -1,17 +1,14 @@
-#include <oscar/Graphics/VertexFormat.hpp>
+#include <oscar/Graphics/VertexFormat.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Graphics/VertexAttribute.hpp>
-#include <oscar/Graphics/VertexAttributeDescriptor.hpp>
-#include <oscar/Graphics/VertexAttributeFormat.hpp>
+#include <oscar/Graphics/VertexAttribute.h>
+#include <oscar/Graphics/VertexAttributeDescriptor.h>
+#include <oscar/Graphics/VertexAttributeFormat.h>
 
 #include <array>
 #include <initializer_list>
 
-using osc::VertexAttribute;
-using osc::VertexAttributeDescriptor;
-using osc::VertexAttributeFormat;
-using osc::VertexFormat;
+using namespace osc;
 
 TEST(VertexFormat, IsDefaultConstructible)
 {

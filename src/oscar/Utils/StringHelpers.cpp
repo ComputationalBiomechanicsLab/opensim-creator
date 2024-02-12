@@ -1,4 +1,4 @@
-#include "StringHelpers.hpp"
+#include "StringHelpers.h"
 
 #include <algorithm>
 #include <array>

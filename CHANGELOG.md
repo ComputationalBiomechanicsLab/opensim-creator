@@ -27,6 +27,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   unit mismatches in the source code
 - Internal: the test suite now automatically exercises all available UI tabs (mesh warper, model
   editor, etc.) tabs to ensure they are always working
+- Internal: all header files are now suffixed with `.h` to match most libraries etc. (previously: `.hpp`)
 
 ## [0.5.7] - 2023/01/11
 

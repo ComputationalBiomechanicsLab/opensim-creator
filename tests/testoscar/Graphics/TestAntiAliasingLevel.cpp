@@ -1,11 +1,11 @@
-#include <oscar/Graphics/AntiAliasingLevel.hpp>
+#include <oscar/Graphics/AntiAliasingLevel.h>
 
 #include <gtest/gtest.h>
 
 #include <sstream>
 #include <string>
 
-using osc::AntiAliasingLevel;
+using namespace osc;
 
 TEST(AntiAliasingLevel, DefaultCtorIsEquivalentTo1XLevel)
 {

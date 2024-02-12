@@ -1,10 +1,10 @@
-#include "CustomRenderingOptions.hpp"
+#include "CustomRenderingOptions.h"
 
-#include <OpenSimCreator/Graphics/CustomRenderingOptionFlags.hpp>
+#include <OpenSimCreator/Graphics/CustomRenderingOptionFlags.h>
 
-#include <oscar/Utils/At.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/EnumHelpers.hpp>
+#include <oscar/Utils/At.h>
+#include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <cstddef>
 #include <cstdint>

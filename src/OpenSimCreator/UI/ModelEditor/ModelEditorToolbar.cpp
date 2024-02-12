@@ -1,20 +1,20 @@
-#include "ModelEditorToolbar.hpp"
+#include "ModelEditorToolbar.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelActions.hpp>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
-#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.hpp>
-#include <OpenSimCreator/UI/Shared/BasicWidgets.hpp>
-#include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
+#include <OpenSimCreator/UI/Shared/BasicWidgets.h>
+#include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.h>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/UI/IconCache.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Platform/App.h>
+#include <oscar/UI/IconCache.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/Utils/ParentPtr.h>
 
 #include <algorithm>
 #include <memory>

@@ -1,18 +1,18 @@
-#include "OpenSimBridge.hpp"
+#include "OpenSimBridge.h"
 
-#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.hpp>
-#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Body.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Document.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/DocumentHelpers.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Joint.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/MIIDs.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Mesh.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/OpenSimExportFlags.hpp>
-#include <OpenSimCreator/Documents/MeshImporter/Station.hpp>
-#include <OpenSimCreator/Graphics/SimTKMeshLoader.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
-#include <OpenSimCreator/Utils/SimTKHelpers.hpp>
+#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.h>
+#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
+#include <OpenSimCreator/Documents/MeshImporter/Body.h>
+#include <OpenSimCreator/Documents/MeshImporter/Document.h>
+#include <OpenSimCreator/Documents/MeshImporter/DocumentHelpers.h>
+#include <OpenSimCreator/Documents/MeshImporter/Joint.h>
+#include <OpenSimCreator/Documents/MeshImporter/MIIDs.h>
+#include <OpenSimCreator/Documents/MeshImporter/Mesh.h>
+#include <OpenSimCreator/Documents/MeshImporter/OpenSimExportFlags.h>
+#include <OpenSimCreator/Documents/MeshImporter/Station.h>
+#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <OpenSimCreator/Utils/SimTKHelpers.h>
 
 #include <SimTKcommon.h>
 #include <OpenSim/Common/Component.h>
@@ -33,13 +33,13 @@
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <SimTKcommon/SmallMatrix.h>
-#include <oscar/Graphics/Mesh.hpp>
-#include <oscar/Maths/Mat4.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <oscar/Graphics/Mesh.h>
+#include <oscar/Maths/Mat4.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Transform.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Platform/Log.h>
+#include <oscar/Utils/UID.h>
 
 #include <array>
 #include <memory>

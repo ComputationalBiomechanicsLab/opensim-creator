@@ -1,4 +1,4 @@
-#include "ModelWarpConfiguration.hpp"
+#include "ModelWarpConfiguration.h"
 
 osc::mow::ModelWarpConfiguration::ModelWarpConfiguration(std::filesystem::path const&)
 {

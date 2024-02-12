@@ -1,8 +1,8 @@
-#include "LOGLShadowMappingTab.hpp"
+#include "LOGLShadowMappingTab.h"
 
-#include <oscar_learnopengl/MouseCapturingCamera.hpp>
+#include <oscar_learnopengl/MouseCapturingCamera.h>
 
-#include <oscar/oscar.hpp>
+#include <oscar/oscar.h>
 #include <SDL_events.h>
 
 #include <cstdint>
@@ -20,7 +20,7 @@ namespace
     Mesh GeneratePlaneMesh()
     {
         Mesh rv;
-        rv.setVerts({{
+        rv.setVerts({
             { 25.0f, -0.5f,  25.0f},
             {-25.0f, -0.5f,  25.0f},
             {-25.0f, -0.5f, -25.0f},
@@ -28,8 +28,8 @@ namespace
             { 25.0f, -0.5f,  25.0f},
             {-25.0f, -0.5f, -25.0f},
             { 25.0f, -0.5f, -25.0f},
-        }});
-        rv.setNormals({{
+        });
+        rv.setNormals({
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
@@ -37,8 +37,8 @@ namespace
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
-        }});
-        rv.setTexCoords({{
+        });
+        rv.setTexCoords({
             {25.0f,  0.0f},
             {0.0f,  0.0f},
             {0.0f, 25.0f},
@@ -46,10 +46,8 @@ namespace
             {25.0f,  0.0f},
             {0.0f, 25.0f},
             {25.0f, 25.0f},
-        }});
-        rv.setIndices(std::to_array<uint16_t>({
-            0, 1, 2, 3, 4, 5
-        }));
+        });
+        rv.setIndices({0, 1, 2, 3, 4, 5});
         return rv;
     }
 

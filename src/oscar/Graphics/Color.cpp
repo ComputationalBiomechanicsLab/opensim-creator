@@ -1,10 +1,10 @@
-#include "Color.hpp"
+#include "Color.h"
 
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Maths/Vec4.hpp>
-#include <oscar/Utils/HashHelpers.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Maths/Vec4.h>
+#include <oscar/Utils/HashHelpers.h>
+#include <oscar/Utils/StringHelpers.h>
 
 #include <cmath>
 #include <algorithm>

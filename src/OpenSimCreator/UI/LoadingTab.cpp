@@ -1,20 +1,20 @@
-#include "LoadingTab.hpp"
+#include "LoadingTab.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/Platform/RecentFiles.hpp>
-#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
-#include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.hpp>
-#include <OpenSimCreator/Utils/OpenSimHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Platform/RecentFiles.h>
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <imgui.h>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Rect.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Platform/App.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Tabs/ITabHost.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Rect.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Platform/App.h>
+#include <oscar/Platform/Log.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/Tabs/ITabHost.h>
+#include <oscar/Utils/ParentPtr.h>
 
 #include <chrono>
 #include <exception>

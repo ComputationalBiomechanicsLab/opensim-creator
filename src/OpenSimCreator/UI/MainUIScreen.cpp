@@ -1,37 +1,37 @@
-#include "MainUIScreen.hpp"
+#include "MainUIScreen.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.hpp>
-#include <OpenSimCreator/OutputExtractors/OutputExtractor.hpp>
-#include <OpenSimCreator/UI/IMainUIStateAPI.hpp>
-#include <OpenSimCreator/UI/LoadingTab.hpp>
-#include <OpenSimCreator/UI/SplashTab.hpp>
-#include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.hpp>
-#include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.hpp>
-#include <OpenSimCreator/Utils/ParamBlock.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
+#include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/LoadingTab.h>
+#include <OpenSimCreator/UI/SplashTab.h>
+#include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.h>
+#include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
+#include <OpenSimCreator/Utils/ParamBlock.h>
 
 #include <IconsFontAwesome5.h>
 #include <SDL_events.h>
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <oscar/Platform/App.hpp>
-#include <oscar/Platform/AppConfig.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Platform/Screenshot.hpp>
-#include <oscar/Platform/os.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/UI/Tabs/ErrorTab.hpp>
-#include <oscar/UI/Tabs/ITab.hpp>
-#include <oscar/UI/Tabs/ScreenshotTab.hpp>
-#include <oscar/UI/Tabs/TabRegistry.hpp>
-#include <oscar/UI/Widgets/SaveChangesPopup.hpp>
-#include <oscar/UI/Widgets/SaveChangesPopupConfig.hpp>
-#include <oscar/UI/ui_context.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/ParentPtr.hpp>
-#include <oscar/Utils/Perf.hpp>
-#include <oscar/Utils/UID.hpp>
+#include <oscar/Platform/App.h>
+#include <oscar/Platform/AppConfig.h>
+#include <oscar/Platform/Log.h>
+#include <oscar/Platform/Screenshot.h>
+#include <oscar/Platform/os.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/Tabs/ErrorTab.h>
+#include <oscar/UI/Tabs/ITab.h>
+#include <oscar/UI/Tabs/ScreenshotTab.h>
+#include <oscar/UI/Tabs/TabRegistry.h>
+#include <oscar/UI/Widgets/SaveChangesPopup.h>
+#include <oscar/UI/Widgets/SaveChangesPopupConfig.h>
+#include <oscar/UI/ui_context.h>
+#include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/Perf.h>
+#include <oscar/Utils/UID.h>
 
 #include <algorithm>
 #include <functional>
@@ -46,7 +46,6 @@
 #include <vector>
 
 using namespace osc;
-namespace ui = osc::ui;
 
 namespace
 {

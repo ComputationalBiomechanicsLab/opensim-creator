@@ -2,6 +2,12 @@ include(GoogleTest)
 find_package(GTest REQUIRED CONFIG)
 
 add_executable(testoscar
+    DOM/TestClass.cpp
+    DOM/TestNode.cpp
+    DOM/TestNodePath.cpp
+    DOM/TestObject.cpp
+    DOM/TestPropertyInfo.cpp
+
     Formats/TestCSV.cpp
     Formats/TestDAE.cpp
     Formats/TestImage.cpp
@@ -10,6 +16,7 @@ add_executable(testoscar
     Graphics/Detail/TestVertexAttributeHelpers.cpp
     Graphics/Detail/TestVertexAttributeFormatList.cpp
     Graphics/Detail/TestVertexAttributeList.cpp
+    Graphics/Scene/TestSceneCache.cpp
     Graphics/TestAntiAliasingLevel.cpp
     Graphics/TestCamera.cpp
     Graphics/TestCameraProjection.cpp
@@ -50,19 +57,11 @@ add_executable(testoscar
     MetaTests/TestUtilsHeader.cpp
     MetaTests/TestVariantHeader.cpp
 
-    Object/TestClass.cpp
-    Object/TestNode.cpp
-    Object/TestNodePath.cpp
-    Object/TestObject.cpp
-    Object/TestPropertyInfo.cpp
-
     Platform/TestAppSettingValueType.cpp
     Platform/TestResourceDirectoryEntry.cpp
     Platform/TestResourceLoader.cpp
     Platform/TestResourcePath.cpp
     Platform/TestResourceStream.cpp
-
-    Scene/TestSceneCache.cpp
 
     Shims/Cpp20/TestBit.cpp
 
@@ -81,22 +80,22 @@ add_executable(testoscar
     Variant/TestVariantType.cpp
 
     TestingHelpers.cpp
-    TestingHelpers.hpp
+    TestingHelpers.h
     testoscar.cpp  # entry point
 )
 
 
 configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/testoscarconfig.hpp.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/testoscar/testoscarconfig.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/testoscarconfig.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/testoscar/testoscarconfig.h"
 )
 
 target_include_directories(testoscar PUBLIC
 
-    # so that the source code can `#include <testoscar/SomeModule.hpp>`
+    # so that the source code can `#include <testoscar/SomeModule.h>`
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 
-    # so that source code can `#include <tesetoscar/testoscarconfig.hpp>`
+    # so that source code can `#include <tesetoscar/testoscarconfig.h>`
     "${CMAKE_CURRENT_BINARY_DIR}/generated/"
 )
 

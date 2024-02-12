@@ -1,4 +1,4 @@
-#include "ResourceStream.hpp"
+#include "ResourceStream.h"
 
 #include <filesystem>
 #include <fstream>

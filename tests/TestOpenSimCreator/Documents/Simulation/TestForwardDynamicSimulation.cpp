@@ -1,15 +1,11 @@
-#include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulation.hpp>
+#include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulation.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSimCreator/Documents/Model/BasicModelStatePair.hpp>
-#include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.hpp>
+#include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
+#include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
 #include <gtest/gtest.h>
 
-using osc::BasicModelStatePair;
-using osc::ForwardDynamicSimulation;
-using osc::ForwardDynamicSimulatorParams;
-using osc::FromParamBlock;
-using osc::SimulationClock;
+using namespace osc;
 
 TEST(ForwardDynamicSimulation, CanInitFromBasicModel)
 {

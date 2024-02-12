@@ -1,4 +1,4 @@
-#include "SimulationReport.hpp"
+#include "SimulationReport.h"
 
 #include <SimTKcommon.h>
 

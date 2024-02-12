@@ -1,8 +1,8 @@
-#include "VariantType.hpp"
+#include "VariantType.h"
 
-#include <oscar/Shims/Cpp23/utility.hpp>
-#include <oscar/Variant/VariantTypeList.hpp>
-#include <oscar/Variant/VariantTypeTraits.hpp>
+#include <oscar/Shims/Cpp23/utility.h>
+#include <oscar/Variant/VariantTypeList.h>
+#include <oscar/Variant/VariantTypeTraits.h>
 
 #include <array>
 #include <string>

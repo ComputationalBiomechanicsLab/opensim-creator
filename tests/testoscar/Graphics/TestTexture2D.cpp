@@ -1,17 +1,17 @@
-#include <oscar/Graphics/Texture2D.hpp>
+#include <oscar/Graphics/Texture2D.h>
 
-#include <testoscar/TestingHelpers.hpp>
+#include <testoscar/TestingHelpers.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/Color32.hpp>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/TextureFilterMode.hpp>
-#include <oscar/Graphics/TextureFormat.hpp>
-#include <oscar/Graphics/TextureWrapMode.hpp>
-#include <oscar/Maths/Vec2.hpp>
-#include <oscar/Maths/Vec4.hpp>
-#include <oscar/Utils/ObjectRepresentation.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Graphics/Color32.h>
+#include <oscar/Graphics/ColorSpace.h>
+#include <oscar/Graphics/TextureFilterMode.h>
+#include <oscar/Graphics/TextureFormat.h>
+#include <oscar/Graphics/TextureWrapMode.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Maths/Vec4.h>
+#include <oscar/Utils/ObjectRepresentation.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -19,18 +19,8 @@
 #include <utility>
 #include <vector>
 
-using osc::testing::ContainersEqual;
-using osc::testing::GenerateVec4;
-using osc::Color;
-using osc::ColorSpace;
-using osc::Color32;
-using osc::TextureFilterMode;
-using osc::TextureFormat;
-using osc::TextureWrapMode;
-using osc::Texture2D;
-using osc::Vec2i;
-using osc::Vec4;
-using osc::ViewObjectRepresentations;
+using namespace osc::testing;
+using namespace osc;
 
 namespace
 {

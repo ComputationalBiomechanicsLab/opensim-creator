@@ -1,11 +1,11 @@
-#include "Image.hpp"
+#include "Image.h"
 
-#include <oscar/Graphics/Color32.hpp>
-#include <oscar/Graphics/ColorSpace.hpp>
-#include <oscar/Graphics/Texture2D.hpp>
-#include <oscar/Graphics/TextureFormat.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/ObjectRepresentation.hpp>
+#include <oscar/Graphics/Color32.h>
+#include <oscar/Graphics/ColorSpace.h>
+#include <oscar/Graphics/Texture2D.h>
+#include <oscar/Graphics/TextureFormat.h>
+#include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/ObjectRepresentation.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -198,7 +198,7 @@ Texture2D osc::LoadTexture2DFromImage(
 {
     // test whether file content is HDR or not
     auto const originalPos = in.tellg();
-    bool const isHDR = stbi_is_hdr_from_callbacks(&c_StbiIStreamCallbacks, &in);
+    bool const isHDR = stbi_is_hdr_from_callbacks(&c_StbiIStreamCallbacks, &in) != 0;
     in.seekg(originalPos);  // rewind, before reading content
 
     OSC_ASSERT(in.tellg() == originalPos);

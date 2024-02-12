@@ -1,8 +1,8 @@
-#include "ImGuizmoHelpers.hpp"
+#include "ImGuizmoHelpers.h"
 
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/UI/ImGuiHelpers.hpp>
-#include <oscar/Utils/CStringView.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/Utils/CStringView.h>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>

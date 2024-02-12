@@ -1,9 +1,8 @@
-#include "OpenSimHelpers.hpp"
+#include "OpenSimHelpers.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.hpp>
-#include <OpenSimCreator/Utils/SimTKHelpers.hpp>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Utils/SimTKHelpers.h>
 
-#include <SimTKcommon.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -49,17 +48,18 @@
 #include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Plane.h>
+#include <oscar/Maths/Transform.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Platform/Log.h>
+#include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/Perf.h>
+#include <SimTKcommon.h>
 #include <SimTKcommon/SmallMatrix.h>
-#include <oscar/Maths/MathHelpers.hpp>
-#include <oscar/Maths/Plane.hpp>
-#include <oscar/Maths/Transform.hpp>
-#include <oscar/Maths/Vec3.hpp>
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Scene/SceneCache.hpp>
-#include <oscar/Scene/SceneDecoration.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/Perf.hpp>
 
 #include <cmath>
 #include <algorithm>

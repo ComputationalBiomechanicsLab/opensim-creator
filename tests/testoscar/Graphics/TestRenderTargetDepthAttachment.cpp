@@ -1,15 +1,12 @@
-#include <oscar/Graphics/RenderTargetDepthAttachment.hpp>
+#include <oscar/Graphics/RenderTargetDepthAttachment.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Graphics/Color.hpp>
-#include <oscar/Graphics/RenderBufferLoadAction.hpp>
-#include <oscar/Graphics/RenderBufferStoreAction.hpp>
-#include <oscar/Graphics/RenderTexture.hpp>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Graphics/RenderBufferLoadAction.h>
+#include <oscar/Graphics/RenderBufferStoreAction.h>
+#include <oscar/Graphics/RenderTexture.h>
 
-using osc::RenderBufferLoadAction;
-using osc::RenderBufferStoreAction;
-using osc::RenderTargetDepthAttachment;
-using osc::RenderTexture;
+using namespace osc;
 
 TEST(RenderTargetDepthAttachment, CanConstructFromPartsOfRenderTexture)
 {

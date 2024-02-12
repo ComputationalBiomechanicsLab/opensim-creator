@@ -1,12 +1,12 @@
-#include <OpenSimCreator/Platform/RecentFiles.hpp>
+#include <OpenSimCreator/Platform/RecentFiles.h>
 
-#include <TestOpenSimCreator/TestOpenSimCreatorConfig.hpp>
+#include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
 #include <gtest/gtest.h>
 
 #include <filesystem>
 
-using osc::RecentFiles;
+using namespace osc;
 
 // automated repro for a bug found in #811
 //

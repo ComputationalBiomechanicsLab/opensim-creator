@@ -1,10 +1,10 @@
-#include "os.hpp"
+#include "os.h"
 
-#include <oscar/Platform/Log.hpp>
-#include <oscar/Platform/LogLevel.hpp>
-#include <oscar/Shims/Cpp20/bit.hpp>
-#include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
+#include <oscar/Platform/Log.h>
+#include <oscar/Platform/LogLevel.h>
+#include <oscar/Shims/Cpp20/bit.h>
+#include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/StringHelpers.h>
 
 #include <nfd.h>
 #include <SDL_clipboard.h>
@@ -239,9 +239,6 @@ std::string osc::CurrentErrnoAsString()
 #include <sys/wait.h>
 
 using osc::log_error;
-using osc::log_info;
-using osc::log_message;
-using osc::log_warn;
 
 std::tm osc::GMTimeThreadsafe(std::time_t t)
 {
