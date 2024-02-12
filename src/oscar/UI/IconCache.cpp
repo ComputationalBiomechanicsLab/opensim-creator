@@ -15,7 +15,7 @@ using osc::Icon;
 
 class osc::IconCache::Impl final {
 public:
-    Impl(ResourceLoader loaderPrefixedAtDirContainingSVGs, float verticalScale)
+    Impl(ResourceLoader& loaderPrefixedAtDirContainingSVGs, float verticalScale)
     {
         auto it = loaderPrefixedAtDirContainingSVGs.iterateDirectory(".");
 

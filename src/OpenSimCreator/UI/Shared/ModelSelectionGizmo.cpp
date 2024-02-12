@@ -379,7 +379,6 @@ namespace
             getUndoableModel().commit(std::move(ss).str());
         }
 
-    private:
         bool m_IsChildFrameOfJoint = false;
     };
 

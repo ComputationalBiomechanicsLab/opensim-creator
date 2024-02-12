@@ -37,7 +37,7 @@ namespace
         using std::begin;
         using std::end;
 
-        value_type* ptr = reinterpret_cast<value_type*>(malloc(size(c) * sizeof(value_type)));
+        auto* ptr = reinterpret_cast<value_type*>(malloc(size(c) * sizeof(value_type)));  // NOLINT(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
         std::copy(begin(c), end(c), ptr);
         return ptr;
     }

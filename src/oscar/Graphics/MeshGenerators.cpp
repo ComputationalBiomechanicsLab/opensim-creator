@@ -1055,18 +1055,16 @@ Mesh osc::GenerateBoxMesh(
         Vec3::length_type w,
         float udir,
         float vdir,
-        float width,
-        float height,
-        float depth,
+        Vec3 dims,
         size_t gridX,
         size_t gridY)
     {
-        float const segmentWidth = width / gridX;
-        float const segmentHeight = height / gridY;
+        float const segmentWidth = dims.x / static_cast<float>(gridX);
+        float const segmentHeight = dims.y / static_cast<float>(gridY);
 
-        float const widthHalf = 0.5f * width;
-        float const heightHalf = 0.5f * height;
-        float const depthHalf = 0.5f * depth;
+        float const widthHalf = 0.5f * dims.x;
+        float const heightHalf = 0.5f * dims.y;
+        float const depthHalf = 0.5f * dims.z;
 
         size_t const gridX1 = gridX + 1;
         size_t const gridY1 = gridY + 1;
@@ -1076,9 +1074,9 @@ Mesh osc::GenerateBoxMesh(
 
         // generate vertices, normals, and UVs
         for (size_t iy = 0; iy < gridY1; ++iy) {
-            float const y = iy*segmentHeight - heightHalf;
+            float const y = static_cast<float>(iy)*segmentHeight - heightHalf;
             for (size_t ix = 0; ix < gridX1; ++ix) {
-                float const x = ix*segmentWidth - widthHalf;
+                float const x = static_cast<float>(ix)*segmentWidth - widthHalf;
 
                 Vec3 vertex{};
                 vertex[u] = x*udir;
@@ -1089,7 +1087,7 @@ Mesh osc::GenerateBoxMesh(
                 Vec3 normal{};
                 normal[u] = 0.0f;
                 normal[v] = 0.0f;
-                normal[w] = depth > 0.0f ? 1.0f : -1.0f;
+                normal[w] = dims.z > 0.0f ? 1.0f : -1.0f;
                 normals.push_back(normal);
 
                 uvs.emplace_back(ix/gridX, 1 - (iy/gridY));
@@ -1101,10 +1099,10 @@ Mesh osc::GenerateBoxMesh(
         // indices (two triangles, or 6 indices, per segment)
         for (size_t iy = 0; iy < gridY; ++iy) {
             for (size_t ix = 0; ix < gridX; ++ix) {
-                uint32_t const a = static_cast<uint32_t>(numberOfVertices +  ix      + (gridX1 *  iy     ));
-                uint32_t const b = static_cast<uint32_t>(numberOfVertices +  ix      + (gridX1 * (iy + 1)));
-                uint32_t const c = static_cast<uint32_t>(numberOfVertices + (ix + 1) + (gridX1 * (iy + 1)));
-                uint32_t const d = static_cast<uint32_t>(numberOfVertices + (ix + 1) + (gridX1 *  iy     ));
+                auto const a = static_cast<uint32_t>(numberOfVertices +  ix      + (gridX1 *  iy     ));
+                auto const b = static_cast<uint32_t>(numberOfVertices +  ix      + (gridX1 * (iy + 1)));
+                auto const c = static_cast<uint32_t>(numberOfVertices + (ix + 1) + (gridX1 * (iy + 1)));
+                auto const d = static_cast<uint32_t>(numberOfVertices + (ix + 1) + (gridX1 *  iy     ));
 
                 indices.insert(indices.end(), {a, b, d});
                 indices.insert(indices.end(), {b, c, d});
@@ -1120,12 +1118,12 @@ Mesh osc::GenerateBoxMesh(
     };
 
     // build each side of the box
-    buildPlane(2, 1, 0, -1.0f, -1.0f, depth, height,  width,  depthSegments, heightSegments);  // px
-    buildPlane(2, 1, 0,  1.0f, -1.0f, depth, height, -width,  depthSegments, heightSegments);  // nx
-    buildPlane(0, 2, 1,  1.0f,  1.0f, width, depth,   height, widthSegments, depthSegments);   // py
-    buildPlane(0, 2, 1,  1.0f, -1.0f, width, depth,  -height, widthSegments, depthSegments);   // ny
-    buildPlane(0, 1, 2,  1.0f, -1.0f, width, height,  depth,  widthSegments, heightSegments);  // pz
-    buildPlane(0, 1, 2, -1.0f, -1.0f, width, height, -depth,  widthSegments, heightSegments);  // nz
+    buildPlane(2, 1, 0, -1.0f, -1.0f, {depth, height,  width},  depthSegments, heightSegments);  // px
+    buildPlane(2, 1, 0,  1.0f, -1.0f, {depth, height, -width},  depthSegments, heightSegments);  // nx
+    buildPlane(0, 2, 1,  1.0f,  1.0f, {width, depth,   height}, widthSegments, depthSegments);   // py
+    buildPlane(0, 2, 1,  1.0f, -1.0f, {width, depth,  -height}, widthSegments, depthSegments);   // ny
+    buildPlane(0, 1, 2,  1.0f, -1.0f, {width, height,  depth},  widthSegments, heightSegments);  // pz
+    buildPlane(0, 1, 2, -1.0f, -1.0f, {width, height, -depth},  widthSegments, heightSegments);  // nz
 
     // the first submesh is "the entire cube"
     submeshes.insert(submeshes.begin(), SubMeshDescriptor{0, groupStart, MeshTopology::Triangles});

@@ -1135,7 +1135,7 @@ Radians osc::VerticalToHorizontalFOV(Radians verticalFOV, float aspectRatio)
 
 Mat4 osc::Perspective(Radians verticalFOV, float aspectRatio, float zNear, float zFar)
 {
-    if (fabs(aspectRatio - std::numeric_limits<float>::epsilon()) > 0.0f) {
+    if (std::fabs(aspectRatio - std::numeric_limits<float>::epsilon()) > 0.0f) {
         return glm::perspective(verticalFOV.count(), aspectRatio, zNear, zFar);
     }
     // edge-case: some UIs ask for a perspective matrix on first frame before

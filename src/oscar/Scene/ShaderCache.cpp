@@ -20,21 +20,21 @@ namespace
     struct ShaderInputs final {
 
         ShaderInputs(
-            ResourcePath const& vertexShaderPath_,
-            ResourcePath const& fragmentShaderPath_) :
+            ResourcePath vertexShaderPath_,
+            ResourcePath fragmentShaderPath_) :
 
-            vertexShaderPath{vertexShaderPath_},
-            fragmentShaderPath{fragmentShaderPath_}
+            vertexShaderPath{std::move(vertexShaderPath_)},
+            fragmentShaderPath{std::move(fragmentShaderPath_)}
         {}
 
         ShaderInputs(
-            ResourcePath const& vertexShaderPath_,
-            ResourcePath const& geometryShaderPath_,
-            ResourcePath const& fragmentShaderPath_) :
+            ResourcePath vertexShaderPath_,
+            ResourcePath geometryShaderPath_,
+            ResourcePath fragmentShaderPath_) :
 
-            vertexShaderPath{vertexShaderPath_},
-            geometryShaderPath{geometryShaderPath_},
-            fragmentShaderPath{fragmentShaderPath_}
+            vertexShaderPath{std::move(vertexShaderPath_)},
+            geometryShaderPath{std::move(geometryShaderPath_)},
+            fragmentShaderPath{std::move(fragmentShaderPath_)}
         {}
 
         friend bool operator==(ShaderInputs const&, ShaderInputs const&) = default;
@@ -58,8 +58,8 @@ struct std::hash<ShaderInputs> final {
 
 class osc::ShaderCache::Impl final {
 public:
-    explicit Impl(ResourceLoader const& resourceLoader_) :
-        m_Loader{resourceLoader_}
+    explicit Impl(ResourceLoader resourceLoader_) :
+        m_Loader{std::move(resourceLoader_)}
     {}
 
     Shader const& load(

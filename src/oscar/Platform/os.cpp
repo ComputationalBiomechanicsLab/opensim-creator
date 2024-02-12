@@ -239,9 +239,6 @@ std::string osc::CurrentErrnoAsString()
 #include <sys/wait.h>
 
 using osc::log_error;
-using osc::log_info;
-using osc::log_message;
-using osc::log_warn;
 
 std::tm osc::GMTimeThreadsafe(std::time_t t)
 {

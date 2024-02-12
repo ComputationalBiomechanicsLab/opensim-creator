@@ -46,7 +46,6 @@
 #include <vector>
 
 using namespace osc;
-namespace ui = osc::ui;
 
 namespace
 {

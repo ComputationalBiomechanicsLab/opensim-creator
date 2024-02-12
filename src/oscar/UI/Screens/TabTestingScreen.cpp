@@ -20,8 +20,8 @@ class osc::TabTestingScreen::Impl final :
     public IScreen,
     public ITabHost {
 public:
-    Impl(TabRegistryEntry const& registryEntry) :
-        m_RegistryEntry{registryEntry}
+    explicit Impl(TabRegistryEntry registryEntry) :
+        m_RegistryEntry{std::move(registryEntry)}
     {}
 
 private:

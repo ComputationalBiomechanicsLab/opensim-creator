@@ -198,7 +198,7 @@ Texture2D osc::LoadTexture2DFromImage(
 {
     // test whether file content is HDR or not
     auto const originalPos = in.tellg();
-    bool const isHDR = stbi_is_hdr_from_callbacks(&c_StbiIStreamCallbacks, &in);
+    bool const isHDR = stbi_is_hdr_from_callbacks(&c_StbiIStreamCallbacks, &in) != 0;
     in.seekg(originalPos);  // rewind, before reading content
 
     OSC_ASSERT(in.tellg() == originalPos);
