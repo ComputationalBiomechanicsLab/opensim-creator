@@ -100,7 +100,6 @@ using namespace osc::detail;
 using namespace osc::literals;
 using namespace osc;
 namespace cpp20 = osc::cpp20;
-namespace cpp23 = osc::cpp23;
 namespace gl = osc::gl;
 namespace sdl = osc::sdl;
 
