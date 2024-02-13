@@ -6,5 +6,5 @@
 
 namespace osc::mi
 {
-    using UndoableDocument = UndoRedoT<Document>;
+    using UndoableDocument = UndoRedo<Document>;
 }

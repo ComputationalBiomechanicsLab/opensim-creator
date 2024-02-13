@@ -16,7 +16,7 @@ class osc::UndoRedoPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
         std::string_view panelName,
-        std::shared_ptr<UndoRedo> storage_) :
+        std::shared_ptr<UndoRedoBase> storage_) :
 
         StandardPanelImpl{panelName},
         m_Storage{std::move(storage_)}
@@ -29,13 +29,13 @@ private:
         UndoRedoPanel::DrawContent(*m_Storage);
     }
 
-    std::shared_ptr<UndoRedo> m_Storage;
+    std::shared_ptr<UndoRedoBase> m_Storage;
 };
 
 
 // public API (PIMPL)
 
-void osc::UndoRedoPanel::DrawContent(UndoRedo& storage)
+void osc::UndoRedoPanel::DrawContent(UndoRedoBase& storage)
 {
     if (ImGui::Button("undo"))
     {
@@ -55,7 +55,7 @@ void osc::UndoRedoPanel::DrawContent(UndoRedo& storage)
     for (ptrdiff_t i = storage.getNumUndoEntriesi()-1; 0 <= i && i < storage.getNumUndoEntriesi(); --i)
     {
         ImGui::PushID(imguiID++);
-        if (ImGui::Selectable(storage.getUndoEntry(i).getMessage().c_str()))
+        if (ImGui::Selectable(storage.getUndoEntry(i).message().c_str()))
         {
             storage.undoTo(i);
         }
@@ -63,14 +63,14 @@ void osc::UndoRedoPanel::DrawContent(UndoRedo& storage)
     }
 
     ImGui::PushID(imguiID++);
-    ImGui::Text("  %s", storage.getHead().getMessage().c_str());
+    ImGui::Text("  %s", storage.getHead().message().c_str());
     ImGui::PopID();
 
     // draw redo entries oldest (lowest index) to newest (highest index)
     for (ptrdiff_t i = 0; i < storage.getNumRedoEntriesi(); ++i)
     {
         ImGui::PushID(imguiID++);
-        if (ImGui::Selectable(storage.getRedoEntry(i).getMessage().c_str()))
+        if (ImGui::Selectable(storage.getRedoEntry(i).message().c_str()))
         {
             storage.redoTo(i);
         }
@@ -78,7 +78,7 @@ void osc::UndoRedoPanel::DrawContent(UndoRedo& storage)
     }
 }
 
-osc::UndoRedoPanel::UndoRedoPanel(std::string_view panelName_, std::shared_ptr<UndoRedo> storage_) :
+osc::UndoRedoPanel::UndoRedoPanel(std::string_view panelName_, std::shared_ptr<UndoRedoBase> storage_) :
     m_Impl{std::make_unique<Impl>(panelName_, std::move(storage_))}
 {
 }
