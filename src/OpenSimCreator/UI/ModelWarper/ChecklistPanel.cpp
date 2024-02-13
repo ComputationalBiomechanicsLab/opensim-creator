@@ -1,7 +1,6 @@
 #include "ChecklistPanel.h"
 
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
-#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
@@ -45,7 +44,7 @@ namespace
 
     EntryStyling CalcStyle(UIState const& state, OpenSim::Mesh const& mesh)
     {
-        return ToStyle(state.warpState(mesh));
+        return ToStyle(state.state(mesh));
     }
 
     EntryStyling CalcStyle(UIState const&, OpenSim::Frame const&)
@@ -97,14 +96,14 @@ namespace
             ImGui::TableSetupColumn("Value");
             ImGui::TableHeadersRow();
 
-            state.forEachWarpDetail(mesh, [](auto detail)
-            {
+            for (auto&& detail : state.details(mesh)) {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 TextUnformatted(detail.name());
                 ImGui::TableSetColumnIndex(1);
                 TextUnformatted(detail.value());
-            });
+            }
+
             ImGui::EndTable();
         }
     }
@@ -113,16 +112,14 @@ namespace
     {
         ImGui::Indent(5.0f);
         int id = 0;
-        state.forEachWarpCheck(mesh, [&id](auto check)
-        {
+        for (auto&& check : state.validate(mesh)) {
             ImGui::PushID(id);
             auto style = ToStyle(check.state());
             DrawIcon(style);
             ImGui::SameLine();
             TextUnformatted(check.description());
             ImGui::PopID();
-            return ValidationCheckConsumerResponse::Continue;
-        });
+        }
         ImGui::Unindent(5.0f);
     }
 
@@ -177,16 +174,14 @@ namespace
     {
         ImGui::Indent(5.0f);
         int id = 0;
-        state.forEachWarpCheck(frame, [&id](auto check)
-        {
+        for (auto&& check : state.validate(frame)) {
             ImGui::PushID(id);
             auto style = ToStyle(check.state());
             DrawIcon(style);
             ImGui::SameLine();
             TextUnformatted(check.description());
             ImGui::PopID();
-            return ValidationCheckConsumerResponse::Continue;
-        });
+        }
         ImGui::Unindent(5.0f);
     }
 

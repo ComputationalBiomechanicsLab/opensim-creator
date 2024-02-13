@@ -2,7 +2,7 @@
 
 #include <memory>
 
-namespace osc
+namespace osc::mow
 {
     template<typename T>
     class ICloneable {

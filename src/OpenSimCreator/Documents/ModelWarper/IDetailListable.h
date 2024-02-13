@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
 
-#include <functional>
+#include <vector>
 
 namespace osc::mow
 {
@@ -15,10 +15,8 @@ namespace osc::mow
         IDetailListable& operator=(IDetailListable&&) noexcept = default;
     public:
         virtual ~IDetailListable() noexcept = default;
-
-        void forEachDetail(std::function<void(WarpDetail)> const& callback) const { implForEachDetail(callback); }
-
+        std::vector<WarpDetail> details() const { return implWarpDetails(); }
     private:
-        virtual void implForEachDetail(std::function<void(WarpDetail)> const&) const = 0;
+        virtual std::vector<WarpDetail> implWarpDetails() const = 0;
     };
 }

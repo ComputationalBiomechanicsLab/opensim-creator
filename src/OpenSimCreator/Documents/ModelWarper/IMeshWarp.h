@@ -1,22 +1,15 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/ModelWarper/ICloneable.h>
 #include <OpenSimCreator/Documents/ModelWarper/IDetailListable.h>
-#include <OpenSimCreator/Documents/ModelWarper/IValidationCheckable.h>
-#include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
-#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.h>
-#include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
-
-#include <oscar/Utils/ICloneable.h>
-
-#include <functional>
-#include <memory>
+#include <OpenSimCreator/Documents/ModelWarper/IValidateable.h>
 
 namespace osc::mow
 {
     class IMeshWarp :
         public ICloneable<IMeshWarp>,
         public IDetailListable,
-        public IValidationCheckable {
+        public IValidateable {
     protected:
         IMeshWarp() = default;
         IMeshWarp(IMeshWarp const&) = default;

@@ -6,7 +6,7 @@
 
 #include <cstddef>
 #include <filesystem>
-#include <functional>
+#include <iterator>
 #include <memory>
 #include <sstream>
 #include <utility>
@@ -30,41 +30,36 @@ osc::mow::Document& osc::mow::Document::operator=(Document const&) = default;
 osc::mow::Document& osc::mow::Document::operator=(Document&&) noexcept = default;
 osc::mow::Document::~Document() noexcept = default;
 
-void osc::mow::Document::forEachWarpDetail(
-    OpenSim::Mesh const& mesh,
-    std::function<void(WarpDetail)> const& callback) const
+std::vector<WarpDetail> osc::mow::Document::details(OpenSim::Mesh const& mesh) const
 {
-    callback({ "OpenSim::Mesh path in the OpenSim::Model", GetAbsolutePathString(mesh) });
+    std::vector<WarpDetail> rv;
+    rv.emplace_back("OpenSim::Mesh path in the OpenSim::Model", GetAbsolutePathString(mesh));
 
-    if (IMeshWarp const* p = m_MeshWarpLookup.find(GetAbsolutePathString(mesh)))
-    {
-        p->forEachDetail(callback);
+    if (IMeshWarp const* p = m_MeshWarpLookup.find(GetAbsolutePathString(mesh))) {
+        auto inner = p->details();
+        rv.insert(rv.end(), std::make_move_iterator(inner.begin()), std::make_move_iterator(inner.end()));
+    }
+
+    return rv;
+}
+
+std::vector<ValidationCheck> osc::mow::Document::validate(OpenSim::Mesh const& mesh) const
+{
+    if (IMeshWarp const* p = m_MeshWarpLookup.find(GetAbsolutePathString(mesh))) {
+        return p->validate();
+    }
+    else {
+        return {ValidationCheck{"no mesh warp pairing found: this is probably an implementation error (maybe reload?)", ValidationCheck::State::Error}};
     }
 }
 
-void osc::mow::Document::forEachWarpCheck(
-    OpenSim::Mesh const& mesh,
-    std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
-{
-    if (IMeshWarp const* p = m_MeshWarpLookup.find(GetAbsolutePathString(mesh)))
-    {
-        p->forEachCheck(callback);
-    }
-    else
-    {
-        callback({ "no mesh warp pairing found: this is probably an implementation error (maybe reload?)", ValidationCheck::State::Error });
-    }
-}
-
-ValidationCheck::State osc::mow::Document::warpState(OpenSim::Mesh const& mesh) const
+ValidationCheck::State osc::mow::Document::state(OpenSim::Mesh const& mesh) const
 {
     IMeshWarp const* p = m_MeshWarpLookup.find(GetAbsolutePathString(mesh));
     return p ? p->state() : ValidationCheck::State::Error;
 }
 
-void osc::mow::Document::forEachWarpCheck(
-    OpenSim::PhysicalOffsetFrame const&,
-    std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&) const
+std::vector<ValidationCheck> osc::mow::Document::validate(OpenSim::PhysicalOffsetFrame const&) const
 {
     // TODO
     // - check associated mesh is found
@@ -73,9 +68,10 @@ void osc::mow::Document::forEachWarpCheck(
     // - check axis edge end landmark
     // - check nonparallel edge begin landmark
     // - check nonparallel edge end landmark
+    return {};
 }
 
-ValidationCheck::State osc::mow::Document::warpState(
+ValidationCheck::State osc::mow::Document::state(
     OpenSim::PhysicalOffsetFrame const&) const
 {
     return ValidationCheck::State::Ok;

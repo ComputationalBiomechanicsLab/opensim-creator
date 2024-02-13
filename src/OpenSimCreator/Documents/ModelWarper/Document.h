@@ -4,13 +4,12 @@
 #include <OpenSimCreator/Documents/ModelWarper/MeshWarpLookup.h>
 #include <OpenSimCreator/Documents/ModelWarper/ModelWarpConfiguration.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
-#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
 
 #include <oscar/Utils/ClonePtr.h>
 
 #include <filesystem>
-#include <functional>
+#include <vector>
 
 namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
@@ -29,26 +28,14 @@ namespace osc::mow
         Document& operator=(Document&&) noexcept;
         ~Document() noexcept;
 
-        OpenSim::Model const& model() const
-        {
-            return *m_Model;
-        }
+        OpenSim::Model const& model() const { return *m_Model; }
 
-        void forEachWarpDetail(
-            OpenSim::Mesh const&,
-            std::function<void(WarpDetail)> const&
-        ) const;
-        void forEachWarpCheck(
-            OpenSim::Mesh const&,
-            std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&
-        ) const;
-        ValidationCheck::State warpState(OpenSim::Mesh const&) const;
+        std::vector<WarpDetail> details(OpenSim::Mesh const&) const;
+        std::vector<ValidationCheck> validate(OpenSim::Mesh const&) const;
+        ValidationCheck::State state(OpenSim::Mesh const&) const;
 
-        void forEachWarpCheck(
-            OpenSim::PhysicalOffsetFrame const&,
-            std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&
-        ) const;
-        ValidationCheck::State warpState(OpenSim::PhysicalOffsetFrame const&) const;
+        std::vector<ValidationCheck> validate(OpenSim::PhysicalOffsetFrame const&) const;
+        ValidationCheck::State state(OpenSim::PhysicalOffsetFrame const&) const;
 
     private:
         ClonePtr<OpenSim::Model const> m_Model;

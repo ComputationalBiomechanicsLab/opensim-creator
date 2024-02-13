@@ -263,100 +263,59 @@ std::unique_ptr<IMeshWarp> osc::mow::ThinPlateSplineMeshWarp::implClone() const
     return std::make_unique<ThinPlateSplineMeshWarp>(*this);
 }
 
-void osc::mow::ThinPlateSplineMeshWarp::implForEachDetail(
-    std::function<void(WarpDetail)> const& callback) const
+std::vector<WarpDetail> osc::mow::ThinPlateSplineMeshWarp::implWarpDetails() const
 {
-    callback({ "source mesh filepath", getSourceMeshAbsoluteFilepath().string() });
-    callback({ "source landmarks expected filepath", recommendedSourceLandmarksFilepath().string() });
-    callback({ "has source landmarks file?", hasSourceLandmarksFilepath() ? "yes" : "no" });
-    callback({ "number of source landmarks", std::to_string(getNumSourceLandmarks()) });
-    callback({ "destination mesh expected filepath", recommendedDestinationMeshFilepath().string() });
-    callback({ "has destination mesh?", hasDestinationMeshFilepath() ? "yes" : "no" });
-    callback({ "destination landmarks expected filepath", recommendedDestinationLandmarksFilepath().string() });
-    callback({ "has destination landmarks file?", hasDestinationLandmarksFilepath() ? "yes" : "no" });
-    callback({ "number of destination landmarks", std::to_string(getNumDestinationLandmarks()) });
-    callback({ "number of paired landmarks", std::to_string(getNumFullyPairedLandmarks()) });
-    callback({ "number of unpaired landmarks", std::to_string(getNumUnpairedLandmarks()) });
+    std::vector<WarpDetail> rv;
+    rv.emplace_back("source mesh filepath", getSourceMeshAbsoluteFilepath().string());
+    rv.emplace_back("source landmarks expected filepath", recommendedSourceLandmarksFilepath().string());
+    rv.emplace_back("has source landmarks file?", hasSourceLandmarksFilepath() ? "yes" : "no");
+    rv.emplace_back("number of source landmarks", std::to_string(getNumSourceLandmarks()));
+    rv.emplace_back("destination mesh expected filepath", recommendedDestinationMeshFilepath().string());
+    rv.emplace_back("has destination mesh?", hasDestinationMeshFilepath() ? "yes" : "no");
+    rv.emplace_back("destination landmarks expected filepath", recommendedDestinationLandmarksFilepath().string());
+    rv.emplace_back("has destination landmarks file?", hasDestinationLandmarksFilepath() ? "yes" : "no");
+    rv.emplace_back("number of destination landmarks", std::to_string(getNumDestinationLandmarks()));
+    rv.emplace_back("number of paired landmarks", std::to_string(getNumFullyPairedLandmarks()));
+    rv.emplace_back("number of unpaired landmarks", std::to_string(getNumUnpairedLandmarks()));
+    return rv;
 }
 
-void osc::mow::ThinPlateSplineMeshWarp::implForEachCheck(
-    std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
+std::vector<ValidationCheck> osc::mow::ThinPlateSplineMeshWarp::implValidate() const
 {
+    std::vector<ValidationCheck> rv;
+
     // has a source landmarks file
     {
         std::stringstream ss;
         ss << "has source landmarks file at " << recommendedSourceLandmarksFilepath().string();
-        if (callback({ std::move(ss).str(), hasSourceLandmarksFilepath() }) == ValidationCheckConsumerResponse::Stop) {
-            return;
-        }
+        rv.emplace_back(std::move(ss).str(), hasSourceLandmarksFilepath());
     }
 
     // has source landmarks
-    {
-        if (callback({ "source landmarks file contains landmarks", hasSourceLandmarks() }) == ValidationCheckConsumerResponse::Stop) {
-            return;
-        }
-    }
+    rv.emplace_back("source landmarks file contains landmarks", hasSourceLandmarks());
 
     // has destination mesh file
     {
         std::stringstream ss;
         ss << "has destination mesh file at " << recommendedDestinationMeshFilepath().string();
-        if (callback({ std::move(ss).str(), hasDestinationMeshFilepath() }) == ValidationCheckConsumerResponse::Stop) {
-            return;
-        }
+        rv.emplace_back(std::move(ss).str(), hasDestinationMeshFilepath());
     }
 
     // has destination landmarks file
     {
         std::stringstream ss;
         ss << "has destination landmarks file at " << recommendedDestinationLandmarksFilepath().string();
-        if (callback({ std::move(ss).str(), hasDestinationLandmarksFilepath() }) == ValidationCheckConsumerResponse::Stop) {
-            return;
-        }
+        rv.emplace_back(std::move(ss).str(), hasDestinationLandmarksFilepath());
     }
 
     // has destination landmarks
-    {
-        if (callback({ "destination landmarks file contains landmarks", hasDestinationLandmarks() }) == ValidationCheckConsumerResponse::Stop) {
-            return;
-        }
-    }
+    rv.emplace_back("destination landmarks file contains landmarks", hasDestinationLandmarks());
 
     // has at least a few paired landmarks
-    {
-        if (callback({ "at least three landmarks can be paired between source/destination", getNumFullyPairedLandmarks() >= 3 }) == ValidationCheckConsumerResponse::Stop) {
-            return;
-        }
-    }
+    rv.emplace_back("at least three landmarks can be paired between source/destination", getNumFullyPairedLandmarks() >= 3);
 
     // (warning): has no unpaired landmarks
-    {
-        if (callback({ "there are no unpaired landmarks", getNumUnpairedLandmarks() == 0 ? ValidationCheck::State::Ok : ValidationCheck::State::Warning }) == ValidationCheckConsumerResponse::Stop) {
-            return;
-        }
-    }
-}
+    rv.emplace_back("there are no unpaired landmarks", getNumUnpairedLandmarks() == 0 ? ValidationCheck::State::Ok : ValidationCheck::State::Warning);
 
-ValidationCheck::State osc::mow::ThinPlateSplineMeshWarp::implState() const
-{
-    ValidationCheck::State worst = ValidationCheck::State::Ok;
-    forEachCheck([&worst](ValidationCheck const& c)
-    {
-        if (c.state() == ValidationCheck::State::Error)
-        {
-            worst = ValidationCheck::State::Error;
-            return ValidationCheckConsumerResponse::Stop;
-        }
-        else if (c.state() == ValidationCheck::State::Warning)
-        {
-            worst = ValidationCheck::State::Warning;
-            return ValidationCheckConsumerResponse::Continue;
-        }
-        else
-        {
-            return ValidationCheckConsumerResponse::Continue;
-        }
-    });
-    return worst;
+    return rv;
 }

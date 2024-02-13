@@ -3,7 +3,6 @@
 #include <OpenSimCreator/Documents/ModelWarper/IMeshWarp.h>
 #include <OpenSimCreator/Documents/ModelWarper/LandmarkPairing.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
-#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
 
 #include <cstddef>
@@ -50,9 +49,8 @@ namespace osc::mow
 
     private:
         std::unique_ptr<IMeshWarp> implClone() const override;
-        void implForEachDetail(std::function<void(WarpDetail)> const&) const override;
-        void implForEachCheck(std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const override;
-        ValidationCheck::State implState() const override;
+        std::vector<WarpDetail> implWarpDetails() const override;
+        std::vector<ValidationCheck> implValidate() const override;
 
         std::filesystem::path m_SourceMeshAbsoluteFilepath;
 
