@@ -30,6 +30,7 @@ namespace
             {"torus", cache.getTorusMesh(0.9f, 0.1f)},
             {"torusknot", GenerateTorusKnotMesh()},
             {"box", GenerateBoxMesh(2.0f, 2.0f, 2.0f, 1, 1, 1)},
+            {"icosahedron", GenerateIcosahedronMesh()},
         };
     }
 }

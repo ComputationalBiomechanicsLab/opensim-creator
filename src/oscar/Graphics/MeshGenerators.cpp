@@ -1149,7 +1149,7 @@ Mesh osc::GeneratePolyhedronMesh(
     return {};
 }
 
-Mesh GenerateIcosahedronMesh(
+Mesh osc::GenerateIcosahedronMesh(
     float radius,
     size_t detail)
 {
