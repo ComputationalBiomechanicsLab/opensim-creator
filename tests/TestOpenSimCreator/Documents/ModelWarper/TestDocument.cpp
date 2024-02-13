@@ -39,5 +39,5 @@ TEST(ModelWarpingDocument, ConstructorThrowsIfGivenInvalidOsimPath)
 TEST(ModelWarpingDocument, AfterConstructingFromBasicOsimFileTheReturnedModelContainsExpectedComponents)
 {
     Document const doc{GetFixturesDir() / "onebody.osim"};
-    doc.getModel().getComponent("bodyset/some_body");
+    doc.model().getComponent("bodyset/some_body");
 }

@@ -30,11 +30,9 @@ namespace osc::mow
         }
 
         template<>
-        IMeshWarp const* find<IMeshWarp>(std::string const& meshComponentAbsPath) const
+        IMeshWarp const* find<IMeshWarp>(std::string const& absPath) const
         {
-            if (auto const it = m_ComponentAbsPathToMeshPairing.find(meshComponentAbsPath);
-                it != m_ComponentAbsPathToMeshPairing.end()) {
-
+            if (auto const it = m_AbsPathToWarpLUT.find(absPath); it != m_AbsPathToWarpLUT.end()) {
                 return it->second.get();
             }
             else {
@@ -42,6 +40,6 @@ namespace osc::mow
             }
         }
     private:
-        std::unordered_map<std::string, ClonePtr<IMeshWarp>> m_ComponentAbsPathToMeshPairing;
+        std::unordered_map<std::string, ClonePtr<IMeshWarp>> m_AbsPathToWarpLUT;
     };
 }

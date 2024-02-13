@@ -1,10 +1,15 @@
 #pragma once
 
-#include <oscar/Utils/ICloneable.h>
+#include <OpenSimCreator/Documents/ModelWarper/ICloneable.h>
+#include <OpenSimCreator/Documents/ModelWarper/IDetailListable.h>
+#include <OpenSimCreator/Documents/ModelWarper/IValidateable.h>
 
 namespace osc::mow
 {
-    class IFrameWarp : public ICloneable<IFrameWarp> {
+    class IFrameWarp :
+        public ICloneable<IFrameWarp>,
+        public IDetailListable,
+        public IValidateable {
     protected:
         IFrameWarp() = default;
         IFrameWarp(IFrameWarp const&) = default;

@@ -103,13 +103,16 @@ add_library(OpenSimCreator STATIC
     Documents/Model/UndoableModelStatePair.cpp
     Documents/Model/UndoableModelStatePair.h
 
-    Documents/ModelWarper/Detail.h
     Documents/ModelWarper/Document.cpp
     Documents/ModelWarper/Document.h
     Documents/ModelWarper/FrameWarpLookup.cpp
     Documents/ModelWarper/FrameWarpLookup.h
+    Documents/ModelWarper/ICloneable.h
+    Documents/ModelWarper/IDetailListable.h
     Documents/ModelWarper/IFrameWarp.h
     Documents/ModelWarper/IMeshWarp.h
+    Documents/ModelWarper/IValidateable.cpp
+    Documents/ModelWarper/IValidateable.h
     Documents/ModelWarper/LandmarkPairing.h
     Documents/ModelWarper/MeshWarpLookup.cpp
     Documents/ModelWarper/MeshWarpLookup.h
@@ -118,7 +121,9 @@ add_library(OpenSimCreator STATIC
     Documents/ModelWarper/ThinPlateSplineMeshWarp.cpp
     Documents/ModelWarper/ThinPlateSplineMeshWarp.h
     Documents/ModelWarper/ValidationCheck.h
-    Documents/ModelWarper/ValidationCheckConsumerResponse.h
+    Documents/ModelWarper/ValidationState.h
+    Documents/ModelWarper/WarpableOpenSimComponent.h
+    Documents/ModelWarper/WarpDetail.h
 
     Documents/Simulation/ForwardDynamicSimulation.cpp
     Documents/Simulation/ForwardDynamicSimulation.h

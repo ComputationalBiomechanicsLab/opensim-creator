@@ -13,7 +13,6 @@
 #include <oscar/Utils/FilenameExtractor.h>
 #include <oscar/Utils/FilesystemHelpers.h>
 #include <oscar/Utils/HashHelpers.h>
-#include <oscar/Utils/ICloneable.h>
 #include <oscar/Utils/NonTypelist.h>
 #include <oscar/Utils/NullOStream.h>
 #include <oscar/Utils/NullStreambuf.h>
@@ -25,7 +24,6 @@
 #include <oscar/Utils/PerfMeasurement.h>
 #include <oscar/Utils/PerfMeasurementMetadata.h>
 #include <oscar/Utils/ScopeGuard.h>
-#include <oscar/Utils/SetHelpers.h>
 #include <oscar/Utils/Spsc.h>
 #include <oscar/Utils/StdVariantHelpers.h>
 #include <oscar/Utils/StringHelpers.h>

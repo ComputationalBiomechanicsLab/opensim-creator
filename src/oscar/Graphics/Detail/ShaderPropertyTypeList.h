@@ -1,11 +1,11 @@
 #pragma once
 
 #include <oscar/Graphics/ShaderPropertyType.h>
-#include <oscar/Utils/NonTypelist.h>
+#include <oscar/Utils/EnumHelpers.h>
 
 namespace osc::detail
 {
-    using ShaderPropertyTypeList = NonTypelist<ShaderPropertyType,
+    using ShaderPropertyTypeList = OptionList<ShaderPropertyType,
         ShaderPropertyType::Float,
         ShaderPropertyType::Vec2,
         ShaderPropertyType::Vec3,

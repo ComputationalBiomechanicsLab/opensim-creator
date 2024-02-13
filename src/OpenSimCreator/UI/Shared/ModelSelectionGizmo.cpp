@@ -44,9 +44,9 @@ namespace
 {
     // operations that are supported by a manipulator
     enum class SupportedManipulationOpFlags : uint32_t {
-        None        = 0u,
-        Translation = 1u<<0u,
-        Rotation    = 1u<<1u,
+        None        = 0,
+        Translation = 1<<0,
+        Rotation    = 1<<1,
     };
 
     constexpr SupportedManipulationOpFlags operator|(SupportedManipulationOpFlags lhs, SupportedManipulationOpFlags rhs)

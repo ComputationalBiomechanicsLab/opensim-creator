@@ -305,7 +305,6 @@ add_library(oscar STATIC
     Utils/FilesystemHelpers.cpp
     Utils/FilesystemHelpers.h
     Utils/HashHelpers.h
-    Utils/ICloneable.h
     Utils/NonTypelist.h
     Utils/NullOStream.h
     Utils/NullStreambuf.h
@@ -318,7 +317,6 @@ add_library(oscar STATIC
     Utils/PerfMeasurement.h
     Utils/PerfMeasurementMetadata.h
     Utils/ScopeGuard.h
-    Utils/SetHelpers.h
     Utils/Spsc.h
     Utils/StringHelpers.cpp
     Utils/StringHelpers.h

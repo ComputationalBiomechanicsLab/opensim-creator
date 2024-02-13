@@ -1,16 +1,19 @@
 #include "ChecklistPanel.h"
 
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
-#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
+#include <OpenSimCreator/Documents/ModelWarper/WarpableOpenSimComponent.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <concepts>
 #include <cstddef>
@@ -29,27 +32,24 @@ namespace
         Color color;
     };
 
-    EntryStyling ToStyle(ValidationCheck::State s)
+    EntryStyling ToStyle(ValidationState s)
     {
+        static_assert(NumOptions<ValidationState>() == 3);
         switch (s) {
-        case ValidationCheck::State::Ok:
+        case ValidationState::Ok:
             return {.icon = ICON_FA_CHECK, .color = Color::green()};
-        case ValidationCheck::State::Warning:
+        case ValidationState::Warning:
             return {.icon = ICON_FA_EXCLAMATION, .color = Color::orange()};
         default:
-        case ValidationCheck::State::Error:
+        case ValidationState::Error:
             return {.icon = ICON_FA_TIMES, .color = Color::red()};
         }
     }
 
-    EntryStyling CalcStyle(UIState const& state, OpenSim::Mesh const& mesh)
+    template<WarpableOpenSimComponent T>
+    EntryStyling CalcStyle(UIState const& state, T const& c)
     {
-        return ToStyle(state.getMeshWarpState(mesh));
-    }
-
-    EntryStyling CalcStyle(UIState const&, OpenSim::Frame const&)
-    {
-        return {.icon = ICON_FA_TIMES, .color = Color::red()};
+        return ToStyle(state.state(c));
     }
 
     void DrawIcon(EntryStyling const& style)
@@ -69,10 +69,10 @@ namespace
         TextUnformatted(component.getName());
     }
 
-    template<std::derived_from<OpenSim::Component> T>
-    void DrawEntryIconAndText(UIState const& state, T const& component)
+    template<WarpableOpenSimComponent T>
+    void DrawEntryIconAndText(UIState const& state, T const& c)
     {
-        DrawEntryIconAndText(state, component, CalcStyle(state, component));
+        DrawEntryIconAndText(state, c, CalcStyle(state, c));
     }
 
     void DrawTooltipHeader(UIState const&, OpenSim::Component const& component)
@@ -83,12 +83,9 @@ namespace
         ImGui::Separator();
         ImGui::Dummy({0.0f, 3.0f});
     }
-}
 
-// UI (meshes/mesh pairing)
-namespace
-{
-    void DrawDetailsTable(UIState const& state, OpenSim::Mesh const& mesh)
+    template<WarpableOpenSimComponent T>
+    void DrawDetailsTable(UIState const& state, T const& c)
     {
         if (ImGui::BeginTable("##Details", 2)) {
 
@@ -96,145 +93,109 @@ namespace
             ImGui::TableSetupColumn("Value");
             ImGui::TableHeadersRow();
 
-            state.forEachMeshWarpDetail(mesh, [](auto detail)
-            {
+            for (auto&& detail : state.details(c)) {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                TextUnformatted(detail.name);
+                TextUnformatted(detail.name());
                 ImGui::TableSetColumnIndex(1);
-                TextUnformatted(detail.value);
-            });
+                TextUnformatted(detail.value());
+            }
+
             ImGui::EndTable();
         }
     }
 
-    void DrawMeshTooltipChecklist(UIState const& state, OpenSim::Mesh const& mesh)
+    template<WarpableOpenSimComponent T>
+    void DrawChecklist(UIState const& state, T const& c)
     {
         ImGui::Indent(5.0f);
         int id = 0;
-        state.forEachMeshWarpCheck(mesh, [&id](auto check)
-        {
+        for (auto&& check : state.validate(c)) {
             ImGui::PushID(id);
             auto style = ToStyle(check.state());
             DrawIcon(style);
             ImGui::SameLine();
             TextUnformatted(check.description());
             ImGui::PopID();
-            return ValidationCheckConsumerResponse::Continue;
-        });
+        }
         ImGui::Unindent(5.0f);
     }
 
-    void DrawTooltipContent(UIState const& state, OpenSim::Mesh const& mesh)
+    template<WarpableOpenSimComponent T>
+    void DrawTooltipContent(UIState const& state, T const& c)
     {
-        DrawTooltipHeader(state, mesh);
+        DrawTooltipHeader(state, c);
 
         ImGui::Text("Checklist:");
         ImGui::Dummy({0.0f, 3.0f});
-        DrawMeshTooltipChecklist(state, mesh);
+        DrawChecklist(state, c);
 
         ImGui::NewLine();
 
         ImGui::Text("Details:");
         ImGui::Dummy({0.0f, 3.0f});
-        DrawDetailsTable(state, mesh);
+        DrawDetailsTable(state, c);
     }
 
-    void DrawMeshEntry(UIState const& state, OpenSim::Mesh const& mesh)
+    template<WarpableOpenSimComponent T>
+    void DrawEntry(UIState const& state, T const& c)
     {
-        DrawEntryIconAndText(state, mesh);
+        DrawEntryIconAndText(state, c);
         if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)) {
             ImGui::BeginTooltip();
-            DrawTooltipContent(state, mesh);
+            DrawTooltipContent(state, c);
             ImGui::EndTooltip();
         }
+    }
+}
+
+// UI (meshes/mesh pairing)
+namespace
+{
+    void DrawMeshSectionHeader(UIState const& state)
+    {
+        ImGui::Text("Meshes");
+        ImGui::SameLine();
+        ImGui::TextDisabled("(%zu)", GetNumChildren<OpenSim::Mesh>(state.model()));
+        ImGui::SameLine();
+        DrawHelpMarker("Shows which meshes are elegible for warping in the source model - and whether the model warper has enough information to warp them (plus any other useful validation checks)");
     }
 
     void DrawMeshSection(UIState const& state)
     {
-        ImGui::Text("Meshes");
-        ImGui::SameLine();
-        ImGui::TextDisabled("(%zu)", state.getNumWarpableMeshesInModel());
-        ImGui::SameLine();
-        DrawHelpMarker("Shows which meshes are elegible for warping in the source model - and whether the model warper has enough information to warp them (plus any other useful validation checks)");
-
+        DrawMeshSectionHeader(state);
         ImGui::Separator();
-
         int id = 0;
-        state.forEachWarpableMeshInModel([&state, &id](auto const& mesh)
-        {
+        for (auto const& mesh : state.model().getComponentList<OpenSim::Mesh>()) {
             ImGui::PushID(id++);
-            DrawMeshEntry(state, mesh);
+            DrawEntry(state, mesh);
             ImGui::PopID();
-        });
+        }
     }
 }
 
 // UI (frames)
 namespace
 {
-    void DrawTooltipChecklist(UIState const& state, OpenSim::PhysicalOffsetFrame const& frame)
-    {
-        ImGui::Indent(5.0f);
-        int id = 0;
-        state.forEachFrameDefinitionCheck(frame, [&id](auto check)
-        {
-            ImGui::PushID(id);
-            auto style = ToStyle(check.state());
-            DrawIcon(style);
-            ImGui::SameLine();
-            TextUnformatted(check.description());
-            ImGui::PopID();
-            return ValidationCheckConsumerResponse::Continue;
-        });
-        ImGui::Unindent(5.0f);
-    }
-
-    void DrawTooltipContent(
-        UIState const& state,
-        OpenSim::PhysicalOffsetFrame const& frame)
-    {
-        DrawTooltipHeader(state, frame);
-
-        ImGui::Text("Checklist:");
-        ImGui::Dummy({0.0f, 3.0f});
-        DrawTooltipChecklist(state, frame);
-    }
-
-    void DrawChecklistEntry(
-        UIState const& state,
-        OpenSim::PhysicalOffsetFrame const& frame)
-    {
-        DrawEntryIconAndText(state, frame);
-        if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)) {
-            BeginTooltip();
-            DrawTooltipContent(state, frame);
-            EndTooltip();
-        }
-    }
-
-    void DrawFramesSectionHeader(size_t numWarpableFrames)
+    void DrawFramesSectionHeader(UIState const& state)
     {
         ImGui::Text("Warpable Frames");
         ImGui::SameLine();
-        ImGui::TextDisabled("(%zu)", numWarpableFrames);
+        ImGui::TextDisabled("(%zu)", GetNumChildren<OpenSim::PhysicalOffsetFrame>(state.model()));
         ImGui::SameLine();
         DrawHelpMarker("Shows which frames are eligible for warping in the source model - and whether the model warper has enough information to warp them");
     }
 
     void DrawFramesSection(UIState const& state)
     {
-        DrawFramesSectionHeader(state.getNumWarpableFramesInModel());
-
+        DrawFramesSectionHeader(state);
         ImGui::Separator();
-
         int id = 0;
-        state.forEachWarpableFrameInModel([&state, &id](auto const& frame)
-        {
+        for (auto const& pof : state.model().getComponentList<OpenSim::PhysicalOffsetFrame>()) {
             ImGui::PushID(id++);
-            DrawChecklistEntry(state, frame);
+            DrawEntry(state, pof);
             ImGui::PopID();
-        });
+        }
     }
 }
 

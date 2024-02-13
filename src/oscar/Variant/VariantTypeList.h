@@ -1,12 +1,11 @@
 #pragma once
 
 #include <oscar/Utils/EnumHelpers.h>
-#include <oscar/Utils/NonTypelist.h>
 #include <oscar/Variant/VariantType.h>
 
 namespace osc
 {
-    using VariantTypeList = NonTypelist<VariantType,
+    using VariantTypeList = OptionList<VariantType,
         VariantType::Nil,
         VariantType::Bool,
         VariantType::Color,
@@ -16,5 +15,4 @@ namespace osc
         VariantType::StringName,
         VariantType::Vec3
     >;
-    static_assert(NonTypelistSizeV<VariantTypeList> == NumOptions<VariantType>());
 }

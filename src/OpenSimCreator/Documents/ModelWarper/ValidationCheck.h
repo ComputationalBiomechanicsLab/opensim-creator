@@ -1,5 +1,7 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
+
 #include <oscar/Utils/CStringView.h>
 
 #include <string>
@@ -9,29 +11,27 @@ namespace osc::mow
 {
     class ValidationCheck final {
     public:
-        enum class State { Ok, Warning, Error };
-
         ValidationCheck(
             std::string description_,
             bool passOrFail_) :
 
             m_Description{std::move(description_)},
-            m_State{passOrFail_ ? State::Ok : State::Error}
+            m_State{passOrFail_ ? ValidationState::Ok : ValidationState::Error}
         {}
 
         ValidationCheck(
             std::string description_,
-            State state_) :
+            ValidationState state_) :
 
             m_Description{std::move(description_)},
             m_State{state_}
         {}
 
         CStringView description() const { return m_Description; }
-        State state() const { return m_State; }
+        ValidationState state() const { return m_State; }
 
     private:
         std::string m_Description;
-        State m_State;
+        ValidationState m_State;
     };
 }
