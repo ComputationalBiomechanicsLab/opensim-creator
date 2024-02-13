@@ -60,6 +60,11 @@ ValidationState osc::mow::Document::state(OpenSim::Mesh const& mesh) const
     return p ? p->state() : ValidationState::Error;
 }
 
+std::vector<WarpDetail> osc::mow::Document::details(OpenSim::PhysicalOffsetFrame const&) const
+{
+    return {};  // TODO
+}
+
 std::vector<ValidationCheck> osc::mow::Document::validate(OpenSim::PhysicalOffsetFrame const&) const
 {
     // TODO

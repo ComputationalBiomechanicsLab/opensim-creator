@@ -24,7 +24,9 @@ namespace osc::mow
         std::vector<ValidationCheck> validate(OpenSim::Mesh const& mesh) const { return m_Document->validate(mesh); }
         ValidationState state(OpenSim::Mesh const& mesh) const { return m_Document->state(mesh); }
 
+        std::vector<WarpDetail> details(OpenSim::PhysicalOffsetFrame const& pof) const { return m_Document->details(pof); }
         std::vector<ValidationCheck> validate(OpenSim::PhysicalOffsetFrame const& pof) const { return m_Document->validate(pof); }
+        ValidationState state(OpenSim::PhysicalOffsetFrame const& pof) const { return m_Document->state(pof); }
 
         void actionOpenOsimOrPromptUser(
             std::optional<std::filesystem::path> maybeOsimPath = std::nullopt

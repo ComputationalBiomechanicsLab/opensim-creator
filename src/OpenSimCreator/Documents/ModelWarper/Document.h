@@ -35,6 +35,7 @@ namespace osc::mow
         std::vector<ValidationCheck> validate(OpenSim::Mesh const&) const;
         ValidationState state(OpenSim::Mesh const&) const;
 
+        std::vector<WarpDetail> details(OpenSim::PhysicalOffsetFrame const&) const;
         std::vector<ValidationCheck> validate(OpenSim::PhysicalOffsetFrame const&) const;
         ValidationState state(OpenSim::PhysicalOffsetFrame const&) const;
 
