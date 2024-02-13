@@ -50,7 +50,7 @@ std::vector<ValidationCheck> osc::mow::Document::validate(OpenSim::Mesh const& m
         return p->validate();
     }
     else {
-        return {ValidationCheck{"no mesh warp pairing found: this is probably an implementation error (maybe reload?)", ValidationState::Error}};
+        return {ValidationCheck{"no mesh warp pairing found: this is probably an implementation error (try reloading?)", ValidationState::Error}};
     }
 }
 
@@ -60,25 +60,27 @@ ValidationState osc::mow::Document::state(OpenSim::Mesh const& mesh) const
     return p ? p->state() : ValidationState::Error;
 }
 
-std::vector<WarpDetail> osc::mow::Document::details(OpenSim::PhysicalOffsetFrame const&) const
+std::vector<WarpDetail> osc::mow::Document::details(OpenSim::PhysicalOffsetFrame const& pof) const
 {
-    return {};  // TODO
-}
-
-std::vector<ValidationCheck> osc::mow::Document::validate(OpenSim::PhysicalOffsetFrame const&) const
-{
-    // TODO
-    // - check associated mesh is found
-    // - check origin location landmark
-    // - check axis edge begin landmark
-    // - check axis edge end landmark
-    // - check nonparallel edge begin landmark
-    // - check nonparallel edge end landmark
+    if (IFrameWarp const* p = m_FrameWarpLookup.find(GetAbsolutePathString(pof))) {
+        return p->details();
+    }
     return {};
 }
 
-ValidationState osc::mow::Document::state(
-    OpenSim::PhysicalOffsetFrame const&) const
+std::vector<ValidationCheck> osc::mow::Document::validate(OpenSim::PhysicalOffsetFrame const& pof) const
 {
-    return ValidationState::Ok;
+    if (IFrameWarp const* p = m_FrameWarpLookup.find(GetAbsolutePathString(pof))) {
+        return p->validate();
+    }
+    else {
+        return {ValidationCheck{"no frame warp method found: this is probably an implementation error (try reloading?)", ValidationState::Error}};
+    }
+}
+
+ValidationState osc::mow::Document::state(
+    OpenSim::PhysicalOffsetFrame const& pof) const
+{
+    IFrameWarp const* p = m_FrameWarpLookup.find(GetAbsolutePathString(pof));
+    return p ? p->state() : ValidationState::Error;
 }
