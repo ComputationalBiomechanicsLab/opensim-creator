@@ -8,11 +8,13 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/At.h>
 
 #include <array>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <numeric>
 #include <span>
 #include <vector>
 
@@ -1141,12 +1143,143 @@ Mesh osc::GenerateBoxMesh(
 }
 
 Mesh osc::GeneratePolyhedronMesh(
-    std::span<Vec3 const>,
-    std::span<uint32_t const>,
-    float,
-    size_t)
+    std::span<Vec3 const> vertices,
+    std::span<uint32_t const> indices,
+    float radius,
+    size_t detail)
 {
-    return {};
+    std::vector<Vec3> vertexBuffer;
+    std::vector<Vec2> uvBuffer;
+
+    auto const subdivideFace = [&vertexBuffer](Vec3 a, Vec3 b, Vec3 c, size_t detail)
+    {
+        auto const cols = detail + 1;
+        auto const fcols = static_cast<float>(cols);
+
+        // we use this multidimensional array as a data structure for creating the subdivision
+        std::vector<std::vector<Vec3>> v;
+        v.reserve(cols+1);
+
+        for (size_t i = 0; i <= cols; ++i) {
+            auto const fi = static_cast<float>(i);
+            Vec3 const aj = Mix(a, c, fi/fcols);
+            Vec3 const bj = Mix(b, c, fi/fcols);
+
+            auto const rows = cols - i;
+            auto const frows = static_cast<float>(rows);
+
+            v.emplace_back().reserve(rows+1);
+            for (size_t j = 0; j <= rows; ++j) {
+                v.at(i).emplace_back();
+
+                auto const fj = static_cast<float>(j);
+                if (j == 0 && i == cols) {
+                    v.at(i).at(j) = aj;
+                }
+                else {
+                    v.at(i).at(j) = Mix(aj, bj, fj/frows);
+                }
+            }
+        }
+
+        // construct all of the faces
+        for (size_t i = 0; i < cols; ++i) {
+            for (size_t j = 0; j < 2*(cols-i) - 1; ++j) {
+                size_t const k = j/2;
+
+                if (j % 2 == 0) {
+                    vertexBuffer.insert(vertexBuffer.end(), {
+                        v.at(i).at(k+1),
+                        v.at(i+1).at(k),
+                        v.at(i).at(k),
+                    });
+                }
+                else {
+                    vertexBuffer.insert(vertexBuffer.end(), {
+                        v.at(i).at(k+1),
+                        v.at(i+1).at(k+1),
+                        v.at(i+1).at(k),
+                    });
+                }
+            }
+        }
+    };
+
+    auto const subdivide = [&subdivideFace, &vertices, &indices](size_t detail)
+    {
+        // subdivide each input triangle by the given detail
+        for (size_t i = 0; i < indices.size(); i += 3) {
+            Vec3 const a = At(vertices, At(indices, i+0));
+            Vec3 const b = At(vertices, At(indices, i+1));
+            Vec3 const c = At(vertices, At(indices, i+2));
+            subdivideFace(a, b, c, detail);
+        }
+    };
+
+    auto const applyRadius = [&vertexBuffer](float radius)
+    {
+        for (Vec3 v : vertexBuffer) {
+            v = radius * Normalize(v);
+        }
+    };
+
+    auto const correctUVs = []()
+    {
+        // TODO
+    };
+
+    auto const correctSeam = []()
+    {
+        // TODO
+    };
+
+    auto const generateUVs = [&vertexBuffer, &uvBuffer, &correctUVs, &correctSeam]()
+    {
+        // return the angle around the Y axis, CCW when looking from above
+        auto const azimuth = [](Vec3 const& v) -> Radians
+        {
+            return atan2(v.z, -v.x);
+        };
+
+        // returns angle above the XZ plane
+        auto const inclination = [](Vec3 const& v) -> Radians
+        {
+            return atan2(-v.y, Length(Vec2{v.x, v.z}));
+        };
+
+        for (Vec3 const& v : vertexBuffer) {
+            uvBuffer.emplace_back(
+                Turns{azimuth(v) + 0.5_turn}.count(),
+                Turns{2.0f*inclination(v) + 0.5_turn}.count()
+            );
+        }
+
+        correctUVs();
+        correctSeam();
+    };
+
+    subdivide(detail);
+    applyRadius(radius);
+    generateUVs();
+
+    OSC_ASSERT(vertexBuffer.size() == uvBuffer.size());
+    OSC_ASSERT(vertexBuffer.size() % 3 == 0);
+
+    std::vector<uint32_t> meshIndices;
+    meshIndices.reserve(vertexBuffer.size());
+    for (uint32_t i = 0; i < static_cast<uint32_t>(vertexBuffer.size()); ++i) {
+        meshIndices.push_back(i);
+    }
+
+    auto meshNormals = vertexBuffer;
+    for (auto& v : meshNormals) { v = Normalize(v); }
+
+    Mesh rv;
+    rv.setVerts(vertexBuffer);
+    rv.setNormals(meshNormals);
+    rv.setTexCoords(uvBuffer);
+    rv.setIndices(meshIndices);
+    return rv;
 }
 
 Mesh osc::GenerateIcosahedronMesh(

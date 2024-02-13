@@ -13,6 +13,7 @@ namespace osc
         IsShowingOnly        = 1<<4,
         IsChildOfShowingOnly = 1<<5,
         CastsShadows         = 1<<6,
+        WireframeOverlay     = 1<<7,
     };
 
     constexpr SceneDecorationFlags operator|(SceneDecorationFlags lhs, SceneDecorationFlags rhs)
