@@ -37,7 +37,6 @@
 #include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/SetHelpers.h>
 
 #include <algorithm>
 #include <concepts>
@@ -623,13 +622,13 @@ namespace
             OpenSim::Component const& c = *ptrs[i];
             std::string const& classname = c.getConcreteClassName();
 
-            if (Contains(blacklisted, classname))
+            if (blacklisted.contains(classname))
             {
                 // it's blacklisted in the UI
                 continue;
             }
 
-            if (Contains(grouped, c.getConcreteClassName()))
+            if (grouped.contains(c.getConcreteClassName()))
             {
                 // it's already grouped
                 continue;
