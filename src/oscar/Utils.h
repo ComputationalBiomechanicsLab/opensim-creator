@@ -25,7 +25,6 @@
 #include <oscar/Utils/PerfMeasurement.h>
 #include <oscar/Utils/PerfMeasurementMetadata.h>
 #include <oscar/Utils/ScopeGuard.h>
-#include <oscar/Utils/SetHelpers.h>
 #include <oscar/Utils/Spsc.h>
 #include <oscar/Utils/StdVariantHelpers.h>
 #include <oscar/Utils/StringHelpers.h>

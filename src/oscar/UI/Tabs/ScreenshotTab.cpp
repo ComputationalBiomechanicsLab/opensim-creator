@@ -23,7 +23,6 @@
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/Tabs/StandardTabImpl.h>
 #include <oscar/Utils/Assertions.h>
-#include <oscar/Utils/SetHelpers.h>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -159,7 +158,7 @@ private:
         for (ScreenshotAnnotation const& annotation : m_Screenshot.annotations)
         {
             Rect const annotationRectScreenSpace = MapRect(imageSourceRect, imageRect, annotation.rect);
-            bool const selected =  Contains(m_SelectedAnnotations, annotation.label);
+            bool const selected = m_SelectedAnnotations.contains(annotation.label);
             bool const hovered = IsPointInRect(annotationRectScreenSpace, mousePos);
 
             Vec4 color = selected ? selectedColor : unselectedColor;
