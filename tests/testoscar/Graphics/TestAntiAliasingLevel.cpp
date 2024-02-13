@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 
-using osc::AntiAliasingLevel;
+using namespace osc;
 
 TEST(AntiAliasingLevel, DefaultCtorIsEquivalentTo1XLevel)
 {

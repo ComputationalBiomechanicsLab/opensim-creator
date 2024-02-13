@@ -31,14 +31,6 @@ add_library(OpenSimCreator STATIC
     Documents/FrameDefinition/SphereLandmark.cpp
     Documents/FrameDefinition/SphereLandmark.h
 
-    Documents/Frames/FrameAxis.cpp
-    Documents/Frames/FrameAxis.h
-    Documents/Frames/FrameDefinition.h
-    Documents/Frames/FramesFile.cpp
-    Documents/Frames/FramesFile.h
-    Documents/Frames/FramesHelpers.cpp
-    Documents/Frames/FramesHelpers.h
-
     Documents/Landmarks/Landmark.h
     Documents/Landmarks/LandmarkCSVFlags.h
     Documents/Landmarks/LandmarkHelpers.cpp
@@ -114,15 +106,17 @@ add_library(OpenSimCreator STATIC
     Documents/ModelWarper/Detail.h
     Documents/ModelWarper/Document.cpp
     Documents/ModelWarper/Document.h
-    Documents/ModelWarper/FrameDefinitionLookup.cpp
-    Documents/ModelWarper/FrameDefinitionLookup.h
+    Documents/ModelWarper/FrameWarpLookup.cpp
+    Documents/ModelWarper/FrameWarpLookup.h
+    Documents/ModelWarper/IFrameWarp.h
+    Documents/ModelWarper/IMeshWarp.h
     Documents/ModelWarper/LandmarkPairing.h
-    Documents/ModelWarper/MeshWarpPairing.cpp
-    Documents/ModelWarper/MeshWarpPairing.h
-    Documents/ModelWarper/MeshWarpPairingLookup.cpp
-    Documents/ModelWarper/MeshWarpPairingLookup.h
+    Documents/ModelWarper/MeshWarpLookup.cpp
+    Documents/ModelWarper/MeshWarpLookup.h
     Documents/ModelWarper/ModelWarpConfiguration.cpp
     Documents/ModelWarper/ModelWarpConfiguration.h
+    Documents/ModelWarper/ThinPlateSplineMeshWarp.cpp
+    Documents/ModelWarper/ThinPlateSplineMeshWarp.h
     Documents/ModelWarper/ValidationCheck.h
     Documents/ModelWarper/ValidationCheckConsumerResponse.h
 

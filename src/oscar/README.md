@@ -16,10 +16,10 @@ necessary when creating research tooling:
 
 | Component | Description |
 | - | - |
+| `DOM/` | Document object model: classes, properties, objects, and nodes (WIP) |
 | `Formats/` | Parsers/Writers for file formats |
 | `Graphics/` | Backend-independent, Unity-inspired graphics API |
 | `Maths/` | Common mathematical classes/algorithms for UI/scene rendering |
-| `Object/` | Standardized implementation of classes, properties, objects, and node hierarchies (WIP) |
 | `Platform/` | Configuration, window creation, logging, error handling, stacktrace dumping, etc. |
 | `Scene/` | Mid-level classes for rendering a 3D scene |
 | `Shims/` | Shims for upcoming but not-yet-supported versions of C++ |

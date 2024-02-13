@@ -3,9 +3,7 @@
 #include <gtest/gtest.h>
 #include <oscar/Utils/EnumHelpers.h>
 
-using osc::TextureChannelFormat;
-using osc::NumOptions;
-using osc::NumBytesPerChannel;
+using namespace osc;
 
 TEST(TextureChannelFormat, NumBytesPerChannelReturnsExpectedValues)
 {

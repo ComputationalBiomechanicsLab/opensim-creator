@@ -1,10 +1,10 @@
 #include "SceneViewer.h"
 
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Graphics/Scene/SceneRenderer.h>
+#include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Platform/App.h>
-#include <oscar/Scene/SceneCache.h>
-#include <oscar/Scene/SceneDecoration.h>
-#include <oscar/Scene/SceneRenderer.h>
-#include <oscar/Scene/ShaderCache.h>
 #include <oscar/UI/ImGuiHelpers.h>
 
 #include <imgui.h>

@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-using osc::BVH;
+using namespace osc;
 
 TEST(BVH, GetMaxDepthReturns0OnDefaultConstruction)
 {

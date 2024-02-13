@@ -7,7 +7,7 @@
 
 #include <memory>
 
-osc::UndoButton::UndoButton(std::shared_ptr<UndoRedo> undoRedo_) :
+osc::UndoButton::UndoButton(std::shared_ptr<UndoRedoBase> undoRedo_) :
     m_UndoRedo{std::move(undoRedo_)}
 {
 }
@@ -47,7 +47,7 @@ void osc::UndoButton::onDraw()
         for (ptrdiff_t i = 0; i < m_UndoRedo->getNumUndoEntriesi(); ++i)
         {
             ImGui::PushID(imguiID++);
-            if (ImGui::Selectable(m_UndoRedo->getUndoEntry(i).getMessage().c_str()))
+            if (ImGui::Selectable(m_UndoRedo->getUndoEntry(i).message().c_str()))
             {
                 m_UndoRedo->undoTo(i);
             }

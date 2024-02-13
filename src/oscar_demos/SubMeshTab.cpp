@@ -53,9 +53,7 @@ namespace
         rv.setVerts(allVerts);
         rv.setNormals(allNormals);
         rv.setIndices(allIndices);
-        for (auto const& desc : allDescriptors) {
-            rv.pushSubMeshDescriptor(desc);
-        }
+        rv.setSubmeshDescriptors(allDescriptors);
         return rv;
     }
 }

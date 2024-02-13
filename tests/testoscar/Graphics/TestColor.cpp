@@ -10,21 +10,7 @@
 #include <type_traits>
 #include <utility>
 
-using osc::Color;
-using osc::ColorHSLA;
-using osc::Color32;
-using osc::Lerp;
-using osc::ToColor;
-using osc::ToColor32;
-using osc::ToHtmlStringRGBA;
-using osc::ToHSLA;
-using osc::ToLinear;
-using osc::ToSRGB;
-using osc::ToVec4;
-using osc::TryParseHtmlString;
-using osc::ValuePtr;
-using osc::Vec3;
-using osc::Vec4;
+using namespace osc;
 
 namespace
 {

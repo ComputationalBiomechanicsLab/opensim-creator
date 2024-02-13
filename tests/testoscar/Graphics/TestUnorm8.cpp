@@ -6,9 +6,7 @@
 
 #include <limits>
 
-using osc::Unorm8;
-using osc::Vec;
-using osc::Vec3;
+using namespace osc;
 
 TEST(Unorm8, ComparisonBetweenBytesWorksAsExpected)
 {

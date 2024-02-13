@@ -21,22 +21,7 @@
 #include <string>
 #include <vector>
 
-using osc::AddModelComponent;
-using osc::CopyCommonJointProperties;
-using osc::FinalizeConnections;
-using osc::FindComponentMut;
-using osc::ForEachComponent;
-using osc::GetAbsolutePath;
-using osc::GetAbsolutePathOrEmpty;
-using osc::GetAbsolutePathString;
-using osc::GetComponentRegistry;
-using osc::GetNumChildren;
-using osc::InitializeModel;
-using osc::InitializeState;
-using osc::LoadOpenSimCreatorConfig;
-using osc::log_info;
-using osc::TryDeleteComponentFromModel;
-using osc::UndoableModelStatePair;
+using namespace osc;
 
 namespace
 {

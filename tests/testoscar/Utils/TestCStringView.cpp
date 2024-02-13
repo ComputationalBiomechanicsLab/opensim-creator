@@ -8,7 +8,7 @@
 #include <string_view>
 
 namespace cpp20 = osc::cpp20;
-using osc::CStringView;
+using namespace osc;
 
 TEST(CStringView, WhenPassedNullCstringYieldsEmptyCStringView)
 {

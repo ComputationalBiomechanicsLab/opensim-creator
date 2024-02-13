@@ -10,24 +10,15 @@
 #include <gtest/gtest.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Platform/Log.h>
-#include <oscar/Scene/SceneCache.h>
-#include <oscar/Scene/SceneDecoration.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Utils/StringHelpers.h>
 
 #include <filesystem>
 #include <utility>
 #include <vector>
 
-using osc::AddComponent;
-using osc::ContainsCaseInsensitive;
-using osc::InitializeModel;
-using osc::InitializeState;
-using osc::IsEqualWithinRelativeError;
-using osc::MuscleColoringStyle;
-using osc::OpenSimDecorationOptions;
-using osc::SceneCache;
-using osc::SceneDecoration;
-using osc::ToOscMesh;
+using namespace osc;
 
 // test that telling OSC to generate OpenSim-colored muscles
 // results in red muscle lines (as opposed to muscle lines that

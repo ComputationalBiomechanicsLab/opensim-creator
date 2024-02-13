@@ -2,13 +2,13 @@
 
 #include <memory>
 
-namespace osc { class UndoRedo; }
+namespace osc { class UndoRedoBase; }
 
 namespace osc
 {
     class RedoButton final {
     public:
-        explicit RedoButton(std::shared_ptr<UndoRedo>);
+        explicit RedoButton(std::shared_ptr<UndoRedoBase>);
         RedoButton(RedoButton const&) = delete;
         RedoButton(RedoButton&&) noexcept = default;
         RedoButton& operator=(RedoButton const&) = delete;
@@ -17,6 +17,6 @@ namespace osc
 
         void onDraw();
     private:
-        std::shared_ptr<UndoRedo> m_UndoRedo;
+        std::shared_ptr<UndoRedoBase> m_UndoRedo;
     };
 }

@@ -6,10 +6,7 @@
 #include <oscar/Graphics/RenderBufferStoreAction.h>
 #include <oscar/Graphics/RenderTexture.h>
 
-using osc::RenderBufferLoadAction;
-using osc::RenderBufferStoreAction;
-using osc::RenderTargetDepthAttachment;
-using osc::RenderTexture;
+using namespace osc;
 
 TEST(RenderTargetDepthAttachment, CanConstructFromPartsOfRenderTexture)
 {

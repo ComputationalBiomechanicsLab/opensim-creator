@@ -1,7 +1,6 @@
 #include "TPS2DTab.h"
 
 #include <IconsFontAwesome5.h>
-#include <Simbody.h>
 #include <imgui.h>
 #include <oscar/Formats/Image.h>
 #include <oscar/Graphics/Camera.h>
@@ -10,16 +9,17 @@
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshGenerators.h>
+#include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
-#include <oscar/Scene/ShaderCache.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/StdVariantHelpers.h>
+#include <Simbody.h>
 
 #include <cmath>
 #include <algorithm>

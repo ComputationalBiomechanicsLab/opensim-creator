@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-using osc::FileChangePoller;
+using namespace osc;
 
 // repro for #495
 //

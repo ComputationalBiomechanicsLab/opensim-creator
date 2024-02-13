@@ -6,11 +6,7 @@
 #include <oscar/Graphics/RenderBufferStoreAction.h>
 #include <oscar/Graphics/RenderTexture.h>
 
-using osc::RenderTexture;
-using osc::RenderTargetColorAttachment;
-using osc::RenderBufferLoadAction;
-using osc::RenderBufferStoreAction;
-using osc::Color;
+using namespace osc;
 
 TEST(RenderTargetColorAttachment, CanConstructFromPartsOfRenderTexture)
 {

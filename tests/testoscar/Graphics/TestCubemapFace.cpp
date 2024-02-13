@@ -4,8 +4,7 @@
 #include <oscar/Utils/EnumHelpers.h>
 
 namespace cpp23 = osc::cpp23;
-using osc::CubemapFace;
-using osc::NumOptions;
+using namespace osc;
 
 static_assert(NumOptions<CubemapFace>() == 6);
 

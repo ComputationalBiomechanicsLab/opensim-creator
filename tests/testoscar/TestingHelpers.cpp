@@ -5,14 +5,7 @@
 #include <numeric>
 #include <random>
 
-using osc::Color;
-using osc::Color32;
-using osc::Mat3;
-using osc::Mat4;
-using osc::Triangle;
-using osc::Vec2;
-using osc::Vec3;
-using osc::Vec4;
+using namespace osc;
 
 namespace
 {

@@ -17,25 +17,11 @@ namespace
 {
     constexpr CStringView c_TabStringID = "Demos/Hittest";
 
-    constexpr auto c_CrosshairVerts = std::to_array<Vec3>({
-        // -X to +X
-        {-0.05f, 0.0f, 0.0f},
-        {+0.05f, 0.0f, 0.0f},
-
-        // -Y to +Y
-        {0.0f, -0.05f, 0.0f},
-        {0.0f, +0.05f, 0.0f},
-    });
-
-    constexpr auto c_CrosshairIndices = std::to_array<uint16_t>({ 0, 1, 2, 3 });
-
     constexpr auto c_TriangleVerts = std::to_array<Vec3>({
         {-10.0f, -10.0f, 0.0f},
         {+0.0f, +10.0f, 0.0f},
         {+10.0f, -10.0f, 0.0f},
     });
-
-    constexpr auto c_TriangleIndices = std::to_array<uint16_t>({ 0, 1, 2 });
 
     struct SceneSphere final {
 
@@ -72,8 +58,16 @@ namespace
     {
         Mesh rv;
         rv.setTopology(MeshTopology::Lines);
-        rv.setVerts(c_CrosshairVerts);
-        rv.setIndices(c_CrosshairIndices);
+        rv.setVerts({
+            // -X to +X
+            {-0.05f, 0.0f, 0.0f},
+            {+0.05f, 0.0f, 0.0f},
+
+            // -Y to +Y
+            {0.0f, -0.05f, 0.0f},
+            {0.0f, +0.05f, 0.0f},
+        });
+        rv.setIndices({0, 1, 2, 3});
         return rv;
     }
 
@@ -81,7 +75,7 @@ namespace
     {
         Mesh rv;
         rv.setVerts(c_TriangleVerts);
-        rv.setIndices(c_TriangleIndices);
+        rv.setIndices({0, 1, 2});
         return rv;
     }
 

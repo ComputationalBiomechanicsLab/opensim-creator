@@ -3,7 +3,7 @@
 #include <OpenSimCreator/Documents/MeshImporter/Document.h>
 #include <OpenSimCreator/Documents/MeshImporter/MIObject.h>
 
-#include <oscar/Scene/SceneDecorationFlags.h>
+#include <oscar/Graphics/Scene/SceneDecorationFlags.h>
 #include <oscar/Utils/UID.h>
 
 #include <concepts>

@@ -5,6 +5,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <cstddef>
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <sstream>
@@ -17,13 +18,12 @@ osc::mow::Document::Document() :
 {
 }
 
-osc::mow::Document::Document(std::filesystem::path const& osimPath) :
-    m_Model{std::make_unique<OpenSim::Model>(osimPath.string())},
-    m_TopLevelWarpConfig{osimPath},
-    m_MeshWarpPairingLookup{osimPath, *m_Model},
-    m_FrameDefinitionLookup{osimPath, *m_Model}
-{
-}
+osc::mow::Document::Document(std::filesystem::path const& osimFileLocation) :
+    m_Model{std::make_unique<OpenSim::Model>(osimFileLocation.string())},
+    m_ModelWarpConfig{osimFileLocation, *m_Model},
+    m_MeshWarpLookup{osimFileLocation, *m_Model, m_ModelWarpConfig},
+    m_FrameWarpLookup{osimFileLocation, *m_Model, m_ModelWarpConfig}
+{}
 
 osc::mow::Document::Document(Document const&) = default;
 osc::mow::Document::Document(Document&&) noexcept = default;
@@ -51,7 +51,7 @@ void osc::mow::Document::forEachMeshWarpDetail(
 {
     callback({ "OpenSim::Mesh path in the OpenSim::Model", GetAbsolutePathString(mesh) });
 
-    if (MeshWarpPairing const* p = m_MeshWarpPairingLookup.lookup(GetAbsolutePathString(mesh)))
+    if (IMeshWarp const* p = m_MeshWarpLookup.find(GetAbsolutePathString(mesh)))
     {
         p->forEachDetail(callback);
     }
@@ -61,7 +61,7 @@ void osc::mow::Document::forEachMeshWarpCheck(
     OpenSim::Mesh const& mesh,
     std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
 {
-    if (MeshWarpPairing const* p = m_MeshWarpPairingLookup.lookup(GetAbsolutePathString(mesh)))
+    if (IMeshWarp const* p = m_MeshWarpLookup.find(GetAbsolutePathString(mesh)))
     {
         p->forEachCheck(callback);
     }
@@ -73,7 +73,7 @@ void osc::mow::Document::forEachMeshWarpCheck(
 
 ValidationCheck::State osc::mow::Document::getMeshWarpState(OpenSim::Mesh const& mesh) const
 {
-    MeshWarpPairing const* p = m_MeshWarpPairingLookup.lookup(GetAbsolutePathString(mesh));
+    IMeshWarp const* p = m_MeshWarpLookup.find(GetAbsolutePathString(mesh));
     return p ? p->state() : ValidationCheck::State::Error;
 }
 
@@ -93,43 +93,8 @@ void osc::mow::Document::forEachWarpableFrameInModel(
 
 void osc::mow::Document::forEachFrameDefinitionCheck(
     OpenSim::PhysicalOffsetFrame const&,
-    std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
+    std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&) const
 {
-    // check for frames file
-    {
-        std::stringstream ss;
-        ss << "has a frame definition file at " << recommendedFrameDefinitionFilepath().string();
-        if (callback({std::move(ss).str(), hasFrameDefinitionFile()}) == ValidationCheckConsumerResponse::Stop)
-        {
-            return;
-        }
-    }
-
-    // check for top-level parse errors in frames file
-    {
-        std::stringstream ss;
-        ValidationCheck::State state = ValidationCheck::State::Ok;
-        if (!hasFrameDefinitionFile())
-        {
-            ss << "frame definition file error: the file does not exist";
-            state = ValidationCheck::State::Error;
-        }
-        else if (auto err = getFramesFileLoadError())
-        {
-            ss << "frame definition file error: " << *err;
-            state = ValidationCheck::State::Error;
-        }
-        else
-        {
-            ss << "frame definition file contains no errors";
-        }
-
-        if (callback({std::move(ss).str(), state}) == ValidationCheckConsumerResponse::Stop)
-        {
-            return;
-        }
-    }
-
     // TODO
     // - check associated mesh is found
     // - check origin location landmark

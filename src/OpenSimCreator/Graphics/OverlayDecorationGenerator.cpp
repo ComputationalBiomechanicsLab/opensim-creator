@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Graphics/OverlayDecorationOptions.h>
 
-#include <oscar/Scene/SceneHelpers.h>
+#include <oscar/Graphics/Scene/SceneHelpers.h>
 
 #include <functional>
 

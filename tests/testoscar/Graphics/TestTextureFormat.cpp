@@ -8,10 +8,7 @@
 #include <optional>
 #include <type_traits>
 
-using osc::NumChannels;
-using osc::NumOptions;
-using osc::TextureChannelFormat;
-using osc::TextureFormat;
+using namespace osc;
 
 static_assert(std::is_same_v<std::underlying_type_t<TextureFormat>, int32_t>);
 

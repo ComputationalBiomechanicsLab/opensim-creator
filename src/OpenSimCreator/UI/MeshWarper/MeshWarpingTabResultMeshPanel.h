@@ -9,16 +9,16 @@
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <oscar/Graphics/RenderTexture.h>
+#include <oscar/Graphics/Scene/CachedSceneRenderer.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Graphics/Scene/SceneRendererParams.h>
+#include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
-#include <oscar/Scene/CachedSceneRenderer.h>
-#include <oscar/Scene/SceneCache.h>
-#include <oscar/Scene/SceneDecoration.h>
-#include <oscar/Scene/SceneRendererParams.h>
-#include <oscar/Scene/ShaderCache.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/Utils/CStringView.h>
 

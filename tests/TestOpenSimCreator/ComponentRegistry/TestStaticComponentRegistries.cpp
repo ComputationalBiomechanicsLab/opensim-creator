@@ -26,9 +26,7 @@
 #include <utility>
 #include <vector>
 
-using osc::CStringView;
-using osc::IndexOf;
-using osc::GetComponentRegistry;
+using namespace osc;
 
 namespace
 {

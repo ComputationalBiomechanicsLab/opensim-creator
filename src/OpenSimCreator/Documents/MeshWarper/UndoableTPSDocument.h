@@ -6,5 +6,5 @@
 
 namespace osc
 {
-    using UndoableTPSDocument = UndoRedoT<TPSDocument>;
+    using UndoableTPSDocument = UndoRedo<TPSDocument>;
 }

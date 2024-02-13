@@ -6,16 +6,16 @@
 #include <memory>
 #include <string_view>
 
-namespace osc { class UndoRedo; }
+namespace osc { class UndoRedoBase; }
 
 namespace osc
 {
     // a user-visible panel that lists undo/redo history
     class UndoRedoPanel final : public IPanel {
     public:
-        static void DrawContent(UndoRedo&);
+        static void DrawContent(UndoRedoBase&);
 
-        UndoRedoPanel(std::string_view panelName, std::shared_ptr<UndoRedo>);
+        UndoRedoPanel(std::string_view panelName, std::shared_ptr<UndoRedoBase>);
         UndoRedoPanel(UndoRedoPanel const&) = delete;
         UndoRedoPanel(UndoRedoPanel&&) noexcept;
         UndoRedoPanel& operator=(UndoRedoPanel const&) = delete;

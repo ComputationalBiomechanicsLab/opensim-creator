@@ -15,6 +15,7 @@
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/UnitVec3.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
@@ -30,47 +31,9 @@
 #include <utility>
 #include <vector>
 
+using namespace osc;
 using namespace osc::literals;
-using osc::testing::GenerateColors;
-using osc::testing::GenerateColor32;
-using osc::testing::GenerateIndices;
-using osc::testing::GenerateNormals;
-using osc::testing::GenerateTangents;
-using osc::testing::GenerateTexCoords;
-using osc::testing::GenerateTriangle;
-using osc::testing::GenerateVec2;
-using osc::testing::GenerateVec3;
-using osc::testing::GenerateVec4;
-using osc::testing::GenerateVertices;
-using osc::testing::MapToVector;
-using osc::testing::ResizedVectorCopy;
-using osc::AABB;
-using osc::AABBFromVerts;
-using osc::BoundingAABBOf;
-using osc::Color;
-using osc::Color32;
-using osc::Eulers;
-using osc::Identity;
-using osc::Mat4;
-using osc::Mesh;
-using osc::MeshTopology;
-using osc::MeshUpdateFlags;
-using osc::Quat;
-using osc::Radians;
-using osc::SubMeshDescriptor;
-using osc::ToColor;
-using osc::ToColor32;
-using osc::ToMat4;
-using osc::Transform;
-using osc::TransformPoint;
-using osc::Triangle;
-using osc::VertexAttribute;
-using osc::VertexAttributeFormat;
-using osc::VertexFormat;
-using osc::Vec2;
-using osc::Vec3;
-using osc::Vec4;
-using osc::WorldspaceRotation;
+using namespace osc::testing;
 
 TEST(Mesh, CanBeDefaultConstructed)
 {
@@ -184,6 +147,29 @@ TEST(Mesh, SetVertsMakesGetCallReturnVerts)
     ASSERT_EQ(m.getVerts(), verts);
 }
 
+TEST(Mesh, SetVertsCanBeCalledWithInitializerList)
+{
+    Mesh m;
+
+    Vec3 a{};
+    Vec3 b{};
+    Vec3 c{};
+
+    m.setVerts({a, b, c});
+    std::vector<Vec3> expected = {a, b, c};
+
+    ASSERT_EQ(m.getVerts(), expected);
+}
+
+TEST(Mesh, SetVertsCanBeCalledWithUnitVectorsBecauseOfImplicitConversion)
+{
+    Mesh m;
+    UnitVec3 v{1.0f, 0.0f, 0.0f};
+    m.setVerts({v});
+    std::vector<Vec3> expected = {v};
+    ASSERT_EQ(m.getVerts(), expected);
+}
+
 TEST(Mesh, SetVertsCausesCopiedMeshToNotBeEqualToInitialMesh)
 {
     Mesh const m;
@@ -206,6 +192,54 @@ TEST(Mesh, ShrinkingVertsCausesNormalsToShrinkAlso)
     m.setVerts(GenerateVertices(3));
 
     ASSERT_EQ(m.getNormals(), ResizedVectorCopy(normals, 3));
+}
+
+TEST(Mesh, CanCallSetNormalsWithInitializerList)
+{
+    auto const verts = GenerateVertices(3);
+    auto const normals = GenerateNormals(3);
+
+    Mesh m;
+    m.setVerts(verts);
+    m.setNormals({normals[0], normals[1], normals[2]});
+
+    ASSERT_EQ(m.getNormals(), normals);
+}
+
+TEST(Mesh, CanCallSetTexCoordsWithInitializerList)
+{
+    auto const verts = GenerateVertices(3);
+    auto const uvs = GenerateTexCoords(3);
+
+    Mesh m;
+    m.setVerts(verts);
+    m.setTexCoords({uvs[0], uvs[1], uvs[2]});
+
+    ASSERT_EQ(m.getTexCoords(), uvs);
+}
+
+TEST(Mesh, CanCallSetColorsWithInitializerList)
+{
+    auto const verts = GenerateVertices(3);
+    auto const colors = GenerateColors(3);
+
+    Mesh m;
+    m.setVerts(verts);
+    m.setColors({colors[0], colors[1], colors[2]});
+
+    ASSERT_EQ(m.getColors(), colors);
+}
+
+TEST(Mesh, CanCallSetTangentsWithInitializerList)
+{
+    auto const verts = GenerateVertices(3);
+    auto const tangents = GenerateTangents(3);
+
+    Mesh m;
+    m.setVerts(verts);
+    m.setTangents({tangents[0], tangents[1], tangents[2]});
+
+    ASSERT_EQ(m.getTangents(), tangents);
 }
 
 TEST(Mesh, ExpandingVertsCausesNormalsToExpandWithZeroedNormals)
@@ -729,6 +763,17 @@ TEST(Mesh, SetIndiciesWithNoFlagsWorksForNormalArgs)
     ASSERT_EQ(m.getNumIndices(), 3);
 }
 
+TEST(Mesh, SetIndicesCanBeCalledWithInitializerList)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(3));
+    m.setIndices({0, 1, 2});
+    std::vector<uint32_t> const expected = {0, 1, 2};
+    auto const got = m.getIndices();
+
+    ASSERT_TRUE(std::equal(got.begin(), got.end(), expected.begin(), expected.end()));
+}
+
 TEST(Mesh, SetIndicesAlsoWorksIfOnlyIndexesSomeOfTheVerts)
 {
     auto const indices = GenerateIndices(3, 6);  // only indexes half the verts
@@ -784,7 +829,7 @@ TEST(Mesh, ForEachIndexedVertNotCalledWithEmptyMesh)
 TEST(Mesh, ForEachIndexedVertNotCalledWhenOnlyVertexDataSupplied)
 {
     Mesh m;
-    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});
+    m.setVerts({Vec3{}, Vec3{}, Vec3{}});
     size_t ncalls = 0;
     m.forEachIndexedVert([&ncalls](auto&&) { ++ncalls; });
     ASSERT_EQ(ncalls, 0);
@@ -793,7 +838,7 @@ TEST(Mesh, ForEachIndexedVertNotCalledWhenOnlyVertexDataSupplied)
 TEST(Mesh, ForEachIndexedVertCalledWhenSuppliedCorrectlyIndexedMesh)
 {
     Mesh m;
-    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});
+    m.setVerts({Vec3{}, Vec3{}, Vec3{}});
     m.setIndices(std::to_array<uint16_t>({0, 1, 2}));
     size_t ncalls = 0;
     m.forEachIndexedVert([&ncalls](auto&&) { ++ncalls; });
@@ -804,7 +849,7 @@ TEST(Mesh, ForEachIndexedVertCalledEvenWhenMeshIsNonTriangular)
 {
     Mesh m;
     m.setTopology(MeshTopology::Lines);
-    m.setVerts({{Vec3{}, Vec3{}, Vec3{}, Vec3{}}});
+    m.setVerts({Vec3{}, Vec3{}, Vec3{}, Vec3{}});
     m.setIndices(std::to_array<uint16_t>({0, 1, 2, 3}));
     size_t ncalls = 0;
     m.forEachIndexedVert([&ncalls](auto&&) { ++ncalls; });
@@ -821,7 +866,7 @@ TEST(Mesh, ForEachIndexedTriangleNotCalledWithEmptyMesh)
 TEST(Mesh, ForEachIndexedTriangleNotCalledWhenMeshhasNoIndicies)
 {
     Mesh m;
-    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});  // unindexed
+    m.setVerts({Vec3{}, Vec3{}, Vec3{}});  // unindexed
     size_t ncalls = 0;
     m.forEachIndexedTriangle([&ncalls](auto&&) { ++ncalls; });
     ASSERT_EQ(ncalls, 0);
@@ -830,7 +875,7 @@ TEST(Mesh, ForEachIndexedTriangleNotCalledWhenMeshhasNoIndicies)
 TEST(Mesh, ForEachIndexedTriangleCalledIfMeshContainsIndexedTriangles)
 {
     Mesh m;
-    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});
+    m.setVerts({Vec3{}, Vec3{}, Vec3{}});
     m.setIndices(std::to_array<uint16_t>({0, 1, 2}));
     size_t ncalls = 0;
     m.forEachIndexedTriangle([&ncalls](auto&&) { ++ncalls; });
@@ -840,7 +885,7 @@ TEST(Mesh, ForEachIndexedTriangleCalledIfMeshContainsIndexedTriangles)
 TEST(Mesh, ForEachIndexedTriangleNotCalledIfMeshContainsInsufficientIndices)
 {
     Mesh m;
-    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});
+    m.setVerts({Vec3{}, Vec3{}, Vec3{}});
     m.setIndices(std::to_array<uint16_t>({0, 1}));  // too few
     size_t ncalls = 0;
     m.forEachIndexedTriangle([&ncalls](auto&&) { ++ncalls; });
@@ -850,7 +895,7 @@ TEST(Mesh, ForEachIndexedTriangleNotCalledIfMeshContainsInsufficientIndices)
 TEST(Mesh, ForEachIndexedTriangleCalledMultipleTimesForMultipleTriangles)
 {
     Mesh m;
-    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});
+    m.setVerts({Vec3{}, Vec3{}, Vec3{}});
     m.setIndices(std::to_array<uint16_t>({0, 1, 2, 1, 2, 0}));
     size_t ncalls = 0;
     m.forEachIndexedTriangle([&ncalls](auto&&) { ++ncalls; });
@@ -861,7 +906,7 @@ TEST(Mesh, ForEachIndexedTriangleNotCalledIfMeshTopologyIsLines)
 {
     Mesh m;
     m.setTopology(MeshTopology::Lines);
-    m.setVerts({{Vec3{}, Vec3{}, Vec3{}}});
+    m.setVerts({Vec3{}, Vec3{}, Vec3{}});
     m.setIndices(std::to_array<uint16_t>({0, 1, 2, 1, 2, 0}));
     size_t ncalls = 0;
     m.forEachIndexedTriangle([&ncalls](auto&&) { ++ncalls; });
@@ -885,7 +930,7 @@ TEST(Mesh, GetTriangleAtReturnsTriangleIndexedByIndiciesAtProvidedOffset)
     Triangle const b = GenerateTriangle();
 
     Mesh m;
-    m.setVerts({{a[0], a[1], a[2], b[0], b[1], b[2]}});         // stored as  [a, b]
+    m.setVerts({a[0], a[1], a[2], b[0], b[1], b[2]});             // stored as  [a, b]
     m.setIndices(std::to_array<uint16_t>({3, 4, 5, 0, 1, 2}));  // indexed as [b, a]
 
     ASSERT_EQ(m.getTriangleAt(0), b) << "the provided arg is an offset into the _indices_";
@@ -896,7 +941,7 @@ TEST(Mesh, GetTriangleAtThrowsIfCalledOnNonTriangularMesh)
 {
     Mesh m;
     m.setTopology(MeshTopology::Lines);
-    m.setVerts({{GenerateVec3(), GenerateVec3(), GenerateVec3(), GenerateVec3(), GenerateVec3(), GenerateVec3()}});
+    m.setVerts({GenerateVec3(), GenerateVec3(), GenerateVec3(), GenerateVec3(), GenerateVec3(), GenerateVec3()});
     m.setIndices(std::to_array<uint16_t>({0, 1, 2, 3, 4, 5}));
 
     ASSERT_ANY_THROW({ m.getTriangleAt(0); }) << "incorrect topology";
@@ -1070,6 +1115,38 @@ TEST(Mesh, PushSecondDescriptorMakesGetReturnExpectedResults)
     ASSERT_EQ(m.getSubMeshCount(), 2);
     ASSERT_EQ(m.getSubMeshDescriptor(0), firstDesc);
     ASSERT_EQ(m.getSubMeshDescriptor(1), secondDesc);
+}
+
+TEST(Mesh, SetSubmeshDescriptorsWithRangeWorksAsExpected)
+{
+    Mesh m;
+    SubMeshDescriptor const firstDesc{0, 10, MeshTopology::Triangles};
+    SubMeshDescriptor const secondDesc{5, 15, MeshTopology::Lines};
+
+    m.setSubmeshDescriptors(std::vector{firstDesc, secondDesc});
+
+    ASSERT_EQ(m.getSubMeshCount(), 2);
+    ASSERT_EQ(m.getSubMeshDescriptor(0), firstDesc);
+    ASSERT_EQ(m.getSubMeshDescriptor(1), secondDesc);
+}
+
+TEST(Mesh, SetSubmeshDescriptorsRemovesExistingDescriptors)
+{
+    SubMeshDescriptor const firstDesc{0, 10, MeshTopology::Triangles};
+    SubMeshDescriptor const secondDesc{5, 15, MeshTopology::Lines};
+    SubMeshDescriptor const thirdDesc{20, 35, MeshTopology::Triangles};
+
+    Mesh m;
+    m.pushSubMeshDescriptor(firstDesc);
+
+    ASSERT_EQ(m.getSubMeshCount(), 1);
+    ASSERT_EQ(m.getSubMeshDescriptor(0), firstDesc);
+
+    m.setSubmeshDescriptors(std::vector{secondDesc, thirdDesc});
+
+    ASSERT_EQ(m.getSubMeshCount(), 2);
+    ASSERT_EQ(m.getSubMeshDescriptor(0), secondDesc);
+    ASSERT_EQ(m.getSubMeshDescriptor(1), thirdDesc);
 }
 
 TEST(Mesh, GetSubMeshDescriptorThrowsOOBExceptionIfOOBAccessed)

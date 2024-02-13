@@ -36,6 +36,7 @@
 #include <oscar/Graphics/RenderTextureDescriptor.h>
 #include <oscar/Graphics/RenderTextureFormat.h>
 #include <oscar/Graphics/RenderTextureReadWrite.h>
+#include <oscar/Graphics/Scene.h>
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Graphics/ShaderPropertyType.h>
 #include <oscar/Graphics/SubMeshDescriptor.h>

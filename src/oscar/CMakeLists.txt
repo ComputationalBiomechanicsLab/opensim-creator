@@ -17,6 +17,15 @@ find_package(tomlplusplus REQUIRED CONFIG)
 find_package(unordered_dense REQUIRED CONFIG)
 
 add_library(oscar STATIC
+    DOM/Class.cpp
+    DOM/Class.h
+    DOM/Node.h
+    DOM/NodePath.cpp
+    DOM/NodePath.h
+    DOM/Object.cpp
+    DOM/PropertyInfo.cpp
+    DOM/PropertyInfo.h
+
     Formats/CSV.h
     Formats/CSV.cpp
     Formats/DAE.h
@@ -44,11 +53,29 @@ add_library(oscar STATIC
     Graphics/Detail/VertexAttributeHelpers.h
     Graphics/Detail/VertexAttributeList.h
     Graphics/Detail/VertexAttributeTraits.h
+
     Graphics/OpenGL/CPUDataTypeOpenGLTraits.h
     Graphics/OpenGL/CPUImageFormatOpenGLTraits.h
     Graphics/OpenGL/Gl.cpp
     Graphics/OpenGL/Gl.h
     Graphics/OpenGL/TextureFormatOpenGLTraits.h
+
+    Graphics/Scene/CachedSceneRenderer.cpp
+    Graphics/Scene/CachedSceneRenderer.h
+    Graphics/Scene/SceneCache.cpp
+    Graphics/Scene/SceneCache.h
+    Graphics/Scene/SceneCollision.h
+    Graphics/Scene/SceneDecoration.h
+    Graphics/Scene/SceneDecorationFlags.h
+    Graphics/Scene/SceneHelpers.cpp
+    Graphics/Scene/SceneHelpers.h
+    Graphics/Scene/SceneRenderer.cpp
+    Graphics/Scene/SceneRenderer.h
+    Graphics/Scene/SceneRendererParams.cpp
+    Graphics/Scene/SceneRendererParams.h
+    Graphics/Scene/ShaderCache.cpp
+    Graphics/Scene/ShaderCache.h
+
     Graphics/AntiAliasingLevel.cpp
     Graphics/AntiAliasingLevel.h
     Graphics/BlitFlags.h
@@ -92,6 +119,7 @@ add_library(oscar STATIC
     Graphics/RenderTextureDescriptor.h
     Graphics/RenderTextureFormat.h
     Graphics/RenderTextureReadWrite.h
+    Graphics/Scene.h
     Graphics/Shader.h
     Graphics/ShaderPropertyType.h
     Graphics/SubMeshDescriptor.h
@@ -124,6 +152,7 @@ add_library(oscar STATIC
     Maths/Ellipsoid.h
     Maths/EulerPerspectiveCamera.h
     Maths/Eulers.h
+    Maths/FrameAxis.h
     Maths/LengthType.h
     Maths/Line.h
     Maths/Mat.h
@@ -151,16 +180,6 @@ add_library(oscar STATIC
     Maths/Vec2.h
     Maths/Vec3.h
     Maths/Vec4.h
-
-    Object/Class.cpp
-    Object/Class.h
-    Object/Node.h
-    Object/NodePath.cpp
-    Object/NodePath.h
-    Object/Object.cpp
-    Object/Object.h
-    Object/PropertyInfo.cpp
-    Object/PropertyInfo.h
 
     Platform/Detail/SDL2Helpers.h
     Platform/App.cpp
@@ -196,22 +215,6 @@ add_library(oscar STATIC
     Platform/ResourceStream.h
     Platform/Screenshot.h
     Platform/ScreenshotAnnotation.h
-
-    Scene/CachedSceneRenderer.cpp
-    Scene/CachedSceneRenderer.h
-    Scene/SceneCache.cpp
-    Scene/SceneCache.h
-    Scene/SceneCollision.h
-    Scene/SceneDecoration.h
-    Scene/SceneDecorationFlags.h
-    Scene/SceneHelpers.cpp
-    Scene/SceneHelpers.h
-    Scene/SceneRenderer.cpp
-    Scene/SceneRenderer.h
-    Scene/SceneRendererParams.cpp
-    Scene/SceneRendererParams.h
-    Scene/ShaderCache.cpp
-    Scene/ShaderCache.h
 
     Shims/Cpp20/bit.h
     Shims/Cpp20/stop_token.h
@@ -302,6 +305,7 @@ add_library(oscar STATIC
     Utils/FilesystemHelpers.cpp
     Utils/FilesystemHelpers.h
     Utils/HashHelpers.h
+    Utils/ICloneable.h
     Utils/NonTypelist.h
     Utils/NullOStream.h
     Utils/NullStreambuf.h
@@ -336,13 +340,12 @@ add_library(oscar STATIC
     Variant/VariantTypeList.h
     Variant/VariantTypeTraits.h
 
+    DOM.h
     Formats.h
     Graphics.h
     Maths.h
     oscar.h
-    Object.h
     Platform.h
-    Scene.h
     Shims.h
     UI.h
     Utils.h

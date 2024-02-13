@@ -6,7 +6,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <OpenSimCreator/Utils/SimTKHelpers.h>
 
-#include <SimTKcommon.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
@@ -22,16 +21,17 @@
 #include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Mesh.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Graphics/Scene/SceneHelpers.h>
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Segment.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/Log.h>
-#include <oscar/Scene/SceneCache.h>
-#include <oscar/Scene/SceneDecoration.h>
-#include <oscar/Scene/SceneHelpers.h>
 #include <oscar/Utils/Perf.h>
+#include <SimTKcommon.h>
 
 #include <cmath>
 #include <algorithm>

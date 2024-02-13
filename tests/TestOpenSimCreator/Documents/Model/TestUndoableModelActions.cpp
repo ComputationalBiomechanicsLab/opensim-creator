@@ -16,15 +16,7 @@
 #include <functional>
 #include <memory>
 
-using osc::AddBody;
-using osc::AttachGeometry;
-using osc::BodyDetails;
-using osc::FinalizeConnections;
-using osc::InitializeModel;
-using osc::InitializeState;
-using osc::IsEqualWithinRelativeError;
-using osc::ObjectPropertyEdit;
-using osc::UndoableModelStatePair;
+using namespace osc;
 
 // repro for #642
 //

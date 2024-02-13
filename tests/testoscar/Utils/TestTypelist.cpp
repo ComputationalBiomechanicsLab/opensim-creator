@@ -5,9 +5,7 @@
 #include <cstdint>
 #include <type_traits>
 
-using osc::TypeAtT;
-using osc::Typelist;
-using osc::TypelistSizeV;
+using namespace osc;
 
 TEST(Typelist, EmptyTypelistIsOk)
 {

@@ -3,10 +3,8 @@
 #include <gtest/gtest.h>
 #include <oscar/Graphics/VertexAttributeFormat.h>
 
-using osc::detail::SizeOfComponent;
-using osc::detail::NumComponents;
-using osc::detail::StrideOf;
-using osc::VertexAttributeFormat;
+using namespace osc;
+using namespace osc::detail;
 
 TEST(VertexAttributeHelpers, StrideOfWorks)
 {

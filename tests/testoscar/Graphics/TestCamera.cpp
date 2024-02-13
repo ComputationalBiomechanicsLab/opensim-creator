@@ -15,18 +15,9 @@
 #include <sstream>
 #include <utility>
 
+using namespace osc;
 using namespace osc::literals;
-using osc::testing::GenerateColor;
-using osc::Camera;
-using osc::CameraClearFlags;
-using osc::CameraProjection;
-using osc::Color;
-using osc::Dot;
-using osc::Identity;
-using osc::Inverse;
-using osc::Mat4;
-using osc::Normalize;
-using osc::Vec3;
+using namespace osc::testing;
 
 TEST(Camera, CanDefaultConstruct)
 {

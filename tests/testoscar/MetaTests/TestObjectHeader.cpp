@@ -1,4 +1,4 @@
-#include <oscar/Object.h>
+#include <oscar/DOM/Object.h>
 
 #include <gtest/gtest.h>
 

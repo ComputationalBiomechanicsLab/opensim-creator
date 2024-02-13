@@ -9,13 +9,7 @@
 
 #include <vector>
 
-using osc::Color;
-using osc::RenderBufferLoadAction;
-using osc::RenderBufferStoreAction;
-using osc::RenderTarget;
-using osc::RenderTargetColorAttachment;
-using osc::RenderTargetDepthAttachment;
-using osc::RenderTexture;
+using namespace osc;
 
 TEST(RenderTarget, CtorWorksAsExpected)
 {

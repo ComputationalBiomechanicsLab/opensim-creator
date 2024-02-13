@@ -2,6 +2,12 @@ include(GoogleTest)
 find_package(GTest REQUIRED CONFIG)
 
 add_executable(testoscar
+    DOM/TestClass.cpp
+    DOM/TestNode.cpp
+    DOM/TestNodePath.cpp
+    DOM/TestObject.cpp
+    DOM/TestPropertyInfo.cpp
+
     Formats/TestCSV.cpp
     Formats/TestDAE.cpp
     Formats/TestImage.cpp
@@ -10,6 +16,7 @@ add_executable(testoscar
     Graphics/Detail/TestVertexAttributeHelpers.cpp
     Graphics/Detail/TestVertexAttributeFormatList.cpp
     Graphics/Detail/TestVertexAttributeList.cpp
+    Graphics/Scene/TestSceneCache.cpp
     Graphics/TestAntiAliasingLevel.cpp
     Graphics/TestCamera.cpp
     Graphics/TestCameraProjection.cpp
@@ -36,6 +43,7 @@ add_executable(testoscar
 
     Maths/TestAngle.cpp
     Maths/TestBVH.cpp
+    Maths/TestFrameAxis.cpp
     Maths/TestUnitVec.cpp
 
     MetaTests/TestFormatsHeader.cpp
@@ -50,19 +58,11 @@ add_executable(testoscar
     MetaTests/TestUtilsHeader.cpp
     MetaTests/TestVariantHeader.cpp
 
-    Object/TestClass.cpp
-    Object/TestNode.cpp
-    Object/TestNodePath.cpp
-    Object/TestObject.cpp
-    Object/TestPropertyInfo.cpp
-
     Platform/TestAppSettingValueType.cpp
     Platform/TestResourceDirectoryEntry.cpp
     Platform/TestResourceLoader.cpp
     Platform/TestResourcePath.cpp
     Platform/TestResourceStream.cpp
-
-    Scene/TestSceneCache.cpp
 
     Shims/Cpp20/TestBit.cpp
 

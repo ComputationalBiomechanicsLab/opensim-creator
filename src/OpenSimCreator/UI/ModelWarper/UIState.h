@@ -2,7 +2,6 @@
 
 #include <OpenSimCreator/Documents/ModelWarper/Detail.h>
 #include <OpenSimCreator/Documents/ModelWarper/Document.h>
-#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.h>
 
@@ -37,7 +36,9 @@ namespace osc::mow
         ) const;
 
         size_t getNumWarpableFramesInModel() const;
-        void forEachWarpableFrameInModel(std::function<void(OpenSim::PhysicalOffsetFrame const&)> const&) const;
+        void forEachWarpableFrameInModel(
+            std::function<void(OpenSim::PhysicalOffsetFrame const&)> const&
+        ) const;
         void forEachFrameDefinitionCheck(
             OpenSim::PhysicalOffsetFrame const&,
             std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&

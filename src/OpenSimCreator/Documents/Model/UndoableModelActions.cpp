@@ -44,6 +44,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
+#include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Maths/Ellipsoid.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Plane.h>
@@ -53,7 +54,6 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
-#include <oscar/Scene/SceneCache.h>
 #include <oscar/Utils/FilesystemHelpers.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/UID.h>

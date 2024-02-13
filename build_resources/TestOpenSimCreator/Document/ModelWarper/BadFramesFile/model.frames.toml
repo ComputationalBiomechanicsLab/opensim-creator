@@ -1,6 +1,0 @@
-# frames file that exists, but has bad content
-
-[frames]
-
-    [frames."/jointset/weldjoint/ground_offset"]
-    this_is_missing = "required entries"

@@ -27,8 +27,7 @@ namespace
     std::vector<T const*> SortedComponentPointers(OpenSim::Model const& model)
     {
         std::vector<T const*> rv;
-        for (auto const& v : model.getComponentList<T>())
-        {
+        for (auto const& v : model.getComponentList<T>()) {
             rv.push_back(&v);
         }
         std::sort(rv.begin(), rv.end(), IsNameLexographicallyLowerThan<T const*>);
@@ -85,13 +84,11 @@ void osc::mow::UIState::forEachFrameDefinitionCheck(
 
 void osc::mow::UIState::actionOpenModel(std::optional<std::filesystem::path> path)
 {
-    if (!path)
-    {
+    if (!path) {
         path = PromptUserForFile("osim");
     }
 
-    if (path)
-    {
+    if (path) {
         m_Document = std::make_shared<Document>(std::move(path).value());
     }
 }

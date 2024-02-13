@@ -6,7 +6,7 @@
 
 #include <filesystem>
 
-using osc::RecentFiles;
+using namespace osc;
 
 // automated repro for a bug found in #811
 //

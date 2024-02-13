@@ -4,10 +4,10 @@
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelLayer.h>
 
 #include <OpenSim/Common/ComponentPath.h>
+#include <oscar/Graphics/Scene/SceneCollision.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/Rect.h>
-#include <oscar/Scene/SceneCollision.h>
-#include <oscar/Scene/SceneDecoration.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <optional>

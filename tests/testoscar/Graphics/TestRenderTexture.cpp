@@ -9,14 +9,7 @@
 #include <oscar/Graphics/TextureDimensionality.h>
 #include <oscar/Maths/Vec2.h>
 
-using osc::AntiAliasingLevel;
-using osc::DepthStencilFormat;
-using osc::RenderTexture;
-using osc::RenderTextureDescriptor;
-using osc::RenderTextureFormat;
-using osc::RenderTextureReadWrite;
-using osc::TextureDimensionality;
-using osc::Vec2i;
+using namespace osc;
 
 TEST(RenderTexture, DefaultConstructorCreates1x1RgbaRenderTexture)
 {
