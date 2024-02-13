@@ -4,7 +4,6 @@
 #include <oscar/Graphics/Detail/VertexAttributeTraits.h>
 #include <oscar/Graphics/VertexAttribute.h>
 #include <oscar/Graphics/VertexAttributeFormat.h>
-#include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/Utils/EnumHelpers.h>
 
 #include <array>
@@ -17,6 +16,6 @@ namespace osc::detail
             return std::to_array({ VertexAttributeTraits<Attrs>::default_format... });
         }(VertexAttributeList{});
 
-        return lut.at(cpp23::to_underlying(attr));
+        return lut.at(ToIndex(attr));
     }
 }

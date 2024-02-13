@@ -30,11 +30,4 @@ namespace osc
     {
         return static_cast<CubemapFace>(cpp23::to_underlying(face) + 1);
     }
-
-    constexpr size_t ToIndex(CubemapFace face)
-    {
-        static_assert(cpp23::to_underlying(FirstCubemapFace()) == 0);
-        static_assert(cpp23::to_underlying(LastCubemapFace()) - cpp23::to_underlying(FirstCubemapFace()) == 5);
-        return static_cast<size_t>(face);
-    }
 }

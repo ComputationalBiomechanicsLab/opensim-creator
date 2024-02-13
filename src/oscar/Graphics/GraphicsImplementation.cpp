@@ -1068,7 +1068,7 @@ namespace
             return std::to_array({ TextureFormatOpenGLTraits<Formats>::unpack_alignment... });
         }(TextureFormatList{});
 
-        return lut.at(cpp23::to_underlying(format));
+        return lut.at(ToIndex(format));
     }
 
     // returns the format OpenGL will use internally (i.e. on the GPU) to
@@ -1089,10 +1089,10 @@ namespace
 
         static_assert(NumOptions<ColorSpace>() == 2);
         if (colorSpace == ColorSpace::sRGB) {
-            return srgbLUT.at(cpp23::to_underlying(format));
+            return srgbLUT.at(ToIndex(format));
         }
         else {
-            return linearLUT.at(cpp23::to_underlying(format));
+            return linearLUT.at(ToIndex(format));
         }
     }
 
@@ -1103,7 +1103,7 @@ namespace
             return std::to_array({ CPUDataTypeOpenGLTraits<DataTypes>::opengl_data_type... });
         }(CPUDataTypeList{});
 
-        return lut.at(cpp23::to_underlying(t));
+        return lut.at(ToIndex(t));
     }
 
     constexpr CPUDataType ToEquivalentCPUDataType(TextureFormat format)
@@ -1113,7 +1113,7 @@ namespace
             return std::to_array({ TextureFormatTraits<Formats>::equivalent_cpu_datatype... });
         }(TextureFormatList{});
 
-        return lut.at(cpp23::to_underlying(format));
+        return lut.at(ToIndex(format));
     }
 
     constexpr CPUImageFormat ToEquivalentCPUImageFormat(TextureFormat format)
@@ -1123,7 +1123,7 @@ namespace
             return std::to_array({ TextureFormatTraits<Formats>::equivalent_cpu_image_format... });
         }(TextureFormatList{});
 
-        return lut.at(cpp23::to_underlying(format));
+        return lut.at(ToIndex(format));
     }
 
     constexpr GLenum ToOpenGLFormat(CPUImageFormat t)
@@ -1133,7 +1133,7 @@ namespace
             return std::to_array({ CPUImageFormatOpenGLTraits<Formats>::opengl_format... });
         }(CPUImageFormatList{});
 
-        return lut.at(cpp23::to_underlying(t));
+        return lut.at(ToIndex(t));
     }
 
     constexpr GLenum ToOpenGLTextureEnum(CubemapFace f)
@@ -1911,7 +1911,7 @@ size_t osc::NumChannels(TextureFormat format)
         return std::to_array({ TextureFormatTraits<Formats>::num_channels... });
     }(TextureFormatList{});
 
-    return lut.at(cpp23::to_underlying(format));
+    return lut.at(ToIndex(format));
 }
 
 TextureChannelFormat osc::ChannelFormat(TextureFormat f)
@@ -1921,7 +1921,7 @@ TextureChannelFormat osc::ChannelFormat(TextureFormat f)
         return std::to_array({ TextureFormatTraits<Formats>::channel_format... });
     }(TextureFormatList{});
 
-    return lut.at(cpp23::to_underlying(f));
+    return lut.at(ToIndex(f));
 }
 
 size_t osc::NumBytesPerPixel(TextureFormat format)
@@ -2203,7 +2203,7 @@ namespace
             return std::to_array({ TextureFormatOpenGLTraits<Formats>::image_color_format... });
         }(TextureFormatList{});
 
-        return lut.at(cpp23::to_underlying(f));
+        return lut.at(ToIndex(f));
     }
 
     constexpr GLint ToImagePixelPackAlignment(TextureFormat f)
@@ -2213,7 +2213,7 @@ namespace
             return std::to_array({ TextureFormatOpenGLTraits<Formats>::pixel_pack_alignment... });
         }(TextureFormatList{});
 
-        return lut.at(cpp23::to_underlying(f));
+        return lut.at(ToIndex(f));
     }
 
     constexpr GLenum ToImageDataType(TextureFormat)
@@ -3069,7 +3069,7 @@ std::ostream& osc::operator<<(std::ostream& o, ShaderPropertyType shaderType)
         return std::to_array({ ShaderPropertyTypeTraits<Types>::name... });
     }(ShaderPropertyTypeList{});
 
-    return o << lut.at(cpp23::to_underlying(shaderType));
+    return o << lut.at(ToIndex(shaderType));
 }
 
 osc::Shader::Shader(CStringView vertexShader, CStringView fragmentShader) :
@@ -5083,7 +5083,7 @@ private:
             return std::to_array({ VertexAttributeTraits<Attrs>::shader_location... });
         }(VertexAttributeList{});
 
-        return lut.at(cpp23::to_underlying(attr));
+        return lut.at(ToIndex(attr));
     }
 
     static GLint GetVertexAttributeSize(VertexAttributeFormat const& format)

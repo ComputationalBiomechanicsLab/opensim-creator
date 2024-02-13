@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Shims/Cpp23/utility.h>
+
 #include <concepts>
 #include <cstddef>
 #include <type_traits>
@@ -22,6 +24,12 @@ namespace osc
     struct OptionList {
         static_assert(sizeof...(TEnumOptions) == NumOptions<TEnum>());
     };
+
+    template<DenselyPackedOptionsEnum TEnum>
+    constexpr size_t ToIndex(TEnum v)
+    {
+        return cpp23::to_underlying(v);
+    }
 
     template<typename TEnum>
     concept FlagsEnum = requires(TEnum v) {
