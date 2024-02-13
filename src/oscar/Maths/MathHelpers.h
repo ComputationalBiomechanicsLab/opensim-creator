@@ -23,6 +23,7 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <initializer_list>
 #include <optional>
 #include <span>
 #include <type_traits>
@@ -338,6 +339,7 @@ namespace osc
 
     // returns the unweighted midpoint of all of the provided vectors, or {0.0f, 0.0f, 0.0f} if provided no inputs
     Vec3 Midpoint(std::span<Vec3 const>);
+    inline Vec3 Midpoint(std::initializer_list<Vec3> const& vs) { return Midpoint(std::span<Vec3 const>(vs)); }
 
     // returns the sum of `n` vectors using the "Kahan Summation Algorithm" to reduce errors, returns {0.0f, 0.0f, 0.0f} if provided no inputs
     Vec3 KahanSum(std::span<Vec3 const>);

@@ -10,6 +10,7 @@
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/At.h>
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
@@ -1218,29 +1219,66 @@ Mesh osc::GeneratePolyhedronMesh(
 
     auto const applyRadius = [&vertexBuffer](float radius)
     {
-        for (Vec3 v : vertexBuffer) {
+        for (Vec3& v : vertexBuffer) {
             v = radius * Normalize(v);
         }
     };
 
-    auto const correctUVs = []()
+    // return the angle around the Y axis, CCW when looking from above
+    auto const azimuth = [](Vec3 const& v) -> Radians
     {
-        // TODO
+        return atan2(v.z, -v.x);
     };
 
-    auto const correctSeam = []()
+    auto const correctUV = [](Vec2& uv, Vec3 const& vector, Radians azimuth)
     {
-        // TODO
+        if ((azimuth < 0_rad) && (uv.x == 1.0f)) {
+            uv.x -= 1.0f;
+        }
+        if ((vector.x == 0.0f) && (vector.z == 0.0f)) {
+            uv.x = Turns{azimuth + 0.5_turn}.count();
+        }
     };
 
-    auto const generateUVs = [&vertexBuffer, &uvBuffer, &correctUVs, &correctSeam]()
+    auto const correctUVs = [&vertexBuffer, &uvBuffer, &azimuth, &correctUV]()
     {
-        // return the angle around the Y axis, CCW when looking from above
-        auto const azimuth = [](Vec3 const& v) -> Radians
-        {
-            return atan2(v.z, -v.x);
-        };
+        OSC_ASSERT(vertexBuffer.size() == uvBuffer.size());
+        OSC_ASSERT(vertexBuffer.size() % 3 == 0);
 
+        for (size_t i = 0; i < vertexBuffer.size(); i += 3) {
+            Vec3 const a = vertexBuffer[i+0];
+            Vec3 const b = vertexBuffer[i+1];
+            Vec3 const c = vertexBuffer[i+2];
+
+            auto const azi = azimuth(Midpoint({a, b, c}));
+
+            correctUV(uvBuffer[i+0], a, azi);
+            correctUV(uvBuffer[i+1], b, azi);
+            correctUV(uvBuffer[i+2], c, azi);
+        }
+    };
+
+    auto const correctSeam = [&uvBuffer]()
+    {
+        // handle case when face straddles the seam, see mrdoob/three.js#3269
+        OSC_ASSERT(uvBuffer.size() % 3 == 0);
+        for (size_t i = 0; i < uvBuffer.size(); i += 3) {
+            float const x0 = uvBuffer[i+0].x;
+            float const x1 = uvBuffer[i+1].x;
+            float const x2 = uvBuffer[i+2].x;
+            auto const [min, max] = std::minmax({x0, x1, x2});
+
+            // these magic numbers are arbitrary (copied from three.js)
+            if (max > 0.9f && min < 0.1f) {
+                if (x0 < 0.2f) { uvBuffer[i+0] += 1.0f; }
+                if (x1 < 0.2f) { uvBuffer[i+1] += 1.0f; }
+                if (x2 < 0.2f) { uvBuffer[i+2] += 1.0f; }
+            }
+        }
+    };
+
+    auto const generateUVs = [&vertexBuffer, &uvBuffer, &azimuth, &correctUVs, &correctSeam]()
+    {
         // returns angle above the XZ plane
         auto const inclination = [](Vec3 const& v) -> Radians
         {
@@ -1273,6 +1311,14 @@ Mesh osc::GeneratePolyhedronMesh(
 
     auto meshNormals = vertexBuffer;
     for (auto& v : meshNormals) { v = Normalize(v); }
+
+    // TODO
+    // if (detail == 0) {
+    //     compute flat normals: (three.js: computeVertexNormals)
+    // }
+    // else {
+    //     compute smooth normals (three.js: normalizeNormals)
+    // }
 
     Mesh rv;
     rv.setVerts(vertexBuffer);
