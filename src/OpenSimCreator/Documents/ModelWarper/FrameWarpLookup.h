@@ -22,10 +22,10 @@ namespace osc::mow
             ModelWarpConfiguration const&
         );
 
-        template<std::derived_from<IFrameWarp> TMeshWarp = IFrameWarp>
-        TMeshWarp const* find(std::string const& meshComponentAbsPath) const
+        template<std::derived_from<IFrameWarp> FrameWarp = IFrameWarp>
+        FrameWarp const* find(std::string const& absPath) const
         {
-            return dynamic_cast<TMeshWarp const*>(find<IFrameWarp>(meshComponentAbsPath));
+            return dynamic_cast<FrameWarp const*>(find<IFrameWarp>(absPath));
         }
 
         template<>
