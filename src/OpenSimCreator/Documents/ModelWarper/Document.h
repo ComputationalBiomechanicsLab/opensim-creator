@@ -1,11 +1,11 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/ModelWarper/Detail.h>
 #include <OpenSimCreator/Documents/ModelWarper/FrameWarpLookup.h>
 #include <OpenSimCreator/Documents/ModelWarper/MeshWarpLookup.h>
 #include <OpenSimCreator/Documents/ModelWarper/ModelWarpConfiguration.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.h>
+#include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
 
 #include <oscar/Utils/ClonePtr.h>
 
@@ -29,33 +29,26 @@ namespace osc::mow
         Document& operator=(Document&&) noexcept;
         ~Document() noexcept;
 
-        OpenSim::Model const& getModel() const
+        OpenSim::Model const& model() const
         {
             return *m_Model;
         }
 
-        size_t getNumWarpableMeshesInModel() const;
-        void forEachWarpableMeshInModel(
-            std::function<void(OpenSim::Mesh const&)> const&
-        ) const;
-        void forEachMeshWarpDetail(
+        void forEachWarpDetail(
             OpenSim::Mesh const&,
-            std::function<void(Detail)> const&
+            std::function<void(WarpDetail)> const&
         ) const;
-        void forEachMeshWarpCheck(
+        void forEachWarpCheck(
             OpenSim::Mesh const&,
             std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&
         ) const;
-        ValidationCheck::State getMeshWarpState(OpenSim::Mesh const&) const;
+        ValidationCheck::State warpState(OpenSim::Mesh const&) const;
 
-        size_t getNumWarpableFramesInModel() const;
-        void forEachWarpableFrameInModel(
-            std::function<void(OpenSim::PhysicalOffsetFrame const&)> const&
-        ) const;
-        void forEachFrameDefinitionCheck(
+        void forEachWarpCheck(
             OpenSim::PhysicalOffsetFrame const&,
             std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&
         ) const;
+        ValidationCheck::State warpState(OpenSim::PhysicalOffsetFrame const&) const;
 
     private:
         ClonePtr<OpenSim::Model const> m_Model;

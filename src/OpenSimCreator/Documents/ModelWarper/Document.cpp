@@ -11,12 +11,11 @@
 #include <sstream>
 #include <utility>
 
-using osc::mow::ValidationCheck;
+using namespace osc::mow;
 
 osc::mow::Document::Document() :
     m_Model{std::make_unique<OpenSim::Model>()}
-{
-}
+{}
 
 osc::mow::Document::Document(std::filesystem::path const& osimFileLocation) :
     m_Model{std::make_unique<OpenSim::Model>(osimFileLocation.string())},
@@ -31,23 +30,9 @@ osc::mow::Document& osc::mow::Document::operator=(Document const&) = default;
 osc::mow::Document& osc::mow::Document::operator=(Document&&) noexcept = default;
 osc::mow::Document::~Document() noexcept = default;
 
-size_t osc::mow::Document::getNumWarpableMeshesInModel() const
-{
-    return GetNumChildren<OpenSim::Mesh>(*m_Model);
-}
-
-void osc::mow::Document::forEachWarpableMeshInModel(
-    std::function<void(OpenSim::Mesh const&)> const& callback) const
-{
-    for (auto const& mesh : m_Model->getComponentList<OpenSim::Mesh>())
-    {
-        callback(mesh);
-    }
-}
-
-void osc::mow::Document::forEachMeshWarpDetail(
+void osc::mow::Document::forEachWarpDetail(
     OpenSim::Mesh const& mesh,
-    std::function<void(Detail)> const& callback) const
+    std::function<void(WarpDetail)> const& callback) const
 {
     callback({ "OpenSim::Mesh path in the OpenSim::Model", GetAbsolutePathString(mesh) });
 
@@ -57,7 +42,7 @@ void osc::mow::Document::forEachMeshWarpDetail(
     }
 }
 
-void osc::mow::Document::forEachMeshWarpCheck(
+void osc::mow::Document::forEachWarpCheck(
     OpenSim::Mesh const& mesh,
     std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
 {
@@ -71,31 +56,16 @@ void osc::mow::Document::forEachMeshWarpCheck(
     }
 }
 
-ValidationCheck::State osc::mow::Document::getMeshWarpState(OpenSim::Mesh const& mesh) const
+ValidationCheck::State osc::mow::Document::warpState(OpenSim::Mesh const& mesh) const
 {
     IMeshWarp const* p = m_MeshWarpLookup.find(GetAbsolutePathString(mesh));
     return p ? p->state() : ValidationCheck::State::Error;
 }
 
-size_t osc::mow::Document::getNumWarpableFramesInModel() const
-{
-    return GetNumChildren<OpenSim::PhysicalOffsetFrame>(*m_Model);
-}
-
-void osc::mow::Document::forEachWarpableFrameInModel(
-    std::function<void(OpenSim::PhysicalOffsetFrame const&)> const& callback) const
-{
-    for (auto const& frame : m_Model->getComponentList<OpenSim::PhysicalOffsetFrame>())
-    {
-        callback(frame);
-    }
-}
-
-void osc::mow::Document::forEachFrameDefinitionCheck(
+void osc::mow::Document::forEachWarpCheck(
     OpenSim::PhysicalOffsetFrame const&,
     std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&) const
 {
-
     // TODO
     // - check associated mesh is found
     // - check origin location landmark
@@ -103,4 +73,10 @@ void osc::mow::Document::forEachFrameDefinitionCheck(
     // - check axis edge end landmark
     // - check nonparallel edge begin landmark
     // - check nonparallel edge end landmark
+}
+
+ValidationCheck::State osc::mow::Document::warpState(
+    OpenSim::PhysicalOffsetFrame const&) const
+{
+    return ValidationCheck::State::Ok;
 }

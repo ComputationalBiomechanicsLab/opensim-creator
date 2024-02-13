@@ -6,6 +6,7 @@
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <oscar/Graphics/Color.h>
@@ -44,7 +45,7 @@ namespace
 
     EntryStyling CalcStyle(UIState const& state, OpenSim::Mesh const& mesh)
     {
-        return ToStyle(state.getMeshWarpState(mesh));
+        return ToStyle(state.warpState(mesh));
     }
 
     EntryStyling CalcStyle(UIState const&, OpenSim::Frame const&)
@@ -96,13 +97,13 @@ namespace
             ImGui::TableSetupColumn("Value");
             ImGui::TableHeadersRow();
 
-            state.forEachMeshWarpDetail(mesh, [](auto detail)
+            state.forEachWarpDetail(mesh, [](auto detail)
             {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                TextUnformatted(detail.name);
+                TextUnformatted(detail.name());
                 ImGui::TableSetColumnIndex(1);
-                TextUnformatted(detail.value);
+                TextUnformatted(detail.value());
             });
             ImGui::EndTable();
         }
@@ -112,7 +113,7 @@ namespace
     {
         ImGui::Indent(5.0f);
         int id = 0;
-        state.forEachMeshWarpCheck(mesh, [&id](auto check)
+        state.forEachWarpCheck(mesh, [&id](auto check)
         {
             ImGui::PushID(id);
             auto style = ToStyle(check.state());
@@ -154,19 +155,18 @@ namespace
     {
         ImGui::Text("Meshes");
         ImGui::SameLine();
-        ImGui::TextDisabled("(%zu)", state.getNumWarpableMeshesInModel());
+        ImGui::TextDisabled("(%zu)", GetNumChildren<OpenSim::Mesh>(state.model()));
         ImGui::SameLine();
         DrawHelpMarker("Shows which meshes are elegible for warping in the source model - and whether the model warper has enough information to warp them (plus any other useful validation checks)");
 
         ImGui::Separator();
 
         int id = 0;
-        state.forEachWarpableMeshInModel([&state, &id](auto const& mesh)
-        {
+        for (auto const& mesh : state.model().getComponentList<OpenSim::Mesh>()) {
             ImGui::PushID(id++);
             DrawMeshEntry(state, mesh);
             ImGui::PopID();
-        });
+        }
     }
 }
 
@@ -177,7 +177,7 @@ namespace
     {
         ImGui::Indent(5.0f);
         int id = 0;
-        state.forEachFrameDefinitionCheck(frame, [&id](auto check)
+        state.forEachWarpCheck(frame, [&id](auto check)
         {
             ImGui::PushID(id);
             auto style = ToStyle(check.state());
@@ -224,17 +224,16 @@ namespace
 
     void DrawFramesSection(UIState const& state)
     {
-        DrawFramesSectionHeader(state.getNumWarpableFramesInModel());
+        DrawFramesSectionHeader(GetNumChildren<OpenSim::PhysicalOffsetFrame>(state.model()));
 
         ImGui::Separator();
 
         int id = 0;
-        state.forEachWarpableFrameInModel([&state, &id](auto const& frame)
-        {
+        for (auto const& pof : state.model().getComponentList<OpenSim::PhysicalOffsetFrame>()) {
             ImGui::PushID(id++);
-            DrawChecklistEntry(state, frame);
+            DrawChecklistEntry(state, pof);
             ImGui::PopID();
-        });
+        }
     }
 }
 

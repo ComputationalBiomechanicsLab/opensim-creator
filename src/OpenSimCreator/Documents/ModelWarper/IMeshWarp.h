@@ -1,10 +1,10 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/ModelWarper/Detail.h>
 #include <OpenSimCreator/Documents/ModelWarper/IDetailListable.h>
 #include <OpenSimCreator/Documents/ModelWarper/IValidationCheckable.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.h>
+#include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
 
 #include <oscar/Utils/ICloneable.h>
 

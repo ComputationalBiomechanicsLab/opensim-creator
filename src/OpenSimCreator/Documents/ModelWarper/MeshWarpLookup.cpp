@@ -25,17 +25,14 @@ namespace
         rv.reserve(GetNumChildren<OpenSim::Mesh>(model));
 
         // go through each mesh in the `OpenSim::Model` and attempt to load its landmark pairings
-        for (auto const& mesh : model.getComponentList<OpenSim::Mesh>())
-        {
-            if (auto meshPath = FindGeometryFileAbsPath(model, mesh))
-            {
+        for (auto const& mesh : model.getComponentList<OpenSim::Mesh>()) {
+            if (auto meshPath = FindGeometryFileAbsPath(model, mesh)) {
                 rv.try_emplace(
                     mesh.getAbsolutePathString(),
                     std::make_unique<ThinPlateSplineMeshWarp>(modelFileLocation, std::move(meshPath).value())
                 );
             }
-            else
-            {
+            else {
                 std::stringstream ss;
                 ss << mesh.getGeometryFilename() << ": could not find this mesh file: skipping";
                 log_error(std::move(ss).str());

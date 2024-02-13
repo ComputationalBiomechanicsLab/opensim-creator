@@ -1,10 +1,10 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/ModelWarper/Detail.h>
 #include <OpenSimCreator/Documents/ModelWarper/IMeshWarp.h>
 #include <OpenSimCreator/Documents/ModelWarper/LandmarkPairing.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.h>
+#include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
 
 #include <cstddef>
 #include <filesystem>
@@ -50,7 +50,7 @@ namespace osc::mow
 
     private:
         std::unique_ptr<IMeshWarp> implClone() const override;
-        void implForEachDetail(std::function<void(Detail)> const&) const override;
+        void implForEachDetail(std::function<void(WarpDetail)> const&) const override;
         void implForEachCheck(std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const override;
         ValidationCheck::State implState() const override;
 

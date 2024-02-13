@@ -1,9 +1,9 @@
 #include "UIState.h"
 
-#include <OpenSimCreator/Documents/ModelWarper/Detail.h>
 #include <OpenSimCreator/Documents/ModelWarper/Document.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.h>
+#include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>
@@ -35,54 +35,34 @@ namespace
     }
 }
 
-OpenSim::Model const& osc::mow::UIState::getModel() const
+OpenSim::Model const& osc::mow::UIState::model() const
 {
-    return m_Document->getModel();
+    return m_Document->model();
 }
 
-size_t osc::mow::UIState::getNumWarpableMeshesInModel() const
+void osc::mow::UIState::forEachWarpDetail(OpenSim::Mesh const& mesh, std::function<void(WarpDetail)> const& callback) const
 {
-    return m_Document->getNumWarpableMeshesInModel();
+    m_Document->forEachWarpDetail(mesh, callback);
 }
 
-void osc::mow::UIState::forEachWarpableMeshInModel(std::function<void(OpenSim::Mesh const&)> const& callback) const
+void osc::mow::UIState::forEachWarpCheck(OpenSim::Mesh const& mesh, std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
 {
-    return m_Document->forEachWarpableMeshInModel(callback);
+    m_Document->forEachWarpCheck(mesh, callback);
 }
 
-void osc::mow::UIState::forEachMeshWarpDetail(OpenSim::Mesh const& mesh, std::function<void(Detail)> const& callback) const
+ValidationCheck::State osc::mow::UIState::warpState(OpenSim::Mesh const& mesh) const
 {
-    m_Document->forEachMeshWarpDetail(mesh, callback);
+    return m_Document->warpState(mesh);
 }
 
-void osc::mow::UIState::forEachMeshWarpCheck(OpenSim::Mesh const& mesh, std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
-{
-    m_Document->forEachMeshWarpCheck(mesh, callback);
-}
-
-ValidationCheck::State osc::mow::UIState::getMeshWarpState(OpenSim::Mesh const& mesh) const
-{
-    return m_Document->getMeshWarpState(mesh);
-}
-
-size_t osc::mow::UIState::getNumWarpableFramesInModel() const
-{
-    return m_Document->getNumWarpableFramesInModel();
-}
-
-void osc::mow::UIState::forEachWarpableFrameInModel(std::function<void(OpenSim::PhysicalOffsetFrame const&)> const& callback) const
-{
-    m_Document->forEachWarpableFrameInModel(callback);
-}
-
-void osc::mow::UIState::forEachFrameDefinitionCheck(
+void osc::mow::UIState::forEachWarpCheck(
     OpenSim::PhysicalOffsetFrame const& frame,
     std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
 {
-    m_Document->forEachFrameDefinitionCheck(frame, callback);
+    m_Document->forEachWarpCheck(frame, callback);
 }
 
-void osc::mow::UIState::actionOpenModel(std::optional<std::filesystem::path> path)
+void osc::mow::UIState::actionOpenOsimOrPromptUser(std::optional<std::filesystem::path> path)
 {
     if (!path) {
         path = PromptUserForFile("osim");

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/ModelWarper/Detail.h>
+#include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
 
 #include <functional>
 
@@ -16,9 +16,9 @@ namespace osc::mow
     public:
         virtual ~IDetailListable() noexcept = default;
 
-        void forEachDetail(std::function<void(Detail)> const& callback) const { implForEachDetail(callback); }
+        void forEachDetail(std::function<void(WarpDetail)> const& callback) const { implForEachDetail(callback); }
 
     private:
-        virtual void implForEachDetail(std::function<void(Detail)> const&) const = 0;
+        virtual void implForEachDetail(std::function<void(WarpDetail)> const&) const = 0;
     };
 }

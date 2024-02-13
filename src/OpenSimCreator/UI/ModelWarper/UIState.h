@@ -1,9 +1,9 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/ModelWarper/Detail.h>
 #include <OpenSimCreator/Documents/ModelWarper/Document.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.h>
+#include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
 
 #include <filesystem>
 #include <memory>
@@ -17,34 +17,28 @@ namespace osc::mow
 {
     class UIState final {
     public:
-        OpenSim::Model const& getModel() const;
+        OpenSim::Model const& model() const;
 
-        size_t getNumWarpableMeshesInModel() const;
-        void forEachWarpableMeshInModel(
-            std::function<void(OpenSim::Mesh const&)> const&
-        ) const;
-        void forEachMeshWarpDetail(
+        void forEachWarpDetail(
             OpenSim::Mesh const&,
-            std::function<void(Detail)> const&
+            std::function<void(WarpDetail)> const&
         ) const;
-        void forEachMeshWarpCheck(
+        void forEachWarpCheck(
             OpenSim::Mesh const&,
             std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&
         ) const;
-        ValidationCheck::State getMeshWarpState(
+        ValidationCheck::State warpState(
             OpenSim::Mesh const&
         ) const;
 
-        size_t getNumWarpableFramesInModel() const;
-        void forEachWarpableFrameInModel(
-            std::function<void(OpenSim::PhysicalOffsetFrame const&)> const&
-        ) const;
-        void forEachFrameDefinitionCheck(
+        void forEachWarpCheck(
             OpenSim::PhysicalOffsetFrame const&,
             std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&
         ) const;
 
-        void actionOpenModel(std::optional<std::filesystem::path> path = std::nullopt);
+        void actionOpenOsimOrPromptUser(
+            std::optional<std::filesystem::path> maybeOsimPath = std::nullopt
+        );
     private:
         std::shared_ptr<Document> m_Document = std::make_shared<Document>();
     };

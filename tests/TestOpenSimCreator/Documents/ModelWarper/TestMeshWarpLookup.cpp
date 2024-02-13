@@ -71,9 +71,9 @@ TEST(MeshWarpLookup, CorrectlyLoadsSimpleCase)
         auto p = pairing->tryGetLandmarkPairingByName(name);
 
         ASSERT_TRUE(p);
-        ASSERT_EQ(p->getName(), name);
-        ASSERT_TRUE(p->hasSourcePos());
-        ASSERT_FALSE(p->hasDestinationPos());
+        ASSERT_EQ(p->name(), name);
+        ASSERT_TRUE(p->hasSource());
+        ASSERT_FALSE(p->hasDestination());
         ASSERT_FALSE(p->isFullyPaired());  // this only tests one side of the pairing
     }
 }
@@ -135,9 +135,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsPairedCase)
         auto p = pairing->tryGetLandmarkPairingByName(name);
 
         ASSERT_TRUE(p);
-        ASSERT_EQ(p->getName(), name);
-        ASSERT_TRUE(p->hasSourcePos());
-        ASSERT_TRUE(p->hasDestinationPos());
+        ASSERT_EQ(p->name(), name);
+        ASSERT_TRUE(p->hasSource());
+        ASSERT_TRUE(p->hasDestination());
         ASSERT_TRUE(p->isFullyPaired());
     }
 }
@@ -201,9 +201,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingDestinationLMsCase)
         auto p = pairing->tryGetLandmarkPairingByName(name);
 
         ASSERT_TRUE(p);
-        ASSERT_EQ(p->getName(), name);
-        ASSERT_TRUE(p->hasSourcePos());
-        ASSERT_FALSE(p->hasDestinationPos());
+        ASSERT_EQ(p->name(), name);
+        ASSERT_TRUE(p->hasSource());
+        ASSERT_FALSE(p->hasDestination());
         ASSERT_FALSE(p->isFullyPaired());
     }
 }
@@ -269,9 +269,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingSourceLMsCase)
         ASSERT_TRUE(pairing->hasLandmarkNamed(name));
         auto p = pairing->tryGetLandmarkPairingByName(name);
         ASSERT_TRUE(p);
-        ASSERT_EQ(p->getName(), name);
-        ASSERT_FALSE(p->hasSourcePos());
-        ASSERT_TRUE(p->hasDestinationPos());
+        ASSERT_EQ(p->name(), name);
+        ASSERT_FALSE(p->hasSource());
+        ASSERT_TRUE(p->hasDestination());
         ASSERT_FALSE(p->isFullyPaired());
     }
 }
@@ -321,9 +321,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSimpleUnnamedCase)
         ASSERT_TRUE(pairing->hasLandmarkNamed(name)) << name;
         auto p = pairing->tryGetLandmarkPairingByName(name);
         ASSERT_TRUE(p) << name;
-        ASSERT_EQ(p->getName(), name);
-        ASSERT_TRUE(p->hasSourcePos());
-        ASSERT_FALSE(p->hasDestinationPos());
+        ASSERT_EQ(p->name(), name);
+        ASSERT_TRUE(p->hasSource());
+        ASSERT_FALSE(p->hasDestination());
         ASSERT_FALSE(p->isFullyPaired());
     }
 }
@@ -384,7 +384,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSparselyNamedPairedCase)
         auto p = pairing->tryGetLandmarkPairingByName(name);
 
         ASSERT_TRUE(p);
-        ASSERT_EQ(p->getName(), name);
+        ASSERT_EQ(p->name(), name);
         ASSERT_TRUE(p->isFullyPaired());
     }
 }
