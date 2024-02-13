@@ -68,7 +68,6 @@
 #include <oscar/Utils/Concepts.h>
 #include <oscar/Utils/DefaultConstructOnCopy.h>
 #include <oscar/Utils/EnumHelpers.h>
-#include <oscar/Utils/NonTypelist.h>
 #include <oscar/Utils/ObjectRepresentation.h>
 #include <oscar/Utils/Perf.h>
 #include <oscar/Utils/StdVariantHelpers.h>
@@ -1064,7 +1063,7 @@ namespace
     // CPU (packed) to the GPU (unpacked)
     constexpr GLint ToOpenGLUnpackAlignment(TextureFormat format)
     {
-        constexpr auto lut = []<TextureFormat... Formats>(NonTypelist<TextureFormat, Formats...>)
+        constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
         {
             return std::to_array({ TextureFormatOpenGLTraits<Formats>::unpack_alignment... });
         }(TextureFormatList{});
@@ -1078,12 +1077,12 @@ namespace
         TextureFormat format,
         ColorSpace colorSpace)
     {
-        constexpr auto srgbLUT = []<TextureFormat... Formats>(NonTypelist<TextureFormat, Formats...>)
+        constexpr auto srgbLUT = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
         {
             return std::to_array({ TextureFormatOpenGLTraits<Formats>::internal_format_srgb... });
         }(TextureFormatList{});
 
-        constexpr auto linearLUT = []<TextureFormat... Formats>(NonTypelist<TextureFormat, Formats...>)
+        constexpr auto linearLUT = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
         {
             return std::to_array({ TextureFormatOpenGLTraits<Formats>::internal_format_linear... });
         }(TextureFormatList{});
@@ -1099,7 +1098,7 @@ namespace
 
     constexpr GLenum ToOpenGLDataType(CPUDataType t)
     {
-        constexpr auto lut = []<CPUDataType... DataTypes>(NonTypelist<CPUDataType, DataTypes...>)
+        constexpr auto lut = []<CPUDataType... DataTypes>(OptionList<CPUDataType, DataTypes...>)
         {
             return std::to_array({ CPUDataTypeOpenGLTraits<DataTypes>::opengl_data_type... });
         }(CPUDataTypeList{});
@@ -1109,7 +1108,7 @@ namespace
 
     constexpr CPUDataType ToEquivalentCPUDataType(TextureFormat format)
     {
-        constexpr auto lut = []<TextureFormat... Formats>(NonTypelist<TextureFormat, Formats...>)
+        constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
         {
             return std::to_array({ TextureFormatTraits<Formats>::equivalent_cpu_datatype... });
         }(TextureFormatList{});
@@ -1119,7 +1118,7 @@ namespace
 
     constexpr CPUImageFormat ToEquivalentCPUImageFormat(TextureFormat format)
     {
-        constexpr auto lut = []<TextureFormat... Formats>(NonTypelist<TextureFormat, Formats...>)
+        constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
         {
             return std::to_array({ TextureFormatTraits<Formats>::equivalent_cpu_image_format... });
         }(TextureFormatList{});
@@ -1129,7 +1128,7 @@ namespace
 
     constexpr GLenum ToOpenGLFormat(CPUImageFormat t)
     {
-        constexpr auto lut = []<CPUImageFormat... Formats>(NonTypelist<CPUImageFormat, Formats...>)
+        constexpr auto lut = []<CPUImageFormat... Formats>(OptionList<CPUImageFormat, Formats...>)
         {
             return std::to_array({ CPUImageFormatOpenGLTraits<Formats>::opengl_format... });
         }(CPUImageFormatList{});
@@ -1907,7 +1906,7 @@ std::ostream& osc::operator<<(std::ostream& o, TextureFilterMode twm)
 
 size_t osc::NumChannels(TextureFormat format)
 {
-    constexpr auto lut = []<TextureFormat... Formats>(NonTypelist<TextureFormat, Formats...>)
+    constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
     {
         return std::to_array({ TextureFormatTraits<Formats>::num_channels... });
     }(TextureFormatList{});
@@ -1917,7 +1916,7 @@ size_t osc::NumChannels(TextureFormat format)
 
 TextureChannelFormat osc::ChannelFormat(TextureFormat f)
 {
-    constexpr auto lut = []<TextureFormat... Formats>(NonTypelist<TextureFormat, Formats...>)
+    constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
     {
         return std::to_array({ TextureFormatTraits<Formats>::channel_format... });
     }(TextureFormatList{});
@@ -2199,7 +2198,7 @@ namespace
 
     constexpr GLenum ToImageColorFormat(TextureFormat f)
     {
-        constexpr auto lut = []<TextureFormat... Formats>(NonTypelist<TextureFormat, Formats...>)
+        constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
         {
             return std::to_array({ TextureFormatOpenGLTraits<Formats>::image_color_format... });
         }(TextureFormatList{});
@@ -2209,7 +2208,7 @@ namespace
 
     constexpr GLint ToImagePixelPackAlignment(TextureFormat f)
     {
-        constexpr auto lut = []<TextureFormat... Formats>(NonTypelist<TextureFormat, Formats...>)
+        constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
         {
             return std::to_array({ TextureFormatOpenGLTraits<Formats>::pixel_pack_alignment... });
         }(TextureFormatList{});
@@ -3065,7 +3064,7 @@ private:
 
 std::ostream& osc::operator<<(std::ostream& o, ShaderPropertyType shaderType)
 {
-    constexpr auto lut = []<ShaderPropertyType... Types>(NonTypelist<ShaderPropertyType, Types...>)
+    constexpr auto lut = []<ShaderPropertyType... Types>(OptionList<ShaderPropertyType, Types...>)
     {
         return std::to_array({ ShaderPropertyTypeTraits<Types>::name... });
     }(ShaderPropertyTypeList{});
@@ -4148,7 +4147,7 @@ namespace
         }
 
         template<VertexAttributeFormat... Formats>
-        static constexpr void WriteEntriesTopLevel(ReencoderLut& lut, NonTypelist<VertexAttributeFormat, Formats...>)
+        static constexpr void WriteEntriesTopLevel(ReencoderLut& lut, OptionList<VertexAttributeFormat, Formats...>)
         {
             (WriteEntries<Formats, Formats...>(lut), ...);
         }
@@ -5079,7 +5078,7 @@ private:
 
     static GLuint GetVertexAttributeIndex(VertexAttribute attr)
     {
-        auto constexpr lut = []<VertexAttribute... Attrs>(NonTypelist<VertexAttribute, Attrs...>)
+        auto constexpr lut = []<VertexAttribute... Attrs>(OptionList<VertexAttribute, Attrs...>)
         {
             return std::to_array({ VertexAttributeTraits<Attrs>::shader_location... });
         }(VertexAttributeList{});

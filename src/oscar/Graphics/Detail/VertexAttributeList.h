@@ -1,11 +1,11 @@
 #pragma once
 
 #include <oscar/Graphics/VertexAttribute.h>
-#include <oscar/Utils/NonTypelist.h>
+#include <oscar/Utils/EnumHelpers.h>
 
 namespace osc::detail
 {
-    using VertexAttributeList = NonTypelist<VertexAttribute,
+    using VertexAttributeList = OptionList<VertexAttribute,
         VertexAttribute::Position,
         VertexAttribute::Normal,
         VertexAttribute::Tangent,

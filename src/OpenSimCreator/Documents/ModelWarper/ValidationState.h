@@ -2,5 +2,5 @@
 
 namespace osc::mow
 {
-	enum class ValidationState { Ok, Warning, Error };
+    enum class ValidationState { Ok, Warning, Error };
 }

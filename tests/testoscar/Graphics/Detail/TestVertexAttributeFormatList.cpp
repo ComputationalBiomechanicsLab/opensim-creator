@@ -11,21 +11,10 @@
 using namespace osc;
 using namespace osc::detail;
 
-namespace
-{
-    template<VertexAttributeFormat... Formats>
-    constexpr void InstantiateTraits(NonTypelist<VertexAttributeFormat, Formats...>)
-    {
-        [[maybe_unused]] auto a = std::to_array({VertexAttributeFormatTraits<Formats>::num_components...});
-    }
-}
-
-TEST(VertexAttributeFormatList, HasAnEntryForEachVertexAttributeFormat)
-{
-    static_assert(NumOptions<VertexAttributeFormat>() == NonTypelistSizeV<VertexAttributeFormatList>);
-}
-
 TEST(VertexAttributeFormatList, EveryEntryInTheListHasAnAssociatedTraitsObject)
 {
-    InstantiateTraits(VertexAttributeFormatList{});
+    [[maybe_unused]] auto ary = []<VertexAttributeFormat... Formats>(OptionList<VertexAttributeFormat, Formats...>)
+    {
+        return std::to_array({VertexAttributeFormatTraits<Formats>::num_components...});
+    }(VertexAttributeFormatList{});
 }

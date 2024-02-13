@@ -9,7 +9,7 @@
 
 std::string osc::to_string(VariantType v)
 {
-    auto constexpr lut = []<VariantType... Types>(NonTypelist<VariantType, Types...>)
+    auto constexpr lut = []<VariantType... Types>(OptionList<VariantType, Types...>)
     {
         return std::to_array({ VariantTypeTraits<Types>::name... });
     }(VariantTypeList{});
