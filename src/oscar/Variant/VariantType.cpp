@@ -15,7 +15,7 @@ std::string osc::to_string(VariantType v)
     }(VariantTypeList{});
 
     auto const idx = ToIndex(v);
-    if (0 <= idx && idx < std::ssize(lut)) {
+    if (0 <= idx && idx < std::size(lut)) {
         return std::string{lut[idx]};
     }
     else {
