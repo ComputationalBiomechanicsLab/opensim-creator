@@ -48,5 +48,5 @@ osc::mow::MeshWarpLookup::MeshWarpLookup(
     OpenSim::Model const& model,
     ModelWarpConfiguration const&) :
 
-    m_ComponentAbsPathToMeshPairing{CreateLut(osimFileLocation, model)}
+    m_AbsPathToWarpLUT{CreateLut(osimFileLocation, model)}
 {}
