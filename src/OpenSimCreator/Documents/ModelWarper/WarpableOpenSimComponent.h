@@ -7,5 +7,5 @@
 namespace osc::mow
 {
     template<typename T>
-    concept WarpableOpenSimComponent = true;  // TODO
+    concept WarpableOpenSimComponent = IsAnyOf<T, OpenSim::Mesh, OpenSim::PhysicalOffsetFrame>;
 }
