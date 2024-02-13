@@ -1,6 +1,7 @@
 #include "ChecklistPanel.h"
 
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
@@ -29,15 +30,15 @@ namespace
         Color color;
     };
 
-    EntryStyling ToStyle(ValidationCheck::State s)
+    EntryStyling ToStyle(ValidationState s)
     {
         switch (s) {
-        case ValidationCheck::State::Ok:
+        case ValidationState::Ok:
             return {.icon = ICON_FA_CHECK, .color = Color::green()};
-        case ValidationCheck::State::Warning:
+        case ValidationState::Warning:
             return {.icon = ICON_FA_EXCLAMATION, .color = Color::orange()};
         default:
-        case ValidationCheck::State::Error:
+        case ValidationState::Error:
             return {.icon = ICON_FA_TIMES, .color = Color::red()};
         }
     }

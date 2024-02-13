@@ -1,5 +1,6 @@
 #include "Document.h"
 
+#include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
@@ -49,14 +50,14 @@ std::vector<ValidationCheck> osc::mow::Document::validate(OpenSim::Mesh const& m
         return p->validate();
     }
     else {
-        return {ValidationCheck{"no mesh warp pairing found: this is probably an implementation error (maybe reload?)", ValidationCheck::State::Error}};
+        return {ValidationCheck{"no mesh warp pairing found: this is probably an implementation error (maybe reload?)", ValidationState::Error}};
     }
 }
 
-ValidationCheck::State osc::mow::Document::state(OpenSim::Mesh const& mesh) const
+ValidationState osc::mow::Document::state(OpenSim::Mesh const& mesh) const
 {
     IMeshWarp const* p = m_MeshWarpLookup.find(GetAbsolutePathString(mesh));
-    return p ? p->state() : ValidationCheck::State::Error;
+    return p ? p->state() : ValidationState::Error;
 }
 
 std::vector<ValidationCheck> osc::mow::Document::validate(OpenSim::PhysicalOffsetFrame const&) const
@@ -71,8 +72,8 @@ std::vector<ValidationCheck> osc::mow::Document::validate(OpenSim::PhysicalOffse
     return {};
 }
 
-ValidationCheck::State osc::mow::Document::state(
+ValidationState osc::mow::Document::state(
     OpenSim::PhysicalOffsetFrame const&) const
 {
-    return ValidationCheck::State::Ok;
+    return ValidationState::Ok;
 }

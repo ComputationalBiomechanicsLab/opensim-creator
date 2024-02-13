@@ -121,6 +121,7 @@ add_library(OpenSimCreator STATIC
     Documents/ModelWarper/ThinPlateSplineMeshWarp.cpp
     Documents/ModelWarper/ThinPlateSplineMeshWarp.h
     Documents/ModelWarper/ValidationCheck.h
+    Documents/ModelWarper/ValidationState.h
     Documents/ModelWarper/WarpDetail.h
 
     Documents/Simulation/ForwardDynamicSimulation.cpp

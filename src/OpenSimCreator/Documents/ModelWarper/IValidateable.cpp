@@ -1,15 +1,17 @@
 #include "IValidateable.h"
 
+#include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
+
 #include <algorithm>
 
 using namespace osc::mow;
 
-ValidationCheck::State osc::mow::IValidateable::implState() const
+ValidationState osc::mow::IValidateable::implState() const
 {
-    ValidationCheck::State worst = ValidationCheck::State::Ok;
+    ValidationState worst = ValidationState::Ok;
     for (auto const& c : validate()) {
         worst = std::max(worst, c.state());
-        if (worst == ValidationCheck::State::Error) {
+        if (worst == ValidationState::Error) {
             break;
         }
     }

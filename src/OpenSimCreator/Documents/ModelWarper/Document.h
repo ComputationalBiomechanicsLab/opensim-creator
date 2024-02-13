@@ -4,6 +4,7 @@
 #include <OpenSimCreator/Documents/ModelWarper/MeshWarpLookup.h>
 #include <OpenSimCreator/Documents/ModelWarper/ModelWarpConfiguration.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
 
 #include <oscar/Utils/ClonePtr.h>
@@ -32,10 +33,10 @@ namespace osc::mow
 
         std::vector<WarpDetail> details(OpenSim::Mesh const&) const;
         std::vector<ValidationCheck> validate(OpenSim::Mesh const&) const;
-        ValidationCheck::State state(OpenSim::Mesh const&) const;
+        ValidationState state(OpenSim::Mesh const&) const;
 
         std::vector<ValidationCheck> validate(OpenSim::PhysicalOffsetFrame const&) const;
-        ValidationCheck::State state(OpenSim::PhysicalOffsetFrame const&) const;
+        ValidationState state(OpenSim::PhysicalOffsetFrame const&) const;
 
     private:
         ClonePtr<OpenSim::Model const> m_Model;

@@ -1,6 +1,7 @@
 #include "ThinPlateSplineMeshWarp.h"
 
 #include <OpenSimCreator/Documents/Landmarks/LandmarkHelpers.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
 
 #include <oscar/Platform/Log.h>
 
@@ -315,7 +316,7 @@ std::vector<ValidationCheck> osc::mow::ThinPlateSplineMeshWarp::implValidate() c
     rv.emplace_back("at least three landmarks can be paired between source/destination", getNumFullyPairedLandmarks() >= 3);
 
     // (warning): has no unpaired landmarks
-    rv.emplace_back("there are no unpaired landmarks", getNumUnpairedLandmarks() == 0 ? ValidationCheck::State::Ok : ValidationCheck::State::Warning);
+    rv.emplace_back("there are no unpaired landmarks", getNumUnpairedLandmarks() == 0 ? ValidationState::Ok : ValidationState::Warning);
 
     return rv;
 }
