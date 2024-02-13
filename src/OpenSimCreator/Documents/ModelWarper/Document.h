@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/ModelWarper/FrameWarpLookup.h>
+#include <OpenSimCreator/Documents/ModelWarper/IValidateable.h>
 #include <OpenSimCreator/Documents/ModelWarper/MeshWarpLookup.h>
 #include <OpenSimCreator/Documents/ModelWarper/ModelWarpConfiguration.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
@@ -19,7 +20,7 @@ namespace OpenSim { class PhysicalOffsetFrame; }
 namespace osc::mow
 {
     // the document that the model warping UI represents/manipulates
-    class Document final {
+    class Document final : public IValidateable {
     public:
         Document();
         explicit Document(std::filesystem::path const& osimFileLocation);
@@ -38,8 +39,9 @@ namespace osc::mow
         std::vector<WarpDetail> details(OpenSim::PhysicalOffsetFrame const&) const;
         std::vector<ValidationCheck> validate(OpenSim::PhysicalOffsetFrame const&) const;
         ValidationState state(OpenSim::PhysicalOffsetFrame const&) const;
-
     private:
+        std::vector<ValidationCheck> implValidate() const;
+
         ClonePtr<OpenSim::Model const> m_Model;
         ModelWarpConfiguration m_ModelWarpConfig;
         MeshWarpLookup m_MeshWarpLookup;

@@ -84,3 +84,15 @@ ValidationState osc::mow::Document::state(
     IFrameWarp const* p = m_FrameWarpLookup.find(GetAbsolutePathString(pof));
     return p ? p->state() : ValidationState::Error;
 }
+
+std::vector<ValidationCheck> osc::mow::Document::implValidate() const
+{
+    std::vector<ValidationCheck> rv;
+    for (auto const& mesh : model().getComponentList<OpenSim::Mesh>()) {
+        rv.emplace_back(mesh.getName(), state(mesh));
+    }
+    for (auto const& pof : model().getComponentList<OpenSim::PhysicalOffsetFrame>()) {
+        rv.emplace_back(pof.getName(), state(pof));
+    }
+    return rv;
+}
