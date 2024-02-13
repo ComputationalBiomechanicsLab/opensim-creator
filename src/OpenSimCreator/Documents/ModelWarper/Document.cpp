@@ -95,6 +95,7 @@ void osc::mow::Document::forEachFrameDefinitionCheck(
     OpenSim::PhysicalOffsetFrame const&,
     std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&) const
 {
+
     // TODO
     // - check associated mesh is found
     // - check origin location landmark

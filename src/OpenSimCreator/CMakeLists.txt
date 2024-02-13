@@ -108,8 +108,10 @@ add_library(OpenSimCreator STATIC
     Documents/ModelWarper/Document.h
     Documents/ModelWarper/FrameWarpLookup.cpp
     Documents/ModelWarper/FrameWarpLookup.h
+    Documents/ModelWarper/IDetailListable.h
     Documents/ModelWarper/IFrameWarp.h
     Documents/ModelWarper/IMeshWarp.h
+    Documents/ModelWarper/IValidationCheckable.h
     Documents/ModelWarper/LandmarkPairing.h
     Documents/ModelWarper/MeshWarpLookup.cpp
     Documents/ModelWarper/MeshWarpLookup.h
