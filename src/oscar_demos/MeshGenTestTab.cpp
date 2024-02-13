@@ -31,6 +31,7 @@ namespace
             {"torusknot", GenerateTorusKnotMesh()},
             {"box", GenerateBoxMesh(2.0f, 2.0f, 2.0f, 1, 1, 1)},
             {"icosahedron", GenerateIcosahedronMesh()},
+            {"dodecahedron", GenerateDodecahedronMesh()},
         };
     }
 }

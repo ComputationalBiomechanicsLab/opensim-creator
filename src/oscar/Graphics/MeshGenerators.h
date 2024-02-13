@@ -113,4 +113,9 @@ namespace osc
         float radius = 1.0f,
         size_t detail = 0
     );
+
+    Mesh GenerateDodecahedronMesh(
+        float radius = 1.0f,
+        size_t detail = 0
+    );
 }
