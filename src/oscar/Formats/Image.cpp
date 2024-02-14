@@ -15,6 +15,7 @@
 #include <istream>
 #include <memory>
 #include <mutex>
+#include <new>
 #include <optional>
 #include <sstream>
 #include <string>
@@ -185,7 +186,7 @@ namespace
     {
         std::ostream& out = *reinterpret_cast<std::ostream*>(context);
         if (size > 0) {
-            out.write(reinterpret_cast<char const*>(data), static_cast<std::streamsize>(size));
+            out.write(std::launder(reinterpret_cast<char const*>(data)), std::streamsize{size});
         }
     }
 }

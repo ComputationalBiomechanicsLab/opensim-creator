@@ -228,6 +228,8 @@ std::string osc::CurrentErrnoAsString()
 #define __USE_GNU
 #endif
 
+#include <oscar/Shims/Cpp20/bit.h>
+
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
@@ -316,9 +318,9 @@ namespace
 
         /* Get the address at the time the signal was raised */
 #if defined(__i386__)  // gcc specific
-        void* caller_address = reinterpret_cast<void*>(uc->uc_mcontext.eip);  // EIP: x86 specific
+        void* caller_address = cpp20::bit_cast<void*>(uc->uc_mcontext.eip);  // EIP: x86 specific
 #elif defined(__x86_64__)  // gcc specific
-        void* callerAddress = reinterpret_cast<void*>(uc->uc_mcontext.rip);  // RIP: x86_64 specific
+        void* callerAddress = cpp20::bit_cast<void*>(uc->uc_mcontext.rip);  // RIP: x86_64 specific
 #else
 #error Unsupported architecture.
 #endif
@@ -513,6 +515,8 @@ void osc::OpenURLInDefaultBrowser(std::string_view url)
 #include <cinttypes>  // PRIXPTR
 #include <signal.h>   // signal()
 
+#include <oscar/Shims/Cpp20/bit.h>
+
 using osc::defaultLogger;
 using osc::getTracebackLog;
 using osc::LogMessage;
@@ -554,12 +558,12 @@ void osc::WriteTracebackToLog(LogLevel lvl)
         // falls in (effectively, where it is relative to the start of the memory-mapped DLL/exe)
         MEMORY_BASIC_INFORMATION bmi;
         VirtualQuery(return_addrs[i], &bmi, sizeof(bmi));
-        DWORD64 base_addr = reinterpret_cast<DWORD64>(bmi.AllocationBase);
+        DWORD64 base_addr = cpp20::bit_cast<DWORD64>(bmi.AllocationBase);
         static_assert(sizeof(DWORD64) == 8 && sizeof(PVOID) == 8, "review this code - might not work so well on 32-bit systems");
 
         // use the base address to figure out the file name
         TCHAR module_namebuf[1024];
-        GetModuleFileName(reinterpret_cast<HMODULE>(base_addr), module_namebuf, 1024);
+        GetModuleFileName(cpp20::bit_cast<HMODULE>(base_addr), module_namebuf, 1024);
 
         // find the final element in the filename
         TCHAR* cursor = module_namebuf;
@@ -573,7 +577,7 @@ void osc::WriteTracebackToLog(LogLevel lvl)
             ++cursor;
         }
 
-        PVOID relative_addr = reinterpret_cast<PVOID>(reinterpret_cast<DWORD64>(return_addrs[i]) - base_addr);
+        PVOID relative_addr = cpp20::bit_cast<PVOID>(cpp20::bit_cast<DWORD64>(return_addrs[i]) - base_addr);
 
         log_message(lvl, "    #%zu %s+0x%" PRIXPTR " [0x%" PRIXPTR "]", i, filename_start, (uintptr_t)relative_addr, (uintptr_t)return_addrs[i]);
     }

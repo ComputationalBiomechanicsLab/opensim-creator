@@ -147,9 +147,16 @@ namespace
 
     CStringView GLStringToCStringView(GLubyte const* stringPtr)
     {
-        static_assert(sizeof(GLubyte) == sizeof(CStringView::value_type));
-        static_assert(alignof(GLubyte) == alignof(CStringView::value_type));
-        return stringPtr ? CStringView{std::launder(reinterpret_cast<CStringView::value_type const*>(stringPtr))} : CStringView{};
+        using value_type = CStringView::value_type;
+
+        static_assert(sizeof(GLubyte) == sizeof(value_type));
+        static_assert(alignof(GLubyte) == alignof(value_type));
+        if (stringPtr) {
+            return CStringView{std::launder(reinterpret_cast<value_type const*>(stringPtr))};
+        }
+        else {
+            return CStringView{};
+        }
     }
 
     CStringView GLGetCStringView(GLenum name)
