@@ -3,7 +3,16 @@
 All notable changes to this project will be documented here. The format is based
 on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [Upcoming Release]
+
+- (nothing yet)
+
+
+## [0.5.8] - 2023/02/14
+
+0.5.8 makes moving `PhysicalOffsetFrame`s a little bit easier when they're the child of a `Joint`, and adds
+user-facing support for OSC-specific `OpenSim::Component`s (explained below). It also contains a few minor
+bugfixes, plus a variety of internal engine changes.
 
 - Editing the position of a `PhysicalOffsetFrame` that's a child of a Joint now behaves more intuitively
   (rotation still sucks, though)
