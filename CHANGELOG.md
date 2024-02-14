@@ -5,7 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- (nothing yet)
+- OpenSim was updated to the latest upstream `main` branch, which includes better socket connection support
+  and other performance improvements and bugfixes
 
 
 ## [0.5.8] - 2023/02/14
