@@ -13,6 +13,7 @@
 #include <oscar/Maths/Ellipsoid.h>
 #include <oscar/Maths/EulerPerspectiveCamera.h>
 #include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/FrameAxis.h>
 #include <oscar/Maths/LengthType.h>
 #include <oscar/Maths/Line.h>
 #include <oscar/Maths/Mat.h>

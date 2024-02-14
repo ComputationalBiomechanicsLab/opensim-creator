@@ -141,6 +141,7 @@ public:
         m_SceneColoredElementsMaterial{shaderCache.load("oscar/shaders/SceneRenderer/DrawColoredObjects.vert", "oscar/shaders/SceneRenderer/DrawColoredObjects.frag")},
         m_SceneTexturedElementsMaterial{shaderCache.load("oscar/shaders/SceneRenderer/DrawTexturedObjects.vert", "oscar/shaders/SceneRenderer/DrawTexturedObjects.frag")},
         m_SolidColorMaterial{shaderCache.load("oscar/shaders/SceneRenderer/SolidColor.vert", "oscar/shaders/SceneRenderer/SolidColor.frag")},
+        m_WireframeMaterial{m_SolidColorMaterial},
         m_EdgeDetectorMaterial{shaderCache.load("oscar/shaders/SceneRenderer/EdgeDetector.vert", "oscar/shaders/SceneRenderer/EdgeDetector.frag")},
         m_NormalsMaterial{shaderCache.load("oscar/shaders/SceneRenderer/NormalsVisualizer.vert", "oscar/shaders/SceneRenderer/NormalsVisualizer.geom", "oscar/shaders/SceneRenderer/NormalsVisualizer.frag")},
         m_DepthWritingMaterial{shaderCache.load("oscar/shaders/SceneRenderer/DepthMap.vert", "oscar/shaders/SceneRenderer/DepthMap.frag")},
@@ -149,6 +150,9 @@ public:
         m_SceneTexturedElementsMaterial.setTexture("uDiffuseTexture", m_ChequerTexture);
         m_SceneTexturedElementsMaterial.setVec2("uTextureScale", {200.0f, 200.0f});
         m_SceneTexturedElementsMaterial.setTransparent(true);
+
+        m_WireframeMaterial.setColor("uDiffuseColor", Color::black());
+        m_WireframeMaterial.setWireframeMode(true);
 
         m_RimsSelectedColor.setColor("uDiffuseColor", Color::red());
         m_RimsHoveredColor.setColor("uDiffuseColor", {0.5, 0.0f, 0.0f, 1.0f});
@@ -232,6 +236,13 @@ public:
                 else
                 {
                     Graphics::DrawMesh(dec.mesh, dec.transform, transparentMaterial, m_Camera, propBlock);
+                }
+
+                // if a wireframe overlay is requested for the decoration then draw it over the top in
+                // a solid color
+                if (dec.flags & SceneDecorationFlags::WireframeOverlay)
+                {
+                    Graphics::DrawMesh(dec.mesh, dec.transform, m_WireframeMaterial, m_Camera);
                 }
 
                 // if normals are requested, render the scene element via a normals geometry shader
@@ -466,6 +477,7 @@ private:
     Material m_SceneColoredElementsMaterial;
     Material m_SceneTexturedElementsMaterial;
     Material m_SolidColorMaterial;
+    Material m_WireframeMaterial;
     Material m_EdgeDetectorMaterial;
     Material m_NormalsMaterial;
     Material m_DepthWritingMaterial;

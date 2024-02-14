@@ -1,11 +1,11 @@
 #pragma once
 
 #include <oscar/Graphics/VertexAttributeFormat.h>
-#include <oscar/Utils/NonTypelist.h>
+#include <oscar/Utils/EnumHelpers.h>
 
 namespace osc::detail
 {
-    using VertexAttributeFormatList = NonTypelist<VertexAttributeFormat,
+    using VertexAttributeFormatList = OptionList<VertexAttributeFormat,
         VertexAttributeFormat::Float32x2,
         VertexAttributeFormat::Float32x3,
         VertexAttributeFormat::Float32x4,

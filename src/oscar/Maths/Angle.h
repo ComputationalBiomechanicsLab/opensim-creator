@@ -125,15 +125,8 @@ namespace osc
 
     namespace literals
     {
-        constexpr Radians operator""_rad(long double radians)
-        {
-            return Radians{radians};
-        }
-
-        constexpr Radians operator""_rad(unsigned long long int radians)
-        {
-            return Radians{radians};
-        }
+        constexpr Radians operator""_rad(long double radians) { return Radians{radians}; }
+        constexpr Radians operator""_rad(unsigned long long int radians) { return Radians{radians}; }
     }
 
     // degrees support
@@ -149,15 +142,25 @@ namespace osc
 
     namespace literals
     {
-        constexpr Degrees operator""_deg(long double degrees)
-        {
-            return Degrees{degrees};
-        }
+        constexpr Degrees operator""_deg(long double degrees) { return Degrees{degrees}; }
+        constexpr Degrees operator""_deg(unsigned long long int degrees) { return Degrees{degrees};}
+    }
 
-        constexpr Degrees operator""_deg(unsigned long long int degrees)
-        {
-            return Degrees{degrees};
-        }
+    // turn support
+
+    struct TurnsAngularUnitTraits final {
+        static inline constexpr double radians_per_rep = 2.0*std::numbers::pi_v<double>;
+    };
+
+    template<typename T>
+    using TurnsT = Angle<T, TurnsAngularUnitTraits>;
+    using Turns = TurnsT<float>;
+    using Turnsd = TurnsT<double>;
+
+    namespace literals
+    {
+        constexpr Turns operator""_turn(long double turns) { return Turns{turns}; }
+        constexpr Turns operator""_turn(unsigned long long int turns) { return Turns{turns}; }
     }
 }
 

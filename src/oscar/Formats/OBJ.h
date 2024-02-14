@@ -14,7 +14,7 @@ namespace osc
 {
     enum class ObjWriterFlags : uint32_t {
         None           = 0,
-        NoWriteNormals = 1u<<0u,
+        NoWriteNormals = 1<<0,
 
         Default = None,
     };

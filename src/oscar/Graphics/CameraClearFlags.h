@@ -7,9 +7,9 @@
 namespace osc
 {
     enum class CameraClearFlags : uint32_t {
-        Nothing    = 0u,
-        SolidColor = 1u << 0u,
-        Depth      = 1u << 1u,
+        Nothing    = 0,
+        SolidColor = 1<<0,
+        Depth      = 1<<1,
 
         All = SolidColor | Depth,
         Default = SolidColor | Depth,

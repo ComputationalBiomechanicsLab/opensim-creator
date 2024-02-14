@@ -18,8 +18,7 @@ public:
 
         StandardPanelImpl{panelName_},
         m_State{std::move(state_)}
-    {
-    }
+    {}
 private:
     void implDrawContent() final
     {

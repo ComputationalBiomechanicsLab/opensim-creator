@@ -90,8 +90,8 @@ namespace osc
 
     // calculate menus
     enum class CalculateMenuFlags {
-        None,
-        NoCalculatorIcon,
+        None             = 0,
+        NoCalculatorIcon = 1<<0,
     };
     constexpr bool operator&(CalculateMenuFlags lhs, CalculateMenuFlags rhs)
     {

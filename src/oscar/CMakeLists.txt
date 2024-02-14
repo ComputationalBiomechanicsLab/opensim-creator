@@ -152,6 +152,7 @@ add_library(oscar STATIC
     Maths/Ellipsoid.h
     Maths/EulerPerspectiveCamera.h
     Maths/Eulers.h
+    Maths/FrameAxis.h
     Maths/LengthType.h
     Maths/Line.h
     Maths/Mat.h
@@ -316,7 +317,6 @@ add_library(oscar STATIC
     Utils/PerfMeasurement.h
     Utils/PerfMeasurementMetadata.h
     Utils/ScopeGuard.h
-    Utils/SetHelpers.h
     Utils/Spsc.h
     Utils/StringHelpers.cpp
     Utils/StringHelpers.h

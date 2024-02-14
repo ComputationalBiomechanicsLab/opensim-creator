@@ -3,7 +3,6 @@
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.h>
 #include <gtest/gtest.h>
 
 #include <cctype>
@@ -40,49 +39,5 @@ TEST(ModelWarpingDocument, ConstructorThrowsIfGivenInvalidOsimPath)
 TEST(ModelWarpingDocument, AfterConstructingFromBasicOsimFileTheReturnedModelContainsExpectedComponents)
 {
     Document const doc{GetFixturesDir() / "onebody.osim"};
-    doc.getModel().getComponent("bodyset/some_body");
-}
-
-TEST(ModelWarpingDocument, HasFrameDefinitionFileReturnsFalseForSimpleNonFramedCase)
-{
-    std::filesystem::path const modelPath = GetFixturesDir() / "Simple" / "model.osim";
-    ASSERT_FALSE(Document{modelPath}.hasFrameDefinitionFile());
-}
-
-TEST(ModelWarpingDocument, HasFrameDefinitionFileReturnsTrueForSimpleFramedCase)
-{
-    std::filesystem::path const modelPath = GetFixturesDir() / "SimpleFramed" / "model.osim";
-    ASSERT_TRUE(Document{modelPath}.hasFrameDefinitionFile());
-}
-
-
-TEST(ModelWarpingDocument, RecommendedFrameDefinitionFilepathWorksAsExpected)
-{
-    std::filesystem::path const modelPath = GetFixturesDir() / "SimpleFramed" / "model.osim";
-    std::filesystem::path const expectedFramesPath = GetFixturesDir() / "SimpleFramed" / "model.frames.toml";
-    ASSERT_EQ(Document{modelPath}.recommendedFrameDefinitionFilepath(), expectedFramesPath);
-}
-
-TEST(ModelWarpingDocument, HasFramesFileLoadErrorReturnsFalseForNormalCase)
-{
-    std::filesystem::path const modelPath = GetFixturesDir() / "SimpleFramed" / "model.osim";
-    ASSERT_FALSE(Document{modelPath}.hasFramesFileLoadError());
-}
-
-TEST(ModelWarpingDocument, HasFramesFileLoadErrorReturnsTrueForBadCase)
-{
-    std::filesystem::path const modelPath = GetFixturesDir() / "BadFramesFile" / "model.osim";
-    ASSERT_TRUE(Document{modelPath}.hasFramesFileLoadError());
-}
-
-TEST(ModelWarpingDocument, GetFramesFileLoadErrorReturnsNulloptForNormalCase)
-{
-    std::filesystem::path const modelPath = GetFixturesDir() / "SimpleFramed" / "model.osim";
-    ASSERT_EQ(Document{modelPath}.getFramesFileLoadError(), std::nullopt);
-}
-
-TEST(ModelWarpingDocument, GetFramesFileLoadErrorReturnsNonNulloptForBadCase)
-{
-    std::filesystem::path const modelPath = GetFixturesDir() / "BadFramesFile" / "model.osim";
-    ASSERT_NE(Document{modelPath}.getFramesFileLoadError(), std::nullopt);
+    doc.model().getComponent("bodyset/some_body");
 }

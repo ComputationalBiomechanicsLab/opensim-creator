@@ -1,29 +1,29 @@
 #include "Document.h"
 
+#include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <cstddef>
-#include <functional>
+#include <filesystem>
+#include <iterator>
 #include <memory>
 #include <sstream>
 #include <utility>
 
-using osc::mow::ValidationCheck;
+using namespace osc::mow;
 
 osc::mow::Document::Document() :
     m_Model{std::make_unique<OpenSim::Model>()}
-{
-}
+{}
 
-osc::mow::Document::Document(std::filesystem::path const& osimPath) :
-    m_Model{std::make_unique<OpenSim::Model>(osimPath.string())},
-    m_TopLevelWarpConfig{osimPath},
-    m_MeshWarpPairingLookup{osimPath, *m_Model},
-    m_FrameDefinitionLookup{osimPath, *m_Model}
-{
-}
+osc::mow::Document::Document(std::filesystem::path const& osimFileLocation) :
+    m_Model{std::make_unique<OpenSim::Model>(osimFileLocation.string())},
+    m_ModelWarpConfig{osimFileLocation, *m_Model},
+    m_MeshWarpLookup{osimFileLocation, *m_Model, m_ModelWarpConfig},
+    m_FrameWarpLookup{osimFileLocation, *m_Model, m_ModelWarpConfig}
+{}
 
 osc::mow::Document::Document(Document const&) = default;
 osc::mow::Document::Document(Document&&) noexcept = default;
@@ -31,110 +31,68 @@ osc::mow::Document& osc::mow::Document::operator=(Document const&) = default;
 osc::mow::Document& osc::mow::Document::operator=(Document&&) noexcept = default;
 osc::mow::Document::~Document() noexcept = default;
 
-size_t osc::mow::Document::getNumWarpableMeshesInModel() const
+std::vector<WarpDetail> osc::mow::Document::details(OpenSim::Mesh const& mesh) const
 {
-    return GetNumChildren<OpenSim::Mesh>(*m_Model);
+    std::vector<WarpDetail> rv;
+    rv.emplace_back("OpenSim::Mesh path in the OpenSim::Model", GetAbsolutePathString(mesh));
+
+    if (IMeshWarp const* p = m_MeshWarpLookup.find(GetAbsolutePathString(mesh))) {
+        auto inner = p->details();
+        rv.insert(rv.end(), std::make_move_iterator(inner.begin()), std::make_move_iterator(inner.end()));
+    }
+
+    return rv;
 }
 
-void osc::mow::Document::forEachWarpableMeshInModel(
-    std::function<void(OpenSim::Mesh const&)> const& callback) const
+std::vector<ValidationCheck> osc::mow::Document::validate(OpenSim::Mesh const& mesh) const
 {
-    for (auto const& mesh : m_Model->getComponentList<OpenSim::Mesh>())
-    {
-        callback(mesh);
+    if (IMeshWarp const* p = m_MeshWarpLookup.find(GetAbsolutePathString(mesh))) {
+        return p->validate();
+    }
+    else {
+        return {ValidationCheck{"no mesh warp pairing found: this is probably an implementation error (try reloading?)", ValidationState::Error}};
     }
 }
 
-void osc::mow::Document::forEachMeshWarpDetail(
-    OpenSim::Mesh const& mesh,
-    std::function<void(Detail)> const& callback) const
+ValidationState osc::mow::Document::state(OpenSim::Mesh const& mesh) const
 {
-    callback({ "OpenSim::Mesh path in the OpenSim::Model", GetAbsolutePathString(mesh) });
+    IMeshWarp const* p = m_MeshWarpLookup.find(GetAbsolutePathString(mesh));
+    return p ? p->state() : ValidationState::Error;
+}
 
-    if (MeshWarpPairing const* p = m_MeshWarpPairingLookup.lookup(GetAbsolutePathString(mesh)))
-    {
-        p->forEachDetail(callback);
+std::vector<WarpDetail> osc::mow::Document::details(OpenSim::PhysicalOffsetFrame const& pof) const
+{
+    if (IFrameWarp const* p = m_FrameWarpLookup.find(GetAbsolutePathString(pof))) {
+        return p->details();
+    }
+    return {};
+}
+
+std::vector<ValidationCheck> osc::mow::Document::validate(OpenSim::PhysicalOffsetFrame const& pof) const
+{
+    if (IFrameWarp const* p = m_FrameWarpLookup.find(GetAbsolutePathString(pof))) {
+        return p->validate();
+    }
+    else {
+        return {ValidationCheck{"no frame warp method found: this is probably an implementation error (try reloading?)", ValidationState::Error}};
     }
 }
 
-void osc::mow::Document::forEachMeshWarpCheck(
-    OpenSim::Mesh const& mesh,
-    std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
+ValidationState osc::mow::Document::state(
+    OpenSim::PhysicalOffsetFrame const& pof) const
 {
-    if (MeshWarpPairing const* p = m_MeshWarpPairingLookup.lookup(GetAbsolutePathString(mesh)))
-    {
-        p->forEachCheck(callback);
-    }
-    else
-    {
-        callback({ "no mesh warp pairing found: this is probably an implementation error (maybe reload?)", ValidationCheck::State::Error });
-    }
+    IFrameWarp const* p = m_FrameWarpLookup.find(GetAbsolutePathString(pof));
+    return p ? p->state() : ValidationState::Error;
 }
 
-ValidationCheck::State osc::mow::Document::getMeshWarpState(OpenSim::Mesh const& mesh) const
+std::vector<ValidationCheck> osc::mow::Document::implValidate() const
 {
-    MeshWarpPairing const* p = m_MeshWarpPairingLookup.lookup(GetAbsolutePathString(mesh));
-    return p ? p->state() : ValidationCheck::State::Error;
-}
-
-size_t osc::mow::Document::getNumWarpableFramesInModel() const
-{
-    return GetNumChildren<OpenSim::PhysicalOffsetFrame>(*m_Model);
-}
-
-void osc::mow::Document::forEachWarpableFrameInModel(
-    std::function<void(OpenSim::PhysicalOffsetFrame const&)> const& callback) const
-{
-    for (auto const& frame : m_Model->getComponentList<OpenSim::PhysicalOffsetFrame>())
-    {
-        callback(frame);
+    std::vector<ValidationCheck> rv;
+    for (auto const& mesh : model().getComponentList<OpenSim::Mesh>()) {
+        rv.emplace_back(mesh.getName(), state(mesh));
     }
-}
-
-void osc::mow::Document::forEachFrameDefinitionCheck(
-    OpenSim::PhysicalOffsetFrame const&,
-    std::function<ValidationCheckConsumerResponse(ValidationCheck)> const& callback) const
-{
-    // check for frames file
-    {
-        std::stringstream ss;
-        ss << "has a frame definition file at " << recommendedFrameDefinitionFilepath().string();
-        if (callback({std::move(ss).str(), hasFrameDefinitionFile()}) == ValidationCheckConsumerResponse::Stop)
-        {
-            return;
-        }
+    for (auto const& pof : model().getComponentList<OpenSim::PhysicalOffsetFrame>()) {
+        rv.emplace_back(pof.getName(), state(pof));
     }
-
-    // check for top-level parse errors in frames file
-    {
-        std::stringstream ss;
-        ValidationCheck::State state = ValidationCheck::State::Ok;
-        if (!hasFrameDefinitionFile())
-        {
-            ss << "frame definition file error: the file does not exist";
-            state = ValidationCheck::State::Error;
-        }
-        else if (auto err = getFramesFileLoadError())
-        {
-            ss << "frame definition file error: " << *err;
-            state = ValidationCheck::State::Error;
-        }
-        else
-        {
-            ss << "frame definition file contains no errors";
-        }
-
-        if (callback({std::move(ss).str(), state}) == ValidationCheckConsumerResponse::Stop)
-        {
-            return;
-        }
-    }
-
-    // TODO
-    // - check associated mesh is found
-    // - check origin location landmark
-    // - check axis edge begin landmark
-    // - check axis edge end landmark
-    // - check nonparallel edge begin landmark
-    // - check nonparallel edge end landmark
+    return rv;
 }

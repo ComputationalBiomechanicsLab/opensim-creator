@@ -24,7 +24,6 @@
 #include <oscar/Platform/App.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/SetHelpers.h>
 
 #include <memory>
 #include <optional>
@@ -81,11 +80,11 @@ namespace
         {
             // update flags based on path
             std::string const absPath = GetAbsolutePathString(component);
-            if (Contains(state.popupParams.componentsBeingAssignedTo, absPath))
+            if (state.popupParams.componentsBeingAssignedTo.contains(absPath))
             {
                 decoration.flags |= SceneDecorationFlags::IsSelected;
             }
-            if (Contains(state.alreadyChosenComponents, absPath))
+            if (state.alreadyChosenComponents.contains(absPath))
             {
                 decoration.flags |= SceneDecorationFlags::IsSelected;
             }
@@ -282,7 +281,7 @@ public:
         {
             return false;  // nothing hovered
         }
-        else if (Contains(m_State.popupParams.componentsBeingAssignedTo, absPath))
+        else if (m_State.popupParams.componentsBeingAssignedTo.contains(absPath))
         {
             return false;  // cannot be selected
         }

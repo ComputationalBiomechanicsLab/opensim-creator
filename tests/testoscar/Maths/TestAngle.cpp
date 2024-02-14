@@ -87,3 +87,13 @@ TEST(Angle, MixedAdditionReturnsRadians)
 {
     static_assert(Radians{360_deg} == Radians{180_deg} + 180_deg);
 }
+
+TEST(Angle, TurnConvertsToRadiansOrDegreesAsExpected)
+{
+    constexpr auto pi = std::numbers::pi_v<float>;
+
+    static_assert(Radians{1_turn} == Radians{2.0*pi*1_rad});
+    static_assert(Radians{0.5_turn} == Radians{pi*1_rad});
+    static_assert(Degrees{1_turn} == 360_deg);
+    static_assert(Degrees{0.5_turn} == 180_deg);
+}

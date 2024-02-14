@@ -11,8 +11,7 @@ namespace osc::mow
     public:
         explicit FileMenu(std::shared_ptr<UIState> state_) :
             m_State{std::move(state_)}
-        {
-        }
+        {}
 
         void onDraw();
 

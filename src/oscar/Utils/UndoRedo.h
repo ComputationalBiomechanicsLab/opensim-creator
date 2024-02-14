@@ -22,106 +22,81 @@ namespace osc
     template<typename T>
     concept Undoable = std::destructible<T> && std::copy_constructible<T>;
 
-    // an abstract base class for storing undo/redo metadata
-    class UndoRedoEntryMetadata {
-    protected:
-        explicit UndoRedoEntryMetadata(std::string_view message_);
-        UndoRedoEntryMetadata(UndoRedoEntryMetadata const&);
-        UndoRedoEntryMetadata(UndoRedoEntryMetadata&&) noexcept;
-        UndoRedoEntryMetadata& operator=(UndoRedoEntryMetadata const&);
-        UndoRedoEntryMetadata& operator=(UndoRedoEntryMetadata&&) noexcept;
-    public:
-        virtual ~UndoRedoEntryMetadata() noexcept;
+    // internal storage details
+    namespace detail
+    {
+        // a base class for storing undo/redo metadata
+        class UndoRedoEntryMetadata {
+        protected:
+            explicit UndoRedoEntryMetadata(std::string_view message_) :
+                m_Message{message_}
+            {}
+            UndoRedoEntryMetadata(UndoRedoEntryMetadata const&) = default;
+            UndoRedoEntryMetadata(UndoRedoEntryMetadata&&) noexcept = default;
+            UndoRedoEntryMetadata& operator=(UndoRedoEntryMetadata const&) = default;
+            UndoRedoEntryMetadata& operator=(UndoRedoEntryMetadata&&) noexcept = default;
+        public:
+            virtual ~UndoRedoEntryMetadata() noexcept = default;
 
-        UID getID() const
-        {
-            return m_ID;
-        }
+            UID id() const { return m_ID; }
+            std::chrono::system_clock::time_point time() const { return m_Time; }
+            CStringView message() const { return m_Message; }
+        private:
+            UID m_ID;
+            std::chrono::system_clock::time_point m_Time = std::chrono::system_clock::now();
+            std::string m_Message;
+        };
 
-        std::chrono::system_clock::time_point getTime() const
-        {
-            return m_Time;
-        }
+        // concrete implementation of storage for a complete undo/redo entry (metadata + value)
+        template<Undoable T>
+        class UndoRedoEntryData final : public UndoRedoEntryMetadata {
+        public:
+            template<typename... Args>
+            UndoRedoEntryData(std::string_view message_, Args&&... args)
+                requires std::constructible_from<T, Args&&...> :
 
-        CStringView getMessage() const
-        {
-            return m_Message;
-        }
-    private:
-        UID m_ID;
-        std::chrono::system_clock::time_point m_Time;
-        std::string m_Message;
-    };
+                UndoRedoEntryMetadata{std::move(message_)},
+                m_Value{std::forward<Args>(args)...}
+            {}
 
-    // concrete implementation of storage for a complete undo/redo entry (metadata + data)
-    template<Undoable T>
-    class UndoRedoEntryData final : public UndoRedoEntryMetadata {
-    public:
-        template<typename... Args>
-        UndoRedoEntryData(std::string_view message_, Args&&... args)
-            requires std::constructible_from<T, Args&&...> :
+            T const& value() const { return m_Value; }
 
-            UndoRedoEntryMetadata{std::move(message_)},
-            m_Data{std::forward<Args>(args)...}
-        {
-        }
-
-        T const& getData() const
-        {
-            return m_Data;
-        }
-
-    private:
-        T m_Data;
-    };
+        private:
+            T m_Value;
+        };
+    }
 
     // type-erased, const, and reference-counted storage for undo/redo entry data
     //
     // can be safely copied, sliced, etc. from the derived class, enabling type-erased
     // implementation code
-    class UndoRedoEntry {
+    class UndoRedoEntryBase {
     protected:
-        explicit UndoRedoEntry(std::shared_ptr<UndoRedoEntryMetadata const> data_) :
+        explicit UndoRedoEntryBase(std::shared_ptr<detail::UndoRedoEntryMetadata const> data_) :
             m_Data{std::move(data_)}
-        {
-        }
+        {}
 
     public:
-        UID getID() const
-        {
-            return m_Data->getID();
-        }
-
-        std::chrono::system_clock::time_point getTime() const
-        {
-            return m_Data->getTime();
-        }
-
-        CStringView getMessage() const
-        {
-            return m_Data->getMessage();
-        }
+        UID id() const { return m_Data->id(); }
+        std::chrono::system_clock::time_point time() const { return m_Data->time(); }
+        CStringView message() const { return m_Data->message(); }
 
     protected:
-        std::shared_ptr<UndoRedoEntryMetadata const> m_Data;
+        std::shared_ptr<detail::UndoRedoEntryMetadata const> m_Data;
     };
 
     // concrete, known-to-hold-type-T version of `UndoRedoEntry`
     template<Undoable T>
-    class UndoRedoEntryT final : public UndoRedoEntry {
+    class UndoRedoEntry final : public UndoRedoEntryBase {
     public:
         template<typename... Args>
-        UndoRedoEntryT(std::string_view message_, Args&&... args)
+        UndoRedoEntry(std::string_view message_, Args&&... args)
             requires std::constructible_from<T, Args&&...> :
 
-            UndoRedoEntry{std::make_shared<UndoRedoEntryData<T>>(std::move(message_), std::forward<Args>(args)...)}
-        {
-        }
+            UndoRedoEntryBase{std::make_shared<detail::UndoRedoEntryData<T>>(std::move(message_), std::forward<Args>(args)...)}
+        {}
 
-        T const& getData() const
-        {
-            return static_cast<UndoRedoEntryData<T> const&>(*m_Data).getData();
-        }
+        T const& value() const { return static_cast<detail::UndoRedoEntryData<T> const&>(*m_Data).value(); }
     };
 
     // type-erased base class for undo/redo storage
@@ -129,42 +104,42 @@ namespace osc
     // this base class stores undo/redo entries as type-erased pointers, so that the
     // code here, and in other generic downstream classes, doesn't need to know what's
     // actually being stored
-    class UndoRedo {
+    class UndoRedoBase {
     protected:
-        explicit UndoRedo(UndoRedoEntry initialCommit_);
-        UndoRedo(UndoRedo const&);
-        UndoRedo(UndoRedo&&) noexcept;
-        UndoRedo& operator=(UndoRedo const&);
-        UndoRedo& operator=(UndoRedo&&) noexcept;
+        explicit UndoRedoBase(UndoRedoEntryBase initialCommit_);
+        UndoRedoBase(UndoRedoBase const&);
+        UndoRedoBase(UndoRedoBase&&) noexcept;
+        UndoRedoBase& operator=(UndoRedoBase const&);
+        UndoRedoBase& operator=(UndoRedoBase&&) noexcept;
 
     public:
-        virtual ~UndoRedo() noexcept;
+        virtual ~UndoRedoBase() noexcept;
 
         void commitScratch(std::string_view commitMsg);
-        UndoRedoEntry const& getHead() const;
+        UndoRedoEntryBase const& getHead() const;
         UID getHeadID() const;
 
         size_t getNumUndoEntries() const;
         ptrdiff_t getNumUndoEntriesi() const;
-        UndoRedoEntry const& getUndoEntry(ptrdiff_t i) const;
+        UndoRedoEntryBase const& getUndoEntry(ptrdiff_t i) const;
         void undoTo(ptrdiff_t nthEntry);
         bool canUndo() const;
         void undo();
 
         size_t getNumRedoEntries() const;
         ptrdiff_t getNumRedoEntriesi() const;
-        UndoRedoEntry const& getRedoEntry(ptrdiff_t i) const;
+        UndoRedoEntryBase const& getRedoEntry(ptrdiff_t i) const;
         bool canRedo() const;
         void redoTo(ptrdiff_t nthEntry);
         void redo();
 
     private:
-        virtual UndoRedoEntry implCreateCommitFromScratch(std::string_view commitMsg) = 0;
-        virtual void implAssignScratchFromCommit(UndoRedoEntry const&) = 0;
+        virtual UndoRedoEntryBase implCreateCommitFromScratch(std::string_view commitMsg) = 0;
+        virtual void implAssignScratchFromCommit(UndoRedoEntryBase const&) = 0;
 
-        std::vector<UndoRedoEntry> m_Undo;
-        std::vector<UndoRedoEntry> m_Redo;
-        UndoRedoEntry m_Head;
+        std::vector<UndoRedoEntryBase> m_Undo;
+        std::vector<UndoRedoEntryBase> m_Redo;
+        UndoRedoEntryBase m_Head;
     };
 
     // concrete class for undo/redo storage
@@ -173,46 +148,39 @@ namespace osc
     // - other code can "commit" the scratch space to storage via `commit(message)`
     // - there is always at least one commit (the "head") in storage, for rollback support
     template<Undoable T>
-    class UndoRedoT final : public UndoRedo {
+    class UndoRedo final : public UndoRedoBase {
     public:
         template<typename... Args>
-        UndoRedoT(Args&&... args)
+        UndoRedo(Args&&... args)
             requires std::constructible_from<T, Args&&...> :
 
-            UndoRedo(UndoRedoEntryT<T>{"created document", std::forward<Args>(args)...}),
-            m_Scratch{static_cast<UndoRedoEntryT<T> const&>(getHead()).getData()}
+            UndoRedoBase(UndoRedoEntry<T>{"created document", std::forward<Args>(args)...}),
+            m_Scratch{static_cast<UndoRedoEntry<T> const&>(getHead()).value()}
+        {}
+
+        T const& getScratch() const { return m_Scratch; }
+
+        T& updScratch() { return m_Scratch; }
+
+        UndoRedoEntry<T> const& getUndoEntry(ptrdiff_t i) const
         {
+            return static_cast<UndoRedoEntry<T> const&>(static_cast<UndoRedoBase const&>(*this).getUndoEntry(i));
         }
 
-        T const& getScratch() const
+        UndoRedoEntry<T> const& getRedoEntry(ptrdiff_t i) const
         {
-            return m_Scratch;
-        }
-
-        T& updScratch()
-        {
-            return m_Scratch;
-        }
-
-        UndoRedoEntryT<T> const& getUndoEntry(ptrdiff_t i) const
-        {
-            return static_cast<UndoRedoEntryT<T> const&>(static_cast<UndoRedo const&>(*this).getUndoEntry(i));
-        }
-
-        UndoRedoEntryT<T> const& getRedoEntry(ptrdiff_t i) const
-        {
-            return static_cast<UndoRedoEntryT<T> const&>(static_cast<UndoRedo const&>(*this).getRedoEntry(i));
+            return static_cast<UndoRedoEntry<T> const&>(static_cast<UndoRedoBase const&>(*this).getRedoEntry(i));
         }
 
     private:
-        virtual UndoRedoEntry implCreateCommitFromScratch(std::string_view commitMsg)
+        virtual UndoRedoEntryBase implCreateCommitFromScratch(std::string_view commitMsg)
         {
-            return UndoRedoEntryT<T>{std::move(commitMsg), m_Scratch};
+            return UndoRedoEntry<T>{std::move(commitMsg), m_Scratch};
         }
 
-        virtual void implAssignScratchFromCommit(UndoRedoEntry const& commit)
+        virtual void implAssignScratchFromCommit(UndoRedoEntryBase const& commit)
         {
-            m_Scratch = static_cast<UndoRedoEntryT<T> const&>(commit).getData();
+            m_Scratch = static_cast<UndoRedoEntry<T> const&>(commit).value();
         }
 
         T m_Scratch;

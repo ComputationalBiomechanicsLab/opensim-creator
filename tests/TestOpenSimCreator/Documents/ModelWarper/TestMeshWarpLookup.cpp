@@ -1,9 +1,10 @@
-#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairingLookup.h>
+#include <OpenSimCreator/Documents/ModelWarper/MeshWarpLookup.h>
 
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.h>
+#include <OpenSimCreator/Documents/ModelWarper/ModelWarpConfiguration.h>
+#include <OpenSimCreator/Documents/ModelWarper/ThinPlateSplineMeshWarp.h>
 #include <gtest/gtest.h>
 
 #include <filesystem>
@@ -21,7 +22,7 @@ namespace
     }
 }
 
-TEST(MeshWarpPairingLookup, CorrectlyLoadsSimpleCase)
+TEST(MeshWarpLookup, CorrectlyLoadsSimpleCase)
 {
     struct Paths final {
         // model
@@ -35,9 +36,9 @@ TEST(MeshWarpPairingLookup, CorrectlyLoadsSimpleCase)
     } paths;
 
     OpenSim::Model const model{paths.osim.string()};
-    MeshWarpPairingLookup const lut{paths.osim, model};
+    MeshWarpLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
     std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    MeshWarpPairing const* pairing = lut.lookup(meshAbsPath);
+    auto const* pairing = lut.find<ThinPlateSplineMeshWarp>(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -70,9 +71,9 @@ TEST(MeshWarpPairingLookup, CorrectlyLoadsSimpleCase)
         auto p = pairing->tryGetLandmarkPairingByName(name);
 
         ASSERT_TRUE(p);
-        ASSERT_EQ(p->getName(), name);
-        ASSERT_TRUE(p->hasSourcePos());
-        ASSERT_FALSE(p->hasDestinationPos());
+        ASSERT_EQ(p->name(), name);
+        ASSERT_TRUE(p->hasSource());
+        ASSERT_FALSE(p->hasDestination());
         ASSERT_FALSE(p->isFullyPaired());  // this only tests one side of the pairing
     }
 }
@@ -96,9 +97,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsPairedCase)
     } paths;
 
     OpenSim::Model const model{paths.osim.string()};
-    MeshWarpPairingLookup const lut{paths.osim, model};
+    MeshWarpLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
     std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    MeshWarpPairing const* pairing = lut.lookup(meshAbsPath);
+    auto const* pairing = lut.find<ThinPlateSplineMeshWarp>(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -134,9 +135,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsPairedCase)
         auto p = pairing->tryGetLandmarkPairingByName(name);
 
         ASSERT_TRUE(p);
-        ASSERT_EQ(p->getName(), name);
-        ASSERT_TRUE(p->hasSourcePos());
-        ASSERT_TRUE(p->hasDestinationPos());
+        ASSERT_EQ(p->name(), name);
+        ASSERT_TRUE(p->hasSource());
+        ASSERT_TRUE(p->hasDestination());
         ASSERT_TRUE(p->isFullyPaired());
     }
 }
@@ -160,9 +161,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingDestinationLMsCase)
     } paths;
 
     OpenSim::Model const model{paths.osim.string()};
-    MeshWarpPairingLookup const lut{paths.osim, model};
+    MeshWarpLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
     std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    MeshWarpPairing const* pairing = lut.lookup(meshAbsPath);
+    auto const* pairing = lut.find<ThinPlateSplineMeshWarp>(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -200,9 +201,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingDestinationLMsCase)
         auto p = pairing->tryGetLandmarkPairingByName(name);
 
         ASSERT_TRUE(p);
-        ASSERT_EQ(p->getName(), name);
-        ASSERT_TRUE(p->hasSourcePos());
-        ASSERT_FALSE(p->hasDestinationPos());
+        ASSERT_EQ(p->name(), name);
+        ASSERT_TRUE(p->hasSource());
+        ASSERT_FALSE(p->hasDestination());
         ASSERT_FALSE(p->isFullyPaired());
     }
 }
@@ -226,9 +227,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingSourceLMsCase)
     } paths;
 
     OpenSim::Model const model{paths.osim.string()};
-    MeshWarpPairingLookup const lut{paths.osim, model};
+    MeshWarpLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
     std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    MeshWarpPairing const* pairing = lut.lookup(meshAbsPath);
+    auto const* pairing = lut.find<ThinPlateSplineMeshWarp>(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -268,9 +269,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingSourceLMsCase)
         ASSERT_TRUE(pairing->hasLandmarkNamed(name));
         auto p = pairing->tryGetLandmarkPairingByName(name);
         ASSERT_TRUE(p);
-        ASSERT_EQ(p->getName(), name);
-        ASSERT_FALSE(p->hasSourcePos());
-        ASSERT_TRUE(p->hasDestinationPos());
+        ASSERT_EQ(p->name(), name);
+        ASSERT_FALSE(p->hasSource());
+        ASSERT_TRUE(p->hasDestination());
         ASSERT_FALSE(p->isFullyPaired());
     }
 }
@@ -289,9 +290,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSimpleUnnamedCase)
     } paths;
 
     OpenSim::Model const model{paths.osim.string()};
-    MeshWarpPairingLookup const lut{paths.osim, model};
+    MeshWarpLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
     std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    MeshWarpPairing const* pairing = lut.lookup(meshAbsPath);
+    auto const* pairing = lut.find<ThinPlateSplineMeshWarp>(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -320,9 +321,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSimpleUnnamedCase)
         ASSERT_TRUE(pairing->hasLandmarkNamed(name)) << name;
         auto p = pairing->tryGetLandmarkPairingByName(name);
         ASSERT_TRUE(p) << name;
-        ASSERT_EQ(p->getName(), name);
-        ASSERT_TRUE(p->hasSourcePos());
-        ASSERT_FALSE(p->hasDestinationPos());
+        ASSERT_EQ(p->name(), name);
+        ASSERT_TRUE(p->hasSource());
+        ASSERT_FALSE(p->hasDestination());
         ASSERT_FALSE(p->isFullyPaired());
     }
 }
@@ -346,9 +347,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSparselyNamedPairedCase)
     } paths;
 
     OpenSim::Model const model{paths.osim.string()};
-    MeshWarpPairingLookup const lut{paths.osim, model};
+    MeshWarpLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
     std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    MeshWarpPairing const* pairing = lut.lookup(meshAbsPath);
+    auto const* pairing = lut.find<ThinPlateSplineMeshWarp>(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -383,7 +384,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSparselyNamedPairedCase)
         auto p = pairing->tryGetLandmarkPairingByName(name);
 
         ASSERT_TRUE(p);
-        ASSERT_EQ(p->getName(), name);
+        ASSERT_EQ(p->name(), name);
         ASSERT_TRUE(p->isFullyPaired());
     }
 }

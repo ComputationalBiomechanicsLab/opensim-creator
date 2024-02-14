@@ -1,5 +1,7 @@
-#include "MeshWarpPairingLookup.h"
+#include "MeshWarpLookup.h"
 
+#include <OpenSimCreator/Documents/ModelWarper/IMeshWarp.h>
+#include <OpenSimCreator/Documents/ModelWarper/ThinPlateSplineMeshWarp.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Simulation/Model/Geometry.h>
@@ -10,31 +12,27 @@
 #include <sstream>
 #include <utility>
 
-using osc::mow::MeshWarpPairing;
 using namespace osc;
+using namespace osc::mow;
 
 namespace
 {
-    std::unordered_map<std::string, MeshWarpPairing> CreateLut(
+    std::unordered_map<std::string, ClonePtr<IMeshWarp>> CreateLut(
         std::filesystem::path const& modelFileLocation,
         OpenSim::Model const& model)
     {
-        std::unordered_map<std::string, MeshWarpPairing> rv;
+        std::unordered_map<std::string, ClonePtr<IMeshWarp>> rv;
         rv.reserve(GetNumChildren<OpenSim::Mesh>(model));
 
         // go through each mesh in the `OpenSim::Model` and attempt to load its landmark pairings
-        for (auto const& mesh : model.getComponentList<OpenSim::Mesh>())
-        {
-            if (auto meshPath = FindGeometryFileAbsPath(model, mesh))
-            {
+        for (auto const& mesh : model.getComponentList<OpenSim::Mesh>()) {
+            if (auto meshPath = FindGeometryFileAbsPath(model, mesh)) {
                 rv.try_emplace(
                     mesh.getAbsolutePathString(),
-                    modelFileLocation,
-                    std::move(meshPath).value()
+                    std::make_unique<ThinPlateSplineMeshWarp>(modelFileLocation, std::move(meshPath).value())
                 );
             }
-            else
-            {
+            else {
                 std::stringstream ss;
                 ss << mesh.getGeometryFilename() << ": could not find this mesh file: skipping";
                 log_error(std::move(ss).str());
@@ -45,10 +43,10 @@ namespace
     }
 }
 
-osc::mow::MeshWarpPairingLookup::MeshWarpPairingLookup(
-    std::filesystem::path const& modelFileLocation,
-    OpenSim::Model const& model) :
+osc::mow::MeshWarpLookup::MeshWarpLookup(
+    std::filesystem::path const& osimFileLocation,
+    OpenSim::Model const& model,
+    ModelWarpConfiguration const&) :
 
-    m_ComponentAbsPathToMeshPairing{CreateLut(modelFileLocation, model)}
-{
-}
+    m_AbsPathToWarpLUT{CreateLut(osimFileLocation, model)}
+{}

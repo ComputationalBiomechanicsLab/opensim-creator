@@ -30,6 +30,8 @@ namespace
             {"torus", cache.getTorusMesh(0.9f, 0.1f)},
             {"torusknot", GenerateTorusKnotMesh()},
             {"box", GenerateBoxMesh(2.0f, 2.0f, 2.0f, 1, 1, 1)},
+            {"icosahedron", GenerateIcosahedronMesh()},
+            {"dodecahedron", GenerateDodecahedronMesh()},
         };
     }
 }
@@ -51,6 +53,7 @@ private:
         }
 
         if (ImGui::Begin("viewer")) {
+            ImGui::Checkbox("wireframe", &m_DrawWireframe);
             for (auto const& [name, _] : m_AllMeshes) {
                 if (ImGui::Button(name.c_str())) {
                     m_CurrentMesh = name;
@@ -76,14 +79,16 @@ private:
                 m_Viewer.onDraw({{SceneDecoration{
                     .mesh = m_AllMeshes[m_CurrentMesh],
                     .color = Color::white(),
+                    .flags = m_DrawWireframe ? SceneDecorationFlags::WireframeOverlay : SceneDecorationFlags::None,
                 }}}, m_RenderParams);
             }
         }
         ImGui::End();
     }
 
-    std::string m_CurrentMesh = "brick";
     std::map<std::string, Mesh> m_AllMeshes = GenerateMeshLookup();
+    std::string m_CurrentMesh = m_AllMeshes.begin()->first;
+    bool m_DrawWireframe = false;
     SceneViewer m_Viewer;
     SceneRendererParams m_RenderParams;
     PolarPerspectiveCamera m_Camera;

@@ -17,8 +17,7 @@ namespace osc::mow
 
             m_Label{label_},
             m_State{std::move(state_)}
-        {
-        }
+        {}
 
         void onDraw();
     private:

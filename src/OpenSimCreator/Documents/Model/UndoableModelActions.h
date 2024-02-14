@@ -237,8 +237,8 @@ namespace osc
 
     // flags for reassignment
     enum class SocketReassignmentFlags {
-        None,
-        TryReexpressComponentInNewConnectee,
+        None                                 = 0,
+        TryReexpressComponentInNewConnectee  = 1<<0,
     };
     constexpr bool operator&(SocketReassignmentFlags lhs, SocketReassignmentFlags rhs)
     {

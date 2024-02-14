@@ -8,8 +8,7 @@
 
 void osc::mow::Toolbar::onDraw()
 {
-    if (BeginToolbar(m_Label))
-    {
+    if (BeginToolbar(m_Label)) {
         drawContent();
     }
     ImGui::End();
@@ -19,6 +18,6 @@ void osc::mow::Toolbar::drawContent()
 {
     DrawOpenModelButtonWithRecentFilesDropdown([this](auto maybeSelection)
     {
-        m_State->actionOpenModel(std::move(maybeSelection));
+        m_State->actionOpenOsimOrPromptUser(std::move(maybeSelection));
     });
 }

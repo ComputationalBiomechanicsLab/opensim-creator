@@ -19,7 +19,6 @@
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
-#include <oscar/Utils/SetHelpers.h>
 #include <oscar/Utils/StringHelpers.h>
 
 #include <algorithm>
@@ -105,7 +104,7 @@ namespace
 
         std::string const absPath = GetAbsolutePathString(component);
 
-        bool selected = Contains(uiState.selectedPointAbsPaths, absPath);
+        bool selected = uiState.selectedPointAbsPaths.contains(absPath);
         if (ImGui::Checkbox(component.getName().c_str(), &selected))
         {
             if (selected)

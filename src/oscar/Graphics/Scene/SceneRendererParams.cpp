@@ -23,5 +23,4 @@ osc::SceneRendererParams::SceneRendererParams() :
     rimThicknessInPixels{1.0f, 1.0f},
     floorLocation{DefaultFloorLocation()},
     fixupScaleFactor{1.0f}
-{
-}
+{}

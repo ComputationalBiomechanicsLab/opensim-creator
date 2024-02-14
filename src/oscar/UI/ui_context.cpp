@@ -8,6 +8,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourcePath.h>
+#include <oscar/Shims/Cpp20/bit.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/ui_graphics_backend.h>
 #include <oscar/Utils/Perf.h>
@@ -37,7 +38,7 @@ namespace
         using std::begin;
         using std::end;
 
-        auto* ptr = reinterpret_cast<value_type*>(malloc(size(c) * sizeof(value_type)));  // NOLINT(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
+        auto* ptr = cpp20::bit_cast<value_type*>(malloc(size(c) * sizeof(value_type)));  // NOLINT(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
         std::copy(begin(c), end(c), ptr);
         return ptr;
     }

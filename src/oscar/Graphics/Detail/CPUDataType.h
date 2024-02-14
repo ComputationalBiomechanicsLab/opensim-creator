@@ -1,7 +1,6 @@
 #pragma once
 
 #include <oscar/Utils/EnumHelpers.h>
-#include <oscar/Utils/NonTypelist.h>
 
 namespace osc::detail
 {
@@ -15,11 +14,10 @@ namespace osc::detail
         NUM_OPTIONS,
     };
 
-    using CPUDataTypeList = NonTypelist<CPUDataType,
+    using CPUDataTypeList = OptionList<CPUDataType,
         CPUDataType::UnsignedByte,
         CPUDataType::Float,
         CPUDataType::UnsignedInt24_8,
         CPUDataType::HalfFloat
     >;
-    static_assert(NumOptions<CPUDataType>() == NonTypelistSizeV<CPUDataTypeList>);
 }

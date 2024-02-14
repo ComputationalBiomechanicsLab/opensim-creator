@@ -2,14 +2,14 @@
 
 #include <memory>
 
-namespace osc { class UndoRedo; }
+namespace osc { class UndoRedoBase; }
 
 namespace osc
 {
     // a user-visible button, with a history dropdown menu, that performs an undo operation
     class UndoButton final {
     public:
-        explicit UndoButton(std::shared_ptr<UndoRedo>);
+        explicit UndoButton(std::shared_ptr<UndoRedoBase>);
         UndoButton(UndoButton const&) = delete;
         UndoButton(UndoButton&&) noexcept = default;
         UndoButton& operator=(UndoButton const&) = delete;
@@ -18,6 +18,6 @@ namespace osc
 
         void onDraw();
     private:
-        std::shared_ptr<UndoRedo> m_UndoRedo;
+        std::shared_ptr<UndoRedoBase> m_UndoRedo;
     };
 }

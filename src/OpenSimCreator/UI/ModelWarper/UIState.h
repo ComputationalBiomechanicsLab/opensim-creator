@@ -1,14 +1,14 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/ModelWarper/Detail.h>
 #include <OpenSimCreator/Documents/ModelWarper/Document.h>
-#include <OpenSimCreator/Documents/ModelWarper/MeshWarpPairing.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
-#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckConsumerResponse.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
+#include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
 
 #include <filesystem>
 #include <memory>
 #include <optional>
+#include <vector>
 
 namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
@@ -18,32 +18,19 @@ namespace osc::mow
 {
     class UIState final {
     public:
-        OpenSim::Model const& getModel() const;
+        OpenSim::Model const& model() const { return m_Document->model(); }
 
-        size_t getNumWarpableMeshesInModel() const;
-        void forEachWarpableMeshInModel(
-            std::function<void(OpenSim::Mesh const&)> const&
-        ) const;
-        void forEachMeshWarpDetail(
-            OpenSim::Mesh const&,
-            std::function<void(Detail)> const&
-        ) const;
-        void forEachMeshWarpCheck(
-            OpenSim::Mesh const&,
-            std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&
-        ) const;
-        ValidationCheck::State getMeshWarpState(
-            OpenSim::Mesh const&
-        ) const;
+        std::vector<WarpDetail> details(OpenSim::Mesh const& mesh) const { return m_Document->details(mesh); }
+        std::vector<ValidationCheck> validate(OpenSim::Mesh const& mesh) const { return m_Document->validate(mesh); }
+        ValidationState state(OpenSim::Mesh const& mesh) const { return m_Document->state(mesh); }
 
-        size_t getNumWarpableFramesInModel() const;
-        void forEachWarpableFrameInModel(std::function<void(OpenSim::PhysicalOffsetFrame const&)> const&) const;
-        void forEachFrameDefinitionCheck(
-            OpenSim::PhysicalOffsetFrame const&,
-            std::function<ValidationCheckConsumerResponse(ValidationCheck)> const&
-        ) const;
+        std::vector<WarpDetail> details(OpenSim::PhysicalOffsetFrame const& pof) const { return m_Document->details(pof); }
+        std::vector<ValidationCheck> validate(OpenSim::PhysicalOffsetFrame const& pof) const { return m_Document->validate(pof); }
+        ValidationState state(OpenSim::PhysicalOffsetFrame const& pof) const { return m_Document->state(pof); }
 
-        void actionOpenModel(std::optional<std::filesystem::path> path = std::nullopt);
+        void actionOpenOsimOrPromptUser(
+            std::optional<std::filesystem::path> maybeOsimPath = std::nullopt
+        );
     private:
         std::shared_ptr<Document> m_Document = std::make_shared<Document>();
     };
