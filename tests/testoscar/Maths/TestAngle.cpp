@@ -92,8 +92,19 @@ TEST(Angle, TurnConvertsToRadiansOrDegreesAsExpected)
 {
     constexpr auto pi = std::numbers::pi_v<float>;
 
-    static_assert(Radians{1_turn} == Radians{2.0*pi*1_rad});
-    static_assert(Radians{0.5_turn} == Radians{pi*1_rad});
-    static_assert(Degrees{1_turn} == 360_deg);
-    static_assert(Degrees{0.5_turn} == 180_deg);
+    static_assert(1_turn == 2.0*pi*1_rad);
+    static_assert(0.5_turn == pi*1_rad);
+    static_assert(1_turn == 360_deg);
+    static_assert(0.5_turn == 180_deg);
+}
+
+TEST(Angle, CanCompareMixedAngularTypes)
+{
+    static_assert(1_turn == 360_deg);  // should compile
+}
+
+TEST(Angle, ScalarDivisionWorksAsExpected)
+{
+    static_assert(1_turn/2 == 180_deg);
+    static_assert(360*360/360_deg == 1/1_turn);
 }
