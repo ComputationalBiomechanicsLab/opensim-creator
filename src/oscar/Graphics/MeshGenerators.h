@@ -118,4 +118,14 @@ namespace osc
         float radius = 1.0f,
         size_t detail = 0
     );
+
+    Mesh GenerateOctahedronMesh(
+        float radius = 1.0f,
+        size_t detail = 0
+    );
+
+    Mesh GenerateTetrahedronMesh(
+        float radius = 1.0f,
+        size_t detail = 0
+    );
 }

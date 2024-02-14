@@ -1354,6 +1354,8 @@ Mesh osc::GenerateDodecahedronMesh(
     float radius,
     size_t detail)
 {
+    // implementation ported from threejs (DodecahedronGeometry)
+
     float const t = (1.0f + std::sqrt(5.0f))/2.0f;
     float const r = 1.0f/t;
 
@@ -1386,6 +1388,43 @@ Mesh osc::GenerateDodecahedronMesh(
         11, 9, 5, 	11, 5, 19, 	11, 19, 7,
         19, 5, 14, 	19, 14, 4, 	19, 4, 17,
         1, 12, 14, 	1, 14, 5, 	1, 5, 9
+    });
+
+    return GeneratePolyhedronMesh(vertices, indices, radius, detail);
+}
+
+Mesh osc::GenerateOctahedronMesh(
+    float radius,
+    size_t detail)
+{
+    // implementation ported from threejs (OctahedronGeometry)
+
+    auto const vertices = std::to_array<Vec3>({
+        {1.0f,  0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f,  0.0f},
+        {0.0f, -1.0f, 0.0f}, { 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, -1.0f},
+    });
+
+    auto const indices = std::to_array<uint32_t>({
+        0, 2, 4,    0, 4, 3,    0, 3, 5,
+        0, 5, 2,    1, 2, 5,    1, 5, 3,
+        1, 3, 4,    1, 4, 2
+    });
+
+    return GeneratePolyhedronMesh(vertices, indices, radius, detail);
+}
+
+Mesh osc::GenerateTetrahedronMesh(
+    float radius,
+    size_t detail)
+{
+    // implementation ported from threejs (TetrahedronGeometry)
+
+    auto const vertices = std::to_array<Vec3>({
+        {1, 1, 1}, {-1, -1, 1}, {-1, 1, - 1}, {1, -1, -1},
+    });
+
+    auto const indices = std::to_array<uint32_t>({
+        2, 1, 0,    0, 3, 2,    1, 3, 0,    2, 3, 1
     });
 
     return GeneratePolyhedronMesh(vertices, indices, radius, detail);
