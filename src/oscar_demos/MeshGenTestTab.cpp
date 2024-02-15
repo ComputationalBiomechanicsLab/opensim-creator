@@ -65,7 +65,7 @@ private:
             ImGui::NewLine();
 
             Vec2 contentRegion = ImGui::GetContentRegionAvail();
-            m_RenderParams.dimensions = Max(contentRegion, {0.0f, 0.0f});
+            m_RenderParams.dimensions = elementwise_max(contentRegion, {0.0f, 0.0f});
             m_RenderParams.antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
 
             {

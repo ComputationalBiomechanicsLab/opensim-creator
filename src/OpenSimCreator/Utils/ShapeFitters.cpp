@@ -307,7 +307,7 @@ namespace
         Vec3 const& basis1,
         Vec3 const& basis2)
     {
-        return {Dot(v, basis1), Dot(v, basis2)};
+        return {dot(v, basis1), dot(v, basis2)};
     }
 
     // returns `surfacePoint` un-projected from the 2D surface of a plane, where
@@ -561,7 +561,7 @@ Sphere osc::FitSphere(Mesh const& mesh)
     {
         Vec3 const vert = points[i];
 
-        f(i) = Dot(vert, vert);  // x^2 + y^2 + z^2
+        f(i) = dot(vert, vert);  // x^2 + y^2 + z^2
         A(i, 0) = 2.0f*vert[0];
         A(i, 1) = 2.0f*vert[1];
         A(i, 2) = 2.0f*vert[2];

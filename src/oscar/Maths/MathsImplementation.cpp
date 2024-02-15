@@ -1517,7 +1517,7 @@ Line osc::PerspectiveUnprojectTopLeftScreenPosToWorldRay(
 
 Vec2 osc::MinValuePerDimension(Rect const& r)
 {
-    return Min(r.p1, r.p2);
+    return elementwise_min(r.p1, r.p2);
 }
 
 float osc::Area(Rect const& r)
@@ -1557,8 +1557,8 @@ Rect osc::BoundingRectOf(std::span<Vec2 const> vs)
     Rect rv{vs.front(), vs.front()};
     for (auto it = vs.begin()+1; it != vs.end(); ++it)
     {
-        rv.p1 = Min(rv.p1, *it);
-        rv.p2 = Max(rv.p2, *it);
+        rv.p1 = elementwise_min(rv.p1, *it);
+        rv.p2 = elementwise_max(rv.p2, *it);
     }
     return rv;
 }
@@ -1567,8 +1567,8 @@ Rect osc::Expand(Rect const& rect, float amt)
 {
     Rect rv
     {
-        Min(rect.p1, rect.p2),
-        Max(rect.p1, rect.p2)
+        elementwise_min(rect.p1, rect.p2),
+        elementwise_max(rect.p1, rect.p2)
     };
     rv.p1.x -= amt;
     rv.p2.x += amt;
@@ -1581,8 +1581,8 @@ Rect osc::Expand(Rect const& rect, Vec2 amt)
 {
     Rect rv
     {
-        Min(rect.p1, rect.p2),
-        Max(rect.p1, rect.p2)
+        elementwise_min(rect.p1, rect.p2),
+        elementwise_max(rect.p1, rect.p2)
     };
     rv.p1.x -= amt.x;
     rv.p2.x += amt.x;
@@ -1758,8 +1758,8 @@ AABB osc::Union(AABB const& a, AABB const& b)
 {
     return AABB
     {
-        Min(a.min, b.min),
-        Max(a.max, b.max),
+        elementwise_min(a.min, b.min),
+        elementwise_max(a.max, b.max),
     };
 }
 
@@ -1860,10 +1860,10 @@ AABB osc::TransformAABB(AABB const& aabb, Transform const& t)
 AABB osc::AABBFromTriangle(Triangle const& t)
 {
     AABB rv{t.p0, t.p0};
-    rv.min = Min(rv.min, t.p1);
-    rv.max = Max(rv.max, t.p1);
-    rv.min = Min(rv.min, t.p2);
-    rv.max = Max(rv.max, t.p2);
+    rv.min = elementwise_min(rv.min, t.p1);
+    rv.max = elementwise_max(rv.max, t.p1);
+    rv.min = elementwise_min(rv.min, t.p2);
+    rv.max = elementwise_max(rv.max, t.p2);
     return rv;
 }
 
@@ -1880,8 +1880,8 @@ AABB osc::AABBFromVerts(std::span<Vec3 const> vs)
     for (size_t i = 1; i < vs.size(); ++i)
     {
         Vec3 const& pos = vs[i];
-        rv.min = Min(rv.min, pos);
-        rv.max = Max(rv.max, pos);
+        rv.min = elementwise_min(rv.min, pos);
+        rv.max = elementwise_max(rv.max, pos);
     }
 
     return rv;
@@ -1918,8 +1918,8 @@ AABB osc::AABBFromIndexedVerts(
         if (idx < verts.size())  // ignore invalid indices
         {
             Vec3 const& pos = verts[idx];
-            rv.min = Min(rv.min, pos);
-            rv.max = Max(rv.max, pos);
+            rv.min = elementwise_min(rv.min, pos);
+            rv.max = elementwise_max(rv.max, pos);
         }
     }
 
@@ -1957,8 +1957,8 @@ AABB osc::AABBFromIndexedVerts(
         if (idx < verts.size())  // ignore invalid indices
         {
             Vec3 const& pos = verts[idx];
-            rv.min = Min(rv.min, pos);
-            rv.max = Max(rv.max, pos);
+            rv.min = elementwise_min(rv.min, pos);
+            rv.max = elementwise_max(rv.max, pos);
         }
     }
 
@@ -2428,7 +2428,6 @@ float osc::EaseOutElastic(float x)
 {
     // adopted from: https://easings.net/#easeOutElastic
 
-    using std::sin;
     using std::pow;
 
     constexpr float c4 = 2.0f*std::numbers::pi_v<float> / 3.0f;

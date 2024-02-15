@@ -100,8 +100,6 @@ private:
 
     void implOnTick() final
     {
-        using std::sin;
-
         // move light position over time
         double const seconds = App::get().getFrameDeltaSinceAppStartup().count();
         m_LightPos.x = static_cast<float>(3.0 * sin(0.5 * seconds));

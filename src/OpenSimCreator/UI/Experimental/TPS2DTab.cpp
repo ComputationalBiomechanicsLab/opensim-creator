@@ -56,7 +56,7 @@ namespace
     float RadialBasisFunction2D(Vec2 controlPoint, Vec2 p)
     {
         Vec2 const diff = controlPoint - p;
-        float const r2 = Dot(diff, diff);
+        float const r2 = dot(diff, diff);
 
         if (r2 == 0.0f)
         {

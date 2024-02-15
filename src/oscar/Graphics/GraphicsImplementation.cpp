@@ -698,8 +698,8 @@ namespace
             Vec3 const bMidpointWorldSpace = WorldMidpoint(b);
             Vec3 const camera2a = aMidpointWorldSpace - m_Pos;
             Vec3 const camera2b = bMidpointWorldSpace - m_Pos;
-            float const camera2aDistanceSquared = Dot(camera2a, camera2a);
-            float const camera2bDistanceSquared = Dot(camera2b, camera2b);
+            float const camera2aDistanceSquared = dot(camera2a, camera2a);
+            float const camera2bDistanceSquared = dot(camera2b, camera2b);
             return camera2aDistanceSquared > camera2bDistanceSquared;
         }
     private:
@@ -2240,7 +2240,7 @@ std::ostream& osc::operator<<(std::ostream& o, DepthStencilFormat f)
 }
 
 osc::RenderTextureDescriptor::RenderTextureDescriptor(Vec2i dimensions) :
-    m_Dimensions{Max(dimensions, Vec2i{0, 0})},
+    m_Dimensions{max(dimensions, Vec2i{0, 0})},
     m_Dimension{TextureDimensionality::Tex2D},
     m_AnialiasingLevel{1},
     m_ColorFormat{RenderTextureFormat::ARGB32},
@@ -5065,8 +5065,8 @@ private:
             for (auto idx : getIndices())
             {
                 Vec3 pos = range.at(idx);  // bounds-check index
-                m_AABB.min = Min(m_AABB.min, pos);
-                m_AABB.max = Max(m_AABB.max, pos);
+                m_AABB.min = elementwise_min(m_AABB.min, pos);
+                m_AABB.max = elementwise_max(m_AABB.max, pos);
             }
         }
         else if (checkIndices && !recalculateBounds)

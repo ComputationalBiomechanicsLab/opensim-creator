@@ -240,7 +240,7 @@ TEST(Camera, SetDirectionToDifferentDirectionGivesAccurateEnoughResults)
 
     Vec3 returnedDirection = camera.getDirection();
 
-    ASSERT_GT(Dot(newDirection, returnedDirection), 0.999f);
+    ASSERT_GT(dot(newDirection, returnedDirection), 0.999f);
 }
 
 TEST(Camera, GetViewMatrixReturnsViewMatrixBasedOnPositonDirectionAndUp)

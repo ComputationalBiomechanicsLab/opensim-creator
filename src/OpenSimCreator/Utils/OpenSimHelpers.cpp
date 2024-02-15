@@ -1371,7 +1371,7 @@ namespace
         ForceTorque const& forceTorque,
         float minimumForce = std::numeric_limits<float>::epsilon())
     {
-        float const forceScaler = Dot(plane.normal, forceTorque.force);
+        float const forceScaler = dot(plane.normal, forceTorque.force);
 
         if (std::abs(forceScaler) < minimumForce)
         {
@@ -1379,7 +1379,7 @@ namespace
             return std::nullopt;
         }
 
-        if (std::abs(Dot(plane.normal, Normalize(forceTorque.torque))) >= 1.0f - std::numeric_limits<float>::epsilon())
+        if (std::abs(dot(plane.normal, Normalize(forceTorque.torque))) >= 1.0f - std::numeric_limits<float>::epsilon())
         {
             // pedantic: the resulting torque is aligned with the plane normal, making
             // the cross product undefined later
@@ -1390,7 +1390,7 @@ namespace
         // it feels a bit like `p1` is always going to be zero
         Vec3 const pos = Cross(plane.normal, forceTorque.torque) / forceScaler;
         Vec3 const posRelativeToPlaneOrigin = pos - plane.origin;
-        float const p1 = Dot(posRelativeToPlaneOrigin, plane.normal);
+        float const p1 = dot(posRelativeToPlaneOrigin, plane.normal);
         float const p2 = forceScaler;
 
         return pos - (p1/p2)*forceTorque.force;

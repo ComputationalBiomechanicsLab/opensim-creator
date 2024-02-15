@@ -948,7 +948,7 @@ namespace osc::mi
             Vec2 const childScr = worldPosToScreenPos(child);
             Vec2 const child2ParentScr = parentScr - childScr;
 
-            if (Dot(child2ParentScr, child2ParentScr) < triangleWidthSquared)
+            if (dot(child2ParentScr, child2ParentScr) < triangleWidthSquared)
             {
                 return;
             }

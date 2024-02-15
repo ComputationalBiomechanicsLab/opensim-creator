@@ -926,8 +926,6 @@ Mesh osc::GenerateTorusKnotMesh(
     //
     // https://threejs.org/docs/#api/en/geometries/TorusKnotGeometry
 
-    using std::cos;
-
     auto const fNumTubularSegments = static_cast<float>(numTubularSegments);
     auto const fNumRadialSegments = static_cast<float>(numRadialSegments);
     auto const fp = static_cast<float>(p);

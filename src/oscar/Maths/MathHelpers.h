@@ -37,16 +37,34 @@ namespace osc { struct Segment; }
 //               osc struct
 namespace osc
 {
+    template<std::floating_point GenType>
+    GenType sin(GenType v)
+    {
+        return std::sin(v);
+    }
+
     template<std::floating_point Rep, AngularUnitTraits Units>
     Rep sin(Angle<Rep, Units> v)
     {
         return std::sin(RadiansT<Rep>{v}.count());
     }
 
+    template<std::floating_point GenType>
+    GenType cos(GenType v)
+    {
+        return std::cos(v);
+    }
+
     template<std::floating_point Rep, AngularUnitTraits Units>
     Rep cos(Angle<Rep, Units> v)
     {
         return std::cos(RadiansT<Rep>{v}.count());
+    }
+
+    template<std::floating_point GenType>
+    GenType tan(GenType v)
+    {
+        return std::tan(v);
     }
 
     template<std::floating_point Rep, AngularUnitTraits Units>
@@ -93,7 +111,7 @@ namespace osc
 
     // returns the dot product of the provided two vectors
     template<LengthType L, typename T, Qualifier Q>
-    constexpr T Dot(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b)
+    constexpr T dot(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b)
         requires std::is_arithmetic_v<T>
     {
         return glm::dot(a, b);
@@ -101,7 +119,7 @@ namespace osc
 
     // returns the smallest of `a` and `b`
     template<typename GenType>
-    constexpr GenType Min(GenType a, GenType b)
+    constexpr GenType min(GenType a, GenType b)
         requires std::is_arithmetic_v<GenType>
     {
         return glm::min(a, b);
@@ -109,7 +127,7 @@ namespace osc
 
     // returns a vector containing min(a[dim], b[dim]) for each element
     template<LengthType L, typename T, Qualifier Q>
-    constexpr Vec<L, T, Q> Min(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b)
+    constexpr Vec<L, T, Q> elementwise_min(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b)
         requires std::is_arithmetic_v<T>
     {
         return glm::min(a, b);
@@ -117,7 +135,7 @@ namespace osc
 
     // returns the largest of `a` and `b`
     template<typename GenType>
-    constexpr GenType Max(GenType a, GenType b)
+    constexpr GenType max(GenType a, GenType b)
         requires std::is_arithmetic_v<GenType>
     {
         return glm::max(a, b);
@@ -125,7 +143,7 @@ namespace osc
 
     // returns a vector containing max(a[i], b[i]) for each element
     template<LengthType L, typename T, Qualifier Q>
-    constexpr Vec<L, T, Q> Max(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b)
+    constexpr Vec<L, T, Q> elementwise_max(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b)
         requires std::is_arithmetic_v<T>
     {
         return glm::max(a, b);
@@ -302,7 +320,7 @@ namespace osc
     {
         constexpr T eps2 = std::numeric_limits<T>::epsilon() * std::numeric_limits<T>::epsilon();
         auto const b2a = a - b;
-        return Dot(b2a, b2a) > eps2;
+        return dot(b2a, b2a) > eps2;
     }
 
     bool AreAtSameLocation(Vec3 const&, Vec3 const&);
