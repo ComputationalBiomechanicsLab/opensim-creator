@@ -357,7 +357,7 @@ namespace osc::mi
 
             if (m_AnimationFraction < 1.0f)
             {
-                m_AnimationFraction = std::clamp(m_AnimationFraction + 0.5f*dt, 0.0f, 1.0f);
+                m_AnimationFraction = Saturate(m_AnimationFraction + 0.5f*dt);
                 App::upd().requestRedraw();
             }
         }

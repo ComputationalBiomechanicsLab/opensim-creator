@@ -2431,7 +2431,7 @@ float osc::EaseOutElastic(float x)
     using std::pow;
 
     constexpr float c4 = 2.0f*std::numbers::pi_v<float> / 3.0f;
-    float const normalized = Clamp(x, 0.0f, 1.0f);
+    float const normalized = Saturate(x);
 
     return pow(2.0f, -5.0f*normalized) * sin((normalized*10.0f - 0.75f) * c4) + 1.0f;
 }

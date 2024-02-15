@@ -103,9 +103,9 @@ namespace osc
         std::floating_point Rep2,
         AngularUnitTraits Units2
     >
-    typename std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>> fmod(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y)
+    auto fmod(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y) -> std::common_type_t<decltype(x), decltype(y)>
     {
-        using CA = std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>>;
+        using CA = std::common_type_t<decltype(x), decltype(y)>;
         return CA{std::fmod(CA{x}.count(), CA{y}.count())};
     }
 
@@ -177,6 +177,20 @@ namespace osc
         requires std::is_arithmetic_v<T>
     {
         return glm::clamp(x, minVal, maxVal);
+    }
+
+    // clamps `v` between 0.0 and 1.0
+    template<std::floating_point GenType>
+    constexpr GenType Saturate(GenType v)
+    {
+        return glm::clamp(v, static_cast<GenType>(0), static_cast<GenType>(1));
+    }
+
+    // clamps each element in `x` between 0.0 and 1.0
+    template<LengthType L, std::floating_point T, Qualifier Q>
+    constexpr Vec<L, T, Q> Saturate(Vec<L, T, Q> const& x)
+    {
+        return glm::clamp(x, static_cast<T>(0), static_cast<T>(1));
     }
 
     // linearly interpolates between `x` and `y` with factor `a`
