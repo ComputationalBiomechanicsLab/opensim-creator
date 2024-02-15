@@ -1,7 +1,6 @@
 #include "TPS2DTab.h"
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <oscar/Formats/Image.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/ColorSpace.h>
@@ -16,6 +15,7 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/StdVariantHelpers.h>

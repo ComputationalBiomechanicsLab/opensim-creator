@@ -8,8 +8,7 @@
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
-#include <implot.h>
+#include <oscar/UI/oscimgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Vec2.h>

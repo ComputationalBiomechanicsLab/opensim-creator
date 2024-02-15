@@ -5,13 +5,13 @@
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Common/ComponentSocket.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 #include <oscar/Utils/StringHelpers.h>
 

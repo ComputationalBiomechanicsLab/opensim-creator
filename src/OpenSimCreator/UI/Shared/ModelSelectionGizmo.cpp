@@ -5,8 +5,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <OpenSimCreator/Utils/SimTKHelpers.h>
 
-#include <imgui.h>
-#include <ImGuizmo.h>  // care: must be included after imgui
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -26,6 +24,7 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/UI/ImGuizmoHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/ScopeGuard.h>
 

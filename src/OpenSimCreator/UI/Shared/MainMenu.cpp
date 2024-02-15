@@ -11,7 +11,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Platform/App.h>
@@ -20,6 +19,7 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/FilesystemHelpers.h>
 #include <oscar/Utils/ParentPtr.h>

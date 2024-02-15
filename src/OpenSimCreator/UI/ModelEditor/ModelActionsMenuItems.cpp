@@ -7,16 +7,16 @@
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Control/Controller.h>
-#include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
+#include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/Probe.h>
 #include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <concepts>

@@ -5,9 +5,9 @@
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 #include <oscar/Utils/ParentPtr.h>
 

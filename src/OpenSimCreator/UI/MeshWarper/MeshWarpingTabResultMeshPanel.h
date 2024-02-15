@@ -7,7 +7,6 @@
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <oscar/Graphics/RenderTexture.h>
 #include <oscar/Graphics/Scene/CachedSceneRenderer.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
@@ -20,6 +19,7 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <functional>

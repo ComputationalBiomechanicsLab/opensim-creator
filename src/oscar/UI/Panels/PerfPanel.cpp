@@ -1,10 +1,9 @@
 #include "PerfPanel.h"
 
 #include <oscar/Platform/App.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/Utils/Perf.h>
-
-#include <imgui.h>
 
 #include <algorithm>
 #include <chrono>

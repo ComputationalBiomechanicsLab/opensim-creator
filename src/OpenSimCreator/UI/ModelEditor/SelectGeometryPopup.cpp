@@ -2,13 +2,13 @@
 
 #include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
 
-#include <imgui.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
-#include <SimTKcommon/SmallMatrix.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 #include <oscar/Utils/FilesystemHelpers.h>
+#include <SimTKcommon/SmallMatrix.h>
 
 #include <algorithm>
 #include <array>

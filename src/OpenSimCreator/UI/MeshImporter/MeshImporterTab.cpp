@@ -30,9 +30,6 @@
 #include <OpenSimCreator/UI/Shared/MainMenu.h>
 
 #include <IconsFontAwesome5.h>
-#include <ImGuizmo.h>
-#include <SDL_events.h>
-#include <imgui.h>
 #include <oscar/Formats/OBJ.h>
 #include <oscar/Formats/STL.h>
 #include <oscar/Graphics/Color.h>
@@ -50,6 +47,7 @@
 #include <oscar/Platform/os.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/ImGuizmoHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Panels/UndoRedoPanel.h>
 #include <oscar/UI/Widgets/LogViewer.h>
@@ -58,6 +56,7 @@
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/ScopeGuard.h>
 #include <oscar/Utils/UID.h>
+#include <SDL_events.h>
 
 #include <cstddef>
 #include <filesystem>

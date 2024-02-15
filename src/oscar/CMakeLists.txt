@@ -279,6 +279,9 @@ add_library(oscar STATIC
     UI/ImGuiHelpers.h
     UI/ImGuizmoHelpers.cpp
     UI/ImGuizmoHelpers.h
+    UI/oscimgui.h
+    UI/oscimgui_internal.h
+    UI/oscimgui_config.h
     UI/Panels.h
     UI/Screens.h
     UI/Tabs.h

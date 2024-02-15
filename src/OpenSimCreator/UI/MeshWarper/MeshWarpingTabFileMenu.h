@@ -6,8 +6,8 @@
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <oscar/Platform/App.h>
+#include <oscar/UI/oscimgui.h>
 
 #include <memory>
 #include <utility>

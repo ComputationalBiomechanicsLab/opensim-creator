@@ -6,9 +6,9 @@
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
-#include <imgui_internal.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
+#include <oscar/UI/oscimgui_internal.h>
 #include <oscar/UI/Widgets/RedoButton.h>
 #include <oscar/UI/Widgets/UndoButton.h>
 

@@ -1,7 +1,5 @@
 #include "CustomWidgetsTab.h"
 
-#include <imgui.h>
-#include <imgui_internal.h>
 #include <oscar/oscar.h>
 
 #include <cmath>

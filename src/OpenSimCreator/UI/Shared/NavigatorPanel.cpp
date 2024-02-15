@@ -5,7 +5,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
@@ -13,6 +12,7 @@
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/StringHelpers.h>

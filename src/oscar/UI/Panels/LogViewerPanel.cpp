@@ -1,9 +1,8 @@
 #include "LogViewerPanel.h"
 
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/UI/Widgets/LogViewer.h>
-
-#include <imgui.h>
 
 #include <memory>
 #include <string_view>

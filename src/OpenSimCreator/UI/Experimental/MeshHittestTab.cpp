@@ -3,7 +3,6 @@
 #include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Graphics.h>
@@ -25,6 +24,7 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/Utils/UID.h>
 

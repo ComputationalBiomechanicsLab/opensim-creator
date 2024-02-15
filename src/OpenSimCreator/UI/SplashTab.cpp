@@ -11,7 +11,6 @@
 #include <OpenSimCreator/UI/Shared/MainMenu.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <oscar/Formats/SVG.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
@@ -29,6 +28,7 @@
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/UI/Widgets/LogViewer.h>
 #include <oscar/Utils/CStringView.h>

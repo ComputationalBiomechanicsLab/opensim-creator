@@ -1,7 +1,6 @@
 #pragma once
 
 #include <SDL_events.h>
-#include <imgui.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Maths/Eulers.h>
 #include <oscar/Platform/App.h>

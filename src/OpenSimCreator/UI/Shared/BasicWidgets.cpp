@@ -22,8 +22,6 @@
 #include <OpenSimCreator/Utils/SimTKHelpers.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
-#include <imgui_internal.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Simulation/Model/Frame.h>
@@ -47,6 +45,8 @@
 #include <oscar/Platform/os.h>
 #include <oscar/UI/IconCache.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
+#include <oscar/UI/oscimgui_internal.h>
 #include <oscar/UI/Widgets/IconWithMenu.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/StringHelpers.h>

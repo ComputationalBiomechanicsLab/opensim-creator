@@ -12,9 +12,9 @@
 #include <OpenSimCreator/Utils/ParamValue.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Platform/os.h>
+#include <oscar/UI/oscimgui.h>
 
 #include <algorithm>
 #include <filesystem>

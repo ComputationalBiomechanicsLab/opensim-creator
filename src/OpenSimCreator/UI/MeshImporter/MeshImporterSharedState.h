@@ -17,7 +17,6 @@
 #include <OpenSimCreator/UI/MeshImporter/MeshLoader.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Material.h>
@@ -44,6 +43,7 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Widgets/LogViewer.h>
 #include <oscar/Utils/CStringView.h>

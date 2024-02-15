@@ -11,27 +11,27 @@
 #include <OpenSimCreator/Utils/ParamBlock.h>
 
 #include <IconsFontAwesome5.h>
-#include <SDL_events.h>
-#include <imgui.h>
-#include <imgui_internal.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppConfig.h>
 #include <oscar/Platform/Log.h>
-#include <oscar/Platform/Screenshot.h>
 #include <oscar/Platform/os.h>
+#include <oscar/Platform/Screenshot.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
+#include <oscar/UI/oscimgui_internal.h>
 #include <oscar/UI/Tabs/ErrorTab.h>
 #include <oscar/UI/Tabs/ITab.h>
 #include <oscar/UI/Tabs/ScreenshotTab.h>
 #include <oscar/UI/Tabs/TabRegistry.h>
+#include <oscar/UI/ui_context.h>
 #include <oscar/UI/Widgets/SaveChangesPopup.h>
 #include <oscar/UI/Widgets/SaveChangesPopupConfig.h>
-#include <oscar/UI/ui_context.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/Perf.h>
 #include <oscar/Utils/UID.h>
+#include <SDL_events.h>
 
 #include <algorithm>
 #include <functional>

@@ -1,9 +1,8 @@
 #pragma once
 
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/IPanel.h>
 #include <oscar/Utils/CStringView.h>
-
-#include <imgui.h>
 
 #include <string>
 #include <string_view>

@@ -1,9 +1,8 @@
 #pragma once
 
 #include <oscar/Maths/Vec2.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/IPopup.h>
-
-#include <imgui.h>
 
 #include <optional>
 #include <string>

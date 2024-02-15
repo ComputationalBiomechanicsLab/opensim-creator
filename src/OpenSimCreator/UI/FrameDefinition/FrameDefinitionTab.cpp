@@ -27,7 +27,6 @@
 
 #include <IconsFontAwesome5.h>
 #include <SDL_events.h>
-#include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Common/ComponentSocket.h>
@@ -43,6 +42,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Panels/PerfPanel.h>

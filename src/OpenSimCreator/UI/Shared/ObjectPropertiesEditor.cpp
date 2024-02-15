@@ -7,7 +7,6 @@
 #include <OpenSimCreator/Utils/SimTKHelpers.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Object.h>
@@ -18,8 +17,6 @@
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <SimTKcommon/Constants.h>
-#include <SimTKcommon/SmallMatrix.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec2.h>
@@ -28,8 +25,11 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/StringHelpers.h>
 #include <oscar/Utils/Typelist.h>
+#include <SimTKcommon/Constants.h>
+#include <SimTKcommon/SmallMatrix.h>
 
 #include <algorithm>
 #include <array>

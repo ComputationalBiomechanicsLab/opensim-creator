@@ -6,8 +6,7 @@
 #include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Platform/App.h>
 #include <oscar/UI/ImGuiHelpers.h>
-
-#include <imgui.h>
+#include <oscar/UI/oscimgui.h>
 
 #include <memory>
 #include <span>

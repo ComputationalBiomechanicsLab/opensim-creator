@@ -21,9 +21,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
-#include <SDL_events.h>
-#include <SDL_keyboard.h>
-#include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
@@ -31,6 +28,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Panels/PerfPanel.h>
@@ -44,6 +42,8 @@
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/Perf.h>
 #include <oscar/Utils/UID.h>
+#include <SDL_events.h>
+#include <SDL_keyboard.h>
 
 #include <chrono>
 #include <exception>

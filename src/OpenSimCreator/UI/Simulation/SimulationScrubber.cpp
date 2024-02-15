@@ -5,7 +5,7 @@
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/ImGuiHelpers.h>
 
 #include <memory>

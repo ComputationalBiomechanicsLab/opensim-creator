@@ -13,7 +13,6 @@
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentSocket.h>
@@ -29,6 +28,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 #include <oscar/Utils/Assertions.h>

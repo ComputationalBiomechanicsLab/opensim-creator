@@ -1,7 +1,7 @@
 #include "ImPlotDemoTab.h"
 
-#include <implot.h>
 #include <oscar/UI/Tabs/StandardTabImpl.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <memory>

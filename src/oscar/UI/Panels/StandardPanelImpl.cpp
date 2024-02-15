@@ -2,8 +2,7 @@
 
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppConfig.h>
-
-#include <imgui.h>
+#include <oscar/UI/oscimgui.h>
 
 #include <string_view>
 

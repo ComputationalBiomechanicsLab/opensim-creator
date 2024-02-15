@@ -11,7 +11,6 @@
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/RenderTexture.h>
@@ -34,6 +33,7 @@
 #include <oscar/Maths/Vec4.h>
 #include <oscar/Platform/App.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <functional>

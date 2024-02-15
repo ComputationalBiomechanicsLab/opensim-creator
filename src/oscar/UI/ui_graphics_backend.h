@@ -1,6 +1,6 @@
 #pragma once
 
-#include <imgui.h>
+#include <oscar/UI/oscimgui.h>
 
 namespace osc { class RenderTexture; }
 namespace osc { class Texture2D; }

@@ -2,11 +2,11 @@
 
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <imgui.h>
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentSocket.h>
+#include <oscar/UI/oscimgui.h>
 
 #include <string>
 #include <vector>

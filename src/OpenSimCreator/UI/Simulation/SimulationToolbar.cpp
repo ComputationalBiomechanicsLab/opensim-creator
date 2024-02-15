@@ -6,12 +6,12 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
-#include <imgui_internal.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec4.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
+#include <oscar/UI/oscimgui_internal.h>
 
 #include <memory>
 #include <string>
