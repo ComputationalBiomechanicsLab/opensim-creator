@@ -1077,18 +1077,18 @@ bool osc::CircularSliderFloat(
     bool temporaryTextInputActive = temporaryTextInputAllowed && ImGui::TempInputIsActive(id);
     if (!temporaryTextInputActive)
     {
-        // tabbing or CTRL+clicking the slider temporarily transforms it into an input box
-        const bool inputRequestedByTabbing = temporaryTextInputAllowed && (g.LastItemData.StatusFlags & ImGuiItemStatusFlags_FocusedByTabbing) != 0;
+        // tabbing or double clicking the slider temporarily transforms it into an input box
         const bool clicked = isHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left, id);
-        const bool makeActive = (inputRequestedByTabbing || clicked || g.NavActivateId == id);
+        const bool doubleClicked = (isHovered && g.IO.MouseClickedCount[0] == 2 && ImGui::TestKeyOwner(ImGuiKey_MouseLeft, id));
+        const bool makeActive = (clicked || doubleClicked || g.NavActivateId == id);
 
-        if (makeActive && clicked)
+        if (makeActive && (clicked || doubleClicked))
         {
             ImGui::SetKeyOwner(ImGuiKey_MouseLeft, id);  // tell ImGui that left-click is locked from further interaction etc. this frame
         }
         if (makeActive && temporaryTextInputAllowed)
         {
-            if (inputRequestedByTabbing || (clicked && g.IO.KeyCtrl) || (g.NavActivateId == id && (g.NavActivateFlags & ImGuiActivateFlags_PreferInput)))
+            if ((clicked && g.IO.KeyCtrl) || doubleClicked || (g.NavActivateId == id && (g.NavActivateFlags & ImGuiActivateFlags_PreferInput)))
             {
                 temporaryTextInputActive = true;
             }

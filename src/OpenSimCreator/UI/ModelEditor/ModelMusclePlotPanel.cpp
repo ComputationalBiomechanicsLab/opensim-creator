@@ -2118,7 +2118,7 @@ namespace
         bool m_ShowMarkersOnActivePlot = true;
         bool m_ShowMarkersOnOtherPlots = false;
         bool m_SnapCursor = false;
-        ImPlotFlags m_PlotFlags = ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame | ImPlotFlags_NoTitle;
+        ImPlotFlags m_PlotFlags = ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame | ImPlotFlags_NoTitle;
         ImPlotLocation m_LegendLocation = ImPlotLocation_NorthWest;
         ImPlotLegendFlags m_LegendFlags = ImPlotLegendFlags_None;
         Color m_LockedCurveTint = {0.5f, 0.5f, 1.0f, 1.1f};
