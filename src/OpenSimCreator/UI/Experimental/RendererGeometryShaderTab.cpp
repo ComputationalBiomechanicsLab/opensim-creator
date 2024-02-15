@@ -88,8 +88,8 @@ public:
         m_SceneCamera.setPixelRect(GetMainViewportWorkspaceScreenRect());
 
         m_SceneMaterial.setColor("uDiffuseColor", m_MeshColor);
-        Graphics::DrawMesh(m_Mesh, Transform{}, m_SceneMaterial, m_SceneCamera);
-        Graphics::DrawMesh(m_Mesh, Transform{}, m_NormalsMaterial, m_SceneCamera);
+        Graphics::DrawMesh(m_Mesh, Identity<Transform>(), m_SceneMaterial, m_SceneCamera);
+        Graphics::DrawMesh(m_Mesh, Identity<Transform>(), m_NormalsMaterial, m_SceneCamera);
         m_SceneCamera.renderToScreen();
     }
 

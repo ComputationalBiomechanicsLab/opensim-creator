@@ -30,6 +30,6 @@ namespace osc::mi
 
     inline AABB calcBounds(DrawableThing const& dt)
     {
-        return osc::TransformAABB(dt.mesh.getBounds(), dt.transform);
+        return TransformAABB(dt.mesh.getBounds(), dt.transform);
     }
 }

@@ -411,8 +411,8 @@ private:
         RenderTextureDescriptor desc{dims};
         desc.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
         out.emplace(desc);
-        Graphics::DrawMesh(mesh, Transform{}, m_Material, m_Camera);
-        Graphics::DrawMesh(mesh, Transform{}, m_WireframeMaterial, m_Camera);
+        Graphics::DrawMesh(mesh, Identity<Transform>(), m_Material, m_Camera);
+        Graphics::DrawMesh(mesh, Identity<Transform>(), m_WireframeMaterial, m_Camera);
 
         OSC_ASSERT(out.has_value());
         m_Camera.renderTo(*out);

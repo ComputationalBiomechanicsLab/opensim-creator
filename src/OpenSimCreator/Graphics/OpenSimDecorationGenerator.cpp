@@ -326,12 +326,11 @@ namespace
         Vec3 const p2 = TransformInGround(p2p.getBody2(), rs.getState()) * ToVec3(p2p.getPoint2());
 
         float const radius = c_GeometryPathBaseRadius * rs.getFixupScaleFactor();
-        Transform const cylinderXform = YToYCylinderToSegmentTransform({p1, p2}, radius);
 
         rs.consume(p2p, SceneDecoration
         {
             .mesh = rs.getCylinderMesh(),
-            .transform = cylinderXform,
+            .transform = YToYCylinderToSegmentTransform({p1, p2}, radius),
             .color = {0.7f, 0.7f, 0.7f, 1.0f},
         });
     }
@@ -380,8 +379,8 @@ namespace
         {
             float const radius = rs.getFixupScaleFactor() * 0.005f;
             Transform t = TransformInGround(b, rs.getState());
-            t.position = TransformPoint(t, ToVec3(b.getMassCenter()));
-            t.scale = {radius, radius, radius};
+            t.position = t * ToVec3(b.getMassCenter());
+            t.scale = Vec3{radius};
 
             rs.consume(b, SceneDecoration
             {

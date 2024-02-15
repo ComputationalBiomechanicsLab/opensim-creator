@@ -1200,20 +1200,18 @@ namespace osc::mi
             float const cylinderPullback = coreRadius * sin((180_deg * legThickness) / coreRadius);
 
             // emit origin sphere
-            {
-                Transform t;
-                t.scale *= coreRadius;
-                t.rotation = xform.rotation;
-                t.position = xform.position;
-
-                DrawableThing& sphere = appendOut.emplace_back();
-                sphere.id = logicalID;
-                sphere.groupId = groupID;
-                sphere.mesh = m_SphereMesh;
-                sphere.transform = t;
-                sphere.color = coreColor.withAlpha(coreColor.a * alpha);
-                sphere.flags = flags;
-            }
+            appendOut.push_back({
+                .id = logicalID,
+                .groupId = groupID,
+                .mesh = m_SphereMesh,
+                .transform = {
+                    .scale = Vec3{coreRadius},
+                    .rotation = xform.rotation,
+                    .position = xform.position,
+                },
+                .color = coreColor.withAlpha(coreColor.a * alpha),
+                .flags = flags,
+            });
 
             // emit "legs"
             for (int i = 0; i < 3; ++i)

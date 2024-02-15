@@ -112,7 +112,7 @@ public:
         // draw mesh
         m_Material.setColor("uColor", m_IsMousedOver ? Color::green() : Color::red());
         m_Material.setDepthTested(true);
-        Graphics::DrawMesh(m_Mesh, Transform{}, m_Material, m_Camera);
+        Graphics::DrawMesh(m_Mesh, Identity<Transform>(), m_Material, m_Camera);
 
         // draw hit triangle while mousing over
         if (m_IsMousedOver)
@@ -123,7 +123,7 @@ public:
 
             m_Material.setColor("uColor", Color::black());
             m_Material.setDepthTested(false);
-            Graphics::DrawMesh(m, Transform{}, m_Material, m_Camera);
+            Graphics::DrawMesh(m, Identity<Transform>(), m_Material, m_Camera);
         }
 
         if (m_UseBVH)

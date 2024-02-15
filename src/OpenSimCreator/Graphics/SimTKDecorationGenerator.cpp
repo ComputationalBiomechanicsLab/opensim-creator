@@ -64,10 +64,7 @@ namespace
         SimTK::Transform const& body2ground = mobod.getBodyTransform(state);
         SimTK::Transform const& decoration2body = g.getTransform();
 
-        Transform rv = ToTransform(body2ground * decoration2body);
-        rv.scale = GetScaleFactors(g);
-
-        return rv;
+        return ToTransform(body2ground * decoration2body).withScale(GetScaleFactors(g));
     }
 
     size_t HashOf(SimTK::Vec3 const& v)
