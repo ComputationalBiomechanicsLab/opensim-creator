@@ -75,16 +75,11 @@ namespace osc
             return Angle{lhs.m_Value * static_cast<Rep>(scalar)};
         }
 
-        // scalar division (both lhs and rhs)
+        // scalar division (only rhs: reciporical units aren't supported)
         template<std::convertible_to<Rep> Rep2>
         constexpr friend Angle operator/(Angle const& lhs, Rep2 const& scalar)
         {
             return Angle{lhs.m_Value / static_cast<Rep>(scalar)};
-        }
-        template<std::convertible_to<Rep> Rep2>
-        constexpr friend Angle operator/(Rep2 const& scalar, Angle const& rhs)
-        {
-            return Angle{static_cast<Rep>(scalar) / rhs.m_Value};
         }
     private:
         Rep m_Value;

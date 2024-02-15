@@ -106,5 +106,4 @@ TEST(Angle, CanCompareMixedAngularTypes)
 TEST(Angle, ScalarDivisionWorksAsExpected)
 {
     static_assert(1_turn/2 == 180_deg);
-    static_assert(360*360/360_deg == 1/1_turn);
 }
