@@ -180,10 +180,10 @@ namespace
         {
             for (int col = 0; col < numPairs; ++col)
             {
-                Vec2 const& pi = landmarkPairs[row].src;
+                Vec2 const& pi_ = landmarkPairs[row].src;
                 Vec2 const& pj = landmarkPairs[col].src;
 
-                L(row, col) = RadialBasisFunction2D(pi, pj);
+                L(row, col) = RadialBasisFunction2D(pi_, pj);
             }
         }
 
@@ -372,7 +372,7 @@ public:
                 std::vector<LandmarkPair2D> pairs = m_LandmarkPairs;
                 for (LandmarkPair2D& p : pairs)
                 {
-                    p.dest = Mix(p.src, p.dest, m_BlendingFactor);
+                    p.dest = mix(p.src, p.dest, m_BlendingFactor);
                 }
                 ThinPlateWarper2D warper{pairs};
                 m_OutputGrid = ApplyThinPlateWarpToMesh(warper, m_InputGrid);

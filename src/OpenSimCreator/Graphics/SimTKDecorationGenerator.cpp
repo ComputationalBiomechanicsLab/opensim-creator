@@ -310,7 +310,7 @@ namespace
             Vec3 const start = TransformPoint(t, startBase);
             Vec3 const end = TransformPoint(t, endBase);
 
-            Vec3 const direction = Normalize(end - start);
+            Vec3 const direction = normalize(end - start);
 
             Vec3 const neckStart = start;
             Vec3 const neckEnd = end - (m_FixupScaleFactor * static_cast<float>(d.getTipLength()) * direction);

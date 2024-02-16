@@ -28,7 +28,7 @@ namespace
         // (e.g. the above book) uses U(v) = |v|. The primary author (Gunz) claims that the original
         // basis function is not as good as just using the magnitude?
 
-        return Length(controlPoint - p);
+        return length(controlPoint - p);
     }
 }
 
@@ -128,10 +128,10 @@ TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const& inpu
     {
         for (int col = 0; col < numPairs; ++col)
         {
-            Vec3 const& pi = inputs.landmarks[row].source;
+            Vec3 const& pis = inputs.landmarks[row].source;
             Vec3 const& pj = inputs.landmarks[col].source;
 
-            L(row, col) = RadialBasisFunction3D(pi, pj);
+            L(row, col) = RadialBasisFunction3D(pis, pj);
         }
     }
 
@@ -181,7 +181,7 @@ TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const& inpu
     SimTK::Vector Vz(numPairs + 4, 0.0);
     for (int row = 0; row < numPairs; ++row)
     {
-        Vec3 const blended = Mix(inputs.landmarks[row].source, inputs.landmarks[row].destination, inputs.blendingFactor);
+        Vec3 const blended = mix(inputs.landmarks[row].source, inputs.landmarks[row].destination, inputs.blendingFactor);
         Vx[row] = blended.x;
         Vy[row] = blended.y;
         Vz[row] = blended.z;

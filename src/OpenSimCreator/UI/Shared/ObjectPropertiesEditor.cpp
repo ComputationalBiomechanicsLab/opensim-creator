@@ -163,7 +163,7 @@ namespace
     }
 
     // returns a suitable color for the given dimension index (e.g. x == 0)
-    Color IthDimensionColor(Vec3::length_type i)
+    Color IthDimensionColor(Vec3::size_type i)
     {
         Color color = {0.0f, 0.0f, 0.0f, 0.6f};
         color[i] = 1.0f;
@@ -352,7 +352,7 @@ namespace
 
     std::string GenerateVecFrameAnnotationLabel(
         OpenSim::AbstractProperty const& backingProperty,
-        Vec3::length_type ithDimension)
+        Vec3::size_type ithDimension)
     {
         std::stringstream ss;
         ss << "ObjectPropertiesEditor::Vec3/";
@@ -1012,7 +1012,7 @@ namespace
 
             // draw an editor for each component of the Vec3
             bool shouldSave = false;
-            for (Vec3::length_type i = 0; i < 3; ++i)
+            for (Vec3::size_type i = 0; i < 3; ++i)
             {
                 ComponentEditorReturn const componentEditorRv = drawVec3ComponentEditor(idx, i, editedValue, valueConverter);
                 shouldSave = shouldSave || componentEditorRv == ComponentEditorReturn::ShouldSave;
@@ -1032,11 +1032,11 @@ namespace
         // draws float input for a single component of the Vec3 (e.g. vec.x)
         ComponentEditorReturn drawVec3ComponentEditor(
             int idx,
-            Vec3::length_type i,
+            Vec3::size_type i,
             Vec3 editedValue,
             ValueConverter const& valueConverter)
         {
-            ImGui::PushID(i);
+            PushID(i);
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
             // draw dimension hint (color bar next to the input)

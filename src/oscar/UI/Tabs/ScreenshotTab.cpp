@@ -164,7 +164,7 @@ private:
             Vec4 color = selected ? selectedColor : unselectedColor;
             if (hovered)
             {
-                color.a = Saturate(color.a + 0.3f);
+                color.w = saturate(color.w + 0.3f);
             }
 
             if (hovered && leftClickReleased)

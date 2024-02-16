@@ -213,7 +213,7 @@ TEST(Camera, SetDirectionToStandardDirectionCausesGetDirectionToReturnTheDirecti
 
     ASSERT_EQ(camera.getDirection(), defaultDirection);
 
-    Vec3 differentDirection = Normalize(Vec3{1.0f, 2.0f, -0.5f});
+    Vec3 differentDirection = normalize(Vec3{1.0f, 2.0f, -0.5f});
     camera.setDirection(differentDirection);
 
     // not guaranteed: the camera stores *rotation*, not *direction*
@@ -234,7 +234,7 @@ TEST(Camera, SetDirectionToDifferentDirectionGivesAccurateEnoughResults)
 
     Camera camera;
 
-    Vec3 newDirection = Normalize(Vec3{1.0f, 1.0f, 1.0f});
+    Vec3 newDirection = normalize(Vec3{1.0f, 1.0f, 1.0f});
 
     camera.setDirection(newDirection);
 

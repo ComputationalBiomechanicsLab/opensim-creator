@@ -2090,7 +2090,7 @@ private:
             }
 
             ras /= static_cast<float>(n);
-            ras.rotation = Normalize(ras.rotation);
+            ras.rotation = normalize(ras.rotation);
 
             m_ImGuizmoState.mtx = ToMat4(ras);
         }

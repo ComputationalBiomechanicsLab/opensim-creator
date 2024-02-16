@@ -159,7 +159,7 @@ namespace osc
             float const pad = ImGui::GetStyle().ItemInnerSpacing.x;
 
             // draw connecting line
-            Vec2 const direction = Normalize(dest.origin - src.origin);
+            Vec2 const direction = normalize(dest.origin - src.origin);
             Vec2 const start = src.origin  + (src.radius  + Vec2{pad, 0.0f})*direction;
             Vec2 const end   = dest.origin - (dest.radius + Vec2{pad, 0.0f})*direction;
             ImU32 const color = ToImU32(Color::halfGrey());

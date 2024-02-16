@@ -33,6 +33,7 @@
 #include <oscar/Maths/Line.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
+#include <oscar/Maths/QuaternionFunctions.h>
 #include <oscar/Maths/RayCollision.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Sphere.h>
@@ -955,7 +956,7 @@ namespace osc::mi
 
             Vec3 const midpoint = Midpoint(parent, child);
             Vec2 const midpointScr = worldPosToScreenPos(midpoint);
-            Vec2 const directionScr = Normalize(child2ParentScr);
+            Vec2 const directionScr = normalize(child2ParentScr);
             Vec2 const directionNormalScr = {-directionScr.y, directionScr.x};
 
             Vec2 const p1 = midpointScr + (triangleWidth/2.0f)*directionNormalScr;
@@ -1232,7 +1233,7 @@ namespace osc::mi
                 t.scale.x = legThickness;
                 t.scale.y = 0.5f * actualLegLen;  // cylinder is 2 units high
                 t.scale.z = legThickness;
-                t.rotation = Normalize(xform.rotation * Rotation(meshDirection, cylinderDirection));
+                t.rotation = normalize(xform.rotation * Rotation(meshDirection, cylinderDirection));
                 t.position = xform.position + (t.rotation * (((getSphereRadius() + (0.5f * actualLegLen)) - cylinderPullback) * meshDirection));
 
                 Color color = {0.0f, 0.0f, 0.0f, alpha};

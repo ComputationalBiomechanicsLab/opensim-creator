@@ -133,7 +133,7 @@ TEST(Color, ToVec4ExplicitlyConvertsToVec4)
     ASSERT_EQ(v.x, c.r);
     ASSERT_EQ(v.y, c.g);
     ASSERT_EQ(v.z, c.b);
-    ASSERT_EQ(v.a, c.a);
+    ASSERT_EQ(v.w, c.a);
 }
 
 TEST(Color, EqualityReturnsTrueForEquivalentColors)

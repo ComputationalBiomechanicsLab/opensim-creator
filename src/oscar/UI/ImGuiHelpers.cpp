@@ -380,7 +380,7 @@ void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, Eulers& eulers)
 {
     Vec3 const front = camera.getDirection();
     Vec3 const up = camera.getUpwardsDirection();
-    Vec3 const right = Cross(front, up);
+    Vec3 const right = cross(front, up);
     Vec2 const mouseDelta = ImGui::GetIO().MouseDelta;
 
     float const speed = 10.0f;
@@ -416,7 +416,7 @@ void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, Eulers& eulers)
     camera.setPosition(pos);
 
     eulers.x += sensitivity * -mouseDelta.y;
-    eulers.x = Clamp(eulers.x, -90_deg + 0.1_rad, 90_deg - 0.1_rad);
+    eulers.x = clamp(eulers.x, -90_deg + 0.1_rad, 90_deg - 0.1_rad);
     eulers.y += sensitivity * -mouseDelta.x;
     eulers.y = fmod(eulers.y, 360_deg);
 
@@ -579,7 +579,7 @@ bool osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn, float threshold)
 
     Vec2 const dragDelta = ImGui::GetMouseDragDelta(btn);
 
-    return Length(dragDelta) < threshold;
+    return length(dragDelta) < threshold;
 }
 
 bool osc::IsDraggingWithAnyMouseButtonDown()
@@ -684,7 +684,7 @@ Rect osc::DrawAlignmentAxes(Mat4 const& viewMtx)
     for (size_t i = 0; i < std::size(labels); ++i)
     {
         Vec4 world = {0.0f, 0.0f, 0.0f, 0.0f};
-        world[static_cast<Vec4::length_type>(i)] = 1.0f;
+        world[static_cast<Vec4::size_type>(i)] = 1.0f;
 
         Vec2 view = Vec2{viewMtx * world};
         view.y = -view.y;  // y goes down in screen-space

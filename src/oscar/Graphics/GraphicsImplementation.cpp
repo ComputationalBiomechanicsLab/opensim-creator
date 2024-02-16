@@ -372,10 +372,10 @@ namespace
     }
 
     template<typename VecOrMat>
-    std::span<typename VecOrMat::value_type const> ToFloatSpan(VecOrMat const& v)
-        requires BitCastable<typename VecOrMat::value_type>
+    std::span<typename VecOrMat::element_type const> ToFloatSpan(VecOrMat const& v)
+        requires BitCastable<typename VecOrMat::element_type>
     {
-        return {ValuePtr(v), sizeof(VecOrMat)/sizeof(typename VecOrMat::value_type)};
+        return {ValuePtr(v), sizeof(VecOrMat)/sizeof(typename VecOrMat::element_type)};
     }
 }
 
@@ -589,7 +589,7 @@ namespace
         }, matrixOrTransform);
     }
 
-    Mat4 ToNormalMat3(Mat4OrTransform const& matrixOrTransform)
+    Mat3 ToNormalMat3(Mat4OrTransform const& matrixOrTransform)
     {
         return std::visit(Overload{
             [](Mat4 const& matrix) { return ToNormalMatrix(matrix); },
@@ -2240,7 +2240,7 @@ std::ostream& osc::operator<<(std::ostream& o, DepthStencilFormat f)
 }
 
 osc::RenderTextureDescriptor::RenderTextureDescriptor(Vec2i dimensions) :
-    m_Dimensions{max(dimensions, Vec2i{0, 0})},
+    m_Dimensions{elementwise_max(dimensions, Vec2i{0, 0})},
     m_Dimension{TextureDimensionality::Tex2D},
     m_AnialiasingLevel{1},
     m_ColorFormat{RenderTextureFormat::ARGB32},
@@ -4049,9 +4049,9 @@ namespace
         using ComponentType = typename VertexAttributeFormatTraits<EncodingFormat>::component_type;
         constexpr auto numComponents = NumComponents(EncodingFormat);
         constexpr auto sizeOfComponent = SizeOfComponent(EncodingFormat);
-        constexpr auto n = std::min(T::length(), static_cast<typename T::length_type>(numComponents));
+        constexpr auto n = std::min(T::length(), static_cast<typename T::size_type>(numComponents));
 
-        for (typename T::length_type i = 0; i < n; ++i)
+        for (typename T::size_type i = 0; i < n; ++i)
         {
             Encode<typename T::value_type, ComponentType>(p + i*sizeOfComponent, v[i]);
         }
@@ -4063,10 +4063,10 @@ namespace
         using ComponentType = typename VertexAttributeFormatTraits<EncodingFormat>::component_type;
         constexpr auto numComponents = NumComponents(EncodingFormat);
         constexpr auto sizeOfComponent = SizeOfComponent(EncodingFormat);
-        constexpr auto n = std::min(T::length(), static_cast<typename T::length_type>(numComponents));
+        constexpr auto n = std::min(T::length(), static_cast<typename T::size_type>(numComponents));
 
         T rv{};
-        for (typename T::length_type i = 0; i < n; ++i)
+        for (typename T::size_type i = 0; i < n; ++i)
         {
             rv[i] = Decode<ComponentType, typename T::value_type>(p + i*sizeOfComponent);
         }

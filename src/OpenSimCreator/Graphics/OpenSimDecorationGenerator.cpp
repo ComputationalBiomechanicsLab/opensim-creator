@@ -27,6 +27,7 @@
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Segment.h>
+#include <oscar/Maths/QuaternionFunctions.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/Log.h>
@@ -508,7 +509,7 @@ namespace
 
             GeometryPathPoint const& point = pps[i];
             Vec3 const prevToPos = point.locationInGround - prevPoint.locationInGround;
-            float prevToPosLen = Length(prevToPos);
+            float prevToPosLen = length(prevToPos);
             float traversalPos = prevTraversalPos + prevToPosLen;
             float excess = traversalPos - tendonLen;
 
@@ -546,7 +547,7 @@ namespace
 
             GeometryPathPoint const& point = pps[i];
             Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
-            float prevToPosLen = Length(prevToPos);
+            float prevToPosLen = length(prevToPos);
             float traversalPos = prevTraversalPos + prevToPosLen;
             float excess = traversalPos - fiberEnd;
 
@@ -585,7 +586,7 @@ namespace
 
             GeometryPathPoint const& point = pps[i];
             Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
-            float prevToPosLen = Length(prevToPos);
+            float prevToPosLen = length(prevToPos);
             float traversalPos = prevTraversalPos + prevToPosLen;
 
             emitTendonCylinder(prevPoint.locationInGround, point.locationInGround);
@@ -630,7 +631,7 @@ namespace
                     // ensure the sphere directionally tries to line up with the cylinders, to make
                     // the "join" between the sphere and cylinders nicer (#593)
                     .scale = Vec3{radius},
-                    .rotation = Normalize(Rotation(Vec3{0.0f, 1.0f, 0.0f}, upDirection)),
+                    .rotation = normalize(Rotation(Vec3{0.0f, 1.0f, 0.0f}, upDirection)),
                     .position = pp.locationInGround
                 },
                 .color = color,
@@ -657,7 +658,7 @@ namespace
             Vec3 const& ppPos = firstPoint.locationInGround;
             Vec3 const direction = points.size() == 1 ?
                 Vec3{0.0f, 1.0f, 0.0f} :
-                Normalize(points[1].locationInGround - ppPos);
+                normalize(points[1].locationInGround - ppPos);
 
             emitSphere(firstPoint, direction);
         }
@@ -675,7 +676,7 @@ namespace
             // if required, draw path points
             if (rs.getShowPathPoints())
             {
-                Vec3 const direction = Normalize(curPos - prevPos);
+                Vec3 const direction = normalize(curPos - prevPos);
                 emitSphere(point, direction);
             }
         }
@@ -901,7 +902,7 @@ namespace
         float const fixupScaleFactor = rs.getFixupScaleFactor();
         float const lenScale = 0.0025f;
         float const baseRadius = 0.025f;
-        float const tipLength = 0.1f*Length((fixupScaleFactor*lenScale)*maybeContact->force);
+        float const tipLength = 0.1f*length((fixupScaleFactor*lenScale)*maybeContact->force);
 
         ArrowProperties p;
         p.worldspaceStart = maybeContact->point;

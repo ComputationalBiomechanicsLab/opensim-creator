@@ -972,12 +972,12 @@ Mesh osc::GenerateTorusKnotMesh(
         // calculate orthonormal basis
         Vec3 const T = P2 - P1;
         Vec3 N = P2 + P1;
-        Vec3 B = Cross(T, N);
-        N = Cross(B, T);
+        Vec3 B = cross(T, N);
+        N = cross(B, T);
 
         // normalize B, N. T can be ignored, we don't use it
-        B = Normalize(B);
-        N = Normalize(N);
+        B = normalize(B);
+        N = normalize(N);
 
         for (size_t j = 0; j <= numRadialSegments; ++j) {
             auto const fj = static_cast<float>(j);
@@ -999,7 +999,7 @@ Mesh osc::GenerateTorusKnotMesh(
             vertices.push_back(vertex);
 
             // normal (P1 is always the center/origin of the extrusion, thus we can use it to calculate the normal)
-            normals.push_back(Normalize(vertex - P1));
+            normals.push_back(normalize(vertex - P1));
 
             uvs.emplace_back(fi / fNumTubularSegments, fj / fNumRadialSegments);
         }
@@ -1053,9 +1053,9 @@ Mesh osc::GenerateBoxMesh(
 
     // helper function
     auto const buildPlane = [&indices, &vertices, &normals, &uvs, &submeshes, &numberOfVertices, &groupStart](
-        Vec3::length_type u,
-        Vec3::length_type v,
-        Vec3::length_type w,
+        Vec3::size_type u,
+        Vec3::size_type v,
+        Vec3::size_type w,
         float udir,
         float vdir,
         Vec3 dims,
@@ -1161,8 +1161,8 @@ Mesh osc::GeneratePolyhedronMesh(
 
         for (size_t i = 0; i <= cols; ++i) {
             auto const fi = static_cast<float>(i);
-            Vec3 const aj = Mix(a, c, fi/fcols);
-            Vec3 const bj = Mix(b, c, fi/fcols);
+            Vec3 const aj = mix(a, c, fi/fcols);
+            Vec3 const bj = mix(b, c, fi/fcols);
 
             auto const rows = cols - i;
             auto const frows = static_cast<float>(rows);
@@ -1176,7 +1176,7 @@ Mesh osc::GeneratePolyhedronMesh(
                     v.at(i).at(j) = aj;
                 }
                 else {
-                    v.at(i).at(j) = Mix(aj, bj, fj/frows);
+                    v.at(i).at(j) = mix(aj, bj, fj/frows);
                 }
             }
         }
@@ -1218,7 +1218,7 @@ Mesh osc::GeneratePolyhedronMesh(
     auto const applyRadius = [&vertexBuffer](float radius)
     {
         for (Vec3& v : vertexBuffer) {
-            v = radius * Normalize(v);
+            v = radius * normalize(v);
         }
     };
 
@@ -1280,7 +1280,7 @@ Mesh osc::GeneratePolyhedronMesh(
         // returns angle above the XZ plane
         auto const inclination = [](Vec3 const& v) -> Radians
         {
-            return atan2(-v.y, Length(Vec2{v.x, v.z}));
+            return atan2(-v.y, length(Vec2{v.x, v.z}));
         };
 
         for (Vec3 const& v : vertexBuffer) {
@@ -1308,7 +1308,7 @@ Mesh osc::GeneratePolyhedronMesh(
     }
 
     auto meshNormals = vertexBuffer;
-    for (auto& v : meshNormals) { v = Normalize(v); }
+    for (auto& v : meshNormals) { v = normalize(v); }
 
     // TODO
     // if (detail == 0) {

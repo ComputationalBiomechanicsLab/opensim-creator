@@ -117,7 +117,7 @@ bool osc::mi::TryOrientObjectAxisAlongTwoPoints(
         return false;
     }
 
-    Vec3 const direction = Normalize(p2 - p1);
+    Vec3 const direction = normalize(p2 - p1);
     Transform const t = obj->getXForm(doc);
 
     obj->setXform(doc, PointAxisAlong(t, axis, direction));

@@ -449,8 +449,8 @@ namespace
             return;  // skip writing: point no longer exists in model
         }
 
-        std::optional<PointInfo> const pi = TryExtractPointInfo(*c, state);
-        if (!pi)
+        std::optional<PointInfo> const poi = TryExtractPointInfo(*c, state);
+        if (!poi)
         {
             return;  // skip writing: cannot extract point info for the component
         }
@@ -458,8 +458,8 @@ namespace
         // else: compute position, name, etc. and emit as a CSV data row
 
         Vec3 const position = maybeGround2ReexpressedFrame ?
-            CalcReexpressedFrame(model, state, *pi, *maybeGround2ReexpressedFrame) :
-            pi->location;
+            CalcReexpressedFrame(model, state, *poi, *maybeGround2ReexpressedFrame) :
+            poi->location;
 
         std::string const name = shouldExportPointsWithAbsPathNames ?
             GetAbsolutePathString(*c) :

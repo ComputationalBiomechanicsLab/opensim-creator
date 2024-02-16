@@ -1,12 +1,9 @@
 #pragma once
 
-#include <oscar/Maths/LengthType.h>
 #include <oscar/Maths/MathHelpers.h>
-#include <oscar/Maths/Qualifier.h>
 #include <oscar/Maths/Vec.h>
 
-#include <glm/detail/qualifier.hpp>
-
+#include <cstddef>
 #include <concepts>
 #include <limits>
 
@@ -20,19 +17,15 @@ namespace osc
      *
      * Inspired by Simbody's `SimTK::UnitVec` class
      */
-    template<
-        LengthType L,
-        typename T,
-        Qualifier Q = glm::defaultp
-    >
+    template<size_t L, typename T>
     class UnitVec final {
     public:
-        using type = UnitVec<L, T, Q>;
-        using value_type = typename Vec<L, T, Q>::value_type;
-        using length_type = typename Vec<L, T, Q>::length_type;
+        using type = UnitVec<L, T>;
+        using value_type = typename Vec<L, T>::size_type;
+        using size_type = typename Vec<L, T>::size_type;
         static inline constexpr T nan_type = std::numeric_limits<T>::has_signaling_NaN ? std::numeric_limits<T>::signaling_NaN() : std::numeric_limits<T>::quiet_NaN();
 
-        static constexpr length_type length()
+        static constexpr size_type length()
         {
             return L;
         }
@@ -45,20 +38,20 @@ namespace osc
         constexpr UnitVec(UnitVec&&) noexcept = default;
 
         // constructs a UnitVec by normalizing the provided `Vec`
-        explicit UnitVec(Vec<L, T, Q> const& v) :
-            m_Data{Normalize(v)}
+        explicit UnitVec(Vec<L, T> const& v) :
+            m_Data{normalize(v)}
         {}
 
         // constructs a UnitVec by normalizing the provided `Vec`
-        explicit UnitVec(Vec<L, T, Q>&& v) :
-            m_Data{Normalize(std::move(v))}
+        explicit UnitVec(Vec<L, T>&& v) :
+            m_Data{normalize(std::move(v))}
         {}
 
         // constructs a `UnitVec` by constructing the underlying `Vec`, followed by normalizing it
         template<typename... Args>
         explicit UnitVec(Args&&... args)
-            requires std::constructible_from<Vec<L, T, Q>, Args&&...> :
-            UnitVec{Vec<L, T, Q>{std::forward<Args>(args)...}}
+            requires std::constructible_from<Vec<L, T>, Args&&...> :
+            UnitVec{Vec<L, T>{std::forward<Args>(args)...}}
         {}
 
         // copy/move assignment (trivial)
@@ -66,12 +59,12 @@ namespace osc
         constexpr UnitVec& operator=(UnitVec&&) noexcept = default;
 
         // implicit conversion to the underlying (normalized) vector
-        constexpr operator Vec<L, T, Q> const& () const
+        constexpr operator Vec<L, T> const& () const
         {
             return m_Data;
         }
 
-        constexpr T const& operator[](length_type index) const
+        constexpr T const& operator[](size_type index) const
         {
             return m_Data[index];
         }
@@ -92,10 +85,10 @@ namespace osc
         // tag struct that says "the provided vector is already normalized, so skip normalization"
         struct AlreadyNormalized final {};
 
-        constexpr UnitVec(Vec<L, T, Q> const& v, AlreadyNormalized) :
+        constexpr UnitVec(Vec<L, T> const& v, AlreadyNormalized) :
             m_Data{v}
         {}
 
-        Vec<L, T, Q> m_Data{nan_type};
+        Vec<L, T> m_Data{nan_type};
     };
 }

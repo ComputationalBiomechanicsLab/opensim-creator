@@ -147,26 +147,28 @@ add_library(oscar STATIC
     Maths/BVHPrim.h
     Maths/Circle.h
     Maths/CollisionTests.h
+    Maths/CommonFunctions.h
+    Maths/Constants.h
     Maths/Disc.h
     Maths/EasingFunctions.h
     Maths/Ellipsoid.h
     Maths/EulerPerspectiveCamera.h
     Maths/Eulers.h
     Maths/FrameAxis.h
-    Maths/LengthType.h
+    Maths/GeometricFunctions.h
     Maths/Line.h
     Maths/Mat.h
     Maths/MathHelpers.h
     Maths/MathsImplementation.cpp
+    Maths/MatrixFunctions.h
     Maths/Mat3.h
     Maths/Mat4.h
-    Maths/Mat4x3.h
     Maths/Plane.h
     Maths/PointDirection.h
     Maths/PolarPerspectiveCamera.h
     Maths/Qua.h
-    Maths/Qualifier.h
     Maths/Quat.h
+    Maths/QuaternionFunctions.h
     Maths/RayCollision.h
     Maths/Rect.h
     Maths/Segment.h
@@ -174,6 +176,7 @@ add_library(oscar STATIC
     Maths/Tetrahedron.h
     Maths/Transform.h
     Maths/Triangle.h
+    Maths/TrigonometricFunctions.h
     Maths/UnitVec.h
     Maths/UnitVec3.h
     Maths/Vec.h
@@ -340,17 +343,17 @@ add_library(oscar STATIC
     Variant/VariantType.h
     Variant/VariantTypeList.h
     Variant/VariantTypeTraits.h
-
-    DOM.h
-    Formats.h
-    Graphics.h
-    Maths.h
-    oscar.h
-    Platform.h
-    Shims.h
-    UI.h
-    Utils.h
-    Variant.h
+    #
+    #DOM.h
+    #Formats.h
+    #Graphics.h
+    #Maths.h
+    #oscar.h
+    #Platform.h
+    #Shims.h
+    #UI.h
+    #Utils.h
+    #Variant.h
 )
 
 target_include_directories(oscar PUBLIC

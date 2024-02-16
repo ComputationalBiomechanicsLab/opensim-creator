@@ -2,18 +2,22 @@
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/BVH.h>
 #include <oscar/Maths/CollisionTests.h>
+#include <oscar/Maths/CommonFunctions.h>
 #include <oscar/Maths/Disc.h>
 #include <oscar/Maths/EasingFunctions.h>
 #include <oscar/Maths/EulerPerspectiveCamera.h>
 #include <oscar/Maths/FrameAxis.h>
+#include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/Line.h>
+#include <oscar/Maths/Mat.h>
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
-#include <oscar/Maths/Mat4x3.h>
 #include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/MatrixFunctions.h>
 #include <oscar/Maths/Plane.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/Quat.h>
+#include <oscar/Maths/QuaternionFunctions.h>
 #include <oscar/Maths/RayCollision.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Segment.h>
@@ -21,6 +25,7 @@
 #include <oscar/Maths/Tetrahedron.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/TrigonometricFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
@@ -28,11 +33,6 @@
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/At.h>
 #include <oscar/Utils/EnumHelpers.h>
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/euler_angles.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
 
 #include <cmath>
 #include <algorithm>
@@ -505,7 +505,7 @@ osc::EulerPerspectiveCamera::EulerPerspectiveCamera() :
 
 Vec3 osc::EulerPerspectiveCamera::getFront() const
 {
-    return Normalize(Vec3
+    return normalize(Vec3
     {
         cos(yaw) * cos(pitch),
         sin(pitch),
@@ -520,12 +520,12 @@ Vec3 osc::EulerPerspectiveCamera::getUp() const
 
 Vec3 osc::EulerPerspectiveCamera::getRight() const
 {
-    return glm::normalize(glm::cross(getFront(), getUp()));
+    return normalize(cross(getFront(), getUp()));
 }
 
 Mat4 osc::EulerPerspectiveCamera::getViewMtx() const
 {
-    return glm::lookAt(origin, origin + getFront(), getUp());
+    return look_at(origin, origin + getFront(), getUp());
 }
 
 Mat4 osc::EulerPerspectiveCamera::getProjMtx(float aspectRatio) const
@@ -593,8 +593,8 @@ void osc::PolarPerspectiveCamera::pan(float aspectRatio, Vec2 delta)
     // axes to match the scene's rotation
     Vec4 defaultPanningAx = {xAmt, yAmt, 0.0f, 1.0f};
     auto rotTheta = Rotate(Identity<Mat4>(), theta, Vec3{0.0f, 1.0f, 0.0f});
-    auto thetaVec = Normalize(Vec3{sin(theta), 0.0f, cos(theta)});
-    auto phiAxis = Cross(thetaVec, Vec3{0.0, 1.0f, 0.0f});
+    auto thetaVec = normalize(Vec3{sin(theta), 0.0f, cos(theta)});
+    auto phiAxis = cross(thetaVec, Vec3{0.0, 1.0f, 0.0f});
     auto rotPhi = Rotate(Identity<Mat4>(), phi, phiAxis);
 
     Vec4 panningAxes = rotPhi * rotTheta * defaultPanningAx;
@@ -627,11 +627,11 @@ Mat4 osc::PolarPerspectiveCamera::getViewMtx() const
     // system that shifts the world based on the camera pan
 
     auto rotTheta = Rotate(Identity<Mat4>(), -theta, Vec3{0.0f, 1.0f, 0.0f});
-    auto thetaVec = Normalize(Vec3{sin(theta), 0.0f, cos(theta)});
-    auto phiAxis = Cross(thetaVec, Vec3{0.0, 1.0f, 0.0f});
+    auto thetaVec = normalize(Vec3{sin(theta), 0.0f, cos(theta)});
+    auto phiAxis = cross(thetaVec, Vec3{0.0, 1.0f, 0.0f});
     auto rotPhi = Rotate(Identity<Mat4>(), -phi, phiAxis);
     auto panTranslate = Translate(Identity<Mat4>(), focusPoint);
-    return glm::lookAt(
+    return look_at(
         Vec3(0.0f, 0.0f, radius),
         Vec3(0.0f, 0.0f, 0.0f),
         Vec3{0.0f, 1.0f, 0.0f}) * rotTheta * rotPhi * panTranslate;
@@ -671,7 +671,7 @@ Line osc::PolarPerspectiveCamera::unprojectTopLeftPosToWorldRay(Vec2 pos, Vec2 d
     Mat4 const projectionMatrix = getProjMtx(dims.x/dims.y);
 
     return PerspectiveUnprojectTopLeftScreenPosToWorldRay(
-        pos/dims,
+        pos / dims,
         this->getPos(),
         viewMatrix,
         projectionMatrix
@@ -712,7 +712,7 @@ Vec3 osc::RecommendedLightDirection(PolarPerspectiveCamera const& c)
 
     Vec3 const p = PolarToCartesian(c.focusPoint, c.radius, theta, phi);
 
-    return glm::normalize(-c.focusPoint - p);
+    return normalize(-c.focusPoint - p);
 }
 
 void osc::FocusAlongX(PolarPerspectiveCamera& camera)
@@ -826,7 +826,7 @@ float osc::Volume(Tetrahedron const& t)
         Vec4{t[3], 1.0f},
     };
 
-    return glm::determinant(m) / 6.0f;
+    return determinant(m) / 6.0f;
 }
 
 // returns spatial centerpoint of a given tetrahedron
@@ -863,104 +863,6 @@ Transform& osc::operator/=(Transform& lhs, float rhs)
     lhs.rotation /= rhs;
     lhs.scale /= rhs;
     return lhs;
-}
-
-// Mat3
-
-std::ostream& osc::operator<<(std::ostream& o, Mat3 const& m)
-{
-    // prints in row-major, because that's how most people debug matrices
-    for (Mat3::length_type row = 0; row < 3; ++row)
-    {
-        std::string_view delim;
-        for (Mat3::length_type col = 0; col < 3; ++col)
-        {
-            o << delim << m[col][row];
-            delim = " ";
-        }
-        o << '\n';
-    }
-    return o;
-}
-
-// Mat4
-
-std::ostream& osc::operator<<(std::ostream& o, Mat4 const& m)
-{
-    // prints in row-major, because that's how most people debug matrices
-    for (Mat4::length_type row = 0; row < 4; ++row) {
-        std::string_view delim;
-        for (Mat4::length_type col = 0; col < 4; ++col)
-        {
-            o << delim << m[col][row];
-            delim = " ";
-        }
-        o << '\n';
-    }
-    return o;
-}
-
-
-// Mat4x3
-
-std::ostream& osc::operator<<(std::ostream& o, Mat4x3 const& m)
-{
-    // prints in row-major, because that's how most people debug matrices
-    for (Mat4x3::length_type row = 0; row < 3; ++row)
-    {
-        std::string_view delim;
-        for (Mat4x3::length_type col = 0; col < 4; ++col)
-        {
-            o << delim << m[col][row];
-            delim = " ";
-        }
-        o << '\n';
-    }
-    return o;
-}
-
-// Quat
-
-std::ostream& osc::operator<<(std::ostream& o, Quat const& q)
-{
-    return o << "Quat(x = " << q.x << ", y = " << q.y << ", z = " << q.z << ", w = " << q.w << ')';
-}
-
-// Vec2
-
-std::ostream& osc::operator<<(std::ostream& o, Vec2 const& v)
-{
-    return o << "Vec2(" << v.x << ", " << v.y << ')';
-}
-
-std::string osc::to_string(Vec2 const& v)
-{
-    std::stringstream ss;
-    ss << v;
-    return std::move(ss).str();
-}
-
-
-// Vec3
-
-std::ostream& osc::operator<<(std::ostream& o, Vec3 const& v)
-{
-    return o << "Vec3(" << v.x << ", " << v.y << ", " << v.z << ')';
-}
-
-std::string osc::to_string(Vec3 const& v)
-{
-    std::stringstream ss;
-    ss << v;
-    return std::move(ss).str();
-}
-
-
-// Vec4
-
-std::ostream& osc::operator<<(std::ostream& o, Vec4 const& v)
-{
-    return o << "Vec4(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ')';
 }
 
 
@@ -1066,9 +968,9 @@ namespace
         // if the quadratic has solutions, then there must exist one or two
         // `t`s that are points on the sphere's surface.
 
-        float a = glm::dot(l.direction, l.direction);  // always == 1.0f if d is normalized
-        float b = 2.0f * glm::dot(l.direction, L);
-        float c = glm::dot(L, L) - glm::dot(s.radius, s.radius);
+        float a = dot(l.direction, l.direction);  // always == 1.0f if d is normalized
+        float b = 2.0f * dot(l.direction, L);
+        float c = dot(L, L) - dot(s.radius, s.radius);
 
         auto [ok, t0, t1] = solveQuadratic(a, b, c);
 
@@ -1118,17 +1020,17 @@ namespace
 
 Quat osc::Rotation(Vec3 const& src, Vec3 const& dest)
 {
-    return glm::rotation(src, dest);
+    return rotation(src, dest);
 }
 
 Quat osc::AngleAxis(Radians angle, Vec3 const& axis)
 {
-    return glm::angleAxis(angle.count(), axis);
+    return angle_axis(angle, axis);
 }
 
 Mat4 osc::LookAt(Vec3 const& eye, Vec3 const& center, Vec3 const& up)
 {
-    return glm::lookAt(eye, center, up);
+    return look_at(eye, center, up);
 }
 
 Radians osc::VerticalToHorizontalFOV(Radians verticalFOV, float aspectRatio)
@@ -1141,7 +1043,7 @@ Radians osc::VerticalToHorizontalFOV(Radians verticalFOV, float aspectRatio)
 Mat4 osc::Perspective(Radians verticalFOV, float aspectRatio, float zNear, float zFar)
 {
     if (std::fabs(aspectRatio - std::numeric_limits<float>::epsilon()) > 0.0f) {
-        return glm::perspective(verticalFOV.count(), aspectRatio, zNear, zFar);
+        return perspective(verticalFOV, aspectRatio, zNear, zFar);
     }
     // edge-case: some UIs ask for a perspective matrix on first frame before
     // aspect ratio is known or the aspect ratio is NaN because of a division
@@ -1151,47 +1053,47 @@ Mat4 osc::Perspective(Radians verticalFOV, float aspectRatio, float zNear, float
 
 Mat4 osc::Ortho(float left, float right, float bottom, float top, float zNear, float zFar)
 {
-    return glm::ortho(left, right, bottom, top, zNear, zFar);
+    return ortho(left, right, bottom, top, zNear, zFar);
 }
 
 Mat4 osc::Inverse(Mat4 const& mat)
 {
-    return glm::inverse(mat);
+    return inverse(mat);
 }
 
 Quat osc::Inverse(Quat const& q)
 {
-    return glm::inverse(q);
+    return inverse(q);
 }
 
 Mat4 osc::Scale(Mat4 const& m, Vec3 const& v)
 {
-    return glm::scale(m, v);
+    return scale(m, v);
 }
 
 Mat4 osc::Rotate(Mat4 const& m, Radians angle, Vec3 const& axis)
 {
-    return glm::rotate(m, angle.count(), axis);
+    return rotate(m, angle, axis);
 }
 
 Mat4 osc::Translate(Mat4 const& m, Vec3 const& v)
 {
-    return glm::translate(m, v);
+    return translate(m, v);
 }
 
 Quat osc::QuatCast(Mat3 const& m)
 {
-    return glm::quat_cast(Mat3{m});
+    return quat_cast(Mat3{m});
 }
 
 Mat3 osc::ToMat3(Quat const& q)
 {
-    return glm::toMat3(q);
+    return mat3_cast(q);
 }
 
 Eulers osc::EulerAngles(Quat const& q)
 {
-    return glm::eulerAngles(Normalize(q));
+    return euler_angles(normalize(q));
 }
 
 // returns `true` if the values of `a` and `b` are effectively equal
@@ -1240,7 +1142,7 @@ bool osc::IsEqualWithinAbsoluteError(float a, float b, float absError)
     return difference <= absError;
 }
 
-Vec3::length_type osc::LongestDimIndex(Vec3 const& v)
+Vec3::size_type osc::LongestDimIndex(Vec3 const& v)
 {
     if (v.x > v.y && v.x > v.z)
     {
@@ -1256,7 +1158,7 @@ Vec3::length_type osc::LongestDimIndex(Vec3 const& v)
     }
 }
 
-Vec2::length_type osc::LongestDimIndex(Vec2 v)
+Vec2::size_type osc::LongestDimIndex(Vec2 v)
 {
     if (v.x > v.y)
     {
@@ -1268,7 +1170,7 @@ Vec2::length_type osc::LongestDimIndex(Vec2 v)
     }
 }
 
-Vec2i::length_type osc::LongestDimIndex(Vec2i v)
+Vec2i::size_type osc::LongestDimIndex(Vec2i v)
 {
     if (v.x > v.y)
     {
@@ -1350,8 +1252,8 @@ Vec3 osc::TriangleNormal(Triangle const& tri)
 {
     Vec3 const ab = tri.p1 - tri.p0;
     Vec3 const ac = tri.p2 - tri.p0;
-    Vec3 const perpendiular = glm::cross(ab, ac);
-    return glm::normalize(perpendiular);
+    Vec3 const perpendiular = cross(ab, ac);
+    return normalize(perpendiular);
 }
 
 Mat3 osc::ToAdjugateMatrix(Mat3 const& m)
@@ -1391,27 +1293,7 @@ Mat3 osc::ToNormalMatrix(Mat4 const& m)
     //  nothing is lost"
 
     Mat3 const topLeft{m};
-    return ToAdjugateMatrix(glm::transpose(topLeft));
-}
-
-Mat3 osc::ToNormalMatrix(Mat4x3 const& m)
-{
-    // "On the Transformation of Surface Normals" by Andrew Glassner (1987)
-    //
-    // "One option is to replace the inverse with the adjoint of M. The
-    //  adjoint is attractive because it always exists, even when M is
-    //  singular. The inverse and the adjoint are related by:
-    //
-    //      inverse(M) = adjoint(M) / determinant(M);
-    //
-    //  so, when the inverse exists, they only differ by a constant factor.
-    //  Therefore, using adjoint(M) instead of inverse(M) only affects the
-    //  magnitude of the resulting normal vector. Normal vectors have to
-    //  be normalized after mutiplication with a normal matrix anyway, so
-    //  nothing is lost"
-
-    Mat3 const topLeft{m};
-    return ToAdjugateMatrix(glm::transpose(topLeft));
+    return ToAdjugateMatrix(transpose(topLeft));
 }
 
 Mat4 osc::ToNormalMatrix4(Mat4 const& m)
@@ -1423,7 +1305,7 @@ Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
 {
     // this is effectively a rewrite of glm::rotation(vec3 const&, vec3 const& dest);
 
-    float const cosTheta = glm::dot(dir1, dir2);
+    float const cosTheta = dot(dir1, dir2);
 
     if(cosTheta >= static_cast<float>(1.0f) - std::numeric_limits<float>::epsilon())
     {
@@ -1440,20 +1322,20 @@ Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
         // - there is no "ideal" rotation axis
         // - so we try "guessing" one and hope it's good (then try another if it isn't)
 
-        rotationAxis = glm::cross(Vec3{0.0f, 0.0f, 1.0f}, dir1);
-        if (glm::length2(rotationAxis) < std::numeric_limits<float>::epsilon())
+        rotationAxis = cross(Vec3{0.0f, 0.0f, 1.0f}, dir1);
+        if (length2(rotationAxis) < std::numeric_limits<float>::epsilon())
         {
             // bad luck: they were parallel - use a different axis
-            rotationAxis = glm::cross(Vec3{1.0f, 0.0f, 0.0f}, dir1);
+            rotationAxis = cross(Vec3{1.0f, 0.0f, 0.0f}, dir1);
         }
 
         theta = 180_deg;
-        rotationAxis = glm::normalize(rotationAxis);
+        rotationAxis = normalize(rotationAxis);
     }
     else
     {
         theta = acos(cosTheta);
-        rotationAxis = glm::normalize(glm::cross(dir1, dir2));
+        rotationAxis = normalize(cross(dir1, dir2));
     }
 
     return Rotate(Identity<Mat4>(), theta, rotationAxis);
@@ -1461,16 +1343,12 @@ Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
 
 Eulers osc::ExtractEulerAngleXYZ(Quat const& q)
 {
-    Vec3 rv;
-    glm::extractEulerAngleXYZ(glm::toMat4(q), rv.x, rv.y, rv.z);
-    return rv;
+    return extract_eulers_xyz(mat4_cast(q));
 }
 
 Eulers osc::ExtractEulerAngleXYZ(Mat4 const& m)
 {
-    Vec3 v;
-    glm::extractEulerAngleXYZ(m, v.x, v.y, v.z);
-    return v;
+    return extract_eulers_xyz(m);
 }
 
 Vec2 osc::TopleftRelPosToNDCPoint(Vec2 relpos)
@@ -1500,14 +1378,14 @@ Line osc::PerspectiveUnprojectTopLeftScreenPosToWorldRay(
     // position of point, as if it were on the front of the 3D NDC cube
     Vec4 lineOriginNDC = TopleftRelPosToNDCCube(relpos);
 
-    Vec4 lineOriginView = glm::inverse(projMatrix) * lineOriginNDC;
+    Vec4 lineOriginView = inverse(projMatrix) * lineOriginNDC;
     lineOriginView /= lineOriginView.w;  // perspective divide
 
     // location of mouse in worldspace
-    Vec3 lineOriginWorld = Vec3{glm::inverse(viewMatrix) * lineOriginView};
+    Vec3 lineOriginWorld = Vec3{inverse(viewMatrix) * lineOriginView};
 
     // direction vector from camera to mouse location (i.e. the projection)
-    Vec3 lineDirWorld = glm::normalize(lineOriginWorld - cameraWorldspaceOrigin);
+    Vec3 lineDirWorld = normalize(lineOriginWorld - cameraWorldspaceOrigin);
 
     Line rv{};
     rv.direction = lineDirWorld;
@@ -1528,12 +1406,12 @@ float osc::Area(Rect const& r)
 
 Vec2 osc::Dimensions(Rect const& r)
 {
-    return glm::abs(r.p2 - r.p1);
+    return abs(r.p2 - r.p1);
 }
 
 Vec2 osc::BottomLeft(Rect const& r)
 {
-    return Vec2{glm::min(r.p1.x, r.p2.x), glm::max(r.p1.y, r.p2.y)};
+    return Vec2{min(r.p1.x, r.p2.x), max(r.p1.y, r.p2.y)};
 }
 
 float osc::AspectRatio(Rect const& r)
@@ -1595,8 +1473,8 @@ Rect osc::Clamp(Rect const& r, Vec2 const& min, Vec2 const& max)
 {
     return
     {
-        glm::clamp(r.p1, min, max),
-        glm::clamp(r.p2, min, max),
+        clamp(r.p1, min, max),
+        clamp(r.p2, min, max),
     };
 }
 
@@ -1631,7 +1509,7 @@ Sphere osc::BoundingSphereOf(std::span<Vec3 const> points)
     float r2 = 0.0f;
     for (Vec3 const& pos : points)
     {
-        r2 = std::max(r2, Length2(pos - origin));
+        r2 = max(r2, length2(pos - origin));
     }
 
     return {.origin = origin, .radius = std::sqrt(r2)};
@@ -1644,14 +1522,14 @@ Sphere osc::ToSphere(AABB const& aabb)
 
 Mat4 osc::FromUnitSphereMat4(Sphere const& s)
 {
-    return glm::translate(Identity<Mat4>(), s.origin) * glm::scale(Identity<Mat4>(), {s.radius, s.radius, s.radius});
+    return translate(Identity<Mat4>(), s.origin) * scale(Identity<Mat4>(), {s.radius, s.radius, s.radius});
 }
 
 Mat4 osc::SphereToSphereMat4(Sphere const& a, Sphere const& b)
 {
-    float scale = b.radius/a.radius;
-    Mat4 scaler = glm::scale(Identity<Mat4>(), Vec3{scale});
-    Mat4 mover = glm::translate(Identity<Mat4>(), b.origin - a.origin);
+    float s = b.radius/a.radius;
+    Mat4 scaler = scale(Identity<Mat4>(), Vec3{s});
+    Mat4 mover = translate(Identity<Mat4>(), b.origin - a.origin);
     return mover * scaler;
 }
 
@@ -1704,10 +1582,10 @@ Mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b)
     // - 1-N is sin(theta) of each axis to the normal
     // - LERP is 1.0f + (s - 1.0f)*V, where V is how perpendiular each axis is
 
-    Vec3 scalers = 1.0f + ((s - 1.0f) * glm::abs(1.0f - a.normal));
-    Mat4 scaler = glm::scale(Identity<Mat4>(), scalers);
+    Vec3 scalers = 1.0f + ((s - 1.0f) * abs(1.0f - a.normal));
+    Mat4 scaler = scale(Identity<Mat4>(), scalers);
 
-    float cosTheta = glm::dot(a.normal, b.normal);
+    float cosTheta = dot(a.normal, b.normal);
     Mat4 rotator;
     if (cosTheta > 0.9999f)
     {
@@ -1716,11 +1594,11 @@ Mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b)
     else
     {
         Radians theta = acos(cosTheta);
-        Vec3 axis = glm::cross(a.normal, b.normal);
+        Vec3 axis = cross(a.normal, b.normal);
         rotator = Rotate(Identity<Mat4>(), theta, axis);
     }
 
-    Mat4 translator = glm::translate(Identity<Mat4>(), b.origin-a.origin);
+    Mat4 translator = translate(Identity<Mat4>(), b.origin-a.origin);
 
     return translator * rotator * scaler;
 }
@@ -1771,7 +1649,7 @@ bool osc::IsAPoint(AABB const& a)
 bool osc::IsZeroVolume(AABB const& a)
 {
 
-    for (Vec3::length_type i = 0; i < 3; ++i)
+    for (Vec3::size_type i = 0; i < 3; ++i)
     {
         if (a.min[i] == a.max[i])
         {
@@ -1781,7 +1659,7 @@ bool osc::IsZeroVolume(AABB const& a)
     return false;
 }
 
-Vec3::length_type osc::LongestDimIndex(AABB const& a)
+Vec3::size_type osc::LongestDimIndex(AABB const& a)
 {
     return LongestDimIndex(Dimensions(a));
 }
@@ -1800,7 +1678,7 @@ std::array<Vec3, 8> osc::ToCubeVerts(AABB const& aabb)
     rv[0] = aabb.min;
     rv[1] = aabb.max;
     size_t pos = 2;
-    for (Vec3::length_type i = 0; i < 3; ++i)
+    for (Vec3::size_type i = 0; i < 3; ++i)
     {
         Vec3 min = aabb.min;
         min[i] += d[i];
@@ -1834,10 +1712,10 @@ AABB osc::TransformAABB(AABB const& aabb, Transform const& t)
     Mat3 const m = ToMat3(t);
 
     AABB rv{t.position, t.position};  // add in the translation
-    for (Vec3::length_type i = 0; i < 3; ++i)
+    for (Vec3::size_type i = 0; i < 3; ++i)
     {
         // form extent by summing smaller and larger terms repsectively
-        for (Vec3::length_type j = 0; j < 3; ++j)
+        for (Vec3::size_type j = 0; j < 3; ++j)
         {
             float const e = m[j][i] * aabb.min[j];
             float const f = m[j][i] * aabb.max[j];
@@ -1991,16 +1869,16 @@ std::optional<Rect> osc::AABBToScreenNDCRect(
     }
 
     // clamp the viewspace AABB to within the camera's clipping planes
-    viewspaceAABB.min.z = glm::clamp(viewspaceAABB.min.z, -zfar, -znear);
-    viewspaceAABB.max.z = glm::clamp(viewspaceAABB.max.z, -zfar, -znear);
+    viewspaceAABB.min.z = clamp(viewspaceAABB.min.z, -zfar, -znear);
+    viewspaceAABB.max.z = clamp(viewspaceAABB.max.z, -zfar, -znear);
 
     // transform it into an NDC-aligned NDC-space AABB
     AABB ndcAABB = TransformAABB(viewspaceAABB, projMat);
 
     // take the X and Y coordinates of that AABB and ensure they are clamped to within bounds
     Rect rv{Vec2{ndcAABB.min}, Vec2{ndcAABB.max}};
-    rv.p1 = glm::clamp(rv.p1, {-1.0f, -1.0f}, {1.0f, 1.0f});
-    rv.p2 = glm::clamp(rv.p2, { -1.0f, -1.0f }, {1.0f, 1.0f});
+    rv.p1 = clamp(rv.p1, {-1.0f, -1.0f}, {1.0f, 1.0f});
+    rv.p2 = clamp(rv.p2, { -1.0f, -1.0f }, {1.0f, 1.0f});
 
     return rv;
 }
@@ -2010,11 +1888,11 @@ Mat4 osc::SegmentToSegmentMat4(Segment const& a, Segment const& b)
     Vec3 a1ToA2 = a.p2 - a.p1;
     Vec3 b1ToB2 = b.p2 - b.p1;
 
-    float aLen = glm::length(a1ToA2);
-    float bLen = glm::length(b1ToB2);
+    float aLen = length(a1ToA2);
+    float bLen = length(b1ToB2);
 
-    Vec3 aDir = a1ToA2/aLen;
-    Vec3 bDir = b1ToB2/bLen;
+    Vec3 aDir = a1ToA2 / aLen;
+    Vec3 bDir = b1ToB2 / bLen;
 
     Vec3 aCenter = (a.p1 + a.p2)/2.0f;
     Vec3 bCenter = (b.p1 + b.p2)/2.0f;
@@ -2025,10 +1903,9 @@ Mat4 osc::SegmentToSegmentMat4(Segment const& a, Segment const& b)
     Vec3 scaler = Vec3{1.0f, 1.0f, 1.0f} + (s-1.0f)*aDir;
 
     Mat4 rotate = Dir1ToDir2Xform(aDir, bDir);
-    Mat4 scale = glm::scale(Identity<Mat4>(), scaler);
-    Mat4 move = glm::translate(Identity<Mat4>(), bCenter - aCenter);
+    Mat4 move = translate(Identity<Mat4>(), bCenter - aCenter);
 
-    return move * rotate * scale;
+    return move * rotate * scale(Identity<Mat4>(), scaler);
 }
 
 Transform osc::SegmentToSegmentTransform(Segment const& a, Segment const& b)
@@ -2036,18 +1913,18 @@ Transform osc::SegmentToSegmentTransform(Segment const& a, Segment const& b)
     Vec3 aLine = a.p2 - a.p1;
     Vec3 bLine = b.p2 - b.p1;
 
-    float aLen = glm::length(aLine);
-    float bLen = glm::length(bLine);
+    float aLen = length(aLine);
+    float bLen = length(bLine);
 
-    Vec3 aDir = aLine/aLen;
-    Vec3 bDir = bLine/bLen;
+    Vec3 aDir = aLine / aLen;
+    Vec3 bDir = bLine / bLen;
 
     Vec3 aMid = (a.p1 + a.p2)/2.0f;
     Vec3 bMid = (b.p1 + b.p2)/2.0f;
 
     // for scale: LERP [0,1] onto [1,l] along original direction
     Transform t;
-    t.rotation = glm::rotation(aDir, bDir);
+    t.rotation = rotation(aDir, bDir);
     t.scale = Vec3{1.0f, 1.0f, 1.0f} + ((bLen/aLen - 1.0f)*aDir);
     t.position = bMid - aMid;
 
@@ -2070,7 +1947,7 @@ Transform osc::YToYConeToSegmentTransform(Segment const& s, float radius)
 
 Mat3 osc::ToMat3(Transform const& t)
 {
-    Mat3 rv = glm::toMat3(t.rotation);
+    Mat3 rv = mat3_cast(t.rotation);
 
     rv[0][0] *= t.scale.x;
     rv[0][1] *= t.scale.x;
@@ -2089,7 +1966,7 @@ Mat3 osc::ToMat3(Transform const& t)
 
 Mat4 osc::ToMat4(Transform const& t)
 {
-    Mat4 rv = glm::toMat4(t.rotation);
+    Mat4 rv = mat4_cast(t.rotation);
 
     rv[0][0] *= t.scale.x;
     rv[0][1] *= t.scale.x;
@@ -2112,21 +1989,21 @@ Mat4 osc::ToMat4(Transform const& t)
 
 Mat4 osc::ToInverseMat4(Transform const& t)
 {
-    Mat4 translater = glm::translate(Identity<Mat4>(), -t.position);
-    Mat4 rotater = glm::toMat4(glm::conjugate(t.rotation));
-    Mat4 scaler = glm::scale(Identity<Mat4>(), 1.0f/t.scale);
+    Mat4 translater = translate(Identity<Mat4>(), -t.position);
+    Mat4 rotater = mat4_cast(conjugate(t.rotation));
+    Mat4 scaler = scale(Identity<Mat4>(), 1.0f/t.scale);
 
     return scaler * rotater * translater;
 }
 
 Mat3 osc::ToNormalMatrix(Transform const& t)
 {
-    return ToAdjugateMatrix(glm::transpose(ToMat3(t)));
+    return ToAdjugateMatrix(transpose(ToMat3(t)));
 }
 
 Mat4 osc::ToNormalMatrix4(Transform const& t)
 {
-    return ToAdjugateMatrix(glm::transpose(ToMat3(t)));
+    return ToAdjugateMatrix(transpose(ToMat3(t)));
 }
 
 Transform osc::ToTransform(Mat4 const& mtx)
@@ -2134,7 +2011,7 @@ Transform osc::ToTransform(Mat4 const& mtx)
     Transform rv;
     Vec3 skew;
     Vec4 perspective;
-    if (!glm::decompose(mtx, rv.scale, rv.rotation, rv.position, skew, perspective))
+    if (!decompose(mtx, rv.scale, rv.rotation, rv.position, skew, perspective))
     {
         throw std::runtime_error{"failed to decompose a matrix into scale, rotation, etc."};
     }
@@ -2143,12 +2020,12 @@ Transform osc::ToTransform(Mat4 const& mtx)
 
 Vec3 osc::TransformDirection(Transform const& t, Vec3 const& localDir)
 {
-    return glm::normalize(t.rotation * (t.scale * localDir));
+    return normalize(t.rotation * (t.scale * localDir));
 }
 
 Vec3 osc::InverseTransformDirection(Transform const& t, Vec3 const& direction)
 {
-    return glm::normalize((glm::conjugate(t.rotation) * direction) / t.scale);
+    return normalize((conjugate(t.rotation) * direction) / t.scale);
 }
 
 Vec3 osc::TransformPoint(Transform const& t, Vec3 const& p)
@@ -2169,7 +2046,7 @@ Vec3 osc::InverseTransformPoint(Transform const& t, Vec3 const& p)
 {
     Vec3 rv = p;
     rv -= t.position;
-    rv = glm::conjugate(t.rotation) * rv;
+    rv = conjugate(t.rotation) * rv;
     rv /= t.scale;
     return rv;
 }
@@ -2177,7 +2054,7 @@ Vec3 osc::InverseTransformPoint(Transform const& t, Vec3 const& p)
 Quat osc::WorldspaceRotation(Eulers const& eulers)
 {
     static_assert(std::is_same_v<Eulers::value_type, Radians>);
-    return Normalize(Quat{Vec3{eulers.x.count(), eulers.y.count(), eulers.z.count()}});
+    return normalize(Quat{Vec3{eulers.x.count(), eulers.y.count(), eulers.z.count()}});
 }
 
 void osc::ApplyWorldspaceRotation(
@@ -2187,19 +2064,17 @@ void osc::ApplyWorldspaceRotation(
 {
     Quat q = WorldspaceRotation(eulerAngles);
     t.position = q*(t.position - rotationCenter) + rotationCenter;
-    t.rotation = glm::normalize(q*t.rotation);
+    t.rotation = normalize(q*t.rotation);
 }
 
 Eulers osc::ExtractEulerAngleXYZ(Transform const& t)
 {
-    Vec3 rv;
-    glm::extractEulerAngleXYZ(glm::toMat4(t.rotation), rv.x, rv.y, rv.z);
-    return rv;
+    return extract_eulers_xyz(mat4_cast(t.rotation));
 }
 
 Eulers osc::ExtractExtrinsicEulerAnglesXYZ(Transform const& t)
 {
-    return glm::eulerAngles(t.rotation);
+    return euler_angles(t.rotation);
 }
 
 Transform osc::PointAxisAlong(Transform const& t, int axisIndex, Vec3 const& newDirection)
@@ -2209,14 +2084,14 @@ Transform osc::PointAxisAlong(Transform const& t, int axisIndex, Vec3 const& new
     beforeDir = t.rotation * beforeDir;
 
     Quat const rotBeforeToAfter = Rotation(beforeDir, newDirection);
-    Quat const newRotation = Normalize(rotBeforeToAfter * t.rotation);
+    Quat const newRotation = normalize(rotBeforeToAfter * t.rotation);
 
     return t.withRotation(newRotation);
 }
 
 Transform osc::PointAxisTowards(Transform const& t, int axisIndex, Vec3 const& location)
 {
-    return PointAxisAlong(t, axisIndex, Normalize(location - t.position));
+    return PointAxisAlong(t, axisIndex, normalize(location - t.position));
 }
 
 Transform osc::RotateAlongAxis(Transform const& t, int axisIndex, Radians angle)
@@ -2227,7 +2102,7 @@ Transform osc::RotateAlongAxis(Transform const& t, int axisIndex, Radians angle)
 
     Quat const q = AngleAxis(angle, ax);
 
-    return t.withRotation(Normalize(q * t.rotation));
+    return t.withRotation(normalize(q * t.rotation));
 }
 
 bool osc::IsPointInRect(Rect const& r, Vec2 const& p)
@@ -2252,7 +2127,7 @@ std::optional<RayCollision> osc::GetRayCollisionAABB(Line const& l, AABB const& 
     //      is no intersection
     float t0 = std::numeric_limits<float>::lowest();
     float t1 = std::numeric_limits<float>::max();
-    for (Vec3::length_type i = 0; i < 3; ++i)
+    for (Vec3::size_type i = 0; i < 3; ++i)
     {
         float invDir = 1.0f / l.direction[i];
         float tNear = (bb.min[i] - l.origin[i]) * invDir;
@@ -2298,11 +2173,11 @@ std::optional<RayCollision> osc::GetRayCollisionPlane(Line const& l, Plane const
     //
     // equation: t = dot(P0 - O, n) / dot(D, n)
 
-    float denominator = glm::dot(p.normal, l.direction);
+    float denominator = dot(p.normal, l.direction);
 
     if (std::abs(denominator) > 1e-6)
     {
-        float numerator = glm::dot(p.origin - l.origin, p.normal);
+        float numerator = dot(p.origin - l.origin, p.normal);
         float distance = numerator / denominator;
         return RayCollision{distance, l.origin + distance*l.direction};
     }
@@ -2334,8 +2209,8 @@ std::optional<RayCollision> osc::GetRayCollisionDisc(Line const& l, Disc const& 
 
     // figure out whether the plane hit is within the disc's radius
     Vec3 v = maybePlaneCollision->position - d.origin;
-    float const d2 = glm::dot(v, v);
-    float const r2 = glm::dot(d.radius, d.radius);
+    float const d2 = dot(v, v);
+    float const r2 = dot(d.radius, d.radius);
 
     if (d2 > r2)
     {
@@ -2353,7 +2228,7 @@ std::optional<RayCollision> osc::GetRayCollisionTriangle(Line const& l, Triangle
     Vec3 N = TriangleNormal(tri);
 
     // compute dot product between normal and ray
-    float NdotR = glm::dot(N, l.direction);
+    float NdotR = dot(N, l.direction);
 
     // if the dot product is small, then the ray is probably very parallel to
     // the triangle (or, perpendicular to the normal) and doesn't intersect
@@ -2366,7 +2241,7 @@ std::optional<RayCollision> osc::GetRayCollisionTriangle(Line const& l, Triangle
     // - N is a normal to the plane
     // - N.v[0] is the projection of v[0] onto N and indicates how long along N to go to hit some
     //   other point on the plane
-    float D = glm::dot(N, tri.p0);
+    float D = dot(N, tri.p0);
 
     // ok, that's one side of the equation
     //
@@ -2381,7 +2256,7 @@ std::optional<RayCollision> osc::GetRayCollisionTriangle(Line const& l, Triangle
     //     (D - O.N)/(R.N) = t
     //
     // tah-dah: we have the ray distance
-    float t = -(glm::dot(N, l.origin) - D) / NdotR;
+    float t = -(dot(N, l.origin) - D) / NdotR;
 
     // if triangle plane is behind line then return early
     if (t < 0.0f)
@@ -2411,11 +2286,11 @@ std::optional<RayCollision> osc::GetRayCollisionTriangle(Line const& l, Triangle
         // clockwise or anti-clockwise with respect to eachover. It's a
         // right-handed coord system, so anti-clockwise produces a vector
         // that points in same direction as normal
-        Vec3 ax = glm::cross(e, c);
+        Vec3 ax = cross(e, c);
 
         // if the dot product of that axis with the normal is <0.0f then
         // the point was "outside"
-        if (glm::dot(ax, N) < 0.0f)
+        if (dot(ax, N) < 0.0f)
         {
             return std::nullopt;
         }
@@ -2431,7 +2306,7 @@ float osc::EaseOutElastic(float x)
     using std::pow;
 
     constexpr float c4 = 2.0f*std::numbers::pi_v<float> / 3.0f;
-    float const normalized = Saturate(x);
+    float const normalized = saturate(x);
 
     return pow(2.0f, -5.0f*normalized) * sin((normalized*10.0f - 0.75f) * c4) + 1.0f;
 }

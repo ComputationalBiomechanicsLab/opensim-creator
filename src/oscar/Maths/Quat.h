@@ -2,20 +2,22 @@
 
 #include <oscar/Maths/Qua.h>
 
-#include <iosfwd>
+#include <cstdint>
 
 namespace osc
 {
     using Quat = Qua<float>;
-
-    std::ostream& operator<<(std::ostream&, Quat const&);
+    using Quatf = Qua<float>;
+    using Quatd = Qua<double>;
+    using Quati = Qua<int>;
+    using Quatu32 = Qua<uint32_t>;
 
     template<typename T>
     constexpr T Identity();
 
     template<>
-    constexpr Quat Identity()
+    constexpr Quat Identity<Quat>()
     {
-        return Quat{1.0f, 0.0f, 0.0f, 0.0f};
+        return Quat{};
     }
 }

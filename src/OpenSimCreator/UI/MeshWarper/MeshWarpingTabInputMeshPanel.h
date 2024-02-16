@@ -172,7 +172,7 @@ namespace osc
             Sphere const landmarkSphere = {.origin = *maybePos, .radius = m_LandmarkRadius};
             if (auto const collision = GetRayCollisionSphere(cameraRay, landmarkSphere))
             {
-                if (!closest || Length(closest->getWorldspaceLocation() - cameraRay.origin) > collision->distance)
+                if (!closest || length(closest->getWorldspaceLocation() - cameraRay.origin) > collision->distance)
                 {
                     TPSDocumentElementID fullID{landmark.uid, TPSDocumentElementType::Landmark, m_DocumentIdentifier};
                     closest.emplace(std::move(fullID), *maybePos);
@@ -206,7 +206,7 @@ namespace osc
 
             if (auto const collision = GetRayCollisionSphere(cameraRay, decorationSphere))
             {
-                if (!closest || Length(closest->getWorldspaceLocation() - cameraRay.origin) > collision->distance)
+                if (!closest || length(closest->getWorldspaceLocation() - cameraRay.origin) > collision->distance)
                 {
                     TPSDocumentElementID fullID{nonPariticpatingLandmark.uid, TPSDocumentElementType::NonParticipatingLandmark, m_DocumentIdentifier};
                     closest.emplace(std::move(fullID), nonPariticpatingLandmark.location);

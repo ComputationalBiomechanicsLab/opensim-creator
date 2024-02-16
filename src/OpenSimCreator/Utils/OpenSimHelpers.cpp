@@ -248,11 +248,11 @@ namespace
 
         Vec3 const originPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first), st);
         Vec3 const pointAfterOriginPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first + 1), st);
-        Vec3 const originDir = Normalize(pointAfterOriginPos - originPos);
+        Vec3 const originDir = normalize(pointAfterOriginPos - originPos);
 
         Vec3 const insertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second), st);
         Vec3 const pointAfterInsertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second - 1), st);
-        Vec3 const insertionDir = Normalize(pointAfterInsertionPos - insertionPos);
+        Vec3 const insertionDir = normalize(pointAfterInsertionPos - insertionPos);
 
         return LinesOfAction
         {
@@ -1329,7 +1329,7 @@ namespace
             static_cast<float>(-forces[2]),
         };
 
-        if (Length2(force) < std::numeric_limits<float>::epsilon())
+        if (length2(force) < std::numeric_limits<float>::epsilon())
         {
             return std::nullopt;  // edge-case: no force is actually being exherted
         }
@@ -1359,7 +1359,7 @@ namespace
         Transform const geom2body = ToTransform(halfSpace.getTransform());
 
         Vec3 const originInGround = body2ground * ToVec3(halfSpace.get_location());
-        Vec3 const normalInGround = Normalize(body2ground.rotation * geom2body.rotation) * c_ContactHalfSpaceUpwardsNormal;
+        Vec3 const normalInGround = normalize(body2ground.rotation * geom2body.rotation) * c_ContactHalfSpaceUpwardsNormal;
 
         return Plane{originInGround, normalInGround};
     }
@@ -1379,7 +1379,7 @@ namespace
             return std::nullopt;
         }
 
-        if (std::abs(dot(plane.normal, Normalize(forceTorque.torque))) >= 1.0f - std::numeric_limits<float>::epsilon())
+        if (abs(dot(plane.normal, normalize(forceTorque.torque))) >= 1.0f - std::numeric_limits<float>::epsilon())
         {
             // pedantic: the resulting torque is aligned with the plane normal, making
             // the cross product undefined later
@@ -1388,7 +1388,7 @@ namespace
 
         // this maths seems sketchy, it's inspired by SCONE/model_tools.cpp:GetPlaneCop but
         // it feels a bit like `p1` is always going to be zero
-        Vec3 const pos = Cross(plane.normal, forceTorque.torque) / forceScaler;
+        Vec3 const pos = cross(plane.normal, forceTorque.torque) / forceScaler;
         Vec3 const posRelativeToPlaneOrigin = pos - plane.origin;
         float const p1 = dot(posRelativeToPlaneOrigin, plane.normal);
         float const p2 = forceScaler;

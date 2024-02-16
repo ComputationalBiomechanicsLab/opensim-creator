@@ -186,15 +186,15 @@ std::vector<Vec4> osc::CalcTangentVectors(
             auto const triVertIndex = indices[triBegin + iVert];
 
             // Gram-Schmidt orthogonalization (w.r.t. the stored normal)
-            Vec3 const normal = Normalize(normals[triVertIndex]);
-            Vec3 const orthoTangent = Normalize(tangent - dot(normal, tangent)*normal);
-            Vec3 const orthoBitangent = Normalize(bitangent - (dot(orthoTangent, bitangent)*orthoTangent) - (dot(normal, bitangent)*normal));
+            Vec3 const normal = normalize(normals[triVertIndex]);
+            Vec3 const orthoTangent = normalize(tangent - dot(normal, tangent)*normal);
+            Vec3 const orthoBitangent = normalize(bitangent - (dot(orthoTangent, bitangent)*orthoTangent) - (dot(normal, bitangent)*normal));
 
             // this algorithm doesn't produce bitangents. Instead, it writes the
             // "direction" (flip) of the bitangent w.r.t. `cross(normal, tangent)`
             //
             // (the shader can recompute the bitangent from: `cross(normal, tangent) * w`)
-            float const w = dot(Cross(normal, orthoTangent), orthoBitangent);
+            float const w = dot(cross(normal, orthoTangent), orthoBitangent);
 
             accumulateTangent(triVertIndex, Vec4{orthoTangent, w});
         }

@@ -2,6 +2,7 @@
 
 #include <oscar/Utils/Concepts.h>
 
+#include <functional>
 #include <memory>
 #include <utility>
 

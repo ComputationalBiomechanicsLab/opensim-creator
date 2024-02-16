@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <ranges>
 
 namespace osc
 {
@@ -24,5 +25,15 @@ namespace osc
     size_t HashOf(T const& v, Ts const&... vs)
     {
         return HashCombine(HashOf(v), HashOf(vs...));
+    }
+
+    template<typename Range>
+    size_t HashRange(Range const& range)
+    {
+        size_t rv = 0;
+        for (auto const& el : range) {
+            rv = HashCombine(rv, el);
+        }
+        return rv;
     }
 }

@@ -360,7 +360,7 @@ namespace
             Quat const deltaRotationInGround = WorldspaceRotation(m_IsChildFrameOfJoint ? -deltaEulerRadiansInGround : deltaEulerRadiansInGround);
             Quat const oldRotationInGround = ToQuat(pof.getRotationInGround(state));
             Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
-            Quat const newRotationInGround = Normalize(deltaRotationInGround * oldRotationInGround);
+            Quat const newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
             Quat const newRotationInParent = Inverse(parentRotationInGround) * newRotationInGround;
 
             ActionTransformPof(
@@ -432,7 +432,7 @@ namespace
             Quat const deltaRotationInGround = WorldspaceRotation(deltaEulerRadiansInGround);
             Quat const oldRotationInGround = ToQuat(parent.getTransformInGround(state).R() * wrapObj.getTransform().R());
             Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
-            Quat const newRotationInGround = Normalize(deltaRotationInGround * oldRotationInGround);
+            Quat const newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
             Quat const newRotationInParent = Inverse(parentRotationInGround) * newRotationInGround;
 
             ActionTransformWrapObject(
@@ -503,7 +503,7 @@ namespace
             Quat const deltaRotationInGround = WorldspaceRotation(deltaEulerRadiansInGround);
             Quat const oldRotationInGround = ToQuat(parent.getTransformInGround(state).R() * contactGeom.getTransform().R());
             Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
-            Quat const newRotationInGround = Normalize(deltaRotationInGround * oldRotationInGround);
+            Quat const newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
             Quat const newRotationInParent = Inverse(parentRotationInGround) * newRotationInGround;
 
             ActionTransformContactGeometry(

@@ -143,7 +143,7 @@ Color osc::ToSRGB(Color const& c)
 
 Color osc::Lerp(Color const& a, Color const& b, float t)
 {
-    return Color{Mix(Vec4{a}, Vec4{b}, Saturate(t))};
+    return Color{mix(Vec4{a}, Vec4{b}, saturate(t))};
 }
 
 size_t std::hash<osc::Color>::operator()(osc::Color const& color) const
@@ -158,7 +158,7 @@ Color32 osc::ToColor32(Color const& color)
 
 Color32 osc::ToColor32(Vec4 const& v)
 {
-    return Color32{v.r, v.g, v.b, v.a};
+    return Color32{v.x, v.y, v.z, v.w};
 }
 
 Color32 osc::ToColor32(float r, float g, float b, float a)
@@ -184,7 +184,7 @@ Color osc::ToColor(Color32 c)
 
 Color osc::ClampToLDR(Color const& c)
 {
-    return Color{Saturate(Vec4{c})};
+    return Color{saturate(Vec4{c})};
 }
 
 ColorHSLA osc::ToHSLA(Color const& c)
