@@ -11,6 +11,7 @@
 #include <oscar/Maths/Plane.h>
 #include <oscar/Maths/Sphere.h>
 #include <oscar/Maths/Transform.h>
+#include <oscar/Maths/UnitVec3.h>
 #include <oscar/Maths/Vec3.h>
 
 #include <array>
@@ -48,7 +49,7 @@ TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphere)
     Transform t;
     t.position = {7.0f, 3.0f, 1.5f};
     t.scale = {3.25f, 3.25f, 3.25f};  // keep it spherical
-    t.rotation = AngleAxis(45_deg, normalize(Vec3{1.0f, 1.0f, 0.0f}));
+    t.rotation = angle_axis(45_deg, UnitVec3{1.0f, 1.0f, 0.0f});
 
     Mesh sphereMesh = GenerateUVSphereMesh(16, 16);
     sphereMesh.transformVerts(t);

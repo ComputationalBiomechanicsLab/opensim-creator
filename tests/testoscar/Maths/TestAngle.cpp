@@ -30,14 +30,14 @@ TEST(Angle, RadiansCanConstructFromDegrees)
 
 TEST(Angle, RadiansConversionFromDegreesWorksAsExpected)
 {
-    static_assert(Radians{-90.0_deg} == Radians{-0.5f*pi_f});
-    static_assert(Radians{90.0_deg} == Radians{0.5f*pi_f});
+    static_assert(Radians{-90.0_deg} == Radians{-0.5f*pi<float>});
+    static_assert(Radians{90.0_deg} == Radians{0.5f*pi<float>});
 
-    static_assert(Radians{-180.0_deg} == Radians{-pi_f});
-    static_assert(Radians{180.0_deg} == Radians{pi_f});
+    static_assert(Radians{-180.0_deg} == Radians{-pi<float>});
+    static_assert(Radians{180.0_deg} == Radians{pi<float>});
 
-    static_assert(Radians{-360.0_deg} == Radians{-2.0f*pi_f});
-    static_assert(Radians{360.0_deg} == Radians{2.0f*pi_f});
+    static_assert(Radians{-360.0_deg} == Radians{-2.0f*pi<float>});
+    static_assert(Radians{360.0_deg} == Radians{2.0f*pi<float>});
 }
 
 TEST(Angle, RadiansAddingTwoRadiansWorksAsExpected)
@@ -88,8 +88,8 @@ TEST(Angle, MixedAdditionReturnsRadians)
 
 TEST(Angle, TurnConvertsToRadiansOrDegreesAsExpected)
 {
-    static_assert(1_turn == 2.0f*pi_f*1_rad);
-    static_assert(0.5_turn == pi_f*1_rad);
+    static_assert(1_turn == 2.0f*pi<float>*1_rad);
+    static_assert(0.5_turn == pi<float>*1_rad);
     static_assert(1_turn == 360_deg);
     static_assert(0.5_turn == 180_deg);
 }

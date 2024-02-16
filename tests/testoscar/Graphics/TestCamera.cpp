@@ -7,6 +7,7 @@
 #include <oscar/Graphics/CameraProjection.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Angle.h>
+#include <oscar/Maths/MatrixFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec3.h>
 
@@ -365,7 +366,7 @@ TEST(Camera, GetInverseViewProjectionMatrixReturnsExpectedAnswerWhenUsingOverrid
     Mat4 projectionMatrix = Identity<Mat4>();
     projectionMatrix[0][1] = 9.0f;  // change some part of it
 
-    Mat4 expected = Inverse(projectionMatrix * viewMatrix);
+    Mat4 expected = inverse(projectionMatrix * viewMatrix);
 
     camera.setViewMatrixOverride(viewMatrix);
     camera.setProjectionMatrixOverride(projectionMatrix);
