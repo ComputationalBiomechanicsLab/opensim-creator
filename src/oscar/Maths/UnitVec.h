@@ -1,10 +1,13 @@
 #pragma once
 
-#include <oscar/Maths/MathHelpers.h>
+#include <concepts>
+namespace osc { template<size_t, std::floating_point> class UnitVec; }
+
+#include <oscar/Maths/Constants.h>
+#include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/Vec.h>
 
 #include <cstddef>
-#include <concepts>
 #include <limits>
 
 namespace osc
@@ -17,46 +20,34 @@ namespace osc
      *
      * Inspired by Simbody's `SimTK::UnitVec` class
      */
-    template<size_t L, typename T>
+    template<size_t L, std::floating_point T>
     class UnitVec final {
     public:
         using type = UnitVec<L, T>;
-        using value_type = typename Vec<L, T>::size_type;
+        using value_type = typename Vec<L, T>::value_type;
         using size_type = typename Vec<L, T>::size_type;
-        static inline constexpr T nan_type = std::numeric_limits<T>::has_signaling_NaN ? std::numeric_limits<T>::signaling_NaN() : std::numeric_limits<T>::quiet_NaN();
 
-        static constexpr size_type length()
-        {
-            return L;
-        }
+        // tag struct that says "the provided data is already normalized, so skip normalization"
+        struct AlreadyNormalized final {};
+
+        static constexpr size_type length() { return L; }
 
         // constructs a `UnitVec` containing NaNs
         constexpr UnitVec() = default;
-
-        // constructs a `UnitVec` via copy/move (trivial)
-        constexpr UnitVec(UnitVec const&) = default;
-        constexpr UnitVec(UnitVec&&) noexcept = default;
-
-        // constructs a UnitVec by normalizing the provided `Vec`
-        explicit UnitVec(Vec<L, T> const& v) :
-            m_Data{normalize(v)}
-        {}
-
-        // constructs a UnitVec by normalizing the provided `Vec`
-        explicit UnitVec(Vec<L, T>&& v) :
-            m_Data{normalize(std::move(v))}
-        {}
 
         // constructs a `UnitVec` by constructing the underlying `Vec`, followed by normalizing it
         template<typename... Args>
         explicit UnitVec(Args&&... args)
             requires std::constructible_from<Vec<L, T>, Args&&...> :
-            UnitVec{Vec<L, T>{std::forward<Args>(args)...}}
+            m_Data{normalize(Vec<L, T>{std::forward<Args>(args)...})}
         {}
 
-        // copy/move assignment (trivial)
-        constexpr UnitVec& operator=(UnitVec const&) = default;
-        constexpr UnitVec& operator=(UnitVec&&) noexcept = default;
+        // constructs a `UnitVec` by constructing the underlying `Vec` and skips normalization
+        template<typename... Args>
+        constexpr explicit UnitVec(AlreadyNormalized, Args&&... args)
+            requires std::constructible_from<Vec<L, T>, Args&&...> :
+            m_Data{Vec<L, T>{std::forward<Args>(args)...}}
+        {}
 
         // implicit conversion to the underlying (normalized) vector
         constexpr operator Vec<L, T> const& () const
@@ -71,24 +62,23 @@ namespace osc
 
         constexpr UnitVec operator+() const
         {
-            return {+m_Data, AlreadyNormalized{}};
+            return UnitVec{AlreadyNormalized{}, +m_Data};
         }
 
         constexpr UnitVec operator-() const
         {
-            return {-m_Data, AlreadyNormalized{}};
+            return UnitVec{AlreadyNormalized{}, -m_Data};
         }
 
         friend constexpr bool operator==(UnitVec const&, UnitVec const&) = default;
 
     private:
-        // tag struct that says "the provided vector is already normalized, so skip normalization"
-        struct AlreadyNormalized final {};
-
-        constexpr UnitVec(Vec<L, T> const& v, AlreadyNormalized) :
-            m_Data{v}
-        {}
-
-        Vec<L, T> m_Data{nan_type};
+        Vec<L, T> m_Data{quiet_nan<T>};
     };
+
+    template<size_t L, std::floating_point T>
+    constexpr Vec<L, T> operator*(T s, UnitVec<L, T> const& v)
+    {
+        return s * static_cast<Vec<L, T> const&>(v);
+    }
 }

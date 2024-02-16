@@ -160,7 +160,7 @@ private:
 
             Graphics::DrawMesh(
                 m_Mesh,
-                {.rotation = AngleAxis(angle, axis), .position = pos},
+                {.rotation = angle_axis(angle, axis), .position = pos},
                 m_MultipleLightsMaterial,
                 m_Camera
             );

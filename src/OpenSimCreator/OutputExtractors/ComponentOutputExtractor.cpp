@@ -215,7 +215,7 @@ public:
             // cannot find output
             // or the type of the output changed
             // or don't know how to extract a value from the output
-            std::fill(out.begin(), out.end(), quiet_nan_f);
+            std::fill(out.begin(), out.end(), quiet_nan<float>);
             return;
         }
 

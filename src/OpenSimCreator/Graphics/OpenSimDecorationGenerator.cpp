@@ -140,7 +140,7 @@ namespace
         float const specificTension = 0.25e6f;  // magic number?
         float const pcsa = f / specificTension;
         float const widthFactor = 0.25f;
-        return widthFactor * sqrt(pcsa / pi_f);
+        return widthFactor * sqrt(pcsa / pi<float>);
     }
 
     // helper: returns the size (radius) of a muscle based on caller-provided sizing flags
@@ -631,7 +631,7 @@ namespace
                     // ensure the sphere directionally tries to line up with the cylinders, to make
                     // the "join" between the sphere and cylinders nicer (#593)
                     .scale = Vec3{radius},
-                    .rotation = normalize(Rotation(Vec3{0.0f, 1.0f, 0.0f}, upDirection)),
+                    .rotation = normalize(rotation(Vec3{0.0f, 1.0f, 0.0f}, upDirection)),
                     .position = pp.locationInGround
                 },
                 .color = color,

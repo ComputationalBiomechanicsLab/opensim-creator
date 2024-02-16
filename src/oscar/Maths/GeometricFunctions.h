@@ -1,5 +1,6 @@
 #pragma once
 
+#include <oscar/Maths/UnitVec.h>
 #include <oscar/Maths/Vec.h>
 
 #include <cmath>
@@ -54,6 +55,18 @@ namespace osc
             x.y * y.z - y.y * x.z,
             x.z * y.x - y.z * x.x,
             x.x * y.y - y.x * x.y
+        );
+    }
+
+    template<std::floating_point T>
+    constexpr UnitVec<3, T> cross(UnitVec<3, T> const& x, UnitVec<3, T> const& y)
+        requires std::is_arithmetic_v<T>
+    {
+        return UnitVec<3, T>(
+            UnitVec<3, T>::AlreadyNormalized(),
+            x[1] * y[2] - y[1] * x[2],
+            x[2] * y[0] - y[2] * x[0],
+            x[0] * y[1] - y[0] * x[1]
         );
     }
 

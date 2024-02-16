@@ -118,7 +118,7 @@ void osc::DrawXZFloorLines(
         .mesh = yLine,
         .transform = {
             .scale = Vec3{scale},
-            .rotation = AngleAxis(90_deg, Vec3{0.0f, 0.0f, 1.0f}),
+            .rotation = angle_axis(90_deg, Vec3{0.0f, 0.0f, 1.0f}),
         },
         .color = Color::red(),
     });
@@ -128,7 +128,7 @@ void osc::DrawXZFloorLines(
         .mesh = yLine,
         .transform = {
             .scale = Vec3{scale},
-            .rotation = AngleAxis(90_deg, Vec3{1.0f, 0.0f, 0.0f}),
+            .rotation = angle_axis(90_deg, Vec3{1.0f, 0.0f, 0.0f}),
         },
         .color = Color::blue(),
     });
@@ -138,7 +138,7 @@ void osc::DrawXZGrid(
     SceneCache& cache,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    Quat const rotation = AngleAxis(90_deg, Vec3{1.0f, 0.0f, 0.0f});
+    Quat const rotation = angle_axis(90_deg, Vec3{1.0f, 0.0f, 0.0f});
     DrawGrid(cache, rotation, out);
 }
 
@@ -153,7 +153,7 @@ void osc::DrawYZGrid(
     SceneCache& cache,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    Quat const rotation = AngleAxis(90_deg, Vec3{0.0f, 1.0f, 0.0f});
+    Quat const rotation = angle_axis(90_deg, Vec3{0.0f, 1.0f, 0.0f});
     DrawGrid(cache, rotation, out);
 }
 

@@ -62,7 +62,7 @@ namespace
         cubemapRenderTarget.setColorFormat(RenderTextureFormat::RGBFloat16);
 
         // create a 90 degree cube cone projection matrix
-        Mat4 const projectionMatrix = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
+        Mat4 const projectionMatrix = perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
         // create material that projects all 6 faces onto the output cubemap
         Material material{Shader{
@@ -92,7 +92,7 @@ namespace
         irradianceCubemap.setDimensionality(TextureDimensionality::Cube);
         irradianceCubemap.setColorFormat(RenderTextureFormat::RGBFloat16);
 
-        Mat4 const captureProjection = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
+        Mat4 const captureProjection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
         Material material{Shader{
             rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.vert"),
@@ -124,7 +124,7 @@ namespace
         captureRT.setDimensionality(TextureDimensionality::Cube);
         captureRT.setColorFormat(RenderTextureFormat::RGBFloat16);
 
-        Mat4 const captureProjection = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
+        Mat4 const captureProjection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
         Material material{Shader{
             rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.vert"),

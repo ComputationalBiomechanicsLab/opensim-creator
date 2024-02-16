@@ -5,6 +5,7 @@
 #include <oscar/Maths/Constants.h>
 #include <oscar/Maths/Mat.h>
 #include <oscar/Maths/Qua.h>
+#include <oscar/Maths/UnitVec3.h>
 #include <oscar/Maths/Vec.h>
 #include <oscar/Utils/Assertions.h>
 
@@ -38,10 +39,15 @@ namespace osc
         return Result;
     }
 
-    template<std::floating_point T>
-    Mat<4, 4, T> perspective(RadiansT<T> fovy, T aspect, T zNear, T zFar)
+    template<std::floating_point T, AngularUnitTraits Units>
+    Mat<4, 4, T> perspective(Angle<T, Units> fovy, T aspect, T zNear, T zFar)
     {
-        OSC_ASSERT(abs(aspect - epsilon<T>) > T{});
+        if (fabs(aspect - epsilon<T>) <= T{}) {
+            // edge-case: some UIs ask for a perspective matrix on first frame before
+            // aspect ratio is known or the aspect ratio is NaN because of a division
+            // by zero
+            return Mat4{T(1)};
+        }
 
         T const tanHalfFovy = tan(fovy / static_cast<T>(2));
 
@@ -78,14 +84,12 @@ namespace osc
         return Result;
     }
 
-    template<typename T>
-    Mat<4, 4, T> rotate(Mat<4, 4, T> const& m, RadiansT<T> angle, Vec<3, T> const& v)
+    template<std::floating_point T, AngularUnitTraits Units>
+    Mat<4, 4, T> rotate(Mat<4, 4, T> const& m, Angle<T, Units> angle, UnitVec<3, T> axis)
     {
-        RadiansT<T> const a = angle;
-        T const c = cos(a);
-        T const s = sin(a);
+        T const c = cos(angle);
+        T const s = sin(angle);
 
-        Vec<3, T> axis(normalize(v));
         Vec<3, T> temp((T(1) - c) * axis);
 
         Mat<4, 4, T> Rotate;
@@ -107,6 +111,12 @@ namespace osc
         Result[2] = m[0] * Rotate[2][0] + m[1] * Rotate[2][1] + m[2] * Rotate[2][2];
         Result[3] = m[3];
         return Result;
+    }
+
+    template<std::floating_point T, AngularUnitTraits Units>
+    Mat<4, 4, T> rotate(Mat<4, 4, T> const& m, Angle<T, Units> angle, Vec<3, T> const& axis)
+    {
+        return rotate(m, angle, UnitVec<3, T>{axis});
     }
 
     template<typename T>

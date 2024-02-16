@@ -34,32 +34,10 @@ namespace osc { struct Segment; }
 //               osc struct
 namespace osc
 {
-    // computes the rotation from `src` to `dest`
-    Quat Rotation(Vec3 const& src, Vec3 const& dest);
-
-    // computes a rotation from an angle+axis
-    Quat AngleAxis(Radians angle, Vec3 const& axis);
-
-    // computes a view matrix for the given params
-    Mat4 LookAt(Vec3 const& eye, Vec3 const& center, Vec3 const& up);
-
     // computes horizontal FoV for a given vertical FoV + aspect ratio
     Radians VerticalToHorizontalFOV(Radians verticalFOV, float aspectRatio);
 
-    // computes a perspective projection matrix
-    Mat4 Perspective(Radians verticalFOV, float aspectRatio, float zNear, float zFar);
-
-    // computes an orthogonal projection matrix
-    Mat4 Ortho(float left, float right, float bottom, float top, float zNear, float zFar);
-
-    // computes the inverse of the matrix
-    Mat4 Inverse(Mat4 const&);
     Quat Inverse(Quat const&);
-
-    // right-hand multiply
-    Mat4 Scale(Mat4 const&, Vec3 const&);
-    Mat4 Rotate(Mat4 const&, Radians angle, Vec3 const& axis);
-    Mat4 Translate(Mat4 const&, Vec3 const&);
 
     Quat QuatCast(Mat3 const&);
     Mat3 ToMat3(Quat const&);

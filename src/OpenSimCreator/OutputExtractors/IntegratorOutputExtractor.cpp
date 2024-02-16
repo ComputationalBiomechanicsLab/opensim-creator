@@ -140,7 +140,7 @@ OutputType osc::IntegratorOutputExtractor::getOutputType() const
 
 float osc::IntegratorOutputExtractor::getValueFloat(OpenSim::Component const&, SimulationReport const& report) const
 {
-    return report.getAuxiliaryValue(m_AuxiliaryDataID).value_or(quiet_nan_f);
+    return report.getAuxiliaryValue(m_AuxiliaryDataID).value_or(quiet_nan<float>);
 }
 
 void osc::IntegratorOutputExtractor::getValuesFloat(OpenSim::Component const&,
@@ -150,13 +150,13 @@ void osc::IntegratorOutputExtractor::getValuesFloat(OpenSim::Component const&,
     OSC_ASSERT_ALWAYS(reports.size() == out.size());
     for (size_t i = 0; i < reports.size(); ++i)
     {
-        out[i] = reports[i].getAuxiliaryValue(m_AuxiliaryDataID).value_or(quiet_nan_f);
+        out[i] = reports[i].getAuxiliaryValue(m_AuxiliaryDataID).value_or(quiet_nan<float>);
     }
 }
 
 std::string osc::IntegratorOutputExtractor::getValueString(OpenSim::Component const&, SimulationReport const& report) const
 {
-    return std::to_string(report.getAuxiliaryValue(m_AuxiliaryDataID).value_or(quiet_nan_f));
+    return std::to_string(report.getAuxiliaryValue(m_AuxiliaryDataID).value_or(quiet_nan<float>));
 }
 
 UID osc::IntegratorOutputExtractor::getAuxiliaryDataID() const

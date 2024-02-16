@@ -3,6 +3,7 @@
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshIndicesView.h>
 #include <oscar/Graphics/MeshTopology.h>
+#include <oscar/Maths/MatrixFunctions.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Sphere.h>
@@ -42,7 +43,7 @@ namespace
 
     Mat4 CalcCubemapViewMatrix(CubemapFaceDetails const& faceDetails, Vec3 const& cubeCenter)
     {
-        return LookAt(cubeCenter, cubeCenter + faceDetails.direction, faceDetails.up);
+        return look_at(cubeCenter, cubeCenter + faceDetails.direction, faceDetails.up);
     }
 }
 

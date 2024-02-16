@@ -8,8 +8,10 @@ namespace osc { template<typename> struct Qua; }
 #include <oscar/Maths/CommonFunctions.h>
 #include <oscar/Maths/TrigonometricFunctions.h>
 
+#include <concepts>
 #include <limits>
 #include <type_traits>
+#include <utility>
 
 namespace osc
 {
@@ -152,13 +154,17 @@ namespace osc
         );
     }
 
-    template<std::floating_point T>
-    Qua<T> angle_axis(RadiansT<T> const& angle, Vec<3, T> const& axis)
+    template<
+        std::floating_point T,
+        AngularUnitTraits Units,
+        std::convertible_to<Vec<3, T> const&> Veclike>
+    Qua<T> angle_axis(Angle<T, Units> angle, Veclike&& axis)
     {
         T const s = sin(angle * static_cast<T>(0.5));
-        return Qua<T>(cos(angle * static_cast<T>(0.5)), axis * s);
+        return Qua<T>(cos(angle * static_cast<T>(0.5)), static_cast<Vec<3, T> const&>(axis) * s);
     }
 
+    // computes the rotation from `src` to `dest`
     template<typename T>
     Qua<T> rotation(Vec<3, T> const& orig, Vec<3, T> const& dest)
     {
@@ -182,7 +188,7 @@ namespace osc
             }
 
             rotationAxis = normalize(rotationAxis);
-            return angle_axis(RadiansT<T>{180_deg}, rotationAxis);
+            return angle_axis(Degrees{180}, rotationAxis);
         }
 
         // Implementation from Stan Melax's Game Programming Gems 1 article

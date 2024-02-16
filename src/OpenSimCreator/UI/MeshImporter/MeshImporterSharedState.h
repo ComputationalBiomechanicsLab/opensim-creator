@@ -1170,7 +1170,7 @@ namespace osc::mi
         {
             return {
                 .scale = {m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f},
-                .rotation = AngleAxis(90_deg, Vec3{-1.0f, 0.0f, 0.0f}),
+                .rotation = angle_axis(90_deg, Vec3{-1.0f, 0.0f, 0.0f}),
             };
         }
 
@@ -1233,7 +1233,7 @@ namespace osc::mi
                 t.scale.x = legThickness;
                 t.scale.y = 0.5f * actualLegLen;  // cylinder is 2 units high
                 t.scale.z = legThickness;
-                t.rotation = normalize(xform.rotation * Rotation(meshDirection, cylinderDirection));
+                t.rotation = normalize(xform.rotation * rotation(meshDirection, cylinderDirection));
                 t.position = xform.position + (t.rotation * (((getSphereRadius() + (0.5f * actualLegLen)) - cylinderPullback) * meshDirection));
 
                 Color color = {0.0f, 0.0f, 0.0f, alpha};
@@ -1285,7 +1285,7 @@ namespace osc::mi
                 t.scale.x = 0.5f * halfWidth;
                 t.scale.y = 0.5f * coneHeight;
                 t.scale.z = 0.5f * halfWidth;
-                t.rotation = xform.rotation * Rotation(meshDirection, coneDirection);
+                t.rotation = xform.rotation * rotation(meshDirection, coneDirection);
                 t.position = xform.position + (t.rotation * ((halfWidth + (0.5f * coneHeight)) * meshDirection));
 
                 Color color = {0.0f, 0.0f, 0.0f, 1.0f};

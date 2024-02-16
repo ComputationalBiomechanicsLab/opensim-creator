@@ -2107,7 +2107,7 @@ bool osc::ActionFitPlaneToMesh(
     offsetFrame->connectSocket_parent(dynamic_cast<OpenSim::PhysicalFrame const&>(openSimMesh.getFrame()));
     {
         // +1Y in "brick space" should map to the plane's normal
-        Quat const q = Rotation({0.0f, 1.0f, 0.0f}, plane.normal);
+        Quat const q = rotation({0.0f, 1.0f, 0.0f}, plane.normal);
         offsetFrame->setOffsetTransform(SimTK::Transform{ToSimTKRotation(q), ToSimTKVec3(plane.origin)});
     }
 

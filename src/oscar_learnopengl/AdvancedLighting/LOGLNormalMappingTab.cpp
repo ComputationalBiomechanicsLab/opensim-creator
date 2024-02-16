@@ -128,7 +128,7 @@ private:
         AppClock::duration const dt = App::get().getFrameDeltaSinceAppStartup();
         auto const angle = Degrees{-10.0 * dt.count()};
         auto const axis = UnitVec3{1.0f, 0.0f, 1.0f};
-        m_QuadTransform.rotation = AngleAxis(angle, axis);
+        m_QuadTransform.rotation = angle_axis(angle, axis);
     }
 
     void implOnDraw() final

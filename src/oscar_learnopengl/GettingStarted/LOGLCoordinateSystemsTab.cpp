@@ -97,7 +97,7 @@ private:
     void implOnTick() final
     {
         double const dt = App::get().getFrameDeltaSinceAppStartup().count();
-        m_Step1Transform.rotation = AngleAxis(50_deg * dt, UnitVec3{0.5f, 1.0f, 0.0f});
+        m_Step1Transform.rotation = angle_axis(50_deg * dt, UnitVec3{0.5f, 1.0f, 0.0f});
     }
 
     void implOnDraw() final
@@ -123,7 +123,7 @@ private:
                 Graphics::DrawMesh(
                     m_Mesh,
                     Transform{
-                        .rotation = AngleAxis(i * 20_deg, axis),
+                        .rotation = angle_axis(i * 20_deg, axis),
                         .position = c_CubePositions[i],
                     },
                     m_Material,

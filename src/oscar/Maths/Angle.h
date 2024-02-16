@@ -19,6 +19,8 @@ namespace osc
     template<std::floating_point Rep, AngularUnitTraits Units>
     class Angle final {
     public:
+        using value_type = Rep;
+
         constexpr Angle() = default;
 
         // explicitly constructs the angle from a raw value in the given units
@@ -27,10 +29,15 @@ namespace osc
             m_Value{static_cast<Rep>(value_)}
         {}
 
+        // implicit unit-conversion constructor
+        template<AngularUnitTraits Units2>
+        constexpr Angle(Angle<Rep, Units2> const& other) :
+            m_Value{static_cast<Rep>(other.count() * (Units2::radians_per_rep/Units::radians_per_rep))}
+        {}
 
-        // converting constructor
+        // explicit rep+unit conversion constructor
         template<std::convertible_to<Rep> Rep2, AngularUnitTraits Units2>
-        constexpr Angle(Angle<Rep2, Units2> const& other) :
+        explicit constexpr Angle(Angle<Rep2, Units2> const& other) :
             m_Value{static_cast<Rep>(other.count() * (Units2::radians_per_rep/Units::radians_per_rep))}
         {}
 

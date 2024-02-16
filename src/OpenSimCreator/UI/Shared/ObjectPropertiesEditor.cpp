@@ -263,27 +263,27 @@ namespace
                 ImGui::TableSetColumnIndex(1);
                 if (ImGui::Button("1 pi"))
                 {
-                    stepSize = pi_f;
+                    stepSize = pi<float>;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("1/2 pi"))
                 {
-                    stepSize = pi_f/2.0f;
+                    stepSize = pi<float>/2.0f;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("1/4 pi"))
                 {
-                    stepSize = pi_f/4.0f;
+                    stepSize = pi<float>/4.0f;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("10/180 pi"))
                 {
-                    stepSize = (10.0f/180.0f) * pi_f;
+                    stepSize = (10.0f/180.0f) * pi<float>;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("1/180 pi"))
                 {
-                    stepSize = (1.0f/180.0f) * pi_f;
+                    stepSize = (1.0f/180.0f) * pi<float>;
                 }
 
                 ImGui::TableNextRow();

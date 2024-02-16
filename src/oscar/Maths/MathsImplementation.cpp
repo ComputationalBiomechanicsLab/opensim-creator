@@ -529,7 +529,7 @@ Mat4 osc::EulerPerspectiveCamera::getViewMtx() const
 
 Mat4 osc::EulerPerspectiveCamera::getProjMtx(float aspectRatio) const
 {
-    return Perspective(verticalFOV, aspectRatio, znear, zfar);
+    return perspective(verticalFOV, aspectRatio, znear, zfar);
 }
 
 
@@ -591,10 +591,10 @@ void osc::PolarPerspectiveCamera::pan(float aspectRatio, Vec2 delta)
     // this assumes the scene is not rotated, so we need to rotate these
     // axes to match the scene's rotation
     Vec4 defaultPanningAx = {xAmt, yAmt, 0.0f, 1.0f};
-    auto rotTheta = Rotate(Identity<Mat4>(), theta, Vec3{0.0f, 1.0f, 0.0f});
-    auto thetaVec = normalize(Vec3{sin(theta), 0.0f, cos(theta)});
-    auto phiAxis = cross(thetaVec, Vec3{0.0, 1.0f, 0.0f});
-    auto rotPhi = Rotate(Identity<Mat4>(), phi, phiAxis);
+    auto rotTheta = rotate(Identity<Mat4>(), theta, UnitVec3{0.0f, 1.0f, 0.0f});
+    auto thetaVec = UnitVec3{sin(theta), 0.0f, cos(theta)};
+    auto phiAxis = cross(thetaVec, UnitVec3{0.0, 1.0f, 0.0f});
+    auto rotPhi = rotate(Identity<Mat4>(), phi, phiAxis);
 
     Vec4 panningAxes = rotPhi * rotTheta * defaultPanningAx;
     focusPoint += Vec3{panningAxes};
@@ -625,11 +625,11 @@ Mat4 osc::PolarPerspectiveCamera::getViewMtx() const
     // this maths is a complete shitshow and I apologize. It just happens to work for now. It's a polar coordinate
     // system that shifts the world based on the camera pan
 
-    auto rotTheta = Rotate(Identity<Mat4>(), -theta, Vec3{0.0f, 1.0f, 0.0f});
+    auto rotTheta = rotate(Identity<Mat4>(), -theta, Vec3{0.0f, 1.0f, 0.0f});
     auto thetaVec = normalize(Vec3{sin(theta), 0.0f, cos(theta)});
     auto phiAxis = cross(thetaVec, Vec3{0.0, 1.0f, 0.0f});
-    auto rotPhi = Rotate(Identity<Mat4>(), -phi, phiAxis);
-    auto panTranslate = Translate(Identity<Mat4>(), focusPoint);
+    auto rotPhi = rotate(Identity<Mat4>(), -phi, phiAxis);
+    auto panTranslate = translate(Identity<Mat4>(), focusPoint);
     return look_at(
         Vec3(0.0f, 0.0f, radius),
         Vec3(0.0f, 0.0f, 0.0f),
@@ -638,7 +638,7 @@ Mat4 osc::PolarPerspectiveCamera::getViewMtx() const
 
 Mat4 osc::PolarPerspectiveCamera::getProjMtx(float aspectRatio) const
 {
-    return Perspective(verticalFOV, aspectRatio, znear, zfar);
+    return perspective(verticalFOV, aspectRatio, znear, zfar);
 }
 
 Vec3 osc::PolarPerspectiveCamera::getPos() const
@@ -1017,21 +1017,6 @@ namespace
 
 // MathHelpers
 
-Quat osc::Rotation(Vec3 const& src, Vec3 const& dest)
-{
-    return rotation(src, dest);
-}
-
-Quat osc::AngleAxis(Radians angle, Vec3 const& axis)
-{
-    return angle_axis(angle, axis);
-}
-
-Mat4 osc::LookAt(Vec3 const& eye, Vec3 const& center, Vec3 const& up)
-{
-    return look_at(eye, center, up);
-}
-
 Radians osc::VerticalToHorizontalFOV(Radians verticalFOV, float aspectRatio)
 {
     // https://en.wikipedia.org/wiki/Field_of_view_in_video_games#Field_of_view_calculations
@@ -1039,45 +1024,9 @@ Radians osc::VerticalToHorizontalFOV(Radians verticalFOV, float aspectRatio)
     return 2.0f * atan(tan(verticalFOV / 2.0f) * aspectRatio);
 }
 
-Mat4 osc::Perspective(Radians verticalFOV, float aspectRatio, float zNear, float zFar)
-{
-    if (fabs(aspectRatio - epsilon<float>) > 0.0f) {
-        return perspective(verticalFOV, aspectRatio, zNear, zFar);
-    }
-    // edge-case: some UIs ask for a perspective matrix on first frame before
-    // aspect ratio is known or the aspect ratio is NaN because of a division
-    // by zero
-    return Mat4{1.0f};
-}
-
-Mat4 osc::Ortho(float left, float right, float bottom, float top, float zNear, float zFar)
-{
-    return ortho(left, right, bottom, top, zNear, zFar);
-}
-
-Mat4 osc::Inverse(Mat4 const& mat)
-{
-    return inverse(mat);
-}
-
 Quat osc::Inverse(Quat const& q)
 {
     return inverse(q);
-}
-
-Mat4 osc::Scale(Mat4 const& m, Vec3 const& v)
-{
-    return scale(m, v);
-}
-
-Mat4 osc::Rotate(Mat4 const& m, Radians angle, Vec3 const& axis)
-{
-    return rotate(m, angle, axis);
-}
-
-Mat4 osc::Translate(Mat4 const& m, Vec3 const& v)
-{
-    return translate(m, v);
 }
 
 Quat osc::QuatCast(Mat3 const& m)
@@ -1337,7 +1286,7 @@ Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
         rotationAxis = normalize(cross(dir1, dir2));
     }
 
-    return Rotate(Identity<Mat4>(), theta, rotationAxis);
+    return rotate(Identity<Mat4>(), theta, rotationAxis);
 }
 
 Eulers osc::ExtractEulerAngleXYZ(Quat const& q)
@@ -1594,7 +1543,7 @@ Mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b)
     {
         Radians theta = acos(cosTheta);
         Vec3 axis = cross(a.normal, b.normal);
-        rotator = Rotate(Identity<Mat4>(), theta, axis);
+        rotator = rotate(Identity<Mat4>(), theta, axis);
     }
 
     Mat4 translator = translate(Identity<Mat4>(), b.origin-a.origin);
@@ -2082,7 +2031,7 @@ Transform osc::PointAxisAlong(Transform const& t, int axisIndex, Vec3 const& new
     beforeDir[axisIndex] = 1.0f;
     beforeDir = t.rotation * beforeDir;
 
-    Quat const rotBeforeToAfter = Rotation(beforeDir, newDirection);
+    Quat const rotBeforeToAfter = rotation(beforeDir, newDirection);
     Quat const newRotation = normalize(rotBeforeToAfter * t.rotation);
 
     return t.withRotation(newRotation);
@@ -2099,7 +2048,7 @@ Transform osc::RotateAlongAxis(Transform const& t, int axisIndex, Radians angle)
     ax[axisIndex] = 1.0f;
     ax = t.rotation * ax;
 
-    Quat const q = AngleAxis(angle, ax);
+    Quat const q = angle_axis(angle, ax);
 
     return t.withRotation(normalize(q * t.rotation));
 }
@@ -2302,7 +2251,7 @@ float osc::EaseOutElastic(float x)
 {
     // adopted from: https://easings.net/#easeOutElastic
 
-    constexpr float c4 = 2.0f*pi_f / 3.0f;
+    constexpr float c4 = 2.0f*pi<float> / 3.0f;
     float const normalized = saturate(x);
 
     return pow(2.0f, -5.0f*normalized) * sin((normalized*10.0f - 0.75f) * c4) + 1.0f;

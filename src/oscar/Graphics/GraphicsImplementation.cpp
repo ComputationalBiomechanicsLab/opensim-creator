@@ -52,6 +52,7 @@
 #include <oscar/Graphics/OpenGL/TextureFormatOpenGLTraits.h>
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/Angle.h>
+#include <oscar/Maths/MatrixFunctions.h>
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MathHelpers.h>
@@ -5560,7 +5561,7 @@ public:
 
     void setDirection(Vec3 const& d)
     {
-        m_Rotation = Rotation(Vec3{0.0f, 0.0f, -1.0f}, d);
+        m_Rotation = rotation(Vec3{0.0f, 0.0f, -1.0f}, d);
     }
 
     Vec3 getUpwardsDirection() const
@@ -5576,7 +5577,7 @@ public:
         }
         else
         {
-            return LookAt(m_Position, m_Position + getDirection(), getUpwardsDirection());
+            return look_at(m_Position, m_Position + getDirection(), getUpwardsDirection());
         }
     }
 
@@ -5598,7 +5599,7 @@ public:
         }
         else if (m_CameraProjection == CameraProjection::Perspective)
         {
-            return Perspective(
+            return perspective(
                 m_PerspectiveFov,
                 aspectRatio,
                 m_NearClippingPlane,
@@ -5615,7 +5616,7 @@ public:
             float const top = 0.5f * height;
             float const bottom = -top;
 
-            return Ortho(left, right, bottom, top, m_NearClippingPlane, m_FarClippingPlane);
+            return ortho(left, right, bottom, top, m_NearClippingPlane, m_FarClippingPlane);
         }
     }
 
@@ -5636,7 +5637,7 @@ public:
 
     Mat4 getInverseViewProjectionMatrix(float aspectRatio) const
     {
-        return Inverse(getViewProjectionMatrix(aspectRatio));
+        return inverse(getViewProjectionMatrix(aspectRatio));
     }
 
     void renderToScreen()

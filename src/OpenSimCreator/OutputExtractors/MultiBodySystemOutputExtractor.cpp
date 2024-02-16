@@ -78,7 +78,7 @@ OutputType osc::MultiBodySystemOutputExtractor::getOutputType() const
 float osc::MultiBodySystemOutputExtractor::getValueFloat(OpenSim::Component const&,
                                                          SimulationReport const& report) const
 {
-    return report.getAuxiliaryValue(m_AuxiliaryDataID).value_or(quiet_nan_f);
+    return report.getAuxiliaryValue(m_AuxiliaryDataID).value_or(quiet_nan<float>);
 }
 
 void osc::MultiBodySystemOutputExtractor::getValuesFloat(OpenSim::Component const&,
@@ -88,7 +88,7 @@ void osc::MultiBodySystemOutputExtractor::getValuesFloat(OpenSim::Component cons
     OSC_ASSERT_ALWAYS(reports.size() == out.size());
     for (size_t i = 0; i < reports.size(); ++i)
     {
-        out[i] = reports[i].getAuxiliaryValue(m_AuxiliaryDataID).value_or(quiet_nan_f);
+        out[i] = reports[i].getAuxiliaryValue(m_AuxiliaryDataID).value_or(quiet_nan<float>);
     }
 }
 

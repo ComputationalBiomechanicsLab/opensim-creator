@@ -144,7 +144,7 @@ private:
             m_CubeMesh,
             Transform{
                 .scale = Vec3{0.25f},
-                .rotation = AngleAxis(60_deg, UnitVec3{1.0f, 0.0f, 1.0f}),
+                .rotation = angle_axis(60_deg, UnitVec3{1.0f, 0.0f, 1.0f}),
                 .position = {-1.0f, 0.0f, 2.0f},
             },
             material,
@@ -156,8 +156,8 @@ private:
     {
         float const zNear = 1.0f;
         float const zFar = 7.5f;
-        Mat4 const lightViewMatrix = LookAt(m_LightPos, Vec3{0.0f}, {0.0f, 1.0f, 0.0f});
-        Mat4 const lightProjMatrix = Ortho(-10.0f, 10.0f, -10.0f, 10.0f, zNear, zFar);
+        Mat4 const lightViewMatrix = look_at(m_LightPos, Vec3{0.0f}, {0.0f, 1.0f, 0.0f});
+        Mat4 const lightProjMatrix = ortho(-10.0f, 10.0f, -10.0f, 10.0f, zNear, zFar);
         m_LatestLightSpaceMatrix = lightProjMatrix * lightViewMatrix;
 
         drawMeshesWithMaterial(m_DepthMaterial);
