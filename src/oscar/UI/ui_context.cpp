@@ -95,8 +95,8 @@ void osc::ui::context::Init()
     {
         ImFontConfig config = baseConfig;
         config.MergeMode = true;
-        config.GlyphMinAdvanceX = std::floor(1.5f * config.SizePixels);
-        config.GlyphMaxAdvanceX = std::floor(1.5f * config.SizePixels);
+        config.GlyphMinAdvanceX = floor(1.5f * config.SizePixels);
+        config.GlyphMaxAdvanceX = floor(1.5f * config.SizePixels);
         AddResourceAsFont(config, *io.Fonts, "oscar/fonts/fa-solid-900.ttf", c_IconRanges.data());
     }
 

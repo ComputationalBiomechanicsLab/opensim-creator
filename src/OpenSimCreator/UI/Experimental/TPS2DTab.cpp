@@ -66,7 +66,7 @@ namespace
         }
         else
         {
-            return r2 * std::log(r2);
+            return r2 * log(r2);
         }
     }
 

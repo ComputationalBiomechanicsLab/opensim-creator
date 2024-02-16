@@ -36,7 +36,6 @@
 #include <concepts>
 #include <cstddef>
 #include <memory>
-#include <numbers>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
@@ -264,27 +263,27 @@ namespace
                 ImGui::TableSetColumnIndex(1);
                 if (ImGui::Button("1 pi"))
                 {
-                    stepSize = std::numbers::pi_v<float>;
+                    stepSize = pi_f;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("1/2 pi"))
                 {
-                    stepSize = std::numbers::pi_v<float>/2.0f;
+                    stepSize = pi_f/2.0f;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("1/4 pi"))
                 {
-                    stepSize = std::numbers::pi_v<float>/4.0f;
+                    stepSize = pi_f/4.0f;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("10/180 pi"))
                 {
-                    stepSize = (10.0f/180.0f) * std::numbers::pi_v<float>;
+                    stepSize = (10.0f/180.0f) * pi_f;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("1/180 pi"))
                 {
-                    stepSize = (1.0f/180.0f) * std::numbers::pi_v<float>;
+                    stepSize = (1.0f/180.0f) * pi_f;
                 }
 
                 ImGui::TableNextRow();

@@ -25,6 +25,7 @@
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Graphics/Scene/SceneHelpers.h>
 #include <oscar/Maths/AABB.h>
+#include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Segment.h>
 #include <oscar/Maths/QuaternionFunctions.h>
@@ -39,7 +40,6 @@
 #include <cstddef>
 #include <iterator>
 #include <memory>
-#include <numbers>
 #include <optional>
 #include <sstream>
 #include <stdexcept>
@@ -78,8 +78,8 @@ namespace
         {
             auto const nfl = static_cast<float>(musc.getNormalizedFiberLength(st));  // 1.0f == ideal length
             float fl = nfl - 1.0f;
-            fl = std::abs(fl);
-            fl = std::min(fl, 1.0f);
+            fl = abs(fl);
+            fl = min(fl, 1.0f);
             return fl;
         }
         default:
@@ -140,7 +140,7 @@ namespace
         float const specificTension = 0.25e6f;  // magic number?
         float const pcsa = f / specificTension;
         float const widthFactor = 0.25f;
-        return widthFactor * std::sqrt(pcsa / std::numbers::pi_v<float>);
+        return widthFactor * sqrt(pcsa / pi_f);
     }
 
     // helper: returns the size (radius) of a muscle based on caller-provided sizing flags

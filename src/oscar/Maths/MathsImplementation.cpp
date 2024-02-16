@@ -44,7 +44,6 @@
 #include <iterator>
 #include <limits>
 #include <memory>
-#include <numbers>
 #include <numeric>
 #include <optional>
 #include <span>
@@ -895,7 +894,7 @@ namespace
         }
 
         // q = -1/2 * (b +- sqrt(b2 - 4ac))
-        float const q = -0.5f * (b + std::copysign(std::sqrt(discriminant), b));
+        float const q = -0.5f * (b + copysign(sqrt(discriminant), b));
 
         // you might be wondering why this doesn't just compute a textbook
         // version of the quadratic equation (-b +- sqrt(disc))/2a
@@ -1009,8 +1008,8 @@ namespace
         //
         // - https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
 
-        auto const difference = std::abs(a - b);
-        auto const permittedAbsoluteError = relativeError * std::max(std::abs(a), std::abs(b));
+        auto const difference = abs(a - b);
+        auto const permittedAbsoluteError = relativeError * max(abs(a), abs(b));
         return difference <= permittedAbsoluteError;
     }
 }
@@ -1042,7 +1041,7 @@ Radians osc::VerticalToHorizontalFOV(Radians verticalFOV, float aspectRatio)
 
 Mat4 osc::Perspective(Radians verticalFOV, float aspectRatio, float zNear, float zFar)
 {
-    if (std::fabs(aspectRatio - std::numeric_limits<float>::epsilon()) > 0.0f) {
+    if (fabs(aspectRatio - epsilon<float>) > 0.0f) {
         return perspective(verticalFOV, aspectRatio, zNear, zFar);
     }
     // edge-case: some UIs ask for a perspective matrix on first frame before
@@ -1110,8 +1109,8 @@ bool osc::IsEffectivelyEqual(double a, double b)
     // value must be scaled up to the magnitude of the operands if you need
     // a more-correct equality comparison
 
-    double const scaledEpsilon = std::max({1.0, a, b}) * std::numeric_limits<double>::epsilon();
-    return std::abs(a - b) < scaledEpsilon;
+    double const scaledEpsilon = std::max({1.0, a, b}) * epsilon<double>;
+    return abs(a - b) < scaledEpsilon;
 }
 
 bool osc::IsLessThanOrEffectivelyEqual(double a, double b)
@@ -1138,7 +1137,7 @@ bool osc::IsEqualWithinRelativeError(float a, float b, float relativeError)
 
 bool osc::IsEqualWithinAbsoluteError(float a, float b, float absError)
 {
-    auto const difference = std::abs(a - b);
+    auto const difference = abs(a - b);
     return difference <= absError;
 }
 
@@ -1307,7 +1306,7 @@ Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
 
     float const cosTheta = dot(dir1, dir2);
 
-    if(cosTheta >= static_cast<float>(1.0f) - std::numeric_limits<float>::epsilon())
+    if(cosTheta >= static_cast<float>(1.0f) - epsilon<float>)
     {
         // `a` and `b` point in the same direction: return identity transform
         return Identity<Mat4>();
@@ -1315,7 +1314,7 @@ Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
 
     Radians theta{};
     Vec3 rotationAxis{};
-    if(cosTheta < static_cast<float>(-1.0f) + std::numeric_limits<float>::epsilon())
+    if(cosTheta < static_cast<float>(-1.0f) + epsilon<float>)
     {
         // `a` and `b` point in opposite directions
         //
@@ -1323,7 +1322,7 @@ Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
         // - so we try "guessing" one and hope it's good (then try another if it isn't)
 
         rotationAxis = cross(Vec3{0.0f, 0.0f, 1.0f}, dir1);
-        if (length2(rotationAxis) < std::numeric_limits<float>::epsilon())
+        if (length2(rotationAxis) < epsilon<float>)
         {
             // bad luck: they were parallel - use a different axis
             rotationAxis = cross(Vec3{1.0f, 0.0f, 0.0f}, dir1);
@@ -1512,7 +1511,7 @@ Sphere osc::BoundingSphereOf(std::span<Vec3 const> points)
         r2 = max(r2, length2(pos - origin));
     }
 
-    return {.origin = origin, .radius = std::sqrt(r2)};
+    return {.origin = origin, .radius = sqrt(r2)};
 }
 
 Sphere osc::ToSphere(AABB const& aabb)
@@ -2175,7 +2174,7 @@ std::optional<RayCollision> osc::GetRayCollisionPlane(Line const& l, Plane const
 
     float denominator = dot(p.normal, l.direction);
 
-    if (std::abs(denominator) > 1e-6)
+    if (abs(denominator) > 1e-6)
     {
         float numerator = dot(p.origin - l.origin, p.normal);
         float distance = numerator / denominator;
@@ -2232,7 +2231,7 @@ std::optional<RayCollision> osc::GetRayCollisionTriangle(Line const& l, Triangle
 
     // if the dot product is small, then the ray is probably very parallel to
     // the triangle (or, perpendicular to the normal) and doesn't intersect
-    if (std::abs(NdotR) < std::numeric_limits<float>::epsilon())
+    if (abs(NdotR) < epsilon<float>)
     {
         return std::nullopt;
     }
@@ -2303,9 +2302,7 @@ float osc::EaseOutElastic(float x)
 {
     // adopted from: https://easings.net/#easeOutElastic
 
-    using std::pow;
-
-    constexpr float c4 = 2.0f*std::numbers::pi_v<float> / 3.0f;
+    constexpr float c4 = 2.0f*pi_f / 3.0f;
     float const normalized = saturate(x);
 
     return pow(2.0f, -5.0f*normalized) * sin((normalized*10.0f - 0.75f) * c4) + 1.0f;

@@ -771,8 +771,8 @@ namespace
         PlotDataPoint const below = points[belowIdx];
         PlotDataPoint const above = points[aboveIdx];
 
-        float const belowDistance = std::abs(below.x - x);
-        float const aboveDistance = std::abs(above.x - x);
+        float const belowDistance = abs(below.x - x);
+        float const aboveDistance = abs(above.x - x);
 
         size_t const closestIdx =  aboveDistance < belowDistance  ? aboveIdx : belowIdx;
 

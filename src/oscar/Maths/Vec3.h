@@ -284,7 +284,6 @@ namespace osc
         return Vec<3, T>{v1.x / v2.x, v1.y / v2.y, v1.z / v2.z};
     }
 
-
     constexpr Vec<3, bool> operator&&(Vec<3, bool> const& v1, Vec<3, bool> const& v2)
     {
         return Vec<3, bool>{v1.x && v2.x, v1.y && v2.y, v1.z && v2.z};

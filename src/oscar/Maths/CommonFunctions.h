@@ -59,11 +59,29 @@ namespace osc
         return std::fabs(v);
     }
 
+    template<std::floating_point T>
+    T floor(T num)
+    {
+        return std::floor(num);
+    }
+
+    template<std::floating_point T>
+    T copysign(T mag, T sgn)
+    {
+        return std::copysign(mag, sgn);
+    }
+
     template<size_t L, typename T>
     Vec<L, T> abs(Vec<L, T> const& v)
         requires std::is_arithmetic_v<T>
     {
         return elementwise_map(v, abs);
+    }
+
+    template<std::floating_point T>
+    T fmod(T x, T y)
+    {
+        return std::fmod(x, y);
     }
 
     template<
@@ -75,7 +93,7 @@ namespace osc
     auto fmod(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y) -> std::common_type_t<decltype(x), decltype(y)>
     {
         using CA = std::common_type_t<decltype(x), decltype(y)>;
-        return CA{std::fmod(CA{x}.count(), CA{y}.count())};
+        return CA{fmod(CA{x}.count(), CA{y}.count())};
     }
 
     // returns the smallest of `a` and `b`
@@ -217,5 +235,17 @@ namespace osc
             }
         }
         return true;
+    }
+
+    template<std::floating_point T>
+    T log(T num)
+    {
+        return std::log(num);
+    }
+
+    template<std::floating_point T>
+    T pow(T base, T exp)
+    {
+        return std::pow(base, exp);
     }
 }

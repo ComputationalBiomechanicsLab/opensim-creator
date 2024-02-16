@@ -1330,7 +1330,7 @@ Mesh osc::GenerateIcosahedronMesh(
     float radius,
     size_t detail)
 {
-    float const t = (1.0f + std::sqrt(5.0f))/2.0f;
+    float const t = (1.0f + sqrt(5.0f))/2.0f;
 
     auto const vertices = std::to_array<Vec3>({
         {-1.0f,  t,     0.0f}, {1.0f, t,    0.0f}, {-1.0f, -t,     0.0f}, { 1.0f, -t,     0.0f},
@@ -1354,7 +1354,7 @@ Mesh osc::GenerateDodecahedronMesh(
 {
     // implementation ported from threejs (DodecahedronGeometry)
 
-    float const t = (1.0f + std::sqrt(5.0f))/2.0f;
+    float const t = (1.0f + sqrt(5.0f))/2.0f;
     float const r = 1.0f/t;
 
     auto const vertices = std::to_array<Vec3>({

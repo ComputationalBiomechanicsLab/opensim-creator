@@ -1,5 +1,6 @@
 #include "Color.h"
 
+#include <oscar/Maths/CommonFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
@@ -103,7 +104,7 @@ float osc::ToLinear(float colorChannelValue)
     }
     else
     {
-        return std::pow((colorChannelValue + 0.055f) / 1.055f, 2.4f);
+        return pow((colorChannelValue + 0.055f) / 1.055f, 2.4f);
     }
 }
 
@@ -115,7 +116,7 @@ float osc::ToSRGB(float colorChannelValue)
     }
     else
     {
-        return std::pow(colorChannelValue, 1.0f/2.4f)*1.055f - 0.055f;
+        return pow(colorChannelValue, 1.0f/2.4f)*1.055f - 0.055f;
     }
 }
 
@@ -221,8 +222,8 @@ Color osc::ToColor(ColorHSLA const& c)
         return Color::white();
     }
 
-    float const hp = std::fmod(6.0f*h, 6.0f);
-    float const c1 = std::floor(hp);
+    float const hp = fmod(6.0f*h, 6.0f);
+    float const c1 = floor(hp);
     float const c2 = hp - c1;
     float const d = l <= 0.5f ? s*l : s*(1.0f - l);
     float const u1 = l + d;

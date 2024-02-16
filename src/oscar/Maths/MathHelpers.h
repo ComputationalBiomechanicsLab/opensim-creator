@@ -112,9 +112,8 @@ namespace osc
     bool AreAtSameLocation(Vec<L, T> const& a, Vec<L, T> const& b)
         requires std::is_arithmetic_v<T>
     {
-        constexpr T eps2 = std::numeric_limits<T>::epsilon() * std::numeric_limits<T>::epsilon();
         auto const b2a = a - b;
-        return dot(b2a, b2a) > eps2;
+        return dot(b2a, b2a) > (epsilon<T> * epsilon<T>);
     }
 
     bool AreAtSameLocation(Vec3 const&, Vec3 const&);

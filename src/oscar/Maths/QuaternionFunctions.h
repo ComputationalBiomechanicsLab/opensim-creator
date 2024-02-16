@@ -9,7 +9,6 @@ namespace osc { template<typename> struct Qua; }
 #include <oscar/Maths/TrigonometricFunctions.h>
 
 #include <limits>
-#include <numbers>
 #include <type_traits>
 
 namespace osc

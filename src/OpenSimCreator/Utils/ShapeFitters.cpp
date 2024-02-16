@@ -5,6 +5,7 @@
 #include <Simbody.h>
 #include <oscar/Graphics/GraphicsHelpers.h>
 #include <oscar/Graphics/Mesh.h>
+#include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Sphere.h>
@@ -579,7 +580,7 @@ Sphere osc::FitSphere(Mesh const& mesh)
     double const r2 = c[3] + x0*x0 + y0*y0 + z0*z0;
 
     Vec3 const origin{Vec3d{x0, y0, z0}};
-    auto const radius = static_cast<float>(std::sqrt(r2));
+    auto const radius = static_cast<float>(sqrt(r2));
 
     return Sphere{origin, radius};
 }

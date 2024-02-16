@@ -7,6 +7,7 @@
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <SimTKcommon/SmallMatrix.h>
+#include <oscar/Maths/Constants.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/HashHelpers.h>
 #include <oscar/Utils/Perf.h>
@@ -214,7 +215,7 @@ public:
             // cannot find output
             // or the type of the output changed
             // or don't know how to extract a value from the output
-            std::fill(out.begin(), out.end(), NAN);
+            std::fill(out.begin(), out.end(), quiet_nan_f);
             return;
         }
 
