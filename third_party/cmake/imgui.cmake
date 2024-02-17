@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.10)
 project(imgui VERSION 1.89.4)
 
 find_package(SDL2 REQUIRED)
-find_package(glm REQUIRED)
 
 add_library(imgui STATIC
     backends/imgui_impl_sdl2.cpp
@@ -27,7 +26,6 @@ target_compile_features(imgui
 )
 target_link_libraries(imgui
     PUBLIC SDL2::SDL2
-    PUBLIC glm::glm
     PUBLIC ${CMAKE_DL_LIBS}  # imgui_impl_opengl3.cpp references `dlclose`
 )
 

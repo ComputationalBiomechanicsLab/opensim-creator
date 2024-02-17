@@ -7,9 +7,6 @@
 [submodule "third_party/googletest"]
 	path = third_party/googletest
 	url = https://github.com/ComputationalBiomechanicsLab/googletest
-[submodule "third_party/glm"]
-	path = third_party/glm
-	url = https://github.com/ComputationalBiomechanicsLab/glm
 [submodule "third_party/imgui"]
 	path = third_party/imgui
 	url = https://github.com/ComputationalBiomechanicsLab/imgui
