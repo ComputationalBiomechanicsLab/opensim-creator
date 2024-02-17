@@ -136,10 +136,31 @@ namespace osc
         return min(max(v, low), high);
     }
 
+    // clamps `v` between `low` and `high` (inclusive, all the same unit type)
     template<std::floating_point Rep, AngularUnitTraits Units>
-    constexpr Angle<Rep, Units> clamp(Angle<Rep, Units> const& v, Angle<Rep, Units> const& min, Angle<Rep, Units> const& max)
+    constexpr Angle<Rep, Units> clamp(
+        Angle<Rep, Units> const& v,
+        Angle<Rep, Units> const& min,
+        Angle<Rep, Units> const& max)
     {
         return Angle<Rep, Units>{clamp(v.count(), min.count(), max.count())};
+    }
+
+    // clamps `v` between `low` and `high`
+    //
+    // `low` and `high` are converted to the units of `v` before clamping
+    template<
+        std::floating_point Rep,
+        AngularUnitTraits Units,
+        std::convertible_to<Angle<Rep, Units>> AngleMin,
+        std::convertible_to<Angle<Rep, Units>> AngleMax
+    >
+    constexpr Angle<Rep, Units> clamp(
+        Angle<Rep, Units> const& v,
+        AngleMin const& min,
+        AngleMax const& max)
+    {
+        return clamp(v, Angle<Rep, Units>{min}, Angle<Rep, Units>{max});
     }
 
     // clamps each element in `x` between the corresponding elements in `minVal` and `maxVal`
