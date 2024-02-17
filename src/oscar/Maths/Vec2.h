@@ -10,6 +10,9 @@
 
 namespace osc
 {
+    // a 2-element vector
+    //
+    // implementation initially adapted from `glm::vec2`
     template<typename T>
     struct Vec<2, T> {
         using value_type = T;
@@ -75,10 +78,10 @@ namespace osc
         constexpr reference operator[](size_type i) { return begin()[i]; }
         constexpr const_reference operator[](size_type i) const { return begin()[i]; }
 
-        friend constexpr bool operator==(Vec const&, Vec const&) = default;
+        friend constexpr bool operator==(Vec<2, T> const&, Vec<2, T> const&) = default;
 
         template<typename U>
-        constexpr Vec& operator+=(U scalar)
+        constexpr Vec<2, T>& operator+=(U scalar)
         {
             this->x += static_cast<T>(scalar);
             this->y += static_cast<T>(scalar);

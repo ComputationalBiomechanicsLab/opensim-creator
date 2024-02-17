@@ -12,6 +12,9 @@
 
 namespace osc
 {
+    // a 3x3 matrix
+    //
+    // implementation initially adapted from `glm::mat3`
     template<typename T>
     struct Mat<3, 3, T> {
         using col_type = Vec<3, T>;
@@ -62,18 +65,18 @@ namespace osc
         {}
 
         template<
+            typename X0, typename Y0, typename Z0,
             typename X1, typename Y1, typename Z1,
-            typename X2, typename Y2, typename Z2,
-            typename X3, typename Y3, typename Z3>
+            typename X2, typename Y2, typename Z2>
         constexpr Mat(
+            X0 x0, Y0 y0, Z0 z0,
             X1 x1, Y1 y1, Z1 z1,
-            X2 x2, Y2 y2, Z2 z2,
-            X3 x3, Y3 y3, Z3 z3) :
+            X2 x2, Y2 y2, Z2 z2) :
 
             value{
+                col_type{x0, y0, z0},
                 col_type{x1, y1, z1},
-                col_type{x2, y2, z2},
-                col_type{x3, y3, z3}
+                col_type{x2, y2, z2}
             }
         {}
 
@@ -371,8 +374,8 @@ namespace osc
     template<typename T>
     Mat<3, 3, T> operator/(Mat<3, 3, T> const& m1, Mat<3, 3, T> const& m2)
     {
-        Mat<3, 3, T> copy{m1};
-        return copy /= m2;
+        Mat<3, 3, T> m1_copy{m1};
+        return m1_copy /= m2;
     }
 
     template<typename T>

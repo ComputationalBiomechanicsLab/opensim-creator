@@ -217,7 +217,7 @@ private:
         ImGui::Dummy({0.0f, 3.0f});
 
         // draw content
-        ImGui::BeginChild("##componentnavigatorvieweritems", {0.0, 0.0}, false, ImGuiWindowFlags_NoBackground);
+        ImGui::BeginChild("##componentnavigatorvieweritems", {0.0, 0.0}, ImGuiChildFlags_None, ImGuiWindowFlags_NoBackground);
 
         OpenSim::Component const* root = &m_Model->getModel();
         OpenSim::Component const* selection = m_Model->getSelected();

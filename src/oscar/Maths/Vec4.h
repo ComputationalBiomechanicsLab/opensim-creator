@@ -10,6 +10,9 @@
 
 namespace osc
 {
+    // a 4-element vector
+    //
+    // implementation initially adapted from `glm::vec4`
     template<typename T>
     struct Vec<4, T> {
         using value_type = T;
@@ -329,7 +332,7 @@ namespace osc
 
     constexpr Vec<4, bool> operator||(Vec<4, bool> const& v1, Vec<4, bool> const& v2)
     {
-        return Vec<4, bool>{v1.x && v2.x, v1.y && v2.y, v1.z && v2.z, v1.w && v2.w};
+        return Vec<4, bool>{v1.x || v2.x, v1.y || v2.y, v1.z || v2.z, v1.w || v2.w};
     }
 
     template<typename T>

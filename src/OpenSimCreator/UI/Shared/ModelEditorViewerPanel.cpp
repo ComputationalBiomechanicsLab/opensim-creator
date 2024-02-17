@@ -520,7 +520,7 @@ private:
             // buttons, widgets, etc.)
             ImGui::SetNextWindowPos(m_State.viewportRect.p1);
             std::string const childID = std::to_string(std::distance(it, m_Layers.end()));
-            if (ImGui::BeginChild(childID.c_str(), Dimensions(m_State.viewportRect), false, windowFlags))
+            if (ImGui::BeginChild(childID.c_str(), Dimensions(m_State.viewportRect), ImGuiChildFlags_None, windowFlags))
             {
                 layer.onDraw(m_Parameters, m_State);
                 ImGui::EndChild();

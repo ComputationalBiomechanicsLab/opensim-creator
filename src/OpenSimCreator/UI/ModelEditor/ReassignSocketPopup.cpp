@@ -167,7 +167,7 @@ private:
         DrawSearchBar(m_EditedParams.search);
 
         std::optional<OpenSim::ComponentPath> userSelection;
-        ImGui::BeginChild("##componentlist", ImVec2(512, 256), true, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar);
+        ImGui::BeginChild("##componentlist", ImVec2(512, 256), ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar);
 
         int id = 0;  // care: necessary because multiple connectees may have the same name
         for (ConnecteeOption const& option : m_Options)

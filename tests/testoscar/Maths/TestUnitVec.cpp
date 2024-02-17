@@ -1,6 +1,8 @@
 #include <oscar/Maths/UnitVec.h>
 #include <oscar/Maths/UnitVec3.h>
 
+#include <oscar/Maths/GeometricFunctions.h>
+
 #include <gtest/gtest.h>
 
 #include <cmath>

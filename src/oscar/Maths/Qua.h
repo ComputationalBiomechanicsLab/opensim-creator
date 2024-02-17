@@ -15,6 +15,9 @@
 
 namespace osc
 {
+    // a 3D (4-element) quaternion: usually used to represent rotations
+    //
+    // implementation initially adapted from `glm::qua`
     template<typename T>
     struct Qua {
         using value_type = T;

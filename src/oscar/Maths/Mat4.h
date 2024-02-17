@@ -12,6 +12,9 @@
 
 namespace osc
 {
+    // a 4x4 matrix
+    //
+    // implementation initially adapted from `glm::mat4`
     template<typename T>
     struct Mat<4, 4, T> {
         using col_type = Vec<4, T>;
@@ -66,21 +69,21 @@ namespace osc
         {}
 
         template<
+            typename X0, typename Y0, typename Z0, typename W0,
             typename X1, typename Y1, typename Z1, typename W1,
             typename X2, typename Y2, typename Z2, typename W2,
-            typename X3, typename Y3, typename Z3, typename W3,
-            typename X4, typename Y4, typename Z4, typename W4>
+            typename X3, typename Y3, typename Z3, typename W3>
         constexpr Mat(
+            X0 const& x0, Y0 const& y0, Z0 const& z0, W0 const& w0,
             X1 const& x1, Y1 const& y1, Z1 const& z1, W1 const& w1,
             X2 const& x2, Y2 const& y2, Z2 const& z2, W2 const& w2,
-            X3 const& x3, Y3 const& y3, Z3 const& z3, W3 const& w3,
-            X4 const& x4, Y4 const& y4, Z4 const& z4, W4 const& w4) :
+            X3 const& x3, Y3 const& y3, Z3 const& z3, W3 const& w3) :
 
             value{
+                col_type{x0, y0, z0, w0},
                 col_type{x1, y1, z1, w1},
                 col_type{x2, y2, z2, w2},
-                col_type{x3, y3, z3, w3},
-                col_type{x4, y4, z4, w4}
+                col_type{x3, y3, z3, w3}
             }
         {}
 
@@ -378,8 +381,8 @@ namespace osc
     template<typename T>
     Mat<4, 4, T> operator/(Mat<4, 4, T> const& m1,	Mat<4, 4, T> const& m2)
     {
-        Mat<4, 4, T> copy{m1};
-        return m1 /= m2;
+        Mat<4, 4, T> m1_copy{m1};
+        return m1_copy /= m2;
     }
 
     template<typename T>

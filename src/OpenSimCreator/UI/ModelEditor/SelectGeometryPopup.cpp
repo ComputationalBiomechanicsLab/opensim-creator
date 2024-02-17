@@ -142,7 +142,7 @@ private:
         ImGui::BeginChild(
             "mesh list",
             ImVec2(ImGui::GetContentRegionAvail().x, 256),
-            false,
+            ImGuiChildFlags_None,
             ImGuiWindowFlags_HorizontalScrollbar);
 
         if (!m_RecentUserChoices.empty())
