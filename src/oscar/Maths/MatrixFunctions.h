@@ -289,7 +289,7 @@ namespace osc
         T C1 = cos(T1);
         RadiansT<T> T3 = atan2(S1*M[0][2] - C1*M[0][1], C1*M[1][1] - S1*M[1][2  ]);
 
-        return Vec<3, RadiansT<T>>{-T1, -T2, -T2};
+        return Vec<3, RadiansT<T>>{-T1, -T2, -T3};
     }
 
     namespace detail

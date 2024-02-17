@@ -4135,7 +4135,7 @@ namespace
 
         auto const decoded = DecodeMany<SourceFormat, SourceCPUFormat>(src.data());
         DestCPUFormat converted{};
-        for (int i = 0; i < n; ++i)
+        for (size_t i = 0; i < n; ++i)
         {
             converted[i] = typename DestCPUFormat::value_type{decoded[i]};
         }

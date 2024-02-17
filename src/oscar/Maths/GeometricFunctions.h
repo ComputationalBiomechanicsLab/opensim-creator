@@ -63,7 +63,7 @@ namespace osc
         requires std::is_arithmetic_v<T>
     {
         return UnitVec<3, T>(
-            UnitVec<3, T>::AlreadyNormalized(),
+            typename UnitVec<3, T>::AlreadyNormalized(),
             x[1] * y[2] - y[1] * x[2],
             x[2] * y[0] - y[2] * x[0],
             x[0] * y[1] - y[0] * x[1]
