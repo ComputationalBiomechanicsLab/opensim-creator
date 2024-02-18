@@ -9,7 +9,7 @@ jobs:
     runs-on: windows-2022
     steps:
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         path: osc
         submodules: 'recursive'
@@ -19,7 +19,7 @@ jobs:
         cd $env:GITHUB_WORKSPACE\osc
         python scripts\\build_windows.py -j2 || exit /b
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: OpenSimCreator_Win64.zip
         path: osc/osc-build/*win64.exe
@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         path: osc
         submodules: 'recursive'
@@ -41,19 +41,13 @@ jobs:
         sudo apt-get install xvfb  # virtual desktop, for tests
         export OSC_BUILD_CONCURRENCY=$(nproc)
         export CC=clang
-        export CXX=clang++
+        export CXX=clang++  # C++20 support (g++ on this CI node isn't new enough)
         xvfb-run ./scripts/build_debian-buster.sh
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: OpenSimCreator_Deb.zip
         path: osc/osc-build/*.deb
-        if-no-files-found: error
-
-    - uses: actions/upload-artifact@v2
-      with:
-        name: osc_docs
-        path: osc/docs/build
         if-no-files-found: error
 
   macCatalina:
@@ -61,7 +55,7 @@ jobs:
     runs-on: macos-11
     steps:
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
 
@@ -70,10 +64,10 @@ jobs:
         cd $GITHUB_WORKSPACE
         export OSC_BUILD_CONCURRENCY=$(sysctl -n hw.physicalcpu)
         export CC=$(brew --prefix llvm@15)/bin/clang
-        export CXX=$(brew --prefix llvm@15)/bin/clang++
+        export CXX=$(brew --prefix llvm@15)/bin/clang++  # C++20 support (apple clang on this CI node isn't new enough)
         ./scripts/build_mac.sh
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: OpenSimCreator_MacOSX.zip
         path: osc-build/*.dmg
