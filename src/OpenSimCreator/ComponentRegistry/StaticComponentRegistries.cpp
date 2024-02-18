@@ -210,7 +210,7 @@ namespace
             },
             {
                 "PointConstraint",
-                "A class implementing a Point Constraint.The constraint keeps two points, one on each of two separate PhysicalFrame%s, coincident and free to rotate about that point.",
+                "A class implementing a Point Constraint.The constraint keeps two points, one on each of two separate PhysicalFrames, coincident and free to rotate about that point.",
             },
             {
                 "ActivationCoordinateActuator",
@@ -246,7 +246,7 @@ namespace
             },
             {
                 "PathActuator",
-                "This is the base class for actuators that apply controllable tension along a geometry path. %PathActuator has no states; the control is simply the tension to be applied along a geometry path (i.e. tensionable rope).",
+                "This is the base class for actuators that apply controllable tension along a geometry path. PathActuator has no states; the control is simply the tension to be applied along a geometry path (i.e. tensionable rope).",
             },
             {
                 "PointActuator",
