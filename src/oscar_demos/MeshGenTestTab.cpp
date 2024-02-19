@@ -50,6 +50,7 @@ namespace
             {"lathe", GenerateLatheMesh(LathePoints(), 3)},
             {"circle2", GenerateCircleMesh2()},
             {"ring", GenerateRingMesh(0.5f, 1.0f, 32, 3, Degrees{0}, Degrees{180})},
+            {"torus2", GenerateTorusMesh2(1.0f, 0.2f, 16, 64, Degrees{180})},
         };
     }
 }

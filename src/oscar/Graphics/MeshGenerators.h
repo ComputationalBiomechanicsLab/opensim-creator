@@ -161,4 +161,13 @@ namespace osc
         Radians thetaStart = Degrees{0},
         Radians thetaLength = Degrees{360}
     );
+
+    // (ported from three.js/TorusGeometry)
+    Mesh GenerateTorusMesh2(
+        float radius = 1.0f,
+        float tube = 0.4f,
+        size_t radialSegments = 12,
+        size_t tubularSegments = 48,
+        Radians arc = Degrees{360}
+    );
 }
