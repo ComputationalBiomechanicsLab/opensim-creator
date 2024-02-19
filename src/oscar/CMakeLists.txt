@@ -342,18 +342,18 @@ add_library(oscar STATIC
     Variant/VariantType.h
     Variant/VariantTypeList.h
     Variant/VariantTypeTraits.h
-    #
-    #DOM.h
-    #Formats.h
-    #Graphics.h
-    #Maths.h
-    #oscar.h
-    #Platform.h
-    #Shims.h
-    #UI.h
-    #Utils.h
-    #Variant.h
-)
+
+    DOM.h
+    Formats.h
+    Graphics.h
+    Maths.h
+    oscar.h
+    Platform.h
+    Shims.h
+    UI.h
+    Utils.h
+    Variant.h
+ )
 
 target_include_directories(oscar PUBLIC
 
