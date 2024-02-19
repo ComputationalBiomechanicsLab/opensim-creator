@@ -6,6 +6,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Upcoming Release]
 
 - Fixed a crash when visualizing contact forces in the model editor (sorry about that :-))
+- There is now an `Export Model Graph as Dotviz` utility under `Tools -> Experimental Tools` in the model
+  editor, which produces a `.dot` file that can be visualized with external graph visualizers, such as
+  Graphviz Online
 - OpenSim was updated to the latest upstream `main` branch, which includes better socket connection support
   and other performance improvements and bugfixes
 - The coordinate editor's sliders now enable text-input mode when double-clicked (previously: only Ctrl+Click)

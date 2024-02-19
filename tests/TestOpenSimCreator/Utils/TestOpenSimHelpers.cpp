@@ -15,9 +15,11 @@
 #include <gtest/gtest.h>
 #include <oscar/Platform/AppConfig.h>
 #include <oscar/Platform/Log.h>
+#include <oscar/Utils/StringHelpers.h>
 
 #include <filesystem>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -35,6 +37,13 @@ namespace
 
     class Child2 final : public InnerParent {
         OpenSim_DECLARE_CONCRETE_OBJECT(Child2, OpenSim::Component);
+        OpenSim_DECLARE_SOCKET(sibling, InnerParent, "sibling connection");
+
+    public:
+        Child2()
+        {
+            updSocket("sibling").setConnecteePath("../child1");
+        }
     };
 
     class Root final : public OpenSim::Component {
@@ -294,4 +303,19 @@ TEST(OpenSimHelpers, TypedGetNumChildrenOnlyCountsChildrenWithGivenType)
     ASSERT_EQ(GetNumChildren<Child1>(root), 1);
     ASSERT_EQ(GetNumChildren<Child2>(root), 1);
     ASSERT_EQ(GetNumChildren<InnerParent>(root), 2);
+}
+
+TEST(OpenSimHelpers, WriteComponentTopologyGraphAsDotViz)
+{
+    Root root;
+    root.finalizeConnections(root);
+    std::stringstream ss;
+    WriteComponentTopologyGraphAsDotViz(root, ss);
+
+    std::string const rv = ss.str();
+    ASSERT_TRUE(Contains(rv, "digraph Component"));
+    ASSERT_TRUE(Contains(rv, R"("/" -> "/child1")"));
+    ASSERT_TRUE(Contains(rv, R"("/" -> "/child2")"));
+    ASSERT_TRUE(Contains(rv, R"("/child2" -> "/child1")"));
+    ASSERT_TRUE(Contains(rv, R"(label="sibling")"));
 }

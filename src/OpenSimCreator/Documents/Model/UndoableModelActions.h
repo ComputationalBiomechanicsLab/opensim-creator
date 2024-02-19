@@ -423,4 +423,8 @@ namespace osc
         std::span<lm::NamedLandmark const>,
         std::optional<std::string> maybeName
     );
+
+    bool ActionExportModelGraphToDotviz(
+        UndoableModelStatePair const&
+    );
 }

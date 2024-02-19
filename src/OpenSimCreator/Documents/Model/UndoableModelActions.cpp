@@ -2181,3 +2181,18 @@ bool osc::ActionImportLandmarks(
     }
     return true;
 }
+
+bool osc::ActionExportModelGraphToDotviz(UndoableModelStatePair const& model)
+{
+    if (auto p = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("dot")) {
+        if (std::ofstream of{*p}) {
+            WriteComponentTopologyGraphAsDotViz(model.getModel(), of);
+            return true;
+        }
+        else {
+            log_error("error opening %s for writing", p->string().c_str());
+            return false;
+        }
+    }
+    return false;  // user cancelled out
+}
