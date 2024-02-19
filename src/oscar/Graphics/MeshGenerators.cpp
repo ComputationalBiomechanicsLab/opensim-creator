@@ -1529,6 +1529,8 @@ Mesh osc::GenerateCircleMesh2(
     Radians thetaStart,
     Radians thetaLength)
 {
+    // this implementation was initially hand-ported from threejs (CircleGeometry)
+
     segments = max(static_cast<size_t>(3), segments);
     float const fsegments = static_cast<float>(segments);
 
@@ -1558,6 +1560,68 @@ Mesh osc::GenerateCircleMesh2(
 
     for (uint32_t i = 1; i <= static_cast<uint32_t>(segments); ++i) {
         indices.insert(indices.end(), {i, i+1, 0});
+    }
+
+    Mesh rv;
+    rv.setVerts(vertices);
+    rv.setNormals(normals);
+    rv.setTexCoords(uvs);
+    rv.setIndices(indices);
+    return rv;
+}
+
+Mesh osc::GenerateRingMesh(
+    float innerRadius,
+    float outerRadius,
+    size_t thetaSegments,
+    size_t phiSegments,
+    Radians thetaStart,
+    Radians thetaLength)
+{
+    // this implementation was initially hand-ported from threejs (RingGeometry)
+
+    thetaSegments = max(static_cast<size_t>(3), thetaSegments);
+    phiSegments = max(static_cast<size_t>(1), phiSegments);
+    float const fthetaSegments = static_cast<float>(thetaSegments);
+    float const fphiSegments = static_cast<float>(phiSegments);
+
+    std::vector<uint32_t> indices;
+    std::vector<Vec3> vertices;
+    std::vector<Vec3> normals;
+    std::vector<Vec2> uvs;
+
+    float radius = innerRadius;
+    float radiusStep = (outerRadius - innerRadius)/fphiSegments;
+
+    // generate vertices, normals, and uvs
+    for (size_t j = 0; j <= phiSegments; ++j) {
+        for (size_t i = 0; i <= thetaSegments; ++i) {
+            float const fi = static_cast<float>(i);
+            Radians segment = thetaStart + (fi/fthetaSegments * thetaLength);
+
+            Vec3 const& v = vertices.emplace_back(radius * cos(segment), radius * sin(segment), 0.0f);
+            normals.emplace_back(0.0f, 0.0f, 1.0f);
+            uvs.emplace_back(
+                (v.x/outerRadius + 1.0f) / 2.0f,
+                (v.y/outerRadius + 1.0f) / 2.0f
+            );
+        }
+        radius += radiusStep;
+    }
+
+    for (size_t j = 0; j < phiSegments; ++j) {
+        size_t const thetaSegmentLevel = j * (thetaSegments + 1);
+        for (size_t i = 0; i < thetaSegments; ++i) {
+            size_t segment = i + thetaSegmentLevel;
+
+            auto const a = static_cast<uint32_t>(segment);
+            auto const b = static_cast<uint32_t>(segment + thetaSegments + 1);
+            auto const c = static_cast<uint32_t>(segment + thetaSegments + 2);
+            auto const d = static_cast<uint32_t>(segment + 1);
+
+            indices.insert(indices.end(), {a, b, d});
+            indices.insert(indices.end(), {b, c, d});
+        }
     }
 
     Mesh rv;

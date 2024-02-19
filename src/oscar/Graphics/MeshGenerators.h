@@ -140,9 +140,24 @@ namespace osc
         Radians phiLength = Degrees{360}
     );
 
+    // returns a mesh representation of a solid circle
+    //
+    // (ported from three.js:CircleGeometry)
     Mesh GenerateCircleMesh2(
         float radius = 1.0f,
         size_t segments = 32,
+        Radians thetaStart = Degrees{0},
+        Radians thetaLength = Degrees{360}
+    );
+
+    // returns a mesh representation of a ring
+    //
+    // (ported from three.js/RingGeometry)
+    Mesh GenerateRingMesh(
+        float innerRadius = 0.5f,
+        float outerRadius = 1.0f,
+        size_t thetaSegments = 32,
+        size_t phiSegments = 1,
         Radians thetaStart = Degrees{0},
         Radians thetaLength = Degrees{360}
     );

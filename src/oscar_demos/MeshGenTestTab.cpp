@@ -49,6 +49,7 @@ namespace
             {"tetrahedron", GenerateTetrahedronMesh()},
             {"lathe", GenerateLatheMesh(LathePoints(), 3)},
             {"circle2", GenerateCircleMesh2()},
+            {"ring", GenerateRingMesh(0.5f, 1.0f, 32, 3, Degrees{0}, Degrees{180})},
         };
     }
 }
