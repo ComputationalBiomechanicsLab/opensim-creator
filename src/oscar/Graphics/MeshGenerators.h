@@ -139,4 +139,11 @@ namespace osc
         Radians phiStart = Degrees{0},
         Radians phiLength = Degrees{360}
     );
+
+    Mesh GenerateCircleMesh2(
+        float radius = 1.0f,
+        size_t segments = 32,
+        Radians thetaStart = Degrees{0},
+        Radians thetaLength = Degrees{360}
+    );
 }

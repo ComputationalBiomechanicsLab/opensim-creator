@@ -48,6 +48,7 @@ namespace
             {"octahedron", GenerateOctahedronMesh()},
             {"tetrahedron", GenerateTetrahedronMesh()},
             {"lathe", GenerateLatheMesh(LathePoints(), 3)},
+            {"circle2", GenerateCircleMesh2()},
         };
     }
 }
