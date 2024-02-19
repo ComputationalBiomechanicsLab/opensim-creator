@@ -602,15 +602,13 @@ void osc::WriteComponentTopologyGraphAsDotViz(
     {
         auto sourceAbsPath = GetAbsolutePathString(c);
         for (OpenSim::AbstractSocket const* sock : GetAllSockets(c)) {
-            for (unsigned i = 0; i < sock->getNumConnectees(); ++i) {
-                if (auto const* connectee = dynamic_cast<OpenSim::Component const*>(&sock->getConnecteeAsObject(i))) {
-                    edges.insert({
-                        .sourceAbsPath = sourceAbsPath,
-                        .destinationAbsPath = GetAbsolutePathString(*connectee),
-                        .name = sock->getName(),
-                        .type = GraphEdgeType::Socket,
-                    });
-                }
+            if (auto const* connectee = dynamic_cast<OpenSim::Component const*>(&sock->getConnecteeAsObject())) {
+                edges.insert({
+                    .sourceAbsPath = sourceAbsPath,
+                    .destinationAbsPath = GetAbsolutePathString(*connectee),
+                    .name = sock->getName(),
+                    .type = GraphEdgeType::Socket,
+                });
             }
         }
     };
