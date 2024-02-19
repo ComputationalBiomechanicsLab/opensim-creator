@@ -1522,3 +1522,48 @@ Mesh osc::GenerateLatheMesh(
     rv.setIndices(indices);
     return rv;
 }
+
+Mesh osc::GenerateCircleMesh2(
+    float radius,
+    size_t segments,
+    Radians thetaStart,
+    Radians thetaLength)
+{
+    segments = max(static_cast<size_t>(3), segments);
+    float const fsegments = static_cast<float>(segments);
+
+    std::vector<uint32_t> indices;
+    std::vector<Vec3> vertices;
+    std::vector<Vec3> normals;
+    std::vector<Vec2> uvs;
+
+    // middle vertex
+    vertices.emplace_back(0.0f, 0.0f, 0.0f);
+    normals.emplace_back(0.0f, 0.0f, 1.0f);
+    uvs.emplace_back(0.5f, 0.5f);
+
+    // not-middle vertices
+    for (ptrdiff_t s = 0; s <= static_cast<ptrdiff_t>(segments); ++s) {
+        float const fs = static_cast<float>(s);
+        Radians const segment = thetaStart + (fs/fsegments * thetaLength);
+
+        vertices.emplace_back(radius * cos(segment), radius * sin(segment), 0.0f);
+        normals.emplace_back(0.0f, 0.0f, 1.0f);
+
+        uvs.emplace_back(
+            (vertices[s-1].x/radius + 1.0f) / 2.0f,
+            (vertices[s-1].y/radius + 1.0f) / 2.0f
+        );
+    }
+
+    for (uint32_t i = 1; i <= static_cast<uint32_t>(segments); ++i) {
+        indices.insert(indices.end(), {i, i+1, 0});
+    }
+
+    Mesh rv;
+    rv.setVerts(vertices);
+    rv.setNormals(normals);
+    rv.setTexCoords(uvs);
+    rv.setIndices(indices);
+    return rv;
+}
