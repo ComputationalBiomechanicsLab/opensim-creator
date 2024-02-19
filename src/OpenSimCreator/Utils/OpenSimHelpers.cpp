@@ -1289,7 +1289,7 @@ namespace
             OpenSim::HuntCrossleyForce::ContactParameters const& param = At(paramSet, i);
             OpenSim::Property<std::string> const& geomProperty = param.getProperty_geometry();
 
-            for (size_t j = 0; size(geomProperty); ++j)
+            for (size_t j = 0; j < size(geomProperty); ++j)
             {
                 std::string const& geomNameOrPath = At(geomProperty, j);
                 if (auto const* foundViaAbsPath = FindComponent<OpenSim::ContactHalfSpace>(model, geomNameOrPath))
