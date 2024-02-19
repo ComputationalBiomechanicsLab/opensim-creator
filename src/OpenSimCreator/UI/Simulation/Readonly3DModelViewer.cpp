@@ -4,7 +4,6 @@
 #include <OpenSimCreator/Graphics/ModelRendererParams.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 
-#include <imgui.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Graphics/Scene/SceneCollision.h>
 #include <oscar/Graphics/Scene/ShaderCache.h>
@@ -12,6 +11,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/UI/IconCache.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/GuiRuler.h>
 #include <oscar/UI/Widgets/IconWithoutMenu.h>
 

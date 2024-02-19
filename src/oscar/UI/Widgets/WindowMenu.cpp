@@ -1,9 +1,8 @@
 #include "WindowMenu.h"
 
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/Utils/CStringView.h>
-
-#include <imgui.h>
 
 #include <memory>
 #include <utility>

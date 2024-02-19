@@ -6,12 +6,12 @@
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
 
 #include <IconsFontAwesome5.h>
-#include <Simbody.h>
-#include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/UID.h>
+#include <Simbody.h>
 
 #include <memory>
 #include <string_view>

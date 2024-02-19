@@ -1,6 +1,5 @@
 #include "ImGuiDemoTab.h"
 
-#include <imgui.h>
 #include <oscar/oscar.h>
 
 #include <memory>

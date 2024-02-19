@@ -1,7 +1,6 @@
 #pragma once
 
-#include <imgui.h>
-#include <ImGuizmo.h>
+#include <oscar/UI/oscimgui.h>
 
 namespace osc
 {

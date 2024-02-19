@@ -7,9 +7,8 @@
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
-
-#include <imgui.h>
 
 #include <iomanip>
 #include <optional>
@@ -90,10 +89,10 @@ void osc::GuiRuler::onDraw(
         {
             // user is moused over something, so draw a line + circle between the two hitlocs
             Vec2 endScreenPos = mouseLoc;
-            Vec2 lineScreenDir = Normalize(startScreenPos - endScreenPos);
+            Vec2 lineScreenDir = normalize(startScreenPos - endScreenPos);
             Vec2 offsetVec = 15.0f * Vec2{lineScreenDir.y, -lineScreenDir.x};
             Vec2 lineMidpoint = (startScreenPos + endScreenPos) / 2.0f;
-            float lineWorldLen = Length(maybeMouseover->worldspaceLocation - m_StartWorldPos);
+            float lineWorldLen = length(maybeMouseover->worldspaceLocation - m_StartWorldPos);
 
             dl.AddCircleFilled(startScreenPos, circleRadius, circleColor);
             dl.AddLine(startScreenPos, endScreenPos, lineColor, lineThickness);

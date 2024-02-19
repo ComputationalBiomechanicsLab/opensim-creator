@@ -1,11 +1,10 @@
 #pragma once
 
-#include <oscar/Maths/LengthType.h>
-
-#include <glm/detail/qualifier.hpp>
+#include <cstddef>
 
 namespace osc
 {
-    template<LengthType C, LengthType R, typename T, glm::qualifier Q = glm::defaultp>
-    using Mat = glm::mat<C, R, T, Q>;
+    // template adopted from `glm::mat<>`
+    template<size_t C, size_t R, typename T>
+    struct Mat;
 }

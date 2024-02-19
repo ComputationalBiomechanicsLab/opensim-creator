@@ -10,8 +10,6 @@
 #include <OpenSimCreator/UI/Shared/ModelSelectionGizmo.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <ImGuizmo.h>
-#include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Rect.h>
@@ -21,6 +19,7 @@
 #include <oscar/UI/IconCache.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/ImGuizmoHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/UI/Widgets/GuiRuler.h>
 #include <oscar/UI/Widgets/IconWithoutMenu.h>
@@ -521,7 +520,7 @@ private:
             // buttons, widgets, etc.)
             ImGui::SetNextWindowPos(m_State.viewportRect.p1);
             std::string const childID = std::to_string(std::distance(it, m_Layers.end()));
-            if (ImGui::BeginChild(childID.c_str(), Dimensions(m_State.viewportRect), false, windowFlags))
+            if (ImGui::BeginChild(childID.c_str(), Dimensions(m_State.viewportRect), ImGuiChildFlags_None, windowFlags))
             {
                 layer.onDraw(m_Parameters, m_State);
                 ImGui::EndChild();

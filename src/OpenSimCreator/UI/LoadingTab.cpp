@@ -6,13 +6,13 @@
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <imgui.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/Utils/ParentPtr.h>
 

@@ -17,7 +17,6 @@
 #include <OpenSimCreator/UI/MeshImporter/MeshLoader.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Material.h>
@@ -34,6 +33,7 @@
 #include <oscar/Maths/Line.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
+#include <oscar/Maths/QuaternionFunctions.h>
 #include <oscar/Maths/RayCollision.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Sphere.h>
@@ -44,6 +44,7 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Widgets/LogViewer.h>
 #include <oscar/Utils/CStringView.h>
@@ -948,14 +949,14 @@ namespace osc::mi
             Vec2 const childScr = worldPosToScreenPos(child);
             Vec2 const child2ParentScr = parentScr - childScr;
 
-            if (Dot(child2ParentScr, child2ParentScr) < triangleWidthSquared)
+            if (dot(child2ParentScr, child2ParentScr) < triangleWidthSquared)
             {
                 return;
             }
 
             Vec3 const midpoint = Midpoint(parent, child);
             Vec2 const midpointScr = worldPosToScreenPos(midpoint);
-            Vec2 const directionScr = Normalize(child2ParentScr);
+            Vec2 const directionScr = normalize(child2ParentScr);
             Vec2 const directionNormalScr = {-directionScr.y, directionScr.x};
 
             Vec2 const p1 = midpointScr + (triangleWidth/2.0f)*directionNormalScr;
@@ -1169,7 +1170,7 @@ namespace osc::mi
         {
             return {
                 .scale = {m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f},
-                .rotation = AngleAxis(90_deg, Vec3{-1.0f, 0.0f, 0.0f}),
+                .rotation = angle_axis(90_deg, Vec3{-1.0f, 0.0f, 0.0f}),
             };
         }
 
@@ -1200,20 +1201,18 @@ namespace osc::mi
             float const cylinderPullback = coreRadius * sin((180_deg * legThickness) / coreRadius);
 
             // emit origin sphere
-            {
-                Transform t;
-                t.scale *= coreRadius;
-                t.rotation = xform.rotation;
-                t.position = xform.position;
-
-                DrawableThing& sphere = appendOut.emplace_back();
-                sphere.id = logicalID;
-                sphere.groupId = groupID;
-                sphere.mesh = m_SphereMesh;
-                sphere.transform = t;
-                sphere.color = coreColor.withAlpha(coreColor.a * alpha);
-                sphere.flags = flags;
-            }
+            appendOut.push_back({
+                .id = logicalID,
+                .groupId = groupID,
+                .mesh = m_SphereMesh,
+                .transform = {
+                    .scale = Vec3{coreRadius},
+                    .rotation = xform.rotation,
+                    .position = xform.position,
+                },
+                .color = coreColor.withAlpha(coreColor.a * alpha),
+                .flags = flags,
+            });
 
             // emit "legs"
             for (int i = 0; i < 3; ++i)
@@ -1234,7 +1233,7 @@ namespace osc::mi
                 t.scale.x = legThickness;
                 t.scale.y = 0.5f * actualLegLen;  // cylinder is 2 units high
                 t.scale.z = legThickness;
-                t.rotation = Normalize(xform.rotation * Rotation(meshDirection, cylinderDirection));
+                t.rotation = normalize(xform.rotation * rotation(meshDirection, cylinderDirection));
                 t.position = xform.position + (t.rotation * (((getSphereRadius() + (0.5f * actualLegLen)) - cylinderPullback) * meshDirection));
 
                 Color color = {0.0f, 0.0f, 0.0f, alpha};
@@ -1286,7 +1285,7 @@ namespace osc::mi
                 t.scale.x = 0.5f * halfWidth;
                 t.scale.y = 0.5f * coneHeight;
                 t.scale.z = 0.5f * halfWidth;
-                t.rotation = xform.rotation * Rotation(meshDirection, coneDirection);
+                t.rotation = xform.rotation * rotation(meshDirection, coneDirection);
                 t.position = xform.position + (t.rotation * ((halfWidth + (0.5f * coneHeight)) * meshDirection));
 
                 Color color = {0.0f, 0.0f, 0.0f, 1.0f};

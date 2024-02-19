@@ -19,6 +19,8 @@ namespace osc
     template<std::floating_point Rep, AngularUnitTraits Units>
     class Angle final {
     public:
+        using value_type = Rep;
+
         constexpr Angle() = default;
 
         // explicitly constructs the angle from a raw value in the given units
@@ -27,10 +29,15 @@ namespace osc
             m_Value{static_cast<Rep>(value_)}
         {}
 
+        // implicit unit-conversion constructor
+        template<AngularUnitTraits Units2>
+        constexpr Angle(Angle<Rep, Units2> const& other) :
+            m_Value{static_cast<Rep>(other.count() * (Units2::radians_per_rep/Units::radians_per_rep))}
+        {}
 
-        // converting constructor
+        // explicit rep+unit conversion constructor
         template<std::convertible_to<Rep> Rep2, AngularUnitTraits Units2>
-        constexpr Angle(Angle<Rep2, Units2> const& other) :
+        explicit constexpr Angle(Angle<Rep2, Units2> const& other) :
             m_Value{static_cast<Rep>(other.count() * (Units2::radians_per_rep/Units::radians_per_rep))}
         {}
 
@@ -63,18 +70,19 @@ namespace osc
             return lhs;
         }
 
+        // scalar multiplication (both lhs and rhs)
         template<std::convertible_to<Rep> Rep2>
         constexpr friend Angle operator*(Rep2 const& scalar, Angle const& rhs)
         {
             return Angle{static_cast<Rep>(scalar) * rhs.m_Value};
         }
-
         template<std::convertible_to<Rep> Rep2>
         constexpr friend Angle operator*(Angle const& lhs, Rep2 const& scalar)
         {
             return Angle{lhs.m_Value * static_cast<Rep>(scalar)};
         }
 
+        // scalar division (only rhs: reciporical units aren't supported)
         template<std::convertible_to<Rep> Rep2>
         constexpr friend Angle operator/(Angle const& lhs, Rep2 const& scalar)
         {
@@ -110,6 +118,32 @@ namespace osc
     {
         using CA = std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>>;
         return CA{CA{lhs}.count() - CA{rhs}.count()};
+    }
+
+    // converting equality comparison (e.g. 360_deg == 1_turn)
+    template<
+        std::floating_point Rep1,
+        AngularUnitTraits Units1,
+        std::floating_point Rep2,
+        AngularUnitTraits Units2
+    >
+    constexpr bool operator==(Angle<Rep1, Units1> const& lhs, Angle<Rep2, Units2> const& rhs)
+    {
+        using CA = std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>>;
+        return CA{lhs} == CA{rhs};
+    }
+
+    // converting ordering comparison (e.g. 180_deg < 1_turn)
+    template<
+        std::floating_point Rep1,
+        AngularUnitTraits Units1,
+        std::floating_point Rep2,
+        AngularUnitTraits Units2
+    >
+    constexpr auto operator<=>(Angle<Rep1, Units1> const& lhs, Angle<Rep2, Units2> const& rhs)
+    {
+        using CA = std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>>;
+        return CA{lhs} <=> CA{rhs};
     }
 
     // radians support
@@ -172,6 +206,7 @@ template<
     osc::AngularUnitTraits Units2
 >
 struct std::common_type<osc::Angle<Rep1, Units1>, osc::Angle<Rep2, Units2>> {
+    // the units of the common type is the "largest" of either
     using units = typename std::conditional_t<(Units1::radians_per_rep > Units2::radians_per_rep), Units1, Units2>;
     using type = osc::Angle<std::common_type_t<Rep1, Rep2>, units>;
 };

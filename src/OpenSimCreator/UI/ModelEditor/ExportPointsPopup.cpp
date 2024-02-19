@@ -5,8 +5,6 @@
 #include <OpenSimCreator/Utils/SimTKHelpers.h>
 
 #include <IconsFontAwesome5.h>
-#include <Simbody.h>
-#include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -15,11 +13,13 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/StringHelpers.h>
+#include <Simbody.h>
 
 #include <algorithm>
 #include <array>
@@ -449,8 +449,8 @@ namespace
             return;  // skip writing: point no longer exists in model
         }
 
-        std::optional<PointInfo> const pi = TryExtractPointInfo(*c, state);
-        if (!pi)
+        std::optional<PointInfo> const poi = TryExtractPointInfo(*c, state);
+        if (!poi)
         {
             return;  // skip writing: cannot extract point info for the component
         }
@@ -458,8 +458,8 @@ namespace
         // else: compute position, name, etc. and emit as a CSV data row
 
         Vec3 const position = maybeGround2ReexpressedFrame ?
-            CalcReexpressedFrame(model, state, *pi, *maybeGround2ReexpressedFrame) :
-            pi->location;
+            CalcReexpressedFrame(model, state, *poi, *maybeGround2ReexpressedFrame) :
+            poi->location;
 
         std::string const name = shouldExportPointsWithAbsPathNames ?
             GetAbsolutePathString(*c) :

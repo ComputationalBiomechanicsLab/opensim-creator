@@ -7,7 +7,6 @@
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
-#include <oscar/Maths/Mat4x3.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
@@ -57,21 +56,6 @@ SimTK::Inertia osc::ToSimTKInertia(Vec3 const& v)
     };
 }
 
-SimTK::Transform osc::ToSimTKTransform(Mat4x3 const& m)
-{
-    // Mat4 is column-major, SimTK::Transform is effectively row-major
-
-    SimTK::Rotation const rot{SimTK::Mat33
-    {
-        static_cast<double>(m[0][0]), static_cast<double>(m[1][0]), static_cast<double>(m[2][0]),
-        static_cast<double>(m[0][1]), static_cast<double>(m[1][1]), static_cast<double>(m[2][1]),
-        static_cast<double>(m[0][2]), static_cast<double>(m[1][2]), static_cast<double>(m[2][2])
-    }};
-    SimTK::Vec3 const translation = ToSimTKVec3(m[3]);
-
-    return SimTK::Transform{rot, translation};
-}
-
 SimTK::Transform osc::ToSimTKTransform(Transform const& t)
 {
     return SimTK::Transform{ToSimTKRotation(t.rotation), ToSimTKVec3(t.position)};
@@ -108,13 +92,9 @@ Vec4 osc::ToVec4(SimTK::Vec3 const& v, float w)
     };
 }
 
-Mat4x3 osc::ToMat4x3(SimTK::Transform const& t)
+Mat4 osc::ToMat4x4(SimTK::Transform const& t)
 {
-    // - Mat4x3 is column major
-    //
-    // - SimTK is row-major, carefully read the sourcecode for `SimTK::Transform`.
-
-    Mat4x3 m{};
+    Mat4 m{};
 
     // x0 y0 z0 w0
     SimTK::Rotation const& r = t.R();
@@ -144,12 +124,13 @@ Mat4x3 osc::ToMat4x3(SimTK::Transform const& t)
         m[3][2] = static_cast<float>(p[2]);
     }
 
-    return m;
-}
+    // row3
+    m[0][3] = 0.0f;
+    m[1][3] = 0.0f;
+    m[2][3] = 0.0f;
+    m[3][3] = 1.0f;
 
-Mat4 osc::ToMat4x4(SimTK::Transform const& t)
-{
-    return Mat4{ToMat4x3(t)};
+    return m;
 }
 
 Mat4 osc::ToMat4(SimTK::Rotation const& r)

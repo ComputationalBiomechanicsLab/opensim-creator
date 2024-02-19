@@ -49,13 +49,6 @@ ExternalProject_Add(benchmark
         -DBENCHMARK_INSTALL_DOCS:BOOL=OFF
 )
 
-ExternalProject_Add(glm
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glm
-    CMAKE_CACHE_ARGS
-        ${OSC_DEPENDENCY_CMAKE_ARGS}
-        -DBUILD_TESTING:BOOL=OFF
-)
-
 ExternalProject_Add(lunasvg
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lunasvg
     CMAKE_CACHE_ARGS
@@ -126,7 +119,7 @@ ExternalProject_Add(nativefiledialog
 )
 
 ExternalProject_Add(imgui
-    DEPENDS sdl glm
+    DEPENDS sdl
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui
 
     # we provide our own cmake for this dependency

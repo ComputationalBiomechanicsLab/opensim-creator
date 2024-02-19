@@ -228,8 +228,6 @@ std::string osc::CurrentErrnoAsString()
 #define __USE_GNU
 #endif
 
-#include <oscar/Shims/Cpp20/bit.h>
-
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>

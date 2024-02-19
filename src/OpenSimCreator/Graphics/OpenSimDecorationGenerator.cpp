@@ -25,8 +25,10 @@
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Graphics/Scene/SceneHelpers.h>
 #include <oscar/Maths/AABB.h>
+#include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Segment.h>
+#include <oscar/Maths/QuaternionFunctions.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/Log.h>
@@ -38,7 +40,6 @@
 #include <cstddef>
 #include <iterator>
 #include <memory>
-#include <numbers>
 #include <optional>
 #include <sstream>
 #include <stdexcept>
@@ -77,8 +78,8 @@ namespace
         {
             auto const nfl = static_cast<float>(musc.getNormalizedFiberLength(st));  // 1.0f == ideal length
             float fl = nfl - 1.0f;
-            fl = std::abs(fl);
-            fl = std::min(fl, 1.0f);
+            fl = abs(fl);
+            fl = min(fl, 1.0f);
             return fl;
         }
         default:
@@ -139,7 +140,7 @@ namespace
         float const specificTension = 0.25e6f;  // magic number?
         float const pcsa = f / specificTension;
         float const widthFactor = 0.25f;
-        return widthFactor * std::sqrt(pcsa / std::numbers::pi_v<float>);
+        return widthFactor * sqrt(pcsa / pi<float>);
     }
 
     // helper: returns the size (radius) of a muscle based on caller-provided sizing flags
@@ -326,12 +327,11 @@ namespace
         Vec3 const p2 = TransformInGround(p2p.getBody2(), rs.getState()) * ToVec3(p2p.getPoint2());
 
         float const radius = c_GeometryPathBaseRadius * rs.getFixupScaleFactor();
-        Transform const cylinderXform = YToYCylinderToSegmentTransform({p1, p2}, radius);
 
         rs.consume(p2p, SceneDecoration
         {
             .mesh = rs.getCylinderMesh(),
-            .transform = cylinderXform,
+            .transform = YToYCylinderToSegmentTransform({p1, p2}, radius),
             .color = {0.7f, 0.7f, 0.7f, 1.0f},
         });
     }
@@ -380,8 +380,8 @@ namespace
         {
             float const radius = rs.getFixupScaleFactor() * 0.005f;
             Transform t = TransformInGround(b, rs.getState());
-            t.position = TransformPoint(t, ToVec3(b.getMassCenter()));
-            t.scale = {radius, radius, radius};
+            t.position = t * ToVec3(b.getMassCenter());
+            t.scale = Vec3{radius};
 
             rs.consume(b, SceneDecoration
             {
@@ -509,7 +509,7 @@ namespace
 
             GeometryPathPoint const& point = pps[i];
             Vec3 const prevToPos = point.locationInGround - prevPoint.locationInGround;
-            float prevToPosLen = Length(prevToPos);
+            float prevToPosLen = length(prevToPos);
             float traversalPos = prevTraversalPos + prevToPosLen;
             float excess = traversalPos - tendonLen;
 
@@ -547,7 +547,7 @@ namespace
 
             GeometryPathPoint const& point = pps[i];
             Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
-            float prevToPosLen = Length(prevToPos);
+            float prevToPosLen = length(prevToPos);
             float traversalPos = prevTraversalPos + prevToPosLen;
             float excess = traversalPos - fiberEnd;
 
@@ -586,7 +586,7 @@ namespace
 
             GeometryPathPoint const& point = pps[i];
             Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
-            float prevToPosLen = Length(prevToPos);
+            float prevToPosLen = length(prevToPos);
             float traversalPos = prevTraversalPos + prevToPosLen;
 
             emitTendonCylinder(prevPoint.locationInGround, point.locationInGround);
@@ -631,7 +631,7 @@ namespace
                     // ensure the sphere directionally tries to line up with the cylinders, to make
                     // the "join" between the sphere and cylinders nicer (#593)
                     .scale = Vec3{radius},
-                    .rotation = Normalize(Rotation(Vec3{0.0f, 1.0f, 0.0f}, upDirection)),
+                    .rotation = normalize(rotation(Vec3{0.0f, 1.0f, 0.0f}, upDirection)),
                     .position = pp.locationInGround
                 },
                 .color = color,
@@ -658,7 +658,7 @@ namespace
             Vec3 const& ppPos = firstPoint.locationInGround;
             Vec3 const direction = points.size() == 1 ?
                 Vec3{0.0f, 1.0f, 0.0f} :
-                Normalize(points[1].locationInGround - ppPos);
+                normalize(points[1].locationInGround - ppPos);
 
             emitSphere(firstPoint, direction);
         }
@@ -676,7 +676,7 @@ namespace
             // if required, draw path points
             if (rs.getShowPathPoints())
             {
-                Vec3 const direction = Normalize(curPos - prevPos);
+                Vec3 const direction = normalize(curPos - prevPos);
                 emitSphere(point, direction);
             }
         }
@@ -902,7 +902,7 @@ namespace
         float const fixupScaleFactor = rs.getFixupScaleFactor();
         float const lenScale = 0.0025f;
         float const baseRadius = 0.025f;
-        float const tipLength = 0.1f*Length((fixupScaleFactor*lenScale)*maybeContact->force);
+        float const tipLength = 0.1f*length((fixupScaleFactor*lenScale)*maybeContact->force);
 
         ArrowProperties p;
         p.worldspaceStart = maybeContact->point;

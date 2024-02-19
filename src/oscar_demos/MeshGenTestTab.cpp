@@ -1,17 +1,30 @@
 #include "MeshGenTestTab.h"
 
-#include <imgui.h>
 #include <oscar/oscar.h>
 
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 using namespace osc;
 
 namespace
 {
     constexpr CStringView c_TabStringID = "Demos/MeshGen";
+
+    std::vector<Vec2> LathePoints()
+    {
+        std::vector<Vec2> rv;
+        rv.reserve(10);
+        for (size_t i = 0; i < 10; ++i) {
+            rv.emplace_back(
+                sin(static_cast<float>(i) * 0.2f) * 10.0f + 5.0f,
+                (static_cast<float>(i) - 5.0f) * 2.0f
+            );
+        }
+        return rv;
+    }
 
     std::map<std::string, Mesh> GenerateMeshLookup()
     {
@@ -32,6 +45,9 @@ namespace
             {"box", GenerateBoxMesh(2.0f, 2.0f, 2.0f, 1, 1, 1)},
             {"icosahedron", GenerateIcosahedronMesh()},
             {"dodecahedron", GenerateDodecahedronMesh()},
+            {"octahedron", GenerateOctahedronMesh()},
+            {"tetrahedron", GenerateTetrahedronMesh()},
+            {"lathe", GenerateLatheMesh(LathePoints(), 3)},
         };
     }
 }
@@ -63,7 +79,7 @@ private:
             ImGui::NewLine();
 
             Vec2 contentRegion = ImGui::GetContentRegionAvail();
-            m_RenderParams.dimensions = Max(contentRegion, {0.0f, 0.0f});
+            m_RenderParams.dimensions = elementwise_max(contentRegion, {0.0f, 0.0f});
             m_RenderParams.antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
 
             {

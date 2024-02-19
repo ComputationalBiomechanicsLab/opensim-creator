@@ -16,9 +16,11 @@
 #include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Graphics/TextureGenerators.h>
 #include <oscar/Maths/Angle.h>
+#include <oscar/Maths/MatrixFunctions.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
+#include <oscar/Maths/QuaternionFunctions.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec2.h>
@@ -40,7 +42,7 @@ namespace
     {
         return {
             .scale = {100.0f * fixupScaleFactor, 100.0f * fixupScaleFactor, 1.0f},
-            .rotation = AngleAxis(-90_deg, Vec3{1.0f, 0.0f, 0.0f}),
+            .rotation = angle_axis(-90_deg, Vec3{1.0f, 0.0f, 0.0f}),
             .position = floorLocation,
         };
     }
@@ -120,7 +122,7 @@ namespace
         polarCamera.zfar = 2.0f * casterSphere.radius;
 
         Mat4 const viewMat = polarCamera.getViewMtx();
-        Mat4 const projMat = Ortho(
+        Mat4 const projMat = ortho(
             -casterSphere.radius,
             casterSphere.radius,
             -casterSphere.radius,
@@ -423,7 +425,7 @@ private:
         return RimHighlights
         {
             m_QuadMesh,
-            Inverse(params.projectionMatrix * params.viewMatrix) * ToMat4(quadMeshToRimsQuad),
+            inverse(params.projectionMatrix * params.viewMatrix) * ToMat4(quadMeshToRimsQuad),
             m_EdgeDetectorMaterial,
         };
     }

@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
-#include <imgui.h>
+#include <oscar/UI/oscimgui.h>
 
 #include <memory>
 #include <utility>

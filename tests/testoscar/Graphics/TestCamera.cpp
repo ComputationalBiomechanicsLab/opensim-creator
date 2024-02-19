@@ -7,6 +7,7 @@
 #include <oscar/Graphics/CameraProjection.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Angle.h>
+#include <oscar/Maths/MatrixFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec3.h>
 
@@ -213,7 +214,7 @@ TEST(Camera, SetDirectionToStandardDirectionCausesGetDirectionToReturnTheDirecti
 
     ASSERT_EQ(camera.getDirection(), defaultDirection);
 
-    Vec3 differentDirection = Normalize(Vec3{1.0f, 2.0f, -0.5f});
+    Vec3 differentDirection = normalize(Vec3{1.0f, 2.0f, -0.5f});
     camera.setDirection(differentDirection);
 
     // not guaranteed: the camera stores *rotation*, not *direction*
@@ -234,13 +235,13 @@ TEST(Camera, SetDirectionToDifferentDirectionGivesAccurateEnoughResults)
 
     Camera camera;
 
-    Vec3 newDirection = Normalize(Vec3{1.0f, 1.0f, 1.0f});
+    Vec3 newDirection = normalize(Vec3{1.0f, 1.0f, 1.0f});
 
     camera.setDirection(newDirection);
 
     Vec3 returnedDirection = camera.getDirection();
 
-    ASSERT_GT(Dot(newDirection, returnedDirection), 0.999f);
+    ASSERT_GT(dot(newDirection, returnedDirection), 0.999f);
 }
 
 TEST(Camera, GetViewMatrixReturnsViewMatrixBasedOnPositonDirectionAndUp)
@@ -365,7 +366,7 @@ TEST(Camera, GetInverseViewProjectionMatrixReturnsExpectedAnswerWhenUsingOverrid
     Mat4 projectionMatrix = Identity<Mat4>();
     projectionMatrix[0][1] = 9.0f;  // change some part of it
 
-    Mat4 expected = Inverse(projectionMatrix * viewMatrix);
+    Mat4 expected = inverse(projectionMatrix * viewMatrix);
 
     camera.setViewMatrixOverride(viewMatrix);
     camera.setProjectionMatrixOverride(projectionMatrix);

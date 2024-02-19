@@ -4,8 +4,8 @@
 #include <OpenSimCreator/Utils/ParamBlock.h>
 #include <OpenSimCreator/Utils/ParamValue.h>
 
-#include <imgui.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 #include <oscar/Utils/StdVariantHelpers.h>
 

@@ -3,6 +3,7 @@
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/SubMeshDescriptor.h>
 #include <oscar/Maths/Angle.h>
+#include <oscar/Maths/CommonFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Triangle.h>
 #include <oscar/Maths/Vec2.h>
@@ -926,8 +927,6 @@ Mesh osc::GenerateTorusKnotMesh(
     //
     // https://threejs.org/docs/#api/en/geometries/TorusKnotGeometry
 
-    using std::cos;
-
     auto const fNumTubularSegments = static_cast<float>(numTubularSegments);
     auto const fNumRadialSegments = static_cast<float>(numRadialSegments);
     auto const fp = static_cast<float>(p);
@@ -974,12 +973,12 @@ Mesh osc::GenerateTorusKnotMesh(
         // calculate orthonormal basis
         Vec3 const T = P2 - P1;
         Vec3 N = P2 + P1;
-        Vec3 B = Cross(T, N);
-        N = Cross(B, T);
+        Vec3 B = cross(T, N);
+        N = cross(B, T);
 
         // normalize B, N. T can be ignored, we don't use it
-        B = Normalize(B);
-        N = Normalize(N);
+        B = normalize(B);
+        N = normalize(N);
 
         for (size_t j = 0; j <= numRadialSegments; ++j) {
             auto const fj = static_cast<float>(j);
@@ -1001,7 +1000,7 @@ Mesh osc::GenerateTorusKnotMesh(
             vertices.push_back(vertex);
 
             // normal (P1 is always the center/origin of the extrusion, thus we can use it to calculate the normal)
-            normals.push_back(Normalize(vertex - P1));
+            normals.push_back(normalize(vertex - P1));
 
             uvs.emplace_back(fi / fNumTubularSegments, fj / fNumRadialSegments);
         }
@@ -1055,9 +1054,9 @@ Mesh osc::GenerateBoxMesh(
 
     // helper function
     auto const buildPlane = [&indices, &vertices, &normals, &uvs, &submeshes, &numberOfVertices, &groupStart](
-        Vec3::length_type u,
-        Vec3::length_type v,
-        Vec3::length_type w,
+        Vec3::size_type u,
+        Vec3::size_type v,
+        Vec3::size_type w,
         float udir,
         float vdir,
         Vec3 dims,
@@ -1163,8 +1162,8 @@ Mesh osc::GeneratePolyhedronMesh(
 
         for (size_t i = 0; i <= cols; ++i) {
             auto const fi = static_cast<float>(i);
-            Vec3 const aj = Mix(a, c, fi/fcols);
-            Vec3 const bj = Mix(b, c, fi/fcols);
+            Vec3 const aj = mix(a, c, fi/fcols);
+            Vec3 const bj = mix(b, c, fi/fcols);
 
             auto const rows = cols - i;
             auto const frows = static_cast<float>(rows);
@@ -1178,7 +1177,7 @@ Mesh osc::GeneratePolyhedronMesh(
                     v.at(i).at(j) = aj;
                 }
                 else {
-                    v.at(i).at(j) = Mix(aj, bj, fj/frows);
+                    v.at(i).at(j) = mix(aj, bj, fj/frows);
                 }
             }
         }
@@ -1220,7 +1219,7 @@ Mesh osc::GeneratePolyhedronMesh(
     auto const applyRadius = [&vertexBuffer](float radius)
     {
         for (Vec3& v : vertexBuffer) {
-            v = radius * Normalize(v);
+            v = radius * normalize(v);
         }
     };
 
@@ -1282,7 +1281,7 @@ Mesh osc::GeneratePolyhedronMesh(
         // returns angle above the XZ plane
         auto const inclination = [](Vec3 const& v) -> Radians
         {
-            return atan2(-v.y, Length(Vec2{v.x, v.z}));
+            return atan2(-v.y, length(Vec2{v.x, v.z}));
         };
 
         for (Vec3 const& v : vertexBuffer) {
@@ -1310,7 +1309,7 @@ Mesh osc::GeneratePolyhedronMesh(
     }
 
     auto meshNormals = vertexBuffer;
-    for (auto& v : meshNormals) { v = Normalize(v); }
+    for (auto& v : meshNormals) { v = normalize(v); }
 
     // TODO
     // if (detail == 0) {
@@ -1332,7 +1331,7 @@ Mesh osc::GenerateIcosahedronMesh(
     float radius,
     size_t detail)
 {
-    float const t = (1.0f + std::sqrt(5.0f))/2.0f;
+    float const t = (1.0f + sqrt(5.0f))/2.0f;
 
     auto const vertices = std::to_array<Vec3>({
         {-1.0f,  t,     0.0f}, {1.0f, t,    0.0f}, {-1.0f, -t,     0.0f}, { 1.0f, -t,     0.0f},
@@ -1354,7 +1353,9 @@ Mesh osc::GenerateDodecahedronMesh(
     float radius,
     size_t detail)
 {
-    float const t = (1.0f + std::sqrt(5.0f))/2.0f;
+    // implementation ported from threejs (DodecahedronGeometry)
+
+    float const t = (1.0f + sqrt(5.0f))/2.0f;
     float const r = 1.0f/t;
 
     auto const vertices = std::to_array<Vec3>({
@@ -1389,4 +1390,135 @@ Mesh osc::GenerateDodecahedronMesh(
     });
 
     return GeneratePolyhedronMesh(vertices, indices, radius, detail);
+}
+
+Mesh osc::GenerateOctahedronMesh(
+    float radius,
+    size_t detail)
+{
+    // implementation ported from threejs (OctahedronGeometry)
+
+    auto const vertices = std::to_array<Vec3>({
+        {1.0f,  0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f,  0.0f},
+        {0.0f, -1.0f, 0.0f}, { 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, -1.0f},
+    });
+
+    auto const indices = std::to_array<uint32_t>({
+        0, 2, 4,    0, 4, 3,    0, 3, 5,
+        0, 5, 2,    1, 2, 5,    1, 5, 3,
+        1, 3, 4,    1, 4, 2
+    });
+
+    return GeneratePolyhedronMesh(vertices, indices, radius, detail);
+}
+
+Mesh osc::GenerateTetrahedronMesh(
+    float radius,
+    size_t detail)
+{
+    // implementation ported from threejs (TetrahedronGeometry)
+
+    auto const vertices = std::to_array<Vec3>({
+        {1, 1, 1}, {-1, -1, 1}, {-1, 1, - 1}, {1, -1, -1},
+    });
+
+    auto const indices = std::to_array<uint32_t>({
+        2, 1, 0,    0, 3, 2,    1, 3, 0,    2, 3, 1
+    });
+
+    return GeneratePolyhedronMesh(vertices, indices, radius, detail);
+}
+
+Mesh osc::GenerateLatheMesh(
+    std::span<Vec2 const> points,
+    size_t segments,
+    Radians phiStart,
+    Radians phiLength)
+{
+    // this implementation was initially hand-ported from threejs (LatheGeometry)
+
+    if (points.size() <= 2) {
+        return Mesh{};  // edge-case: requires at least 2 points
+    }
+
+    phiLength = clamp(phiLength, 0_deg, 360_deg);
+
+    std::vector<uint32_t> indices;
+    std::vector<Vec3> vertices;
+    std::vector<Vec2> uvs;
+    std::vector<Vec3> initNormals;
+    std::vector<Vec3> normals;
+
+    float const fsegments = static_cast<float>(segments);
+    float const inverseSegments = 1.0f/fsegments;
+    Vec3 prevNormal{};
+
+    // pre-compute normals for initial "meridian"
+    {
+        // first vertex
+        Vec2 const dv = points[1] - points[0];
+        Vec3 normal = {dv.y * 1.0f, -dv.x, dv.y * 0.0f};
+
+        initNormals.push_back(normalize(normal));
+        prevNormal = normal;
+    }
+    // in-between vertices
+    for (size_t i = 1; i < points.size()-1; ++i) {
+        Vec2 const dv = points[i+1] - points[i];
+        Vec3 normal = {dv.y * 1.0f, -dv.x, dv.y * 0.0f};
+
+        initNormals.push_back(normalize(normal + prevNormal));
+        prevNormal = normal;
+    }
+    // last vertex
+    initNormals.push_back(prevNormal);
+
+    // generate vertices, uvs, and normals
+    for (size_t i = 0; i <= segments; ++i) {
+        auto const fi = static_cast<float>(i);
+        auto const phi = phiStart + fi*inverseSegments*phiLength;
+        auto const sinPhi = sin(phi);
+        auto const cosPhi = cos(phi);
+
+        for (size_t j = 0; j <= points.size()-1; ++j) {
+            auto const fj = static_cast<float>(j);
+
+            vertices.emplace_back(
+                points[j].x * sinPhi,
+                points[j].y,
+                points[j].x * cosPhi
+            );
+            uvs.emplace_back(
+                fi / fsegments,
+                fj / static_cast<float>(points.size()-1)
+            );
+            normals.emplace_back(
+                initNormals[j].x * sinPhi,
+                initNormals[j].y,
+                initNormals[j].x * cosPhi
+            );
+        }
+    }
+
+    // indices
+    for (size_t i = 0; i < segments; ++i) {
+        for (size_t j = 0; j < points.size()-1; ++j) {
+            size_t const base = j + i*points.size();
+
+            auto const a = static_cast<uint32_t>(base);
+            auto const b = static_cast<uint32_t>(base + points.size());
+            auto const c = static_cast<uint32_t>(base + points.size() + 1);
+            auto const d = static_cast<uint32_t>(base + 1);
+
+            indices.insert(indices.end(), {a, b, d});
+            indices.insert(indices.end(), {c, d, b});
+        }
+    }
+
+    Mesh rv;
+    rv.setVerts(vertices);
+    rv.setNormals(normals);
+    rv.setTexCoords(uvs);
+    rv.setIndices(indices);
+    return rv;
 }

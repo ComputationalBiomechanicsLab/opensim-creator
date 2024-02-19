@@ -7,7 +7,6 @@
 #include <OpenSimCreator/Utils/SimTKHelpers.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Object.h>
@@ -18,8 +17,6 @@
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <SimTKcommon/Constants.h>
-#include <SimTKcommon/SmallMatrix.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec2.h>
@@ -28,15 +25,17 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/StringHelpers.h>
 #include <oscar/Utils/Typelist.h>
+#include <SimTKcommon/Constants.h>
+#include <SimTKcommon/SmallMatrix.h>
 
 #include <algorithm>
 #include <array>
 #include <concepts>
 #include <cstddef>
 #include <memory>
-#include <numbers>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
@@ -163,7 +162,7 @@ namespace
     }
 
     // returns a suitable color for the given dimension index (e.g. x == 0)
-    Color IthDimensionColor(Vec3::length_type i)
+    Color IthDimensionColor(Vec3::size_type i)
     {
         Color color = {0.0f, 0.0f, 0.0f, 0.6f};
         color[i] = 1.0f;
@@ -264,27 +263,27 @@ namespace
                 ImGui::TableSetColumnIndex(1);
                 if (ImGui::Button("1 pi"))
                 {
-                    stepSize = std::numbers::pi_v<float>;
+                    stepSize = pi<float>;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("1/2 pi"))
                 {
-                    stepSize = std::numbers::pi_v<float>/2.0f;
+                    stepSize = pi<float>/2.0f;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("1/4 pi"))
                 {
-                    stepSize = std::numbers::pi_v<float>/4.0f;
+                    stepSize = pi<float>/4.0f;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("10/180 pi"))
                 {
-                    stepSize = (10.0f/180.0f) * std::numbers::pi_v<float>;
+                    stepSize = (10.0f/180.0f) * pi<float>;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("1/180 pi"))
                 {
-                    stepSize = (1.0f/180.0f) * std::numbers::pi_v<float>;
+                    stepSize = (1.0f/180.0f) * pi<float>;
                 }
 
                 ImGui::TableNextRow();
@@ -352,7 +351,7 @@ namespace
 
     std::string GenerateVecFrameAnnotationLabel(
         OpenSim::AbstractProperty const& backingProperty,
-        Vec3::length_type ithDimension)
+        Vec3::size_type ithDimension)
     {
         std::stringstream ss;
         ss << "ObjectPropertiesEditor::Vec3/";
@@ -1012,7 +1011,7 @@ namespace
 
             // draw an editor for each component of the Vec3
             bool shouldSave = false;
-            for (Vec3::length_type i = 0; i < 3; ++i)
+            for (Vec3::size_type i = 0; i < 3; ++i)
             {
                 ComponentEditorReturn const componentEditorRv = drawVec3ComponentEditor(idx, i, editedValue, valueConverter);
                 shouldSave = shouldSave || componentEditorRv == ComponentEditorReturn::ShouldSave;
@@ -1032,11 +1031,11 @@ namespace
         // draws float input for a single component of the Vec3 (e.g. vec.x)
         ComponentEditorReturn drawVec3ComponentEditor(
             int idx,
-            Vec3::length_type i,
+            Vec3::size_type i,
             Vec3 editedValue,
             ValueConverter const& valueConverter)
         {
-            ImGui::PushID(i);
+            PushID(i);
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
             // draw dimension hint (color bar next to the input)

@@ -8,7 +8,6 @@
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterSharedState.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterUILayer.h>
 
-#include <imgui.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Scene/SceneDecorationFlags.h>
 #include <oscar/Maths/EasingFunctions.h>
@@ -16,6 +15,7 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/UID.h>
 #include <SDL_events.h>
@@ -357,7 +357,7 @@ namespace osc::mi
 
             if (m_AnimationFraction < 1.0f)
             {
-                m_AnimationFraction = std::clamp(m_AnimationFraction + 0.5f*dt, 0.0f, 1.0f);
+                m_AnimationFraction = saturate(m_AnimationFraction + 0.5f*dt);
                 App::upd().requestRedraw();
             }
         }

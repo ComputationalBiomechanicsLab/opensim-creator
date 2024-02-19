@@ -14,12 +14,10 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
+#include <oscar/UI/oscimgui.h>
+#include <oscar/UI/oscimgui_internal.h>
 #include <oscar/UI/ui_graphics_backend.h>
 #include <oscar/Utils/UID.h>
-
-#include <imgui.h>
-#include <imgui_internal.h>
-#include <imgui/misc/cpp/imgui_stdlib.h>
 
 #include <algorithm>
 #include <array>
@@ -382,7 +380,7 @@ void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, Eulers& eulers)
 {
     Vec3 const front = camera.getDirection();
     Vec3 const up = camera.getUpwardsDirection();
-    Vec3 const right = Cross(front, up);
+    Vec3 const right = cross(front, up);
     Vec2 const mouseDelta = ImGui::GetIO().MouseDelta;
 
     float const speed = 10.0f;
@@ -418,7 +416,7 @@ void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, Eulers& eulers)
     camera.setPosition(pos);
 
     eulers.x += sensitivity * -mouseDelta.y;
-    eulers.x = Clamp(eulers.x, -90_deg + 0.1_rad, 90_deg - 0.1_rad);
+    eulers.x = clamp(eulers.x, -90_deg + 0.1_rad, 90_deg - 0.1_rad);
     eulers.y += sensitivity * -mouseDelta.x;
     eulers.y = fmod(eulers.y, 360_deg);
 
@@ -581,7 +579,7 @@ bool osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn, float threshold)
 
     Vec2 const dragDelta = ImGui::GetMouseDragDelta(btn);
 
-    return Length(dragDelta) < threshold;
+    return length(dragDelta) < threshold;
 }
 
 bool osc::IsDraggingWithAnyMouseButtonDown()
@@ -686,7 +684,7 @@ Rect osc::DrawAlignmentAxes(Mat4 const& viewMtx)
     for (size_t i = 0; i < std::size(labels); ++i)
     {
         Vec4 world = {0.0f, 0.0f, 0.0f, 0.0f};
-        world[static_cast<Vec4::length_type>(i)] = 1.0f;
+        world[static_cast<Vec4::size_type>(i)] = 1.0f;
 
         Vec2 view = Vec2{viewMtx * world};
         view.y = -view.y;  // y goes down in screen-space
@@ -1079,18 +1077,18 @@ bool osc::CircularSliderFloat(
     bool temporaryTextInputActive = temporaryTextInputAllowed && ImGui::TempInputIsActive(id);
     if (!temporaryTextInputActive)
     {
-        // tabbing or CTRL+clicking the slider temporarily transforms it into an input box
-        const bool inputRequestedByTabbing = temporaryTextInputAllowed && (g.LastItemData.StatusFlags & ImGuiItemStatusFlags_FocusedByTabbing) != 0;
+        // tabbing or double clicking the slider temporarily transforms it into an input box
         const bool clicked = isHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left, id);
-        const bool makeActive = (inputRequestedByTabbing || clicked || g.NavActivateId == id);
+        const bool doubleClicked = (isHovered && g.IO.MouseClickedCount[0] == 2 && ImGui::TestKeyOwner(ImGuiKey_MouseLeft, id));
+        const bool makeActive = (clicked || doubleClicked || g.NavActivateId == id);
 
-        if (makeActive && clicked)
+        if (makeActive && (clicked || doubleClicked))
         {
             ImGui::SetKeyOwner(ImGuiKey_MouseLeft, id);  // tell ImGui that left-click is locked from further interaction etc. this frame
         }
         if (makeActive && temporaryTextInputAllowed)
         {
-            if (inputRequestedByTabbing || (clicked && g.IO.KeyCtrl) || (g.NavActivateId == id && (g.NavActivateFlags & ImGuiActivateFlags_PreferInput)))
+            if ((clicked && g.IO.KeyCtrl) || doubleClicked || (g.NavActivateId == id && (g.NavActivateFlags & ImGuiActivateFlags_PreferInput)))
             {
                 temporaryTextInputActive = true;
             }

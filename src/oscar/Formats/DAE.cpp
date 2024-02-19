@@ -370,7 +370,7 @@ namespace
         // row-major
         o << R"(        <matrix sid="transform">)";
         std::string_view delim;
-        for (Mat4::length_type row = 0; row < 4; ++row)
+        for (Mat4::size_type row = 0; row < 4; ++row)
         {
             o << delim << m[0][row];
             delim = " ";

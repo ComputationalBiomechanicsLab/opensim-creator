@@ -25,13 +25,12 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Shims/Cpp20/bit.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Assertions.h>
-#include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/Concepts.h>
+#include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/StdVariantHelpers.h>
 #include <oscar/Utils/UID.h>
-
-#include <imgui.h>
 
 #include <array>
 #include <cstddef>

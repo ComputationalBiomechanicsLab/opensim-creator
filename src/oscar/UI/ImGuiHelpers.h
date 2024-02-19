@@ -8,9 +8,8 @@
 #include <oscar/Maths/Vec.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
-
-#include <imgui.h>
 
 #include <cstddef>
 #include <functional>

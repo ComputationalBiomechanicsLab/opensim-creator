@@ -2,7 +2,6 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.h>
 
-#include <imgui.h>
 #include <oscar/oscar.h>
 #include <SDL_events.h>
 
@@ -62,7 +61,7 @@ namespace
         cubemapRenderTarget.setColorFormat(RenderTextureFormat::RGBFloat16);
 
         // create a 90 degree cube cone projection matrix
-        Mat4 const projectionMatrix = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
+        Mat4 const projectionMatrix = perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
         // create material that projects all 6 faces onto the output cubemap
         Material material{Shader{
@@ -89,7 +88,7 @@ namespace
         irradianceCubemap.setDimensionality(TextureDimensionality::Cube);
         irradianceCubemap.setColorFormat(RenderTextureFormat::RGBFloat16);
 
-        Mat4 const captureProjection = Perspective(90_deg, 1.0f, 0.1f, 10.0f);
+        Mat4 const captureProjection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
         Material material{Shader{
             rl.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Convolution.vert"),
@@ -173,7 +172,7 @@ private:
 
             for (int col = 0; col < c_NumCols; ++col) {
                 float const normalizedCol = static_cast<float>(col) / static_cast<float>(c_NumCols);
-                m_PBRMaterial.setFloat("uRoughness", Clamp(normalizedCol, 0.005f, 1.0f));
+                m_PBRMaterial.setFloat("uRoughness", clamp(normalizedCol, 0.005f, 1.0f));
 
                 float const x = (static_cast<float>(col) - static_cast<float>(c_NumCols)/2.0f) * c_CellSpacing;
                 float const y = (static_cast<float>(row) - static_cast<float>(c_NumRows)/2.0f) * c_CellSpacing;

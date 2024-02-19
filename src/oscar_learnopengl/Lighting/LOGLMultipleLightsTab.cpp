@@ -3,7 +3,6 @@
 #include <oscar_learnopengl/LearnOpenGLHelpers.h>
 #include <oscar_learnopengl/MouseCapturingCamera.h>
 
-#include <imgui.h>
 #include <oscar/oscar.h>
 #include <SDL_events.h>
 
@@ -161,7 +160,7 @@ private:
 
             Graphics::DrawMesh(
                 m_Mesh,
-                {.rotation = AngleAxis(angle, axis), .position = pos},
+                {.rotation = angle_axis(angle, axis), .position = pos},
                 m_MultipleLightsMaterial,
                 m_Camera
             );

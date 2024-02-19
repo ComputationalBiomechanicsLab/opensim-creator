@@ -6,11 +6,11 @@
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
-#include <imgui.h>
 #include <oscar/Maths/Circle.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 
 #include <memory>
@@ -159,7 +159,7 @@ namespace osc
             float const pad = ImGui::GetStyle().ItemInnerSpacing.x;
 
             // draw connecting line
-            Vec2 const direction = Normalize(dest.origin - src.origin);
+            Vec2 const direction = normalize(dest.origin - src.origin);
             Vec2 const start = src.origin  + (src.radius  + Vec2{pad, 0.0f})*direction;
             Vec2 const end   = dest.origin - (dest.radius + Vec2{pad, 0.0f})*direction;
             ImU32 const color = ToImU32(Color::halfGrey());

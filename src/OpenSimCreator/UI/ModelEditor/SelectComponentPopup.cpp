@@ -3,10 +3,10 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 
 #include <functional>
@@ -34,7 +34,7 @@ private:
 
         // iterate through each T in `root` and give the user the option to click it
         {
-            ImGui::BeginChild("first", ImVec2(256, 256), true, ImGuiWindowFlags_HorizontalScrollbar);
+            ImGui::BeginChild("first", ImVec2(256, 256), ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
             for (OpenSim::Component const& c : m_Model->getModel().getComponentList())
             {
                 if (!m_Filter(c))

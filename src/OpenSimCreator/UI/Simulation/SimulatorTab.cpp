@@ -22,13 +22,13 @@
 #include <OpenSimCreator/UI/Simulation/SimulationViewerRightClickEvent.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppConfig.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Panels/PerfPanel.h>

@@ -1,15 +1,13 @@
 #include "ui_context.h"
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <imgui/backends/imgui_impl_sdl2.h>
-#include <ImGuizmo.h>  // care: must come after imgui.h
-#include <implot.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourcePath.h>
 #include <oscar/Shims/Cpp20/bit.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/ui_graphics_backend.h>
 #include <oscar/Utils/Perf.h>
 #include <SDL_events.h>
@@ -97,8 +95,8 @@ void osc::ui::context::Init()
     {
         ImFontConfig config = baseConfig;
         config.MergeMode = true;
-        config.GlyphMinAdvanceX = std::floor(1.5f * config.SizePixels);
-        config.GlyphMaxAdvanceX = std::floor(1.5f * config.SizePixels);
+        config.GlyphMinAdvanceX = floor(1.5f * config.SizePixels);
+        config.GlyphMaxAdvanceX = floor(1.5f * config.SizePixels);
         AddResourceAsFont(config, *io.Fonts, "oscar/fonts/fa-solid-900.ttf", c_IconRanges.data());
     }
 

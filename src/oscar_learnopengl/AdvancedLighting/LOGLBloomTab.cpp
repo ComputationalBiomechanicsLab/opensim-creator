@@ -2,7 +2,6 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.h>
 
-#include <imgui.h>
 #include <oscar/oscar.h>
 #include <SDL_events.h>
 
@@ -42,44 +41,44 @@ namespace
 
         {
             Mat4 m = Identity<Mat4>();
-            m = Translate(m, Vec3(0.0f, 1.5f, 0.0));
-            m = Scale(m, Vec3(0.5f));
+            m = translate(m, Vec3(0.0f, 1.5f, 0.0));
+            m = scale(m, Vec3(0.5f));
             rv.push_back(m);
         }
 
         {
             Mat4 m = Identity<Mat4>();
-            m = Translate(m, Vec3(2.0f, 0.0f, 1.0));
-            m = Scale(m, Vec3(0.5f));
+            m = translate(m, Vec3(2.0f, 0.0f, 1.0));
+            m = scale(m, Vec3(0.5f));
             rv.push_back(m);
         }
 
         {
             Mat4 m = Identity<Mat4>();
-            m = Translate(m, Vec3(-1.0f, -1.0f, 2.0));
-            m = Rotate(m, 60_deg, UnitVec3{1.0, 0.0, 1.0});
+            m = translate(m, Vec3(-1.0f, -1.0f, 2.0));
+            m = rotate(m, 60_deg, UnitVec3{1.0, 0.0, 1.0});
             rv.push_back(m);
         }
 
         {
             Mat4 m = Identity<Mat4>();
-            m = Translate(m, Vec3(0.0f, 2.7f, 4.0));
-            m = Rotate(m, 23_deg, UnitVec3{1.0, 0.0, 1.0});
-            m = Scale(m, Vec3(1.25));
+            m = translate(m, Vec3(0.0f, 2.7f, 4.0));
+            m = rotate(m, 23_deg, UnitVec3{1.0, 0.0, 1.0});
+            m = scale(m, Vec3(1.25));
             rv.push_back(m);
         }
 
         {
             Mat4 m = Identity<Mat4>();
-            m = Translate(m, Vec3(-2.0f, 1.0f, -3.0));
-            m = Rotate(m, 124_deg, UnitVec3{1.0, 0.0, 1.0});
+            m = translate(m, Vec3(-2.0f, 1.0f, -3.0));
+            m = rotate(m, 124_deg, UnitVec3{1.0, 0.0, 1.0});
             rv.push_back(m);
         }
 
         {
             Mat4 m = Identity<Mat4>();
-            m = Translate(m, Vec3(-3.0f, 0.0f, 0.0));
-            m = Scale(m, Vec3(0.5f));
+            m = translate(m, Vec3(-3.0f, 0.0f, 0.0));
+            m = scale(m, Vec3(0.5f));
             rv.push_back(m);
         }
 
@@ -175,8 +174,8 @@ private:
         // draw floor
         {
             Mat4 floorTransform = Identity<Mat4>();
-            floorTransform = Translate(floorTransform, Vec3(0.0f, -1.0f, 0.0));
-            floorTransform = Scale(floorTransform, Vec3(12.5f, 0.5f, 12.5f));
+            floorTransform = translate(floorTransform, Vec3(0.0f, -1.0f, 0.0));
+            floorTransform = scale(floorTransform, Vec3(12.5f, 0.5f, 12.5f));
 
             MaterialPropertyBlock floorProps;
             floorProps.setTexture("uDiffuseTexture", m_WoodTexture);
@@ -209,8 +208,8 @@ private:
 
         for (size_t i = 0; i < c_SceneLightPositions.size(); ++i) {
             Mat4 lightTransform = Identity<Mat4>();
-            lightTransform = Translate(lightTransform, Vec3(c_SceneLightPositions[i]));
-            lightTransform = Scale(lightTransform, Vec3(0.25f));
+            lightTransform = translate(lightTransform, Vec3(c_SceneLightPositions[i]));
+            lightTransform = scale(lightTransform, Vec3(0.25f));
 
             MaterialPropertyBlock lightProps;
             lightProps.setColor("uLightColor", sceneLightColors[i]);

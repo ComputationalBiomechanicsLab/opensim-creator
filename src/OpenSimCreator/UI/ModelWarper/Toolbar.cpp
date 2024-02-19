@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 
-#include <imgui.h>
+#include <oscar/UI/oscimgui.h>
 
 #include <utility>
 

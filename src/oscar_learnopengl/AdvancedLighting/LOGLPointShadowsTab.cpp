@@ -2,7 +2,6 @@
 
 #include <oscar_learnopengl/MouseCapturingCamera.h>
 
-#include <imgui.h>
 #include <oscar/oscar.h>
 #include <SDL_events.h>
 
@@ -23,7 +22,7 @@ namespace
     {
         return {
             .scale = Vec3(0.75f),
-            .rotation = AngleAxis(60_deg, UnitVec3{1.0f, 0.0f, 1.0f}),
+            .rotation = angle_axis(60_deg, UnitVec3{1.0f, 0.0f, 1.0f}),
             .position = {-1.5f, 2.0f, -3.0f},
         };
     }
@@ -100,8 +99,6 @@ private:
 
     void implOnTick() final
     {
-        using std::sin;
-
         // move light position over time
         double const seconds = App::get().getFrameDeltaSinceAppStartup().count();
         m_LightPos.x = static_cast<float>(3.0 * sin(0.5 * seconds));
@@ -127,7 +124,7 @@ private:
         // create a 90 degree cube cone projection matrix
         float const nearPlane = 0.1f;
         float const farPlane = 25.0f;
-        Mat4 const projectionMatrix = Perspective(
+        Mat4 const projectionMatrix = perspective(
             90_deg,
             AspectRatio(c_ShadowmapDims),
             nearPlane,

@@ -3,11 +3,11 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 
 #include <algorithm>
@@ -31,7 +31,7 @@ private:
     {
         OpenSim::PhysicalFrame const* selected = nullptr;
 
-        ImGui::BeginChild("pflist", ImVec2(256, 256), true, ImGuiWindowFlags_HorizontalScrollbar);
+        ImGui::BeginChild("pflist", ImVec2(256, 256), ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
         for (auto const& pf : m_Model->getModel().getComponentList<OpenSim::PhysicalFrame>())
         {
             if (ImGui::Selectable(pf.getName().c_str()))

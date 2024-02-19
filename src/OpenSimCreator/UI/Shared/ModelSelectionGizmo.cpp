@@ -5,8 +5,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <OpenSimCreator/Utils/SimTKHelpers.h>
 
-#include <imgui.h>
-#include <ImGuizmo.h>  // care: must be included after imgui
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -26,6 +24,7 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/UI/ImGuizmoHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/ScopeGuard.h>
 
@@ -361,7 +360,7 @@ namespace
             Quat const deltaRotationInGround = WorldspaceRotation(m_IsChildFrameOfJoint ? -deltaEulerRadiansInGround : deltaEulerRadiansInGround);
             Quat const oldRotationInGround = ToQuat(pof.getRotationInGround(state));
             Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
-            Quat const newRotationInGround = Normalize(deltaRotationInGround * oldRotationInGround);
+            Quat const newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
             Quat const newRotationInParent = Inverse(parentRotationInGround) * newRotationInGround;
 
             ActionTransformPof(
@@ -433,7 +432,7 @@ namespace
             Quat const deltaRotationInGround = WorldspaceRotation(deltaEulerRadiansInGround);
             Quat const oldRotationInGround = ToQuat(parent.getTransformInGround(state).R() * wrapObj.getTransform().R());
             Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
-            Quat const newRotationInGround = Normalize(deltaRotationInGround * oldRotationInGround);
+            Quat const newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
             Quat const newRotationInParent = Inverse(parentRotationInGround) * newRotationInGround;
 
             ActionTransformWrapObject(
@@ -504,7 +503,7 @@ namespace
             Quat const deltaRotationInGround = WorldspaceRotation(deltaEulerRadiansInGround);
             Quat const oldRotationInGround = ToQuat(parent.getTransformInGround(state).R() * contactGeom.getTransform().R());
             Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
-            Quat const newRotationInGround = Normalize(deltaRotationInGround * oldRotationInGround);
+            Quat const newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
             Quat const newRotationInParent = Inverse(parentRotationInGround) * newRotationInGround;
 
             ActionTransformContactGeometry(

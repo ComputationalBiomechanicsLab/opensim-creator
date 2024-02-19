@@ -18,14 +18,14 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
 #include <oscar/Platform/App.h>
-#include <oscar/Platform/Screenshot.h>
 #include <oscar/Platform/os.h>
+#include <oscar/Platform/Screenshot.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/StandardTabImpl.h>
 #include <oscar/Utils/Assertions.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 
 #include <filesystem>
 #include <fstream>
@@ -164,7 +164,7 @@ private:
             Vec4 color = selected ? selectedColor : unselectedColor;
             if (hovered)
             {
-                color.a = Clamp(color.a + 0.3f, 0.0f, 1.0f);
+                color.w = saturate(color.w + 0.3f);
             }
 
             if (hovered && leftClickReleased)

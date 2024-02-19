@@ -118,7 +118,7 @@ void osc::DrawXZFloorLines(
         .mesh = yLine,
         .transform = {
             .scale = Vec3{scale},
-            .rotation = AngleAxis(90_deg, Vec3{0.0f, 0.0f, 1.0f}),
+            .rotation = angle_axis(90_deg, Vec3{0.0f, 0.0f, 1.0f}),
         },
         .color = Color::red(),
     });
@@ -128,7 +128,7 @@ void osc::DrawXZFloorLines(
         .mesh = yLine,
         .transform = {
             .scale = Vec3{scale},
-            .rotation = AngleAxis(90_deg, Vec3{1.0f, 0.0f, 0.0f}),
+            .rotation = angle_axis(90_deg, Vec3{1.0f, 0.0f, 0.0f}),
         },
         .color = Color::blue(),
     });
@@ -138,7 +138,7 @@ void osc::DrawXZGrid(
     SceneCache& cache,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    Quat const rotation = AngleAxis(90_deg, Vec3{1.0f, 0.0f, 0.0f});
+    Quat const rotation = angle_axis(90_deg, Vec3{1.0f, 0.0f, 0.0f});
     DrawGrid(cache, rotation, out);
 }
 
@@ -153,7 +153,7 @@ void osc::DrawYZGrid(
     SceneCache& cache,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    Quat const rotation = AngleAxis(90_deg, Vec3{0.0f, 1.0f, 0.0f});
+    Quat const rotation = angle_axis(90_deg, Vec3{0.0f, 1.0f, 0.0f});
     DrawGrid(cache, rotation, out);
 }
 
@@ -163,7 +163,7 @@ void osc::DrawArrow(
     std::function<void(SceneDecoration&&)> const& out)
 {
     Vec3 startToEnd = props.worldspaceEnd - props.worldspaceStart;
-    float const len = Length(startToEnd);
+    float const len = length(startToEnd);
     Vec3 const direction = startToEnd/len;
 
     Vec3 const neckStart = props.worldspaceStart;
@@ -273,7 +273,7 @@ std::optional<RayCollision> osc::GetClosestWorldspaceRayCollision(
         {
             // map it back into worldspace and check if it's closer
             Vec3 const locationWorldspace = transform * triangleCollision->position;
-            float const distance = Length(locationWorldspace - worldspaceRay.origin);
+            float const distance = length(locationWorldspace - worldspaceRay.origin);
             if (!rv || rv->distance > distance)
             {
                 // if it's closer, update the return value

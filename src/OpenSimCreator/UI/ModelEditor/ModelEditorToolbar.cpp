@@ -8,12 +8,12 @@
 #include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/App.h>
 #include <oscar/UI/IconCache.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/ParentPtr.h>
 
 #include <algorithm>

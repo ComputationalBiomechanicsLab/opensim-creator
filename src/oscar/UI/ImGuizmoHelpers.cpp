@@ -2,11 +2,10 @@
 
 #include <oscar/Graphics/Color.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
-#include <ImGuizmo.h>
 
 #include <array>
 #include <iterator>

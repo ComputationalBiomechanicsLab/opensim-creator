@@ -6,7 +6,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -17,12 +16,13 @@
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/Station.h>
-#include <SimTKcommon/SmallMatrix.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Platform/App.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 #include <oscar/Utils/StringHelpers.h>
+#include <SimTKcommon/SmallMatrix.h>
 
 #include <algorithm>
 #include <cstddef>

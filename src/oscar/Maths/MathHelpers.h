@@ -3,12 +3,9 @@
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/Eulers.h>
-#include <oscar/Maths/LengthType.h>
 #include <oscar/Maths/Line.h>
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
-#include <oscar/Maths/Mat4x3.h>
-#include <oscar/Maths/Qualifier.h>
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/Sphere.h>
 #include <oscar/Maths/Transform.h>
@@ -18,11 +15,11 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
 
-#include <glm/glm.hpp>
-
 #include <array>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
+#include <concepts>
 #include <initializer_list>
 #include <optional>
 #include <span>
@@ -37,211 +34,10 @@ namespace osc { struct Segment; }
 //               osc struct
 namespace osc
 {
-    template<std::floating_point Rep, AngularUnitTraits Units>
-    Rep sin(Angle<Rep, Units> v)
-    {
-        return std::sin(RadiansT<Rep>{v}.count());
-    }
-
-    template<std::floating_point Rep, AngularUnitTraits Units>
-    Rep cos(Angle<Rep, Units> v)
-    {
-        return std::cos(RadiansT<Rep>{v}.count());
-    }
-
-    template<std::floating_point Rep, AngularUnitTraits Units>
-    Rep tan(Angle<Rep, Units> v)
-    {
-        return std::tan(RadiansT<Rep>{v}.count());
-    }
-
-    template<std::floating_point Rep>
-    RadiansT<Rep> atan(Rep v)
-    {
-        return RadiansT<Rep>{std::atan(v)};
-    }
-
-    template<std::floating_point Rep>
-    RadiansT<Rep> acos(Rep num)
-    {
-        return RadiansT<Rep>{std::acos(num)};
-    }
-
-    template<std::floating_point Rep>
-    RadiansT<Rep> asin(Rep num)
-    {
-        return RadiansT<Rep>{std::asin(num)};
-    }
-
-    template<std::floating_point Rep>
-    RadiansT<Rep> atan2(Rep x, Rep y)
-    {
-        return RadiansT<Rep>{std::atan2(x, y)};
-    }
-
-    template<
-        std::floating_point Rep1,
-        AngularUnitTraits Units1,
-        std::floating_point Rep2,
-        AngularUnitTraits Units2
-    >
-    typename std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>> fmod(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y)
-    {
-        using CA = std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>>;
-        return CA{std::fmod(CA{x}.count(), CA{y}.count())};
-    }
-
-    // returns the dot product of the provided two vectors
-    template<LengthType L, typename T, Qualifier Q>
-    constexpr T Dot(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b)
-        requires std::is_arithmetic_v<T>
-    {
-        return glm::dot(a, b);
-    }
-
-    // returns the smallest of `a` and `b`
-    template<typename GenType>
-    constexpr GenType Min(GenType a, GenType b)
-        requires std::is_arithmetic_v<GenType>
-    {
-        return glm::min(a, b);
-    }
-
-    // returns a vector containing min(a[dim], b[dim]) for each element
-    template<LengthType L, typename T, Qualifier Q>
-    constexpr Vec<L, T, Q> Min(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b)
-        requires std::is_arithmetic_v<T>
-    {
-        return glm::min(a, b);
-    }
-
-    // returns the largest of `a` and `b`
-    template<typename GenType>
-    constexpr GenType Max(GenType a, GenType b)
-        requires std::is_arithmetic_v<GenType>
-    {
-        return glm::max(a, b);
-    }
-
-    // returns a vector containing max(a[i], b[i]) for each element
-    template<LengthType L, typename T, Qualifier Q>
-    constexpr Vec<L, T, Q> Max(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b)
-        requires std::is_arithmetic_v<T>
-    {
-        return glm::max(a, b);
-    }
-
-    // clamps `v` between `low` and `high` (inclusive)
-    template<typename GenType>
-    constexpr GenType Clamp(GenType v, GenType low, GenType high)
-        requires std::is_arithmetic_v<GenType>
-    {
-        return glm::clamp(v, low, high);
-    }
-
-    template<std::floating_point Rep, AngularUnitTraits Units>
-    constexpr Angle<Rep, Units> Clamp(Angle<Rep, Units> const& v, Angle<Rep, Units> const& min, Angle<Rep, Units> const& max)
-    {
-        return Angle<Rep, Units>{Clamp(v.count(), min.count(), max.count())};
-    }
-
-    // clamps each element in `x` between the corresponding elements in `minVal` and `maxVal`
-    template<LengthType L, typename T, Qualifier Q>
-    constexpr Vec<L, T, Q> Clamp(Vec<L, T, Q> const& x, Vec<L, T, Q> const& minVal, Vec<L, T, Q> const& maxVal)
-        requires std::is_arithmetic_v<T>
-    {
-        return glm::clamp(x, minVal, maxVal);
-    }
-
-    // clamps each element in `x` between `minVal` and `maxVal`
-    template<LengthType L, typename T, Qualifier Q>
-    constexpr Vec<L, T, Q> Clamp(Vec<L, T, Q> const& x, T const& minVal, T const& maxVal)
-        requires std::is_arithmetic_v<T>
-    {
-        return glm::clamp(x, minVal, maxVal);
-    }
-
-    // linearly interpolates between `x` and `y` with factor `a`
-    template<typename GenType, typename UInterpolant>
-    constexpr GenType Mix(GenType const& x, GenType const& y, UInterpolant const& a)
-        requires std::is_arithmetic_v<GenType> && std::is_floating_point_v<UInterpolant>
-    {
-        return glm::mix(x, y, a);
-    }
-
-    // linearly interpolates between each element in `x` and `y` with factor `a`
-    template<LengthType L, typename T, Qualifier Q, typename UInterpolant>
-    constexpr Vec<L, T, Q> Mix(Vec<L, T, Q> const& x, Vec<L, T, Q> const& y, UInterpolant const& a)
-        requires std::is_arithmetic_v<T> && std::is_floating_point_v<UInterpolant>
-    {
-        return glm::mix(x, y, a);
-    }
-
-    // calculates the cross product of the two vectors
-    template<typename T, Qualifier Q>
-    constexpr Vec<3, T, Q> Cross(Vec<3, T, Q> const& x, Vec<3, T, Q> const& y)
-        requires std::is_floating_point_v<T>
-    {
-        return glm::cross(x, y);
-    }
-
-    // returns a normalized version of the provided argument
-    template<typename T, Qualifier Q>
-    Qua<T, Q> Normalize(Qua<T, Q> const& q)
-        requires std::is_floating_point_v<T>
-    {
-        return glm::normalize(q);
-    }
-
-    template<LengthType L, typename T, Qualifier Q>
-    Vec<L, T, Q> Normalize(Vec<L, T, Q> const& v)
-        requires std::is_floating_point_v<T>
-    {
-        return glm::normalize(v);
-    }
-
-    // returns the length of the provided vector
-    template<LengthType L, typename T, Qualifier Q>
-    float Length(Vec<L, T, Q> const& v)
-        requires std::is_floating_point_v<T>
-    {
-        return glm::length(v);
-    }
-
-    // returns the squared length of the provided vector
-    template<LengthType L, typename T, Qualifier Q>
-    float Length2(Vec<L, T, Q> const& v)
-        requires std::is_floating_point_v<T>
-    {
-        return glm::length2(v);
-    }
-
-    // computes the rotation from `src` to `dest`
-    Quat Rotation(Vec3 const& src, Vec3 const& dest);
-
-    // computes a rotation from an angle+axis
-    Quat AngleAxis(Radians angle, Vec3 const& axis);
-
-    // computes a view matrix for the given params
-    Mat4 LookAt(Vec3 const& eye, Vec3 const& center, Vec3 const& up);
-
     // computes horizontal FoV for a given vertical FoV + aspect ratio
     Radians VerticalToHorizontalFOV(Radians verticalFOV, float aspectRatio);
 
-    // computes a perspective projection matrix
-    Mat4 Perspective(Radians verticalFOV, float aspectRatio, float zNear, float zFar);
-
-    // computes an orthogonal projection matrix
-    Mat4 Ortho(float left, float right, float bottom, float top, float zNear, float zFar);
-
-    // computes the inverse of the matrix
-    Mat4 Inverse(Mat4 const&);
     Quat Inverse(Quat const&);
-
-    // right-hand multiply
-    Mat4 Scale(Mat4 const&, Vec3 const&);
-    Mat4 Rotate(Mat4 const&, Radians angle, Vec3 const& axis);
-    Mat4 Translate(Mat4 const&, Vec3 const&);
 
     Quat QuatCast(Mat3 const&);
     Mat3 ToMat3(Quat const&);
@@ -262,14 +58,11 @@ namespace osc
     bool IsEqualWithinRelativeError(double, double, double relativeError);
     bool IsEqualWithinRelativeError(float, float, float relativeError);
 
-    template<LengthType L, typename T, Qualifier Q>
-    bool IsEqualWithinRelativeError(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b, T relativeError)
-        requires std::is_floating_point_v<T>
+    template<size_t L, std::floating_point T>
+    bool IsEqualWithinRelativeError(Vec<L, T> const& a, Vec<L, T> const& b, T relativeError)
     {
-        for (LengthType i = 0; i < L; ++i)
-        {
-            if (!IsEqualWithinRelativeError(a[i], b[i], relativeError))
-            {
+        for (size_t i = 0; i < L; ++i) {
+            if (!IsEqualWithinRelativeError(a[i], b[i], relativeError)) {
                 return false;
             }
         }
@@ -279,14 +72,11 @@ namespace osc
     // returns `true` if the first two arguments are within `absoluteError` of eachover
     bool IsEqualWithinAbsoluteError(float, float, float absError);
 
-    template<LengthType L, typename T, Qualifier Q>
-    bool IsEqualWithinAbsoluteError(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b, T absError)
-        requires std::is_floating_point_v<T>
+    template<size_t L, std::floating_point T>
+    bool IsEqualWithinAbsoluteError(Vec<L, T> const& a, Vec<L, T> const& b, T absError)
     {
-        for (LengthType i = 0; i < L; ++i)
-        {
-            if (!IsEqualWithinAbsoluteError(a[i], b[i], absError))
-            {
+        for (size_t i = 0; i < L; ++i) {
+            if (!IsEqualWithinAbsoluteError(a[i], b[i], absError)) {
                 return false;
             }
         }
@@ -296,25 +86,24 @@ namespace osc
     // ----- VecX/MatX helpers -----
 
     // returns true if the provided vectors are at the same location
-    template<LengthType L, typename T, Qualifier Q>
-    bool AreAtSameLocation(Vec<L, T, Q> const& a, Vec<L, T, Q> const& b)
+    template<size_t L, typename T>
+    bool AreAtSameLocation(Vec<L, T> const& a, Vec<L, T> const& b)
         requires std::is_arithmetic_v<T>
     {
-        constexpr T eps2 = std::numeric_limits<T>::epsilon() * std::numeric_limits<T>::epsilon();
         auto const b2a = a - b;
-        return Dot(b2a, b2a) > eps2;
+        return dot(b2a, b2a) > (epsilon<T> * epsilon<T>);
     }
 
     bool AreAtSameLocation(Vec3 const&, Vec3 const&);
 
     // returns the *index* of a vector's longest dimension
-    Vec3::length_type LongestDimIndex(Vec3 const&);
+    Vec3::size_type LongestDimIndex(Vec3 const&);
 
     // returns the *index* of a vector's longest dimension
-    Vec2::length_type LongestDimIndex(Vec2);
+    Vec2::size_type LongestDimIndex(Vec2);
 
     // returns the *index* of a vector's longest dimension
-    Vec2i::length_type LongestDimIndex(Vec2i);
+    Vec2i::size_type LongestDimIndex(Vec2i);
 
     // returns the *value* of a vector's longest dimension
     float LongestDim(Vec3 const&);
@@ -355,9 +144,6 @@ namespace osc
 
     // returns a normal matrix created from the supplied xform matrix
     Mat3 ToNormalMatrix(Mat4 const&);
-
-    // returns a normal matrix created from the supplied xform matrix
-    Mat3 ToNormalMatrix(Mat4x3 const&);
 
     // returns a noraml matrix created from the supplied xform matrix
     //
@@ -419,9 +205,8 @@ namespace osc
     // returns `Min(rect.p1, rect.p2)`: i.e. the smallest X and the smallest Y of the rectangle's points
     Vec2 MinValuePerDimension(Rect const&);
 
-    template<typename T, Qualifier Q>
-    constexpr T Area(Vec<2, T, Q> const& v)
-        requires std::is_arithmetic_v<T>
+    template<typename T>
+    constexpr T Area(Vec<2, T> const& v) requires std::is_arithmetic_v<T>
     {
         return v.x * v.y;
     }
@@ -524,7 +309,7 @@ namespace osc
     bool IsZeroVolume(AABB const&);
 
     // returns the *index* of the longest dimension of an AABB
-    Vec3::length_type LongestDimIndex(AABB const&);
+    Vec3::size_type LongestDimIndex(AABB const&);
 
     // returns the length of the longest dimension of an AABB
     float LongestDim(AABB const&);

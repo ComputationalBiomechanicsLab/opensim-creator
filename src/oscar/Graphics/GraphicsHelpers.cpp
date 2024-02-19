@@ -3,6 +3,7 @@
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshIndicesView.h>
 #include <oscar/Graphics/MeshTopology.h>
+#include <oscar/Maths/MatrixFunctions.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Sphere.h>
@@ -42,7 +43,7 @@ namespace
 
     Mat4 CalcCubemapViewMatrix(CubemapFaceDetails const& faceDetails, Vec3 const& cubeCenter)
     {
-        return LookAt(cubeCenter, cubeCenter + faceDetails.direction, faceDetails.up);
+        return look_at(cubeCenter, cubeCenter + faceDetails.direction, faceDetails.up);
     }
 }
 
@@ -186,15 +187,15 @@ std::vector<Vec4> osc::CalcTangentVectors(
             auto const triVertIndex = indices[triBegin + iVert];
 
             // Gram-Schmidt orthogonalization (w.r.t. the stored normal)
-            Vec3 const normal = Normalize(normals[triVertIndex]);
-            Vec3 const orthoTangent = Normalize(tangent - Dot(normal, tangent)*normal);
-            Vec3 const orthoBitangent = Normalize(bitangent - (Dot(orthoTangent, bitangent)*orthoTangent) - (Dot(normal, bitangent)*normal));
+            Vec3 const normal = normalize(normals[triVertIndex]);
+            Vec3 const orthoTangent = normalize(tangent - dot(normal, tangent)*normal);
+            Vec3 const orthoBitangent = normalize(bitangent - (dot(orthoTangent, bitangent)*orthoTangent) - (dot(normal, bitangent)*normal));
 
             // this algorithm doesn't produce bitangents. Instead, it writes the
             // "direction" (flip) of the bitangent w.r.t. `cross(normal, tangent)`
             //
             // (the shader can recompute the bitangent from: `cross(normal, tangent) * w`)
-            float const w = Dot(Cross(normal, orthoTangent), orthoBitangent);
+            float const w = dot(cross(normal, orthoTangent), orthoBitangent);
 
             accumulateTangent(triVertIndex, Vec4{orthoTangent, w});
         }

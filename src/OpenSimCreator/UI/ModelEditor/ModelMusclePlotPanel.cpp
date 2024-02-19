@@ -7,8 +7,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
-#include <implot.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -27,6 +25,7 @@
 #include <oscar/Shims/Cpp20/stop_token.h>
 #include <oscar/Shims/Cpp20/thread.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/StringHelpers.h>
@@ -772,8 +771,8 @@ namespace
         PlotDataPoint const below = points[belowIdx];
         PlotDataPoint const above = points[aboveIdx];
 
-        float const belowDistance = std::abs(below.x - x);
-        float const aboveDistance = std::abs(above.x - x);
+        float const belowDistance = abs(below.x - x);
+        float const aboveDistance = abs(above.x - x);
 
         size_t const closestIdx =  aboveDistance < belowDistance  ? aboveIdx : belowIdx;
 
@@ -2119,7 +2118,7 @@ namespace
         bool m_ShowMarkersOnActivePlot = true;
         bool m_ShowMarkersOnOtherPlots = false;
         bool m_SnapCursor = false;
-        ImPlotFlags m_PlotFlags = ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame | ImPlotFlags_NoTitle;
+        ImPlotFlags m_PlotFlags = ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame | ImPlotFlags_NoTitle;
         ImPlotLocation m_LegendLocation = ImPlotLocation_NorthWest;
         ImPlotLegendFlags m_LegendFlags = ImPlotLegendFlags_None;
         Color m_LockedCurveTint = {0.5f, 0.5f, 1.0f, 1.1f};

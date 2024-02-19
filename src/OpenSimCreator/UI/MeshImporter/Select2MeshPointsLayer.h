@@ -7,10 +7,10 @@
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterSharedState.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterUILayer.h>
 
-#include <imgui.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <functional>

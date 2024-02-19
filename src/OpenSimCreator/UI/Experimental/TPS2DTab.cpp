@@ -1,7 +1,6 @@
 #include "TPS2DTab.h"
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <oscar/Formats/Image.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/ColorSpace.h>
@@ -16,6 +15,7 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/StdVariantHelpers.h>
@@ -56,7 +56,7 @@ namespace
     float RadialBasisFunction2D(Vec2 controlPoint, Vec2 p)
     {
         Vec2 const diff = controlPoint - p;
-        float const r2 = Dot(diff, diff);
+        float const r2 = dot(diff, diff);
 
         if (r2 == 0.0f)
         {
@@ -66,7 +66,7 @@ namespace
         }
         else
         {
-            return r2 * std::log(r2);
+            return r2 * log(r2);
         }
     }
 
@@ -180,10 +180,10 @@ namespace
         {
             for (int col = 0; col < numPairs; ++col)
             {
-                Vec2 const& pi = landmarkPairs[row].src;
+                Vec2 const& pi_ = landmarkPairs[row].src;
                 Vec2 const& pj = landmarkPairs[col].src;
 
-                L(row, col) = RadialBasisFunction2D(pi, pj);
+                L(row, col) = RadialBasisFunction2D(pi_, pj);
             }
         }
 
@@ -372,7 +372,7 @@ public:
                 std::vector<LandmarkPair2D> pairs = m_LandmarkPairs;
                 for (LandmarkPair2D& p : pairs)
                 {
-                    p.dest = Mix(p.src, p.dest, m_BlendingFactor);
+                    p.dest = mix(p.src, p.dest, m_BlendingFactor);
                 }
                 ThinPlateWarper2D warper{pairs};
                 m_OutputGrid = ApplyThinPlateWarpToMesh(warper, m_InputGrid);
@@ -411,8 +411,8 @@ private:
         RenderTextureDescriptor desc{dims};
         desc.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
         out.emplace(desc);
-        Graphics::DrawMesh(mesh, Transform{}, m_Material, m_Camera);
-        Graphics::DrawMesh(mesh, Transform{}, m_WireframeMaterial, m_Camera);
+        Graphics::DrawMesh(mesh, Identity<Transform>(), m_Material, m_Camera);
+        Graphics::DrawMesh(mesh, Identity<Transform>(), m_WireframeMaterial, m_Camera);
 
         OSC_ASSERT(out.has_value());
         m_Camera.renderTo(*out);

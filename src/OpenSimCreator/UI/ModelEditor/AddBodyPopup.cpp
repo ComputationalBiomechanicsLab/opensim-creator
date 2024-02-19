@@ -9,7 +9,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
@@ -19,6 +18,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 
 #include <memory>
@@ -111,7 +111,7 @@ private:
             DrawHelpMarker("What the added body will be joined to. All bodies in an OpenSim model are connected to other bodies, or the ground, by joints. This is true even if the joint is unconstrained and does nothing (e.g. an OpenSim::FreeJoint) or if the joint constrains motion in all direcctions (e.g. an OpenSim::WeldJoint).");
             ImGui::NextColumn();
 
-            ImGui::BeginChild("join targets", ImVec2(0, 128.0f), true, ImGuiWindowFlags_HorizontalScrollbar);
+            ImGui::BeginChild("join targets", ImVec2(0, 128.0f), ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
             for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>())
             {
                 if (ImGui::Selectable(pf.getName().c_str(), &pf == selectedPf))

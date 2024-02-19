@@ -1,10 +1,9 @@
 #include "IconWithMenu.h"
 
 #include <oscar/UI/Icon.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/IconWithoutMenu.h>
 #include <oscar/Utils/CStringView.h>
-
-#include <imgui.h>
 
 #include <functional>
 #include <string>

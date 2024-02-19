@@ -8,8 +8,7 @@
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
-#include <implot.h>
+#include <oscar/UI/oscimgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Vec2.h>
@@ -306,7 +305,7 @@ private:
             ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 0.0f);
             ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, ImVec2(0,1));
 
-            if (ImPlot::BeginPlot("##", ImVec2(plotWidth, m_Height), ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoInputs | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame))
+            if (ImPlot::BeginPlot("##", ImVec2(plotWidth, m_Height), ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoInputs | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame))
             {
                 ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
                 ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);

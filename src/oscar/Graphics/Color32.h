@@ -17,11 +17,10 @@ namespace osc
         using value_type = Unorm8;
         using reference = value_type&;
         using const_reference = value_type const&;
-        using length_type = size_t;
         using size_type = size_t;
         using const_iterator = value_type const*;
 
-        static constexpr length_type length()
+        static constexpr size_type length()
         {
             return 4;
         }

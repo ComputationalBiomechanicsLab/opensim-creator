@@ -11,7 +11,6 @@
 #include <OpenSimCreator/UI/Shared/MainMenu.h>
 
 #include <IconsFontAwesome5.h>
-#include <imgui.h>
 #include <oscar/Formats/SVG.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
@@ -29,6 +28,7 @@
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/UI/Widgets/LogViewer.h>
 #include <oscar/Utils/CStringView.h>
@@ -169,7 +169,7 @@ private:
         // pretend the attributation bar isn't there (avoid it)
         tabRect.p2.y -= static_cast<float>(std::max(m_TudLogo.getDimensions().y, m_CziLogo.getDimensions().y)) - 2.0f*ImGui::GetStyle().WindowPadding.y;
 
-        Vec2 const menuAndTopLogoDims = Min(Dimensions(tabRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
+        Vec2 const menuAndTopLogoDims = elementwise_min(Dimensions(tabRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
         Vec2 const menuAndTopLogoTopLeft = tabRect.p1 + 0.5f*(Dimensions(tabRect) - menuAndTopLogoDims);
         Vec2 const menuDims = {menuAndTopLogoDims.x, menuAndTopLogoDims.y - m_MainAppLogoDims.y - m_TopLogoPadding.y};
         Vec2 const menuTopLeft = Vec2{menuAndTopLogoTopLeft.x, menuAndTopLogoTopLeft.y + m_MainAppLogoDims.y + m_TopLogoPadding.y};

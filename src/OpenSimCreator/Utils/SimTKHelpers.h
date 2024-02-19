@@ -7,7 +7,6 @@
 #include <oscar/Maths/Eulers.h>
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
-#include <oscar/Maths/Mat4x3.h>
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
@@ -23,7 +22,6 @@ namespace osc
     SimTK::Vec3 ToSimTKVec3(Eulers const&);
     SimTK::Mat33 ToSimTKMat3(Mat3 const&);
     SimTK::Inertia ToSimTKInertia(Vec3 const&);
-    SimTK::Transform ToSimTKTransform(Mat4x3 const&);
     SimTK::Transform ToSimTKTransform(Transform const&);
     SimTK::Rotation ToSimTKRotation(Quat const&);
     SimTK::Vec3 ToSimTKRGBVec3(Color const&);
@@ -31,7 +29,6 @@ namespace osc
     // converters: from SimTK types to osc
     Vec3 ToVec3(SimTK::Vec3 const&);
     Vec4 ToVec4(SimTK::Vec3 const&, float w = 1.0f);
-    Mat4x3 ToMat4x3(SimTK::Transform const&);
     Mat4 ToMat4x4(SimTK::Transform const&);
     Mat4 ToMat4(SimTK::Rotation const&);
     Quat ToQuat(SimTK::Rotation const&);

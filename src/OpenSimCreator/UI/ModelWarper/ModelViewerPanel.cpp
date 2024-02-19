@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/UI/ModelWarper/UIState.h>
 
-#include <imgui.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 
 #include <memory>

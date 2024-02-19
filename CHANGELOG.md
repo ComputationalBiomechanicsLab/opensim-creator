@@ -5,7 +5,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- (nothing yet)
+- OpenSim was updated to the latest upstream `main` branch, which includes better socket connection support
+  and other performance improvements and bugfixes
+- The coordinate editor's sliders now enable text-input mode when double-clicked (previously: only Ctrl+Click)
+- Internal: ImGui, ImPlot, and ImGuizmo were all upgraded to their latest version
+- Internal: glm was dropped as an external dependency by copying the bare-minimum parts used by `osc` in-tree
 
 
 ## [0.5.8] - 2023/02/14

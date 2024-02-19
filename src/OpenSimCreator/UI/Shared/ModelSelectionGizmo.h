@@ -1,7 +1,6 @@
 #pragma once
 
-#include <imgui.h>
-#include <ImGuizmo.h>  // care: must be included after imgui
+#include <oscar/UI/oscimgui.h>
 
 #include <memory>
 

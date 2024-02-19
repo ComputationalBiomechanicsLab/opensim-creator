@@ -6,8 +6,8 @@
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <OpenSimCreator/UI/Simulation/SimulationOutputPlot.h>
 
-#include <imgui.h>
 #include <OpenSim/Common/Component.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 
 #include <memory>
