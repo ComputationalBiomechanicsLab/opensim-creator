@@ -8,6 +8,7 @@
 #include <iterator>
 #include <ranges>
 #include <span>
+#include <stdexcept>
 
 namespace osc
 {
@@ -126,6 +127,14 @@ namespace osc
         uint32_t operator[](ptrdiff_t i) const
         {
             return !m_IsU32 ? static_cast<uint32_t>(m_Ptr.u16[i]) : m_Ptr.u32[i];
+        }
+
+        uint32_t at(ptrdiff_t i) const
+        {
+            if (i >= static_cast<ptrdiff_t>(size())) {
+                throw std::out_of_range{"attempted to access a MeshIndicesView with an invalid index"};
+            }
+            return this->operator[](i);
         }
 
         Iterator begin() const

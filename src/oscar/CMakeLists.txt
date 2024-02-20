@@ -353,7 +353,7 @@ add_library(oscar STATIC
     UI.h
     Utils.h
     Variant.h
- )
+   "Graphics/Blender/BlenderStyleMesh.h")
 
 target_include_directories(oscar PUBLIC
 
