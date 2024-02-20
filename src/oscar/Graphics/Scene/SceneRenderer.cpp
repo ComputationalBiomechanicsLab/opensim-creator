@@ -53,6 +53,7 @@ namespace
     }
 
     struct RimHighlights final {
+
         RimHighlights(
             Mesh mesh_,
             Mat4 const& transform_,
@@ -61,8 +62,7 @@ namespace
             mesh{std::move(mesh_)},
             transform{transform_},
             material{std::move(material_)}
-        {
-        }
+        {}
 
         Mesh mesh;
         Mat4 transform;
@@ -218,41 +218,39 @@ public:
             transparentMaterial.setTransparent(true);
 
             MaterialPropertyBlock propBlock;
+            MaterialPropertyBlock wireframePropBlock;
             Color lastColor = {-1.0f, -1.0f, -1.0f, 0.0f};
             for (SceneDecoration const& dec : decorations)
             {
-                if (dec.color != lastColor)
-                {
-                    propBlock.setColor("uDiffuseColor", dec.color);
-                    lastColor = dec.color;
-                }
+                if (!(dec.flags & SceneDecorationFlags::NoDrawNormally)) {
+                    if (dec.color != lastColor) {
+                        propBlock.setColor("uDiffuseColor", dec.color);
+                        lastColor = dec.color;
+                    }
 
-                if (dec.maybeMaterial)
-                {
-                    Graphics::DrawMesh(dec.mesh, dec.transform, *dec.maybeMaterial, m_Camera, dec.maybeMaterialProps);
-                }
-                else if (dec.color.a > 0.99f)
-                {
-                    Graphics::DrawMesh(dec.mesh, dec.transform, m_SceneColoredElementsMaterial, m_Camera, propBlock);
-                }
-                else
-                {
-                    Graphics::DrawMesh(dec.mesh, dec.transform, transparentMaterial, m_Camera, propBlock);
+                    if (dec.maybeMaterial) {
+                        Graphics::DrawMesh(dec.mesh, dec.transform, *dec.maybeMaterial, m_Camera, dec.maybeMaterialProps);
+                    }
+                    else if (dec.color.a > 0.99f) {
+                        Graphics::DrawMesh(dec.mesh, dec.transform, m_SceneColoredElementsMaterial, m_Camera, propBlock);
+                    }
+                    else {
+                        Graphics::DrawMesh(dec.mesh, dec.transform, transparentMaterial, m_Camera, propBlock);
+                    }
                 }
 
                 // if a wireframe overlay is requested for the decoration then draw it over the top in
                 // a solid color
-                if (dec.flags & SceneDecorationFlags::WireframeOverlay)
-                {
-                    Graphics::DrawMesh(dec.mesh, dec.transform, m_WireframeMaterial, m_Camera);
+                if (dec.flags & SceneDecorationFlags::WireframeOverlay) {
+                    wireframePropBlock.setColor("uDiffuseColor",MultiplyLuminance(dec.color, 0.5f));
+                    Graphics::DrawMesh(dec.mesh, dec.transform, m_WireframeMaterial, m_Camera, wireframePropBlock);
                 }
 
                 // if normals are requested, render the scene element via a normals geometry shader
                 //
                 // care: this only works for triangles, because normals-drawing material uses a geometry
                 //       shader that assumes triangular input (#792)
-                if (params.drawMeshNormals && dec.mesh.getTopology() == MeshTopology::Triangles)
-                {
+                if (params.drawMeshNormals && dec.mesh.getTopology() == MeshTopology::Triangles) {
                     Graphics::DrawMesh(dec.mesh, dec.transform, m_NormalsMaterial, m_Camera);
                 }
             }
