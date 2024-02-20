@@ -15,6 +15,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     from other 3D tooling (e.g. in Blender, load the mesh, right-click, Shade Flat, reexport)
 - The visualizer now obeys the "Display Properties" of an OpenSim Component when it's set to `Wire`, which
   is more consistent with OpenSim GUI
+- The `Appearance` editor in the property editor now shows a dropdown that lets you select the component's
+  representation (e.g. `Wire`). Note: `Points` does not work, which is consistent with OpenSim GUI
 - There is now an `Export Model Graph as Dotviz` utility under `Tools -> Experimental Tools` in the model
   editor, which produces a `.dot` file that can be visualized with external graph visualizers, such as
   Graphviz Online

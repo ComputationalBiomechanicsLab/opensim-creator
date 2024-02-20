@@ -125,7 +125,6 @@ Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
     Mesh rv;
     rv.setVerts(vertices);
     rv.setIndices(indices);
-    //rv.optimize();
     rv.recalculateNormals();
     return rv;
 }

@@ -58,6 +58,9 @@ namespace
     {
         SceneDecorationFlags rv = SceneDecorationFlags::None;
         switch (geom.getRepresentation()) {
+        case SimTK::DecorativeGeometry::Hide:
+            rv |= SceneDecorationFlags::NoDrawNormally;
+            break;
         case SimTK::DecorativeGeometry::DrawWireframe:
             rv |= SceneDecorationFlags::WireframeOverlay | SceneDecorationFlags::NoDrawNormally;
             break;

@@ -1364,6 +1364,27 @@ namespace
             }
             shouldSave = shouldSave || ItemValueShouldBeSaved();
 
+            // DisplayPreference
+            {
+                static_assert(OpenSim::VisualRepresentation::DrawDefault == -1);
+                static_assert(OpenSim::VisualRepresentation::Hide == 0);
+                static_assert(OpenSim::VisualRepresentation::DrawPoints == 1);
+                static_assert(OpenSim::VisualRepresentation::DrawWireframe == 2);
+                static_assert(OpenSim::VisualRepresentation::DrawSurface == 3);
+                auto const options = std::to_array<CStringView>({
+                    "Default",
+                    "Hide",
+                    "Points",
+                    "Wireframe",
+                    "Surface",
+                });
+                size_t index = clamp(static_cast<size_t>(m_EditedProperty.getValue().get_representation()+1), static_cast<size_t>(0), options.size());
+                if (osc::Combo("##DisplayPref", &index, options)) {
+                    m_EditedProperty.updValue().set_representation(static_cast<OpenSim::VisualRepresentation>(static_cast<int>(index)-1));
+                    shouldSave = true;
+                }
+            }
+
             if (shouldSave)
             {
                 rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
