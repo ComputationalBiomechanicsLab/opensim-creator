@@ -170,4 +170,27 @@ namespace osc
         size_t tubularSegments = 48,
         Radians arc = Degrees{360}
     );
+
+    // (ported from three.js/CylinderGeometry)
+    Mesh GenerateCylinderMesh2(
+        float radiusTop = 1.0f,
+        float radiusBottom = 1.0f,
+        float height = 1.0f,
+        size_t radialSegments = 32,
+        size_t heightSegments = 1,
+        bool openEnded = false,
+        Radians thetaStart = Degrees{0},
+        Radians thetaLength = Degrees{360}
+    );
+
+    // (ported from three.js/ConeGeometry)
+    Mesh GenerateConeMesh2(
+        float radius = 1.0f,
+        float height = 1.0f,
+        size_t radialSegments = 32,
+        size_t heightSegments = 1,
+        bool openEnded = false,
+        Radians thetaStart = Degrees{0},
+        Radians thetaLength = Degrees{360}
+    );
 }
