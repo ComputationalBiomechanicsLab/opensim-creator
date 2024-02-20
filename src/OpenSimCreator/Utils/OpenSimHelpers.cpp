@@ -72,6 +72,7 @@
 #include <set>
 #include <span>
 #include <sstream>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -570,7 +571,12 @@ namespace
 {
     enum class GraphEdgeType { ParentChild, Socket };
     struct GraphEdge final {
-        friend auto operator<=>(GraphEdge const&, GraphEdge const&) = default;
+        friend bool operator==(GraphEdge const&, GraphEdge const&) = default;
+        friend bool operator<(GraphEdge const& lhs, GraphEdge const& rhs)
+        {
+            // HACK: MacOS doesn't define a three-way comparison operator for `std::string`
+            return std::tie(lhs.sourceAbsPath, lhs.destinationAbsPath, lhs.name, lhs.type) < std::tie(rhs.sourceAbsPath, rhs.destinationAbsPath, rhs.name, rhs.type);
+        }
 
         std::string sourceAbsPath;
         std::string destinationAbsPath;
