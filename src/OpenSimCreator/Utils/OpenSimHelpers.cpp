@@ -571,7 +571,6 @@ namespace
 {
     enum class GraphEdgeType { ParentChild, Socket };
     struct GraphEdge final {
-        friend bool operator==(GraphEdge const&, GraphEdge const&) = default;
         friend bool operator<(GraphEdge const& lhs, GraphEdge const& rhs)
         {
             // HACK: MacOS doesn't define a three-way comparison operator for `std::string`
