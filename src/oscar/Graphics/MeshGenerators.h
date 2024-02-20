@@ -193,4 +193,12 @@ namespace osc
         Radians thetaStart = Degrees{0},
         Radians thetaLength = Degrees{360}
     );
+
+    // (ported from three.js/PlaneGeometry)
+    Mesh GeneratePlaneMesh2(
+        float width = 1.0f,
+        float height = 1.0f,
+        size_t widthSegments = 1,
+        size_t heightSegments = 1
+    );
 }

@@ -53,6 +53,7 @@ namespace
             {"torus2", GenerateTorusMesh2(1.0f, 0.2f, 16, 64, Degrees{180})},
             {"cylinder2", GenerateCylinderMesh2(0.0f, 1.0f, 1.0f, 16, 1, false, Degrees{0}, Degrees{180})},
             {"cone2", GenerateConeMesh2()},
+            {"plane2", GeneratePlaneMesh2(2.0f, 2.0f, 4, 4)},
         };
     }
 }
