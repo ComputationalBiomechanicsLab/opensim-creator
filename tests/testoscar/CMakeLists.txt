@@ -65,6 +65,7 @@ add_executable(testoscar
     Platform/TestResourceStream.cpp
 
     Shims/Cpp20/TestBit.cpp
+    Shims/Cpp23/TestCstddef.cpp
 
     Utils/TestCStringView.cpp
     Utils/TestEnumHelpers.cpp

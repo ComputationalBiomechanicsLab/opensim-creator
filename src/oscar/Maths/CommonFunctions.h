@@ -104,6 +104,18 @@ namespace osc
         return (b < a) ? b : a;
     }
 
+    template<
+        std::floating_point Rep1,
+        AngularUnitTraits Units1,
+        std::floating_point Rep2,
+        AngularUnitTraits Units2
+    >
+    constexpr auto min(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y) -> std::common_type_t<decltype(x), decltype(y)>
+    {
+        using CA = std::common_type_t<decltype(x), decltype(y)>;
+        return CA{min(CA{x}.count(), CA{y}.count())};
+    }
+
     // returns a vector containing min(a[dim], b[dim]) for each element
     template<size_t L, typename T>
     constexpr Vec<L, T> elementwise_min(Vec<L, T> const& a, Vec<L, T> const& b)

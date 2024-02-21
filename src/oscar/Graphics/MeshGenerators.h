@@ -201,4 +201,15 @@ namespace osc
         size_t widthSegments = 1,
         size_t heightSegments = 1
     );
+
+    // (ported from three.js/SphereGeometry)
+    Mesh GenerateSphereMesh2(
+        float radius = 1.0f,
+        size_t widthSegments = 32,
+        size_t heightSegments = 16,
+        Radians phiStart = Degrees{0},
+        Radians phiLength = Degrees{360},
+        Radians thetaStart = Degrees{0},
+        Radians thetaLength = Degrees{180}
+    );
 }

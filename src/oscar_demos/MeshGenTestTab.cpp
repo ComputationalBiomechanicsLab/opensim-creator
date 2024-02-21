@@ -54,6 +54,7 @@ namespace
             {"cylinder2", GenerateCylinderMesh2(0.0f, 1.0f, 1.0f, 16, 1, false, Degrees{0}, Degrees{180})},
             {"cone2", GenerateConeMesh2()},
             {"plane2", GeneratePlaneMesh2(2.0f, 2.0f, 4, 4)},
+            {"sphere2", GenerateSphereMesh2()},
         };
     }
 }
