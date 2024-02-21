@@ -2196,3 +2196,11 @@ bool osc::ActionExportModelGraphToDotviz(UndoableModelStatePair const& model)
     }
     return false;  // user cancelled out
 }
+
+bool osc::ActionExportModelGraphToDotvizClipboard(UndoableModelStatePair const& model)
+{
+    std::stringstream ss;
+    WriteComponentTopologyGraphAsDotViz(model.getModel(), ss);
+    SetClipboardText(std::move(ss).str());
+    return true;
+}

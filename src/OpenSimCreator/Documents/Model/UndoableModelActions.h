@@ -427,4 +427,8 @@ namespace osc
     bool ActionExportModelGraphToDotviz(
         UndoableModelStatePair const&
     );
+
+    bool ActionExportModelGraphToDotvizClipboard(
+        UndoableModelStatePair const&
+    );
 }

@@ -123,6 +123,10 @@ private:
                 }
                 DrawTooltipIfItemHovered("Writes the model's data topology graph in dotviz format, so that it can be visualized in external tooling such as Graphviz Online");
 
+                if (ImGui::MenuItem("Export Model Graph as Dotviz (clipboard)")) {
+                    ActionExportModelGraphToDotvizClipboard(*m_Model);
+                }
+
                 ImGui::EndMenu();
             }
 
