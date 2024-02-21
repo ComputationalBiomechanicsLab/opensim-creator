@@ -12,6 +12,7 @@ add_executable(TestOpenSimCreator
     Documents/ModelWarper/TestMeshWarpLookup.cpp
     Documents/Simulation/TestForwardDynamicSimulation.cpp
     Graphics/TestOpenSimDecorationGenerator.cpp
+    Graphics/TestSimTKDecorationGenerator.cpp
     MetaTests/TestOpenSimLibraryAPI.cpp
     Platform/TestRecentFiles.cpp
     UI/Widgets/TestAddComponentPopup.cpp

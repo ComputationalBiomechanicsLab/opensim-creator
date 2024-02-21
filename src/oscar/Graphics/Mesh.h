@@ -160,6 +160,12 @@ namespace osc
             setVertexBufferData(bytes, flags);
         }
 
+        // recalculates the normals of the mesh from its triangles
+        //
+        // - does nothing if the mesh's topology is != MeshTopology::Triangles
+        // - the normals of shared vertices are averaged (i.e. smooth-shaded)
+        void recalculateNormals();
+
         friend void swap(Mesh& a, Mesh& b) noexcept
         {
             swap(a.m_Impl, b.m_Impl);

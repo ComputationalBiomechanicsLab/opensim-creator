@@ -1879,3 +1879,68 @@ TEST(Mesh, SetVertexBufferDataRecalculatesBounds)
 
     ASSERT_EQ(m.getBounds(), BoundingAABBOf(secondVerts));
 }
+
+TEST(Mesh, RecalculateNormalsDoesNothingIfTopologyIsLines)
+{
+    Mesh m;
+    m.setVerts(GenerateVertices(2));
+    m.setIndices({0, 1});
+    m.setTopology(MeshTopology::Lines);
+
+    ASSERT_FALSE(m.hasNormals());
+    m.recalculateNormals();
+    ASSERT_FALSE(m.hasNormals()) << "shouldn't recalculate for lines";
+}
+
+TEST(Mesh, RecalculateNormalsAssignsNormalsIfNoneExist)
+{
+    Mesh m;
+    m.setVerts({  // i.e. triangle that's wound to point in +Z
+        {0.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+    });
+    m.setIndices({0, 1, 2});
+    ASSERT_FALSE(m.hasNormals());
+    m.recalculateNormals();
+    ASSERT_TRUE(m.hasNormals());
+
+    auto const normals = m.getNormals();
+    ASSERT_EQ(normals.size(), 3);
+    ASSERT_TRUE(std::all_of(normals.begin(), normals.end(), [first = normals.front()](Vec3 const& normal){ return normal == first; }));
+    ASSERT_TRUE(all(equal_within_absdiff(normals.front(), Vec3(0.0f, 0.0f, 1.0f), epsilon<float>)));
+}
+
+TEST(Mesh, RecalculateNormalsSmoothsNormalsOfSharedVerts)
+{
+    // create a "tent" mesh, where two 45-degree-angled triangles
+    // are joined on one edge (two verts) on the top
+    //
+    // `recalculateNormals` should ensure that the normals at the
+    // vertices on the top are calculated by averaging each participating
+    // triangle's normals (which point outwards at an angle)
+
+    auto const verts = std::to_array<Vec3>({
+        {-1.0f, 0.0f,  0.0f},  // bottom-left "pin"
+        { 0.0f, 1.0f,  1.0f},  // front of "top"
+        { 0.0f, 1.0f, -1.0f},  // back of "top"
+        { 1.0f, 0.0f,  0.0f},  // bottom-right "pin"
+    });
+
+    Mesh m;
+    m.setVerts(verts);
+    m.setIndices({0, 1, 2,   3, 2, 1});  // shares two verts per triangle
+
+    Vec3 const lhsNormal = TriangleNormal({ verts[0], verts[1], verts[2] });
+    Vec3 const rhsNormal = TriangleNormal({ verts[3], verts[2], verts[1] });
+    Vec3 const mixedNormal = Midpoint(lhsNormal, rhsNormal);
+
+    m.recalculateNormals();
+
+    auto const normals = m.getNormals();
+    ASSERT_EQ(normals.size(), 4);
+    ASSERT_TRUE(all(equal_within_absdiff(normals[0], lhsNormal, epsilon<float>)));
+    ASSERT_TRUE(all(equal_within_absdiff(normals[1], mixedNormal, epsilon<float>)));
+    ASSERT_TRUE(all(equal_within_absdiff(normals[2], mixedNormal, epsilon<float>)));
+    ASSERT_TRUE(all(equal_within_absdiff(normals[3], rhsNormal, epsilon<float>)));
+}

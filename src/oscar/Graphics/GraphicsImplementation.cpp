@@ -4285,6 +4285,18 @@ namespace
             {
                 return m_Encoding.decode(m_Data);
             }
+
+            template<typename U>
+            AttributeValueProxy& operator/=(U const& v) requires (!IsConst)
+            {
+                return *this = (T{*this} /= v);
+            }
+
+            template<typename U>
+            AttributeValueProxy& operator+=(U const& v) requires (!IsConst)
+            {
+                return *this = (T{*this} += v);
+            }
         private:
             Byte* m_Data;
             MultiComponentEncoding<T> m_Encoding;
@@ -4439,12 +4451,12 @@ namespace
 
             value_type at(difference_type i) const
             {
-                auto const beg = begin();
-                if (i >= std::distance(beg, end()))
-                {
-                    throw std::out_of_range{"an attribute value was out-of-range: this is usually because of out-of-range mesh indices"};
-                }
-                return beg[i];
+                return at(*this, i);
+            }
+
+            value_type at(difference_type i)
+            {
+                return at(*this, i);
             }
 
             value_type operator[](difference_type i) const
@@ -4452,6 +4464,17 @@ namespace
                 return begin()[i];
             }
         private:
+            template<typename AttrValueRange>
+            static value_type at(AttrValueRange&& range, difference_type i)
+            {
+                auto const beg = range.begin();
+                if (i >= std::distance(beg, range.end()))
+                {
+                    throw std::out_of_range{"an attribute value was out-of-range: this is usually because of out-of-range mesh indices"};
+                }
+                return beg[i];
+            }
+
             std::span<Byte> m_Data{};
             size_t m_Stride = 1;  // care: divide by zero in an iterator is UB
             MultiComponentEncoding<T> m_Encoding{VertexAttributeFormat::Float32x3};  // dummy, for default ctor
@@ -4638,6 +4661,11 @@ namespace
             {
                 // no change in format or size, do nothing
             }
+        }
+
+        void setFormat(VertexFormat const& newFormat)
+        {
+            setParams(numVerts(), newFormat);
         }
 
         void setData(std::span<std::byte const> newData)
@@ -4944,6 +4972,59 @@ public:
 
         rangeCheckIndicesAndRecalculateBounds(flags);
         m_Version->reset();
+    }
+
+    void recalculateNormals()
+    {
+        if (getTopology() != MeshTopology::Triangles) {
+            // if the mesh isn't triangle-based, do nothing
+            return;
+        }
+
+        if (!m_VertexBuffer.hasAttribute(VertexAttribute::Normal)) {
+            // if the mesh doesn't have normal data in its vertex buffer, create it so that
+            // we can overwrite it with the cacluated normals
+
+            auto format = m_VertexBuffer.format();
+            format.insert({VertexAttribute::Normal, VertexAttributeFormat::Float32x3});
+            m_VertexBuffer.setFormat(format);
+        }
+
+        // calculate normals from triangle faces:
+        //
+        // - use addition to aggregate face normals onto each vertex, but retain a separate
+        //   counter for the number of additions each vertex has received, so that we can
+        //   average it later
+
+        auto const indices = getIndices();
+        auto const positions = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
+        auto normals = m_VertexBuffer.iter<Vec3>(VertexAttribute::Normal);
+        auto additionCounts = std::vector<uint16_t>(m_VertexBuffer.numVerts());
+        for (size_t i = 0, len = 3*(indices.size()/3); i < len; i+=3) {
+            // get triangle indices
+            auto const tis = std::to_array({indices.at(i), indices.at(i+1), indices.at(i+2)});
+
+            // calculate triangle normal
+            auto const tnormal = TriangleNormal({positions.at(tis[0]), positions.at(tis[1]), positions.at(tis[2])});
+
+            // assign to vertex data
+            for (auto idx : tis) {
+                if (additionCounts.at(idx)++ == 0) {
+                    normals.at(idx) = tnormal;
+                }
+                else {
+                    normals.at(idx) += tnormal;
+                }
+            }
+        }
+
+        // average shared normals
+        for (size_t i = 0; i < additionCounts.size(); ++i) {
+            auto count = additionCounts[i];
+            if (count > 1) {
+                normals[i] /= static_cast<float>(count);
+            }
+        }
     }
 
     // non-PIMPL methods
@@ -5409,6 +5490,11 @@ size_t osc::Mesh::getVertexBufferStride() const
 void osc::Mesh::setVertexBufferData(std::span<uint8_t const> data, MeshUpdateFlags flags)
 {
     m_Impl.upd()->setVertexBufferData(data, flags);
+}
+
+void osc::Mesh::recalculateNormals()
+{
+    m_Impl.upd()->recalculateNormals();
 }
 
 std::ostream& osc::operator<<(std::ostream& o, Mesh const&)

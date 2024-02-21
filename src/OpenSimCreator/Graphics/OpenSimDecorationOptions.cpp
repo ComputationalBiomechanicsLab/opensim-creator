@@ -147,6 +147,11 @@ bool osc::OpenSimDecorationOptions::getShouldShowContactForces() const
     return m_Flags & OpenSimDecorationOptionFlags::ShouldShowContactForces;
 }
 
+void osc::OpenSimDecorationOptions::setShouldShowContactForces(bool v)
+{
+    SetOption(m_Flags, OpenSimDecorationOptionFlags::ShouldShowContactForces, v);
+}
+
 void osc::OpenSimDecorationOptions::forEachOptionAsAppSettingValue(std::function<void(std::string_view, AppSettingValue const&)> const& callback) const
 {
     callback("muscle_decoration_style", AppSettingValue{GetMuscleDecorationStyleMetadata(m_MuscleDecorationStyle).id});

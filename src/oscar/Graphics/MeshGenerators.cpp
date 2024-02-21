@@ -6,6 +6,7 @@
 #include <oscar/Maths/CommonFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/UnitVec3.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/Assertions.h>
@@ -1521,4 +1522,393 @@ Mesh osc::GenerateLatheMesh(
     rv.setTexCoords(uvs);
     rv.setIndices(indices);
     return rv;
+}
+
+Mesh osc::GenerateCircleMesh2(
+    float radius,
+    size_t segments,
+    Radians thetaStart,
+    Radians thetaLength)
+{
+    // this implementation was initially hand-ported from threejs (CircleGeometry)
+
+    segments = max(static_cast<size_t>(3), segments);
+    float const fsegments = static_cast<float>(segments);
+
+    std::vector<uint32_t> indices;
+    std::vector<Vec3> vertices;
+    std::vector<Vec3> normals;
+    std::vector<Vec2> uvs;
+
+    // middle vertex
+    vertices.emplace_back(0.0f, 0.0f, 0.0f);
+    normals.emplace_back(0.0f, 0.0f, 1.0f);
+    uvs.emplace_back(0.5f, 0.5f);
+
+    // not-middle vertices
+    for (ptrdiff_t s = 0; s <= static_cast<ptrdiff_t>(segments); ++s) {
+        float const fs = static_cast<float>(s);
+        Radians const segment = thetaStart + (fs/fsegments * thetaLength);
+
+        vertices.emplace_back(radius * cos(segment), radius * sin(segment), 0.0f);
+        normals.emplace_back(0.0f, 0.0f, 1.0f);
+
+        uvs.emplace_back(
+            (vertices[s-1].x/radius + 1.0f) / 2.0f,
+            (vertices[s-1].y/radius + 1.0f) / 2.0f
+        );
+    }
+
+    for (uint32_t i = 1; i <= static_cast<uint32_t>(segments); ++i) {
+        indices.insert(indices.end(), {i, i+1, 0});
+    }
+
+    Mesh rv;
+    rv.setVerts(vertices);
+    rv.setNormals(normals);
+    rv.setTexCoords(uvs);
+    rv.setIndices(indices);
+    return rv;
+}
+
+Mesh osc::GenerateRingMesh(
+    float innerRadius,
+    float outerRadius,
+    size_t thetaSegments,
+    size_t phiSegments,
+    Radians thetaStart,
+    Radians thetaLength)
+{
+    // this implementation was initially hand-ported from threejs (RingGeometry)
+
+    thetaSegments = max(static_cast<size_t>(3), thetaSegments);
+    phiSegments = max(static_cast<size_t>(1), phiSegments);
+    float const fthetaSegments = static_cast<float>(thetaSegments);
+    float const fphiSegments = static_cast<float>(phiSegments);
+
+    std::vector<uint32_t> indices;
+    std::vector<Vec3> vertices;
+    std::vector<Vec3> normals;
+    std::vector<Vec2> uvs;
+
+    float radius = innerRadius;
+    float radiusStep = (outerRadius - innerRadius)/fphiSegments;
+
+    // generate vertices, normals, and uvs
+    for (size_t j = 0; j <= phiSegments; ++j) {
+        for (size_t i = 0; i <= thetaSegments; ++i) {
+            float const fi = static_cast<float>(i);
+            Radians segment = thetaStart + (fi/fthetaSegments * thetaLength);
+
+            Vec3 const& v = vertices.emplace_back(radius * cos(segment), radius * sin(segment), 0.0f);
+            normals.emplace_back(0.0f, 0.0f, 1.0f);
+            uvs.emplace_back(
+                (v.x/outerRadius + 1.0f) / 2.0f,
+                (v.y/outerRadius + 1.0f) / 2.0f
+            );
+        }
+        radius += radiusStep;
+    }
+
+    for (size_t j = 0; j < phiSegments; ++j) {
+        size_t const thetaSegmentLevel = j * (thetaSegments + 1);
+        for (size_t i = 0; i < thetaSegments; ++i) {
+            size_t segment = i + thetaSegmentLevel;
+
+            auto const a = static_cast<uint32_t>(segment);
+            auto const b = static_cast<uint32_t>(segment + thetaSegments + 1);
+            auto const c = static_cast<uint32_t>(segment + thetaSegments + 2);
+            auto const d = static_cast<uint32_t>(segment + 1);
+
+            indices.insert(indices.end(), {a, b, d});
+            indices.insert(indices.end(), {b, c, d});
+        }
+    }
+
+    Mesh rv;
+    rv.setVerts(vertices);
+    rv.setNormals(normals);
+    rv.setTexCoords(uvs);
+    rv.setIndices(indices);
+    return rv;
+}
+
+Mesh osc::GenerateTorusMesh2(
+    float radius,
+    float tube,
+    size_t radialSegments,
+    size_t tubularSegments,
+    Radians arc)
+{
+    // (ported from three.js/TorusGeometry)
+
+    float const fradialSegments = static_cast<float>(radialSegments);
+    float const ftubularSegments = static_cast<float>(tubularSegments);
+
+    std::vector<uint32_t> indices;
+    std::vector<Vec3>  vertices;
+    std::vector<Vec3> normals;
+    std::vector<Vec2> uvs;
+
+    for (size_t j = 0; j <= radialSegments; ++j) {
+        float const fj = static_cast<float>(j);
+        for (size_t i = 0; i <= tubularSegments; ++i) {
+            float const fi = static_cast<float>(i);
+            Radians const u = fi/ftubularSegments * arc;
+            Radians const v = fj/fradialSegments * 360_deg;
+
+            Vec3 const& vertex = vertices.emplace_back(
+                (radius + tube * cos(v)) * cos(u),
+                (radius + tube * cos(v)) * sin(u),
+                tube * sin(v)
+            );
+            normals.push_back(UnitVec3{
+                vertex.x - radius*cos(u),
+                vertex.y - radius*sin(u),
+                vertex.z - 0.0f,
+            });
+            uvs.emplace_back(fi/ftubularSegments, fj/fradialSegments);
+        }
+    }
+
+    for (size_t j = 1; j <= radialSegments; ++j) {
+        for (size_t i = 1; i <= tubularSegments; ++i) {
+            auto const a = static_cast<uint32_t>((tubularSegments + 1)*(j + 0) + i - 1);
+            auto const b = static_cast<uint32_t>((tubularSegments + 1)*(j - 1) + i - 1);
+            auto const c = static_cast<uint32_t>((tubularSegments + 1)*(j - 1) + i);
+            auto const d = static_cast<uint32_t>((tubularSegments + 1)*(j + 0) + i);
+
+            indices.insert(indices.end(), {a, b, d});
+            indices.insert(indices.end(), {b, c, d});
+        }
+    }
+
+    Mesh rv;
+    rv.setVerts(vertices);
+    rv.setNormals(normals);
+    rv.setTexCoords(uvs);
+    rv.setIndices(indices);
+    return rv;
+}
+
+Mesh osc::GenerateCylinderMesh2(
+    float radiusTop,
+    float radiusBottom,
+    float height,
+    size_t radialSegments,
+    size_t heightSegments,
+    bool openEnded,
+    Radians thetaStart,
+    Radians thetaLength)
+{
+    // this implementation was initially hand-ported from threejs (CylinderGeometry)
+
+    auto const fradialSegments = static_cast<float>(radialSegments);
+    auto const fheightSegments = static_cast<float>(heightSegments);
+
+    std::vector<uint32_t> indices;
+    std::vector<Vec3> vertices;
+    std::vector<Vec3> normals;
+    std::vector<Vec2> uvs;
+
+    uint32_t index = 0;
+    std::vector<std::vector<uint32_t>> indexArray;
+    float const halfHeight = height/2.0f;
+    size_t groupStart = 0;
+    std::vector<SubMeshDescriptor> groups;
+
+    auto const generateTorso = [&]()
+    {
+        // used to calculate normal
+        float const slope = (radiusBottom - radiusTop) / height;
+
+        // generate vertices, normals, and uvs
+        size_t groupCount = 0;
+        for (size_t y = 0; y <= heightSegments; ++y) {
+            std::vector<uint32_t> indexRow;
+            float const v = static_cast<float>(y)/fheightSegments;
+            float const radius = v * (radiusBottom - radiusTop) + radiusTop;
+            for (size_t x = 0; x <= radialSegments; ++x) {
+                float const fx = static_cast<float>(x);
+                float const u = fx/fradialSegments;
+                Radians const theta = u*thetaLength + thetaStart;
+                float const sinTheta = sin(theta);
+                float const cosTheta = cos(theta);
+
+                vertices.emplace_back(
+                    radius * sinTheta,
+                    (-v * height) + halfHeight,
+                    radius * cosTheta
+                );
+                normals.push_back(UnitVec3{sinTheta, slope, cosTheta});
+                uvs.emplace_back(u, 1 - v);
+                indexRow.push_back(index++);
+            }
+            indexArray.push_back(std::move(indexRow));
+        }
+
+        // generate indices
+        for (size_t x = 0; x < radialSegments; ++x) {
+            for (size_t y = 0; y < heightSegments; ++y) {
+                auto const a = indexArray.at(y+0).at(x+0);
+                auto const b = indexArray.at(y+1).at(x+0);
+                auto const c = indexArray.at(y+1).at(x+1);
+                auto const d = indexArray.at(y+0).at(x+1);
+                indices.insert(indices.end(), {a, b, d});
+                indices.insert(indices.end(), {b, c, d});
+                groupCount += 6;
+            }
+        }
+
+        groups.emplace_back(groupStart, groupCount, MeshTopology::Triangles);
+        groupStart += groupCount;
+    };
+
+    auto const generateCap = [&](bool top)
+    {
+        size_t groupCount = 0;
+
+        auto const radius = top ? radiusTop : radiusBottom;
+        auto const sign = top ? 1.0f : -1.0f;
+
+        // first, generate the center vertex data of the cap.
+        // Because, the geometry needs one set of uvs per face
+        // we must generate a center vertex per face/segment
+
+        auto const centerIndexStart = index;  // save first center vertex
+        for (size_t x = 1; x <= radialSegments; ++x) {
+            vertices.emplace_back(0.0f, sign*halfHeight, 0.0f);
+            normals.emplace_back(0.0f, sign, 0.0f);
+            uvs.emplace_back(0.5f, 0.5f);
+            ++index;
+        }
+        auto const centerIndexEnd = index;  // save last center vertex
+
+        // generate surrounding vertices, normals, and uvs
+        for (size_t x = 0; x <= radialSegments; ++x) {
+            auto const fx = static_cast<float>(x);
+            float const u = fx / fradialSegments;
+            Radians const theta = u * thetaLength + thetaStart;
+            float const cosTheta = cos(theta);
+            float const sinTheta = sin(theta);
+
+            vertices.emplace_back(radius * sinTheta, halfHeight * sign, radius * cosTheta);
+            normals.emplace_back(0.0f, sign, 0.0f);
+            uvs.emplace_back(
+                (cosTheta * 0.5f) + 0.5f,
+                (sinTheta * 0.5f * sign) + 0.5f
+            );
+            ++index;
+        }
+
+        // generate indices
+        for (size_t x = 0; x < radialSegments; ++x) {
+            uint32_t const c = static_cast<uint32_t>(centerIndexStart + x);
+            uint32_t const i = static_cast<uint32_t>(centerIndexEnd + x);
+
+            if (top) {
+                indices.insert(indices.end(), {i, i+1, c});
+            }
+            else {
+                indices.insert(indices.end(), {i+1, i, c});
+            }
+            groupCount += 3;
+        }
+
+        groups.emplace_back(groupStart, groupCount, MeshTopology::Triangles);
+        groupStart += groupCount;
+    };
+
+    generateTorso();
+    if (!openEnded) {
+        if (radiusTop > 0.0f) {
+            generateCap(true);
+        }
+        if (radiusBottom > 0.0f) {
+            generateCap(false);
+        }
+    }
+
+    Mesh rv;
+    rv.setVerts(vertices);
+    rv.setNormals(normals);
+    rv.setTexCoords(uvs);
+    rv.setIndices(indices);
+    rv.setSubmeshDescriptors(groups);
+    return rv;
+}
+
+Mesh osc::GenerateConeMesh2(
+    float radius,
+    float height,
+    size_t radialSegments,
+    size_t heightSegments,
+    bool openEnded,
+    Radians thetaStart,
+    Radians thetaLength)
+{
+    return GenerateCylinderMesh2(
+        0.0f,
+        radius,
+        height,
+        radialSegments,
+        heightSegments,
+        openEnded,
+        thetaStart,
+        thetaLength
+    );
+}
+
+Mesh osc::GeneratePlaneMesh2(
+    float width,
+    float height,
+    size_t widthSegments,
+    size_t heightSegments)
+{
+    float const halfWidth = width/2.0f;
+    float const halfHeight = height/2.0f;
+    size_t const gridX = widthSegments;
+    size_t const gridY = heightSegments;
+    size_t const gridX1 = gridX + 1;
+    size_t const gridY1 = gridY + 1;
+    float const segmentWidth = width / static_cast<float>(gridX);
+    float const segmentHeight = height / static_cast<float>(gridY);
+
+    std::vector<uint32_t> indices;
+    std::vector<Vec3> vertices;
+    std::vector<Vec3> normals;
+    std::vector<Vec2> uvs;
+
+    // generate vertices, normals, and uvs
+    for (size_t iy = 0; iy < gridY1; ++iy) {
+        float const y = static_cast<float>(iy) * segmentHeight - halfHeight;
+        for (size_t ix = 0; ix < gridX1; ++ix) {
+            float const x = static_cast<float>(ix) * segmentWidth - halfWidth;
+
+            vertices.emplace_back(x, -y, 0.0f);
+            normals.emplace_back(0.0f, 0.0f, 1.0f);
+            uvs.emplace_back(
+                       static_cast<float>(ix)/static_cast<float>(gridX),
+                1.0f - static_cast<float>(iy)/static_cast<float>(gridY)
+            );
+        }
+    }
+
+    for (size_t iy = 0; iy < gridY; ++iy) {
+        for (size_t ix = 0; ix < gridX; ++ix) {
+            auto const a = static_cast<uint32_t>((ix + 0) + gridX1*(iy + 0));
+            auto const b = static_cast<uint32_t>((ix + 0) + gridX1*(iy + 1));
+            auto const c = static_cast<uint32_t>((ix + 1) + gridX1*(iy + 1));
+            auto const d = static_cast<uint32_t>((ix + 1) + gridX1*(iy + 0));
+            indices.insert(indices.end(), {a, b, d});
+            indices.insert(indices.end(), {b, c, d});
+        }
+    }
+
+    Mesh m;
+    m.setVerts(vertices);
+    m.setNormals(normals);
+    m.setTexCoords(uvs);
+    m.setIndices(indices);
+    return m;
 }

@@ -139,4 +139,66 @@ namespace osc
         Radians phiStart = Degrees{0},
         Radians phiLength = Degrees{360}
     );
+
+    // returns a mesh representation of a solid circle
+    //
+    // (ported from three.js:CircleGeometry)
+    Mesh GenerateCircleMesh2(
+        float radius = 1.0f,
+        size_t segments = 32,
+        Radians thetaStart = Degrees{0},
+        Radians thetaLength = Degrees{360}
+    );
+
+    // returns a mesh representation of a ring
+    //
+    // (ported from three.js/RingGeometry)
+    Mesh GenerateRingMesh(
+        float innerRadius = 0.5f,
+        float outerRadius = 1.0f,
+        size_t thetaSegments = 32,
+        size_t phiSegments = 1,
+        Radians thetaStart = Degrees{0},
+        Radians thetaLength = Degrees{360}
+    );
+
+    // (ported from three.js/TorusGeometry)
+    Mesh GenerateTorusMesh2(
+        float radius = 1.0f,
+        float tube = 0.4f,
+        size_t radialSegments = 12,
+        size_t tubularSegments = 48,
+        Radians arc = Degrees{360}
+    );
+
+    // (ported from three.js/CylinderGeometry)
+    Mesh GenerateCylinderMesh2(
+        float radiusTop = 1.0f,
+        float radiusBottom = 1.0f,
+        float height = 1.0f,
+        size_t radialSegments = 32,
+        size_t heightSegments = 1,
+        bool openEnded = false,
+        Radians thetaStart = Degrees{0},
+        Radians thetaLength = Degrees{360}
+    );
+
+    // (ported from three.js/ConeGeometry)
+    Mesh GenerateConeMesh2(
+        float radius = 1.0f,
+        float height = 1.0f,
+        size_t radialSegments = 32,
+        size_t heightSegments = 1,
+        bool openEnded = false,
+        Radians thetaStart = Degrees{0},
+        Radians thetaLength = Degrees{360}
+    );
+
+    // (ported from three.js/PlaneGeometry)
+    Mesh GeneratePlaneMesh2(
+        float width = 1.0f,
+        float height = 1.0f,
+        size_t widthSegments = 1,
+        size_t heightSegments = 1
+    );
 }

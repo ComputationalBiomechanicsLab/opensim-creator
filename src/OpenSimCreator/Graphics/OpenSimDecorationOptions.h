@@ -60,6 +60,7 @@ namespace osc
         void setShouldShowPointToPointSprings(bool);
 
         bool getShouldShowContactForces() const;
+        void setShouldShowContactForces(bool);
 
         void forEachOptionAsAppSettingValue(std::function<void(std::string_view, AppSettingValue const&)> const&) const;
         void tryUpdFromValues(std::string_view keyPrefix, std::unordered_map<std::string, AppSettingValue> const&);

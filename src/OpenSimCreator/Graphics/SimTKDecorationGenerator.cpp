@@ -54,6 +54,23 @@ namespace
         return Color{ToVec3(rgb), ar};
     }
 
+    SceneDecorationFlags GetFlags(SimTK::DecorativeGeometry const& geom)
+    {
+        SceneDecorationFlags rv = SceneDecorationFlags::None;
+        switch (geom.getRepresentation()) {
+        case SimTK::DecorativeGeometry::Hide:
+            rv |= SceneDecorationFlags::NoDrawNormally;
+            break;
+        case SimTK::DecorativeGeometry::DrawWireframe:
+            rv |= SceneDecorationFlags::WireframeOverlay | SceneDecorationFlags::NoDrawNormally;
+            break;
+        default:
+            rv |= SceneDecorationFlags::CastsShadows;
+            break;
+        }
+        return rv;
+    }
+
     // creates a geometry-to-ground transform for the given geometry
     Transform ToOscTransform(
         SimTK::SimbodyMatterSubsystem const& matter,
@@ -148,6 +165,7 @@ namespace
                 .mesh = m_MeshCache.getCylinderMesh(),
                 .transform = cylinderXform,
                 .color = GetColor(d),
+                .flags = GetFlags(d),
             });
         }
 
@@ -160,6 +178,7 @@ namespace
                 .mesh = m_MeshCache.getBrickMesh(),
                 .transform = t,
                 .color = GetColor(d),
+                .flags = GetFlags(d),
             });
         }
 
@@ -175,6 +194,7 @@ namespace
                 .mesh = m_MeshCache.getCylinderMesh(),
                 .transform = t,
                 .color = GetColor(d),
+                .flags = GetFlags(d),
             });
         }
 
@@ -189,6 +209,7 @@ namespace
                 .mesh = m_MeshCache.getCircleMesh(),
                 .transform = t,
                 .color = GetColor(d),
+                .flags = GetFlags(d),
             });
         }
 
@@ -201,6 +222,7 @@ namespace
                 .mesh = m_MeshCache.getSphereMesh(),
                 .transform = t,
                 .color = GetColor(d),
+                .flags = GetFlags(d),
             });
         }
 
@@ -213,6 +235,7 @@ namespace
                 .mesh = m_MeshCache.getSphereMesh(),
                 .transform = t,
                 .color = GetColor(d),
+                .flags = GetFlags(d),
             });
         }
 
@@ -229,6 +252,7 @@ namespace
                     .mesh = m_MeshCache.getSphereMesh(),
                     .transform = sphereXform,
                     .color = Color::white(),
+                    .flags = GetFlags(d),
                 });
             }
 
@@ -236,6 +260,7 @@ namespace
             Vec3 const axisLengths = t.scale * static_cast<float>(d.getAxisLength());
             float const legLen = c_FrameAxisLengthRescale * m_FixupScaleFactor;
             float const legThickness = c_FrameAxisThickness * m_FixupScaleFactor;
+            auto const flags = GetFlags(d);
             for (int axis = 0; axis < 3; ++axis)
             {
                 Vec3 direction = {0.0f, 0.0f, 0.0f};
@@ -255,6 +280,7 @@ namespace
                     .mesh = m_MeshCache.getCylinderMesh(),
                     .transform = legXform,
                     .color = color,
+                    .flags = flags,
                 });
             }
         }
@@ -285,6 +311,7 @@ namespace
                 .mesh = m_MeshCache.get(id, meshLoaderFunc),
                 .transform = ToOscTransform(d),
                 .color = GetColor(d),
+                .flags = GetFlags(d),
             });
         }
 
@@ -297,6 +324,7 @@ namespace
                 .mesh = m_MeshCache.get(path, meshLoader),
                 .transform = ToOscTransform(d),
                 .color = GetColor(d),
+                .flags = GetFlags(d),
             });
         }
 
@@ -321,12 +349,14 @@ namespace
             float const headThickness = 1.75f * neckThickness;
 
             Color const color = GetColor(d);
+            auto const flags = GetFlags(d);
 
             // emit neck cylinder
             m_Consumer({
                 .mesh = m_MeshCache.getCylinderMesh(),
                 .transform = YToYCylinderToSegmentTransform({neckStart, neckEnd}, neckThickness),
                 .color = color,
+                .flags = flags,
             });
 
             // emit head cone
@@ -334,6 +364,7 @@ namespace
                 .mesh = m_MeshCache.getConeMesh(),
                 .transform = YToYCylinderToSegmentTransform({headStart, headEnd}, headThickness),
                 .color = color,
+                .flags = flags,
             });
         }
 
@@ -346,6 +377,7 @@ namespace
                 .mesh = m_MeshCache.getTorusMesh(torusCenterToTubeCenterRadius, tubeRadius),
                 .transform = ToOscTransform(d),
                 .color = GetColor(d),
+                .flags = GetFlags(d),
             });
         }
 
@@ -369,6 +401,7 @@ namespace
                 .mesh = m_MeshCache.getConeMesh(),
                 .transform = coneXform,
                 .color = GetColor(d),
+                .flags = GetFlags(d),
             });
         }
 

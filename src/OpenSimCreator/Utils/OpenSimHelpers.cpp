@@ -63,13 +63,16 @@
 
 #include <cmath>
 #include <algorithm>
+#include <compare>
 #include <cstddef>
 #include <cstdlib>
 #include <iterator>
 #include <memory>
 #include <ostream>
+#include <set>
 #include <span>
 #include <sstream>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -562,6 +565,77 @@ std::vector<OpenSim::AbstractSocket const*> osc::GetAllSockets(OpenSim::Componen
     }
 
     return rv;
+}
+
+namespace
+{
+    enum class GraphEdgeType { ParentChild, Socket };
+    struct GraphEdge final {
+        friend bool operator<(GraphEdge const& lhs, GraphEdge const& rhs)
+        {
+            // HACK: MacOS doesn't define a three-way comparison operator for `std::string`
+            return std::tie(lhs.sourceAbsPath, lhs.destinationAbsPath, lhs.name, lhs.type) < std::tie(rhs.sourceAbsPath, rhs.destinationAbsPath, rhs.name, rhs.type);
+        }
+
+        std::string sourceAbsPath;
+        std::string destinationAbsPath;
+        std::string name;
+        GraphEdgeType type;
+    };
+}
+
+void osc::WriteComponentTopologyGraphAsDotViz(
+    OpenSim::Component const& root,
+    std::ostream& out)
+{
+    std::set<GraphEdge> edges;
+
+    // first, get all parent-to-child connections (easiest)
+    for (OpenSim::Component const& child : root.getComponentList()) {
+        OpenSim::Component const& parent = child.getOwner();
+
+        edges.insert({
+            .sourceAbsPath = GetAbsolutePathString(parent),
+            .destinationAbsPath = GetAbsolutePathString(child),
+            .name = "",
+            .type = GraphEdgeType::ParentChild
+        });
+    }
+
+    // helper: extract all socket edges leaving the given component
+    auto extractSocketEdges = [&edges](OpenSim::Component const& c)
+    {
+        auto sourceAbsPath = GetAbsolutePathString(c);
+        for (OpenSim::AbstractSocket const* sock : GetAllSockets(c)) {
+            if (auto const* connectee = dynamic_cast<OpenSim::Component const*>(&sock->getConnecteeAsObject())) {
+                edges.insert({
+                    .sourceAbsPath = sourceAbsPath,
+                    .destinationAbsPath = GetAbsolutePathString(*connectee),
+                    .name = sock->getName(),
+                    .type = GraphEdgeType::Socket,
+                });
+            }
+        }
+    };
+
+    extractSocketEdges(root);
+    for (OpenSim::Component const& c : root.getComponentList()) {
+        extractSocketEdges(c);
+    }
+
+    // emit dotviz
+    out << "digraph Component {";
+    for (auto const& edge : edges) {
+        out << "    \"" << edge.sourceAbsPath << "\" -> \"" << edge.destinationAbsPath << '"';
+        if (edge.type == GraphEdgeType::ParentChild) {
+            out << " [color=grey];";
+        }
+        else if (edge.type == GraphEdgeType::Socket) {
+            out << " [label=\"" << edge.name << "\"];";
+        }
+        out << '\n';
+    }
+    out << "}";
 }
 
 std::vector<OpenSim::AbstractSocket*> osc::UpdAllSockets(OpenSim::Component& c)

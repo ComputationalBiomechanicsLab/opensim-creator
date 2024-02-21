@@ -11,6 +11,7 @@
 #include <concepts>
 #include <cstddef>
 #include <filesystem>
+#include <iosfwd>
 #include <memory>
 #include <optional>
 #include <span>
@@ -262,6 +263,7 @@ namespace osc
     // calls the given function with each subcomponent of the given component
     void ForEachComponent(OpenSim::Component const&, std::function<void(OpenSim::Component const&)> const&);
 
+    // returns the number of children (recursive) of type T under the given component
     template<std::derived_from<OpenSim::Component> T>
     size_t GetNumChildren(OpenSim::Component const& c)
     {
@@ -368,6 +370,13 @@ namespace osc
 
     // returns all (mutable) sockets that are directly attached to the given component
     std::vector<OpenSim::AbstractSocket*> UpdAllSockets(OpenSim::Component&);
+
+    // writes the given component's (recursive) topology graph to the output stream as a
+    // dotviz `digraph`
+    void WriteComponentTopologyGraphAsDotViz(
+        OpenSim::Component const&,
+        std::ostream&
+    );
 
     // returns a pointer if the given path resolves a component relative to root
     OpenSim::Component const* FindComponent(

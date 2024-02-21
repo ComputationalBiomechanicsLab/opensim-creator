@@ -218,3 +218,29 @@ TEST(OpenSimDecorationGenerator, DoesntIncludeTheModelsDirectDecorations)
     );
     ASSERT_FALSE(empty);
 }
+
+// generate model decorations with collision arrows should work fine for the soccerkick model
+//
+// (this is just an automated repro for that one time where I screwed up a loop in the renderer ;))
+TEST(OpenSimDecorationGenerator, GenerateCollisionArrowsWorks)
+{
+    std::filesystem::path const soccerKickPath = std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "resources" / "models" / "SoccerKick" / "SoccerKickingModel.osim";
+    OpenSim::Model model{soccerKickPath.string()};
+    InitializeModel(model);
+    InitializeState(model);
+    SceneCache meshCache;
+
+    OpenSimDecorationOptions opts;
+    opts.setShouldShowContactForces(true);
+
+    bool empty = true;
+    GenerateModelDecorations(
+        meshCache,
+        model,
+        model.getWorkingState(),
+        opts,
+        1.0f,
+        [&empty](OpenSim::Component const&, SceneDecoration&&) { empty = false; }
+    );
+    ASSERT_FALSE(empty);
+}
