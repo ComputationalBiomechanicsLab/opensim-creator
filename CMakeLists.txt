@@ -86,7 +86,7 @@ set(
     "the user-facing email of the author (appears in 'email support', installer, etc.)"
 )
 set(
-    OSC_BUILD_BENCHMARKS OFF
+    OSC_BUILD_BENCHMARKS ON
     CACHE BOOL
     "enable/disable building the benchmark suite (handy for development)"
 )
