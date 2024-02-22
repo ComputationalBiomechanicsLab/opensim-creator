@@ -10,16 +10,16 @@ namespace osc::mow { class UIState; }
 
 namespace osc::mow
 {
-    class ModelViewerPanel final : public IPanel {
+    class ResultModelViewerPanel final : public IPanel {
     public:
-        ModelViewerPanel(
+        ResultModelViewerPanel(
             std::string_view panelName_,
             std::shared_ptr<UIState> state_);
-        ModelViewerPanel(ModelViewerPanel const&) = delete;
-        ModelViewerPanel(ModelViewerPanel&&) noexcept;
-        ModelViewerPanel& operator=(ModelViewerPanel const&) = delete;
-        ModelViewerPanel& operator=(ModelViewerPanel&&) noexcept;
-        ~ModelViewerPanel() noexcept;
+        ResultModelViewerPanel(ResultModelViewerPanel const&) = delete;
+        ResultModelViewerPanel(ResultModelViewerPanel&&) noexcept;
+        ResultModelViewerPanel& operator=(ResultModelViewerPanel const&) = delete;
+        ResultModelViewerPanel& operator=(ResultModelViewerPanel&&) noexcept;
+        ~ResultModelViewerPanel() noexcept;
 
     private:
         CStringView implGetName() const final;
