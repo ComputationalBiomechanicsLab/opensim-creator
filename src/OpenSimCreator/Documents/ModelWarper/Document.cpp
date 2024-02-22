@@ -12,17 +12,16 @@
 #include <sstream>
 #include <utility>
 
+using namespace osc;
 using namespace osc::mow;
 
-osc::mow::Document::Document() :
-    m_Model{std::make_unique<OpenSim::Model>()}
-{}
+osc::mow::Document::Document() = default;
 
 osc::mow::Document::Document(std::filesystem::path const& osimFileLocation) :
-    m_Model{std::make_unique<OpenSim::Model>(osimFileLocation.string())},
-    m_ModelWarpConfig{osimFileLocation, *m_Model},
-    m_MeshWarpLookup{osimFileLocation, *m_Model, m_ModelWarpConfig},
-    m_FrameWarpLookup{osimFileLocation, *m_Model, m_ModelWarpConfig}
+    m_ModelState{osimFileLocation},
+    m_ModelWarpConfig{osimFileLocation, m_ModelState.getModel()},
+    m_MeshWarpLookup{osimFileLocation, m_ModelState.getModel(), m_ModelWarpConfig},
+    m_FrameWarpLookup{osimFileLocation, m_ModelState.getModel(), m_ModelWarpConfig}
 {}
 
 osc::mow::Document::Document(Document const&) = default;
@@ -30,6 +29,16 @@ osc::mow::Document::Document(Document&&) noexcept = default;
 osc::mow::Document& osc::mow::Document::operator=(Document const&) = default;
 osc::mow::Document& osc::mow::Document::operator=(Document&&) noexcept = default;
 osc::mow::Document::~Document() noexcept = default;
+
+OpenSim::Model const& osc::mow::Document::model() const
+{
+    return m_ModelState.getModel();
+}
+
+IConstModelStatePair const& osc::mow::Document::modelstate() const
+{
+    return m_ModelState;
+}
 
 std::vector<WarpDetail> osc::mow::Document::details(OpenSim::Mesh const& mesh) const
 {

@@ -325,6 +325,8 @@ add_library(OpenSimCreator STATIC
     UI/Shared/ParamBlockEditorPopup.h
     UI/Shared/PropertiesPanel.cpp
     UI/Shared/PropertiesPanel.h
+    UI/Shared/Readonly3DModelViewer.cpp
+    UI/Shared/Readonly3DModelViewer.h
 
     UI/Simulation/ComponentDetails.cpp
     UI/Simulation/ComponentDetails.h
@@ -333,8 +335,6 @@ add_library(OpenSimCreator STATIC
     UI/Simulation/ModelStatePairContextMenu.h
     UI/Simulation/OutputPlotsPanel.cpp
     UI/Simulation/OutputPlotsPanel.h
-    UI/Simulation/Readonly3DModelViewer.cpp
-    UI/Simulation/Readonly3DModelViewer.h
     UI/Simulation/SelectionDetailsPanel.cpp
     UI/Simulation/SimulationDetailsPanel.cpp
     UI/Simulation/SimulationDetailsPanel.h

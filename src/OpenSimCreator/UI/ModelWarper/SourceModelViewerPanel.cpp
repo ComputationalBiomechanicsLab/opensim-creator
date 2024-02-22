@@ -1,6 +1,7 @@
 #include "SourceModelViewerPanel.h"
 
 #include <OpenSimCreator/UI/ModelWarper/UIState.h>
+#include <OpenSimCreator/UI/Shared/Readonly3DModelViewer.h>
 
 #include <imgui.h>
 #include <oscar/UI.h>
@@ -22,10 +23,11 @@ public:
 private:
     void implDrawContent() final
     {
-        ImGui::Text("always show source model");
+        m_ModelViewer.onDraw(m_State->modelstate());
     }
 
     std::shared_ptr<UIState> m_State;
+    Readonly3DModelViewer m_ModelViewer{this->getName()};
 };
 
 osc::mow::SourceModelViewerPanel::SourceModelViewerPanel(

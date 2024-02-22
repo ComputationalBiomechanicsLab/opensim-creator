@@ -1,5 +1,7 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
+#include <OpenSimCreator/Documents/Model/IConstModelStatePair.h>
 #include <OpenSimCreator/Documents/ModelWarper/FrameWarpLookup.h>
 #include <OpenSimCreator/Documents/ModelWarper/IValidateable.h>
 #include <OpenSimCreator/Documents/ModelWarper/MeshWarpLookup.h>
@@ -30,7 +32,8 @@ namespace osc::mow
         Document& operator=(Document&&) noexcept;
         ~Document() noexcept;
 
-        OpenSim::Model const& model() const { return *m_Model; }
+        OpenSim::Model const& model() const;
+        IConstModelStatePair const& modelstate() const;
 
         std::vector<WarpDetail> details(OpenSim::Mesh const&) const;
         std::vector<ValidationCheck> validate(OpenSim::Mesh const&) const;
@@ -44,7 +47,7 @@ namespace osc::mow
     private:
         std::vector<ValidationCheck> implValidate() const;
 
-        ClonePtr<OpenSim::Model const> m_Model;
+        BasicModelStatePair m_ModelState;
         ModelWarpConfiguration m_ModelWarpConfig;
         MeshWarpLookup m_MeshWarpLookup;
         FrameWarpLookup m_FrameWarpLookup;

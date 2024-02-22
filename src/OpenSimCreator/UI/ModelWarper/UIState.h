@@ -1,5 +1,6 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/Model/IConstModelStatePair.h>
 #include <OpenSimCreator/Documents/ModelWarper/Document.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
@@ -19,6 +20,7 @@ namespace osc::mow
     class UIState final {
     public:
         OpenSim::Model const& model() const { return m_Document->model(); }
+        IConstModelStatePair const& modelstate() const { return m_Document->modelstate(); }
 
         std::vector<WarpDetail> details(OpenSim::Mesh const& mesh) const { return m_Document->details(mesh); }
         std::vector<ValidationCheck> validate(OpenSim::Mesh const& mesh) const { return m_Document->validate(mesh); }

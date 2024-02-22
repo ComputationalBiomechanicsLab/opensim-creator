@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
-#include <OpenSimCreator/UI/Simulation/Readonly3DModelViewer.h>
+#include <OpenSimCreator/UI/Shared/Readonly3DModelViewer.h>
 #include <OpenSimCreator/UI/Simulation/SimulationViewerPanelParameters.h>
 #include <OpenSimCreator/UI/Simulation/SimulationViewerRightClickEvent.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>

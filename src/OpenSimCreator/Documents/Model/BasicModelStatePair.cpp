@@ -4,6 +4,7 @@
 
 #include <OpenSim/Simulation/Model/Model.h>
 
+#include <filesystem>
 #include <memory>
 
 class osc::BasicModelStatePair::Impl final {
@@ -19,6 +20,13 @@ public:
     explicit Impl(IModelStatePair const& p) :
         Impl{p.getModel(), p.getState(), p.getFixupScaleFactor()}
     {
+    }
+
+    Impl(std::filesystem::path const& osimPath) :
+        m_Model{std::make_unique<OpenSim::Model>(osimPath.string())}
+    {
+        InitializeModel(*m_Model);
+        InitializeState(*m_Model);
     }
 
     Impl(OpenSim::Model const& m, SimTK::State const& st) :
@@ -84,13 +92,16 @@ private:
 
 osc::BasicModelStatePair::BasicModelStatePair() :
     m_Impl{std::make_unique<Impl>()}
-{
-}
+{}
 
 osc::BasicModelStatePair::BasicModelStatePair(IModelStatePair const& p) :
     m_Impl{std::make_unique<Impl>(p)}
-{
-}
+{}
+
+osc::BasicModelStatePair::BasicModelStatePair(std::filesystem::path const& p) :
+    m_Impl{std::make_unique<Impl>(p)}
+{}
+
 osc::BasicModelStatePair::BasicModelStatePair(OpenSim::Model const& model, SimTK::State const& state) :
     m_Impl{std::make_unique<Impl>(model, state)}
 {
