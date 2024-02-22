@@ -85,6 +85,18 @@ ValidationState osc::mow::Document::state(
     return p ? p->state() : ValidationState::Error;
 }
 
+ValidationState osc::mow::Document::state() const
+{
+    ValidationState rv = ValidationState::Ok;
+    for (auto const& mesh : model().getComponentList<OpenSim::Mesh>()) {
+        rv = std::max(rv , state(mesh));
+    }
+    for (auto const& pof : model().getComponentList<OpenSim::PhysicalOffsetFrame>()) {
+        rv = std::max(rv, state(pof));
+    }
+    return rv;
+}
+
 std::vector<ValidationCheck> osc::mow::Document::implValidate() const
 {
     std::vector<ValidationCheck> rv;
