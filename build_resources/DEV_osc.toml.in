@@ -18,7 +18,7 @@ docs = "@CMAKE_CURRENT_SOURCE_DIR@/../../docs/build"
 # log_level = "trace"  # trace < debug < info < warn < err < critical
 
 # handy for auto-opening an in-development tab
-initial_tab = "OpenSim/ModelWarper"
+# initial_tab = "OpenSim/ModelWarper"
 
 [experimental_feature_flags]
 
