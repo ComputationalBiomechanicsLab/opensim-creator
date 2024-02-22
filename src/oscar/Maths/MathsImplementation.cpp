@@ -996,22 +996,6 @@ namespace
 
         return RayCollision{t0, l.origin + t0*l.direction};
     }
-
-    template<std::floating_point TReal>
-    bool IsEqualWithinRelativeError(TReal a , TReal b, TReal relativeError)
-    {
-        // inspired from:
-        //
-        // - https://stackoverflow.com/questions/17333/what-is-the-most-effective-way-for-float-and-double-comparison
-        //
-        // but, specifically, you should read the section `Epsilon comparisons` here:
-        //
-        // - https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
-
-        auto const difference = abs(a - b);
-        auto const permittedAbsoluteError = relativeError * max(abs(a), abs(b));
-        return difference <= permittedAbsoluteError;
-    }
 }
 
 
@@ -1024,70 +1008,9 @@ Radians osc::VerticalToHorizontalFOV(Radians verticalFOV, float aspectRatio)
     return 2.0f * atan(tan(verticalFOV / 2.0f) * aspectRatio);
 }
 
-Quat osc::Inverse(Quat const& q)
-{
-    return inverse(q);
-}
-
-Quat osc::QuatCast(Mat3 const& m)
-{
-    return quat_cast(Mat3{m});
-}
-
-Mat3 osc::ToMat3(Quat const& q)
-{
-    return mat3_cast(q);
-}
-
 Eulers osc::EulerAngles(Quat const& q)
 {
     return euler_angles(normalize(q));
-}
-
-// returns `true` if the values of `a` and `b` are effectively equal
-//
-// this algorithm is designed to be correct, rather than fast
-bool osc::IsEffectivelyEqual(double a, double b)
-{
-    // why:
-    //
-    //     http://realtimecollisiondetection.net/blog/?p=89
-    //     https://stackoverflow.com/questions/17333/what-is-the-most-effective-way-for-float-and-double-comparison
-    //
-    // machine epsilon is only relevant for numbers < 1.0, so the epsilon
-    // value must be scaled up to the magnitude of the operands if you need
-    // a more-correct equality comparison
-
-    double const scaledEpsilon = std::max({1.0, a, b}) * epsilon<double>;
-    return abs(a - b) < scaledEpsilon;
-}
-
-bool osc::IsLessThanOrEffectivelyEqual(double a, double b)
-{
-    if (a <= b)
-    {
-        return true;
-    }
-    else
-    {
-        return IsEffectivelyEqual(a, b);
-    }
-}
-
-bool osc::IsEqualWithinRelativeError(double a , double b, double relativeError)
-{
-    return ::IsEqualWithinRelativeError<double>(a, b, relativeError);
-}
-
-bool osc::IsEqualWithinRelativeError(float a, float b, float relativeError)
-{
-    return ::IsEqualWithinRelativeError<float>(a, b, relativeError);
-}
-
-bool osc::IsEqualWithinAbsoluteError(float a, float b, float absError)
-{
-    auto const difference = abs(a - b);
-    return difference <= absError;
 }
 
 Vec3::size_type osc::LongestDimIndex(Vec3 const& v)

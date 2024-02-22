@@ -109,7 +109,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorScalesFrames)
         SceneDecoration const& unscaledDec = unscaledDecs[i];
         SceneDecoration const& scaledDec = scaledDecs[i];
 
-        ASSERT_TRUE(IsEqualWithinRelativeError(scale*unscaledDec.transform.scale, scaledDec.transform.scale, 0.0001f));
+        ASSERT_TRUE(all(equal_within_reldiff(scale*unscaledDec.transform.scale, scaledDec.transform.scale, 0.0001f)));
     }
 }
 
@@ -175,7 +175,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorDoesNotScaleE
         SceneDecoration const& scaledDec = scaledDecs[i];
 
         // note: not scaled
-        ASSERT_TRUE(IsEqualWithinRelativeError(unscaledDec.transform.scale, scaledDec.transform.scale, 0.0001f));
+        ASSERT_TRUE(all(equal_within_reldiff(unscaledDec.transform.scale, scaledDec.transform.scale, 0.0001f)));
     }
 }
 

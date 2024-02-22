@@ -63,7 +63,7 @@ SimTK::Transform osc::ToSimTKTransform(Transform const& t)
 
 SimTK::Rotation osc::ToSimTKRotation(Quat const& q)
 {
-    return SimTK::Rotation{ToSimTKMat3(ToMat3(q))};
+    return SimTK::Rotation{ToSimTKMat3(mat3_cast(q))};
 }
 
 SimTK::Vec3 osc::ToSimTKRGBVec3(Color const& color)

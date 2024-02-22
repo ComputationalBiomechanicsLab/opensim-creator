@@ -37,51 +37,7 @@ namespace osc
     // computes horizontal FoV for a given vertical FoV + aspect ratio
     Radians VerticalToHorizontalFOV(Radians verticalFOV, float aspectRatio);
 
-    Quat Inverse(Quat const&);
-
-    Quat QuatCast(Mat3 const&);
-    Mat3 ToMat3(Quat const&);
-
     Eulers EulerAngles(Quat const&);
-
-    // returns `true` if the two arguments are effectively equal (i.e. within machine precision)
-    //
-    // this algorithm is designed to be correct, rather than fast
-    bool IsEffectivelyEqual(double, double);
-
-    bool IsLessThanOrEffectivelyEqual(double, double);
-
-    // returns `true` if the first two arguments are within `relativeError` of eachover
-    //
-    // careful: this won't work if either argument is equal to, or very near, zero (relative
-    //          requires scaling)
-    bool IsEqualWithinRelativeError(double, double, double relativeError);
-    bool IsEqualWithinRelativeError(float, float, float relativeError);
-
-    template<size_t L, std::floating_point T>
-    bool IsEqualWithinRelativeError(Vec<L, T> const& a, Vec<L, T> const& b, T relativeError)
-    {
-        for (size_t i = 0; i < L; ++i) {
-            if (!IsEqualWithinRelativeError(a[i], b[i], relativeError)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    // returns `true` if the first two arguments are within `absoluteError` of eachover
-    bool IsEqualWithinAbsoluteError(float, float, float absError);
-
-    template<size_t L, std::floating_point T>
-    bool IsEqualWithinAbsoluteError(Vec<L, T> const& a, Vec<L, T> const& b, T absError)
-    {
-        for (size_t i = 0; i < L; ++i) {
-            if (!IsEqualWithinAbsoluteError(a[i], b[i], absError)) {
-                return false;
-            }
-        }
-        return true;
-    }
 
     // ----- VecX/MatX helpers -----
 

@@ -154,6 +154,7 @@ add_library(oscar STATIC
     Maths/EulerPerspectiveCamera.h
     Maths/Eulers.h
     Maths/FrameAxis.h
+    Maths/Functors.h
     Maths/GeometricFunctions.h
     Maths/Line.h
     Maths/Mat.h

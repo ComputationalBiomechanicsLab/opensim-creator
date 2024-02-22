@@ -17,6 +17,7 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/Quat.h>
+#include <oscar/Maths/QuaternionFunctions.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Vec.h>
 #include <oscar/Maths/Vec3.h>
@@ -361,7 +362,7 @@ namespace
             Quat const oldRotationInGround = ToQuat(pof.getRotationInGround(state));
             Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
             Quat const newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
-            Quat const newRotationInParent = Inverse(parentRotationInGround) * newRotationInGround;
+            Quat const newRotationInParent = inverse(parentRotationInGround) * newRotationInGround;
 
             ActionTransformPof(
                 getUndoableModel(),
@@ -433,7 +434,7 @@ namespace
             Quat const oldRotationInGround = ToQuat(parent.getTransformInGround(state).R() * wrapObj.getTransform().R());
             Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
             Quat const newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
-            Quat const newRotationInParent = Inverse(parentRotationInGround) * newRotationInGround;
+            Quat const newRotationInParent = inverse(parentRotationInGround) * newRotationInGround;
 
             ActionTransformWrapObject(
                 getUndoableModel(),
@@ -504,7 +505,7 @@ namespace
             Quat const oldRotationInGround = ToQuat(parent.getTransformInGround(state).R() * contactGeom.getTransform().R());
             Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
             Quat const newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
-            Quat const newRotationInParent = Inverse(parentRotationInGround) * newRotationInGround;
+            Quat const newRotationInParent = inverse(parentRotationInGround) * newRotationInGround;
 
             ActionTransformContactGeometry(
                 getUndoableModel(),

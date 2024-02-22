@@ -324,7 +324,7 @@ namespace osc
         Mat<4, 4, T> LocalMatrix(ModelMatrix);
 
         // Normalize the matrix.
-        if(equal_within_absdiff(LocalMatrix[3][3], static_cast<T>(0), epsilon<T>)) {
+        if (equal_within_epsilon(LocalMatrix[3][3], static_cast<T>(0))) {
             return false;
         }
 
@@ -344,15 +344,15 @@ namespace osc
         PerspectiveMatrix[3][3] = static_cast<T>(1);
 
         /// TODO: Fixme!
-        if(equal_within_absdiff(determinant(PerspectiveMatrix), static_cast<T>(0), epsilon<T>)) {
+        if (equal_within_epsilon(determinant(PerspectiveMatrix), static_cast<T>(0))) {
             return false;
         }
 
         // First, isolate perspective.  This is the messiest.
         if(
-            !equal_within_absdiff(LocalMatrix[0][3], static_cast<T>(0), epsilon<T>) ||
-            !equal_within_absdiff(LocalMatrix[1][3], static_cast<T>(0), epsilon<T>) ||
-            !equal_within_absdiff(LocalMatrix[2][3], static_cast<T>(0), epsilon<T>))
+            !equal_within_epsilon(LocalMatrix[0][3], static_cast<T>(0)) ||
+            !equal_within_epsilon(LocalMatrix[1][3], static_cast<T>(0)) ||
+            !equal_within_epsilon(LocalMatrix[2][3], static_cast<T>(0)))
         {
             // rightHandSide is the right hand side of the equation.
             Vec<4, T> RightHandSide;

@@ -160,5 +160,5 @@ TEST(OpenSimActions, ActionFitSphereToMeshAppliesMeshesScaleFactorsCorrectly)
     ASSERT_TRUE(dynamic_cast<OpenSim::Sphere const*>(model.getSelected()));
     double const scaledRadius = dynamic_cast<OpenSim::Sphere const&>(*model.getSelected()).get_radius();
 
-    ASSERT_TRUE(IsEqualWithinRelativeError(scaledRadius, scalar*unscaledRadius, 0.0001));
+    ASSERT_TRUE(equal_within_reldiff(scaledRadius, scalar*unscaledRadius, 0.0001));
 }

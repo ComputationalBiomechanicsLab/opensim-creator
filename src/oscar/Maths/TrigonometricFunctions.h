@@ -1,7 +1,7 @@
 #pragma once
 
 #include <oscar/Maths/Angle.h>
-#include <oscar/Maths/CommonFunctions.h>
+#include <oscar/Maths/Functors.h>
 #include <oscar/Maths/Vec.h>
 
 #include <cmath>

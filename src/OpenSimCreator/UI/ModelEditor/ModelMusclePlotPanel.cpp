@@ -1382,7 +1382,7 @@ namespace
             {
                 std::optional<PlotDataPoint> data = cursor.peek();
 
-                if (data && IsLessThanOrEffectivelyEqual(data->x, *maybeX))
+                if (data && (data->x <= *maybeX || equal_within_epsilon(data->x, *maybeX)))
                 {
                     cols.push_back(std::to_string(data->y));
                     ++cursor;

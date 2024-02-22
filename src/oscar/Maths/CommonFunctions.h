@@ -1,6 +1,8 @@
 #pragma once
 
 #include <oscar/Maths/Angle.h>
+#include <oscar/Maths/Constants.h>
+#include <oscar/Maths/Functors.h>
 #include <oscar/Maths/Mat.h>
 #include <oscar/Maths/Vec.h>
 
@@ -11,42 +13,6 @@
 
 namespace osc
 {
-    template<typename T>
-    constexpr auto elementwise_map(Vec<2, T> const& v, T(*op)(T))
-    {
-        return Vec<2, T>{op(v.x), op(v.y)};
-    }
-
-    template<typename T>
-    constexpr auto elementwise_map(Vec<2, T> const& v1, Vec<2, T> const& v2, T(*op)(T, T))
-    {
-        return Vec<2, T>{op(v1.x, v2.x), op(v1.y, v2.y)};
-    }
-
-    template<typename T>
-    constexpr auto elementwise_map(Vec<3, T> const& v, T(*op)(T))
-    {
-        return Vec<3, T>{op(v.x), op(v.y), op(v.z)};
-    }
-
-    template<typename T>
-    constexpr auto elementwise_map(Vec<3, T> const& v1, Vec<3, T> const& v2, T(*op)(T, T))
-    {
-        return Vec<3, T>{op(v1.x, v2.x), op(v1.y, v2.y), op(v1.z, v2.z)};
-    }
-
-    template<typename T>
-    constexpr auto elementwise_map(Vec<4, T> const& v, T(*op)(T))
-    {
-        return Vec<4, T>{op(v.x), op(v.y), op(v.z), op(v.w)};
-    }
-
-    template<typename T>
-    constexpr auto elementwise_map(Vec<4, T> const& v1, Vec<4, T> const& v2, T(*op)(T, T))
-    {
-        return Vec<4, T>{op(v1.x, v2.x), op(v1.y, v2.y), op(v1.z, v2.z), op(v1.w, v2.w)};
-    }
-
     template<std::signed_integral T>
     T abs(T v)
     {
@@ -222,7 +188,7 @@ namespace osc
     }
 
     template<size_t L, typename T>
-    constexpr Vec<L, bool> less_than(Vec<L, T> const& x, Vec<L, T> const& y)
+    constexpr Vec<L, bool> elementwise_less(Vec<L, T> const& x, Vec<L, T> const& y)
     {
         Vec<L, bool> Result(true);
         for (size_t i = 0; i < L; ++i) {
@@ -232,13 +198,23 @@ namespace osc
     }
 
     template<size_t L, typename T>
-    constexpr Vec<L, bool> less_than(Vec<L, T> const& x, T const& v)
+    constexpr Vec<L, bool> elementwise_less(Vec<L, T> const& x, T const& v)
     {
         Vec<L, bool> Result(true);
         for (size_t i = 0; i < L; ++i) {
             Result[i] = x[i] < v;
         }
         return Result;
+    }
+
+    template<size_t L, typename T>
+    constexpr Vec<L, bool> elementwise_less_equal(Vec<L, T> const& x, Vec<L, T> const& y)
+    {
+        Vec<L, bool> rv(true);
+        for (size_t i = 0; i < L; ++i) {
+            rv[i] = x[i] <= y[i];
+        }
+        return rv;
     }
 
     template<std::floating_point T>
@@ -250,24 +226,61 @@ namespace osc
     template<size_t L, std::floating_point T>
     Vec<L, bool> equal_within_absdiff(Vec<L, T> const& x, Vec<L, T> const& y, Vec<L, T> const& eps)
     {
-        return less_than(abs(x - y), eps);
+        return elementwise_less(abs(x - y), eps);
     }
 
     template<size_t L, std::floating_point T>
     Vec<L, bool> equal_within_absdiff(Vec<L, T> const& x, Vec<L, T> const& y, T const& eps)
     {
-        return less_than(abs(x - y), eps);
+        return elementwise_less(abs(x - y), eps);
     }
 
-    template<size_t L>
-    constexpr bool all(Vec<L, bool> const& v)
+    template<std::floating_point T>
+    bool equal_within_epsilon(T x, T y)
     {
-        for (size_t i = 0; i < L; ++i) {
-            if (!v[i]) {
-                return false;
-            }
-        }
-        return true;
+        return equal_within_absdiff(x, y, epsilon<T>);
+    }
+
+    template<size_t L, std::floating_point T>
+    Vec<L, bool> equal_within_epsilon(Vec<L, T> const& x, Vec<L, T> const& y)
+    {
+        return equal_within_absdiff(x, y, Vec<L, T>{epsilon<T>});
+    }
+
+    template<std::floating_point T>
+    bool equal_within_scaled_epsilon(T x, T y)
+    {
+        // why:
+        //
+        //     http://realtimecollisiondetection.net/blog/?p=89
+        //     https://stackoverflow.com/questions/17333/what-is-the-most-effective-way-for-float-and-double-comparison
+        //
+        // machine epsilon is only relevant for numbers < 1.0, so the epsilon
+        // value must be scaled up to the magnitude of the operands if you need
+        // a more-correct equality comparison
+
+        T const scaledEpsilon = max(max(1.0, x), y) * epsilon<T>;
+        return abs(x - y) < scaledEpsilon;
+    }
+
+    template<std::floating_point T>
+    bool equal_within_reldiff(T x, T y, T releps)
+    {
+        // inspired from:
+        //
+        // - https://stackoverflow.com/questions/17333/what-is-the-most-effective-way-for-float-and-double-comparison
+        //
+        // but, specifically, you should read the section `Epsilon comparisons` here:
+        //
+        // - https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+
+        return abs(x - y) <= releps * max(abs(x), abs(y));
+    }
+
+    template<size_t L, std::floating_point T>
+    Vec<L, bool> equal_within_reldiff(Vec<L, T> const& x, Vec<L, T> const& y, T releps)
+    {
+        return elementwise_less_equal(abs(x - y), releps * elementwise_max(abs(x), abs(y)));
     }
 
     template<std::floating_point T>
