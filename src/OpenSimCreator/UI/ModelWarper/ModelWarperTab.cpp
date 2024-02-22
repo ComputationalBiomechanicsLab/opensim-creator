@@ -9,6 +9,7 @@
 
 #include <SDL_events.h>
 #include <oscar/Platform/App.h>
+#include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Tabs/StandardTabImpl.h>
 #include <oscar/Utils/CStringView.h>
@@ -48,6 +49,14 @@ public:
             [state = m_State](std::string_view panelName)
             {
                 return std::make_shared<ResultModelViewerPanel>(panelName, state);
+            }
+        );
+
+        m_PanelManager->registerToggleablePanel(
+            "Log",
+            [](std::string_view panelName)
+            {
+                return std::make_shared<LogViewerPanel>(panelName);
             }
         );
     }

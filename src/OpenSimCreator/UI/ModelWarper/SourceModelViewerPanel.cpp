@@ -22,12 +22,7 @@ public:
 private:
     void implDrawContent() final
     {
-        if (m_State->state() == ValidationState::Ok) {
-            ImGui::Text("ok!");
-        }
-        else {
-            TextCentered("cannot show - model is not warpable");
-        }
+        ImGui::Text("always show source model");
     }
 
     std::shared_ptr<UIState> m_State;

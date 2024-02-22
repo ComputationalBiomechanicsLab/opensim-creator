@@ -4,6 +4,7 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 
 #include <filesystem>
@@ -21,4 +22,9 @@ void osc::mow::UIState::actionOpenOsimOrPromptUser(std::optional<std::filesystem
         App::singleton<RecentFiles>()->push_back(*path);
         m_Document = std::make_shared<Document>(std::move(path).value());
     }
+}
+
+void osc::mow::UIState::actionWarpModelAndOpenInModelEditor()
+{
+    log_error("actually warping the model and putting it into an editor isn't implemented yet");
 }

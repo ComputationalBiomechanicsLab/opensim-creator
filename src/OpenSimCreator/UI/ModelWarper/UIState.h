@@ -29,10 +29,13 @@ namespace osc::mow
         ValidationState state(OpenSim::PhysicalOffsetFrame const& pof) const { return m_Document->state(pof); }
 
         ValidationState state() const { return m_Document->state(); }
+        bool canWarpModel() const { return state() != ValidationState::Error; }
 
         void actionOpenOsimOrPromptUser(
             std::optional<std::filesystem::path> maybeOsimPath = std::nullopt
         );
+
+        void actionWarpModelAndOpenInModelEditor();
     private:
         std::shared_ptr<Document> m_Document = std::make_shared<Document>();
     };
