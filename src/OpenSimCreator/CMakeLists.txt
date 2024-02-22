@@ -103,6 +103,8 @@ add_library(OpenSimCreator STATIC
     Documents/Model/UndoableModelStatePair.cpp
     Documents/Model/UndoableModelStatePair.h
 
+    Documents/ModelWarper/CachedModelWarper.cpp
+    Documents/ModelWarper/CachedModelWarper.h
     Documents/ModelWarper/Document.cpp
     Documents/ModelWarper/Document.h
     Documents/ModelWarper/FrameWarpLookup.cpp
