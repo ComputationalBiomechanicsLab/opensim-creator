@@ -1,34 +1,4 @@
-#include <oscar/Maths/AABB.h>
-#include <oscar/Maths/Angle.h>
-#include <oscar/Maths/BVH.h>
-#include <oscar/Maths/CollisionTests.h>
-#include <oscar/Maths/CommonFunctions.h>
-#include <oscar/Maths/Disc.h>
-#include <oscar/Maths/EasingFunctions.h>
-#include <oscar/Maths/EulerPerspectiveCamera.h>
-#include <oscar/Maths/FrameAxis.h>
-#include <oscar/Maths/GeometricFunctions.h>
-#include <oscar/Maths/Line.h>
-#include <oscar/Maths/Mat.h>
-#include <oscar/Maths/Mat3.h>
-#include <oscar/Maths/Mat4.h>
-#include <oscar/Maths/MathHelpers.h>
-#include <oscar/Maths/MatrixFunctions.h>
-#include <oscar/Maths/Plane.h>
-#include <oscar/Maths/PolarPerspectiveCamera.h>
-#include <oscar/Maths/Quat.h>
-#include <oscar/Maths/QuaternionFunctions.h>
-#include <oscar/Maths/RayCollision.h>
-#include <oscar/Maths/Rect.h>
-#include <oscar/Maths/Segment.h>
-#include <oscar/Maths/Sphere.h>
-#include <oscar/Maths/Tetrahedron.h>
-#include <oscar/Maths/Transform.h>
-#include <oscar/Maths/Triangle.h>
-#include <oscar/Maths/TrigonometricFunctions.h>
-#include <oscar/Maths/Vec2.h>
-#include <oscar/Maths/Vec3.h>
-#include <oscar/Maths/Vec4.h>
+#include <oscar/Maths.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/At.h>
@@ -996,22 +966,6 @@ namespace
 
         return RayCollision{t0, l.origin + t0*l.direction};
     }
-
-    template<std::floating_point TReal>
-    bool IsEqualWithinRelativeError(TReal a , TReal b, TReal relativeError)
-    {
-        // inspired from:
-        //
-        // - https://stackoverflow.com/questions/17333/what-is-the-most-effective-way-for-float-and-double-comparison
-        //
-        // but, specifically, you should read the section `Epsilon comparisons` here:
-        //
-        // - https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
-
-        auto const difference = abs(a - b);
-        auto const permittedAbsoluteError = relativeError * max(abs(a), abs(b));
-        return difference <= permittedAbsoluteError;
-    }
 }
 
 
@@ -1024,127 +978,6 @@ Radians osc::VerticalToHorizontalFOV(Radians verticalFOV, float aspectRatio)
     return 2.0f * atan(tan(verticalFOV / 2.0f) * aspectRatio);
 }
 
-Quat osc::Inverse(Quat const& q)
-{
-    return inverse(q);
-}
-
-Quat osc::QuatCast(Mat3 const& m)
-{
-    return quat_cast(Mat3{m});
-}
-
-Mat3 osc::ToMat3(Quat const& q)
-{
-    return mat3_cast(q);
-}
-
-Eulers osc::EulerAngles(Quat const& q)
-{
-    return euler_angles(normalize(q));
-}
-
-// returns `true` if the values of `a` and `b` are effectively equal
-//
-// this algorithm is designed to be correct, rather than fast
-bool osc::IsEffectivelyEqual(double a, double b)
-{
-    // why:
-    //
-    //     http://realtimecollisiondetection.net/blog/?p=89
-    //     https://stackoverflow.com/questions/17333/what-is-the-most-effective-way-for-float-and-double-comparison
-    //
-    // machine epsilon is only relevant for numbers < 1.0, so the epsilon
-    // value must be scaled up to the magnitude of the operands if you need
-    // a more-correct equality comparison
-
-    double const scaledEpsilon = std::max({1.0, a, b}) * epsilon<double>;
-    return abs(a - b) < scaledEpsilon;
-}
-
-bool osc::IsLessThanOrEffectivelyEqual(double a, double b)
-{
-    if (a <= b)
-    {
-        return true;
-    }
-    else
-    {
-        return IsEffectivelyEqual(a, b);
-    }
-}
-
-bool osc::IsEqualWithinRelativeError(double a , double b, double relativeError)
-{
-    return ::IsEqualWithinRelativeError<double>(a, b, relativeError);
-}
-
-bool osc::IsEqualWithinRelativeError(float a, float b, float relativeError)
-{
-    return ::IsEqualWithinRelativeError<float>(a, b, relativeError);
-}
-
-bool osc::IsEqualWithinAbsoluteError(float a, float b, float absError)
-{
-    auto const difference = abs(a - b);
-    return difference <= absError;
-}
-
-Vec3::size_type osc::LongestDimIndex(Vec3 const& v)
-{
-    if (v.x > v.y && v.x > v.z)
-    {
-        return 0;  // X is longest
-    }
-    else if (v.y > v.z)
-    {
-        return 1;  // Y is longest
-    }
-    else
-    {
-        return 2;  // Z is longest
-    }
-}
-
-Vec2::size_type osc::LongestDimIndex(Vec2 v)
-{
-    if (v.x > v.y)
-    {
-        return 0;  // X is longest
-    }
-    else
-    {
-        return 1;  // Y is longest
-    }
-}
-
-Vec2i::size_type osc::LongestDimIndex(Vec2i v)
-{
-    if (v.x > v.y)
-    {
-        return 0;  // X is longest
-    }
-    else
-    {
-        return 1;  // Y is longest
-    }
-}
-
-float osc::LongestDim(Vec3 const& v)
-{
-    return v[LongestDimIndex(v)];
-}
-
-float osc::LongestDim(Vec2 v)
-{
-    return v[LongestDimIndex(v)];
-}
-
-Vec2i::value_type osc::LongestDim(Vec2i v)
-{
-    return v[LongestDimIndex(v)];
-}
-
 float osc::AspectRatio(Vec2i v)
 {
     return static_cast<float>(v.x) / static_cast<float>(v.y);
@@ -1153,21 +986,6 @@ float osc::AspectRatio(Vec2i v)
 float osc::AspectRatio(Vec2 v)
 {
     return v.x/v.y;
-}
-
-Vec2 osc::Midpoint(Vec2 a, Vec2 b)
-{
-    return 0.5f*(a+b);
-}
-
-Vec3 osc::Midpoint(Vec3 const& a, Vec3 const& b)
-{
-    return 0.5f*(a+b);
-}
-
-Vec3 osc::Midpoint(std::span<Vec3 const> vs)
-{
-    return std::reduce(vs.begin(), vs.end()) / static_cast<float>(vs.size());
 }
 
 
@@ -1204,58 +1022,13 @@ Vec3 osc::TriangleNormal(Triangle const& tri)
     return normalize(perpendiular);
 }
 
-Mat3 osc::ToAdjugateMatrix(Mat3 const& m)
-{
-    // google: "Adjugate Matrix": it's related to the cofactor matrix and is
-    // related to the inverse of a matrix through:
-    //
-    //     inverse(M) = Adjugate(M) / determinant(M);
-
-    Mat3 rv;
-    rv[0][0] = + (m[1][1] * m[2][2] - m[2][1] * m[1][2]);
-    rv[1][0] = - (m[1][0] * m[2][2] - m[2][0] * m[1][2]);
-    rv[2][0] = + (m[1][0] * m[2][1] - m[2][0] * m[1][1]);
-    rv[0][1] = - (m[0][1] * m[2][2] - m[2][1] * m[0][2]);
-    rv[1][1] = + (m[0][0] * m[2][2] - m[2][0] * m[0][2]);
-    rv[2][1] = - (m[0][0] * m[2][1] - m[2][0] * m[0][1]);
-    rv[0][2] = + (m[0][1] * m[1][2] - m[1][1] * m[0][2]);
-    rv[1][2] = - (m[0][0] * m[1][2] - m[1][0] * m[0][2]);
-    rv[2][2] = + (m[0][0] * m[1][1] - m[1][0] * m[0][1]);
-    return rv;
-}
-
-Mat3 osc::ToNormalMatrix(Mat4 const& m)
-{
-    // "On the Transformation of Surface Normals" by Andrew Glassner (1987)
-    //
-    // "One option is to replace the inverse with the adjoint of M. The
-    //  adjoint is attractive because it always exists, even when M is
-    //  singular. The inverse and the adjoint are related by:
-    //
-    //      inverse(M) = adjoint(M) / determinant(M);
-    //
-    //  so, when the inverse exists, they only differ by a constant factor.
-    //  Therefore, using adjoint(M) instead of inverse(M) only affects the
-    //  magnitude of the resulting normal vector. Normal vectors have to
-    //  be normalized after mutiplication with a normal matrix anyway, so
-    //  nothing is lost"
-
-    Mat3 const topLeft{m};
-    return ToAdjugateMatrix(transpose(topLeft));
-}
-
-Mat4 osc::ToNormalMatrix4(Mat4 const& m)
-{
-    return ToNormalMatrix(m);
-}
-
 Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
 {
     // this is effectively a rewrite of glm::rotation(vec3 const&, vec3 const& dest);
 
     float const cosTheta = dot(dir1, dir2);
 
-    if(cosTheta >= static_cast<float>(1.0f) - epsilon<float>)
+    if(cosTheta >= static_cast<float>(1.0f) - epsilon_v<float>)
     {
         // `a` and `b` point in the same direction: return identity transform
         return Identity<Mat4>();
@@ -1263,7 +1036,7 @@ Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
 
     Radians theta{};
     Vec3 rotationAxis{};
-    if(cosTheta < static_cast<float>(-1.0f) + epsilon<float>)
+    if(cosTheta < static_cast<float>(-1.0f) + epsilon_v<float>)
     {
         // `a` and `b` point in opposite directions
         //
@@ -1271,7 +1044,7 @@ Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
         // - so we try "guessing" one and hope it's good (then try another if it isn't)
 
         rotationAxis = cross(Vec3{0.0f, 0.0f, 1.0f}, dir1);
-        if (length2(rotationAxis) < epsilon<float>)
+        if (length2(rotationAxis) < epsilon_v<float>)
         {
             // bad luck: they were parallel - use a different axis
             rotationAxis = cross(Vec3{1.0f, 0.0f, 0.0f}, dir1);
@@ -1609,7 +1382,7 @@ bool osc::IsZeroVolume(AABB const& a)
 
 Vec3::size_type osc::LongestDimIndex(AABB const& a)
 {
-    return LongestDimIndex(Dimensions(a));
+    return max_element_index(Dimensions(a));
 }
 
 float osc::LongestDim(AABB const& a)
@@ -1946,12 +1719,12 @@ Mat4 osc::ToInverseMat4(Transform const& t)
 
 Mat3 osc::ToNormalMatrix(Transform const& t)
 {
-    return ToAdjugateMatrix(transpose(ToMat3(t)));
+    return adjugate(transpose(ToMat3(t)));
 }
 
 Mat4 osc::ToNormalMatrix4(Transform const& t)
 {
-    return ToAdjugateMatrix(transpose(ToMat3(t)));
+    return adjugate(transpose(ToMat3(t)));
 }
 
 Transform osc::ToTransform(Mat4 const& mtx)
@@ -2180,7 +1953,7 @@ std::optional<RayCollision> osc::GetRayCollisionTriangle(Line const& l, Triangle
 
     // if the dot product is small, then the ray is probably very parallel to
     // the triangle (or, perpendicular to the normal) and doesn't intersect
-    if (abs(NdotR) < epsilon<float>)
+    if (abs(NdotR) < epsilon_v<float>)
     {
         return std::nullopt;
     }
@@ -2251,7 +2024,7 @@ float osc::EaseOutElastic(float x)
 {
     // adopted from: https://easings.net/#easeOutElastic
 
-    constexpr float c4 = 2.0f*pi<float> / 3.0f;
+    constexpr float c4 = 2.0f*pi_v<float> / 3.0f;
     float const normalized = saturate(x);
 
     return pow(2.0f, -5.0f*normalized) * sin((normalized*10.0f - 0.75f) * c4) + 1.0f;

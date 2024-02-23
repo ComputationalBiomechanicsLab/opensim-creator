@@ -1,52 +1,23 @@
 #pragma once
 
 #include <oscar/Maths/Angle.h>
-#include <oscar/Maths/Mat.h>
+#include <oscar/Maths/Constants.h>
+#include <oscar/Maths/Functors.h>
 #include <oscar/Maths/Vec.h>
 
+#include <algorithm>
 #include <cmath>
 #include <concepts>
 #include <cstddef>
+#include <initializer_list>
+#include <iterator>
+#include <numeric>
+#include <ranges>
+#include <span>
 #include <type_traits>
 
 namespace osc
 {
-    template<typename T>
-    constexpr auto elementwise_map(Vec<2, T> const& v, T(*op)(T))
-    {
-        return Vec<2, T>{op(v.x), op(v.y)};
-    }
-
-    template<typename T>
-    constexpr auto elementwise_map(Vec<2, T> const& v1, Vec<2, T> const& v2, T(*op)(T, T))
-    {
-        return Vec<2, T>{op(v1.x, v2.x), op(v1.y, v2.y)};
-    }
-
-    template<typename T>
-    constexpr auto elementwise_map(Vec<3, T> const& v, T(*op)(T))
-    {
-        return Vec<3, T>{op(v.x), op(v.y), op(v.z)};
-    }
-
-    template<typename T>
-    constexpr auto elementwise_map(Vec<3, T> const& v1, Vec<3, T> const& v2, T(*op)(T, T))
-    {
-        return Vec<3, T>{op(v1.x, v2.x), op(v1.y, v2.y), op(v1.z, v2.z)};
-    }
-
-    template<typename T>
-    constexpr auto elementwise_map(Vec<4, T> const& v, T(*op)(T))
-    {
-        return Vec<4, T>{op(v.x), op(v.y), op(v.z), op(v.w)};
-    }
-
-    template<typename T>
-    constexpr auto elementwise_map(Vec<4, T> const& v1, Vec<4, T> const& v2, T(*op)(T, T))
-    {
-        return Vec<4, T>{op(v1.x, v2.x), op(v1.y, v2.y), op(v1.z, v2.z), op(v1.w, v2.w)};
-    }
-
     template<std::signed_integral T>
     T abs(T v)
     {
@@ -59,10 +30,23 @@ namespace osc
         return std::fabs(v);
     }
 
+    template<size_t L, typename T>
+    Vec<L, T> abs(Vec<L, T> const& v)
+        requires std::is_arithmetic_v<T>
+    {
+        return map(v, abs<T>);
+    }
+
     template<std::floating_point T>
     T floor(T num)
     {
         return std::floor(num);
+    }
+
+    template<size_t L, std::floating_point T>
+    Vec<L, T> floor(Vec<L, T> const& v)
+    {
+        return map(v, floor<T>);
     }
 
     template<std::floating_point T>
@@ -71,15 +55,14 @@ namespace osc
         return std::copysign(mag, sgn);
     }
 
-    template<size_t L, typename T>
-    Vec<L, T> abs(Vec<L, T> const& v)
-        requires std::is_arithmetic_v<T>
+    template<std::integral T>
+    constexpr T mod(T x, T y)
     {
-        return elementwise_map(v, abs);
+        return x % y;
     }
 
     template<std::floating_point T>
-    T fmod(T x, T y)
+    T mod(T x, T y)
     {
         return std::fmod(x, y);
     }
@@ -90,10 +73,17 @@ namespace osc
         std::floating_point Rep2,
         AngularUnitTraits Units2
     >
-    auto fmod(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y) -> std::common_type_t<decltype(x), decltype(y)>
+    auto mod(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y) -> std::common_type_t<decltype(x), decltype(y)>
     {
         using CA = std::common_type_t<decltype(x), decltype(y)>;
-        return CA{fmod(CA{x}.count(), CA{y}.count())};
+        return CA{mod(CA{x}.count(), CA{y}.count())};
+    }
+
+    template<size_t L, typename T>
+    constexpr Vec<L, T> mod(Vec<L, T> const& a, Vec<L, T> const& b)
+        requires std::is_arithmetic_v<T>
+    {
+        return map(a, b, mod<T>);
     }
 
     // returns the smallest of `a` and `b`
@@ -101,15 +91,68 @@ namespace osc
     constexpr GenType min(GenType a, GenType b)
         requires std::is_arithmetic_v<GenType>
     {
-        return (b < a) ? b : a;
+        return std::min(a, b);
     }
 
-    // returns a vector containing min(a[dim], b[dim]) for each element
+    // returns the smallest of `a` and `b`, accounting for differences in angular units (e.g. 180_deg < 1_turn)
+    template<
+        std::floating_point Rep1,
+        AngularUnitTraits Units1,
+        std::floating_point Rep2,
+        AngularUnitTraits Units2
+    >
+    constexpr auto min(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y) -> std::common_type_t<decltype(x), decltype(y)>
+    {
+        using CA = std::common_type_t<decltype(x), decltype(y)>;
+        return CA{min(CA{x}.count(), CA{y}.count())};
+    }
+
+    // returns the smallest element in `v`
+    template<size_t L, typename T>
+    constexpr T min(Vec<L, T> const& v)
+        requires std::is_arithmetic_v<T>
+    {
+        auto it = v.begin();
+        auto const end = v.end();
+        T rv = *it;
+        while (++it != end) {
+            if (*it < rv) {
+                rv = *it;
+            }
+        }
+        return rv;
+    }
+
+    // returns an iterator to the smallest element in `v`
+    template<size_t L, typename T>
+    constexpr typename Vec<L, T>::const_iterator min_element(Vec<L, T> const& v)
+        requires std::is_arithmetic_v<T>
+    {
+        return std::min_element(v.begin(), v.end());
+    }
+
+    // returns an iterator to the smallest element in `v`
+    template<size_t L, typename T>
+    constexpr typename Vec<L, T>::iterator min_element(Vec<L, T>& v)
+        requires std::is_arithmetic_v<T>
+    {
+        return std::min_element(v.begin, v.end());
+    }
+
+    // returns the index of the smallest element in `v`
+    template<size_t L, typename T>
+    constexpr typename Vec<L, T>::size_type min_element_index(Vec<L, T> const& v)
+        requires std::is_arithmetic_v<T>
+    {
+        return std::distance(v.begin(), min_element(v));
+    }
+
+    // returns a vector containing `min(a, b)` for each element
     template<size_t L, typename T>
     constexpr Vec<L, T> elementwise_min(Vec<L, T> const& a, Vec<L, T> const& b)
         requires std::is_arithmetic_v<T>
     {
-        return elementwise_map(a, b, min);
+        return map(a, b, min<T>);
     }
 
     // returns the largest of `a` and `b`
@@ -117,7 +160,60 @@ namespace osc
     constexpr GenType max(GenType a, GenType b)
         requires std::is_arithmetic_v<GenType>
     {
-        return (a < b) ? b : a;
+        return std::max(a, b);
+    }
+
+    // returns the largest of `a` and `b`, accounting for differences in angular units (e.g. 180_deg < 1_turn)
+    template<
+        std::floating_point Rep1,
+        AngularUnitTraits Units1,
+        std::floating_point Rep2,
+        AngularUnitTraits Units2
+    >
+    constexpr auto max(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y) -> std::common_type_t<decltype(x), decltype(y)>
+    {
+        using CA = std::common_type_t<decltype(x), decltype(y)>;
+        return CA{max(CA{x}.count(), CA{y}.count())};
+    }
+
+    // returns the largest element in `v`
+    template<size_t L, typename T>
+    constexpr T max(Vec<L, T> const& v)
+        requires std::is_arithmetic_v<T>
+    {
+        auto it = v.begin();
+        auto const end = v.end();
+        T rv = *it;
+        while (++it != end) {
+            if (*it > rv) {
+                rv = *it;
+            }
+        }
+        return rv;
+    }
+
+    // returns an iterator to the largest element in `v`
+    template<size_t L, typename T>
+    constexpr typename Vec<L, T>::const_iterator max_element(Vec<L, T> const& v)
+        requires std::is_arithmetic_v<T>
+    {
+        return std::max_element(v.begin(), v.end());
+    }
+
+    // returns an iterator to the largest element in `v`
+    template<size_t L, typename T>
+    constexpr typename Vec<L, T>::iterator max_element(Vec<L, T>& v)
+        requires std::is_arithmetic_v<T>
+    {
+        return std::max_element(v.begin, v.end());
+    }
+
+    // returns the index of the largest element in `v`
+    template<size_t L, typename T>
+    constexpr typename Vec<L, T>::size_type max_element_index(Vec<L, T> const& v)
+        requires std::is_arithmetic_v<T>
+    {
+        return std::distance(v.begin(), max_element(v));
     }
 
     // returns a vector containing max(a[i], b[i]) for each element
@@ -125,7 +221,7 @@ namespace osc
     constexpr Vec<L, T> elementwise_max(Vec<L, T> const& a, Vec<L, T> const& b)
         requires std::is_arithmetic_v<T>
     {
-        return elementwise_map(a, b, max);
+        return map(a, b, max<T>);
     }
 
     // clamps `v` between `low` and `high` (inclusive)
@@ -133,7 +229,7 @@ namespace osc
     constexpr GenType clamp(GenType v, GenType low, GenType high)
         requires std::is_arithmetic_v<GenType>
     {
-        return min(max(v, low), high);
+        return std::clamp(v, low, high);
     }
 
     // clamps `v` between `low` and `high` (inclusive, all the same unit type)
@@ -163,20 +259,20 @@ namespace osc
         return clamp(v, Angle<Rep, Units>{min}, Angle<Rep, Units>{max});
     }
 
-    // clamps each element in `x` between the corresponding elements in `minVal` and `maxVal`
+    // clamps each element in `x` between the corresponding elements in `low` and `high`
     template<size_t L, typename T>
     constexpr Vec<L, T> clamp(Vec<L, T> const& v, Vec<L, T> const& low, Vec<L, T> const& high)
         requires std::is_arithmetic_v<T>
     {
-        return elementwise_min(elementwise_max(v, low), high);
+        return map(v, low, high, clamp<T>);
     }
 
-    // clamps each element in `x` between `minVal` and `maxVal`
+    // clamps each element in `x` between `low` and `high`
     template<size_t L, typename T>
     constexpr Vec<L, T> clamp(Vec<L, T> const& v, T const& low, T const& high)
         requires std::is_arithmetic_v<T>
     {
-        return clamp(v, Vec<L, T>{low}, Vec<L, T>{high});
+        return map(v, [&low, &high](T const& el) { return clamp(el, low, high); });
     }
 
     // clamps `v` between 0.0 and 1.0
@@ -210,52 +306,87 @@ namespace osc
     }
 
     template<size_t L, typename T>
-    constexpr Vec<L, bool> less_than(Vec<L, T> const& x, Vec<L, T> const& y)
+    constexpr Vec<L, bool> elementwise_less(Vec<L, T> const& x, Vec<L, T> const& y)
     {
-        Vec<L, bool> Result(true);
-        for (size_t i = 0; i < L; ++i) {
-            Result[i] = x[i] < y[i];
-        }
-        return Result;
+        return map(x, y, std::less<T>{});
     }
 
     template<size_t L, typename T>
-    constexpr Vec<L, bool> less_than(Vec<L, T> const& x, T const& v)
+    constexpr Vec<L, bool> elementwise_less(Vec<L, T> const& x, T const& v)
     {
-        Vec<L, bool> Result(true);
-        for (size_t i = 0; i < L; ++i) {
-            Result[i] = x[i] < v;
-        }
-        return Result;
+        return map(x, [&v](T const& el) { return el < v; });
+    }
+
+    template<size_t L, typename T>
+    constexpr Vec<L, bool> elementwise_less_equal(Vec<L, T> const& x, Vec<L, T> const& y)
+    {
+        return map(x, y, std::less_equal<T>{});
     }
 
     template<std::floating_point T>
-    bool equal_within_absdiff(T x, T y, T epsilon)
+    bool equal_within_absdiff(T x, T y, T epsilon_v)
     {
-        return abs(x - y) < epsilon;
+        return abs(x - y) < epsilon_v;
     }
 
     template<size_t L, std::floating_point T>
     Vec<L, bool> equal_within_absdiff(Vec<L, T> const& x, Vec<L, T> const& y, Vec<L, T> const& eps)
     {
-        return less_than(abs(x - y), eps);
+        return map(x, y, eps, equal_within_absdiff<T>);
     }
 
     template<size_t L, std::floating_point T>
     Vec<L, bool> equal_within_absdiff(Vec<L, T> const& x, Vec<L, T> const& y, T const& eps)
     {
-        return less_than(abs(x - y), eps);
+        return elementwise_less(abs(x - y), eps);
     }
 
-    template<size_t L>
-    constexpr bool all(Vec<L, bool> const& v)
+    template<std::floating_point T>
+    bool equal_within_epsilon(T x, T y)
     {
-        for (size_t i = 0; i < L; ++i) {
-            if (!v[i]) {
-                return false;
-            }
-        }
-        return true;
+        return equal_within_absdiff(x, y, epsilon_v<T>);
+    }
+
+    template<size_t L, std::floating_point T>
+    Vec<L, bool> equal_within_epsilon(Vec<L, T> const& x, Vec<L, T> const& y)
+    {
+        return equal_within_absdiff(x, y, epsilon_v<T>);
+    }
+
+    template<std::floating_point T>
+    bool equal_within_scaled_epsilon(T x, T y)
+    {
+        // why:
+        //
+        //     http://realtimecollisiondetection.net/blog/?p=89
+        //     https://stackoverflow.com/questions/17333/what-is-the-most-effective-way-for-float-and-double-comparison
+        //
+        // machine epsilon is only relevant for numbers < 1.0, so the epsilon
+        // value must be scaled up to the magnitude of the operands if you need
+        // a more-correct equality comparison
+
+        T const scaledEpsilon = std::max(static_cast<T>(1.0), x, y) * epsilon_v<T>;
+        return abs(x - y) < scaledEpsilon;
+    }
+
+    template<std::floating_point T>
+    bool equal_within_reldiff(T x, T y, T releps)
+    {
+        // inspired from:
+        //
+        // - https://stackoverflow.com/questions/17333/what-is-the-most-effective-way-for-float-and-double-comparison
+        //
+        // but, specifically, you should read the section `Epsilon comparisons` here:
+        //
+        // - https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+
+        return abs(x - y) <= releps * max(abs(x), abs(y));
+    }
+
+    template<size_t L, std::floating_point T>
+    Vec<L, bool> equal_within_reldiff(Vec<L, T> const& x, Vec<L, T> const& y, T releps)
+    {
+        return map(x, y, Vec<L, T>(releps), equal_within_reldiff<T>);
     }
 
     template<std::floating_point T>
@@ -268,5 +399,42 @@ namespace osc
     T pow(T base, T exp)
     {
         return std::pow(base, exp);
+    }
+
+    template<typename T>
+    constexpr T midpoint(T a, T b)
+        requires std::is_arithmetic_v<T>
+    {
+        return std::midpoint(a, b);
+    }
+
+    template<size_t L, typename T>
+    Vec<L, T> midpoint(Vec<L, T> const& a, Vec<L, T> const& b)
+    {
+        return map(a, b, midpoint<T>);
+    }
+
+    // returns the centroid of all of the provided vectors, or the zero vector if provided no inputs
+    template<
+        std::ranges::range Range,
+        typename VecElement = typename std::ranges::range_value_t<Range>,
+        size_t L = VecElement::length(),
+        typename T = typename VecElement::value_type
+    >
+    constexpr Vec<L, T> centroid(Range const& r)
+        requires std::is_arithmetic_v<T>
+    {
+        using std::begin;
+        using std::end;
+        using std::size;
+
+        return std::reduce(begin(r), end(r)) / static_cast<T>(size(r));
+    }
+
+    template<size_t L, typename T>
+    constexpr Vec<L, T> centroid(std::initializer_list<Vec<L, T>> const& vs)
+        requires std::is_arithmetic_v<T>
+    {
+        return centroid(std::span<Vec<L, T> const>{vs});
     }
 }

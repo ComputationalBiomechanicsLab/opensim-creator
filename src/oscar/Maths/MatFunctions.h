@@ -8,8 +8,16 @@
 #include <oscar/Maths/UnitVec3.h>
 #include <oscar/Maths/Vec.h>
 #include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/HashHelpers.h>
 
 #include <concepts>
+#include <cstddef>
+#include <functional>
+#include <ostream>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <utility>
 
 namespace osc
 {
@@ -42,7 +50,7 @@ namespace osc
     template<std::floating_point T, AngularUnitTraits Units>
     Mat<4, 4, T> perspective(Angle<T, Units> fovy, T aspect, T zNear, T zFar)
     {
-        if (fabs(aspect - epsilon<T>) <= T{}) {
+        if (fabs(aspect - epsilon_v<T>) <= T{}) {
             // edge-case: some UIs ask for a perspective matrix on first frame before
             // aspect ratio is known or the aspect ratio is NaN because of a division
             // by zero
@@ -324,7 +332,7 @@ namespace osc
         Mat<4, 4, T> LocalMatrix(ModelMatrix);
 
         // Normalize the matrix.
-        if(equal_within_absdiff(LocalMatrix[3][3], static_cast<T>(0), epsilon<T>)) {
+        if (equal_within_epsilon(LocalMatrix[3][3], static_cast<T>(0))) {
             return false;
         }
 
@@ -344,15 +352,15 @@ namespace osc
         PerspectiveMatrix[3][3] = static_cast<T>(1);
 
         /// TODO: Fixme!
-        if(equal_within_absdiff(determinant(PerspectiveMatrix), static_cast<T>(0), epsilon<T>)) {
+        if (equal_within_epsilon(determinant(PerspectiveMatrix), static_cast<T>(0))) {
             return false;
         }
 
         // First, isolate perspective.  This is the messiest.
         if(
-            !equal_within_absdiff(LocalMatrix[0][3], static_cast<T>(0), epsilon<T>) ||
-            !equal_within_absdiff(LocalMatrix[1][3], static_cast<T>(0), epsilon<T>) ||
-            !equal_within_absdiff(LocalMatrix[2][3], static_cast<T>(0), epsilon<T>))
+            !equal_within_epsilon(LocalMatrix[0][3], static_cast<T>(0)) ||
+            !equal_within_epsilon(LocalMatrix[1][3], static_cast<T>(0)) ||
+            !equal_within_epsilon(LocalMatrix[2][3], static_cast<T>(0)))
         {
             // rightHandSide is the right hand side of the equation.
             Vec<4, T> RightHandSide;
@@ -477,4 +485,103 @@ namespace osc
 
         return true;
     }
+
+    template<std::floating_point T>
+    Mat<3, 3, T> adjugate(Mat<3, 3, T> const& m)
+    {
+        // google: "Adjugate Matrix": it's related to the cofactor matrix and is
+        // related to the inverse of a matrix through:
+        //
+        //     inverse(M) = Adjugate(M) / determinant(M);
+
+        Mat<3, 3, T> rv;
+        rv[0][0] = + (m[1][1] * m[2][2] - m[2][1] * m[1][2]);
+        rv[1][0] = - (m[1][0] * m[2][2] - m[2][0] * m[1][2]);
+        rv[2][0] = + (m[1][0] * m[2][1] - m[2][0] * m[1][1]);
+        rv[0][1] = - (m[0][1] * m[2][2] - m[2][1] * m[0][2]);
+        rv[1][1] = + (m[0][0] * m[2][2] - m[2][0] * m[0][2]);
+        rv[2][1] = - (m[0][0] * m[2][1] - m[2][0] * m[0][1]);
+        rv[0][2] = + (m[0][1] * m[1][2] - m[1][1] * m[0][2]);
+        rv[1][2] = - (m[0][0] * m[1][2] - m[1][0] * m[0][2]);
+        rv[2][2] = + (m[0][0] * m[1][1] - m[1][0] * m[0][1]);
+        return rv;
+    }
+
+    template<std::floating_point T>
+    Mat<3, 3, T> normal_matrix(Mat<4, 4, T> const& m)
+    {
+        // "On the Transformation of Surface Normals" by Andrew Glassner (1987)
+        //
+        // "One option is to replace the inverse with the adjoint of M. The
+        //  adjoint is attractive because it always exists, even when M is
+        //  singular. The inverse and the adjoint are related by:
+        //
+        //      inverse(M) = adjoint(M) / determinant(M);
+        //
+        //  so, when the inverse exists, they only differ by a constant factor.
+        //  Therefore, using adjoint(M) instead of inverse(M) only affects the
+        //  magnitude of the resulting normal vector. Normal vectors have to
+        //  be normalized after mutiplication with a normal matrix anyway, so
+        //  nothing is lost"
+
+        Mat<3, 3, T> const topLeft{m};
+        return adjugate(transpose(topLeft));
+    }
+
+    template<std::floating_point T>
+    Mat<4, 4, T> normal_matrix4(Mat<4, 4, T> const& m)
+    {
+        return Mat<4, 4, T>{normal_matrix(m)};
+    }
+
+    template<size_t C, size_t R, typename T>
+    constexpr T const* value_ptr(Mat<C, R, T> const& m)
+    {
+        return m.data()->data();
+    }
+
+    template<size_t C, size_t R, typename T>
+    constexpr T* value_ptr(Mat<C, R, T>& m)
+    {
+        return m.data()->data();
+    }
+
+    template<size_t C, size_t R, typename T>
+    std::ostream& operator<<(std::ostream& o, Mat<C, R, T> const& m)
+    {
+        for (size_t row = 0; row < R; ++row) {
+            std::string_view delim;
+            for (size_t col = 0; col < C; ++col) {
+                o << delim << m[col][row];
+                delim = " ";
+            }
+            o << '\n';
+        }
+        return o;
+    }
+
+    template<size_t C, size_t R, typename T>
+    std::string to_string(Mat<C, R, T> const& m)
+    {
+        std::stringstream ss;
+        ss << m;
+        return std::move(ss).str();
+    }
+
+    template<typename T>
+    constexpr T Identity();
+
+    template<>
+    constexpr Mat4 Identity<Mat4>()
+    {
+        return Mat4{1.0f};
+    }
 }
+
+template<size_t C, size_t R, typename T>
+struct std::hash<osc::Mat<C, R, T>> final {
+    size_t operator()(osc::Mat<C, R, T> const& m) const
+    {
+        return osc::HashRange(m);
+    }
+};

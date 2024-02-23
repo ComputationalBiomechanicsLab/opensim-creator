@@ -154,12 +154,13 @@ add_library(oscar STATIC
     Maths/EulerPerspectiveCamera.h
     Maths/Eulers.h
     Maths/FrameAxis.h
+    Maths/Functors.h
     Maths/GeometricFunctions.h
     Maths/Line.h
     Maths/Mat.h
+    Maths/MatFunctions.h
     Maths/MathHelpers.h
     Maths/MathsImplementation.cpp
-    Maths/MatrixFunctions.h
     Maths/Mat3.h
     Maths/Mat4.h
     Maths/Plane.h
@@ -179,6 +180,7 @@ add_library(oscar STATIC
     Maths/UnitVec.h
     Maths/UnitVec3.h
     Maths/Vec.h
+    Maths/VecFunctions.h
     Maths/Vec2.h
     Maths/Vec3.h
     Maths/Vec4.h
@@ -221,6 +223,7 @@ add_library(oscar STATIC
     Shims/Cpp20/bit.h
     Shims/Cpp20/stop_token.h
     Shims/Cpp20/thread.h
+    Shims/Cpp23/cstddef.h
     Shims/Cpp23/utility.h
 
     UI/Panels/IPanel.h

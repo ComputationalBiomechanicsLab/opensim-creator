@@ -102,7 +102,7 @@ Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
                 centroid += vertices.at(mesh.getFaceVertex(face, vert));
             }
             centroid /= static_cast<float>(numFaceVerts);
-            uint32_t const centroidIdx = static_cast<uint32_t>(vertices.size());
+            auto const centroidIdx = static_cast<uint32_t>(vertices.size());
             vertices.push_back(centroid);
 
             // triangulate polygon loop

@@ -3,6 +3,7 @@
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpableOpenSimComponent.h>
+#include <OpenSimCreator/UI/ModelWarper/ModelWarperUIHelpers.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
@@ -27,25 +28,6 @@ using namespace osc::mow;
 // UI (generic)
 namespace
 {
-    struct EntryStyling final {
-        CStringView icon;
-        Color color;
-    };
-
-    EntryStyling ToStyle(ValidationState s)
-    {
-        static_assert(NumOptions<ValidationState>() == 3);
-        switch (s) {
-        case ValidationState::Ok:
-            return {.icon = ICON_FA_CHECK, .color = Color::green()};
-        case ValidationState::Warning:
-            return {.icon = ICON_FA_EXCLAMATION, .color = Color::orange()};
-        default:
-        case ValidationState::Error:
-            return {.icon = ICON_FA_TIMES, .color = Color::red()};
-        }
-    }
-
     template<WarpableOpenSimComponent T>
     EntryStyling CalcStyle(UIState const& state, T const& c)
     {

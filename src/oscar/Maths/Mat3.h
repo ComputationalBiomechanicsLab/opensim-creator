@@ -2,13 +2,9 @@
 
 #include <oscar/Maths/Mat.h>
 #include <oscar/Maths/Vec3.h>
-#include <oscar/Utils/HashHelpers.h>
 
 #include <cstddef>
 #include <cstdint>
-#include <ostream>
-#include <string>
-#include <string_view>
 
 namespace osc
 {
@@ -378,58 +374,9 @@ namespace osc
         return m1_copy /= m2;
     }
 
-    template<typename T>
-    constexpr T const* ValuePtr(Mat<3, 3, T> const& m)
-    {
-        return m.data()->data();
-    }
-
     using Mat3 = Mat<3, 3, float>;
     using Mat3f = Mat<3, 3, float>;
     using Mat3d = Mat<3, 3, double>;
     using Mat3i = Mat<3, 3, int>;
     using Mat3u32 = Mat<3, 3, uint32_t>;
-
-    template<typename T>
-    std::ostream& operator<<(std::ostream& o, Mat<3, 3, T> const& m)
-    {
-        // prints in row-major, because that's how most people debug matrices
-        for (Mat3::size_type row = 0; row < 3; ++row) {
-            std::string_view delim;
-            for (Mat3::size_type col = 0; col < 3; ++col) {
-                o << delim << m[col][row];
-                delim = " ";
-            }
-            o << '\n';
-        }
-        return o;
-    }
-
-    template<typename T>
-    std::string to_string(Mat<3, 3, T> const& m)
-    {
-        using std::to_string;
-
-        // prints in row-major, because that's how most people debug matrices
-        std::string rv;
-        for (Mat3::size_type row = 0; row < 3; ++row) {
-            std::string_view delim;
-            for (Mat3::size_type col = 0; col < 3; ++col) {
-                rv += delim;
-                rv += to_string(m[col][row]);
-                delim = " ";
-            }
-            rv += '\n';
-        }
-        return rv;
-    }
 }
-
-template<>
-struct std::hash<osc::Mat3> final {
-    size_t operator()(osc::Mat3 const& v) const
-    {
-        return osc::HashRange(v);
-    }
-};
-

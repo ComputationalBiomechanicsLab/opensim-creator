@@ -37,6 +37,7 @@
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Rect.h>
+#include <oscar/Maths/VecFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
@@ -541,7 +542,7 @@ void osc::DrawPointTranslationInformationWithRespectTo(
     ImGui::SameLine();
     DrawHelpMarker("translation", "Translational offset (in meters) of the point expressed in the chosen frame");
     ImGui::SameLine();
-    ImGui::InputFloat3("##translation", ValuePtr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputFloat3("##translation", value_ptr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
 void osc::DrawDirectionInformationWithRepsectTo(
@@ -556,7 +557,7 @@ void osc::DrawDirectionInformationWithRepsectTo(
     ImGui::SameLine();
     DrawHelpMarker("direction", "a unit vector expressed in the given frame");
     ImGui::SameLine();
-    ImGui::InputFloat3("##direction", ValuePtr(direction), "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputFloat3("##direction", value_ptr(direction), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
 void osc::DrawFrameInformationExpressedIn(
@@ -572,13 +573,13 @@ void osc::DrawFrameInformationExpressedIn(
     ImGui::SameLine();
     DrawHelpMarker("translation", "Translational offset (in meters) of the frame's origin expressed in the chosen frame");
     ImGui::SameLine();
-    ImGui::InputFloat3("##translation", ValuePtr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputFloat3("##translation", value_ptr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
 
     ImGui::Text("orientation");
     ImGui::SameLine();
     DrawHelpMarker("orientation", "Orientation offset (in radians) of the frame, expressed in the chosen frame as a frame-fixed x-y-z rotation sequence");
     ImGui::SameLine();
-    ImGui::InputFloat3("##orientation", ValuePtr(rotationEulers), "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputFloat3("##orientation", value_ptr(rotationEulers), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
 bool osc::BeginCalculateMenu(CalculateMenuFlags flags)
@@ -975,8 +976,8 @@ bool osc::DrawAdvancedParamsEditor(
     ImGui::Dummy({0.0f, 10.0f});
     ImGui::Text("advanced scene properties:");
     ImGui::Separator();
-    edited = ImGui::ColorEdit3("light_color", ValuePtr(params.lightColor)) || edited;
-    edited = ImGui::ColorEdit3("background color", ValuePtr(params.backgroundColor)) || edited;
+    edited = ImGui::ColorEdit3("light_color", value_ptr(params.lightColor)) || edited;
+    edited = ImGui::ColorEdit3("background color", value_ptr(params.backgroundColor)) || edited;
     edited = InputMetersFloat3("floor location", params.floorLocation) || edited;
     DrawTooltipBodyOnlyIfItemHovered("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
 

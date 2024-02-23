@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshGenerators.h>
+#include <oscar/Maths/CommonFunctions.h>
 #include <oscar/Maths/Ellipsoid.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Plane.h>
@@ -40,8 +41,8 @@ TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenAUnitSphereMesh)
     Mesh const sphereMesh = GenerateUVSphereMesh(16, 16);
     Sphere const sphereFit = FitSphere(sphereMesh);
 
-    ASSERT_TRUE(IsEqualWithinAbsoluteError(sphereFit.origin, Vec3{}, 0.000001f));
-    ASSERT_TRUE(IsEqualWithinAbsoluteError(sphereFit.radius, 1.0f, 0.000001f));
+    ASSERT_TRUE(all(equal_within_absdiff(sphereFit.origin, Vec3{}, 0.000001f)));
+    ASSERT_TRUE(equal_within_absdiff(sphereFit.radius, 1.0f, 0.000001f));
 }
 
 TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphere)
@@ -56,8 +57,8 @@ TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphere)
 
     Sphere const sphereFit = FitSphere(sphereMesh);
 
-    ASSERT_TRUE(IsEqualWithinAbsoluteError(sphereFit.origin, t.position, 0.000001f));
-    ASSERT_TRUE(IsEqualWithinAbsoluteError(sphereFit.radius, t.scale.x, 0.000001f));
+    ASSERT_TRUE(all(equal_within_absdiff(sphereFit.origin, t.position, 0.000001f)));
+    ASSERT_TRUE(equal_within_reldiff(sphereFit.radius, t.scale.x, 0.000001f));
 }
 
 // reproduction: ensure the C++ rewrite produces similar results to:
@@ -89,8 +90,8 @@ TEST(FitSphere, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgo
     Mesh const mesh = LoadMeshViaSimTK(objPath);
     Sphere const sphereFit = FitSphere(mesh);
 
-    ASSERT_TRUE(IsEqualWithinAbsoluteError(sphereFit.origin, c_ExpectedSphere.origin, 0.0001f));
-    ASSERT_TRUE(IsEqualWithinAbsoluteError(sphereFit.radius, c_ExpectedSphere.radius, 0.0001f));
+    ASSERT_TRUE(all(equal_within_absdiff(sphereFit.origin, c_ExpectedSphere.origin, 0.0001f)));
+    ASSERT_TRUE(equal_within_absdiff(sphereFit.radius, c_ExpectedSphere.radius, 0.0001f));
 }
 
 TEST(FitPlane, ReturnsUnitPlanePointingUpInYIfGivenAnEmptyMesh)
@@ -136,8 +137,8 @@ TEST(FitPlane, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgor
     Mesh const mesh = LoadMeshViaSimTK(objPath);
     Plane const planeFit = FitPlane(mesh);
 
-    ASSERT_TRUE(IsEqualWithinAbsoluteError(planeFit.origin, c_ExpectedPlane.origin, 0.0001f));
-    ASSERT_TRUE(IsEqualWithinAbsoluteError(planeFit.normal, c_ExpectedPlane.normal, 0.0001f));
+    ASSERT_TRUE(all(equal_within_absdiff(planeFit.origin, c_ExpectedPlane.origin, 0.0001f)));
+    ASSERT_TRUE(all(equal_within_absdiff(planeFit.normal, c_ExpectedPlane.normal, 0.0001f)));
 }
 
 // reproduction: ensure the C++ rewrite produces similar results to:
@@ -183,11 +184,11 @@ TEST(FitEllipsoid, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedA
     Mesh const mesh = LoadMeshViaSimTK(objPath);
     Ellipsoid const fit = FitEllipsoid(mesh);
 
-    ASSERT_TRUE(IsEqualWithinAbsoluteError(fit.origin, c_ExpectedFit.origin, c_MaximumAbsoluteError));
-    ASSERT_TRUE(IsEqualWithinAbsoluteError(fit.radii, c_ExpectedFit.radii, c_MaximumAbsoluteError));
-    ASSERT_TRUE(IsEqualWithinAbsoluteError(fit.radiiDirections[0], c_ExpectedFit.radiiDirections[0], c_MaximumAbsoluteError));
-    ASSERT_TRUE(IsEqualWithinAbsoluteError(fit.radiiDirections[1], c_ExpectedFit.radiiDirections[1], c_MaximumAbsoluteError));
-    ASSERT_TRUE(IsEqualWithinAbsoluteError(fit.radiiDirections[2], c_ExpectedFit.radiiDirections[2], c_MaximumAbsoluteError));
+    ASSERT_TRUE(all(equal_within_absdiff(fit.origin, c_ExpectedFit.origin, c_MaximumAbsoluteError)));
+    ASSERT_TRUE(all(equal_within_absdiff(fit.radii, c_ExpectedFit.radii, c_MaximumAbsoluteError)));
+    ASSERT_TRUE(all(equal_within_absdiff(fit.radiiDirections[0], c_ExpectedFit.radiiDirections[0], c_MaximumAbsoluteError)));
+    ASSERT_TRUE(all(equal_within_absdiff(fit.radiiDirections[1], c_ExpectedFit.radiiDirections[1], c_MaximumAbsoluteError)));
+    ASSERT_TRUE(all(equal_within_absdiff(fit.radiiDirections[2], c_ExpectedFit.radiiDirections[2], c_MaximumAbsoluteError)));
 }
 
 TEST(FitEllipsoid, DISABLED_ThrowsErrorIfGivenLessThan9Points)

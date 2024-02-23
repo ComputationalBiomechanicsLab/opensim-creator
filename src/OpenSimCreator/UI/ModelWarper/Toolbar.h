@@ -22,6 +22,7 @@ namespace osc::mow
         void onDraw();
     private:
         void drawContent();
+        void drawWarpModelButton();
 
         std::string m_Label;
         std::shared_ptr<UIState> m_State;

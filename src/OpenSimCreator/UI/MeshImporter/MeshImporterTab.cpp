@@ -36,12 +36,14 @@
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/Mat4.h>
+#include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Maths/VecFunctions.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/os.h>
@@ -891,7 +893,7 @@ private:
         if (e.canChangePosition())
         {
             Vec3 translation = e.getPos(mg);
-            if (ImGui::InputFloat3("Translation", ValuePtr(translation), "%.6f"))
+            if (ImGui::InputFloat3("Translation", value_ptr(translation), "%.6f"))
             {
                 mg.updByID(e.getID()).setPos(mg, translation);
             }
@@ -908,7 +910,7 @@ private:
         // rotation editor
         if (e.canChangeRotation())
         {
-            Eulers eulers = EulerAngles(e.getRotation(m_Shared->getModelGraph()));
+            Eulers eulers = euler_angles(normalize(e.getRotation(m_Shared->getModelGraph())));
 
             if (InputAngle3("Rotation", eulers, "%.6f"))
             {
@@ -929,7 +931,7 @@ private:
         if (e.canChangeScale())
         {
             Vec3 scaleFactors = e.getScale(mg);
-            if (ImGui::InputFloat3("Scale", ValuePtr(scaleFactors), "%.6f"))
+            if (ImGui::InputFloat3("Scale", value_ptr(scaleFactors), "%.6f"))
             {
                 mg.updByID(e.getID()).setScale(mg, scaleFactors);
             }
@@ -1771,7 +1773,7 @@ private:
             {
                 Color colorVal = colors[i];
                 ImGui::PushID(imguiID++);
-                if (ImGui::ColorEdit4(labels[i], ValuePtr(colorVal)))
+                if (ImGui::ColorEdit4(labels[i], value_ptr(colorVal)))
                 {
                     m_Shared->setColor(i, colorVal);
                 }
@@ -2111,12 +2113,12 @@ private:
         Mat4 delta;
         SetImguizmoStyleToOSCStandard();
         bool manipulated = ImGuizmo::Manipulate(
-            ValuePtr(m_Shared->getCamera().getViewMtx()),
-            ValuePtr(m_Shared->getCamera().getProjMtx(AspectRatio(sceneRect))),
+            value_ptr(m_Shared->getCamera().getViewMtx()),
+            value_ptr(m_Shared->getCamera().getProjMtx(AspectRatio(sceneRect))),
             m_ImGuizmoState.op,
             m_ImGuizmoState.mode,
-            ValuePtr(m_ImGuizmoState.mtx),
-            ValuePtr(delta),
+            value_ptr(m_ImGuizmoState.mtx),
+            value_ptr(delta),
             nullptr,
             nullptr,
             nullptr
@@ -2145,10 +2147,10 @@ private:
         Vec3 rotationDegrees;
         Vec3 scale;
         ImGuizmo::DecomposeMatrixToComponents(
-            ValuePtr(delta),
-            ValuePtr(translation),
-            ValuePtr(rotationDegrees),
-            ValuePtr(scale)
+            value_ptr(delta),
+            value_ptr(translation),
+            value_ptr(rotationDegrees),
+            value_ptr(scale)
         );
         Eulers rotation = Vec<3, Degrees>{rotationDegrees};
 

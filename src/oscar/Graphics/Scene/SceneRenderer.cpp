@@ -16,8 +16,8 @@
 #include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Graphics/TextureGenerators.h>
 #include <oscar/Maths/Angle.h>
-#include <oscar/Maths/MatrixFunctions.h>
 #include <oscar/Maths/Mat4.h>
+#include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/QuaternionFunctions.h>

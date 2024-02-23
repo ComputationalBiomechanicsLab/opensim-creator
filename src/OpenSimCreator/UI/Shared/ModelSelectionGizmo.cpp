@@ -14,13 +14,16 @@
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/Eulers.h>
 #include <oscar/Maths/Mat4.h>
+#include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/Quat.h>
+#include <oscar/Maths/QuaternionFunctions.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Vec.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
+#include <oscar/Maths/VecFunctions.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/UI/ImGuizmoHelpers.h>
@@ -361,7 +364,7 @@ namespace
             Quat const oldRotationInGround = ToQuat(pof.getRotationInGround(state));
             Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
             Quat const newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
-            Quat const newRotationInParent = Inverse(parentRotationInGround) * newRotationInGround;
+            Quat const newRotationInParent = inverse(parentRotationInGround) * newRotationInGround;
 
             ActionTransformPof(
                 getUndoableModel(),
@@ -433,7 +436,7 @@ namespace
             Quat const oldRotationInGround = ToQuat(parent.getTransformInGround(state).R() * wrapObj.getTransform().R());
             Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
             Quat const newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
-            Quat const newRotationInParent = Inverse(parentRotationInGround) * newRotationInGround;
+            Quat const newRotationInParent = inverse(parentRotationInGround) * newRotationInGround;
 
             ActionTransformWrapObject(
                 getUndoableModel(),
@@ -504,7 +507,7 @@ namespace
             Quat const oldRotationInGround = ToQuat(parent.getTransformInGround(state).R() * contactGeom.getTransform().R());
             Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
             Quat const newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
-            Quat const newRotationInParent = Inverse(parentRotationInGround) * newRotationInGround;
+            Quat const newRotationInParent = inverse(parentRotationInGround) * newRotationInGround;
 
             ActionTransformContactGeometry(
                 getUndoableModel(),
@@ -570,12 +573,12 @@ namespace
 
         SetImguizmoStyleToOSCStandard();
         bool const gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
-            ValuePtr(camera.getViewMtx()),
-            ValuePtr(camera.getProjMtx(AspectRatio(viewportRect))),
+            value_ptr(camera.getViewMtx()),
+            value_ptr(camera.getProjMtx(AspectRatio(viewportRect))),
             operation,
             mode,
-            ValuePtr(currentXformInGround),
-            ValuePtr(deltaInGround),
+            value_ptr(currentXformInGround),
+            value_ptr(deltaInGround),
             nullptr,
             nullptr,
             nullptr
@@ -602,10 +605,10 @@ namespace
         Vec3 rotationInGroundDegrees{};
         Vec3 scaleInGround{};
         ImGuizmo::DecomposeMatrixToComponents(
-            ValuePtr(deltaInGround),
-            ValuePtr(translationInGround),
-            ValuePtr(rotationInGroundDegrees),
-            ValuePtr(scaleInGround)
+            value_ptr(deltaInGround),
+            value_ptr(translationInGround),
+            value_ptr(rotationInGroundDegrees),
+            value_ptr(scaleInGround)
         );
         Eulers rotationInGround = Vec<3, Degrees>(rotationInGroundDegrees);
 

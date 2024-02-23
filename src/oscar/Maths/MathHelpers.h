@@ -37,98 +37,13 @@ namespace osc
     // computes horizontal FoV for a given vertical FoV + aspect ratio
     Radians VerticalToHorizontalFOV(Radians verticalFOV, float aspectRatio);
 
-    Quat Inverse(Quat const&);
-
-    Quat QuatCast(Mat3 const&);
-    Mat3 ToMat3(Quat const&);
-
-    Eulers EulerAngles(Quat const&);
-
-    // returns `true` if the two arguments are effectively equal (i.e. within machine precision)
-    //
-    // this algorithm is designed to be correct, rather than fast
-    bool IsEffectivelyEqual(double, double);
-
-    bool IsLessThanOrEffectivelyEqual(double, double);
-
-    // returns `true` if the first two arguments are within `relativeError` of eachover
-    //
-    // careful: this won't work if either argument is equal to, or very near, zero (relative
-    //          requires scaling)
-    bool IsEqualWithinRelativeError(double, double, double relativeError);
-    bool IsEqualWithinRelativeError(float, float, float relativeError);
-
-    template<size_t L, std::floating_point T>
-    bool IsEqualWithinRelativeError(Vec<L, T> const& a, Vec<L, T> const& b, T relativeError)
-    {
-        for (size_t i = 0; i < L; ++i) {
-            if (!IsEqualWithinRelativeError(a[i], b[i], relativeError)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    // returns `true` if the first two arguments are within `absoluteError` of eachover
-    bool IsEqualWithinAbsoluteError(float, float, float absError);
-
-    template<size_t L, std::floating_point T>
-    bool IsEqualWithinAbsoluteError(Vec<L, T> const& a, Vec<L, T> const& b, T absError)
-    {
-        for (size_t i = 0; i < L; ++i) {
-            if (!IsEqualWithinAbsoluteError(a[i], b[i], absError)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     // ----- VecX/MatX helpers -----
-
-    // returns true if the provided vectors are at the same location
-    template<size_t L, typename T>
-    bool AreAtSameLocation(Vec<L, T> const& a, Vec<L, T> const& b)
-        requires std::is_arithmetic_v<T>
-    {
-        auto const b2a = a - b;
-        return dot(b2a, b2a) > (epsilon<T> * epsilon<T>);
-    }
-
-    bool AreAtSameLocation(Vec3 const&, Vec3 const&);
-
-    // returns the *index* of a vector's longest dimension
-    Vec3::size_type LongestDimIndex(Vec3 const&);
-
-    // returns the *index* of a vector's longest dimension
-    Vec2::size_type LongestDimIndex(Vec2);
-
-    // returns the *index* of a vector's longest dimension
-    Vec2i::size_type LongestDimIndex(Vec2i);
-
-    // returns the *value* of a vector's longest dimension
-    float LongestDim(Vec3 const&);
-
-    // returns the *value* of a vector's longest dimension
-    float LongestDim(Vec2);
-
-    // returns the *value* of a vector's longest dimension
-    Vec2i::value_type LongestDim(Vec2i);
 
     // returns the aspect ratio of the vec (effectively: x/y)
     float AspectRatio(Vec2i);
 
     // returns the aspect ratio of the vec (effectively: x/y)
     float AspectRatio(Vec2);
-
-    // returns the midpoint between two vectors (effectively: 0.5 * (a+b))
-    Vec2 Midpoint(Vec2, Vec2);
-
-    // returns the midpoint between two vectors (effectively: 0.5 * (a+b))
-    Vec3 Midpoint(Vec3 const&, Vec3 const&);
-
-    // returns the unweighted midpoint of all of the provided vectors, or {0.0f, 0.0f, 0.0f} if provided no inputs
-    Vec3 Midpoint(std::span<Vec3 const>);
-    inline Vec3 Midpoint(std::initializer_list<Vec3> const& vs) { return Midpoint(std::span<Vec3 const>(vs)); }
 
     // returns the sum of `n` vectors using the "Kahan Summation Algorithm" to reduce errors, returns {0.0f, 0.0f, 0.0f} if provided no inputs
     Vec3 KahanSum(std::span<Vec3 const>);
@@ -138,17 +53,6 @@ namespace osc
 
     // returns a normal vector of the supplied (pointed to) triangle (i.e. (v[1]-v[0]) x (v[2]-v[0]))
     Vec3 TriangleNormal(Triangle const&);
-
-    // returns the adjugate matrix of the given 3x3 input
-    Mat3 ToAdjugateMatrix(Mat3 const&);
-
-    // returns a normal matrix created from the supplied xform matrix
-    Mat3 ToNormalMatrix(Mat4 const&);
-
-    // returns a noraml matrix created from the supplied xform matrix
-    //
-    // equivalent to mat4{ToNormalMatrix(m)}
-    Mat4 ToNormalMatrix4(Mat4 const&);
 
     // returns a transform matrix that rotates dir1 to point in the same direction as dir2
     Mat4 Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2);

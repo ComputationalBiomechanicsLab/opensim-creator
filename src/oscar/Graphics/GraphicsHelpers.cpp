@@ -3,8 +3,8 @@
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshIndicesView.h>
 #include <oscar/Graphics/MeshTopology.h>
-#include <oscar/Maths/MatrixFunctions.h>
 #include <oscar/Maths/Mat4.h>
+#include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Sphere.h>
 #include <oscar/Maths/Tetrahedron.h>

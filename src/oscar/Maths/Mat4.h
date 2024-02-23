@@ -2,13 +2,9 @@
 
 #include <oscar/Maths/Mat.h>
 #include <oscar/Maths/Vec4.h>
-#include <oscar/Utils/HashHelpers.h>
 
 #include <cstddef>
 #include <cstdint>
-#include <ostream>
-#include <string>
-#include <string_view>
 
 namespace osc
 {
@@ -385,72 +381,9 @@ namespace osc
         return m1_copy /= m2;
     }
 
-    template<typename T>
-    constexpr T const* ValuePtr(Mat<4, 4, T> const& m)
-    {
-        return m.data()->data();
-    }
-
-    template<typename T>
-    constexpr T* ValuePtr(Mat<4, 4, T>& m)
-    {
-        return m.data()->data();
-    }
-
     using Mat4 = Mat<4, 4, float>;
     using Mat4f = Mat<4, 4, float>;
     using Mat4d = Mat<4, 4, double>;
     using Mat4i = Mat<4, 4, int>;
     using Mat4u32 = Mat<4, 4, uint32_t>;
-
-    template<typename T>
-    constexpr T Identity();
-
-    template<>
-    constexpr Mat4 Identity<Mat4>()
-    {
-        return Mat4{1.0f};
-    }
-
-    template<typename T>
-    std::ostream& operator<<(std::ostream& o, Mat<4, 4, T> const& m)
-    {
-        // prints in row-major, because that's how most people debug matrices
-        for (Mat4::size_type row = 0; row < 4; ++row) {
-            std::string_view delim;
-            for (Mat4::size_type col = 0; col < 4; ++col) {
-                o << delim << m[col][row];
-                delim = " ";
-            }
-            o << '\n';
-        }
-        return o;
-    }
-
-    template<typename T>
-    std::string to_string(Mat<4, 4, T> const& m)
-    {
-        using std::to_string;
-
-        // prints in row-major, because that's how most people debug matrices
-        std::string rv;
-        for (Mat4::size_type row = 0; row < 4; ++row) {
-            std::string_view delim;
-            for (Mat4::size_type col = 0; col < 4; ++col) {
-                rv += delim;
-                rv += to_string(m[col][row]);
-                delim = " ";
-            }
-            rv += '\n';
-        }
-        return rv;
-    }
 }
-
-template<>
-struct std::hash<osc::Mat4> final {
-    size_t operator()(osc::Mat4 const& v) const
-    {
-        return osc::HashRange(v);
-    }
-};

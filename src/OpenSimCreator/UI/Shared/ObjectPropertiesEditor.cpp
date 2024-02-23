@@ -263,27 +263,27 @@ namespace
                 ImGui::TableSetColumnIndex(1);
                 if (ImGui::Button("1 pi"))
                 {
-                    stepSize = pi<float>;
+                    stepSize = pi_v<float>;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("1/2 pi"))
                 {
-                    stepSize = pi<float>/2.0f;
+                    stepSize = pi_v<float>/2.0f;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("1/4 pi"))
                 {
-                    stepSize = pi<float>/4.0f;
+                    stepSize = pi_v<float>/4.0f;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("10/180 pi"))
                 {
-                    stepSize = (10.0f/180.0f) * pi<float>;
+                    stepSize = (10.0f/180.0f) * pi_v<float>;
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("1/180 pi"))
                 {
-                    stepSize = (1.0f/180.0f) * pi<float>;
+                    stepSize = (1.0f/180.0f) * pi_v<float>;
                 }
 
                 ImGui::TableNextRow();
@@ -1345,7 +1345,7 @@ namespace
             Color color = ToColor(m_EditedProperty.getValue());
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
-            if (ImGui::ColorEdit4("##coloreditor", ValuePtr(color)))
+            if (ImGui::ColorEdit4("##coloreditor", value_ptr(color)))
             {
                 SimTK::Vec3 newColor;
                 newColor[0] = static_cast<double>(color[0]);
@@ -1378,7 +1378,7 @@ namespace
                     "Wireframe",
                     "Surface",
                 });
-                size_t index = clamp(static_cast<size_t>(m_EditedProperty.getValue().get_representation()+1), static_cast<size_t>(0), options.size());
+                size_t index = clamp(static_cast<size_t>(m_EditedProperty.getValue().get_representation())+1, static_cast<size_t>(0), options.size());
                 if (osc::Combo("##DisplayPref", &index, options)) {
                     m_EditedProperty.updValue().set_representation(static_cast<OpenSim::VisualRepresentation>(static_cast<int>(index)-1));
                     shouldSave = true;

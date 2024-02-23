@@ -5,6 +5,7 @@
 #include <oscar/Variant/VariantTypeTraits.h>
 
 #include <array>
+#include <cstddef>
 #include <string>
 
 std::string osc::to_string(VariantType v)
@@ -14,8 +15,8 @@ std::string osc::to_string(VariantType v)
         return std::to_array({ VariantTypeTraits<Types>::name... });
     }(VariantTypeList{});
 
-    auto const idx = ToIndex(v);
-    if (0 <= idx && idx < std::size(lut)) {
+    size_t const idx = ToIndex(v);
+    if (idx < std::size(lut)) {
         return std::string{lut[idx]};
     }
     else {

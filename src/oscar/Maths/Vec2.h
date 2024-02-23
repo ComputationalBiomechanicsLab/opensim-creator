@@ -1,12 +1,9 @@
 #pragma once
 
 #include <oscar/Maths/Vec.h>
-#include <oscar/Utils/HashHelpers.h>
 
 #include <cstddef>
 #include <cstdint>
-#include <ostream>
-#include <string>
 
 namespace osc
 {
@@ -270,36 +267,9 @@ namespace osc
         return Vec<2, bool>{v1.x || v2.x, v1.y || v2.y};
     }
 
-    template<typename T>
-    constexpr T const* ValuePtr(Vec<2, T> const& v)
-    {
-        return v.data();
-    }
-
     using Vec2 = Vec<2, float>;
     using Vec2f = Vec<2, float>;
     using Vec2d = Vec<2, double>;
     using Vec2i = Vec<2, int>;
     using Vec2u32 = Vec<2, uint32_t>;
-
-    template<typename T>
-    std::ostream& operator<<(std::ostream& o, Vec<2, T> const& v)
-    {
-        return o << "Vec2(" << v.x << ", " << v.y << ')';
-    }
-
-    template<typename T>
-    std::string to_string(Vec<2, T> const& v)
-    {
-        using std::to_string;
-        return std::string{"Vec2("} + to_string(v.x) + ", " + to_string(v.y) + ')';
-    }
 }
-
-template<typename T>
-struct std::hash<osc::Vec<2, T>> final {
-    size_t operator()(osc::Vec<2, T> const& v) const
-    {
-        return osc::HashRange(v);
-    }
-};

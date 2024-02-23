@@ -2,6 +2,7 @@
 
 #include <Simbody.h>
 #include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/VecFunctions.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/ParalellizationHelpers.h>
 #include <oscar/Utils/Perf.h>

@@ -44,6 +44,7 @@ add_executable(testoscar
     Maths/TestAngle.cpp
     Maths/TestBVH.cpp
     Maths/TestFrameAxis.cpp
+    Maths/TestTransform.cpp
     Maths/TestUnitVec.cpp
 
     MetaTests/TestFormatsHeader.cpp
@@ -65,6 +66,7 @@ add_executable(testoscar
     Platform/TestResourceStream.cpp
 
     Shims/Cpp20/TestBit.cpp
+    Shims/Cpp23/TestCstddef.cpp
 
     Utils/TestCStringView.cpp
     Utils/TestEnumHelpers.cpp

@@ -351,13 +351,13 @@ TEST(Color, WithAlphaWorksAsExpected)
 TEST(Color, ValuePtrConstVersionReturnsAddressOfColor)
 {
     Color const color = Color::red();
-    ASSERT_EQ(&color.r, ValuePtr(color));
+    ASSERT_EQ(&color.r, value_ptr(color));
 }
 
 TEST(Color, ValuePtrMutatingVersionReturnsAddressOfColor)
 {
     Color color = Color::red();
-    ASSERT_EQ(&color.r, ValuePtr(color));
+    ASSERT_EQ(&color.r, value_ptr(color));
 }
 
 TEST(Color, LerpWithZeroReturnsFirstColor)

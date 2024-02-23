@@ -103,6 +103,8 @@ add_library(OpenSimCreator STATIC
     Documents/Model/UndoableModelStatePair.cpp
     Documents/Model/UndoableModelStatePair.h
 
+    Documents/ModelWarper/CachedModelWarper.cpp
+    Documents/ModelWarper/CachedModelWarper.h
     Documents/ModelWarper/Document.cpp
     Documents/ModelWarper/Document.h
     Documents/ModelWarper/FrameWarpLookup.cpp
@@ -283,10 +285,14 @@ add_library(OpenSimCreator STATIC
     UI/ModelWarper/FileMenu.cpp
     UI/ModelWarper/FileMenu.h
     UI/ModelWarper/MainMenu.h
-    UI/ModelWarper/ModelViewerPanel.cpp
-    UI/ModelWarper/ModelViewerPanel.h
     UI/ModelWarper/ModelWarperTab.cpp
     UI/ModelWarper/ModelWarperTab.h
+    UI/ModelWarper/ModelWarperUIHelpers.cpp
+    UI/ModelWarper/ModelWarperUIHelpers.h
+    UI/ModelWarper/ResultModelViewerPanel.cpp
+    UI/ModelWarper/ResultModelViewerPanel.h
+    UI/ModelWarper/SourceModelViewerPanel.cpp
+    UI/ModelWarper/SourceModelViewerPanel.h
     UI/ModelWarper/Toolbar.cpp
     UI/ModelWarper/Toolbar.h
     UI/ModelWarper/UIState.cpp
@@ -321,6 +327,8 @@ add_library(OpenSimCreator STATIC
     UI/Shared/ParamBlockEditorPopup.h
     UI/Shared/PropertiesPanel.cpp
     UI/Shared/PropertiesPanel.h
+    UI/Shared/Readonly3DModelViewer.cpp
+    UI/Shared/Readonly3DModelViewer.h
 
     UI/Simulation/ComponentDetails.cpp
     UI/Simulation/ComponentDetails.h
@@ -329,8 +337,6 @@ add_library(OpenSimCreator STATIC
     UI/Simulation/ModelStatePairContextMenu.h
     UI/Simulation/OutputPlotsPanel.cpp
     UI/Simulation/OutputPlotsPanel.h
-    UI/Simulation/Readonly3DModelViewer.cpp
-    UI/Simulation/Readonly3DModelViewer.h
     UI/Simulation/SelectionDetailsPanel.cpp
     UI/Simulation/SimulationDetailsPanel.cpp
     UI/Simulation/SimulationDetailsPanel.h

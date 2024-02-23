@@ -4,7 +4,6 @@ namespace osc { template<typename> struct Qua; }
 
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/Constants.h>
-#include <oscar/Maths/Quat.h>
 #include <oscar/Maths/CommonFunctions.h>
 #include <oscar/Maths/TrigonometricFunctions.h>
 
@@ -171,19 +170,19 @@ namespace osc
         T cosTheta = dot(orig, dest);
         Vec<3, T> rotationAxis;
 
-        if(cosTheta >= static_cast<T>(1) - epsilon<T>) {
+        if(cosTheta >= static_cast<T>(1) - epsilon_v<T>) {
             // orig and dest point in the same direction
             return quat_identity<T>();
         }
 
-        if(cosTheta < static_cast<T>(-1) + epsilon<T>) {
+        if(cosTheta < static_cast<T>(-1) + epsilon_v<T>) {
             // special case when vectors in opposite directions :
             // there is no "ideal" rotation axis
             // So guess one; any will do as long as it's perpendicular to start
             // This implementation favors a rotation around the Up axis (Y),
             // since it's often what you want to do.
             rotationAxis = cross(Vec<3, T>(0, 0, 1), orig);
-            if(length2(rotationAxis) < epsilon<T>) { // bad luck, they were parallel, try again!
+            if(length2(rotationAxis) < epsilon_v<T>) { // bad luck, they were parallel, try again!
                 rotationAxis = cross(Vec<3, T>(1, 0, 0), orig);
             }
 
@@ -212,7 +211,7 @@ namespace osc
         T const y = static_cast<T>(2) * (q.y * q.z + q.w * q.x);
         T const x = q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z;
 
-        if (all(equal_within_absdiff(Vec<2, T>(x, y), Vec<2, T>(0), epsilon<T>))) {
+        if (all(equal_within_epsilon(Vec<2, T>(x, y), Vec<2, T>(0)))) {
             //avoid atan2(0,0) - handle singularity - Matiis
             return static_cast<T>(2) * atan2(q.x, q.w);
         }
@@ -232,7 +231,7 @@ namespace osc
         T const y = static_cast<T>(2) * (q.x * q.y + q.w * q.z);
         T const x = q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z;
 
-        if (all(equal_within_absdiff(Vec<2, T>(x, y), Vec<2, T>(0), epsilon<T>))) {
+        if (all(equal_within_epsilon(Vec<2, T>(x, y), Vec<2, T>(0)))) {
             //avoid atan2(0,0) - handle singularity - Matiis
             return RadiansT<T>{0};
         }

@@ -11,6 +11,7 @@
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/Rect.h>
+#include <oscar/Maths/VecFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
@@ -418,7 +419,7 @@ void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, Eulers& eulers)
     eulers.x += sensitivity * -mouseDelta.y;
     eulers.x = clamp(eulers.x, -90_deg + 0.1_rad, 90_deg - 0.1_rad);
     eulers.y += sensitivity * -mouseDelta.x;
-    eulers.y = fmod(eulers.y, 360_deg);
+    eulers.y = mod(eulers.y, 360_deg);
 
     camera.setRotation(WorldspaceRotation(eulers));
 }
@@ -746,7 +747,7 @@ bool osc::InputMetersFloat(CStringView label, float& v, float step, float step_f
 
 bool osc::InputMetersFloat3(CStringView label, Vec3& vec, ImGuiInputTextFlags flags)
 {
-    return ImGui::InputFloat3(label.c_str(), ValuePtr(vec), "%.6f", flags);
+    return ImGui::InputFloat3(label.c_str(), value_ptr(vec), "%.6f", flags);
 }
 
 bool osc::SliderMetersFloat(CStringView label, float& v, float v_min, float v_max, ImGuiSliderFlags flags)
@@ -776,7 +777,7 @@ bool osc::InputAngle3(
     CStringView format)
 {
     Vec3 dvs = {Degrees{vs.x}.count(), Degrees{vs.y}.count(), Degrees{vs.z}.count()};
-    if (ImGui::InputFloat3(label.c_str(), ValuePtr(dvs), format.c_str()))
+    if (ImGui::InputFloat3(label.c_str(), value_ptr(dvs), format.c_str()))
     {
         vs = Vec<3, Degrees>{dvs};
         return true;

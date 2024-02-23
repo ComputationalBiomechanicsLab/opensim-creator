@@ -222,7 +222,7 @@ Color osc::ToColor(ColorHSLA const& c)
         return Color::white();
     }
 
-    float const hp = fmod(6.0f*h, 6.0f);
+    float const hp = mod(6.0f*h, 6.0f);
     float const c1 = floor(hp);
     float const c2 = hp - c1;
     float const d = l <= 0.5f ? s*l : s*(1.0f - l);

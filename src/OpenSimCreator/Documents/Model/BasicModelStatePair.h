@@ -4,6 +4,8 @@
 
 #include <oscar/Utils/ClonePtr.h>
 
+#include <filesystem>
+
 namespace OpenSim { class Model; }
 namespace SimTK { class State; }
 
@@ -21,6 +23,7 @@ namespace osc
     public:
         BasicModelStatePair();
         explicit BasicModelStatePair(IModelStatePair const&);
+        explicit BasicModelStatePair(std::filesystem::path const&);
         BasicModelStatePair(OpenSim::Model const&, SimTK::State const&);
         BasicModelStatePair(BasicModelStatePair const&);
         BasicModelStatePair(BasicModelStatePair&&) noexcept;

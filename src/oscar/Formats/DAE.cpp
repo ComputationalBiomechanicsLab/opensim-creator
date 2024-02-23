@@ -5,6 +5,7 @@
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/VecFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/os.h>
@@ -131,17 +132,17 @@ namespace
 {
     std::span<float const> ToFloatSpan(std::span<Vec2 const> s)
     {
-        return {ValuePtr(s[0]), 2 * s.size()};
+        return {value_ptr(s[0]), 2 * s.size()};
     }
 
     std::span<float const> ToFloatSpan(std::span<Vec3 const> s)
     {
-        return {ValuePtr(s[0]), 3 * s.size()};
+        return {value_ptr(s[0]), 3 * s.size()};
     }
 
     std::span<float const> ToFloatSpan(Color const& v)
     {
-        return {ValuePtr(v), 4};
+        return {value_ptr(v), 4};
     }
 
     std::ostream& operator<<(std::ostream& out, std::span<float const> vs)

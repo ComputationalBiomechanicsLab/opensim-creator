@@ -1403,7 +1403,7 @@ namespace
             static_cast<float>(-forces[2]),
         };
 
-        if (length2(force) < epsilon<float>)
+        if (length2(force) < epsilon_v<float>)
         {
             return std::nullopt;  // edge-case: no force is actually being exherted
         }
@@ -1443,7 +1443,7 @@ namespace
     std::optional<Vec3> ComputeCenterOfPressure(
         Plane const& plane,
         ForceTorque const& forceTorque,
-        float minimumForce = epsilon<float>)
+        float minimumForce = epsilon_v<float>)
     {
         float const forceScaler = dot(plane.normal, forceTorque.force);
 
@@ -1453,7 +1453,7 @@ namespace
             return std::nullopt;
         }
 
-        if (abs(dot(plane.normal, normalize(forceTorque.torque))) >= 1.0f - epsilon<float>)
+        if (abs(dot(plane.normal, normalize(forceTorque.torque))) >= 1.0f - epsilon_v<float>)
         {
             // pedantic: the resulting torque is aligned with the plane normal, making
             // the cross product undefined later

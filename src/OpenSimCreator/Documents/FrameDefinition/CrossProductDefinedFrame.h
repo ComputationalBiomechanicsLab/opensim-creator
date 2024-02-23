@@ -88,7 +88,7 @@ namespace osc::fd
      * then "second product".
      */
     class CrossProductDefinedFrame final : public OpenSim::PhysicalFrame {
-        OpenSim_DECLARE_CONCRETE_OBJECT(CrossProductDefinedFrame, PhysicalFrame);
+        OpenSim_DECLARE_CONCRETE_OBJECT(CrossProductDefinedFrame, PhysicalFrame)
     public:
         OpenSim_DECLARE_PROPERTY(axis_edge_axis, std::string, "The resulting frame axis that `axis_edge` points in the direction of. Can be -x, +x, -y, +y, -z, or +z");
         OpenSim_DECLARE_PROPERTY(first_cross_product_axis, std::string, "The resulting frame axis that `axis_edge x other_edge` points in the direction of. Can be -x, +x, -y, +y, -z, or +z, but must be orthogonal to `axis_edge_axis`");

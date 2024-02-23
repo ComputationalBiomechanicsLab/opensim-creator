@@ -5,6 +5,7 @@ add_executable(TestOpenSimCreator
 
     ComponentRegistry/TestStaticComponentRegistries.cpp
     Documents/Landmarks/TestLandmarkHelpers.cpp
+    Documents/Model/TestBasicModelStatePair.cpp
     Documents/Model/TestUndoableModelActions.cpp
     Documents/Model/TestUndoableModelStatePair.cpp
     Documents/ModelWarper/TestDocument.cpp

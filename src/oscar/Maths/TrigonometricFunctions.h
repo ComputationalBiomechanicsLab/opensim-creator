@@ -1,7 +1,7 @@
 #pragma once
 
 #include <oscar/Maths/Angle.h>
-#include <oscar/Maths/CommonFunctions.h>
+#include <oscar/Maths/Functors.h>
 #include <oscar/Maths/Vec.h>
 
 #include <cmath>
@@ -24,7 +24,7 @@ namespace osc
     template<size_t L, std::floating_point T>
     Vec<L, T> sin(Vec<L, T> const& v)
     {
-        return elementwise_map(v, sin);
+        return map(v, sin<T>);
     }
 
     template<std::floating_point GenType>
@@ -42,7 +42,7 @@ namespace osc
     template<size_t L, std::floating_point T>
     Vec<L, T> cos(Vec<L, T> const& v)
     {
-        return elementwise_map(v, cos);
+        return map(v, cos<T>);
     }
 
     template<std::floating_point GenType>

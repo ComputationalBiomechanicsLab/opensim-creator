@@ -1,12 +1,9 @@
 #pragma once
 
 #include <oscar/Maths/Vec.h>
-#include <oscar/Utils/HashHelpers.h>
 
 #include <cstddef>
 #include <cstdint>
-#include <ostream>
-#include <string>
 
 namespace osc
 {
@@ -335,36 +332,9 @@ namespace osc
         return Vec<4, bool>{v1.x || v2.x, v1.y || v2.y, v1.z || v2.z, v1.w || v2.w};
     }
 
-    template<typename T>
-    constexpr T const* ValuePtr(Vec<4, T> const& v)
-    {
-        return v.data();
-    }
-
     using Vec4  = Vec<4, float>;
     using Vec4f = Vec<4, float>;
     using Vec4d = Vec<4, double>;
     using Vec4i = Vec<4, int>;
     using Vec4u32 = Vec<4, uint32_t>;
-
-    template<typename T>
-    std::ostream& operator<<(std::ostream& o, Vec<4, T> const& v)
-    {
-        return o << "Vec4(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ')';
-    }
-
-    template<typename T>
-    std::string to_string(Vec<4, T> const& v)
-    {
-        using std::to_string;
-        return std::string{"Vec4("} + to_string(v.x) + ", " + to_string(v.y) + ", " + to_string(v.z) + ", " + to_string(v.w) + ')';
-    }
 }
-
-template<>
-struct std::hash<osc::Vec4> final {
-    size_t operator()(osc::Vec4 const& v) const
-    {
-        return osc::HashRange(v);
-    }
-};
