@@ -251,13 +251,13 @@ namespace osc
     }
 
     // returns a pointer to the first float element in the color
-    constexpr float const* ValuePtr(Color const& color)
+    constexpr float const* value_ptr(Color const& color)
     {
         return &color.r;
     }
 
     // returns a pointer to the first float element in the color
-    constexpr float* ValuePtr(Color& color)
+    constexpr float* value_ptr(Color& color)
     {
         return &color.r;
     }

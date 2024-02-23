@@ -2,9 +2,11 @@
 
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
+#include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
+#include <oscar/Maths/VecFunctions.h>
 #include <oscar/Shims/Cpp20/bit.h>
 #include <oscar/Utils/Concepts.h>
 
@@ -431,23 +433,23 @@ namespace osc::gl
 
     inline void Uniform(UniformMat3& u, Mat3 const& mat)
     {
-        glUniformMatrix3fv(u.geti(), 1, false, ValuePtr(mat));
+        glUniformMatrix3fv(u.geti(), 1, false, value_ptr(mat));
     }
 
     inline void Uniform(UniformVec4& u, Vec4 const& v)
     {
-        glUniform4fv(u.geti(), 1, ValuePtr(v));
+        glUniform4fv(u.geti(), 1, value_ptr(v));
     }
 
     inline void Uniform(UniformVec3& u, Vec3 const& v)
     {
-        glUniform3fv(u.geti(), 1, ValuePtr(v));
+        glUniform3fv(u.geti(), 1, value_ptr(v));
     }
 
     inline void Uniform(UniformVec3& u, std::span<Vec3 const> vs)
     {
         static_assert(sizeof(Vec3) == 3 * sizeof(GLfloat));
-        glUniform3fv(u.geti(), static_cast<GLsizei>(vs.size()), ValuePtr(vs.front()));
+        glUniform3fv(u.geti(), static_cast<GLsizei>(vs.size()), value_ptr(vs.front()));
     }
 
     // set a uniform array of vec3s from a userspace container type (e.g. vector<Vec3>)
@@ -461,13 +463,13 @@ namespace osc::gl
 
     inline void Uniform(UniformMat4& u, Mat4 const& mat)
     {
-        glUniformMatrix4fv(u.geti(), 1, false, ValuePtr(mat));
+        glUniformMatrix4fv(u.geti(), 1, false, value_ptr(mat));
     }
 
     inline void Uniform(UniformMat4& u, std::span<Mat4 const> ms)
     {
         static_assert(sizeof(Mat4) == 16 * sizeof(GLfloat));
-        glUniformMatrix4fv(u.geti(), static_cast<GLsizei>(ms.size()), false, ValuePtr(ms.front()));
+        glUniformMatrix4fv(u.geti(), static_cast<GLsizei>(ms.size()), false, value_ptr(ms.front()));
     }
 
     inline void Uniform(UniformMat4& u, UniformIdentityValueTag)
@@ -477,7 +479,7 @@ namespace osc::gl
 
     inline void Uniform(UniformVec2& u, Vec2 const& v)
     {
-        glUniform2fv(u.geti(), 1, ValuePtr(v));
+        glUniform2fv(u.geti(), 1, value_ptr(v));
     }
 
     inline void Uniform(UniformVec2& u, std::span<Vec2 const> vs)
@@ -487,7 +489,7 @@ namespace osc::gl
         glUniform2fv(
             u.geti(),
             static_cast<GLsizei>(vs.size()),
-            ValuePtr(vs.front())
+            value_ptr(vs.front())
         );
     }
 

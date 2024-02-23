@@ -8,12 +8,27 @@
 #include <oscar/Graphics/ColorSpace.h>
 #include <oscar/Graphics/Cubemap.h>
 #include <oscar/Graphics/DepthStencilFormat.h>
+#include <oscar/Graphics/Detail/CPUDataType.h>
+#include <oscar/Graphics/Detail/CPUImageFormat.h>
+#include <oscar/Graphics/Detail/ShaderPropertyTypeList.h>
+#include <oscar/Graphics/Detail/ShaderPropertyTypeTraits.h>
+#include <oscar/Graphics/Detail/TextureFormatList.h>
+#include <oscar/Graphics/Detail/TextureFormatTraits.h>
+#include <oscar/Graphics/Detail/VertexAttributeFormatHelpers.h>
+#include <oscar/Graphics/Detail/VertexAttributeFormatList.h>
+#include <oscar/Graphics/Detail/VertexAttributeFormatTraits.h>
+#include <oscar/Graphics/Detail/VertexAttributeHelpers.h>
+#include <oscar/Graphics/Detail/VertexAttributeList.h>
 #include <oscar/Graphics/Graphics.h>
 #include <oscar/Graphics/GraphicsContext.h>
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshGenerators.h>
 #include <oscar/Graphics/MeshTopology.h>
+#include <oscar/Graphics/OpenGL/CPUDataTypeOpenGLTraits.h>
+#include <oscar/Graphics/OpenGL/CPUImageFormatOpenGLTraits.h>
+#include <oscar/Graphics/OpenGL/Gl.h>
+#include <oscar/Graphics/OpenGL/TextureFormatOpenGLTraits.h>
 #include <oscar/Graphics/RenderBuffer.h>
 #include <oscar/Graphics/RenderBufferLoadAction.h>
 #include <oscar/Graphics/RenderBufferStoreAction.h>
@@ -35,38 +50,24 @@
 #include <oscar/Graphics/VertexAttributeDescriptor.h>
 #include <oscar/Graphics/VertexAttributeFormat.h>
 #include <oscar/Graphics/VertexFormat.h>
-#include <oscar/Graphics/Detail/CPUDataType.h>
-#include <oscar/Graphics/Detail/CPUImageFormat.h>
-#include <oscar/Graphics/Detail/ShaderPropertyTypeList.h>
-#include <oscar/Graphics/Detail/ShaderPropertyTypeTraits.h>
-#include <oscar/Graphics/Detail/TextureFormatList.h>
-#include <oscar/Graphics/Detail/TextureFormatTraits.h>
-#include <oscar/Graphics/Detail/VertexAttributeFormatHelpers.h>
-#include <oscar/Graphics/Detail/VertexAttributeFormatList.h>
-#include <oscar/Graphics/Detail/VertexAttributeFormatTraits.h>
-#include <oscar/Graphics/Detail/VertexAttributeHelpers.h>
-#include <oscar/Graphics/Detail/VertexAttributeList.h>
-#include <oscar/Graphics/OpenGL/CPUDataTypeOpenGLTraits.h>
-#include <oscar/Graphics/OpenGL/CPUImageFormatOpenGLTraits.h>
-#include <oscar/Graphics/OpenGL/Gl.h>
-#include <oscar/Graphics/OpenGL/TextureFormatOpenGLTraits.h>
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/Angle.h>
-#include <oscar/Maths/MatrixFunctions.h>
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
+#include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
+#include <oscar/Maths/VecFunctions.h>
 #include <oscar/Platform/App.h>
-#include <oscar/Platform/Log.h>
 #include <oscar/Platform/Detail/SDL2Helpers.h>
+#include <oscar/Platform/Log.h>
 #include <oscar/Utils/Assertions.h>
-#include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/Concepts.h>
+#include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/DefaultConstructOnCopy.h>
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/ObjectRepresentation.h>
@@ -376,7 +377,7 @@ namespace
     std::span<typename VecOrMat::element_type const> ToFloatSpan(VecOrMat const& v)
         requires BitCastable<typename VecOrMat::element_type>
     {
-        return {ValuePtr(v), sizeof(VecOrMat)/sizeof(typename VecOrMat::element_type)};
+        return {value_ptr(v), sizeof(VecOrMat)/sizeof(typename VecOrMat::element_type)};
     }
 }
 
@@ -6882,7 +6883,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
             }
             static_assert(sizeof(Vec4) == 4*sizeof(float));
             static_assert(alignof(Vec4) <= alignof(float));
-            glUniform4fv(se.location, numToAssign, ValuePtr(linearColors.front()));
+            glUniform4fv(se.location, numToAssign, value_ptr(linearColors.front()));
         }
         break;
     }
@@ -6943,7 +6944,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
             static_assert(sizeof(Vec3) == 3*sizeof(float));
             static_assert(alignof(Vec3) <= alignof(float));
 
-            glUniform3fv(se.location, numToAssign, osc::ValuePtr(vals.front()));
+            glUniform3fv(se.location, numToAssign, value_ptr(vals.front()));
         }
         break;
     }
@@ -6982,7 +6983,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
 
             static_assert(sizeof(Mat4) == 16*sizeof(float));
             static_assert(alignof(Mat4) <= alignof(float));
-            glUniformMatrix4fv(se.location, numToAssign, GL_FALSE, osc::ValuePtr(vals.front()));
+            glUniformMatrix4fv(se.location, numToAssign, GL_FALSE, value_ptr(vals.front()));
         }
         break;
     }
@@ -7619,7 +7620,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
                     glClearBufferfv(
                         GL_COLOR,
                         static_cast<GLint>(i),
-                        ValuePtr(static_cast<Vec4>(colorAttachment.clearColor))
+                        value_ptr(static_cast<Vec4>(colorAttachment.clearColor))
                     );
                 }
             }

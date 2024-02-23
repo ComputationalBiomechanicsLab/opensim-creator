@@ -4,7 +4,6 @@ namespace osc { template<typename> struct Qua; }
 
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/Constants.h>
-#include <oscar/Maths/Quat.h>
 #include <oscar/Maths/CommonFunctions.h>
 #include <oscar/Maths/TrigonometricFunctions.h>
 

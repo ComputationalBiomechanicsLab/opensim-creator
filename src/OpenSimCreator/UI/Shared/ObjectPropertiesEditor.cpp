@@ -1345,7 +1345,7 @@ namespace
             Color color = ToColor(m_EditedProperty.getValue());
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
-            if (ImGui::ColorEdit4("##coloreditor", ValuePtr(color)))
+            if (ImGui::ColorEdit4("##coloreditor", value_ptr(color)))
             {
                 SimTK::Vec3 newColor;
                 newColor[0] = static_cast<double>(color[0]);

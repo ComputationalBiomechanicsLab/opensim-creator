@@ -20,8 +20,8 @@
 #include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/Line.h>
 #include <oscar/Maths/Mat.h>
+#include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
-#include <oscar/Maths/MatrixFunctions.h>
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/Plane.h>
@@ -41,6 +41,7 @@
 #include <oscar/Maths/UnitVec.h>
 #include <oscar/Maths/UnitVec3.h>
 #include <oscar/Maths/Vec.h>
+#include <oscar/Maths/VecFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>

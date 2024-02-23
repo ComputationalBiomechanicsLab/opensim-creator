@@ -29,17 +29,17 @@ private:
 
         ImGuizmo::SetRect(viewportRect.p1.x, viewportRect.p1.y, dims.x, dims.y);
         Mat4 identity = Identity<Mat4>();
-        ImGuizmo::DrawGrid(ValuePtr(view), ValuePtr(projection), ValuePtr(identity), 100.f);
-        ImGuizmo::DrawCubes(ValuePtr(view), ValuePtr(projection), ValuePtr(m_ModelMatrix), 1);
+        ImGuizmo::DrawGrid(value_ptr(view), value_ptr(projection), value_ptr(identity), 100.f);
+        ImGuizmo::DrawCubes(value_ptr(view), value_ptr(projection), value_ptr(m_ModelMatrix), 1);
 
         ImGui::Checkbox("translate", &m_IsInTranslateMode);
 
         ImGuizmo::Manipulate(
-            ValuePtr(view),
-            ValuePtr(projection),
+            value_ptr(view),
+            value_ptr(projection),
             m_IsInTranslateMode ? ImGuizmo::TRANSLATE : ImGuizmo::ROTATE,
             ImGuizmo::LOCAL,
-            ValuePtr(m_ModelMatrix),
+            value_ptr(m_ModelMatrix),
             nullptr,
             nullptr, //&snap[0],   // snap
             nullptr, // bound sizing?

@@ -1,6 +1,7 @@
 #include "Variant.h"
 
 #include <oscar/Graphics/Color.h>
+#include <oscar/Maths/VecFunctions.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>

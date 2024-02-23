@@ -8,8 +8,16 @@
 #include <oscar/Maths/UnitVec3.h>
 #include <oscar/Maths/Vec.h>
 #include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/HashHelpers.h>
 
 #include <concepts>
+#include <cstddef>
+#include <functional>
+#include <ostream>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <utility>
 
 namespace osc
 {
@@ -525,4 +533,55 @@ namespace osc
     {
         return Mat<4, 4, T>{normal_matrix(m)};
     }
+
+    template<size_t C, size_t R, typename T>
+    constexpr T const* value_ptr(Mat<C, R, T> const& m)
+    {
+        return m.data()->data();
+    }
+
+    template<size_t C, size_t R, typename T>
+    constexpr T* value_ptr(Mat<C, R, T>& m)
+    {
+        return m.data()->data();
+    }
+
+    template<size_t C, size_t R, typename T>
+    std::ostream& operator<<(std::ostream& o, Mat<C, R, T> const& m)
+    {
+        for (size_t row = 0; row < R; ++row) {
+            std::string_view delim;
+            for (size_t col = 0; col < C; ++col) {
+                o << delim << m[col][row];
+                delim = " ";
+            }
+            o << '\n';
+        }
+        return o;
+    }
+
+    template<size_t C, size_t R, typename T>
+    std::string to_string(Mat<C, R, T> const& m)
+    {
+        std::stringstream ss;
+        ss << m;
+        return std::move(ss).str();
+    }
+
+    template<typename T>
+    constexpr T Identity();
+
+    template<>
+    constexpr Mat4 Identity<Mat4>()
+    {
+        return Mat4{1.0f};
+    }
 }
+
+template<size_t C, size_t R, typename T>
+struct std::hash<osc::Mat<C, R, T>> final {
+    size_t operator()(osc::Mat<C, R, T> const& m) const
+    {
+        return osc::HashRange(m);
+    }
+};

@@ -6,6 +6,7 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
+#include <oscar/Maths/VecFunctions.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/UID.h>
 

@@ -7,7 +7,7 @@
 #include <oscar/Graphics/CameraProjection.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Angle.h>
-#include <oscar/Maths/MatrixFunctions.h>
+#include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec3.h>
 

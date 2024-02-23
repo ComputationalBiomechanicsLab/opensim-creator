@@ -158,9 +158,9 @@ add_library(oscar STATIC
     Maths/GeometricFunctions.h
     Maths/Line.h
     Maths/Mat.h
+    Maths/MatFunctions.h
     Maths/MathHelpers.h
     Maths/MathsImplementation.cpp
-    Maths/MatrixFunctions.h
     Maths/Mat3.h
     Maths/Mat4.h
     Maths/Plane.h
@@ -180,6 +180,7 @@ add_library(oscar STATIC
     Maths/UnitVec.h
     Maths/UnitVec3.h
     Maths/Vec.h
+    Maths/VecFunctions.h
     Maths/Vec2.h
     Maths/Vec3.h
     Maths/Vec4.h
