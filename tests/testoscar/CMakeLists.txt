@@ -44,6 +44,7 @@ add_executable(testoscar
     Maths/TestAngle.cpp
     Maths/TestBVH.cpp
     Maths/TestFrameAxis.cpp
+    Maths/TestTransform.cpp
     Maths/TestUnitVec.cpp
 
     MetaTests/TestFormatsHeader.cpp
