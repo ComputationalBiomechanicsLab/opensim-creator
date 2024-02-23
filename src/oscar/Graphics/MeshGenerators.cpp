@@ -1451,8 +1451,8 @@ Mesh osc::GenerateLatheMesh(
     std::vector<Vec3> initNormals;
     std::vector<Vec3> normals;
 
-    float const fsegments = static_cast<float>(segments);
-    float const inverseSegments = 1.0f/fsegments;
+    auto const fsegments = static_cast<float>(segments);
+    auto const inverseSegments = 1.0f/fsegments;
     Vec3 prevNormal{};
 
     // pre-compute normals for initial "meridian"
@@ -1533,8 +1533,8 @@ Mesh osc::GenerateCircleMesh2(
 {
     // this implementation was initially hand-ported from threejs (CircleGeometry)
 
-    segments = max(static_cast<size_t>(3), segments);
-    float const fsegments = static_cast<float>(segments);
+    segments = max(3_zu, segments);
+    auto const fsegments = static_cast<float>(segments);
 
     std::vector<uint32_t> indices;
     std::vector<Vec3> vertices;
@@ -1548,16 +1548,14 @@ Mesh osc::GenerateCircleMesh2(
 
     // not-middle vertices
     for (ptrdiff_t s = 0; s <= static_cast<ptrdiff_t>(segments); ++s) {
-        float const fs = static_cast<float>(s);
-        Radians const segment = thetaStart + (fs/fsegments * thetaLength);
+        auto const fs = static_cast<float>(s);
+        auto const segment = thetaStart + (fs/fsegments * thetaLength);
+        auto const cosSeg = cos(segment);
+        auto const sinSeg = sin(segment);
 
-        vertices.emplace_back(radius * cos(segment), radius * sin(segment), 0.0f);
+        vertices.emplace_back(radius * cosSeg, radius * sinSeg, 0.0f);
         normals.emplace_back(0.0f, 0.0f, 1.0f);
-
-        uvs.emplace_back(
-            (vertices[s-1].x/radius + 1.0f) / 2.0f,
-            (vertices[s-1].y/radius + 1.0f) / 2.0f
-        );
+        uvs.emplace_back((cosSeg + 1.0f) / 2.0f, (sinSeg + 1.0f) / 2.0f);
     }
 
     for (uint32_t i = 1; i <= static_cast<uint32_t>(segments); ++i) {
@@ -1584,8 +1582,8 @@ Mesh osc::GenerateRingMesh(
 
     thetaSegments = max(static_cast<size_t>(3), thetaSegments);
     phiSegments = max(static_cast<size_t>(1), phiSegments);
-    float const fthetaSegments = static_cast<float>(thetaSegments);
-    float const fphiSegments = static_cast<float>(phiSegments);
+    auto const fthetaSegments = static_cast<float>(thetaSegments);
+    auto const fphiSegments = static_cast<float>(phiSegments);
 
     std::vector<uint32_t> indices;
     std::vector<Vec3> vertices;
@@ -1598,7 +1596,7 @@ Mesh osc::GenerateRingMesh(
     // generate vertices, normals, and uvs
     for (size_t j = 0; j <= phiSegments; ++j) {
         for (size_t i = 0; i <= thetaSegments; ++i) {
-            float const fi = static_cast<float>(i);
+            auto const fi = static_cast<float>(i);
             Radians segment = thetaStart + (fi/fthetaSegments * thetaLength);
 
             Vec3 const& v = vertices.emplace_back(radius * cos(segment), radius * sin(segment), 0.0f);
@@ -1643,8 +1641,8 @@ Mesh osc::GenerateTorusMesh2(
 {
     // (ported from three.js/TorusGeometry)
 
-    float const fradialSegments = static_cast<float>(radialSegments);
-    float const ftubularSegments = static_cast<float>(tubularSegments);
+    auto const fradialSegments = static_cast<float>(radialSegments);
+    auto const ftubularSegments = static_cast<float>(tubularSegments);
 
     std::vector<uint32_t> indices;
     std::vector<Vec3>  vertices;
@@ -1652,9 +1650,9 @@ Mesh osc::GenerateTorusMesh2(
     std::vector<Vec2> uvs;
 
     for (size_t j = 0; j <= radialSegments; ++j) {
-        float const fj = static_cast<float>(j);
+        auto const fj = static_cast<float>(j);
         for (size_t i = 0; i <= tubularSegments; ++i) {
-            float const fi = static_cast<float>(i);
+            auto const fi = static_cast<float>(i);
             Radians const u = fi/ftubularSegments * arc;
             Radians const v = fj/fradialSegments * 360_deg;
 
@@ -1730,7 +1728,7 @@ Mesh osc::GenerateCylinderMesh2(
             float const v = static_cast<float>(y)/fheightSegments;
             float const radius = v * (radiusBottom - radiusTop) + radiusTop;
             for (size_t x = 0; x <= radialSegments; ++x) {
-                float const fx = static_cast<float>(x);
+                auto const fx = static_cast<float>(x);
                 float const u = fx/fradialSegments;
                 Radians const theta = u*thetaLength + thetaStart;
                 float const sinTheta = sin(theta);
@@ -1804,8 +1802,8 @@ Mesh osc::GenerateCylinderMesh2(
 
         // generate indices
         for (size_t x = 0; x < radialSegments; ++x) {
-            uint32_t const c = static_cast<uint32_t>(centerIndexStart + x);
-            uint32_t const i = static_cast<uint32_t>(centerIndexEnd + x);
+            auto const c = static_cast<uint32_t>(centerIndexStart + x);
+            auto const i = static_cast<uint32_t>(centerIndexEnd + x);
 
             if (top) {
                 indices.insert(indices.end(), {i, i+1, c});

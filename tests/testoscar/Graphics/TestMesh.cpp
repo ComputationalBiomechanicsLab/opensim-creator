@@ -10,6 +10,7 @@
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Quat.h>

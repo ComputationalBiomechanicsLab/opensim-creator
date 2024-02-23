@@ -18,13 +18,13 @@ namespace osc::fd
     * (e.g. doi: 10.1016/s0021-9290(01)00222-6).
     */
     class MidpointLandmark final : public OpenSim::Point {
-        OpenSim_DECLARE_CONCRETE_OBJECT(MidpointLandmark, OpenSim::Point);
+        OpenSim_DECLARE_CONCRETE_OBJECT(MidpointLandmark, OpenSim::Point)
     public:
-        OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the midpoint (decorative)");
-        OpenSim_DECLARE_PROPERTY(Appearance, OpenSim::Appearance, "The appearance of the midpoint (decorative)");
+        OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the midpoint (decorative)")
+        OpenSim_DECLARE_PROPERTY(Appearance, OpenSim::Appearance, "The appearance of the midpoint (decorative)")
 
-        OpenSim_DECLARE_SOCKET(first_point, OpenSim::Point, "The first point that the midpoint lies between");
-        OpenSim_DECLARE_SOCKET(second_point, OpenSim::Point, "The second point that the midpoint lies between");
+        OpenSim_DECLARE_SOCKET(first_point, OpenSim::Point, "The first point that the midpoint lies between")
+        OpenSim_DECLARE_SOCKET(second_point, OpenSim::Point, "The second point that the midpoint lies between")
 
         MidpointLandmark();
 

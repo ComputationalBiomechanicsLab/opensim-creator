@@ -26,11 +26,11 @@ namespace osc::mow
         template<std::derived_from<IMeshWarp> TMeshWarp = IMeshWarp>
         TMeshWarp const* find(std::string const& meshComponentAbsPath) const
         {
-            return dynamic_cast<TMeshWarp const*>(find<IMeshWarp>(meshComponentAbsPath));
+            return dynamic_cast<TMeshWarp const*>(lookup(meshComponentAbsPath));
         }
 
-        template<>
-        IMeshWarp const* find<IMeshWarp>(std::string const& absPath) const
+    private:
+        IMeshWarp const* lookup(std::string const& absPath) const
         {
             if (auto const it = m_AbsPathToWarpLUT.find(absPath); it != m_AbsPathToWarpLUT.end()) {
                 return it->second.get();
@@ -39,7 +39,7 @@ namespace osc::mow
                 return nullptr;
             }
         }
-    private:
+
         std::unordered_map<std::string, ClonePtr<IMeshWarp>> m_AbsPathToWarpLUT;
     };
 }

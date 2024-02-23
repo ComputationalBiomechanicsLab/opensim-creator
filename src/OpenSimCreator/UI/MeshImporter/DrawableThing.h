@@ -20,12 +20,12 @@ namespace osc::mi
     struct DrawableThing final {
         UID id = MIIDs::Empty();
         UID groupId = MIIDs::Empty();
-        osc::Mesh mesh;
-        Transform transform;
+        osc::Mesh mesh{};
+        Transform transform{};
         Color color = Color::black();
         SceneDecorationFlags flags = SceneDecorationFlags::None;
-        std::optional<Material> maybeMaterial;
-        std::optional<MaterialPropertyBlock> maybePropertyBlock;
+        std::optional<Material> maybeMaterial{};
+        std::optional<MaterialPropertyBlock> maybePropertyBlock{};
     };
 
     inline AABB calcBounds(DrawableThing const& dt)

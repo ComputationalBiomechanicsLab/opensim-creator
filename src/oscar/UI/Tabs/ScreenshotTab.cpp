@@ -12,6 +12,7 @@
 #include <oscar/Graphics/Texture2D.h>
 #include <oscar/Graphics/TextureFormat.h>
 #include <oscar/Maths/CollisionTests.h>
+#include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec2.h>

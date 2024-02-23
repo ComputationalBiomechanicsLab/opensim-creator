@@ -9,6 +9,7 @@
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshGenerators.h>
 #include <oscar/Graphics/Scene/ShaderCache.h>
+#include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/VecFunctions.h>

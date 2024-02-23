@@ -30,12 +30,12 @@ namespace osc::fd
      * `CrossProductDefinedFrame`).
      */
     class Edge : public OpenSim::ModelComponent {
-        OpenSim_DECLARE_ABSTRACT_OBJECT(Edge, ModelComponent);
+        OpenSim_DECLARE_ABSTRACT_OBJECT(Edge, ModelComponent)
     public:
-        OpenSim_DECLARE_OUTPUT(start_location, SimTK::Vec3, getStartLocationInGround, SimTK::Stage::Position);
-        OpenSim_DECLARE_OUTPUT(end_location, SimTK::Vec3, getEndLocationInGround, SimTK::Stage::Position);
-        OpenSim_DECLARE_OUTPUT(direction, SimTK::Vec3, getDirectionInGround, SimTK::Stage::Position);
-        OpenSim_DECLARE_OUTPUT(length, double, getLengthInGround, SimTK::Stage::Position);
+        OpenSim_DECLARE_OUTPUT(start_location, SimTK::Vec3, getStartLocationInGround, SimTK::Stage::Position)
+        OpenSim_DECLARE_OUTPUT(end_location, SimTK::Vec3, getEndLocationInGround, SimTK::Stage::Position)
+        OpenSim_DECLARE_OUTPUT(direction, SimTK::Vec3, getDirectionInGround, SimTK::Stage::Position)
+        OpenSim_DECLARE_OUTPUT(length, double, getLengthInGround, SimTK::Stage::Position)
 
         /**
          * Get the start and end locations of the edge relative to, and expressed in,

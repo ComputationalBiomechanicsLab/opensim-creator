@@ -33,7 +33,7 @@ namespace osc::fd
      * rather than a single `Edge` (`CrossProductEdge`) from two `Edge`s.
      */
     class CrossProductEdge final : public Edge {
-        OpenSim_DECLARE_CONCRETE_OBJECT(CrossProductEdge, Edge);
+        OpenSim_DECLARE_CONCRETE_OBJECT(CrossProductEdge, Edge)
     public:
         OpenSim_DECLARE_PROPERTY(show_plane, bool, "Show/hide displaying a decorative plane formed from the two edges that were used to compute the cross product (decorative)");
         OpenSim_DECLARE_PROPERTY(arrow_display_length, double, "The length of the displayed cross-product arrow decoration (decorative)");

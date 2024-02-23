@@ -17,6 +17,7 @@
 #include <oscar/Graphics/VertexAttribute.h>
 #include <oscar/Graphics/VertexAttributeFormat.h>
 #include <oscar/Graphics/VertexFormat.h>
+#include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Vec2.h>

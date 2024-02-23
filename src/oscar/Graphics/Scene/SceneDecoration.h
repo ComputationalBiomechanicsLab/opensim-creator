@@ -39,12 +39,12 @@ namespace osc
             return copy;
         }
 
-        Mesh mesh;
-        Transform transform;
+        Mesh mesh{};
+        Transform transform{};
         Color color = Color::white();
-        std::string id;
+        std::string id{};
         SceneDecorationFlags flags = SceneDecorationFlags::None;
-        std::optional<Material> maybeMaterial;
-        std::optional<MaterialPropertyBlock> maybeMaterialProps;
+        std::optional<Material> maybeMaterial{};
+        std::optional<MaterialPropertyBlock> maybeMaterialProps{};
     };
 }

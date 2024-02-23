@@ -4175,11 +4175,6 @@ namespace
         constexpr ReencoderLut()
         {
             WriteEntriesTopLevel(*this, VertexAttributeFormatList{});
-
-            for (auto entry : m_Storage)
-            {
-                OSC_ASSERT_ALWAYS(entry != nullptr);
-            }
         }
 
         constexpr void assign(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat, ReencoderFunction f)

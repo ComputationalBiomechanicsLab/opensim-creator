@@ -41,7 +41,7 @@ namespace osc
         friend bool operator==(Transform const&, Transform const&) = default;
 
         Vec3 scale{1.0f};
-        Quat rotation;
+        Quat rotation{};
         Vec3 position{};
     };
 

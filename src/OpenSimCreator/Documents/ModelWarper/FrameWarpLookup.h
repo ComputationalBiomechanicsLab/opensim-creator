@@ -25,11 +25,11 @@ namespace osc::mow
         template<std::derived_from<IFrameWarp> FrameWarp = IFrameWarp>
         FrameWarp const* find(std::string const& absPath) const
         {
-            return dynamic_cast<FrameWarp const*>(find<IFrameWarp>(absPath));
+            return dynamic_cast<FrameWarp const*>(lookup(absPath));
         }
 
-        template<>
-        IFrameWarp const* find<IFrameWarp>(std::string const& absPath) const
+    private:
+        IFrameWarp const* lookup(std::string const& absPath) const
         {
             if (auto const it = m_AbsPathToWarpLUT.find(absPath); it != m_AbsPathToWarpLUT.end()) {
                 return it->second.get();
@@ -39,7 +39,6 @@ namespace osc::mow
             }
         }
 
-    private:
         std::unordered_map<std::string, ClonePtr<IFrameWarp>> m_AbsPathToWarpLUT;
     };
 }

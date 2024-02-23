@@ -19,7 +19,7 @@ namespace osc::fd
      * - Color-coded landmarks for presentation, visual grouping, etc.
      */
     class SphereLandmark final : public OpenSim::Station {
-        OpenSim_DECLARE_CONCRETE_OBJECT(SphereLandmark, OpenSim::Station);
+        OpenSim_DECLARE_CONCRETE_OBJECT(SphereLandmark, OpenSim::Station)
     public:
         OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the landmark's decorative sphere");
         OpenSim_DECLARE_PROPERTY(Appearance, OpenSim::Appearance, "The appearance landmark's decorative sphere");
