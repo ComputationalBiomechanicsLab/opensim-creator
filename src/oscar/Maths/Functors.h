@@ -2,54 +2,72 @@
 
 #include <oscar/Maths/Vec.h>
 
+#include <concepts>
 #include <cstddef>
+#include <functional>
 
 namespace osc
 {
-    template<typename T>
-    constexpr auto elementwise_map(Vec<2, T> const& v, T(*op)(T))
+    template<
+        size_t N,
+        typename T,
+        std::invocable<T const&> UnaryOperation
+    >
+    constexpr auto map(Vec<N, T> const& v, UnaryOperation op) -> Vec<N, decltype(op(v[0]))>
     {
-        return Vec<2, T>{op(v.x), op(v.y)};
+        Vec<N, decltype(op(v[0]))> rv;
+        for (size_t i = 0; i < N; ++i) {
+            rv[i] = op(v[i]);
+        }
+        return rv;
     }
 
-    template<typename T>
-    constexpr auto elementwise_map(Vec<2, T> const& v1, Vec<2, T> const& v2, T(*op)(T, T))
+    template<
+        size_t N,
+        typename T,
+        std::invocable<T const&, T const&> BinaryOperation
+    >
+    constexpr auto map(Vec<N, T> const& v1, Vec<N, T> const& v2, BinaryOperation op) -> Vec<N, decltype(op(v1[0], v2[0]))>
     {
-        return Vec<2, T>{op(v1.x, v2.x), op(v1.y, v2.y)};
+        Vec<N, decltype(op(v1[0], v2[0]))> rv;
+        for (size_t i = 0; i < N; ++i) {
+            rv[i] = op(v1[i], v2[i]);
+        }
+        return rv;
     }
 
-    template<typename T>
-    constexpr auto elementwise_map(Vec<3, T> const& v, T(*op)(T))
+    template<
+        size_t N,
+        typename T,
+        std::invocable<T const&, T const&, T const&> TernaryOperation
+    >
+    constexpr auto map(Vec<N, T> const& v1, Vec<N, T> const& v2, Vec<N, T> const& v3, TernaryOperation op) -> Vec<N, decltype(op(v1[0], v2[0], v3[0]))>
     {
-        return Vec<3, T>{op(v.x), op(v.y), op(v.z)};
+        Vec<N, decltype(op(v1[0], v2[0], v3[0]))> rv;
+        for (size_t i = 0; i < N; ++i) {
+            rv[i] = op(v1[i], v2[i], v3[i]);
+        }
+        return rv;
     }
 
-    template<typename T>
-    constexpr auto elementwise_map(Vec<3, T> const& v1, Vec<3, T> const& v2, T(*op)(T, T))
+    template<
+        size_t N,
+        typename T,
+        std::invocable<T const&> UnaryPredicate
+    >
+    constexpr bool all(Vec<N, T> const& v, UnaryPredicate p)
     {
-        return Vec<3, T>{op(v1.x, v2.x), op(v1.y, v2.y), op(v1.z, v2.z)};
-    }
-
-    template<typename T>
-    constexpr auto elementwise_map(Vec<4, T> const& v, T(*op)(T))
-    {
-        return Vec<4, T>{op(v.x), op(v.y), op(v.z), op(v.w)};
-    }
-
-    template<typename T>
-    constexpr auto elementwise_map(Vec<4, T> const& v1, Vec<4, T> const& v2, T(*op)(T, T))
-    {
-        return Vec<4, T>{op(v1.x, v2.x), op(v1.y, v2.y), op(v1.z, v2.z), op(v1.w, v2.w)};
-    }
-
-    template<size_t L>
-    constexpr bool all(Vec<L, bool> const& v)
-    {
-        for (size_t i = 0; i < L; ++i) {
-            if (!v[i]) {
+        for (size_t i = 0; i < N; ++i) {
+            if (!p(v[i])) {
                 return false;
             }
         }
         return true;
+    }
+
+    template<size_t N, std::convertible_to<bool> T>
+    constexpr bool all(Vec<N, T> const& v)
+    {
+        return all(v, [](T const& v) { return static_cast<bool>(v); });
     }
 }

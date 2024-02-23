@@ -1933,7 +1933,7 @@ TEST(Mesh, RecalculateNormalsSmoothsNormalsOfSharedVerts)
 
     Vec3 const lhsNormal = TriangleNormal({ verts[0], verts[1], verts[2] });
     Vec3 const rhsNormal = TriangleNormal({ verts[3], verts[2], verts[1] });
-    Vec3 const mixedNormal = Midpoint(lhsNormal, rhsNormal);
+    Vec3 const mixedNormal = midpoint(lhsNormal, rhsNormal);
 
     m.recalculateNormals();
 

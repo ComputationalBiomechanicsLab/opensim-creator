@@ -954,8 +954,8 @@ namespace osc::mi
                 return;
             }
 
-            Vec3 const midpoint = Midpoint(parent, child);
-            Vec2 const midpointScr = worldPosToScreenPos(midpoint);
+            Vec3 const mp = midpoint(parent, child);
+            Vec2 const midpointScr = worldPosToScreenPos(mp);
             Vec2 const directionScr = normalize(child2ParentScr);
             Vec2 const directionNormalScr = {-directionScr.y, directionScr.x};
 

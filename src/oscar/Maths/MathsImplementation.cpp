@@ -1008,66 +1008,6 @@ Radians osc::VerticalToHorizontalFOV(Radians verticalFOV, float aspectRatio)
     return 2.0f * atan(tan(verticalFOV / 2.0f) * aspectRatio);
 }
 
-Eulers osc::EulerAngles(Quat const& q)
-{
-    return euler_angles(normalize(q));
-}
-
-Vec3::size_type osc::LongestDimIndex(Vec3 const& v)
-{
-    if (v.x > v.y && v.x > v.z)
-    {
-        return 0;  // X is longest
-    }
-    else if (v.y > v.z)
-    {
-        return 1;  // Y is longest
-    }
-    else
-    {
-        return 2;  // Z is longest
-    }
-}
-
-Vec2::size_type osc::LongestDimIndex(Vec2 v)
-{
-    if (v.x > v.y)
-    {
-        return 0;  // X is longest
-    }
-    else
-    {
-        return 1;  // Y is longest
-    }
-}
-
-Vec2i::size_type osc::LongestDimIndex(Vec2i v)
-{
-    if (v.x > v.y)
-    {
-        return 0;  // X is longest
-    }
-    else
-    {
-        return 1;  // Y is longest
-    }
-}
-
-float osc::LongestDim(Vec3 const& v)
-{
-    return v[LongestDimIndex(v)];
-}
-
-float osc::LongestDim(Vec2 v)
-{
-    return v[LongestDimIndex(v)];
-}
-
-Vec2i::value_type osc::LongestDim(Vec2i v)
-{
-    return v[LongestDimIndex(v)];
-}
-
 float osc::AspectRatio(Vec2i v)
 {
     return static_cast<float>(v.x) / static_cast<float>(v.y);
@@ -1076,21 +1016,6 @@ float osc::AspectRatio(Vec2i v)
 float osc::AspectRatio(Vec2 v)
 {
     return v.x/v.y;
-}
-
-Vec2 osc::Midpoint(Vec2 a, Vec2 b)
-{
-    return 0.5f*(a+b);
-}
-
-Vec3 osc::Midpoint(Vec3 const& a, Vec3 const& b)
-{
-    return 0.5f*(a+b);
-}
-
-Vec3 osc::Midpoint(std::span<Vec3 const> vs)
-{
-    return std::reduce(vs.begin(), vs.end()) / static_cast<float>(vs.size());
 }
 
 
@@ -1125,51 +1050,6 @@ Vec3 osc::TriangleNormal(Triangle const& tri)
     Vec3 const ac = tri.p2 - tri.p0;
     Vec3 const perpendiular = cross(ab, ac);
     return normalize(perpendiular);
-}
-
-Mat3 osc::ToAdjugateMatrix(Mat3 const& m)
-{
-    // google: "Adjugate Matrix": it's related to the cofactor matrix and is
-    // related to the inverse of a matrix through:
-    //
-    //     inverse(M) = Adjugate(M) / determinant(M);
-
-    Mat3 rv;
-    rv[0][0] = + (m[1][1] * m[2][2] - m[2][1] * m[1][2]);
-    rv[1][0] = - (m[1][0] * m[2][2] - m[2][0] * m[1][2]);
-    rv[2][0] = + (m[1][0] * m[2][1] - m[2][0] * m[1][1]);
-    rv[0][1] = - (m[0][1] * m[2][2] - m[2][1] * m[0][2]);
-    rv[1][1] = + (m[0][0] * m[2][2] - m[2][0] * m[0][2]);
-    rv[2][1] = - (m[0][0] * m[2][1] - m[2][0] * m[0][1]);
-    rv[0][2] = + (m[0][1] * m[1][2] - m[1][1] * m[0][2]);
-    rv[1][2] = - (m[0][0] * m[1][2] - m[1][0] * m[0][2]);
-    rv[2][2] = + (m[0][0] * m[1][1] - m[1][0] * m[0][1]);
-    return rv;
-}
-
-Mat3 osc::ToNormalMatrix(Mat4 const& m)
-{
-    // "On the Transformation of Surface Normals" by Andrew Glassner (1987)
-    //
-    // "One option is to replace the inverse with the adjoint of M. The
-    //  adjoint is attractive because it always exists, even when M is
-    //  singular. The inverse and the adjoint are related by:
-    //
-    //      inverse(M) = adjoint(M) / determinant(M);
-    //
-    //  so, when the inverse exists, they only differ by a constant factor.
-    //  Therefore, using adjoint(M) instead of inverse(M) only affects the
-    //  magnitude of the resulting normal vector. Normal vectors have to
-    //  be normalized after mutiplication with a normal matrix anyway, so
-    //  nothing is lost"
-
-    Mat3 const topLeft{m};
-    return ToAdjugateMatrix(transpose(topLeft));
-}
-
-Mat4 osc::ToNormalMatrix4(Mat4 const& m)
-{
-    return ToNormalMatrix(m);
 }
 
 Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
@@ -1532,7 +1412,7 @@ bool osc::IsZeroVolume(AABB const& a)
 
 Vec3::size_type osc::LongestDimIndex(AABB const& a)
 {
-    return LongestDimIndex(Dimensions(a));
+    return max_element_index(Dimensions(a));
 }
 
 float osc::LongestDim(AABB const& a)
@@ -1869,12 +1749,12 @@ Mat4 osc::ToInverseMat4(Transform const& t)
 
 Mat3 osc::ToNormalMatrix(Transform const& t)
 {
-    return ToAdjugateMatrix(transpose(ToMat3(t)));
+    return adjugate(transpose(ToMat3(t)));
 }
 
 Mat4 osc::ToNormalMatrix4(Transform const& t)
 {
-    return ToAdjugateMatrix(transpose(ToMat3(t)));
+    return adjugate(transpose(ToMat3(t)));
 }
 
 Transform osc::ToTransform(Mat4 const& mtx)

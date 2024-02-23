@@ -585,7 +585,7 @@ namespace
     Mat4 ToNormalMat4(Mat4OrTransform const& matrixOrTransform)
     {
         return std::visit(Overload{
-            [](Mat4 const& matrix) { return ToNormalMatrix4(matrix); },
+            [](Mat4 const& matrix) { return normal_matrix4(matrix); },
             [](Transform const& transform) { return ToNormalMatrix4(transform); }
         }, matrixOrTransform);
     }
@@ -593,7 +593,7 @@ namespace
     Mat3 ToNormalMat3(Mat4OrTransform const& matrixOrTransform)
     {
         return std::visit(Overload{
-            [](Mat4 const& matrix) { return ToNormalMatrix(matrix); },
+            [](Mat4 const& matrix) { return normal_matrix(matrix); },
             [](Transform const& transform) { return ToNormalMatrix(transform); }
         }, matrixOrTransform);
     }

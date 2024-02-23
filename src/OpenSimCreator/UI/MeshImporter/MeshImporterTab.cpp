@@ -908,7 +908,7 @@ private:
         // rotation editor
         if (e.canChangeRotation())
         {
-            Eulers eulers = EulerAngles(e.getRotation(m_Shared->getModelGraph()));
+            Eulers eulers = euler_angles(normalize(e.getRotation(m_Shared->getModelGraph())));
 
             if (InputAngle3("Rotation", eulers, "%.6f"))
             {

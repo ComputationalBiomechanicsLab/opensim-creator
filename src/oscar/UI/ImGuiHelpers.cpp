@@ -418,7 +418,7 @@ void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, Eulers& eulers)
     eulers.x += sensitivity * -mouseDelta.y;
     eulers.x = clamp(eulers.x, -90_deg + 0.1_rad, 90_deg - 0.1_rad);
     eulers.y += sensitivity * -mouseDelta.x;
-    eulers.y = fmod(eulers.y, 360_deg);
+    eulers.y = mod(eulers.y, 360_deg);
 
     camera.setRotation(WorldspaceRotation(eulers));
 }

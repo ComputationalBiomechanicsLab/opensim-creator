@@ -477,4 +477,52 @@ namespace osc
 
         return true;
     }
+
+    template<std::floating_point T>
+    Mat<3, 3, T> adjugate(Mat<3, 3, T> const& m)
+    {
+        // google: "Adjugate Matrix": it's related to the cofactor matrix and is
+        // related to the inverse of a matrix through:
+        //
+        //     inverse(M) = Adjugate(M) / determinant(M);
+
+        Mat<3, 3, T> rv;
+        rv[0][0] = + (m[1][1] * m[2][2] - m[2][1] * m[1][2]);
+        rv[1][0] = - (m[1][0] * m[2][2] - m[2][0] * m[1][2]);
+        rv[2][0] = + (m[1][0] * m[2][1] - m[2][0] * m[1][1]);
+        rv[0][1] = - (m[0][1] * m[2][2] - m[2][1] * m[0][2]);
+        rv[1][1] = + (m[0][0] * m[2][2] - m[2][0] * m[0][2]);
+        rv[2][1] = - (m[0][0] * m[2][1] - m[2][0] * m[0][1]);
+        rv[0][2] = + (m[0][1] * m[1][2] - m[1][1] * m[0][2]);
+        rv[1][2] = - (m[0][0] * m[1][2] - m[1][0] * m[0][2]);
+        rv[2][2] = + (m[0][0] * m[1][1] - m[1][0] * m[0][1]);
+        return rv;
+    }
+
+    template<std::floating_point T>
+    Mat<3, 3, T> normal_matrix(Mat<4, 4, T> const& m)
+    {
+        // "On the Transformation of Surface Normals" by Andrew Glassner (1987)
+        //
+        // "One option is to replace the inverse with the adjoint of M. The
+        //  adjoint is attractive because it always exists, even when M is
+        //  singular. The inverse and the adjoint are related by:
+        //
+        //      inverse(M) = adjoint(M) / determinant(M);
+        //
+        //  so, when the inverse exists, they only differ by a constant factor.
+        //  Therefore, using adjoint(M) instead of inverse(M) only affects the
+        //  magnitude of the resulting normal vector. Normal vectors have to
+        //  be normalized after mutiplication with a normal matrix anyway, so
+        //  nothing is lost"
+
+        Mat<3, 3, T> const topLeft{m};
+        return adjugate(transpose(topLeft));
+    }
+
+    template<std::floating_point T>
+    Mat<4, 4, T> normal_matrix4(Mat<4, 4, T> const& m)
+    {
+        return Mat<4, 4, T>{normal_matrix(m)};
+    }
 }

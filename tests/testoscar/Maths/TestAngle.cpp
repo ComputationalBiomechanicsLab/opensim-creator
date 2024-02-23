@@ -74,10 +74,10 @@ TEST(Angle, RadiansPlusEqualsWorksAsExpected)
 
 TEST(Angle, FmodBehavesAsExpected)
 {
-    using osc::fmod;
+    using osc::mod;
 
     auto r = 2_rad;
-    r = fmod(r, 1_rad);
+    r = mod(r, 1_rad);
     ASSERT_EQ(r, 0_rad);
 }
 

@@ -1251,7 +1251,7 @@ Mesh osc::GeneratePolyhedronMesh(
             Vec3 const b = vertexBuffer[i+1];
             Vec3 const c = vertexBuffer[i+2];
 
-            auto const azi = azimuth(Midpoint({a, b, c}));
+            auto const azi = azimuth(centroid({a, b, c}));
 
             correctUV(uvBuffer[i+0], a, azi);
             correctUV(uvBuffer[i+1], b, azi);

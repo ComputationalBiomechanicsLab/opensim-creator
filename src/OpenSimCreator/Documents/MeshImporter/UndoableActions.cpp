@@ -85,7 +85,7 @@ bool osc::mi::TryCreateJoint(
     size_t const jointTypeIdx = *IndexOf<OpenSim::WeldJoint>(GetComponentRegistry<OpenSim::Joint>());
     Vec3 const parentPos = doc.getPosByID(parentID);
     Vec3 const childPos = doc.getPosByID(childID);
-    Vec3 const midPoint = Midpoint(parentPos, childPos);
+    Vec3 const midPoint = midpoint(parentPos, childPos);
 
     auto const& joint = doc.emplace<Joint>(
         UID{},
@@ -155,7 +155,7 @@ bool osc::mi::TryTranslateObjectBetweenTwoPoints(
         return false;
     }
 
-    obj->setPos(doc, Midpoint(a, b));
+    obj->setPos(doc, midpoint(a, b));
     udoc.commitScratch("translated " + obj->getLabel());
 
     return true;
@@ -187,7 +187,7 @@ bool osc::mi::TryTranslateBetweenTwoObjects(
         return false;
     }
 
-    obj->setPos(doc, Midpoint(objA->getPos(doc), objB->getPos(doc)));
+    obj->setPos(doc, midpoint(objA->getPos(doc), objB->getPos(doc)));
     udoc.commitScratch("translated " + obj->getLabel());
 
     return true;
