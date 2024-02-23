@@ -1028,7 +1028,7 @@ Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
 
     float const cosTheta = dot(dir1, dir2);
 
-    if(cosTheta >= static_cast<float>(1.0f) - epsilon<float>)
+    if(cosTheta >= static_cast<float>(1.0f) - epsilon_v<float>)
     {
         // `a` and `b` point in the same direction: return identity transform
         return Identity<Mat4>();
@@ -1036,7 +1036,7 @@ Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
 
     Radians theta{};
     Vec3 rotationAxis{};
-    if(cosTheta < static_cast<float>(-1.0f) + epsilon<float>)
+    if(cosTheta < static_cast<float>(-1.0f) + epsilon_v<float>)
     {
         // `a` and `b` point in opposite directions
         //
@@ -1044,7 +1044,7 @@ Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
         // - so we try "guessing" one and hope it's good (then try another if it isn't)
 
         rotationAxis = cross(Vec3{0.0f, 0.0f, 1.0f}, dir1);
-        if (length2(rotationAxis) < epsilon<float>)
+        if (length2(rotationAxis) < epsilon_v<float>)
         {
             // bad luck: they were parallel - use a different axis
             rotationAxis = cross(Vec3{1.0f, 0.0f, 0.0f}, dir1);
@@ -1953,7 +1953,7 @@ std::optional<RayCollision> osc::GetRayCollisionTriangle(Line const& l, Triangle
 
     // if the dot product is small, then the ray is probably very parallel to
     // the triangle (or, perpendicular to the normal) and doesn't intersect
-    if (abs(NdotR) < epsilon<float>)
+    if (abs(NdotR) < epsilon_v<float>)
     {
         return std::nullopt;
     }
@@ -2024,7 +2024,7 @@ float osc::EaseOutElastic(float x)
 {
     // adopted from: https://easings.net/#easeOutElastic
 
-    constexpr float c4 = 2.0f*pi<float> / 3.0f;
+    constexpr float c4 = 2.0f*pi_v<float> / 3.0f;
     float const normalized = saturate(x);
 
     return pow(2.0f, -5.0f*normalized) * sin((normalized*10.0f - 0.75f) * c4) + 1.0f;

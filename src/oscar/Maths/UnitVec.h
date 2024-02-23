@@ -86,7 +86,7 @@ namespace osc
             m_Data{Vec<L, T>{std::forward<Args>(args)...}}
         {}
 
-        Vec<L, T> m_Data{quiet_nan<T>};
+        Vec<L, T> m_Data{quiet_nan_v<T>};
     };
 
     template<size_t L, std::floating_point T>

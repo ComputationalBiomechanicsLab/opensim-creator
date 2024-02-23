@@ -170,19 +170,19 @@ namespace osc
         T cosTheta = dot(orig, dest);
         Vec<3, T> rotationAxis;
 
-        if(cosTheta >= static_cast<T>(1) - epsilon<T>) {
+        if(cosTheta >= static_cast<T>(1) - epsilon_v<T>) {
             // orig and dest point in the same direction
             return quat_identity<T>();
         }
 
-        if(cosTheta < static_cast<T>(-1) + epsilon<T>) {
+        if(cosTheta < static_cast<T>(-1) + epsilon_v<T>) {
             // special case when vectors in opposite directions :
             // there is no "ideal" rotation axis
             // So guess one; any will do as long as it's perpendicular to start
             // This implementation favors a rotation around the Up axis (Y),
             // since it's often what you want to do.
             rotationAxis = cross(Vec<3, T>(0, 0, 1), orig);
-            if(length2(rotationAxis) < epsilon<T>) { // bad luck, they were parallel, try again!
+            if(length2(rotationAxis) < epsilon_v<T>) { // bad luck, they were parallel, try again!
                 rotationAxis = cross(Vec<3, T>(1, 0, 0), orig);
             }
 

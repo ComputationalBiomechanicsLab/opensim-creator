@@ -50,7 +50,7 @@ namespace osc
     template<std::floating_point T, AngularUnitTraits Units>
     Mat<4, 4, T> perspective(Angle<T, Units> fovy, T aspect, T zNear, T zFar)
     {
-        if (fabs(aspect - epsilon<T>) <= T{}) {
+        if (fabs(aspect - epsilon_v<T>) <= T{}) {
             // edge-case: some UIs ask for a perspective matrix on first frame before
             // aspect ratio is known or the aspect ratio is NaN because of a division
             // by zero

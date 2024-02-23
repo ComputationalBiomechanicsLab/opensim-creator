@@ -324,9 +324,9 @@ namespace osc
     }
 
     template<std::floating_point T>
-    bool equal_within_absdiff(T x, T y, T epsilon)
+    bool equal_within_absdiff(T x, T y, T epsilon_v)
     {
-        return abs(x - y) < epsilon;
+        return abs(x - y) < epsilon_v;
     }
 
     template<size_t L, std::floating_point T>
@@ -344,13 +344,13 @@ namespace osc
     template<std::floating_point T>
     bool equal_within_epsilon(T x, T y)
     {
-        return equal_within_absdiff(x, y, epsilon<T>);
+        return equal_within_absdiff(x, y, epsilon_v<T>);
     }
 
     template<size_t L, std::floating_point T>
     Vec<L, bool> equal_within_epsilon(Vec<L, T> const& x, Vec<L, T> const& y)
     {
-        return equal_within_absdiff(x, y, epsilon<T>);
+        return equal_within_absdiff(x, y, epsilon_v<T>);
     }
 
     template<std::floating_point T>
@@ -365,7 +365,7 @@ namespace osc
         // value must be scaled up to the magnitude of the operands if you need
         // a more-correct equality comparison
 
-        T const scaledEpsilon = std::max(static_cast<T>(1.0), x, y) * epsilon<T>;
+        T const scaledEpsilon = std::max(static_cast<T>(1.0), x, y) * epsilon_v<T>;
         return abs(x - y) < scaledEpsilon;
     }
 

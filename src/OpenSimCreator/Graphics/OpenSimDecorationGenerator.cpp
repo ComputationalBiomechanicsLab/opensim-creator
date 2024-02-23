@@ -140,7 +140,7 @@ namespace
         float const specificTension = 0.25e6f;  // magic number?
         float const pcsa = f / specificTension;
         float const widthFactor = 0.25f;
-        return widthFactor * sqrt(pcsa / pi<float>);
+        return widthFactor * sqrt(pcsa / pi_v<float>);
     }
 
     // helper: returns the size (radius) of a muscle based on caller-provided sizing flags
