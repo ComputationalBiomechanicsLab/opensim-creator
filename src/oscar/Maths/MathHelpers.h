@@ -51,9 +51,6 @@ namespace osc
     // returns the average of `n` vectors using whichever numerically stable average happens to work
     Vec3 NumericallyStableAverage(std::span<Vec3 const>);
 
-    // returns a normal vector of the supplied (pointed to) triangle (i.e. (v[1]-v[0]) x (v[2]-v[0]))
-    Vec3 TriangleNormal(Triangle const&);
-
     // returns a transform matrix that rotates dir1 to point in the same direction as dir2
     Mat4 Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2);
 

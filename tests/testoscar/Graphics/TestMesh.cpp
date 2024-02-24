@@ -16,6 +16,7 @@
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/TriangleFunctions.h>
 #include <oscar/Maths/UnitVec3.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
@@ -1932,8 +1933,8 @@ TEST(Mesh, RecalculateNormalsSmoothsNormalsOfSharedVerts)
     m.setVerts(verts);
     m.setIndices({0, 1, 2,   3, 2, 1});  // shares two verts per triangle
 
-    Vec3 const lhsNormal = TriangleNormal({ verts[0], verts[1], verts[2] });
-    Vec3 const rhsNormal = TriangleNormal({ verts[3], verts[2], verts[1] });
+    Vec3 const lhsNormal = triangle_normal({ verts[0], verts[1], verts[2] });
+    Vec3 const rhsNormal = triangle_normal({ verts[3], verts[2], verts[1] });
     Vec3 const mixedNormal = normalize(midpoint(lhsNormal, rhsNormal));
 
     m.recalculateNormals();

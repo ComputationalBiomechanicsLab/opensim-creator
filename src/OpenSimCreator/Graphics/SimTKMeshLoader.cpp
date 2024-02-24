@@ -11,6 +11,7 @@
 #include <oscar/Graphics/VertexFormat.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/TriangleFunctions.h>
 #include <oscar/Maths/Vec3.h>
 
 #include <array>

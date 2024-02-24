@@ -58,6 +58,8 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/Transform.h>
+#include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/TriangleFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
@@ -5010,7 +5012,7 @@ public:
             Triangle const triangle = {positions[idxs[0]], positions[idxs[1]], positions[idxs[2]]};
 
             // calculate + validate triangle normal
-            auto const normal = TriangleNormal(triangle);
+            auto const normal = triangle_normal(triangle).unwrap();
             if (any_of(isnan(normal))) {
                 continue;  // probably co-located, or invalid: don't accumulate it
             }

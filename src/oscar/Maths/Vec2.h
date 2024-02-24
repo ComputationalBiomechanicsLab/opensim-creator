@@ -22,7 +22,6 @@ namespace osc
         using const_pointer = T const*;
         using iterator = T*;
         using const_iterator = T const*;
-        using type = Vec<2, T>;
         using bool_type = Vec<2, bool>;
 
         static constexpr size_type length() { return 2; }

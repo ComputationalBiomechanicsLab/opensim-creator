@@ -37,6 +37,7 @@
 #include <oscar/Maths/Tetrahedron.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/TriangleFunctions.h>
 #include <oscar/Maths/TrigonometricFunctions.h>
 #include <oscar/Maths/UnitVec.h>
 #include <oscar/Maths/UnitVec3.h>

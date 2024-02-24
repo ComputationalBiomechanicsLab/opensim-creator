@@ -176,6 +176,7 @@ add_library(oscar STATIC
     Maths/Tetrahedron.h
     Maths/Transform.h
     Maths/Triangle.h
+    Maths/TriangleFunctions.h
     Maths/TrigonometricFunctions.h
     Maths/UnitVec.h
     Maths/UnitVec3.h
@@ -356,7 +357,7 @@ add_library(oscar STATIC
     UI.h
     Utils.h
     Variant.h
- )
+)
 
 target_include_directories(oscar PUBLIC
 

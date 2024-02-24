@@ -1014,14 +1014,6 @@ Vec3 osc::NumericallyStableAverage(std::span<Vec3 const> vs)
     return sum / static_cast<float>(vs.size());
 }
 
-Vec3 osc::TriangleNormal(Triangle const& tri)
-{
-    Vec3 const ab = tri.p1 - tri.p0;
-    Vec3 const ac = tri.p2 - tri.p0;
-    Vec3 const perpendiular = cross(ab, ac);
-    return normalize(perpendiular);
-}
-
 Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
 {
     // this is effectively a rewrite of glm::rotation(vec3 const&, vec3 const& dest);
@@ -1946,7 +1938,7 @@ std::optional<RayCollision> osc::GetRayCollisionTriangle(Line const& l, Triangle
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution
 
     // compute triangle normal
-    Vec3 N = TriangleNormal(tri);
+    Vec3 N = triangle_normal(tri);
 
     // compute dot product between normal and ray
     float NdotR = dot(N, l.direction);

@@ -10,13 +10,17 @@
 
 namespace osc
 {
-
-    // A vector that has either:
+    // A wrapper around a `Vec` that has either a length of one (to
+    // within a very small tolerance) or all components set to NaNs
     //
-    // - A length of one (to within a very small tolerance), or
-    // - All components are NaN (default construction - you should overwrite it)
+    // the utility of this class is that you can use this distinct type
+    // to create overloads of functions that "know" the input is already
+    // normalized, or as a documentation type (it communicates requirements)
     //
-    // Inspired by Simbody's `SimTK::UnitVec` class
+    // the wrapper can be implicitly converted to a (readonly) reference
+    // to the underlying `Vec`, or you can use `.unwrap()` in cases where
+    // the compiler isn't able to figure out the conversion (e.g. deducing
+    // templated Vec functions)
     template<size_t L, std::floating_point T>
     class UnitVec final {
     public:
@@ -30,7 +34,7 @@ namespace osc
         using const_pointer = T const*;
         using iterator = T const*;
         using const_iterator = T const*;
-        using type = UnitVec<2, T>;
+        using bool_type = Vec<L, bool>;
 
         static constexpr size_type length() { return L; }
 
@@ -56,6 +60,11 @@ namespace osc
 
         // implicit conversion to the underlying (normalized) vector
         constexpr operator Vec<L, T> const& () const { return m_Data; }
+
+        // explicit conversion to the underlying (normalized) vector
+        //
+        // this is sometimes necessary when (e.g.) the compiler can't deduce the conversion
+        constexpr Vec<L, T> const& unwrap() const { return m_Data; }
 
         constexpr size_type size() const { return length(); }
         constexpr const_pointer data() const { return m_Data.data(); }
