@@ -76,5 +76,5 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
             ++nExamplesTested;
         }
     }
-    ASSERT_GT(nExamplesTested, 0);  // sanity check: remove this if you want <10 examples
+    ASSERT_GT(nExamplesTested, 10);  // sanity check: remove this if you want <10 examples
 }

@@ -199,19 +199,14 @@ TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFault
     OpenSim::Model const originalModel{modelPath.string()};
     OpenSim::Model modifiedModel{originalModel};
     InitializeModel(modifiedModel);
-    InitializeModel(modifiedModel);
 
     // iterate over the original (const) model, so that iterator
     // invalidation can't happen
-    for (OpenSim::Component const& c : originalModel.getComponentList())
-    {
+    for (OpenSim::Component const& c : originalModel.getComponentList()) {
         // if the component still exists in the to-be-deleted-from model
         // (it may have been indirectly deleted), then try to delete it
-        OpenSim::Component* lookup = FindComponentMut(modifiedModel, c.getAbsolutePath());
-        if (lookup)
-        {
-            if (TryDeleteComponentFromModel(modifiedModel, *lookup))
-            {
+        if (OpenSim::Component* lookup = FindComponentMut(modifiedModel, c.getAbsolutePath())) {
+            if (TryDeleteComponentFromModel(modifiedModel, *lookup)) {
                 log_info("deleted %s (%s)", c.getName().c_str(), c.getConcreteClassName().c_str());
                 InitializeModel(modifiedModel);
                 InitializeState(modifiedModel);

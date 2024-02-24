@@ -385,5 +385,7 @@ namespace osc
     using Mat4f = Mat<4, 4, float>;
     using Mat4d = Mat<4, 4, double>;
     using Mat4i = Mat<4, 4, int>;
+    using Mat4z = Mat<4, 4, ptrdiff_t>;
+    using Mat4zu = Mat<4, 4, size_t>;
     using Mat4u32 = Mat<4, 4, uint32_t>;
 }

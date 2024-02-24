@@ -378,5 +378,7 @@ namespace osc
     using Mat3f = Mat<3, 3, float>;
     using Mat3d = Mat<3, 3, double>;
     using Mat3i = Mat<3, 3, int>;
+    using Mat3z = Mat<3, 3, ptrdiff_t>;
+    using Mat3zu = Mat<3, 3, size_t>;
     using Mat3u32 = Mat<3, 3, uint32_t>;
 }

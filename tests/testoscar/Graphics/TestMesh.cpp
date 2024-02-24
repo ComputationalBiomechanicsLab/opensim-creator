@@ -1909,7 +1909,7 @@ TEST(Mesh, RecalculateNormalsAssignsNormalsIfNoneExist)
     auto const normals = m.getNormals();
     ASSERT_EQ(normals.size(), 3);
     ASSERT_TRUE(std::all_of(normals.begin(), normals.end(), [first = normals.front()](Vec3 const& normal){ return normal == first; }));
-    ASSERT_TRUE(all(equal_within_absdiff(normals.front(), Vec3(0.0f, 0.0f, 1.0f), epsilon_v<float>)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(normals.front(), Vec3(0.0f, 0.0f, 1.0f), epsilon_v<float>)));
 }
 
 TEST(Mesh, RecalculateNormalsSmoothsNormalsOfSharedVerts)
@@ -1934,14 +1934,14 @@ TEST(Mesh, RecalculateNormalsSmoothsNormalsOfSharedVerts)
 
     Vec3 const lhsNormal = TriangleNormal({ verts[0], verts[1], verts[2] });
     Vec3 const rhsNormal = TriangleNormal({ verts[3], verts[2], verts[1] });
-    Vec3 const mixedNormal = midpoint(lhsNormal, rhsNormal);
+    Vec3 const mixedNormal = normalize(midpoint(lhsNormal, rhsNormal));
 
     m.recalculateNormals();
 
     auto const normals = m.getNormals();
     ASSERT_EQ(normals.size(), 4);
-    ASSERT_TRUE(all(equal_within_absdiff(normals[0], lhsNormal, epsilon_v<float>)));
-    ASSERT_TRUE(all(equal_within_absdiff(normals[1], mixedNormal, epsilon_v<float>)));
-    ASSERT_TRUE(all(equal_within_absdiff(normals[2], mixedNormal, epsilon_v<float>)));
-    ASSERT_TRUE(all(equal_within_absdiff(normals[3], rhsNormal, epsilon_v<float>)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(normals[0], lhsNormal, epsilon_v<float>)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(normals[1], mixedNormal, epsilon_v<float>)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(normals[2], mixedNormal, epsilon_v<float>)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(normals[3], rhsNormal, epsilon_v<float>)));
 }

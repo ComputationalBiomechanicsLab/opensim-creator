@@ -21,6 +21,6 @@ TEST(ZSuffix, PacksValueIntoSizeT)
 
 TEST(ZUSuffix, ReturnsSizeT)
 {
-    // C++23 defines the `zu` suffix as "std::size_t"
-    static_assert(std::is_same_v<decltype(10_zu), decltype(std::size_t{10})>);
+    // C++23 defines the `uz` suffix as "std::size_t"
+    static_assert(std::is_same_v<decltype(10_uz), decltype(std::size_t{10})>);
 }
