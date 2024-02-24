@@ -22,42 +22,30 @@ namespace
     // matches the quad used in LearnOpenGL's normal mapping tutorial
     Mesh GenerateQuad()
     {
-        constexpr auto verts = std::to_array<Vec3>({
+        Mesh rv;
+        rv.setVerts({
             {-1.0f,  1.0f, 0.0f},
             {-1.0f, -1.0f, 0.0f},
             { 1.0f, -1.0f, 0.0f},
             { 1.0f,  1.0f, 0.0f},
         });
-        constexpr auto normals = std::to_array<Vec3>({
+        rv.setNormals({
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
         });
-        constexpr auto texCoords = std::to_array<Vec2>({
+        rv.setTexCoords({
             {0.0f, 1.0f},
             {0.0f, 0.0f},
             {1.0f, 0.0f},
             {1.0f, 1.0f},
         });
-        constexpr auto indices = std::to_array<uint16_t>({
+        rv.setIndices({
             0, 1, 2,
             0, 2, 3,
         });
-        auto const tangents = CalcTangentVectors(
-            MeshTopology::Triangles,
-            verts,
-            normals,
-            texCoords,
-            indices
-        );
-
-        Mesh rv;
-        rv.setVerts(verts);
-        rv.setNormals(normals);
-        rv.setTexCoords(texCoords);
-        rv.setTangents(tangents);
-        rv.setIndices(indices);
+        rv.recalculateTangents();
         return rv;
     }
 

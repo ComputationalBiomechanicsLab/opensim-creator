@@ -21,6 +21,7 @@
 #include <oscar/Graphics/Detail/VertexAttributeList.h>
 #include <oscar/Graphics/Graphics.h>
 #include <oscar/Graphics/GraphicsContext.h>
+#include <oscar/Graphics/GraphicsHelpers.h>
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshGenerators.h>
@@ -5046,6 +5047,45 @@ public:
         }
     }
 
+    void recalculateTangents()
+    {
+        if (getTopology() != MeshTopology::Triangles) {
+            // if the mesh isn't triangle-based, do nothing
+            return;
+        }
+        if (!m_VertexBuffer.hasAttribute(VertexAttribute::Normal)) {
+            // if the mesh doesn't have normals, do nothing
+            return;
+        }
+        if (!m_VertexBuffer.hasAttribute(VertexAttribute::TexCoord0)) {
+            // if the mesh doesn't have texture coordinates, do nothing
+            return;
+        }
+        if (m_IndicesData.empty()) {
+            // if the mesh has no indices, do nothing
+            return;
+        }
+
+        // ensure the vertex buffer has space for tangents
+        m_VertexBuffer.emplaceAttributeDescriptor({ VertexAttribute::Tangent, VertexAttributeFormat::Float32x3 });
+
+        // calculate tangents
+
+        auto const vbverts = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
+        auto const vbnormals = m_VertexBuffer.iter<Vec3>(VertexAttribute::Normal);
+        auto const vbtexcoords = m_VertexBuffer.iter<Vec2>(VertexAttribute::TexCoord0);
+
+        auto const tangents = CalcTangentVectors(
+            MeshTopology::Triangles,
+            std::vector<Vec3>(vbverts.begin(), vbverts.end()),
+            std::vector<Vec3>(vbnormals.begin(), vbnormals.end()),
+            std::vector<Vec2>(vbtexcoords.begin(), vbtexcoords.end()),
+            getIndices()
+        );
+
+        m_VertexBuffer.write<Vec4>(VertexAttribute::Tangent, tangents);
+    }
+
     // non-PIMPL methods
 
     gl::VertexArray& updVertexArray()
@@ -5514,6 +5554,11 @@ void osc::Mesh::setVertexBufferData(std::span<uint8_t const> data, MeshUpdateFla
 void osc::Mesh::recalculateNormals()
 {
     m_Impl.upd()->recalculateNormals();
+}
+
+void osc::Mesh::recalculateTangents()
+{
+    m_Impl.upd()->recalculateTangents();
 }
 
 std::ostream& osc::operator<<(std::ostream& o, Mesh const&)

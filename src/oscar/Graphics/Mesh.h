@@ -164,7 +164,16 @@ namespace osc
         //
         // - does nothing if the mesh's topology is != MeshTopology::Triangles
         // - the normals of shared vertices are averaged (i.e. smooth-shaded)
+        // - creates a normal vertex attribute if tangents aren't assigned yet
         void recalculateNormals();
+
+        // recalculates the tangents of the mesh from its triangles + normals + texture coordinates
+        //
+        // - does nothing if the mesh's topology != MeshTopology::Triangles
+        // - does nothing if the mesh has no normals
+        // - does nothing if the mesh has no texture coordinates
+        // - creates a tangent vertex attribute if tangents aren't assigned yet
+        void recalculateTangents();
 
         friend void swap(Mesh& a, Mesh& b) noexcept
         {
