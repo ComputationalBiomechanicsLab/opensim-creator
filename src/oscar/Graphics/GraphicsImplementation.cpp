@@ -4437,6 +4437,11 @@ namespace
             {
             }
 
+            difference_type size() const
+            {
+                return std::distance(begin(), end());
+            }
+
             iterator begin() const
             {
                 return {m_Data.data(), m_Stride, m_Encoding};
@@ -4996,13 +5001,17 @@ public:
 
         // calculate normals from triangle faces:
         //
-        // - use addition to aggregate face normals onto each vertex
-        // - renormalize all normals at the end (I can't be bothered tracking counts and branching
-        //   for only the multi-assigned vertices: just branchlessly renormalize all of them)
+        // - keep a count of the number of times a normal has been assigned
+        // - compute the normal from the triangle
+        // - if counts[i] == 0 assign it (we can't assume the buffer is zeroed - could be reused)
+        // - else, add (accumulate)
+        // - ++counts[i]
+        // - at the end, if counts[i] > 1, then renormalize that normal (it contains a sum)
 
         auto const indices = getIndices();
         auto const positions = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
         auto normals = m_VertexBuffer.iter<Vec3>(VertexAttribute::Normal);
+        std::vector<uint16_t> counts(normals.size());
 
         for (size_t i = 0, len = 3*(indices.size()/3); i < len; i+=3) {
             // get triangle indices
@@ -5019,13 +5028,21 @@ public:
 
             // accumulate
             for (auto idx : idxs) {
-                normals[idx] += normal;
+                if (counts[idx] == 0) {
+                    normals[idx] = normal;
+                }
+                else {
+                    normals[idx] += normal;
+                }
+                ++counts[idx];
             }
         }
 
-        // renormalize all normals
-        for (auto&& normal : normals) {
-            normal = normalize(Vec3{normal});
+        // renormalize shared normals
+        for (size_t i = 0; i < counts.size(); ++i) {
+            if (counts[i] > 1) {
+                normals[i] = normalize(Vec3{normals[i]});
+            }
         }
     }
 
