@@ -211,7 +211,7 @@ namespace osc
         T const y = static_cast<T>(2) * (q.y * q.z + q.w * q.x);
         T const x = q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z;
 
-        if (all(equal_within_epsilon(Vec<2, T>(x, y), Vec<2, T>(0)))) {
+        if (all_of(equal_within_epsilon(Vec<2, T>(x, y), Vec<2, T>(0)))) {
             //avoid atan2(0,0) - handle singularity - Matiis
             return static_cast<T>(2) * atan2(q.x, q.w);
         }
@@ -231,7 +231,7 @@ namespace osc
         T const y = static_cast<T>(2) * (q.x * q.y + q.w * q.z);
         T const x = q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z;
 
-        if (all(equal_within_epsilon(Vec<2, T>(x, y), Vec<2, T>(0)))) {
+        if (all_of(equal_within_epsilon(Vec<2, T>(x, y), Vec<2, T>(0)))) {
             //avoid atan2(0,0) - handle singularity - Matiis
             return RadiansT<T>{0};
         }

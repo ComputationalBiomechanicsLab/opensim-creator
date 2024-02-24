@@ -1533,7 +1533,7 @@ Mesh osc::GenerateCircleMesh2(
 {
     // this implementation was initially hand-ported from threejs (CircleGeometry)
 
-    segments = max(3_zu, segments);
+    segments = max(3_uz, segments);
     auto const fsegments = static_cast<float>(segments);
 
     std::vector<uint32_t> indices;
@@ -1923,8 +1923,8 @@ Mesh osc::GenerateSphereMesh2(
 {
     // implementation was initially hand-ported from three.js (SphereGeometry)
 
-    widthSegments = max(3_zu, widthSegments);
-    heightSegments = max(2_zu, heightSegments);
+    widthSegments = max(3_uz, widthSegments);
+    heightSegments = max(2_uz, heightSegments);
     auto const fwidthSegments = static_cast<float>(widthSegments);
     auto const fheightSegments = static_cast<float>(heightSegments);
     auto const thetaEnd = min(thetaStart + thetaLength, 180_deg);

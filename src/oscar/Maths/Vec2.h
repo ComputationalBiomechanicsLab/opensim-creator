@@ -271,5 +271,7 @@ namespace osc
     using Vec2f = Vec<2, float>;
     using Vec2d = Vec<2, double>;
     using Vec2i = Vec<2, int>;
+    using Vec2z = Vec<2, ptrdiff_t>;
+    using Vec2uz = Vec<2, size_t>;
     using Vec2u32 = Vec<2, uint32_t>;
 }

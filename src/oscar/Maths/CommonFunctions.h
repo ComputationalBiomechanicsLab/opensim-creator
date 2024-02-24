@@ -390,6 +390,18 @@ namespace osc
     }
 
     template<std::floating_point T>
+    bool isnan(T v)
+    {
+        return std::isnan(v);
+    }
+
+    template<size_t L, std::floating_point T>
+    Vec<L, bool> isnan(Vec<L, T> const& v)
+    {
+        return map(v, isnan<T>);
+    }
+
+    template<std::floating_point T>
     T log(T num)
     {
         return std::log(num);

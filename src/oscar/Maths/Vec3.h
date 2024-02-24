@@ -298,5 +298,7 @@ namespace osc
     using Vec3f = Vec<3, float>;
     using Vec3d = Vec<3, double>;
     using Vec3i = Vec<3, int>;
+    using Vec3z = Vec<3, ptrdiff_t>;
+    using Vec3uz = Vec<3, size_t>;
     using Vec3u32 = Vec<3, uint32_t>;
 }

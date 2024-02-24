@@ -4632,6 +4632,18 @@ namespace
             }
         }
 
+        bool emplaceAttributeDescriptor(VertexAttributeDescriptor desc)
+        {
+            if (hasAttribute(desc.attribute())) {
+                return false;
+            }
+
+            auto copy = format();
+            copy.insert(std::move(desc));
+            setFormat(copy);
+            return true;
+        }
+
         void setParams(size_t newNumVerts, VertexFormat const& newFormat)
         {
             if (m_Data.empty())
@@ -4977,49 +4989,41 @@ public:
             return;
         }
 
-        if (!m_VertexBuffer.hasAttribute(VertexAttribute::Normal)) {
-            // if the mesh doesn't have normal data in its vertex buffer, create it so that
-            // we can overwrite it with the cacluated normals
-
-            auto format = m_VertexBuffer.format();
-            format.insert({VertexAttribute::Normal, VertexAttributeFormat::Float32x3});
-            m_VertexBuffer.setFormat(format);
-        }
+        // ensure the vertex buffer has a normal attribute
+        m_VertexBuffer.emplaceAttributeDescriptor({VertexAttribute::Normal, VertexAttributeFormat::Float32x3});
 
         // calculate normals from triangle faces:
         //
-        // - use addition to aggregate face normals onto each vertex, but retain a separate
-        //   counter for the number of additions each vertex has received, so that we can
-        //   average it later
+        // - use addition to aggregate face normals onto each vertex
+        // - renormalize all normals at the end (I can't be bothered tracking counts and branching
+        //   for only the multi-assigned vertices: just branchlessly renormalize all of them)
 
         auto const indices = getIndices();
         auto const positions = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
         auto normals = m_VertexBuffer.iter<Vec3>(VertexAttribute::Normal);
-        auto additionCounts = std::vector<uint16_t>(m_VertexBuffer.numVerts());
+
         for (size_t i = 0, len = 3*(indices.size()/3); i < len; i+=3) {
             // get triangle indices
-            auto const tis = std::to_array({indices.at(i), indices.at(i+1), indices.at(i+2)});
+            Vec3uz const idxs = {indices[i], indices[i+1], indices[i+2]};
 
-            // calculate triangle normal
-            auto const tnormal = TriangleNormal({positions.at(tis[0]), positions.at(tis[1]), positions.at(tis[2])});
+            // get triangle
+            Triangle const triangle = {positions[idxs[0]], positions[idxs[1]], positions[idxs[2]]};
 
-            // assign to vertex data
-            for (auto idx : tis) {
-                if (additionCounts.at(idx)++ == 0) {
-                    normals.at(idx) = tnormal;
-                }
-                else {
-                    normals.at(idx) += tnormal;
-                }
+            // calculate + validate triangle normal
+            auto const normal = TriangleNormal(triangle);
+            if (any_of(isnan(normal))) {
+                continue;  // probably co-located, or invalid: don't accumulate it
+            }
+
+            // accumulate
+            for (auto idx : idxs) {
+                normals[idx] += normal;
             }
         }
 
-        // average shared normals
-        for (size_t i = 0; i < additionCounts.size(); ++i) {
-            auto count = additionCounts[i];
-            if (count > 1) {
-                normals[i] /= static_cast<float>(count);
-            }
+        // renormalize all normals
+        for (auto&& normal : normals) {
+            normal = normalize(Vec3{normal});
         }
     }
 
