@@ -381,4 +381,13 @@ namespace osc
     using Mat3z = Mat<3, 3, ptrdiff_t>;
     using Mat3zu = Mat<3, 3, size_t>;
     using Mat3u32 = Mat<3, 3, uint32_t>;
+
+    template<typename T>
+    constexpr T Identity();
+
+    template<>
+    constexpr Mat3 Identity<Mat3>()
+    {
+        return Mat3{1.0f};
+    }
 }

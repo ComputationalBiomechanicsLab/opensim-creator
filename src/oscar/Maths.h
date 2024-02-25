@@ -36,6 +36,7 @@
 #include <oscar/Maths/Sphere.h>
 #include <oscar/Maths/Tetrahedron.h>
 #include <oscar/Maths/Transform.h>
+#include <oscar/Maths/TransformFunctions.h>
 #include <oscar/Maths/Triangle.h>
 #include <oscar/Maths/TriangleFunctions.h>
 #include <oscar/Maths/TrigonometricFunctions.h>

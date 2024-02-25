@@ -41,6 +41,7 @@
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Transform.h>
+#include <oscar/Maths/TransformFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/VecFunctions.h>
@@ -2084,14 +2085,19 @@ private:
             ++it;
             ++n;
 
-            while (it != end)
-            {
-                ras += mg.getXFormByID(*it);
+
+            while (it != end) {
+                Transform const t = mg.getXFormByID(*it);
+                ras.position += t.position;
+                ras.rotation += t.rotation;
+                ras.scale += t.scale;
                 ++it;
                 ++n;
             }
 
-            ras /= static_cast<float>(n);
+            ras.position /= static_cast<float>(n);
+            ras.rotation /= static_cast<float>(n);
+            ras.scale /= static_cast<float>(n);
             ras.rotation = normalize(ras.rotation);
 
             m_ImGuizmoState.mtx = ToMat4(ras);

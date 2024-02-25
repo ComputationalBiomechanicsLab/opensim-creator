@@ -388,4 +388,13 @@ namespace osc
     using Mat4z = Mat<4, 4, ptrdiff_t>;
     using Mat4zu = Mat<4, 4, size_t>;
     using Mat4u32 = Mat<4, 4, uint32_t>;
+
+    template<typename T>
+    constexpr T Identity();
+
+    template<>
+    constexpr Mat4 Identity<Mat4>()
+    {
+        return Mat4{1.0f};
+    }
 }

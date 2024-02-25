@@ -4,14 +4,15 @@
 #include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/TrigonometricFunctions.h>
 #include <oscar/Maths/Mat.h>
-#include <oscar/Maths/QuaternionFunctions.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/HashHelpers.h>
 
 #include <cstddef>
 #include <cstdint>
 #include <ostream>
+#include <sstream>
 #include <string>
+#include <utility>
 
 namespace osc
 {
@@ -263,7 +264,8 @@ namespace osc
     template<typename T>
     std::string to_string(Qua<T> const& v)
     {
-        using std::to_string;
-        return std::string{"Quat("} + to_string(v.w) + ", " + to_string(v.x) + ", " + to_string(v.y) + ", " + to_string(v.z) + ')';
+        std::stringstream ss;
+        ss << v;
+        return std::move(ss).str();
     }
 }

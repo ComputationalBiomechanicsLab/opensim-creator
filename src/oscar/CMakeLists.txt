@@ -175,6 +175,7 @@ add_library(oscar STATIC
     Maths/Sphere.h
     Maths/Tetrahedron.h
     Maths/Transform.h
+    Maths/TransformFunctions.h
     Maths/Triangle.h
     Maths/TriangleFunctions.h
     Maths/TrigonometricFunctions.h

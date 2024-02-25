@@ -6,6 +6,7 @@
 #include <oscar/Maths/Vec3.h>
 
 #include <concepts>
+#include <type_traits>
 
 namespace osc
 {

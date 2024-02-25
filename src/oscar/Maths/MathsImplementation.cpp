@@ -806,36 +806,6 @@ Vec3 osc::Center(Tetrahedron const& t)
 }
 
 
-// `Transform` implementation
-
-std::ostream& osc::operator<<(std::ostream& o, Transform const& t)
-{
-    return o << "Transform(position = " << t.position << ", rotation = " << t.rotation << ", scale = " << t.scale << ')';
-}
-
-Vec3 osc::operator*(Transform const& lhs, Vec3 const& rhs)
-{
-    return TransformPoint(lhs, rhs);
-}
-
-Transform& osc::operator+=(Transform& lhs, Transform const& rhs)
-{
-    lhs.position += rhs.position;
-    lhs.rotation += rhs.rotation;
-    lhs.scale += rhs.scale;
-    return lhs;
-}
-
-Transform& osc::operator/=(Transform& lhs, float rhs)
-{
-    lhs.position /= rhs;
-    lhs.rotation /= rhs;
-    lhs.scale /= rhs;
-    return lhs;
-}
-
-
-
 // Geometry implementation
 
 
@@ -1623,110 +1593,9 @@ Transform osc::YToYConeToSegmentTransform(Segment const& s, float radius)
     return YToYCylinderToSegmentTransform(s, radius);
 }
 
-Mat3 osc::ToMat3(Transform const& t)
-{
-    Mat3 rv = mat3_cast(t.rotation);
-
-    rv[0][0] *= t.scale.x;
-    rv[0][1] *= t.scale.x;
-    rv[0][2] *= t.scale.x;
-
-    rv[1][0] *= t.scale.y;
-    rv[1][1] *= t.scale.y;
-    rv[1][2] *= t.scale.y;
-
-    rv[2][0] *= t.scale.z;
-    rv[2][1] *= t.scale.z;
-    rv[2][2] *= t.scale.z;
-
-    return rv;
-}
-
-Mat4 osc::ToMat4(Transform const& t)
-{
-    Mat4 rv = mat4_cast(t.rotation);
-
-    rv[0][0] *= t.scale.x;
-    rv[0][1] *= t.scale.x;
-    rv[0][2] *= t.scale.x;
-
-    rv[1][0] *= t.scale.y;
-    rv[1][1] *= t.scale.y;
-    rv[1][2] *= t.scale.y;
-
-    rv[2][0] *= t.scale.z;
-    rv[2][1] *= t.scale.z;
-    rv[2][2] *= t.scale.z;
-
-    rv[3][0] = t.position.x;
-    rv[3][1] = t.position.y;
-    rv[3][2] = t.position.z;
-
-    return rv;
-}
-
-Mat4 osc::ToInverseMat4(Transform const& t)
-{
-    Mat4 translater = translate(Identity<Mat4>(), -t.position);
-    Mat4 rotater = mat4_cast(conjugate(t.rotation));
-    Mat4 scaler = scale(Identity<Mat4>(), 1.0f/t.scale);
-
-    return scaler * rotater * translater;
-}
-
-Mat3 osc::ToNormalMatrix(Transform const& t)
-{
-    return adjugate(transpose(ToMat3(t)));
-}
-
-Mat4 osc::ToNormalMatrix4(Transform const& t)
-{
-    return adjugate(transpose(ToMat3(t)));
-}
-
-Transform osc::ToTransform(Mat4 const& mtx)
-{
-    Transform rv;
-    Vec3 skew;
-    Vec4 perspective;
-    if (!decompose(mtx, rv.scale, rv.rotation, rv.position, skew, perspective))
-    {
-        throw std::runtime_error{"failed to decompose a matrix into scale, rotation, etc."};
-    }
-    return rv;
-}
-
-Vec3 osc::TransformDirection(Transform const& t, Vec3 const& localDir)
-{
-    return normalize(t.rotation * (t.scale * localDir));
-}
-
-Vec3 osc::InverseTransformDirection(Transform const& t, Vec3 const& direction)
-{
-    return normalize((conjugate(t.rotation) * direction) / t.scale);
-}
-
-Vec3 osc::TransformPoint(Transform const& t, Vec3 const& p)
-{
-    Vec3 rv = p;
-    rv *= t.scale;
-    rv = t.rotation * rv;
-    rv += t.position;
-    return rv;
-}
-
 Vec3 osc::TransformPoint(Mat4 const& m, Vec3 const& p)
 {
     return Vec3{m * Vec4{p, 1.0f}};
-}
-
-Vec3 osc::InverseTransformPoint(Transform const& t, Vec3 const& p)
-{
-    Vec3 rv = p;
-    rv -= t.position;
-    rv = conjugate(t.rotation) * rv;
-    rv /= t.scale;
-    return rv;
 }
 
 Quat osc::WorldspaceRotation(Eulers const& eulers)
@@ -1743,44 +1612,6 @@ void osc::ApplyWorldspaceRotation(
     Quat q = WorldspaceRotation(eulerAngles);
     t.position = q*(t.position - rotationCenter) + rotationCenter;
     t.rotation = normalize(q*t.rotation);
-}
-
-Eulers osc::ExtractEulerAngleXYZ(Transform const& t)
-{
-    return extract_eulers_xyz(mat4_cast(t.rotation));
-}
-
-Eulers osc::ExtractExtrinsicEulerAnglesXYZ(Transform const& t)
-{
-    return euler_angles(t.rotation);
-}
-
-Transform osc::PointAxisAlong(Transform const& t, int axisIndex, Vec3 const& newDirection)
-{
-    Vec3 beforeDir{};
-    beforeDir[axisIndex] = 1.0f;
-    beforeDir = t.rotation * beforeDir;
-
-    Quat const rotBeforeToAfter = rotation(beforeDir, newDirection);
-    Quat const newRotation = normalize(rotBeforeToAfter * t.rotation);
-
-    return t.withRotation(newRotation);
-}
-
-Transform osc::PointAxisTowards(Transform const& t, int axisIndex, Vec3 const& location)
-{
-    return PointAxisAlong(t, axisIndex, normalize(location - t.position));
-}
-
-Transform osc::RotateAlongAxis(Transform const& t, int axisIndex, Radians angle)
-{
-    Vec3 ax{};
-    ax[axisIndex] = 1.0f;
-    ax = t.rotation * ax;
-
-    Quat const q = angle_axis(angle, ax);
-
-    return t.withRotation(normalize(q * t.rotation));
 }
 
 bool osc::IsPointInRect(Rect const& r, Vec2 const& p)

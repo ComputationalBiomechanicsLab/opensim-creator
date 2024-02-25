@@ -5,7 +5,11 @@ namespace osc { template<typename> struct Qua; }
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/Constants.h>
 #include <oscar/Maths/CommonFunctions.h>
+#include <oscar/Maths/Mat3.h>
+#include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/TrigonometricFunctions.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Maths/Vec3.h>
 
 #include <concepts>
 #include <limits>
@@ -109,7 +113,7 @@ namespace osc
     }
 
     template<typename T>
-    Mat<3, 3, T> mat3_cast(Qua<T> const& q)
+    constexpr Mat<3, 3, T> mat3_cast(Qua<T> const& q)
     {
         Mat<3, 3, T> Result(T(1));
         T qxx(q.x * q.x);
@@ -137,7 +141,7 @@ namespace osc
     }
 
     template<typename T>
-    Mat<4, 4, T> mat4_cast(Qua<T> const& q)
+    constexpr Mat<4, 4, T> mat4_cast(Qua<T> const& q)
     {
         return Mat<4, 4, T>(mat3_cast(q));
     }

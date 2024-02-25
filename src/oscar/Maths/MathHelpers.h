@@ -14,6 +14,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
+#include <oscar/Maths/TransformFunctions.h>
 
 #include <array>
 #include <cmath>
@@ -253,47 +254,7 @@ namespace osc
     // returns a transform that maps a Y-to-Y (bottom-to-top) cone to a segment with the given radius
     Transform YToYConeToSegmentTransform(Segment const&, float radius);
 
-
-    // ----- `Transform` helpers -----
-
-    // returns a 3x3 transform matrix equivalent to the provided transform (ignores position)
-    Mat3 ToMat3(Transform const&);
-
-    // returns a 4x4 transform matrix equivalent to the provided transform
-    Mat4 ToMat4(Transform const&);
-
-    // returns a 4x4 transform matrix equivalent to the inverse of the provided transform
-    Mat4 ToInverseMat4(Transform const&);
-
-    // returns a 3x3 normal matrix for the provided transform
-    Mat3 ToNormalMatrix(Transform const&);
-
-    // returns a 4x4 normal matrix for the provided transform
-    Mat4 ToNormalMatrix4(Transform const&);
-
-    // returns a transform that *tries to* perform the equivalent transform as the provided mat4
-    //
-    // - not all 4x4 matrices can be expressed as an `Transform` (e.g. those containing skews)
-    // - uses matrix decomposition to break up the provided matrix
-    // - throws if decomposition of the provided matrix is not possible
-    Transform ToTransform(Mat4 const&);
-
-    // returns a unit-length vector that is the equivalent of the provided direction vector after applying the transform
-    //
-    // effectively, apply the Transform but ignore the `position` (translation) component
-    Vec3 TransformDirection(Transform const&, Vec3 const&);
-
-    // returns a unit-length vector that is the equivalent of the provided direction vector after applying the inverse of the transform
-    //
-    // effectively, apply the inverse transform but ignore the `position` (translation) component
-    Vec3 InverseTransformDirection(Transform const&, Vec3 const&);
-
-    // returns a vector that is the equivalent of the provided vector after applying the transform
-    Vec3 TransformPoint(Transform const&, Vec3 const&);
     Vec3 TransformPoint(Mat4 const&, Vec3 const&);
-
-    // returns a vector that is the equivalent of the provided vector after applying the inverse of the transform
-    Vec3 InverseTransformPoint(Transform const&, Vec3 const&);
 
     // returns the a quaternion equivalent to the given euler angles
     Quat WorldspaceRotation(Eulers const&);
@@ -302,46 +263,5 @@ namespace osc
     void ApplyWorldspaceRotation(
         Transform& applicationTarget,
         Eulers const& eulerAngles,
-        Vec3 const& rotationCenter
-    );
-
-    // returns XYZ (pitch, yaw, roll) Euler angles for a one-by-one application of an
-    // intrinsic rotations.
-    //
-    // Each rotation is applied one-at-a-time, to the transformed space, so we have:
-    //
-    // x-y-z (initial)
-    // x'-y'-z' (after first rotation)
-    // x''-y''-z'' (after second rotation)
-    // x'''-y'''-z''' (after third rotation)
-    //
-    // Assuming we're doing an XYZ rotation, the first rotation rotates x, the second
-    // rotation rotates around y', and the third rotation rotates around z''
-    //
-    // see: https://en.wikipedia.org/wiki/Euler_angles#Conventions_by_intrinsic_rotations
-    Eulers ExtractEulerAngleXYZ(Transform const&);
-
-    // returns XYZ (pitch, yaw, roll) Euler angles for an extrinsic rotation
-    //
-    // in extrinsic rotations, each rotation happens about a *fixed* coordinate system, which
-    // is in contrast to intrinsic rotations, which happen in a coordinate system that's attached
-    // to a moving body (the thing being rotated)
-    //
-    // see: https://en.wikipedia.org/wiki/Euler_angles#Conventions_by_extrinsic_rotations
-    Eulers ExtractExtrinsicEulerAnglesXYZ(Transform const&);
-
-    // returns the provided transform, but rotated such that the given axis, as expressed
-    // in the original transform, will instead point along the new direction
-    Transform PointAxisAlong(Transform const&, int axisIndex, Vec3 const& newDirection);
-
-    // returns the provided transform, but rotated such that the given axis, as expressed
-    // in the original transform, will instead point towards the given point
-    //
-    // alternate explanation: "performs the shortest (angular) rotation of the given
-    // transform such that the given axis points towards a point in the same space"
-    Transform PointAxisTowards(Transform const&, int axisIndex, Vec3 const& location);
-
-    // returns the provided transform, but intrinsically rotated along the given axis by
-    // the given number of radians
-    Transform RotateAlongAxis(Transform const&, int axisIndex, Radians);
+        Vec3 const& rotationCenter);
 }
