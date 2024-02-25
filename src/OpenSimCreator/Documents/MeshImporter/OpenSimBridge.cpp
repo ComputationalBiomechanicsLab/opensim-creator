@@ -34,6 +34,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <SimTKcommon/SmallMatrix.h>
 #include <oscar/Graphics/Mesh.h>
+#include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Transform.h>
@@ -290,7 +291,7 @@ namespace
         parentPOF->setParentFrame(*parent.physicalFrame);
         Mat4 toParentPofInParent =  ToInverseMat4(IgnoreScale(doc.getXFormByID(joint.getParentID()))) * ToMat4(IgnoreScale(joint.getXForm()));
         parentPOF->set_translation(ToSimTKVec3(toParentPofInParent[3]));
-        parentPOF->set_orientation(ToSimTKVec3(ExtractEulerAngleXYZ(toParentPofInParent)));
+        parentPOF->set_orientation(ToSimTKVec3(extract_eulers_xyz(toParentPofInParent)));
 
         // create the child OpenSim::PhysicalOffsetFrame
         auto childPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
@@ -298,7 +299,7 @@ namespace
         childPOF->setParentFrame(*child.physicalFrame);
         Mat4 const toChildPofInChild = ToInverseMat4(IgnoreScale(doc.getXFormByID(joint.getChildID()))) * ToMat4(IgnoreScale(joint.getXForm()));
         childPOF->set_translation(ToSimTKVec3(toChildPofInChild[3]));
-        childPOF->set_orientation(ToSimTKVec3(ExtractEulerAngleXYZ(toChildPofInChild)));
+        childPOF->set_orientation(ToSimTKVec3(extract_eulers_xyz(toChildPofInChild)));
 
         // create a relevant OpenSim::Joint (based on the type index, e.g. could be a FreeJoint)
         auto jointUniqPtr = At(GetComponentRegistry<OpenSim::Joint>(), joint.getJointTypeIndex()).instantiate();

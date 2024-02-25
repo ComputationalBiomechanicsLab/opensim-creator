@@ -989,31 +989,6 @@ float osc::AspectRatio(Vec2 v)
 }
 
 
-// Geometry
-
-Vec3 osc::KahanSum(std::span<Vec3 const> vs)
-{
-    Vec3 sum{};  // accumulator
-    Vec3 c{};    // running compensation of low-order bits
-
-    for (Vec3 const& v : vs)
-    {
-        Vec3 const y = v - c;    // subtract the compensation amount from the next number
-        Vec3 const t = sum + y;  // perform the summation (might lose information)
-
-        c = (t - sum) - y;            // (t-sum) yields the retained (high-order) parts of `y`, so `c` contains the "lost" information
-        sum = t;                      // CAREFUL: algebreically, `c` always == 0 - despite the computer's (actual) limited precision, the compiler might elilde all of this
-    }
-
-    return sum;
-}
-
-Vec3 osc::NumericallyStableAverage(std::span<Vec3 const> vs)
-{
-    Vec3 const sum = KahanSum(vs);
-    return sum / static_cast<float>(vs.size());
-}
-
 Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
 {
     // this is effectively a rewrite of glm::rotation(vec3 const&, vec3 const& dest);
@@ -1059,11 +1034,6 @@ Eulers osc::ExtractEulerAngleXYZ(Quat const& q)
     return extract_eulers_xyz(mat4_cast(q));
 }
 
-Eulers osc::ExtractEulerAngleXYZ(Mat4 const& m)
-{
-    return extract_eulers_xyz(m);
-}
-
 Vec2 osc::TopleftRelPosToNDCPoint(Vec2 relpos)
 {
     relpos.y = 1.0f - relpos.y;
@@ -1104,11 +1074,6 @@ Line osc::PerspectiveUnprojectTopLeftScreenPosToWorldRay(
     rv.direction = lineDirWorld;
     rv.origin = lineOriginWorld;
     return rv;
-}
-
-Vec2 osc::MinValuePerDimension(Rect const& r)
-{
-    return elementwise_min(r.p1, r.p2);
 }
 
 float osc::Area(Rect const& r)

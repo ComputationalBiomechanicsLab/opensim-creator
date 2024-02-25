@@ -45,20 +45,11 @@ namespace osc
     // returns the aspect ratio of the vec (effectively: x/y)
     float AspectRatio(Vec2);
 
-    // returns the sum of `n` vectors using the "Kahan Summation Algorithm" to reduce errors, returns {0.0f, 0.0f, 0.0f} if provided no inputs
-    Vec3 KahanSum(std::span<Vec3 const>);
-
-    // returns the average of `n` vectors using whichever numerically stable average happens to work
-    Vec3 NumericallyStableAverage(std::span<Vec3 const>);
-
     // returns a transform matrix that rotates dir1 to point in the same direction as dir2
     Mat4 Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2);
 
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
     Eulers ExtractEulerAngleXYZ(Quat const&);
-
-    // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
-    Eulers ExtractEulerAngleXYZ(Mat4 const&);
 
     // returns an XY NDC point converted from a screen/viewport point
     //
@@ -102,9 +93,6 @@ namespace osc
     );
 
     // ----- `Rect` helpers -----
-
-    // returns `Min(rect.p1, rect.p2)`: i.e. the smallest X and the smallest Y of the rectangle's points
-    Vec2 MinValuePerDimension(Rect const&);
 
     template<typename T>
     constexpr T Area(Vec<2, T> const& v) requires std::is_arithmetic_v<T>

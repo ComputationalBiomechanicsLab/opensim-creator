@@ -287,6 +287,7 @@ namespace osc
         return Result;
     }
 
+    // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
     template<typename T>
     Vec<3, RadiansT<T>> extract_eulers_xyz(Mat<4, 4, T> const& M)
     {
