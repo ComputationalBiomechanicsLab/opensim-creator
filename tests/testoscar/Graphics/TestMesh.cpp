@@ -2078,8 +2078,7 @@ TEST(Mesh, RecalculateTangentsGivesExpectedResultsInBasicCase)
     auto const tangents = m.getTangents();
 
     ASSERT_EQ(tangents.size(), 3);
-    ASSERT_EQ(tangents[0], Vec4(1.0f, 0.0f, 0.0f, 0.0f));
-    ASSERT_EQ(tangents[1], Vec4(1.0f, 0.0f, 0.0f, 0.0f));
-    ASSERT_EQ(tangents[2], Vec4(1.0f, 0.0f, 0.0f, 0.0f));
-    ASSERT_EQ(tangents[3], Vec4(1.0f, 0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(tangents.at(0), Vec4(1.0f, 0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(tangents.at(1), Vec4(1.0f, 0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(tangents.at(2), Vec4(1.0f, 0.0f, 0.0f, 0.0f));
 }
