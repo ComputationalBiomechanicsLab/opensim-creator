@@ -22,6 +22,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The camera axes widget now ensures that each axis is rendered in the correct order when two axes overlap
 - The visualizer now obeys the "Display Properties" of an OpenSim Component when it's set to `Wire`, which
   is more consistent with OpenSim GUI
+- The camera alignment overlay (red, green, blue lines that move around when you move the camera) are now
+  clickable, and will align the camera along the clicked axis
 - The `Appearance` editor in the property editor now shows a dropdown that lets you select the component's
   representation (e.g. `Wire`). Note: `Points` does not work, which is consistent with OpenSim GUI
 - There is now an `Export Model Graph as Dotviz` utility under `Tools -> Experimental Tools` in the model

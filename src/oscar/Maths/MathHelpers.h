@@ -26,6 +26,7 @@
 #include <span>
 #include <type_traits>
 
+namespace osc { struct Circle; }
 namespace osc { struct Disc; }
 namespace osc { struct Plane; }
 namespace osc { struct Rect; }
@@ -120,6 +121,9 @@ namespace osc
     //
     // note: no points --> zero-sized rectangle at the origin
     Rect BoundingRectOf(std::span<Vec2 const>);
+
+    // returns the smallest rectangle that bounds the provided circle
+    Rect BoundingRectOf(Circle const&);
 
     // returns a rectangle that has been expanded along each edge by the given amount
     //

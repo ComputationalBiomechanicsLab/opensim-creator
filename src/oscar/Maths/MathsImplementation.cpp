@@ -684,6 +684,24 @@ Vec3 osc::RecommendedLightDirection(PolarPerspectiveCamera const& c)
     return normalize(-c.focusPoint - p);
 }
 
+void osc::FocusAlongAxis(PolarPerspectiveCamera& camera, size_t axis, bool negate)
+{
+    if (negate) {
+        switch (axis) {
+        case 0: FocusAlongMinusX(camera); break;
+        case 1: FocusAlongMinusY(camera); break;
+        case 2: FocusAlongMinusZ(camera); break;
+        }
+    }
+    else {
+        switch (axis) {
+        case 0: FocusAlongX(camera); break;
+        case 1: FocusAlongY(camera); break;
+        case 2: FocusAlongZ(camera); break;
+        }
+    }
+}
+
 void osc::FocusAlongX(PolarPerspectiveCamera& camera)
 {
     camera.theta = 90_deg;
@@ -1087,6 +1105,12 @@ Rect osc::BoundingRectOf(std::span<Vec2 const> vs)
         rv.p2 = elementwise_max(rv.p2, *it);
     }
     return rv;
+}
+
+Rect osc::BoundingRectOf(Circle const& c)
+{
+    float const hypot = sqrt(c.radius * c.radius);
+    return {c.origin - hypot, c.origin + hypot};
 }
 
 Rect osc::Expand(Rect const& rect, float amt)
