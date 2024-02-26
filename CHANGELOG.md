@@ -14,6 +14,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     from other 3D tooling (e.g. in Blender, load the mesh, right-click, Shade Flat, reexport)
 - When adding a new component, the socket selector now contains help markers and subtitles that document
   each socket that needs to be assigned (#822)
+- When adding a new component, the socket selector now has a search input, which lets you filter through
+  the available options
+- The `Add Parent Offset Frame` and `Add Child Offset Frame` actions when right-clicking a joint now
+  correctly attach the added offset frame to the joint and select it (#824), but you can't create chains of
+  offset frames this way, because of a known bug in opensim-core (opensim-core/#3711)
 - The visualizer now obeys the "Display Properties" of an OpenSim Component when it's set to `Wire`, which
   is more consistent with OpenSim GUI
 - The `Appearance` editor in the property editor now shows a dropdown that lets you select the component's

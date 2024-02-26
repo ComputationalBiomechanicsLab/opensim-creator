@@ -239,22 +239,28 @@ private:
         ImGui::TextDisabled(socket.getConnecteeTypeName().c_str());
         ImGui::NextColumn();
 
-        // rhs: connectee choices
+        // rhs: search and connectee choices
         ImGui::PushID(static_cast<int>(i));
+        ImGui::TextUnformatted(ICON_FA_SEARCH);
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+        InputString("##search", m_SocketSearchStrings[i]);
         ImGui::BeginChild("##pfselector", {ImGui::GetContentRegionAvail().x, 128.0f});
 
         // iterate through potential connectees in model and print connect-able options
         int innerID = 0;
         for (OpenSim::Component const& c : m_Uum->getModel().getComponentList())
         {
-            if (!IsAbleToConnectTo(socket, c))
-            {
-                continue;
+            if (!IsAbleToConnectTo(socket, c)) {
+                continue;  // can't connect to it
             }
 
-            if (dynamic_cast<OpenSim::Station const*>(&c) && IsChildOfA<OpenSim::Muscle>(c))
-            {
-                continue;  // don't present muscle points etc.
+            if (dynamic_cast<OpenSim::Station const*>(&c) && IsChildOfA<OpenSim::Muscle>(c)) {
+                continue;  // it's a muscle point: don't present it (noisy)
+            }
+
+            if (!ContainsCaseInsensitive(c.getName(), m_SocketSearchStrings[i])) {
+                continue;  // not part of the user-enacted search set
             }
 
             OpenSim::ComponentPath const absPath = GetAbsolutePath(c);
@@ -540,6 +546,9 @@ private:
 
     // a property editor for the prototype's properties
     ObjectPropertiesEditor m_PrototypePropertiesEditor;
+
+    // user-enacted search strings for each socket input (used to filter each list)
+    std::vector<std::string> m_SocketSearchStrings{m_ProtoSockets.size()};
 
     // absolute paths to user-selected connectees of the prototype's sockets
     std::vector<OpenSim::ComponentPath> m_SocketConnecteePaths{m_ProtoSockets.size()};

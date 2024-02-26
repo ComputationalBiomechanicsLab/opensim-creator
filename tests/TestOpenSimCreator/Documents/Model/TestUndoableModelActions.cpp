@@ -6,6 +6,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSimCreator/Documents/Model/ObjectPropertyEdit.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
@@ -161,4 +162,124 @@ TEST(OpenSimActions, ActionFitSphereToMeshAppliesMeshesScaleFactorsCorrectly)
     double const scaledRadius = dynamic_cast<OpenSim::Sphere const&>(*model.getSelected()).get_radius();
 
     ASSERT_TRUE(equal_within_reldiff(scaledRadius, scalar*unscaledRadius, 0.0001));
+}
+
+TEST(OpenSimActions, ActionAddParentOffsetFrameToJointWorksInNormalCase)
+{
+    UndoableModelStatePair um;
+    auto& body = AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{}, SimTK::Inertia{1.0});
+    auto& joint = AddJoint<OpenSim::FreeJoint>(um.updModel(), "jname", um.getModel().getGround(), body);
+
+    // this should be ok
+    FinalizeConnections(um.updModel());
+    InitializeModel(um.updModel());
+    InitializeState(um.updModel());
+
+    // the joint is initially directly attached to ground
+    ASSERT_EQ(&joint.getParentFrame(), &um.getModel().getGround());
+
+    // and now we ask for a new `PhysicalOffsetFrame` to be injected into the parent, which works
+    ASSERT_TRUE(ActionAddParentOffsetFrameToJoint(um, joint.getAbsolutePath()));
+
+    // the joint's parent frame is now a `PhysicalOffsetFrame` that's attached to ground
+    OpenSim::PhysicalFrame const& parent1 = joint.getParentFrame();
+    ASSERT_NE(&parent1, &um.getModel().getGround());
+    ASSERT_TRUE(dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&parent1));
+    ASSERT_EQ(&dynamic_cast<OpenSim::PhysicalOffsetFrame const&>(parent1).getParentFrame(), &um.getModel().getGround());
+}
+
+// ensure that the caller can keep asking to add parent offset frames to a joint - even if the
+// joint is already attached to an offset frame
+//
+// - DISABLED because there's a bug in OpenSim that prevents this from working: https://github.com/opensim-org/opensim-core/pull/3711
+TEST(OpenSimActions, DISABLED_ActionAddParentOffsetFrameToJointWorksInChainedCase)
+{
+    UndoableModelStatePair um;
+    auto& body = AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{}, SimTK::Inertia{1.0});
+    auto& joint = AddJoint<OpenSim::FreeJoint>(um.updModel(), "jname", um.getModel().getGround(), body);
+
+    // this should be ok
+    FinalizeConnections(um.updModel());
+    InitializeModel(um.updModel());
+    InitializeState(um.updModel());
+
+    // the joint is initially directly attached to ground
+    ASSERT_EQ(&joint.getParentFrame(), &um.getModel().getGround());
+
+    // and now we ask for a new PhysicalOffsetFrame to be injected into the parent, which should work
+    ASSERT_TRUE(ActionAddParentOffsetFrameToJoint(um, joint.getAbsolutePath()));
+
+    // the joint's parent frame is now a `PhysicalOffsetFrame` that's attached to ground
+    OpenSim::PhysicalFrame const& parent1 = joint.getParentFrame();
+    ASSERT_NE(&parent1, &um.getModel().getGround());
+    ASSERT_TRUE(dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&parent1));
+    ASSERT_EQ(&dynamic_cast<OpenSim::PhysicalOffsetFrame const&>(parent1).getParentFrame(), &um.getModel().getGround());
+
+    // repeating the process creates a chain of `PhysicalOffsetFrame`s
+    ASSERT_TRUE(ActionAddParentOffsetFrameToJoint(um, joint.getAbsolutePath()));
+
+    OpenSim::PhysicalFrame const& parent2 = joint.getParentFrame();
+    ASSERT_NE(&parent1, &parent2);
+    ASSERT_TRUE(dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&parent2));
+    ASSERT_EQ(&dynamic_cast<OpenSim::PhysicalOffsetFrame const&>(parent2).getParentFrame(), &parent1);
+}
+
+TEST(OpenSimActions, ActionAddChildOffsetFrameToJointWorksInNormalCase)
+{
+    UndoableModelStatePair um;
+    auto& body = AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{}, SimTK::Inertia{1.0});
+    auto& joint = AddJoint<OpenSim::FreeJoint>(um.updModel(), "jname", um.getModel().getGround(), body);
+
+    // this should be ok
+    FinalizeConnections(um.updModel());
+    InitializeModel(um.updModel());
+    InitializeState(um.updModel());
+
+    // the joint is initially directly attached to ground
+    ASSERT_EQ(&joint.getChildFrame(), &body);
+
+    // and now we ask for a new `PhysicalOffsetFrame` to be injected into the child, which should work
+    ASSERT_TRUE(ActionAddChildOffsetFrameToJoint(um, joint.getAbsolutePath()));
+
+    // the joint's child frame is now a `PhysicalOffsetFrame` that's attached to the body
+    OpenSim::PhysicalFrame const& child1 = joint.getChildFrame();
+    ASSERT_NE(&child1, &body);
+    ASSERT_TRUE(dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&child1));
+    ASSERT_EQ(&dynamic_cast<OpenSim::PhysicalOffsetFrame const&>(child1).getParentFrame(), &body);
+}
+
+// ensure that the caller can keep asking to add child offset frames to a joint - even if the
+// joint is already attached to an offset frame
+//
+// - DISABLED because there's a bug in OpenSim that prevents this from working: https://github.com/opensim-org/opensim-core/pull/3711
+TEST(OpenSimActions, DISABLED_ActionAddChildOffsetFrameToJointWorksInChainedCase)
+{
+    UndoableModelStatePair um;
+    auto& body = AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{}, SimTK::Inertia{1.0});
+    auto& joint = AddJoint<OpenSim::FreeJoint>(um.updModel(), "jname", um.getModel().getGround(), body);
+
+    // this should be ok
+    FinalizeConnections(um.updModel());
+    InitializeModel(um.updModel());
+    InitializeState(um.updModel());
+
+    // the joint is initially directly attached to ground
+    ASSERT_EQ(&joint.getChildFrame(), &body);
+
+    // and now we ask for a new `PhysicalOffsetFrame` to be injected into the child, which should work
+    ASSERT_TRUE(ActionAddChildOffsetFrameToJoint(um, joint.getAbsolutePath()));
+
+    // the joint's child frame is now a `PhysicalOffsetFrame` that's attached to the body
+    OpenSim::PhysicalFrame const& child1 = joint.getChildFrame();
+    ASSERT_NE(&child1, &body);
+    ASSERT_TRUE(dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&child1));
+    ASSERT_EQ(&dynamic_cast<OpenSim::PhysicalOffsetFrame const&>(child1).getParentFrame(), &body);
+
+    // repeating the process creates a chain of `PhysicalOffsetFrame`s
+    ASSERT_TRUE(ActionAddChildOffsetFrameToJoint(um, joint.getAbsolutePath()));
+
+    OpenSim::PhysicalFrame const& child2 = joint.getChildFrame();
+    ASSERT_NE(&child2, &child1);
+    ASSERT_TRUE(dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&child2));
+    ASSERT_EQ(&dynamic_cast<OpenSim::PhysicalOffsetFrame const&>(child2).getParentFrame(), &child1);
 }
