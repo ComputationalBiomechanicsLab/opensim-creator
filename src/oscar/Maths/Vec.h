@@ -51,7 +51,7 @@ namespace osc
 }
 
 template<size_t L, typename T>
-struct std::tuple_size<osc::Vec<L, T>> final {
+struct std::tuple_size<osc::Vec<L, T>> {
     static inline constexpr size_t value = L;
 };
 

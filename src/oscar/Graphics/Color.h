@@ -308,7 +308,7 @@ namespace osc
 
 // define compile-time size for Color (same as std::array, std::tuple, Vec, etc.)
 template<>
-struct std::tuple_size<osc::Color> final {
+struct std::tuple_size<osc::Color> {
     static inline constexpr size_t value = 4;
 };
 

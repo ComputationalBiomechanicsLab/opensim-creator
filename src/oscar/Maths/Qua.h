@@ -283,7 +283,7 @@ namespace osc
 }
 
 template<typename T>
-struct std::tuple_size<osc::Qua<T>> final {
+struct std::tuple_size<osc::Qua<T>> {
     static inline constexpr size_t value = 4;
 };
 
