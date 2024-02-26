@@ -18,6 +18,7 @@ namespace osc
             std::function<bool()> contentRenderer
         );
 
+        Vec2 dimensions() const { return m_IconWithoutMenu.dimensions(); }
         bool onDraw();
     private:
         IconWithoutMenu m_IconWithoutMenu;

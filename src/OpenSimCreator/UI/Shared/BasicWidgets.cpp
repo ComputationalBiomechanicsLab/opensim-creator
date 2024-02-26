@@ -887,73 +887,6 @@ bool osc::DrawAdvancedParamsEditor(
 {
     bool edited = false;
 
-    ImGui::Text("reposition camera:");
-    ImGui::Separator();
-
-    if (ImGui::Button("+X"))
-    {
-        FocusAlongX(params.camera);
-        edited = true;
-    }
-    DrawTooltipBodyOnlyIfItemHovered("Position camera along +X, pointing towards the center (Hotkey: X).");
-    ImGui::SameLine();
-    if (ImGui::Button("-X"))
-    {
-        FocusAlongMinusX(params.camera);
-        edited = true;
-    }
-    DrawTooltipBodyOnlyIfItemHovered("Position camera along -X, pointing towards the center (Hotkey: Ctrl+X).");
-
-    ImGui::SameLine();
-    if (ImGui::Button("+Y"))
-    {
-        FocusAlongY(params.camera);
-        edited = true;
-    }
-    DrawTooltipBodyOnlyIfItemHovered("Position camera along +Y, pointing towards the center (Hotkey: Y).");
-    ImGui::SameLine();
-    if (ImGui::Button("-Y"))
-    {
-        FocusAlongMinusY(params.camera);
-        edited = true;
-    }
-    DrawTooltipBodyOnlyIfItemHovered("Position camera along -Y, pointing towards the center.");
-
-    ImGui::SameLine();
-    if (ImGui::Button("+Z"))
-    {
-        FocusAlongZ(params.camera);
-        edited = true;
-    }
-    DrawTooltipBodyOnlyIfItemHovered("Position camera along +Z, pointing towards the center.");
-    ImGui::SameLine();
-    if (ImGui::Button("-Z"))
-    {
-        FocusAlongMinusZ(params.camera);
-        edited = true;
-    }
-    DrawTooltipBodyOnlyIfItemHovered("Position camera along -Z, pointing towards the center.");
-
-    if (ImGui::Button("Zoom In (Hotkey: =)"))
-    {
-        ZoomIn(params.camera);
-        edited = true;
-    }
-
-    ImGui::SameLine();
-    if (ImGui::Button("Zoom Out (Hotkey: -)"))
-    {
-        ZoomOut(params.camera);
-        edited = true;
-    }
-
-    if (ImGui::Button("Reset Camera"))
-    {
-        Reset(params.camera);
-        edited = true;
-    }
-    DrawTooltipBodyOnlyIfItemHovered("Reset the camera to its initial (default) location. Hotkey: F");
-
     if (ImGui::Button("Export to .dae"))
     {
         TryPromptUserToSaveAsDAE(drawlist);
@@ -1005,7 +938,7 @@ bool osc::DrawVisualAidsContextMenuContent(ModelRendererParams& params)
 
 bool osc::DrawViewerTopButtonRow(
     ModelRendererParams& params,
-    std::span<SceneDecoration const> drawlist,
+    std::span<SceneDecoration const>,
     IconCache& iconCache,
     std::function<bool()> const& drawExtraElements)
 {
@@ -1031,16 +964,6 @@ bool osc::DrawViewerTopButtonRow(
     edited = vizAidsButton.onDraw() || edited;
     ImGui::SameLine();
 
-    IconWithMenu settingsButton
-    {
-        iconCache.getIcon("gear"),
-        "Scene Settings",
-        "Change advanced scene settings",
-        [&params, drawlist]() { return DrawAdvancedParamsEditor(params, drawlist); },
-    };
-    edited = settingsButton.onDraw() || edited;
-    ImGui::SameLine();
-
     // caller-provided extra buttons (usually, context-dependent)
     edited = drawExtraElements() || edited;
 
@@ -1048,163 +971,74 @@ bool osc::DrawViewerTopButtonRow(
 }
 
 bool osc::DrawCameraControlButtons(
-    PolarPerspectiveCamera& camera,
+    ModelRendererParams& params,
+    std::span<SceneDecoration const> drawlist,
     Rect const& viewerScreenRect,
     std::optional<AABB> const& maybeSceneAABB,
-    IconCache& iconCache)
+    IconCache& iconCache,
+    Vec2 desiredTopCentroid)
 {
-    CameraViewAxes axes;
-    ImGuiStyle const& style = ImGui::GetStyle();
-    float const buttonHeight = 2.0f*style.FramePadding.y + ImGui::GetTextLineHeight();
-    float const rowSpacing = ImGui::GetStyle().FramePadding.y;
-    float const twoRowHeight = 2.0f*buttonHeight + rowSpacing;
-    float const xFirstRow = viewerScreenRect.p1.x + style.WindowPadding.x + axes.dimensions().x + style.ItemSpacing.x;
-    float const yFirstRow = (viewerScreenRect.p2.y - style.WindowPadding.y - 0.5f*axes.dimensions().y) - 0.5f*twoRowHeight;
+    IconWithoutMenu zoomOutButton{
+        iconCache.getIcon("zoomout"),
+        "Zoom Out Camera",
+        "Moves the camera one step away from its focus point (Hotkey: -)",
+    };
+    IconWithoutMenu zoomInButton{
+        iconCache.getIcon("zoomin"),
+        "Zoom in Camera",
+        "Moves the camera one step towards its focus point (Hotkey: =)",
+    };
+    IconWithoutMenu autoFocusButton{
+        iconCache.getIcon("zoomauto"),
+        "Auto-Focus Camera",
+        "Try to automatically adjust the camera's zoom etc. to suit the model's dimensions (Hotkey: Ctrl+F)",
+    };
+    IconWithMenu sceneSettingsButton{
+        iconCache.getIcon("gear"),
+        "Scene Settings",
+        "Change advanced scene settings",
+        [&params, drawlist]() { return DrawAdvancedParamsEditor(params, drawlist); },
+    };
 
-    Vec2 const firstRowTopLeft = {xFirstRow, yFirstRow};
-    float const midRowY = yFirstRow + 0.5f*(buttonHeight + rowSpacing);
+    auto c = ImGui::GetStyle().Colors[ImGuiCol_Button];
+    c.w *= 0.9f;
+
+    ImGui::PushStyleColor(ImGuiCol_Button, c);
+
+    float const spacing = ImGui::GetStyle().ItemSpacing.x;
+    float width = zoomOutButton.dimensions().x + spacing + zoomInButton.dimensions().x + spacing + autoFocusButton.dimensions().x;
+    Vec2 const topleft = {desiredTopCentroid.x - 0.5f*width, desiredTopCentroid.y + 2.0f*ImGui::GetStyle().ItemSpacing.y};
+    ImGui::SetCursorScreenPos(topleft);
 
     bool edited = false;
+    if (zoomOutButton.onDraw()) {
+        ZoomOut(params.camera);
+        edited = true;
+    }
+    ImGui::SameLine();
+    if (zoomInButton.onDraw()) {
+        ZoomIn(params.camera);
+        edited = true;
+    }
+    ImGui::SameLine();
+    if (autoFocusButton.onDraw() && maybeSceneAABB) {
+        AutoFocus(params.camera, *maybeSceneAABB, AspectRatio(viewerScreenRect));
+        edited = true;
+    }
 
-    // draw top row
+    // next line (centered)
     {
-        ImGui::SetCursorScreenPos(firstRowTopLeft);
-
-        IconWithoutMenu plusXbutton
-        {
-            iconCache.getIcon("plusx"),
-            "Focus Camera Along +X",
-            "Rotates the camera to focus along the +X direction (Hotkey: X)",
+        Vec2 const tl = {
+            desiredTopCentroid.x - 0.5f*sceneSettingsButton.dimensions().x,
+            ImGui::GetCursorScreenPos().y,
         };
-        if (plusXbutton.onDraw())
-        {
-            FocusAlongX(camera);
-            edited = true;
-        }
-
-        ImGui::SameLine();
-
-        IconWithoutMenu plusYbutton
-        {
-            iconCache.getIcon("plusy"),
-            "Focus Camera Along +Y",
-            "Rotates the camera to focus along the +Y direction (Hotkey: Y)",
-        };
-        if (plusYbutton.onDraw())
-        {
-            FocusAlongY(camera);
-            edited = true;
-        }
-
-        ImGui::SameLine();
-
-        IconWithoutMenu plusZbutton
-        {
-            iconCache.getIcon("plusz"),
-            "Focus Camera Along +Z",
-            "Rotates the camera to focus along the +Z direction",
-        };
-        if (plusZbutton.onDraw())
-        {
-            FocusAlongZ(camera);
-            edited = true;
-        }
-
-        ImGui::SameLine();
-        ImGui::SameLine();
-
-        IconWithoutMenu zoomInButton
-        {
-            iconCache.getIcon("zoomin"),
-            "Zoom in Camera",
-            "Moves the camera one step towards its focus point (Hotkey: =)",
-        };
-        if (zoomInButton.onDraw())
-        {
-            ZoomIn(camera);
+        ImGui::SetCursorScreenPos(tl);
+        if (sceneSettingsButton.onDraw()) {
             edited = true;
         }
     }
 
-    // draw bottom row
-    {
-        ImGui::SetCursorScreenPos({ firstRowTopLeft.x, ImGui::GetCursorScreenPos().y });
-
-        IconWithoutMenu minusXbutton
-        {
-            iconCache.getIcon("minusx"),
-            "Focus Camera Along -X",
-            "Rotates the camera to focus along the -X direction (Hotkey: Ctrl+X)",
-        };
-        if (minusXbutton.onDraw())
-        {
-            FocusAlongMinusX(camera);
-            edited = true;
-        }
-
-        ImGui::SameLine();
-
-        IconWithoutMenu minusYbutton
-        {
-            iconCache.getIcon("minusy"),
-            "Focus Camera Along -Y",
-            "Rotates the camera to focus along the -Y direction",
-        };
-        if (minusYbutton.onDraw())
-        {
-            FocusAlongMinusY(camera);
-            edited = true;
-        }
-
-        ImGui::SameLine();
-
-        IconWithoutMenu minusZbutton
-        {
-            iconCache.getIcon("minusz"),
-            "Focus Camera Along -Z",
-            "Rotates the camera to focus along the -Z direction",
-        };
-        if (minusZbutton.onDraw())
-        {
-            FocusAlongMinusZ(camera);
-            edited = true;
-        }
-
-        ImGui::SameLine();
-        ImGui::SameLine();
-
-        IconWithoutMenu zoomOutButton
-        {
-            iconCache.getIcon("zoomout"),
-            "Zoom Out Camera",
-            "Moves the camera one step away from its focus point (Hotkey: -)",
-        };
-        if (zoomOutButton.onDraw())
-        {
-            ZoomOut(camera);
-            edited = true;
-        }
-
-        ImGui::SameLine();
-        ImGui::SameLine();
-    }
-
-    // draw single row
-    {
-        ImGui::SetCursorScreenPos({ImGui::GetCursorScreenPos().x, midRowY});
-
-        IconWithoutMenu autoFocusButton
-        {
-            iconCache.getIcon("zoomauto"),
-            "Auto-Focus Camera",
-            "Try to automatically adjust the camera's zoom etc. to suit the model's dimensions (Hotkey: Ctrl+F)",
-        };
-        if (autoFocusButton.onDraw() && maybeSceneAABB)
-        {
-            AutoFocus(camera, *maybeSceneAABB, AspectRatio(viewerScreenRect));
-            edited = true;
-        }
-    }
+    ImGui::PopStyleColor();
 
     return edited;
 }
@@ -1217,30 +1051,36 @@ bool osc::DrawViewerImGuiOverlays(
     IconCache& iconCache,
     std::function<bool()> const& drawExtraElementsInTop)
 {
+    ImGuiStyle const& style = ImGui::GetStyle();
+
     bool edited = false;
 
-    // draw the top overlays
-    ImGui::SetCursorScreenPos(renderRect.p1 + Vec2{ImGui::GetStyle().WindowPadding});
+    // draw top-left buttons
+    ImGui::SetCursorScreenPos(renderRect.p1 + Vec2{style.WindowPadding});
     edited = DrawViewerTopButtonRow(params, drawlist, iconCache, drawExtraElementsInTop) || edited;
 
-    // compute bottom overlay positions
+    // draw top-right camera manipulators
     CameraViewAxes axes;
-    ImGuiStyle const& style = ImGui::GetStyle();
-    Vec2 const alignmentAxesDims = axes.dimensions();
-    Vec2 const axesTopLeft =
-    {
-        renderRect.p1.x + style.WindowPadding.x,
-        renderRect.p2.y - style.WindowPadding.y - alignmentAxesDims.y
+    Vec2 const renderDims = Dimensions(renderRect);
+    Vec2 const axesDims = axes.dimensions();
+    Vec2 const axesTopLeft = {
+        renderRect.p1.x + renderDims.x - style.WindowPadding.x - axesDims.x,
+        renderRect.p1.y + style.WindowPadding.y,
     };
 
     // draw the bottom overlays
     ImGui::SetCursorScreenPos(axesTopLeft);
-    axes.draw(params.camera);
+    edited = axes.draw(params.camera) || edited;
+
+    Vec2 const cameraButtonsTopLeft = axesTopLeft + Vec2{0.0f, axesDims.y};
+    ImGui::SetCursorScreenPos(cameraButtonsTopLeft);
     edited = DrawCameraControlButtons(
-        params.camera,
+        params,
+        drawlist,
         renderRect,
         maybeSceneAABB,
-        iconCache
+        iconCache,
+        {axesTopLeft.x + 0.5f*axesDims.x, axesTopLeft.y + axesDims.y}
     ) || edited;
 
     return edited;

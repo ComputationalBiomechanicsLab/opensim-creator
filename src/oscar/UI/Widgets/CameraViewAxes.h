@@ -10,6 +10,6 @@ namespace osc
     class CameraViewAxes final {
     public:
         Vec2 dimensions() const;
-        Rect draw(PolarPerspectiveCamera&);
+        bool draw(PolarPerspectiveCamera&);
     };
 }

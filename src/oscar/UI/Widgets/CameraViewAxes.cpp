@@ -34,7 +34,7 @@ Vec2 osc::CameraViewAxes::dimensions() const
     return AxesMetrics{}.dimensions;
 }
 
-Rect osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
+bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 {
     // calculate widget metrics
     auto const metrics = AxesMetrics{};
@@ -57,6 +57,7 @@ Rect osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
     });
 
     // draw each edge back-to-front
+    bool edited = false;
     ImDrawList& drawlist = *ImGui::GetWindowDrawList();
     for (auto i : order) {
         // calc direction vector in screen space
@@ -91,6 +92,7 @@ Rect osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 
                 if (hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left, id)) {
                     FocusAlongAxis(camera, i);
+                    edited = true;
                 }
             }
         }
@@ -113,10 +115,11 @@ Rect osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 
                 if (hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left, id)) {
                     FocusAlongAxis(camera, i, true);
+                    edited = true;
                 }
             }
         }
     }
 
-    return bounds;
+    return edited;
 }
