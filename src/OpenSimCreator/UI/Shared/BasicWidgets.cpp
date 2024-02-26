@@ -962,6 +962,9 @@ bool osc::DrawViewerTopButtonRow(
         [&params]() { return DrawVisualAidsContextMenuContent(params); },
     };
     edited = vizAidsButton.onDraw() || edited;
+
+    ImGui::SameLine();
+    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
     ImGui::SameLine();
 
     // caller-provided extra buttons (usually, context-dependent)
@@ -1002,7 +1005,6 @@ bool osc::DrawCameraControlButtons(
 
     auto c = ImGui::GetStyle().Colors[ImGuiCol_Button];
     c.w *= 0.9f;
-
     ImGui::PushStyleColor(ImGuiCol_Button, c);
 
     float const spacing = ImGui::GetStyle().ItemSpacing.x;
