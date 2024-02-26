@@ -139,6 +139,7 @@ add_library(oscar STATIC
     Graphics/VertexFormat.h
 
     Maths/AABB.h
+    Maths/AABBFunctions.h
     Maths/Angle.h
     Maths/BVH.h
     Maths/BVHCollision.h
