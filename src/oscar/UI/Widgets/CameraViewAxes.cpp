@@ -11,6 +11,7 @@
 
 #include <imgui.h>
 
+#include <algorithm>
 #include <array>
 #include <iterator>
 
@@ -34,21 +35,29 @@ Vec2 osc::CameraViewAxes::dimensions() const
 
 Rect osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 {
-    Mat4 const viewMtx = camera.getViewMtx();
-
+    // calculate widget metrics
     auto const metrics = AxesMetrics{};
-    ImU32 const whiteColorU32 = ToImU32(Color::white());
 
+    // calculate widget screen-space metrics
     Vec2 const topLeft = ImGui::GetCursorScreenPos();
-    Vec2 const bottomRight = topLeft + metrics.dimensions;
-    Rect const bounds = {topLeft, bottomRight};
+    Rect const bounds = {topLeft, topLeft + metrics.dimensions};
     Vec2 const origin = Midpoint(bounds);
 
+    Mat4 const viewMtx = camera.getViewMtx();
+
     auto const labels = std::to_array<CStringView>({ "X", "Y", "Z" });
+    auto order = std::to_array<Vec4::size_type>({0, 1, 2});
+    std::sort(order.begin(), order.end(), [&viewMtx](auto a, auto b)
+    {
+        Vec4 av{};
+        av[a] = 1.0f;
+        Vec4 bv{};
+        bv[b] = 1.0f;
+        return (viewMtx*av).z < (viewMtx*bv).z;
+    });
 
     ImDrawList& drawlist = *ImGui::GetWindowDrawList();
-    for (size_t i = 0; i < std::size(labels); ++i)
-    {
+    for (auto i : order) {
         Vec4 world = {0.0f, 0.0f, 0.0f, 0.0f};
         world[static_cast<Vec4::size_type>(i)] = 1.0f;
 
@@ -66,7 +75,7 @@ Rect osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 
         drawlist.AddLine(p1, p2, colorU32, 3.0f);
         drawlist.AddCircleFilled(p2, metrics.circleRadius, colorU32);
-        drawlist.AddText(p2 - 0.5f*ts, whiteColorU32, labels[i].c_str());
+        drawlist.AddText(p2 - 0.5f*ts, ToImU32(Color::white()), labels[i].c_str());
 
         // also, add a faded line for symmetry
         {

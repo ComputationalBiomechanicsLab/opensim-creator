@@ -19,6 +19,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The `Add Parent Offset Frame` and `Add Child Offset Frame` actions when right-clicking a joint now
   correctly attach the added offset frame to the joint and select it (#824), but you can't create chains of
   offset frames this way, because of a known bug in opensim-core (opensim-core/#3711)
+- The camera axes widget now ensures that each axis is rendered in the correct order when two axes overlap
 - The visualizer now obeys the "Display Properties" of an OpenSim Component when it's set to `Wire`, which
   is more consistent with OpenSim GUI
 - The `Appearance` editor in the property editor now shows a dropdown that lets you select the component's
