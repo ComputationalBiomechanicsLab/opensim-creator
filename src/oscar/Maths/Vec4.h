@@ -227,6 +227,14 @@ namespace osc
             return copy;
         }
 
+        template<typename U>
+        constexpr Vec with_element(size_type i, U scalar) const
+        {
+            Vec copy{*this};
+            copy[i] = static_cast<T>(scalar);
+            return copy;
+        }
+
         T x{};
         T y{};
         T z{};

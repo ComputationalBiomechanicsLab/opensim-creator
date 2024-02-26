@@ -49,11 +49,9 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
     auto order = std::to_array<Vec4::size_type>({0, 1, 2});
     std::sort(order.begin(), order.end(), [&viewMtx](auto a, auto b)
     {
-        Vec4 av{};
-        av[a] = 1.0f;
-        Vec4 bv{};
-        bv[b] = 1.0f;
-        return (viewMtx*av).z < (viewMtx*bv).z;
+        float const aDepth = (viewMtx * Vec4{}.with_element(a, 1.0f)).z;
+        float const bDepth = (viewMtx * Vec4{}.with_element(b, 1.0f)).z;
+        return aDepth < bDepth;
     });
 
     // draw each edge back-to-front
@@ -61,9 +59,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
     ImDrawList& drawlist = *ImGui::GetWindowDrawList();
     for (auto i : order) {
         // calc direction vector in screen space
-        Vec4 world = {0.0f, 0.0f, 0.0f, 0.0f};
-        world[i] = 1.0f;
-        Vec2 view = Vec2{viewMtx * world};
+        Vec2 view = Vec2{viewMtx * Vec4{}.with_element(i, 1.0f)};
         view.y = -view.y;  // y goes down in screen-space
 
         Color baseColor = {0.15f, 0.15f, 0.15f, 1.0f};
