@@ -15,28 +15,28 @@ namespace osc
 
         // returns a new transform which is the same as the existing one, but with the
         // provided position
-        constexpr Transform withPosition(Vec3 const& position_) const
+        constexpr Transform with_position(Vec3 const& position_) const
         {
             return Transform{.scale = scale, .rotation = rotation, .position = position_};
         }
 
         // returns a new transform which is the same as the existing one, but with
         // the provided rotation
-        constexpr Transform withRotation(Quat const& rotation_) const
+        constexpr Transform with_rotation(Quat const& rotation_) const
         {
             return Transform{.scale = scale, .rotation = rotation_, .position = position};
         }
 
         // returns a new transform which is the same as the existing one, but with
         // the provided scale
-        constexpr Transform withScale(Vec3 const& scale_) const
+        constexpr Transform with_scale(Vec3 const& scale_) const
         {
             return Transform{.scale = scale_, .rotation = rotation, .position = position};
         }
 
         // returns a new transform which is the same as the existing one, but with
         // the provided scale (same for all axes)
-        constexpr Transform withScale(float scale_) const
+        constexpr Transform with_scale(float scale_) const
         {
             return Transform{.scale = Vec3{scale_}, .rotation = rotation, .position = position};
         }

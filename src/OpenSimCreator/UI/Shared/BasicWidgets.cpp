@@ -194,7 +194,7 @@ namespace
         OpenSim::Frame const& frame,
         SimTK::State const& state)
     {
-        Transform rv = ToTransform(mesh.getFrame().findTransformBetween(state, frame));
+        Transform rv = decompose_to_transform(mesh.getFrame().findTransformBetween(state, frame));
         rv.scale = ToVec3(mesh.get_scale_factors());
         return rv;
     }

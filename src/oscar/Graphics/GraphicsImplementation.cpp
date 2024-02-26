@@ -578,11 +578,11 @@ namespace
     // is important)
     using Mat4OrTransform = std::variant<Mat4, Transform>;
 
-    Mat4 ToMat4(Mat4OrTransform const& matrixOrTransform)
+    Mat4 mat4_cast(Mat4OrTransform const& matrixOrTransform)
     {
         return std::visit(Overload{
             [](Mat4 const& matrix) { return matrix; },
-            [](Transform const& transform) { return ToMat4(transform); }
+            [](Transform const& transform) { return mat4_cast(transform); }
         }, matrixOrTransform);
     }
 
@@ -590,7 +590,7 @@ namespace
     {
         return std::visit(Overload{
             [](Mat4 const& matrix) { return normal_matrix4(matrix); },
-            [](Transform const& transform) { return ToNormalMatrix4(transform); }
+            [](Transform const& transform) { return normal_matrix_4x4(transform); }
         }, matrixOrTransform);
     }
 
@@ -598,7 +598,7 @@ namespace
     {
         return std::visit(Overload{
             [](Mat4 const& matrix) { return normal_matrix(matrix); },
-            [](Transform const& transform) { return ToNormalMatrix(transform); }
+            [](Transform const& transform) { return normal_matrix(transform); }
         }, matrixOrTransform);
     }
 
@@ -616,7 +616,7 @@ namespace
             mesh{std::move(mesh_)},
             maybePropBlock{std::move(maybePropBlock_)},
             transform{transform_},
-            worldMidpoint{material.getTransparent() ? TransformPoint(transform_, Midpoint(mesh.getBounds())) : Vec3{}},
+            worldMidpoint{material.getTransparent() ? transform_point(transform_, Midpoint(mesh.getBounds())) : Vec3{}},
             maybeSubMeshIndex{maybeSubMeshIndex_}
         {
         }
@@ -672,7 +672,7 @@ namespace
 
     Mat4 ModelMatrix(RenderObject const& ro)
     {
-        return ToMat4(ro.transform);
+        return mat4_cast(ro.transform);
     }
 
     Mat3 NormalMatrix(RenderObject const& ro)
@@ -1629,7 +1629,7 @@ namespace
         pixelData.clear();
         pixelData.reserve(numOutputBytes);
 
-        OSC_ASSERT(numChannels <= Color::length());
+        OSC_ASSERT(numChannels <= std::tuple_size_v<Color>);
         static_assert(NumOptions<TextureChannelFormat>() == 2);
         if (channelFormat == TextureChannelFormat::Uint8)
         {
@@ -4054,7 +4054,7 @@ namespace
         using ComponentType = typename VertexAttributeFormatTraits<EncodingFormat>::component_type;
         constexpr auto numComponents = NumComponents(EncodingFormat);
         constexpr auto sizeOfComponent = SizeOfComponent(EncodingFormat);
-        constexpr auto n = std::min(T::length(), static_cast<typename T::size_type>(numComponents));
+        constexpr auto n = std::min(std::tuple_size_v<T>, static_cast<typename T::size_type>(numComponents));
 
         for (typename T::size_type i = 0; i < n; ++i)
         {
@@ -4068,7 +4068,7 @@ namespace
         using ComponentType = typename VertexAttributeFormatTraits<EncodingFormat>::component_type;
         constexpr auto numComponents = NumComponents(EncodingFormat);
         constexpr auto sizeOfComponent = SizeOfComponent(EncodingFormat);
-        constexpr auto n = std::min(T::length(), static_cast<typename T::size_type>(numComponents));
+        constexpr auto n = std::min(std::tuple_size_v<T>, static_cast<typename T::size_type>(numComponents));
 
         T rv{};
         for (typename T::size_type i = 0; i < n; ++i)
@@ -4135,7 +4135,7 @@ namespace
     {
         using SourceCPUFormat = typename VertexAttributeFormatTraits<SourceFormat>::type;
         using DestCPUFormat = typename VertexAttributeFormatTraits<DestinationFormat>::type;
-        constexpr auto n = std::min(SourceCPUFormat::length(), DestCPUFormat::length());
+        constexpr auto n = std::min(std::tuple_size_v<SourceCPUFormat>, std::tuple_size_v<DestCPUFormat>);
 
         auto const decoded = DecodeMany<SourceFormat, SourceCPUFormat>(src.data());
         DestCPUFormat converted{};

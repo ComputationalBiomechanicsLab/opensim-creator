@@ -220,7 +220,7 @@ namespace
             OpenSim::Station const& station) const final
         {
             SimTK::State const& state = getState();
-            Mat4 currentXformInGround = ToMat4(station.getParentFrame().getRotationInGround(state));
+            Mat4 currentXformInGround = mat4_cast(station.getParentFrame().getRotationInGround(state));
             currentXformInGround[3] = Vec4{ToVec3(station.getLocationInGround(state)), 1.0f};
 
             return currentXformInGround;
@@ -262,7 +262,7 @@ namespace
             OpenSim::PathPoint const& pathPoint) const final
         {
             SimTK::State const& state = getState();
-            Mat4 currentXformInGround = ToMat4(pathPoint.getParentFrame().getRotationInGround(state));
+            Mat4 currentXformInGround = mat4_cast(pathPoint.getParentFrame().getRotationInGround(state));
             currentXformInGround[3] = Vec4{ToVec3(pathPoint.getLocationInGround(state)), 1.0f};
 
             return currentXformInGround;
@@ -370,7 +370,7 @@ namespace
                 getUndoableModel(),
                 pof,
                 Vec3{},  // no translation delta
-                ExtractEulerAngleXYZ(newRotationInParent)
+                extract_eulers_xyz(newRotationInParent)
             );
         }
 
@@ -442,7 +442,7 @@ namespace
                 getUndoableModel(),
                 wrapObj,
                 Vec3{},  // no translation
-                ExtractEulerAngleXYZ(newRotationInParent)
+                extract_eulers_xyz(newRotationInParent)
             );
         }
 
@@ -513,7 +513,7 @@ namespace
                 getUndoableModel(),
                 contactGeom,
                 Vec3{},  // no translation
-                ExtractEulerAngleXYZ(newRotationInParent)
+                extract_eulers_xyz(newRotationInParent)
             );
         }
 

@@ -238,7 +238,7 @@ UID osc::mi::GetStationAttachmentParent(Document const& doc, MIObject const& obj
     }, obj.toVariant());
 }
 
-void osc::mi::PointAxisTowards(
+void osc::mi::point_axis_towards(
     Document& doc,
     UID id,
     int axis,
@@ -247,7 +247,7 @@ void osc::mi::PointAxisTowards(
     Vec3 const choicePos = doc.getPosByID(other);
     Transform const sourceXform = {.position = doc.getPosByID(id)};
 
-    doc.updByID(id).setXform(doc, PointAxisTowards(sourceXform, axis, choicePos));
+    doc.updByID(id).setXform(doc, point_axis_towards(sourceXform, axis, choicePos));
 }
 
 SceneDecorationFlags osc::mi::computeFlags(

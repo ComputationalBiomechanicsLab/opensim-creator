@@ -14,6 +14,7 @@
 #include <numeric>
 #include <ranges>
 #include <span>
+#include <tuple>
 #include <type_traits>
 
 namespace osc
@@ -430,7 +431,7 @@ namespace osc
     template<
         std::ranges::range Range,
         typename VecElement = typename std::ranges::range_value_t<Range>,
-        size_t L = VecElement::length(),
+        size_t L = std::tuple_size_v<VecElement>,
         typename T = typename VecElement::value_type
     >
     constexpr Vec<L, T> centroid(Range const& r)

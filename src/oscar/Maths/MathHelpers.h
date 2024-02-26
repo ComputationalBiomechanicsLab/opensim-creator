@@ -50,7 +50,7 @@ namespace osc
     Mat4 Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2);
 
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
-    Eulers ExtractEulerAngleXYZ(Quat const&);
+    Eulers extract_eulers_xyz(Quat const&);
 
     // returns an XY NDC point converted from a screen/viewport point
     //
@@ -254,7 +254,7 @@ namespace osc
     // returns a transform that maps a Y-to-Y (bottom-to-top) cone to a segment with the given radius
     Transform YToYConeToSegmentTransform(Segment const&, float radius);
 
-    Vec3 TransformPoint(Mat4 const&, Vec3 const&);
+    Vec3 transform_point(Mat4 const&, Vec3 const&);
 
     // returns the a quaternion equivalent to the given euler angles
     Quat WorldspaceRotation(Eulers const&);

@@ -462,7 +462,7 @@ private:
                 return false;
             }
 
-            return PointAxisTowards(shared->updCommittableModelGraph(), id, axis, choices.front());
+            return point_axis_towards(shared->updCommittableModelGraph(), id, axis, choices.front());
         };
         m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
     }
@@ -1234,7 +1234,7 @@ private:
 
                     if (ImGui::MenuItem(label.c_str()))
                     {
-                        PointAxisTowards(m_Shared->updCommittableModelGraph(), el.getID(), axis, el.getCrossReferenceConnecteeID(i));
+                        point_axis_towards(m_Shared->updCommittableModelGraph(), el.getID(), axis, el.getCrossReferenceConnecteeID(i));
                     }
                 }
 
@@ -1448,7 +1448,7 @@ private:
                     {
                         Transform const MIObjectToGround = MIObject.getXForm(m_Shared->getModelGraph());
                         Transform const meshVertToGround = el.getXForm();
-                        Mat4 const meshVertToMIObjectVert = ToInverseMat4(MIObjectToGround) * ToMat4(meshVertToGround);
+                        Mat4 const meshVertToMIObjectVert = inverse_mat4_cast(MIObjectToGround) * mat4_cast(meshVertToGround);
 
                         osc::Mesh mesh = el.getMeshData();
                         mesh.transformVerts(meshVertToMIObjectVert);
@@ -1459,7 +1459,7 @@ private:
                     {
                         Transform const MIObjectToGround = MIObject.getXForm(m_Shared->getModelGraph());
                         Transform const meshVertToGround = el.getXForm();
-                        Mat4 const meshVertToMIObjectVert = ToInverseMat4(MIObjectToGround) * ToMat4(meshVertToGround);
+                        Mat4 const meshVertToMIObjectVert = inverse_mat4_cast(MIObjectToGround) * mat4_cast(meshVertToGround);
 
                         osc::Mesh mesh = el.getMeshData();
                         mesh.transformVerts(meshVertToMIObjectVert);
@@ -2100,7 +2100,7 @@ private:
             ras.scale /= static_cast<float>(n);
             ras.rotation = normalize(ras.rotation);
 
-            m_ImGuizmoState.mtx = ToMat4(ras);
+            m_ImGuizmoState.mtx = mat4_cast(ras);
         }
 
         // else: is using OR nselected > 0 (so draw it)

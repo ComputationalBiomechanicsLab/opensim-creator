@@ -999,7 +999,7 @@ Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
     return rotate(Identity<Mat4>(), theta, rotationAxis);
 }
 
-Eulers osc::ExtractEulerAngleXYZ(Quat const& q)
+Eulers osc::extract_eulers_xyz(Quat const& q)
 {
     return extract_eulers_xyz(mat4_cast(q));
 }
@@ -1209,8 +1209,8 @@ Line osc::InverseTransformLine(Line const& l, Transform const& t)
 {
     return Line
     {
-        InverseTransformPoint(t, l.origin),
-        InverseTransformDirection(t, l.direction),
+        inverse_transform_point(t, l.origin),
+        inverse_transform_direction(t, l.direction),
     };
 }
 
@@ -1357,7 +1357,7 @@ AABB osc::TransformAABB(AABB const& aabb, Transform const& t)
     //
     // screenshot: https://twitter.com/Herschel/status/1188613724665335808
 
-    Mat3 const m = ToMat3(t);
+    Mat3 const m = mat3_cast(t);
 
     AABB rv{t.position, t.position};  // add in the translation
     for (Vec3::size_type i = 0; i < 3; ++i)
@@ -1593,7 +1593,7 @@ Transform osc::YToYConeToSegmentTransform(Segment const& s, float radius)
     return YToYCylinderToSegmentTransform(s, radius);
 }
 
-Vec3 osc::TransformPoint(Mat4 const& m, Vec3 const& p)
+Vec3 osc::transform_point(Mat4 const& m, Vec3 const& p)
 {
     return Vec3{m * Vec4{p, 1.0f}};
 }

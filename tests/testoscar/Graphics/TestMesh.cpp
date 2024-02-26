@@ -390,7 +390,7 @@ TEST(Mesh, TransformVertsWithTransformAppliesTransformToVerts)
     auto const original = GenerateVertices(30);
 
     // precompute "expected" verts
-    auto const expected = MapToVector(original, [&transform](auto const& p) { return TransformPoint(transform, p); });
+    auto const expected = MapToVector(original, [&transform](auto const& p) { return transform_point(transform, p); });
 
     // create mesh with "original" verts
     Mesh m;
@@ -417,7 +417,7 @@ TEST(Mesh, TransformVertsWithTransformCausesTransformedMeshToNotBeEqualToInitial
 
 TEST(Mesh, TransformVertsWithMat4AppliesTransformToVerts)
 {
-    Mat4 const mat = ToMat4(Transform{
+    Mat4 const mat = mat4_cast(Transform{
         .scale = Vec3{0.25f},
         .rotation = WorldspaceRotation(Eulers{90_deg, 0_deg, 0_deg}),
         .position = {1.0f, 0.25f, 0.125f},
@@ -427,7 +427,7 @@ TEST(Mesh, TransformVertsWithMat4AppliesTransformToVerts)
     auto const original = GenerateVertices(30);
 
     // precompute "expected" verts
-    auto const expected = MapToVector(original, [&mat](auto const& p) { return TransformPoint(mat, p); });
+    auto const expected = MapToVector(original, [&mat](auto const& p) { return transform_point(mat, p); });
 
     // create mesh with "original" verts
     Mesh m;

@@ -87,7 +87,7 @@ namespace osc::mi
     UID GetStationAttachmentParent(Document const&, MIObject const&);
 
     // points an axis of a given object towards some other object in the document
-    void PointAxisTowards(
+    void point_axis_towards(
         Document&,
         UID,
         int axis,

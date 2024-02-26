@@ -18,7 +18,7 @@ namespace osc
 
         friend bool operator==(SceneDecoration const&, SceneDecoration const&) = default;
 
-        SceneDecoration withPosition(Vec3 const& position_) const
+        SceneDecoration with_position(Vec3 const& position_) const
         {
             SceneDecoration copy{*this};
             copy.transform.position = position_;

@@ -1,12 +1,11 @@
 #pragma once
 
-namespace osc { template<typename> struct Qua; }
-
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/Constants.h>
 #include <oscar/Maths/CommonFunctions.h>
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
+#include <oscar/Maths/Qua.h>
 #include <oscar/Maths/TrigonometricFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>

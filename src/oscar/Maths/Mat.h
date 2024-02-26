@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 
 namespace osc
@@ -34,4 +35,26 @@ namespace osc
         ss << m;
         return std::move(ss).str();
     }
+
+    template<size_t I, size_t C, size_t R, typename T>
+    constexpr typename Mat<C, R, T>::value_type const& get(Mat<C, R, T> const& m)
+    {
+        return m[I];
+    }
+
+    template<size_t I, size_t C, size_t R, typename T>
+    constexpr typename Mat<C, R, T>::value_type& get(Mat<C, R, T>& m)
+    {
+        return m[I];
+    }
 }
+
+template<size_t C, size_t R, typename T>
+struct std::tuple_size<osc::Mat<C, R, T>> final {
+    static inline constexpr size_t value = C;
+};
+
+template<size_t I, size_t C, size_t R, typename T>
+struct std::tuple_element<I, osc::Mat<C, R, T>> {
+    using type = typename osc::Mat<C, R, T>::value_type;
+};

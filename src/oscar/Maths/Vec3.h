@@ -22,9 +22,6 @@ namespace osc
         using const_pointer = T const*;
         using iterator = T*;
         using const_iterator = T const*;
-        using bool_type = Vec<3, bool>;
-
-        static constexpr size_type length() { return 3; }
 
         constexpr Vec() = default;
         constexpr explicit Vec(T scalar) :
@@ -77,7 +74,7 @@ namespace osc
             return *this;
         }
 
-        constexpr size_type size() const { return length(); }
+        constexpr size_type size() const { return 3; }
         constexpr pointer data() { return &x; }
         constexpr const_pointer data() const { return &x; }
         constexpr iterator begin() { return data(); }
@@ -191,9 +188,9 @@ namespace osc
             return copy;
         }
 
-        T x;
-        T y;
-        T z;
+        T x{};
+        T y{};
+        T z{};
     };
 
     template<typename T>

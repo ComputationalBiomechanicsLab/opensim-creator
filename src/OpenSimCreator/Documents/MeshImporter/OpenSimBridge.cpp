@@ -58,7 +58,7 @@ namespace
     // (dare i call them.... frames ;))
     Transform IgnoreScale(Transform const& t)
     {
-        return t.withScale(Vec3{1.0f});
+        return t.with_scale(1.0f);
     }
 
     // attaches a mesh to a parent `OpenSim::PhysicalFrame` that is part of an `OpenSim::Model`
@@ -289,7 +289,7 @@ namespace
         auto parentPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         parentPOF->setName(parent.physicalFrame->getName() + "_offset");
         parentPOF->setParentFrame(*parent.physicalFrame);
-        Mat4 toParentPofInParent =  ToInverseMat4(IgnoreScale(doc.getXFormByID(joint.getParentID()))) * ToMat4(IgnoreScale(joint.getXForm()));
+        Mat4 toParentPofInParent =  inverse_mat4_cast(IgnoreScale(doc.getXFormByID(joint.getParentID()))) * mat4_cast(IgnoreScale(joint.getXForm()));
         parentPOF->set_translation(ToSimTKVec3(toParentPofInParent[3]));
         parentPOF->set_orientation(ToSimTKVec3(extract_eulers_xyz(toParentPofInParent)));
 
@@ -297,7 +297,7 @@ namespace
         auto childPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         childPOF->setName(child.physicalFrame->getName() + "_offset");
         childPOF->setParentFrame(*child.physicalFrame);
-        Mat4 const toChildPofInChild = ToInverseMat4(IgnoreScale(doc.getXFormByID(joint.getChildID()))) * ToMat4(IgnoreScale(joint.getXForm()));
+        Mat4 const toChildPofInChild = inverse_mat4_cast(IgnoreScale(doc.getXFormByID(joint.getChildID()))) * mat4_cast(IgnoreScale(joint.getXForm()));
         childPOF->set_translation(ToSimTKVec3(toChildPofInChild[3]));
         childPOF->set_orientation(ToSimTKVec3(extract_eulers_xyz(toChildPofInChild)));
 
@@ -476,7 +476,7 @@ namespace
         for (OpenSim::Body const& b : m.getComponentList<OpenSim::Body>())
         {
             std::string const name = b.getName();
-            Transform const xform = ToTransform(b.getTransformInGround(st));
+            Transform const xform = decompose_to_transform(b.getTransformInGround(st));
 
             auto& el = rv.emplace<Body>(UID{}, name, xform);
             el.setMass(b.getMass());
@@ -554,7 +554,7 @@ namespace
                 continue;
             }
 
-            Transform const xform = ToTransform(parentFrame.getTransformInGround(st));
+            Transform const xform = decompose_to_transform(parentFrame.getTransformInGround(st));
 
             auto& jointEl = rv.emplace<Joint>(UID{}, type, name, parent, child, xform);
             jointLookup.emplace(&j, jointEl.getID());
@@ -618,7 +618,7 @@ namespace
             }
 
             auto& el = rv.emplace<Mesh>(UID{}, attachment, meshData, realLocation);
-            Transform newTransform = ToTransform(frame.getTransformInGround(st));
+            Transform newTransform = decompose_to_transform(frame.getTransformInGround(st));
             newTransform.scale = ToVec3(mesh.get_scale_factors());
 
             el.setXform(newTransform);

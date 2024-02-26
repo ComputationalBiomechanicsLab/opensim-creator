@@ -12,6 +12,7 @@
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <tuple>
 #include <utility>
 
 namespace osc
@@ -32,7 +33,6 @@ namespace osc
         using const_iterator = T const*;
         using type = Qua<T>;
 
-        static constexpr size_type length() { return 4; }
         static constexpr Qua<T> wxyz(T w, T x, T y, T z) { return Qua<T>(w, x, y, z); }
 
         constexpr Qua() = default;
@@ -99,7 +99,7 @@ namespace osc
             *this = quat_cast(m);
         }
 
-        constexpr size_type size() const { return length(); }
+        constexpr size_type size() const { return 4; }
         constexpr pointer data() { return &w; }
         constexpr const_pointer data() const { return &w; }
         constexpr iterator begin() { return data(); }
@@ -268,4 +268,26 @@ namespace osc
         ss << v;
         return std::move(ss).str();
     }
+
+    template<size_t I, typename T>
+    constexpr T const& get(Qua<T> const& v)
+    {
+        return v[I];
+    }
+
+    template<size_t I, typename T>
+    constexpr T& get(Qua<T>& v)
+    {
+        return v[I];
+    }
 }
+
+template<typename T>
+struct std::tuple_size<osc::Qua<T>> final {
+    static inline constexpr size_t value = 4;
+};
+
+template<size_t I, typename T>
+struct std::tuple_element<I, osc::Qua<T>> {
+    using type = T;
+};

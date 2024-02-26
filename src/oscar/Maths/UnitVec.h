@@ -34,9 +34,6 @@ namespace osc
         using const_pointer = T const*;
         using iterator = T const*;
         using const_iterator = T const*;
-        using bool_type = Vec<L, bool>;
-
-        static constexpr size_type length() { return L; }
 
         // helper: constructs a UnitVec with arguments that are assumed to produce
         // a normalized underlying vector without checking
@@ -66,7 +63,7 @@ namespace osc
         // this is sometimes necessary when (e.g.) the compiler can't deduce the conversion
         constexpr Vec<L, T> const& unwrap() const { return m_Data; }
 
-        constexpr size_type size() const { return length(); }
+        constexpr size_type size() const { return L; }
         constexpr const_pointer data() const { return m_Data.data(); }
         constexpr const_iterator begin() const { return data(); }
         constexpr const_iterator end() const { return data() + size(); }
