@@ -236,7 +236,7 @@ private:
         ImGui::TextUnformatted(socket.getName().c_str());
         ImGui::SameLine();
         DrawHelpMarker(m_Proto->getPropertyByName("socket_" + socket.getName()).getComment());
-        ImGui::TextDisabled(socket.getConnecteeTypeName().c_str());
+        ImGui::TextDisabled("%s", socket.getConnecteeTypeName().c_str());
         ImGui::NextColumn();
 
         // rhs: search and connectee choices
