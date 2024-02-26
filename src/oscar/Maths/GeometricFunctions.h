@@ -62,7 +62,7 @@ namespace osc
     constexpr UnitVec<3, T> cross(UnitVec<3, T> const& x, UnitVec<3, T> const& y)
         requires std::is_arithmetic_v<T>
     {
-        return UnitVec<3, T>::AlreadyNormalized(
+        return UnitVec<3, T>::already_normalized(
             x[1] * y[2] - y[1] * x[2],
             x[2] * y[0] - y[2] * x[0],
             x[0] * y[1] - y[0] * x[1]

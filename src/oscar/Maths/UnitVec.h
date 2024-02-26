@@ -12,15 +12,6 @@ namespace osc
 {
     // A wrapper around a `Vec` that has either a length of one (to
     // within a very small tolerance) or all components set to NaNs
-    //
-    // the utility of this class is that you can use this distinct type
-    // to create overloads of functions that "know" the input is already
-    // normalized, or as a documentation type (it communicates requirements)
-    //
-    // the wrapper can be implicitly converted to a (readonly) reference
-    // to the underlying `Vec`, or you can use `.unwrap()` in cases where
-    // the compiler isn't able to figure out the conversion (e.g. deducing
-    // templated Vec functions)
     template<size_t L, std::floating_point T>
     class UnitVec final {
     public:
@@ -38,7 +29,7 @@ namespace osc
         // helper: constructs a UnitVec with arguments that are assumed to produce
         // a normalized underlying vector without checking
         template<typename... Args>
-        constexpr static UnitVec<L, T> AlreadyNormalized(Args&&... args)
+        constexpr static UnitVec<L, T> already_normalized(Args&&... args)
             requires std::constructible_from<Vec<L, T>, Args&&...>
         {
             return UnitVec<L, T>(AlreadyNormalizedTag{}, std::forward<Args>(args)...);
@@ -71,12 +62,12 @@ namespace osc
 
         constexpr UnitVec operator+() const
         {
-            return UnitVec<3, T>::AlreadyNormalized(+m_Data);
+            return UnitVec<3, T>::already_normalized(+m_Data);
         }
 
         constexpr UnitVec operator-() const
         {
-            return UnitVec<3, T>::AlreadyNormalized(-m_Data);
+            return UnitVec<3, T>::already_normalized(-m_Data);
         }
 
         friend constexpr bool operator==(UnitVec const&, UnitVec const&) = default;

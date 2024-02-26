@@ -7,9 +7,6 @@
 
 namespace osc
 {
-    // a 3-element vector
-    //
-    // implementation initially adapted from `glm::vec3`
     template<typename T>
     struct Vec<3, T> {
         using value_type = T;

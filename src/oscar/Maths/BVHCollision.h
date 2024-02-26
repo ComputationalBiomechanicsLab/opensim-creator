@@ -16,8 +16,7 @@ namespace osc
 
             RayCollision{distance_, position_},
             id{id_}
-        {
-        }
+        {}
 
         ptrdiff_t id{};
     };

@@ -7,9 +7,6 @@
 
 namespace osc
 {
-    // a 2-element vector
-    //
-    // implementation initially adapted from `glm::vec2`
     template<typename T>
     struct Vec<2, T> {
         using value_type = T;

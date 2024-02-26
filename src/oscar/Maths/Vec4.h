@@ -7,9 +7,6 @@
 
 namespace osc
 {
-    // a 4-element vector
-    //
-    // implementation initially adapted from `glm::vec4`
     template<typename T>
     struct Vec<4, T> {
         using value_type = T;
