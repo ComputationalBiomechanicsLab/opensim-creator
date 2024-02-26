@@ -255,6 +255,8 @@ add_library(oscar STATIC
     UI/Tabs/TabRegistry.h
     UI/Tabs/TabRegistryEntry.cpp
     UI/Tabs/TabRegistryEntry.h
+    UI/Widgets/CameraViewAxes.cpp
+    UI/Widgets/CameraViewAxes.h
     UI/Widgets/GuiRuler.cpp
     UI/Widgets/GuiRuler.h
     UI/Widgets/IconWithMenu.cpp

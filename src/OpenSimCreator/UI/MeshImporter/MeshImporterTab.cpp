@@ -53,6 +53,7 @@
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Panels/UndoRedoPanel.h>
+#include <oscar/UI/Widgets/CameraViewAxes.h>
 #include <oscar/UI/Widgets/LogViewer.h>
 #include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/Utils/CStringView.h>
@@ -1878,15 +1879,17 @@ private:
 
         // bottom-left axes overlay
         {
+            CameraViewAxes axes;
+
             ImGuiStyle const& style = ImGui::GetStyle();
             Rect const& r = m_Shared->get3DSceneRect();
             Vec2 const topLeft =
             {
                 r.p1.x + style.WindowPadding.x,
-                r.p2.y - style.WindowPadding.y - CalcAlignmentAxesDimensions().y,
+                r.p2.y - style.WindowPadding.y - axes.dimensions().y,
             };
             ImGui::SetCursorScreenPos(topLeft);
-            DrawAlignmentAxes(m_Shared->getCamera().getViewMtx());
+            axes.draw(m_Shared->updCamera());
         }
 
         Rect sceneRect = m_Shared->get3DSceneRect();

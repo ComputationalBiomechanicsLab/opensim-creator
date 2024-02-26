@@ -49,6 +49,7 @@
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/oscimgui_internal.h>
 #include <oscar/UI/Widgets/IconWithMenu.h>
+#include <oscar/UI/Widgets/CameraViewAxes.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/StringHelpers.h>
 #include <SimTKcommon/basics.h>
@@ -1052,12 +1053,13 @@ bool osc::DrawCameraControlButtons(
     std::optional<AABB> const& maybeSceneAABB,
     IconCache& iconCache)
 {
+    CameraViewAxes axes;
     ImGuiStyle const& style = ImGui::GetStyle();
     float const buttonHeight = 2.0f*style.FramePadding.y + ImGui::GetTextLineHeight();
     float const rowSpacing = ImGui::GetStyle().FramePadding.y;
     float const twoRowHeight = 2.0f*buttonHeight + rowSpacing;
-    float const xFirstRow = viewerScreenRect.p1.x + style.WindowPadding.x + CalcAlignmentAxesDimensions().x + style.ItemSpacing.x;
-    float const yFirstRow = (viewerScreenRect.p2.y - style.WindowPadding.y - 0.5f*CalcAlignmentAxesDimensions().y) - 0.5f*twoRowHeight;
+    float const xFirstRow = viewerScreenRect.p1.x + style.WindowPadding.x + axes.dimensions().x + style.ItemSpacing.x;
+    float const yFirstRow = (viewerScreenRect.p2.y - style.WindowPadding.y - 0.5f*axes.dimensions().y) - 0.5f*twoRowHeight;
 
     Vec2 const firstRowTopLeft = {xFirstRow, yFirstRow};
     float const midRowY = yFirstRow + 0.5f*(buttonHeight + rowSpacing);
@@ -1222,8 +1224,9 @@ bool osc::DrawViewerImGuiOverlays(
     edited = DrawViewerTopButtonRow(params, drawlist, iconCache, drawExtraElementsInTop) || edited;
 
     // compute bottom overlay positions
+    CameraViewAxes axes;
     ImGuiStyle const& style = ImGui::GetStyle();
-    Vec2 const alignmentAxesDims = CalcAlignmentAxesDimensions();
+    Vec2 const alignmentAxesDims = axes.dimensions();
     Vec2 const axesTopLeft =
     {
         renderRect.p1.x + style.WindowPadding.x,
@@ -1232,9 +1235,7 @@ bool osc::DrawViewerImGuiOverlays(
 
     // draw the bottom overlays
     ImGui::SetCursorScreenPos(axesTopLeft);
-    DrawAlignmentAxes(
-        params.camera.getViewMtx()
-    );
+    axes.draw(params.camera);
     edited = DrawCameraControlButtons(
         params.camera,
         renderRect,

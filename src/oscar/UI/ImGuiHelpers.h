@@ -173,10 +173,6 @@ namespace osc
         ImGuiHoveredFlags flags = ImGuiHoveredFlags_ForTooltip
     );
 
-    // draw overlay axes at the cursor position and return the bounding box of those axes
-    Vec2 CalcAlignmentAxesDimensions();
-    Rect DrawAlignmentAxes(Mat4 const& viewMtx);
-
     // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
     void DrawHelpMarker(CStringView header, CStringView desc);
 
