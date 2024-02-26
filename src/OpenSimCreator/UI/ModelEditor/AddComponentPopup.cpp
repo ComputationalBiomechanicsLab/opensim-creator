@@ -231,6 +231,9 @@ private:
             OpenSim::ComponentPath& connectee = m_SocketConnecteePaths[i];
 
             ImGui::TextUnformatted(socket.getName().c_str());
+            ImGui::SameLine();
+            DrawHelpMarker(m_Proto->getPropertyByName("socket_" + socket.getName()).getComment());
+            ImGui::TextDisabled(socket.getConnecteeTypeName().c_str());
             ImGui::NextColumn();
 
             // rhs: connectee choices

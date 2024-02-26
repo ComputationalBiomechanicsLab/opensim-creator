@@ -5,7 +5,6 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- Fixed a crash when visualizing contact forces in the model editor is enabled (sorry about that :-))
 - The mesh loader now obeys the normals of shared vertices in provided mesh files:
   - Practically speaking, it means that the surface shading of meshes in OSC will more closely match what
     you see in OpenSim GUI
@@ -13,6 +12,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     in OSC (previously: OSC would throw away vertex duplication information and not smooth-shade meshes)
   - If you want flat-shaded meshes, you must now ensure that your meshes are flat-shaded when exported
     from other 3D tooling (e.g. in Blender, load the mesh, right-click, Shade Flat, reexport)
+- When adding a new component, the socket selector now contains help markers and subtitles that document
+  each socket that needs to be assigned (#822)
 - The visualizer now obeys the "Display Properties" of an OpenSim Component when it's set to `Wire`, which
   is more consistent with OpenSim GUI
 - The `Appearance` editor in the property editor now shows a dropdown that lets you select the component's
@@ -23,6 +24,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - OpenSim was updated to the latest upstream `main` branch, which includes better socket connection support
   and other performance improvements and bugfixes
 - The coordinate editor's sliders now enable text-input mode when double-clicked (previously: only Ctrl+Click)
+- Fixed a crash when visualizing contact forces in the model editor is enabled (sorry about that :-))
 - Internal: ImGui, ImPlot, and ImGuizmo were all upgraded to their latest version
 - Internal: glm was dropped as an external dependency by copying the bare-minimum parts used by `osc` in-tree
 
