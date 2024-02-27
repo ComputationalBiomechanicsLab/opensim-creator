@@ -5,6 +5,17 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Updated `opensim-core` to a version which includes `StationDefinedFrame` support:
+  - Upstream feature: https://github.com/opensim-org/opensim-core/pull/3694
+  - They let you define an `OpenSim::PhysicalFrame` from stations/landmarks/markers. This more closely
+    matches ISB standards and the way in which people tend to build anatomical models.
+  - Because they are an `OpenSim::PhysicalFrame`, they can be used a joint frames, offset frames, etc.
+  - **BEWARE: EXPERIMENTAL FEATURE**:
+    - Upstream OpenSim (+GUI) have not yet released this feature, so models that use it cannot be opened
+      outside of OpenSim Creator (yet).
+    - OpenSim Creator's tooling support for the feature (visualization, documentation, etc.) is currently
+      limited, but we plan to improve it over time
+
 
 ## [0.5.9] - 2023/02/27
 
