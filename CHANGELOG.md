@@ -18,7 +18,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   the available options
 - The `Add Parent Offset Frame` and `Add Child Offset Frame` actions when right-clicking a joint now
   correctly attach the added offset frame to the joint and select it (#824), but you can't create chains of
-  offset frames this way, because of a known bug in opensim-core (opensim-core/#3711)
+  offset frames this way yet, because of a known bug in opensim-core (opensim-core/#3711)
 - The camera axes widget now ensures that each axis is rendered in the correct order when two axes overlap
 - The camera axes widget circles are now clickable, and will align the camera along the clicked axis
 - The camera axes widget now appears in the top-right of each model editor visualizer window, which is
