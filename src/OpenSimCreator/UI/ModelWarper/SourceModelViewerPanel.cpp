@@ -21,6 +21,16 @@ public:
         m_State{std::move(state_)}
     {}
 private:
+    void implBeforeImGuiBegin() final
+    {
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+    }
+
+    void implAfterImGuiBegin() final
+    {
+        ImGui::PopStyleVar();
+    }
+
     void implDrawContent() final
     {
         m_ModelViewer.onDraw(m_State->modelstate());
