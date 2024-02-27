@@ -2,8 +2,9 @@
 
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
-#include <OpenSim/Simulation/Model/Model.h>
 #include <gtest/gtest.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <oscar/Maths/Constants.h>
 
 #include <cctype>
 #include <filesystem>
@@ -121,4 +122,21 @@ TEST(ModelWarpingDocument, PofPairedIsInAnErrorState)
     // that haven't been explicitly handled by the user (ignored, least-squares fit, etc.)
     Document const doc{GetFixturesDir() / "PofPaired" / "model.osim"};
     ASSERT_EQ(doc.state(), ValidationState::Error);
+}
+
+TEST(ModelWarpingDocument, WarpBlendingFactorInitiallyOne)
+{
+    ASSERT_EQ(Document{}.getWarpBlendingFactor(), 1.0f);
+}
+
+TEST(ModelWarpingDocument, WarpBlendingFactorClampedBetweenZeroAndOne)
+{
+    Document doc;
+    ASSERT_EQ(doc.getWarpBlendingFactor(), 1.0f);
+    doc.setWarpBlendingFactor(5.0f);
+    ASSERT_EQ(doc.getWarpBlendingFactor(), 1.0f);
+    doc.setWarpBlendingFactor(-2.0f);
+    ASSERT_EQ(doc.getWarpBlendingFactor(), 0.0f);
+    doc.setWarpBlendingFactor(1.0f);
+    ASSERT_EQ(doc.getWarpBlendingFactor(), 1.0f);
 }

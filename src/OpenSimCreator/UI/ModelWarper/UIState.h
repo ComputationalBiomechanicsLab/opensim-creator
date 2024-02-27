@@ -39,6 +39,9 @@ namespace osc::mow
         std::vector<ValidationCheck> validate(OpenSim::PhysicalOffsetFrame const& pof) const { return m_Document->validate(pof); }
         ValidationState state(OpenSim::PhysicalOffsetFrame const& pof) const { return m_Document->state(pof); }
 
+        float getWarpBlendingFactor() const { return m_Document->getWarpBlendingFactor(); }
+        void setWarpBlendingFactor(float v) { m_Document->setWarpBlendingFactor(v); }
+
         ValidationState state() const { return m_Document->state(); }
         bool canWarpModel() const { return state() != ValidationState::Error; }
         std::shared_ptr<IConstModelStatePair const> tryGetWarpedModel() { return m_ModelWarper.warp(*m_Document); }

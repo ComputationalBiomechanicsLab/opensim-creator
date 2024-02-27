@@ -111,6 +111,16 @@ ValidationState osc::mow::Document::state() const
     return rv;
 }
 
+float osc::mow::Document::getWarpBlendingFactor() const
+{
+    return m_ModelWarpConfig->getWarpBlendingFactor();
+}
+
+void osc::mow::Document::setWarpBlendingFactor(float v)
+{
+    m_ModelWarpConfig.upd()->setWarpBlendingFactor(v);
+}
+
 std::vector<ValidationCheck> osc::mow::Document::implValidate() const
 {
     std::vector<ValidationCheck> rv;

@@ -43,6 +43,9 @@ namespace osc::mow
         std::vector<ValidationCheck> validate(OpenSim::PhysicalOffsetFrame const&) const;
         ValidationState state(OpenSim::PhysicalOffsetFrame const&) const;
 
+        float getWarpBlendingFactor() const;
+        void setWarpBlendingFactor(float);
+
         ValidationState state() const;
 
         // only checks reference equality by leaning on the copy-on-write behavior
