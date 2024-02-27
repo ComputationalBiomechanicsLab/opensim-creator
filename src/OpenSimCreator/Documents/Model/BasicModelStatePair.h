@@ -31,6 +31,8 @@ namespace osc
         BasicModelStatePair& operator=(BasicModelStatePair&&) noexcept;
         ~BasicModelStatePair() noexcept override;
 
+        // reference, not value, equality
+        friend bool operator==(BasicModelStatePair const&, BasicModelStatePair const&) = default;
     private:
         OpenSim::Model const& implGetModel() const final;
         SimTK::State const& implGetState() const final;

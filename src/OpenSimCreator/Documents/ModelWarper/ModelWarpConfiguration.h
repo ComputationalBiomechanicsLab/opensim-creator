@@ -13,5 +13,7 @@ namespace osc::mow
             std::filesystem::path const& osimFileLocation,
             OpenSim::Model const&
         );
+
+        friend bool operator==(ModelWarpConfiguration const&, ModelWarpConfiguration const&) = default;
     };
 }

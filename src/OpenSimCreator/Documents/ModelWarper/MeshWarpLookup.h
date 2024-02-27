@@ -29,6 +29,7 @@ namespace osc::mow
             return dynamic_cast<TMeshWarp const*>(lookup(meshComponentAbsPath));
         }
 
+        friend bool operator==(MeshWarpLookup const&, MeshWarpLookup const&) = default;
     private:
         IMeshWarp const* lookup(std::string const& absPath) const
         {

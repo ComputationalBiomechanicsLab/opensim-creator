@@ -17,6 +17,8 @@ namespace osc
         IConstModelStatePair(IConstModelStatePair&&) noexcept = default;
         IConstModelStatePair& operator=(IConstModelStatePair const&) = default;
         IConstModelStatePair& operator=(IConstModelStatePair&&) noexcept = default;
+
+        friend bool operator==(IConstModelStatePair const&, IConstModelStatePair const&) = default;
     public:
         virtual ~IConstModelStatePair() noexcept = default;
 

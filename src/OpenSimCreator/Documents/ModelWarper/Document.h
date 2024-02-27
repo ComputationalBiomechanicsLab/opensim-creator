@@ -44,6 +44,8 @@ namespace osc::mow
         ValidationState state(OpenSim::PhysicalOffsetFrame const&) const;
 
         ValidationState state() const;
+
+        friend bool operator==(Document const&, Document const&) = default;
     private:
         std::vector<ValidationCheck> implValidate() const;
 

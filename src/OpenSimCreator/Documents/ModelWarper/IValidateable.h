@@ -14,6 +14,8 @@ namespace osc::mow
         IValidateable(IValidateable&&) noexcept = default;
         IValidateable& operator=(IValidateable const&) = default;
         IValidateable& operator=(IValidateable&&) noexcept = default;
+
+        friend bool operator==(IValidateable const&, IValidateable const&) = default;
     public:
         virtual ~IValidateable() noexcept = default;
         std::vector<ValidationCheck> validate() const { return implValidate(); }
