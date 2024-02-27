@@ -1,6 +1,7 @@
 #include "ResultModelViewerPanel.h"
 
 #include <OpenSimCreator/UI/ModelWarper/UIState.h>
+#include <OpenSimCreator/UI/Shared/Readonly3DModelViewer.h>
 
 #include <imgui.h>
 #include <oscar/UI.h>
@@ -22,18 +23,23 @@ public:
 private:
     void implDrawContent() final
     {
-        ImGui::Text("if possible, show result model");
+        if (auto warped = m_State->tryGetWarpedModel()) {
+            m_ModelViewer.onDraw(*warped);
+        }
+        else {
+            ImGui::Text("cannot show result: model is not warpable");
+        }
     }
 
     std::shared_ptr<UIState> m_State;
+    Readonly3DModelViewer m_ModelViewer{this->getName()};
 };
 
 osc::mow::ResultModelViewerPanel::ResultModelViewerPanel(
     std::string_view panelName_,
     std::shared_ptr<UIState> state_) :
     m_Impl{std::make_unique<Impl>(panelName_, std::move(state_))}
-{
-}
+{}
 
 osc::mow::ResultModelViewerPanel::ResultModelViewerPanel(ResultModelViewerPanel&&) noexcept = default;
 osc::mow::ResultModelViewerPanel& osc::mow::ResultModelViewerPanel::operator=(ResultModelViewerPanel&&) noexcept = default;

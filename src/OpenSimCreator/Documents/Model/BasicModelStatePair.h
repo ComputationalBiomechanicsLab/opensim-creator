@@ -22,7 +22,7 @@ namespace osc
     class BasicModelStatePair final : public IModelStatePair {
     public:
         BasicModelStatePair();
-        explicit BasicModelStatePair(IModelStatePair const&);
+        explicit BasicModelStatePair(IConstModelStatePair const&);
         explicit BasicModelStatePair(std::filesystem::path const&);
         BasicModelStatePair(OpenSim::Model const&, SimTK::State const&);
         BasicModelStatePair(BasicModelStatePair const&);
@@ -30,9 +30,6 @@ namespace osc
         BasicModelStatePair& operator=(BasicModelStatePair const&);
         BasicModelStatePair& operator=(BasicModelStatePair&&) noexcept;
         ~BasicModelStatePair() noexcept override;
-
-        // reference, not value, equality
-        friend bool operator==(BasicModelStatePair const&, BasicModelStatePair const&) = default;
     private:
         OpenSim::Model const& implGetModel() const final;
         SimTK::State const& implGetState() const final;

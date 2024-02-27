@@ -28,7 +28,6 @@ namespace osc::mow
             return dynamic_cast<FrameWarp const*>(lookup(absPath));
         }
 
-        friend bool operator==(FrameWarpLookup const&, FrameWarpLookup const&) = default;
     private:
         IFrameWarp const* lookup(std::string const& absPath) const
         {

@@ -22,7 +22,7 @@ TEST(CachedModelWarper, CanWarpDefaultConstructedModelWarpingDocument)
     ASSERT_NE(rv, nullptr);
 
     // ... and it can be copied into a new model that can be initialized etc. ready for UI usage
-    OpenSim::Model copy{*rv};
+    OpenSim::Model copy{rv->getModel()};
     InitializeModel(copy);
     InitializeState(copy);
 }

@@ -10,7 +10,7 @@
 #include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
 
-#include <oscar/Utils/ClonePtr.h>
+#include <oscar/Utils/CopyOnUpdPtr.h>
 
 #include <filesystem>
 #include <vector>
@@ -45,13 +45,14 @@ namespace osc::mow
 
         ValidationState state() const;
 
+        // only checks reference equality by leaning on the copy-on-write behavior
         friend bool operator==(Document const&, Document const&) = default;
     private:
         std::vector<ValidationCheck> implValidate() const;
 
-        BasicModelStatePair m_ModelState;
-        ModelWarpConfiguration m_ModelWarpConfig;
-        MeshWarpLookup m_MeshWarpLookup;
-        FrameWarpLookup m_FrameWarpLookup;
+        CopyOnUpdPtr<BasicModelStatePair> m_ModelState;
+        CopyOnUpdPtr<ModelWarpConfiguration> m_ModelWarpConfig;
+        CopyOnUpdPtr<MeshWarpLookup> m_MeshWarpLookup;
+        CopyOnUpdPtr<FrameWarpLookup> m_FrameWarpLookup;
     };
 }

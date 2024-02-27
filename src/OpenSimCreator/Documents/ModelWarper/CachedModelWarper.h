@@ -1,5 +1,7 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/Model/IConstModelStatePair.h>
+
 #include <memory>
 
 namespace OpenSim { class Model; }
@@ -16,7 +18,7 @@ namespace osc::mow
         CachedModelWarper& operator=(CachedModelWarper&&) noexcept;
         ~CachedModelWarper() noexcept;
 
-        std::shared_ptr<OpenSim::Model const> warp(Document const&);
+        std::shared_ptr<IConstModelStatePair const> warp(Document const&);
     private:
         class Impl;
         std::unique_ptr<Impl> m_Impl;

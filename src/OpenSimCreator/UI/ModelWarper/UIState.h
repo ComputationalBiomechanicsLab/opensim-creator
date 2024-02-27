@@ -41,6 +41,7 @@ namespace osc::mow
 
         ValidationState state() const { return m_Document->state(); }
         bool canWarpModel() const { return state() != ValidationState::Error; }
+        std::shared_ptr<IConstModelStatePair const> tryGetWarpedModel() { return m_ModelWarper.warp(*m_Document); }
 
         void actionOpenOsimOrPromptUser(
             std::optional<std::filesystem::path> maybeOsimPath = std::nullopt
