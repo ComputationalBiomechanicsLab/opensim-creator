@@ -4647,7 +4647,7 @@ namespace
             }
 
             auto copy = format();
-            copy.insert(std::move(desc));
+            copy.insert(desc);
             setFormat(copy);
             return true;
         }

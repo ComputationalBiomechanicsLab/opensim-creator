@@ -462,16 +462,6 @@ std::ostream& osc::operator<<(std::ostream& o, Disc const& d)
 
 // `EulerPerspectiveCamera` implementation
 
-osc::EulerPerspectiveCamera::EulerPerspectiveCamera() :
-    origin{},
-    pitch{},
-    yaw{-180_deg},
-    verticalFOV{35_deg},
-    znear{0.1f},
-    zfar{1000.0f}
-{
-}
-
 Vec3 osc::EulerPerspectiveCamera::getFront() const
 {
     return normalize(Vec3
@@ -691,6 +681,7 @@ void osc::FocusAlongAxis(PolarPerspectiveCamera& camera, size_t axis, bool negat
         case 0: FocusAlongMinusX(camera); break;
         case 1: FocusAlongMinusY(camera); break;
         case 2: FocusAlongMinusZ(camera); break;
+        default: break;
         }
     }
     else {
@@ -698,6 +689,7 @@ void osc::FocusAlongAxis(PolarPerspectiveCamera& camera, size_t axis, bool negat
         case 0: FocusAlongX(camera); break;
         case 1: FocusAlongY(camera); break;
         case 2: FocusAlongZ(camera); break;
+        default: break;
         }
     }
 }
