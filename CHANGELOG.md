@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+
+## [0.5.9] - 2023/02/27
+
 - The mesh loader now obeys the normals of shared vertices in provided mesh files:
   - Practically speaking, it means that the surface shading of meshes in OSC will more closely match what
     you see in OpenSim GUI
