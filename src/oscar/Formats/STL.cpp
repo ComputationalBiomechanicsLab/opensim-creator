@@ -3,6 +3,7 @@
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/TriangleFunctions.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Shims/Cpp20/bit.h>
@@ -87,7 +88,7 @@ namespace
 
     void WriteTriangle(std::ostream& o, Triangle const& triangle)
     {
-        WriteVec3IEEE(o, normalize(TriangleNormal(triangle)));
+        WriteVec3IEEE(o, triangle_normal(triangle));
         WriteVec3IEEE(o, triangle.p0);
         WriteVec3IEEE(o, triangle.p1);
         WriteVec3IEEE(o, triangle.p2);

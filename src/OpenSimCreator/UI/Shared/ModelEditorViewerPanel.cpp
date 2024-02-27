@@ -20,6 +20,7 @@
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/ImGuizmoHelpers.h>
 #include <oscar/UI/oscimgui.h>
+#include <oscar/UI/oscimgui_internal.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/UI/Widgets/GuiRuler.h>
 #include <oscar/UI/Widgets/IconWithoutMenu.h>
@@ -182,6 +183,9 @@ namespace
                 state.pushLayer(std::make_unique<RulerLayer>());
                 edited = true;
             }
+
+            ImGui::SameLine();
+            ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
             ImGui::SameLine();
 
             // draw translate/rotate/scale selector

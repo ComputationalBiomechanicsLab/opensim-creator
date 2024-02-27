@@ -5,7 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- Fixed a crash when visualizing contact forces in the model editor is enabled (sorry about that :-))
+
+## [0.5.9] - 2023/02/27
+
 - The mesh loader now obeys the normals of shared vertices in provided mesh files:
   - Practically speaking, it means that the surface shading of meshes in OSC will more closely match what
     you see in OpenSim GUI
@@ -13,6 +15,17 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     in OSC (previously: OSC would throw away vertex duplication information and not smooth-shade meshes)
   - If you want flat-shaded meshes, you must now ensure that your meshes are flat-shaded when exported
     from other 3D tooling (e.g. in Blender, load the mesh, right-click, Shade Flat, reexport)
+- When adding a new component, the socket selector now contains help markers and subtitles that document
+  each socket that needs to be assigned (#822)
+- When adding a new component, the socket selector now has a search input, which lets you filter through
+  the available options
+- The `Add Parent Offset Frame` and `Add Child Offset Frame` actions when right-clicking a joint now
+  correctly attach the added offset frame to the joint and select it (#824), but you can't create chains of
+  offset frames this way yet, because of a known bug in opensim-core (opensim-core/#3711)
+- The camera axes widget now ensures that each axis is rendered in the correct order when two axes overlap
+- The camera axes widget circles are now clickable, and will align the camera along the clicked axis
+- The camera axes widget now appears in the top-right of each model editor visualizer window, which is
+  consistent with (e.g.) Blender and Godot
 - The visualizer now obeys the "Display Properties" of an OpenSim Component when it's set to `Wire`, which
   is more consistent with OpenSim GUI
 - The `Appearance` editor in the property editor now shows a dropdown that lets you select the component's
@@ -23,6 +36,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - OpenSim was updated to the latest upstream `main` branch, which includes better socket connection support
   and other performance improvements and bugfixes
 - The coordinate editor's sliders now enable text-input mode when double-clicked (previously: only Ctrl+Click)
+- Fixed a crash when visualizing contact forces in the model editor is enabled (sorry about that :-))
 - Internal: ImGui, ImPlot, and ImGuizmo were all upgraded to their latest version
 - Internal: glm was dropped as an external dependency by copying the bare-minimum parts used by `osc` in-tree
 

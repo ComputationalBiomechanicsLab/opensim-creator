@@ -366,7 +366,7 @@ namespace
 
     void WriteTransformMatrix(std::ostream& o, Transform const& t)
     {
-        Mat4 const m = ToMat4(t);
+        Mat4 const m = mat4_cast(t);
 
         // row-major
         o << R"(        <matrix sid="transform">)";

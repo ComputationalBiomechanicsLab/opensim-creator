@@ -12,5 +12,6 @@ namespace osc
 
         friend bool operator==(Rect const&, Rect const&) = default;
     };
+
     std::ostream& operator<<(std::ostream&, Rect const&);
 }

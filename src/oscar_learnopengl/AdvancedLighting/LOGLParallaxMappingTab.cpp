@@ -21,42 +21,30 @@ namespace
     // matches the quad used in LearnOpenGL's parallax mapping tutorial
     Mesh GenerateQuad()
     {
-        auto const verts = std::to_array<Vec3>({
+        Mesh rv;
+        rv.setVerts({
             {-1.0f,  1.0f, 0.0f},
             {-1.0f, -1.0f, 0.0f},
             { 1.0f, -1.0f, 0.0f},
             { 1.0f,  1.0f, 0.0f},
         });
-        auto const normals = std::to_array<Vec3>({
+        rv.setNormals({
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
         });
-        auto const texCoords = std::to_array<Vec2>({
+        rv.setTexCoords({
             {0.0f, 1.0f},
             {0.0f, 0.0f},
             {1.0f, 0.0f},
             {1.0f, 1.0f},
         });
-        auto const indices = std::to_array<uint16_t>({
+        rv.setIndices({
             0, 1, 2,
             0, 2, 3,
         });
-        auto const tangents = CalcTangentVectors(
-            MeshTopology::Triangles,
-            verts,
-            normals,
-            texCoords,
-            indices
-        );
-
-        Mesh rv;
-        rv.setVerts(verts);
-        rv.setNormals(normals);
-        rv.setTexCoords(texCoords);
-        rv.setTangents(tangents);
-        rv.setIndices(indices);
+        rv.recalculateTangents();
         return rv;
     }
 

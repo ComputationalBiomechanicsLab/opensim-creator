@@ -11,6 +11,7 @@
 #include <oscar/Graphics/VertexFormat.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/TriangleFunctions.h>
 #include <oscar/Maths/Vec3.h>
 
 #include <array>
@@ -39,7 +40,7 @@ namespace
             }
 
             rv.numIndices = numFaceVerts;
-            if (rv.numIndices > 3) {  // handle triangulation
+            if (rv.numIndices > 4) {  // account for triangulation
                 ++rv.numVertices;
                 ++rv.numIndices;
             }
@@ -50,23 +51,35 @@ namespace
 
 Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
 {
-    // original source: simbody's `VisualizerProtocol.cpp:drawPolygonalMesh(...)`
-
-    // figure out how much memory to allocate ahead of time
     auto const metrics = CalcMeshMetrics(mesh);
 
-    // copy all vertex positions from the source mesh
     std::vector<Vec3> vertices;
     vertices.reserve(metrics.numVertices);
+
+    std::vector<uint32_t> indices;
+    indices.reserve(metrics.numIndices);
+
+    // helper: validate+push triangle into the index list
+    auto const pushTriangle = [&indices, &vertices](uint32_t a, uint32_t b, uint32_t c)
+    {
+        // validate that the indices actually form a triangle
+        //
+        // external mesh data can contain wacky problems, like bad indices
+        // or repeated vertex locations that form lines, etc. - those problems
+        // should stop here
+        if (can_form_triangle(vertices.at(a), vertices.at(b), vertices.at(c))) {
+            indices.insert(indices.end(), {a, b, c});
+        }
+    };
+
+    // copy all vertex positions from the source mesh
     for (int i = 0; i < mesh.getNumVertices(); ++i) {
         vertices.push_back(ToVec3(mesh.getVertexPosition(i)));
     }
 
     // build up the index list while triangulating any n>3 faces
     //
-    // (puts the injected triangulation verts at the end and optimizes later)
-    std::vector<uint32_t> indices;
-    indices.reserve(metrics.numIndices);
+    // (pushes injected triangulation verts to the end - assumes the mesh is optimized later)
     for (int face = 0, faces = mesh.getNumFaces(); face < faces; ++face) {
         int const numFaceVerts = mesh.getNumVerticesForFace(face);
 
@@ -83,7 +96,8 @@ Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
             auto const a = static_cast<uint32_t>(mesh.getFaceVertex(face, 0));
             auto const b = static_cast<uint32_t>(mesh.getFaceVertex(face, 1));
             auto const c = static_cast<uint32_t>(mesh.getFaceVertex(face, 2));
-            indices.insert(indices.end(), {a, b, c});
+
+            pushTriangle(a, b, c);
         }
         else if (numFaceVerts == 4) {
             // quad (emit as two triangles)
@@ -91,7 +105,9 @@ Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
             auto const b = static_cast<uint32_t>(mesh.getFaceVertex(face, 1));
             auto const c = static_cast<uint32_t>(mesh.getFaceVertex(face, 2));
             auto const d = static_cast<uint32_t>(mesh.getFaceVertex(face, 3));
-            indices.insert(indices.end(), {a, b, c,    a, c, d});
+
+            pushTriangle(a, b, c);
+            pushTriangle(a, c, d);
         }
         else {
             // polygon: triangulate each edge with a centroid
@@ -107,18 +123,16 @@ Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
 
             // triangulate polygon loop
             for (int vert = 0; vert < numFaceVerts-1; ++vert) {
-                indices.insert(indices.end(), {
-                    centroidIdx,
-                    static_cast<uint32_t>(mesh.getFaceVertex(face, vert)),
-                    static_cast<uint32_t>(mesh.getFaceVertex(face, vert+1)),
-                });
+                auto const b = static_cast<uint32_t>(mesh.getFaceVertex(face, vert));
+                auto const c = static_cast<uint32_t>(mesh.getFaceVertex(face, vert+1));
+
+                pushTriangle(centroidIdx, b, c);
             }
+
             // (complete the loop)
-            indices.insert(indices.end(), {
-                centroidIdx,
-                static_cast<uint32_t>(mesh.getFaceVertex(face, numFaceVerts-1)),
-                static_cast<uint32_t>(mesh.getFaceVertex(face, 0)),
-            });
+            auto const b = static_cast<uint32_t>(mesh.getFaceVertex(face, numFaceVerts-1));
+            auto const c = static_cast<uint32_t>(mesh.getFaceVertex(face, 0));
+            pushTriangle(centroidIdx, b, c);
         }
     }
 

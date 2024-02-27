@@ -28,8 +28,6 @@ namespace osc
         using iterator = col_type*;
         using const_iterator = col_type const*;
 
-        static constexpr size_type length() { return 3; }
-
         constexpr Mat() = default;
 
         explicit constexpr Mat(T s) :
@@ -115,7 +113,7 @@ namespace osc
             return *this;
         }
 
-        constexpr size_type size() const { return length(); }
+        constexpr size_type size() const { return 3; }
         constexpr pointer data() { return value; }
         constexpr const_pointer data() const { return value; }
         constexpr iterator begin() { return data(); }
@@ -378,5 +376,16 @@ namespace osc
     using Mat3f = Mat<3, 3, float>;
     using Mat3d = Mat<3, 3, double>;
     using Mat3i = Mat<3, 3, int>;
+    using Mat3z = Mat<3, 3, ptrdiff_t>;
+    using Mat3zu = Mat<3, 3, size_t>;
     using Mat3u32 = Mat<3, 3, uint32_t>;
+
+    template<typename T>
+    constexpr T Identity();
+
+    template<>
+    constexpr Mat3 Identity<Mat3>()
+    {
+        return Mat3{1.0f};
+    }
 }

@@ -7,9 +7,6 @@
 
 namespace osc
 {
-    // a 4-element vector
-    //
-    // implementation initially adapted from `glm::vec4`
     template<typename T>
     struct Vec<4, T> {
         using value_type = T;
@@ -22,10 +19,6 @@ namespace osc
         using const_pointer = T const*;
         using iterator = T*;
         using const_iterator = T const*;
-        using type = Vec<4, T>;
-        using bool_type = Vec<4, bool>;
-
-        static constexpr size_type length() { return 4; }
 
         constexpr Vec() = default;
         constexpr explicit Vec(T scalar) :
@@ -97,7 +90,7 @@ namespace osc
             w{static_cast<T>(v.w)}
         {}
 
-        constexpr size_type size() const { return length(); }
+        constexpr size_type size() const { return 4; }
         constexpr pointer data() { return &x; }
         constexpr const_pointer data() const { return &x; }
         constexpr iterator begin() { return data(); }
@@ -231,10 +224,18 @@ namespace osc
             return copy;
         }
 
-        T x;
-        T y;
-        T z;
-        T w;
+        template<typename U>
+        constexpr Vec with_element(size_type i, U scalar) const
+        {
+            Vec copy{*this};
+            copy[i] = static_cast<T>(scalar);
+            return copy;
+        }
+
+        T x{};
+        T y{};
+        T z{};
+        T w{};
     };
 
     template<typename T>
@@ -336,5 +337,7 @@ namespace osc
     using Vec4f = Vec<4, float>;
     using Vec4d = Vec<4, double>;
     using Vec4i = Vec<4, int>;
+    using Vec4z = Vec<4, ptrdiff_t>;
+    using Vec4uz = Vec<4, size_t>;
     using Vec4u32 = Vec<4, uint32_t>;
 }

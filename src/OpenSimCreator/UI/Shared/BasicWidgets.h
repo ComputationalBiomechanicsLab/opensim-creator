@@ -169,10 +169,12 @@ namespace osc
         std::function<bool()> const& drawExtraElements = []() { return false; }
     );
     bool DrawCameraControlButtons(
-        PolarPerspectiveCamera&,
+        ModelRendererParams&,
+        std::span<SceneDecoration const>,
         Rect const&,
         std::optional<AABB> const& maybeSceneAABB,
-        IconCache&
+        IconCache&,
+        Vec2 desiredTopCentroid
     );
     bool DrawViewerImGuiOverlays(
         ModelRendererParams&,

@@ -7,9 +7,6 @@
 
 namespace osc
 {
-    // a 2-element vector
-    //
-    // implementation initially adapted from `glm::vec2`
     template<typename T>
     struct Vec<2, T> {
         using value_type = T;
@@ -22,10 +19,6 @@ namespace osc
         using const_pointer = T const*;
         using iterator = T*;
         using const_iterator = T const*;
-        using type = Vec<2, T>;
-        using bool_type = Vec<2, bool>;
-
-        static constexpr size_type length() { return 2; }
 
         constexpr Vec() = default;
         constexpr explicit Vec(T scalar) :
@@ -65,7 +58,7 @@ namespace osc
             return *this;
         }
 
-        constexpr size_type size() const { return length(); }
+        constexpr size_type size() const { return 2; }
         constexpr pointer data() { return &x; }
         constexpr const_pointer data() const { return &x; }
         constexpr iterator begin() { return data(); }
@@ -169,8 +162,16 @@ namespace osc
             return copy;
         }
 
-        T x;
-        T y;
+        template<typename U>
+        constexpr Vec with_element(size_type i, U scalar) const
+        {
+            Vec copy{*this};
+            copy[i] = static_cast<T>(scalar);
+            return copy;
+        }
+
+        T x{};
+        T y{};
     };
 
     template<typename T>
@@ -271,5 +272,7 @@ namespace osc
     using Vec2f = Vec<2, float>;
     using Vec2d = Vec<2, double>;
     using Vec2i = Vec<2, int>;
+    using Vec2z = Vec<2, ptrdiff_t>;
+    using Vec2uz = Vec<2, size_t>;
     using Vec2u32 = Vec<2, uint32_t>;
 }

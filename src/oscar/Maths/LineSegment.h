@@ -6,10 +6,10 @@
 
 namespace osc
 {
-    struct Segment final {
+    struct LineSegment final {
         Vec3 p1{};
         Vec3 p2{};
     };
 
-    std::ostream& operator<<(std::ostream&, Segment const&);
+    std::ostream& operator<<(std::ostream&, LineSegment const&);
 }

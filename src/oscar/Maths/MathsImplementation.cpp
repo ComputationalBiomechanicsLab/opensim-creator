@@ -462,16 +462,6 @@ std::ostream& osc::operator<<(std::ostream& o, Disc const& d)
 
 // `EulerPerspectiveCamera` implementation
 
-osc::EulerPerspectiveCamera::EulerPerspectiveCamera() :
-    origin{},
-    pitch{},
-    yaw{-180_deg},
-    verticalFOV{35_deg},
-    znear{0.1f},
-    zfar{1000.0f}
-{
-}
-
 Vec3 osc::EulerPerspectiveCamera::getFront() const
 {
     return normalize(Vec3
@@ -684,6 +674,26 @@ Vec3 osc::RecommendedLightDirection(PolarPerspectiveCamera const& c)
     return normalize(-c.focusPoint - p);
 }
 
+void osc::FocusAlongAxis(PolarPerspectiveCamera& camera, size_t axis, bool negate)
+{
+    if (negate) {
+        switch (axis) {
+        case 0: FocusAlongMinusX(camera); break;
+        case 1: FocusAlongMinusY(camera); break;
+        case 2: FocusAlongMinusZ(camera); break;
+        default: break;
+        }
+    }
+    else {
+        switch (axis) {
+        case 0: FocusAlongX(camera); break;
+        case 1: FocusAlongY(camera); break;
+        case 2: FocusAlongZ(camera); break;
+        default: break;
+        }
+    }
+}
+
 void osc::FocusAlongX(PolarPerspectiveCamera& camera)
 {
     camera.theta = 90_deg;
@@ -763,9 +773,9 @@ std::ostream& osc::operator<<(std::ostream& o, Rect const& r)
 
 // `Segment` implementation
 
-std::ostream& osc::operator<<(std::ostream& o, Segment const& d)
+std::ostream& osc::operator<<(std::ostream& o, LineSegment const& d)
 {
-    return o << "Segment(p1 = " << d.p1 << ", p2 = " << d.p2 << ')';
+    return o << "LineSegment(p1 = " << d.p1 << ", p2 = " << d.p2 << ')';
 }
 
 
@@ -804,36 +814,6 @@ Vec3 osc::Center(Tetrahedron const& t)
     // arithmetic mean of tetrahedron vertices
     return std::reduce(t.begin(), t.end()) / static_cast<float>(t.size());
 }
-
-
-// `Transform` implementation
-
-std::ostream& osc::operator<<(std::ostream& o, Transform const& t)
-{
-    return o << "Transform(position = " << t.position << ", rotation = " << t.rotation << ", scale = " << t.scale << ')';
-}
-
-Vec3 osc::operator*(Transform const& lhs, Vec3 const& rhs)
-{
-    return TransformPoint(lhs, rhs);
-}
-
-Transform& osc::operator+=(Transform& lhs, Transform const& rhs)
-{
-    lhs.position += rhs.position;
-    lhs.rotation += rhs.rotation;
-    lhs.scale += rhs.scale;
-    return lhs;
-}
-
-Transform& osc::operator/=(Transform& lhs, float rhs)
-{
-    lhs.position /= rhs;
-    lhs.rotation /= rhs;
-    lhs.scale /= rhs;
-    return lhs;
-}
-
 
 
 // Geometry implementation
@@ -989,39 +969,6 @@ float osc::AspectRatio(Vec2 v)
 }
 
 
-// Geometry
-
-Vec3 osc::KahanSum(std::span<Vec3 const> vs)
-{
-    Vec3 sum{};  // accumulator
-    Vec3 c{};    // running compensation of low-order bits
-
-    for (Vec3 const& v : vs)
-    {
-        Vec3 const y = v - c;    // subtract the compensation amount from the next number
-        Vec3 const t = sum + y;  // perform the summation (might lose information)
-
-        c = (t - sum) - y;            // (t-sum) yields the retained (high-order) parts of `y`, so `c` contains the "lost" information
-        sum = t;                      // CAREFUL: algebreically, `c` always == 0 - despite the computer's (actual) limited precision, the compiler might elilde all of this
-    }
-
-    return sum;
-}
-
-Vec3 osc::NumericallyStableAverage(std::span<Vec3 const> vs)
-{
-    Vec3 const sum = KahanSum(vs);
-    return sum / static_cast<float>(vs.size());
-}
-
-Vec3 osc::TriangleNormal(Triangle const& tri)
-{
-    Vec3 const ab = tri.p1 - tri.p0;
-    Vec3 const ac = tri.p2 - tri.p0;
-    Vec3 const perpendiular = cross(ab, ac);
-    return normalize(perpendiular);
-}
-
 Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
 {
     // this is effectively a rewrite of glm::rotation(vec3 const&, vec3 const& dest);
@@ -1062,14 +1009,9 @@ Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
     return rotate(Identity<Mat4>(), theta, rotationAxis);
 }
 
-Eulers osc::ExtractEulerAngleXYZ(Quat const& q)
+Eulers osc::extract_eulers_xyz(Quat const& q)
 {
     return extract_eulers_xyz(mat4_cast(q));
-}
-
-Eulers osc::ExtractEulerAngleXYZ(Mat4 const& m)
-{
-    return extract_eulers_xyz(m);
 }
 
 Vec2 osc::TopleftRelPosToNDCPoint(Vec2 relpos)
@@ -1114,11 +1056,6 @@ Line osc::PerspectiveUnprojectTopLeftScreenPosToWorldRay(
     return rv;
 }
 
-Vec2 osc::MinValuePerDimension(Rect const& r)
-{
-    return elementwise_min(r.p1, r.p2);
-}
-
 float osc::Area(Rect const& r)
 {
     auto d = Dimensions(r);
@@ -1160,6 +1097,12 @@ Rect osc::BoundingRectOf(std::span<Vec2 const> vs)
         rv.p2 = elementwise_max(rv.p2, *it);
     }
     return rv;
+}
+
+Rect osc::BoundingRectOf(Circle const& c)
+{
+    float const hypot = sqrt(c.radius * c.radius);
+    return {c.origin - hypot, c.origin + hypot};
 }
 
 Rect osc::Expand(Rect const& rect, float amt)
@@ -1282,8 +1225,8 @@ Line osc::InverseTransformLine(Line const& l, Transform const& t)
 {
     return Line
     {
-        InverseTransformPoint(t, l.origin),
-        InverseTransformDirection(t, l.direction),
+        inverse_transform_point(t, l.origin),
+        inverse_transform_direction(t, l.direction),
     };
 }
 
@@ -1430,7 +1373,7 @@ AABB osc::TransformAABB(AABB const& aabb, Transform const& t)
     //
     // screenshot: https://twitter.com/Herschel/status/1188613724665335808
 
-    Mat3 const m = ToMat3(t);
+    Mat3 const m = mat3_cast(t);
 
     AABB rv{t.position, t.position};  // add in the translation
     for (Vec3::size_type i = 0; i < 3; ++i)
@@ -1604,7 +1547,7 @@ std::optional<Rect> osc::AABBToScreenNDCRect(
     return rv;
 }
 
-Mat4 osc::SegmentToSegmentMat4(Segment const& a, Segment const& b)
+Mat4 osc::SegmentToSegmentMat4(LineSegment const& a, LineSegment const& b)
 {
     Vec3 a1ToA2 = a.p2 - a.p1;
     Vec3 b1ToB2 = b.p2 - b.p1;
@@ -1629,7 +1572,7 @@ Mat4 osc::SegmentToSegmentMat4(Segment const& a, Segment const& b)
     return move * rotate * scale(Identity<Mat4>(), scaler);
 }
 
-Transform osc::SegmentToSegmentTransform(Segment const& a, Segment const& b)
+Transform osc::SegmentToSegmentTransform(LineSegment const& a, LineSegment const& b)
 {
     Vec3 aLine = a.p2 - a.p1;
     Vec3 bLine = b.p2 - b.p1;
@@ -1652,124 +1595,23 @@ Transform osc::SegmentToSegmentTransform(Segment const& a, Segment const& b)
     return t;
 }
 
-Transform osc::YToYCylinderToSegmentTransform(Segment const& s, float radius)
+Transform osc::YToYCylinderToSegmentTransform(LineSegment const& s, float radius)
 {
-    Segment cylinderLine{{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
+    LineSegment cylinderLine{{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
     Transform t = SegmentToSegmentTransform(cylinderLine, s);
     t.scale.x = radius;
     t.scale.z = radius;
     return t;
 }
 
-Transform osc::YToYConeToSegmentTransform(Segment const& s, float radius)
+Transform osc::YToYConeToSegmentTransform(LineSegment const& s, float radius)
 {
     return YToYCylinderToSegmentTransform(s, radius);
 }
 
-Mat3 osc::ToMat3(Transform const& t)
-{
-    Mat3 rv = mat3_cast(t.rotation);
-
-    rv[0][0] *= t.scale.x;
-    rv[0][1] *= t.scale.x;
-    rv[0][2] *= t.scale.x;
-
-    rv[1][0] *= t.scale.y;
-    rv[1][1] *= t.scale.y;
-    rv[1][2] *= t.scale.y;
-
-    rv[2][0] *= t.scale.z;
-    rv[2][1] *= t.scale.z;
-    rv[2][2] *= t.scale.z;
-
-    return rv;
-}
-
-Mat4 osc::ToMat4(Transform const& t)
-{
-    Mat4 rv = mat4_cast(t.rotation);
-
-    rv[0][0] *= t.scale.x;
-    rv[0][1] *= t.scale.x;
-    rv[0][2] *= t.scale.x;
-
-    rv[1][0] *= t.scale.y;
-    rv[1][1] *= t.scale.y;
-    rv[1][2] *= t.scale.y;
-
-    rv[2][0] *= t.scale.z;
-    rv[2][1] *= t.scale.z;
-    rv[2][2] *= t.scale.z;
-
-    rv[3][0] = t.position.x;
-    rv[3][1] = t.position.y;
-    rv[3][2] = t.position.z;
-
-    return rv;
-}
-
-Mat4 osc::ToInverseMat4(Transform const& t)
-{
-    Mat4 translater = translate(Identity<Mat4>(), -t.position);
-    Mat4 rotater = mat4_cast(conjugate(t.rotation));
-    Mat4 scaler = scale(Identity<Mat4>(), 1.0f/t.scale);
-
-    return scaler * rotater * translater;
-}
-
-Mat3 osc::ToNormalMatrix(Transform const& t)
-{
-    return adjugate(transpose(ToMat3(t)));
-}
-
-Mat4 osc::ToNormalMatrix4(Transform const& t)
-{
-    return adjugate(transpose(ToMat3(t)));
-}
-
-Transform osc::ToTransform(Mat4 const& mtx)
-{
-    Transform rv;
-    Vec3 skew;
-    Vec4 perspective;
-    if (!decompose(mtx, rv.scale, rv.rotation, rv.position, skew, perspective))
-    {
-        throw std::runtime_error{"failed to decompose a matrix into scale, rotation, etc."};
-    }
-    return rv;
-}
-
-Vec3 osc::TransformDirection(Transform const& t, Vec3 const& localDir)
-{
-    return normalize(t.rotation * (t.scale * localDir));
-}
-
-Vec3 osc::InverseTransformDirection(Transform const& t, Vec3 const& direction)
-{
-    return normalize((conjugate(t.rotation) * direction) / t.scale);
-}
-
-Vec3 osc::TransformPoint(Transform const& t, Vec3 const& p)
-{
-    Vec3 rv = p;
-    rv *= t.scale;
-    rv = t.rotation * rv;
-    rv += t.position;
-    return rv;
-}
-
-Vec3 osc::TransformPoint(Mat4 const& m, Vec3 const& p)
+Vec3 osc::transform_point(Mat4 const& m, Vec3 const& p)
 {
     return Vec3{m * Vec4{p, 1.0f}};
-}
-
-Vec3 osc::InverseTransformPoint(Transform const& t, Vec3 const& p)
-{
-    Vec3 rv = p;
-    rv -= t.position;
-    rv = conjugate(t.rotation) * rv;
-    rv /= t.scale;
-    return rv;
 }
 
 Quat osc::WorldspaceRotation(Eulers const& eulers)
@@ -1786,44 +1628,6 @@ void osc::ApplyWorldspaceRotation(
     Quat q = WorldspaceRotation(eulerAngles);
     t.position = q*(t.position - rotationCenter) + rotationCenter;
     t.rotation = normalize(q*t.rotation);
-}
-
-Eulers osc::ExtractEulerAngleXYZ(Transform const& t)
-{
-    return extract_eulers_xyz(mat4_cast(t.rotation));
-}
-
-Eulers osc::ExtractExtrinsicEulerAnglesXYZ(Transform const& t)
-{
-    return euler_angles(t.rotation);
-}
-
-Transform osc::PointAxisAlong(Transform const& t, int axisIndex, Vec3 const& newDirection)
-{
-    Vec3 beforeDir{};
-    beforeDir[axisIndex] = 1.0f;
-    beforeDir = t.rotation * beforeDir;
-
-    Quat const rotBeforeToAfter = rotation(beforeDir, newDirection);
-    Quat const newRotation = normalize(rotBeforeToAfter * t.rotation);
-
-    return t.withRotation(newRotation);
-}
-
-Transform osc::PointAxisTowards(Transform const& t, int axisIndex, Vec3 const& location)
-{
-    return PointAxisAlong(t, axisIndex, normalize(location - t.position));
-}
-
-Transform osc::RotateAlongAxis(Transform const& t, int axisIndex, Radians angle)
-{
-    Vec3 ax{};
-    ax[axisIndex] = 1.0f;
-    ax = t.rotation * ax;
-
-    Quat const q = angle_axis(angle, ax);
-
-    return t.withRotation(normalize(q * t.rotation));
 }
 
 bool osc::IsPointInRect(Rect const& r, Vec2 const& p)
@@ -1946,7 +1750,7 @@ std::optional<RayCollision> osc::GetRayCollisionTriangle(Line const& l, Triangle
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution
 
     // compute triangle normal
-    Vec3 N = TriangleNormal(tri);
+    Vec3 N = triangle_normal(tri);
 
     // compute dot product between normal and ray
     float NdotR = dot(N, l.direction);

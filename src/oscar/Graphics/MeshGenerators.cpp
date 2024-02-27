@@ -6,6 +6,7 @@
 #include <oscar/Maths/CommonFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/TriangleFunctions.h>
 #include <oscar/Maths/UnitVec3.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
@@ -489,14 +490,13 @@ Mesh osc::GenerateUntexturedYToYConeMesh(size_t nsides)
             Radians const thetaStart = i * stepAngle;
             Radians const thetaEnd = (i + 1) * stepAngle;
 
-            Triangle const triangle =
-            {
+            Triangle const triangle = {
                 {0.0f, topY, 0.0f},
                 {cos(thetaEnd), bottomY, sin(thetaEnd)},
                 {cos(thetaStart), bottomY, sin(thetaStart)},
             };
 
-            Vec3 const normal = TriangleNormal(triangle);
+            auto const normal = triangle_normal(triangle);
 
             push(triangle.p0, normal);
             push(triangle.p1, normal);
@@ -735,9 +735,9 @@ Mesh osc::GenerateTorusMesh(size_t slices, size_t stacks, float torusCenterToTub
                 data.verts.at(data.indices[i+1]),
             };
 
-            data.normals.at(data.indices[i]) = TriangleNormal(t);
-            data.normals.at(data.indices[i+1]) = TriangleNormal(t1);
-            data.normals.at(data.indices[i+2]) = TriangleNormal(t2);
+            data.normals.at(data.indices[i]) = triangle_normal(t);
+            data.normals.at(data.indices[i+1]) = triangle_normal(t1);
+            data.normals.at(data.indices[i+2]) = triangle_normal(t2);
         }
         OSC_ASSERT(data.normals.size() == data.verts.size());
     }
@@ -1533,7 +1533,7 @@ Mesh osc::GenerateCircleMesh2(
 {
     // this implementation was initially hand-ported from threejs (CircleGeometry)
 
-    segments = max(3_zu, segments);
+    segments = max(3_uz, segments);
     auto const fsegments = static_cast<float>(segments);
 
     std::vector<uint32_t> indices;
@@ -1923,8 +1923,8 @@ Mesh osc::GenerateSphereMesh2(
 {
     // implementation was initially hand-ported from three.js (SphereGeometry)
 
-    widthSegments = max(3_zu, widthSegments);
-    heightSegments = max(2_zu, heightSegments);
+    widthSegments = max(3_uz, widthSegments);
+    heightSegments = max(2_uz, heightSegments);
     auto const fwidthSegments = static_cast<float>(widthSegments);
     auto const fheightSegments = static_cast<float>(heightSegments);
     auto const thetaEnd = min(thetaStart + thetaLength, 180_deg);

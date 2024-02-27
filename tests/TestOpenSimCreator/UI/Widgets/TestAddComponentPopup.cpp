@@ -29,13 +29,9 @@ namespace
 TEST(AddComponentPopup, CanOpenAndDrawAllRegisteredComponentsInTheAddComponentPopup)
 {
     OpenSimCreatorApp app;
-
-    for (auto const& entry : GetAllRegisteredComponents())
-    {
-        try
-        {
-            ui::context::Init();
-            ScopeGuard g{[]() { ui::context::Shutdown(); }};
+    ui::context::Init();
+    for (auto const& entry : GetAllRegisteredComponents()) {
+        try {
             ui::context::NewFrame();
             NullPopupAPI api;
             auto model = std::make_shared<UndoableModelStatePair>();
@@ -46,9 +42,9 @@ TEST(AddComponentPopup, CanOpenAndDrawAllRegisteredComponentsInTheAddComponentPo
             popup.endPopup();
             ui::context::Render();
         }
-        catch (std::exception const& ex)
-        {
+        catch (std::exception const& ex) {
             FAIL() << entry.name() << ": " << ex.what();
         }
     }
+    ui::context::Shutdown();
 }

@@ -41,6 +41,7 @@
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Transform.h>
+#include <oscar/Maths/TransformFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/VecFunctions.h>
@@ -52,6 +53,7 @@
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Panels/UndoRedoPanel.h>
+#include <oscar/UI/Widgets/CameraViewAxes.h>
 #include <oscar/UI/Widgets/LogViewer.h>
 #include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/Utils/CStringView.h>
@@ -461,7 +463,7 @@ private:
                 return false;
             }
 
-            return PointAxisTowards(shared->updCommittableModelGraph(), id, axis, choices.front());
+            return point_axis_towards(shared->updCommittableModelGraph(), id, axis, choices.front());
         };
         m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
     }
@@ -1233,7 +1235,7 @@ private:
 
                     if (ImGui::MenuItem(label.c_str()))
                     {
-                        PointAxisTowards(m_Shared->updCommittableModelGraph(), el.getID(), axis, el.getCrossReferenceConnecteeID(i));
+                        point_axis_towards(m_Shared->updCommittableModelGraph(), el.getID(), axis, el.getCrossReferenceConnecteeID(i));
                     }
                 }
 
@@ -1447,7 +1449,7 @@ private:
                     {
                         Transform const MIObjectToGround = MIObject.getXForm(m_Shared->getModelGraph());
                         Transform const meshVertToGround = el.getXForm();
-                        Mat4 const meshVertToMIObjectVert = ToInverseMat4(MIObjectToGround) * ToMat4(meshVertToGround);
+                        Mat4 const meshVertToMIObjectVert = inverse_mat4_cast(MIObjectToGround) * mat4_cast(meshVertToGround);
 
                         osc::Mesh mesh = el.getMeshData();
                         mesh.transformVerts(meshVertToMIObjectVert);
@@ -1458,7 +1460,7 @@ private:
                     {
                         Transform const MIObjectToGround = MIObject.getXForm(m_Shared->getModelGraph());
                         Transform const meshVertToGround = el.getXForm();
-                        Mat4 const meshVertToMIObjectVert = ToInverseMat4(MIObjectToGround) * ToMat4(meshVertToGround);
+                        Mat4 const meshVertToMIObjectVert = inverse_mat4_cast(MIObjectToGround) * mat4_cast(meshVertToGround);
 
                         osc::Mesh mesh = el.getMeshData();
                         mesh.transformVerts(meshVertToMIObjectVert);
@@ -1877,15 +1879,17 @@ private:
 
         // bottom-left axes overlay
         {
+            CameraViewAxes axes;
+
             ImGuiStyle const& style = ImGui::GetStyle();
             Rect const& r = m_Shared->get3DSceneRect();
             Vec2 const topLeft =
             {
                 r.p1.x + style.WindowPadding.x,
-                r.p2.y - style.WindowPadding.y - CalcAlignmentAxesDimensions().y,
+                r.p2.y - style.WindowPadding.y - axes.dimensions().y,
             };
             ImGui::SetCursorScreenPos(topLeft);
-            DrawAlignmentAxes(m_Shared->getCamera().getViewMtx());
+            axes.draw(m_Shared->updCamera());
         }
 
         Rect sceneRect = m_Shared->get3DSceneRect();
@@ -2084,17 +2088,22 @@ private:
             ++it;
             ++n;
 
-            while (it != end)
-            {
-                ras += mg.getXFormByID(*it);
+
+            while (it != end) {
+                Transform const t = mg.getXFormByID(*it);
+                ras.position += t.position;
+                ras.rotation += t.rotation;
+                ras.scale += t.scale;
                 ++it;
                 ++n;
             }
 
-            ras /= static_cast<float>(n);
+            ras.position /= static_cast<float>(n);
+            ras.rotation /= static_cast<float>(n);
+            ras.scale /= static_cast<float>(n);
             ras.rotation = normalize(ras.rotation);
 
-            m_ImGuizmoState.mtx = ToMat4(ras);
+            m_ImGuizmoState.mtx = mat4_cast(ras);
         }
 
         // else: is using OR nselected > 0 (so draw it)

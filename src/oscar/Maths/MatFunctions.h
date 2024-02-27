@@ -54,7 +54,7 @@ namespace osc
             // edge-case: some UIs ask for a perspective matrix on first frame before
             // aspect ratio is known or the aspect ratio is NaN because of a division
             // by zero
-            return Mat4{T(1)};
+            return Mat<4, 4, T>{T(1)};
         }
 
         T const tanHalfFovy = tan(fovy / static_cast<T>(2));
@@ -244,7 +244,7 @@ namespace osc
     }
 
     template<typename T>
-    Mat<3, 3, T> transpose(Mat<3, 3, T> const& m)
+    constexpr Mat<3, 3, T> transpose(Mat<3, 3, T> const& m)
     {
         Mat<3, 3, T> Result;
         Result[0][0] = m[0][0];
@@ -287,6 +287,7 @@ namespace osc
         return Result;
     }
 
+    // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
     template<typename T>
     Vec<3, RadiansT<T>> extract_eulers_xyz(Mat<4, 4, T> const& M)
     {
@@ -487,7 +488,7 @@ namespace osc
     }
 
     template<std::floating_point T>
-    Mat<3, 3, T> adjugate(Mat<3, 3, T> const& m)
+    constexpr Mat<3, 3, T> adjugate(Mat<3, 3, T> const& m)
     {
         // google: "Adjugate Matrix": it's related to the cofactor matrix and is
         // related to the inverse of a matrix through:
@@ -544,37 +545,6 @@ namespace osc
     constexpr T* value_ptr(Mat<C, R, T>& m)
     {
         return m.data()->data();
-    }
-
-    template<size_t C, size_t R, typename T>
-    std::ostream& operator<<(std::ostream& o, Mat<C, R, T> const& m)
-    {
-        for (size_t row = 0; row < R; ++row) {
-            std::string_view delim;
-            for (size_t col = 0; col < C; ++col) {
-                o << delim << m[col][row];
-                delim = " ";
-            }
-            o << '\n';
-        }
-        return o;
-    }
-
-    template<size_t C, size_t R, typename T>
-    std::string to_string(Mat<C, R, T> const& m)
-    {
-        std::stringstream ss;
-        ss << m;
-        return std::move(ss).str();
-    }
-
-    template<typename T>
-    constexpr T Identity();
-
-    template<>
-    constexpr Mat4 Identity<Mat4>()
-    {
-        return Mat4{1.0f};
     }
 }
 

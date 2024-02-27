@@ -19,7 +19,7 @@ namespace osc::mi { class MIObject; }
 // correct time
 namespace osc::mi
 {
-    bool PointAxisTowards(
+    bool point_axis_towards(
         UndoableDocument&,
         UID id,
         int axis,

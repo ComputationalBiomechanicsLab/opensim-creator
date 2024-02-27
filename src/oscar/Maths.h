@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Maths/AABB.h>
+#include <oscar/Maths/AABBFunctions.h>
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/BVH.h>
 #include <oscar/Maths/BVHCollision.h>
@@ -19,6 +20,7 @@
 #include <oscar/Maths/Functors.h>
 #include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/Line.h>
+#include <oscar/Maths/LineSegment.h>
 #include <oscar/Maths/Mat.h>
 #include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
@@ -32,11 +34,12 @@
 #include <oscar/Maths/QuaternionFunctions.h>
 #include <oscar/Maths/RayCollision.h>
 #include <oscar/Maths/Rect.h>
-#include <oscar/Maths/Segment.h>
 #include <oscar/Maths/Sphere.h>
 #include <oscar/Maths/Tetrahedron.h>
 #include <oscar/Maths/Transform.h>
+#include <oscar/Maths/TransformFunctions.h>
 #include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/TriangleFunctions.h>
 #include <oscar/Maths/TrigonometricFunctions.h>
 #include <oscar/Maths/UnitVec.h>
 #include <oscar/Maths/UnitVec3.h>

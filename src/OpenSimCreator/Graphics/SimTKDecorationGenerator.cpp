@@ -6,8 +6,8 @@
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Maths/LineSegment.h>
 #include <oscar/Maths/MathHelpers.h>
-#include <oscar/Maths/Segment.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Utils/HashHelpers.h>
@@ -81,7 +81,7 @@ namespace
         SimTK::Transform const& body2ground = mobod.getBodyTransform(state);
         SimTK::Transform const& decoration2body = g.getTransform();
 
-        return ToTransform(body2ground * decoration2body).withScale(GetScaleFactors(g));
+        return decompose_to_transform(body2ground * decoration2body).with_scale(GetScaleFactors(g));
     }
 
     size_t HashOf(SimTK::Vec3 const& v)
@@ -246,7 +246,7 @@ namespace
             // emit origin sphere
             {
                 float const radius = 0.05f * c_FrameAxisLengthRescale * m_FixupScaleFactor;
-                Transform const sphereXform = t.withScale(radius);
+                Transform const sphereXform = t.with_scale(radius);
 
                 m_Consumer({
                     .mesh = m_MeshCache.getSphereMesh(),
@@ -266,10 +266,10 @@ namespace
                 Vec3 direction = {0.0f, 0.0f, 0.0f};
                 direction[axis] = 1.0f;
 
-                Segment const line =
+                LineSegment const line =
                 {
                     t.position,
-                    t.position + (legLen * axisLengths[axis] * TransformDirection(t, direction))
+                    t.position + (legLen * axisLengths[axis] * transform_direction(t, direction))
                 };
                 Transform const legXform = YToYCylinderToSegmentTransform(line, legThickness);
 
@@ -335,8 +335,8 @@ namespace
             Vec3 const startBase = ToVec3(d.getStartPoint());
             Vec3 const endBase = ToVec3(d.getEndPoint());
 
-            Vec3 const start = TransformPoint(t, startBase);
-            Vec3 const end = TransformPoint(t, endBase);
+            Vec3 const start = transform_point(t, startBase);
+            Vec3 const end = transform_point(t, endBase);
 
             Vec3 const direction = normalize(end - start);
 
@@ -388,8 +388,8 @@ namespace
             Vec3 const posBase = ToVec3(d.getOrigin());
             Vec3 const posDir = ToVec3(d.getDirection());
 
-            Vec3 const pos = TransformPoint(t, posBase);
-            Vec3 const direction = TransformDirection(t, posDir);
+            Vec3 const pos = transform_point(t, posBase);
+            Vec3 const direction = transform_direction(t, posDir);
 
             auto const radius = static_cast<float>(d.getBaseRadius());
             auto const height = static_cast<float>(d.getHeight());

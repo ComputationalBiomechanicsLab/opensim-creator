@@ -17,11 +17,11 @@ namespace osc
         Mat4 getViewMtx() const;
         Mat4 getProjMtx(float aspectRatio) const;
 
-        Vec3 origin;
-        Radians pitch;
-        Radians yaw;
-        Radians verticalFOV;
-        float znear;
-        float zfar;
+        Vec3 origin = {};
+        Radians pitch = Degrees{0};
+        Radians yaw = Degrees{180};
+        Radians verticalFOV = Degrees{35};
+        float znear = 0.1f;
+        float zfar = 1000.0f;
     };
 }

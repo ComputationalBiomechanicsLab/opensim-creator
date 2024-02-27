@@ -21,6 +21,7 @@
 #include <oscar/Graphics/Detail/VertexAttributeList.h>
 #include <oscar/Graphics/Graphics.h>
 #include <oscar/Graphics/GraphicsContext.h>
+#include <oscar/Graphics/GraphicsHelpers.h>
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshGenerators.h>
@@ -58,6 +59,8 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/Transform.h>
+#include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/TriangleFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
@@ -575,11 +578,11 @@ namespace
     // is important)
     using Mat4OrTransform = std::variant<Mat4, Transform>;
 
-    Mat4 ToMat4(Mat4OrTransform const& matrixOrTransform)
+    Mat4 mat4_cast(Mat4OrTransform const& matrixOrTransform)
     {
         return std::visit(Overload{
             [](Mat4 const& matrix) { return matrix; },
-            [](Transform const& transform) { return ToMat4(transform); }
+            [](Transform const& transform) { return mat4_cast(transform); }
         }, matrixOrTransform);
     }
 
@@ -587,7 +590,7 @@ namespace
     {
         return std::visit(Overload{
             [](Mat4 const& matrix) { return normal_matrix4(matrix); },
-            [](Transform const& transform) { return ToNormalMatrix4(transform); }
+            [](Transform const& transform) { return normal_matrix_4x4(transform); }
         }, matrixOrTransform);
     }
 
@@ -595,7 +598,7 @@ namespace
     {
         return std::visit(Overload{
             [](Mat4 const& matrix) { return normal_matrix(matrix); },
-            [](Transform const& transform) { return ToNormalMatrix(transform); }
+            [](Transform const& transform) { return normal_matrix(transform); }
         }, matrixOrTransform);
     }
 
@@ -613,7 +616,7 @@ namespace
             mesh{std::move(mesh_)},
             maybePropBlock{std::move(maybePropBlock_)},
             transform{transform_},
-            worldMidpoint{material.getTransparent() ? TransformPoint(transform_, Midpoint(mesh.getBounds())) : Vec3{}},
+            worldMidpoint{material.getTransparent() ? transform_point(transform_, Midpoint(mesh.getBounds())) : Vec3{}},
             maybeSubMeshIndex{maybeSubMeshIndex_}
         {
         }
@@ -669,7 +672,7 @@ namespace
 
     Mat4 ModelMatrix(RenderObject const& ro)
     {
-        return ToMat4(ro.transform);
+        return mat4_cast(ro.transform);
     }
 
     Mat3 NormalMatrix(RenderObject const& ro)
@@ -1626,7 +1629,7 @@ namespace
         pixelData.clear();
         pixelData.reserve(numOutputBytes);
 
-        OSC_ASSERT(numChannels <= Color::length());
+        OSC_ASSERT(numChannels <= std::tuple_size_v<Color>);
         static_assert(NumOptions<TextureChannelFormat>() == 2);
         if (channelFormat == TextureChannelFormat::Uint8)
         {
@@ -4051,7 +4054,7 @@ namespace
         using ComponentType = typename VertexAttributeFormatTraits<EncodingFormat>::component_type;
         constexpr auto numComponents = NumComponents(EncodingFormat);
         constexpr auto sizeOfComponent = SizeOfComponent(EncodingFormat);
-        constexpr auto n = std::min(T::length(), static_cast<typename T::size_type>(numComponents));
+        constexpr auto n = std::min(std::tuple_size_v<T>, static_cast<typename T::size_type>(numComponents));
 
         for (typename T::size_type i = 0; i < n; ++i)
         {
@@ -4065,7 +4068,7 @@ namespace
         using ComponentType = typename VertexAttributeFormatTraits<EncodingFormat>::component_type;
         constexpr auto numComponents = NumComponents(EncodingFormat);
         constexpr auto sizeOfComponent = SizeOfComponent(EncodingFormat);
-        constexpr auto n = std::min(T::length(), static_cast<typename T::size_type>(numComponents));
+        constexpr auto n = std::min(std::tuple_size_v<T>, static_cast<typename T::size_type>(numComponents));
 
         T rv{};
         for (typename T::size_type i = 0; i < n; ++i)
@@ -4132,7 +4135,7 @@ namespace
     {
         using SourceCPUFormat = typename VertexAttributeFormatTraits<SourceFormat>::type;
         using DestCPUFormat = typename VertexAttributeFormatTraits<DestinationFormat>::type;
-        constexpr auto n = std::min(SourceCPUFormat::length(), DestCPUFormat::length());
+        constexpr auto n = std::min(std::tuple_size_v<SourceCPUFormat>, std::tuple_size_v<DestCPUFormat>);
 
         auto const decoded = DecodeMany<SourceFormat, SourceCPUFormat>(src.data());
         DestCPUFormat converted{};
@@ -4435,6 +4438,11 @@ namespace
             {
             }
 
+            difference_type size() const
+            {
+                return std::distance(begin(), end());
+            }
+
             iterator begin() const
             {
                 return {m_Data.data(), m_Stride, m_Encoding};
@@ -4630,6 +4638,18 @@ namespace
             {
                 proxy = f(proxy);
             }
+        }
+
+        bool emplaceAttributeDescriptor(VertexAttributeDescriptor desc)
+        {
+            if (hasAttribute(desc.attribute())) {
+                return false;
+            }
+
+            auto copy = format();
+            copy.insert(desc);
+            setFormat(copy);
+            return true;
         }
 
         void setParams(size_t newNumVerts, VertexFormat const& newFormat)
@@ -4977,50 +4997,93 @@ public:
             return;
         }
 
-        if (!m_VertexBuffer.hasAttribute(VertexAttribute::Normal)) {
-            // if the mesh doesn't have normal data in its vertex buffer, create it so that
-            // we can overwrite it with the cacluated normals
-
-            auto format = m_VertexBuffer.format();
-            format.insert({VertexAttribute::Normal, VertexAttributeFormat::Float32x3});
-            m_VertexBuffer.setFormat(format);
-        }
+        // ensure the vertex buffer has a normal attribute
+        m_VertexBuffer.emplaceAttributeDescriptor({VertexAttribute::Normal, VertexAttributeFormat::Float32x3});
 
         // calculate normals from triangle faces:
         //
-        // - use addition to aggregate face normals onto each vertex, but retain a separate
-        //   counter for the number of additions each vertex has received, so that we can
-        //   average it later
+        // - keep a count of the number of times a normal has been assigned
+        // - compute the normal from the triangle
+        // - if counts[i] == 0 assign it (we can't assume the buffer is zeroed - could be reused)
+        // - else, add (accumulate)
+        // - ++counts[i]
+        // - at the end, if counts[i] > 1, then renormalize that normal (it contains a sum)
 
         auto const indices = getIndices();
         auto const positions = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
         auto normals = m_VertexBuffer.iter<Vec3>(VertexAttribute::Normal);
-        auto additionCounts = std::vector<uint16_t>(m_VertexBuffer.numVerts());
+        std::vector<uint16_t> counts(normals.size());
+
         for (size_t i = 0, len = 3*(indices.size()/3); i < len; i+=3) {
             // get triangle indices
-            auto const tis = std::to_array({indices.at(i), indices.at(i+1), indices.at(i+2)});
+            Vec3uz const idxs = {indices[i], indices[i+1], indices[i+2]};
 
-            // calculate triangle normal
-            auto const tnormal = TriangleNormal({positions.at(tis[0]), positions.at(tis[1]), positions.at(tis[2])});
+            // get triangle
+            Triangle const triangle = {positions[idxs[0]], positions[idxs[1]], positions[idxs[2]]};
 
-            // assign to vertex data
-            for (auto idx : tis) {
-                if (additionCounts.at(idx)++ == 0) {
-                    normals.at(idx) = tnormal;
+            // calculate + validate triangle normal
+            auto const normal = triangle_normal(triangle).unwrap();
+            if (any_of(isnan(normal))) {
+                continue;  // probably co-located, or invalid: don't accumulate it
+            }
+
+            // accumulate
+            for (auto idx : idxs) {
+                if (counts[idx] == 0) {
+                    normals[idx] = normal;
                 }
                 else {
-                    normals.at(idx) += tnormal;
+                    normals[idx] += normal;
                 }
+                ++counts[idx];
             }
         }
 
-        // average shared normals
-        for (size_t i = 0; i < additionCounts.size(); ++i) {
-            auto count = additionCounts[i];
-            if (count > 1) {
-                normals[i] /= static_cast<float>(count);
+        // renormalize shared normals
+        for (size_t i = 0; i < counts.size(); ++i) {
+            if (counts[i] > 1) {
+                normals[i] = normalize(Vec3{normals[i]});
             }
         }
+    }
+
+    void recalculateTangents()
+    {
+        if (getTopology() != MeshTopology::Triangles) {
+            // if the mesh isn't triangle-based, do nothing
+            return;
+        }
+        if (!m_VertexBuffer.hasAttribute(VertexAttribute::Normal)) {
+            // if the mesh doesn't have normals, do nothing
+            return;
+        }
+        if (!m_VertexBuffer.hasAttribute(VertexAttribute::TexCoord0)) {
+            // if the mesh doesn't have texture coordinates, do nothing
+            return;
+        }
+        if (m_IndicesData.empty()) {
+            // if the mesh has no indices, do nothing
+            return;
+        }
+
+        // ensure the vertex buffer has space for tangents
+        m_VertexBuffer.emplaceAttributeDescriptor({ VertexAttribute::Tangent, VertexAttributeFormat::Float32x3 });
+
+        // calculate tangents
+
+        auto const vbverts = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
+        auto const vbnormals = m_VertexBuffer.iter<Vec3>(VertexAttribute::Normal);
+        auto const vbtexcoords = m_VertexBuffer.iter<Vec2>(VertexAttribute::TexCoord0);
+
+        auto const tangents = CalcTangentVectors(
+            MeshTopology::Triangles,
+            std::vector<Vec3>(vbverts.begin(), vbverts.end()),
+            std::vector<Vec3>(vbnormals.begin(), vbnormals.end()),
+            std::vector<Vec2>(vbtexcoords.begin(), vbtexcoords.end()),
+            getIndices()
+        );
+
+        m_VertexBuffer.write<Vec4>(VertexAttribute::Tangent, tangents);
     }
 
     // non-PIMPL methods
@@ -5491,6 +5554,11 @@ void osc::Mesh::setVertexBufferData(std::span<uint8_t const> data, MeshUpdateFla
 void osc::Mesh::recalculateNormals()
 {
     m_Impl.upd()->recalculateNormals();
+}
+
+void osc::Mesh::recalculateTangents()
+{
+    m_Impl.upd()->recalculateTangents();
 }
 
 std::ostream& osc::operator<<(std::ostream& o, Mesh const&)

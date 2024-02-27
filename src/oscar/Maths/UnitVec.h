@@ -10,13 +10,8 @@
 
 namespace osc
 {
-
-    // A vector that has either:
-    //
-    // - A length of one (to within a very small tolerance), or
-    // - All components are NaN (default construction - you should overwrite it)
-    //
-    // Inspired by Simbody's `SimTK::UnitVec` class
+    // A wrapper around a `Vec` that has either a length of one (to
+    // within a very small tolerance) or all components set to NaNs
     template<size_t L, std::floating_point T>
     class UnitVec final {
     public:
@@ -30,14 +25,11 @@ namespace osc
         using const_pointer = T const*;
         using iterator = T const*;
         using const_iterator = T const*;
-        using type = UnitVec<2, T>;
-
-        static constexpr size_type length() { return L; }
 
         // helper: constructs a UnitVec with arguments that are assumed to produce
         // a normalized underlying vector without checking
         template<typename... Args>
-        constexpr static UnitVec<L, T> AlreadyNormalized(Args&&... args)
+        constexpr static UnitVec<L, T> already_normalized(Args&&... args)
             requires std::constructible_from<Vec<L, T>, Args&&...>
         {
             return UnitVec<L, T>(AlreadyNormalizedTag{}, std::forward<Args>(args)...);
@@ -57,7 +49,12 @@ namespace osc
         // implicit conversion to the underlying (normalized) vector
         constexpr operator Vec<L, T> const& () const { return m_Data; }
 
-        constexpr size_type size() const { return length(); }
+        // explicit conversion to the underlying (normalized) vector
+        //
+        // this is sometimes necessary when (e.g.) the compiler can't deduce the conversion
+        constexpr Vec<L, T> const& unwrap() const { return m_Data; }
+
+        constexpr size_type size() const { return L; }
         constexpr const_pointer data() const { return m_Data.data(); }
         constexpr const_iterator begin() const { return data(); }
         constexpr const_iterator end() const { return data() + size(); }
@@ -65,12 +62,12 @@ namespace osc
 
         constexpr UnitVec operator+() const
         {
-            return UnitVec<3, T>::AlreadyNormalized(+m_Data);
+            return UnitVec<3, T>::already_normalized(+m_Data);
         }
 
         constexpr UnitVec operator-() const
         {
-            return UnitVec<3, T>::AlreadyNormalized(-m_Data);
+            return UnitVec<3, T>::already_normalized(-m_Data);
         }
 
         friend constexpr bool operator==(UnitVec const&, UnitVec const&) = default;

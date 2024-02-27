@@ -26,8 +26,8 @@
 #include <oscar/Graphics/Scene/SceneHelpers.h>
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/GeometricFunctions.h>
+#include <oscar/Maths/LineSegment.h>
 #include <oscar/Maths/MathHelpers.h>
-#include <oscar/Maths/Segment.h>
 #include <oscar/Maths/QuaternionFunctions.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
@@ -58,7 +58,7 @@ namespace
     // helper: convert a physical frame's transform to ground into an Transform
     Transform TransformInGround(OpenSim::Frame const& frame, SimTK::State const& state)
     {
-        return ToTransform(frame.getTransformInGround(state));
+        return decompose_to_transform(frame.getTransformInGround(state));
     }
 
     // returns value between [0.0f, 1.0f]
@@ -458,7 +458,7 @@ namespace
             {
                 c = p.maybeUnderlyingUserPathPoint;
             }
-            rs.consume(*c, tendonSpherePrototype.withPosition(p.locationInGround));
+            rs.consume(*c, tendonSpherePrototype.with_position(p.locationInGround));
         };
         auto const emitTendonCylinder = [&](Vec3 const& p1, Vec3 const& p2)
         {
@@ -472,7 +472,7 @@ namespace
             {
                 c = p.maybeUnderlyingUserPathPoint;
             }
-            rs.consume(*c, fiberSpherePrototype.withPosition(p.locationInGround));
+            rs.consume(*c, fiberSpherePrototype.with_position(p.locationInGround));
         };
         auto emitFiberCylinder = [&](Vec3 const& p1, Vec3 const& p2)
         {

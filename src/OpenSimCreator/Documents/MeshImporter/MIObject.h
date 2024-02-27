@@ -114,7 +114,7 @@ namespace osc::mi
         }
         void setPos(IObjectFinder const& lookup, Vec3 const& newPos)
         {
-            setXform(lookup, getXForm(lookup).withPosition(newPos));
+            setXform(lookup, getXForm(lookup).with_position(newPos));
         }
 
         Vec3 getScale(IObjectFinder const& lookup) const
@@ -124,7 +124,7 @@ namespace osc::mi
 
         void setScale(IObjectFinder const& lookup, Vec3 const& newScale)
         {
-            setXform(lookup, getXForm(lookup).withScale(newScale));
+            setXform(lookup, getXForm(lookup).with_scale(newScale));
         }
 
         Quat getRotation(IObjectFinder const& lookup) const
@@ -134,7 +134,7 @@ namespace osc::mi
 
         void setRotation(IObjectFinder const& lookup, Quat const& newRotation)
         {
-            setXform(lookup, getXForm(lookup).withRotation(newRotation));
+            setXform(lookup, getXForm(lookup).with_rotation(newRotation));
         }
 
         AABB calcBounds(IObjectFinder const& lookup) const

@@ -828,6 +828,7 @@ bool osc::ActionAddParentOffsetFrameToJoint(UndoableModelStatePair& uim, OpenSim
 
         std::string const jointName = mutJoint->getName();
 
+        mutJoint->connectSocket_parent_frame(*pf);
         AddFrame(*mutJoint, std::move(pf));
         FinalizeConnections(mutModel);
         InitializeModel(mutModel);
@@ -869,6 +870,7 @@ bool osc::ActionAddChildOffsetFrameToJoint(UndoableModelStatePair& uim, OpenSim:
 
         std::string const jointName = mutJoint->getName();
 
+        mutJoint->connectSocket_child_frame(*pf);
         AddFrame(*mutJoint, std::move(pf));
         FinalizeConnections(mutModel);
         InitializeModel(mutModel);

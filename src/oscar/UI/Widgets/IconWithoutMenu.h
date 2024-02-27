@@ -1,5 +1,6 @@
 #pragma once
 
+#include <oscar/Maths/Vec2.h>
 #include <oscar/UI/Icon.h>
 #include <oscar/Utils/CStringView.h>
 
@@ -25,6 +26,7 @@ namespace osc
             return m_Title;
         }
 
+        Vec2 dimensions() const;
         bool onDraw();
 
     private:

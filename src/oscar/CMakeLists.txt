@@ -139,6 +139,7 @@ add_library(oscar STATIC
     Graphics/VertexFormat.h
 
     Maths/AABB.h
+    Maths/AABBFunctions.h
     Maths/Angle.h
     Maths/BVH.h
     Maths/BVHCollision.h
@@ -157,6 +158,7 @@ add_library(oscar STATIC
     Maths/Functors.h
     Maths/GeometricFunctions.h
     Maths/Line.h
+    Maths/LineSegment.h
     Maths/Mat.h
     Maths/MatFunctions.h
     Maths/MathHelpers.h
@@ -171,11 +173,12 @@ add_library(oscar STATIC
     Maths/QuaternionFunctions.h
     Maths/RayCollision.h
     Maths/Rect.h
-    Maths/Segment.h
     Maths/Sphere.h
     Maths/Tetrahedron.h
     Maths/Transform.h
+    Maths/TransformFunctions.h
     Maths/Triangle.h
+    Maths/TriangleFunctions.h
     Maths/TrigonometricFunctions.h
     Maths/UnitVec.h
     Maths/UnitVec3.h
@@ -253,6 +256,8 @@ add_library(oscar STATIC
     UI/Tabs/TabRegistry.h
     UI/Tabs/TabRegistryEntry.cpp
     UI/Tabs/TabRegistryEntry.h
+    UI/Widgets/CameraViewAxes.cpp
+    UI/Widgets/CameraViewAxes.h
     UI/Widgets/GuiRuler.cpp
     UI/Widgets/GuiRuler.h
     UI/Widgets/IconWithMenu.cpp

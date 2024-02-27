@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Maths/AABB.h>
+#include <oscar/Maths/AABBFunctions.h>
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/Eulers.h>
 #include <oscar/Maths/Line.h>
@@ -14,6 +15,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
+#include <oscar/Maths/TransformFunctions.h>
 
 #include <array>
 #include <cmath>
@@ -25,10 +27,11 @@
 #include <span>
 #include <type_traits>
 
+namespace osc { struct Circle; }
 namespace osc { struct Disc; }
 namespace osc { struct Plane; }
 namespace osc { struct Rect; }
-namespace osc { struct Segment; }
+namespace osc { struct LineSegment; }
 
 // math helpers: generally handy math functions that aren't attached to a particular
 //               osc struct
@@ -45,23 +48,11 @@ namespace osc
     // returns the aspect ratio of the vec (effectively: x/y)
     float AspectRatio(Vec2);
 
-    // returns the sum of `n` vectors using the "Kahan Summation Algorithm" to reduce errors, returns {0.0f, 0.0f, 0.0f} if provided no inputs
-    Vec3 KahanSum(std::span<Vec3 const>);
-
-    // returns the average of `n` vectors using whichever numerically stable average happens to work
-    Vec3 NumericallyStableAverage(std::span<Vec3 const>);
-
-    // returns a normal vector of the supplied (pointed to) triangle (i.e. (v[1]-v[0]) x (v[2]-v[0]))
-    Vec3 TriangleNormal(Triangle const&);
-
     // returns a transform matrix that rotates dir1 to point in the same direction as dir2
     Mat4 Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2);
 
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
-    Eulers ExtractEulerAngleXYZ(Quat const&);
-
-    // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
-    Eulers ExtractEulerAngleXYZ(Mat4 const&);
+    Eulers extract_eulers_xyz(Quat const&);
 
     // returns an XY NDC point converted from a screen/viewport point
     //
@@ -106,9 +97,6 @@ namespace osc
 
     // ----- `Rect` helpers -----
 
-    // returns `Min(rect.p1, rect.p2)`: i.e. the smallest X and the smallest Y of the rectangle's points
-    Vec2 MinValuePerDimension(Rect const&);
-
     template<typename T>
     constexpr T Area(Vec<2, T> const& v) requires std::is_arithmetic_v<T>
     {
@@ -134,6 +122,9 @@ namespace osc
     //
     // note: no points --> zero-sized rectangle at the origin
     Rect BoundingRectOf(std::span<Vec2 const>);
+
+    // returns the smallest rectangle that bounds the provided circle
+    Rect BoundingRectOf(Circle const&);
 
     // returns a rectangle that has been expanded along each edge by the given amount
     //
@@ -183,132 +174,23 @@ namespace osc
     Mat4 DiscToDiscMat4(Disc const&, Disc const&);
 
 
-    // ----- `AABB` helpers -----
-
-    // returns an AABB that is "inverted", such that it's minimum is the largest
-    // possible value and its maximum is the smallest possible value
-    //
-    // handy as a "seed" when union-ing many AABBs, because it won't
-    AABB InvertedAABB();
-
-    // returns the centerpoint of an AABB
-    Vec3 Midpoint(AABB const&);
-
-    // returns the dimensions of an AABB
-    Vec3 Dimensions(AABB const&);
-
-    // returns the half-widths of an AABB (effectively, Dimensions(aabb)/2.0)
-    Vec3 HalfWidths(AABB const&);
-
-    // returns the volume of the AABB
-    float Volume(AABB const&);
-
-    // returns the smallest AABB that spans both of the provided AABBs
-    AABB Union(AABB const&, AABB const&);
-
-    // returns true if the AABB has no extents in any dimension
-    bool IsAPoint(AABB const&);
-
-    // returns true if the AABB is an extent in any dimension is zero
-    bool IsZeroVolume(AABB const&);
-
-    // returns the *index* of the longest dimension of an AABB
-    Vec3::size_type LongestDimIndex(AABB const&);
-
-    // returns the length of the longest dimension of an AABB
-    float LongestDim(AABB const&);
-
-    // returns the eight corner points of the cuboid representation of the AABB
-    std::array<Vec3, 8> ToCubeVerts(AABB const&);
-
-    // returns an AABB that has been transformed by the given matrix
-    AABB TransformAABB(AABB const&, Mat4 const&);
-
-    // returns an AABB that has been transformed by the given transform
-    AABB TransformAABB(AABB const&, Transform const&);
-
-    // returns an AAB that tightly bounds the provided triangle
-    AABB AABBFromTriangle(Triangle const&);
-
-    // returns an AABB that tightly bounds the provided points
-    AABB AABBFromVerts(std::span<Vec3 const>);
-
-    // returns an AABB that tightly bounds the provided points (alias that matches BoundingSphereOf, etc.)
-    inline AABB BoundingAABBOf(std::span<Vec3 const> vs) { return AABBFromVerts(vs); }
-
-    // returns an AABB that tightly bounds the points indexed by the provided 32-bit indices
-    AABB AABBFromIndexedVerts(std::span<Vec3 const> verts, std::span<uint32_t const> indices);
-
-    // returns an AABB that tightly bounds the points indexed by the provided 16-bit indices
-    AABB AABBFromIndexedVerts(std::span<Vec3 const> verts, std::span<uint16_t const> indices);
-
-    // (tries to) return a Normalized Device Coordinate (NDC) rectangle, clamped to the NDC clipping
-    // bounds ((-1,-1) to (1, 1)), where the rectangle loosely bounds the given worldspace AABB after
-    // projecting it into NDC
-    std::optional<Rect> AABBToScreenNDCRect(
-        AABB const&,
-        Mat4 const& viewMat,
-        Mat4 const& projMat,
-        float znear,
-        float zfar
-    );
-
-
     // ----- `Segment` helpers -----
 
     // returns a transform matrix that maps a path segment to another path segment
-    Mat4 SegmentToSegmentMat4(Segment const&, Segment const&);
+    Mat4 SegmentToSegmentMat4(LineSegment const&, LineSegment const&);
 
     // returns a transform that maps a path segment to another path segment
-    Transform SegmentToSegmentTransform(Segment const&, Segment const&);
+    Transform SegmentToSegmentTransform(LineSegment const&, LineSegment const&);
 
     // returns a transform that maps a Y-to-Y (bottom-to-top) cylinder to a segment with the given radius
-    Transform YToYCylinderToSegmentTransform(Segment const&, float radius);
+    Transform YToYCylinderToSegmentTransform(LineSegment const&, float radius);
 
     // returns a transform that maps a Y-to-Y (bottom-to-top) cone to a segment with the given radius
-    Transform YToYConeToSegmentTransform(Segment const&, float radius);
+    Transform YToYConeToSegmentTransform(LineSegment const&, float radius);
 
+    // ----- other -----
 
-    // ----- `Transform` helpers -----
-
-    // returns a 3x3 transform matrix equivalent to the provided transform (ignores position)
-    Mat3 ToMat3(Transform const&);
-
-    // returns a 4x4 transform matrix equivalent to the provided transform
-    Mat4 ToMat4(Transform const&);
-
-    // returns a 4x4 transform matrix equivalent to the inverse of the provided transform
-    Mat4 ToInverseMat4(Transform const&);
-
-    // returns a 3x3 normal matrix for the provided transform
-    Mat3 ToNormalMatrix(Transform const&);
-
-    // returns a 4x4 normal matrix for the provided transform
-    Mat4 ToNormalMatrix4(Transform const&);
-
-    // returns a transform that *tries to* perform the equivalent transform as the provided mat4
-    //
-    // - not all 4x4 matrices can be expressed as an `Transform` (e.g. those containing skews)
-    // - uses matrix decomposition to break up the provided matrix
-    // - throws if decomposition of the provided matrix is not possible
-    Transform ToTransform(Mat4 const&);
-
-    // returns a unit-length vector that is the equivalent of the provided direction vector after applying the transform
-    //
-    // effectively, apply the Transform but ignore the `position` (translation) component
-    Vec3 TransformDirection(Transform const&, Vec3 const&);
-
-    // returns a unit-length vector that is the equivalent of the provided direction vector after applying the inverse of the transform
-    //
-    // effectively, apply the inverse transform but ignore the `position` (translation) component
-    Vec3 InverseTransformDirection(Transform const&, Vec3 const&);
-
-    // returns a vector that is the equivalent of the provided vector after applying the transform
-    Vec3 TransformPoint(Transform const&, Vec3 const&);
-    Vec3 TransformPoint(Mat4 const&, Vec3 const&);
-
-    // returns a vector that is the equivalent of the provided vector after applying the inverse of the transform
-    Vec3 InverseTransformPoint(Transform const&, Vec3 const&);
+    Vec3 transform_point(Mat4 const&, Vec3 const&);
 
     // returns the a quaternion equivalent to the given euler angles
     Quat WorldspaceRotation(Eulers const&);
@@ -317,46 +199,5 @@ namespace osc
     void ApplyWorldspaceRotation(
         Transform& applicationTarget,
         Eulers const& eulerAngles,
-        Vec3 const& rotationCenter
-    );
-
-    // returns XYZ (pitch, yaw, roll) Euler angles for a one-by-one application of an
-    // intrinsic rotations.
-    //
-    // Each rotation is applied one-at-a-time, to the transformed space, so we have:
-    //
-    // x-y-z (initial)
-    // x'-y'-z' (after first rotation)
-    // x''-y''-z'' (after second rotation)
-    // x'''-y'''-z''' (after third rotation)
-    //
-    // Assuming we're doing an XYZ rotation, the first rotation rotates x, the second
-    // rotation rotates around y', and the third rotation rotates around z''
-    //
-    // see: https://en.wikipedia.org/wiki/Euler_angles#Conventions_by_intrinsic_rotations
-    Eulers ExtractEulerAngleXYZ(Transform const&);
-
-    // returns XYZ (pitch, yaw, roll) Euler angles for an extrinsic rotation
-    //
-    // in extrinsic rotations, each rotation happens about a *fixed* coordinate system, which
-    // is in contrast to intrinsic rotations, which happen in a coordinate system that's attached
-    // to a moving body (the thing being rotated)
-    //
-    // see: https://en.wikipedia.org/wiki/Euler_angles#Conventions_by_extrinsic_rotations
-    Eulers ExtractExtrinsicEulerAnglesXYZ(Transform const&);
-
-    // returns the provided transform, but rotated such that the given axis, as expressed
-    // in the original transform, will instead point along the new direction
-    Transform PointAxisAlong(Transform const&, int axisIndex, Vec3 const& newDirection);
-
-    // returns the provided transform, but rotated such that the given axis, as expressed
-    // in the original transform, will instead point towards the given point
-    //
-    // alternate explanation: "performs the shortest (angular) rotation of the given
-    // transform such that the given axis points towards a point in the same space"
-    Transform PointAxisTowards(Transform const&, int axisIndex, Vec3 const& location);
-
-    // returns the provided transform, but intrinsically rotated along the given axis by
-    // the given number of radians
-    Transform RotateAlongAxis(Transform const&, int axisIndex, Radians);
+        Vec3 const& rotationCenter);
 }

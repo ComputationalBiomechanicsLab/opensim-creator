@@ -4,14 +4,16 @@
 #include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/TrigonometricFunctions.h>
 #include <oscar/Maths/Mat.h>
-#include <oscar/Maths/QuaternionFunctions.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/HashHelpers.h>
 
 #include <cstddef>
 #include <cstdint>
 #include <ostream>
+#include <sstream>
 #include <string>
+#include <tuple>
+#include <utility>
 
 namespace osc
 {
@@ -31,7 +33,6 @@ namespace osc
         using const_iterator = T const*;
         using type = Qua<T>;
 
-        static constexpr size_type length() { return 4; }
         static constexpr Qua<T> wxyz(T w, T x, T y, T z) { return Qua<T>(w, x, y, z); }
 
         constexpr Qua() = default;
@@ -98,7 +99,7 @@ namespace osc
             *this = quat_cast(m);
         }
 
-        constexpr size_type size() const { return length(); }
+        constexpr size_type size() const { return 4; }
         constexpr pointer data() { return &w; }
         constexpr const_pointer data() const { return &w; }
         constexpr iterator begin() { return data(); }
@@ -263,7 +264,30 @@ namespace osc
     template<typename T>
     std::string to_string(Qua<T> const& v)
     {
-        using std::to_string;
-        return std::string{"Quat("} + to_string(v.w) + ", " + to_string(v.x) + ", " + to_string(v.y) + ", " + to_string(v.z) + ')';
+        std::stringstream ss;
+        ss << v;
+        return std::move(ss).str();
+    }
+
+    template<size_t I, typename T>
+    constexpr T const& get(Qua<T> const& v)
+    {
+        return v[I];
+    }
+
+    template<size_t I, typename T>
+    constexpr T& get(Qua<T>& v)
+    {
+        return v[I];
     }
 }
+
+template<typename T>
+struct std::tuple_size<osc::Qua<T>> {
+    static inline constexpr size_t value = 4;
+};
+
+template<size_t I, typename T>
+struct std::tuple_element<I, osc::Qua<T>> {
+    using type = T;
+};

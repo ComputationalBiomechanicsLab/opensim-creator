@@ -22,7 +22,7 @@ namespace osc { class BVH; }
 namespace osc { class Mesh; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct Rect; }
-namespace osc { struct Segment; }
+namespace osc { struct LineSegment; }
 namespace osc { class SceneCache; }
 namespace osc { class ShaderCache; }
 namespace osc { struct Transform; }
@@ -90,7 +90,7 @@ namespace osc
 
     void DrawLineSegment(
         SceneCache&,
-        Segment const&,
+        LineSegment const&,
         Color const&,
         float radius,
         std::function<void(SceneDecoration&&)> const&

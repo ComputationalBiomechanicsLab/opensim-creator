@@ -73,8 +73,7 @@ public:
         m_Uum{std::move(uum)},
         m_Proto{std::move(prototype)},
         m_PrototypePropertiesEditor{api, m_Uum, [proto = m_Proto]() { return proto.get(); }}
-    {
-    }
+    {}
 
 private:
 
@@ -206,8 +205,6 @@ private:
 
     void drawSocketEditors()
     {
-        OpenSim::Model const& model = m_Uum->getModel();
-
         if (m_ProtoSockets.empty())
         {
             return;
@@ -220,62 +217,75 @@ private:
 
         ImGui::Dummy({0.0f, 1.0f});
 
-        // lhs: socket name, rhs: connectee choices
-        ImGui::Columns(2);
-
         // for each socket in the prototype (cached), check if the user has chosen a
         // connectee for it yet and provide a UI for selecting them
         for (size_t i = 0; i < m_ProtoSockets.size(); ++i)
         {
-            OpenSim::AbstractSocket const& socket = *m_ProtoSockets[i];
-            OpenSim::ComponentPath& connectee = m_SocketConnecteePaths[i];
+            drawIthSocketEditor(i);
+            ImGui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
+        }
+    }
 
-            ImGui::TextUnformatted(socket.getName().c_str());
-            ImGui::NextColumn();
+    void drawIthSocketEditor(size_t i)
+    {
+        OpenSim::AbstractSocket const& socket = *m_ProtoSockets[i];
+        OpenSim::ComponentPath& connectee = m_SocketConnecteePaths[i];
 
-            // rhs: connectee choices
-            ImGui::PushID(static_cast<int>(i));
-            ImGui::BeginChild("##pfselector", {ImGui::GetContentRegionAvail().x, 128.0f});
+        ImGui::Columns(2);
 
-            // iterate through potential connectees in model and print connect-able options
-            int innerID = 0;
-            for (OpenSim::Component const& c : model.getComponentList())
-            {
-                if (!IsAbleToConnectTo(socket, c))
-                {
-                    continue;
-                }
+        ImGui::TextUnformatted(socket.getName().c_str());
+        ImGui::SameLine();
+        DrawHelpMarker(m_Proto->getPropertyByName("socket_" + socket.getName()).getComment());
+        ImGui::TextDisabled("%s", socket.getConnecteeTypeName().c_str());
+        ImGui::NextColumn();
 
-                if (dynamic_cast<OpenSim::Station const*>(&c) && IsChildOfA<OpenSim::Muscle>(c))
-                {
-                    continue;  // don't present muscle points etc.
-                }
+        // rhs: search and connectee choices
+        ImGui::PushID(static_cast<int>(i));
+        ImGui::TextUnformatted(ICON_FA_SEARCH);
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+        InputString("##search", m_SocketSearchStrings[i]);
+        ImGui::BeginChild("##pfselector", {ImGui::GetContentRegionAvail().x, 128.0f});
 
-                OpenSim::ComponentPath const absPath = GetAbsolutePath(c);
-                bool selected = absPath == connectee;
-
-                ImGui::PushID(innerID++);
-                if (ImGui::Selectable(c.getName().c_str(), selected))
-                {
-                    connectee = absPath;
-                }
-
-                Rect const selectableRect = GetItemRect();
-                DrawTooltipIfItemHovered(absPath.toString());
-
-                ImGui::PopID();
-
-                if (selected)
-                {
-                    App::upd().addFrameAnnotation(c.toString(), selectableRect);
-                }
+        // iterate through potential connectees in model and print connect-able options
+        int innerID = 0;
+        for (OpenSim::Component const& c : m_Uum->getModel().getComponentList())
+        {
+            if (!IsAbleToConnectTo(socket, c)) {
+                continue;  // can't connect to it
             }
 
-            ImGui::EndChild();
+            if (dynamic_cast<OpenSim::Station const*>(&c) && IsChildOfA<OpenSim::Muscle>(c)) {
+                continue;  // it's a muscle point: don't present it (noisy)
+            }
+
+            if (!ContainsCaseInsensitive(c.getName(), m_SocketSearchStrings[i])) {
+                continue;  // not part of the user-enacted search set
+            }
+
+            OpenSim::ComponentPath const absPath = GetAbsolutePath(c);
+            bool selected = absPath == connectee;
+
+            ImGui::PushID(innerID++);
+            if (ImGui::Selectable(c.getName().c_str(), selected))
+            {
+                connectee = absPath;
+            }
+
+            Rect const selectableRect = GetItemRect();
+            DrawTooltipIfItemHovered(absPath.toString());
+
             ImGui::PopID();
-            ImGui::NextColumn();
+
+            if (selected)
+            {
+                App::upd().addFrameAnnotation(c.toString(), selectableRect);
+            }
         }
 
+        ImGui::EndChild();
+        ImGui::PopID();
+        ImGui::NextColumn();
         ImGui::Columns();
     }
 
@@ -536,6 +546,9 @@ private:
 
     // a property editor for the prototype's properties
     ObjectPropertiesEditor m_PrototypePropertiesEditor;
+
+    // user-enacted search strings for each socket input (used to filter each list)
+    std::vector<std::string> m_SocketSearchStrings{m_ProtoSockets.size()};
 
     // absolute paths to user-selected connectees of the prototype's sockets
     std::vector<OpenSim::ComponentPath> m_SocketConnecteePaths{m_ProtoSockets.size()};

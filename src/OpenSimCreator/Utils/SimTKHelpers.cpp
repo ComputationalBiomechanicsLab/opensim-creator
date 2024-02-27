@@ -133,7 +133,7 @@ Mat4 osc::ToMat4x4(SimTK::Transform const& t)
     return m;
 }
 
-Mat4 osc::ToMat4(SimTK::Rotation const& r)
+Mat4 osc::mat4_cast(SimTK::Rotation const& r)
 {
     SimTK::Transform const t{r};
     return ToMat4x4(t);
@@ -152,7 +152,7 @@ Quat osc::ToQuat(SimTK::Rotation const& r)
     };
 }
 
-Transform osc::ToTransform(SimTK::Transform const& t)
+Transform osc::decompose_to_transform(SimTK::Transform const& t)
 {
     return Transform{.rotation = ToQuat(t.R()), .position = ToVec3(t.p())};
 }

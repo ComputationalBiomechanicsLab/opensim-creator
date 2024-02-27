@@ -423,7 +423,7 @@ private:
         return RimHighlights
         {
             m_QuadMesh,
-            inverse(params.projectionMatrix * params.viewMatrix) * ToMat4(quadMeshToRimsQuad),
+            inverse(params.projectionMatrix * params.viewMatrix) * mat4_cast(quadMeshToRimsQuad),
             m_EdgeDetectorMaterial,
         };
     }

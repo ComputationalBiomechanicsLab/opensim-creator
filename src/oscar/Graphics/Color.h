@@ -10,6 +10,7 @@
 #include <iosfwd>
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace osc
 {
@@ -21,11 +22,6 @@ namespace osc
         using size_type = size_t;
         using iterator = value_type*;
         using const_iterator = value_type const*;
-
-        static constexpr size_type length()
-        {
-            return 4;
-        }
 
         static constexpr Color halfGrey()
         {
@@ -156,6 +152,11 @@ namespace osc
             return (&r)[i];
         }
 
+        constexpr size_t size() const
+        {
+            return 4;
+        }
+
         constexpr iterator begin()
         {
             return &r;
@@ -163,7 +164,7 @@ namespace osc
 
         constexpr iterator end()
         {
-            return &r + length();
+            return &r + size();
         }
 
         constexpr const_iterator begin() const
@@ -173,7 +174,7 @@ namespace osc
 
         constexpr const_iterator end() const
         {
-            return &r + length();
+            return &r + size();
         }
 
         constexpr operator Vec<4, value_type> () const
@@ -291,7 +292,30 @@ namespace osc
     // returns a color that is the result of converting the color to HSLA,
     // multiplying it's luminance (L) by `factor`, and converting it back to RGBA
     Color MultiplyLuminance(Color const& color, float factor);
+
+    template<size_t I>
+    constexpr float const& get(Color const& c)
+    {
+        return c[I];
+    }
+
+    template<size_t I>
+    constexpr float& get(Color& c)
+    {
+        return c[I];
+    }
 }
+
+// define compile-time size for Color (same as std::array, std::tuple, Vec, etc.)
+template<>
+struct std::tuple_size<osc::Color> {
+    static inline constexpr size_t value = 4;
+};
+
+template<size_t I>
+struct std::tuple_element<I, osc::Color> {
+    using type = float;
+};
 
 // define hashing function for colors
 template<>

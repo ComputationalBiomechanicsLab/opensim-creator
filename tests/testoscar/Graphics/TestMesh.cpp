@@ -16,7 +16,9 @@
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Triangle.h>
+#include <oscar/Maths/TriangleFunctions.h>
 #include <oscar/Maths/UnitVec3.h>
+#include <oscar/Maths/VecFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
@@ -388,7 +390,7 @@ TEST(Mesh, TransformVertsWithTransformAppliesTransformToVerts)
     auto const original = GenerateVertices(30);
 
     // precompute "expected" verts
-    auto const expected = MapToVector(original, [&transform](auto const& p) { return TransformPoint(transform, p); });
+    auto const expected = MapToVector(original, [&transform](auto const& p) { return transform_point(transform, p); });
 
     // create mesh with "original" verts
     Mesh m;
@@ -415,7 +417,7 @@ TEST(Mesh, TransformVertsWithTransformCausesTransformedMeshToNotBeEqualToInitial
 
 TEST(Mesh, TransformVertsWithMat4AppliesTransformToVerts)
 {
-    Mat4 const mat = ToMat4(Transform{
+    Mat4 const mat = mat4_cast(Transform{
         .scale = Vec3{0.25f},
         .rotation = WorldspaceRotation(Eulers{90_deg, 0_deg, 0_deg}),
         .position = {1.0f, 0.25f, 0.125f},
@@ -425,7 +427,7 @@ TEST(Mesh, TransformVertsWithMat4AppliesTransformToVerts)
     auto const original = GenerateVertices(30);
 
     // precompute "expected" verts
-    auto const expected = MapToVector(original, [&mat](auto const& p) { return TransformPoint(mat, p); });
+    auto const expected = MapToVector(original, [&mat](auto const& p) { return transform_point(mat, p); });
 
     // create mesh with "original" verts
     Mesh m;
@@ -1909,7 +1911,7 @@ TEST(Mesh, RecalculateNormalsAssignsNormalsIfNoneExist)
     auto const normals = m.getNormals();
     ASSERT_EQ(normals.size(), 3);
     ASSERT_TRUE(std::all_of(normals.begin(), normals.end(), [first = normals.front()](Vec3 const& normal){ return normal == first; }));
-    ASSERT_TRUE(all(equal_within_absdiff(normals.front(), Vec3(0.0f, 0.0f, 1.0f), epsilon_v<float>)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(normals.front(), Vec3(0.0f, 0.0f, 1.0f), epsilon_v<float>)));
 }
 
 TEST(Mesh, RecalculateNormalsSmoothsNormalsOfSharedVerts)
@@ -1932,16 +1934,151 @@ TEST(Mesh, RecalculateNormalsSmoothsNormalsOfSharedVerts)
     m.setVerts(verts);
     m.setIndices({0, 1, 2,   3, 2, 1});  // shares two verts per triangle
 
-    Vec3 const lhsNormal = TriangleNormal({ verts[0], verts[1], verts[2] });
-    Vec3 const rhsNormal = TriangleNormal({ verts[3], verts[2], verts[1] });
-    Vec3 const mixedNormal = midpoint(lhsNormal, rhsNormal);
+    Vec3 const lhsNormal = triangle_normal({ verts[0], verts[1], verts[2] });
+    Vec3 const rhsNormal = triangle_normal({ verts[3], verts[2], verts[1] });
+    Vec3 const mixedNormal = normalize(midpoint(lhsNormal, rhsNormal));
 
     m.recalculateNormals();
 
     auto const normals = m.getNormals();
     ASSERT_EQ(normals.size(), 4);
-    ASSERT_TRUE(all(equal_within_absdiff(normals[0], lhsNormal, epsilon_v<float>)));
-    ASSERT_TRUE(all(equal_within_absdiff(normals[1], mixedNormal, epsilon_v<float>)));
-    ASSERT_TRUE(all(equal_within_absdiff(normals[2], mixedNormal, epsilon_v<float>)));
-    ASSERT_TRUE(all(equal_within_absdiff(normals[3], rhsNormal, epsilon_v<float>)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(normals[0], lhsNormal, epsilon_v<float>)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(normals[1], mixedNormal, epsilon_v<float>)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(normals[2], mixedNormal, epsilon_v<float>)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(normals[3], rhsNormal, epsilon_v<float>)));
+}
+
+TEST(Mesh, RecalculateTangentsDoesNothingIfTopologyIsLines)
+{
+    Mesh m;
+    m.setTopology(MeshTopology::Lines);
+    m.setVerts({ GenerateVec3(), GenerateVec3() });
+    m.setNormals(GenerateNormals(2));
+    m.setTexCoords(GenerateTexCoords(2));
+
+    ASSERT_TRUE(m.getTangents().empty());
+    m.recalculateTangents();
+    ASSERT_TRUE(m.getTangents().empty()) << "shouldn't do anything if topology is lines";
+}
+
+TEST(Mesh, RecalculateTangentsDoesNothingIfNoNormals)
+{
+    Mesh m;
+    m.setVerts({  // i.e. triangle that's wound to point in +Z
+        {0.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+    });
+    // skip normals
+    m.setTexCoords({
+        {0.0f, 0.0f},
+        {1.0f, 0.0f},
+        {0.0f, 1.0f},
+    });
+    m.setIndices({0, 1, 2});
+    ASSERT_TRUE(m.getTangents().empty());
+    m.recalculateTangents();
+    ASSERT_TRUE(m.getTangents().empty()) << "cannot calculate tangents if normals are missing";
+}
+
+TEST(Mesh, RecalculateTangentsDoesNothingIfNoTexCoords)
+{
+    Mesh m;
+    m.setVerts({  // i.e. triangle that's wound to point in +Z
+        {0.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+    });
+    m.setNormals({
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    });
+    // no tex coords
+    m.setIndices({0, 1, 2});
+
+    ASSERT_TRUE(m.getTangents().empty());
+    m.recalculateTangents();
+    ASSERT_TRUE(m.getTangents().empty()) << "cannot calculate tangents if text coords are missing";
+}
+
+TEST(Mesh, RecalculateTangentsDoesNothingIfIndicesAreNotAssigned)
+{
+    Mesh m;
+    m.setVerts({  // i.e. triangle that's wound to point in +Z
+        {0.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+    });
+    m.setNormals({
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    });
+    m.setTexCoords({
+        {0.0f, 0.0f},
+        {1.0f, 0.0f},
+        {0.0f, 1.0f},
+    });
+    // no indices
+
+    ASSERT_TRUE(m.getTangents().empty());
+    m.recalculateTangents();
+    ASSERT_TRUE(m.getTangents().empty()) << "cannot recalculate tangents if there are no indices (needed to figure out what's a triangle, etc.)";
+}
+
+TEST(Mesh, RecalculateTangentsCreatesTangentsIfNoneExist)
+{
+    Mesh m;
+    m.setVerts({  // i.e. triangle that's wound to point in +Z
+        {0.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+    });
+    m.setNormals({
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    });
+    m.setTexCoords({
+        {0.0f, 0.0f},
+        {1.0f, 0.0f},
+        {0.0f, 1.0f},
+    });
+    m.setIndices({0, 1, 2});
+
+    ASSERT_TRUE(m.getTangents().empty());
+    m.recalculateTangents();
+    ASSERT_FALSE(m.getTangents().empty());
+}
+
+TEST(Mesh, RecalculateTangentsGivesExpectedResultsInBasicCase)
+{
+    Mesh m;
+    m.setVerts({  // i.e. triangle that's wound to point in +Z
+        {0.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+    });
+    m.setNormals({
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    });
+    m.setTexCoords({
+        {0.0f, 0.0f},
+        {1.0f, 0.0f},
+        {0.0f, 1.0f},
+    });
+    m.setIndices({0, 1, 2});
+
+    ASSERT_TRUE(m.getTangents().empty());
+    m.recalculateTangents();
+
+    auto const tangents = m.getTangents();
+
+    ASSERT_EQ(tangents.size(), 3);
+    ASSERT_EQ(tangents.at(0), Vec4(1.0f, 0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(tangents.at(1), Vec4(1.0f, 0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(tangents.at(2), Vec4(1.0f, 0.0f, 0.0f, 0.0f));
 }

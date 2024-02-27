@@ -7,9 +7,6 @@
 
 namespace osc
 {
-    // a 3-element vector
-    //
-    // implementation initially adapted from `glm::vec3`
     template<typename T>
     struct Vec<3, T> {
         using value_type = T;
@@ -22,10 +19,6 @@ namespace osc
         using const_pointer = T const*;
         using iterator = T*;
         using const_iterator = T const*;
-        using type = Vec<3, T>;
-        using bool_type = Vec<3, bool>;
-
-        static constexpr size_type length() { return 3; }
 
         constexpr Vec() = default;
         constexpr explicit Vec(T scalar) :
@@ -78,7 +71,7 @@ namespace osc
             return *this;
         }
 
-        constexpr size_type size() const { return length(); }
+        constexpr size_type size() const { return 3; }
         constexpr pointer data() { return &x; }
         constexpr const_pointer data() const { return &x; }
         constexpr iterator begin() { return data(); }
@@ -192,9 +185,17 @@ namespace osc
             return copy;
         }
 
-        T x;
-        T y;
-        T z;
+        template<typename U>
+        constexpr Vec with_element(size_type i, U scalar) const
+        {
+            Vec copy{*this};
+            copy[i] = static_cast<T>(scalar);
+            return copy;
+        }
+
+        T x{};
+        T y{};
+        T z{};
     };
 
     template<typename T>
@@ -298,5 +299,7 @@ namespace osc
     using Vec3f = Vec<3, float>;
     using Vec3d = Vec<3, double>;
     using Vec3i = Vec<3, int>;
+    using Vec3z = Vec<3, ptrdiff_t>;
+    using Vec3uz = Vec<3, size_t>;
     using Vec3u32 = Vec<3, uint32_t>;
 }

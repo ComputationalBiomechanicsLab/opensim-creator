@@ -14,12 +14,12 @@
 #include <oscar/Maths/BVH.h>
 #include <oscar/Maths/CollisionTests.h>
 #include <oscar/Maths/Line.h>
+#include <oscar/Maths/LineSegment.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/RayCollision.h>
 #include <oscar/Maths/Rect.h>
-#include <oscar/Maths/Segment.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
@@ -188,7 +188,7 @@ void osc::DrawArrow(
 
 void osc::DrawLineSegment(
     SceneCache& cache,
-    Segment const& segment,
+    LineSegment const& segment,
     Color const& color,
     float radius,
     std::function<void(SceneDecoration&&)> const& out)

@@ -6,6 +6,7 @@
 
 #include <IconsFontAwesome5.h>
 #include <oscar/Maths/Transform.h>
+#include <oscar/Maths/TransformFunctions.h>
 #include <oscar/Utils/UID.h>
 
 #include <iostream>

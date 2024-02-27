@@ -8,7 +8,7 @@ namespace osc
 {
     struct AABB final {
 
-        constexpr static AABB OfPoint(Vec3 const& p)
+        constexpr static AABB of_point(Vec3 const& p)
         {
             return AABB{p, p};
         }

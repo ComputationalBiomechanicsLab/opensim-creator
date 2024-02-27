@@ -27,13 +27,13 @@
 
 using osc::UID;
 
-bool osc::mi::PointAxisTowards(
+bool osc::mi::point_axis_towards(
     UndoableDocument& udoc,
     UID id,
     int axis,
     UID other)
 {
-    PointAxisTowards(udoc.updScratch(), id, axis, other);
+    point_axis_towards(udoc.updScratch(), id, axis, other);
     udoc.commitScratch("reoriented " + udoc.getScratch().getLabelByID(id));
     return true;
 }
@@ -120,7 +120,7 @@ bool osc::mi::TryOrientObjectAxisAlongTwoPoints(
     Vec3 const direction = normalize(p2 - p1);
     Transform const t = obj->getXForm(doc);
 
-    obj->setXform(doc, PointAxisAlong(t, axis, direction));
+    obj->setXform(doc, point_axis_along(t, axis, direction));
     udoc.commitScratch("reoriented " + obj->getLabel());
 
     return true;
@@ -365,7 +365,7 @@ void osc::mi::RotateAxis(
     Radians radians)
 {
     Document& doc = udoc.updScratch();
-    el.setXform(doc, RotateAlongAxis(el.getXForm(doc), axis, radians));
+    el.setXform(doc, rotate_axis(el.getXForm(doc), axis, radians));
     udoc.commitScratch("reoriented " + el.getLabel());
 }
 
