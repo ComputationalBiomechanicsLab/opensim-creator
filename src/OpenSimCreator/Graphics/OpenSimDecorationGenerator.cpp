@@ -333,6 +333,7 @@ namespace
             .mesh = rs.getCylinderMesh(),
             .transform = YToYCylinderToSegmentTransform({p1, p2}, radius),
             .color = {0.7f, 0.7f, 0.7f, 1.0f},
+            .flags = SceneDecorationFlags::CastsShadows,
         });
     }
 
@@ -352,6 +353,7 @@ namespace
             .mesh = rs.getSphereMesh(),
             .transform = xform,
             .color = Color::red(),
+            .flags = SceneDecorationFlags::CastsShadows,
         });
     }
 
@@ -368,6 +370,7 @@ namespace
             .mesh = rs.getSphereMesh(),
             .transform = t,
             .color = {1.0f, 1.0f, 0.0f, 0.2f},
+            .flags = SceneDecorationFlags::CastsShadows,
         });
     }
 
@@ -388,6 +391,7 @@ namespace
                 .mesh = rs.getSphereMesh(),
                 .transform = t,
                 .color = Color::black(),
+                .flags = SceneDecorationFlags::CastsShadows,
             });
         }
     }
@@ -433,22 +437,26 @@ namespace
             .mesh = rs.getSphereMesh(),
             .transform = {.scale = Vec3{tendonUiRadius}},
             .color = tendonColor,
+            .flags = SceneDecorationFlags::CastsShadows,
         };
         SceneDecoration const tendonCylinderPrototype =
         {
             .mesh = rs.getCylinderMesh(),
             .color = tendonColor,
+            .flags = SceneDecorationFlags::CastsShadows,
         };
         SceneDecoration const fiberSpherePrototype =
         {
             .mesh = rs.getSphereMesh(),
             .transform = {.scale = Vec3{fiberUiRadius}},
             .color = fiberColor,
+            .flags = SceneDecorationFlags::CastsShadows,
         };
         SceneDecoration const fiberCylinderPrototype =
         {
             .mesh = rs.getCylinderMesh(),
             .color = fiberColor,
+            .flags = SceneDecorationFlags::CastsShadows,
         };
 
         auto const emitTendonSphere = [&](GeometryPathPoint const& p)
@@ -635,6 +643,7 @@ namespace
                     .position = pp.locationInGround
                 },
                 .color = color,
+                .flags = SceneDecorationFlags::CastsShadows,
             });
         };
 
@@ -648,6 +657,7 @@ namespace
                 .mesh = rs.getCylinderMesh(),
                 .transform = YToYCylinderToSegmentTransform({p1, p2}, radius),
                 .color  = color,
+                .flags = SceneDecorationFlags::CastsShadows,
             });
         };
 

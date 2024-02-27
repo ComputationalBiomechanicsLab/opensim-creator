@@ -15,6 +15,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
       outside of OpenSim Creator (yet).
     - OpenSim Creator's tooling support for the feature (visualization, documentation, etc.) is currently
       limited, but we plan to improve it over time
+- Fixes muscles not casting shadows after the surface rendering change
 - Internal: google/benchmark, ocornut/imgui, sammycage/lunasvg, nothings/stb, marzer/tomlplusplus, and
   martinus/unordered_dense were all updated to their latest releases
 
