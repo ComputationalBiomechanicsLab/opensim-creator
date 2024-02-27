@@ -1,5 +1,7 @@
 #include "CachedModelWarper.h"
 
+#include <OpenSim/Simulation/Model/Geometry.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
 #include <OpenSimCreator/Documents/ModelWarper/Document.h>
 
@@ -22,8 +24,17 @@ public:
 
     std::shared_ptr<IConstModelStatePair const> createWarpedModel(Document const& document)
     {
-        // TODO: actually warp it
-        return std::make_shared<BasicModelStatePair>(document.modelstate());
+        auto rv = std::make_shared<BasicModelStatePair>(document.modelstate());
+
+        for ([[maybe_unused]] auto const& mesh : document.model().getComponentList<OpenSim::Mesh>()) {
+            [[maybe_unused]] auto const* warper = document.findMeshWarp(mesh);
+            // TODO
+            // use the warper to warp the mesh data
+            // re-export the warped mesh points as a temporary OBJ
+            // mutate the returned model to point to the OBJ
+        }
+
+        return rv;
     }
 private:
     std::optional<Document> m_PreviousDocument;

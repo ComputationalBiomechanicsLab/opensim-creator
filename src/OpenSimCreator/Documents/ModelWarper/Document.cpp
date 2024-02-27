@@ -74,6 +74,11 @@ ValidationState osc::mow::Document::state(OpenSim::Mesh const& mesh) const
     return p ? p->state() : ValidationState::Error;
 }
 
+IMeshWarp const* osc::mow::Document::findMeshWarp(OpenSim::Mesh const& mesh) const
+{
+    return m_MeshWarpLookup->find(GetAbsolutePathString(mesh));
+}
+
 std::vector<WarpDetail> osc::mow::Document::details(OpenSim::PhysicalOffsetFrame const& pof) const
 {
     if (IFrameWarp const* p = m_FrameWarpLookup->find(GetAbsolutePathString(pof))) {
