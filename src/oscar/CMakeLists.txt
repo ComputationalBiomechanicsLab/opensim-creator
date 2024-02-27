@@ -158,6 +158,7 @@ add_library(oscar STATIC
     Maths/Functors.h
     Maths/GeometricFunctions.h
     Maths/Line.h
+    Maths/LineSegment.h
     Maths/Mat.h
     Maths/MatFunctions.h
     Maths/MathHelpers.h
@@ -172,7 +173,6 @@ add_library(oscar STATIC
     Maths/QuaternionFunctions.h
     Maths/RayCollision.h
     Maths/Rect.h
-    Maths/Segment.h
     Maths/Sphere.h
     Maths/Tetrahedron.h
     Maths/Transform.h

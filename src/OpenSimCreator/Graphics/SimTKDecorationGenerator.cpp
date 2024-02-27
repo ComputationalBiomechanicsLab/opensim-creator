@@ -6,8 +6,8 @@
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Maths/LineSegment.h>
 #include <oscar/Maths/MathHelpers.h>
-#include <oscar/Maths/Segment.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Utils/HashHelpers.h>
@@ -266,7 +266,7 @@ namespace
                 Vec3 direction = {0.0f, 0.0f, 0.0f};
                 direction[axis] = 1.0f;
 
-                Segment const line =
+                LineSegment const line =
                 {
                     t.position,
                     t.position + (legLen * axisLengths[axis] * transform_direction(t, direction))

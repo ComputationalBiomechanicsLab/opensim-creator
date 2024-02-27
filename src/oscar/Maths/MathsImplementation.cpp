@@ -773,9 +773,9 @@ std::ostream& osc::operator<<(std::ostream& o, Rect const& r)
 
 // `Segment` implementation
 
-std::ostream& osc::operator<<(std::ostream& o, Segment const& d)
+std::ostream& osc::operator<<(std::ostream& o, LineSegment const& d)
 {
-    return o << "Segment(p1 = " << d.p1 << ", p2 = " << d.p2 << ')';
+    return o << "LineSegment(p1 = " << d.p1 << ", p2 = " << d.p2 << ')';
 }
 
 
@@ -1547,7 +1547,7 @@ std::optional<Rect> osc::AABBToScreenNDCRect(
     return rv;
 }
 
-Mat4 osc::SegmentToSegmentMat4(Segment const& a, Segment const& b)
+Mat4 osc::SegmentToSegmentMat4(LineSegment const& a, LineSegment const& b)
 {
     Vec3 a1ToA2 = a.p2 - a.p1;
     Vec3 b1ToB2 = b.p2 - b.p1;
@@ -1572,7 +1572,7 @@ Mat4 osc::SegmentToSegmentMat4(Segment const& a, Segment const& b)
     return move * rotate * scale(Identity<Mat4>(), scaler);
 }
 
-Transform osc::SegmentToSegmentTransform(Segment const& a, Segment const& b)
+Transform osc::SegmentToSegmentTransform(LineSegment const& a, LineSegment const& b)
 {
     Vec3 aLine = a.p2 - a.p1;
     Vec3 bLine = b.p2 - b.p1;
@@ -1595,16 +1595,16 @@ Transform osc::SegmentToSegmentTransform(Segment const& a, Segment const& b)
     return t;
 }
 
-Transform osc::YToYCylinderToSegmentTransform(Segment const& s, float radius)
+Transform osc::YToYCylinderToSegmentTransform(LineSegment const& s, float radius)
 {
-    Segment cylinderLine{{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
+    LineSegment cylinderLine{{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
     Transform t = SegmentToSegmentTransform(cylinderLine, s);
     t.scale.x = radius;
     t.scale.z = radius;
     return t;
 }
 
-Transform osc::YToYConeToSegmentTransform(Segment const& s, float radius)
+Transform osc::YToYConeToSegmentTransform(LineSegment const& s, float radius)
 {
     return YToYCylinderToSegmentTransform(s, radius);
 }

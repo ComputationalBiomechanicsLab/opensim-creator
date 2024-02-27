@@ -26,8 +26,8 @@
 #include <oscar/Graphics/Scene/SceneHelpers.h>
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/GeometricFunctions.h>
+#include <oscar/Maths/LineSegment.h>
 #include <oscar/Maths/MathHelpers.h>
-#include <oscar/Maths/Segment.h>
 #include <oscar/Maths/QuaternionFunctions.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>

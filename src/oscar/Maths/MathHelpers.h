@@ -31,7 +31,7 @@ namespace osc { struct Circle; }
 namespace osc { struct Disc; }
 namespace osc { struct Plane; }
 namespace osc { struct Rect; }
-namespace osc { struct Segment; }
+namespace osc { struct LineSegment; }
 
 // math helpers: generally handy math functions that aren't attached to a particular
 //               osc struct
@@ -177,16 +177,16 @@ namespace osc
     // ----- `Segment` helpers -----
 
     // returns a transform matrix that maps a path segment to another path segment
-    Mat4 SegmentToSegmentMat4(Segment const&, Segment const&);
+    Mat4 SegmentToSegmentMat4(LineSegment const&, LineSegment const&);
 
     // returns a transform that maps a path segment to another path segment
-    Transform SegmentToSegmentTransform(Segment const&, Segment const&);
+    Transform SegmentToSegmentTransform(LineSegment const&, LineSegment const&);
 
     // returns a transform that maps a Y-to-Y (bottom-to-top) cylinder to a segment with the given radius
-    Transform YToYCylinderToSegmentTransform(Segment const&, float radius);
+    Transform YToYCylinderToSegmentTransform(LineSegment const&, float radius);
 
     // returns a transform that maps a Y-to-Y (bottom-to-top) cone to a segment with the given radius
-    Transform YToYConeToSegmentTransform(Segment const&, float radius);
+    Transform YToYConeToSegmentTransform(LineSegment const&, float radius);
 
     // ----- other -----
 

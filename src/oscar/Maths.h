@@ -20,6 +20,7 @@
 #include <oscar/Maths/Functors.h>
 #include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/Line.h>
+#include <oscar/Maths/LineSegment.h>
 #include <oscar/Maths/Mat.h>
 #include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
@@ -33,7 +34,6 @@
 #include <oscar/Maths/QuaternionFunctions.h>
 #include <oscar/Maths/RayCollision.h>
 #include <oscar/Maths/Rect.h>
-#include <oscar/Maths/Segment.h>
 #include <oscar/Maths/Sphere.h>
 #include <oscar/Maths/Tetrahedron.h>
 #include <oscar/Maths/Transform.h>
