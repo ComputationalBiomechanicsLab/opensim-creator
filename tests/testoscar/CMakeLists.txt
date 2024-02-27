@@ -26,6 +26,7 @@ add_executable(testoscar
     Graphics/TestCullMode.cpp
     Graphics/TestSubMeshDescriptor.cpp
     Graphics/TestMesh.cpp
+    Graphics/TestMeshGenerators.cpp
     Graphics/TestMeshUpdateFlags.cpp
     Graphics/TestRenderer.cpp
     Graphics/TestRenderTarget.cpp

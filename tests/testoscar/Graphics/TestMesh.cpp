@@ -464,6 +464,15 @@ TEST(Mesh, AssigningOnlyNormalsButNoVertsMakesHasNormalsStillReturnFalse)
     ASSERT_FALSE(m.hasNormals()) << "shouldn't have any normals, because the caller didn't first assign any vertices";
 }
 
+TEST(Mesh, SettingEmptyNormalsOnAnEmptyMeshDoesNotCauseHasNormalsToReturnTrue)
+{
+    Mesh m;
+    m.setVerts({});
+    ASSERT_FALSE(m.hasVerts());
+    m.setNormals({});
+    ASSERT_FALSE(m.hasNormals());
+}
+
 TEST(Mesh, AssigningNormalsAndThenVerticiesMakesNormalsAssignmentFail)
 {
     Mesh m;
@@ -592,6 +601,15 @@ TEST(Mesh, AssigningVerticesAndThenTexCoordsCausesHasTexCoordsToReturnTrue)
     m.setVerts(GenerateVertices(6));
     m.setTexCoords(GenerateTexCoords(6));
     ASSERT_TRUE(m.hasTexCoords());
+}
+
+TEST(Mesh, AssigningNoVerticesAndThenNoTexCoordsCausesHasTexCoordsToReturnFalse)
+{
+    Mesh m;
+    m.setVerts({});
+    ASSERT_FALSE(m.hasVerts());
+    m.setTexCoords({});
+    ASSERT_FALSE(m.hasTexCoords());
 }
 
 TEST(Mesh, GetTexCoordsReturnsEmptyOnDefaultConstruction)

@@ -4588,13 +4588,14 @@ namespace
         template<UserFacingVertexData T>
         void write(VertexAttribute attr, std::span<T const> els)
         {
-            // edge-case: size == 0 should be treated as "wipe it"
-            if (els.empty() && m_VertexFormat.contains(attr))
-            {
-                VertexFormat newFormat{m_VertexFormat};
-                newFormat.erase(attr);
-                setParams(numVerts(), newFormat);
-                return;
+            // edge-case: size == 0 should be treated as "wipe/ignore it"
+            if (els.empty()) {
+                if (m_VertexFormat.contains(attr)) {
+                    VertexFormat newFormat{m_VertexFormat};
+                    newFormat.erase(attr);
+                    setParams(numVerts(), newFormat);
+                }
+                return;  // ignore/wipe
             }
 
             if (attr != VertexAttribute::Position)

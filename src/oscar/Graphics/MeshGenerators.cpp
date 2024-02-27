@@ -714,7 +714,7 @@ Mesh osc::GenerateTorusMesh(size_t slices, size_t stacks, float torusCenterToTub
     {
         OSC_ASSERT(data.indices.size() % 3 == 0);
         data.normals.resize(data.verts.size());
-        for (size_t i = 0; i+2 < data.indices.size(); i += 3)
+        for (size_t i = 0; i < 3*(data.indices.size()/3); i += 3)
         {
             Triangle const t =
             {
@@ -1210,7 +1210,7 @@ Mesh osc::GeneratePolyhedronMesh(
     auto const subdivide = [&subdivideFace, &vertices, &indices](size_t detail)
     {
         // subdivide each input triangle by the given detail
-        for (size_t i = 0; i < indices.size(); i += 3) {
+        for (size_t i = 0; i < 3*(indices.size()/3); i += 3) {
             Vec3 const a = At(vertices, At(indices, i+0));
             Vec3 const b = At(vertices, At(indices, i+1));
             Vec3 const c = At(vertices, At(indices, i+2));
@@ -1246,7 +1246,7 @@ Mesh osc::GeneratePolyhedronMesh(
         OSC_ASSERT(vertexBuffer.size() == uvBuffer.size());
         OSC_ASSERT(vertexBuffer.size() % 3 == 0);
 
-        for (size_t i = 0; i < vertexBuffer.size(); i += 3) {
+        for (size_t i = 0; i < 3*(vertexBuffer.size()/3); i += 3) {
             Vec3 const a = vertexBuffer[i+0];
             Vec3 const b = vertexBuffer[i+1];
             Vec3 const c = vertexBuffer[i+2];
@@ -1263,7 +1263,7 @@ Mesh osc::GeneratePolyhedronMesh(
     {
         // handle case when face straddles the seam, see mrdoob/three.js#3269
         OSC_ASSERT(uvBuffer.size() % 3 == 0);
-        for (size_t i = 0; i < uvBuffer.size(); i += 3) {
+        for (size_t i = 0; i < 3*(uvBuffer.size()/3); i += 3) {
             float const x0 = uvBuffer[i+0].x;
             float const x1 = uvBuffer[i+1].x;
             float const x2 = uvBuffer[i+2].x;
