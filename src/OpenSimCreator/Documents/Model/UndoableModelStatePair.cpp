@@ -188,6 +188,10 @@ public:
         doCommit("created a new model");  // make initial commit
     }
 
+    explicit Impl(OpenSim::Model const& m) :
+        Impl{std::make_unique<OpenSim::Model>(m)}
+    {}
+
     // crete a new commit graph that contains a backup of the given model
     explicit Impl(std::unique_ptr<OpenSim::Model> m) :
         m_Scratch{std::move(m)},
@@ -679,6 +683,11 @@ private:
 
 osc::UndoableModelStatePair::UndoableModelStatePair() :
     m_Impl{std::make_unique<Impl>()}
+{
+}
+
+osc::UndoableModelStatePair::UndoableModelStatePair(OpenSim::Model const& model) :
+    m_Impl{std::make_unique<Impl>(model)}
 {
 }
 

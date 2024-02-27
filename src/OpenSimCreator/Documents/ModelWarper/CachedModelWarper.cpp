@@ -11,22 +11,22 @@ using namespace osc::mow;
 
 class osc::mow::CachedModelWarper::Impl final {
 public:
-    std::unique_ptr<OpenSim::Model> warp(Document const& document)
+    std::shared_ptr<OpenSim::Model const> warp(Document const& document)
     {
         if (document != *m_PreviousDocument) {
             m_PreviousResult = createWarpedModel(document);
             m_PreviousDocument = document;
         }
-        return std::make_unique<OpenSim::Model>(*m_PreviousResult);
+        return m_PreviousResult;
     }
 
-    std::unique_ptr<OpenSim::Model> createWarpedModel(Document const& document)
+    std::shared_ptr<OpenSim::Model const> createWarpedModel(Document const& document)
     {
         return std::make_unique<OpenSim::Model>(document.model());  // TODO: actually warp it
     }
 private:
     std::optional<Document> m_PreviousDocument;
-    std::unique_ptr<OpenSim::Model> m_PreviousResult;
+    std::shared_ptr<OpenSim::Model const> m_PreviousResult;
 };
 
 osc::mow::CachedModelWarper::CachedModelWarper() :
@@ -36,7 +36,7 @@ osc::mow::CachedModelWarper::CachedModelWarper(CachedModelWarper&&) noexcept = d
 CachedModelWarper& osc::mow::CachedModelWarper::operator=(CachedModelWarper&&) noexcept = default;
 osc::mow::CachedModelWarper::~CachedModelWarper() noexcept = default;
 
-std::unique_ptr<OpenSim::Model> osc::mow::CachedModelWarper::warp(Document const& document)
+std::shared_ptr<OpenSim::Model const> osc::mow::CachedModelWarper::warp(Document const& document)
 {
     return m_Impl->warp(document);
 }

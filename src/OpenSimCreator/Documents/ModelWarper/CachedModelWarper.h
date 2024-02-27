@@ -16,7 +16,7 @@ namespace osc::mow
         CachedModelWarper& operator=(CachedModelWarper&&) noexcept;
         ~CachedModelWarper() noexcept;
 
-        std::unique_ptr<OpenSim::Model> warp(Document const&);
+        std::shared_ptr<OpenSim::Model const> warp(Document const&);
     private:
         class Impl;
         std::unique_ptr<Impl> m_Impl;

@@ -1,10 +1,13 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/Model/IConstModelStatePair.h>
+#include <OpenSimCreator/Documents/ModelWarper/CachedModelWarper.h>
 #include <OpenSimCreator/Documents/ModelWarper/Document.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
+#include <oscar/UI/Tabs/ITabHost.h>
+#include <oscar/Utils/ParentPtr.h>
 
 #include <filesystem>
 #include <memory>
@@ -14,11 +17,17 @@
 namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
 namespace OpenSim { class PhysicalOffsetFrame; }
+namespace osc { template<typename> class ParentPtr; }
+namespace osc { class ITabHost; }
 
 namespace osc::mow
 {
     class UIState final {
     public:
+        explicit UIState(ParentPtr<ITabHost> const& tabHost) :
+            m_TabHost{tabHost}
+        {}
+
         OpenSim::Model const& model() const { return m_Document->model(); }
         IConstModelStatePair const& modelstate() const { return m_Document->modelstate(); }
 
@@ -39,6 +48,8 @@ namespace osc::mow
 
         void actionWarpModelAndOpenInModelEditor();
     private:
+        ParentPtr<ITabHost> m_TabHost;
         std::shared_ptr<Document> m_Document = std::make_shared<Document>();
+        CachedModelWarper m_ModelWarper;
     };
 }

@@ -26,7 +26,9 @@ namespace
 
 class osc::mow::ModelWarperTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl(ParentPtr<ITabHost> const& tabHost) :
+        StandardTabImpl{c_TabStringID},
+        m_TabHost{tabHost}
     {
         m_PanelManager->registerToggleablePanel(
             "Checklist",
@@ -96,7 +98,8 @@ private:
         m_PanelManager->onDraw();
     }
 
-    std::shared_ptr<UIState> m_State = std::make_shared<UIState>();
+    ParentPtr<ITabHost> m_TabHost;
+    std::shared_ptr<UIState> m_State = std::make_shared<UIState>(m_TabHost);
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
     MainMenu m_MainMenu{m_State, m_PanelManager};
     Toolbar m_Toolbar{"##ModelWarperToolbar", m_State};
@@ -110,10 +113,9 @@ CStringView osc::mow::ModelWarperTab::id()
     return c_TabStringID;
 }
 
-osc::mow::ModelWarperTab::ModelWarperTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
+osc::mow::ModelWarperTab::ModelWarperTab(ParentPtr<ITabHost> const& tabHost) :
+    m_Impl{std::make_unique<Impl>(tabHost)}
+{}
 
 osc::mow::ModelWarperTab::ModelWarperTab(ModelWarperTab&&) noexcept = default;
 osc::mow::ModelWarperTab& osc::mow::ModelWarperTab::operator=(ModelWarperTab&&) noexcept = default;

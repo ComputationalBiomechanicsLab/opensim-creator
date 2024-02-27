@@ -24,6 +24,9 @@ namespace osc
         UndoableModelStatePair();
 
         // constructs a model from an existing in-memory OpenSim model
+        explicit UndoableModelStatePair(OpenSim::Model const&);
+
+        // constructs a model from an existing in-memory OpenSim model
         explicit UndoableModelStatePair(std::unique_ptr<OpenSim::Model> model);
 
         // construct a model by loading an existing on-disk osim file
