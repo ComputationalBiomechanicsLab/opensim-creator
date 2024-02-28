@@ -38,11 +38,15 @@ namespace
             if (numFaceVerts < 3) {
                 continue;  // ignore lines/points
             }
-
-            rv.numIndices = numFaceVerts;
-            if (rv.numIndices > 4) {  // account for triangulation
-                ++rv.numVertices;
-                ++rv.numIndices;
+            else if (numFaceVerts == 3) {
+                rv.numIndices += 3;
+            }
+            else if (numFaceVerts == 4) {
+                rv.numIndices += 6;
+            }
+            else {
+                rv.numVertices += 1;  // triangulation
+                rv.numIndices += static_cast<size_t>(3*(numFaceVerts-2));
             }
         }
         return rv;
@@ -62,14 +66,15 @@ Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
     // helper: validate+push triangle into the index list
     auto const pushTriangle = [&indices, &vertices](uint32_t a, uint32_t b, uint32_t c)
     {
-        // validate that the indices actually form a triangle
-        //
-        // external mesh data can contain wacky problems, like bad indices
-        // or repeated vertex locations that form lines, etc. - those problems
-        // should stop here
-        if (can_form_triangle(vertices.at(a), vertices.at(b), vertices.at(c))) {
-            indices.insert(indices.end(), {a, b, c});
+        if (a >= vertices.size() || b >= vertices.size() || c >= vertices.size()) {
+            return;  // index out-of-bounds
         }
+
+        if (!can_form_triangle(vertices[a], vertices[b], vertices[c])) {
+            return;  // vertex data doesn't form a triangle (NaNs, degenerate locations)
+        }
+
+        indices.insert(indices.end(), {a, b, c});
     };
 
     // copy all vertex positions from the source mesh
