@@ -808,13 +808,6 @@ float osc::volume(Tetrahedron const& t)
     return determinant(m) / 6.0f;
 }
 
-// returns spatial centerpoint of a given tetrahedron
-Vec3 osc::Center(Tetrahedron const& t)
-{
-    // arithmetic mean of tetrahedron vertices
-    return std::reduce(t.begin(), t.end()) / static_cast<float>(t.size());
-}
-
 
 // Geometry implementation
 

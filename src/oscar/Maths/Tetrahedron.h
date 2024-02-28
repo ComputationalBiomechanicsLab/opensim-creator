@@ -3,39 +3,34 @@
 #include <oscar/Maths/Vec3.h>
 
 #include <array>
+#include <cstddef>
 
 namespace osc
 {
     struct Tetrahedron final {
+        using value_type = Vec3;
+        using size_type = size_t;
+        using difference_type = ptrdiff_t;
+        using reference = Vec3&;
+        using const_reference = Vec3 const&;
+        using pointer = Vec3*;
+        using const_pointer = Vec3 const*;
+        using iterator = Vec3*;
+        using const_iterator = Vec3 const*;
 
-        Vec3 const* begin() const
-        {
-            return verts.data();
-        }
+        constexpr size_t size() const { return 4; }
+        constexpr pointer data() { return &p0; }
+        constexpr const_pointer data() const { return &p0; }
+        constexpr iterator begin() { return data(); }
+        constexpr const_iterator begin() const { return data(); }
+        constexpr iterator end() { return data() + size(); }
+        constexpr const_iterator end() const { return data() + size(); }
+        constexpr reference operator[](size_t i) { return begin()[i]; }
+        constexpr const_reference operator[](size_t i) const { return begin()[i]; }
 
-        Vec3 const* end() const
-        {
-            return verts.data() + verts.size();
-        }
-
-        Vec3 const& operator[](size_t i) const
-        {
-            return verts[i];
-        }
-
-        Vec3& operator[](size_t i)
-        {
-            return verts[i];
-        }
-
-        constexpr size_t size() const
-        {
-            return 4;
-        }
-
-        std::array<Vec3, 4> verts{};
+        value_type p0{};
+        value_type p1{};
+        value_type p2{};
+        value_type p3{};
     };
-
-    float volume(Tetrahedron const&);
-    Vec3 Center(Tetrahedron const&);
 }

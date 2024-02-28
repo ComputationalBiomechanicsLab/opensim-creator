@@ -32,6 +32,7 @@ namespace osc { struct Disc; }
 namespace osc { struct Plane; }
 namespace osc { struct Rect; }
 namespace osc { struct LineSegment; }
+namespace osc { struct Tetrahedron; }
 
 // math helpers: generally handy math functions that aren't attached to a particular
 //               osc struct
@@ -200,4 +201,6 @@ namespace osc
         Transform& applicationTarget,
         Eulers const& eulerAngles,
         Vec3 const& rotationCenter);
+
+    float volume(Tetrahedron const&);
 }
