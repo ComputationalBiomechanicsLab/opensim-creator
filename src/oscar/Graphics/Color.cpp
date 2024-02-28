@@ -144,7 +144,7 @@ Color osc::ToSRGB(Color const& c)
 
 Color osc::Lerp(Color const& a, Color const& b, float t)
 {
-    return Color{mix(Vec4{a}, Vec4{b}, saturate(t))};
+    return Color{lerp(Vec4{a}, Vec4{b}, saturate(t))};
 }
 
 size_t std::hash<osc::Color>::operator()(osc::Color const& color) const

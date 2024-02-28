@@ -253,7 +253,7 @@ namespace
             // try updating the camera (mouse panning, etc.)
             bool rv = UpdatePolarCameraFromImGuiMouseInputs(
                 params.updRenderParams().camera,
-                Dimensions(state.viewportRect)
+                dimensions(state.viewportRect)
             );
 
             if (IsDraggingWithAnyMouseButtonDown())
@@ -409,12 +409,12 @@ private:
             RenderTexture& sceneTexture = m_State.updRenderer().onDraw(
                 *m_Parameters.getModelSharedPtr(),
                 m_Parameters.getRenderParams(),
-                Dimensions(m_State.viewportRect),
+                dimensions(m_State.viewportRect),
                 App::get().getCurrentAntiAliasingLevel()
             );
             DrawTextureAsImGuiImage(
                 sceneTexture,
-                Dimensions(m_State.viewportRect)
+                dimensions(m_State.viewportRect)
             );
 
             // care: hittesting is done here, rather than using ImGui::IsWindowHovered, because
@@ -524,7 +524,7 @@ private:
             // buttons, widgets, etc.)
             ImGui::SetNextWindowPos(m_State.viewportRect.p1);
             std::string const childID = std::to_string(std::distance(it, m_Layers.end()));
-            if (ImGui::BeginChild(childID.c_str(), Dimensions(m_State.viewportRect), ImGuiChildFlags_None, windowFlags))
+            if (ImGui::BeginChild(childID.c_str(), dimensions(m_State.viewportRect), ImGuiChildFlags_None, windowFlags))
             {
                 layer.onDraw(m_Parameters, m_State);
                 ImGui::EndChild();

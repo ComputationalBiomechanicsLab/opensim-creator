@@ -292,7 +292,7 @@ namespace osc
 
     // linearly interpolates between `x` and `y` with factor `a`
     template<typename GenType, typename UInterpolant>
-    constexpr GenType mix(GenType const& x, GenType const& y, UInterpolant const& a)
+    constexpr GenType lerp(GenType const& x, GenType const& y, UInterpolant const& a)
         requires std::is_arithmetic_v<GenType> && std::is_floating_point_v<UInterpolant>
     {
         return static_cast<GenType>(static_cast<UInterpolant>(x) * (static_cast<UInterpolant>(1) - a) + static_cast<UInterpolant>(y) * a);
@@ -300,7 +300,7 @@ namespace osc
 
     // linearly interpolates between each element in `x` and `y` with factor `a`
     template<size_t L, typename T, typename UInterpolant>
-    constexpr Vec<L, T> mix(Vec<L, T> const& x, Vec<L, T> const& y, UInterpolant const& a)
+    constexpr Vec<L, T> lerp(Vec<L, T> const& x, Vec<L, T> const& y, UInterpolant const& a)
         requires std::is_arithmetic_v<T> && std::is_floating_point_v<UInterpolant>
     {
         return Vec<L, T>(Vec<L, UInterpolant>(x) * (static_cast<UInterpolant>(1) - a) + Vec<L, UInterpolant>(y) * a);

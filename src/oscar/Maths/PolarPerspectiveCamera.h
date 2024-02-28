@@ -40,8 +40,8 @@ namespace osc
         // and the scene will look wrong.
         void rescaleZNearAndZFarBasedOnRadius();
 
-        Mat4 getViewMtx() const;
-        Mat4 getProjMtx(float aspectRatio) const;
+        Mat4 view_matrix() const;
+        Mat4 projection_matrix(float aspectRatio) const;
 
         // project's a worldspace coordinate onto a screen-space rectangle
         Vec2 projectOntoScreenRect(Vec3 const& worldspaceLoc, Rect const& screenRect) const;
@@ -57,7 +57,7 @@ namespace osc
         Radians theta;
         Radians phi;
         Vec3 focusPoint;
-        Radians verticalFOV;
+        Radians vertical_fov;
         float znear;
         float zfar;
     };

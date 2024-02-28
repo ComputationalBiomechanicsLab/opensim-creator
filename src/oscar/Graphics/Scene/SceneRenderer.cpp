@@ -49,7 +49,7 @@ namespace
 
     AABB WorldpaceAABB(SceneDecoration const& d)
     {
-        return TransformAABB(d.mesh.getBounds(), d.transform);
+        return transform_aabb(d.mesh.getBounds(), d.transform);
     }
 
     struct RimHighlights final {
@@ -121,7 +121,7 @@ namespace
         polarCamera.znear = 0.0f;
         polarCamera.zfar = 2.0f * casterSphere.radius;
 
-        Mat4 const viewMat = polarCamera.getViewMtx();
+        Mat4 const viewMat = polarCamera.view_matrix();
         Mat4 const projMat = ortho(
             -casterSphere.radius,
             casterSphere.radius,
@@ -324,7 +324,7 @@ private:
             if (dec.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected | SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered))
             {
                 AABB const decAABB = WorldpaceAABB(dec);
-                maybeRimWorldspaceAABB = maybeRimWorldspaceAABB ? Union(*maybeRimWorldspaceAABB, decAABB) : decAABB;
+                maybeRimWorldspaceAABB = maybeRimWorldspaceAABB ? union_of(*maybeRimWorldspaceAABB, decAABB) : decAABB;
             }
         }
 
@@ -335,7 +335,7 @@ private:
         }
 
         // figure out if the rims actually appear on the screen and (roughly) where
-        std::optional<Rect> maybeRimRectNDC = AABBToScreenNDCRect(
+        std::optional<Rect> maybeRimRectNDC = loosely_project_into_ndc(
             *maybeRimWorldspaceAABB,
             params.viewMatrix,
             params.projectionMatrix,
@@ -373,8 +373,8 @@ private:
 
         // compute where the quad needs to eventually be drawn in the scene
         Transform quadMeshToRimsQuad;
-        quadMeshToRimsQuad.position = {Midpoint(rimRectNDC), 0.0f};
-        quadMeshToRimsQuad.scale = {0.5f * Dimensions(rimRectNDC), 1.0f};
+        quadMeshToRimsQuad.position = {centroid(rimRectNDC), 0.0f};
+        quadMeshToRimsQuad.scale = {0.5f * dimensions(rimRectNDC), 1.0f};
 
         // rendering:
 
@@ -417,7 +417,7 @@ private:
         m_EdgeDetectorMaterial.setColor("uRimRgba", params.rimColor);
         m_EdgeDetectorMaterial.setVec2("uRimThickness", 0.5f*rimThicknessNDC);
         m_EdgeDetectorMaterial.setVec2("uTextureOffset", rimRectUV.p1);
-        m_EdgeDetectorMaterial.setVec2("uTextureScale", Dimensions(rimRectUV));
+        m_EdgeDetectorMaterial.setVec2("uTextureScale", dimensions(rimRectUV));
 
         // return necessary information for rendering the rims
         return RimHighlights
@@ -449,7 +449,7 @@ private:
             if (dec.flags & SceneDecorationFlags::CastsShadows)
             {
                 AABB const decorationAABB = WorldpaceAABB(dec);
-                casterAABBs = casterAABBs ? Union(*casterAABBs, decorationAABB) : decorationAABB;
+                casterAABBs = casterAABBs ? union_of(*casterAABBs, decorationAABB) : decorationAABB;
                 Graphics::DrawMesh(dec.mesh, dec.transform, m_DepthWritingMaterial, m_Camera);
             }
         }

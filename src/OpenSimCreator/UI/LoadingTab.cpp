@@ -100,7 +100,7 @@ public:
         constexpr Vec2 menuDims = {512.0f, 512.0f};
 
         Rect const tabRect = GetMainViewportWorkspaceScreenRect();
-        Vec2 const windowDims = Dimensions(tabRect);
+        Vec2 const windowDims = dimensions(tabRect);
 
         // center the menu
         {

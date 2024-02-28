@@ -59,7 +59,7 @@ public:
         auto raycastStart = std::chrono::high_resolution_clock::now();
 
         Rect r = GetMainViewportWorkspaceScreenRect();
-        Vec2 d = Dimensions(r);
+        Vec2 d = dimensions(r);
         m_Ray = m_PolarCamera.unprojectTopLeftPosToWorldRay(Vec2{ImGui::GetMousePos()} - r.p1, d);
 
         m_IsMousedOver = false;
@@ -68,7 +68,7 @@ public:
             m_MeshBVH.forEachRayAABBCollision(m_Ray, [this](BVHCollision const& aabbColl)
             {
                 Triangle const triangle = m_Mesh.getTriangleAt(aabbColl.id);
-                if (auto triangleColl = GetRayCollisionTriangle(m_Ray, triangle))
+                if (auto triangleColl = find_collision(m_Ray, triangle))
                 {
                     m_IsMousedOver = true;
                     m_Tris = triangle;
@@ -79,7 +79,7 @@ public:
         {
             m_Mesh.forEachIndexedTriangle([this](Triangle triangle)
             {
-                if (auto const hit = GetRayCollisionTriangle(m_Ray, triangle))
+                if (auto const hit = find_collision(m_Ray, triangle))
                 {
                     m_HitPos = hit->position;
                     m_IsMousedOver = true;
@@ -98,15 +98,15 @@ public:
         // setup scene
         {
             Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
-            Vec2 const viewportRectDims = Dimensions(viewportRect);
+            Vec2 const viewportRectDims = dimensions(viewportRect);
             m_Camera.setPixelRect(viewportRect);
 
             // update real scene camera from constrained polar camera
             m_Camera.setPosition(m_PolarCamera.getPos());
             m_Camera.setNearClippingPlane(m_PolarCamera.znear);
             m_Camera.setFarClippingPlane(m_PolarCamera.zfar);
-            m_Camera.setViewMatrixOverride(m_PolarCamera.getViewMtx());
-            m_Camera.setProjectionMatrixOverride(m_PolarCamera.getProjMtx(AspectRatio(viewportRectDims)));
+            m_Camera.setViewMatrixOverride(m_PolarCamera.view_matrix());
+            m_Camera.setProjectionMatrixOverride(m_PolarCamera.projection_matrix(AspectRatio(viewportRectDims)));
         }
 
         // draw mesh

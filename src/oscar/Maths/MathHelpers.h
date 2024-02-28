@@ -38,7 +38,7 @@ namespace osc { struct LineSegment; }
 namespace osc
 {
     // computes horizontal FoV for a given vertical FoV + aspect ratio
-    Radians VerticalToHorizontalFOV(Radians verticalFOV, float aspectRatio);
+    Radians VerticalToHorizontalFOV(Radians vertical_fov, float aspectRatio);
 
     // ----- VecX/MatX helpers -----
 
@@ -107,7 +107,7 @@ namespace osc
     float Area(Rect const&);
 
     // returns the dimensions of the rectangle
-    Vec2 Dimensions(Rect const&);
+    Vec2 dimensions(Rect const&);
 
     // returns bottom-left point of the rectangle
     Vec2 BottomLeft(Rect const&);
@@ -116,7 +116,7 @@ namespace osc
     float AspectRatio(Rect const&);
 
     // returns the middle point of the rectangle
-    Vec2 Midpoint(Rect const&);
+    Vec2 centroid(Rect const&);
 
     // returns the smallest rectangle that bounds the provided points
     //

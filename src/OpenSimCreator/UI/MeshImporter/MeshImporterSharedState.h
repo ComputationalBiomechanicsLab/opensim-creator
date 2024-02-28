@@ -383,14 +383,14 @@ namespace osc::mi
         {
             // setup rendering params
             SceneRendererParams p;
-            p.dimensions = Dimensions(get3DSceneRect());
+            p.dimensions = dimensions(get3DSceneRect());
             p.antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
             p.drawRims = true;
             p.drawFloor = false;
             p.nearClippingPlane = m_3DSceneCamera.znear;
             p.farClippingPlane = m_3DSceneCamera.zfar;
-            p.viewMatrix = m_3DSceneCamera.getViewMtx();
-            p.projectionMatrix = m_3DSceneCamera.getProjMtx(AspectRatio(p.dimensions));
+            p.viewMatrix = m_3DSceneCamera.view_matrix();
+            p.projectionMatrix = m_3DSceneCamera.projection_matrix(AspectRatio(p.dimensions));
             p.viewPos = m_3DSceneCamera.getPos();
             p.lightDirection = RecommendedLightDirection(m_3DSceneCamera);
             p.lightColor = Color::white();
@@ -434,7 +434,7 @@ namespace osc::mi
 
         Vec2 get3DSceneDims() const
         {
-            return Dimensions(m_3DSceneRect);
+            return dimensions(m_3DSceneRect);
         }
 
         PolarPerspectiveCamera const& getCamera() const
@@ -565,13 +565,13 @@ namespace osc::mi
             Rect const sceneRect = get3DSceneRect();
             Vec2 const mousePos = ImGui::GetMousePos();
 
-            if (!IsPointInRect(sceneRect, mousePos))
+            if (!is_point_in_rect(sceneRect, mousePos))
             {
                 // mouse isn't over the scene render
                 return MeshImporterHover{};
             }
 
-            Vec2 const sceneDims = Dimensions(sceneRect);
+            Vec2 const sceneDims = dimensions(sceneRect);
             Vec2 const relMousePos = mousePos - sceneRect.p1;
 
             Line const ray = getCamera().unprojectTopLeftPosToWorldRay(relMousePos, sceneDims);

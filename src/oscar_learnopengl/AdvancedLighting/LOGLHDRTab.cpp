@@ -112,7 +112,7 @@ private:
         // reformat intermediate HDR texture to match tab dimensions etc.
         {
             Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
-            RenderTextureDescriptor descriptor{Dimensions(viewportRect)};
+            RenderTextureDescriptor descriptor{dimensions(viewportRect)};
             descriptor.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
             if (m_Use16BitFormat)
             {

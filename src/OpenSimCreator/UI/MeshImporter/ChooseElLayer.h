@@ -175,7 +175,7 @@ namespace osc::mi
             Document const& mg = m_Shared->getModelGraph();
 
             float fadedAlpha = 0.2f;
-            float animScale = EaseOutElastic(m_AnimationFraction);
+            float animScale = ease_out_elastic(m_AnimationFraction);
 
             for (MIObject const& el : mg.iter())
             {

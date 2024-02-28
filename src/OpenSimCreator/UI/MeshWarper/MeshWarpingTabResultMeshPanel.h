@@ -78,7 +78,7 @@ namespace osc
             // update camera if user drags it around etc.
             if (m_LastTextureHittestResult.isHovered)
             {
-                if (UpdatePolarCameraFromImGuiMouseInputs(m_Camera, Dimensions(m_LastTextureHittestResult.rect)))
+                if (UpdatePolarCameraFromImGuiMouseInputs(m_Camera, dimensions(m_LastTextureHittestResult.rect)))
                 {
                     m_State->linkedCameraBase = m_Camera;  // reflects latest modification
                 }

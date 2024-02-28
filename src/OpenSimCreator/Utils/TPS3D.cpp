@@ -182,7 +182,7 @@ TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const& inpu
     SimTK::Vector Vz(numPairs + 4, 0.0);
     for (int row = 0; row < numPairs; ++row)
     {
-        Vec3 const blended = mix(inputs.landmarks[row].source, inputs.landmarks[row].destination, inputs.blendingFactor);
+        Vec3 const blended = lerp(inputs.landmarks[row].source, inputs.landmarks[row].destination, inputs.blendingFactor);
         Vx[row] = blended.x;
         Vy[row] = blended.y;
         Vz[row] = blended.z;

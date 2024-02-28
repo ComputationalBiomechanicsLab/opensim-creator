@@ -36,6 +36,6 @@ namespace osc
         std::array<Vec3, 4> verts{};
     };
 
-    float Volume(Tetrahedron const&);
+    float volume(Tetrahedron const&);
     Vec3 Center(Tetrahedron const&);
 }

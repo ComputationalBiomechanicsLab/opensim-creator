@@ -188,7 +188,7 @@ void osc::StandardPopup::setModal(bool v)
 void osc::StandardPopup::setRect(Rect const& rect)
 {
     m_MaybePosition = rect.p1;
-    m_Dimensions = Dimensions(rect);
+    m_Dimensions = dimensions(rect);
 }
 
 void osc::StandardPopup::setDimensions(Vec2 d)

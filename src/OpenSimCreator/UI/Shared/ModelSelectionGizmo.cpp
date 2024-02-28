@@ -561,8 +561,8 @@ namespace
         ImGuizmo::SetRect(
             viewportRect.p1.x,
             viewportRect.p1.y,
-            Dimensions(viewportRect).x,
-            Dimensions(viewportRect).y
+            dimensions(viewportRect).x,
+            dimensions(viewportRect).y
         );
         ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
         ImGuizmo::AllowAxisFlip(false);
@@ -573,8 +573,8 @@ namespace
 
         SetImguizmoStyleToOSCStandard();
         bool const gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
-            value_ptr(camera.getViewMtx()),
-            value_ptr(camera.getProjMtx(AspectRatio(viewportRect))),
+            value_ptr(camera.view_matrix()),
+            value_ptr(camera.projection_matrix(AspectRatio(viewportRect))),
             operation,
             mode,
             value_ptr(currentXformInGround),

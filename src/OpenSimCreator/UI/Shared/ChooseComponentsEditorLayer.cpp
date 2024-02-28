@@ -157,7 +157,7 @@ public:
     {
         bool rv = UpdatePolarCameraFromImGuiMouseInputs(
             params.updRenderParams().camera,
-            Dimensions(state.viewportRect)
+            dimensions(state.viewportRect)
         );
 
         if (IsDraggingWithAnyMouseButtonDown())
@@ -192,7 +192,7 @@ public:
         GenerateChooseComponentsDecorations(m_State, m_Decorations);
         SceneRendererParams const rendererParameters = CalcSceneRendererParams(
             m_State.renderParams,
-            Dimensions(panelState.viewportRect),
+            dimensions(panelState.viewportRect),
             App::get().getCurrentAntiAliasingLevel(),
             m_State.model->getFixupScaleFactor()
         );
@@ -203,7 +203,7 @@ public:
         // blit texture as ImGui image
         DrawTextureAsImGuiImage(
             m_Renderer.updRenderTexture(),
-            Dimensions(panelState.viewportRect)
+            dimensions(panelState.viewportRect)
         );
 
         // do hovertest

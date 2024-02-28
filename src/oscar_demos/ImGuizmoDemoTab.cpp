@@ -22,10 +22,10 @@ private:
     {
         // ImGuizmo::BeginFrame();  already done by MainUIScreen
 
-        Mat4 view = m_SceneCamera.getViewMtx();
+        Mat4 view = m_SceneCamera.view_matrix();
         Rect viewportRect = GetMainViewportWorkspaceScreenRect();
-        Vec2 dims = Dimensions(viewportRect);
-        Mat4 projection = m_SceneCamera.getProjMtx(AspectRatio(dims));
+        Vec2 dims = dimensions(viewportRect);
+        Mat4 projection = m_SceneCamera.projection_matrix(AspectRatio(dims));
 
         ImGuizmo::SetRect(viewportRect.p1.x, viewportRect.p1.y, dims.x, dims.y);
         Mat4 identity = Identity<Mat4>();

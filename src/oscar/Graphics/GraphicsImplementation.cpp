@@ -616,7 +616,7 @@ namespace
             mesh{std::move(mesh_)},
             maybePropBlock{std::move(maybePropBlock_)},
             transform{transform_},
-            worldMidpoint{material.getTransparent() ? transform_point(transform_, Midpoint(mesh.getBounds())) : Vec3{}},
+            worldMidpoint{material.getTransparent() ? transform_point(transform_, centroid(mesh.getBounds())) : Vec3{}},
             maybeSubMeshIndex{maybeSubMeshIndex_}
         {
         }
@@ -632,7 +632,7 @@ namespace
             mesh{std::move(mesh_)},
             maybePropBlock{std::move(maybePropBlock_)},
             transform{transform_},
-            worldMidpoint{material.getTransparent() ? transform_ * Vec4{Midpoint(mesh.getBounds()), 1.0f} : Vec3{}},
+            worldMidpoint{material.getTransparent() ? transform_ * Vec4{centroid(mesh.getBounds()), 1.0f} : Vec3{}},
             maybeSubMeshIndex{maybeSubMeshIndex_}
         {
         }
@@ -5917,9 +5917,9 @@ Radians osc::Camera::getVerticalFOV() const
     return m_Impl->getVerticalFOV();
 }
 
-void osc::Camera::setVerticalFOV(Radians verticalFOV)
+void osc::Camera::setVerticalFOV(Radians vertical_fov)
 {
-    m_Impl.upd()->setVerticalFOV(verticalFOV);
+    m_Impl.upd()->setVerticalFOV(vertical_fov);
 }
 
 float osc::Camera::getNearClippingPlane() const
@@ -7523,7 +7523,7 @@ Rect osc::GraphicsBackend::CalcViewportRect(
         Rect{{}, targetDims};
 
     Vec2 const cameraRectBottomLeft = BottomLeft(cameraRect);
-    Vec2 const outputDimensions = Dimensions(cameraRect);
+    Vec2 const outputDimensions = dimensions(cameraRect);
     Vec2 const topLeft = {cameraRectBottomLeft.x, targetDims.y - cameraRectBottomLeft.y};
 
     return Rect{topLeft, topLeft + outputDimensions};
@@ -7534,7 +7534,7 @@ Rect osc::GraphicsBackend::SetupTopLevelPipelineState(
     RenderTarget* maybeCustomRenderTarget)
 {
     Rect const viewportRect = CalcViewportRect(camera, maybeCustomRenderTarget);
-    Vec2 const viewportDims = Dimensions(viewportRect);
+    Vec2 const viewportDims = dimensions(viewportRect);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     gl::Viewport(
@@ -7547,7 +7547,7 @@ Rect osc::GraphicsBackend::SetupTopLevelPipelineState(
     if (camera.m_MaybeScissorRect)
     {
         Rect const scissorRect = *camera.m_MaybeScissorRect;
-        Vec2i const scissorDims = Dimensions(scissorRect);
+        Vec2i const scissorDims = dimensions(scissorRect);
 
         gl::Enable(GL_SCISSOR_TEST);
         glScissor(

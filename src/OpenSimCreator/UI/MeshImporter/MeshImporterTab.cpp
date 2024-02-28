@@ -995,7 +995,7 @@ private:
                 {
                     if (ImGui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
                     {
-                        Vec3 const location = Midpoint(mesh->calcBounds());
+                        Vec3 const location = centroid(mesh->calcBounds());
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
                     DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription.c_str());
@@ -1068,7 +1068,7 @@ private:
                     {
                         if (ImGui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
                         {
-                            AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, Midpoint(el.calcBounds(m_Shared->getModelGraph())));
+                            AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, centroid(el.calcBounds(m_Shared->getModelGraph())));
                         }
                         DrawTooltipIfItemHovered("Add Station", MIStrings::c_StationDescription);
                     }
@@ -1108,7 +1108,7 @@ private:
     {
         if (ImGui::MenuItem(ICON_FA_CAMERA " Focus camera on this"))
         {
-            m_Shared->focusCameraOn(Midpoint(el.calcBounds(m_Shared->getModelGraph())));
+            m_Shared->focusCameraOn(centroid(el.calcBounds(m_Shared->getModelGraph())));
         }
         DrawTooltipIfItemHovered("Focus camera on this scene element", "Focuses the scene camera on this element. This is useful for tracking the camera around that particular object in the scene");
 
@@ -1867,7 +1867,7 @@ private:
             if (drawable.id != MIIDs::Empty())
             {
                 AABB const bounds = calcBounds(drawable);
-                rv = rv ? Union(*rv, bounds) : bounds;
+                rv = rv ? union_of(*rv, bounds) : bounds;
             }
         }
         return rv;
@@ -2113,8 +2113,8 @@ private:
         ImGuizmo::SetRect(
             sceneRect.p1.x,
             sceneRect.p1.y,
-            Dimensions(sceneRect).x,
-            Dimensions(sceneRect).y
+            dimensions(sceneRect).x,
+            dimensions(sceneRect).y
         );
         ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
         ImGuizmo::AllowAxisFlip(false);  // user's didn't like this feature in UX sessions
@@ -2122,8 +2122,8 @@ private:
         Mat4 delta;
         SetImguizmoStyleToOSCStandard();
         bool manipulated = ImGuizmo::Manipulate(
-            value_ptr(m_Shared->getCamera().getViewMtx()),
-            value_ptr(m_Shared->getCamera().getProjMtx(AspectRatio(sceneRect))),
+            value_ptr(m_Shared->getCamera().view_matrix()),
+            value_ptr(m_Shared->getCamera().projection_matrix(AspectRatio(sceneRect))),
             m_ImGuizmoState.op,
             m_ImGuizmoState.mode,
             value_ptr(m_ImGuizmoState.mtx),

@@ -34,8 +34,8 @@ SceneRendererParams osc::CalcSceneRendererParams(
     params.antiAliasingLevel = antiAliasingLevel;
     params.lightDirection = RecommendedLightDirection(renderParams.camera);
     params.drawFloor = renderParams.renderingOptions.getDrawFloor();
-    params.viewMatrix = renderParams.camera.getViewMtx();
-    params.projectionMatrix = renderParams.camera.getProjMtx(AspectRatio(viewportDims));
+    params.viewMatrix = renderParams.camera.view_matrix();
+    params.projectionMatrix = renderParams.camera.projection_matrix(AspectRatio(viewportDims));
     params.nearClippingPlane = renderParams.camera.znear;
     params.farClippingPlane = renderParams.camera.zfar;
     params.viewPos = renderParams.camera.getPos();
@@ -89,7 +89,7 @@ std::optional<SceneCollision> osc::GetClosestCollision(
     Vec2 const mouseRenderPos = mouseScreenPos - viewportScreenRect.p1;
     Line const worldspaceCameraRay = camera.unprojectTopLeftPosToWorldRay(
         mouseRenderPos,
-        Dimensions(viewportScreenRect)
+        dimensions(viewportScreenRect)
     );
 
     // find all collisions along the camera ray

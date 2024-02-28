@@ -899,7 +899,7 @@ bool osc::DrawAdvancedParamsEditor(
     edited = SliderMetersFloat("radius", params.camera.radius, 0.0f, 10.0f) || edited;
     edited = SliderAngle("theta", params.camera.theta, 0_deg, 360_deg) || edited;
     edited = SliderAngle("phi", params.camera.phi, 0_deg, 360_deg) || edited;
-    edited = SliderAngle("fov", params.camera.verticalFOV, 0_deg, 360_deg) || edited;
+    edited = SliderAngle("fov", params.camera.vertical_fov, 0_deg, 360_deg) || edited;
     edited = InputMetersFloat("znear", params.camera.znear) || edited;
     edited = InputMetersFloat("zfar", params.camera.zfar) || edited;
     ImGui::NewLine();
@@ -1063,7 +1063,7 @@ bool osc::DrawViewerImGuiOverlays(
 
     // draw top-right camera manipulators
     CameraViewAxes axes;
-    Vec2 const renderDims = Dimensions(renderRect);
+    Vec2 const renderDims = dimensions(renderRect);
     Vec2 const axesDims = axes.dimensions();
     Vec2 const axesTopLeft = {
         renderRect.p1.x + renderDims.x - style.WindowPadding.x - axesDims.x,

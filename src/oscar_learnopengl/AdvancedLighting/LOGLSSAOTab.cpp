@@ -42,7 +42,7 @@ namespace
             // scale antiAliasingLevel such that they are more aligned to
             // the center of the kernel
             float scale = static_cast<float>(i)/static_cast<float>(numSamples);
-            scale = mix(0.1f, 1.0f, scale*scale);
+            scale = lerp(0.1f, 1.0f, scale*scale);
 
             Vec3 sample = {minusOneToOne(rng), minusOneToOne(rng), minusOneToOne(rng)};
             sample = normalize(sample);
@@ -161,7 +161,7 @@ private:
     void draw3DScene()
     {
         Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
-        Vec2 const viewportDims = Dimensions(viewportRect);
+        Vec2 const viewportDims = dimensions(viewportRect);
         AntiAliasingLevel const antiAliasingLevel = AntiAliasingLevel::none();
 
         // ensure textures/buffers have correct dimensions
@@ -213,7 +213,7 @@ private:
         m_SSAO.material.setRenderTexture("uNormalTex", m_GBuffer.normal);
         m_SSAO.material.setTexture("uNoiseTex", m_NoiseTexture);
         m_SSAO.material.setVec3Array("uSamples", m_SampleKernel);
-        m_SSAO.material.setVec2("uNoiseScale", Dimensions(viewportRect) / Vec2{m_NoiseTexture.getDimensions()});
+        m_SSAO.material.setVec2("uNoiseScale", dimensions(viewportRect) / Vec2{m_NoiseTexture.getDimensions()});
         m_SSAO.material.setInt("uKernelSize", static_cast<int32_t>(m_SampleKernel.size()));
         m_SSAO.material.setFloat("uRadius", 0.5f);
         m_SSAO.material.setFloat("uBias", 0.125f);

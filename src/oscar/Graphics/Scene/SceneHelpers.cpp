@@ -60,8 +60,8 @@ void osc::DrawBVH(
         out({
             .mesh = cube,
             .transform = {
-                .scale = HalfWidths(node.getBounds()),
-                .position = Midpoint(node.getBounds()),
+                .scale = half_widths(node.getBounds()),
+                .position = centroid(node.getBounds()),
             },
             .color = Color::black(),
         });
@@ -87,8 +87,8 @@ void osc::DrawAABBs(
         out({
             .mesh = cube,
             .transform = {
-                .scale = HalfWidths(aabb),
-                .position = Midpoint(aabb),
+                .scale = half_widths(aabb),
+                .position = centroid(aabb),
             },
             .color = Color::black(),
         });
@@ -202,7 +202,7 @@ void osc::DrawLineSegment(
 
 AABB osc::GetWorldspaceAABB(SceneDecoration const& cd)
 {
-    return TransformAABB(cd.mesh.getBounds(), cd.transform);
+    return transform_aabb(cd.mesh.getBounds(), cd.transform);
 }
 
 void osc::UpdateSceneBVH(std::span<SceneDecoration const> sceneEls, BVH& bvh)
@@ -269,7 +269,7 @@ std::optional<RayCollision> osc::GetClosestWorldspaceRayCollision(
     triangleBVH.forEachRayAABBCollision(modelspaceRay, [&mesh, &transform, &worldspaceRay, &modelspaceRay, &rv](BVHCollision bvhCollision)
     {
         // then perform a ray-triangle collision
-        if (auto triangleCollision = GetRayCollisionTriangle(modelspaceRay, mesh.getTriangleAt(bvhCollision.id)))
+        if (auto triangleCollision = find_collision(modelspaceRay, mesh.getTriangleAt(bvhCollision.id)))
         {
             // map it back into worldspace and check if it's closer
             Vec3 const locationWorldspace = transform * triangleCollision->position;
@@ -293,7 +293,7 @@ std::optional<RayCollision> osc::GetClosestWorldspaceRayCollision(
 {
     Line const ray = camera.unprojectTopLeftPosToWorldRay(
         mouseScreenPos - renderScreenRect.p1,
-        Dimensions(renderScreenRect)
+        dimensions(renderScreenRect)
     );
 
     return GetClosestWorldspaceRayCollision(
@@ -314,8 +314,8 @@ SceneRendererParams osc::CalcStandardDarkSceneRenderParams(
     rv.antiAliasingLevel = antiAliasingLevel;
     rv.drawMeshNormals = false;
     rv.drawFloor = false;
-    rv.viewMatrix = camera.getViewMtx();
-    rv.projectionMatrix = camera.getProjMtx(AspectRatio(renderDims));
+    rv.viewMatrix = camera.view_matrix();
+    rv.projectionMatrix = camera.projection_matrix(AspectRatio(renderDims));
     rv.viewPos = camera.getPos();
     rv.lightDirection = RecommendedLightDirection(camera);
     rv.backgroundColor = {0.1f, 1.0f};

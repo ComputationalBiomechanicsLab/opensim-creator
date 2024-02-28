@@ -144,7 +144,7 @@ private:
                 m_SceneSphereBoundingSphere.radius
             };
 
-            std::optional<RayCollision> res = GetRayCollisionSphere(ray, s);
+            std::optional<RayCollision> res = find_collision(ray, s);
             if (res && res->distance >= 0.0f && res->distance < closestEl) {
                 closestEl = res->distance;
                 closestSceneSphere = &ss;
@@ -185,7 +185,7 @@ private:
 
                 Graphics::DrawMesh(
                     m_WireframeCubeMesh,
-                    {.scale = HalfWidths(m_SceneSphereAABB), .position = sphere.pos},
+                    {.scale = half_widths(m_SceneSphereAABB), .position = sphere.pos},
                     m_Material,
                     m_Camera,
                     m_BlackColorMaterialProps
@@ -203,7 +203,7 @@ private:
                 .radius = 10.0f,
             };
 
-            std::optional<RayCollision> const maybeCollision = GetRayCollisionDisc(ray, sceneDisc);
+            std::optional<RayCollision> const maybeCollision = find_collision(ray, sceneDisc);
 
             Disc const meshDisc{
                 .origin = {0.0f, 0.0f, 0.0f},
@@ -223,7 +223,7 @@ private:
         // hittest + draw triangle
         {
             Line const ray = GetCameraRay(m_Camera);
-            std::optional<RayCollision> const maybeCollision = GetRayCollisionTriangle(
+            std::optional<RayCollision> const maybeCollision = find_collision(
                 ray,
                 Triangle{c_TriangleVerts.at(0), c_TriangleVerts.at(1), c_TriangleVerts.at(2)}
             );

@@ -1164,8 +1164,8 @@ Mesh osc::GeneratePolyhedronMesh(
 
         for (size_t i = 0; i <= cols; ++i) {
             auto const fi = static_cast<float>(i);
-            Vec3 const aj = mix(a, c, fi/fcols);
-            Vec3 const bj = mix(b, c, fi/fcols);
+            Vec3 const aj = lerp(a, c, fi/fcols);
+            Vec3 const bj = lerp(b, c, fi/fcols);
 
             auto const rows = cols - i;
             auto const frows = static_cast<float>(rows);
@@ -1179,7 +1179,7 @@ Mesh osc::GeneratePolyhedronMesh(
                     v.at(i).at(j) = aj;
                 }
                 else {
-                    v.at(i).at(j) = mix(aj, bj, fj/frows);
+                    v.at(i).at(j) = lerp(aj, bj, fj/frows);
                 }
             }
         }

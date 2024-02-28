@@ -142,7 +142,7 @@ private:
 
     void reformatAllTextures(Rect const& viewportRect)
     {
-        Vec2 const viewportDims = Dimensions(viewportRect);
+        Vec2 const viewportDims = dimensions(viewportRect);
         AntiAliasingLevel const msxaaSamples = App::get().getCurrentAntiAliasingLevel();
 
         RenderTextureDescriptor textureDescription{viewportDims};

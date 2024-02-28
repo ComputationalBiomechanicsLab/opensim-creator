@@ -58,7 +58,7 @@ namespace
     {
         SceneRendererParams rv;
         rv.drawRims = false;
-        rv.viewMatrix = camera.getViewMtx();
+        rv.viewMatrix = camera.view_matrix();
         rv.nearClippingPlane = camera.znear;
         rv.farClippingPlane = camera.zfar;
         rv.viewPos = camera.getPos();
@@ -169,8 +169,8 @@ private:
         // pretend the attributation bar isn't there (avoid it)
         tabRect.p2.y -= static_cast<float>(std::max(m_TudLogo.getDimensions().y, m_CziLogo.getDimensions().y)) - 2.0f*ImGui::GetStyle().WindowPadding.y;
 
-        Vec2 const menuAndTopLogoDims = elementwise_min(Dimensions(tabRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
-        Vec2 const menuAndTopLogoTopLeft = tabRect.p1 + 0.5f*(Dimensions(tabRect) - menuAndTopLogoDims);
+        Vec2 const menuAndTopLogoDims = elementwise_min(dimensions(tabRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
+        Vec2 const menuAndTopLogoTopLeft = tabRect.p1 + 0.5f*(dimensions(tabRect) - menuAndTopLogoDims);
         Vec2 const menuDims = {menuAndTopLogoDims.x, menuAndTopLogoDims.y - m_MainAppLogoDims.y - m_TopLogoPadding.y};
         Vec2 const menuTopLeft = Vec2{menuAndTopLogoTopLeft.x, menuAndTopLogoTopLeft.y + m_MainAppLogoDims.y + m_TopLogoPadding.y};
 
@@ -182,7 +182,7 @@ private:
         Rect const mmr = calcMainMenuRect();
         Vec2 const topLeft
         {
-            mmr.p1.x + Dimensions(mmr).x/2.0f - m_MainAppLogoDims.x/2.0f,
+            mmr.p1.x + dimensions(mmr).x/2.0f - m_MainAppLogoDims.x/2.0f,
             mmr.p1.y - m_TopLogoPadding.y - m_MainAppLogoDims.y,
         };
 
@@ -194,16 +194,16 @@ private:
         Rect const screenRect = GetMainViewportWorkspaceScreenRect();
 
         ImGui::SetNextWindowPos(screenRect.p1);
-        ImGui::SetNextWindowSize(Dimensions(screenRect));
+        ImGui::SetNextWindowSize(dimensions(screenRect));
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 0.0f });
         ImGui::Begin("##splashscreenbackground", nullptr, GetMinimalWindowFlags());
         ImGui::PopStyleVar();
 
         SceneRendererParams params{m_LastSceneRendererParams};
-        params.dimensions = Dimensions(screenRect);
+        params.dimensions = dimensions(screenRect);
         params.antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
-        params.projectionMatrix = m_Camera.getProjMtx(AspectRatio(screenRect));
+        params.projectionMatrix = m_Camera.projection_matrix(AspectRatio(screenRect));
 
         if (params != m_LastSceneRendererParams)
         {
@@ -222,7 +222,7 @@ private:
 
         ImGui::SetNextWindowPos(logoRect.p1);
         ImGui::Begin("##osclogo", nullptr, GetMinimalWindowFlags());
-        DrawTextureAsImGuiImage(m_MainAppLogo, Dimensions(logoRect));
+        DrawTextureAsImGuiImage(m_MainAppLogo, dimensions(logoRect));
         ImGui::End();
     }
 
@@ -231,8 +231,8 @@ private:
         // center the menu window
         Rect const mmr = calcMainMenuRect();
         ImGui::SetNextWindowPos(mmr.p1);
-        ImGui::SetNextWindowSize({Dimensions(mmr).x, -1.0f});
-        ImGui::SetNextWindowSizeConstraints(Dimensions(mmr), Dimensions(mmr));
+        ImGui::SetNextWindowSize({dimensions(mmr).x, -1.0f});
+        ImGui::SetNextWindowSizeConstraints(dimensions(mmr), dimensions(mmr));
 
         if (ImGui::Begin("Splash screen", nullptr, ImGuiWindowFlags_NoTitleBar))
         {

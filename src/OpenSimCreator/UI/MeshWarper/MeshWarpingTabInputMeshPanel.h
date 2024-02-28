@@ -66,7 +66,7 @@ namespace osc
         {
             // compute top-level UI variables (render rect, mouse pos, etc.)
             Rect const contentRect = ContentRegionAvailScreenRect();
-            Vec2 const contentRectDims = Dimensions(contentRect);
+            Vec2 const contentRectDims = dimensions(contentRect);
             Vec2 const mousePos = ImGui::GetMousePos();
 
             // un-project mouse's (2D) location into the 3D scene as a ray
@@ -129,7 +129,7 @@ namespace osc
             // if the user interacts with the render, update the camera as necessary
             if (m_LastTextureHittestResult.isHovered)
             {
-                if (UpdatePolarCameraFromImGuiMouseInputs(m_Camera, Dimensions(m_LastTextureHittestResult.rect)))
+                if (UpdatePolarCameraFromImGuiMouseInputs(m_Camera, dimensions(m_LastTextureHittestResult.rect)))
                 {
                     m_State->linkedCameraBase = m_Camera;  // reflects latest modification
                 }
@@ -170,7 +170,7 @@ namespace osc
 
             // hittest the landmark as an analytic sphere
             Sphere const landmarkSphere = {.origin = *maybePos, .radius = m_LandmarkRadius};
-            if (auto const collision = GetRayCollisionSphere(cameraRay, landmarkSphere))
+            if (auto const collision = find_collision(cameraRay, landmarkSphere))
             {
                 if (!closest || length(closest->getWorldspaceLocation() - cameraRay.origin) > collision->distance)
                 {
@@ -204,7 +204,7 @@ namespace osc
                 .radius = GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius
             };
 
-            if (auto const collision = GetRayCollisionSphere(cameraRay, decorationSphere))
+            if (auto const collision = find_collision(cameraRay, decorationSphere))
             {
                 if (!closest || length(closest->getWorldspaceLocation() - cameraRay.origin) > collision->distance)
                 {

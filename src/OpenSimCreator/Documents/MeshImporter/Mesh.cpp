@@ -36,7 +36,7 @@ osc::mi::Mesh::Mesh(
 
 AABB osc::mi::Mesh::calcBounds() const
 {
-    return TransformAABB(m_MeshData.getBounds(), m_Transform);
+    return transform_aabb(m_MeshData.getBounds(), m_Transform);
 }
 
 MIClass osc::mi::Mesh::CreateClass()

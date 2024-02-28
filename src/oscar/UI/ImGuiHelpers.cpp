@@ -369,7 +369,7 @@ bool osc::UpdatePolarCameraFromImGuiInputs(
     // we don't check `io.WantCaptureMouse` because clicking/dragging on an ImGui::Image
     // is classed as a mouse interaction
     bool const mouseHandled =
-        UpdatePolarCameraFromImGuiMouseInputs(camera, Dimensions(viewportRect));
+        UpdatePolarCameraFromImGuiMouseInputs(camera, dimensions(viewportRect));
     bool const keyboardHandled = !io.WantCaptureKeyboard ?
         UpdatePolarCameraFromImGuiKeyboardInputs(camera, viewportRect, maybeSceneAABB) :
         false;
@@ -807,7 +807,7 @@ bool osc::IsMouseInMainViewportWorkspaceScreenRect()
     Vec2 const mousepos = ImGui::GetMousePos();
     Rect const hitRect = GetMainViewportWorkspaceScreenRect();
 
-    return IsPointInRect(hitRect, mousepos);
+    return is_point_in_rect(hitRect, mousepos);
 }
 
 bool osc::BeginMainViewportTopBar(CStringView label, float height, ImGuiWindowFlags flags)

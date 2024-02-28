@@ -4,6 +4,7 @@
 #include <OpenSimCreator/Documents/MeshImporter/MIObjectCRTP.h>
 
 #include <oscar/Maths/AABB.h>
+#include <oscar/Maths/AABBFunctions.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/UID.h>
@@ -92,7 +93,7 @@ namespace osc::mi
 
         AABB implCalcBounds(IObjectFinder const&) const final
         {
-            return AABB::of_point(m_Position);
+            return aabb_of(m_Position);
         }
 
         UID m_ID;

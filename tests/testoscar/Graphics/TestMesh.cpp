@@ -826,7 +826,7 @@ TEST(Mesh, SetIndicesRecalculatesBounds)
     m.setVerts(triangle);
     ASSERT_EQ(m.getBounds(), AABB{});
     m.setIndices(GenerateIndices(0, 3));
-    ASSERT_EQ(m.getBounds(), BoundingAABBOf(triangle));
+    ASSERT_EQ(m.getBounds(), aabb_of(triangle));
 }
 
 TEST(Mesh, SetIndicesWithDontRecalculateBoundsDoesNotRecalculateBounds)
@@ -1045,7 +1045,7 @@ TEST(Mesh, GetBooundsReturnsNonemptyForIndexedVerts)
     Mesh m;
     m.setVerts(pyramid);
     m.setIndices(pyramidIndices);
-    ASSERT_EQ(m.getBounds(), AABBFromVerts(pyramid));
+    ASSERT_EQ(m.getBounds(), aabb_of(pyramid));
 }
 
 TEST(Mesh, CanBeComparedForEquality)
@@ -1894,11 +1894,11 @@ TEST(Mesh, SetVertexBufferDataRecalculatesBounds)
     m.setVerts(firstVerts);
     m.setIndices(GenerateIndices(0, 6));
 
-    ASSERT_EQ(m.getBounds(), BoundingAABBOf(firstVerts));
+    ASSERT_EQ(m.getBounds(), aabb_of(firstVerts));
 
     m.setVertexBufferData(secondVerts);
 
-    ASSERT_EQ(m.getBounds(), BoundingAABBOf(secondVerts));
+    ASSERT_EQ(m.getBounds(), aabb_of(secondVerts));
 }
 
 TEST(Mesh, RecalculateNormalsDoesNothingIfTopologyIsLines)

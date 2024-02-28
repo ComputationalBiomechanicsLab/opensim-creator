@@ -53,7 +53,7 @@ namespace
     {
         float const targetAspectRatio = AspectRatio(targetRect);
         float const ratio = targetAspectRatio / aspectRatio;
-        Vec2 const targetDims = Dimensions(targetRect);
+        Vec2 const targetDims = dimensions(targetRect);
 
         if (ratio >= 1.0f)
         {
@@ -73,7 +73,7 @@ namespace
 
     Rect MapRect(Rect const& sourceRect, Rect const& targetRect, Rect const& rect)
     {
-        Vec2 const scale = Dimensions(targetRect) / Dimensions(sourceRect);
+        Vec2 const scale = dimensions(targetRect) / dimensions(sourceRect);
 
         return Rect
         {
@@ -142,7 +142,7 @@ private:
         Rect const windowRect = {screenTopLeft, screenTopLeft + Vec2{ImGui::GetContentRegionAvail()}};
         Rect const imageRect = ShrinkToFit(windowRect, AspectRatio(m_Screenshot.image.getDimensions()));
         ImGui::SetCursorScreenPos(imageRect.p1);
-        DrawTextureAsImGuiImage(m_ImageTexture, Dimensions(imageRect));
+        DrawTextureAsImGuiImage(m_ImageTexture, dimensions(imageRect));
         return imageRect;
     }
 
@@ -160,7 +160,7 @@ private:
         {
             Rect const annotationRectScreenSpace = MapRect(imageSourceRect, imageRect, annotation.rect);
             bool const selected = m_SelectedAnnotations.contains(annotation.label);
-            bool const hovered = IsPointInRect(annotationRectScreenSpace, mousePos);
+            bool const hovered = is_point_in_rect(annotationRectScreenSpace, mousePos);
 
             Vec4 color = selected ? selectedColor : unselectedColor;
             if (hovered)

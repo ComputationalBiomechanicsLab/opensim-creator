@@ -374,7 +374,7 @@ public:
                 std::vector<LandmarkPair2D> pairs = m_LandmarkPairs;
                 for (LandmarkPair2D& p : pairs)
                 {
-                    p.dest = mix(p.src, p.dest, m_BlendingFactor);
+                    p.dest = lerp(p.src, p.dest, m_BlendingFactor);
                 }
                 ThinPlateWarper2D warper{pairs};
                 m_OutputGrid = ApplyThinPlateWarpToMesh(warper, m_InputGrid);
@@ -430,8 +430,8 @@ private:
         // render all fully-established landmark pairs
         for (LandmarkPair2D const& p : m_LandmarkPairs)
         {
-            Vec2 const p1 = ht.rect.p1 + (Dimensions(ht.rect) * NDCPointToTopLeftRelPos(p.src));
-            Vec2 const p2 = ht.rect.p1 + (Dimensions(ht.rect) * NDCPointToTopLeftRelPos(p.dest));
+            Vec2 const p1 = ht.rect.p1 + (dimensions(ht.rect) * NDCPointToTopLeftRelPos(p.src));
+            Vec2 const p2 = ht.rect.p1 + (dimensions(ht.rect) * NDCPointToTopLeftRelPos(p.dest));
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist->AddRectFilled(p1 - 12.0f, p1 + 12.0f, m_SrcSquareColor);
@@ -443,7 +443,7 @@ private:
         {
             GUIFirstClickMouseState const& st = std::get<GUIFirstClickMouseState>(m_MouseState);
 
-            Vec2 const p1 = ht.rect.p1 + (Dimensions(ht.rect) * NDCPointToTopLeftRelPos(st.srcNDCPos));
+            Vec2 const p1 = ht.rect.p1 + (dimensions(ht.rect) * NDCPointToTopLeftRelPos(st.srcNDCPos));
             Vec2 const p2 = ImGui::GetMousePos();
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
@@ -467,7 +467,7 @@ private:
     {
         Vec2 const mouseScreenPos = ImGui::GetMousePos();
         Vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
-        Vec2 const mouseImageRelPos = mouseImagePos / Dimensions(ht.rect);
+        Vec2 const mouseImageRelPos = mouseImagePos / dimensions(ht.rect);
         Vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
 
         DrawTooltipBodyOnly(to_string(mouseImageNDCPos));
@@ -483,7 +483,7 @@ private:
     {
         Vec2 const mouseScreenPos = ImGui::GetMousePos();
         Vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
-        Vec2 const mouseImageRelPos = mouseImagePos / Dimensions(ht.rect);
+        Vec2 const mouseImageRelPos = mouseImagePos / dimensions(ht.rect);
         Vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
 
         DrawTooltipBodyOnly(to_string(mouseImageNDCPos) + "*");
