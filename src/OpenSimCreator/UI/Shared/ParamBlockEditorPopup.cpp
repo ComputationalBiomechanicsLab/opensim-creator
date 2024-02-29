@@ -118,7 +118,7 @@ private:
         }
         ui::Columns();
 
-        ImGui::Dummy({0.0f, 1.0f});
+        ui::Dummy({0.0f, 1.0f});
 
         if (ui::Button("save"))
         {

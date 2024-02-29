@@ -101,4 +101,9 @@ namespace osc::ui
     {
         return ImGui::Button(label, size);
     }
+
+    inline void Dummy(ImVec2 const& size)
+    {
+        ImGui::Dummy(size);
+    }
 }

@@ -115,7 +115,7 @@ private:
             ui::SameLine();
             DrawHelpMarker("This is geometry that OpenSim can generate without needing an external mesh file. Useful for basic geometry.");
             ImGui::Separator();
-            ImGui::Dummy({0.0f, 2.0f});
+            ui::Dummy({0.0f, 2.0f});
 
             int item = -1;
             if (ImGui::Combo("##premade", &item, c_GeomNames.data(), static_cast<int>(c_GeomNames.size())))
@@ -128,16 +128,16 @@ private:
         // mesh file selection
         //
         // let the user select a mesh file that the implementation should load + use
-        ImGui::Dummy({0.0f, 3.0f});
+        ui::Dummy({0.0f, 3.0f});
         ui::TextUnformatted("mesh file");
         ui::SameLine();
         DrawHelpMarker("This is geometry that OpenSim loads from external mesh files. Useful for custom geometry (usually, created in some other application, such as ParaView or Blender)");
         ImGui::Separator();
-        ImGui::Dummy({0.0f, 2.0f});
+        ui::Dummy({0.0f, 2.0f});
 
         // let the user search through mesh files in pre-established Geometry/ dirs
         InputString("search", m_Search);
-        ImGui::Dummy({0.0f, 1.0f});
+        ui::Dummy({0.0f, 1.0f});
 
         ImGui::BeginChild(
             "mesh list",
@@ -183,7 +183,7 @@ private:
         }
         DrawTooltipIfItemHovered("Open Mesh File", "Open a mesh file on the filesystem");
 
-        ImGui::Dummy({0.0f, 5.0f});
+        ui::Dummy({0.0f, 5.0f});
 
         if (ui::Button("Cancel"))
         {

@@ -1476,7 +1476,7 @@ private:
 
     void drawContextMenuSpacer()
     {
-        ImGui::Dummy({0.0f, 0.0f});
+        ui::Dummy({0.0f, 0.0f});
     }
 
     // draw context menu content for when user right-clicks nothing
@@ -1634,7 +1634,7 @@ private:
         ui::Text("%s %s", c.getIconUTF8().c_str(), c.getNamePluralized().c_str());
         ui::SameLine();
         DrawHelpMarker(c.getNamePluralized(), c.getDescription());
-        ImGui::Dummy({0.0f, 5.0f});
+        ui::Dummy({0.0f, 5.0f});
         ImGui::Indent();
 
         bool empty = true;
@@ -1699,7 +1699,7 @@ private:
         for (MIClass const& c : GetSceneElClasses())
         {
             drawNavigatorElement(c);
-            ImGui::Dummy({0.0f, 5.0f});
+            ui::Dummy({0.0f, 5.0f});
         }
 
         // a navigator element might have opened the context menu in the navigator panel

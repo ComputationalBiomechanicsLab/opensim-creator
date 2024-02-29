@@ -237,13 +237,13 @@ void osc::MainMenuAboutTab::onDraw()
     }
 
     constexpr float menuWidth = 400;
-    ImGui::Dummy({menuWidth, 0});
+    ui::Dummy({menuWidth, 0});
 
     ui::TextUnformatted("graphics");
     ui::SameLine();
     DrawHelpMarker("OSMV's global graphical settings");
     ImGui::Separator();
-    ImGui::Dummy({0.0f, 0.5f});
+    ui::Dummy({0.0f, 0.5f});
     {
         ui::Columns(2);
 
@@ -310,12 +310,12 @@ void osc::MainMenuAboutTab::onDraw()
         ui::Columns();
     }
 
-    ImGui::Dummy({0.0f, 2.0f});
+    ui::Dummy({0.0f, 2.0f});
     ui::TextUnformatted("properties");
     ui::SameLine();
     DrawHelpMarker("general software properties: useful information for bug reporting etc.");
     ImGui::Separator();
-    ImGui::Dummy({0.0f, 0.5f});
+    ui::Dummy({0.0f, 0.5f});
     {
         AppMetadata const& metadata = App::get().getMetadata();
 
@@ -354,12 +354,12 @@ void osc::MainMenuAboutTab::onDraw()
         ui::Columns(1);
     }
 
-    ImGui::Dummy({0.0f, 2.5f});
+    ui::Dummy({0.0f, 2.5f});
     ui::TextUnformatted("debugging utilities:");
     ui::SameLine();
     DrawHelpMarker("standard utilities that can help with development, debugging, etc.");
     ImGui::Separator();
-    ImGui::Dummy({0.0f, 0.5f});
+    ui::Dummy({0.0f, 0.5f});
     int id = 0;
     {
         ui::Columns(2);
@@ -409,12 +409,12 @@ void osc::MainMenuAboutTab::onDraw()
         ui::Columns();
     }
 
-    ImGui::Dummy({0.0f, 2.5f});
+    ui::Dummy({0.0f, 2.5f});
     ui::TextUnformatted("useful links:");
     ui::SameLine();
     DrawHelpMarker("links to external sites that might be useful");
     ImGui::Separator();
-    ImGui::Dummy({0.0f, 0.5f});
+    ui::Dummy({0.0f, 0.5f});
     {
         ui::Columns(2);
 

@@ -199,7 +199,7 @@ private:
     {
         Response rv;
 
-        ImGui::Dummy({0.0f, 3.0f});
+        ui::Dummy({0.0f, 3.0f});
 
         // draw filter stuff
 
@@ -212,9 +212,9 @@ private:
         ui::SameLine();
         DrawSearchBar(m_CurrentSearch);
 
-        ImGui::Dummy({0.0f, 3.0f});
+        ui::Dummy({0.0f, 3.0f});
         ImGui::Separator();
-        ImGui::Dummy({0.0f, 3.0f});
+        ui::Dummy({0.0f, 3.0f});
 
         // draw content
         ImGui::BeginChild("##componentnavigatorvieweritems", {0.0, 0.0}, ImGuiChildFlags_None, ImGuiWindowFlags_NoBackground);

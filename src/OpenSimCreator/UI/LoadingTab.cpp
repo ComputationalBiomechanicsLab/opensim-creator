@@ -123,9 +123,9 @@ public:
             if (ImGui::Begin("Error Message", nullptr, ImGuiWindowFlags_NoTitleBar))
             {
                 ui::TextWrapped("An error occurred while loading the file:");
-                ImGui::Dummy({0.0f, 5.0f});
+                ui::Dummy({0.0f, 5.0f});
                 ui::TextWrapped(m_LoadingErrorMsg);
-                ImGui::Dummy({0.0f, 5.0f});
+                ui::Dummy({0.0f, 5.0f});
 
                 if (ui::Button("try again"))
                 {

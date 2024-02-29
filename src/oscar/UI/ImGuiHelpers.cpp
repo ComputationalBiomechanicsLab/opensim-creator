@@ -610,7 +610,7 @@ void osc::TooltipHeaderText(CStringView s)
 
 void osc::TooltipDescriptionSpacer()
 {
-    ImGui::Dummy({0.0f, 1.0f});
+    ui::Dummy({0.0f, 1.0f});
 }
 
 void osc::TooltipDescriptionText(CStringView s)

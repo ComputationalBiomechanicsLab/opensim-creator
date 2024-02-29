@@ -60,7 +60,7 @@ public:
         ui::SameLine();
         ui::TextDisabled(c.getConcreteClassName());
         ImGui::Separator();
-        ImGui::Dummy({0.0f, 3.0f});
+        ui::Dummy({0.0f, 3.0f});
 
         DrawSelectOwnerMenu(*m_Model, c);
         DrawWatchOutputMenu(*m_API, c);

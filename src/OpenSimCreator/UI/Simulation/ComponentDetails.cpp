@@ -28,7 +28,7 @@ ComponentDetails::Response osc::ComponentDetails::onDraw(
     OpenSim::Component const& c = *comp;
 
     ui::Text("selection information:");
-    ImGui::Dummy({0.0, 2.5f});
+    ui::Dummy({0.0, 2.5f});
     ImGui::Separator();
 
     // top-level info

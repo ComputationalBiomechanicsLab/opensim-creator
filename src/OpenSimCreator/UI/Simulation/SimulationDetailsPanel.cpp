@@ -35,12 +35,12 @@ private:
     void implDrawContent() final
     {
         {
-            ImGui::Dummy({0.0f, 1.0f});
+            ui::Dummy({0.0f, 1.0f});
             ui::TextUnformatted("info:");
             ui::SameLine();
             DrawHelpMarker("Top-level info about the simulation");
             ImGui::Separator();
-            ImGui::Dummy({0.0f, 2.0f});
+            ui::Dummy({0.0f, 2.0f});
 
             ui::Columns(2);
             ui::Text("num reports");
@@ -55,7 +55,7 @@ private:
             DrawSimulationParams(m_Simulation->getParams());
         }
 
-        ImGui::Dummy({0.0f, 10.0f});
+        ui::Dummy({0.0f, 10.0f});
 
         {
             OSC_PERF("draw simulation stats");
@@ -73,7 +73,7 @@ private:
             return;
         }
 
-        ImGui::Dummy({0.0f, 1.0f});
+        ui::Dummy({0.0f, 1.0f});
         ui::Columns(2);
         ui::TextUnformatted("plots:");
         ui::SameLine();
@@ -105,7 +105,7 @@ private:
         ui::NextColumn();
         ui::Columns();
         ImGui::Separator();
-        ImGui::Dummy({0.0f, 2.0f});
+        ui::Dummy({0.0f, 2.0f});
 
         int imguiID = 0;
         ui::Columns(2);

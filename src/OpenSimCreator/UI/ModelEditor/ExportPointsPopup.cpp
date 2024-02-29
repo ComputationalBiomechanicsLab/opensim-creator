@@ -571,16 +571,16 @@ private:
         float const sectionSpacing = 0.5f*ImGui::GetTextLineHeight();
 
         DrawExportPointsPopupDescriptionSection();
-        ImGui::Dummy({0.0f, sectionSpacing});
+        ui::Dummy({0.0f, sectionSpacing});
 
         DrawPointSelector(m_PointSelectorState, model, state);
-        ImGui::Dummy({0.0f, sectionSpacing});
+        ui::Dummy({0.0f, sectionSpacing});
 
         ui::Text("Options");
         ImGui::Separator();
         DrawFrameSelector(m_FrameSelectorState, model);
         DrawOutputFormatEditor(m_OutputFormatState);
-        ImGui::Dummy({0.0f, sectionSpacing});
+        ui::Dummy({0.0f, sectionSpacing});
 
         drawBottomButtons();
     }

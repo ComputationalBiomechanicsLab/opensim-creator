@@ -315,7 +315,7 @@ void osc::DrawRightClickedComponentContextMenuHeader(OpenSim::Component const& c
 void osc::DrawContextMenuSeparator()
 {
     ImGui::Separator();
-    ImGui::Dummy({0.0f, 3.0f});
+    ui::Dummy({0.0f, 3.0f});
 }
 
 void osc::DrawComponentHoverTooltip(OpenSim::Component const& hovered)
@@ -375,7 +375,7 @@ bool osc::DrawWatchOutputMenu(IMainUIStateAPI& api, OpenSim::Component const& c)
         {
             ImGui::PushID(imguiId++);
 
-            ImGui::Dummy({0.0f, 2.0f});
+            ui::Dummy({0.0f, 2.0f});
             ui::TextDisabled("%s (%s)", p->getName().c_str(), p->getConcreteClassName().c_str());
             ImGui::Separator();
 
@@ -405,12 +405,12 @@ bool osc::DrawWatchOutputMenu(IMainUIStateAPI& api, OpenSim::Component const& c)
 
 void osc::DrawSimulationParams(ParamBlock const& params)
 {
-    ImGui::Dummy({0.0f, 1.0f});
+    ui::Dummy({0.0f, 1.0f});
     ui::TextUnformatted("parameters:");
     ui::SameLine();
     DrawHelpMarker("The parameters used when this simulation was launched. These must be set *before* running the simulation");
     ImGui::Separator();
-    ImGui::Dummy({0.0f, 2.0f});
+    ui::Dummy({0.0f, 2.0f});
 
     ui::Columns(2);
     for (int i = 0, len = params.size(); i < len; ++i)
@@ -932,13 +932,13 @@ bool osc::DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions& opts)
     edited = DrawMuscleRenderingOptionsRadioButtions(opts) || edited;
     ImGui::PopID();
 
-    ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+    ui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
     ImGui::PushID(id++);
     ui::TextDisabled("Sizing");
     edited = DrawMuscleSizingOptionsRadioButtons(opts) || edited;
     ImGui::PopID();
 
-    ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+    ui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
     ImGui::PushID(id++);
     ui::TextDisabled("Coloring");
     edited = DrawMuscleColoringOptionsRadioButtons(opts) || edited;
@@ -975,7 +975,7 @@ bool osc::DrawOverlayOptionsEditor(OverlayDecorationOptions& opts)
         {
             if (lastGroupLabel)
             {
-                ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+                ui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
             }
             ui::TextDisabled(groupLabel);
             lastGroupLabel = groupLabel;
@@ -1028,7 +1028,7 @@ bool osc::DrawAdvancedParamsEditor(
     }
     DrawTooltipBodyOnlyIfItemHovered("Try to export the 3D scene to a portable DAE file, so that it can be viewed in 3rd-party modelling software, such as Blender");
 
-    ImGui::Dummy({0.0f, 10.0f});
+    ui::Dummy({0.0f, 10.0f});
     ui::Text("advanced camera properties:");
     ImGui::Separator();
     edited = SliderMetersFloat("radius", params.camera.radius, 0.0f, 10.0f) || edited;
@@ -1042,7 +1042,7 @@ bool osc::DrawAdvancedParamsEditor(
     edited = SliderMetersFloat("pan_y", params.camera.focusPoint.y, -100.0f, 100.0f) || edited;
     edited = SliderMetersFloat("pan_z", params.camera.focusPoint.z, -100.0f, 100.0f) || edited;
 
-    ImGui::Dummy({0.0f, 10.0f});
+    ui::Dummy({0.0f, 10.0f});
     ui::Text("advanced scene properties:");
     ImGui::Separator();
     edited = ImGui::ColorEdit3("light_color", value_ptr(params.lightColor)) || edited;
@@ -1064,7 +1064,7 @@ bool osc::DrawVisualAidsContextMenuContent(ModelRendererParams& params)
     edited = DrawOverlayOptionsEditor(params.overlayOptions) || edited;
 
     // OpenSim-specific extra rendering options
-    ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+    ui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
     ui::TextDisabled("OpenSim");
     edited = DrawCustomDecorationOptionCheckboxes(params.decorationOptions) || edited;
 

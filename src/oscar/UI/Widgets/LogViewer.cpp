@@ -109,7 +109,7 @@ public:
                 copyTracebackLogToClipboard();
             }
 
-            ImGui::Dummy({0.0f, 10.0f});
+            ui::Dummy({0.0f, 10.0f});
 
             ImGui::EndMenuBar();
         }

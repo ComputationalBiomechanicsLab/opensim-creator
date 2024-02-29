@@ -32,7 +32,7 @@ bool osc::IconWithMenu::onDraw()
     if (ImGui::BeginPopup(m_ContextMenuID.c_str(),ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings))
     {
         ui::TextDisabled(m_IconWithoutMenu.getTitle());
-        ImGui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
+        ui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
         rv = m_ContentRenderer();
         ImGui::EndPopup();
     }

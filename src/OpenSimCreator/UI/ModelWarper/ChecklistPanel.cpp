@@ -63,7 +63,7 @@ namespace
         ui::SameLine();
         ui::TextDisabled(component.getConcreteClassName());
         ImGui::Separator();
-        ImGui::Dummy({0.0f, 3.0f});
+        ui::Dummy({0.0f, 3.0f});
     }
 
     template<WarpableOpenSimComponent T>
@@ -109,13 +109,13 @@ namespace
         DrawTooltipHeader(state, c);
 
         ui::Text("Checklist:");
-        ImGui::Dummy({0.0f, 3.0f});
+        ui::Dummy({0.0f, 3.0f});
         DrawChecklist(state, c);
 
         ImGui::NewLine();
 
         ui::Text("Details:");
-        ImGui::Dummy({0.0f, 3.0f});
+        ui::Dummy({0.0f, 3.0f});
         DrawDetailsTable(state, c);
     }
 

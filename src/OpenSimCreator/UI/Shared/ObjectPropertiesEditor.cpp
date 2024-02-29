@@ -189,9 +189,9 @@ namespace
             ui::Text("Set Step Size");
             ui::SameLine();
             DrawHelpMarker("Sets the decrement/increment of the + and - buttons. Can be handy for tweaking property values");
-            ImGui::Dummy({0.0f, 0.1f*ImGui::GetTextLineHeight()});
+            ui::Dummy({0.0f, 0.1f*ImGui::GetTextLineHeight()});
             ImGui::Separator();
-            ImGui::Dummy({0.0f, 0.2f*ImGui::GetTextLineHeight()});
+            ui::Dummy({0.0f, 0.2f*ImGui::GetTextLineHeight()});
 
             if (ImGui::BeginTable("CommonChoicesTable", 2, ImGuiTableFlags_SizingStretchProp))
             {
@@ -951,7 +951,7 @@ namespace
                 ui::TextDisabled("Frame (editing)");
                 ui::SameLine();
                 DrawHelpMarker("Note: this only affects the values that the quantities are edited in. It does not change the frame that the component is attached to. You can change the frame attachment by using the component's context menu: Socket > $FRAME > (edit button) > (select new frame)");
-                ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+                ui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
 
                 int imguiID = 0;
 
