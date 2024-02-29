@@ -133,6 +133,18 @@ Mat4 osc::ToMat4x4(SimTK::Transform const& t)
     return m;
 }
 
+Mat3 osc::ToMat3(SimTK::Mat33 const& m)
+{
+    Mat3 rv{};
+    for (int row = 0; row < 3; ++row) {
+        auto const& r = m[row];
+        rv[0][row] = static_cast<float>(r[0]);
+        rv[1][row] = static_cast<float>(r[1]);
+        rv[2][row] = static_cast<float>(r[2]);
+    }
+    return rv;
+}
+
 Mat4 osc::mat4_cast(SimTK::Rotation const& r)
 {
     SimTK::Transform const t{r};

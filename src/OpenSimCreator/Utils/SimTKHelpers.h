@@ -30,6 +30,7 @@ namespace osc
     Vec3 ToVec3(SimTK::Vec3 const&);
     Vec4 ToVec4(SimTK::Vec3 const&, float w = 1.0f);
     Mat4 ToMat4x4(SimTK::Transform const&);
+    Mat3 ToMat3(SimTK::Mat33 const&);
     Mat4 mat4_cast(SimTK::Rotation const&);
     Quat ToQuat(SimTK::Rotation const&);
     Transform decompose_to_transform(SimTK::Transform const&);

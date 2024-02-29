@@ -750,6 +750,6 @@ Ellipsoid osc::FitEllipsoid(Mesh const& mesh)
     {
         ToVec3(ellipsoidOrigin),
         ToVec3(SimTK::sqrt(Reciporical(Diag(evals)))),
-        {ToVec3(evecs.col(0)), ToVec3(evecs.col(1)), ToVec3(evecs.col(2))},
+        quat_cast(ToMat3(evecs)),
     };
 }

@@ -46,6 +46,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Maths/Ellipsoid.h>
+#include <oscar/Maths/EllipsoidFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Plane.h>
 #include <oscar/Maths/Quat.h>
@@ -2035,9 +2036,10 @@ bool osc::ActionFitEllipsoidToMesh(
     {
         // compute offset transform for ellipsoid
         SimTK::Mat33 m;
-        m.col(0) = ToSimTKVec3(ellipsoid.radiiDirections[0]);
-        m.col(1) = ToSimTKVec3(ellipsoid.radiiDirections[1]);
-        m.col(2) = ToSimTKVec3(ellipsoid.radiiDirections[2]);
+        auto directions = radii_directions(ellipsoid);
+        m.col(0) = ToSimTKVec3(directions[0]);
+        m.col(1) = ToSimTKVec3(directions[1]);
+        m.col(2) = ToSimTKVec3(directions[2]);
         SimTK::Transform const t{SimTK::Rotation{m}, ToSimTKVec3(ellipsoid.origin)};
         offsetFrame->setOffsetTransform(t);
     }
