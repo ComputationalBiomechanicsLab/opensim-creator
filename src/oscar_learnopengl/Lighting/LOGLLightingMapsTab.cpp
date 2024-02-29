@@ -86,7 +86,7 @@ private:
         m_LightingMapsMaterial.setFloat("uLightDiffuse", m_LightDiffuse);
         m_LightingMapsMaterial.setFloat("uLightSpecular", m_LightSpecular);
         m_LightingMapsMaterial.setFloat("uMaterialShininess", m_MaterialShininess);
-        Graphics::DrawMesh(m_Mesh, Identity<Transform>(), m_LightingMapsMaterial, m_Camera);
+        Graphics::DrawMesh(m_Mesh, identity<Transform>(), m_LightingMapsMaterial, m_Camera);
 
         // draw lamp
         m_LightCubeMaterial.setColor("uLightColor", Color::white());

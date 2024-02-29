@@ -55,8 +55,8 @@ namespace
     Camera CreateScreenCamera()
     {
         Camera rv;
-        rv.setViewMatrixOverride(Identity<Mat4>());
-        rv.setProjectionMatrixOverride(Identity<Mat4>());
+        rv.setViewMatrixOverride(identity<Mat4>());
+        rv.setProjectionMatrixOverride(identity<Mat4>());
         return rv;
     }
 }
@@ -104,7 +104,7 @@ private:
 
             // floor
             m_SceneRenderMaterial.setTexture("uTexture1", m_MetalTexture);
-            Graphics::DrawMesh(m_PlaneMesh, Identity<Transform>(), m_SceneRenderMaterial, m_SceneCamera);
+            Graphics::DrawMesh(m_PlaneMesh, identity<Transform>(), m_SceneRenderMaterial, m_SceneCamera);
         }
         m_SceneCamera.renderTo(m_RenderTexture);
 

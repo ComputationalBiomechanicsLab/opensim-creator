@@ -230,7 +230,7 @@ private:
 
             Graphics::DrawMesh(
                 m_TriangleMesh,
-                Identity<Transform>(),
+                identity<Transform>(),
                 m_Material,
                 m_Camera,
                 maybeCollision ? m_BlueColorMaterialProps : m_RedColorMaterialProps

@@ -146,7 +146,7 @@ void osc::DrawXYGrid(
     SceneCache& cache,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    DrawGrid(cache, Identity<Quat>(), out);
+    DrawGrid(cache, identity<Quat>(), out);
 }
 
 void osc::DrawYZGrid(
@@ -299,7 +299,7 @@ std::optional<RayCollision> osc::GetClosestWorldspaceRayCollision(
     return GetClosestWorldspaceRayCollision(
         mesh,
         triangleBVH,
-        Identity<Transform>(),
+        identity<Transform>(),
         ray
     );
 }

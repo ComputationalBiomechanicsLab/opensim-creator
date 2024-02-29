@@ -149,7 +149,7 @@ namespace
             TComponent const* maybeSelected = findSelection();
             if (!maybeSelected)
             {
-                return Identity<Mat4>();  // selection of that type does not exist in the model
+                return identity<Mat4>();  // selection of that type does not exist in the model
             }
             return implGetCurrentModelMatrix(*maybeSelected);
         }

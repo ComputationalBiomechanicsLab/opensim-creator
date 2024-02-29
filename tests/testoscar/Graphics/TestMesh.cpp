@@ -410,7 +410,7 @@ TEST(Mesh, TransformVertsWithTransformCausesTransformedMeshToNotBeEqualToInitial
 
     ASSERT_EQ(m, copy);
 
-    copy.transformVerts(Identity<Transform>());  // noop transform also triggers this (meshes aren't value-comparable)
+    copy.transformVerts(identity<Transform>());  // noop transform also triggers this (meshes aren't value-comparable)
 
     ASSERT_NE(m, copy);
 }
@@ -447,7 +447,7 @@ TEST(Mesh, TransformVertsWithMat4CausesTransformedMeshToNotBeEqualToInitialMesh)
 
     ASSERT_EQ(m, copy);
 
-    copy.transformVerts(Identity<Mat4>());  // noop
+    copy.transformVerts(identity<Mat4>());  // noop
 
     ASSERT_NE(m, copy) << "should be non-equal because mesh equality is reference-based (if it becomes value-based, delete this test)";
 }

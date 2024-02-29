@@ -129,7 +129,7 @@ private:
 
         // render scene
         m_Material.setVec3("uViewPos", m_Camera.getPosition());
-        Graphics::DrawMesh(m_PlaneMesh, Identity<Transform>(), m_Material, m_Camera);
+        Graphics::DrawMesh(m_PlaneMesh, identity<Transform>(), m_Material, m_Camera);
         m_Camera.renderToScreen();
     }
 

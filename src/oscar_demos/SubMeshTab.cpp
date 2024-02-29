@@ -78,7 +78,7 @@ private:
         for (size_t subMeshIndex = 0; subMeshIndex < m_MeshWithSubmeshes.getSubMeshCount(); ++subMeshIndex) {
             Graphics::DrawMesh(
                 m_MeshWithSubmeshes,
-                Identity<Transform>(),
+                identity<Transform>(),
                 m_Material,
                 m_Camera,
                 std::nullopt,

@@ -251,7 +251,7 @@ TEST(Camera, GetViewMatrixReturnsViewMatrixBasedOnPositonDirectionAndUp)
     camera.setPosition({0.0f, 0.0f, 0.0f});
 
     Mat4 viewMatrix = camera.getViewMatrix();
-    Mat4 expectedMatrix = Identity<Mat4>();
+    Mat4 expectedMatrix = identity<Mat4>();
 
     ASSERT_EQ(viewMatrix, expectedMatrix);
 }
@@ -264,7 +264,7 @@ TEST(Camera, SetViewMatrixOverrideSetsANewViewMatrixThatCanBeRetrievedWithGetVie
     camera.setCameraProjection(CameraProjection::Orthographic);
     camera.setPosition({7.0f, 5.0f, -3.0f});
 
-    Mat4 viewMatrix = Identity<Mat4>();
+    Mat4 viewMatrix = identity<Mat4>();
     viewMatrix[0][1] = 9.0f;  // change some part of it
 
     camera.setViewMatrixOverride(viewMatrix);
@@ -277,7 +277,7 @@ TEST(Camera, SetViewMatrixOverrideNulloptResetsTheViewMatrixToUsingStandardCamer
     Camera camera;
     Mat4 initialViewMatrix = camera.getViewMatrix();
 
-    Mat4 viewMatrix = Identity<Mat4>();
+    Mat4 viewMatrix = identity<Mat4>();
     viewMatrix[0][1] = 9.0f;  // change some part of it
 
     camera.setViewMatrixOverride(viewMatrix);
@@ -296,7 +296,7 @@ TEST(Camera, GetProjectionMatrixReturnsProjectionMatrixBasedOnPositonDirectionAn
     camera.setPosition({0.0f, 0.0f, 0.0f});
 
     Mat4 mtx = camera.getProjectionMatrix(1.0f);
-    Mat4 expected = Identity<Mat4>();
+    Mat4 expected = identity<Mat4>();
 
     // only compare the Y, Z, and W columns: the X column depends on the aspect ratio of the output
     // target
@@ -313,7 +313,7 @@ TEST(Camera, SetProjectionMatrixOverrideSetsANewProjectionMatrixThatCanBeRetriev
     camera.setCameraProjection(CameraProjection::Orthographic);
     camera.setPosition({7.0f, 5.0f, -3.0f});
 
-    Mat4 ProjectionMatrix = Identity<Mat4>();
+    Mat4 ProjectionMatrix = identity<Mat4>();
     ProjectionMatrix[0][1] = 9.0f;  // change some part of it
 
     camera.setProjectionMatrixOverride(ProjectionMatrix);
@@ -326,7 +326,7 @@ TEST(Camera, SetProjectionMatrixNulloptResetsTheProjectionMatrixToUsingStandardC
     Camera camera;
     Mat4 initialProjectionMatrix = camera.getProjectionMatrix(1.0f);
 
-    Mat4 ProjectionMatrix = Identity<Mat4>();
+    Mat4 ProjectionMatrix = identity<Mat4>();
     ProjectionMatrix[0][1] = 9.0f;  // change some part of it
 
     camera.setProjectionMatrixOverride(ProjectionMatrix);
@@ -342,10 +342,10 @@ TEST(Camera, GetViewProjectionMatrixReturnsViewMatrixMultipliedByProjectionMatri
 {
     Camera camera;
 
-    Mat4 viewMatrix = Identity<Mat4>();
+    Mat4 viewMatrix = identity<Mat4>();
     viewMatrix[0][3] = 2.5f;  // change some part of it
 
-    Mat4 projectionMatrix = Identity<Mat4>();
+    Mat4 projectionMatrix = identity<Mat4>();
     projectionMatrix[0][1] = 9.0f;  // change some part of it
 
     Mat4 expected = projectionMatrix * viewMatrix;
@@ -360,10 +360,10 @@ TEST(Camera, GetInverseViewProjectionMatrixReturnsExpectedAnswerWhenUsingOverrid
 {
     Camera camera;
 
-    Mat4 viewMatrix = Identity<Mat4>();
+    Mat4 viewMatrix = identity<Mat4>();
     viewMatrix[0][3] = 2.5f;  // change some part of it
 
-    Mat4 projectionMatrix = Identity<Mat4>();
+    Mat4 projectionMatrix = identity<Mat4>();
     projectionMatrix[0][1] = 9.0f;  // change some part of it
 
     Mat4 expected = inverse(projectionMatrix * viewMatrix);

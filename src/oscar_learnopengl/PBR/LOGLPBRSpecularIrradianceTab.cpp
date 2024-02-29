@@ -77,7 +77,7 @@ namespace
         );
 
         Camera camera;
-        Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
+        Graphics::DrawMesh(GenerateCubeMesh(), identity<Transform>(), material, camera);
         camera.renderTo(cubemapRenderTarget);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -106,7 +106,7 @@ namespace
         );
 
         Camera camera;
-        Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
+        Graphics::DrawMesh(GenerateCubeMesh(), identity<Transform>(), material, camera);
         camera.renderTo(irradianceCubemap);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -155,7 +155,7 @@ namespace
             float const roughness = static_cast<float>(mip)/static_cast<float>(maxMipmapLevel);
             material.setFloat("uRoughness", roughness);
 
-            Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
+            Graphics::DrawMesh(GenerateCubeMesh(), identity<Transform>(), material, camera);
             camera.renderTo(captureRT);
             Graphics::CopyTexture(captureRT, rv, mip);
         }
@@ -178,10 +178,10 @@ namespace
 
         // TODO: Graphics::Blit with material
         Camera camera;
-        camera.setProjectionMatrixOverride(Identity<Mat4>());
-        camera.setViewMatrixOverride(Identity<Mat4>());
+        camera.setProjectionMatrixOverride(identity<Mat4>());
+        camera.setViewMatrixOverride(identity<Mat4>());
 
-        Graphics::DrawMesh(quad, Identity<Transform>(), material, camera);
+        Graphics::DrawMesh(quad, identity<Transform>(), material, camera);
         camera.renderTo(renderTex);
 
         Texture2D rv{
@@ -297,7 +297,7 @@ private:
     {
         m_BackgroundMaterial.setRenderTexture("uEnvironmentMap", m_ProjectedMap);
         m_BackgroundMaterial.setDepthFunction(DepthFunction::LessOrEqual);  // for skybox depth trick
-        Graphics::DrawMesh(m_CubeMesh, Identity<Transform>(), m_BackgroundMaterial, m_Camera);
+        Graphics::DrawMesh(m_CubeMesh, identity<Transform>(), m_BackgroundMaterial, m_Camera);
         m_Camera.setClearFlags(CameraClearFlags::Nothing);
         m_Camera.renderTo(m_OutputRender);
         m_Camera.setClearFlags(CameraClearFlags::Default);

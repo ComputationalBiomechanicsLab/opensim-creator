@@ -63,9 +63,9 @@ namespace osc
     // returns a 4x4 transform matrix equivalent to the inverse of the provided transform
     inline Mat4 inverse_mat4_cast(Transform const& t)
     {
-        Mat4 translater = translate(Identity<Mat4>(), -t.position);
+        Mat4 translater = translate(identity<Mat4>(), -t.position);
         Mat4 rotater = mat4_cast(conjugate(t.rotation));
-        Mat4 scaler = scale(Identity<Mat4>(), 1.0f/t.scale);
+        Mat4 scaler = scale(identity<Mat4>(), 1.0f/t.scale);
 
         return scaler * rotater * translater;
     }

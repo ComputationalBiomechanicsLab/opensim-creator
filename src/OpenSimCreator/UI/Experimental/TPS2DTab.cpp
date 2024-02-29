@@ -318,8 +318,8 @@ public:
         m_WireframeMaterial.setTransparent(true);
         m_WireframeMaterial.setWireframeMode(true);
         m_WireframeMaterial.setDepthTested(false);
-        m_Camera.setViewMatrixOverride(Identity<Mat4>());
-        m_Camera.setProjectionMatrixOverride(Identity<Mat4>());
+        m_Camera.setViewMatrixOverride(identity<Mat4>());
+        m_Camera.setProjectionMatrixOverride(identity<Mat4>());
         m_Camera.setBackgroundColor(Color::white());
     }
 
@@ -413,8 +413,8 @@ private:
         RenderTextureDescriptor desc{dims};
         desc.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
         out.emplace(desc);
-        Graphics::DrawMesh(mesh, Identity<Transform>(), m_Material, m_Camera);
-        Graphics::DrawMesh(mesh, Identity<Transform>(), m_WireframeMaterial, m_Camera);
+        Graphics::DrawMesh(mesh, identity<Transform>(), m_Material, m_Camera);
+        Graphics::DrawMesh(mesh, identity<Transform>(), m_WireframeMaterial, m_Camera);
 
         OSC_ASSERT(out.has_value());
         m_Camera.renderTo(*out);

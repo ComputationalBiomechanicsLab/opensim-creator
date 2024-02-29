@@ -36,13 +36,13 @@ namespace osc
         template<std::derived_from<Node> TNode = Node>
         TNode const* getParent() const
         {
-            return getParent(Identity<TNode>{});
+            return getParent(identity<TNode>{});
         }
 
         template<std::derived_from<Node> TNode = Node>
         TNode* updParent()
         {
-            return updParent(Identity<TNode>{});
+            return updParent(identity<TNode>{});
         }
 
 
@@ -51,31 +51,31 @@ namespace osc
         template<std::derived_from<Node> TNode = Node>
         TNode const* getChild(size_t i) const
         {
-            return getChild(i, Identity<TNode>{});
+            return getChild(i, identity<TNode>{});
         }
 
         template<std::derived_from<Node> TNode = Node>
         TNode const* getChild(std::string_view childName) const
         {
-            return getChild(childName, Identity<TNode>{});
+            return getChild(childName, identity<TNode>{});
         }
 
         template<std::derived_from<Node> TNode = Node>
         TNode* updChild(size_t i)
         {
-            return updChild(i, Identity<TNode>{});
+            return updChild(i, identity<TNode>{});
         }
 
         template<std::derived_from<Node> TNode = Node>
         TNode* updChild(std::string_view childName)
         {
-            return updChild(childName, Identity<TNode>{});
+            return updChild(childName, identity<TNode>{});
         }
 
         template<std::derived_from<Node> TNode = Node>
         TNode& addChild(std::unique_ptr<TNode> p)
         {
-            return addChild(std::move(p), Identity<TNode>{});
+            return addChild(std::move(p), identity<TNode>{});
         }
 
         template<std::derived_from<Node> TNode, typename... Args>
@@ -94,13 +94,13 @@ namespace osc
         template<std::derived_from<Node> TNode = Node>
         TNode const* find(NodePath const& p) const
         {
-            return find(p, Identity<TNode>{});
+            return find(p, identity<TNode>{});
         }
 
         template<std::derived_from<Node> TNode = Node>
         TNode* findMut(NodePath const& p)
         {
-            return dynamic_cast<TNode*>(findMut(p, Identity<TNode>{}));
+            return dynamic_cast<TNode*>(findMut(p, identity<TNode>{}));
         }
 
     private:
@@ -112,72 +112,72 @@ namespace osc
         // member functions. See: https://stackoverflow.com/a/3057522
 
         template<typename T>
-        struct Identity { using type = T; };
+        struct identity { using type = T; };
 
         template<std::derived_from<Node> TDerived>
-        TDerived const* getParent(Identity<TDerived>) const
+        TDerived const* getParent(identity<TDerived>) const
         {
-            return dynamic_cast<TDerived const*>(getParent(Identity<Node>{}));
+            return dynamic_cast<TDerived const*>(getParent(identity<Node>{}));
         }
-        Node const* getParent(Identity<Node>) const;
+        Node const* getParent(identity<Node>) const;
 
         template<std::derived_from<Node> TDerived>
-        TDerived* updParent(Identity<TDerived>)
+        TDerived* updParent(identity<TDerived>)
         {
-            return dynamic_cast<TDerived*>(updParent(Identity<Node>{}));
+            return dynamic_cast<TDerived*>(updParent(identity<Node>{}));
         }
-        Node* updParent(Identity<Node>);
+        Node* updParent(identity<Node>);
 
         template<std::derived_from<Node> TDerived>
-        TDerived const* getChild(size_t i, Identity<TDerived>) const
+        TDerived const* getChild(size_t i, identity<TDerived>) const
         {
-            return dynamic_cast<TDerived const*>(getChild(i, Identity<Node>{}));
+            return dynamic_cast<TDerived const*>(getChild(i, identity<Node>{}));
         }
-        Node const* getChild(size_t, Identity<Node>) const;
+        Node const* getChild(size_t, identity<Node>) const;
 
         template<std::derived_from<Node> TDerived>
-        TDerived const* getChild(std::string_view childName, Identity<TDerived>) const
+        TDerived const* getChild(std::string_view childName, identity<TDerived>) const
         {
-            return dynamic_cast<TDerived const*>(getChild(childName, Identity<Node>{}));
+            return dynamic_cast<TDerived const*>(getChild(childName, identity<Node>{}));
         }
-        Node const* getChild(std::string_view, Identity<Node>) const;
+        Node const* getChild(std::string_view, identity<Node>) const;
 
         template<std::derived_from<Node> TDerived>
-        TDerived* updChild(size_t i, Identity<TDerived>)
+        TDerived* updChild(size_t i, identity<TDerived>)
         {
-            return dynamic_cast<TDerived*>(updChild(i, Identity<Node>{}));
+            return dynamic_cast<TDerived*>(updChild(i, identity<Node>{}));
         }
-        Node* updChild(size_t, Identity<Node>);
+        Node* updChild(size_t, identity<Node>);
 
         template<std::derived_from<Node> TDerived>
-        TDerived* updChild(std::string_view childName, Identity<TDerived>)
+        TDerived* updChild(std::string_view childName, identity<TDerived>)
         {
-            return dynamic_cast<TDerived*>(updChild(childName, Identity<Node>{}));
+            return dynamic_cast<TDerived*>(updChild(childName, identity<Node>{}));
         }
-        Node* updChild(std::string_view childName, Identity<Node>);
+        Node* updChild(std::string_view childName, identity<Node>);
 
         template<std::derived_from<Node> TDerived>
-        TDerived& addChild(std::unique_ptr<TDerived> p, Identity<TDerived>)
+        TDerived& addChild(std::unique_ptr<TDerived> p, identity<TDerived>)
         {
             TDerived& rv = *p;
-            addChild(std::move(p), Identity<Node>{});
+            addChild(std::move(p), identity<Node>{});
             return rv;
         }
-        Node& addChild(std::unique_ptr<Node>, Identity<Node>);
+        Node& addChild(std::unique_ptr<Node>, identity<Node>);
 
         template<std::derived_from<Node> TDerived>
-        TDerived const* find(NodePath const& p, Identity<TDerived>) const
+        TDerived const* find(NodePath const& p, identity<TDerived>) const
         {
-            return dynamic_cast<TDerived const*>(find(p, Identity<Node>{}));
+            return dynamic_cast<TDerived const*>(find(p, identity<Node>{}));
         }
-        Node const* find(NodePath const&, Identity<Node>) const;
+        Node const* find(NodePath const&, identity<Node>) const;
 
         template<std::derived_from<Node> TDerived>
-        TDerived* findMut(NodePath const& p, Identity<TDerived>)
+        TDerived* findMut(NodePath const& p, identity<TDerived>)
         {
-            return dynamic_cast<TDerived*>(findMut(p, Identity<Node>{}));
+            return dynamic_cast<TDerived*>(findMut(p, identity<Node>{}));
         }
-        Node* findMut(NodePath const&, Identity<Node>);
+        Node* findMut(NodePath const&, identity<Node>);
 
         // lifetime
         // lifetimed ptr to parent

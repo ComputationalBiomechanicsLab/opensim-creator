@@ -257,7 +257,7 @@ private:
         m_LightPass.material.setFloat("uLightQuadratic", 1.8f);
         m_LightPass.material.setVec3("uViewPos", m_Camera.getPosition());
 
-        Graphics::DrawMesh(m_QuadMesh, Identity<Transform>(), m_LightPass.material, m_Camera);
+        Graphics::DrawMesh(m_QuadMesh, identity<Transform>(), m_LightPass.material, m_Camera);
 
         m_Camera.renderTo(m_OutputTexture);
 

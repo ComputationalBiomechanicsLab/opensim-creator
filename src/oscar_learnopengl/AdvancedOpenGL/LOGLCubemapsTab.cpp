@@ -158,7 +158,7 @@ private:
         m_CubeProperties.setFloat("uIOR", m_IOR);
         Graphics::DrawMesh(
             m_Cube,
-            Identity<Transform>(),
+            identity<Transform>(),
             m_CubeMaterials.at(m_CubeMaterialIndex).material,
             m_Camera,
             m_CubeProperties
@@ -172,7 +172,7 @@ private:
         m_Camera.setViewMatrixOverride(Mat4{Mat3{m_Camera.getViewMatrix()}});
         Graphics::DrawMesh(
             m_Skybox,
-            Identity<Transform>(),
+            identity<Transform>(),
             m_SkyboxMaterial,
             m_Camera
         );

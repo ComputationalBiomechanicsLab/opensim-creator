@@ -60,8 +60,8 @@ namespace
     Camera CreateIdentityCamera()
     {
         Camera rv;
-        rv.setViewMatrixOverride(Identity<Mat4>());
-        rv.setProjectionMatrixOverride(Identity<Mat4>());
+        rv.setViewMatrixOverride(identity<Mat4>());
+        rv.setProjectionMatrixOverride(identity<Mat4>());
         return rv;
     }
 }
@@ -74,7 +74,7 @@ public:
 private:
     void implOnDraw() final
     {
-        Graphics::DrawMesh(m_Mesh, Identity<Transform>(), m_Material, m_Camera);
+        Graphics::DrawMesh(m_Mesh, identity<Transform>(), m_Material, m_Camera);
 
         m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
         m_Camera.renderToScreen();

@@ -218,7 +218,7 @@ private:
         m_SSAO.material.setFloat("uRadius", 0.5f);
         m_SSAO.material.setFloat("uBias", 0.125f);
 
-        Graphics::DrawMesh(m_QuadMesh, Identity<Transform>(), m_SSAO.material, m_Camera);
+        Graphics::DrawMesh(m_QuadMesh, identity<Transform>(), m_SSAO.material, m_Camera);
         m_Camera.renderTo(m_SSAO.outputTexture);
 
         m_SSAO.material.clearRenderTexture("uPositionTex");
@@ -229,7 +229,7 @@ private:
     {
         m_Blur.material.setRenderTexture("uSSAOTex", m_SSAO.outputTexture);
 
-        Graphics::DrawMesh(m_QuadMesh, Identity<Transform>(), m_Blur.material, m_Camera);
+        Graphics::DrawMesh(m_QuadMesh, identity<Transform>(), m_Blur.material, m_Camera);
         m_Camera.renderTo(m_Blur.outputTexture);
 
         m_Blur.material.clearRenderTexture("uSSAOTex");
@@ -246,7 +246,7 @@ private:
         m_Lighting.material.setFloat("uLightLinear", 0.09f);
         m_Lighting.material.setFloat("uLightQuadratic", 0.032f);
 
-        Graphics::DrawMesh(m_QuadMesh, Identity<Transform>(), m_Lighting.material, m_Camera);
+        Graphics::DrawMesh(m_QuadMesh, identity<Transform>(), m_Lighting.material, m_Camera);
         m_Camera.renderTo(m_Lighting.outputTexture);
 
         m_Lighting.material.clearRenderTexture("uPositionTex");

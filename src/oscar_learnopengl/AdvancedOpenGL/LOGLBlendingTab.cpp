@@ -131,7 +131,7 @@ private:
         // floor
         {
             m_OpaqueMaterial.setTexture("uTexture", m_MetalTexture);
-            Graphics::DrawMesh(m_PlaneMesh, Identity<Transform>(), m_OpaqueMaterial, m_Camera);
+            Graphics::DrawMesh(m_PlaneMesh, identity<Transform>(), m_OpaqueMaterial, m_Camera);
         }
 
         // windows

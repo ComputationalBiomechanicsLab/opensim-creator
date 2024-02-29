@@ -31,7 +31,7 @@ namespace osc::mi
 
         Transform implGetXform(IObjectFinder const&) const final
         {
-            return Identity<Transform>();
+            return identity<Transform>();
         }
 
         AABB implCalcBounds(IObjectFinder const&) const final

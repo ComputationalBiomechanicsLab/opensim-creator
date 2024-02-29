@@ -10,5 +10,5 @@ using namespace osc;
 TEST(Transform, QuatDefaultCtorIsIdentity)
 {
     // sanity check: the transform ctor depends on this
-    static_assert(Transform{}.rotation == Identity<Quat>());
+    static_assert(Transform{}.rotation == identity<Quat>());
 }

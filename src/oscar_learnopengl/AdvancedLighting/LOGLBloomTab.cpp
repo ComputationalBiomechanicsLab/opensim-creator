@@ -40,28 +40,28 @@ namespace
         rv.reserve(6);
 
         {
-            Mat4 m = Identity<Mat4>();
+            Mat4 m = identity<Mat4>();
             m = translate(m, Vec3(0.0f, 1.5f, 0.0));
             m = scale(m, Vec3(0.5f));
             rv.push_back(m);
         }
 
         {
-            Mat4 m = Identity<Mat4>();
+            Mat4 m = identity<Mat4>();
             m = translate(m, Vec3(2.0f, 0.0f, 1.0));
             m = scale(m, Vec3(0.5f));
             rv.push_back(m);
         }
 
         {
-            Mat4 m = Identity<Mat4>();
+            Mat4 m = identity<Mat4>();
             m = translate(m, Vec3(-1.0f, -1.0f, 2.0));
             m = rotate(m, 60_deg, UnitVec3{1.0, 0.0, 1.0});
             rv.push_back(m);
         }
 
         {
-            Mat4 m = Identity<Mat4>();
+            Mat4 m = identity<Mat4>();
             m = translate(m, Vec3(0.0f, 2.7f, 4.0));
             m = rotate(m, 23_deg, UnitVec3{1.0, 0.0, 1.0});
             m = scale(m, Vec3(1.25));
@@ -69,14 +69,14 @@ namespace
         }
 
         {
-            Mat4 m = Identity<Mat4>();
+            Mat4 m = identity<Mat4>();
             m = translate(m, Vec3(-2.0f, 1.0f, -3.0));
             m = rotate(m, 124_deg, UnitVec3{1.0, 0.0, 1.0});
             rv.push_back(m);
         }
 
         {
-            Mat4 m = Identity<Mat4>();
+            Mat4 m = identity<Mat4>();
             m = translate(m, Vec3(-3.0f, 0.0f, 0.0));
             m = scale(m, Vec3(0.5f));
             rv.push_back(m);
@@ -173,7 +173,7 @@ private:
 
         // draw floor
         {
-            Mat4 floorTransform = Identity<Mat4>();
+            Mat4 floorTransform = identity<Mat4>();
             floorTransform = translate(floorTransform, Vec3(0.0f, -1.0f, 0.0));
             floorTransform = scale(floorTransform, Vec3(12.5f, 0.5f, 12.5f));
 
@@ -207,7 +207,7 @@ private:
         std::array<Color, c_SceneLightPositions.size()> const& sceneLightColors = GetSceneLightColors();
 
         for (size_t i = 0; i < c_SceneLightPositions.size(); ++i) {
-            Mat4 lightTransform = Identity<Mat4>();
+            Mat4 lightTransform = identity<Mat4>();
             lightTransform = translate(lightTransform, Vec3(c_SceneLightPositions[i]));
             lightTransform = scale(lightTransform, Vec3(0.25f));
 
@@ -258,7 +258,7 @@ private:
         for (RenderTexture& pingPongBuffer : m_PingPongBlurOutputBuffers) {
             m_BlurMaterial.setBool("uHorizontal", horizontal);
             Camera camera;
-            Graphics::DrawMesh(m_QuadMesh, Identity<Transform>(), m_BlurMaterial, camera);
+            Graphics::DrawMesh(m_QuadMesh, identity<Transform>(), m_BlurMaterial, camera);
             camera.renderTo(pingPongBuffer);
             m_BlurMaterial.clearRenderTexture("uInputImage");
 
@@ -274,7 +274,7 @@ private:
         m_FinalCompositingMaterial.setFloat("uExposure", 1.0f);
 
         Camera camera;
-        Graphics::DrawMesh(m_QuadMesh, Identity<Transform>(), m_FinalCompositingMaterial, camera);
+        Graphics::DrawMesh(m_QuadMesh, identity<Transform>(), m_FinalCompositingMaterial, camera);
         camera.setPixelRect(viewportRect);
         camera.renderToScreen();
 

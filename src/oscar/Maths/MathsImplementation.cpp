@@ -544,10 +544,10 @@ void osc::PolarPerspectiveCamera::pan(float aspectRatio, Vec2 delta)
     // this assumes the scene is not rotated, so we need to rotate these
     // axes to match the scene's rotation
     Vec4 defaultPanningAx = {xAmt, yAmt, 0.0f, 1.0f};
-    auto rotTheta = rotate(Identity<Mat4>(), theta, UnitVec3{0.0f, 1.0f, 0.0f});
+    auto rotTheta = rotate(identity<Mat4>(), theta, UnitVec3{0.0f, 1.0f, 0.0f});
     auto thetaVec = UnitVec3{sin(theta), 0.0f, cos(theta)};
     auto phiAxis = cross(thetaVec, UnitVec3{0.0, 1.0f, 0.0f});
-    auto rotPhi = rotate(Identity<Mat4>(), phi, phiAxis);
+    auto rotPhi = rotate(identity<Mat4>(), phi, phiAxis);
 
     Vec4 panningAxes = rotPhi * rotTheta * defaultPanningAx;
     focusPoint += Vec3{panningAxes};
@@ -578,11 +578,11 @@ Mat4 osc::PolarPerspectiveCamera::view_matrix() const
     // this maths is a complete shitshow and I apologize. It just happens to work for now. It's a polar coordinate
     // system that shifts the world based on the camera pan
 
-    auto rotTheta = rotate(Identity<Mat4>(), -theta, Vec3{0.0f, 1.0f, 0.0f});
+    auto rotTheta = rotate(identity<Mat4>(), -theta, Vec3{0.0f, 1.0f, 0.0f});
     auto thetaVec = normalize(Vec3{sin(theta), 0.0f, cos(theta)});
     auto phiAxis = cross(thetaVec, Vec3{0.0, 1.0f, 0.0f});
-    auto rotPhi = rotate(Identity<Mat4>(), -phi, phiAxis);
-    auto panTranslate = translate(Identity<Mat4>(), focusPoint);
+    auto rotPhi = rotate(identity<Mat4>(), -phi, phiAxis);
+    auto panTranslate = translate(identity<Mat4>(), focusPoint);
     return look_at(
         Vec3(0.0f, 0.0f, radius),
         Vec3(0.0f, 0.0f, 0.0f),
@@ -964,7 +964,7 @@ Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
     if(cosTheta >= static_cast<float>(1.0f) - epsilon_v<float>)
     {
         // `a` and `b` point in the same direction: return identity transform
-        return Identity<Mat4>();
+        return identity<Mat4>();
     }
 
     Radians theta{};
@@ -992,7 +992,7 @@ Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
         rotationAxis = normalize(cross(dir1, dir2));
     }
 
-    return rotate(Identity<Mat4>(), theta, rotationAxis);
+    return rotate(identity<Mat4>(), theta, rotationAxis);
 }
 
 Eulers osc::extract_eulers_xyz(Quat const& q)
@@ -1172,14 +1172,14 @@ Sphere osc::ToSphere(AABB const& aabb)
 
 Mat4 osc::FromUnitSphereMat4(Sphere const& s)
 {
-    return translate(Identity<Mat4>(), s.origin) * scale(Identity<Mat4>(), {s.radius, s.radius, s.radius});
+    return translate(identity<Mat4>(), s.origin) * scale(identity<Mat4>(), {s.radius, s.radius, s.radius});
 }
 
 Mat4 osc::SphereToSphereMat4(Sphere const& a, Sphere const& b)
 {
     float s = b.radius/a.radius;
-    Mat4 scaler = scale(Identity<Mat4>(), Vec3{s});
-    Mat4 mover = translate(Identity<Mat4>(), b.origin - a.origin);
+    Mat4 scaler = scale(identity<Mat4>(), Vec3{s});
+    Mat4 mover = translate(identity<Mat4>(), b.origin - a.origin);
     return mover * scaler;
 }
 
@@ -1233,22 +1233,22 @@ Mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b)
     // - LERP is 1.0f + (s - 1.0f)*V, where V is how perpendiular each axis is
 
     Vec3 scalers = 1.0f + ((s - 1.0f) * abs(1.0f - a.normal));
-    Mat4 scaler = scale(Identity<Mat4>(), scalers);
+    Mat4 scaler = scale(identity<Mat4>(), scalers);
 
     float cosTheta = dot(a.normal, b.normal);
     Mat4 rotator;
     if (cosTheta > 0.9999f)
     {
-        rotator = Identity<Mat4>();
+        rotator = identity<Mat4>();
     }
     else
     {
         Radians theta = acos(cosTheta);
         Vec3 axis = cross(a.normal, b.normal);
-        rotator = rotate(Identity<Mat4>(), theta, axis);
+        rotator = rotate(identity<Mat4>(), theta, axis);
     }
 
-    Mat4 translator = translate(Identity<Mat4>(), b.origin-a.origin);
+    Mat4 translator = translate(identity<Mat4>(), b.origin-a.origin);
 
     return translator * rotator * scaler;
 }
@@ -1372,9 +1372,9 @@ Mat4 osc::SegmentToSegmentMat4(LineSegment const& a, LineSegment const& b)
     Vec3 scaler = Vec3{1.0f, 1.0f, 1.0f} + (s-1.0f)*aDir;
 
     Mat4 rotate = Dir1ToDir2Xform(aDir, bDir);
-    Mat4 move = translate(Identity<Mat4>(), bCenter - aCenter);
+    Mat4 move = translate(identity<Mat4>(), bCenter - aCenter);
 
-    return move * rotate * scale(Identity<Mat4>(), scaler);
+    return move * rotate * scale(identity<Mat4>(), scaler);
 }
 
 Transform osc::SegmentToSegmentTransform(LineSegment const& a, LineSegment const& b)

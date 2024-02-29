@@ -125,7 +125,7 @@ private:
     void drawMeshesWithMaterial(Material const& material)
     {
         // floor
-        Graphics::DrawMesh(m_PlaneMesh, Identity<Transform>(), material, m_Camera);
+        Graphics::DrawMesh(m_PlaneMesh, identity<Transform>(), material, m_Camera);
 
         // cubes
         Graphics::DrawMesh(
@@ -186,7 +186,7 @@ private:
         m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.frag"),
     }};
     RenderTexture m_DepthTexture = CreateDepthTexture();
-    Mat4 m_LatestLightSpaceMatrix = Identity<Mat4>();
+    Mat4 m_LatestLightSpaceMatrix = identity<Mat4>();
     Vec3 m_LightPos = {-2.0f, 4.0f, -1.0f};
 };
 

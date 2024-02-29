@@ -65,7 +65,7 @@ private:
         m_LightingMaterial.setFloat("uAmbientStrength", m_AmbientStrength);
         m_LightingMaterial.setFloat("uDiffuseStrength", m_DiffuseStrength);
         m_LightingMaterial.setFloat("uSpecularStrength", m_SpecularStrength);
-        Graphics::DrawMesh(m_CubeMesh, Identity<Transform>(), m_LightingMaterial, m_Camera);
+        Graphics::DrawMesh(m_CubeMesh, identity<Transform>(), m_LightingMaterial, m_Camera);
 
         // draw lamp
         m_LightCubeMaterial.setColor("uLightColor", m_LightColor);

@@ -131,14 +131,14 @@ private:
         Camera orthoCamera;
         orthoCamera.setBackgroundColor(Color::clear());
         orthoCamera.setPixelRect(GetMainViewportWorkspaceScreenRect());
-        orthoCamera.setProjectionMatrixOverride(Identity<Mat4>());
-        orthoCamera.setViewMatrixOverride(Identity<Mat4>());
+        orthoCamera.setProjectionMatrixOverride(identity<Mat4>());
+        orthoCamera.setViewMatrixOverride(identity<Mat4>());
 
         m_TonemapMaterial.setRenderTexture("uTexture", m_SceneHDRTexture);
         m_TonemapMaterial.setBool("uUseTonemap", m_UseTonemap);
         m_TonemapMaterial.setFloat("uExposure", m_Exposure);
 
-        Graphics::DrawMesh(m_QuadMesh, Identity<Transform>(), m_TonemapMaterial, orthoCamera);
+        Graphics::DrawMesh(m_QuadMesh, identity<Transform>(), m_TonemapMaterial, orthoCamera);
         orthoCamera.renderToScreen();
 
         m_TonemapMaterial.clearRenderTexture("uTexture");

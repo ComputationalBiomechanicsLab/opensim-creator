@@ -50,10 +50,10 @@ namespace osc
     }
 
     template<typename T>
-    constexpr T Identity();
+    constexpr T identity();
 
     template<>
-    constexpr Transform Identity<Transform>()
+    constexpr Transform identity<Transform>()
     {
         return Transform{};
     }

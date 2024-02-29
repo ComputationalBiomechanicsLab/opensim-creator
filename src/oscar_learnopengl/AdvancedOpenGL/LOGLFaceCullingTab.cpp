@@ -81,7 +81,7 @@ private:
     void drawScene()
     {
         m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
-        Graphics::DrawMesh(m_Cube, Identity<Transform>(), m_Material, m_Camera);
+        Graphics::DrawMesh(m_Cube, identity<Transform>(), m_Material, m_Camera);
         m_Camera.renderToScreen();
     }
 

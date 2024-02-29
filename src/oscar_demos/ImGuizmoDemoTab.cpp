@@ -28,8 +28,8 @@ private:
         Mat4 projection = m_SceneCamera.projection_matrix(AspectRatio(dims));
 
         ImGuizmo::SetRect(viewportRect.p1.x, viewportRect.p1.y, dims.x, dims.y);
-        Mat4 identity = Identity<Mat4>();
-        ImGuizmo::DrawGrid(value_ptr(view), value_ptr(projection), value_ptr(identity), 100.f);
+        Mat4 identityMatrix = identity<Mat4>();
+        ImGuizmo::DrawGrid(value_ptr(view), value_ptr(projection), value_ptr(identityMatrix), 100.f);
         ImGuizmo::DrawCubes(value_ptr(view), value_ptr(projection), value_ptr(m_ModelMatrix), 1);
 
         ImGui::Checkbox("translate", &m_IsInTranslateMode);
@@ -58,7 +58,7 @@ private:
     }();
 
     bool m_IsInTranslateMode = false;
-    Mat4 m_ModelMatrix = Identity<Mat4>();
+    Mat4 m_ModelMatrix = identity<Mat4>();
 };
 
 

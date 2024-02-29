@@ -73,7 +73,7 @@ namespace
         material.setMat4Array("uShadowMatrices", CalcCubemapViewProjMatrices(projectionMatrix, Vec3{}));
 
         Camera camera;
-        Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
+        Graphics::DrawMesh(GenerateCubeMesh(), identity<Transform>(), material, camera);
         camera.renderTo(cubemapRenderTarget);
 
         // TODO: some way of copying it into an `osc::Cubemap` would make sense
@@ -99,7 +99,7 @@ namespace
         material.setMat4Array("uShadowMatrices", CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
 
         Camera camera;
-        Graphics::DrawMesh(GenerateCubeMesh(), Identity<Transform>(), material, camera);
+        Graphics::DrawMesh(GenerateCubeMesh(), identity<Transform>(), material, camera);
         camera.renderTo(irradianceCubemap);
 
         // TODO: some way of copying it into an `osc::Cubemap` would make sense
@@ -195,7 +195,7 @@ private:
     {
         m_BackgroundMaterial.setRenderTexture("uEnvironmentMap", m_ProjectedMap);
         m_BackgroundMaterial.setDepthFunction(DepthFunction::LessOrEqual);  // for skybox depth trick
-        Graphics::DrawMesh(m_CubeMesh, Identity<Transform>(), m_BackgroundMaterial, m_Camera);
+        Graphics::DrawMesh(m_CubeMesh, identity<Transform>(), m_BackgroundMaterial, m_Camera);
         m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
         m_Camera.setClearFlags(CameraClearFlags::Nothing);
         m_Camera.renderToScreen();

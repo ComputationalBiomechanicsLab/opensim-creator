@@ -1537,7 +1537,7 @@ TEST_F(Renderer, DepthStencilFormatCanBeIteratedOverAndStreamedToString)
 TEST_F(Renderer, DrawMeshDoesNotThrowWithStandardArgs)
 {
     Mesh const mesh;
-    Transform const transform = Identity<Transform>();
+    Transform const transform = identity<Transform>();
     Material const material = GenerateMaterial();
     Camera camera;
 
@@ -1547,7 +1547,7 @@ TEST_F(Renderer, DrawMeshDoesNotThrowWithStandardArgs)
 TEST_F(Renderer, DrawMeshThrowsIfGivenOutOfBoundsSubMeshIndex)
 {
     Mesh const mesh;
-    Transform const transform = Identity<Transform>();
+    Transform const transform = identity<Transform>();
     Material const material = GenerateMaterial();
     Camera camera;
 
@@ -1558,7 +1558,7 @@ TEST_F(Renderer, DrawMeshDoesNotThrowIfGivenInBoundsSubMesh)
 {
     Mesh mesh;
     mesh.pushSubMeshDescriptor({0, 0, MeshTopology::Triangles});
-    Transform const transform = Identity<Transform>();
+    Transform const transform = identity<Transform>();
     Material const material = GenerateMaterial();
     Camera camera;
 

@@ -381,10 +381,10 @@ namespace osc
     using Mat3u32 = Mat<3, 3, uint32_t>;
 
     template<typename T>
-    constexpr T Identity();
+    constexpr T identity();
 
     template<>
-    constexpr Mat3 Identity<Mat3>()
+    constexpr Mat3 identity<Mat3>()
     {
         return Mat3{1.0f};
     }

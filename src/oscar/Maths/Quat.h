@@ -13,10 +13,10 @@ namespace osc
     using Quatu32 = Qua<uint32_t>;
 
     template<typename T>
-    constexpr T Identity();
+    constexpr T identity();
 
     template<>
-    constexpr Quat Identity<Quat>()
+    constexpr Quat identity<Quat>()
     {
         return Quat{};
     }
