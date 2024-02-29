@@ -95,13 +95,13 @@ namespace osc::mi
             {
                 return;  // nothing hovered
             }
-            else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            else if (ui::IsMouseClicked(ImGuiMouseButton_Left))
             {
                 // LEFT CLICK: set first mouse location
                 m_MaybeFirstLocation = m_MaybeCurrentHover.Pos;
                 handlePossibleTransitionToNextStep();
             }
-            else if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+            else if (ui::IsMouseClicked(ImGuiMouseButton_Right))
             {
                 // RIGHT CLICK: set second mouse location
                 m_MaybeSecondLocation = m_MaybeCurrentHover.Pos;

@@ -86,4 +86,9 @@ namespace osc::ui
     {
         ImGui::SameLine(offset_from_start_x, spacing);
     }
+
+    inline bool IsMouseClicked(ImGuiMouseButton button, bool repeat = false)
+    {
+        return ImGui::IsMouseClicked(button, repeat);
+    }
 }

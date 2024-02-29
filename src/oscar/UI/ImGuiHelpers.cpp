@@ -1021,7 +1021,7 @@ bool osc::CircularSliderFloat(
     if (!temporaryTextInputActive)
     {
         // tabbing or double clicking the slider temporarily transforms it into an input box
-        const bool clicked = isHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left, id);
+        const bool clicked = isHovered && ui::IsMouseClicked(ImGuiMouseButton_Left, id);
         const bool doubleClicked = (isHovered && g.IO.MouseClickedCount[0] == 2 && ImGui::TestKeyOwner(ImGuiKey_MouseLeft, id));
         const bool makeActive = (clicked || doubleClicked || g.NavActivateId == id);
 

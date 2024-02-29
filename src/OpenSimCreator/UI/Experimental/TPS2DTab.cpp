@@ -472,7 +472,7 @@ private:
 
         DrawTooltipBodyOnly(to_string(mouseImageNDCPos));
 
-        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+        if (ui::IsMouseClicked(ImGuiMouseButton_Left))
         {
             m_MouseState = GUIFirstClickMouseState{mouseImageNDCPos};
         }
@@ -488,7 +488,7 @@ private:
 
         DrawTooltipBodyOnly(to_string(mouseImageNDCPos) + "*");
 
-        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+        if (ui::IsMouseClicked(ImGuiMouseButton_Left))
         {
             m_LandmarkPairs.push_back({st.srcNDCPos, mouseImageNDCPos});
             m_MouseState = GUIInitialMouseState{};

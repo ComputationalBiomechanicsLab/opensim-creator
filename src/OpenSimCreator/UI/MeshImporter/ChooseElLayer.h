@@ -237,7 +237,7 @@ namespace osc::mi
 
             drawHoverTooltip();
 
-            if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            if (ui::IsMouseClicked(ImGuiMouseButton_Left))
             {
                 tryToggleSelectionStateOf(m_MaybeHover.ID);
                 handlePossibleCompletion();
