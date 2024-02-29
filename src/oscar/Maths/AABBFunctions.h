@@ -152,10 +152,20 @@ namespace osc
         using std::begin;
         using std::end;
 
+        auto it = begin(range);
+        auto const en = end(range);
+
+        // find first non-nullopt AABB (or the end)
         std::optional<AABB> rv;
-        for (auto const& el : range) {
-            rv = maybe_aabb_of(rv, proj(el));
+        while (!rv && it != en) {
+            rv = proj(*it++);
         }
+
+        // combine with remainder of range
+        for (; it != en; ++it) {
+            rv = aabb_of(proj(*it), *rv);
+        }
+
         return rv;
     }
 
