@@ -165,7 +165,7 @@ private:
             ui::SameLine();
             DrawHelpMarker("Whether osc should automatically add intermediate offset frames to the OpenSim::Joint. A joint can attach to the two bodies (this added one, plus the selected one) directly. However, many OpenSim model designs instead make the joint attach to offset frames which, themselves, attach to the bodies. The utility of doing this is that the offset frames can be manually adjusted later, rather than *having* to attach the center of the joint to the center of the body");
             ui::NextColumn();
-            ImGui::Checkbox("##addoffsetframescheckbox", &m_BodyDetails.addOffsetFrames);
+            ui::Checkbox("##addoffsetframescheckbox", &m_BodyDetails.addOffsetFrames);
             App::upd().addFrameAnnotation("AddBodyPopup::AddOffsetFramesInput", GetItemRect());
             ui::NextColumn();
         }

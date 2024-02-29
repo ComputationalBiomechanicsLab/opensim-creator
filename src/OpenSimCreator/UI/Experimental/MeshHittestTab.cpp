@@ -148,7 +148,7 @@ public:
         // printout stats
         {
             ImGui::Begin("controls");
-            ImGui::Checkbox("BVH", &m_UseBVH);
+            ui::Checkbox("BVH", &m_UseBVH);
             ui::Text("%ld microseconds", static_cast<long>(m_RaycastDuration.count()));
             auto r = m_Ray;
             ui::Text("camerapos = (%.2f, %.2f, %.2f)", m_Camera.getPosition().x, m_Camera.getPosition().y, m_Camera.getPosition().z);

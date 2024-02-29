@@ -105,7 +105,7 @@ namespace
         std::string const absPath = GetAbsolutePathString(component);
 
         bool selected = uiState.selectedPointAbsPaths.contains(absPath);
-        if (ImGui::Checkbox(component.getName().c_str(), &selected))
+        if (ui::Checkbox(component.getName().c_str(), &selected))
         {
             if (selected)
             {
@@ -370,7 +370,7 @@ namespace
 
     void DrawOutputFormatEditor(OutputFormatEditorUiState& uiState)
     {
-        ImGui::Checkbox("Export Point Names as Absolute Paths", &uiState.exportPointNamesAsAbsPaths);
+        ui::Checkbox("Export Point Names as Absolute Paths", &uiState.exportPointNamesAsAbsPaths);
         DrawTooltipBodyOnlyIfItemHovered("If selected, the exported point name will be the full path to the point (e.g. `/forceset/somemuscle/geometrypath/pointname`), rather than just the name of the point (e.g. `pointname`)");
     }
 

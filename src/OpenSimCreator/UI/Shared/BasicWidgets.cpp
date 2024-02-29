@@ -954,7 +954,7 @@ bool osc::DrawRenderingOptionsEditor(CustomRenderingOptions& opts)
     for (size_t i = 0; i < opts.getNumOptions(); ++i)
     {
         bool value = opts.getOptionValue(i);
-        if (ImGui::Checkbox(opts.getOptionLabel(i).c_str(), &value))
+        if (ui::Checkbox(opts.getOptionLabel(i).c_str(), &value))
         {
             opts.setOptionValue(i, value);
             edited = true;
@@ -982,7 +982,7 @@ bool osc::DrawOverlayOptionsEditor(OverlayDecorationOptions& opts)
         }
 
         bool value = opts.getOptionValue(i);
-        if (ImGui::Checkbox(opts.getOptionLabel(i).c_str(), &value))
+        if (ui::Checkbox(opts.getOptionLabel(i).c_str(), &value))
         {
             opts.setOptionValue(i, value);
             edited = true;
@@ -1000,7 +1000,7 @@ bool osc::DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions& opts)
         ImGui::PushID(imguiID++);
 
         bool v = opts.getOptionValue(i);
-        if (ImGui::Checkbox(opts.getOptionLabel(i).c_str(), &v))
+        if (ui::Checkbox(opts.getOptionLabel(i).c_str(), &v))
         {
             opts.setOptionValue(i, v);
             edited = true;

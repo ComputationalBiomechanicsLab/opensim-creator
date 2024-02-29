@@ -97,7 +97,7 @@ namespace osc
             ui::SameLine();
             drawAutoFitCameraButton();
             ui::SameLine();
-            ImGui::Checkbox("show destination", &m_ShowDestinationMesh);
+            ui::Checkbox("show destination", &m_ShowDestinationMesh);
             ui::SameLine();
             drawLandmarkRadiusSlider();
             drawBlendingFactorSlider();

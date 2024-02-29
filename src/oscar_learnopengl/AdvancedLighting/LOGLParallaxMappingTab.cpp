@@ -139,7 +139,7 @@ private:
         m_Camera.renderToScreen();
 
         ImGui::Begin("controls");
-        ImGui::Checkbox("normal mapping", &m_IsMappingEnabled);
+        ui::Checkbox("normal mapping", &m_IsMappingEnabled);
         ImGui::End();
     }
 

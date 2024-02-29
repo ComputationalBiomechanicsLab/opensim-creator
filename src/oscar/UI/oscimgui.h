@@ -91,4 +91,9 @@ namespace osc::ui
     {
         return ImGui::IsMouseClicked(button, repeat);
     }
+
+    inline bool Checkbox(const char* label, bool* v)
+    {
+        return ImGui::Checkbox(label, v);
+    }
 }

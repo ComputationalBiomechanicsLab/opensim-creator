@@ -138,7 +138,7 @@ private:
     void draw2DUI()
     {
         ImGui::Begin("Tutorial Step");
-        ImGui::Checkbox("step1", &m_ShowStep1);
+        ui::Checkbox("step1", &m_ShowStep1);
         if (m_Camera.isCapturingMouse()) {
             ui::Text("mouse captured (esc to uncapture)");
         }

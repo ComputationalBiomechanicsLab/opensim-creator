@@ -42,14 +42,14 @@ private:
 
         {
             bool waiting = App::get().isMainLoopWaiting();
-            if (ImGui::Checkbox("waiting", &waiting))
+            if (ui::Checkbox("waiting", &waiting))
             {
                 App::upd().setMainLoopWaiting(waiting);
             }
         }
         {
             bool vsync = App::get().isVsyncEnabled();
-            if (ImGui::Checkbox("VSYNC", &vsync))
+            if (ui::Checkbox("VSYNC", &vsync))
             {
                 App::upd().setVsync(vsync);
             }
@@ -58,7 +58,7 @@ private:
         {
             ClearAllPerfMeasurements();
         }
-        ImGui::Checkbox("pause", &m_IsPaused);
+        ui::Checkbox("pause", &m_IsPaused);
 
         std::vector<PerfMeasurement> measurements;
         if (!m_IsPaused)

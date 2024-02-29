@@ -236,7 +236,7 @@ private:
         if (!physFrameSocket)
         {
             bool v = false;
-            ImGui::Checkbox(label.c_str(), &v);
+            ui::Checkbox(label.c_str(), &v);
             DrawTooltipBodyOnlyIfItemHovered("Disabled: the socket doesn't connect to a physical frame");
             return;
         }
@@ -246,12 +246,12 @@ private:
         if (!componentSpatialRepresentation)
         {
             bool v = false;
-            ImGui::Checkbox(label.c_str(), &v);
+            ui::Checkbox(label.c_str(), &v);
             DrawTooltipBodyOnlyIfItemHovered("Disabled: the component doesn't have a spatial representation that OSC knows how to re-express");
             return;
         }
 
-        ImGui::Checkbox(label.c_str(), &m_TryReexpressInDifferentFrame);
+        ui::Checkbox(label.c_str(), &m_TryReexpressInDifferentFrame);
     }
 
     std::shared_ptr<UndoableModelStatePair> m_Model;

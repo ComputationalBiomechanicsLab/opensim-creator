@@ -733,7 +733,7 @@ namespace
             bool edited = false;
 
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            if (ImGui::Checkbox("##booleditor", &value))
+            if (ui::Checkbox("##booleditor", &value))
             {
                 // update the edited property - don't rely on ImGui to remember edits
                 m_EditedProperty.setValue(idx, value);
@@ -1358,7 +1358,7 @@ namespace
             shouldSave = shouldSave || ItemValueShouldBeSaved();
 
             bool isVisible = m_EditedProperty.getValue().get_visible();
-            if (ImGui::Checkbox("is visible", &isVisible))
+            if (ui::Checkbox("is visible", &isVisible))
             {
                 m_EditedProperty.updValue().set_visible(isVisible);
             }

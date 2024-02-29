@@ -59,7 +59,7 @@ public:
 
         ImGui::Begin("cookiecutter panel");
         ui::Text("hello world");
-        ImGui::Checkbox("checkbox_state", &m_CheckboxState);
+        ui::Checkbox("checkbox_state", &m_CheckboxState);
         ImGui::End();
 
         ui::context::Render();  // render the 2D UI's drawing to the screen

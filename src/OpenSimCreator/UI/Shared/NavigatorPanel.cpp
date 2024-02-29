@@ -206,7 +206,7 @@ private:
         ui::TextUnformatted(ICON_FA_EYE);
         if (ImGui::BeginPopupContextItem("##filterpopup"))
         {
-            ImGui::Checkbox("frames", &m_ShowFrames);
+            ui::Checkbox("frames", &m_ShowFrames);
             ImGui::EndPopup();
         }
         ui::SameLine();

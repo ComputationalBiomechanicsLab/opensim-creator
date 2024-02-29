@@ -32,7 +32,7 @@ private:
         ImGuizmo::DrawGrid(value_ptr(view), value_ptr(projection), value_ptr(identityMatrix), 100.f);
         ImGuizmo::DrawCubes(value_ptr(view), value_ptr(projection), value_ptr(m_ModelMatrix), 1);
 
-        ImGui::Checkbox("translate", &m_IsInTranslateMode);
+        ui::Checkbox("translate", &m_IsInTranslateMode);
 
         ImGuizmo::Manipulate(
             value_ptr(view),

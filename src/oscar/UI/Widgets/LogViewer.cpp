@@ -88,7 +88,7 @@ public:
             }
 
             ui::SameLine();
-            ImGui::Checkbox("autoscroll", &autoscroll);
+            ui::Checkbox("autoscroll", &autoscroll);
 
             ui::SameLine();
             if (ImGui::Button("clear"))

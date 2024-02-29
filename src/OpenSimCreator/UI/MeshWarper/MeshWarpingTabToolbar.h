@@ -120,13 +120,13 @@ namespace osc
 
         void drawCameraLockCheckbox()
         {
-            ImGui::Checkbox("link cameras", &m_State->linkCameras);
+            ui::Checkbox("link cameras", &m_State->linkCameras);
             ui::SameLine();
             if (!m_State->linkCameras)
             {
                 ImGui::BeginDisabled();
             }
-            ImGui::Checkbox("only link rotation", &m_State->onlyLinkRotation);
+            ui::Checkbox("only link rotation", &m_State->onlyLinkRotation);
             if (!m_State->linkCameras)
             {
                 ImGui::EndDisabled();

@@ -1799,7 +1799,7 @@ private:
             {
                 bool v = visibilities[i];
                 ImGui::PushID(imguiID++);
-                if (ImGui::Checkbox(labels[i], &v))
+                if (ui::Checkbox(labels[i], &v))
                 {
                     m_Shared->setVisibilityFlag(i, v);
                 }
@@ -1823,7 +1823,7 @@ private:
             {
                 bool v = interactables[i];
                 ImGui::PushID(imguiID++);
-                if (ImGui::Checkbox(labels[i], &v))
+                if (ui::Checkbox(labels[i], &v))
                 {
                     m_Shared->setInteractivityFlag(i, v);
                 }
@@ -2012,7 +2012,7 @@ private:
 
             {
                 bool v = flags & ModelCreationFlags::ExportStationsAsMarkers;
-                if (ImGui::Checkbox("Export Stations as Markers", &v))
+                if (ui::Checkbox("Export Stations as Markers", &v))
                 {
                     ModelCreationFlags const newFlags = v ?
                         flags + ModelCreationFlags::ExportStationsAsMarkers :

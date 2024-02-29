@@ -76,7 +76,7 @@ private:
         }
 
         if (ImGui::Begin("viewer")) {
-            ImGui::Checkbox("wireframe", &m_DrawWireframe);
+            ui::Checkbox("wireframe", &m_DrawWireframe);
             for (auto const& [name, _] : m_AllMeshes) {
                 if (ImGui::Button(name.c_str())) {
                     m_CurrentMesh = name;
