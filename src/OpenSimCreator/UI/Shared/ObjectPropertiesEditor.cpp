@@ -518,9 +518,9 @@ namespace
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
             for (int idx = 0; idx < std::max(m_EditedProperty.size(), 1); ++idx)
             {
-                ImGui::PushID(idx);
+                ui::PushID(idx);
                 std::optional<std::function<void(OpenSim::AbstractProperty&)>> editorRv = drawIthEditor(idx);
-                ImGui::PopID();
+                ui::PopID();
 
                 if (!rv)
                 {
@@ -606,9 +606,9 @@ namespace
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
             for (int idx = 0; idx < std::max(m_EditedProperty.size(), 1); ++idx)
             {
-                ImGui::PushID(idx);
+                ui::PushID(idx);
                 std::optional<std::function<void(OpenSim::AbstractProperty&)>> editorRv = drawIthEditor(idx);
-                ImGui::PopID();
+                ui::PopID();
 
                 if (!rv)
                 {
@@ -698,9 +698,9 @@ namespace
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
             for (int idx = 0; idx < std::max(m_EditedProperty.size(), 1); ++idx)
             {
-                ImGui::PushID(idx);
+                ui::PushID(idx);
                 std::optional<std::function<void(OpenSim::AbstractProperty&)>> editorRv = drawIthEditor(idx);
-                ImGui::PopID();
+                ui::PopID();
 
                 if (!rv)
                 {
@@ -919,9 +919,9 @@ namespace
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
             for (int idx = 0; idx < std::max(m_EditedProperty.size(), 1); ++idx)
             {
-                ImGui::PushID(idx);
+                ui::PushID(idx);
                 std::optional<std::function<void(OpenSim::AbstractProperty&)>> editorRv = drawIthEditor(valueConverter, idx);
-                ImGui::PopID();
+                ui::PopID();
 
                 if (!rv)
                 {
@@ -958,13 +958,13 @@ namespace
                 // draw "default" (reset) option
                 {
                     ImGui::Separator();
-                    ImGui::PushID(imguiID++);
+                    ui::PushID(imguiID++);
                     bool selected = !m_MaybeUserSelectedFrameAbsPath.has_value();
                     if (ImGui::Selectable(defaultedLabel.c_str(), &selected))
                     {
                         m_MaybeUserSelectedFrameAbsPath.reset();
                     }
-                    ImGui::PopID();
+                    ui::PopID();
                     ImGui::Separator();
                 }
 
@@ -973,13 +973,13 @@ namespace
                 {
                     OpenSim::ComponentPath const frameAbsPath = GetAbsolutePath(frame);
 
-                    ImGui::PushID(imguiID++);
+                    ui::PushID(imguiID++);
                     bool selected = frameAbsPath == m_MaybeUserSelectedFrameAbsPath;
                     if (ImGui::Selectable(frame.getName().c_str(), &selected))
                     {
                         m_MaybeUserSelectedFrameAbsPath = frameAbsPath;
                     }
-                    ImGui::PopID();
+                    ui::PopID();
                 }
 
                 ImGui::EndCombo();
@@ -1052,7 +1052,7 @@ namespace
                 m_EditedProperty.setValue(idx, ToSimTKVec3(savedValue));
             }
 
-            ImGui::PopID();
+            ui::PopID();
 
             return drawRV.shouldSave ? ComponentEditorReturn::ShouldSave : ComponentEditorReturn::None;
         }
@@ -1124,9 +1124,9 @@ namespace
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
             for (int idx = 0; idx < std::max(m_EditedProperty.size(), 1); ++idx)
             {
-                ImGui::PushID(idx);
+                ui::PushID(idx);
                 std::optional<std::function<void(OpenSim::AbstractProperty&)>> editorRv = drawIthEditor(idx);
-                ImGui::PopID();
+                ui::PopID();
 
                 if (!rv)
                 {
@@ -1161,7 +1161,7 @@ namespace
             bool shouldSave = false;
             for (int i = 0; i < 2; ++i)
             {
-                ImGui::PushID(i);
+                ui::PushID(i);
 
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                 if (ImGui::InputFloat3("##vec6editor", rawValue.data() + static_cast<ptrdiff_t>(3*i), "%.6f"))
@@ -1173,7 +1173,7 @@ namespace
                 shouldSave = shouldSave || ItemValueShouldBeSaved();
                 App::upd().addFrameAnnotation("ObjectPropertiesEditor::Vec6Editor/" + m_EditedProperty.getName(), osc::GetItemRect());
 
-                ImGui::PopID();
+                ui::PopID();
             }
 
             if (shouldSave)
@@ -1219,9 +1219,9 @@ namespace
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
             for (int idx = 0; idx < std::max(m_EditedProperty.size(), 1); ++idx)
             {
-                ImGui::PushID(idx);
+                ui::PushID(idx);
                 std::optional<std::function<void(OpenSim::AbstractProperty&)>> editorRv = drawIthEditor(idx);
-                ImGui::PopID();
+                ui::PopID();
 
                 if (!rv)
                 {
@@ -1312,9 +1312,9 @@ namespace
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
             for (int idx = 0; idx < std::max(m_EditedProperty.size(), 1); ++idx)
             {
-                ImGui::PushID(idx);
+                ui::PushID(idx);
                 std::optional<std::function<void(OpenSim::AbstractProperty&)>> editorRv = drawIthEditor(idx);
-                ImGui::PopID();
+                ui::PopID();
 
                 if (!rv)
                 {
@@ -1670,9 +1670,9 @@ private:
         ui::Columns(2);
         for (int i = 0; i < obj.getNumProperties(); ++i)
         {
-            ImGui::PushID(i);
+            ui::PushID(i);
             std::optional<ObjectPropertyEdit> maybeEdit = tryDrawPropertyEditor(obj, obj.getPropertyByIndex(i));
-            ImGui::PopID();
+            ui::PopID();
 
             if (maybeEdit)
             {
@@ -1713,9 +1713,9 @@ private:
         OpenSim::AbstractProperty const& prop,
         IPropertyEditor& editor)
     {
-        ImGui::PushID(prop.getName().c_str());
+        ui::PushID(prop.getName().c_str());
         std::optional<std::function<void(OpenSim::AbstractProperty&)>> maybeUpdater = editor.onDraw();
-        ImGui::PopID();
+        ui::PopID();
 
         if (maybeUpdater)
         {

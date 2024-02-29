@@ -244,11 +244,11 @@ namespace osc
         Radians max
     );
 
-    // push things as-if by calling `ImGui::PushID(int);`
+    // push things as-if by calling `ui::PushID(int);`
     void PushID(UID);
     void PushID(ptrdiff_t);
 
-    // symmetric equivalent to `ImGui::PopID();`
+    // symmetric equivalent to `ui::PopID();`
     void PopID();
 
     // convert a color to ImU32 (used by ImGui's drawlist)

@@ -110,12 +110,12 @@ void osc::MainMenuFileTab::onDraw(
         // iterate in reverse: recent files are stored oldest --> newest
         for (RecentFile const& rf : *recentFiles)
         {
-            ImGui::PushID(++imgui_id);
+            ui::PushID(++imgui_id);
             if (ui::MenuItem(rf.path.filename().string().c_str()))
             {
                 ActionOpenModel(api, rf.path);
             }
-            ImGui::PopID();
+            ui::PopID();
         }
 
         ui::EndMenu();
@@ -125,12 +125,12 @@ void osc::MainMenuFileTab::onDraw(
     {
         for (std::filesystem::path const& ex : exampleOsimFiles)
         {
-            ImGui::PushID(++imgui_id);
+            ui::PushID(++imgui_id);
             if (ui::MenuItem(ex.filename().string().c_str()))
             {
                 ActionOpenModel(api, ex);
             }
-            ImGui::PopID();
+            ui::PopID();
         }
 
         ui::EndMenu();
@@ -368,23 +368,23 @@ void osc::MainMenuAboutTab::onDraw()
         ui::SameLine();
         DrawHelpMarker("opens OSC's installation location in your OS's default file browser");
         ui::NextColumn();
-        ImGui::PushID(id++);
+        ui::PushID(id++);
         if (ui::Button(ICON_FA_FOLDER " open"))
         {
             OpenPathInOSDefaultApplication(App::get().getExecutableDirPath());
         }
-        ImGui::PopID();
+        ui::PopID();
         ui::NextColumn();
 
         ui::TextUnformatted("User Data Dir");
         ui::SameLine();
         DrawHelpMarker("opens your OSC user data directory in your OS's default file browser");
         ui::NextColumn();
-        ImGui::PushID(id++);
+        ui::PushID(id++);
         if (ui::Button(ICON_FA_FOLDER " open")) {
             OpenPathInOSDefaultApplication(App::get().getUserDataDirPath());
         }
-        ImGui::PopID();
+        ui::PopID();
         ui::NextColumn();
 
         ui::TextUnformatted("Debug mode");
@@ -420,38 +420,38 @@ void osc::MainMenuAboutTab::onDraw()
 
         ui::TextUnformatted("OpenSim Creator Documentation");
         ui::NextColumn();
-        ImGui::PushID(id++);
+        ui::PushID(id++);
         if (ui::Button(ICON_FA_LINK " open"))
         {
             OpenPathInOSDefaultApplication(App::get().getConfig().getHTMLDocsDir() / "index.html");
         }
         DrawTooltipBodyOnlyIfItemHovered("this will open the (locally installed) documentation in a separate browser window");
-        ImGui::PopID();
+        ui::PopID();
         ui::NextColumn();
 
         if (auto repoURL = App::get().getMetadata().tryGetRepositoryURL())
         {
             ui::TextUnformatted("OpenSim Creator Repository");
             ui::NextColumn();
-            ImGui::PushID(id++);
+            ui::PushID(id++);
             if (ui::Button(ICON_FA_LINK " open"))
             {
                 OpenPathInOSDefaultApplication(std::filesystem::path{std::string_view{*repoURL}});
             }
             DrawTooltipBodyOnlyIfItemHovered("this will open the repository homepage in a separate browser window");
-            ImGui::PopID();
+            ui::PopID();
             ui::NextColumn();
         }
 
         ui::TextUnformatted("OpenSim Documentation");
         ui::NextColumn();
-        ImGui::PushID(id++);
+        ui::PushID(id++);
         if (ui::Button(ICON_FA_LINK " open"))
         {
             OpenPathInOSDefaultApplication("https://simtk-confluence.stanford.edu/display/OpenSim/Documentation");
         }
         DrawTooltipBodyOnlyIfItemHovered("this will open the documentation in a separate browser window");
-        ImGui::PopID();
+        ui::PopID();
         ui::NextColumn();
 
         ui::Columns();

@@ -127,9 +127,9 @@ private:
             ui::Begin("Controls");
             for (ScreenshotAnnotation const& annotation : m_Screenshot.annotations)
             {
-                ImGui::PushID(id++);
+                ui::PushID(id++);
                 ui::TextUnformatted(annotation.label);
-                ImGui::PopID();
+                ui::PopID();
             }
             ui::End();
         }

@@ -110,7 +110,7 @@ private:
             int id = 0;
             for (auto const& station : m_ImportedLandmarks)
             {
-                ImGui::PushID(id++);
+                ui::PushID(id++);
                 ImGui::TableNextRow();
                 int column = 0;
                 ImGui::TableSetColumnIndex(column++);
@@ -121,7 +121,7 @@ private:
                 ui::Text("%f", station.position.y);
                 ImGui::TableSetColumnIndex(column++);
                 ui::Text("%f", station.position.z);
-                ImGui::PopID();
+                ui::PopID();
             }
 
             ImGui::EndTable();
@@ -157,9 +157,9 @@ private:
             int id = 0;
             for (auto const& warning : m_ImportWarnings)
             {
-                ImGui::PushID(id++);
+                ui::PushID(id++);
                 TextUnformatted(warning);
-                ImGui::PopID();
+                ui::PopID();
             }
             EndTooltip();
         }

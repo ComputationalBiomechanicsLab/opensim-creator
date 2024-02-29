@@ -172,13 +172,13 @@ private:
         int id = 0;  // care: necessary because multiple connectees may have the same name
         for (ConnecteeOption const& option : m_Options)
         {
-            ImGui::PushID(id++);
+            ui::PushID(id++);
             if (ImGui::Selectable(option.name.c_str()))
             {
                 userSelection = option.absPath;
             }
             DrawTooltipIfItemHovered(option.absPath.toString());
-            ImGui::PopID();
+            ui::PopID();
         }
         ImGui::EndChild();
 

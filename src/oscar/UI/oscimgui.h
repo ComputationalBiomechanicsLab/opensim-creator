@@ -126,4 +126,15 @@ namespace osc::ui
     {
         ImGui::EndDisabled();
     }
+
+    template<typename... Args>
+    inline void PushID(Args&&... args)
+    {
+        ImGui::PushID(std::forward<Args>(args)...);
+    }
+
+    inline void PopID()
+    {
+        ImGui::PopID();
+    }
 }

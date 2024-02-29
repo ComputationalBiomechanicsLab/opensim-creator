@@ -46,12 +46,12 @@ void osc::RedoButton::onDraw()
     {
         for (ptrdiff_t i = 0; i < m_UndoRedo->getNumRedoEntriesi(); ++i)
         {
-            ImGui::PushID(imguiID++);
+            ui::PushID(imguiID++);
             if (ImGui::Selectable(m_UndoRedo->getRedoEntry(i).message().c_str()))
             {
                 m_UndoRedo->redoTo(i);
             }
-            ImGui::PopID();
+            ui::PopID();
         }
         ImGui::EndPopup();
     }

@@ -64,14 +64,14 @@ namespace
         ImVec2 const p = ImGui::GetCursorScreenPos();
         ImVec2 const bb(ImGui::GetColumnWidth(), ImGui::GetFrameHeight());
         ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0, 0));
-        ImGui::PushID(label.c_str());
+        ui::PushID(label.c_str());
         bool const status = ui::Button("###toggle_button", bb);
 
         if (status) {
             *v = !*v;
         }
 
-        ImGui::PopID();
+        ui::PopID();
         ImGui::PopStyleVar();
         ImVec2 const pMin = ImGui::GetItemRectMin();
         ImVec2 const pMax = ImGui::GetItemRectMax();

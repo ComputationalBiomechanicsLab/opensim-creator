@@ -56,7 +56,7 @@ private:
             ui::Columns(2);
             for (auto const& [outputName, aoPtr] : selected->getOutputs())
             {
-                ImGui::PushID(imguiID++);
+                ui::PushID(imguiID++);
 
                 ui::Text(outputName);
                 ui::NextColumn();
@@ -69,7 +69,7 @@ private:
                 plot.onDraw();
                 ui::NextColumn();
 
-                ImGui::PopID();
+                ui::PopID();
             }
             ui::Columns();
         }

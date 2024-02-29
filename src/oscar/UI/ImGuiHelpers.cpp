@@ -742,17 +742,17 @@ bool osc::SliderAngle(CStringView label, Radians& v, Radians min, Radians max)
 
 void osc::PushID(UID id)
 {
-    ImGui::PushID(static_cast<int>(id.get()));
+    ui::PushID(static_cast<int>(id.get()));
 }
 
 void osc::PushID(ptrdiff_t p)
 {
-    ImGui::PushID(static_cast<int>(p));
+    ui::PushID(static_cast<int>(p));
 }
 
 void osc::PopID()
 {
-    ImGui::PopID();
+    ui::PopID();
 }
 
 ImU32 osc::ToImU32(Color const& color)
@@ -920,7 +920,7 @@ bool osc::Combo(
     bool changed = false;
     for (size_t i = 0; i < size; ++i)
     {
-        ImGui::PushID(static_cast<int>(i));
+        ui::PushID(static_cast<int>(i));
         bool const isSelected = current != nullptr && *current == i;
         if (ImGui::Selectable(accessor(i).c_str(), isSelected))
         {
@@ -934,7 +934,7 @@ bool osc::Combo(
         {
             ImGui::SetItemDefaultFocus();
         }
-        ImGui::PopID();
+        ui::PopID();
     }
 
     ImGui::EndCombo();

@@ -111,13 +111,13 @@ private:
         ui::Columns(2);
         for (OutputExtractor const& output : sim.getOutputs())
         {
-            ImGui::PushID(imguiID++);
+            ui::PushID(imguiID++);
             DrawOutputNameColumn(output, false);
             ui::NextColumn();
             SimulationOutputPlot plot{m_SimulatorUIAPI, output, 32.0f};
             plot.onDraw();
             ui::NextColumn();
-            ImGui::PopID();
+            ui::PopID();
         }
         ui::Columns();
     }

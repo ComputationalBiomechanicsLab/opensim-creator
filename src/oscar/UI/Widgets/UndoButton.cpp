@@ -46,12 +46,12 @@ void osc::UndoButton::onDraw()
     {
         for (ptrdiff_t i = 0; i < m_UndoRedo->getNumUndoEntriesi(); ++i)
         {
-            ImGui::PushID(imguiID++);
+            ui::PushID(imguiID++);
             if (ImGui::Selectable(m_UndoRedo->getUndoEntry(i).message().c_str()))
             {
                 m_UndoRedo->undoTo(i);
             }
-            ImGui::PopID();
+            ui::PopID();
         }
         ImGui::EndPopup();
     }

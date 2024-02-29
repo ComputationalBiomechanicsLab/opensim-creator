@@ -83,11 +83,11 @@ private:
         {
             OutputExtractor output = m_API->getUserOutputExtractor(i);
 
-            ImGui::PushID(i);
+            ui::PushID(i);
             SimulationOutputPlot plot{m_SimulatorUIAPI, output, 64.0f};
             plot.onDraw();
             DrawOutputNameColumn(output, true, m_SimulatorUIAPI->tryGetCurrentSimulationState());
-            ImGui::PopID();
+            ui::PopID();
         }
     }
 

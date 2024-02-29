@@ -101,7 +101,7 @@ private:
         ui::Columns(2);
         for (int i = 0, len = m_LocalCopy.size(); i < len; ++i)
         {
-            ImGui::PushID(i);
+            ui::PushID(i);
 
             ui::TextUnformatted(m_LocalCopy.getName(i));
             ui::SameLine();
@@ -114,7 +114,7 @@ private:
             }
             ui::NextColumn();
 
-            ImGui::PopID();
+            ui::PopID();
         }
         ui::Columns();
 

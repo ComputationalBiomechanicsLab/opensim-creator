@@ -142,9 +142,9 @@ namespace
             {
                 if (IsVisibleInPointList(uiState, component, state))
                 {
-                    ImGui::PushID(imguiID++);
+                    ui::PushID(imguiID++);
                     DrawPointListElement(uiState, component, state);
-                    ImGui::PopID();
+                    ui::PopID();
                 }
             }
             ImGui::EndListBox();
@@ -351,9 +351,9 @@ namespace
         int imguiID = 0;
         for (OpenSim::Frame const& frame : model.getComponentList<OpenSim::Frame>())
         {
-            ImGui::PushID(imguiID++);
+            ui::PushID(imguiID++);
             DrawModelFrameSelectable(uiState, frame);
-            ImGui::PopID();
+            ui::PopID();
         }
     }
 

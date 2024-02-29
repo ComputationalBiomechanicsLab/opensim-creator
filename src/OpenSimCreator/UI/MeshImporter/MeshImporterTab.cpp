@@ -955,8 +955,8 @@ private:
         ScopeGuard const g1{[]() { ImGui::PopStyleVar(); }};
 
         int imguiID = 0;
-        ImGui::PushID(imguiID++);
-        ScopeGuard const g2{[]() { ImGui::PopID(); }};
+        ui::PushID(imguiID++);
+        ScopeGuard const g2{[]() { ui::PopID(); }};
 
         if (CanAttachMeshTo(el))
         {
@@ -966,9 +966,9 @@ private:
             }
             DrawTooltipIfItemHovered("Add Meshes", MIStrings::c_MeshDescription);
         }
-        ImGui::PopID();
+        ui::PopID();
 
-        ImGui::PushID(imguiID++);
+        ui::PushID(imguiID++);
         if (el.hasPhysicalSize())
         {
             if (ui::BeginMenu(ICON_FA_CIRCLE " Body"))
@@ -1026,9 +1026,9 @@ private:
             }
             DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription.c_str());
         }
-        ImGui::PopID();
+        ui::PopID();
 
-        ImGui::PushID(imguiID++);
+        ui::PushID(imguiID++);
         if (auto const* body = dynamic_cast<Body const*>(&el))
         {
             if (ui::MenuItem(ICON_FA_LINK " Joint"))
@@ -1037,9 +1037,9 @@ private:
             }
             DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a WeldJoint between the body and ground.");
         }
-        ImGui::PopID();
+        ui::PopID();
 
-        ImGui::PushID(imguiID++);
+        ui::PushID(imguiID++);
         if (CanAttachStationTo(el))
         {
             if (el.hasPhysicalSize())
@@ -1085,7 +1085,7 @@ private:
                 DrawTooltipIfItemHovered("Add Station", MIStrings::c_StationDescription);
             }
         }
-        // ~ScopeGuard: implicitly calls ImGui::PopID()
+        // ~ScopeGuard: implicitly calls ui::PopID()
     }
 
     void drawNothingActions()
@@ -1594,21 +1594,21 @@ private:
         {
             // context menu not open, but just draw the "nothing" menu
             PushID(UID::empty());
-            ScopeGuard const g{[]() { ImGui::PopID(); }};
+            ScopeGuard const g{[]() { ui::PopID(); }};
             drawNothingContextMenuContent();
         }
         else if (m_MaybeOpenedContextMenu.ID == MIIDs::RightClickedNothing())
         {
             // context menu was opened on "nothing" specifically
             PushID(UID::empty());
-            ScopeGuard const g{[]() { ImGui::PopID(); }};
+            ScopeGuard const g{[]() { ui::PopID(); }};
             drawNothingContextMenuContent();
         }
         else if (MIObject* el = m_Shared->updModelGraph().tryUpdByID(m_MaybeOpenedContextMenu.ID))
         {
             // context menu was opened on a scene element that exists in the modelgraph
             PushID(el->getID());
-            ScopeGuard const g{[]() { ImGui::PopID(); }};
+            ScopeGuard const g{[]() { ui::PopID(); }};
             drawContextMenuContent(*el, m_MaybeOpenedContextMenu.Pos);
         }
 
@@ -1774,12 +1774,12 @@ private:
             for (size_t i = 0; i < colors.size(); ++i)
             {
                 Color colorVal = colors[i];
-                ImGui::PushID(imguiID++);
+                ui::PushID(imguiID++);
                 if (ImGui::ColorEdit4(labels[i], value_ptr(colorVal)))
                 {
                     m_Shared->setColor(i, colorVal);
                 }
-                ImGui::PopID();
+                ui::PopID();
             }
             ImGui::EndPopup();
         }
@@ -1798,12 +1798,12 @@ private:
             for (size_t i = 0; i < visibilities.size(); ++i)
             {
                 bool v = visibilities[i];
-                ImGui::PushID(imguiID++);
+                ui::PushID(imguiID++);
                 if (ui::Checkbox(labels[i], &v))
                 {
                     m_Shared->setVisibilityFlag(i, v);
                 }
-                ImGui::PopID();
+                ui::PopID();
             }
             ImGui::EndPopup();
         }
@@ -1822,12 +1822,12 @@ private:
             for (size_t i = 0; i < interactables.size(); ++i)
             {
                 bool v = interactables[i];
-                ImGui::PushID(imguiID++);
+                ui::PushID(imguiID++);
                 if (ui::Checkbox(labels[i], &v))
                 {
                     m_Shared->setInteractivityFlag(i, v);
                 }
-                ImGui::PopID();
+                ui::PopID();
             }
             ImGui::EndPopup();
         }
@@ -1872,7 +1872,7 @@ private:
 
     void draw3DViewerOverlayBottomBar()
     {
-        ImGui::PushID("##3DViewerOverlay");
+        ui::PushID("##3DViewerOverlay");
 
         // bottom-left axes overlay
         {
@@ -1968,7 +1968,7 @@ private:
         }
         DrawTooltipIfItemHovered("Reset camera", "Resets the camera to its default position (the position it's in when the wizard is first loaded)");
 
-        ImGui::PopID();
+        ui::PopID();
     }
 
     void draw3DViewerOverlayConvertToOpenSimModelButton()

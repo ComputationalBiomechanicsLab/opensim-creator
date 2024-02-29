@@ -93,12 +93,12 @@ namespace
         ImGui::Indent(5.0f);
         int id = 0;
         for (auto&& check : state.validate(c)) {
-            ImGui::PushID(id);
+            ui::PushID(id);
             auto style = ToStyle(check.state());
             DrawIcon(style);
             ui::SameLine();
             TextUnformatted(check.description());
-            ImGui::PopID();
+            ui::PopID();
         }
         ImGui::Unindent(5.0f);
     }
@@ -149,9 +149,9 @@ namespace
         ImGui::Separator();
         int id = 0;
         for (auto const& mesh : state.model().getComponentList<OpenSim::Mesh>()) {
-            ImGui::PushID(id++);
+            ui::PushID(id++);
             DrawEntry(state, mesh);
-            ImGui::PopID();
+            ui::PopID();
         }
     }
 }
@@ -174,9 +174,9 @@ namespace
         ImGui::Separator();
         int id = 0;
         for (auto const& pof : state.model().getComponentList<OpenSim::PhysicalOffsetFrame>()) {
-            ImGui::PushID(id++);
+            ui::PushID(id++);
             DrawEntry(state, pof);
-            ImGui::PopID();
+            ui::PopID();
         }
     }
 }
@@ -188,13 +188,13 @@ void osc::mow::ChecklistPanel::implDrawContent()
 {
     int id = 0;
 
-    ImGui::PushID(id++);
+    ui::PushID(id++);
     DrawMeshSection(*m_State);
-    ImGui::PopID();
+    ui::PopID();
 
     ImGui::NewLine();
 
-    ImGui::PushID(id++);
+    ui::PushID(id++);
     DrawFramesSection(*m_State);
-    ImGui::PopID();
+    ui::PopID();
 }

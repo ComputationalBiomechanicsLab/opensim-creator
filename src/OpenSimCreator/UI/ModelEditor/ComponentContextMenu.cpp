@@ -530,7 +530,7 @@ private:
                         OpenSim::AbstractSocket const& socket = c.getSocket(socketName);
 
                         int column = 0;
-                        ImGui::PushID(id++);
+                        ui::PushID(id++);
                         ImGui::TableNextRow();
 
                         ImGui::TableSetColumnIndex(column++);
@@ -561,7 +561,7 @@ private:
                             m_EditorAPI->pushPopup(std::move(popup));
                         }
 
-                        ImGui::PopID();
+                        ui::PopID();
                     }
 
                     ImGui::EndTable();

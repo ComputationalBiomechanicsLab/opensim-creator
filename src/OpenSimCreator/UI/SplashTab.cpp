@@ -76,7 +76,7 @@ namespace
     {
         std::string const label = std::string{ICON_FA_FILE} + " " + path.filename().string();
 
-        ImGui::PushID(++imguiID);
+        ui::PushID(++imguiID);
         if (ui::MenuItem(label.c_str()))
         {
             parent_->addAndSelectTab<LoadingTab>(parent_, path);
@@ -89,7 +89,7 @@ namespace
             ui::TextUnformatted(path.filename().string());
             ImGui::EndTooltip();
         }
-        ImGui::PopID();
+        ui::PopID();
     }
 }
 

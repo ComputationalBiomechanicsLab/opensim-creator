@@ -76,9 +76,9 @@ namespace osc
             int id = 0;
             for (auto const& lm : m_State->getScratch().landmarkPairs)
             {
-                ImGui::PushID(++id);
+                ui::PushID(++id);
                 drawLandmarksTableRow(lm);
-                ImGui::PopID();
+                ui::PopID();
             }
 
             ImGui::EndTable();
@@ -188,9 +188,9 @@ namespace osc
             int id = 0;
             for (auto const& npl : m_State->getScratch().nonParticipatingLandmarks)
             {
-                ImGui::PushID(++id);
+                ui::PushID(++id);
                 drawNonParticipatingLandmarksTableRow(npl);
-                ImGui::PopID();
+                ui::PopID();
             }
 
             ImGui::EndTable();

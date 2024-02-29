@@ -240,7 +240,7 @@ private:
         ui::NextColumn();
 
         // rhs: search and connectee choices
-        ImGui::PushID(static_cast<int>(i));
+        ui::PushID(static_cast<int>(i));
         ui::TextUnformatted(ICON_FA_SEARCH);
         ui::SameLine();
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
@@ -266,7 +266,7 @@ private:
             OpenSim::ComponentPath const absPath = GetAbsolutePath(c);
             bool selected = absPath == connectee;
 
-            ImGui::PushID(innerID++);
+            ui::PushID(innerID++);
             if (ImGui::Selectable(c.getName().c_str(), selected))
             {
                 connectee = absPath;
@@ -275,7 +275,7 @@ private:
             Rect const selectableRect = GetItemRect();
             DrawTooltipIfItemHovered(absPath.toString());
 
-            ImGui::PopID();
+            ui::PopID();
 
             if (selected)
             {
@@ -284,7 +284,7 @@ private:
         }
 
         ImGui::EndChild();
-        ImGui::PopID();
+        ui::PopID();
         ui::NextColumn();
         ui::Columns();
     }
@@ -459,14 +459,14 @@ private:
         ui::Columns(2);
         int imguiID = 0;
 
-        ImGui::PushID(imguiID++);
+        ui::PushID(imguiID++);
         drawPathPointEditorChoices();
-        ImGui::PopID();
+        ui::PopID();
         ui::NextColumn();
 
-        ImGui::PushID(imguiID++);
+        ui::PushID(imguiID++);
         drawPathPointEditorAlreadyChosenPoints();
-        ImGui::PopID();
+        ui::PopID();
         ui::NextColumn();
 
         ui::Columns();

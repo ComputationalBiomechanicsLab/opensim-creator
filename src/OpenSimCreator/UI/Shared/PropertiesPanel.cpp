@@ -123,8 +123,8 @@ private:
             return;
         }
 
-        ImGui::PushID(m_Model->getSelected());
-        ScopeGuard const g{[]() { ImGui::PopID(); }};
+        ui::PushID(m_Model->getSelected());
+        ScopeGuard const g{[]() { ui::PopID(); }};
 
         // draw an actions row with a button that opens the context menu
         //

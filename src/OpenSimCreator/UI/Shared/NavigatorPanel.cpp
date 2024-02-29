@@ -347,13 +347,13 @@ private:
                 ImGui::SetNextItemOpen(true);
             }
 
-            ImGui::PushID(imguiId);
+            ui::PushID(imguiId);
             if (ImGui::TreeNodeEx(cur->getName().c_str(), nodeFlags))
             {
                 ImGui::Unindent(unindentPerLevel);
                 ++imguiTreeDepth;
             }
-            ImGui::PopID();
+            ui::PopID();
             ImGui::PopStyleColor(styles);
 
             if (ImGui::IsItemHovered())

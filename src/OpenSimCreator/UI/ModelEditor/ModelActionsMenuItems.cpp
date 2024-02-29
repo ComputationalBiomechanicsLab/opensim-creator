@@ -37,7 +37,7 @@ public:
 
     void onDraw()
     {
-        ImGui::PushID(this);
+        ui::PushID(this);
 
         // action: add body
         {
@@ -67,7 +67,7 @@ public:
         renderButton(GetComponentRegistry<OpenSim::Component>());
         renderButton(GetCustomComponentRegistry());
 
-        ImGui::PopID();
+        ui::PopID();
     }
 
 private:

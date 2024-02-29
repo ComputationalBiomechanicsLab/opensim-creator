@@ -373,7 +373,7 @@ bool osc::DrawWatchOutputMenu(IMainUIStateAPI& api, OpenSim::Component const& c)
         int imguiId = 0;
         for (OpenSim::Component const* p = &c; p; p = GetOwner(*p))
         {
-            ImGui::PushID(imguiId++);
+            ui::PushID(imguiId++);
 
             ui::Dummy({0.0f, 2.0f});
             ui::TextDisabled("%s (%s)", p->getName().c_str(), p->getConcreteClassName().c_str());
@@ -394,7 +394,7 @@ bool osc::DrawWatchOutputMenu(IMainUIStateAPI& api, OpenSim::Component const& c)
                 }
             }
 
-            ImGui::PopID();
+            ui::PopID();
         }
 
         ui::EndMenu();
@@ -502,13 +502,13 @@ void osc::DrawWithRespectToMenuContainingMenuPerFrame(
     int imguiID = 0;
     for (OpenSim::Frame const& frame : root.getComponentList<OpenSim::Frame>())
     {
-        ImGui::PushID(imguiID++);
+        ui::PushID(imguiID++);
         if (ui::BeginMenu(frame.getName().c_str()))
         {
             onFrameMenuOpened(frame);
             ui::EndMenu();
         }
-        ImGui::PopID();
+        ui::PopID();
     }
 }
 
@@ -522,12 +522,12 @@ void osc::DrawWithRespectToMenuContainingMenuItemPerFrame(
     int imguiID = 0;
     for (OpenSim::Frame const& frame : root.getComponentList<OpenSim::Frame>())
     {
-        ImGui::PushID(imguiID++);
+        ui::PushID(imguiID++);
         if (ui::MenuItem(frame.getName().c_str()))
         {
             onFrameMenuItemClicked(frame);
         }
-        ImGui::PopID();
+        ui::PopID();
     }
 }
 
@@ -927,22 +927,22 @@ bool osc::DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions& opts)
     int id = 0;
     bool edited = false;
 
-    ImGui::PushID(id++);
+    ui::PushID(id++);
     ui::TextDisabled("Rendering");
     edited = DrawMuscleRenderingOptionsRadioButtions(opts) || edited;
-    ImGui::PopID();
+    ui::PopID();
 
     ui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
-    ImGui::PushID(id++);
+    ui::PushID(id++);
     ui::TextDisabled("Sizing");
     edited = DrawMuscleSizingOptionsRadioButtons(opts) || edited;
-    ImGui::PopID();
+    ui::PopID();
 
     ui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
-    ImGui::PushID(id++);
+    ui::PushID(id++);
     ui::TextDisabled("Coloring");
     edited = DrawMuscleColoringOptionsRadioButtons(opts) || edited;
-    ImGui::PopID();
+    ui::PopID();
 
     return edited;
 }
@@ -997,7 +997,7 @@ bool osc::DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions& opts)
     bool edited = false;
     for (size_t i = 0; i < opts.getNumOptions(); ++i)
     {
-        ImGui::PushID(imguiID++);
+        ui::PushID(imguiID++);
 
         bool v = opts.getOptionValue(i);
         if (ui::Checkbox(opts.getOptionLabel(i).c_str(), &v))
@@ -1011,7 +1011,7 @@ bool osc::DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions& opts)
             DrawHelpMarker(*description);
         }
 
-        ImGui::PopID();
+        ui::PopID();
     }
     return edited;
 }
@@ -1272,12 +1272,12 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
 
         for (RecentFile const& rf : *recentFiles)
         {
-            ImGui::PushID(imguiID++);
+            ui::PushID(imguiID++);
             if (ImGui::Selectable(rf.path.filename().string().c_str()))
             {
                 onUserClickedOpenOrSelectedFile(rf.path);
             }
-            ImGui::PopID();
+            ui::PopID();
         }
 
         ImGui::EndPopup();

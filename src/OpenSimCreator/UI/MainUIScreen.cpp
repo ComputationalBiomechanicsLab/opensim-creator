@@ -433,7 +433,7 @@ private:
                             m_ActiveTabNameLastFrame = m_Tabs[i]->getName();
                         }
 
-                        ImGui::PushID(m_Tabs[i].get());
+                        ui::PushID(m_Tabs[i].get());
                         bool active = true;
 
                         if (ImGui::BeginTabItem(m_Tabs[i]->getName().c_str(), &active, flags))
@@ -463,7 +463,7 @@ private:
                             ImGui::EndTabItem();
                         }
 
-                        ImGui::PopID();
+                        ui::PopID();
                         if (!active && i != 0)  // can't close the splash tab
                         {
                             implCloseTab(m_Tabs[i]->getID());

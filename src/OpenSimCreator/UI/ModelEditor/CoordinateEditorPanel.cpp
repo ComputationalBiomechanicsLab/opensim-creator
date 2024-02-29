@@ -106,9 +106,9 @@ private:
             int id = 0;
             for (OpenSim::Coordinate const* coordPtr : coordPtrs)
             {
-                ImGui::PushID(id++);
+                ui::PushID(id++);
                 drawRow(*coordPtr);
-                ImGui::PopID();
+                ui::PopID();
             }
 
             ImGui::EndTable();

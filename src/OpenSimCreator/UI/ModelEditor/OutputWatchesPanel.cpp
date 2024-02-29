@@ -76,7 +76,7 @@ private:
                 int column = 0;
                 OutputExtractor o = m_API->getUserOutputExtractor(outputIdx);
 
-                ImGui::PushID(outputIdx);
+                ui::PushID(outputIdx);
 
                 ImGui::TableNextRow();
 
@@ -91,7 +91,7 @@ private:
                 ImGui::TableSetColumnIndex(column++);
                 ui::TextUnformatted(o.getValueString(m_Model->getModel(), m_CachedReport.simulationReport));
 
-                ImGui::PopID();
+                ui::PopID();
             }
 
             ImGui::EndTable();

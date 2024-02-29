@@ -2077,27 +2077,27 @@ namespace
             int id = 0;
 
             for (size_t i = 0; i < m_Lines.getNumOtherPlots(); ++i) {
-                ImGui::PushID(id++);
+                ui::PushID(id++);
                 if (ui::MenuItem(m_Lines.getOtherPlot(i).getName().c_str())) {
                     ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), m_Lines.getOtherPlot(i));
                 }
-                ImGui::PopID();
+                ui::PopID();
             }
 
-            ImGui::PushID(id++);
+            ui::PushID(id++);
             if (ui::MenuItem(m_Lines.getActivePlot().getName().c_str())) {
                 ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), m_Lines.getActivePlot());
             }
-            ImGui::PopID();
+            ui::PopID();
 
             ImGui::Separator();
 
-            ImGui::PushID(id++);
+            ui::PushID(id++);
             if (ui::MenuItem("Export All Curves")) {
                 ActionPromptUserToSavePlotLinesToCSV(coord, getShared().getPlotParams(), m_Lines);
             }
             DrawTooltipIfItemHovered("Export All Curves to CSV", "Exports all curves in the plot to a CSV file.\n\nThe implementation will try to group things together by X value, but the CSV file *may* contain sparse rows if (e.g.) some curves have a different number of plot points, or some curves were loaded from another CSV, etc.");
-            ImGui::PopID();
+            ui::PopID();
         }
 
         // tries to duplicate the current plot (settings etc.) into a new plot panel
