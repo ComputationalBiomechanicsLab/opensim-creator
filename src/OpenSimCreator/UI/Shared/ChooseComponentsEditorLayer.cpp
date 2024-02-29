@@ -246,7 +246,7 @@ public:
 
         // draw cancellation button
         {
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
+            ui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
 
             constexpr CStringView cancellationButtonText = ICON_FA_ARROW_LEFT " Cancel (ESC)";
             Vec2 const margin = {25.0f, 25.0f};
@@ -258,7 +258,7 @@ public:
                 m_State.shouldClosePopup = true;
             }
 
-            ImGui::PopStyleVar();
+            ui::PopStyleVar();
         }
     }
 

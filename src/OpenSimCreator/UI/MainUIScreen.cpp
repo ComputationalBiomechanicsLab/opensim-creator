@@ -398,10 +398,10 @@ private:
     {
         OSC_PERF("MainUIScreen/drawTabBar");
 
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ ImGui::GetStyle().FramePadding.x + 2.0f, ImGui::GetStyle().FramePadding.y + 2.0f });
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2{ 5.0f, 0.0f });
-        ImGui::PushStyleVar(ImGuiStyleVar_TabRounding, 10.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
+        ui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ ImGui::GetStyle().FramePadding.x + 2.0f, ImGui::GetStyle().FramePadding.y + 2.0f });
+        ui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2{ 5.0f, 0.0f });
+        ui::PushStyleVar(ImGuiStyleVar_TabRounding, 10.0f);
+        ui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
         if (BeginMainViewportTopBar("##TabBarViewport"))
         {
             if (ImGui::BeginMenuBar())
@@ -487,7 +487,7 @@ private:
             ui::End();
             handleDeletedTabs();
         }
-        ImGui::PopStyleVar(4);
+        ui::PopStyleVar(4);
     }
 
     void drawUIContent()

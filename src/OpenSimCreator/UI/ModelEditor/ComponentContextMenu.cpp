@@ -515,7 +515,7 @@ private:
 
             if (!socketNames.empty())
             {
-                ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, {0.5f*ImGui::GetTextLineHeight(), 0.5f*ImGui::GetTextLineHeight()});
+                ui::PushStyleVar(ImGuiStyleVar_CellPadding, {0.5f*ImGui::GetTextLineHeight(), 0.5f*ImGui::GetTextLineHeight()});
                 if (ImGui::BeginTable("sockets table", 3, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInner | ImGuiTableFlags_PadOuterX))
                 {
                     ImGui::TableSetupColumn("Socket Name");
@@ -566,7 +566,7 @@ private:
 
                     ImGui::EndTable();
                 }
-                ImGui::PopStyleVar();
+                ui::PopStyleVar();
             }
             else
             {

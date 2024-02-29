@@ -2058,7 +2058,7 @@ namespace
             const float s = ImGui::GetFrameHeight();
             ImVec2 const dims{1.5f * s, s};
 
-            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2, 2));
+            ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2, 2));
             if (ui::Button("NW", dims))         { m_LegendLocation = ImPlotLocation_NorthWest; } ui::SameLine();
             if (ui::Button("N", dims))          { m_LegendLocation = ImPlotLocation_North; }     ui::SameLine();
             if (ui::Button("NE", dims))         { m_LegendLocation = ImPlotLocation_NorthEast; }
@@ -2068,7 +2068,7 @@ namespace
             if (ui::Button("SW", dims))         { m_LegendLocation = ImPlotLocation_SouthWest; } ui::SameLine();
             if (ui::Button("S", dims))          { m_LegendLocation = ImPlotLocation_South; }     ui::SameLine();
             if (ui::Button("SE", dims))         { m_LegendLocation = ImPlotLocation_SouthEast; }
-            ImGui::PopStyleVar();
+            ui::PopStyleVar();
         }
 
         // draws the content of a menu for exporting plot data to a CSV

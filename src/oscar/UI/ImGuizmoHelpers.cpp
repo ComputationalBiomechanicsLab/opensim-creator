@@ -18,14 +18,14 @@ bool osc::DrawGizmoModeSelector(ImGuizmo::MODE& mode)
 
     bool rv = false;
     int currentMode = static_cast<int>(std::distance(std::begin(modes), std::find(std::begin(modes), std::end(modes), mode)));
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+    ui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
     ImGui::SetNextItemWidth(ImGui::CalcTextSize(modeLabels[0]).x + 40.0f);
     if (ImGui::Combo("##modeselect", &currentMode, modeLabels.data(), static_cast<int>(modeLabels.size())))
     {
         mode = modes.at(static_cast<size_t>(currentMode));
         rv = true;
     }
-    ImGui::PopStyleVar();
+    ui::PopStyleVar();
     constexpr CStringView tooltipTitle = "Manipulation coordinate system";
     constexpr CStringView tooltipDesc = "This affects whether manipulations (such as the arrow gizmos that you can use to translate things) are performed relative to the global coordinate system or the selection's (local) one. Local manipulations can be handy when translating/rotating something that's already rotated.";
     DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
@@ -41,8 +41,8 @@ bool osc::DrawGizmoOpSelector(
 {
     bool rv = false;
 
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+    ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
+    ui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
     int colorsPushed = 0;
 
     if (canTranslate)
@@ -105,7 +105,7 @@ bool osc::DrawGizmoOpSelector(
         ui::SameLine();
     }
 
-    ImGui::PopStyleVar(2);
+    ui::PopStyleVar(2);
 
     return rv;
 }

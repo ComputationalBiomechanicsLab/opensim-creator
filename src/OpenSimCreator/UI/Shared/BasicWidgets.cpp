@@ -1227,7 +1227,7 @@ bool osc::BeginToolbar(CStringView label, std::optional<Vec2> padding)
 {
     if (padding)
     {
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, *padding);
+        ui::PushStyleVar(ImGuiStyleVar_WindowPadding, *padding);
     }
 
     float const height = ImGui::GetFrameHeight() + 2.0f*ImGui::GetStyle().WindowPadding.y;
@@ -1235,7 +1235,7 @@ bool osc::BeginToolbar(CStringView label, std::optional<Vec2> padding)
     bool open = BeginMainViewportTopBar(label, height, flags);
     if (padding)
     {
-        ImGui::PopStyleVar();
+        ui::PopStyleVar();
     }
     return open;
 }
@@ -1252,18 +1252,18 @@ void osc::DrawNewModelButton(ParentPtr<IMainUIStateAPI> const& api)
 void osc::DrawOpenModelButtonWithRecentFilesDropdown(
     std::function<void(std::optional<std::filesystem::path>)> const& onUserClickedOpenOrSelectedFile)
 {
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
+    ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
     if (ui::Button(ICON_FA_FOLDER_OPEN))
     {
         onUserClickedOpenOrSelectedFile(std::nullopt);
     }
     DrawTooltipIfItemHovered("Open Model", "Opens an existing osim file in a new tab");
     ui::SameLine();
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {1.0f, ImGui::GetStyle().FramePadding.y});
+    ui::PushStyleVar(ImGuiStyleVar_FramePadding, {1.0f, ImGui::GetStyle().FramePadding.y});
     ui::Button(ICON_FA_CARET_DOWN);
     DrawTooltipIfItemHovered("Open Recent File", "Opens a recently-opened osim file in a new tab");
-    ImGui::PopStyleVar();
-    ImGui::PopStyleVar();
+    ui::PopStyleVar();
+    ui::PopStyleVar();
 
     if (ImGui::BeginPopupContextItem("##RecentFilesMenu", ImGuiPopupFlags_MouseButtonLeft))
     {
@@ -1315,7 +1315,7 @@ void osc::DrawReloadModelButton(UndoableModelStatePair& model)
     if (!HasInputFileName(model.getModel()))
     {
         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
+        ui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
     }
 
     if (ui::Button(ICON_FA_RECYCLE))
@@ -1326,7 +1326,7 @@ void osc::DrawReloadModelButton(UndoableModelStatePair& model)
     if (!HasInputFileName(model.getModel()))
     {
         ImGui::PopItemFlag();
-        ImGui::PopStyleVar();
+        ui::PopStyleVar();
     }
 
     DrawTooltipIfItemHovered("Reload Model", "Reloads the model from its source osim file");
@@ -1340,7 +1340,7 @@ void osc::DrawUndoButton(UndoableModelStatePair& model)
     {
         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
         ++itemFlagsPushed;
-        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
+        ui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
         ++styleVarsPushed;
     }
 
@@ -1350,7 +1350,7 @@ void osc::DrawUndoButton(UndoableModelStatePair& model)
     }
 
     PopItemFlags(itemFlagsPushed);
-    ImGui::PopStyleVar(styleVarsPushed);
+    ui::PopStyleVar(styleVarsPushed);
 
     DrawTooltipIfItemHovered("Undo", "Undo the model to an earlier version");
 }
@@ -1363,7 +1363,7 @@ void osc::DrawRedoButton(UndoableModelStatePair& model)
     {
         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
         ++itemFlagsPushed;
-        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
+        ui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
         ++styleVarsPushed;
     }
 
@@ -1373,7 +1373,7 @@ void osc::DrawRedoButton(UndoableModelStatePair& model)
     }
 
     PopItemFlags(itemFlagsPushed);
-    ImGui::PopStyleVar(styleVarsPushed);
+    ui::PopStyleVar(styleVarsPushed);
 
     DrawTooltipIfItemHovered("Redo", "Redo the model to an undone version");
 }
@@ -1438,7 +1438,7 @@ void osc::DrawAllDecorationToggleButtons(UndoableModelStatePair& model, IconCach
 
 void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
 {
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
+    ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
     ui::TextUnformatted(ICON_FA_EXPAND_ALT);
     DrawTooltipIfItemHovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
     ui::SameLine();
@@ -1451,15 +1451,15 @@ void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
             ActionSetModelSceneScaleFactorTo(model, scaleFactor);
         }
     }
-    ImGui::PopStyleVar();
+    ui::PopStyleVar();
 
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
+    ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
     ui::SameLine();
     if (ui::Button(ICON_FA_EXPAND_ARROWS_ALT))
     {
         ActionAutoscaleSceneScaleFactor(model);
     }
-    ImGui::PopStyleVar();
+    ui::PopStyleVar();
     DrawTooltipIfItemHovered("Autoscale Scale Factor", "Try to autoscale the model's scale factor based on the current dimensions of the model");
 }
 

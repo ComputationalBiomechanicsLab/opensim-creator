@@ -335,12 +335,12 @@ namespace
     {
         ScalarInputRv rv;
 
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, {1.0f, 0.0f});
+        ui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, {1.0f, 0.0f});
         if (ImGui::InputScalar(label.c_str(), ImGuiDataType_Float, &value, &stepSize, nullptr, "%.6f"))
         {
             rv.wasEdited = true;
         }
-        ImGui::PopStyleVar();
+        ui::PopStyleVar();
         rv.shouldSave = ItemValueShouldBeSaved();
         App::upd().addFrameAnnotation(frameAnnotationLabel, GetItemRect());
         DrawTooltipIfItemHovered("Step Size", "You can right-click to adjust the step size of the buttons");

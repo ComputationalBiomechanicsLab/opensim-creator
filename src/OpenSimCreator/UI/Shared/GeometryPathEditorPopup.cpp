@@ -215,7 +215,7 @@ private:
 
     void drawIthPathPointActionsCell(OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
+        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
 
         if (i <= 0)
         {
@@ -254,7 +254,7 @@ private:
         }
         ImGui::PopStyleColor();
 
-        ImGui::PopStyleVar();
+        ui::PopStyleVar();
     }
 
     void drawIthPathPointTypeCell(OpenSim::PathPointSet const& pps, ptrdiff_t i)

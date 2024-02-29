@@ -45,12 +45,12 @@ public:
 private:
     void implBeforeImGuiBegin() final
     {
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+        ui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
     }
 
     void implAfterImGuiBegin() final
     {
-        ImGui::PopStyleVar();
+        ui::PopStyleVar();
     }
 
     void implDrawContent() final

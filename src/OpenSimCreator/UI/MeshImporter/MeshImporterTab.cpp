@@ -951,8 +951,8 @@ private:
     // draw content of "Add" menu for some scene element
     void drawAddOtherToMIObjectActions(MIObject& el, Vec3 const& clickPos)
     {
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
-        ScopeGuard const g1{[]() { ImGui::PopStyleVar(); }};
+        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
+        ScopeGuard const g1{[]() { ui::PopStyleVar(); }};
 
         int imguiID = 0;
         ui::PushID(imguiID++);
@@ -1152,7 +1152,7 @@ private:
             return;  // top-level menu isn't open
         }
 
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
+        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
 
         for (int i = 0, len = el.getNumCrossReferences(); i < len; ++i)
         {
@@ -1207,7 +1207,7 @@ private:
         }
         DrawTooltipIfItemHovered("Translate to mesh mess center", "Translates the given element to the mass center of the selected mesh.\n\nCAREFUL: the algorithm used to do this heavily relies on your triangle winding (i.e. normals) being correct and your mesh being a closed surface. If your mesh doesn't meet these requirements, you might get strange results (apologies: the only way to get around that problems involves complicated voxelization and leak-detection algorithms :( )");
 
-        ImGui::PopStyleVar();
+        ui::PopStyleVar();
         ui::EndMenu();
     }
 
@@ -1224,7 +1224,7 @@ private:
             return;  // top-level menu isn't open
         }
 
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
+        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
 
         {
             auto DrawMenuContent = [&](int axis)
@@ -1295,7 +1295,7 @@ private:
             m_Shared->commitCurrentModelGraph("reset " + el.getLabel() + " orientation");
         }
 
-        ImGui::PopStyleVar();
+        ui::PopStyleVar();
         ui::EndMenu();
     }
 
@@ -1343,7 +1343,7 @@ private:
 
         if (ui::BeginMenu(ICON_FA_EXTERNAL_LINK_ALT " Reassign Connection"))
         {
-            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
+            ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
 
             for (int i = 0; i < nRefs; ++i)
             {
@@ -1354,7 +1354,7 @@ private:
                 }
             }
 
-            ImGui::PopStyleVar();
+            ui::PopStyleVar();
             ui::EndMenu();
         }
     }
@@ -1714,7 +1714,7 @@ private:
 
     void drawAddOtherMenuItems()
     {
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
+        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
 
         if (ui::MenuItem(ICON_FA_CUBE " Meshes"))
         {
@@ -1736,7 +1736,7 @@ private:
         }
         DrawTooltipIfItemHovered("Add Station", StationEl::Class().getDescription());
 
-        ImGui::PopStyleVar();
+        ui::PopStyleVar();
     }
 
     void draw3DViewerOverlayTopBar()
@@ -1836,9 +1836,9 @@ private:
 
         DrawGizmoOpSelector(m_ImGuizmoState.op);
 
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
+        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
         ui::SameLine();
-        ImGui::PopStyleVar();
+        ui::PopStyleVar();
 
         // local/global dropdown
         DrawGizmoModeSelector(m_ImGuizmoState.mode);
@@ -1973,7 +1973,7 @@ private:
 
     void draw3DViewerOverlayConvertToOpenSimModelButton()
     {
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
+        ui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
 
         constexpr CStringView mainButtonText = "Convert to OpenSim Model " ICON_FA_ARROW_RIGHT;
         constexpr CStringView settingButtonText = ICON_FA_COG;
@@ -1998,13 +1998,13 @@ private:
         }
         PopStyleColor();
 
-        ImGui::PopStyleVar();
+        ui::PopStyleVar();
         DrawTooltipIfItemHovered("Convert current scene to an OpenSim Model", "This will attempt to convert the current scene into an OpenSim model, followed by showing the model in OpenSim Creator's OpenSim model editor screen.\n\nYour progress in this tab will remain untouched.");
 
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
+        ui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
         ui::SameLine(0.0f, spacingBetweenMainAndSettingsButtons.x);
         ui::Button(settingButtonText.c_str());
-        ImGui::PopStyleVar();
+        ui::PopStyleVar();
 
         if (ImGui::BeginPopupContextItem("##settingspopup", ImGuiPopupFlags_MouseButtonLeft))
         {
@@ -2411,7 +2411,7 @@ private:
             ImGui::OpenPopup("##visualizermodalpopup");
             ImGui::SetNextWindowSize(m_Shared->get3DSceneDims());
             ImGui::SetNextWindowPos(m_Shared->get3DSceneRect().p1);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
+            ui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
 
             ImGuiWindowFlags const modalFlags =
                 ImGuiWindowFlags_AlwaysAutoResize |
@@ -2421,28 +2421,28 @@ private:
 
             if (ImGui::BeginPopupModal("##visualizermodalpopup", nullptr, modalFlags))
             {
-                ImGui::PopStyleVar();
+                ui::PopStyleVar();
                 ptr->onDraw();
                 ImGui::EndPopup();
             }
             else
             {
-                ImGui::PopStyleVar();
+                ui::PopStyleVar();
             }
         }
         else
         {
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
+            ui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
             if (ui::Begin("wizard_3dViewer"))
             {
-                ImGui::PopStyleVar();
+                ui::PopStyleVar();
                 draw3DViewer();
                 ImGui::SetCursorPos(Vec2{ImGui::GetCursorStartPos()} + Vec2{10.0f, 10.0f});
                 draw3DViewerOverlay();
             }
             else
             {
-                ImGui::PopStyleVar();
+                ui::PopStyleVar();
             }
             ui::End();
         }

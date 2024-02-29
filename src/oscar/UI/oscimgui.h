@@ -147,4 +147,19 @@ namespace osc::ui
     {
         return ImGui::IsKeyPressed(key, repeat);
     }
+
+    inline void PushStyleVar(ImGuiStyleVar style, ImVec2 const& pos)
+    {
+        ImGui::PushStyleVar(style, pos);
+    }
+
+    inline void PushStyleVar(ImGuiStyleVar style, float pos)
+    {
+        ImGui::PushStyleVar(style, pos);
+    }
+
+    inline void PopStyleVar(int count = 1)
+    {
+        ImGui::PopStyleVar(count);
+    }
 }

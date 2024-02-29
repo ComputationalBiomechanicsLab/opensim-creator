@@ -316,7 +316,7 @@ namespace osc::mi
         // draw a user-clickable button for cancelling out of this choosing state
         void drawCancelButton()
         {
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
+            ui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
             osc::PushStyleColor(ImGuiCol_Button, Color::halfGrey());
 
             CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
@@ -330,7 +330,7 @@ namespace osc::mi
             }
 
             osc::PopStyleColor();
-            ImGui::PopStyleVar();
+            ui::PopStyleVar();
         }
 
         bool implOnEvent(SDL_Event const& e) final

@@ -186,13 +186,13 @@ private:
         ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.0f, 0.0f, 0.0f});
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, {0.0f, 0.0f, 0.0f, 0.0f});
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {0.0f, 0.0f, 0.0f, 0.0f});
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.0f, ImGui::GetStyle().FramePadding.y});
+        ui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.0f, ImGui::GetStyle().FramePadding.y});
         if (ui::Button(c.getLocked(m_Model->getState()) ? ICON_FA_LOCK : ICON_FA_UNLOCK))
         {
             bool newValue = !c.getLocked(m_Model->getState());
             ActionSetCoordinateLockedAndSave(*m_Model, c, newValue);
         }
-        ImGui::PopStyleVar();
+        ui::PopStyleVar();
         ImGui::PopStyleColor();
         ImGui::PopStyleColor();
         ImGui::PopStyleColor();
@@ -211,7 +211,7 @@ private:
 
         if (coordinateLocked)
         {
-            ImGui::PushStyleVar(ImGuiStyleVar_DisabledAlpha, 0.2f);
+            ui::PushStyleVar(ImGuiStyleVar_DisabledAlpha, 0.2f);
             ui::BeginDisabled();
         }
         if (CircularSliderFloat("##coordinatevalueeditor", &displayedValue, minValue, maxValue))
@@ -222,7 +222,7 @@ private:
         if (coordinateLocked)
         {
             ui::EndDisabled();
-            ImGui::PopStyleVar();
+            ui::PopStyleVar();
         }
         if (ImGui::IsItemDeactivatedAfterEdit())
         {

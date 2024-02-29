@@ -380,7 +380,7 @@ private:
         {
             PushID(i);
 
-            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
+            ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
 
             if (ui::Button(ICON_FA_TRASH))
             {
@@ -417,7 +417,7 @@ private:
                 ui::EndDisabled();
             }
 
-            ImGui::PopStyleVar();
+            ui::PopStyleVar();
             ui::SameLine();
 
             ui::Text(m_PathPoints[i].userChoice.getComponentName());

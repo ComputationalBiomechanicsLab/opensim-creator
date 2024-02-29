@@ -83,7 +83,7 @@ private:
 
     void drawScaleFactorGroup()
     {
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
+        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
         ui::TextUnformatted(ICON_FA_EXPAND_ALT);
         DrawTooltipIfItemHovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
         ui::SameLine();
@@ -96,7 +96,7 @@ private:
                 m_Simulation->setFixupScaleFactor(scaleFactor);
             }
         }
-        ImGui::PopStyleVar();
+        ui::PopStyleVar();
     }
 
     void drawSimulationStatusGroup()

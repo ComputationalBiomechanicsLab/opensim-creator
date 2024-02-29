@@ -196,9 +196,9 @@ private:
         ImGui::SetNextWindowPos(screenRect.p1);
         ImGui::SetNextWindowSize(dimensions(screenRect));
 
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 0.0f });
+        ui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 0.0f });
         ui::Begin("##splashscreenbackground", nullptr, GetMinimalWindowFlags());
-        ImGui::PopStyleVar();
+        ui::PopStyleVar();
 
         SceneRendererParams params{m_LastSceneRendererParams};
         params.dimensions = dimensions(screenRect);

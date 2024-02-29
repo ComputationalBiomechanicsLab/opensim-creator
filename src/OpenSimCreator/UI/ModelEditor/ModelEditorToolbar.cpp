@@ -59,7 +59,7 @@ private:
 
     void drawForwardDynamicSimulationControls()
     {
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
+        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
 
         PushStyleColor(ImGuiCol_Text, Color::darkGreen());
         if (ui::Button(ICON_FA_PLAY))
@@ -78,7 +78,7 @@ private:
         }
         DrawTooltipIfItemHovered("Edit Simulation Settings", "Change the parameters used when simulating the model");
 
-        ImGui::PopStyleVar();
+        ui::PopStyleVar();
     }
 
     void drawContent()
