@@ -13,7 +13,6 @@
 #include <iterator>
 #include <optional>
 #include <ranges>
-#include <span>
 
 namespace osc
 {
