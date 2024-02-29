@@ -121,7 +121,7 @@ bool osc::UpdateImguizmoStateFromKeyboard(
     {
         return false;  // assume the user is doing some other action
     }
-    else if (ImGui::IsKeyPressed(ImGuiKey_R))
+    else if (ui::IsKeyPressed(ImGuiKey_R))
     {
         // R: set manipulation mode to "rotate"
         if (op == ImGuizmo::ROTATE)
@@ -131,7 +131,7 @@ bool osc::UpdateImguizmoStateFromKeyboard(
         op = ImGuizmo::ROTATE;
         return true;
     }
-    else if (ImGui::IsKeyPressed(ImGuiKey_G))
+    else if (ui::IsKeyPressed(ImGuiKey_G))
     {
         // G: set manipulation mode to "grab" (translate)
         if (op == ImGuizmo::TRANSLATE)
@@ -141,7 +141,7 @@ bool osc::UpdateImguizmoStateFromKeyboard(
         op = ImGuizmo::TRANSLATE;
         return true;
 }
-    else if (ImGui::IsKeyPressed(ImGuiKey_S))
+    else if (ui::IsKeyPressed(ImGuiKey_S))
     {
         // S: set manipulation mode to "scale"
         if (op == ImGuizmo::SCALE)

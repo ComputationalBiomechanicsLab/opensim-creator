@@ -753,55 +753,55 @@ private:
         bool shiftDown = IsShiftDown();
         bool ctrlOrSuperDown = IsCtrlOrSuperDown();
 
-        if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_N))
+        if (ctrlOrSuperDown && ui::IsKeyPressed(ImGuiKey_N))
         {
             // Ctrl+N: new scene
             m_Shared->requestNewMeshImporterTab();
             return true;
         }
-        else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_O))
+        else if (ctrlOrSuperDown && ui::IsKeyPressed(ImGuiKey_O))
         {
             // Ctrl+O: open osim
             m_Shared->openOsimFileAsModelGraph();
             return true;
         }
-        else if (ctrlOrSuperDown && shiftDown && ImGui::IsKeyPressed(ImGuiKey_S))
+        else if (ctrlOrSuperDown && shiftDown && ui::IsKeyPressed(ImGuiKey_S))
         {
             // Ctrl+Shift+S: export as: export scene as osim to user-specified location
             m_Shared->exportAsModelGraphAsOsimFile();
             return true;
         }
-        else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_S))
+        else if (ctrlOrSuperDown && ui::IsKeyPressed(ImGuiKey_S))
         {
             // Ctrl+S: export: export scene as osim according to typical export heuristic
             m_Shared->exportModelGraphAsOsimFile();
             return true;
         }
-        else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_W))
+        else if (ctrlOrSuperDown && ui::IsKeyPressed(ImGuiKey_W))
         {
             // Ctrl+W: close
             m_Shared->requestClose();
             return true;
         }
-        else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_Q))
+        else if (ctrlOrSuperDown && ui::IsKeyPressed(ImGuiKey_Q))
         {
             // Ctrl+Q: quit application
             App::upd().requestQuit();
             return true;
         }
-        else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_A))
+        else if (ctrlOrSuperDown && ui::IsKeyPressed(ImGuiKey_A))
         {
             // Ctrl+A: select all
             m_Shared->selectAll();
             return true;
         }
-        else if (ctrlOrSuperDown && shiftDown && ImGui::IsKeyPressed(ImGuiKey_Z))
+        else if (ctrlOrSuperDown && shiftDown && ui::IsKeyPressed(ImGuiKey_Z))
         {
             // Ctrl+Shift+Z: redo
             m_Shared->redoCurrentModelGraph();
             return true;
         }
-        else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_Z))
+        else if (ctrlOrSuperDown && ui::IsKeyPressed(ImGuiKey_Z))
         {
             // Ctrl+Z: undo
             m_Shared->undoCurrentModelGraph();
@@ -813,25 +813,25 @@ private:
             deleteSelected();
             return true;
         }
-        else if (ImGui::IsKeyPressed(ImGuiKey_B))
+        else if (ui::IsKeyPressed(ImGuiKey_B))
         {
             // B: add body to hovered element
             tryAddBodyToHoveredElement();
             return true;
         }
-        else if (ImGui::IsKeyPressed(ImGuiKey_A))
+        else if (ui::IsKeyPressed(ImGuiKey_A))
         {
             // A: assign a parent for the hovered element
             tryTransitionToAssigningHoverAndSelectionNextFrame();
             return true;
         }
-        else if (ImGui::IsKeyPressed(ImGuiKey_J))
+        else if (ui::IsKeyPressed(ImGuiKey_J))
         {
             // J: try to create a joint
             tryCreatingJointFromHoveredElement();
             return true;
         }
-        else if (ImGui::IsKeyPressed(ImGuiKey_T))
+        else if (ui::IsKeyPressed(ImGuiKey_T))
         {
             // T: try to add a station to the current hover
             tryAddingStationAtMousePosToHoveredElement();

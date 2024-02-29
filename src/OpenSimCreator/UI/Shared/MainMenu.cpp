@@ -59,23 +59,23 @@ void osc::MainMenuFileTab::onDraw(
 
         bool mod = IsCtrlOrSuperDown();
 
-        if (mod && ImGui::IsKeyPressed(ImGuiKey_N))
+        if (mod && ui::IsKeyPressed(ImGuiKey_N))
         {
             ActionNewModel(api);
         }
-        else if (mod && ImGui::IsKeyPressed(ImGuiKey_O))
+        else if (mod && ui::IsKeyPressed(ImGuiKey_O))
         {
             ActionOpenModel(api);
         }
-        else if (maybeModel && mod && io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_S))
+        else if (maybeModel && mod && io.KeyShift && ui::IsKeyPressed(ImGuiKey_S))
         {
             ActionSaveCurrentModelAs(*maybeModel);
         }
-        else if (maybeModel && mod && ImGui::IsKeyPressed(ImGuiKey_S))
+        else if (maybeModel && mod && ui::IsKeyPressed(ImGuiKey_S))
         {
             ActionSaveModel(*api, *maybeModel);
         }
-        else if (maybeModel && ImGui::IsKeyPressed(ImGuiKey_F5))
+        else if (maybeModel && ui::IsKeyPressed(ImGuiKey_F5))
         {
             ActionReloadOsimFromDisk(*maybeModel, *App::singleton<SceneCache>());
         }

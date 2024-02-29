@@ -142,4 +142,9 @@ namespace osc::ui
     {
         ImGui::Separator();
     }
+
+    inline bool IsKeyPressed(ImGuiKey key, bool repeat = true)
+    {
+        return ImGui::IsKeyPressed(key, repeat);
+    }
 }

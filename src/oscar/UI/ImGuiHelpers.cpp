@@ -232,7 +232,7 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
             return true;
         }
     }
-    else if (ImGui::IsKeyPressed(ImGuiKey_Y))
+    else if (ui::IsKeyPressed(ImGuiKey_Y))
     {
         // Ctrl+Y already does something?
         if (!ctrlOrSuperDown)
@@ -241,7 +241,7 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
             return true;
         }
     }
-    else if (ImGui::IsKeyPressed(ImGuiKey_F))
+    else if (ui::IsKeyPressed(ImGuiKey_F))
     {
         if (ctrlOrSuperDown)
         {
@@ -261,7 +261,7 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
             return true;
         }
     }
-    else if (ctrlOrSuperDown && (ImGui::IsKeyPressed(ImGuiKey_8)))
+    else if (ctrlOrSuperDown && (ui::IsKeyPressed(ImGuiKey_8)))
     {
         if (maybeSceneAABB)
         {
@@ -539,7 +539,7 @@ bool osc::IsAnyKeyDown(std::initializer_list<ImGuiKey const> keys)
 
 bool osc::IsAnyKeyPressed(std::span<ImGuiKey const> keys)
 {
-    return std::any_of(keys.begin(), keys.end(), [](ImGuiKey k) { return ImGui::IsKeyPressed(k); });
+    return std::any_of(keys.begin(), keys.end(), [](ImGuiKey k) { return ui::IsKeyPressed(k); });
 }
 bool osc::IsAnyKeyPressed(std::initializer_list<ImGuiKey const> keys)
 {
