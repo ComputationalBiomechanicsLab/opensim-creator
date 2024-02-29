@@ -646,6 +646,53 @@ void osc::DrawCalculateTransformMenu(
     }
 }
 
+void osc::DrawCalculateAxisDirectionsMenu(
+    OpenSim::Component const& root,
+    SimTK::State const& state,
+    OpenSim::Frame const& frame)
+{
+    if (ImGui::BeginMenu("Axis Directions")) {
+        auto const onFrameMenuOpened = [&state, &frame](OpenSim::Frame const& other)
+        {
+            Vec3 x = ToVec3(frame.expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
+            Vec3 y = ToVec3(frame.expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
+            Vec3 z = ToVec3(frame.expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
+
+            ImGui::Text("x axis");
+            ImGui::SameLine();
+            ImGui::InputFloat3("##xdir", value_ptr(x), "%.6f", ImGuiInputTextFlags_ReadOnly);
+
+            ImGui::Text("y axis");
+            ImGui::SameLine();
+            ImGui::InputFloat3("##ydir", value_ptr(y), "%.6f", ImGuiInputTextFlags_ReadOnly);
+
+            ImGui::Text("z axis");
+            ImGui::SameLine();
+            ImGui::InputFloat3("##zdir", value_ptr(z), "%.6f", ImGuiInputTextFlags_ReadOnly);
+        };
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+        ImGui::EndMenu();
+    }
+}
+
+void osc::DrawCalculateOriginMenu(
+    OpenSim::Component const& root,
+    SimTK::State const& state,
+    OpenSim::Frame const& frame)
+{
+    if (ImGui::BeginMenu("Origin")) {
+        auto const onFrameMenuOpened = [&state, &frame](OpenSim::Frame const& otherFrame)
+        {
+            auto v = ToVec3(frame.findStationLocationInAnotherFrame(state, {0.0f, 0.0f, 0.0f}, otherFrame));
+            ImGui::Text("origin");
+            ImGui::SameLine();
+            ImGui::InputFloat3("##origin", value_ptr(v), "%.6f", ImGuiInputTextFlags_ReadOnly);
+        };
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+        ImGui::EndMenu();
+    }
+}
+
 void osc::DrawCalculateMenu(
     OpenSim::Component const& root,
     SimTK::State const& state,
@@ -655,6 +702,8 @@ void osc::DrawCalculateMenu(
     if (BeginCalculateMenu(flags))
     {
         DrawCalculateTransformMenu(root, state, frame);
+        DrawCalculateOriginMenu(root, state, frame);
+        DrawCalculateAxisDirectionsMenu(root, state, frame);
         EndCalculateMenu();
     }
 }
@@ -664,7 +713,7 @@ void osc::DrawCalculateOriginMenu(
     SimTK::State const& state,
     OpenSim::Sphere const& sphere)
 {
-    if (ImGui::BeginMenu("origin"))
+    if (ImGui::BeginMenu("Origin"))
     {
         Vec3 const posInGround = ToVec3(sphere.getFrame().getPositionInGround(state));
         auto const onFrameMenuOpened = [&state, posInGround](OpenSim::Frame const& otherFrame)
@@ -682,7 +731,7 @@ void osc::DrawCalculateRadiusMenu(
     SimTK::State const&,
     OpenSim::Sphere const& sphere)
 {
-    if (ImGui::BeginMenu("radius"))
+    if (ImGui::BeginMenu("Radius"))
     {
         double d = sphere.get_radius();
         ImGui::InputDouble("radius", &d);
@@ -695,11 +744,11 @@ void osc::DrawCalculateVolumeMenu(
     SimTK::State const&,
     OpenSim::Sphere const& sphere)
 {
-    if (ImGui::BeginMenu("volume"))
+    if (ImGui::BeginMenu("Volume"))
     {
         double const r = sphere.get_radius();
         double v = 4.0/3.0 * SimTK::Pi * r*r*r;
-        ImGui::InputDouble("volume", &v);
+        ImGui::InputDouble("volume", &v, 0.0, 0.0, "%.6f", ImGuiInputTextFlags_ReadOnly);
         ImGui::EndMenu();
     }
 }
@@ -721,6 +770,8 @@ void osc::DrawCalculateMenu(
         else
         {
             DrawCalculateTransformMenu(root, state, geom.getFrame());
+            DrawCalculateOriginMenu(root, state, geom.getFrame());
+            DrawCalculateAxisDirectionsMenu(root, state, geom.getFrame());
         }
         EndCalculateMenu();
     }
@@ -739,6 +790,90 @@ void osc::TryDrawCalculateMenu(
     else if (auto const* const point = dynamic_cast<OpenSim::Point const*>(&selected))
     {
         DrawCalculateMenu(root, state, *point, flags);
+    }
+}
+
+void osc::DrawCalculateOriginMenu(
+    OpenSim::Component const& root,
+    SimTK::State const& state,
+    OpenSim::Ellipsoid const& ellipsoid)
+{
+    if (ImGui::BeginMenu("Origin")) {
+        Vec3 const posInGround = ToVec3(ellipsoid.getFrame().getPositionInGround(state));
+        auto const onFrameMenuOpened = [&state, posInGround](OpenSim::Frame const& otherFrame)
+        {
+            DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
+        };
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+
+        ImGui::EndMenu();
+    }
+}
+
+void osc::DrawCalculateRadiiMenu(
+    OpenSim::Component const&,
+    SimTK::State const&,
+    OpenSim::Ellipsoid const& ellipsoid)
+{
+    if (ImGui::BeginMenu("Radii")) {
+        auto v = ToVec3(ellipsoid.get_radii());
+        ImGui::Text("radii");
+        ImGui::SameLine();
+        ImGui::InputFloat3("##radii", value_ptr(v), "%.6f", ImGuiInputTextFlags_ReadOnly);
+        ImGui::EndMenu();
+    }
+}
+
+void osc::DrawCalculateRadiiDirectionsMenu(
+    OpenSim::Component const& root,
+    SimTK::State const& state,
+    OpenSim::Ellipsoid const& ellipsoid)
+{
+    return DrawCalculateAxisDirectionsMenu(root, state, ellipsoid.getFrame());
+}
+
+void osc::DrawCalculateScaledRadiiDirectionsMenu(
+    OpenSim::Component const& root,
+    SimTK::State const& state,
+    OpenSim::Ellipsoid const& ellipsoid)
+{
+    if (ImGui::BeginMenu("Axis Directions (Scaled by Radii)")) {
+        auto const onFrameMenuOpened = [&state, &ellipsoid](OpenSim::Frame const& other)
+        {
+            auto const& radii = ellipsoid.get_radii();
+            Vec3 x = ToVec3(radii[0] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
+            Vec3 y = ToVec3(radii[1] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
+            Vec3 z = ToVec3(radii[2] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
+
+            ImGui::Text("x axis");
+            ImGui::SameLine();
+            ImGui::InputFloat3("##xdir", value_ptr(x), "%.6f", ImGuiInputTextFlags_ReadOnly);
+
+            ImGui::Text("y axis");
+            ImGui::SameLine();
+            ImGui::InputFloat3("##ydir", value_ptr(y), "%.6f", ImGuiInputTextFlags_ReadOnly);
+
+            ImGui::Text("z axis");
+            ImGui::SameLine();
+            ImGui::InputFloat3("##zdir", value_ptr(z), "%.6f", ImGuiInputTextFlags_ReadOnly);
+        };
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+        ImGui::EndMenu();
+    }
+}
+
+void osc::DrawCalculateMenu(
+    OpenSim::Component const& root,
+    SimTK::State const& state,
+    OpenSim::Ellipsoid const& ellipsoid,
+    CalculateMenuFlags flags)
+{
+    if (BeginCalculateMenu(flags)) {
+        DrawCalculateOriginMenu(root, state, ellipsoid);
+        DrawCalculateRadiiMenu(root, state, ellipsoid);
+        DrawCalculateRadiiDirectionsMenu(root, state, ellipsoid);
+        DrawCalculateScaledRadiiDirectionsMenu(root, state, ellipsoid);
+        EndCalculateMenu();
     }
 }
 

@@ -28,6 +28,7 @@ namespace osc { class IModelStatePair; }
 namespace osc { class IOutputExtractor; }
 namespace osc { class SimulationModelStatePair; }
 namespace OpenSim { class Component; }
+namespace OpenSim { class Ellipsoid; }
 namespace OpenSim { class Frame; }
 namespace OpenSim { class Geometry; }
 namespace OpenSim { class Mesh; }
@@ -121,6 +122,16 @@ namespace osc
     void DrawCalculateOriginMenu(
         OpenSim::Component const& root,
         SimTK::State const&,
+        OpenSim::Frame const&
+    );
+    void DrawCalculateAxisDirectionsMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Frame const&
+    );
+    void DrawCalculateOriginMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
         OpenSim::Sphere const&
     );
     void DrawCalculateRadiusMenu(
@@ -149,6 +160,32 @@ namespace osc
         OpenSim::Component const& root,
         SimTK::State const&,
         OpenSim::Component const& selected,
+        CalculateMenuFlags = CalculateMenuFlags::None
+    );
+    void DrawCalculateOriginMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Ellipsoid const&
+    );
+    void DrawCalculateRadiiMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Ellipsoid const&
+    );
+    void DrawCalculateRadiiDirectionsMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Ellipsoid const&
+    );
+    void DrawCalculateScaledRadiiDirectionsMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Ellipsoid const&
+    );
+    void DrawCalculateMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Ellipsoid const&,
         CalculateMenuFlags = CalculateMenuFlags::None
     );
 

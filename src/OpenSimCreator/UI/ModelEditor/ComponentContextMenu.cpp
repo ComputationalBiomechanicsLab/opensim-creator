@@ -224,7 +224,24 @@ namespace
         UndoableModelStatePair& uim,
         OpenSim::Point const& point)
     {
-        DrawCalculateMenu(uim.getModel(), uim.getState(), point, CalculateMenuFlags::NoCalculatorIcon);
+        DrawCalculateMenu(
+            uim.getModel(),
+            uim.getState(),
+            point,
+            CalculateMenuFlags::NoCalculatorIcon
+        );
+    }
+
+    void DrawEllipsoidContextualActions(
+        UndoableModelStatePair& uim,
+        OpenSim::Ellipsoid const& ellipsoid)
+    {
+        DrawCalculateMenu(
+            uim.getModel(),
+            uim.getState(),
+            ellipsoid,
+            CalculateMenuFlags::NoCalculatorIcon
+        );
     }
 
     void DrawMeshContextualActions(
@@ -475,6 +492,10 @@ private:
         else if (auto const* pointPtr = dynamic_cast<OpenSim::Point const*>(c))
         {
             DrawPointContextualActions(*m_Model, *pointPtr);
+        }
+        else if (auto const* ellipsoidPtr = dynamic_cast<OpenSim::Ellipsoid const*>(c))
+        {
+            DrawEllipsoidContextualActions(*m_Model, *ellipsoidPtr);
         }
         else if (auto const* meshPtr = dynamic_cast<OpenSim::Mesh const*>(c))
         {
