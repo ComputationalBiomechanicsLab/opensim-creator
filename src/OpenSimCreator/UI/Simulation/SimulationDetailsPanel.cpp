@@ -36,16 +36,16 @@ private:
     {
         {
             ImGui::Dummy({0.0f, 1.0f});
-            ImGui::TextUnformatted("info:");
+            ui::TextUnformatted("info:");
             ImGui::SameLine();
             DrawHelpMarker("Top-level info about the simulation");
             ImGui::Separator();
             ImGui::Dummy({0.0f, 2.0f});
 
             ImGui::Columns(2);
-            ImGui::Text("num reports");
+            ui::Text("num reports");
             ImGui::NextColumn();
-            ImGui::Text("%zu", m_Simulation->getNumReports());
+            ui::Text("%zu", m_Simulation->getNumReports());
             ImGui::NextColumn();
             ImGui::Columns();
         }
@@ -69,13 +69,13 @@ private:
 
         if (outputs.empty())
         {
-            ImGui::TextDisabled("(no simulator output plots available for this simulation)");
+            ui::TextDisabled("(no simulator output plots available for this simulation)");
             return;
         }
 
         ImGui::Dummy({0.0f, 1.0f});
         ImGui::Columns(2);
-        ImGui::TextUnformatted("plots:");
+        ui::TextUnformatted("plots:");
         ImGui::SameLine();
         DrawHelpMarker("Various statistics collected when the simulation was ran");
         ImGui::NextColumn();

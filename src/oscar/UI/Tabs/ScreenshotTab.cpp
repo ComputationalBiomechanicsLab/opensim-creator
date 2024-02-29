@@ -128,7 +128,7 @@ private:
             for (ScreenshotAnnotation const& annotation : m_Screenshot.annotations)
             {
                 ImGui::PushID(id++);
-                ImGui::TextUnformatted(annotation.label.c_str());
+                ui::TextUnformatted(annotation.label);
                 ImGui::PopID();
             }
             ImGui::End();

@@ -34,7 +34,7 @@ private:
 
         if (!maybeShownState)
         {
-            ImGui::TextDisabled("(no simulation selected)");
+            ui::TextDisabled("(no simulation selected)");
             return;
         }
 
@@ -44,7 +44,7 @@ private:
 
         if (!selected)
         {
-            ImGui::TextDisabled("(nothing selected)");
+            ui::TextDisabled("(nothing selected)");
             return;
         }
 
@@ -58,7 +58,7 @@ private:
             {
                 ImGui::PushID(imguiID++);
 
-                ImGui::Text("%s", outputName.c_str());
+                ui::Text(outputName);
                 ImGui::NextColumn();
                 SimulationOutputPlot plot
                 {

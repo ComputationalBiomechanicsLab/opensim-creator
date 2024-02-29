@@ -452,7 +452,7 @@ namespace osc
             {
                 BeginTooltip();
 
-                ImGui::TextDisabled("Input Information:");
+                ui::TextDisabled("Input Information:");
                 drawInputInformationTable();
 
                 EndTooltip();
@@ -469,21 +469,21 @@ namespace osc
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text("# landmarks");
+                ui::Text("# landmarks");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", CountNumLandmarksForInput(m_State->getScratch(), m_DocumentIdentifier));
+                ui::Text("%zu", CountNumLandmarksForInput(m_State->getScratch(), m_DocumentIdentifier));
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text("# verts");
+                ui::Text("# verts");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", m_State->getScratchMesh(m_DocumentIdentifier).getNumVerts());
+                ui::Text("%zu", m_State->getScratchMesh(m_DocumentIdentifier).getNumVerts());
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text("# triangles");
+                ui::Text("# triangles");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", m_State->getScratchMesh(m_DocumentIdentifier).getNumIndices()/3);
+                ui::Text("%zu", m_State->getScratchMesh(m_DocumentIdentifier).getNumIndices()/3);
 
                 ImGui::EndTable();
             }

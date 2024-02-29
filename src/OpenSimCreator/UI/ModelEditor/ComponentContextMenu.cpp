@@ -534,7 +534,7 @@ private:
                         ImGui::TableNextRow();
 
                         ImGui::TableSetColumnIndex(column++);
-                        ImGui::TextDisabled("%s", socketName.c_str());
+                        ui::TextDisabled(socketName);
 
                         ImGui::TableSetColumnIndex(column++);
                         if (ImGui::SmallButton(socket.getConnecteeAsObject().getName().c_str()))
@@ -570,7 +570,7 @@ private:
             }
             else
             {
-                ImGui::TextDisabled("%s has no sockets", c.getName().c_str());
+                ui::TextDisabled("%s has no sockets", c.getName().c_str());
             }
 
             ImGui::EndMenu();

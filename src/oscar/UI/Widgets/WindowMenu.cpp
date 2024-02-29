@@ -80,6 +80,6 @@ void osc::WindowMenu::drawContent()
 
     if (numMenuItemsPrinted <= 0)
     {
-        ImGui::TextDisabled("(no windows available to be toggled)");
+        ui::TextDisabled("(no windows available to be toggled)");
     }
 }

@@ -111,7 +111,7 @@ namespace osc
             {
                 BeginTooltip();
 
-                ImGui::TextDisabled("Result Information:");
+                ui::TextDisabled("Result Information:");
                 drawInformationTable();
 
                 EndTooltip();
@@ -128,15 +128,15 @@ namespace osc
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text("# verts");
+                ui::Text("# verts");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", m_State->getResultMesh().getNumVerts());
+                ui::Text("%zu", m_State->getResultMesh().getNumVerts());
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text("# triangles");
+                ui::Text("# triangles");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", m_State->getResultMesh().getNumIndices()/3);
+                ui::Text("%zu", m_State->getResultMesh().getNumIndices()/3);
 
                 ImGui::EndTable();
             }

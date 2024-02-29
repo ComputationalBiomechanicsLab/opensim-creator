@@ -58,7 +58,7 @@ public:
         App::upd().clearScreen(Color::clear());  // set app window bg color
 
         ImGui::Begin("cookiecutter panel");
-        ImGui::Text("hello world");
+        ui::Text("hello world");
         ImGui::Checkbox("checkbox_state", &m_CheckboxState);
         ImGui::End();
 

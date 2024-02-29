@@ -41,10 +41,10 @@ private:
 
             if (ImGui::Begin("fatal error"))
             {
-                ImGui::TextWrapped("The application threw an exception with the following message:");
+                ui::TextWrapped("The application threw an exception with the following message:");
                 ImGui::Dummy({2.0f, 10.0f});
                 ImGui::SameLine();
-                ImGui::TextWrapped("%s", m_ErrorMessage.c_str());
+                ui::TextWrapped(m_ErrorMessage);
                 ImGui::Dummy({0.0f, 10.0f});
             }
             ImGui::End();

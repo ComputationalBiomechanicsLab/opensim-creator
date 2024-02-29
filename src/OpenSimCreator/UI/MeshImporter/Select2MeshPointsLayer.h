@@ -144,8 +144,8 @@ namespace osc::mi
             }(m_MaybeCurrentHover.Pos);
 
             ImGui::BeginTooltip();
-            ImGui::Text("%s", pos.c_str());
-            ImGui::TextDisabled("(left-click to assign as first point, right-click to assign as second point)");
+            ui::Text(pos);
+            ui::TextDisabled("(left-click to assign as first point, right-click to assign as second point)");
             ImGui::EndTooltip();
         }
 

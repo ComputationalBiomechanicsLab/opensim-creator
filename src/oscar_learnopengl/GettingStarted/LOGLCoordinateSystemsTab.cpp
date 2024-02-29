@@ -140,13 +140,13 @@ private:
         ImGui::Begin("Tutorial Step");
         ImGui::Checkbox("step1", &m_ShowStep1);
         if (m_Camera.isCapturingMouse()) {
-            ImGui::Text("mouse captured (esc to uncapture)");
+            ui::Text("mouse captured (esc to uncapture)");
         }
 
         Vec3 const cameraPos = m_Camera.getPosition();
-        ImGui::Text("camera pos = (%f, %f, %f)", cameraPos.x, cameraPos.y, cameraPos.z);
+        ui::Text("camera pos = (%f, %f, %f)", cameraPos.x, cameraPos.y, cameraPos.z);
         Vec<3, Degrees> const cameraEulers = m_Camera.eulers();
-        ImGui::Text("camera eulers = (%f, %f, %f)", cameraEulers.x.count(), cameraEulers.y.count(), cameraEulers.z.count());
+        ui::Text("camera eulers = (%f, %f, %f)", cameraEulers.x.count(), cameraEulers.y.count(), cameraEulers.z.count());
         ImGui::End();
 
         m_PerfPanel.onDraw();

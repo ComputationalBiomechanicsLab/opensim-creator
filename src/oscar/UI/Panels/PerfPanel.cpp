@@ -34,9 +34,9 @@ private:
     void implDrawContent() final
     {
         ImGui::Columns(2);
-        ImGui::TextUnformatted("FPS");
+        ui::TextUnformatted("FPS");
         ImGui::NextColumn();
-        ImGui::Text("%.0f", static_cast<double>(ImGui::GetIO().Framerate));
+        ui::Text("%.0f", static_cast<double>(ImGui::GetIO().Framerate));
         ImGui::NextColumn();
         ImGui::Columns();
 
@@ -91,17 +91,17 @@ private:
                 int column = 0;
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::TextUnformatted(pm.getLabel().c_str());
+                ui::TextUnformatted(pm.getLabel());
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::Text("%s:%u", pm.getFilename().c_str(), pm.getLine());
+                ui::Text("%s:%u", pm.getFilename().c_str(), pm.getLine());
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::Text("%" PRId64, pm.getCallCount());
+                ui::Text("%" PRId64, pm.getCallCount());
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getLastDuration()).count()));
+                ui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getLastDuration()).count()));
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getAvgDuration()).count()));
+                ui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getAvgDuration()).count()));
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getTotalDuration()).count()));
+                ui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getTotalDuration()).count()));
             }
 
             ImGui::EndTable();

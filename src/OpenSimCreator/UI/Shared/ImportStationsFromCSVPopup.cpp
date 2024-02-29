@@ -61,14 +61,14 @@ private:
 
     void drawHelpText()
     {
-        ImGui::TextWrapped("Use this tool to import CSV data containing 3D locations as stations into the document. The CSV file should contain:");
+        ui::TextWrapped("Use this tool to import CSV data containing 3D locations as stations into the document. The CSV file should contain:");
         ImGui::Bullet();
-        ImGui::TextWrapped("(optional) A header row of four columns, ideally labelled 'name', 'x', 'y', and 'z'");
+        ui::TextWrapped("(optional) A header row of four columns, ideally labelled 'name', 'x', 'y', and 'z'");
         ImGui::Bullet();
-        ImGui::TextWrapped("Data rows containing four columns: name (optional, string), x (number), y (number), and z (number)");
+        ui::TextWrapped("Data rows containing four columns: name (optional, string), x (number), y (number), and z (number)");
         ImGui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
         constexpr CStringView c_ExampleInputText = "name,x,y,z\nstationatground,0,0,0\nstation2,1.53,0.2,1.7\nstation3,3.0,2.0,0.0\n";
-        ImGui::TextWrapped("Example Input: ");
+        ui::TextWrapped("Example Input: ");
         ImGui::SameLine();
         if (ImGui::Button(ICON_FA_COPY))
         {
@@ -76,7 +76,7 @@ private:
         }
         DrawTooltipBodyOnlyIfItemHovered("Copy example input to clipboard");
         ImGui::Indent();
-        ImGui::TextWrapped("%s", c_ExampleInputText.c_str());
+        ui::TextWrapped(c_ExampleInputText);
         ImGui::Unindent();
     }
 
@@ -114,13 +114,13 @@ private:
                 ImGui::TableNextRow();
                 int column = 0;
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::TextUnformatted(station.name.c_str());
+                ui::TextUnformatted(station.name);
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::Text("%f", station.position.x);
+                ui::Text("%f", station.position.x);
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::Text("%f", station.position.y);
+                ui::Text("%f", station.position.y);
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::Text("%f", station.position.z);
+                ui::Text("%f", station.position.z);
                 ImGui::PopID();
             }
 
@@ -147,7 +147,7 @@ private:
         }
 
         PushStyleColor(ImGuiCol_Text, Color::orange());
-        ImGui::Text(ICON_FA_EXCLAMATION " input file contains issues");
+        ui::Text(ICON_FA_EXCLAMATION " input file contains issues");
         PopStyleColor();
 
         if (ImGui::IsItemHovered())

@@ -113,7 +113,7 @@ public:
         {
             if (ImGui::Begin("Loading Message", nullptr, ImGuiWindowFlags_NoTitleBar))
             {
-                ImGui::Text("loading: %s", m_OsimPath.string().c_str());
+                ui::Text("loading: %s", m_OsimPath.string().c_str());
                 ImGui::ProgressBar(m_LoadingProgress);
             }
             ImGui::End();
@@ -122,9 +122,9 @@ public:
         {
             if (ImGui::Begin("Error Message", nullptr, ImGuiWindowFlags_NoTitleBar))
             {
-                ImGui::TextWrapped("An error occurred while loading the file:");
+                ui::TextWrapped("An error occurred while loading the file:");
                 ImGui::Dummy({0.0f, 5.0f});
-                ImGui::TextWrapped("%s", m_LoadingErrorMsg.c_str());
+                ui::TextWrapped(m_LoadingErrorMsg);
                 ImGui::Dummy({0.0f, 5.0f});
 
                 if (ImGui::Button("try again"))

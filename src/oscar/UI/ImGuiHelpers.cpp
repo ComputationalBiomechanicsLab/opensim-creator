@@ -661,20 +661,20 @@ void osc::DrawTooltipIfItemHovered(
 // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
 void osc::DrawHelpMarker(CStringView header, CStringView desc)
 {
-    ImGui::TextDisabled("(?)");
+    ui::TextDisabled("(?)");
     DrawTooltipIfItemHovered(header, desc, ImGuiHoveredFlags_None);
 }
 
 // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
 void osc::DrawHelpMarker(CStringView desc)
 {
-    ImGui::TextDisabled("(?)");
+    ui::TextDisabled("(?)");
     DrawTooltipIfItemHovered(desc, {}, ImGuiHoveredFlags_None);
 }
 
 void osc::TextUnformatted(CStringView label)
 {
-    ImGui::TextUnformatted(label.c_str());
+    ui::TextUnformatted(label);
 }
 
 bool osc::InputString(CStringView label, std::string& editedString, ImGuiInputTextFlags flags)

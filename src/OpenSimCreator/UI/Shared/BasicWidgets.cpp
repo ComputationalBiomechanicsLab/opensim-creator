@@ -174,19 +174,19 @@ namespace
     {
         if (std::holds_alternative<double>(v))
         {
-            ImGui::Text("%f", static_cast<float>(std::get<double>(v)));
+            ui::Text("%f", static_cast<float>(std::get<double>(v)));
         }
         else if (std::holds_alternative<IntegratorMethod>(v))
         {
-            ImGui::Text("%s", GetIntegratorMethodString(std::get<IntegratorMethod>(v)).c_str());
+            ui::Text(GetIntegratorMethodString(std::get<IntegratorMethod>(v)));
         }
         else if (std::holds_alternative<int>(v))
         {
-            ImGui::Text("%i", std::get<int>(v));
+            ui::Text("%i", std::get<int>(v));
         }
         else
         {
-            ImGui::Text("(unknown value type)");
+            ui::Text("(unknown value type)");
         }
     }
 
@@ -297,14 +297,14 @@ namespace
 
 void osc::DrawNothingRightClickedContextMenuHeader()
 {
-    ImGui::TextDisabled("(nothing selected)");
+    ui::TextDisabled("(nothing selected)");
 }
 
 void osc::DrawContextMenuHeader(CStringView title, CStringView subtitle)
 {
-    ImGui::TextUnformatted(title.c_str());
+    ui::TextUnformatted(title);
     ImGui::SameLine();
-    ImGui::TextDisabled("%s", subtitle.c_str());
+    ui::TextDisabled(subtitle);
 }
 
 void osc::DrawRightClickedComponentContextMenuHeader(OpenSim::Component const& c)
@@ -322,9 +322,9 @@ void osc::DrawComponentHoverTooltip(OpenSim::Component const& hovered)
 {
     BeginTooltip();
 
-    ImGui::TextUnformatted(hovered.getName().c_str());
+    ui::TextUnformatted(hovered.getName());
     ImGui::SameLine();
-    ImGui::TextDisabled("%s", hovered.getConcreteClassName().c_str());
+    ui::TextDisabled(hovered.getConcreteClassName());
 
     EndTooltip();
 }
@@ -376,12 +376,12 @@ bool osc::DrawWatchOutputMenu(IMainUIStateAPI& api, OpenSim::Component const& c)
             ImGui::PushID(imguiId++);
 
             ImGui::Dummy({0.0f, 2.0f});
-            ImGui::TextDisabled("%s (%s)", p->getName().c_str(), p->getConcreteClassName().c_str());
+            ui::TextDisabled("%s (%s)", p->getName().c_str(), p->getConcreteClassName().c_str());
             ImGui::Separator();
 
             if (p->getNumOutputs() == 0)
             {
-                ImGui::TextDisabled("  (has no outputs)");
+                ui::TextDisabled("  (has no outputs)");
             }
             else
             {
@@ -406,7 +406,7 @@ bool osc::DrawWatchOutputMenu(IMainUIStateAPI& api, OpenSim::Component const& c)
 void osc::DrawSimulationParams(ParamBlock const& params)
 {
     ImGui::Dummy({0.0f, 1.0f});
-    ImGui::TextUnformatted("parameters:");
+    ui::TextUnformatted("parameters:");
     ImGui::SameLine();
     DrawHelpMarker("The parameters used when this simulation was launched. These must be set *before* running the simulation");
     ImGui::Separator();
@@ -419,7 +419,7 @@ void osc::DrawSimulationParams(ParamBlock const& params)
         std::string const& description = params.getDescription(i);
         ParamValue const& value = params.getValue(i);
 
-        ImGui::TextUnformatted(name.c_str());
+        ui::TextUnformatted(name);
         ImGui::SameLine();
         DrawHelpMarker(name, description);
         ImGui::NextColumn();
@@ -442,7 +442,7 @@ void osc::DrawSearchBar(std::string& out)
     }
     else
     {
-        ImGui::Text(ICON_FA_SEARCH);
+        ui::Text(ICON_FA_SEARCH);
     }
 
     // draw search bar
@@ -463,7 +463,7 @@ void osc::DrawOutputNameColumn(
     }
     else
     {
-        ImGui::TextUnformatted(output.getName().c_str());
+        ui::TextUnformatted(output.getName());
     }
 
     // if it's specifically a component ouptut, then hover/clicking the text should
@@ -496,7 +496,7 @@ void osc::DrawWithRespectToMenuContainingMenuPerFrame(
     OpenSim::Component const& root,
     std::function<void(OpenSim::Frame const&)> const& onFrameMenuOpened)
 {
-    ImGui::TextDisabled("With Respect to:");
+    ui::TextDisabled("With Respect to:");
     ImGui::Separator();
 
     int imguiID = 0;
@@ -516,7 +516,7 @@ void osc::DrawWithRespectToMenuContainingMenuItemPerFrame(
     OpenSim::Component const& root,
     std::function<void(OpenSim::Frame const&)> const& onFrameMenuItemClicked)
 {
-    ImGui::TextDisabled("With Respect to:");
+    ui::TextDisabled("With Respect to:");
     ImGui::Separator();
 
     int imguiID = 0;
@@ -539,7 +539,7 @@ void osc::DrawPointTranslationInformationWithRespectTo(
     SimTK::Transform const groundToFrame = frame.getTransformInGround(state).invert();
     Vec3 position = ToVec3(groundToFrame * ToSimTKVec3(locationInGround));
 
-    ImGui::Text("translation");
+    ui::Text("translation");
     ImGui::SameLine();
     DrawHelpMarker("translation", "Translational offset (in meters) of the point expressed in the chosen frame");
     ImGui::SameLine();
@@ -554,7 +554,7 @@ void osc::DrawDirectionInformationWithRepsectTo(
     SimTK::Transform const groundToFrame = frame.getTransformInGround(state).invert();
     Vec3 direction = ToVec3(groundToFrame.xformBaseVecToFrame(ToSimTKVec3(directionInGround)));
 
-    ImGui::Text("direction");
+    ui::Text("direction");
     ImGui::SameLine();
     DrawHelpMarker("direction", "a unit vector expressed in the given frame");
     ImGui::SameLine();
@@ -570,13 +570,13 @@ void osc::DrawFrameInformationExpressedIn(
     Vec3 position = ToVec3(xform.p());
     Vec3 rotationEulers = ToVec3(xform.R().convertRotationToBodyFixedXYZ());
 
-    ImGui::Text("translation");
+    ui::Text("translation");
     ImGui::SameLine();
     DrawHelpMarker("translation", "Translational offset (in meters) of the frame's origin expressed in the chosen frame");
     ImGui::SameLine();
     ImGui::InputFloat3("##translation", value_ptr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
 
-    ImGui::Text("orientation");
+    ui::Text("orientation");
     ImGui::SameLine();
     DrawHelpMarker("orientation", "Orientation offset (in radians) of the frame, expressed in the chosen frame as a frame-fixed x-y-z rotation sequence");
     ImGui::SameLine();
@@ -658,15 +658,15 @@ void osc::DrawCalculateAxisDirectionsMenu(
             Vec3 y = ToVec3(frame.expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
             Vec3 z = ToVec3(frame.expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
 
-            ImGui::Text("x axis");
+            ui::Text("x axis");
             ImGui::SameLine();
             ImGui::InputFloat3("##xdir", value_ptr(x), "%.6f", ImGuiInputTextFlags_ReadOnly);
 
-            ImGui::Text("y axis");
+            ui::Text("y axis");
             ImGui::SameLine();
             ImGui::InputFloat3("##ydir", value_ptr(y), "%.6f", ImGuiInputTextFlags_ReadOnly);
 
-            ImGui::Text("z axis");
+            ui::Text("z axis");
             ImGui::SameLine();
             ImGui::InputFloat3("##zdir", value_ptr(z), "%.6f", ImGuiInputTextFlags_ReadOnly);
         };
@@ -684,7 +684,7 @@ void osc::DrawCalculateOriginMenu(
         auto const onFrameMenuOpened = [&state, &frame](OpenSim::Frame const& otherFrame)
         {
             auto v = ToVec3(frame.findStationLocationInAnotherFrame(state, {0.0f, 0.0f, 0.0f}, otherFrame));
-            ImGui::Text("origin");
+            ui::Text("origin");
             ImGui::SameLine();
             ImGui::InputFloat3("##origin", value_ptr(v), "%.6f", ImGuiInputTextFlags_ReadOnly);
         };
@@ -817,7 +817,7 @@ void osc::DrawCalculateRadiiMenu(
 {
     if (ImGui::BeginMenu("Radii")) {
         auto v = ToVec3(ellipsoid.get_radii());
-        ImGui::Text("radii");
+        ui::Text("radii");
         ImGui::SameLine();
         ImGui::InputFloat3("##radii", value_ptr(v), "%.6f", ImGuiInputTextFlags_ReadOnly);
         ImGui::EndMenu();
@@ -845,15 +845,15 @@ void osc::DrawCalculateScaledRadiiDirectionsMenu(
             Vec3 y = ToVec3(radii[1] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
             Vec3 z = ToVec3(radii[2] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
 
-            ImGui::Text("x axis");
+            ui::Text("x axis");
             ImGui::SameLine();
             ImGui::InputFloat3("##xdir", value_ptr(x), "%.6f", ImGuiInputTextFlags_ReadOnly);
 
-            ImGui::Text("y axis");
+            ui::Text("y axis");
             ImGui::SameLine();
             ImGui::InputFloat3("##ydir", value_ptr(y), "%.6f", ImGuiInputTextFlags_ReadOnly);
 
-            ImGui::Text("z axis");
+            ui::Text("z axis");
             ImGui::SameLine();
             ImGui::InputFloat3("##zdir", value_ptr(z), "%.6f", ImGuiInputTextFlags_ReadOnly);
         };
@@ -928,19 +928,19 @@ bool osc::DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions& opts)
     bool edited = false;
 
     ImGui::PushID(id++);
-    ImGui::TextDisabled("Rendering");
+    ui::TextDisabled("Rendering");
     edited = DrawMuscleRenderingOptionsRadioButtions(opts) || edited;
     ImGui::PopID();
 
     ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
     ImGui::PushID(id++);
-    ImGui::TextDisabled("Sizing");
+    ui::TextDisabled("Sizing");
     edited = DrawMuscleSizingOptionsRadioButtons(opts) || edited;
     ImGui::PopID();
 
     ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
     ImGui::PushID(id++);
-    ImGui::TextDisabled("Coloring");
+    ui::TextDisabled("Coloring");
     edited = DrawMuscleColoringOptionsRadioButtons(opts) || edited;
     ImGui::PopID();
 
@@ -950,7 +950,7 @@ bool osc::DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions& opts)
 bool osc::DrawRenderingOptionsEditor(CustomRenderingOptions& opts)
 {
     bool edited = false;
-    ImGui::TextDisabled("Rendering");
+    ui::TextDisabled("Rendering");
     for (size_t i = 0; i < opts.getNumOptions(); ++i)
     {
         bool value = opts.getOptionValue(i);
@@ -977,7 +977,7 @@ bool osc::DrawOverlayOptionsEditor(OverlayDecorationOptions& opts)
             {
                 ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
             }
-            ImGui::TextDisabled("%s", groupLabel.c_str());
+            ui::TextDisabled(groupLabel);
             lastGroupLabel = groupLabel;
         }
 
@@ -1029,7 +1029,7 @@ bool osc::DrawAdvancedParamsEditor(
     DrawTooltipBodyOnlyIfItemHovered("Try to export the 3D scene to a portable DAE file, so that it can be viewed in 3rd-party modelling software, such as Blender");
 
     ImGui::Dummy({0.0f, 10.0f});
-    ImGui::Text("advanced camera properties:");
+    ui::Text("advanced camera properties:");
     ImGui::Separator();
     edited = SliderMetersFloat("radius", params.camera.radius, 0.0f, 10.0f) || edited;
     edited = SliderAngle("theta", params.camera.theta, 0_deg, 360_deg) || edited;
@@ -1043,7 +1043,7 @@ bool osc::DrawAdvancedParamsEditor(
     edited = SliderMetersFloat("pan_z", params.camera.focusPoint.z, -100.0f, 100.0f) || edited;
 
     ImGui::Dummy({0.0f, 10.0f});
-    ImGui::Text("advanced scene properties:");
+    ui::Text("advanced scene properties:");
     ImGui::Separator();
     edited = ImGui::ColorEdit3("light_color", value_ptr(params.lightColor)) || edited;
     edited = ImGui::ColorEdit3("background color", value_ptr(params.backgroundColor)) || edited;
@@ -1065,7 +1065,7 @@ bool osc::DrawVisualAidsContextMenuContent(ModelRendererParams& params)
 
     // OpenSim-specific extra rendering options
     ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
-    ImGui::TextDisabled("OpenSim");
+    ui::TextDisabled("OpenSim");
     edited = DrawCustomDecorationOptionCheckboxes(params.decorationOptions) || edited;
 
     return edited;
@@ -1439,7 +1439,7 @@ void osc::DrawAllDecorationToggleButtons(UndoableModelStatePair& model, IconCach
 void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
 {
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
-    ImGui::TextUnformatted(ICON_FA_EXPAND_ALT);
+    ui::TextUnformatted(ICON_FA_EXPAND_ALT);
     DrawTooltipIfItemHovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
     ImGui::SameLine();
 
@@ -1467,7 +1467,7 @@ void osc::DrawMeshExportContextMenuContent(
     UndoableModelStatePair const& model,
     OpenSim::Mesh const& mesh)
 {
-    ImGui::TextDisabled("Format:");
+    ui::TextDisabled("Format:");
     ImGui::Separator();
 
     if (ImGui::BeginMenu(".obj"))

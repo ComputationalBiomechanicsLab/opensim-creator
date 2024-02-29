@@ -34,7 +34,7 @@ namespace
         }
 
         ImGui::Columns(2);
-        ImGui::TextUnformatted("actions");
+        ui::TextUnformatted("actions");
         ImGui::SameLine();
         DrawHelpMarker("Shows a menu containing extra actions that can be performed on this component.\n\nYou can also access the same menu by right-clicking the component in the 3D viewer, bottom status bar, or navigator panel.");
         ImGui::NextColumn();
@@ -75,7 +75,7 @@ namespace
             ImGui::Columns(2);
 
             ImGui::Separator();
-            ImGui::TextUnformatted("name");
+            ui::TextUnformatted("name");
             ImGui::SameLine();
             DrawHelpMarker("The name of the component", "The component's name can be important. It can be used when components want to refer to eachover. E.g. a joint will name the two frames it attaches to.");
 
@@ -119,7 +119,7 @@ private:
     {
         if (!m_Model->getSelected())
         {
-            ImGui::TextUnformatted("(nothing selected)");
+            ui::TextUnformatted("(nothing selected)");
             return;
         }
 

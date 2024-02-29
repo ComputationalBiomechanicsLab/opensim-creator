@@ -62,7 +62,7 @@ void osc::UndoRedoPanel::DrawContent(UndoRedoBase& storage)
     }
 
     ImGui::PushID(imguiID++);
-    ImGui::Text("  %s", storage.getHead().message().c_str());
+    ui::Text("  %s", storage.getHead().message().c_str());
     ImGui::PopID();
 
     // draw redo entries oldest (lowest index) to newest (highest index)

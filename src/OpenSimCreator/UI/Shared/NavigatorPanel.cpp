@@ -180,7 +180,7 @@ private:
     {
         if (!m_Model)
         {
-            ImGui::TextDisabled("(no model)");
+            ui::TextDisabled("(no model)");
             return;
         }
 
@@ -203,7 +203,7 @@ private:
 
         // draw filter stuff
 
-        ImGui::TextUnformatted(ICON_FA_EYE);
+        ui::TextUnformatted(ICON_FA_EYE);
         if (ImGui::BeginPopupContextItem("##filterpopup"))
         {
             ImGui::Checkbox("frames", &m_ShowFrames);

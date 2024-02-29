@@ -21,13 +21,13 @@ ComponentDetails::Response osc::ComponentDetails::onDraw(
 
     if (!comp)
     {
-        ImGui::Text("(nothing selected)");
+        ui::Text("(nothing selected)");
         return rv;
     }
 
     OpenSim::Component const& c = *comp;
 
-    ImGui::Text("selection information:");
+    ui::Text("selection information:");
     ImGui::Dummy({0.0, 2.5f});
     ImGui::Separator();
 
@@ -35,54 +35,54 @@ ComponentDetails::Response osc::ComponentDetails::onDraw(
     {
         ImGui::Columns(2);
 
-        ImGui::Text("getName()");
+        ui::Text("getName()");
         ImGui::NextColumn();
-        ImGui::Text("%s", c.getName().c_str());
-        ImGui::NextColumn();
-
-        ImGui::Text("getAuthors()");
-        ImGui::NextColumn();
-        ImGui::Text("%s", c.getAuthors().c_str());
+        ui::Text(c.getName());
         ImGui::NextColumn();
 
-        ImGui::Text("getOwner().getName()");
+        ui::Text("getAuthors()");
         ImGui::NextColumn();
-        ImGui::Text("%s", TryGetOwnerName(c).value_or("N/A (no owner)").c_str());
-        ImGui::NextColumn();
-
-        ImGui::Text("getAbsolutePath()");
-        ImGui::NextColumn();
-        ImGui::Text("%s", GetAbsolutePathString(c).c_str());
+        ui::Text(c.getAuthors());
         ImGui::NextColumn();
 
-        ImGui::Text("getConcreteClassName()");
+        ui::Text("getOwner().getName()");
         ImGui::NextColumn();
-        ImGui::Text("%s", c.getConcreteClassName().c_str());
-        ImGui::NextColumn();
-
-        ImGui::Text("getNumInputs()");
-        ImGui::NextColumn();
-        ImGui::Text("%i", c.getNumInputs());
+        ui::Text(TryGetOwnerName(c).value_or("N/A (no owner)"));
         ImGui::NextColumn();
 
-        ImGui::Text("getNumOutputs()");
+        ui::Text("getAbsolutePath()");
         ImGui::NextColumn();
-        ImGui::Text("%i", c.getNumOutputs());
-        ImGui::NextColumn();
-
-        ImGui::Text("getNumSockets()");
-        ImGui::NextColumn();
-        ImGui::Text("%i", c.getNumSockets());
+        ui::Text(GetAbsolutePathString(c));
         ImGui::NextColumn();
 
-        ImGui::Text("getNumStateVariables()");
+        ui::Text("getConcreteClassName()");
         ImGui::NextColumn();
-        ImGui::Text("%i", c.getNumStateVariables());
+        ui::Text(c.getConcreteClassName());
         ImGui::NextColumn();
 
-        ImGui::Text("getNumProperties()");
+        ui::Text("getNumInputs()");
         ImGui::NextColumn();
-        ImGui::Text("%i", c.getNumProperties());
+        ui::Text("%i", c.getNumInputs());
+        ImGui::NextColumn();
+
+        ui::Text("getNumOutputs()");
+        ImGui::NextColumn();
+        ui::Text("%i", c.getNumOutputs());
+        ImGui::NextColumn();
+
+        ui::Text("getNumSockets()");
+        ImGui::NextColumn();
+        ui::Text("%i", c.getNumSockets());
+        ImGui::NextColumn();
+
+        ui::Text("getNumStateVariables()");
+        ImGui::NextColumn();
+        ui::Text("%i", c.getNumStateVariables());
+        ImGui::NextColumn();
+
+        ui::Text("getNumProperties()");
+        ImGui::NextColumn();
+        ui::Text("%i", c.getNumProperties());
         ImGui::NextColumn();
 
         ImGui::Columns();
@@ -95,9 +95,9 @@ ComponentDetails::Response osc::ComponentDetails::onDraw(
         for (int i = 0; i < c.getNumProperties(); ++i)
         {
             OpenSim::AbstractProperty const& p = c.getPropertyByIndex(i);
-            ImGui::Text("%s", p.getName().c_str());
+            ui::Text(p.getName());
             ImGui::NextColumn();
-            ImGui::Text("%s", p.toString().c_str());
+            ui::Text(p.toString());
             ImGui::NextColumn();
         }
         ImGui::Columns();
@@ -112,14 +112,14 @@ ComponentDetails::Response osc::ComponentDetails::onDraw(
         {
             std::string const& name = names[i];
 
-            ImGui::Text("%s", name.c_str());
+            ui::Text(name);
             ImGui::NextColumn();
-            ImGui::Text("%f", c.getStateVariableValue(state, name));
+            ui::Text("%f", c.getStateVariableValue(state, name));
             ImGui::NextColumn();
 
-            ImGui::Text("%s (deriv)", name.c_str());
+            ui::Text("%s (deriv)", name.c_str());
             ImGui::NextColumn();
-            ImGui::Text("%f", c.getStateVariableDerivativeValue(state, name));
+            ui::Text("%f", c.getStateVariableDerivativeValue(state, name));
             ImGui::NextColumn();
         }
         ImGui::Columns();
@@ -131,7 +131,7 @@ ComponentDetails::Response osc::ComponentDetails::onDraw(
         std::vector<std::string> input_names = c.getInputNames();
         for (std::string const& inputName : input_names)
         {
-            ImGui::Text("%s", inputName.c_str());
+            ui::Text(inputName);
         }
     }
 
@@ -142,11 +142,11 @@ ComponentDetails::Response osc::ComponentDetails::onDraw(
         ImGui::Columns(2);
         for (std::string const& sn : socknames)
         {
-            ImGui::Text("%s", sn.c_str());
+            ui::Text(sn);
             ImGui::NextColumn();
 
             std::string const& cp = c.getSocket(sn).getConnecteePath();
-            ImGui::Text("%s", cp.c_str());
+            ui::Text(cp);
             if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
             {
                 rv.type = ResponseType::SelectionChanged;

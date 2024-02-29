@@ -150,8 +150,8 @@ private:
         ImGui::Checkbox("use tonemapping", &m_UseTonemap);
         ImGui::Checkbox("use 16-bit colors", &m_Use16BitFormat);
         ImGui::InputFloat("exposure", &m_Exposure);
-        ImGui::Text("pos = %f,%f,%f", m_Camera.getPosition().x, m_Camera.getPosition().y, m_Camera.getPosition().z);
-        ImGui::Text("eulers = %f,%f,%f", m_Camera.eulers().x.count(), m_Camera.eulers().y.count(), m_Camera.eulers().z.count());
+        ui::Text("pos = %f,%f,%f", m_Camera.getPosition().x, m_Camera.getPosition().y, m_Camera.getPosition().z);
+        ui::Text("eulers = %f,%f,%f", m_Camera.eulers().x.count(), m_Camera.eulers().y.count(), m_Camera.eulers().z.count());
         ImGui::End();
     }
 

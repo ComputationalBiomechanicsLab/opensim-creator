@@ -49,7 +49,7 @@ private:
     {
         if (m_API->getNumUserOutputExtractors() <= 0)
         {
-            ImGui::TextDisabled("(no outputs requested)");
+            ui::TextDisabled("(no outputs requested)");
             return;
         }
 

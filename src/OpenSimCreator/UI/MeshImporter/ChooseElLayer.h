@@ -257,9 +257,9 @@ namespace osc::mi
             if (se)
             {
                 ImGui::BeginTooltip();
-                ImGui::TextUnformatted(se->getLabel().c_str());
+                ui::TextUnformatted(se->getLabel());
                 ImGui::SameLine();
-                ImGui::TextDisabled("(%s, click to choose)", se->getClass().getName().c_str());
+                ui::TextDisabled("(%s, click to choose)", se->getClass().getName().c_str());
                 ImGui::EndTooltip();
             }
         }

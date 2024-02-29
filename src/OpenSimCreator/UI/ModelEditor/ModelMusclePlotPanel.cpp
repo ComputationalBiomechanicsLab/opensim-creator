@@ -1546,7 +1546,7 @@ namespace
 
             if (m_Lines.getPlottingTaskStatus() == PlottingTaskStatus::Error) {
                 if (auto maybeErrorString = m_Lines.tryGetPlottingTaskErrorMessage()) {
-                    ImGui::Text("error: cannot show plot: %s", maybeErrorString->c_str());
+                    ui::Text("error: cannot show plot: %s", maybeErrorString->c_str());
                 }
                 return nullptr;
             }
@@ -1556,7 +1556,7 @@ namespace
 
             auto const* maybeCoord = FindComponent<OpenSim::Coordinate>(*modelGuard, latestParams.getCoordinatePath());
             if (!maybeCoord) {
-                ImGui::Text("(no coordinate named %s in model)", latestParams.getCoordinatePath().toString().c_str());
+                ui::Text("(no coordinate named %s in model)", latestParams.getCoordinatePath().toString().c_str());
                 return nullptr;
             }
             OpenSim::Coordinate const& coord = *maybeCoord;
@@ -1664,7 +1664,7 @@ namespace
 
             ImGui::SameLine();
             ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ImGui::GetStyle().ItemSpacing.x);
-            ImGui::Text("'s");
+            ui::Text("'s");
             ImGui::SameLine();
             ImGui::SetNextItemWidth(outputNameWidth);
             if (ImGui::BeginCombo("##outputname", outputName.c_str(), ImGuiComboFlags_NoArrowButton))
@@ -1681,7 +1681,7 @@ namespace
                 ImGui::EndCombo();
             }
             ImGui::SameLine();
-            ImGui::TextUnformatted("vs.");
+            ui::TextUnformatted("vs.");
             ImGui::SameLine();
             ImGui::SetNextItemWidth(coordNameWidth);
             if (ImGui::BeginCombo("##coordname", coordName.c_str(), ImGuiComboFlags_NoArrowButton))
@@ -2154,7 +2154,7 @@ namespace
                 IsNameLexographicallyLowerThan<OpenSim::Component const*>
             );
 
-            ImGui::Text("select coordinate:");
+            ui::Text("select coordinate:");
 
             ImGui::BeginChild("MomentArmPlotCoordinateSelection");
             for (OpenSim::Coordinate const* coord : coordinates) {
@@ -2194,10 +2194,10 @@ namespace
                 IsNameLexographicallyLowerThan<OpenSim::Component const*>
             );
 
-            ImGui::Text("select muscle:");
+            ui::Text("select muscle:");
 
             if (muscles.empty()) {
-                ImGui::TextDisabled("(the model contains no muscles?)");
+                ui::TextDisabled("(the model contains no muscles?)");
             }
             else {
                 ImGui::BeginChild("MomentArmPlotMuscleSelection");

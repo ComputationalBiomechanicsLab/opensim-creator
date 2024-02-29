@@ -103,7 +103,7 @@ private:
         ImGui::Begin("window");
         ImGui::InputFloat("standardinput", &m_Value);
         CircularSliderFloat("custom slider", &m_Value, 15.0f, 5.0f);
-        ImGui::Text("%f", m_Value);
+        ui::Text("%f", m_Value);
         Toggle("custom toggle", &m_Toggle);
         ImGui::End();
     }

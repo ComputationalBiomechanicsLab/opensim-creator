@@ -170,7 +170,7 @@ private:
     {
         ImGui::Columns(2);
 
-        ImGui::TextUnformatted("name");
+        ui::TextUnformatted("name");
         ImGui::SameLine();
         DrawHelpMarker("Name the newly-added component will have after being added into the model. Note: this is used to derive the name of subcomponents (e.g. path points)");
         ImGui::NextColumn();
@@ -185,7 +185,7 @@ private:
 
     void drawPropertyEditors()
     {
-        ImGui::TextUnformatted("Properties");
+        ui::TextUnformatted("Properties");
         ImGui::SameLine();
         DrawHelpMarker("These are properties of the OpenSim::Component being added. Their datatypes, default values, and help text are defined in the source code (see OpenSim_DECLARE_PROPERTY in OpenSim's C++ source code, if you want the details). Their default values are typically sane enough to let you add the component directly into your model.");
         ImGui::Separator();
@@ -210,7 +210,7 @@ private:
             return;
         }
 
-        ImGui::TextUnformatted("Socket assignments (required)");
+        ui::TextUnformatted("Socket assignments (required)");
         ImGui::SameLine();
         DrawHelpMarker("The OpenSim::Component being added has `socket`s that connect to other components in the model. You must specify what these sockets should be connected to; otherwise, the component cannot be added to the model.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
         ImGui::Separator();
@@ -233,15 +233,15 @@ private:
 
         ImGui::Columns(2);
 
-        ImGui::TextUnformatted(socket.getName().c_str());
+        ui::TextUnformatted(socket.getName());
         ImGui::SameLine();
         DrawHelpMarker(m_Proto->getPropertyByName("socket_" + socket.getName()).getComment());
-        ImGui::TextDisabled("%s", socket.getConnecteeTypeName().c_str());
+        ui::TextDisabled(socket.getConnecteeTypeName());
         ImGui::NextColumn();
 
         // rhs: search and connectee choices
         ImGui::PushID(static_cast<int>(i));
-        ImGui::TextUnformatted(ICON_FA_SEARCH);
+        ui::TextUnformatted(ICON_FA_SEARCH);
         ImGui::SameLine();
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
         InputString("##search", m_SocketSearchStrings[i]);
@@ -420,7 +420,7 @@ private:
             ImGui::PopStyleVar();
             ImGui::SameLine();
 
-            ImGui::Text("%s", m_PathPoints[i].userChoice.getComponentName().c_str());
+            ui::Text(m_PathPoints[i].userChoice.getComponentName());
             if (ImGui::IsItemHovered())
             {
                 if (OpenSim::Component const* c = FindComponent(model, m_PathPoints[i].userChoice))
@@ -449,7 +449,7 @@ private:
         }
 
         // header
-        ImGui::TextUnformatted("Path Points (at least 2 required)");
+        ui::TextUnformatted("Path Points (at least 2 required)");
         ImGui::SameLine();
         DrawHelpMarker("The Component being added is (effectively) a line that connects physical frames (e.g. bodies) in the model. For example, an OpenSim::Muscle can be described as an actuator that connects bodies in the model together. You **must** specify at least two physical frames on the line in order to add a PathActuator component.\n\nDetails: in OpenSim, some `Components` are `PathActuator`s. All `Muscle`s are defined as `PathActuator`s. A `PathActuator` is an `Actuator` that actuates along a path. Therefore, a `Model` containing a `PathActuator` with zero or one points would be invalid. This is why it is required that you specify at least two points");
         ImGui::Separator();
@@ -505,7 +505,7 @@ private:
         {
             PushStyleColor(ImGuiCol_Text, Color::red());
             ImGui::Dummy({0.0f, 2.0f});
-            ImGui::TextWrapped("Error adding component to model: %s", m_CurrentErrors.c_str());
+            ui::TextWrapped("Error adding component to model: %s", m_CurrentErrors.c_str());
             ImGui::Dummy({0.0f, 2.0f});
             PopStyleColor();
         }

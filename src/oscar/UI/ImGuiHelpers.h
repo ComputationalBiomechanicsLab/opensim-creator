@@ -179,7 +179,7 @@ namespace osc
     // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
     void DrawHelpMarker(CStringView);
 
-    // draw the provided string view using ImGui::TextUnformatted
+    // draw the provided string view using ui::TextUnformatted
     void TextUnformatted(CStringView);
 
     // draw an ImGui::InputText that manipulates a std::string

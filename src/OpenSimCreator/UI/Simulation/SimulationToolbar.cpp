@@ -84,7 +84,7 @@ private:
     void drawScaleFactorGroup()
     {
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
-        ImGui::TextUnformatted(ICON_FA_EXPAND_ALT);
+        ui::TextUnformatted(ICON_FA_EXPAND_ALT);
         DrawTooltipIfItemHovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
         ImGui::SameLine();
 
@@ -102,10 +102,10 @@ private:
     void drawSimulationStatusGroup()
     {
         SimulationStatus const status = m_Simulation->getStatus();
-        ImGui::TextDisabled("simulator status:");
+        ui::TextDisabled("simulator status:");
         ImGui::SameLine();
         PushStyleColor(ImGuiCol_Text, CalcStatusColor(status));
-        ImGui::TextUnformatted(GetAllSimulationStatusStrings()[static_cast<size_t>(status)].c_str());
+        ui::TextUnformatted(GetAllSimulationStatusStrings()[static_cast<size_t>(status)]);
         PopStyleColor();
     }
 

@@ -853,17 +853,17 @@ private:
 
     void drawNothingContextMenuContentHeader()
     {
-        ImGui::Text(ICON_FA_BOLT " Actions");
+        ui::Text(ICON_FA_BOLT " Actions");
         ImGui::SameLine();
-        ImGui::TextDisabled("(nothing clicked)");
+        ui::TextDisabled("(nothing clicked)");
         ImGui::Separator();
     }
 
     void drawMIObjectContextMenuContentHeader(MIObject const& e)
     {
-        ImGui::Text("%s %s", e.getClass().getIconUTF8().c_str(), e.getLabel().c_str());
+        ui::Text("%s %s", e.getClass().getIconUTF8().c_str(), e.getLabel().c_str());
         ImGui::SameLine();
-        ImGui::TextDisabled("%s", GetContextMenuSubHeaderText(m_Shared->getModelGraph(), e).c_str());
+        ui::TextDisabled(GetContextMenuSubHeaderText(m_Shared->getModelGraph(), e));
         ImGui::SameLine();
         DrawHelpMarker(e.getClass().getName(), e.getClass().getDescription());
         ImGui::Separator();
@@ -1436,13 +1436,13 @@ private:
     {
         if (ImGui::BeginMenu(ICON_FA_FILE_EXPORT " Export"))
         {
-            ImGui::TextDisabled("With Respect to:");
+            ui::TextDisabled("With Respect to:");
             ImGui::Separator();
             for (MIObject const& MIObject : m_Shared->getModelGraph().iter())
             {
                 if (ImGui::BeginMenu(MIObject.getLabel().c_str()))
                 {
-                    ImGui::TextDisabled("Format:");
+                    ui::TextDisabled("Format:");
                     ImGui::Separator();
 
                     if (ImGui::MenuItem(".obj"))
@@ -1631,7 +1631,7 @@ private:
     {
         Document& mg = m_Shared->updModelGraph();
 
-        ImGui::Text("%s %s", c.getIconUTF8().c_str(), c.getNamePluralized().c_str());
+        ui::Text("%s %s", c.getIconUTF8().c_str(), c.getNamePluralized().c_str());
         ImGui::SameLine();
         DrawHelpMarker(c.getNamePluralized(), c.getDescription());
         ImGui::Dummy({0.0f, 5.0f});
@@ -1661,7 +1661,7 @@ private:
                 ++styles;
             }
 
-            ImGui::Text("%s", el.getLabel().c_str());
+            ui::Text(el.getLabel());
 
             ImGui::PopStyleColor(styles);
 
@@ -1689,7 +1689,7 @@ private:
 
         if (empty)
         {
-            ImGui::TextDisabled("(no %s)", c.getNamePluralized().c_str());
+            ui::TextDisabled("(no %s)", c.getNamePluralized().c_str());
         }
         ImGui::Unindent();
     }
@@ -2035,9 +2035,9 @@ private:
     void drawMIObjectTooltip(MIObject const& e) const
     {
         ImGui::BeginTooltip();
-        ImGui::Text("%s %s", e.getClass().getIconUTF8().c_str(), e.getLabel().c_str());
+        ui::Text("%s %s", e.getClass().getIconUTF8().c_str(), e.getLabel().c_str());
         ImGui::SameLine();
-        ImGui::TextDisabled("%s", GetContextMenuSubHeaderText(m_Shared->getModelGraph(), e).c_str());
+        ui::TextDisabled(GetContextMenuSubHeaderText(m_Shared->getModelGraph(), e));
         ImGui::EndTooltip();
     }
 

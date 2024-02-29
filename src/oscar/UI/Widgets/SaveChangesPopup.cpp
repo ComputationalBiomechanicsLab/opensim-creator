@@ -17,7 +17,7 @@ public:
 
     void implDrawContent() final
     {
-        ImGui::TextUnformatted(m_Config.content.c_str());
+        ui::TextUnformatted(m_Config.content);
 
         if (ImGui::Button("Yes"))
         {

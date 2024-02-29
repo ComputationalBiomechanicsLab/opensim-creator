@@ -44,7 +44,7 @@ namespace osc
             }
             else
             {
-                ImGui::TextDisabled("(nothing hovered)");
+                ui::TextDisabled("(nothing hovered)");
             }
         }
 
@@ -54,22 +54,22 @@ namespace osc
             ImGui::SameLine();
             if (hover.isHoveringASceneElement())
             {
-                ImGui::TextDisabled("(Click: select %s)", FindElementNameOr(m_State->getScratch(), *hover.getSceneElementID()).c_str());
+                ui::TextDisabled("(Click: select %s)", FindElementNameOr(m_State->getScratch(), *hover.getSceneElementID()).c_str());
             }
             else if (hover.getInput() == TPSDocumentInputIdentifier::Source)
             {
-                ImGui::TextDisabled("(Click: add a landmark, Ctrl+Click: add non-participating landmark)");
+                ui::TextDisabled("(Click: add a landmark, Ctrl+Click: add non-participating landmark)");
             }
             else
             {
                 static_assert(NumOptions<TPSDocumentInputIdentifier>() == 2);
-                ImGui::TextDisabled("(Click: add a landmark)");
+                ui::TextDisabled("(Click: add a landmark)");
             }
         }
 
         void drawColorCodedXYZ(Vec3 pos)
         {
-            ImGui::TextUnformatted("(");
+            ui::TextUnformatted("(");
             ImGui::SameLine();
             for (int i = 0; i < 3; ++i)
             {
@@ -77,11 +77,11 @@ namespace osc
                 color[i] = 1.0f;
 
                 PushStyleColor(ImGuiCol_Text, color);
-                ImGui::Text("%f", pos[i]);
+                ui::Text("%f", pos[i]);
                 ImGui::SameLine();
                 PopStyleColor();
             }
-            ImGui::TextUnformatted(")");
+            ui::TextUnformatted(")");
         }
 
         std::string m_Label;

@@ -36,7 +36,7 @@ private:
             m_ModelViewer.onDraw(*warped);
         }
         else {
-            ImGui::Text("cannot show result: model is not warpable");
+            ui::Text("cannot show result: model is not warpable");
         }
     }
 

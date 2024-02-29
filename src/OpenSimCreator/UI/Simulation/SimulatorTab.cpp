@@ -413,7 +413,7 @@ private:
         else
         {
             ImGui::Begin("Waiting for simulation");
-            ImGui::TextDisabled("(waiting for first simulation state)");
+            ui::TextDisabled("(waiting for first simulation state)");
             ImGui::End();
 
             // and show the log, so that the user can see any errors from the integrator (#628)

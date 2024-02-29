@@ -158,7 +158,7 @@ private:
 
         // draw UI
 
-        ImGui::Text("connect %s (%s) to:", socket->getName().c_str(), socket->getConnecteeTypeName().c_str());
+        ui::Text("connect %s (%s) to:", socket->getName().c_str(), socket->getConnecteeTypeName().c_str());
 
         ImGui::Dummy({0.0f, 0.1f * ImGui::GetTextLineHeight()});
         ImGui::Separator();
@@ -185,7 +185,7 @@ private:
         if (!m_Error.empty())
         {
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            ImGui::TextWrapped("%s", m_Error.c_str());
+            ui::TextWrapped(m_Error);
         }
 
         // add ability to re-express a component in a new frame (#326)

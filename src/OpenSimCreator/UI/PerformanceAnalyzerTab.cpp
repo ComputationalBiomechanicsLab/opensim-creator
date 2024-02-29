@@ -117,13 +117,13 @@ public:
                 ImGui::TableNextRow();
                 int column = 0;
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::TextUnformatted(GetIntegratorMethodString(m).c_str());
+                ui::TextUnformatted(GetIntegratorMethodString(m));
                 ImGui::TableSetColumnIndex(column++);
                 ImGui::ProgressBar(sim.getProgress());
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::Text("%f", t);
+                ui::Text("%f", t);
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::Text("%i", static_cast<int>(steps));
+                ui::Text("%i", static_cast<int>(steps));
             }
 
             ImGui::EndTable();

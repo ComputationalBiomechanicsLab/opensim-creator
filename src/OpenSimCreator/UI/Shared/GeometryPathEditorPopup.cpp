@@ -139,7 +139,7 @@ private:
             // edge-case: the geometry path that this popup is editing no longer
             // exists (e.g. because a muscle was deleted or similar), so it should
             // announce the problem and close itself
-            ImGui::Text("The GeometryPath no longer exists - closing this popup");
+            ui::Text("The GeometryPath no longer exists - closing this popup");
             requestClose();
             return;
         }
@@ -147,7 +147,7 @@ private:
         // `m_EditedGeometryPath`, which is independent of the original data
         // and the target model (so that edits can be applied transactionally)
 
-        ImGui::Text("Path Points:");
+        ui::Text("Path Points:");
         ImGui::Separator();
         drawPathPointEditorTable();
         ImGui::Separator();
@@ -259,7 +259,7 @@ private:
 
     void drawIthPathPointTypeCell(OpenSim::PathPointSet const& pps, ptrdiff_t i)
     {
-        ImGui::TextDisabled("%s", At(pps, i).getConcreteClassName().c_str());
+        ui::TextDisabled(At(pps, i).getConcreteClassName());
     }
 
     // try, because the path point type might not actually have a set location

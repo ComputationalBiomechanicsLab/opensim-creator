@@ -244,7 +244,7 @@ public:
 
         if (nReports <= 0)
         {
-            ImGui::Text("no data (yet)");
+            ui::Text("no data (yet)");
         }
         else if (outputType == OutputType::Float)
         {
@@ -254,7 +254,7 @@ public:
         else if (outputType == OutputType::String)
         {
             SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
-            ImGui::TextUnformatted(m_OutputExtractor.getValueString(*sim.getModel(), r).c_str());
+            ui::TextUnformatted(m_OutputExtractor.getValueString(*sim.getModel(), r));
 
             // draw context menu (if user right clicks)
             if (ImGui::BeginPopupContextItem("plotcontextmenu"))
@@ -265,7 +265,7 @@ public:
         }
         else
         {
-            ImGui::Text("unknown output type");
+            ui::Text("unknown output type");
         }
     }
 
@@ -281,7 +281,7 @@ private:
         ptrdiff_t const nReports = sim.getNumReports();
         if (nReports <= 0)
         {
-            ImGui::Text("no data (yet)");
+            ui::Text("no data (yet)");
             return;
         }
 

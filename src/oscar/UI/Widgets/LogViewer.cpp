@@ -120,10 +120,10 @@ public:
         for (LogMessage const& msg : *contentGuard)
         {
             ImGui::PushStyleColor(ImGuiCol_Text, ::ToColor(msg.level));
-            ImGui::Text("[%s]", ToCStringView(msg.level).c_str());
+            ui::Text("[%s]", ToCStringView(msg.level).c_str());
             ImGui::PopStyleColor();
             ImGui::SameLine();
-            ImGui::TextWrapped("%s", msg.payload.c_str());
+            ui::TextWrapped(msg.payload);
 
             if (autoscroll)
             {

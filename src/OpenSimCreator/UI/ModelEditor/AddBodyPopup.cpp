@@ -61,7 +61,7 @@ private:
                 ImGui::SetKeyboardFocusHere();
             }
 
-            ImGui::Text("body name");
+            ui::Text("body name");
             ImGui::SameLine();
             DrawHelpMarker("The name used to identify the OpenSim::Body in the model. OpenSim typically uses the name to identify connections between components in a model, so the name should be unique.");
             ImGui::NextColumn();
@@ -73,7 +73,7 @@ private:
 
         // prompt mass
         {
-            ImGui::Text("mass (kg)");
+            ui::Text("mass (kg)");
             ImGui::SameLine();
             DrawHelpMarker("The mass of the body in kilograms");
             ImGui::NextColumn();
@@ -84,7 +84,7 @@ private:
 
         // prompt center of mass
         {
-            ImGui::Text("center of mass");
+            ui::Text("center of mass");
             ImGui::SameLine();
             DrawHelpMarker("The location of the mass center in the body frame.");
             ImGui::NextColumn();
@@ -95,7 +95,7 @@ private:
 
         // prompt inertia
         {
-            ImGui::Text("inertia (tensor)");
+            ui::Text("inertia (tensor)");
             ImGui::SameLine();
             DrawHelpMarker("The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz]. These are measured about the center of mass, *not* the center of the body frame.");
             ImGui::NextColumn();
@@ -106,7 +106,7 @@ private:
 
         // prompt body/ground that new body will connect to (via a joint)
         {
-            ImGui::Text("join to");
+            ui::Text("join to");
             ImGui::SameLine();
             DrawHelpMarker("What the added body will be joined to. All bodies in an OpenSim model are connected to other bodies, or the ground, by joints. This is true even if the joint is unconstrained and does nothing (e.g. an OpenSim::FreeJoint) or if the joint constrains motion in all direcctions (e.g. an OpenSim::WeldJoint).");
             ImGui::NextColumn();
@@ -130,7 +130,7 @@ private:
 
         // prompt joint type for the above
         {
-            ImGui::Text("joint type");
+            ui::Text("joint type");
             ImGui::SameLine();
             DrawHelpMarker("The type of OpenSim::Joint that will connect the new OpenSim::Body to the selection above");
             ImGui::NextColumn();
@@ -149,7 +149,7 @@ private:
 
         // prompt joint name
         {
-            ImGui::Text("joint name");
+            ui::Text("joint name");
             ImGui::SameLine();
             DrawHelpMarker("The name of the OpenSim::Joint that will join the new body to the existing frame specified above");
             ImGui::NextColumn();
@@ -161,7 +161,7 @@ private:
 
         // prompt adding offset frames
         {
-            ImGui::Text("add offset frames");
+            ui::Text("add offset frames");
             ImGui::SameLine();
             DrawHelpMarker("Whether osc should automatically add intermediate offset frames to the OpenSim::Joint. A joint can attach to the two bodies (this added one, plus the selected one) directly. However, many OpenSim model designs instead make the joint attach to offset frames which, themselves, attach to the bodies. The utility of doing this is that the offset frames can be manually adjusted later, rather than *having* to attach the center of the joint to the center of the body");
             ImGui::NextColumn();
@@ -172,7 +172,7 @@ private:
 
         // prompt geometry
         {
-            ImGui::Text("geometry");
+            ui::Text("geometry");
             ImGui::SameLine();
             DrawHelpMarker("Attaches visual geometry to the new body. This is what the OpenSim::Body looks like in the UI. The geometry is purely cosmetic and does not affect the simulation");
             ImGui::NextColumn();

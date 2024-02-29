@@ -86,10 +86,10 @@ private:
                     m_API->removeUserOutputExtractor(outputIdx);
                 }
                 ImGui::SameLine();
-                ImGui::TextUnformatted(o.getName().c_str());
+                ui::TextUnformatted(o.getName());
 
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::TextUnformatted(o.getValueString(m_Model->getModel(), m_CachedReport.simulationReport).c_str());
+                ui::TextUnformatted(o.getValueString(m_Model->getModel(), m_CachedReport.simulationReport));
 
                 ImGui::PopID();
             }
@@ -98,7 +98,7 @@ private:
         }
         else
         {
-            ImGui::TextWrapped("No outputs are being watched. You can watch outputs by right-clicking something in the model.");
+            ui::TextWrapped("No outputs are being watched. You can watch outputs by right-clicking something in the model.");
         }
     }
 

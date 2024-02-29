@@ -52,7 +52,7 @@ void osc::mow::Toolbar::drawWarpModelButton()
         if (!m_State->canWarpModel()) {
             TooltipDescriptionSpacer();
             PushStyleColor(ImGuiCol_Text, Color::mutedRed());
-            ImGui::Text("Cannot warp the model right now: there are errors that need to be fixed. See the checklist panel.");
+            ui::Text("Cannot warp the model right now: there are errors that need to be fixed. See the checklist panel.");
             PopStyleColor();
         }
         EndTooltip();

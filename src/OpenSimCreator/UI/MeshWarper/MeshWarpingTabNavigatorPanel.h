@@ -32,7 +32,7 @@ namespace osc
     private:
         void implDrawContent() final
         {
-            ImGui::TextUnformatted("Landmarks:");
+            ui::TextUnformatted("Landmarks:");
             ImGui::Separator();
             if (ContainsLandmarks(m_State->getScratch()))
             {
@@ -45,7 +45,7 @@ namespace osc
 
             ImGui::NewLine();
 
-            ImGui::TextUnformatted("Non-Participating Landmarks:");
+            ui::TextUnformatted("Non-Participating Landmarks:");
             ImGui::Separator();
             if (ContainsNonParticipatingLandmarks(m_State->getScratch()))
             {

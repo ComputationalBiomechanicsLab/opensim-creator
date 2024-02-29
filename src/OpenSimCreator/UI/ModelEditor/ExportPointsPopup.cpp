@@ -70,10 +70,10 @@ namespace
 
     void DrawExportPointsPopupDescriptionSection()
     {
-        ImGui::Text("Description");
+        ui::Text("Description");
         ImGui::Separator();
         BeginDisabled();
-        ImGui::TextWrapped("%s", c_ExplanationText.c_str());
+        ui::TextWrapped(c_ExplanationText);
         EndDisabled();
         ImGui::PopStyleColor();
     }
@@ -83,13 +83,13 @@ namespace
         SimTK::State const& state)
     {
         BeginTooltip();
-        ImGui::TextUnformatted(component.getName().c_str());
+        ui::TextUnformatted(component.getName());
         ImGui::SameLine();
-        ImGui::TextDisabled("%s", component.getConcreteClassName().c_str());
+        ui::TextDisabled(component.getConcreteClassName());
 
         if (std::optional<PointInfo> const pointInfo = TryExtractPointInfo(component, state))
         {
-            ImGui::TextDisabled("Expressed In: %s", pointInfo->frameAbsPath.toString().c_str());
+            ui::TextDisabled("Expressed In: %s", pointInfo->frameAbsPath.toString().c_str());
         }
 
         EndTooltip();
@@ -298,7 +298,7 @@ namespace
         OpenSim::Model const& model,
         SimTK::State const& state)
     {
-        ImGui::Text("Points");
+        ui::Text("Points");
         ImGui::Separator();
         InputString("search", uiState.searchString);
         DrawPointSelectionList(uiState, model, state);
@@ -576,7 +576,7 @@ private:
         DrawPointSelector(m_PointSelectorState, model, state);
         ImGui::Dummy({0.0f, sectionSpacing});
 
-        ImGui::Text("Options");
+        ui::Text("Options");
         ImGui::Separator();
         DrawFrameSelector(m_FrameSelectorState, model);
         DrawOutputFormatEditor(m_OutputFormatState);

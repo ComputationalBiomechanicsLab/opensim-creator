@@ -124,7 +124,7 @@ private:
     void drawStartTimeText()
     {
         SimulationClock::time_point const tStart = m_Simulation->getStartTime();
-        ImGui::TextDisabled("%.2f", static_cast<float>(tStart.time_since_epoch().count()));
+        ui::TextDisabled("%.2f", static_cast<float>(tStart.time_since_epoch().count()));
     }
 
     void drawPlaybackSpeedSelector()
@@ -162,8 +162,8 @@ private:
         if (ImGui::IsItemHovered())
         {
             BeginTooltip();
-            ImGui::TextUnformatted("Left-Click: Change simulation time being shown");
-            ImGui::TextUnformatted("Ctrl-Click: Type in the simulation time being shown");
+            ui::TextUnformatted("Left-Click: Change simulation time being shown");
+            ui::TextUnformatted("Ctrl-Click: Type in the simulation time being shown");
             EndTooltip();
         }
     }
@@ -171,7 +171,7 @@ private:
     void drawEndTimeText()
     {
         SimulationClock::time_point const tEnd = m_Simulation->getEndTime();
-        ImGui::TextDisabled("%.2f", static_cast<float>(tEnd.time_since_epoch().count()));
+        ui::TextDisabled("%.2f", static_cast<float>(tEnd.time_since_epoch().count()));
     }
 
     std::string m_Label;

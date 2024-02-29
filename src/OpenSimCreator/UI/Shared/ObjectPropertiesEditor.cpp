@@ -129,7 +129,7 @@ namespace
     // draws the property name and (optionally) comment tooltip
     void DrawPropertyName(OpenSim::AbstractProperty const& prop)
     {
-        ImGui::TextUnformatted(prop.getName().c_str());
+        ui::TextUnformatted(prop.getName());
 
         if (!prop.getComment().empty())
         {
@@ -186,7 +186,7 @@ namespace
     {
         if (ImGui::BeginPopupContextItem("##valuecontextmenu"))
         {
-            ImGui::Text("Set Step Size");
+            ui::Text("Set Step Size");
             ImGui::SameLine();
             DrawHelpMarker("Sets the decrement/increment of the + and - buttons. Can be handy for tweaking property values");
             ImGui::Dummy({0.0f, 0.1f*ImGui::GetTextLineHeight()});
@@ -200,13 +200,13 @@ namespace
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text("Custom");
+                ui::Text("Custom");
                 ImGui::TableSetColumnIndex(1);
                 ImGui::InputFloat("##stepsizeinput", &stepSize, 0.0f, 0.0f, "%.6f");
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text("Lengths");
+                ui::Text("Lengths");
                 ImGui::TableSetColumnIndex(1);
                 if (ImGui::Button("10 cm"))
                 {
@@ -230,7 +230,7 @@ namespace
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text("Angles (Degrees)");
+                ui::Text("Angles (Degrees)");
                 ImGui::TableSetColumnIndex(1);
                 if (ImGui::Button("180"))
                 {
@@ -259,7 +259,7 @@ namespace
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text("Angles (Radians)");
+                ui::Text("Angles (Radians)");
                 ImGui::TableSetColumnIndex(1);
                 if (ImGui::Button("1 pi"))
                 {
@@ -288,7 +288,7 @@ namespace
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text("Masses");
+                ui::Text("Masses");
                 ImGui::TableSetColumnIndex(1);
                 if (ImGui::Button("1 kg"))
                 {
@@ -948,7 +948,7 @@ namespace
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             if (ImGui::BeginCombo("##reexpressioneditor", preview.c_str()))
             {
-                ImGui::TextDisabled("Frame (editing)");
+                ui::TextDisabled("Frame (editing)");
                 ImGui::SameLine();
                 DrawHelpMarker("Note: this only affects the values that the quantities are edited in. It does not change the frame that the component is attached to. You can change the frame attachment by using the component's context menu: Socket > $FRAME > (edit button) > (select new frame)");
                 ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
@@ -1734,7 +1734,7 @@ private:
         ImGui::Separator();
         DrawPropertyName(prop);
         ImGui::NextColumn();
-        ImGui::TextUnformatted(prop.toString().c_str());
+        ui::TextUnformatted(prop.toString());
         ImGui::NextColumn();
     }
 

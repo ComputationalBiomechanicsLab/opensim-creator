@@ -103,7 +103,7 @@ private:
         {
             ImGui::PushID(i);
 
-            ImGui::TextUnformatted(m_LocalCopy.getName(i).c_str());
+            ui::TextUnformatted(m_LocalCopy.getName(i));
             ImGui::SameLine();
             DrawHelpMarker(m_LocalCopy.getName(i), m_LocalCopy.getDescription(i));
             ImGui::NextColumn();

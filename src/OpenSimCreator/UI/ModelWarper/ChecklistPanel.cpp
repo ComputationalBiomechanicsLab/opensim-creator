@@ -61,7 +61,7 @@ namespace
     {
         TextUnformatted(GetAbsolutePathString(component));
         ImGui::SameLine();
-        ImGui::TextDisabled("%s", component.getConcreteClassName().c_str());
+        ui::TextDisabled(component.getConcreteClassName());
         ImGui::Separator();
         ImGui::Dummy({0.0f, 3.0f});
     }
@@ -108,13 +108,13 @@ namespace
     {
         DrawTooltipHeader(state, c);
 
-        ImGui::Text("Checklist:");
+        ui::Text("Checklist:");
         ImGui::Dummy({0.0f, 3.0f});
         DrawChecklist(state, c);
 
         ImGui::NewLine();
 
-        ImGui::Text("Details:");
+        ui::Text("Details:");
         ImGui::Dummy({0.0f, 3.0f});
         DrawDetailsTable(state, c);
     }
@@ -136,9 +136,9 @@ namespace
 {
     void DrawMeshSectionHeader(UIState const& state)
     {
-        ImGui::Text("Meshes");
+        ui::Text("Meshes");
         ImGui::SameLine();
-        ImGui::TextDisabled("(%zu)", GetNumChildren<OpenSim::Mesh>(state.model()));
+        ui::TextDisabled("(%zu)", GetNumChildren<OpenSim::Mesh>(state.model()));
         ImGui::SameLine();
         DrawHelpMarker("Shows which meshes are elegible for warping in the source model - and whether the model warper has enough information to warp them (plus any other useful validation checks)");
     }
@@ -161,9 +161,9 @@ namespace
 {
     void DrawFramesSectionHeader(UIState const& state)
     {
-        ImGui::Text("Warpable Frames");
+        ui::Text("Warpable Frames");
         ImGui::SameLine();
-        ImGui::TextDisabled("(%zu)", GetNumChildren<OpenSim::PhysicalOffsetFrame>(state.model()));
+        ui::TextDisabled("(%zu)", GetNumChildren<OpenSim::PhysicalOffsetFrame>(state.model()));
         ImGui::SameLine();
         DrawHelpMarker("Shows which frames are eligible for warping in the source model - and whether the model warper has enough information to warp them");
     }

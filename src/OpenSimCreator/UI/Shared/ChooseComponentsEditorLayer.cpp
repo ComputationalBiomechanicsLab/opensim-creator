@@ -235,7 +235,7 @@ public:
 
         // show header
         ImGui::SetCursorScreenPos(panelState.viewportRect.p1 + Vec2{10.0f, 10.0f});
-        ImGui::Text("%s (ESC to cancel)", m_State.popupParams.popupHeaderText.c_str());
+        ui::Text("%s (ESC to cancel)", m_State.popupParams.popupHeaderText.c_str());
 
         // handle completion state (i.e. user selected enough components)
         if (m_State.alreadyChosenComponents.size() == m_State.popupParams.numComponentsUserMustChoose)

@@ -136,7 +136,7 @@ private:
     void draw2DUI()
     {
         ImGui::Begin("controls");
-        ImGui::Text("no need to gamma correct - OSC is a gamma-corrected renderer");
+        ui::Text("no need to gamma correct - OSC is a gamma-corrected renderer");
         ImGui::End();
     }
 

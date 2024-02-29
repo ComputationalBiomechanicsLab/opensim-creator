@@ -52,7 +52,7 @@ private:
             CStringView const msg = "(there are no coordinates in the model)";
             float const w = ImGui::CalcTextSize(msg.c_str()).x;
             ImGui::SetCursorPosX(0.5f * (ImGui::GetContentRegionAvail().x - w));  // center align
-            ImGui::TextDisabled("%s", msg.c_str());
+            ui::TextDisabled(msg);
             return;
         }
 
@@ -142,7 +142,7 @@ private:
             ++stylesPushed;
         }
 
-        ImGui::TextUnformatted(c.getName().c_str());
+        ui::TextUnformatted(c.getName());
         ImGui::PopStyleColor(std::exchange(stylesPushed, 0));
 
         if (ImGui::IsItemHovered())

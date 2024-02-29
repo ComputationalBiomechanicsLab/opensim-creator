@@ -53,20 +53,20 @@ private:
                 }
                 drawMouseInteractionStuff(*els[i]);
                 ImGui::SameLine();
-                ImGui::TextDisabled("/");
+                ui::TextDisabled("/");
                 ImGui::SameLine();
                 PopID();
             }
             if (!els.empty())
             {
                 std::string const label = Ellipsis(els.back()->getName(), 15);
-                ImGui::TextUnformatted(label.c_str());
+                ui::TextUnformatted(label);
                 drawMouseInteractionStuff(*els.back());
             }
         }
         else
         {
-            ImGui::TextDisabled("(nothing selected)");
+            ui::TextDisabled("(nothing selected)");
         }
     }
 
@@ -77,7 +77,7 @@ private:
             m_Model->setHovered(&c);
 
             BeginTooltip();
-            ImGui::TextDisabled("%s", c.getConcreteClassName().c_str());
+            ui::TextDisabled(c.getConcreteClassName());
             EndTooltip();
         }
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right))

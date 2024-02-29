@@ -111,7 +111,7 @@ private:
         // let user select from a shorter sequence of analytical geometry that can be
         // generated without a mesh file
         {
-            ImGui::TextUnformatted("Generated geometry");
+            ui::TextUnformatted("Generated geometry");
             ImGui::SameLine();
             DrawHelpMarker("This is geometry that OpenSim can generate without needing an external mesh file. Useful for basic geometry.");
             ImGui::Separator();
@@ -129,7 +129,7 @@ private:
         //
         // let the user select a mesh file that the implementation should load + use
         ImGui::Dummy({0.0f, 3.0f});
-        ImGui::TextUnformatted("mesh file");
+        ui::TextUnformatted("mesh file");
         ImGui::SameLine();
         DrawHelpMarker("This is geometry that OpenSim loads from external mesh files. Useful for custom geometry (usually, created in some other application, such as ParaView or Blender)");
         ImGui::Separator();
@@ -147,7 +147,7 @@ private:
 
         if (!m_RecentUserChoices.empty())
         {
-            ImGui::TextDisabled("  (recent)");
+            ui::TextDisabled("  (recent)");
         }
 
         for (std::filesystem::path const& p : m_RecentUserChoices)
@@ -161,7 +161,7 @@ private:
 
         if (!m_RecentUserChoices.empty())
         {
-            ImGui::TextDisabled("  (from Geometry/ dir)");
+            ui::TextDisabled("  (from Geometry/ dir)");
         }
         for (std::filesystem::path const& p : m_GeometryFiles)
         {

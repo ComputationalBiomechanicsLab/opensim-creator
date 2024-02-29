@@ -86,7 +86,7 @@ namespace
         if (ImGui::IsItemHovered())
         {
             ImGui::BeginTooltip();
-            ImGui::TextUnformatted(path.filename().string().c_str());
+            ui::TextUnformatted(path.filename().string());
             ImGui::EndTooltip();
         }
         ImGui::PopID();
@@ -309,7 +309,7 @@ private:
         else
         {
             PushStyleColor(ImGuiCol_Text, Color::halfGrey());
-            ImGui::TextWrapped("No files opened recently. Try:");
+            ui::TextWrapped("No files opened recently. Try:");
             ImGui::BulletText("Creating a new model (Ctrl+N)");
             ImGui::BulletText("Opening an existing model (Ctrl+O)");
             ImGui::BulletText("Opening an example (right-side)");
@@ -319,19 +319,19 @@ private:
 
     void drawMenuLeftColumnContent(int& imguiID)
     {
-        ImGui::TextDisabled("Actions");
+        ui::TextDisabled("Actions");
         ImGui::Dummy({0.0f, 2.0f});
 
         drawActionsMenuSectionContent();
 
         ImGui::Dummy({0.0f, 1.0f*ImGui::GetTextLineHeight()});
-        ImGui::TextDisabled("Workflows");
+        ui::TextDisabled("Workflows");
         ImGui::Dummy({0.0f, 2.0f});
 
         drawWorkflowsMenuSectionContent();
 
         ImGui::Dummy({0.0f, 1.0f*ImGui::GetTextLineHeight()});
-        ImGui::TextDisabled("Recent Models");
+        ui::TextDisabled("Recent Models");
         ImGui::Dummy({0.0f, 2.0f});
 
         drawRecentlyOpenedFilesMenuSectionContent(imguiID);
@@ -341,7 +341,7 @@ private:
     {
         if (!m_MainMenuFileTab.exampleOsimFiles.empty())
         {
-            ImGui::TextDisabled("Example Models");
+            ui::TextDisabled("Example Models");
             ImGui::Dummy({0.0f, 2.0f});
 
             for (std::filesystem::path const& examplePath : m_MainMenuFileTab.exampleOsimFiles)
