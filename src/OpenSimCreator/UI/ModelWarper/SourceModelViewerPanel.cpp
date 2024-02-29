@@ -3,7 +3,6 @@
 #include <OpenSimCreator/UI/ModelWarper/UIState.h>
 #include <OpenSimCreator/UI/Shared/Readonly3DModelViewer.h>
 
-#include <imgui.h>
 #include <oscar/UI.h>
 
 #include <memory>
