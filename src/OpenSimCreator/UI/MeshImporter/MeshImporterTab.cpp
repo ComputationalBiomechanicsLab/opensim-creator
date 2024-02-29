@@ -856,7 +856,7 @@ private:
         ui::Text(ICON_FA_BOLT " Actions");
         ui::SameLine();
         ui::TextDisabled("(nothing clicked)");
-        ImGui::Separator();
+        ui::Separator();
     }
 
     void drawMIObjectContextMenuContentHeader(MIObject const& e)
@@ -866,7 +866,7 @@ private:
         ui::TextDisabled(GetContextMenuSubHeaderText(m_Shared->getModelGraph(), e));
         ui::SameLine();
         DrawHelpMarker(e.getClass().getName(), e.getClass().getDescription());
-        ImGui::Separator();
+        ui::Separator();
     }
 
     void drawMIObjectPropEditors(MIObject const& e)
@@ -1437,13 +1437,13 @@ private:
         if (ui::BeginMenu(ICON_FA_FILE_EXPORT " Export"))
         {
             ui::TextDisabled("With Respect to:");
-            ImGui::Separator();
+            ui::Separator();
             for (MIObject const& MIObject : m_Shared->getModelGraph().iter())
             {
                 if (ui::BeginMenu(MIObject.getLabel().c_str()))
                 {
                     ui::TextDisabled("Format:");
-                    ImGui::Separator();
+                    ui::Separator();
 
                     if (ui::MenuItem(".obj"))
                     {
@@ -1506,7 +1506,7 @@ private:
         drawMassEditor(el);
 
         drawContextMenuSpacer();
-        ImGui::Separator();
+        ui::Separator();
         drawContextMenuSpacer();
 
         drawTranslateMenu(el);
@@ -1525,7 +1525,7 @@ private:
         drawMIObjectPropEditors(el);
 
         drawContextMenuSpacer();
-        ImGui::Separator();
+        ui::Separator();
         drawContextMenuSpacer();
 
         drawTranslateMenu(el);
@@ -1546,7 +1546,7 @@ private:
         drawJointTypeEditor(el);
 
         drawContextMenuSpacer();
-        ImGui::Separator();
+        ui::Separator();
         drawContextMenuSpacer();
 
         drawTranslateMenu(el);
@@ -1565,7 +1565,7 @@ private:
         drawMIObjectPropEditors(el);
 
         drawContextMenuSpacer();
-        ImGui::Separator();
+        ui::Separator();
         drawContextMenuSpacer();
 
         drawTranslateMenu(el);
@@ -2305,7 +2305,7 @@ private:
                 m_Shared->requestNewMeshImporterTab();
             }
 
-            ImGui::Separator();
+            ui::Separator();
 
             if (ui::MenuItem(ICON_FA_FOLDER_OPEN " Import", "Ctrl+O"))
             {
@@ -2325,7 +2325,7 @@ private:
             }
             DrawTooltipIfItemHovered("Export mesh impoter scene to osim", "Try to export the current mesh importer scene to an osim.\n\nBEWARE: the mesh importer scene may not map 1:1 onto an OpenSim model, so re-importing the scene *may* change a few things slightly. The main utility of this button is to try and save some progress in the mesh importer.");
 
-            ImGui::Separator();
+            ui::Separator();
 
             if (ui::MenuItem(ICON_FA_FOLDER_OPEN " Import Stations from CSV"))
             {
@@ -2344,7 +2344,7 @@ private:
                 m_PopupManager.push_back(std::move(popup));
             }
 
-            ImGui::Separator();
+            ui::Separator();
 
             if (ui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W"))
             {

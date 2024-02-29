@@ -62,7 +62,7 @@ namespace
         TextUnformatted(GetAbsolutePathString(component));
         ui::SameLine();
         ui::TextDisabled(component.getConcreteClassName());
-        ImGui::Separator();
+        ui::Separator();
         ui::Dummy({0.0f, 3.0f});
     }
 
@@ -146,7 +146,7 @@ namespace
     void DrawMeshSection(UIState const& state)
     {
         DrawMeshSectionHeader(state);
-        ImGui::Separator();
+        ui::Separator();
         int id = 0;
         for (auto const& mesh : state.model().getComponentList<OpenSim::Mesh>()) {
             ui::PushID(id++);
@@ -171,7 +171,7 @@ namespace
     void DrawFramesSection(UIState const& state)
     {
         DrawFramesSectionHeader(state);
-        ImGui::Separator();
+        ui::Separator();
         int id = 0;
         for (auto const& pof : state.model().getComponentList<OpenSim::PhysicalOffsetFrame>()) {
             ui::PushID(id++);

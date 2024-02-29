@@ -161,7 +161,7 @@ private:
         ui::Text("connect %s (%s) to:", socket->getName().c_str(), socket->getConnecteeTypeName().c_str());
 
         ui::Dummy({0.0f, 0.1f * ImGui::GetTextLineHeight()});
-        ImGui::Separator();
+        ui::Separator();
         ui::Dummy({0.0f, 0.25f * ImGui::GetTextLineHeight()});
 
         DrawSearchBar(m_EditedParams.search);

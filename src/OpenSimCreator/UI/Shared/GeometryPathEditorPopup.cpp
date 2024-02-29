@@ -148,9 +148,9 @@ private:
         // and the target model (so that edits can be applied transactionally)
 
         ui::Text("Path Points:");
-        ImGui::Separator();
+        ui::Separator();
         drawPathPointEditorTable();
-        ImGui::Separator();
+        ui::Separator();
         drawAddPathPointButton();
         ImGui::NewLine();
         drawBottomButtons();

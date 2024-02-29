@@ -213,7 +213,7 @@ private:
         DrawSearchBar(m_CurrentSearch);
 
         ui::Dummy({0.0f, 3.0f});
-        ImGui::Separator();
+        ui::Separator();
         ui::Dummy({0.0f, 3.0f});
 
         // draw content

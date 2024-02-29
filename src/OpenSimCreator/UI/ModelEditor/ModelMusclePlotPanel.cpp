@@ -2090,7 +2090,7 @@ namespace
             }
             ui::PopID();
 
-            ImGui::Separator();
+            ui::Separator();
 
             ui::PushID(id++);
             if (ui::MenuItem("Export All Curves")) {

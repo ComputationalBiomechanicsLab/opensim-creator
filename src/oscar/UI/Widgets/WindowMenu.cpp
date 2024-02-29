@@ -45,7 +45,7 @@ void osc::WindowMenu::drawContent()
     // dynamic panels
     if (manager.getNumDynamicPanels() > 0)
     {
-        ImGui::Separator();
+        ui::Separator();
         for (size_t i = 0; i < manager.getNumDynamicPanels(); ++i)
         {
             bool activated = true;
@@ -61,7 +61,7 @@ void osc::WindowMenu::drawContent()
     // spawnable submenu
     if (manager.getNumSpawnablePanels() > 0)
     {
-        ImGui::Separator();
+        ui::Separator();
 
         if (ui::BeginMenu("Add"))
         {

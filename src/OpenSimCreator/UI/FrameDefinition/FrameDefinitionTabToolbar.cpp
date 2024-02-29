@@ -77,7 +77,7 @@ void osc::FrameDefinitionTabToolbar::drawExportToOpenSimTooltipContent(size_t nu
     TooltipDescriptionText("Exports the frame definition scene to opensim.");
     if (numBodies == 0)
     {
-        ImGui::Separator();
+        ui::Separator();
         TextWarning("Warning:");
         ui::SameLine();
         ui::Text("You currently have %zu bodies defined. Use the 'Add > Body from This' feature on a frame in your scene to add a new body", numBodies);

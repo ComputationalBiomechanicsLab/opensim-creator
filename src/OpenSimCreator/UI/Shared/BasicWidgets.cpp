@@ -314,7 +314,7 @@ void osc::DrawRightClickedComponentContextMenuHeader(OpenSim::Component const& c
 
 void osc::DrawContextMenuSeparator()
 {
-    ImGui::Separator();
+    ui::Separator();
     ui::Dummy({0.0f, 3.0f});
 }
 
@@ -377,7 +377,7 @@ bool osc::DrawWatchOutputMenu(IMainUIStateAPI& api, OpenSim::Component const& c)
 
             ui::Dummy({0.0f, 2.0f});
             ui::TextDisabled("%s (%s)", p->getName().c_str(), p->getConcreteClassName().c_str());
-            ImGui::Separator();
+            ui::Separator();
 
             if (p->getNumOutputs() == 0)
             {
@@ -409,7 +409,7 @@ void osc::DrawSimulationParams(ParamBlock const& params)
     ui::TextUnformatted("parameters:");
     ui::SameLine();
     DrawHelpMarker("The parameters used when this simulation was launched. These must be set *before* running the simulation");
-    ImGui::Separator();
+    ui::Separator();
     ui::Dummy({0.0f, 2.0f});
 
     ui::Columns(2);
@@ -497,7 +497,7 @@ void osc::DrawWithRespectToMenuContainingMenuPerFrame(
     std::function<void(OpenSim::Frame const&)> const& onFrameMenuOpened)
 {
     ui::TextDisabled("With Respect to:");
-    ImGui::Separator();
+    ui::Separator();
 
     int imguiID = 0;
     for (OpenSim::Frame const& frame : root.getComponentList<OpenSim::Frame>())
@@ -517,7 +517,7 @@ void osc::DrawWithRespectToMenuContainingMenuItemPerFrame(
     std::function<void(OpenSim::Frame const&)> const& onFrameMenuItemClicked)
 {
     ui::TextDisabled("With Respect to:");
-    ImGui::Separator();
+    ui::Separator();
 
     int imguiID = 0;
     for (OpenSim::Frame const& frame : root.getComponentList<OpenSim::Frame>())
@@ -1030,7 +1030,7 @@ bool osc::DrawAdvancedParamsEditor(
 
     ui::Dummy({0.0f, 10.0f});
     ui::Text("advanced camera properties:");
-    ImGui::Separator();
+    ui::Separator();
     edited = SliderMetersFloat("radius", params.camera.radius, 0.0f, 10.0f) || edited;
     edited = SliderAngle("theta", params.camera.theta, 0_deg, 360_deg) || edited;
     edited = SliderAngle("phi", params.camera.phi, 0_deg, 360_deg) || edited;
@@ -1044,7 +1044,7 @@ bool osc::DrawAdvancedParamsEditor(
 
     ui::Dummy({0.0f, 10.0f});
     ui::Text("advanced scene properties:");
-    ImGui::Separator();
+    ui::Separator();
     edited = ImGui::ColorEdit3("light_color", value_ptr(params.lightColor)) || edited;
     edited = ImGui::ColorEdit3("background color", value_ptr(params.backgroundColor)) || edited;
     edited = InputMetersFloat3("floor location", params.floorLocation) || edited;
@@ -1468,7 +1468,7 @@ void osc::DrawMeshExportContextMenuContent(
     OpenSim::Mesh const& mesh)
 {
     ui::TextDisabled("Format:");
-    ImGui::Separator();
+    ui::Separator();
 
     if (ui::BeginMenu(".obj"))
     {

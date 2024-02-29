@@ -39,7 +39,7 @@ private:
             ui::TextUnformatted("info:");
             ui::SameLine();
             DrawHelpMarker("Top-level info about the simulation");
-            ImGui::Separator();
+            ui::Separator();
             ui::Dummy({0.0f, 2.0f});
 
             ui::Columns(2);
@@ -104,7 +104,7 @@ private:
 
         ui::NextColumn();
         ui::Columns();
-        ImGui::Separator();
+        ui::Separator();
         ui::Dummy({0.0f, 2.0f});
 
         int imguiID = 0;

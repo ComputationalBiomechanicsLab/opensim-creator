@@ -137,4 +137,9 @@ namespace osc::ui
     {
         ImGui::PopID();
     }
+
+    inline void Separator()
+    {
+        ImGui::Separator();
+    }
 }

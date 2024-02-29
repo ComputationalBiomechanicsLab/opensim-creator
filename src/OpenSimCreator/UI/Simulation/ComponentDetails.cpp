@@ -29,7 +29,7 @@ ComponentDetails::Response osc::ComponentDetails::onDraw(
 
     ui::Text("selection information:");
     ui::Dummy({0.0, 2.5f});
-    ImGui::Separator();
+    ui::Separator();
 
     // top-level info
     {

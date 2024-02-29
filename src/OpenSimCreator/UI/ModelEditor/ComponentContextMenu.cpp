@@ -413,7 +413,7 @@ private:
 
             // add a seperator between probably commonly-used, simple, diplay toggles and the more
             // advanced ones
-            ImGui::Separator();
+            ui::Separator();
 
             // redundantly put a "Show All" option here, also, so that the user doesn't have
             // to "know" that they need to right-click in the middle of nowhere or on the

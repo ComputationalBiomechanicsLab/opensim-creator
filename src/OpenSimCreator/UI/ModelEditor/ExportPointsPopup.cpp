@@ -71,7 +71,7 @@ namespace
     void DrawExportPointsPopupDescriptionSection()
     {
         ui::Text("Description");
-        ImGui::Separator();
+        ui::Separator();
         BeginDisabled();
         ui::TextWrapped(c_ExplanationText);
         EndDisabled();
@@ -299,7 +299,7 @@ namespace
         SimTK::State const& state)
     {
         ui::Text("Points");
-        ImGui::Separator();
+        ui::Separator();
         InputString("search", uiState.searchString);
         DrawPointSelectionList(uiState, model, state);
         DrawSelectionManipulatorButtons(uiState, model, state);
@@ -577,7 +577,7 @@ private:
         ui::Dummy({0.0f, sectionSpacing});
 
         ui::Text("Options");
-        ImGui::Separator();
+        ui::Separator();
         DrawFrameSelector(m_FrameSelectorState, model);
         DrawOutputFormatEditor(m_OutputFormatState);
         ui::Dummy({0.0f, sectionSpacing});

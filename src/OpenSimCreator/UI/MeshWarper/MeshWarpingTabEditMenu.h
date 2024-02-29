@@ -39,7 +39,7 @@ namespace osc
             {
                 m_State->redo();
             }
-            ImGui::Separator();
+            ui::Separator();
             if (ui::MenuItem("Select All", "Ctrl+A"))
             {
                 m_State->selectAll();

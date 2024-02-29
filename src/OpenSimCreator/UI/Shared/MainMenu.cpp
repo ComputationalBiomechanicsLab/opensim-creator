@@ -136,7 +136,7 @@ void osc::MainMenuFileTab::onDraw(
         ui::EndMenu();
     }
 
-    ImGui::Separator();
+    ui::Separator();
 
     if (ui::MenuItem(ICON_FA_FOLDER_OPEN " Load Motion", nullptr, false, maybeModel != nullptr))
     {
@@ -158,7 +158,7 @@ void osc::MainMenuFileTab::onDraw(
         }
     }
 
-    ImGui::Separator();
+    ui::Separator();
 
     if (ui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S", false, maybeModel != nullptr))
     {
@@ -176,7 +176,7 @@ void osc::MainMenuFileTab::onDraw(
         }
     }
 
-    ImGui::Separator();
+    ui::Separator();
 
     {
         bool const modelHasBackingFile = maybeModel != nullptr && HasInputFileName(maybeModel->getModel());
@@ -210,7 +210,7 @@ void osc::MainMenuFileTab::onDraw(
     // parent dir
     // external editor
 
-    ImGui::Separator();
+    ui::Separator();
 
     if (ui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
     {
@@ -242,7 +242,7 @@ void osc::MainMenuAboutTab::onDraw()
     ui::TextUnformatted("graphics");
     ui::SameLine();
     DrawHelpMarker("OSMV's global graphical settings");
-    ImGui::Separator();
+    ui::Separator();
     ui::Dummy({0.0f, 0.5f});
     {
         ui::Columns(2);
@@ -314,7 +314,7 @@ void osc::MainMenuAboutTab::onDraw()
     ui::TextUnformatted("properties");
     ui::SameLine();
     DrawHelpMarker("general software properties: useful information for bug reporting etc.");
-    ImGui::Separator();
+    ui::Separator();
     ui::Dummy({0.0f, 0.5f});
     {
         AppMetadata const& metadata = App::get().getMetadata();
@@ -358,7 +358,7 @@ void osc::MainMenuAboutTab::onDraw()
     ui::TextUnformatted("debugging utilities:");
     ui::SameLine();
     DrawHelpMarker("standard utilities that can help with development, debugging, etc.");
-    ImGui::Separator();
+    ui::Separator();
     ui::Dummy({0.0f, 0.5f});
     int id = 0;
     {
@@ -413,7 +413,7 @@ void osc::MainMenuAboutTab::onDraw()
     ui::TextUnformatted("useful links:");
     ui::SameLine();
     DrawHelpMarker("links to external sites that might be useful");
-    ImGui::Separator();
+    ui::Separator();
     ui::Dummy({0.0f, 0.5f});
     {
         ui::Columns(2);

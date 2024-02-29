@@ -76,7 +76,7 @@ private:
             }
         }
 
-        ImGui::Separator();
+        ui::Separator();
         ui::Dummy({0.0f, 5.0f});
 
         for (int i = 0; i < m_API->getNumUserOutputExtractors(); ++i)

@@ -668,7 +668,7 @@ namespace
             }
             PopStyleColor();
 
-            ImGui::Separator();
+            ui::Separator();
 
             PushStyleColor(ImGuiCol_Text, Color::mutedRed());
             if (ui::MenuItem("-x"))

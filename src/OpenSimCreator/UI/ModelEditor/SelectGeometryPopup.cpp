@@ -114,7 +114,7 @@ private:
             ui::TextUnformatted("Generated geometry");
             ui::SameLine();
             DrawHelpMarker("This is geometry that OpenSim can generate without needing an external mesh file. Useful for basic geometry.");
-            ImGui::Separator();
+            ui::Separator();
             ui::Dummy({0.0f, 2.0f});
 
             int item = -1;
@@ -132,7 +132,7 @@ private:
         ui::TextUnformatted("mesh file");
         ui::SameLine();
         DrawHelpMarker("This is geometry that OpenSim loads from external mesh files. Useful for custom geometry (usually, created in some other application, such as ParaView or Blender)");
-        ImGui::Separator();
+        ui::Separator();
         ui::Dummy({0.0f, 2.0f});
 
         // let the user search through mesh files in pre-established Geometry/ dirs

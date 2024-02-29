@@ -190,7 +190,7 @@ namespace
             ui::SameLine();
             DrawHelpMarker("Sets the decrement/increment of the + and - buttons. Can be handy for tweaking property values");
             ui::Dummy({0.0f, 0.1f*ImGui::GetTextLineHeight()});
-            ImGui::Separator();
+            ui::Separator();
             ui::Dummy({0.0f, 0.2f*ImGui::GetTextLineHeight()});
 
             if (ImGui::BeginTable("CommonChoicesTable", 2, ImGuiTableFlags_SizingStretchProp))
@@ -508,7 +508,7 @@ namespace
                 m_EditedProperty = prop;
             }
 
-            ImGui::Separator();
+            ui::Separator();
 
             // draw name of the property in left-hand column
             DrawPropertyName(m_EditedProperty);
@@ -596,7 +596,7 @@ namespace
                 m_EditedProperty = prop;
             }
 
-            ImGui::Separator();
+            ui::Separator();
 
             // draw name of the property in left-hand column
             DrawPropertyName(m_EditedProperty);
@@ -688,7 +688,7 @@ namespace
                 m_EditedProperty = prop;
             }
 
-            ImGui::Separator();
+            ui::Separator();
 
             // draw name of the property in left-hand column
             DrawPropertyName(m_EditedProperty);
@@ -903,7 +903,7 @@ namespace
             // draw UI
 
 
-            ImGui::Separator();
+            ui::Separator();
 
             // draw name of the property in left-hand column
             DrawPropertyName(m_EditedProperty);
@@ -957,7 +957,7 @@ namespace
 
                 // draw "default" (reset) option
                 {
-                    ImGui::Separator();
+                    ui::Separator();
                     ui::PushID(imguiID++);
                     bool selected = !m_MaybeUserSelectedFrameAbsPath.has_value();
                     if (ImGui::Selectable(defaultedLabel.c_str(), &selected))
@@ -965,7 +965,7 @@ namespace
                         m_MaybeUserSelectedFrameAbsPath.reset();
                     }
                     ui::PopID();
-                    ImGui::Separator();
+                    ui::Separator();
                 }
 
                 // draw selectable for each frame in the model
@@ -1114,7 +1114,7 @@ namespace
                 m_EditedProperty = prop;
             }
 
-            ImGui::Separator();
+            ui::Separator();
 
             // draw name of the property in left-hand column
             DrawPropertyName(m_EditedProperty);
@@ -1209,7 +1209,7 @@ namespace
                 m_EditedProperty = prop;
             }
 
-            ImGui::Separator();
+            ui::Separator();
 
             // draw name of the property in left-hand column
             DrawPropertyName(m_EditedProperty);
@@ -1302,7 +1302,7 @@ namespace
                 m_EditedProperty = prop;
             }
 
-            ImGui::Separator();
+            ui::Separator();
 
             // draw name of the property in left-hand column
             DrawPropertyName(m_EditedProperty);
@@ -1475,7 +1475,7 @@ namespace
             }
             property_type const& prop = *maybeProp;
 
-            ImGui::Separator();
+            ui::Separator();
             DrawPropertyName(prop);
             ui::NextColumn();
             if (ui::Button(ICON_FA_EDIT))
@@ -1731,7 +1731,7 @@ private:
     void drawNonEditablePropertyDetails(
         OpenSim::AbstractProperty const& prop)
     {
-        ImGui::Separator();
+        ui::Separator();
         DrawPropertyName(prop);
         ui::NextColumn();
         ui::TextUnformatted(prop.toString());

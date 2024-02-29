@@ -60,7 +60,7 @@ private:
                 ActionRedoCurrentlyEditedModel(*m_Model);
             }
 
-            ImGui::Separator();
+            ui::Separator();
 
             if (ui::MenuItem("         Deselect", nullptr, false, m_Model->getSelected() != nullptr))
             {

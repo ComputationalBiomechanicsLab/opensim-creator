@@ -46,12 +46,12 @@ private:
         }
         else
         {
-            ImGui::Separator();
+            ui::Separator();
             drawLandmarkEntries();
             drawWarnings();
 
             ui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
-            ImGui::Separator();
+            ui::Separator();
             ui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
 
         }

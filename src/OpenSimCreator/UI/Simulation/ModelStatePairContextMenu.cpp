@@ -59,7 +59,7 @@ public:
         ui::TextUnformatted(c.getName());
         ui::SameLine();
         ui::TextDisabled(c.getConcreteClassName());
-        ImGui::Separator();
+        ui::Separator();
         ui::Dummy({0.0f, 3.0f});
 
         DrawSelectOwnerMenu(*m_Model, c);
