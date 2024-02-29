@@ -53,13 +53,13 @@ private:
         if (ImGui::CollapsingHeader("outputs"))
         {
             int imguiID = 0;
-            ImGui::Columns(2);
+            ui::Columns(2);
             for (auto const& [outputName, aoPtr] : selected->getOutputs())
             {
                 ImGui::PushID(imguiID++);
 
                 ui::Text(outputName);
-                ImGui::NextColumn();
+                ui::NextColumn();
                 SimulationOutputPlot plot
                 {
                     m_SimulatorUIAPI,
@@ -67,11 +67,11 @@ private:
                     ImGui::GetTextLineHeight(),
                 };
                 plot.onDraw();
-                ImGui::NextColumn();
+                ui::NextColumn();
 
                 ImGui::PopID();
             }
-            ImGui::Columns();
+            ui::Columns();
         }
     }
 

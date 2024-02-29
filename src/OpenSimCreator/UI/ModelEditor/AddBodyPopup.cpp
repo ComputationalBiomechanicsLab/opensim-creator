@@ -52,7 +52,7 @@ private:
             m_BodyDetails.parentFrameAbsPath = GetAbsolutePathString(*selectedPf);
         }
 
-        ImGui::Columns(2);
+        ui::Columns(2);
 
         // prompt name
         {
@@ -64,11 +64,11 @@ private:
             ui::Text("body name");
             ImGui::SameLine();
             DrawHelpMarker("The name used to identify the OpenSim::Body in the model. OpenSim typically uses the name to identify connections between components in a model, so the name should be unique.");
-            ImGui::NextColumn();
+            ui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             InputString("##bodyname", m_BodyDetails.bodyName);
             App::upd().addFrameAnnotation("AddBodyPopup::BodyNameInput", GetItemRect());
-            ImGui::NextColumn();
+            ui::NextColumn();
         }
 
         // prompt mass
@@ -76,10 +76,10 @@ private:
             ui::Text("mass (kg)");
             ImGui::SameLine();
             DrawHelpMarker("The mass of the body in kilograms");
-            ImGui::NextColumn();
+            ui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             InputKilogramFloat("##mass", m_BodyDetails.mass);
-            ImGui::NextColumn();
+            ui::NextColumn();
         }
 
         // prompt center of mass
@@ -87,10 +87,10 @@ private:
             ui::Text("center of mass");
             ImGui::SameLine();
             DrawHelpMarker("The location of the mass center in the body frame.");
-            ImGui::NextColumn();
+            ui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             InputMetersFloat3("##comeditor", m_BodyDetails.centerOfMass);
-            ImGui::NextColumn();
+            ui::NextColumn();
         }
 
         // prompt inertia
@@ -98,10 +98,10 @@ private:
             ui::Text("inertia (tensor)");
             ImGui::SameLine();
             DrawHelpMarker("The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz]. These are measured about the center of mass, *not* the center of the body frame.");
-            ImGui::NextColumn();
+            ui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             InputMetersFloat3("##inertiaeditor", m_BodyDetails.inertia);
-            ImGui::NextColumn();
+            ui::NextColumn();
         }
 
         // prompt body/ground that new body will connect to (via a joint)
@@ -109,7 +109,7 @@ private:
             ui::Text("join to");
             ImGui::SameLine();
             DrawHelpMarker("What the added body will be joined to. All bodies in an OpenSim model are connected to other bodies, or the ground, by joints. This is true even if the joint is unconstrained and does nothing (e.g. an OpenSim::FreeJoint) or if the joint constrains motion in all direcctions (e.g. an OpenSim::WeldJoint).");
-            ImGui::NextColumn();
+            ui::NextColumn();
 
             ImGui::BeginChild("join targets", ImVec2(0, 128.0f), ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
             for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>())
@@ -125,7 +125,7 @@ private:
                 }
             }
             ImGui::EndChild();
-            ImGui::NextColumn();
+            ui::NextColumn();
         }
 
         // prompt joint type for the above
@@ -133,7 +133,7 @@ private:
             ui::Text("joint type");
             ImGui::SameLine();
             DrawHelpMarker("The type of OpenSim::Joint that will connect the new OpenSim::Body to the selection above");
-            ImGui::NextColumn();
+            ui::NextColumn();
             {
                 auto const& registry = GetComponentRegistry<OpenSim::Joint>();
                 Combo(
@@ -144,7 +144,7 @@ private:
                 );
                 App::upd().addFrameAnnotation("AddBodyPopup::JointTypeInput", GetItemRect());
             }
-            ImGui::NextColumn();
+            ui::NextColumn();
         }
 
         // prompt joint name
@@ -152,11 +152,11 @@ private:
             ui::Text("joint name");
             ImGui::SameLine();
             DrawHelpMarker("The name of the OpenSim::Joint that will join the new body to the existing frame specified above");
-            ImGui::NextColumn();
+            ui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             InputString("##jointnameinput", m_BodyDetails.jointName);
             App::upd().addFrameAnnotation("AddBodyPopup::JointNameInput", GetItemRect());
-            ImGui::NextColumn();
+            ui::NextColumn();
         }
 
         // prompt adding offset frames
@@ -164,10 +164,10 @@ private:
             ui::Text("add offset frames");
             ImGui::SameLine();
             DrawHelpMarker("Whether osc should automatically add intermediate offset frames to the OpenSim::Joint. A joint can attach to the two bodies (this added one, plus the selected one) directly. However, many OpenSim model designs instead make the joint attach to offset frames which, themselves, attach to the bodies. The utility of doing this is that the offset frames can be manually adjusted later, rather than *having* to attach the center of the joint to the center of the body");
-            ImGui::NextColumn();
+            ui::NextColumn();
             ImGui::Checkbox("##addoffsetframescheckbox", &m_BodyDetails.addOffsetFrames);
             App::upd().addFrameAnnotation("AddBodyPopup::AddOffsetFramesInput", GetItemRect());
-            ImGui::NextColumn();
+            ui::NextColumn();
         }
 
         // prompt geometry
@@ -175,7 +175,7 @@ private:
             ui::Text("geometry");
             ImGui::SameLine();
             DrawHelpMarker("Attaches visual geometry to the new body. This is what the OpenSim::Body looks like in the UI. The geometry is purely cosmetic and does not affect the simulation");
-            ImGui::NextColumn();
+            ui::NextColumn();
             {
                 std::string label = m_BodyDetails.maybeGeometry ? GetDisplayName(*m_BodyDetails.maybeGeometry) : std::string{"attach"};
 
@@ -191,10 +191,10 @@ private:
                 }
                 App::upd().addFrameAnnotation("AddBodyPopup::GeometryButton", GetItemRect());
             }
-            ImGui::NextColumn();
+            ui::NextColumn();
         }
 
-        ImGui::Columns();
+        ui::Columns();
 
         // end of input prompting: show user cancel/ok buttons
 

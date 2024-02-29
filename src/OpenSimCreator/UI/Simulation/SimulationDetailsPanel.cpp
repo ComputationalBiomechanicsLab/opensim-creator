@@ -42,12 +42,12 @@ private:
             ImGui::Separator();
             ImGui::Dummy({0.0f, 2.0f});
 
-            ImGui::Columns(2);
+            ui::Columns(2);
             ui::Text("num reports");
-            ImGui::NextColumn();
+            ui::NextColumn();
             ui::Text("%zu", m_Simulation->getNumReports());
-            ImGui::NextColumn();
-            ImGui::Columns();
+            ui::NextColumn();
+            ui::Columns();
         }
 
         {
@@ -74,11 +74,11 @@ private:
         }
 
         ImGui::Dummy({0.0f, 1.0f});
-        ImGui::Columns(2);
+        ui::Columns(2);
         ui::TextUnformatted("plots:");
         ImGui::SameLine();
         DrawHelpMarker("Various statistics collected when the simulation was ran");
-        ImGui::NextColumn();
+        ui::NextColumn();
         if (std::any_of(outputs.begin(), outputs.end(), [](OutputExtractor const& o) { return o.getOutputType() == OutputType::Float; }))
         {
             ImGui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
@@ -102,24 +102,24 @@ private:
             }
         }
 
-        ImGui::NextColumn();
-        ImGui::Columns();
+        ui::NextColumn();
+        ui::Columns();
         ImGui::Separator();
         ImGui::Dummy({0.0f, 2.0f});
 
         int imguiID = 0;
-        ImGui::Columns(2);
+        ui::Columns(2);
         for (OutputExtractor const& output : sim.getOutputs())
         {
             ImGui::PushID(imguiID++);
             DrawOutputNameColumn(output, false);
-            ImGui::NextColumn();
+            ui::NextColumn();
             SimulationOutputPlot plot{m_SimulatorUIAPI, output, 32.0f};
             plot.onDraw();
-            ImGui::NextColumn();
+            ui::NextColumn();
             ImGui::PopID();
         }
-        ImGui::Columns();
+        ui::Columns();
     }
 
     ISimulatorUIAPI* m_SimulatorUIAPI;

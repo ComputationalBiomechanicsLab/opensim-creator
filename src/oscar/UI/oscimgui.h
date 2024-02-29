@@ -71,4 +71,14 @@ namespace osc::ui
     {
         return ImGui::MenuItem(std::forward<Args>(args)...);
     }
+
+    inline void Columns(int count = 1, const char* id = nullptr, bool border = true)
+    {
+        ImGui::Columns(count, id, border);
+    }
+
+    inline void NextColumn()
+    {
+        ImGui::NextColumn();
+    }
 }

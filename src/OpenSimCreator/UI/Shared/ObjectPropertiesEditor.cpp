@@ -512,7 +512,7 @@ namespace
 
             // draw name of the property in left-hand column
             DrawPropertyName(m_EditedProperty);
-            ImGui::NextColumn();
+            ui::NextColumn();
 
             // draw `n` editors in right-hand column
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
@@ -527,7 +527,7 @@ namespace
                     rv = std::move(editorRv);
                 }
             }
-            ImGui::NextColumn();
+            ui::NextColumn();
 
             return rv;
         }
@@ -600,7 +600,7 @@ namespace
 
             // draw name of the property in left-hand column
             DrawPropertyName(m_EditedProperty);
-            ImGui::NextColumn();
+            ui::NextColumn();
 
             // draw `n` editors in right-hand column
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
@@ -615,7 +615,7 @@ namespace
                     rv = std::move(editorRv);
                 }
             }
-            ImGui::NextColumn();
+            ui::NextColumn();
 
             return rv;
         }
@@ -692,7 +692,7 @@ namespace
 
             // draw name of the property in left-hand column
             DrawPropertyName(m_EditedProperty);
-            ImGui::NextColumn();
+            ui::NextColumn();
 
             // draw `n` editors in right-hand column
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
@@ -707,7 +707,7 @@ namespace
                     rv = std::move(editorRv);
                 }
             }
-            ImGui::NextColumn();
+            ui::NextColumn();
 
             return rv;
         }
@@ -907,7 +907,7 @@ namespace
 
             // draw name of the property in left-hand column
             DrawPropertyName(m_EditedProperty);
-            ImGui::NextColumn();
+            ui::NextColumn();
 
             // top line of right column shows "reexpress in" editor (if applicable)
             drawReexpressionEditorIfApplicable();
@@ -928,7 +928,7 @@ namespace
                     rv = std::move(editorRv);
                 }
             }
-            ImGui::NextColumn();
+            ui::NextColumn();
 
             return rv;
         }
@@ -1118,7 +1118,7 @@ namespace
 
             // draw name of the property in left-hand column
             DrawPropertyName(m_EditedProperty);
-            ImGui::NextColumn();
+            ui::NextColumn();
 
             // draw `n` editors in right-hand column
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
@@ -1133,7 +1133,7 @@ namespace
                     rv = std::move(editorRv);
                 }
             }
-            ImGui::NextColumn();
+            ui::NextColumn();
 
             return rv;
         }
@@ -1213,7 +1213,7 @@ namespace
 
             // draw name of the property in left-hand column
             DrawPropertyName(m_EditedProperty);
-            ImGui::NextColumn();
+            ui::NextColumn();
 
             // draw `n` editors in right-hand column
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
@@ -1228,7 +1228,7 @@ namespace
                     rv = std::move(editorRv);
                 }
             }
-            ImGui::NextColumn();
+            ui::NextColumn();
 
             return rv;
         }
@@ -1306,7 +1306,7 @@ namespace
 
             // draw name of the property in left-hand column
             DrawPropertyName(m_EditedProperty);
-            ImGui::NextColumn();
+            ui::NextColumn();
 
             // draw `n` editors in right-hand column
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
@@ -1321,7 +1321,7 @@ namespace
                     rv = std::move(editorRv);
                 }
             }
-            ImGui::NextColumn();
+            ui::NextColumn();
 
             return rv;
         }
@@ -1428,9 +1428,9 @@ namespace
             }
             ObjectPropertiesEditor& nestedEditor = *m_MaybeNestedEditor;
 
-            ImGui::Columns();
+            ui::Columns();
             auto resp = nestedEditor.onDraw();
-            ImGui::Columns(2);
+            ui::Columns(2);
 
             if (resp)
             {
@@ -1477,12 +1477,12 @@ namespace
 
             ImGui::Separator();
             DrawPropertyName(prop);
-            ImGui::NextColumn();
+            ui::NextColumn();
             if (ImGui::Button(ICON_FA_EDIT))
             {
                 pushPopup(createGeometryPathEditorPopup());
             }
-            ImGui::NextColumn();
+            ui::NextColumn();
 
 
             if (*m_ReturnValueHolder)
@@ -1667,7 +1667,7 @@ private:
         // draw each editor and return the last property edit (or std::nullopt)
         std::optional<ObjectPropertyEdit> rv;
 
-        ImGui::Columns(2);
+        ui::Columns(2);
         for (int i = 0; i < obj.getNumProperties(); ++i)
         {
             ImGui::PushID(i);
@@ -1679,7 +1679,7 @@ private:
                 rv = std::move(maybeEdit);
             }
         }
-        ImGui::Columns();
+        ui::Columns();
 
         return rv;
     }
@@ -1733,9 +1733,9 @@ private:
     {
         ImGui::Separator();
         DrawPropertyName(prop);
-        ImGui::NextColumn();
+        ui::NextColumn();
         ui::TextUnformatted(prop.toString());
-        ImGui::NextColumn();
+        ui::NextColumn();
     }
 
     // try get/construct a property editor for the given property

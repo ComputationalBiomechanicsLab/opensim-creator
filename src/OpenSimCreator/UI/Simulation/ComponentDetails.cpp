@@ -33,96 +33,96 @@ ComponentDetails::Response osc::ComponentDetails::onDraw(
 
     // top-level info
     {
-        ImGui::Columns(2);
+        ui::Columns(2);
 
         ui::Text("getName()");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ui::Text(c.getName());
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ui::Text("getAuthors()");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ui::Text(c.getAuthors());
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ui::Text("getOwner().getName()");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ui::Text(TryGetOwnerName(c).value_or("N/A (no owner)"));
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ui::Text("getAbsolutePath()");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ui::Text(GetAbsolutePathString(c));
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ui::Text("getConcreteClassName()");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ui::Text(c.getConcreteClassName());
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ui::Text("getNumInputs()");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ui::Text("%i", c.getNumInputs());
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ui::Text("getNumOutputs()");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ui::Text("%i", c.getNumOutputs());
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ui::Text("getNumSockets()");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ui::Text("%i", c.getNumSockets());
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ui::Text("getNumStateVariables()");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ui::Text("%i", c.getNumStateVariables());
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ui::Text("getNumProperties()");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ui::Text("%i", c.getNumProperties());
-        ImGui::NextColumn();
+        ui::NextColumn();
 
-        ImGui::Columns();
+        ui::Columns();
     }
 
     // properties
     if (ImGui::CollapsingHeader("properties"))
     {
-        ImGui::Columns(2);
+        ui::Columns(2);
         for (int i = 0; i < c.getNumProperties(); ++i)
         {
             OpenSim::AbstractProperty const& p = c.getPropertyByIndex(i);
             ui::Text(p.getName());
-            ImGui::NextColumn();
+            ui::NextColumn();
             ui::Text(p.toString());
-            ImGui::NextColumn();
+            ui::NextColumn();
         }
-        ImGui::Columns();
+        ui::Columns();
     }
 
     // state variables
     if (ImGui::CollapsingHeader("state variables"))
     {
         OpenSim::Array<std::string> names = c.getStateVariableNames();
-        ImGui::Columns(2);
+        ui::Columns(2);
         for (int i = 0; i < names.size(); ++i)
         {
             std::string const& name = names[i];
 
             ui::Text(name);
-            ImGui::NextColumn();
+            ui::NextColumn();
             ui::Text("%f", c.getStateVariableValue(state, name));
-            ImGui::NextColumn();
+            ui::NextColumn();
 
             ui::Text("%s (deriv)", name.c_str());
-            ImGui::NextColumn();
+            ui::NextColumn();
             ui::Text("%f", c.getStateVariableDerivativeValue(state, name));
-            ImGui::NextColumn();
+            ui::NextColumn();
         }
-        ImGui::Columns();
+        ui::Columns();
     }
 
     // inputs
@@ -139,11 +139,11 @@ ComponentDetails::Response osc::ComponentDetails::onDraw(
     if (ImGui::CollapsingHeader("sockets"))
     {
         std::vector<std::string> socknames = GetSocketNames(c);
-        ImGui::Columns(2);
+        ui::Columns(2);
         for (std::string const& sn : socknames)
         {
             ui::Text(sn);
-            ImGui::NextColumn();
+            ui::NextColumn();
 
             std::string const& cp = c.getSocket(sn).getConnecteePath();
             ui::Text(cp);
@@ -152,9 +152,9 @@ ComponentDetails::Response osc::ComponentDetails::onDraw(
                 rv.type = ResponseType::SelectionChanged;
                 rv.ptr = &c.getComponent(cp);
             }
-            ImGui::NextColumn();
+            ui::NextColumn();
         }
-        ImGui::Columns();
+        ui::Columns();
     }
 
     return rv;

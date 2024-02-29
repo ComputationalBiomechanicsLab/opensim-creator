@@ -33,12 +33,12 @@ public:
 private:
     void implDrawContent() final
     {
-        ImGui::Columns(2);
+        ui::Columns(2);
         ui::TextUnformatted("FPS");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ui::Text("%.0f", static_cast<double>(ImGui::GetIO().Framerate));
-        ImGui::NextColumn();
-        ImGui::Columns();
+        ui::NextColumn();
+        ui::Columns();
 
         {
             bool waiting = App::get().isMainLoopWaiting();

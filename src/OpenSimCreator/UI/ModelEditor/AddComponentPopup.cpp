@@ -168,19 +168,19 @@ private:
 
     void drawNameEditor()
     {
-        ImGui::Columns(2);
+        ui::Columns(2);
 
         ui::TextUnformatted("name");
         ImGui::SameLine();
         DrawHelpMarker("Name the newly-added component will have after being added into the model. Note: this is used to derive the name of subcomponents (e.g. path points)");
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         InputString("##componentname", m_Name);
         App::upd().addFrameAnnotation("AddComponentPopup::ComponentNameInput", GetItemRect());
 
-        ImGui::NextColumn();
+        ui::NextColumn();
 
-        ImGui::Columns();
+        ui::Columns();
     }
 
     void drawPropertyEditors()
@@ -231,13 +231,13 @@ private:
         OpenSim::AbstractSocket const& socket = *m_ProtoSockets[i];
         OpenSim::ComponentPath& connectee = m_SocketConnecteePaths[i];
 
-        ImGui::Columns(2);
+        ui::Columns(2);
 
         ui::TextUnformatted(socket.getName());
         ImGui::SameLine();
         DrawHelpMarker(m_Proto->getPropertyByName("socket_" + socket.getName()).getComment());
         ui::TextDisabled(socket.getConnecteeTypeName());
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         // rhs: search and connectee choices
         ImGui::PushID(static_cast<int>(i));
@@ -285,8 +285,8 @@ private:
 
         ImGui::EndChild();
         ImGui::PopID();
-        ImGui::NextColumn();
-        ImGui::Columns();
+        ui::NextColumn();
+        ui::Columns();
     }
 
     void drawPathPointEditorChoices()
@@ -456,20 +456,20 @@ private:
 
         InputString(ICON_FA_SEARCH " search", m_PathSearchString);
 
-        ImGui::Columns(2);
+        ui::Columns(2);
         int imguiID = 0;
 
         ImGui::PushID(imguiID++);
         drawPathPointEditorChoices();
         ImGui::PopID();
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ImGui::PushID(imguiID++);
         drawPathPointEditorAlreadyChosenPoints();
         ImGui::PopID();
-        ImGui::NextColumn();
+        ui::NextColumn();
 
-        ImGui::Columns();
+        ui::Columns();
     }
 
     void drawBottomButtons()

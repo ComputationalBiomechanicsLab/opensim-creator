@@ -247,12 +247,12 @@ private:
         // names
         int imguiID = 0;
 
-        ImGui::Columns(2, nullptr, false);
+        ui::Columns(2, nullptr, false);
         drawMenuLeftColumnContent(imguiID);
-        ImGui::NextColumn();
+        ui::NextColumn();
         drawMenuRightColumnContent(imguiID);
-        ImGui::NextColumn();
-        ImGui::Columns();
+        ui::NextColumn();
+        ui::Columns();
     }
 
     void drawActionsMenuSectionContent()

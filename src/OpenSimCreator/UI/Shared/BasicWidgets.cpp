@@ -412,7 +412,7 @@ void osc::DrawSimulationParams(ParamBlock const& params)
     ImGui::Separator();
     ImGui::Dummy({0.0f, 2.0f});
 
-    ImGui::Columns(2);
+    ui::Columns(2);
     for (int i = 0, len = params.size(); i < len; ++i)
     {
         std::string const& name = params.getName(i);
@@ -422,12 +422,12 @@ void osc::DrawSimulationParams(ParamBlock const& params)
         ui::TextUnformatted(name);
         ImGui::SameLine();
         DrawHelpMarker(name, description);
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         DrawSimulationParamValue(value);
-        ImGui::NextColumn();
+        ui::NextColumn();
     }
-    ImGui::Columns();
+    ui::Columns();
 }
 
 void osc::DrawSearchBar(std::string& out)

@@ -245,17 +245,17 @@ void osc::MainMenuAboutTab::onDraw()
     ImGui::Separator();
     ImGui::Dummy({0.0f, 0.5f});
     {
-        ImGui::Columns(2);
+        ui::Columns(2);
 
         ui::TextUnformatted("FPS");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ui::Text("%.0f", static_cast<double>(ImGui::GetIO().Framerate));
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ui::TextUnformatted("MSXAA");
         ImGui::SameLine();
         DrawHelpMarker("the level of MultiSample Anti-Aliasing to use. This only affects 3D renders *within* the UI, not the whole UI (panels etc. will not be affected)");
-        ImGui::NextColumn();
+        ui::NextColumn();
         {
             AntiAliasingLevel const current = App::get().getCurrentAntiAliasingLevel();
             AntiAliasingLevel const max = App::get().getMaxAntiAliasingLevel();
@@ -273,10 +273,10 @@ void osc::MainMenuAboutTab::onDraw()
                 ImGui::EndCombo();
             }
         }
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ui::TextUnformatted("window");
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         if (ImGui::Button(ICON_FA_EXPAND " fullscreen"))
         {
@@ -290,12 +290,12 @@ void osc::MainMenuAboutTab::onDraw()
         {
             App::upd().makeWindowed();
         }
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ui::TextUnformatted("VSYNC");
         ImGui::SameLine();
         DrawHelpMarker("whether the backend uses vertical sync (VSYNC), which will cap the rendering FPS to your monitor's refresh rate");
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         bool enabled = App::get().isVsyncEnabled();
         if (ImGui::Checkbox("##vsynccheckbox", &enabled)) {
@@ -305,9 +305,9 @@ void osc::MainMenuAboutTab::onDraw()
                 App::upd().disableVsync();
             }
         }
-        ImGui::NextColumn();
+        ui::NextColumn();
 
-        ImGui::Columns();
+        ui::Columns();
     }
 
     ImGui::Dummy({0.0f, 2.0f});
@@ -319,39 +319,39 @@ void osc::MainMenuAboutTab::onDraw()
     {
         AppMetadata const& metadata = App::get().getMetadata();
 
-        ImGui::Columns(2);
+        ui::Columns(2);
 
         ui::TextUnformatted("VERSION");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ui::TextUnformatted(metadata.tryGetVersionString().value_or("(not known)"));
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ui::TextUnformatted("BUILD_ID");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ui::TextUnformatted(metadata.tryGetBuildID().value_or("(not known)"));
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ui::TextUnformatted("GRAPHICS_VENDOR");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ui::Text(App::get().getGraphicsBackendVendorString());
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ui::TextUnformatted("GRAPHICS_RENDERER");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ui::Text(App::get().getGraphicsBackendRendererString());
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ui::TextUnformatted("GRAPHICS_RENDERER_VERSION");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ui::Text(App::get().getGraphicsBackendVersionString());
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ui::TextUnformatted("GRAPHICS_SHADER_VERSION");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ui::Text(App::get().getGraphicsBackendShadingLanguageVersionString());
-        ImGui::NextColumn();
+        ui::NextColumn();
 
-        ImGui::Columns(1);
+        ui::Columns(1);
     }
 
     ImGui::Dummy({0.0f, 2.5f});
@@ -362,35 +362,35 @@ void osc::MainMenuAboutTab::onDraw()
     ImGui::Dummy({0.0f, 0.5f});
     int id = 0;
     {
-        ImGui::Columns(2);
+        ui::Columns(2);
 
         ui::TextUnformatted("OSC Install Location");
         ImGui::SameLine();
         DrawHelpMarker("opens OSC's installation location in your OS's default file browser");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ImGui::PushID(id++);
         if (ImGui::Button(ICON_FA_FOLDER " open"))
         {
             OpenPathInOSDefaultApplication(App::get().getExecutableDirPath());
         }
         ImGui::PopID();
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ui::TextUnformatted("User Data Dir");
         ImGui::SameLine();
         DrawHelpMarker("opens your OSC user data directory in your OS's default file browser");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ImGui::PushID(id++);
         if (ImGui::Button(ICON_FA_FOLDER " open")) {
             OpenPathInOSDefaultApplication(App::get().getUserDataDirPath());
         }
         ImGui::PopID();
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         ui::TextUnformatted("Debug mode");
         ImGui::SameLine();
         DrawHelpMarker("Toggles whether the application is in debug mode or not: enabling this can reveal more inforamtion about bugs");
-        ImGui::NextColumn();
+        ui::NextColumn();
         {
             bool appIsInDebugMode = App::get().isInDebugMode();
             if (ImGui::Checkbox("##debugmodecheckbox", &appIsInDebugMode))
@@ -406,7 +406,7 @@ void osc::MainMenuAboutTab::onDraw()
             }
         }
 
-        ImGui::Columns();
+        ui::Columns();
     }
 
     ImGui::Dummy({0.0f, 2.5f});
@@ -416,10 +416,10 @@ void osc::MainMenuAboutTab::onDraw()
     ImGui::Separator();
     ImGui::Dummy({0.0f, 0.5f});
     {
-        ImGui::Columns(2);
+        ui::Columns(2);
 
         ui::TextUnformatted("OpenSim Creator Documentation");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ImGui::PushID(id++);
         if (ImGui::Button(ICON_FA_LINK " open"))
         {
@@ -427,12 +427,12 @@ void osc::MainMenuAboutTab::onDraw()
         }
         DrawTooltipBodyOnlyIfItemHovered("this will open the (locally installed) documentation in a separate browser window");
         ImGui::PopID();
-        ImGui::NextColumn();
+        ui::NextColumn();
 
         if (auto repoURL = App::get().getMetadata().tryGetRepositoryURL())
         {
             ui::TextUnformatted("OpenSim Creator Repository");
-            ImGui::NextColumn();
+            ui::NextColumn();
             ImGui::PushID(id++);
             if (ImGui::Button(ICON_FA_LINK " open"))
             {
@@ -440,11 +440,11 @@ void osc::MainMenuAboutTab::onDraw()
             }
             DrawTooltipBodyOnlyIfItemHovered("this will open the repository homepage in a separate browser window");
             ImGui::PopID();
-            ImGui::NextColumn();
+            ui::NextColumn();
         }
 
         ui::TextUnformatted("OpenSim Documentation");
-        ImGui::NextColumn();
+        ui::NextColumn();
         ImGui::PushID(id++);
         if (ImGui::Button(ICON_FA_LINK " open"))
         {
@@ -452,9 +452,9 @@ void osc::MainMenuAboutTab::onDraw()
         }
         DrawTooltipBodyOnlyIfItemHovered("this will open the documentation in a separate browser window");
         ImGui::PopID();
-        ImGui::NextColumn();
+        ui::NextColumn();
 
-        ImGui::Columns();
+        ui::Columns();
     }
 
     ui::EndMenu();

@@ -98,7 +98,7 @@ private:
     {
         m_WasEdited = false;
 
-        ImGui::Columns(2);
+        ui::Columns(2);
         for (int i = 0, len = m_LocalCopy.size(); i < len; ++i)
         {
             ImGui::PushID(i);
@@ -106,17 +106,17 @@ private:
             ui::TextUnformatted(m_LocalCopy.getName(i));
             ImGui::SameLine();
             DrawHelpMarker(m_LocalCopy.getName(i), m_LocalCopy.getDescription(i));
-            ImGui::NextColumn();
+            ui::NextColumn();
 
             if (DrawEditor(m_LocalCopy, i))
             {
                 m_WasEdited = true;
             }
-            ImGui::NextColumn();
+            ui::NextColumn();
 
             ImGui::PopID();
         }
-        ImGui::Columns();
+        ui::Columns();
 
         ImGui::Dummy({0.0f, 1.0f});
 
