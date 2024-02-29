@@ -8,6 +8,7 @@
 #include <oscar/Graphics/MeshGenerators.h>
 #include <oscar/Maths/CommonFunctions.h>
 #include <oscar/Maths/Ellipsoid.h>
+#include <oscar/Maths/EllipsoidFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Plane.h>
 #include <oscar/Maths/Sphere.h>
@@ -162,20 +163,15 @@ TEST(FitPlane, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgor
 TEST(FitEllipsoid, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgorithm)
 {
     // this hard-coded result comes from running the provided `Femoral_head.obj` through the shape fitter script
-    constexpr Ellipsoid c_ExpectedFit =
-    {
-        {4.41627617443540f, -28.2484366502307f, 165.041246898544f},
-        {9.39508101198322f,   8.71324627349633f,  6.71387132216324f},
-
-        // OSC change: the _signs_ of these direction vectors might be different from the MATLAB script because
-        // OSC's implementation also gurantees that the vectors are right-handed
-        std::to_array<Vec3>
-        ({
-            Vec3{0.387689357308333f, 0.744763303086706f, -0.543161656052074f},
-            Vec3{0.343850708787853f, 0.429871105312056f, 0.834851796957929},
-            Vec3{0.855256483340491f, -0.510429677030215f, -0.0894309371016929f},
-        })
-    };
+    constexpr Vec3 c_ExpectedOrigin = {4.41627617443540f, -28.2484366502307f, 165.041246898544f};
+    constexpr Vec3 c_ExpectedRadii = {9.39508101198322f,   8.71324627349633f,  6.71387132216324f};
+    // OSC change: the _signs_ of these direction vectors might be different from the MATLAB script because
+    // OSC's implementation also gurantees that the vectors are right-handed
+    constexpr auto c_ExpectedRadiiDirections = std::to_array<Vec3>({
+        Vec3{0.387689357308333f, 0.744763303086706f, -0.543161656052074f},
+        Vec3{0.343850708787853f, 0.429871105312056f, 0.834851796957929},
+        Vec3{0.855256483340491f, -0.510429677030215f, -0.0894309371016929f},
+    });
     constexpr float c_MaximumAbsoluteError = 0.0001f;
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
@@ -183,12 +179,13 @@ TEST(FitEllipsoid, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedA
         std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources/TestOpenSimCreator/Utils/ShapeFitting/Femoral_head.obj";
     Mesh const mesh = LoadMeshViaSimTK(objPath);
     Ellipsoid const fit = FitEllipsoid(mesh);
+    auto const directions = radii_directions(fit);
 
-    ASSERT_TRUE(all_of(equal_within_absdiff(fit.origin, c_ExpectedFit.origin, c_MaximumAbsoluteError)));
-    ASSERT_TRUE(all_of(equal_within_absdiff(fit.radii, c_ExpectedFit.radii, c_MaximumAbsoluteError)));
-    ASSERT_TRUE(all_of(equal_within_absdiff(fit.radiiDirections[0], c_ExpectedFit.radiiDirections[0], c_MaximumAbsoluteError)));
-    ASSERT_TRUE(all_of(equal_within_absdiff(fit.radiiDirections[1], c_ExpectedFit.radiiDirections[1], c_MaximumAbsoluteError)));
-    ASSERT_TRUE(all_of(equal_within_absdiff(fit.radiiDirections[2], c_ExpectedFit.radiiDirections[2], c_MaximumAbsoluteError)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(fit.origin, c_ExpectedOrigin, c_MaximumAbsoluteError)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(fit.radii,  c_ExpectedRadii, c_MaximumAbsoluteError)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(directions[0], c_ExpectedRadiiDirections[0], c_MaximumAbsoluteError)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(directions[1], c_ExpectedRadiiDirections[1], c_MaximumAbsoluteError)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(directions[2], c_ExpectedRadiiDirections[2], c_MaximumAbsoluteError)));
 }
 
 TEST(FitEllipsoid, DISABLED_ThrowsErrorIfGivenLessThan9Points)
