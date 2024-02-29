@@ -230,7 +230,7 @@ private:
             ImGui::EndDisabled();
         }
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         if (i+1 >= ssize(pps))
         {
@@ -245,7 +245,7 @@ private:
             ImGui::EndDisabled();
         }
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         ImGui::PushStyleColor(ImGuiCol_Text, {0.7f, 0.0f, 0.0f, 1.0f});
         if (ImGui::SmallButton(ICON_FA_TIMES))
@@ -325,7 +325,7 @@ private:
             requestClose();
         }
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         if (ImGui::Button("save"))
         {

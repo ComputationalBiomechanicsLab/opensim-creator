@@ -31,7 +31,7 @@ void osc::UndoButton::onDraw()
         m_UndoRedo->undo();
     }
 
-    ImGui::SameLine();
+    ui::SameLine();
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.0f, ImGui::GetStyle().FramePadding.y});
     ImGui::Button(ICON_FA_CARET_DOWN);

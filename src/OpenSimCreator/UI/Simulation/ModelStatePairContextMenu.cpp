@@ -57,7 +57,7 @@ public:
     {
         // draw context menu for whatever's selected
         ui::TextUnformatted(c.getName());
-        ImGui::SameLine();
+        ui::SameLine();
         ui::TextDisabled(c.getConcreteClassName());
         ImGui::Separator();
         ImGui::Dummy({0.0f, 3.0f});

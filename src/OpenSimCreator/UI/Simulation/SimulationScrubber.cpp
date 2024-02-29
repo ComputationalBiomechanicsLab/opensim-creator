@@ -30,22 +30,22 @@ public:
     void onDraw()
     {
         drawBackwardsButtons();
-        ImGui::SameLine();
+        ui::SameLine();
 
         drawPlayOrPauseOrReplayButton();
-        ImGui::SameLine();
+        ui::SameLine();
 
         drawForwardsButtons();
-        ImGui::SameLine();
+        ui::SameLine();
 
         drawPlaybackSpeedSelector();
-        ImGui::SameLine();
+        ui::SameLine();
 
         drawStartTimeText();
-        ImGui::SameLine();
+        ui::SameLine();
 
         drawScrubber();
-        ImGui::SameLine();
+        ui::SameLine();
 
         drawEndTimeText();
 
@@ -61,7 +61,7 @@ private:
             m_SimulatorAPI->setSimulationScrubTime(m_Simulation->getStartTime());
         }
         DrawTooltipIfItemHovered("Go to First State");
-        ImGui::SameLine();
+        ui::SameLine();
 
         if (ImGui::Button(ICON_FA_STEP_BACKWARD))
         {
@@ -112,7 +112,7 @@ private:
         }
         DrawTooltipIfItemHovered("Next State");
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         if (ImGui::Button(ICON_FA_FAST_FORWARD))
         {
@@ -152,7 +152,7 @@ private:
             "%.2f",
             ImGuiSliderFlags_AlwaysClamp
         );
-        ImGui::SameLine();
+        ui::SameLine();
 
         if (userScrubbed)
         {

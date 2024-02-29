@@ -171,7 +171,7 @@ private:
         ui::Columns(2);
 
         ui::TextUnformatted("name");
-        ImGui::SameLine();
+        ui::SameLine();
         DrawHelpMarker("Name the newly-added component will have after being added into the model. Note: this is used to derive the name of subcomponents (e.g. path points)");
         ui::NextColumn();
 
@@ -186,7 +186,7 @@ private:
     void drawPropertyEditors()
     {
         ui::TextUnformatted("Properties");
-        ImGui::SameLine();
+        ui::SameLine();
         DrawHelpMarker("These are properties of the OpenSim::Component being added. Their datatypes, default values, and help text are defined in the source code (see OpenSim_DECLARE_PROPERTY in OpenSim's C++ source code, if you want the details). Their default values are typically sane enough to let you add the component directly into your model.");
         ImGui::Separator();
 
@@ -211,7 +211,7 @@ private:
         }
 
         ui::TextUnformatted("Socket assignments (required)");
-        ImGui::SameLine();
+        ui::SameLine();
         DrawHelpMarker("The OpenSim::Component being added has `socket`s that connect to other components in the model. You must specify what these sockets should be connected to; otherwise, the component cannot be added to the model.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
         ImGui::Separator();
 
@@ -234,7 +234,7 @@ private:
         ui::Columns(2);
 
         ui::TextUnformatted(socket.getName());
-        ImGui::SameLine();
+        ui::SameLine();
         DrawHelpMarker(m_Proto->getPropertyByName("socket_" + socket.getName()).getComment());
         ui::TextDisabled(socket.getConnecteeTypeName());
         ui::NextColumn();
@@ -242,7 +242,7 @@ private:
         // rhs: search and connectee choices
         ImGui::PushID(static_cast<int>(i));
         ui::TextUnformatted(ICON_FA_SEARCH);
-        ImGui::SameLine();
+        ui::SameLine();
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
         InputString("##search", m_SocketSearchStrings[i]);
         ImGui::BeginChild("##pfselector", {ImGui::GetContentRegionAvail().x, 128.0f});
@@ -387,7 +387,7 @@ private:
                 maybeIndexToErase = i;
             }
 
-            ImGui::SameLine();
+            ui::SameLine();
 
             if (i <= 0)
             {
@@ -402,7 +402,7 @@ private:
                 ImGui::EndDisabled();
             }
 
-            ImGui::SameLine();
+            ui::SameLine();
 
             if (i >= std::ssize(m_PathPoints) - 1)
             {
@@ -418,7 +418,7 @@ private:
             }
 
             ImGui::PopStyleVar();
-            ImGui::SameLine();
+            ui::SameLine();
 
             ui::Text(m_PathPoints[i].userChoice.getComponentName());
             if (ImGui::IsItemHovered())
@@ -450,7 +450,7 @@ private:
 
         // header
         ui::TextUnformatted("Path Points (at least 2 required)");
-        ImGui::SameLine();
+        ui::SameLine();
         DrawHelpMarker("The Component being added is (effectively) a line that connects physical frames (e.g. bodies) in the model. For example, an OpenSim::Muscle can be described as an actuator that connects bodies in the model together. You **must** specify at least two physical frames on the line in order to add a PathActuator component.\n\nDetails: in OpenSim, some `Components` are `PathActuator`s. All `Muscle`s are defined as `PathActuator`s. A `PathActuator` is an `Actuator` that actuates along a path. Therefore, a `Model` containing a `PathActuator` with zero or one points would be invalid. This is why it is required that you specify at least two points");
         ImGui::Separator();
 
@@ -484,7 +484,7 @@ private:
             return;  // can't add anything yet
         }
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         if (ImGui::Button(ICON_FA_PLUS " add"))
         {

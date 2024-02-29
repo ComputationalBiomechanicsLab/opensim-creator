@@ -967,9 +967,9 @@ void osc::VerticalSeperator()
 
 void osc::SameLineWithVerticalSeperator()
 {
-    ImGui::SameLine();
+    ui::SameLine();
     VerticalSeperator();
-    ImGui::SameLine();
+    ui::SameLine();
 }
 
 bool osc::CircularSliderFloat(

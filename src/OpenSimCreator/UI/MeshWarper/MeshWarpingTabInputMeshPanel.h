@@ -434,13 +434,13 @@ namespace osc
             ImGui::SetCursorScreenPos(renderRect.p1 + m_State->overlayPadding);
 
             drawInformationIcon();
-            ImGui::SameLine();
+            ui::SameLine();
             drawImportButton();
-            ImGui::SameLine();
+            ui::SameLine();
             drawExportButton();
-            ImGui::SameLine();
+            ui::SameLine();
             drawAutoFitCameraButton();
-            ImGui::SameLine();
+            ui::SameLine();
             drawLandmarkRadiusSlider();
         }
 

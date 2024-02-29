@@ -85,7 +85,7 @@ private:
                 {
                     m_API->removeUserOutputExtractor(outputIdx);
                 }
-                ImGui::SameLine();
+                ui::SameLine();
                 ui::TextUnformatted(o.getName());
 
                 ImGui::TableSetColumnIndex(column++);

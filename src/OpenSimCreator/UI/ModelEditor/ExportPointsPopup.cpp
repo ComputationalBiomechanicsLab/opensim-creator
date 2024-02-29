@@ -84,7 +84,7 @@ namespace
     {
         BeginTooltip();
         ui::TextUnformatted(component.getName());
-        ImGui::SameLine();
+        ui::SameLine();
         ui::TextDisabled(component.getConcreteClassName());
 
         if (std::optional<PointInfo> const pointInfo = TryExtractPointInfo(component, state))
@@ -277,7 +277,7 @@ namespace
             ImGui::EndPopup();
         }
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         ImGui::Button("De-Select" ICON_FA_CARET_DOWN);
         if (ImGui::BeginPopupContextItem("##deselectmenu", ImGuiPopupFlags_MouseButtonLeft))
@@ -592,7 +592,7 @@ private:
             requestClose();
         }
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         if (ImGui::Button(ICON_FA_UPLOAD " Export to CSV"))
         {

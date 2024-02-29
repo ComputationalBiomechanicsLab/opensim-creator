@@ -62,7 +62,7 @@ bool osc::DrawGizmoOpSelector(
         }
         DrawTooltipIfItemHovered("Translate", "Make the 3D manipulation gizmos translate things (hotkey: G)");
         ImGui::PopStyleColor(std::exchange(colorsPushed, 0));
-        ImGui::SameLine();
+        ui::SameLine();
     }
 
     if (canRotate)
@@ -82,7 +82,7 @@ bool osc::DrawGizmoOpSelector(
         }
         DrawTooltipIfItemHovered("Rotate", "Make the 3D manipulation gizmos rotate things (hotkey: R)");
         ImGui::PopStyleColor(std::exchange(colorsPushed, 0));
-        ImGui::SameLine();
+        ui::SameLine();
     }
 
     if (canScale)
@@ -102,7 +102,7 @@ bool osc::DrawGizmoOpSelector(
         }
         DrawTooltipIfItemHovered("Scale", "Make the 3D manipulation gizmos scale things (hotkey: S)");
         ImGui::PopStyleColor(std::exchange(colorsPushed, 0));
-        ImGui::SameLine();
+        ui::SameLine();
     }
 
     ImGui::PopStyleVar(2);

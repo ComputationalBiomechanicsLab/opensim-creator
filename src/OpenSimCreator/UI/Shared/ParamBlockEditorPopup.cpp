@@ -104,7 +104,7 @@ private:
             ImGui::PushID(i);
 
             ui::TextUnformatted(m_LocalCopy.getName(i));
-            ImGui::SameLine();
+            ui::SameLine();
             DrawHelpMarker(m_LocalCopy.getName(i), m_LocalCopy.getDescription(i));
             ui::NextColumn();
 
@@ -125,7 +125,7 @@ private:
             *m_OutputTarget = m_LocalCopy;
             requestClose();
         }
-        ImGui::SameLine();
+        ui::SameLine();
         if (ImGui::Button("close"))
         {
             requestClose();

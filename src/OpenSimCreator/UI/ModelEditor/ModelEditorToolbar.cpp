@@ -49,11 +49,11 @@ private:
     void drawModelFileRelatedButtons()
     {
         DrawNewModelButton(m_MainUIStateAPI);
-        ImGui::SameLine();
+        ui::SameLine();
         DrawOpenModelButtonWithRecentFilesDropdown(m_MainUIStateAPI);
-        ImGui::SameLine();
+        ui::SameLine();
         DrawSaveModelButton(m_MainUIStateAPI, *m_Model);
-        ImGui::SameLine();
+        ui::SameLine();
         DrawReloadModelButton(*m_Model);
     }
 
@@ -70,7 +70,7 @@ private:
         App::upd().addFrameAnnotation("Simulate Button", GetItemRect());
         DrawTooltipIfItemHovered("Simulate Model", "Run a forward-dynamic simulation of the model");
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         if (ImGui::Button(ICON_FA_EDIT))
         {

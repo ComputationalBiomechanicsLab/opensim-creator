@@ -35,7 +35,7 @@ namespace
 
         ui::Columns(2);
         ui::TextUnformatted("actions");
-        ImGui::SameLine();
+        ui::SameLine();
         DrawHelpMarker("Shows a menu containing extra actions that can be performed on this component.\n\nYou can also access the same menu by right-clicking the component in the 3D viewer, bottom status bar, or navigator panel.");
         ui::NextColumn();
         PushStyleColor(ImGuiCol_Text, Color::yellow());
@@ -76,7 +76,7 @@ namespace
 
             ImGui::Separator();
             ui::TextUnformatted("name");
-            ImGui::SameLine();
+            ui::SameLine();
             DrawHelpMarker("The name of the component", "The component's name can be important. It can be used when components want to refer to eachover. E.g. a joint will name the two frames it attaches to.");
 
             ui::NextColumn();

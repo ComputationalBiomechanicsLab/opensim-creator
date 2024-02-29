@@ -854,7 +854,7 @@ private:
     void drawNothingContextMenuContentHeader()
     {
         ui::Text(ICON_FA_BOLT " Actions");
-        ImGui::SameLine();
+        ui::SameLine();
         ui::TextDisabled("(nothing clicked)");
         ImGui::Separator();
     }
@@ -862,9 +862,9 @@ private:
     void drawMIObjectContextMenuContentHeader(MIObject const& e)
     {
         ui::Text("%s %s", e.getClass().getIconUTF8().c_str(), e.getLabel().c_str());
-        ImGui::SameLine();
+        ui::SameLine();
         ui::TextDisabled(GetContextMenuSubHeaderText(m_Shared->getModelGraph(), e));
-        ImGui::SameLine();
+        ui::SameLine();
         DrawHelpMarker(e.getClass().getName(), e.getClass().getDescription());
         ImGui::Separator();
     }
@@ -887,7 +887,7 @@ private:
                 ss << "changed " << e.getClass().getName() << " name";
                 m_Shared->commitCurrentModelGraph(std::move(ss).str());
             }
-            ImGui::SameLine();
+            ui::SameLine();
             DrawHelpMarker("Component Name", "This is the name that the component will have in the exported OpenSim model.");
         }
 
@@ -905,7 +905,7 @@ private:
                 ss << "changed " << e.getLabel() << "'s translation";
                 m_Shared->commitCurrentModelGraph(std::move(ss).str());
             }
-            ImGui::SameLine();
+            ui::SameLine();
             DrawHelpMarker("Translation", MIStrings::c_TranslationDescription);
         }
 
@@ -925,7 +925,7 @@ private:
                 ss << "changed " << e.getLabel() << "'s rotation";
                 m_Shared->commitCurrentModelGraph(std::move(ss).str());
             }
-            ImGui::SameLine();
+            ui::SameLine();
             DrawHelpMarker("Rotation", "These are the rotation Euler angles for the component in ground. Positive rotations are anti-clockwise along that axis.\n\nNote: the numbers may contain slight rounding error, due to backend constraints. Your values *should* be accurate to a few decimal places.");
         }
 
@@ -943,7 +943,7 @@ private:
                 ss << "changed " << e.getLabel() << "'s scale";
                 m_Shared->commitCurrentModelGraph(std::move(ss).str());
             }
-            ImGui::SameLine();
+            ui::SameLine();
             DrawHelpMarker("Scale", "These are the scale factors of the component in ground. These scale-factors are applied to the element before any other transform (it scales first, then rotates, then translates).");
         }
     }
@@ -1311,7 +1311,7 @@ private:
         {
             m_Shared->commitCurrentModelGraph("changed body mass");
         }
-        ImGui::SameLine();
+        ui::SameLine();
         DrawHelpMarker("Mass", "The mass of the body. OpenSim defines this as 'unitless'; however, models conventionally use kilograms.");
     }
 
@@ -1327,7 +1327,7 @@ private:
             m_Shared->updModelGraph().updByID<Joint>(jointEl.getID()).setJointTypeIndex(currentIdx);
             m_Shared->commitCurrentModelGraph("changed joint type");
         }
-        ImGui::SameLine();
+        ui::SameLine();
         DrawHelpMarker("Joint Type", "This is the type of joint that should be added into the OpenSim model. The joint's type dictates what types of motion are permitted around the joint center. See the official OpenSim documentation for an explanation of each joint type.");
     }
 
@@ -1632,7 +1632,7 @@ private:
         Document& mg = m_Shared->updModelGraph();
 
         ui::Text("%s %s", c.getIconUTF8().c_str(), c.getNamePluralized().c_str());
-        ImGui::SameLine();
+        ui::SameLine();
         DrawHelpMarker(c.getNamePluralized(), c.getDescription());
         ImGui::Dummy({0.0f, 5.0f});
         ImGui::Indent();
@@ -1749,7 +1749,7 @@ private:
         }
         DrawTooltipIfItemHovered("Add Meshes to the model", MIStrings::c_MeshDescription);
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         ImGui::Button(ICON_FA_PLUS " Add Other");
         DrawTooltipIfItemHovered("Add components to the model");
@@ -1760,7 +1760,7 @@ private:
             ImGui::EndPopup();
         }
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         ImGui::Button(ICON_FA_PAINT_ROLLER " Colors");
         DrawTooltipIfItemHovered("Change scene display colors", "This only changes the decroative display colors of model elements in this screen. Color changes are not saved to the exported OpenSim model. Changing these colors can be handy for spotting things, or constrasting scene elements more strongly");
@@ -1784,7 +1784,7 @@ private:
             ImGui::EndPopup();
         }
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         ImGui::Button(ICON_FA_EYE " Visibility");
         DrawTooltipIfItemHovered("Change what's visible in the 3D scene", "This only changes what's visible in this screen. Visibility options are not saved to the exported OpenSim model. Changing these visibility options can be handy if you have a lot of overlapping/intercalated scene elements");
@@ -1808,7 +1808,7 @@ private:
             ImGui::EndPopup();
         }
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         ImGui::Button(ICON_FA_LOCK " Interactivity");
         DrawTooltipIfItemHovered("Change what your mouse can interact with in the 3D scene", "This does not prevent being able to edit the model - it only affects whether you can click that type of element in the 3D scene. Combining these flags with visibility and custom colors can be handy if you have heavily overlapping/intercalated scene elements.");
@@ -1832,17 +1832,17 @@ private:
             ImGui::EndPopup();
         }
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         DrawGizmoOpSelector(m_ImGuizmoState.op);
 
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
-        ImGui::SameLine();
+        ui::SameLine();
         ImGui::PopStyleVar();
 
         // local/global dropdown
         DrawGizmoModeSelector(m_ImGuizmoState.mode);
-        ImGui::SameLine();
+        ui::SameLine();
 
         // scale factor
         {
@@ -1899,7 +1899,7 @@ private:
         }
         DrawTooltipIfItemHovered("Zoom Out");
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         if (ImGui::Button(ICON_FA_SEARCH_PLUS))
         {
@@ -1907,7 +1907,7 @@ private:
         }
         DrawTooltipIfItemHovered("Zoom In");
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
         {
@@ -1918,7 +1918,7 @@ private:
         }
         DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         if (ImGui::Button("X"))
         {
@@ -1932,7 +1932,7 @@ private:
         }
         DrawTooltipIfItemHovered("Face camera facing along X", "Right-clicking faces it along X, but in the opposite direction");
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         if (ImGui::Button("Y"))
         {
@@ -1946,7 +1946,7 @@ private:
         }
         DrawTooltipIfItemHovered("Face camera facing along Y", "Right-clicking faces it along Y, but in the opposite direction");
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         if (ImGui::Button("Z"))
         {
@@ -1960,7 +1960,7 @@ private:
         }
         DrawTooltipIfItemHovered("Face camera facing along Z", "Right-clicking faces it along Z, but in the opposite direction");
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         if (ImGui::Button(ICON_FA_CAMERA))
         {
@@ -2002,7 +2002,7 @@ private:
         DrawTooltipIfItemHovered("Convert current scene to an OpenSim Model", "This will attempt to convert the current scene into an OpenSim model, followed by showing the model in OpenSim Creator's OpenSim model editor screen.\n\nYour progress in this tab will remain untouched.");
 
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
-        ImGui::SameLine(0.0f, spacingBetweenMainAndSettingsButtons.x);
+        ui::SameLine(0.0f, spacingBetweenMainAndSettingsButtons.x);
         ImGui::Button(settingButtonText.c_str());
         ImGui::PopStyleVar();
 
@@ -2036,7 +2036,7 @@ private:
     {
         ImGui::BeginTooltip();
         ui::Text("%s %s", e.getClass().getIconUTF8().c_str(), e.getLabel().c_str());
-        ImGui::SameLine();
+        ui::SameLine();
         ui::TextDisabled(GetContextMenuSubHeaderText(m_Shared->getModelGraph(), e));
         ImGui::EndTooltip();
     }

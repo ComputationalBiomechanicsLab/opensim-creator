@@ -258,7 +258,7 @@ namespace osc::mi
             {
                 ImGui::BeginTooltip();
                 ui::TextUnformatted(se->getLabel());
-                ImGui::SameLine();
+                ui::SameLine();
                 ui::TextDisabled("(%s, click to choose)", se->getClass().getName().c_str());
                 ImGui::EndTooltip();
             }

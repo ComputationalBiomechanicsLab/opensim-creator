@@ -184,9 +184,9 @@ namespace
                 edited = true;
             }
 
-            ImGui::SameLine();
+            ui::SameLine();
             ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-            ImGui::SameLine();
+            ui::SameLine();
 
             // draw translate/rotate/scale selector
             {
@@ -199,7 +199,7 @@ namespace
             }
 
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
-            ImGui::SameLine();
+            ui::SameLine();
             ImGui::PopStyleVar();
 
             // draw global/world selector

@@ -51,7 +51,7 @@ namespace osc
         void drawCurrentHoverInfo(MeshWarpingTabHover const& hover)
         {
             drawColorCodedXYZ(hover.getWorldspaceLocation());
-            ImGui::SameLine();
+            ui::SameLine();
             if (hover.isHoveringASceneElement())
             {
                 ui::TextDisabled("(Click: select %s)", FindElementNameOr(m_State->getScratch(), *hover.getSceneElementID()).c_str());
@@ -70,7 +70,7 @@ namespace osc
         void drawColorCodedXYZ(Vec3 pos)
         {
             ui::TextUnformatted("(");
-            ImGui::SameLine();
+            ui::SameLine();
             for (int i = 0; i < 3; ++i)
             {
                 Color color = {0.5f, 0.5f, 0.5f, 1.0f};
@@ -78,7 +78,7 @@ namespace osc
 
                 PushStyleColor(ImGuiCol_Text, color);
                 ui::Text("%f", pos[i]);
-                ImGui::SameLine();
+                ui::SameLine();
                 PopStyleColor();
             }
             ui::TextUnformatted(")");

@@ -209,7 +209,7 @@ private:
             ImGui::Checkbox("frames", &m_ShowFrames);
             ImGui::EndPopup();
         }
-        ImGui::SameLine();
+        ui::SameLine();
         DrawSearchBar(m_CurrentSearch);
 
         ImGui::Dummy({0.0f, 3.0f});

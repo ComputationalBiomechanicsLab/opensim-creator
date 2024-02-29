@@ -25,7 +25,7 @@ void osc::mow::Toolbar::drawContent()
         m_State->actionOpenOsimOrPromptUser(std::move(maybeSelection));
     });
 
-    ImGui::SameLine();
+    ui::SameLine();
 
     drawWarpModelButton();
 }
@@ -58,7 +58,7 @@ void osc::mow::Toolbar::drawWarpModelButton()
         EndTooltip();
     }
 
-    ImGui::SameLine();
+    ui::SameLine();
     ImGui::SetNextItemWidth(ImGui::CalcTextSize("should be roughly this long incl label").x);
     float blend = m_State->getWarpBlendingFactor();
     if (ImGui::SliderFloat("blending", &blend, 0.0f, 1.0f)) {

@@ -79,7 +79,7 @@ void osc::FrameDefinitionTabToolbar::drawExportToOpenSimTooltipContent(size_t nu
     {
         ImGui::Separator();
         TextWarning("Warning:");
-        ImGui::SameLine();
+        ui::SameLine();
         ui::Text("You currently have %zu bodies defined. Use the 'Add > Body from This' feature on a frame in your scene to add a new body", numBodies);
     }
     EndTooltip();

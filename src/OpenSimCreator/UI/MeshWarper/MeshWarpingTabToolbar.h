@@ -47,30 +47,30 @@ namespace osc
         {
             // document-related stuff
             drawNewDocumentButton();
-            ImGui::SameLine();
+            ui::SameLine();
             drawOpenDocumentButton();
-            ImGui::SameLine();
+            ui::SameLine();
             drawSaveLandmarksButton();
-            ImGui::SameLine();
+            ui::SameLine();
 
             ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-            ImGui::SameLine();
+            ui::SameLine();
 
             // undo/redo-related stuff
             m_UndoButton.onDraw();
-            ImGui::SameLine();
+            ui::SameLine();
             m_RedoButton.onDraw();
-            ImGui::SameLine();
+            ui::SameLine();
 
             ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-            ImGui::SameLine();
+            ui::SameLine();
 
             // camera stuff
             drawCameraLockCheckbox();
-            ImGui::SameLine();
+            ui::SameLine();
 
             ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-            ImGui::SameLine();
+            ui::SameLine();
         }
 
         void drawNewDocumentButton()
@@ -121,7 +121,7 @@ namespace osc
         void drawCameraLockCheckbox()
         {
             ImGui::Checkbox("link cameras", &m_State->linkCameras);
-            ImGui::SameLine();
+            ui::SameLine();
             if (!m_State->linkCameras)
             {
                 ImGui::BeginDisabled();

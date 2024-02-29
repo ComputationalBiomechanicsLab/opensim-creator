@@ -81,7 +81,7 @@ private:
                 if (ImGui::Button(name.c_str())) {
                     m_CurrentMesh = name;
                 }
-                ImGui::SameLine();
+                ui::SameLine();
             }
             ImGui::NewLine();
 

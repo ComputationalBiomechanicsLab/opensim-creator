@@ -41,7 +41,7 @@ void osc::UndoRedoPanel::DrawContent(UndoRedoBase& storage)
         storage.undo();
     }
 
-    ImGui::SameLine();
+    ui::SameLine();
 
     if (ImGui::Button("redo"))
     {

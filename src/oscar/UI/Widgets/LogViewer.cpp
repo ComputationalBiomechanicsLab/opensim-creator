@@ -87,23 +87,23 @@ public:
                 }
             }
 
-            ImGui::SameLine();
+            ui::SameLine();
             ImGui::Checkbox("autoscroll", &autoscroll);
 
-            ImGui::SameLine();
+            ui::SameLine();
             if (ImGui::Button("clear"))
             {
                 getTracebackLog().lock()->clear();
             }
             App::upd().addFrameAnnotation("LogClearButton", GetItemRect());
 
-            ImGui::SameLine();
+            ui::SameLine();
             if (ImGui::Button("turn off"))
             {
                 logger->set_level(LogLevel::off);
             }
 
-            ImGui::SameLine();
+            ui::SameLine();
             if (ImGui::Button("copy to clipboard"))
             {
                 copyTracebackLogToClipboard();
@@ -122,7 +122,7 @@ public:
             ImGui::PushStyleColor(ImGuiCol_Text, ::ToColor(msg.level));
             ui::Text("[%s]", ToCStringView(msg.level).c_str());
             ImGui::PopStyleColor();
-            ImGui::SameLine();
+            ui::SameLine();
             ui::TextWrapped(msg.payload);
 
             if (autoscroll)

@@ -27,7 +27,7 @@ public:
             }
         }
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         if (ImGui::Button("No"))
         {
@@ -37,7 +37,7 @@ public:
             }
         }
 
-        ImGui::SameLine();
+        ui::SameLine();
 
         if (ImGui::Button("Cancel"))
         {

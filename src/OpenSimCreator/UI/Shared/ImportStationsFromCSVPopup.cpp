@@ -69,7 +69,7 @@ private:
         ImGui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
         constexpr CStringView c_ExampleInputText = "name,x,y,z\nstationatground,0,0,0\nstation2,1.53,0.2,1.7\nstation3,3.0,2.0,0.0\n";
         ui::TextWrapped("Example Input: ");
-        ImGui::SameLine();
+        ui::SameLine();
         if (ImGui::Button(ICON_FA_COPY))
         {
             SetClipboardText(c_ExampleInputText);
@@ -132,7 +132,7 @@ private:
         {
             actionTryPromptingUserForCSVFile();
         }
-        ImGui::SameLine();
+        ui::SameLine();
         if (ImGui::Button(ICON_FA_RECYCLE " Reload Same File"))
         {
             actionLoadCSVFile(*m_MaybeImportPath);
@@ -194,7 +194,7 @@ private:
                 DrawTooltipBodyOnly(*disabledReason);
             }
         }
-        ImGui::SameLine();
+        ui::SameLine();
         if (ImGui::Button("Cancel"))
         {
             close();

@@ -92,13 +92,13 @@ namespace osc
             ImGui::SetCursorScreenPos(renderRect.p1 + m_OverlayPadding);
 
             drawInformationIcon();
-            ImGui::SameLine();
+            ui::SameLine();
             drawExportButton();
-            ImGui::SameLine();
+            ui::SameLine();
             drawAutoFitCameraButton();
-            ImGui::SameLine();
+            ui::SameLine();
             ImGui::Checkbox("show destination", &m_ShowDestinationMesh);
-            ImGui::SameLine();
+            ui::SameLine();
             drawLandmarkRadiusSlider();
             drawBlendingFactorSlider();
         }

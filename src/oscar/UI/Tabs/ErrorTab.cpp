@@ -43,7 +43,7 @@ private:
             {
                 ui::TextWrapped("The application threw an exception with the following message:");
                 ImGui::Dummy({2.0f, 10.0f});
-                ImGui::SameLine();
+                ui::SameLine();
                 ui::TextWrapped(m_ErrorMessage);
                 ImGui::Dummy({0.0f, 10.0f});
             }

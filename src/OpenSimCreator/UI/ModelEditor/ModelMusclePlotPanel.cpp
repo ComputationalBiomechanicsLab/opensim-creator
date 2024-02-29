@@ -1662,10 +1662,10 @@ namespace
                 ImGui::EndCombo();
             }
 
-            ImGui::SameLine();
+            ui::SameLine();
             ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ImGui::GetStyle().ItemSpacing.x);
             ui::Text("'s");
-            ImGui::SameLine();
+            ui::SameLine();
             ImGui::SetNextItemWidth(outputNameWidth);
             if (ImGui::BeginCombo("##outputname", outputName.c_str(), ImGuiComboFlags_NoArrowButton))
             {
@@ -1680,9 +1680,9 @@ namespace
                 }
                 ImGui::EndCombo();
             }
-            ImGui::SameLine();
+            ui::SameLine();
             ui::TextUnformatted("vs.");
-            ImGui::SameLine();
+            ui::SameLine();
             ImGui::SetNextItemWidth(coordNameWidth);
             if (ImGui::BeginCombo("##coordname", coordName.c_str(), ImGuiComboFlags_NoArrowButton))
             {
@@ -1697,7 +1697,7 @@ namespace
                 }
                 ImGui::EndCombo();
             }
-            ImGui::SameLine();
+            ui::SameLine();
 
             // draw little options button that opens the context menu
             //
@@ -2059,14 +2059,14 @@ namespace
             ImVec2 const dims{1.5f * s, s};
 
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2, 2));
-            if (ImGui::Button("NW", dims))         { m_LegendLocation = ImPlotLocation_NorthWest; } ImGui::SameLine();
-            if (ImGui::Button("N", dims))          { m_LegendLocation = ImPlotLocation_North; }     ImGui::SameLine();
+            if (ImGui::Button("NW", dims))         { m_LegendLocation = ImPlotLocation_NorthWest; } ui::SameLine();
+            if (ImGui::Button("N", dims))          { m_LegendLocation = ImPlotLocation_North; }     ui::SameLine();
             if (ImGui::Button("NE", dims))         { m_LegendLocation = ImPlotLocation_NorthEast; }
-            if (ImGui::Button("W", dims))          { m_LegendLocation = ImPlotLocation_West; }      ImGui::SameLine();
-            if (ImGui::InvisibleButton("C", dims)) { m_LegendLocation = ImPlotLocation_Center; }    ImGui::SameLine();
+            if (ImGui::Button("W", dims))          { m_LegendLocation = ImPlotLocation_West; }      ui::SameLine();
+            if (ImGui::InvisibleButton("C", dims)) { m_LegendLocation = ImPlotLocation_Center; }    ui::SameLine();
             if (ImGui::Button("E", dims))          { m_LegendLocation = ImPlotLocation_East; }
-            if (ImGui::Button("SW", dims))         { m_LegendLocation = ImPlotLocation_SouthWest; } ImGui::SameLine();
-            if (ImGui::Button("S", dims))          { m_LegendLocation = ImPlotLocation_South; }     ImGui::SameLine();
+            if (ImGui::Button("SW", dims))         { m_LegendLocation = ImPlotLocation_SouthWest; } ui::SameLine();
+            if (ImGui::Button("S", dims))          { m_LegendLocation = ImPlotLocation_South; }     ui::SameLine();
             if (ImGui::Button("SE", dims))         { m_LegendLocation = ImPlotLocation_SouthEast; }
             ImGui::PopStyleVar();
         }

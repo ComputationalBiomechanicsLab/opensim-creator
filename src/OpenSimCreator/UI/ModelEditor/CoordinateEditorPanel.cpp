@@ -177,7 +177,7 @@ private:
     void drawDataCell(OpenSim::Coordinate const& c)
     {
         drawDataCellLockButton(c);
-        ImGui::SameLine(0.0f, 0.0f);
+        ui::SameLine(0.0f, 0.0f);
         drawDataCellCoordinateSlider(c);
     }
 

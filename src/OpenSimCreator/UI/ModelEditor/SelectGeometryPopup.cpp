@@ -112,7 +112,7 @@ private:
         // generated without a mesh file
         {
             ui::TextUnformatted("Generated geometry");
-            ImGui::SameLine();
+            ui::SameLine();
             DrawHelpMarker("This is geometry that OpenSim can generate without needing an external mesh file. Useful for basic geometry.");
             ImGui::Separator();
             ImGui::Dummy({0.0f, 2.0f});
@@ -130,7 +130,7 @@ private:
         // let the user select a mesh file that the implementation should load + use
         ImGui::Dummy({0.0f, 3.0f});
         ui::TextUnformatted("mesh file");
-        ImGui::SameLine();
+        ui::SameLine();
         DrawHelpMarker("This is geometry that OpenSim loads from external mesh files. Useful for custom geometry (usually, created in some other application, such as ParaView or Blender)");
         ImGui::Separator();
         ImGui::Dummy({0.0f, 2.0f});

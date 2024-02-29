@@ -303,7 +303,7 @@ void osc::DrawNothingRightClickedContextMenuHeader()
 void osc::DrawContextMenuHeader(CStringView title, CStringView subtitle)
 {
     ui::TextUnformatted(title);
-    ImGui::SameLine();
+    ui::SameLine();
     ui::TextDisabled(subtitle);
 }
 
@@ -323,7 +323,7 @@ void osc::DrawComponentHoverTooltip(OpenSim::Component const& hovered)
     BeginTooltip();
 
     ui::TextUnformatted(hovered.getName());
-    ImGui::SameLine();
+    ui::SameLine();
     ui::TextDisabled(hovered.getConcreteClassName());
 
     EndTooltip();
@@ -407,7 +407,7 @@ void osc::DrawSimulationParams(ParamBlock const& params)
 {
     ImGui::Dummy({0.0f, 1.0f});
     ui::TextUnformatted("parameters:");
-    ImGui::SameLine();
+    ui::SameLine();
     DrawHelpMarker("The parameters used when this simulation was launched. These must be set *before* running the simulation");
     ImGui::Separator();
     ImGui::Dummy({0.0f, 2.0f});
@@ -420,7 +420,7 @@ void osc::DrawSimulationParams(ParamBlock const& params)
         ParamValue const& value = params.getValue(i);
 
         ui::TextUnformatted(name);
-        ImGui::SameLine();
+        ui::SameLine();
         DrawHelpMarker(name, description);
         ui::NextColumn();
 
@@ -447,7 +447,7 @@ void osc::DrawSearchBar(std::string& out)
 
     // draw search bar
 
-    ImGui::SameLine();
+    ui::SameLine();
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
     InputString("##hirarchtsearchbar", out);
 }
@@ -487,7 +487,7 @@ void osc::DrawOutputNameColumn(
 
     if (!output.getDescription().empty())
     {
-        ImGui::SameLine();
+        ui::SameLine();
         DrawHelpMarker(output.getName(), output.getDescription());
     }
 }
@@ -540,9 +540,9 @@ void osc::DrawPointTranslationInformationWithRespectTo(
     Vec3 position = ToVec3(groundToFrame * ToSimTKVec3(locationInGround));
 
     ui::Text("translation");
-    ImGui::SameLine();
+    ui::SameLine();
     DrawHelpMarker("translation", "Translational offset (in meters) of the point expressed in the chosen frame");
-    ImGui::SameLine();
+    ui::SameLine();
     ImGui::InputFloat3("##translation", value_ptr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
@@ -555,9 +555,9 @@ void osc::DrawDirectionInformationWithRepsectTo(
     Vec3 direction = ToVec3(groundToFrame.xformBaseVecToFrame(ToSimTKVec3(directionInGround)));
 
     ui::Text("direction");
-    ImGui::SameLine();
+    ui::SameLine();
     DrawHelpMarker("direction", "a unit vector expressed in the given frame");
-    ImGui::SameLine();
+    ui::SameLine();
     ImGui::InputFloat3("##direction", value_ptr(direction), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
@@ -571,15 +571,15 @@ void osc::DrawFrameInformationExpressedIn(
     Vec3 rotationEulers = ToVec3(xform.R().convertRotationToBodyFixedXYZ());
 
     ui::Text("translation");
-    ImGui::SameLine();
+    ui::SameLine();
     DrawHelpMarker("translation", "Translational offset (in meters) of the frame's origin expressed in the chosen frame");
-    ImGui::SameLine();
+    ui::SameLine();
     ImGui::InputFloat3("##translation", value_ptr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
 
     ui::Text("orientation");
-    ImGui::SameLine();
+    ui::SameLine();
     DrawHelpMarker("orientation", "Orientation offset (in radians) of the frame, expressed in the chosen frame as a frame-fixed x-y-z rotation sequence");
-    ImGui::SameLine();
+    ui::SameLine();
     ImGui::InputFloat3("##orientation", value_ptr(rotationEulers), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
@@ -659,15 +659,15 @@ void osc::DrawCalculateAxisDirectionsMenu(
             Vec3 z = ToVec3(frame.expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
 
             ui::Text("x axis");
-            ImGui::SameLine();
+            ui::SameLine();
             ImGui::InputFloat3("##xdir", value_ptr(x), "%.6f", ImGuiInputTextFlags_ReadOnly);
 
             ui::Text("y axis");
-            ImGui::SameLine();
+            ui::SameLine();
             ImGui::InputFloat3("##ydir", value_ptr(y), "%.6f", ImGuiInputTextFlags_ReadOnly);
 
             ui::Text("z axis");
-            ImGui::SameLine();
+            ui::SameLine();
             ImGui::InputFloat3("##zdir", value_ptr(z), "%.6f", ImGuiInputTextFlags_ReadOnly);
         };
         DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
@@ -685,7 +685,7 @@ void osc::DrawCalculateOriginMenu(
         {
             auto v = ToVec3(frame.findStationLocationInAnotherFrame(state, {0.0f, 0.0f, 0.0f}, otherFrame));
             ui::Text("origin");
-            ImGui::SameLine();
+            ui::SameLine();
             ImGui::InputFloat3("##origin", value_ptr(v), "%.6f", ImGuiInputTextFlags_ReadOnly);
         };
         DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
@@ -818,7 +818,7 @@ void osc::DrawCalculateRadiiMenu(
     if (ui::BeginMenu("Radii")) {
         auto v = ToVec3(ellipsoid.get_radii());
         ui::Text("radii");
-        ImGui::SameLine();
+        ui::SameLine();
         ImGui::InputFloat3("##radii", value_ptr(v), "%.6f", ImGuiInputTextFlags_ReadOnly);
         ui::EndMenu();
     }
@@ -846,15 +846,15 @@ void osc::DrawCalculateScaledRadiiDirectionsMenu(
             Vec3 z = ToVec3(radii[2] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
 
             ui::Text("x axis");
-            ImGui::SameLine();
+            ui::SameLine();
             ImGui::InputFloat3("##xdir", value_ptr(x), "%.6f", ImGuiInputTextFlags_ReadOnly);
 
             ui::Text("y axis");
-            ImGui::SameLine();
+            ui::SameLine();
             ImGui::InputFloat3("##ydir", value_ptr(y), "%.6f", ImGuiInputTextFlags_ReadOnly);
 
             ui::Text("z axis");
-            ImGui::SameLine();
+            ui::SameLine();
             ImGui::InputFloat3("##zdir", value_ptr(z), "%.6f", ImGuiInputTextFlags_ReadOnly);
         };
         DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
@@ -1007,7 +1007,7 @@ bool osc::DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions& opts)
         }
         if (std::optional<CStringView> description = opts.getOptionDescription(i))
         {
-            ImGui::SameLine();
+            ui::SameLine();
             DrawHelpMarker(*description);
         }
 
@@ -1087,7 +1087,7 @@ bool osc::DrawViewerTopButtonRow(
         [&params]() { return DrawMuscleDecorationOptionsEditor(params.decorationOptions); },
     };
     edited = muscleStylingButton.onDraw() || edited;
-    ImGui::SameLine();
+    ui::SameLine();
 
     IconWithMenu vizAidsButton
     {
@@ -1098,9 +1098,9 @@ bool osc::DrawViewerTopButtonRow(
     };
     edited = vizAidsButton.onDraw() || edited;
 
-    ImGui::SameLine();
+    ui::SameLine();
     ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-    ImGui::SameLine();
+    ui::SameLine();
 
     // caller-provided extra buttons (usually, context-dependent)
     edited = drawExtraElements() || edited;
@@ -1152,12 +1152,12 @@ bool osc::DrawCameraControlButtons(
         ZoomOut(params.camera);
         edited = true;
     }
-    ImGui::SameLine();
+    ui::SameLine();
     if (zoomInButton.onDraw()) {
         ZoomIn(params.camera);
         edited = true;
     }
-    ImGui::SameLine();
+    ui::SameLine();
     if (autoFocusButton.onDraw() && maybeSceneAABB) {
         AutoFocus(params.camera, *maybeSceneAABB, AspectRatio(viewerScreenRect));
         edited = true;
@@ -1258,7 +1258,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
         onUserClickedOpenOrSelectedFile(std::nullopt);
     }
     DrawTooltipIfItemHovered("Open Model", "Opens an existing osim file in a new tab");
-    ImGui::SameLine();
+    ui::SameLine();
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {1.0f, ImGui::GetStyle().FramePadding.y});
     ImGui::Button(ICON_FA_CARET_DOWN);
     DrawTooltipIfItemHovered("Open Recent File", "Opens a recently-opened osim file in a new tab");
@@ -1381,7 +1381,7 @@ void osc::DrawRedoButton(UndoableModelStatePair& model)
 void osc::DrawUndoAndRedoButtons(UndoableModelStatePair& model)
 {
     DrawUndoButton(model);
-    ImGui::SameLine();
+    ui::SameLine();
     DrawRedoButton(model);
 }
 
@@ -1428,11 +1428,11 @@ void osc::DrawToggleContactGeometryButton(UndoableModelStatePair& model, IconCac
 void osc::DrawAllDecorationToggleButtons(UndoableModelStatePair& model, IconCache& icons)
 {
     DrawToggleFramesButton(model, icons);
-    ImGui::SameLine();
+    ui::SameLine();
     DrawToggleMarkersButton(model, icons);
-    ImGui::SameLine();
+    ui::SameLine();
     DrawToggleWrapGeometryButton(model, icons);
-    ImGui::SameLine();
+    ui::SameLine();
     DrawToggleContactGeometryButton(model, icons);
 }
 
@@ -1441,7 +1441,7 @@ void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
     ui::TextUnformatted(ICON_FA_EXPAND_ALT);
     DrawTooltipIfItemHovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
-    ImGui::SameLine();
+    ui::SameLine();
 
     {
         float scaleFactor = model.getFixupScaleFactor();
@@ -1454,7 +1454,7 @@ void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
     ImGui::PopStyleVar();
 
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
-    ImGui::SameLine();
+    ui::SameLine();
     if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
     {
         ActionAutoscaleSceneScaleFactor(model);

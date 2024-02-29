@@ -37,7 +37,7 @@ private:
         {
             ImGui::Dummy({0.0f, 1.0f});
             ui::TextUnformatted("info:");
-            ImGui::SameLine();
+            ui::SameLine();
             DrawHelpMarker("Top-level info about the simulation");
             ImGui::Separator();
             ImGui::Dummy({0.0f, 2.0f});
@@ -76,7 +76,7 @@ private:
         ImGui::Dummy({0.0f, 1.0f});
         ui::Columns(2);
         ui::TextUnformatted("plots:");
-        ImGui::SameLine();
+        ui::SameLine();
         DrawHelpMarker("Various statistics collected when the simulation was ran");
         ui::NextColumn();
         if (std::any_of(outputs.begin(), outputs.end(), [](OutputExtractor const& o) { return o.getOutputType() == OutputType::Float; }))

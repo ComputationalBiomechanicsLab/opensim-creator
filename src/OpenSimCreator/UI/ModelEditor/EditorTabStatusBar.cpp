@@ -52,9 +52,9 @@ private:
                     m_Model->setSelected(els[i]);
                 }
                 drawMouseInteractionStuff(*els[i]);
-                ImGui::SameLine();
+                ui::SameLine();
                 ui::TextDisabled("/");
-                ImGui::SameLine();
+                ui::SameLine();
                 PopID();
             }
             if (!els.empty())

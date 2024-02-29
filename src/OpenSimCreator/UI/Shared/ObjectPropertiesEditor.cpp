@@ -133,7 +133,7 @@ namespace
 
         if (!prop.getComment().empty())
         {
-            ImGui::SameLine();
+            ui::SameLine();
             DrawHelpMarker(prop.getComment());
         }
     }
@@ -187,7 +187,7 @@ namespace
         if (ImGui::BeginPopupContextItem("##valuecontextmenu"))
         {
             ui::Text("Set Step Size");
-            ImGui::SameLine();
+            ui::SameLine();
             DrawHelpMarker("Sets the decrement/increment of the + and - buttons. Can be handy for tweaking property values");
             ImGui::Dummy({0.0f, 0.1f*ImGui::GetTextLineHeight()});
             ImGui::Separator();
@@ -212,17 +212,17 @@ namespace
                 {
                     stepSize = 0.1f;
                 }
-                ImGui::SameLine();
+                ui::SameLine();
                 if (ImGui::Button("1 cm"))
                 {
                     stepSize = 0.01f;
                 }
-                ImGui::SameLine();
+                ui::SameLine();
                 if (ImGui::Button("1 mm"))
                 {
                     stepSize = 0.001f;
                 }
-                ImGui::SameLine();
+                ui::SameLine();
                 if (ImGui::Button("0.1 mm"))
                 {
                     stepSize = 0.0001f;
@@ -236,22 +236,22 @@ namespace
                 {
                     stepSize = 180.0f;
                 }
-                ImGui::SameLine();
+                ui::SameLine();
                 if (ImGui::Button("90"))
                 {
                     stepSize = 90.0f;
                 }
-                ImGui::SameLine();
+                ui::SameLine();
                 if (ImGui::Button("45"))
                 {
                     stepSize = 45.0f;
                 }
-                ImGui::SameLine();
+                ui::SameLine();
                 if (ImGui::Button("10"))
                 {
                     stepSize = 10.0f;
                 }
-                ImGui::SameLine();
+                ui::SameLine();
                 if (ImGui::Button("1"))
                 {
                     stepSize = 1.0f;
@@ -265,22 +265,22 @@ namespace
                 {
                     stepSize = pi_v<float>;
                 }
-                ImGui::SameLine();
+                ui::SameLine();
                 if (ImGui::Button("1/2 pi"))
                 {
                     stepSize = pi_v<float>/2.0f;
                 }
-                ImGui::SameLine();
+                ui::SameLine();
                 if (ImGui::Button("1/4 pi"))
                 {
                     stepSize = pi_v<float>/4.0f;
                 }
-                ImGui::SameLine();
+                ui::SameLine();
                 if (ImGui::Button("10/180 pi"))
                 {
                     stepSize = (10.0f/180.0f) * pi_v<float>;
                 }
-                ImGui::SameLine();
+                ui::SameLine();
                 if (ImGui::Button("1/180 pi"))
                 {
                     stepSize = (1.0f/180.0f) * pi_v<float>;
@@ -294,22 +294,22 @@ namespace
                 {
                     stepSize = 1.0f;
                 }
-                ImGui::SameLine();
+                ui::SameLine();
                 if (ImGui::Button("100 g"))
                 {
                     stepSize = 0.1f;
                 }
-                ImGui::SameLine();
+                ui::SameLine();
                 if (ImGui::Button("10 g"))
                 {
                     stepSize = 0.01f;
                 }
-                ImGui::SameLine();
+                ui::SameLine();
                 if (ImGui::Button("1 g"))
                 {
                     stepSize = 0.001f;
                 }
-                ImGui::SameLine();
+                ui::SameLine();
                 if (ImGui::Button("100 mg"))
                 {
                     stepSize = 0.0001f;
@@ -544,7 +544,7 @@ namespace
                 {
                     rv = MakePropElementDeleter<std::string>(idx);
                 }
-                ImGui::SameLine();
+                ui::SameLine();
             }
 
             // read stored value from edited property
@@ -631,7 +631,7 @@ namespace
                 {
                     rv = MakePropElementDeleter<double>(idx);
                 }
-                ImGui::SameLine();
+                ui::SameLine();
             }
 
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
@@ -723,7 +723,7 @@ namespace
                 {
                     rv = MakePropElementDeleter<bool>(idx);
                 }
-                ImGui::SameLine();
+                ui::SameLine();
             }
 
             // read stored value from edited property
@@ -949,7 +949,7 @@ namespace
             if (ImGui::BeginCombo("##reexpressioneditor", preview.c_str()))
             {
                 ui::TextDisabled("Frame (editing)");
-                ImGui::SameLine();
+                ui::SameLine();
                 DrawHelpMarker("Note: this only affects the values that the quantities are edited in. It does not change the frame that the component is attached to. You can change the frame attachment by using the component's context menu: Socket > $FRAME > (edit button) > (select new frame)");
                 ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
 
@@ -1000,7 +1000,7 @@ namespace
                 {
                     rv = MakePropElementDeleter<SimTK::Vec3>(idx);
                 }
-                ImGui::SameLine();
+                ui::SameLine();
             }
 
             // read stored value from edited property
@@ -1244,7 +1244,7 @@ namespace
                 {
                     rv = MakePropElementDeleter<int>(idx);
                 }
-                ImGui::SameLine();
+                ui::SameLine();
             }
 
             // read stored value from edited property

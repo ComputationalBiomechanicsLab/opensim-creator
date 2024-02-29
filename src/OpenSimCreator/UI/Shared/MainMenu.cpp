@@ -240,7 +240,7 @@ void osc::MainMenuAboutTab::onDraw()
     ImGui::Dummy({menuWidth, 0});
 
     ui::TextUnformatted("graphics");
-    ImGui::SameLine();
+    ui::SameLine();
     DrawHelpMarker("OSMV's global graphical settings");
     ImGui::Separator();
     ImGui::Dummy({0.0f, 0.5f});
@@ -253,7 +253,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::NextColumn();
 
         ui::TextUnformatted("MSXAA");
-        ImGui::SameLine();
+        ui::SameLine();
         DrawHelpMarker("the level of MultiSample Anti-Aliasing to use. This only affects 3D renders *within* the UI, not the whole UI (panels etc. will not be affected)");
         ui::NextColumn();
         {
@@ -293,7 +293,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::NextColumn();
 
         ui::TextUnformatted("VSYNC");
-        ImGui::SameLine();
+        ui::SameLine();
         DrawHelpMarker("whether the backend uses vertical sync (VSYNC), which will cap the rendering FPS to your monitor's refresh rate");
         ui::NextColumn();
 
@@ -312,7 +312,7 @@ void osc::MainMenuAboutTab::onDraw()
 
     ImGui::Dummy({0.0f, 2.0f});
     ui::TextUnformatted("properties");
-    ImGui::SameLine();
+    ui::SameLine();
     DrawHelpMarker("general software properties: useful information for bug reporting etc.");
     ImGui::Separator();
     ImGui::Dummy({0.0f, 0.5f});
@@ -356,7 +356,7 @@ void osc::MainMenuAboutTab::onDraw()
 
     ImGui::Dummy({0.0f, 2.5f});
     ui::TextUnformatted("debugging utilities:");
-    ImGui::SameLine();
+    ui::SameLine();
     DrawHelpMarker("standard utilities that can help with development, debugging, etc.");
     ImGui::Separator();
     ImGui::Dummy({0.0f, 0.5f});
@@ -365,7 +365,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::Columns(2);
 
         ui::TextUnformatted("OSC Install Location");
-        ImGui::SameLine();
+        ui::SameLine();
         DrawHelpMarker("opens OSC's installation location in your OS's default file browser");
         ui::NextColumn();
         ImGui::PushID(id++);
@@ -377,7 +377,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::NextColumn();
 
         ui::TextUnformatted("User Data Dir");
-        ImGui::SameLine();
+        ui::SameLine();
         DrawHelpMarker("opens your OSC user data directory in your OS's default file browser");
         ui::NextColumn();
         ImGui::PushID(id++);
@@ -388,7 +388,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::NextColumn();
 
         ui::TextUnformatted("Debug mode");
-        ImGui::SameLine();
+        ui::SameLine();
         DrawHelpMarker("Toggles whether the application is in debug mode or not: enabling this can reveal more inforamtion about bugs");
         ui::NextColumn();
         {
@@ -411,7 +411,7 @@ void osc::MainMenuAboutTab::onDraw()
 
     ImGui::Dummy({0.0f, 2.5f});
     ui::TextUnformatted("useful links:");
-    ImGui::SameLine();
+    ui::SameLine();
     DrawHelpMarker("links to external sites that might be useful");
     ImGui::Separator();
     ImGui::Dummy({0.0f, 0.5f});
