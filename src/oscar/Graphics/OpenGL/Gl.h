@@ -401,10 +401,6 @@ namespace osc::gl
         glUniform1i(u.geti(), v);
     }
 
-    // tag-type for resetting a uniform to an "identity value"
-    struct UniformIdentityValueTag {};
-    inline UniformIdentityValueTag identity;
-
     // a uniform that points to a statically-sized array of values in the shader
     //
     // This is just a uniform that points to the first element. The utility of
@@ -470,11 +466,6 @@ namespace osc::gl
     {
         static_assert(sizeof(Mat4) == 16 * sizeof(GLfloat));
         glUniformMatrix4fv(u.geti(), static_cast<GLsizei>(ms.size()), false, value_ptr(ms.front()));
-    }
-
-    inline void Uniform(UniformMat4& u, UniformIdentityValueTag)
-    {
-        Uniform(u, Identity<Mat4>());
     }
 
     inline void Uniform(UniformVec2& u, Vec2 const& v)
